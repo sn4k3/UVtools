@@ -165,44 +165,52 @@ namespace UVtools.Core.FileFormats
             public unsafe Mat Decode(bool consumeRle = true)
             {
                 var mat = EmguExtensions.InitMat(new Size((int) ResolutionX, (int) ResolutionY));
-                var matSpan = mat.GetBytePointer();
+                //var matSpan = mat.GetBytePointer();
                 var imageLength = mat.GetLength();
 
-                uint pixel = 0;
+                int pixelPos = 0;
                 foreach (var run in EncodedRle)
                 {
+                    if (pixelPos > imageLength)
+                    {
+                        mat.Dispose();
+                        throw new FileLoadException($"Error image ran off the end, expecting {imageLength} pixels.");
+                    }
+
                     byte brightness = (byte) ((run & 0x01) * 255);
 
-                    uint numPixelsInRun =
-                        (uint) ((((run & 128) > 0 ? 1 : 0) |
-                                 ((run & 64) > 0 ? 2 : 0) |
-                                 ((run & 32) > 0 ? 4 : 0) |
-                                 ((run & 16) > 0 ? 8 : 0) |
-                                 ((run &  8) > 0 ? 16 : 0) |
-                                 ((run &  4) > 0 ? 32 : 0) |
-                                 ((run &  2) > 0 ? 64 : 0)) + 1);
+                    int numPixelsInRun =
+                             (((run & 128) > 0 ? 1 : 0) |
+                              ((run & 64) > 0 ? 2 : 0) |
+                              ((run & 32) > 0 ? 4 : 0) |
+                              ((run & 16) > 0 ? 8 : 0) |
+                              ((run &  8) > 0 ? 16 : 0) |
+                              ((run &  4) > 0 ? 32 : 0) |
+                              ((run &  2) > 0 ? 64 : 0)) + 1;
 
-                    if (brightness == 0) // Don't fill black pixels
+                    mat.FillSpan(ref pixelPos, numPixelsInRun, brightness);
+
+                    /*if (brightness == 0) // Don't fill black pixels
                     {
-                        pixel += numPixelsInRun;
+                        pixelPos += numPixelsInRun;
                         continue;
                     }
 
                     for (; numPixelsInRun > 0; numPixelsInRun--)
                     {
-                        if (pixel > imageLength)
+                        if (pixelPos > imageLength)
                         {
                             mat.Dispose();
                             throw new FileLoadException($"Error image ran off the end, expecting {imageLength} pixels.");
                         }
-                        matSpan[pixel++] = brightness;
-                    }
+                        matSpan[pixelPos++] = brightness;
+                    }*/
                 }
 
-                if (pixel != imageLength && pixel-1 != imageLength)
+                if (pixelPos != imageLength && pixelPos-1 != imageLength)
                 {
                     mat.Dispose();
-                    throw new FileLoadException($"Error image ran shortly or off the end, expecting {imageLength} pixels, got {pixel} pixels.");
+                    throw new FileLoadException($"Error image ran shortly or off the end, expecting {imageLength} pixels, got {pixelPos} pixels.");
                 }
 
                 // Not required as mat is all black by default
@@ -368,6 +376,8 @@ namespace UVtools.Core.FileFormats
             get => (float) Math.Round(HeaderSettings.LiftSpeed * 60.0, 2);
             set => base.LiftSpeed = (float) (HeaderSettings.LiftSpeed = Math.Round(value / 60.0, 2));
         }
+
+        public override float BottomRetractSpeed => RetractSpeed;
 
         public override float RetractSpeed
         {

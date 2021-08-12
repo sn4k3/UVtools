@@ -25,7 +25,7 @@ struct HEADER {
     float MachineZ <fgcolor=cBlack, bgcolor=cRed>;
     float DisplayWidth <fgcolor=cBlack, bgcolor=cRed>;
     float DisplayHeight <fgcolor=cBlack, bgcolor=cRed>;
-    byte DisplayMirror <fgcolor=cBlack, bgcolor=cRed>;
+    ubyte DisplayMirror <fgcolor=cBlack, bgcolor=cRed>;
     
     char PreviewDataType[16] <fgcolor=cBlack, bgcolor=cRed>;
     char LayerDataType[16] <fgcolor=cBlack, bgcolor=cRed>;
@@ -66,16 +66,33 @@ struct PREVIEW {
     ushort ResolutionX <fgcolor=cBlack, bgcolor=cPurple>;
     ushort ResolutionY <fgcolor=cBlack, bgcolor=cPurple>;
     uint ImageLength <fgcolor=cBlack, bgcolor=cPurple>;
-    byte ImageData[ImageLength] <fgcolor=cWhite, bgcolor=cBlack>;
+    ubyte ImageData[ImageLength] <fgcolor=cWhite, bgcolor=cBlack>;
 };
 
 struct LAYER_DEF {
     uint DataAddress <fgcolor=cBlack, bgcolor=cPurple>;
+    float PositionZ <fgcolor=cBlack, bgcolor=cPurple>;
+    float LiftHeight <fgcolor=cBlack, bgcolor=cPurple>;
+    float LiftSpeed <fgcolor=cBlack, bgcolor=cPurple>;
+    float LiftHeight2 <fgcolor=cBlack, bgcolor=cPurple>;
+    float LiftSpeed2 <fgcolor=cBlack, bgcolor=cPurple>;
+    float WaitTimeAfterLift <fgcolor=cBlack, bgcolor=cPurple>;
+    float RetractSpeed <fgcolor=cBlack, bgcolor=cPurple>;
+    float RetractHeight2 <fgcolor=cBlack, bgcolor=cPurple>;
+    float RetractSpeed2 <fgcolor=cBlack, bgcolor=cPurple>;
+    float WaitTimeBeforeCure <fgcolor=cBlack, bgcolor=cPurple>;
+    float ExposureTime <fgcolor=cBlack, bgcolor=cPurple>;
+    float WaitTimeAfterCure <fgcolor=cBlack, bgcolor=cPurple>;
+    ubyte LightPWM <fgcolor=cBlack, bgcolor=cPurple>;
+    uint BoundingRectangleX <fgcolor=cBlack, bgcolor=cPurple>;
+    uint BoundingRectangleY <fgcolor=cBlack, bgcolor=cPurple>;
+    uint BoundingRectangleWidth <fgcolor=cBlack, bgcolor=cPurple>;
+    uint BoundingRectangleHeight <fgcolor=cBlack, bgcolor=cPurple>;
 };
 
 struct LAYER_DATA{
     uint ImageLength <fgcolor=cWhite, bgcolor=cBlack>;
-    byte ImageData[ImageLength] <fgcolor=cWhite, bgcolor=cBlack>;
+    ubyte ImageData[ImageLength] <fgcolor=cWhite, bgcolor=cBlack>;
 };
 
 struct GCODE{

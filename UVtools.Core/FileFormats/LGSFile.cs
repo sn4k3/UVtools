@@ -92,28 +92,32 @@ namespace UVtools.Core.FileFormats
 
             [FieldOrder(1)]
             [FieldLength(nameof(DataSize))]
-            public byte[] EncodedRle { get; set; }
+            public byte[] PngBytes { get; set; }
+
+            [FieldOrder(2)] public ushort Padding { get; set; }
 
             public void Encode(Mat mat)
             {
+                mat ??= EmguExtensions.InitMat(new Size(ResolutionX, ResolutionY), 3);
+
                 if (mat.Width != ResolutionX || mat.Height != ResolutionY)
                 {
                     using var resizeMat = new Mat();
                     CvInvoke.Resize(mat, resizeMat, new Size(ResolutionX, ResolutionY));
-                    EncodedRle = resizeMat.GetPngByes();
+                    PngBytes = resizeMat.GetPngByes();
                 }
                 else
                 {
-                    EncodedRle = mat.GetPngByes();
+                    PngBytes = mat.GetPngByes();
                 }
             }
 
             public Mat Decode(bool consumeRle = true)
             {
                 var mat = new Mat();
-                CvInvoke.Imdecode(EncodedRle, ImreadModes.AnyColor, mat);
+                CvInvoke.Imdecode(PngBytes, ImreadModes.AnyColor, mat);
                 if (consumeRle)
-                    EncodedRle = null;
+                    PngBytes = null;
                 return mat;
             }
         }
@@ -133,10 +137,23 @@ namespace UVtools.Core.FileFormats
             [FieldLength(nameof(DataSize))]
             public byte[] EncodedRle { get; set; }
 
+            public LayerData() { }
+
+            public LayerData(LGSFile parent)
+            {
+                Parent = parent;
+            }
+
             public unsafe byte[] Encode(Mat mat)
             {
                 List<byte> rawData = new();
                 List<byte> chunk = new();
+
+                if (Parent.HeaderSettings.PrinterModel is 4000 or 4500)
+                {
+                    CvInvoke.Rotate(mat, mat, RotateFlags.Rotate90Clockwise);
+                }
+
                 var spanMat = mat.GetBytePointer();
                 var imageLength = mat.GetLength();
 
@@ -171,64 +188,65 @@ namespace UVtools.Core.FileFormats
                 addSpan();
                 EncodedRle = rawData.ToArray();
                 DataSize = (uint) EncodedRle.Length;
+
+                if (Parent.HeaderSettings.PrinterModel is 4000 or 4500)
+                {
+                    CvInvoke.Rotate(mat, mat, RotateFlags.Rotate90CounterClockwise);
+                }
+
                 return EncodedRle;
             }
 
-            public unsafe Mat Decode(bool consumeRle = true)
+            public Mat Decode(bool consumeRle = true)
             {
-                var mat = EmguExtensions.InitMat(Parent.Resolution);
-                var matSpan = mat.GetBytePointer();
+                // lgs10/30 -------->
+                // lgs120/4k From Y bottom to top Y
+                var mat = EmguExtensions.InitMat(Parent.HeaderSettings.PrinterModel is 4000 or 4500 ? Parent.Resolution.Exchange() : Parent.Resolution);
+                //var matSpan = mat.GetBytePointer();
                 var imageLength = mat.GetLength();
+                
+                int pixelPos = 0;
 
-                byte last = 0;
-                int span = 0;
-                int index = 0;
-
-                foreach (var b in EncodedRle)
+                for (var i = 0; i < EncodedRle.Length; i++)
                 {
-                    byte color = (byte) ((b & 0xf0) | (b >> 4));
+                    var b = EncodedRle[i];
+                    byte colorNibble = (byte)(b >> 4);
+                    byte color = (byte)(colorNibble << 0x4 | colorNibble);
+                    int repeat = b & 0xf;
 
-                    if (color == last)
+                    while (i + 1 < EncodedRle.Length && (EncodedRle[i + 1] >> 4) == colorNibble)
                     {
-                        span = (span << 4) | (b & 0xf);
-                    }
-                    else
-                    {
-                        for(; span > 0; span--)
-                        {
-                            if (index >= imageLength)
-                            {
-                                throw new FileLoadException($"'{span}' bytes to many");
-                            }
-
-                            matSpan[index++] = last;
-                        }
-
-                        span = b & 0xf;
-
+                        i++;
+                        repeat = (repeat << 4) | (EncodedRle[i] & 0xf);
                     }
 
-                    last = color;
-                }
-
-                for (; span > 0; span--)
-                {
-                    if (index >= imageLength)
+                    if (pixelPos >= imageLength)
                     {
-                        throw new FileLoadException($"'{span}' bytes to many");
+                        throw new FileLoadException($"Too much buffer, expected: {imageLength}, got: {pixelPos}");
                     }
 
-                    matSpan[index++] = last;
+                    mat.FillSpan(ref pixelPos, repeat, color);
+
+                    //if (repeat <= 0) continue;
+                    /*while (repeat-- > 0)
+                    {
+                        matSpan[pixel++] = color;
+                    }*/
+
                 }
 
-                if (index != imageLength)
+                if (pixelPos != imageLength)
                 {
-                    throw new FileLoadException($"Incomplete buffer, expected: {imageLength}, got: {index}");
+                    throw new FileLoadException($"Incomplete buffer, expected: {imageLength}, got: {pixelPos}");
                 }
-
 
                 if (consumeRle)
                     EncodedRle = null;
+
+                if (Parent.HeaderSettings.PrinterModel is 4000 or 4500)
+                {
+                    CvInvoke.Rotate(mat, mat, RotateFlags.Rotate90CounterClockwise);
+                }
 
                 return mat;
             }
@@ -245,8 +263,8 @@ namespace UVtools.Core.FileFormats
         public override FileExtension[] FileExtensions { get; } = {
             new ("lgs", "Longer Orange 10"),
             new ("lgs30", "Longer Orange 30"),
-            //new ("lgs120", "Longer Orange 120"),
-            //new ("lgs4k", "Longer Orange 4k"),
+            new ("lgs120", "Longer Orange 120"),
+            new ("lgs4k", "Longer Orange 4k"),
         };
 
         public override PrintParameterModifier[] PrintParameterModifiers { get; } =
@@ -448,6 +466,8 @@ namespace UVtools.Core.FileFormats
             set => base.LiftSpeed = HeaderSettings.LiftSpeed = HeaderSettings.LiftSpeed_ = value;
         }
 
+        public override float BottomRetractSpeed => RetractSpeed;
+
         public override float RetractSpeed => LiftSpeed;
 
         /*public override float PrintTime => 0;
@@ -548,6 +568,15 @@ namespace UVtools.Core.FileFormats
                 outputFile.WriteSerialize(HeaderSettings);
                 outputFile.WriteBytes(PreviewEncode(Thumbnails[0]));
 
+                if (HeaderSettings.PrinterModel == 120)
+                {
+                    // Insert PNG here
+                    var mat = GetThumbnail(true);
+                    var pngPreview = new LGS120PngPreview();
+                    pngPreview.Encode(mat);
+                    outputFile.WriteSerialize(pngPreview);
+                }
+
                 var layerData = new LayerData[LayerCount];
 
                 Parallel.For(0, LayerCount, layerIndex =>
@@ -555,7 +584,7 @@ namespace UVtools.Core.FileFormats
                     if (progress.Token.IsCancellationRequested) return;
                     using (var mat = this[layerIndex].LayerMat)
                     {
-                        layerData[layerIndex] = new LayerData();
+                        layerData[layerIndex] = new LayerData(this);
                         layerData[layerIndex].Encode(mat);
                     }
 
@@ -587,13 +616,14 @@ namespace UVtools.Core.FileFormats
                 throw new FileLoadException("Not a valid LGS file!", fileFullPath);
             }
 
-            // Fix inconsistencies found of different version of plugin and slicers
-            if (ResolutionX > ResolutionY)
-            {
-                var oldX = ResolutionX;
-                ResolutionX = ResolutionY;
-                ResolutionY = oldX;
-            }
+            //if (HeaderSettings.PrinterModel is 10 or 30 or 120)
+            //{
+                // Fix inconsistencies found of different version of plugin and slicers
+                if (ResolutionX > ResolutionY)
+                {
+                    (ResolutionX, ResolutionY) = (ResolutionY, ResolutionX);
+                }
+            //}
 
             int previewSize = (int) (HeaderSettings.PreviewSizeX * HeaderSettings.PreviewSizeY * 2);
             byte[] previewData = new byte[previewSize];
@@ -603,13 +633,13 @@ namespace UVtools.Core.FileFormats
             currentOffset += inputFile.ReadBytes(previewData);
             Thumbnails[0] = PreviewDecode(previewData);
 
-            if (FileEndsWith(".lgs120"))
+            if (HeaderSettings.PrinterModel == 120)
             {
                 var pngPreview = Helpers.Deserialize<LGS120PngPreview>(inputFile);
             }
   
 
-            LayerData[] layerData = new LayerData[HeaderSettings.LayerCount];
+            var layerData = new LayerData[HeaderSettings.LayerCount];
             progress.Reset(OperationProgress.StatusGatherLayers, HeaderSettings.LayerCount);
 
             for (int layerIndex = 0; layerIndex < HeaderSettings.LayerCount; layerIndex++)
@@ -656,12 +686,9 @@ namespace UVtools.Core.FileFormats
                 FileFullPath = filePath;
             }
 
-            using (var outputFile = new FileStream(FileFullPath, FileMode.Open, FileAccess.Write))
-            {
-
-                outputFile.Seek(0, SeekOrigin.Begin);
-                Helpers.SerializeWriteFileStream(outputFile, HeaderSettings);
-            }
+            using var outputFile = new FileStream(FileFullPath, FileMode.Open, FileAccess.Write);
+            outputFile.Seek(0, SeekOrigin.Begin);
+            Helpers.SerializeWriteFileStream(outputFile, HeaderSettings);
         }
         
         #endregion

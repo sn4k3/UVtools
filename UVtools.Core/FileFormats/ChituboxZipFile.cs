@@ -96,11 +96,22 @@ namespace UVtools.Core.FileFormats
             PrintParameterModifier.LiftHeight,
             PrintParameterModifier.LiftSpeed,
 
+            PrintParameterModifier.BottomLiftHeight2,
+            PrintParameterModifier.BottomLiftSpeed2,
+            PrintParameterModifier.LiftHeight2,
+            PrintParameterModifier.LiftSpeed2,
+
             PrintParameterModifier.BottomWaitTimeAfterLift,
             PrintParameterModifier.WaitTimeAfterLift,
 
+            PrintParameterModifier.BottomRetractSpeed,
             PrintParameterModifier.RetractSpeed,
-            
+
+            PrintParameterModifier.BottomRetractHeight2,
+            PrintParameterModifier.BottomRetractSpeed2,
+            PrintParameterModifier.RetractHeight2,
+            PrintParameterModifier.RetractSpeed2,
+
             PrintParameterModifier.BottomLightPWM,
             PrintParameterModifier.LightPWM,
         };
@@ -111,8 +122,12 @@ namespace UVtools.Core.FileFormats
             PrintParameterModifier.WaitTimeAfterCure,
             PrintParameterModifier.LiftHeight,
             PrintParameterModifier.LiftSpeed,
+            PrintParameterModifier.LiftHeight2,
+            PrintParameterModifier.LiftSpeed2,
             PrintParameterModifier.WaitTimeAfterLift,
             PrintParameterModifier.RetractSpeed,
+            PrintParameterModifier.RetractHeight2,
+            PrintParameterModifier.RetractSpeed2,
             PrintParameterModifier.LightPWM,
         };
 

@@ -149,6 +149,11 @@ namespace UVtools.Core.Extensions
             return mat.GetDataSpan<byte>();
         }
 
+        public static unsafe Span<byte> GetDataByteSpan(this Mat mat, int length, int offset = 0)
+        {
+            return new(IntPtr.Add(mat.DataPointer, offset).ToPointer(), length <= 0 ? mat.GetLength() : length);
+        }
+
         /// <summary>
         /// Gets the data span to manipulate or read pixels given a length and offset
         /// </summary>
@@ -215,6 +220,56 @@ namespace UVtools.Core.Extensions
             var colMat = mat.Col(x);
             return new(IntPtr.Add(colMat.DataPointer, offset).ToPointer(), length <= 0 ? mat.Height : length);
         }
+        #endregion
+
+        #region Memory Fill
+
+        /// <summary>
+        /// Fill a mat span with a color
+        /// </summary>
+        /// <param name="mat">Mat to fill</param>
+        /// <param name="startPosition">Start position, this reference will increment by the <see cref="length"/></param>
+        /// <param name="length">Length to fill</param>
+        /// <param name="color">Color to fill with</param>
+        /// <param name="colorFillMinThreshold">Ignore and sum <see cref="startPosition"/> to <see cref="length"/> if <see cref="color"/> is less than the threshold value</param>
+        public static void FillSpan(this Mat mat, ref int startPosition, int length, byte color, byte colorFillMinThreshold = 1)
+        {
+            if (length <= 0) return;
+            if (color < colorFillMinThreshold) // Ignore threshold (mostly if blacks), spare cycles
+            {
+                startPosition += length;
+                return;
+            }
+
+            mat.GetDataByteSpan(length, startPosition).Fill(color);
+            startPosition += length;
+        }
+
+        /// <summary>
+        /// Fill a mat span with a color
+        /// </summary>
+        /// <param name="mat">Mat to fill</param>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="length">Length to fill</param>
+        /// <param name="color">Color to fill with</param>
+        /// <param name="colorFillMinThreshold">Ignore and sum <see cref="startPosition"/> to <see cref="length"/> if <see cref="color"/> is less than the threshold value</param>
+        public static void FillSpan(this Mat mat, int x, int y, int length, byte color, byte colorFillMinThreshold = 1)
+        {
+            if (length <= 0 || color < colorFillMinThreshold) return; // Ignore threshold (mostly if blacks), spare cycles
+            mat.GetDataByteSpan(length, mat.GetPixelPos(x, y)).Fill(color);
+        }
+
+        /// <summary>
+        /// Fill a mat span with a color
+        /// </summary>
+        /// <param name="mat">Mat to fill</param>
+        /// <param name="position"></param>
+        /// <param name="length">Length to fill</param>
+        /// <param name="color">Color to fill with</param>
+        /// <param name="colorFillMinThreshold">Ignore and sum <see cref="startPosition"/> to <see cref="length"/> if <see cref="color"/> is less than the threshold value</param>
+        public static void FillSpan(this Mat mat, Point position, int length, byte color, byte colorFillMinThreshold = 1)
+            => mat.FillSpan(position.X, position.Y, length, color, colorFillMinThreshold);
         #endregion
 
         #region Get/Set methods

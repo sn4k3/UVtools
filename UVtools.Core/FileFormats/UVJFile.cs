@@ -146,6 +146,7 @@ namespace UVtools.Core.FileFormats
             PrintParameterModifier.BottomLiftSpeed,
             PrintParameterModifier.LiftHeight,
             PrintParameterModifier.LiftSpeed,
+            PrintParameterModifier.BottomRetractSpeed,
             PrintParameterModifier.RetractSpeed,
 
             PrintParameterModifier.BottomLightPWM,
@@ -311,6 +312,12 @@ namespace UVtools.Core.FileFormats
         {
             get => JsonSettings.Properties.Exposure.LiftSpeed;
             set => base.LiftSpeed = JsonSettings.Properties.Exposure.LiftSpeed = (float)Math.Round(value, 2);
+        }
+
+        public override float BottomRetractSpeed
+        {
+            get => JsonSettings.Properties.Bottom.RetractSpeed;
+            set => base.BottomRetractSpeed = JsonSettings.Properties.Bottom.RetractSpeed = (float)Math.Round(value, 2);
         }
 
         public override float RetractSpeed

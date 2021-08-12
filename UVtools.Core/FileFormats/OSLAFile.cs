@@ -98,7 +98,7 @@ namespace UVtools.Core.FileFormats
             [FieldOrder(11)] public float LayerHeight { get; set; } = 0.05f;
             [FieldOrder(12)] public ushort BottomLayersCount { get; set; } = 4;
             [FieldOrder(13)] public uint LayerCount { get; set; }
-            [FieldOrder(14)] public uint LayerTableSize { get; set; } = 4;
+            [FieldOrder(14)] public uint LayerTableSize { get; set; } = 69;
             [FieldOrder(15)] public uint LayerDefinitionsAddress { get; set; }
             [FieldOrder(16)] public uint GCodeAddress { get; set; }
             [FieldOrder(17)] public uint PrintTime { get; set; }
@@ -106,6 +106,7 @@ namespace UVtools.Core.FileFormats
             [FieldOrder(19)] public float MaterialCost { get; set; }
             [FieldOrder(20)] [FieldLength(50)] [SerializeAs(SerializedType.TerminatedString)] public string MaterialName { get; set; }
             [FieldOrder(21)] [FieldLength(50)] [SerializeAs(SerializedType.TerminatedString)] public string MachineName { get; set; } = "Unknown";
+
 
             public override string ToString()
             {
@@ -161,17 +162,68 @@ namespace UVtools.Core.FileFormats
         #region Layer
         public class LayerDef
         {
-            [FieldOrder(0)] public uint DataAddress { get; set; }
+            //[FieldOrder(0)] public uint DataAddress { get; set; }
+            
+            [FieldOrder(1)] public float PositionZ { get; set; }
+            [FieldOrder(2)] public float LiftHeight { get; set; }
+            [FieldOrder(3)] public float LiftSpeed { get; set; }
+            [FieldOrder(4)] public float LiftHeight2 { get; set; }
+            [FieldOrder(5)] public float LiftSpeed2 { get; set; }
+            [FieldOrder(6)] public float WaitTimeAfterLift { get; set; }
+            [FieldOrder(7)] public float RetractSpeed { get; set; }
+            [FieldOrder(8)] public float RetractHeight2 { get; set; }
+            [FieldOrder(9)] public float RetractSpeed2 { get; set; }
+            [FieldOrder(10)] public float WaitTimeBeforeCure { get; set; }
+            [FieldOrder(11)] public float ExposureTime { get; set; }
+            [FieldOrder(12)] public float WaitTimeAfterCure { get; set; }
+            [FieldOrder(13)] public byte LightPWM { get; set; }
+            [FieldOrder(14)] public uint BoundingRectangleX { get; set; }
+            [FieldOrder(15)] public uint BoundingRectangleY { get; set; }
+            [FieldOrder(16)] public uint BoundingRectangleWidth { get; set; }
+            [FieldOrder(17)] public uint BoundingRectangleHeight { get; set; }
 
-            [Ignore] public byte[] ImageData { get; set; }
+            //[Ignore] public byte[] ImageData { get; set; }
 
             public LayerDef()
             {
             }
 
-            public override string ToString()
+            public LayerDef(Layer layer)
             {
-                return $"{nameof(DataAddress)}: {DataAddress}, {nameof(ImageData)}: {ImageData.Length}";
+                PositionZ = layer.PositionZ;
+                LiftHeight = layer.LiftHeight;
+                LiftSpeed = layer.LiftSpeed;
+                LiftHeight2 = layer.LiftHeight2;
+                LiftSpeed2 = layer.LiftSpeed2;
+                WaitTimeAfterLift = layer.WaitTimeAfterLift;
+                RetractSpeed = layer.RetractSpeed;
+                RetractHeight2 = layer.RetractHeight2;
+                RetractSpeed2 = layer.RetractSpeed2;
+                WaitTimeBeforeCure = layer.WaitTimeBeforeCure;
+                ExposureTime = layer.ExposureTime;
+                WaitTimeAfterCure = layer.WaitTimeAfterCure;
+                LightPWM = layer.LightPWM;
+                BoundingRectangleX = (uint)layer.BoundingRectangle.X;
+                BoundingRectangleY = (uint)layer.BoundingRectangle.Y;
+                BoundingRectangleWidth =  (uint)layer.BoundingRectangle.Width;
+                BoundingRectangleHeight = (uint)layer.BoundingRectangle.Height;
+            }
+
+            public void SetTo(Layer layer)
+            {
+                layer.PositionZ = PositionZ;
+                layer.LiftHeight = LiftHeight;
+                layer.LiftSpeed = LiftSpeed;
+                layer.LiftHeight2 = LiftHeight2;
+                layer.LiftSpeed2 = LiftSpeed2;
+                layer.WaitTimeAfterLift = WaitTimeAfterLift;
+                layer.RetractSpeed = RetractSpeed;
+                layer.RetractHeight2 = RetractHeight2;
+                layer.RetractSpeed2 = RetractSpeed2;
+                layer.WaitTimeBeforeCure = WaitTimeBeforeCure;
+                layer.ExposureTime = ExposureTime;
+                layer.WaitTimeAfterCure = WaitTimeAfterCure;
+                layer.LightPWM = LightPWM;
             }
         }
         #endregion
@@ -205,8 +257,7 @@ namespace UVtools.Core.FileFormats
             //new ("odlp", "Open DLP universal binary file"),
         };
 
-        public override PrintParameterModifier[] PrintParameterModifiers { get; } =
-        {
+        public override PrintParameterModifier[] PrintParameterModifiers { get; } = {
             PrintParameterModifier.BottomLayerCount,
 
             PrintParameterModifier.BottomWaitTimeBeforeCure,
@@ -223,11 +274,21 @@ namespace UVtools.Core.FileFormats
             PrintParameterModifier.LiftHeight,
             PrintParameterModifier.LiftSpeed,
 
+            PrintParameterModifier.BottomLiftHeight2,
+            PrintParameterModifier.BottomLiftSpeed2,
+            PrintParameterModifier.LiftHeight2,
+            PrintParameterModifier.LiftSpeed2,
+
             PrintParameterModifier.BottomWaitTimeAfterLift,
             PrintParameterModifier.WaitTimeAfterLift,
 
+            PrintParameterModifier.BottomRetractSpeed,
             PrintParameterModifier.RetractSpeed,
-            
+
+            PrintParameterModifier.BottomRetractHeight2,
+            PrintParameterModifier.BottomRetractSpeed2,
+            PrintParameterModifier.RetractHeight2,
+            PrintParameterModifier.RetractSpeed2,
 
             PrintParameterModifier.BottomLightPWM,
             PrintParameterModifier.LightPWM,
@@ -239,8 +300,12 @@ namespace UVtools.Core.FileFormats
             PrintParameterModifier.WaitTimeAfterCure,
             PrintParameterModifier.LiftHeight,
             PrintParameterModifier.LiftSpeed,
+            PrintParameterModifier.LiftHeight2,
+            PrintParameterModifier.LiftSpeed2,
             PrintParameterModifier.WaitTimeAfterLift,
             PrintParameterModifier.RetractSpeed,
+            PrintParameterModifier.RetractHeight2,
+            PrintParameterModifier.RetractSpeed2,
             PrintParameterModifier.LightPWM,
         };
 
@@ -464,7 +529,7 @@ namespace UVtools.Core.FileFormats
             outputFile.Seek(HeaderSettings.LayerTableSize * LayerCount, SeekOrigin.Current); // Start of layer data
 
             var layerHash = new Dictionary<string, uint>();
-
+            
             var range = Enumerable.Range(0, (int)LayerCount);
             foreach (var batch in range.Batch(Environment.ProcessorCount * 10))
             {
@@ -496,23 +561,30 @@ namespace UVtools.Core.FileFormats
                         layerHash.Add(hash, layerDataAddresses[layerIndex]);
                     }
 
-
-                    
                     layerBytes[layerIndex] = null; // Clean
                 }
             }
 
             HeaderSettings.GCodeAddress = (uint)outputFile.Position;
 
+            uint layerTableSize = 0;
             outputFile.Seek(HeaderSettings.LayerDefinitionsAddress, SeekOrigin.Begin);
-            for (int i = 0; i < layerDataAddresses.Length; i++)
+            for (int layerIndex = 0; layerIndex < layerDataAddresses.Length; layerIndex++)
             {
                 progress.Token.ThrowIfCancellationRequested();
-                outputFile.WriteUIntLittleEndian(layerDataAddresses[i]);
-                // Need to fill what we don't know
-                if (HeaderSettings.LayerTableSize > 4)
+
+                var layer = this[layerIndex];
+                var layerdef = new LayerDef(layer);
+                
+                outputFile.WriteUIntLittleEndian(layerDataAddresses[layerIndex]);
+                Helpers.SerializeWriteFileStream(outputFile, layerdef);
+                if (layerTableSize == 0)
                 {
-                    outputFile.Seek(HeaderSettings.LayerTableSize - 4, SeekOrigin.Current);
+                    layerTableSize = 4 + (uint)Helpers.Serializer.SizeOf(layerdef);
+                }
+                if (HeaderSettings.LayerTableSize > layerTableSize)
+                {
+                    outputFile.Seek(HeaderSettings.LayerTableSize - layerTableSize, SeekOrigin.Current);
                 }
             }
 
@@ -581,15 +653,25 @@ namespace UVtools.Core.FileFormats
             inputFile.Seek(HeaderSettings.LayerDefinitionsAddress, SeekOrigin.Begin);
 
             LayerManager.Init(HeaderSettings.LayerCount);
+            var layerDef = new LayerDef[LayerCount];
+
+
             progress.Reset(OperationProgress.StatusGatherLayers, HeaderSettings.LayerCount);
             uint[] layerDataAddresses = new uint[LayerCount];
+            uint layerTableSize = 0;
             for (uint layerIndex = 0; layerIndex < HeaderSettings.LayerCount; layerIndex++)
             {
                 progress.Token.ThrowIfCancellationRequested();
                 layerDataAddresses[layerIndex] = inputFile.ReadUIntLittleEndian();
-                if (HeaderSettings.LayerTableSize > 4)
+
+                layerDef[layerIndex] = Helpers.Deserialize<LayerDef>(inputFile);
+                if (layerTableSize == 0)
                 {
-                    inputFile.Seek(HeaderSettings.LayerTableSize - 4, SeekOrigin.Current);
+                    layerTableSize = 4 + (uint)Helpers.Serializer.SizeOf(layerDef[layerIndex]);
+                }
+                if (HeaderSettings.LayerTableSize > layerTableSize)
+                {
+                    inputFile.Seek(HeaderSettings.LayerTableSize - layerTableSize, SeekOrigin.Current);
                 }
 
                 progress++;
@@ -615,7 +697,9 @@ namespace UVtools.Core.FileFormats
                 {
                     if (progress.Token.IsCancellationRequested) return;
                     using var mat = DecodeImage(layerBytes[layerIndex], HeaderSettings.LayerDataType, Resolution);
-                    this[layerIndex] = new Layer((uint)layerIndex, mat, this);
+                    var layer = new Layer((uint)layerIndex, mat, this);
+                    layerDef[layerIndex].SetTo(layer);
+                    this[layerIndex] = layer;
                     layerBytes[layerIndex] = null; // Clean
 
                     progress.LockAndIncrement();
@@ -626,7 +710,9 @@ namespace UVtools.Core.FileFormats
             inputFile.Seek(HeaderSettings.GCodeAddress, SeekOrigin.Begin);
             var gcodeDef = Helpers.Deserialize<GCodeDef>(inputFile);
             GCodeStr = gcodeDef.GCodeText;
-            GCode.ParseLayersFromGCode(this);
+            //GCode.ParseLayersFromGCode(this);
+
+            UpdateGlobalPropertiesFromLayers();
         }
 
         public override void SaveAs(string filePath = null, OperationProgress progress = null)
@@ -653,13 +739,23 @@ namespace UVtools.Core.FileFormats
             Helpers.SerializeWriteFileStream(outputFile, FileSettings);
             Helpers.SerializeWriteFileStream(outputFile, HeaderSettings);
 
-            outputFile.Seek(HeaderSettings.GCodeAddress, SeekOrigin.Begin);
-            outputFile.SetLength(HeaderSettings.GCodeAddress);
+            outputFile.Seek(HeaderSettings.LayerDefinitionsAddress, SeekOrigin.Begin);
+            foreach (var layer in this)
+            {
+                outputFile.Seek(4, SeekOrigin.Current); // skip address
+                Helpers.SerializeWriteFileStream(outputFile, new LayerDef(layer)); // Update layer values
+            }
 
-            RebuildGCode();
-            var gcodeSettings = new GCodeDef {GCodeText = GCodeStr};
-            gcodeSettings.GCodeSize = (uint) gcodeSettings.GCodeText.Length;
-            Helpers.SerializeWriteFileStream(outputFile, gcodeSettings);
+            if (HeaderSettings.GCodeAddress > 0)
+            {
+                outputFile.Seek(HeaderSettings.GCodeAddress, SeekOrigin.Begin);
+                outputFile.SetLength(HeaderSettings.GCodeAddress);
+
+                RebuildGCode();
+                var gcodeSettings = new GCodeDef { GCodeText = GCodeStr };
+                gcodeSettings.GCodeSize = (uint)gcodeSettings.GCodeText.Length;
+                Helpers.SerializeWriteFileStream(outputFile, gcodeSettings);
+            }
         }
         #endregion
 

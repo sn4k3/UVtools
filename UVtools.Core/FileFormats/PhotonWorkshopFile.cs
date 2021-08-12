@@ -1142,6 +1142,8 @@ namespace UVtools.Core.FileFormats
             }
         }
 
+        public override float BottomRetractSpeed => RetractSpeed;
+
         public override float RetractSpeed
         {
             get => (float)Math.Round(HeaderSettings.RetractSpeed * 60, 2);

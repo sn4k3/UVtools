@@ -8,7 +8,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.IO.Compression;
@@ -84,10 +83,10 @@ namespace UVtools.Core.FileFormats
                 public float LiftSpeed { get; set; } = FileFormat.DefaultLiftSpeed;
 
                 [XmlAttribute("cooldown_bottom")]
-                public uint BottomLightOffDelay { get; set; } = (uint) (FileFormat.DefaultBottomLightOffDelay * 1000);
+                public uint BottomLightOffDelay { get; set; }
 
                 [XmlAttribute("cooldown")]
-                public uint LightOffDelay { get; set; } = (uint) (FileFormat.DefaultLightOffDelay * 1000);
+                public uint LightOffDelay { get; set; }
 
                 [XmlAttribute("thickness")]
                 public float LayerHeight { get; set; } = FileFormat.DefaultLayerHeight;
@@ -209,10 +208,21 @@ namespace UVtools.Core.FileFormats
             PrintParameterModifier.LiftHeight,
             PrintParameterModifier.LiftSpeed,
 
+            PrintParameterModifier.BottomLiftHeight2,
+            PrintParameterModifier.BottomLiftSpeed2,
+            PrintParameterModifier.LiftHeight2,
+            PrintParameterModifier.LiftSpeed2,
+
             PrintParameterModifier.BottomWaitTimeAfterLift,
             PrintParameterModifier.WaitTimeAfterLift,
 
+            PrintParameterModifier.BottomRetractSpeed,
             PrintParameterModifier.RetractSpeed,
+
+            PrintParameterModifier.BottomRetractHeight2,
+            PrintParameterModifier.BottomRetractSpeed2,
+            PrintParameterModifier.RetractHeight2,
+            PrintParameterModifier.RetractSpeed2,
 
             PrintParameterModifier.BottomLightPWM,
             PrintParameterModifier.LightPWM,
@@ -224,8 +234,12 @@ namespace UVtools.Core.FileFormats
             PrintParameterModifier.WaitTimeAfterCure,
             PrintParameterModifier.LiftHeight,
             PrintParameterModifier.LiftSpeed,
+            PrintParameterModifier.LiftHeight2,
+            PrintParameterModifier.LiftSpeed2,
             PrintParameterModifier.WaitTimeAfterLift,
             PrintParameterModifier.RetractSpeed,
+            PrintParameterModifier.RetractHeight2,
+            PrintParameterModifier.RetractSpeed2,
             PrintParameterModifier.LightPWM,
         };
 

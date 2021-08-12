@@ -60,7 +60,7 @@ namespace UVtools.Core.Extensions
         /// </summary>
         /// <param name="size"></param>
         /// <returns></returns>
-        public static Size Invert(this Size size) => new(size.Height, size.Width);
+        public static Size Exchange(this Size size) => new(size.Height, size.Width);
 
         public static int Area(this Rectangle rect) => rect.Width * rect.Height;
 

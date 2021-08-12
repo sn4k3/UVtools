@@ -1,5 +1,26 @@
 # Changelog
 
+## 12/08/2021 - v2.18.0
+
+- **Command line arguments:**
+   - (Add) Convert files: UVtools.exe -c \<inputfile\> \<outputfile1/ext1\> [outputfile2/ext2]
+   - (Add) Extract files: UVtools.exe -e \<inputfile\> [output_folder]
+   - https://github.com/sn4k3/UVtools#command-line-arguments
+- **File formats:** 
+   - (Add) Implement TSMC (Two Stage Motor Control) for the supported formats
+   - (Add) Implement 'Bottom retract speed' for the supported formats
+   - (Add) LGS: Support for lgs120 and lg4k (#218)
+   - (Add) CTB: Special/virtual file extensions .v2.ctb, .v3.ctb, .v4.ctb to force a convertion to the set version (2 to 4). The .ctb is Version 3 by default when creating/converting files
+   - (Improvement) Better performance for file formats that decode images in sequential pixels groups
+- **GCode:**
+  - (Improvement) Better parsing of the movements / lifts
+  - (Improvement) Better handling of lifts performed after cure the layer
+  - (Improvement) More fail-safe checks and sanitize of gcode while parsing
+- (Improvement) CTBv3: Enable per layer settings if disabled when fast save without reencode
+- (Upgrade) .NET from 5.0.8 to 5.0.9
+- (Fix) PrusaSlicer printer: Longer Orange 4k with correct resolution and display size
+- (Fix) Odd error when changing properties too fast in multi-thread
+
 ## 08/08/2021 - v2.17.0
 
 - **Windows MSI:**

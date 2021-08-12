@@ -44,15 +44,26 @@ namespace UVtools.Core.FileFormats
         public const ushort DefaultBottomLayerCount = 4;
 
         public const float DefaultBottomExposureTime = 30;
+        public const float DefaultExposureTime = 3;
+
         public const float DefaultBottomLiftHeight = 5;
         public const float DefaultLiftHeight = 5;
         public const float DefaultBottomLiftSpeed = 100;
-
-        public const float DefaultExposureTime = 3;
         public const float DefaultLiftSpeed = 100;
+
+        public const float DefaultBottomLiftHeight2 = 0;
+        public const float DefaultLiftHeight2 = 0;
+        public const float DefaultBottomLiftSpeed2 = 300;
+        public const float DefaultLiftSpeed2 = 300;
+
+
+        public const float DefaultBottomRetractSpeed = 100;
         public const float DefaultRetractSpeed = 100;
-        public const float DefaultBottomLightOffDelay = 0;
-        public const float DefaultLightOffDelay = 0;
+        public const float DefaultBottomRetractHeight2 = 0;
+        public const float DefaultRetractHeight2 = 0;
+        public const float DefaultBottomRetractSpeed2 = 300;
+        public const float DefaultRetractSpeed2 = 300;
+
         public const byte DefaultBottomLightPWM = 255;
         public const byte DefaultLightPWM = 255;
 
@@ -61,7 +72,7 @@ namespace UVtools.Core.FileFormats
         public const float MinimumLayerHeight = 0.01f;
         public const float MaximumLayerHeight = 0.20f;
 
-        private const ushort QueueTimerPrintTime = 250;
+        private const ushort QueueTimerPrintTime = 250; // ms
         #endregion 
 
         #region Enums
@@ -108,15 +119,27 @@ namespace UVtools.Core.FileFormats
             public static PrintParameterModifier WaitTimeAfterCure { get; } = new("Wait after cure", "Time to wait/rest after cure a new bottom layer\nChitubox: Rest before lift\nLychee: Wait after print", "s", 0, 1000, 2);
             
             public static PrintParameterModifier BottomLiftHeight { get; } = new ("Bottom lift height", "Bottom lift/peel height between layers", "mm", 1);
-            public static PrintParameterModifier LiftHeight { get; } = new ("Lift height", @"Lift/peel height between layers", "mm");
+            public static PrintParameterModifier LiftHeight { get; } = new ("Lift height", @"Lift/peel height between layers", "mm", 1);
             
             public static PrintParameterModifier BottomLiftSpeed { get; } = new ("Bottom lift speed", null, "mm/min", 10, 5000, 2);
             public static PrintParameterModifier LiftSpeed { get; } = new ("Lift speed", null, "mm/min", 10, 5000, 2);
-           
+
+            public static PrintParameterModifier BottomLiftHeight2 { get; } = new("2) Bottom lift height", "Bottom second lift/peel height between layers", "mm");
+            public static PrintParameterModifier LiftHeight2 { get; } = new("2) Lift height", @"Second lift/peel height between layers", "mm");
+
+            public static PrintParameterModifier BottomLiftSpeed2 { get; } = new("2) Bottom lift speed", null, "mm/min", 10, 5000, 2);
+            public static PrintParameterModifier LiftSpeed2 { get; } = new("2) Lift speed", null, "mm/min", 10, 5000, 2);
+
             public static PrintParameterModifier BottomWaitTimeAfterLift { get; } = new("Bottom wait after lift", "Time to wait/rest after a lift/peel sequence at bottom layers\nChitubox: Rest after lift\nLychee: Wait after lift", "s", 0, 1000, 2);
             public static PrintParameterModifier WaitTimeAfterLift { get; } = new("Wait after lift", "Time to wait/rest after a lift/peel sequence at layers\nChitubox: Rest after lift\nLychee: Wait after lift", "s", 0, 1000, 2);
            
+            public static PrintParameterModifier BottomRetractSpeed { get; } = new ("Bottom retract speed", "Bottom down speed from lift height to next layer cure position", "mm/min", 10, 5000, 2);
             public static PrintParameterModifier RetractSpeed { get; } = new ("Retract speed", "Down speed from lift height to next layer cure position", "mm/min", 10, 5000, 2);
+
+            public static PrintParameterModifier BottomRetractHeight2 { get; } = new("2) Bottom retract height", "Second extra bottom retract height ", "mm");
+            public static PrintParameterModifier RetractHeight2 { get; } = new("2) Retract height", @"Second extra retract height", "mm");
+            public static PrintParameterModifier BottomRetractSpeed2 { get; } = new("2) Bottom retract speed", "Bottom second down speed from lift height to next layer cure position", "mm/min", 10, 5000, 2);
+            public static PrintParameterModifier RetractSpeed2 { get; } = new("2) Retract speed", "Second down speed from lift height to next layer cure position", "mm/min", 10, 5000, 2);
 
             public static PrintParameterModifier BottomLightPWM { get; } = new ("Bottom light PWM", "UV LED power for bottom layers", "☀", 1, byte.MaxValue, 0);
             public static PrintParameterModifier LightPWM { get; } = new ("Light PWM", "UV LED power for layers", "☀", 1, byte.MaxValue, 0);
@@ -360,21 +383,48 @@ namespace UVtools.Core.FileFormats
         #region Members
         private bool _haveModifiedLayers;
         private LayerManager _layerManager;
-        private float _printTime;
-        private float _materialMilliliters;
-        private float _machineZ;
+
         private ushort _bottomLayerCount = DefaultBottomLayerCount;
+
+        private float _bottomLightOffDelay;
+        private float _lightOffDelay;
+
+        private float _bottomWaitTimeBeforeCure;
+        private float _waitTimeBeforeCure;
+
         private float _bottomExposureTime = DefaultBottomExposureTime;
         private float _exposureTime = DefaultExposureTime;
+
+        private float _bottomWaitTimeAfterCure;
+        private float _waitTimeAfterCure;
+        
         private float _bottomLiftHeight = DefaultBottomLiftHeight;
         private float _liftHeight = DefaultLiftHeight;
         private float _bottomLiftSpeed = DefaultBottomLiftSpeed;
         private float _liftSpeed = DefaultLiftSpeed;
+
+        private float _bottomLiftHeight2 = DefaultBottomLiftHeight2;
+        private float _liftHeight2 = DefaultLiftHeight2;
+        private float _bottomLiftSpeed2 = DefaultBottomLiftSpeed2;
+        private float _liftSpeed2 = DefaultLiftSpeed2;
+
+        private float _bottomWaitTimeAfterLift;
+        private float _waitTimeAfterLift;
+
+        private float _bottomRetractHeight2 = DefaultBottomRetractHeight2;
+        private float _retractHeight2 = DefaultRetractHeight2;
+        private float _bottomRetractSpeed2 = DefaultBottomRetractSpeed2;
+        private float _retractSpeed2 = DefaultRetractSpeed2;
+        private float _bottomRetractSpeed = DefaultBottomRetractSpeed;
         private float _retractSpeed = DefaultRetractSpeed;
-        private float _bottomLightOffDelay = DefaultBottomLightOffDelay;
-        private float _lightOffDelay = DefaultLightOffDelay;
+
+
         private byte _bottomLightPwm = DefaultBottomLightPWM;
         private byte _lightPwm = DefaultLightPWM;
+
+        private float _printTime;
+        private float _materialMilliliters;
+        private float _machineZ;
         private string _machineName = "Unknown";
         private string _materialName;
         private float _materialGrams;
@@ -382,16 +432,11 @@ namespace UVtools.Core.FileFormats
         private bool _suppressRebuildGCode;
 
         private readonly Timer _queueTimerPrintTime = new(QueueTimerPrintTime){AutoReset = false};
-        private float _bottomWaitTimeBeforeCure;
-        private float _waitTimeBeforeCure;
-        private float _bottomWaitTimeAfterCure;
-        private float _waitTimeAfterCure;
-        private float _bottomWaitTimeAfterLift;
-        private float _waitTimeAfterLift;
-
         #endregion
 
         #region Properties
+
+        public object Mutex = new();
 
         /// <summary>
         /// Gets the file format type
@@ -857,6 +902,9 @@ namespace UVtools.Core.FileFormats
             }
         }
 
+        /// <summary>
+        /// Gets or sets the bottom time in seconds to wait before cure the layer
+        /// </summary>
         public virtual float BottomWaitTimeBeforeCure
         {
             get => _bottomWaitTimeBeforeCure;
@@ -868,6 +916,9 @@ namespace UVtools.Core.FileFormats
         }
 
 
+        /// <summary>
+        /// Gets or sets the time in seconds to wait after cure the layer
+        /// </summary>
         public virtual float WaitTimeBeforeCure
         {
             get => _waitTimeBeforeCure;
@@ -904,6 +955,9 @@ namespace UVtools.Core.FileFormats
             }
         }
 
+        /// <summary>
+        /// Gets or sets the bottom time in seconds to wait after cure the layer
+        /// </summary>
         public virtual float BottomWaitTimeAfterCure
         {
             get => _bottomWaitTimeAfterCure;
@@ -914,6 +968,9 @@ namespace UVtools.Core.FileFormats
             }
         }
 
+        /// <summary>
+        /// Gets or sets the time in seconds to wait after cure the layer
+        /// </summary>
         public virtual float WaitTimeAfterCure
         {
             get => _waitTimeAfterCure;
@@ -921,6 +978,34 @@ namespace UVtools.Core.FileFormats
             {
                 RaiseAndSet(ref _waitTimeAfterCure, (float)Math.Round(value, 2));
                 RaisePropertyChanged(nameof(WaitTimeRepresentation));
+            }
+        }
+
+        /// <summary>
+        /// Gets: Total bottom lift height (lift1 + lift2)
+        /// Sets: Bottom lift1 with value and lift2 with 0
+        /// </summary>
+        public float BottomLiftHeightTotal
+        {
+            get => (float)Math.Round(_bottomLiftHeight + _bottomLiftHeight2);
+            set
+            {
+                BottomLiftHeight = value;
+                BottomLiftHeight2 = 0;
+            }
+        }
+
+        /// <summary>
+        /// Gets: Total lift height (lift1 + lift2)
+        /// Sets: Lift1 with value and lift2 with 0
+        /// </summary>
+        public float LiftHeightTotal
+        {
+            get => (float)Math.Round(_liftHeight + _liftHeight2);
+            set
+            {
+                LiftHeight = value;
+                LiftHeight2 = 0;
             }
         }
 
@@ -933,20 +1018,9 @@ namespace UVtools.Core.FileFormats
             set
             {
                 RaiseAndSet(ref _bottomLiftHeight, (float)Math.Round(value, 2));
+                RaisePropertyChanged(nameof(BottomLiftHeightTotal));
                 RaisePropertyChanged(nameof(LiftRepresentation));
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the lift height in mm
-        /// </summary>
-        public virtual float LiftHeight
-        {
-            get => _liftHeight;
-            set
-            {
-                RaiseAndSet(ref _liftHeight, (float)Math.Round(value, 2));
-                RaisePropertyChanged(nameof(LiftRepresentation));
+                BottomRetractHeight2 = _bottomRetractHeight2; // Sanitize
             }
         }
 
@@ -964,6 +1038,23 @@ namespace UVtools.Core.FileFormats
         }
 
         /// <summary>
+        /// Gets or sets the lift height in mm
+        /// </summary>
+        public virtual float LiftHeight
+        {
+            get => _liftHeight;
+            set
+            {
+                RaiseAndSet(ref _liftHeight, (float)Math.Round(value, 2));
+                RaisePropertyChanged(nameof(LiftHeightTotal));
+                RaisePropertyChanged(nameof(LiftRepresentation));
+                RetractHeight2 = _retractHeight2; // Sanitize
+            }
+        }
+
+        
+
+        /// <summary>
         /// Gets or sets the speed in mm/min
         /// </summary>
         public virtual float LiftSpeed
@@ -976,6 +1067,66 @@ namespace UVtools.Core.FileFormats
             }
         }
 
+        /// <summary>
+        /// Gets or sets the second bottom lift height in mm
+        /// </summary>
+        public virtual float BottomLiftHeight2
+        {
+            get => _bottomLiftHeight2;
+            set
+            {
+                RaiseAndSet(ref _bottomLiftHeight2, (float)Math.Round(value, 2));
+                RaisePropertyChanged(nameof(BottomLiftHeightTotal));
+                RaisePropertyChanged(nameof(LiftRepresentation));
+                BottomRetractHeight2 = _bottomRetractHeight2; // Sanitize
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the second bottom lift speed in mm/min
+        /// </summary>
+        public virtual float BottomLiftSpeed2
+        {
+            get => _bottomLiftSpeed2;
+            set
+            {
+                RaiseAndSet(ref _bottomLiftSpeed2, (float)Math.Round(value, 2));
+                RaisePropertyChanged(nameof(LiftRepresentation));
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the second lift height in mm
+        /// </summary>
+        public virtual float LiftHeight2
+        {
+            get => _liftHeight2;
+            set
+            {
+                RaiseAndSet(ref _liftHeight2, (float)Math.Round(value, 2));
+                RaisePropertyChanged(nameof(LiftHeightTotal));
+                RaisePropertyChanged(nameof(LiftRepresentation));
+                RetractHeight2 = _retractHeight2; // Sanitize
+            }
+        }
+
+        
+        /// <summary>
+        /// Gets or sets the second speed in mm/min
+        /// </summary>
+        public virtual float LiftSpeed2
+        {
+            get => _liftSpeed2;
+            set
+            {
+                RaiseAndSet(ref _liftSpeed2, (float)Math.Round(value, 2));
+                RaisePropertyChanged(nameof(LiftRepresentation));
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the bottom time in seconds to wait after lift / before retract
+        /// </summary>
         public virtual float BottomWaitTimeAfterLift
         {
             get => _bottomWaitTimeAfterLift;
@@ -986,6 +1137,9 @@ namespace UVtools.Core.FileFormats
             }
         }
 
+        /// <summary>
+        /// Gets or sets the time in seconds to wait after lift / before retract
+        /// </summary>
         public virtual float WaitTimeAfterLift
         {
             get => _waitTimeAfterLift;
@@ -997,6 +1151,39 @@ namespace UVtools.Core.FileFormats
         }
 
         /// <summary>
+        /// Gets: Total bottom retract height (retract1 + retract2)  alias of <see cref="BottomLiftHeightTotal"/>
+        /// </summary>
+        public float BottomRetractHeightTotal => BottomLiftHeightTotal;
+
+        /// <summary>
+        /// Gets: Total retract height (retract1 + retract2) alias of <see cref="LiftHeightTotal"/>
+        /// </summary>
+        public float RetractHeightTotal => LiftHeightTotal;
+
+        /// <summary>
+        /// Gets the bottom retract height in mm
+        /// </summary>
+        public float BottomRetractHeight => (float)Math.Round(BottomLiftHeightTotal - _bottomRetractHeight2);
+
+        /// <summary>
+        /// Gets the speed in mm/min for the bottom retracts
+        /// </summary>
+        public virtual float BottomRetractSpeed
+        {
+            get => _bottomRetractSpeed;
+            set
+            {
+                RaiseAndSet(ref _bottomRetractSpeed, (float)Math.Round(value, 2));
+                RaisePropertyChanged(nameof(RetractRepresentation));
+            }
+        }
+
+        /// <summary>
+        /// Gets the retract height in mm
+        /// </summary>
+        public float RetractHeight => (float)Math.Round(LiftHeightTotal - _retractHeight2);
+        
+        /// <summary>
         /// Gets the speed in mm/min for the retracts
         /// </summary>
         public virtual float RetractSpeed
@@ -1005,6 +1192,64 @@ namespace UVtools.Core.FileFormats
             set
             {
                 RaiseAndSet(ref _retractSpeed, (float)Math.Round(value, 2));
+                RaisePropertyChanged(nameof(RetractRepresentation));
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the second bottom retract height in mm
+        /// </summary>
+        public virtual float BottomRetractHeight2
+        {
+            get => _bottomRetractHeight2;
+            set
+            {
+                value = Math.Clamp((float)Math.Round(value, 2), 0, BottomRetractHeightTotal);
+                RaiseAndSet(ref _bottomRetractHeight2, value);
+                RaisePropertyChanged(nameof(BottomRetractHeight));
+                RaisePropertyChanged(nameof(BottomRetractHeightTotal));
+                RaisePropertyChanged(nameof(RetractRepresentation));
+            }
+        }
+
+        /// <summary>
+        /// Gets the speed in mm/min for the retracts
+        /// </summary>
+        public virtual float BottomRetractSpeed2
+        {
+            get => _bottomRetractSpeed2;
+            set
+            {
+                RaiseAndSet(ref _bottomRetractSpeed2, (float)Math.Round(value, 2));
+                RaisePropertyChanged(nameof(RetractRepresentation));
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the second retract height in mm
+        /// </summary>
+        public virtual float RetractHeight2
+        {
+            get => _retractHeight2;
+            set
+            {
+                value = Math.Clamp((float)Math.Round(value, 2), 0, RetractHeightTotal);
+                RaiseAndSet(ref _retractHeight2, value);
+                RaisePropertyChanged(nameof(RetractHeight));
+                RaisePropertyChanged(nameof(RetractHeightTotal));
+                RaisePropertyChanged(nameof(RetractRepresentation));
+            }
+        }
+
+        /// <summary>
+        /// Gets the speed in mm/min for the retracts
+        /// </summary>
+        public virtual float RetractSpeed2
+        {
+            get => _retractSpeed2;
+            set
+            {
+                RaiseAndSet(ref _retractSpeed2, (float)Math.Round(value, 2));
                 RaisePropertyChanged(nameof(RetractRepresentation));
             }
         }
@@ -1053,11 +1298,28 @@ namespace UVtools.Core.FileFormats
         public bool CanUseLiftSpeed => HavePrintParameterModifier(PrintParameterModifier.LiftSpeed);
         public bool CanUseAnyLiftSpeed => CanUseBottomLiftSpeed || CanUseLiftSpeed;
 
+        public bool CanUseBottomLiftHeight2 => HavePrintParameterModifier(PrintParameterModifier.BottomLiftHeight2);
+        public bool CanUseLiftHeight2 => HavePrintParameterModifier(PrintParameterModifier.LiftHeight2);
+        public bool CanUseAnyLiftHeight2 => CanUseBottomLiftHeight2 || CanUseLiftHeight2;
+
+        public bool CanUseBottomLiftSpeed2 => HavePrintParameterModifier(PrintParameterModifier.BottomLiftSpeed2);
+        public bool CanUseLiftSpeed2 => HavePrintParameterModifier(PrintParameterModifier.LiftSpeed2);
+        public bool CanUseAnyLiftSpeed2 => CanUseBottomLiftSpeed2 || CanUseLiftSpeed2;
+
         public bool CanUseBottomWaitTimeAfterLift => HavePrintParameterModifier(PrintParameterModifier.BottomWaitTimeAfterLift);
         public bool CanUseWaitTimeAfterLift => HavePrintParameterModifier(PrintParameterModifier.WaitTimeAfterLift);
         public bool CanUseAnyWaitTimeAfterLift => CanUseBottomWaitTimeAfterLift || CanUseWaitTimeAfterLift;
 
+        public bool CanUseBottomRetractSpeed => HavePrintParameterModifier(PrintParameterModifier.BottomRetractSpeed);
         public bool CanUseRetractSpeed => HavePrintParameterModifier(PrintParameterModifier.RetractSpeed);
+        public bool CanUseAnyRetractSpeed => CanUseBottomRetractSpeed || CanUseRetractSpeed;
+
+        public bool CanUseBottomRetractHeight2 => HavePrintParameterModifier(PrintParameterModifier.BottomRetractHeight2);
+        public bool CanUseRetractHeight2 => HavePrintParameterModifier(PrintParameterModifier.RetractHeight2);
+        public bool CanUseAnyRetractHeight2 => CanUseBottomRetractHeight2 || CanUseRetractHeight2;
+        public bool CanUseBottomRetractSpeed2 => HavePrintParameterModifier(PrintParameterModifier.BottomRetractSpeed2);
+        public bool CanUseRetractSpeed2 => HavePrintParameterModifier(PrintParameterModifier.RetractSpeed2);
+        public bool CanUseAnyRetractSpeed2 => CanUseBottomRetractSpeed2 || CanUseRetractSpeed2;
 
         public bool CanUseAnyWaitTime => CanUseBottomWaitTimeBeforeCure || CanUseBottomWaitTimeAfterCure || CanUseBottomWaitTimeAfterLift ||
                                          CanUseWaitTimeBeforeCure || CanUseWaitTimeAfterCure || CanUseWaitTimeAfterLift;
@@ -1071,8 +1333,12 @@ namespace UVtools.Core.FileFormats
         public bool CanUseLayerWaitTimeAfterCure => HaveLayerParameterModifier(PrintParameterModifier.WaitTimeAfterCure);
         public bool CanUseLayerLiftHeight => HaveLayerParameterModifier(PrintParameterModifier.LiftHeight);
         public bool CanUseLayerLiftSpeed => HaveLayerParameterModifier(PrintParameterModifier.LiftSpeed);
+        public bool CanUseLayerLiftHeight2 => HaveLayerParameterModifier(PrintParameterModifier.LiftHeight2);
+        public bool CanUseLayerLiftSpeed2 => HaveLayerParameterModifier(PrintParameterModifier.LiftSpeed2);
         public bool CanUseLayerWaitTimeAfterLift => HaveLayerParameterModifier(PrintParameterModifier.WaitTimeAfterLift);
         public bool CanUseLayerRetractSpeed => HaveLayerParameterModifier(PrintParameterModifier.RetractSpeed);
+        public bool CanUseLayerRetractHeight2 => HaveLayerParameterModifier(PrintParameterModifier.RetractHeight2);
+        public bool CanUseLayerRetractSpeed2 => HaveLayerParameterModifier(PrintParameterModifier.RetractSpeed2);
         public bool CanUseLayerLightOffDelay => HaveLayerParameterModifier(PrintParameterModifier.LightOffDelay);
         public bool CanUseLayerLightPWM => HaveLayerParameterModifier(PrintParameterModifier.LightPWM);
 
@@ -1106,9 +1372,12 @@ namespace UVtools.Core.FileFormats
 
                 var haveBottomLiftHeight = CanUseBottomLiftHeight;
                 var haveLiftHeight = CanUseLiftHeight;
+                var haveBottomLiftHeight2 = CanUseBottomLiftHeight2;
+                var haveLiftHeight2 = CanUseLiftHeight2;
 
-                if (!haveBottomLiftHeight && !haveLiftHeight) return str;
+                if (!haveBottomLiftHeight && !haveLiftHeight && !haveBottomLiftHeight2 && !haveLiftHeight2) return str;
 
+                // Sequence 1
                 if (haveBottomLiftHeight)
                 {
                     str += BottomLiftHeight.ToString(CultureInfo.InvariantCulture);
@@ -1137,6 +1406,35 @@ namespace UVtools.Core.FileFormats
 
                 str += "mm/min";
 
+                // Sequence 2
+                if (haveBottomLiftHeight2)
+                {
+                    str += $"\n2th: {BottomLiftHeight2.ToString(CultureInfo.InvariantCulture)}";
+                }
+                if (haveLiftHeight2)
+                {
+                    str += str.EndsWith("mm/min") ? "\n2th: " : '/';
+                    str += LiftHeight2.ToString(CultureInfo.InvariantCulture);
+                }
+
+                if (str.EndsWith("mm/min")) return str;
+
+                str += "mm @ ";
+
+                var haveBottomLiftSpeed2 = CanUseBottomLiftSpeed2;
+                var haveLiftSpeed2 = CanUseLiftSpeed2;
+                if (haveBottomLiftSpeed2)
+                {
+                    str += BottomLiftSpeed2.ToString(CultureInfo.InvariantCulture);
+                }
+                if (haveLiftSpeed2)
+                {
+                    if (haveBottomLiftSpeed2) str += '/';
+                    str += LiftSpeed2.ToString(CultureInfo.InvariantCulture);
+                }
+
+                str += "mm/min";
+
                 return str;
             }
         }
@@ -1147,12 +1445,71 @@ namespace UVtools.Core.FileFormats
             {
                 var str = string.Empty;
 
-                if (CanUseRetractSpeed)
+                var haveBottomRetractHeight = CanUseLiftHeight;
+                var haveRetractHeight = CanUseBottomLiftHeight;
+                var haveBottomRetractSpeed = CanUseBottomRetractSpeed;
+                var haveRetractSpeed = CanUseRetractSpeed;
+                var haveBottomRetractHeight2 = CanUseBottomRetractHeight2;
+                var haveRetractHeight2 = CanUseRetractHeight2;
+                var haveBottomRetractSpeed2 = CanUseBottomRetractSpeed2;
+                var haveRetractSpeed2 = CanUseRetractSpeed2;
+
+                if (!haveBottomRetractSpeed && !haveRetractSpeed && !haveBottomRetractHeight2 && !haveRetractHeight2) return str;
+
+                // Sequence 1
+                if (haveBottomRetractHeight)
                 {
+                    str += BottomRetractHeight.ToString(CultureInfo.InvariantCulture);
+                }
+                if (haveRetractHeight)
+                {
+                    if (!string.IsNullOrEmpty(str)) str += '/';
+                    str += RetractHeight.ToString(CultureInfo.InvariantCulture);
+                }
+
+                if (string.IsNullOrEmpty(str)) return str;
+
+                str += "mm @ ";
+
+                
+                if (haveBottomRetractSpeed)
+                {
+                    str += BottomRetractSpeed.ToString(CultureInfo.InvariantCulture);
+                }
+                if (haveRetractSpeed)
+                {
+                    if (haveBottomRetractSpeed) str += '/';
                     str += RetractSpeed.ToString(CultureInfo.InvariantCulture);
                 }
 
-                if (!string.IsNullOrEmpty(str)) str += "mm/min";
+                str += "mm/min";
+
+                // Sequence 2
+                if (haveBottomRetractHeight2)
+                {
+                    str += $"\n2th: {BottomRetractHeight2.ToString(CultureInfo.InvariantCulture)}";
+                }
+                if (haveRetractHeight2)
+                {
+                    str += str.EndsWith("mm/min") ? "\n2th: " : '/';
+                    str += RetractHeight2.ToString(CultureInfo.InvariantCulture);
+                }
+
+                if (str.EndsWith("mm/min")) return str;
+
+                str += "mm @ ";
+
+                if (haveBottomRetractSpeed2)
+                {
+                    str += BottomRetractSpeed2.ToString(CultureInfo.InvariantCulture);
+                }
+                if (haveRetractSpeed2)
+                {
+                    if (haveBottomRetractSpeed2) str += '/';
+                    str += RetractSpeed2.ToString(CultureInfo.InvariantCulture);
+                }
+
+                str += "mm/min";
 
                 return str;
             }
@@ -1461,12 +1818,21 @@ namespace UVtools.Core.FileFormats
                     or nameof(BottomWaitTimeAfterCure)
                     or nameof(WaitTimeAfterCure)
                     or nameof(BottomLiftHeight) 
+                    or nameof(BottomLiftSpeed)
                     or nameof(LiftHeight) 
-                    or nameof(BottomLiftSpeed) 
                     or nameof(LiftSpeed)
+                    or nameof(BottomLiftHeight2)
+                    or nameof(BottomLiftSpeed2)
+                    or nameof(LiftHeight2)
+                    or nameof(LiftSpeed2)
                     or nameof(BottomWaitTimeAfterLift)
                     or nameof(WaitTimeAfterLift)
-                    or nameof(RetractSpeed) 
+                    or nameof(BottomRetractSpeed) 
+                    or nameof(RetractSpeed)
+                    or nameof(BottomRetractHeight2)
+                    or nameof(BottomRetractSpeed2)
+                    or nameof(RetractHeight2)
+                    or nameof(RetractSpeed2) 
                     or nameof(BottomLightPWM) 
                     or nameof(LightPWM)
             )
@@ -1579,7 +1945,7 @@ namespace UVtools.Core.FileFormats
         /// <summary>
         /// Checks if a extension is valid under the <see cref="FileFormat"/>
         /// </summary>
-        /// <param name="extension">Extension to check</param>
+        /// <param name="extension">Extension to check without the dot (.)</param>
         /// <param name="isFilePath">True if <see cref="extension"/> is a full file path, otherwise false for extension only</param>
         /// <returns>True if valid, otherwise false</returns>
         public bool IsExtensionValid(string extension, bool isFilePath = false)
@@ -1865,24 +2231,36 @@ namespace UVtools.Core.FileFormats
                         tw.WriteLine($"{nameof(layer.LayerHeight)}: {layer.LayerHeight}");
                         tw.WriteLine($"{nameof(layer.PositionZ)}: {layer.PositionZ}");
 
-                        if (HaveLayerParameterModifier(PrintParameterModifier.LightOffDelay))
+                        if (CanUseLayerLightOffDelay)
                             tw.WriteLine($"{nameof(layer.LightOffDelay)}: {layer.LightOffDelay}");
-                        if (HaveLayerParameterModifier(PrintParameterModifier.WaitTimeBeforeCure))
+                        if (CanUseLayerWaitTimeBeforeCure)
                             tw.WriteLine($"{nameof(layer.WaitTimeBeforeCure)}: {layer.WaitTimeBeforeCure}");
                         tw.WriteLine($"{nameof(layer.ExposureTime)}: {layer.ExposureTime}");
-                        if (HaveLayerParameterModifier(PrintParameterModifier.WaitTimeAfterCure))
+                        if (CanUseLayerWaitTimeAfterCure)
                             tw.WriteLine($"{nameof(layer.WaitTimeAfterCure)}: {layer.WaitTimeAfterCure}");
 
 
-                        if (HaveLayerParameterModifier(PrintParameterModifier.LiftHeight))
+                        if (CanUseLayerLiftHeight)
                             tw.WriteLine($"{nameof(layer.LiftHeight)}: {layer.LiftHeight}");
-                        if (HaveLayerParameterModifier(PrintParameterModifier.LiftSpeed))
+                        if (CanUseLayerLiftSpeed)
                             tw.WriteLine($"{nameof(layer.LiftSpeed)}: {layer.LiftSpeed}");
-                        if (HaveLayerParameterModifier(PrintParameterModifier.WaitTimeAfterLift))
+                        if (CanUseLayerLiftHeight2)
+                            tw.WriteLine($"{nameof(layer.LiftHeight2)}: {layer.LiftHeight2}");
+                        if (CanUseLayerLiftSpeed2)
+                            tw.WriteLine($"{nameof(layer.LiftSpeed2)}: {layer.LiftSpeed2}");
+                        if (CanUseLayerWaitTimeAfterLift)
                             tw.WriteLine($"{nameof(layer.WaitTimeAfterLift)}: {layer.WaitTimeAfterLift}");
-                        if (HaveLayerParameterModifier(PrintParameterModifier.RetractSpeed))
+                        if (CanUseLayerRetractSpeed)
+                        {
+                            tw.WriteLine($"{nameof(layer.RetractHeight)}: {layer.RetractHeight}");
                             tw.WriteLine($"{nameof(layer.RetractSpeed)}: {layer.RetractSpeed}");
-                        if (HaveLayerParameterModifier(PrintParameterModifier.LightPWM))
+                        }
+                        if (CanUseLayerRetractHeight2)
+                            tw.WriteLine($"{nameof(layer.RetractHeight2)}: {layer.RetractHeight2}");
+                        if (CanUseLayerRetractSpeed2)
+                            tw.WriteLine($"{nameof(layer.RetractSpeed2)}: {layer.RetractSpeed2}");
+
+                        if (CanUseLayerLightPWM)
                             tw.WriteLine($"{nameof(layer.LightPWM)}: {layer.LightPWM}");
 
                         var materialMillilitersPercent = layer.MaterialMillilitersPercent;
@@ -2025,19 +2403,39 @@ namespace UVtools.Core.FileFormats
                 PrintParameterModifier.BottomLiftHeight.Value = (decimal)BottomLiftHeight;
             }
 
-            if (PrintParameterModifiers.Contains(PrintParameterModifier.LiftHeight))
-            {
-                PrintParameterModifier.LiftHeight.Value = (decimal)LiftHeight;
-            }
-
             if (PrintParameterModifiers.Contains(PrintParameterModifier.BottomLiftSpeed))
             {
                 PrintParameterModifier.BottomLiftSpeed.Value = (decimal)BottomLiftSpeed;
             }
 
+            if (PrintParameterModifiers.Contains(PrintParameterModifier.LiftHeight))
+            {
+                PrintParameterModifier.LiftHeight.Value = (decimal)LiftHeight;
+            }
+
             if (PrintParameterModifiers.Contains(PrintParameterModifier.LiftSpeed))
             {
                 PrintParameterModifier.LiftSpeed.Value = (decimal)LiftSpeed;
+            }
+
+            if (PrintParameterModifiers.Contains(PrintParameterModifier.BottomLiftHeight2))
+            {
+                PrintParameterModifier.BottomLiftHeight2.Value = (decimal)BottomLiftHeight2;
+            }
+
+            if (PrintParameterModifiers.Contains(PrintParameterModifier.BottomLiftSpeed2))
+            {
+                PrintParameterModifier.BottomLiftSpeed2.Value = (decimal)BottomLiftSpeed2;
+            }
+
+            if (PrintParameterModifiers.Contains(PrintParameterModifier.LiftHeight2))
+            {
+                PrintParameterModifier.LiftHeight2.Value = (decimal)LiftHeight2;
+            }
+
+            if (PrintParameterModifiers.Contains(PrintParameterModifier.LiftSpeed2))
+            {
+                PrintParameterModifier.LiftSpeed2.Value = (decimal)LiftSpeed2;
             }
 
             if (PrintParameterModifiers.Contains(PrintParameterModifier.BottomWaitTimeAfterLift))
@@ -2050,9 +2448,34 @@ namespace UVtools.Core.FileFormats
                 PrintParameterModifier.WaitTimeAfterLift.Value = (decimal)WaitTimeAfterLift;
             }
 
+            if (PrintParameterModifiers.Contains(PrintParameterModifier.BottomRetractSpeed))
+            {
+                PrintParameterModifier.BottomRetractSpeed.Value = (decimal)BottomRetractSpeed;
+            }
+
             if (PrintParameterModifiers.Contains(PrintParameterModifier.RetractSpeed))
             {
                 PrintParameterModifier.RetractSpeed.Value = (decimal)RetractSpeed;
+            }
+
+            if (PrintParameterModifiers.Contains(PrintParameterModifier.BottomRetractHeight2))
+            {
+                PrintParameterModifier.BottomRetractHeight2.Value = (decimal)BottomRetractHeight2;
+            }
+
+            if (PrintParameterModifiers.Contains(PrintParameterModifier.BottomRetractSpeed2))
+            {
+                PrintParameterModifier.BottomRetractSpeed2.Value = (decimal)BottomRetractSpeed2;
+            }
+
+            if (PrintParameterModifiers.Contains(PrintParameterModifier.RetractHeight2))
+            {
+                PrintParameterModifier.RetractHeight2.Value = (decimal)RetractHeight2;
+            }
+
+            if (PrintParameterModifiers.Contains(PrintParameterModifier.RetractSpeed2))
+            {
+                PrintParameterModifier.RetractSpeed2.Value = (decimal)RetractSpeed2;
             }
 
             if (PrintParameterModifiers.Contains(PrintParameterModifier.BottomLightPWM))
@@ -2104,6 +2527,16 @@ namespace UVtools.Core.FileFormats
                 PrintParameterModifier.LiftSpeed.Value = (decimal)layer.LiftSpeed;
             }
 
+            if (PrintParameterPerLayerModifiers.Contains(PrintParameterModifier.LiftHeight2))
+            {
+                PrintParameterModifier.LiftHeight2.Value = (decimal)layer.LiftHeight2;
+            }
+
+            if (PrintParameterPerLayerModifiers.Contains(PrintParameterModifier.LiftSpeed2))
+            {
+                PrintParameterModifier.LiftSpeed2.Value = (decimal)layer.LiftSpeed2;
+            }
+
             if (PrintParameterPerLayerModifiers.Contains(PrintParameterModifier.WaitTimeAfterLift))
             {
                 PrintParameterModifier.WaitTimeAfterLift.Value = (decimal)layer.WaitTimeAfterLift;
@@ -2112,6 +2545,16 @@ namespace UVtools.Core.FileFormats
             if (PrintParameterPerLayerModifiers.Contains(PrintParameterModifier.RetractSpeed))
             {
                 PrintParameterModifier.RetractSpeed.Value = (decimal)layer.RetractSpeed;
+            }
+
+            if (PrintParameterPerLayerModifiers.Contains(PrintParameterModifier.RetractHeight2))
+            {
+                PrintParameterModifier.RetractHeight2.Value = (decimal)layer.RetractHeight2;
+            }
+
+            if (PrintParameterPerLayerModifiers.Contains(PrintParameterModifier.RetractSpeed2))
+            {
+                PrintParameterModifier.RetractSpeed2.Value = (decimal)layer.RetractSpeed2;
             }
 
             if (PrintParameterPerLayerModifiers.Contains(PrintParameterModifier.LightPWM))
@@ -2159,13 +2602,35 @@ namespace UVtools.Core.FileFormats
             if (ReferenceEquals(modifier, PrintParameterModifier.LiftSpeed))
                 return LiftSpeed;
 
+            if (ReferenceEquals(modifier, PrintParameterModifier.BottomLiftHeight2))
+                return BottomLiftHeight2;
+            if (ReferenceEquals(modifier, PrintParameterModifier.LiftHeight2))
+                return LiftHeight2;
+            if (ReferenceEquals(modifier, PrintParameterModifier.BottomLiftSpeed2))
+                return BottomLiftSpeed2;
+            if (ReferenceEquals(modifier, PrintParameterModifier.LiftSpeed2))
+                return LiftSpeed2;
+
             if (ReferenceEquals(modifier, PrintParameterModifier.BottomWaitTimeAfterLift))
                 return BottomWaitTimeAfterLift;
             if (ReferenceEquals(modifier, PrintParameterModifier.WaitTimeAfterLift))
                 return WaitTimeAfterLift;
 
+            if (ReferenceEquals(modifier, PrintParameterModifier.BottomRetractSpeed))
+                return BottomRetractSpeed;
             if (ReferenceEquals(modifier, PrintParameterModifier.RetractSpeed))
                 return RetractSpeed;
+
+            if (ReferenceEquals(modifier, PrintParameterModifier.BottomRetractHeight2))
+                return BottomRetractHeight2;
+            if (ReferenceEquals(modifier, PrintParameterModifier.RetractHeight2))
+                return RetractHeight2;
+            if (ReferenceEquals(modifier, PrintParameterModifier.BottomRetractSpeed2))
+                return BottomRetractSpeed2;
+            if (ReferenceEquals(modifier, PrintParameterModifier.RetractSpeed2))
+                return RetractSpeed2;
+
+
 
             if (ReferenceEquals(modifier, PrintParameterModifier.BottomLightPWM))
                 return BottomLightPWM;
@@ -2254,6 +2719,27 @@ namespace UVtools.Core.FileFormats
                 return true;
             }
 
+            if (ReferenceEquals(modifier, PrintParameterModifier.BottomLiftHeight2))
+            {
+                BottomLiftHeight2 = (float)value;
+                return true;
+            }
+            if (ReferenceEquals(modifier, PrintParameterModifier.LiftHeight2))
+            {
+                LiftHeight2 = (float)value;
+                return true;
+            }
+            if (ReferenceEquals(modifier, PrintParameterModifier.BottomLiftSpeed2))
+            {
+                BottomLiftSpeed2 = (float)value;
+                return true;
+            }
+            if (ReferenceEquals(modifier, PrintParameterModifier.LiftSpeed2))
+            {
+                LiftSpeed2 = (float)value;
+                return true;
+            }
+
             if (ReferenceEquals(modifier, PrintParameterModifier.BottomWaitTimeAfterLift))
             {
                 BottomWaitTimeAfterLift = (float)value;
@@ -2265,9 +2751,38 @@ namespace UVtools.Core.FileFormats
                 return true;
             }
 
+            if (ReferenceEquals(modifier, PrintParameterModifier.BottomRetractSpeed))
+            {
+                BottomRetractSpeed = (float)value;
+                return true;
+            }
+
             if (ReferenceEquals(modifier, PrintParameterModifier.RetractSpeed))
             {
                 RetractSpeed = (float) value;
+                return true;
+            }
+
+            if (ReferenceEquals(modifier, PrintParameterModifier.BottomRetractHeight2))
+            {
+                BottomRetractHeight2 = (float)value;
+                return true;
+            }
+
+            if (ReferenceEquals(modifier, PrintParameterModifier.RetractHeight2))
+            {
+                RetractHeight2 = (float)value;
+                return true;
+            }
+            if (ReferenceEquals(modifier, PrintParameterModifier.BottomRetractSpeed2))
+            {
+                BottomRetractSpeed2 = (float)value;
+                return true;
+            }
+
+            if (ReferenceEquals(modifier, PrintParameterModifier.RetractSpeed2))
+            {
+                RetractSpeed2 = (float)value;
                 return true;
             }
 
@@ -2315,17 +2830,15 @@ namespace UVtools.Core.FileFormats
         public float CalculateMotorMovementTime(bool isBottomLayer, float extraTime = 0)
         {
             return isBottomLayer
-                ? OperationCalculator.LightOffDelayC.CalculateSeconds(BottomLiftHeight, BottomLiftSpeed, RetractSpeed, extraTime)
-                : OperationCalculator.LightOffDelayC.CalculateSeconds(LiftHeight, LiftSpeed, RetractSpeed, extraTime);
+                ? OperationCalculator.LightOffDelayC.CalculateSeconds(BottomLiftHeight, BottomLiftSpeed, BottomRetractSpeed, extraTime, BottomLiftHeight2, BottomLiftSpeed2, BottomRetractHeight2, BottomRetractSpeed2)
+                : OperationCalculator.LightOffDelayC.CalculateSeconds(LiftHeight, LiftSpeed, RetractSpeed, extraTime, LiftHeight2, LiftSpeed2, RetractHeight2, RetractSpeed2);
         }
 
         public float CalculateLightOffDelay(bool isBottomLayer, float extraTime = 0)
         {
             extraTime = (float)Math.Round(extraTime, 2);
             if (SupportsGCode) return extraTime;
-            return isBottomLayer 
-                    ? OperationCalculator.LightOffDelayC.CalculateSeconds(BottomLiftHeight, BottomLiftSpeed, RetractSpeed, extraTime)
-                    : OperationCalculator.LightOffDelayC.CalculateSeconds(LiftHeight, LiftSpeed, RetractSpeed, extraTime);
+            return CalculateMotorMovementTime(isBottomLayer, extraTime);
         }
 
         public bool SetLightOffDelay(bool isBottomLayer, float extraTime = 0)
@@ -2415,12 +2928,22 @@ namespace UVtools.Core.FileFormats
 
                 // Lift
                 slicerFile.BottomLiftHeight = BottomLiftHeight;
-                slicerFile.LiftHeight = LiftHeight;
-
                 slicerFile.BottomLiftSpeed = BottomLiftSpeed;
+                slicerFile.LiftHeight = LiftHeight;
                 slicerFile.LiftSpeed = LiftSpeed;
-                
+
+                slicerFile.BottomLiftHeight2 = BottomLiftHeight2;
+                slicerFile.BottomLiftSpeed2 = BottomLiftSpeed2;
+                slicerFile.LiftHeight2 = LiftHeight2;
+                slicerFile.LiftSpeed2 = LiftSpeed2;
+
+                slicerFile.BottomRetractSpeed = BottomRetractSpeed;
                 slicerFile.RetractSpeed = RetractSpeed;
+
+                slicerFile.BottomRetractHeight2 = BottomRetractHeight2;
+                slicerFile.BottomRetractSpeed2 = BottomRetractSpeed2;
+                slicerFile.RetractHeight2 = RetractHeight2;
+                slicerFile.RetractSpeed2 = RetractSpeed2;
 
                 // Wait times
                 slicerFile.BottomLightOffDelay = BottomLightOffDelay;
@@ -2526,6 +3049,50 @@ namespace UVtools.Core.FileFormats
             return result;
         }
 
+        public void UpdateGlobalPropertiesFromLayers()
+        {
+            if (LayerCount == 0) return;
+
+            SuppressRebuildPropertiesWork(() =>
+            {
+                var bottomLayer = FirstLayer;
+                if (bottomLayer is not null)
+                {
+                    if (bottomLayer.LightOffDelay > 0) BottomLightOffDelay = bottomLayer.LightOffDelay;
+                    if (bottomLayer.WaitTimeBeforeCure > 0) BottomWaitTimeBeforeCure = bottomLayer.WaitTimeBeforeCure;
+                    if (bottomLayer.ExposureTime > 0) BottomExposureTime = bottomLayer.ExposureTime;
+                    if (bottomLayer.WaitTimeAfterCure > 0) BottomWaitTimeAfterCure = bottomLayer.WaitTimeAfterCure;
+                    if (bottomLayer.LiftHeight > 0) BottomLiftHeight = bottomLayer.LiftHeight;
+                    if (bottomLayer.LiftSpeed > 0) BottomLiftSpeed = bottomLayer.LiftSpeed;
+                    if (bottomLayer.LiftHeight2 > 0) BottomLiftHeight2 = bottomLayer.LiftHeight2;
+                    if (bottomLayer.LiftSpeed2 > 0) BottomLiftSpeed2 = bottomLayer.LiftSpeed2;
+                    if (bottomLayer.WaitTimeAfterLift > 0) BottomWaitTimeAfterLift = bottomLayer.WaitTimeAfterLift;
+                    if (bottomLayer.RetractSpeed > 0) BottomRetractSpeed = bottomLayer.RetractSpeed;
+                    if (bottomLayer.RetractHeight2 > 0) BottomRetractHeight2 = bottomLayer.RetractHeight2;
+                    if (bottomLayer.RetractSpeed2 > 0) BottomRetractSpeed2 = bottomLayer.RetractSpeed2;
+                    if (bottomLayer.LightPWM > 0) BottomLightPWM = bottomLayer.LightPWM;
+                }
+
+                var normalLayer = LastLayer;
+                if (normalLayer is not null)
+                {
+                    if (normalLayer.LightOffDelay > 0) LightOffDelay = normalLayer.LightOffDelay;
+                    if (normalLayer.WaitTimeBeforeCure > 0) WaitTimeBeforeCure = normalLayer.WaitTimeBeforeCure;
+                    if (normalLayer.ExposureTime > 0) ExposureTime = normalLayer.ExposureTime;
+                    if (normalLayer.WaitTimeAfterCure > 0) WaitTimeAfterCure = normalLayer.WaitTimeAfterCure;
+                    if (normalLayer.LiftHeight > 0) LiftHeight = normalLayer.LiftHeight;
+                    if (normalLayer.LiftSpeed > 0) LiftSpeed = normalLayer.LiftSpeed;
+                    if (normalLayer.LiftHeight2 > 0) LiftHeight2 = normalLayer.LiftHeight2;
+                    if (normalLayer.LiftSpeed2 > 0) LiftSpeed2 = normalLayer.LiftSpeed2;
+                    if (normalLayer.WaitTimeAfterLift > 0) WaitTimeAfterLift = normalLayer.WaitTimeAfterLift;
+                    if (normalLayer.RetractSpeed > 0) RetractSpeed = normalLayer.RetractSpeed;
+                    if (normalLayer.RetractHeight2 > 0) RetractHeight2 = normalLayer.RetractHeight2;
+                    if (normalLayer.RetractSpeed2 > 0) RetractSpeed2 = normalLayer.RetractSpeed2;
+                    if (normalLayer.LightPWM > 0) LightPWM = normalLayer.LightPWM;
+                }
+            });
+        }
+
         public void UpdatePrintTime()
         {
             PrintTime = PrintTimeComputed;
@@ -2534,8 +3101,11 @@ namespace UVtools.Core.FileFormats
 
         public void UpdatePrintTimeQueued()
         {
-            _queueTimerPrintTime.Stop();
-            _queueTimerPrintTime.Start();
+            lock (Mutex)
+            {
+                _queueTimerPrintTime.Stop();
+                _queueTimerPrintTime.Start();
+            }
         }
 
         #endregion

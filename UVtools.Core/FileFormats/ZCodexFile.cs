@@ -11,12 +11,9 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.IO.Compression;
-using System.Text;
 using System.Text.RegularExpressions;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
-using Emgu.CV.Stitching;
-using Emgu.CV.Util;
 using Newtonsoft.Json;
 using UVtools.Core.Extensions;
 using UVtools.Core.GCode;
@@ -174,6 +171,7 @@ namespace UVtools.Core.FileFormats
             
             PrintParameterModifier.LiftHeight,
             PrintParameterModifier.LiftSpeed,
+            PrintParameterModifier.BottomRetractSpeed,
             PrintParameterModifier.RetractSpeed,
         };
 
@@ -609,6 +607,7 @@ M106 S0
                 }
             }
 
+            BottomRetractSpeed = RetractSpeed; // Compability
             LayerManager.GetBoundingRectangle(progress);
         }
 

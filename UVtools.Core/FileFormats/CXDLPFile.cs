@@ -548,6 +548,8 @@ namespace UVtools.Core.FileFormats
             set => base.LiftSpeed = SlicerInfoSettings.LiftSpeed = (ushort)value;
         }
 
+        public override float BottomRetractSpeed => RetractSpeed;
+
         public override float RetractSpeed
         {
             get => SlicerInfoSettings.RetractSpeed;

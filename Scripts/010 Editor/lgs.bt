@@ -12,9 +12,6 @@ typedef struct() {
     BYTE LayerRLE[DataSize] <fgcolor=cBlack, bgcolor=cRed>;
 } layerData;
 
-typedef struct(int size) {
-    BYTE layerDataBlock[size] <fgcolor=cBlack, bgcolor=0x00FF00>;
-} rgbPreviewImageRawData;
 
 struct HEADER {
     char Name[8] <fgcolor=cBlack, bgcolor=cWhite>;
@@ -62,15 +59,20 @@ struct HEADER {
     uint32 Uint_a8 <fgcolor=cBlack, bgcolor=cRed>;
     uint32 PreviewSizeX <fgcolor=cBlack, bgcolor=cRed>;
     uint32 PreviewSizeY <fgcolor=cBlack, bgcolor=cRed>;
+} header;
 
-    rgbPreviewImageRawData preview(PreviewSizeX*PreviewSizeY*2);
 
-    if(PrinterModel == 120) // .lgs120
-    {
+byte preview_data[header.PreviewSizeX*header.PreviewSizeY*2];
+
+if(header.PrinterModel == 120) // .lgs120
+{
+    struct PNG_PREVIEW {
         uint32 pngLength <fgcolor=cBlack, bgcolor=cRed>;
         byte png[pngLength] <fgcolor=cBlack, bgcolor=cYellow>;
-    }
-} header;
+        ushort padding <fgcolor=cBlack, bgcolor=cRed>;
+    } png_preview;
+}
+
 
 struct LAYERS {
     local int i;

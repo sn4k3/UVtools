@@ -27,6 +27,8 @@ namespace UVtools.Core.FileFormats
     {
 
         #region Constants
+        public const byte USED_VERSION = 3; // 318570521
+
         public const uint MAGIC_CBDDLP = 0x12FD0019; // 318570521
         public const uint MAGIC_CBT = 0x12FD0086; // 318570630
         public const uint MAGIC_CBTv4 = 0x12FD0106; // 318570758
@@ -69,7 +71,7 @@ namespace UVtools.Core.FileFormats
             /// <summary>
             /// Gets the software version
             /// </summary>
-            [FieldOrder(1)] public uint Version { get; set; } = 3;
+            [FieldOrder(1)] public uint Version { get; set; } = USED_VERSION;
 
             /// <summary>
             /// Gets dimensions of the printer’s X output volume, in millimeters.
@@ -285,7 +287,7 @@ namespace UVtools.Core.FileFormats
         public class SlicerInfo
         {
             private string _machineName;
-            [FieldOrder(0)] public float BottomLiftDistance2 { get; set; }
+            [FieldOrder(0)] public float BottomLiftHeight2 { get; set; }
             [FieldOrder(1)] public float BottomLiftSpeed2    { get; set; }
             [FieldOrder(2)] public float LiftHeight2         { get; set; }
             [FieldOrder(3)] public float LiftSpeed2          { get; set; }
@@ -352,7 +354,7 @@ namespace UVtools.Core.FileFormats
 
             public override string ToString()
             {
-                return $"{nameof(BottomLiftDistance2)}: {BottomLiftDistance2}, {nameof(BottomLiftSpeed2)}: {BottomLiftSpeed2}, {nameof(LiftHeight2)}: {LiftHeight2}, {nameof(LiftSpeed2)}: {LiftSpeed2}, {nameof(RetractHeight2)}: {RetractHeight2}, {nameof(RetractSpeed2)}: {RetractSpeed2}, {nameof(RestTimeAfterLift)}: {RestTimeAfterLift}, {nameof(MachineNameAddress)}: {MachineNameAddress}, {nameof(MachineNameSize)}: {MachineNameSize}, {nameof(EncryptionMode)}: {EncryptionMode}, {nameof(MysteriousId)}: {MysteriousId}, {nameof(AntiAliasLevel)}: {AntiAliasLevel}, {nameof(SoftwareVersion)}: {SoftwareVersion}, {nameof(RestTimeAfterRetract)}: {RestTimeAfterRetract}, {nameof(RestTimeAfterLift2)}: {RestTimeAfterLift2}, {nameof(TransitionLayerCount)}: {TransitionLayerCount}, {nameof(Padding1)}: {Padding1}, {nameof(Padding2)}: {Padding2}, {nameof(Padding3)}: {Padding3}, {nameof(MachineName)}: {MachineName}";
+                return $"{nameof(BottomLiftHeight2)}: {BottomLiftHeight2}, {nameof(BottomLiftSpeed2)}: {BottomLiftSpeed2}, {nameof(LiftHeight2)}: {LiftHeight2}, {nameof(LiftSpeed2)}: {LiftSpeed2}, {nameof(RetractHeight2)}: {RetractHeight2}, {nameof(RetractSpeed2)}: {RetractSpeed2}, {nameof(RestTimeAfterLift)}: {RestTimeAfterLift}, {nameof(MachineNameAddress)}: {MachineNameAddress}, {nameof(MachineNameSize)}: {MachineNameSize}, {nameof(EncryptionMode)}: {EncryptionMode}, {nameof(MysteriousId)}: {MysteriousId}, {nameof(AntiAliasLevel)}: {AntiAliasLevel}, {nameof(SoftwareVersion)}: {SoftwareVersion}, {nameof(RestTimeAfterRetract)}: {RestTimeAfterRetract}, {nameof(RestTimeAfterLift2)}: {RestTimeAfterLift2}, {nameof(TransitionLayerCount)}: {TransitionLayerCount}, {nameof(Padding1)}: {Padding1}, {nameof(Padding2)}: {Padding2}, {nameof(Padding3)}: {Padding3}, {nameof(MachineName)}: {MachineName}";
             }
         }
 
@@ -706,10 +708,10 @@ namespace UVtools.Core.FileFormats
                 return image;
             }
 
-            private unsafe Mat DecodeCbtImage(uint layerIndex)
+            private Mat DecodeCbtImage(uint layerIndex)
             {
-                var image = EmguExtensions.InitMat(Parent.Resolution);
-                var span = image.GetBytePointer();
+                var mat = EmguExtensions.InitMat(Parent.Resolution);
+                //var span = mat.GetBytePointer();
 
                 if (Parent.HeaderSettings.EncryptionKey > 0)
                 {
@@ -751,7 +753,7 @@ namespace UVtools.Core.FileFormats
                         }
                         else
                         {
-                            image.Dispose();
+                            mat.Dispose();
                             throw new FileLoadException("Corrupted RLE data");
                         }
                     }
@@ -762,22 +764,24 @@ namespace UVtools.Core.FileFormats
                         code = (byte)((code << 1) | 1);
                     }
 
-                    if (stride == 0) continue; // Nothing to do
+                    mat.FillSpan(ref pixel, stride, code);
 
-                    if (code == 0) // Ignore blacks, spare cycles
+                    //if (stride <= 0) continue; // Nothing to do
+
+                    /*if (code == 0) // Ignore blacks, spare cycles
                     {
                         pixel += stride;
                         continue;
-                    }
+                    }*/
 
-                    for (; stride > 0; stride--)
+                    /*for (; stride > 0; stride--)
                     {
                         span[pixel] = code;
                         pixel++;
-                    }
+                    }*/
                 }
 
-                return image;
+                return mat;
             }
 
             public byte[] Encode(Mat image, byte aaIndex, uint layerIndex)
@@ -950,7 +954,7 @@ namespace UVtools.Core.FileFormats
         public class LayerDataEx
         {
             /// <summary>
-            /// Gets a copy of layer data defenition
+            /// Gets a copy of layer data definition
             /// </summary>
             [FieldOrder(0)] public LayerData LayerData { get; set; } = new();
 
@@ -986,6 +990,12 @@ namespace UVtools.Core.FileFormats
 
                     if (layerData.Parent.HeaderSettings.Version >= 4)
                     {
+                        LiftHeight2 = layerData.Parent[layerIndex].LiftHeight2;
+                        LiftSpeed2 = layerData.Parent[layerIndex].LiftSpeed2;
+
+                        RetractHeight2 = layerData.Parent[layerIndex].RetractHeight2;
+                        RetractSpeed2 = layerData.Parent[layerIndex].RetractSpeed2;
+
                         RestTimeAfterRetract = layerData.Parent[layerIndex].WaitTimeBeforeCure;
                         RestTimeBeforeLift = layerData.Parent[layerIndex].WaitTimeAfterCure;
                         RestTimeAfterLift = layerData.Parent[layerIndex].WaitTimeAfterLift;
@@ -1075,7 +1085,11 @@ namespace UVtools.Core.FileFormats
         public override FileFormatType FileType => FileFormatType.Binary;
 
         public override FileExtension[] FileExtensions { get; } = {
-            new("ctb", "Chitubox CTB"),
+            new("ctb", $"Chitubox CTBv{USED_VERSION}"),
+            //new("v2.ctb", "Chitubox CTBv2"),
+            //new("v3.ctb", "Chitubox CTBv3"),
+            new("v4.ctb", "Chitubox CTBv4"),
+            //new("encrypted.ctb", "Chitubox encrypted CTB"),
             new("cbddlp", "Chitubox CBDDLP"),
             new("photon", "Chitubox Photon"),
         };
@@ -1107,11 +1121,20 @@ namespace UVtools.Core.FileFormats
                         PrintParameterModifier.BottomLiftSpeed,
                         PrintParameterModifier.LiftHeight,
                         PrintParameterModifier.LiftSpeed,
+                        PrintParameterModifier.BottomLiftHeight2,
+                        PrintParameterModifier.BottomLiftSpeed2,
+                        PrintParameterModifier.LiftHeight2,
+                        PrintParameterModifier.LiftSpeed2,
 
                         //PrintParameterModifier.BottomWaitTimeAfterLift,
                         PrintParameterModifier.WaitTimeAfterLift,
 
+                        PrintParameterModifier.BottomRetractSpeed,
                         PrintParameterModifier.RetractSpeed,
+                        PrintParameterModifier.BottomRetractHeight2,
+                        PrintParameterModifier.BottomRetractSpeed2,
+                        PrintParameterModifier.RetractHeight2,
+                        PrintParameterModifier.RetractSpeed2,
 
                         PrintParameterModifier.BottomLightPWM,
                         PrintParameterModifier.LightPWM,
@@ -1169,8 +1192,12 @@ namespace UVtools.Core.FileFormats
                         PrintParameterModifier.WaitTimeAfterCure,
                         PrintParameterModifier.LiftHeight,
                         PrintParameterModifier.LiftSpeed,
+                        PrintParameterModifier.LiftHeight2,
+                        PrintParameterModifier.LiftSpeed2,
                         PrintParameterModifier.WaitTimeAfterLift,
                         PrintParameterModifier.RetractSpeed,
+                        PrintParameterModifier.RetractHeight2,
+                        PrintParameterModifier.RetractSpeed2,
                         PrintParameterModifier.LightPWM,
                     };
                 }
@@ -1421,6 +1448,46 @@ namespace UVtools.Core.FileFormats
             set => base.LiftSpeed = PrintParametersSettings.LiftSpeed = (float)Math.Round(value, 2);
         }
 
+        public override float BottomLiftHeight2
+        {
+            get => HeaderSettings.Version >= 4 ? SlicerInfoSettings.BottomLiftHeight2 : 0;
+            set
+            {
+                if (HeaderSettings.Version < 4) return;
+                base.BottomLiftHeight2 = SlicerInfoSettings.BottomLiftHeight2 = (float)Math.Round(value, 2);
+            }
+        }
+
+        public override float LiftHeight2
+        {
+            get => HeaderSettings.Version >= 4 ? SlicerInfoSettings.LiftHeight2 : 0;
+            set
+            {
+                if (HeaderSettings.Version < 4) return;
+                base.LiftHeight2 = SlicerInfoSettings.LiftHeight2 = (float)Math.Round(value, 2);
+            }
+        }
+
+        public override float BottomLiftSpeed2
+        {
+            get => HeaderSettings.Version >= 4 ? SlicerInfoSettings.BottomLiftSpeed2 : 0;
+            set
+            {
+                if (HeaderSettings.Version < 4) return;
+                base.BottomLiftSpeed2 = SlicerInfoSettings.BottomLiftSpeed2 = (float)Math.Round(value, 2);
+            }
+        }
+
+        public override float LiftSpeed2
+        {
+            get => HeaderSettings.Version >= 4 ? SlicerInfoSettings.LiftSpeed2 : 0;
+            set
+            {
+                if (HeaderSettings.Version < 4) return;
+                base.LiftSpeed2 = SlicerInfoSettings.LiftSpeed2 = (float)Math.Round(value, 2);
+            }
+        }
+
         public override float BottomWaitTimeAfterLift => WaitTimeAfterLift;
         public override float WaitTimeAfterLift
         {
@@ -1437,10 +1504,52 @@ namespace UVtools.Core.FileFormats
             }
         }
 
+        public override float BottomRetractSpeed
+        {
+            get => HeaderSettings.Version >= 4 ? PrintParametersV4Settings.BottomRetractSpeed : RetractSpeed;
+            set
+            {
+                if (HeaderSettings.Version < 4) return;
+                base.BottomRetractSpeed = PrintParametersV4Settings.BottomRetractSpeed = (float)Math.Round(value, 2);
+            }
+        }
+
         public override float RetractSpeed
         {
             get => PrintParametersSettings.RetractSpeed;
-            set => base.RetractSpeed = PrintParametersV4Settings.BottomRetractSpeed = PrintParametersSettings.RetractSpeed = (float)Math.Round(value, 2);
+            set => base.RetractSpeed = PrintParametersSettings.RetractSpeed = (float)Math.Round(value, 2);
+        }
+
+        public override float BottomRetractHeight2
+        {
+            get => HeaderSettings.Version >= 4 ? PrintParametersV4Settings.BottomRetractHeight2 : 0;
+            set
+            {
+                if (HeaderSettings.Version < 4) return;
+                base.BottomRetractSpeed2 = PrintParametersV4Settings.BottomRetractHeight2 = (float)Math.Round(value, 2);
+            }
+        }
+
+        public override float RetractHeight2
+        {
+            get => HeaderSettings.Version >= 4 ? SlicerInfoSettings.RetractHeight2 : 0;
+            set => base.RetractSpeed2 = SlicerInfoSettings.RetractHeight2 = (float)Math.Round(value, 2);
+        }
+
+        public override float BottomRetractSpeed2
+        {
+            get => HeaderSettings.Version >= 4 ? PrintParametersV4Settings.BottomRetractSpeed2 : 0;
+            set
+            {
+                if (HeaderSettings.Version < 4) return;
+                base.BottomRetractSpeed2 = PrintParametersV4Settings.BottomRetractSpeed2 = (float)Math.Round(value, 2);
+            }
+        }
+
+        public override float RetractSpeed2
+        {
+            get => HeaderSettings.Version >= 4 ? SlicerInfoSettings.RetractSpeed2 : 0;
+            set => base.RetractSpeed2 = SlicerInfoSettings.RetractSpeed2 = (float)Math.Round(value, 2);
         }
 
         public override byte BottomLightPWM
@@ -1537,13 +1646,8 @@ namespace UVtools.Core.FileFormats
             LayerDefinitions = null;
         }
 
-        protected override void EncodeInternally(string fileFullPath, OperationProgress progress)
+        public void SanitizeProperties()
         {
-            LayersHash.Clear();
-
-            HeaderSettings.Magic = FileEndsWith(".ctb") ? MAGIC_CBT : MAGIC_CBDDLP;
-            HeaderSettings.PrintParametersSize = (uint)Helpers.Serializer.SizeOf(PrintParametersSettings);
-
             if (IsCbtFile)
             {
                 if (SlicerInfoSettings.AntiAliasLevel <= 1)
@@ -1555,30 +1659,52 @@ namespace UVtools.Core.FileFormats
 
                 if (HeaderSettings.Version <= 2)
                 {
-                    //if (SlicerInfoSettings.RestTimeAfterRetract == 0)
-                        //SlicerInfoSettings.RestTimeAfterRetract = 0x200; // 512 for v2 | 0 for v3
                     SlicerInfoSettings.EncryptionMode = ENCRYPTYION_MODE_CTBv2;
                     PrintParametersSettings.Padding4 = 0x1234; // 4660
 
                     if (SlicerInfoSettings.MysteriousId == 0)
                         SlicerInfoSettings.MysteriousId = 305419896;
                 }
-                else if(HeaderSettings.Version == 3)
+                else if (HeaderSettings.Version == 3)
                 {
                     SlicerInfoSettings.EncryptionMode = ENCRYPTYION_MODE_CTBv3;
 
                     if (SlicerInfoSettings.MysteriousId == 0)
                         SlicerInfoSettings.MysteriousId = 305419896;
                 }
-                else 
+                else if (HeaderSettings.Version >= 4)
                 {
                     SlicerInfoSettings.EncryptionMode = ENCRYPTYION_MODE_CTBv4;
 
                     if (SlicerInfoSettings.MysteriousId == 0)
                         SlicerInfoSettings.MysteriousId = 27087820;
                 }
+            }
+        }
 
+        protected override void EncodeInternally(string fileFullPath, OperationProgress progress)
+        {
+            LayersHash.Clear();
 
+            HeaderSettings.Magic = FileEndsWith(".ctb") ? MAGIC_CBT : MAGIC_CBDDLP;
+            HeaderSettings.PrintParametersSize = (uint)Helpers.Serializer.SizeOf(PrintParametersSettings);
+
+            if (FileEndsWith(".v2.ctb"))
+            {
+                HeaderSettings.Version = 2;
+            }
+            else if (FileEndsWith(".v3.ctb"))
+            {
+                HeaderSettings.Version = 3;
+            }
+            else if (FileEndsWith(".v4.ctb"))
+            {
+                HeaderSettings.Version = 4;
+            }
+
+            SanitizeProperties();
+            if (IsCbtFile)
+            {
                 if (HeaderSettings.EncryptionKey == 0)
                 {
                     var rnd = new Random();
@@ -1883,6 +2009,10 @@ namespace UVtools.Core.FileFormats
 
                     if (HeaderSettings.Version >= 4)
                     {
+                        layer.LiftHeight2 = LayerDefinitionsEx[layerIndex].LiftHeight2;
+                        layer.LiftSpeed2 = LayerDefinitionsEx[layerIndex].LiftSpeed2;
+                        layer.RetractHeight2 = LayerDefinitionsEx[layerIndex].RetractHeight2;
+                        layer.RetractSpeed2 = LayerDefinitionsEx[layerIndex].RetractSpeed2;
                         layer.WaitTimeBeforeCure = LayerDefinitionsEx[layerIndex].RestTimeAfterRetract;
                         layer.WaitTimeAfterCure = LayerDefinitionsEx[layerIndex].RestTimeBeforeLift;
                         layer.WaitTimeAfterLift = LayerDefinitionsEx[layerIndex].RestTimeAfterLift;
@@ -1915,6 +2045,7 @@ namespace UVtools.Core.FileFormats
                 FileFullPath = filePath;
             }
 
+            SanitizeProperties();
             using var outputFile = new FileStream(FileFullPath, FileMode.Open, FileAccess.Write);
             outputFile.Seek(0, SeekOrigin.Begin);
             Helpers.SerializeWriteFileStream(outputFile, HeaderSettings);

@@ -505,8 +505,12 @@ namespace UVtools.Core
                         layer.WaitTimeAfterCure = SlicerFile.GetInitialLayerValueOrNormal(layerIndex, SlicerFile.BottomWaitTimeAfterCure, SlicerFile.WaitTimeAfterCure);
                         layer.LiftHeight = SlicerFile.GetInitialLayerValueOrNormal(layerIndex, SlicerFile.BottomLiftHeight, SlicerFile.LiftHeight);
                         layer.LiftSpeed = SlicerFile.GetInitialLayerValueOrNormal(layerIndex, SlicerFile.BottomLiftSpeed, SlicerFile.LiftSpeed);
+                        layer.LiftHeight2 = SlicerFile.GetInitialLayerValueOrNormal(layerIndex, SlicerFile.BottomLiftHeight2, SlicerFile.LiftHeight2);
+                        layer.LiftSpeed2 = SlicerFile.GetInitialLayerValueOrNormal(layerIndex, SlicerFile.BottomLiftSpeed2, SlicerFile.LiftSpeed2);
                         layer.WaitTimeAfterLift = SlicerFile.GetInitialLayerValueOrNormal(layerIndex, SlicerFile.BottomWaitTimeAfterLift, SlicerFile.WaitTimeAfterLift);
-                        layer.RetractSpeed = SlicerFile.RetractSpeed;
+                        layer.RetractSpeed = SlicerFile.GetInitialLayerValueOrNormal(layerIndex, SlicerFile.BottomRetractSpeed, SlicerFile.RetractSpeed);
+                        layer.RetractHeight2 = SlicerFile.GetInitialLayerValueOrNormal(layerIndex, SlicerFile.BottomRetractHeight2, SlicerFile.RetractHeight2);
+                        layer.RetractSpeed2 = SlicerFile.GetInitialLayerValueOrNormal(layerIndex, SlicerFile.BottomRetractSpeed2, SlicerFile.RetractSpeed2);
                         layer.LightPWM = SlicerFile.GetInitialLayerValueOrNormal(layerIndex, SlicerFile.BottomLightPWM, SlicerFile.LightPWM);
                     }
                     else
@@ -533,13 +537,25 @@ namespace UVtools.Core
                                 case nameof(SlicerFile.BottomLiftSpeed):
                                     layer.LiftSpeed = SlicerFile.BottomLiftSpeed;
                                     break;
+                                case nameof(SlicerFile.BottomLiftHeight2):
+                                    layer.LiftHeight2 = SlicerFile.BottomLiftHeight2;
+                                    break;
+                                case nameof(SlicerFile.BottomLiftSpeed2):
+                                    layer.LiftSpeed2 = SlicerFile.BottomLiftSpeed2;
+                                    break;
                                 case nameof(SlicerFile.BottomWaitTimeAfterLift):
                                     layer.WaitTimeAfterLift = SlicerFile.BottomWaitTimeAfterLift;
                                     break;
-                                case nameof(SlicerFile.RetractSpeed):
-                                    layer.RetractSpeed = SlicerFile.RetractSpeed;
+                                case nameof(SlicerFile.BottomRetractSpeed):
+                                    layer.RetractSpeed = SlicerFile.BottomRetractSpeed;
                                     break;
-                                
+                                case nameof(SlicerFile.BottomRetractHeight2):
+                                    layer.RetractHeight2 = SlicerFile.BottomRetractHeight2;
+                                    break;
+                                case nameof(SlicerFile.BottomRetractSpeed2):
+                                    layer.RetractSpeed2 = SlicerFile.BottomRetractSpeed2;
+                                    break;
+
                                 case nameof(SlicerFile.BottomLightPWM):
                                     layer.LightPWM = SlicerFile.BottomLightPWM;
                                     break;
@@ -567,11 +583,23 @@ namespace UVtools.Core
                                 case nameof(SlicerFile.LiftSpeed):
                                     layer.LiftSpeed = SlicerFile.LiftSpeed;
                                     break;
+                                case nameof(SlicerFile.LiftHeight2):
+                                    layer.LiftHeight2 = SlicerFile.LiftHeight2;
+                                    break;
+                                case nameof(SlicerFile.LiftSpeed2):
+                                    layer.LiftSpeed2 = SlicerFile.LiftSpeed2;
+                                    break;
                                 case nameof(SlicerFile.WaitTimeAfterLift):
                                     layer.WaitTimeAfterLift = SlicerFile.WaitTimeAfterLift;
                                     break;
                                 case nameof(SlicerFile.RetractSpeed):
                                     layer.RetractSpeed = SlicerFile.RetractSpeed;
+                                    break;
+                                case nameof(SlicerFile.RetractHeight2):
+                                    layer.RetractHeight2 = SlicerFile.RetractHeight2;
+                                    break;
+                                case nameof(SlicerFile.RetractSpeed2):
+                                    layer.RetractSpeed2 = SlicerFile.RetractSpeed2;
                                     break;
                                 case nameof(SlicerFile.LightPWM):
                                     layer.LightPWM = SlicerFile.LightPWM;
@@ -603,7 +631,7 @@ namespace UVtools.Core
             {
                 var layer = this[layerIndex];
                 if (this[layerIndex - 1].PositionZ != layer.PositionZ) continue;
-                layer.LiftHeight = liftHeight;
+                layer.LiftHeightTotal = liftHeight;
                 layer.WaitTimeAfterLift = 0;
                 if (zeroLightOffDelay)
                 {

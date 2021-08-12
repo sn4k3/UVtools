@@ -20,6 +20,16 @@ namespace UVtools.WPF
             ProgramStartupTime = Stopwatch.StartNew();
             Args = args;
 
+            try
+            {
+                if (ConsoleArguments.ParseArgs(args)) return;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                return;
+            }
+            
             /*Slicer slicer = new(Size.Empty, SizeF.Empty, "D:\\Cube100x100x100.stl");
             var slices = slicer.SliceModel(0.05f);
             

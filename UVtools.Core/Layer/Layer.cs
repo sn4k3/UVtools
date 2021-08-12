@@ -7,6 +7,7 @@
  */
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using Emgu.CV;
@@ -40,14 +41,18 @@ namespace UVtools.Core
         private bool _isModified;
         private uint _index;
         private float _positionZ;
+        private float _lightOffDelay;
         private float _waitTimeBeforeCure;
         private float _exposureTime;
         private float _waitTimeAfterCure;
-        private float _lightOffDelay = FileFormat.DefaultLightOffDelay;
         private float _liftHeight = FileFormat.DefaultLiftHeight;
         private float _liftSpeed = FileFormat.DefaultLiftSpeed;
+        private float _liftHeight2 = FileFormat.DefaultLiftHeight2;
+        private float _liftSpeed2 = FileFormat.DefaultLiftSpeed2;
         private float _waitTimeAfterLift;
         private float _retractSpeed = FileFormat.DefaultRetractSpeed;
+        private float _retractHeight2 = FileFormat.DefaultRetractHeight2;
+        private float _retractSpeed2 = FileFormat.DefaultRetractSpeed2;
         private byte _lightPwm = FileFormat.DefaultLightPWM;
         private float _materialMilliliters;
         #endregion
@@ -132,6 +137,19 @@ namespace UVtools.Core
         }
 
         /// <summary>
+        /// Gets or sets the layer position on Z in mm
+        /// </summary>
+        public float PositionZ
+        {
+            get => _positionZ;
+            set
+            {
+                if (!RaiseAndSetIfChanged(ref _positionZ, value)) return;
+                RaisePropertyChanged(nameof(LayerHeight));
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the wait time in seconds before cure the layer
         /// AKA: Light-off delay
         /// Chitubox: Rest time after retract
@@ -191,6 +209,20 @@ namespace UVtools.Core
         }
 
         /// <summary>
+        /// Gets: Total lift height (lift1 + lift2)
+        /// Sets: Lift1 with value and lift2 with 0
+        /// </summary>
+        public float LiftHeightTotal
+        {
+            get => (float)Math.Round(_liftHeight + _liftHeight2);
+            set
+            {
+                LiftHeight = value;
+                LiftHeight2 = 0;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the lift height in mm
         /// </summary>
         public float LiftHeight
@@ -200,6 +232,8 @@ namespace UVtools.Core
             {
                 if (value < 0) value = SlicerFile.GetInitialLayerValueOrNormal(Index, SlicerFile.BottomLiftHeight, SlicerFile.LiftHeight);
                 if(!RaiseAndSetIfChanged(ref _liftHeight, value)) return;
+                RaisePropertyChanged(nameof(LiftHeightTotal));
+                RetractHeight2 = _retractHeight2; // Sanitize
                 SlicerFile?.UpdatePrintTimeQueued();
             }
         }
@@ -218,6 +252,36 @@ namespace UVtools.Core
             }
         }
 
+        /// <summary>
+        /// Gets or sets the lift height in mm
+        /// </summary>
+        public float LiftHeight2
+        {
+            get => _liftHeight2;
+            set
+            {
+                if (value < 0) value = SlicerFile.GetInitialLayerValueOrNormal(Index, SlicerFile.BottomLiftHeight2, SlicerFile.LiftHeight2);
+                if (!RaiseAndSetIfChanged(ref _liftHeight2, value)) return;
+                RaisePropertyChanged(nameof(LiftHeightTotal));
+                RetractHeight2 = _retractHeight2; // Sanitize
+                SlicerFile?.UpdatePrintTimeQueued();
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the speed in mm/min
+        /// </summary>
+        public float LiftSpeed2
+        {
+            get => _liftSpeed2;
+            set
+            {
+                if (value <= 0) value = SlicerFile.GetInitialLayerValueOrNormal(Index, SlicerFile.BottomLiftSpeed2, SlicerFile.LiftSpeed2);
+                if (!RaiseAndSetIfChanged(ref _liftSpeed2, value)) return;
+                SlicerFile?.UpdatePrintTimeQueued();
+            }
+        }
+
         public float WaitTimeAfterLift
         {
             get => _waitTimeAfterLift;
@@ -227,6 +291,16 @@ namespace UVtools.Core
                 SlicerFile?.UpdatePrintTimeQueued();
             }
         }
+
+        /// <summary>
+        /// Gets: Total retract height (retract1 + retract2) alias of <see cref="LiftHeightTotal"/>
+        /// </summary>
+        public float RetractHeightTotal => LiftHeightTotal;
+
+        /// <summary>
+        /// Gets the retract height in mm
+        /// </summary>
+        public float RetractHeight => (float)Math.Round(LiftHeightTotal - _retractHeight2);
 
         /// <summary>
         /// Gets the speed in mm/min for the retracts
@@ -240,6 +314,30 @@ namespace UVtools.Core
                 if(!RaiseAndSetIfChanged(ref _retractSpeed, value)) return;
                 SlicerFile?.UpdatePrintTimeQueued();
             }
+        }
+
+        /// <summary>
+        /// Gets or sets the second retract height in mm
+        /// </summary>
+        public virtual float RetractHeight2
+        {
+            get => _retractHeight2;
+            set
+            {
+                value = Math.Clamp((float)Math.Round(value, 2), 0, RetractHeightTotal);
+                RaiseAndSetIfChanged(ref _retractHeight2, value);
+                RaisePropertyChanged(nameof(RetractHeight));
+                RaisePropertyChanged(nameof(RetractHeightTotal));
+            }
+        }
+
+        /// <summary>
+        /// Gets the speed in mm/min for the retracts
+        /// </summary>
+        public virtual float RetractSpeed2
+        {
+            get => _retractSpeed2;
+            set => RaiseAndSetIfChanged(ref _retractSpeed2, (float)Math.Round(value, 2));
         }
 
         /// <summary>
@@ -260,19 +358,6 @@ namespace UVtools.Core
         /// Gets if this layer can be exposed to UV light
         /// </summary>
         public bool CanExpose => _exposureTime > 0 && _lightPwm > 0;
-
-        /// <summary>
-        /// Gets or sets the layer position on Z in mm
-        /// </summary>
-        public float PositionZ
-        {
-            get => _positionZ;
-            set
-            {
-                if(!RaiseAndSetIfChanged(ref _positionZ, value)) return;
-                RaisePropertyChanged(nameof(LayerHeight));
-            }
-        }
 
         /// <summary>
         /// Gets the layer height in millimeters of this layer
@@ -406,7 +491,12 @@ namespace UVtools.Core
                         WaitTimeBeforeCure != SlicerFile.BottomWaitTimeBeforeCure ||
                         LiftHeight != SlicerFile.BottomLiftHeight ||
                         LiftSpeed != SlicerFile.BottomLiftSpeed ||
+                        LiftHeight2 != SlicerFile.BottomLiftHeight2 ||
+                        LiftSpeed2 != SlicerFile.BottomLiftSpeed2 ||
                         WaitTimeAfterLift != SlicerFile.BottomWaitTimeAfterLift ||
+                        RetractSpeed != SlicerFile.BottomRetractSpeed ||
+                        RetractHeight2 != SlicerFile.BottomRetractHeight2 ||
+                        RetractSpeed2 != SlicerFile.BottomRetractSpeed2 ||
                         LightPWM != SlicerFile.BottomLightPWM 
                         ) return false;
                 }
@@ -419,12 +509,15 @@ namespace UVtools.Core
                         WaitTimeAfterCure != SlicerFile.WaitTimeAfterCure ||
                         LiftHeight != SlicerFile.LiftHeight ||
                         LiftSpeed != SlicerFile.LiftSpeed ||
+                        LiftHeight2 != SlicerFile.LiftHeight2 ||
+                        LiftSpeed2 != SlicerFile.LiftSpeed2 ||
                         WaitTimeAfterLift != SlicerFile.WaitTimeAfterLift ||
+                        RetractSpeed != SlicerFile.RetractSpeed ||
+                        RetractHeight2 != SlicerFile.RetractHeight2 ||
+                        RetractSpeed2 != SlicerFile.RetractSpeed2 ||
                         LightPWM != SlicerFile.LightPWM
                     ) return false;
                 }
-
-                if (RetractSpeed != SlicerFile.RetractSpeed) return false;
 
                 return true;
             }
@@ -447,8 +540,12 @@ namespace UVtools.Core
             _waitTimeAfterCure = SlicerFile.GetInitialLayerValueOrNormal(index, SlicerFile.BottomWaitTimeAfterCure, SlicerFile.WaitTimeAfterCure);
             _liftHeight = SlicerFile.GetInitialLayerValueOrNormal(index, SlicerFile.BottomLiftHeight, SlicerFile.LiftHeight);
             _liftSpeed = SlicerFile.GetInitialLayerValueOrNormal(index, SlicerFile.BottomLiftSpeed, SlicerFile.LiftSpeed);
+            _liftHeight2 = SlicerFile.GetInitialLayerValueOrNormal(index, SlicerFile.BottomLiftHeight2, SlicerFile.LiftHeight2);
+            _liftSpeed2 = SlicerFile.GetInitialLayerValueOrNormal(index, SlicerFile.BottomLiftSpeed2, SlicerFile.LiftSpeed2);
             _waitTimeAfterLift = SlicerFile.GetInitialLayerValueOrNormal(index, SlicerFile.BottomWaitTimeAfterLift, SlicerFile.WaitTimeAfterLift);
-            _retractSpeed = SlicerFile.RetractSpeed;
+            _retractSpeed = SlicerFile.GetInitialLayerValueOrNormal(index, SlicerFile.BottomRetractSpeed, SlicerFile.RetractSpeed);
+            _retractHeight2 = SlicerFile.GetInitialLayerValueOrNormal(index, SlicerFile.BottomRetractHeight2, SlicerFile.RetractHeight2);
+            _retractSpeed2 = SlicerFile.GetInitialLayerValueOrNormal(index, SlicerFile.BottomRetractSpeed2, SlicerFile.RetractSpeed2);
             _lightPwm = SlicerFile.GetInitialLayerValueOrNormal(index, SlicerFile.BottomLightPWM, SlicerFile.LightPWM);
         }
 
@@ -569,8 +666,13 @@ namespace UVtools.Core
                    $"{nameof(WaitTimeAfterCure)}: {WaitTimeAfterCure}s, " +
                    $"{nameof(LiftHeight)}: {LiftHeight}mm, " +
                    $"{nameof(LiftSpeed)}: {LiftSpeed}mm/mim, " +
+                   $"{nameof(LiftHeight2)}: {LiftHeight2}mm, " +
+                   $"{nameof(LiftSpeed2)}: {LiftSpeed2}mm/mim, " +
                    $"{nameof(WaitTimeAfterLift)}: {WaitTimeAfterLift}s, " +
+                   $"{nameof(RetractHeight)}: {RetractHeight}mm, " +
                    $"{nameof(RetractSpeed)}: {RetractSpeed}mm/mim, " +
+                   $"{nameof(RetractHeight2)}: {RetractHeight2}mm, " +
+                   $"{nameof(RetractSpeed2)}: {RetractSpeed2}mm/mim, " +
                    $"{nameof(LightPWM)}: {LightPWM}, " +
                    $"{nameof(IsModified)}: {IsModified}, " +
                    $"{nameof(HaveGlobalParameters)}: {HaveGlobalParameters}";
@@ -581,13 +683,13 @@ namespace UVtools.Core
 
         public float CalculateMotorMovementTime(float extraTime = 0)
         {
-            return OperationCalculator.LightOffDelayC.CalculateSeconds(_liftHeight, _liftSpeed, _retractSpeed, extraTime);
+            return OperationCalculator.LightOffDelayC.CalculateSeconds(this, extraTime);
         }
 
         public float CalculateLightOffDelay(float extraTime = 0)
         {
-            if (SlicerFile is null) return OperationCalculator.LightOffDelayC.CalculateSeconds(_liftHeight, _liftSpeed, _retractSpeed, extraTime);
-            return SlicerFile.SupportsGCode ? extraTime : OperationCalculator.LightOffDelayC.CalculateSeconds(_liftHeight, _liftSpeed, _retractSpeed, extraTime);
+            if (SlicerFile is null) return OperationCalculator.LightOffDelayC.CalculateSeconds(this, extraTime);
+            return SlicerFile.SupportsGCode ? extraTime : OperationCalculator.LightOffDelayC.CalculateSeconds(this, extraTime);
         }
 
         public void SetLightOffDelay(float extraTime = 0)
@@ -702,6 +804,18 @@ namespace UVtools.Core
                 return true;
             }
 
+            if (ReferenceEquals(modifier, FileFormat.PrintParameterModifier.LiftHeight2))
+            {
+                LiftHeight2 = (float)value;
+                return true;
+            }
+
+            if (ReferenceEquals(modifier, FileFormat.PrintParameterModifier.LiftSpeed2))
+            {
+                LiftSpeed2 = (float)value;
+                return true;
+            }
+
             if (ReferenceEquals(modifier, FileFormat.PrintParameterModifier.WaitTimeAfterLift))
             {
                 WaitTimeAfterLift = (float)value;
@@ -711,6 +825,18 @@ namespace UVtools.Core
             if (ReferenceEquals(modifier, FileFormat.PrintParameterModifier.RetractSpeed))
             {
                 RetractSpeed = (float)value;
+                return true;
+            }
+
+            if (ReferenceEquals(modifier, FileFormat.PrintParameterModifier.RetractHeight2))
+            {
+                RetractHeight2 = (float)value;
+                return true;
+            }
+
+            if (ReferenceEquals(modifier, FileFormat.PrintParameterModifier.RetractSpeed2))
+            {
+                RetractSpeed2 = (float)value;
                 return true;
             }
 
@@ -898,7 +1024,11 @@ namespace UVtools.Core
 
         public Layer Clone()
         {
-            return new(_index, CompressedBytes.ToArray(), ParentLayerManager)
+            //var layer = (Layer)MemberwiseClone();
+            //layer.CompressedBytes = _compressedBytes.ToArray();
+            //Debug.WriteLine(ReferenceEquals(_compressedBytes, layer.CompressedBytes));
+            //return layer;
+            return new (_index, CompressedBytes.ToArray(), ParentLayerManager)
             {
                 PositionZ = _positionZ,
                 LightOffDelay = _lightOffDelay,
@@ -907,8 +1037,12 @@ namespace UVtools.Core
                 WaitTimeAfterCure = _waitTimeAfterCure,
                 LiftHeight = _liftHeight,
                 LiftSpeed = _liftSpeed,
+                LiftHeight2 = _liftHeight2,
+                LiftSpeed2 = _liftSpeed2,
                 WaitTimeAfterLift = _waitTimeAfterLift,
                 RetractSpeed = _retractSpeed,
+                RetractHeight2 = _retractHeight2,
+                RetractSpeed2 = _retractSpeed2,
                 LightPWM = _lightPwm,
                 BoundingRectangle = _boundingRectangle,
                 NonZeroPixelCount = _nonZeroPixelCount,

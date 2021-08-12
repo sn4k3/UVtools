@@ -7,6 +7,7 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Globalization;
@@ -390,12 +391,12 @@ namespace UVtools.Core.GCode
                 AppendMoveG1(z, feedRate);
         }
 
-        public void AppendLiftMoveGx(float upZ, float upFeedRate, float downZ, float downFeedRate, float waitAfterLift = 0, float waitAfterRetract = 0, Layer layer = null)
+        public void AppendLiftMoveGx(float upZ, float upFeedRate, float upZ2, float upFeedRate2, float downZ, float downFeedRate, float downZ2, float downFeedRate2, float waitAfterLift = 0, float waitAfterRetract = 0, Layer layer = null)
         {
             if (_layerMoveCommand == GCodeMoveCommands.G0)
-                AppendLiftMoveG0(upZ, upFeedRate, downZ, downFeedRate, waitAfterLift, waitAfterRetract, layer);
+                AppendLiftMoveG0(upZ, upFeedRate, upZ2, upFeedRate2, downZ, downFeedRate, downZ2, downFeedRate2, waitAfterLift, waitAfterRetract, layer);
             else
-                AppendLiftMoveG1(upZ, upFeedRate, downZ, downFeedRate, waitAfterLift, waitAfterRetract, layer);
+                AppendLiftMoveG1(upZ, upFeedRate, upZ2, upFeedRate2, downZ, downFeedRate, downZ2, downFeedRate2, waitAfterLift, waitAfterRetract, layer);
         }
 
 
@@ -405,14 +406,15 @@ namespace UVtools.Core.GCode
             AppendLine(CommandMoveG0, z, feedRate);
         }
 
-        public void AppendLiftMoveG0(float upZ, float upFeedRate, float downZ, float downFeedRate, float waitAfterLift = 0, float waitAfterRetract = 0, Layer layer = null)
+        public void AppendLiftMoveG0(float upZ, float upFeedRate, float upZ2 = 0, float upFeedRate2 = 0, float downZ = 0, float downFeedRate = 0, float downZ2 = 0, float downFeedRate2 = 0, float waitAfterLift = 0, float waitAfterRetract = 0, Layer layer = null)
         {
-            if (upZ == 0 || upFeedRate <= 0) return;
-            AppendLineOverrideComment(CommandMoveG0, "Z Lift", upZ, upFeedRate); // Z Lift
+            if ((upZ == 0 || upFeedRate <= 0) && (upZ2 == 0 || upFeedRate2 <= 0)) return;
+
+            if(upZ > 0 && upFeedRate > 0) AppendLineOverrideComment(CommandMoveG0, "Z Lift", upZ, upFeedRate); // Z Lift
+            if(upZ2 > 0 && upFeedRate2 > 0) AppendLineOverrideComment(CommandMoveG0, "Z Lift (2)", upZ2, upFeedRate2); // Z Lift2
             if (_syncMovementsWithDelay && layer is not null)
             {
-                // Finish this
-                var seconds = OperationCalculator.LightOffDelayC.CalculateSecondsLiftOnly(layer.LiftHeight, layer.LiftSpeed, 0.75f);
+                var seconds = OperationCalculator.LightOffDelayC.CalculateSecondsLiftOnly(layer, 0.75f);
                 var time = ConvertFromSeconds(seconds);
                 AppendWaitG4($"0{time}", "Sync movement");
             }
@@ -422,13 +424,17 @@ namespace UVtools.Core.GCode
                 AppendWaitG4(waitAfterLift, "Wait after lift");
             }
 
-            if (downZ != 0 && downFeedRate > 0)
+            if ((downZ != 0 && downFeedRate > 0) || (downZ2 != 0 && downFeedRate2 > 0))
             {
-                AppendLineOverrideComment(CommandMoveG0, "Retract to layer height", downZ, downFeedRate);
+                if(downZ2 != 0 && downFeedRate2 > 0)
+                    AppendLineOverrideComment(CommandMoveG0, "Retract (2)", downZ2, downFeedRate2);
+                if (downZ != 0 && downFeedRate > 0)
+                    AppendLineOverrideComment(CommandMoveG0, "Retract to layer height", downZ, downFeedRate);
+
                 if (_syncMovementsWithDelay && layer is not null)
                 {
                     // Finish this
-                    var seconds = OperationCalculator.LightOffDelayC.CalculateSecondsLiftOnly(layer.LiftHeight, layer.RetractSpeed, 0.75f);
+                    var seconds = OperationCalculator.LightOffDelayC.CalculateSecondsLiftOnly(layer.RetractHeight, layer.RetractSpeed, layer.RetractHeight2, layer.RetractSpeed2, 0.75f);
                     var time = ConvertFromSeconds(seconds);
                     AppendWaitG4($"0{time}", "Sync movement");
                 }
@@ -446,19 +452,17 @@ namespace UVtools.Core.GCode
             AppendLine(CommandMoveG1, z, feedRate);
         }
 
-        public void AppendLiftMoveG1(float upZ, float upFeedRate, float downZ, float downFeedRate, float waitAfterLift = 0, float waitAfterRetract = 0, Layer layer = null)
+        public void AppendLiftMoveG1(float upZ, float upFeedRate, float upZ2 = 0, float upFeedRate2 = 0, float downZ = 0, float downFeedRate = 0, float downZ2 = 0, float downFeedRate2 = 0, float waitAfterLift = 0, float waitAfterRetract = 0, Layer layer = null)
         {
-            if (upZ == 0 || upFeedRate <= 0) return;
-            AppendLineOverrideComment(CommandMoveG1, "Lift Z", upZ, upFeedRate); // Z Lift
+            if ((upZ == 0 || upFeedRate <= 0) && (upZ2 == 0 || upFeedRate2 <= 0)) return;
+
+            if (upZ > 0 && upFeedRate > 0) AppendLineOverrideComment(CommandMoveG1, "Z Lift", upZ, upFeedRate); // Z Lift
+            if (upZ2 > 0 && upFeedRate2 > 0) AppendLineOverrideComment(CommandMoveG1, "Z Lift (2)", upZ2, upFeedRate2); // Z Lift2
             if (_syncMovementsWithDelay && layer is not null)
             {
-                // Finish this
-                var seconds = OperationCalculator.LightOffDelayC.CalculateSecondsLiftOnly(layer.LiftHeight, layer.LiftSpeed, 0.75f);
-                if (seconds > layer.WaitTimeAfterLift) // Fix if wait time already include this
-                {
-                    var time = ConvertFromSeconds(seconds);
-                    AppendWaitG4($"0{time}", "Sync movement");
-                }
+                var seconds = OperationCalculator.LightOffDelayC.CalculateSecondsLiftOnly(layer, 0.75f);
+                var time = ConvertFromSeconds(seconds);
+                AppendWaitG4($"0{time}", "Sync movement");
             }
 
             if (waitAfterLift > 0)
@@ -466,18 +470,19 @@ namespace UVtools.Core.GCode
                 AppendWaitG4(waitAfterLift, "Wait after lift");
             }
 
-            if (downZ != 0 && downFeedRate > 0)
+            if ((downZ != 0 && downFeedRate > 0) || (downZ2 != 0 && downFeedRate2 > 0))
             {
-                AppendLineOverrideComment(CommandMoveG1, "Retract to layer height", downZ, downFeedRate);
+                if (downZ2 != 0 && downFeedRate2 > 0)
+                    AppendLineOverrideComment(CommandMoveG1, "Retract (2)", downZ2, downFeedRate2);
+                if (downZ != 0 && downFeedRate > 0)
+                    AppendLineOverrideComment(CommandMoveG1, "Retract to layer height", downZ, downFeedRate);
+
                 if (_syncMovementsWithDelay && layer is not null)
                 {
                     // Finish this
-                    var seconds = OperationCalculator.LightOffDelayC.CalculateSecondsLiftOnly(layer.LiftHeight, layer.RetractSpeed, 0.75f);
-                    if (seconds > layer.WaitTimeBeforeCure) // Fix if wait time already include this
-                    {
-                        var time = ConvertFromSeconds(seconds);
-                        AppendWaitG4($"0{time}", "Sync movement");
-                    }
+                    var seconds = OperationCalculator.LightOffDelayC.CalculateSecondsLiftOnly(layer.RetractHeight, layer.RetractSpeed, layer.RetractHeight2, layer.RetractSpeed2, 0.75f);
+                    var time = ConvertFromSeconds(seconds);
+                    AppendWaitG4($"0{time}", "Sync movement");
                 }
             }
 
@@ -569,7 +574,7 @@ namespace UVtools.Core.GCode
 
             float lastZPosition = 0;
 
-            // Defaults for: Absolute, mm/m and s
+            // Defaults for: Absolute, mm/min and s
             for (uint layerIndex = 0; layerIndex < slicerFile.LayerCount; layerIndex++)
             {
                 var layer = slicerFile[layerIndex];
@@ -578,23 +583,64 @@ namespace UVtools.Core.GCode
                 float exposureTime = ConvertFromSeconds(layer.ExposureTime);
                 float waitAfterCure = ConvertFromSeconds(layer.WaitTimeAfterCure);
                 float liftHeight = layer.LiftHeight;
-                float liftZPos = Layer.RoundHeight(liftHeight + layer.PositionZ);
-                float liftZPosAbs = liftZPos;
+                //float liftZPos = Layer.RoundHeight(liftHeight + layer.PositionZ);
+                //float liftZPosAbs = liftZPos;
                 float liftSpeed = ConvertFromMillimetersPerMinute(layer.LiftSpeed);
+                float liftHeight2 = layer.LiftHeight2;
+                float liftSpeed2 = ConvertFromMillimetersPerMinute(layer.LiftSpeed2);
                 float waitAfterLift = ConvertFromSeconds(layer.WaitTimeAfterLift);
-                float retractPos = layer.PositionZ;
+                float retractHeight = layer.RetractHeight;
                 float retractSpeed = ConvertFromMillimetersPerMinute(layer.RetractSpeed);
+                float retractHeight2 = layer.RetractHeight2;
+                float retractSpeed2 = ConvertFromMillimetersPerMinute(layer.RetractSpeed2);
+                float liftHeightTotal = layer.LiftHeightTotal;
                 ushort pwmValue = layer.LightPWM;
                 if (_maxLedPower != byte.MaxValue)
                 {
                     pwmValue = (ushort)(_maxLedPower * pwmValue / byte.MaxValue);
                 }
 
+                float liftPos = 0;
+                float liftPos2 = 0;
+                float retractPos = 0;
+                float retractPos2 = 0;
+
                 switch (GCodePositioningType)
                 {
+                    case GCodePositioningTypes.Absolute:
+                        var absLiftPos = Layer.RoundHeight(liftHeight + layer.PositionZ);
+                        var absLiftPos2 = Layer.RoundHeight(absLiftPos + liftHeight2);
+                        var absRetractPos2 = Layer.RoundHeight(absLiftPos2 - retractHeight2);
+                        if (liftHeight > 0) liftPos = absLiftPos;
+                        if (liftHeight2 > 0) liftPos2 = absLiftPos2;
+                        if (retractHeight2 > 0) retractPos2 = absRetractPos2;
+                        if (retractHeight > 0) retractPos = layer.PositionZ;
+                        if (retractPos > 0 && retractPos > retractPos2) retractPos2 = 0; // Fail-safe
+                        break;
                     case GCodePositioningTypes.Partial:
-                        liftZPos = liftHeight;
-                        retractPos = Layer.RoundHeight(layer.PositionZ - lastZPosition - liftHeight);
+                        var partialLiftPos = Layer.RoundHeight(layer.PositionZ - lastZPosition + liftHeight);
+                        var partialLiftPosTotal = Layer.RoundHeight(partialLiftPos + liftHeight2);
+                        var partialRetractPosTotal = Layer.RoundHeight(partialLiftPos + liftHeight2);
+                        if (liftHeight > 0)
+                        {
+                            liftPos = partialLiftPos;
+                            if (liftHeight2 > 0) liftPos2 = liftHeight2;
+                        }
+                        else
+                        {
+                            if (liftHeight2 > 0) liftPos2 = Layer.RoundHeight(partialLiftPos + liftHeight2);
+                        }
+                        
+                        if (retractHeight2 > 0) retractPos2 = -retractHeight2;
+                        if (retractHeight > 0) retractPos = -retractHeight;
+
+                        // Assert
+                        if (Layer.RoundHeight(Math.Abs(retractPos + retractPos2)) != liftHeightTotal) // Fail-safe
+                        {
+                            retractPos2 = 0;
+                            retractPos = -liftHeightTotal;
+                        }
+
                         break;
                 }
 
@@ -605,9 +651,9 @@ namespace UVtools.Core.GCode
                 AppendShowImageM6054(GetShowImageString(layerIndex));
                 //}
 
-                if (liftHeight > 0 && liftZPosAbs > layer.PositionZ)
+                if (liftHeightTotal > 0 && Layer.RoundHeight(liftHeightTotal + layer.PositionZ) > layer.PositionZ)
                 {
-                    AppendLiftMoveGx(liftZPos, liftSpeed, retractPos, retractSpeed, waitAfterLift, 0, layer);
+                    AppendLiftMoveGx(liftPos, liftSpeed, liftPos2, liftSpeed2, retractPos, retractSpeed, retractPos2, retractSpeed2, waitAfterLift, 0, layer);
                 }
                 else if (lastZPosition < layer.PositionZ) // Ensure Z is on correct position
                 {
@@ -759,10 +805,7 @@ namespace UVtools.Core.GCode
                         }
 
                         // Propagate values before switch to the new layer
-                        layerBlock.PositionZ ??= positionZ;
-                        layerBlock.SetLayer();
-
-                        layerBlock.Init();
+                        layerBlock.SetLayer(true);
                         layerBlock.LayerIndex = layerIndex;
 
                         continue;
@@ -782,12 +825,16 @@ namespace UVtools.Core.GCode
                         RegexOptions.IgnoreCase);
                     match = moveG0Regex.Success && moveG0Regex.Groups.Count >= 2 ? moveG0Regex : moveG1Regex;
 
-                    if (match.Success && match.Groups.Count >= 4 && !layerBlock.RetractSpeed.HasValue)
+                    if (match.Success && match.Groups.Count >= 4 && !layerBlock.RetractSpeed2.HasValue && layerBlock.LightOffCount < 2)
                     {
                         float pos = float.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture);
                         float speed = ConvertToMillimetersPerMinute(float.Parse(match.Groups[3].Value, CultureInfo.InvariantCulture));
 
-                        if (!layerBlock.PositionZ.HasValue) // Lift or pos, set here for now
+
+                        layerBlock.Movements.Add(new(pos, speed));
+                        layerBlock.AssignMovements(positionType);
+
+                        /*if (!layerBlock.PositionZ.HasValue) // Lift or pos, set here for now
                         {
                             switch (positionType)
                             {
@@ -817,7 +864,7 @@ namespace UVtools.Core.GCode
                                 layerBlock.LiftHeight = layerBlock.PositionZ - positionZ;
                                 layerBlock.PositionZ = positionZ = Layer.RoundHeight(layerBlock.PositionZ.Value + pos);
                                 break;
-                        }
+                        }*/
 
                         continue;
                     }
@@ -897,7 +944,7 @@ namespace UVtools.Core.GCode
 
                         if (pwm == 0 && layerBlock.LightPWM.HasValue)
                         {
-                            layerBlock.IsAfterLightOff = true;
+                            layerBlock.LightOffCount++;
                         }
                         else if (!layerBlock.IsAfterLightOff)
                         {
@@ -910,7 +957,6 @@ namespace UVtools.Core.GCode
             }
 
             // Propagate values of left over layer
-            layerBlock.PositionZ ??= positionZ;
             layerBlock.SetLayer();
 
 
@@ -1016,36 +1062,7 @@ namespace UVtools.Core.GCode
 
             if (rebuildGlobalTable)
             {
-                slicerFile.SuppressRebuildPropertiesWork(() =>
-                {
-                    var bottomLayer = slicerFile.FirstLayer;
-                    if (bottomLayer is not null)
-                    {
-                        if (bottomLayer.LightOffDelay > 0) slicerFile.BottomLightOffDelay = bottomLayer.LightOffDelay;
-                        if (bottomLayer.WaitTimeBeforeCure > 0) slicerFile.BottomWaitTimeBeforeCure = bottomLayer.WaitTimeBeforeCure;
-                        if (bottomLayer.ExposureTime > 0) slicerFile.BottomExposureTime = bottomLayer.ExposureTime;
-                        if (bottomLayer.WaitTimeAfterCure > 0) slicerFile.BottomWaitTimeAfterCure = bottomLayer.WaitTimeAfterCure;
-                        if (bottomLayer.LiftHeight > 0) slicerFile.BottomLiftHeight = bottomLayer.LiftHeight;
-                        if (bottomLayer.LiftSpeed > 0) slicerFile.BottomLiftSpeed = bottomLayer.LiftSpeed;
-                        if (bottomLayer.WaitTimeAfterLift > 0) slicerFile.BottomWaitTimeAfterLift = bottomLayer.WaitTimeAfterLift;
-                        if (bottomLayer.RetractSpeed > 0) slicerFile.RetractSpeed = bottomLayer.RetractSpeed;
-                        if (bottomLayer.LightPWM > 0) slicerFile.BottomLightPWM = bottomLayer.LightPWM;
-                    }
-
-                    var normalLayer = slicerFile.LastLayer;
-                    if (normalLayer is not null)
-                    {
-                        if (normalLayer.LightOffDelay > 0) slicerFile.LightOffDelay = normalLayer.LightOffDelay;
-                        if (normalLayer.WaitTimeBeforeCure > 0) slicerFile.WaitTimeBeforeCure = normalLayer.WaitTimeBeforeCure;
-                        if (normalLayer.ExposureTime > 0) slicerFile.ExposureTime = normalLayer.ExposureTime;
-                        if (normalLayer.WaitTimeAfterCure > 0) slicerFile.WaitTimeAfterCure = normalLayer.WaitTimeAfterCure;
-                        if (normalLayer.LiftHeight > 0) slicerFile.LiftHeight = normalLayer.LiftHeight;
-                        if (normalLayer.LiftSpeed > 0) slicerFile.LiftSpeed = normalLayer.LiftSpeed;
-                        if (normalLayer.WaitTimeAfterLift > 0) slicerFile.WaitTimeAfterLift = normalLayer.WaitTimeAfterLift;
-                        if (normalLayer.RetractSpeed > 0) slicerFile.RetractSpeed = normalLayer.RetractSpeed;
-                        if (normalLayer.LightPWM > 0) slicerFile.LightPWM = normalLayer.LightPWM;
-                    }
-                });
+                slicerFile.UpdateGlobalPropertiesFromLayers();
             }
         }
 

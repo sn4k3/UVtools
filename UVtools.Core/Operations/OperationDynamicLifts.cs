@@ -252,10 +252,10 @@ namespace UVtools.Core.Operations
         {
             base.InitWithSlicerFile();
 
-            if(_minBottomLiftHeight <= 0) _minBottomLiftHeight = SlicerFile.BottomLiftHeight;
+            if(_minBottomLiftHeight <= 0) _minBottomLiftHeight = SlicerFile.BottomLiftHeightTotal;
             if (_maxBottomLiftHeight <= 0 || _maxBottomLiftHeight < _minBottomLiftHeight) _maxBottomLiftHeight = _minBottomLiftHeight;
 
-            if (_minLiftHeight <= 0) _minLiftHeight = SlicerFile.LiftHeight;
+            if (_minLiftHeight <= 0) _minLiftHeight = SlicerFile.LiftHeightTotal;
             if (_maxLiftHeight <= 0 || _maxLiftHeight < _minLiftHeight) _maxLiftHeight = _minLiftHeight;
 
             if (_minBottomLiftSpeed <= 0) _minBottomLiftSpeed = SlicerFile.BottomLiftSpeed;
@@ -340,7 +340,8 @@ namespace UVtools.Core.Operations
                     liftSpeed = (_maxLiftSpeed - (_maxLiftSpeed * layer.NonZeroPixelCount / maxNormalPixels)).Clamp(_minLiftSpeed, _maxLiftSpeed);
                 }
 
-                layer.LiftHeight = (float) Math.Round(liftHeight, 1);
+                layer.RetractHeight2 = 0;
+                layer.LiftHeightTotal = (float) Math.Round(liftHeight, 1);
                 layer.LiftSpeed = (float) Math.Round(liftSpeed, 1);
 
                 switch (_lightOffDelaySetMode)

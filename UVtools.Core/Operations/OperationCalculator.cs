@@ -286,35 +286,58 @@ namespace UVtools.Core.Operations
                 return Math.Round(time, 2);
             }
 
-            public static float CalculateSeconds(float liftHeight, float liftSpeed, float retractSpeed, float extraWaitTime = 0)
+            public static float CalculateSeconds(float liftHeight, float liftSpeed, float retractSpeed, float extraWaitTime = 0,
+                float liftHeight2 = 0, float liftSpeed2 = 0, float retractHeight2 = 0, float retractSpeed2 = 0)
             {
                 var time = extraWaitTime;
-                if (liftSpeed > 0)
-                {
+                if (liftHeight > 0 && liftSpeed > 0)
                     time += liftHeight / (liftSpeed / 60f);
-                }
-                if (retractSpeed > 0)
+
+                if (liftHeight2 > 0 && liftSpeed2 > 0)
+                    time += liftHeight2 / (liftSpeed2 / 60f);
+
+                if (retractHeight2 > 0 && retractSpeed2 > 0)
+                    time += retractHeight2 / (retractSpeed2 / 60f);
+
+                var remainingRetractHeight = liftHeight + liftHeight2 - retractHeight2;
+
+                if (remainingRetractHeight > 0 && retractSpeed > 0)
                 {
-                    time += liftHeight / (retractSpeed / 60f);
+                    time += remainingRetractHeight / (retractSpeed / 60f);
                 }
 
                 return (float)Math.Round(time, 2);
 
             }
 
+            public static float CalculateSeconds(Layer layer, float extraTime)
+                => CalculateSeconds(layer.LiftHeight, layer.LiftSpeed, layer.RetractSpeed, extraTime, 
+                    layer.LiftHeight2, layer.LiftSpeed2, layer.RetractHeight2, layer.RetractSpeed2);
+
+            public static uint CalculateMilliseconds(Layer layer, float extraTime)
+                => (uint)(CalculateSeconds(layer.LiftHeight, layer.LiftSpeed, layer.RetractSpeed, extraTime,
+                    layer.LiftHeight2, layer.LiftSpeed2, layer.RetractHeight2, layer.RetractSpeed2) * 1000);
+
             public static uint CalculateMilliseconds(float liftHeight, float liftSpeed, float retract, float extraWaitTime = 0) =>
                 (uint)(CalculateSeconds(liftHeight, liftSpeed, retract, extraWaitTime) * 1000);
 
 
-            public static float CalculateSecondsLiftOnly(float liftHeight, float liftSpeed, float extraWaitTime = 0)
+            public static float CalculateSecondsLiftOnly(float liftHeight, float liftSpeed, float liftHeight2 = 0, float liftSpeed2 = 0, float extraWaitTime = 0)
             {
-                if (liftSpeed <= 0) return extraWaitTime;
-                return (float)Math.Round(liftHeight / (liftSpeed / 60f) + extraWaitTime, 2);
+                var time = extraWaitTime;
+                if (liftHeight > 0 && liftSpeed > 0) time += (float)Math.Round(liftHeight / (liftSpeed / 60f) + extraWaitTime, 2);
+                if (liftHeight2 > 0 && liftSpeed2 > 0) time += (float)Math.Round(liftHeight2 / (liftSpeed2 / 60f) + extraWaitTime, 2);
+                return time;
             }
 
-            public static uint CalculateMillisecondsLiftOnly(float liftHeight, float liftSpeed, float extraWaitTime = 0) =>
-                (uint)(CalculateSecondsLiftOnly(liftHeight, liftSpeed, extraWaitTime) * 1000);
+            public static uint CalculateMillisecondsLiftOnly(float liftHeight, float liftSpeed, float liftHeight2 = 0, float liftSpeed2 = 0, float extraWaitTime = 0) =>
+                (uint)(CalculateSecondsLiftOnly(liftHeight, liftSpeed, liftHeight2, liftSpeed2, extraWaitTime) * 1000);
 
+            public static float CalculateSecondsLiftOnly(Layer layer, float extraWaitTime = 0) =>
+                CalculateSecondsLiftOnly(layer.LiftHeight, layer.LiftSpeed, layer.LiftHeight2, layer.LiftSpeed2, extraWaitTime);
+
+            public static uint CalculateMillisecondsLiftOnly(Layer layer, float extraWaitTime = 0) =>
+                (uint)(CalculateSecondsLiftOnly(layer.LiftHeight, layer.LiftSpeed, layer.LiftHeight2, layer.LiftSpeed2, extraWaitTime) * 1000);
 
         }
 

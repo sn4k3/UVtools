@@ -867,6 +867,8 @@ namespace UVtools.Core.FileFormats
             set => base.LiftSpeed = HeaderSettings.LiftSpeed = (float)Math.Round(value, 2);
         }
 
+        public override float BottomRetractSpeed => RetractSpeed;
+
         public override float RetractSpeed
         {
             get => HeaderSettings.RetractSpeed;

@@ -2170,15 +2170,10 @@ namespace UVtools.Core.Operations
                     }
                     else
                     {
-                        Layer layer = new(layerIndex++, mat, SlicerFile)
+                        var layer = new Layer(layerIndex++, mat, SlicerFile)
                         {
                             PositionZ = (float)currentHeight,
                             ExposureTime = isBottomLayer ? (float)bottomExposure : (float)normalExposure,
-                            LiftHeight = isBottomLayer ? SlicerFile.BottomLiftHeight : SlicerFile.LiftHeight,
-                            LiftSpeed = isBottomLayer ? SlicerFile.BottomLiftSpeed : SlicerFile.LiftSpeed,
-                            RetractSpeed = SlicerFile.RetractSpeed,
-                            LightOffDelay = isBottomLayer ? SlicerFile.BottomLightOffDelay : SlicerFile.LightOffDelay,
-                            LightPWM = isBottomLayer ? SlicerFile.BottomLightPWM : SlicerFile.LightPWM,
                             IsModified = true
                         };
                         newLayers.Add(layer);
@@ -2249,8 +2244,8 @@ namespace UVtools.Core.Operations
                 var layers = SlicerFile.LayerManager.GetSamePositionedLayers();
                 foreach (var layer in layers)
                 {
-                    if(_samePositionedLayersLiftHeightEnabled)    layer.LiftHeight    = (float) _samePositionedLayersLiftHeight;
-                    if(_samePositionedLayersLightOffDelayEnabled) layer.LightOffDelay = (float) _samePositionedLayersLightOffDelay;
+                    if(_samePositionedLayersLiftHeightEnabled)    layer.LiftHeightTotal = (float) _samePositionedLayersLiftHeight;
+                    if(_samePositionedLayersLightOffDelayEnabled) layer.LightOffDelay   = (float) _samePositionedLayersLightOffDelay;
                 }
             }
 

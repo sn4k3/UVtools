@@ -348,8 +348,13 @@ namespace UVtools.WPF
 
                 if (SlicerFile.CanUseLayerLiftHeight)
                     CurrentLayerProperties.Add(new ValueDescription($"{layer.LiftHeight.ToString(CultureInfo.InvariantCulture)}mm @ {layer.LiftSpeed.ToString(CultureInfo.InvariantCulture)}mm/min", nameof(layer.LiftHeight)));
+                if (SlicerFile.CanUseLayerLiftHeight2)
+                    CurrentLayerProperties.Add(new ValueDescription($"{layer.LiftHeight2.ToString(CultureInfo.InvariantCulture)}mm @ {layer.LiftSpeed2.ToString(CultureInfo.InvariantCulture)}mm/min", nameof(layer.LiftHeight2)));
+
                 if (SlicerFile.CanUseLayerRetractSpeed)
-                    CurrentLayerProperties.Add(new ValueDescription($"{layer.RetractSpeed}mm/min", nameof(layer.RetractSpeed)));
+                    CurrentLayerProperties.Add(new ValueDescription($"{layer.RetractHeight.ToString(CultureInfo.InvariantCulture)}mm @ {layer.RetractSpeed}mm/min", nameof(layer.RetractHeight)));
+                if (SlicerFile.CanUseLayerRetractHeight2)
+                    CurrentLayerProperties.Add(new ValueDescription($"{layer.RetractHeight2.ToString(CultureInfo.InvariantCulture)}mm @ {layer.RetractSpeed2}mm/min", nameof(layer.RetractHeight2)));
 
                 if (SlicerFile.CanUseLayerLightOffDelay)
                     CurrentLayerProperties.Add(new ValueDescription($"{layer.LightOffDelay}s", nameof(layer.LightOffDelay)));

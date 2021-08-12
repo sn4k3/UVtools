@@ -637,8 +637,8 @@ namespace UVtools.Core.FileFormats
 
                 SuppressRebuildPropertiesWork(() =>
                 {
-                    BottomLightOffDelay = LookupCustomValue(Keyword_BottomLightOffDelay, DefaultBottomLightOffDelay);
-                    LightOffDelay = LookupCustomValue(Keyword_LightOffDelay, DefaultLightOffDelay);
+                    BottomLightOffDelay = LookupCustomValue(Keyword_BottomLightOffDelay, 0f);
+                    LightOffDelay = LookupCustomValue(Keyword_LightOffDelay, 0f);
 
                     BottomWaitTimeBeforeCure = LookupCustomValue(Keyword_BottomWaitTimeBeforeCure, 0f);
                     WaitTimeBeforeCure = LookupCustomValue(Keyword_WaitTimeBeforeCure, 0f);
