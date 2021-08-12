@@ -49,7 +49,7 @@ But also, i need victims for test subject. Proceed at your own risk!
 - View all used settings
 - Edit print properties and save file
 - Mutate and filter layers
-- Check islands, overhangs, resin traps and repair/remove them as other issues
+- Check islands, overhangs, resin traps, empty layers and repair/remove them as other issues
 - Export file to a folder
 - Convert format to another format
 - Calibration tests
@@ -168,18 +168,6 @@ But also, i need victims for test subject. Proceed at your own risk!
 
 Complete guide: https://github.com/sn4k3/UVtools/wiki/Setup-PrusaSlicer
 
-1. Download and install PrusaSlicer from: https://www.prusa3d.com/prusaslicer/
-1. Start and configure PrusaSlicer (Wizard)
-    * Choose SL1 printer
-1. Close PrusaSlicer
-1. Open UVtools if not already
-   * Under Menu click -> Help -> Install profiles into PrusaSlicer
-1. Open PrusaSlicer and check if profiles are there
-1. To clean up interface remove printers that you will not use (OPTIONAL)
-1. Duplicate and/or create your printer and tune the values if required
-1. Look up under "Printer -> Notes" and configure parameters to the target slicer
-1. Change only the value after the "_" (underscore)
-
 ## Custom "Material Notes" and "Printer Notes" keywords for PrusaSlicer
 
 Note that some variables will only work if the target format supports them, otherwise they will be ignored.
@@ -205,6 +193,28 @@ Replace the "xxx" by your desired value in the correct units
 # File Convertion
 
 https://github.com/sn4k3/UVtools/wiki/Sliced-File-Conversion
+
+# Command-line arguments
+
+The UVtools executable allow to set some arguments to do special functions:
+
+- **Open file(s):**
+   - **Syntax:** UVtools \<file1\> [file2] [file3] ...
+   - **Example 1:** UVtools C:\model.osla
+   - **Example 2:** UVtools C:\model.zip D:\other_model.osla
+   - **Note:** When a invalid file is pass, the program will open as default.
+- **Convert a file into another type(s)**
+   - **Syntax:** UVtools -c/--convert \<input_file\> \<output_file1_or_ext\> [output_file2_or_ext] ...
+   - **Example 1:** UVtools -c model.zip osla
+   - **Example 2:** UVtools -c model.zip model_converted.osla
+   - **Example 3:** UVtools --convert model.zip model_converted.osla model_converted.zcode
+   - **Note:** Nothing happen when providing wrong files, will quit.
+- **Extract a file to a folder**
+   - **Syntax:** UVtools -e/--extract \<input_file\> [output_folder]
+   - **Example 1:** UVtools -e model.zip
+   - **Example 2:** UVtools -e model.zip mymodel
+   - **Example 3:** UVtools --extract model.zip .
+   - **Note:** Nothing happen when providing wrong files/folder, will quit.
 
 # Requirements
 
