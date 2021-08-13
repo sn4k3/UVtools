@@ -119,7 +119,7 @@ namespace UVtools.Core.FileFormats
                 ? FileFormat.FindByExtension(Extension, false, createNewInstance)
                 : FileFormat.FindByType(FileFormatType, createNewInstance);
 
-        public static FileExtension Find(string extension)=>
+        public static FileExtension Find(string extension) =>
             FileFormat.FindExtension(extension);
         #endregion
     }
