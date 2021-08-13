@@ -336,19 +336,46 @@ namespace UVtools.Core.FileFormats
         /// <summary>
         /// Find <see cref="FileFormat"/> by an extension
         /// </summary>
-        /// <param name="extension">Extension name to find</param>
-        /// <param name="isFilePath">True if <see cref="extension"/> is a file path rather than only a extension name</param>
+        /// <param name="extensionOrFilePath"> name to find</param>
         /// <param name="createNewInstance">True to create a new instance of found file format, otherwise will return a pre created one which should be used for read-only purpose</param>
         /// <returns><see cref="FileFormat"/> object or null if not found</returns>
-        public static FileFormat FindByExtension(string extension, bool isFilePath = false, bool createNewInstance = false)
+        public static FileFormat FindByExtensionOrFilePath(string extensionOrFilePath, bool createNewInstance = false)
         {
-            if (isFilePath)
+            if (string.IsNullOrWhiteSpace(extensionOrFilePath)) return null;
+
+            bool isFilePath = false;
+            // Test for ext first
+            var fileFormats = AvailableFormats.Where(fileFormat => fileFormat.IsExtensionValid(extensionOrFilePath)).ToArray();
+            if (fileFormats.Length == 0) // Extension not found, can be filepath, try to find it
             {
-                GetFileNameStripExtensions(extension, out extension);
+                GetFileNameStripExtensions(extensionOrFilePath, out var extension);
+                if (string.IsNullOrWhiteSpace(extension)) return null;
+
+                fileFormats = AvailableFormats.Where(fileFormat => fileFormat.IsExtensionValid(extension)).ToArray();
+                if (fileFormats.Length == 0) return null;
+                isFilePath = true; // Was a file path
             }
 
-            if (string.IsNullOrWhiteSpace(extension)) return null;
-            return (from fileFormat in AvailableFormats where fileFormat.IsExtensionValid(extension) select createNewInstance ? (FileFormat) Activator.CreateInstance(fileFormat.GetType()) : fileFormat).FirstOrDefault();
+            if (fileFormats.Length == 1 || !isFilePath) 
+                return createNewInstance 
+                    ? (FileFormat)Activator.CreateInstance(fileFormats[0].GetType()) 
+                    : fileFormats[0];
+
+            // Multiple instances using Check for valid candidate
+            foreach (var fileFormat in fileFormats)
+            {
+                if (fileFormat.CanProcess(extensionOrFilePath))
+                {
+                    return createNewInstance
+                        ? (FileFormat)Activator.CreateInstance(fileFormat.GetType())
+                        : fileFormat;
+                }
+            }
+
+            // Try this in a far and not probable attempt
+            return createNewInstance
+                ? (FileFormat)Activator.CreateInstance(fileFormats[0].GetType())
+                : fileFormats[0];
         }
 
         public static FileExtension FindExtension(string extension)
@@ -1930,13 +1957,22 @@ namespace UVtools.Core.FileFormats
             }
         }
 
+        public virtual bool CanProcess(string fileFullPath)
+        {
+            if (fileFullPath is null) return false;
+            if (!File.Exists(fileFullPath)) return false;
+
+            return true;
+        }
+
+
         /// <summary>
         /// Validate if a file is a valid <see cref="FileFormat"/>
         /// </summary>
         /// <param name="fileFullPath">Full file path</param>
         public void FileValidation(string fileFullPath)
         {
-            if (fileFullPath is null) throw new ArgumentNullException(nameof(FileFullPath), "fullFilePath can't be null.");
+            if (string.IsNullOrWhiteSpace(fileFullPath)) throw new ArgumentNullException(nameof(FileFullPath), "FileFullPath can't be null nor empty.");
             if (!File.Exists(fileFullPath)) throw new FileNotFoundException("The specified file does not exists.", fileFullPath);
 
             if (IsExtensionValid(fileFullPath, true))

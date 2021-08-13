@@ -261,7 +261,7 @@ namespace UVtools.Core.Operations
                         _files[i].ValueAsString.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase) ||
                         _files[i].ValueAsString.EndsWith(".gif", StringComparison.OrdinalIgnoreCase)) continue;
 
-                    var fileFormat = FileFormat.FindByExtension(_files[i].ValueAsString, true, true);
+                    var fileFormat = FileFormat.FindByExtensionOrFilePath(_files[i].ValueAsString, true);
                     if (fileFormat is null) continue;
                     fileFormat.FileFullPath = _files[i].ValueAsString;
                     fileFormats.Add(fileFormat);

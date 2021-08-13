@@ -8,6 +8,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using MoreLinq;
 using UVtools.Core.FileFormats;
 
@@ -38,7 +39,7 @@ namespace UVtools.WPF
                     return true;
                 }
 
-                var slicerFile = FileFormat.FindByExtension(args[1], true, true);
+                var slicerFile = FileFormat.FindByExtensionOrFilePath(args[1], true);
                 if (slicerFile is null)
                 {
                     Console.WriteLine($"Invalid input file: {args[1]}");
@@ -53,21 +54,16 @@ namespace UVtools.WPF
                 for (int i = 2; i < args.Length; i++)
                 {
                     var outputFile = args[i];
-                    var targetFormat = FileFormat.FindByExtension(args[i]);
-                    if (targetFormat is not null)
-                    {
-                        outputFile = $"{filenameNoExt}.{args[i]}";
-                    }
-                    else
-                    {
-                        targetFormat = FileFormat.FindByExtension(args[i], true);
-                    }
-
+                    var targetFormat = FileFormat.FindByExtensionOrFilePath(args[i], true);
                     if (targetFormat is null)
                     {
                         Console.WriteLine($"Invalid output file/extension: {args[i]}");
                         continue;
                     }
+
+                    if(targetFormat.IsExtensionValid(outputFile))
+                        outputFile = $"{filenameNoExt}.{args[i]}";
+                    
 
                     filesToConvert.Add(new KeyValuePair<FileFormat, string>(targetFormat, outputFile));
                 }
@@ -110,7 +106,7 @@ namespace UVtools.WPF
                     return true;
                 }
 
-                var slicerFile = FileFormat.FindByExtension(args[1], true, true);
+                var slicerFile = FileFormat.FindByExtensionOrFilePath(args[1], true);
                 if (slicerFile is null)
                 {
                     Console.WriteLine($"Invalid input file: {args[1]}");

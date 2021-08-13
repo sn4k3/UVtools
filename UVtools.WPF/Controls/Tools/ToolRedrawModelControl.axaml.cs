@@ -58,7 +58,7 @@ namespace UVtools.WPF.Controls.Tools
             };
             var files = await dialog.ShowAsync(ParentWindow);
             if (files is null || files.Length <= 0) return;
-            if (FileFormat.FindByExtension(files[0], true) is null) return;
+            if (FileFormat.FindByExtensionOrFilePath(files[0]) is null) return;
             Operation.FilePath = files[0];
         }
     }

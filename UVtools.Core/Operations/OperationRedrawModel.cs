@@ -156,7 +156,7 @@ namespace UVtools.Core.Operations
         #region Methods
 
         public FileFormat IsFileValid(bool returnNewInstance = false) =>
-            FileFormat.FindByExtension(_filePath, true, returnNewInstance);
+            FileFormat.FindByExtensionOrFilePath(_filePath, returnNewInstance);
 
         protected override bool ExecuteInternally(OperationProgress progress)
         {

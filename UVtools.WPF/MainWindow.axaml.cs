@@ -1043,7 +1043,7 @@ namespace UVtools.WPF
             if (!File.Exists(fileName)) return;
             CloseFile();
             var fileNameOnly = Path.GetFileName(fileName);
-            SlicerFile = FileFormat.FindByExtension(fileName, true, true);
+            SlicerFile = FileFormat.FindByExtensionOrFilePath(fileName, true);
             if (SlicerFile is null) return;
 
             IsGUIEnabled = false;
@@ -1102,7 +1102,7 @@ namespace UVtools.WPF
                 if (!string.IsNullOrWhiteSpace(convertFileExtension))
                 {
                     convertFileExtension = convertFileExtension.ToLower(CultureInfo.InvariantCulture);
-                    var convertToFormat = FileFormat.FindByExtension(convertFileExtension);
+                    var convertToFormat = FileFormat.FindByExtensionOrFilePath(convertFileExtension);
                     if (convertToFormat is not null)
                     {
                         var directory = Path.GetDirectoryName(SlicerFile.FileFullPath);

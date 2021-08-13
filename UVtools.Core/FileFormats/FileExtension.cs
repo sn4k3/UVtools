@@ -116,7 +116,7 @@ namespace UVtools.Core.FileFormats
 
         public FileFormat GetFileFormat(bool createNewInstance = false) =>
             FileFormatType is null
-                ? FileFormat.FindByExtension(Extension, false, createNewInstance)
+                ? FileFormat.FindByExtensionOrFilePath(Extension, createNewInstance)
                 : FileFormat.FindByType(FileFormatType, createNewInstance);
 
         public static FileExtension Find(string extension) =>
