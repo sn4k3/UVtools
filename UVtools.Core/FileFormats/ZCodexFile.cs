@@ -158,7 +158,7 @@ namespace UVtools.Core.FileFormats
         public override FileFormatType FileType => FileFormatType.Archive;
 
         public override FileExtension[] FileExtensions { get; } = {
-            new("zcodex", "Z-Suite ZCodex")
+            new(typeof(ZCodexFile), "zcodex", "Z-Suite ZCodex")
         };
 
         public override PrintParameterModifier[] PrintParameterModifiers { get; } = {

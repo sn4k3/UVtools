@@ -76,7 +76,7 @@ namespace UVtools.Core.FileFormats
         public override FileFormatType FileType => FileFormatType.Archive;
 
         public override FileExtension[] FileExtensions { get; } = {
-            new("zip", "Chitubox Zip")
+            new(typeof(ChituboxZipFile), "zip", "Chitubox Zip")
         };
 
         public override PrintParameterModifier[] PrintParameterModifiers { get; } = {

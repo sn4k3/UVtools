@@ -312,7 +312,7 @@ namespace UVtools.Core.FileFormats
         public override FileFormatType FileType => FileFormatType.Binary;
 
         public override FileExtension[] FileExtensions { get; } = {
-            new("v1.cxdlp", "Creality CXDLP v1"),
+            new(typeof(CXDLPv1File), "v1.cxdlp", "Creality CXDLP v1"),
         };
 
         public override PrintParameterModifier[] PrintParameterModifiers { get; } =

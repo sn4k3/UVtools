@@ -233,7 +233,7 @@ namespace UVtools.Core.FileFormats
         public override FileFormatType FileType => FileFormatType.Binary;
 
         public override FileExtension[] FileExtensions { get; } = {
-            new("photons", "Chitubox PhotonS"),
+            new(typeof(PhotonSFile), "photons", "Chitubox PhotonS"),
         };
 
         public override PrintParameterModifier[] PrintParameterModifiers { get; } =

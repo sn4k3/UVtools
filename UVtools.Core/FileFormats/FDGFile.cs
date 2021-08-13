@@ -671,7 +671,7 @@ namespace UVtools.Core.FileFormats
         public override FileFormatType FileType => FileFormatType.Binary;
 
         public override FileExtension[] FileExtensions { get; } = {
-            new("fdg", "Voxelab FDG"),
+            new(typeof(FDGFile), "fdg", "Voxelab FDG"),
         };
 
         public override PrintParameterModifier[] PrintParameterModifiers { get; } =

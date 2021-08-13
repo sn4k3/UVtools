@@ -301,9 +301,9 @@ namespace UVtools.Core.FileFormats
         public PrinterType Printer { get; set; } = PrinterType.Unknown;
 
         public override FileExtension[] FileExtensions { get; } = {
-            new ("cws", "NovaMaker CWS"),
-            new ("rgb.cws", "NovaMaker Bene4 Mono / Elfin2 Mono SE (CWS)"),
-            new ("xml.cws", "Creation Workshop X (CWS)"),
+            new (typeof(CWSFile), "cws", "NovaMaker CWS"),
+            new (typeof(CWSFile), "rgb.cws", "NovaMaker Bene4 Mono / Elfin2 Mono SE (CWS)"),
+            new (typeof(CWSFile), "xml.cws", "Creation Workshop X (CWS)"),
         };
 
         public override PrintParameterModifier[] PrintParameterModifiers { get; } = {

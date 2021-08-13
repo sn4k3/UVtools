@@ -8,19 +8,26 @@ namespace UVtools.Core.FileFormats
 {
     public class ImageFile : FileFormat
     {
-        public override FileFormatType FileType { get; } = FileFormatType.Binary;
+        public override FileFormatType FileType => FileFormatType.Binary;
 
         public override FileExtension[] FileExtensions { get; } =
         {
-            new ("jpg", "JPG"),
-            new ("jpeg", "JPEG"),
-            new ("png", "PNG"),
-            new ("bmp", "BMP"),
-            new ("gif", "GIF"),
-            new ("tga", "TGA"),
+            new (typeof(ImageFile), "png", "PNG: Portable Network Graphics"),
+            new (typeof(ImageFile), "jpg", "JPG: Joint Photographic Experts Group"),
+            new (typeof(ImageFile), "jpeg", "JPEG: Joint Photographic Experts Group"),
+            new (typeof(ImageFile), "jp2", "JP2: Joint Photographic Experts Group (JPEG 2000)"),
+            //new (typeof(ImageFile), "tga", "TGA: Truevision"),
+            new (typeof(ImageFile), "tif", "TIF: Tag Image File Format"),
+            new (typeof(ImageFile), "tiff", "TIFF: Tag Image File Format"),
+            new (typeof(ImageFile), "bmp", "BMP: Bitmap"),
+            new (typeof(ImageFile), "pbm", "PBM: Portable Bitmap"),
+            new (typeof(ImageFile), "pgm", "PGM: Portable Greymap"),
+            //new (typeof(ImageFile), "gif", "GIF"),
+            new (typeof(ImageFile), "sr", "SR: Sun raster"),
+            new (typeof(ImageFile), "RAS", "RAS: Sun raster"),
         };
-        public override PrintParameterModifier[] PrintParameterModifiers { get; } = null;
-        
+        public override PrintParameterModifier[] PrintParameterModifiers => null;
+
         public override Size[] ThumbnailsOriginalSize { get; } = {
             Size.Empty,
             Size.Empty,

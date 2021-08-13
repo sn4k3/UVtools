@@ -689,7 +689,7 @@ namespace UVtools.Core.FileFormats
         public override FileFormatType FileType => FileFormatType.Binary;
 
         public override FileExtension[] FileExtensions { get; } = {
-            new ("phz", "Chitubox PHZ"),
+            new (typeof(PHZFile), "phz", "Chitubox PHZ"),
         };
 
         public override PrintParameterModifier[] PrintParameterModifiers { get; } =

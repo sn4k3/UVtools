@@ -261,10 +261,10 @@ namespace UVtools.Core.FileFormats
         public override FileFormatType FileType => FileFormatType.Binary;
 
         public override FileExtension[] FileExtensions { get; } = {
-            new ("lgs", "Longer Orange 10"),
-            new ("lgs30", "Longer Orange 30"),
-            new ("lgs120", "Longer Orange 120"),
-            new ("lgs4k", "Longer Orange 4k"),
+            new (typeof(LGSFile), "lgs", "Longer Orange 10"),
+            new (typeof(LGSFile), "lgs30", "Longer Orange 30"),
+            new (typeof(LGSFile), "lgs120", "Longer Orange 120"),
+            new (typeof(LGSFile), "lgs4k", "Longer Orange 4k"),
         };
 
         public override PrintParameterModifier[] PrintParameterModifiers { get; } =

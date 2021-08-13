@@ -18,6 +18,11 @@ namespace UVtools.Core.FileFormats
     {
         #region Properties
         /// <summary>
+        /// Stores a specific Type that should be used to create this FileExtension instance
+        /// </summary>
+        public Type FileFormatType { get; }
+
+        /// <summary>
         /// Gets the extension name without the dot (.)
         /// </summary>
         public string Extension { get; }
@@ -26,6 +31,8 @@ namespace UVtools.Core.FileFormats
         /// Gets the extension description
         /// </summary>
         public string Description { get; }
+
+        public bool IsVisible { get; }
 
         /// <summary>
         /// Gets a tag object
@@ -43,13 +50,17 @@ namespace UVtools.Core.FileFormats
         /// <summary>
         /// Constructor
         /// </summary>
+        /// <param name="fileFormatType">The exact <see cref="FileFormat"/> type</param>
         /// <param name="extension">The extension name without the dot (.)</param>
         /// <param name="description">The extension description</param>
+        /// <param name="isVisible">True if this extension is visible on open dialog filters</param>
         /// <param name="tag">Tag object</param>
-        public FileExtension(string extension, string description, object tag = null)
+        public FileExtension(Type fileFormatType, string extension, string description, bool isVisible = true, object tag = null)
         {
+            FileFormatType = fileFormatType;
             Extension = extension;
             Description = description;
+            IsVisible = isVisible;
             Tag = tag;
         }
         #endregion

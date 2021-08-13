@@ -148,7 +148,7 @@ namespace UVtools.Core.FileFormats
         public override FileFormatType FileType => FileFormatType.Binary;
 
         public override FileExtension[] FileExtensions { get; } = {
-            new ("gr1", "GR1 Workshop")
+            new (typeof(GR1File), "gr1", "GR1 Workshop")
         };
 
         public override PrintParameterModifier[] PrintParameterModifiers { get; } =

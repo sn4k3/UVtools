@@ -252,7 +252,7 @@ namespace UVtools.Core.FileFormats
         public override FileFormatType FileType => FileFormatType.Binary;
 
         public override FileExtension[] FileExtensions { get; } = {
-            new ("osla", "Open SLA universal binary file"),
+            new (typeof(OSLAFile), "osla", "Open SLA universal binary file"),
             //new ("omsla", "Open mSLA universal binary file"),
             //new ("odlp", "Open DLP universal binary file"),
         };

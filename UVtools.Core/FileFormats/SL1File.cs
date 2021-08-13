@@ -310,8 +310,8 @@ namespace UVtools.Core.FileFormats
         public override FileFormatType FileType => FileFormatType.Archive;
 
         public override FileExtension[] FileExtensions { get; } = {
-            new("sl1", "PrusaSlicer SL1"),
-            new("sl1s", "PrusaSlicer SL1S Speed")
+            new(typeof(SL1File), "sl1", "PrusaSlicer SL1"),
+            new(typeof(SL1File), "sl1s", "PrusaSlicer SL1S Speed")
         };
         public override PrintParameterModifier[] PrintParameterModifiers { get; } = {
             PrintParameterModifier.BottomLayerCount,

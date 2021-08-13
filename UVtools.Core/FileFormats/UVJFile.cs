@@ -130,7 +130,7 @@ namespace UVtools.Core.FileFormats
         public override FileFormatType FileType => FileFormatType.Archive;
 
         public override FileExtension[] FileExtensions { get; } = {
-            new("uvj", "UVJ")
+            new(typeof(UVJFile), "uvj", "UVJ")
         };
 
         public override PrintParameterModifier[] PrintParameterModifiers { get; } = {

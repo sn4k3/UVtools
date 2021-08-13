@@ -152,7 +152,7 @@ namespace UVtools.Core.FileFormats
         public override FileFormatType FileType => FileFormatType.Archive;
 
         public override FileExtension[] FileExtensions { get; } = {
-            new("vda.zip", "Voxeldance Additive Zip")
+            new(typeof(VDAFile), "vda.zip", "Voxeldance Additive Zip")
         };
 
         public override uint ResolutionX
