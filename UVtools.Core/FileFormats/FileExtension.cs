@@ -18,7 +18,7 @@ namespace UVtools.Core.FileFormats
     {
         #region Properties
         /// <summary>
-        /// Stores a specific Type that should be used to create this FileExtension instance
+        /// Stores a specific <see cref="FileFormat"/> type that should be used to create with this FileExtension instance
         /// </summary>
         public Type FileFormatType { get; }
 
@@ -114,9 +114,11 @@ namespace UVtools.Core.FileFormats
 
         #region Methods
 
-        public FileFormat GetFileFormat() =>
-            FileFormat.FindByExtension(Extension);
-    
+        public FileFormat GetFileFormat(bool createNewInstance = false) =>
+            FileFormatType is null
+                ? FileFormat.FindByExtension(Extension, false, createNewInstance)
+                : FileFormat.FindByType(FileFormatType, createNewInstance);
+
         public static FileExtension Find(string extension)=>
             FileFormat.FindExtension(extension);
         #endregion
