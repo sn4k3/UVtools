@@ -9,7 +9,6 @@
 // https://github.com/cbiffle/catibo/blob/master/doc/cbddlp-ctb.adoc
 
 using System;
-using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -1655,7 +1654,6 @@ namespace UVtools.Core.FileFormats
             {
                 using var fs = new BinaryReader(new FileStream(fileFullPath, FileMode.Open, FileAccess.Read));
                 var magic = fs.ReadUInt32();
-
                 return magic is MAGIC_CBDDLP or MAGIC_CBT or MAGIC_CBTv4;
             }
             catch (Exception e)

@@ -1957,11 +1957,16 @@ namespace UVtools.Core.FileFormats
             }
         }
 
+        /// <summary>
+        /// Check if a file is valid and can be processed before read it against the <see cref="FileFormat"/> decode scheme
+        /// </summary>
+        /// <param name="fileFullPath"></param>
+        /// <returns></returns>
         public virtual bool CanProcess(string fileFullPath)
         {
             if (fileFullPath is null) return false;
             if (!File.Exists(fileFullPath)) return false;
-
+            //if (!IsExtensionValid(fileFullPath, true)) return false;
             return true;
         }
 
