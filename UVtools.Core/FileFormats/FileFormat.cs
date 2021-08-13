@@ -364,7 +364,12 @@ namespace UVtools.Core.FileFormats
         /// <returns><see cref="FileFormat"/> object or null if not found</returns>
         public static FileFormat FindByType(Type type, bool createNewInstance = false)
         {
-            return (from t in AvailableFormats where type == t.GetType() select createNewInstance ? (FileFormat) Activator.CreateInstance(type) : t).FirstOrDefault();
+            var fileFormat = AvailableFormats.FirstOrDefault(format => format.GetType() == type);
+            if (fileFormat is null) return null;
+            return createNewInstance
+                ? (FileFormat)Activator.CreateInstance(type)
+                : fileFormat;
+            //return (from t in AvailableFormats where type == t.GetType() select createNewInstance ? (FileFormat) Activator.CreateInstance(type) : t).FirstOrDefault();
         }
 
         public static string GetFileNameStripExtensions(string filepath)
