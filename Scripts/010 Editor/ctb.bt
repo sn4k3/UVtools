@@ -142,13 +142,13 @@ if(header.Version >= 4)
         float Unknown1 <fgcolor=cWhite, bgcolor=cBlue>; // 2955.996 or uint:1161347054 but changes
         uint Unknown2 <fgcolor=cWhite, bgcolor=cBlue>; // 73470 but changes
         uint Unknown3 <fgcolor=cWhite, bgcolor=cBlue>; // 5?
-        uint Unknown4 <fgcolor=cWhite, bgcolor=cBlue>; // 139 but changes
+        uint LastLayerIndex <fgcolor=cWhite, bgcolor=cBlue>; // LayerCount-1
         uint Padding3 <fgcolor=cWhite, bgcolor=cBlue>;
         uint Padding4 <fgcolor=cWhite, bgcolor=cBlue>;
         uint Padding5 <fgcolor=cWhite, bgcolor=cBlue>;
         uint Padding6 <fgcolor=cWhite, bgcolor=cBlue>;
-        uint Unknown5 <fgcolor=cWhite, bgcolor=cBlue>; // 23047 but changes
-        uint Unknown6 <fgcolor=cWhite, bgcolor=cBlue>; // 320 but changes
+        uint DisclaimerAddress <fgcolor=cWhite, bgcolor=cBlue>; 
+        uint DisclaimerLength <fgcolor=cWhite, bgcolor=cBlue>; // 320
         ubyte Reserved[384] <fgcolor=cYellow, bgcolor=cBlue>;
     } printParametersV4;
 }
