@@ -149,7 +149,7 @@ if(header.Version >= 4)
         uint Padding6 <fgcolor=cWhite, bgcolor=cBlue>;
         uint Unknown5 <fgcolor=cWhite, bgcolor=cBlue>; // 23047 but changes
         uint Unknown6 <fgcolor=cWhite, bgcolor=cBlue>; // 320 but changes
-        ubyte Reserved[420] <fgcolor=cWhite, bgcolor=cBlue>;
+        ubyte Reserved[384] <fgcolor=cYellow, bgcolor=cBlue>;
     } printParametersV4;
 }
 
