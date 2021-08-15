@@ -584,7 +584,7 @@ namespace UVtools.Core.FileFormats
         #endregion
 
         #region Layer
-        public class LayerData
+        public class LayerDef
         {
             /// <summary>
             /// Gets the build platform Z position for this layer, measured in millimeters.
@@ -619,14 +619,14 @@ namespace UVtools.Core.FileFormats
             [Ignore] public byte[] EncodedRle { get; set; }
             [Ignore] public ChituboxFile Parent { get; set; }
 
-            public LayerData()
+            public LayerDef()
             {
             }
 
-            public LayerData(ChituboxFile parent, uint layerIndex)
+            public LayerDef(ChituboxFile parent, Layer layer)
             {
                 Parent = parent;
-                RefreshLayerData(parent, layerIndex);
+                RefreshLayerData(layer);
 
                 if (parent.HeaderSettings.Version >= 3 && Unknown2 == 0)
                 {
@@ -634,11 +634,11 @@ namespace UVtools.Core.FileFormats
                 }
             }
 
-            public void RefreshLayerData(ChituboxFile parent, uint layerIndex)
+            public void RefreshLayerData(Layer layer)
             {
-                LayerPositionZ = parent[layerIndex].PositionZ;
-                LayerExposure = parent[layerIndex].ExposureTime;
-                LightOffSeconds = parent[layerIndex].LightOffDelay;
+                LayerPositionZ = layer.PositionZ;
+                LayerExposure = layer.ExposureTime;
+                LightOffSeconds = layer.LightOffDelay;
             }
 
 
@@ -951,12 +951,12 @@ namespace UVtools.Core.FileFormats
 
         }
 
-        public class LayerDataEx
+        public class LayerDefEx
         {
             /// <summary>
             /// Gets a copy of layer data definition
             /// </summary>
-            [FieldOrder(0)] public LayerData LayerData { get; set; } = new();
+            [FieldOrder(0)] public LayerDef LayerDef { get; set; } = new();
 
             /// <summary>
             /// Gets the total size of ctbImageInfo and Image data
@@ -974,43 +974,43 @@ namespace UVtools.Core.FileFormats
             [FieldOrder(11)] public float RestTimeAfterRetract { get; set; } // 28672 v3?
             [FieldOrder(12)] public float LightPWM { get; set; }
 
-            public LayerDataEx()
+            public LayerDefEx()
             {
             }
 
-            public LayerDataEx(LayerData layerData, uint layerIndex)
+            public LayerDefEx(LayerDef layerDef, Layer layer)
             {
-                LayerData = layerData;
-                if (layerData.Parent is not null)
+                LayerDef = layerDef;
+                if (layerDef.Parent is not null && layer is not null)
                 {
-                    LiftHeight = layerData.Parent[layerIndex].LiftHeight;
-                    LiftSpeed = layerData.Parent[layerIndex].LiftSpeed;
-                    RetractSpeed = layerData.Parent[layerIndex].RetractSpeed;
-                    LightPWM = layerData.Parent[layerIndex].LightPWM;
+                    LiftHeight = layer.LiftHeight;
+                    LiftSpeed = layer.LiftSpeed;
+                    RetractSpeed = layer.RetractSpeed;
+                    LightPWM = layer.LightPWM;
 
-                    if (layerData.Parent.HeaderSettings.Version >= 4)
+                    if (layerDef.Parent.HeaderSettings.Version >= 4)
                     {
-                        LiftHeight2 = layerData.Parent[layerIndex].LiftHeight2;
-                        LiftSpeed2 = layerData.Parent[layerIndex].LiftSpeed2;
+                        LiftHeight2 = layer.LiftHeight2;
+                        LiftSpeed2 = layer.LiftSpeed2;
 
-                        RetractHeight2 = layerData.Parent[layerIndex].RetractHeight2;
-                        RetractSpeed2 = layerData.Parent[layerIndex].RetractSpeed2;
+                        RetractHeight2 = layer.RetractHeight2;
+                        RetractSpeed2 = layer.RetractSpeed2;
 
-                        RestTimeAfterRetract = layerData.Parent[layerIndex].WaitTimeBeforeCure;
-                        RestTimeBeforeLift = layerData.Parent[layerIndex].WaitTimeAfterCure;
-                        RestTimeAfterLift = layerData.Parent[layerIndex].WaitTimeAfterLift;
+                        RestTimeAfterRetract = layer.WaitTimeBeforeCure;
+                        RestTimeBeforeLift = layer.WaitTimeAfterCure;
+                        RestTimeAfterLift = layer.WaitTimeAfterLift;
                     }
                 }
 
-                if (layerData.DataSize > 0)
+                if (layerDef.DataSize > 0)
                 {
-                    TotalSize = (uint) (Helpers.Serializer.SizeOf(this) + layerData.DataSize);
+                    TotalSize = (uint) (Helpers.Serializer.SizeOf(this) + layerDef.DataSize);
                 }
             }
 
             public override string ToString()
             {
-                return $"{nameof(LayerData)}: {LayerData}, {nameof(TotalSize)}: {TotalSize}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(LiftHeight2)}: {LiftHeight2}, {nameof(LiftSpeed2)}: {LiftSpeed2}, {nameof(RetractSpeed)}: {RetractSpeed}, {nameof(RetractHeight2)}: {RetractHeight2}, {nameof(RetractSpeed2)}: {RetractSpeed2}, {nameof(RestTimeBeforeLift)}: {RestTimeBeforeLift}, {nameof(RestTimeAfterLift)}: {RestTimeAfterLift}, {nameof(RestTimeAfterRetract)}: {RestTimeAfterRetract}, {nameof(LightPWM)}: {LightPWM}";
+                return $"{nameof(LayerDef)}: {LayerDef}, {nameof(TotalSize)}: {TotalSize}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(LiftHeight2)}: {LiftHeight2}, {nameof(LiftSpeed2)}: {LiftSpeed2}, {nameof(RetractSpeed)}: {RetractSpeed}, {nameof(RetractHeight2)}: {RetractHeight2}, {nameof(RetractSpeed2)}: {RetractSpeed2}, {nameof(RestTimeBeforeLift)}: {RestTimeBeforeLift}, {nameof(RestTimeAfterLift)}: {RestTimeAfterLift}, {nameof(RestTimeAfterRetract)}: {RestTimeAfterRetract}, {nameof(LightPWM)}: {LightPWM}";
             }
         }
 
@@ -1078,9 +1078,9 @@ namespace UVtools.Core.FileFormats
 
         public Preview[] Previews { get; protected internal set; }
 
-        public LayerData[,] LayerDefinitions { get; private set; }
+        public LayerDef[,] LayerDefinitions { get; private set; }
 
-        public Dictionary<string, LayerData> LayersHash { get; } = new();
+        public Dictionary<string, LayerDef> LayersHash { get; } = new();
 
         public override FileFormatType FileType => FileFormatType.Binary;
 
@@ -1710,6 +1710,22 @@ namespace UVtools.Core.FileFormats
                 {
                     HeaderSettings.Magic = MAGIC_CTB;
                 }
+
+                if (FileEndsWith(".v2.ctb"))
+                {
+                    HeaderSettings.Magic = MAGIC_CTB;
+                    HeaderSettings.Version = 2;
+                }
+                else if (FileEndsWith(".v3.ctb"))
+                {
+                    HeaderSettings.Magic = MAGIC_CTB;
+                    HeaderSettings.Version = 3;
+                }
+                else if (FileEndsWith(".v4.ctb"))
+                {
+                    HeaderSettings.Magic = MAGIC_CTBv4;
+                    HeaderSettings.Version = 4;
+                }
             }
             else if (FileEndsWith(".cbddlp"))
             {
@@ -1717,18 +1733,7 @@ namespace UVtools.Core.FileFormats
             }
             HeaderSettings.PrintParametersSize = (uint)Helpers.Serializer.SizeOf(PrintParametersSettings);
 
-            if (FileEndsWith(".v2.ctb"))
-            {
-                HeaderSettings.Version = 2;
-            }
-            else if (FileEndsWith(".v3.ctb"))
-            {
-                HeaderSettings.Version = 3;
-            }
-            else if (FileEndsWith(".v4.ctb"))
-            {
-                HeaderSettings.Version = 4;
-            }
+            
 
             SanitizeProperties();
             if (IsCtbFile)
@@ -1747,7 +1752,7 @@ namespace UVtools.Core.FileFormats
             }
 
             uint currentOffset = (uint)Helpers.Serializer.SizeOf(HeaderSettings);
-            LayerDefinitions = new LayerData[HeaderSettings.AntiAliasLevel, HeaderSettings.LayerCount];
+            LayerDefinitions = new LayerDef[HeaderSettings.AntiAliasLevel, HeaderSettings.LayerCount];
             using var outputFile = new FileStream(fileFullPath, FileMode.Create, FileAccess.Write);
             outputFile.Seek((int) currentOffset, SeekOrigin.Begin);
 
@@ -1806,7 +1811,7 @@ namespace UVtools.Core.FileFormats
             }
 
             HeaderSettings.LayersDefinitionOffsetAddress = currentOffset;
-            uint layerDataCurrentOffset = currentOffset + (uint)Helpers.Serializer.SizeOf(new LayerData()) * HeaderSettings.LayerCount * HeaderSettings.AntiAliasLevel;
+            uint layerDataCurrentOffset = currentOffset + (uint)Helpers.Serializer.SizeOf(new LayerDef()) * HeaderSettings.LayerCount * HeaderSettings.AntiAliasLevel;
                 
             progress.ItemCount *= 2 * HeaderSettings.AntiAliasLevel;
 
@@ -1816,11 +1821,11 @@ namespace UVtools.Core.FileFormats
                 Parallel.For(0, LayerCount, /*new ParallelOptions{MaxDegreeOfParallelism = 1},*/ layerIndex =>
                 {
                     if (progress.Token.IsCancellationRequested) return;
-                    LayerData layerData = new(this, (uint) layerIndex);
+                    var layerDef = new LayerDef(this, this[layerIndex]);
                     using (var image = this[layerIndex].LayerMat)
                     {
-                        layerData.Encode(image, aaIndex, (uint) layerIndex);
-                        LayerDefinitions[aaIndex, layerIndex] = layerData;
+                        layerDef.Encode(image, aaIndex, (uint) layerIndex);
+                        LayerDefinitions[aaIndex, layerIndex] = layerDef;
                     }
 
                     progress.LockAndIncrement();
@@ -1829,41 +1834,41 @@ namespace UVtools.Core.FileFormats
                 for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
                 {
                     progress.Token.ThrowIfCancellationRequested();
-                    var layerData = LayerDefinitions[aaIndex, layerIndex];
-                    LayerData layerDataHash = null;
+                    var layerDef = LayerDefinitions[aaIndex, layerIndex];
+                    LayerDef layerDefHash = null;
 
                     if (CanHash)
                     {
-                        string hash = Helpers.ComputeSHA1Hash(layerData.EncodedRle);
-                        if (LayersHash.TryGetValue(hash, out layerDataHash))
+                        string hash = Helpers.ComputeSHA1Hash(layerDef.EncodedRle);
+                        if (LayersHash.TryGetValue(hash, out layerDefHash))
                         {
-                            layerData.DataAddress = layerDataHash.DataAddress;
-                            layerData.DataSize = layerDataHash.DataSize;
+                            layerDef.DataAddress = layerDefHash.DataAddress;
+                            layerDef.DataSize = layerDefHash.DataSize;
                         }
                         else
                         {
-                            LayersHash.Add(hash, layerData);
+                            LayersHash.Add(hash, layerDef);
                         }
                     }
 
-                    if (layerDataHash is null)
+                    if (layerDefHash is null)
                     {
-                        layerData.DataAddress = layerDataCurrentOffset;
+                        layerDef.DataAddress = layerDataCurrentOffset;
                         outputFile.Seek(layerDataCurrentOffset, SeekOrigin.Begin);
 
                         if (HeaderSettings.Version >= 3)
                         {
-                            var layerDataEx = new LayerDataEx(layerData, layerIndex);
+                            var layerDataEx = new LayerDefEx(layerDef, this[layerIndex]);
                             layerDataCurrentOffset += (uint)Helpers.Serializer.SizeOf(layerDataEx);
-                            layerData.DataAddress = layerDataCurrentOffset;
+                            layerDef.DataAddress = layerDataCurrentOffset;
                             Helpers.SerializeWriteFileStream(outputFile, layerDataEx);
                         }
 
-                        layerDataCurrentOffset += outputFile.WriteBytes(layerData.EncodedRle);
+                        layerDataCurrentOffset += outputFile.WriteBytes(layerDef.EncodedRle);
                     }
                         
                     outputFile.Seek(currentOffset, SeekOrigin.Begin);
-                    currentOffset += Helpers.SerializeWriteFileStream(outputFile, layerData);
+                    currentOffset += Helpers.SerializeWriteFileStream(outputFile, layerDef);
 
                     progress++;
                 }
@@ -1959,8 +1964,8 @@ namespace UVtools.Core.FileFormats
                 Debug.WriteLine(PrintParametersV4Settings);
             }
 
-            LayerDefinitions = new LayerData[HeaderSettings.AntiAliasLevel, HeaderSettings.LayerCount];
-            var LayerDefinitionsEx = HeaderSettings.Version >= 3 ? new LayerDataEx[HeaderSettings.LayerCount] : null;
+            LayerDefinitions = new LayerDef[HeaderSettings.AntiAliasLevel, HeaderSettings.LayerCount];
+            var LayerDefinitionsEx = HeaderSettings.Version >= 3 ? new LayerDefEx[HeaderSettings.LayerCount] : null;
 
             uint layerOffset = HeaderSettings.LayersDefinitionOffsetAddress;
 
@@ -1973,31 +1978,31 @@ namespace UVtools.Core.FileFormats
                 for (uint layerIndex = 0; layerIndex < HeaderSettings.LayerCount; layerIndex++)
                 {
                     inputFile.Seek(layerOffset, SeekOrigin.Begin);
-                    LayerData layerData = Helpers.Deserialize<LayerData>(inputFile);
-                    layerData.Parent = this;
-                    LayerDefinitions[aaIndex, layerIndex] = layerData;
+                    LayerDef layerDef = Helpers.Deserialize<LayerDef>(inputFile);
+                    layerDef.Parent = this;
+                    LayerDefinitions[aaIndex, layerIndex] = layerDef;
 
-                    layerOffset += (uint) Helpers.Serializer.SizeOf(layerData);
+                    layerOffset += (uint) Helpers.Serializer.SizeOf(layerDef);
                     Debug.Write($"LAYER {layerIndex} -> ");
-                    Debug.WriteLine(layerData);
+                    Debug.WriteLine(layerDef);
 
-                    layerData.EncodedRle = new byte[layerData.DataSize];
+                    layerDef.EncodedRle = new byte[layerDef.DataSize];
                         
 
                     if (HeaderSettings.Version < 3)
                     {
-                        inputFile.Seek(layerData.DataAddress, SeekOrigin.Begin);
+                        inputFile.Seek(layerDef.DataAddress, SeekOrigin.Begin);
                     }
                     else
                     {
-                        inputFile.Seek(layerData.DataAddress - 84, SeekOrigin.Begin);
-                        LayerDefinitionsEx[layerIndex] = Helpers.Deserialize<LayerDataEx>(inputFile);
+                        inputFile.Seek(layerDef.DataAddress - 84, SeekOrigin.Begin);
+                        LayerDefinitionsEx[layerIndex] = Helpers.Deserialize<LayerDefEx>(inputFile);
                         Debug.Write($"LAYER {layerIndex} -> ");
                         Debug.WriteLine(LayerDefinitionsEx[layerIndex]);
                     }
 
 
-                    inputFile.Read(layerData.EncodedRle, 0, (int) layerData.DataSize);
+                    inputFile.Read(layerDef.EncodedRle, 0, (int) layerDef.DataSize);
                         
                     progress++;
                     progress.Token.ThrowIfCancellationRequested();
@@ -2086,11 +2091,11 @@ namespace UVtools.Core.FileFormats
             {
                 for (uint layerIndex = 0; layerIndex < HeaderSettings.LayerCount; layerIndex++)
                 {
-                    LayerDefinitions[aaIndex, layerIndex].RefreshLayerData(this, layerIndex);
+                    var layer = this[layerIndex];
+                    LayerDefinitions[aaIndex, layerIndex].RefreshLayerData(layer);
 
                     outputFile.Seek(layerOffset, SeekOrigin.Begin);
-                    layerOffset +=
-                        Helpers.SerializeWriteFileStream(outputFile, LayerDefinitions[aaIndex, layerIndex]);
+                    layerOffset += Helpers.SerializeWriteFileStream(outputFile, LayerDefinitions[aaIndex, layerIndex]);
                 }
             }
 
@@ -2099,7 +2104,7 @@ namespace UVtools.Core.FileFormats
                 for (uint layerIndex = 0; layerIndex < HeaderSettings.LayerCount; layerIndex++)
                 {
                     outputFile.Seek(LayerDefinitions[0, layerIndex].DataAddress - 84, SeekOrigin.Begin);
-                    Helpers.SerializeWriteFileStream(outputFile, new LayerDataEx(LayerDefinitions[0, layerIndex], layerIndex));
+                    Helpers.SerializeWriteFileStream(outputFile, new LayerDefEx(LayerDefinitions[0, layerIndex], this[layerIndex]));
                 }
             }
 
