@@ -30,9 +30,9 @@ namespace UVtools.Core.FileFormats
         public const byte USED_VERSION = 3; // 318570521
 
         public const uint MAGIC_CBDDLP = 0x12FD0019; // 318570521
-        public const uint MAGIC_CBT = 0x12FD0086; // 318570630
-        public const uint MAGIC_CBTv4 = 0x12FD0106; // 318570758
-        public const uint MAGIC_CBT_ENCRYPTED = 0x12FD0107; // 318570759
+        public const uint MAGIC_CTB = 0x12FD0086; // 318570630
+        public const uint MAGIC_CTBv4 = 0x12FD0106; // 318570758
+        public const uint MAGIC_CTB_ENCRYPTED = 0x12FD0107; // 318570759
         public const ushort REPEATRGB15MASK = 0x20;
 
         public const byte RLE8EncodingLimit = 0x7d; // 125;
@@ -41,7 +41,7 @@ namespace UVtools.Core.FileFormats
         public const uint ENCRYPTYION_MODE_CBDDLP = 0x8;  // 0 or 8
         public const uint ENCRYPTYION_MODE_CTBv2 = 0xF; // 15 for ctb v2 files
         public const uint ENCRYPTYION_MODE_CTBv3 = 536870927; // 536870927 for ctb v3 files (This allow per layer settings, while 15 don't)
-        public const uint ENCRYPTYION_MODE_CTBv4 = 1073741839; // 1073741839 for ctb v3 files (This allow per layer settings, while 15 don't)
+        public const uint ENCRYPTYION_MODE_CTBv4 = 1073741839; // 1073741839 for ctb v4 files (This allow per layer settings, while 15 don't)
 
         private const string CTBv4_DISCLAIMER = "Layout and record format for the ctb and cbddlp file types are the copyrighted programs or codes of CBD Technology (China) Inc..The Customer or User shall not in any manner reproduce, distribute, modify, decompile, disassemble, decrypt, extract, reverse engineer, lease, assign, or sublicense the said programs or codes.";
         private const ushort CTBv4_DISCLAIMER_SIZE = 320;
@@ -363,73 +363,73 @@ namespace UVtools.Core.FileFormats
         #region PrintParametersV4
         public sealed class PrintParametersV4
         {
-            [FieldOrder(1)]
+            [FieldOrder(0)]
             [FieldLength(CTBv4_DISCLAIMER_SIZE)] 
             public string Disclaimer { get; set; } = CTBv4_DISCLAIMER; // 320 bytes
 
-            [FieldOrder(2)]
+            [FieldOrder(1)]
             public float BottomRetractSpeed { get; set; }
 
-            [FieldOrder(3)]
+            [FieldOrder(2)]
             public float BottomRetractSpeed2 { get; set; }
 
-            [FieldOrder(4)]
+            [FieldOrder(3)]
             public uint Padding1 { get; set; }
 
-            [FieldOrder(5)]
+            [FieldOrder(4)]
             public float Four1 { get; set; } = 4; // 4?
 
-            [FieldOrder(6)]
+            [FieldOrder(5)]
             public uint Padding2 { get; set; }
 
-            [FieldOrder(7)]
+            [FieldOrder(6)]
             public float Four2 { get; set; } = 4; // ?
 
-            [FieldOrder(8)]
+            [FieldOrder(7)]
             public float RestTimeAfterRetract { get; set; }
 
-            [FieldOrder(9)]
+            [FieldOrder(8)]
             public float RestTimeAfterLift { get; set; }
 
-            [FieldOrder(10)]
+            [FieldOrder(9)]
             public float RestTimeBeforeLift { get; set; }
 
-            [FieldOrder(11)]
+            [FieldOrder(10)]
             public float BottomRetractHeight2 { get; set; }
 
-            [FieldOrder(12)]
+            [FieldOrder(11)]
             public float Unknown1 { get; set; } // 2955.996 or uint:1161347054 but changes
 
-            [FieldOrder(13)]
+            [FieldOrder(12)]
             public uint Unknown2 { get; set; } // 73470 but changes
 
-            [FieldOrder(14)]
+            [FieldOrder(13)]
             public uint Unknown3 { get; set; } = 5; // 5?
 
-            [FieldOrder(15)]
+            [FieldOrder(14)]
             public uint Unknown4 { get; set; } // 139 but changes
 
-            [FieldOrder(16)]
+            [FieldOrder(15)]
             public uint Padding3 { get; set; }
 
-            [FieldOrder(17)]
+            [FieldOrder(16)]
             public uint Padding4 { get; set; }
 
-            [FieldOrder(18)]
+            [FieldOrder(17)]
             public uint Padding5 { get; set; }
 
-            [FieldOrder(19)]
+            [FieldOrder(18)]
             public uint Padding6 { get; set; }
 
-            [FieldOrder(20)]
+            [FieldOrder(19)]
             public uint Unknown5 { get; set; } // 23047 but changes
 
-            [FieldOrder(21)]
+            [FieldOrder(20)]
             public uint Unknown6 { get; set; } // 320 but changes
 
-            [FieldOrder(22)]
-            [FieldCount(420)] 
-            private byte[] Reserved { get; set; } = new byte[420]; // 420 bytes
+            [FieldOrder(21)]
+            [FieldLength(384)]
+            public byte[] Reserved { get; set; } = new byte[384]; // 384 bytes
 
             public override string ToString()
             {
@@ -644,7 +644,7 @@ namespace UVtools.Core.FileFormats
 
             public Mat Decode(uint layerIndex, bool consumeData = true)
             {
-                var image = Parent.IsCbtFile ? DecodeCbtImage(layerIndex) : DecodeCbddlpImage(Parent, layerIndex);
+                var image = Parent.IsCtbFile ? DecodeCtbImage(layerIndex) : DecodeCbddlpImage(Parent, layerIndex);
 
                 if (consumeData)
                     EncodedRle = null;
@@ -708,7 +708,7 @@ namespace UVtools.Core.FileFormats
                 return image;
             }
 
-            private Mat DecodeCbtImage(uint layerIndex)
+            private Mat DecodeCtbImage(uint layerIndex)
             {
                 var mat = EmguExtensions.InitMat(Parent.Resolution);
                 //var span = mat.GetBytePointer();
@@ -786,7 +786,7 @@ namespace UVtools.Core.FileFormats
 
             public byte[] Encode(Mat image, byte aaIndex, uint layerIndex)
             {
-                return Parent.IsCbtFile ? EncodeCbtImage(image, layerIndex) : EncodeCbddlpImage(image, aaIndex);
+                return Parent.IsCtbFile ? EncodeCtbImage(image, layerIndex) : EncodeCbddlpImage(image, aaIndex);
             }
 
             public unsafe byte[] EncodeCbddlpImage(Mat image, byte bit)
@@ -852,7 +852,7 @@ namespace UVtools.Core.FileFormats
                 return EncodedRle;
             }
 
-            private unsafe byte[] EncodeCbtImage(Mat image, uint layerIndex)
+            private unsafe byte[] EncodeCtbImage(Mat image, uint layerIndex)
             {
                 List<byte> rawData = new();
                 byte color = byte.MaxValue >> 1;
@@ -1088,7 +1088,7 @@ namespace UVtools.Core.FileFormats
             new(typeof(ChituboxFile), "ctb", $"Chitubox CTBv{USED_VERSION}"),
             //new(typeof(ChituboxFile), "v2.ctb", "Chitubox CTBv2"),
             //new(typeof(ChituboxFile), "v3.ctb", "Chitubox CTBv3"),
-            new(typeof(ChituboxFile), "v4.ctb", "Chitubox CTBv4"),
+            new(typeof(ChituboxFile), "v4.ctb", "Chitubox CTBv4", false),
             //new(typeof(ChituboxFile), "encrypted.ctb", "Chitubox encrypted CTB"),
             new(typeof(ChituboxFile), "cbddlp", "Chitubox CBDDLP"),
             new(typeof(ChituboxFile), "photon", "Chitubox Photon"),
@@ -1169,7 +1169,7 @@ namespace UVtools.Core.FileFormats
         public override PrintParameterModifier[] PrintParameterPerLayerModifiers {
             get
             {
-                if (!IsCbtFile) return null; // Only ctb files
+                if (!IsCtbFile) return null; // Only ctb files
                 if (HeaderSettings.Version == 3)
                 {
                     return new[]
@@ -1284,10 +1284,10 @@ namespace UVtools.Core.FileFormats
 
         public override byte AntiAliasing
         {
-            get => (byte) (IsCbtFile ? SlicerInfoSettings.AntiAliasLevel : HeaderSettings.AntiAliasLevel);
+            get => (byte) (IsCtbFile ? SlicerInfoSettings.AntiAliasLevel : HeaderSettings.AntiAliasLevel);
             set
             {
-                if (IsCbtFile)
+                if (IsCtbFile)
                 {
                     SlicerInfoSettings.AntiAliasLevel = value;
                 }
@@ -1430,18 +1430,18 @@ namespace UVtools.Core.FileFormats
             set => base.BottomLiftHeight = PrintParametersSettings.BottomLiftHeight = (float)Math.Round(value, 2);
         }
 
-        public override float LiftHeight
-        {
-            get => PrintParametersSettings.LiftHeight;
-            set => base.LiftHeight = PrintParametersSettings.LiftHeight = (float)Math.Round(value, 2);
-        }
-
         public override float BottomLiftSpeed
         {
             get => PrintParametersSettings.BottomLiftSpeed;
             set => base.BottomLiftSpeed = PrintParametersSettings.BottomLiftSpeed = (float)Math.Round(value, 2);
         }
 
+        public override float LiftHeight
+        {
+            get => PrintParametersSettings.LiftHeight;
+            set => base.LiftHeight = PrintParametersSettings.LiftHeight = (float)Math.Round(value, 2);
+        }
+        
         public override float LiftSpeed
         {
             get => PrintParametersSettings.LiftSpeed;
@@ -1458,16 +1458,6 @@ namespace UVtools.Core.FileFormats
             }
         }
 
-        public override float LiftHeight2
-        {
-            get => HeaderSettings.Version >= 4 ? SlicerInfoSettings.LiftHeight2 : 0;
-            set
-            {
-                if (HeaderSettings.Version < 4) return;
-                base.LiftHeight2 = SlicerInfoSettings.LiftHeight2 = (float)Math.Round(value, 2);
-            }
-        }
-
         public override float BottomLiftSpeed2
         {
             get => HeaderSettings.Version >= 4 ? SlicerInfoSettings.BottomLiftSpeed2 : 0;
@@ -1475,6 +1465,16 @@ namespace UVtools.Core.FileFormats
             {
                 if (HeaderSettings.Version < 4) return;
                 base.BottomLiftSpeed2 = SlicerInfoSettings.BottomLiftSpeed2 = (float)Math.Round(value, 2);
+            }
+        }
+
+        public override float LiftHeight2
+        {
+            get => HeaderSettings.Version >= 4 ? SlicerInfoSettings.LiftHeight2 : 0;
+            set
+            {
+                if (HeaderSettings.Version < 4) return;
+                base.LiftHeight2 = SlicerInfoSettings.LiftHeight2 = (float)Math.Round(value, 2);
             }
         }
 
@@ -1526,14 +1526,8 @@ namespace UVtools.Core.FileFormats
             set
             {
                 if (HeaderSettings.Version < 4) return;
-                base.BottomRetractSpeed2 = PrintParametersV4Settings.BottomRetractHeight2 = (float)Math.Round(value, 2);
+                base.BottomRetractHeight2 = PrintParametersV4Settings.BottomRetractHeight2 = (float)Math.Round(value, 2);
             }
-        }
-
-        public override float RetractHeight2
-        {
-            get => HeaderSettings.Version >= 4 ? SlicerInfoSettings.RetractHeight2 : 0;
-            set => base.RetractSpeed2 = SlicerInfoSettings.RetractHeight2 = (float)Math.Round(value, 2);
         }
 
         public override float BottomRetractSpeed2
@@ -1544,6 +1538,12 @@ namespace UVtools.Core.FileFormats
                 if (HeaderSettings.Version < 4) return;
                 base.BottomRetractSpeed2 = PrintParametersV4Settings.BottomRetractSpeed2 = (float)Math.Round(value, 2);
             }
+        }
+
+        public override float RetractHeight2
+        {
+            get => HeaderSettings.Version >= 4 ? SlicerInfoSettings.RetractHeight2 : 0;
+            set => base.RetractHeight2 = SlicerInfoSettings.RetractHeight2 = (float)Math.Round(value, 2);
         }
 
         public override float RetractSpeed2
@@ -1621,9 +1621,9 @@ namespace UVtools.Core.FileFormats
         }
 
         public bool IsCbddlpFile => HeaderSettings.Magic == MAGIC_CBDDLP;
-        public bool IsCbtFile => HeaderSettings.Magic is MAGIC_CBT or MAGIC_CBTv4;
+        public bool IsCtbFile => HeaderSettings.Magic is MAGIC_CTB or MAGIC_CTBv4;
 
-        public bool CanHash => !IsCbtFile && HeaderSettings.Version <= 2;
+        public bool CanHash => !IsCtbFile && HeaderSettings.Version <= 2;
         #endregion
 
         #region Constructors
@@ -1654,7 +1654,7 @@ namespace UVtools.Core.FileFormats
             {
                 using var fs = new BinaryReader(new FileStream(fileFullPath, FileMode.Open, FileAccess.Read));
                 var magic = fs.ReadUInt32();
-                return magic is MAGIC_CBDDLP or MAGIC_CBT or MAGIC_CBTv4;
+                return magic is MAGIC_CBDDLP or MAGIC_CTB or MAGIC_CTBv4;
             }
             catch (Exception e)
             {
@@ -1666,7 +1666,7 @@ namespace UVtools.Core.FileFormats
 
         public void SanitizeProperties()
         {
-            if (IsCbtFile)
+            if (IsCtbFile)
             {
                 if (SlicerInfoSettings.AntiAliasLevel <= 1)
                 {
@@ -1704,7 +1704,17 @@ namespace UVtools.Core.FileFormats
         {
             LayersHash.Clear();
 
-            HeaderSettings.Magic = FileEndsWith(".ctb") ? MAGIC_CBT : MAGIC_CBDDLP;
+            if (FileEndsWith(".ctb"))
+            {
+                if (HeaderSettings.Magic is not MAGIC_CTB and not MAGIC_CTBv4)
+                {
+                    HeaderSettings.Magic = MAGIC_CTB;
+                }
+            }
+            else if (FileEndsWith(".cbddlp"))
+            {
+                HeaderSettings.Magic = MAGIC_CBDDLP;
+            }
             HeaderSettings.PrintParametersSize = (uint)Helpers.Serializer.SizeOf(PrintParametersSettings);
 
             if (FileEndsWith(".v2.ctb"))
@@ -1721,7 +1731,7 @@ namespace UVtools.Core.FileFormats
             }
 
             SanitizeProperties();
-            if (IsCbtFile)
+            if (IsCtbFile)
             {
                 if (HeaderSettings.EncryptionKey == 0)
                 {
@@ -1880,11 +1890,7 @@ namespace UVtools.Core.FileFormats
             //HeaderSettings = Helpers.Serializer.Deserialize<Header>(InputFile.ReadBytes(Helpers.Serializer.SizeOf(typeof(Header))));
             HeaderSettings = Helpers.Deserialize<Header>(inputFile);
 
-            /*if (HeaderSettings.Magic == MAGIC_CBTv4)
-            {
-                throw new FileLoadException("CTB v4 not supported!", fileFullPath);
-            }*/
-            if (HeaderSettings.Magic is not MAGIC_CBDDLP and not MAGIC_CBT and not MAGIC_CBTv4)
+            if (HeaderSettings.Magic is not MAGIC_CBDDLP and not MAGIC_CTB and not MAGIC_CTBv4)
             {
                 throw new FileLoadException($"Not a valid PHOTON nor CBDDLP nor CTB file! Magic Value: {HeaderSettings.Magic}", fileFullPath);
             }
