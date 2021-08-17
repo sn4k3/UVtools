@@ -73,6 +73,31 @@ namespace UVtools.Core.FileFormats
         public const float MaximumLayerHeight = 0.20f;
 
         private const ushort QueueTimerPrintTime = 250; // ms
+
+        public const string DATATYPE_PNG = "PNG";
+        public const string DATATYPE_JPG = "JPG";
+        public const string DATATYPE_JPEG = "JPEG";
+        public const string DATATYPE_JP2 = "JP2";
+        public const string DATATYPE_BMP = "BMP";
+        public const string DATATYPE_TIF = "TIF";
+        public const string DATATYPE_TIFF = "TIFF";
+        public const string DATATYPE_PPM = "PPM";
+        public const string DATATYPE_PMG = "PMG";
+        public const string DATATYPE_SR = "SR";
+        public const string DATATYPE_RAS = "RAS";
+
+        public const string DATATYPE_RGB555 = "RGB555";
+        public const string DATATYPE_RGB565 = "RGB565";
+        public const string DATATYPE_RGB555_BE = "RGB555-BE";
+        public const string DATATYPE_RGB565_BE = "RGB565-BE";
+        public const string DATATYPE_RGB888 = "RGB888";
+
+
+        public const string DATATYPE_BGR555 = "BGR555";
+        public const string DATATYPE_BGR565 = "BGR565";
+        public const string DATATYPE_BGR555_BE = "BGR555-BE";
+        public const string DATATYPE_BGR565_BE = "BGR565-BE";
+        public const string DATATYPE_BGR888 = "BGR888";
         #endregion 
 
         #region Enums
@@ -299,6 +324,7 @@ namespace UVtools.Core.FileFormats
                 {
                     foreach (var fileExtension in AvailableFormats[i].FileExtensions)
                     {
+                        if(!fileExtension.IsVisibleOnFileFilters) continue;
                         result[0].Value.Add(fileExtension.Extension);
                         result.Add(new KeyValuePair<string, List<string>>(fileExtension.Description, new List<string>
                         {
@@ -410,11 +436,259 @@ namespace UVtools.Core.FileFormats
             //if (file.EndsWith(TemporaryFileAppend)) file = Path.GetFileNameWithoutExtension(file);
             return PathExtensions.GetFileNameStripExtensions(filepath, AllFileExtensionsString.OrderByDescending(s => s.Length).ToList(), out strippedExtension);
         }
+
+
+        public static byte[] EncodeImage(string dataType, Mat mat)
+        {
+            dataType = dataType.ToUpperInvariant();
+            if (dataType
+                is DATATYPE_PNG
+                or DATATYPE_JPG
+                or DATATYPE_JPEG
+                or DATATYPE_JP2
+                or DATATYPE_BMP
+                or DATATYPE_TIF
+                or DATATYPE_TIFF
+                or DATATYPE_PPM
+                or DATATYPE_PMG
+                or DATATYPE_SR
+                or DATATYPE_RAS
+                )
+            {
+                return CvInvoke.Imencode($".{dataType.ToLowerInvariant()}", mat);
+            }
+
+            if (dataType
+                is DATATYPE_RGB555
+                or DATATYPE_RGB565
+                or DATATYPE_RGB555_BE
+                or DATATYPE_RGB565_BE
+                or DATATYPE_RGB888
+
+                or DATATYPE_BGR555
+                or DATATYPE_BGR565
+                or DATATYPE_BGR555_BE
+                or DATATYPE_BGR565_BE
+                or DATATYPE_BGR888
+            )
+            {
+                var bytesPerPixel = dataType is "RGB888" or "BGR888" ? 3 : 2;
+                var bytes = new byte[mat.Width * mat.Height * bytesPerPixel];
+                uint index = 0;
+                var span = mat.GetDataByteSpan();
+                for (int i = 0; i < span.Length;)
+                {
+                    byte b = span[i++];
+                    byte g;
+                    byte r;
+
+                    if (mat.NumberOfChannels == 1) // 8 bit safe-guard
+                    {
+                        r = g = b;
+                    }
+                    else
+                    {
+                        g = span[i++];
+                        r = span[i++];
+                    }
+
+                    if (mat.NumberOfChannels == 4) i++; // skip alpha
+
+                    switch (dataType)
+                    {
+                        case DATATYPE_RGB555:
+                            var rgb555 = (ushort)(((r & 0b11111000) << 7) | ((g & 0b11111000) << 2) | (b >> 3));
+                            BitExtensions.ToBytesLittleEndian(rgb555, bytes, index);
+                            index += 2;
+                            break;
+                        case DATATYPE_RGB565:
+                            var rgb565 = (ushort)(((r & 0b11111000) << 8) | ((g & 0b11111100) << 3) | (b >> 3));
+                            BitExtensions.ToBytesLittleEndian(rgb565, bytes, index);
+                            index += 2;
+                            break;
+                        case DATATYPE_RGB555_BE:
+                            var rgb555Be = (ushort)(((r & 0b11111000) << 7) | ((g & 0b11111000) << 2) | (b >> 3));
+                            BitExtensions.ToBytesBigEndian(rgb555Be, bytes, index);
+                            index += 2;
+                            break;
+                        case DATATYPE_RGB565_BE:
+                            var rgb565Be = (ushort)(((r & 0b11111000) << 8) | ((g & 0b11111100) << 3) | (b >> 3));
+                            BitExtensions.ToBytesBigEndian(rgb565Be, bytes, index);
+                            index += 2;
+                            break;
+                        case DATATYPE_RGB888:
+                            bytes[index++] = r;
+                            bytes[index++] = g;
+                            bytes[index++] = b;
+                            break;
+                        case DATATYPE_BGR555:
+                            var bgr555 = (ushort)(((b & 0b11111000) << 7) | ((g & 0b11111000) << 2) | (r >> 3));
+                            BitExtensions.ToBytesLittleEndian(bgr555, bytes, index);
+                            index += 2;
+                            break;
+                        case DATATYPE_BGR565:
+                            var bgr565 = (ushort)(((b & 0b11111000) << 8) | ((g & 0b11111100) << 3) | (r >> 3));
+                            BitExtensions.ToBytesLittleEndian(bgr565, bytes, index);
+                            index += 2;
+                            break;
+                        case DATATYPE_BGR555_BE:
+                            var bgr555Be = (ushort)(((b & 0b11111000) << 7) | ((g & 0b11111000) << 2) | (r >> 3));
+                            BitExtensions.ToBytesBigEndian(bgr555Be, bytes, index);
+                            index += 2;
+                            break;
+                        case DATATYPE_BGR565_BE:
+                            var bgr565Be = (ushort)(((b & 0b11111000) << 8) | ((g & 0b11111100) << 3) | (r >> 3));
+                            BitExtensions.ToBytesBigEndian(bgr565Be, bytes, index);
+                            index += 2;
+                            break;
+                        case DATATYPE_BGR888:
+                            bytes[index++] = b;
+                            bytes[index++] = g;
+                            bytes[index++] = r;
+                            break;
+                    }
+                }
+
+                return bytes;
+            }
+
+            throw new NotSupportedException($"The encode type: {dataType} is not supported.");
+        }
+
+        public static Mat DecodeImage(string dataType, byte[] bytes, Size resolution)
+        {
+            if (dataType
+                is DATATYPE_PNG
+                or DATATYPE_JPG
+                or DATATYPE_JPEG
+                or DATATYPE_JP2
+                or DATATYPE_BMP
+                or DATATYPE_TIF
+                or DATATYPE_TIFF
+                or DATATYPE_PPM
+                or DATATYPE_PMG
+                or DATATYPE_SR
+                or DATATYPE_RAS
+                )
+            {
+                var mat = new Mat();
+                CvInvoke.Imdecode(bytes, ImreadModes.AnyColor, mat);
+                return mat;
+            }
+
+            if (dataType
+                is DATATYPE_RGB555
+                or DATATYPE_RGB565
+                or DATATYPE_RGB555_BE
+                or DATATYPE_RGB565_BE
+                or DATATYPE_RGB888
+
+                or DATATYPE_BGR555
+                or DATATYPE_BGR565
+                or DATATYPE_BGR555_BE
+                or DATATYPE_BGR565_BE
+                or DATATYPE_BGR888
+                )
+            {
+                var mat = new Mat(resolution, DepthType.Cv8U, 3);
+                var span = mat.GetDataByteSpan();
+                var pixel = 0;
+                for (int i = 0; i < bytes.Length;)
+                {
+                    switch (dataType)
+                    {
+                        case DATATYPE_RGB555:
+                            ushort rgb555 = BitExtensions.ToUShortLittleEndian(bytes, i);
+                            // 0b0rrrrrgggggbbbbb
+                            span[pixel++] = (byte)((rgb555 & 0b00000000_00011111) << 3); // b
+                            span[pixel++] = (byte)((rgb555 & 0b00000011_11100000) >> 2); // g
+                            span[pixel++] = (byte)((rgb555 & 0b01111100_00000000) >> 7); // r
+                            /*span[pixel++] = (byte)((rgb555 << 3) & 0b11111000); // b
+                            span[pixel++] = (byte)((rgb555 >> 2) & 0b11111000); // g
+                            span[pixel++] = (byte)((rgb555 >> 7) & 0b11111000); // r*/
+                            i += 2;
+                            break;
+                        case DATATYPE_RGB565:
+                            // 0brrrrrggggggbbbbb
+                            ushort rgb565 = BitExtensions.ToUShortLittleEndian(bytes, i);
+                            span[pixel++] = (byte)((rgb565 & 0b00000000_00011111) << 3); // b
+                            span[pixel++] = (byte)((rgb565 & 0b00000111_11100000) >> 3); // g
+                            span[pixel++] = (byte)((rgb565 & 0b11111000_00000000) >> 8); // r
+                            i += 2;
+                            break;
+                        case DATATYPE_RGB555_BE:
+                            ushort rgb555Be = BitExtensions.ToUShortBigEndian(bytes, i);
+                            span[pixel++] = (byte)((rgb555Be & 0b00000000_00011111) << 3); // b
+                            span[pixel++] = (byte)((rgb555Be & 0b00000011_11100000) >> 2); // g
+                            span[pixel++] = (byte)((rgb555Be & 0b01111100_00000000) >> 7); // r
+                            i += 2;
+                            break;
+                        case DATATYPE_RGB565_BE:
+                            ushort rgb565Be = BitExtensions.ToUShortBigEndian(bytes, i);
+                            span[pixel++] = (byte)((rgb565Be & 0b00000000_00011111) << 3); // b
+                            span[pixel++] = (byte)((rgb565Be & 0b00000111_11100000) >> 3); // g
+                            span[pixel++] = (byte)((rgb565Be & 0b11111000_00000000) >> 8); // r
+                            i += 2;
+                            break;
+                        case DATATYPE_RGB888:
+                            span[pixel++] = bytes[i + 2]; // b
+                            span[pixel++] = bytes[i + 1]; // g
+                            span[pixel++] = bytes[i];     // r
+                            i += 3;
+                            break;
+                        case DATATYPE_BGR555:
+                            ushort bgr555 = BitExtensions.ToUShortLittleEndian(bytes, i);
+                            span[pixel++] = (byte)((bgr555 & 0b01111100_00000000) >> 7); // b
+                            span[pixel++] = (byte)((bgr555 & 0b00000011_11100000) >> 2); // g
+                            span[pixel++] = (byte)((bgr555 & 0b00000000_00011111) << 3); // r
+                            i += 2;
+                            break;
+                        case DATATYPE_BGR565:
+                            ushort bgr565 = BitExtensions.ToUShortLittleEndian(bytes, i);
+                            span[pixel++] = (byte)((bgr565 & 0b11111000_00000000) >> 8); // b
+                            span[pixel++] = (byte)((bgr565 & 0b00000111_11100000) >> 3); // g
+                            span[pixel++] = (byte)((bgr565 & 0b00000000_00011111) << 3); // r
+                            i += 2;
+                            break;
+                        case DATATYPE_BGR555_BE:
+                            ushort bgr555Be = BitExtensions.ToUShortBigEndian(bytes, i);
+                            span[pixel++] = (byte)((bgr555Be & 0b01111100_00000000) >> 7); // b
+                            span[pixel++] = (byte)((bgr555Be & 0b00000011_11100000) >> 2); // g
+                            span[pixel++] = (byte)((bgr555Be & 0b00000000_00011111) << 3); // r
+                            i += 2;
+                            break;
+                        case DATATYPE_BGR565_BE:
+                            ushort bgr565Be = BitExtensions.ToUShortBigEndian(bytes, i);
+                            span[pixel++] = (byte)((bgr565Be & 0b11111000_00000000) >> 8); // b
+                            span[pixel++] = (byte)((bgr565Be & 0b00000111_11100000) >> 3); // g
+                            span[pixel++] = (byte)((bgr565Be & 0b00000000_00011111) << 3); // r
+                            i += 2;
+                            break;
+                        case DATATYPE_BGR888:
+                            span[pixel++] = bytes[i]; // b
+                            span[pixel++] = bytes[i + 1]; // g
+                            span[pixel++] = bytes[i + 2]; // r
+                            i += 3;
+                            break;
+                    }
+                }
+                return mat;
+            }
+
+            throw new NotSupportedException($"The decode type: {dataType} is not supported.");
+        }
+
+        public static Mat DecodeImage(string dataType, byte[] bytes, uint resolutionX = 0, uint resolutionY = 0)
+            => DecodeImage(dataType, bytes, new Size((int)resolutionX, (int)resolutionY));
         #endregion
 
         #region Members
+        public object Mutex = new();
+
         private bool _haveModifiedLayers;
         private LayerManager _layerManager;
+
+        private byte _antiAliasing = 1;
 
         private ushort _bottomLayerCount = DefaultBottomLayerCount;
 
@@ -467,8 +741,6 @@ namespace UVtools.Core.FileFormats
         #endregion
 
         #region Properties
-
-        public object Mutex = new();
 
         /// <summary>
         /// Gets the file format type
@@ -752,6 +1024,7 @@ namespace UVtools.Core.FileFormats
             {
                 RaisePropertyChanged(nameof(Xppmm));
                 RaisePropertyChanged(nameof(Ppmm));
+                RaisePropertyChanged(nameof(PpmmMax));
             }
         }
 
@@ -765,6 +1038,7 @@ namespace UVtools.Core.FileFormats
             {
                 RaisePropertyChanged(nameof(Yppmm));
                 RaisePropertyChanged(nameof(Ppmm));
+                RaisePropertyChanged(nameof(PpmmMax));
             }
         }
 
@@ -782,14 +1056,19 @@ namespace UVtools.Core.FileFormats
         }
 
         /// <summary>
+        /// Gets the maximum (Width or Height) pixels per mm 
+        /// </summary>
+        public float PpmmMax => Ppmm.Max();
+
+        /// <summary>
         /// Gets the pixel width in millimeters
         /// </summary>
-        public float PixelWidth => DisplayWidth > 0 ? (float) Math.Round(DisplayWidth / ResolutionX, 3) : 0;
+        public float PixelWidth => DisplayWidth > 0 && ResolutionX > 0 ? (float) Math.Round(DisplayWidth / ResolutionX, 3) : 0;
 
         /// <summary>
         /// Gets the pixel height in millimeters
         /// </summary>
-        public float PixelHeight => DisplayHeight > 0 ? (float) Math.Round(DisplayHeight / ResolutionY, 3) : 0;
+        public float PixelHeight => DisplayHeight > 0 && ResolutionY > 0 ? (float) Math.Round(DisplayHeight / ResolutionY, 3) : 0;
 
         /// <summary>
         /// Gets the pixel size in millimeters
@@ -844,7 +1123,11 @@ namespace UVtools.Core.FileFormats
         /// <summary>
         /// Gets or sets the AntiAliasing level
         /// </summary>
-        public abstract byte AntiAliasing { get; set; }
+        public virtual byte AntiAliasing
+        {
+            get => _antiAliasing;
+            set => RaiseAndSet(ref _antiAliasing, value);
+        }
 
         /// <summary>
         /// Gets Layer Height in mm
@@ -862,7 +1145,7 @@ namespace UVtools.Core.FileFormats
         /// </summary>
         public virtual float PrintHeight
         {
-            get => LayerCount == 0 ? 0 : this[LayerCount - 1]?.PositionZ ?? 0;
+            get => LayerCount == 0 ? 0 : LastLayer?.PositionZ ?? 0;
             set => RaisePropertyChanged();
         }
 
@@ -881,7 +1164,7 @@ namespace UVtools.Core.FileFormats
         /// </summary>
         public virtual uint LayerCount
         {
-            get => LayerManager?.LayerCount ?? 0;
+            get => _layerManager?.LayerCount ?? 0;
             set {
                 RaisePropertyChanged();
                 RaisePropertyChanged(nameof(NormalLayerCount));
@@ -1019,10 +1302,10 @@ namespace UVtools.Core.FileFormats
         /// </summary>
         public float BottomLiftHeightTotal
         {
-            get => (float)Math.Round(_bottomLiftHeight + _bottomLiftHeight2);
+            get => (float)Math.Round(BottomLiftHeight + BottomLiftHeight2, 2);
             set
             {
-                BottomLiftHeight = value;
+                BottomLiftHeight = (float)Math.Round(value, 2);
                 BottomLiftHeight2 = 0;
             }
         }
@@ -1033,10 +1316,10 @@ namespace UVtools.Core.FileFormats
         /// </summary>
         public float LiftHeightTotal
         {
-            get => (float)Math.Round(_liftHeight + _liftHeight2);
+            get => (float)Math.Round(LiftHeight + LiftHeight2, 2);
             set
             {
-                LiftHeight = value;
+                LiftHeight = (float)Math.Round(value, 2);
                 LiftHeight2 = 0;
             }
         }
@@ -1195,7 +1478,7 @@ namespace UVtools.Core.FileFormats
         /// <summary>
         /// Gets the bottom retract height in mm
         /// </summary>
-        public float BottomRetractHeight => (float)Math.Round(BottomLiftHeightTotal - _bottomRetractHeight2);
+        public float BottomRetractHeight => (float)Math.Round(BottomLiftHeightTotal - BottomRetractHeight2, 2);
 
         /// <summary>
         /// Gets the speed in mm/min for the bottom retracts
@@ -1213,7 +1496,7 @@ namespace UVtools.Core.FileFormats
         /// <summary>
         /// Gets the retract height in mm
         /// </summary>
-        public float RetractHeight => (float)Math.Round(LiftHeightTotal - _retractHeight2);
+        public float RetractHeight => (float)Math.Round(LiftHeightTotal - RetractHeight2, 2);
         
         /// <summary>
         /// Gets the speed in mm/min for the retracts
@@ -1407,19 +1690,32 @@ namespace UVtools.Core.FileFormats
                 var haveBottomLiftHeight2 = CanUseBottomLiftHeight2;
                 var haveLiftHeight2 = CanUseLiftHeight2;
 
+                var haveBottomLiftSpeed2 = CanUseBottomLiftSpeed2;
+                var haveLiftSpeed2 = CanUseLiftSpeed2;
+
                 if (!haveBottomLiftHeight && !haveLiftHeight && !haveBottomLiftHeight2 && !haveLiftHeight2) return str;
 
                 // Sequence 1
                 if (haveBottomLiftHeight)
                 {
                     str += BottomLiftHeight.ToString(CultureInfo.InvariantCulture);
+                    if (haveBottomLiftHeight2 && BottomLiftHeight2 > 0)
+                    {
+                        str += $"+{BottomLiftHeight2.ToString(CultureInfo.InvariantCulture)}";
+                    }
                 }
+               
                 if (haveLiftHeight)
                 {
                     if (!string.IsNullOrEmpty(str)) str += '/';
                     str += LiftHeight.ToString(CultureInfo.InvariantCulture);
-                }
 
+                    if (haveLiftHeight2 && LiftHeight2 > 0)
+                    {
+                        str += $"+{LiftHeight2.ToString(CultureInfo.InvariantCulture)}";
+                    }
+                }
+               
                 if (string.IsNullOrEmpty(str)) return str;
 
                 str += "mm @ ";
@@ -1429,16 +1725,24 @@ namespace UVtools.Core.FileFormats
                 if (haveBottomLiftSpeed)
                 {
                     str += BottomLiftSpeed.ToString(CultureInfo.InvariantCulture);
+                    if (haveBottomLiftSpeed2 && haveBottomLiftHeight2 && BottomLiftHeight2 > 0)
+                    {
+                        str += $"+{BottomLiftSpeed2.ToString(CultureInfo.InvariantCulture)}";
+                    }
                 }
                 if (haveLiftSpeed)
                 {
                     if (haveBottomLiftSpeed) str += '/';
                     str += LiftSpeed.ToString(CultureInfo.InvariantCulture);
+                    if (haveLiftSpeed2 && haveLiftHeight2 && LiftHeight2 > 0)
+                    {
+                        str += $"+{LiftSpeed2.ToString(CultureInfo.InvariantCulture)}";
+                    }
                 }
 
                 str += "mm/min";
 
-                // Sequence 2
+                /*// Sequence 2
                 if (haveBottomLiftHeight2)
                 {
                     str += $"\n2th: {BottomLiftHeight2.ToString(CultureInfo.InvariantCulture)}";
@@ -1465,7 +1769,7 @@ namespace UVtools.Core.FileFormats
                     str += LiftSpeed2.ToString(CultureInfo.InvariantCulture);
                 }
 
-                str += "mm/min";
+                str += "mm/min";*/
 
                 return str;
             }
@@ -1492,11 +1796,19 @@ namespace UVtools.Core.FileFormats
                 if (haveBottomRetractHeight)
                 {
                     str += BottomRetractHeight.ToString(CultureInfo.InvariantCulture);
+                    if (haveBottomRetractHeight2 && BottomRetractHeight2 > 0)
+                    {
+                        str += $"+{BottomRetractHeight2.ToString(CultureInfo.InvariantCulture)}";
+                    }
                 }
                 if (haveRetractHeight)
                 {
                     if (!string.IsNullOrEmpty(str)) str += '/';
                     str += RetractHeight.ToString(CultureInfo.InvariantCulture);
+                    if (haveRetractHeight2 && RetractHeight2 > 0)
+                    {
+                        str += $"+{RetractHeight2.ToString(CultureInfo.InvariantCulture)}";
+                    }
                 }
 
                 if (string.IsNullOrEmpty(str)) return str;
@@ -1507,17 +1819,25 @@ namespace UVtools.Core.FileFormats
                 if (haveBottomRetractSpeed)
                 {
                     str += BottomRetractSpeed.ToString(CultureInfo.InvariantCulture);
+                    if (haveBottomRetractSpeed2 && haveBottomRetractHeight2 && BottomRetractHeight2 > 0)
+                    {
+                        str += $"+{BottomRetractSpeed2.ToString(CultureInfo.InvariantCulture)}";
+                    }
                 }
                 if (haveRetractSpeed)
                 {
                     if (haveBottomRetractSpeed) str += '/';
                     str += RetractSpeed.ToString(CultureInfo.InvariantCulture);
+                    if (haveRetractSpeed2 && haveRetractHeight2 && RetractHeight2 > 0)
+                    {
+                        str += $"+{RetractSpeed2.ToString(CultureInfo.InvariantCulture)}";
+                    }
                 }
 
                 str += "mm/min";
 
                 // Sequence 2
-                if (haveBottomRetractHeight2)
+                /*if (haveBottomRetractHeight2)
                 {
                     str += $"\n2th: {BottomRetractHeight2.ToString(CultureInfo.InvariantCulture)}";
                 }
@@ -1541,7 +1861,7 @@ namespace UVtools.Core.FileFormats
                     str += RetractSpeed2.ToString(CultureInfo.InvariantCulture);
                 }
 
-                str += "mm/min";
+                str += "mm/min";*/
 
                 return str;
             }
@@ -1587,6 +1907,18 @@ namespace UVtools.Core.FileFormats
 
                 return str;
             }
+        }
+
+        public IEnumerable<IEnumerable<int>> BatchLayersIndexes(int batchSize = 0)
+        {
+            if (batchSize <= 0) batchSize = Environment.ProcessorCount * 10;
+            return MoreLinq.MoreEnumerable.Batch(Enumerable.Range(0, (int)LayerCount), batchSize);
+        }
+
+        public IEnumerable<IEnumerable<Layer>> BatchLayers(int batchSize = 0)
+        {
+            if (batchSize <= 0) batchSize = Environment.ProcessorCount * 10;
+            return MoreLinq.MoreEnumerable.Batch(this, batchSize);
         }
 
         #endregion
@@ -1723,8 +2055,13 @@ namespace UVtools.Core.FileFormats
             {
                 if (value <= 0)
                 {
-                    value = (float)Math.Round(this.Where(layer => layer is not null).Sum(layer => layer.MaterialMilliliters), 3); ;
+                    value = (float)Math.Round(this.Where(layer => layer is not null).Sum(layer => layer.MaterialMilliliters), 3);
                 }
+                else
+                {
+                    value = (float)Math.Round(value, 3);
+                }
+
                 RaiseAndSetIfChanged(ref _materialMilliliters, value);
             }
         }
@@ -2094,6 +2431,8 @@ namespace UVtools.Core.FileFormats
                     CvInvoke.Resize(Thumbnails[i], Thumbnails[i], ThumbnailsOriginalSize[i]);
                 }
             }
+
+            RaisePropertyChanged(nameof(Thumbnails));
         }
 
         /// <summary>
@@ -2112,6 +2451,7 @@ namespace UVtools.Core.FileFormats
                     CvInvoke.Resize(Thumbnails[i], Thumbnails[i], ThumbnailsOriginalSize[i]);
                 }
             }
+            RaisePropertyChanged(nameof(Thumbnails));
         }
 
         /// <summary>
@@ -2126,6 +2466,7 @@ namespace UVtools.Core.FileFormats
             {
                 CvInvoke.Resize(Thumbnails[index], Thumbnails[index], ThumbnailsOriginalSize[index]);
             }
+            RaisePropertyChanged(nameof(Thumbnails));
         }
 
         /// <summary>
@@ -3041,8 +3382,8 @@ namespace UVtools.Core.FileFormats
         /// </summary>
         public byte ValidateAntiAliasingLevel()
         {
-            if (AntiAliasing < 2) return 1;
-            if(AntiAliasing % 2 != 0) throw new ArgumentException("AntiAliasing must be multiples of 2, otherwise use 0 or 1 to disable it", nameof(AntiAliasing));
+            if (AntiAliasing <= 1) return 1;
+            //if(AntiAliasing % 2 != 0) throw new ArgumentException("AntiAliasing must be multiples of 2, otherwise use 0 or 1 to disable it", nameof(AntiAliasing));
             return AntiAliasing;
         }
 

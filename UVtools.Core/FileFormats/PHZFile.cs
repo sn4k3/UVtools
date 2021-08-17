@@ -422,17 +422,17 @@ namespace UVtools.Core.FileFormats
         #endregion
 
         #region Layer
-        public class LayerData
+        public class LayerDef
         {
             /// <summary>
             /// Gets the build platform Z position for this layer, measured in millimeters.
             /// </summary>
-            [FieldOrder(0)] public float LayerPositionZ      { get; set; }
+            [FieldOrder(0)] public float PositionZ      { get; set; }
 
             /// <summary>
             /// Gets the exposure time for this layer, in seconds.
             /// </summary>
-            [FieldOrder(1)] public float LayerExposure       { get; set; }
+            [FieldOrder(1)] public float ExposureTime       { get; set; }
 
             /// <summary>
             /// Gets how long to keep the light off after exposing this layer, in seconds.
@@ -457,21 +457,28 @@ namespace UVtools.Core.FileFormats
 
             [Ignore] public PHZFile Parent { get; set; }
 
-            public LayerData()
+            public LayerDef()
             {
             }
 
-            public LayerData(PHZFile parent, uint layerIndex)
+            public LayerDef(PHZFile parent, Layer layer)
             {
                 Parent = parent;
-                RefreshLayerData(layerIndex);
+                SetFrom(layer);
             }
 
-            public void RefreshLayerData(uint layerIndex)
+            public void SetFrom(Layer layer)
             {
-                LayerPositionZ = Parent[layerIndex].PositionZ;
-                LayerExposure = Parent[layerIndex].ExposureTime;
-                LightOffDelay = Parent[layerIndex].LightOffDelay;
+                PositionZ = layer.PositionZ;
+                ExposureTime = layer.ExposureTime;
+                LightOffDelay = layer.LightOffDelay;
+            }
+
+            public void CopyTo(Layer layer)
+            {
+                layer.PositionZ = PositionZ;
+                layer.ExposureTime = ExposureTime;
+                layer.LightOffDelay = LightOffDelay;
             }
 
             public unsafe Mat Decode(uint layerIndex, bool consumeData = true)
@@ -619,7 +626,7 @@ namespace UVtools.Core.FileFormats
 
             public override string ToString()
             {
-                return $"{nameof(LayerPositionZ)}: {LayerPositionZ}, {nameof(LayerExposure)}: {LayerExposure}, {nameof(LightOffDelay)}: {LightOffDelay}, {nameof(DataAddress)}: {DataAddress}, {nameof(DataSize)}: {DataSize}, {nameof(Unknown1)}: {Unknown1}, {nameof(Unknown2)}: {Unknown2}, {nameof(Unknown3)}: {Unknown3}, {nameof(Unknown4)}: {Unknown4}";
+                return $"{nameof(PositionZ)}: {PositionZ}, {nameof(ExposureTime)}: {ExposureTime}, {nameof(LightOffDelay)}: {LightOffDelay}, {nameof(DataAddress)}: {DataAddress}, {nameof(DataSize)}: {DataSize}, {nameof(Unknown1)}: {Unknown1}, {nameof(Unknown2)}: {Unknown2}, {nameof(Unknown3)}: {Unknown3}, {nameof(Unknown4)}: {Unknown4}";
             }
         }
         #endregion
@@ -682,9 +689,7 @@ namespace UVtools.Core.FileFormats
 
         public Preview[] Previews { get; protected internal set; }
 
-        public LayerData[] LayersDefinitions { get; private set; }
-
-        public Dictionary<string, LayerData> LayersHash { get; } = new ();
+        public LayerDef[] LayersDefinitions { get; private set; }
 
         public override FileFormatType FileType => FileFormatType.Binary;
 
@@ -788,11 +793,7 @@ namespace UVtools.Core.FileFormats
         public override byte AntiAliasing
         {
             get => (byte) HeaderSettings.AntiAliasLevelInfo;
-            set
-            {
-                HeaderSettings.AntiAliasLevelInfo = value.Clamp(1, 16);
-                RaisePropertyChanged();
-            }
+            set => base.AntiAliasing = (byte)(HeaderSettings.AntiAliasLevelInfo = value.Clamp(1, 16));
         }
 
         public override float LayerHeight
@@ -979,221 +980,201 @@ namespace UVtools.Core.FileFormats
 
         protected override void EncodeInternally(string fileFullPath, OperationProgress progress)
         {
-            LayersHash.Clear();
-
             /*if (HeaderSettings.EncryptionKey == 0)
             {
                 Random rnd = new Random();
                 HeaderSettings.EncryptionKey = (uint)rnd.Next(short.MaxValue, int.MaxValue);
             }*/
 
+            LayersDefinitions = new LayerDef[HeaderSettings.LayerCount];
+            using var outputFile = new FileStream(fileFullPath, FileMode.Create, FileAccess.Write);
+            outputFile.Seek(Helpers.Serializer.SizeOf(HeaderSettings), SeekOrigin.Begin);
 
-            uint currentOffset = (uint)Helpers.Serializer.SizeOf(HeaderSettings);
-            LayersDefinitions = new LayerData[HeaderSettings.LayerCount];
-            using (var outputFile = new FileStream(fileFullPath, FileMode.Create, FileAccess.Write))
+            for (byte i = 0; i < ThumbnailsCount; i++)
             {
-                outputFile.Seek((int) currentOffset, SeekOrigin.Begin);
+                var image = Thumbnails[i];
 
-                for (byte i = 0; i < ThumbnailsCount; i++)
+                var bytes = Preview.Encode(image);
+
+                if (bytes.Length == 0) continue;
+
+                if (i == (byte) FileThumbnailSize.Small)
                 {
-                    var image = Thumbnails[i];
-
-                    var bytes = Preview.Encode(image);
-
-                    if (bytes.Length == 0) continue;
-
-                    if (i == (byte) FileThumbnailSize.Small)
-                    {
-                        HeaderSettings.PreviewSmallOffsetAddress = currentOffset;
-                    }
-                    else
-                    {
-                        HeaderSettings.PreviewLargeOffsetAddress = currentOffset;
-                    }
-
-
-
-                    Preview preview = new()
-                    {
-                        ResolutionX = (uint) image.Width,
-                        ResolutionY = (uint) image.Height,
-                        ImageLength = (uint)bytes.Length,
-                    };
-
-                    currentOffset += (uint) Helpers.Serializer.SizeOf(preview);
-                    preview.ImageOffset = currentOffset;
-
-                    Helpers.SerializeWriteFileStream(outputFile, preview);
-
-                    currentOffset += (uint)bytes.Length;
-                    outputFile.WriteBytes(bytes);
+                    HeaderSettings.PreviewSmallOffsetAddress = (uint)outputFile.Position;
+                }
+                else
+                {
+                    HeaderSettings.PreviewLargeOffsetAddress = (uint)outputFile.Position;
                 }
 
-                if (HeaderSettings.MachineNameSize > 0)
-                {
-                    HeaderSettings.MachineNameAddress = currentOffset;
-                    var machineBytes = Encoding.ASCII.GetBytes(HeaderSettings.MachineName);
-                    outputFile.Write(machineBytes, 0, machineBytes.Length);
-                    currentOffset += (uint)machineBytes.Length;
-                }
 
-                Parallel.For(0, LayerCount, /*new ParallelOptions{MaxDegreeOfParallelism = 1},*/ layerIndex =>
+
+                Preview preview = new()
                 {
-                    if(progress.Token.IsCancellationRequested) return;
-                    LayerData layer = new(this, (uint) layerIndex);
-                    using (var image = this[layerIndex].LayerMat)
+                    ResolutionX = (uint) image.Width,
+                    ResolutionY = (uint) image.Height,
+                    ImageLength = (uint)bytes.Length,
+                };
+
+                preview.ImageOffset = (uint)(outputFile.Position + Helpers.Serializer.SizeOf(preview));
+
+                Helpers.SerializeWriteFileStream(outputFile, preview);
+
+                outputFile.WriteBytes(bytes);
+            }
+
+            if (HeaderSettings.MachineNameSize > 0)
+            {
+                HeaderSettings.MachineNameAddress = (uint)outputFile.Position;
+                var machineBytes = Encoding.ASCII.GetBytes(HeaderSettings.MachineName);
+                outputFile.WriteBytes(machineBytes);
+            }
+
+            progress.Reset(OperationProgress.StatusEncodeLayers, LayerCount);
+            var layersHash = new Dictionary<string, LayerDef>();
+            LayersDefinitions = new LayerDef[HeaderSettings.LayerCount];
+            HeaderSettings.LayersDefinitionOffsetAddress = (uint)outputFile.Position;
+            uint layerDefCurrentOffset = HeaderSettings.LayersDefinitionOffsetAddress;
+            uint layerDataCurrentOffset = HeaderSettings.LayersDefinitionOffsetAddress + (uint)Helpers.Serializer.SizeOf(new LayerDef()) * LayerCount;
+
+            foreach (var batch in BatchLayersIndexes())
+            {
+                Parallel.ForEach(batch, layerIndex =>
+                {
+                    if (progress.Token.IsCancellationRequested) return;
+                    using (var mat = this[layerIndex].LayerMat)
                     {
-                        layer.Encode(image, (uint) layerIndex);
-                        LayersDefinitions[layerIndex] = layer;
+                        LayersDefinitions[layerIndex] = new LayerDef(this, this[layerIndex]);
+                        LayersDefinitions[layerIndex].Encode(mat, (uint)layerIndex);
                     }
-
                     progress.LockAndIncrement();
                 });
 
-                progress.Reset(OperationProgress.StatusWritingFile, LayerCount);
-
-                HeaderSettings.LayersDefinitionOffsetAddress = currentOffset;
-                uint layerDataCurrentOffset = currentOffset + (uint) Helpers.Serializer.SizeOf(LayersDefinitions[0]) * LayerCount;
-                for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
+                foreach (var layerIndex in batch)
                 {
                     progress.Token.ThrowIfCancellationRequested();
-                    LayerData layerData = LayersDefinitions[layerIndex];
-                    LayerData layerDataHash = null;
+
+                    var layerDef = LayersDefinitions[layerIndex];
+                    LayerDef layerDefHash = null;
 
                     if (HeaderSettings.EncryptionKey == 0)
                     {
-                        string hash = Helpers.ComputeSHA1Hash(layerData.EncodedRle);
-                        if (LayersHash.TryGetValue(hash, out layerDataHash))
+                        string hash = Helpers.ComputeSHA1Hash(layerDef.EncodedRle);
+                        if (layersHash.TryGetValue(hash, out layerDefHash))
                         {
-                            layerData.DataAddress = layerDataHash.DataAddress;
-                            layerData.DataSize = layerDataHash.DataSize;
+                            layerDef.DataAddress = layerDefHash.DataAddress;
+                            layerDef.DataSize = layerDefHash.DataSize;
                         }
                         else
                         {
-                            LayersHash.Add(hash, layerData);
+                            layersHash.Add(hash, layerDef);
                         }
                     }
 
-                    if (ReferenceEquals(layerDataHash, null))
+                    if (layerDefHash is null)
                     {
-                        layerData.DataAddress = layerDataCurrentOffset;
+                        layerDef.DataAddress = layerDataCurrentOffset;
 
                         outputFile.Seek(layerDataCurrentOffset, SeekOrigin.Begin);
-                        layerDataCurrentOffset += outputFile.WriteBytes(layerData.EncodedRle);
+                        layerDataCurrentOffset += outputFile.WriteBytes(layerDef.EncodedRle);
                     }
 
 
-                    LayersDefinitions[layerIndex] = layerData;
+                    outputFile.Seek(layerDefCurrentOffset, SeekOrigin.Begin);
+                    layerDefCurrentOffset += Helpers.SerializeWriteFileStream(outputFile, layerDef);
 
-                    outputFile.Seek(currentOffset, SeekOrigin.Begin);
-                    currentOffset += Helpers.SerializeWriteFileStream(outputFile, layerData);
-                    progress++;
+                    layerDef.EncodedRle = null; // Free
                 }
-
-                outputFile.Seek(0, SeekOrigin.Begin);
-                Helpers.SerializeWriteFileStream(outputFile, HeaderSettings);
-
-                Debug.WriteLine("Encode Results:");
-                Debug.WriteLine(HeaderSettings);
-                Debug.WriteLine(Previews[0]);
-                Debug.WriteLine(Previews[1]);
-                Debug.WriteLine("-End-");
             }
+
+            outputFile.Seek(0, SeekOrigin.Begin);
+            Helpers.SerializeWriteFileStream(outputFile, HeaderSettings);
+
+            Debug.WriteLine("Encode Results:");
+            Debug.WriteLine(HeaderSettings);
+            Debug.WriteLine(Previews[0]);
+            Debug.WriteLine(Previews[1]);
+            Debug.WriteLine("-End-");
         }
 
         protected override void DecodeInternally(string fileFullPath, OperationProgress progress)
         {
-            using (var inputFile = new FileStream(fileFullPath, FileMode.Open, FileAccess.Read))
+            using var inputFile = new FileStream(fileFullPath, FileMode.Open, FileAccess.Read);
+            //HeaderSettings = Helpers.ByteToType<CbddlpFile.Header>(InputFile);
+            //HeaderSettings = Helpers.Serializer.Deserialize<Header>(InputFile.ReadBytes(Helpers.Serializer.SizeOf(typeof(Header))));
+            HeaderSettings = Helpers.Deserialize<Header>(inputFile);
+            if (HeaderSettings.Magic != MAGIC_PHZ)
             {
+                throw new FileLoadException("Not a valid PHZ file!", fileFullPath);
+            }
 
-                //HeaderSettings = Helpers.ByteToType<CbddlpFile.Header>(InputFile);
-                //HeaderSettings = Helpers.Serializer.Deserialize<Header>(InputFile.ReadBytes(Helpers.Serializer.SizeOf(typeof(Header))));
-                HeaderSettings = Helpers.Deserialize<Header>(inputFile);
-                if (HeaderSettings.Magic != MAGIC_PHZ)
+            HeaderSettings.AntiAliasLevel = 1;
+
+            progress.Reset(OperationProgress.StatusDecodePreviews, ThumbnailsCount);
+            Debug.Write("Header -> ");
+            Debug.WriteLine(HeaderSettings);
+
+            for (byte i = 0; i < ThumbnailsCount; i++)
+            {
+                uint offsetAddress = i == 0
+                    ? HeaderSettings.PreviewSmallOffsetAddress
+                    : HeaderSettings.PreviewLargeOffsetAddress;
+                if (offsetAddress == 0) continue;
+
+                inputFile.Seek(offsetAddress, SeekOrigin.Begin);
+                Previews[i] = Helpers.Deserialize<Preview>(inputFile);
+
+                Debug.Write($"Preview {i} -> ");
+                Debug.WriteLine(Previews[i]);
+
+                inputFile.Seek(Previews[i].ImageOffset, SeekOrigin.Begin);
+                byte[] rawImageData = new byte[Previews[i].ImageLength];
+                inputFile.Read(rawImageData, 0, (int) Previews[i].ImageLength);
+
+                Thumbnails[i] = Previews[i].Decode(rawImageData);
+                progress++;
+            }
+
+            if (HeaderSettings.MachineNameAddress > 0 && HeaderSettings.MachineNameSize > 0)
+            {
+                inputFile.Seek(HeaderSettings.MachineNameAddress, SeekOrigin.Begin);
+                byte[] buffer = new byte[HeaderSettings.MachineNameSize];
+                inputFile.Read(buffer, 0, (int) HeaderSettings.MachineNameSize);
+                HeaderSettings.MachineName = Encoding.ASCII.GetString(buffer);
+            }
+
+
+            LayerManager.Init(HeaderSettings.LayerCount);
+            LayersDefinitions = new LayerDef[HeaderSettings.LayerCount];
+
+            progress.Reset(OperationProgress.StatusDecodeLayers, HeaderSettings.LayerCount);
+            foreach (var batch in BatchLayersIndexes())
+            {
+                foreach (var layerIndex in batch)
                 {
-                    throw new FileLoadException("Not a valid PHZ file!", fileFullPath);
-                }
-
-                HeaderSettings.AntiAliasLevel = 1;
-
-                progress.Reset(OperationProgress.StatusDecodePreviews, ThumbnailsCount);
-                Debug.Write("Header -> ");
-                Debug.WriteLine(HeaderSettings);
-
-                for (byte i = 0; i < ThumbnailsCount; i++)
-                {
-                    uint offsetAddress = i == 0
-                        ? HeaderSettings.PreviewSmallOffsetAddress
-                        : HeaderSettings.PreviewLargeOffsetAddress;
-                    if (offsetAddress == 0) continue;
-
-                    inputFile.Seek(offsetAddress, SeekOrigin.Begin);
-                    Previews[i] = Helpers.Deserialize<Preview>(inputFile);
-
-                    Debug.Write($"Preview {i} -> ");
-                    Debug.WriteLine(Previews[i]);
-
-                    inputFile.Seek(Previews[i].ImageOffset, SeekOrigin.Begin);
-                    byte[] rawImageData = new byte[Previews[i].ImageLength];
-                    inputFile.Read(rawImageData, 0, (int) Previews[i].ImageLength);
-
-                    Thumbnails[i] = Previews[i].Decode(rawImageData);
-                    progress++;
-                }
-
-                if (HeaderSettings.MachineNameAddress > 0 && HeaderSettings.MachineNameSize > 0)
-                {
-                    inputFile.Seek(HeaderSettings.MachineNameAddress, SeekOrigin.Begin);
-                    byte[] buffer = new byte[HeaderSettings.MachineNameSize];
-                    inputFile.Read(buffer, 0, (int) HeaderSettings.MachineNameSize);
-                    HeaderSettings.MachineName = Encoding.ASCII.GetString(buffer);
-                }
-
-
-                LayersDefinitions = new LayerData[HeaderSettings.LayerCount];
-
-                uint layerOffset = HeaderSettings.LayersDefinitionOffsetAddress;
-
-                progress.Reset(OperationProgress.StatusGatherLayers, HeaderSettings.LayerCount);
-
-                for (uint layerIndex = 0; layerIndex < HeaderSettings.LayerCount; layerIndex++)
-                {
-                    inputFile.Seek(layerOffset, SeekOrigin.Begin);
-                    LayerData layerData = Helpers.Deserialize<LayerData>(inputFile);
-                    layerData.Parent = this;
-                    LayersDefinitions[layerIndex] = layerData;
-
-                    layerOffset += (uint) Helpers.Serializer.SizeOf(layerData);
-                    Debug.Write($"LAYER {layerIndex} -> ");
-                    Debug.WriteLine(layerData);
-
-                    layerData.EncodedRle = new byte[layerData.DataSize];
-                    inputFile.Seek(layerData.DataAddress, SeekOrigin.Begin);
-                    inputFile.Read(layerData.EncodedRle, 0, (int) layerData.DataSize);
-
-                    progress++;
                     progress.Token.ThrowIfCancellationRequested();
+
+                    var layerDef = Helpers.Deserialize<LayerDef>(inputFile);
+                    layerDef.Parent = this;
+                    LayersDefinitions[layerIndex] = layerDef;
+
+                    Debug.Write($"LAYER {layerIndex} -> ");
+                    Debug.WriteLine(layerDef);
+
+                    inputFile.SeekDoWorkAndRewind(layerDef.DataAddress, () =>
+                    {
+                        layerDef.EncodedRle = inputFile.ReadBytes(layerDef.DataSize);
+                    });
                 }
 
-                LayerManager.Init(HeaderSettings.LayerCount);
-
-                progress.Reset(OperationProgress.StatusDecodeLayers, HeaderSettings.LayerCount);
-
-                Parallel.For(0, LayerCount, layerIndex =>
+                Parallel.ForEach(batch, layerIndex =>
                 {
-                    if (progress.Token.IsCancellationRequested)
+                    if (progress.Token.IsCancellationRequested) return;
+                    using (var mat = LayersDefinitions[layerIndex].Decode((uint)layerIndex))
                     {
-                        return;
-                    }
-
-                    using (var image = LayersDefinitions[layerIndex].Decode((uint) layerIndex, true))
-                    {
-                        this[layerIndex] = new Layer((uint) layerIndex, image, LayerManager)
-                        {
-                            PositionZ = LayersDefinitions[layerIndex].LayerPositionZ,
-                            ExposureTime = LayersDefinitions[layerIndex].LayerExposure,
-                            LightOffDelay = LayersDefinitions[layerIndex].LightOffDelay,
-                        };
+                        var layer = new Layer((uint)layerIndex, mat, this);
+                        LayersDefinitions[layerIndex].CopyTo(layer);
+                        this[layerIndex] = layer;
                     }
 
                     progress.LockAndIncrement();
@@ -1219,26 +1200,24 @@ namespace UVtools.Core.FileFormats
                 FileFullPath = filePath;
             }
 
-            using (var outputFile = new FileStream(FileFullPath, FileMode.Open, FileAccess.Write))
-            {
-                outputFile.Seek(0, SeekOrigin.Begin);
-                Helpers.SerializeWriteFileStream(outputFile, HeaderSettings);
+            using var outputFile = new FileStream(FileFullPath, FileMode.Open, FileAccess.Write);
+            outputFile.Seek(0, SeekOrigin.Begin);
+            Helpers.SerializeWriteFileStream(outputFile, HeaderSettings);
 
-                /*if (HeaderSettings.MachineNameAddress > 0 && HeaderSettings.MachineNameSize > 0)
+            /*if (HeaderSettings.MachineNameAddress > 0 && HeaderSettings.MachineNameSize > 0)
                 {
                     outputFile.Seek(HeaderSettings.MachineNameAddress, SeekOrigin.Begin);
                     byte[] buffer = new byte[HeaderSettings.MachineNameSize];
                     outputFile.Write(Encoding.ASCII.GetBytes(HeaderSettings.MachineName), 0, (int)HeaderSettings.MachineNameSize);
                 }*/
 
-                uint layerOffset = HeaderSettings.LayersDefinitionOffsetAddress;
-                for (uint layerIndex = 0; layerIndex < HeaderSettings.LayerCount; layerIndex++)
-                {
-                    LayersDefinitions[layerIndex].RefreshLayerData(layerIndex);
-                    outputFile.Seek(layerOffset, SeekOrigin.Begin);
-                    Helpers.SerializeWriteFileStream(outputFile, LayersDefinitions[layerIndex]);
-                    layerOffset += (uint)Helpers.Serializer.SizeOf(LayersDefinitions[layerIndex]);
-                }
+            uint layerOffset = HeaderSettings.LayersDefinitionOffsetAddress;
+            for (uint layerIndex = 0; layerIndex < HeaderSettings.LayerCount; layerIndex++)
+            {
+                LayersDefinitions[layerIndex].SetFrom(this[layerIndex]);
+                outputFile.Seek(layerOffset, SeekOrigin.Begin);
+                Helpers.SerializeWriteFileStream(outputFile, LayersDefinitions[layerIndex]);
+                layerOffset += (uint)Helpers.Serializer.SizeOf(LayersDefinitions[layerIndex]);
             }
         }
 

@@ -24,8 +24,11 @@ namespace UVtools.WPF.Controls
                     "bmp",
                     "jpeg",
                     "jpg",
+                    "jp2",
                     "tif",
                     "tiff",
+                    "sr",
+                    "ras",
                 }
             },
         };

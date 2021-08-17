@@ -127,6 +127,25 @@ namespace UVtools.WPF
             }
         }
 
+        public static bool SelectFileOnExplorer(string filePath)
+        {
+            if (!File.Exists(filePath))
+            {
+                return false;
+            }
+            
+            if (OperatingSystem.IsWindows())
+            {
+                StartProcess("explorer.exe", $"/select,\"{filePath}\"");
+            }
+            else
+            {
+                StartProcess(Path.GetDirectoryName(filePath));
+            }
+
+            return true;
+        }
+
         public static void OpenBrowser(string url)
         {
             try

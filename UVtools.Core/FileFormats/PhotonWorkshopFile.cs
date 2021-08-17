@@ -121,7 +121,7 @@ namespace UVtools.Core.FileFormats
             /// <summary>
             /// 18
             /// </summary>
-            [FieldOrder(4)]  public uint Offset1 { get; set; }
+            [FieldOrder(4)]  public uint Padding1 { get; set; }
 
             /// <summary>
             /// Gets the preview start offset
@@ -132,7 +132,7 @@ namespace UVtools.Core.FileFormats
             /// <summary>
             /// 20
             /// </summary>
-            [FieldOrder(6)]  public uint Offset2  { get; set; }
+            [FieldOrder(6)]  public uint Padding2  { get; set; }
 
             /// <summary>
             /// Gets the layer definition start address
@@ -143,7 +143,7 @@ namespace UVtools.Core.FileFormats
             /// <summary>
             /// 28
             /// </summary>
-            [FieldOrder(8)]  public uint Offset3  { get; set; }
+            [FieldOrder(8)]  public uint Padding3  { get; set; }
 
             /// <summary>
             /// Gets layer image start address
@@ -153,7 +153,7 @@ namespace UVtools.Core.FileFormats
 
             public override string ToString()
             {
-                return $"{nameof(Mark)}: {Mark}, {nameof(Version)}: {Version}, {nameof(AreaNum)}: {AreaNum}, {nameof(HeaderAddress)}: {HeaderAddress}, {nameof(Offset1)}: {Offset1}, {nameof(PreviewAddress)}: {PreviewAddress}, {nameof(Offset2)}: {Offset2}, {nameof(LayerDefinitionAddress)}: {LayerDefinitionAddress}, {nameof(Offset3)}: {Offset3}, {nameof(LayerImageAddress)}: {LayerImageAddress}";
+                return $"{nameof(Mark)}: {Mark}, {nameof(Version)}: {Version}, {nameof(AreaNum)}: {AreaNum}, {nameof(HeaderAddress)}: {HeaderAddress}, {nameof(Padding1)}: {Padding1}, {nameof(PreviewAddress)}: {PreviewAddress}, {nameof(Padding2)}: {Padding2}, {nameof(LayerDefinitionAddress)}: {LayerDefinitionAddress}, {nameof(Padding3)}: {Padding3}, {nameof(LayerImageAddress)}: {LayerImageAddress}";
             }
         }
         #endregion
@@ -341,19 +341,19 @@ namespace UVtools.Core.FileFormats
             /// <summary>
             /// 88
             /// </summary>
-            [FieldOrder(19)] public uint Offset1 { get; set; }
+            [FieldOrder(19)] public uint Padding1 { get; set; }
 
             /// <summary>
             /// 8C
             /// </summary>
-            [FieldOrder(20)] public uint Offset2 { get; set; }
+            [FieldOrder(20)] public uint Padding2 { get; set; }
 
             public Header()
             {
                 Section = new SectionHeader(SectionMark, this);
             }
 
-            public override string ToString() => $"{nameof(Section)}: {Section}, {nameof(PixelSizeUm)}: {PixelSizeUm}, {nameof(LayerHeight)}: {LayerHeight}, {nameof(LayerExposureTime)}: {LayerExposureTime}, {nameof(LightOffDelay)}: {LightOffDelay}, {nameof(BottomExposureSeconds)}: {BottomExposureSeconds}, {nameof(BottomLayersCount)}: {BottomLayersCount}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(RetractSpeed)}: {RetractSpeed}, {nameof(VolumeMl)}: {VolumeMl}, {nameof(AntiAliasing)}: {AntiAliasing}, {nameof(ResolutionX)}: {ResolutionX}, {nameof(ResolutionY)}: {ResolutionY}, {nameof(WeightG)}: {WeightG}, {nameof(Price)}: {Price}, {nameof(PriceCurrencyDec)}: {PriceCurrencyDec}, {nameof(PerLayerOverride)}: {PerLayerOverride}, {nameof(PrintTime)}: {PrintTime}, {nameof(Offset1)}: {Offset1}, {nameof(Offset2)}: {Offset2}";
+            public override string ToString() => $"{nameof(Section)}: {Section}, {nameof(PixelSizeUm)}: {PixelSizeUm}, {nameof(LayerHeight)}: {LayerHeight}, {nameof(LayerExposureTime)}: {LayerExposureTime}, {nameof(LightOffDelay)}: {LightOffDelay}, {nameof(BottomExposureSeconds)}: {BottomExposureSeconds}, {nameof(BottomLayersCount)}: {BottomLayersCount}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(RetractSpeed)}: {RetractSpeed}, {nameof(VolumeMl)}: {VolumeMl}, {nameof(AntiAliasing)}: {AntiAliasing}, {nameof(ResolutionX)}: {ResolutionX}, {nameof(ResolutionY)}: {ResolutionY}, {nameof(WeightG)}: {WeightG}, {nameof(Price)}: {Price}, {nameof(PriceCurrencyDec)}: {PriceCurrencyDec}, {nameof(PerLayerOverride)}: {PerLayerOverride}, {nameof(PrintTime)}: {PrintTime}, {nameof(Padding1)}: {Padding1}, {nameof(Padding2)}: {Padding2}";
 
             public void Validate()
             {
@@ -382,26 +382,26 @@ namespace UVtools.Core.FileFormats
             /// Gets the image width, in pixels.
             /// A0
             /// </summary>
-            [FieldOrder(1)] public uint Width { get; set; } = 224;
+            [FieldOrder(1)] public uint ResolutionX { get; set; } = 224;
 
             /// <summary>
             /// Gets the resolution of the image, in dpi.
             /// A4
             /// </summary>
-            [FieldOrder(2)] public uint Resolution { get; set; } = 42;
+            [FieldOrder(2)] public uint DpiResolution { get; set; } = 42;
 
             /// <summary>
             /// Gets the image height, in pixels.
             /// A8
             /// </summary>
-            [FieldOrder(3)] public uint Height { get; set; } = 168;
+            [FieldOrder(3)] public uint ResolutionY { get; set; } = 168;
 
-            [FieldOrder(4)] public uint Offset1 { get; set; }
-            [FieldOrder(5)] public uint Offset2 { get; set; }
-            [FieldOrder(6)] public uint Offset3 { get; set; }
-            [FieldOrder(7)] public uint Offset4 { get; set; }
+            [FieldOrder(4)] public uint Unknown1 { get; set; }
+            [FieldOrder(5)] public uint Unknown2 { get; set; }
+            [FieldOrder(6)] public uint Unknown3 { get; set; }
+            [FieldOrder(7)] public uint Unknown4 { get; set; }
 
-            [Ignore] public uint DataSize => Width * Height * 2;
+            [Ignore] public uint DataSize => ResolutionX * ResolutionY * 2;
 
             // little-endian 16bit colors, RGB 565 encoded.
             //[FieldOrder(4)] [FieldLength(nameof(Section)+"."+nameof(SectionHeader.Length))]
@@ -412,16 +412,16 @@ namespace UVtools.Core.FileFormats
                 Section = new SectionHeader(SectionMark, this);
             }
 
-            public Preview(uint width, uint height, uint resolution = 42) : this()
+            public Preview(uint resolutionX, uint resolutionY, uint dpiResolution = 42) : this()
             {
-                Width = width;
-                Height = height;
-                Resolution = resolution;
+                ResolutionX = resolutionX;
+                ResolutionY = resolutionY;
+                DpiResolution = dpiResolution;
                 Data = new byte[DataSize];
                 Section.Length += (uint)Data.Length;
             }
 
-            public unsafe Mat Decode(bool consumeData = true)
+            /*public unsafe Mat Decode(bool consumeData = true)
             {
                 Mat image = new(new Size((int) Width, (int) Height), DepthType.Cv8U, 3);
                 var span = image.GetBytePointer();
@@ -469,10 +469,10 @@ namespace UVtools.Core.FileFormats
 
                 return preview;
             }
-
+            */
             public override string ToString()
             {
-                return $"{nameof(Section)}: {Section}, {nameof(Width)}: {Width}, {nameof(Resolution)}: {Resolution}, {nameof(Height)}: {Height}, {nameof(Data)}: {Data?.Length ?? 0}";
+                return $"{nameof(Section)}: {Section}, {nameof(ResolutionX)}: {ResolutionX}, {nameof(DpiResolution)}: {DpiResolution}, {nameof(ResolutionY)}: {ResolutionY}, {nameof(Data)}: {Data?.Length ?? 0}";
             }
 
             public void Validate(int size)
@@ -485,7 +485,7 @@ namespace UVtools.Core.FileFormats
 
         #region Layer
 
-        public class LayerData
+        public class LayerDef
         {
             public const byte ClassSize = 32;
             /// <summary>
@@ -505,38 +505,43 @@ namespace UVtools.Core.FileFormats
             /// <summary>
             /// Gets the exposure time for this layer, in seconds.
             /// </summary>
-            [FieldOrder(4)]
-            public float ExposureTime { get; set; }
+            [FieldOrder(4)] public float ExposureTime { get; set; }
 
             /// <summary>
             /// Gets the layer height for this layer, measured in millimeters.
             /// </summary>
-            [FieldOrder(5)]
-            public float LayerHeight { get; set; }
+            [FieldOrder(5)] public float LayerHeight { get; set; }
 
             [FieldOrder(6)] public uint NonZeroPixelCount { get; set; }
-            [FieldOrder(7)] public uint Offset1 { get; set; }
+            [FieldOrder(7)] public uint Padding1 { get; set; }
 
             [Ignore] public byte[] EncodedRle { get; set; }
             [Ignore] public PhotonWorkshopFile Parent { get; set; }
 
-            public LayerData()
+            public LayerDef()
             {
             }
 
-            public LayerData(PhotonWorkshopFile parent, uint layerIndex)
+            public LayerDef(PhotonWorkshopFile parent, Layer layer)
             {
                 Parent = parent;
-                RefreshLayerData(layerIndex);
+                SetFrom(layer);
             }
 
-            public void RefreshLayerData(uint layerIndex)
+            public void SetFrom(Layer layer)
             {
-                LayerHeight = Parent[layerIndex].LayerHeight;
-                ExposureTime = Parent[layerIndex].ExposureTime;
-                LiftHeight = Parent[layerIndex].LiftHeight;
-                LiftSpeed = (float) Math.Round(Parent[layerIndex].LiftSpeed / 60, 2);
-                NonZeroPixelCount = Parent[layerIndex].NonZeroPixelCount;
+                LayerHeight = layer.LayerHeight;
+                ExposureTime = layer.ExposureTime;
+                LiftHeight = layer.LiftHeight;
+                LiftSpeed = (float) Math.Round(layer.LiftSpeed / 60, 2);
+                NonZeroPixelCount = layer.NonZeroPixelCount;
+            }
+
+            public void CopyTo(Layer layer)
+            {
+                layer.ExposureTime = ExposureTime;
+                layer.LiftHeight = LiftHeight;
+                layer.LiftSpeed = (float)Math.Round(LiftSpeed * 60, 2);
             }
 
             public Mat Decode(bool consumeData = true)
@@ -681,72 +686,79 @@ namespace UVtools.Core.FileFormats
                 return rawData.ToArray();
             }
 
-            private unsafe Mat DecodePW0()
+            private Mat DecodePW0()
             {
-                var image = EmguExtensions.InitMat(Parent.Resolution);
-                var span = image.GetBytePointer();
-                var imageLength = image.GetLength();
+                var mat = EmguExtensions.InitMat(Parent.Resolution);
+                var imageLength = mat.GetLength();
 
-                uint n = 0;
-                for (int index = 0; index < EncodedRle.Length; index++)
+                int pixelPos = 0;
+                for (int i = 0; i < EncodedRle.Length; i++)
                 {
-                    byte b = EncodedRle[index];
+                    byte b = EncodedRle[i];
                     int code = b >> 4;
-                    uint reps = (uint) (b & 0xf);
+                    int repeat = b & 0xf;
                     byte color;
                     switch (code)
                     {
                         case 0x0:
-                            color = 0x00;
-                            index++;
-                            //reps = reps * 256 + EncodedRle[index];
-                            reps = (reps << 8) + EncodedRle[index];
+                            color = 0;
+                            i++;
+                            //reps = reps * 256 + EncodedRle[i];
+                            if (i >= EncodedRle.Length)
+                            {
+                                repeat = imageLength - pixelPos;
+                                break;
+                            }
+
+                            repeat = (repeat << 8) + EncodedRle[i];
                             break;
                         case 0xf:
-                            color = 0xff;
-                            index++;
-                            //reps = reps * 256 + EncodedRle[index];
-                            reps = (reps << 8) + EncodedRle[index];
+                            color = 255;
+                            i++;
+                            //reps = reps * 256 + EncodedRle[i];
+                            if (i >= EncodedRle.Length)
+                            {
+                                repeat = imageLength - pixelPos;
+                                break;
+                            }
+
+                            repeat = (repeat << 8) + EncodedRle[i];
                             break;
                         default:
                             color = (byte) ((code << 4) | code);
+                            if (i >= EncodedRle.Length)
+                            {
+                                repeat = imageLength - pixelPos;
+                            }
                             break;
                     }
 
                     //color &= 0xff;
 
                     // We only need to set the non-zero pixels
-                    if (color != 0)
+                    mat.FillSpan(ref pixelPos, repeat, color);
+
+
+                    if (pixelPos == imageLength)
                     {
-                        for (int i = 0; i < reps; i++)
-                        {
-                            span[(int) (n + i)] |= color;
-                        }
-                    }
-
-                    n += reps;
-
-
-                    if (n == imageLength)
-                    {
-                        //index++;
+                        //i++;
                         break;
                     }
 
-                    if (n > imageLength)
+                    if (pixelPos > imageLength)
                     {
-                        image.Dispose();
-                        throw new FileLoadException($"Error image ran off the end: {n - reps}({reps}) of {imageLength}");
+                        mat.Dispose();
+                        throw new FileLoadException($"Error image ran off the end: {pixelPos - repeat}({repeat}) of {imageLength}");
                     }
                 }
 
-                if (n > 0 && n != imageLength)
+                if (pixelPos > 0 && pixelPos != imageLength)
                 {
-                    image.Dispose();
-                    throw new FileLoadException($"Error image ended short: {n} of {imageLength}");
+                    mat.Dispose();
+                    throw new FileLoadException($"Error image ended short: {pixelPos} of {imageLength}");
                 }
 
-                return image;
+                return mat;
             }
 
             public unsafe byte[] EncodePW0(Mat image)
@@ -840,7 +852,7 @@ namespace UVtools.Core.FileFormats
 
             public override string ToString()
             {
-                return $"{nameof(DataAddress)}: {DataAddress}, {nameof(DataLength)}: {DataLength}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(ExposureTime)}: {ExposureTime}, {nameof(LayerHeight)}: {LayerHeight}, {nameof(NonZeroPixelCount)}: {NonZeroPixelCount}, {nameof(Offset1)}: {Offset1}, {nameof(EncodedRle)}: {EncodedRle?.Length ?? 0}";
+                return $"{nameof(DataAddress)}: {DataAddress}, {nameof(DataLength)}: {DataLength}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(ExposureTime)}: {ExposureTime}, {nameof(LayerHeight)}: {LayerHeight}, {nameof(NonZeroPixelCount)}: {NonZeroPixelCount}, {nameof(Padding1)}: {Padding1}, {nameof(EncodedRle)}: {EncodedRle?.Length ?? 0}";
             }
         }
 
@@ -858,7 +870,7 @@ namespace UVtools.Core.FileFormats
 
             [FieldOrder(1)] public uint LayerCount { get; set; }
 
-            [Ignore] public LayerData[] Layers { get; set; }
+            [Ignore] public LayerDef[] Layers { get; set; }
 
             public LayerDefinition()
             {
@@ -868,19 +880,19 @@ namespace UVtools.Core.FileFormats
             public LayerDefinition(uint layerCount) : this()
             {
                 LayerCount = layerCount;
-                Layers = new LayerData[layerCount];
-                Section.Length += (uint) Helpers.Serializer.SizeOf(new LayerData()) * LayerCount;
+                Layers = new LayerDef[layerCount];
+                Section.Length += (uint) Helpers.Serializer.SizeOf(new LayerDef()) * LayerCount;
             }
 
             [Ignore]
-            public LayerData this[uint index]
+            public LayerDef this[uint index]
             {
                 get => Layers[index];
                 set => Layers[index] = value;
             }
 
             [Ignore]
-            public LayerData this[int index]
+            public LayerDef this[int index]
             {
                 get => Layers[index];
                 set => Layers[index] = value;
@@ -888,7 +900,7 @@ namespace UVtools.Core.FileFormats
 
             public void Validate()
             {
-                Section.Validate(SectionMark, (int) (LayerCount * Helpers.Serializer.SizeOf(new LayerData()) - Helpers.Serializer.SizeOf(Section)), this);
+                Section.Validate(SectionMark, (int) (LayerCount * Helpers.Serializer.SizeOf(new LayerDef()) - Helpers.Serializer.SizeOf(Section)), this);
             }
 
             public override string ToString() => $"{nameof(Section)}: {Section}, {nameof(LayerCount)}: {LayerCount}";
@@ -906,8 +918,6 @@ namespace UVtools.Core.FileFormats
         public Preview PreviewSettings { get; protected internal set; } = new();
 
         public LayerDefinition LayersDefinition { get; protected internal set; } = new();
-
-        public Dictionary<string, LayerData> LayersHash { get; } = new();
 
         public override FileFormatType FileType => FileFormatType.Binary;
 
@@ -1054,9 +1064,8 @@ namespace UVtools.Core.FileFormats
             get => (byte) HeaderSettings.AntiAliasing;
             set
             {
-                HeaderSettings.AntiAliasing = value.Clamp(1, 16);
+                base.AntiAliasing = (byte)(HeaderSettings.AntiAliasing = value.Clamp(1, 16));
                 ValidateAntiAliasingLevel();
-                RaisePropertyChanged();
             }
         }
 
@@ -1272,9 +1281,6 @@ namespace UVtools.Core.FileFormats
 
         protected override void EncodeInternally(string fileFullPath, OperationProgress progress)
         {
-            LayersHash.Clear();
-            LayersDefinition = new LayerDefinition(LayerCount);
-
             switch (PrinterModel)
             {
                 case AnyCubicMachine.AnyCubicPhotonS:
@@ -1303,65 +1309,72 @@ namespace UVtools.Core.FileFormats
             HeaderSettings.PerLayerOverride = (byte)(LayerManager.AllLayersHaveGlobalParameters ? 0 : 1);
 
 
-            uint currentOffset = FileMarkSettings.HeaderAddress = (uint) Helpers.Serializer.SizeOf(FileMarkSettings);
+            FileMarkSettings.HeaderAddress = (uint) Helpers.Serializer.SizeOf(FileMarkSettings);
             using var outputFile = new FileStream(fileFullPath, FileMode.Create, FileAccess.Write);
-            outputFile.Seek((int) currentOffset, SeekOrigin.Begin);
-            currentOffset += Helpers.SerializeWriteFileStream(outputFile, HeaderSettings);
+            outputFile.Seek((int)FileMarkSettings.HeaderAddress, SeekOrigin.Begin);
+            Helpers.SerializeWriteFileStream(outputFile, HeaderSettings);
 
             if (CreatedThumbnailsCount > 0)
             {
-                FileMarkSettings.PreviewAddress = currentOffset;
-                Preview preview = Preview.Encode(Thumbnails[0]);
-                currentOffset += Helpers.SerializeWriteFileStream(outputFile, preview);
-                currentOffset += outputFile.WriteBytes(preview.Data);
+                FileMarkSettings.PreviewAddress = (uint)outputFile.Position;
+                //Preview preview = Preview.Encode(Thumbnails[0]);
+                var preview = new Preview((uint)Thumbnails[0].Width, (uint)Thumbnails[0].Height)
+                {
+                    Data = EncodeImage(DATATYPE_RGB565, Thumbnails[0])
+                };
+                Helpers.SerializeWriteFileStream(outputFile, preview);
+                outputFile.WriteBytes(preview.Data);
             }
 
-            FileMarkSettings.LayerDefinitionAddress = currentOffset;
+            progress.Reset(OperationProgress.StatusEncodeLayers, LayerCount);
+            FileMarkSettings.LayerDefinitionAddress = (uint)outputFile.Position;
+            LayersDefinition = new LayerDefinition(LayerCount);
+            Helpers.SerializeWriteFileStream(outputFile, LayersDefinition);
+            uint layerDefOffset = (uint)outputFile.Position;
+            uint layerRleOffset = FileMarkSettings.LayerImageAddress = (uint)(layerDefOffset + Helpers.Serializer.SizeOf(new LayerDef()) * LayerCount);
+            var layersHash = new Dictionary<string, LayerDef>();
 
-            Parallel.For(0, LayerCount, layerIndex =>
+            foreach (var batch in BatchLayersIndexes())
             {
-                if (progress.Token.IsCancellationRequested) return;
-                LayerData layer = new(this, (uint) layerIndex);
-                using (var image = this[layerIndex].LayerMat)
+                Parallel.ForEach(batch, layerIndex =>
                 {
-                    layer.Encode(image);
-                    LayersDefinition.Layers[layerIndex] = layer;
-                }
-                progress.LockAndIncrement();
-            });
+                    if (progress.Token.IsCancellationRequested) return;
+                    using (var mat = this[layerIndex].LayerMat)
+                    {
+                        LayersDefinition.Layers[layerIndex] = new LayerDef(this, this[layerIndex]);
+                        LayersDefinition.Layers[layerIndex].Encode(mat);
+                    }
+                    progress.LockAndIncrement();
+                });
 
-            uint offsetLayerRle = FileMarkSettings.LayerImageAddress = (uint) (currentOffset + Helpers.Serializer.SizeOf(LayersDefinition.Section) + LayersDefinition.Section.Length);
-
-            currentOffset += Helpers.SerializeWriteFileStream(outputFile, LayersDefinition);
-
-            progress.Reset(OperationProgress.StatusWritingFile, LayerCount);
-
-            foreach (var layer in LayersDefinition.Layers)
-            {
-                progress.Token.ThrowIfCancellationRequested();
-                string hash = Helpers.ComputeSHA1Hash(layer.EncodedRle);
-
-                if (LayersHash.TryGetValue(hash, out var layerDataHash))
+                foreach (var layerIndex in batch)
                 {
-                    layer.DataAddress = layerDataHash.DataAddress;
-                    layer.DataLength = (uint)layerDataHash.EncodedRle.Length;
+                    progress.Token.ThrowIfCancellationRequested();
+
+                    var layerDef = LayersDefinition.Layers[layerIndex];
+
+                    var hash = Helpers.ComputeSHA1Hash(layerDef.EncodedRle);
+
+                    if (layersHash.TryGetValue(hash, out var layerDataHash))
+                    {
+                        layerDef.DataAddress = layerDataHash.DataAddress;
+                        layerDef.DataLength = (uint)layerDataHash.EncodedRle.Length;
+                    }
+                    else
+                    {
+                        layersHash.Add(hash, layerDef);
+
+                        layerDef.DataAddress = layerRleOffset;
+
+                        outputFile.Seek(layerRleOffset, SeekOrigin.Begin);
+                        layerRleOffset += Helpers.SerializeWriteFileStream(outputFile, layerDef.EncodedRle);
+                    }
+
+                    outputFile.Seek(layerDefOffset, SeekOrigin.Begin);
+                    layerDefOffset += Helpers.SerializeWriteFileStream(outputFile, layerDef);
                 }
-                else
-                {
-                    LayersHash.Add(hash, layer);
-
-                    layer.DataAddress = offsetLayerRle;
-
-                    outputFile.Seek(offsetLayerRle, SeekOrigin.Begin);
-                    offsetLayerRle += Helpers.SerializeWriteFileStream(outputFile, layer.EncodedRle);
-                }
-
-                outputFile.Seek(currentOffset, SeekOrigin.Begin);
-                currentOffset += Helpers.SerializeWriteFileStream(outputFile, layer);
-
-                progress++;
             }
-
+            
             // Rewind
             outputFile.Seek(0, SeekOrigin.Begin);
             Helpers.SerializeWriteFileStream(outputFile, FileMarkSettings);
@@ -1410,7 +1423,8 @@ namespace UVtools.Core.FileFormats
                 PreviewSettings.Data = new byte[PreviewSettings.DataSize];
                 inputFile.ReadBytes(PreviewSettings.Data);
 
-                Thumbnails[0] = PreviewSettings.Decode(true);
+                Thumbnails[0] = DecodeImage(DATATYPE_RGB565, PreviewSettings.Data, PreviewSettings.ResolutionX, PreviewSettings.ResolutionY);
+                PreviewSettings.Data = null;
             }
 
             inputFile.Seek(FileMarkSettings.LayerDefinitionAddress, SeekOrigin.Begin);
@@ -1420,54 +1434,44 @@ namespace UVtools.Core.FileFormats
             Debug.WriteLine(LayersDefinition);
 
             LayerManager.Init(LayersDefinition.LayerCount);
-            LayersDefinition.Layers = new LayerData[LayerCount];
-
-
+            LayersDefinition.Layers = new LayerDef[LayerCount];
+            
             LayersDefinition.Validate();
 
-            for (int i = 0; i < LayerCount; i++)
-            {
-                LayersDefinition[i] = Helpers.Deserialize<LayerData>(inputFile);
-                LayersDefinition[i].Parent = this;
-                Debug.WriteLine($"Layer {i}: {LayersDefinition[i]}");
-            }
-
-            progress.Reset(OperationProgress.StatusGatherLayers, LayerCount);
-
-            for (int i = 0; i < LayerCount; i++)
-            {
-                var layer = LayersDefinition[i];
-                //layer.Parent = this;
-                inputFile.Seek(layer.DataAddress, SeekOrigin.Begin);
-                layer.EncodedRle = new byte[layer.DataLength];
-                inputFile.ReadBytes(layer.EncodedRle);
-
-                progress++;
-                progress.Token.ThrowIfCancellationRequested();
-            }
-
             progress.Reset(OperationProgress.StatusDecodeLayers, LayerCount);
-
-            Parallel.For(0, LayerCount, layerIndex =>
+            foreach (var batch in BatchLayersIndexes())
             {
-                if (progress.Token.IsCancellationRequested)
+                foreach (var layerIndex in batch)
                 {
-                    return;
-                }
+                    progress.Token.ThrowIfCancellationRequested();
 
-                using (var image = LayersDefinition[(uint) layerIndex].Decode())
-                {
-                    this[layerIndex] = new Layer((uint) layerIndex, image, LayerManager)
+                    LayersDefinition[layerIndex] = Helpers.Deserialize<LayerDef>(inputFile);
+                    LayersDefinition[layerIndex].Parent = this;
+                    Debug.WriteLine($"Layer {layerIndex}: {LayersDefinition[layerIndex]}");
+
+
+                    inputFile.SeekDoWorkAndRewind(LayersDefinition[layerIndex].DataAddress, () =>
                     {
-                        PositionZ = Layer.RoundHeight(LayersDefinition[(uint)layerIndex].LayerHeight),
-                        ExposureTime = LayersDefinition[(uint)layerIndex].ExposureTime,
-                        LiftHeight = LayersDefinition[(uint)layerIndex].LiftHeight,
-                        LiftSpeed = (float)Math.Round(LayersDefinition[(uint)layerIndex].LiftSpeed * 60, 2),
-                    };
+                        LayersDefinition[layerIndex].EncodedRle = inputFile.ReadBytes(LayersDefinition[layerIndex].DataLength);
+                    });
                 }
 
-                progress.LockAndIncrement();
-            });
+                Parallel.ForEach(batch, layerIndex =>
+                {
+                    if (progress.Token.IsCancellationRequested) return;
+                    using (var mat = LayersDefinition[layerIndex].Decode())
+                    {
+                        var layer = new Layer((uint)layerIndex, mat, this)
+                        {
+                            PositionZ = Layer.RoundHeight(LayersDefinition[(uint)layerIndex].LayerHeight),
+                        };
+                        LayersDefinition[layerIndex].CopyTo(layer);
+                        this[layerIndex] = layer;
+                    }
+
+                    progress.LockAndIncrement();
+                });
+            }
 
             // Fix position z height values
             if (LayerCount > 0)
@@ -1508,7 +1512,7 @@ namespace UVtools.Core.FileFormats
             outputFile.Seek(FileMarkSettings.LayerDefinitionAddress + Helpers.Serializer.SizeOf(LayersDefinition), SeekOrigin.Begin);
             for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
             {
-                LayersDefinition[layerIndex].RefreshLayerData(layerIndex);
+                LayersDefinition[layerIndex].SetFrom(this[layerIndex]);
                 Helpers.SerializeWriteFileStream(outputFile, LayersDefinition[layerIndex]);
             }
         }

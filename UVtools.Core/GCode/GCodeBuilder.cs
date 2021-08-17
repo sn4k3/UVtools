@@ -761,7 +761,6 @@ namespace UVtools.Core.GCode
                 "\r\n"
                 ;*/
 
-            float positionZ = 0;
             var layerBlock = new GCodeLayer(slicerFile);
 
             using var reader = new StringReader(gcode);

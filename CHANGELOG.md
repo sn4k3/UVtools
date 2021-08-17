@@ -1,5 +1,53 @@
 # Changelog
 
+## 17/08/2021 - v2.19.0
+
+- **File formats:** 
+   - Add and remove some image types that can be open
+   - (Add) `CanProcess` method to know if a file can be read under a format and to allow diferent formats with same extension
+   - (Fix) `LiftHeightTotal` and `RetractHeight` was rounding to no decimals and returning wrong values
+   - (Improvement) Round all float setters on `Layer` class
+   - (Improvement) Decode/encode RAM usage and performance by processing in batch groups
+- **Pixel Dimming:** (#262)
+   - (Add) Option "Lightening pixels" to add brightness/lightening instead of dimming/subtract pixels
+   - (Fix) "Dim walls only" would reset body brightness by increase pixel brightness two times it value
+- **Pixel Arithmetic:**
+   - (Change) Transpose "Pixel Dimming" to "Pixel Arithmetic"
+   - (Improvement) New options and manipulations
+- **(Fix) Exposure time finder:**
+  - Generate top staircase based on selected measure (px or mm)
+  - Zebra bars when used in mm measures, it was using X density instead Y to calculate the thickness
+  - Move 'Unit of measure' to 'Object configuration'
+  - Custom text with wrong Y position when using out of portion resolutions/LCDs
+- **CTBv4:**
+  - (Fix) More Unknown fields discovered and implemented
+  - (Fix) Reserved table is 384 bytes instead of 420
+  - (Fix) When full encoding it was forcing to change to version 3. This also affected convertions. (#263)
+  - (Fix) `BottomRetractHeight2` was being set to `BottomRetractSpeed2`
+  - (Fix) `RetractHeight2` was being set to `RetracSpeed2`
+  - (Fix) The PrintParametersV4 table address
+  - (Fix) Generates invalid files to open with Chitubox and printers (#263)
+  - (Fix) Better progress report
+- **(Add) PrusaSlicer printer notes variables:**
+  - BottomLiftHeight2
+  - BottomLiftSpeed2
+  - LiftHeight2
+  - LiftSpeed2
+  - BottomRetractSpeed
+  - BottomRetractSpeed2
+  - BottomRetractHeight2
+  - BottomRetractSpeed2
+  - RetractHeight2
+  - RetractSpeed2
+- **UI:**
+  - (Add) File - Open current file folder (Ctrl+Shift+L): Locate and open the folder that contain the current loaded file
+  - (Improvement) Hide some virtual extensions from file open dialog filters
+  - (Improvement) UI: Refresh active thumbnail when changed
+  - (Change) Icon for File - Open and Open in a new file 
+  - (Change) Rename File - Extract to: Extract file contents
+- (Upgrade) AvaloniaUI from 0.10.6 to 0.10.7
+- (Fix) PW0, PWM, PWMX, PWMO, PWMS: Unable to decode some files with AntiAliasing (#143)
+
 ## 12/08/2021 - v2.18.0
 
 - **Command line arguments:**

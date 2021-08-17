@@ -155,7 +155,7 @@ namespace UVtools.WPF
                 Tag = new OperationPixelArithmetic(),
                 Icon = new Avalonia.Controls.Image
                 {
-                    Source = new Bitmap(App.GetAsset("/Assets/Icons/square-root-16x16.png"))
+                    Source = new Bitmap(App.GetAsset("/Assets/Icons/pixel-16x16.png"))
                 }
             },
             new()
@@ -166,14 +166,14 @@ namespace UVtools.WPF
                     Source = new Bitmap(App.GetAsset("/Assets/Icons/mask-16x16.png"))
                     }
             },
-            new()
+            /*new()
             {
                 Tag = new OperationPixelDimming(),
                 Icon = new Avalonia.Controls.Image
                 {
                     Source = new Bitmap(App.GetAsset("/Assets/Icons/pixel-16x16.png"))
                 }
-            },
+            },*/
             new()
             {
                 Tag = new OperationLightBleedCompensation(),
@@ -745,6 +745,12 @@ namespace UVtools.WPF
         public void MenuFileOpenClicked() => OpenFile();
         public void MenuFileOpenNewWindowClicked() => OpenFile(true);
 
+        public void MenuFileOpenCurrentFileFolderClicked()
+        {
+            if (!IsFileLoaded) return;
+            App.SelectFileOnExplorer(SlicerFile.FileFullPath);
+        } 
+
         public async void MenuFileSaveClicked()
         {
             if (!CanSave) return;
@@ -1148,9 +1154,8 @@ namespace UVtools.WPF
                 SlicerFile.CanUseBottomLightOffDelay &&
                 (Settings.Automations.ChangeOnlyLightOffDelayIfZero && SlicerFile.BottomLightOffDelay == 0 || !Settings.Automations.ChangeOnlyLightOffDelayIfZero))
             {
-                if (SlicerFile is ChituboxFile chituboxFile &&
-                    chituboxFile.HeaderSettings.Version >= 4 && 
-                    (chituboxFile.WaitTimeBeforeCure > 0 || chituboxFile.WaitTimeAfterCure > 0 || chituboxFile.WaitTimeAfterLift > 0))
+                if ((SlicerFile.CanUseAnyWaitTimeBeforeCure || SlicerFile.CanUseAnyWaitTimeAfterCure || SlicerFile.CanUseAnyWaitTimeAfterLift) && 
+                    (SlicerFile.BottomWaitTimeBeforeCure > 0 || SlicerFile.BottomWaitTimeAfterCure > 0 || SlicerFile.BottomWaitTimeAfterLift > 0))
                 {
                     // Ignore this automation
                 }
@@ -1175,9 +1180,8 @@ namespace UVtools.WPF
                 SlicerFile.CanUseLightOffDelay &&
                 (Settings.Automations.ChangeOnlyLightOffDelayIfZero && SlicerFile.LightOffDelay == 0 || !Settings.Automations.ChangeOnlyLightOffDelayIfZero))
             {
-                if (SlicerFile is ChituboxFile chituboxFile &&
-                    chituboxFile.HeaderSettings.Version >= 4 &&
-                    (chituboxFile.WaitTimeBeforeCure > 0 || chituboxFile.WaitTimeAfterCure > 0 || chituboxFile.WaitTimeAfterLift > 0))
+                if ((SlicerFile.CanUseAnyWaitTimeBeforeCure || SlicerFile.CanUseAnyWaitTimeAfterCure || SlicerFile.CanUseAnyWaitTimeAfterLift) &&
+                    (SlicerFile.WaitTimeBeforeCure > 0 || SlicerFile.WaitTimeAfterCure > 0 || SlicerFile.WaitTimeAfterLift > 0))
                 {
                     // Ignore this automation
                 }
@@ -1218,6 +1222,8 @@ namespace UVtools.WPF
                     if(fileFormat is ImageFile) continue;
                     foreach (var fileExtension in fileFormat.FileExtensions)
                     {
+                        if(!fileExtension.IsVisibleOnConvertMenu) continue;
+
                         var menuItem = new MenuItem
                         {
                             Header = fileExtension.Description,
@@ -1314,6 +1320,16 @@ namespace UVtools.WPF
                 {
                     SelectedTabItem = TabIssues;
                 }
+            }
+
+            SlicerFile.PropertyChanged += SlicerFileOnPropertyChanged;
+        }
+
+        private void SlicerFileOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(SlicerFile.Thumbnails))
+            {
+                RefreshThumbnail();
             }
         }
 

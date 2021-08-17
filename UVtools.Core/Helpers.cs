@@ -101,9 +101,9 @@ namespace UVtools.Core
 
         public static void SwapVariables<T>(ref T var1, ref T var2)
         {
-            var backup = var1;
-            var1 = var2;
-            var2 = backup;
+            (var1, var2) = (var2, var1);
         }
+
+        public static float BrightnessToPercent(byte brightness, byte roundPlates = 2) => (float)Math.Round(brightness * 100 / 255f, roundPlates);
     }
 }

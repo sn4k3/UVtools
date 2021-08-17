@@ -8,6 +8,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -152,7 +153,7 @@ namespace UVtools.Core.FileFormats
         public override FileFormatType FileType => FileFormatType.Archive;
 
         public override FileExtension[] FileExtensions { get; } = {
-            new(typeof(VDAFile), "vda.zip", "Voxeldance Additive Zip")
+            new(typeof(VDAFile), "zip", "Voxeldance Additive Zip")
         };
 
         public override uint ResolutionX
@@ -247,11 +248,7 @@ namespace UVtools.Core.FileFormats
         public override byte AntiAliasing
         {
             get => ManifestFile.Machines.AntiAliasing;
-            set
-            {
-                ManifestFile.Machines.AntiAliasing = value.Clamp(1, 16);
-                RaisePropertyChanged();
-            }
+            set => base.AntiAliasing = ManifestFile.Machines.AntiAliasing = value.Clamp(1, 16);
         }
 
         public override float LayerHeight
@@ -285,6 +282,24 @@ namespace UVtools.Core.FileFormats
         #endregion
 
         #region Methods
+
+        public override bool CanProcess(string fileFullPath)
+        {
+            if(!base.CanProcess(fileFullPath)) return false;
+
+            try
+            {
+                using var zip = ZipFile.Open(fileFullPath, ZipArchiveMode.Read);
+                if (zip.Entries.Any(entry => entry.Name.EndsWith(".xml"))) return true;
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine(e);
+            }
+            
+
+            return false;
+        }
 
         protected override void EncodeInternally(string fileFullPath, OperationProgress progress)
         {

@@ -1,0 +1,116 @@
+//------------------------------------------------
+//--- 010 Editor v8.0.1 Binary Template
+//
+//      File: pws, pw0, pwm, pwmo, pwms, pwmx
+//   Authors: Tiago Conceição
+//------------------------------------------------
+
+LittleEndian();
+
+struct FILEMARK {
+    char Mark[12] <fgcolor=cBlack, bgcolor=cRed>;
+    uint Version <fgcolor=cBlack, bgcolor=cRed>;
+    uint AreaNum <fgcolor=cBlack, bgcolor=cRed>;
+    uint HeaderAddress <fgcolor=cBlack, bgcolor=cRed>;
+    uint Padding1 <fgcolor=cBlack, bgcolor=cRed>;
+    uint PreviewAddress <fgcolor=cBlack, bgcolor=cRed>;
+    uint Padding2 <fgcolor=cBlack, bgcolor=cRed>;
+    uint LayerDefinitionAddress <fgcolor=cBlack, bgcolor=cRed>;
+    uint Padding3 <fgcolor=cBlack, bgcolor=cRed>;
+    uint LayerImageAddress <fgcolor=cBlack, bgcolor=cRed>;
+} fileMark;
+
+struct SECTION {
+    char Mark[12] <fgcolor=cBlack, bgcolor=cYellow>;
+    uint Length <fgcolor=cBlack, bgcolor=cYellow>;
+};
+
+struct HEADER {
+    SECTION section;
+    
+    float PixelSizeUm <fgcolor=cBlack, bgcolor=cRed>;
+    float LayerHeight <fgcolor=cBlack, bgcolor=cRed>;
+    float LayerExposureTime <fgcolor=cBlack, bgcolor=cRed>;
+       
+    float LightOffDelay <fgcolor=cBlack, bgcolor=cRed>;
+    float BottomExposureSeconds <fgcolor=cBlack, bgcolor=cRed>;
+    float BottomLayersCount <fgcolor=cBlack, bgcolor=cRed>;
+    float LiftHeight <fgcolor=cBlack, bgcolor=cRed>;
+    float LiftSpeed <fgcolor=cBlack, bgcolor=cRed>;
+    float RetractSpeed <fgcolor=cBlack, bgcolor=cRed>;
+    float VolumeMl <fgcolor=cBlack, bgcolor=cRed>;
+    uint AntiAliasing <fgcolor=cBlack, bgcolor=cRed>;
+    uint ResolutionX <fgcolor=cBlack, bgcolor=cRed>;
+    uint ResolutionY <fgcolor=cBlack, bgcolor=cRed>;
+    float WeightG <fgcolor=cBlack, bgcolor=cRed>;
+    float Price <fgcolor=cBlack, bgcolor=cRed>;
+    uint PriceCurrencyDec <fgcolor=cBlack, bgcolor=cRed>;
+    uint PerLayerOverride <fgcolor=cBlack, bgcolor=cRed>;
+    uint PrintTime <fgcolor=cBlack, bgcolor=cRed>;
+    uint Padding1 <fgcolor=cBlack, bgcolor=cRed>;
+    uint Padding2 <fgcolor=cBlack, bgcolor=cRed>;
+};
+
+if(fileMark.HeaderAddress > 0){
+    FSeek(fileMark.HeaderAddress);
+    HEADER header;
+}
+
+
+struct PREVIEW {
+    SECTION section;
+    uint ResolutionX <fgcolor=cBlack, bgcolor=cRed>;
+    uint DpiResolution <fgcolor=cBlack, bgcolor=cRed>;
+    uint ResolutionY <fgcolor=cBlack, bgcolor=cRed>;
+    uint Unknown1 <fgcolor=cBlack, bgcolor=cRed>;
+    uint Unknown2 <fgcolor=cBlack, bgcolor=cRed>;
+    uint Unknown3 <fgcolor=cBlack, bgcolor=cRed>;
+    uint Unknown4 <fgcolor=cBlack, bgcolor=cRed>;
+
+    ubyte Data[ResolutionX*ResolutionY*2] <fgcolor=cBlack, bgcolor=cGreen>;
+};
+
+if(fileMark.PreviewAddress > 0){
+    FSeek(fileMark.PreviewAddress);
+    PREVIEW preview;
+}
+
+
+typedef struct(int size) {
+    ubyte layerDataBlock[size] <fgcolor=cBlack, bgcolor=cGreen>;
+} LAYER_RLE;
+
+struct LayerDefinition {
+    SECTION section;
+    uint LayerCount <fgcolor=cBlack, bgcolor=cRed>;
+};
+
+struct LAYER_DEF {
+    uint DataAddress <fgcolor=cWhite, bgcolor=cBlue>;
+    uint DataLength <fgcolor=cWhite, bgcolor=cBlue>;
+    float LiftHeight <fgcolor=cWhite, bgcolor=cBlue>;
+    float LiftSpeed <fgcolor=cWhite, bgcolor=cBlue>;
+    float ExposureTime <fgcolor=cWhite, bgcolor=cBlue>;
+    float LayerHeight <fgcolor=cWhite, bgcolor=cBlue>;
+    uint NonZeroPixelCount <fgcolor=cWhite, bgcolor=cBlue>;
+    uint Padding1 <fgcolor=cWhite, bgcolor=cBlue>;
+
+    local uint currentPos = FTell();   
+    FSeek(DataAddress);
+    ubyte RLE[DataLength];
+    FSeek(currentPos);
+};
+
+
+
+if(fileMark.LayerDefinitionAddress > 0){
+    FSeek(fileMark.LayerDefinitionAddress);
+    LayerDefinition layerDefinition;
+    struct LAYERS{
+        local uint i;
+        
+        for(i = 0; i < layerDefinition.LayerCount; i++ ){
+            LAYER_DEF layerDef;
+        }
+    } layers;
+}

@@ -6,6 +6,7 @@
  *  of this license document, but changing it is not allowed.
  */
 
+using System;
 using System.IO;
 
 namespace UVtools.Core.Extensions
@@ -87,6 +88,24 @@ namespace UVtools.Core.Extensions
         public static uint WriteSerialize(this FileStream fs, object data, int offset = 0)
         {
             return Helpers.SerializeWriteFileStream(fs, data, offset);
+        }
+
+        /// <summary>
+        /// Seek to a position, do work and rewind to initial position
+        /// </summary>
+        /// <param name="fs"></param>
+        /// <param name="action"></param>
+        /// <param name="offset"></param>
+        /// <param name="seekOrigin"></param>
+        public static void SeekDoWorkAndRewind(this FileStream fs, long offset, Action action)
+            => fs.SeekDoWorkAndRewind(offset, SeekOrigin.Begin, action);
+
+        public static void SeekDoWorkAndRewind(this FileStream fs, long offset, SeekOrigin seekOrigin, Action action)
+        {
+            var currentPos = fs.Position;
+            fs.Seek(offset, seekOrigin); // Go to
+            action.Invoke(); // Do work
+            fs.Seek(currentPos, SeekOrigin.Begin); // Rewind
         }
     }
 }

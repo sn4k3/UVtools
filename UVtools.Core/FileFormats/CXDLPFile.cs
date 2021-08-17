@@ -36,7 +36,7 @@ namespace UVtools.Core.FileFormats
         #region Header
         public sealed class Header
         {
-            private string _printerModel = "CL-89";
+            //private string _printerModel = "CL-89";
 
             /// <summary>
             /// Gets the size of the header
@@ -447,12 +447,6 @@ namespace UVtools.Core.FileFormats
             }
         }
 
-        public override byte AntiAliasing
-        {
-            get => 8;
-            set {}
-        }
-
         public override float LayerHeight
         {
             get => float.Parse(Encoding.ASCII.GetString(SlicerInfoSettings.LayerHeightBytes.Where(b => b != 0).ToArray()));
@@ -608,33 +602,24 @@ namespace UVtools.Core.FileFormats
 
             Helpers.SerializeWriteFileStream(outputFile, HeaderSettings);
 
-            byte[][] previews = new byte[ThumbnailsOriginalSize.Length][];
-            for (int i = 0; i < ThumbnailsOriginalSize.Length; i++)
-            {
-                previews[i] = new byte[ThumbnailsOriginalSize[i].Area() * 2];
-            }
+            var previews = new byte[ThumbnailsOriginalSize.Length][];
+
             // Previews
             Parallel.For(0, previews.Length, previewIndex =>
             {
                 if (progress.Token.IsCancellationRequested) return;
-                if (Thumbnails[previewIndex] is null) return;
-                var span = Thumbnails[previewIndex].GetDataByteSpan();
-                int index = 0;
-                for (int i = 0; i < span.Length; i += 3)
+                var encodeLength = ThumbnailsOriginalSize[previewIndex].Area() * 2;
+                if (Thumbnails[previewIndex] is null)
                 {
-                    byte b = span[i];
-                    byte g = span[i + 1];
-                    byte r = span[i + 2];
-
-                    ushort rgb15 = (ushort)(((r >> 3) << 11) | ((g >> 2) << 5) | ((b >> 3) << 0));
-
-                    previews[previewIndex][index++] = (byte)(rgb15 >> 8);
-                    previews[previewIndex][index++] = (byte)(rgb15 & 0xff);
+                    previews[previewIndex] = new byte[encodeLength];
+                    return;
                 }
 
-                if (index != previews[previewIndex].Length)
+                previews[previewIndex] = EncodeImage(DATATYPE_RGB565_BE, Thumbnails[previewIndex]);
+
+                if (encodeLength != previews[previewIndex].Length)
                 {
-                    throw new FileLoadException($"Preview encode incomplete encode, expected: {previews[previewIndex].Length}, encoded: {index}");
+                    throw new FileLoadException($"Preview encode incomplete encode, expected: {previews[previewIndex].Length}, encoded: {encodeLength}");
                 }
             });
 
@@ -642,7 +627,7 @@ namespace UVtools.Core.FileFormats
             {
                 Helpers.SerializeWriteFileStream(outputFile, previews[i]);
                 outputFile.WriteBytes(pageBreak);
-                //Helpers.SerializeWriteFileStream(outputFile, pageBreak);
+                previews[i] = null;
             }
             Helpers.SerializeWriteFileStream(outputFile, SlicerInfoSettings);
 
@@ -662,10 +647,8 @@ namespace UVtools.Core.FileFormats
             //Helpers.SerializeWriteFileStream(outputFile, pageBreak);
             outputFile.WriteBytes(pageBreak);
 
-            var range = Enumerable.Range(0, (int) LayerCount);
-
             var layerBytes = new List<byte>[LayerCount];
-            foreach (var batch in range.Batch(Environment.ProcessorCount * 10))
+            foreach (var batch in BatchLayersIndexes())
             {
                 progress.Token.ThrowIfCancellationRequested();
 
@@ -673,47 +656,51 @@ namespace UVtools.Core.FileFormats
                 {
                     if (progress.Token.IsCancellationRequested) return;
                     var layer = this[layerIndex];
-                    using var mat = layer.LayerMat;
-                    var span = mat.GetDataByteSpan();
-
-                    layerBytes[layerIndex] = new();
-
-                    uint lineCount = 0;
-
-                    for (int x = layer.BoundingRectangle.X; x < layer.BoundingRectangle.Right; x++)
+                    using (var mat = layer.LayerMat)
                     {
-                        int y = layer.BoundingRectangle.Y;
-                        int startY = -1;
-                        byte lastColor = 0;
-                        for (; y < layer.BoundingRectangle.Bottom; y++)
-                        {
-                            int pos = mat.GetPixelPos(x, y);
-                            byte color = span[pos];
+                        var span = mat.GetDataByteSpan();
 
-                            if (lastColor == color && color != 0) continue;
+                        layerBytes[layerIndex] = new();
+
+                        uint lineCount = 0;
+
+                        for (int x = layer.BoundingRectangle.X; x < layer.BoundingRectangle.Right; x++)
+                        {
+                            int y = layer.BoundingRectangle.Y;
+                            int startY = -1;
+                            byte lastColor = 0;
+                            for (; y < layer.BoundingRectangle.Bottom; y++)
+                            {
+                                int pos = mat.GetPixelPos(x, y);
+                                byte color = span[pos];
+
+                                if (lastColor == color && color != 0) continue;
+
+                                if (startY >= 0)
+                                {
+                                    layerBytes[layerIndex].AddRange(LayerLine.GetBytes((ushort)startY, (ushort)(y - 1),
+                                        (ushort)x, lastColor));
+                                    lineCount++;
+                                }
+
+                                startY = color == 0 ? -1 : y;
+
+                                lastColor = color;
+                            }
 
                             if (startY >= 0)
                             {
-                                layerBytes[layerIndex].AddRange(LayerLine.GetBytes((ushort)startY, (ushort)(y - 1), (ushort)x, lastColor));
+                                layerBytes[layerIndex].AddRange(LayerLine.GetBytes((ushort)startY, (ushort)(y - 1),
+                                    (ushort)x, lastColor));
                                 lineCount++;
                             }
-
-                            startY = color == 0 ? -1 : y;
-
-                            lastColor = color;
                         }
 
-                        if (startY >= 0)
-                        {
-                            layerBytes[layerIndex].AddRange(LayerLine.GetBytes((ushort)startY, (ushort)(y - 1), (ushort)x, lastColor));
-                            lineCount++;
-                        }
+                        layerBytes[layerIndex].InsertRange(0, LayerDef.GetHeaderBytes(
+                            (uint)Math.Round(layer.BoundingRectangleMillimeters.Area() * 1000),
+                            lineCount));
+                        layerBytes[layerIndex].AddRange(pageBreak);
                     }
-
-                    layerBytes[layerIndex].InsertRange(0, LayerDef.GetHeaderBytes(
-                        (uint)Math.Round(layer.BoundingRectangleMillimeters.Area()*1000), 
-                        lineCount));
-                    layerBytes[layerIndex].AddRange(pageBreak);
 
                     progress.LockAndIncrement();
                 });
@@ -842,23 +829,8 @@ namespace UVtools.Core.FileFormats
 
             Parallel.For(0, previews.Length, previewIndex =>
             {
-                var mat = new Mat(ThumbnailsOriginalSize[previewIndex], DepthType.Cv8U, 3);
-                var span = mat.GetDataByteSpan();
-
-                int spanIndex = 0;
-                for (int i = 0; i < previews[previewIndex].Length; i += 2)
-                {
-                    ushort rgb15 = (ushort)((ushort)(previews[previewIndex][i + 0] << 8) | previews[previewIndex][i + 1]);
-                    byte r = (byte)((rgb15 >> 11) << 3);
-                    byte g = (byte)((rgb15 >> 5) << 2);
-                    byte b = (byte)((rgb15 >> 0) << 3);
-
-                    span[spanIndex++] = b;
-                    span[spanIndex++] = g;
-                    span[spanIndex++] = r;
-                }
-
-                Thumbnails[previewIndex] = mat;
+                Thumbnails[previewIndex] = DecodeImage(DATATYPE_RGB565_BE, previews[previewIndex], ThumbnailsOriginalSize[previewIndex]);
+                previews[previewIndex] = null;
             });
 
 
@@ -877,10 +849,9 @@ namespace UVtools.Core.FileFormats
             }*/
 
             //inputFile.Seek(2, SeekOrigin.Current);
-            var range = Enumerable.Range(0, (int)LayerCount);
 
             var linesBytes = new byte[LayerCount][];
-            foreach (var batch in range.Batch(Environment.ProcessorCount * 10))
+            foreach (var batch in BatchLayersIndexes())
             {
                 progress.Token.ThrowIfCancellationRequested();
 
@@ -899,29 +870,32 @@ namespace UVtools.Core.FileFormats
                 Parallel.ForEach(batch, layerIndex =>
                 {
                     if (progress.Token.IsCancellationRequested) return;
-                    using var mat = EmguExtensions.InitMat(Resolution);
-
-                    for (int i = 0; i < linesBytes[layerIndex].Length; i++)
+                    using (var mat = EmguExtensions.InitMat(Resolution))
                     {
-                        LayerLine line = new()
+
+                        for (int i = 0; i < linesBytes[layerIndex].Length; i++)
                         {
-                            Coordinates =
+                            LayerLine line = new()
                             {
-                                [0] = linesBytes[layerIndex][i++],
-                                [1] = linesBytes[layerIndex][i++],
-                                [2] = linesBytes[layerIndex][i++],
-                                [3] = linesBytes[layerIndex][i++],
-                                [4] = linesBytes[layerIndex][i++]
-                            },
-                            Gray = linesBytes[layerIndex][i]
-                        };
+                                Coordinates =
+                                {
+                                    [0] = linesBytes[layerIndex][i++],
+                                    [1] = linesBytes[layerIndex][i++],
+                                    [2] = linesBytes[layerIndex][i++],
+                                    [3] = linesBytes[layerIndex][i++],
+                                    [4] = linesBytes[layerIndex][i++]
+                                },
+                                Gray = linesBytes[layerIndex][i]
+                            };
 
-                        CvInvoke.Line(mat, new Point(line.StartX, line.StartY), new Point(line.StartX, line.EndY), new MCvScalar(line.Gray));
+                            CvInvoke.Line(mat, new Point(line.StartX, line.StartY), new Point(line.StartX, line.EndY),
+                                new MCvScalar(line.Gray));
+                        }
+
+                        linesBytes[layerIndex] = null;
+
+                        this[layerIndex] = new Layer((uint)layerIndex, mat, this);
                     }
-
-                    linesBytes[layerIndex] = null;
-
-                    this[layerIndex] = new Layer((uint)layerIndex, mat, this);
 
                     progress.LockAndIncrement();
                 });

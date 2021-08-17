@@ -288,12 +288,7 @@ namespace UVtools.Core.FileFormats
         public override byte AntiAliasing
         {
             get => ManifestFile.AdvancedParameters.AntialasingLevel;
-            set
-            {
-                ManifestFile.AdvancedParameters.AntialasingLevel = value.Clamp(1, 16);
-                RaisePropertyChanged();
-            }
-
+            set => base.AntiAliasing = ManifestFile.AdvancedParameters.AntialasingLevel = value.Clamp(1, 16);
         }
 
         public override float LayerHeight
@@ -370,18 +365,18 @@ namespace UVtools.Core.FileFormats
             set => base.BottomLiftHeight = ManifestFile.Print.BottomLiftHeight = (float)Math.Round(value, 2);
         }
 
-        public override float LiftHeight
-        {
-            get => ManifestFile.Print.LiftHeight;
-            set => base.LiftHeight = ManifestFile.Print.LiftHeight = (float)Math.Round(value, 2);
-        }
-
         public override float BottomLiftSpeed
         {
             get => ManifestFile.Print.BottomLiftSpeed;
             set => base.BottomLiftSpeed = ManifestFile.Print.BottomLiftSpeed = (float)Math.Round(value, 2);
         }
 
+        public override float LiftHeight
+        {
+            get => ManifestFile.Print.LiftHeight;
+            set => base.LiftHeight = ManifestFile.Print.LiftHeight = (float)Math.Round(value, 2);
+        }
+        
         public override float LiftSpeed
         {
             get => ManifestFile.Print.LiftSpeed;
@@ -394,18 +389,18 @@ namespace UVtools.Core.FileFormats
             set => base.BottomLiftHeight2 = ManifestFile.Print.BottomLiftHeight2 = (float)Math.Round(value, 2);
         }
 
-        public override float LiftHeight2
-        {
-            get => ManifestFile.Print.LiftHeight2;
-            set => base.LiftHeight2 = ManifestFile.Print.LiftHeight2 = (float)Math.Round(value, 2);
-        }
-
         public override float BottomLiftSpeed2
         {
             get => ManifestFile.Print.BottomLiftSpeed2;
             set => base.BottomLiftSpeed2 = ManifestFile.Print.BottomLiftSpeed2 = (float)Math.Round(value, 2);
         }
 
+        public override float LiftHeight2
+        {
+            get => ManifestFile.Print.LiftHeight2;
+            set => base.LiftHeight2 = ManifestFile.Print.LiftHeight2 = (float)Math.Round(value, 2);
+        }
+        
         public override float LiftSpeed2
         {
             get => ManifestFile.Print.LiftSpeed2;
@@ -438,21 +433,29 @@ namespace UVtools.Core.FileFormats
         public override float BottomRetractHeight2
         {
             get => ManifestFile.Print.BottomRetractHeight2;
-            set => base.BottomRetractHeight2 = ManifestFile.Print.BottomRetractHeight2 = (float)Math.Round(value, 2);
+            set
+            {
+                value = Math.Clamp((float)Math.Round(value, 2), 0, BottomRetractHeightTotal);
+                base.BottomRetractHeight2 = ManifestFile.Print.BottomRetractHeight2 = value;
+            }
         }
-
-        public override float RetractHeight2
-        {
-            get => ManifestFile.Print.RetractHeight2;
-            set => base.RetractHeight2 = ManifestFile.Print.RetractHeight2 = (float)Math.Round(value, 2);
-        }
-
+        
         public override float BottomRetractSpeed2
         {
             get => ManifestFile.Print.BottomRetractSpeed2;
             set => base.BottomRetractSpeed2 = ManifestFile.Print.BottomRetractSpeed2 = (float)Math.Round(value, 2);
         }
 
+        public override float RetractHeight2
+        {
+            get => ManifestFile.Print.RetractHeight2;
+            set
+            {
+                value = Math.Clamp((float)Math.Round(value, 2), 0, RetractHeightTotal);
+                base.RetractHeight2 = ManifestFile.Print.RetractHeight2 = value;
+            }
+        }
+        
         public override float RetractSpeed2
         {
             get => ManifestFile.Print.RetractSpeed2;
@@ -523,11 +526,11 @@ namespace UVtools.Core.FileFormats
         public void RebuildVDTLayers()
         {
             ManifestFile.CreateDateTime = DateTime.UtcNow.ToString("u");
-            var layers = new VDTLayer[LayerCount];
+            ManifestFile.Layers = new VDTLayer[LayerCount];
             for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
             {
                 var layer = this[layerIndex];
-                layers[layerIndex] = new VDTLayer
+                ManifestFile.Layers[layerIndex] = new VDTLayer
                 {
                     PositionZ = layer.PositionZ,
                     LightOffDelay = layer.LightOffDelay,
@@ -545,8 +548,6 @@ namespace UVtools.Core.FileFormats
                     LightPWM = layer.LightPWM
                 };
             }
-
-            ManifestFile.Layers = layers;
         }
 
         protected override void EncodeInternally(string fileFullPath, OperationProgress progress)

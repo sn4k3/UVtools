@@ -7,12 +7,9 @@
  */
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Text;
 using Avalonia;
@@ -20,7 +17,6 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using MessageBox.Avalonia.Enums;
 using UVtools.Core;
-using UVtools.Core.FileFormats;
 using UVtools.Core.Objects;
 using UVtools.WPF.Extensions;
 using UVtools.WPF.Structures;
@@ -137,8 +133,8 @@ namespace UVtools.WPF
             }
         }
 
-        public bool ThumbnailCanGoPrevious => SlicerFile is { } && _visibleThumbnailIndex > 1;
-        public bool ThumbnailCanGoNext => SlicerFile is { } && _visibleThumbnailIndex < SlicerFile.CreatedThumbnailsCount;
+        public bool ThumbnailCanGoPrevious => SlicerFile is not null && _visibleThumbnailIndex > 1;
+        public bool ThumbnailCanGoNext => SlicerFile is not null && _visibleThumbnailIndex < SlicerFile.CreatedThumbnailsCount;
 
         public void ThumbnailGoPrevious()
         {
@@ -167,7 +163,7 @@ namespace UVtools.WPF
         public async void OnClickThumbnailSave()
         {
             if (SlicerFile is null) return;
-            if (ReferenceEquals(SlicerFile.Thumbnails[_visibleThumbnailIndex - 1], null))
+            if (SlicerFile.Thumbnails[_visibleThumbnailIndex - 1] is null)
             {
                 return; // This should never happen!
             }
@@ -189,7 +185,7 @@ namespace UVtools.WPF
         public async void OnClickThumbnailImport()
         {
             if (_visibleThumbnailIndex <= 0) return;
-            if (ReferenceEquals(SlicerFile.Thumbnails[_visibleThumbnailIndex - 1], null))
+            if (SlicerFile.Thumbnails[_visibleThumbnailIndex - 1] is null)
             {
                 return; // This should never happen!
             }
@@ -203,8 +199,21 @@ namespace UVtools.WPF
             var filepath = await dialog.ShowAsync(this);
 
             if (filepath is null || filepath.Length <= 0) return;
-            int i = (int)(_visibleThumbnailIndex - 1);
-            SlicerFile.SetThumbnail(i, filepath[0]);
+            uint i = _visibleThumbnailIndex - 1;
+            SlicerFile.SetThumbnail((int)i, filepath[0]);
+            //VisibleThumbnailImage = SlicerFile.Thumbnails[i].ToBitmap();
+            SlicerFile.RequireFullEncode = true;
+            CanSave = true;
+        }
+
+        public void RefreshThumbnail()
+        {
+            if (_visibleThumbnailIndex <= 0) return;
+            uint i = _visibleThumbnailIndex - 1;
+            if (SlicerFile.Thumbnails?[i] is null)
+            {
+                return; 
+            }
             VisibleThumbnailImage = SlicerFile.Thumbnails[i].ToBitmap();
         }
         #endregion
@@ -228,32 +237,30 @@ namespace UVtools.WPF
 
             try
             {
-                using (TextWriter tw = new StreamWriter(file))
+                using TextWriter tw = new StreamWriter(file);
+                foreach (var config in SlicerFile.Configs)
                 {
-                    foreach (var config in SlicerFile.Configs)
+                    var type = config.GetType();
+                    tw.WriteLine($"[{type.Name}]");
+                    foreach (var property in type.GetProperties(BindingFlags.Public | BindingFlags.Instance))
                     {
-                        var type = config.GetType();
-                        tw.WriteLine($"[{type.Name}]");
-                        foreach (var property in type.GetProperties(BindingFlags.Public | BindingFlags.Instance))
+                        if (property.Name.Equals("Item")) continue;
+                        var value = property.GetValue(config);
+                        switch (value)
                         {
-                            if (property.Name.Equals("Item")) continue;
-                            var value = property.GetValue(config);
-                            switch (value)
-                            {
-                                case null:
-                                    continue;
-                                case IList list:
-                                    tw.WriteLine($"{property.Name} = {list.Count}");
-                                    break;
-                                default:
-                                    tw.WriteLine($"{property.Name} = {value}");
-                                    break;
-                            }
+                            case null:
+                                continue;
+                            case IList list:
+                                tw.WriteLine($"{property.Name} = {list.Count}");
+                                break;
+                            default:
+                                tw.WriteLine($"{property.Name} = {value}");
+                                break;
                         }
-                        tw.WriteLine();
                     }
-                    tw.Close();
+                    tw.WriteLine();
                 }
+                tw.Close();
             }
             catch (Exception e)
             {

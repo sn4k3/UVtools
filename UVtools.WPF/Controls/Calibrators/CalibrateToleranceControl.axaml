@@ -7,7 +7,6 @@
   <Grid ColumnDefinitions="Auto,10,380">
     <StackPanel Spacing="10">
 
-      <Border BorderBrush="Black" BorderThickness="1" Padding="5">
         <Expander IsExpanded="True">
           <Expander.Header>
             <TextBlock Text="Step 1 - Common properties"
@@ -241,174 +240,164 @@
 
           </Grid>
         </Expander>
-      </Border>
 
-        <Border BorderBrush="Black" BorderThickness="1" Padding="5">
-            <Expander IsExpanded="True">
-                <Expander.Header>
-                    <TextBlock Text="Step 2 - Female part"
-                               FontWeight="Bold"
-                               Cursor="Hand"/>
+        <Expander IsExpanded="True">
+            <Expander.Header>
+                <TextBlock Text="Step 2 - Female part"
+                           FontWeight="Bold"
+                           Cursor="Hand"/>
 
-                </Expander.Header>
+            </Expander.Header>
 
-              <Grid RowDefinitions="Auto,5,Auto"
-                    ColumnDefinitions="Auto,10,170,5,Auto,20,Auto,10,170,5,Auto">
+          <Grid RowDefinitions="Auto,5,Auto"
+                ColumnDefinitions="Auto,10,170,5,Auto,20,Auto,10,170,5,Auto">
+
+
+            <TextBlock Grid.Row="0" Grid.Column="0"
+                       Text="Diameter:"
+                       VerticalAlignment="Center"/>
+            <NumericUpDown Grid.Row="0" Grid.Column="2"
+                             
+                             Increment="1.0"
+                             Minimum="2"
+                             Maximum="1000"
+                             FormatString="F2"
+                             Value="{Binding Operation.FemaleDiameter}"/>
+            <TextBlock Grid.Row="0" Grid.Column="4"
+                         VerticalAlignment="Center"
+                         Text="mm"/>
+
+            <TextBlock Grid.Row="0" Grid.Column="6"
+                       Text="Hole diameter:"
+                       VerticalAlignment="Center"/>
+            <NumericUpDown Grid.Row="0" Grid.Column="8"
+                           
+                           Increment="1.0"
+                           Minimum="2"
+                           Maximum="1000"
+                           FormatString="F2"
+                           Value="{Binding Operation.FemaleHoleDiameter}"/>
+            <TextBlock Grid.Row="0" Grid.Column="10"
+                       VerticalAlignment="Center"
+                       Text="mm"/>
+
+            <TextBlock Grid.Row="2" Grid.Column="0"
+                       Text="Expected:"
+                       FontWeight="Bold"
+                       VerticalAlignment="Center"/>
+
+            <TextBlock Grid.Row="2" Grid.Column="2"
+                       Text="{Binding Operation.FemaleDiameterRealXSize, StringFormat=\{0:F2\}mm}"
+                       FontWeight="Bold"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"/>
+
+            <TextBlock Grid.Row="2" Grid.Column="8"
+                       Text="{Binding Operation.FemaleHoleDiameterRealXSize, StringFormat=\{0:F2\}mm}"
+                       FontWeight="Bold"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"/>
+          </Grid>
+
+        </Expander>
+
+        <Expander IsExpanded="True">
+            <Expander.Header>
+                <TextBlock Text="Step 3 - Male parts"
+                           FontWeight="Bold"
+                           Cursor="Hand"/>
+
+            </Expander.Header>
+
+            <Grid RowDefinitions="Auto,10,Auto"
+                  ColumnDefinitions="Auto,10,Auto,5,Auto,20,Auto,10,150,5,Auto,20,Auto,10,150,5,Auto">
 
 
                 <TextBlock Grid.Row="0" Grid.Column="0"
-                           Text="Diameter:"
+                           Text="Thinner models:"
                            VerticalAlignment="Center"/>
                 <NumericUpDown Grid.Row="0" Grid.Column="2"
-                                 
-                                 Increment="1.0"
-                                 Minimum="2"
-                                 Maximum="1000"
-                                 FormatString="F2"
-                                 Value="{Binding Operation.FemaleDiameter}"/>
-                <TextBlock Grid.Row="0" Grid.Column="4"
-                             VerticalAlignment="Center"
-                             Text="mm"/>
-
+                               
+                               Increment="1"
+                               Minimum="0"
+                               Maximum="1000"
+                               Value="{Binding Operation.MaleThinnerModels}"/>
                 <TextBlock Grid.Row="0" Grid.Column="6"
-                           Text="Hole diameter:"
+                           Text="-Offset:"
                            VerticalAlignment="Center"/>
                 <NumericUpDown Grid.Row="0" Grid.Column="8"
                                
-                               Increment="1.0"
-                               Minimum="2"
-                               Maximum="1000"
+                               Increment="0.01"
+                               Minimum="-1000"
+                               Maximum="0"
                                FormatString="F2"
-                               Value="{Binding Operation.FemaleHoleDiameter}"/>
+                               Value="{Binding Operation.MaleThinnerOffset}"/>
                 <TextBlock Grid.Row="0" Grid.Column="10"
                            VerticalAlignment="Center"
                            Text="mm"/>
 
-                <TextBlock Grid.Row="2" Grid.Column="0"
-                           Text="Expected:"
-                           FontWeight="Bold"
+                <TextBlock Grid.Row="0" Grid.Column="12"
+                           Text="-Step:"
                            VerticalAlignment="Center"/>
-
-                <TextBlock Grid.Row="2" Grid.Column="2"
-                           Text="{Binding Operation.FemaleDiameterRealXSize, StringFormat=\{0:F2\}mm}"
-                           FontWeight="Bold"
-                           HorizontalAlignment="Center"
-                           VerticalAlignment="Center"/>
-
-                <TextBlock Grid.Row="2" Grid.Column="8"
-                           Text="{Binding Operation.FemaleHoleDiameterRealXSize, StringFormat=\{0:F2\}mm}"
-                           FontWeight="Bold"
-                           HorizontalAlignment="Center"
-                           VerticalAlignment="Center"/>
-              </Grid>
-
-            </Expander>
-        </Border>
-
-        <Border BorderBrush="Black" BorderThickness="1" Padding="5">
-            <Expander IsExpanded="True">
-                <Expander.Header>
-                    <TextBlock Text="Step 3 - Male parts"
-                               FontWeight="Bold"
-                               Cursor="Hand"/>
-
-                </Expander.Header>
-
-                <Grid RowDefinitions="Auto,10,Auto"
-                      ColumnDefinitions="Auto,10,Auto,5,Auto,20,Auto,10,150,5,Auto,20,Auto,10,150,5,Auto">
+                <NumericUpDown Grid.Row="0" Grid.Column="14"
+                               
+                               Increment="0.01"
+                               Minimum="-1000"
+                               Maximum="-0.01"
+                               FormatString="F2"
+                               Value="{Binding Operation.MaleThinnerStep}"/>
+                <TextBlock Grid.Row="0" Grid.Column="16"
+                           VerticalAlignment="Center"
+                           Text="mm"/>
 
 
-                    <TextBlock Grid.Row="0" Grid.Column="0"
-                               Text="Thinner models:"
-                               VerticalAlignment="Center"/>
-                    <NumericUpDown Grid.Row="0" Grid.Column="2"
-                                   
-                                   Increment="1"
-                                   Minimum="0"
-                                   Maximum="1000"
-                                   Value="{Binding Operation.MaleThinnerModels}"/>
-                    <TextBlock Grid.Row="0" Grid.Column="6"
-                               Text="-Offset:"
-                               VerticalAlignment="Center"/>
-                    <NumericUpDown Grid.Row="0" Grid.Column="8"
-                                   
-                                   Increment="0.01"
-                                   Minimum="-1000"
-                                   Maximum="0"
-                                   FormatString="F2"
-                                   Value="{Binding Operation.MaleThinnerOffset}"/>
-                    <TextBlock Grid.Row="0" Grid.Column="10"
-                               VerticalAlignment="Center"
-                               Text="mm"/>
-
-                    <TextBlock Grid.Row="0" Grid.Column="12"
-                               Text="-Step:"
-                               VerticalAlignment="Center"/>
-                    <NumericUpDown Grid.Row="0" Grid.Column="14"
-                                   
-                                   Increment="0.01"
-                                   Minimum="-1000"
-                                   Maximum="-0.01"
-                                   FormatString="F2"
-                                   Value="{Binding Operation.MaleThinnerStep}"/>
-                    <TextBlock Grid.Row="0" Grid.Column="16"
-                               VerticalAlignment="Center"
-                               Text="mm"/>
-
-
-                  <TextBlock Grid.Row="2" Grid.Column="0"
-                             Text="Thicker models:"
+              <TextBlock Grid.Row="2" Grid.Column="0"
+                         Text="Thicker models:"
+                         IsEnabled="{Binding !Operation.FuseParts}"
+                         VerticalAlignment="Center"/>
+              <NumericUpDown Grid.Row="2" Grid.Column="2"
+                             
+                             Increment="1"
+                             Minimum="0"
+                             Maximum="1000"
                              IsEnabled="{Binding !Operation.FuseParts}"
-                             VerticalAlignment="Center"/>
-                  <NumericUpDown Grid.Row="2" Grid.Column="2"
-                                 
-                                 Increment="1"
-                                 Minimum="0"
-                                 Maximum="1000"
-                                 IsEnabled="{Binding !Operation.FuseParts}"
-                                 Value="{Binding Operation.MaleThickerModels}"/>
-                  <TextBlock Grid.Row="2" Grid.Column="6"
-                             Text="+Offset:"
+                             Value="{Binding Operation.MaleThickerModels}"/>
+              <TextBlock Grid.Row="2" Grid.Column="6"
+                         Text="+Offset:"
+                         IsEnabled="{Binding !Operation.FuseParts}"
+                         VerticalAlignment="Center"/>
+              <NumericUpDown Grid.Row="2" Grid.Column="8"
+                             
+                             Increment="0.01"
+                             Minimum="0"
+                             Maximum="1000"
+                             FormatString="F2"
                              IsEnabled="{Binding !Operation.FuseParts}"
-                             VerticalAlignment="Center"/>
-                  <NumericUpDown Grid.Row="2" Grid.Column="8"
-                                 
-                                 Increment="0.01"
-                                 Minimum="0"
-                                 Maximum="1000"
-                                 FormatString="F2"
-                                 IsEnabled="{Binding !Operation.FuseParts}"
-                                 Value="{Binding Operation.MaleThickerOffset}"/>
-                  <TextBlock Grid.Row="2" Grid.Column="10"
-                             VerticalAlignment="Center"
+                             Value="{Binding Operation.MaleThickerOffset}"/>
+              <TextBlock Grid.Row="2" Grid.Column="10"
+                         VerticalAlignment="Center"
+                         IsEnabled="{Binding !Operation.FuseParts}"
+                         Text="mm"/>
+
+              <TextBlock Grid.Row="2" Grid.Column="12"
+                         Text="+Step:"
+                         IsEnabled="{Binding !Operation.FuseParts}"
+                         VerticalAlignment="Center"/>
+              <NumericUpDown Grid.Row="2" Grid.Column="14"
+                             
+                             Increment="0.01"
+                             Minimum="0.01"
+                             Maximum="1000"
                              IsEnabled="{Binding !Operation.FuseParts}"
-                             Text="mm"/>
+                             FormatString="F2"
+                             Value="{Binding Operation.MaleThickerStep}"/>
+              <TextBlock Grid.Row="2" Grid.Column="16"
+                         VerticalAlignment="Center"
+                         IsEnabled="{Binding !Operation.FuseParts}"
+                         Text="mm"/>
+            </Grid>
 
-                  <TextBlock Grid.Row="2" Grid.Column="12"
-                             Text="+Step:"
-                             IsEnabled="{Binding !Operation.FuseParts}"
-                             VerticalAlignment="Center"/>
-                  <NumericUpDown Grid.Row="2" Grid.Column="14"
-                                 
-                                 Increment="0.01"
-                                 Minimum="0.01"
-                                 Maximum="1000"
-                                 IsEnabled="{Binding !Operation.FuseParts}"
-                                 FormatString="F2"
-                                 Value="{Binding Operation.MaleThickerStep}"/>
-                  <TextBlock Grid.Row="2" Grid.Column="16"
-                             VerticalAlignment="Center"
-                             IsEnabled="{Binding !Operation.FuseParts}"
-                             Text="mm"/>
-                  
-
-
-                    
-                </Grid>
-
-            </Expander>
-        </Border>
-
+        </Expander>
         
     </StackPanel>
 

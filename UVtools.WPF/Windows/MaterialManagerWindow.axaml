@@ -77,8 +77,7 @@
             </Border>
 
 
-        <Border Grid.Row="1" BorderBrush="Black" BorderThickness="1" Padding="5">
-        <Expander IsExpanded="False">
+        <Expander Grid.Row="1" IsExpanded="False">
           <Expander.Header>
             <TextBlock Text="Add new material"
                        FontWeight="Bold"
@@ -170,7 +169,6 @@
                          Text="units"/>
           </Grid>
         </Expander>
-      </Border>
 
         <TextBlock  Grid.Row="2"
                     VerticalAlignment="Center" FontWeight="Bold"

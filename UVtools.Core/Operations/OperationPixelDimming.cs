@@ -36,6 +36,7 @@ namespace UVtools.Core.Operations
         #endregion
 
         #region Members
+        private bool _lighteningPixels;
         private uint _wallThicknessStart = 10;
         private uint _wallThicknessEnd = 10;
         private bool _wallsOnly;
@@ -48,6 +49,7 @@ namespace UVtools.Core.Operations
         private byte _brightness = 127;
         private ushort _infillGenThickness = 10;
         private ushort _infillGenSpacing = 20;
+
         #endregion
 
         #region Overrides
@@ -140,13 +142,20 @@ namespace UVtools.Core.Operations
 
         #region Constructor
 
-        public OperationPixelDimming() { }
+        public OperationPixelDimming()
+        { }
 
         public OperationPixelDimming(FileFormat slicerFile) : base(slicerFile) { }
 
         #endregion
 
         #region Properties
+
+        public bool LighteningPixels
+        {
+            get => _lighteningPixels;
+            set => RaiseAndSetIfChanged(ref _lighteningPixels, value);
+        }
 
         public uint WallThickness
         {
@@ -227,7 +236,7 @@ namespace UVtools.Core.Operations
             }
         }
         
-        public decimal BrightnessPercent => Math.Round(_brightness * 100 / 255M, 2);
+        public float BrightnessPercent => (float)Math.Round(_brightness * 100 / 255f, 2);
 
 
         public ushort InfillGenThickness
@@ -248,7 +257,7 @@ namespace UVtools.Core.Operations
 
         protected bool Equals(OperationPixelDimming other)
         {
-            return _wallThicknessStart == other._wallThicknessStart && _wallThicknessEnd == other._wallThicknessEnd && _wallsOnly == other._wallsOnly && _chamfer == other._chamfer && _alternatePatternPerLayers == other._alternatePatternPerLayers && _patternText == other._patternText && _alternatePatternText == other._alternatePatternText && _brightness == other._brightness && _infillGenThickness == other._infillGenThickness && _infillGenSpacing == other._infillGenSpacing;
+            return _lighteningPixels == other._lighteningPixels && _wallThicknessStart == other._wallThicknessStart && _wallThicknessEnd == other._wallThicknessEnd && _wallsOnly == other._wallsOnly && _chamfer == other._chamfer && _alternatePatternPerLayers == other._alternatePatternPerLayers && _patternText == other._patternText && _alternatePatternText == other._alternatePatternText && _brightness == other._brightness && _infillGenThickness == other._infillGenThickness && _infillGenSpacing == other._infillGenSpacing;
         }
 
         public override bool Equals(object obj)
@@ -256,12 +265,13 @@ namespace UVtools.Core.Operations
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
             if (obj.GetType() != this.GetType()) return false;
-            return Equals((OperationPixelDimming) obj);
+            return Equals((OperationPixelDimming)obj);
         }
 
         public override int GetHashCode()
         {
             var hashCode = new HashCode();
+            hashCode.Add(_lighteningPixels);
             hashCode.Add(_wallThicknessStart);
             hashCode.Add(_wallThicknessEnd);
             hashCode.Add(_wallsOnly);
@@ -673,29 +683,30 @@ namespace UVtools.Core.Operations
 
 
             using Mat erode = new();
-            using Mat diff = new();
+            //using Mat diff = new();
             var original = mat.Clone();
+            var originalRoi = GetRoiOrDefault(original);
             var target = GetRoiOrDefault(mat);
             using var mask = GetMask(mat);
 
 
             CvInvoke.Erode(target, erode, kernel, anchor, wallThickness, BorderType.Reflect101, default);
-
-            if (_wallsOnly)
+           
+            if (_lighteningPixels)
             {
-                CvInvoke.Subtract(target, IsNormalPattern(layerIndex) ? patternMask : alternatePatternMask, target);
-                //CvInvoke.BitwiseAnd(diff, IsNormalPattern(layerIndex) ? patternMask : alternatePatternMask, target, mask);
-                CvInvoke.Add(erode, target, target);
+                CvInvoke.Add(target, IsNormalPattern(layerIndex) ? patternMask : alternatePatternMask, target, _wallsOnly ? target : erode);
             }
             else
             {
-                //CvInvoke.Subtract(target, erode, diff);
-                //CvInvoke.BitwiseAnd(erode, IsNormalPattern(layerIndex) ? patternMask : alternatePatternMask, target, mask);
-                //CvInvoke.Add(target, diff, target, mask);
-                CvInvoke.Subtract(target, IsNormalPattern(layerIndex) ? patternMask : alternatePatternMask, target, erode);
+                CvInvoke.Subtract(target, IsNormalPattern(layerIndex) ? patternMask : alternatePatternMask, target, _wallsOnly ? target : erode);
             }
 
-            ApplyMask(original, target, mask);
+            if (_wallsOnly)
+            {
+                originalRoi.CopyTo(target, erode);
+            }
+
+            ApplyMask(originalRoi, target, mask);
 
             return true;
         }

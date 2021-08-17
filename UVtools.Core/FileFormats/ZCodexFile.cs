@@ -216,12 +216,7 @@ namespace UVtools.Core.FileFormats
         public override byte AntiAliasing
         {
             get => UserSettings.AntiAliasing;
-            set
-            {
-                UserSettings.AntiAliasing = value.Clamp(1, 16);
-                RaisePropertyChanged();
-            }
-
+            set => base.AntiAliasing = UserSettings.AntiAliasing = value.Clamp(1, 16);
         }
 
         public override float LayerHeight

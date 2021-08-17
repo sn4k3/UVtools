@@ -8,6 +8,7 @@
 
 using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.IO.Compression;
@@ -197,11 +198,7 @@ namespace UVtools.Core.FileFormats
         public override byte AntiAliasing
         {
             get => HeaderSettings.AntiAliasing;
-            set
-            {
-                HeaderSettings.AntiAliasing = value.Clamp(1, 16);
-                RaisePropertyChanged();
-            }
+            set => base.AntiAliasing = HeaderSettings.AntiAliasing = value.Clamp(1, 16);
         }
 
         public override float LayerHeight
@@ -367,6 +364,7 @@ namespace UVtools.Core.FileFormats
         public bool IsPHZZip;
         #endregion
 
+        #region Constructor
         public ChituboxZipFile()
         {
             GCode = new GCodeBuilder
@@ -380,8 +378,27 @@ namespace UVtools.Core.FileFormats
                 EndGCodeMoveCommand = GCodeBuilder.GCodeMoveCommands.G1
             };
         }
+        #endregion
 
         #region Methods
+
+        public override bool CanProcess(string fileFullPath)
+        {
+            if (!base.CanProcess(fileFullPath)) return false;
+
+            try
+            {
+                var zip = ZipFile.Open(fileFullPath, ZipArchiveMode.Read);
+                if (zip.Entries.Any(entry => entry.Name.EndsWith(".gcode"))) return true;
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine(e);
+            }
+
+
+            return false;
+        }
 
         protected override void EncodeInternally(string fileFullPath, OperationProgress progress)
         {

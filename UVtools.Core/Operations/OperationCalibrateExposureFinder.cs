@@ -128,7 +128,8 @@ namespace UVtools.Core.Operations
         private decimal _featuresHeight = 1;
         private decimal _featuresMargin = 2m;
         
-        private ushort _staircaseThickness = 40;
+        private ushort _staircaseThicknessPx = 40;
+        private decimal _staircaseThicknessMm = 2;
         
         private bool _holesEnabled = false;
         private CalibrateExposureFinderShapes _holeShape = CalibrateExposureFinderShapes.Square;
@@ -485,11 +486,21 @@ namespace UVtools.Core.Operations
             set => RaiseAndSetIfChanged(ref _featuresMargin, Math.Round(value, 2));
         }
 
-        public ushort StaircaseThickness
+        public ushort StaircaseThicknessPx
         {
-            get => _staircaseThickness;
-            set => RaiseAndSetIfChanged(ref _staircaseThickness, value);
+            get => _staircaseThicknessPx;
+            set => RaiseAndSetIfChanged(ref _staircaseThicknessPx, value);
         }
+
+        public decimal StaircaseThicknessMm
+        {
+            get => _staircaseThicknessMm;
+            set => RaiseAndSetIfChanged(ref _staircaseThicknessMm, value);
+        }
+
+        public ushort StaircaseThickness => _unitOfMeasure == CalibrateExposureFinderMeasures.Pixels
+            ? _staircaseThicknessPx
+            : (ushort)(_staircaseThicknessMm * Yppmm);
 
         public bool CounterTrianglesEnabled
         {
@@ -664,7 +675,7 @@ namespace UVtools.Core.Operations
                     {
                         if (string.IsNullOrWhiteSpace(mmStr)) continue;
                         if (!decimal.TryParse(mmStr, out var mm)) continue;
-                        var mmPx = (int)(mm * Xppmm);
+                        var mmPx = (int)(mm * Yppmm);
                         if (mmPx is <= 0 or > 500) continue;
                         if (bars.Contains(mmPx)) continue;
                         bars.Add(mmPx);
@@ -1186,7 +1197,7 @@ namespace UVtools.Core.Operations
         
         private bool Equals(OperationCalibrateExposureFinder other)
         {
-            return _displayWidth == other._displayWidth && _displayHeight == other._displayHeight && _layerHeight == other._layerHeight && _bottomLayers == other._bottomLayers && _bottomExposure == other._bottomExposure && _normalExposure == other._normalExposure && _topBottomMargin == other._topBottomMargin && _leftRightMargin == other._leftRightMargin && _chamferLayers == other._chamferLayers && _erodeBottomIterations == other._erodeBottomIterations && _partMargin == other._partMargin && _enableAntiAliasing == other._enableAntiAliasing && _mirrorOutput == other._mirrorOutput && _baseHeight == other._baseHeight && _featuresHeight == other._featuresHeight && _featuresMargin == other._featuresMargin && _staircaseThickness == other._staircaseThickness && _holesEnabled == other._holesEnabled && _holeShape == other._holeShape && _unitOfMeasure == other._unitOfMeasure && _holeDiametersPx == other._holeDiametersPx && _holeDiametersMm == other._holeDiametersMm && _barsEnabled == other._barsEnabled && _barSpacing == other._barSpacing && _barLength == other._barLength && _barVerticalSplitter == other._barVerticalSplitter && _barFenceThickness == other._barFenceThickness && _barFenceOffset == other._barFenceOffset && _barThicknessesPx == other._barThicknessesPx && _barThicknessesMm == other._barThicknessesMm && _textEnabled == other._textEnabled && _textFont == other._textFont && _textScale.Equals(other._textScale) && _textThickness == other._textThickness && _text == other._text && _multipleBrightness == other._multipleBrightness && _multipleBrightnessExcludeFrom == other._multipleBrightnessExcludeFrom && _multipleBrightnessValues == other._multipleBrightnessValues && _multipleBrightnessGenExposureTime == other._multipleBrightnessGenExposureTime && _multipleBrightnessGenEmulatedAALevel == other._multipleBrightnessGenEmulatedAALevel && _multipleBrightnessGenExposureFractions == other._multipleBrightnessGenExposureFractions && _multipleLayerHeight == other._multipleLayerHeight && _multipleLayerHeightMaximum == other._multipleLayerHeightMaximum && _multipleLayerHeightStep == other._multipleLayerHeightStep && _multipleExposuresBaseLayersPrintMode == other._multipleExposuresBaseLayersPrintMode && _multipleExposuresBaseLayersCustomExposure == other._multipleExposuresBaseLayersCustomExposure && _differentSettingsForSamePositionedLayers == other._differentSettingsForSamePositionedLayers && _samePositionedLayersLiftHeightEnabled == other._samePositionedLayersLiftHeightEnabled && _samePositionedLayersLiftHeight == other._samePositionedLayersLiftHeight && _samePositionedLayersLightOffDelayEnabled == other._samePositionedLayersLightOffDelayEnabled && _samePositionedLayersLightOffDelay == other._samePositionedLayersLightOffDelay && _multipleExposures == other._multipleExposures && _exposureGenType == other._exposureGenType && _exposureGenIgnoreBaseExposure == other._exposureGenIgnoreBaseExposure && _exposureGenBottomStep == other._exposureGenBottomStep && _exposureGenNormalStep == other._exposureGenNormalStep && _exposureGenTests == other._exposureGenTests && _exposureGenManualLayerHeight == other._exposureGenManualLayerHeight && _exposureGenManualBottom == other._exposureGenManualBottom && _exposureGenManualNormal == other._exposureGenManualNormal && Equals(_exposureTable, other._exposureTable) && _bullsEyeEnabled == other._bullsEyeEnabled && _bullsEyeConfigurationPx == other._bullsEyeConfigurationPx && _bullsEyeConfigurationMm == other._bullsEyeConfigurationMm && _bullsEyeInvertQuadrants == other._bullsEyeInvertQuadrants && _counterTrianglesEnabled == other._counterTrianglesEnabled && _counterTrianglesTipOffset == other._counterTrianglesTipOffset && _counterTrianglesFence == other._counterTrianglesFence && _patternModel == other._patternModel && _bullsEyeFenceThickness == other._bullsEyeFenceThickness && _bullsEyeFenceOffset == other._bullsEyeFenceOffset && _patternModelGlueBottomLayers == other._patternModelGlueBottomLayers;
+            return _displayWidth == other._displayWidth && _displayHeight == other._displayHeight && _layerHeight == other._layerHeight && _bottomLayers == other._bottomLayers && _bottomExposure == other._bottomExposure && _normalExposure == other._normalExposure && _topBottomMargin == other._topBottomMargin && _leftRightMargin == other._leftRightMargin && _chamferLayers == other._chamferLayers && _erodeBottomIterations == other._erodeBottomIterations && _partMargin == other._partMargin && _enableAntiAliasing == other._enableAntiAliasing && _mirrorOutput == other._mirrorOutput && _baseHeight == other._baseHeight && _featuresHeight == other._featuresHeight && _featuresMargin == other._featuresMargin && _staircaseThicknessPx == other._staircaseThicknessPx && _holesEnabled == other._holesEnabled && _holeShape == other._holeShape && _unitOfMeasure == other._unitOfMeasure && _holeDiametersPx == other._holeDiametersPx && _holeDiametersMm == other._holeDiametersMm && _barsEnabled == other._barsEnabled && _barSpacing == other._barSpacing && _barLength == other._barLength && _barVerticalSplitter == other._barVerticalSplitter && _barFenceThickness == other._barFenceThickness && _barFenceOffset == other._barFenceOffset && _barThicknessesPx == other._barThicknessesPx && _barThicknessesMm == other._barThicknessesMm && _textEnabled == other._textEnabled && _textFont == other._textFont && _textScale.Equals(other._textScale) && _textThickness == other._textThickness && _text == other._text && _multipleBrightness == other._multipleBrightness && _multipleBrightnessExcludeFrom == other._multipleBrightnessExcludeFrom && _multipleBrightnessValues == other._multipleBrightnessValues && _multipleBrightnessGenExposureTime == other._multipleBrightnessGenExposureTime && _multipleBrightnessGenEmulatedAALevel == other._multipleBrightnessGenEmulatedAALevel && _multipleBrightnessGenExposureFractions == other._multipleBrightnessGenExposureFractions && _multipleLayerHeight == other._multipleLayerHeight && _multipleLayerHeightMaximum == other._multipleLayerHeightMaximum && _multipleLayerHeightStep == other._multipleLayerHeightStep && _multipleExposuresBaseLayersPrintMode == other._multipleExposuresBaseLayersPrintMode && _multipleExposuresBaseLayersCustomExposure == other._multipleExposuresBaseLayersCustomExposure && _differentSettingsForSamePositionedLayers == other._differentSettingsForSamePositionedLayers && _samePositionedLayersLiftHeightEnabled == other._samePositionedLayersLiftHeightEnabled && _samePositionedLayersLiftHeight == other._samePositionedLayersLiftHeight && _samePositionedLayersLightOffDelayEnabled == other._samePositionedLayersLightOffDelayEnabled && _samePositionedLayersLightOffDelay == other._samePositionedLayersLightOffDelay && _multipleExposures == other._multipleExposures && _exposureGenType == other._exposureGenType && _exposureGenIgnoreBaseExposure == other._exposureGenIgnoreBaseExposure && _exposureGenBottomStep == other._exposureGenBottomStep && _exposureGenNormalStep == other._exposureGenNormalStep && _exposureGenTests == other._exposureGenTests && _exposureGenManualLayerHeight == other._exposureGenManualLayerHeight && _exposureGenManualBottom == other._exposureGenManualBottom && _exposureGenManualNormal == other._exposureGenManualNormal && Equals(_exposureTable, other._exposureTable) && _bullsEyeEnabled == other._bullsEyeEnabled && _bullsEyeConfigurationPx == other._bullsEyeConfigurationPx && _bullsEyeConfigurationMm == other._bullsEyeConfigurationMm && _bullsEyeInvertQuadrants == other._bullsEyeInvertQuadrants && _counterTrianglesEnabled == other._counterTrianglesEnabled && _counterTrianglesTipOffset == other._counterTrianglesTipOffset && _counterTrianglesFence == other._counterTrianglesFence && _patternModel == other._patternModel && _bullsEyeFenceThickness == other._bullsEyeFenceThickness && _bullsEyeFenceOffset == other._bullsEyeFenceOffset && _patternModelGlueBottomLayers == other._patternModelGlueBottomLayers;
         }
 
         public override bool Equals(object obj)
@@ -1213,7 +1224,7 @@ namespace UVtools.Core.Operations
             hashCode.Add(_baseHeight);
             hashCode.Add(_featuresHeight);
             hashCode.Add(_featuresMargin);
-            hashCode.Add(_staircaseThickness);
+            hashCode.Add(_staircaseThicknessPx);
             hashCode.Add(_holesEnabled);
             hashCode.Add((int) _holeShape);
             hashCode.Add((int) _unitOfMeasure);
@@ -1353,6 +1364,7 @@ namespace UVtools.Core.Operations
 
             int featuresMarginX = (int)(Xppmm * _featuresMargin);
             int featuresMarginY = (int)(Yppmm * _featuresMargin);
+            ushort startCaseThickness = StaircaseThickness;
 
             int holePanelWidth = holes.Length > 0 ? featuresMarginX * 2 + holes[^1] : 0;
             int holePanelHeight = GetHolesHeight(holes);
@@ -1360,8 +1372,8 @@ namespace UVtools.Core.Operations
             int bulleyesDiameter = GetBullsEyeMaxDiameter(bulleyes);
             int bulleyesPanelDiameter = GetBullsEyeMaxPanelDiameter(bulleyes);
             int bulleyesRadius = bulleyesDiameter / 2;
-            int yLeftMaxSize = _staircaseThickness + featuresMarginY + Math.Max(barsPanelHeight, textSize.Width) + bulleyesPanelDiameter;
-            int yRightMaxSize = _staircaseThickness + holePanelHeight + featuresMarginY * 2;
+            int yLeftMaxSize = startCaseThickness + featuresMarginY + Math.Max(barsPanelHeight, textSize.Width) + bulleyesPanelDiameter;
+            int yRightMaxSize = startCaseThickness + holePanelHeight + featuresMarginY * 2;
             
             int xSize = featuresMarginX;
             int ySize = TextMarkingSpacing + featuresMarginY;
@@ -1431,10 +1443,10 @@ namespace UVtools.Core.Operations
             int yPos = 0;
 
             // Print staircase
-            if (isPreview && _staircaseThickness > 0)
+            if (isPreview && startCaseThickness > 0)
             {
                 CvInvoke.Rectangle(layers[1],
-                    new Rectangle(0, 0, layers[1].Size.Width-holePanelWidth, _staircaseThickness),
+                    new Rectangle(0, 0, layers[1].Size.Width-holePanelWidth, startCaseThickness),
                     EmguExtensions.WhiteColor, -1, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
             }
 
@@ -1442,7 +1454,7 @@ namespace UVtools.Core.Operations
             for (var layerIndex = 0; layerIndex < layers.Length; layerIndex++)
             {
                 var layer = layers[layerIndex];
-                yPos = featuresMarginY + _staircaseThickness;
+                yPos = featuresMarginY + startCaseThickness;
                 for (int i = 0; i < holes.Length; i++)
                 {
                     var diameter = holes[i];
@@ -1547,7 +1559,7 @@ namespace UVtools.Core.Operations
             // Print Zebra bars
             if (bars.Length > 0)
             {
-                int yStartPos = _staircaseThickness + featuresMarginY;
+                int yStartPos = startCaseThickness + featuresMarginY;
                 int xStartPos = xPos;
                 yPos = yStartPos + _barFenceThickness / 2 + _barFenceOffset;
                 xPos += _barFenceThickness / 2 + _barFenceOffset;
@@ -1587,7 +1599,7 @@ namespace UVtools.Core.Operations
             if (!textSize.IsEmpty)
             {
                 CvInvoke.Rotate(layers[1], layers[1], RotateFlags.Rotate90CounterClockwise);
-                CvInvoke.PutText(layers[1], _text, new Point(_staircaseThickness + featuresMarginX, layers[1].Height - barsPanelWidth - featuresMarginX * (barsPanelWidth > 0 ? 2 : 1)), _textFont, _textScale, EmguExtensions.WhiteColor, _textThickness, _enableAntiAliasing ? LineType.AntiAlias :  LineType.EightConnected);
+                CvInvoke.PutText(layers[1], _text, new Point(startCaseThickness + featuresMarginY, layers[1].Height - barsPanelWidth - featuresMarginX * (barsPanelWidth > 0 ? 2 : 1)), _textFont, _textScale, EmguExtensions.WhiteColor, _textThickness, _enableAntiAliasing ? LineType.AntiAlias :  LineType.EightConnected);
                 CvInvoke.Rotate(layers[1], layers[1], RotateFlags.Rotate90Clockwise);
             }
 
@@ -1998,6 +2010,7 @@ namespace UVtools.Core.Operations
                 int currentY = topBottomMarginPx;
                 int featuresMarginX = (int)(Xppmm * _featuresMargin);
                 int featuresMarginY = (int)(Yppmm * _featuresMargin);
+                ushort startCaseThickness = StaircaseThickness;
 
                 var holes = Holes;
                 int holePanelWidth = holes.Length > 0 ? featuresMarginX * 2 + holes[^1] : 0;
@@ -2073,7 +2086,7 @@ namespace UVtools.Core.Operations
 
                         layers[isBaseLayer ? 0 : 1].CopyTo(matRoi);
 
-                        if (!isBaseLayer && _staircaseThickness > 0)
+                        if (!isBaseLayer && startCaseThickness > 0)
                         {
                             int staircaseWidthIncrement = (int) Math.Ceiling(staircaseWidth / (_featuresHeight / layerHeight-1));
                             int staircaseLayer = layerCountOnHeight - firstFeatureLayer - 1;
@@ -2081,7 +2094,7 @@ namespace UVtools.Core.Operations
                             if (staircaseWidthForLayer >= 0 && layerCountOnHeight != lastLayer)
                             {
                                 CvInvoke.Rectangle(matRoi,
-                                    new Rectangle(staircaseWidth - staircaseWidthForLayer, 0, staircaseWidthForLayer, _staircaseThickness),
+                                    new Rectangle(staircaseWidth - staircaseWidthForLayer, 0, staircaseWidthForLayer, startCaseThickness),
                                     EmguExtensions.WhiteColor, -1,
                                     _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
                             }

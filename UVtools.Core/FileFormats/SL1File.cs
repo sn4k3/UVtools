@@ -40,9 +40,18 @@ namespace UVtools.Core.FileFormats
         public const string Keyword_BottomLiftSpeed     = "BottomLiftSpeed";
         public const string Keyword_LiftHeight          = "LiftHeight";
         public const string Keyword_LiftSpeed           = "LiftSpeed";
+        public const string Keyword_BottomLiftHeight2 = "BottomLiftHeight2";
+        public const string Keyword_BottomLiftSpeed2 = "BottomLiftSpeed2";
+        public const string Keyword_LiftHeight2 = "LiftHeight2";
+        public const string Keyword_LiftSpeed2 = "LiftSpeed2";
         public const string Keyword_BottomWaitTimeAfterLift = "BottomWaitAfterLift";
         public const string Keyword_WaitTimeAfterLift = "WaitAfterLift";
+        public const string Keyword_BottomRetractSpeed        = "BottomRetractSpeed";
         public const string Keyword_RetractSpeed        = "RetractSpeed";
+        public const string Keyword_BottomRetractHeight2 = "BottomRetractHeight2";
+        public const string Keyword_BottomRetractSpeed2 = "BottomRetractSpeed2";
+        public const string Keyword_RetractHeight2        = "RetractHeight2";
+        public const string Keyword_RetractSpeed2        = "RetractSpeed2";
         public const string Keyword_BottomLightPWM      = "BottomLightPWM";
         public const string Keyword_LightPWM            = "LightPWM";
         #endregion
@@ -652,10 +661,22 @@ namespace UVtools.Core.FileFormats
                     LiftHeight = LookupCustomValue(Keyword_LiftHeight, DefaultLiftHeight);
                     LiftSpeed = LookupCustomValue(Keyword_LiftSpeed, DefaultLiftSpeed);
 
+                    BottomLiftHeight2 = LookupCustomValue(Keyword_BottomLiftHeight2, DefaultBottomLiftHeight2);
+                    BottomLiftSpeed2 = LookupCustomValue(Keyword_BottomLiftSpeed2, DefaultBottomLiftSpeed2);
+
+                    LiftHeight2 = LookupCustomValue(Keyword_LiftHeight2, DefaultLiftHeight2);
+                    LiftSpeed2 = LookupCustomValue(Keyword_LiftSpeed2, DefaultLiftSpeed2);
+
                     BottomWaitTimeAfterLift = LookupCustomValue(Keyword_BottomWaitTimeAfterLift, 0f);
                     WaitTimeAfterLift = LookupCustomValue(Keyword_WaitTimeAfterLift, 0f);
 
+                    BottomRetractSpeed = LookupCustomValue(Keyword_BottomRetractSpeed, DefaultBottomRetractSpeed);
                     RetractSpeed = LookupCustomValue(Keyword_RetractSpeed, DefaultRetractSpeed);
+
+                    BottomRetractHeight2 = LookupCustomValue(Keyword_BottomRetractHeight2, DefaultBottomRetractHeight2);
+                    RetractHeight2 = LookupCustomValue(Keyword_RetractHeight2, DefaultRetractHeight2);
+                    BottomRetractSpeed2 = LookupCustomValue(Keyword_BottomRetractSpeed2, DefaultBottomRetractSpeed2);
+                    RetractSpeed2 = LookupCustomValue(Keyword_RetractSpeed2, DefaultRetractSpeed2);
                     BottomLightPWM = LookupCustomValue(Keyword_BottomLightPWM, DefaultLightPWM);
                     LightPWM = LookupCustomValue(Keyword_LightPWM, DefaultBottomLightPWM);
                 });
@@ -664,7 +685,7 @@ namespace UVtools.Core.FileFormats
 
                 progress.ItemCount = LayerCount;
 
-                foreach (ZipArchiveEntry entity in inputFile.Entries)
+                foreach (var entity in inputFile.Entries)
                 {
                     if (!entity.Name.EndsWith(".png")) continue;
                     if (entity.Name.StartsWith("thumbnail"))

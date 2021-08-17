@@ -14,7 +14,6 @@ using System.IO;
 using System.Threading.Tasks;
 using BinarySerialization;
 using Emgu.CV;
-using Emgu.CV.CvEnum;
 using UVtools.Core.Extensions;
 using UVtools.Core.Operations;
 
@@ -22,7 +21,24 @@ namespace UVtools.Core.FileFormats
 {
     public class PhotonSFile : FileFormat
     {
+        #region Constants
         public const byte RLEEncodingLimit = 128;
+
+        public const ushort RESOLUTION_X = 1440;
+        public const ushort RESOLUTION_Y = 2560;
+
+        public const float DISPLAY_WIDTH = 68.04f;
+        public const float DISPLAY_HEIGHT = 120.96f;
+        public const float MACHINE_Z = 165f;
+
+        #endregion
+
+        #region Members
+
+        private uint _resolutionX = RESOLUTION_X;
+        private uint _resolutionY = RESOLUTION_Y;
+
+        #endregion
 
         #region Sub Classes
 
@@ -30,13 +46,6 @@ namespace UVtools.Core.FileFormats
 
         public class Header
         {
-            public const uint ResolutionX = 1440;
-            public const uint ResolutionY = 2560;
-
-            public const float DisplayWidth = 68.04f;
-            public const float DisplayHeight = 120.96f;
-            public const float BuildZ = 165f;
-
             public const uint TAG1 = 2;
             public const ushort TAG2 = 49;
 
@@ -78,13 +87,13 @@ namespace UVtools.Core.FileFormats
 
         #region LayerDef
 
-        public class LayerData
+        public class LayerDef
         {
             [FieldOrder(0)] [FieldEndianness(Endianness.Big)] public uint Unknown1 { get; set; } = 44944;
             [FieldOrder(1)] [FieldEndianness(Endianness.Big)] public uint Unknown2 { get; set; } = 0;
             [FieldOrder(2)] [FieldEndianness(Endianness.Big)] public uint Unknown3 { get; set; } = 0;
-            [FieldOrder(3)] [FieldEndianness(Endianness.Big)] public uint ResolutionX { get; set; } = 1440;
-            [FieldOrder(4)] [FieldEndianness(Endianness.Big)] public uint ResolutionY { get; set; } = 2560;
+            [FieldOrder(3)] [FieldEndianness(Endianness.Big)] public uint ResolutionX { get; set; } = RESOLUTION_X;
+            [FieldOrder(4)] [FieldEndianness(Endianness.Big)] public uint ResolutionY { get; set; } = RESOLUTION_Y;
             [FieldOrder(5)] [FieldEndianness(Endianness.Big)] public uint DataSize { get; set; }
             [Ignore] public uint RleDataSize
             {
@@ -98,9 +107,19 @@ namespace UVtools.Core.FileFormats
 
             [Ignore] public byte[] EncodedRle { get; set; }
 
+            public LayerDef()
+            {
+            }
+
+            public LayerDef(Mat mat)
+            {
+                ResolutionX = (uint)mat.Width;
+                ResolutionY = (uint)mat.Height;
+            }
+
             public override string ToString()
             {
-                return $"{nameof(Unknown1)}: {Unknown1}, {nameof(Unknown2)}: {Unknown2}, {nameof(Unknown3)}: {Unknown3}, {nameof(ResolutionX)}: {ResolutionX}, {nameof(ResolutionY)}: {ResolutionY}, {nameof(DataSize)}: {DataSize}, {nameof(RleDataSize)}: {RleDataSize}, {nameof(Unknown5)}: {Unknown5}, {nameof(EncodedRle)}: {EncodedRle.Length}";
+                return $"{nameof(Unknown1)}: {Unknown1}, {nameof(Unknown2)}: {Unknown2}, {nameof(Unknown3)}: {Unknown3}, {nameof(ResolutionX)}: {ResolutionX}, {nameof(ResolutionY)}: {ResolutionY}, {nameof(DataSize)}: {DataSize}, {nameof(RleDataSize)}: {RleDataSize}, {nameof(Unknown5)}: {Unknown5}, {nameof(EncodedRle)}: {EncodedRle?.Length}";
             }
 
             public unsafe byte[] Encode(Mat mat)
@@ -162,7 +181,7 @@ namespace UVtools.Core.FileFormats
                 return EncodedRle;
             }
 
-            public unsafe Mat Decode(bool consumeRle = true)
+            public Mat Decode(bool consumeRle = true)
             {
                 var mat = EmguExtensions.InitMat(new Size((int) ResolutionX, (int) ResolutionY));
                 //var matSpan = mat.GetBytePointer();
@@ -259,25 +278,33 @@ namespace UVtools.Core.FileFormats
 
         public override uint ResolutionX
         {
-            get => Header.ResolutionX;
-            set { }
+            get => _resolutionX;
+            set
+            {
+                if(!RaiseAndSetIfChanged(ref _resolutionX, value)) return;
+                HeaderSettings.XYPixelSize = PixelSizeMax;
+            }
         }
 
         public override uint ResolutionY
         {
-            get => Header.ResolutionY;
-            set { }
+            get => _resolutionY;
+            set
+            {
+                if (!RaiseAndSetIfChanged(ref _resolutionY, value)) return;
+                HeaderSettings.XYPixelSize = PixelSizeMax;
+            }
         }
 
         public override float DisplayWidth
         {
-            get => Header.DisplayWidth;
+            get => DISPLAY_WIDTH;
             set { }
         }
 
         public override float DisplayHeight
         {
-            get => Header.DisplayHeight;
+            get => DISPLAY_HEIGHT;
             set { }
         }
 
@@ -286,13 +313,7 @@ namespace UVtools.Core.FileFormats
             get => true;
             set { }
         }
-
-        public override byte AntiAliasing
-        {
-            get => 1;
-            set { }
-        }
-
+        
         public override float LayerHeight
         {
             get => (float) Layer.RoundHeight(HeaderSettings.LayerHeight);
@@ -305,7 +326,7 @@ namespace UVtools.Core.FileFormats
 
         public override float MachineZ
         {
-            get => Header.BuildZ;
+            get => MACHINE_Z;
             set { }
         }
 
@@ -409,90 +430,40 @@ namespace UVtools.Core.FileFormats
         #endregion
 
         #region Methods
-
-        public unsafe byte[] PreviewEncode(Mat mat)
-        {
-            byte[] bytes = new byte[mat.Width * mat.Height * 2];
-            var span = mat.GetBytePointer();
-            var imageLength = mat.GetLength();
-
-            int index = 0;
-            for (int i = 0; i < imageLength; i+=3)
-            {
-                byte r = span[i + 2]; // 60
-                byte g = span[i + 1];
-                byte b = span[i];
-
-                ushort color = (ushort)(((b & 0xF8) << 8) | ((g & 0xFC) << 3) | (r >> 3)); 
-
-                bytes[index++] = (byte)color;
-                bytes[index++] = (byte)(color >> 8);
-            }
-
-            if (index != bytes.Length)
-            {
-                throw new FileLoadException($"Preview encode incomplete encode, expected: {bytes.Length}, encoded: {index}");
-            }
-
-            return bytes;
-        }
-
-        public unsafe Mat PreviewDecode(byte[] data)
-        {
-            Mat mat = new((int)HeaderSettings.PreviewResolutionY, (int)HeaderSettings.PreviewResolutionX, DepthType.Cv8U, 3);
-            var span = mat.GetBytePointer();
-            int spanIndex = 0;
-            for (int i = 0; i < data.Length; i += 2)
-            {
-                ushort color16 = BitExtensions.ToUShortLittleEndian(data[i], data[i + 1]);
-
-                //var r = (byte)((color16 & 0x1F) << 3);
-                //var g = (byte)(((color16 >> 5) & 0x3F) << 2);
-                //var b = (byte)(((color16 >> 11) & 0x1f) << 3);
-                var r = (byte)((color16 << 3) & 0xF8); // Mask: 11111000
-                var g = (byte)((color16 >> 3) & 0xFC); // Mask: 11111100
-                var b = (byte)((color16 >> 8) & 0xF8); // Mask: 11111000
-
-                span[spanIndex++] = b;
-                span[spanIndex++] = g;
-                span[spanIndex++] = r;
-            }
-
-            return mat;
-        }
-
+        
         protected override void EncodeInternally(string fileFullPath, OperationProgress progress)
         {
             //throw new NotSupportedException("PhotonS is read-only format, please use pws instead!");
-            //uint currentOffset = (uint)Helpers.Serializer.SizeOf(HeaderSettings);
             using var outputFile = new FileStream(fileFullPath, FileMode.Create, FileAccess.Write);
             outputFile.WriteSerialize(HeaderSettings);
-            outputFile.WriteBytes(PreviewEncode(Thumbnails[0]));
+            outputFile.WriteBytes(EncodeImage(DATATYPE_BGR565, Thumbnails[0]));
             outputFile.WriteSerialize(LayerSettings);
 
-            var layerData = new LayerData[LayerCount];
+            progress.Reset(OperationProgress.StatusEncodeLayers, LayerCount);
+            var layerData = new LayerDef[LayerCount];
 
-            Parallel.For(0, LayerCount, layerIndex =>
+            foreach (var batch in BatchLayersIndexes())
             {
-                if (progress.Token.IsCancellationRequested) return;
-                using (var mat = this[layerIndex].LayerMat)
+                Parallel.ForEach(batch, layerIndex =>
                 {
-                    layerData[layerIndex] = new LayerData();
-                    layerData[layerIndex].Encode(mat);
+                    if (progress.Token.IsCancellationRequested) return;
+                    using (var mat = this[layerIndex].LayerMat)
+                    {
+                        layerData[layerIndex] = new LayerDef(mat);
+                        layerData[layerIndex].Encode(mat);
+                    }
+                    progress.LockAndIncrement();
+                });
+
+                foreach (var layerIndex in batch)
+                {
+                    progress.Token.ThrowIfCancellationRequested();
+
+                    outputFile.WriteSerialize(layerData[layerIndex]);
+                    outputFile.WriteBytes(layerData[layerIndex].EncodedRle);
+
+                    layerData[layerIndex].EncodedRle = null; // Free
                 }
-
-                progress.LockAndIncrement();
-            });
-
-            progress.ItemName = "Saving layers";
-            progress.ProcessedItems = 0;
-
-            for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
-            {
-                progress.Token.ThrowIfCancellationRequested();
-                outputFile.WriteSerialize(layerData[layerIndex]);
-                outputFile.WriteBytes(layerData[layerIndex].EncodedRle);
-                progress++;
             }
 
             Debug.WriteLine("Encode Results:");
@@ -512,43 +483,52 @@ namespace UVtools.Core.FileFormats
             int previewSize = (int) (HeaderSettings.PreviewResolutionX * HeaderSettings.PreviewResolutionY * 2);
             byte[] previewData = new byte[previewSize];
 
-
-            uint currentOffset = (uint) Helpers.Serializer.SizeOf(HeaderSettings);
-            currentOffset += inputFile.ReadBytes(previewData);
-            Thumbnails[0] = PreviewDecode(previewData);
+            inputFile.ReadBytes(previewData);
+            Thumbnails[0] = DecodeImage(DATATYPE_BGR565, previewData, HeaderSettings.PreviewResolutionX, HeaderSettings.PreviewResolutionY);
 
             LayerSettings = Helpers.Deserialize<LayerHeader>(inputFile);
-            currentOffset += (uint)Helpers.Serializer.SizeOf(LayerSettings);
-
+            
             Debug.WriteLine(HeaderSettings);
             Debug.WriteLine(LayerSettings);
   
 
-            var layerData = new LayerData[LayerSettings.LayerCount];
-            progress.Reset(OperationProgress.StatusGatherLayers, LayerSettings.LayerCount);
-
-            for (int layerIndex = 0; layerIndex < LayerSettings.LayerCount; layerIndex++)
-            {
-                progress.Token.ThrowIfCancellationRequested();
-                layerData[layerIndex] = Helpers.Deserialize<LayerData>(inputFile);
-                layerData[layerIndex].EncodedRle = new byte[layerData[layerIndex].RleDataSize];
-                currentOffset += inputFile.ReadBytes(layerData[layerIndex].EncodedRle);
-                Debug.WriteLine($"Layer {layerIndex} -> {layerData[layerIndex]}");
-            }
-
             LayerManager.Init(LayerSettings.LayerCount);
-            progress.Reset(OperationProgress.StatusDecodeLayers, LayerCount);
+            var layersDefinitions = new LayerDef[LayerSettings.LayerCount];
 
-            Parallel.For(0, LayerCount, 
-                //new ParallelOptions{MaxDegreeOfParallelism = 1},
-                layerIndex =>
+            progress.Reset(OperationProgress.StatusDecodeLayers, LayerCount);
+            foreach (var batch in BatchLayersIndexes())
+            {
+                foreach (var layerIndex in batch)
+                {
+                    progress.Token.ThrowIfCancellationRequested();
+
+                    var layerDef = Helpers.Deserialize<LayerDef>(inputFile);
+                    layersDefinitions[layerIndex] = layerDef;
+
+                    layerDef.EncodedRle = inputFile.ReadBytes(layerDef.RleDataSize);
+
+                    Debug.Write($"LAYER {layerIndex} -> ");
+                    Debug.WriteLine(layerDef);
+
+                    if (layerIndex == 1)
+                    {
+                        // Auto fix resolution if needed
+                        ResolutionX = layersDefinitions[layerIndex].ResolutionX;
+                        ResolutionY = layersDefinitions[layerIndex].ResolutionY;
+                    }
+                }
+
+                Parallel.ForEach(batch, layerIndex =>
                 {
                     if (progress.Token.IsCancellationRequested) return;
+                    using (var mat = layersDefinitions[layerIndex].Decode())
+                    {
+                        this[layerIndex] = new Layer((uint)layerIndex, mat, this);
+                    }
 
-                    using var image = layerData[layerIndex].Decode();
-                    this[layerIndex] = new Layer((uint) layerIndex, image, this);
                     progress.LockAndIncrement();
                 });
+            }
 
             LayerManager.RebuildLayersProperties();
         }

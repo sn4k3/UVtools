@@ -7,13 +7,12 @@
   <Grid ColumnDefinitions="Auto,10,380">
     <StackPanel Spacing="10">
 
-        <Border BorderBrush="Black" BorderThickness="1" Padding="5">
-            <Expander IsExpanded="True">
-                <Expander.Header>
-                    <TextBlock Text="Step 1: Generate and print test model"
-                               FontWeight="Bold"
-                               Cursor="Hand"/>
-                </Expander.Header>
+        <Expander IsExpanded="True">
+            <Expander.Header>
+                <TextBlock Text="Step 1: Generate and print test model"
+                           FontWeight="Bold"
+                           Cursor="Hand"/>
+            </Expander.Header>
        
         <Grid
             RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto"
@@ -376,15 +375,13 @@
 
         </Grid>
         </Expander>
-    </Border>
 
-        <Border BorderBrush="Black" BorderThickness="1" Padding="5">
-            <Expander IsExpanded="True">
-                <Expander.Header>
-                    <TextBlock Text="Step 2: Validate the printed model with your measures"
-                               FontWeight="Bold"
-                               Cursor="Hand"/>
-                </Expander.Header>
+        <Expander IsExpanded="True">
+            <Expander.Header>
+                <TextBlock Text="Step 2: Validate the printed model with your measures"
+                           FontWeight="Bold"
+                           Cursor="Hand"/>
+            </Expander.Header>
 
                 <StackPanel Spacing="10">
 
@@ -482,17 +479,15 @@
         </StackPanel>
 
         </Expander>
-    </Border>
 
-        <Border BorderBrush="Black" BorderThickness="1" Padding="5">
-            <Expander IsExpanded="True">
-                <Expander.Header>
-                    <TextBlock Text="Step 3: Save a resize profile with the results"
-                               FontWeight="Bold"
-                               Cursor="Hand"/>
-                </Expander.Header>
+        <Expander IsExpanded="True">
+            <Expander.Header>
+                <TextBlock Text="Step 3: Save a resize profile with the results"
+                           FontWeight="Bold"
+                           Cursor="Hand"/>
+            </Expander.Header>
 
-        <Grid ColumnDefinitions="Auto,10,*,5,Auto,5,Auto">
+        <Grid ColumnDefinitions="Auto,10,440,5,Auto,5,Auto">
             <TextBlock VerticalAlignment="Center"
                        Text="Profile name:"/>
             <TextBox Grid.Column="2" VerticalAlignment="Center"
@@ -511,7 +506,6 @@
             </Button>
         </Grid>
       </Expander>
-    </Border>
         
 
     </StackPanel>

@@ -13,12 +13,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using BinarySerialization;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
-using MoreLinq;
 using UVtools.Core.Extensions;
 using UVtools.Core.GCode;
 using UVtools.Core.Operations;
@@ -30,6 +28,7 @@ namespace UVtools.Core.FileFormats
         #region Constants
 
         public const string MARKER = "OSLATiCo";
+        
         #endregion
 
         #region Sub Classes
@@ -209,7 +208,7 @@ namespace UVtools.Core.FileFormats
                 BoundingRectangleHeight = (uint)layer.BoundingRectangle.Height;
             }
 
-            public void SetTo(Layer layer)
+            public void CopyTo(Layer layer)
             {
                 layer.PositionZ = PositionZ;
                 layer.LiftHeight = LiftHeight;
@@ -376,12 +375,6 @@ namespace UVtools.Core.FileFormats
             }
         }
 
-        public override byte AntiAliasing
-        {
-            get => 8;
-            set => RaisePropertyChanged();
-        }
-
         public override float LayerHeight
         {
             get => HeaderSettings.LayerHeight;
@@ -495,7 +488,7 @@ namespace UVtools.Core.FileFormats
 
                 progress.Token.ThrowIfCancellationRequested();
 
-                var bytes = EncodeImage(image, HeaderSettings.PreviewDataType);
+                var bytes = EncodeImage(HeaderSettings.PreviewDataType, image);
                 if (bytes.Length == 0) continue;
                 var preview = new Preview
                 {
@@ -528,18 +521,20 @@ namespace UVtools.Core.FileFormats
             
             outputFile.Seek(HeaderSettings.LayerTableSize * LayerCount, SeekOrigin.Current); // Start of layer data
 
-            var layerHash = new Dictionary<string, uint>();
+            var layersHash = new Dictionary<string, uint>();
             
-            var range = Enumerable.Range(0, (int)LayerCount);
-            foreach (var batch in range.Batch(Environment.ProcessorCount * 10))
+            foreach (var batch in BatchLayersIndexes())
             {
                 var layerBytes = new byte[LayerCount][];
 
                 Parallel.ForEach(batch, layerIndex =>
                 {
                     if (progress.Token.IsCancellationRequested) return;
-                    using var mat = this[layerIndex].LayerMat;
-                    layerBytes[layerIndex] = EncodeImage(mat, HeaderSettings.LayerDataType);
+                    using (var mat = this[layerIndex].LayerMat)
+                    {
+                        layerBytes[layerIndex] = EncodeImage(HeaderSettings.LayerDataType, mat);
+                    }
+
                     progress.LockAndIncrement();
                 });
 
@@ -549,7 +544,7 @@ namespace UVtools.Core.FileFormats
 
                     // Try to reuse layers
                     var hash = Helpers.ComputeSHA1Hash(layerBytes[layerIndex]);
-                    if (layerHash.TryGetValue(hash, out var address))
+                    if (layersHash.TryGetValue(hash, out var address))
                     {
                         layerDataAddresses[layerIndex] = address;
                     }
@@ -558,10 +553,10 @@ namespace UVtools.Core.FileFormats
                         layerDataAddresses[layerIndex] = (uint)outputFile.Position;
                         outputFile.WriteUIntLittleEndian((uint)layerBytes[layerIndex].Length);
                         outputFile.WriteBytes(layerBytes[layerIndex]);
-                        layerHash.Add(hash, layerDataAddresses[layerIndex]);
+                        layersHash.Add(hash, layerDataAddresses[layerIndex]);
                     }
 
-                    layerBytes[layerIndex] = null; // Clean
+                    layerBytes[layerIndex] = null; // Free this
                 }
             }
 
@@ -646,7 +641,7 @@ namespace UVtools.Core.FileFormats
 
                 var bytes = inputFile.ReadBytes((int)Previews[i].ImageLength);
 
-                Thumbnails[i] = DecodeImage(bytes, HeaderSettings.PreviewDataType, Previews[i].ResolutionX, Previews[i].ResolutionY);
+                Thumbnails[i] = DecodeImage(HeaderSettings.PreviewDataType, bytes, Previews[i].ResolutionX, Previews[i].ResolutionY);
                 progress++;
             }
 
@@ -680,8 +675,7 @@ namespace UVtools.Core.FileFormats
             
 
             progress.Reset(OperationProgress.StatusDecodeLayers, HeaderSettings.LayerCount);
-            var range = Enumerable.Range(0, (int)LayerCount);
-            foreach (var batch in MoreEnumerable.Batch(range, Environment.ProcessorCount * 10))
+            foreach (var batch in BatchLayersIndexes())
             {
                 var layerBytes = new byte[LayerCount][];
 
@@ -696,11 +690,14 @@ namespace UVtools.Core.FileFormats
                 Parallel.ForEach(batch, layerIndex =>
                 {
                     if (progress.Token.IsCancellationRequested) return;
-                    using var mat = DecodeImage(layerBytes[layerIndex], HeaderSettings.LayerDataType, Resolution);
-                    var layer = new Layer((uint)layerIndex, mat, this);
-                    layerDef[layerIndex].SetTo(layer);
-                    this[layerIndex] = layer;
-                    layerBytes[layerIndex] = null; // Clean
+                    using (var mat = DecodeImage(HeaderSettings.LayerDataType, layerBytes[layerIndex], Resolution))
+                    {
+                        layerBytes[layerIndex] = null; // Clean
+
+                        var layer = new Layer((uint)layerIndex, mat, this);
+                        layerDef[layerIndex].CopyTo(layer);
+                        this[layerIndex] = layer;
+                    }
 
                     progress.LockAndIncrement();
                 });
@@ -761,134 +758,7 @@ namespace UVtools.Core.FileFormats
 
         #region Static Methods
 
-        public static byte[] EncodeImage(Mat mat, string encodeTo)
-        {
-            encodeTo = encodeTo.ToUpperInvariant();
-            if (encodeTo is "PNG" or "JPG" or "JPEG" or "JP2" or "BMP" or "TIF" or "TIFF" or "PPM" or "PMG" or "SR" or "RAS")
-            {
-                return CvInvoke.Imencode($".{encodeTo.ToLowerInvariant()}", mat);
-            }
-
-            if (encodeTo is "RGB555" or "RGB565" or "RGB888"
-                         or "BGR555" or "BGR565" or "BGR888")
-            {
-                var bytesPerPixel = encodeTo is "RGB888" or "BGR888" ? 3 : 2;
-                var bytes = new byte[mat.Width * mat.Height * bytesPerPixel];
-                uint index = 0;
-                var span = mat.GetDataByteSpan();
-                for (int i = 0; i < span.Length;)
-                {
-                    byte b = span[i++];
-                    byte g;
-                    byte r;
-
-                    if (mat.NumberOfChannels == 1) // 8 bit safe-guard
-                    {
-                        r = g = b;
-                    }
-                    else
-                    {
-                        g = span[i++];
-                        r = span[i++];
-                    }
-
-                    if (mat.NumberOfChannels == 4) i++; // skip alpha
-
-                    switch (encodeTo)
-                    {
-                        case "RGB555":
-                            var rgb555 = (ushort) (((r & 0b11111000) << 7) | ((g & 0b11111000) << 2) | (b >> 3));
-                            BitExtensions.ToBytesLittleEndian(rgb555, bytes, index);
-                            index += 2;
-                            break;
-                        case "RGB565":
-                            var rgb565 = (ushort) (((r & 0b11111000) << 8) | ((g & 0b11111100) << 3) | (b >> 3));
-                            BitExtensions.ToBytesLittleEndian(rgb565, bytes, index);
-                            index += 2;
-                            break;
-                        case "RGB888":
-                            bytes[index++] = r;
-                            bytes[index++] = g;
-                            bytes[index++] = b;
-                            break;
-                    }
-                }
-
-                return bytes;
-            }
-
-            throw new NotSupportedException($"The encode type: {encodeTo} is not supported.");
-        }
-
-        public static Mat DecodeImage(byte[] bytes, string decodeFrom, Size resolution)
-        {
-            if (decodeFrom is "PNG" or "JPG" or "JPEG" or "JP2" or "BMP" or "TIF" or "TIFF" or "PPM" or "PMG" or "SR" or "RAS")
-            {
-                var mat = new Mat();
-                CvInvoke.Imdecode(bytes, ImreadModes.AnyColor, mat);
-                return mat;
-            }
-
-            if (decodeFrom is "RGB555" or "RGB565" or "RGB888"
-                           or "BGR555" or "BGR565" or "BGR888")
-            {
-                var mat = new Mat(resolution, DepthType.Cv8U, 3);
-                var span = mat.GetDataByteSpan();
-                var pixel = 0;
-                for (int i = 0; i < bytes.Length;)
-                {
-                    switch (decodeFrom)
-                    {
-                        case "RGB555":
-                            ushort rgb555 = BitExtensions.ToUShortLittleEndian(bytes, i);
-                            span[pixel++] = (byte)((rgb555 & 0b00000000_00011111) << 3); // b
-                            span[pixel++] = (byte)((rgb555 & 0b00000011_11100000) >> 2); // g
-                            span[pixel++] = (byte)((rgb555 & 0b01111100_00000000) >> 7); // r
-                            i += 2;
-                            break;
-                        case "RGB565":
-                            ushort rgb565 = BitExtensions.ToUShortLittleEndian(bytes, i);
-                            span[pixel++] = (byte)((rgb565 & 0b00000000_00011111) << 3); // b
-                            span[pixel++] = (byte)((rgb565 & 0b00000111_11100000) >> 3); // g
-                            span[pixel++] = (byte)((rgb565 & 0b11111000_00000000) >> 8); // r
-                            i += 2;
-                            break;
-                        case "RGB888":
-                            span[pixel++] = bytes[i + 2]; // b
-                            span[pixel++] = bytes[i + 1]; // g
-                            span[pixel++] = bytes[i];     // r
-                            i += 3;
-                            break;
-                        case "BGR555":
-                            ushort bgr555 = BitExtensions.ToUShortLittleEndian(bytes, i);
-                            span[pixel++] = (byte)((bgr555 & 0b01111100_00000000) >> 7); // b
-                            span[pixel++] = (byte)((bgr555 & 0b00000011_11100000) >> 2); // g
-                            span[pixel++] = (byte)((bgr555 & 0b00000000_00011111) << 3); // r
-                            i += 2;
-                            break;
-                        case "BGR565":
-                            ushort bgr565 = BitExtensions.ToUShortLittleEndian(bytes, i);
-                            span[pixel++] = (byte)((bgr565 & 0b11111000_00000000) >> 8); // b
-                            span[pixel++] = (byte)((bgr565 & 0b00000111_11100000) >> 3); // g
-                            span[pixel++] = (byte)((bgr565 & 0b00000000_00011111) << 3); // r
-                            i += 2;
-                            break;
-                        case "BGR888":
-                            span[pixel++] = bytes[i]; // b
-                            span[pixel++] = bytes[i+1]; // g
-                            span[pixel++] = bytes[i+2]; // r
-                            i += 3;
-                            break;
-                    }
-                }
-                return mat;
-            }
-
-            throw new NotSupportedException($"The decode type: {decodeFrom} is not supported.");
-        }
-
-        public static Mat DecodeImage(byte[] bytes, string decodeFrom, uint resolutionX = 0, uint resolutionY = 0)
-            => DecodeImage(bytes, decodeFrom, new Size((int) resolutionX, (int) resolutionY));
+        
 
 
         #endregion

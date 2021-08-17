@@ -22,12 +22,12 @@
           HotKey="Ctrl+O" InputGesture="Ctrl+O" 
           Command="{Binding MenuFileOpenClicked}">
           <MenuItem.Icon>
-            <Image Source="\Assets\Icons\open-16x16.png"/>
+            <Image Source="\Assets\Icons\file-import-16x16.png"/>
           </MenuItem.Icon>
         </MenuItem>
         <MenuItem Name="MainMenu.File.OpenNewWindow" Header="Open in _new window" HotKey="Ctrl+Shift+O" InputGesture="Ctrl+Shift+O" Command="{Binding MenuFileOpenNewWindowClicked}">
           <MenuItem.Icon>
-            <Image Source="\Assets\Icons\open-16x16.png"/>
+            <Image Source="\Assets\Icons\file-import-16x16.png"/>
           </MenuItem.Icon>
         </MenuItem>
         <MenuItem 
@@ -82,10 +82,16 @@
                   <Image Source="\Assets\Icons\flask-16x16.png"/>
               </MenuItem.Icon>
           </MenuItem>
-        
+
+          <MenuItem Name="MainMenu.File.OpenCurrentFileFolder" Header="Open current file fo_lder" HotKey="Ctrl+Shift+L" InputGesture="Ctrl+Shift+L" IsEnabled="{Binding IsFileLoaded}" Command="{Binding MenuFileOpenCurrentFileFolderClicked}">
+              <MenuItem.Icon>
+                  <Image Source="\Assets\Icons\folder-open-16x16.png"/>
+              </MenuItem.Icon>
+          </MenuItem>
+
         <MenuItem 
           Name="MainMenu.File.Extract" 
-          Header="_Extract" HotKey="Ctrl+E" InputGesture="Ctrl+E" 
+          Header="_Extract file contents" HotKey="Ctrl+E" InputGesture="Ctrl+E" 
           IsEnabled="{Binding IsFileLoaded}"
           Command="{Binding ExtractFile}">
           <MenuItem.Icon>
@@ -103,7 +109,7 @@
             <Image Source="\Assets\Icons\convert-16x16.png"/>
           </MenuItem.Icon>
         </MenuItem>
-        
+
         <Separator/>
 
         <MenuItem

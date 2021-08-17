@@ -32,7 +32,15 @@ namespace UVtools.Core.FileFormats
         /// </summary>
         public string Description { get; }
 
-        public bool IsVisible { get; }
+        /// <summary>
+        /// Gets if the extension shows up on open file dialog filters
+        /// </summary>
+        public bool IsVisibleOnFileFilters { get; }
+
+        /// <summary>
+        /// Gets if the extension shows up on convert to menu
+        /// </summary>
+        public bool IsVisibleOnConvertMenu { get; }
 
         /// <summary>
         /// Gets a tag object
@@ -53,14 +61,16 @@ namespace UVtools.Core.FileFormats
         /// <param name="fileFormatType">The exact <see cref="FileFormat"/> type</param>
         /// <param name="extension">The extension name without the dot (.)</param>
         /// <param name="description">The extension description</param>
-        /// <param name="isVisible">True if this extension is visible on open dialog filters</param>
+        /// <param name="isVisibleOnFileFilters">True if this extension is visible on open file dialog filters</param>
+        /// <param name="isVisibleOnConvertMenu">True if this extension is visible on convert to menu</param>
         /// <param name="tag">Tag object</param>
-        public FileExtension(Type fileFormatType, string extension, string description, bool isVisible = true, object tag = null)
+        public FileExtension(Type fileFormatType, string extension, string description, bool isVisibleOnFileFilters = true, bool isVisibleOnConvertMenu = true, object tag = null)
         {
             FileFormatType = fileFormatType;
             Extension = extension;
             Description = description;
-            IsVisible = isVisible;
+            IsVisibleOnFileFilters = isVisibleOnFileFilters;
+            IsVisibleOnConvertMenu = isVisibleOnConvertMenu;
             Tag = tag;
         }
         #endregion

@@ -725,6 +725,8 @@ namespace UVtools.WPF.Windows
             }, TimeSpan.FromMilliseconds(1));
         }
 
+
+
         public void FitToSize()
         {
             SizeToContent = SizeToContent.Manual;

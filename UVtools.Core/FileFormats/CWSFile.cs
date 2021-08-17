@@ -426,9 +426,8 @@ namespace UVtools.Core.FileFormats
             get => (byte) OutputSettings.AntiAliasingValue;
             set
             {
-                OutputSettings.AntiAliasingValue = value.Clamp(1, 16);
+                base.AntiAliasing = (byte)(OutputSettings.AntiAliasingValue = value.Clamp(1, 16));
                 OutputSettings.AntiAliasing = OutputSettings.AntiAliasingValue > 1;
-                RaisePropertyChanged();
             }
         }
 

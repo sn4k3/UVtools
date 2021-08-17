@@ -216,12 +216,7 @@ namespace UVtools.Core.FileFormats
         public override byte AntiAliasing
         {
             get => JsonSettings.Properties.AntiAliasLevel;
-            set
-            {
-                JsonSettings.Properties.AntiAliasLevel = value.Clamp(1, 16);
-                RaisePropertyChanged();
-            }
-
+            set => base.AntiAliasing = JsonSettings.Properties.AntiAliasLevel = value.Clamp(1, 16);
         }
 
         public override float LayerHeight
@@ -363,7 +358,7 @@ namespace UVtools.Core.FileFormats
                     {
                         LiftHeight = layer.LiftHeight,
                         LiftSpeed = layer.LiftSpeed,
-                        RetractHeight = layer.LiftHeight+1,
+                        RetractHeight = layer.LiftHeight,
                         RetractSpeed = layer.RetractSpeed,
                         LightOffTime = layer.LightOffDelay,
                         LightOnTime = layer.ExposureTime,
@@ -372,7 +367,7 @@ namespace UVtools.Core.FileFormats
                 });
             }
 
-            using ZipArchive outputFile = ZipFile.Open(fileFullPath, ZipArchiveMode.Create);
+            using var outputFile = ZipFile.Open(fileFullPath, ZipArchiveMode.Create);
             outputFile.PutFileContent(FileConfigName, JsonConvert.SerializeObject(JsonSettings, Formatting.Indented), ZipArchiveMode.Create);
 
             if (CreatedThumbnailsCount > 0)
@@ -407,7 +402,7 @@ namespace UVtools.Core.FileFormats
             using (var inputFile = ZipFile.Open(fileFullPath, ZipArchiveMode.Read))
             {
                 var entry = inputFile.GetEntry(FileConfigName);
-                if (ReferenceEquals(entry, null))
+                if (entry is null)
                 {
                     Clear();
                     throw new FileLoadException($"{FileConfigName} not found", fileFullPath);
@@ -418,21 +413,19 @@ namespace UVtools.Core.FileFormats
                 LayerManager.Init(JsonSettings.Properties.Size.Layers);
 
                 entry = inputFile.GetEntry(FilePreviewTinyName);
-                if (!ReferenceEquals(entry, null))
+                if (entry is not null)
                 {
-                    using (Stream stream = entry.Open())
-                    {
-                        Mat image = new();
-                        CvInvoke.Imdecode(stream.ToArray(), ImreadModes.AnyColor, image);
-                        Thumbnails[0] = image;
-                        stream.Close();
-                    }
+                    using var stream = entry.Open();
+                    Mat image = new();
+                    CvInvoke.Imdecode(stream.ToArray(), ImreadModes.AnyColor, image);
+                    Thumbnails[0] = image;
+                    stream.Close();
                 }
 
                 entry = inputFile.GetEntry(FilePreviewHugeName);
                 if (entry is not null)
                 {
-                    using Stream stream = entry.Open();
+                    using var stream = entry.Open();
                     Mat image = new();
                     CvInvoke.Imdecode(stream.ToArray(), ImreadModes.AnyColor, image);
                     Thumbnails[1] = image;
@@ -482,10 +475,8 @@ namespace UVtools.Core.FileFormats
 
             }
 
-            using (var outputFile = ZipFile.Open(FileFullPath, ZipArchiveMode.Update))
-            {
-                outputFile.PutFileContent(FileConfigName, JsonConvert.SerializeObject(JsonSettings, Formatting.Indented), ZipArchiveMode.Update);
-            }
+            using var outputFile = ZipFile.Open(FileFullPath, ZipArchiveMode.Update);
+            outputFile.PutFileContent(FileConfigName, JsonConvert.SerializeObject(JsonSettings, Formatting.Indented), ZipArchiveMode.Update);
 
             //Decode(FileFullPath, progress);
         }

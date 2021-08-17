@@ -52,7 +52,7 @@ struct PREVIEW {
     uint Unknown3 <fgcolor=cBlack, bgcolor=cRed>;
     uint Unknown4 <fgcolor=cBlack, bgcolor=cRed>;
 
-    ubyte Data[ImageLength] <fgcolor=cBlack, bgcolor=cRed>;
+    ubyte Data[ImageLength] <fgcolor=cBlack, bgcolor=cYellow>;
 };
 
 struct PRINT_PARAMETERS {
@@ -92,7 +92,7 @@ struct SLICER_INFO {
     float RestTimeAfterRetract <fgcolor=cBlack, bgcolor=cRed>;
     float RestTimeAfterLift2 <fgcolor=cBlack, bgcolor=cRed>;
     uint TransitionLayerCount <fgcolor=cBlack, bgcolor=cRed>;
-    uint Padding1 <fgcolor=cBlack, bgcolor=cRed>;
+    uint PrintParametersV4Address <fgcolor=cBlack, bgcolor=cRed>;
     uint Padding2 <fgcolor=cBlack, bgcolor=cRed>;
     uint Padding3 <fgcolor=cBlack, bgcolor=cRed>;
 
@@ -126,9 +126,9 @@ if(header.SlicerOffset > 0){
 
 if(header.Version >= 4)
 {
+    FSeek(SlicerInfo.PrintParametersV4Address);
     struct PRINT_PARAMETERS_V4
     {
-        char Disclaimer[320] <fgcolor=cBlack, bgcolor=cYellow>;
         float BottomRetractSpeed <fgcolor=cWhite, bgcolor=cBlue>;
         float BottomRetractSpeed2 <fgcolor=cWhite, bgcolor=cBlue>;
         uint Padding1 <fgcolor=cWhite, bgcolor=cBlue>;
@@ -151,9 +151,13 @@ if(header.Version >= 4)
         uint DisclaimerLength <fgcolor=cWhite, bgcolor=cBlue>; // 320
         ubyte Reserved[384] <fgcolor=cYellow, bgcolor=cBlue>;
     } printParametersV4;
+
+    FSeek(printParametersV4.DisclaimerAddress);
+    char DisclaimerText[printParametersV4.DisclaimerLength] <fgcolor=cBlack, bgcolor=cYellow>;;
+
 }
 
-typedef struct() {
+struct LAYER_DATA {
     float LayerPositionZ <fgcolor=cBlack, bgcolor=cRed>;
     float LayerExposure <fgcolor=cBlack, bgcolor=cRed>;
     float LightOffSeconds <fgcolor=cBlack, bgcolor=cRed>;
@@ -163,9 +167,9 @@ typedef struct() {
     uint Unknown2 <fgcolor=cBlack, bgcolor=cRed>;
     uint Unknown3 <fgcolor=cBlack, bgcolor=cRed>;
     uint Unknown4 <fgcolor=cBlack, bgcolor=cRed>;
-} LAYER_DATA;
+};
 
-typedef struct() {
+struct LAYER_DATAEX {
     LAYER_DATA LayerData <fgcolor=cBlack, bgcolor=cRed>;
     uint TotalSize <fgcolor=cBlack, bgcolor=cRed>;
     float LiftHeight <fgcolor=cBlack, bgcolor=cRed>;
@@ -179,7 +183,7 @@ typedef struct() {
     float RestTimeAfterLift <fgcolor=cBlack, bgcolor=cRed>;
     float RestTimeAfterRetract <fgcolor=cBlack, bgcolor=cRed>;
     float LightPWM <fgcolor=cBlack, bgcolor=cRed>;
-} LAYER_DATAEX;
+};
 
 
 typedef struct(int size) {

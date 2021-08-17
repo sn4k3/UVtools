@@ -63,7 +63,7 @@ namespace UVtools.WPF.Windows
             {
                 FileFormat.AllSlicerFiles.Replace("*", string.Empty)
             };
-            fileFormats.AddRange(from format in FileFormat.AvailableFormats from extension in format.FileExtensions select $"{extension.Description} (.{extension.Extension})");
+            fileFormats.AddRange(from format in FileFormat.AvailableFormats from extension in format.FileExtensions where extension.IsVisibleOnFileFilters select $"{extension.Description} (.{extension.Extension})");
             FileOpenDialogFilters = fileFormats.ToArray();
 
 

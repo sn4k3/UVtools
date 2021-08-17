@@ -144,7 +144,7 @@ namespace UVtools.Core
             get => _positionZ;
             set
             {
-                if (!RaiseAndSetIfChanged(ref _positionZ, value)) return;
+                if (!RaiseAndSetIfChanged(ref _positionZ, RoundHeight(value))) return;
                 RaisePropertyChanged(nameof(LayerHeight));
             }
         }
@@ -160,7 +160,7 @@ namespace UVtools.Core
             get => _waitTimeBeforeCure;
             set
             {
-                if (!RaiseAndSetIfChanged(ref _waitTimeBeforeCure, value)) return;
+                if (!RaiseAndSetIfChanged(ref _waitTimeBeforeCure, (float)Math.Round(value, 2))) return;
                 SlicerFile?.UpdatePrintTimeQueued();
             }
         }
@@ -174,7 +174,7 @@ namespace UVtools.Core
             set
             {
                 if (value <= 0) value = SlicerFile.GetInitialLayerValueOrNormal(Index, SlicerFile.BottomExposureTime, SlicerFile.ExposureTime);
-                if(!RaiseAndSetIfChanged(ref _exposureTime, value)) return;
+                if(!RaiseAndSetIfChanged(ref _exposureTime, (float)Math.Round(value, 2))) return;
                 SlicerFile?.UpdatePrintTimeQueued();
             }
         }
@@ -189,7 +189,7 @@ namespace UVtools.Core
             get => _waitTimeAfterCure;
             set
             {
-                if (!RaiseAndSetIfChanged(ref _waitTimeAfterCure, value)) return;
+                if (!RaiseAndSetIfChanged(ref _waitTimeAfterCure, (float)Math.Round(value, 2))) return;
                 SlicerFile?.UpdatePrintTimeQueued();
             }
         }
@@ -203,7 +203,7 @@ namespace UVtools.Core
             set
             {
                 if (value < 0) value = SlicerFile.GetInitialLayerValueOrNormal(Index, SlicerFile.BottomLightOffDelay, SlicerFile.LightOffDelay);
-                if(!RaiseAndSetIfChanged(ref _lightOffDelay, value)) return;
+                if(!RaiseAndSetIfChanged(ref _lightOffDelay, (float)Math.Round(value, 2))) return;
                 SlicerFile?.UpdatePrintTimeQueued();
             }
         }
@@ -214,10 +214,10 @@ namespace UVtools.Core
         /// </summary>
         public float LiftHeightTotal
         {
-            get => (float)Math.Round(_liftHeight + _liftHeight2);
+            get => (float)Math.Round(_liftHeight + _liftHeight2, 2);
             set
             {
-                LiftHeight = value;
+                LiftHeight = (float)Math.Round(value, 2);
                 LiftHeight2 = 0;
             }
         }
@@ -231,7 +231,7 @@ namespace UVtools.Core
             set
             {
                 if (value < 0) value = SlicerFile.GetInitialLayerValueOrNormal(Index, SlicerFile.BottomLiftHeight, SlicerFile.LiftHeight);
-                if(!RaiseAndSetIfChanged(ref _liftHeight, value)) return;
+                if(!RaiseAndSetIfChanged(ref _liftHeight, (float)Math.Round(value, 2))) return;
                 RaisePropertyChanged(nameof(LiftHeightTotal));
                 RetractHeight2 = _retractHeight2; // Sanitize
                 SlicerFile?.UpdatePrintTimeQueued();
@@ -247,7 +247,7 @@ namespace UVtools.Core
             set
             {
                 if (value <= 0) value = SlicerFile.GetInitialLayerValueOrNormal(Index, SlicerFile.BottomLiftSpeed, SlicerFile.LiftSpeed);
-                if(!RaiseAndSetIfChanged(ref _liftSpeed, value)) return;
+                if(!RaiseAndSetIfChanged(ref _liftSpeed, (float)Math.Round(value, 2))) return;
                 SlicerFile?.UpdatePrintTimeQueued();
             }
         }
@@ -261,7 +261,7 @@ namespace UVtools.Core
             set
             {
                 if (value < 0) value = SlicerFile.GetInitialLayerValueOrNormal(Index, SlicerFile.BottomLiftHeight2, SlicerFile.LiftHeight2);
-                if (!RaiseAndSetIfChanged(ref _liftHeight2, value)) return;
+                if (!RaiseAndSetIfChanged(ref _liftHeight2, (float)Math.Round(value, 2))) return;
                 RaisePropertyChanged(nameof(LiftHeightTotal));
                 RetractHeight2 = _retractHeight2; // Sanitize
                 SlicerFile?.UpdatePrintTimeQueued();
@@ -277,7 +277,7 @@ namespace UVtools.Core
             set
             {
                 if (value <= 0) value = SlicerFile.GetInitialLayerValueOrNormal(Index, SlicerFile.BottomLiftSpeed2, SlicerFile.LiftSpeed2);
-                if (!RaiseAndSetIfChanged(ref _liftSpeed2, value)) return;
+                if (!RaiseAndSetIfChanged(ref _liftSpeed2, (float)Math.Round(value, 2))) return;
                 SlicerFile?.UpdatePrintTimeQueued();
             }
         }
@@ -287,7 +287,7 @@ namespace UVtools.Core
             get => _waitTimeAfterLift;
             set
             {
-                if (!RaiseAndSetIfChanged(ref _waitTimeAfterLift, value)) return;
+                if (!RaiseAndSetIfChanged(ref _waitTimeAfterLift, (float)Math.Round(value, 2))) return;
                 SlicerFile?.UpdatePrintTimeQueued();
             }
         }
@@ -300,7 +300,7 @@ namespace UVtools.Core
         /// <summary>
         /// Gets the retract height in mm
         /// </summary>
-        public float RetractHeight => (float)Math.Round(LiftHeightTotal - _retractHeight2);
+        public float RetractHeight => (float)Math.Round(LiftHeightTotal - _retractHeight2, 2);
 
         /// <summary>
         /// Gets the speed in mm/min for the retracts
@@ -311,7 +311,7 @@ namespace UVtools.Core
             set
             {
                 if (value <= 0) value = SlicerFile.RetractSpeed;
-                if(!RaiseAndSetIfChanged(ref _retractSpeed, value)) return;
+                if(!RaiseAndSetIfChanged(ref _retractSpeed, (float)Math.Round(value, 2))) return;
                 SlicerFile?.UpdatePrintTimeQueued();
             }
         }
@@ -391,9 +391,10 @@ namespace UVtools.Core
             private set
             {
                 if (ParentLayerManager?.SlicerFile is null) return;
+                //var globalMilliliters = SlicerFile.MaterialMilliliters - _materialMilliliters;
                 if (value <= 0)
                 {
-                    value = (float) Math.Round(ParentLayerManager.SlicerFile.PixelArea * ParentLayerManager.SlicerFile.LayerHeight * NonZeroPixelCount / 1000, 4);
+                    value = (float) Math.Round(ParentLayerManager.SlicerFile.PixelArea * ParentLayerManager.SlicerFile.LayerHeight * NonZeroPixelCount / 1000f, 4);
                 }
 
                 if(!RaiseAndSetIfChanged(ref _materialMilliliters, value)) return;

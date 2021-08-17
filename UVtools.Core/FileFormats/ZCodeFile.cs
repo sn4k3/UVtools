@@ -292,11 +292,7 @@ namespace UVtools.Core.FileFormats
         public override byte AntiAliasing
         {
             get => ManifestFile.Profile.Slice.AntiAliasing;
-            set
-            {
-                ManifestFile.Profile.Slice.AntiAliasing = value.Clamp(1, 16);
-                RaisePropertyChanged();
-            }
+            set => base.AntiAliasing = ManifestFile.Profile.Slice.AntiAliasing = value.Clamp(1, 16);
         }
 
         public override float LayerHeight

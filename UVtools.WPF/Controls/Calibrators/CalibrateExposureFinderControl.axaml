@@ -7,811 +7,812 @@
   <Grid ColumnDefinitions="Auto,10,380">
     <StackPanel Spacing="10">
 
-      <Border BorderBrush="Black" BorderThickness="1" Padding="5">
-        <Expander IsExpanded="True">
-          <Expander.Header>
-            <TextBlock Text="Common properties"
-                       FontWeight="Bold"
-                       Cursor="Hand"/>
-          </Expander.Header>
+    <Expander IsExpanded="True">
+      <Expander.Header>
+        <TextBlock Text="Common properties"
+                   FontWeight="Bold"
+                   Cursor="Hand"/>
+      </Expander.Header>
 
-          <Grid
-              RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto"
-              ColumnDefinitions="Auto,10,170,5,Auto,20,Auto,10,170,5,Auto">
+      <Grid
+          RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto"
+          ColumnDefinitions="Auto,10,170,5,Auto,20,Auto,10,170,5,Auto">
 
-            <TextBlock
-                      Grid.Row="0" Grid.Column="0"
-                       VerticalAlignment="Center"
-                      ToolTip.Tip="The printer display width. Required to calculate the pixels per mm."
-                       Text="Display width:"/>
-            <NumericUpDown Grid.Row="0" Grid.Column="2"
-                           
-                           Increment="0.1"
-                           Minimum="0"
-                           Maximum="10000"
-                           FormatString="F2"
-                           Value="{Binding Operation.DisplayWidth}"/>
-            <TextBlock Grid.Row="0" Grid.Column="4"
-                       VerticalAlignment="Center"
-                       Text="mm"/>
+        <TextBlock
+                  Grid.Row="0" Grid.Column="0"
+                   VerticalAlignment="Center"
+                  ToolTip.Tip="The printer display width. Required to calculate the pixels per mm."
+                   Text="Display width:"/>
+        <NumericUpDown Grid.Row="0" Grid.Column="2"
+                       
+                       Increment="0.1"
+                       Minimum="0"
+                       Maximum="10000"
+                       FormatString="F2"
+                       Value="{Binding Operation.DisplayWidth}"/>
+        <TextBlock Grid.Row="0" Grid.Column="4"
+                   VerticalAlignment="Center"
+                   Text="mm"/>
 
-            <TextBlock Grid.Row="0" Grid.Column="6"
-                       VerticalAlignment="Center"
-                       ToolTip.Tip="The printer display height. Required to calculate the pixels per mm."
-                       Text="Display height:"/>
-            <NumericUpDown Grid.Row="0" Grid.Column="8"
-                           Increment="0.1"
-                           Minimum="0"
-                           Maximum="10000"
-                           FormatString="F2"
-                           Value="{Binding Operation.DisplayHeight}"/>
-            <TextBlock Grid.Row="0" Grid.Column="10"
-                       VerticalAlignment="Center"
-                       Text="mm"/>
+        <TextBlock Grid.Row="0" Grid.Column="6"
+                   VerticalAlignment="Center"
+                   ToolTip.Tip="The printer display height. Required to calculate the pixels per mm."
+                   Text="Display height:"/>
+        <NumericUpDown Grid.Row="0" Grid.Column="8"
+                       Increment="0.1"
+                       Minimum="0"
+                       Maximum="10000"
+                       FormatString="F2"
+                       Value="{Binding Operation.DisplayHeight}"/>
+        <TextBlock Grid.Row="0" Grid.Column="10"
+                   VerticalAlignment="Center"
+                   Text="mm"/>
 
-            <TextBlock Grid.Row="2" Grid.Column="0"
+        <TextBlock Grid.Row="2" Grid.Column="0"
+                   IsEnabled="{Binding !Operation.PatternModel}"
+                   VerticalAlignment="Center"
+                   Text="Layer height:"/>
+        <NumericUpDown Grid.Row="2" Grid.Column="2"
                        IsEnabled="{Binding !Operation.PatternModel}"
-                       VerticalAlignment="Center"
-                       Text="Layer height:"/>
-            <NumericUpDown Grid.Row="2" Grid.Column="2"
-                           IsEnabled="{Binding !Operation.PatternModel}"
-                           Increment="0.01"
-                           Minimum="0.01"
-                           Maximum="0.30"
-                           FormatString="F3"
-                           Value="{Binding Operation.LayerHeight}"/>
-            <TextBlock Grid.Row="2" Grid.Column="4"
-                       IsEnabled="{Binding !Operation.PatternModel}"
-                       VerticalAlignment="Center"
-                       Text="mm"/>
+                       Increment="0.01"
+                       Minimum="0.01"
+                       Maximum="0.30"
+                       FormatString="F3"
+                       Value="{Binding Operation.LayerHeight}"/>
+        <TextBlock Grid.Row="2" Grid.Column="4"
+                   IsEnabled="{Binding !Operation.PatternModel}"
+                   VerticalAlignment="Center"
+                   Text="mm"/>
 
-            <TextBlock Grid.Row="2" Grid.Column="6"
-                       VerticalAlignment="Center"
-                       Text="Bottom layers:"/>
-            <NumericUpDown Grid.Row="2" Grid.Column="8"
-                           
-                           Increment="1"
-                           Minimum="1"
-                           Maximum="1000"
-                           Value="{Binding Operation.BottomLayers}"/>
-            <TextBlock Grid.Row="2" Grid.Column="8"
-                       VerticalAlignment="Center"
-                       Text="{Binding Operation.BottomHeight, StringFormat=\{0:F3\}mm}"/>
+        <TextBlock Grid.Row="2" Grid.Column="6"
+                   VerticalAlignment="Center"
+                   Text="Bottom layers:"/>
+        <NumericUpDown Grid.Row="2" Grid.Column="8"
+                       
+                       Increment="1"
+                       Minimum="1"
+                       Maximum="1000"
+                       Value="{Binding Operation.BottomLayers}"/>
+        <TextBlock Grid.Row="2" Grid.Column="8"
+                   VerticalAlignment="Center"
+                   Text="{Binding Operation.BottomHeight, StringFormat=\{0:F3\}mm}"/>
 
-            <TextBlock Grid.Row="4" Grid.Column="0"
-                       VerticalAlignment="Center"
-                       Text="Bottom exposure:"/>
-            <NumericUpDown Grid.Row="4" Grid.Column="2"
-                           
-                           Increment="0.5"
-                           Minimum="0.1"
-                           Maximum="200"
-                           FormatString="F2"
-                           Value="{Binding Operation.BottomExposure}"/>
-            <TextBlock Grid.Row="4" Grid.Column="4"
-                       VerticalAlignment="Center"
-                       Text="s"/>
+        <TextBlock Grid.Row="4" Grid.Column="0"
+                   VerticalAlignment="Center"
+                   Text="Bottom exposure:"/>
+        <NumericUpDown Grid.Row="4" Grid.Column="2"
+                       
+                       Increment="0.5"
+                       Minimum="0.1"
+                       Maximum="200"
+                       FormatString="F2"
+                       Value="{Binding Operation.BottomExposure}"/>
+        <TextBlock Grid.Row="4" Grid.Column="4"
+                   VerticalAlignment="Center"
+                   Text="s"/>
 
-            <TextBlock Grid.Row="4" Grid.Column="6"
-                       VerticalAlignment="Center"
-                       Text="Normal exposure:"/>
-            <NumericUpDown Grid.Row="4" Grid.Column="8"
-                           
-                           Increment="0.5"
-                           Minimum="0.1"
-                           Maximum="200"
-                           FormatString="F2"
-                           Value="{Binding Operation.NormalExposure}"/>
-            <TextBlock Grid.Row="4" Grid.Column="10"
-                       VerticalAlignment="Center"
-                       Text="s"/>
+        <TextBlock Grid.Row="4" Grid.Column="6"
+                   VerticalAlignment="Center"
+                   Text="Normal exposure:"/>
+        <NumericUpDown Grid.Row="4" Grid.Column="8"
+                       
+                       Increment="0.5"
+                       Minimum="0.1"
+                       Maximum="200"
+                       FormatString="F2"
+                       Value="{Binding Operation.NormalExposure}"/>
+        <TextBlock Grid.Row="4" Grid.Column="10"
+                   VerticalAlignment="Center"
+                   Text="s"/>
 
-            <TextBlock Grid.Row="6" Grid.Column="0"
-                       VerticalAlignment="Center"
-                       Text="Top/bottom margin:"/>
-            <NumericUpDown Grid.Row="6" Grid.Column="2"
-                           
-                           Increment="0.5"
-                           Minimum="0"
-                           Maximum="1000"
-                           Value="{Binding Operation.TopBottomMargin}"/>
-            <TextBlock Grid.Row="6" Grid.Column="4"
-                       VerticalAlignment="Center"
-                       Text="mm"/>
+        <TextBlock Grid.Row="6" Grid.Column="0"
+                   VerticalAlignment="Center"
+                   Text="Top/bottom margin:"/>
+        <NumericUpDown Grid.Row="6" Grid.Column="2"
+                       
+                       Increment="0.5"
+                       Minimum="0"
+                       Maximum="1000"
+                       Value="{Binding Operation.TopBottomMargin}"/>
+        <TextBlock Grid.Row="6" Grid.Column="4"
+                   VerticalAlignment="Center"
+                   Text="mm"/>
 
-            <TextBlock Grid.Row="6" Grid.Column="6"
-                       VerticalAlignment="Center"
-                       Text="Left/right margin:"/>
-            <NumericUpDown Grid.Row="6" Grid.Column="8"
-                           
-                           Increment="0.5"
-                           Minimum="0"
-                           Maximum="1000"
-                           Value="{Binding Operation.LeftRightMargin}"/>
-            <TextBlock Grid.Row="6" Grid.Column="10"
-                       VerticalAlignment="Center"
-                       Text="mm"/>
+        <TextBlock Grid.Row="6" Grid.Column="6"
+                   VerticalAlignment="Center"
+                   Text="Left/right margin:"/>
+        <NumericUpDown Grid.Row="6" Grid.Column="8"
+                       
+                       Increment="0.5"
+                       Minimum="0"
+                       Maximum="1000"
+                       Value="{Binding Operation.LeftRightMargin}"/>
+        <TextBlock Grid.Row="6" Grid.Column="10"
+                   VerticalAlignment="Center"
+                   Text="mm"/>
 
-            <TextBlock Grid.Row="8" Grid.Column="0"
-                       VerticalAlignment="Center"
-                       Text="Part margin:"/>
-            <NumericUpDown Grid.Row="8" Grid.Column="2"
-                           
-                           Increment="1"
-                           Minimum="0"
-                           Maximum="10000"
-                           Value="{Binding Operation.PartMargin}"/>
-            <TextBlock Grid.Row="8" Grid.Column="4"
-                       VerticalAlignment="Center"
-                       Text="mm"/>
+        <TextBlock Grid.Row="8" Grid.Column="0"
+                   VerticalAlignment="Center"
+                   Text="Part margin:"/>
+        <NumericUpDown Grid.Row="8" Grid.Column="2"
+                       
+                       Increment="1"
+                       Minimum="0"
+                       Maximum="10000"
+                       Value="{Binding Operation.PartMargin}"/>
+        <TextBlock Grid.Row="8" Grid.Column="4"
+                   VerticalAlignment="Center"
+                   Text="mm"/>
 
-            <TextBlock Grid.Row="10" Grid.Column="0"
-                       VerticalAlignment="Center"
-                       ToolTip.Tip="Chamfer the bottom and top layers"
-                       Text="Chamfer layers:"/>
-            <NumericUpDown Grid.Row="10" Grid.Column="2"
-                           
-                           Increment="1"
-                           Minimum="0"
-                           Maximum="255"
-                           IsEnabled="{Binding Operation.ChamferModel}"
-                           Value="{Binding Operation.ChamferLayers}"/>
+        <TextBlock Grid.Row="10" Grid.Column="0"
+                   VerticalAlignment="Center"
+                   ToolTip.Tip="Chamfer the bottom and top layers"
+                   Text="Chamfer layers:"/>
+        <NumericUpDown Grid.Row="10" Grid.Column="2"
+                       
+                       Increment="1"
+                       Minimum="0"
+                       Maximum="255"
+                       IsEnabled="{Binding Operation.ChamferModel}"
+                       Value="{Binding Operation.ChamferLayers}"/>
 
-            <TextBlock Grid.Row="10" Grid.Column="6"
-                       VerticalAlignment="Center"
-                       ToolTip.Tip="Erode bottom iterations to counter the elephant foot"
-                       Text="Erode bottom iter.:"/>
-            <NumericUpDown Grid.Row="10" Grid.Column="8"
-                           
-                           Increment="1"
-                           Minimum="0"
-                           Maximum="255"
-                           Value="{Binding Operation.ErodeBottomIterations}"/>
+        <TextBlock Grid.Row="10" Grid.Column="6"
+                   VerticalAlignment="Center"
+                   ToolTip.Tip="Erode bottom iterations to counter the elephant foot"
+                   Text="Erode bottom iter.:"/>
+        <NumericUpDown Grid.Row="10" Grid.Column="8"
+                       
+                       Increment="1"
+                       Minimum="0"
+                       Maximum="255"
+                       Value="{Binding Operation.ErodeBottomIterations}"/>
 
-            <CheckBox Grid.Row="12" Grid.Column="2" Grid.ColumnSpan="5"
-                      VerticalAlignment="Center"
-                      IsEnabled="{Binding !Operation.PatternModel}"
-                      IsChecked="{Binding Operation.EnableAntiAliasing}"
-                      Content="Enable Anti-Aliasing"/>
+        <CheckBox Grid.Row="12" Grid.Column="2" Grid.ColumnSpan="5"
+                  VerticalAlignment="Center"
+                  IsEnabled="{Binding !Operation.PatternModel}"
+                  IsChecked="{Binding Operation.EnableAntiAliasing}"
+                  Content="Enable Anti-Aliasing"/>
 
-            <CheckBox Grid.Row="12" Grid.Column="8"
-                      Grid.ColumnSpan="3"
-                      IsEnabled="{Binding !Operation.PatternModel}"
-                      ToolTip.Tip="Most of the printers requires a mirror output to print with the correct orientation"
-                      IsChecked="{Binding Operation.MirrorOutput}"
-                      Content="Mirror output" />
+        <CheckBox Grid.Row="12" Grid.Column="8"
+                  Grid.ColumnSpan="3"
+                  IsEnabled="{Binding !Operation.PatternModel}"
+                  ToolTip.Tip="Most of the printers requires a mirror output to print with the correct orientation"
+                  IsChecked="{Binding Operation.MirrorOutput}"
+                  Content="Mirror output" />
 
-          </Grid>
-        </Expander>
-      </Border>
+      </Grid>
+    </Expander>
 
-      <Border BorderBrush="Black" BorderThickness="1" Padding="5"
-              IsVisible="{Binding !Operation.PatternModel}">
-        <Expander IsExpanded="True">
-          <Expander.Header>
-            <TextBlock Text="Object configuration"
-                       FontWeight="Bold"
-                       Cursor="Hand"/>
+    <Expander IsExpanded="True" IsVisible="{Binding !Operation.PatternModel}">
+      <Expander.Header>
+        <TextBlock Text="Object configuration"
+                   FontWeight="Bold"
+                   Cursor="Hand"/>
 
-          </Expander.Header>
+      </Expander.Header>
 
-          <Grid RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto"
-                ColumnDefinitions="Auto,10,Auto,5,Auto,20,Auto,10,Auto,5,Auto,20,Auto,10,Auto,5,Auto">
-            <TextBlock Grid.Row="0" Grid.Column="0"
-                       Text="Base height:"
-                       VerticalAlignment="Center"/>
-            <NumericUpDown Grid.Row="0" Grid.Column="2"
-                             
-                             Increment="0.5"
-                             Minimum="0.3"
-                             Maximum="100"
-                             FormatString="F2"
-                             Value="{Binding Operation.BaseHeight}"/>
-            <TextBlock Grid.Row="0" Grid.Column="4"
-                         VerticalAlignment="Center"
-                         Text="mm"/>
+      <Grid RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto"
+            ColumnDefinitions="Auto,10,Auto,5,Auto,20,Auto,10,Auto,5,Auto,20,Auto,10,Auto,5,Auto">
+        <TextBlock Grid.Row="0" Grid.Column="0"
+                   Text="Base height:"
+                   VerticalAlignment="Center"/>
+        <NumericUpDown Grid.Row="0" Grid.Column="2"
+                         
+                         Increment="0.5"
+                         Minimum="0.3"
+                         Maximum="100"
+                         FormatString="F2"
+                         Value="{Binding Operation.BaseHeight}"/>
+        <TextBlock Grid.Row="0" Grid.Column="4"
+                     VerticalAlignment="Center"
+                     Text="mm"/>
 
-            <TextBlock Grid.Row="0" Grid.Column="6"
-                       Text="Features height:"
-                       VerticalAlignment="Center"/>
-            <NumericUpDown Grid.Row="0" Grid.Column="8"
-                           
-                           Increment="0.5"
-                           Minimum="0.5"
-                           Maximum="100"
-                           FormatString="F2"
-                           Value="{Binding Operation.FeaturesHeight}"/>
-            <TextBlock Grid.Row="0" Grid.Column="10"
-                       VerticalAlignment="Center"
-                       Text="mm"/>
+        <TextBlock Grid.Row="0" Grid.Column="6"
+                   Text="Features height:"
+                   VerticalAlignment="Center"/>
+        <NumericUpDown Grid.Row="0" Grid.Column="8"
+                       
+                       Increment="0.5"
+                       Minimum="0.5"
+                       Maximum="100"
+                       FormatString="F2"
+                       Value="{Binding Operation.FeaturesHeight}"/>
+        <TextBlock Grid.Row="0" Grid.Column="10"
+                   VerticalAlignment="Center"
+                   Text="mm"/>
 
-            <TextBlock Grid.Row="0" Grid.Column="12"
-                       Text="Features margin:"
-                       VerticalAlignment="Center"/>
-            <NumericUpDown Grid.Row="0" Grid.Column="14"
-                           
-                           Increment="0.5"
-                           Minimum="0"
-                           Maximum="100"
-                           FormatString="F2"
-                           Value="{Binding Operation.FeaturesMargin}"/>
-            <TextBlock Grid.Row="0" Grid.Column="16"
-                       VerticalAlignment="Center"
-                       Text="mm"/>
+        <TextBlock Grid.Row="0" Grid.Column="12"
+                   Text="Features margin:"
+                   VerticalAlignment="Center"/>
+        <NumericUpDown Grid.Row="0" Grid.Column="14"
+                       
+                       Increment="0.5"
+                       Minimum="0"
+                       Maximum="100"
+                       FormatString="F2"
+                       Value="{Binding Operation.FeaturesMargin}"/>
+        <TextBlock Grid.Row="0" Grid.Column="16"
+                   VerticalAlignment="Center"
+                   Text="mm"/>
 
-            <TextBlock Grid.Row="2" Grid.Column="0"
-                       ToolTip.Tip="Creates an incremental stair at top from left to right that goes up to the top layer"
-                       Text="Staircase:"
-                       VerticalAlignment="Center"/>
-            <NumericUpDown Grid.Row="2" Grid.Column="2"
-                             
-                           Increment="1"
-                           Minimum="0"
-                           Maximum="65535"
-                           Value="{Binding Operation.StaircaseThickness}"/>
-            <TextBlock Grid.Row="2" Grid.Column="4"
-                       VerticalAlignment="Center"
-                       Text="px"/>
+        <TextBlock Grid.Row="2" Grid.Column="0"
+                   ToolTip.Tip="Creates an incremental stair at top from left to right that goes up to the top layer"
+                   Text="Staircase:"
+                   VerticalAlignment="Center"/>
+        <NumericUpDown Grid.Row="2" Grid.Column="2"
+                       IsVisible="{Binding !Operation.IsUnitOfMeasureMm}"
+                       Increment="1"
+                       Minimum="0"
+                       Maximum="65535"
+                       Value="{Binding Operation.StaircaseThicknessPx}"/>
+        <NumericUpDown Grid.Row="2" Grid.Column="2"
+                       IsVisible="{Binding Operation.IsUnitOfMeasureMm}"
+                       Increment="1"
+                       Minimum="0"
+                       Maximum="500"
+                       Value="{Binding Operation.StaircaseThicknessMm}"/>
 
-            <CheckBox Grid.Row="4" Grid.Column="0"
-                       Grid.ColumnSpan="17"
-                       FontWeight="Bold"
-                       Content="Pin (positive) / holes (negative):"
-                       VerticalAlignment="Center"
-                       IsChecked="{Binding Operation.HolesEnabled}"/>
+        <TextBlock Grid.Row="2" Grid.Column="4"
+                   VerticalAlignment="Center"
+                   IsVisible="{Binding !Operation.IsUnitOfMeasureMm}"
+                   Text="px"/>
+        <TextBlock Grid.Row="2" Grid.Column="4"
+                   VerticalAlignment="Center"
+                   IsVisible="{Binding Operation.IsUnitOfMeasureMm}"
+                   Text="mm"/>
 
-            <TextBlock Grid.Row="6" Grid.Column="0"
-                       IsEnabled="{Binding Operation.HolesEnabled}"
-                       Text="Shape:"
-                       VerticalAlignment="Center"/>
+        <TextBlock Grid.Row="2" Grid.Column="6"
+                   Text="Unit of measure:"
+                   VerticalAlignment="Center"/>
 
-            <ComboBox Grid.Row="6" Grid.Column="2"
-                      IsEnabled="{Binding Operation.HolesEnabled}"
-                      HorizontalAlignment="Stretch"
-                      Items="{Binding Operation.ShapesItems}"
-                      SelectedItem="{Binding Operation.HoleShape}"/>
-            
-            <TextBlock Grid.Row="6" Grid.Column="6"
-                       Text="Unit of measure:"
-                       VerticalAlignment="Center"/>
+        <ComboBox Grid.Row="2" Grid.Column="8"
+                  HorizontalAlignment="Stretch"
+                  Items="{Binding Operation.MeasuresItems}"
+                  SelectedItem="{Binding Operation.UnitOfMeasure}"/>
 
-            <ComboBox Grid.Row="6" Grid.Column="8"
-                      HorizontalAlignment="Stretch"
-                      Items="{Binding Operation.MeasuresItems}"
-                      SelectedItem="{Binding Operation.UnitOfMeasure}"/>
-           
+        <CheckBox Grid.Row="4" Grid.Column="0"
+                   Grid.ColumnSpan="17"
+                   FontWeight="Bold"
+                   Content="Pin (positive) / holes (negative):"
+                   VerticalAlignment="Center"
+                   IsChecked="{Binding Operation.HolesEnabled}"/>
 
-            <TextBlock Grid.Row="8" Grid.Column="0"
-                       IsEnabled="{Binding Operation.HolesEnabled}"
-                       Text="Diameters:"
-                       ToolTip.Tip="Diameters separated by a comma (,).
+        <TextBlock Grid.Row="6" Grid.Column="0"
+                   IsEnabled="{Binding Operation.HolesEnabled}"
+                   Text="Shape:"
+                   VerticalAlignment="Center"/>
+
+        <ComboBox Grid.Row="6" Grid.Column="2"
+                  IsEnabled="{Binding Operation.HolesEnabled}"
+                  HorizontalAlignment="Stretch"
+                  Items="{Binding Operation.ShapesItems}"
+                  SelectedItem="{Binding Operation.HoleShape}"/>
+        
+        
+        <TextBlock Grid.Row="8" Grid.Column="0"
+                   IsEnabled="{Binding Operation.HolesEnabled}"
+                   Text="Diameters:"
+                   ToolTip.Tip="Diameters separated by a comma (,).
 &#x0a;Order doesn't matter.
 &#x0a;Values are pixel square, eg: 3 = 3x3 = 9 pixel hole"
-                       VerticalAlignment="Center"/>
+                   VerticalAlignment="Center"/>
 
-            <TextBox Grid.Row="8" Grid.Column="2"
-                     Grid.ColumnSpan="13"
-                     IsEnabled="{Binding Operation.HolesEnabled}"
-                     IsVisible="{Binding Operation.IsUnitOfMeasureMm}"
-                     Text="{Binding Operation.HoleDiametersMm}"/>
+        <TextBox Grid.Row="8" Grid.Column="2"
+                 Grid.ColumnSpan="13"
+                 IsEnabled="{Binding Operation.HolesEnabled}"
+                 IsVisible="{Binding Operation.IsUnitOfMeasureMm}"
+                 Text="{Binding Operation.HoleDiametersMm}"/>
 
-            <TextBox Grid.Row="8" Grid.Column="2"
-                     Grid.ColumnSpan="13"
-                     IsEnabled="{Binding Operation.HolesEnabled}"
-                     IsVisible="{Binding !Operation.IsUnitOfMeasureMm}"
-                     Text="{Binding Operation.HoleDiametersPx}"/>
-            
-            <TextBlock Grid.Row="8" Grid.Column="16"
-                       IsEnabled="{Binding Operation.HolesEnabled}"
-                       IsVisible="{Binding Operation.IsUnitOfMeasureMm}"
-                       VerticalAlignment="Center"
-                       Text="mm"/>
+        <TextBox Grid.Row="8" Grid.Column="2"
+                 Grid.ColumnSpan="13"
+                 IsEnabled="{Binding Operation.HolesEnabled}"
+                 IsVisible="{Binding !Operation.IsUnitOfMeasureMm}"
+                 Text="{Binding Operation.HoleDiametersPx}"/>
+        
+        <TextBlock Grid.Row="8" Grid.Column="16"
+                   IsEnabled="{Binding Operation.HolesEnabled}"
+                   IsVisible="{Binding Operation.IsUnitOfMeasureMm}"
+                   VerticalAlignment="Center"
+                   Text="mm"/>
 
-            <TextBlock Grid.Row="8" Grid.Column="16"
-                       IsEnabled="{Binding Operation.HolesEnabled}"
-                       IsVisible="{Binding !Operation.IsUnitOfMeasureMm}"
-                       VerticalAlignment="Center"
-                       Text="px"/>
+        <TextBlock Grid.Row="8" Grid.Column="16"
+                   IsEnabled="{Binding Operation.HolesEnabled}"
+                   IsVisible="{Binding !Operation.IsUnitOfMeasureMm}"
+                   VerticalAlignment="Center"
+                   Text="px"/>
 
-            <CheckBox Grid.Row="10" Grid.Column="0"
-                       Grid.ColumnSpan="17"
-                       FontWeight="Bold"
-                       Content="Zebra bars:"
-                       VerticalAlignment="Center"
-                       IsChecked="{Binding Operation.BarsEnabled}"/>
+        <CheckBox Grid.Row="10" Grid.Column="0"
+                   Grid.ColumnSpan="17"
+                   FontWeight="Bold"
+                   Content="Zebra bars:"
+                   VerticalAlignment="Center"
+                   IsChecked="{Binding Operation.BarsEnabled}"/>
 
 
-            <TextBlock Grid.Row="12" Grid.Column="0"
+        <TextBlock Grid.Row="12" Grid.Column="0"
+                   IsEnabled="{Binding Operation.BarsEnabled}"
+                   Text="Bar spacing:"
+                   VerticalAlignment="Center"/>
+        <NumericUpDown Grid.Row="12" Grid.Column="2"
                        IsEnabled="{Binding Operation.BarsEnabled}"
-                       Text="Bar spacing:"
-                       VerticalAlignment="Center"/>
-            <NumericUpDown Grid.Row="12" Grid.Column="2"
-                           IsEnabled="{Binding Operation.BarsEnabled}"
-                           Increment="0.5"
-                           Minimum="0.01"
-                           Maximum="100"
-                           FormatString="F2"
-                           Value="{Binding Operation.BarSpacing}"/>
-            <TextBlock Grid.Row="12" Grid.Column="4"
-                       IsEnabled="{Binding Operation.BarsEnabled}"
-                       VerticalAlignment="Center"
-                       Text="mm"/>
+                       Increment="0.5"
+                       Minimum="0.01"
+                       Maximum="100"
+                       FormatString="F2"
+                       Value="{Binding Operation.BarSpacing}"/>
+        <TextBlock Grid.Row="12" Grid.Column="4"
+                   IsEnabled="{Binding Operation.BarsEnabled}"
+                   VerticalAlignment="Center"
+                   Text="mm"/>
 
-            <TextBlock Grid.Row="12" Grid.Column="6"
+        <TextBlock Grid.Row="12" Grid.Column="6"
+                   IsEnabled="{Binding Operation.BarsEnabled}"
+                   Text="Bar length:"
+                   HorizontalAlignment="Right"
+                   VerticalAlignment="Center"/>
+        <NumericUpDown Grid.Row="12" Grid.Column="8"
                        IsEnabled="{Binding Operation.BarsEnabled}"
-                       Text="Bar length:"
-                       HorizontalAlignment="Right"
-                       VerticalAlignment="Center"/>
-            <NumericUpDown Grid.Row="12" Grid.Column="8"
-                           IsEnabled="{Binding Operation.BarsEnabled}"
-                           Increment="0.5"
-                           Minimum="0.01"
-                           Maximum="100"
-                           FormatString="F2"
-                           Value="{Binding Operation.BarLength}"/>
-            <TextBlock Grid.Row="12" Grid.Column="10"
-                       IsEnabled="{Binding Operation.BarsEnabled}"
-                       VerticalAlignment="Center"
-                       Text="mm"/>
+                       Increment="0.5"
+                       Minimum="0.01"
+                       Maximum="100"
+                       FormatString="F2"
+                       Value="{Binding Operation.BarLength}"/>
+        <TextBlock Grid.Row="12" Grid.Column="10"
+                   IsEnabled="{Binding Operation.BarsEnabled}"
+                   VerticalAlignment="Center"
+                   Text="mm"/>
 
-            <TextBlock Grid.Row="12" Grid.Column="12"
+        <TextBlock Grid.Row="12" Grid.Column="12"
+                   IsEnabled="{Binding Operation.BarsEnabled}"
+                   Text="Vertical splitter:"
+                   HorizontalAlignment="Right"
+                   VerticalAlignment="Center"/>
+        <NumericUpDown Grid.Row="12" Grid.Column="14"
                        IsEnabled="{Binding Operation.BarsEnabled}"
-                       Text="Vertical splitter:"
-                       HorizontalAlignment="Right"
-                       VerticalAlignment="Center"/>
-            <NumericUpDown Grid.Row="12" Grid.Column="14"
-                           IsEnabled="{Binding Operation.BarsEnabled}"
-                           Increment="1"
-                           Minimum="-128"
-                           Maximum="127"
-                           Value="{Binding Operation.BarVerticalSplitter}"/>
-            <TextBlock Grid.Row="10" Grid.Column="16"
-                       IsEnabled="{Binding Operation.BarsEnabled}"
-                       VerticalAlignment="Center"
-                       Text="px"/>
+                       Increment="1"
+                       Minimum="-128"
+                       Maximum="127"
+                       Value="{Binding Operation.BarVerticalSplitter}"/>
+        <TextBlock Grid.Row="10" Grid.Column="16"
+                   IsEnabled="{Binding Operation.BarsEnabled}"
+                   VerticalAlignment="Center"
+                   Text="px"/>
 
-            <TextBlock Grid.Row="14" Grid.Column="0"
+        <TextBlock Grid.Row="14" Grid.Column="0"
+                   IsEnabled="{Binding Operation.BarsEnabled}"
+                   Text="Fence thick:"
+                   VerticalAlignment="Center"/>
+        <NumericUpDown Grid.Row="14" Grid.Column="2"
                        IsEnabled="{Binding Operation.BarsEnabled}"
-                       Text="Fence thick:"
-                       VerticalAlignment="Center"/>
-            <NumericUpDown Grid.Row="14" Grid.Column="2"
-                           IsEnabled="{Binding Operation.BarsEnabled}"
-                           Increment="2"
-                           Minimum="0"
-                           Maximum="255"
-                           Value="{Binding Operation.BarFenceThickness}"/>
-            <TextBlock Grid.Row="14" Grid.Column="4"
-                       IsEnabled="{Binding Operation.BarsEnabled}"
-                       VerticalAlignment="Center"
-                       Text="px"/>
+                       Increment="2"
+                       Minimum="0"
+                       Maximum="255"
+                       Value="{Binding Operation.BarFenceThickness}"/>
+        <TextBlock Grid.Row="14" Grid.Column="4"
+                   IsEnabled="{Binding Operation.BarsEnabled}"
+                   VerticalAlignment="Center"
+                   Text="px"/>
 
-            <TextBlock Grid.Row="14" Grid.Column="6"
+        <TextBlock Grid.Row="14" Grid.Column="6"
+                   IsEnabled="{Binding Operation.BarsEnabled}"
+                   Text="Fence offset:"
+                   HorizontalAlignment="Right"
+                   VerticalAlignment="Center"/>
+        <NumericUpDown Grid.Row="14" Grid.Column="8"
                        IsEnabled="{Binding Operation.BarsEnabled}"
-                       Text="Fence offset:"
-                       HorizontalAlignment="Right"
-                       VerticalAlignment="Center"/>
-            <NumericUpDown Grid.Row="14" Grid.Column="8"
-                           IsEnabled="{Binding Operation.BarsEnabled}"
-                           Increment="1"
-                           Minimum="-128"
-                           Maximum="127"
-                           Value="{Binding Operation.BarFenceOffset}"/>
-            <TextBlock Grid.Row="14" Grid.Column="10"
-                       IsEnabled="{Binding Operation.BarsEnabled}"
-                       VerticalAlignment="Center"
-                       Text="px"/>
+                       Increment="1"
+                       Minimum="-128"
+                       Maximum="127"
+                       Value="{Binding Operation.BarFenceOffset}"/>
+        <TextBlock Grid.Row="14" Grid.Column="10"
+                   IsEnabled="{Binding Operation.BarsEnabled}"
+                   VerticalAlignment="Center"
+                   Text="px"/>
 
-            <TextBlock Grid.Row="16" Grid.Column="0"
-                       IsEnabled="{Binding Operation.BarsEnabled}"
-                       Text="Thicknesses:"
-                       VerticalAlignment="Center"/>
+        <TextBlock Grid.Row="16" Grid.Column="0"
+                   IsEnabled="{Binding Operation.BarsEnabled}"
+                   Text="Thicknesses:"
+                   VerticalAlignment="Center"/>
 
-            <TextBox Grid.Row="16" Grid.Column="2"
-                     Grid.ColumnSpan="13"
-                     IsEnabled="{Binding Operation.BarsEnabled}"
-                     IsVisible="{Binding Operation.IsUnitOfMeasureMm}"
-                     Text="{Binding Operation.BarThicknessesMm}"/>
+        <TextBox Grid.Row="16" Grid.Column="2"
+                 Grid.ColumnSpan="13"
+                 IsEnabled="{Binding Operation.BarsEnabled}"
+                 IsVisible="{Binding Operation.IsUnitOfMeasureMm}"
+                 Text="{Binding Operation.BarThicknessesMm}"/>
 
-            <TextBox Grid.Row="16" Grid.Column="2"
-                     Grid.ColumnSpan="13"
-                     IsEnabled="{Binding Operation.BarsEnabled}"
-                     IsVisible="{Binding !Operation.IsUnitOfMeasureMm}"
-                     Text="{Binding Operation.BarThicknessesPx}"/>
-            <TextBlock Grid.Row="16" Grid.Column="16"
-                       IsEnabled="{Binding Operation.BarsEnabled}"
-                       IsVisible="{Binding Operation.IsUnitOfMeasureMm}"
-                       VerticalAlignment="Center"
-                       Text="mm"/>
-            <TextBlock Grid.Row="16" Grid.Column="16"
-                       IsEnabled="{Binding Operation.BarsEnabled}"
-                       IsVisible="{Binding !Operation.IsUnitOfMeasureMm}"
-                       VerticalAlignment="Center"
-                       Text="px"/>
+        <TextBox Grid.Row="16" Grid.Column="2"
+                 Grid.ColumnSpan="13"
+                 IsEnabled="{Binding Operation.BarsEnabled}"
+                 IsVisible="{Binding !Operation.IsUnitOfMeasureMm}"
+                 Text="{Binding Operation.BarThicknessesPx}"/>
+        <TextBlock Grid.Row="16" Grid.Column="16"
+                   IsEnabled="{Binding Operation.BarsEnabled}"
+                   IsVisible="{Binding Operation.IsUnitOfMeasureMm}"
+                   VerticalAlignment="Center"
+                   Text="mm"/>
+        <TextBlock Grid.Row="16" Grid.Column="16"
+                   IsEnabled="{Binding Operation.BarsEnabled}"
+                   IsVisible="{Binding !Operation.IsUnitOfMeasureMm}"
+                   VerticalAlignment="Center"
+                   Text="px"/>
 
-            <CheckBox Grid.Row="18" Grid.Column="0"
-                       Grid.ColumnSpan="17"
-                       FontWeight="Bold"
-                       Content="Text:"
-                       VerticalAlignment="Center"
-                       IsChecked="{Binding Operation.TextEnabled}"/>
+        <CheckBox Grid.Row="18" Grid.Column="0"
+                   Grid.ColumnSpan="17"
+                   FontWeight="Bold"
+                   Content="Text:"
+                   VerticalAlignment="Center"
+                   IsChecked="{Binding Operation.TextEnabled}"/>
 
-            <TextBlock Grid.Row="20" Grid.Column="0"
+        <TextBlock Grid.Row="20" Grid.Column="0"
+                   IsEnabled="{Binding Operation.TextEnabled}"
+                   Text="Font:"
+                   VerticalAlignment="Center"/>
+        <ComboBox Grid.Row="20" Grid.Column="2"
+                  IsEnabled="{Binding Operation.TextEnabled}"
+                  Grid.ColumnSpan="3"
+                  VerticalAlignment="Center"
+                  HorizontalAlignment="Stretch"
+                  Items="{Binding Operation.TextFonts}"
+                  SelectedItem="{Binding Operation.TextFont}"/>
+
+        <TextBlock Grid.Row="20" Grid.Column="6"
+                   IsEnabled="{Binding Operation.TextEnabled}"
+                   Text="Text scale:"
+                   HorizontalAlignment="Right"
+                   VerticalAlignment="Center"/>
+        <NumericUpDown Grid.Row="20" Grid.Column="8"
                        IsEnabled="{Binding Operation.TextEnabled}"
-                       Text="Font:"
-                       VerticalAlignment="Center"/>
-            <ComboBox Grid.Row="20" Grid.Column="2"
-                      IsEnabled="{Binding Operation.TextEnabled}"
-                      Grid.ColumnSpan="3"
-                      VerticalAlignment="Center"
-                      HorizontalAlignment="Stretch"
-                      Items="{Binding Operation.TextFonts}"
-                      SelectedItem="{Binding Operation.TextFont}"/>
+                       Increment="0.5"
+                       Minimum="0.1"
+                       Maximum="100"
+                       FormatString="F2"
+                       Value="{Binding Operation.TextScale}"/>
+        <TextBlock Grid.Row="20" Grid.Column="10"
+                   IsEnabled="{Binding Operation.TextEnabled}"
+                   VerticalAlignment="Center"
+                   Text="x"/>
 
-            <TextBlock Grid.Row="20" Grid.Column="6"
+        <TextBlock Grid.Row="20" Grid.Column="12"
+                   IsEnabled="{Binding Operation.TextEnabled}"
+                   Text="Text thickness:"
+                   HorizontalAlignment="Right"
+                   VerticalAlignment="Center"/>
+        <NumericUpDown Grid.Row="20" Grid.Column="14"
                        IsEnabled="{Binding Operation.TextEnabled}"
-                       Text="Text scale:"
-                       HorizontalAlignment="Right"
-                       VerticalAlignment="Center"/>
-            <NumericUpDown Grid.Row="20" Grid.Column="8"
-                           IsEnabled="{Binding Operation.TextEnabled}"
-                           Increment="0.5"
-                           Minimum="0.1"
-                           Maximum="100"
-                           FormatString="F2"
-                           Value="{Binding Operation.TextScale}"/>
-            <TextBlock Grid.Row="20" Grid.Column="10"
-                       IsEnabled="{Binding Operation.TextEnabled}"
-                       VerticalAlignment="Center"
-                       Text="x"/>
+                       Increment="1"
+                       Minimum="1"
+                       Maximum="255"
+                       Value="{Binding Operation.TextThickness}"/>
+        <TextBlock Grid.Row="20" Grid.Column="16"
+                   IsEnabled="{Binding Operation.TextEnabled}"
+                   VerticalAlignment="Center"
+                   Text="px"/>
 
-            <TextBlock Grid.Row="20" Grid.Column="12"
-                       IsEnabled="{Binding Operation.TextEnabled}"
-                       Text="Text thickness:"
-                       HorizontalAlignment="Right"
-                       VerticalAlignment="Center"/>
-            <NumericUpDown Grid.Row="20" Grid.Column="14"
-                           IsEnabled="{Binding Operation.TextEnabled}"
-                           Increment="1"
-                           Minimum="1"
-                           Maximum="255"
-                           Value="{Binding Operation.TextThickness}"/>
-            <TextBlock Grid.Row="20" Grid.Column="16"
-                       IsEnabled="{Binding Operation.TextEnabled}"
-                       VerticalAlignment="Center"
-                       Text="px"/>
+        <TextBlock Grid.Row="22" Grid.Column="0"
+                   IsEnabled="{Binding Operation.TextEnabled}"
+                   Text="Text:"
+                   VerticalAlignment="Center"/>
 
-            <TextBlock Grid.Row="22" Grid.Column="0"
-                       IsEnabled="{Binding Operation.TextEnabled}"
-                       Text="Text:"
-                       VerticalAlignment="Center"/>
+        <TextBox Grid.Row="22" Grid.Column="2"
+                 IsEnabled="{Binding Operation.TextEnabled}"
+                 Grid.ColumnSpan="13"
+                 Text="{Binding Operation.Text}"/>
 
-            <TextBox Grid.Row="22" Grid.Column="2"
-                     IsEnabled="{Binding Operation.TextEnabled}"
-                     Grid.ColumnSpan="13"
-                     Text="{Binding Operation.Text}"/>
-
-            <CheckBox Grid.Row="24" Grid.Column="0"
-                       Grid.ColumnSpan="17"
-                       FontWeight="Bold"
-                       Content="Bullseye:"
-                       VerticalAlignment="Center"
-                       IsChecked="{Binding Operation.BullsEyeEnabled}"/>
+        <CheckBox Grid.Row="24" Grid.Column="0"
+                   Grid.ColumnSpan="17"
+                   FontWeight="Bold"
+                   Content="Bullseye:"
+                   VerticalAlignment="Center"
+                   IsChecked="{Binding Operation.BullsEyeEnabled}"/>
 
 
-            <TextBlock Grid.Row="26" Grid.Column="0"
-                       Text="Configuration:"
+        <TextBlock Grid.Row="26" Grid.Column="0"
+                   Text="Configuration:"
+                   IsEnabled="{Binding Operation.BullsEyeEnabled}"
+                   ToolTip.Tip="Diameter:Thickness, ..."
+                   VerticalAlignment="Center"/>
+
+        <TextBox Grid.Row="26" Grid.Column="2"
+                 Grid.ColumnSpan="13"
+                 IsEnabled="{Binding Operation.BullsEyeEnabled}"
+                 IsVisible="{Binding Operation.IsUnitOfMeasureMm}"
+                 Text="{Binding Operation.BullsEyeConfigurationMm}"/>
+
+        <TextBox Grid.Row="26" Grid.Column="2"
+                 Grid.ColumnSpan="13"
+                 IsEnabled="{Binding Operation.BullsEyeEnabled}"
+                 IsVisible="{Binding !Operation.IsUnitOfMeasureMm}"
+                 Text="{Binding Operation.BullsEyeConfigurationPx}"/>
+        <TextBlock Grid.Row="26" Grid.Column="16"
+                   IsEnabled="{Binding Operation.BullsEyeEnabled}"
+                   IsVisible="{Binding Operation.IsUnitOfMeasureMm}"
+                   VerticalAlignment="Center"
+                   Text="mm"/>
+        <TextBlock Grid.Row="26" Grid.Column="16"
+                   IsEnabled="{Binding Operation.BullsEyeEnabled}"
+                   IsVisible="{Binding !Operation.IsUnitOfMeasureMm}"
+                   VerticalAlignment="Center"
+                   Text="px"/>
+
+        <TextBlock Grid.Row="28" Grid.Column="0"
+                   IsEnabled="{Binding Operation.BullsEyeEnabled}"
+                   Text="Fence thick:"
+                   VerticalAlignment="Center"/>
+        <NumericUpDown Grid.Row="28" Grid.Column="2"
                        IsEnabled="{Binding Operation.BullsEyeEnabled}"
-                       ToolTip.Tip="Diameter:Thickness, ..."
-                       VerticalAlignment="Center"/>
+                       Increment="2"
+                       Minimum="0"
+                       Maximum="255"
+                       Value="{Binding Operation.BullsEyeFenceThickness}"/>
+        <TextBlock Grid.Row="28" Grid.Column="4"
+                   IsEnabled="{Binding Operation.BullsEyeEnabled}"
+                   VerticalAlignment="Center"
+                   Text="px"/>
 
-            <TextBox Grid.Row="26" Grid.Column="2"
-                     Grid.ColumnSpan="13"
-                     IsEnabled="{Binding Operation.BullsEyeEnabled}"
-                     IsVisible="{Binding Operation.IsUnitOfMeasureMm}"
-                     Text="{Binding Operation.BullsEyeConfigurationMm}"/>
-
-            <TextBox Grid.Row="26" Grid.Column="2"
-                     Grid.ColumnSpan="13"
-                     IsEnabled="{Binding Operation.BullsEyeEnabled}"
-                     IsVisible="{Binding !Operation.IsUnitOfMeasureMm}"
-                     Text="{Binding Operation.BullsEyeConfigurationPx}"/>
-            <TextBlock Grid.Row="26" Grid.Column="16"
+        <TextBlock Grid.Row="28" Grid.Column="6"
+                   IsEnabled="{Binding Operation.BullsEyeEnabled}"
+                   Text="Fence offset:"
+                   HorizontalAlignment="Right"
+                   VerticalAlignment="Center"/>
+        <NumericUpDown Grid.Row="28" Grid.Column="8"
                        IsEnabled="{Binding Operation.BullsEyeEnabled}"
-                       IsVisible="{Binding Operation.IsUnitOfMeasureMm}"
-                       VerticalAlignment="Center"
-                       Text="mm"/>
-            <TextBlock Grid.Row="26" Grid.Column="16"
-                       IsEnabled="{Binding Operation.BullsEyeEnabled}"
-                       IsVisible="{Binding !Operation.IsUnitOfMeasureMm}"
-                       VerticalAlignment="Center"
-                       Text="px"/>
+                       Increment="1"
+                       Minimum="-128"
+                       Maximum="127"
+                       Value="{Binding Operation.BullsEyeFenceOffset}"/>
+        <TextBlock Grid.Row="28" Grid.Column="10"
+                   IsEnabled="{Binding Operation.BullsEyeEnabled}"
+                   VerticalAlignment="Center"
+                   Text="px"/>
 
-            <TextBlock Grid.Row="28" Grid.Column="0"
-                       IsEnabled="{Binding Operation.BullsEyeEnabled}"
-                       Text="Fence thick:"
-                       VerticalAlignment="Center"/>
-            <NumericUpDown Grid.Row="28" Grid.Column="2"
-                           IsEnabled="{Binding Operation.BullsEyeEnabled}"
-                           Increment="2"
-                           Minimum="0"
-                           Maximum="255"
-                           Value="{Binding Operation.BullsEyeFenceThickness}"/>
-            <TextBlock Grid.Row="28" Grid.Column="4"
-                       IsEnabled="{Binding Operation.BullsEyeEnabled}"
-                       VerticalAlignment="Center"
-                       Text="px"/>
-
-            <TextBlock Grid.Row="28" Grid.Column="6"
-                       IsEnabled="{Binding Operation.BullsEyeEnabled}"
-                       Text="Fence offset:"
-                       HorizontalAlignment="Right"
-                       VerticalAlignment="Center"/>
-            <NumericUpDown Grid.Row="28" Grid.Column="8"
-                           IsEnabled="{Binding Operation.BullsEyeEnabled}"
-                           Increment="1"
-                           Minimum="-128"
-                           Maximum="127"
-                           Value="{Binding Operation.BullsEyeFenceOffset}"/>
-            <TextBlock Grid.Row="28" Grid.Column="10"
-                       IsEnabled="{Binding Operation.BullsEyeEnabled}"
-                       VerticalAlignment="Center"
-                       Text="px"/>
-
-            <CheckBox Grid.Row="28" Grid.Column="12"
-                      Grid.ColumnSpan="5"
-                      Content="Invert quadrants"
-                      VerticalAlignment="Center"
-                      IsEnabled="{Binding Operation.BullsEyeEnabled}"
-                      IsChecked="{Binding Operation.BullsEyeInvertQuadrants}"/>
+        <CheckBox Grid.Row="28" Grid.Column="12"
+                  Grid.ColumnSpan="5"
+                  Content="Invert quadrants"
+                  VerticalAlignment="Center"
+                  IsEnabled="{Binding Operation.BullsEyeEnabled}"
+                  IsChecked="{Binding Operation.BullsEyeInvertQuadrants}"/>
 
 
-            <CheckBox Grid.Row="30" Grid.Column="0"
-                      Grid.ColumnSpan="17"
-                      FontWeight="Bold"
-                      Content="Counter triangles:"
-                      VerticalAlignment="Center"
-                      IsChecked="{Binding Operation.CounterTrianglesEnabled}"/>
+        <CheckBox Grid.Row="30" Grid.Column="0"
+                  Grid.ColumnSpan="17"
+                  FontWeight="Bold"
+                  Content="Counter triangles:"
+                  VerticalAlignment="Center"
+                  IsChecked="{Binding Operation.CounterTrianglesEnabled}"/>
 
 
-            <TextBlock Grid.Row="32" Grid.Column="0"
-                       Text="Tip Offset:"
+        <TextBlock Grid.Row="32" Grid.Column="0"
+                   Text="Tip Offset:"
+                   IsEnabled="{Binding Operation.CounterTrianglesEnabled}"
+                   VerticalAlignment="Center"/>
+
+        <NumericUpDown Grid.Row="32" Grid.Column="2"
                        IsEnabled="{Binding Operation.CounterTrianglesEnabled}"
-                       VerticalAlignment="Center"/>
+                       Increment="1"
+                       Minimum="-128"
+                       Maximum="127"
+                       Value="{Binding Operation.CounterTrianglesTipOffset}"/>
 
-            <NumericUpDown Grid.Row="32" Grid.Column="2"
-                           IsEnabled="{Binding Operation.CounterTrianglesEnabled}"
-                           Increment="1"
-                           Minimum="-128"
-                           Maximum="127"
-                           Value="{Binding Operation.CounterTrianglesTipOffset}"/>
+        <TextBlock Grid.Row="32" Grid.Column="4"
+                   IsEnabled="{Binding Operation.CounterTrianglesEnabled}"
+                   VerticalAlignment="Center"
+                   Text="px"/>
 
-            <TextBlock Grid.Row="32" Grid.Column="4"
-                       IsEnabled="{Binding Operation.CounterTrianglesEnabled}"
-                       VerticalAlignment="Center"
-                       Text="px"/>
+        <CheckBox Grid.Row="32" Grid.Column="6"
+                  Grid.ColumnSpan="5"
+                  IsEnabled="{Binding Operation.CounterTrianglesEnabled}"
+                  Content="Fence the triangles"
+                  VerticalAlignment="Center"
+                  IsChecked="{Binding Operation.CounterTrianglesFence}"/>
 
-            <CheckBox Grid.Row="32" Grid.Column="6"
-                      Grid.ColumnSpan="5"
-                      IsEnabled="{Binding Operation.CounterTrianglesEnabled}"
-                      Content="Fence the triangles"
-                      VerticalAlignment="Center"
-                      IsChecked="{Binding Operation.CounterTrianglesFence}"/>
+      </Grid>
 
-          </Grid>
+    </Expander>
 
-        </Expander>
-      </Border>
 
-        <Border BorderBrush="Black"
-                BorderThickness="1"
-                Padding="5">
-            <Expander IsExpanded="False">
-                <Expander.Header>
-                    <StackPanel Orientation="Horizontal" Cursor="Hand">
-                    <TextBlock Text="Multiple brightness"
-                               IsVisible="{Binding !SlicerFile.IsAntiAliasingEmulated}"
-                               FontWeight="Bold"/>
-                    <TextBlock Text="Multiple brightness/exposures with emulated AntiAliasing and time fractions"
-                               IsVisible="{Binding SlicerFile.IsAntiAliasingEmulated}"
-                               FontWeight="Bold"/>
-                    </StackPanel>
+        <Expander IsExpanded="False">
+            <Expander.Header>
+                <StackPanel Orientation="Horizontal" Cursor="Hand">
+                <TextBlock Text="Multiple brightness"
+                           IsVisible="{Binding !SlicerFile.IsAntiAliasingEmulated}"
+                           FontWeight="Bold"/>
+                <TextBlock Text="Multiple brightness/exposures with emulated AntiAliasing and time fractions"
+                           IsVisible="{Binding SlicerFile.IsAntiAliasingEmulated}"
+                           FontWeight="Bold"/>
+                </StackPanel>
 
-                </Expander.Header>
+            </Expander.Header>
 
-                <StackPanel Spacing="10">
+            <StackPanel Spacing="10">
 
-                    <TextBlock 
-                        Text="Only printers able to do Anti-Aliasing and enabled on file can support this.
+                <TextBlock 
+                    Text="Only printers able to do Anti-Aliasing and enabled on file can support this.
 &#x0a;Make sure your is supported or else it can print a full white or full black model.
 &#x0a;Also take into consideration some printers/formats have fixed usable AA levels and all in between will be threshold, study this first.
 &#x0a;When using this section, always set the exposure time to the highest time you want to test.
 &#x0a;If your printer is able to do 'Multiple exposures times per layer', please use that method instead of this (More accurate and AA threshold free)."/>
 
-                    <TextBlock 
-                        IsVisible="{Binding SlicerFile.IsAntiAliasingEmulated}"
-                        TextWrapping="Wrap"
-                        FontWeight="Bold"
-                        Text="Note: This file format uses time fractions to emulate AntiAliasing.
+                <TextBlock 
+                    IsVisible="{Binding SlicerFile.IsAntiAliasingEmulated}"
+                    TextWrapping="Wrap"
+                    FontWeight="Bold"
+                    Text="Note: This file format uses time fractions to emulate AntiAliasing.
 &#x0a;This can be used to replace the 'Multiple exposures' sections and print multiple models at once at different timings.
 &#x0a;However you can't set the object time, instead fractions of the main exposure must be used.
 &#x0a;The brightness table will tell you the expected exposure time of each object."/>
 
-                <CheckBox
-                        Content="Enable - For advanced users only!"
-                        IsChecked="{Binding Operation.MultipleBrightness}"/>
+            <CheckBox
+                    Content="Enable - For advanced users only!"
+                    IsChecked="{Binding Operation.MultipleBrightness}"/>
 
 
 
-                  <Grid RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto"
-                          ColumnDefinitions="Auto,10,200,5,Auto,20,Auto,10,Auto,5,Auto,5,Auto"
-                          IsEnabled="{Binding Operation.MultipleBrightness}">
+              <Grid RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto"
+                      ColumnDefinitions="Auto,10,200,5,Auto,20,Auto,10,Auto,5,Auto,5,Auto"
+                      IsEnabled="{Binding Operation.MultipleBrightness}">
 
-                        <TextBlock Grid.Row="0" Grid.Column="0"
-                                   ToolTip.Tip="Do not change brightness from the selected layers. Full brightness of 255 is applied to the skip layers."
-                                   Text="Exclude from:"
-                                   VerticalAlignment="Center"/>
-                        <ComboBox Grid.Row="0" Grid.Column="2"
-                                  VerticalAlignment="Center"
-                                  HorizontalAlignment="Stretch"
-                                  Items="{Binding Operation.MultipleBrightnessExcludeFromItems}"
-                                  SelectedItem="{Binding Operation.MultipleBrightnessExcludeFrom}"/>
-                        <TextBlock Grid.Row="0" Grid.Column="4"
-                                   Text="layers"
-                                   VerticalAlignment="Center"/>
-
-                        <TextBlock Grid.Row="0" Grid.Column="6"
-                                   IsVisible="{Binding !SlicerFile.IsAntiAliasingEmulated}"
-                                   ToolTip.Tip="Append a brightness level to the list by giving a desired exposure time. Supplied time must be lower than the common exposure time or you need to increase it on the common 'Normal Exposure'."
-                                   Text="Generate by exposure time:"
-                                   VerticalAlignment="Center"/>
-
-                        <NumericUpDown Grid.Row="0" Grid.Column="8"
-                                       IsVisible="{Binding !SlicerFile.IsAntiAliasingEmulated}"
-                                       Increment="0.10"
-                                       Minimum="0.10"
-                                       Maximum="{Binding Operation.NormalExposure}"
-                                       FormatString="F2"
-                                       Value="{Binding Operation.MultipleBrightnessGenExposureTime}"/>
-
-                        <TextBlock Grid.Row="0" Grid.Column="10"
-                                   IsVisible="{Binding !SlicerFile.IsAntiAliasingEmulated}"
-                                   Text="s"
-                                   VerticalAlignment="Center"/>
-
-                        <Button
-                            Grid.Row="0" Grid.Column="12" VerticalContentAlignment="Center"
-                            IsVisible="{Binding !SlicerFile.IsAntiAliasingEmulated}"
-                            HorizontalContentAlignment="Center"
-                            VerticalAlignment="Stretch"
-                            Command="{Binding BrightnessExposureGenAdd}">
-                            <StackPanel Orientation="Horizontal" Spacing="10">
-                                <Image Source="/Assets/Icons/plus-16x16.png"/>
-                                <TextBlock
-                                    VerticalAlignment="Center"
-                                    Text="Add"/>
-                            </StackPanel>
-                        </Button>
-
-                        <TextBlock Grid.Row="2" Grid.Column="0"
-                                   Text="Brightnesses:"
-                                   ToolTip.Tip="From 1-255, where 1 is almost black and 255 is full white. No half numbers are allowed."
-                                   VerticalAlignment="Center"/>
-
-                        <TextBox Grid.Row="2" Grid.Column="2"
-                                 Grid.ColumnSpan="11"
-                                 Text="{Binding Operation.MultipleBrightnessValues}"/>
-
-                    <!--
-                    <TextBlock Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3"
-                               IsVisible="{Binding SlicerFile.IsAntiAliasingEmulated}"
-                               FontWeight="Bold"
-                               Text="Emulated AntiAliasing with time fractions"
+                    <TextBlock Grid.Row="0" Grid.Column="0"
+                               ToolTip.Tip="Do not change brightness from the selected layers. Full brightness of 255 is applied to the skip layers."
+                               Text="Exclude from:"
                                VerticalAlignment="Center"/>
-                    !-->
-
-                        <TextBlock Grid.Row="4" Grid.Column="0"
-                                   IsVisible="{Binding SlicerFile.IsAntiAliasingEmulated}"
-                                   ToolTip.Tip="AntiAliasing level to set on file.
-&#x0a;This value is used to set the maximum available time fractions on the next field.
-&#x0a;Lower levels have larger time windows, while higher levels allow lower time windows (Recommended)."
-                                   Text="AntiAliasing:"
-                                   VerticalAlignment="Center"/>
-
-                        <NumericUpDown Grid.Row="4" Grid.Column="2"
-                                       IsVisible="{Binding SlicerFile.IsAntiAliasingEmulated}"
-                                       Increment="2"
-                                       Minimum="2"
-                                       Maximum="{Binding Operation.MaximumAntiAliasing}"
-                                       Value="{Binding Operation.MultipleBrightnessGenEmulatedAALevel}"/>
-
-                        <TextBlock Grid.Row="4" Grid.Column="4"
-                                   IsVisible="{Binding SlicerFile.IsAntiAliasingEmulated}"
-                                   Text="x"
-                                   VerticalAlignment="Center"/>
-
-
-                    <TextBlock Grid.Row="4" Grid.Column="6"
-                               IsVisible="{Binding SlicerFile.IsAntiAliasingEmulated}"
-                               ToolTip.Tip="Amount of fractions from the main exposure: 2 to 16"
-                               Text="Generate by time fractions:"
+                    <ComboBox Grid.Row="0" Grid.Column="2"
+                              VerticalAlignment="Center"
+                              HorizontalAlignment="Stretch"
+                              Items="{Binding Operation.MultipleBrightnessExcludeFromItems}"
+                              SelectedItem="{Binding Operation.MultipleBrightnessExcludeFrom}"/>
+                    <TextBlock Grid.Row="0" Grid.Column="4"
+                               Text="layers"
                                VerticalAlignment="Center"/>
-                    
 
-                    <NumericUpDown Grid.Row="4" Grid.Column="8"
-                                   IsVisible="{Binding SlicerFile.IsAntiAliasingEmulated}"
-                                   Increment="1"
-                                   Minimum="2"
-                                   Maximum="{Binding Operation.MultipleBrightnessGenEmulatedAALevel}"
-                                   Value="{Binding Operation.MultipleBrightnessGenExposureFractions}"/>
+                    <TextBlock Grid.Row="0" Grid.Column="6"
+                               IsVisible="{Binding !SlicerFile.IsAntiAliasingEmulated}"
+                               ToolTip.Tip="Append a brightness level to the list by giving a desired exposure time. Supplied time must be lower than the common exposure time or you need to increase it on the common 'Normal Exposure'."
+                               Text="Generate by exposure time:"
+                               VerticalAlignment="Center"/>
 
-                        <TextBlock Grid.Row="4" Grid.Column="10"
-                                   IsVisible="{Binding SlicerFile.IsAntiAliasingEmulated}"
-                                   Text="÷"
-                                   VerticalAlignment="Center"/>
+                    <NumericUpDown Grid.Row="0" Grid.Column="8"
+                                   IsVisible="{Binding !SlicerFile.IsAntiAliasingEmulated}"
+                                   Increment="0.10"
+                                   Minimum="0.10"
+                                   Maximum="{Binding Operation.NormalExposure}"
+                                   FormatString="F2"
+                                   Value="{Binding Operation.MultipleBrightnessGenExposureTime}"/>
 
-                    <!--<Button
-                        IsVisible="{Binding SlicerFile.IsAntiAliasingEmulated}"
-                        Grid.Row="4" Grid.Column="12" VerticalContentAlignment="Center"
+                    <TextBlock Grid.Row="0" Grid.Column="10"
+                               IsVisible="{Binding !SlicerFile.IsAntiAliasingEmulated}"
+                               Text="s"
+                               VerticalAlignment="Center"/>
+
+                    <Button
+                        Grid.Row="0" Grid.Column="12" VerticalContentAlignment="Center"
+                        IsVisible="{Binding !SlicerFile.IsAntiAliasingEmulated}"
                         HorizontalContentAlignment="Center"
                         VerticalAlignment="Stretch"
-                        Command="{Binding Operation.GenerateBrightnessExposureFractions}">
-                      <StackPanel Orientation="Horizontal" Spacing="10">
-                        <Image Source="/Assets/Icons/refresh-16x16.png"/>
-                        <TextBlock
-                            VerticalAlignment="Center"
-                            Text="Gen"/>
-                      </StackPanel>
+                        Command="{Binding BrightnessExposureGenAdd}">
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <Image Source="/Assets/Icons/plus-16x16.png"/>
+                            <TextBlock
+                                VerticalAlignment="Center"
+                                Text="Add"/>
+                        </StackPanel>
                     </Button>
-                    !-->
-                    </Grid>
 
-                    
-                    <DataGrid
-                        Name="BrightnessTable"
-                        CanUserReorderColumns="True"
-                        CanUserResizeColumns="True"
-                        CanUserSortColumns="True"
-                        GridLinesVisibility="Horizontal"
-                        IsReadOnly="True"
-                        ClipboardCopyMode="IncludeHeader"
-                        VerticalAlignment="Stretch"
-                        Margin="0,-10,0,0"
-                        IsEnabled="{Binding Operation.MultipleBrightness}"
-                        Items="{Binding Operation.MultipleBrightnessTable}">
-                        <DataGrid.Columns>
-                            <DataGridTextColumn Header="Brightness"
-                                                Binding="{Binding Brightness}"
-                                                Width="Auto" />
-                            <DataGridTextColumn Header="Percent (%)"
-                                                Binding="{Binding BrightnessPercent}"
-                                                Width="Auto" />
-                            <DataGridTextColumn Header="Bottom exposure (s)"
-                                                Binding="{Binding BottomExposure}"
-                                                Width="Auto" />
-                            <DataGridTextColumn Header="Exposure (s)"
-                                                Binding="{Binding Exposure}"
-                                                Width="Auto" />
-                        </DataGrid.Columns>
+                    <TextBlock Grid.Row="2" Grid.Column="0"
+                               Text="Brightnesses:"
+                               ToolTip.Tip="From 1-255, where 1 is almost black and 255 is full white. No half numbers are allowed."
+                               VerticalAlignment="Center"/>
 
-                    </DataGrid>
+                    <TextBox Grid.Row="2" Grid.Column="2"
+                             Grid.ColumnSpan="11"
+                             Text="{Binding Operation.MultipleBrightnessValues}"/>
+
+                <!--
+                <TextBlock Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3"
+                           IsVisible="{Binding SlicerFile.IsAntiAliasingEmulated}"
+                           FontWeight="Bold"
+                           Text="Emulated AntiAliasing with time fractions"
+                           VerticalAlignment="Center"/>
+                !-->
+
+                    <TextBlock Grid.Row="4" Grid.Column="0"
+                               IsVisible="{Binding SlicerFile.IsAntiAliasingEmulated}"
+                               ToolTip.Tip="AntiAliasing level to set on file.
+&#x0a;This value is used to set the maximum available time fractions on the next field.
+&#x0a;Lower levels have larger time windows, while higher levels allow lower time windows (Recommended)."
+                               Text="AntiAliasing:"
+                               VerticalAlignment="Center"/>
+
+                    <NumericUpDown Grid.Row="4" Grid.Column="2"
+                                   IsVisible="{Binding SlicerFile.IsAntiAliasingEmulated}"
+                                   Increment="2"
+                                   Minimum="2"
+                                   Maximum="{Binding Operation.MaximumAntiAliasing}"
+                                   Value="{Binding Operation.MultipleBrightnessGenEmulatedAALevel}"/>
+
+                    <TextBlock Grid.Row="4" Grid.Column="4"
+                               IsVisible="{Binding SlicerFile.IsAntiAliasingEmulated}"
+                               Text="x"
+                               VerticalAlignment="Center"/>
+
+
+                <TextBlock Grid.Row="4" Grid.Column="6"
+                           IsVisible="{Binding SlicerFile.IsAntiAliasingEmulated}"
+                           ToolTip.Tip="Amount of fractions from the main exposure: 2 to 16"
+                           Text="Generate by time fractions:"
+                           VerticalAlignment="Center"/>
+                
+
+                <NumericUpDown Grid.Row="4" Grid.Column="8"
+                               IsVisible="{Binding SlicerFile.IsAntiAliasingEmulated}"
+                               Increment="1"
+                               Minimum="2"
+                               Maximum="{Binding Operation.MultipleBrightnessGenEmulatedAALevel}"
+                               Value="{Binding Operation.MultipleBrightnessGenExposureFractions}"/>
+
+                    <TextBlock Grid.Row="4" Grid.Column="10"
+                               IsVisible="{Binding SlicerFile.IsAntiAliasingEmulated}"
+                               Text="÷"
+                               VerticalAlignment="Center"/>
+
+                <!--<Button
+                    IsVisible="{Binding SlicerFile.IsAntiAliasingEmulated}"
+                    Grid.Row="4" Grid.Column="12" VerticalContentAlignment="Center"
+                    HorizontalContentAlignment="Center"
+                    VerticalAlignment="Stretch"
+                    Command="{Binding Operation.GenerateBrightnessExposureFractions}">
+                  <StackPanel Orientation="Horizontal" Spacing="10">
+                    <Image Source="/Assets/Icons/refresh-16x16.png"/>
+                    <TextBlock
+                        VerticalAlignment="Center"
+                        Text="Gen"/>
+                  </StackPanel>
+                </Button>
+                !-->
+                </Grid>
+
+                
+                <DataGrid
+                    Name="BrightnessTable"
+                    CanUserReorderColumns="True"
+                    CanUserResizeColumns="True"
+                    CanUserSortColumns="True"
+                    GridLinesVisibility="Horizontal"
+                    IsReadOnly="True"
+                    ClipboardCopyMode="IncludeHeader"
+                    VerticalAlignment="Stretch"
+                    Margin="0,-10,0,0"
+                    IsEnabled="{Binding Operation.MultipleBrightness}"
+                    Items="{Binding Operation.MultipleBrightnessTable}">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Brightness"
+                                            Binding="{Binding Brightness}"
+                                            Width="Auto" />
+                        <DataGridTextColumn Header="Percent (%)"
+                                            Binding="{Binding BrightnessPercent}"
+                                            Width="Auto" />
+                        <DataGridTextColumn Header="Bottom exposure (s)"
+                                            Binding="{Binding BottomExposure}"
+                                            Width="Auto" />
+                        <DataGridTextColumn Header="Exposure (s)"
+                                            Binding="{Binding Exposure}"
+                                            Width="Auto" />
+                    </DataGrid.Columns>
+
+                </DataGrid>
 
 
 
-                    </StackPanel>
-                </Expander>
-            </Border>
+                </StackPanel>
+            </Expander>
 
-      <Border BorderBrush="Black" 
-              BorderThickness="1"
-              Padding="5">
-        <Border.IsVisible>
-          <MultiBinding Converter="{x:Static BoolConverters.And}">
-            <Binding Path="CanSupportPerLayerSettings"/>
-            <Binding Path="!Operation.PatternModel"/>
-          </MultiBinding>
-        </Border.IsVisible>
         <Expander IsExpanded="False">
-          <Expander.Header>
+          <Expander.IsVisible>
+            <MultiBinding Converter="{x:Static BoolConverters.And}">
+              <Binding Path="CanSupportPerLayerSettings"/>
+              <Binding Path="!Operation.PatternModel"/>
+            </MultiBinding>
+          </Expander.IsVisible>
+            <Expander.Header>
             <TextBlock Text="Multiple layer height"
                        FontWeight="Bold"
                        Cursor="Hand"/>
@@ -821,7 +822,7 @@
             <StackPanel Spacing="10">
 
                 <TextBlock Text="Only few printers support this, make sure your is supported or else it will print a malformed model.
-&#x0a;After this, do not apply any modification which reconstruct the z positions of the layers."/>
+    &#x0a;After this, do not apply any modification which reconstruct the z positions of the layers."/>
 
                 <CheckBox
                     Content="Enable - For advanced users only!"
@@ -873,13 +874,8 @@
                 </StackPanel>
 
         </Expander>
-      </Border>
 
-      <Border BorderBrush="Black" 
-              BorderThickness="1" 
-              Padding="5"
-              IsVisible="{Binding CanSupportPerLayerSettings}">
-        <Expander IsExpanded="True">
+        <Expander IsExpanded="True" IsVisible="{Binding CanSupportPerLayerSettings}">
           <Expander.Header>
             <TextBlock Text="Multiple exposures"
                        FontWeight="Bold"
@@ -1208,13 +1204,8 @@
             </StackPanel>
 
         </Expander>
-      </Border>
 
-      <Border BorderBrush="Black"
-              BorderThickness="1"
-              Padding="5"
-              IsVisible="{Binding Operation.CanPatternModel}">
-        <Expander IsExpanded="False">
+        <Expander IsExpanded="False" IsVisible="{Binding Operation.CanPatternModel}">
           <Expander.Header>
             <TextBlock Text="Pattern loaded model"
                        FontWeight="Bold"
@@ -1286,7 +1277,6 @@
           </StackPanel>
 
         </Expander>
-      </Border>
 
     </StackPanel>
 
