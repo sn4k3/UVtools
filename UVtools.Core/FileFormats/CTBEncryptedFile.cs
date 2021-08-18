@@ -1094,6 +1094,7 @@ namespace UVtools.Core.FileFormats
             progress.Reset(OperationProgress.StatusDecodeLayers, Settings.LayerCount);
             var range = Enumerable.Range(0, (int)Settings.LayerCount);
             LayerManager.Init(Settings.LayerCount);
+            ConcurrentBag<int> buggyLayers = new ConcurrentBag<int>();
             foreach (var batch in MoreEnumerable.Batch(range, Environment.ProcessorCount * 10))
             {
                 List<LayerData> parsedLayerData = new();
@@ -1132,12 +1133,32 @@ namespace UVtools.Core.FileFormats
 
                     }
 
-                    var layer = new Layer((uint)layerData.LayerIndex, layerData.DecodeLayerImage(), LayerManager)
+                    Layer layer = null;
+
+                    /* bug fix for Chitubox when a small layer RLE data is encrypted */
+                    if (layerData.EncryptedDataLength > 0 && layerData.RLEData.Length < 0x200 && layerData.RLEData.Length % 0x10 != 0)
                     {
-                        PositionZ = layerData.PositionZ,
-                        ExposureTime = layerData.ExposureTime,
-                        LightOffDelay = 0
-                    };
+                        buggyLayers.Add(layerData.LayerIndex);
+
+                        /* create a layer with no decoded mat, these will be fixed up *after* the parallel section */
+                        layer = new Layer((uint)layerData.LayerIndex, LayerManager)
+                        {
+                            PositionZ = layerData.PositionZ,
+                            ExposureTime = layerData.ExposureTime,
+                            LightOffDelay = 0
+                        };
+
+                    }
+                    else
+                    {
+
+                        layer = new Layer((uint)layerData.LayerIndex, layerData.DecodeLayerImage(), LayerManager)
+                        {
+                            PositionZ = layerData.PositionZ,
+                            ExposureTime = layerData.ExposureTime,
+                            LightOffDelay = 0
+                        };
+                    }
 
                     layer.LiftHeight = layerData.LiftHeight;
                     layer.LiftSpeed = layerData.LiftSpeed;
@@ -1157,6 +1178,45 @@ namespace UVtools.Core.FileFormats
                 parsedLayerData.Clear();
 
             }
+
+            if (buggyLayers.Count == LayerCount)
+            {
+                throw new FileLoadException("Unable to load this file due to Chitubox bug affecting every layer. Please increase the portion of the plate in use and reslice from Chitubox");
+            }
+
+            var sortedLayerIndexes = buggyLayers.ToList();
+            sortedLayerIndexes.Sort();
+            int correctedLayerCount = 0;
+            foreach(var layerIndex in sortedLayerIndexes)
+            {
+                int direction = layerIndex == 0 ? 1 : -1;
+
+                /* clone from the next one that has a mat */
+                var substituteLayerFound = false;
+                var layerIndexForClone = layerIndex + direction;
+                while (layerIndexForClone >= 0 && layerIndexForClone < LayerCount && !substituteLayerFound)
+                {
+                    if (this[layerIndexForClone].CompressedBytes != null)
+                    {
+                        substituteLayerFound = true;
+                        this[layerIndex].LayerMat = this[layerIndexForClone].LayerMat.Clone();
+                        this[layerIndex].IsModified = true;
+                        correctedLayerCount++;
+
+                        /* TODO: Report to the user that a layer was cloned to work around chitubox crypto bug */
+                    } else
+                    {
+                        layerIndexForClone += direction;
+                    }
+                }
+            }
+
+            if (correctedLayerCount < buggyLayers.Count)
+            {
+                throw new FileLoadException("Unable to load this file due to Chitubox bug. UVTools was unable to correct some of these layers. Please increase the portion of the plate in use and reslice from Chitubox.");
+            }
+
+
             inputFile.ReadBytes(Hash);
         }
 
