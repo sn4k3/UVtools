@@ -278,6 +278,7 @@ namespace UVtools.Core.FileFormats
             new SL1File(),      // Prusa SL1
             new ChituboxZipFile(), // Zip
             new ChituboxFile(), // cbddlp, cbt, photon
+            new CTBEncryptedFile(), // Mars 3, Epax 5k
             new PhotonSFile(), // photons
             new PHZFile(), // phz
             new FDGFile(), // fdg
