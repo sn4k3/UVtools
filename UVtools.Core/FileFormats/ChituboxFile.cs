@@ -1456,8 +1456,18 @@ namespace UVtools.Core.FileFormats
 
         public override float BottomLiftHeight
         {
-            get => PrintParametersSettings.BottomLiftHeight;
-            set => base.BottomLiftHeight = PrintParametersSettings.BottomLiftHeight = (float)Math.Round(value, 2);
+            get
+            {
+                if (HeaderSettings.Version <= 3) return PrintParametersSettings.BottomLiftHeight;
+                return Math.Max(0, PrintParametersSettings.BottomLiftHeight - SlicerInfoSettings.BottomLiftHeight2);
+            }
+            set
+            {
+                value = (float)Math.Round(value, 2);
+                if (HeaderSettings.Version <= 3) PrintParametersSettings.BottomLiftHeight = value;
+                if (HeaderSettings.Version >= 4) PrintParametersSettings.BottomLiftHeight = (float)Math.Round(value + SlicerInfoSettings.BottomLiftHeight2, 2);
+                base.BottomLiftHeight = value;
+            }
         }
 
         public override float BottomLiftSpeed
@@ -1468,10 +1478,20 @@ namespace UVtools.Core.FileFormats
 
         public override float LiftHeight
         {
-            get => PrintParametersSettings.LiftHeight;
-            set => base.LiftHeight = PrintParametersSettings.LiftHeight = (float)Math.Round(value, 2);
+            get
+            {
+                if(HeaderSettings.Version <= 3) return PrintParametersSettings.LiftHeight;
+                return Math.Max(0, PrintParametersSettings.LiftHeight - SlicerInfoSettings.LiftHeight2);
+            }
+            set
+            {
+                value = (float)Math.Round(value, 2);
+                if (HeaderSettings.Version <= 3) PrintParametersSettings.LiftHeight = value;
+                if (HeaderSettings.Version >= 4) PrintParametersSettings.LiftHeight = (float)Math.Round(value + SlicerInfoSettings.LiftHeight2, 2);
+                base.LiftHeight = value;
+            }
         }
-        
+
         public override float LiftSpeed
         {
             get => PrintParametersSettings.LiftSpeed;
@@ -1484,7 +1504,10 @@ namespace UVtools.Core.FileFormats
             set
             {
                 if (HeaderSettings.Version < 4) return;
-                base.BottomLiftHeight2 = SlicerInfoSettings.BottomLiftHeight2 = (float)Math.Round(value, 2);
+                var bottomLiftHeight = BottomLiftHeight;
+                SlicerInfoSettings.BottomLiftHeight2 = (float)Math.Round(value, 2);
+                BottomLiftHeight = bottomLiftHeight;
+                base.BottomLiftHeight2 = SlicerInfoSettings.BottomLiftHeight2;
             }
         }
 
@@ -1504,7 +1527,10 @@ namespace UVtools.Core.FileFormats
             set
             {
                 if (HeaderSettings.Version < 4) return;
-                base.LiftHeight2 = SlicerInfoSettings.LiftHeight2 = (float)Math.Round(value, 2);
+                var liftHeight = LiftHeight;
+                SlicerInfoSettings.LiftHeight2 = (float)Math.Round(value, 2);
+                LiftHeight = liftHeight;
+                base.LiftHeight2 = SlicerInfoSettings.BottomLiftHeight2;
             }
         }
 
@@ -2171,7 +2197,7 @@ namespace UVtools.Core.FileFormats
 
             if (HeaderSettings.Version >= 4)
             {
-                outputFile.Seek(SlicerInfoSettings.MachineNameAddress + SlicerInfoSettings.MachineNameSize, SeekOrigin.Begin);
+                outputFile.Seek(SlicerInfoSettings.PrintParametersV4Address, SeekOrigin.Begin);
                 Helpers.SerializeWriteFileStream(outputFile, PrintParametersV4Settings);
             }
         }
