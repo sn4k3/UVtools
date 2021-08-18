@@ -3313,23 +3313,40 @@ namespace UVtools.Core.FileFormats
                 slicerFile.BottomExposureTime = BottomExposureTime;
                 slicerFile.ExposureTime = ExposureTime;
 
-                // Lift
-                slicerFile.BottomLiftHeight = BottomLiftHeight;
+                // Lifts
+                if (slicerFile.CanUseAnyLiftHeight2 && CanUseAnyLiftHeight2) // Both are TSMC compatible
+                {
+                    slicerFile.BottomLiftHeight = BottomLiftHeight;
+                    slicerFile.LiftHeight = LiftHeight;
+
+                    slicerFile.BottomLiftHeight2 = BottomLiftHeight2;
+                    slicerFile.LiftHeight2 = LiftHeight2;
+
+                    slicerFile.BottomRetractHeight2 = BottomRetractHeight2;
+                    slicerFile.RetractHeight2 = RetractHeight2;
+                }
+                else if (slicerFile.CanUseAnyLiftHeight2) // Output format is compatible with TSMC, but input isn't
+                {
+                    slicerFile.BottomLiftHeight = BottomLiftHeight;
+                    slicerFile.LiftHeight = LiftHeight;
+                }
+                else if (CanUseAnyLiftHeight2) // Output format isn't compatible with TSMC, but input is
+                {
+                    slicerFile.BottomLiftHeight = BottomLiftHeightTotal;
+                    slicerFile.LiftHeight = LiftHeightTotal;
+                }
+                
+
                 slicerFile.BottomLiftSpeed = BottomLiftSpeed;
-                slicerFile.LiftHeight = LiftHeight;
                 slicerFile.LiftSpeed = LiftSpeed;
 
-                slicerFile.BottomLiftHeight2 = BottomLiftHeight2;
                 slicerFile.BottomLiftSpeed2 = BottomLiftSpeed2;
-                slicerFile.LiftHeight2 = LiftHeight2;
                 slicerFile.LiftSpeed2 = LiftSpeed2;
 
                 slicerFile.BottomRetractSpeed = BottomRetractSpeed;
                 slicerFile.RetractSpeed = RetractSpeed;
 
-                slicerFile.BottomRetractHeight2 = BottomRetractHeight2;
                 slicerFile.BottomRetractSpeed2 = BottomRetractSpeed2;
-                slicerFile.RetractHeight2 = RetractHeight2;
                 slicerFile.RetractSpeed2 = RetractSpeed2;
 
                 // Wait times
