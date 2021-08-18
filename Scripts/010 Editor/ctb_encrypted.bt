@@ -1,0 +1,132 @@
+//--------------------------------------
+//--- 010 Editor v6.0.3 Binary Template
+//
+// File: ctb
+// Author: Tim Slater
+// Revision: 1
+// Purpose: CTB File Format
+//--------------------------------------
+
+struct HEADER {
+    uint Magic <fgcolor=cBlack, bgcolor=cRed>;
+    uint EncryptedHeaderSize <fgcolor=cBlack, bgcolor=cRed>;
+    uint EncryptedHeaderOffset <fgcolor=cBlack, bgcolor=cRed>;
+    uint unknown1;
+    uint unknown2;
+    uint SignatureSize <fgcolor=cBlack, bgcolor=cRed>;
+    uint SignatureOffset <fgcolor=cBlack, bgcolor=cRed>;
+    uint unknown3;
+    ushort unknown4;
+    ushort unknown5;
+    uint unknown6;
+    uint unknown7;
+    uint unknown9;
+} header;
+
+FSeek(header.EncryptedHeaderOffset);
+ubyte encryptedHeader[header.EncryptedHeaderSize];
+
+struct PREVIEW {
+    uint ResolutionX <fgcolor=cBlack, bgcolor=cRed>;
+    uint ResolutionY <fgcolor=cBlack, bgcolor=cRed>;
+    uint ImageOffset <fgcolor=cBlack, bgcolor=cRed>;
+    uint ImageLength <fgcolor=cBlack, bgcolor=cRed>;
+
+    byte Data[ImageLength] <fgcolor=cBlack, bgcolor=cGreen>;
+} LargePreview;
+
+PREVIEW SmallPreview;
+
+local ushort machineNameLength = 1;
+while (ReadString(FTell()+machineNameLength, 17 ) != "Layout and record") {
+    machineNameLength++;
+    if(machineNameLength > 255) return;
+}
+
+char MachineName[machineNameLength] <fgcolor=cBlack, bgcolor=cYellow>;
+
+char Disclaimer[320] <fgcolor=cBlack, bgcolor=cPurple>;
+
+/* need to walk the layer index table to get a count of them.
+   the actual count field is in the encrypted header */
+local uint curOffset = FTell();
+local uint finalOffset;
+
+while (true) {
+    uint a <hidden=true>;
+    uint b <hidden=true>;
+    uint c <hidden=true>; 
+    uint d <hidden=true>;
+    if (a == 88) {
+        break;
+    }
+}
+FSkip(-16);
+finalOffset = FTell();
+local uint tableSize = finalOffset - curOffset;
+local uint layerCount = tableSize / 16;
+
+FSeek(curOffset);
+
+struct LAYER_POINTER {
+    uint Offset <format=hex>;
+    uint unknown1;
+    uint unknown2;
+    uint unknown3;
+} layerPointers[layerCount];
+
+struct LAYER_HEADER{
+    uint LayerMarker <hidden=true>;
+    float PositionZ;
+    float ExposureTime;
+    float LightOffDelay;
+    uint LayerDataOffset;
+    uint unknown2;
+    uint LayerDataLength;
+    ubyte unknown3[4];
+    uint EncryptedDataOffset;
+    uint EncryptedDataLength;
+    float LiftHeight;
+    float LiftSpeed;
+    float LiftHeight2;
+    float LiftSpeed2;
+    float RetractSpeed;
+    float RetractHeight2;
+    float RetractSpeed2;
+    float RestTimeBeforeLift;
+    float RestTimeAfterLift;
+    float RestTimeAfterRetract;
+    float LightPWM; /* just a guess, has value 255 as a float */
+    uint unknown6;
+};
+
+struct LAYER {
+    LAYER_HEADER layerHeader;
+    FSeek(layerHeader.LayerDataOffset);
+
+    /* do we have encrypted data? */
+    if (layerHeader.EncryptedDataLength > 0) {
+
+        if (layerHeader.EncryptedDataOffset > 0) {
+            ubyte normalLayerData1[layerHeader.EncryptedDataOffset];
+            ubyte encrytedLayerData[layerHeader.EncryptedDataLength];
+            ubyte normalLayerData2[layerHeader.LayerDataLength - (layerHeader.EncryptedDataOffset + layerHeader.EncryptedDataLength)];
+        } else {
+            ubyte encrytedLayerData[layerHeader.EncryptedDataLength];
+            ubyte normalLayerData[layerHeader.LayerDataLength - layerHeader.EncryptedDataLength];
+        }
+
+    } else {
+        ubyte layerData[layerHeader.LayerDataLength] <format=binary>;
+    }
+};
+
+struct LAYERS {
+    local uint x;
+    for(x = 0; x < layerCount; x++) {
+        FSeek(layerPointers[x].Offset);
+        LAYER layer;
+    }
+} layers;
+
+ubyte Sha256Hash[0x20]<format=hex>;

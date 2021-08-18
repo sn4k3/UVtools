@@ -1915,7 +1915,7 @@ namespace UVtools.Core.FileFormats
 
                         if (CanHash)
                         {
-                            var hash = Helpers.ComputeSHA1Hash(layerDef.EncodedRle);
+                            var hash = CryptExtensions.ComputeSHA1Hash(layerDef.EncodedRle);
                             if (layersHash.TryGetValue(hash, out layerDefHash))
                             {
                                 layerDef.DataAddress = layerDefHash.DataAddress;

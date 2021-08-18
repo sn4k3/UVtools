@@ -424,9 +424,15 @@ namespace UVtools.Core
                 if (ParentLayerManager is not null)
                     ParentLayerManager.BoundingRectangle = Rectangle.Empty;
                 RaisePropertyChanged();
+                RaisePropertyChanged(nameof(HaveImage));
             }
         }
 
+        /// <summary>
+        /// True if this layer have an valid initialized image, otherwise false
+        /// </summary>
+        public bool HaveImage => _compressedBytes is not null && _compressedBytes.Length > 0;
+        
         /// <summary>
         /// Gets or sets a new image instance
         /// </summary>
@@ -1022,6 +1028,15 @@ namespace UVtools.Core
 
             return result;
         }*/
+
+        public void CopyImageTo(Layer layer)
+        {
+            if (!HaveImage) return;
+            layer.CompressedBytes = _compressedBytes.ToArray();
+            layer.BoundingRectangle = _boundingRectangle;
+            layer.NonZeroPixelCount = _nonZeroPixelCount;
+
+        }
 
         public Layer Clone()
         {

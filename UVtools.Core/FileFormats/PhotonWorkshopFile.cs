@@ -14,7 +14,6 @@ using System.IO;
 using System.Threading.Tasks;
 using BinarySerialization;
 using Emgu.CV;
-using Emgu.CV.CvEnum;
 using UVtools.Core.Extensions;
 using UVtools.Core.Operations;
 
@@ -1353,7 +1352,7 @@ namespace UVtools.Core.FileFormats
 
                     var layerDef = LayersDefinition.Layers[layerIndex];
 
-                    var hash = Helpers.ComputeSHA1Hash(layerDef.EncodedRle);
+                    var hash = CryptExtensions.ComputeSHA1Hash(layerDef.EncodedRle);
 
                     if (layersHash.TryGetValue(hash, out var layerDataHash))
                     {

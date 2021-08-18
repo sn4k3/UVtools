@@ -543,7 +543,7 @@ namespace UVtools.Core.FileFormats
                     progress.Token.ThrowIfCancellationRequested();
 
                     // Try to reuse layers
-                    var hash = Helpers.ComputeSHA1Hash(layerBytes[layerIndex]);
+                    var hash = CryptExtensions.ComputeSHA1Hash(layerBytes[layerIndex]);
                     if (layersHash.TryGetValue(hash, out var address))
                     {
                         layerDataAddresses[layerIndex] = address;

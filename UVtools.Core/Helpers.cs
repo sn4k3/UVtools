@@ -51,53 +51,6 @@ namespace UVtools.Core
             return JsonConvert.DeserializeObject<T>(tr.ReadToEnd());
         }
 
-        public static SHA1CryptoServiceProvider SHA1 { get; } = new();
-        public static string ComputeSHA1Hash(byte[] input)
-        {
-            return Convert.ToBase64String(SHA1.ComputeHash(input));
-        }
-
-        public static SHA256 SHA256 { get; } = SHA256.Create();
-        public static byte[] ComputeSHA256Hash(byte[] input)
-        {
-            return SHA256.ComputeHash(input);
-        }
-
-        public static byte[] AesCryptBytes(byte[] data, byte[] key, CipherMode mode, PaddingMode paddingMode, bool encrypt, byte[] iv = null)
-        {
-            if (data.Length % 0x10 != 0)
-            {
-                byte[] temp = new byte[((data.Length / 0x10) + 1) * 0x10];
-                Array.Copy(data, 0, temp, 0, data.Length);
-                data = temp;
-            }
-
-
-            AesManaged aes = new AesManaged();
-
-            aes.KeySize = key.Length * 8;
-            aes.Key = key;
-            aes.Padding = paddingMode;
-            aes.Mode = mode;
-            if (iv != null)
-            {
-                aes.IV = iv;
-            }
-            ICryptoTransform cryptor = encrypt ? aes.CreateEncryptor() : aes.CreateDecryptor();
-
-            byte[] outputBuffer = null;
-            using (MemoryStream msDecrypt = new MemoryStream(data))
-            {
-                using (CryptoStream csDecrypt = new CryptoStream(msDecrypt, cryptor, CryptoStreamMode.Read))
-                {
-                    outputBuffer = new byte[data.Length];
-                    csDecrypt.Read(outputBuffer, 0, data.Length);
-                }
-            }
-
-            return outputBuffer;
-        }
-
         public static bool SetPropertyValue(PropertyInfo attribute, object obj, string value)
         {
             var name = attribute.PropertyType.Name.ToLower();

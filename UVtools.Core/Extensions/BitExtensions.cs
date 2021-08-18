@@ -114,5 +114,45 @@ namespace UVtools.Core.Extensions
         }
 
 
+        public static byte[] ToBytesLittleEndian(ulong value)
+        {
+            var bytes = new byte[8];
+            ToBytesLittleEndian(value, bytes);
+            return bytes;
+        }
+
+        public static void ToBytesLittleEndian(ulong value, byte[] buffer, ulong offset = 0)
+        {
+            buffer[offset] = (byte)value;
+            buffer[offset + 1] = (byte)(value >> 8);
+            buffer[offset + 2] = (byte)(value >> 16);
+            buffer[offset + 3] = (byte)(value >> 24);
+
+            buffer[offset + 4] = (byte)(value >> 32);
+            buffer[offset + 5] = (byte)(value >> 40);
+            buffer[offset + 6] = (byte)(value >> 48);
+            buffer[offset + 7] = (byte)(value >> 56);
+        }
+
+        public static byte[] ToBytesBigEndian(ulong value)
+        {
+            var bytes = new byte[8];
+            ToBytesBigEndian(value, bytes);
+            return bytes;
+        }
+
+        public static void ToBytesBigEndian(ulong value, byte[] buffer, ulong offset = 0)
+        {
+            buffer[offset] = (byte)(value >> 56);
+            buffer[offset + 1] = (byte)(value >> 48);
+            buffer[offset + 2] = (byte)(value >> 40);
+            buffer[offset + 3] = (byte)(value >> 32);
+            buffer[offset + 4] = (byte)(value >> 24);
+            buffer[offset + 5] = (byte)(value >> 16);
+            buffer[offset + 6] = (byte)(value >> 8);
+            buffer[offset + 7] = (byte)value;
+        }
+
+
     }
 }

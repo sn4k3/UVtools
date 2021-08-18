@@ -1059,7 +1059,7 @@ namespace UVtools.Core.FileFormats
 
                     if (HeaderSettings.EncryptionKey == 0)
                     {
-                        string hash = Helpers.ComputeSHA1Hash(layerDef.EncodedRle);
+                        string hash = CryptExtensions.ComputeSHA1Hash(layerDef.EncodedRle);
                         if (layersHash.TryGetValue(hash, out layerDefHash))
                         {
                             layerDef.DataAddress = layerDefHash.DataAddress;

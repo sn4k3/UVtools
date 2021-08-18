@@ -1,7 +1,6 @@
 ﻿using BinarySerialization;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
-using MoreLinq;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -14,7 +13,6 @@ using System.Text;
 using System.Threading.Tasks;
 using UVtools.Core.Extensions;
 using UVtools.Core.Operations;
-using static UVtools.Core.FileFormats.ChituboxFile;
 
 namespace UVtools.Core.FileFormats
 {
@@ -24,49 +22,57 @@ namespace UVtools.Core.FileFormats
         #region Constants 
         public const uint MAGIC_CBT_ENCRYPTED = 0x12FD0107;
         public const ushort REPEATRGB15MASK = 0x20;
-
-        public const byte RLE8EncodingLimit = 0x7d; // 125;
         public const ushort RLE16EncodingLimit = 0xFFF;
+        public const ushort RLEEncryptedMinimumLength = 512;
 
         private const string CTB_DISCLAIMER = "Layout and record format for the ctb and cbddlp file types are the copyrighted programs or codes of CBD Technology (China) Inc..The Customer or User shall not in any manner reproduce, distribute, modify, decompile, disassemble, decrypt, extract, reverse engineer, lease, assign, or sublicense the said programs or codes.";
         private const ushort CTB_DISCLAIMER_SIZE = 320;
 
-        public static readonly byte[] Thing1 = new byte[0x20];
+        public const byte HashLength = 32;
+        public const uint LayerXorKey = 0xEFBEADDE;
 
-        public static readonly byte[] Thing2 = new byte[0x10];
+        public static readonly byte[] ThinK = new byte[0x20];
+
+        public static readonly byte[] CookieMonster = new byte[0x10];
+
         #endregion
 
         #region Sub Classes
 
         public class FileHeader
         {
-            [FieldOrder(0)] public uint Magic;
-            [FieldOrder(1)] public uint SettingsSize;
-            [FieldOrder(2)] public uint SettingsOffset;
-            [FieldOrder(3)] public uint Unknown1; // set to 0
-            [FieldOrder(4)] public uint Unknown2; // set to 4
-            [FieldOrder(5)] public uint SignatureSize;
-            [FieldOrder(6)] public uint SignatureOffset;
-            [FieldOrder(7)] public uint Unknown3; //set to 0
-            [FieldOrder(8)] public ushort Unknown4 = 1; // set to 1
-            [FieldOrder(9)] public ushort Unknown5 = 1; // seet to 1
-            [FieldOrder(10)] public uint Unknown6; // set to 0
-            [FieldOrder(11)] public uint Unknown7 = 0x2A; // probably 0x2A
-            [FieldOrder(12)] public uint Unknown8; // probably 0
+            [FieldOrder(0)] public uint Magic { get; set; } = MAGIC_CBT_ENCRYPTED;
+            [FieldOrder(1)] public uint SettingsSize { get; set; }
+            [FieldOrder(2)] public uint SettingsOffset { get; set; }
+            [FieldOrder(3)] public uint Unknown1 { get; set; } // set to 0
+            [FieldOrder(4)] public uint Unknown2 { get; set; } = 4; // set to 4
+            [FieldOrder(5)] public uint SignatureSize { get; set; }
+            [FieldOrder(6)] public uint SignatureOffset { get; set; }
+            [FieldOrder(7)] public uint Unknown { get; set; } //set to 0
+            [FieldOrder(8)] public ushort Unknown4 { get; set; } = 1; // set to 1
+            [FieldOrder(9)] public ushort Unknown5 { get; set; } = 1; // set to 1
+            [FieldOrder(10)] public uint Unknown6 { get; set; } // set to 0
+            [FieldOrder(11)] public uint Unknown7 { get; set; } = 42; // probably 0x2A
+            [FieldOrder(12)] public uint Unknown8 { get; set; } // probably 0
+
+            public override string ToString()
+            {
+                return $"{nameof(Magic)}: {Magic}, {nameof(SettingsSize)}: {SettingsSize}, {nameof(SettingsOffset)}: {SettingsOffset}, {nameof(Unknown1)}: {Unknown1}, {nameof(Unknown2)}: {Unknown2}, {nameof(SignatureSize)}: {SignatureSize}, {nameof(SignatureOffset)}: {SignatureOffset}, {nameof(Unknown)}: {Unknown}, {nameof(Unknown4)}: {Unknown4}, {nameof(Unknown5)}: {Unknown5}, {nameof(Unknown6)}: {Unknown6}, {nameof(Unknown7)}: {Unknown7}, {nameof(Unknown8)}: {Unknown8}";
+            }
         }
 
         public class SlicerSettings
         {
             private string _machineName;
 
-            [FieldOrder(0)] public ulong checksumValue;
-            [FieldOrder(1)] public uint LayerTableOffset;
-            [FieldOrder(2)] public float SizeX;
-            [FieldOrder(3)] public float SizeY;
-            [FieldOrder(4)] public float SizeZ;
-            [FieldOrder(5)] public uint unknown1;
-            [FieldOrder(6)] public uint unknown2;
-            [FieldOrder(7)] public float TotalHeightMilimeter { get; set; }
+            [FieldOrder(0)] public ulong ChecksumValue { get; set; }
+            [FieldOrder(1)] public uint LayerTableOffset { get; set; }
+            [FieldOrder(2)] public float DisplayWidth { get; set; }
+            [FieldOrder(3)] public float DisplayHeight { get; set; }
+            [FieldOrder(4)] public float MachineZ { get; set; }
+            [FieldOrder(5)] public uint Unknown1 { get; set; }
+            [FieldOrder(6)] public uint Unknown2 { get; set; }
+            [FieldOrder(7)] public float TotalHeightMillimeter { get; set; }
             [FieldOrder(8)] public float LayerHeight { get; set; }
             [FieldOrder(9)] public float ExposureTime { get; set; }
             [FieldOrder(10)] public float BottomExposureTime { get; set; }
@@ -74,11 +80,11 @@ namespace UVtools.Core.FileFormats
             [FieldOrder(12)] public uint BottomLayerCount { get; set; }
             [FieldOrder(13)] public uint ResolutionX { get; set; }
             [FieldOrder(14)] public uint ResolutionY { get; set; }
-            [FieldOrder(15)] public uint LayerCount;
-            [FieldOrder(16)] public uint LargePreviewOffset;
-            [FieldOrder(17)] public uint SmallPreviewOffset;
+            [FieldOrder(15)] public uint LayerCount { get; set; }
+            [FieldOrder(16)] public uint LargePreviewOffset { get; set; }
+            [FieldOrder(17)] public uint SmallPreviewOffset { get; set; }
             [FieldOrder(18)] public uint PrintTime { get; set; }
-            [FieldOrder(19)] public uint unknown5 = 1;
+            [FieldOrder(19)] public uint Unknown5 { get; set; } = 1;
             [FieldOrder(20)] public float BottomLiftHeight { get; set; }
             [FieldOrder(21)] public float BottomLiftSpeed { get; set; }
             [FieldOrder(22)] public float LiftHeight { get; set; }
@@ -88,10 +94,10 @@ namespace UVtools.Core.FileFormats
             [FieldOrder(26)] public float MaterialGrams { get; set; }
             [FieldOrder(27)] public float MaterialCost { get; set; }
             [FieldOrder(28)] public float BottomLightOffDelay { get; set; }
-            [FieldOrder(29)] public uint unknown9 = 1;
+            [FieldOrder(29)] public uint Unknown9 { get; set; } = 1;
             [FieldOrder(30)] public ushort LightPWM { get; set; }
             [FieldOrder(31)] public ushort BottomLightPWM { get; set; }
-            [FieldOrder(32)] public uint LayerXorKey;
+            [FieldOrder(32)] public uint LayerXorKey { get; set; }
             [FieldOrder(33)] public float BottomLiftHeight2 { get; set; }
             [FieldOrder(34)] public float BottomLiftSpeed2 { get; set; }
             [FieldOrder(35)] public float LiftHeight2 { get; set; }
@@ -99,32 +105,38 @@ namespace UVtools.Core.FileFormats
             [FieldOrder(37)] public float RetractHeight2 { get; set; }
             [FieldOrder(38)] public float RetractSpeed2 { get; set; }
             [FieldOrder(39)] public float RestTimeAfterLift { get; set; }
-            [FieldOrder(40)] public uint MachineNameOffset;
-            [FieldOrder(41)] public uint MachineNameSize;
-            [FieldOrder(42)] public uint unknown12 = 0xF;
-            [FieldOrder(43)] public uint unknown13;
-            [FieldOrder(44)] public uint unknown14 = 0x8;
+            [FieldOrder(40)] public uint MachineNameOffset { get; set; }
+            [FieldOrder(41)] public uint MachineNameSize { get; set; }
+            [FieldOrder(42)] public uint Unknown12 { get; set; } = 15;
+            [FieldOrder(43)] public uint Unknown13 { get; set; }
+            [FieldOrder(44)] public uint Unknown14 { get; set; } = 8;
             [FieldOrder(45)] public float RestTimeAfterRetract { get; set; }
             [FieldOrder(46)] public float RestTimeAfterLift2 { get; set; }
-            [FieldOrder(47)] public uint unknown15;
+            [FieldOrder(47)] public uint Unknown15;
             [FieldOrder(48)] public float BottomRetractSpeed { get; set; }
             [FieldOrder(49)] public float BottomRetractSpeed2 { get; set; }
-            [FieldOrder(50)] public uint unknown16 = 4;
-            [FieldOrder(51)] public float unknown17;
-            [FieldOrder(52)] public uint unknown18 = 4;
-            [FieldOrder(53)] public float unknown19;
+            [FieldOrder(50)] public uint Unknown16 { get; set; } = 4;
+            [FieldOrder(51)] public float Unknown17 { get; set; }
+            [FieldOrder(52)] public uint Unknown18 { get; set; } = 4;
+            [FieldOrder(53)] public float Unknown19 { get; set; }
             [FieldOrder(54)] public float RestTimeAfterRetract2 { get; set; }
             [FieldOrder(55)] public float RestTimeAfterLift3 { get; set; }
             [FieldOrder(56)] public float RestTimeBeforeLift { get; set; }
             [FieldOrder(57)] public float BottomRetractHeight2 { get; set; }
-            [FieldOrder(58)] public float unknown23;
-            [FieldOrder(59)] public uint unknown24;
-            [FieldOrder(60)] public uint unknown25 = 4;
-            [FieldOrder(61)] public uint LastLayerIndex;
-            [FieldOrder(62), FieldCount(4)] public uint[] Padding;
-            [FieldOrder(63)] public uint DisclaimerOffset;
-            [FieldOrder(64)] public uint DisclaimerSize;
-            [FieldOrder(65), FieldCount(4)] public uint[] Padding2;
+            [FieldOrder(58)] public float Unknown23 { get; set; }
+            [FieldOrder(59)] public uint Unknown24 { get; set; }
+            [FieldOrder(60)] public uint Unknown25 { get; set; } = 4;
+            [FieldOrder(61)] public uint LastLayerIndex { get; set; }
+            [FieldOrder(62)] public uint Padding1 { get; set; }
+            [FieldOrder(63)] public uint Padding2 { get; set; }
+            [FieldOrder(64)] public uint Padding3 { get; set; }
+            [FieldOrder(65)] public uint Padding4 { get; set; }
+            [FieldOrder(66)] public uint DisclaimerOffset { get; set; }
+            [FieldOrder(67)] public uint DisclaimerSize { get; set; }
+            [FieldOrder(68)] public uint Padding5 { get; set; }
+            [FieldOrder(69)] public uint Padding6 { get; set; }
+            [FieldOrder(70)] public uint Padding7 { get; set; }
+            [FieldOrder(71)] public uint Padding8 { get; set; }
 
             [Ignore]
             public string MachineName
@@ -137,61 +149,94 @@ namespace UVtools.Core.FileFormats
                 }
             }
 
+            public override string ToString()
+            {
+                return $"{nameof(_machineName)}: {_machineName}, {nameof(Unknown15)}: {Unknown15}, {nameof(ChecksumValue)}: {ChecksumValue}, {nameof(LayerTableOffset)}: {LayerTableOffset}, {nameof(DisplayWidth)}: {DisplayWidth}, {nameof(DisplayHeight)}: {DisplayHeight}, {nameof(MachineZ)}: {MachineZ}, {nameof(Unknown1)}: {Unknown1}, {nameof(Unknown2)}: {Unknown2}, {nameof(TotalHeightMillimeter)}: {TotalHeightMillimeter}, {nameof(LayerHeight)}: {LayerHeight}, {nameof(ExposureTime)}: {ExposureTime}, {nameof(BottomExposureTime)}: {BottomExposureTime}, {nameof(LightOffDelay)}: {LightOffDelay}, {nameof(BottomLayerCount)}: {BottomLayerCount}, {nameof(ResolutionX)}: {ResolutionX}, {nameof(ResolutionY)}: {ResolutionY}, {nameof(LayerCount)}: {LayerCount}, {nameof(LargePreviewOffset)}: {LargePreviewOffset}, {nameof(SmallPreviewOffset)}: {SmallPreviewOffset}, {nameof(PrintTime)}: {PrintTime}, {nameof(Unknown5)}: {Unknown5}, {nameof(BottomLiftHeight)}: {BottomLiftHeight}, {nameof(BottomLiftSpeed)}: {BottomLiftSpeed}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(RetractSpeed)}: {RetractSpeed}, {nameof(MaterialMilliliters)}: {MaterialMilliliters}, {nameof(MaterialGrams)}: {MaterialGrams}, {nameof(MaterialCost)}: {MaterialCost}, {nameof(BottomLightOffDelay)}: {BottomLightOffDelay}, {nameof(Unknown9)}: {Unknown9}, {nameof(LightPWM)}: {LightPWM}, {nameof(BottomLightPWM)}: {BottomLightPWM}, {nameof(LayerXorKey)}: {LayerXorKey}, {nameof(BottomLiftHeight2)}: {BottomLiftHeight2}, {nameof(BottomLiftSpeed2)}: {BottomLiftSpeed2}, {nameof(LiftHeight2)}: {LiftHeight2}, {nameof(LiftSpeed2)}: {LiftSpeed2}, {nameof(RetractHeight2)}: {RetractHeight2}, {nameof(RetractSpeed2)}: {RetractSpeed2}, {nameof(RestTimeAfterLift)}: {RestTimeAfterLift}, {nameof(MachineNameOffset)}: {MachineNameOffset}, {nameof(MachineNameSize)}: {MachineNameSize}, {nameof(Unknown12)}: {Unknown12}, {nameof(Unknown13)}: {Unknown13}, {nameof(Unknown14)}: {Unknown14}, {nameof(RestTimeAfterRetract)}: {RestTimeAfterRetract}, {nameof(RestTimeAfterLift2)}: {RestTimeAfterLift2}, {nameof(BottomRetractSpeed)}: {BottomRetractSpeed}, {nameof(BottomRetractSpeed2)}: {BottomRetractSpeed2}, {nameof(Unknown16)}: {Unknown16}, {nameof(Unknown17)}: {Unknown17}, {nameof(Unknown18)}: {Unknown18}, {nameof(Unknown19)}: {Unknown19}, {nameof(RestTimeAfterRetract2)}: {RestTimeAfterRetract2}, {nameof(RestTimeAfterLift3)}: {RestTimeAfterLift3}, {nameof(RestTimeBeforeLift)}: {RestTimeBeforeLift}, {nameof(BottomRetractHeight2)}: {BottomRetractHeight2}, {nameof(Unknown23)}: {Unknown23}, {nameof(Unknown24)}: {Unknown24}, {nameof(Unknown25)}: {Unknown25}, {nameof(LastLayerIndex)}: {LastLayerIndex}, {nameof(Padding1)}: {Padding1}, {nameof(Padding2)}: {Padding2}, {nameof(Padding3)}: {Padding3}, {nameof(Padding4)}: {Padding4}, {nameof(DisclaimerOffset)}: {DisclaimerOffset}, {nameof(DisclaimerSize)}: {DisclaimerSize}, {nameof(Padding5)}: {Padding5}, {nameof(Padding6)}: {Padding6}, {nameof(Padding7)}: {Padding7}, {nameof(Padding8)}: {Padding8}, {nameof(MachineName)}: {MachineName}";
+            }
         }
 
         public class LayerTable
         {
             [Ignore]
-            public uint LayerCount;
+            public uint LayerCount { get; set; }
 
-            [FieldOrder(0), FieldCount(nameof(LayerCount))] public LayerPointer[] Pointers;
+            [FieldOrder(0)] [FieldCount(nameof(LayerCount))] public LayerPointer[] Pointers { get; set; }
+
+            public LayerTable() { }
+
+            public LayerTable(uint layerCount)
+            {
+                LayerCount = layerCount;
+                Pointers = new LayerPointer[layerCount];
+            }
         }
 
         public class LayerPointer
         {
-            [FieldOrder(0)] public uint LayerOffset;
-            [FieldOrder(1)] public uint Unknown1; // 0
-            [FieldOrder(2)] public uint Unknown2; // always 0x58
-            [FieldOrder(3)] public uint Unknown3; // 0
-        }
+            [FieldOrder(0)] public uint LayerOffset { get; set; }
+            [FieldOrder(1)] public uint Unknown1 { get; set; } // 0
+            [FieldOrder(2)] public uint Unknown2 { get; set; } = LayerDef.TableSize; // always 0x58
+            [FieldOrder(3)] public uint Unknown3 { get; set; } // 0
 
-        public class LayerData
-        {
-            [FieldOrder(0)] public uint LayerHeaderSize;
-            [FieldOrder(1)] public float PositionZ;
-            [FieldOrder(2)] public float ExposureTime;
-            [FieldOrder(3)] public float LightOffDelay;
-            [FieldOrder(4)] public uint LayerDataOffset;
-            [FieldOrder(5)] public uint unknown2;
-            [FieldOrder(6)] public uint LayerDataLength;
-            [FieldOrder(7)] public uint unknown3;
-            [FieldOrder(8)] public uint EncryptedDataOffset;
-            [FieldOrder(9)] public uint EncryptedDataLength;
-            [FieldOrder(10)] public float LiftHeight;
-            [FieldOrder(11)] public float LiftSpeed;
-            [FieldOrder(12)] public float LiftHeight2;
-            [FieldOrder(13)] public float LiftSpeed2;
-            [FieldOrder(14)] public float RetractSpeed;
-            [FieldOrder(15)] public float RetractDistance;
-            [FieldOrder(16)] public float RetractSpeed2;
-            [FieldOrder(17)] public float RestTimeBeforeLift;
-            [FieldOrder(18)] public float RestTimeAfterLift;
-            [FieldOrder(19)] public float RestTimeAfterRetract;
-            [FieldOrder(20)] public float LightPWM;
-            [FieldOrder(21)] public uint unknown6;
+            public override string ToString()
+            {
+                return $"{nameof(LayerOffset)}: {LayerOffset}, {nameof(Unknown1)}: {Unknown1}, {nameof(Unknown2)}: {Unknown2}, {nameof(Unknown3)}: {Unknown3}";
+            }
 
-            [Ignore] public int LayerIndex;
-            [Ignore] public CTBEncryptedFile Parent { get; set; }
-
-            [FieldLength(nameof(LayerDataLength)), FieldOrder(22)] public byte[] RLEData;
-
-            public LayerData()
+            public LayerPointer()
             {
             }
 
-            public LayerData(Layer layer)
+            public LayerPointer(uint layerOffset)
             {
-                LayerHeaderSize = 0x58;
+                LayerOffset = layerOffset;
+            }
+        }
+
+        public class LayerDef
+        {
+            public const byte TableSize = 88;
+
+            [FieldOrder(0)] public uint LayerHeaderSize { get; set; } = TableSize;
+            [FieldOrder(1)] public float PositionZ { get; set; }
+            [FieldOrder(2)] public float ExposureTime { get; set; }
+            [FieldOrder(3)] public float LightOffDelay { get; set; }
+            [FieldOrder(4)] public uint LayerDataOffset { get; set; }
+            [FieldOrder(5)] public uint Unknown2 { get; set; }
+            [FieldOrder(6)] public uint LayerDataLength { get; set; }
+            [FieldOrder(7)] public uint Unknown3 { get; set; }
+            [FieldOrder(8)] public uint EncryptedDataOffset { get; set; }
+            [FieldOrder(9)] public uint EncryptedDataLength { get; set; }
+            [FieldOrder(10)] public float LiftHeight { get; set; }
+            [FieldOrder(11)] public float LiftSpeed { get; set; }
+            [FieldOrder(12)] public float LiftHeight2 { get; set; }
+            [FieldOrder(13)] public float LiftSpeed2 { get; set; }
+            [FieldOrder(14)] public float RetractSpeed { get; set; }
+            [FieldOrder(15)] public float RetractHeight2 { get; set; }
+            [FieldOrder(16)] public float RetractSpeed2 { get; set; }
+            [FieldOrder(17)] public float RestTimeBeforeLift { get; set; }
+            [FieldOrder(18)] public float RestTimeAfterLift { get; set; }
+            [FieldOrder(19)] public float RestTimeAfterRetract { get; set; }
+            [FieldOrder(20)] public float LightPWM { get; set; }
+            [FieldOrder(21)] public uint Unknown6 { get; set; }
+
+            [Ignore] public CTBEncryptedFile Parent { get; set; }
+
+            [FieldOrder(22)] [FieldLength(nameof(LayerDataLength))] public byte[] RLEData { get; set; }
+
+            public LayerDef()
+            {
+            }
+
+            public LayerDef(CTBEncryptedFile parent, Layer layer)
+            {
+                Parent = parent;
+                SetFrom(layer);
+            }
+
+            public void SetFrom(Layer layer)
+            {
+                
                 PositionZ = layer.PositionZ;
                 ExposureTime = layer.ExposureTime;
                 LightOffDelay = layer.LightOffDelay;
@@ -200,21 +245,40 @@ namespace UVtools.Core.FileFormats
                 LiftHeight2 = layer.LiftHeight2;
                 LiftSpeed2 = layer.LiftSpeed2;
                 RetractSpeed = layer.RetractSpeed;
-                RetractDistance = layer.RetractHeight;
+                RetractHeight2 = layer.RetractHeight2;
                 RetractSpeed2 = layer.RetractSpeed2;
                 RestTimeBeforeLift = layer.WaitTimeAfterCure;
                 RestTimeAfterLift = layer.WaitTimeAfterLift;
                 RestTimeAfterRetract = layer.WaitTimeBeforeCure;
                 LightPWM = layer.LightPWM;
             }
-            public Mat DecodeLayerImage()
+
+            public void CopyTo(Layer layer)
+            {
+                layer.PositionZ = PositionZ;
+                layer.ExposureTime = ExposureTime;
+                layer.LightOffDelay = LightOffDelay;
+                layer.LiftHeight = LiftHeight;
+                layer.LiftSpeed = LiftSpeed;
+                layer.LiftHeight2 = LiftHeight2;
+                layer.LiftSpeed2 = LiftSpeed2;
+                layer.RetractSpeed = RetractSpeed;
+                layer.RetractHeight2 = RetractHeight2;
+                layer.RetractSpeed2 = RetractSpeed2;
+                layer.WaitTimeAfterCure = RestTimeBeforeLift;
+                layer.WaitTimeAfterLift = RestTimeAfterLift;
+                layer.WaitTimeBeforeCure = RestTimeAfterRetract;
+                layer.LightPWM = (byte)LightPWM;
+            }
+
+            public Mat DecodeImage(uint layerIndex)
             {
                 var mat = EmguExtensions.InitMat(Parent.Resolution);
                 //var span = mat.GetBytePointer();
 
                 if (Parent.Settings.LayerXorKey > 0)
                 {
-                    KeyRing kr = new(Parent.Settings.LayerXorKey, (uint)LayerIndex);
+                    ChituboxFile.KeyRing kr = new(Parent.Settings.LayerXorKey, (uint)layerIndex);
                     RLEData = kr.Read(RLEData);
                 }
 
@@ -283,7 +347,7 @@ namespace UVtools.Core.FileFormats
                 return mat;
             }
 
-            public unsafe byte[] EncodeLayerImage(Mat image, uint layerIndex)
+            public unsafe byte[] EncodeImage(Mat image, uint layerIndex)
             {
                 List<byte> rawData = new();
                 byte color = byte.MaxValue >> 1;
@@ -359,7 +423,7 @@ namespace UVtools.Core.FileFormats
 
                 AddRep();
 
-                KeyRing kr = new(Parent.Settings.LayerXorKey, layerIndex);
+                ChituboxFile.KeyRing kr = new(Parent.Settings.LayerXorKey, layerIndex);
                 RLEData = kr.Read(rawData.ToArray());
 
                 LayerDataLength = (uint)RLEData.Length;
@@ -506,8 +570,8 @@ namespace UVtools.Core.FileFormats
         public override FileFormatType FileType => FileFormatType.Binary;
 
         public override FileExtension[] FileExtensions { get; } = {
-            new(typeof(CTBEncryptedFile), "ctb", $"Chitubox Encrypted", false, false),
-            new(typeof(CTBEncryptedFile),"encrypted.ctb", "Chitubox Encrypted", false, false),
+            new(typeof(CTBEncryptedFile), "ctb",           "Chitubox CTB (Encrypted)"),
+            new(typeof(CTBEncryptedFile), "encrypted.ctb", "Chitubox CTB (Encrypted)", false, false),
         };
 
         public override string MachineName
@@ -550,8 +614,6 @@ namespace UVtools.Core.FileFormats
             }
         }
 
-        public byte[] Hash = new byte[0x20];
-
         public override byte AntiAliasing { get => 8; set { } }
 
         public override Size[] ThumbnailsOriginalSize { get; } =
@@ -567,101 +629,88 @@ namespace UVtools.Core.FileFormats
         public SlicerSettings Settings { get; protected internal set; } = new();
 
         /**********************************/
-        public override PrintParameterModifier[] PrintParameterModifiers
-        {
-            get
-            {
-                return new[]
-                {
-                    PrintParameterModifier.BottomLayerCount,
+        public override PrintParameterModifier[] PrintParameterModifiers { get; } = {
+            PrintParameterModifier.BottomLayerCount,
 
-                    PrintParameterModifier.BottomLightOffDelay,
-                    PrintParameterModifier.LightOffDelay,
+            PrintParameterModifier.BottomLightOffDelay,
+            PrintParameterModifier.LightOffDelay,
 
-                    //PrintParameterModifier.BottomWaitTimeBeforeCure,
-                    PrintParameterModifier.WaitTimeBeforeCure,
+            //PrintParameterModifier.BottomWaitTimeBeforeCure,
+            PrintParameterModifier.WaitTimeBeforeCure,
 
-                    PrintParameterModifier.BottomExposureTime,
-                    PrintParameterModifier.ExposureTime,
+            PrintParameterModifier.BottomExposureTime,
+            PrintParameterModifier.ExposureTime,
 
-                    //PrintParameterModifier.BottomWaitTimeAfterCure,
-                    PrintParameterModifier.WaitTimeAfterCure,
+            //PrintParameterModifier.BottomWaitTimeAfterCure,
+            PrintParameterModifier.WaitTimeAfterCure,
 
-                    PrintParameterModifier.BottomLiftHeight,
-                    PrintParameterModifier.BottomLiftSpeed,
-                    PrintParameterModifier.LiftHeight,
-                    PrintParameterModifier.LiftSpeed,
-                    PrintParameterModifier.BottomLiftHeight2,
-                    PrintParameterModifier.BottomLiftSpeed2,
-                    PrintParameterModifier.LiftHeight2,
-                    PrintParameterModifier.LiftSpeed2,
+            PrintParameterModifier.BottomLiftHeight,
+            PrintParameterModifier.BottomLiftSpeed,
+            PrintParameterModifier.LiftHeight,
+            PrintParameterModifier.LiftSpeed,
+            PrintParameterModifier.BottomLiftHeight2,
+            PrintParameterModifier.BottomLiftSpeed2,
+            PrintParameterModifier.LiftHeight2,
+            PrintParameterModifier.LiftSpeed2,
 
-                    //PrintParameterModifier.BottomWaitTimeAfterLift,
-                    PrintParameterModifier.WaitTimeAfterLift,
+            //PrintParameterModifier.BottomWaitTimeAfterLift,
+            PrintParameterModifier.WaitTimeAfterLift,
 
-                    PrintParameterModifier.BottomRetractSpeed,
-                    PrintParameterModifier.RetractSpeed,
-                    PrintParameterModifier.BottomRetractHeight2,
-                    PrintParameterModifier.BottomRetractSpeed2,
-                    PrintParameterModifier.RetractHeight2,
-                    PrintParameterModifier.RetractSpeed2,
+            PrintParameterModifier.BottomRetractSpeed,
+            PrintParameterModifier.RetractSpeed,
+            PrintParameterModifier.BottomRetractHeight2,
+            PrintParameterModifier.BottomRetractSpeed2,
+            PrintParameterModifier.RetractHeight2,
+            PrintParameterModifier.RetractSpeed2,
 
-                    PrintParameterModifier.BottomLightPWM,
-                    PrintParameterModifier.LightPWM
-                };
-            }
-        }
+            PrintParameterModifier.BottomLightPWM,
+            PrintParameterModifier.LightPWM
+        };
 
 
 
-        public override PrintParameterModifier[] PrintParameterPerLayerModifiers
-        {
-            get
-            {
-                return new[]
-                {
-                    PrintParameterModifier.LightOffDelay,
-                    PrintParameterModifier.WaitTimeBeforeCure,
-                    PrintParameterModifier.ExposureTime,
-                    PrintParameterModifier.WaitTimeAfterCure,
-                    PrintParameterModifier.LiftHeight,
-                    PrintParameterModifier.LiftSpeed,
-                    PrintParameterModifier.LiftHeight2,
-                    PrintParameterModifier.LiftSpeed2,
-                    PrintParameterModifier.WaitTimeAfterLift,
-                    PrintParameterModifier.RetractSpeed,
-                    PrintParameterModifier.RetractHeight2,
-                    PrintParameterModifier.RetractSpeed2,
-                    PrintParameterModifier.LightPWM
-                };
-            }
-        }
+        public override PrintParameterModifier[] PrintParameterPerLayerModifiers { get; } = {
+            PrintParameterModifier.LightOffDelay,
+            PrintParameterModifier.WaitTimeBeforeCure,
+            PrintParameterModifier.ExposureTime,
+            PrintParameterModifier.WaitTimeAfterCure,
+            PrintParameterModifier.LiftHeight,
+            PrintParameterModifier.LiftSpeed,
+            PrintParameterModifier.LiftHeight2,
+            PrintParameterModifier.LiftSpeed2,
+            PrintParameterModifier.WaitTimeAfterLift,
+            PrintParameterModifier.RetractSpeed,
+            PrintParameterModifier.RetractHeight2,
+            PrintParameterModifier.RetractSpeed2,
+            PrintParameterModifier.LightPWM
+        };
+
 
 
         public override float DisplayWidth
         {
-            get => Settings.SizeX;
+            get => Settings.DisplayWidth;
             set
             {
-                Settings.SizeX = (float)Math.Round(value, 2);
+                Settings.DisplayWidth = (float)Math.Round(value, 2);
                 RaisePropertyChanged();
             }
         }
 
         public override float DisplayHeight
         {
-            get => Settings.SizeY;
+            get => Settings.DisplayHeight;
             set
             {
-                Settings.SizeY = (float)Math.Round(value, 2);
+                Settings.DisplayHeight = (float)Math.Round(value, 2);
                 RaisePropertyChanged();
             }
         }
 
         public override float MachineZ
         {
-            get => Settings.SizeZ > 0 ? Settings.SizeZ : base.MachineZ;
-            set => base.MachineZ = Settings.SizeZ = (float)Math.Round(value, 2);
+            get => Settings.MachineZ > 0 ? Settings.MachineZ : base.MachineZ;
+            set => base.MachineZ = Settings.MachineZ = (float)Math.Round(value, 2);
         }
 
         /* TODO: Find ProjectorType in file */
@@ -674,8 +723,6 @@ namespace UVtools.Core.FileFormats
                 RaisePropertyChanged();
             }
         }*/
-
-        public override bool IsAntiAliasingEmulated => false;
 
         /* TODO: Find AntiAliasLevel in file */
         /*
@@ -692,13 +739,17 @@ namespace UVtools.Core.FileFormats
         public override float PrintHeight
         {
             get => base.PrintHeight;
-            set => base.PrintHeight = Settings.TotalHeightMilimeter = base.PrintHeight;
+            set => base.PrintHeight = Settings.TotalHeightMillimeter = base.PrintHeight;
         }
 
         public override uint LayerCount
         {
             get => base.LayerCount;
-            set => base.LayerCount = Settings.LayerCount = base.LayerCount;
+            set
+            {
+                base.LayerCount = Settings.LayerCount = base.LayerCount;
+                Settings.LastLayerIndex = LastLayerIndex;
+            }
         }
 
         public override ushort BottomLayerCount
@@ -751,7 +802,7 @@ namespace UVtools.Core.FileFormats
             get => Settings.RestTimeAfterRetract;
             set
             {
-                base.WaitTimeBeforeCure = Settings.RestTimeAfterRetract = (float)Math.Round(value, 2);
+                base.WaitTimeBeforeCure = Settings.RestTimeAfterRetract = Settings.RestTimeAfterRetract2 = (float)Math.Round(value, 2);
                 if (value > 0)
                 {
                     BottomLightOffDelay = 0;
@@ -798,6 +849,12 @@ namespace UVtools.Core.FileFormats
             }
         }
 
+        public override float BottomLiftSpeed
+        {
+            get => Settings.BottomLiftSpeed;
+            set => base.BottomLiftSpeed = Settings.BottomLiftSpeed = (float)Math.Round(value, 2);
+        }
+
         public override float LiftHeight
         {
             get => Math.Max(0,Settings.LiftHeight - Settings.LiftHeight2);
@@ -808,13 +865,7 @@ namespace UVtools.Core.FileFormats
                 base.LiftHeight = value;
             }
         }
-
-        public override float BottomLiftSpeed
-        {
-            get => Settings.BottomLiftSpeed;
-            set => base.BottomLiftSpeed = Settings.BottomLiftSpeed = (float)Math.Round(value, 2);
-        }
-
+        
         public override float LiftSpeed
         {
             get => Settings.LiftSpeed;
@@ -833,6 +884,12 @@ namespace UVtools.Core.FileFormats
             }
         }
 
+        public override float BottomLiftSpeed2
+        {
+            get => Settings.BottomLiftSpeed2;
+            set => base.BottomLiftSpeed2 = Settings.BottomLiftSpeed2 = (float)Math.Round(value, 2);
+        }
+
         public override float LiftHeight2
         {
             get => Settings.LiftHeight2;
@@ -844,23 +901,11 @@ namespace UVtools.Core.FileFormats
                 base.LiftHeight2 = Settings.LiftHeight2;
             }
         }
-
-        public override float BottomLiftSpeed2
-        {
-            get => Settings.BottomLiftSpeed2;
-            set
-            {
-                base.BottomLiftSpeed2 = Settings.BottomLiftSpeed2 = (float)Math.Round(value, 2);
-            }
-        }
-
+        
         public override float LiftSpeed2
         {
             get => Settings.LiftSpeed2;
-            set
-            {
-                base.LiftSpeed2 = Settings.LiftSpeed2 = (float)Math.Round(value, 2);
-            }
+            set => base.LiftSpeed2 = Settings.LiftSpeed2 = (float)Math.Round(value, 2);
         }
 
         public override float BottomWaitTimeAfterLift => WaitTimeAfterLift;
@@ -869,7 +914,7 @@ namespace UVtools.Core.FileFormats
             get => Settings.RestTimeAfterLift;
             set
             {
-                base.WaitTimeAfterLift = Settings.RestTimeAfterLift = Settings.RestTimeAfterLift2 = (float)Math.Round(value, 2);
+                base.WaitTimeAfterLift = Settings.RestTimeAfterLift = Settings.RestTimeAfterLift2 = Settings.RestTimeAfterLift3 = (float)Math.Round(value, 2);
                 if (value > 0)
                 {
                     BottomLightOffDelay = 0;
@@ -881,10 +926,7 @@ namespace UVtools.Core.FileFormats
         public override float BottomRetractSpeed
         {
             get => Settings.BottomRetractSpeed;
-            set
-            {
-                base.BottomRetractSpeed = Settings.BottomRetractSpeed = (float)Math.Round(value, 2);
-            }
+            set => base.BottomRetractSpeed = Settings.BottomRetractSpeed = (float)Math.Round(value, 2);
         }
 
         public override float RetractSpeed
@@ -903,6 +945,12 @@ namespace UVtools.Core.FileFormats
             }
         }
 
+        public override float BottomRetractSpeed2
+        {
+            get => Settings.BottomRetractSpeed2;
+            set => base.BottomRetractSpeed2 = Settings.BottomRetractSpeed2 = (float)Math.Round(value, 2);
+        }
+
         public override float RetractHeight2
         {
             get => Settings.RetractHeight2;
@@ -910,15 +958,6 @@ namespace UVtools.Core.FileFormats
             {
                 value = Math.Clamp((float)Math.Round(value, 2), 0, RetractHeightTotal);
                 base.RetractHeight2 = Settings.RetractHeight2 = value;
-            }
-        }
-
-        public override float BottomRetractSpeed2
-        {
-            get => Settings.BottomRetractSpeed2;
-            set
-            {
-                base.BottomRetractSpeed2 = Settings.BottomRetractSpeed2 = (float)Math.Round(value, 2);
             }
         }
 
@@ -1022,29 +1061,36 @@ namespace UVtools.Core.FileFormats
         }
 
 
-        public override void SaveAs(string filePath = null, OperationProgress progress = null)
-        {
-            EncodeInternally(filePath, progress);
-        }
-
         protected override void DecodeInternally(string fileFullPath, OperationProgress progress)
         {
             using var inputFile = new FileStream(fileFullPath, FileMode.Open, FileAccess.Read);
             Header = Helpers.Deserialize<FileHeader>(inputFile);
 
-            byte[] encryptedBlock = new byte[Header.SettingsSize];
-            inputFile.Position = Header.SettingsOffset;
-            inputFile.ReadBytes(encryptedBlock, 0);
-
-            byte[] decryptedBlock = Helpers.AesCryptBytes(encryptedBlock, Thing1, CipherMode.CBC, PaddingMode.None, false, Thing2);
-            using (MemoryStream ms = new(decryptedBlock))
+            inputFile.Seek(Header.SettingsOffset, SeekOrigin.Begin);
+            
+            var encryptedBlock = inputFile.ReadBytes(Header.SettingsSize); 
+            using (var ms = CryptExtensions.AesCryptMemoryStream(encryptedBlock, ThinK, CipherMode.CBC, PaddingMode.None, false, CookieMonster))
             {
                 Settings = Helpers.Deserialize<SlicerSettings>(ms);
-                //LayerCount = Settings.LayerCount;
                 BottomLayerCount = (ushort)Settings.BottomLayerCount;
             }
-            encryptedBlock = null;
-            decryptedBlock = null;
+
+            if (Header.Magic is not MAGIC_CBT_ENCRYPTED)
+            {
+                throw new FileLoadException($"Not a valid CTB encrypted file! Magic Value: {Header.Magic}", fileFullPath);
+            }
+
+            /* validate hash */
+            var checksumBytes = BitExtensions.ToBytesLittleEndian(Settings.ChecksumValue);
+            var checksumHash = CryptExtensions.ComputeSHA256Hash(checksumBytes);
+            var encryptedHash = CryptExtensions.AesCryptBytes(checksumHash, ThinK, CipherMode.CBC, PaddingMode.None, true, CookieMonster);
+
+            inputFile.Seek(-HashLength, SeekOrigin.End);
+            var hash = inputFile.ReadBytes(HashLength);
+            if (!hash.SequenceEqual(encryptedHash))
+            {
+                throw new FileLoadException("The file checksum does not match, malformed file.", fileFullPath);
+            }
 
             progress.Reset(OperationProgress.StatusDecodePreviews, ThumbnailsCount);
 
@@ -1070,101 +1116,120 @@ namespace UVtools.Core.FileFormats
             }
 
             /* Read the settings and disclaimer */
-            inputFile.Position = Settings.MachineNameOffset;
-            byte[] machineNameBytes = new byte[Settings.MachineNameSize];
-            inputFile.ReadBytes(machineNameBytes);
-            Settings.MachineName = UTF8Encoding.UTF8.GetString(machineNameBytes);
+            inputFile.Seek(Settings.MachineNameOffset, SeekOrigin.Begin);
+            var machineNameBytes = inputFile.ReadBytes(Settings.MachineNameSize);
+            Settings.MachineName = Encoding.UTF8.GetString(machineNameBytes);
 
             /* TODO: read the disclaimer here? we can really just ignore it though...*/
 
             /* start gathering up the layers */
             progress.Reset(OperationProgress.StatusGatherLayers, Settings.LayerCount);
+            inputFile.Seek(Settings.LayerTableOffset, SeekOrigin.Begin);
 
-
-            inputFile.Position = Settings.LayerTableOffset;
-
-            LayerPointer[] pointers = new LayerPointer[Settings.LayerCount];
+            var pointers = new LayerPointer[Settings.LayerCount];
             for (var x = 0; x < Settings.LayerCount; x++)
             {
+                progress.Token.ThrowIfCancellationRequested();
                 pointers[x] = Helpers.Deserialize<LayerPointer>(inputFile);
                 progress++;
-                progress.Token.ThrowIfCancellationRequested();
             }
 
             progress.Reset(OperationProgress.StatusDecodeLayers, Settings.LayerCount);
-            var range = Enumerable.Range(0, (int)Settings.LayerCount);
             LayerManager.Init(Settings.LayerCount);
-            foreach (var batch in MoreEnumerable.Batch(range, Environment.ProcessorCount * 10))
-            {
-                List<LayerData> parsedLayerData = new();
+            var layersDef = new LayerDef[LayerCount];
+            var buggyLayers = new ConcurrentBag<uint>();
 
+            foreach (var batch in BatchLayersIndexes())
+            {
                 foreach (var layerIndex in batch)
                 {
                     progress.Token.ThrowIfCancellationRequested();
 
                     inputFile.Seek(pointers[layerIndex].LayerOffset, SeekOrigin.Begin);
-                    LayerData layerInfo = Helpers.Deserialize<LayerData>(inputFile);
-                    layerInfo.LayerIndex = layerIndex;
-                    layerInfo.Parent = this;
-                    parsedLayerData.Add(layerInfo);
-
+                    var layerDef = Helpers.Deserialize<LayerDef>(inputFile);
+                    layerDef.Parent = this;
+                    layersDef[layerIndex] = layerDef;
                 }
 
 
-                Parallel.ForEach(parsedLayerData, layerData =>
+                Parallel.ForEach(batch, layerIndex =>
                 {
                     if (progress.Token.IsCancellationRequested) return;
 
-                    if (layerData.EncryptedDataLength > 0)
+                    var layerDef = layersDef[layerIndex];
+
+                    if (layerDef.EncryptedDataLength > 0)
                     {
                         /* decrypte RLE data here */
 
-                        using (MemoryStream ms = new MemoryStream(layerData.RLEData))
-                        {
-                            ms.Position = layerData.EncryptedDataOffset;
-                            byte[] byteBuffer = new byte[layerData.EncryptedDataLength];
-                            ms.Read(byteBuffer, 0, (int)layerData.EncryptedDataLength);
+                        var byteBuffer = new byte[layerDef.EncryptedDataLength];
+                        Array.Copy(layerDef.RLEData, (int)layerDef.EncryptedDataOffset, byteBuffer, 0, (int)layerDef.EncryptedDataLength);
 
-                            byteBuffer = Helpers.AesCryptBytes(byteBuffer, Thing1, CipherMode.CBC, PaddingMode.None, false, Thing2);
-
-                            Array.Copy(byteBuffer, 0, layerData.RLEData, layerData.EncryptedDataOffset, layerData.EncryptedDataLength);
-                        }
-
+                        byteBuffer = CryptExtensions.AesCryptBytes(byteBuffer, ThinK, CipherMode.CBC, PaddingMode.None, false, CookieMonster);
+                        Array.Copy(byteBuffer, 0, layerDef.RLEData, layerDef.EncryptedDataOffset, layerDef.EncryptedDataLength);
                     }
 
-                    var layer = new Layer((uint)layerData.LayerIndex, layerData.DecodeLayerImage(), LayerManager)
+                    bool isBugged = false;
+                    /* bug fix for Chitubox when a small layer RLE data is encrypted */
+                    if (layerDef.EncryptedDataLength > 0 && layerDef.RLEData.Length < RLEEncryptedMinimumLength && layerDef.RLEData.Length % 16 != 0)
                     {
-                        PositionZ = layerData.PositionZ,
-                        ExposureTime = layerData.ExposureTime,
-                        LightOffDelay = 0
-                    };
+                        buggyLayers.Add((uint)layerIndex);
+                        isBugged = true;
+                    }
 
-                    layer.LiftHeight = layerData.LiftHeight;
-                    layer.LiftSpeed = layerData.LiftSpeed;
-                    layer.RetractSpeed = layerData.RetractSpeed;
-                    layer.LightPWM = (byte)layerData.LightPWM;
-                    layer.LiftHeight2 = layerData.LiftHeight2;
-                    layer.LiftSpeed2 = layerData.LiftSpeed2;
-                    layer.RetractHeight2 = layerData.RetractDistance;
-                    layer.RetractSpeed2 = layerData.RetractSpeed2;
-                    layer.WaitTimeBeforeCure = layerData.RestTimeAfterRetract;
-                    layer.WaitTimeAfterCure = layerData.RestTimeBeforeLift;
-                    layer.WaitTimeAfterLift = layerData.RestTimeAfterLift;
-                    this[layerData.LayerIndex] = layer;
-                    layerData.RLEData = null; /* clean up RLE data */
+                    var layer = new Layer((uint)layerIndex, isBugged ? null : layerDef.DecodeImage((uint)layerIndex), this);
+                    layerDef.CopyTo(layer);
+                    this[layerIndex] = layer;
+                    layerDef.RLEData = null; /* clean up RLE data */
                     progress.LockAndIncrement();
                 });
-                parsedLayerData.Clear();
-
             }
-            inputFile.ReadBytes(Hash);
+
+            if (buggyLayers.Count == LayerCount)
+            {
+                throw new FileLoadException("Unable to load this file due to Chitubox bug affecting every layer." +
+                                            "Please increase the portion of the plate in use and reslice the file.");
+            }
+            
+            if (!buggyLayers.IsEmpty)
+            {
+                var sortedLayerIndexes = buggyLayers.ToArray();
+                Array.Sort(sortedLayerIndexes);
+                uint correctedLayerCount = 0;
+
+                foreach (var layerIndex in sortedLayerIndexes)
+                {
+                    int direction = layerIndex == 0 ? 1 : -1;
+
+                    /* clone from the next one that has a mat */
+                    for (int layerIndexForClone = (int)(layerIndex + direction); 
+                        layerIndexForClone >= 0 && layerIndexForClone < LayerCount;
+                        layerIndexForClone += direction)
+                    {
+                        if (!this[layerIndexForClone].HaveImage) continue;
+                        this[layerIndexForClone].CopyImageTo(this[layerIndex]);
+                        correctedLayerCount++;
+                        
+                        /* TODO: Report to the user that a layer was cloned to work around chitubox crypto bug */
+                        
+                        break;
+                    }
+                }
+
+                if (correctedLayerCount < buggyLayers.Count)
+                {
+                    throw new FileLoadException(
+                        "Unable to load this file due to an Chitubox bug and the impossibility to auto correct some of these layers.\n" +
+                        "Please increase the portion of the plate in use and reslice the file.");
+                }
+            }
+            //inputFile.ReadBytes(HashLength);
         }
 
         protected override void EncodeInternally(string fileFullPath, OperationProgress progress)
         {
             using var outputFile = new FileStream(fileFullPath, FileMode.Create, FileAccess.Write);
-            uint currentOffset = 0;
-            Settings.LastLayerIndex = Settings.LayerCount - 1;
+            //uint currentOffset = 0;
 
             /* Create the file header and fill out what we can. SignatureOffset will have to be populated later
              * this will be the last thing written to file */
@@ -1174,16 +1239,15 @@ namespace UVtools.Core.FileFormats
             Header.Unknown2 = 0x4;
             Header.Unknown4 = 1;
             Header.Unknown5 = 1;
-            Header.Unknown5 = 0x2A;
+            Header.Unknown5 = 42;
 
 
             if (Settings.LayerXorKey == 0)
             {
-                Settings.LayerXorKey = 0xEFBEADDE;
+                Settings.LayerXorKey = LayerXorKey;
             }
 
-            currentOffset = Header.SettingsOffset + Header.SettingsSize;
-            outputFile.Seek((int)currentOffset, SeekOrigin.Begin);
+            outputFile.Seek(Header.SettingsOffset + Header.SettingsSize, SeekOrigin.Begin);
 
             progress.Reset(OperationProgress.StatusEncodePreviews, 2);
 
@@ -1205,53 +1269,48 @@ namespace UVtools.Core.FileFormats
 
                 if (i == 0)
                 {
-                    Settings.LargePreviewOffset = currentOffset;
+                    Settings.LargePreviewOffset = (uint)outputFile.Position;
                 }
                 else
                 {
-                    Settings.SmallPreviewOffset = currentOffset;
+                    Settings.SmallPreviewOffset = (uint)outputFile.Position;
                 }
 
-                currentOffset += (uint)Helpers.Serializer.SizeOf(preview);
-                preview.ImageOffset = currentOffset;
+                preview.ImageOffset = (uint)(outputFile.Position + Helpers.Serializer.SizeOf(preview));
 
                 Helpers.SerializeWriteFileStream(outputFile, preview);
-                currentOffset += outputFile.WriteBytes(previewBytes);
+                outputFile.WriteBytes(previewBytes);
                 progress++;
             }
 
-            Settings.MachineNameOffset = currentOffset;
+            Settings.MachineNameOffset = (uint)outputFile.Position;
             Settings.MachineNameSize = (uint)Settings.MachineName.Length;
-            byte[] machineNameBytes = Encoding.UTF8.GetBytes(Settings.MachineName);
+            var machineNameBytes = Encoding.UTF8.GetBytes(Settings.MachineName);
 
-            currentOffset += outputFile.WriteBytes(machineNameBytes);
+            outputFile.WriteBytes(machineNameBytes);
 
-            Settings.DisclaimerOffset = currentOffset;
+            Settings.DisclaimerOffset = (uint)outputFile.Position;
             Settings.DisclaimerSize = CTB_DISCLAIMER_SIZE;
-            currentOffset += outputFile.WriteBytes(Encoding.UTF8.GetBytes(CTB_DISCLAIMER));
+            outputFile.WriteBytes(Encoding.UTF8.GetBytes(CTB_DISCLAIMER));
 
-            Settings.LayerTableOffset = currentOffset;
+            Settings.LayerTableOffset = (uint)outputFile.Position;
 
             /* we'll write this after we write out all of the layers ... */
-            LayerTable lt = new LayerTable();
-            lt.LayerCount = LayerCount;
-            lt.Pointers = new LayerPointer[LayerCount];
+            var layerTable = new LayerTable(LayerCount);
             uint layerTableSize = (uint)Helpers.Serializer.SizeOf(new LayerPointer()) * LayerCount;
-            currentOffset += layerTableSize;
 
-            outputFile.Seek((int)currentOffset, SeekOrigin.Begin);
+            outputFile.Seek(outputFile.Length + layerTableSize, SeekOrigin.Begin);
 
-            LayerData[] layerDataList = new LayerData[LayerCount];
+            var layersDef = new LayerDef[LayerCount];
             progress.Reset(OperationProgress.StatusEncodeLayers, LayerCount);
             Parallel.For(0, LayerCount, layerIndex =>
             {
                 if (progress.Token.IsCancellationRequested) return;
-                LayerData layerData = new(this[layerIndex]);
-                layerData.Parent = this;
-                using (var image = this[layerIndex].LayerMat)
+                var layerDef = new LayerDef(this, this[layerIndex]);
+                using (var mat = this[layerIndex].LayerMat)
                 {
-                    layerData.EncodeLayerImage(image, (uint)layerIndex);
-                    layerDataList[layerIndex] = layerData;
+                    layerDef.EncodeImage(mat, (uint)layerIndex);
+                    layersDef[layerIndex] = layerDef;
                 }
 
                 progress.LockAndIncrement();
@@ -1259,30 +1318,39 @@ namespace UVtools.Core.FileFormats
             progress.Reset(OperationProgress.StatusWritingFile, LayerCount);
             for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
             {
-                var currentLayer = layerDataList[layerIndex];
-                lt.Pointers[layerIndex] = new LayerPointer() { LayerOffset = currentOffset, Unknown2 = 0x58 };
+                var currentLayer = layersDef[layerIndex];
+                layerTable.Pointers[layerIndex] = new LayerPointer((uint)outputFile.Position);
 
-                currentLayer.LayerDataOffset = currentOffset + 0x58;
-                //currentLayer.LiftHeight = currentLayer.LiftHeight + currentLayer.LiftHeight2;
-                currentOffset += Helpers.SerializeWriteFileStream(outputFile, currentLayer);
+                currentLayer.LayerDataOffset = layerTable.Pointers[layerIndex].LayerOffset + LayerDef.TableSize;
+                Helpers.SerializeWriteFileStream(outputFile, currentLayer);
                 progress++;
             }
-
+            
             /* write the final hash */
-            byte[] hash = Helpers.ComputeSHA256Hash(BitConverter.GetBytes((ulong)(Settings.checksumValue)));
-            byte[] encryptedHash = Helpers.AesCryptBytes(hash, Thing1, CipherMode.CBC, PaddingMode.None, true, Thing2);
-            Header.SignatureOffset = currentOffset;
+            var hash = CryptExtensions.ComputeSHA256Hash(BitExtensions.ToBytesLittleEndian(Settings.ChecksumValue));
+            var encryptedHash = CryptExtensions.AesCryptBytes(hash, ThinK, CipherMode.CBC, PaddingMode.None, true, CookieMonster);
+            Header.SignatureOffset = (uint)outputFile.Position;
             Header.SignatureSize = (uint)encryptedHash.Length;
             outputFile.WriteBytes(encryptedHash);
+
+            // Header
             outputFile.Seek(0, SeekOrigin.Begin);
             Helpers.SerializeWriteFileStream(outputFile, Header);
-            outputFile.Seek(0, SeekOrigin.Begin);
+            
+            // Settings
             outputFile.Seek(Header.SettingsOffset, SeekOrigin.Begin);
             var settingsBytes = Helpers.Serialize(Settings).ToArray();
-            var encryptedSettings = Helpers.AesCryptBytes(settingsBytes, Thing1, CipherMode.CBC, PaddingMode.None, true, Thing2);
+            var encryptedSettings = CryptExtensions.AesCryptBytes(settingsBytes, ThinK, CipherMode.CBC, PaddingMode.None, true, CookieMonster);
             outputFile.WriteBytes(encryptedSettings);
+            
+            // Layer table
             outputFile.Seek(Settings.LayerTableOffset, SeekOrigin.Begin);
-            Helpers.SerializeWriteFileStream(outputFile, lt);
+            Helpers.SerializeWriteFileStream(outputFile, layerTable);
+        }
+
+        public override void SaveAs(string filePath = null, OperationProgress progress = null)
+        {
+            EncodeInternally(filePath, progress);
         }
         #endregion
 

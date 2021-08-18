@@ -1,0 +1,185 @@
+//--------------------------------------
+//--- 010 Editor v6.0.3 Binary Template
+//
+// File: ctb
+// Author: Tim Slater
+// Revision: 1
+// Purpose: CTB File Format
+//--------------------------------------
+
+struct HEADER {
+    uint Magic <fgcolor=cBlack, bgcolor=cRed, format=hex>;
+    uint HeaderSize <fgcolor=cBlack, bgcolor=cRed>;
+    uint HeaderOffset <fgcolor=cBlack, bgcolor=cRed, format=hex>;
+    uint unknown1;
+    uint unknown2;
+    uint SignatureSize <fgcolor=cBlack, bgcolor=cRed>;
+    uint SignatureOffset <fgcolor=cBlack, bgcolor=cRed, format=hex>;
+    uint unknown3;
+    ushort unknown4;
+    ushort unknown5;
+    uint unknown6;
+    uint unknown7;
+    uint unknown9;
+} header;
+
+FSeek(header.HeaderOffset);
+
+struct DECRYPTED_HEADER {
+    uint64 checksumValue;
+    uint LayerTableOffset;
+    float SizeX;
+    float SizeY;
+    float SizeZ;
+    uint Padding1;
+	uint Padding2;
+    float TotalHeightMilimeter;
+    float LayerHeight;
+    float ExposureTime;
+    float BottomExposureTime;
+    float LightOffDelay;
+    uint BottomLayerCount;
+    uint ResolutionX;
+    uint ResolutionY;
+    uint LayerCount;
+    uint LargePreviewOffset;
+    uint SmallPreviewOffset;
+    uint PrintTime;
+    uint unknown5;
+    float BottomLiftHeight;
+    float BottomLiftSpeed;
+    float LiftHeight;
+    float LiftSpeed;
+    float RetractSpeed; /* might be bottom retract speed, need to verify */
+    float ModelVolume;
+    float ModelWeight;
+    float Cost;
+    float BottomLightOffDelay;
+    uint unknown9;
+    ushort LightPWM; /* these might be in the wrong order */
+    ushort BottomLightPWM;
+    uint LayerXorKey;
+    float BottomLiftHeight2;
+    float BottomLiftSpeed2;
+    float LiftingHeight2;
+    float LiftingSpeed2;
+    float RetractHeight2;
+    float RetractSpeed2;
+    float RestTimeAfterLift;
+    uint PrinterNameOffset;
+    uint PrinterNameSize;
+    uint unknown12;
+    uint unknown13;
+    uint unknown14;
+    float RestTimeAfterRetract;
+    float RestTimeAfterLift;
+    uint unknown15;
+    float BottomRetractSpeed;
+    float BottomRetractSpeed2;
+    uint unknown15;
+    float unknown16;
+    uint unknown17;
+    float unknown18;
+    float RestTimeAfterRetract;
+    float RestTimeAfterLift;
+    float RestTimeBeforeLift;
+    float BottomRetractHeight;
+    float unknown23;
+    uint unknown24;
+    uint unknown25;
+    uint LastLayerIndex;
+    uint unknown26[4];
+    uint DisclaimerOffset;
+    uint DisclaimerSize;
+    uint Padding3;
+    uint Padding4;
+    uint Padding5;
+    uint Padding6;
+};
+
+
+DECRYPTED_HEADER decryptedHeader;
+
+struct PREVIEW {
+    uint ResolutionX <fgcolor=cBlack, bgcolor=cRed>;
+    uint ResolutionY <fgcolor=cBlack, bgcolor=cRed>;
+    uint ImageOffset <fgcolor=cBlack, bgcolor=cRed>;
+    uint ImageLength <fgcolor=cBlack, bgcolor=cRed>;
+
+    byte Data[ImageLength] <fgcolor=cBlack, bgcolor=cGreen>;
+} LargePreview;
+
+PREVIEW SmallPreview;
+
+FSeek(decryptedHeader.PrinterNameOffset);
+char MachineName[decryptedHeader.PrinterNameSize] <fgcolor=cBlack, bgcolor=cYellow>;
+
+char Disclaimer[320] <fgcolor=cBlack, bgcolor=cPurple>;
+
+FSeek(decryptedHeader.LayerTableOffset);
+
+/* need to walk the layer index table to get a count of them.
+   the actual count field is in the encrypted header */
+
+struct LayerPointer {
+    uint Offset;
+    uint unknown1;
+    uint unknown2;
+    uint unknown3;
+} layerPointers[decryptedHeader.LayerCount];
+
+struct LAYER_HEADER{
+    uint LayerMarker <hidden=true>;
+    float PositionZ;
+    float ExposureTime;
+    float LightOffDelay;
+    uint LayerDataOffset;
+    uint unknown2;
+    uint LayerDataLength;
+    uint unknown3;
+    uint EncryptedDataOffset;
+    uint EncryptedDataLength;
+    float LiftHeight;
+    float LiftSpeed;
+    float LiftHeight2;
+    float LiftSpeed2;
+    float RetractSpeed;
+    float RetractHeight2;
+    float RetractSpeed2;
+    float RestTimeBeforeLift;
+    float RestTimeAfterLift;
+    float RestTimeAfterRetract;
+    float LightPWM; /* just a guess, has value 255 as a float */
+    uint unknown6;
+};
+
+struct LAYER {
+    LAYER_HEADER layerHeader;
+    FSeek(layerHeader.LayerDataOffset);
+
+    /* do we have encrypted data? */
+    if (layerHeader.EncryptedDataLength > 0) {
+
+        if (layerHeader.EncryptedDataOffset > 0) {
+            ubyte normalLayerData1[layerHeader.EncryptedDataOffset];
+            ubyte encrytedLayerData[layerHeader.EncryptedDataLength];
+            ubyte normalLayerData2[layerHeader.LayerDataLength - (layerHeader.EncryptedDataOffset + layerHeader.EncryptedDataLength)];
+        } else {
+            ubyte encrytedLayerData[layerHeader.EncryptedDataLength];
+            ubyte normalLayerData[layerHeader.LayerDataLength - layerHeader.EncryptedDataLength];
+        }
+
+    } else {
+        ubyte layerData[layerHeader.LayerDataLength] <format=binary>;
+    }
+};
+
+struct LAYERS {
+	local uint x;
+	for(x = 0; x < decryptedHeader.LayerCount; x++) {
+		FSeek(layerPointers[x].Offset);
+		LAYER layer;
+	}
+} layers;
+
+ubyte Sha256Hash[0x20]<format=hex>;
