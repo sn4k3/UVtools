@@ -316,9 +316,14 @@ namespace UVtools.Core
         }
 
         /// <summary>
-        /// Gets if all layers have same value parameters as global settings
+        /// True if all layers are using same value parameters as global settings, otherwise false
         /// </summary>
-        public bool AllLayersHaveGlobalParameters => _layers.Where(layer => layer is not null).All(layer => layer.HaveGlobalParameters);
+        public bool AllLayersAreUsingGlobalParameters => _layers.Where(layer => layer is not null).All(layer => layer.IsUsingGlobalParameters);
+
+        /// <summary>
+        /// True if any layer is using TSMC, otherwise false when none of layers is using TSMC
+        /// </summary>
+        public bool AnyLayerIsUsingTSMC => _layers.Where(layer => layer is not null).Any(layer => layer.IsUsingTSMC);
 
         //public float LayerHeight => Layers[0].PositionZ;
 

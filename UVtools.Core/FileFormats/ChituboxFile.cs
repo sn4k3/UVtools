@@ -305,7 +305,7 @@ namespace UVtools.Core.FileFormats
             /// Gets the parameter used to control encryption.
             /// Not totally understood. 0/8 for cbddlp files, 0xF (15) for ctb files, 0x2000000F (536870927) for v3 ctb and 1073741839 for v4 ctb files to allow per layer parameters
             /// </summary>
-            [FieldOrder(9)] public uint PerLayerSettings     { get; set; } = PERLAYER_SETTINGS_CTBv3;
+            [FieldOrder(9)] public uint PerLayerSettings     { get; set; } = PERLAYER_SETTINGS_DISALLOW;
 
             /// <summary>
             /// Gets a number that increments with time or number of models sliced, or both. Zeroing it in output seems to have no effect. Possibly a user tracking bug.
@@ -1745,14 +1745,14 @@ namespace UVtools.Core.FileFormats
                 }
                 else if (HeaderSettings.Version == 3)
                 {
-                    SlicerInfoSettings.PerLayerSettings = LayerManager.AllLayersHaveGlobalParameters ? PERLAYER_SETTINGS_DISALLOW : PERLAYER_SETTINGS_CTBv3;
+                    SlicerInfoSettings.PerLayerSettings = LayerManager.AllLayersAreUsingGlobalParameters ? PERLAYER_SETTINGS_DISALLOW : PERLAYER_SETTINGS_CTBv3;
 
                     if (SlicerInfoSettings.MysteriousId == 0)
                         SlicerInfoSettings.MysteriousId = 305419896;
                 }
                 else if (HeaderSettings.Version >= 4)
                 {
-                    SlicerInfoSettings.PerLayerSettings = LayerManager.AllLayersHaveGlobalParameters ? PERLAYER_SETTINGS_DISALLOW : PERLAYER_SETTINGS_CTBv4;
+                    SlicerInfoSettings.PerLayerSettings = LayerManager.AllLayersAreUsingGlobalParameters ? PERLAYER_SETTINGS_DISALLOW : PERLAYER_SETTINGS_CTBv4;
 
                     if (SlicerInfoSettings.MysteriousId == 0)
                         SlicerInfoSettings.MysteriousId = 27087820;

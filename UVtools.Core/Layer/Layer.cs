@@ -493,7 +493,7 @@ namespace UVtools.Core
         /// <summary>
         /// Gets if this layer have same value parameters as global settings
         /// </summary>
-        public bool HaveGlobalParameters
+        public bool IsUsingGlobalParameters
         {
             get
             {
@@ -542,6 +542,11 @@ namespace UVtools.Core
                 return true;
             }
         }
+
+        /// <summary>
+        /// True if this layer is using TSMC values, otherwise false
+        /// </summary>
+        public bool IsUsingTSMC => LiftHeight2 > 0 || RetractHeight2 > 0;
 
         #endregion
 
@@ -695,7 +700,7 @@ namespace UVtools.Core
                    $"{nameof(RetractSpeed2)}: {RetractSpeed2}mm/mim, " +
                    $"{nameof(LightPWM)}: {LightPWM}, " +
                    $"{nameof(IsModified)}: {IsModified}, " +
-                   $"{nameof(HaveGlobalParameters)}: {HaveGlobalParameters}";
+                   $"{nameof(IsUsingGlobalParameters)}: {IsUsingGlobalParameters}";
         }
         #endregion
 
