@@ -26,11 +26,11 @@ struct HEADER {
 FSeek(header.HeaderOffset);
 
 struct DECRYPTED_HEADER {
-    uint64 checksumValue;
+    uint64 ChecksumValue;
     uint LayerTableOffset;
-    float SizeX;
-    float SizeY;
-    float SizeZ;
+    float DisplayWidth;
+    float DisplayHeight;
+    float MachineZ;
     uint Padding1;
 	uint Padding2;
     float TotalHeightMilimeter;
@@ -45,7 +45,7 @@ struct DECRYPTED_HEADER {
     uint LargePreviewOffset;
     uint SmallPreviewOffset;
     uint PrintTime;
-    uint unknown5;
+    uint ProjectorType;
     float BottomLiftHeight;
     float BottomLiftSpeed;
     float LiftHeight;
@@ -76,10 +76,10 @@ struct DECRYPTED_HEADER {
     uint unknown15;
     float BottomRetractSpeed;
     float BottomRetractSpeed2;
-    uint unknown15;
-    float unknown16;
-    uint unknown17;
-    float unknown18;
+    uint Four1;
+    float Padding1;
+    uint Four2;
+    float Padding2;
     float RestTimeAfterRetract;
     float RestTimeAfterLift;
     float RestTimeBeforeLift;
