@@ -141,6 +141,14 @@ namespace UVtools.WPF
                 return true;
             }
 
+            if (args[0] is "--encrypt-ctb" or "--decrypt-ctb")
+            {
+                bool isEncrypt = (args[0] is "--encrypt-ctb");
+
+
+                CTBEncryptedFile.CryptFile(args[1], isEncrypt);
+                return true;
+            }
 
             return false;
         }
