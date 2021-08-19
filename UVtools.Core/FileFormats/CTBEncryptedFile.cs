@@ -32,6 +32,7 @@ namespace UVtools.Core.FileFormats
         public const uint LAYER_XOR_KEY = 0xEFBEADDE;
 
         public static readonly byte[] Kong = new byte[0x20];
+
         public static readonly byte[] CookieMonster = new byte[0x10];
 
         #endregion
@@ -68,7 +69,7 @@ namespace UVtools.Core.FileFormats
             /// Checksum of unix timestamp
             /// </summary>
             [FieldOrder(0)] public ulong ChecksumValue { get; set; } = 0xCAFEBABE;
-            [FieldOrder(1)] public uint LayerTableOffset { get; set; }
+            [FieldOrder(1)] public uint LayerPointersOffset { get; set; }
             [FieldOrder(2)] public float DisplayWidth { get; set; }
             [FieldOrder(3)] public float DisplayHeight { get; set; }
             [FieldOrder(4)] public float MachineZ { get; set; }
@@ -117,10 +118,10 @@ namespace UVtools.Core.FileFormats
             [FieldOrder(47)] public uint Unknown15 { get; set; }
             [FieldOrder(48)] public float BottomRetractSpeed { get; set; }
             [FieldOrder(49)] public float BottomRetractSpeed2 { get; set; }
-            [FieldOrder(50)] public uint Four1 { get; set; } = 4; // Same as CTBv4.PrintParametersV4.Four1)
-            [FieldOrder(51)] public float Padding1 { get; set; }
-            [FieldOrder(52)] public uint Four2 { get; set; } = 4; // Same as CTBv4.PrintParametersV4.Four2)
-            [FieldOrder(53)] public float Padding2 { get; set; }
+            [FieldOrder(50)] public uint Padding1 { get; set; }
+            [FieldOrder(51)] public float Four1 { get; set; } = 4; // Same as CTBv4.PrintParametersV4.Four1)
+            [FieldOrder(52)] public uint Padding2 { get; set; } 
+            [FieldOrder(53)] public float Four2 { get; set; } = 4; // Same as CTBv4.PrintParametersV4.Four2)
             [FieldOrder(54)] public float RestTimeAfterRetract2 { get; set; }
             [FieldOrder(55)] public float RestTimeAfterLift3 { get; set; }
             [FieldOrder(56)] public float RestTimeBeforeLift { get; set; }
@@ -153,36 +154,20 @@ namespace UVtools.Core.FileFormats
 
             public override string ToString()
             {
-                return $"{nameof(_machineName)}: {_machineName}, {nameof(Unknown15)}: {Unknown15}, {nameof(ChecksumValue)}: {ChecksumValue}, {nameof(LayerTableOffset)}: {LayerTableOffset}, {nameof(DisplayWidth)}: {DisplayWidth}, {nameof(DisplayHeight)}: {DisplayHeight}, {nameof(MachineZ)}: {MachineZ}, {nameof(Unknown1)}: {Unknown1}, {nameof(Unknown2)}: {Unknown2}, {nameof(TotalHeightMillimeter)}: {TotalHeightMillimeter}, {nameof(LayerHeight)}: {LayerHeight}, {nameof(ExposureTime)}: {ExposureTime}, {nameof(BottomExposureTime)}: {BottomExposureTime}, {nameof(LightOffDelay)}: {LightOffDelay}, {nameof(BottomLayerCount)}: {BottomLayerCount}, {nameof(ResolutionX)}: {ResolutionX}, {nameof(ResolutionY)}: {ResolutionY}, {nameof(LayerCount)}: {LayerCount}, {nameof(LargePreviewOffset)}: {LargePreviewOffset}, {nameof(SmallPreviewOffset)}: {SmallPreviewOffset}, {nameof(PrintTime)}: {PrintTime}, {nameof(ProjectorType)}: {ProjectorType}, {nameof(BottomLiftHeight)}: {BottomLiftHeight}, {nameof(BottomLiftSpeed)}: {BottomLiftSpeed}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(RetractSpeed)}: {RetractSpeed}, {nameof(MaterialMilliliters)}: {MaterialMilliliters}, {nameof(MaterialGrams)}: {MaterialGrams}, {nameof(MaterialCost)}: {MaterialCost}, {nameof(BottomLightOffDelay)}: {BottomLightOffDelay}, {nameof(Unknown9)}: {Unknown9}, {nameof(LightPWM)}: {LightPWM}, {nameof(BottomLightPWM)}: {BottomLightPWM}, {nameof(LayerXorKey)}: {LayerXorKey}, {nameof(BottomLiftHeight2)}: {BottomLiftHeight2}, {nameof(BottomLiftSpeed2)}: {BottomLiftSpeed2}, {nameof(LiftHeight2)}: {LiftHeight2}, {nameof(LiftSpeed2)}: {LiftSpeed2}, {nameof(RetractHeight2)}: {RetractHeight2}, {nameof(RetractSpeed2)}: {RetractSpeed2}, {nameof(RestTimeAfterLift)}: {RestTimeAfterLift}, {nameof(MachineNameOffset)}: {MachineNameOffset}, {nameof(MachineNameSize)}: {MachineNameSize}, {nameof(Unknown12)}: {Unknown12}, {nameof(Unknown13)}: {Unknown13}, {nameof(Unknown14)}: {Unknown14}, {nameof(RestTimeAfterRetract)}: {RestTimeAfterRetract}, {nameof(RestTimeAfterLift2)}: {RestTimeAfterLift2}, {nameof(BottomRetractSpeed)}: {BottomRetractSpeed}, {nameof(BottomRetractSpeed2)}: {BottomRetractSpeed2}, {nameof(Four1)}: {Four1}, {nameof(Padding1)}: {Padding1}, {nameof(Four2)}: {Four2}, {nameof(Padding2)}: {Padding2}, {nameof(RestTimeAfterRetract2)}: {RestTimeAfterRetract2}, {nameof(RestTimeAfterLift3)}: {RestTimeAfterLift3}, {nameof(RestTimeBeforeLift)}: {RestTimeBeforeLift}, {nameof(BottomRetractHeight2)}: {BottomRetractHeight2}, {nameof(Unknown23)}: {Unknown23}, {nameof(Unknown24)}: {Unknown24}, {nameof(Unknown25)}: {Unknown25}, {nameof(LastLayerIndex)}: {LastLayerIndex}, {nameof(Padding3)}: {Padding3}, {nameof(Padding4)}: {Padding4}, {nameof(Padding5)}: {Padding5}, {nameof(Padding6)}: {Padding6}, {nameof(DisclaimerOffset)}: {DisclaimerOffset}, {nameof(DisclaimerSize)}: {DisclaimerSize}, {nameof(Padding7)}: {Padding7}, {nameof(Padding8)}: {Padding8}, {nameof(Padding9)}: {Padding9}, {nameof(Padding10)}: {Padding10}, {nameof(MachineName)}: {MachineName}";
-            }
-        }
-
-        public class LayerTable
-        {
-            [Ignore]
-            public uint LayerCount { get; set; }
-
-            [FieldOrder(0)] [FieldCount(nameof(LayerCount))] public LayerPointer[] Pointers { get; set; }
-
-            public LayerTable() { }
-
-            public LayerTable(uint layerCount)
-            {
-                LayerCount = layerCount;
-                Pointers = new LayerPointer[layerCount];
+                return $"{nameof(Unknown15)}: {Unknown15}, {nameof(ChecksumValue)}: {ChecksumValue}, {nameof(LayerPointersOffset)}: {LayerPointersOffset}, {nameof(DisplayWidth)}: {DisplayWidth}, {nameof(DisplayHeight)}: {DisplayHeight}, {nameof(MachineZ)}: {MachineZ}, {nameof(Unknown1)}: {Unknown1}, {nameof(Unknown2)}: {Unknown2}, {nameof(TotalHeightMillimeter)}: {TotalHeightMillimeter}, {nameof(LayerHeight)}: {LayerHeight}, {nameof(ExposureTime)}: {ExposureTime}, {nameof(BottomExposureTime)}: {BottomExposureTime}, {nameof(LightOffDelay)}: {LightOffDelay}, {nameof(BottomLayerCount)}: {BottomLayerCount}, {nameof(ResolutionX)}: {ResolutionX}, {nameof(ResolutionY)}: {ResolutionY}, {nameof(LayerCount)}: {LayerCount}, {nameof(LargePreviewOffset)}: {LargePreviewOffset}, {nameof(SmallPreviewOffset)}: {SmallPreviewOffset}, {nameof(PrintTime)}: {PrintTime}, {nameof(ProjectorType)}: {ProjectorType}, {nameof(BottomLiftHeight)}: {BottomLiftHeight}, {nameof(BottomLiftSpeed)}: {BottomLiftSpeed}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(RetractSpeed)}: {RetractSpeed}, {nameof(MaterialMilliliters)}: {MaterialMilliliters}, {nameof(MaterialGrams)}: {MaterialGrams}, {nameof(MaterialCost)}: {MaterialCost}, {nameof(BottomLightOffDelay)}: {BottomLightOffDelay}, {nameof(Unknown9)}: {Unknown9}, {nameof(LightPWM)}: {LightPWM}, {nameof(BottomLightPWM)}: {BottomLightPWM}, {nameof(LayerXorKey)}: {LayerXorKey}, {nameof(BottomLiftHeight2)}: {BottomLiftHeight2}, {nameof(BottomLiftSpeed2)}: {BottomLiftSpeed2}, {nameof(LiftHeight2)}: {LiftHeight2}, {nameof(LiftSpeed2)}: {LiftSpeed2}, {nameof(RetractHeight2)}: {RetractHeight2}, {nameof(RetractSpeed2)}: {RetractSpeed2}, {nameof(RestTimeAfterLift)}: {RestTimeAfterLift}, {nameof(MachineNameOffset)}: {MachineNameOffset}, {nameof(MachineNameSize)}: {MachineNameSize}, {nameof(Unknown12)}: {Unknown12}, {nameof(Unknown13)}: {Unknown13}, {nameof(Unknown14)}: {Unknown14}, {nameof(RestTimeAfterRetract)}: {RestTimeAfterRetract}, {nameof(RestTimeAfterLift2)}: {RestTimeAfterLift2}, {nameof(BottomRetractSpeed)}: {BottomRetractSpeed}, {nameof(BottomRetractSpeed2)}: {BottomRetractSpeed2}, {nameof(Four1)}: {Four1}, {nameof(Padding1)}: {Padding1}, {nameof(Four2)}: {Four2}, {nameof(Padding2)}: {Padding2}, {nameof(RestTimeAfterRetract2)}: {RestTimeAfterRetract2}, {nameof(RestTimeAfterLift3)}: {RestTimeAfterLift3}, {nameof(RestTimeBeforeLift)}: {RestTimeBeforeLift}, {nameof(BottomRetractHeight2)}: {BottomRetractHeight2}, {nameof(Unknown23)}: {Unknown23}, {nameof(Unknown24)}: {Unknown24}, {nameof(Unknown25)}: {Unknown25}, {nameof(LastLayerIndex)}: {LastLayerIndex}, {nameof(Padding3)}: {Padding3}, {nameof(Padding4)}: {Padding4}, {nameof(Padding5)}: {Padding5}, {nameof(Padding6)}: {Padding6}, {nameof(DisclaimerOffset)}: {DisclaimerOffset}, {nameof(DisclaimerSize)}: {DisclaimerSize}, {nameof(Padding7)}: {Padding7}, {nameof(Padding8)}: {Padding8}, {nameof(Padding9)}: {Padding9}, {nameof(Padding10)}: {Padding10}, {nameof(MachineName)}: {MachineName}";
             }
         }
 
         public class LayerPointer
         {
             [FieldOrder(0)] public uint LayerOffset { get; set; }
-            [FieldOrder(1)] public uint Unknown1 { get; set; } // 0
-            [FieldOrder(2)] public uint Unknown2 { get; set; } = LayerDef.TableSize; // always 0x58
-            [FieldOrder(3)] public uint Unknown3 { get; set; } // 0
+            [FieldOrder(1)] public uint Padding1 { get; set; } // 0
+            [FieldOrder(2)] public uint LayerTableSize { get; set; } = LayerDef.TableSize; // always 0x58
+            [FieldOrder(3)] public uint Padding2 { get; set; } // 0
 
             public override string ToString()
             {
-                return $"{nameof(LayerOffset)}: {LayerOffset}, {nameof(Unknown1)}: {Unknown1}, {nameof(Unknown2)}: {Unknown2}, {nameof(Unknown3)}: {Unknown3}";
+                return $"{nameof(LayerOffset)}: {LayerOffset}, {nameof(Padding1)}: {Padding1}, {nameof(LayerTableSize)}: {LayerTableSize}, {nameof(Padding2)}: {Padding2}";
             }
 
             public LayerPointer()
@@ -203,9 +188,9 @@ namespace UVtools.Core.FileFormats
             [FieldOrder(1)] public float PositionZ { get; set; }
             [FieldOrder(2)] public float ExposureTime { get; set; }
             [FieldOrder(3)] public float LightOffDelay { get; set; }
-            [FieldOrder(4)] public uint LayerDataOffset { get; set; }
+            [FieldOrder(4)] public uint LayerDefOffset { get; set; }
             [FieldOrder(5)] public uint Unknown2 { get; set; }
-            [FieldOrder(6)] public uint LayerDataLength { get; set; }
+            [FieldOrder(6)] public uint DataLength { get; set; }
             [FieldOrder(7)] public uint Unknown3 { get; set; }
             [FieldOrder(8)] public uint EncryptedDataOffset { get; set; }
             [FieldOrder(9)] public uint EncryptedDataLength { get; set; }
@@ -224,11 +209,10 @@ namespace UVtools.Core.FileFormats
 
             [Ignore] public CTBEncryptedFile Parent { get; set; }
 
-            [FieldOrder(22)] [FieldLength(nameof(LayerDataLength))] public byte[] RLEData { get; set; }
+            //[FieldOrder(22)] [FieldLength(nameof(DataLength))] public byte[] RLEData { get; set; }
+            [Ignore] public byte[] RLEData { get; set; }
 
-            public LayerDef()
-            {
-            }
+            public LayerDef() { }
 
             public LayerDef(CTBEncryptedFile parent, Layer layer)
             {
@@ -273,14 +257,14 @@ namespace UVtools.Core.FileFormats
                 layer.LightPWM = (byte)LightPWM;
             }
 
-            public Mat DecodeImage(uint layerIndex)
+            public Mat DecodeImage(uint layerIndex, bool consumeRle = true)
             {
                 var mat = EmguExtensions.InitMat(Parent.Resolution);
                 //var span = mat.GetBytePointer();
 
                 if (Parent.Settings.LayerXorKey > 0)
                 {
-                    ChituboxFile.KeyRing kr = new(Parent.Settings.LayerXorKey, (uint)layerIndex);
+                    ChituboxFile.KeyRing kr = new(Parent.Settings.LayerXorKey, layerIndex);
                     RLEData = kr.Read(RLEData);
                 }
 
@@ -345,6 +329,8 @@ namespace UVtools.Core.FileFormats
                         pixel++;
                     }*/
                 }
+
+                if (consumeRle) RLEData = null;
 
                 return mat;
             }
@@ -428,11 +414,15 @@ namespace UVtools.Core.FileFormats
                 ChituboxFile.KeyRing kr = new(Parent.Settings.LayerXorKey, layerIndex);
                 RLEData = kr.Read(rawData.ToArray());
 
-                LayerDataLength = (uint)RLEData.Length;
+                DataLength = (uint)RLEData.Length;
 
                 return RLEData;
             }
 
+            public override string ToString()
+            {
+                return $"{nameof(LayerHeaderSize)}: {LayerHeaderSize}, {nameof(PositionZ)}: {PositionZ}, {nameof(ExposureTime)}: {ExposureTime}, {nameof(LightOffDelay)}: {LightOffDelay}, {nameof(LayerDefOffset)}: {LayerDefOffset}, {nameof(Unknown2)}: {Unknown2}, {nameof(DataLength)}: {DataLength}, {nameof(Unknown3)}: {Unknown3}, {nameof(EncryptedDataOffset)}: {EncryptedDataOffset}, {nameof(EncryptedDataLength)}: {EncryptedDataLength}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(LiftHeight2)}: {LiftHeight2}, {nameof(LiftSpeed2)}: {LiftSpeed2}, {nameof(RetractSpeed)}: {RetractSpeed}, {nameof(RetractHeight2)}: {RetractHeight2}, {nameof(RetractSpeed2)}: {RetractSpeed2}, {nameof(RestTimeBeforeLift)}: {RestTimeBeforeLift}, {nameof(RestTimeAfterLift)}: {RestTimeAfterLift}, {nameof(RestTimeAfterRetract)}: {RestTimeAfterRetract}, {nameof(LightPWM)}: {LightPWM}, {nameof(Unknown6)}: {Unknown6}, {nameof(RLEData)}: {RLEData?.Length}";
+            }
         }
 
         #region Preview
@@ -629,8 +619,9 @@ namespace UVtools.Core.FileFormats
         public FileHeader Header { get; protected internal set; } = new();
 
         public SlicerSettings Settings { get; protected internal set; } = new();
+        public LayerPointer[] LayersPointer { get; protected internal set; }
+        public LayerDef[] LayersDefinition { get; protected internal set; }
 
-        /**********************************/
         public override PrintParameterModifier[] PrintParameterModifiers { get; } = {
             PrintParameterModifier.BottomLayerCount,
 
@@ -780,23 +771,17 @@ namespace UVtools.Core.FileFormats
             set
             {
                 base.LightOffDelay = Settings.LightOffDelay = (float)Math.Round(value, 2);
-                WaitTimeBeforeCure = 0;
-                WaitTimeAfterCure = 0;
-                WaitTimeAfterLift = 0;
-            }
-        }
-
-        public override float BottomWaitTimeBeforeCure
-        {
-            get => WaitTimeBeforeCure;
-            set
-            {
                 if (value > 0)
                 {
-                    SetBottomLightOffDelay(value);
+                    WaitTimeBeforeCure = 0;
+                    WaitTimeAfterCure = 0;
+                    WaitTimeAfterLift = 0;
                 }
             }
         }
+
+        public override float BottomWaitTimeBeforeCure => WaitTimeBeforeCure;
+
 
         public override float WaitTimeBeforeCure
         {
@@ -1066,6 +1051,12 @@ namespace UVtools.Core.FileFormats
         {
             using var inputFile = new FileStream(fileFullPath, FileMode.Open, FileAccess.Read);
             Header = Helpers.Deserialize<FileHeader>(inputFile);
+            Debug.WriteLine($"Header: {Header}");
+
+            if (Header.Magic is not MAGIC_CBT_ENCRYPTED)
+            {
+                throw new FileLoadException($"Not a valid CTB encrypted file! Magic Value: {Header.Magic}", fileFullPath);
+            }
 
             inputFile.Seek(Header.SettingsOffset, SeekOrigin.Begin);
             
@@ -1073,13 +1064,9 @@ namespace UVtools.Core.FileFormats
             using (var ms = CryptExtensions.AesCryptMemoryStream(encryptedBlock, Kong, CipherMode.CBC, PaddingMode.None, false, CookieMonster))
             {
                 Settings = Helpers.Deserialize<SlicerSettings>(ms);
-                BottomLayerCount = (ushort)Settings.BottomLayerCount;
             }
 
-            if (Header.Magic is not MAGIC_CBT_ENCRYPTED)
-            {
-                throw new FileLoadException($"Not a valid CTB encrypted file! Magic Value: {Header.Magic}", fileFullPath);
-            }
+            Debug.WriteLine($"Settings: {Settings}");
 
             /* validate hash */
             var checksumBytes = BitExtensions.ToBytesLittleEndian(Settings.ChecksumValue);
@@ -1125,19 +1112,20 @@ namespace UVtools.Core.FileFormats
 
             /* start gathering up the layers */
             progress.Reset(OperationProgress.StatusGatherLayers, Settings.LayerCount);
-            inputFile.Seek(Settings.LayerTableOffset, SeekOrigin.Begin);
+            inputFile.Seek(Settings.LayerPointersOffset, SeekOrigin.Begin);
 
-            var pointers = new LayerPointer[Settings.LayerCount];
-            for (var x = 0; x < Settings.LayerCount; x++)
+            LayersPointer = new LayerPointer[Settings.LayerCount];
+            for (var i = 0; i < Settings.LayerCount; i++)
             {
                 progress.Token.ThrowIfCancellationRequested();
-                pointers[x] = Helpers.Deserialize<LayerPointer>(inputFile);
+                LayersPointer[i] = Helpers.Deserialize<LayerPointer>(inputFile);
+                Debug.WriteLine($"pointer[{i}]: {LayersPointer[i]}");
                 progress++;
             }
 
             progress.Reset(OperationProgress.StatusDecodeLayers, Settings.LayerCount);
             LayerManager.Init(Settings.LayerCount);
-            var layersDef = new LayerDef[LayerCount];
+            LayersDefinition = new LayerDef[LayerCount];
             var buggyLayers = new ConcurrentBag<uint>();
 
             foreach (var batch in BatchLayersIndexes())
@@ -1146,10 +1134,11 @@ namespace UVtools.Core.FileFormats
                 {
                     progress.Token.ThrowIfCancellationRequested();
 
-                    inputFile.Seek(pointers[layerIndex].LayerOffset, SeekOrigin.Begin);
-                    var layerDef = Helpers.Deserialize<LayerDef>(inputFile);
-                    layerDef.Parent = this;
-                    layersDef[layerIndex] = layerDef;
+                    inputFile.Seek(LayersPointer[layerIndex].LayerOffset, SeekOrigin.Begin);
+                    LayersDefinition[layerIndex] = Helpers.Deserialize<LayerDef>(inputFile);
+                    LayersDefinition[layerIndex].Parent = this;
+                    LayersDefinition[layerIndex].RLEData = inputFile.ReadBytes(LayersDefinition[layerIndex].DataLength);
+                    Debug.WriteLine($"layer[{layerIndex}]: {LayersDefinition[layerIndex]}");
                 }
 
 
@@ -1157,11 +1146,11 @@ namespace UVtools.Core.FileFormats
                 {
                     if (progress.Token.IsCancellationRequested) return;
 
-                    var layerDef = layersDef[layerIndex];
+                    var layerDef = LayersDefinition[layerIndex];
 
                     if (layerDef.EncryptedDataLength > 0)
                     {
-                        /* decrypte RLE data here */
+                        /* Decrypt RLE data here */
 
                         var byteBuffer = new byte[layerDef.EncryptedDataLength];
                         Array.Copy(layerDef.RLEData, (int)layerDef.EncryptedDataOffset, byteBuffer, 0, (int)layerDef.EncryptedDataLength);
@@ -1176,12 +1165,13 @@ namespace UVtools.Core.FileFormats
                     {
                         buggyLayers.Add((uint)layerIndex);
                         isBugged = true;
+                        layerDef.RLEData = null; /* clean up RLE data */
                     }
 
                     var layer = new Layer((uint)layerIndex, isBugged ? null : layerDef.DecodeImage((uint)layerIndex), this);
                     layerDef.CopyTo(layer);
                     this[layerIndex] = layer;
-                    layerDef.RLEData = null; /* clean up RLE data */
+                    
                     progress.LockAndIncrement();
                 });
             }
@@ -1294,15 +1284,16 @@ namespace UVtools.Core.FileFormats
             Settings.DisclaimerSize = CTB_DISCLAIMER_SIZE;
             outputFile.WriteBytes(Encoding.UTF8.GetBytes(CTB_DISCLAIMER));
 
-            Settings.LayerTableOffset = (uint)outputFile.Position;
+            Settings.LayerPointersOffset = (uint)outputFile.Position;
 
             /* we'll write this after we write out all of the layers ... */
-            var layerTable = new LayerTable(LayerCount);
+            LayersPointer = new LayerPointer[LayerCount];
+            LayersDefinition = new LayerDef[LayerCount];
+
             uint layerTableSize = (uint)Helpers.Serializer.SizeOf(new LayerPointer()) * LayerCount;
 
-            outputFile.Seek(outputFile.Length + layerTableSize, SeekOrigin.Begin);
+            outputFile.Seek(outputFile.Position + layerTableSize, SeekOrigin.Begin);
 
-            var layersDef = new LayerDef[LayerCount];
             progress.Reset(OperationProgress.StatusEncodeLayers, LayerCount);
             Parallel.For(0, LayerCount, layerIndex =>
             {
@@ -1311,7 +1302,7 @@ namespace UVtools.Core.FileFormats
                 using (var mat = this[layerIndex].LayerMat)
                 {
                     layerDef.EncodeImage(mat, (uint)layerIndex);
-                    layersDef[layerIndex] = layerDef;
+                    LayersDefinition[layerIndex] = layerDef;
                 }
 
                 progress.LockAndIncrement();
@@ -1319,11 +1310,12 @@ namespace UVtools.Core.FileFormats
             progress.Reset(OperationProgress.StatusWritingFile, LayerCount);
             for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
             {
-                var currentLayer = layersDef[layerIndex];
-                layerTable.Pointers[layerIndex] = new LayerPointer((uint)outputFile.Position);
+                var layerDef = LayersDefinition[layerIndex];
+                LayersPointer[layerIndex] = new LayerPointer((uint)outputFile.Position);
 
-                currentLayer.LayerDataOffset = layerTable.Pointers[layerIndex].LayerOffset + LayerDef.TableSize;
-                Helpers.SerializeWriteFileStream(outputFile, currentLayer);
+                layerDef.LayerDefOffset = LayersPointer[layerIndex].LayerOffset + LayerDef.TableSize;
+                Helpers.SerializeWriteFileStream(outputFile, layerDef);
+                outputFile.WriteBytes(layerDef.RLEData);
                 progress++;
             }
             
@@ -1334,24 +1326,58 @@ namespace UVtools.Core.FileFormats
             Header.SignatureSize = (uint)encryptedHash.Length;
             outputFile.WriteBytes(encryptedHash);
 
-            // Header
-            outputFile.Seek(0, SeekOrigin.Begin);
-            Helpers.SerializeWriteFileStream(outputFile, Header);
-            
+            // Rewind
+
+            // Layer pointers
+            outputFile.Seek(Settings.LayerPointersOffset, SeekOrigin.Begin);
+            for (uint layerIndex = 0; layerIndex < LayersPointer.Length; layerIndex++)
+            {
+                Helpers.SerializeWriteFileStream(outputFile, LayersPointer[layerIndex]);
+            }
+
             // Settings
             outputFile.Seek(Header.SettingsOffset, SeekOrigin.Begin);
             var settingsBytes = Helpers.Serialize(Settings).ToArray();
             var encryptedSettings = CryptExtensions.AesCryptBytes(settingsBytes, Kong, CipherMode.CBC, PaddingMode.None, true, CookieMonster);
             outputFile.WriteBytes(encryptedSettings);
-            
-            // Layer table
-            outputFile.Seek(Settings.LayerTableOffset, SeekOrigin.Begin);
-            Helpers.SerializeWriteFileStream(outputFile, layerTable);
+
+            // Header
+            outputFile.Seek(0, SeekOrigin.Begin);
+            Helpers.SerializeWriteFileStream(outputFile, Header);
         }
 
         public override void SaveAs(string filePath = null, OperationProgress progress = null)
         {
-            EncodeInternally(filePath, progress);
+            if (RequireFullEncode)
+            {
+                if (!string.IsNullOrEmpty(filePath))
+                {
+                    FileFullPath = filePath;
+                }
+                Encode(FileFullPath, progress);
+                return;
+            }
+
+
+            if (!string.IsNullOrEmpty(filePath))
+            {
+                File.Copy(FileFullPath, filePath, true);
+                FileFullPath = filePath;
+            }
+
+            using var outputFile = new FileStream(FileFullPath, FileMode.Open, FileAccess.Write);
+            
+            outputFile.Seek(Header.SettingsOffset, SeekOrigin.Begin);
+            var settingsBytes = Helpers.Serialize(Settings).ToArray();
+            var encryptedSettings = CryptExtensions.AesCryptBytes(settingsBytes, Kong, CipherMode.CBC, PaddingMode.None, true, CookieMonster);
+            outputFile.WriteBytes(encryptedSettings);
+
+            for (uint layerIndex = 0; layerIndex < LayersPointer.Length; layerIndex++)
+            {
+                LayersDefinition[layerIndex].SetFrom(this[layerIndex]);
+                outputFile.Seek(LayersPointer[layerIndex].LayerOffset, SeekOrigin.Begin);
+                Helpers.SerializeWriteFileStream(outputFile, LayersDefinition[layerIndex]);
+            }
         }
         #endregion
 

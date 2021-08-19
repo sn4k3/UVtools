@@ -19,7 +19,6 @@ using System.Threading.Tasks;
 using BinarySerialization;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
-using MoreLinq;
 using UVtools.Core.Extensions;
 using UVtools.Core.Operations;
 

@@ -70,9 +70,9 @@ FSeek(curOffset);
 
 struct LAYER_POINTER {
     uint Offset <format=hex>;
-    uint unknown1;
-    uint unknown2;
-    uint unknown3;
+    uint Padding1;
+    uint LayerTableSize;
+    uint Padding2;
 } layerPointers[layerCount];
 
 struct LAYER_HEADER{

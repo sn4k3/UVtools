@@ -76,10 +76,10 @@ struct DECRYPTED_HEADER {
     uint unknown15;
     float BottomRetractSpeed;
     float BottomRetractSpeed2;
-    uint Four1;
-    float Padding1;
-    uint Four2;
-    float Padding2;
+    uint Padding1;
+    float Four1;
+    uint Padding2;
+    float Four2;
     float RestTimeAfterRetract;
     float RestTimeAfterLift;
     float RestTimeBeforeLift;
@@ -121,11 +121,11 @@ FSeek(decryptedHeader.LayerTableOffset);
 /* need to walk the layer index table to get a count of them.
    the actual count field is in the encrypted header */
 
-struct LayerPointer {
+struct LAYER_POINTER {
     uint Offset;
-    uint unknown1;
-    uint unknown2;
-    uint unknown3;
+    uint Padding1;
+    uint LayerTableSize;
+    uint Padding2;
 } layerPointers[decryptedHeader.LayerCount];
 
 struct LAYER_HEADER{

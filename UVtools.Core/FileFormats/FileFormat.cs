@@ -279,7 +279,7 @@ namespace UVtools.Core.FileFormats
             new ChituboxZipFile(), // Zip
             new ChituboxFile(), // cbddlp, cbt, photon
 #if DEBUG
-            new CTBEncryptedFile(), // Mars 3, Epax 5k
+            new CTBEncryptedFile(), // encrypted ctb
 #endif
             new PhotonSFile(), // photons
             new PHZFile(), // phz
