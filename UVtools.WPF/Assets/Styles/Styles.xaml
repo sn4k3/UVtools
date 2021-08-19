@@ -38,5 +38,10 @@
     <Style Selector="TabControl">
         <Setter Property="Padding" Value="0"></Setter>
     </Style>
+
+    <Style Selector="Expander /template/ ToggleButton">
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="Cursor" Value="Hand" />
+    </Style>
     
 </Styles>

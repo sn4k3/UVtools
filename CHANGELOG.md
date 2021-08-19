@@ -1,5 +1,14 @@
 # Changelog
 
+## 19/08/2021 - v2.19.1
+
+- (Add) Setting - Allow to resize the tool windows: Check this option if you have problems with content being cut on some windows, down-size the height by a bit and then expand to fix the content.
+- (Fix) File formats: When converting from a TSMC-able file to an TSMC-unable file, the LiftHeight will be set to the total lift (1+2) as fail-safe guard
+- (Fix) Pixel Arithmetic: Keep pattern visible by default to prevent content from being cut when made visible
+- **(Fix) CTBv4:**
+   - LiftHeight and LiftHeight2 properties when using TSMC, LiftHeight on CTB is the total of lifts 1+2
+   - Soft-save is corrupting the file
+
 ## 17/08/2021 - v2.19.0
 
 - **File formats:** 
@@ -46,6 +55,7 @@
   - (Change) Icon for File - Open and Open in a new file 
   - (Change) Rename File - Extract to: Extract file contents
 - (Upgrade) AvaloniaUI from 0.10.6 to 0.10.7
+- (Fix) PhotonS: Allow to use different resolution than printer default
 - (Fix) PW0, PWM, PWMX, PWMO, PWMS: Unable to decode some files with AntiAliasing (#143)
 
 ## 12/08/2021 - v2.18.0

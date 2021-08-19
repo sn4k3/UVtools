@@ -34,6 +34,7 @@ namespace UVtools.WPF
             private bool _startMaximized = true;
             private bool _checkForUpdatesOnStartup = true;
             private bool _loadDemoFileOnStartup = true;
+            private bool _windowsCanResize;
             private bool _windowsTakeIntoAccountScreenScaling = true;
             private ushort _windowsHorizontalMargin = 100;
             private ushort _windowsVerticalMargin = 60;
@@ -66,6 +67,12 @@ namespace UVtools.WPF
             {
                 get => _loadDemoFileOnStartup;
                 set => RaiseAndSetIfChanged(ref _loadDemoFileOnStartup, value);
+            }
+
+            public bool WindowsCanResize
+            {
+                get => _windowsCanResize;
+                set => RaiseAndSetIfChanged(ref _windowsCanResize, value);
             }
 
             public bool WindowsTakeIntoAccountScreenScaling

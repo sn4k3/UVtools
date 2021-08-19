@@ -13,12 +13,9 @@
 
     <Grid RowDefinitions="Auto,Auto,Auto,*">
         <Border Grid.Row="0" Padding="5">
-            <Expander IsExpanded="True">
-                <Expander.Header>
-                    <TextBlock Text="Global statistics"
-                               FontWeight="Bold"
-                               Cursor="Hand"/>
-                </Expander.Header>
+            <Expander
+                Header="Global statistics"
+                IsExpanded="True">
 
                 <StackPanel>
                   <!--<Button VerticalAlignment="Center"
@@ -77,12 +74,9 @@
             </Border>
 
 
-        <Expander Grid.Row="1" IsExpanded="False">
-          <Expander.Header>
-            <TextBlock Text="Add new material"
-                       FontWeight="Bold"
-                       Cursor="Hand"/>
-          </Expander.Header>
+        <Expander Grid.Row="1"
+                  Header="Add new material"
+                  IsExpanded="False">
 
           <Grid
               RowDefinitions="Auto,10,Auto,10,Auto,10,Auto"

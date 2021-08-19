@@ -33,7 +33,6 @@ namespace UVtools.WPF.Windows
         public ToolControl ToolControl;
         private string _description;
         private double _descriptionMaxWidth;
-        private double _expanderHeaderMaxWidth = double.NaN;
         private double _profileBoxMaxWidth = double.NaN;
         private bool _layerRangeVisible = true;
         private bool _layerRangeSync;
@@ -75,12 +74,6 @@ namespace UVtools.WPF.Windows
         {
             get => _descriptionMaxWidth;
             set => RaiseAndSetIfChanged(ref _descriptionMaxWidth, value);
-        }
-
-        public double ExpanderHeaderMaxWidth
-        {
-            get => _expanderHeaderMaxWidth;
-            set => RaiseAndSetIfChanged(ref _expanderHeaderMaxWidth, value);
         }
 
         public double ProfileBoxMaxWidth
@@ -663,8 +656,6 @@ namespace UVtools.WPF.Windows
             //RaisePropertyChanged(nameof(IsContentVisible));
             //RaisePropertyChanged(nameof(IsROIVisible));
 
-
-
             // Ensure the description don't stretch window
             /*DispatcherTimer.Run(() =>
             {
@@ -706,7 +697,6 @@ namespace UVtools.WPF.Windows
             base.OnOpened(e);
             var profileTextBox = this.FindControl<TextBox>("ProfileName");
             DescriptionMaxWidth = Math.Max(Bounds.Width, ToolControl.Bounds.Width) - 20;
-            ExpanderHeaderMaxWidth = DescriptionMaxWidth - 40;
             ProfileBoxMaxWidth = profileTextBox.Bounds.Width;
             Height = MaxHeight;
 
@@ -721,6 +711,9 @@ namespace UVtools.WPF.Windows
                     (int)(App.MainWindow.Position.X + App.MainWindow.Width / 2 - Width / 2),
                     App.MainWindow.Position.Y + 20
                 );
+
+                CanResize = Settings.General.WindowsCanResize;
+
                 return false;
             }, TimeSpan.FromMilliseconds(1));
         }

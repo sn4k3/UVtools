@@ -7,17 +7,13 @@
   <Grid ColumnDefinitions="Auto,10,380">
     <StackPanel Spacing="10">
 
-        <Expander IsExpanded="True">
-            <Expander.Header>
-                <TextBlock Text="Step 1: Generate and print test model"
-                           FontWeight="Bold"
-                           Cursor="Hand"/>
-            </Expander.Header>
+        <Expander
+            Header="Step 1: Generate and print test model"
+            IsExpanded="True">
        
         <Grid
             RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto"
-            ColumnDefinitions="Auto,10,150,5,Auto,20,Auto,10,150,5,Auto"
-      >
+            ColumnDefinitions="Auto,10,150,5,Auto,20,Auto,10,150,5,Auto">
 
           <TextBlock
                     Grid.Row="0" Grid.Column="0"
@@ -376,12 +372,9 @@
         </Grid>
         </Expander>
 
-        <Expander IsExpanded="True">
-            <Expander.Header>
-                <TextBlock Text="Step 2: Validate the printed model with your measures"
-                           FontWeight="Bold"
-                           Cursor="Hand"/>
-            </Expander.Header>
+        <Expander
+            Header="Step 2: Validate the printed model with your measures"
+            IsExpanded="True">
 
                 <StackPanel Spacing="10">
 
@@ -480,12 +473,9 @@
 
         </Expander>
 
-        <Expander IsExpanded="True">
-            <Expander.Header>
-                <TextBlock Text="Step 3: Save a resize profile with the results"
-                           FontWeight="Bold"
-                           Cursor="Hand"/>
-            </Expander.Header>
+        <Expander
+            Header="Step 3: Save a resize profile with the results"
+            IsExpanded="True">
 
         <Grid ColumnDefinitions="Auto,10,440,5,Auto,5,Auto">
             <TextBlock VerticalAlignment="Center"

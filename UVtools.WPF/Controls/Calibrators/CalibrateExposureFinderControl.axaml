@@ -7,12 +7,9 @@
   <Grid ColumnDefinitions="Auto,10,380">
     <StackPanel Spacing="10">
 
-    <Expander IsExpanded="True">
-      <Expander.Header>
-        <TextBlock Text="Common properties"
-                   FontWeight="Bold"
-                   Cursor="Hand"/>
-      </Expander.Header>
+    <Expander
+        Header="Common properties"
+        IsExpanded="True">
 
       <Grid
           RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto"
@@ -183,13 +180,9 @@
       </Grid>
     </Expander>
 
-    <Expander IsExpanded="True" IsVisible="{Binding !Operation.PatternModel}">
-      <Expander.Header>
-        <TextBlock Text="Object configuration"
-                   FontWeight="Bold"
-                   Cursor="Hand"/>
-
-      </Expander.Header>
+    <Expander
+        Header="Object configuration"
+        IsExpanded="True" IsVisible="{Binding !Operation.PatternModel}">
 
       <Grid RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto"
             ColumnDefinitions="Auto,10,Auto,5,Auto,20,Auto,10,Auto,5,Auto,20,Auto,10,Auto,5,Auto">
@@ -805,19 +798,15 @@
                 </StackPanel>
             </Expander>
 
-        <Expander IsExpanded="False">
+        <Expander
+            Header="Multiple layer height"
+            IsExpanded="False">
           <Expander.IsVisible>
             <MultiBinding Converter="{x:Static BoolConverters.And}">
               <Binding Path="CanSupportPerLayerSettings"/>
               <Binding Path="!Operation.PatternModel"/>
             </MultiBinding>
           </Expander.IsVisible>
-            <Expander.Header>
-            <TextBlock Text="Multiple layer height"
-                       FontWeight="Bold"
-                       Cursor="Hand"/>
-
-          </Expander.Header>
 
             <StackPanel Spacing="10">
 
@@ -875,13 +864,9 @@
 
         </Expander>
 
-        <Expander IsExpanded="True" IsVisible="{Binding CanSupportPerLayerSettings}">
-          <Expander.Header>
-            <TextBlock Text="Multiple exposures"
-                       FontWeight="Bold"
-                       Cursor="Hand"/>
-
-          </Expander.Header>
+        <Expander
+            Header="Multiple exposures"
+            IsExpanded="True" IsVisible="{Binding CanSupportPerLayerSettings}">
 
             <StackPanel Spacing="10">
 
@@ -1205,13 +1190,9 @@
 
         </Expander>
 
-        <Expander IsExpanded="False" IsVisible="{Binding Operation.CanPatternModel}">
-          <Expander.Header>
-            <TextBlock Text="Pattern loaded model"
-                       FontWeight="Bold"
-                       Cursor="Hand"/>
-
-          </Expander.Header>
+        <Expander
+            Header="Pattern loaded model"
+            IsExpanded="False" IsVisible="{Binding Operation.CanPatternModel}">
 
           <StackPanel Spacing="10">
 

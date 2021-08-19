@@ -1115,11 +1115,11 @@ namespace UVtools.Core.FileFormats
             inputFile.Seek(Settings.LayerPointersOffset, SeekOrigin.Begin);
 
             LayersPointer = new LayerPointer[Settings.LayerCount];
-            for (var i = 0; i < Settings.LayerCount; i++)
+            for (uint layerIndex = 0; layerIndex < Settings.LayerCount; layerIndex++)
             {
                 progress.Token.ThrowIfCancellationRequested();
-                LayersPointer[i] = Helpers.Deserialize<LayerPointer>(inputFile);
-                Debug.WriteLine($"pointer[{i}]: {LayersPointer[i]}");
+                LayersPointer[layerIndex] = Helpers.Deserialize<LayerPointer>(inputFile);
+                Debug.WriteLine($"pointer[{layerIndex}]: {LayersPointer[layerIndex]}");
                 progress++;
             }
 

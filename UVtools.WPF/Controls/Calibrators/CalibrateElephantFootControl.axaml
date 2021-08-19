@@ -189,14 +189,9 @@
           
         </Grid>
 
-
-        
-      <Expander IsExpanded="True">
-        <Expander.Header>
-          <TextBlock Text="{Binding Operation.ErodeObjects, StringFormat=Morph - Erode    [\{0\} objects]}"
-                     FontWeight="Bold"
-                     Cursor="Hand"/>
-        </Expander.Header>
+        <Expander
+            Header="{Binding Operation.ErodeObjects, StringFormat=Morph - Erode    [\{0\} objects]}"
+            IsExpanded="True">
 
         <StackPanel>
           <Grid
@@ -275,12 +270,9 @@
       </Expander>
 
        
-      <Expander IsExpanded="True">
-        <Expander.Header>
-          <TextBlock Text="{Binding Operation.DimmingObjects, StringFormat=Wall dimming    [\{0\} objects]}"
-                     FontWeight="Bold"
-                     Cursor="Hand"/>
-        </Expander.Header>
+      <Expander
+          Header="{Binding Operation.DimmingObjects, StringFormat=Wall dimming    [\{0\} objects]}"
+          IsExpanded="True">
 
         <Grid
             RowDefinitions="Auto,10,Auto,10,Auto,5,Auto"

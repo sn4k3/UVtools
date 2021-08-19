@@ -5,7 +5,7 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="UVtools.WPF.Controls.Tools.ToolPixelArithmeticControl">
 
-  <StackPanel Spacing="10">
+  <Grid RowDefinitions="Auto,10,Auto">
     <Grid RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto"
           ColumnDefinitions="Auto,10,Auto,20,Auto,10,Auto,20,Auto,10,Auto">
         
@@ -157,17 +157,21 @@
 
       </Grid>
 
-      <Border>
-          <Border.IsVisible>
+      <Expander Grid.Row="2" 
+                Header="Pattern" 
+                IsExpanded="True">
+        <!--
+        <Border.IsVisible>
               <MultiBinding Converter="{x:Static BoolConverters.And}">
                   <Binding Path="Operation.IsUsePatternVisible" />
                   <Binding Path="Operation.UsePattern"/>
               </MultiBinding>
           </Border.IsVisible>
+-->
 
-          <StackPanel Spacing="10">
+        <StackPanel Spacing="10" IsEnabled="{Binding Operation.UsePattern}">
 
-          <TextBlock Text="Pattern:" FontWeight="Bold"/>
+          <!-- <TextBlock Text="Pattern:" FontWeight="Bold"/> -->
 
               <StackPanel Orientation="Horizontal" Spacing="10">
                   <TextBlock
@@ -419,8 +423,8 @@
             </Grid>
 
           </StackPanel>
-          </Border>
+        </Expander>
 
-  </StackPanel>
+  </Grid>
 
 </UserControl>

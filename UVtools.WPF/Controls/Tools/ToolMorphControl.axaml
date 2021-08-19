@@ -63,12 +63,9 @@
     </Grid>
 
 
-  <Expander Margin="0,10,0,0">
-    <Expander.Header>
-      <TextBlock Text="Kernel - Advanced options (Click to expand)"
-                 FontWeight="Bold"
-                 Cursor="Hand"/>
-    </Expander.Header>
+  <Expander
+      Header="Kernel - Advanced options (Click to expand)"
+      Margin="0,10,0,0">
     <uc:KernelControl
       Name="KernelCtrl"
       Margin="0,10,0,0"

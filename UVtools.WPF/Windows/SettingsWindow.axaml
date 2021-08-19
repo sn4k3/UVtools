@@ -39,8 +39,15 @@
                   <StackPanel Orientation="Vertical">
                       <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Windows / dialogs"/>
                       <StackPanel Margin="10" Orientation="Vertical" Spacing="10">
+
+                          <CheckBox IsChecked="{Binding Settings.General.WindowsCanResize}"
+                                    ToolTip.Tip="Check this option if you have problems with content being cut on some windows, down-size the height by a bit and then expand to fix the content."
+                                    Content="Allow to resize the tool windows"/>
+
                           <CheckBox IsChecked="{Binding Settings.General.WindowsTakeIntoAccountScreenScaling}"
                                     Content="Take into account the screen scale factor to limit the dialogs windows maximum size"/>
+
+
                           <Grid RowDefinitions="Auto,10,Auto"
                                 ColumnDefinitions="Auto,10,150,5,Auto">
 

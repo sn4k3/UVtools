@@ -18,13 +18,9 @@
       Background="WhiteSmoke"
       Padding="10"
       IsVisible="{Binding Description, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
-        <Expander IsExpanded="{Binding Settings.General.ExpandDescriptions}">
-            <Expander.Header>
-                <TextBlock Text="Description (Click to toggle)"
-                           Width="{Binding ExpanderHeaderMaxWidth}"
-                           FontWeight="Bold"
-                           Cursor="Hand"/>
-            </Expander.Header>
+        <Expander 
+            IsExpanded="{Binding Settings.General.ExpandDescriptions}"
+            Header="Description (Click to toggle)">
         <TextBox Classes="TransparentReadOnly"
                  HorizontalAlignment="Left"
                  Width="Infinity"
