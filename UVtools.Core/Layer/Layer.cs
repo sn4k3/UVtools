@@ -133,8 +133,17 @@ namespace UVtools.Core
         public uint Index
         {
             get => _index;
-            set => RaiseAndSetIfChanged(ref _index, value);
+            set
+            {
+                if(!RaiseAndSetIfChanged(ref _index, value)) return;
+                RaisePropertyChanged(nameof(Number));
+            }
         }
+
+        /// <summary>
+        /// Gets the layer number, 1 started
+        /// </summary>
+        public uint Number => _index + 1;
 
         /// <summary>
         /// Gets or sets the layer position on Z in mm
@@ -492,38 +501,42 @@ namespace UVtools.Core
                 if (IsBottomLayer)
                 {
                     if (
-                        LightOffDelay != SlicerFile.BottomLightOffDelay ||
-                        WaitTimeBeforeCure != SlicerFile.BottomWaitTimeBeforeCure ||
-                        ExposureTime != SlicerFile.BottomExposureTime ||
-                        WaitTimeBeforeCure != SlicerFile.BottomWaitTimeBeforeCure ||
-                        LiftHeight != SlicerFile.BottomLiftHeight ||
-                        LiftSpeed != SlicerFile.BottomLiftSpeed ||
-                        LiftHeight2 != SlicerFile.BottomLiftHeight2 ||
-                        LiftSpeed2 != SlicerFile.BottomLiftSpeed2 ||
-                        WaitTimeAfterLift != SlicerFile.BottomWaitTimeAfterLift ||
-                        RetractSpeed != SlicerFile.BottomRetractSpeed ||
-                        RetractHeight2 != SlicerFile.BottomRetractHeight2 ||
-                        RetractSpeed2 != SlicerFile.BottomRetractSpeed2 ||
-                        LightPWM != SlicerFile.BottomLightPWM 
-                        ) return false;
+                        _positionZ != RoundHeight(SlicerFile.LayerHeight * Number) ||
+                        _lightOffDelay != SlicerFile.BottomLightOffDelay ||
+                        _waitTimeBeforeCure != SlicerFile.BottomWaitTimeBeforeCure ||
+                        _exposureTime != SlicerFile.BottomExposureTime ||
+                        _waitTimeAfterCure != SlicerFile.BottomWaitTimeAfterCure ||
+                        _liftHeight != SlicerFile.BottomLiftHeight ||
+                        _liftSpeed != SlicerFile.BottomLiftSpeed ||
+                        _liftHeight2 != SlicerFile.BottomLiftHeight2 ||
+                        _liftSpeed2 != SlicerFile.BottomLiftSpeed2 ||
+                        _waitTimeAfterLift != SlicerFile.BottomWaitTimeAfterLift ||
+                        _retractSpeed != SlicerFile.BottomRetractSpeed ||
+                        _retractHeight2 != SlicerFile.BottomRetractHeight2 ||
+                        _retractSpeed2 != SlicerFile.BottomRetractSpeed2 ||
+                        _lightPwm != SlicerFile.BottomLightPWM 
+                        ) 
+                        return false;
                 }
                 else
                 {
                     if (
-                        LightOffDelay != SlicerFile.LightOffDelay ||
-                        WaitTimeBeforeCure != SlicerFile.WaitTimeBeforeCure ||
-                        ExposureTime != SlicerFile.ExposureTime ||
-                        WaitTimeAfterCure != SlicerFile.WaitTimeAfterCure ||
-                        LiftHeight != SlicerFile.LiftHeight ||
-                        LiftSpeed != SlicerFile.LiftSpeed ||
-                        LiftHeight2 != SlicerFile.LiftHeight2 ||
-                        LiftSpeed2 != SlicerFile.LiftSpeed2 ||
-                        WaitTimeAfterLift != SlicerFile.WaitTimeAfterLift ||
-                        RetractSpeed != SlicerFile.RetractSpeed ||
-                        RetractHeight2 != SlicerFile.RetractHeight2 ||
-                        RetractSpeed2 != SlicerFile.RetractSpeed2 ||
-                        LightPWM != SlicerFile.LightPWM
-                    ) return false;
+                        _positionZ != RoundHeight(SlicerFile.LayerHeight * Number) ||
+                        _lightOffDelay != SlicerFile.LightOffDelay ||
+                        _waitTimeBeforeCure != SlicerFile.WaitTimeBeforeCure ||
+                        _exposureTime != SlicerFile.ExposureTime ||
+                        _waitTimeAfterCure != SlicerFile.WaitTimeAfterCure ||
+                        _liftHeight != SlicerFile.LiftHeight ||
+                        _liftSpeed != SlicerFile.LiftSpeed ||
+                        _liftHeight2 != SlicerFile.LiftHeight2 ||
+                        _liftSpeed2 != SlicerFile.LiftSpeed2 ||
+                        _waitTimeAfterLift != SlicerFile.WaitTimeAfterLift ||
+                        _retractSpeed != SlicerFile.RetractSpeed ||
+                        _retractHeight2 != SlicerFile.RetractHeight2 ||
+                        _retractSpeed2 != SlicerFile.RetractSpeed2 ||
+                        _lightPwm != SlicerFile.LightPWM
+                    ) 
+                        return false;
                 }
 
                 return true;

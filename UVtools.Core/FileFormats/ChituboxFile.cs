@@ -39,10 +39,11 @@ namespace UVtools.Core.FileFormats
         public const byte RLE8EncodingLimit = 0x7d; // 125;
         public const ushort RLE16EncodingLimit = 0xFFF;
 
-        public const uint ENCRYPTYION_MODE_CBDDLP = 0x8;  // 0 or 8
-        public const uint ENCRYPTYION_MODE_CTBv2 = 0xF; // 15 for ctb v2 files
-        public const uint ENCRYPTYION_MODE_CTBv3 = 536870927; // 536870927 for ctb v3 files (This allow per layer settings, while 15 don't)
-        public const uint ENCRYPTYION_MODE_CTBv4 = 1073741839; // 1073741839 for ctb v4 files (This allow per layer settings, while 15 don't)
+        public const uint PERLAYER_SETTINGS_CBDDLP =    0x8;  // 0 or 8 (This disallow per layer settings)
+        public const uint PERLAYER_SETTINGS_DISALLOW =  0xF; // 15 (This disallow per layer settings)
+        public const uint PERLAYER_SETTINGS_CTBv2 =     0xF; // 15 for ctb v2 files and others (This disallow per layer settings)
+        public const uint PERLAYER_SETTINGS_CTBv3 =     0x2000000F; // 536870927 for ctb v3 files (This allow per layer settings, while 15 don't)
+        public const uint PERLAYER_SETTINGS_CTBv4 =     0x4000000F; // 1073741839 for ctb v4 files (This allow per layer settings, while 15 don't)
 
         private const string CTBv4_DISCLAIMER = "Layout and record format for the ctb and cbddlp file types are the copyrighted programs or codes of CBD Technology (China) Inc..The Customer or User shall not in any manner reproduce, distribute, modify, decompile, disassemble, decrypt, extract, reverse engineer, lease, assign, or sublicense the said programs or codes.";
         private const ushort CTBv4_DISCLAIMER_SIZE = 320;
@@ -304,7 +305,7 @@ namespace UVtools.Core.FileFormats
             /// Gets the parameter used to control encryption.
             /// Not totally understood. 0/8 for cbddlp files, 0xF (15) for ctb files, 0x2000000F (536870927) for v3 ctb and 1073741839 for v4 ctb files to allow per layer parameters
             /// </summary>
-            [FieldOrder(9)] public uint EncryptionMode     { get; set; } = ENCRYPTYION_MODE_CTBv3;
+            [FieldOrder(9)] public uint PerLayerSettings     { get; set; } = PERLAYER_SETTINGS_CTBv3;
 
             /// <summary>
             /// Gets a number that increments with time or number of models sliced, or both. Zeroing it in output seems to have no effect. Possibly a user tracking bug.
@@ -349,7 +350,7 @@ namespace UVtools.Core.FileFormats
 
             public override string ToString()
             {
-                return $"{nameof(BottomLiftHeight2)}: {BottomLiftHeight2}, {nameof(BottomLiftSpeed2)}: {BottomLiftSpeed2}, {nameof(LiftHeight2)}: {LiftHeight2}, {nameof(LiftSpeed2)}: {LiftSpeed2}, {nameof(RetractHeight2)}: {RetractHeight2}, {nameof(RetractSpeed2)}: {RetractSpeed2}, {nameof(RestTimeAfterLift)}: {RestTimeAfterLift}, {nameof(MachineNameAddress)}: {MachineNameAddress}, {nameof(MachineNameSize)}: {MachineNameSize}, {nameof(EncryptionMode)}: {EncryptionMode}, {nameof(MysteriousId)}: {MysteriousId}, {nameof(AntiAliasLevel)}: {AntiAliasLevel}, {nameof(SoftwareVersion)}: {SoftwareVersion}, {nameof(RestTimeAfterRetract)}: {RestTimeAfterRetract}, {nameof(RestTimeAfterLift2)}: {RestTimeAfterLift2}, {nameof(TransitionLayerCount)}: {TransitionLayerCount}, {nameof(PrintParametersV4Address)}: {PrintParametersV4Address}, {nameof(Padding2)}: {Padding2}, {nameof(Padding3)}: {Padding3}, {nameof(MachineName)}: {MachineName}";
+                return $"{nameof(BottomLiftHeight2)}: {BottomLiftHeight2}, {nameof(BottomLiftSpeed2)}: {BottomLiftSpeed2}, {nameof(LiftHeight2)}: {LiftHeight2}, {nameof(LiftSpeed2)}: {LiftSpeed2}, {nameof(RetractHeight2)}: {RetractHeight2}, {nameof(RetractSpeed2)}: {RetractSpeed2}, {nameof(RestTimeAfterLift)}: {RestTimeAfterLift}, {nameof(MachineNameAddress)}: {MachineNameAddress}, {nameof(MachineNameSize)}: {MachineNameSize}, {nameof(PerLayerSettings)}: {PerLayerSettings}, {nameof(MysteriousId)}: {MysteriousId}, {nameof(AntiAliasLevel)}: {AntiAliasLevel}, {nameof(SoftwareVersion)}: {SoftwareVersion}, {nameof(RestTimeAfterRetract)}: {RestTimeAfterRetract}, {nameof(RestTimeAfterLift2)}: {RestTimeAfterLift2}, {nameof(TransitionLayerCount)}: {TransitionLayerCount}, {nameof(PrintParametersV4Address)}: {PrintParametersV4Address}, {nameof(Padding2)}: {Padding2}, {nameof(Padding3)}: {Padding3}, {nameof(MachineName)}: {MachineName}";
             }
         }
 
@@ -581,15 +582,17 @@ namespace UVtools.Core.FileFormats
         #region Layer
         public class LayerDef
         {
+            public const byte TABLE_SIZE = 36;
+
             /// <summary>
             /// Gets the build platform Z position for this layer, measured in millimeters.
             /// </summary>
-            [FieldOrder(0)] public float PositionZ      { get; set; }
+            [FieldOrder(0)] public float PositionZ       { get; set; }
 
             /// <summary>
             /// Gets the exposure time for this layer, in seconds.
             /// </summary>
-            [FieldOrder(1)] public float ExposureTime       { get; set; }
+            [FieldOrder(1)] public float ExposureTime    { get; set; }
 
             /// <summary>
             /// Gets how long to keep the light off after exposing this layer, in seconds.
@@ -599,34 +602,29 @@ namespace UVtools.Core.FileFormats
             /// <summary>
             /// Gets the layer image offset to encoded layer data, and its length in bytes.
             /// </summary>
-            [FieldOrder(3)] public uint DataAddress          { get; set; }
+            [FieldOrder(3)] public uint DataAddress      { get; set; }
 
             /// <summary>
             /// Gets the layer image length in bytes.
             /// </summary>
-            [FieldOrder(4)] public uint DataSize             { get; set; }
-            [FieldOrder(5)] public uint Unknown1             { get; set; }
-            [FieldOrder(6)] public uint Unknown2             { get; set; }// = 84; // Spoted on Mars 2 Pro
-            [FieldOrder(7)] public uint Unknown3             { get; set; }
-            [FieldOrder(8)] public uint Unknown4             { get; set; }
+            [FieldOrder(4)] public uint DataSize         { get; set; }
+            [FieldOrder(5)] public uint Unknown1         { get; set; }
+            [FieldOrder(6)] public uint TableSize        { get; set; } = TABLE_SIZE;
+            [FieldOrder(7)] public uint Unknown3         { get; set; }
+            [FieldOrder(8)] public uint Unknown4         { get; set; }
 
 
             [Ignore] public byte[] EncodedRle { get; set; }
             [Ignore] public ChituboxFile Parent { get; set; }
 
-            public LayerDef()
-            {
-            }
+            public LayerDef() { }
 
             public LayerDef(ChituboxFile parent, Layer layer)
             {
                 Parent = parent;
                 SetFrom(layer);
 
-                if (parent.HeaderSettings.Version >= 3 && Unknown2 == 0)
-                {
-                    Unknown2 = 84;
-                }
+                TableSize = parent.HeaderSettings.Version <= 2 ? TABLE_SIZE : LayerDefEx.TABLE_SIZE;
             }
 
             public void SetFrom(Layer layer)
@@ -952,12 +950,13 @@ namespace UVtools.Core.FileFormats
 
             public override string ToString()
             {
-                return $"{nameof(PositionZ)}: {PositionZ}, {nameof(ExposureTime)}: {ExposureTime}, {nameof(LightOffSeconds)}: {LightOffSeconds}, {nameof(DataAddress)}: {DataAddress}, {nameof(DataSize)}: {DataSize}, {nameof(Unknown1)}: {Unknown1}, {nameof(Unknown2)}: {Unknown2}, {nameof(Unknown3)}: {Unknown3}, {nameof(Unknown4)}: {Unknown4}";
+                return $"{nameof(PositionZ)}: {PositionZ}, {nameof(ExposureTime)}: {ExposureTime}, {nameof(LightOffSeconds)}: {LightOffSeconds}, {nameof(DataAddress)}: {DataAddress}, {nameof(DataSize)}: {DataSize}, {nameof(Unknown1)}: {Unknown1}, {nameof(TableSize)}: {TableSize}, {nameof(Unknown3)}: {Unknown3}, {nameof(Unknown4)}: {Unknown4}";
             }
         }
 
         public class LayerDefEx
         {
+            public const byte TABLE_SIZE = 48;
             /// <summary>
             /// Gets a copy of layer data definition
             /// </summary>
@@ -1738,7 +1737,7 @@ namespace UVtools.Core.FileFormats
 
                 if (HeaderSettings.Version <= 2)
                 {
-                    SlicerInfoSettings.EncryptionMode = ENCRYPTYION_MODE_CTBv2;
+                    SlicerInfoSettings.PerLayerSettings = PERLAYER_SETTINGS_CTBv2;
                     PrintParametersSettings.Padding4 = 0x1234; // 4660
 
                     if (SlicerInfoSettings.MysteriousId == 0)
@@ -1746,14 +1745,14 @@ namespace UVtools.Core.FileFormats
                 }
                 else if (HeaderSettings.Version == 3)
                 {
-                    SlicerInfoSettings.EncryptionMode = ENCRYPTYION_MODE_CTBv3;
+                    SlicerInfoSettings.PerLayerSettings = LayerManager.AllLayersHaveGlobalParameters ? PERLAYER_SETTINGS_DISALLOW : PERLAYER_SETTINGS_CTBv3;
 
                     if (SlicerInfoSettings.MysteriousId == 0)
                         SlicerInfoSettings.MysteriousId = 305419896;
                 }
                 else if (HeaderSettings.Version >= 4)
                 {
-                    SlicerInfoSettings.EncryptionMode = ENCRYPTYION_MODE_CTBv4;
+                    SlicerInfoSettings.PerLayerSettings = LayerManager.AllLayersHaveGlobalParameters ? PERLAYER_SETTINGS_DISALLOW : PERLAYER_SETTINGS_CTBv4;
 
                     if (SlicerInfoSettings.MysteriousId == 0)
                         SlicerInfoSettings.MysteriousId = 27087820;
@@ -1806,7 +1805,7 @@ namespace UVtools.Core.FileFormats
             {
                 //HeaderSettings.Version = 2;
                 HeaderSettings.EncryptionKey = 0; // Force disable encryption
-                SlicerInfoSettings.EncryptionMode = ENCRYPTYION_MODE_CBDDLP;
+                SlicerInfoSettings.PerLayerSettings = PERLAYER_SETTINGS_CBDDLP;
             }
 
             //uint currentOffset = (uint)Helpers.Serializer.SizeOf(HeaderSettings);
