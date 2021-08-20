@@ -53,7 +53,7 @@ namespace UVtools.Core
         private float _retractSpeed = FileFormat.DefaultRetractSpeed;
         private float _retractHeight2 = FileFormat.DefaultRetractHeight2;
         private float _retractSpeed2 = FileFormat.DefaultRetractSpeed2;
-        private byte _lightPwm = FileFormat.DefaultLightPWM;
+        private byte _lightPWM = FileFormat.DefaultLightPWM;
         private float _materialMilliliters;
         #endregion
 
@@ -155,6 +155,7 @@ namespace UVtools.Core
             {
                 if (!RaiseAndSetIfChanged(ref _positionZ, RoundHeight(value))) return;
                 RaisePropertyChanged(nameof(LayerHeight));
+                MaterialMilliliters = 0; // Recalculate
             }
         }
 
@@ -354,19 +355,19 @@ namespace UVtools.Core
         /// </summary>
         public byte LightPWM
         {
-            get => _lightPwm;
+            get => _lightPWM;
             set
             {
                 //if (value == 0) value = SlicerFile.GetInitialLayerValueOrNormal(Index, SlicerFile.BottomLightPWM, SlicerFile.LightPWM);
                 //if (value == 0) value = FileFormat.DefaultLightPWM;
-                RaiseAndSetIfChanged(ref _lightPwm, value);
+                RaiseAndSetIfChanged(ref _lightPWM, value);
             }
         }
 
         /// <summary>
         /// Gets if this layer can be exposed to UV light
         /// </summary>
-        public bool CanExpose => _exposureTime > 0 && _lightPwm > 0;
+        public bool CanExpose => _exposureTime > 0 && _lightPWM > 0;
 
         /// <summary>
         /// Gets the layer height in millimeters of this layer
@@ -376,7 +377,7 @@ namespace UVtools.Core
             get
             {
                 if (_index == 0) return _positionZ;
-                Layer previousLayer = this;
+                var previousLayer = this;
 
                 while ((previousLayer = previousLayer.PreviousLayer()) is not null) // This cycle returns the correct layer height if two or more layers have the same position z
                 {
@@ -387,7 +388,7 @@ namespace UVtools.Core
                     return layerHeight;
                 }
 
-                return ParentLayerManager.SlicerFile.LayerHeight;
+                return SlicerFile.LayerHeight;
             }
         }
 
@@ -399,11 +400,11 @@ namespace UVtools.Core
             get => _materialMilliliters;
             private set
             {
-                if (ParentLayerManager?.SlicerFile is null) return;
+                if (SlicerFile is null) return;
                 //var globalMilliliters = SlicerFile.MaterialMilliliters - _materialMilliliters;
                 if (value <= 0)
                 {
-                    value = (float) Math.Round(ParentLayerManager.SlicerFile.PixelArea * ParentLayerManager.SlicerFile.LayerHeight * NonZeroPixelCount / 1000f, 4);
+                    value = (float) Math.Round(SlicerFile.PixelArea * LayerHeight * NonZeroPixelCount / 1000f, 4);
                 }
 
                 if(!RaiseAndSetIfChanged(ref _materialMilliliters, value)) return;
@@ -514,7 +515,7 @@ namespace UVtools.Core
                         _retractSpeed != SlicerFile.BottomRetractSpeed ||
                         _retractHeight2 != SlicerFile.BottomRetractHeight2 ||
                         _retractSpeed2 != SlicerFile.BottomRetractSpeed2 ||
-                        _lightPwm != SlicerFile.BottomLightPWM 
+                        _lightPWM != SlicerFile.BottomLightPWM 
                         ) 
                         return false;
                 }
@@ -534,7 +535,7 @@ namespace UVtools.Core
                         _retractSpeed != SlicerFile.RetractSpeed ||
                         _retractHeight2 != SlicerFile.RetractHeight2 ||
                         _retractSpeed2 != SlicerFile.RetractSpeed2 ||
-                        _lightPwm != SlicerFile.LightPWM
+                        _lightPWM != SlicerFile.LightPWM
                     ) 
                         return false;
                 }
@@ -571,7 +572,7 @@ namespace UVtools.Core
             _retractSpeed = SlicerFile.GetInitialLayerValueOrNormal(index, SlicerFile.BottomRetractSpeed, SlicerFile.RetractSpeed);
             _retractHeight2 = SlicerFile.GetInitialLayerValueOrNormal(index, SlicerFile.BottomRetractHeight2, SlicerFile.RetractHeight2);
             _retractSpeed2 = SlicerFile.GetInitialLayerValueOrNormal(index, SlicerFile.BottomRetractSpeed2, SlicerFile.RetractSpeed2);
-            _lightPwm = SlicerFile.GetInitialLayerValueOrNormal(index, SlicerFile.BottomLightPWM, SlicerFile.LightPWM);
+            _lightPWM = SlicerFile.GetInitialLayerValueOrNormal(index, SlicerFile.BottomLightPWM, SlicerFile.LightPWM);
         }
 
         public Layer(uint index, byte[] compressedBytes, LayerManager parentLayerManager) : this(index, parentLayerManager)
@@ -779,7 +780,7 @@ namespace UVtools.Core
         {
             if (ParentLayerManager is null || _index == 0)
                 return null;
-
+            
             return ParentLayerManager[_index - 1];
         }
 
@@ -1053,7 +1054,6 @@ namespace UVtools.Core
             layer.CompressedBytes = _compressedBytes.ToArray();
             layer.BoundingRectangle = _boundingRectangle;
             layer.NonZeroPixelCount = _nonZeroPixelCount;
-
         }
 
         public Layer Clone()
@@ -1064,24 +1064,24 @@ namespace UVtools.Core
             //return layer;
             return new (_index, CompressedBytes.ToArray(), ParentLayerManager)
             {
-                PositionZ = _positionZ,
-                LightOffDelay = _lightOffDelay,
-                WaitTimeBeforeCure = _waitTimeBeforeCure,
-                ExposureTime = _exposureTime,
-                WaitTimeAfterCure = _waitTimeAfterCure,
-                LiftHeight = _liftHeight,
-                LiftSpeed = _liftSpeed,
-                LiftHeight2 = _liftHeight2,
-                LiftSpeed2 = _liftSpeed2,
-                WaitTimeAfterLift = _waitTimeAfterLift,
-                RetractSpeed = _retractSpeed,
-                RetractHeight2 = _retractHeight2,
-                RetractSpeed2 = _retractSpeed2,
-                LightPWM = _lightPwm,
-                BoundingRectangle = _boundingRectangle,
-                NonZeroPixelCount = _nonZeroPixelCount,
-                IsModified = _isModified,
-                MaterialMilliliters = _materialMilliliters
+                _positionZ = _positionZ,
+                _lightOffDelay = _lightOffDelay,
+                _waitTimeBeforeCure = _waitTimeBeforeCure,
+                _exposureTime = _exposureTime,
+                _waitTimeAfterCure = _waitTimeAfterCure,
+                _liftHeight = _liftHeight,
+                _liftSpeed = _liftSpeed,
+                _liftHeight2 = _liftHeight2,
+                _liftSpeed2 = _liftSpeed2,
+                _waitTimeAfterLift = _waitTimeAfterLift,
+                _retractSpeed = _retractSpeed,
+                _retractHeight2 = _retractHeight2,
+                _retractSpeed2 = _retractSpeed2,
+                _lightPWM = _lightPWM,
+                _boundingRectangle = _boundingRectangle,
+                _nonZeroPixelCount = _nonZeroPixelCount,
+                _isModified = _isModified,
+                _materialMilliliters = _materialMilliliters
             };
         }
         #endregion

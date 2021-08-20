@@ -61,7 +61,6 @@ namespace UVtools.Core
 
                 if (value is not null && LayerCount > 0)
                 {
-                    SlicerFile.MaterialMilliliters = 0;
                     //SetAllIsModified(true);
 
                     for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++) // Forced sanitize
@@ -82,9 +81,11 @@ namespace UVtools.Core
                         RebuildLayersProperties();
                         rebuildProperties = true;
                     }
+
+                    SlicerFile.MaterialMilliliters = 0;
                 }
 
-                if(!rebuildProperties) SlicerFile.RebuildGCode();
+                if (!rebuildProperties) SlicerFile.RebuildGCode();
 
                 RaisePropertyChanged();
             }
