@@ -523,94 +523,50 @@ namespace UVtools.Core
                     {
                         if (layer.IsBottomLayer)
                         {
-                            switch (property)
-                            {
-                                case nameof(SlicerFile.BottomLightOffDelay):
-                                    layer.LightOffDelay = SlicerFile.BottomLightOffDelay;
-                                    break;
-                                case nameof(SlicerFile.BottomWaitTimeBeforeCure):
-                                    layer.WaitTimeBeforeCure = SlicerFile.BottomWaitTimeBeforeCure;
-                                    break;
-                                case nameof(SlicerFile.BottomExposureTime):
-                                    layer.ExposureTime = SlicerFile.BottomExposureTime;
-                                    break;
-                                case nameof(SlicerFile.BottomWaitTimeAfterCure):
-                                    layer.WaitTimeAfterCure = SlicerFile.BottomWaitTimeAfterCure;
-                                    break;
-                                case nameof(SlicerFile.BottomLiftHeight):
-                                    layer.LiftHeight = SlicerFile.BottomLiftHeight;
-                                    break;
-                                case nameof(SlicerFile.BottomLiftSpeed):
-                                    layer.LiftSpeed = SlicerFile.BottomLiftSpeed;
-                                    break;
-                                case nameof(SlicerFile.BottomLiftHeight2):
-                                    layer.LiftHeight2 = SlicerFile.BottomLiftHeight2;
-                                    break;
-                                case nameof(SlicerFile.BottomLiftSpeed2):
-                                    layer.LiftSpeed2 = SlicerFile.BottomLiftSpeed2;
-                                    break;
-                                case nameof(SlicerFile.BottomWaitTimeAfterLift):
-                                    layer.WaitTimeAfterLift = SlicerFile.BottomWaitTimeAfterLift;
-                                    break;
-                                case nameof(SlicerFile.BottomRetractSpeed):
-                                    layer.RetractSpeed = SlicerFile.BottomRetractSpeed;
-                                    break;
-                                case nameof(SlicerFile.BottomRetractHeight2):
-                                    layer.RetractHeight2 = SlicerFile.BottomRetractHeight2;
-                                    break;
-                                case nameof(SlicerFile.BottomRetractSpeed2):
-                                    layer.RetractSpeed2 = SlicerFile.BottomRetractSpeed2;
-                                    break;
+                            if (property == nameof(SlicerFile.BottomLightOffDelay)) layer.LightOffDelay = SlicerFile.BottomLightOffDelay;
+                            else if (property == nameof(SlicerFile.BottomWaitTimeBeforeCure)) layer.WaitTimeBeforeCure = SlicerFile.BottomWaitTimeBeforeCure;
+                            else if (property == nameof(SlicerFile.BottomExposureTime)) layer.ExposureTime = SlicerFile.BottomExposureTime;
+                            else if (property == nameof(SlicerFile.BottomWaitTimeAfterCure)) layer.WaitTimeAfterCure = SlicerFile.BottomWaitTimeAfterCure;
+                            else if (property == nameof(SlicerFile.BottomLiftHeight)) layer.LiftHeight = SlicerFile.BottomLiftHeight;
+                            else if (property == nameof(SlicerFile.BottomLiftSpeed)) layer.LiftSpeed = SlicerFile.BottomLiftSpeed;
+                            else if (property == nameof(SlicerFile.BottomLiftHeight2)) layer.LiftHeight2 = SlicerFile.BottomLiftHeight2;
+                            else if (property == nameof(SlicerFile.BottomLiftSpeed2)) layer.LiftSpeed2 = SlicerFile.BottomLiftSpeed2;
+                            else if (property == nameof(SlicerFile.BottomWaitTimeAfterLift)) layer.WaitTimeAfterLift = SlicerFile.BottomWaitTimeAfterLift;
+                            else if (property == nameof(SlicerFile.BottomRetractSpeed)) layer.RetractSpeed = SlicerFile.BottomRetractSpeed;
+                            else if (property == nameof(SlicerFile.BottomRetractHeight2)) layer.RetractHeight2 = SlicerFile.BottomRetractHeight2;
+                            else if (property == nameof(SlicerFile.BottomRetractSpeed2)) layer.RetractSpeed2 = SlicerFile.BottomRetractSpeed2;
+                            else if (property == nameof(SlicerFile.BottomLightPWM)) layer.LightPWM = SlicerFile.BottomLightPWM;
 
-                                case nameof(SlicerFile.BottomLightPWM):
-                                    layer.LightPWM = SlicerFile.BottomLightPWM;
-                                    break;
-                            }
+                            // Propagate value to layer when bottom property does not exists
+                            else if (property == nameof(SlicerFile.LightOffDelay) && !SlicerFile.CanUseBottomLightOffDelay) layer.LightOffDelay = SlicerFile.LightOffDelay;
+                            else if (property == nameof(SlicerFile.WaitTimeBeforeCure) && !SlicerFile.CanUseBottomWaitTimeBeforeCure) layer.WaitTimeBeforeCure = SlicerFile.WaitTimeBeforeCure;
+                            else if (property == nameof(SlicerFile.ExposureTime) && !SlicerFile.CanUseBottomExposureTime) layer.ExposureTime = SlicerFile.ExposureTime;
+                            else if (property == nameof(SlicerFile.WaitTimeAfterCure) && !SlicerFile.CanUseBottomWaitTimeAfterCure) layer.WaitTimeAfterCure = SlicerFile.WaitTimeAfterCure;
+                            else if (property == nameof(SlicerFile.LiftHeight) && !SlicerFile.CanUseBottomLiftHeight) layer.LiftHeight = SlicerFile.LiftHeight;
+                            else if (property == nameof(SlicerFile.LiftSpeed) && !SlicerFile.CanUseBottomLiftSpeed) layer.LiftSpeed = SlicerFile.LiftSpeed;
+                            else if (property == nameof(SlicerFile.LiftHeight2) && !SlicerFile.CanUseBottomLiftHeight2) layer.LiftHeight2 = SlicerFile.LiftHeight2;
+                            else if (property == nameof(SlicerFile.LiftSpeed2) && !SlicerFile.CanUseBottomLiftSpeed2) layer.LiftSpeed2 = SlicerFile.LiftSpeed2;
+                            else if (property == nameof(SlicerFile.WaitTimeAfterLift) && !SlicerFile.CanUseBottomWaitTimeAfterLift) layer.WaitTimeAfterLift = SlicerFile.WaitTimeAfterLift;
+                            else if (property == nameof(SlicerFile.RetractSpeed) && !SlicerFile.CanUseBottomRetractSpeed) layer.RetractSpeed = SlicerFile.RetractSpeed;
+                            else if (property == nameof(SlicerFile.RetractHeight2) && !SlicerFile.CanUseBottomRetractHeight2) layer.RetractHeight2 = SlicerFile.RetractHeight2;
+                            else if (property == nameof(SlicerFile.RetractSpeed2) && !SlicerFile.CanUseRetractSpeed2) layer.RetractSpeed2 = SlicerFile.RetractSpeed2;
+                            else if (property == nameof(SlicerFile.LightPWM) && !SlicerFile.CanUseBottomLightPWM) layer.LightPWM = SlicerFile.LightPWM;
                         }
                         else // Normal layers
                         {
-                            switch (property)
-                            {
-                                case nameof(SlicerFile.LightOffDelay):
-                                    layer.LightOffDelay = SlicerFile.LightOffDelay;
-                                    break;
-                                case nameof(SlicerFile.WaitTimeBeforeCure):
-                                    layer.WaitTimeBeforeCure = SlicerFile.WaitTimeBeforeCure;
-                                    break;
-                                case nameof(SlicerFile.ExposureTime):
-                                    layer.ExposureTime = SlicerFile.ExposureTime;
-                                    break;
-                                case nameof(SlicerFile.WaitTimeAfterCure):
-                                    layer.WaitTimeAfterCure = SlicerFile.WaitTimeAfterCure;
-                                    break;
-                                case nameof(SlicerFile.LiftHeight):
-                                    layer.LiftHeight = SlicerFile.LiftHeight;
-                                    break;
-                                case nameof(SlicerFile.LiftSpeed):
-                                    layer.LiftSpeed = SlicerFile.LiftSpeed;
-                                    break;
-                                case nameof(SlicerFile.LiftHeight2):
-                                    layer.LiftHeight2 = SlicerFile.LiftHeight2;
-                                    break;
-                                case nameof(SlicerFile.LiftSpeed2):
-                                    layer.LiftSpeed2 = SlicerFile.LiftSpeed2;
-                                    break;
-                                case nameof(SlicerFile.WaitTimeAfterLift):
-                                    layer.WaitTimeAfterLift = SlicerFile.WaitTimeAfterLift;
-                                    break;
-                                case nameof(SlicerFile.RetractSpeed):
-                                    layer.RetractSpeed = SlicerFile.RetractSpeed;
-                                    break;
-                                case nameof(SlicerFile.RetractHeight2):
-                                    layer.RetractHeight2 = SlicerFile.RetractHeight2;
-                                    break;
-                                case nameof(SlicerFile.RetractSpeed2):
-                                    layer.RetractSpeed2 = SlicerFile.RetractSpeed2;
-                                    break;
-                                case nameof(SlicerFile.LightPWM):
-                                    layer.LightPWM = SlicerFile.LightPWM;
-                                    break;
-                            }
+                            if (property == nameof(SlicerFile.LightOffDelay)) layer.LightOffDelay = SlicerFile.LightOffDelay;
+                            else if (property == nameof(SlicerFile.WaitTimeBeforeCure)) layer.WaitTimeBeforeCure = SlicerFile.WaitTimeBeforeCure;
+                            else if (property == nameof(SlicerFile.ExposureTime)) layer.ExposureTime = SlicerFile.ExposureTime;
+                            else if (property == nameof(SlicerFile.WaitTimeAfterCure)) layer.WaitTimeAfterCure = SlicerFile.WaitTimeAfterCure;
+                            else if (property == nameof(SlicerFile.LiftHeight)) layer.LiftHeight = SlicerFile.LiftHeight;
+                            else if (property == nameof(SlicerFile.LiftSpeed)) layer.LiftSpeed = SlicerFile.LiftSpeed;
+                            else if (property == nameof(SlicerFile.LiftHeight2)) layer.LiftHeight2 = SlicerFile.LiftHeight2;
+                            else if (property == nameof(SlicerFile.LiftSpeed2)) layer.LiftSpeed2 = SlicerFile.LiftSpeed2;
+                            else if (property == nameof(SlicerFile.WaitTimeAfterLift)) layer.WaitTimeAfterLift = SlicerFile.WaitTimeAfterLift;
+                            else if (property == nameof(SlicerFile.RetractSpeed)) layer.RetractSpeed = SlicerFile.RetractSpeed;
+                            else if (property == nameof(SlicerFile.RetractHeight2)) layer.RetractHeight2 = SlicerFile.RetractHeight2;
+                            else if (property == nameof(SlicerFile.RetractSpeed2)) layer.RetractSpeed2 = SlicerFile.RetractSpeed2;
+                            else if (property == nameof(SlicerFile.LightPWM)) layer.LightPWM = SlicerFile.LightPWM;
                         }
                     }
                 }
