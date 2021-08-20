@@ -164,7 +164,7 @@
 
               <TextBlock
                   FontWeight="Bold"
-                  Text="{Binding Operation.RealZSize, StringFormat=\{0:0.F3\}mm}"/>
+                  Text="{Binding Operation.RealZSize, StringFormat=\{0:F3\}mm}"/>
 
 
           </StackPanel>
