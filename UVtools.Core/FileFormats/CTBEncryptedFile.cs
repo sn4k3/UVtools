@@ -1020,6 +1020,13 @@ namespace UVtools.Core.FileFormats
         public CTBEncryptedFile()
         {
             Previews = new Preview[ThumbnailsCount];
+
+            if (Kong is null || Kong[0] == 0)
+            {
+                using var fs = new FileStream("MAGIC.ectb", FileMode.Open);
+                fs.ReadBytes(Kong);
+                fs.ReadBytes(CookieMonster);
+            }
         }
         #endregion
 
