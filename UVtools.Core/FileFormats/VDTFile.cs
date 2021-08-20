@@ -40,9 +40,9 @@ namespace UVtools.Core.FileFormats
 
         public sealed class VDTManifest
         {
-            [JsonProperty("application_name")] public string ApplicationName { get; set; } = "Voxeldance Tango";
+            [JsonProperty("application_name")] public string ApplicationName { get; set; } = About.Software;
 
-            [JsonProperty("application_version")] public string ApplicationVersion { get; set; } = "2.1.15.14";
+            [JsonProperty("application_version")] public string ApplicationVersion { get; set; } = About.VersionStr;
             //2021-04-09 17:48:46
             [JsonProperty("create_datetime")] public string CreateDateTime { get; set; } = DateTime.UtcNow.ToString("u");
 
