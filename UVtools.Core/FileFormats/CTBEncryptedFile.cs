@@ -35,9 +35,15 @@ namespace UVtools.Core.FileFormats
         public const byte HASH_LENGTH = 32;
         public const uint LAYER_XOR_KEY = 0xEFBEADDE;
 
-        public static readonly byte[] Kong = new byte[0x20];
+        public static readonly byte[] Kong =
+        {
+            0xD0, 0x5B, 0x8E, 0x33, 0x71, 0xDE, 0x3D, 0x1A, 0xE5, 0x4F, 0x22, 0xDD, 0xDF, 0x5B, 0xFD, 0x94,
+            0xAB, 0x5D, 0x64, 0x3A, 0x9D, 0x7E, 0xBF, 0xAF, 0x42, 0x03, 0xF3, 0x10, 0xD8, 0x52, 0x2A, 0xEA
+        };
 
-        public static readonly byte[] CookieMonster = new byte[0x10];
+        public static readonly byte[] CookieMonster = {
+            0x0F, 0x01, 0x0A, 0x05, 0x05, 0x0B, 0x06, 0x07, 0x08, 0x06, 0x0A, 0x0C, 0x0C, 0x0D, 0x09, 0x0F
+        };
 
         #endregion
 
@@ -163,154 +169,6 @@ namespace UVtools.Core.FileFormats
             public override string ToString()
             {
                 return $"{nameof(Unknown15)}: {Unknown15}, {nameof(ChecksumValue)}: {ChecksumValue}, {nameof(LayerPointersOffset)}: {LayerPointersOffset}, {nameof(DisplayWidth)}: {DisplayWidth}, {nameof(DisplayHeight)}: {DisplayHeight}, {nameof(MachineZ)}: {MachineZ}, {nameof(Unknown1)}: {Unknown1}, {nameof(Unknown2)}: {Unknown2}, {nameof(TotalHeightMillimeter)}: {TotalHeightMillimeter}, {nameof(LayerHeight)}: {LayerHeight}, {nameof(ExposureTime)}: {ExposureTime}, {nameof(BottomExposureTime)}: {BottomExposureTime}, {nameof(LightOffDelay)}: {LightOffDelay}, {nameof(BottomLayerCount)}: {BottomLayerCount}, {nameof(ResolutionX)}: {ResolutionX}, {nameof(ResolutionY)}: {ResolutionY}, {nameof(LayerCount)}: {LayerCount}, {nameof(LargePreviewOffset)}: {LargePreviewOffset}, {nameof(SmallPreviewOffset)}: {SmallPreviewOffset}, {nameof(PrintTime)}: {PrintTime}, {nameof(ProjectorType)}: {ProjectorType}, {nameof(BottomLiftHeight)}: {BottomLiftHeight}, {nameof(BottomLiftSpeed)}: {BottomLiftSpeed}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(RetractSpeed)}: {RetractSpeed}, {nameof(MaterialMilliliters)}: {MaterialMilliliters}, {nameof(MaterialGrams)}: {MaterialGrams}, {nameof(MaterialCost)}: {MaterialCost}, {nameof(BottomLightOffDelay)}: {BottomLightOffDelay}, {nameof(Unknown9)}: {Unknown9}, {nameof(LightPWM)}: {LightPWM}, {nameof(BottomLightPWM)}: {BottomLightPWM}, {nameof(LayerXorKey)}: {LayerXorKey}, {nameof(BottomLiftHeight2)}: {BottomLiftHeight2}, {nameof(BottomLiftSpeed2)}: {BottomLiftSpeed2}, {nameof(LiftHeight2)}: {LiftHeight2}, {nameof(LiftSpeed2)}: {LiftSpeed2}, {nameof(RetractHeight2)}: {RetractHeight2}, {nameof(RetractSpeed2)}: {RetractSpeed2}, {nameof(RestTimeAfterLift)}: {RestTimeAfterLift}, {nameof(MachineNameOffset)}: {MachineNameOffset}, {nameof(MachineNameSize)}: {MachineNameSize}, {nameof(PerLayerSettings)}: {PerLayerSettings}, {nameof(Unknown13)}: {Unknown13}, {nameof(Unknown14)}: {Unknown14}, {nameof(RestTimeAfterRetract)}: {RestTimeAfterRetract}, {nameof(RestTimeAfterLift2)}: {RestTimeAfterLift2}, {nameof(BottomRetractSpeed)}: {BottomRetractSpeed}, {nameof(BottomRetractSpeed2)}: {BottomRetractSpeed2}, {nameof(Four1)}: {Four1}, {nameof(Padding1)}: {Padding1}, {nameof(Four2)}: {Four2}, {nameof(Padding2)}: {Padding2}, {nameof(RestTimeAfterRetract2)}: {RestTimeAfterRetract2}, {nameof(RestTimeAfterLift3)}: {RestTimeAfterLift3}, {nameof(RestTimeBeforeLift)}: {RestTimeBeforeLift}, {nameof(BottomRetractHeight2)}: {BottomRetractHeight2}, {nameof(Unknown23)}: {Unknown23}, {nameof(Unknown24)}: {Unknown24}, {nameof(Unknown25)}: {Unknown25}, {nameof(LastLayerIndex)}: {LastLayerIndex}, {nameof(Padding3)}: {Padding3}, {nameof(Padding4)}: {Padding4}, {nameof(Padding5)}: {Padding5}, {nameof(Padding6)}: {Padding6}, {nameof(DisclaimerOffset)}: {DisclaimerOffset}, {nameof(DisclaimerSize)}: {DisclaimerSize}, {nameof(Padding7)}: {Padding7}, {nameof(Padding8)}: {Padding8}, {nameof(Padding9)}: {Padding9}, {nameof(Padding10)}: {Padding10}, {nameof(MachineName)}: {MachineName}";
-            }
-        }
-
-        public static void CryptFile(string filePath, bool encrypt)
-        {
-            using (MemoryStream decryptedStream = new MemoryStream(File.ReadAllBytes(filePath)))
-            {
-                BinaryWriter writer = new BinaryWriter(decryptedStream);
-                using MemoryStream ms = new MemoryStream(File.ReadAllBytes(filePath));
-                BinaryReader reader = new BinaryReader(ms);
-
-                /* magic */
-                var magic = reader.ReadUInt32();
-                if (magic != MAGIC_CBT_ENCRYPTED)
-                {
-                    Console.Write("File does not appear to be an encrypted CTB. Aborting.");
-                    return;
-                }
-                writer.Write(magic);
-                var headerLength = reader.ReadUInt32();
-                writer.Write(headerLength);
-                var headerOffset = reader.ReadUInt32();
-                writer.Write(headerOffset);
-
-                /* pass through rest of data until encrypted header */
-                var bytesToPassthru = headerOffset - ms.Position;
-                var temp = reader.ReadBytes((int)bytesToPassthru);
-                writer.Write(temp);
-                uint printerNameLength = 0;
-
-                var originalHeader = reader.ReadBytes((int)headerLength);
-
-                if (encrypt)
-                {
-                    printerNameLength = BitExtensions.ToUIntLittleEndian(originalHeader, 164);
-                }
-
-                /* decrypt header with recovered keys */
-                var cryptedData = CryptExtensions.AesCryptBytes(originalHeader, Kong, CipherMode.CBC, PaddingMode.None, encrypt, CookieMonster);
-                writer.Write(cryptedData);
-
-                /* get machine name length */
-                if (!encrypt)
-                {
-                    printerNameLength = BitExtensions.ToUIntLittleEndian(cryptedData, 164);
-                }
-
-                /* pass through the next 2 dwords */
-                writer.Write(reader.ReadUInt32());
-                writer.Write(reader.ReadUInt32());
-
-                /* get offset and length of next section (not encrypted) */
-                var nextOffset = reader.ReadUInt32();
-                var nextLength = reader.ReadUInt32();
-
-                writer.Write(nextOffset);
-                writer.Write(nextLength);
-
-                /* how many bytes from current position till the next offset */
-                bytesToPassthru = nextOffset - ms.Position;
-                writer.Write(reader.ReadBytes((int)bytesToPassthru));
-
-                /* passthrough this whole block */
-                writer.Write(reader.ReadBytes((int)nextLength));
-
-                /* pass throught the next 2 dwords */
-                writer.Write(reader.ReadUInt32());
-                writer.Write(reader.ReadUInt32());
-
-                /* get offset and length of next section (not encrypted) */
-                nextOffset = reader.ReadUInt32();
-                nextLength = reader.ReadUInt32();
-
-                writer.Write(nextOffset);
-                writer.Write(nextLength);
-
-                /* how many bytes from current position till the next offset */
-                bytesToPassthru = nextOffset - ms.Position;
-                writer.Write(reader.ReadBytes((int)bytesToPassthru));
-
-                /* passthrough this whole block */
-                writer.Write(reader.ReadBytes((int)nextLength));
-
-                /* passes printer name and disclaimer */
-                var x = reader.ReadBytes((int)(CTB_DISCLAIMER_SIZE + printerNameLength));
-                writer.Write(x);
-
-                /* we're at the layer offset table now */
-                List<ulong> layerOffsets = new List<ulong>();
-                var startOfTable = ms.Position;
-                ulong layerOffset = reader.ReadUInt64();
-                ulong firstLayer = layerOffset;
-                while (ms.Position < (int)firstLayer)
-                {
-                    layerOffsets.Add(layerOffset);
-                    reader.ReadUInt64();
-                    layerOffset = reader.ReadUInt64();
-                }
-
-                ms.Position = (int)startOfTable;
-
-                /* copy the rest of the file to the output memory stream, we'll decrypt layers next */
-                writer.Write(reader.ReadBytes((int)(ms.Length - ms.Position)));
-
-                byte[] cryptedFile = decryptedStream.ToArray();
-                var layerCounter = 0;
-                foreach (var offset in layerOffsets)
-                {
-                    layerCounter++;
-                    ms.Position = (int)(offset + 0x10);
-
-                    ms.Position += 0x10;
-                    var encryptedOffset = reader.ReadUInt32();
-                    var encryptedLength = reader.ReadUInt32();
-                    ms.Position -= 0x18;
-
-                    if (encryptedLength > 0)
-                    {
-                        Debug.WriteLine($"Layer {layerCounter} has {encryptedLength} bytes of encrypted data. (Layer data offset: {encryptedOffset})");
-                        var layerDataOffset = reader.ReadUInt32();
-
-                        ms.Position = layerDataOffset + encryptedOffset;
-
-                        byte[] encryptedLayerData = reader.ReadBytes((int)encryptedLength);
-
-                        byte[] decryptedLayerData = CryptExtensions.AesCryptBytes(encryptedLayerData, Kong, CipherMode.CBC, PaddingMode.None, encrypt, CookieMonster);
-
-                        Array.Copy(decryptedLayerData, 0, cryptedFile, layerDataOffset + encryptedOffset, encryptedLength);
-
-
-                        /* update encrypted markers in the layer header */
-                        byte[] empty = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 };
-                        Array.Copy(empty, 0, cryptedFile, layerDataOffset - 0x38, 8);
-
-                    }
-                    else
-                    {
-                        Debug.WriteLine($"Layer {layerCounter} is not encrypted");
-                    }
-                }
-
-                /* last 20 bytes are an encrypted sha256 */
-                byte[] cipheredHash = cryptedFile[^0x20..];
-
-                byte[] plainHash = CryptExtensions.AesCryptBytes(cipheredHash, Kong, CipherMode.CBC, PaddingMode.None, encrypt, CookieMonster);
-                Array.Copy(plainHash, 0, cryptedFile, cryptedFile.Length - 0x20, 0x20);
-
-                File.WriteAllBytes(filePath, cryptedFile);
             }
         }
 
@@ -1204,7 +1062,7 @@ namespace UVtools.Core.FileFormats
         private void SanitizeProperties()
         {
             Settings.PerLayerSettings = LayerManager.AllLayersAreUsingGlobalParameters
-                ? (LayerManager.AnyLayerIsUsingTSMC ? PERLAYER_SETTINGS_DISALLOW_BUT_TSMC : PERLAYER_SETTINGS_DISALLOW)
+                ? PERLAYER_SETTINGS_DISALLOW
                 : PERLAYER_SETTINGS_ALLOW;
         }
 
@@ -1541,6 +1399,162 @@ namespace UVtools.Core.FileFormats
         }
         #endregion
 
+        #region Static Methods
+        public static void CryptFile(string filePath)
+        {
+            using var msReader = new MemoryStream(File.ReadAllBytes(filePath));
+            using var msWriter = new MemoryStream();
+            msReader.CopyTo(msWriter);
+            msWriter.Position = 0;
+            msReader.Position = 0;
+            var writer = new BinaryWriter(msWriter);
+            var reader = new BinaryReader(msReader);
 
+            /* magic */
+            var magic = reader.ReadUInt32();
+            if (magic != MAGIC_CBT_ENCRYPTED)
+            {
+                Console.Write("File does not appear to be an encrypted CTB. Aborting.");
+                return;
+            }
+
+            writer.Write(magic);
+            var headerLength = reader.ReadUInt32();
+            writer.Write(headerLength);
+            var headerOffset = reader.ReadUInt32();
+            writer.Write(headerOffset);
+
+            var currentPos = msReader.Position;
+            msReader.Seek(headerOffset + 24, SeekOrigin.Begin); // Paddings of 0
+
+
+            var encrypt = reader.ReadUInt32() == 0 && reader.ReadUInt32() == 0; // Both paddings must be zero so we know we need to encrypt!
+            msReader.Seek(currentPos, SeekOrigin.Begin);
+
+            Console.Write($"Crypt mode: {(encrypt ? "Encrypting" : "Decrypting")}");
+
+            /* pass through rest of data until encrypted header */
+            var bytesToPassthru = headerOffset - msReader.Position;
+            var temp = reader.ReadBytes((int)bytesToPassthru);
+            writer.Write(temp);
+            uint printerNameLength = 0;
+
+            var originalHeader = reader.ReadBytes((int)headerLength);
+
+            if (encrypt)
+            {
+                printerNameLength = BitExtensions.ToUIntLittleEndian(originalHeader, 164);
+            }
+
+            /* decrypt header with recovered keys */
+            var cryptedData = CryptExtensions.AesCryptBytes(originalHeader, Kong, CipherMode.CBC, PaddingMode.None, encrypt, CookieMonster);
+            writer.Write(cryptedData);
+
+            /* get machine name length */
+            if (!encrypt)
+            {
+                printerNameLength = BitExtensions.ToUIntLittleEndian(cryptedData, 164);
+            }
+
+            /* pass through the next 2 dwords */
+            writer.Write(reader.ReadUInt32());
+            writer.Write(reader.ReadUInt32());
+
+            /* get offset and length of next section (not encrypted) */
+            var nextOffset = reader.ReadUInt32();
+            var nextLength = reader.ReadUInt32();
+
+            writer.Write(nextOffset);
+            writer.Write(nextLength);
+
+            /* how many bytes from current position till the next offset */
+            bytesToPassthru = nextOffset - msReader.Position;
+            writer.Write(reader.ReadBytes((int)bytesToPassthru));
+
+            /* passthrough this whole block */
+            writer.Write(reader.ReadBytes((int)nextLength));
+
+            /* pass throught the next 2 dwords */
+            writer.Write(reader.ReadUInt32());
+            writer.Write(reader.ReadUInt32());
+
+            /* get offset and length of next section (not encrypted) */
+            nextOffset = reader.ReadUInt32();
+            nextLength = reader.ReadUInt32();
+
+            writer.Write(nextOffset);
+            writer.Write(nextLength);
+
+            /* how many bytes from current position till the next offset */
+            bytesToPassthru = nextOffset - msReader.Position;
+            writer.Write(reader.ReadBytes((int)bytesToPassthru));
+
+            /* passthrough this whole block */
+            writer.Write(reader.ReadBytes((int)nextLength));
+
+            /* passes printer name and disclaimer */
+            var x = reader.ReadBytes((int)(CTB_DISCLAIMER_SIZE + printerNameLength));
+            writer.Write(x);
+
+            /* we're at the layer offset table now */
+            var layerOffsets = new List<ulong>();
+            var startOfTable = msReader.Position;
+            ulong layerOffset = reader.ReadUInt64();
+            ulong firstLayer = layerOffset;
+            while (msReader.Position < (int)firstLayer)
+            {
+                layerOffsets.Add(layerOffset);
+                reader.ReadUInt64();
+                layerOffset = reader.ReadUInt64();
+            }
+
+            msReader.Position = (int)startOfTable;
+
+            /* copy the rest of the file to the output memory stream, we'll decrypt layers next */
+            writer.Write(reader.ReadBytes((int)(msReader.Length - msReader.Position)));
+
+            byte[] cryptedFile = msWriter.ToArray();
+            var layerCounter = 0;
+            foreach (var offset in layerOffsets)
+            {
+                layerCounter++;
+                msReader.Position = (int)(offset + 0x10);
+
+                msReader.Position += 0x10;
+                var encryptedOffset = reader.ReadUInt32();
+                var encryptedLength = reader.ReadUInt32();
+                msReader.Position -= 0x18;
+
+                if (encryptedLength > 0)
+                {
+                    Debug.WriteLine($"Layer {layerCounter} has {encryptedLength} bytes of encrypted data. (Layer data offset: {encryptedOffset})");
+                    var layerDataOffset = reader.ReadUInt32();
+
+                    msReader.Position = layerDataOffset + encryptedOffset;
+
+                    var encryptedLayerData = reader.ReadBytes((int)encryptedLength);
+                    var decryptedLayerData = CryptExtensions.AesCryptBytes(encryptedLayerData, Kong, CipherMode.CBC, PaddingMode.None, encrypt, CookieMonster);
+
+                    Array.Copy(decryptedLayerData, 0, cryptedFile, layerDataOffset + encryptedOffset, encryptedLength);
+
+
+                    /* update encrypted markers in the layer header */
+                    cryptedFile.AsSpan((int)(layerDataOffset - 0x38), 8).Fill(0);
+                }
+                else
+                {
+                    Debug.WriteLine($"Layer {layerCounter} is not encrypted");
+                }
+            }
+
+            /* last 20 bytes are an encrypted sha256 */
+            var cipheredHash = cryptedFile[^0x20..];
+
+            var plainHash = CryptExtensions.AesCryptBytes(cipheredHash, Kong, CipherMode.CBC, PaddingMode.None, encrypt, CookieMonster);
+            Array.Copy(plainHash, 0, cryptedFile, cryptedFile.Length - 0x20, 0x20);
+
+            File.WriteAllBytes(filePath, cryptedFile);
+        }
+        #endregion
     }
 }

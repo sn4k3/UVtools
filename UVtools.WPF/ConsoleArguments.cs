@@ -141,12 +141,16 @@ namespace UVtools.WPF
                 return true;
             }
 
-            if (args[0] is "--encrypt-ctb" or "--decrypt-ctb")
+            if (args[0] is "--crypt-ctb" or "--encrypt-ctb" or "--decrypt-ctb")
             {
-                bool isEncrypt = (args[0] is "--encrypt-ctb");
-
-
-                CTBEncryptedFile.CryptFile(args[1], isEncrypt);
+                if (!File.Exists(args[1]))
+                {
+                    Console.WriteLine($"Input file does not exists: {args[1]}");
+                    return true;
+                }
+                
+                CTBEncryptedFile.CryptFile(args[1]);
+                
                 return true;
             }
 
