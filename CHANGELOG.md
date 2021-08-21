@@ -1,5 +1,24 @@
 # Changelog
 
+## 21/08/2021 - v2.19.2
+
+- **File Formats:**
+   - (Fix) Setting a global property that haven't a bottom counter-part will notify and set that value to bottom layers too
+   - (Fix) TSMC: Update lift or retract height for the first time will set the `RetractHeight2` property to 0
+   - (Fix) TSMC: `RetractHeight` is the first fast sequence paired with `RetractSpeed`
+   - (Fix) TSMC: `RetractHeight2` paired with `RetractSpeed2` is performed after the `RetractHeight` and controls the height to retract to the next layer position (The slow stage)
+   - (Improvement) When converting from a TSMC enabled to a TSMC unable file, the slowest retract speed will be enforced
+- **Layer:**
+   - (Add) `Number` property to get the layer number, 1 started
+   - (Fix) `HaveGlobalParameters` property was not comparing  the `PositionZ` resulting in `true` when different heights are used but keeping all other settings the same
+   - (Fix) `HaveGlobalParameters` property was not comparing the `WaitTimeAfterCure` for bottom layers
+   - (Fix) `MaterialMilliliters` calculation with the real layer height instead of global information and recalculate when height changes (#266)
+- **CTB:**
+   - (Improvement) Discovered more unknown fields and set them accordingly
+   - (Improvement) When all layers share same settings as globals it will set to follow global table instead of per layer settings
+- (Fix) VDT: Wrong binding to json 'retract_distance2' key
+- (Fix) XYZ Accuracy: 'Total height' text showing a F3 and no decimals
+
 ## 19/08/2021 - v2.19.1
 
 - (Add) Setting - Allow to resize the tool windows: Check this option if you have problems with content being cut on some windows, down-size the height by a bit and then expand to fix the content.

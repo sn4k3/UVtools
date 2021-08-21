@@ -117,9 +117,9 @@ namespace UVtools.Core.FileFormats
             [JsonProperty("wait_time_after_lift")] public float WaitTimeAfterLift { get; set; }
             [JsonProperty("bottom_retract_speed")] public float BottomRetractSpeed { get; set; } = DefaultBottomRetractSpeed;
             [JsonProperty("retract_speed")] public float RetractSpeed { get; set; } = DefaultRetractSpeed;
-            [JsonProperty("bottom_retract_height2")] public float BottomRetractHeight2 { get; set; } = DefaultBottomRetractHeight2;
+            [JsonProperty("bottom_retract_distance2")] public float BottomRetractHeight2 { get; set; } = DefaultBottomRetractHeight2;
             [JsonProperty("bottom_retract_speed2")] public float BottomRetractSpeed2 { get; set; } = DefaultBottomRetractSpeed2;
-            [JsonProperty("retract_height2")] public float RetractHeight2 { get; set; } = DefaultRetractHeight2;
+            [JsonProperty("retract_distance2")] public float RetractHeight2 { get; set; } = DefaultRetractHeight2;
             [JsonProperty("retract_speed2")] public float RetractSpeed2 { get; set; } = DefaultRetractSpeed2;
         }
 

@@ -25,8 +25,7 @@ namespace UVtools.Core.FileFormats
         public const ushort RLE16EncodingLimit = 0xFFF;
         public const ushort RLEEncryptedMinimumLength = 512;
 
-        public const uint PERLAYER_SETTINGS_DISALLOW          = 0xF; // 15 (This disallow per layer settings and follow global table only)
-        public const uint PERLAYER_SETTINGS_DISALLOW_BUT_TSMC = 0x7; // 7 (This disallow per layer settings but do TSMC and follow global table only)
+        public const uint PERLAYER_SETTINGS_DISALLOW          = 7; // 7 (This disallow per layer settings and follow global table only)
         public const uint PERLAYER_SETTINGS_ALLOW             = 0x5000000F; // 1342177295 (This allow per layer settings)
 
         private const string CTB_DISCLAIMER = "Layout and record format for the ctb and cbddlp file types are the copyrighted programs or codes of CBD Technology (China) Inc..The Customer or User shall not in any manner reproduce, distribute, modify, decompile, disassemble, decrypt, extract, reverse engineer, lease, assign, or sublicense the said programs or codes.";

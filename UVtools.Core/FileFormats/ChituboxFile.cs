@@ -33,18 +33,17 @@ namespace UVtools.Core.FileFormats
         public const uint MAGIC_CBDDLP = 0x12FD0019; // 318570521
         public const uint MAGIC_CTB = 0x12FD0086; // 318570630
         public const uint MAGIC_CTBv4 = 0x12FD0106; // 318570758
-        public const uint MAGIC_CTB_ENCRYPTED = 0x12FD0107; // 318570759
         public const ushort REPEATRGB15MASK = 0x20;
 
         public const byte RLE8EncodingLimit = 0x7d; // 125;
         public const ushort RLE16EncodingLimit = 0xFFF;
 
         public const uint PERLAYER_SETTINGS_CBDDLP =    0x8;  // 0 or 8 (This disallow per layer settings)
-        public const uint PERLAYER_SETTINGS_DISALLOW =  0xF; // 15 (This disallow per layer settings)
+        public const uint PERLAYER_SETTINGS_DISALLOW =  0x7; // 7 (This disallow per layer settings)
         public const uint PERLAYER_SETTINGS_CTBv2 =     0xF; // 15 for ctb v2 files and others (This disallow per layer settings)
         public const uint PERLAYER_SETTINGS_CTBv3 =     0x2000000F; // 536870927 for ctb v3 files (This allow per layer settings, while 15 don't)
         public const uint PERLAYER_SETTINGS_CTBv4 =     0x4000000F; // 1073741839 for ctb v4 files (This allow per layer settings, while 15 don't)
-
+            
         private const string CTBv4_DISCLAIMER = "Layout and record format for the ctb and cbddlp file types are the copyrighted programs or codes of CBD Technology (China) Inc..The Customer or User shall not in any manner reproduce, distribute, modify, decompile, disassemble, decrypt, extract, reverse engineer, lease, assign, or sublicense the said programs or codes.";
         private const ushort CTBv4_DISCLAIMER_SIZE = 320;
         private const ushort CTBv4_RESERVED_SIZE = 384;

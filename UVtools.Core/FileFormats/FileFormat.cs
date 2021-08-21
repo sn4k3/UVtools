@@ -61,8 +61,8 @@ namespace UVtools.Core.FileFormats
         public const float DefaultRetractSpeed = 100;
         public const float DefaultBottomRetractHeight2 = 0;
         public const float DefaultRetractHeight2 = 0;
-        public const float DefaultBottomRetractSpeed2 = 300;
-        public const float DefaultRetractSpeed2 = 300;
+        public const float DefaultBottomRetractSpeed2 = 80;
+        public const float DefaultRetractSpeed2 = 80;
 
         public const byte DefaultBottomLightPWM = 255;
         public const byte DefaultLightPWM = 255;
@@ -161,10 +161,10 @@ namespace UVtools.Core.FileFormats
             public static PrintParameterModifier BottomRetractSpeed { get; } = new ("Bottom retract speed", "Bottom down speed from lift height to next layer cure position", "mm/min", 10, 5000, 2);
             public static PrintParameterModifier RetractSpeed { get; } = new ("Retract speed", "Down speed from lift height to next layer cure position", "mm/min", 10, 5000, 2);
 
-            public static PrintParameterModifier BottomRetractHeight2 { get; } = new("2) Bottom retract height", "Second extra bottom retract height ", "mm");
-            public static PrintParameterModifier RetractHeight2 { get; } = new("2) Retract height", @"Second extra retract height", "mm");
-            public static PrintParameterModifier BottomRetractSpeed2 { get; } = new("2) Bottom retract speed", "Bottom second down speed from lift height to next layer cure position", "mm/min", 10, 5000, 2);
-            public static PrintParameterModifier RetractSpeed2 { get; } = new("2) Retract speed", "Second down speed from lift height to next layer cure position", "mm/min", 10, 5000, 2);
+            public static PrintParameterModifier BottomRetractHeight2 { get; } = new("2) Bottom retract height", null, "mm");
+            public static PrintParameterModifier RetractHeight2 { get; } = new("2) Retract height", null, "mm");
+            public static PrintParameterModifier BottomRetractSpeed2 { get; } = new("2) Bottom retract speed", null, "mm/min", 10, 5000, 2);
+            public static PrintParameterModifier RetractSpeed2 { get; } = new("2) Retract speed", null, "mm/min", 10, 5000, 2);
 
             public static PrintParameterModifier BottomLightPWM { get; } = new ("Bottom light PWM", "UV LED power for bottom layers", "☀", 1, byte.MaxValue, 0);
             public static PrintParameterModifier LightPWM { get; } = new ("Light PWM", "UV LED power for layers", "☀", 1, byte.MaxValue, 0);
@@ -1338,7 +1338,7 @@ namespace UVtools.Core.FileFormats
                 RaiseAndSet(ref _bottomLiftHeight, (float)Math.Round(value, 2));
                 RaisePropertyChanged(nameof(BottomLiftHeightTotal));
                 RaisePropertyChanged(nameof(LiftRepresentation));
-                BottomRetractHeight2 = _bottomRetractHeight2; // Sanitize
+                BottomRetractHeight2 = BottomRetractHeight2; // Sanitize
             }
         }
 
@@ -1366,7 +1366,7 @@ namespace UVtools.Core.FileFormats
                 RaiseAndSet(ref _liftHeight, (float)Math.Round(value, 2));
                 RaisePropertyChanged(nameof(LiftHeightTotal));
                 RaisePropertyChanged(nameof(LiftRepresentation));
-                RetractHeight2 = _retractHeight2; // Sanitize
+                RetractHeight2 = RetractHeight2; // Sanitize
             }
         }
 
@@ -1396,7 +1396,7 @@ namespace UVtools.Core.FileFormats
                 RaiseAndSet(ref _bottomLiftHeight2, (float)Math.Round(value, 2));
                 RaisePropertyChanged(nameof(BottomLiftHeightTotal));
                 RaisePropertyChanged(nameof(LiftRepresentation));
-                BottomRetractHeight2 = _bottomRetractHeight2; // Sanitize
+                BottomRetractHeight2 = BottomRetractHeight2; // Sanitize
             }
         }
 
@@ -1414,7 +1414,7 @@ namespace UVtools.Core.FileFormats
         }
 
         /// <summary>
-        /// Gets or sets the second lift height in mm
+        /// Gets or sets the second lift height in mm (This is the closer to fep retract)
         /// </summary>
         public virtual float LiftHeight2
         {
@@ -1424,13 +1424,13 @@ namespace UVtools.Core.FileFormats
                 RaiseAndSet(ref _liftHeight2, (float)Math.Round(value, 2));
                 RaisePropertyChanged(nameof(LiftHeightTotal));
                 RaisePropertyChanged(nameof(LiftRepresentation));
-                RetractHeight2 = _retractHeight2; // Sanitize
+                RetractHeight2 = RetractHeight2; // Sanitize
             }
         }
 
         
         /// <summary>
-        /// Gets or sets the second speed in mm/min
+        /// Gets or sets the second speed in mm/min (This is the closer to fep retract)
         /// </summary>
         public virtual float LiftSpeed2
         {
@@ -3317,6 +3317,19 @@ namespace UVtools.Core.FileFormats
                 slicerFile.ExposureTime = ExposureTime;
 
                 // Lifts
+                slicerFile.BottomLiftSpeed = BottomLiftSpeed;
+                slicerFile.LiftSpeed = LiftSpeed;
+
+                slicerFile.BottomLiftSpeed2 = BottomLiftSpeed2;
+                slicerFile.LiftSpeed2 = LiftSpeed2;
+
+                slicerFile.BottomRetractSpeed = BottomRetractSpeed;
+                slicerFile.RetractSpeed = RetractSpeed;
+
+                slicerFile.BottomRetractSpeed2 = BottomRetractSpeed2;
+                slicerFile.RetractSpeed2 = RetractSpeed2;
+
+
                 if (slicerFile.CanUseAnyLiftHeight2 && CanUseAnyLiftHeight2) // Both are TSMC compatible
                 {
                     slicerFile.BottomLiftHeight = BottomLiftHeight;
@@ -3337,20 +3350,19 @@ namespace UVtools.Core.FileFormats
                 {
                     slicerFile.BottomLiftHeight = BottomLiftHeightTotal;
                     slicerFile.LiftHeight = LiftHeightTotal;
+
+                    // Set to the slowest retract speed
+                    if (BottomRetractSpeed2 > 0 && BottomRetractSpeed > BottomRetractSpeed2)
+                    {
+                        slicerFile.BottomRetractSpeed = BottomRetractSpeed2;
+                    }
+
+                    // Set to the slowest retract speed
+                    if (RetractSpeed2 > 0 && RetractSpeed > RetractSpeed2)
+                    {
+                        slicerFile.RetractSpeed = RetractSpeed2;
+                    }
                 }
-                
-
-                slicerFile.BottomLiftSpeed = BottomLiftSpeed;
-                slicerFile.LiftSpeed = LiftSpeed;
-
-                slicerFile.BottomLiftSpeed2 = BottomLiftSpeed2;
-                slicerFile.LiftSpeed2 = LiftSpeed2;
-
-                slicerFile.BottomRetractSpeed = BottomRetractSpeed;
-                slicerFile.RetractSpeed = RetractSpeed;
-
-                slicerFile.BottomRetractSpeed2 = BottomRetractSpeed2;
-                slicerFile.RetractSpeed2 = RetractSpeed2;
 
                 // Wait times
                 slicerFile.BottomLightOffDelay = BottomLightOffDelay;

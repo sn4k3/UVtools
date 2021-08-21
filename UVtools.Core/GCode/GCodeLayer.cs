@@ -191,7 +191,10 @@ namespace UVtools.Core.GCode
                 if (i == Movements.Count - 1)
                 {
                     PositionZ = currentZ;
-                    if (LiftHeight.HasValue) RetractSpeed = speed; // A lift exists, set to retract speed of this move
+                    if (LiftHeight.HasValue) 
+                    {
+                        RetractSpeed = speed; // A lift exists, set to retract speed of this move
+                    }
                     continue;
                 }
 
@@ -236,6 +239,12 @@ namespace UVtools.Core.GCode
                 LiftHeight = liftHeight;
             }
 
+            if (RetractHeight2.HasValue) // Need to fix the propose of this value
+            {
+                RetractHeight2 = Layer.RoundHeight(LiftHeightTotal - RetractHeight2.Value);
+                (RetractSpeed, RetractSpeed2) = (RetractSpeed2, RetractSpeed);
+            }
+
             if (LiftHeight.HasValue && RetractHeight2.HasValue) // Sanitize RetractHeight2 value
             {
                 RetractHeight2 = Math.Clamp(RetractHeight2.Value, 0, LiftHeightTotal);
@@ -251,7 +260,7 @@ namespace UVtools.Core.GCode
             uint layerIndex = LayerIndex.Value;
             var layer = SlicerFile[layerIndex];
 
-            if (!PositionZ.HasValue) PositionZ = PreviousPositionZ;
+            PositionZ ??= PreviousPositionZ;
             layer.PositionZ = PositionZ.Value;
             layer.WaitTimeBeforeCure = WaitTimeBeforeCure ?? 0;
             layer.ExposureTime = ExposureTime ?? SlicerFile.GetInitialLayerValueOrNormal(layerIndex, SlicerFile.BottomExposureTime, SlicerFile.ExposureTime);
