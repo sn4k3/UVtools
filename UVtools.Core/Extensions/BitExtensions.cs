@@ -20,7 +20,7 @@ namespace UVtools.Core.Extensions
         public static uint ToUIntLittleEndian(byte byte1, byte byte2, byte byte3, byte byte4) 
             => (uint)(byte1 + (byte2 << 8) + (byte3 << 16) + (byte4 << 24));
         public static uint ToUIntBigEndian(byte byte1, byte byte2, byte byte3, byte byte4) 
-            => (uint)((byte1 << 24) + (byte1 << 16) + (byte1 << 8) + byte2);
+            => (uint)((byte1 << 24) + (byte2 << 16) + (byte3 << 8) + byte4);
 
         public static uint ToUIntLittleEndian(byte[] buffer, int offset = 0)
             => (uint)(buffer[offset] + (buffer[offset + 1] << 8) + (buffer[offset + 2] << 16) + (buffer[offset + 3] << 24));

@@ -8,6 +8,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.IO.Compression;
@@ -158,23 +159,11 @@ namespace UVtools.Core.FileFormats
                                        "G1 Z{1} F10;{0}" +          // Raize Z
                                        "M18;{0}";                   // Disable Motors
 
-        public const string GCodeRSAPrivateKey = 
-            "-----BEGIN PRIVATE KEY-----\n" +
-            "MIIBVQIBADANBgkqhkiG9w0BAQEFAASCAT8wggE7AgEAAkEA6BnF3oT9Ap+OyZFs" +
-            "p02ZRtTpbMUA96PpctTXev1cPCclLuowXWNa3f2JBpPbPrzMwLam3JSQN3HjvYfS" +
-            "Vx7e6wIDAQABAkBibCNzQ/PCfAThxxBLNeXMmpbNsBDD8rcZIdaqaewF+UjUlqI7" +
-            "eI0Yp2V2Ez28FjKCEiM34DxU9PZTzYS3rCShAiEA9qp9+RwYvcvQUXlT2bqKIo3s" +
-            "xu7LQFM4VIddQ1SMVhsCIQDw4i74LqF285Iz77vw1MXE06LHKKBBBa3Air1QNBhn" +
-            "cQIgYfO4TLk8lfoewovkoVyzSB+F/EWNjwC9KMwMXBVyGSsCIQDisxudOtV+y3C3" +
-            "LFHmL3kI6lxxrsxTJXMGmAvfJYgqIQIhAKBtzYeZB46EToDSpeYlrMQitSWvjgNG" +
-            "mw+8aB/HYEIr\n" +
-            "-----END PRIVATE KEY-----";
 
-        public const string GCodeRSAPublicKey =
-            "-----BEGIN PUBLIC KEY-----\n" +
-            "MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAOgZxd6E/QKfjsmRbKdNmUbU6WzFAPej" +
-            "6XLU13r9XDwnJS7qMF1jWt39iQaT2z68zMC2ptyUkDdx472H0lce3usCAwEAAQ==\n" +
-            "-----END PUBLIC KEY-----";
+        public const string Secret1 = "eHtZQkIuNhIfOk8/PjoDFyAqTyc2DHtZQkJBeRgfPS05PToXFzAuIS4UPiccBAYrSiJmNi4+KTUUFycsLjhLIjETKlgtFBAXNQQqLUUXODJcADhKFCZfIBY2NSYmRF01PgcBJhYiOi1KYwYEDBs4KzAgRQw/LxA5GgEAGDQkGzdHCV0mMSUGFj8dFj4iGhUCXCYgBBhHJwUaKjMFIhdYCUUiHzAuPi0xFD02Bg0vPS8HWz8sCjIBPgwXLSA9MA45Ah8OPSYUMCtXHhAPHxAOHg0WIhBfOgU5HyQfQwomXColZCJdKhZBbRAeJCwpGhhlQCsXOUoFDCAVNj9AJxUnBy4FNhRvBR9WRyEiDwIMGT0mDTogXQ0dOBw5RxwXGUQZBzIiWzo6MTIlXjwhJT0lNyY+KARhP0NbIx01Z25BJhVbRCMhRSI3KUNjGjwkJC4xFzdHLgYeQgQYNgcBDyIcMS0JIFgnGT1MAwkDFiI5AgQAOgovBTZEKUM2AhgeGCxVOBghOTctOgoSBQcsJj03PCUMGgsjBwN9DVwsXz8THhkjXAc6YzoMFx0fCwEcLCIoATIjMD42CB06BB8cLiQuBy8PETUtWEUQAhsrPBwWDDoGIj4FBwYBAgUIIjQ4IV9XDi5cHQ8xJh1mXnh7WUIqIjd1BiYmOS0nEHY/KjZBXnh7WQ==";
+        public const string Secret2 = "eHtZQkIuNhIfOk8/OTEZHzdPJCkqeHtZQkJmPhMhAys+NTkeOS4mBxoQGxclKi0uIhQSJxguGyAUHDYuIAspLTJCKkA9ODM8BwI9DjgxGBk6DTlFAiwyLj8JGWMOODpeXwFsDjAYASYgYic5KV4GJCFlTQY+DSdnLEJXFSEwZyYAFjoHNzEuQFhdJEM5NRFcGh8wFCExLi49TmhcWUJCQV4QGDBPPzkxGR83TyQpKnh7WUJC";
+        public static readonly string GCodeRSAPrivateKey = CryptExtensions.XORCipherString(CryptExtensions.Base64DecodeString(Secret1), About.Software);
+        public static readonly string GCodeRSAPublicKey = CryptExtensions.XORCipherString(CryptExtensions.Base64DecodeString(Secret2), About.Software);
 
         #endregion
 

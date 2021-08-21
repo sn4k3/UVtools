@@ -25,8 +25,8 @@ namespace UVtools.Core.FileFormats
         public const ushort RLE16EncodingLimit = 0xFFF;
         public const ushort RLEEncryptedMinimumLength = 512;
 
-        public const uint PERLAYER_SETTINGS_DISALLOW          = 7; // 7 (This disallow per layer settings and follow global table only)
-        public const uint PERLAYER_SETTINGS_ALLOW             = 0x5000000F; // 1342177295 (This allow per layer settings)
+        public const uint PERLAYER_SETTINGS_DISALLOW = 7; // 7 (This disallow per layer settings and follow global table only)
+        public const uint PERLAYER_SETTINGS_ALLOW    = 0x5000000F; // 1342177295 (This allow per layer settings)
 
         private const string CTB_DISCLAIMER = "Layout and record format for the ctb and cbddlp file types are the copyrighted programs or codes of CBD Technology (China) Inc..The Customer or User shall not in any manner reproduce, distribute, modify, decompile, disassemble, decrypt, extract, reverse engineer, lease, assign, or sublicense the said programs or codes.";
         private const ushort CTB_DISCLAIMER_SIZE = 320;
@@ -34,8 +34,10 @@ namespace UVtools.Core.FileFormats
         public const byte HASH_LENGTH = 32;
         public const uint LAYER_XOR_KEY = 0xEFBEADDE;
 
-        public static readonly byte[] Kong = new byte[32];
+        public const string Secret1 = "hQ36XB6yTk+zO02ysyiowt8yC1buK+nbLWyfY40EXoU=";
+        public const string Secret2 = "Wld+ampndVJecmVjYH5cWQ==";
 
+        public static readonly byte[] Bigfoot = new byte[32];
         public static readonly byte[] CookieMonster = new byte[16];
 
         #endregion
@@ -1020,10 +1022,10 @@ namespace UVtools.Core.FileFormats
         {
             Previews = new Preview[ThumbnailsCount];
 
-            if (Kong is null || Kong[0] == 0)
+            if (Bigfoot is not null && Bigfoot[0] == 0)
             {
                 using var fs = new FileStream("MAGIC.ectb", FileMode.Open);
-                fs.ReadBytes(Kong);
+                fs.ReadBytes(Bigfoot);
                 fs.ReadBytes(CookieMonster);
             }
         }
@@ -1081,7 +1083,7 @@ namespace UVtools.Core.FileFormats
             inputFile.Seek(Header.SettingsOffset, SeekOrigin.Begin);
             
             var encryptedBlock = inputFile.ReadBytes(Header.SettingsSize); 
-            using (var ms = CryptExtensions.AesCryptMemoryStream(encryptedBlock, Kong, CipherMode.CBC, PaddingMode.None, false, CookieMonster))
+            using (var ms = CryptExtensions.AesCryptMemoryStream(encryptedBlock, Bigfoot, CipherMode.CBC, PaddingMode.None, false, CookieMonster))
             {
                 Settings = Helpers.Deserialize<SlicerSettings>(ms);
             }
@@ -1091,7 +1093,7 @@ namespace UVtools.Core.FileFormats
             /* validate hash */
             var checksumBytes = BitExtensions.ToBytesLittleEndian(Settings.ChecksumValue);
             var checksumHash = CryptExtensions.ComputeSHA256Hash(checksumBytes);
-            var encryptedHash = CryptExtensions.AesCryptBytes(checksumHash, Kong, CipherMode.CBC, PaddingMode.None, true, CookieMonster);
+            var encryptedHash = CryptExtensions.AesCryptBytes(checksumHash, Bigfoot, CipherMode.CBC, PaddingMode.None, true, CookieMonster);
 
             inputFile.Seek(-HASH_LENGTH, SeekOrigin.End);
             var hash = inputFile.ReadBytes(HASH_LENGTH);
@@ -1175,7 +1177,7 @@ namespace UVtools.Core.FileFormats
                         var byteBuffer = new byte[layerDef.EncryptedDataLength];
                         Array.Copy(layerDef.RLEData, (int)layerDef.EncryptedDataOffset, byteBuffer, 0, (int)layerDef.EncryptedDataLength);
 
-                        byteBuffer = CryptExtensions.AesCryptBytes(byteBuffer, Kong, CipherMode.CBC, PaddingMode.None, false, CookieMonster);
+                        byteBuffer = CryptExtensions.AesCryptBytes(byteBuffer, Bigfoot, CipherMode.CBC, PaddingMode.None, false, CookieMonster);
                         Array.Copy(byteBuffer, 0, layerDef.RLEData, layerDef.EncryptedDataOffset, layerDef.EncryptedDataLength);
                     }
 
@@ -1337,7 +1339,7 @@ namespace UVtools.Core.FileFormats
             
             /* write the final hash */
             var hash = CryptExtensions.ComputeSHA256Hash(BitExtensions.ToBytesLittleEndian(Settings.ChecksumValue));
-            var encryptedHash = CryptExtensions.AesCryptBytes(hash, Kong, CipherMode.CBC, PaddingMode.None, true, CookieMonster);
+            var encryptedHash = CryptExtensions.AesCryptBytes(hash, Bigfoot, CipherMode.CBC, PaddingMode.None, true, CookieMonster);
             Header.SignatureOffset = (uint)outputFile.Position;
             Header.SignatureSize = (uint)encryptedHash.Length;
             outputFile.WriteBytes(encryptedHash);
@@ -1354,7 +1356,7 @@ namespace UVtools.Core.FileFormats
             // Settings
             outputFile.Seek(Header.SettingsOffset, SeekOrigin.Begin);
             var settingsBytes = Helpers.Serialize(Settings).ToArray();
-            var encryptedSettings = CryptExtensions.AesCryptBytes(settingsBytes, Kong, CipherMode.CBC, PaddingMode.None, true, CookieMonster);
+            var encryptedSettings = CryptExtensions.AesCryptBytes(settingsBytes, Bigfoot, CipherMode.CBC, PaddingMode.None, true, CookieMonster);
             outputFile.WriteBytes(encryptedSettings);
 
             // Header
@@ -1387,7 +1389,7 @@ namespace UVtools.Core.FileFormats
             
             outputFile.Seek(Header.SettingsOffset, SeekOrigin.Begin);
             var settingsBytes = Helpers.Serialize(Settings).ToArray();
-            var encryptedSettings = CryptExtensions.AesCryptBytes(settingsBytes, Kong, CipherMode.CBC, PaddingMode.None, true, CookieMonster);
+            var encryptedSettings = CryptExtensions.AesCryptBytes(settingsBytes, Bigfoot, CipherMode.CBC, PaddingMode.None, true, CookieMonster);
             outputFile.WriteBytes(encryptedSettings);
 
             for (uint layerIndex = 0; layerIndex < LayersPointer.Length; layerIndex++)
@@ -1447,7 +1449,7 @@ namespace UVtools.Core.FileFormats
             }
 
             /* decrypt header with recovered keys */
-            var cryptedData = CryptExtensions.AesCryptBytes(originalHeader, Kong, CipherMode.CBC, PaddingMode.None, encrypt, CookieMonster);
+            var cryptedData = CryptExtensions.AesCryptBytes(originalHeader, Bigfoot, CipherMode.CBC, PaddingMode.None, encrypt, CookieMonster);
             writer.Write(cryptedData);
 
             /* get machine name length */
@@ -1533,7 +1535,7 @@ namespace UVtools.Core.FileFormats
                     msReader.Position = layerDataOffset + encryptedOffset;
 
                     var encryptedLayerData = reader.ReadBytes((int)encryptedLength);
-                    var decryptedLayerData = CryptExtensions.AesCryptBytes(encryptedLayerData, Kong, CipherMode.CBC, PaddingMode.None, encrypt, CookieMonster);
+                    var decryptedLayerData = CryptExtensions.AesCryptBytes(encryptedLayerData, Bigfoot, CipherMode.CBC, PaddingMode.None, encrypt, CookieMonster);
 
                     Array.Copy(decryptedLayerData, 0, cryptedFile, layerDataOffset + encryptedOffset, encryptedLength);
 
@@ -1550,7 +1552,7 @@ namespace UVtools.Core.FileFormats
             /* last 20 bytes are an encrypted sha256 */
             var cipheredHash = cryptedFile[^0x20..];
 
-            var plainHash = CryptExtensions.AesCryptBytes(cipheredHash, Kong, CipherMode.CBC, PaddingMode.None, encrypt, CookieMonster);
+            var plainHash = CryptExtensions.AesCryptBytes(cipheredHash, Bigfoot, CipherMode.CBC, PaddingMode.None, encrypt, CookieMonster);
             Array.Copy(plainHash, 0, cryptedFile, cryptedFile.Length - 0x20, 0x20);
 
             File.WriteAllBytes(filePath, cryptedFile);
