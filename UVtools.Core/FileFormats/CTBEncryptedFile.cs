@@ -1027,7 +1027,7 @@ namespace UVtools.Core.FileFormats
         {
             Previews = new Preview[ThumbnailsCount];
 
-            if (Bigfoot is not null && Bigfoot[0] == 0)
+            if (Bigfoot is not null && Bigfoot[0] == 0 && File.Exists("MAGIC.ectb"))
             {
                 using var fs = new FileStream("MAGIC.ectb", FileMode.Open);
                 fs.ReadBytes(Bigfoot);
