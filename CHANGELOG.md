@@ -1,5 +1,9 @@
 # Changelog
 
+## 22/08/2021 - v2.19.4
+
+- (Fix) CTBv2: Corrupt and unprintable file when saving
+
 ## 22/08/2021 - v2.19.3
 
 - (Fix) CTB: Corrupt and unprintable file when saving (#270)
