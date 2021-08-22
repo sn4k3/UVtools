@@ -272,7 +272,7 @@ namespace UVtools.Core.FileFormats
 
                 if (Parent.Settings.LayerXorKey > 0)
                 {
-                    ChituboxFile.LayerRleReCrypt(Parent.Settings.LayerXorKey, layerIndex, RLEData);
+                    ChituboxFile.LayerRleCryptBuffer(Parent.Settings.LayerXorKey, layerIndex, RLEData);
                 }
 
                 int pixel = 0;
