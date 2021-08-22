@@ -719,7 +719,7 @@ namespace UVtools.Core.FileFormats
 
                 if (Parent.HeaderSettings.EncryptionKey > 0)
                 {
-                    LayerRleReCrypt(Parent.HeaderSettings.EncryptionKey, layerIndex, EncodedRle);
+                    LayerRleCryptBuffer(Parent.HeaderSettings.EncryptionKey, layerIndex, EncodedRle);
                 }
 
                 int pixel = 0;
@@ -2153,11 +2153,11 @@ namespace UVtools.Core.FileFormats
         public static byte[] LayerRleCrypt(uint seed, uint layerIndex, IEnumerable<byte> input)
         {
             var result = input.ToArray();
-            LayerRleReCrypt(seed, layerIndex, result);
+            LayerRleCryptBuffer(seed, layerIndex, result);
             return result;
         }
 
-        public static void LayerRleReCrypt(uint seed, uint layerIndex, byte[] input)
+        public static void LayerRleCryptBuffer(uint seed, uint layerIndex, byte[] input)
         {
             var init = seed * 0x2d83cdac + 0xd8a83423;
             var key = (layerIndex * 0x1e1530cd + 0xec3d47cd) * init;

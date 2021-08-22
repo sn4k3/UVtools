@@ -488,7 +488,7 @@ namespace UVtools.Core.FileFormats
 
                 if (Parent.HeaderSettings.EncryptionKey > 0)
                 {
-                    LayerRleReCrypt(Parent.HeaderSettings.EncryptionKey, layerIndex, EncodedRle);
+                    LayerRleCryptBuffer(Parent.HeaderSettings.EncryptionKey, layerIndex, EncodedRle);
                 }
 
                 int limit = image.Width * image.Height;
@@ -1175,11 +1175,11 @@ namespace UVtools.Core.FileFormats
         public static byte[] LayerRleCrypt(uint seed, uint layerIndex, IEnumerable<byte> input)
         {
             var result = input.ToArray();
-            LayerRleReCrypt(seed, layerIndex, result);
+            LayerRleCryptBuffer(seed, layerIndex, result);
             return result;
         }
 
-        public static void LayerRleReCrypt(uint seed, uint layerIndex, byte[] input)
+        public static void LayerRleCryptBuffer(uint seed, uint layerIndex, byte[] input)
         {
             seed %= 0x4324;
             var init = seed * 0x34a32231;
