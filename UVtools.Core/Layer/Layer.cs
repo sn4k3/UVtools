@@ -778,17 +778,13 @@ namespace UVtools.Core
 
         public Layer PreviousLayer()
         {
-            if (ParentLayerManager is null || _index == 0)
-                return null;
-            
+            if (ParentLayerManager is null || _index == 0 || _index > ParentLayerManager.Count) return null;
             return ParentLayerManager[_index - 1];
         }
 
         public Layer NextLayer()
         {
-            if (ParentLayerManager is null || _index >= ParentLayerManager.LayerCount - 1)
-                return null;
-
+            if (ParentLayerManager is null || _index >= ParentLayerManager.LayerCount - 1) return null;
             return ParentLayerManager[_index + 1];
         }
 

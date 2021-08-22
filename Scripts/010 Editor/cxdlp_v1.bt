@@ -54,18 +54,18 @@ struct HEADER {
     uint32 layerThicknessLength <fgcolor=cBlack, bgcolor=cWhite>;
     wchar_t layerThickness[layerThicknessLength/2];
 
-    uint16 exposureTime <fgcolor=cBlack, bgcolor=cWhite>;
-    uint16 turnOffTime <fgcolor=cBlack, bgcolor=cWhite>;
-    uint16 bottomExposure <fgcolor=cBlack, bgcolor=cWhite>;
-    uint16 bottomLayers <fgcolor=cBlack, bgcolor=cWhite>;
-    uint16 bottomRaise <fgcolor=cBlack, bgcolor=cWhite>;
-    uint16 bottomRaiseSpeed <fgcolor=cBlack, bgcolor=cWhite>;
-    uint16 raise <fgcolor=cBlack, bgcolor=cWhite>;
-    uint16 raiseSpeed <fgcolor=cBlack, bgcolor=cWhite>;
-    uint16 fallSpeed <fgcolor=cBlack, bgcolor=cWhite>;
-    uint16 bottomPWM <fgcolor=cBlack, bgcolor=cWhite>;
-    uint16 normalPWM <fgcolor=cBlack, bgcolor=cWhite>;
 
+    uint16 ExposureTime <fgcolor=cBlack, bgcolor=cWhite>;
+    uint16 WaitTimeBeforeCure <fgcolor=cBlack, bgcolor=cWhite>;
+    uint16 BottomExposureTime <fgcolor=cBlack, bgcolor=cWhite>;
+    uint16 BottomLayersCount <fgcolor=cBlack, bgcolor=cWhite>;
+    uint16 BottomLiftHeight <fgcolor=cBlack, bgcolor=cWhite>;
+    uint16 BottomLiftSpeed <fgcolor=cBlack, bgcolor=cWhite>;
+    uint16 LiftHeight <fgcolor=cBlack, bgcolor=cWhite>;
+    uint16 LiftSpeed <fgcolor=cBlack, bgcolor=cWhite>;
+    uint16 RetractSpeed <fgcolor=cBlack, bgcolor=cWhite>;
+    uint16 BottomLightPWM <fgcolor=cBlack, bgcolor=cWhite>;
+    uint16 LightPWM <fgcolor=cBlack, bgcolor=cWhite>;
 } header;
 
 struct LAYER_DEF {

@@ -32,10 +32,10 @@ namespace UVtools.Core.FileFormats
 
         public const string Keyword_BottomLightOffDelay = "BottomLightOffDelay";
         public const string Keyword_LightOffDelay = "LightOffDelay";
-        public const string Keyword_BottomWaitTimeBeforeCure = "BottomWaitBeforeCure";
-        public const string Keyword_WaitTimeBeforeCure = "WaitBeforeCure";
-        public const string Keyword_BottomWaitTimeAfterCure = "BottomWaitAfterCure";
-        public const string Keyword_WaitTimeAfterCure = "WaitAfterCure";
+        public const string Keyword_BottomWaitTimeBeforeCure = "BottomWaitTimeBeforeCure";
+        public const string Keyword_WaitTimeBeforeCure = "WaitTimeBeforeCure";
+        public const string Keyword_BottomWaitTimeAfterCure = "BottomWaitTimeAfterCure";
+        public const string Keyword_WaitTimeAfterCure = "WaitTimeAfterCure";
         public const string Keyword_BottomLiftHeight    = "BottomLiftHeight";
         public const string Keyword_BottomLiftSpeed     = "BottomLiftSpeed";
         public const string Keyword_LiftHeight          = "LiftHeight";
@@ -44,8 +44,8 @@ namespace UVtools.Core.FileFormats
         public const string Keyword_BottomLiftSpeed2 = "BottomLiftSpeed2";
         public const string Keyword_LiftHeight2 = "LiftHeight2";
         public const string Keyword_LiftSpeed2 = "LiftSpeed2";
-        public const string Keyword_BottomWaitTimeAfterLift = "BottomWaitAfterLift";
-        public const string Keyword_WaitTimeAfterLift = "WaitAfterLift";
+        public const string Keyword_BottomWaitTimeAfterLift = "BottomWaitTimeAfterLift";
+        public const string Keyword_WaitTimeAfterLift = "WaitTimeAfterLift";
         public const string Keyword_BottomRetractSpeed        = "BottomRetractSpeed";
         public const string Keyword_RetractSpeed        = "RetractSpeed";
         public const string Keyword_BottomRetractHeight2 = "BottomRetractHeight2";

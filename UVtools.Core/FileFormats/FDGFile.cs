@@ -1158,6 +1158,8 @@ namespace UVtools.Core.FileFormats
 
         public static void LayerRleCryptBuffer(uint seed, uint layerIndex, byte[] input)
         {
+            if (seed == 0) return;
+
             var init = (seed - 0x1dcb76c3) ^ 0x257e2431;
             var key = init * 0x82391efd * (layerIndex ^ 0x110bdacd);
 

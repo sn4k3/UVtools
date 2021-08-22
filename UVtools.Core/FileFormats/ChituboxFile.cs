@@ -1675,7 +1675,7 @@ namespace UVtools.Core.FileFormats
             return false;
         }
 
-        public void SanitizeProperties()
+        private void SanitizeProperties()
         {
             if (IsCtbFile)
             {
@@ -1711,7 +1711,7 @@ namespace UVtools.Core.FileFormats
             }
         }
 
-        protected override void EncodeInternally(string fileFullPath, OperationProgress progress)
+        private void SanitizeMagicVersion()
         {
             if (FileEndsWith(".ctb"))
             {
@@ -1736,14 +1736,26 @@ namespace UVtools.Core.FileFormats
                     HeaderSettings.Version = 4;
                 }
             }
-            else if (FileEndsWith(".cbddlp"))
+            else if (FileEndsWith(".cbddlp") || FileEndsWith(".photon"))
             {
                 HeaderSettings.Magic = MAGIC_CBDDLP;
+                if (HeaderSettings.Version > 3) HeaderSettings.Version = 3;
             }
-            HeaderSettings.PrintParametersSize = (uint)Helpers.Serializer.SizeOf(PrintParametersSettings);
+        }
 
-            
+        protected override bool OnBeforeConvertFrom(FileFormat source)
+        {
+            SanitizeMagicVersion();
+            return true;
+        }
+
+        protected override void EncodeInternally(string fileFullPath, OperationProgress progress)
+        {
+            SanitizeMagicVersion();
             SanitizeProperties();
+
+            HeaderSettings.PrintParametersSize = (uint)Helpers.Serializer.SizeOf(PrintParametersSettings);
+            
             if (IsCtbFile)
             {
                 if (HeaderSettings.EncryptionKey == 0)
@@ -2163,6 +2175,7 @@ namespace UVtools.Core.FileFormats
 
         public static void LayerRleCryptBuffer(uint seed, uint layerIndex, byte[] input)
         {
+            if (seed == 0) return;
             var init = seed * 0x2d83cdac + 0xd8a83423;
             var key = (layerIndex * 0x1e1530cd + 0xec3d47cd) * init;
 

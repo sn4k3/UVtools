@@ -7,6 +7,7 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Threading.Tasks;
@@ -209,6 +210,7 @@ namespace UVtools.Core.Operations
                     using var contours = new VectorOfVectorOfPoint();
                     using var hierarchy = new Mat();
                     CvInvoke.FindContours(matRoi, contours, hierarchy, RetrType.Tree, ChainApproxMethod.ChainApproxSimple);
+
                     var hierarchyJagged = hierarchy.GetData();
                     
                     using TextWriter tw = new StreamWriter(fileFullPath);
@@ -231,14 +233,17 @@ namespace UVtools.Core.Operations
                     tw.WriteLine("\t<defs>");
                         tw.WriteLine("\t\t<style>");
                         //tw.WriteLine("\t\tsvg { background-color: #000000; }");
-                        tw.WriteLine("\t\t.background { fill: #000000; fill-rule: evenodd; }");
-                        tw.WriteLine("\t\t.black { fill: #000000; fill-rule: evenodd; }");
-                        tw.WriteLine("\t\t.white { fill: #FFFFFF; fill-rule: evenodd; }");
+                        tw.WriteLine("\t\t.background { fill: #000000; }");
+                        //tw.WriteLine("\t\t.black { fill: #000000; fill-rule: evenodd; }");
+                        //tw.WriteLine("\t\t.white { fill: #FFFFFF; fill-rule: evenodd; }");
+                        tw.WriteLine("\t\tpath { fill: #FFFFFF; fill-rule: evenodd; }");
                         tw.WriteLine("\t\t</style>");
                     tw.WriteLine("\t</defs>");
                     tw.WriteLine($"\t<title>{slicedFileNameNoExt} #{layerIndex}</title>");
-                    tw.WriteLine($"\t<rect class=\"background\" width=\"{mat.Width}\" height=\"{mat.Height}\"/>");
 
+                    tw.WriteLine($"\t<g id=\"layer{layerIndex}\">");
+                    tw.WriteLine($"\t<rect class=\"background\" width=\"{mat.Width}\" height=\"{mat.Height}\"/>");
+                    
                     //
                     //hierarchy[i][0]: the index of the next contour of the same level
                     //hierarchy[i][1]: the index of the previous contour of the same level
@@ -246,7 +251,41 @@ namespace UVtools.Core.Operations
                     //hierarchy[i][3]: the index of the parent
                     //
 
+
+                    bool firstTime = true;
                     for (int i = 0; i < contours.Size; i++)
+                    {
+                        if (contours[i].Size == 0) continue;
+                        if ((int)hierarchyJagged.GetValue(0, i, 3) == -1) // Top hierarchy
+                        {
+                            if (firstTime)
+                            {
+                                firstTime = false;
+                            }
+                            else
+                            {
+                                tw.WriteLine("\"/>");
+                            }
+
+                            tw.Write("\t<path d=\"");
+                        }
+                        else
+                        {
+                            tw.Write(" ");
+                        }
+
+                        tw.Write($"M{contours[i][0].X} {contours[i][0].Y}");
+                        for (int x = 1; x < contours[i].Size; x++)
+                        {
+                            tw.Write($" L{contours[i][x].X} {contours[i][x].Y}");
+                        }
+                        tw.Write(" Z");
+                    }
+
+                    if(!firstTime) tw.WriteLine("\"/>");
+
+                    // Old method!
+                    /*for (int i = 0; i < contours.Size; i++)
                     {
                         if (contours[i].Size == 0) continue;
 
@@ -268,8 +307,9 @@ namespace UVtools.Core.Operations
                             tw.Write($",L{contours[i][x].X} {contours[i][x].Y}");
                         }
                         tw.WriteLine("Z\"/>");
-                    }
+                    }*/
 
+                    tw.WriteLine("\t</g>");
                     tw.WriteLine("</svg>");
                 }
                 

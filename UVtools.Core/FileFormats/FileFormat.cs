@@ -3281,6 +3281,20 @@ namespace UVtools.Core.FileFormats
         public abstract void SaveAs(string filePath = null, OperationProgress progress = null);
 
         /// <summary>
+        /// Triggers when a conversion is valid and before start converting values
+        /// </summary>
+        /// <param name="source">Target file format</param>
+        /// <returns>True to continue the conversion, otherwise false to stop</returns>
+        protected virtual bool OnBeforeConvertFrom(FileFormat source) => true;
+
+        /// <summary>
+        /// Triggers when the conversion is made but before encoding
+        /// </summary>
+        /// <param name="source">Target file format</param>
+        /// <returns>True to continue the conversion, otherwise false to stop</returns>
+        protected virtual bool OnAfterConvertFrom(FileFormat source) => true;
+
+        /// <summary>
         /// Converts this file type to another file type
         /// </summary>
         /// <param name="to">Target file format</param>
@@ -3297,6 +3311,9 @@ namespace UVtools.Core.FileFormats
             
             var slicerFile = (FileFormat)Activator.CreateInstance(to);
             if (slicerFile is null) return null;
+            slicerFile.FileFullPath = fileFullPath;
+
+            if (!slicerFile.OnBeforeConvertFrom(this)) return null;
 
             slicerFile.SuppressRebuildPropertiesWork(() =>
             {
@@ -3317,7 +3334,10 @@ namespace UVtools.Core.FileFormats
                 slicerFile.ExposureTime = ExposureTime;
 
                 // Lifts
+                slicerFile.BottomLiftHeight = BottomLiftHeight;
                 slicerFile.BottomLiftSpeed = BottomLiftSpeed;
+                
+                slicerFile.LiftHeight = LiftHeight;
                 slicerFile.LiftSpeed = LiftSpeed;
 
                 slicerFile.BottomLiftSpeed2 = BottomLiftSpeed2;
@@ -3330,22 +3350,19 @@ namespace UVtools.Core.FileFormats
                 slicerFile.RetractSpeed2 = RetractSpeed2;
 
 
-                if (slicerFile.CanUseAnyLiftHeight2 && CanUseAnyLiftHeight2) // Both are TSMC compatible
+                if (slicerFile.CanUseAnyLiftHeight2 && (CanUseAnyLiftHeight2 || GetType() == typeof(SL1File))) // Both are TSMC compatible
                 {
-                    slicerFile.BottomLiftHeight = BottomLiftHeight;
-                    slicerFile.LiftHeight = LiftHeight;
-
                     slicerFile.BottomLiftHeight2 = BottomLiftHeight2;
                     slicerFile.LiftHeight2 = LiftHeight2;
 
                     slicerFile.BottomRetractHeight2 = BottomRetractHeight2;
                     slicerFile.RetractHeight2 = RetractHeight2;
                 }
-                else if (slicerFile.CanUseAnyLiftHeight2) // Output format is compatible with TSMC, but input isn't
+                /*else if (slicerFile.CanUseAnyLiftHeight2) // Output format is compatible with TSMC, but input isn't
                 {
                     slicerFile.BottomLiftHeight = BottomLiftHeight;
                     slicerFile.LiftHeight = LiftHeight;
-                }
+                }*/
                 else if (CanUseAnyLiftHeight2) // Output format isn't compatible with TSMC, but input is
                 {
                     slicerFile.BottomLiftHeight = BottomLiftHeightTotal;
@@ -3393,6 +3410,8 @@ namespace UVtools.Core.FileFormats
 
                 slicerFile.SetThumbnails(Thumbnails);
             });
+
+            if (!slicerFile.OnAfterConvertFrom(this)) return null;
 
             slicerFile.Encode(fileFullPath, progress);
 

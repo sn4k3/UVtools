@@ -175,16 +175,16 @@ Replace the "xxx" by your desired value in the correct units
 
 - **BottomLightOffDelay_xxx:** Sets the bottom light off delay time in seconds
 - **LightOffDelay_xxx:** Sets the light off delay time in seconds
-- **BottomWaitBeforeCure_xxx:** Sets the bottom wait time before cure in seconds
-- **WaitBeforeCure_xxx:** Sets the wait time before cure in seconds
-- **BottomWaitAfterCure_xxx:** Sets the bottom wait time after cure in seconds
-- **WaitAfterCure_xxx:** Sets the wait time after cure in seconds
+- **BottomWaitTimeBeforeCure_xxx:** Sets the bottom wait time before cure in seconds
+- **WaitTimeBeforeCure_xxx:** Sets the wait time before cure in seconds
+- **BottomWaitTimeAfterCure_xxx:** Sets the bottom wait time after cure in seconds
+- **WaitTimeAfterCure_xxx:** Sets the wait time after cure in seconds
 - **BottomLiftHeight_xxx:** Sets the bottom lift height in millimeters
 - **BottomLiftSpeed_xxx:** Sets the bottom lift speed in millimeters/minute
 - **LiftHeight_xxx:** Sets the lift height in millimeters
 - **LiftSpeed_xxx:** Sets the lift speed in millimeters/minute
-- **BottomWaitAfterLift_xxx:** Sets the bottom wait time after lift in seconds
-- **WaitAfterLift_xxx:** Sets the wait time after lift in seconds
+- **BottomWaitTimeAfterLift_xxx:** Sets the bottom wait time after lift in seconds
+- **WaitTimeAfterLift_xxx:** Sets the wait time after lift in seconds
 - **RetractSpeed_xxx:** Sets the retract speed in millimeters/minute
 - **BottomLightPWM_xxx:** Sets the bottom LED light power (0-255)
 - **LightPWM_xxx:** Sets the LED light power (0-255)

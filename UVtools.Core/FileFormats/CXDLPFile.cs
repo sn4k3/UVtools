@@ -170,7 +170,7 @@ namespace UVtools.Core.FileFormats
 
             [FieldOrder(7)]
             [FieldEndianness(Endianness.Big)]
-            public ushort LightOffDelay { get; set; }
+            public ushort WaitTimeBeforeCure { get; set; }
 
             [FieldOrder(8)]
             [FieldEndianness(Endianness.Big)]
@@ -178,7 +178,7 @@ namespace UVtools.Core.FileFormats
 
             [FieldOrder(9)]
             [FieldEndianness(Endianness.Big)]
-            public ushort BottomLayers { get; set; }
+            public ushort BottomLayersCount { get; set; }
 
             [FieldOrder(10)]
             [FieldEndianness(Endianness.Big)]
@@ -210,7 +210,7 @@ namespace UVtools.Core.FileFormats
 
             public override string ToString()
             {
-                return $"{nameof(DisplayWidthDataSize)}: {DisplayWidthDataSize}, {nameof(DisplayWidthBytes)}: {DisplayWidthBytes}, {nameof(DisplayHeightDataSize)}: {DisplayHeightDataSize}, {nameof(DisplayHeightBytes)}: {DisplayHeightBytes}, {nameof(LayerHeightDataSize)}: {LayerHeightDataSize}, {nameof(LayerHeightBytes)}: {LayerHeightBytes}, {nameof(ExposureTime)}: {ExposureTime}, {nameof(LightOffDelay)}: {LightOffDelay}, {nameof(BottomExposureTime)}: {BottomExposureTime}, {nameof(BottomLayers)}: {BottomLayers}, {nameof(BottomLiftHeight)}: {BottomLiftHeight}, {nameof(BottomLiftSpeed)}: {BottomLiftSpeed}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(RetractSpeed)}: {RetractSpeed}, {nameof(BottomLightPWM)}: {BottomLightPWM}, {nameof(LightPWM)}: {LightPWM}";
+                return $"{nameof(DisplayWidthDataSize)}: {DisplayWidthDataSize}, {nameof(DisplayWidthBytes)}: {DisplayWidthBytes}, {nameof(DisplayHeightDataSize)}: {DisplayHeightDataSize}, {nameof(DisplayHeightBytes)}: {DisplayHeightBytes}, {nameof(LayerHeightDataSize)}: {LayerHeightDataSize}, {nameof(LayerHeightBytes)}: {LayerHeightBytes}, {nameof(ExposureTime)}: {ExposureTime}, {nameof(WaitTimeBeforeCure)}: {WaitTimeBeforeCure}, {nameof(BottomExposureTime)}: {BottomExposureTime}, {nameof(BottomLayersCount)}: {BottomLayersCount}, {nameof(BottomLiftHeight)}: {BottomLiftHeight}, {nameof(BottomLiftSpeed)}: {BottomLiftSpeed}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(RetractSpeed)}: {RetractSpeed}, {nameof(BottomLightPWM)}: {BottomLightPWM}, {nameof(LightPWM)}: {LightPWM}";
             }
         }
         #endregion
@@ -367,7 +367,7 @@ namespace UVtools.Core.FileFormats
         {
             PrintParameterModifier.BottomLayerCount,
 
-            PrintParameterModifier.LightOffDelay,
+            PrintParameterModifier.WaitTimeBeforeCure,
 
             PrintParameterModifier.BottomExposureTime,
             PrintParameterModifier.ExposureTime,
@@ -474,36 +474,24 @@ namespace UVtools.Core.FileFormats
 
         public override ushort BottomLayerCount
         {
-            get => SlicerInfoSettings.BottomLayers;
-            set => base.BottomLayerCount = SlicerInfoSettings.BottomLayers = value;
+            get => SlicerInfoSettings.BottomLayersCount;
+            set => base.BottomLayerCount = SlicerInfoSettings.BottomLayersCount = value;
         }
 
-        public override float BottomLightOffDelay => SlicerInfoSettings.LightOffDelay;
+        /*public override float BottomLightOffDelay => SlicerInfoSettings.WaitTimeBeforeCure;
 
         public override float LightOffDelay
         {
-            get => SlicerInfoSettings.LightOffDelay;
-            set => base.LightOffDelay = SlicerInfoSettings.LightOffDelay = (ushort)value;
-        }
+            get => SlicerInfoSettings.WaitTimeBeforeCure;
+            set => base.LightOffDelay = SlicerInfoSettings.WaitTimeBeforeCure = (ushort)value;
+        }*/
 
-        public override float BottomWaitTimeBeforeCure
-        {
-            get => base.BottomWaitTimeBeforeCure;
-            set
-            {
-                SetBottomLightOffDelay(value);
-                base.BottomWaitTimeBeforeCure = value;
-            }
-        }
+        public override float BottomWaitTimeBeforeCure => WaitTimeBeforeCure;
 
         public override float WaitTimeBeforeCure
         {
-            get => base.WaitTimeBeforeCure;
-            set
-            {
-                SetNormalLightOffDelay(value);
-                base.WaitTimeBeforeCure = value;
-            }
+            get => SlicerInfoSettings.WaitTimeBeforeCure;
+            set => base.WaitTimeBeforeCure = SlicerInfoSettings.WaitTimeBeforeCure = (ushort)value;
         }
 
         public override float BottomExposureTime

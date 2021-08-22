@@ -1,5 +1,28 @@
 # Changelog
 
+## 22/08/2021 - v2.19.5
+
+- **(Fix) CTB:**
+   - Converting a file to version 4 won't port the TMSC values (#271)
+   - Force version 3 when on version 4 and converting to photon or cbddlp
+- **(Improvement) Export to SVG image:**
+   - Group \<g\> all layer objects
+   - Intersect all childs on same \<path\>
+- **PrusaSlicer:**
+   - (Rename) Printer keywords notes:
+      - BottomWaitBeforeCure -> BottomWaitTimeBeforeCure
+      - WaitBeforeCure -> WaitTimeBeforeCure
+      - BottomWaitAfterCure -> BottomWaitTimeAfterCure
+      - WaitAfterCure -> WaitTimeAfterCure
+      - BottomWaitAfterLift -> BottomWaitTimeAfterLift
+      - WaitAfterLift -> WaitTimeAfterLift
+   - (Change) PrusaSlicer gcode printers to reflect the previous changes
+   - (Change) PrusaSlicer Creality Hallot printers with better values by default
+   - (Fix) PrusaSlicer printers with TMSC values was not being ported to the file format
+- (Fix) CXDLP: The light-off delay is not present on the format, instead the wait time before cure is used, this was leading to high wait and print times
+- (Fix) Converting from files that aren't both TSMC compatible won't set the bottom and lift height
+- (Fix) Error when changing the layer collection with another with higher layer count than the previous
+
 ## 22/08/2021 - v2.19.4
 
 - (Fix) CTBv2: Corrupt and unprintable file when saving
