@@ -272,8 +272,7 @@ namespace UVtools.Core.FileFormats
 
                 if (Parent.Settings.LayerXorKey > 0)
                 {
-                    ChituboxFile.KeyRing kr = new(Parent.Settings.LayerXorKey, layerIndex);
-                    RLEData = kr.Read(RLEData);
+                    ChituboxFile.LayerRleReCrypt(Parent.Settings.LayerXorKey, layerIndex, RLEData);
                 }
 
                 int pixel = 0;
@@ -419,8 +418,14 @@ namespace UVtools.Core.FileFormats
 
                 AddRep();
 
-                ChituboxFile.KeyRing kr = new(Parent.Settings.LayerXorKey, layerIndex);
-                RLEData = kr.Read(rawData.ToArray());
+                if (Parent.Settings.LayerXorKey > 0)
+                {
+                    RLEData = ChituboxFile.LayerRleCrypt(Parent.Settings.LayerXorKey, layerIndex, rawData);
+                }
+                else
+                {
+                    RLEData = rawData.ToArray();
+                }
 
                 DataLength = (uint)RLEData.Length;
 

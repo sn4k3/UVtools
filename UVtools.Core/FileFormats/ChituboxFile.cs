@@ -719,8 +719,7 @@ namespace UVtools.Core.FileFormats
 
                 if (Parent.HeaderSettings.EncryptionKey > 0)
                 {
-                    KeyRing kr = new(Parent.HeaderSettings.EncryptionKey, layerIndex);
-                    EncodedRle = kr.Read(EncodedRle);
+                    LayerRleReCrypt(Parent.HeaderSettings.EncryptionKey, layerIndex, EncodedRle);
                 }
 
                 int pixel = 0;
@@ -934,8 +933,7 @@ namespace UVtools.Core.FileFormats
 
                 if (Parent.HeaderSettings.EncryptionKey > 0)
                 {
-                    KeyRing kr = new(Parent.HeaderSettings.EncryptionKey, layerIndex);
-                    EncodedRle = kr.Read(rawData.ToArray());
+                    EncodedRle = LayerRleCrypt(Parent.HeaderSettings.EncryptionKey, layerIndex, rawData);
                 }
                 else
                 {
@@ -1038,56 +1036,6 @@ namespace UVtools.Core.FileFormats
             }
 
             
-        }
-
-        #endregion
-
-        #region KeyRing
-
-            public class KeyRing
-        {
-            public uint Init { get; }
-            public uint Key { get; private set; }
-            public uint Index { get; private set; }
-
-            public KeyRing(uint seed, uint layerIndex)
-            {
-                Init = seed * 0x2d83cdac + 0xd8a83423;
-                Key = (layerIndex * 0x1e1530cd + 0xec3d47cd) * Init;
-            }
-
-            public byte Next()
-            {
-                byte k = (byte)(Key >> (int)(8 * Index));
-
-                Index++;
-
-                if ((Index & 3) == 0)
-                {
-                    Key += Init;
-                    Index = 0;
-                }
-
-                return k;
-            }
-
-            public List<byte> Read(List<byte> input)
-            {
-                List<byte> data = new(input.Count);
-                data.AddRange(input.Select(t => (byte) (t ^ Next())));
-
-                return data;
-            }
-
-            public byte[] Read(byte[] input)
-            {
-                byte[] data = new byte[input.Length];
-                for (int i = 0; i < input.Length; i++)
-                {
-                    data[i] = (byte)(input[i]^Next());
-                }
-                return data;
-            }
         }
 
         #endregion
@@ -2199,6 +2147,37 @@ namespace UVtools.Core.FileFormats
             }
         }
 
+        #endregion
+
+        #region Static Methods
+        public static byte[] LayerRleCrypt(uint seed, uint layerIndex, IEnumerable<byte> input)
+        {
+            var result = input.ToArray();
+            LayerRleReCrypt(seed, layerIndex, result);
+            return result;
+        }
+
+        public static void LayerRleReCrypt(uint seed, uint layerIndex, byte[] input)
+        {
+            var init = seed * 0x2d83cdac + 0xd8a83423;
+            var key = (layerIndex * 0x1e1530cd + 0xec3d47cd) * init;
+
+            int index = 0;
+            for (int i = 0; i < input.Length; i++)
+            {
+                var k = (byte)(key >> 8 * index);
+
+                index++;
+
+                if ((index & 3) == 0)
+                {
+                    key += init;
+                    index = 0;
+                }
+
+                input[i] = (byte)(input[i] ^ k);
+            }
+        }
         #endregion
     }
 }
