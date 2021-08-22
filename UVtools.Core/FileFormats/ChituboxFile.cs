@@ -623,7 +623,11 @@ namespace UVtools.Core.FileFormats
                 Parent = parent;
                 SetFrom(layer);
 
-                TableSize = parent.HeaderSettings.Version <= 2 ? TABLE_SIZE : LayerDefEx.TABLE_SIZE;
+                if (parent.HeaderSettings.Version >= 2)
+                {
+                    TableSize += LayerDefEx.TABLE_SIZE;
+                }
+                
             }
 
             public void SetFrom(Layer layer)

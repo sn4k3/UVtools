@@ -29,7 +29,6 @@
 - For beta testing new features
 
 # Supporters / Contributors
-
 - https://github.com/sponsors/sn4k3
 - Ingo Strohmenger
 - Sven Vogt
@@ -64,3 +63,4 @@
 - Gary Kyle
 - Peter Csaki
 - Chris Luginbuhl
+- Tim Savage
