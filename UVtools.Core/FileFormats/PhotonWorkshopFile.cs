@@ -14,6 +14,7 @@ using System.IO;
 using System.Threading.Tasks;
 using BinarySerialization;
 using Emgu.CV;
+using Emgu.CV.CvEnum;
 using UVtools.Core.Extensions;
 using UVtools.Core.Operations;
 
@@ -22,6 +23,9 @@ namespace UVtools.Core.FileFormats
     public class PhotonWorkshopFile : FileFormat
     {
         #region Constants
+        public const byte VERSION_1 = 1;
+        public const ushort VERSION_515 = 515;
+
         public const byte MarkSize = 12;
         public const byte RLE1EncodingLimit = 0x7d; // 125;
         public const ushort RLE4EncodingLimit = 0xfff; // 4095;
@@ -76,9 +80,11 @@ namespace UVtools.Core.FileFormats
             AnyCubicPhotonS,
             AnyCubicPhotonZero,
             AnyCubicPhotonX,
+            AnyCubicPhotonUltra,
             AnyCubicPhotonMono,
             AnyCubicPhotonMonoSE,
             AnyCubicPhotonMonoX,
+            AnyCubicPhotonMonoSQ,
         }
         #endregion
 
@@ -103,7 +109,7 @@ namespace UVtools.Core.FileFormats
             /// Gets the file format version
             /// 0C
             /// </summary>
-            [FieldOrder(1)] public uint Version { get; set; } = 1;
+            [FieldOrder(1)] public uint Version { get; set; } = VERSION_1;
 
             /// <summary>
             /// Gets the area num
@@ -129,9 +135,9 @@ namespace UVtools.Core.FileFormats
             [FieldOrder(5)]  public uint PreviewAddress { get; set; }
 
             /// <summary>
-            /// 20
+            /// 20, Spoted on version 515 only
             /// </summary>
-            [FieldOrder(6)]  public uint Padding2  { get; set; }
+            [FieldOrder(6)]  public uint PreviewEndAddress  { get; set; } 
 
             /// <summary>
             /// Gets the layer definition start address
@@ -142,7 +148,7 @@ namespace UVtools.Core.FileFormats
             /// <summary>
             /// 28
             /// </summary>
-            [FieldOrder(8)]  public uint Padding3  { get; set; }
+            [FieldOrder(8)]  public uint Padding2  { get; set; }
 
             /// <summary>
             /// Gets layer image start address
@@ -152,7 +158,7 @@ namespace UVtools.Core.FileFormats
 
             public override string ToString()
             {
-                return $"{nameof(Mark)}: {Mark}, {nameof(Version)}: {Version}, {nameof(AreaNum)}: {AreaNum}, {nameof(HeaderAddress)}: {HeaderAddress}, {nameof(Padding1)}: {Padding1}, {nameof(PreviewAddress)}: {PreviewAddress}, {nameof(Padding2)}: {Padding2}, {nameof(LayerDefinitionAddress)}: {LayerDefinitionAddress}, {nameof(Padding3)}: {Padding3}, {nameof(LayerImageAddress)}: {LayerImageAddress}";
+                return $"{nameof(Mark)}: {Mark}, {nameof(Version)}: {Version}, {nameof(AreaNum)}: {AreaNum}, {nameof(HeaderAddress)}: {HeaderAddress}, {nameof(Padding1)}: {Padding1}, {nameof(PreviewAddress)}: {PreviewAddress}, {nameof(PreviewEndAddress)}: {PreviewEndAddress}, {nameof(LayerDefinitionAddress)}: {LayerDefinitionAddress}, {nameof(Padding2)}: {Padding2}, {nameof(LayerImageAddress)}: {LayerImageAddress}";
             }
         }
         #endregion
@@ -395,10 +401,10 @@ namespace UVtools.Core.FileFormats
             /// </summary>
             [FieldOrder(3)] public uint ResolutionY { get; set; } = 168;
 
-            [FieldOrder(4)] public uint Unknown1 { get; set; }
+            /*[FieldOrder(4)] public uint Unknown1 { get; set; }
             [FieldOrder(5)] public uint Unknown2 { get; set; }
             [FieldOrder(6)] public uint Unknown3 { get; set; }
-            [FieldOrder(7)] public uint Unknown4 { get; set; }
+            [FieldOrder(7)] public uint Unknown4 { get; set; }*/
 
             [Ignore] public uint DataSize => ResolutionX * ResolutionY * 2;
 
@@ -422,7 +428,7 @@ namespace UVtools.Core.FileFormats
 
             /*public unsafe Mat Decode(bool consumeData = true)
             {
-                Mat image = new(new Size((int) Width, (int) Height), DepthType.Cv8U, 3);
+                Mat image = new(new Size((int)ResolutionX, (int)ResolutionY), DepthType.Cv8U, 3);
                 var span = image.GetBytePointer();
 
                 int pixel = 0;
@@ -467,8 +473,8 @@ namespace UVtools.Core.FileFormats
                 }
 
                 return preview;
-            }
-            */
+            }*/
+            
             public override string ToString()
             {
                 return $"{nameof(Section)}: {Section}, {nameof(ResolutionX)}: {ResolutionX}, {nameof(DpiResolution)}: {DpiResolution}, {nameof(ResolutionY)}: {ResolutionY}, {nameof(Data)}: {Data?.Length ?? 0}";
@@ -922,12 +928,15 @@ namespace UVtools.Core.FileFormats
 
         public override FileExtension[] FileExtensions { get; } = {
 
+            new(typeof(PhotonWorkshopFile), "pws", "Photon / Photon S (PWS)"),
+            new(typeof(PhotonWorkshopFile), "pw0", "Photon Zero (PW0)"),
+            new(typeof(PhotonWorkshopFile), "pwx", "Photon X (PWX)"),
+            new(typeof(PhotonWorkshopFile), "dlp", "Photon Ultra (DLP)", false, false),
             new(typeof(PhotonWorkshopFile), "pwmx", "Photon Mono X (PWMX)"),
             new(typeof(PhotonWorkshopFile), "pwms", "Photon Mono SE (PWMS)"),
             new(typeof(PhotonWorkshopFile), "pwmo", "Photon Mono (PWMO)"),
-            new(typeof(PhotonWorkshopFile), "pwx", "Photon X (PWX)"),
-            new(typeof(PhotonWorkshopFile), "pws", "Photon / Photon S (PWS)"),
-            new(typeof(PhotonWorkshopFile), "pw0", "Photon Zero (PW0)"),
+            new(typeof(PhotonWorkshopFile), "pmsq", "Photon Mono SQ (PMSQ)", false, false),
+            
             
         };
 
@@ -980,23 +989,18 @@ namespace UVtools.Core.FileFormats
         {
             get
             {
-                switch (PrinterModel)
+                return PrinterModel switch
                 {
-                    case AnyCubicMachine.AnyCubicPhotonS:
-                        return 68.04f;
-                    case AnyCubicMachine.AnyCubicPhotonZero:
-                        return 55.44f;
-                    case AnyCubicMachine.AnyCubicPhotonX:
-                        return 192;
-                    case AnyCubicMachine.AnyCubicPhotonMono:
-                        return 82.62f;
-                    case AnyCubicMachine.AnyCubicPhotonMonoSE:
-                        return 82.62f;
-                    case AnyCubicMachine.AnyCubicPhotonMonoX:
-                        return 192;
-                    default:
-                        return 0;
-                }
+                    AnyCubicMachine.AnyCubicPhotonS => 68.04f,
+                    AnyCubicMachine.AnyCubicPhotonZero => 55.44f,
+                    AnyCubicMachine.AnyCubicPhotonX => 192,
+                    AnyCubicMachine.AnyCubicPhotonUltra => 102.40f,
+                    AnyCubicMachine.AnyCubicPhotonMono => 82.62f,
+                    AnyCubicMachine.AnyCubicPhotonMonoSE => 82.62f,
+                    AnyCubicMachine.AnyCubicPhotonMonoX => 192,
+                    AnyCubicMachine.AnyCubicPhotonMonoSQ => 120,
+                    _ => 0
+                };
             }
             set { }
         }
@@ -1004,23 +1008,18 @@ namespace UVtools.Core.FileFormats
         {
             get
             {
-                switch (PrinterModel)
+                return PrinterModel switch
                 {
-                    case AnyCubicMachine.AnyCubicPhotonS:
-                        return 120.96f;
-                    case AnyCubicMachine.AnyCubicPhotonZero:
-                        return 98.637f;
-                    case AnyCubicMachine.AnyCubicPhotonX:
-                        return 120;
-                    case AnyCubicMachine.AnyCubicPhotonMono:
-                        return 130.56f;
-                    case AnyCubicMachine.AnyCubicPhotonMonoSE:
-                        return 130.56f;
-                    case AnyCubicMachine.AnyCubicPhotonMonoX:
-                        return 120;
-                    default:
-                        return 0;
-                }
+                    AnyCubicMachine.AnyCubicPhotonS => 120.96f,
+                    AnyCubicMachine.AnyCubicPhotonZero => 98.637f,
+                    AnyCubicMachine.AnyCubicPhotonX => 120,
+                    AnyCubicMachine.AnyCubicPhotonUltra => 57.60f,
+                    AnyCubicMachine.AnyCubicPhotonMono => 130.56f,
+                    AnyCubicMachine.AnyCubicPhotonMonoSE => 130.56f,
+                    AnyCubicMachine.AnyCubicPhotonMonoX => 120,
+                    AnyCubicMachine.AnyCubicPhotonMonoSQ => 128,
+                    _ => 0
+                };
             }
             set { }
         }
@@ -1029,30 +1028,25 @@ namespace UVtools.Core.FileFormats
         {
             get
             {
-                switch (PrinterModel)
+                return PrinterModel switch
                 {
-                    case AnyCubicMachine.AnyCubicPhotonS:
-                        return 165;
-                    case AnyCubicMachine.AnyCubicPhotonZero:
-                        return 150;
-                    case AnyCubicMachine.AnyCubicPhotonX:
-                        return 245;
-                    case AnyCubicMachine.AnyCubicPhotonMono:
-                        return 165;
-                    case AnyCubicMachine.AnyCubicPhotonMonoSE:
-                        return 160;
-                    case AnyCubicMachine.AnyCubicPhotonMonoX:
-                        return 245;
-                    default:
-                        return 0;
-                }
+                    AnyCubicMachine.AnyCubicPhotonS => 165,
+                    AnyCubicMachine.AnyCubicPhotonZero => 150,
+                    AnyCubicMachine.AnyCubicPhotonX => 245,
+                    AnyCubicMachine.AnyCubicPhotonUltra => 165,
+                    AnyCubicMachine.AnyCubicPhotonMono => 165,
+                    AnyCubicMachine.AnyCubicPhotonMonoSE => 160,
+                    AnyCubicMachine.AnyCubicPhotonMonoX => 245,
+                    AnyCubicMachine.AnyCubicPhotonMonoSQ => 200,
+                    _ => 0
+                };
             }
             set { }
         }
 
-        public override bool DisplayMirror
+        public override Enumerations.FlipDirection DisplayMirror
         {
-            get => true;
+            get => Enumerations.FlipDirection.Horizontally;
             set {}
         }
 
@@ -1198,23 +1192,18 @@ namespace UVtools.Core.FileFormats
         {
             get
             {
-                switch (PrinterModel)
+                return PrinterModel switch
                 {
-                    case AnyCubicMachine.AnyCubicPhotonS:
-                        return "AnyCubic Photon S";
-                    case AnyCubicMachine.AnyCubicPhotonZero:
-                        return "AnyCubic Photon Zero";
-                    case AnyCubicMachine.AnyCubicPhotonX:
-                        return "AnyCubic Photon X";
-                    case AnyCubicMachine.AnyCubicPhotonMono:
-                        return "AnyCubic Photon Mono";
-                    case AnyCubicMachine.AnyCubicPhotonMonoSE:
-                        return "AnyCubic Photon Mono SE";
-                    case AnyCubicMachine.AnyCubicPhotonMonoX:
-                        return "AnyCubic Photon Mono X";
-                    default:
-                        return base.MachineName;
-                }
+                    AnyCubicMachine.AnyCubicPhotonS => "AnyCubic Photon S",
+                    AnyCubicMachine.AnyCubicPhotonZero => "AnyCubic Photon Zero",
+                    AnyCubicMachine.AnyCubicPhotonX => "AnyCubic Photon X",
+                    AnyCubicMachine.AnyCubicPhotonUltra => "AnyCubic Photon Ultra",
+                    AnyCubicMachine.AnyCubicPhotonMono => "AnyCubic Photon Mono",
+                    AnyCubicMachine.AnyCubicPhotonMonoSE => "AnyCubic Photon Mono SE",
+                    AnyCubicMachine.AnyCubicPhotonMonoX => "AnyCubic Photon Mono X",
+                    AnyCubicMachine.AnyCubicPhotonMonoSQ => "AnyCubic Photon Mono SQ",
+                    _ => base.MachineName
+                };
             }
         }
         
@@ -1244,6 +1233,11 @@ namespace UVtools.Core.FileFormats
                     return AnyCubicMachine.AnyCubicPhotonX;
                 }
 
+                if (FileEndsWith(".dlp"))
+                {
+                    return AnyCubicMachine.AnyCubicPhotonUltra;
+                }
+
                 if (FileEndsWith(".pwmo"))
                 {
                     return AnyCubicMachine.AnyCubicPhotonMono;
@@ -1257,6 +1251,11 @@ namespace UVtools.Core.FileFormats
                 if (FileEndsWith(".pwmx"))
                 {
                     return AnyCubicMachine.AnyCubicPhotonMonoX;
+                }
+
+                if (FileEndsWith(".pmsq"))
+                {
+                    return AnyCubicMachine.AnyCubicPhotonMonoSQ;
                 }
 
                 return AnyCubicMachine.AnyCubicPhotonS;
@@ -1280,30 +1279,20 @@ namespace UVtools.Core.FileFormats
 
         protected override void EncodeInternally(string fileFullPath, OperationProgress progress)
         {
-            switch (PrinterModel)
+            HeaderSettings.PixelSizeUm = PixelSizeMicronsMax;
+                
+                /*PrinterModel switch
             {
-                case AnyCubicMachine.AnyCubicPhotonS:
-                    HeaderSettings.PixelSizeUm = 47.25f;
-                    break;
-                case AnyCubicMachine.AnyCubicPhotonZero:
-                    HeaderSettings.PixelSizeUm = 115.5f;
-                    break;
-                case AnyCubicMachine.AnyCubicPhotonX:
-                    HeaderSettings.PixelSizeUm = 75;
-                    break;
-                case AnyCubicMachine.AnyCubicPhotonMono:
-                    HeaderSettings.PixelSizeUm = 51;
-                    break;
-                case AnyCubicMachine.AnyCubicPhotonMonoSE:
-                    HeaderSettings.PixelSizeUm = 51;
-                    break;
-                case AnyCubicMachine.AnyCubicPhotonMonoX:
-                    HeaderSettings.PixelSizeUm = 50;
-                    break;
-                default:
-                    HeaderSettings.PixelSizeUm = 47.25f;
-                    break;
-            }
+                AnyCubicMachine.AnyCubicPhotonS => 47.25f,
+                AnyCubicMachine.AnyCubicPhotonZero => 115.5f,
+                AnyCubicMachine.AnyCubicPhotonX => 75,
+                AnyCubicMachine.AnyCubicPhotonUltra => 80,
+                AnyCubicMachine.AnyCubicPhotonMono => 51,
+                AnyCubicMachine.AnyCubicPhotonMonoSE => 51,
+                AnyCubicMachine.AnyCubicPhotonMonoX => 50,
+                AnyCubicMachine.AnyCubicPhotonMonoSQ => 50,
+                _ => 47.25f
+            };*/
 
             HeaderSettings.PerLayerOverride = (byte)(LayerManager.AllLayersAreUsingGlobalParameters ? 0 : 1);
 
@@ -1323,6 +1312,7 @@ namespace UVtools.Core.FileFormats
                 };
                 Helpers.SerializeWriteFileStream(outputFile, preview);
                 outputFile.WriteBytes(preview.Data);
+                FileMarkSettings.PreviewEndAddress = (uint)outputFile.Position;
             }
 
             progress.Reset(OperationProgress.StatusEncodeLayers, LayerCount);
@@ -1393,9 +1383,9 @@ namespace UVtools.Core.FileFormats
                     $"Invalid Filemark {FileMarkSettings.Mark}, expected {FileMark.SectionMarkFile}", fileFullPath);
             }
 
-            if (FileMarkSettings.Version != 1)
+            if (FileMarkSettings.Version is not VERSION_1 and not VERSION_515)
             {
-                throw new FileLoadException($"Invalid Version {FileMarkSettings.Version}, expected 1",
+                throw new FileLoadException($"Invalid Version {FileMarkSettings.Version}, expected {VERSION_1} or {VERSION_515}",
                     fileFullPath);
             }
 
@@ -1423,6 +1413,7 @@ namespace UVtools.Core.FileFormats
                 inputFile.ReadBytes(PreviewSettings.Data);
 
                 Thumbnails[0] = DecodeImage(DATATYPE_RGB565, PreviewSettings.Data, PreviewSettings.ResolutionX, PreviewSettings.ResolutionY);
+                //Thumbnails[0] = PreviewSettings.Decode();
                 PreviewSettings.Data = null;
             }
 

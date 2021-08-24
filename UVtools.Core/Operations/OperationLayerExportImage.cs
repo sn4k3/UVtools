@@ -7,7 +7,6 @@
  */
 
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Threading.Tasks;
@@ -274,10 +273,10 @@ namespace UVtools.Core.Operations
                             tw.Write(" ");
                         }
 
-                        tw.Write($"M{contours[i][0].X} {contours[i][0].Y}");
+                        tw.Write($"M {contours[i][0].X} {contours[i][0].Y} L");
                         for (int x = 1; x < contours[i].Size; x++)
                         {
-                            tw.Write($" L{contours[i][x].X} {contours[i][x].Y}");
+                            tw.Write($" {contours[i][x].X} {contours[i][x].Y}");
                         }
                         tw.Write(" Z");
                     }

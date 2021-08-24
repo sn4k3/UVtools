@@ -184,13 +184,13 @@ namespace UVtools.Core.FileFormats
             set => base.MachineZ = HeaderSettings.MachineZ = (float)Math.Round(value, 2);
         }
 
-        public override bool DisplayMirror
+        public override Enumerations.FlipDirection DisplayMirror
         {
-            get => HeaderSettings.Mirror > 0;
+            get => HeaderSettings.Mirror == 0 ? Enumerations.FlipDirection.None : Enumerations.FlipDirection.Horizontally;
             set
             {
-                HeaderSettings.ProjectType = value ? "LCD_mirror" : "Normal";
-                HeaderSettings.Mirror = (byte)(value ? 1 : 0);
+                HeaderSettings.ProjectType = value == Enumerations.FlipDirection.None ? "Normal" : "LCD_mirror";
+                HeaderSettings.Mirror = (byte)(value == Enumerations.FlipDirection.None ? 0 : 1);
                 RaisePropertyChanged();
             }
         }

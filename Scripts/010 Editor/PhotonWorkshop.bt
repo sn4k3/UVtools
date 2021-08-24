@@ -9,12 +9,12 @@ LittleEndian();
 
 struct FILEMARK {
     char Mark[12] <fgcolor=cBlack, bgcolor=cRed>;
-    uint Version <fgcolor=cBlack, bgcolor=cRed>;
+    uint Version <fgcolor=cBlack, bgcolor=cRed>; // 1 or 515
     uint AreaNum <fgcolor=cBlack, bgcolor=cRed>;
     uint HeaderAddress <fgcolor=cBlack, bgcolor=cRed>;
     uint Padding1 <fgcolor=cBlack, bgcolor=cRed>;
     uint PreviewAddress <fgcolor=cBlack, bgcolor=cRed>;
-    uint Padding2 <fgcolor=cBlack, bgcolor=cRed>;
+    uint PreviewEndAddress <fgcolor=cBlack, bgcolor=cRed>; // Version 515 only
     uint LayerDefinitionAddress <fgcolor=cBlack, bgcolor=cRed>;
     uint Padding3 <fgcolor=cBlack, bgcolor=cRed>;
     uint LayerImageAddress <fgcolor=cBlack, bgcolor=cRed>;
@@ -62,12 +62,13 @@ struct PREVIEW {
     uint ResolutionX <fgcolor=cBlack, bgcolor=cRed>;
     uint DpiResolution <fgcolor=cBlack, bgcolor=cRed>;
     uint ResolutionY <fgcolor=cBlack, bgcolor=cRed>;
-    uint Unknown1 <fgcolor=cBlack, bgcolor=cRed>;
+    
+    ubyte Data[ResolutionX*ResolutionY*2] <fgcolor=cBlack, bgcolor=cGreen>;
+
+    /*uint Unknown1 <fgcolor=cBlack, bgcolor=cRed>;
     uint Unknown2 <fgcolor=cBlack, bgcolor=cRed>;
     uint Unknown3 <fgcolor=cBlack, bgcolor=cRed>;
-    uint Unknown4 <fgcolor=cBlack, bgcolor=cRed>;
-
-    ubyte Data[ResolutionX*ResolutionY*2] <fgcolor=cBlack, bgcolor=cGreen>;
+    uint Unknown4 <fgcolor=cBlack, bgcolor=cRed>;*/
 };
 
 if(fileMark.PreviewAddress > 0){
@@ -97,7 +98,7 @@ struct LAYER_DEF {
 
     local uint currentPos = FTell();   
     FSeek(DataAddress);
-    ubyte RLE[DataLength];
+    ubyte RLE[DataLength] <fgcolor=cWhite, bgcolor=cBlack>;
     FSeek(currentPos);
 };
 

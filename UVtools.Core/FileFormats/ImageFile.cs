@@ -66,12 +66,6 @@ namespace UVtools.Core.FileFormats
             }
         }
 
-        public override bool DisplayMirror
-        {
-            get => false;
-            set { }
-        }
-
         public override float LayerHeight { get; set; } = 0.01f;
         /*public override float PrintTime { get; } = 0;
         public override float UsedMaterial { get; } = 0;

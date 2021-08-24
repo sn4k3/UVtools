@@ -137,14 +137,23 @@
                     Grid.ColumnSpan="9"
                     VerticalAlignment="Center"
                     Orientation="Horizontal" Spacing="5">
+            
+            <Button
+                Command="{Binding PresetElephantFootCompensation}"
+                ToolTip.Tip="This preset will dim/darken wall pixels at a given thickness and brightness.
+&#x0a;After pick the best looking model from the calibration test, fill the value/brightness with (B) and wall thickness with (W) found on the model."
+                Content="Elephant foot compensation"/>
+            
             <Button
                 Command="{Binding Operation.PresetPixelDimming}"
+                ToolTip.Tip="This preset will dim/darken pixels with a pattern, on the pattern put the brightness values you want to subtract to each pixel"
                 Content="Pixel dimming"/>
 
             <Button
                 Command="{Binding Operation.PresetPixelLightening}"
+                ToolTip.Tip="This preset will lightening pixels with a pattern, on the pattern put the brightness values you want to add to each pixel"
                 Content="Pixel lightening"/>
-
+            
             <Button 
                 Command="{Binding Operation.PresetStripAntiAliasing}"
                 Content="Strip anti-aliasing"/>

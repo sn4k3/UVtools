@@ -294,6 +294,7 @@ namespace UVtools.Core.FileFormats
             //new CXDLPv1File(),   // Creality Box v1
             new CXDLPFile(),   // Creality Box
             new LGSFile(),   // LGS, LGS30
+            new FlashForgeSVGXFile(), // SVGX
             new VDAFile(),   // VDA
             new VDTFile(),   // VDT
             new UVJFile(),   // UVJ
@@ -596,7 +597,8 @@ namespace UVtools.Core.FileFormats
                 var mat = new Mat(resolution, DepthType.Cv8U, 3);
                 var span = mat.GetDataByteSpan();
                 var pixel = 0;
-                for (int i = 0; i < bytes.Length;)
+                int i = 0;
+                while (i < bytes.Length && pixel < span.Length)
                 {
                     switch (dataType)
                     {
@@ -675,6 +677,12 @@ namespace UVtools.Core.FileFormats
                             break;
                     }
                 }
+
+                for (; pixel < span.Length; pixel++) // Fill leftovers
+                {
+                    span[pixel] = 0; 
+                }
+
                 return mat;
             }
 
@@ -996,7 +1004,7 @@ namespace UVtools.Core.FileFormats
         /// <summary>
         /// Gets or sets if images need to be mirrored on lcd to print on the correct orientation
         /// </summary>
-        public virtual bool DisplayMirror { get; set; }
+        public virtual Enumerations.FlipDirection DisplayMirror { get; set; } = Enumerations.FlipDirection.None;
 
         /// <summary>
         /// Gets if the display is in portrait mode
@@ -3534,7 +3542,7 @@ namespace UVtools.Core.FileFormats
         public void UpdatePrintTime()
         {
             PrintTime = PrintTimeComputed;
-            Debug.WriteLine($"Time updated: {_printTime}s");
+            //Debug.WriteLine($"Time updated: {_printTime}s");
         }
 
         public void UpdatePrintTimeQueued()
@@ -3545,6 +3553,50 @@ namespace UVtools.Core.FileFormats
                 _queueTimerPrintTime.Start();
             }
         }
+
+        /// <summary>
+        /// From a pixel position get the equivalent position on the display
+        /// </summary>
+        /// <param name="x">X position in pixels</param>
+        /// <returns>Display position in millimeters</returns>
+        public float PixelToDisplayPositionX(int x) => (float)Math.Round(PixelWidth * x, 3);
+
+        /// <summary>
+        /// From a pixel position get the equivalent position on the display
+        /// </summary>
+        /// <param name="y">Y position in pixels</param>
+        /// <returns>Display position in millimeters</returns>
+        public float PixelToDisplayPositionY(int y) => (float)Math.Round(PixelHeight * y, 3);
+
+        /// <summary>
+        /// From a pixel position get the equivalent position on the display
+        /// </summary>
+        /// <param name="x">X position in pixels</param>
+        /// <param name="y">Y position in pixels</param>
+        /// <returns>Resolution position in pixels</returns>
+        public PointF PixelToDisplayPosition(int x, int y) =>new(PixelToDisplayPositionX(x), PixelToDisplayPositionY(y));
+
+        /// <summary>
+        /// From a pixel position get the equivalent position on the display
+        /// </summary>
+        /// <param name="x">X position in millimeters</param>
+        /// <returns>Resolution position in pixels</returns>
+        public int DisplayToPixelPositionX(float x) => (int)(x * Xppmm);
+
+        /// <summary>
+        /// From a pixel position get the equivalent position on the display
+        /// </summary>
+        /// <param name="y">Y position in millimeters</param>
+        /// <returns>Resolution position in pixels</returns>
+        public int DisplayToPixelPositionY(float y) => (int)(y * Yppmm);
+
+        /// <summary>
+        /// From a pixel position get the equivalent position on the display
+        /// </summary>
+        /// <param name="x">X position in millimeters</param>
+        /// <param name="y">Y position in millimeters</param>
+        /// <returns>Resolution position in pixels</returns>
+        public Point DisplayToPixelPosition(float x, float y) => new(DisplayToPixelPositionX(x), DisplayToPixelPositionY(y));
 
         #endregion
     }

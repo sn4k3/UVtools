@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Avalonia.Markup.Xaml;
 using UVtools.Core.Objects;
 using UVtools.Core.Operations;

@@ -719,12 +719,12 @@ namespace UVtools.Core.FileFormats
             set => base.MachineZ = Settings.MachineZ = (float)Math.Round(value, 2);
         }
 
-        public override bool DisplayMirror
+        public override Enumerations.FlipDirection DisplayMirror
         {
-            get => Settings.ProjectorType > 0;
+            get => Settings.ProjectorType == 0 ? Enumerations.FlipDirection.None : Enumerations.FlipDirection.Horizontally;
             set
             {
-                Settings.ProjectorType = value ? 1u : 0;
+                Settings.ProjectorType = value == Enumerations.FlipDirection.None ? 0u : 1;
                 RaisePropertyChanged();
             }
         }

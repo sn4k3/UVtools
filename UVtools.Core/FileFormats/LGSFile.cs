@@ -344,9 +344,9 @@ namespace UVtools.Core.FileFormats
             set => base.MachineZ = HeaderSettings.MachineZ = (float)Math.Round(value, 2);
         }
 
-        public override bool DisplayMirror
+        public override Enumerations.FlipDirection DisplayMirror
         {
-            get => true;
+            get => Enumerations.FlipDirection.Horizontally;
             set { }
         }      
 

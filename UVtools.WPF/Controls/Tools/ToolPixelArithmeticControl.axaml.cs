@@ -21,6 +21,12 @@ namespace UVtools.WPF.Controls.Tools
             AvaloniaXamlLoader.Load(this);
         }
 
+        public void PresetElephantFootCompensation()
+        {
+            ParentWindow.SelectBottomLayers();
+            Operation.PresetElephantFootCompensation();
+        }
+
         public async void LoadPatternFromImage(bool isAlternatePattern = false)
         {
             var dialog = new OpenFileDialog

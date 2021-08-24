@@ -365,12 +365,12 @@ namespace UVtools.Core.FileFormats
             }
         }
 
-        public override bool DisplayMirror
+        public override Enumerations.FlipDirection DisplayMirror
         {
-            get => HeaderSettings.DisplayMirror is >= 1 and <= 3;
+            get => (Enumerations.FlipDirection)HeaderSettings.DisplayMirror;
             set
             {
-                HeaderSettings.DisplayMirror = value ? (byte)1 : (byte)0;
+                HeaderSettings.DisplayMirror = (byte)value;
                 RaisePropertyChanged();
             }
         }

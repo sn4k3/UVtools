@@ -1,5 +1,28 @@
 # Changelog
 
+## 24/08/2021 - v2.20.0
+
+- **File formats:**
+   - (Add) FlashForge SVGX format of FlashDLPrint
+   - (Improvement) Change `DisplayMirror` from `bool` to a `FlipDirection` enumeration, to be able to identify the exact mirror direction
+- **(Add) PrusaSlicer Printers:**
+   - FlashForge Explorer MAX
+   - FlashForge Focus 8.9
+   - FlashForge Focus 13.3
+   - FlashForge Foto 6.0
+   - FlashForge Foto 8.9
+   - FlashForge Foto 13.3
+   - AnyCubic Photon Mono SQ
+   - AnyCubic Photon Ultra
+- (Add) Pixel arithmetic: Preset "Elephant foot compensation"
+<!--
+- **FileFormat PhotonWorkshop:**
+   - (Add) Compability with version 515
+   - (Add) Support for Photon Mono SQ (PMSQ)
+   - (Add) Support for Photon Ultra (DLP)
+   
+!-->
+
 ## 22/08/2021 - v2.19.5
 
 - **(Fix) CTB:**

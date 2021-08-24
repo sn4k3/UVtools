@@ -8,6 +8,7 @@
 
 using System;
 using System.IO;
+using System.Text;
 
 namespace UVtools.Core.Extensions
 {
@@ -27,6 +28,16 @@ namespace UVtools.Core.Extensions
 
         public static byte[] ReadBytes(this FileStream fs, uint length, int offset = 0)
             => fs.ReadBytes((int)length, offset);
+
+        /// <summary>
+        /// Read from current position to the end of the file
+        /// </summary>
+        /// <param name="fs"></param>
+        /// <returns></returns>
+        public static byte[] ReadToEnd(this FileStream fs)
+        {
+            return fs.ReadBytes((uint)(fs.Length - fs.Position));
+        }
 
         public static uint ReadUShortLittleEndian(this FileStream fs, int offset = 0)
         {
@@ -82,6 +93,16 @@ namespace UVtools.Core.Extensions
         public static uint WriteBytes(this Stream stream, byte[] bytes, int offset = 0)
         {
             stream.Write(bytes, offset, bytes.Length);
+            return (uint)bytes.Length;
+        }
+
+        public static uint WriteString(this FileStream fs, string text, int offset = 0)
+            => fs.WriteString(text, Encoding.UTF8, offset);
+
+        public static uint WriteString(this FileStream fs, string text, Encoding encoding, int offset = 0)
+        {
+            var bytes = encoding.GetBytes(text);
+            fs.Write(bytes, offset, bytes.Length);
             return (uint)bytes.Length;
         }
 

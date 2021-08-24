@@ -410,13 +410,19 @@ namespace UVtools.Core.FileFormats
             set => base.MachineZ = OutputSettings.PlatformZSize = (float)Math.Round(value, 2);
         }
 
-        public override bool DisplayMirror
+        public override Enumerations.FlipDirection DisplayMirror
         {
-            get => OutputSettings.FlipX;
+            get
+            {
+                if (OutputSettings.FlipX && OutputSettings.FlipY) return Enumerations.FlipDirection.Both;
+                if (OutputSettings.FlipX) return Enumerations.FlipDirection.Horizontally;
+                if (OutputSettings.FlipY) return Enumerations.FlipDirection.Vertically;
+                return Enumerations.FlipDirection.None;
+            }
             set
             {
-                OutputSettings.FlipX = value;
-                OutputSettings.FlipY = false;
+                OutputSettings.FlipX = value is Enumerations.FlipDirection.Horizontally or Enumerations.FlipDirection.Both;
+                OutputSettings.FlipY = value is Enumerations.FlipDirection.Vertically or Enumerations.FlipDirection.Both;
                 RaisePropertyChanged();
             }
         }

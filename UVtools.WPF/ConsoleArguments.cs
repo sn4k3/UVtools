@@ -141,7 +141,7 @@ namespace UVtools.WPF
                 return true;
             }
 
-            if (args[0] is "--crypt-ctb" or "--encrypt-ctb" or "--decrypt-ctb")
+            if (args[0] == "--crypt-ctb")
             {
                 if (!File.Exists(args[1]))
                 {

@@ -283,7 +283,22 @@ namespace UVtools.Core.FileFormats
             }
         }
 
-        public override bool DisplayMirror => ManifestFile.Machine.XMirror || ManifestFile.Machine.YMirror;
+        public override Enumerations.FlipDirection DisplayMirror
+        {
+            get
+            {
+                if (ManifestFile.Machine.XMirror && ManifestFile.Machine.YMirror) return Enumerations.FlipDirection.Both;
+                if (ManifestFile.Machine.XMirror) return Enumerations.FlipDirection.Horizontally;
+                if (ManifestFile.Machine.YMirror) return Enumerations.FlipDirection.Vertically;
+                return Enumerations.FlipDirection.None;
+            }
+            set
+            {
+                ManifestFile.Machine.XMirror = value is Enumerations.FlipDirection.Horizontally or Enumerations.FlipDirection.Both;
+                ManifestFile.Machine.YMirror = value is Enumerations.FlipDirection.Vertically or Enumerations.FlipDirection.Both;
+                RaisePropertyChanged();
+            }
+        }
 
         public override byte AntiAliasing
         {

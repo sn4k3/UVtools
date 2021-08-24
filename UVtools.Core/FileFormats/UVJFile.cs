@@ -211,7 +211,7 @@ namespace UVtools.Core.FileFormats
             }
         }
 
-        public override bool DisplayMirror { get; set; }
+        public override Enumerations.FlipDirection DisplayMirror { get; set; }
 
         public override byte AntiAliasing
         {

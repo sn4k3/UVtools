@@ -84,7 +84,7 @@ namespace UVtools.Core.Extensions
 
         public static Size Half(this Size size) => new(size.Width / 2, size.Height / 2);
 
-        public static SizeF Half(this SizeF size) => new(size.Width / 2, size.Height / 2);
+        public static SizeF Half(this SizeF size) => new(size.Width / 2f, size.Height / 2f);
 
         public static Point ToPoint(this Size size) => new(size.Width, size.Height);
         public static PointF ToPoint(this SizeF size) => new(size.Width, size.Height);

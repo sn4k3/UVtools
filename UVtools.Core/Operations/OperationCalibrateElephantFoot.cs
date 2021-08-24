@@ -370,7 +370,7 @@ namespace UVtools.Core.Operations
             if (_bottomLayers <= 0) _bottomLayers = (ushort) Slicer.Slicer.MillimetersToLayers(1M, _layerHeight);
             if (_normalLayers <= 0) _normalLayers = (ushort) Slicer.Slicer.MillimetersToLayers(3.5M, _layerHeight);
 
-            _mirrorOutput = SlicerFile.DisplayMirror;
+            _mirrorOutput = SlicerFile.DisplayMirror != Enumerations.FlipDirection.None;
         }
 
         #endregion
@@ -659,7 +659,9 @@ namespace UVtools.Core.Operations
 
             if (_mirrorOutput)
             {
-                Parallel.ForEach(layers, mat => CvInvoke.Flip(mat, mat, FlipType.Horizontal));
+                var flip = SlicerFile.DisplayMirror;
+                if (flip == Enumerations.FlipDirection.None) flip = Enumerations.FlipDirection.Horizontally;
+                Parallel.ForEach(layers, mat => CvInvoke.Flip(mat, mat, Enumerations.ToOpenCVFlipType(flip)));
             }
 
             // Preview

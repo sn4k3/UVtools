@@ -463,7 +463,7 @@ namespace UVtools.Core.Operations
             if (_bottomLayers <= 0) _bottomLayers = SlicerFile.BottomLayerCount;
             if (_bottomExposure <= 0) _bottomExposure = (decimal)SlicerFile.BottomExposureTime;
             if (_normalExposure <= 0) _normalExposure = (decimal)SlicerFile.ExposureTime;
-            _mirrorOutput = SlicerFile.DisplayMirror;
+            _mirrorOutput = SlicerFile.DisplayMirror != Enumerations.FlipDirection.None;
 
             if (SlicerFile.DisplayWidth > 0)
                 DisplayWidth = (decimal)SlicerFile.DisplayWidth;
@@ -719,7 +719,9 @@ namespace UVtools.Core.Operations
 
             if (_mirrorOutput)
             {
-                Parallel.ForEach(layers, mat => CvInvoke.Flip(mat, mat, FlipType.Horizontal));
+                var flip = SlicerFile.DisplayMirror;
+                if (flip == Enumerations.FlipDirection.None) flip = Enumerations.FlipDirection.Horizontally;
+                Parallel.ForEach(layers, mat => CvInvoke.Flip(mat, mat, Enumerations.ToOpenCVFlipType(flip)));
             }
 
             return layers;

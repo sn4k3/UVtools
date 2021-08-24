@@ -882,214 +882,241 @@
         <Directory Id="owd9F9F77C9E3C3E4DA718760164D5303B8" Name="Assets">
           <Directory Id="owd09EA423812736FC896B5C82AE8837139" Name="PrusaSlicer">
             <Directory Id="owd44E5BD2F3F078D3F66FB8FE12300C21C" Name="printer">
-              <Component Id="owcB1F9239297148807EDD6F0AD6A16F055" Guid="319838b0-55af-2be6-09e9-f97a8270196b">
+              <Component Id="owcB1F9239297148807EDD6F0AD6A16F055" Guid="319838b0-55af-2be6-09e9-f97a8270196b" Win64="yes">
                 <File Id="owfB1F9239297148807EDD6F0AD6A16F055" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\AnyCubic Photon Mono SE.ini" KeyPath="yes" />
               </Component>
-              <Component Id="owc5438DE5556A7860A5A4B999D2C8549E6" Guid="18d012cf-f45e-421f-9e5f-f2530fd82cdf">
+              <Component Id="owc67D0DCEBE8B3912065D33D90635862C5" Guid="321b01b8-d6da-009e-ab2e-a78fc841fcf7" Win64="yes">
+                <File Id="owf67D0DCEBE8B3912065D33D90635862C5" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\AnyCubic Photon Mono SQ.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owc5438DE5556A7860A5A4B999D2C8549E6" Guid="18d012cf-f45e-421f-9e5f-f2530fd82cdf" Win64="yes">
                 <File Id="owf5438DE5556A7860A5A4B999D2C8549E6" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\AnyCubic Photon Mono X.ini" KeyPath="yes" />
               </Component>
-              <Component Id="owc6D301112F11F080C920F7E769AA8DAAC" Guid="1a7ba221-3475-f546-3fe9-a713f4bf856c">
+              <Component Id="owc6D301112F11F080C920F7E769AA8DAAC" Guid="1a7ba221-3475-f546-3fe9-a713f4bf856c" Win64="yes">
                 <File Id="owf6D301112F11F080C920F7E769AA8DAAC" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\AnyCubic Photon Mono.ini" KeyPath="yes" />
               </Component>
-              <Component Id="owc2EABADD977D38E081AEBDA1E4F66ABAC" Guid="21cff034-fa0c-8768-77a8-0466b9adfa34">
+              <Component Id="owc2EABADD977D38E081AEBDA1E4F66ABAC" Guid="21cff034-fa0c-8768-77a8-0466b9adfa34" Win64="yes">
                 <File Id="owf2EABADD977D38E081AEBDA1E4F66ABAC" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\AnyCubic Photon S.ini" KeyPath="yes" />
               </Component>
-              <Component Id="owc72EDAE2CA5207EAC641C69AFC492E534" Guid="4eadef64-b635-98bc-ce76-a48433cf88be">
+              <Component Id="owcA64FD5D7EAD5BF50561391F76DD15503" Guid="922d89ca-ea1d-0d0c-27bb-a0adf6a2e9da" Win64="yes">
+                <File Id="owfA64FD5D7EAD5BF50561391F76DD15503" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\AnyCubic Photon Ultra.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owc72EDAE2CA5207EAC641C69AFC492E534" Guid="4eadef64-b635-98bc-ce76-a48433cf88be" Win64="yes">
                 <File Id="owf72EDAE2CA5207EAC641C69AFC492E534" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\AnyCubic Photon X.ini" KeyPath="yes" />
               </Component>
-              <Component Id="owc52FABCDB07DFFBA3A0BA85FC86A4E849" Guid="8d9ec4f5-bf5c-b1ec-16d2-704dfcb6e5ee">
+              <Component Id="owc52FABCDB07DFFBA3A0BA85FC86A4E849" Guid="8d9ec4f5-bf5c-b1ec-16d2-704dfcb6e5ee" Win64="yes">
                 <File Id="owf52FABCDB07DFFBA3A0BA85FC86A4E849" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\AnyCubic Photon Zero.ini" KeyPath="yes" />
               </Component>
-              <Component Id="owc1C3DE0BEF10A5791E37D4C3D97AED5E1" Guid="b1851a14-1200-d448-1acd-b229bf6ac918">
+              <Component Id="owc1C3DE0BEF10A5791E37D4C3D97AED5E1" Guid="b1851a14-1200-d448-1acd-b229bf6ac918" Win64="yes">
                 <File Id="owf1C3DE0BEF10A5791E37D4C3D97AED5E1" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\AnyCubic Photon.ini" KeyPath="yes" />
               </Component>
-              <Component Id="owcD9B52941C3B939A8B3215DD20CF242D0" Guid="19f42433-a592-01d2-ece1-41f37945261d">
+              <Component Id="owcD9B52941C3B939A8B3215DD20CF242D0" Guid="19f42433-a592-01d2-ece1-41f37945261d" Win64="yes">
                 <File Id="owfD9B52941C3B939A8B3215DD20CF242D0" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Creality HALOT-MAX CL-133.ini" KeyPath="yes" />
               </Component>
-              <Component Id="owc64BDFB521E8E34CAE3547B3D1B8F3996" Guid="71d86e2a-c6b7-884a-65ff-2260e4edd56f">
+              <Component Id="owc64BDFB521E8E34CAE3547B3D1B8F3996" Guid="71d86e2a-c6b7-884a-65ff-2260e4edd56f" Win64="yes">
                 <File Id="owf64BDFB521E8E34CAE3547B3D1B8F3996" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Creality HALOT-ONE CL-60.ini" KeyPath="yes" />
               </Component>
-              <Component Id="owc88F58B3D3A8E53CEFC3FE84F6C20FAB8" Guid="8f66ab9b-8ff1-f324-9ec5-5cbb688dd5f6">
+              <Component Id="owc88F58B3D3A8E53CEFC3FE84F6C20FAB8" Guid="8f66ab9b-8ff1-f324-9ec5-5cbb688dd5f6" Win64="yes">
                 <File Id="owf88F58B3D3A8E53CEFC3FE84F6C20FAB8" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Creality HALOT-SKY CL-89.ini" KeyPath="yes" />
               </Component>
-              <Component Id="owc0402794BACCC21B2ADA93D76665B1076" Guid="f9949f30-9613-fe85-e9f8-432d4764ed1f">
+              <Component Id="owc0402794BACCC21B2ADA93D76665B1076" Guid="f9949f30-9613-fe85-e9f8-432d4764ed1f" Win64="yes">
                 <File Id="owf0402794BACCC21B2ADA93D76665B1076" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Creality LD-002H.ini" KeyPath="yes" />
               </Component>
-              <Component Id="owcA366EE5E18C0300113B84236C2D5827D" Guid="3c683456-5a2b-319a-ad7f-931df564c0da">
+              <Component Id="owcA366EE5E18C0300113B84236C2D5827D" Guid="3c683456-5a2b-319a-ad7f-931df564c0da" Win64="yes">
                 <File Id="owfA366EE5E18C0300113B84236C2D5827D" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Creality LD-002R.ini" KeyPath="yes" />
               </Component>
-              <Component Id="owc8304FE0C53C6793457DFBC941289A9EB" Guid="91d411b9-d7a0-e718-f688-83a34880ebcb">
+              <Component Id="owc8304FE0C53C6793457DFBC941289A9EB" Guid="91d411b9-d7a0-e718-f688-83a34880ebcb" Win64="yes">
                 <File Id="owf8304FE0C53C6793457DFBC941289A9EB" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Creality LD-006.ini" KeyPath="yes" />
               </Component>
-              <Component Id="owcAB1BB9D30236925105FC2E5CE2ED6D1A" Guid="8ba56c46-b915-5a96-dde6-e9c2084379d8">
+              <Component Id="owcAB1BB9D30236925105FC2E5CE2ED6D1A" Guid="8ba56c46-b915-5a96-dde6-e9c2084379d8" Win64="yes">
                 <File Id="owfAB1BB9D30236925105FC2E5CE2ED6D1A" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Elegoo Mars 2 Pro.ini" KeyPath="yes" />
               </Component>
-              <Component Id="owc99BA1976940D6CE22287790F6985BB6A" Guid="ce2d1d6b-39d2-a53b-8702-6412a7c5afc0">
+              <Component Id="owc99BA1976940D6CE22287790F6985BB6A" Guid="ce2d1d6b-39d2-a53b-8702-6412a7c5afc0" Win64="yes">
                 <File Id="owf99BA1976940D6CE22287790F6985BB6A" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Elegoo Mars C.ini" KeyPath="yes" />
               </Component>
-              <Component Id="owc0E234E55CBA190E83DA52025540F8A3D" Guid="b1a97eca-4b0e-9d3f-f196-ea03f123fc3d">
+              <Component Id="owc0E234E55CBA190E83DA52025540F8A3D" Guid="b1a97eca-4b0e-9d3f-f196-ea03f123fc3d" Win64="yes">
                 <File Id="owf0E234E55CBA190E83DA52025540F8A3D" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Elegoo Mars.ini" KeyPath="yes" />
               </Component>
-              <Component Id="owc87C1B7E42025B6AC6C87D1D36775BBDE" Guid="b9b191bf-dadb-4140-1220-41a04f4cbc28">
+              <Component Id="owc87C1B7E42025B6AC6C87D1D36775BBDE" Guid="b9b191bf-dadb-4140-1220-41a04f4cbc28" Win64="yes">
                 <File Id="owf87C1B7E42025B6AC6C87D1D36775BBDE" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Elegoo Saturn.ini" KeyPath="yes" />
               </Component>
-              <Component Id="owc4C4D2614316012195906A5E4914A2378" Guid="47ad31b3-87d5-b2bb-ba98-e95100744f0b">
+              <Component Id="owc4C4D2614316012195906A5E4914A2378" Guid="47ad31b3-87d5-b2bb-ba98-e95100744f0b" Win64="yes">
                 <File Id="owf4C4D2614316012195906A5E4914A2378" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\EPAX E10 Mono.ini" KeyPath="yes" />
               </Component>
-              <Component Id="owc34F4D06FF0857772BE25072A0237697F" Guid="5cba601d-e3b6-39ac-bd29-0dea035b868f">
+              <Component Id="owc34F4D06FF0857772BE25072A0237697F" Guid="5cba601d-e3b6-39ac-bd29-0dea035b868f" Win64="yes">
                 <File Id="owf34F4D06FF0857772BE25072A0237697F" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\EPAX E6 Mono.ini" KeyPath="yes" />
               </Component>
-              <Component Id="owc0706B6998D6F521C34E62ABB5D993AB8" Guid="8d4ca610-f357-9fcb-8fca-2c08cc940e8e">
+              <Component Id="owc0706B6998D6F521C34E62ABB5D993AB8" Guid="8d4ca610-f357-9fcb-8fca-2c08cc940e8e" Win64="yes">
                 <File Id="owf0706B6998D6F521C34E62ABB5D993AB8" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\EPAX X1.ini" KeyPath="yes" />
               </Component>
-              <Component Id="owc6CD1D731C774A9FC303E119C78FDD2CD" Guid="e75de2d4-c7e2-71ee-338a-0ffcc7da4607">
+              <Component Id="owc6CD1D731C774A9FC303E119C78FDD2CD" Guid="e75de2d4-c7e2-71ee-338a-0ffcc7da4607" Win64="yes">
                 <File Id="owf6CD1D731C774A9FC303E119C78FDD2CD" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\EPAX X10 4K Mono.ini" KeyPath="yes" />
               </Component>
-              <Component Id="owcAAF100D9FA50AAFA27C478251BD36C84" Guid="5e816d43-7553-1fe3-d9f9-d1bb491c0c89">
+              <Component Id="owcAAF100D9FA50AAFA27C478251BD36C84" Guid="5e816d43-7553-1fe3-d9f9-d1bb491c0c89" Win64="yes">
                 <File Id="owfAAF100D9FA50AAFA27C478251BD36C84" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\EPAX X10.ini" KeyPath="yes" />
               </Component>
-              <Component Id="owcEBD7F25427880807A3B22D07EFDFE10A" Guid="ca8ac24d-39e2-79bb-d596-207c58c8b996">
+              <Component Id="owcEBD7F25427880807A3B22D07EFDFE10A" Guid="ca8ac24d-39e2-79bb-d596-207c58c8b996" Win64="yes">
                 <File Id="owfEBD7F25427880807A3B22D07EFDFE10A" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\EPAX X133 4K Mono.ini" KeyPath="yes" />
               </Component>
-              <Component Id="owcABD51FD4BD0E86B40C3E60EF1FFF2652" Guid="63b5c52b-f496-6709-076f-593ba96acde3">
+              <Component Id="owcABD51FD4BD0E86B40C3E60EF1FFF2652" Guid="63b5c52b-f496-6709-076f-593ba96acde3" Win64="yes">
                 <File Id="owfABD51FD4BD0E86B40C3E60EF1FFF2652" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\EPAX X156 4K Color.ini" KeyPath="yes" />
               </Component>
-              <Component Id="owcF60AE43E2FCAA44993EA41F9AAF52544" Guid="2a01f334-9752-ff6c-f433-5906b10abdd0">
+              <Component Id="owcF60AE43E2FCAA44993EA41F9AAF52544" Guid="2a01f334-9752-ff6c-f433-5906b10abdd0" Win64="yes">
                 <File Id="owfF60AE43E2FCAA44993EA41F9AAF52544" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\EPAX X1K 2K Mono.ini" KeyPath="yes" />
               </Component>
-              <Component Id="owcC00A40A7EB735EEF0CDE42F7CB633263" Guid="f1e176aa-405d-b293-f693-46886a0cda3e">
+              <Component Id="owcEF8BD2356BD06AA244EA107DE9D5FB7C" Guid="0a7bd249-ec9c-6cd9-6d01-7cb83be92f49" Win64="yes">
+                <File Id="owfEF8BD2356BD06AA244EA107DE9D5FB7C" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\FlashForge Explorer MAX.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owcCAAA2D69B75A2B0629D60B64711DF959" Guid="f91c305e-8951-0bc4-866e-5cc0c5779184" Win64="yes">
+                <File Id="owfCAAA2D69B75A2B0629D60B64711DF959" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\FlashForge Focus 13.3.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owcF34A5CF1DA6FEE69E4B43AF6D37C83F2" Guid="dac273d1-8130-b1f1-3bcb-9dacb58d2771" Win64="yes">
+                <File Id="owfF34A5CF1DA6FEE69E4B43AF6D37C83F2" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\FlashForge Focus 8.9.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owc61913D8BD21FFEEA0D00630647648655" Guid="a6fa37c1-ce4c-5021-d63d-9e24be5b2761" Win64="yes">
+                <File Id="owf61913D8BD21FFEEA0D00630647648655" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\FlashForge Foto 13.3.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owc3301611D5674767924C4BE1087CAF1AC" Guid="331d0c79-c84e-c635-5fc3-f98577aa86bb" Win64="yes">
+                <File Id="owf3301611D5674767924C4BE1087CAF1AC" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\FlashForge Foto 6.0.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owc5AF5BE9835C2474140785D99DEA9D986" Guid="73479a36-a961-0be2-aa1e-28d0c7980f71" Win64="yes">
+                <File Id="owf5AF5BE9835C2474140785D99DEA9D986" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\FlashForge Foto 8.9.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owc9876364C59233BDE29C2D64C8A8664E5" Guid="8c94b7f9-1fdb-2236-a8e6-c1d4c73957f6" Win64="yes">
+                <File Id="owf9876364C59233BDE29C2D64C8A8664E5" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\FlashForge Hunter.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owcC00A40A7EB735EEF0CDE42F7CB633263" Guid="f1e176aa-405d-b293-f693-46886a0cda3e" Win64="yes">
                 <File Id="owfC00A40A7EB735EEF0CDE42F7CB633263" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Kelant S400.ini" KeyPath="yes" />
               </Component>
-              <Component Id="owc7B488E0A9D9B2656D06620E0CEEFDA13" Guid="7c2fe9e4-adb9-72d1-c0f4-ee7311cabadf">
+              <Component Id="owc7B488E0A9D9B2656D06620E0CEEFDA13" Guid="7c2fe9e4-adb9-72d1-c0f4-ee7311cabadf" Win64="yes">
                 <File Id="owf7B488E0A9D9B2656D06620E0CEEFDA13" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Longer Orange 10.ini" KeyPath="yes" />
               </Component>
-              <Component Id="owc81404C7F01EDBA07B087B424DAA40376" Guid="aaee9d27-478d-5d85-c09b-e2b2c8f61633">
+              <Component Id="owc81404C7F01EDBA07B087B424DAA40376" Guid="aaee9d27-478d-5d85-c09b-e2b2c8f61633" Win64="yes">
                 <File Id="owf81404C7F01EDBA07B087B424DAA40376" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Longer Orange 120.ini" KeyPath="yes" />
               </Component>
-              <Component Id="owc227006E17D85BD8103B64C6480AF8A6F" Guid="33dff0a8-a2a6-7ad5-51b1-a91bc258b227">
+              <Component Id="owc227006E17D85BD8103B64C6480AF8A6F" Guid="33dff0a8-a2a6-7ad5-51b1-a91bc258b227" Win64="yes">
                 <File Id="owf227006E17D85BD8103B64C6480AF8A6F" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Longer Orange 30.ini" KeyPath="yes" />
               </Component>
-              <Component Id="owc6FE42BDB3CE927703AA1E9971366D810" Guid="b3fd97c9-d3b8-b5db-942f-f7ab9d2195e5">
+              <Component Id="owc6FE42BDB3CE927703AA1E9971366D810" Guid="b3fd97c9-d3b8-b5db-942f-f7ab9d2195e5" Win64="yes">
                 <File Id="owf6FE42BDB3CE927703AA1E9971366D810" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Longer Orange 4K.ini" KeyPath="yes" />
               </Component>
-              <Component Id="owc60E90B40E8992C21339B84C28DFE9891" Guid="e8e24d92-2cb1-0bec-3963-817532a4c171">
+              <Component Id="owc60E90B40E8992C21339B84C28DFE9891" Guid="e8e24d92-2cb1-0bec-3963-817532a4c171" Win64="yes">
                 <File Id="owf60E90B40E8992C21339B84C28DFE9891" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Nova3D Bene4 Mono.ini" KeyPath="yes" />
               </Component>
-              <Component Id="owcC502436F48FF41D38156813AD32AAC8D" Guid="89478893-b2a3-a64b-c27a-0d99e3dce4d8">
+              <Component Id="owcC502436F48FF41D38156813AD32AAC8D" Guid="89478893-b2a3-a64b-c27a-0d99e3dce4d8" Win64="yes">
                 <File Id="owfC502436F48FF41D38156813AD32AAC8D" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Nova3D Bene4.ini" KeyPath="yes" />
               </Component>
-              <Component Id="owc99B5CFB726FA398251B212CEECF36083" Guid="f94cafa3-bc47-9bc0-350b-5eeb40679c36">
+              <Component Id="owc99B5CFB726FA398251B212CEECF36083" Guid="f94cafa3-bc47-9bc0-350b-5eeb40679c36" Win64="yes">
                 <File Id="owf99B5CFB726FA398251B212CEECF36083" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Nova3D Bene5.ini" KeyPath="yes" />
               </Component>
-              <Component Id="owc2D13CB27790279041B7046CCA000768B" Guid="c27b7fdd-753f-0d08-6310-6ecef6ae4fa4">
+              <Component Id="owc2D13CB27790279041B7046CCA000768B" Guid="c27b7fdd-753f-0d08-6310-6ecef6ae4fa4" Win64="yes">
                 <File Id="owf2D13CB27790279041B7046CCA000768B" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Nova3D Elfin.ini" KeyPath="yes" />
               </Component>
-              <Component Id="owc5012419DCAC6A0DF4B7E37C7691031EB" Guid="ddeea951-7f98-641a-9af5-fc8371c1aef0">
+              <Component Id="owc5012419DCAC6A0DF4B7E37C7691031EB" Guid="ddeea951-7f98-641a-9af5-fc8371c1aef0" Win64="yes">
                 <File Id="owf5012419DCAC6A0DF4B7E37C7691031EB" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Nova3D Elfin2 Mono SE.ini" KeyPath="yes" />
               </Component>
-              <Component Id="owc25A67BA4D2E63BC50D256F00A5E60BA2" Guid="8158f079-73e1-238f-4b6b-fcee7f48c8ce">
+              <Component Id="owc25A67BA4D2E63BC50D256F00A5E60BA2" Guid="8158f079-73e1-238f-4b6b-fcee7f48c8ce" Win64="yes">
                 <File Id="owf25A67BA4D2E63BC50D256F00A5E60BA2" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Nova3D Elfin2.ini" KeyPath="yes" />
               </Component>
-              <Component Id="owcAAD60F81138D7049AF41740104BCAB41" Guid="090fee7f-9e2b-d016-c83b-7b98e33999b5">
+              <Component Id="owcAAD60F81138D7049AF41740104BCAB41" Guid="090fee7f-9e2b-d016-c83b-7b98e33999b5" Win64="yes">
                 <File Id="owfAAD60F81138D7049AF41740104BCAB41" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Nova3D Elfin3 Mini.ini" KeyPath="yes" />
               </Component>
-              <Component Id="owcA250307D58F323E1C6DC46EA020395EE" Guid="c83aaa8a-e13b-ac0e-7640-4d50b88a60ef">
+              <Component Id="owcA250307D58F323E1C6DC46EA020395EE" Guid="c83aaa8a-e13b-ac0e-7640-4d50b88a60ef" Win64="yes">
                 <File Id="owfA250307D58F323E1C6DC46EA020395EE" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Nova3D Whale.ini" KeyPath="yes" />
               </Component>
-              <Component Id="owcDCAE3DE6C60367FB788A82F49EEE1A5A" Guid="c3be403f-2f35-cbf7-d36c-948f227dce15">
+              <Component Id="owcDCAE3DE6C60367FB788A82F49EEE1A5A" Guid="c3be403f-2f35-cbf7-d36c-948f227dce15" Win64="yes">
                 <File Id="owfDCAE3DE6C60367FB788A82F49EEE1A5A" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Nova3D Whale2.ini" KeyPath="yes" />
               </Component>
-              <Component Id="owc66B3B56E9ED020CAA7BBA3FAC953C136" Guid="cffd69b2-fd9b-7837-4f02-4bf3f71ec59f">
+              <Component Id="owc66B3B56E9ED020CAA7BBA3FAC953C136" Guid="cffd69b2-fd9b-7837-4f02-4bf3f71ec59f" Win64="yes">
                 <File Id="owf66B3B56E9ED020CAA7BBA3FAC953C136" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Peopoly Phenom L.ini" KeyPath="yes" />
               </Component>
-              <Component Id="owc13438B96466244BCB8EEF225433BC787" Guid="99b981b3-c851-900a-abaa-a18535df5331">
+              <Component Id="owc13438B96466244BCB8EEF225433BC787" Guid="99b981b3-c851-900a-abaa-a18535df5331" Win64="yes">
                 <File Id="owf13438B96466244BCB8EEF225433BC787" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Peopoly Phenom Noir.ini" KeyPath="yes" />
               </Component>
-              <Component Id="owc1FC1979B98DE233286C3B4804929A5FC" Guid="1ca2aa61-eb0a-2449-1c6f-07fa9749bce8">
+              <Component Id="owc1FC1979B98DE233286C3B4804929A5FC" Guid="1ca2aa61-eb0a-2449-1c6f-07fa9749bce8" Win64="yes">
                 <File Id="owf1FC1979B98DE233286C3B4804929A5FC" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Peopoly Phenom XXL.ini" KeyPath="yes" />
               </Component>
-              <Component Id="owcA1B48C5E1FE8B630F74308849833290E" Guid="4d77c8e5-87d3-b989-e9ea-e5500471a42b">
+              <Component Id="owcA1B48C5E1FE8B630F74308849833290E" Guid="4d77c8e5-87d3-b989-e9ea-e5500471a42b" Win64="yes">
                 <File Id="owfA1B48C5E1FE8B630F74308849833290E" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Peopoly Phenom.ini" KeyPath="yes" />
               </Component>
-              <Component Id="owc15A71F3BB1B2AEB10916D29E37F38D12" Guid="e0fb086d-6925-6100-dc4c-39a463226be2">
+              <Component Id="owc15A71F3BB1B2AEB10916D29E37F38D12" Guid="e0fb086d-6925-6100-dc4c-39a463226be2" Win64="yes">
                 <File Id="owf15A71F3BB1B2AEB10916D29E37F38D12" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Phrozen Shuffle 16.ini" KeyPath="yes" />
               </Component>
-              <Component Id="owcE8409009BD6763D828E850D38FA8BD82" Guid="2382b129-458a-d22d-da5e-184f4acca3dd">
+              <Component Id="owcE8409009BD6763D828E850D38FA8BD82" Guid="2382b129-458a-d22d-da5e-184f4acca3dd" Win64="yes">
                 <File Id="owfE8409009BD6763D828E850D38FA8BD82" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Phrozen Shuffle 4K.ini" KeyPath="yes" />
               </Component>
-              <Component Id="owc11A60D48E52212F18E2C477C8578E239" Guid="256837b3-d391-abbd-5adf-21f67c78aefa">
+              <Component Id="owc11A60D48E52212F18E2C477C8578E239" Guid="256837b3-d391-abbd-5adf-21f67c78aefa" Win64="yes">
                 <File Id="owf11A60D48E52212F18E2C477C8578E239" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Phrozen Shuffle Lite.ini" KeyPath="yes" />
               </Component>
-              <Component Id="owcC03ED35E13CDFC9FBEB4F599236CB5FD" Guid="04521b5a-c5d5-f767-819b-af64f8e04110">
+              <Component Id="owcC03ED35E13CDFC9FBEB4F599236CB5FD" Guid="04521b5a-c5d5-f767-819b-af64f8e04110" Win64="yes">
                 <File Id="owfC03ED35E13CDFC9FBEB4F599236CB5FD" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Phrozen Shuffle XL Lite.ini" KeyPath="yes" />
               </Component>
-              <Component Id="owcCD40C11D90FC0E69173DC0CA0331A4F7" Guid="b319eb54-612a-50cd-c1ac-0fb29a76ccc0">
+              <Component Id="owcCD40C11D90FC0E69173DC0CA0331A4F7" Guid="b319eb54-612a-50cd-c1ac-0fb29a76ccc0" Win64="yes">
                 <File Id="owfCD40C11D90FC0E69173DC0CA0331A4F7" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Phrozen Shuffle XL.ini" KeyPath="yes" />
               </Component>
-              <Component Id="owc24E8828277D098684F005D40D8EE197A" Guid="8102e631-084a-0997-df55-0a1ba6683205">
+              <Component Id="owc24E8828277D098684F005D40D8EE197A" Guid="8102e631-084a-0997-df55-0a1ba6683205" Win64="yes">
                 <File Id="owf24E8828277D098684F005D40D8EE197A" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Phrozen Shuffle.ini" KeyPath="yes" />
               </Component>
-              <Component Id="owcD15E0DC3059CA06E77AAFA92F637FC45" Guid="2445b075-6cd5-7cac-0619-61929f0bbf89">
+              <Component Id="owcD15E0DC3059CA06E77AAFA92F637FC45" Guid="2445b075-6cd5-7cac-0619-61929f0bbf89" Win64="yes">
                 <File Id="owfD15E0DC3059CA06E77AAFA92F637FC45" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Phrozen Sonic 4K.ini" KeyPath="yes" />
               </Component>
-              <Component Id="owc36D6BBE9B18A4A65DFD3D79CF21B429B" Guid="2596c453-e070-b45d-df5c-9669e1a8c625">
+              <Component Id="owc36D6BBE9B18A4A65DFD3D79CF21B429B" Guid="2596c453-e070-b45d-df5c-9669e1a8c625" Win64="yes">
                 <File Id="owf36D6BBE9B18A4A65DFD3D79CF21B429B" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Phrozen Sonic Mighty 4K.ini" KeyPath="yes" />
               </Component>
-              <Component Id="owc89B07C29965B83AB351559075302123F" Guid="678cf4a8-183b-35b9-47fa-ab71d6ec8723">
+              <Component Id="owc89B07C29965B83AB351559075302123F" Guid="678cf4a8-183b-35b9-47fa-ab71d6ec8723" Win64="yes">
                 <File Id="owf89B07C29965B83AB351559075302123F" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Phrozen Sonic Mini 4K.ini" KeyPath="yes" />
               </Component>
-              <Component Id="owc62BB0F9A288719E16F573299E1D996F7" Guid="f1f6e606-dfa0-07b5-2cae-26f89b424056">
+              <Component Id="owc62BB0F9A288719E16F573299E1D996F7" Guid="f1f6e606-dfa0-07b5-2cae-26f89b424056" Win64="yes">
                 <File Id="owf62BB0F9A288719E16F573299E1D996F7" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Phrozen Sonic Mini.ini" KeyPath="yes" />
               </Component>
-              <Component Id="owc51A8602AF8B1F794D75D755035BCA481" Guid="c6a1905b-627c-c872-cf21-d2b69c84db8d">
+              <Component Id="owc51A8602AF8B1F794D75D755035BCA481" Guid="c6a1905b-627c-c872-cf21-d2b69c84db8d" Win64="yes">
                 <File Id="owf51A8602AF8B1F794D75D755035BCA481" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Phrozen Sonic.ini" KeyPath="yes" />
               </Component>
-              <Component Id="owcFE299618D4ED99513A75713869AEB4B2" Guid="7e76d3e8-e561-5fcc-e266-d43e670840c2">
+              <Component Id="owcFE299618D4ED99513A75713869AEB4B2" Guid="7e76d3e8-e561-5fcc-e266-d43e670840c2" Win64="yes">
                 <File Id="owfFE299618D4ED99513A75713869AEB4B2" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Phrozen Transform.ini" KeyPath="yes" />
               </Component>
-              <Component Id="owc06E606590D5C2186D26EF1DDD7A361B7" Guid="578ba680-240d-d850-8372-b8c261fbe053">
+              <Component Id="owc06E606590D5C2186D26EF1DDD7A361B7" Guid="578ba680-240d-d850-8372-b8c261fbe053" Win64="yes">
                 <File Id="owf06E606590D5C2186D26EF1DDD7A361B7" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\QIDI I-Box Mono.ini" KeyPath="yes" />
               </Component>
-              <Component Id="owcACB41397AF3AAB714FF18711FC3D3D1B" Guid="a47810c7-ddf5-3a76-3113-c0cdab0551bf">
+              <Component Id="owcACB41397AF3AAB714FF18711FC3D3D1B" Guid="a47810c7-ddf5-3a76-3113-c0cdab0551bf" Win64="yes">
                 <File Id="owfACB41397AF3AAB714FF18711FC3D3D1B" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\QIDI S-Box.ini" KeyPath="yes" />
               </Component>
-              <Component Id="owcF5CA849F66CC478E38B67212127BE7A2" Guid="cdecb062-fe09-44e6-db2d-a4b81fcf4c73">
+              <Component Id="owcF5CA849F66CC478E38B67212127BE7A2" Guid="cdecb062-fe09-44e6-db2d-a4b81fcf4c73" Win64="yes">
                 <File Id="owfF5CA849F66CC478E38B67212127BE7A2" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\QIDI Shadow5.5.ini" KeyPath="yes" />
               </Component>
-              <Component Id="owc696F0AF8084A6AA7624CA0947E245A47" Guid="6aa7d092-d68b-a44d-f2c7-0a590404b19f">
+              <Component Id="owc696F0AF8084A6AA7624CA0947E245A47" Guid="6aa7d092-d68b-a44d-f2c7-0a590404b19f" Win64="yes">
                 <File Id="owf696F0AF8084A6AA7624CA0947E245A47" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\QIDI Shadow6.0 Pro.ini" KeyPath="yes" />
               </Component>
-              <Component Id="owc58F08D198616611A088F5E8CA9BAB684" Guid="f0f9d4c3-c4d4-ab8b-ff79-f93dc13fbbbb">
+              <Component Id="owc58F08D198616611A088F5E8CA9BAB684" Guid="f0f9d4c3-c4d4-ab8b-ff79-f93dc13fbbbb" Win64="yes">
                 <File Id="owf58F08D198616611A088F5E8CA9BAB684" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Uniz IBEE.ini" KeyPath="yes" />
               </Component>
-              <Component Id="owcD0FD9259BE924EB58AE9F7A85AE0A9E8" Guid="360b089c-8765-92db-0c8f-367d80202d8f">
+              <Component Id="owcD0FD9259BE924EB58AE9F7A85AE0A9E8" Guid="360b089c-8765-92db-0c8f-367d80202d8f" Win64="yes">
                 <File Id="owfD0FD9259BE924EB58AE9F7A85AE0A9E8" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\UVtools Prusa SL1.ini" KeyPath="yes" />
               </Component>
-              <Component Id="owc92527EBFC9C5B568C8D66A882C08D0B5" Guid="dcca948b-ff91-af94-7363-d77b50dde1a5">
+              <Component Id="owc92527EBFC9C5B568C8D66A882C08D0B5" Guid="dcca948b-ff91-af94-7363-d77b50dde1a5" Win64="yes">
                 <File Id="owf92527EBFC9C5B568C8D66A882C08D0B5" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\UVtools Prusa SL1S SPEED.ini" KeyPath="yes" />
               </Component>
-              <Component Id="owc2D767EDC65A9490BE5587F5807220F67" Guid="1b34ea21-cadd-c887-3f4e-8655903ef11a">
+              <Component Id="owc2D767EDC65A9490BE5587F5807220F67" Guid="1b34ea21-cadd-c887-3f4e-8655903ef11a" Win64="yes">
                 <File Id="owf2D767EDC65A9490BE5587F5807220F67" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Voxelab Ceres 8.9.ini" KeyPath="yes" />
               </Component>
-              <Component Id="owc90539A9197EF7BEC5C7BE8507C05CAB3" Guid="9dc6bfc4-de9d-312e-d562-bf3574c4f527">
+              <Component Id="owc90539A9197EF7BEC5C7BE8507C05CAB3" Guid="9dc6bfc4-de9d-312e-d562-bf3574c4f527" Win64="yes">
                 <File Id="owf90539A9197EF7BEC5C7BE8507C05CAB3" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Voxelab Polaris 5.5.ini" KeyPath="yes" />
               </Component>
-              <Component Id="owc1F3FB53972C06D8DF37D9F829AC83D16" Guid="d245e99b-d664-d9f6-351f-d8cf26532427">
+              <Component Id="owc1F3FB53972C06D8DF37D9F829AC83D16" Guid="d245e99b-d664-d9f6-351f-d8cf26532427" Win64="yes">
                 <File Id="owf1F3FB53972C06D8DF37D9F829AC83D16" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Voxelab Proxima 6.ini" KeyPath="yes" />
               </Component>
-              <Component Id="owc7C7E45D1C452D2676768409E4CA9CC60" Guid="860c70fe-c0a8-cd0a-e957-f1a6a9430509">
+              <Component Id="owc7C7E45D1C452D2676768409E4CA9CC60" Guid="860c70fe-c0a8-cd0a-e957-f1a6a9430509" Win64="yes">
                 <File Id="owf7C7E45D1C452D2676768409E4CA9CC60" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Wanhao CGR Mini Mono.ini" KeyPath="yes" />
               </Component>
-              <Component Id="owcF9E5AF8C32ABDFCF9A192B1CDDF75FE7" Guid="bc420f43-9332-7e19-13d8-1704b3931172">
+              <Component Id="owcF9E5AF8C32ABDFCF9A192B1CDDF75FE7" Guid="bc420f43-9332-7e19-13d8-1704b3931172" Win64="yes">
                 <File Id="owfF9E5AF8C32ABDFCF9A192B1CDDF75FE7" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Wanhao CGR Mono.ini" KeyPath="yes" />
               </Component>
-              <Component Id="owcADA4A8BCF46DF0463053836AF5844507" Guid="a0052256-a256-d7c2-e8ab-fa76b6405a56">
+              <Component Id="owcADA4A8BCF46DF0463053836AF5844507" Guid="a0052256-a256-d7c2-e8ab-fa76b6405a56" Win64="yes">
                 <File Id="owfADA4A8BCF46DF0463053836AF5844507" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Wanhao D7.ini" KeyPath="yes" />
               </Component>
-              <Component Id="owcA5775C19FF4675471A8C0D8A95A8FD99" Guid="61438068-0851-2e9b-2d6a-49cf5d31931f">
+              <Component Id="owcA5775C19FF4675471A8C0D8A95A8FD99" Guid="61438068-0851-2e9b-2d6a-49cf5d31931f" Win64="yes">
                 <File Id="owfA5775C19FF4675471A8C0D8A95A8FD99" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Wanhao D8.ini" KeyPath="yes" />
               </Component>
-              <Component Id="owc5A0969A08E1AC292A7F06D07A9C219FC" Guid="c767b03e-f767-4482-621d-04b79c6735f9">
+              <Component Id="owc5A0969A08E1AC292A7F06D07A9C219FC" Guid="c767b03e-f767-4482-621d-04b79c6735f9" Win64="yes">
                 <File Id="owf5A0969A08E1AC292A7F06D07A9C219FC" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Zortrax Inkspire.ini" KeyPath="yes" />
               </Component>
             </Directory>

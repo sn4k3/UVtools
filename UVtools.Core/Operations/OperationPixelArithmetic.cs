@@ -794,11 +794,22 @@ namespace UVtools.Core.Operations
                 and not PixelArithmeticOperators.KeepRegion
                 and not PixelArithmeticOperators.DiscardRegion ? EmguExtensions.InitMat(HaveROI ? ROI.Size : SlicerFile.Resolution, new MCvScalar(_value)) : null;
 
+        public void PresetElephantFootCompensation()
+        {
+            SelectBottomLayers();
+            Operator = PixelArithmeticOperators.Set;
+            ApplyMethod = PixelArithmeticApplyMethod.ModelWalls;
+            //Value = 190;
+            //WallThickness = 20;
+            WallChamfer = false;
+            UsePattern = false;
+        }
+
         public void PresetPixelDimming()
         {
             Operator = PixelArithmeticOperators.Subtract;
             ApplyMethod = PixelArithmeticApplyMethod.ModelInner;
-            WallThickness = 20;
+            //WallThickness = 20;
             WallChamfer = false;
             UsePattern = true;
         }

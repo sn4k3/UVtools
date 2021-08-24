@@ -1266,9 +1266,11 @@ namespace UVtools.WPF
                 _showLayerImageRotated = mat.Height > mat.Width;
             }
 
-            if (SlicerFile.DisplayMirror)
+            if (SlicerFile.DisplayMirror != Enumerations.FlipDirection.None)
             {
                 _showLayerImageFlipped = true;
+                _showLayerImageFlippedHorizontally = SlicerFile.DisplayMirror is Enumerations.FlipDirection.Horizontally or Enumerations.FlipDirection.Both;
+                _showLayerImageFlippedVertically = SlicerFile.DisplayMirror is Enumerations.FlipDirection.Vertically or Enumerations.FlipDirection.Both;
             }
 
             ResetDataContext();

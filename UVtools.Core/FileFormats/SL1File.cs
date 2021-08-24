@@ -384,13 +384,19 @@ namespace UVtools.Core.FileFormats
             }
         }
 
-        public override bool DisplayMirror
+        public override Enumerations.FlipDirection DisplayMirror
         {
-            get => PrinterSettings.DisplayMirrorX || PrinterSettings.DisplayMirrorY;  
+            get
+            {
+                if (PrinterSettings.DisplayMirrorX && PrinterSettings.DisplayMirrorY) return Enumerations.FlipDirection.Both;
+                if (PrinterSettings.DisplayMirrorX) return Enumerations.FlipDirection.Horizontally;
+                if (PrinterSettings.DisplayMirrorY) return Enumerations.FlipDirection.Vertically;
+                return Enumerations.FlipDirection.None;
+            }
             set
             {
-                PrinterSettings.DisplayMirrorX = value;
-                PrinterSettings.DisplayMirrorY = false;
+                PrinterSettings.DisplayMirrorX = value is Enumerations.FlipDirection.Horizontally or Enumerations.FlipDirection.Both;
+                PrinterSettings.DisplayMirrorY = value is Enumerations.FlipDirection.Vertically or Enumerations.FlipDirection.Both;
                 RaisePropertyChanged();
             }
         }   

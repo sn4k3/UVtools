@@ -276,7 +276,7 @@ namespace UVtools.Core.FileFormats
             }
         }
 
-        public override bool DisplayMirror => true;
+        public override Enumerations.FlipDirection DisplayMirror => Enumerations.FlipDirection.Vertically;
 
         public override byte AntiAliasing
         {

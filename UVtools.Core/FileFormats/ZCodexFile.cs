@@ -207,9 +207,9 @@ namespace UVtools.Core.FileFormats
             set { }
         }
 
-        public override bool DisplayMirror
+        public override Enumerations.FlipDirection DisplayMirror
         {
-            get => true;
+            get => Enumerations.FlipDirection.Horizontally;
             set { }
         }
 

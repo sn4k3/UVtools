@@ -728,12 +728,12 @@ namespace UVtools.Core.FileFormats
             }
         }
 
-        public override bool DisplayMirror
+        public override Enumerations.FlipDirection DisplayMirror
         {
-            get => HeaderSettings.ProjectorType > 0;
+            get => HeaderSettings.ProjectorType == 0 ? Enumerations.FlipDirection.None : Enumerations.FlipDirection.Horizontally;
             set
             {
-                HeaderSettings.ProjectorType = value ? 1u : 0;
+                HeaderSettings.ProjectorType = value == Enumerations.FlipDirection.None ? 0u : 1;
                 RaisePropertyChanged();
             }
         }

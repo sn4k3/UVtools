@@ -234,7 +234,7 @@ namespace UVtools.Core.FileFormats
             }
         }
 
-        public override bool DisplayMirror { get; set; }
+        public override Enumerations.FlipDirection DisplayMirror { get; set; }
         public override float LayerHeight
         {
             get => float.Parse(Encoding.ASCII.GetString(SlicerInfoSettings.LayerHeightBytes.Where(b => b != 0).ToArray()));
