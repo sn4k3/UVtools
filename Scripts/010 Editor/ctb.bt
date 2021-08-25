@@ -85,10 +85,10 @@ struct SLICER_INFO {
 
     uint MachineNameAddress <fgcolor=cBlack, bgcolor=cRed>;
     uint MachineNameSize <fgcolor=cBlack, bgcolor=cRed>;
-    uint PerLayerSettings <fgcolor=cBlack, bgcolor=cRed>; // 0/8 for cbddlp files, 0xF (15) for ctb files, 0x2000000F (536870927) for v3 ctb and 1073741839 for v4 ctb files to allow per layer parameters
+    uint PerLayerSettings <fgcolor=cBlack, bgcolor=cRed, format=hex>; // 0/8 for cbddlp files, 0xF (15) for ctb files, 0x2000000F (536870927) for v3 ctb and 1073741839 for v4 ctb files to allow per layer parameters
     uint MysteriousId <fgcolor=cBlack, bgcolor=cRed>; // v3 = 305419896 | v4 lightoff? = 27093086 | v4 rest? = 27093090
     uint AntiAliasLevel <fgcolor=cBlack, bgcolor=cRed>;
-    uint SoftwareVersion <fgcolor=cBlack, bgcolor=cRed>; // ctb v3 = 17171200 | ctb v4 pro = 16777216
+    uint SoftwareVersion <fgcolor=cBlack, bgcolor=cRed, format=hex>; // ctb v3 = 17171200 | ctb v4 pro = 16777216
     float RestTimeAfterRetract <fgcolor=cBlack, bgcolor=cRed>;
     float RestTimeAfterLift2 <fgcolor=cBlack, bgcolor=cRed>;
     uint TransitionLayerCount <fgcolor=cBlack, bgcolor=cRed>;

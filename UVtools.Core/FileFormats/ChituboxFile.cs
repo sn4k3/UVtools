@@ -108,12 +108,12 @@ namespace UVtools.Core.FileFormats
             /// <summary>
             /// Gets the light off time setting used at slicing, for normal layers, in seconds. Actual time used by the machine is in the layer table. Note that light_off_time_s appears in both the file header and ExtConfig.
             /// </summary>
-            [FieldOrder(11)] public float LightOffDelay     { get; set; } = 1;
+            [FieldOrder(11)] public float LightOffDelay     { get; set; }
 
             /// <summary>
             /// Gets number of layers configured as "bottom." Note that this field appears in both the file header and ExtConfig..
             /// </summary>
-            [FieldOrder(12)] public uint BottomLayersCount { get; set; } = 10;
+            [FieldOrder(12)] public uint BottomLayersCount { get; set; } = DefaultBottomLayerCount;
 
             /// <summary>
             /// Gets the printer resolution along X axis, in pixels. This information is critical to correctly decoding layer images.
@@ -178,13 +178,13 @@ namespace UVtools.Core.FileFormats
             /// Gets the PWM duty cycle for the UV illumination source on normal levels, respectively.
             /// This appears to be an 8-bit quantity where 0xFF is fully on and 0x00 is fully off.
             /// </summary>
-            [FieldOrder(24)] public ushort LightPWM { get; set; } = 255;
+            [FieldOrder(24)] public ushort LightPWM { get; set; } = DefaultLightPWM;
 
             /// <summary>
             /// Gets the PWM duty cycle for the UV illumination source on bottom levels, respectively.
             /// This appears to be an 8-bit quantity where 0xFF is fully on and 0x00 is fully off.
             /// </summary>
-            [FieldOrder(25)] public ushort BottomLightPWM { get; set; } = 255;
+            [FieldOrder(25)] public ushort BottomLightPWM { get; set; } = DefaultBottomLightPWM;
 
             /// <summary>
             /// Gets the key used to encrypt layer data, or 0 if encryption is not used.
@@ -214,27 +214,27 @@ namespace UVtools.Core.FileFormats
             /// <summary>
             /// Gets the distance to lift the build platform away from the vat after bottom layers, in millimeters.
             /// </summary>
-            [FieldOrder(0)] public float BottomLiftHeight { get; set; } = 5;
+            [FieldOrder(0)] public float BottomLiftHeight { get; set; } = DefaultBottomLiftHeight;
 
             /// <summary>
             /// Gets the speed at which to lift the build platform away from the vat after bottom layers, in millimeters per minute.
             /// </summary>
-            [FieldOrder(1)]  public float BottomLiftSpeed     { get; set; } = 300;
+            [FieldOrder(1)]  public float BottomLiftSpeed     { get; set; } = DefaultBottomLiftSpeed;
 
             /// <summary>
             /// Gets the distance to lift the build platform away from the vat after normal layers, in millimeters.
             /// </summary>
-            [FieldOrder(2)]  public float LiftHeight          { get; set; } = 5;
+            [FieldOrder(2)]  public float LiftHeight          { get; set; } = DefaultLayerHeight;
 
             /// <summary>
             /// Gets the speed at which to lift the build platform away from the vat after normal layers, in millimeters per minute.
             /// </summary>
-            [FieldOrder(3)]  public float LiftSpeed        { get; set; } = 300;
+            [FieldOrder(3)]  public float LiftSpeed        { get; set; } = DefaultLiftSpeed;
 
             /// <summary>
             /// Gets the speed to use when the build platform re-approaches the vat after lift, in millimeters per minute.
             /// </summary>
-            [FieldOrder(4)]  public float RetractSpeed        { get; set; } = 300;
+            [FieldOrder(4)]  public float RetractSpeed        { get; set; } = DefaultRetractSpeed;
 
             /// <summary>
             /// Gets the estimated required resin, measured in milliliters. The volume number is derived from the model.
@@ -254,17 +254,17 @@ namespace UVtools.Core.FileFormats
             /// <summary>
             /// Gets the light off time setting used at slicing, for bottom layers, in seconds. Actual time used by the machine is in the layer table. Note that light_off_time_s appears in both the file header and ExtConfig.
             /// </summary>
-            [FieldOrder(8)]  public float BottomLightOffDelay { get; set; } = 1;
+            [FieldOrder(8)]  public float BottomLightOffDelay { get; set; }
 
             /// <summary>
             /// Gets the light off time setting used at slicing, for normal layers, in seconds. Actual time used by the machine is in the layer table. Note that light_off_time_s appears in both the file header and ExtConfig.
             /// </summary>
-            [FieldOrder(9)]  public float LightOffDelay       { get; set; } = 1;
+            [FieldOrder(9)]  public float LightOffDelay       { get; set; }
 
             /// <summary>
             /// Gets number of layers configured as "bottom." Note that this field appears in both the file header and ExtConfig.
             /// </summary>
-            [FieldOrder(10)] public uint BottomLayerCount     { get; set; } = 10;
+            [FieldOrder(10)] public uint BottomLayerCount     { get; set; } = DefaultBottomLayerCount;
             [FieldOrder(11)] public uint Padding1             { get; set; }
             [FieldOrder(12)] public uint Padding2             { get; set; }
             [FieldOrder(13)] public uint Padding3             { get; set; }
@@ -320,8 +320,8 @@ namespace UVtools.Core.FileFormats
             /// Gets a version of software that generated this file, encoded with major, minor, and patch release in bytes starting from the MSB down.
             /// (No provision is made to name the software being used, so this assumes that only one software package can generate the files.
             /// Probably best to hardcode it at 0x01060300.)
-            /// </summary>
-            [FieldOrder(12)] public uint SoftwareVersion { get; set; } = 0x01060300; // ctb v3 = 17171200 | ctb v4 = 16777216
+            /// </summary>17170480
+            [FieldOrder(12)] public uint SoftwareVersion { get; set; } = 0x1090000; // ctb v3 = 0x1060300 (1.6.3) | ctb v4 = 0x1090000 (1.9.0)
             [FieldOrder(13)] public float RestTimeAfterRetract { get; set; }
             [FieldOrder(14)] public float RestTimeAfterLift2   { get; set; }
             [FieldOrder(15)] public uint TransitionLayerCount { get; set; } // CTB not all printers
@@ -1084,13 +1084,13 @@ namespace UVtools.Core.FileFormats
                         PrintParameterModifier.BottomLightOffDelay,
                         PrintParameterModifier.LightOffDelay,
 
-                        //PrintParameterModifier.BottomWaitTimeBeforeCure,
+                        PrintParameterModifier.BottomWaitTimeBeforeCure,
                         PrintParameterModifier.WaitTimeBeforeCure,
 
                         PrintParameterModifier.BottomExposureTime,
                         PrintParameterModifier.ExposureTime,
 
-                        //PrintParameterModifier.BottomWaitTimeAfterCure,
+                        PrintParameterModifier.BottomWaitTimeAfterCure,
                         PrintParameterModifier.WaitTimeAfterCure,
 
                         PrintParameterModifier.BottomLiftHeight,
@@ -1102,7 +1102,7 @@ namespace UVtools.Core.FileFormats
                         PrintParameterModifier.LiftHeight2,
                         PrintParameterModifier.LiftSpeed2,
 
-                        //PrintParameterModifier.BottomWaitTimeAfterLift,
+                        PrintParameterModifier.BottomWaitTimeAfterLift,
                         PrintParameterModifier.WaitTimeAfterLift,
 
                         PrintParameterModifier.BottomRetractSpeed,
@@ -1304,7 +1304,7 @@ namespace UVtools.Core.FileFormats
         public override ushort BottomLayerCount
         {
             get => (ushort) HeaderSettings.BottomLayersCount;
-            set => base.BottomLayerCount = (ushort) (HeaderSettings.BottomLayersCount = value);
+            set => base.BottomLayerCount = (ushort) (HeaderSettings.BottomLayersCount = PrintParametersSettings.BottomLayerCount = value);
         }
 
         public override float BottomLightOffDelay
@@ -1339,7 +1339,7 @@ namespace UVtools.Core.FileFormats
 
         public override float BottomWaitTimeBeforeCure
         {
-            get => WaitTimeBeforeCure;
+            get => base.BottomWaitTimeBeforeCure > 0 ? base.BottomWaitTimeBeforeCure : FirstLayer?.WaitTimeBeforeCure ?? 0;
             set
             {
                 if (HeaderSettings.Version < 4)
@@ -1348,7 +1348,11 @@ namespace UVtools.Core.FileFormats
                     {
                         SetBottomLightOffDelay(value);
                     }
+
+                    return;
                 }
+
+                base.BottomWaitTimeBeforeCure = value;
             }
         }
 
@@ -1381,7 +1385,16 @@ namespace UVtools.Core.FileFormats
             set => base.BottomExposureTime = HeaderSettings.BottomExposureSeconds = (float) Math.Round(value, 2);
         }
 
-        public override float BottomWaitTimeAfterCure => WaitTimeAfterCure;
+        public override float BottomWaitTimeAfterCure
+        {
+            get => HeaderSettings.Version >= 4 ? (base.BottomWaitTimeAfterCure > 0 ? base.BottomWaitTimeAfterCure : FirstLayer?.WaitTimeAfterCure ?? 0) : 0;
+            set
+            {
+                if (HeaderSettings.Version < 4) return;
+                base.BottomWaitTimeAfterCure = value;
+            }
+        }
+
         public override float WaitTimeAfterCure
         {
             get => HeaderSettings.Version >= 4 ? PrintParametersV4Settings.RestTimeBeforeLift : 0;
@@ -1493,7 +1506,16 @@ namespace UVtools.Core.FileFormats
             }
         }
 
-        public override float BottomWaitTimeAfterLift => WaitTimeAfterLift;
+        public override float BottomWaitTimeAfterLift
+        {
+            get => HeaderSettings.Version >= 4 ? (base.BottomWaitTimeAfterLift > 0 ? base.BottomWaitTimeAfterLift : FirstLayer?.WaitTimeAfterLift ?? 0) : 0;
+            set
+            {
+                if (HeaderSettings.Version < 4) return;
+                base.BottomWaitTimeAfterLift = value;
+            }
+        }
+
         public override float WaitTimeAfterLift
         {
             get => HeaderSettings.Version >= 4 ? PrintParametersV4Settings.RestTimeAfterLift : 0;

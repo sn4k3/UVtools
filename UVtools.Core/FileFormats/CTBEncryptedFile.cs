@@ -641,13 +641,13 @@ namespace UVtools.Core.FileFormats
             PrintParameterModifier.BottomLightOffDelay,
             PrintParameterModifier.LightOffDelay,
 
-            //PrintParameterModifier.BottomWaitTimeBeforeCure,
+            PrintParameterModifier.BottomWaitTimeBeforeCure,
             PrintParameterModifier.WaitTimeBeforeCure,
 
             PrintParameterModifier.BottomExposureTime,
             PrintParameterModifier.ExposureTime,
 
-            //PrintParameterModifier.BottomWaitTimeAfterCure,
+            PrintParameterModifier.BottomWaitTimeAfterCure,
             PrintParameterModifier.WaitTimeAfterCure,
 
             PrintParameterModifier.BottomLiftHeight,
@@ -659,7 +659,7 @@ namespace UVtools.Core.FileFormats
             PrintParameterModifier.LiftHeight2,
             PrintParameterModifier.LiftSpeed2,
 
-            //PrintParameterModifier.BottomWaitTimeAfterLift,
+            PrintParameterModifier.BottomWaitTimeAfterLift,
             PrintParameterModifier.WaitTimeAfterLift,
 
             PrintParameterModifier.BottomRetractSpeed,
@@ -793,7 +793,11 @@ namespace UVtools.Core.FileFormats
             }
         }
 
-        public override float BottomWaitTimeBeforeCure => WaitTimeBeforeCure;
+        public override float BottomWaitTimeBeforeCure
+        {
+            get => base.BottomWaitTimeBeforeCure > 0 ? base.BottomWaitTimeBeforeCure : FirstLayer?.WaitTimeBeforeCure ?? 0;
+            set => base.BottomWaitTimeBeforeCure = value;
+        }
 
 
         public override float WaitTimeBeforeCure
@@ -816,7 +820,12 @@ namespace UVtools.Core.FileFormats
             set => base.BottomExposureTime = Settings.BottomExposureTime = (float)Math.Round(value, 2);
         }
 
-        public override float BottomWaitTimeAfterCure => WaitTimeAfterCure;
+        public override float BottomWaitTimeAfterCure
+        {
+            get => base.BottomWaitTimeAfterCure > 0 ? base.BottomWaitTimeAfterCure : FirstLayer?.WaitTimeAfterCure ?? 0;
+            set => base.BottomWaitTimeAfterCure = value;
+        }
+
         public override float WaitTimeAfterCure
         {
             get => Settings.RestTimeBeforeLift;
@@ -907,7 +916,12 @@ namespace UVtools.Core.FileFormats
             set => base.LiftSpeed2 = Settings.LiftSpeed2 = (float)Math.Round(value, 2);
         }
 
-        public override float BottomWaitTimeAfterLift => WaitTimeAfterLift;
+        public override float BottomWaitTimeAfterLift
+        {
+            get => base.BottomWaitTimeAfterLift > 0 ? base.BottomWaitTimeAfterLift : FirstLayer?.WaitTimeAfterLift ?? 0;
+            set => base.BottomWaitTimeAfterLift = value;
+        }
+
         public override float WaitTimeAfterLift
         {
             get => Settings.RestTimeAfterLift;
