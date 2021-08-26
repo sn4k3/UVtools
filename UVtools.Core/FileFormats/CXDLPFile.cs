@@ -170,7 +170,7 @@ namespace UVtools.Core.FileFormats
 
             [FieldOrder(7)]
             [FieldEndianness(Endianness.Big)]
-            public ushort WaitTimeBeforeCure { get; set; }
+            public ushort WaitTimeBeforeCure { get; set; } = 1; // 1 as minimum or it wont print!
 
             [FieldOrder(8)]
             [FieldEndianness(Endianness.Big)]
@@ -491,7 +491,7 @@ namespace UVtools.Core.FileFormats
         public override float WaitTimeBeforeCure
         {
             get => SlicerInfoSettings.WaitTimeBeforeCure;
-            set => base.WaitTimeBeforeCure = SlicerInfoSettings.WaitTimeBeforeCure = (ushort)value;
+            set => base.WaitTimeBeforeCure = SlicerInfoSettings.WaitTimeBeforeCure = (ushort)Math.Max(1, value);
         }
 
         public override float BottomExposureTime
@@ -565,6 +565,11 @@ namespace UVtools.Core.FileFormats
 
         #region Methods
 
+        private void SanitizeProperties()
+        {
+            SlicerInfoSettings.WaitTimeBeforeCure = (ushort)Math.Max(1, WaitTimeBeforeCure);
+        }
+
         protected override void EncodeInternally(string fileFullPath, OperationProgress progress)
         {
             using var outputFile = new FileStream(fileFullPath, FileMode.Create, FileAccess.ReadWrite);
@@ -585,6 +590,8 @@ namespace UVtools.Core.FileFormats
             {
                 throw new Exception("Unable to detect the printer model from resolution, check if resolution is well defined on slicer for your printer model.");
             }
+
+            SanitizeProperties();
 
             var pageBreak = PageBreak.Bytes;
 
@@ -940,6 +947,8 @@ namespace UVtools.Core.FileFormats
             {
                 offset += size.Area() * 2 + 2; // + page break
             }
+
+            SanitizeProperties();
             
             using var outputFile = new FileStream(FileFullPath, FileMode.Open, FileAccess.ReadWrite);
             outputFile.Seek(offset, SeekOrigin.Begin);

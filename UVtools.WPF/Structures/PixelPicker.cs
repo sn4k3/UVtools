@@ -6,7 +6,8 @@ namespace UVtools.WPF.Structures
     public class PixelPicker : BindableBase
     {
         private bool _isSet;
-        private Point _location = new(0,0);
+        private Point _location;
+        private PointF _lcdLocation;
         private byte _brightness;
 
         public bool IsSet
@@ -21,15 +22,22 @@ namespace UVtools.WPF.Structures
             set => RaiseAndSetIfChanged(ref _location, value);
         }
 
+        public PointF LcdLocation
+        {
+            get => _lcdLocation;
+            set => RaiseAndSetIfChanged(ref _lcdLocation, value);
+        }
+
         public byte Brightness
         {
             get => _brightness;
             private set => RaiseAndSetIfChanged(ref _brightness, value);
         }
 
-        public void Set(Point location, byte brightness)
+        public void Set(Point location, byte brightness, PointF lcdLocation = default)
         {
             Location = location;
+            LcdLocation = lcdLocation;
             Brightness = brightness;
             IsSet = true;
         }
@@ -37,13 +45,20 @@ namespace UVtools.WPF.Structures
         public void Reset()
         {
             Location = Point.Empty;
+            LcdLocation = PointF.Empty;
             Brightness = 0;
             IsSet = false;
         }
 
         public override string ToString()
         {
-            return $"{{X={_location.X}, Y={_location.Y}, B={_brightness}}}";
+            var text = $"{{X={_location.X}, Y={_location.Y}, B={_brightness}}}";
+            if (!_lcdLocation.IsEmpty)
+            {
+                text += $"\n{{X={_lcdLocation.X}, Y={_lcdLocation.Y} mm}}";
+            }
+
+            return text;
         }
     }
 }

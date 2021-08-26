@@ -2073,12 +2073,15 @@
 
           <Button
             ToolTip.Tip="Layer image zoom level, use mouse scroll to zoom in/out into image.
+&#x0a;Click to set zoom to 100%
+&#x0a;Shift+Click to set zoom to defined value
 &#x0a;Ctrl + 0 OR double right click to scale to fit"
             Margin="2,0,0,0"
+            Command="{Binding ZoomToNormal}"
           >
             <StackPanel VerticalAlignment="Center" Orientation="Horizontal" Spacing="5">
               <Image Source="/Assets/Icons/search-16x16.png"/>
-              <TextBlock Text="{Binding LayerZoomStr, StringFormat=Zoom: [ \{0\} ]}"/>
+              <TextBlock Text="{Binding LayerZoomStr}"/>
             </StackPanel>
           </Button>
 

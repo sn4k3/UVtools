@@ -358,7 +358,7 @@ namespace UVtools.AvaloniaControls
         #region Enums
 
         /// <summary>
-        /// Determines the sizing mode of an image hosted in an <see cref="UVtools.Avalonia.AdvancedImageBox" /> control.
+        /// Determines the sizing mode of an image hosted in an <see cref="AdvancedImageBox" /> control.
         /// </summary>
         public enum SizeModes : byte
         {

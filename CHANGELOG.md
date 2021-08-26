@@ -1,5 +1,17 @@
 # Changelog
 
+## 26/08/2021 - v2.20.1
+
+- **UI:**
+   - (Add) Pixel position on lcd millimeters to the pixel picker information
+   - (Add) Pixel size information when availiable below zoom on status bar
+   - (Add) Click on Zoom button will zoom to 100% and shift click will set to the user defined value
+- **CTB:**
+   - (Add) Allow to change wait time for bottoms and normal layers separately
+   - (Change) Software version field to 1.9.0
+   - (Fix) Bottom layer count field was not being set in one of the tables
+- (Fix) CXDLP: Force the 'Wait time before cure' to be 1 as minimum, or else 0 is preventing the print
+
 ## 24/08/2021 - v2.20.0
 
 - **File formats:**

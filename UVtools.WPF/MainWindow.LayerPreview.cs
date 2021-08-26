@@ -498,8 +498,16 @@ namespace UVtools.WPF
 
         public PixelPicker LayerPixelPicker { get; } = new ();
 
-        public string LayerZoomStr => $"{LayerImageBox.Zoom / 100m}x" +
-                                      (AppSettings.LockedZoomLevel == LayerImageBox.Zoom ? " 🔒" : string.Empty);
+        public string LayerZoomStr
+        {
+            get
+            {
+                var pixelSize = SlicerFile?.PixelSizeMicronsMax;
+                var text = $"Zoom: [ {LayerImageBox.Zoom / 100m}x{(AppSettings.LockedZoomLevel == LayerImageBox.Zoom ? " 🔒 ]" : " ]")}";
+                if (pixelSize > 0) text += $"\nPixel: {SlicerFile.PixelSizeMicronsMax}µm";
+                return text;
+            }
+        }
 
         public string LayerResolutionStr
         {
@@ -1338,6 +1346,13 @@ namespace UVtools.WPF
             return GetTransposedRectangle(issue.BoundingRectangle);
         }
 
+        public void CenterLayer(int zoomLevel = 0)
+        {
+            if (zoomLevel < 0) zoomLevel = AppSettings.LockedZoomLevel;
+            if (zoomLevel > 0) LayerImageBox.Zoom = zoomLevel;
+            LayerImageBox.CenterToImage();
+        }
+
         /// <summary>
         /// Centers layer view on a X,Y coordinate
         /// </summary>
@@ -1430,8 +1445,7 @@ namespace UVtools.WPF
         /// </summary>
         private void CenterAtIssue(LayerIssue issue)
         {
-            if (issue.Type == LayerIssue.IssueType.TouchingBound || issue.Type == LayerIssue.IssueType.EmptyLayer ||
-                (issue.X == -1 && issue.Y == -1))
+            if (issue.Type is LayerIssue.IssueType.TouchingBound or LayerIssue.IssueType.EmptyLayer || (issue.X == -1 && issue.Y == -1))
             {
                 ZoomToFit();
             }
@@ -1440,6 +1454,12 @@ namespace UVtools.WPF
             {
                 CenterLayerAt(GetTransposedIssueBounds(issue));
             }
+        }
+
+        public void ZoomToNormal()
+        {
+            LayerImageBox.Zoom = (_globalModifiers & KeyModifiers.Shift) != 0 ? AppSettings.LockedZoomLevel : 100;
+            LayerImageBox.CenterToImage();
         }
 
         public void ZoomToFitSimple()
@@ -1714,7 +1734,7 @@ namespace UVtools.WPF
                 unsafe
                 {
                     var brightness = LayerCache.ImageSpan[LayerCache.Image.GetPixelPos(realLocation)];
-                    LayerPixelPicker.Set(realLocation, brightness);
+                    LayerPixelPicker.Set(realLocation, brightness, SlicerFile.PixelToDisplayPosition(realLocation, 2));
                 }
 
                 RaisePropertyChanged(nameof(LayerPixelPicker));

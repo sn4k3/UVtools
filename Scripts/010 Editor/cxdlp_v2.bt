@@ -35,12 +35,12 @@ typedef struct(int size) {
 
 struct HEADER {
     uint32 headerSize <fgcolor=cBlack, bgcolor=cWhite>;
-    ubyte header[headerSize] <fgcolor=cBlack, bgcolor=cRed>;
+    char header[headerSize] <fgcolor=cBlack, bgcolor=cRed>;
 
     uint16 version <fgcolor=cBlack, bgcolor=cWhite>;
 
     uint32 modelSize <fgcolor=cBlack, bgcolor=cWhite>;
-    ubyte model[modelSize] <fgcolor=cBlack, bgcolor=cRed>;
+    char model[modelSize] <fgcolor=cBlack, bgcolor=cRed>;
 
     uint16 totalLayers <fgcolor=cBlack, bgcolor=cWhite>;
     uint16 resolutionX <fgcolor=cBlack, bgcolor=cWhite>;
@@ -67,7 +67,7 @@ struct HEADER {
     wchar_t layerThickness[layerThicknessLength/2];
 
     uint16 ExposureTime <fgcolor=cBlack, bgcolor=cWhite>;
-    uint16 WaitTimeBeforeCure <fgcolor=cBlack, bgcolor=cWhite>;
+    uint16 WaitTimeBeforeCure <fgcolor=cBlack, bgcolor=cWhite>; // Cant be 0!
     uint16 BottomExposureTime <fgcolor=cBlack, bgcolor=cWhite>;
     uint16 BottomLayersCount <fgcolor=cBlack, bgcolor=cWhite>;
     uint16 BottomLiftHeight <fgcolor=cBlack, bgcolor=cWhite>;
@@ -97,8 +97,7 @@ struct LAYERS {
  
 struct FOOTER {
     uint32 footerSize <fgcolor=cBlack, bgcolor=cWhite>;
-    ubyte str[footer.footerSize] <fgcolor=cBlack, bgcolor=cRed>;
+    char str[footer.footerSize] <fgcolor=cBlack, bgcolor=cRed>;
 
-    ubyte checkSumControl[3] <fgcolor=cBlack, bgcolor=cWhite>;
-    ubyte checkSumByte <fgcolor=cBlack, bgcolor=cWhite>;
+    uint checkSum <fgcolor=cBlack, bgcolor=cWhite>;
 } footer;

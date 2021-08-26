@@ -3558,23 +3558,27 @@ namespace UVtools.Core.FileFormats
         /// From a pixel position get the equivalent position on the display
         /// </summary>
         /// <param name="x">X position in pixels</param>
+        /// <param name="precision">Decimal precision</param>
         /// <returns>Display position in millimeters</returns>
-        public float PixelToDisplayPositionX(int x) => (float)Math.Round(PixelWidth * x, 3);
+        public float PixelToDisplayPositionX(int x, byte precision = 3) => (float)Math.Round(PixelWidth * x, precision);
 
         /// <summary>
         /// From a pixel position get the equivalent position on the display
         /// </summary>
         /// <param name="y">Y position in pixels</param>
+        /// <param name="precision">Decimal precision</param>
         /// <returns>Display position in millimeters</returns>
-        public float PixelToDisplayPositionY(int y) => (float)Math.Round(PixelHeight * y, 3);
+        public float PixelToDisplayPositionY(int y, byte precision = 3) => (float)Math.Round(PixelHeight * y, precision);
 
         /// <summary>
         /// From a pixel position get the equivalent position on the display
         /// </summary>
         /// <param name="x">X position in pixels</param>
         /// <param name="y">Y position in pixels</param>
+        /// <param name="precision">Decimal precision</param>
         /// <returns>Resolution position in pixels</returns>
-        public PointF PixelToDisplayPosition(int x, int y) =>new(PixelToDisplayPositionX(x), PixelToDisplayPositionY(y));
+        public PointF PixelToDisplayPosition(int x, int y, byte precision = 3) =>new(PixelToDisplayPositionX(x, precision), PixelToDisplayPositionY(y, precision));
+        public PointF PixelToDisplayPosition(Point point, byte precision = 3) => new(PixelToDisplayPositionX(point.X, precision), PixelToDisplayPositionY(point.Y, precision));
 
         /// <summary>
         /// From a pixel position get the equivalent position on the display
@@ -3597,6 +3601,7 @@ namespace UVtools.Core.FileFormats
         /// <param name="y">Y position in millimeters</param>
         /// <returns>Resolution position in pixels</returns>
         public Point DisplayToPixelPosition(float x, float y) => new(DisplayToPixelPositionX(x), DisplayToPixelPositionY(y));
+        public Point DisplayToPixelPosition(PointF point) => new(DisplayToPixelPositionX(point.X), DisplayToPixelPositionY(point.Y));
 
         #endregion
     }
