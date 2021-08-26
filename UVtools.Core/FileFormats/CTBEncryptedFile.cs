@@ -234,7 +234,7 @@ namespace UVtools.Core.FileFormats
                 PositionZ = layer.PositionZ;
                 ExposureTime = layer.ExposureTime;
                 LightOffDelay = layer.LightOffDelay;
-                LiftHeight = layer.LiftHeight;
+                LiftHeight = layer.LiftHeightTotal;
                 LiftSpeed = layer.LiftSpeed;
                 LiftHeight2 = layer.LiftHeight2;
                 LiftSpeed2 = layer.LiftSpeed2;
@@ -252,7 +252,7 @@ namespace UVtools.Core.FileFormats
                 layer.PositionZ = PositionZ;
                 layer.ExposureTime = ExposureTime;
                 layer.LightOffDelay = LightOffDelay;
-                layer.LiftHeight = LiftHeight;
+                layer.LiftHeight = LiftHeight - LiftHeight2;
                 layer.LiftSpeed = LiftSpeed;
                 layer.LiftHeight2 = LiftHeight2;
                 layer.LiftSpeed2 = LiftSpeed2;

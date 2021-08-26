@@ -993,6 +993,7 @@ namespace UVtools.Core.FileFormats
 
                     if (layerDef.Parent is not null && layerDef.Parent.HeaderSettings.Version >= 4)
                     {
+                        LiftHeight += layer.LiftHeight2;
                         LiftHeight2 = layer.LiftHeight2;
                         LiftSpeed2 = layer.LiftSpeed2;
 
@@ -1022,6 +1023,7 @@ namespace UVtools.Core.FileFormats
 
                 if (LayerDef.Parent is not null && LayerDef.Parent.HeaderSettings.Version >= 4)
                 {
+                    layer.LiftHeight -= LiftHeight2;
                     layer.LiftHeight2 = LiftHeight2;
                     layer.LiftSpeed2 = LiftSpeed2;
 
