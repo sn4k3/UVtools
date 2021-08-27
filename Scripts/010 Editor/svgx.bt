@@ -8,7 +8,7 @@
 LittleEndian();
 
 struct HEADER {
-    char Identifier[16] <fgcolor=cBlack, bgcolor=cRed>;
+    char Identifier[16] <fgcolor=cBlack, bgcolor=cRed>; // DLP-II 1.1\n
     uint Preview1Address <fgcolor=cBlack, bgcolor=cRed>;
     uint Preview2Address <fgcolor=cBlack, bgcolor=cRed>;
     uint SVGDocumentAddress <fgcolor=cBlack, bgcolor=cRed>;
@@ -17,7 +17,7 @@ struct HEADER {
 
 struct PREVIEW {
     char Identifier[2] <fgcolor=cBlack, bgcolor=cGreen>; // BM (Bitmap?)
-    uint TableSize <fgcolor=cBlack, bgcolor=cGreen>;     // This table + RGB Data
+    uint TableSize <fgcolor=cBlack, bgcolor=cGreen>;     // This table + BGR Data
     uint Padding1 <fgcolor=cBlack, bgcolor=cGreen>;
     uint dpiX <fgcolor=cBlack, bgcolor=cGreen>;          // 54
     uint dpiY <fgcolor=cBlack, bgcolor=cGreen>;          // 40
