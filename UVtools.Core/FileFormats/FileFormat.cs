@@ -2733,16 +2733,29 @@ namespace UVtools.Core.FileFormats
         }
 
         /// <summary>
-        /// Gets the value for initial layer or normal layers based on layer index
+        /// Gets the global value for bottom or normal layers based on layer index
         /// </summary>
         /// <typeparam name="T">Type of value</typeparam>
         /// <param name="layerIndex">Layer index</param>
-        /// <param name="initialLayerValue">Initial value</param>
-        /// <param name="normalLayerValue">Normal value</param>
+        /// <param name="bottomValue">Initial value</param>
+        /// <param name="normalValue">Normal value</param>
         /// <returns></returns>
-        public T GetInitialLayerValueOrNormal<T>(uint layerIndex, T initialLayerValue, T normalLayerValue)
+        public T GetBottomOrNormalValue<T>(uint layerIndex, T bottomValue, T normalValue)
         {
-            return layerIndex < BottomLayerCount ? initialLayerValue : normalLayerValue;
+            return layerIndex < BottomLayerCount ? bottomValue : normalValue;
+        }
+
+        /// <summary>
+        /// Gets the global value for bottom or normal layers based on layer
+        /// </summary>
+        /// <typeparam name="T">Type of value</typeparam>
+        /// <param name="layer">Layer</param>
+        /// <param name="bottomValue">Initial value</param>
+        /// <param name="normalValue">Normal value</param>
+        /// <returns></returns>
+        public T GetBottomOrNormalValue<T>(Layer layer, T bottomValue, T normalValue)
+        {
+            return layer.IsBottomLayer ? bottomValue : normalValue;
         }
 
         /// <summary>

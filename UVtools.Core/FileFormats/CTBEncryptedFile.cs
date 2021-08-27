@@ -25,8 +25,9 @@ namespace UVtools.Core.FileFormats
         public const ushort RLE16EncodingLimit = 0xFFF;
         public const ushort RLEEncryptedMinimumLength = 512;
 
-        public const uint PERLAYER_SETTINGS_DISALLOW = 7; // 7 (This disallow per layer settings and follow global table only)
-        public const uint PERLAYER_SETTINGS_ALLOW    = 0x5000000F; // 1342177295 (This allow per layer settings)
+        public const uint PERLAYER_SETTINGS_DISALLOW_NO_AA = 7; // 7 (This disallow per layer settings and follow global table only) No AA
+        public const uint PERLAYER_SETTINGS_DISALLOW       = 15; // 15 (This disallow per layer settings and follow global table only) with AA
+        public const uint PERLAYER_SETTINGS_ALLOW          = 0x5000000F; // 1342177295 (This allow per layer settings)
 
         private const string CTB_DISCLAIMER = "Layout and record format for the ctb and cbddlp file types are the copyrighted programs or codes of CBD Technology (China) Inc..The Customer or User shall not in any manner reproduce, distribute, modify, decompile, disassemble, decrypt, extract, reverse engineer, lease, assign, or sublicense the said programs or codes.";
         private const ushort CTB_DISCLAIMER_SIZE = 320;
@@ -60,7 +61,7 @@ namespace UVtools.Core.FileFormats
             [FieldOrder(9)] public ushort Unknown5 { get; set; } = 1; // set to 1
             [FieldOrder(10)] public uint Unknown6 { get; set; } // set to 0
             [FieldOrder(11)] public uint Unknown7 { get; set; } = 42; // probably 0x2A
-            [FieldOrder(12)] public uint Unknown8 { get; set; } // probably 0
+            [FieldOrder(12)] public uint Unknown8 { get; set; } // probably 0 or 1
 
             public override string ToString()
             {
@@ -106,7 +107,7 @@ namespace UVtools.Core.FileFormats
             [FieldOrder(26)] public float MaterialGrams { get; set; }
             [FieldOrder(27)] public float MaterialCost { get; set; }
             [FieldOrder(28)] public float BottomLightOffDelay { get; set; }
-            [FieldOrder(29)] public uint Unknown9 { get; set; } = 1;
+            [FieldOrder(29)] public uint Unknown3 { get; set; } = 1;
             [FieldOrder(30)] public ushort LightPWM { get; set; }
             [FieldOrder(31)] public ushort BottomLightPWM { get; set; }
             [FieldOrder(32)] public uint LayerXorKey { get; set; }
@@ -120,11 +121,11 @@ namespace UVtools.Core.FileFormats
             [FieldOrder(40)] public uint MachineNameOffset { get; set; }
             [FieldOrder(41)] public uint MachineNameSize { get; set; }
             [FieldOrder(42)] public uint PerLayerSettings { get; set; } = PERLAYER_SETTINGS_DISALLOW;
-            [FieldOrder(43)] public uint Unknown13 { get; set; }
-            [FieldOrder(44)] public uint Unknown14 { get; set; } = 8;
+            [FieldOrder(43)] public uint Unknown4 { get; set; }
+            [FieldOrder(44)] public uint Unknown5 { get; set; } = 8; // Also 1
             [FieldOrder(45)] public float RestTimeAfterRetract { get; set; }
             [FieldOrder(46)] public float RestTimeAfterLift2 { get; set; }
-            [FieldOrder(47)] public uint Unknown15 { get; set; }
+            [FieldOrder(47)] public uint TransitionLayerCount { get; set; }
             [FieldOrder(48)] public float BottomRetractSpeed { get; set; }
             [FieldOrder(49)] public float BottomRetractSpeed2 { get; set; }
             [FieldOrder(50)] public uint Padding1 { get; set; }
@@ -135,9 +136,9 @@ namespace UVtools.Core.FileFormats
             [FieldOrder(55)] public float RestTimeAfterLift3 { get; set; }
             [FieldOrder(56)] public float RestTimeBeforeLift { get; set; }
             [FieldOrder(57)] public float BottomRetractHeight2 { get; set; }
-            [FieldOrder(58)] public float Unknown23 { get; set; } // Same as CTBv4.PrintParametersV4.Unknown1)
-            [FieldOrder(59)] public uint Unknown24 { get; set; } //  Same as  CTBv4.PrintParametersV4.Unknown2)
-            [FieldOrder(60)] public uint Unknown25 { get; set; } = 4; // Same as CTBv4.PrintParametersV4.Unknown3)
+            [FieldOrder(58)] public float Unknown6 { get; set; } // Same as CTBv4.PrintParametersV4.Unknown1)
+            [FieldOrder(59)] public uint Unknown7 { get; set; } //  Same as  CTBv4.PrintParametersV4.Unknown2)
+            [FieldOrder(60)] public uint Unknown8 { get; set; } = 4; // Same as CTBv4.PrintParametersV4.Unknown3)
             [FieldOrder(61)] public uint LastLayerIndex { get; set; }
             [FieldOrder(62)] public uint Padding3 { get; set; }
             [FieldOrder(63)] public uint Padding4 { get; set; }
@@ -163,7 +164,7 @@ namespace UVtools.Core.FileFormats
 
             public override string ToString()
             {
-                return $"{nameof(Unknown15)}: {Unknown15}, {nameof(ChecksumValue)}: {ChecksumValue}, {nameof(LayerPointersOffset)}: {LayerPointersOffset}, {nameof(DisplayWidth)}: {DisplayWidth}, {nameof(DisplayHeight)}: {DisplayHeight}, {nameof(MachineZ)}: {MachineZ}, {nameof(Unknown1)}: {Unknown1}, {nameof(Unknown2)}: {Unknown2}, {nameof(TotalHeightMillimeter)}: {TotalHeightMillimeter}, {nameof(LayerHeight)}: {LayerHeight}, {nameof(ExposureTime)}: {ExposureTime}, {nameof(BottomExposureTime)}: {BottomExposureTime}, {nameof(LightOffDelay)}: {LightOffDelay}, {nameof(BottomLayerCount)}: {BottomLayerCount}, {nameof(ResolutionX)}: {ResolutionX}, {nameof(ResolutionY)}: {ResolutionY}, {nameof(LayerCount)}: {LayerCount}, {nameof(LargePreviewOffset)}: {LargePreviewOffset}, {nameof(SmallPreviewOffset)}: {SmallPreviewOffset}, {nameof(PrintTime)}: {PrintTime}, {nameof(ProjectorType)}: {ProjectorType}, {nameof(BottomLiftHeight)}: {BottomLiftHeight}, {nameof(BottomLiftSpeed)}: {BottomLiftSpeed}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(RetractSpeed)}: {RetractSpeed}, {nameof(MaterialMilliliters)}: {MaterialMilliliters}, {nameof(MaterialGrams)}: {MaterialGrams}, {nameof(MaterialCost)}: {MaterialCost}, {nameof(BottomLightOffDelay)}: {BottomLightOffDelay}, {nameof(Unknown9)}: {Unknown9}, {nameof(LightPWM)}: {LightPWM}, {nameof(BottomLightPWM)}: {BottomLightPWM}, {nameof(LayerXorKey)}: {LayerXorKey}, {nameof(BottomLiftHeight2)}: {BottomLiftHeight2}, {nameof(BottomLiftSpeed2)}: {BottomLiftSpeed2}, {nameof(LiftHeight2)}: {LiftHeight2}, {nameof(LiftSpeed2)}: {LiftSpeed2}, {nameof(RetractHeight2)}: {RetractHeight2}, {nameof(RetractSpeed2)}: {RetractSpeed2}, {nameof(RestTimeAfterLift)}: {RestTimeAfterLift}, {nameof(MachineNameOffset)}: {MachineNameOffset}, {nameof(MachineNameSize)}: {MachineNameSize}, {nameof(PerLayerSettings)}: {PerLayerSettings}, {nameof(Unknown13)}: {Unknown13}, {nameof(Unknown14)}: {Unknown14}, {nameof(RestTimeAfterRetract)}: {RestTimeAfterRetract}, {nameof(RestTimeAfterLift2)}: {RestTimeAfterLift2}, {nameof(BottomRetractSpeed)}: {BottomRetractSpeed}, {nameof(BottomRetractSpeed2)}: {BottomRetractSpeed2}, {nameof(Four1)}: {Four1}, {nameof(Padding1)}: {Padding1}, {nameof(Four2)}: {Four2}, {nameof(Padding2)}: {Padding2}, {nameof(RestTimeAfterRetract2)}: {RestTimeAfterRetract2}, {nameof(RestTimeAfterLift3)}: {RestTimeAfterLift3}, {nameof(RestTimeBeforeLift)}: {RestTimeBeforeLift}, {nameof(BottomRetractHeight2)}: {BottomRetractHeight2}, {nameof(Unknown23)}: {Unknown23}, {nameof(Unknown24)}: {Unknown24}, {nameof(Unknown25)}: {Unknown25}, {nameof(LastLayerIndex)}: {LastLayerIndex}, {nameof(Padding3)}: {Padding3}, {nameof(Padding4)}: {Padding4}, {nameof(Padding5)}: {Padding5}, {nameof(Padding6)}: {Padding6}, {nameof(DisclaimerOffset)}: {DisclaimerOffset}, {nameof(DisclaimerSize)}: {DisclaimerSize}, {nameof(Padding7)}: {Padding7}, {nameof(Padding8)}: {Padding8}, {nameof(Padding9)}: {Padding9}, {nameof(Padding10)}: {Padding10}, {nameof(MachineName)}: {MachineName}";
+                return $"{nameof(ChecksumValue)}: {ChecksumValue}, {nameof(LayerPointersOffset)}: {LayerPointersOffset}, {nameof(DisplayWidth)}: {DisplayWidth}, {nameof(DisplayHeight)}: {DisplayHeight}, {nameof(MachineZ)}: {MachineZ}, {nameof(Unknown1)}: {Unknown1}, {nameof(Unknown2)}: {Unknown2}, {nameof(TotalHeightMillimeter)}: {TotalHeightMillimeter}, {nameof(LayerHeight)}: {LayerHeight}, {nameof(ExposureTime)}: {ExposureTime}, {nameof(BottomExposureTime)}: {BottomExposureTime}, {nameof(LightOffDelay)}: {LightOffDelay}, {nameof(BottomLayerCount)}: {BottomLayerCount}, {nameof(ResolutionX)}: {ResolutionX}, {nameof(ResolutionY)}: {ResolutionY}, {nameof(LayerCount)}: {LayerCount}, {nameof(LargePreviewOffset)}: {LargePreviewOffset}, {nameof(SmallPreviewOffset)}: {SmallPreviewOffset}, {nameof(PrintTime)}: {PrintTime}, {nameof(ProjectorType)}: {ProjectorType}, {nameof(BottomLiftHeight)}: {BottomLiftHeight}, {nameof(BottomLiftSpeed)}: {BottomLiftSpeed}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(RetractSpeed)}: {RetractSpeed}, {nameof(MaterialMilliliters)}: {MaterialMilliliters}, {nameof(MaterialGrams)}: {MaterialGrams}, {nameof(MaterialCost)}: {MaterialCost}, {nameof(BottomLightOffDelay)}: {BottomLightOffDelay}, {nameof(Unknown3)}: {Unknown3}, {nameof(LightPWM)}: {LightPWM}, {nameof(BottomLightPWM)}: {BottomLightPWM}, {nameof(LayerXorKey)}: {LayerXorKey}, {nameof(BottomLiftHeight2)}: {BottomLiftHeight2}, {nameof(BottomLiftSpeed2)}: {BottomLiftSpeed2}, {nameof(LiftHeight2)}: {LiftHeight2}, {nameof(LiftSpeed2)}: {LiftSpeed2}, {nameof(RetractHeight2)}: {RetractHeight2}, {nameof(RetractSpeed2)}: {RetractSpeed2}, {nameof(RestTimeAfterLift)}: {RestTimeAfterLift}, {nameof(MachineNameOffset)}: {MachineNameOffset}, {nameof(MachineNameSize)}: {MachineNameSize}, {nameof(PerLayerSettings)}: {PerLayerSettings}, {nameof(Unknown4)}: {Unknown4}, {nameof(Unknown5)}: {Unknown5}, {nameof(RestTimeAfterRetract)}: {RestTimeAfterRetract}, {nameof(RestTimeAfterLift2)}: {RestTimeAfterLift2}, {nameof(TransitionLayerCount)}: {TransitionLayerCount}, {nameof(BottomRetractSpeed)}: {BottomRetractSpeed}, {nameof(BottomRetractSpeed2)}: {BottomRetractSpeed2}, {nameof(Padding1)}: {Padding1}, {nameof(Four1)}: {Four1}, {nameof(Padding2)}: {Padding2}, {nameof(Four2)}: {Four2}, {nameof(RestTimeAfterRetract2)}: {RestTimeAfterRetract2}, {nameof(RestTimeAfterLift3)}: {RestTimeAfterLift3}, {nameof(RestTimeBeforeLift)}: {RestTimeBeforeLift}, {nameof(BottomRetractHeight2)}: {BottomRetractHeight2}, {nameof(Unknown6)}: {Unknown6}, {nameof(Unknown7)}: {Unknown7}, {nameof(Unknown8)}: {Unknown8}, {nameof(LastLayerIndex)}: {LastLayerIndex}, {nameof(Padding3)}: {Padding3}, {nameof(Padding4)}: {Padding4}, {nameof(Padding5)}: {Padding5}, {nameof(Padding6)}: {Padding6}, {nameof(DisclaimerOffset)}: {DisclaimerOffset}, {nameof(DisclaimerSize)}: {DisclaimerSize}, {nameof(Padding7)}: {Padding7}, {nameof(Padding8)}: {Padding8}, {nameof(Padding9)}: {Padding9}, {nameof(Padding10)}: {Padding10}, {nameof(MachineName)}: {MachineName}";
             }
         }
 

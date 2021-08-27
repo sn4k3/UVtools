@@ -259,20 +259,20 @@ namespace UVtools.Core.GCode
             if (!IsValid) return;
             uint layerIndex = LayerIndex.Value;
             var layer = SlicerFile[layerIndex];
-
+            
             PositionZ ??= PreviousPositionZ;
             layer.PositionZ = PositionZ.Value;
             layer.WaitTimeBeforeCure = WaitTimeBeforeCure ?? 0;
-            layer.ExposureTime = ExposureTime ?? SlicerFile.GetInitialLayerValueOrNormal(layerIndex, SlicerFile.BottomExposureTime, SlicerFile.ExposureTime);
+            layer.ExposureTime = ExposureTime ?? SlicerFile.GetBottomOrNormalValue(layer, SlicerFile.BottomExposureTime, SlicerFile.ExposureTime);
             layer.WaitTimeAfterCure = WaitTimeAfterCure ?? 0;
             layer.LiftHeight = LiftHeight ?? 0;
-            layer.LiftSpeed = LiftSpeed ?? SlicerFile.GetInitialLayerValueOrNormal(layerIndex, SlicerFile.BottomLiftSpeed, SlicerFile.LiftSpeed);
+            layer.LiftSpeed = LiftSpeed ?? SlicerFile.GetBottomOrNormalValue(layer, SlicerFile.BottomLiftSpeed, SlicerFile.LiftSpeed);
             layer.LiftHeight2 = LiftHeight2 ?? 0;
-            layer.LiftSpeed2 = LiftSpeed2 ?? SlicerFile.GetInitialLayerValueOrNormal(layerIndex, SlicerFile.BottomLiftSpeed2, SlicerFile.LiftSpeed2);
+            layer.LiftSpeed2 = LiftSpeed2 ?? SlicerFile.GetBottomOrNormalValue(layer, SlicerFile.BottomLiftSpeed2, SlicerFile.LiftSpeed2);
             layer.WaitTimeAfterLift = WaitTimeAfterLift ?? 0;
-            layer.RetractSpeed = RetractSpeed ?? SlicerFile.GetInitialLayerValueOrNormal(layerIndex, SlicerFile.BottomRetractSpeed, SlicerFile.RetractSpeed);
+            layer.RetractSpeed = RetractSpeed ?? SlicerFile.GetBottomOrNormalValue(layer, SlicerFile.BottomRetractSpeed, SlicerFile.RetractSpeed);
             layer.RetractHeight2 = RetractHeight2 ?? 0;
-            layer.RetractSpeed2 = RetractSpeed2 ?? SlicerFile.GetInitialLayerValueOrNormal(layerIndex, SlicerFile.BottomRetractSpeed2, SlicerFile.RetractSpeed2);
+            layer.RetractSpeed2 = RetractSpeed2 ?? SlicerFile.GetBottomOrNormalValue(layer, SlicerFile.BottomRetractSpeed2, SlicerFile.RetractSpeed2);
             layer.LightPWM = LightPWM ?? 0;//SlicerFile.GetInitialLayerValueOrNormal(layerIndex, SlicerFile.BottomLightPWM, SlicerFile.LightPWM);
 
             if (SlicerFile.GCode.SyncMovementsWithDelay) // Dirty fix of the value

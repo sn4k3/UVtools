@@ -542,9 +542,9 @@ M106 S0
                             var stripGcode = gcode.Substring(gcode.IndexOf(startStr, StringComparison.InvariantCultureIgnoreCase) + startStr.Length).Trim(' ', '\n', '\r', '\t');
 
                             float liftHeight = 0;
-                            float liftSpeed = GetInitialLayerValueOrNormal((uint)layerIndex, BottomLiftSpeed, LiftSpeed);
+                            float liftSpeed = GetBottomOrNormalValue((uint)layerIndex, BottomLiftSpeed, LiftSpeed);
                             float retractSpeed = RetractSpeed;
-                            byte pwm = GetInitialLayerValueOrNormal((uint)layerIndex, BottomLightPWM, LightPWM); ;
+                            byte pwm = GetBottomOrNormalValue((uint)layerIndex, BottomLightPWM, LightPWM); ;
 
                             //var currPos = Regex.Match(stripGcode, "G1 Z([+-]?([0-9]*[.])?[0-9]+)", RegexOptions.IgnoreCase);
                             var moveG1Regex = Regex.Match(stripGcode, @"G1 Z([+-]?([0-9]*[.])?[0-9]+) F(\d+)", RegexOptions.IgnoreCase);

@@ -31,8 +31,8 @@ struct DECRYPTED_HEADER {
     float DisplayWidth;
     float DisplayHeight;
     float MachineZ;
-    uint Padding1;
-	uint Padding2;
+    uint Unknown1;
+	uint Unknown2;
     float TotalHeightMilimeter;
     float LayerHeight;
     float ExposureTime;
@@ -55,7 +55,7 @@ struct DECRYPTED_HEADER {
     float ModelWeight;
     float Cost;
     float BottomLightOffDelay;
-    uint unknown9;
+    uint Unknown3;
     ushort LightPWM; /* these might be in the wrong order */
     ushort BottomLightPWM;
     uint LayerXorKey;
@@ -68,12 +68,12 @@ struct DECRYPTED_HEADER {
     float RestTimeAfterLift;
     uint PrinterNameOffset;
     uint PrinterNameSize;
-    uint unknown12;
-    uint unknown13;
-    uint unknown14;
+    uint Unknown4;
+    uint unknown5;
+    uint unknown6;
     float RestTimeAfterRetract;
     float RestTimeAfterLift;
-    uint unknown15;
+    uint TransitionLayerCount;
     float BottomRetractSpeed;
     float BottomRetractSpeed2;
     uint Padding1;
@@ -84,17 +84,20 @@ struct DECRYPTED_HEADER {
     float RestTimeAfterLift;
     float RestTimeBeforeLift;
     float BottomRetractHeight;
-    float unknown23;
-    uint unknown24;
-    uint unknown25;
+    float unknown7;
+    uint unknown8;
+    uint unknown9;
     uint LastLayerIndex;
-    uint unknown26[4];
-    uint DisclaimerOffset;
-    uint DisclaimerSize;
     uint Padding3;
     uint Padding4;
     uint Padding5;
     uint Padding6;
+    uint DisclaimerOffset;
+    uint DisclaimerSize;
+    uint Padding7;
+    uint Padding8;
+    uint Padding9;
+    uint Padding10;
 };
 
 

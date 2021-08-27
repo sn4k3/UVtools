@@ -684,15 +684,16 @@ namespace UVtools.Core.Operations
             var exposureDictionary = ExposureTableDictionary;
             for (uint layerIndex = 0; layerIndex < SlicerFile.LayerCount; layerIndex++)
             {
+                var layer = SlicerFile[layerIndex];
                 float bottomExposure = SlicerFile.BottomExposureTime;
                 float exposure = SlicerFile.ExposureTime;
-                if(exposureDictionary.TryGetValue((decimal)SlicerFile[layerIndex].LayerHeight, out var item))
+                if(exposureDictionary.TryGetValue((decimal)layer.LayerHeight, out var item))
                 {
                     bottomExposure = (float) item.BottomExposure;
                     exposure = (float) item.Exposure;
                 }
 
-                SlicerFile[layerIndex].ExposureTime = SlicerFile.GetInitialLayerValueOrNormal(layerIndex, bottomExposure, exposure);
+                layer.ExposureTime = SlicerFile.GetBottomOrNormalValue(layer, bottomExposure, exposure);
             }
             //var layer = slicerFile.LayerManager.Layers[^1];
 

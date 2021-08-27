@@ -1,5 +1,17 @@
 # Changelog
 
+## 27/08/2021 - v2.20.2
+
+- **(Fix) Layers:**
+   - Round properties before comparing to avoid the precision error
+   - Prevent 'Wait time' properties from having negative values
+   - The `RetractSpeed` or `RetractSpeed2` property wasn't setting the bottom speed for bottom layers, instead the normal retract speed was always used
+   - Set the `RetractHeight2` or `RetractSpeed2` property was not notifing the timer to update the print time no
+   - Propagate global settings to layers now identfies the bottom layers per height instead of layer index
+- (Add) UVJ: Support TSMC for the file format
+- (Fix) UVJ: Soft save was not updating the layer settings
+- (Fix) CTB: TSMC not working properly due incorrect layer `LiftHeight` value calculation
+
 ## 26/08/2021 - v2.20.1
 
 - **UI:**

@@ -780,7 +780,7 @@ namespace UVtools.Core.Operations
 
             for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
             {
-                newLayers[layerIndex] = SlicerFile.GetInitialLayerValueOrNormal(layerIndex, bottomLayer.Clone(),
+                newLayers[layerIndex] = SlicerFile.GetBottomOrNormalValue(layerIndex, bottomLayer.Clone(),
                     (_hollowModel || _centerHoleRelief) && _drainHoleArea > 0 && layerIndex <= _bottomLayers + (int)(_drainHoleArea / _layerHeight)
                         ? ventLayer.Clone() : layer.Clone());
 

@@ -737,7 +737,7 @@ namespace UVtools.Core.Operations
                 layerIndex < _bottomLayers + _normalLayers;
                 layerIndex++)
             {
-                newLayers[layerIndex] = SlicerFile.GetInitialLayerValueOrNormal(layerIndex, bottomLayer.Clone(), layer.Clone());
+                newLayers[layerIndex] = SlicerFile.GetBottomOrNormalValue(layerIndex, bottomLayer.Clone(), layer.Clone());
             }
 
             if (_extrudeText)

@@ -170,7 +170,8 @@ namespace UVtools.Core
             get => _waitTimeBeforeCure;
             set
             {
-                if (!RaiseAndSetIfChanged(ref _waitTimeBeforeCure, (float)Math.Round(value, 2))) return;
+                value = Math.Max(0, (float)Math.Round(value, 2));
+                if (!RaiseAndSetIfChanged(ref _waitTimeBeforeCure, value)) return;
                 SlicerFile?.UpdatePrintTimeQueued();
             }
         }
@@ -183,8 +184,9 @@ namespace UVtools.Core
             get => _exposureTime;
             set
             {
-                if (value <= 0) value = SlicerFile.GetInitialLayerValueOrNormal(Index, SlicerFile.BottomExposureTime, SlicerFile.ExposureTime);
-                if(!RaiseAndSetIfChanged(ref _exposureTime, (float)Math.Round(value, 2))) return;
+                value = (float)Math.Round(value, 2);
+                if (value <= 0) value = SlicerFile.GetBottomOrNormalValue(this, SlicerFile.BottomExposureTime, SlicerFile.ExposureTime);
+                if(!RaiseAndSetIfChanged(ref _exposureTime, value)) return;
                 SlicerFile?.UpdatePrintTimeQueued();
             }
         }
@@ -199,7 +201,8 @@ namespace UVtools.Core
             get => _waitTimeAfterCure;
             set
             {
-                if (!RaiseAndSetIfChanged(ref _waitTimeAfterCure, (float)Math.Round(value, 2))) return;
+                value = Math.Max(0, (float)Math.Round(value, 2));
+                if (!RaiseAndSetIfChanged(ref _waitTimeAfterCure, value)) return;
                 SlicerFile?.UpdatePrintTimeQueued();
             }
         }
@@ -212,8 +215,9 @@ namespace UVtools.Core
             get => _lightOffDelay;
             set
             {
-                if (value < 0) value = SlicerFile.GetInitialLayerValueOrNormal(Index, SlicerFile.BottomLightOffDelay, SlicerFile.LightOffDelay);
-                if(!RaiseAndSetIfChanged(ref _lightOffDelay, (float)Math.Round(value, 2))) return;
+                value = (float)Math.Round(value, 2);
+                if (value < 0) value = SlicerFile.GetBottomOrNormalValue(this, SlicerFile.BottomLightOffDelay, SlicerFile.LightOffDelay);
+                if(!RaiseAndSetIfChanged(ref _lightOffDelay, value)) return;
                 SlicerFile?.UpdatePrintTimeQueued();
             }
         }
@@ -240,8 +244,9 @@ namespace UVtools.Core
             get => _liftHeight;
             set
             {
-                if (value < 0) value = SlicerFile.GetInitialLayerValueOrNormal(Index, SlicerFile.BottomLiftHeight, SlicerFile.LiftHeight);
-                if(!RaiseAndSetIfChanged(ref _liftHeight, (float)Math.Round(value, 2))) return;
+                value = (float)Math.Round(value, 2);
+                if (value < 0) value = SlicerFile.GetBottomOrNormalValue(this, SlicerFile.BottomLiftHeight, SlicerFile.LiftHeight);
+                if(!RaiseAndSetIfChanged(ref _liftHeight, value)) return;
                 RaisePropertyChanged(nameof(LiftHeightTotal));
                 RetractHeight2 = _retractHeight2; // Sanitize
                 SlicerFile?.UpdatePrintTimeQueued();
@@ -256,8 +261,9 @@ namespace UVtools.Core
             get => _liftSpeed;
             set
             {
-                if (value <= 0) value = SlicerFile.GetInitialLayerValueOrNormal(Index, SlicerFile.BottomLiftSpeed, SlicerFile.LiftSpeed);
-                if(!RaiseAndSetIfChanged(ref _liftSpeed, (float)Math.Round(value, 2))) return;
+                value = (float)Math.Round(value, 2);
+                if (value <= 0) value = SlicerFile.GetBottomOrNormalValue(this, SlicerFile.BottomLiftSpeed, SlicerFile.LiftSpeed);
+                if(!RaiseAndSetIfChanged(ref _liftSpeed, value)) return;
                 SlicerFile?.UpdatePrintTimeQueued();
             }
         }
@@ -270,8 +276,9 @@ namespace UVtools.Core
             get => _liftHeight2;
             set
             {
-                if (value < 0) value = SlicerFile.GetInitialLayerValueOrNormal(Index, SlicerFile.BottomLiftHeight2, SlicerFile.LiftHeight2);
-                if (!RaiseAndSetIfChanged(ref _liftHeight2, (float)Math.Round(value, 2))) return;
+                value = (float)Math.Round(value, 2);
+                if (value < 0) value = SlicerFile.GetBottomOrNormalValue(this, SlicerFile.BottomLiftHeight2, SlicerFile.LiftHeight2);
+                if (!RaiseAndSetIfChanged(ref _liftHeight2, value)) return;
                 RaisePropertyChanged(nameof(LiftHeightTotal));
                 RetractHeight2 = _retractHeight2; // Sanitize
                 SlicerFile?.UpdatePrintTimeQueued();
@@ -286,8 +293,9 @@ namespace UVtools.Core
             get => _liftSpeed2;
             set
             {
-                if (value <= 0) value = SlicerFile.GetInitialLayerValueOrNormal(Index, SlicerFile.BottomLiftSpeed2, SlicerFile.LiftSpeed2);
-                if (!RaiseAndSetIfChanged(ref _liftSpeed2, (float)Math.Round(value, 2))) return;
+                value = (float)Math.Round(value, 2);
+                if (value <= 0) value = SlicerFile.GetBottomOrNormalValue(this, SlicerFile.BottomLiftSpeed2, SlicerFile.LiftSpeed2);
+                if (!RaiseAndSetIfChanged(ref _liftSpeed2, value)) return;
                 SlicerFile?.UpdatePrintTimeQueued();
             }
         }
@@ -297,7 +305,8 @@ namespace UVtools.Core
             get => _waitTimeAfterLift;
             set
             {
-                if (!RaiseAndSetIfChanged(ref _waitTimeAfterLift, (float)Math.Round(value, 2))) return;
+                value = Math.Max(0, (float)Math.Round(value, 2));
+                if (!RaiseAndSetIfChanged(ref _waitTimeAfterLift, value)) return;
                 SlicerFile?.UpdatePrintTimeQueued();
             }
         }
@@ -320,8 +329,9 @@ namespace UVtools.Core
             get => _retractSpeed;
             set
             {
-                if (value <= 0) value = SlicerFile.RetractSpeed;
-                if(!RaiseAndSetIfChanged(ref _retractSpeed, (float)Math.Round(value, 2))) return;
+                value = (float)Math.Round(value, 2);
+                if (value <= 0) value = SlicerFile.GetBottomOrNormalValue(this, SlicerFile.BottomRetractSpeed, SlicerFile.RetractSpeed);
+                if (!RaiseAndSetIfChanged(ref _retractSpeed, value)) return;
                 SlicerFile?.UpdatePrintTimeQueued();
             }
         }
@@ -338,6 +348,7 @@ namespace UVtools.Core
                 RaiseAndSetIfChanged(ref _retractHeight2, value);
                 RaisePropertyChanged(nameof(RetractHeight));
                 RaisePropertyChanged(nameof(RetractHeightTotal));
+                SlicerFile?.UpdatePrintTimeQueued();
             }
         }
 
@@ -347,7 +358,13 @@ namespace UVtools.Core
         public virtual float RetractSpeed2
         {
             get => _retractSpeed2;
-            set => RaiseAndSetIfChanged(ref _retractSpeed2, (float)Math.Round(value, 2));
+            set
+            {
+                value = (float)Math.Round(value, 2);
+                if (value <= 0) value = SlicerFile.GetBottomOrNormalValue(this, SlicerFile.BottomRetractSpeed2, SlicerFile.RetractSpeed2);
+                if (!RaiseAndSetIfChanged(ref _retractSpeed2, value)) return;
+                SlicerFile?.UpdatePrintTimeQueued();
+            }
         }
 
         /// <summary>
@@ -560,19 +577,19 @@ namespace UVtools.Core
 
             if (parentLayerManager is null) return;
             _positionZ = SlicerFile.GetHeightFromLayer(index);
-            _lightOffDelay = SlicerFile.GetInitialLayerValueOrNormal(index, SlicerFile.BottomLightOffDelay, SlicerFile.LightOffDelay);
-            _waitTimeBeforeCure = SlicerFile.GetInitialLayerValueOrNormal(index, SlicerFile.BottomWaitTimeBeforeCure, SlicerFile.WaitTimeBeforeCure);
-            _exposureTime = SlicerFile.GetInitialLayerValueOrNormal(index, SlicerFile.BottomExposureTime, SlicerFile.ExposureTime);
-            _waitTimeAfterCure = SlicerFile.GetInitialLayerValueOrNormal(index, SlicerFile.BottomWaitTimeAfterCure, SlicerFile.WaitTimeAfterCure);
-            _liftHeight = SlicerFile.GetInitialLayerValueOrNormal(index, SlicerFile.BottomLiftHeight, SlicerFile.LiftHeight);
-            _liftSpeed = SlicerFile.GetInitialLayerValueOrNormal(index, SlicerFile.BottomLiftSpeed, SlicerFile.LiftSpeed);
-            _liftHeight2 = SlicerFile.GetInitialLayerValueOrNormal(index, SlicerFile.BottomLiftHeight2, SlicerFile.LiftHeight2);
-            _liftSpeed2 = SlicerFile.GetInitialLayerValueOrNormal(index, SlicerFile.BottomLiftSpeed2, SlicerFile.LiftSpeed2);
-            _waitTimeAfterLift = SlicerFile.GetInitialLayerValueOrNormal(index, SlicerFile.BottomWaitTimeAfterLift, SlicerFile.WaitTimeAfterLift);
-            _retractSpeed = SlicerFile.GetInitialLayerValueOrNormal(index, SlicerFile.BottomRetractSpeed, SlicerFile.RetractSpeed);
-            _retractHeight2 = SlicerFile.GetInitialLayerValueOrNormal(index, SlicerFile.BottomRetractHeight2, SlicerFile.RetractHeight2);
-            _retractSpeed2 = SlicerFile.GetInitialLayerValueOrNormal(index, SlicerFile.BottomRetractSpeed2, SlicerFile.RetractSpeed2);
-            _lightPWM = SlicerFile.GetInitialLayerValueOrNormal(index, SlicerFile.BottomLightPWM, SlicerFile.LightPWM);
+            _lightOffDelay = SlicerFile.GetBottomOrNormalValue(this, SlicerFile.BottomLightOffDelay, SlicerFile.LightOffDelay);
+            _waitTimeBeforeCure = SlicerFile.GetBottomOrNormalValue(this, SlicerFile.BottomWaitTimeBeforeCure, SlicerFile.WaitTimeBeforeCure);
+            _exposureTime = SlicerFile.GetBottomOrNormalValue(this, SlicerFile.BottomExposureTime, SlicerFile.ExposureTime);
+            _waitTimeAfterCure = SlicerFile.GetBottomOrNormalValue(this, SlicerFile.BottomWaitTimeAfterCure, SlicerFile.WaitTimeAfterCure);
+            _liftHeight = SlicerFile.GetBottomOrNormalValue(this, SlicerFile.BottomLiftHeight, SlicerFile.LiftHeight);
+            _liftSpeed = SlicerFile.GetBottomOrNormalValue(this, SlicerFile.BottomLiftSpeed, SlicerFile.LiftSpeed);
+            _liftHeight2 = SlicerFile.GetBottomOrNormalValue(this, SlicerFile.BottomLiftHeight2, SlicerFile.LiftHeight2);
+            _liftSpeed2 = SlicerFile.GetBottomOrNormalValue(this, SlicerFile.BottomLiftSpeed2, SlicerFile.LiftSpeed2);
+            _waitTimeAfterLift = SlicerFile.GetBottomOrNormalValue(this, SlicerFile.BottomWaitTimeAfterLift, SlicerFile.WaitTimeAfterLift);
+            _retractSpeed = SlicerFile.GetBottomOrNormalValue(this, SlicerFile.BottomRetractSpeed, SlicerFile.RetractSpeed);
+            _retractHeight2 = SlicerFile.GetBottomOrNormalValue(this, SlicerFile.BottomRetractHeight2, SlicerFile.RetractHeight2);
+            _retractSpeed2 = SlicerFile.GetBottomOrNormalValue(this, SlicerFile.BottomRetractSpeed2, SlicerFile.RetractSpeed2);
+            _lightPWM = SlicerFile.GetBottomOrNormalValue(this, SlicerFile.BottomLightPWM, SlicerFile.LightPWM);
         }
 
         public Layer(uint index, byte[] compressedBytes, LayerManager parentLayerManager) : this(index, parentLayerManager)

@@ -8,11 +8,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.IO.Compression;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
-using Emgu.CV.Util;
 using Newtonsoft.Json;
 using UVtools.Core.Extensions;
 using UVtools.Core.Operations;
@@ -43,7 +43,7 @@ namespace UVtools.Core.FileFormats
             public ushort X { get; set; }
             public ushort Y { get; set; }
 
-            public Millimeter Millimeter { get; set; } = new Millimeter();
+            public Millimeter Millimeter { get; set; } = new();
 
             public uint Layers { get; set; }
             public float LayerHeight { get; set; }
@@ -58,51 +58,97 @@ namespace UVtools.Core.FileFormats
         {
             public float LightOnTime { get; set; }
             public float LightOffTime { get; set; }
-            public byte LightPWM { get; set; } = 255;
-            public float LiftHeight { get; set; } = 5;
-            public float LiftSpeed { get; set; } = 100;
+            public byte LightPWM { get; set; } = DefaultLightPWM;
+            public float LiftHeight { get; set; } = DefaultLiftHeight;
+            public float LiftSpeed { get; set; } = DefaultLiftSpeed;
+            public float LiftHeight2 { get; set; } = DefaultLiftHeight2;
+            public float LiftSpeed2 { get; set; } = DefaultLiftSpeed2;
             public float RetractHeight { get; set; }
-            public float RetractSpeed { get; set; } = 100;
+            public float RetractSpeed { get; set; } = DefaultRetractSpeed;
+            public float RetractHeight2 { get; set; }
+            public float RetractSpeed2 { get; set; } = DefaultRetractSpeed2;
 
             public override string ToString()
             {
-                return $"{nameof(LightOnTime)}: {LightOnTime}, {nameof(LightOffTime)}: {LightOffTime}, {nameof(LightPWM)}: {LightPWM}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(RetractHeight)}: {RetractHeight}, {nameof(RetractSpeed)}: {RetractSpeed}";
+                return $"{nameof(LightOnTime)}: {LightOnTime}, {nameof(LightOffTime)}: {LightOffTime}, {nameof(LightPWM)}: {LightPWM}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(LiftHeight2)}: {LiftHeight2}, {nameof(LiftSpeed2)}: {LiftSpeed2}, {nameof(RetractHeight)}: {RetractHeight}, {nameof(RetractSpeed)}: {RetractSpeed}, {nameof(RetractHeight2)}: {RetractHeight2}, {nameof(RetractSpeed2)}: {RetractSpeed2}";
             }
         }
 
         public class Bottom
         {
-            public float LightOnTime { get; set; }
             public float LightOffTime { get; set; }
-            public byte LightPWM { get; set; } = 255;
-            public float LiftHeight { get; set; } = 5;
-            public float LiftSpeed { get; set; } = 100;
+            public float LightOnTime { get; set; }
+            public byte LightPWM { get; set; } = DefaultBottomLightPWM;
+            public float LiftHeight { get; set; } = DefaultBottomLiftHeight;
+            public float LiftSpeed { get; set; } = DefaultBottomLiftSpeed;
+            public float LiftHeight2 { get; set; } = DefaultBottomLiftHeight2;
+            public float LiftSpeed2 { get; set; } = DefaultBottomLiftSpeed2;
             public float RetractHeight { get; set; }
-            public float RetractSpeed { get; set; } = 100;
+            public float RetractSpeed { get; set; } = DefaultBottomRetractSpeed;
+            public float RetractHeight2 { get; set; }
+            public float RetractSpeed2 { get; set; } = DefaultBottomRetractSpeed2;
             public ushort Count { get; set; }
 
             public override string ToString()
             {
-                return $"{nameof(LightOnTime)}: {LightOnTime}, {nameof(LightOffTime)}: {LightOffTime}, {nameof(LightPWM)}: {LightPWM}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(RetractHeight)}: {RetractHeight}, {nameof(RetractSpeed)}: {RetractSpeed}, {nameof(Count)}: {Count}";
+                return $"{nameof(LightOffTime)}: {LightOffTime}, {nameof(LightOnTime)}: {LightOnTime}, {nameof(LightPWM)}: {LightPWM}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(LiftHeight2)}: {LiftHeight2}, {nameof(LiftSpeed2)}: {LiftSpeed2}, {nameof(RetractHeight)}: {RetractHeight}, {nameof(RetractSpeed)}: {RetractSpeed}, {nameof(RetractHeight2)}: {RetractHeight2}, {nameof(RetractSpeed2)}: {RetractSpeed2}, {nameof(Count)}: {Count}";
             }
         }
 
-        public class LayerData
+        public class LayerDef
         {
             public float Z { get; set; }
-            public Exposure Exposure { get; set; }
+            public Exposure Exposure { get; set; } = new();
+
+            public LayerDef() { }
+
+            public LayerDef(Layer layer)
+            {
+                SetFrom(layer);
+            }
 
             public override string ToString()
             {
                 return $"{nameof(Z)}: {Z}, {nameof(Exposure)}: {Exposure}";
             }
+
+            public void SetFrom(Layer layer)
+            {
+                Z = layer.PositionZ;
+                Exposure.LightOffTime = layer.LightOffDelay;
+                Exposure.LightOnTime = layer.ExposureTime;
+                Exposure.LiftHeight = layer.LiftHeight;
+                Exposure.LiftSpeed = layer.LiftSpeed;
+                Exposure.LiftHeight2 = layer.LiftHeight2;
+                Exposure.LiftSpeed2 = layer.LiftSpeed2;
+                Exposure.RetractHeight = layer.RetractHeight;
+                Exposure.RetractSpeed = layer.RetractSpeed;
+                Exposure.RetractHeight2 = layer.RetractHeight2;
+                Exposure.RetractSpeed2 = layer.RetractSpeed2;
+                Exposure.LightPWM = layer.LightPWM;
+            }
+
+            public void CopyTo(Layer layer)
+            {
+                layer.PositionZ = Z;
+                layer.LightOffDelay = Exposure.LightOffTime;
+                layer.ExposureTime = Exposure.LightOnTime;
+                layer.LiftHeight = Exposure.LiftHeight;
+                layer.LiftSpeed = Exposure.LiftSpeed;
+                layer.LiftHeight2 = Exposure.LiftHeight2;
+                layer.LiftSpeed2 = Exposure.LiftSpeed2;
+                layer.RetractSpeed = Exposure.RetractSpeed;
+                layer.RetractHeight2 = Exposure.RetractHeight2;
+                layer.RetractSpeed2 = Exposure.RetractSpeed2;
+                layer.LightPWM = Exposure.LightPWM;
+            }
         }
 
         public class Properties
         {
-            public Size Size { get; set; } = new Size();
-            public Exposure Exposure { get; set; } = new Exposure();
-            public Bottom Bottom { get; set; } = new Bottom();
+            public Size Size { get; set; } = new ();
+            public Exposure Exposure { get; set; } = new ();
+            public Bottom Bottom { get; set; } = new ();
             public byte AntiAliasLevel { get; set; } = 1;
 
             public override string ToString()
@@ -114,7 +160,7 @@ namespace UVtools.Core.FileFormats
         public class Settings
         {
             public Properties Properties { get; set; } = new();
-            public List<LayerData> Layers { get; set; } = new();
+            public List<LayerDef> Layers { get; set; } = new();
 
             public override string ToString()
             {
@@ -144,10 +190,24 @@ namespace UVtools.Core.FileFormats
 
             PrintParameterModifier.BottomLiftHeight,
             PrintParameterModifier.BottomLiftSpeed,
+
             PrintParameterModifier.LiftHeight,
             PrintParameterModifier.LiftSpeed,
+
+            PrintParameterModifier.BottomLiftHeight2,
+            PrintParameterModifier.BottomLiftSpeed2,
+
+            PrintParameterModifier.LiftHeight2,
+            PrintParameterModifier.LiftSpeed2,
+
             PrintParameterModifier.BottomRetractSpeed,
             PrintParameterModifier.RetractSpeed,
+
+            PrintParameterModifier.BottomRetractHeight2,
+            PrintParameterModifier.RetractHeight2,
+
+            PrintParameterModifier.BottomRetractSpeed2,
+            PrintParameterModifier.RetractSpeed2,
 
             PrintParameterModifier.BottomLightPWM,
             PrintParameterModifier.LightPWM,
@@ -156,10 +216,15 @@ namespace UVtools.Core.FileFormats
         public override PrintParameterModifier[] PrintParameterPerLayerModifiers { get; } = {
             PrintParameterModifier.LightOffDelay,
             PrintParameterModifier.ExposureTime,
+
             PrintParameterModifier.LiftHeight,
             PrintParameterModifier.LiftSpeed,
+            PrintParameterModifier.LiftHeight2,
+            PrintParameterModifier.LiftSpeed2,
+
             PrintParameterModifier.RetractSpeed,
-            
+            PrintParameterModifier.RetractHeight2,
+            PrintParameterModifier.RetractSpeed2,
             
             PrintParameterModifier.BottomLightPWM,
             PrintParameterModifier.LightPWM,
@@ -241,6 +306,12 @@ namespace UVtools.Core.FileFormats
             set => base.BottomLayerCount = JsonSettings.Properties.Bottom.Count = value;
         }
 
+        public override float BottomLightOffDelay
+        {
+            get => JsonSettings.Properties.Bottom.LightOffTime;
+            set => base.BottomLightOffDelay = JsonSettings.Properties.Bottom.LightOffTime = (float)Math.Round(value, 2);
+        }
+
         public override float LightOffDelay
         {
             get => JsonSettings.Properties.Exposure.LightOffTime;
@@ -267,12 +338,6 @@ namespace UVtools.Core.FileFormats
             }
         }
 
-        public override float BottomLiftHeight
-        {
-            get => JsonSettings.Properties.Bottom.LiftHeight;
-            set => base.BottomLiftHeight = JsonSettings.Properties.Bottom.LiftHeight = (float)Math.Round(value, 2);
-        }
-
         public override float BottomExposureTime
         {
             get => JsonSettings.Properties.Bottom.LightOnTime;
@@ -285,16 +350,10 @@ namespace UVtools.Core.FileFormats
             set => base.ExposureTime = JsonSettings.Properties.Exposure.LightOnTime = (float)Math.Round(value, 2);
         }
 
-        public override float BottomLightOffDelay
+        public override float BottomLiftHeight
         {
-            get => JsonSettings.Properties.Bottom.LightOffTime;
-            set => base.BottomLightOffDelay = JsonSettings.Properties.Bottom.LightOffTime = (float)Math.Round(value, 2);
-        }
-
-        public override float LiftHeight
-        {
-            get => JsonSettings.Properties.Exposure.LiftHeight;
-            set => base.LiftHeight = JsonSettings.Properties.Exposure.LiftHeight = (float)Math.Round(value, 2);
+            get => JsonSettings.Properties.Bottom.LiftHeight;
+            set => base.BottomLiftHeight = JsonSettings.Properties.Bottom.LiftHeight = (float)Math.Round(value, 2);
         }
 
         public override float BottomLiftSpeed
@@ -303,10 +362,40 @@ namespace UVtools.Core.FileFormats
             set => base.BottomLiftSpeed = JsonSettings.Properties.Bottom.LiftSpeed = (float)Math.Round(value, 2);
         }
 
+        public override float LiftHeight
+        {
+            get => JsonSettings.Properties.Exposure.LiftHeight;
+            set => base.LiftHeight = JsonSettings.Properties.Exposure.LiftHeight = (float)Math.Round(value, 2);
+        }
+
         public override float LiftSpeed
         {
             get => JsonSettings.Properties.Exposure.LiftSpeed;
             set => base.LiftSpeed = JsonSettings.Properties.Exposure.LiftSpeed = (float)Math.Round(value, 2);
+        }
+
+        public override float BottomLiftHeight2
+        {
+            get => JsonSettings.Properties.Bottom.LiftHeight2;
+            set => base.BottomLiftHeight2 = JsonSettings.Properties.Bottom.LiftHeight2 = (float)Math.Round(value, 2);
+        }
+
+        public override float BottomLiftSpeed2
+        {
+            get => JsonSettings.Properties.Bottom.LiftSpeed2;
+            set => base.BottomLiftSpeed2 = JsonSettings.Properties.Bottom.LiftSpeed2 = (float)Math.Round(value, 2);
+        }
+
+        public override float LiftHeight2
+        {
+            get => JsonSettings.Properties.Exposure.LiftHeight2;
+            set => base.LiftHeight2 = JsonSettings.Properties.Exposure.LiftHeight2 = (float)Math.Round(value, 2);
+        }
+
+        public override float LiftSpeed2
+        {
+            get => JsonSettings.Properties.Exposure.LiftSpeed2;
+            set => base.LiftSpeed2 = JsonSettings.Properties.Exposure.LiftSpeed2 = (float)Math.Round(value, 2);
         }
 
         public override float BottomRetractSpeed
@@ -320,6 +409,31 @@ namespace UVtools.Core.FileFormats
             get => JsonSettings.Properties.Exposure.RetractSpeed;
             set => base.RetractSpeed = JsonSettings.Properties.Exposure.RetractSpeed = (float)Math.Round(value, 2);
         }
+
+        public override float BottomRetractHeight2
+        {
+            get => JsonSettings.Properties.Bottom.RetractHeight2;
+            set => base.BottomRetractHeight2 = JsonSettings.Properties.Bottom.RetractHeight2 = (float)Math.Round(value, 2);
+        }
+
+        public override float BottomRetractSpeed2
+        {
+            get => JsonSettings.Properties.Bottom.RetractSpeed2;
+            set => base.BottomRetractSpeed2 = JsonSettings.Properties.Bottom.RetractSpeed2 = (float)Math.Round(value, 2);
+        }
+
+        public override float RetractHeight2
+        {
+            get => JsonSettings.Properties.Exposure.RetractHeight2;
+            set => base.RetractHeight2 = JsonSettings.Properties.Exposure.RetractHeight2 = (float)Math.Round(value, 2);
+        }
+
+        public override float RetractSpeed2
+        {
+            get => JsonSettings.Properties.Exposure.RetractSpeed2;
+            set => base.RetractSpeed2 = JsonSettings.Properties.Exposure.RetractSpeed2 = (float)Math.Round(value, 2);
+        }
+
 
         public override byte BottomLightPWM
         {
@@ -338,33 +452,35 @@ namespace UVtools.Core.FileFormats
 
         #region Methods
 
+        protected override void OnPropertyChanged(PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(BottomRetractHeight)) JsonSettings.Properties.Bottom.RetractHeight = BottomRetractHeight;
+            else if (e.PropertyName == nameof(RetractHeight)) JsonSettings.Properties.Exposure.RetractHeight = RetractHeight;
+
+            base.OnPropertyChanged(e);
+        }
+
         public override void Clear()
         {
             base.Clear();
-            JsonSettings.Layers = new List<LayerData>();
+            JsonSettings.Layers = new List<LayerDef>();
         }
 
         protected override void EncodeInternally(string fileFullPath, OperationProgress progress)
         {
             // Redo layer data
-            JsonSettings.Layers.Clear();
+            if (JsonSettings.Layers is null)
+            {
+                JsonSettings.Layers = new List<LayerDef>();
+            }
+            else
+            {
+                JsonSettings.Layers.Clear();
+            }
+            
             for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
             {
-                var layer = this[layerIndex];
-                JsonSettings.Layers.Add(new LayerData
-                {
-                    Z = layer.PositionZ,
-                    Exposure = new Exposure
-                    {
-                        LiftHeight = layer.LiftHeight,
-                        LiftSpeed = layer.LiftSpeed,
-                        RetractHeight = layer.LiftHeight,
-                        RetractSpeed = layer.RetractSpeed,
-                        LightOffTime = layer.LightOffDelay,
-                        LightOnTime = layer.ExposureTime,
-                        LightPWM = layer.LightPWM
-                    }
-                });
+                JsonSettings.Layers.Add(new LayerDef(this[layerIndex]));
             }
 
             using var outputFile = ZipFile.Open(fileFullPath, ZipArchiveMode.Create);
@@ -438,16 +554,14 @@ namespace UVtools.Core.FileFormats
                     if (entry is null) continue;
 
                     using var stream = entry.Open();
-                    this[layerIndex] = new Layer(layerIndex, stream, LayerManager)
+                    var layer = new Layer(layerIndex, stream, LayerManager);
+
+                    if (JsonSettings.Layers?.Count > layerIndex)
                     {
-                        PositionZ = JsonSettings.Layers?.Count > layerIndex ? JsonSettings.Layers[(int) layerIndex].Z : GetHeightFromLayer(layerIndex),
-                        LiftHeight = JsonSettings.Layers?.Count > layerIndex ? JsonSettings.Layers[(int)layerIndex].Exposure.LiftHeight : GetInitialLayerValueOrNormal(layerIndex, BottomLiftHeight, LiftHeight),
-                        LiftSpeed = JsonSettings.Layers?.Count > layerIndex ? JsonSettings.Layers[(int)layerIndex].Exposure.LiftSpeed : GetInitialLayerValueOrNormal(layerIndex, BottomLiftSpeed, LiftSpeed),
-                        RetractSpeed = JsonSettings.Layers?.Count > layerIndex ? JsonSettings.Layers[(int)layerIndex].Exposure.RetractSpeed : RetractSpeed,
-                        LightOffDelay = JsonSettings.Layers?.Count > layerIndex ? JsonSettings.Layers[(int)layerIndex].Exposure.LightOffTime : GetInitialLayerValueOrNormal(layerIndex, BottomLightOffDelay, LightOffDelay),
-                        ExposureTime = JsonSettings.Layers?.Count > layerIndex ? JsonSettings.Layers[(int)layerIndex].Exposure.LightOnTime : GetInitialLayerValueOrNormal(layerIndex, BottomExposureTime, ExposureTime),
-                        LightPWM = JsonSettings.Layers?.Count > layerIndex ? JsonSettings.Layers[(int)layerIndex].Exposure.LightPWM : GetInitialLayerValueOrNormal(layerIndex, BottomLightPWM, LightPWM),
-                    };
+                        JsonSettings.Layers[(int)layerIndex].CopyTo(layer);
+                    }
+
+                    this[layerIndex] = layer;
                 }
                 
                 progress.ProcessedItems++;
@@ -473,6 +587,20 @@ namespace UVtools.Core.FileFormats
                 File.Copy(FileFullPath, filePath, true);
                 FileFullPath = filePath;
 
+            }
+
+            if (JsonSettings.Layers is null)
+            {
+                JsonSettings.Layers = new List<LayerDef>();
+            }
+            else
+            {
+                JsonSettings.Layers.Clear();
+            }
+
+            for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
+            {
+                JsonSettings.Layers.Add(new LayerDef(this[layerIndex]));
             }
 
             using var outputFile = ZipFile.Open(FileFullPath, ZipArchiveMode.Update);

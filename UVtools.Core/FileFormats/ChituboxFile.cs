@@ -38,9 +38,10 @@ namespace UVtools.Core.FileFormats
         public const byte RLE8EncodingLimit = 0x7d; // 125;
         public const ushort RLE16EncodingLimit = 0xFFF;
 
-        public const uint PERLAYER_SETTINGS_CBDDLP =    0x8;  // 0 or 8 (This disallow per layer settings)
-        public const uint PERLAYER_SETTINGS_DISALLOW =  0x7; // 7 (This disallow per layer settings)
-        public const uint PERLAYER_SETTINGS_CTBv2 =     0xF; // 15 for ctb v2 files and others (This disallow per layer settings)
+        public const uint PERLAYER_SETTINGS_CBDDLP =    8;  // 0 or 8 (This disallow per layer settings)
+        public const uint PERLAYER_SETTINGS_DISALLOW_NO_AA =  7; // 7 (This disallow per layer settings) no AA
+        public const uint PERLAYER_SETTINGS_DISALLOW =  15; // 15 (This disallow per layer settings) with AA
+        public const uint PERLAYER_SETTINGS_CTBv2 =     15; // 15 for ctb v2 files and others (This disallow per layer settings)
         public const uint PERLAYER_SETTINGS_CTBv3 =     0x2000000F; // 536870927 for ctb v3 files (This allow per layer settings, while 15 don't)
         public const uint PERLAYER_SETTINGS_CTBv4 =     0x4000000F; // 1073741839 for ctb v4 files (This allow per layer settings, while 15 don't)
             

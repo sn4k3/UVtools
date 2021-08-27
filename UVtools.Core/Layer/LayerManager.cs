@@ -505,19 +505,19 @@ namespace UVtools.Core
                 {
                     if (property is null or nameof(SlicerFile.BottomLayerCount))
                     {
-                        layer.LightOffDelay = SlicerFile.GetInitialLayerValueOrNormal(layerIndex, SlicerFile.BottomLightOffDelay, SlicerFile.LightOffDelay);
-                        layer.WaitTimeBeforeCure = SlicerFile.GetInitialLayerValueOrNormal(layerIndex, SlicerFile.BottomWaitTimeBeforeCure, SlicerFile.WaitTimeBeforeCure);
-                        layer.ExposureTime = SlicerFile.GetInitialLayerValueOrNormal(layerIndex, SlicerFile.BottomExposureTime, SlicerFile.ExposureTime);
-                        layer.WaitTimeAfterCure = SlicerFile.GetInitialLayerValueOrNormal(layerIndex, SlicerFile.BottomWaitTimeAfterCure, SlicerFile.WaitTimeAfterCure);
-                        layer.LiftHeight = SlicerFile.GetInitialLayerValueOrNormal(layerIndex, SlicerFile.BottomLiftHeight, SlicerFile.LiftHeight);
-                        layer.LiftSpeed = SlicerFile.GetInitialLayerValueOrNormal(layerIndex, SlicerFile.BottomLiftSpeed, SlicerFile.LiftSpeed);
-                        layer.LiftHeight2 = SlicerFile.GetInitialLayerValueOrNormal(layerIndex, SlicerFile.BottomLiftHeight2, SlicerFile.LiftHeight2);
-                        layer.LiftSpeed2 = SlicerFile.GetInitialLayerValueOrNormal(layerIndex, SlicerFile.BottomLiftSpeed2, SlicerFile.LiftSpeed2);
-                        layer.WaitTimeAfterLift = SlicerFile.GetInitialLayerValueOrNormal(layerIndex, SlicerFile.BottomWaitTimeAfterLift, SlicerFile.WaitTimeAfterLift);
-                        layer.RetractSpeed = SlicerFile.GetInitialLayerValueOrNormal(layerIndex, SlicerFile.BottomRetractSpeed, SlicerFile.RetractSpeed);
-                        layer.RetractHeight2 = SlicerFile.GetInitialLayerValueOrNormal(layerIndex, SlicerFile.BottomRetractHeight2, SlicerFile.RetractHeight2);
-                        layer.RetractSpeed2 = SlicerFile.GetInitialLayerValueOrNormal(layerIndex, SlicerFile.BottomRetractSpeed2, SlicerFile.RetractSpeed2);
-                        layer.LightPWM = SlicerFile.GetInitialLayerValueOrNormal(layerIndex, SlicerFile.BottomLightPWM, SlicerFile.LightPWM);
+                        layer.LightOffDelay = SlicerFile.GetBottomOrNormalValue(layer, SlicerFile.BottomLightOffDelay, SlicerFile.LightOffDelay);
+                        layer.WaitTimeBeforeCure = SlicerFile.GetBottomOrNormalValue(layer, SlicerFile.BottomWaitTimeBeforeCure, SlicerFile.WaitTimeBeforeCure);
+                        layer.ExposureTime = SlicerFile.GetBottomOrNormalValue(layer, SlicerFile.BottomExposureTime, SlicerFile.ExposureTime);
+                        layer.WaitTimeAfterCure = SlicerFile.GetBottomOrNormalValue(layer, SlicerFile.BottomWaitTimeAfterCure, SlicerFile.WaitTimeAfterCure);
+                        layer.LiftHeight = SlicerFile.GetBottomOrNormalValue(layer, SlicerFile.BottomLiftHeight, SlicerFile.LiftHeight);
+                        layer.LiftSpeed = SlicerFile.GetBottomOrNormalValue(layer, SlicerFile.BottomLiftSpeed, SlicerFile.LiftSpeed);
+                        layer.LiftHeight2 = SlicerFile.GetBottomOrNormalValue(layer, SlicerFile.BottomLiftHeight2, SlicerFile.LiftHeight2);
+                        layer.LiftSpeed2 = SlicerFile.GetBottomOrNormalValue(layer, SlicerFile.BottomLiftSpeed2, SlicerFile.LiftSpeed2);
+                        layer.WaitTimeAfterLift = SlicerFile.GetBottomOrNormalValue(layer, SlicerFile.BottomWaitTimeAfterLift, SlicerFile.WaitTimeAfterLift);
+                        layer.RetractSpeed = SlicerFile.GetBottomOrNormalValue(layer, SlicerFile.BottomRetractSpeed, SlicerFile.RetractSpeed);
+                        layer.RetractHeight2 = SlicerFile.GetBottomOrNormalValue(layer, SlicerFile.BottomRetractHeight2, SlicerFile.RetractHeight2);
+                        layer.RetractSpeed2 = SlicerFile.GetBottomOrNormalValue(layer, SlicerFile.BottomRetractSpeed2, SlicerFile.RetractSpeed2);
+                        layer.LightPWM = SlicerFile.GetBottomOrNormalValue(layer, SlicerFile.BottomLightPWM, SlicerFile.LightPWM);
                     }
                     else
                     {
