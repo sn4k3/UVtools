@@ -32,12 +32,12 @@ This file format share and reserve the following file extensions:
 1. Home
 2. Go to next layer `PositionZ`
 3. Display the layer image
-3. Lift sequence (If `SUM(LiftHeight + LiftHeight2)` > 0mm)
+3. Lift sequence (If `LiftHeight + LiftHeight2` > 0mm)
    1. `LiftHeight` @ `LiftSpeed` (if > 0mm)
    2. `LiftHeight2` @ `LiftSpeed2` (if > 0mm)
    3. `WaitTimeAfterLift` (if > 0s)
-   4. `RetractHeight2` @ `RetractSpeed2` (if > 0mm)
-   5. Retract to layer `PositionZ` at `RetractSpeed`
+   4. `RetractHeight` @ `RetractSpeed` (if > 0mm)
+   5. `RetractHeight2` @ `RetractSpeed2` (if > 0mm) [This must be the layer `PositionZ` position]
 4. Wait `WaitTimeBeforeCure`
 6. Turn on LED @ `LightPWM`
 7. Wait `ExposureTime`
