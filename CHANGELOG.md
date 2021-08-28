@@ -1,5 +1,21 @@
 # Changelog
 
+## 28/08/2021 - v2.20.3
+
+- **Tool - Dynamic Layer Height:**
+   - (Add) Option to strip anti-aliasing: Use this option if you get flashy layers or if you want to enhancement the results
+   - (Add) Option to reconstruct anti-aliasing: Use this option with "Strip anti-aliasing" to reconstruct the layer anti-aliasing via an gaussian blur
+   - (Add) Maximum wide difference: The maximum number of pixels wide difference to be able to stack layers, where one pixel difference is a whole perimeter of the object to be eroded.  
+      0 = Stack only equal layers  
+      n = Stack equal layers or with a n perimeter of difference between the sum of the stack (#274) 
+   - (Add) Allow to change the base exposure times for the auto generation (#274)
+   - (Add) Option to switch between: "Set the same base time for all bottoms" or "Calculate and iterate bottom exposures"
+   - (Add) Button to: Copy automatic table data into manual table
+   - (Improvement) Auto fill all layer height exposures times on manual entry
+   - (Fix) When "Exposure set type = Multiplier" bottom exposure is being used for normal exposure (#274)
+   - (Fix) Do not sum equal layers on the stack
+- (Fix) Recalculate the material milliliters per layer when replacing a layer collection (#273)
+
 ## 27/08/2021 - v2.20.2
 
 - **(Fix) Layers:**

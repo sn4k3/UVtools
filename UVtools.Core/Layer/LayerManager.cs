@@ -500,7 +500,7 @@ namespace UVtools.Core
                 var layer = this[layerIndex];
                 layer.Index = layerIndex;
                 layer.ParentLayerManager = this;
-
+                
                 if (property != string.Empty)
                 {
                     if (property is null or nameof(SlicerFile.BottomLayerCount))
@@ -575,6 +575,8 @@ namespace UVtools.Core
                 {
                     layer.PositionZ = SlicerFile.GetHeightFromLayer(layerIndex);
                 }
+
+                layer.MaterialMilliliters = 0; // Recalculate this value to be sure
             }
 
             SlicerFile?.RebuildGCode();

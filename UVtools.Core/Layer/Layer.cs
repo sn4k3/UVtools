@@ -7,7 +7,6 @@
  */
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using Emgu.CV;
@@ -124,7 +123,7 @@ namespace UVtools.Core
             }
         }
 
-        public bool IsBottomLayer => (uint)(PositionZ / SlicerFile.LayerHeight) <= ParentLayerManager.SlicerFile.BottomLayerCount;
+        public bool IsBottomLayer => (uint)(PositionZ / SlicerFile.LayerHeight) <= SlicerFile.BottomLayerCount;
         public bool IsNormalLayer => !IsBottomLayer;
 
         /// <summary>
@@ -155,7 +154,7 @@ namespace UVtools.Core
             {
                 if (!RaiseAndSetIfChanged(ref _positionZ, RoundHeight(value))) return;
                 RaisePropertyChanged(nameof(LayerHeight));
-                MaterialMilliliters = 0; // Recalculate
+                //MaterialMilliliters = 0; // Recalculate
             }
         }
 
@@ -415,7 +414,7 @@ namespace UVtools.Core
         public float MaterialMilliliters
         {
             get => _materialMilliliters;
-            private set
+            internal set
             {
                 if (SlicerFile is null) return;
                 //var globalMilliliters = SlicerFile.MaterialMilliliters - _materialMilliliters;

@@ -28,13 +28,51 @@ namespace UVtools.Core.Operations
         #region Sub Classes
         public sealed class Report
         {
-            public uint OldLayerCount { get; set; }
-            public uint NewLayerCount { get; set; }
-            public uint StackedLayers { get; set; }
+            private uint _oldLayerCount;
+            private uint _newLayerCount;
+            private uint _stackedLayers;
+            private float _maximumLayerHeight1;
+            private float _oldPrintTime;
+            private float _newPrintTime;
+
+            public uint OldLayerCount
+            {
+                get => _oldLayerCount;
+                set => _oldLayerCount = value;
+            }
+
+            public uint NewLayerCount
+            {
+                get => _newLayerCount;
+                set => _newLayerCount = value;
+            }
+
+            public uint StackedLayers
+            {
+                get => _stackedLayers;
+                set => _stackedLayers = value;
+            }
+
             public uint ReusedLayers => OldLayerCount - StackedLayers;
-            public float MaximumLayerHeight { get; set; }
-            public float OldPrintTime { get; set; }
-            public float NewPrintTime { get; set; }
+
+            public float MaximumLayerHeight
+            {
+                get => _maximumLayerHeight1;
+                set => _maximumLayerHeight1 = value;
+            }
+
+            public float OldPrintTime
+            {
+                get => _oldPrintTime;
+                set => _oldPrintTime = value;
+            }
+
+            public float NewPrintTime
+            {
+                get => _newPrintTime;
+                set => _newPrintTime = value;
+            }
+
             public double SparedPrintTime => Math.Round(OldPrintTime - NewPrintTime, 2);
 
             public double CompressionRatio => Math.Round((double)OldLayerCount / NewLayerCount * 100.0, 2);
@@ -61,12 +99,17 @@ namespace UVtools.Core.Operations
 
         #region Members
 
-        //private decimal _displayWidth;
-        //private decimal _displayHeight;
+        private decimal _cacheRamSize = 1.5m;
         private decimal _minimumLayerHeight = 0.03m;
         private decimal _maximumLayerHeight = 0.10m;
-        private decimal _cacheRamSize = 1.5m;
+        private bool _stripAntiAliasing;
+        private bool _reconstructAntiAliasing;
+        private byte _maximumErodes = 10;
+
         private ExposureSetTypes _exposureSetType = ExposureSetTypes.Linear;
+        private bool _iterateBottomExposureTime;
+        private decimal _bottomExposureTime;
+        private decimal _exposureTime;
         private decimal _bottomExposureStep = 0.5m;
         private decimal _exposureStep = 0.2m;
         private RangeObservableCollection<ExposureItem> _automaticExposureTable = new();
@@ -166,7 +209,12 @@ namespace UVtools.Core.Operations
 
         public override string ToString()
         {
-            var result = $"[Layer Height: Min: {_minimumLayerHeight}mm Max: {_maximumLayerHeight}mm] [RAM: {_cacheRamSize}Gb] [Exposure type: {_exposureSetType}, Steps: {_bottomExposureStep}s/{_exposureStep}s]" + LayerRangeString;
+            var result = $"[RAM: {_cacheRamSize}Gb] " +
+                         $"[Layer Height: Min: {_minimumLayerHeight}mm Max: {_maximumLayerHeight}mm] " +
+                         $"[Strip AA: {_stripAntiAliasing} Reconstruct AA: {_reconstructAntiAliasing}] " +
+                         $"[Difference: {_maximumErodes}px] " +
+                         $"[Bottom Exposure: {_bottomExposureTime}s Normal Exposure: {_exposureTime}s] " +
+                         $"[Exposure type: {_exposureSetType}, Steps: {_bottomExposureStep}s/{_exposureStep}s]" + LayerRangeString;
             if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
             return result;
         }
@@ -189,33 +237,17 @@ namespace UVtools.Core.Operations
 
         #region Properties
 
-        /*public decimal DisplayWidth
+        public decimal CacheRAMSize
         {
-            get => _displayWidth;
+            get => _cacheRamSize;
             set
             {
-                if (!RaiseAndSetIfChanged(ref _displayWidth, Math.Round(value, 2))) return;
-                //RaisePropertyChanged(nameof(XYResolutionUm));
+                if (!RaiseAndSetIfChanged(ref _cacheRamSize, Math.Round(value, 2))) return;
+                RaisePropertyChanged(nameof(CacheObjectCount));
             }
         }
 
-        public decimal DisplayHeight
-        {
-            get => _displayHeight;
-            set
-            {
-                if (!RaiseAndSetIfChanged(ref _displayHeight, Math.Round(value, 2))) return;
-                //RaisePropertyChanged(nameof(XYResolutionUm));
-            }
-        }
-
-        public decimal XYResolutionUm => DisplayWidth > 0 || DisplayHeight > 0 ?
-            Math.Round(Math.Max(
-                DisplayWidth / SlicerFile.ResolutionX,
-                DisplayHeight / SlicerFile.ResolutionY
-            ), 3) * 1000
-            : 0;
-        */
+        public uint CacheObjectCount => (uint)(_cacheRamSize * 1000000000L / SlicerFile.Resolution.Area() / ObjectsPerCache);
 
         public decimal MinimumLayerHeight
         {
@@ -239,16 +271,22 @@ namespace UVtools.Core.Operations
             }
         }
 
-        public uint CacheObjectCount => (uint) (_cacheRamSize * 1000000000L / SlicerFile.Resolution.Area() / ObjectsPerCache);
-
-        public decimal CacheRAMSize
+        public bool StripAntiAliasing
         {
-            get => _cacheRamSize;
-            set
-            {
-                if(!RaiseAndSetIfChanged(ref _cacheRamSize, Math.Round(value, 2))) return;
-                RaisePropertyChanged(nameof(CacheObjectCount));
-            }
+            get => _stripAntiAliasing;
+            set => RaiseAndSetIfChanged(ref _stripAntiAliasing, value);
+        }
+
+        public bool ReconstructAntiAliasing
+        {
+            get => _reconstructAntiAliasing;
+            set => RaiseAndSetIfChanged(ref _reconstructAntiAliasing, value);
+        }
+
+        public byte MaximumErodes
+        {
+            get => _maximumErodes;
+            set => RaiseAndSetIfChanged(ref _maximumErodes, value);
         }
 
         public ExposureSetTypes ExposureSetType
@@ -266,6 +304,37 @@ namespace UVtools.Core.Operations
         }
 
         public bool IsExposureSetTypeManual => _exposureSetType == ExposureSetTypes.Manual;
+
+        public bool IterateBottomExposureTime
+        {
+            get => _iterateBottomExposureTime;
+            set
+            {
+                if(!RaiseAndSetIfChanged(ref _iterateBottomExposureTime, value)) return;
+                if (!IsExposureSetTypeManual) RebuildAutoExposureTable();
+            }
+        }
+
+        public decimal BottomExposureTime
+        {
+            get => _bottomExposureTime;
+            set
+            {
+                if(!RaiseAndSetIfChanged(ref _bottomExposureTime, value)) return;
+                if (!IsExposureSetTypeManual) RebuildAutoExposureTable();
+            }
+        }
+
+        public decimal ExposureTime
+        {
+            get => _exposureTime;
+            set
+            {
+                if(!RaiseAndSetIfChanged(ref _exposureTime, value)) return;
+                if (!IsExposureSetTypeManual) RebuildAutoExposureTable();
+            }
+            
+        }
 
         public decimal BottomExposureStep
         {
@@ -340,12 +409,12 @@ namespace UVtools.Core.Operations
                     switch (_exposureSetType)
                     {
                         case ExposureSetTypes.Linear:
-                            bottomExposure = (decimal)SlicerFile.BottomExposureTime + count * _bottomExposureStep;
-                            exposure = (decimal)SlicerFile.ExposureTime + count * _exposureStep;
+                            bottomExposure = _iterateBottomExposureTime ? _bottomExposureTime + count * _bottomExposureStep : _bottomExposureTime;
+                            exposure = _exposureTime + count * _exposureStep;
                             break;
                         case ExposureSetTypes.Multiplier:
-                            bottomExposure = (decimal)SlicerFile.BottomExposureTime + (decimal)SlicerFile.BottomExposureTime * count * layerHeight * _bottomExposureStep;
-                            exposure = (decimal)SlicerFile.BottomExposureTime + (decimal)SlicerFile.ExposureTime * count * layerHeight * _exposureStep;
+                            bottomExposure = _iterateBottomExposureTime ? _bottomExposureTime + _bottomExposureTime * count * layerHeight * _bottomExposureStep : _bottomExposureTime;
+                            exposure = _exposureTime + _exposureTime * count * layerHeight * _exposureStep;
                             break;
                         case ExposureSetTypes.Manual:
                             break;
@@ -377,11 +446,6 @@ namespace UVtools.Core.Operations
         {
             base.InitWithSlicerFile();
 
-            /*if (SlicerFile.DisplayWidth > 0)
-                _displayWidth = (decimal)SlicerFile.DisplayWidth;
-            if (SlicerFile.DisplayHeight > 0)
-                _displayHeight = (decimal)SlicerFile.DisplayHeight;*/
-
             var layerHeight = (decimal)SlicerFile.LayerHeight;
             if (_minimumLayerHeight < layerHeight)
             {
@@ -391,6 +455,11 @@ namespace UVtools.Core.Operations
             {
                 _maximumLayerHeight = Math.Min((decimal) FileFormat.MaximumLayerHeight, _maximumLayerHeight*2);
             }
+            if (_bottomExposureTime <= 0)
+                _bottomExposureTime = (decimal)SlicerFile.BottomExposureTime;
+            if (_exposureTime <= 0)
+                _exposureTime = (decimal)SlicerFile.ExposureTime;
+
         }
 
         public void InitManualTable()
@@ -399,12 +468,13 @@ namespace UVtools.Core.Operations
                 layerHeight <= (decimal) FileFormat.MaximumLayerHeight;
                 layerHeight += (decimal)FileFormat.MinimumLayerHeight)
             {
-                var item = new ExposureItem(layerHeight);
-                if (layerHeight == (decimal) SlicerFile.LayerHeight)
+                var item = new ExposureItem(layerHeight, _bottomExposureTime, _exposureTime);
+                //item.BottomExposure = _bottomExposureTime;
+                //item.Exposure = _exposureTime;
+                /*if (layerHeight == (decimal) SlicerFile.LayerHeight)
                 {
-                    item.BottomExposure = (decimal) SlicerFile.BottomExposureTime;
-                    item.Exposure = (decimal) SlicerFile.ExposureTime;
-                }
+                    
+                }*/
                 _manualExposureTable.Add(item);
             }
         }
@@ -415,7 +485,7 @@ namespace UVtools.Core.Operations
 
         private bool Equals(OperationDynamicLayerHeight other)
         {
-            return _minimumLayerHeight == other._minimumLayerHeight && _maximumLayerHeight == other._maximumLayerHeight && _cacheRamSize == other._cacheRamSize && _exposureSetType == other._exposureSetType && _bottomExposureStep == other._bottomExposureStep && _exposureStep == other._exposureStep && Equals(_manualExposureTable, other._manualExposureTable);
+            return _cacheRamSize == other._cacheRamSize && _minimumLayerHeight == other._minimumLayerHeight && _maximumLayerHeight == other._maximumLayerHeight && _stripAntiAliasing == other._stripAntiAliasing && _reconstructAntiAliasing == other._reconstructAntiAliasing && _maximumErodes == other._maximumErodes && _exposureSetType == other._exposureSetType && _iterateBottomExposureTime == other._iterateBottomExposureTime && _bottomExposureTime == other._bottomExposureTime && _exposureTime == other._exposureTime && _bottomExposureStep == other._bottomExposureStep && _exposureStep == other._exposureStep && Equals(_manualExposureTable, other._manualExposureTable);
         }
 
         public override bool Equals(object obj)
@@ -425,7 +495,21 @@ namespace UVtools.Core.Operations
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(_minimumLayerHeight, _maximumLayerHeight, _cacheRamSize, (int) _exposureSetType, _bottomExposureStep, _exposureStep, _manualExposureTable);
+            var hashCode = new HashCode();
+            hashCode.Add(_cacheRamSize);
+            hashCode.Add(_minimumLayerHeight);
+            hashCode.Add(_maximumLayerHeight);
+            hashCode.Add(_stripAntiAliasing);
+            hashCode.Add(_reconstructAntiAliasing);
+            hashCode.Add(_maximumErodes);
+            hashCode.Add((int)_exposureSetType);
+            hashCode.Add(_iterateBottomExposureTime);
+            hashCode.Add(_bottomExposureTime);
+            hashCode.Add(_exposureTime);
+            hashCode.Add(_bottomExposureStep);
+            hashCode.Add(_exposureStep);
+            hashCode.Add(_manualExposureTable);
+            return hashCode.ToHashCode();
         }
 
         #endregion
@@ -444,12 +528,12 @@ namespace UVtools.Core.Operations
                 switch (_exposureSetType)
                 {
                     case ExposureSetTypes.Linear:
-                        bottomExposure = (decimal)SlicerFile.BottomExposureTime + count * _bottomExposureStep;
-                        exposure = (decimal)SlicerFile.ExposureTime + count * _exposureStep;
+                        bottomExposure = _iterateBottomExposureTime ? _bottomExposureTime + count * _bottomExposureStep : _bottomExposureTime;
+                        exposure = _exposureTime + count * _exposureStep;
                         break;
                     case ExposureSetTypes.Multiplier:
-                        bottomExposure = (decimal)SlicerFile.BottomExposureTime + (decimal)SlicerFile.BottomExposureTime * count * layerHeight * _bottomExposureStep;
-                        exposure = (decimal)SlicerFile.BottomExposureTime + (decimal)SlicerFile.ExposureTime * count * layerHeight * _exposureStep;
+                        bottomExposure = _iterateBottomExposureTime ? _bottomExposureTime + _bottomExposureTime * count * layerHeight * _bottomExposureStep : _bottomExposureTime;
+                        exposure = _exposureTime + _exposureTime * count * layerHeight * _exposureStep;
                         break;
                     case ExposureSetTypes.Manual:
                         break;
@@ -459,6 +543,13 @@ namespace UVtools.Core.Operations
                 _automaticExposureTable.Add(new ExposureItem(layerHeight, Math.Round(bottomExposure, 2), Math.Round(exposure, 2)));
                 count++;
             }
+        }
+
+        public void CopyAutomaticTableToManual()
+        {
+            ManualExposureTable.Clear();
+            ManualExposureTable.AddRange(_automaticExposureTable);
+            ExposureSetType = ExposureSetTypes.Manual;
         }
 
         protected override bool ExecuteInternally(OperationProgress progress)
@@ -481,7 +572,6 @@ namespace UVtools.Core.Operations
             Mat matXorSum = null;
             Mat matSum = null;
 
-            const byte _maximumErodes = 10;
             //decimal xyResolutionUm = XYResolutionUm;
 
             //const double xyRes = 35;
@@ -505,7 +595,13 @@ namespace UVtools.Core.Operations
                     matThresholdCache[layerIndex] = new Mat();
 
                     // Clean AA
-                    CvInvoke.Threshold(matCache[layerIndex], matThresholdCache[layerIndex], 128, 255, ThresholdType.Binary);
+                    CvInvoke.Threshold(matCache[layerIndex], matThresholdCache[layerIndex], 127, 255, ThresholdType.Binary);
+
+                    if (_stripAntiAliasing)
+                    {
+                        matCache[layerIndex].Dispose();
+                        matCache[layerIndex] = matThresholdCache[layerIndex];
+                    }
                 });
             }
 
@@ -523,6 +619,11 @@ namespace UVtools.Core.Operations
 
             void AddNewLayer(Mat mat, float layerHeight)
             {
+                if (_stripAntiAliasing && _reconstructAntiAliasing)
+                {
+                    CvInvoke.GaussianBlur(mat, mat, new Size(3, 3), 0);
+                }
+
                 report.MaximumLayerHeight = Math.Max(report.MaximumLayerHeight, layerHeight);
                 var positionZ = GetLastPositionZ(layerHeight);
                 var layer = new Layer((uint) layers.Count, mat, SlicerFile)
@@ -536,10 +637,25 @@ namespace UVtools.Core.Operations
 
             void ReUseLayer(uint layerIndex)
             {
-                SlicerFile[layerIndex].PositionZ = GetLastPositionZ(SlicerFile.LayerHeight);
-                SlicerFile[layerIndex].Index = (uint) layers.Count;
-                SlicerFile[layerIndex].IsModified = true;
-                layers.Add(SlicerFile[layerIndex]);
+                var layer = SlicerFile[layerIndex];
+                layer.PositionZ = GetLastPositionZ(SlicerFile.LayerHeight);
+                layer.Index = (uint) layers.Count;
+                layer.IsModified = true;
+                if (_stripAntiAliasing)
+                {
+                    var (mat, matThreshold) = GetLayer(layerIndex);
+                    if (_reconstructAntiAliasing)
+                    {
+                        var blurMat = new Mat();
+                        CvInvoke.GaussianBlur(matThreshold, blurMat, new Size(3, 3), 0);
+                        layer.LayerMat = blurMat;
+                    }
+                    else
+                    {
+                        layer.LayerMat = matThreshold;
+                    }
+                }
+                layers.Add(layer);
             }
 
             for (uint layerIndex = 0; layerIndex < LayerIndexStart; layerIndex++) // Skip layers and re-use layers
@@ -567,7 +683,7 @@ namespace UVtools.Core.Operations
                 matXorSum?.Dispose();
                 matXorSum = null;
 
-                while (true)
+                while (true) // In a stack
                 {
                     progress.Token.ThrowIfCancellationRequested();
                     progress.ProcessedItems = layerIndex;
@@ -601,13 +717,15 @@ namespace UVtools.Core.Operations
                         CvInvoke.Add(matXorSum, matXor, matXorSum);
                     }
 
-                    var currentLayerHeigthUm = currentLayerHeight * 1000.0;
+                    //var currentLayerHeigthUm = currentLayerHeight * 1000.0;
 
                     if (CvInvoke.CountNonZero(matXorSum) > 0) // Layers are different
                     {
+                        //byte innerErodeCount = 0;
                         bool meetRequirement = false;
-                        for (; erodeCount <= _maximumErodes; )
+                        while (erodeCount < _maximumErodes)
                         {
+                            //innerErodeCount++;
                             erodeCount++;
                             //maxErodeCount = Math.Max(maxErodeCount, erodeCount);
 
@@ -637,6 +755,11 @@ namespace UVtools.Core.Operations
                             Debug.WriteLine(string.Empty);
                             break;
                         }
+
+                        if (erodeCount > 0) // Sum only if layers are different from the stack
+                        {
+                            CvInvoke.Add(matSum, mat2, matSum);
+                        }
                     }
                     else
                     {
@@ -645,7 +768,7 @@ namespace UVtools.Core.Operations
                     }
 
                     layerSum++;
-                    CvInvoke.Add(matSum, mat2, matSum);
+
                     Debug.WriteLine(string.Empty);
                 }
 
@@ -677,6 +800,8 @@ namespace UVtools.Core.Operations
 
             SlicerFile.SuppressRebuildPropertiesWork(() =>
             {
+                SlicerFile.BottomExposureTime = (float)_bottomExposureTime;
+                SlicerFile.ExposureTime = (float)_exposureTime;
                 SlicerFile.LayerManager.Layers = layers.ToArray();
             }, true, false);
 
@@ -685,15 +810,15 @@ namespace UVtools.Core.Operations
             for (uint layerIndex = 0; layerIndex < SlicerFile.LayerCount; layerIndex++)
             {
                 var layer = SlicerFile[layerIndex];
-                float bottomExposure = SlicerFile.BottomExposureTime;
-                float exposure = SlicerFile.ExposureTime;
+                var bottomExposure = _bottomExposureTime;
+                var exposure = _exposureTime;
                 if(exposureDictionary.TryGetValue((decimal)layer.LayerHeight, out var item))
                 {
-                    bottomExposure = (float) item.BottomExposure;
-                    exposure = (float) item.Exposure;
+                    bottomExposure = item.BottomExposure;
+                    exposure = item.Exposure;
                 }
 
-                layer.ExposureTime = SlicerFile.GetBottomOrNormalValue(layer, bottomExposure, exposure);
+                layer.ExposureTime = (float)SlicerFile.GetBottomOrNormalValue(layer, bottomExposure, exposure);
             }
             //var layer = slicerFile.LayerManager.Layers[^1];
 
