@@ -75,7 +75,7 @@ namespace UVtools.Core
             {
                 if(!RaiseAndSetIfChanged(ref _nonZeroPixelCount, value)) return;
                 RaisePropertyChanged(nameof(ExposureMillimeters));
-                MaterialMilliliters = 0; // Recalculate
+                MaterialMilliliters = -1; // Recalculate
             }
         }
 
@@ -154,7 +154,7 @@ namespace UVtools.Core
             {
                 if (!RaiseAndSetIfChanged(ref _positionZ, RoundHeight(value))) return;
                 RaisePropertyChanged(nameof(LayerHeight));
-                //MaterialMilliliters = 0; // Recalculate
+                //MaterialMilliliters = -1; // Recalculate
             }
         }
 
@@ -414,18 +414,18 @@ namespace UVtools.Core
         public float MaterialMilliliters
         {
             get => _materialMilliliters;
-            internal set
+            set
             {
                 if (SlicerFile is null) return;
                 //var globalMilliliters = SlicerFile.MaterialMilliliters - _materialMilliliters;
-                if (value <= 0)
+                if (value < 0)
                 {
                     value = (float) Math.Round(SlicerFile.PixelArea * LayerHeight * NonZeroPixelCount / 1000f, 4);
                 }
 
                 if(!RaiseAndSetIfChanged(ref _materialMilliliters, value)) return;
-                SlicerFile.MaterialMilliliters = 0; // Recalculate global
                 RaisePropertyChanged(nameof(MaterialMillilitersPercent));
+                SlicerFile.MaterialMilliliters = -1; // Recalculate global
                 //ParentLayerManager.MaterialMillilitersTimer.Stop();
                 //if(!ParentLayerManager.MaterialMillilitersTimer.Enabled)
                 //    ParentLayerManager.MaterialMillilitersTimer.Start();

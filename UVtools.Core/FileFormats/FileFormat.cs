@@ -905,7 +905,7 @@ namespace UVtools.Core.FileFormats
                 // Recalculate changes
                 PrintHeight = PrintHeight;
                 PrintTime = PrintTimeComputed;
-                MaterialMilliliters = 0;
+                MaterialMilliliters = -1;
 
                 if (oldLayerManager is null) return; // Init
 

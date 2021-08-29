@@ -81,11 +81,13 @@ namespace UVtools.Core
                         RebuildLayersProperties();
                         rebuildProperties = true;
                     }
-
-                    SlicerFile.MaterialMilliliters = 0;
                 }
 
-                if (!rebuildProperties) SlicerFile.RebuildGCode();
+                if (!rebuildProperties)
+                {
+                    SlicerFile.MaterialMilliliters = -1;
+                    SlicerFile.RebuildGCode();
+                }
 
                 RaisePropertyChanged();
             }
@@ -500,7 +502,12 @@ namespace UVtools.Core
                 var layer = this[layerIndex];
                 layer.Index = layerIndex;
                 layer.ParentLayerManager = this;
-                
+
+                if (recalculateZPos)
+                {
+                    layer.PositionZ = SlicerFile.GetHeightFromLayer(layerIndex);
+                }
+
                 if (property != string.Empty)
                 {
                     if (property is null or nameof(SlicerFile.BottomLayerCount))
@@ -571,12 +578,7 @@ namespace UVtools.Core
                     }
                 }
 
-                if (recalculateZPos)
-                {
-                    layer.PositionZ = SlicerFile.GetHeightFromLayer(layerIndex);
-                }
-
-                layer.MaterialMilliliters = 0; // Recalculate this value to be sure
+                layer.MaterialMilliliters = -1; // Recalculate this value to be sure
             }
 
             SlicerFile?.RebuildGCode();

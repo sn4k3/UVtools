@@ -1,5 +1,9 @@
 # Changelog
 
+## 29/08/2021 - v2.20.4
+
+- (Fix) On some tools, calibration tests and even files when recalculating the Z layer position for the whole set, it will use the bottom setting for all layers
+
 ## 28/08/2021 - v2.20.3
 
 - **Tool - Dynamic Layer Height:**
