@@ -638,7 +638,7 @@ namespace UVtools.Core.Operations
                 if (!addPart(step)) break;
             }
 
-            Parallel.For(0, layers.Length, layerIndex =>
+            Parallel.For(0, layers.Length, CoreSettings.ParallelOptions, layerIndex =>
                 //for (var i = 0; i < layers.Length; i++)
             {
                 layers[layerIndex] = layer.Clone();
@@ -646,7 +646,7 @@ namespace UVtools.Core.Operations
 
             if (_erodeBottomIterations > 0)
             {
-                Parallel.For(0, _bottomLayers, layerIndex => 
+                Parallel.For(0, _bottomLayers, CoreSettings.ParallelOptions, layerIndex => 
                 { 
                     CvInvoke.Erode(layers[layerIndex], layers[layerIndex], kernel, anchor, _erodeBottomIterations, BorderType.Reflect101, default);
                 });
@@ -654,7 +654,7 @@ namespace UVtools.Core.Operations
 
             if (_chamferLayers > 0)
             {
-                Parallel.For(0, _chamferLayers, layerIndexOffset =>
+                Parallel.For(0, _chamferLayers, CoreSettings.ParallelOptions, layerIndexOffset =>
                 {
                     var iteration = _chamferLayers - layerIndexOffset;
                     CvInvoke.Erode(layers[layerIndexOffset], layers[layerIndexOffset], kernel, anchor, iteration, BorderType.Reflect101, default);
@@ -676,7 +676,7 @@ namespace UVtools.Core.Operations
                 }*/
             }
 
-            Parallel.For(Math.Max(0u, LayerCount - 15), LayerCount, layerIndex =>
+            Parallel.For(Math.Max(0u, LayerCount - 15), LayerCount, CoreSettings.ParallelOptions, layerIndex =>
             {
                 foreach (var keyValuePair in pointTextList)
                 {
@@ -688,7 +688,7 @@ namespace UVtools.Core.Operations
             {
                 var flip = SlicerFile.DisplayMirror;
                 if (flip == Enumerations.FlipDirection.None) flip = Enumerations.FlipDirection.Horizontally;
-                Parallel.ForEach(layers, mat => CvInvoke.Flip(mat, mat, Enumerations.ToOpenCVFlipType(flip)));
+                Parallel.ForEach(layers, CoreSettings.ParallelOptions, mat => CvInvoke.Flip(mat, mat, Enumerations.ToOpenCVFlipType(flip)));
             }
 
             return layers;
@@ -730,7 +730,7 @@ namespace UVtools.Core.Operations
 
             var layers = GetLayers();
 
-            Parallel.For(0, LayerCount, layerIndex =>
+            Parallel.For(0, LayerCount, CoreSettings.ParallelOptions, layerIndex =>
             {
                 newLayers[layerIndex] = new Layer((uint)layerIndex, layers[layerIndex], SlicerFile.LayerManager) {IsModified = true};
                 layers[layerIndex].Dispose();

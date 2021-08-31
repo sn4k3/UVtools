@@ -116,7 +116,7 @@ namespace UVtools.WPF
                 bool result = false;
                 try
                 {
-                    Parallel.ForEach(processIssues, layerIssues =>
+                    Parallel.ForEach(processIssues, CoreSettings.ParallelOptions, layerIssues =>
                     {
                         if (Progress.Token.IsCancellationRequested) return;
                         using (var image = SlicerFile[layerIssues.Key].LayerMat)

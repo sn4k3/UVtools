@@ -167,7 +167,7 @@ namespace UVtools.Core.Operations
 
             int startLayerIndex = (int)(SlicerFile.LayerCount - otherFile.LayerCount);
             if (startLayerIndex < 0) return false;
-            Parallel.For(0, otherFile.LayerCount, layerIndex =>
+            Parallel.For(0, otherFile.LayerCount, CoreSettings.ParallelOptions, layerIndex =>
             {
                 if (progress.Token.IsCancellationRequested) return;
                 var fullMatLayerIndex = startLayerIndex + layerIndex;

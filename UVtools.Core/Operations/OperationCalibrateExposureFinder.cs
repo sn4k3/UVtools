@@ -1883,7 +1883,7 @@ namespace UVtools.Core.Operations
                 var tableGrouped = table.GroupBy(pair => new {pair.Key.LayerHeight, pair.Key.BottomExposure, pair.Key.Exposure}).Distinct();
                 SlicerFile.BottomLayerCount = _bottomLayers;
                 progress.ItemCount = (uint) (SlicerFile.LayerCount * table.Count); 
-                Parallel.For(0, SlicerFile.LayerCount, layerIndex =>
+                Parallel.For(0, SlicerFile.LayerCount, CoreSettings.ParallelOptions, layerIndex =>
                 {
                     if (progress.Token.IsCancellationRequested) return;
                     var layer = SlicerFile[layerIndex];

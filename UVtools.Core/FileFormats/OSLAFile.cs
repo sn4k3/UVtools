@@ -527,7 +527,7 @@ namespace UVtools.Core.FileFormats
             {
                 var layerBytes = new byte[LayerCount][];
 
-                Parallel.ForEach(batch, layerIndex =>
+                Parallel.ForEach(batch, CoreSettings.ParallelOptions, layerIndex =>
                 {
                     if (progress.Token.IsCancellationRequested) return;
                     using (var mat = this[layerIndex].LayerMat)
@@ -687,7 +687,7 @@ namespace UVtools.Core.FileFormats
                     layerBytes[layerIndex] = inputFile.ReadBytes(inputFile.ReadUIntLittleEndian());
                 }
 
-                Parallel.ForEach(batch, layerIndex =>
+                Parallel.ForEach(batch, CoreSettings.ParallelOptions, layerIndex =>
                 {
                     if (progress.Token.IsCancellationRequested) return;
                     using (var mat = DecodeImage(HeaderSettings.LayerDataType, layerBytes[layerIndex], Resolution))

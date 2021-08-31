@@ -32,6 +32,93 @@
               </StackPanel>
             </Border>
 
+              <Border
+                  Classes="GroupBox"
+                  Margin="5">
+
+                  <StackPanel Orientation="Vertical">
+                      <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Tasks"/>
+                      <StackPanel Margin="10" Orientation="Vertical" Spacing="10">
+                        <Grid RowDefinitions="Auto"
+                              ColumnDefinitions="Auto,10,150,5,Auto,20,Auto,2,Auto,2,Auto,2,Auto,2,Auto,2,Auto,2,Auto">
+
+                          <TextBlock Grid.Row="0" Grid.Column="0"
+                                     VerticalAlignment="Center"
+                                     ToolTip.Tip="Sets the maximum number of concurrent tasks/threads/operations enabled to run by parallel method calls.
+&#x0a;If your computer lags and freeze during operations you can reduce this number to reduce the workload and keep some cores available to other tasks as well.
+&#x0a;&lt;= 0: Will utilize however many threads the underlying scheduler provides, mostly this is the processor core count.
+&#x0a;1: Single thread."
+                                     Text="Max degree of parallelism:"/>
+
+                          <NumericUpDown Grid.Row="0" Grid.Column="2"
+                                     VerticalAlignment="Center"
+                                     ToolTip.Tip="Sets the maximum number of concurrent tasks/threads/operations enabled to run by parallel method calls.
+&#x0a;If your computer lags and freeze during operations you can reduce this number to reduce the workload and keep some cores available to other tasks as well.
+&#x0a;&lt;= 0: Will utilize however many threads the underlying scheduler provides, mostly this is the processor core count.
+&#x0a;1: Single thread."
+                                     Minimum="-1"
+                                     Maximum="{Binding MaxProcessorCount}"
+                                     Increment="1"
+                                     Value="{Binding Settings.General.MaxDegreeOfParallelism}"/>
+                          <TextBlock Grid.Row="0" Grid.Column="4"
+                                     VerticalAlignment="Center"
+                                     Text="{Binding MaxProcessorCount, StringFormat=/ {0} threads}"/>
+
+                          <Button Grid.Row="0" Grid.Column="6"
+                                  VerticalAlignment="Center"
+                                  Content="Auto"
+                                  ToolTip.Tip="Will utilize however many threads the underlying scheduler provides (Full performance)"
+                                  Command="{Binding SetMaxDegreeOfParallelism}"
+                                  CommandParameter="-1"/>
+
+                          <Button Grid.Row="0" Grid.Column="8"
+                                  VerticalAlignment="Center"
+                                  Content="1"
+                                  ToolTip.Tip="Single thread (Very slow performance)"
+                                  Command="{Binding SetMaxDegreeOfParallelism}"
+                                  CommandParameter="1"/>
+
+                          <Button Grid.Row="0" Grid.Column="10"
+                                  VerticalAlignment="Center"
+                                  Content="¼"
+                                  ToolTip.Tip="A quarter of the available threads (Slow performance)"
+                                  Command="{Binding SetMaxDegreeOfParallelism}"
+                                  CommandParameter="0.25"/>
+
+                          <Button Grid.Row="0" Grid.Column="12"
+                                  VerticalAlignment="Center"
+                                  Content="½"
+                                  ToolTip.Tip="Half of the available threads (Half performance)"
+                                  Command="{Binding SetMaxDegreeOfParallelism}"
+                                  CommandParameter="0.5"/>
+
+                          <Button Grid.Row="0" Grid.Column="14"
+                                  VerticalAlignment="Center"
+                                  Content="¾"
+                                  ToolTip.Tip="Three quarters of the available threads (Fast performance)"
+                                  Command="{Binding SetMaxDegreeOfParallelism}"
+                                  CommandParameter="0.75"/>
+
+                          <Button Grid.Row="0" Grid.Column="16"
+                                  VerticalAlignment="Center"
+                                  Content="!"
+                                  ToolTip.Tip="Optimal of the available threads, this is your thread count less 2 to relief the workload and leave 2 cores free for other running tasks (Optimal performance)"
+                                  Command="{Binding SetMaxDegreeOfParallelism}"
+                                  CommandParameter="!"/>
+
+                          <Button Grid.Row="0" Grid.Column="18"
+                                  VerticalAlignment="Center"
+                                  Content="Max"
+                                  ToolTip.Tip="{Binding MaxProcessorCount, StringFormat=All of the available threads [{0}] (Full performance)}"
+                                  Command="{Binding SetMaxDegreeOfParallelism}"
+                                  CommandParameter="{Binding MaxProcessorCount}"/>
+                          
+                        </Grid>
+                      </StackPanel>
+
+                  </StackPanel>
+              </Border>
+
             <Border
                 Classes="GroupBox"
                   Margin="5">

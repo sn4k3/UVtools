@@ -86,7 +86,7 @@ namespace UVtools.Core.Operations
 
         protected override bool ExecuteInternally(OperationProgress progress)
         {
-            Parallel.For(LayerIndexStart, LayerIndexEnd + 1, layerIndex =>
+            Parallel.For(LayerIndexStart, LayerIndexEnd + 1, CoreSettings.ParallelOptions, layerIndex =>
             {
                 if (progress.Token.IsCancellationRequested) return;
                 using var mat = SlicerFile[layerIndex].LayerMat;

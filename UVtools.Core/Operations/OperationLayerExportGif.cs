@@ -219,7 +219,7 @@ namespace UVtools.Core.Operations
                 ROI = SlicerFile.BoundingRectangle;
             }
 
-            Parallel.For(0, TotalLayers, i =>
+            Parallel.For(0, TotalLayers, CoreSettings.ParallelOptions, i =>
             {
                 if (progress.Token.IsCancellationRequested) return;
                 uint layerIndex = (uint) (LayerIndexStart + i * (_skip + 1));

@@ -239,7 +239,7 @@ namespace UVtools.Core.Operations
             }
 
             progress.Reset(ProgressAction, firstSupportLayerIndex - _ignoreFirstLayers);
-            Parallel.For(_ignoreFirstLayers, firstSupportLayerIndex, layerIndex =>
+            Parallel.For(_ignoreFirstLayers, firstSupportLayerIndex, CoreSettings.ParallelOptions, layerIndex =>
             {
                 if (progress.Token.IsCancellationRequested) return;
                 using var mat = SlicerFile[layerIndex].LayerMat;

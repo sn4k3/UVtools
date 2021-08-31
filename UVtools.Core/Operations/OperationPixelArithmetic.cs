@@ -494,7 +494,7 @@ namespace UVtools.Core.Operations
             }
 
 
-            Parallel.For(LayerIndexStart, LayerIndexEnd + 1, layerIndex =>
+            Parallel.For(LayerIndexStart, LayerIndexEnd + 1, CoreSettings.ParallelOptions, layerIndex =>
             {
                 if (progress.Token.IsCancellationRequested) return;
                 using (var mat = SlicerFile[layerIndex].LayerMat)
@@ -839,7 +839,7 @@ namespace UVtools.Core.Operations
         {
             var result = new string[mat.Height];
             var span = mat.GetBytePointer();
-            Parallel.For(0, mat.Height, y =>
+            Parallel.For(0, mat.Height, CoreSettings.ParallelOptions, y =>
             {
                 result[y] = string.Empty;
                 var pixelPos = mat.GetPixelPos(0, y);

@@ -987,7 +987,7 @@ namespace UVtools.Core.FileFormats
 
             foreach (var batch in BatchLayersIndexes())
             {
-                Parallel.ForEach(batch, layerIndex =>
+                Parallel.ForEach(batch, CoreSettings.ParallelOptions, layerIndex =>
                 {
                     if (progress.Token.IsCancellationRequested) return;
                     using (var mat = this[layerIndex].LayerMat)
@@ -1115,7 +1115,7 @@ namespace UVtools.Core.FileFormats
                     });
                 }
 
-                Parallel.ForEach(batch, layerIndex =>
+                Parallel.ForEach(batch, CoreSettings.ParallelOptions, layerIndex =>
                 {
                     if (progress.Token.IsCancellationRequested) return;
                     using (var mat = LayersDefinitions[layerIndex].Decode((uint)layerIndex))

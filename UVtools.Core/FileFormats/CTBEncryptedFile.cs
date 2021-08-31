@@ -1184,7 +1184,7 @@ namespace UVtools.Core.FileFormats
                 }
 
 
-                Parallel.ForEach(batch, layerIndex =>
+                Parallel.ForEach(batch, CoreSettings.ParallelOptions, layerIndex =>
                 {
                     if (progress.Token.IsCancellationRequested) return;
 
@@ -1333,7 +1333,7 @@ namespace UVtools.Core.FileFormats
             outputFile.Seek(outputFile.Position + layerTableSize, SeekOrigin.Begin);
 
             progress.Reset(OperationProgress.StatusEncodeLayers, LayerCount);
-            Parallel.For(0, LayerCount, layerIndex =>
+            Parallel.For(0, LayerCount, CoreSettings.ParallelOptions, layerIndex =>
             {
                 if (progress.Token.IsCancellationRequested) return;
                 var layerDef = new LayerDef(this, this[layerIndex]);

@@ -156,7 +156,7 @@ namespace UVtools.Core.Operations
             decimal xSteps = Math.Abs(100 - _x) / (LayerIndexEnd - LayerIndexStart + 1);
             decimal ySteps = Math.Abs(100 - _y) / (LayerIndexEnd - LayerIndexStart + 1);
 
-            Parallel.For(LayerIndexStart, LayerIndexEnd + 1, layerIndex =>
+            Parallel.For(LayerIndexStart, LayerIndexEnd + 1, CoreSettings.ParallelOptions, layerIndex =>
             {
                 if (progress.Token.IsCancellationRequested) return;
                 var newX = _x;

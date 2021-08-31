@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using UVtools.Core.Scripting;
 using Emgu.CV;
 using Emgu.CV.Structure;
+using UVtools.Core;
 using UVtools.Core.Extensions;
 
 namespace UVtools.ScriptSample
@@ -86,7 +87,7 @@ namespace UVtools.ScriptSample
             var brightnesses = Levels;
 
             // Loop user selected layers in parallel, this will put each core of CPU working here on parallel
-            Parallel.For(Operation.LayerIndexStart, Operation.LayerIndexEnd+1, layerIndex =>
+            Parallel.For(Operation.LayerIndexStart, Operation.LayerIndexEnd+1, CoreSettings.ParallelOptions, layerIndex =>
             {
                 if (Progress.Token.IsCancellationRequested) return; // Abort operation, user requested cancellation
 

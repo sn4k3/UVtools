@@ -588,7 +588,7 @@ namespace UVtools.Core.Operations
                     matThresholdCache[layerIndex].Dispose();
                     matThresholdCache[layerIndex] = null;
                 }
-                Parallel.For(fromLayerIndex, Math.Min(fromLayerIndex + CacheObjectCount, SlicerFile.LayerCount), layerIndex =>
+                Parallel.For(fromLayerIndex, Math.Min(fromLayerIndex + CacheObjectCount, SlicerFile.LayerCount), CoreSettings.ParallelOptions, layerIndex =>
                 {
                     if (matCache[layerIndex] is not null) return; // Already cached
                     matCache[layerIndex] = SlicerFile[layerIndex].LayerMat;

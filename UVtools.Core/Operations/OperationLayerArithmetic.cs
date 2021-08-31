@@ -288,7 +288,7 @@ namespace UVtools.Core.Operations
             }
 
             progress.Reset("Applied layers", (uint) SetLayers.Count);
-            Parallel.ForEach(SetLayers, layerIndex =>
+            Parallel.ForEach(SetLayers, CoreSettings.ParallelOptions, layerIndex =>
             {
                 if (progress.Token.IsCancellationRequested) return;
                 progress.LockAndIncrement();

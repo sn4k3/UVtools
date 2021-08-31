@@ -296,7 +296,7 @@ namespace UVtools.Core.Operations
         {
             var result = new string[mat.Height];
             var span = mat.GetBytePointer();
-            Parallel.For(0, mat.Height, y =>
+            Parallel.For(0, mat.Height, CoreSettings.ParallelOptions, y =>
             {
                 result[y] = string.Empty;
                 for (int x = 0; x < mat.Width; x++)
@@ -649,7 +649,7 @@ namespace UVtools.Core.Operations
             CvInvoke.BitwiseNot(patternMask, patternMask);
             CvInvoke.BitwiseNot(alternatePatternMask, alternatePatternMask);
 
-            Parallel.For(LayerIndexStart, LayerIndexEnd + 1, layerIndex =>
+            Parallel.For(LayerIndexStart, LayerIndexEnd + 1, CoreSettings.ParallelOptions, layerIndex =>
             {
                 if (progress.Token.IsCancellationRequested) return;
                 using var mat = SlicerFile[layerIndex].LayerMat;

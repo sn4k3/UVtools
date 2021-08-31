@@ -660,7 +660,7 @@ namespace UVtools.Core.FileFormats
 
             if (Printer == PrinterType.BeneMono)
             {
-                Parallel.For(0, LayerCount,
+                Parallel.For(0, LayerCount, CoreSettings.ParallelOptions,
                 //new ParallelOptions { MaxDegreeOfParallelism = Printer == PrinterType.BeneMono ? 1 : 1 },
                 layerIndex =>
                 {
@@ -862,7 +862,7 @@ namespace UVtools.Core.FileFormats
 
                     if (Printer == PrinterType.BeneMono)
                     {
-                        Parallel.For(0, LayerCount, layerIndex =>
+                        Parallel.For(0, LayerCount, CoreSettings.ParallelOptions, layerIndex =>
                         {
                             if (progress.Token.IsCancellationRequested) return;
                             var layer = this[layerIndex];

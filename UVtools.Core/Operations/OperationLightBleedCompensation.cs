@@ -203,7 +203,7 @@ namespace UVtools.Core.Operations
         {
             var dimMats = GetDimMats();
             if (dimMats.Length == 0) return false;
-            Parallel.For(LayerIndexStart, LayerIndexEnd + 1, layerIndex =>
+            Parallel.For(LayerIndexStart, LayerIndexEnd + 1, CoreSettings.ParallelOptions, layerIndex =>
             {
                 if (progress.Token.IsCancellationRequested) return; // Abort operation, user requested cancellation
 

@@ -20,6 +20,9 @@ namespace UVtools.WPF.Windows
     {
         private double _scrollViewerMaxHeight;
         private int _selectedTabIndex;
+
+        public int MaxProcessorCount => Environment.ProcessorCount;
+
         public UserSettings SettingsBackup { get; }
 
         public string[] FileOpenDialogFilters { get; }
@@ -110,7 +113,35 @@ namespace UVtools.WPF.Windows
                 UserSettings.Save();
             }
         }
-        
+
+        public void SetMaxDegreeOfParallelism(string to)
+        {
+            if (to == "*")
+            {
+                Settings.General.MaxDegreeOfParallelism = MaxProcessorCount;
+                return;
+            }
+
+            if (to == "!")
+            {
+                Settings.General.MaxDegreeOfParallelism = Math.Max(1, MaxProcessorCount-2);
+                return;
+            }
+
+            if (int.TryParse(to, out var i))
+            {
+                Settings.General.MaxDegreeOfParallelism = i;
+                return;
+            }
+
+            if (decimal.TryParse(to, out var d))
+            {
+                Settings.General.MaxDegreeOfParallelism = (int)(MaxProcessorCount * d);
+                return;
+            }
+        }
+
+
         public async void GeneralOpenFolderField(string field)
         {
             foreach (PropertyInfo propertyInfo in Settings.General.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))

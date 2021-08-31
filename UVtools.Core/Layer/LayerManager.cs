@@ -630,7 +630,7 @@ namespace UVtools.Core
             if (_boundingRectangle.IsEmpty) // Safe checking
             {
                 progress.Reset(OperationProgress.StatusOptimizingBounds, LayerCount-1);
-                Parallel.For(0, LayerCount, layerIndex =>
+                Parallel.For(0, LayerCount, CoreSettings.ParallelOptions, layerIndex =>
                 {
                     if (progress.Token.IsCancellationRequested) return;
                     
@@ -775,7 +775,7 @@ namespace UVtools.Core
             Mat GetCachedMat(uint layerIndex)
             {
                 if (cachedLayers[layerIndex] is not null) return cachedLayers[layerIndex];
-                Parallel.For(layerIndex, Math.Min(layerIndex + cacheCount, LayerCount), i =>
+                Parallel.For(layerIndex, Math.Min(layerIndex + cacheCount, LayerCount), CoreSettings.ParallelOptions, i =>
                 {
                     if (this[i].IsEmpty) return; // empty layers
                     cachedLayers[i] = this[i].LayerMat;
@@ -825,7 +825,7 @@ namespace UVtools.Core
                 GetCachedMat(rootLayerIndex);
                 progress.Token.ThrowIfCancellationRequested();
                 uint layerAdvance = (uint) Math.Min(i + cacheCount, actionLayers.Count);
-                Parallel.For(i, layerAdvance, l =>
+                Parallel.For(i, layerAdvance, CoreSettings.ParallelOptions, l =>
                 {
                     var layerIndex = actionLayers[(int) l];
                     var layer = this[layerIndex];
@@ -1007,9 +1007,7 @@ namespace UVtools.Core
                 progress.Reset(OperationProgress.StatusIslands, LayerCount);
 
                 // Detect contours
-                Parallel.ForEach(this,
-                //new ParallelOptions{MaxDegreeOfParallelism = 1},
-                layer =>
+                Parallel.ForEach(this, CoreSettings.ParallelOptions, layer =>
                 {
                     if (progress.Token.IsCancellationRequested) return;
                     if (layer.IsEmpty)
@@ -1422,8 +1420,8 @@ namespace UVtools.Core
                     //foreach (var area in areas)
 
                     //Parallel.ForEach(from t in areas where t.Type == LayerHollowArea.AreaType.Unknown select t, 
-                    //    new ParallelOptions{MaxDegreeOfParallelism = 1}, area =>
-                    foreach(var area in areas)
+                    //     CoreSettings.ParallelOptions, area =>
+                    foreach (var area in areas)
                     {
                         //if (progress.Token.IsCancellationRequested) return;
                         if (area.Type != LayerHollowArea.AreaType.Unknown) continue; // processed, ignore
@@ -1437,7 +1435,7 @@ namespace UVtools.Core
                         //List<LayerHollowArea> linkedAreas = new();
 
                         for (sbyte dir = 1; dir >= -1 && area.Type != LayerHollowArea.AreaType.Drain; dir -= 2)
-                            //Parallel.ForEach(new sbyte[] {1, -1}, new ParallelOptions {MaxDegreeOfParallelism = 2}, dir =>
+                        //Parallel.ForEach(new sbyte[] {1, -1},  CoreSettings.ParallelOptions,  dir =>
                         {
                             Queue<LayerHollowArea> queue = new();
                             queue.Enqueue(area);
@@ -1783,7 +1781,7 @@ namespace UVtools.Core
             }
 
             progress.Reset("Saving", (uint) modifiedLayers.Count);
-            Parallel.ForEach(modifiedLayers, (modifiedLayer, state) =>
+            Parallel.ForEach(modifiedLayers, CoreSettings.ParallelOptions, modifiedLayer =>
             {
                 this[modifiedLayer.Key].LayerMat = modifiedLayer.Value;
                 modifiedLayer.Value.Dispose();
@@ -1835,7 +1833,7 @@ namespace UVtools.Core
             Array.Resize(ref _layers, (int) newLayerCount);
             if (differenceLayerCount > 0 && initBlack)
             {
-                Parallel.For(oldLayerCount, newLayerCount, layerIndex =>
+                Parallel.For(oldLayerCount, newLayerCount, CoreSettings.ParallelOptions, layerIndex =>
                 {
                     this[layerIndex] = new Layer((uint)layerIndex, EmguExtensions.InitMat(SlicerFile.Resolution), this);
                 });
@@ -1866,7 +1864,7 @@ namespace UVtools.Core
             // Allocate new layers
             if (initBlack)
             {
-                Parallel.For(insertAtLayerIndex, insertAtLayerIndex + layerCount, layerIndex =>
+                Parallel.For(insertAtLayerIndex, insertAtLayerIndex + layerCount, CoreSettings.ParallelOptions, layerIndex =>
                 {
                     newLayers[layerIndex] = new Layer((uint) layerIndex, EmguExtensions.InitMat(SlicerFile.Resolution), this);
                 });
@@ -1917,7 +1915,7 @@ namespace UVtools.Core
         public Layer[] AllocateFromMat(Mat[] mats)
         {
             var layers = new Layer[mats.Length];
-            Parallel.For(0L, mats.Length, i =>
+            Parallel.For(0L, mats.Length, CoreSettings.ParallelOptions, i =>
             {
                 layers[i] = new Layer((uint)i, mats[i], this);
             });

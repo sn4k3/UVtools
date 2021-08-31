@@ -73,7 +73,7 @@ namespace UVtools.Core.Operations
         public override string ValidateInternally()
         {
             /*var result = new ConcurrentBag<StringTag>();
-            Parallel.ForEach(Files, file =>
+            Parallel.ForEach(Files,  CoreSettings.ParallelOptions, file =>
             {
                 using (Mat mat = CvInvoke.Imread(file.TagString, ImreadModes.AnyColor))
                 {
@@ -238,7 +238,7 @@ namespace UVtools.Core.Operations
                     SL1File format = new();
                     format.LayerManager.Init((uint)keyImage.Count);
 
-                    Parallel.ForEach(keyImage, pair =>
+                    Parallel.ForEach(keyImage, CoreSettings.ParallelOptions, pair =>
                     {
                         if (progress.Token.IsCancellationRequested) return;
                         using var mat = CvInvoke.Imread(pair.Value, ImreadModes.Grayscale);
@@ -360,9 +360,7 @@ namespace UVtools.Core.Operations
                     }
 
                     progress.Reset(ProgressAction, fileFormat.LayerCount);
-                    Parallel.For(0, fileFormat.LayerCount,
-                        //new ParallelOptions{MaxDegreeOfParallelism = 1},
-                        i =>
+                    Parallel.For(0, fileFormat.LayerCount, CoreSettings.ParallelOptions, i =>
                         {
                             if (progress.Token.IsCancellationRequested) return;
                             uint layerIndex = (uint)(_startLayerIndex + i);

@@ -505,7 +505,7 @@ namespace UVtools.Core.FileFormats
             SVGDocument.Groups = new List<FlashForgeSVGXSvgGroup> { new("background") };
             var groups = new FlashForgeSVGXSvgGroup[LayerCount];
 
-            Parallel.For(0, LayerCount, /*new ParallelOptions{MaxDegreeOfParallelism = 1},*/ layerIndex =>
+            Parallel.For(0, LayerCount, CoreSettings.ParallelOptions, layerIndex =>
             {
                 if (progress.Token.IsCancellationRequested) return;
 
@@ -656,7 +656,7 @@ namespace UVtools.Core.FileFormats
             LayerManager.Init(SVGDocument.PrintParameters.LayerCount);
             progress.Reset(OperationProgress.StatusDecodeLayers, LayerCount);
 
-            Parallel.For(0, LayerCount, /*new ParallelOptions{MaxDegreeOfParallelism = 1},*/ layerIndex =>
+            Parallel.For(0, LayerCount, CoreSettings.ParallelOptions, layerIndex =>
             {
                 if (progress.Token.IsCancellationRequested) return;
 

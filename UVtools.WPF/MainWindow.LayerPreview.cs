@@ -796,7 +796,7 @@ namespace UVtools.WPF
                         bool showSimilarityInstead =
                             Settings.LayerPreview.LayerDifferenceHighlightSimilarityInstead;
 
-                        Parallel.For(rect.Y, rect.Bottom, y =>
+                        Parallel.For(rect.Y, rect.Bottom, CoreSettings.ParallelOptions, y =>
                         {
                             for (int x = rect.X; x < rect.Right; x++)
                             {

@@ -661,7 +661,7 @@ namespace UVtools.Core.Operations
             {
                 var flip = SlicerFile.DisplayMirror;
                 if (flip == Enumerations.FlipDirection.None) flip = Enumerations.FlipDirection.Horizontally;
-                Parallel.ForEach(layers, mat => CvInvoke.Flip(mat, mat, Enumerations.ToOpenCVFlipType(flip)));
+                Parallel.ForEach(layers, CoreSettings.ParallelOptions, mat => CvInvoke.Flip(mat, mat, Enumerations.ToOpenCVFlipType(flip)));
             }
 
             // Preview

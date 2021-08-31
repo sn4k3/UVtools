@@ -324,7 +324,7 @@ namespace UVtools.Core.FileFormats
             var previews = new byte[ThumbnailsOriginalSize.Length][];
 
             // Previews
-            Parallel.For(0, previews.Length, previewIndex =>
+            Parallel.For(0, previews.Length, CoreSettings.ParallelOptions, previewIndex =>
             {
                 if (progress.Token.IsCancellationRequested) return;
                 var encodeLength = ThumbnailsOriginalSize[previewIndex].Area() * 2;
@@ -358,7 +358,7 @@ namespace UVtools.Core.FileFormats
             {
                 progress.Token.ThrowIfCancellationRequested();
 
-                Parallel.ForEach(batch, layerIndex =>
+                Parallel.ForEach(batch, CoreSettings.ParallelOptions, layerIndex =>
                 {
                     if (progress.Token.IsCancellationRequested) return;
                     var layer = this[layerIndex];
@@ -440,7 +440,7 @@ namespace UVtools.Core.FileFormats
                 inputFile.Seek(2, SeekOrigin.Current);
             }
 
-            Parallel.For(0, previews.Length, previewIndex =>
+            Parallel.For(0, previews.Length, CoreSettings.ParallelOptions, previewIndex =>
             {
                 Thumbnails[previewIndex] = DecodeImage(DATATYPE_RGB565_BE, previews[previewIndex], ThumbnailsOriginalSize[previewIndex]);
                 previews[previewIndex] = null;
@@ -472,7 +472,7 @@ namespace UVtools.Core.FileFormats
                     progress.Token.ThrowIfCancellationRequested();
                 }
 
-                Parallel.ForEach(batch, layerIndex =>
+                Parallel.ForEach(batch, CoreSettings.ParallelOptions, layerIndex =>
                 {
                     if (progress.Token.IsCancellationRequested) return;
                     using (var mat = EmguExtensions.InitMat(Resolution))

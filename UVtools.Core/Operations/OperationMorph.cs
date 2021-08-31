@@ -155,9 +155,7 @@ namespace UVtools.Core.Operations
                 out var maxIteration
             );
 
-            Parallel.For(LayerIndexStart, LayerIndexEnd + 1,
-                //new ParallelOptions {MaxDegreeOfParallelism = 1},
-                layerIndex =>
+            Parallel.For(LayerIndexStart, LayerIndexEnd + 1, CoreSettings.ParallelOptions, layerIndex =>
                 {
                     if (progress.Token.IsCancellationRequested) return;
                     int iterations = LayerManager.MutateGetIterationVar(isFade, (int)IterationsStart, (int)IterationsEnd, iterationSteps, maxIteration, LayerIndexStart, (uint)layerIndex);

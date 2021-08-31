@@ -135,7 +135,7 @@ namespace UVtools.Core.Operations
                 mask = GetHoneycombMask(GetRoiSizeOrDefault());
             }
 
-            Parallel.For(LayerIndexStart, LayerIndexEnd + 1, layerIndex =>
+            Parallel.For(LayerIndexStart, LayerIndexEnd + 1, CoreSettings.ParallelOptions, layerIndex =>
             {
                 if (progress.Token.IsCancellationRequested) return;
 

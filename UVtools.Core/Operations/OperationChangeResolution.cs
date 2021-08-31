@@ -162,7 +162,7 @@ namespace UVtools.Core.Operations
             progress.ItemCount = SlicerFile.LayerCount;
             var boundingRectangle = SlicerFile.BoundingRectangle;
             var newSize = new Size((int) NewResolutionX, (int) NewResolutionY);
-            Parallel.For(0, SlicerFile.LayerCount, layerIndex =>
+            Parallel.For(0, SlicerFile.LayerCount, CoreSettings.ParallelOptions, layerIndex =>
             {
                 if (progress.Token.IsCancellationRequested) return;
 

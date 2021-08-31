@@ -1,5 +1,12 @@
 # Changelog
 
+## 31/08/2021 - v2.20.5
+
+- (Add) Setting - Max degree of parallelism: Sets the maximum number of concurrent tasks/threads/operations enabled to run by parallel method calls.   
+   If your computer lags and freeze during operations you can reduce this number to reduce the workload and keep some cores available to other tasks as well.  
+   <= 0: Will utilize however many threads the underlying scheduler provides, mostly this is the processor count.  
+   1: Single thread. (#279)
+
 ## 29/08/2021 - v2.20.4
 
 - (Fix) On some tools, calibration tests and even files when recalculating the Z layer position for the whole set, it will use the bottom setting for all layers

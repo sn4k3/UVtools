@@ -179,7 +179,7 @@ namespace UVtools.Core.Operations
                     if (!issuesGroup.Any()) break; // Nothing to process
 
                     islandsToRecompute.Clear();
-                    Parallel.ForEach(issuesGroup, group =>
+                    Parallel.ForEach(issuesGroup, CoreSettings.ParallelOptions, group =>
                     {
                         if (progress.Token.IsCancellationRequested) return;
                         Layer layer = SlicerFile[group.Key];
@@ -234,7 +234,7 @@ namespace UVtools.Core.Operations
 
 
                 progress.Reset("Attempt to attach islands below", (uint) islandsToProcess.Count);
-                Parallel.ForEach(issuesGroup, group =>
+                Parallel.ForEach(issuesGroup, CoreSettings.ParallelOptions, group =>
                 {
                     using var mat = SlicerFile[group.Key].LayerMat;
                     var matSpan = mat.GetDataByteSpan();
@@ -319,7 +319,7 @@ namespace UVtools.Core.Operations
             progress.Reset(ProgressAction, LayerRangeCount);
             if (_repairIslands || _repairResinTraps)
             {
-                Parallel.For(LayerIndexStart, LayerIndexEnd, layerIndex =>
+                Parallel.For(LayerIndexStart, LayerIndexEnd, CoreSettings.ParallelOptions, layerIndex =>
                 {
                     if (progress.Token.IsCancellationRequested) return;
                     var layer = SlicerFile[layerIndex];

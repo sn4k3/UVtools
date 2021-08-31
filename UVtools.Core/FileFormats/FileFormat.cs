@@ -2703,7 +2703,7 @@ namespace UVtools.Core.FileFormats
 
                 if (LayerCount > 0)
                 {
-                    Parallel.ForEach(this, (layer) =>
+                    Parallel.ForEach(this, CoreSettings.ParallelOptions, layer =>
                     {
                         if (progress.Token.IsCancellationRequested) return;
                         var byteArr = layer.CompressedBytes;

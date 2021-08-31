@@ -9,6 +9,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Threading.Tasks;
 using System.Xml.Serialization;
 using Avalonia.Media;
 using JetBrains.Annotations;
@@ -22,7 +23,7 @@ namespace UVtools.WPF
     public sealed class UserSettings : BindableBase
     {
         #region Constants
-        public const ushort SETTINGS_VERSION = 4;
+        public const ushort SETTINGS_VERSION = 5;
         #endregion
 
         #region Sub classes
@@ -34,6 +35,8 @@ namespace UVtools.WPF
             private bool _startMaximized = true;
             private bool _checkForUpdatesOnStartup = true;
             private bool _loadDemoFileOnStartup = true;
+            private int _maxDegreeOfParallelism = -1;
+
             private bool _windowsCanResize;
             private bool _windowsTakeIntoAccountScreenScaling = true;
             private ushort _windowsHorizontalMargin = 100;
@@ -48,7 +51,6 @@ namespace UVtools.WPF
             private bool _promptOverwriteFileSave = true;
             private string _fileSaveNamePrefix;
             private string _fileSaveNameSuffix = "_copy";
-            private int _maxDegreeOfParallelism;
 
 
             public bool StartMaximized
@@ -67,6 +69,15 @@ namespace UVtools.WPF
             {
                 get => _loadDemoFileOnStartup;
                 set => RaiseAndSetIfChanged(ref _loadDemoFileOnStartup, value);
+            }
+
+            /// <summary>
+            /// Gets or sets the maximum number of concurrent tasks enabled by a ParallelOptions instance.
+            /// </summary>
+            public int MaxDegreeOfParallelism
+            {
+                get => _maxDegreeOfParallelism;
+                set => RaiseAndSetIfChanged(ref _maxDegreeOfParallelism, Math.Min(value, Environment.ProcessorCount));
             }
 
             public bool WindowsCanResize
@@ -154,19 +165,7 @@ namespace UVtools.WPF
                 set => RaiseAndSetIfChanged(ref _fileSaveNameSuffix, value);
             }
 
-            /// <summary>
-            /// Gets or sets the maximum number of concurrent tasks enabled by a ParallelOptions instance.
-            /// </summary>
-            public int MaxDegreeOfParallelism
-            {
-                get => _maxDegreeOfParallelism;
-                set => RaiseAndSetIfChanged(ref _maxDegreeOfParallelism,  value);
-            }
-
-            public GeneralUserSettings()
-            {
-                MaxDegreeOfParallelism = Environment.ProcessorCount;
-            }
+            public GeneralUserSettings() { }
 
             public GeneralUserSettings Clone()
             {
@@ -1417,16 +1416,26 @@ namespace UVtools.WPF
                 using var myXmlReader = new StreamReader(FilePath);
                 _instance = (UserSettings)serializer.Deserialize(myXmlReader);
                 if (_instance.General.MaxDegreeOfParallelism <= 0)
-                    _instance.General.MaxDegreeOfParallelism = Environment.ProcessorCount;
+                {
+                    _instance.General.MaxDegreeOfParallelism = -1;
+                }
+                else
+                {
+                    _instance.General.MaxDegreeOfParallelism = Math.Min(_instance.General.MaxDegreeOfParallelism, Environment.ProcessorCount);
+                }
+                    
 
                 if (_instance.SettingsVersion < SETTINGS_VERSION)
                 {
                     // Upgrade
-
+                    if (_instance.SettingsVersion <= 4)
+                    {
+                        _instance.General.MaxDegreeOfParallelism = -1;
+                    }
                     _instance.SettingsVersion = SETTINGS_VERSION;
                 }
 
-                
+                CoreSettings.MaxDegreeOfParallelism = _instance.General.MaxDegreeOfParallelism;
             }
             catch (Exception e)
             {
@@ -1443,6 +1452,7 @@ namespace UVtools.WPF
         {
             Instance.SavesCount++;
             _instance.ModifiedDateTime = DateTime.Now;
+            CoreSettings.MaxDegreeOfParallelism = _instance.General.MaxDegreeOfParallelism;
             var serializer = new XmlSerializer(_instance.GetType());
             try
             {

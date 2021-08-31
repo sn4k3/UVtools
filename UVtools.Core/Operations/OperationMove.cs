@@ -284,7 +284,7 @@ namespace UVtools.Core.Operations
             if (ROI.IsEmpty) ROI = SlicerFile.LayerManager.GetBoundingRectangle(progress);
             CalculateDstRoi();
 
-            Parallel.For(LayerIndexStart, LayerIndexEnd + 1, layerIndex =>
+            Parallel.For(LayerIndexStart, LayerIndexEnd + 1, CoreSettings.ParallelOptions, layerIndex =>
             {
                 if (progress.Token.IsCancellationRequested) return;
 

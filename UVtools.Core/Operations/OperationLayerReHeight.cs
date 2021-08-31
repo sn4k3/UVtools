@@ -220,7 +220,7 @@ namespace UVtools.Core.Operations
                     layerIndexes[i] = i * _selectedItem.Modifier;
                 }
 
-                Parallel.ForEach(layerIndexes, layerIndex =>
+                Parallel.ForEach(layerIndexes, CoreSettings.ParallelOptions, layerIndex =>
                 {
                     if (progress.Token.IsCancellationRequested) return;
                     var oldLayer = SlicerFile[layerIndex];

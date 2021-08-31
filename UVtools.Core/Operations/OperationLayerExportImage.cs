@@ -172,7 +172,7 @@ namespace UVtools.Core.Operations
 
             var slicedFileNameNoExt = SlicerFile.FilenameNoExt;
 
-            Parallel.For(LayerIndexStart, LayerIndexEnd+1, layerIndex =>
+            Parallel.For(LayerIndexStart, LayerIndexEnd+1, CoreSettings.ParallelOptions, layerIndex =>
             {
                 if (progress.Token.IsCancellationRequested) return;
 
