@@ -76,6 +76,7 @@ namespace UVtools.WPF
         private bool _showLayerOutlineLayerBoundary;
         private bool _showLayerOutlineHollowAreas;
         private bool _showLayerOutlineEdgeDetection;
+        private bool _showLayerOutlineDistanceDetection;
         private bool _showLayerOutlineSkeletonize;
 
 
@@ -389,6 +390,16 @@ namespace UVtools.WPF
             }
         }
 
+        public bool ShowLayerOutlineDistanceDetection
+        {
+            get => _showLayerOutlineDistanceDetection;
+            set
+            {
+                if (!RaiseAndSetIfChanged(ref _showLayerOutlineDistanceDetection, value)) return;
+                ShowLayer();
+            }
+        }
+
         public bool ShowLayerOutlineSkeletonize
         {
             get => _showLayerOutlineSkeletonize;
@@ -661,30 +672,45 @@ namespace UVtools.WPF
 
         public void GoFirstLayer()
         {
-            if (SlicerFile is null) return;
+            if (!IsFileLoaded) return;
             if (!CanGoDown) return;
             ActualLayer = 0;
         }
 
         public void GoPreviousLayer()
         {
-            if (SlicerFile is null) return;
+            if (!IsFileLoaded) return;
             if (!CanGoDown) return;
             ActualLayer--;
         }
 
         public void GoNextLayer()
         {
-            if (SlicerFile is null) return;
+            if (!IsFileLoaded) return;
             if (!CanGoUp) return;
             ActualLayer++;
         }
 
         public void GoLastLayer()
         {
-            if (SlicerFile is null) return;
+            if (!IsFileLoaded) return;
             if (!CanGoUp) return;
             ActualLayer = SliderMaximumValue;
+        }
+
+        public void GoMassLayer(string which)
+        {
+            if (!IsFileLoaded) return;
+            var layer = which switch
+            {
+                "SB" => SlicerFile.LayerManager.SmallestBottomLayer,
+                "LB" => SlicerFile.LayerManager.LargestBottomLayer,
+                "SN" => SlicerFile.LayerManager.SmallestNormalLayer,
+                "LN" => SlicerFile.LayerManager.LargestNormalLayer,
+                _ => null
+            };
+            if (layer is null) return;
+            ActualLayer = layer.Index;
         }
 
         public void RefreshLayerImage()
@@ -722,6 +748,14 @@ namespace UVtools.WPF
                     using var canny = new Mat();
                     CvInvoke.Canny(LayerCache.Image, canny, 80, 40, 3, true);
                     CvInvoke.CvtColor(canny, LayerCache.ImageBgr, ColorConversion.Gray2Bgr);
+                }
+                else if (_showLayerOutlineDistanceDetection)
+                {
+                    using var distance = new Mat();
+                    CvInvoke.DistanceTransform(LayerCache.Image, distance, null, DistType.C, 3);
+                    //distance.ConvertTo(distance, DepthType.Cv8U);
+                    CvInvoke.Normalize(distance, distance, byte.MinValue, byte.MaxValue, NormType.MinMax, DepthType.Cv8U);
+                    CvInvoke.CvtColor(distance, LayerCache.ImageBgr, ColorConversion.Gray2Bgr);
                 }
                 else if (_showLayerOutlineSkeletonize)
                 {

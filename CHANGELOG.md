@@ -1,5 +1,36 @@
 # Changelog
 
+## 03/09/2021 - v2.21.0
+
+- **UI:**
+   - **Menu:**
+      - (Add) File - Open recent: Open any recent open file from a list   
+          Shift + Click: Open file in a new window   
+          Shift + Ctrl + Click: Remove file from recent list
+          Ctrl + Click: Purge non-existing files
+      - (Add) File - Send to: Copy the file directly to a removable drive (Windows only)
+   - **(Add) Layer navigation buttons:**
+      - SB: Navigate to the smallest bottom layer in mass
+      - LB: Navigate to the largest bottom layer in mass
+      - SN: Navigate to the smallest normal layer in mass
+      - LN: Navigate to the largest normal layer in mass
+   - (Add) Layer outline - Distance detection: Calculates the distance to the closest zero pixel for each pixel
+- **Tools:**
+   - **Dynamic Lifts:**
+      - (Improvement) Select normal layers by default
+      - (Improvement) Hide light-off delay fields when the file format don't support them
+      - (Fix) Light-off delay fields was not hidding when set a mode that dont require the extra time fields
+   - **Exposure time finder:**
+      - (Fix) Fix the 'light-off delay' field not being show on files that support wait time before cure
+      - (Change) Field name 'Light-off delay' to 'Wait time before cure'
+   - (Add) Fade exposure time: The double exposure method clones the selected layer range and print the same layer twice with different exposure times and strategies
+   - (Add) Double exposure: The double exposure method clones the selected layer range and print the same layer twice with different exposure times and strategies
+   - (Add) Clone layers: Option to keep the same z position for the cloned layers instead of rebuild model height
+   - (Improvement) The layer range selector for normal and bottom layers now selects the correct range based on IsBottom property rather than layer index
+   - (Fix) The layer range selector was setting a very high last layer index when bottom layer count is 0
+   - (Fix) Pixel arithmetic: Threshold types "Otsu" and "Triangle" are flags to combine with other types, it will auto append the "Binnary" type
+- (Add) Support for Encrypted CTB (read-only)
+
 ## 31/08/2021 - v2.20.5
 
 - (Add) Setting - Max degree of parallelism: Sets the maximum number of concurrent tasks/threads/operations enabled to run by parallel method calls.   

@@ -22,6 +22,8 @@ namespace UVtools.Core.Operations
     {
         #region Members
         private uint _clones = 1;
+        private bool _keepSamePositionZ;
+
         #endregion
 
         #region Overrides
@@ -69,13 +71,28 @@ namespace UVtools.Core.Operations
         #region Properties
 
         /// <summary>
+        /// Gets or sets if cloned layers will keep same position z or get the height rebuilt
+        /// </summary>
+        public bool KeepSamePositionZ
+        {
+            get => _keepSamePositionZ;
+            set => RaiseAndSetIfChanged(ref _keepSamePositionZ, value);
+        }
+
+        /// <summary>
         /// Gets or sets the number of clones
         /// </summary>
         public uint Clones
         {
             get => _clones;
-            set => RaiseAndSetIfChanged(ref _clones, value);
+            set
+            {
+                if(!RaiseAndSetIfChanged(ref _clones, value)) return;
+                RaisePropertyChanged(nameof(ExtraLayers));
+            }
         }
+
+        public uint ExtraLayers => (uint)Math.Max(0, ((int)LayerIndexEnd - LayerIndexStart + 1) * _clones);
 
         #endregion
 
@@ -107,7 +124,11 @@ namespace UVtools.Core.Operations
                 }
             }
 
-            SlicerFile.LayerManager.Layers = newLayers;
+            SlicerFile.SuppressRebuildPropertiesWork(() =>
+            {
+                SlicerFile.LayerManager.Layers = newLayers;
+            }, !_keepSamePositionZ);
+            
 
             /*var oldLayers = SlicerFile.LayerManager.Layers;
 

@@ -278,9 +278,7 @@ namespace UVtools.Core.FileFormats
             new SL1File(),      // Prusa SL1
             new ChituboxZipFile(), // Zip
             new ChituboxFile(), // cbddlp, cbt, photon
-#if DEBUG
             new CTBEncryptedFile(), // encrypted ctb
-#endif
             new PhotonSFile(), // photons
             new PHZFile(), // phz
             new FDGFile(), // fdg
@@ -2496,6 +2494,13 @@ namespace UVtools.Core.FileFormats
         {
             progress ??= new OperationProgress();
             progress.Reset(OperationProgress.StatusEncodeLayers, LayerCount);
+
+#if !DEBUG
+            if (this is CTBEncryptedFile)
+            {
+                throw new NotSupportedException(CTBEncryptedFile.Preamble);
+            }
+#endif
 
             _layerManager.Sanitize();
 

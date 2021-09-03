@@ -38,6 +38,7 @@ namespace UVtools.WPF.Windows
         private bool _layerRangeSync;
         private uint _layerIndexStart;
         private uint _layerIndexEnd;
+        private bool _layerIndexEndEnabled = true;
         private bool _isROIVisible;
         private bool _isMasksVisible;
 
@@ -110,13 +111,14 @@ namespace UVtools.WPF.Windows
             get => _layerIndexStart;
             set
             {
+                value = Math.Min(value, SlicerFile.LastLayerIndex);
+
                 if (ToolControl?.BaseOperation is not null)
                 {
                     ToolControl.BaseOperation.LayerRangeSelection = Enumerations.LayerRangeSelection.None;
                     ToolControl.BaseOperation.LayerIndexStart = value;
                 }
 
-                value = value.Clamp(0, SlicerFile.LastLayerIndex);
                 if (!RaiseAndSetIfChanged(ref _layerIndexStart, value)) return;
                 RaisePropertyChanged(nameof(LayerStartMM));
                 RaisePropertyChanged(nameof(LayerRangeCountStr));
@@ -137,13 +139,14 @@ namespace UVtools.WPF.Windows
             get => _layerIndexEnd;
             set
             {
+                value = Math.Min(value, SlicerFile.LastLayerIndex);
+
                 if (ToolControl?.BaseOperation is not null)
                 {
                     ToolControl.BaseOperation.LayerRangeSelection = Enumerations.LayerRangeSelection.None;
                     ToolControl.BaseOperation.LayerIndexEnd = value;
                 }
 
-                value = value.Clamp(0, SlicerFile.LastLayerIndex);
                 if (!RaiseAndSetIfChanged(ref _layerIndexEnd, value)) return;
                 RaisePropertyChanged(nameof(LayerEndMM));
                 RaisePropertyChanged(nameof(LayerRangeCountStr));
@@ -151,7 +154,14 @@ namespace UVtools.WPF.Windows
         }
 
         public float LayerEndMM => SlicerFile[_layerIndexEnd].PositionZ;
-        
+
+        public bool LayerIndexEndEnabled
+        {
+            get => _layerIndexEndEnabled;
+            set => RaiseAndSetIfChanged(ref _layerIndexEndEnabled, value);
+        }
+
+
         public string LayerRangeCountStr
         {
             get
@@ -198,14 +208,14 @@ namespace UVtools.WPF.Windows
         public void SelectBottomLayers()
         {
             LayerIndexStart = 0;
-            LayerIndexEnd = SlicerFile.BottomLayerCount-1u;
+            LayerIndexEnd = Math.Max(1, SlicerFile.FirstNormalLayer?.Index ?? 1) - 1u;
             if (ToolControl is not null)
                 ToolControl.BaseOperation.LayerRangeSelection = Enumerations.LayerRangeSelection.Bottom;
         }
 
         public void SelectNormalLayers()
         {
-            LayerIndexStart = SlicerFile.BottomLayerCount;
+            LayerIndexStart = SlicerFile.FirstNormalLayer?.Index ?? 0;
             LayerIndexEnd = MaximumLayerIndex;
             if (ToolControl is not null)
                 ToolControl.BaseOperation.LayerRangeSelection = Enumerations.LayerRangeSelection.Normal;
@@ -571,13 +581,14 @@ namespace UVtools.WPF.Windows
             }
         }
 
-        public ToolWindow(string description = null, bool layerRangeVisible = true) : this()
+        public ToolWindow(string description = null, bool layerRangeVisible = true, bool layerEndIndexEnabled = true) : this()
         {
             _description = description;
             _layerRangeVisible = layerRangeVisible;
+            _layerIndexEndEnabled = layerEndIndexEnabled;
         }
 
-        public ToolWindow(ToolControl toolControl) : this(toolControl.BaseOperation.Description, toolControl.BaseOperation.StartLayerRangeSelection != Enumerations.LayerRangeSelection.None)
+        public ToolWindow(ToolControl toolControl) : this(toolControl.BaseOperation.Description, toolControl.BaseOperation.StartLayerRangeSelection != Enumerations.LayerRangeSelection.None, toolControl.BaseOperation.LayerIndexEndEnabled)
         {
             ToolControl = toolControl;
             toolControl.ParentWindow = this;

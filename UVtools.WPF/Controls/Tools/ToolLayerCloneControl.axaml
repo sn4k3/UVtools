@@ -5,7 +5,12 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="UVtools.WPF.Controls.Tools.ToolLayerCloneControl">
   <StackPanel Spacing="10">
-    <StackPanel Spacing="10" Orientation="Horizontal">
+      <ToggleSwitch 
+          OffContent="Rebuild whole model height with the new layers"
+          OnContent="Keep the same z position for the cloned layers"
+          IsChecked="{Binding Operation.KeepSamePositionZ}"
+          />
+      <StackPanel Spacing="10" Orientation="Horizontal">
       <TextBlock 
         VerticalAlignment="Center"
         Text="Clones:"/>

@@ -32,7 +32,7 @@ namespace UVtools.WPF.Extensions
                     Style = style,
                     WindowIcon = new WindowIcon(App.GetAsset("/Assets/Icons/UVtools.ico")),
                     WindowStartupLocation = location,
-                    CanResize = false,
+                    CanResize = UserSettings.Instance.General.WindowsCanResize,
                     MaxWidth = window.GetScreenWorkingArea().Width - UserSettings.Instance.General.WindowsHorizontalMargin,
                     MaxHeight = window.GetScreenWorkingArea().Height - UserSettings.Instance.General.WindowsVerticalMargin,
                     SizeToContent = SizeToContent.WidthAndHeight,

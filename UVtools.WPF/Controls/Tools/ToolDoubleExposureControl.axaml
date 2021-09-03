@@ -1,0 +1,240 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="UVtools.WPF.Controls.Tools.ToolDoubleExposureControl">
+    <StackPanel Spacing="10">
+        <Grid RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto"
+              ColumnDefinitions="Auto,10,Auto,5,Auto,40,Auto,5,Auto">
+            <TextBlock Grid.Row="0" Grid.Column="2"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Center"
+                       FontWeight="Bold"
+                       IsEnabled="{Binding Operation.LayerRangeHaveBottoms}"
+                       Text="Bottom layers"/>
+            <TextBlock Grid.Row="0" Grid.Column="6"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Center"
+                       FontWeight="Bold"
+                       IsEnabled="{Binding Operation.LayerRangeHaveNormals}"
+                       Text="Normal layers"/>
+
+            <TextBlock Grid.Row="2" Grid.Column="0"
+                       VerticalAlignment="Center"
+                       Text="1º exposure:"/>
+
+            <NumericUpDown
+                        Grid.Row="2" Grid.Column="2"
+                        IsEnabled="{Binding Operation.LayerRangeHaveBottoms}"
+                        VerticalAlignment="Center"
+                        Minimum="0.01"
+                        Maximum="1000"
+                        Increment="0.5"
+                        Value="{Binding Operation.FirstBottomExposure}"/>
+            <TextBlock Grid.Row="2" Grid.Column="4"
+                       VerticalAlignment="Center"
+                       IsEnabled="{Binding Operation.LayerRangeHaveBottoms}"
+                       Text="s"/>
+
+              <NumericUpDown
+                  Grid.Row="2" Grid.Column="6"
+                  IsEnabled="{Binding Operation.LayerRangeHaveNormals}"
+                  VerticalAlignment="Center"
+                  Minimum="0.01"
+                  Maximum="1000"
+                  Increment="0.5"
+                  Value="{Binding Operation.FirstNormalExposure}"/>
+            <TextBlock Grid.Row="2" Grid.Column="8"
+                       VerticalAlignment="Center"
+                       IsEnabled="{Binding Operation.LayerRangeHaveNormals}"
+                       Text="s"/>
+
+            <TextBlock Grid.Row="4" Grid.Column="0"
+                       VerticalAlignment="Center"
+                       Text="1º erode iterations:"/>
+
+            <NumericUpDown
+                Grid.Row="4" Grid.Column="2"
+                IsEnabled="{Binding Operation.LayerRangeHaveBottoms}"
+                VerticalAlignment="Center"
+                Minimum="0"
+                Maximum="255"
+                Increment="1"
+                Value="{Binding Operation.FirstBottomErodeIterations}"/>
+            <TextBlock Grid.Row="4" Grid.Column="4"
+                       VerticalAlignment="Center"
+                       IsEnabled="{Binding Operation.LayerRangeHaveBottoms}"
+                       Text="px"/>
+
+            <NumericUpDown
+                Grid.Row="4" Grid.Column="6"
+                IsEnabled="{Binding Operation.LayerRangeHaveNormals}"
+                VerticalAlignment="Center"
+                Minimum="0"
+                Maximum="255"
+                Increment="1"
+                Value="{Binding Operation.FirstNormalErodeIterations}"/>
+            <TextBlock Grid.Row="4" Grid.Column="8"
+                       VerticalAlignment="Center"
+                       IsEnabled="{Binding Operation.LayerRangeHaveNormals}"
+                       Text="px"/>
+
+            <TextBlock Grid.Row="6" Grid.Column="0"
+                       VerticalAlignment="Center"
+                       Text="2º exposure:"/>
+
+            <NumericUpDown
+                Grid.Row="6" Grid.Column="2"
+                IsEnabled="{Binding Operation.LayerRangeHaveBottoms}"
+                VerticalAlignment="Center"
+                Minimum="0.01"
+                Maximum="1000"
+                Increment="0.5"
+                Value="{Binding Operation.SecondBottomExposure}"/>
+            <TextBlock Grid.Row="6" Grid.Column="4"
+                       VerticalAlignment="Center"
+                       IsEnabled="{Binding Operation.LayerRangeHaveBottoms}"
+                       Text="s"/>
+
+            <NumericUpDown
+                Grid.Row="6" Grid.Column="6"
+                VerticalAlignment="Center"
+                IsEnabled="{Binding Operation.LayerRangeHaveNormals}"
+                Minimum="0.01"
+                Maximum="1000"
+                Increment="0.5"
+                Value="{Binding Operation.SecondNormalExposure}"/>
+            <TextBlock Grid.Row="6" Grid.Column="8"
+                       VerticalAlignment="Center"
+                       IsEnabled="{Binding Operation.LayerRangeHaveNormals}"
+                       Text="s"/>
+
+            <TextBlock Grid.Row="8" Grid.Column="0"
+                       VerticalAlignment="Center"
+                       Text="2º erode iterations:"/>
+
+            <NumericUpDown
+                Grid.Row="8" Grid.Column="2"
+                IsEnabled="{Binding Operation.LayerRangeHaveBottoms}"
+                VerticalAlignment="Center"
+                Minimum="0"
+                Maximum="255"
+                Increment="1"
+                Value="{Binding Operation.SecondBottomErodeIterations}"/>
+            <TextBlock Grid.Row="8" Grid.Column="4"
+                       VerticalAlignment="Center"
+                       IsEnabled="{Binding Operation.LayerRangeHaveBottoms}"
+                       Text="px"/>
+
+            <NumericUpDown
+                Grid.Row="8" Grid.Column="6"
+                VerticalAlignment="Center"
+                IsEnabled="{Binding Operation.LayerRangeHaveNormals}"
+                Minimum="0"
+                Maximum="255"
+                Increment="1"
+                Value="{Binding Operation.SecondNormalErodeIterations}"/>
+            <TextBlock Grid.Row="8" Grid.Column="8"
+                       VerticalAlignment="Center"
+                       IsEnabled="{Binding Operation.LayerRangeHaveNormals}"
+                       Text="px"/>
+        </Grid>
+
+        <ToggleSwitch 
+            OffContent="Exposure the whole image for the second layer"
+            OnContent="Exposure the difference between first and second layer for the second layer"
+            IsChecked="{Binding Operation.SecondLayerDifference}"/>
+
+      <Grid RowDefinitions="Auto"
+            ColumnDefinitions="Auto,10,Auto,5,Auto">
+        <TextBlock Grid.Row="0" Grid.Column="0"
+                   VerticalAlignment="Center"
+                   IsEnabled="{Binding Operation.SecondLayerDifference}"
+                   ToolTip.Tip="When the 'Exposure the difference between first and second layer for the second layer' is active, 
+this setting will further erode the layer producing a overlap of n pixel perimeters over the previous layer"
+                   Text="Difference overlap margin:"/>
+        <NumericUpDown
+            Grid.Row="0" Grid.Column="2"
+            VerticalAlignment="Center"
+            IsEnabled="{Binding Operation.SecondLayerDifference}"
+            Minimum="0"
+            Maximum="255"
+            Increment="1"
+            Value="{Binding Operation.SecondLayerDifferenceOverlapErodeIterations}"/>
+        <TextBlock Grid.Row="0" Grid.Column="4"
+                   VerticalAlignment="Center"
+                   IsEnabled="{Binding Operation.SecondLayerDifference}"
+                   Text="px"/>
+        </Grid>
+
+
+      <CheckBox
+              ToolTip.Tip="Change some defined settings for the second layers"
+              Content="Use different settings for the second layer:"
+              IsChecked="{Binding Operation.DifferentSettingsForSecondLayer}"/>
+
+      <Grid RowDefinitions="Auto,10,Auto" ColumnDefinitions="Auto,10,Auto,5,Auto" IsEnabled="{Binding Operation.DifferentSettingsForSecondLayer}">
+        <CheckBox Grid.Row="0" Grid.Column="0"
+                   ToolTip.Tip="Use a low value to speed up layers with same Z position, lift is not really required here.
+&#x0a;Set no lift height (0mm) will not work on most of the printers, so far, only gcode printers are known/able to use no lifts.
+&#x0a;However set 0mm on a not compatible printer will cause no harm, value will be contained inside a min-max inside firmware."
+                   Content="Lift height:"
+                   IsVisible="{Binding SlicerFile.CanUseLayerLiftHeight}"
+                   IsChecked="{Binding Operation.SecondLayerLiftHeightEnabled}"
+                   VerticalAlignment="Center"/>
+        <NumericUpDown Grid.Row="0" Grid.Column="2"
+                       Increment="0.5"
+                       Minimum="0"
+                       Maximum="1000"
+                       FormatString="F2"
+                       IsVisible="{Binding SlicerFile.CanUseLayerLiftHeight}"
+                       IsEnabled="{Binding Operation.SecondLayerLiftHeightEnabled}"
+                       Value="{Binding Operation.SecondLayerLiftHeight}"/>
+        <TextBlock Grid.Row="0" Grid.Column="4"
+                   Text="mm"
+                   IsVisible="{Binding SlicerFile.CanUseLayerLiftHeight}"
+                   VerticalAlignment="Center"/>
+
+        <CheckBox Grid.Row="2" Grid.Column="0"
+                  ToolTip.Tip="Use a low value to speed up layers with same Z position, a delay is not really required here.
+&#x0a;Set no delay (0s) is not recommended for gcode printers, as most need some time to render the image before move to the next command, 2s is recommended as a safe-guard."
+                  Content="Wait time before cure:"
+                  IsChecked="{Binding Operation.SecondLayerWaitTimeBeforeCureEnabled}"
+                  VerticalAlignment="Center">
+          <CheckBox.IsVisible>
+            <MultiBinding Converter="{x:Static BoolConverters.Or}">
+              <Binding Path="SlicerFile.CanUseLayerLightOffDelay"/>
+              <Binding Path="SlicerFile.CanUseLayerWaitTimeBeforeCure"/>
+            </MultiBinding>
+          </CheckBox.IsVisible>
+        </CheckBox>
+        <NumericUpDown Grid.Row="2" Grid.Column="2"
+                       Increment="0.5"
+                       Minimum="0"
+                       Maximum="1000"
+                       FormatString="F2"
+                       IsEnabled="{Binding Operation.SecondLayerWaitTimeBeforeCureEnabled}"
+                       Value="{Binding Operation.SecondLayerWaitTimeBeforeCure}">
+          <NumericUpDown.IsVisible>
+            <MultiBinding Converter="{x:Static BoolConverters.Or}">
+              <Binding Path="SlicerFile.CanUseLayerLightOffDelay"/>
+              <Binding Path="SlicerFile.CanUseLayerWaitTimeBeforeCure"/>
+            </MultiBinding>
+          </NumericUpDown.IsVisible>
+        </NumericUpDown>
+        <TextBlock Grid.Row="2" Grid.Column="4"
+                 Text="s"
+                 VerticalAlignment="Center">
+          <TextBlock.IsVisible>
+            <MultiBinding Converter="{x:Static BoolConverters.Or}">
+              <Binding Path="SlicerFile.CanUseLayerLightOffDelay"/>
+              <Binding Path="SlicerFile.CanUseLayerWaitTimeBeforeCure"/>
+            </MultiBinding>
+          </TextBlock.IsVisible>
+        </TextBlock>
+
+      </Grid>
+
+    </StackPanel>
+</UserControl>

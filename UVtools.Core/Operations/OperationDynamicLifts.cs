@@ -51,6 +51,8 @@ namespace UVtools.Core.Operations
 
         #region Overrides
 
+        public override Enumerations.LayerRangeSelection StartLayerRangeSelection => Enumerations.LayerRangeSelection.Normal;
+
         public override string Title => "Dynamic lifts";
 
         public override string Description =>
@@ -69,8 +71,7 @@ namespace UVtools.Core.Operations
 
         public override string ValidateSpawn()
         {
-            if (!SlicerFile.HaveLayerParameterModifier(FileFormat.PrintParameterModifier.LiftHeight) ||
-                !SlicerFile.HaveLayerParameterModifier(FileFormat.PrintParameterModifier.LiftSpeed))
+            if (!SlicerFile.CanUseLayerLiftHeight || !SlicerFile.CanUseLayerLiftSpeed)
             {
                 return NotSupportedMessage;
             }
@@ -124,22 +125,9 @@ namespace UVtools.Core.Operations
             return result;
         }
 
-        protected override void OnPropertyChanged(PropertyChangedEventArgs e)
-        {
-            base.OnPropertyChanged(e);
-            if (e.PropertyName is nameof(LayerRangeCount))
-            {
-                RaisePropertyChanged(nameof(IsBottomLayersEnabled));
-                RaisePropertyChanged(nameof(IsNormalLayersEnabled));
-            }
-        }
-
         #endregion
 
         #region Properties
-
-        public bool IsBottomLayersEnabled => LayerIndexStart < SlicerFile.BottomLayerCount;
-        public bool IsNormalLayersEnabled => LayerIndexEnd >= SlicerFile.BottomLayerCount;
 
         public float MinBottomLiftHeight
         {
@@ -263,9 +251,6 @@ namespace UVtools.Core.Operations
 
             if(_minLiftSpeed <= 0) _minLiftSpeed = SlicerFile.LiftSpeed;
             if (_maxLiftSpeed <= 0 || _maxLiftSpeed < _minLiftSpeed) _maxLiftSpeed = _minLiftSpeed;
-
-            RaisePropertyChanged(nameof(IsBottomLayersEnabled));
-            RaisePropertyChanged(nameof(IsNormalLayersEnabled));
         }
 
         #endregion

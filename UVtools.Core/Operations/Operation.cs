@@ -106,6 +106,11 @@ namespace UVtools.Core.Operations
         }
 
         /// <summary>
+        /// Gets if the LayerIndexEnd selector is enabled
+        /// </summary>
+        public virtual bool LayerIndexEndEnabled => true;
+
+        /// <summary>
         /// Gets if this operation should set layer range to the actual layer index on layer preview
         /// </summary>
         public virtual bool PassActualLayerIndex => false;
@@ -173,8 +178,13 @@ namespace UVtools.Core.Operations
             get => _layerIndexStart;
             set
             {
-                if(!RaiseAndSetIfChanged(ref _layerIndexStart, value)) return;
+                if (SlicerFile is not null)
+                {
+                    value = Math.Min(value, SlicerFile.LastLayerIndex);
+                }
+                if (!RaiseAndSetIfChanged(ref _layerIndexStart, value)) return;
                 RaisePropertyChanged(nameof(LayerRangeCount));
+                RaisePropertyChanged(nameof(LayerRangeHaveBottoms));
             }
         }
 
@@ -186,10 +196,18 @@ namespace UVtools.Core.Operations
             get => _layerIndexEnd;
             set
             {
+                if (SlicerFile is not null)
+                {
+                    value = Math.Min(value, SlicerFile.LastLayerIndex);
+                }
                 if(!RaiseAndSetIfChanged(ref _layerIndexEnd, value)) return;
                 RaisePropertyChanged(nameof(LayerRangeCount));
+                RaisePropertyChanged(nameof(LayerRangeHaveNormals));
             }
         }
+
+        public bool LayerRangeHaveBottoms => LayerIndexStart < (SlicerFile.FirstNormalLayer?.Index ?? 0);
+        public bool LayerRangeHaveNormals => LayerIndexEnd >= (SlicerFile.FirstNormalLayer?.Index ?? 0);
 
         public uint LayerRangeCount => LayerIndexEnd - LayerIndexStart + 1;
 
@@ -318,13 +336,13 @@ namespace UVtools.Core.Operations
         public void SelectBottomLayers()
         {
             LayerIndexStart = 0;
-            LayerIndexEnd = SlicerFile.BottomLayerCount - 1u;
+            LayerIndexEnd = Math.Max(1, SlicerFile.FirstNormalLayer?.Index ?? 1) - 1u;
             LayerRangeSelection = Enumerations.LayerRangeSelection.Bottom;
         }
 
         public void SelectNormalLayers()
         {
-            LayerIndexStart = SlicerFile.BottomLayerCount;
+            LayerIndexStart = SlicerFile.FirstNormalLayer?.Index ?? 0;
             LayerIndexEnd = SlicerFile.LastLayerIndex;
             LayerRangeSelection = Enumerations.LayerRangeSelection.Normal;
         }

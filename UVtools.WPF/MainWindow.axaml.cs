@@ -208,10 +208,18 @@ namespace UVtools.WPF
             },
             new()
             {
-                Tag = new OperationDynamicLayerHeight(),
+                Tag = new OperationFadeExposureTime(),
                 Icon = new Avalonia.Controls.Image
                 {
-                    Source = new Bitmap(App.GetAsset("/Assets/Icons/dynamic-layers-16x16.png"))
+                    Source = new Bitmap(App.GetAsset("/Assets/Icons/history-16x16.png"))
+                }
+            },
+            new()
+            {
+                Tag = new OperationDoubleExposure(),
+                Icon = new Avalonia.Controls.Image
+                {
+                    Source = new Bitmap(App.GetAsset("/Assets/Icons/equals-16x16.png"))
                 }
             },
             new()
@@ -220,6 +228,14 @@ namespace UVtools.WPF
                 Icon = new Avalonia.Controls.Image
                 {
                     Source = new Bitmap(App.GetAsset("/Assets/Icons/angle-double-up-16x16.png"))
+                }
+            },
+            new()
+            {
+                Tag = new OperationDynamicLayerHeight(),
+                Icon = new Avalonia.Controls.Image
+                {
+                    Source = new Bitmap(App.GetAsset("/Assets/Icons/dynamic-layers-16x16.png"))
                 }
             },
             new()
@@ -407,6 +423,9 @@ namespace UVtools.WPF
         private bool _isGUIEnabled = true;
         private uint _savesCount;
         private bool _canSave;
+        private MenuItem _menuFileSendTo;
+        private MenuItem[] _menuFileOpenRecentItems;
+        private MenuItem[] _menuFileSendToItems;
         private MenuItem[] _menuFileConvertItems;
 
         private PointerEventArgs _globalPointerEventArgs;
@@ -501,6 +520,18 @@ namespace UVtools.WPF
             set => RaiseAndSetIfChanged(ref _canSave, value);
         }
 
+        public MenuItem[] MenuFileOpenRecentItems
+        {
+            get => _menuFileOpenRecentItems;
+            set => RaiseAndSetIfChanged(ref _menuFileOpenRecentItems, value);
+        }
+
+        public MenuItem[] MenuFileSendToItems
+        {
+            get => _menuFileSendToItems;
+            set => RaiseAndSetIfChanged(ref _menuFileSendToItems, value);
+        }       
+        
         public MenuItem[] MenuFileConvertItems
         {
             get => _menuFileConvertItems;
@@ -522,7 +553,8 @@ namespace UVtools.WPF
             InitClipboardLayers();
             InitLayerPreview();
 
-
+            RefreshRecentFiles(true);
+            
             TabInformation = this.FindControl<TabItem>("TabInformation");
             TabGCode = this.FindControl<TabItem>("TabGCode");
             TabIssues = this.FindControl<TabItem>("TabIssues");
@@ -566,6 +598,94 @@ namespace UVtools.WPF
             {
                 ProcessFiles(e.Data.GetFileNames().ToArray());
             });
+
+            _menuFileSendTo = this.FindControl<MenuItem>("MainMenu.File.SendTo");
+            this.FindControl<MenuItem>("MainMenu.File").SubmenuOpened += (sender, e) =>
+            {
+                if (!IsFileLoaded) return;
+                
+                var menuItems = new List<MenuItem>();
+
+                var drives = DriveInfo.GetDrives();
+
+                foreach (var drive in drives)
+                {
+                    if(drive.DriveType != DriveType.Removable || !drive.IsReady) continue; // Not our target, skip
+                    if (SlicerFile.FileFullPath.StartsWith(drive.Name)) continue; // File already on this device, skip
+
+                    var header = drive.Name;
+                    if (!string.IsNullOrWhiteSpace(drive.VolumeLabel))
+                    {
+                        header += $"  {drive.VolumeLabel}";
+                    }
+
+                    header += $"  ({SizeExtensions.SizeSuffix(drive.AvailableFreeSpace)}) [{drive.DriveFormat}]";
+
+                    var menuItem = new MenuItem
+                    {
+                        Header = header,
+                        Tag = drive,
+                    };
+                    menuItem.Click += FileSendToItemClick;
+
+                    menuItems.Add(menuItem);
+                }
+
+                MenuFileSendToItems = menuItems.ToArray();
+                _menuFileSendTo.IsVisible = _menuFileSendTo.IsEnabled = menuItems.Count > 0;
+            };
+        }
+
+        private async void FileSendToItemClick(object? sender, RoutedEventArgs e)
+        {
+            if (sender is not MenuItem menuItem) return;
+            if (menuItem.Tag is not DriveInfo drive) return;
+            
+            if (!drive.IsReady)
+            {
+                await this.MessageBoxError($"The device {drive.Name} is not ready/available at this time.", "Unable to copy the file");
+                return;
+            }
+
+            if (CanSave)
+            {
+                switch (await this.MessageBoxQuestion("There are unsaved changes. Do you want to save the current file before copy it over?\n\n" +
+                                                      "Yes: Save the current file and copy it over.\n" +
+                                                      "No: Copy the file without current modifications.\n" +
+                                                      "Cancel: Abort the operation.", "Send to - Unsaved changes", ButtonEnum.YesNoCancel))
+                {
+                    case ButtonResult.Yes:
+                        await SaveFile(true);
+                        break;
+                    case ButtonResult.No:
+                        break;
+                    default:
+                        return;
+                }
+            }
+
+            ShowProgressWindow($"Copying: {SlicerFile.Filename} to {drive.Name}", false);
+            Progress.ItemName = "Copying";
+            await Task.Factory.StartNew(() =>
+            {
+                try
+                {
+                    File.Copy(SlicerFile.FileFullPath, $"{drive.Name}{SlicerFile.Filename}", true);
+                    return true;
+                }
+                catch (OperationCanceledException)
+                {
+                }
+                catch (Exception exception)
+                {
+                    Dispatcher.UIThread.InvokeAsync(async () =>
+                        await this.MessageBoxError(exception.ToString(), "Unable to copy the file"));
+                }
+
+                return false;
+            });
+
+            IsGUIEnabled = true;
         }
 
         protected override void OnOpened(EventArgs e)
@@ -1083,6 +1203,8 @@ namespace UVtools.WPF
                 return;
             }
 
+            AddRecentFile(fileName);
+
             if (SlicerFile.LayerCount == 0)
             {
                 await this.MessageBoxError("It seems this file has no layers.  Possible causes could be:\n" +
@@ -1144,6 +1266,7 @@ namespace UVtools.WPF
                         if (task && convertedFile is not null)
                         {
                             SlicerFile = convertedFile;
+                            AddRecentFile(SlicerFile.FileFullPath);
                         }
                     }
                 }
@@ -1325,6 +1448,12 @@ namespace UVtools.WPF
             }
 
             SlicerFile.PropertyChanged += SlicerFileOnPropertyChanged;
+#if !DEBUG
+            if (SlicerFile is CTBEncryptedFile)
+            {
+                await this.MessageBoxInfo(CTBEncryptedFile.Preamble, "Information");
+            }
+#endif
         }
 
         private void SlicerFileOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -1448,7 +1577,7 @@ namespace UVtools.WPF
         }
 
 
-
+        public async Task<bool> SaveFile(bool ignoreOverwriteWarning) => await SaveFile(null, ignoreOverwriteWarning);
 
         public async Task<bool> SaveFile(string filepath = null, bool ignoreOverwriteWarning = false)
         {
@@ -1470,7 +1599,7 @@ namespace UVtools.WPF
 
             IsGUIEnabled = false;
             ShowProgressWindow($"Saving {Path.GetFileName(filepath)}");
-
+            
             var task = await Task.Factory.StartNew( () =>
             {
                 try
@@ -1575,7 +1704,7 @@ namespace UVtools.WPF
 
         }
 
-        #region Operations
+#region Operations
         public async Task<Operation> ShowRunOperation(Type type, Operation loadOperation = null)
         {
             var operation = await ShowOperation(type, loadOperation);
@@ -1735,10 +1864,102 @@ namespace UVtools.WPF
             return result;
         }
 
-        #endregion
+        private void RefreshRecentFiles(bool reloadFiles = false)
+        {
+            if(reloadFiles) RecentFiles.Load();
+
+            var items = new List<MenuItem>();
+
+            foreach (var file in RecentFiles.Instance)
+            {
+                var item = new MenuItem
+                {
+                    Header = Path.GetFileName(file),
+                    Tag = file,
+                    IsEnabled = SlicerFile?.FileFullPath != file
+                };
+                ToolTip.SetTip(item, file);
+                ToolTip.SetPlacement(item, PlacementMode.Right);
+                ToolTip.SetShowDelay(item, 100);
+                items.Add(item);
+
+                item.Click += MenuFileOpenRecentItemOnClick;
+            }
+
+            MenuFileOpenRecentItems = items.ToArray();
+        }
+
+        private void AddRecentFile(string file)
+        {
+            if (file == Path.Combine(App.ApplicationPath, About.DemoFile)) return;
+            RecentFiles.Load();
+            RecentFiles.Instance.Insert(0, file);
+            RecentFiles.Save();
+            RefreshRecentFiles();
+        }
+
+        private async void MenuFileOpenRecentItemOnClick(object? sender, RoutedEventArgs e)
+        {
+            if (sender is not MenuItem { Tag: string file }) return;
+            if (IsFileLoaded && SlicerFile.FileFullPath == file) return;
+
+            if (_globalModifiers == KeyModifiers.Control)
+            {
+                if (await this.MessageBoxQuestion("Are you sure you want to purge the non-existing files from the recent list?",
+                    "Purge the non-existing files?") == ButtonResult.Yes)
+                {
+                    /*if (_globalModifiers == KeyModifiers.Shift)
+                    {
+                        RecentFiles.ClearFiles(true);
+                        RefreshRecentFiles();
+                        return;
+                    }*/
+                    if (RecentFiles.PurgenNonExistingFiles(true) > 0) RefreshRecentFiles();
+                }
+
+                return;
+            }
+
+            if ((_globalModifiers & KeyModifiers.Control) != 0 &&
+                (_globalModifiers & KeyModifiers.Shift) != 0)
+            {
+                if (await this.MessageBoxQuestion($"Are you sure you want to remove the selected file from the recent list?\n{file}",
+                    "Remove the file from recent list?") == ButtonResult.Yes)
+                {
+                    RecentFiles.Load();
+                    RecentFiles.Instance.Remove(file);
+                    RecentFiles.Save();
+
+                    RefreshRecentFiles();
+                }
+
+                return;
+            }
+
+            if (!File.Exists(file))
+            {
+                if (await this.MessageBoxQuestion($"The file: {file} does not exists anymore.\n" +
+                                               "Do you want to remove this file from recent list?",
+                    "The file does not exists") == ButtonResult.Yes)
+                {
+                    RecentFiles.Load();
+                    RecentFiles.Instance.Remove(file);
+                    RecentFiles.Save();
+
+                    RefreshRecentFiles();
+                }
+
+                return;
+            }
+
+            if (_globalModifiers == KeyModifiers.Shift) App.NewInstance(file);
+            else ProcessFile(file);
+        }
+
+#endregion
 
         
 
-        #endregion
+#endregion
         }
 }

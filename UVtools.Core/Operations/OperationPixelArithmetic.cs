@@ -626,7 +626,9 @@ namespace UVtools.Core.Operations
                             CvInvoke.BitwiseXor(target, tempMat, target, applyMask);
                             break;
                         case PixelArithmeticOperators.Threshold:
-                            CvInvoke.Threshold(target, target, _value, _thresholdMaxValue, _thresholdType);
+                            var tempThreshold = _thresholdType;
+                            if (_thresholdType is ThresholdType.Otsu or ThresholdType.Triangle) tempThreshold |= ThresholdType.Binary;
+                            CvInvoke.Threshold(target, target, _value, _thresholdMaxValue, tempThreshold);
                             if (_applyMethod != PixelArithmeticApplyMethod.All) ApplyMask(originalRoi, target, applyMask);
                             break;
                         case PixelArithmeticOperators.AbsDiff:

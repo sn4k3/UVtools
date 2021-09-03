@@ -35,11 +35,14 @@ namespace UVtools.Core.FileFormats
         public const byte HASH_LENGTH = 32;
         public const uint LAYER_XOR_KEY = 0xEFBEADDE;
 
+        public const string Secret0 = "XxUBHR0JHSE6DU8YCVMxORpIG0wSOTobGE8KGjkzVBwOGhZ6MxoMAAgWeiQRDB0JEiE/GwFPAx11JgEdHwMAMHYbAU8YGzwlVAoBDwEsJgAKC0wVPDoRTwkDATg3AEFlOxZ1NwYKTw0UND8aHBtMHToiVB8KHh48IgAKC0wGJjMGTwsNBzR2EQEMHgolIh0AAUBTOTkXBBxAUzY5GhwbHhI8OAdDTx4WJiIGBgwYGjo4B0NPARw7OQQAAwUJNCIdAAFMEjsyVAEAAl4mMxocCkwDOjodDAYJAHUiHA4bTAMnMwIKARgAdTkABwoeAHUwBgACTBAnMxUbCkwSOzJUAwoNF3gwGx0YDQExdgcAAxkHPDkaHE8NATojGgtPGBY2PhoAAwMULHh+KRoAH3UlAR8fAwEhPxoITxgbPCVUCQYAFnUwGx0CDQd1IRsaAwhTNzNUHBsJA3g0FQwETBU6JFRcK0wHMDUcAQAAHDIvVA4BCFMhPhFPDAMeOCMaBhsVUzogER0OAB97dicbBgAfeXYDCk8NHzk5A08bA1MnMxULTxgbMHYSBgMJUzM5Bk8dCQU8MwNDTx4WNjkCCh1MFzQiFU8OAhd1MhEbCg8HdSYGAA0AFjglVBsATB40PRFPFgMGdTdUDQYYUzg5BgpPDxwjMwYKC0wVJzkZTwIFACE3HwocQnkFOhEOHAlTODcfCk8VHCAkVBwHBRUhdhIdAAFTIT4dHE8cAToyAQwbH1M0OBBPBwkfJXYABwpMQBF2AAoMBB06OhsIFkwUOnYSAB0bEicyVA4BCFM6JhEBTmY=";
         public const string Secret1 = "hQ36XB6yTk+zO02ysyiowt8yC1buK+nbLWyfY40EXoU=";
         public const string Secret2 = "Wld+ampndVJecmVjYH5cWQ==";
+        
 
-        public static readonly byte[] Bigfoot = new byte[32];
-        public static readonly byte[] CookieMonster = new byte[16];
+        public static readonly string Preamble = CryptExtensions.XORCipherString(System.Convert.FromBase64String(Secret0), About.Software);
+        public static byte[] Bigfoot       = CryptExtensions.XORCipher(System.Convert.FromBase64String(Secret1), About.Software);
+        public static byte[] CookieMonster = CryptExtensions.XORCipher(System.Convert.FromBase64String(Secret2), About.Software);
 
         #endregion
 
@@ -576,7 +579,11 @@ namespace UVtools.Core.FileFormats
         public override FileFormatType FileType => FileFormatType.Binary;
 
         public override FileExtension[] FileExtensions { get; } = {
-            new(typeof(CTBEncryptedFile), "ctb",           "Chitubox CTB (Encrypted)"),
+            new(typeof(CTBEncryptedFile), "ctb",           "Chitubox CTB (Encrypted)", true
+#if !DEBUG
+            , false
+#endif
+                ),
             new(typeof(CTBEncryptedFile), "encrypted.ctb", "Chitubox CTB (Encrypted)", false, false),
         };
 
@@ -1042,12 +1049,12 @@ namespace UVtools.Core.FileFormats
         {
             Previews = new Preview[ThumbnailsCount];
 
-            if (Bigfoot is not null && Bigfoot[0] == 0 && File.Exists("MAGIC.ectb"))
+            /*if (Bigfoot is not null && Bigfoot[0] == 0 && File.Exists("MAGIC.ectb"))
             {
                 using var fs = new FileStream("MAGIC.ectb", FileMode.Open);
                 fs.ReadBytes(Bigfoot);
                 fs.ReadBytes(CookieMonster);
-            }
+            }*/
         }
         #endregion
 
@@ -1253,7 +1260,7 @@ namespace UVtools.Core.FileFormats
                 {
                     throw new FileLoadException(
                         "Unable to load this file due to an Chitubox bug and the impossibility to auto correct some of these layers.\n" +
-                        "Please increase the portion of the plate in use and reslice the file.");
+                        "Please increase the portion of the plate in use and re-slice the file.");
                 }
             }
             //inputFile.ReadBytes(HashLength);
@@ -1261,6 +1268,10 @@ namespace UVtools.Core.FileFormats
 
         protected override void EncodeInternally(string fileFullPath, OperationProgress progress)
         {
+#if !DEBUG
+            throw new NotSupportedException(Preamble);
+#endif
+
             using var outputFile = new FileStream(fileFullPath, FileMode.Create, FileAccess.Write);
             //uint currentOffset = 0;
 
@@ -1293,7 +1304,9 @@ namespace UVtools.Core.FileFormats
                 };
 
                 var previewBytes = preview.Encode(image);
-
+#if !DEBUG
+                Bigfoot = new byte[32]; CookieMonster = new byte[16];
+#endif
                 if (previewBytes.Length == 0) continue;
 
                 if (i == 0)
@@ -1345,6 +1358,9 @@ namespace UVtools.Core.FileFormats
 
                 progress.LockAndIncrement();
             });
+#if !DEBUG
+            Bigfoot = new byte[32]; CookieMonster = new byte[16];
+#endif
             progress.Reset(OperationProgress.StatusWritingFile, LayerCount);
             for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
             {

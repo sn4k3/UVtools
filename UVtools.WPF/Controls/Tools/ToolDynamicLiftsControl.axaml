@@ -81,12 +81,12 @@
                    Text="View"/>
 
         <TextBlock Grid.Row="2" Grid.Column="0"
-                   IsEnabled="{Binding Operation.IsBottomLayersEnabled}"
+                   IsEnabled="{Binding Operation.LayerRangeHaveBottoms}"
                    VerticalAlignment="Center"
                    Text="Bottom lift height:"/>
 
         <NumericUpDown Grid.Row="2" Grid.Column="2"
-                    IsEnabled="{Binding Operation.IsBottomLayersEnabled}"
+                    IsEnabled="{Binding Operation.LayerRangeHaveBottoms}"
                    VerticalAlignment="Center"
                    Minimum="1"
                    Maximum="100"
@@ -95,13 +95,13 @@
                    Value="{Binding Operation.MinBottomLiftHeight}"/>
 
         <TextBlock Grid.Row="2" Grid.Column="3"
-                   IsEnabled="{Binding Operation.IsBottomLayersEnabled}"
+                   IsEnabled="{Binding Operation.LayerRangeHaveBottoms}"
                    VerticalAlignment="Center"
                    HorizontalAlignment="Center"
                    Text="/"/>
 
         <NumericUpDown Grid.Row="2" Grid.Column="4"
-                       IsEnabled="{Binding Operation.IsBottomLayersEnabled}"
+                       IsEnabled="{Binding Operation.LayerRangeHaveBottoms}"
                        VerticalAlignment="Center"
                        Minimum="1"
                        Maximum="100"
@@ -110,12 +110,12 @@
                        Value="{Binding Operation.MaxBottomLiftHeight}"/>
 
         <TextBlock Grid.Row="2" Grid.Column="6"
-                   IsEnabled="{Binding Operation.IsBottomLayersEnabled}"
+                   IsEnabled="{Binding Operation.LayerRangeHaveBottoms}"
                    VerticalAlignment="Center"
                    Text="mm"/>
 
         <Button Grid.Row="2" Grid.Column="8"
-                IsEnabled="{Binding Operation.IsBottomLayersEnabled}"
+                IsEnabled="{Binding Operation.LayerRangeHaveBottoms}"
                 VerticalAlignment="Stretch"
                 HorizontalAlignment="Stretch"
                 HorizontalContentAlignment="Center"
@@ -125,12 +125,12 @@
                 Content="Smallest"/>
 
         <TextBlock Grid.Row="4" Grid.Column="0"
-                   IsEnabled="{Binding Operation.IsBottomLayersEnabled}"
+                   IsEnabled="{Binding Operation.LayerRangeHaveBottoms}"
                    VerticalAlignment="Center"
                    Text="Bottom lift speed:"/>
 
         <NumericUpDown Grid.Row="4" Grid.Column="2"
-                       IsEnabled="{Binding Operation.IsBottomLayersEnabled}"
+                       IsEnabled="{Binding Operation.LayerRangeHaveBottoms}"
                        VerticalAlignment="Center"
                        Minimum="5"
                        Maximum="1000"
@@ -139,13 +139,13 @@
                        Value="{Binding Operation.MinBottomLiftSpeed}"/>
 
         <TextBlock Grid.Row="4" Grid.Column="3"
-                   IsEnabled="{Binding Operation.IsBottomLayersEnabled}"
+                   IsEnabled="{Binding Operation.LayerRangeHaveBottoms}"
                    VerticalAlignment="Center"
                    HorizontalAlignment="Center"
                    Text="/"/>
 
         <NumericUpDown Grid.Row="4" Grid.Column="4"
-                       IsEnabled="{Binding Operation.IsBottomLayersEnabled}"
+                       IsEnabled="{Binding Operation.LayerRangeHaveBottoms}"
                        VerticalAlignment="Center"
                        Minimum="5"
                        Maximum="1000"
@@ -154,12 +154,12 @@
                        Value="{Binding Operation.MaxBottomLiftSpeed}"/>
 
         <TextBlock Grid.Row="4" Grid.Column="6"
-                   IsEnabled="{Binding Operation.IsBottomLayersEnabled}"
+                   IsEnabled="{Binding Operation.LayerRangeHaveBottoms}"
                    VerticalAlignment="Center"
                    Text="mm/min"/>
 
         <Button Grid.Row="4" Grid.Column="8"
-                IsEnabled="{Binding Operation.IsBottomLayersEnabled}"
+                IsEnabled="{Binding Operation.LayerRangeHaveBottoms}"
                 VerticalAlignment="Stretch"
                 HorizontalAlignment="Stretch"
                 HorizontalContentAlignment="Center"
@@ -170,12 +170,12 @@
 
 
         <TextBlock Grid.Row="6" Grid.Column="0"
-                   IsEnabled="{Binding Operation.IsNormalLayersEnabled}"
+                   IsEnabled="{Binding Operation.LayerRangeHaveNormals}"
                    VerticalAlignment="Center"
                    Text="Lift height:"/>
 
         <NumericUpDown Grid.Row="6" Grid.Column="2"
-                       IsEnabled="{Binding Operation.IsNormalLayersEnabled}"
+                       IsEnabled="{Binding Operation.LayerRangeHaveNormals}"
                        VerticalAlignment="Center"
                        Minimum="1"
                        Maximum="100"
@@ -184,13 +184,13 @@
                        Value="{Binding Operation.MinLiftHeight}"/>
 
         <TextBlock Grid.Row="6" Grid.Column="3"
-                   IsEnabled="{Binding Operation.IsNormalLayersEnabled}"
+                   IsEnabled="{Binding Operation.LayerRangeHaveNormals}"
                    VerticalAlignment="Center"
                    HorizontalAlignment="Center"
                    Text="/"/>
 
         <NumericUpDown Grid.Row="6" Grid.Column="4"
-                       IsEnabled="{Binding Operation.IsNormalLayersEnabled}"
+                       IsEnabled="{Binding Operation.LayerRangeHaveNormals}"
                        VerticalAlignment="Center"
                        Minimum="1"
                        Maximum="100"
@@ -199,12 +199,12 @@
                        Value="{Binding Operation.MaxLiftHeight}"/>
 
         <TextBlock Grid.Row="6" Grid.Column="6"
-                   IsEnabled="{Binding Operation.IsNormalLayersEnabled}"
+                   IsEnabled="{Binding Operation.LayerRangeHaveNormals}"
                    VerticalAlignment="Center"
                    Text="mm"/>
 
         <Button Grid.Row="6" Grid.Column="8"
-                IsEnabled="{Binding Operation.IsNormalLayersEnabled}"
+                IsEnabled="{Binding Operation.LayerRangeHaveNormals}"
                 VerticalAlignment="Stretch"
                 HorizontalAlignment="Stretch"
                 HorizontalContentAlignment="Center"
@@ -214,12 +214,12 @@
                 Content="Smallest"/>
 
         <TextBlock Grid.Row="8" Grid.Column="0"
-                   IsEnabled="{Binding Operation.IsNormalLayersEnabled}"
+                   IsEnabled="{Binding Operation.LayerRangeHaveNormals}"
                    VerticalAlignment="Center"
                    Text="Lift speed:"/>
 
         <NumericUpDown Grid.Row="8" Grid.Column="2"
-                       IsEnabled="{Binding Operation.IsNormalLayersEnabled}"
+                       IsEnabled="{Binding Operation.LayerRangeHaveNormals}"
                        VerticalAlignment="Center"
                        Minimum="5"
                        Maximum="1000"
@@ -228,13 +228,13 @@
                        Value="{Binding Operation.MinLiftSpeed}"/>
 
         <TextBlock Grid.Row="8" Grid.Column="3"
-                   IsEnabled="{Binding Operation.IsNormalLayersEnabled}"
+                   IsEnabled="{Binding Operation.LayerRangeHaveNormals}"
                    VerticalAlignment="Center"
                    HorizontalAlignment="Center"
                    Text="/"/>
 
         <NumericUpDown Grid.Row="8" Grid.Column="4"
-                       IsEnabled="{Binding Operation.IsNormalLayersEnabled}"
+                       IsEnabled="{Binding Operation.LayerRangeHaveNormals}"
                        VerticalAlignment="Center"
                        Minimum="5"
                        Maximum="1000"
@@ -243,12 +243,12 @@
                        Value="{Binding Operation.MaxLiftSpeed}"/>
 
         <TextBlock Grid.Row="8" Grid.Column="6"
-                   IsEnabled="{Binding Operation.IsNormalLayersEnabled}"
+                   IsEnabled="{Binding Operation.LayerRangeHaveNormals}"
                    VerticalAlignment="Center"
                    Text="mm/min"/>
 
         <Button Grid.Row="8" Grid.Column="8"
-                IsEnabled="{Binding Operation.IsNormalLayersEnabled}"
+                IsEnabled="{Binding Operation.LayerRangeHaveNormals}"
                 VerticalAlignment="Stretch"
                 HorizontalAlignment="Stretch"
                 HorizontalContentAlignment="Center"
@@ -258,70 +258,114 @@
                 Content="Largest"/>
 
         <TextBlock Grid.Row="10" Grid.Column="0"
+                   IsVisible="{Binding SlicerFile.CanUseLayerLightOffDelay}"
                    VerticalAlignment="Center"
                    Text="Light-off mode:"/>
 
         <ComboBox Grid.Row="10" Grid.Column="2"
                   Grid.ColumnSpan="3"
+                  IsVisible="{Binding SlicerFile.CanUseLayerLightOffDelay}"
                   HorizontalAlignment="Stretch"
                   Items="{Binding Operation.LightOffDelaySetMode, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
                   SelectedItem="{Binding Operation.LightOffDelaySetMode, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
 
         <TextBlock Grid.Row="12" Grid.Column="2"
-                   IsEnabled="{Binding !Operation.LightOffSetMode}"
-                   IsVisible="{Binding !Operation.LightOffSetMode}"
+                   IsEnabled="{Binding !Operation.LightOffDelaySetMode}"
                    VerticalAlignment="Center"
                    HorizontalAlignment="Center"
                    FontWeight="Bold"
-                   Text="Bottom extra time"/>
+                   Text="Bottom extra time">
+            <TextBlock.IsVisible>
+                <MultiBinding Converter="{x:Static BoolConverters.And}">
+                    <Binding Path="SlicerFile.CanUseLayerLightOffDelay"/>
+                    <Binding Path="!Operation.LightOffDelaySetMode"/>
+                </MultiBinding>
+            </TextBlock.IsVisible>
+        </TextBlock>
 
         <TextBlock Grid.Row="12" Grid.Column="4"
-                   IsEnabled="{Binding !Operation.LightOffSetMode}"
-                   IsVisible="{Binding !Operation.LightOffSetMode}"
+                   IsEnabled="{Binding !Operation.LightOffDelaySetMode}"
                    VerticalAlignment="Center"
                    HorizontalAlignment="Center"
                    FontWeight="Bold"
-                   Text="Normal extra time"/>
+                   Text="Normal extra time">
+            <TextBlock.IsVisible>
+                <MultiBinding Converter="{x:Static BoolConverters.And}">
+                    <Binding Path="SlicerFile.CanUseLayerLightOffDelay"/>
+                    <Binding Path="!Operation.LightOffDelaySetMode"/>
+                </MultiBinding>
+            </TextBlock.IsVisible>
+        </TextBlock>
 
         <TextBlock Grid.Row="14" Grid.Column="0"
-                   IsEnabled="{Binding !Operation.LightOffSetMode}"
-                   IsVisible="{Binding !Operation.LightOffSetMode}"
+                   IsEnabled="{Binding !Operation.LightOffDelaySetMode}"
                    VerticalAlignment="Center"
-                   Text="Light-off delay:"/>
+                   Text="Light-off delay:">
+            <TextBlock.IsVisible>
+                <MultiBinding Converter="{x:Static BoolConverters.And}">
+                    <Binding Path="SlicerFile.CanUseLayerLightOffDelay"/>
+                    <Binding Path="!Operation.LightOffDelaySetMode"/>
+                </MultiBinding>
+            </TextBlock.IsVisible>
+        </TextBlock>
 
         <NumericUpDown Grid.Row="14" Grid.Column="2"
-                       IsEnabled="{Binding !Operation.LightOffSetMode}"
-                       IsVisible="{Binding !Operation.LightOffSetMode}"
+                       IsEnabled="{Binding !Operation.LightOffDelaySetMode}"
                        VerticalAlignment="Center"
                        Minimum="0"
                        Maximum="100"
                        Increment="1"
                        FormatString="F2"
-                       Value="{Binding Operation.LightOffDelayBottomExtraTime}"/>
+                       Value="{Binding Operation.LightOffDelayBottomExtraTime}">
+            <NumericUpDown.IsVisible>
+                <MultiBinding Converter="{x:Static BoolConverters.And}">
+                    <Binding Path="SlicerFile.CanUseLayerLightOffDelay"/>
+                    <Binding Path="!Operation.LightOffDelaySetMode"/>
+                </MultiBinding>
+            </NumericUpDown.IsVisible>
+        </NumericUpDown>
 
         <TextBlock Grid.Row="14" Grid.Column="3"
-                   IsEnabled="{Binding !Operation.LightOffSetMode}"
-                   IsVisible="{Binding !Operation.LightOffSetMode}"
+                   IsEnabled="{Binding !Operation.LightOffDelaySetMode}"
                    VerticalAlignment="Center"
                    HorizontalAlignment="Center"
                    FontWeight="Bold"
-                   Text="/"/>
+                   Text="/">
+            <TextBlock.IsVisible>
+                <MultiBinding Converter="{x:Static BoolConverters.And}">
+                    <Binding Path="SlicerFile.CanUseLayerLightOffDelay"/>
+                    <Binding Path="!Operation.LightOffDelaySetMode"/>
+                </MultiBinding>
+            </TextBlock.IsVisible>
+        </TextBlock>
 
         <NumericUpDown Grid.Row="14" Grid.Column="4"
-                       IsEnabled="{Binding !Operation.LightOffSetMode}"
-                       IsVisible="{Binding !Operation.LightOffSetMode}"
+                       IsEnabled="{Binding !Operation.LightOffDelaySetMode}"
                        VerticalAlignment="Center"
                        Minimum="0"
                        Maximum="100"
                        Increment="1"
                        FormatString="F2"
-                       Value="{Binding Operation.LightOffDelayExtraTime}"/>
+                       Value="{Binding Operation.LightOffDelayExtraTime}">
+            <NumericUpDown.IsVisible>
+                <MultiBinding Converter="{x:Static BoolConverters.And}">
+                    <Binding Path="SlicerFile.CanUseLayerLightOffDelay"/>
+                    <Binding Path="!Operation.LightOffDelaySetMode"/>
+                </MultiBinding>
+            </NumericUpDown.IsVisible>
+        </NumericUpDown>
 
         <TextBlock Grid.Row="14" Grid.Column="6"
-                   IsEnabled="{Binding !Operation.LightOffSetMode}"
-                   IsVisible="{Binding !Operation.LightOffSetMode}"
+                   IsEnabled="{Binding !Operation.LightOffDelaySetMode}"
                    VerticalAlignment="Center"
-                   Text="s"/>
+                   Text="s">
+            <TextBlock.IsVisible>
+                <MultiBinding Converter="{x:Static BoolConverters.And}">
+                    <Binding Path="SlicerFile.CanUseLayerLightOffDelay"/>
+                    <Binding Path="!Operation.LightOffDelaySetMode"/>
+                </MultiBinding>
+            </TextBlock.IsVisible>
+        </TextBlock>
     </Grid>
 
   </StackPanel>

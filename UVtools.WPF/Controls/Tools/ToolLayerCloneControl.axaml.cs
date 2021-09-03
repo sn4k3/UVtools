@@ -10,13 +10,12 @@ namespace UVtools.WPF.Controls.Tools
     {
         public OperationLayerClone Operation => BaseOperation as OperationLayerClone;
 
-        public uint ExtraLayers => (uint)Math.Max(0, ((int)Operation.LayerIndexEnd - Operation.LayerIndexStart + 1) * Operation.Clones);
-
+        
         public string InfoLayersStr
         {
             get
             {
-                uint extraLayers = ExtraLayers;
+                uint extraLayers = Operation.ExtraLayers;
                 return $"Layers: {App.SlicerFile.LayerCount} → {SlicerFile.LayerCount + extraLayers} (+ {extraLayers})";
             }
         }
@@ -25,7 +24,7 @@ namespace UVtools.WPF.Controls.Tools
         {
             get
             {
-                float extraHeight = Layer.RoundHeight(ExtraLayers * SlicerFile.LayerHeight);
+                float extraHeight = Operation.KeepSamePositionZ ? 0 : Layer.RoundHeight(Operation.ExtraLayers * SlicerFile.LayerHeight);
                 return $"Height: {App.SlicerFile.PrintHeight}mm → {Layer.RoundHeight(SlicerFile.PrintHeight + extraHeight)}mm (+ {extraHeight}mm)";
             }
         }

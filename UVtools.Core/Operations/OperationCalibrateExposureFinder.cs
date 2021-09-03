@@ -168,8 +168,8 @@ namespace UVtools.Core.Operations
         private bool _differentSettingsForSamePositionedLayers;
         private bool _samePositionedLayersLiftHeightEnabled = true;
         private decimal _samePositionedLayersLiftHeight;
-        private bool _samePositionedLayersLightOffDelayEnabled = true;
-        private decimal _samePositionedLayersLightOffDelay;
+        private bool _samePositionedLayersWaitTimeBeforeCureEnabled = true;
+        private decimal _samePositionedLayersWaitTimeBeforeCure;
         private bool _multipleExposures;
         private CalibrateExposureFinderExposureGenTypes _exposureGenType = CalibrateExposureFinderExposureGenTypes.Linear;
         private bool _exposureGenIgnoreBaseExposure;
@@ -907,16 +907,16 @@ namespace UVtools.Core.Operations
             set => RaiseAndSetIfChanged(ref _samePositionedLayersLiftHeight, Math.Round(value, 2));
         }
 
-        public bool SamePositionedLayersLightOffDelayEnabled
+        public bool SamePositionedLayersWaitTimeBeforeCureEnabled
         {
-            get => _samePositionedLayersLightOffDelayEnabled;
-            set => RaiseAndSetIfChanged(ref _samePositionedLayersLightOffDelayEnabled, value);
+            get => _samePositionedLayersWaitTimeBeforeCureEnabled;
+            set => RaiseAndSetIfChanged(ref _samePositionedLayersWaitTimeBeforeCureEnabled, value);
         }
 
-        public decimal SamePositionedLayersLightOffDelay
+        public decimal SamePositionedLayersWaitTimeBeforeCure
         {
-            get => _samePositionedLayersLightOffDelay;
-            set => RaiseAndSetIfChanged(ref _samePositionedLayersLightOffDelay, Math.Round(value, 2));
+            get => _samePositionedLayersWaitTimeBeforeCure;
+            set => RaiseAndSetIfChanged(ref _samePositionedLayersWaitTimeBeforeCure, Math.Round(value, 2));
         }
 
         public bool MultipleExposures
@@ -1140,12 +1140,12 @@ namespace UVtools.Core.Operations
                 if (SlicerFile.SupportsGCode)
                 {
                     _samePositionedLayersLiftHeight = 0;
-                    _samePositionedLayersLightOffDelay = 2;
+                    _samePositionedLayersWaitTimeBeforeCure = 2;
                 }
                 else
                 {
                     _samePositionedLayersLiftHeight = 0.1m;
-                    _samePositionedLayersLightOffDelay = 0;
+                    _samePositionedLayersWaitTimeBeforeCure = 0;
                 }
             }
 
@@ -1176,7 +1176,7 @@ namespace UVtools.Core.Operations
 
             if (_multipleExposuresBaseLayersCustomExposure <= 0) _multipleExposuresBaseLayersCustomExposure = (decimal)SlicerFile.ExposureTime;
 
-            if (!SlicerFile.HaveLayerParameterModifier(FileFormat.PrintParameterModifier.ExposureTime))
+            if (!SlicerFile.CanUseLayerExposureTime)
             {
                 _multipleLayerHeight = false;
                 _multipleExposures = false;
@@ -1197,7 +1197,7 @@ namespace UVtools.Core.Operations
         
         private bool Equals(OperationCalibrateExposureFinder other)
         {
-            return _displayWidth == other._displayWidth && _displayHeight == other._displayHeight && _layerHeight == other._layerHeight && _bottomLayers == other._bottomLayers && _bottomExposure == other._bottomExposure && _normalExposure == other._normalExposure && _topBottomMargin == other._topBottomMargin && _leftRightMargin == other._leftRightMargin && _chamferLayers == other._chamferLayers && _erodeBottomIterations == other._erodeBottomIterations && _partMargin == other._partMargin && _enableAntiAliasing == other._enableAntiAliasing && _mirrorOutput == other._mirrorOutput && _baseHeight == other._baseHeight && _featuresHeight == other._featuresHeight && _featuresMargin == other._featuresMargin && _staircaseThicknessPx == other._staircaseThicknessPx && _holesEnabled == other._holesEnabled && _holeShape == other._holeShape && _unitOfMeasure == other._unitOfMeasure && _holeDiametersPx == other._holeDiametersPx && _holeDiametersMm == other._holeDiametersMm && _barsEnabled == other._barsEnabled && _barSpacing == other._barSpacing && _barLength == other._barLength && _barVerticalSplitter == other._barVerticalSplitter && _barFenceThickness == other._barFenceThickness && _barFenceOffset == other._barFenceOffset && _barThicknessesPx == other._barThicknessesPx && _barThicknessesMm == other._barThicknessesMm && _textEnabled == other._textEnabled && _textFont == other._textFont && _textScale.Equals(other._textScale) && _textThickness == other._textThickness && _text == other._text && _multipleBrightness == other._multipleBrightness && _multipleBrightnessExcludeFrom == other._multipleBrightnessExcludeFrom && _multipleBrightnessValues == other._multipleBrightnessValues && _multipleBrightnessGenExposureTime == other._multipleBrightnessGenExposureTime && _multipleBrightnessGenEmulatedAALevel == other._multipleBrightnessGenEmulatedAALevel && _multipleBrightnessGenExposureFractions == other._multipleBrightnessGenExposureFractions && _multipleLayerHeight == other._multipleLayerHeight && _multipleLayerHeightMaximum == other._multipleLayerHeightMaximum && _multipleLayerHeightStep == other._multipleLayerHeightStep && _multipleExposuresBaseLayersPrintMode == other._multipleExposuresBaseLayersPrintMode && _multipleExposuresBaseLayersCustomExposure == other._multipleExposuresBaseLayersCustomExposure && _differentSettingsForSamePositionedLayers == other._differentSettingsForSamePositionedLayers && _samePositionedLayersLiftHeightEnabled == other._samePositionedLayersLiftHeightEnabled && _samePositionedLayersLiftHeight == other._samePositionedLayersLiftHeight && _samePositionedLayersLightOffDelayEnabled == other._samePositionedLayersLightOffDelayEnabled && _samePositionedLayersLightOffDelay == other._samePositionedLayersLightOffDelay && _multipleExposures == other._multipleExposures && _exposureGenType == other._exposureGenType && _exposureGenIgnoreBaseExposure == other._exposureGenIgnoreBaseExposure && _exposureGenBottomStep == other._exposureGenBottomStep && _exposureGenNormalStep == other._exposureGenNormalStep && _exposureGenTests == other._exposureGenTests && _exposureGenManualLayerHeight == other._exposureGenManualLayerHeight && _exposureGenManualBottom == other._exposureGenManualBottom && _exposureGenManualNormal == other._exposureGenManualNormal && Equals(_exposureTable, other._exposureTable) && _bullsEyeEnabled == other._bullsEyeEnabled && _bullsEyeConfigurationPx == other._bullsEyeConfigurationPx && _bullsEyeConfigurationMm == other._bullsEyeConfigurationMm && _bullsEyeInvertQuadrants == other._bullsEyeInvertQuadrants && _counterTrianglesEnabled == other._counterTrianglesEnabled && _counterTrianglesTipOffset == other._counterTrianglesTipOffset && _counterTrianglesFence == other._counterTrianglesFence && _patternModel == other._patternModel && _bullsEyeFenceThickness == other._bullsEyeFenceThickness && _bullsEyeFenceOffset == other._bullsEyeFenceOffset && _patternModelGlueBottomLayers == other._patternModelGlueBottomLayers;
+            return _displayWidth == other._displayWidth && _displayHeight == other._displayHeight && _layerHeight == other._layerHeight && _bottomLayers == other._bottomLayers && _bottomExposure == other._bottomExposure && _normalExposure == other._normalExposure && _topBottomMargin == other._topBottomMargin && _leftRightMargin == other._leftRightMargin && _chamferLayers == other._chamferLayers && _erodeBottomIterations == other._erodeBottomIterations && _partMargin == other._partMargin && _enableAntiAliasing == other._enableAntiAliasing && _mirrorOutput == other._mirrorOutput && _baseHeight == other._baseHeight && _featuresHeight == other._featuresHeight && _featuresMargin == other._featuresMargin && _staircaseThicknessPx == other._staircaseThicknessPx && _holesEnabled == other._holesEnabled && _holeShape == other._holeShape && _unitOfMeasure == other._unitOfMeasure && _holeDiametersPx == other._holeDiametersPx && _holeDiametersMm == other._holeDiametersMm && _barsEnabled == other._barsEnabled && _barSpacing == other._barSpacing && _barLength == other._barLength && _barVerticalSplitter == other._barVerticalSplitter && _barFenceThickness == other._barFenceThickness && _barFenceOffset == other._barFenceOffset && _barThicknessesPx == other._barThicknessesPx && _barThicknessesMm == other._barThicknessesMm && _textEnabled == other._textEnabled && _textFont == other._textFont && _textScale.Equals(other._textScale) && _textThickness == other._textThickness && _text == other._text && _multipleBrightness == other._multipleBrightness && _multipleBrightnessExcludeFrom == other._multipleBrightnessExcludeFrom && _multipleBrightnessValues == other._multipleBrightnessValues && _multipleBrightnessGenExposureTime == other._multipleBrightnessGenExposureTime && _multipleBrightnessGenEmulatedAALevel == other._multipleBrightnessGenEmulatedAALevel && _multipleBrightnessGenExposureFractions == other._multipleBrightnessGenExposureFractions && _multipleLayerHeight == other._multipleLayerHeight && _multipleLayerHeightMaximum == other._multipleLayerHeightMaximum && _multipleLayerHeightStep == other._multipleLayerHeightStep && _multipleExposuresBaseLayersPrintMode == other._multipleExposuresBaseLayersPrintMode && _multipleExposuresBaseLayersCustomExposure == other._multipleExposuresBaseLayersCustomExposure && _differentSettingsForSamePositionedLayers == other._differentSettingsForSamePositionedLayers && _samePositionedLayersLiftHeightEnabled == other._samePositionedLayersLiftHeightEnabled && _samePositionedLayersLiftHeight == other._samePositionedLayersLiftHeight && _samePositionedLayersWaitTimeBeforeCureEnabled == other._samePositionedLayersWaitTimeBeforeCureEnabled && _samePositionedLayersWaitTimeBeforeCure == other._samePositionedLayersWaitTimeBeforeCure && _multipleExposures == other._multipleExposures && _exposureGenType == other._exposureGenType && _exposureGenIgnoreBaseExposure == other._exposureGenIgnoreBaseExposure && _exposureGenBottomStep == other._exposureGenBottomStep && _exposureGenNormalStep == other._exposureGenNormalStep && _exposureGenTests == other._exposureGenTests && _exposureGenManualLayerHeight == other._exposureGenManualLayerHeight && _exposureGenManualBottom == other._exposureGenManualBottom && _exposureGenManualNormal == other._exposureGenManualNormal && Equals(_exposureTable, other._exposureTable) && _bullsEyeEnabled == other._bullsEyeEnabled && _bullsEyeConfigurationPx == other._bullsEyeConfigurationPx && _bullsEyeConfigurationMm == other._bullsEyeConfigurationMm && _bullsEyeInvertQuadrants == other._bullsEyeInvertQuadrants && _counterTrianglesEnabled == other._counterTrianglesEnabled && _counterTrianglesTipOffset == other._counterTrianglesTipOffset && _counterTrianglesFence == other._counterTrianglesFence && _patternModel == other._patternModel && _bullsEyeFenceThickness == other._bullsEyeFenceThickness && _bullsEyeFenceOffset == other._bullsEyeFenceOffset && _patternModelGlueBottomLayers == other._patternModelGlueBottomLayers;
         }
 
         public override bool Equals(object obj)
@@ -1257,8 +1257,8 @@ namespace UVtools.Core.Operations
             hashCode.Add(_differentSettingsForSamePositionedLayers);
             hashCode.Add(_samePositionedLayersLiftHeightEnabled);
             hashCode.Add(_samePositionedLayersLiftHeight);
-            hashCode.Add(_samePositionedLayersLightOffDelayEnabled);
-            hashCode.Add(_samePositionedLayersLightOffDelay);
+            hashCode.Add(_samePositionedLayersWaitTimeBeforeCureEnabled);
+            hashCode.Add(_samePositionedLayersWaitTimeBeforeCure);
             hashCode.Add(_multipleExposures);
             hashCode.Add((int) _exposureGenType);
             hashCode.Add(_exposureGenIgnoreBaseExposure);
@@ -2260,7 +2260,7 @@ namespace UVtools.Core.Operations
                 foreach (var layer in layers)
                 {
                     if(_samePositionedLayersLiftHeightEnabled)    layer.LiftHeightTotal = (float) _samePositionedLayersLiftHeight;
-                    if(_samePositionedLayersLightOffDelayEnabled) layer.LightOffDelay   = (float) _samePositionedLayersLightOffDelay;
+                    if(_samePositionedLayersWaitTimeBeforeCureEnabled) layer.SetWaitTimeBeforeCureOrLightOffDelay((float) _samePositionedLayersWaitTimeBeforeCure);
                 }
             }
 

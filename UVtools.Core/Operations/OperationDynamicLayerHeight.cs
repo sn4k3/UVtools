@@ -148,7 +148,7 @@ namespace UVtools.Core.Operations
 
             for (uint layerIndex = 1; layerIndex < SlicerFile.LayerCount; layerIndex++)
             {
-                if ((decimal)Math.Round(SlicerFile[layerIndex].PositionZ - SlicerFile[layerIndex - 1].PositionZ, Layer.HeightPrecision) ==
+                if ((decimal)Layer.RoundHeight(SlicerFile[layerIndex].PositionZ - SlicerFile[layerIndex - 1].PositionZ) ==
                     (decimal)SlicerFile.LayerHeight) continue;
                 return $"This file contain layer(s) with modified positions, starting at layer {layerIndex}.\n" +
                        $"This tool requires sequential layers with equal height.\n" +

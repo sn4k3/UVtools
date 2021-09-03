@@ -37,6 +37,8 @@ namespace UVtools.WPF.Structures
         [XmlElement(typeof(OperationPixelDimming))]
         [XmlElement(typeof(OperationInfill))]
         [XmlElement(typeof(OperationBlur))]
+        [XmlElement(typeof(OperationFadeExposureTime))]
+        [XmlElement(typeof(OperationDoubleExposure))]
         [XmlElement(typeof(OperationDynamicLayerHeight))]
         [XmlElement(typeof(OperationDynamicLifts))]
         [XmlElement(typeof(OperationRaiseOnPrintFinish))]

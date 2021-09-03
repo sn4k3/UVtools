@@ -30,6 +30,19 @@
             <Image Source="\Assets\Icons\file-import-16x16.png"/>
           </MenuItem.Icon>
         </MenuItem>
+          <MenuItem
+              Name="MainMenu.File.OpenRecent"
+              Header="Open recent"
+              ToolTip.ShowDelay="2000"
+              ToolTip.Tip="On a file:
+&#x0a;Shift + Click: Open file in a new window
+&#x0a;Shift + Ctrl + Click: Remove file from list
+&#x0a;Ctrl + Click: Purge non-existing files"
+              Items="{Binding MenuFileOpenRecentItems}">
+              <MenuItem.Icon>
+                  <Image Source="\Assets\Icons\file-import-16x16.png"/>
+              </MenuItem.Icon>
+          </MenuItem>
         <MenuItem 
           Name="MainMenu.File.Reload" 
           Header="_Reload" 
@@ -61,6 +74,15 @@
             <Image Source="\Assets\Icons\save-as-16x16.png"/>
           </MenuItem.Icon>
         </MenuItem>
+          <MenuItem
+              Name="MainMenu.File.SendTo"
+              Header="Send to"
+              IsEnabled="{Binding IsFileLoaded}"
+              Items="{Binding MenuFileSendToItems}">
+              <MenuItem.Icon>
+                  <Image Source="\Assets\Icons\share-square-16x16.png"/>
+              </MenuItem.Icon>
+          </MenuItem>
         <MenuItem 
           Name="MainMenu.File.Close" 
           Header="_Close" 
@@ -1664,7 +1686,7 @@
       IsEnabled="{Binding IsFileLoaded}" 
       DockPanel.Dock="Right" 
       ColumnDefinitions="160" 
-      RowDefinitions="Auto,Auto,*,Auto,Auto,Auto,Auto"  Margin="5">
+      RowDefinitions="Auto,Auto,*,Auto,Auto,Auto,Auto,Auto"  Margin="5">
       <TextBlock
         Text="{Binding MaximumLayerString}"
         Name="Layer.Navigation.Up"
@@ -1786,6 +1808,37 @@
           <Image Width="16" Height="16" Source="/Assets/Icons/arrow-top-16x16.png"/>
         </Button>
       </Grid>
+
+      <StackPanel Grid.Row="6" 
+                  Margin="0,1,0,0"
+                  HorizontalAlignment="Center"
+                  VerticalAlignment="Center"
+                  Orientation="Horizontal" Spacing="1">
+          <Button
+              ToolTip.Tip="Navigate to the smallest bottom layer in mass"
+              Command="{Binding GoMassLayer}"
+              CommandParameter="SB"
+              Content="SB"/>
+
+          <Button
+              ToolTip.Tip="Navigate to the largest bottom layer in mass"
+              Command="{Binding GoMassLayer}"
+              CommandParameter="LB"
+              Content="LB"/>
+
+          <Button
+              ToolTip.Tip="Navigate to the smallest normal layer in mass"
+              Command="{Binding GoMassLayer}"
+              CommandParameter="SN"
+              Content="SN"/>
+
+          <Button
+              ToolTip.Tip="Navigate to the largest normal layer in mass"
+              Command="{Binding GoMassLayer}"
+              CommandParameter="LN"
+              Content="LN"/>
+      </StackPanel>
+
     </Grid>
 
 
@@ -1910,11 +1963,35 @@
                   Content="Hollow areas"/>
                 <CheckBox
                   IsChecked="{Binding ShowLayerOutlineEdgeDetection}"
-                  Content="Edge detection"/>
+                  Content="Edge detection">
+                  <CheckBox.IsEnabled>
+                    <MultiBinding Converter="{x:Static BoolConverters.And}">
+                      <Binding Path="!ShowLayerOutlineDistanceDetection"/>
+                      <Binding Path="!ShowLayerOutlineSkeletonize"/>
+                    </MultiBinding>
+                  </CheckBox.IsEnabled>
+                </CheckBox>
+                <CheckBox
+                    IsChecked="{Binding ShowLayerOutlineDistanceDetection}"
+                    ToolTip.Tip="Calculates the distance to the closest zero pixel for each pixel"
+                    Content="Distance detection">
+                  <CheckBox.IsEnabled>
+                    <MultiBinding Converter="{x:Static BoolConverters.And}">
+                      <Binding Path="!ShowLayerOutlineEdgeDetection"/>
+                      <Binding Path="!ShowLayerOutlineSkeletonize"/>
+                    </MultiBinding>
+                  </CheckBox.IsEnabled>
+                </CheckBox>
                 <CheckBox
                     IsChecked="{Binding ShowLayerOutlineSkeletonize}"
-                    IsEnabled="{Binding !ShowLayerOutlineEdgeDetection}"
-                    Content="Skeletonize"/>
+                    Content="Skeletonize">
+                    <CheckBox.IsEnabled>
+                        <MultiBinding Converter="{x:Static BoolConverters.And}">
+                            <Binding Path="!ShowLayerOutlineEdgeDetection"/>
+                            <Binding Path="!ShowLayerOutlineDistanceDetection"/>
+                        </MultiBinding>
+                    </CheckBox.IsEnabled>
+                </CheckBox>
               </ContextMenu>
             </Button.ContextMenu>
             <StackPanel Orientation="Horizontal">

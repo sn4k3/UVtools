@@ -740,6 +740,29 @@ namespace UVtools.Core
         }
 
         /// <summary>
+        /// Attempt to set wait time before cure if supported, otherwise fallback to light-off delay
+        /// </summary>
+        /// <param name="time">The time to set</param>
+        /// <param name="zeroLightOffDelayCalculateBase">When true and time is zero, it will calculate light-off delay without extra time, otherwise false to set light-off delay to 0 when time is 0</param>
+        public void SetWaitTimeBeforeCureOrLightOffDelay(float time = 0, bool zeroLightOffDelayCalculateBase = false)
+        {
+            if (SlicerFile.CanUseLayerWaitTimeBeforeCure)
+            {
+                LightOffDelay = 0;
+                WaitTimeBeforeCure = time;
+            }
+            else
+            {
+                if (time == 0 && !zeroLightOffDelayCalculateBase)
+                {
+                    LightOffDelay = 0;
+                    return;
+                }
+                SetLightOffDelay(time);
+            }
+        }
+
+        /// <summary>
         /// Zero all 'wait times / delays' for this layer
         /// </summary>
         public void SetNoDelays()

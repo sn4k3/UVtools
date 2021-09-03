@@ -53,6 +53,7 @@
             VerticalAlignment="Center"
             HorizontalAlignment="Right"
             IsChecked="{Binding LayerRangeSync}"
+            IsVisible="{Binding LayerIndexEndEnabled}"
             ToolTip.Tip="Synchronize and lock the layer range for single layer navigation"
             Content="Synchronize"/>
         </Grid>
@@ -93,9 +94,14 @@
             VerticalAlignment="Center"
             Minimum="0"
             Maximum="{Binding MaximumLayerIndex}"
-            IsEnabled="{Binding !LayerRangeSync}"
-            Value="{Binding LayerIndexEnd}"
-            />
+            Value="{Binding LayerIndexEnd}">
+              <NumericUpDown.IsEnabled>
+                  <MultiBinding Converter="{x:Static BoolConverters.And}">
+                      <Binding Path="LayerIndexEndEnabled"/>
+                      <Binding Path="!LayerRangeSync"/>
+                  </MultiBinding>
+              </NumericUpDown.IsEnabled>
+          </NumericUpDown>
 
           <Button Name="LayerSelectPresetButton"
             Grid.Row="0"

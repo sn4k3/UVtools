@@ -425,7 +425,7 @@ namespace UVtools.Core.Operations
         /// <returns></returns>
         public Mat[] GetLayers()
         {
-            Mat[] layers = new Mat[3];
+            var layers = new Mat[3];
             var anchor = new Point(-1, -1);
             var kernel = CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(3, 3), anchor);
 
