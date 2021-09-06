@@ -26,6 +26,7 @@ using Emgu.CV.Structure;
 using Emgu.CV.Util;
 using UVtools.AvaloniaControls;
 using UVtools.Core;
+using UVtools.Core.EmguCV;
 using UVtools.Core.Extensions;
 using UVtools.Core.PixelEditor;
 using UVtools.WPF.Controls;
@@ -74,7 +75,9 @@ namespace UVtools.WPF
         private bool _isPixelEditorActive;
         private bool _showLayerOutlinePrintVolumeBoundary;
         private bool _showLayerOutlineLayerBoundary;
+        private bool _showLayerOutlineContourBoundary;
         private bool _showLayerOutlineHollowAreas;
+        private bool _showLayerOutlineCentroids;
         private bool _showLayerOutlineEdgeDetection;
         private bool _showLayerOutlineDistanceDetection;
         private bool _showLayerOutlineSkeletonize;
@@ -107,7 +110,9 @@ namespace UVtools.WPF
             _showLayerImageDifference = Settings.LayerPreview.ShowLayerDifference;
             _showLayerOutlinePrintVolumeBoundary = Settings.LayerPreview.VolumeBoundsOutline;
             _showLayerOutlineLayerBoundary = Settings.LayerPreview.LayerBoundsOutline;
+            _showLayerOutlineContourBoundary = Settings.LayerPreview.ContourBoundsOutline;
             _showLayerOutlineHollowAreas = Settings.LayerPreview.HollowOutline;
+            _showLayerOutlineCentroids = Settings.LayerPreview.CentroidOutline;
             
             LayerImageBox.ZoomLevels = new AdvancedImageBox.ZoomLevelCollection(AppSettings.ZoomLevels);
             
@@ -370,12 +375,32 @@ namespace UVtools.WPF
             }
         }
 
+        public bool ShowLayerOutlineContourBoundary
+        {
+            get => _showLayerOutlineContourBoundary;
+            set
+            {
+                if (!RaiseAndSetIfChanged(ref _showLayerOutlineContourBoundary, value)) return;
+                ShowLayer();
+            }
+        }
+
         public bool ShowLayerOutlineHollowAreas
         {
             get => _showLayerOutlineHollowAreas;
             set
             {
                 if (!RaiseAndSetIfChanged(ref _showLayerOutlineHollowAreas, value)) return;
+                ShowLayer();
+            }
+        }
+
+        public bool ShowLayerOutlineCentroids
+        {
+            get => _showLayerOutlineCentroids;
+            set
+            {
+                if (!RaiseAndSetIfChanged(ref _showLayerOutlineCentroids, value)) return;
                 ShowLayer();
             }
         }
@@ -983,6 +1008,21 @@ namespace UVtools.WPF
                         Settings.LayerPreview.LayerBoundsOutlineThickness);
                 }
 
+                if (_showLayerOutlineContourBoundary)
+                {
+                    for (int i = 0; i < LayerCache.LayerContours.Size; i++)
+                    {
+                        if ((int)LayerCache.LayerHierarchyJagged.GetValue(0, i, 2) == -1 &&
+                            (int)LayerCache.LayerHierarchyJagged.GetValue(0, i, 3) != -1) continue;
+                        CvInvoke.Rectangle(LayerCache.ImageBgr, CvInvoke.BoundingRectangle(LayerCache.LayerContours[i]),
+                            new MCvScalar(
+                                Settings.LayerPreview.ContourBoundsOutlineColor.B,
+                                Settings.LayerPreview.ContourBoundsOutlineColor.G, 
+                                Settings.LayerPreview.ContourBoundsOutlineColor.R),
+                            Settings.LayerPreview.ContourBoundsOutlineThickness);
+                    }
+                }
+
                 if (_showLayerOutlineHollowAreas)
                 {
                     //CvInvoke.Threshold(ActualLayerImage, grayscale, 1, 255, ThresholdType.Binary);
@@ -1006,6 +1046,34 @@ namespace UVtools.WPF
                                     Settings.LayerPreview.HollowOutlineColor.R),
                                 Settings.LayerPreview.HollowOutlineLineThickness);
                         }
+                    }
+                }
+
+                if (_showLayerOutlineCentroids)
+                {
+                    for (int i = 0; i < LayerCache.LayerContours.Size; i++)
+                    {
+                        if ((int)LayerCache.LayerHierarchyJagged.GetValue(0, i, 2) == -1 &&
+                            (int)LayerCache.LayerHierarchyJagged.GetValue(0, i, 3) != -1)
+                        {
+                            if (Settings.LayerPreview.CentroidOutlineHollow)
+                            {
+                                CvInvoke.Circle(LayerCache.ImageBgr, Contour.GetCentroid(LayerCache.LayerContours[i]),
+                                    Settings.LayerPreview.CentroidOutlineDiameter / 2, new MCvScalar(
+                                        Settings.LayerPreview.HollowOutlineColor.B,
+                                        Settings.LayerPreview.HollowOutlineColor.G,
+                                        Settings.LayerPreview.HollowOutlineColor.R), 1, LineType.AntiAlias);
+                            }
+                        }
+                        else
+                        {
+                            CvInvoke.Circle(LayerCache.ImageBgr, Contour.GetCentroid(LayerCache.LayerContours[i]),
+                                Settings.LayerPreview.CentroidOutlineDiameter / 2, new MCvScalar(
+                                    Settings.LayerPreview.CentroidOutlineColor.B,
+                                    Settings.LayerPreview.CentroidOutlineColor.G,
+                                    Settings.LayerPreview.CentroidOutlineColor.R), -1, LineType.AntiAlias);
+                        }
+                            
                     }
                 }
 

@@ -1389,7 +1389,7 @@ namespace UVtools.Core
 
                                 listHollowArea.Add(new LayerHollowArea(contours[i].ToArray(),
                                     rect,
-                                    layer.Index == 0 ||
+                                    layer.Index <= resinTrapConfig.StartLayerIndex ||
                                     layer.Index == LayerCount - 1 // First and Last layers, always drains
                                         ? LayerHollowArea.AreaType.Drain
                                         : LayerHollowArea.AreaType.Unknown));
@@ -1410,7 +1410,7 @@ namespace UVtools.Core
 
                 ResinTrapTree resinTrapTree = new();
 
-                for (uint layerIndex = 1; layerIndex < LayerCount - 1; layerIndex++) // First and Last layers, always drains
+                for (uint layerIndex = resinTrapConfig.StartLayerIndex+1; layerIndex < LayerCount - 1; layerIndex++) // First and Last layers, always drains
                 {
                     if (progress.Token.IsCancellationRequested) break;
                     if (!layerHollowAreas.TryGetValue(layerIndex, out var areas))

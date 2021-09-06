@@ -1,5 +1,15 @@
 # Changelog
 
+## 06/09/2021 - v2.21.1
+
+- **(Add) Layer outline:**
+   - Blob outline: Outline all separate blobs
+   - Centroids: Draw a dot at the gemoetric center of a blob
+- (Add) Adjust layer height: Allow to change exposure time on the dialog and inform that different layer thickness require different exposure times
+- (Add) Resin trap detection: Allow to choose the starting layer index for resin trap detection which will also be considered a drain layer.  
+        Use this setting to bypass complicated rafts by selected the model first real layer (#221)
+- (Improvement) Disable mirroed preview when loading a file that is not mirroed
+
 ## 03/09/2021 - v2.21.0
 
 - **UI:**

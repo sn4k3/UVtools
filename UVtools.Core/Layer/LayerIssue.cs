@@ -159,6 +159,12 @@ namespace UVtools.Core
         public bool Enabled { get; set; } = true;
 
         /// <summary>
+        /// Gets or sets the starting layer index for the detection which will also be considered a drain layer.
+        /// Use this setting to bypass complicated rafts by selected the model first real layer.
+        /// </summary>
+        public uint StartLayerIndex { get; set; }
+
+        /// <summary>
         /// Gets or sets the binary threshold, all pixels below this value will turn in black, otherwise white
         /// Set to 0 to disable this operation
         /// </summary>

@@ -90,7 +90,7 @@ namespace UVtools.Core.EmguCV
         /// <summary>
         /// Gets the centroid of the contour
         /// </summary>
-        public Point Centroid => _centroid ??= Moments.M00 == 0 ? Point.Empty : 
+        public Point Centroid => _centroid ??= Moments.M00 == 0 ? new Point(-1,-1) : 
             new Point(
             (int)Math.Round(_moments.M10 / _moments.M00),
             (int)Math.Round(_moments.M01 / _moments.M00));
@@ -209,6 +209,18 @@ namespace UVtools.Core.EmguCV
             var ellipse = CvInvoke.FitEllipse(_points);
             CvInvoke.Ellipse(src, ellipse.Center.ToPoint(), ellipse.Size.ToSize(), ellipse.Angle, 0, 0);
         }*/
+        #endregion
+
+        #region Static methods
+        public static Point GetCentroid(VectorOfPoint points)
+        {
+            if (points is null || points.Length == 0) return new Point(-1, -1);
+            using var moments = CvInvoke.Moments(points);
+            return moments.M00 == 0 ? new Point(-1, -1) :
+                new Point(
+                    (int)Math.Round(moments.M10 / moments.M00),
+                    (int)Math.Round(moments.M01 / moments.M00));
+        }
         #endregion
 
         #region Implementations

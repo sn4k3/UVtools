@@ -44,9 +44,17 @@ namespace UVtools.WPF
         }
 
         public readonly List<LayerIssue> IgnoredIssues = new();
+        private uint _resinTrapDetectionStartLayer;
 
         public bool IssueCanGoPrevious => Issues.Count > 0 && _issueSelectedIndex > 0;
         public bool IssueCanGoNext => Issues.Count > 0 && _issueSelectedIndex < Issues.Count - 1;
+
+        public uint ResinTrapDetectionStartLayer
+        {
+            get => _resinTrapDetectionStartLayer;
+            set => RaiseAndSetIfChanged(ref _resinTrapDetectionStartLayer, value);
+        }
+
         #endregion
 
         #region Methods
@@ -526,7 +534,21 @@ namespace UVtools.WPF
             if(clearIgnored) IgnoredIssues.Clear();
         }
 
-        
+        public void SetResinTrapDetectionStartLayer(char which)
+        {
+            switch (which)
+            {
+                case 'N':
+                    ResinTrapDetectionStartLayer = SlicerFile.FirstNormalLayer.Index;
+                    break;
+                case 'C':
+                    ResinTrapDetectionStartLayer = ActualLayer;
+                    break;
+            }
+        }
+
+
+
         public IslandDetectionConfiguration GetIslandDetectionConfiguration(bool enable)
         {
             return new()
@@ -561,6 +583,7 @@ namespace UVtools.WPF
             return new()
             {
                 Enabled = enable,
+                StartLayerIndex = _resinTrapDetectionStartLayer,
                 BinaryThreshold = Settings.Issues.ResinTrapBinaryThreshold,
                 RequiredAreaToProcessCheck = Settings.Issues.ResinTrapRequiredAreaToProcessCheck,
                 RequiredBlackPixelsToDrain = Settings.Issues.ResinTrapRequiredBlackPixelsToDrain,

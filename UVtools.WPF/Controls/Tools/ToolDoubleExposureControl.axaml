@@ -153,7 +153,7 @@
                    IsEnabled="{Binding Operation.SecondLayerDifference}"
                    ToolTip.Tip="When the 'Exposure the difference between first and second layer for the second layer' is active, 
 this setting will further erode the layer producing a overlap of n pixel perimeters over the previous layer"
-                   Text="Difference overlap margin:"/>
+                   Text="Difference overlap by:"/>
         <NumericUpDown
             Grid.Row="0" Grid.Column="2"
             VerticalAlignment="Center"

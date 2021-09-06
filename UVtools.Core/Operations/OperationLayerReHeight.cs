@@ -38,6 +38,8 @@ namespace UVtools.Core.Operations
         #region Members
         private OperationLayerReHeightItem _selectedItem;
         private OperationLayerReHeightAntiAliasingType _antiAliasingType;
+        private decimal _bottomExposure;
+        private decimal _normalExposure;
 
         #endregion
 
@@ -49,7 +51,8 @@ namespace UVtools.Core.Operations
         public override string Description =>
             "Adjust the layer height of the model.\n\n" +
             "Adjusting to values lower than current height will reduce layer lines, adjusting to values higher" +
-            " than current height will reduce model detail.\n\n" +
+            " than current height will reduce model detail.\n" +
+            "Different layer thickness will require different exposure times, adjust accordingly.\n\n" +
             "Note: Using dedicated slicer software to re-slice will usually yeild better results.";
         public override string ConfirmationText =>
             $"adjust layer height to {SelectedItem.LayerHeight}mm?";
@@ -87,7 +90,9 @@ namespace UVtools.Core.Operations
 
         public override string ToString()
         {
-            var result = $"[Layer Count: {SelectedItem.LayerCount}] [Layer Height: {SelectedItem.LayerHeight}]" + LayerRangeString;
+            var result = $"[Layer Count: {SelectedItem.LayerCount}] " +
+                         $"[Layer Height: {SelectedItem.LayerHeight}] " +
+                         $"[Exposure: {_bottomExposure}/{_normalExposure}s]" + LayerRangeString;
             if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
             return result;
         }
@@ -113,6 +118,18 @@ namespace UVtools.Core.Operations
         {
             get => _antiAliasingType;
             set => RaiseAndSetIfChanged(ref _antiAliasingType, value);
+        }
+
+        public decimal BottomExposure
+        {
+            get => _bottomExposure;
+            set => RaiseAndSetIfChanged(ref _bottomExposure, Math.Round(value, 2));
+        }
+
+        public decimal NormalExposure
+        {
+            get => _normalExposure;
+            set => RaiseAndSetIfChanged(ref _normalExposure, Math.Round(value, 2));
         }
 
 
@@ -158,6 +175,9 @@ namespace UVtools.Core.Operations
             {
                 _selectedItem = Presets[0];
             }
+
+            if (_bottomExposure <= 0) _bottomExposure = (decimal)SlicerFile.BottomExposureTime;
+            if (_normalExposure <= 0) _normalExposure = (decimal)SlicerFile.ExposureTime;
         }
 
         #endregion
@@ -297,8 +317,14 @@ namespace UVtools.Core.Operations
 
             progress.Token.ThrowIfCancellationRequested();
 
-            SlicerFile.LayerHeight = (float)SelectedItem.LayerHeight;
-            SlicerFile.LayerManager.Layers = layers;
+            SlicerFile.SuppressRebuildPropertiesWork(() =>
+            {
+                SlicerFile.LayerHeight = (float)SelectedItem.LayerHeight;
+                SlicerFile.BottomExposureTime = (float)_bottomExposure;
+                SlicerFile.ExposureTime = (float)_normalExposure;
+                SlicerFile.LayerManager.Layers = layers;
+            }, true);
+            
 
             return !progress.Token.IsCancellationRequested;
         }

@@ -183,12 +183,19 @@ namespace UVtools.WPF
             private Color _volumeBoundsOutlineColor = new(255, 0, 255, 0);
             private byte _volumeBoundsOutlineThickness = 3;
             private bool _volumeBoundsOutline = true;
-            private Color _layerBoundsOutlineColor = new(255, 0, 255, 0);
+            private Color _layerBoundsOutlineColor = new(255, 45, 150, 45);
             private byte _layerBoundsOutlineThickness = 3;
             private bool _layerBoundsOutline = false;
+            private Color _contourBoundsOutlineColor = new(255, 50, 100, 50);
+            private byte _contourBoundsOutlineThickness = 2;
+            private bool _contourBoundsOutline = false;
             private Color _hollowOutlineColor = new(255, 255, 165, 0);
             private sbyte _hollowOutlineLineThickness = 5;
             private bool _hollowOutline = false;
+            private Color _centroidOutlineColor = new(255, 255, 0, 0);
+            private byte _centroidOutlineDiameter = 8;
+            private bool _centroidOutlineHollow = false;
+            private bool _centroidOutline = true;
             private Color _maskOutlineColor = new(255, 42, 157, 244);
             private sbyte _maskOutlineLineThickness = 10;
             private bool _maskClearRoiAfterSet = true;
@@ -298,6 +305,35 @@ namespace UVtools.WPF
                 set => RaiseAndSetIfChanged(ref _layerBoundsOutline, value);
             }
 
+            public Color ContourBoundsOutlineColor
+            {
+                get => _contourBoundsOutlineColor;
+                set
+                {
+                    RaiseAndSetIfChanged(ref _contourBoundsOutlineColor, value);
+                    RaisePropertyChanged(nameof(ContourBoundsOutlineBrush));
+                }
+            }
+
+            [XmlIgnore]
+            public SolidColorBrush ContourBoundsOutlineBrush
+            {
+                get => new(_contourBoundsOutlineColor.ToAvalonia());
+                set => ContourBoundsOutlineColor = new Color(value);
+            }
+
+            public byte ContourBoundsOutlineThickness
+            {
+                get => _contourBoundsOutlineThickness;
+                set => RaiseAndSetIfChanged(ref _contourBoundsOutlineThickness, value);
+            }
+
+            public bool ContourBoundsOutline
+            {
+                get => _contourBoundsOutline;
+                set => RaiseAndSetIfChanged(ref _contourBoundsOutline, value);
+            }
+
             public Color HollowOutlineColor
             {
                 get => _hollowOutlineColor;
@@ -325,6 +361,41 @@ namespace UVtools.WPF
             {
                 get => _hollowOutline;
                 set => RaiseAndSetIfChanged(ref _hollowOutline, value);
+            }
+
+            public Color CentroidOutlineColor
+            {
+                get => _centroidOutlineColor;
+                set
+                {
+                    RaiseAndSetIfChanged(ref _centroidOutlineColor, value);
+                    RaisePropertyChanged(nameof(CentroidOutlineBrush));
+                }
+            }
+
+            [XmlIgnore]
+            public SolidColorBrush CentroidOutlineBrush
+            {
+                get => new(_centroidOutlineColor.ToAvalonia());
+                set => CentroidOutlineColor = new Color(value);
+            }
+
+            public byte CentroidOutlineDiameter
+            {
+                get => _centroidOutlineDiameter;
+                set => RaiseAndSetIfChanged(ref _centroidOutlineDiameter, value);
+            }
+
+            public bool CentroidOutlineHollow
+            {
+                get => _centroidOutlineHollow;
+                set => RaiseAndSetIfChanged(ref _centroidOutlineHollow, value);
+            }
+
+            public bool CentroidOutline
+            {
+                get => _centroidOutline;
+                set => RaiseAndSetIfChanged(ref _centroidOutline, value);
             }
 
             public Color MaskOutlineColor

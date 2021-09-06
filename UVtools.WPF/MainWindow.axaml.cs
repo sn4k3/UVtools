@@ -712,7 +712,7 @@ namespace UVtools.WPF
             {
                 ProcessFile(Path.Combine(App.ApplicationPath, About.DemoFile));
             }
-
+            
             DispatcherTimer.Run(() =>
             {
                 UpdateTitle();
@@ -967,6 +967,7 @@ namespace UVtools.WPF
 
             _actualLayer = 0;
             LayerCache.Clear();
+            _resinTrapDetectionStartLayer = 0;
 
             VisibleThumbnailIndex = 0;
 
@@ -1389,7 +1390,11 @@ namespace UVtools.WPF
                 _showLayerImageRotated = mat.Height > mat.Width;
             }
 
-            if (SlicerFile.DisplayMirror != Enumerations.FlipDirection.None)
+            if (SlicerFile.DisplayMirror == Enumerations.FlipDirection.None)
+            {
+                _showLayerImageFlipped = false;
+            }
+            else
             {
                 _showLayerImageFlipped = true;
                 _showLayerImageFlippedHorizontally = SlicerFile.DisplayMirror is Enumerations.FlipDirection.Horizontally or Enumerations.FlipDirection.Both;

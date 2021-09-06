@@ -45,7 +45,7 @@ namespace UVtools.Core.Operations
             "The double exposure method clones the selected layer range and print the same layer twice with different exposure times and strategies.\n" +
             "Can be used to eliminate the elephant foot effect or to harden a layer in two steps.\n" +
             "After this, do not apply any modification which reconstruct the z positions of the layers.\n" +
-            "Note: To eliminate the elephant foot effect, the use of wall dimming method recommended.";
+            "Note: To eliminate the elephant foot effect, the use of wall dimming method is recommended.";
 
         public override string ConfirmationText =>
             $"double exposure model layers {LayerIndexStart} through {LayerIndexEnd}";
