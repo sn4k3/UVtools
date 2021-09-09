@@ -331,6 +331,60 @@
 
             </Border>
 
+            <Border
+                Classes="GroupBox"
+                Margin="5">
+
+              <StackPanel Orientation="Vertical">
+                  <Grid RowDefinitions="Auto" ColumnDefinitions="*,Auto"  Background="LightBlue">
+                    <TextBlock Grid.Row="0" Grid.Column="0"
+                               VerticalAlignment="Center"
+                               Padding="10" FontWeight="Bold" Text="Send to - Custom locations"/>
+
+                    <StackPanel Grid.Row="0" Grid.Column="1"  
+                                HorizontalAlignment="Right" Orientation="Horizontal" Spacing="2">
+                        <Button ToolTip.Tip="Add location" VerticalAlignment="Center"
+                                Command="{Binding SendToAddCustomLocation}">
+                            <Image Source="/Assets/Icons/plus-16x16.png"/>
+                        </Button>
+
+                        <Button ToolTip.Tip="Remove selected locations" VerticalAlignment="Center"
+                                IsEnabled="{Binding #SendToCustomLocationsGrid.SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                Command="{Binding SendToRemoveCustomLocations}">
+                            <Image Source="/Assets/Icons/trash-16x16.png"/>
+                        </Button>
+                    </StackPanel>
+
+                  </Grid>
+
+                  <StackPanel Margin="10" Orientation="Vertical" Spacing="10">
+                    <DataGrid
+                        Name="SendToCustomLocationsGrid"
+                        CanUserReorderColumns="True"
+                        CanUserResizeColumns="True"
+                        CanUserSortColumns="True"
+                        GridLinesVisibility="Horizontal"
+                        IsReadOnly="False"
+                        SelectionMode="Extended"
+                        ClipboardCopyMode="IncludeHeader"
+                        Items="{Binding Settings.General.SendToCustomLocations}">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn  Header="Path"
+                                                 Binding="{Binding Path}"
+                                                 IsReadOnly="True"
+                                                 Width="*" />
+                            <DataGridTextColumn Header="Alias name"
+                                                Binding="{Binding Name}"
+                                                IsReadOnly="False"
+                                                Width="200" />
+                        </DataGrid.Columns>
+
+                    </DataGrid>
+                </StackPanel>
+
+              </StackPanel>
+            </Border>
+
           </StackPanel>
         </ScrollViewer>
 

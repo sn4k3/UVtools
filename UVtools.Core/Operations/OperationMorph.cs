@@ -11,7 +11,9 @@ using System.ComponentModel;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
 using Emgu.CV;
+using Emgu.CV.Cuda;
 using Emgu.CV.CvEnum;
+using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Objects;
 
@@ -177,10 +179,22 @@ namespace UVtools.Core.Operations
             {
                 iterations = (int) arguments[0];
             }
-
+            
             using var original = mat.Clone();
             var target = GetRoiOrDefault(mat);
-            CvInvoke.MorphologyEx(target, target, (MorphOp) MorphOperation, Kernel.Matrix, Kernel.Anchor, iterations, BorderType.Reflect101, default);
+
+            if (CoreSettings.CanUseCuda)
+            {
+                var gpuMat = target.ToGpuMat();
+                using var morph = new CudaMorphologyFilter((MorphOp)MorphOperation, target.Depth, target.NumberOfChannels, Kernel.Matrix, Kernel.Anchor, iterations);
+                morph.Apply(gpuMat, gpuMat);
+                gpuMat.Download(target);
+            }
+            else
+            {
+                CvInvoke.MorphologyEx(target, target, (MorphOp) MorphOperation, Kernel.Matrix, Kernel.Anchor, iterations, BorderType.Reflect101, default);
+            }
+
             ApplyMask(original, target);
             return true;
         }

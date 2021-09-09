@@ -184,9 +184,7 @@ namespace UVtools.Core.Operations
                 {
                     if (layerIndex + 1 >= otherFile.LayerCount) return;
                     CvInvoke.Subtract(fullMatRoi, bodyMatRoi, supportsMat); // Supports
-                    using var contours = new VectorOfVectorOfPoint();
-                    using var hierarchyMat = new Mat();
-                    CvInvoke.FindContours(supportsMat, contours, hierarchyMat, RetrType.List, ChainApproxMethod.ChainApproxSimple);
+                    using var contours = supportsMat.FindContours(RetrType.List);
                     if (contours.Size <= 0) return;
                     using var nextLayerMat = otherFile[layerIndex + 1].LayerMat;
                     using var nextLayerMatRoi = GetRoiOrDefault(nextLayerMat);

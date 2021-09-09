@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Util;
+using UVtools.Core.EmguCV;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 
@@ -101,17 +102,14 @@ namespace UVtools.Core.Operations
         public override bool Execute(Mat mat, params object[] arguments)
         {
             using Mat filteredMat = new();
-            using VectorOfVectorOfPoint contours = new();
-            using Mat hierarchy = new();
             using var original = mat.Clone();
             var target = GetRoiOrDefault(mat);
 
             CvInvoke.Threshold(target, filteredMat, 127, 255, ThresholdType.Binary); // Clean AA
-            CvInvoke.FindContours(filteredMat, contours, hierarchy, RetrType.Ccomp, ChainApproxMethod.ChainApproxSimple);
-            var arr = hierarchy.GetData();
+            using var contours = filteredMat.FindContours(out var hierarchy, RetrType.Ccomp);
             for (int i = 0; i < contours.Size; i++)
             {
-                if ((int)arr.GetValue(0, i, 2) != -1 || (int)arr.GetValue(0, i, 3) == -1) continue;
+                if (hierarchy[i, EmguContour.HierarchyFirstChild] != -1 || hierarchy[i, EmguContour.HierarchyParent] == -1) continue;
                 if (MinimumArea >= 1)
                 {
                     var rectangle = CvInvoke.BoundingRectangle(contours[i]);

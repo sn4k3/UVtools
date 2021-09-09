@@ -7,13 +7,16 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Text;
 using System.Threading.Tasks;
 using UVtools.Core.Scripting;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
+using Emgu.CV.Util;
 using UVtools.Core;
+using UVtools.Core.Extensions;
 
 namespace UVtools.ScriptSample
 {
@@ -87,9 +90,11 @@ namespace UVtools.ScriptSample
         public bool ScriptExecute()
         {
             var anchor = new Point(-1, -1); // Kernel anchor, -1, -1 = center
-            var kernel = CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(3, 3), anchor); // Rectangle 3x3 kernel
+            var kernel =
+                CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(3, 3), anchor); // Rectangle 3x3 kernel
             Progress.Reset("Inset layers", Operation.LayerRangeCount); // Sets the progress name and number of items to process
 
+            
             // Loop user selected layers in parallel, this will put each core of CPU working here on parallel
             Parallel.For(Operation.LayerIndexStart, Operation.LayerIndexEnd+1, CoreSettings.ParallelOptions, layerIndex =>
             {

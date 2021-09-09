@@ -10,6 +10,7 @@ using System;
 using System.Drawing;
 using System.Runtime.InteropServices;
 using Emgu.CV;
+using Emgu.CV.Cuda;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
 using Emgu.CV.Util;
@@ -124,6 +125,18 @@ namespace UVtools.Core.Extensions
             }
 
             return layers;
+        }
+
+        /// <summary>
+        /// Create a new <see cref="GpuMat"/> from <see cref="Mat"/>
+        /// </summary>
+        /// <param name="mat"></param>
+        /// <returns></returns>
+        public static GpuMat ToGpuMat(this Mat mat)
+        {
+            var gpuMat = new GpuMat(mat.Rows, mat.Cols, mat.Depth, mat.NumberOfChannels);
+            gpuMat.Upload(mat);
+            return gpuMat;
         }
         #endregion
 
@@ -871,6 +884,71 @@ namespace UVtools.Core.Extensions
         #endregion
 
         #region Utilities methods
+
+        /// <summary>
+        /// Retrieves contours from the binary image as a contour tree. The pointer firstContour is filled by the function. It is provided as a convenient way to obtain the hierarchy value as int[,].
+        /// The function modifies the source image content
+        /// </summary>
+        /// <param name="mat">The source 8-bit single channel image. Non-zero pixels are treated as 1s, zero pixels remain 0s - that is image treated as binary. To get such a binary image from grayscale, one may use cvThreshold, cvAdaptiveThreshold or cvCanny. The function modifies the source image content</param>
+        /// <param name="mode">Retrieval mode</param>
+        /// <param name="method">Approximation method (for all the modes, except CV_RETR_RUNS, which uses built-in approximation). </param>
+        /// <param name="offset">Offset, by which every contour point is shifted. This is useful if the contours are extracted from the image ROI and then they should be analyzed in the whole image context</param>
+        /// <returns>The contour hierarchy</returns>
+        public static VectorOfVectorOfPoint FindContours(this Mat mat, RetrType mode = RetrType.List, ChainApproxMethod method = ChainApproxMethod.ChainApproxSimple, Point offset = default)
+        {
+            using var hierarchy = new Mat();
+            var contours = new VectorOfVectorOfPoint();
+            CvInvoke.FindContours(mat, contours, hierarchy, mode, method, offset);
+            return contours;
+        }
+
+        /*
+        /// <summary>
+        /// Retrieves contours from the binary image as a contour tree. The pointer firstContour is filled by the function. It is provided as a convenient way to obtain the hierarchy value as int[,].
+        /// The function modifies the source image content
+        /// </summary>
+        /// <param name="mat">The source 8-bit single channel image. Non-zero pixels are treated as 1s, zero pixels remain 0s - that is image treated as binary. To get such a binary image from grayscale, one may use cvThreshold, cvAdaptiveThreshold or cvCanny. The function modifies the source image content</param>
+        /// <param name="contours">Detected contours. Each contour is stored as a vector of points.</param>
+        /// <param name="mode">Retrieval mode</param>
+        /// <param name="method">Approximation method (for all the modes, except CV_RETR_RUNS, which uses built-in approximation). </param>
+        /// <param name="offset">Offset, by which every contour point is shifted. This is useful if the contours are extracted from the image ROI and then they should be analyzed in the whole image context</param>
+        /// <returns>The contour hierarchy</returns>
+        public static int[,] FindContours(this Mat mat, IOutputArray contours, RetrType mode, ChainApproxMethod method = ChainApproxMethod.ChainApproxSimple, Point offset = default)
+        {
+            using var hierarchy = new Mat();
+            CvInvoke.FindContours(mat, contours, hierarchy, mode, method, offset);
+            var numArray = new int[hierarchy.Cols, 4];
+            var gcHandle = GCHandle.Alloc(numArray, GCHandleType.Pinned);
+            using (var mat2 = new Mat(hierarchy.Rows, hierarchy.Cols, hierarchy.Depth, 4, gcHandle.AddrOfPinnedObject(), hierarchy.Step))
+                hierarchy.CopyTo(mat2);
+            gcHandle.Free();
+            return numArray;
+        }*/
+
+        /// <summary>
+        /// Retrieves contours from the binary image as a contour tree. The pointer firstContour is filled by the function. It is provided as a convenient way to obtain the hierarchy value as int[,].
+        /// The function modifies the source image content
+        /// </summary>
+        /// <param name="mat">The source 8-bit single channel image. Non-zero pixels are treated as 1s, zero pixels remain 0s - that is image treated as binary. To get such a binary image from grayscale, one may use cvThreshold, cvAdaptiveThreshold or cvCanny. The function modifies the source image content</param>
+        /// <param name="hierarchy">The contour hierarchy</param>
+        /// <param name="mode">Retrieval mode</param>
+        /// <param name="method">Approximation method (for all the modes, except CV_RETR_RUNS, which uses built-in approximation). </param>
+        /// <param name="offset">Offset, by which every contour point is shifted. This is useful if the contours are extracted from the image ROI and then they should be analyzed in the whole image context</param>
+        /// <returns>Detected contours. Each contour is stored as a vector of points.</returns>
+        public static VectorOfVectorOfPoint FindContours(this Mat mat, out int[,] hierarchy, RetrType mode, ChainApproxMethod method = ChainApproxMethod.ChainApproxSimple, Point offset = default)
+        {
+            var contours = new VectorOfVectorOfPoint();
+            using var hierarchyMat = new Mat();
+            CvInvoke.FindContours(mat, contours, hierarchyMat, mode, method, offset);
+            hierarchy = new int[hierarchyMat.Cols, 4];
+            var gcHandle = GCHandle.Alloc(hierarchy, GCHandleType.Pinned);
+            using (var mat2 = new Mat(hierarchyMat.Rows, hierarchyMat.Cols, hierarchyMat.Depth, 4, gcHandle.AddrOfPinnedObject(), hierarchyMat.Step))
+                hierarchyMat.CopyTo(mat2);
+            gcHandle.Free();
+            return contours;
+        }
+
+
         /// <summary>
         /// Determine the area (i.e. total number of pixels in the image),
         /// initialize the output skeletonized image, and construct the

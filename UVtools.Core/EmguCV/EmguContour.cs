@@ -21,8 +21,17 @@ namespace UVtools.Core.EmguCV
     /// <summary>
     /// A contour cache for OpenCV
     /// </summary>
-    public class Contour : IReadOnlyCollection<Point>, IDisposable
+    public class EmguContour : IReadOnlyCollection<Point>, IDisposable
     {
+        #region Constants
+
+        public const byte HierarchyNextSameLevel = 0;
+        public const byte HierarchyPreviousSameLevel = 1;
+        public const byte HierarchyFirstChild = 2;
+        public const byte HierarchyParent = 3;
+
+        #endregion
+
         #region Members
 
         private VectorOfPoint _points;
@@ -116,10 +125,10 @@ namespace UVtools.Core.EmguCV
         #endregion
 
         #region Constructor
-        public Contour(VectorOfPoint points) : this(points.ToArray())
+        public EmguContour(VectorOfPoint points) : this(points.ToArray())
         { }
 
-        public Contour(Point[] points)
+        public EmguContour(Point[] points)
         {
             Points = new VectorOfPoint(points);
         }

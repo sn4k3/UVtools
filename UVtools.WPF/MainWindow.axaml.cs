@@ -26,6 +26,7 @@ using UVtools.Core;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Managers;
+using UVtools.Core.Network;
 using UVtools.Core.Operations;
 using UVtools.WPF.Controls;
 using UVtools.WPF.Controls.Calibrators;
@@ -631,6 +632,22 @@ namespace UVtools.WPF
                     menuItems.Add(menuItem);
                 }
 
+                if (Settings.General.SendToCustomLocations is not null)
+                {
+                    foreach (var location in Settings.General.SendToCustomLocations)
+                    {
+                        var menuItem = new MenuItem
+                        {
+                            Header = location.ToString(),
+                            Tag = location,
+                        };
+                        menuItem.Click += FileSendToItemClick;
+
+                        menuItems.Add(menuItem);
+                    }
+                }
+
+
                 MenuFileSendToItems = menuItems.ToArray();
                 _menuFileSendTo.IsVisible = _menuFileSendTo.IsEnabled = menuItems.Count > 0;
             };
@@ -639,11 +656,27 @@ namespace UVtools.WPF
         private async void FileSendToItemClick(object? sender, RoutedEventArgs e)
         {
             if (sender is not MenuItem menuItem) return;
-            if (menuItem.Tag is not DriveInfo drive) return;
-            
-            if (!drive.IsReady)
+
+
+            string path;
+            if (menuItem.Tag is DriveInfo drive)
             {
-                await this.MessageBoxError($"The device {drive.Name} is not ready/available at this time.", "Unable to copy the file");
+
+                if (!drive.IsReady)
+                {
+                    await this.MessageBoxError($"The device {drive.Name} is not ready/available at this time.",
+                        "Unable to copy the file");
+                    return;
+                }
+
+                path = drive.Name;
+            }
+            else if (menuItem.Tag is MappedDevice device)
+            {
+                path = device.Path;
+            }
+            else
+            {
                 return;
             }
 
@@ -664,18 +697,16 @@ namespace UVtools.WPF
                 }
             }
 
-            ShowProgressWindow($"Copying: {SlicerFile.Filename} to {drive.Name}", false);
+            ShowProgressWindow($"Copying: {SlicerFile.Filename} to {path}", false);
             Progress.ItemName = "Copying";
             await Task.Factory.StartNew(() =>
             {
                 try
                 {
-                    File.Copy(SlicerFile.FileFullPath, $"{drive.Name}{SlicerFile.Filename}", true);
+                    File.Copy(SlicerFile.FileFullPath, $"{Path.Combine(path, SlicerFile.Filename)}", true);
                     return true;
                 }
-                catch (OperationCanceledException)
-                {
-                }
+                catch (OperationCanceledException) { }
                 catch (Exception exception)
                 {
                     Dispatcher.UIThread.InvokeAsync(async () =>
@@ -1961,10 +1992,10 @@ namespace UVtools.WPF
             else ProcessFile(file);
         }
 
-#endregion
+    #endregion
 
-        
+            
 
-#endregion
-        }
+    #endregion
+    }
 }

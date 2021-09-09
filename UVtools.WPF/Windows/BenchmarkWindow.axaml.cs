@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
-using System.Reflection;
-using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Markup.Xaml;
@@ -33,7 +30,7 @@ namespace UVtools.WPF.Windows
         public const string RunsAbbreviation = "TDPS";
         public const string StressCPUTestName = "Stress CPU (Run until stop)";
 
-        private readonly RNGCryptoServiceProvider _randomProvider = new();
+        //private readonly RNGCryptoServiceProvider _randomProvider = new();
 
         private CancellationTokenSource _tokenSource;
         private CancellationToken _token => _tokenSource.Token;
@@ -133,16 +130,16 @@ namespace UVtools.WPF.Windows
             }
             else
             {
-                BenchmarkTest benchmark = Tests[_testSelectedIndex];
+                var benchmark = Tests[_testSelectedIndex];
                 SingleThreadTDPS = $"Running {SingleThreadTests} tests";
                 MultiThreadTDPS = $"Running {MultiThreadTests} tests";
                 
                 _tokenSource = new CancellationTokenSource();
-                MethodInfo theMethod = GetType().GetMethod(benchmark.FunctionName);
+                var theMethod = GetType().GetMethod(benchmark.FunctionName);
 
                 Task.Factory.StartNew(() =>
                 {
-                    Stopwatch sw = Stopwatch.StartNew();
+                    var sw = Stopwatch.StartNew();
                     try
                     {
                         if (benchmark.Name.Equals(StressCPUTestName))
@@ -422,47 +419,45 @@ namespace UVtools.WPF.Windows
 
         public Mat RandomMat(int width, int height)
         {
-            var bytes = new byte[width * height];
-            _randomProvider.GetBytes(bytes);
             Mat mat = new(new Size(width, height), DepthType.Cv8U, 1);
-            mat.SetBytes(bytes);
+            CvInvoke.Randu(mat, EmguExtensions.BlackColor, EmguExtensions.WhiteColor);
             return mat;
         }
 
         public void Test4KRandomCBBDLPEncode()
         {
-            using (var mat = RandomMat(3840, 2160))
-                EncodeCbddlpImage(mat);
+            using var mat = RandomMat(3840, 2160);
+            EncodeCbddlpImage(mat);
         }
 
         public void Test8KRandomCBBDLPEncode()
         {
-            using (var mat = RandomMat(7680, 4320))
-                EncodeCbddlpImage(mat);
+            using var mat = RandomMat(7680, 4320);
+            EncodeCbddlpImage(mat);
         }
 
         public void Test4KRandomCBTEncode()
         {
-            using (var mat = RandomMat(3840, 2160))
-                EncodeCbtImage(mat);
+            using var mat = RandomMat(3840, 2160);
+            EncodeCbtImage(mat);
         }
 
         public void Test8KRandomCBTEncode()
         {
-            using (var mat = RandomMat(7680, 4320))
-                EncodeCbtImage(mat);
+            using var mat = RandomMat(7680, 4320);
+            EncodeCbtImage(mat);
         }
 
         public void Test4KRandomPW0Encode()
         {
-            using (var mat = RandomMat(3840, 2160))
-                EncodePW0Image(mat);
+            using var mat = RandomMat(3840, 2160);
+            EncodePW0Image(mat);
         }
 
         public void Test8KRandomPW0Encode()
         {
-            using (var mat = RandomMat(7680, 4320))
-                EncodePW0Image(mat);
+            using var mat = RandomMat(7680, 4320);
+            EncodePW0Image(mat);
         }
 
         #endregion

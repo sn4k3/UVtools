@@ -13,6 +13,8 @@ using System.Threading.Tasks;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Util;
+using UVtools.Core.EmguCV;
+using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 
 namespace UVtools.Core.Operations
@@ -206,11 +208,7 @@ namespace UVtools.Core.Operations
                     
                     CvInvoke.Threshold(matRoi, matRoi, 127, byte.MaxValue, ThresholdType.Binary); // Remove AA
 
-                    using var contours = new VectorOfVectorOfPoint();
-                    using var hierarchy = new Mat();
-                    CvInvoke.FindContours(matRoi, contours, hierarchy, RetrType.Tree, ChainApproxMethod.ChainApproxSimple);
-
-                    var hierarchyJagged = hierarchy.GetData();
+                    using var contours = matRoi.FindContours(out var hierarchy, RetrType.Tree);
                     
                     using TextWriter tw = new StreamWriter(fileFullPath);
                     tw.WriteLine("<!--");
@@ -254,8 +252,7 @@ namespace UVtools.Core.Operations
                     bool firstTime = true;
                     for (int i = 0; i < contours.Size; i++)
                     {
-                        if (contours[i].Size == 0) continue;
-                        if ((int)hierarchyJagged.GetValue(0, i, 3) == -1) // Top hierarchy
+                        if (hierarchy[i, EmguContour.HierarchyParent] == -1) // Top hierarchy
                         {
                             if (firstTime)
                             {

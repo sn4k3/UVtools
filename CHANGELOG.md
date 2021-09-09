@@ -1,5 +1,12 @@
 # Changelog
 
+## /09/2021 - v2.21.2
+
+- (Add) Allow to choose custom locations for "Send to"
+- (Improvement) Better random generation for benchmark
+- (Fix) Outline - Hollow areas: Not outlining the second closing contour for contours with child
+- (Fix) Pixel editor - Eraser: It was selecting the whole blob even if have inner parents
+
 ## 06/09/2021 - v2.21.1
 
 - **(Add) Layer outline:**

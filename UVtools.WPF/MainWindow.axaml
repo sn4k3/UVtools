@@ -796,7 +796,7 @@
                           VerticalAlignment="Center"
                           Margin="10,0,0,0"
                           ToolTip.Tip="Starting layer index for resin trap detection which will also be considered a drain layer.
-&#x0a;Use this setting to bypass complicated rafts by selected the model first real layer."
+&#x0a;Use this setting to bypass complicated rafts by select the model first real layer."
                           Minimum="0"
                           Maximum="{Binding SlicerFile.LastLayerIndex}"
                           Increment="1"

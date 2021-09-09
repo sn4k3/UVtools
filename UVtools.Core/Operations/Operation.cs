@@ -11,6 +11,7 @@ using System.Drawing;
 using System.IO;
 using System.Xml.Serialization;
 using Emgu.CV;
+using Emgu.CV.Cuda;
 using Emgu.CV.Util;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;

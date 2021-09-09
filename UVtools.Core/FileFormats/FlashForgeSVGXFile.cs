@@ -21,6 +21,7 @@ using BinarySerialization;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Util;
+using UVtools.Core.EmguCV;
 using UVtools.Core.Extensions;
 using UVtools.Core.Operations;
 
@@ -514,10 +515,7 @@ namespace UVtools.Core.FileFormats
                 using var mat = this[layerIndex].LayerMat;
                 //CvInvoke.Threshold(mat, mat, 127, 255, ThresholdType.Binary); // no AA
 
-                using var contours = new VectorOfVectorOfPoint();
-                using var hierarchy = new Mat();
-                CvInvoke.FindContours(mat, contours, hierarchy, RetrType.Tree, ChainApproxMethod.ChainApproxSimple);
-                var hierarchyJagged = hierarchy.GetData();
+                using var contours = mat.FindContours(out var hierarchy, RetrType.Tree);
 
                 float minx = SVGDocument.PrintParameters.PrintRange.MinX;
                 float miny = SVGDocument.PrintParameters.PrintRange.MinY;
@@ -527,8 +525,7 @@ namespace UVtools.Core.FileFormats
                 var path = new StringBuilder();
                 for (int i = 0; i < contours.Size; i++)
                 {
-                    if (contours[i].Size == 0) continue;
-                    if ((int)hierarchyJagged.GetValue(0, i, 3) == -1) // Top hierarchy
+                    if (hierarchy[i, EmguContour.HierarchyParent] == -1) // Top hierarchy
                     {
                         if (path.Length > 0)
                         {

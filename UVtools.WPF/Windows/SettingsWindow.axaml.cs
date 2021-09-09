@@ -10,6 +10,7 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
 using MessageBox.Avalonia.Enums;
 using UVtools.Core.FileFormats;
+using UVtools.Core.Network;
 using UVtools.WPF.Controls;
 using UVtools.WPF.Extensions;
 using Color = UVtools.WPF.Structures.Color;
@@ -20,6 +21,7 @@ namespace UVtools.WPF.Windows
     {
         private double _scrollViewerMaxHeight;
         private int _selectedTabIndex;
+        private DataGrid _sendToCustomLocationsGrid;
 
         public int MaxProcessorCount => Environment.ProcessorCount;
 
@@ -35,7 +37,7 @@ namespace UVtools.WPF.Windows
             {
                 if(!RaiseAndSetIfChanged(ref _selectedTabIndex, value)) return;
 
-                ScrollViewer scrollViewer = this.FindControl<ScrollViewer>($"ScrollViewer{_selectedTabIndex}");
+                var scrollViewer = this.FindControl<ScrollViewer>($"ScrollViewer{_selectedTabIndex}");
                 SizeToContent = SizeToContent.Manual;
                 Height = MaxHeight;
 
@@ -79,6 +81,8 @@ namespace UVtools.WPF.Windows
 
             DataContext = this;
             InitializeComponent();
+
+            _sendToCustomLocationsGrid = this.FindControl<DataGrid>("SendToCustomLocationsGrid");
         }
 
         private void InitializeComponent()
@@ -97,7 +101,7 @@ namespace UVtools.WPF.Windows
             );
 
             SelectedTabIndex = 1;
-            SelectedTabIndex = 0;
+            DispatcherTimer.RunOnce(() => SelectedTabIndex = 0, TimeSpan.FromMilliseconds(1));
         }
 
         protected override void OnClosed(EventArgs e)
@@ -167,6 +171,34 @@ namespace UVtools.WPF.Windows
                 return;
             }
             
+        }
+
+        public async void SendToAddCustomLocation()
+        {
+            var openFolder = new OpenFolderDialog();
+            var result = await openFolder.ShowAsync(this);
+
+            if (string.IsNullOrWhiteSpace(result)) return;
+            var directory = new MappedDevice(result);
+            if (Settings.General.SendToCustomLocations.Contains(directory))
+            {
+                await this.MessageBoxError("The selected location already exists on the list:\n" +
+                                     $"{result}");
+                return;
+            }
+
+            Settings.General.SendToCustomLocations.Add(directory);
+        }
+
+        public async void SendToRemoveCustomLocations()
+        {
+            if (_sendToCustomLocationsGrid.SelectedItems.Count == 0) return;
+
+            if (await this.MessageBoxQuestion(
+                    $"Are you sure you want to remove the {_sendToCustomLocationsGrid.SelectedItems.Count} selected entries?") !=
+                ButtonResult.Yes) return;
+
+            Settings.General.SendToCustomLocations.RemoveRange(_sendToCustomLocationsGrid.SelectedItems.Cast<MappedDevice>());
         }
 
         public async void SelectColor(string property)

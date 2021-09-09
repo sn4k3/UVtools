@@ -1010,16 +1010,30 @@ namespace UVtools.WPF
 
                 if (_showLayerOutlineContourBoundary)
                 {
+                    int lastParent = -1;
+                    uint reps = 0;
                     for (int i = 0; i < LayerCache.LayerContours.Size; i++)
                     {
-                        if ((int)LayerCache.LayerHierarchyJagged.GetValue(0, i, 2) == -1 &&
-                            (int)LayerCache.LayerHierarchyJagged.GetValue(0, i, 3) != -1) continue;
+                        var parent = LayerCache.LayerContourHierarchy[i, EmguContour.HierarchyParent];
+                        if (parent == -1)
+                        {
+                            reps = 0;
+                        }
+                        if(parent == -1 || parent != lastParent) reps++;
+                        if (reps % 2 == 0)
+                        {
+                            lastParent = parent;
+                            continue;
+                        }
+
                         CvInvoke.Rectangle(LayerCache.ImageBgr, CvInvoke.BoundingRectangle(LayerCache.LayerContours[i]),
                             new MCvScalar(
                                 Settings.LayerPreview.ContourBoundsOutlineColor.B,
                                 Settings.LayerPreview.ContourBoundsOutlineColor.G, 
                                 Settings.LayerPreview.ContourBoundsOutlineColor.R),
                             Settings.LayerPreview.ContourBoundsOutlineThickness);
+
+                        lastParent = parent;
                     }
                 }
 
@@ -1028,37 +1042,46 @@ namespace UVtools.WPF
                     //CvInvoke.Threshold(ActualLayerImage, grayscale, 1, 255, ThresholdType.Binary);
 
                     /*
-                         * hierarchy[i][0]: the index of the next contour of the same level
-                         * hierarchy[i][1]: the index of the previous contour of the same level
-                         * hierarchy[i][2]: the index of the first child
-                         * hierarchy[i][3]: the index of the parent
-                         */
+                     * hierarchy[i][0]: the index of the next contour of the same level
+                     * hierarchy[i][1]: the index of the previous contour of the same level
+                     * hierarchy[i][2]: the index of the first child
+                     * hierarchy[i][3]: the index of the parent
+                     */
+                    using var vec = new VectorOfVectorOfPoint();
                     for (int i = 0; i < LayerCache.LayerContours.Size; i++)
                     {
-                        if ((int)LayerCache.LayerHierarchyJagged.GetValue(0, i, 2) == -1 &&
-                            (int)LayerCache.LayerHierarchyJagged.GetValue(0, i, 3) != -1)
-                        {
-                            //var r = CvInvoke.BoundingRectangle(contours[i]);
-                            //CvInvoke.Rectangle(ActualLayerImageBgr, r, new MCvScalar(0, 0, 255), 2);
-                            CvInvoke.DrawContours(LayerCache.ImageBgr, LayerCache.LayerContours, i,
-                                new MCvScalar(Settings.LayerPreview.HollowOutlineColor.B,
-                                    Settings.LayerPreview.HollowOutlineColor.G,
-                                    Settings.LayerPreview.HollowOutlineColor.R),
-                                Settings.LayerPreview.HollowOutlineLineThickness);
-                        }
+                        if (LayerCache.LayerContourHierarchy[i, EmguContour.HierarchyParent] < 0) continue;
+                        // We need a parent, meaning we are alternating from white and black after this point
+                        vec.Push(LayerCache.LayerContours[i]);
+                    }
+
+                    if (vec.Size > 0)
+                    {
+                        CvInvoke.DrawContours(LayerCache.ImageBgr, vec, -1,
+                            new MCvScalar(Settings.LayerPreview.HollowOutlineColor.B,
+                                Settings.LayerPreview.HollowOutlineColor.G,
+                                Settings.LayerPreview.HollowOutlineColor.R),
+                            Settings.LayerPreview.HollowOutlineLineThickness);
                     }
                 }
 
                 if (_showLayerOutlineCentroids)
                 {
+                    int lastParent = -1;
+                    uint reps = 0;
                     for (int i = 0; i < LayerCache.LayerContours.Size; i++)
                     {
-                        if ((int)LayerCache.LayerHierarchyJagged.GetValue(0, i, 2) == -1 &&
-                            (int)LayerCache.LayerHierarchyJagged.GetValue(0, i, 3) != -1)
+                        var parent = LayerCache.LayerContourHierarchy[i, EmguContour.HierarchyParent];
+                        if (parent == -1)
+                        {
+                            reps = 0;
+                        }
+                        if (parent == -1 || parent != lastParent) reps++;
+                        if (reps % 2 == 0)
                         {
                             if (Settings.LayerPreview.CentroidOutlineHollow)
                             {
-                                CvInvoke.Circle(LayerCache.ImageBgr, Contour.GetCentroid(LayerCache.LayerContours[i]),
+                                CvInvoke.Circle(LayerCache.ImageBgr, EmguContour.GetCentroid(LayerCache.LayerContours[i]),
                                     Settings.LayerPreview.CentroidOutlineDiameter / 2, new MCvScalar(
                                         Settings.LayerPreview.HollowOutlineColor.B,
                                         Settings.LayerPreview.HollowOutlineColor.G,
@@ -1067,13 +1090,16 @@ namespace UVtools.WPF
                         }
                         else
                         {
-                            CvInvoke.Circle(LayerCache.ImageBgr, Contour.GetCentroid(LayerCache.LayerContours[i]),
-                                Settings.LayerPreview.CentroidOutlineDiameter / 2, new MCvScalar(
-                                    Settings.LayerPreview.CentroidOutlineColor.B,
-                                    Settings.LayerPreview.CentroidOutlineColor.G,
-                                    Settings.LayerPreview.CentroidOutlineColor.R), -1, LineType.AntiAlias);
+                            CvInvoke.Circle(LayerCache.ImageBgr, EmguContour.GetCentroid(LayerCache.LayerContours[i]),
+                            Settings.LayerPreview.CentroidOutlineDiameter / 2, new MCvScalar(
+                                Settings.LayerPreview.CentroidOutlineColor.B,
+                                Settings.LayerPreview.CentroidOutlineColor.G,
+                                Settings.LayerPreview.CentroidOutlineColor.R), -1, LineType.AntiAlias);
                         }
-                            
+
+                        
+
+                        lastParent = parent;
                     }
                 }
 
@@ -1153,20 +1179,24 @@ namespace UVtools.WPF
                         var color = DrawingsGrid.SelectedItems.Contains(operation)
                             ? Settings.PixelEditor.RemovePixelHighlightColor
                             : Settings.PixelEditor.RemovePixelColor;
-                        for (int i = 0; i < LayerCache.LayerContours.Size; i++)
-                        {
-                            /*if (pixelBrightness < 10 && (int) LayerCache.LayerHierarchyJagged.GetValue(0, i, 2) != -1 ||
-                                (int) LayerCache.LayerHierarchyJagged.GetValue(0, i, 3) == -1)
-                            {
-                                continue;
-                            }*/
 
-                            if (CvInvoke.PointPolygonTest(LayerCache.LayerContours[i], operation.Location, false) >= 0)
+                        using var vec = new VectorOfVectorOfPoint();
+                        for (int i = LayerCache.LayerContours.Size-1; i >= 0; i--)
+                        {
+                            if (CvInvoke.PointPolygonTest(LayerCache.LayerContours[i], operation.Location, false) < 0) continue;
+                            vec.Push(LayerCache.LayerContours[i]);
+                            for (int n = i+1; n < LayerCache.LayerContours.Size; n++)
                             {
-                                CvInvoke.DrawContours(LayerCache.ImageBgr, LayerCache.LayerContours, i,
-                                    new MCvScalar(color.B, color.G, color.R), -1);
-                                break;
+                                if(LayerCache.LayerContourHierarchy[n, EmguContour.HierarchyParent] != i) continue;
+                                vec.Push(LayerCache.LayerContours[n]);
                             }
+                            break;
+                        }
+
+                        if (vec.Size > 0)
+                        {
+                            CvInvoke.DrawContours(LayerCache.ImageBgr, vec, -1,
+                                new MCvScalar(color.B, color.G, color.R), -1);
                         }
                     }
                     else if (operation.OperationType == PixelOperation.PixelOperationType.Supports)
@@ -1872,21 +1902,13 @@ namespace UVtools.WPF
         public bool SelectObjectRoi(Point location)
         {
             var point = GetTransposedPoint(location);
-            var brightness = LayerCache.Image.GetByte(point);
 
-            for (int i = 0; i < LayerCache.LayerContours.Size; i++)
+            for (int i = LayerCache.LayerContours.Size-1; i >= 0; i--)
             {
-                if (brightness == 0 &&
-                    ((int) LayerCache.LayerHierarchyJagged.GetValue(0, i, 2) != -1 ||
-                    (int) LayerCache.LayerHierarchyJagged.GetValue(0, i, 3) == -1)) continue;
-
-                if (CvInvoke.PointPolygonTest(LayerCache.LayerContours[i], point, false) >= 0)
-                {
-                    var rectangle = CvInvoke.BoundingRectangle(LayerCache.LayerContours[i]);
-                    ROI = rectangle;
-
-                    return true;
-                }
+                if (CvInvoke.PointPolygonTest(LayerCache.LayerContours[i], point, false) < 0) continue;
+                var rectangle = CvInvoke.BoundingRectangle(LayerCache.LayerContours[i]);
+                ROI = rectangle;
+                return true;
             }
 
             return false;
@@ -1921,21 +1943,13 @@ namespace UVtools.WPF
         public bool SelectObjectMask(Point location)
         {
             var point = GetTransposedPoint(location);
-            var brightness = LayerCache.Image.GetByte(point);
-
-            for (int i = 0; i < LayerCache.LayerContours.Size; i++)
+            for (int i = LayerCache.LayerContours.Size-1; i >= 0; i--)
             {
-                if (brightness == 0 &&
-                    ((int)LayerCache.LayerHierarchyJagged.GetValue(0, i, 2) != -1 ||
-                     (int)LayerCache.LayerHierarchyJagged.GetValue(0, i, 3) == -1)) continue;
-                if (CvInvoke.PointPolygonTest(LayerCache.LayerContours[i], point, false) >= 0)
-                {
-                    //var rectangle = GetTransposedRectangle(CvInvoke.BoundingRectangle(LayerCache.LayerContours[i]));
-                    //ROI = rectangle;
-                    AddMaskPoints(LayerCache.LayerContours[i].ToArray());
-
-                    return true;
-                }
+                if (CvInvoke.PointPolygonTest(LayerCache.LayerContours[i], point, false) < 0) continue;
+                //var rectangle = GetTransposedRectangle(CvInvoke.BoundingRectangle(LayerCache.LayerContours[i]));
+                //ROI = rectangle;
+                AddMaskPoints(LayerCache.LayerContours[i].ToArray());
+                return true;
             }
 
             return false;

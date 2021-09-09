@@ -21,9 +21,8 @@ namespace UVtools.WPF
     public sealed class LayerCache
     {
         private Layer _layer;
-        private Array _layerHierarchyJagged;
         private VectorOfVectorOfPoint _layerContours;
-        private Mat _layerHierarchy;
+        private int[,] _layerContourHierarchy;
         //private SKCanvas _canvas;
         private WriteableBitmap _bitmap;
 
@@ -85,35 +84,21 @@ namespace UVtools.WPF
             private set => _layerContours = value;
         }
 
-        public Mat LayerHierarchy
+        public int[,] LayerContourHierarchy
         {
             get
             {
-                if (_layerHierarchy is null) CacheContours();
-                return _layerHierarchy;
+                if (_layerContourHierarchy is null) CacheContours();
+                return _layerContourHierarchy;
             }
-            private set => _layerHierarchy = value;
-        }
-
-        public Array LayerHierarchyJagged
-        {
-            get
-            {
-                if(_layerHierarchyJagged is null) CacheContours();
-                return _layerHierarchyJagged;
-            }
-            private set => _layerHierarchyJagged = value;
+            private set => _layerContourHierarchy = value;
         }
 
         public void CacheContours(bool refresh = false)
         {
             if(refresh) Clear();
             if (_layerContours is not null) return;
-            _layerContours = new VectorOfVectorOfPoint();
-            _layerHierarchy = new Mat();
-            CvInvoke.FindContours(Image, _layerContours, _layerHierarchy, RetrType.Ccomp,
-                ChainApproxMethod.ChainApproxSimple);
-            _layerHierarchyJagged = _layerHierarchy.GetData();
+            _layerContours = Image.FindContours(out _layerContourHierarchy, RetrType.Tree);
         }
         
 
@@ -127,9 +112,7 @@ namespace UVtools.WPF
             ImageBgr?.Dispose();
             _layerContours?.Dispose();
             _layerContours = null;
-            _layerHierarchy?.Dispose();
-            _layerHierarchy = null;
-            _layerHierarchyJagged = null;
+            _layerContourHierarchy = null;
         }
     }
 }

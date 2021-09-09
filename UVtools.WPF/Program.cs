@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Runtime.ExceptionServices;
 using Avalonia;
+using Emgu.CV;
 using UVtools.WPF.Extensions;
 
 namespace UVtools.WPF

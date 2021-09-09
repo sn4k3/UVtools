@@ -7,8 +7,16 @@
  */
 
 using System;
+using System.Collections.Generic;
+using System.Drawing;
 using UVtools.Core.Scripting;
 using System.IO;
+using System.Threading.Tasks;
+using Emgu.CV;
+using Emgu.CV.CvEnum;
+using Emgu.CV.Util;
+using UVtools.Core;
+using UVtools.Core.EmguCV;
 using UVtools.Core.Extensions;
 
 namespace UVtools.ScriptSample
@@ -44,22 +52,55 @@ namespace UVtools.ScriptSample
         /// <returns>True if executes successfully to the end, otherwise false.</returns>
         public bool ScriptExecute()
         {
-            string path = @"c:\temp\UVToolAreaExp_" + DateTime.Now.ToString("yyyyMMddHHmmss") + ".txt";
-
-            Progress.Reset("Changing layers", Operation.LayerRangeCount); // Sets the progress name and number of items to process
-
-            using var sw = File.CreateText(path);
-            for (uint layerIndex = Operation.LayerIndexStart; layerIndex <= Operation.LayerIndexEnd; layerIndex++)
+            var dict = new Dictionary<uint, List<(Point[] points, Rectangle rect)>>();
+            Parallel.For(Operation.LayerIndexStart, Operation.LayerIndexEnd + 1, CoreSettings.ParallelOptions, layerIndex =>
             {
-                Progress.Token.ThrowIfCancellationRequested(); // Abort operation, user requested cancellation
-                var layer = SlicerFile[layerIndex]; // Unpack and expose layer variable for easier use
+                using var mat = SlicerFile[layerIndex].LayerMat;
+                using var contours = mat.FindContours(out var hierarchy, RetrType.Tree);
 
-                sw.WriteLine($@"{layerIndex}\{layer.NonZeroPixelCount}\{layer.BoundingRectangleMillimeters.Area()}");
-                //sw.WriteLine(SlicerFile.GetName);
-             
-                Progress++; // Increment progress bar by 1
+                var hollowContours = new List<(Point[] points, Rectangle rect)>();
+                dict.Add((uint)layerIndex, hollowContours);
+
+                for (int i = 0; i < contours.Size; i++)
+                {
+                    // Only hollow areas inside model
+                    if (hierarchy[i, EmguContour.HierarchyParent] == -1) continue;
+
+                    hollowContours.Add((contours[i].ToArray(), CvInvoke.BoundingRectangle(contours[i])));
+                }
+            });
+
+            foreach (var (layerIndex, contours) in dict)
+            {
+                if (!dict.TryGetValue(layerIndex + 1, out var nextContours)) continue; // No next layer with results
+
+                foreach (var tuple in contours)
+                {
+                    Mat thisContourMat = null;
+                    foreach (var nextTuple in nextContours)
+                    {
+                        if (!tuple.rect.IntersectsWith(nextTuple.rect)) continue;
+                        if (thisContourMat is null)
+                        {
+                            thisContourMat = EmguExtensions.InitMat(SlicerFile.Resolution);
+                            using var vec = new VectorOfPoint(tuple.points);
+                            CvInvoke.DrawContours(thisContourMat, vec, -1, EmguExtensions.WhiteColor, -1);
+                        }
+
+                        using var nextContourMat = thisContourMat.NewBlank();
+                        using var vecNext = new VectorOfPoint(nextTuple.points);
+                        CvInvoke.DrawContours(nextContourMat, vecNext, -1, EmguExtensions.WhiteColor, -1);
+
+                        CvInvoke.BitwiseAnd(thisContourMat, nextContourMat, nextContourMat);
+                        if (CvInvoke.CountNonZero(nextContourMat) == 0) continue; // Does not intersect!
+
+                        // Intersecting here!
+                    }
+
+                    thisContourMat?.Dispose();
+                }
             }
-            sw.Close();
+
 
             // return true if not cancelled by user
             return !Progress.Token.IsCancellationRequested;

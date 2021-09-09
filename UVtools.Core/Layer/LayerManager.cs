@@ -19,6 +19,7 @@ using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
 using Emgu.CV.Util;
 using MoreLinq.Extensions;
+using UVtools.Core.EmguCV;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Objects;
@@ -737,215 +738,6 @@ namespace UVtools.Core
             return MutateGetIterationVar(isFade, iterationsStart, iterationsEnd, iterationSteps, maxIteration, startLayerIndex, layerIndex);
         }
 
-        public unsafe List<LayerIssue> GetAllIssuesBeta(
-            IslandDetectionConfiguration islandConfig = null,
-            OverhangDetectionConfiguration overhangConfig = null,
-            ResinTrapDetectionConfiguration resinTrapConfig = null,
-            TouchingBoundDetectionConfiguration touchBoundConfig = null,
-            PrintHeightDetectionConfiguration printHeightConfig = null,
-            bool emptyLayersConfig = true,
-            List<LayerIssue> ignoredIssues = null,
-            OperationProgress progress = null)
-        {
-            islandConfig ??= new IslandDetectionConfiguration();
-            overhangConfig ??= new OverhangDetectionConfiguration();
-            resinTrapConfig ??= new ResinTrapDetectionConfiguration();
-            touchBoundConfig ??= new TouchingBoundDetectionConfiguration();
-            printHeightConfig ??= new PrintHeightDetectionConfiguration();
-            progress ??= new OperationProgress();
-
-            var result = new ConcurrentBag<LayerIssue>();
-            if (!islandConfig.Enabled && !overhangConfig.Enabled && !resinTrapConfig.Enabled && !touchBoundConfig.Enabled && !emptyLayersConfig) return result.ToList();
-
-            ConcurrentDictionary<uint, List<LayerHollowArea>> layerHollowAreas = new();
-            List<uint> actionLayers = new();
-            bool checkedEmptyLayers = false;
-            Mat emptyMat = new ();
-            Mat[] cachedLayers = new Mat[LayerCount];
-            const uint cacheCount = 300;
-
-            bool IsIgnored(LayerIssue issue) => ignoredIssues is not null && ignoredIssues.Count > 0 && ignoredIssues.Contains(issue);
-            bool AddIssue(LayerIssue issue)
-            {
-                if (IsIgnored(issue)) return false;
-                result.Add(issue);
-                return true;
-            }
-
-            Mat GetCachedMat(uint layerIndex)
-            {
-                if (cachedLayers[layerIndex] is not null) return cachedLayers[layerIndex];
-                Parallel.For(layerIndex, Math.Min(layerIndex + cacheCount, LayerCount), CoreSettings.ParallelOptions, i =>
-                {
-                    if (this[i].IsEmpty) return; // empty layers
-                    cachedLayers[i] = this[i].LayerMat;
-                });
-                return cachedLayers[layerIndex];
-            }
-
-
-            if (touchBoundConfig.Enabled || resinTrapConfig.Enabled ||
-                (islandConfig.Enabled && islandConfig.WhiteListLayers is null) ||
-                (overhangConfig.Enabled && overhangConfig.WhiteListLayers is null)
-            )
-            {
-                checkedEmptyLayers = true;
-                for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
-                {
-                    var layer = this[layerIndex];
-                    if (layer.IsEmpty)
-                    {
-                        cachedLayers[layerIndex] = emptyMat;
-                        if (emptyLayersConfig)
-                        {
-                            AddIssue(new LayerIssue(layer, LayerIssue.IssueType.EmptyLayer));
-                        }
-                        continue;
-                    }
-                    actionLayers.Add(layerIndex);
-                }
-            }
-
-            if (!checkedEmptyLayers && emptyLayersConfig)
-            {
-                checkedEmptyLayers = true;
-                for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
-                {
-                    var layer = this[layerIndex];
-                    if (layer.IsEmpty)
-                    {
-                        AddIssue(new LayerIssue(layer, LayerIssue.IssueType.EmptyLayer));
-                    }
-                }
-            }
-
-            for (var i = 0; i < actionLayers.Count; i++)
-            {
-                var rootLayerIndex = actionLayers[i];
-                GetCachedMat(rootLayerIndex);
-                progress.Token.ThrowIfCancellationRequested();
-                uint layerAdvance = (uint) Math.Min(i + cacheCount, actionLayers.Count);
-                Parallel.For(i, layerAdvance, CoreSettings.ParallelOptions, l =>
-                {
-                    var layerIndex = actionLayers[(int) l];
-                    var layer = this[layerIndex];
-                    if (layer.IsEmpty)
-                    {
-                        progress.LockAndIncrement();
-
-                        return; // Empty layer
-                    }
-
-                    var image = cachedLayers[layerIndex];
-
-                    int step = image.Step;
-                    var span = image.GetBytePointer();
-
-                    if (touchBoundConfig.Enabled)
-                    {
-                        // TouchingBounds Checker
-                        List<Point> pixels = new();
-                        bool touchTop = layer.BoundingRectangle.Top <= touchBoundConfig.MarginTop;
-                        bool touchBottom = layer.BoundingRectangle.Bottom >= image.Height - touchBoundConfig.MarginBottom;
-                        bool touchLeft = layer.BoundingRectangle.Left <= touchBoundConfig.MarginLeft;
-                        bool touchRight = layer.BoundingRectangle.Right >= image.Width - touchBoundConfig.MarginRight;
-                        if (touchTop || touchBottom)
-                        {
-                            for (int x = 0; x < image.Width; x++) // Check Top and Bottom bounds
-                            {
-                                if (touchTop)
-                                {
-                                    for (int y = 0; y < touchBoundConfig.MarginTop; y++) // Top
-                                    {
-                                        if (span[image.GetPixelPos(x, y)] >=
-                                            touchBoundConfig.MinimumPixelBrightness)
-                                        {
-                                            pixels.Add(new Point(x, y));
-                                        }
-                                    }
-                                }
-
-                                if (touchBottom)
-                                {
-                                    for (int y = image.Height - touchBoundConfig.MarginBottom;
-                                        y < image.Height;
-                                        y++) // Bottom
-                                    {
-                                        if (span[image.GetPixelPos(x, y)] >=
-                                            touchBoundConfig.MinimumPixelBrightness)
-                                        {
-                                            pixels.Add(new Point(x, y));
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                        if (touchLeft || touchRight)
-                        {
-                            for (int y = touchBoundConfig.MarginTop;
-                                y < image.Height - touchBoundConfig.MarginBottom;
-                                y++) // Check Left and Right bounds
-                            {
-                                if (touchLeft)
-                                {
-                                    for (int x = 0; x < touchBoundConfig.MarginLeft; x++) // Left
-                                    {
-                                        if (span[image.GetPixelPos(x, y)] >=
-                                            touchBoundConfig.MinimumPixelBrightness)
-                                        {
-                                            pixels.Add(new Point(x, y));
-                                        }
-                                    }
-                                }
-
-                                if (touchRight)
-                                {
-                                    for (int x = image.Width - touchBoundConfig.MarginRight; x < image.Width; x++) // Right
-                                    {
-                                        if (span[image.GetPixelPos(x, y)] >=
-                                            touchBoundConfig.MinimumPixelBrightness)
-                                        {
-                                            pixels.Add(new Point(x, y));
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                        if (pixels.Count > 0)
-                        {
-                            AddIssue(new LayerIssue(layer, LayerIssue.IssueType.TouchingBound,
-                                pixels.ToArray()));
-                        }
-                    }
-
-                    progress.LockAndIncrement();
-                });
-
-                for (; i < layerAdvance - 1; i++)
-                {
-                    cachedLayers[actionLayers[i]].Dispose();
-                    cachedLayers[actionLayers[i]] = null;
-                }
-
-
-                // Wait for jobs
-                    /*foreach (var task in taskList)
-                    {
-                        task.Wait();
-                    }
-
-                    if (layerIndex > 0)
-                    {
-                        cachedLayers[layerIndex - 1].Dispose();
-                        cachedLayers[layerIndex - 1] = null;
-                    }*/
-            }
-
-            return result.ToList();
-        }
-
         public List<LayerIssue> GetAllIssues(
             IslandDetectionConfiguration islandConfig = null,
             OverhangDetectionConfiguration overhangConfig = null, 
@@ -1362,16 +1154,13 @@ namespace UVtools.Core
 
                             var listHollowArea = new List<LayerHollowArea>();
 
-                            using VectorOfVectorOfPoint contours = new();
-                            using Mat hierarchy = new();
-                            CvInvoke.FindContours(resinTrapImage, contours, hierarchy, RetrType.Ccomp, ChainApproxMethod.ChainApproxSimple);
+                            using var contours = resinTrapImage.FindContours(out var hierarchy, RetrType.Tree);
 
-                            if(needDispose)
+                            if (needDispose)
                             {
                                 resinTrapImage.Dispose();
                             }
 
-                            var arr = hierarchy.GetData();
                             //
                             //hierarchy[i][0]: the index of the next contour of the same level
                             //hierarchy[i][1]: the index of the previous contour of the same level
@@ -1381,7 +1170,7 @@ namespace UVtools.Core
 
                             for (int i = 0; i < contours.Size; i++)
                             {
-                                if ((int)arr.GetValue(0, i, 2) != -1 || (int)arr.GetValue(0, i, 3) == -1)
+                                if (hierarchy[i, EmguContour.HierarchyFirstChild] != -1 || hierarchy[i, EmguContour.HierarchyParent] == -1)
                                     continue;
 
                                 var rect = CvInvoke.BoundingRectangle(contours[i]);
@@ -1464,8 +1253,7 @@ namespace UVtools.Core
                                     var span = image.GetDataSpan<byte>();
                                     using (var emguImage = image.NewBlank())
                                     {
-                                        using (var vec =
-                                            new VectorOfVectorOfPoint(new VectorOfPoint(checkArea.Contour)))
+                                        using (var vec = new VectorOfVectorOfPoint(new VectorOfPoint(checkArea.Contour)))
                                         {
                                             CvInvoke.DrawContours(emguImage, vec, -1, EmguExtensions.WhiteColor, -1);
                                         }
@@ -1641,9 +1429,7 @@ namespace UVtools.Core
             for (var i = 0; i < drawings.Count; i++)
             {
                 var operation = drawings[i];
-                VectorOfVectorOfPoint layerContours = null;
-                Mat layerHierarchy = null;
-
+                
                 if (operation.OperationType == PixelOperation.PixelOperationType.Drawing)
                 {
                     var operationDrawing = (PixelDrawing) operation;
@@ -1681,23 +1467,26 @@ namespace UVtools.Core
                 {
                     var mat = modifiedLayers.GetOrAdd(operation.LayerIndex, u => this[operation.LayerIndex].LayerMat);
 
-                    if (layerContours is null)
-                    {
-                        layerContours = new VectorOfVectorOfPoint();
-                        layerHierarchy = new Mat();
-
-                        CvInvoke.FindContours(mat, layerContours, layerHierarchy, RetrType.Ccomp,
-                            ChainApproxMethod.ChainApproxSimple);
-                    }
-
+                    using var layerContours  = mat.FindContours(out var hierarchy, RetrType.Tree);
+                    
                     if (mat.GetByte(operation.Location) >= 10)
                     {
-                        for (int contourIdx = 0; contourIdx < layerContours.Size; contourIdx++)
+                        using var vec = new VectorOfVectorOfPoint();
+                        for (int index = layerContours.Size - 1; index >= 0; index--)
                         {
-                            if (!(CvInvoke.PointPolygonTest(layerContours[contourIdx], operation.Location, false) >= 0))
-                                continue;
-                            CvInvoke.DrawContours(mat, layerContours, contourIdx, new MCvScalar(operation.PixelBrightness), -1);
+                            if (CvInvoke.PointPolygonTest(layerContours[index], operation.Location, false) < 0) continue;
+                            vec.Push(layerContours[index]);
+                            for (int n = index + 1; n < layerContours.Size; n++)
+                            {
+                                if (hierarchy[n, EmguContour.HierarchyParent] != index) continue;
+                                vec.Push(layerContours[n]);
+                            }
                             break;
+                        }
+
+                        if (vec.Size > 0)
+                        {
+                            CvInvoke.DrawContours(mat, vec, -1, new MCvScalar(operation.PixelBrightness), -1);
                         }
                     }
                 }
@@ -1773,10 +1562,7 @@ namespace UVtools.Core
                         drawnLayers++;
                     }
                 }
-
-                layerContours?.Dispose();
-                layerHierarchy?.Dispose();
-
+                
                 progress++;
             }
 

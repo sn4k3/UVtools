@@ -8,6 +8,7 @@
 
 using System;
 using System.Threading.Tasks;
+using Emgu.CV.Cuda;
 
 namespace UVtools.Core
 {
@@ -36,6 +37,16 @@ namespace UVtools.Core
         /// Gets the ParallelOptions with <see cref="MaxDegreeOfParallelism"/> set
         /// </summary>
         public static ParallelOptions ParallelOptions => new() {MaxDegreeOfParallelism = _maxDegreeOfParallelism};
+
+        /// <summary>
+        /// Gets or sets if operations run via cuda when possible
+        /// </summary>
+        public static bool EnableCuda { get; set; }
+
+        /// <summary>
+        /// Gets if we can use cuda on operations
+        /// </summary>
+        public static bool CanUseCuda => EnableCuda && CudaInvoke.HasCuda;
 
         #endregion
     }
