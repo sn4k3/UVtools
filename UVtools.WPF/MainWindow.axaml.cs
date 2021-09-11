@@ -782,6 +782,7 @@ namespace UVtools.WPF
                             while (!token.IsCancellationRequested)
                             {
                                 Progress.ProcessedItems = (uint)(stream.Position / 1000000);
+                                Thread.Sleep(200);
                             }
                         }, token.Token);
                     }
@@ -794,13 +795,13 @@ namespace UVtools.WPF
                     token.Cancel();
                     if (!response.IsSuccessStatusCode)
                     {
-                        await this.MessageBoxError(response.ToString(), "Upload to printer failed");
+                        await this.MessageBoxError(response.ToString(), "Send to printer");
                     }
                 }
                 catch (OperationCanceledException) { }
                 catch (Exception ex)
                 {
-                    await this.MessageBoxError(ex.Message, "Upload to printer failed");
+                    await this.MessageBoxError(ex.Message, "Send to printer");
                 }
                 
 
