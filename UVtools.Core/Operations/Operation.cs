@@ -9,6 +9,7 @@
 using System;
 using System.Drawing;
 using System.IO;
+using System.Threading.Tasks;
 using System.Xml.Serialization;
 using Emgu.CV;
 using Emgu.CV.Cuda;
@@ -505,9 +506,7 @@ namespace UVtools.Core.Operations
                 var msg = Validate();
                 if(!string.IsNullOrWhiteSpace(msg)) throw new InvalidOperationException($"{Title} can't execute due some errors:\n{msg}");
             }
-
             
-
             progress ??= new OperationProgress();
             progress.Reset(ProgressAction, LayerRangeCount);
             HaveExecuted = true;
@@ -518,10 +517,14 @@ namespace UVtools.Core.Operations
             return result;
         }
 
+        public async Task<bool> ExecuteAsync(OperationProgress progress = null) => await new Task<bool>(() => Execute(progress));
+
         public virtual bool Execute(Mat mat, params object[] arguments)
         {
             throw new NotImplementedException();
         }
+
+        public async Task<bool> ExecuteAsync(Mat mat, params object[] arguments) => await new Task<bool>(() => Execute(mat, arguments));
 
         /// <summary>
         /// Copy this operation base configuration to another operation.

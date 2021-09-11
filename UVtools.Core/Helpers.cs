@@ -10,7 +10,6 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.Reflection;
-using System.Security.Cryptography;
 using BinarySerialization;
 using Newtonsoft.Json;
 using UVtools.Core.Extensions;

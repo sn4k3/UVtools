@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
@@ -22,6 +21,7 @@ namespace UVtools.WPF.Windows
         private double _scrollViewerMaxHeight;
         private int _selectedTabIndex;
         private DataGrid _sendToCustomLocationsGrid;
+        private ComboBox _networkRemotePrinterComboBox;
 
         public int MaxProcessorCount => Environment.ProcessorCount;
 
@@ -83,6 +83,7 @@ namespace UVtools.WPF.Windows
             InitializeComponent();
 
             _sendToCustomLocationsGrid = this.FindControl<DataGrid>("SendToCustomLocationsGrid");
+            _networkRemotePrinterComboBox = this.FindControl<ComboBox>("NetworkRemotePrinterComboBox");
         }
 
         private void InitializeComponent()
@@ -148,7 +149,7 @@ namespace UVtools.WPF.Windows
 
         public async void GeneralOpenFolderField(string field)
         {
-            foreach (PropertyInfo propertyInfo in Settings.General.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
+            foreach (var propertyInfo in Settings.General.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
             {
                 if (propertyInfo.Name != field) continue;
                 OpenFolderDialog dialog = new();
@@ -164,7 +165,7 @@ namespace UVtools.WPF.Windows
         public void GeneralClearField(string field)
         {
             var properties = Settings.General.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
-            foreach (PropertyInfo propertyInfo in properties)
+            foreach (var propertyInfo in properties)
             {
                 if (propertyInfo.Name != field) continue;
                 propertyInfo.SetValue(Settings.General, null);
@@ -217,7 +218,41 @@ namespace UVtools.WPF.Windows
                     return;
                 }
             }
-            
+        }
+
+        public async void AddNetworkRemotePrinter()
+        {
+            var result = await this.MessageBoxQuestion("Are you sure you want to add a new remote printer", "Add new remote printer?");
+            if (result != ButtonResult.Yes) return;
+
+            var remotePrinter = new RemotePrinter
+            {
+                Name = "My new remote printer"
+            };
+
+            Settings.Network.RemotePrinters.Add(remotePrinter);
+            _networkRemotePrinterComboBox.SelectedItem = remotePrinter;
+        }
+
+        public async void RemoveSelectedNetworkRemotePrinter()
+        {
+            if (_networkRemotePrinterComboBox.SelectedItem is not RemotePrinter remotePrinter) return;
+            var result = await this.MessageBoxQuestion("Are you sure you want to remove the following remote printer?\n" +
+                                                       remotePrinter, "Remove remote printer?");
+            if (result != ButtonResult.Yes) return;
+            Settings.Network.RemotePrinters.Remove(remotePrinter);
+        }
+
+        public async void DuplicateSelectedNetworkRemotePrinter()
+        {
+            if (_networkRemotePrinterComboBox.SelectedItem is not RemotePrinter remotePrinter) return;
+            var result = await this.MessageBoxQuestion("Are you sure you want to duplicate the following remote printer?\n" +
+                                                       remotePrinter, "Duplicate remote printer?");
+            if (result != ButtonResult.Yes) return;
+            var clone = remotePrinter.Clone();
+            clone.Name += " Duplicated";
+            Settings.Network.RemotePrinters.Add(clone);
+            _networkRemotePrinterComboBox.SelectedItem = clone;
         }
 
         public async void OnClickResetAllDefaults()

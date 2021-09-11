@@ -29,7 +29,6 @@ using UVtools.Core;
 using UVtools.Core.EmguCV;
 using UVtools.Core.Extensions;
 using UVtools.Core.PixelEditor;
-using UVtools.WPF.Controls;
 using UVtools.WPF.Extensions;
 using UVtools.WPF.Structures;
 using Color = UVtools.WPF.Structures.Color;
@@ -642,6 +641,17 @@ namespace UVtools.WPF
             }
         }
 
+        public void SelectModelVolumeRoi()
+        {
+            ROI = SlicerFile.BoundingRectangle;
+        }
+
+        public void SelectLayerVolumeRoi()
+        {
+            ROI = LayerCache.Layer.BoundingRectangle;
+        }
+
+       
         public List<Point[]> MaskPoints => _maskPoints;
 
         /*private set
@@ -649,7 +659,7 @@ namespace UVtools.WPF
                 if(!RaiseAndSetIfChanged(ref _maskPoints, value)) return;
                 ShowLayer();
             }*/
-        public void AddMaskPoints(Point[] points)
+        public void AddMaskPoints(Point[] points, bool refreshLayer = true)
         {
             if (_maskPoints.RemoveAll(points1 => points1.SequenceEqual(points)) <= 0)
             {
@@ -658,7 +668,7 @@ namespace UVtools.WPF
 
             if(_maskPoints.Count > 0 && Settings.LayerPreview.MaskClearROIAfterSet) ClearROI();
 
-            ShowLayer();
+            if(refreshLayer) ShowLayer();
             RaisePropertyChanged(nameof(LayerROIStr));
         }
 
@@ -666,6 +676,27 @@ namespace UVtools.WPF
         {
             _maskPoints.Clear();
             _maskPoints.AddRange(points);
+            ShowLayer();
+            RaisePropertyChanged(nameof(LayerROIStr));
+        }
+
+        public void SelectLayerPositiveAreasMask()
+        {
+            AddMaskPoints(LayerCache.LayerContours.ToArrayOfArray());
+            if (_maskPoints.Count > 0 && Settings.LayerPreview.MaskClearROIAfterSet) ClearROI();
+        }
+
+        public void SelectLayerHollowAreasMask()
+        {
+            _maskPoints.Clear();
+            for (int i = 0; i < LayerCache.LayerContours.Size; i++)
+            {
+                if (LayerCache.LayerContourHierarchy[i, EmguContour.HierarchyParent] == -1) continue;
+                _maskPoints.Add(LayerCache.LayerContours[i].ToArray());
+            }
+
+            if (_maskPoints.Count > 0 && Settings.LayerPreview.MaskClearROIAfterSet) ClearROI();
+
             ShowLayer();
             RaisePropertyChanged(nameof(LayerROIStr));
         }
@@ -1050,7 +1081,7 @@ namespace UVtools.WPF
                     using var vec = new VectorOfVectorOfPoint();
                     for (int i = 0; i < LayerCache.LayerContours.Size; i++)
                     {
-                        if (LayerCache.LayerContourHierarchy[i, EmguContour.HierarchyParent] < 0) continue;
+                        if (LayerCache.LayerContourHierarchy[i, EmguContour.HierarchyParent] == -1) continue;
                         // We need a parent, meaning we are alternating from white and black after this point
                         vec.Push(LayerCache.LayerContours[i]);
                     }
@@ -1198,6 +1229,31 @@ namespace UVtools.WPF
                             CvInvoke.DrawContours(LayerCache.ImageBgr, vec, -1,
                                 new MCvScalar(color.B, color.G, color.R), -1);
                         }
+
+                        /*var hollowGroups = new List<VectorOfVectorOfPoint>();
+                        var processedContours = new bool[LayerCache.LayerContours.Size];
+                        for (int i = 0; i < LayerCache.LayerContours.Size; i++)
+                        {
+                            if(processedContours[i]) continue;
+                            processedContours[i] = true;
+                            if (LayerCache.LayerContourHierarchy[i, EmguContour.HierarchyParent] == -1) continue;
+                            hollowGroups.Add(new VectorOfVectorOfPoint(LayerCache.LayerContours[i]));
+                            for (int n = i + 1; n < LayerCache.LayerContours.Size; n++)
+                            {
+                                if (processedContours[n] || LayerCache.LayerContourHierarchy[n, EmguContour.HierarchyParent] != i) continue;
+                                processedContours[n] = true;
+                                hollowGroups[^1].Push(LayerCache.LayerContours[n]);
+                            }
+
+                        }
+
+                        foreach (var vec in hollowGroups)
+                        {
+                            CvInvoke.PutText(LayerCache.ImageBgr, vec.Size.ToString(), vec[0][0], FontFace.HersheyDuplex, 2, new MCvScalar(255, 0, 0), 2);
+                            CvInvoke.DrawContours(LayerCache.ImageBgr, vec, -1,
+                                new MCvScalar(color.B, color.G, color.R), -1);
+                            vec.Dispose();
+                        }*/
                     }
                     else if (operation.OperationType == PixelOperation.PixelOperationType.Supports)
                     {
@@ -1824,7 +1880,7 @@ namespace UVtools.WPF
 
                     if (e.Key == Key.B)
                     {
-                        ROI = SlicerFile.BoundingRectangle;
+                        SelectModelVolumeRoi();
                         return;
                     }
 
@@ -1948,7 +2004,16 @@ namespace UVtools.WPF
                 if (CvInvoke.PointPolygonTest(LayerCache.LayerContours[i], point, false) < 0) continue;
                 //var rectangle = GetTransposedRectangle(CvInvoke.BoundingRectangle(LayerCache.LayerContours[i]));
                 //ROI = rectangle;
-                AddMaskPoints(LayerCache.LayerContours[i].ToArray());
+                AddMaskPoints(LayerCache.LayerContours[i].ToArray(), false);
+                if ((_globalModifiers & KeyModifiers.Control) != 0)
+                {
+                    for (int n = i+1; n < LayerCache.LayerContours.Size; n++)
+                    {
+                        if(LayerCache.LayerContourHierarchy[n, EmguContour.HierarchyParent] != i) continue;
+                        AddMaskPoints(LayerCache.LayerContours[n].ToArray(), false);
+                    }
+                }
+                ShowLayer();
                 return true;
             }
 

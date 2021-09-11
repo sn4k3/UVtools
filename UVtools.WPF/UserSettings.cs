@@ -10,12 +10,11 @@ using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Xml.Serialization;
 using Avalonia.Media;
 using JetBrains.Annotations;
 using UVtools.Core;
+using UVtools.Core.Extensions;
 using UVtools.Core.Network;
 using UVtools.Core.Objects;
 using Color=UVtools.WPF.Structures.Color;
@@ -26,7 +25,7 @@ namespace UVtools.WPF
     public sealed class UserSettings : BindableBase
     {
         #region Constants
-        public const ushort SETTINGS_VERSION = 5;
+        public const ushort SETTINGS_VERSION = 6;
         #endregion
 
         #region Sub classes
@@ -179,11 +178,15 @@ namespace UVtools.WPF
 
             public GeneralUserSettings Clone()
             {
-                
-                var clone = MemberwiseClone() as GeneralUserSettings;
+                return this.CloneByXmlSerialization();
+                /*var clone = MemberwiseClone() as GeneralUserSettings;
                 _sendToCustomLocations ??= new();
-                clone.SendToCustomLocations = new RangeObservableCollection<MappedDevice>(_sendToCustomLocations.ToArray());
-                return clone;
+                clone.SendToCustomLocations = new RangeObservableCollection<MappedDevice>();
+                foreach (var location in _sendToCustomLocations)
+                {
+                    clone.SendToCustomLocations.Add(location.Clone());
+                }
+                return clone;*/
             }
         }
         #endregion
@@ -209,7 +212,7 @@ namespace UVtools.WPF
             private Color _centroidOutlineColor = new(255, 255, 0, 0);
             private byte _centroidOutlineDiameter = 8;
             private bool _centroidOutlineHollow = false;
-            private bool _centroidOutline = true;
+            private bool _centroidOutline = false;
             private Color _maskOutlineColor = new(255, 42, 157, 244);
             private sbyte _maskOutlineLineThickness = 10;
             private bool _maskClearRoiAfterSet = true;
@@ -1311,6 +1314,32 @@ namespace UVtools.WPF
 
             public bool LightOffDelayExtraTimeVisible => _lightOffDelayDelaySetMode
                 is Enumerations.LightOffDelaySetMode.UpdateWithExtraDelay;
+
+            public AutomationsUserSettings Clone()
+            {
+                return MemberwiseClone() as AutomationsUserSettings;
+            }
+        }
+
+        #endregion
+
+        #region Network
+
+        [Serializable]
+        public sealed class NetworkUserSettings : BindableBase
+        {
+            private RangeObservableCollection<RemotePrinter> _remotePrinters = new();
+
+            public RangeObservableCollection<RemotePrinter> RemotePrinters
+            {
+                get => _remotePrinters;
+                set => RaiseAndSetIfChanged(ref _remotePrinters, value);
+            }
+
+            public NetworkUserSettings Clone()
+            {
+                return this.CloneByXmlSerialization();
+            }
         }
 
         #endregion
@@ -1364,6 +1393,8 @@ namespace UVtools.WPF
         private LayerRepairUserSettings _layerRepair;
         private ToolsUserSettings _tools;
         private AutomationsUserSettings _automations;
+        private NetworkUserSettings _network;
+
         private ushort _settingsVersion = SETTINGS_VERSION;
         private string _appVersion;
         private uint _savesCount;
@@ -1414,6 +1445,12 @@ namespace UVtools.WPF
         {
             get => _automations ??= new AutomationsUserSettings();
             set => _automations = value;
+        }
+
+        public NetworkUserSettings Network
+        {
+            get => _network ??= new NetworkUserSettings();
+            set => _network = value;
         }
 
         /*
@@ -1521,6 +1558,40 @@ namespace UVtools.WPF
                 }
 
                 CoreSettings.MaxDegreeOfParallelism = _instance.General.MaxDegreeOfParallelism;
+
+                if (_instance.Network.RemotePrinters.Count == 0)
+                {
+                    _instance.Network.RemotePrinters.AddRange(
+                    new[]
+                    {
+                        new RemotePrinter("0.0.0.0", 8081, "Nova3D")
+                        {
+                            CompatibleExtensions = "cws",
+                            RequestUploadFile  = new (RemotePrinterRequest.RequestType.UploadFile,  RemotePrinterRequest.RequestMethod.POST, "file/upload/{0}"),
+                            RequestPrintFile   = new (RemotePrinterRequest.RequestType.PrintFile,   RemotePrinterRequest.RequestMethod.GET, "file/print/{0}"),
+                            RequestDeleteFile  = new (RemotePrinterRequest.RequestType.DeleteFile,  RemotePrinterRequest.RequestMethod.GET, "file/delete/{0}"),
+                            RequestPausePrint  = new (RemotePrinterRequest.RequestType.PausePrint,  RemotePrinterRequest.RequestMethod.GET, "job/toggle/{0}"),
+                            RequestResumePrint = new (RemotePrinterRequest.RequestType.ResumePrint, RemotePrinterRequest.RequestMethod.GET, "job/toggle/{0}"),
+                            RequestStopPrint   = new (RemotePrinterRequest.RequestType.StopPrint,   RemotePrinterRequest.RequestMethod.GET, "job/stop/{0}"),
+                            RequestGetFiles    = new (RemotePrinterRequest.RequestType.GetFiles,    RemotePrinterRequest.RequestMethod.GET, "file/list"),
+                            RequestPrintStatus = new (RemotePrinterRequest.RequestType.PrintStatus, RemotePrinterRequest.RequestMethod.GET, "job/list"),
+                            RequestPrinterInfo = new (RemotePrinterRequest.RequestType.PrinterInfo, RemotePrinterRequest.RequestMethod.GET, "setting/printerInfo"),
+                        },
+                        new RemotePrinter("0.0.0.0", 40454, "Creality Halot")
+                        {
+                            CompatibleExtensions = "cxdlp",
+                            RequestUploadFile  = new (RemotePrinterRequest.RequestType.UploadFile,  RemotePrinterRequest.RequestMethod.POST, "{0}"),
+                            //RequestPrintFile   = new (RemotePrinterRequest.RequestType.PrintFile,   RemotePrinterRequest.RequestMethod.GET, "file/print/{0}"),
+                            //RequestDeleteFile  = new (RemotePrinterRequest.RequestType.DeleteFile,  RemotePrinterRequest.RequestMethod.GET, "file/delete/{0}"),
+                            //RequestPausePrint  = new (RemotePrinterRequest.RequestType.PausePrint,  RemotePrinterRequest.RequestMethod.GET, "job/toggle/{0}"),
+                            //RequestResumePrint = new (RemotePrinterRequest.RequestType.ResumePrint, RemotePrinterRequest.RequestMethod.GET, "job/toggle/{0}"),
+                            //RequestStopPrint   = new (RemotePrinterRequest.RequestType.StopPrint,   RemotePrinterRequest.RequestMethod.GET, "job/stop/{0}"),
+                            //RequestGetFiles    = new (RemotePrinterRequest.RequestType.GetFiles,    RemotePrinterRequest.RequestMethod.GET, "file/list"),
+                            //RequestPrintStatus = new (RemotePrinterRequest.RequestType.PrintStatus, RemotePrinterRequest.RequestMethod.GET, "job/list"),
+                            //RequestPrinterInfo = new (RemotePrinterRequest.RequestType.PrinterInfo, RemotePrinterRequest.RequestMethod.GET, "setting/printerInfo"),
+                        }
+                    });
+                }
             }
             catch (Exception e)
             {
@@ -1563,7 +1634,8 @@ namespace UVtools.WPF
                 Instance.Issues,
                 Instance.PixelEditor,
                 Instance.LayerRepair,
-                Instance.Automations
+                Instance.Automations,
+                Instance.Network
             };
         #endregion
 
@@ -1571,13 +1643,17 @@ namespace UVtools.WPF
 
         public UserSettings Clone()
         {
-            var clone = MemberwiseClone() as UserSettings;
-            clone.General = clone.General.Clone();
-            clone.LayerPreview = clone.LayerPreview.Clone();
-            clone.Issues = clone.Issues.Clone();
-            clone.PixelEditor = clone.PixelEditor.Clone();
-            clone.LayerRepair = clone.LayerRepair.Clone();
-            return clone;
+            /*var clone = MemberwiseClone() as UserSettings;
+            clone.General = General.Clone();
+            clone.LayerPreview = LayerPreview.Clone();
+            clone.Issues = Issues.Clone();
+            clone.PixelEditor = PixelEditor.Clone();
+            clone.LayerRepair = LayerRepair.Clone();
+            clone.Automations = Automations.Clone();
+            clone.Network = Network.Clone();
+            return clone;*/
+
+            return this.CloneByXmlSerialization();
         }
 
         #endregion

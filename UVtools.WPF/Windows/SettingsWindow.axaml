@@ -369,6 +369,10 @@
                         ClipboardCopyMode="IncludeHeader"
                         Items="{Binding Settings.General.SendToCustomLocations}">
                         <DataGrid.Columns>
+                            <DataGridCheckBoxColumn  Header="Enabled"
+                                                    Binding="{Binding IsEnabled}"
+                                                    IsReadOnly="False"
+                                                    Width="Auto" />
                             <DataGridTextColumn  Header="Path"
                                                  Binding="{Binding Path}"
                                                  IsReadOnly="True"
@@ -377,6 +381,10 @@
                                                 Binding="{Binding Name}"
                                                 IsReadOnly="False"
                                                 Width="200" />
+                            <DataGridTextColumn Header="Extensions"
+                                                Binding="{Binding CompatibleExtensions}"
+                                                IsReadOnly="False"
+                                                Width="150" />
                         </DataGrid.Columns>
 
                     </DataGrid>
@@ -1768,6 +1776,147 @@
             </StackPanel>
             </ScrollViewer>
           </TabItem>
+
+
+      <TabItem Header="Network" VerticalContentAlignment="Center">
+        <ScrollViewer Name="ScrollViewer7">
+          <StackPanel Orientation="Vertical" Spacing="5">
+            <Border
+                Classes="GroupBox"
+              Margin="5">
+
+              <StackPanel Orientation="Vertical">
+                <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Remote printers"/>
+                <StackPanel Margin="10" Orientation="Vertical" Spacing="10">
+
+                    <Grid RowDefinitions="Auto" ColumnDefinitions="*,2,Auto">
+                        <ComboBox Grid.Column="0"
+                            Name="NetworkRemotePrinterComboBox"
+                            HorizontalAlignment="Stretch"
+                            Items="{Binding Settings.Network.RemotePrinters}"/>
+
+                        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="2">
+                            <Button
+                                VerticalAlignment="Stretch"
+                                Command="{Binding AddNetworkRemotePrinter}">
+                                <Image Source="/Assets/Icons/plus-16x16.png"/>
+                            </Button>
+                          <Button
+                              VerticalAlignment="Stretch"
+                                IsEnabled="{Binding #NetworkRemotePrinterComboBox.SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                Command="{Binding DuplicateSelectedNetworkRemotePrinter}">
+                                <Image Source="/Assets/Icons/copy-16x16.png"/>
+                            </Button>
+                          <Button
+                              VerticalAlignment="Stretch"
+                                IsEnabled="{Binding #NetworkRemotePrinterComboBox.SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                Command="{Binding RemoveSelectedNetworkRemotePrinter}">
+                                <Image Source="/Assets/Icons/trash-16x16.png"/>
+                            </Button>
+                        </StackPanel>
+
+                      </Grid>
+
+
+                    <Grid RowDefinitions="Auto,10,Auto,10,Auto,10,Auto"
+                        ColumnDefinitions="Auto,10,200,30,Auto,10,150"
+                        IsVisible="{Binding #NetworkRemotePrinterComboBox.SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}">
+
+                    <TextBlock Grid.Row="0" Grid.Column="0"
+                                 VerticalAlignment="Center"
+                                 Text="Status:"/>
+
+                    <ToggleSwitch Grid.Row="0" Grid.Column="2"
+                                    VerticalAlignment="Center"
+                                    OnContent="Enabled"
+                                    OffContent="Disabled"
+                                    IsChecked="{Binding #NetworkRemotePrinterComboBox.SelectedItem.IsEnabled}" />
+
+                      <TextBlock Grid.Row="2" Grid.Column="0"
+                                 VerticalAlignment="Center"
+                                 Text="Name:"/>
+
+                      <TextBox Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="5"
+                               HorizontalAlignment="Stretch"
+                               VerticalAlignment="Center"
+                               Text="{Binding #NetworkRemotePrinterComboBox.SelectedItem.Name}"/>
+                    
+                    <TextBlock Grid.Row="4" Grid.Column="0"
+                               VerticalAlignment="Center"
+                               Text="Host:"/>
+
+                      <TextBox Grid.Row="4" Grid.Column="2"
+                               HorizontalAlignment="Stretch"
+                               VerticalAlignment="Center"
+                               Text="{Binding #NetworkRemotePrinterComboBox.SelectedItem.Host}"/>
+
+                      <TextBlock Grid.Row="4" Grid.Column="4"
+                                 VerticalAlignment="Center"
+                                 ToolTip.Tip="Use 0 if not used"
+                                 Text="Port:"/>
+
+                      <NumericUpDown  Grid.Row="4" Grid.Column="6"
+                                      Minimum="0"
+                                      Maximum="65535"
+                                      Increment="1"
+                                      Value="{Binding #NetworkRemotePrinterComboBox.SelectedItem.Port}"/>
+
+                    <TextBlock Grid.Row="6" Grid.Column="0"
+                               VerticalAlignment="Center"
+                               ToolTip.Tip="Valid extensions for this device.
+&#x0a;Example: ctb;zip
+&#x0a;Empty to be compatible with every file format."
+                               Text="Extensions:"/>
+
+                    <TextBox Grid.Row="6" Grid.Column="2" Grid.ColumnSpan="5"
+                             HorizontalAlignment="Stretch"
+                             VerticalAlignment="Center"
+                             Text="{Binding #NetworkRemotePrinterComboBox.SelectedItem.CompatibleExtensions}"/>
+                  </Grid>
+
+                  <DataGrid
+                      Name="NetworkRemotePrintersGrid"
+                      CanUserReorderColumns="True"
+                      CanUserResizeColumns="True"
+                      CanUserSortColumns="True"
+                      GridLinesVisibility="Horizontal"
+                      IsReadOnly="False"
+                      SelectionMode="Extended"
+                      ClipboardCopyMode="IncludeHeader"
+                      Items="{Binding #NetworkRemotePrinterComboBox.SelectedItem.Requests}">
+                      <DataGrid.Columns>
+                          <DataGridTextColumn  Header="Type"
+                                               Binding="{Binding Type}"
+                                               IsReadOnly="True"
+                                               Width="Auto" />
+                          <DataGridTemplateColumn  Header="Method"
+                                               IsReadOnly="False"
+                                               Width="100">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <ComboBox 
+                                        HorizontalAlignment="Stretch"
+                                        Items="{Binding Method, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                                        SelectedItem="{Binding Method, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                          </DataGridTemplateColumn>
+                          <DataGridTextColumn Header="Request path"
+                                              Binding="{Binding Path}"
+                                              IsReadOnly="False"
+                                              Width="*" />
+                      </DataGrid.Columns>
+
+                  </DataGrid>
+
+                </StackPanel>
+
+              </StackPanel>
+            </Border>
+
+          </StackPanel>
+        </ScrollViewer>
+      </TabItem>
 
 
 

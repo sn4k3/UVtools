@@ -19,7 +19,10 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using UVtools.AvaloniaControls;
 using UVtools.Core;
@@ -632,14 +635,59 @@ namespace UVtools.WPF
                     menuItems.Add(menuItem);
                 }
 
-                if (Settings.General.SendToCustomLocations is not null)
+                if (Settings.General.SendToCustomLocations is not null && Settings.General.SendToCustomLocations.Count > 0)
                 {
                     foreach (var location in Settings.General.SendToCustomLocations)
                     {
+                        if(!location.IsEnabled) continue;
+
+                        if (!string.IsNullOrWhiteSpace(location.CompatibleExtensions))
+                        {
+                            var extensions = location.CompatibleExtensions.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+                            var found = false;
+                            foreach (var ext in extensions)
+                            {
+                                found = SlicerFile.FileFullPath.EndsWith($".{ext}");
+                                if (found) break;
+                            }
+                            if(!found) continue;
+                        }
+
                         var menuItem = new MenuItem
                         {
                             Header = location.ToString(),
                             Tag = location,
+                        };
+                        menuItem.Click += FileSendToItemClick;
+
+                        menuItems.Add(menuItem);
+                    }
+                }
+
+                if (Settings.Network.RemotePrinters is not null && Settings.Network.RemotePrinters.Count > 0)
+                {
+                    foreach (var remotePrinter in Settings.Network.RemotePrinters)
+                    {
+                        if(!remotePrinter.IsEnabled || !remotePrinter.IsValid) continue;
+
+                        if (!string.IsNullOrWhiteSpace(remotePrinter.CompatibleExtensions))
+                        {
+                            var extensions = remotePrinter.CompatibleExtensions.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+                            var found = false;
+                            foreach (var ext in extensions)
+                            {
+                                found = SlicerFile.FileFullPath.EndsWith($".{ext}");
+                                if (found) break;
+                            }
+                            if (!found) continue;
+                        }
+
+                        var menuItem = new MenuItem
+                        {
+                            Header = remotePrinter.ToString(),
+                            Tag = remotePrinter,
                         };
                         menuItem.Click += FileSendToItemClick;
 
@@ -675,6 +723,10 @@ namespace UVtools.WPF
             {
                 path = device.Path;
             }
+            else if (menuItem.Tag is RemotePrinter preRemotePrinter)
+            {
+                path = preRemotePrinter.HostUrl;
+            }
             else
             {
                 return;
@@ -699,22 +751,106 @@ namespace UVtools.WPF
 
             ShowProgressWindow($"Copying: {SlicerFile.Filename} to {path}", false);
             Progress.ItemName = "Copying";
-            await Task.Factory.StartNew(() =>
+
+
+            if (menuItem.Tag is RemotePrinter remotePrinter)
             {
-                try
+                var startPrint = (_globalModifiers & KeyModifiers.Shift) != 0 && remotePrinter.RequestPrintFile is not null && remotePrinter.RequestPrintFile.IsValid;
+                if (startPrint)
                 {
-                    File.Copy(SlicerFile.FileFullPath, $"{Path.Combine(path, SlicerFile.Filename)}", true);
-                    return true;
-                }
-                catch (OperationCanceledException) { }
-                catch (Exception exception)
-                {
-                    Dispatcher.UIThread.InvokeAsync(async () =>
-                        await this.MessageBoxError(exception.ToString(), "Unable to copy the file"));
+                    if (await this.MessageBoxQuestion(
+                        "If supported, you are about to send the file and start the print with it.\n" +
+                        "Keep in mind there is no guarantee that the file will start to print.\n" +
+                        "Are you sure you want to continue?\n\n" +
+                        "Yes: Send file and print it.\n" +
+                        "No: Cancel file sending and print.", "Send and print the file?") != ButtonResult.Yes) return;
                 }
 
-                return false;
-            });
+                HttpResponseMessage response = null;
+                try
+                {
+                    await using var stream = File.OpenRead(SlicerFile.FileFullPath);
+                    using var httpContent = new StreamContent(stream);
+
+
+                    Progress.ItemCount = (uint)(stream.Length / 1000000);
+                    using var token = new CancellationTokenSource();
+                    try
+                    {
+                        new Task(() =>
+                        {
+                            while (!token.IsCancellationRequested)
+                            {
+                                Progress.ProcessedItems = (uint)(stream.Position / 1000000);
+                            }
+                        }, token.Token);
+                    }
+                    catch (Exception)
+                    {
+                        // ignored
+                    }
+
+                    response = await remotePrinter.RequestUploadFile.SendRequest(remotePrinter, Progress, SlicerFile.Filename, httpContent);
+                    token.Cancel();
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        await this.MessageBoxError(response.ToString(), "Upload to printer failed");
+                    }
+                }
+                catch (OperationCanceledException) { }
+                catch (Exception ex)
+                {
+                    await this.MessageBoxError(ex.Message, "Upload to printer failed");
+                }
+                
+
+                if (
+                    response is not null && response.IsSuccessStatusCode && 
+                    startPrint)
+                {
+                    response.Dispose();
+                    Progress.Title = "Waiting 2 seconds...";
+                    await Task.Delay(2000);
+                    try
+                    {
+                        response = await remotePrinter.RequestPrintFile.SendRequest(remotePrinter, Progress, SlicerFile.Filename);
+                        if (!response.IsSuccessStatusCode)
+                        {
+                            await this.MessageBoxError(response.ToString(), "Unable to send the print command");
+                        }
+                        /*else
+                        {
+                            await this.MessageBoxInfo(response.ToString(), "Print send command report");
+                        }*/
+                    }
+                    catch (OperationCanceledException) { }
+                    catch (Exception ex)
+                    {
+                        await this.MessageBoxError(ex.Message, "Unable to send the print command");
+                    }
+                }
+            }
+            else
+            {
+                await Task.Factory.StartNew(() =>
+                {
+                    try
+                    {
+                        File.Copy(SlicerFile.FileFullPath, $"{Path.Combine(path, SlicerFile.Filename)}", true);
+                        return true;
+                    }
+                    catch (OperationCanceledException) { }
+                    catch (Exception exception)
+                    {
+                        Dispatcher.UIThread.InvokeAsync(async () =>
+                            await this.MessageBoxError(exception.ToString(), "Unable to copy the file"));
+                    }
+
+                    return false;
+                });
+            }
+
+            
 
             IsGUIEnabled = true;
         }
@@ -828,6 +964,7 @@ namespace UVtools.WPF
                                          "» Left-click + ALT drag to select specific objects ROI\n" +
                                          "» Right-click on a specific object to select it ROI\n" +
                                          "» Right-click + ALT on a specific object to select it as a Mask\n" +
+                                         "» Right-click + ALT + CTRL on a specific object to select all it enclosing areas as a Mask\n" +
                                          "Press Esc to clear the ROI & Masks";
                 }
 
@@ -1095,9 +1232,11 @@ namespace UVtools.WPF
             if (result == ButtonResult.Yes)
             {
                 IsGUIEnabled = false;
-                ShowProgressWindow($"Downloading: {VersionChecker.Filename}", false);
+                ShowProgressWindow($"Downloading: {VersionChecker.Filename}");
 
-                var task = await Task.Factory.StartNew( () =>
+                await VersionChecker.AutoUpgrade(Progress);
+
+                /*var task = await Task.Factory.StartNew( () =>
                 {
                     try
                     {
@@ -1115,7 +1254,7 @@ namespace UVtools.WPF
 
                     return false;
                 });
-
+                */
                 IsGUIEnabled = true;
                 
                 return;

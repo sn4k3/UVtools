@@ -1152,7 +1152,6 @@ namespace UVtools.Core
                                 resinTrapImage = image;
                             }
 
-                            var listHollowArea = new List<LayerHollowArea>();
 
                             using var contours = resinTrapImage.FindContours(out var hierarchy, RetrType.Tree);
 
@@ -1167,8 +1166,38 @@ namespace UVtools.Core
                             //hierarchy[i][2]: the index of the first child
                             //hierarchy[i][3]: the index of the parent
                             //
-
+                            var listHollowArea = new List<LayerHollowArea>();
+                            var hollowGroups = new List<VectorOfVectorOfPoint>();
+                            var processedContours = new bool[contours.Size];
                             for (int i = 0; i < contours.Size; i++)
+                            {
+                                if (processedContours[i]) continue;
+                                processedContours[i] = true;
+                                if (hierarchy[i, EmguContour.HierarchyParent] == -1) continue;
+                                hollowGroups.Add(new VectorOfVectorOfPoint(contours[i]));
+                                for (int n = i + 1; n < contours.Size; n++)
+                                {
+                                    if (processedContours[n] || hierarchy[n, EmguContour.HierarchyParent] != i) continue;
+                                    processedContours[n] = true;
+                                    hollowGroups[^1].Push(contours[n]);
+                                }
+                            }
+
+                            foreach (var group in hollowGroups)
+                            {
+                                if(CvInvoke.ContourArea(group[0]) < resinTrapConfig.RequiredAreaToProcessCheck) continue;
+                                var rect = CvInvoke.BoundingRectangle(group[0]);
+                                listHollowArea.Add(new LayerHollowArea(group.ToArrayOfArray(),
+                                    rect,
+                                    layer.Index <= resinTrapConfig.StartLayerIndex ||
+                                    layer.Index == LayerCount - 1 // First and Last layers, always drains
+                                        ? LayerHollowArea.AreaType.Drain
+                                        : LayerHollowArea.AreaType.Unknown));
+                            }
+
+                            if (listHollowArea.Count > 0) layerHollowAreas.TryAdd(layer.Index, listHollowArea);
+                            
+                            /*for (int i = 0; i < contours.Size; i++)
                             {
                                 if (hierarchy[i, EmguContour.HierarchyFirstChild] != -1 || hierarchy[i, EmguContour.HierarchyParent] == -1)
                                     continue;
@@ -1185,7 +1214,7 @@ namespace UVtools.Core
 
                                 if (listHollowArea.Count > 0)
                                     layerHollowAreas.TryAdd(layer.Index, listHollowArea);
-                            }
+                            }*/
                         }
                     }
 
@@ -1253,7 +1282,7 @@ namespace UVtools.Core
                                     var span = image.GetDataSpan<byte>();
                                     using (var emguImage = image.NewBlank())
                                     {
-                                        using (var vec = new VectorOfVectorOfPoint(new VectorOfPoint(checkArea.Contour)))
+                                        using (var vec = new VectorOfVectorOfPoint(checkArea.Contours))
                                         {
                                             CvInvoke.DrawContours(emguImage, vec, -1, EmguExtensions.WhiteColor, -1);
                                         }
@@ -1267,7 +1296,7 @@ namespace UVtools.Core
                                                     if (!checkArea.BoundingRectangle.IntersectsWith(
                                                         nextArea.BoundingRectangle)) continue;
                                                     intersectingAreas.Add(intersectingAreas.Count + 1, nextArea);
-                                                    using var vec = new VectorOfVectorOfPoint(new VectorOfPoint(nextArea.Contour));
+                                                    using var vec = new VectorOfVectorOfPoint(nextArea.Contours);
                                                     CvInvoke.DrawContours(intersectingAreasMat, vec, -1,
                                                         new MCvScalar(intersectingAreas.Count), -1);
                                                 }
@@ -1361,7 +1390,7 @@ namespace UVtools.Core
     
                                                         }*/
                                                     }
-                                                    else if (blackCount > Math.Min(checkArea.Contour.Length / 2,
+                                                    else if (blackCount > Math.Min(checkArea.Contours.Length / 2,
                                                         resinTrapConfig.RequiredBlackPixelsToDrain)
                                                     ) // Black pixel without next areas = Drain
                                                     {
@@ -1373,7 +1402,7 @@ namespace UVtools.Core
                                                 } // X loop
                                             } // Y loop
 
-                                            if (queue.Count == 0 && blackCount > Math.Min(checkArea.Contour.Length / 2,
+                                            if (queue.Count == 0 && blackCount > Math.Min(checkArea.Contours.Length / 2,
                                                 resinTrapConfig.RequiredBlackPixelsToDrain))
                                             {
                                                 trapGroup.CurrentAreaType = LayerHollowArea.AreaType.Drain;
@@ -1410,7 +1439,7 @@ namespace UVtools.Core
                         from area 
                         in list 
                         where area.Type == LayerHollowArea.AreaType.Trap 
-                        select new LayerIssue(this[layerIndex], LayerIssue.IssueType.ResinTrap, area.Contour, area.BoundingRectangle))
+                        select new LayerIssue(this[layerIndex], LayerIssue.IssueType.ResinTrap, area.Contours[0], area.BoundingRectangle))
                 {
                     AddIssue(issue);
                 }

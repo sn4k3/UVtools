@@ -2,10 +2,25 @@
 
 ## /09/2021 - v2.21.2
 
-- (Add) Allow to choose custom locations for "Send to"
+- **UI:**
+   - (Add) Context menu for ROI button at status bar with the following:
+      - Mask: Select layer positive areas
+      - Mask: Select layer hollow areas
+      - ROI: Select model volume
+      - ROI: Select layer volume
+      - Clear Mask
+      - Clear ROI
+   - (Add) Allow to choose custom locations for "Send to"
+   - (Add) Network remote printers: Send files remotely directly to printer
+   - (Add) Layer image shortcut: Right-click + ALT + CTRL on a specific object to select all it enclosing areas as a Mask
+   - (Fix) Outline - Hollow areas: Not outlining the second closing contour for contours with child
+   - (Fix) Pixel editor - Eraser: It was selecting the whole blob even if have inner parents
+   - (Fix) Setting window: When open it will change tabs quickly to fix the windows height/scroll problem
 - (Improvement) Better random generation for benchmark
-- (Fix) Outline - Hollow areas: Not outlining the second closing contour for contours with child
-- (Fix) Pixel editor - Eraser: It was selecting the whole blob even if have inner parents
+- (Improvement) Allow to cancel the new version download
+- (Improvement) Better version checker and file download methods
+- (Fix) Disable Centroids by default on settings
+- (Fix) Settings: Automations were not being cloned when required
 
 ## 06/09/2021 - v2.21.1
 

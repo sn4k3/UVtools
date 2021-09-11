@@ -391,7 +391,7 @@ namespace UVtools.Core
 
     #region LayerHollowArea
 
-    public class LayerHollowArea : IEnumerable<Point>
+    public class LayerHollowArea : IEnumerable<Point[]>
     {
         public enum AreaType : byte
         {
@@ -402,7 +402,7 @@ namespace UVtools.Core
         /// <summary>
         /// Gets area pixels
         /// </summary>
-        public Point[] Contour { get; }
+        public Point[][] Contours { get; }
 
         public Rectangle BoundingRectangle { get; }
 
@@ -411,25 +411,25 @@ namespace UVtools.Core
         public bool Processed { get; set; }
 
         #region Indexers
-        public Point this[uint index]
+        public Point[] this[uint index]
         {
-            get => index < Contour.Length ? Contour[index] : Point.Empty;
-            set => Contour[index] = value;
+            get => index < Contours.Length ? Contours[index] : null;
+            set => Contours[index] = value;
         }
 
-        public Point this[int index]
+        public Point[] this[int index]
         {
-            get => index < Contour.Length ? Contour[index] : Point.Empty;
-            set => Contour[index] = value;
+            get => index < Contours.Length ? Contours[index] : null;
+            set => Contours[index] = value;
         }
 
-        public Point this[uint x, uint y]
+        /*public Point[] this[uint x, uint y]
         {
             get
             {
-                for (uint i = 0; i < Contour.Length; i++)
+                for (uint i = 0; i < Contours.Length; i++)
                 {
-                    if (Contour[i].X == x && Contour[i].Y == y) return Contour[i];
+                    if (Contours[i].X == x && Contours[i].Y == y) return Contours[i];
                 }
                 return Point.Empty;
             }
@@ -437,13 +437,13 @@ namespace UVtools.Core
 
         public Point this[int x, int y] => this[(uint)x, (uint)y];
 
-        public Point this[Point point] => this[point.X, point.Y];
+        public Point this[Point point] => this[point.X, point.Y];*/
 
         #endregion
 
-        public IEnumerator<Point> GetEnumerator()
+        public IEnumerator<Point[]> GetEnumerator()
         {
-            return ((IEnumerable<Point>)Contour).GetEnumerator();
+            return ((IEnumerable<Point[]>)Contours).GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
@@ -455,9 +455,9 @@ namespace UVtools.Core
         {
         }
 
-        public LayerHollowArea(Point[] contour, Rectangle boundingRectangle, AreaType type = AreaType.Unknown)
+        public LayerHollowArea(Point[][] contours, Rectangle boundingRectangle, AreaType type = AreaType.Unknown)
         {
-            Contour = contour;
+            Contours = contours;
             BoundingRectangle = boundingRectangle;
             Type = type;
         }

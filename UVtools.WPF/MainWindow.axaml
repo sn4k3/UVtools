@@ -2114,8 +2114,7 @@
       
 
       <Canvas Grid.Row="1" Margin="20"
-              IsVisible="{Binding IsTooltipOverlayVisible}"
-              >
+              IsVisible="{Binding IsTooltipOverlayVisible}">
         <Border
           BorderThickness="1"
           BorderBrush="Black"
@@ -2161,7 +2160,31 @@
 &#x0a;Click: go to region
 &#x0a;ESC: Clear ROI &amp; Masks | ESC + Shift: Clear ROI"
           >
-            <StackPanel VerticalAlignment="Center" Orientation="Horizontal" Spacing="5">
+              <Button.ContextMenu>
+                  <ContextMenu Name="ROIContextMenu" PlacementMode="Top">
+                      <MenuItem
+                          Command="{Binding SelectLayerPositiveAreasMask}"
+                          Header="Mask: Select layer positive areas"/>
+                    <MenuItem
+                        Command="{Binding SelectLayerHollowAreasMask}"
+                        Header="Mask: Select layer hollow areas"/>
+                    <Separator/>
+                      <MenuItem
+                          Command="{Binding SelectModelVolumeRoi}"
+                          Header="ROI: Select model volume"/>
+                    <MenuItem
+                        Command="{Binding SelectLayerVolumeRoi}"
+                        Header="ROI: Select layer volume"/>
+                      <Separator/>
+                    <MenuItem
+                        Command="{Binding ClearMask}"
+                        Header="Clear Mask"/>
+                    <MenuItem
+                        Command="{Binding ClearROI}"
+                        Header="Clear ROI"/>
+                    </ContextMenu>
+                </Button.ContextMenu>
+                <StackPanel VerticalAlignment="Center" Orientation="Horizontal" Spacing="5">
               <Image Source="/Assets/Icons/object-group-16x16.png"/>
               <TextBlock Text="{Binding LayerROIStr}"/>
             </StackPanel>

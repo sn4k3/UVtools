@@ -847,7 +847,9 @@ namespace UVtools.Core.FileFormats
         public string FileFullPath { get; set; }
 
         public string Filename => Path.GetFileName(FileFullPath);
+        public string FileExtension => Path.GetExtension(FileFullPath);
         public string FilenameNoExt => GetFileNameStripExtensions(FileFullPath);
+
 
         /// <summary>
         /// Gets the thumbnails count present in this file format
