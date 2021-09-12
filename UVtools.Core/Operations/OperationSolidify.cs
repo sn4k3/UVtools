@@ -112,14 +112,14 @@ namespace UVtools.Core.Operations
                 if (hierarchy[i, EmguContour.HierarchyFirstChild] != -1 || hierarchy[i, EmguContour.HierarchyParent] == -1) continue;
                 if (MinimumArea >= 1)
                 {
-                    var rectangle = CvInvoke.BoundingRectangle(contours[i]);
+                    var area = CvInvoke.ContourArea(contours[i]);
                     if (AreaCheckType == AreaCheckTypes.More)
                     {
-                        if (rectangle.Area() < MinimumArea) continue;
+                        if (area < MinimumArea) continue;
                     }
                     else
                     {
-                        if (rectangle.Area() > MinimumArea) continue;
+                        if (area > MinimumArea) continue;
                     }
 
                 }

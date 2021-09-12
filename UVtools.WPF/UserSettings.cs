@@ -1577,7 +1577,7 @@ namespace UVtools.WPF
                             RequestPrintStatus = new (RemotePrinterRequest.RequestType.PrintStatus, RemotePrinterRequest.RequestMethod.GET, "job/list"),
                             RequestPrinterInfo = new (RemotePrinterRequest.RequestType.PrinterInfo, RemotePrinterRequest.RequestMethod.GET, "setting/printerInfo"),
                         },
-                        new RemotePrinter("0.0.0.0", 40454, "Creality Halot")
+                        /*new RemotePrinter("0.0.0.0", 40454, "Creality Halot")
                         {
                             CompatibleExtensions = "cxdlp",
                             RequestUploadFile  = new (RemotePrinterRequest.RequestType.UploadFile,  RemotePrinterRequest.RequestMethod.POST, "{0}"),
@@ -1589,7 +1589,7 @@ namespace UVtools.WPF
                             //RequestGetFiles    = new (RemotePrinterRequest.RequestType.GetFiles,    RemotePrinterRequest.RequestMethod.GET, "file/list"),
                             //RequestPrintStatus = new (RemotePrinterRequest.RequestType.PrintStatus, RemotePrinterRequest.RequestMethod.GET, "job/list"),
                             //RequestPrinterInfo = new (RemotePrinterRequest.RequestType.PrinterInfo, RemotePrinterRequest.RequestMethod.GET, "setting/printerInfo"),
-                        }
+                        }*/
                     });
                 }
             }

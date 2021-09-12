@@ -672,10 +672,25 @@ namespace UVtools.WPF
             RaisePropertyChanged(nameof(LayerROIStr));
         }
 
-        public void AddMaskPoints(Point[][] points)
+        public void AddMaskPoints(IEnumerable<Point[]> pointsOfPoints, bool clear = true)
         {
-            _maskPoints.Clear();
-            _maskPoints.AddRange(points);
+            if (clear)
+            {
+                _maskPoints.Clear();
+                _maskPoints.AddRange(pointsOfPoints);
+            }
+            else
+            {
+                foreach (var points in pointsOfPoints)
+                {
+                    if (_maskPoints.RemoveAll(points1 => points1.SequenceEqual(points)) <= 0)
+                    {
+                        _maskPoints.Add(points);
+                    }
+                }
+                
+            }
+            
             ShowLayer();
             RaisePropertyChanged(nameof(LayerROIStr));
         }
@@ -688,17 +703,9 @@ namespace UVtools.WPF
 
         public void SelectLayerHollowAreasMask()
         {
-            _maskPoints.Clear();
-            for (int i = 0; i < LayerCache.LayerContours.Size; i++)
-            {
-                if (LayerCache.LayerContourHierarchy[i, EmguContour.HierarchyParent] == -1) continue;
-                _maskPoints.Add(LayerCache.LayerContours[i].ToArray());
-            }
-
+            var contours = EmguContours.GetNegativeContours(LayerCache.LayerContours, LayerCache.LayerContourHierarchy);
+            AddMaskPoints(contours.ToArrayOfArray());
             if (_maskPoints.Count > 0 && Settings.LayerPreview.MaskClearROIAfterSet) ClearROI();
-
-            ShowLayer();
-            RaisePropertyChanged(nameof(LayerROIStr));
         }
 
         public void ClearMask()
@@ -1078,15 +1085,8 @@ namespace UVtools.WPF
                      * hierarchy[i][2]: the index of the first child
                      * hierarchy[i][3]: the index of the parent
                      */
-                    using var vec = new VectorOfVectorOfPoint();
-                    for (int i = 0; i < LayerCache.LayerContours.Size; i++)
-                    {
-                        if (LayerCache.LayerContourHierarchy[i, EmguContour.HierarchyParent] == -1) continue;
-                        // We need a parent, meaning we are alternating from white and black after this point
-                        vec.Push(LayerCache.LayerContours[i]);
-                    }
-
-                    if (vec.Size > 0)
+                    using var vec = EmguContours.GetNegativeContours(LayerCache.LayerContours, LayerCache.LayerContourHierarchy);
+                   if (vec.Size > 0)
                     {
                         CvInvoke.DrawContours(LayerCache.ImageBgr, vec, -1,
                             new MCvScalar(Settings.LayerPreview.HollowOutlineColor.B,
@@ -1211,24 +1211,8 @@ namespace UVtools.WPF
                             ? Settings.PixelEditor.RemovePixelHighlightColor
                             : Settings.PixelEditor.RemovePixelColor;
 
-                        using var vec = new VectorOfVectorOfPoint();
-                        for (int i = LayerCache.LayerContours.Size-1; i >= 0; i--)
-                        {
-                            if (CvInvoke.PointPolygonTest(LayerCache.LayerContours[i], operation.Location, false) < 0) continue;
-                            vec.Push(LayerCache.LayerContours[i]);
-                            for (int n = i+1; n < LayerCache.LayerContours.Size; n++)
-                            {
-                                if(LayerCache.LayerContourHierarchy[n, EmguContour.HierarchyParent] != i) continue;
-                                vec.Push(LayerCache.LayerContours[n]);
-                            }
-                            break;
-                        }
-
-                        if (vec.Size > 0)
-                        {
-                            CvInvoke.DrawContours(LayerCache.ImageBgr, vec, -1,
-                                new MCvScalar(color.B, color.G, color.R), -1);
-                        }
+                        using var vec = EmguContours.GetContours(LayerCache.LayerContours, LayerCache.LayerContourHierarchy, operation.Location);
+                        if (vec.Size > 0) CvInvoke.DrawContours(LayerCache.ImageBgr, vec, -1, new MCvScalar(color.B, color.G, color.R), -1);
 
                         /*var hollowGroups = new List<VectorOfVectorOfPoint>();
                         var processedContours = new bool[LayerCache.LayerContours.Size];
@@ -1999,25 +1983,10 @@ namespace UVtools.WPF
         public bool SelectObjectMask(Point location)
         {
             var point = GetTransposedPoint(location);
-            for (int i = LayerCache.LayerContours.Size-1; i >= 0; i--)
-            {
-                if (CvInvoke.PointPolygonTest(LayerCache.LayerContours[i], point, false) < 0) continue;
-                //var rectangle = GetTransposedRectangle(CvInvoke.BoundingRectangle(LayerCache.LayerContours[i]));
-                //ROI = rectangle;
-                AddMaskPoints(LayerCache.LayerContours[i].ToArray(), false);
-                if ((_globalModifiers & KeyModifiers.Control) != 0)
-                {
-                    for (int n = i+1; n < LayerCache.LayerContours.Size; n++)
-                    {
-                        if(LayerCache.LayerContourHierarchy[n, EmguContour.HierarchyParent] != i) continue;
-                        AddMaskPoints(LayerCache.LayerContours[n].ToArray(), false);
-                    }
-                }
-                ShowLayer();
-                return true;
-            }
 
-            return false;
+            using var vec = EmguContours.GetContours(LayerCache.LayerContours, LayerCache.LayerContourHierarchy, point, (_globalModifiers & KeyModifiers.Control) != 0);
+            AddMaskPoints(vec.ToArrayOfArray(), false);
+            return vec.Size > 0;
         }
 
         public void OnLayerPixelPickerClicked()

@@ -1167,21 +1167,7 @@ namespace UVtools.Core
                             //hierarchy[i][3]: the index of the parent
                             //
                             var listHollowArea = new List<LayerHollowArea>();
-                            var hollowGroups = new List<VectorOfVectorOfPoint>();
-                            var processedContours = new bool[contours.Size];
-                            for (int i = 0; i < contours.Size; i++)
-                            {
-                                if (processedContours[i]) continue;
-                                processedContours[i] = true;
-                                if (hierarchy[i, EmguContour.HierarchyParent] == -1) continue;
-                                hollowGroups.Add(new VectorOfVectorOfPoint(contours[i]));
-                                for (int n = i + 1; n < contours.Size; n++)
-                                {
-                                    if (processedContours[n] || hierarchy[n, EmguContour.HierarchyParent] != i) continue;
-                                    processedContours[n] = true;
-                                    hollowGroups[^1].Push(contours[n]);
-                                }
-                            }
+                            var hollowGroups = EmguContours.GetNegativeContoursInGroups(contours, hierarchy);
 
                             foreach (var group in hollowGroups)
                             {
@@ -1500,18 +1486,7 @@ namespace UVtools.Core
                     
                     if (mat.GetByte(operation.Location) >= 10)
                     {
-                        using var vec = new VectorOfVectorOfPoint();
-                        for (int index = layerContours.Size - 1; index >= 0; index--)
-                        {
-                            if (CvInvoke.PointPolygonTest(layerContours[index], operation.Location, false) < 0) continue;
-                            vec.Push(layerContours[index]);
-                            for (int n = index + 1; n < layerContours.Size; n++)
-                            {
-                                if (hierarchy[n, EmguContour.HierarchyParent] != index) continue;
-                                vec.Push(layerContours[n]);
-                            }
-                            break;
-                        }
+                        using var vec = EmguContours.GetContours(layerContours, hierarchy, operation.Location);
 
                         if (vec.Size > 0)
                         {
