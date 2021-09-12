@@ -31,6 +31,7 @@ namespace UVtools.Core.Operations
             Replace,
             Stack,
             Merge,
+            MergeMax,
             Subtract,
             BitwiseAnd,
             BitwiseOr,
@@ -144,7 +145,7 @@ namespace UVtools.Core.Operations
             set => RaiseAndSetIfChanged(ref _extendBeyondLayerCount, value);
         }
 
-        public bool IsExtendBeyondLayerCountVisible => _importType == ImportTypes.Replace || _importType == ImportTypes.Stack || _importType == ImportTypes.Merge;
+        public bool IsExtendBeyondLayerCountVisible => _importType == ImportTypes.Replace || _importType == ImportTypes.Stack || _importType == ImportTypes.Merge || _importType == ImportTypes.MergeMax;
 
         public bool DiscardUnmodifiedLayers
         {
@@ -341,6 +342,7 @@ namespace UVtools.Core.Operations
 
                             break;
                         case ImportTypes.Merge:
+                        case ImportTypes.MergeMax:
                             if (SlicerFile.Resolution != fileFormat.Resolution) continue;
                             if (_extendBeyondLayerCount)
                             {
@@ -414,6 +416,15 @@ namespace UVtools.Core.Operations
                                         using var originalMat = SlicerFile[layerIndex].LayerMat;
                                         using var newMat = fileFormat[i].LayerMat;
                                         CvInvoke.Add(originalMat, newMat, newMat);
+                                        SlicerFile[layerIndex].LayerMat = newMat;
+                                        break;
+                                    }
+                                case ImportTypes.MergeMax:
+                                    {
+                                        if (layerIndex >= SlicerFile.LayerCount) return;
+                                        using var originalMat = SlicerFile[layerIndex].LayerMat;
+                                        using var newMat = fileFormat[i].LayerMat;
+                                        CvInvoke.Max(originalMat, newMat, newMat);
                                         SlicerFile[layerIndex].LayerMat = newMat;
                                         break;
                                     }
