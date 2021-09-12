@@ -24,7 +24,7 @@ namespace UVtools.Core.EmguCV
         /// <param name="location"></param>
         /// <param name="includeLimitingArea">If true it will include all limiting area, otherwise only outer contour will be returned</param>
         /// <returns></returns>
-        public static VectorOfVectorOfPoint GetContours(VectorOfVectorOfPoint contours, int[,] hierarchy, Point location, bool includeLimitingArea = true)
+        public static VectorOfVectorOfPoint GetContoursInside(VectorOfVectorOfPoint contours, int[,] hierarchy, Point location, bool includeLimitingArea = true)
         {
             var vector = new VectorOfVectorOfPoint();
             var vectorSize = contours.Size;
@@ -51,7 +51,7 @@ namespace UVtools.Core.EmguCV
         /// <param name="location"></param>
         /// <param name="index">Contour index, -1 if not exists</param>
         /// <returns>null if not exists</returns>
-        public static VectorOfPoint GetContour(VectorOfVectorOfPoint contours, Point location, out int index)
+        public static VectorOfPoint GetContourInside(VectorOfVectorOfPoint contours, Point location, out int index)
         {
             index = -1;
             var vectorSize = contours.Size;
