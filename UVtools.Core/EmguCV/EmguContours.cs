@@ -149,7 +149,6 @@ namespace UVtools.Core.EmguCV
                 {
                     result[i] -= CvInvoke.ContourArea(contours[i][n]);
                 }
-
             }
 
             if (useParallel)
@@ -158,13 +157,9 @@ namespace UVtools.Core.EmguCV
             }
             else
             {
-                for (var i = 0; i < contours.Count; i++)
-                {
-                    DoWork(i);
-                }
+                for (var i = 0; i < contours.Count; i++) DoWork(i);
             }
             
-
             return result;
         }
     }
