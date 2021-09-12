@@ -14,6 +14,10 @@ using Emgu.CV.Util;
 
 namespace UVtools.Core.EmguCV
 {
+    /// <summary>
+    /// Utility methods for contour handling.  
+    /// Use only with Tree type
+    /// </summary>
     public static class EmguContours
     {
         /// <summary>
@@ -132,11 +136,11 @@ namespace UVtools.Core.EmguCV
         }
 
         /// <summary>
-        /// Gets contours real area for a limited area
+        /// Gets contour real area for a limited area
         /// </summary>
         /// <param name="contours"></param>
         /// <returns></returns>
-        public static double GetContoursArea(VectorOfVectorOfPoint contours)
+        public static double GetContourArea(VectorOfVectorOfPoint contours)
         {
             var vectorSize = contours.Size;
             if (vectorSize == 0) return 0;
@@ -163,14 +167,14 @@ namespace UVtools.Core.EmguCV
             {
                 Parallel.For(0, contours.Count, CoreSettings.ParallelOptions, i =>
                 {
-                    result[i] = GetContoursArea(contours[i]);
+                    result[i] = GetContourArea(contours[i]);
                 });
             }
             else
             {
                 for (var i = 0; i < contours.Count; i++)
                 {
-                    result[i] = GetContoursArea(contours[i]);
+                    result[i] = GetContourArea(contours[i]);
                 }
             }
             
