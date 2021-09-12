@@ -1486,7 +1486,7 @@ namespace UVtools.Core
                     
                     if (mat.GetByte(operation.Location) >= 10)
                     {
-                        using var vec = EmguContours.GetContours(layerContours, hierarchy, operation.Location);
+                        using var vec = EmguContours.GetContoursInside(layerContours, hierarchy, operation.Location);
 
                         if (vec.Size > 0)
                         {

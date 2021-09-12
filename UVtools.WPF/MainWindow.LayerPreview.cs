@@ -1211,7 +1211,7 @@ namespace UVtools.WPF
                             ? Settings.PixelEditor.RemovePixelHighlightColor
                             : Settings.PixelEditor.RemovePixelColor;
 
-                        using var vec = EmguContours.GetContours(LayerCache.LayerContours, LayerCache.LayerContourHierarchy, operation.Location);
+                        using var vec = EmguContours.GetContoursInside(LayerCache.LayerContours, LayerCache.LayerContourHierarchy, operation.Location);
                         if (vec.Size > 0) CvInvoke.DrawContours(LayerCache.ImageBgr, vec, -1, new MCvScalar(color.B, color.G, color.R), -1);
 
                         /*var hollowGroups = new List<VectorOfVectorOfPoint>();
@@ -1984,7 +1984,7 @@ namespace UVtools.WPF
         {
             var point = GetTransposedPoint(location);
 
-            using var vec = EmguContours.GetContours(LayerCache.LayerContours, LayerCache.LayerContourHierarchy, point, (_globalModifiers & KeyModifiers.Control) != 0);
+            using var vec = EmguContours.GetContoursInside(LayerCache.LayerContours, LayerCache.LayerContourHierarchy, point, (_globalModifiers & KeyModifiers.Control) != 0);
             AddMaskPoints(vec.ToArrayOfArray(), false);
             return vec.Size > 0;
         }
