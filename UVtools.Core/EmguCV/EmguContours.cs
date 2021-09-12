@@ -132,37 +132,35 @@ namespace UVtools.Core.EmguCV
         }
 
         /// <summary>
-        /// Gets contour real area for a group of contours
+        /// Gets contours real area for a group of contours
         /// </summary>
         /// <param name="contours">Grouped contours</param>
         /// <param name="useParallel">True to run in parallel</param>
-        /// <returns></returns>
+        /// <returns>Array with same size with contours area</returns>
         public static double[] GetContoursArea(List<VectorOfVectorOfPoint> contours, bool useParallel = false)
         {
             var result = new double[contours.Count];
 
+            void DoWork(int i)
+            {
+                var vectorSize = contours[i].Size;
+                result[i] = CvInvoke.ContourArea(contours[i][0]);
+                for (var n = 1; n < vectorSize; n++)
+                {
+                    result[i] -= CvInvoke.ContourArea(contours[i][n]);
+                }
+
+            }
+
             if (useParallel)
             {
-                Parallel.For(0, contours.Count, CoreSettings.ParallelOptions, i =>
-                {
-                    result[i] = CvInvoke.ContourArea(contours[i][0]);
-                    var vectorSize = contours[i].Size;
-                    for (var n = 1; n < vectorSize; n++)
-                    {
-                        result[i] += CvInvoke.ContourArea(contours[i][n]);
-                    }
-                });
+                Parallel.For(0, contours.Count, CoreSettings.ParallelOptions, DoWork);
             }
             else
             {
                 for (var i = 0; i < contours.Count; i++)
                 {
-                    result[i] = CvInvoke.ContourArea(contours[i][0]);
-                    var vectorSize = contours[i].Size;
-                    for (var n = 1; n < vectorSize; n++)
-                    {
-                        result[i] += CvInvoke.ContourArea(contours[i][n]);
-                    }
+                    DoWork(i);
                 }
             }
             
