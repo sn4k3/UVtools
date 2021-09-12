@@ -132,6 +132,24 @@ namespace UVtools.Core.EmguCV
         }
 
         /// <summary>
+        /// Gets contours real area for a limited area
+        /// </summary>
+        /// <param name="contours"></param>
+        /// <returns></returns>
+        public static double GetContoursArea(VectorOfVectorOfPoint contours)
+        {
+            var vectorSize = contours.Size;
+            if (vectorSize == 0) return 0;
+
+            double result = CvInvoke.ContourArea(contours[0]);
+            for (var i = 1; i < vectorSize; i++)
+            {
+                result -= CvInvoke.ContourArea(contours[i]);
+            }
+            return result;
+        }
+
+        /// <summary>
         /// Gets contours real area for a group of contours
         /// </summary>
         /// <param name="contours">Grouped contours</param>
@@ -141,23 +159,19 @@ namespace UVtools.Core.EmguCV
         {
             var result = new double[contours.Count];
 
-            void DoWork(int i)
-            {
-                var vectorSize = contours[i].Size;
-                result[i] = CvInvoke.ContourArea(contours[i][0]);
-                for (var n = 1; n < vectorSize; n++)
-                {
-                    result[i] -= CvInvoke.ContourArea(contours[i][n]);
-                }
-            }
-
             if (useParallel)
             {
-                Parallel.For(0, contours.Count, CoreSettings.ParallelOptions, DoWork);
+                Parallel.For(0, contours.Count, CoreSettings.ParallelOptions, i =>
+                {
+                    result[i] = GetContoursArea(contours[i]);
+                });
             }
             else
             {
-                for (var i = 0; i < contours.Count; i++) DoWork(i);
+                for (var i = 0; i < contours.Count; i++)
+                {
+                    result[i] = GetContoursArea(contours[i]);
+                }
             }
             
             return result;
