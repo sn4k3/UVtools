@@ -10,6 +10,7 @@ using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -757,8 +758,13 @@ namespace UVtools.Core
             progress ??= new OperationProgress();
             
             var result = new ConcurrentBag<LayerIssue>();
-            var layerHollowAreas = new ConcurrentDictionary<uint, List<LayerHollowArea>>();
-
+            //var layerHollowAreas = new ConcurrentDictionary<uint, List<LayerHollowArea>>();
+            var resinTraps = new List<VectorOfVectorOfPoint>[LayerCount];
+            var suctionTraps = new List<VectorOfVectorOfPoint>[LayerCount];
+            var externalContours = new VectorOfVectorOfPoint[LayerCount];
+            var hollows = new List<VectorOfVectorOfPoint>[LayerCount];
+            var resinTrapsContoursArea = new double[LayerCount][];
+            
             bool IsIgnored(LayerIssue issue) => ignoredIssues is not null && ignoredIssues.Count > 0 && ignoredIssues.Contains(issue);
 
             bool AddIssue(LayerIssue issue)
@@ -766,6 +772,12 @@ namespace UVtools.Core
                 if (IsIgnored(issue)) return false;
                 result.Add(issue);
                 return true;
+            }
+
+            void GenerateAirMap(Mat input, Mat output, VectorOfVectorOfPoint externals)
+            {
+                CvInvoke.BitwiseNot(input, output);
+                CvInvoke.DrawContours(output, externals, -1, EmguExtensions.BlackColor, -1);
             }
 
             if (printHeightConfig.Enabled && SlicerFile.MachineZ > 0)
@@ -799,9 +811,12 @@ namespace UVtools.Core
                 progress.Reset(OperationProgress.StatusIslands, LayerCount);
 
                 // Detect contours
-                Parallel.ForEach(this, CoreSettings.ParallelOptions, layer =>
+                Parallel.For(0, LayerCount, CoreSettings.ParallelOptions, layerIndexInt =>
                 {
                     if (progress.Token.IsCancellationRequested) return;
+                    uint layerIndex = (uint)layerIndexInt;
+                    var layer = this[layerIndex];
+                    
                     if (layer.IsEmpty)
                     {
                         progress.LockAndIncrement();
@@ -811,8 +826,8 @@ namespace UVtools.Core
                     // Spare a decoding cycle
                     if (!touchBoundConfig.Enabled &&
                         !resinTrapConfig.Enabled &&
-                        (!overhangConfig.Enabled || overhangConfig.Enabled && (layer.Index == 0 || overhangConfig.WhiteListLayers is not null && !overhangConfig.WhiteListLayers.Contains(layer.Index))) &&
-                        (!islandConfig.Enabled || islandConfig.Enabled && (layer.Index == 0 || islandConfig.WhiteListLayers is not null && !islandConfig.WhiteListLayers.Contains(layer.Index)))
+                        (!overhangConfig.Enabled || overhangConfig.Enabled && (layerIndex == 0 || overhangConfig.WhiteListLayers is not null && !overhangConfig.WhiteListLayers.Contains(layerIndex))) &&
+                        (!islandConfig.Enabled || islandConfig.Enabled && (layerIndex == 0 || islandConfig.WhiteListLayers is not null && !islandConfig.WhiteListLayers.Contains(layerIndex)))
                         )
                     {
                         progress.LockAndIncrement();
@@ -908,7 +923,7 @@ namespace UVtools.Core
                             }
                         }
 
-                        if (layer.Index > 0) // No islands nor overhangs for layer 0
+                        if (layerIndex > 0) // No islands nor overhangs for layer 0
                         {
                             Mat previousImage = null;
                             Span<byte> previousSpan = null;
@@ -918,7 +933,7 @@ namespace UVtools.Core
                                 bool canProcessCheck = true;
                                 if (islandConfig.WhiteListLayers is not null) // Check white list
                                 {
-                                    if (!islandConfig.WhiteListLayers.Contains(layer.Index))
+                                    if (!islandConfig.WhiteListLayers.Contains(layerIndex))
                                     {
                                         canProcessCheck = false;
                                     }
@@ -940,151 +955,146 @@ namespace UVtools.Core
                                         islandImage = image;
                                     }
 
-                                    using (
-                                        Mat labels = new(),
-                                        stats = new(),
-                                        centroids = new())
-                                    {
-                                        var numLabels = CvInvoke.ConnectedComponentsWithStats(islandImage, labels, stats,
-                                            centroids,
-                                            islandConfig.AllowDiagonalBonds
-                                                ? LineType.EightConnected
-                                                : LineType.FourConnected);
+                                    using Mat labels = new();
+                                    using Mat stats = new();
+                                    using Mat centroids = new();
+                                    var numLabels = CvInvoke.ConnectedComponentsWithStats(islandImage, labels, stats,
+                                        centroids,
+                                        islandConfig.AllowDiagonalBonds
+                                            ? LineType.EightConnected
+                                            : LineType.FourConnected);
 
-                                        if(needDispose)
+                                    if(needDispose)
+                                    {
+                                        islandImage.Dispose();
+                                    }
+
+                                    // Get array that contains details of each connected component
+                                    var ccStats = stats.GetData();
+                                    //stats[i][0]: Left Edge of Connected Component
+                                    //stats[i][1]: Top Edge of Connected Component 
+                                    //stats[i][2]: Width of Connected Component
+                                    //stats[i][3]: Height of Connected Component
+                                    //stats[i][4]: Total Area (in pixels) in Connected Component
+
+                                    var labelSpan = labels.GetDataSpan<int>();
+
+                                    for (int i = 1; i < numLabels; i++)
+                                    {
+                                        Rectangle rect = new(
+                                            (int) ccStats.GetValue(i, (int) ConnectedComponentsTypes.Left),
+                                            (int) ccStats.GetValue(i, (int) ConnectedComponentsTypes.Top),
+                                            (int) ccStats.GetValue(i, (int) ConnectedComponentsTypes.Width),
+                                            (int) ccStats.GetValue(i, (int) ConnectedComponentsTypes.Height));
+
+                                        if (rect.Area() < islandConfig.RequiredAreaToProcessCheck)
+                                            continue;
+
+                                        if (previousImage is null)
                                         {
-                                            islandImage.Dispose();
+                                            previousImage = this[layerIndex - 1].LayerMat;
+                                            previousSpan = previousImage.GetDataSpan<byte>();
                                         }
 
-                                        // Get array that contains details of each connected component
-                                        var ccStats = stats.GetData();
-                                        //stats[i][0]: Left Edge of Connected Component
-                                        //stats[i][1]: Top Edge of Connected Component 
-                                        //stats[i][2]: Width of Connected Component
-                                        //stats[i][3]: Height of Connected Component
-                                        //stats[i][4]: Total Area (in pixels) in Connected Component
+                                        List<Point> points = new();
+                                        uint pixelsSupportingIsland = 0;
 
-                                        var labelSpan = labels.GetDataSpan<int>();
-
-                                        for (int i = 1; i < numLabels; i++)
+                                        for (int y = rect.Y; y < rect.Bottom; y++)
+                                        for (int x = rect.X; x < rect.Right; x++)
                                         {
-                                            Rectangle rect = new(
-                                                (int) ccStats.GetValue(i, (int) ConnectedComponentsTypes.Left),
-                                                (int) ccStats.GetValue(i, (int) ConnectedComponentsTypes.Top),
-                                                (int) ccStats.GetValue(i, (int) ConnectedComponentsTypes.Width),
-                                                (int) ccStats.GetValue(i, (int) ConnectedComponentsTypes.Height));
+                                            int pixel = step * y + x;
+                                            if (
+                                                labelSpan[pixel] !=
+                                                i || // Background pixel or a pixel from another component within the bounding rectangle
+                                                span[pixel] <
+                                                islandConfig
+                                                    .RequiredPixelBrightnessToProcessCheck // Low brightness, ignore
+                                            ) continue;
 
-                                            if (rect.Area() < islandConfig.RequiredAreaToProcessCheck)
-                                                continue;
+                                            points.Add(new Point(x, y));
 
-                                            if (previousImage is null)
+                                            if (previousSpan[pixel] >=
+                                                islandConfig.RequiredPixelBrightnessToSupport)
                                             {
-                                                previousImage = this[layer.Index - 1].LayerMat;
-                                                previousSpan = previousImage.GetDataSpan<byte>();
+                                                pixelsSupportingIsland++;
                                             }
+                                        }
 
-                                            List<Point> points = new();
-                                            uint pixelsSupportingIsland = 0;
+                                        if (points.Count == 0) continue; // Should never happen
 
-                                            for (int y = rect.Y; y < rect.Bottom; y++)
-                                            for (int x = rect.X; x < rect.Right; x++)
-                                            {
-                                                int pixel = step * y + x;
-                                                if (
-                                                    labelSpan[pixel] !=
-                                                    i || // Background pixel or a pixel from another component within the bounding rectangle
-                                                    span[pixel] <
-                                                    islandConfig
-                                                        .RequiredPixelBrightnessToProcessCheck // Low brightness, ignore
-                                                ) continue;
+                                        var requiredSupportingPixels = Math.Max(1,
+                                            points.Count * islandConfig.RequiredPixelsToSupportMultiplier);
 
-                                                points.Add(new Point(x, y));
-
-                                                if (previousSpan[pixel] >=
-                                                    islandConfig.RequiredPixelBrightnessToSupport)
-                                                {
-                                                    pixelsSupportingIsland++;
-                                                }
-                                            }
-
-                                            if (points.Count == 0) continue; // Should never happen
-
-                                            var requiredSupportingPixels = Math.Max(1,
-                                                points.Count * islandConfig.RequiredPixelsToSupportMultiplier);
-
-                                            /*if (pixelsSupportingIsland >= islandConfig.RequiredPixelsToSupport)
+                                        /*if (pixelsSupportingIsland >= islandConfig.RequiredPixelsToSupport)
                                                 isIsland = false; // Not a island, bounding is strong, i think...
                                             else if (pixelsSupportingIsland > 0 &&
                                                 points.Count < islandConfig.RequiredPixelsToSupport &&
                                                 pixelsSupportingIsland >= Math.Max(1, points.Count / 2))
                                                 isIsland = false; // Not a island, but maybe weak bounding...*/
 
-                                            LayerIssue island = null;
-                                            if (pixelsSupportingIsland < requiredSupportingPixels)
-                                            {
-                                                island = new LayerIssue(layer, LayerIssue.IssueType.Island,
-                                                    points.ToArray(),
-                                                    rect);
-                                                /*AddIssue(new LayerIssue(layer, LayerIssue.IssueType.Island,
+                                        LayerIssue island = null;
+                                        if (pixelsSupportingIsland < requiredSupportingPixels)
+                                        {
+                                            island = new LayerIssue(layer, LayerIssue.IssueType.Island,
+                                                points.ToArray(),
+                                                rect);
+                                            /*AddIssue(new LayerIssue(layer, LayerIssue.IssueType.Island,
                                                     points.ToArray(),
                                                     rect));*/
-                                            }
-
-                                            // Check for overhangs
-                                            if (overhangConfig.Enabled && !overhangConfig.IndependentFromIslands &&
-                                                island is null
-                                                || island is not null && islandConfig.EnhancedDetection &&
-                                                pixelsSupportingIsland >= 10
-                                            )
-                                            {
-                                                points.Clear();
-                                                using (var imageRoi = new Mat(image, rect))
-                                                using (var previousImageRoi = new Mat(previousImage, rect))
-                                                using (var subtractedImage = new Mat())
-                                                {
-                                                    var anchor = new Point(-1, -1);
-                                                    CvInvoke.Subtract(imageRoi, previousImageRoi, subtractedImage);
-                                                    CvInvoke.Threshold(subtractedImage, subtractedImage, 127, 255,
-                                                        ThresholdType.Binary);
-
-                                                    CvInvoke.Erode(subtractedImage, subtractedImage,
-                                                        CvInvoke.GetStructuringElement(ElementShape.Rectangle,
-                                                            new Size(3, 3), anchor),
-                                                        anchor, overhangConfig.ErodeIterations, BorderType.Default,
-                                                        new MCvScalar());
-
-                                                    var subtractedSpan = subtractedImage.GetDataSpan<byte>();
-
-                                                    for (int y = 0; y < subtractedImage.Height; y++)
-                                                    for (int x = 0; x < subtractedImage.Step; x++)
-                                                    {
-                                                        int labelX = rect.X + x;
-                                                        int labelY = rect.Y + y;
-                                                        int pixel = subtractedImage.GetPixelPos(x, y);
-                                                        int pixelLabel = labelY * step + labelX;
-                                                        if (labelSpan[pixelLabel] != i || subtractedSpan[pixel] == 0)
-                                                            continue;
-
-                                                        points.Add(new Point(labelX, labelY));
-                                                    }
-
-                                                    if (points.Count >= overhangConfig.RequiredPixelsToConsider
-                                                    ) // Overhang
-                                                    {
-                                                        AddIssue(new LayerIssue(
-                                                            layer, LayerIssue.IssueType.Overhang, points.ToArray(), rect
-                                                        ));
-                                                    }
-                                                    else if (islandConfig.EnhancedDetection) // No overhang
-                                                    {
-                                                        island = null;
-                                                    }
-                                                }
-                                            }
-
-                                            if (island is not null)
-                                                AddIssue(island);
                                         }
+
+                                        // Check for overhangs
+                                        if (overhangConfig.Enabled && !overhangConfig.IndependentFromIslands &&
+                                            island is null
+                                            || island is not null && islandConfig.EnhancedDetection &&
+                                            pixelsSupportingIsland >= 10
+                                        )
+                                        {
+                                            points.Clear();
+                                            using var imageRoi = new Mat(image, rect);
+                                            using var previousImageRoi = new Mat(previousImage, rect);
+                                            using var subtractedImage = new Mat();
+                                            var anchor = new Point(-1, -1);
+                                            CvInvoke.Subtract(imageRoi, previousImageRoi, subtractedImage);
+                                            CvInvoke.Threshold(subtractedImage, subtractedImage, 127, 255,
+                                                ThresholdType.Binary);
+
+                                            CvInvoke.Erode(subtractedImage, subtractedImage,
+                                                CvInvoke.GetStructuringElement(ElementShape.Rectangle,
+                                                    new Size(3, 3), anchor),
+                                                anchor, overhangConfig.ErodeIterations, BorderType.Default,
+                                                new MCvScalar());
+
+                                            var subtractedSpan = subtractedImage.GetDataSpan<byte>();
+
+                                            for (int y = 0; y < subtractedImage.Height; y++)
+                                            for (int x = 0; x < subtractedImage.Step; x++)
+                                            {
+                                                int labelX = rect.X + x;
+                                                int labelY = rect.Y + y;
+                                                int pixel = subtractedImage.GetPixelPos(x, y);
+                                                int pixelLabel = labelY * step + labelX;
+                                                if (labelSpan[pixelLabel] != i || subtractedSpan[pixel] == 0)
+                                                    continue;
+
+                                                points.Add(new Point(labelX, labelY));
+                                            }
+
+                                            if (points.Count >= overhangConfig.RequiredPixelsToConsider
+                                            ) // Overhang
+                                            {
+                                                AddIssue(new LayerIssue(
+                                                    layer, LayerIssue.IssueType.Overhang, points.ToArray(), rect
+                                                ));
+                                            }
+                                            else if (islandConfig.EnhancedDetection) // No overhang
+                                            {
+                                                island = null;
+                                            }
+                                        }
+
+                                        if (island is not null)
+                                            AddIssue(island);
                                     }
                                 }
                             }
@@ -1097,7 +1107,7 @@ namespace UVtools.Core
                                 bool canProcessCheck = true;
                                 if (overhangConfig.WhiteListLayers is not null) // Check white list
                                 {
-                                    if (!overhangConfig.WhiteListLayers.Contains(layer.Index))
+                                    if (!overhangConfig.WhiteListLayers.Contains(layerIndex))
                                     {
                                         canProcessCheck = false;
                                     }
@@ -1105,7 +1115,7 @@ namespace UVtools.Core
 
                                 if (canProcessCheck)
                                 {
-                                    previousImage ??= this[layer.Index - 1].LayerMat;
+                                    previousImage ??= this[layerIndex - 1].LayerMat;
 
                                     using var subtractedImage = new Mat();
                                     using var vecPoints = new VectorOfPoint();
@@ -1140,6 +1150,56 @@ namespace UVtools.Core
                         {
                             /* this used to calculate all contours for the layers, however new algorithm crops the layers to the overall bounding box
                              * so the contours produced here are not translated properly. We will generate contours during the algorithm itself later */
+
+                            bool needDispose = false;
+                            Mat resinTrapImage;
+                            if (resinTrapConfig.BinaryThreshold > 0)
+                            {
+                                resinTrapImage = new Mat();
+                                CvInvoke.Threshold(image, resinTrapImage, resinTrapConfig.BinaryThreshold, byte.MaxValue, ThresholdType.Binary);
+                            }
+                            else
+                            {
+                                needDispose = true;
+                                resinTrapImage = image;
+                            }
+                            
+                            var contourLayer = new Mat(resinTrapImage, BoundingRectangle);
+
+                            using var contours = contourLayer.FindContours(out var heirarchy, RetrType.Tree);
+                            externalContours[layerIndex] = EmguContours.GetExternalContours(contours, heirarchy);
+                            hollows[layerIndex] = EmguContours.GetNegativeContoursInGroups(contours, heirarchy);
+                            resinTrapsContoursArea[layerIndex] = EmguContours.GetContoursArea(hollows[layerIndex]);
+
+                            if (needDispose)
+                            {
+                                resinTrapImage.Dispose();
+                            }
+
+                            /*//
+                            //hierarchy[i][0]: the index of the next contour of the same level
+                            //hierarchy[i][1]: the index of the previous contour of the same level
+                            //hierarchy[i][2]: the index of the first child
+                            //hierarchy[i][3]: the index of the parent
+                            //
+                            var listHollowArea = new List<LayerHollowArea>();
+                            var hollowGroups = EmguContours.GetNegativeContoursInGroups(contours, hierarchy);
+                            var areas = EmguContours.GetContoursArea(hollowGroups);
+
+                            for (var i = 0; i < hollowGroups.Count; i++)
+                            {
+                                if (areas[i] < resinTrapConfig.RequiredAreaToProcessCheck) continue;
+                                var rect = CvInvoke.BoundingRectangle(hollowGroups[i][0]);
+                                listHollowArea.Add(new LayerHollowArea(hollowGroups[i].ToArrayOfArray(),
+                                    rect,
+                                    areas[i],
+                                    layer.Index <= resinTrapConfig.StartLayerIndex ||
+                                    layer.Index == LayerCount - 1 // First and Last layers, always drains
+                                        ? LayerHollowArea.AreaType.Drain
+                                        : LayerHollowArea.AreaType.Unknown));
+                            }
+
+                            if (listHollowArea.Count > 0) layerHollowAreas.TryAdd(layer.Index, listHollowArea);*/
                         }
                     }
 
@@ -1149,77 +1209,21 @@ namespace UVtools.Core
 
             if (resinTrapConfig.Enabled)
             {
-                progress.Reset("Detecting Air Boundaries (Resin traps)", LayerCount);
-                var ROI = new Rectangle(BoundingRectangle.X, BoundingRectangle.Y, BoundingRectangle.Width, BoundingRectangle.Height);
-                ROI.X -= ROI.X > 5 ? 5 : 0;
-                ROI.Y -= ROI.Y > 5 ? 5 : 0;
-                ROI.Width += ((ROI.X + ROI.Width) < (SlicerFile.PixelWidth - 6) ? 5 : 0) * 2;
-                ROI.Height += ((ROI.Y + ROI.Height) < (SlicerFile.PixelHeight - 6) ? 5 : 0) * 2;
-
-                List<VectorOfVectorOfPoint>[] resinTraps = new List<VectorOfVectorOfPoint>[LayerCount];
-                List<VectorOfVectorOfPoint>[] suctionTraps = new List<VectorOfVectorOfPoint>[LayerCount];
-
-                VectorOfVectorOfPoint[] externalContours = new VectorOfVectorOfPoint[LayerCount];
-                List<VectorOfVectorOfPoint>[] hollows = new List<VectorOfVectorOfPoint>[LayerCount];
-
-                /* calculate all hollow contours */
-                Parallel.ForEach(Enumerable.Range(0, (int)LayerCount), CoreSettings.ParallelOptions , x =>
-                {
-                    Mat contourLayer = new Mat(this[x].LayerMat, ROI);
-
-                    using VectorOfVectorOfPoint contours = new();
-                    using Mat layerHeirarchy = new();
-                    CvInvoke.FindContours(contourLayer, contours, layerHeirarchy, RetrType.Tree, ChainApproxMethod.ChainApproxSimple);
-                    var arr = layerHeirarchy.GetData();
-
-                    VectorOfVectorOfPoint externals = new VectorOfVectorOfPoint();
-                    for (var y = 0; y < contours.Size; y++)
-                    {
-                        if ((int)arr.GetValue(0, y, 3) == -1)
-                        {
-                            externals.Push(contours[y]);
-                        }
-                    }
-
-                    externalContours[x] = externals;
-
-
-                    /* hollow contour grouping */
-                    var hollowGroups = new List<VectorOfVectorOfPoint>();
-                    var processedContours = new bool[contours.Size];
-                    for (int i = 0; i < contours.Size; i++)
-                    {
-                        if (processedContours[i]) continue;
-                        processedContours[i] = true;
-                        if ((int)arr.GetValue(0, i, 3) == -1) continue;
-                        hollowGroups.Add(new VectorOfVectorOfPoint(contours[i]));
-                        for (int n = i + 1; n < contours.Size; n++)
-                        {
-                            if (processedContours[n] || (int)arr.GetValue(0, n, 3) != i) continue;
-                            processedContours[n] = true;
-                            hollowGroups[^1].Push(contours[n]);
-                        }
-
-                    }
-                    hollows[x] = hollowGroups;
-
-                    contourLayer.Dispose();
-                    progress.LockAndIncrement();
-                });
-                if (progress.Token.IsCancellationRequested) return result.OrderBy(issue => issue.Type).ThenBy(issue => issue.LayerIndex).ThenBy(issue => issue.Area).ToList();
-                progress.Reset("Process Layers Pass 1 of 2 (Resin traps)", LayerCount);
-
+                //progress.Reset("Detecting Air Boundaries (Resin traps)", LayerCount);
+                //if (progress.Token.IsCancellationRequested) return result.OrderBy(issue => issue.Type).ThenBy(issue => issue.LayerIndex).ThenBy(issue => issue.Area).ToList();
+                progress.Reset("Process Layers Pass 1 of 2 (Resin traps)", LayerCount, resinTrapConfig.StartLayerIndex);
 
                 /* define all mats up front, reducing allocations */
-                Mat currentAirMap = Mat.Zeros(ROI.Height, ROI.Width, DepthType.Cv8U, 1);
-                Mat layerAirMap = Mat.Zeros(ROI.Height, ROI.Width, DepthType.Cv8U, 1);
-                Mat airOverlap = Mat.Zeros(ROI.Height, ROI.Width, DepthType.Cv8U, 1);
+                var currentAirMap = EmguExtensions.InitMat(BoundingRectangle.Size);
+                var layerAirMap = currentAirMap.NewBlank();
+                var airOverlap = currentAirMap.NewBlank();
                 Mat curLayer = null;
                 /* the first pass does bottom to top, and tracks anything it thinks is a resin trap */
-                for (var layerIndex = 0; layerIndex < LayerCount; layerIndex++)
+                for (var layerIndex = resinTrapConfig.StartLayerIndex; layerIndex < LayerCount; layerIndex++)
                 {
                     if (progress.Token.IsCancellationRequested) return result.OrderBy(issue => issue.Type).ThenBy(issue => issue.LayerIndex).ThenBy(issue => issue.Area).ToList();
-                    curLayer = new Mat(this[layerIndex].LayerMat, ROI);
+                    using var layerMat = this[layerIndex].LayerMat;
+                    curLayer = new Mat(layerMat, BoundingRectangle);
                     if (resinTrapConfig.BinaryThreshold > 0)
                     {
                         CvInvoke.Threshold(curLayer, curLayer, resinTrapConfig.BinaryThreshold, byte.MaxValue, ThresholdType.Binary);
@@ -1237,29 +1241,24 @@ namespace UVtools.Core
 
                     /* add in areas of air in current layer to air map */
                     CvInvoke.BitwiseOr(layerAirMap, currentAirMap, currentAirMap);
-
-
+                    
                     for (var i = 0; i < hollows[layerIndex].Count; i++)
                     {
+                        if (progress.Token.IsCancellationRequested) return result.OrderBy(issue => issue.Type).ThenBy(issue => issue.LayerIndex).ThenBy(issue => issue.Area).ToList();
+                        if (resinTrapsContoursArea[layerIndex][i] < resinTrapConfig.RequiredAreaToProcessCheck) continue;
+
                         /* intersect current contour, with the current airmap. */
-                        Mat currentContour = Mat.Zeros(curLayer.Height, curLayer.Width, curLayer.Depth, curLayer.NumberOfChannels);
-                        CvInvoke.DrawContours(currentContour, hollows[layerIndex][i], -1, new MCvScalar(255, 255, 255, 255), -1);
+                        using var currentContour = curLayer.NewBlank();
+                        CvInvoke.DrawContours(currentContour, hollows[layerIndex][i], -1, EmguExtensions.WhiteColor, -1);
                         CvInvoke.BitwiseAnd(currentAirMap, currentContour, airOverlap);
-                        int overlapCount = CvInvoke.CountNonZero(airOverlap);
+                        var overlapCount = CvInvoke.CountNonZero(airOverlap);
                         if (overlapCount == 0)
                         {
-                            var hollowArea = EmguContours.GetContourArea(hollows[layerIndex][i]);
-                            if (hollowArea > resinTrapConfig.RequiredAreaToProcessCheck)
-                            {
-                                /* this countour does *not* overlap known air */
-                                if (resinTraps[layerIndex] == null)
-                                {
-                                    resinTraps[layerIndex] = new List<VectorOfVectorOfPoint>();
-                                }
+                            /* this countour does *not* overlap known air */
+                            resinTraps[layerIndex] ??= new List<VectorOfVectorOfPoint>();
 
-                                /* add a resin trap (for now... will be revisited in part 2) */
-                                resinTraps[layerIndex].Add(hollows[layerIndex][i]);
-                            }
+                            /* add a resin trap (for now... will be revisited in part 2) */
+                            resinTraps[layerIndex].Add(hollows[layerIndex][i]);
                         }
                         else
                         {
@@ -1274,22 +1273,20 @@ namespace UVtools.Core
                                 CvInvoke.Subtract(currentAirMap, currentContour, currentAirMap);
                             }
                         }
-
-                        /* cleanup */
-                        currentContour.Dispose();
                     };
-                    curLayer.Dispose();
-                    progress.LockAndIncrement();
+                    progress++;
                 }
+
                 if (progress.Token.IsCancellationRequested) return result.OrderBy(issue => issue.Type).ThenBy(issue => issue.LayerIndex).ThenBy(issue => issue.Area).ToList();
-                progress.Reset("Process Layers Pass 2 of 2 (Resin traps)", LayerCount);
+                progress.Reset("Process Layers Pass 2 of 2 (Resin traps)", LayerCount, resinTrapConfig.StartLayerIndex);
                 /* starting over again but this time from the top to the bottom */
                 currentAirMap = null;
 
-                for (var layerIndex = resinTraps.Length - 1; layerIndex >= 0; layerIndex--)
+                for (var layerIndex = resinTraps.Length - 1; layerIndex >= resinTrapConfig.StartLayerIndex; layerIndex--)
                 {
                     if (progress.Token.IsCancellationRequested) return result.OrderBy(issue => issue.Type).ThenBy(issue => issue.LayerIndex).ThenBy(issue => issue.Area).ToList();
-                    curLayer = new Mat(this[layerIndex].LayerMat, ROI);
+                    using var layerMat = this[layerIndex].LayerMat;
+                    curLayer = new Mat(layerMat, BoundingRectangle);
                     if (resinTrapConfig.BinaryThreshold > 0)
                     {
                         CvInvoke.Threshold(curLayer, curLayer, resinTrapConfig.BinaryThreshold, byte.MaxValue, ThresholdType.Binary);
@@ -1318,12 +1315,14 @@ namespace UVtools.Core
                         /* all we care about is contours the first pass thought were resin traps, since there was no access to air from the bottom */
                         for (var x = 0; x < resinTraps[layerIndex].Count; x++)
                         {
+                            if (progress.Token.IsCancellationRequested) return result.OrderBy(issue => issue.Type).ThenBy(issue => issue.LayerIndex).ThenBy(issue => issue.Area).ToList();
+
                             /* check if each contour overlaps known air */
-                            Mat currentContour = Mat.Zeros(curLayer.Height, curLayer.Width, curLayer.Depth, curLayer.NumberOfChannels);
-                            CvInvoke.DrawContours(currentContour, resinTraps[layerIndex][x], -1, new MCvScalar(255, 255, 255, 255), -1);
+                            using var currentContour = curLayer.NewBlank();
+                            CvInvoke.DrawContours(currentContour, resinTraps[layerIndex][x], -1, EmguExtensions.WhiteColor, -1);
 
                             CvInvoke.BitwiseAnd(currentAirMap, currentContour, airOverlap);
-                            int overlapCount = CvInvoke.CountNonZero(airOverlap);
+                            var overlapCount = CvInvoke.CountNonZero(airOverlap);
 
                             if (overlapCount > resinTrapConfig.RequiredBlackPixelsToDrain)
                             {
@@ -1332,22 +1331,19 @@ namespace UVtools.Core
                                 if (resinTrapConfig.DetectSuctionCups)
                                 {
                                     /* if we haven't defined a suctionTrap list for this layer, do so */
-                                    if (suctionTraps[layerIndex] == null)
-                                    {
-                                        suctionTraps[layerIndex] = new List<VectorOfVectorOfPoint>();
-                                    }
+                                    suctionTraps[layerIndex] ??= new List<VectorOfVectorOfPoint>();
 
                                     /* since we know it isn't a resin trap, it becomes a suction trap */
                                     suctionTraps[layerIndex].Add(resinTraps[layerIndex][x]);
                                 }
 
                                 /* to keep things tidy while we iterate resin traps, it will be left in the list for now, and removed later */
-                            } else
+                            } 
+                            else
                             {
                                 /* doesn't overlap by enough, remove from air map */
                                 CvInvoke.Subtract(currentAirMap, currentContour, currentAirMap);
                             }
-                            currentContour.Dispose();
                         };
 
                         /* anything that converted to a suction trap needs to removed from resinTraps. Loop backwards so indexes don't shift */
@@ -1363,57 +1359,43 @@ namespace UVtools.Core
                             }
                         }
                     }
-                    progress.LockAndIncrement();
+
+                    progress++;
                 }
                 if (progress.Token.IsCancellationRequested) return result.OrderBy(issue => issue.Type).ThenBy(issue => issue.LayerIndex).ThenBy(issue => issue.Area).ToList();
-                progress.Reset("Translate contours (Resin traps)", (uint)(resinTraps.Length + suctionTraps.Length));
+                
+                progress.Reset("Translate contours (Resin traps)", 0/*(uint)(resinTraps.Length + suctionTraps.Length)*/);
 
                 /* translate all contour points by ROI x and y */
-                for (var i = 0; i < resinTraps.Length; i++)
+                foreach (var listOfLayers in new[] { resinTraps, suctionTraps })
                 {
-                    var layerTraps = resinTraps[i];
-                    if (layerTraps is null) continue;
-                    for (var trapIndex = 0; trapIndex < layerTraps.Count; trapIndex++)
+                    Parallel.ForEach(listOfLayers, contoursGroups =>
                     {
-                        var trapContours = layerTraps[trapIndex];
-                        if (trapContours is null) continue;
-                        var arrayOfArrayOfPoints = trapContours.ToArrayOfArray();
-
-                        foreach (var pointArray in arrayOfArrayOfPoints)
+                        if (contoursGroups is null) return;
+                        for (var groupIndex = 0; groupIndex < contoursGroups.Count; groupIndex++)
                         {
-                            Parallel.ForEach(Enumerable.Range(0, pointArray.Length), pointIndex =>
-                            {
-                                pointArray[pointIndex] = new Point(pointArray[pointIndex].X + ROI.X, pointArray[pointIndex].Y + ROI.Y);
-                            });
-                        }
-                        layerTraps[trapIndex] = new VectorOfVectorOfPoint(arrayOfArrayOfPoints);
-                    }
-                    progress.LockAndIncrement();
-                }
-                if (progress.Token.IsCancellationRequested) return result.OrderBy(issue => issue.Type).ThenBy(issue => issue.LayerIndex).ThenBy(issue => issue.Area).ToList();
-                for (var i = 0; i < suctionTraps.Length; i++)
-                {
-                    var layerTraps = suctionTraps[i];
-                    if (layerTraps is null) continue;
-                    for (var trapIndex = 0; trapIndex < layerTraps.Count; trapIndex++)
-                    {
-                        var trapContours = layerTraps[trapIndex];
-                        if (trapContours is null) continue;
-                        var arrayOfArrayOfPoints = trapContours.ToArrayOfArray();
+                            var contours = contoursGroups[groupIndex];
+                            if (contours is null) continue;
 
-                        foreach (var pointArray in arrayOfArrayOfPoints)
-                        {
-                            Parallel.ForEach(Enumerable.Range(0, pointArray.Length), pointIndex =>
-                            {
-                                pointArray[pointIndex] = new Point(pointArray[pointIndex].X + ROI.X, pointArray[pointIndex].Y + ROI.Y);
-                            });
-                        }
-                        layerTraps[trapIndex] = new VectorOfVectorOfPoint(arrayOfArrayOfPoints);
-                    }
-                    progress.LockAndIncrement();
-                }
+                            var arrayOfArrayOfPoints = contours.ToArrayOfArray();
 
+                            foreach (var pointArray in arrayOfArrayOfPoints)
+                            {
+                                for (int i = 0; i < pointArray.Length; i++)
+                                {
+                                    pointArray[i] = new Point(pointArray[i].X + BoundingRectangle.X, pointArray[i].Y + BoundingRectangle.Y);
+                                }
+                            }
+
+                            contoursGroups[groupIndex] = new VectorOfVectorOfPoint(arrayOfArrayOfPoints);
+                        }
+
+                        //progress.LockAndIncrement();
+                    });
+                }
+                
                 if (progress.Token.IsCancellationRequested) return result.OrderBy(issue => issue.Type).ThenBy(issue => issue.LayerIndex).ThenBy(issue => issue.Area).ToList();
+                
                 for (var layerIndex = 0; layerIndex < resinTraps.Length; layerIndex++)
                 {
                     if (resinTraps[layerIndex] == null) continue;
@@ -1421,11 +1403,11 @@ namespace UVtools.Core
                     /* select new LayerIssue(this[layerIndex], LayerIssue.IssueType.ResinTrap, area.Contour, area.BoundingRectangle)) */
                     foreach (var trap in resinTraps[layerIndex])
                     {
-                        var rect = CvInvoke.BoundingRectangle(trap.ToArrayOfArray().SelectMany(t => t.ToArray()).ToArray());
+                        var rect = CvInvoke.BoundingRectangle(trap[0]);
                         AddIssue(new LayerIssue(this[layerIndex], LayerIssue.IssueType.ResinTrap, trap.ToArrayOfArray(), rect));
                     }
-                    if (progress.Token.IsCancellationRequested) return result.OrderBy(issue => issue.Type).ThenBy(issue => issue.LayerIndex).ThenBy(issue => issue.Area).ToList();
                 }
+
                 var minimumSuctionArea = resinTrapConfig.RequiredAreaToConsiderSuctionCup;
                 for (var layerIndex = 0; layerIndex < suctionTraps.Length; layerIndex++)
                 {
@@ -1434,46 +1416,14 @@ namespace UVtools.Core
                     foreach (var trap in suctionTraps[layerIndex])
                     {
                         var suctionTrapArea = EmguContours.GetContourArea(trap);
-                        if (suctionTrapArea > minimumSuctionArea)
-                        {
-                            var rect = CvInvoke.BoundingRectangle(trap.ToArrayOfArray().SelectMany(t => t.ToArray()).ToArray());
-                            AddIssue(new LayerIssue(this[layerIndex], LayerIssue.IssueType.SuctionCup, trap.ToArrayOfArray(), rect));
-                        }
+                        if (suctionTrapArea < minimumSuctionArea) continue;
+                        var rect = CvInvoke.BoundingRectangle(trap[0]);
+                        AddIssue(new LayerIssue(this[layerIndex], LayerIssue.IssueType.SuctionCup, trap.ToArrayOfArray(), rect){Area = suctionTrapArea });
                     }
-                    if (progress.Token.IsCancellationRequested) return result.OrderBy(issue => issue.Type).ThenBy(issue => issue.LayerIndex).ThenBy(issue => issue.Area).ToList();
-                }
-
-            }
-
-            /*var resultSorted = result.ToList();
-            resultSorted.Sort((issue, layerIssue) =>
-            {
-                int ret = issue.Type.CompareTo(layerIssue.Type);
-                return ret != 0 ? ret : issue.LayerIndex.CompareTo(layerIssue.LayerIndex);
-            });*/
-            if (progress.Token.IsCancellationRequested) return result.OrderBy(issue => issue.Type).ThenBy(issue => issue.LayerIndex).ThenBy(issue => issue.Area).ToList();
-
-            for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
-            {
-                if (!layerHollowAreas.TryGetValue(layerIndex, out var list)) continue;
-                if (list.Count == 0) continue;
-                foreach (var issue in 
-                        from area 
-                        in list 
-                        where area.Type == LayerHollowArea.AreaType.Trap 
-                        select new LayerIssue(this[layerIndex], LayerIssue.IssueType.ResinTrap, area.Contours, area.BoundingRectangle){Area = area.Area})
-                {
-                    AddIssue(issue);
                 }
             }
 
             return result.OrderBy(issue => issue.Type).ThenBy(issue => issue.LayerIndex).ThenBy(issue => issue.Area).ToList();
-        }
-
-        private void GenerateAirMap(Mat input, Mat output, VectorOfVectorOfPoint externals)
-        {
-            CvInvoke.BitwiseNot(input, output);
-            CvInvoke.DrawContours(output, externals, -1, new MCvScalar(0, 0, 0, 255), -1);
         }
 
         public void DrawModifications(IList<PixelOperation> drawings, OperationProgress progress = null)
@@ -1804,7 +1754,5 @@ namespace UVtools.Core
         }
 
         #endregion
-
-
     }
 }

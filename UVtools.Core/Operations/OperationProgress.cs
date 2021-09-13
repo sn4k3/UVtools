@@ -29,7 +29,7 @@ namespace UVtools.Core.Operations
 
         public const string StatusExtracting = "Extracting";
 
-        public const string StatusIslands = "Layers processed (Islands/Overhangs)";
+        public const string StatusIslands = "Layers processed (Islands/Overhangs/Resin traps)";
         public const string StatusResinTrapsOptimized = "Layers optimized (Resin traps)";
         public const string StatusResinTraps = "Layers processed (Resin traps)";
         public const string StatusRepairLayers = "Repaired Layers";
