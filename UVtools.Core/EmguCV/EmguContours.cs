@@ -109,6 +109,33 @@ namespace UVtools.Core.EmguCV
         }
 
         /// <summary>
+        /// Gets contours that are positive pixels and group them by areas
+        /// Only compatible with Tree type of contour detection
+        /// </summary>
+        /// <returns></returns>
+        public static List<VectorOfVectorOfPoint> GetPositiveContoursInGroups(VectorOfVectorOfPoint contours, int[,] hierarchy)
+        {
+            var result = new List<VectorOfVectorOfPoint>();
+            var vectorSize = contours.Size;
+            var processedContours = new bool[vectorSize];
+            for (int i = 0; i < vectorSize; i++)
+            {
+                if (processedContours[i]) continue;
+                processedContours[i] = true;
+                var index = result.Count;
+                result.Add(new VectorOfVectorOfPoint(contours[i]));
+                for (int n = i + 1; n < vectorSize; n++)
+                {
+                    if (processedContours[n] || hierarchy[n, EmguContour.HierarchyParent] != i) continue;
+                    processedContours[n] = true;
+                    result[index].Push(contours[n]);
+                }
+            }
+
+            return result;
+        }
+
+        /// <summary>
         /// Gets contours inside contours that are black pixels and group them by areas
         /// Only compatible with Tree type of contour detection
         /// </summary>
@@ -123,12 +150,13 @@ namespace UVtools.Core.EmguCV
                 if (processedContours[i]) continue;
                 processedContours[i] = true;
                 if (hierarchy[i, EmguContour.HierarchyParent] == -1) continue;
+                var index = result.Count;
                 result.Add(new VectorOfVectorOfPoint(contours[i]));
                 for (int n = i + 1; n < vectorSize; n++)
                 {
                     if (processedContours[n] || hierarchy[n, EmguContour.HierarchyParent] != i) continue;
                     processedContours[n] = true;
-                    result[^1].Push(contours[n]);
+                    result[index].Push(contours[n]);
                 }
             }
 

@@ -1214,22 +1214,7 @@ namespace UVtools.WPF
                         using var vec = EmguContours.GetContoursInside(LayerCache.LayerContours, LayerCache.LayerContourHierarchy, operation.Location);
                         if (vec.Size > 0) CvInvoke.DrawContours(LayerCache.ImageBgr, vec, -1, new MCvScalar(color.B, color.G, color.R), -1);
 
-                        /*var hollowGroups = new List<VectorOfVectorOfPoint>();
-                        var processedContours = new bool[LayerCache.LayerContours.Size];
-                        for (int i = 0; i < LayerCache.LayerContours.Size; i++)
-                        {
-                            if(processedContours[i]) continue;
-                            processedContours[i] = true;
-                            if (LayerCache.LayerContourHierarchy[i, EmguContour.HierarchyParent] == -1) continue;
-                            hollowGroups.Add(new VectorOfVectorOfPoint(LayerCache.LayerContours[i]));
-                            for (int n = i + 1; n < LayerCache.LayerContours.Size; n++)
-                            {
-                                if (processedContours[n] || LayerCache.LayerContourHierarchy[n, EmguContour.HierarchyParent] != i) continue;
-                                processedContours[n] = true;
-                                hollowGroups[^1].Push(LayerCache.LayerContours[n]);
-                            }
-
-                        }
+                        /*var hollowGroups = EmguContours.GetPositiveContoursInGroups(LayerCache.LayerContours, LayerCache.LayerContourHierarchy);
 
                         foreach (var vec in hollowGroups)
                         {
