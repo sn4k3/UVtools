@@ -146,15 +146,11 @@ namespace UVtools.WPF
                                 }
                                 else if (issue.Type == LayerIssue.IssueType.ResinTrap)
                                 {
-                                    using (var contours =
-                                        new VectorOfVectorOfPoint(new VectorOfPoint(issue.Pixels)))
-                                    {
-                                        CvInvoke.DrawContours(image, contours, -1, new MCvScalar(255), -1);
-                                    }
-
+                                    using var contours = new VectorOfVectorOfPoint(issue.Contours);
+                                    CvInvoke.DrawContours(image, contours, -1, EmguExtensions.WhiteColor, -1);
                                     edited = true;
                                 }
-
+                                
                             }
 
                             if (edited)
@@ -351,11 +347,12 @@ namespace UVtools.WPF
                 return;
             }
 
-            if (issue.Type is LayerIssue.IssueType.TouchingBound or LayerIssue.IssueType.EmptyLayer || (issue.X == -1 && issue.Y == -1))
+            var firstPoint = issue.FirstPoint;
+            if (issue.Type is LayerIssue.IssueType.TouchingBound or LayerIssue.IssueType.EmptyLayer || (firstPoint.X == -1 && firstPoint.Y == -1))
             {
                 ZoomToFit();
             }
-            else if (issue.X >= 0 && issue.Y >= 0)
+            else if (firstPoint.X >= 0 && firstPoint.Y >= 0)
             {
 
                 if (Settings.LayerPreview.ZoomIssues ^ (_globalModifiers & KeyModifiers.Alt) != 0)

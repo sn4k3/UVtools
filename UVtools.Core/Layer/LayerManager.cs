@@ -904,8 +904,7 @@ namespace UVtools.Core
 
                             if (pixels.Count > 0)
                             {
-                                AddIssue(new LayerIssue(layer, LayerIssue.IssueType.TouchingBound,
-                                    pixels.ToArray()));
+                                AddIssue(new LayerIssue(layer, LayerIssue.IssueType.TouchingBound, pixels.ToArray(), null));
                             }
                         }
 
@@ -1168,13 +1167,15 @@ namespace UVtools.Core
                             //
                             var listHollowArea = new List<LayerHollowArea>();
                             var hollowGroups = EmguContours.GetNegativeContoursInGroups(contours, hierarchy);
+                            var areas = EmguContours.GetContoursArea(hollowGroups);
 
-                            foreach (var group in hollowGroups)
+                            for (var i = 0; i < hollowGroups.Count; i++)
                             {
-                                if(CvInvoke.ContourArea(group[0]) < resinTrapConfig.RequiredAreaToProcessCheck) continue;
-                                var rect = CvInvoke.BoundingRectangle(group[0]);
-                                listHollowArea.Add(new LayerHollowArea(group.ToArrayOfArray(),
+                                if (areas[i] < resinTrapConfig.RequiredAreaToProcessCheck) continue;
+                                var rect = CvInvoke.BoundingRectangle(hollowGroups[i][0]);
+                                listHollowArea.Add(new LayerHollowArea(hollowGroups[i].ToArrayOfArray(),
                                     rect,
+                                    areas[i],
                                     layer.Index <= resinTrapConfig.StartLayerIndex ||
                                     layer.Index == LayerCount - 1 // First and Last layers, always drains
                                         ? LayerHollowArea.AreaType.Drain
@@ -1415,7 +1416,7 @@ namespace UVtools.Core
                 int ret = issue.Type.CompareTo(layerIssue.Type);
                 return ret != 0 ? ret : issue.LayerIndex.CompareTo(layerIssue.LayerIndex);
             });*/
-            if (progress.Token.IsCancellationRequested) return result.OrderBy(issue => issue.Type).ThenBy(issue => issue.LayerIndex).ThenBy(issue => issue.PixelsCount).ToList();
+            if (progress.Token.IsCancellationRequested) return result.OrderBy(issue => issue.Type).ThenBy(issue => issue.LayerIndex).ThenBy(issue => issue.Area).ToList();
 
             for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
             {
@@ -1425,13 +1426,13 @@ namespace UVtools.Core
                         from area 
                         in list 
                         where area.Type == LayerHollowArea.AreaType.Trap 
-                        select new LayerIssue(this[layerIndex], LayerIssue.IssueType.ResinTrap, area.Contours[0], area.BoundingRectangle))
+                        select new LayerIssue(this[layerIndex], LayerIssue.IssueType.ResinTrap, area.Contours, area.BoundingRectangle){Area = area.Area})
                 {
                     AddIssue(issue);
                 }
             }
 
-            return result.OrderBy(issue => issue.Type).ThenBy(issue => issue.LayerIndex).ThenBy(issue => issue.PixelsCount).ToList();
+            return result.OrderBy(issue => issue.Type).ThenBy(issue => issue.LayerIndex).ThenBy(issue => issue.Area).ToList();
         }
 
 

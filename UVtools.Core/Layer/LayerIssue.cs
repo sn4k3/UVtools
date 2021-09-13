@@ -11,6 +11,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using UVtools.Core.Extensions;
 using UVtools.Core.Objects;
 
 namespace UVtools.Core
@@ -267,6 +268,7 @@ namespace UVtools.Core
             Island,
             Overhang,
             ResinTrap,
+            SuctionCup,
             TouchingBound,
             PrintHeight,
             EmptyLayer,
@@ -276,7 +278,7 @@ namespace UVtools.Core
         /// <summary>
         /// Gets the parent layer
         /// </summary>
-        public Layer Layer { get; }
+        public Layer Layer { get; init; }
 
         /// <summary>
         /// Gets the layer index
@@ -286,65 +288,88 @@ namespace UVtools.Core
         /// <summary>
         /// Gets the issue type associated
         /// </summary>
-        public IssueType Type { get; }
+        public IssueType Type { get; init; }
 
         /// <summary>
         /// Gets the pixels points containing the issue
         /// </summary>
-        public Point[] Pixels { get; }
-
-        public int PixelsCount => Pixels?.Length ?? 0;
+        public Point[] Pixels { get; init; }
 
         /// <summary>
-        /// Gets the bounding rectangle of the pixel area
+        /// Gets the contours containing the issue
         /// </summary>
-        public Rectangle BoundingRectangle { get; }
+        public Point[][] Contours { get; init; }
 
-        /// <summary>
-        /// Gets the X coordinate for the first point, -1 if doesn't exists
-        /// </summary>
-        public int X => HaveValidPoint ? Pixels[0].X : -1;
-
-        /// <summary>
-        /// Gets the Y coordinate for the first point, -1 if doesn't exists
-        /// </summary>
-        public int Y => HaveValidPoint ? Pixels[0].Y : -1;
-
-        /// <summary>
-        /// Gets the XY point for first point
-        /// </summary>
-        public Point FirstPoint => HaveValidPoint ? Pixels[0] : new Point(-1, -1);
-        public string FirstPointStr => $"{FirstPoint.X}, {FirstPoint.Y}";
-
-        /// <summary>
-        /// Gets the number of pixels on this issue
-        /// </summary>
-        public uint Size
+        public int PixelsCount
         {
             get
             {
-                if (Type == IssueType.ResinTrap && !BoundingRectangle.IsEmpty)
-                {
-                    return (uint)(BoundingRectangle.Width * BoundingRectangle.Height);
-                }
-
-                if (Pixels is null) return 0;
-                return (uint)Pixels.Length;
+                if (Pixels is not null) return Pixels.Length;
+                if (Contours is not null) return (int)Area;
+                return 0;
             }
         }
 
         /// <summary>
+        /// Gets the bounding rectangle of the pixel area
+        /// </summary>
+        public Rectangle BoundingRectangle { get; init; }
+
+        /// <summary>
+        /// Gets the area of the issue
+        /// </summary>
+        public double Area { get; init; }
+
+        /// <summary>
+        /// Gets the X coordinate for the first point, -1 if doesn't exists
+        /// </summary>
+        public int X => FirstPoint.X;
+
+        /// <summary>
+        /// Gets the Y coordinate for the first point, -1 if doesn't exists
+        /// </summary>
+        public int Y => FirstPoint.Y;
+
+        /// <summary>
+        /// Gets the XY point for first point
+        /// </summary>
+        public Point FirstPoint
+        {
+            get
+            {
+                if (Pixels?.Length > 0) return Pixels[0];
+                if (Contours?.Length > 0) return Contours[0][0];
+                return new Point(-1, -1);
+            }
+        }
+
+        public string FirstPointStr => $"{FirstPoint.X}, {FirstPoint.Y}";
+
+        /// <summary>
         /// Check if this issue have a valid start point to show
         /// </summary>
-        public bool HaveValidPoint => Pixels?.Length > 0;
+        public bool HaveValidPoint => Pixels?.Length > 0 || Contours?.Length > 0;
 
-        public LayerIssue(Layer layer, IssueType type, Point[] pixels = null, Rectangle boundingRectangle = default)
+        public LayerIssue(Layer layer, IssueType type, Point[] pixels = null, Point[][] contours = null, Rectangle boundingRectangle = default)
         {
             Layer = layer;
             Type = type;
+            Contours = contours;
             Pixels = pixels;
             BoundingRectangle = boundingRectangle;
+            Area = (uint)boundingRectangle.Area();
         }
+
+        public LayerIssue(Layer layer, IssueType type, Point[] pixels = null, Rectangle boundingRectangle = default) :
+            this(layer, type, pixels, null, boundingRectangle) { }
+
+
+        public LayerIssue(Layer layer, IssueType type, Point[][] contours, Rectangle boundingRectangle = default) :
+            this(layer, type, null, contours, boundingRectangle) { }
+
+        public LayerIssue(Layer layer, IssueType type) :
+            this(layer, type, null, null, default)
+        { }
 
         public Point this[uint index] => Pixels[index];
 
@@ -362,8 +387,9 @@ namespace UVtools.Core
 
         public override string ToString()
         {
-            return $"{nameof(Type)}: {Type}, Layer: {Layer.Index}, {nameof(X)}: {X}, {nameof(Y)}: {Y}, {nameof(Size)}: {Size}";
+            return $"{nameof(Type)}: {Type}, Layer: {Layer.Index}, {nameof(X)}: {X}, {nameof(Y)}: {Y}, {nameof(PixelsCount)}: {PixelsCount}";
         }
+
 
         public bool Equals(LayerIssue other)
         {
@@ -373,6 +399,7 @@ namespace UVtools.Core
                    && Type == other.Type 
                    && PixelsCount == other.PixelsCount 
                    && Pixels is not null && other.Pixels is not null && Pixels.SequenceEqual(other.Pixels)
+                   && Contours is not null && other.Contours is not null && Contours.SequenceEqual(other.Contours)
                    //&& BoundingRectangle.Equals(other.BoundingRectangle)
                 ;
         }
@@ -392,6 +419,7 @@ namespace UVtools.Core
                 var hashCode = (Layer != null ? Layer.GetHashCode() : 0);
                 hashCode = (hashCode * 397) ^ (int) Type;
                 hashCode = (hashCode * 397) ^ (Pixels != null ? Pixels.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ (Contours != null ? Contours.GetHashCode() : 0);
                 hashCode = (hashCode * 397) ^ BoundingRectangle.GetHashCode();
                 return hashCode;
             }
@@ -410,11 +438,13 @@ namespace UVtools.Core
             Drain
         }
         /// <summary>
-        /// Gets area pixels
+        /// Gets contours
         /// </summary>
         public Point[][] Contours { get; }
 
         public Rectangle BoundingRectangle { get; }
+
+        public double Area { get; set; }
 
         public AreaType Type { get; set; } = AreaType.Unknown;
 
@@ -433,22 +463,6 @@ namespace UVtools.Core
             set => Contours[index] = value;
         }
 
-        /*public Point[] this[uint x, uint y]
-        {
-            get
-            {
-                for (uint i = 0; i < Contours.Length; i++)
-                {
-                    if (Contours[i].X == x && Contours[i].Y == y) return Contours[i];
-                }
-                return Point.Empty;
-            }
-        }
-
-        public Point this[int x, int y] => this[(uint)x, (uint)y];
-
-        public Point this[Point point] => this[point.X, point.Y];*/
-
         #endregion
 
         public IEnumerator<Point[]> GetEnumerator()
@@ -461,14 +475,13 @@ namespace UVtools.Core
             return GetEnumerator();
         }
 
-        public LayerHollowArea()
-        {
-        }
+        public LayerHollowArea() { }
 
-        public LayerHollowArea(Point[][] contours, Rectangle boundingRectangle, AreaType type = AreaType.Unknown)
+        public LayerHollowArea(Point[][] contours, Rectangle boundingRectangle, double area, AreaType type = AreaType.Unknown)
         {
             Contours = contours;
             BoundingRectangle = boundingRectangle;
+            Area = area;
             Type = type;
         }
     }

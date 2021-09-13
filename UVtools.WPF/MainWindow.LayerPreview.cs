@@ -963,10 +963,9 @@ namespace UVtools.WPF
                                 : Settings.LayerPreview.ResinTrapColor;
 
 
-                            using (var vec = new VectorOfVectorOfPoint(new VectorOfPoint(issue.Pixels)))
+                            using (var vec = new VectorOfVectorOfPoint(issue.Contours))
                             {
-                                CvInvoke.DrawContours(LayerCache.ImageBgr, vec, -1,
-                                    new MCvScalar(color.B, color.G, color.R), -1);
+                                CvInvoke.DrawContours(LayerCache.ImageBgr, vec, -1, new MCvScalar(color.B, color.G, color.R), -1);
                             }
 
                             if (_showLayerImageCrosshairs &&
@@ -1496,7 +1495,7 @@ namespace UVtools.WPF
         /// </summary>
         private Rectangle GetTransposedIssueBounds(LayerIssue issue)
         {
-            if (issue.X >= 0 && issue.Y >= 0 && (issue.BoundingRectangle.IsEmpty || issue.Size == 1))
+            if (issue.X >= 0 && issue.Y >= 0 && (issue.BoundingRectangle.IsEmpty || issue.PixelsCount == 1))
                 return new Rectangle(GetTransposedPoint(issue.FirstPoint, true), new Size(1, 1));
             //return new Rectangle(LayerCache.Image.Height - 1 - issue.Y, issue.X, 1, 1);
 

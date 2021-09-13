@@ -358,12 +358,8 @@ namespace UVtools.Core.Operations
                             foreach (var issue in Issues.Where(issue => issue.LayerIndex == layerIndex && issue.Type == LayerIssue.IssueType.ResinTrap))
                             {
                                 initImage();
-                                using var vec = new VectorOfVectorOfPoint(new VectorOfPoint(issue.Pixels));
-                                CvInvoke.DrawContours(image,
-                                    vec,
-                                    -1,
-                                    EmguExtensions.WhiteColor,
-                                    -1);
+                                using var vec = new VectorOfVectorOfPoint(issue.Contours);
+                                CvInvoke.DrawContours(image, vec, -1, EmguExtensions.WhiteColor, -1);
                             }
                         }
                     }
