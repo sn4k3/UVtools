@@ -1138,70 +1138,8 @@ namespace UVtools.Core
 
                         if (resinTrapConfig.Enabled)
                         {
-                            bool needDispose = false;
-                            Mat resinTrapImage;
-                            if (resinTrapConfig.BinaryThreshold > 0)
-                            {
-                                resinTrapImage = new Mat();
-                                CvInvoke.Threshold(image, resinTrapImage, resinTrapConfig.BinaryThreshold, byte.MaxValue, ThresholdType.Binary);
-                            }
-                            else
-                            {
-                                needDispose = true;
-                                resinTrapImage = image;
-                            }
-
-
-                            using var contours = resinTrapImage.FindContours(out var hierarchy, RetrType.Tree);
-
-                            if (needDispose)
-                            {
-                                resinTrapImage.Dispose();
-                            }
-
-                            //
-                            //hierarchy[i][0]: the index of the next contour of the same level
-                            //hierarchy[i][1]: the index of the previous contour of the same level
-                            //hierarchy[i][2]: the index of the first child
-                            //hierarchy[i][3]: the index of the parent
-                            //
-                            var listHollowArea = new List<LayerHollowArea>();
-                            var hollowGroups = EmguContours.GetNegativeContoursInGroups(contours, hierarchy);
-                            var areas = EmguContours.GetContoursArea(hollowGroups);
-
-                            for (var i = 0; i < hollowGroups.Count; i++)
-                            {
-                                if (areas[i] < resinTrapConfig.RequiredAreaToProcessCheck) continue;
-                                var rect = CvInvoke.BoundingRectangle(hollowGroups[i][0]);
-                                listHollowArea.Add(new LayerHollowArea(hollowGroups[i].ToArrayOfArray(),
-                                    rect,
-                                    areas[i],
-                                    layer.Index <= resinTrapConfig.StartLayerIndex ||
-                                    layer.Index == LayerCount - 1 // First and Last layers, always drains
-                                        ? LayerHollowArea.AreaType.Drain
-                                        : LayerHollowArea.AreaType.Unknown));
-                            }
-
-                            if (listHollowArea.Count > 0) layerHollowAreas.TryAdd(layer.Index, listHollowArea);
-                            
-                            /*for (int i = 0; i < contours.Size; i++)
-                            {
-                                if (hierarchy[i, EmguContour.HierarchyFirstChild] != -1 || hierarchy[i, EmguContour.HierarchyParent] == -1)
-                                    continue;
-
-                                var rect = CvInvoke.BoundingRectangle(contours[i]);
-                                if (rect.Area() < resinTrapConfig.RequiredAreaToProcessCheck) continue;
-
-                                listHollowArea.Add(new LayerHollowArea(contours[i].ToArray(),
-                                    rect,
-                                    layer.Index <= resinTrapConfig.StartLayerIndex ||
-                                    layer.Index == LayerCount - 1 // First and Last layers, always drains
-                                        ? LayerHollowArea.AreaType.Drain
-                                        : LayerHollowArea.AreaType.Unknown));
-
-                                if (listHollowArea.Count > 0)
-                                    layerHollowAreas.TryAdd(layer.Index, listHollowArea);
-                            }*/
+                            /* this used to calculate all contours for the layers, however new algorithm crops the layers to the overall bounding box
+                             * so the contours produced here are not translated properly. We will generate contours during the algorithm itself later */
                         }
                     }
 
@@ -1211,203 +1149,300 @@ namespace UVtools.Core
 
             if (resinTrapConfig.Enabled)
             {
-                progress.Reset(OperationProgress.StatusResinTraps, LayerCount);
+                progress.Reset("Detecting Air Boundaries (Resin traps)", LayerCount);
+                var ROI = new Rectangle(BoundingRectangle.X, BoundingRectangle.Y, BoundingRectangle.Width, BoundingRectangle.Height);
+                ROI.X -= ROI.X > 5 ? 5 : 0;
+                ROI.Y -= ROI.Y > 5 ? 5 : 0;
+                ROI.Width += ((ROI.X + ROI.Width) < (SlicerFile.PixelWidth - 6) ? 5 : 0) * 2;
+                ROI.Height += ((ROI.Y + ROI.Height) < (SlicerFile.PixelHeight - 6) ? 5 : 0) * 2;
 
-                ResinTrapTree resinTrapTree = new();
+                List<VectorOfVectorOfPoint>[] resinTraps = new List<VectorOfVectorOfPoint>[LayerCount];
+                List<VectorOfVectorOfPoint>[] suctionTraps = new List<VectorOfVectorOfPoint>[LayerCount];
 
-                for (uint layerIndex = resinTrapConfig.StartLayerIndex+1; layerIndex < LayerCount - 1; layerIndex++) // First and Last layers, always drains
+                VectorOfVectorOfPoint[] externalContours = new VectorOfVectorOfPoint[LayerCount];
+                List<VectorOfVectorOfPoint>[] hollows = new List<VectorOfVectorOfPoint>[LayerCount];
+
+                /* calculate all hollow contours */
+                Parallel.ForEach(Enumerable.Range(0, (int)LayerCount), CoreSettings.ParallelOptions , x =>
                 {
-                    if (progress.Token.IsCancellationRequested) break;
-                    if (!layerHollowAreas.TryGetValue(layerIndex, out var areas))
-                        continue; // No hollow areas in this layer, ignore
+                    Mat contourLayer = new Mat(this[x].LayerMat, ROI);
 
-                    byte areaCount = 0;
-                    //foreach (var area in areas)
+                    using VectorOfVectorOfPoint contours = new();
+                    using Mat layerHeirarchy = new();
+                    CvInvoke.FindContours(contourLayer, contours, layerHeirarchy, RetrType.Tree, ChainApproxMethod.ChainApproxSimple);
+                    var arr = layerHeirarchy.GetData();
 
-                    //Parallel.ForEach(from t in areas where t.Type == LayerHollowArea.AreaType.Unknown select t, 
-                    //     CoreSettings.ParallelOptions, area =>
-                    foreach (var area in areas)
+                    VectorOfVectorOfPoint externals = new VectorOfVectorOfPoint();
+                    for (var y = 0; y < contours.Size; y++)
                     {
-                        //if (progress.Token.IsCancellationRequested) return;
-                        if (area.Type != LayerHollowArea.AreaType.Unknown) continue; // processed, ignore
-                        progress.Token.ThrowIfCancellationRequested();
-                        area.Type = LayerHollowArea.AreaType.Trap;
-
-                        areaCount++;
-
-                        var trapGroup = resinTrapTree.AddRoot(area);
-
-                        //List<LayerHollowArea> linkedAreas = new();
-
-                        for (sbyte dir = 1; dir >= -1 && area.Type != LayerHollowArea.AreaType.Drain; dir -= 2)
-                        //Parallel.ForEach(new sbyte[] {1, -1},  CoreSettings.ParallelOptions,  dir =>
+                        if ((int)arr.GetValue(0, y, 3) == -1)
                         {
-                            Queue<LayerHollowArea> queue = new();
-                            queue.Enqueue(area);
-                            area.Processed = false;
-                            int nextLayerIndex = (int) layerIndex;
-                            while (queue.Count > 0 && area.Type != LayerHollowArea.AreaType.Drain)
+                            externals.Push(contours[y]);
+                        }
+                    }
+
+                    externalContours[x] = externals;
+
+
+                    /* hollow contour grouping */
+                    var hollowGroups = new List<VectorOfVectorOfPoint>();
+                    var processedContours = new bool[contours.Size];
+                    for (int i = 0; i < contours.Size; i++)
+                    {
+                        if (processedContours[i]) continue;
+                        processedContours[i] = true;
+                        if ((int)arr.GetValue(0, i, 3) == -1) continue;
+                        hollowGroups.Add(new VectorOfVectorOfPoint(contours[i]));
+                        for (int n = i + 1; n < contours.Size; n++)
+                        {
+                            if (processedContours[n] || (int)arr.GetValue(0, n, 3) != i) continue;
+                            processedContours[n] = true;
+                            hollowGroups[^1].Push(contours[n]);
+                        }
+
+                    }
+                    hollows[x] = hollowGroups;
+
+                    contourLayer.Dispose();
+                    progress.LockAndIncrement();
+                });
+                if (progress.Token.IsCancellationRequested) return result.OrderBy(issue => issue.Type).ThenBy(issue => issue.LayerIndex).ThenBy(issue => issue.Area).ToList();
+                progress.Reset("Process Layers Pass 1 of 2 (Resin traps)", LayerCount);
+
+
+                /* define all mats up front, reducing allocations */
+                Mat currentAirMap = Mat.Zeros(ROI.Height, ROI.Width, DepthType.Cv8U, 1);
+                Mat layerAirMap = Mat.Zeros(ROI.Height, ROI.Width, DepthType.Cv8U, 1);
+                Mat airOverlap = Mat.Zeros(ROI.Height, ROI.Width, DepthType.Cv8U, 1);
+                Mat curLayer = null;
+                /* the first pass does bottom to top, and tracks anything it thinks is a resin trap */
+                for (var layerIndex = 0; layerIndex < LayerCount; layerIndex++)
+                {
+                    if (progress.Token.IsCancellationRequested) return result.OrderBy(issue => issue.Type).ThenBy(issue => issue.LayerIndex).ThenBy(issue => issue.Area).ToList();
+                    curLayer = new Mat(this[layerIndex].LayerMat, ROI);
+                    if (resinTrapConfig.BinaryThreshold > 0)
+                    {
+                        CvInvoke.Threshold(curLayer, curLayer, resinTrapConfig.BinaryThreshold, byte.MaxValue, ThresholdType.Binary);
+                    }
+                    /* find hollows of current layer */
+                    GenerateAirMap(curLayer, layerAirMap, externalContours[layerIndex]);
+
+                    if (layerIndex == 0)
+                    {
+                        currentAirMap = layerAirMap.Clone();
+                    }
+
+                    /* remove solid areas of current layer from the air map */
+                    CvInvoke.Subtract(currentAirMap, curLayer, currentAirMap);
+
+                    /* add in areas of air in current layer to air map */
+                    CvInvoke.BitwiseOr(layerAirMap, currentAirMap, currentAirMap);
+
+
+                    for (var i = 0; i < hollows[layerIndex].Count; i++)
+                    {
+                        /* intersect current contour, with the current airmap. */
+                        Mat currentContour = Mat.Zeros(curLayer.Height, curLayer.Width, curLayer.Depth, curLayer.NumberOfChannels);
+                        CvInvoke.DrawContours(currentContour, hollows[layerIndex][i], -1, new MCvScalar(255, 255, 255, 255), -1);
+                        CvInvoke.BitwiseAnd(currentAirMap, currentContour, airOverlap);
+                        int overlapCount = CvInvoke.CountNonZero(airOverlap);
+                        if (overlapCount == 0)
+                        {
+                            var hollowArea = EmguContours.GetContourArea(hollows[layerIndex][i]);
+                            if (hollowArea > resinTrapConfig.RequiredAreaToProcessCheck)
                             {
-                                //if (progress.Token.IsCancellationRequested) return;
-                                progress.Token.ThrowIfCancellationRequested();
-
-                                LayerHollowArea checkArea = queue.Dequeue();
-                                if (checkArea.Processed) continue;
-                                checkArea.Processed = true;
-                                nextLayerIndex += dir;
-
-                                if (nextLayerIndex < 0 || nextLayerIndex >= LayerCount)
-                                    break; // Exhausted layers
-                                bool haveNextAreas =
-                                    layerHollowAreas.TryGetValue((uint) nextLayerIndex, out var nextAreas);
-                                Dictionary<int, LayerHollowArea> intersectingAreas = new();
-
-                                progress.Reset(OperationProgress.StatusResinTraps, LayerCount, (uint) nextLayerIndex);
-
-                                using (var image = this[nextLayerIndex].LayerMat)
+                                /* this countour does *not* overlap known air */
+                                if (resinTraps[layerIndex] == null)
                                 {
-                                    var span = image.GetDataSpan<byte>();
-                                    using (var emguImage = image.NewBlank())
-                                    {
-                                        using (var vec = new VectorOfVectorOfPoint(checkArea.Contours))
-                                        {
-                                            CvInvoke.DrawContours(emguImage, vec, -1, EmguExtensions.WhiteColor, -1);
-                                        }
+                                    resinTraps[layerIndex] = new List<VectorOfVectorOfPoint>();
+                                }
 
-                                        using (var intersectingAreasMat = image.NewBlank())
-                                        {
-                                            if (haveNextAreas)
-                                            {
-                                                foreach (var nextArea in nextAreas)
-                                                {
-                                                    if (!checkArea.BoundingRectangle.IntersectsWith(
-                                                        nextArea.BoundingRectangle)) continue;
-                                                    intersectingAreas.Add(intersectingAreas.Count + 1, nextArea);
-                                                    using var vec = new VectorOfVectorOfPoint(nextArea.Contours);
-                                                    CvInvoke.DrawContours(intersectingAreasMat, vec, -1,
-                                                        new MCvScalar(intersectingAreas.Count), -1);
-                                                }
-                                            }
-
-                                            //Debug.WriteLine($"Area Count: {areaCount} | Next Areas: {intersectingAreas.Count} | Layer: {layerIndex} | Next Layer: {nextLayerIndex} | Dir: {dir}");
-
-                                            bool exitPixelLoop = false;
-                                            uint blackCount = 0;
-
-                                            var spanContour = emguImage.GetDataSpan<byte>();
-                                            var spanIntersect = intersectingAreasMat.GetDataSpan<byte>();
-                                            for (int y = checkArea.BoundingRectangle.Y;
-                                                y < checkArea.BoundingRectangle.Bottom &&
-                                                area.Type != LayerHollowArea.AreaType.Drain && !exitPixelLoop;
-                                                y++)
-                                            {
-                                                int pixelPos = image.GetPixelPos(checkArea.BoundingRectangle.X, y) - 1;
-                                                for (int x = checkArea.BoundingRectangle.X;
-                                                    x < checkArea.BoundingRectangle.Right &&
-                                                    area.Type != LayerHollowArea.AreaType.Drain && !exitPixelLoop;
-                                                    x++)
-                                                {
-                                                    pixelPos++;
-
-                                                    if (spanContour[pixelPos] != 255) continue; // No contour
-                                                    if (span[pixelPos] > resinTrapConfig.MaximumPixelBrightnessToDrain)
-                                                        continue; // Threshold to ignore white area
-                                                    blackCount++;
-
-                                                    if (intersectingAreas.Count > 0) // Have areas, can be on same area path or not
-                                                    {
-                                                        byte i = spanIntersect[pixelPos];
-                                                        if (i == 0 || !intersectingAreas.ContainsKey(i)) // Black pixels
-                                                            continue;
-
-                                                        //Debug.WriteLine($"BlackCount: {blackCount}, pixel color: {i}, layerindex: {layerIndex}");
-
-                                                        if (intersectingAreas[i].Type == LayerHollowArea.AreaType.Drain) // Found a drain, stop query
-                                                        {
-                                                            area.Type = LayerHollowArea.AreaType.Drain;
-                                                            exitPixelLoop = true;
-                                                        }
-                                                        else
-                                                        {
-                                                            queue.Enqueue(intersectingAreas[i]);
-                                                        }
-
-
-                                                        trapGroup = resinTrapTree.AddChild(trapGroup, intersectingAreas[i]);
-                                                        //linkedAreas.Add(intersectingAreas[i]);
-                                                        intersectingAreas.Remove(i);
-                                                        if (intersectingAreas.Count == 0
-                                                        ) // Intersection areas sweep end, quit this path
-                                                        {
-                                                            exitPixelLoop = true;
-                                                            break;
-                                                        }
-
-                                                        //break;
-
-                                                        // Old Way
-
-                                                        /*foreach (var nextAreaCheck in intersectingAreas)
-                                                        {
-                                                            using (var vec = new VectorOfPoint(nextAreaCheck.Value.Contour))
-                                                            {
-                                                                //Debug.WriteLine(CvInvoke.PointPolygonTest(vec, new PointF(x, y), false));
-                                                                if (CvInvoke.PointPolygonTest(vec, new PointF(x, y), false) < 0) continue;
-                                                            }
-    
-                                                            if (nextAreaCheck.Value.Type == LayerHollowArea.AreaType.Drain) // Found a drain, stop query
-                                                            {
-                                                                area.Type = LayerHollowArea.AreaType.Drain;
-                                                                exitPixelLoop = true;
-                                                            }
-                                                            else
-                                                            {
-                                                                queue.Enqueue(nextAreaCheck.Value);
-                                                            }
-    
-                                                            linkedAreas.Add(nextAreaCheck.Value);
-                                                            intersectingAreas.Remove(nextAreaCheck.Key);
-                                                            if (intersectingAreas.Count == 0)
-                                                            {
-                                                                haveNextAreas = false;
-                                                                exitPixelLoop = true;
-                                                            }
-                                                            //exitPixelLoop = true;
-                                                            break;
-    
-                                                        }*/
-                                                    }
-                                                    else if (blackCount > Math.Min(checkArea.Contours.Length / 2,
-                                                        resinTrapConfig.RequiredBlackPixelsToDrain)
-                                                    ) // Black pixel without next areas = Drain
-                                                    {
-                                                        trapGroup.CurrentAreaType = LayerHollowArea.AreaType.Drain;
-                                                        //area.Type = LayerHollowArea.AreaType.Drain;
-                                                        exitPixelLoop = true;
-                                                        break;
-                                                    }
-                                                } // X loop
-                                            } // Y loop
-
-                                            if (queue.Count == 0 && blackCount > Math.Min(checkArea.Contours.Length / 2,
-                                                resinTrapConfig.RequiredBlackPixelsToDrain))
-                                            {
-                                                trapGroup.CurrentAreaType = LayerHollowArea.AreaType.Drain;
-                                                //area.Type = LayerHollowArea.AreaType.Drain;
-                                            }
-
-                                        } // Dispose intersecting image
-                                    } // Dispose emgu image
-                                } // Dispose image
-                            } // Areas loop
-                        } // Dir layer loop
-
-                        /*foreach (var linkedArea in linkedAreas) // Update linked areas
+                                /* add a resin trap (for now... will be revisited in part 2) */
+                                resinTraps[layerIndex].Add(hollows[layerIndex][i]);
+                            }
+                        }
+                        else
                         {
-                            linkedArea.Type = area.Type;
-                        }*/
-                    }//);
+                            if (overlapCount >= resinTrapConfig.RequiredBlackPixelsToDrain)
+                            {
+                                /* this contour does overlap air, add it to the current air map */
+                                CvInvoke.BitwiseOr(currentContour, currentAirMap, currentAirMap);
+                            }
+                            else
+                            {
+                                /* it overlapped ,but not by enough, treat as solid */
+                                CvInvoke.Subtract(currentAirMap, currentContour, currentAirMap);
+                            }
+                        }
+
+                        /* cleanup */
+                        currentContour.Dispose();
+                    };
+                    curLayer.Dispose();
+                    progress.LockAndIncrement();
                 }
+                if (progress.Token.IsCancellationRequested) return result.OrderBy(issue => issue.Type).ThenBy(issue => issue.LayerIndex).ThenBy(issue => issue.Area).ToList();
+                progress.Reset("Process Layers Pass 2 of 2 (Resin traps)", LayerCount);
+                /* starting over again but this time from the top to the bottom */
+                currentAirMap = null;
+
+                for (var layerIndex = resinTraps.Length - 1; layerIndex >= 0; layerIndex--)
+                {
+                    if (progress.Token.IsCancellationRequested) return result.OrderBy(issue => issue.Type).ThenBy(issue => issue.LayerIndex).ThenBy(issue => issue.Area).ToList();
+                    curLayer = new Mat(this[layerIndex].LayerMat, ROI);
+                    if (resinTrapConfig.BinaryThreshold > 0)
+                    {
+                        CvInvoke.Threshold(curLayer, curLayer, resinTrapConfig.BinaryThreshold, byte.MaxValue, ThresholdType.Binary);
+                    }
+
+                    if (layerIndex == resinTraps.Length - 1)
+                    {
+                        /* this is subtly different that for the first pass, we don't use GenerateAirMap for the initial airmap */
+                        /* instead we use a bitwise not, this way anything that is open/hollow on the top layer is treated as air */
+                        currentAirMap = curLayer.Clone();
+                        CvInvoke.BitwiseNot(curLayer, currentAirMap);
+                    }
+
+                    /* we still modify the airmap like normal, where we account for the air areas of the layer, and any contours that might overlap...*/
+                    GenerateAirMap(curLayer, layerAirMap, externalContours[layerIndex]);
+
+                    /* remove solid areas of current layer from the air map */
+                    CvInvoke.Subtract(currentAirMap, curLayer, currentAirMap);
+
+                    /* add in areas of air in current layer to air map */
+                    CvInvoke.BitwiseOr(layerAirMap, currentAirMap, currentAirMap);
+
+                    if (resinTraps[layerIndex] != null)
+                    {
+                        /* here we don't worry about finding contours on the layer, the bottom to top pass did that already */
+                        /* all we care about is contours the first pass thought were resin traps, since there was no access to air from the bottom */
+                        for (var x = 0; x < resinTraps[layerIndex].Count; x++)
+                        {
+                            /* check if each contour overlaps known air */
+                            Mat currentContour = Mat.Zeros(curLayer.Height, curLayer.Width, curLayer.Depth, curLayer.NumberOfChannels);
+                            CvInvoke.DrawContours(currentContour, resinTraps[layerIndex][x], -1, new MCvScalar(255, 255, 255, 255), -1);
+
+                            CvInvoke.BitwiseAnd(currentAirMap, currentContour, airOverlap);
+                            int overlapCount = CvInvoke.CountNonZero(airOverlap);
+
+                            if (overlapCount > resinTrapConfig.RequiredBlackPixelsToDrain)
+                            {
+                                /* this contour does overlap air, add this it our air map */
+                                CvInvoke.BitwiseOr(currentContour, currentAirMap, currentAirMap);
+                                if (resinTrapConfig.DetectSuctionCups)
+                                {
+                                    /* if we haven't defined a suctionTrap list for this layer, do so */
+                                    if (suctionTraps[layerIndex] == null)
+                                    {
+                                        suctionTraps[layerIndex] = new List<VectorOfVectorOfPoint>();
+                                    }
+
+                                    /* since we know it isn't a resin trap, it becomes a suction trap */
+                                    suctionTraps[layerIndex].Add(resinTraps[layerIndex][x]);
+                                }
+
+                                /* to keep things tidy while we iterate resin traps, it will be left in the list for now, and removed later */
+                            } else
+                            {
+                                /* doesn't overlap by enough, remove from air map */
+                                CvInvoke.Subtract(currentAirMap, currentContour, currentAirMap);
+                            }
+                            currentContour.Dispose();
+                        };
+
+                        /* anything that converted to a suction trap needs to removed from resinTraps. Loop backwards so indexes don't shift */
+                        if (suctionTraps[layerIndex] != null)
+                        {
+                            for (var x = suctionTraps[layerIndex].Count - 1; x >= 0; x--)
+                            {
+                                resinTraps[layerIndex].Remove(suctionTraps[layerIndex][x]);
+                                if (resinTraps[layerIndex].Count == 0)
+                                {
+                                    resinTraps[layerIndex] = null;
+                                }
+                            }
+                        }
+                    }
+                    progress.LockAndIncrement();
+                }
+                if (progress.Token.IsCancellationRequested) return result.OrderBy(issue => issue.Type).ThenBy(issue => issue.LayerIndex).ThenBy(issue => issue.Area).ToList();
+                progress.Reset("Translate contours (Resin traps)", (uint)(resinTraps.Length + suctionTraps.Length));
+
+                /* translate all contour points by ROI x and y */
+                for (var i = 0; i < resinTraps.Length; i++)
+                {
+                    var layerTraps = resinTraps[i];
+                    if (layerTraps is null) continue;
+                    for (var trapIndex = 0; trapIndex < layerTraps.Count; trapIndex++)
+                    {
+                        var trapContours = layerTraps[trapIndex];
+                        if (trapContours is null) continue;
+                        var arrayOfArrayOfPoints = trapContours.ToArrayOfArray();
+
+                        foreach (var pointArray in arrayOfArrayOfPoints)
+                        {
+                            Parallel.ForEach(Enumerable.Range(0, pointArray.Length), pointIndex =>
+                            {
+                                pointArray[pointIndex] = new Point(pointArray[pointIndex].X + ROI.X, pointArray[pointIndex].Y + ROI.Y);
+                            });
+                        }
+                        layerTraps[trapIndex] = new VectorOfVectorOfPoint(arrayOfArrayOfPoints);
+                    }
+                    progress.LockAndIncrement();
+                }
+                if (progress.Token.IsCancellationRequested) return result.OrderBy(issue => issue.Type).ThenBy(issue => issue.LayerIndex).ThenBy(issue => issue.Area).ToList();
+                for (var i = 0; i < suctionTraps.Length; i++)
+                {
+                    var layerTraps = suctionTraps[i];
+                    if (layerTraps is null) continue;
+                    for (var trapIndex = 0; trapIndex < layerTraps.Count; trapIndex++)
+                    {
+                        var trapContours = layerTraps[trapIndex];
+                        if (trapContours is null) continue;
+                        var arrayOfArrayOfPoints = trapContours.ToArrayOfArray();
+
+                        foreach (var pointArray in arrayOfArrayOfPoints)
+                        {
+                            Parallel.ForEach(Enumerable.Range(0, pointArray.Length), pointIndex =>
+                            {
+                                pointArray[pointIndex] = new Point(pointArray[pointIndex].X + ROI.X, pointArray[pointIndex].Y + ROI.Y);
+                            });
+                        }
+                        layerTraps[trapIndex] = new VectorOfVectorOfPoint(arrayOfArrayOfPoints);
+                    }
+                    progress.LockAndIncrement();
+                }
+
+                if (progress.Token.IsCancellationRequested) return result.OrderBy(issue => issue.Type).ThenBy(issue => issue.LayerIndex).ThenBy(issue => issue.Area).ToList();
+                for (var layerIndex = 0; layerIndex < resinTraps.Length; layerIndex++)
+                {
+                    if (resinTraps[layerIndex] == null) continue;
+
+                    /* select new LayerIssue(this[layerIndex], LayerIssue.IssueType.ResinTrap, area.Contour, area.BoundingRectangle)) */
+                    foreach (var trap in resinTraps[layerIndex])
+                    {
+                        var rect = CvInvoke.BoundingRectangle(trap.ToArrayOfArray().SelectMany(t => t.ToArray()).ToArray());
+                        AddIssue(new LayerIssue(this[layerIndex], LayerIssue.IssueType.ResinTrap, trap.ToArrayOfArray(), rect));
+                    }
+                    if (progress.Token.IsCancellationRequested) return result.OrderBy(issue => issue.Type).ThenBy(issue => issue.LayerIndex).ThenBy(issue => issue.Area).ToList();
+                }
+                var minimumSuctionArea = resinTrapConfig.RequiredAreaToConsiderSuctionCup;
+                for (var layerIndex = 0; layerIndex < suctionTraps.Length; layerIndex++)
+                {
+                    if (suctionTraps[layerIndex] == null) continue;
+
+                    foreach (var trap in suctionTraps[layerIndex])
+                    {
+                        var suctionTrapArea = EmguContours.GetContourArea(trap);
+                        if (suctionTrapArea > minimumSuctionArea)
+                        {
+                            var rect = CvInvoke.BoundingRectangle(trap.ToArrayOfArray().SelectMany(t => t.ToArray()).ToArray());
+                            AddIssue(new LayerIssue(this[layerIndex], LayerIssue.IssueType.SuctionCup, trap.ToArrayOfArray(), rect));
+                        }
+                    }
+                    if (progress.Token.IsCancellationRequested) return result.OrderBy(issue => issue.Type).ThenBy(issue => issue.LayerIndex).ThenBy(issue => issue.Area).ToList();
+                }
+
             }
 
             /*var resultSorted = result.ToList();
@@ -1435,6 +1470,11 @@ namespace UVtools.Core
             return result.OrderBy(issue => issue.Type).ThenBy(issue => issue.LayerIndex).ThenBy(issue => issue.Area).ToList();
         }
 
+        private void GenerateAirMap(Mat input, Mat output, VectorOfVectorOfPoint externals)
+        {
+            CvInvoke.BitwiseNot(input, output);
+            CvInvoke.DrawContours(output, externals, -1, new MCvScalar(0, 0, 0, 255), -1);
+        }
 
         public void DrawModifications(IList<PixelOperation> drawings, OperationProgress progress = null)
         {
