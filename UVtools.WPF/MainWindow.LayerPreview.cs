@@ -978,6 +978,28 @@ namespace UVtools.WPF
                             continue;
                         }
 
+                        if (issue.Type == LayerIssue.IssueType.SuctionCup)
+                        {
+                            color = selectedIssues.Count > 0 && selectedIssues.Contains(issue)
+                                ? Settings.LayerPreview.SuctionCupHighlightColor
+                                : Settings.LayerPreview.SuctionCupColor;
+
+
+                            using (var vec = new VectorOfVectorOfPoint(issue.Contours))
+                            {
+                                CvInvoke.DrawContours(LayerCache.ImageBgr, vec, -1, new MCvScalar(color.B, color.G, color.R), -1);
+                            }
+
+                            if (_showLayerImageCrosshairs &&
+                                !Settings.LayerPreview.CrosshairShowOnlyOnSelectedIssues &&
+                                LayerImageBox.Zoom <= AppSettings.CrosshairFadeLevel)
+                            {
+                                DrawCrosshair(issue.BoundingRectangle);
+                            }
+
+                            continue;
+                        }
+
                         switch (issue.Type)
                         {
                             case LayerIssue.IssueType.Island:
