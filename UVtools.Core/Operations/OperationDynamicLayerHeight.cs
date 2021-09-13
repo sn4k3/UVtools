@@ -714,7 +714,7 @@ namespace UVtools.Core.Operations
                     }
                     else
                     {
-                        CvInvoke.Add(matXorSum, matXor, matXorSum);
+                        CvInvoke.Max(matXorSum, matXor, matXorSum);
                     }
 
                     //var currentLayerHeigthUm = currentLayerHeight * 1000.0;
@@ -758,7 +758,7 @@ namespace UVtools.Core.Operations
 
                         if (erodeCount > 0) // Sum only if layers are different from the stack
                         {
-                            CvInvoke.Add(matSum, mat2, matSum);
+                            CvInvoke.Max(matSum, mat2, matSum);
                         }
                     }
                     else
