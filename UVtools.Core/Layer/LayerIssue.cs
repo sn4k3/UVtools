@@ -185,6 +185,16 @@ namespace UVtools.Core
         /// </summary>
         public byte MaximumPixelBrightnessToDrain { get; set; } = 30;
 
+        /// <summary>
+        /// Gets if suction cups can also be detected together with resin traps
+        /// </summary>
+        public bool DetectSuctionCups { get; set; } = true;
+
+        /// <summary>
+        /// Required minimum area to be considered a suction cup
+        /// </summary>
+        public uint RequiredAreaToConsiderSuctionCup { get; set; } = 100;
+
         public ResinTrapDetectionConfiguration(bool enabled = true)
         {
             Enabled = enabled;

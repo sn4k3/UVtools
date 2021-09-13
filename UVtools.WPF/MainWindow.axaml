@@ -818,6 +818,12 @@
                           Command="{Binding SetResinTrapDetectionStartLayer}"
                           CommandParameter="C"/>
                   </StackPanel>
+
+                  <CheckBox
+                      VerticalAlignment="Center"
+                      IsEnabled="{Binding Settings.Issues.ComputeResinTraps}"
+                      IsChecked="{Binding Settings.Issues.ComputeSuctionCups}"
+                      Content="Suction cups"/>
                   
                   <CheckBox
                     IsChecked="{Binding Settings.Issues.ComputeTouchingBounds}"

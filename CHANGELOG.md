@@ -16,7 +16,12 @@
    - (Fix) Outline - Hollow areas: Not outlining the second closing contour for contours with child
    - (Fix) Pixel editor - Eraser: It was selecting the whole blob even if have inner parents
    - (Fix) Setting window: When open it will change tabs quickly to fix the windows height/scroll problem
-- (Improvement) Solidify: Area threshold are now calculated by the real area instead of rectangle area
+- **Tools:**
+   - **Import layers:**
+      - (Add) 'MergeMax' to import type (#289)
+      - (Add) 'AbsDiff' to import type
+      - (Add) Description of operations on the combo box
+   - (Improvement) Solidify: Area threshold are now calculated by the real area instead of rectangle area
 - (Improvement) Better random generation for benchmark
 - (Improvement) Allow to cancel the new version download
 - (Improvement) Better version checker and file download methods

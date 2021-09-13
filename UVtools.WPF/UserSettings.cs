@@ -226,7 +226,9 @@ namespace UVtools.WPF
             private Color _overhangColor = new(255, 255, 105, 180);
             private Color _overhangHighlightColor = new(255, 255, 20, 147);
             private Color _resinTrapColor = new(255, 255, 165, 0);
-            private Color _resinTrapHighlightColor = new(255, 244, 164, 96); 
+            private Color _resinTrapHighlightColor = new(255, 244, 164, 96);
+            private Color _suctionCupColor = new(255, 229, 248, 255);
+            private Color _suctionCupHighlightColor = new(255, 189, 237, 255);
             private Color _touchingBoundsColor = new(255, 255, 0, 0);
             private Color _crosshairColor = new(255, 255, 0, 0);
             private bool _zoomToFitPrintVolumeBounds = true;
@@ -608,6 +610,41 @@ namespace UVtools.WPF
                 get => new(_resinTrapHighlightColor.ToAvalonia());
                 set => ResinTrapHighlightColor = new Color(value);
             }
+
+            public Color SuctionCupColor
+            {
+                get => _suctionCupColor;
+                set
+                {
+                    RaiseAndSetIfChanged(ref _suctionCupColor, value);
+                    RaisePropertyChanged(nameof(SuctionCupBrush));
+                }
+            }
+
+            [XmlIgnore]
+            public SolidColorBrush SuctionCupBrush
+            {
+                get => new(_suctionCupColor.ToAvalonia());
+                set => SuctionCupColor = new Color(value);
+            }
+
+            public Color SuctionCupHighlightColor
+            {
+                get => _suctionCupHighlightColor;
+                set
+                {
+                    RaiseAndSetIfChanged(ref _suctionCupHighlightColor, value);
+                    RaisePropertyChanged(nameof(SuctionCupHighlightBrush));
+                }
+            }
+
+            [XmlIgnore]
+            public SolidColorBrush SuctionCupHighlightBrush
+            {
+                get => new(_suctionCupHighlightColor.ToAvalonia());
+                set => SuctionCupHighlightColor = new Color(value);
+            }
+
             public Color TouchingBoundsColor
             {
                 get => _touchingBoundsColor;
@@ -726,6 +763,7 @@ namespace UVtools.WPF
             private bool _computeIslands = true;
             private bool _computeOverhangs = true;
             private bool _computeResinTraps = true;
+            private bool _computeSuctionCups = true;
             private bool _computeTouchingBounds = true;
             private bool _computePrintHeight = true;
             private bool _computeEmptyLayers = true;
@@ -743,6 +781,7 @@ namespace UVtools.WPF
             private byte _resinTrapRequiredAreaToProcessCheck = 17;
             private byte _resinTrapRequiredBlackPixelsToDrain = 10;
             private byte _resinTrapMaximumPixelBrightnessToDrain = 30;
+            private uint _suctionCupRequiredAreaToConsider = 1000;
             private byte _touchingBoundMinimumPixelBrightness = 127;
             private byte _touchingBoundMarginLeft = 5;
             private byte _touchingBoundMarginTop = 5;
@@ -785,6 +824,12 @@ namespace UVtools.WPF
             {
                 get => _computeResinTraps;
                 set => RaiseAndSetIfChanged(ref _computeResinTraps, value);
+            }
+
+            public bool ComputeSuctionCups
+            {
+                get => _computeSuctionCups;
+                set => RaiseAndSetIfChanged(ref _computeSuctionCups, value);
             }
 
             public bool ComputeTouchingBounds
@@ -887,6 +932,12 @@ namespace UVtools.WPF
             {
                 get => _resinTrapMaximumPixelBrightnessToDrain;
                 set => RaiseAndSetIfChanged(ref _resinTrapMaximumPixelBrightnessToDrain, value);
+            }
+
+            public uint SuctionCupRequiredAreaToConsider
+            {
+                get => _suctionCupRequiredAreaToConsider;
+                set => RaiseAndSetIfChanged(ref _suctionCupRequiredAreaToConsider, value);
             }
 
             public byte TouchingBoundMinimumPixelBrightness

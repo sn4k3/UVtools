@@ -629,7 +629,9 @@
 
                 </Grid>
 
-                <Grid Margin="10,0,10,10" RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto" ColumnDefinitions="Auto,Auto,*,Auto,Auto">
+                <Grid Margin="10,0,10,10" 
+                      RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto" 
+                      ColumnDefinitions="Auto,Auto,*,Auto,Auto">
 
                   <!--Previous layer difference  & Island-->
                   <TextBlock Grid.Row="0" Grid.Column="0"
@@ -643,8 +645,7 @@
                            VerticalAlignment="Center"
                           Background="{Binding Settings.LayerPreview.PreviousLayerDifferenceBrush}"
                           Command="{Binding SelectColor}"
-                          CommandParameter="PreviousLayerDifferenceColor"
-                        />
+                          CommandParameter="PreviousLayerDifferenceColor"/>
                   <TextBlock Grid.Row="0" Grid.Column="2"
                             Margin="10,0,0,0"
                             HorizontalAlignment="Right"
@@ -658,8 +659,7 @@
                            VerticalAlignment="Center"
                           Background="{Binding Settings.LayerPreview.IslandBrush}"
                           Command="{Binding SelectColor}"
-                          CommandParameter="IslandColor"
-                        />
+                          CommandParameter="IslandColor"/>
                   <Button Grid.Row="0" Grid.Column="4"
                           Margin="10,0,0,0"
                           Padding="10"
@@ -668,8 +668,7 @@
                            VerticalAlignment="Center"
                           Background="{Binding Settings.LayerPreview.IslandHighlightBrush}"
                           Command="{Binding SelectColor}"
-                          CommandParameter="IslandHighlightColor"
-                        />
+                          CommandParameter="IslandHighlightColor"/>
 
                   <!--Next layer difference  & Overhang-->
                   <TextBlock Grid.Row="2" Grid.Column="0"
@@ -683,8 +682,7 @@
                            VerticalAlignment="Center"
                           Background="{Binding Settings.LayerPreview.NextLayerDifferenceBrush}"
                           Command="{Binding SelectColor}"
-                          CommandParameter="NextLayerDifferenceColor"
-                        />
+                          CommandParameter="NextLayerDifferenceColor"/>
 
                   <TextBlock Grid.Row="2" Grid.Column="2"
                             Margin="10,0,0,0"
@@ -699,8 +697,7 @@
                            VerticalAlignment="Center"
                           Background="{Binding Settings.LayerPreview.OverhangBrush}"
                           Command="{Binding SelectColor}"
-                          CommandParameter="OverhangColor"
-                        />
+                          CommandParameter="OverhangColor"/>
                   <Button Grid.Row="2" Grid.Column="4"
                           Margin="10,0,0,0"
                           Padding="10"
@@ -724,8 +721,7 @@
                            VerticalAlignment="Center"
                           Background="{Binding Settings.LayerPreview.BothLayerDifferenceBrush}"
                           Command="{Binding SelectColor}"
-                          CommandParameter="BothLayerDifferenceColor"
-                        />
+                          CommandParameter="BothLayerDifferenceColor"/>
 
                   <TextBlock Grid.Row="4" Grid.Column="2"
                             Margin="10,0,0,0"
@@ -740,8 +736,7 @@
                            VerticalAlignment="Center"
                           Background="{Binding Settings.LayerPreview.ResinTrapBrush}"
                           Command="{Binding SelectColor}"
-                          CommandParameter="ResinTrapColor"
-                        />
+                          CommandParameter="ResinTrapColor"/>
                   <Button Grid.Row="4" Grid.Column="4"
                           Margin="10,0,0,0"
                           Padding="10"
@@ -750,23 +745,53 @@
                           VerticalAlignment="Center"
                           Background="{Binding Settings.LayerPreview.ResinTrapHighlightBrush}"
                           Command="{Binding SelectColor}"
-                          CommandParameter="ResinTrapHighlightColor"
-                        />
+                          CommandParameter="ResinTrapHighlightColor"/>
 
-
-                  <!--Diff & Touching bounds-->
+                  <!--Diff & suction cups-->
                   <CheckBox Grid.Row="6" Grid.Column="0"
                             Grid.ColumnSpan="3"
                             Content="Show layer difference by default"
-                            IsChecked="{Binding Settings.LayerPreview.ShowLayerDifference}"
-                          />
+                            IsChecked="{Binding Settings.LayerPreview.ShowLayerDifference}"/>
 
                   <TextBlock Grid.Row="6" Grid.Column="2"
+                             Margin="10,0,0,0"
+                             HorizontalAlignment="Right"
+                             VerticalAlignment="Center"
+                             Text="Suction cup / Selected Suction cup:"/>
+                  <Button Grid.Row="6" Grid.Column="3"
+                          Margin="10,0,0,0"
+                          Padding="10"
+                          BorderBrush="Black"
+                          BorderThickness="2"
+                          VerticalAlignment="Center"
+                          Background="{Binding Settings.LayerPreview.SuctionCupBrush}"
+                          Command="{Binding SelectColor}"
+                          CommandParameter="SuctionCupColor"/>
+                  <Button Grid.Row="6" Grid.Column="4"
+                          Margin="10,0,0,0"
+                          Padding="10"
+                          BorderBrush="Black"
+                          BorderThickness="2"
+                          VerticalAlignment="Center"
+                          Background="{Binding Settings.LayerPreview.SuctionCupHighlightBrush}"
+                          Command="{Binding SelectColor}"
+                          CommandParameter="SuctionCupHighlightColor"/>
+
+
+                  <!--Diff & Touching bounds-->
+
+                  <CheckBox Grid.Row="8" Grid.Column="0"
+                            Grid.ColumnSpan="3"
+                            Content="Show layer similarity instead of difference"
+                            ToolTip.Tip="If enabled, it will recolor the current layer pixels in common with the previous and next layer"
+                            IsChecked="{Binding Settings.LayerPreview.LayerDifferenceHighlightSimilarityInstead}"/>
+
+                  <TextBlock Grid.Row="8" Grid.Column="2"
                             Margin="10,0,0,0"
                             HorizontalAlignment="Right"
                             VerticalAlignment="Center"
                             Text="Touching boundary:"/>
-                  <Button Grid.Row="6" Grid.Column="3"
+                  <Button Grid.Row="8" Grid.Column="3"
                           Margin="10,0,0,0"
                           Padding="10"
                           BorderBrush="Black"
@@ -776,19 +801,14 @@
                           Command="{Binding SelectColor}"
                           CommandParameter="TouchingBoundsColor"/>
 
-                  <CheckBox Grid.Row="8" Grid.Column="0"
-                            Grid.ColumnSpan="3"
-                            Content="Show layer similarity instead of difference"
-                            ToolTip.Tip="If enabled, it will recolor the current layer pixels in common with the previous and next layer"
-                            IsChecked="{Binding Settings.LayerPreview.LayerDifferenceHighlightSimilarityInstead}"/>
 
                   <!-- Crosshair -->
-                  <TextBlock Grid.Row="8" Grid.Column="2"
+                  <TextBlock Grid.Row="10" Grid.Column="2"
                             Margin="10,0,0,0"
                             HorizontalAlignment="Right"
                             VerticalAlignment="Center"
                             Text="Crosshair:"/>
-                  <Button Grid.Row="8" Grid.Column="3"
+                  <Button Grid.Row="10" Grid.Column="3"
                           Margin="10,0,0,0"
                           Padding="10"
                           BorderBrush="Black"
@@ -796,8 +816,7 @@
                           VerticalAlignment="Center"
                           Background="{Binding Settings.LayerPreview.CrosshairBrush}"
                           Command="{Binding SelectColor}"
-                          CommandParameter="CrosshairColor"
-                        />
+                          CommandParameter="CrosshairColor"/>
                 </Grid>
               </StackPanel>
 
@@ -1008,17 +1027,20 @@
                                       IsChecked="{Binding Settings.Issues.ComputeOverhangs}"/>
                             <CheckBox Content="Resin traps"
                                       IsChecked="{Binding Settings.Issues.ComputeResinTraps}"/>
+                            <CheckBox Content="Suction cups"
+                                      IsEnabled="{Binding Settings.Issues.ComputeResinTraps}"
+                                      IsChecked="{Binding Settings.Issues.ComputeSuctionCups}"/>
                             <CheckBox Content="Touching boundary"
                                       IsChecked="{Binding Settings.Issues.ComputeTouchingBounds}"/>
-                            <CheckBox Content="Print height"
-                                      IsChecked="{Binding Settings.Issues.ComputePrintHeight}"/>
                         </StackPanel>
 
-                        <StackPanel
-                            Orientation="Horizontal" Spacing="10">
-                          <CheckBox Content="Empty layers"
-                                    IsChecked="{Binding Settings.Issues.ComputeEmptyLayers}"/>
-                        </StackPanel>
+                      <StackPanel Orientation="Horizontal" Spacing="10">
+                        <CheckBox Content="Print height"
+                                  IsChecked="{Binding Settings.Issues.ComputePrintHeight}"/>
+
+                        <CheckBox Content="Empty layers"
+                                  IsChecked="{Binding Settings.Issues.ComputeEmptyLayers}"/>
+                      </StackPanel>
                     </StackPanel>
                 </Grid>
 
@@ -1039,8 +1061,7 @@
                           IsChecked="{Binding Settings.Issues.IslandEnhancedDetection}"
                           ToolTip.Tip="Combines the island and overhang detections for a better and more realistic detection, also to discard false-positives. (Slower)
 &#x0a;If enabled, and when a island is found, it will check for overhangs on that same island, if no overhang found then the island will be discarded and considered safe, otherwise it will flag as an island issue.
-&#x0a;Note: Overhangs settings will be used to configure the detection. Enabling Overhangs is not required for this procedure to work."
-                        />
+&#x0a;Note: Overhangs settings will be used to configure the detection. Enabling Overhangs is not required for this procedure to work."/>
                 
                 <CheckBox Margin="10,0,10,10"
                           Content="Allow diagonal bonds during island detection"
@@ -1224,13 +1245,11 @@
                                  
                                   Minimum="1"
                                   Maximum="255"
-                                 Value="{Binding Settings.Issues.ResinTrapRequiredAreaToProcessCheck}"
-                                />
+                                 Value="{Binding Settings.Issues.ResinTrapRequiredAreaToProcessCheck}"/>
                   <TextBlock
                     VerticalAlignment="Center"
                     Text="Bounding area required for an object to be processed during resin trap detection"
-                    ToolTip.Tip="Objects with bounding area smaller than this value will not be processed during resin trip detection."
-                  />
+                    ToolTip.Tip="Objects with bounding area smaller than this value will not be processed during resin trip detection."/>
                 </StackPanel>
 
                 <StackPanel Orientation="Horizontal" Margin="10,0,10,10" Spacing="10">
@@ -1262,6 +1281,28 @@
                 </StackPanel>
               </StackPanel>
             </Border>
+
+              <Border
+                  Classes="GroupBox"
+                  Margin="5">
+
+                  <StackPanel Orientation="Vertical">
+                      <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold"
+                                 ToolTip.Tip="Hollow areas that aren't resin traps but lacks a venting hole at that level to prevent suction and pressure"
+                                 Text="Suction cups"/>
+
+                      <StackPanel Orientation="Horizontal" Margin="10" Spacing="10">
+                          <NumericUpDown Width="60"
+                                         Minimum="1"
+                                         Maximum="255"
+                                         Value="{Binding Settings.Issues.SuctionCupRequiredAreaToConsider}"/>
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            Text="Bounding area required for an object to be processed during suction cup detection"
+                            ToolTip.Tip="Objects with bounding area smaller than this value will not be processed during suction cup detection."/>
+                      </StackPanel>
+                    </StackPanel>
+                </Border>
 
             <Border
                 Classes="GroupBox"
