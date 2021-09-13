@@ -8,6 +8,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Drawing;
 using System.IO;
 using System.Text;
@@ -27,14 +28,25 @@ namespace UVtools.Core.Operations
         #region Enums
         public enum ImportTypes : byte
         {
+            [Description("Insert: Inserts the new imported layers")]
             Insert,
+            [Description("Replace: Replaces layers with the imported layers")]
             Replace,
+            [Description("Stack: Stacks and combine imported layers in the current layers")]
             Stack,
+            [Description("Merge: Merges current layers with the imported content by summing value of layer pixels")]
             Merge,
+            [Description("MergeMax: Merges current layers with the imported content by using the maximum value of layer pixels")]
             MergeMax,
+            [Description("Subtract: Subtracts current layers with the imported content")]
             Subtract,
+            [Description("AbsDiff: Absolute difference between current layers and the imported content")]
+            AbsDiff,
+            [Description("BitwiseAnd: Perform a 'bitwise AND' operation over layers and the imported pixels")]
             BitwiseAnd,
+            [Description("BitwiseOr: Perform a 'bitwise OR' operation over layers and the imported pixels")]
             BitwiseOr,
+            [Description("BitwiseXOr: Perform a 'bitwise XOR' operation over layers and the imported pixels")]
             BitwiseXOr,
         }
         #endregion
@@ -145,7 +157,7 @@ namespace UVtools.Core.Operations
             set => RaiseAndSetIfChanged(ref _extendBeyondLayerCount, value);
         }
 
-        public bool IsExtendBeyondLayerCountVisible => _importType == ImportTypes.Replace || _importType == ImportTypes.Stack || _importType == ImportTypes.Merge || _importType == ImportTypes.MergeMax;
+        public bool IsExtendBeyondLayerCountVisible => _importType is ImportTypes.Replace or ImportTypes.Stack or ImportTypes.Merge or ImportTypes.MergeMax;
 
         public bool DiscardUnmodifiedLayers
         {
@@ -216,7 +228,7 @@ namespace UVtools.Core.Operations
         protected override bool ExecuteInternally(OperationProgress progress)
         {
             progress.ItemCount = 0;
-            bool result = SlicerFile.SuppressRebuildPropertiesWork(() => { 
+            var result = SlicerFile.SuppressRebuildPropertiesWork(() => { 
                 List<FileFormat> fileFormats = new();
                 List<KeyValuePair<uint, string>> keyImage = new();
                 int lastProcessedLayerIndex = -1;
@@ -354,6 +366,7 @@ namespace UVtools.Core.Operations
                             }
                             break;
                         case ImportTypes.Subtract:
+                        case ImportTypes.AbsDiff:
                         case ImportTypes.BitwiseAnd:
                         case ImportTypes.BitwiseOr:
                         case ImportTypes.BitwiseXOr:
@@ -437,6 +450,15 @@ namespace UVtools.Core.Operations
                                         SlicerFile[layerIndex].LayerMat = newMat;
                                         break;
                                     }
+                                case ImportTypes.AbsDiff:
+                                {
+                                    if (layerIndex >= SlicerFile.LayerCount) return;
+                                    using var originalMat = SlicerFile[layerIndex].LayerMat;
+                                    using var newMat = fileFormat[i].LayerMat;
+                                    CvInvoke.AbsDiff(originalMat, newMat, newMat);
+                                    SlicerFile[layerIndex].LayerMat = newMat;
+                                    break;
+                                }
                                 case ImportTypes.BitwiseAnd:
                                     {
                                         if (layerIndex >= SlicerFile.LayerCount) return;

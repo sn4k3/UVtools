@@ -11,22 +11,23 @@
 
       <TextBlock Grid.Row="0" Grid.Column="0"
           VerticalAlignment="Center"
-          ToolTip.Tip="Insert: Insert layers. (Requires images with bounds equal or less than file resolution)
-&#x0a;Replace: Replace layers. (Requires images with bounds equal or less than file resolution)
-&#x0a;Stack: Stack layers content. (Requires images with bounds equal or less than file resolution)
-&#x0a;Merge: Merge layers by summing value of layer pixels. (Requires images with same resolution)
-&#x0a;MergeMax: Merge layers using the maximum value of layer pixels. (Requires images with same resolution)
-&#x0a;Subtract: Subtract layers content. (Requires images with same resolution)
-&#x0a;BitwiseAnd: Perform a 'bitwise and' operation over layer pixels. (Requires images with same resolution)
-&#x0a;BitwiseOr: Perform a 'bitwise or' operation over layer pixels. (Requires images with same resolution)
-&#x0a;BitwiseXOr: Perform a 'bitwise xor' operation over layer pixels. (Requires images with same resolution)"
+          ToolTip.Tip="Insert: Requires images with bounds equal or less than file resolution
+&#x0a;Replace: Requires images with bounds equal or less than file resolution
+&#x0a;Stack: Requires images with bounds equal or less than file resolution
+&#x0a;Merge: Requires images with same resolution
+&#x0a;MergeMax: Requires images with same resolution
+&#x0a;Subtract: Requires images with same resolution
+&#x0a;AbsDiff: Requires images with same resolution
+&#x0a;BitwiseAnd: Requires images with same resolution
+&#x0a;BitwiseOr: Requires images with same resolution
+&#x0a;BitwiseXOr: Requires images with same resolution"
           Text="Import type:"/>
 
       <ComboBox Grid.Row="0" Grid.Column="2"
                  VerticalAlignment="Center"
                  HorizontalAlignment="Stretch"
-                 SelectedItem="{Binding Operation.ImportType}"
-                 Items="{Binding Operation.ImportTypesItems}"/>
+                 Items="{Binding Operation.ImportType, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                 SelectedItem="{Binding Operation.ImportType, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
 
       <TextBlock Grid.Row="0" Grid.Column="4"
                  VerticalAlignment="Center"
