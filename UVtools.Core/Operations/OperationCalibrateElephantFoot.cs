@@ -640,7 +640,6 @@ namespace UVtools.Core.Operations
                     using (var roi = new Mat(layers[0],
                         new Rectangle(new Point(currentX, currentY), shape.Size)))
                     using (var erode = new Mat())
-                    using (var diff = new Mat())
                     using (var target = new Mat())
                     using (var mask = shape.NewBlank())
                     {
