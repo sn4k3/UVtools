@@ -775,7 +775,7 @@ namespace UVtools.Core
                 return true;
             }
 
-            void GenerateAirMap(Mat input, Mat output, VectorOfVectorOfPoint externals)
+            void GenerateAirMap(IInputArray input, IInputOutputArray output, VectorOfVectorOfPoint externals)
             {
                 CvInvoke.BitwiseNot(input, output); 
                 if (externals is null || externals.Size == 0) return;

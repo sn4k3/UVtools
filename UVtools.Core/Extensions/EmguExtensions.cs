@@ -68,6 +68,14 @@ namespace UVtools.Core.Extensions
             => InitMat(mat.Size, mat.NumberOfChannels, mat.Depth);
 
         /// <summary>
+        /// Creates a new blanked (All zeros) <see cref="UMat"/> with same size and type of the source
+        /// </summary>
+        /// <param name="mat"></param>
+        /// <returns>Blanked <see cref="Mat"/></returns>
+        public static UMat NewBlank(this UMat mat)
+            => InitUMat(mat.Size, mat.NumberOfChannels, mat.Depth);
+
+        /// <summary>
         /// Creates a <see cref="Mat"/> with same size and type of the source and set it to a color
         /// </summary>
         /// <param name="mat"></param>
@@ -86,6 +94,21 @@ namespace UVtools.Core.Extensions
         /// <returns></returns>
         public static Mat InitMat(Size size, int channels = 1, DepthType depthType = DepthType.Cv8U)
             => size.IsEmpty ? new() : Mat.Zeros(size.Height, size.Width, depthType, channels);
+
+        /// <summary>
+        /// Creates a new <see cref="UMat"/> and zero it
+        /// </summary>
+        /// <param name="size"></param>
+        /// <param name="channels"></param>
+        /// <param name="depthType"></param>
+        /// <returns></returns>
+        public static UMat InitUMat(Size size, int channels = 1, DepthType depthType = DepthType.Cv8U)
+        {
+            if (size.IsEmpty) return new();
+            var umat = new UMat(size.Height, size.Width, depthType, channels);
+            umat.SetTo(BlackColor);
+            return umat;
+        }
 
         /// <summary>
         /// Creates a new <see cref="Mat"/> and set it to a <see cref="MCvScalar"/>
