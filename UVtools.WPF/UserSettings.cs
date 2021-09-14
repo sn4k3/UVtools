@@ -781,7 +781,7 @@ namespace UVtools.WPF
             private byte _resinTrapRequiredAreaToProcessCheck = 17;
             private byte _resinTrapRequiredBlackPixelsToDrain = 10;
             private byte _resinTrapMaximumPixelBrightnessToDrain = 30;
-            private uint _suctionCupRequiredAreaToConsider = 2000;
+            private uint _suctionCupRequiredAreaToConsider = 5000;
             private byte _touchingBoundMinimumPixelBrightness = 127;
             private byte _touchingBoundMarginLeft = 5;
             private byte _touchingBoundMarginTop = 5;
