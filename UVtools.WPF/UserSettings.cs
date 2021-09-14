@@ -226,9 +226,9 @@ namespace UVtools.WPF
             private Color _overhangColor = new(255, 255, 105, 180);
             private Color _overhangHighlightColor = new(255, 255, 20, 147);
             private Color _resinTrapColor = new(255, 255, 165, 0);
-            private Color _resinTrapHighlightColor = new(255, 244, 164, 96);
-            private Color _suctionCupColor = new(255, 229, 248, 255);
-            private Color _suctionCupHighlightColor = new(255, 189, 237, 255);
+            private Color _resinTrapHighlightColor = new(255, 255, 127, 0);
+            private Color _suctionCupColor = new(255, 180, 235, 255);
+            private Color _suctionCupHighlightColor = new(255, 77, 207, 255);
             private Color _touchingBoundsColor = new(255, 255, 0, 0);
             private Color _crosshairColor = new(255, 255, 0, 0);
             private bool _zoomToFitPrintVolumeBounds = true;
@@ -781,7 +781,7 @@ namespace UVtools.WPF
             private byte _resinTrapRequiredAreaToProcessCheck = 17;
             private byte _resinTrapRequiredBlackPixelsToDrain = 10;
             private byte _resinTrapMaximumPixelBrightnessToDrain = 30;
-            private uint _suctionCupRequiredAreaToConsider = 1000;
+            private uint _suctionCupRequiredAreaToConsider = 2000;
             private byte _touchingBoundMinimumPixelBrightness = 127;
             private byte _touchingBoundMarginLeft = 5;
             private byte _touchingBoundMarginTop = 5;

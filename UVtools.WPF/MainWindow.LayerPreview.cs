@@ -954,51 +954,8 @@ namespace UVtools.WPF
                         if (issue.LayerIndex != ActualLayer) continue;
                         if (!issue.HaveValidPoint) continue;
 
-                        Color color = Color.Empty;
-
-                        if (issue.Type == LayerIssue.IssueType.ResinTrap)
-                        {
-                            color = selectedIssues.Count > 0 && selectedIssues.Contains(issue)
-                                ? Settings.LayerPreview.ResinTrapHighlightColor
-                                : Settings.LayerPreview.ResinTrapColor;
-
-
-                            using (var vec = new VectorOfVectorOfPoint(issue.Contours))
-                            {
-                                CvInvoke.DrawContours(LayerCache.ImageBgr, vec, -1, new MCvScalar(color.B, color.G, color.R), -1);
-                            }
-
-                            if (_showLayerImageCrosshairs &&
-                                !Settings.LayerPreview.CrosshairShowOnlyOnSelectedIssues &&
-                                LayerImageBox.Zoom <= AppSettings.CrosshairFadeLevel)
-                            {
-                                DrawCrosshair(issue.BoundingRectangle);
-                            }
-
-                            continue;
-                        }
-
-                        if (issue.Type == LayerIssue.IssueType.SuctionCup)
-                        {
-                            color = selectedIssues.Count > 0 && selectedIssues.Contains(issue)
-                                ? Settings.LayerPreview.SuctionCupHighlightColor
-                                : Settings.LayerPreview.SuctionCupColor;
-
-
-                            using (var vec = new VectorOfVectorOfPoint(issue.Contours))
-                            {
-                                CvInvoke.DrawContours(LayerCache.ImageBgr, vec, -1, new MCvScalar(color.B, color.G, color.R), -1);
-                            }
-
-                            if (_showLayerImageCrosshairs &&
-                                !Settings.LayerPreview.CrosshairShowOnlyOnSelectedIssues &&
-                                LayerImageBox.Zoom <= AppSettings.CrosshairFadeLevel)
-                            {
-                                DrawCrosshair(issue.BoundingRectangle);
-                            }
-
-                            continue;
-                        }
+                        var color = Color.Empty;
+                        bool drawCrosshair = false;
 
                         switch (issue.Type)
                         {
@@ -1006,25 +963,27 @@ namespace UVtools.WPF
                                 color = selectedIssues.Count > 0 && selectedIssues.Contains(issue)
                                     ? Settings.LayerPreview.IslandHighlightColor
                                     : Settings.LayerPreview.IslandColor;
-                                if (_showLayerImageCrosshairs &&
-                                    !Settings.LayerPreview.CrosshairShowOnlyOnSelectedIssues &&
-                                    LayerImageBox.Zoom <= AppSettings.CrosshairFadeLevel)
-                                {
-                                    DrawCrosshair(issue.BoundingRectangle);
-                                }
+                                drawCrosshair = true;
 
                                 break;
                             case LayerIssue.IssueType.Overhang:
                                 color = selectedIssues.Count > 0 && selectedIssues.Contains(issue)
                                     ? Settings.LayerPreview.OverhangHighlightColor
                                     : Settings.LayerPreview.OverhangColor;
-                                if (_showLayerImageCrosshairs &&
-                                    !Settings.LayerPreview.CrosshairShowOnlyOnSelectedIssues &&
-                                    LayerImageBox.Zoom <= AppSettings.CrosshairFadeLevel)
-                                {
-                                    DrawCrosshair(issue.BoundingRectangle);
-                                }
+                                drawCrosshair = true;
 
+                                break;
+                            case LayerIssue.IssueType.ResinTrap:
+                                color = selectedIssues.Count > 0 && selectedIssues.Contains(issue)
+                                    ? Settings.LayerPreview.ResinTrapHighlightColor
+                                    : Settings.LayerPreview.ResinTrapColor;
+                                drawCrosshair = true;
+                                break;
+                            case LayerIssue.IssueType.SuctionCup:
+                                color = selectedIssues.Count > 0 && selectedIssues.Contains(issue)
+                                    ? Settings.LayerPreview.SuctionCupHighlightColor
+                                    : Settings.LayerPreview.SuctionCupColor;
+                                drawCrosshair = true;
                                 break;
                             case LayerIssue.IssueType.TouchingBound:
                                 color = Settings.LayerPreview.TouchingBoundsColor;
@@ -1033,7 +992,22 @@ namespace UVtools.WPF
 
                         if (color.IsEmpty) continue;
 
-                        foreach (var pixel in issue)
+                        if (drawCrosshair && _showLayerImageCrosshairs &&
+                            !Settings.LayerPreview.CrosshairShowOnlyOnSelectedIssues &&
+                            LayerImageBox.Zoom <= AppSettings.CrosshairFadeLevel)
+                        {
+                            DrawCrosshair(issue.BoundingRectangle);
+                        }
+
+                        if (issue.Contours is not null)
+                        {
+                            using var vec = new VectorOfVectorOfPoint(issue.Contours);
+                            CvInvoke.DrawContours(LayerCache.ImageBgr, vec, -1, new MCvScalar(color.B, color.G, color.R), -1);
+                            continue;
+                        }
+
+                        if (issue.Pixels is null) continue;
+                        foreach (var pixel in issue.Pixels)
                         {
                             int pixelPos = LayerCache.Image.GetPixelPos(pixel);
                             byte brightness = imageSpan[pixelPos];
