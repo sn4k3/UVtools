@@ -1220,7 +1220,7 @@ namespace UVtools.Core
                 if (!direction)
                 {
                     toLayerIndex = fromLayerIndex + 1;
-                    fromLayerIndex = Math.Max(0, fromLayerIndex - Environment.ProcessorCount * 10);
+                    fromLayerIndex = (int)Math.Max(resinTrapConfig.StartLayerIndex, fromLayerIndex - Environment.ProcessorCount * 10);
                 }
 
                 Parallel.For(fromLayerIndex, toLayerIndex,
@@ -1244,7 +1244,7 @@ namespace UVtools.Core
                 /* define all mats up front, reducing allocations */
                 var currentAirMap = EmguExtensions.InitMat(BoundingRectangle.Size);
                 var layerAirMap = currentAirMap.NewBlank();
-                var airOverlap = currentAirMap.NewBlank();
+                //var airOverlap = currentAirMap.NewBlank();
                 /* the first pass does bottom to top, and tracks anything it thinks is a resin trap */
                 for (var layerIndex = resinTrapConfig.StartLayerIndex; layerIndex < LayerCount; layerIndex++)
                 {
@@ -1283,41 +1283,55 @@ namespace UVtools.Core
 
                     //currentAirMap.Save($"D:\\dump\\{layerIndex}_e.png");
 
-                    for (var i = 0; hollows[layerIndex] != null && i < hollows[layerIndex].Count; i++)
+                    if (hollows[layerIndex] is not null)
                     {
-                        if (progress.Token.IsCancellationRequested) return result.OrderBy(issue => issue.Type).ThenBy(issue => issue.LayerIndex).ThenBy(issue => issue.Area).ToList();
-                        if (resinTrapsContoursArea[layerIndex][i] < resinTrapConfig.RequiredAreaToProcessCheck) continue;
-
-                        /* intersect current contour, with the current airmap. */
-                        using var currentContour = curLayer.NewBlank();
-                        CvInvoke.DrawContours(currentContour, hollows[layerIndex][i], -1, EmguExtensions.WhiteColor, -1);
-                        CvInvoke.BitwiseAnd(currentAirMap, currentContour, airOverlap);
-                        var overlapCount = CvInvoke.CountNonZero(airOverlap);
-                        if (overlapCount == 0)
+                        resinTraps[layerIndex] = new();
+                        airContours[layerIndex] = new();
+                        Parallel.For(0, hollows[layerIndex].Count, CoreSettings.ParallelOptions, i =>
                         {
-                            /* this countour does *not* overlap known air */
-                            resinTraps[layerIndex] ??= new List<VectorOfVectorOfPoint>();
+                            //for (var i = 0; i < hollows[layerIndex].Count; i++)
+                            //{
+                            if (progress.Token.IsCancellationRequested) return;
+                            if (resinTrapsContoursArea[layerIndex][i] < resinTrapConfig.RequiredAreaToProcessCheck) return;
 
-                            /* add a resin trap (for now... will be revisited in part 2) */
-                            resinTraps[layerIndex].Add(hollows[layerIndex][i]);
-                        }
-                        else
-                        {
-                            if (overlapCount >= resinTrapConfig.RequiredBlackPixelsToDrain)
-                            {
-                                /* this contour does overlap air, add it to the current air map and remember this contour was air-connected for 2nd pass */
-                                airContours[layerIndex] ??= new List<VectorOfVectorOfPoint>();
-                                airContours[layerIndex].Add(hollows[layerIndex][i]);
+                            /* intersect current contour, with the current airmap. */
+                            using var currentContour = curLayer.NewBlank();
+                            using var airOverlap = curLayer.NewBlank();
+                            CvInvoke.DrawContours(currentContour, hollows[layerIndex][i], -1, EmguExtensions.WhiteColor, -1);
+                            CvInvoke.BitwiseAnd(currentAirMap, currentContour, airOverlap);
+                            var overlapCount = CvInvoke.CountNonZero(airOverlap);
 
-                                CvInvoke.BitwiseOr(currentContour, currentAirMap, currentAirMap);
-                            }
-                            else
+                            lock (this[layerIndex].Mutex)
                             {
-                                /* it overlapped ,but not by enough, treat as solid */
-                                CvInvoke.Subtract(currentAirMap, currentContour, currentAirMap);
+                                if (overlapCount == 0)
+                                {
+                                    /* this countour does *not* overlap known air */
+
+                                    /* add a resin trap (for now... will be revisited in part 2) */
+                                    resinTraps[layerIndex].Add(hollows[layerIndex][i]);
+                                }
+                                else
+                                {
+                                    if (overlapCount >= resinTrapConfig.RequiredBlackPixelsToDrain)
+                                    {
+                                        /* this contour does overlap air, add it to the current air map and remember this contour was air-connected for 2nd pass */
+                                        airContours[layerIndex].Add(hollows[layerIndex][i]);
+
+                                        CvInvoke.BitwiseOr(currentContour, currentAirMap, currentAirMap);
+                                    }
+                                    else
+                                    {
+                                        /* it overlapped ,but not by enough, treat as solid */
+                                        CvInvoke.Subtract(currentAirMap, currentContour, currentAirMap);
+                                    }
+                                }
                             }
-                        }
-                    };
+
+                        });
+
+                        if (progress.Token.IsCancellationRequested)
+                            return result.OrderBy(issue => issue.Type).ThenBy(issue => issue.LayerIndex).ThenBy(issue => issue.Area).ToList();
+                    }
 
                     matCache[layerIndex].Dispose();
                     matCache[layerIndex] = null;
@@ -1329,7 +1343,11 @@ namespace UVtools.Core
                 if (progress.Token.IsCancellationRequested) return result.OrderBy(issue => issue.Type).ThenBy(issue => issue.LayerIndex).ThenBy(issue => issue.Area).ToList();
                 progress.Reset("Process Layers Pass 2 of 2 (Resin traps)", LayerCount, resinTrapConfig.StartLayerIndex);
                 /* starting over again but this time from the top to the bottom */
-                currentAirMap = null;
+                if (currentAirMap is not null)
+                {
+                    currentAirMap.Dispose();
+                    currentAirMap = null;
+                }
 
                 for (var layerIndex = resinTraps.Length - 1; layerIndex >= resinTrapConfig.StartLayerIndex; layerIndex--)
                 {
@@ -1357,12 +1375,11 @@ namespace UVtools.Core
                     GenerateAirMap(curLayer, layerAirMap, externalContours[layerIndex]);
 
                     /* Update air map with any hollows that were found to be air-connected during first pass */
-                    if (airContours[layerIndex] != null)
+                    if (airContours[layerIndex] is not null)
                     {
-                        for (var y = 0; y < airContours[layerIndex].Count; y++)
-                        {
-                            CvInvoke.DrawContours(layerAirMap, airContours[layerIndex][y], -1, EmguExtensions.WhiteColor, -1);
-                        }
+                        Parallel.ForEach(airContours[layerIndex], CoreSettings.ParallelOptions, vec =>
+                            CvInvoke.DrawContours(layerAirMap, vec, -1, EmguExtensions.WhiteColor, -1)
+                        );
                     }
 
                     /* remove solid areas of current layer from the air map */
@@ -1371,55 +1388,60 @@ namespace UVtools.Core
                     /* add in areas of air in current layer to air map */
                     CvInvoke.BitwiseOr(layerAirMap, currentAirMap, currentAirMap);
 
-                    if (resinTraps[layerIndex] != null)
+                    if (resinTraps[layerIndex] is not null)
                     {
+                        suctionTraps[layerIndex] = new();
                         /* here we don't worry about finding contours on the layer, the bottom to top pass did that already */
                         /* all we care about is contours the first pass thought were resin traps, since there was no access to air from the bottom */
-                        for (var x = 0; x < resinTraps[layerIndex].Count; x++)
+                        Parallel.For(0, resinTraps[layerIndex].Count, CoreSettings.ParallelOptions, x =>
                         {
-                            if (progress.Token.IsCancellationRequested) return result.OrderBy(issue => issue.Type).ThenBy(issue => issue.LayerIndex).ThenBy(issue => issue.Area).ToList();
+                            if (progress.Token.IsCancellationRequested) return;
 
                             /* check if each contour overlaps known air */
                             using var currentContour = curLayer.NewBlank();
+                            using var airOverlap = curLayer.NewBlank();
                             CvInvoke.DrawContours(currentContour, resinTraps[layerIndex][x], -1, EmguExtensions.WhiteColor, -1);
 
                             CvInvoke.BitwiseAnd(currentAirMap, currentContour, airOverlap);
                             var overlapCount = CvInvoke.CountNonZero(airOverlap);
 
-                            if (overlapCount >= resinTrapConfig.RequiredBlackPixelsToDrain)
+                            lock (SlicerFile[layerIndex].Mutex)
                             {
-                                /* this contour does overlap air, add this it our air map */
-                                CvInvoke.BitwiseOr(currentContour, currentAirMap, currentAirMap);
-                                /* Always add the removed contour to suctionTraps (even if we aren't reporting suction traps)
-                                 * This is because contours that are placed on here get removed from resin traps in the next stage
-                                 * if you don't put them here, they never get removed even if they should :) */
-
-                                /* if we haven't defined a suctionTrap list for this layer, do so */
-                                suctionTraps[layerIndex] ??= new List<VectorOfVectorOfPoint>();
-
-                                /* since we know it isn't a resin trap, it becomes a suction trap */
-                                suctionTraps[layerIndex].Add(resinTraps[layerIndex][x]);
-
-                                /* to keep things tidy while we iterate resin traps, it will be left in the list for now, and removed later */
-                            } 
-                            else
-                            {
-                                /* doesn't overlap by enough, remove from air map */
-                                CvInvoke.Subtract(currentAirMap, currentContour, currentAirMap);
-                            }
-                        };
-
-                        /* anything that converted to a suction trap needs to removed from resinTraps. Loop backwards so indexes don't shift */
-                        if (suctionTraps[layerIndex] != null)
-                        {
-                            for (var x = suctionTraps[layerIndex].Count - 1; x >= 0; x--)
-                            {
-                                resinTraps[layerIndex].Remove(suctionTraps[layerIndex][x]);
-                                if (resinTraps[layerIndex].Count == 0)
+                                if (overlapCount >= resinTrapConfig.RequiredBlackPixelsToDrain)
                                 {
-                                    resinTraps[layerIndex] = null;
+                                    /* this contour does overlap air, add this it our air map */
+                                    CvInvoke.BitwiseOr(currentContour, currentAirMap, currentAirMap);
+                                    /* Always add the removed contour to suctionTraps (even if we aren't reporting suction traps)
+                                     * This is because contours that are placed on here get removed from resin traps in the next stage
+                                     * if you don't put them here, they never get removed even if they should :) */
+
+                                    /* if we haven't defined a suctionTrap list for this layer, do so */
+
+
+                                    /* since we know it isn't a resin trap, it becomes a suction trap */
+                                    suctionTraps[layerIndex].Add(resinTraps[layerIndex][x]);
+
+                                    /* to keep things tidy while we iterate resin traps, it will be left in the list for now, and removed later */
+                                }
+                                else
+                                {
+                                    /* doesn't overlap by enough, remove from air map */
+                                    CvInvoke.Subtract(currentAirMap, currentContour, currentAirMap);
                                 }
                             }
+                        });
+
+                        /* anything that converted to a suction trap needs to removed from resinTraps. Loop backwards so indexes don't shift */
+                        if (suctionTraps[layerIndex] is not null)
+                        {
+                            for (var i = suctionTraps[layerIndex].Count - 1; i >= 0; i--)
+                            {
+                                resinTraps[layerIndex].Remove(suctionTraps[layerIndex][i]);
+                                if (resinTraps[layerIndex].Count > 0) continue;
+                                resinTraps[layerIndex] = null;
+                                break;
+                            }
+                            
                         }
                     }
 
@@ -1434,6 +1456,7 @@ namespace UVtools.Core
                 progress.Reset("Translate contours (Resin traps)", 0/*(uint)(resinTraps.Length + suctionTraps.Length)*/);
 
                 /* translate all contour points by ROI x and y */
+                var offsetBy = new Point(BoundingRectangle.X, BoundingRectangle.Y);
                 foreach (var listOfLayers in new[] { resinTraps, suctionTraps })
                 {
                     Parallel.ForEach(listOfLayers, contoursGroups =>
@@ -1447,13 +1470,10 @@ namespace UVtools.Core
                             var arrayOfArrayOfPoints = contours.ToArrayOfArray();
 
                             foreach (var pointArray in arrayOfArrayOfPoints)
-                            {
-                                for (int i = 0; i < pointArray.Length; i++)
-                                {
-                                    pointArray[i] = new Point(pointArray[i].X + BoundingRectangle.X, pointArray[i].Y + BoundingRectangle.Y);
-                                }
-                            }
+                                for (var i = 0; i < pointArray.Length; i++)
+                                    pointArray[i].Offset(offsetBy);
 
+                            contoursGroups[groupIndex].Dispose();
                             contoursGroups[groupIndex] = new VectorOfVectorOfPoint(arrayOfArrayOfPoints);
                         }
 
@@ -1494,7 +1514,7 @@ namespace UVtools.Core
                 }
 
                 // Dispose
-                foreach (var listOfVectors in new[]{ resinTraps, suctionTraps, hollows , airContours})
+                foreach (var listOfVectors in new[]{ resinTraps, suctionTraps, hollows, airContours})
                 {
                     foreach (var vectorArray in listOfVectors)
                     {
