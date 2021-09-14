@@ -778,7 +778,10 @@ namespace UVtools.Core
             void GenerateAirMap(Mat input, Mat output, VectorOfVectorOfPoint externals)
             {
                 CvInvoke.BitwiseNot(input, output);
-                CvInvoke.DrawContours(output, externals, -1, EmguExtensions.BlackColor, -1);
+                if (externals != null)
+                {
+                    CvInvoke.DrawContours(output, externals, -1, EmguExtensions.BlackColor, -1);
+                }
             }
 
             if (printHeightConfig.Enabled && SlicerFile.MachineZ > 0)
@@ -1243,7 +1246,7 @@ namespace UVtools.Core
                     /* add in areas of air in current layer to air map */
                     CvInvoke.BitwiseOr(layerAirMap, currentAirMap, currentAirMap);
                     
-                    for (var i = 0; i < hollows[layerIndex].Count; i++)
+                    for (var i = 0; hollows[layerIndex] != null && i < hollows[layerIndex].Count; i++)
                     {
                         if (progress.Token.IsCancellationRequested) return result.OrderBy(issue => issue.Type).ThenBy(issue => issue.LayerIndex).ThenBy(issue => issue.Area).ToList();
                         if (resinTrapsContoursArea[layerIndex][i] < resinTrapConfig.RequiredAreaToProcessCheck) continue;
