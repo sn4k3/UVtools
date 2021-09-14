@@ -777,11 +777,9 @@ namespace UVtools.Core
 
             void GenerateAirMap(Mat input, Mat output, VectorOfVectorOfPoint externals)
             {
-                CvInvoke.BitwiseNot(input, output);
-                if (externals != null)
-                {
-                    CvInvoke.DrawContours(output, externals, -1, EmguExtensions.BlackColor, -1);
-                }
+                CvInvoke.BitwiseNot(input, output); 
+                if (externals is null || externals.Size == 0) return;
+                CvInvoke.DrawContours(output, externals, -1, EmguExtensions.BlackColor, -1);
             }
 
             if (printHeightConfig.Enabled && SlicerFile.MachineZ > 0)
@@ -1211,6 +1209,32 @@ namespace UVtools.Core
                 }); // Parallel end
             }
 
+            var matCache = new Mat[LayerCount];
+            var matTargetCache = new Mat[LayerCount];
+            void CacheLayers(uint layerIndex, bool direction)
+            {
+                if (matCache[layerIndex] is not null) return;
+                int fromLayerIndex = (int)layerIndex;
+                int toLayerIndex = (int)Math.Min(LayerCount, layerIndex + Environment.ProcessorCount * 10 + 1);
+
+                if (!direction)
+                {
+                    toLayerIndex = fromLayerIndex + 1;
+                    fromLayerIndex = Math.Max(0, fromLayerIndex - Environment.ProcessorCount * 10);
+                }
+
+                Parallel.For(fromLayerIndex, toLayerIndex,
+                    i =>
+                    {
+                        matCache[i] = this[i].LayerMat;
+                        matTargetCache[i] = new Mat(matCache[i], BoundingRectangle);
+                        if (resinTrapConfig.BinaryThreshold > 0)
+                        {
+                            CvInvoke.Threshold(matTargetCache[i], matTargetCache[i], resinTrapConfig.BinaryThreshold, byte.MaxValue, ThresholdType.Binary);
+                        }
+                    });
+            }
+
             if (resinTrapConfig.Enabled)
             {
                 //progress.Reset("Detecting Air Boundaries (Resin traps)", LayerCount);
@@ -1221,31 +1245,44 @@ namespace UVtools.Core
                 var currentAirMap = EmguExtensions.InitMat(BoundingRectangle.Size);
                 var layerAirMap = currentAirMap.NewBlank();
                 var airOverlap = currentAirMap.NewBlank();
-                Mat curLayer = null;
                 /* the first pass does bottom to top, and tracks anything it thinks is a resin trap */
                 for (var layerIndex = resinTrapConfig.StartLayerIndex; layerIndex < LayerCount; layerIndex++)
                 {
                     if (progress.Token.IsCancellationRequested) return result.OrderBy(issue => issue.Type).ThenBy(issue => issue.LayerIndex).ThenBy(issue => issue.Area).ToList();
-                    using var layerMat = this[layerIndex].LayerMat;
-                    curLayer = new Mat(layerMat, BoundingRectangle);
+                    /*using var layerMat = this[layerIndex].LayerMat;
+                    var curLayer = new Mat(layerMat, BoundingRectangle);
                     if (resinTrapConfig.BinaryThreshold > 0)
                     {
                         CvInvoke.Threshold(curLayer, curLayer, resinTrapConfig.BinaryThreshold, byte.MaxValue, ThresholdType.Binary);
-                    }
+                    }*/
+
+                    CacheLayers(layerIndex, true);
+                    var curLayer = matTargetCache[layerIndex];
+
+                    //curLayer.Save($"D:\\dump\\{layerIndex}_a.png");
+
                     /* find hollows of current layer */
                     GenerateAirMap(curLayer, layerAirMap, externalContours[layerIndex]);
 
-                    if (layerIndex == 0)
+                    //layerAirMap.Save($"D:\\dump\\{layerIndex}_b.png");
+
+                    if (layerIndex == resinTrapConfig.StartLayerIndex)
                     {
                         currentAirMap = layerAirMap.Clone();
                     }
 
+                    //currentAirMap.Save($"D:\\dump\\{layerIndex}_c.png");
+
                     /* remove solid areas of current layer from the air map */
                     CvInvoke.Subtract(currentAirMap, curLayer, currentAirMap);
 
+                    //currentAirMap.Save($"D:\\dump\\{layerIndex}_d.png");
+
                     /* add in areas of air in current layer to air map */
                     CvInvoke.BitwiseOr(layerAirMap, currentAirMap, currentAirMap);
-                    
+
+                    //currentAirMap.Save($"D:\\dump\\{layerIndex}_e.png");
+
                     for (var i = 0; hollows[layerIndex] != null && i < hollows[layerIndex].Count; i++)
                     {
                         if (progress.Token.IsCancellationRequested) return result.OrderBy(issue => issue.Type).ThenBy(issue => issue.LayerIndex).ThenBy(issue => issue.Area).ToList();
@@ -1281,6 +1318,11 @@ namespace UVtools.Core
                             }
                         }
                     };
+
+                    matCache[layerIndex].Dispose();
+                    matCache[layerIndex] = null;
+                    matTargetCache[layerIndex] = null;
+
                     progress++;
                 }
 
@@ -1292,12 +1334,16 @@ namespace UVtools.Core
                 for (var layerIndex = resinTraps.Length - 1; layerIndex >= resinTrapConfig.StartLayerIndex; layerIndex--)
                 {
                     if (progress.Token.IsCancellationRequested) return result.OrderBy(issue => issue.Type).ThenBy(issue => issue.LayerIndex).ThenBy(issue => issue.Area).ToList();
-                    using var layerMat = this[layerIndex].LayerMat;
-                    curLayer = new Mat(layerMat, BoundingRectangle);
+                    
+                    CacheLayers((uint)layerIndex, false);
+                    var curLayer = matTargetCache[layerIndex];
+                    
+                    /*using var layerMat = this[layerIndex].LayerMat;
+                    var curLayer = new Mat(layerMat, BoundingRectangle);
                     if (resinTrapConfig.BinaryThreshold > 0)
                     {
                         CvInvoke.Threshold(curLayer, curLayer, resinTrapConfig.BinaryThreshold, byte.MaxValue, ThresholdType.Binary);
-                    }
+                    }*/
 
                     if (layerIndex == resinTraps.Length - 1)
                     {
@@ -1377,6 +1423,10 @@ namespace UVtools.Core
                         }
                     }
 
+                    matCache[layerIndex].Dispose();
+                    matCache[layerIndex] = null;
+                    matTargetCache[layerIndex] = null;
+
                     progress++;
                 }
                 if (progress.Token.IsCancellationRequested) return result.OrderBy(issue => issue.Type).ThenBy(issue => issue.LayerIndex).ThenBy(issue => issue.Area).ToList();
@@ -1442,6 +1492,25 @@ namespace UVtools.Core
                         }
                     }
                 }
+
+                // Dispose
+                foreach (var listOfVectors in new[]{ resinTraps, suctionTraps, hollows , airContours})
+                {
+                    foreach (var vectorArray in listOfVectors)
+                    {
+                        if (vectorArray is null) continue;
+                        foreach (var vector in vectorArray)
+                        {
+                            vector?.Dispose();
+                        }
+                    }
+                }
+
+                foreach (var vector in externalContours)
+                {
+                    vector?.Dispose();
+                }
+
             }
 
             return result.OrderBy(issue => issue.Type).ThenBy(issue => issue.LayerIndex).ThenBy(issue => issue.Area).ToList();
