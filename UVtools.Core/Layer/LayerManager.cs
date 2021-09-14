@@ -763,6 +763,7 @@ namespace UVtools.Core
             var suctionTraps = new List<VectorOfVectorOfPoint>[LayerCount];
             var externalContours = new VectorOfVectorOfPoint[LayerCount];
             var hollows = new List<VectorOfVectorOfPoint>[LayerCount];
+            var airContours = new List<VectorOfVectorOfPoint>[LayerCount];
             var resinTrapsContoursArea = new double[LayerCount][];
             
             bool IsIgnored(LayerIssue issue) => ignoredIssues is not null && ignoredIssues.Count > 0 && ignoredIssues.Contains(issue);
@@ -1264,7 +1265,10 @@ namespace UVtools.Core
                         {
                             if (overlapCount >= resinTrapConfig.RequiredBlackPixelsToDrain)
                             {
-                                /* this contour does overlap air, add it to the current air map */
+                                /* this contour does overlap air, add it to the current air map and remember this contour was air-connected for 2nd pass */
+                                airContours[layerIndex] ??= new List<VectorOfVectorOfPoint>();
+                                airContours[layerIndex].Add(hollows[layerIndex][i]);
+
                                 CvInvoke.BitwiseOr(currentContour, currentAirMap, currentAirMap);
                             }
                             else
@@ -1303,6 +1307,15 @@ namespace UVtools.Core
                     /* we still modify the airmap like normal, where we account for the air areas of the layer, and any contours that might overlap...*/
                     GenerateAirMap(curLayer, layerAirMap, externalContours[layerIndex]);
 
+                    /* Update air map with any hollows that were found to be air-connected during first pass */
+                    if (airContours[layerIndex] != null)
+                    {
+                        for (var y = 0; y < airContours[layerIndex].Count; y++)
+                        {
+                            CvInvoke.DrawContours(layerAirMap, airContours[layerIndex][y], -1, EmguExtensions.WhiteColor, -1);
+                        }
+                    }
+
                     /* remove solid areas of current layer from the air map */
                     CvInvoke.Subtract(currentAirMap, curLayer, currentAirMap);
 
@@ -1324,18 +1337,19 @@ namespace UVtools.Core
                             CvInvoke.BitwiseAnd(currentAirMap, currentContour, airOverlap);
                             var overlapCount = CvInvoke.CountNonZero(airOverlap);
 
-                            if (overlapCount > resinTrapConfig.RequiredBlackPixelsToDrain)
+                            if (overlapCount >= resinTrapConfig.RequiredBlackPixelsToDrain)
                             {
                                 /* this contour does overlap air, add this it our air map */
                                 CvInvoke.BitwiseOr(currentContour, currentAirMap, currentAirMap);
-                                if (resinTrapConfig.DetectSuctionCups)
-                                {
-                                    /* if we haven't defined a suctionTrap list for this layer, do so */
-                                    suctionTraps[layerIndex] ??= new List<VectorOfVectorOfPoint>();
+                                /* Always add the removed contour to suctionTraps (even if we aren't reporting suction traps)
+                                 * This is because contours that are placed on here get removed from resin traps in the next stage
+                                 * if you don't put them here, they never get removed even if they should :) */
 
-                                    /* since we know it isn't a resin trap, it becomes a suction trap */
-                                    suctionTraps[layerIndex].Add(resinTraps[layerIndex][x]);
-                                }
+                                /* if we haven't defined a suctionTrap list for this layer, do so */
+                                suctionTraps[layerIndex] ??= new List<VectorOfVectorOfPoint>();
+
+                                /* since we know it isn't a resin trap, it becomes a suction trap */
+                                suctionTraps[layerIndex].Add(resinTraps[layerIndex][x]);
 
                                 /* to keep things tidy while we iterate resin traps, it will be left in the list for now, and removed later */
                             } 
@@ -1408,17 +1422,21 @@ namespace UVtools.Core
                     }
                 }
 
-                var minimumSuctionArea = resinTrapConfig.RequiredAreaToConsiderSuctionCup;
-                for (var layerIndex = 0; layerIndex < suctionTraps.Length; layerIndex++)
+                /* only report suction cup issues if enabled */
+                if (resinTrapConfig.DetectSuctionCups)
                 {
-                    if (suctionTraps[layerIndex] == null) continue;
-
-                    foreach (var trap in suctionTraps[layerIndex])
+                    var minimumSuctionArea = resinTrapConfig.RequiredAreaToConsiderSuctionCup;
+                    for (var layerIndex = 0; layerIndex < suctionTraps.Length; layerIndex++)
                     {
-                        var suctionTrapArea = EmguContours.GetContourArea(trap);
-                        if (suctionTrapArea < minimumSuctionArea) continue;
-                        var rect = CvInvoke.BoundingRectangle(trap[0]);
-                        AddIssue(new LayerIssue(this[layerIndex], LayerIssue.IssueType.SuctionCup, trap.ToArrayOfArray(), rect){Area = suctionTrapArea });
+                        if (suctionTraps[layerIndex] == null) continue;
+
+                        foreach (var trap in suctionTraps[layerIndex])
+                        {
+                            var suctionTrapArea = EmguContours.GetContourArea(trap);
+                            if (suctionTrapArea < minimumSuctionArea) continue;
+                            var rect = CvInvoke.BoundingRectangle(trap[0]);
+                            AddIssue(new LayerIssue(this[layerIndex], LayerIssue.IssueType.SuctionCup, trap.ToArrayOfArray(), rect) { Area = suctionTrapArea });
+                        }
                     }
                 }
             }
