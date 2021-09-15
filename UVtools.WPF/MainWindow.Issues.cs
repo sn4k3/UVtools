@@ -524,11 +524,11 @@ namespace UVtools.WPF
             foreach (var value in issuesCountPerLayer)
             {
                 var yPos = tickFrequencySize * value.Key;
-                if (value.Key == 0)
+                if (value.Key == 0 && stroke > 3)
                 {
                     yPos += tickFrequencySize / 2;
                 }
-                else if(value.Key == SlicerFile.LastLayerIndex)
+                else if(value.Key == SlicerFile.LastLayerIndex && stroke > 3)
                 {
                     yPos -= tickFrequencySize / 2;
                 }
