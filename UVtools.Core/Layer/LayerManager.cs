@@ -1239,7 +1239,7 @@ namespace UVtools.Core
             {
                 //progress.Reset("Detecting Air Boundaries (Resin traps)", LayerCount);
                 //if (progress.Token.IsCancellationRequested) return result.OrderBy(issue => issue.Type).ThenBy(issue => issue.LayerIndex).ThenBy(issue => issue.Area).ToList();
-                progress.Reset("Process Layers Pass 1 of 2 (Resin traps)", LayerCount, resinTrapConfig.StartLayerIndex);
+                progress.Reset("Detection pass 1 of 2 (Resin traps)", LayerCount, resinTrapConfig.StartLayerIndex);
 
                 /* define all mats up front, reducing allocations */
                 var currentAirMap = EmguExtensions.InitMat(BoundingRectangle.Size);
@@ -1341,7 +1341,7 @@ namespace UVtools.Core
                 }
 
                 if (progress.Token.IsCancellationRequested) return result.OrderBy(issue => issue.Type).ThenBy(issue => issue.LayerIndex).ThenBy(issue => issue.Area).ToList();
-                progress.Reset("Process Layers Pass 2 of 2 (Resin traps)", LayerCount, resinTrapConfig.StartLayerIndex);
+                progress.Reset("Detection pass 2 of 2 (Resin traps)", LayerCount, resinTrapConfig.StartLayerIndex);
                 /* starting over again but this time from the top to the bottom */
                 if (currentAirMap is not null)
                 {
