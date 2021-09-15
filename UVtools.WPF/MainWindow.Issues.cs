@@ -520,10 +520,11 @@ namespace UVtools.WPF
 
             //var tickFrequencySize = LayerSlider.Track.Bounds.Height * LayerSlider.TickFrequency / (LayerSlider.Maximum - LayerSlider.Minimum);
             var tickFrequencySize = _issuesSliderCanvas.Bounds.Height * LayerSlider.TickFrequency / (LayerSlider.Maximum - LayerSlider.Minimum);
+            var stroke = (int)Math.Ceiling(tickFrequencySize);
             foreach (var value in issuesCountPerLayer)
             {
                 var yPos = tickFrequencySize * value.Key;
-                var line = new Line{StrokeThickness = 1, Stroke = Brushes.Red, EndPoint = new Avalonia.Point(_issuesSliderCanvas.Width, 0)};
+                var line = new Line{StrokeThickness = stroke, Stroke = Brushes.Red, EndPoint = new Avalonia.Point(_issuesSliderCanvas.Width, 0)};
                 _issuesSliderCanvas.Children.Add(line);
                 Canvas.SetBottom(line, yPos);
             }
