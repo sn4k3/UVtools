@@ -81,8 +81,9 @@
                     Orientation="Horizontal" Spacing="5"
                     IsVisible="{Binding Operation.ValueEnabled}"
                     IsEnabled="{Binding Operation.ValueEnabled}">
-            
-            <NumericUpDown
+
+          <NumericUpDown
+              Classes="ValueLabel ValueLabel_sun"
                 Minimum="0"
                 Maximum="255"
                 IsEnabled="{Binding !Operation.UsePattern}"
@@ -370,30 +371,24 @@
                     Text="Warning: This function can generate a large number of resin traps. (Use with caution)"/>
 
                   <Grid RowDefinitions="Auto,10,Auto"
-                        ColumnDefinitions="Auto,10,150,5,Auto">
+                        ColumnDefinitions="Auto,10,180">
                     <TextBlock
                         VerticalAlignment="Center"
                         Text="Thickness:"/>
-                    <NumericUpDown
-                        Grid.Row="0" Grid.Column="2"
+                    <NumericUpDown Grid.Row="0" Grid.Column="2"
+                        Classes="ValueLabel ValueLabel_px"
                         Minimum="5"
                         Maximum="10000"
                         Value="{Binding Operation.PatternGenInfillThickness}"/>
-                    <TextBlock Grid.Row="0" Grid.Column="4"
-                               VerticalAlignment="Center"
-                               Text="px"/>
 
                     <TextBlock Grid.Row="2" Grid.Column="0"
                                VerticalAlignment="Center"
                                Text="Spacing:"/>
                     <NumericUpDown Grid.Row="2" Grid.Column="2"
+                                   Classes="ValueLabel ValueLabel_px"
                                    Minimum="5"
                                    Maximum="10000"
                                    Value="{Binding Operation.PatternGenInfillSpacing}"/>
-                    <TextBlock Grid.Row="2" Grid.Column="4"
-                               VerticalAlignment="Center"
-                               Text="px"/>
-
                   </Grid>
 
                   <StackPanel Orientation="Horizontal" Spacing="10">

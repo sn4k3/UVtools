@@ -8,7 +8,7 @@
     <StackPanel Spacing="10">
 
       <Grid RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto"
-            ColumnDefinitions="Auto,10,150,5,Auto,20,Auto,10,150,5,Auto">
+            ColumnDefinitions="Auto,10,Auto,20,Auto,10,Auto">
 
           <TextBlock Grid.Row="0" Grid.Column="0"
                      VerticalAlignment="Center"
@@ -19,6 +19,7 @@
                      Text="Cache RAM:"/>
 
           <NumericUpDown Grid.Row="0" Grid.Column="2"
+                         Classes="ValueLabel ValueLabel_GB"
                          VerticalAlignment="Center"
                          HorizontalAlignment="Stretch"
                          Minimum="0.5"
@@ -28,15 +29,11 @@
                          Value="{Binding Operation.CacheRAMSize}"/>
 
           <TextBlock Grid.Row="0" Grid.Column="4"
-                     VerticalAlignment="Center"
-                     Text="GB"/>
-
-          <TextBlock Grid.Row="0" Grid.Column="6"
                      HorizontalAlignment="Right"
                      VerticalAlignment="Center"
                      Text="Cache layers:"/>
 
-          <TextBlock Grid.Row="0" Grid.Column="8"
+          <TextBlock Grid.Row="0" Grid.Column="6"
                      VerticalAlignment="Center"
                      Text="{Binding Operation.CacheObjectCount, StringFormat=±\{0\}}"/>
 
@@ -46,6 +43,7 @@
                      Text="Minimum layer height:"/>
 
           <NumericUpDown Grid.Row="2" Grid.Column="2"
+                         Classes="ValueLabel ValueLabel_mm"
                          VerticalAlignment="Center"
                          HorizontalAlignment="Stretch"
                          Minimum="{Binding SlicerFile.LayerHeight}"
@@ -53,16 +51,14 @@
                          Increment="0.01"
                          FormatString="F3"
                          Value="{Binding Operation.MinimumLayerHeight}"/>
-          <TextBlock Grid.Row="2" Grid.Column="4"
-                     VerticalAlignment="Center"
-                     Text="mm"/>
 
-          <TextBlock Grid.Row="2" Grid.Column="6"
+          <TextBlock Grid.Row="2" Grid.Column="4"
                      VerticalAlignment="Center"
                      ToolTip.Tip="Allow to stack layers up to a maximum of this height"
                      Text="Maximum layer height:"/>
 
-            <NumericUpDown Grid.Row="2" Grid.Column="8"
+            <NumericUpDown Grid.Row="2" Grid.Column="6"
+                           Classes="ValueLabel ValueLabel_mm"
                            Name="MaximumLayerHeight"
                          VerticalAlignment="Center"
                          HorizontalAlignment="Stretch"
@@ -71,9 +67,6 @@
                          Increment="0.01"
                          FormatString="F3"
                          Value="{Binding Operation.MaximumLayerHeight}"/>
-          <TextBlock Grid.Row="2" Grid.Column="10"
-                     VerticalAlignment="Center"
-                     Text="mm"/>
 
           <CheckBox Grid.Row="4" Grid.Column="2" Grid.ColumnSpan="3"
                      VerticalAlignment="Center"
@@ -81,7 +74,7 @@
                      Content="Strip anti-aliasing"
                      IsChecked="{Binding Operation.StripAntiAliasing}"/>
 
-          <CheckBox Grid.Row="4" Grid.Column="6"  Grid.ColumnSpan="3"
+          <CheckBox Grid.Row="4" Grid.Column="4"  Grid.ColumnSpan="3"
                     VerticalAlignment="Center"
                     ToolTip.Tip="Use this option with 'Strip anti-aliasing' to reconstruct the layer anti-aliasing via an gaussian blur."
                     Content="Reconstruct anti-aliasing"
@@ -95,15 +88,13 @@
 &#x0a;n = Stack equal layers or with a n perimeter of difference between the sum of the stack."
                      Text="Maximum wide difference:"/>
           <NumericUpDown Grid.Row="6" Grid.Column="2"
+                         Classes="ValueLabel ValueLabel_px"
                          VerticalAlignment="Center"
                          HorizontalAlignment="Stretch"
                          Minimum="0"
                          Maximum="30"
                          Increment="1"
                          Value="{Binding Operation.MaximumErodes}"/>
-          <TextBlock Grid.Row="6" Grid.Column="4"
-                     VerticalAlignment="Center"
-                     Text="px"/>
 
             <TextBlock Grid.Row="8" Grid.Column="0"
                        VerticalAlignment="Center"
@@ -118,7 +109,7 @@ Manual: User defined exposure per layer height"
                       Items="{Binding Operation.ExposureSetTypeItems}"
                       SelectedItem="{Binding Operation.ExposureSetType}"/>
 
-          <ToggleSwitch Grid.Row="8" Grid.Column="6" Grid.ColumnSpan="5"
+          <ToggleSwitch Grid.Row="8" Grid.Column="4" Grid.ColumnSpan="3"
                         IsVisible="{Binding !Operation.IsExposureSetTypeManual}"
                         OffContent="Set the same base time for all bottoms"
                         OnContent="Calculate and iterate bottom exposures"
@@ -130,6 +121,7 @@ Manual: User defined exposure per layer height"
                      Text="Bottom exposure:"/>
 
           <NumericUpDown Grid.Row="10" Grid.Column="2"
+                         Classes="ValueLabel ValueLabel_s"
                          IsVisible="{Binding !Operation.IsExposureSetTypeManual}"
                          VerticalAlignment="Center"
                          HorizontalAlignment="Stretch"
@@ -138,18 +130,15 @@ Manual: User defined exposure per layer height"
                          Maximum="200"
                          FormatString="F2"
                          Value="{Binding Operation.BottomExposureTime}"/>
-          <TextBlock Grid.Row="10" Grid.Column="4"
-                     IsVisible="{Binding !Operation.IsExposureSetTypeManual}"
-                     VerticalAlignment="Center"
-                     Text="s"/>
 
-          <TextBlock Grid.Row="10" Grid.Column="6"
+          <TextBlock Grid.Row="10" Grid.Column="4"
                      IsVisible="{Binding !Operation.IsExposureSetTypeManual}"
                      VerticalAlignment="Center"
                      HorizontalAlignment="Right"
                      Text="Normal exposure:"/>
 
-          <NumericUpDown Grid.Row="10" Grid.Column="8"
+          <NumericUpDown Grid.Row="10" Grid.Column="6"
+                         Classes="ValueLabel ValueLabel_s"
                          IsVisible="{Binding !Operation.IsExposureSetTypeManual}"
                          VerticalAlignment="Center"
                          HorizontalAlignment="Stretch"
@@ -158,10 +147,6 @@ Manual: User defined exposure per layer height"
                          Maximum="200"
                          FormatString="F2"
                          Value="{Binding Operation.ExposureTime}"/>
-          <TextBlock Grid.Row="10" Grid.Column="10"
-                     IsVisible="{Binding !Operation.IsExposureSetTypeManual}"
-                     VerticalAlignment="Center"
-                     Text="s"/>
 
             <TextBlock Grid.Row="12" Grid.Column="0"
                        IsVisible="{Binding !Operation.IsExposureSetTypeManual}"
@@ -170,6 +155,7 @@ Manual: User defined exposure per layer height"
                        Text="Bottom exposure step:"/>
 
             <NumericUpDown Grid.Row="12" Grid.Column="2"
+                           Classes="ValueLabel ValueLabel_s"
                            IsVisible="{Binding !Operation.IsExposureSetTypeManual}"
                            VerticalAlignment="Center"
                            HorizontalAlignment="Stretch"
@@ -178,19 +164,16 @@ Manual: User defined exposure per layer height"
                            Increment="0.01"
                            FormatString="F2"
                            Value="{Binding Operation.BottomExposureStep}"/>
-            <TextBlock Grid.Row="12" Grid.Column="4"
-                       IsVisible="{Binding !Operation.IsExposureSetTypeManual}"
-                       VerticalAlignment="Center"
-                       Text="s"/>
 
-            <TextBlock Grid.Row="12" Grid.Column="6"
+            <TextBlock Grid.Row="12" Grid.Column="4"
                        IsVisible="{Binding !Operation.IsExposureSetTypeManual}"
                        HorizontalAlignment="Right"
                        VerticalAlignment="Center"
                        ToolTip.Tip="Exposure increment per layer height"
                        Text="Exposure step:"/>
 
-            <NumericUpDown Grid.Row="12" Grid.Column="8"
+            <NumericUpDown Grid.Row="12" Grid.Column="6"
+                           Classes="ValueLabel ValueLabel_s"
                            IsVisible="{Binding !Operation.IsExposureSetTypeManual}"
                            VerticalAlignment="Center"
                            HorizontalAlignment="Stretch"
@@ -200,12 +183,7 @@ Manual: User defined exposure per layer height"
                            FormatString="F2"
                            Value="{Binding Operation.ExposureStep}"/>
 
-            <TextBlock Grid.Row="12" Grid.Column="10"
-                       IsVisible="{Binding !Operation.IsExposureSetTypeManual}"
-                       VerticalAlignment="Center"
-                       Text="s"/>
-
-          <Button Grid.Row="14" Grid.Column="2" Grid.ColumnSpan="7"
+          <Button Grid.Row="14" Grid.Column="2" Grid.ColumnSpan="5"
                      IsVisible="{Binding !Operation.IsExposureSetTypeManual}"
                      VerticalAlignment="Center"
                      HorizontalAlignment="Stretch"

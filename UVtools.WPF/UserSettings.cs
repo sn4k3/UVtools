@@ -1216,6 +1216,7 @@ namespace UVtools.WPF
             private ushort _removeIslandsBelowEqualPixels = 5;
             private ushort _removeIslandsRecursiveIterations = 4;
             private ushort _attachIslandsBelowLayers = 2;
+            private byte _resinTrapsOverlapBy = 5;
             private byte _closingIterations = 2;
             private byte _openingIterations = 0;
 
@@ -1253,6 +1254,12 @@ namespace UVtools.WPF
             {
                 get => _attachIslandsBelowLayers;
                 set => RaiseAndSetIfChanged(ref _attachIslandsBelowLayers, value);
+            }
+
+            public byte ResinTrapsOverlapBy
+            {
+                get => _resinTrapsOverlapBy;
+                set => RaiseAndSetIfChanged(ref _resinTrapsOverlapBy, value);
             }
 
             public byte ClosingIterations

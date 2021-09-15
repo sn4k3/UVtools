@@ -148,6 +148,10 @@ namespace UVtools.WPF
                                 {
                                     using var contours = new VectorOfVectorOfPoint(issue.Contours);
                                     CvInvoke.DrawContours(image, contours, -1, EmguExtensions.WhiteColor, -1);
+                                    if (Settings.LayerRepair.ResinTrapsOverlapBy > 0)
+                                    {
+                                        CvInvoke.DrawContours(image, contours, -1, EmguExtensions.WhiteColor, Settings.LayerRepair.ResinTrapsOverlapBy * 2 + 1);
+                                    }
                                     edited = true;
                                 }
                                 

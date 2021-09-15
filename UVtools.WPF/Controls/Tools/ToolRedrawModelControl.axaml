@@ -59,6 +59,7 @@
 
             <StackPanel Grid.Row="4" Grid.Column="2" Orientation="Horizontal" Spacing="5">
               <NumericUpDown 
+                            Classes="ValueLabel ValueLabel_sun"
                              Minimum="0"
                              Maximum="255"
                              Increment="1"

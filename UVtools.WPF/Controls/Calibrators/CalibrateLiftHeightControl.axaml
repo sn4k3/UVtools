@@ -6,23 +6,19 @@
              x:Class="UVtools.WPF.Controls.Calibrators.CalibrateLiftHeightControl">
   <Grid ColumnDefinitions="Auto,10,350">
     <StackPanel Spacing="10">
-      <Grid
-            RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto"
-            ColumnDefinitions="Auto,10,150,5,Auto,20,Auto,10,150,5,Auto"
-      >
+      <Grid RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto"
+            ColumnDefinitions="Auto,10,200,5,Auto,20,Auto,10,200,5,Auto">
 
         <TextBlock Grid.Row="0" Grid.Column="0"
                    VerticalAlignment="Center"
                    Text="Layer height:"/>
         <NumericUpDown Grid.Row="0" Grid.Column="2"
+                       Classes="ValueLabel ValueLabel_mm"
                        Increment="0.01"
                        Minimum="0.01"
                        Maximum="0.30"
                        FormatString="F3"
                        Value="{Binding Operation.LayerHeight}"/>
-        <TextBlock Grid.Row="0" Grid.Column="4"
-                   VerticalAlignment="Center"
-                   Text="mm"/>
 
 
         <TextBlock Grid.Row="0" Grid.Column="6"
@@ -72,119 +68,99 @@
                    VerticalAlignment="Center"
                    Text="Bottom exposure:"/>
         <NumericUpDown Grid.Row="4" Grid.Column="2"
-                         
+                       Classes="ValueLabel ValueLabel_s"
                        Increment="0.5"
                        Minimum="0.1"
                        Maximum="200"
                        Value="{Binding Operation.BottomExposure}"/>
-        <TextBlock Grid.Row="4" Grid.Column="4"
-                   VerticalAlignment="Center"
-                   Text="s"/>
 
         <TextBlock Grid.Row="4" Grid.Column="6"
                    VerticalAlignment="Center"
                    Text="Normal exposure:"/>
         <NumericUpDown Grid.Row="4" Grid.Column="8"
-                         
+                       Classes="ValueLabel ValueLabel_s"
                        Increment="0.5"
                        Minimum="0.1"
                        Maximum="200"
                        Value="{Binding Operation.NormalExposure}"/>
-        <TextBlock Grid.Row="4" Grid.Column="10"
-                   VerticalAlignment="Center"
-                   Text="s"/>
 
 
         <TextBlock Grid.Row="6" Grid.Column="0"
                    VerticalAlignment="Center"
                    Text="Bottom lift height:"/>
         <NumericUpDown Grid.Row="6" Grid.Column="2"
+                       Classes="ValueLabel ValueLabel_mm"
                        Increment="0.5"
                        Minimum="0.5"
                        Maximum="50"
                        FormatString="F2"
                        Value="{Binding Operation.BottomLiftHeight}"/>
-        <TextBlock Grid.Row="6" Grid.Column="4"
-                   VerticalAlignment="Center"
-                   Text="mm"/>
 
         <TextBlock Grid.Row="6" Grid.Column="6"
                    VerticalAlignment="Center"
                    Text="Normal lift height:"/>
         <NumericUpDown Grid.Row="6" Grid.Column="8"
+                       Classes="ValueLabel ValueLabel_mm"
                        Increment="0.5"
                        Minimum="0.5"
                        Maximum="50"
                        FormatString="F2"
                        Value="{Binding Operation.LiftHeight}"/>
-        <TextBlock Grid.Row="6" Grid.Column="10"
-                   VerticalAlignment="Center"
-                   Text="mm"/>
 
 
         <TextBlock Grid.Row="8" Grid.Column="0"
                    VerticalAlignment="Center"
                    Text="Bottom lift speed:"/>
         <NumericUpDown Grid.Row="8" Grid.Column="2"
+                       Classes="ValueLabel ValueLabel_mmmin"
                        Increment="0.5"
                        Minimum="0.5"
                        Maximum="1000"
                        FormatString="F2"
                        Value="{Binding Operation.BottomLiftSpeed}"/>
-        <TextBlock Grid.Row="8" Grid.Column="4"
-                   VerticalAlignment="Center"
-                   Text="mm/min"/>
 
         <TextBlock Grid.Row="8" Grid.Column="6"
                    VerticalAlignment="Center"
                    Text="Normal lift speed:"/>
         <NumericUpDown Grid.Row="8" Grid.Column="8"
+                       Classes="ValueLabel ValueLabel_mmmin"
                        Increment="0.5"
                        Minimum="0.5"
                        Maximum="1000"
                        FormatString="F2"
                        Value="{Binding Operation.LiftSpeed}"/>
-        <TextBlock Grid.Row="8" Grid.Column="10"
-                   VerticalAlignment="Center"
-                   Text="mm/min"/>
 
 
         <TextBlock Grid.Row="10" Grid.Column="0"
                    VerticalAlignment="Center"
                    Text="Retract speed:"/>
         <NumericUpDown Grid.Row="10" Grid.Column="2"
+                       Classes="ValueLabel ValueLabel_mmmin"
                        Increment="0.5"
                        Minimum="0.5"
                        Maximum="1000"
                        FormatString="F2"
                        Value="{Binding Operation.RetractSpeed}"/>
-        <TextBlock Grid.Row="10" Grid.Column="4"
-                   VerticalAlignment="Center"
-                   Text="mm/min"/>
 
         <TextBlock Grid.Row="12" Grid.Column="0"
                    VerticalAlignment="Center"
                    Text="Left/right margin:"/>
         <NumericUpDown Grid.Row="12" Grid.Column="2"
+                       Classes="ValueLabel ValueLabel_px"
                        Increment="5"
                        Minimum="0"
                        Maximum="{Binding Operation.MaxLeftRightMargin}"
                        Value="{Binding Operation.LeftRightMargin}"/>
-        <TextBlock Grid.Row="12" Grid.Column="4"
-                   VerticalAlignment="Center"
-                   Text="px"/>
 
         <TextBlock Grid.Row="12" Grid.Column="6"
                    VerticalAlignment="Center"
                    Text="Top/right margin:"/>
         <NumericUpDown Grid.Row="12" Grid.Column="8"
+                       Classes="ValueLabel ValueLabel_px"
                        Increment="5"
                        Minimum="0"
                        Maximum="{Binding Operation.MaxTopBottomMargin}"
                        Value="{Binding Operation.TopBottomMargin}"/>
-        <TextBlock Grid.Row="12" Grid.Column="10"
-                   VerticalAlignment="Center"
-                   Text="px"/>
 
         <CheckBox Grid.Row="14" Grid.Column="2"
                   Grid.ColumnSpan="9"
@@ -196,15 +172,12 @@
                    VerticalAlignment="Center"
                    Text="Decreasing factor:"/>
         <NumericUpDown Grid.Row="16" Grid.Column="2"
+                       Classes="ValueLabel ValueLabel_percent"
                        IsEnabled="{Binding Operation.DecreaseImage}"
                        Increment="1"
                        Minimum="1"
                        Maximum="99"
                        Value="{Binding Operation.DecreaseImageFactor}"/>
-        <TextBlock Grid.Row="16" Grid.Column="4"
-                   IsEnabled="{Binding Operation.DecreaseImage}"
-                   VerticalAlignment="Center"
-                   Text="%"/>
 
         <TextBlock Grid.Row="16" Grid.Column="6"
                    IsEnabled="{Binding Operation.DecreaseImage}"
@@ -212,16 +185,12 @@
                    HorizontalAlignment="Right"
                    Text="Decrease down to:"/>
         <NumericUpDown Grid.Row="16" Grid.Column="8"
+                       Classes="ValueLabel ValueLabel_percent"
                        IsEnabled="{Binding Operation.DecreaseImage}"
                        Increment="1"
                        Minimum="1"
                        Maximum="99"
                        Value="{Binding Operation.MinimumImageFactor}"/>
-        <TextBlock Grid.Row="16" Grid.Column="10"
-                   IsEnabled="{Binding Operation.DecreaseImage}"
-                   VerticalAlignment="Center"
-                   Text="%"/>
-
       </Grid>
 
 

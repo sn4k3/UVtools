@@ -946,75 +946,44 @@
                     Items="{Binding DrawingPixelDrawing.BrushShapeTypes}"
                     SelectedItem="{Binding DrawingPixelDrawing.BrushShape}"/>
 
-                  <TextBlock
-                      Grid.Row="4"
-                      Grid.Column="0"
-                      VerticalAlignment="Center"
-                      Text="Rotation angle:" />
-                  <NumericUpDown
-                      Grid.Row="4"
-                      Grid.Column="2"
-                      FormatString="F2"
-                      Minimum="-360"
-                      Maximum="360"
-                      Value="{Binding DrawingPixelDrawing.RotationAngle}"/>
-                  <TextBlock
-                      Grid.Row="4"
-                      Grid.Column="4"
-                      VerticalAlignment="Center"
-                      Text="º" />
+                  <TextBlock Grid.Row="4" Grid.Column="0"
+                             VerticalAlignment="Center"
+                             Text="Rotation angle:" />
+                  <NumericUpDown Grid.Row="4" Grid.Column="2" Grid.ColumnSpan="3"
+                                 Classes="ValueLabel ValueLabel_deg"
+                                 FormatString="F2"
+                                 Minimum="-360"
+                                 Maximum="360"
+                                 Value="{Binding DrawingPixelDrawing.RotationAngle}"/>
 
-                  <TextBlock
-                    Grid.Row="6"
-                    Grid.Column="0"
-                    VerticalAlignment="Center"
-                    Text="Brush diameter:" />
-                  <NumericUpDown
-                    Grid.Row="6"
-                    Grid.Column="2"
-                    Minimum="1"
-                    Maximum="4000"
-                    
-                    HorizontalAlignment="Stretch"
-                    Value="{Binding DrawingPixelDrawing.BrushSize}"/>
-                  <TextBlock
-                    Grid.Row="6"
-                    Grid.Column="4"
-                    VerticalAlignment="Center"
-                    Text="px" />
+                  <TextBlock Grid.Row="6" Grid.Column="0"
+                             VerticalAlignment="Center"
+                             Text="Brush diameter:" />
+                  <NumericUpDown Grid.Row="6" Grid.Column="2" Grid.ColumnSpan="3"
+                                 Classes="ValueLabel ValueLabel_px"
+                                 Minimum="1"
+                                 Maximum="4000"
+                                 HorizontalAlignment="Stretch"
+                                 Value="{Binding DrawingPixelDrawing.BrushSize}"/>
 
-                  <TextBlock
-                    Grid.Row="8"
-                    Grid.Column="0"
-                    VerticalAlignment="Center"
-                    Text="Thickness:" />
-                  <NumericUpDown
-                    Grid.Row="8"
-                    Grid.Column="2"
-                    Minimum="-1"
-                    Maximum="255"
-                    
-                    HorizontalAlignment="Stretch"
-                    Value="{Binding DrawingPixelDrawing.Thickness}"/>
-                  <TextBlock
-                    Grid.Row="8"
-                    Grid.Column="4"
-                    VerticalAlignment="Center"
-                    Text="px" />
+                  <TextBlock Grid.Row="8" Grid.Column="0"
+                             VerticalAlignment="Center"
+                             Text="Thickness:" />
+                  <NumericUpDown Grid.Row="8" Grid.Column="2" Grid.ColumnSpan="3"
+                                 Classes="ValueLabel ValueLabel_px"
+                                 Minimum="-1"
+                                 Maximum="255"
+                                 HorizontalAlignment="Stretch"
+                                 Value="{Binding DrawingPixelDrawing.Thickness}"/>
 
-                  <TextBlock
-                      Grid.Row="10"
-                      Grid.Column="0"
-                      VerticalAlignment="Center"
-                      Text="Remove pixel brightness:" />
-                  <NumericUpDown
-                      Grid.Row="10"
-                      Grid.Column="2"
-                      Minimum="0"
-                      Maximum="255"
-                      
-                      HorizontalAlignment="Stretch"
-                      Value="{Binding DrawingPixelDrawing.RemovePixelBrightness}"/>
+                  <TextBlock Grid.Row="10" Grid.Column="0"
+                             VerticalAlignment="Center"
+                             Text="Remove pixel brightness:" />
+                  <NumericUpDown Grid.Row="10" Grid.Column="2"
+                                 Minimum="0"
+                                 Maximum="255"
+                                 HorizontalAlignment="Stretch"
+                                 Value="{Binding DrawingPixelDrawing.RemovePixelBrightness}"/>
                   <TextBlock
                       Grid.Row="10"
                       Grid.Column="4"
@@ -1144,14 +1113,12 @@
                     Grid.Column="0"
                     VerticalAlignment="Center"
                     Text="Thickness:" />
-                  <NumericUpDown
-                    Grid.Row="6"
-                    Grid.Column="2"
-                    Grid.ColumnSpan="3"
-                    Minimum="1"
-                    Maximum="255"
-                    
-                    Value="{Binding DrawingPixelText.Thickness}"/>
+                  <NumericUpDown Grid.Row="6" Grid.Column="2"
+                                 Classes="ValueLabel ValueLabel_px"
+                                 Grid.ColumnSpan="3"
+                                 Minimum="1"
+                                 Maximum="255"
+                                 Value="{Binding DrawingPixelText.Thickness}"/>
 
                   <TextBlock
                     Grid.Row="8"
@@ -1191,18 +1158,12 @@
                       Grid.Column="0"
                       VerticalAlignment="Center"
                       Text="Rotation angle:" />
-                  <NumericUpDown
-                      Grid.Row="14"
-                      Grid.Column="2"
-                      FormatString="F2"
-                      Minimum="-360"
-                      Maximum="360"
-                      Value="{Binding DrawingPixelText.Angle}"/>
-                  <TextBlock
-                      Grid.Row="14"
-                      Grid.Column="4"
-                      VerticalAlignment="Center"
-                      Text="º" />
+                  <NumericUpDown Grid.Row="14" Grid.Column="2" Grid.ColumnSpan="3"
+                                 Classes="ValueLabel ValueLabel_deg"
+                                 FormatString="F2"
+                                 Minimum="-360"
+                                 Maximum="360"
+                                 Value="{Binding DrawingPixelText.Angle}"/>
 
                   <TextBlock
                       Grid.Row="16"
@@ -1301,13 +1262,12 @@
                         Grid.Column="0"
                         VerticalAlignment="Center"
                         Text="Pixel brightness:" />
-                    <NumericUpDown
-                        Grid.Row="0"
-                        Grid.Column="2"
-                        Minimum="0"
-                        Maximum="255"
+                    <NumericUpDown Grid.Row="0" Grid.Column="2"
+                                   Classes="ValueLabel ValueLabel_sun"
+                                   Minimum="0"
+                                   Maximum="255"
                         
-                        Value="{Binding DrawingPixelEraser.PixelBrightness}"/>
+                                   Value="{Binding DrawingPixelEraser.PixelBrightness}"/>
                     <TextBlock
                         Grid.Row="0"
                         Grid.Column="4"
@@ -1374,64 +1334,45 @@
                     Grid.Column="0"
                     VerticalAlignment="Center"
                     Text="Tip diameter:" />
-                  <NumericUpDown
-                    Grid.Row="0"
-                    Grid.Column="2"
-                    Minimum="1"
-                    Maximum="255"
-                    Value="{Binding DrawingPixelSupport.TipDiameter}"/>
-                  <TextBlock
-                    Grid.Row="0"
-                    Grid.Column="4"
-                    VerticalAlignment="Center"
-                    Text="px" />
+                  <NumericUpDown Grid.Row="0" Grid.Column="2" Grid.ColumnSpan="3"
+                                 Classes="ValueLabel ValueLabel_px"
+                                 Minimum="1"
+                                 Maximum="255"
+                                 Value="{Binding DrawingPixelSupport.TipDiameter}"/>
 
                   <TextBlock
                     Grid.Row="2"
                     Grid.Column="0"
                     VerticalAlignment="Center"
                     Text="Pillar diameter:" />
-                  <NumericUpDown
-                    Grid.Row="2"
-                    Grid.Column="2"
-                    Minimum="1"
-                    Maximum="255"
-                    Value="{Binding DrawingPixelSupport.PillarDiameter}"/>
-                  <TextBlock
-                    Grid.Row="2"
-                    Grid.Column="4"
-                    VerticalAlignment="Center"
-                    Text="px" />
+                  <NumericUpDown Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="3"
+                                 Classes="ValueLabel ValueLabel_px"
+                                 Minimum="1"
+                                 Maximum="255"
+                                 Value="{Binding DrawingPixelSupport.PillarDiameter}"/>
 
                   <TextBlock
                     Grid.Row="4"
                     Grid.Column="0"
                     VerticalAlignment="Center"
                     Text="Base diameter:" />
-                  <NumericUpDown
-                    Grid.Row="4"
-                    Grid.Column="2"
-                    Minimum="1"
-                    Maximum="255"
-                    Value="{Binding DrawingPixelSupport.BaseDiameter}"/>
-                  <TextBlock
-                    Grid.Row="4"
-                    Grid.Column="4"
-                    VerticalAlignment="Center"
-                    Text="px" />
+                  <NumericUpDown Grid.Row="4" Grid.Column="2" Grid.ColumnSpan="3"
+                                 Classes="ValueLabel ValueLabel_px"
+                                 Minimum="1"
+                                 Maximum="255"
+                                 Value="{Binding DrawingPixelSupport.BaseDiameter}"/>
 
                   <TextBlock
                       Grid.Row="6"
                       Grid.Column="0"
                       VerticalAlignment="Center"
                       Text="Pixel brightness:" />
-                  <NumericUpDown
-                      Grid.Row="6"
-                      Grid.Column="2"
-                      Minimum="0"
-                      Maximum="255"
+                  <NumericUpDown Grid.Row="6" Grid.Column="2"
+                                 Classes="ValueLabel ValueLabel_sun"
+                                 Minimum="0"
+                                 Maximum="255"
                       
-                      Value="{Binding DrawingPixelSupport.PixelBrightness}"/>
+                                 Value="{Binding DrawingPixelSupport.PixelBrightness}"/>
                   <TextBlock
                       Grid.Row="6"
                       Grid.Column="4"
@@ -1464,24 +1405,17 @@
                 </Border>
                 <Grid
                   RowDefinitions="Auto"
-                  ColumnDefinitions="Auto,10,*,5,Auto">
+                  ColumnDefinitions="Auto,10,*">
                   <TextBlock
                     Grid.Row="0"
                     Grid.Column="0"
                     VerticalAlignment="Center"
                     Text="Hole diameter:" />
-                  <NumericUpDown
-                    Grid.Row="0"
-                    Grid.Column="2"
-                    Minimum="20"
-                    Maximum="255"
-                    Value="{Binding DrawingPixelDrainHole.Diameter}"/>
-                  <TextBlock
-                    Grid.Row="0"
-                    Grid.Column="4"
-                    VerticalAlignment="Center"
-                    Text="px" />
-
+                  <NumericUpDown Grid.Row="0" Grid.Column="2"
+                                 Classes="ValueLabel ValueLabel_px"
+                                 Minimum="20"
+                                 Maximum="255"
+                                 Value="{Binding DrawingPixelDrainHole.Diameter}"/>
                 </Grid>
               </StackPanel>
 

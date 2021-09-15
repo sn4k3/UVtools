@@ -7,7 +7,7 @@
 
 
   <Grid
-    ColumnDefinitions="Auto,10,150,5,Auto"
+    ColumnDefinitions="Auto,10,200,5,Auto"
     RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto"
     >
 
@@ -60,6 +60,7 @@ you must manually input the layer index of the last raft where it ends and suppo
         Text="Pixel brightness:" VerticalAlignment="Center"/>
 
     <NumericUpDown Grid.Row="6" Grid.Column="2"
+                   Classes="ValueLabel ValueLabel_sun"
                    Minimum="0"
                    Maximum="255"
                    IsVisible="{Binding !Operation.IsDecimate}"
@@ -72,73 +73,61 @@ you must manually input the layer index of the last raft where it ends and suppo
 
 
     <TextBlock
-        Grid.Row="8"
+        Grid.Row="8" Grid.Column="0"
         IsVisible="{Binding !Operation.IsDecimate}"
         Text="Supports margin:" VerticalAlignment="Center"/>
 
     <TextBlock
-      Grid.Row="8"
+      Grid.Row="8" Grid.Column="0"
       IsVisible="{Binding Operation.IsDecimate}"
       ToolTip.Tip="Raft will be replaced by the present supports and then dilated by this value to thicken the supports and increase the adhesion. 
 &#x0a;Use large numbers with tiny supports for best adhesion."
       Text="Dilate supports by:" VerticalAlignment="Center"/>
 
     <NumericUpDown Grid.Row="8" Grid.Column="2"
+                   Classes="ValueLabel ValueLabel_px"
               Minimum="0"
               Maximum="255"
               Value="{Binding Operation.DilateIterations}"/>
-    <TextBlock
-      Grid.Row="8" Grid.Column="4"
-      Text="px" VerticalAlignment="Center"/>
 
 
     <TextBlock
-      Grid.Row="10"
+      Grid.Row="10" Grid.Column="0"
       Text="Wall margin:" VerticalAlignment="Center"
       IsVisible="{Binding !Operation.IsDecimate}"
       />
 
     <NumericUpDown Grid.Row="10" Grid.Column="2"
+                   Classes="ValueLabel ValueLabel_px"
               Minimum="1"
               Maximum="255"
               Value="{Binding Operation.WallMargin}"
               IsVisible="{Binding !Operation.IsDecimate}"/>
-    <TextBlock
-      Grid.Row="10" Grid.Column="4"
-      Text="px" VerticalAlignment="Center"
-      IsVisible="{Binding !Operation.IsDecimate}"/>
 
     <TextBlock
       Grid.Row="12"
       Text="Hole diameter:" VerticalAlignment="Center"
-      IsVisible="{Binding Operation.IsRelief}"
-      />
+      IsVisible="{Binding Operation.IsRelief}"/>
 
     <NumericUpDown Grid.Row="12" Grid.Column="2"
+                   Classes="ValueLabel ValueLabel_px"
               Minimum="10"
               Maximum="255"
               Value="{Binding Operation.HoleDiameter}"
               IsVisible="{Binding Operation.IsRelief}"/>
-    <TextBlock
-      Grid.Row="12" Grid.Column="4"
-      Text="px" VerticalAlignment="Center"
-      IsVisible="{Binding Operation.IsRelief}"/>
 
     <TextBlock
-      Grid.Row="14"
+      Grid.Row="14" Grid.Column="0"
       Text="Hole spacing:" VerticalAlignment="Center"
       IsVisible="{Binding Operation.IsRelief}"
       />
 
     <NumericUpDown Grid.Row="14" Grid.Column="2"
+                   Classes="ValueLabel ValueLabel_px"
               Minimum="10"
               Maximum="255"
               Value="{Binding Operation.HoleSpacing}"
               IsVisible="{Binding Operation.IsRelief}"/>
-    <TextBlock
-      Grid.Row="14" Grid.Column="4"
-      Text="px" VerticalAlignment="Center"
-      IsVisible="{Binding Operation.IsRelief}"/>
 
   </Grid>
 

@@ -76,23 +76,23 @@
 
         <Expander Grid.Row="1"
                   Header="Add new material"
-                  IsExpanded="False">
+                  IsExpanded="True">
 
           <Grid
               RowDefinitions="Auto,10,Auto,10,Auto,10,Auto"
-              ColumnDefinitions="Auto,10,150,5,Auto,20,Auto,10,Auto,5,Auto,20,Auto,10,150,5,Auto,20,Auto,10,Auto,5,Auto">
+              ColumnDefinitions="Auto,10,Auto,20,Auto,10,Auto,20,Auto,10,Auto,20,Auto,10,Auto,5,Auto">
 
               <TextBlock Grid.Row="0" Grid.Column="0"
                          VerticalAlignment="Center"
                          Text="Name:"/>
 
-              <TextBox Grid.Row="0" Grid.Column="2" Grid.ColumnSpan="17"
+              <TextBox Grid.Row="0" Grid.Column="2" Grid.ColumnSpan="11"
                        HorizontalAlignment="Stretch"
                        Watermark="A descriptive material name, eg: Epax Hard Grey"
                        Text="{Binding Material.Name}"/>
 
               <Button
-                  Grid.Row="0" Grid.Column="20" Grid.ColumnSpan="3"
+                  Grid.Row="0" Grid.Column="14" Grid.ColumnSpan="3"
                   VerticalContentAlignment="Center"
                   HorizontalContentAlignment="Stretch"
                   VerticalAlignment="Stretch"
@@ -111,54 +111,47 @@
                          Text="Volume:"/>
 
               <NumericUpDown Grid.Row="2" Grid.Column="2"
+                             Classes="ValueLabel ValueLabel_ml"
                              Minimum="100"
                              Maximum="100000"
                              Increment="100"
-                             Value="{Binding Material.BottleVolume}"
-                             />
-              <TextBlock Grid.Row="2" Grid.Column="4"
-                         VerticalAlignment="Center"
-                         Text="ml"/>
+                             Value="{Binding Material.BottleVolume}"/>
 
-              <TextBlock Grid.Row="2" Grid.Column="6"
+
+              <TextBlock Grid.Row="2" Grid.Column="4"
                          VerticalAlignment="Center"
                          ToolTip.Tip="Used to calculate weight and cost"
                          Text="Density:"/>
 
-              <NumericUpDown Grid.Row="2" Grid.Column="8"
+              <NumericUpDown Grid.Row="2" Grid.Column="6"
+                             Classes="ValueLabel ValueLabel_gml"
                              Minimum="0.1"
                              Maximum="10"
                              Increment="0.1"
                              Value="{Binding Material.Density}"/>
-              <TextBlock Grid.Row="2" Grid.Column="10"
-                         VerticalAlignment="Center"
-                         Text="g/ml"/>
 
-              <TextBlock Grid.Row="2" Grid.Column="12"
+              <TextBlock Grid.Row="2" Grid.Column="8"
                          VerticalAlignment="Center"
                          ToolTip.Tip="One bottle unit cost"
                          Text="Cost:"/>
+
+              <NumericUpDown Grid.Row="2" Grid.Column="10"
+                             Minimum="1"
+                             Maximum="100000"
+                             Increment="1"
+                             Value="{Binding Material.BottleCost}"/>
+
+              <TextBlock Grid.Row="2" Grid.Column="12"
+                         VerticalAlignment="Center"
+                         ToolTip.Tip="Number of bottles in stock"
+                         Text="Stock:"/>
 
               <NumericUpDown Grid.Row="2" Grid.Column="14"
                              Minimum="1"
                              Maximum="100000"
                              Increment="1"
-                             Value="{Binding Material.BottleCost}"/>
-              <TextBlock Grid.Row="2" Grid.Column="16"
-                         VerticalAlignment="Center"
-                         Text=""/>
-
-              <TextBlock Grid.Row="2" Grid.Column="18"
-                         VerticalAlignment="Center"
-                         ToolTip.Tip="Number of bottles in stock"
-                         Text="Stock:"/>
-
-              <NumericUpDown Grid.Row="2" Grid.Column="20"
-                             Minimum="1"
-                             Maximum="100000"
-                             Increment="1"
                              Value="{Binding Material.BottlesInStock}"/>
-              <TextBlock Grid.Row="2" Grid.Column="22"
+              <TextBlock Grid.Row="2" Grid.Column="16"
                          VerticalAlignment="Center"
                          Text="units"/>
           </Grid>

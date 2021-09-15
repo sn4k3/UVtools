@@ -28,6 +28,7 @@ namespace UVtools.WPF.Controls.Tools
             RemoveIslandsBelowEqualPixelCount = UserSettings.Instance.LayerRepair.RemoveIslandsBelowEqualPixels,
             RemoveIslandsRecursiveIterations = UserSettings.Instance.LayerRepair.RemoveIslandsRecursiveIterations,
             AttachIslandsBelowLayers = UserSettings.Instance.LayerRepair.AttachIslandsBelowLayers,
+            ResinTrapsOverlapBy = UserSettings.Instance.LayerRepair.ResinTrapsOverlapBy,
             GapClosingIterations = UserSettings.Instance.LayerRepair.ClosingIterations,
             NoiseRemovalIterations = UserSettings.Instance.LayerRepair.OpeningIterations,
         };
@@ -40,6 +41,7 @@ namespace UVtools.WPF.Controls.Tools
             Operation.RemoveIslandsBelowEqualPixelCount = UserSettings.Instance.LayerRepair.RemoveIslandsBelowEqualPixels;
             Operation.RemoveIslandsRecursiveIterations = UserSettings.Instance.LayerRepair.RemoveIslandsRecursiveIterations;
             Operation.AttachIslandsBelowLayers = UserSettings.Instance.LayerRepair.AttachIslandsBelowLayers;
+            Operation.ResinTrapsOverlapBy = UserSettings.Instance.LayerRepair.ResinTrapsOverlapBy;
             Operation.GapClosingIterations = UserSettings.Instance.LayerRepair.ClosingIterations;
             Operation.NoiseRemovalIterations = UserSettings.Instance.LayerRepair.OpeningIterations;
         }

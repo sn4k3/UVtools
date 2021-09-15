@@ -10,40 +10,42 @@
     <TextBlock VerticalAlignment="Center" Text="{Binding CurrentLayers}"/>
 
     <Grid RowDefinitions="Auto,10,Auto,10,Auto"
-          ColumnDefinitions="Auto,10,Auto,5,Auto,20,Auto,10,Auto,5,Auto">
+          ColumnDefinitions="Auto,10,Auto,20,Auto,10,Auto">
 
         <TextBlock Grid.Row="0" Grid.Column="0"  VerticalAlignment="Center" Text="Modifier:"/>
         <ComboBox
-            Grid.Row="0" Grid.Column="2" Grid.ColumnSpan="9"
-            Width="430"
+            Grid.Row="0" Grid.Column="2" Grid.ColumnSpan="5"
+            Width="505"
             SelectedItem="{Binding Operation.SelectedItem}"
             Items="{Binding Operation.Presets}"/>
 
         <TextBlock Grid.Row="2" Grid.Column="0"  VerticalAlignment="Center" Text="Anti-Aliasing:"/>
-        <ComboBox Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="9"
-                  Width="430"
+        <ComboBox Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="5"
+                  Width="505"
                   IsEnabled="{Binding Operation.CanAntiAliasing}"
                   Items="{Binding Operation.AntiAliasingType, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
                   SelectedItem="{Binding Operation.AntiAliasingType, Converter={StaticResource FromValueDescriptionToEnumConverter}}">
         </ComboBox>
 
-        <TextBlock Grid.Row="4" Grid.Column="0"  VerticalAlignment="Center" Text="Bottom exposure:"/>
+        <TextBlock Grid.Row="4" Grid.Column="0" 
+                   VerticalAlignment="Center" 
+                   Text="Bottom exposure:"/>
         <NumericUpDown Grid.Row="4" Grid.Column="2"
+                       Classes="ValueLabel ValueLabel_s"
                        VerticalAlignment="Center"
                        Minimum="0.01"
                        Maximum="1000"
                        Increment="0.5"
                        Value="{Binding Operation.BottomExposure}"/>
-        <TextBlock Grid.Row="4" Grid.Column="4"  VerticalAlignment="Center" Text="s"/>
 
-        <TextBlock Grid.Row="4" Grid.Column="6"  VerticalAlignment="Center" Text="Normal exposure:"/>
-        <NumericUpDown Grid.Row="4" Grid.Column="8"
+        <TextBlock Grid.Row="4" Grid.Column="4"  VerticalAlignment="Center" Text="Normal exposure:"/>
+        <NumericUpDown Grid.Row="4" Grid.Column="6"
+                       Classes="ValueLabel ValueLabel_s"
                        VerticalAlignment="Center"
                        Minimum="0.01"
                        Maximum="1000"
                        Increment="0.5"
                        Value="{Binding Operation.NormalExposure}"/>
-        <TextBlock Grid.Row="4" Grid.Column="10"  VerticalAlignment="Center" Text="s"/>
     </Grid>
 
     </StackPanel>

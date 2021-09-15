@@ -1228,9 +1228,9 @@ namespace UVtools.Core
                     {
                         matCache[i] = this[i].LayerMat;
                         matTargetCache[i] = new Mat(matCache[i], BoundingRectangle);
-                        if (resinTrapConfig.BinaryThreshold > 0)
+                        if (resinTrapConfig.MaximumPixelBrightnessToDrain > 0)
                         {
-                            CvInvoke.Threshold(matTargetCache[i], matTargetCache[i], resinTrapConfig.BinaryThreshold, byte.MaxValue, ThresholdType.Binary);
+                            CvInvoke.Threshold(matTargetCache[i], matTargetCache[i], resinTrapConfig.MaximumPixelBrightnessToDrain, byte.MaxValue, ThresholdType.Binary);
                         }
                     });
             }
@@ -1349,7 +1349,7 @@ namespace UVtools.Core
                     currentAirMap = null;
                 }
 
-                for (var layerIndex = resinTraps.Length - 1; layerIndex >= resinTrapConfig.StartLayerIndex; layerIndex--)
+                for (int layerIndex = (int)(LayerCount - 1); layerIndex >= resinTrapConfig.StartLayerIndex; layerIndex--)
                 {
                     if (progress.Token.IsCancellationRequested) return result.OrderBy(issue => issue.Type).ThenBy(issue => issue.LayerIndex).ThenBy(issue => issue.Area).ToList();
                     

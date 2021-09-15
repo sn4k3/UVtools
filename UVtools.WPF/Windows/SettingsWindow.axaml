@@ -136,7 +136,7 @@
 
 
                           <Grid RowDefinitions="Auto,10,Auto"
-                                ColumnDefinitions="Auto,10,150,5,Auto">
+                                ColumnDefinitions="Auto,10,Auto">
 
                               <TextBlock Grid.Row="0" Grid.Column="0" 
                                          VerticalAlignment="Center"
@@ -144,16 +144,13 @@
                                          Text="Horizontal limiting margin:"/>
 
                             <NumericUpDown Grid.Row="0" Grid.Column="2"
+                                           Classes="ValueLabel ValueLabel_px"
                                        VerticalAlignment="Center"
                                        ToolTip.Tip="Limits the windows and dialogs maximum width to the screen resolution less this margin"
-                                       
                                        Minimum="0"
                                        Maximum="1000"
                                        Increment="1"
                                        Value="{Binding Settings.General.WindowsHorizontalMargin}"/>
-                              <TextBlock Grid.Row="0" Grid.Column="4"
-                                         VerticalAlignment="Center"
-                                         Text="px"/>
 
                               <TextBlock Grid.Row="2" Grid.Column="0"
                                          VerticalAlignment="Center"
@@ -161,18 +158,13 @@
                                          Text="Vertical limiting margin:"/>
 
                               <NumericUpDown Grid.Row="2" Grid.Column="2"
+                                             Classes="ValueLabel ValueLabel_px"
                                              VerticalAlignment="Center"
                                              ToolTip.Tip="Limits windows and dialogs maximum height to the screen resolution less this margin"
-                                             
                                              Minimum="0"
                                              Maximum="1000"
                                              Increment="1"
                                              Value="{Binding Settings.General.WindowsVerticalMargin}"/>
-
-                              <TextBlock Grid.Row="2" Grid.Column="4"
-                                         VerticalAlignment="Center"
-                                         Text="px"/>
-
                           </Grid>
 
                           <CheckBox IsChecked="{Binding Settings.General.ExpandDescriptions}"
@@ -879,33 +871,24 @@
 
               <StackPanel Orientation="Vertical">
                 <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Crosshairs"/>
-                <Grid Margin="10" RowDefinitions="Auto,10,Auto" ColumnDefinitions="Auto,150,*,Auto,Auto">
+                <Grid Margin="10" RowDefinitions="Auto,10,Auto" ColumnDefinitions="Auto,150,*,Auto">
                   <CheckBox Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2"
                              VerticalAlignment="Center"
                              Content="Show crosshairs for selected issues only"
-                             IsChecked="{Binding Settings.LayerPreview.CrosshairShowOnlyOnSelectedIssues}"
-                          />
+                             IsChecked="{Binding Settings.LayerPreview.CrosshairShowOnlyOnSelectedIssues}"/>
                   <TextBlock Grid.Row="0" Grid.Column="2"
                              HorizontalAlignment="Right"
                              VerticalAlignment="Center"
                              Text="Crosshair size:"/>
 
                   <NumericUpDown Grid.Row="0" Grid.Column="3"
+                                 Classes="ValueLabel ValueLabel_px"
                                  Margin="10,0,0,0"
                                  VerticalAlignment="Center"
-                                 
                                  Minimum="1"
                                  Maximum="1000000"
                                  Width="70"
-                                 Value="{Binding Settings.LayerPreview.CrosshairLength}"
-                               />
-
-                  <TextBlock Grid.Row="0" Grid.Column="4"
-                             Margin="5,0,0,0"
-                             HorizontalAlignment="Right"
-                             VerticalAlignment="Center"
-                             Text="px"/>
-
+                                 Value="{Binding Settings.LayerPreview.CrosshairLength}"/>
 
                   <TextBlock Grid.Row="2" Grid.Column="0"
                              VerticalAlignment="Center"
@@ -914,28 +897,20 @@
                             VerticalAlignment="Center"
                             Margin="10,0,0,0"
                             Items="{Binding ZoomRanges}"
-                            SelectedIndex="{Binding Settings.LayerPreview.CrosshairFadeLevelIndex}"
-                          />
+                            SelectedIndex="{Binding Settings.LayerPreview.CrosshairFadeLevelIndex}"/>
                   <TextBlock Grid.Row="2" Grid.Column="2"
                              HorizontalAlignment="Right"
                              VerticalAlignment="Center"
                              Text="Crosshair margin:"/>
 
                   <NumericUpDown Grid.Row="2" Grid.Column="3"
+                                 Classes="ValueLabel ValueLabel_px"
                                  Margin="10,0,0,0"
                                  VerticalAlignment="Center"
-                                 
                                  Minimum="1"
                                  Maximum="255"
                                  Width="70"
-                                 Value="{Binding Settings.LayerPreview.CrosshairMargin}"
-                               />
-
-                  <TextBlock Grid.Row="2" Grid.Column="4"
-                             Margin="5,0,0,0"
-                             HorizontalAlignment="Right"
-                             VerticalAlignment="Center"
-                             Text="px"/>
+                                 Value="{Binding Settings.LayerPreview.CrosshairMargin}"/>
 
                 </Grid>
               </StackPanel>
@@ -1226,10 +1201,9 @@
                 <StackPanel Orientation="Horizontal" Margin="10" Spacing="10">
                   <NumericUpDown Width="60"
                                  
-                                  Minimum="1"
+                                  Minimum="0"
                                   Maximum="254"
-                                 Value="{Binding Settings.Issues.ResinTrapBinaryThreshold}"
-                                />
+                                 Value="{Binding Settings.Issues.ResinTrapBinaryThreshold}"/>
                   <TextBlock
                     VerticalAlignment="Center"
                     Text="Pixel intensity threshold for resin trap detection"
@@ -1294,7 +1268,7 @@
                       <StackPanel Orientation="Horizontal" Margin="10" Spacing="10">
                           <NumericUpDown Width="60"
                                          Minimum="1"
-                                         Maximum="255"
+                                         Maximum="4294967295"
                                          Value="{Binding Settings.Issues.SuctionCupRequiredAreaToConsider}"/>
                         <TextBlock
                             VerticalAlignment="Center"
@@ -1455,6 +1429,7 @@
 
                       <StackPanel Orientation="Horizontal" Margin="10" Spacing="10">
                           <NumericUpDown Width="60"
+                                         Classes="ValueLabel ValueLabel_mm"
                                          Minimum="-50"
                                          Maximum="50"
                                          Increment="0.1"
@@ -1633,7 +1608,7 @@
                     
                     Minimum="0"
                     Maximum="255"/>
-                  <TextBlock VerticalAlignment="Center" Text="Default maximum pixel area for Island removal (0 = disable)"/>
+                  <TextBlock VerticalAlignment="Center" Text="Islands: Maximum pixel area for Island removal (0 = disable)"/>
                 </StackPanel>
 
                 <StackPanel Orientation="Horizontal" Margin="10,0" Spacing="10">
@@ -1643,7 +1618,7 @@
                     
                     Minimum="0"
                     Maximum="65535"/>
-                  <TextBlock VerticalAlignment="Center" Text="Default maximum layers for recursive island removal (0 = All)"/>
+                  <TextBlock VerticalAlignment="Center" Text="Islands: Maximum layers for recursive island removal (0 = All)"/>
                 </StackPanel>
 
                 <StackPanel Orientation="Horizontal" Margin="10,0" Spacing="10">
@@ -1652,7 +1627,16 @@
                         Width="70"
                         Minimum="0"
                         Maximum="65535"/>
-                    <TextBlock VerticalAlignment="Center" Text="Attempt to attach islands down to this layers (0 = Disabled)"/>
+                    <TextBlock VerticalAlignment="Center" Text="Islands: Attempt to attach islands down to this layers (0 = Disabled)"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="10,0" Spacing="10">
+                    <NumericUpDown
+                        Value="{Binding Settings.LayerRepair.ResinTrapsOverlapBy}"
+                        Width="70"
+                        Minimum="0"
+                        Maximum="255"/>
+                    <TextBlock VerticalAlignment="Center" Text="Resin traps: Overlap and expand resin trap area by this value in pixels (0 = Disabled)"/>
                 </StackPanel>
 
                 <StackPanel Orientation="Horizontal" Margin="10,0" Spacing="10">
@@ -1662,7 +1646,7 @@
                     
                     Minimum="0"
                     Maximum="255"/>
-                  <TextBlock VerticalAlignment="Center" Text="Default 'Gap Closing' iterations"/>
+                  <TextBlock VerticalAlignment="Center" Text="'Gap Closing' iterations"/>
                 </StackPanel>
 
                 <StackPanel Orientation="Horizontal" Margin="10,0,10,10" Spacing="10">
@@ -1672,7 +1656,7 @@
                     
                     Minimum="0"
                     Maximum="255"/>
-                  <TextBlock VerticalAlignment="Center" Text="Default 'Noise Removal' iterations"/>
+                  <TextBlock VerticalAlignment="Center" Text="'Noise Removal' iterations"/>
                 </StackPanel>
 
               </StackPanel>
@@ -1772,7 +1756,7 @@
                       <Grid Margin="10,0,10,10"
                             IsVisible="{Binding Settings.Automations.LightOffDelayExtraTimeVisible}"
                             RowDefinitions="Auto"
-                            ColumnDefinitions="Auto,10,150,5,Auto,30,Auto,10,150,5,Auto">
+                            ColumnDefinitions="Auto,10,Auto,30,Auto,10,Auto">
                             
                             <TextBlock Grid.Row="0" Grid.Column="0" 
                                        VerticalAlignment="Center"
@@ -1780,31 +1764,24 @@
                                        Text="Light-off delay:" />
 
                             <NumericUpDown Grid.Row="0" Grid.Column="2"
-                                           
+                                           Classes="ValueLabel ValueLabel_s"
                                            Minimum="0"
                                            Maximum="255"
                                            Increment="0.5"
                                            FormatString="F2"
                                            Value="{Binding Settings.Automations.LightOffDelay}"/>
+
                             <TextBlock Grid.Row="0" Grid.Column="4"
-                                       VerticalAlignment="Center"
-                                       Text="s" />
-
-
-                            <TextBlock Grid.Row="0" Grid.Column="6"
                                        VerticalAlignment="Center"
                                        ToolTip.Tip="Auto set the extra 'bottom light-off delay' based on bottom lift height and speed."
                                        Text="Bottom light-off delay:" />
-                            <NumericUpDown Grid.Row="0" Grid.Column="8"
-                                           
+                            <NumericUpDown Grid.Row="0" Grid.Column="6"
+                                           Classes="ValueLabel ValueLabel_s"
                                            Minimum="0"
                                            Maximum="255"
                                            Increment="0.5"
                                            FormatString="F2"
                                            Value="{Binding Settings.Automations.BottomLightOffDelay}"/>
-                            <TextBlock Grid.Row="0" Grid.Column="10"
-                                       VerticalAlignment="Center"
-                                       Text="s" />
 
                       </Grid>
 

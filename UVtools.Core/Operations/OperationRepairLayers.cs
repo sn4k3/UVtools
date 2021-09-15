@@ -34,6 +34,7 @@ namespace UVtools.Core.Operations
         private ushort _removeIslandsBelowEqualPixelCount = 5;
         private ushort _removeIslandsRecursiveIterations = 4;
         private ushort _attachIslandsBelowLayers = 2;
+        private byte _resinTrapsOverlapBy = 5;
         private uint _gapClosingIterations = 1;
         private uint _noiseRemovalIterations;
 
@@ -109,6 +110,12 @@ namespace UVtools.Core.Operations
         {
             get => _attachIslandsBelowLayers;
             set => RaiseAndSetIfChanged(ref _attachIslandsBelowLayers, value);
+        }
+
+        public byte ResinTrapsOverlapBy
+        {
+            get => _resinTrapsOverlapBy;
+            set => RaiseAndSetIfChanged(ref _resinTrapsOverlapBy, value);
         }
 
         public uint GapClosingIterations
@@ -360,6 +367,10 @@ namespace UVtools.Core.Operations
                                 initImage();
                                 using var vec = new VectorOfVectorOfPoint(issue.Contours);
                                 CvInvoke.DrawContours(image, vec, -1, EmguExtensions.WhiteColor, -1);
+                                if (_resinTrapsOverlapBy > 0)
+                                {
+                                    CvInvoke.DrawContours(image, vec, -1, EmguExtensions.WhiteColor, _resinTrapsOverlapBy * 2 + 1);
+                                }
                             }
                         }
                     }

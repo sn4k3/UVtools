@@ -7,7 +7,8 @@
   <StackPanel Orientation="Horizontal" Spacing="10">
     <TextBlock VerticalAlignment="Center" Text="Rotation angle:"/>
     <NumericUpDown
-          Width="150"
+        Classes="ValueLabel ValueLabel_deg"
+          Width="180"
           Minimum="-359.99"
           Maximum="359.99"
           Increment="1.0"

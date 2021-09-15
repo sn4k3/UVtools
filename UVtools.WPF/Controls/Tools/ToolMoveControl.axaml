@@ -42,6 +42,7 @@
                   FontWeight="Bold"
                   Text="Left"/>
               <NumericUpDown
+                  Classes="ValueLabel ValueLabel_px"
                   VerticalAlignment="Center"
                   ButtonSpinnerLocation="Left"
                   Width="150"
@@ -57,7 +58,8 @@
                   FontWeight="Bold"
                   Margin="0,0,0,5"
                   Text="Top"/>
-              <NumericUpDown
+            <NumericUpDown
+                Classes="ValueLabel ValueLabel_px"
                   VerticalAlignment="Center"
                   Width="150"
                   Minimum="-100000"
@@ -70,6 +72,7 @@
                       VerticalAlignment="Center"
                       Spacing="5">
             <NumericUpDown
+                Classes="ValueLabel ValueLabel_px"
                 VerticalAlignment="Center"
                   Width="150"
                     Minimum="-100000"
@@ -82,7 +85,8 @@
           </StackPanel>
 
           <StackPanel Grid.Row="2" Grid.Column="1">
-              <NumericUpDown
+            <NumericUpDown
+                Classes="ValueLabel ValueLabel_px"
                   VerticalAlignment="Center"
                   Width="150"
                   Minimum="-100000"

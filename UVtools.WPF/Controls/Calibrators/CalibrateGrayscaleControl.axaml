@@ -8,23 +8,19 @@
     <StackPanel Spacing="10">
       <Grid
             RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto"
-            ColumnDefinitions="Auto,10,150,5,Auto,20,Auto,10,150,5,Auto"
+            ColumnDefinitions="Auto,10,Auto,5,Auto,20,Auto,10,Auto,5,Auto"
       >
 
         <TextBlock Grid.Row="0" Grid.Column="0"
                    VerticalAlignment="Center"
                    Text="Layer height:"/>
         <NumericUpDown Grid.Row="0" Grid.Column="2"
-                       
+                       Classes="ValueLabel ValueLabel_mm"
                        Increment="0.01"
                        Minimum="0.01"
                        Maximum="0.30"
                        FormatString="F3"
-                       Value="{Binding Operation.LayerHeight}"
-                     />
-        <TextBlock Grid.Row="0" Grid.Column="4"
-                   VerticalAlignment="Center"
-                   Text="mm"/>
+                       Value="{Binding Operation.LayerHeight}"/>
 
         <StackPanel Grid.Row="0" Grid.Column="6"
                     VerticalAlignment="Center"
@@ -59,8 +55,7 @@
                        Increment="1"
                        Minimum="1"
                        Maximum="1000"
-                       Value="{Binding Operation.BottomLayers}"
-      />
+                       Value="{Binding Operation.BottomLayers}"/>
         <TextBlock Grid.Row="2" Grid.Column="4"
                    VerticalAlignment="Center"
                    Text="{Binding Operation.BottomHeight, StringFormat=\{0:F3\}mm}"/>
@@ -70,7 +65,6 @@
                    ToolTip.Tip="Number of layers at normal exposure between bottom and normal layers"
                    Text="Interface layers:"/>
         <NumericUpDown Grid.Row="2" Grid.Column="8"
-                       
                        Increment="1"
                        Minimum="0"
                        Maximum="1000"
@@ -83,7 +77,6 @@
                    VerticalAlignment="Center"
                    Text="Normal layers:"/>
         <NumericUpDown Grid.Row="4" Grid.Column="2"
-                       
                        Increment="1"
                        Minimum="1"
                        Maximum="1000"
@@ -96,56 +89,43 @@
                    VerticalAlignment="Center"
                    Text="Bottom exposure:"/>
         <NumericUpDown Grid.Row="6" Grid.Column="2"
-                       
+                       Classes="ValueLabel ValueLabel_s"
                        Increment="0.5"
                        Minimum="0.1"
                        Maximum="200"
                        FormatString="F2"
                        Value="{Binding Operation.BottomExposure}"/>
-        <TextBlock Grid.Row="6" Grid.Column="4"
-                   VerticalAlignment="Center"
-                   Text="s"/>
-
         <TextBlock Grid.Row="6" Grid.Column="6"
                    VerticalAlignment="Center"
                    Text="Normal exposure:"/>
         <NumericUpDown Grid.Row="6" Grid.Column="8"
-                       
+                       Classes="ValueLabel ValueLabel_s"
                        Increment="0.5"
                        Minimum="0.1"
                        Maximum="200"
                        FormatString="F2"
                        Value="{Binding Operation.NormalExposure}"/>
-        <TextBlock Grid.Row="6" Grid.Column="10"
-                   VerticalAlignment="Center"
-                   Text="s"/>
 
 
         <TextBlock Grid.Row="8" Grid.Column="0"
                    VerticalAlignment="Center"
                    Text="Outer margin:"/>
         <NumericUpDown Grid.Row="8" Grid.Column="2"
-                       
+                       Classes="ValueLabel ValueLabel_px"
                        Increment="1"
                        Minimum="0"
                        Maximum="10000"
                        Value="{Binding Operation.OuterMargin}"/>
-        <TextBlock Grid.Row="8" Grid.Column="4"
-                   VerticalAlignment="Center"
-                   Text="px"/>
 
         <TextBlock Grid.Row="8" Grid.Column="6"
                    VerticalAlignment="Center"
                    Text="Inner margin:"/>
         <NumericUpDown Grid.Row="8" Grid.Column="8"
-                       
+                       Classes="ValueLabel ValueLabel_px"
                        Increment="1"
                        Minimum="0"
                        Maximum="10000"
                        Value="{Binding Operation.InnerMargin}"/>
-        <TextBlock Grid.Row="8" Grid.Column="10"
-                   VerticalAlignment="Center"
-                   Text="px"/>
 
         <CheckBox Grid.Row="10" Grid.Column="2" Grid.ColumnSpan="4"
                   VerticalAlignment="Center"
@@ -175,14 +155,14 @@
           <Grid 
               Margin="0,10,0,0"
               RowDefinitions="Auto,0,Auto,10,Auto,10,Auto,10,Auto,10,Auto"
-              ColumnDefinitions="Auto,10,Auto,5,Auto,5,Auto,5,Auto,20,Auto,10,Auto">
+              ColumnDefinitions="Auto,10,Auto,5,Auto,5,Auto,10,Auto,10,Auto">
 
             <TextBlock Grid.Row="0" Grid.Column="0"
                          VerticalAlignment="Center"
                          Text="Brightness range:"/>
 
             <NumericUpDown Grid.Row="0" Grid.Column="2"
-                           
+                           Classes="ValueLabel ValueLabel_sun"
                            Increment="1"
                            Minimum="1"
                            Maximum="254"
@@ -195,18 +175,18 @@
                        Text="-"/>
 
             <NumericUpDown Grid.Row="0" Grid.Column="6"
-                           
+                           Classes="ValueLabel ValueLabel_sun"
                            Increment="1"
                            Minimum="2"
                            Maximum="255"
                            Value="{Binding Operation.EndBrightness}"/>
 
-            <TextBlock Grid.Row="0" Grid.Column="10"
+            <TextBlock Grid.Row="0" Grid.Column="8"
                        VerticalAlignment="Center"
                        Text="Step increment(s):"/>
 
-            <NumericUpDown Grid.Row="0" Grid.Column="12"
-                           
+            <NumericUpDown Grid.Row="0" Grid.Column="10"
+                           Classes="ValueLabel ValueLabel_sun"
                            Increment="1"
                            Minimum="2"
                            Maximum="254"
@@ -228,72 +208,64 @@
                        Text="Center hole diameter:"/>
 
             <NumericUpDown Grid.Row="4" Grid.Column="2"
-                           
+                           Classes="ValueLabel ValueLabel_px"
                            Increment="1"
                            Minimum="2"
                            Maximum="10000"
                            IsEnabled="{Binding Operation.EnableCenterHoleRelief}"
                            Value="{Binding Operation.CenterHoleDiameter}"/>
 
-            <CheckBox Grid.Row="4" Grid.Column="6" Grid.ColumnSpan="7"
+            <CheckBox Grid.Row="4" Grid.Column="6" Grid.ColumnSpan="5"
                       VerticalAlignment="Center"
-                      Margin="10,0,0,0"
                       Content="Enable center hole relief"
                       IsChecked="{Binding Operation.EnableCenterHoleRelief}"/>
 
 
-            <TextBlock Grid.Row="4" Grid.Column="4"
-                       VerticalAlignment="Center"
-                       Text="px"/>
+            <StackPanel Grid.Row="6" Grid.Column="2" Grid.ColumnSpan="9"
+                         Orientation="Horizontal" Spacing="20">
+                <CheckBox VerticalAlignment="Center"
+                    ToolTip.Tip="Convert the raw brightness text value to exposure time in seconds and intrude on divisions"
+                    Content="Convert brightness to exposure time"
+                    IsChecked="{Binding Operation.ConvertBrightnessToExposureTime}"/>
 
-            <CheckBox Grid.Row="6" Grid.Column="2" Grid.ColumnSpan="6"
-                      VerticalAlignment="Center"
-                      ToolTip.Tip="Convert the raw brightness text value to exposure time in seconds and intrude on divisions"
-                      Content="Convert brightness to exposure time"
-                      IsChecked="{Binding Operation.ConvertBrightnessToExposureTime}"/>
-            
-            <CheckBox Grid.Row="6" Grid.Column="10" Grid.ColumnSpan="3"
-                      VerticalAlignment="Center"
-                      Content="Enable division lines"
-                      IsChecked="{Binding Operation.EnableLineDivisions}"/>
-            
+                <CheckBox VerticalAlignment="Center"
+                          Content="Enable division lines"
+                          IsChecked="{Binding Operation.EnableLineDivisions}"/>
+            </StackPanel>
+
+
             <TextBlock Grid.Row="8" Grid.Column="0"
                        VerticalAlignment="Center"
                        IsEnabled="{Binding Operation.EnableLineDivisions}"
                        Text="Division thickness:"/>
 
             <NumericUpDown Grid.Row="8" Grid.Column="2"
-                           
+                           Classes="ValueLabel ValueLabel_px"
                            Increment="1"
                            Minimum="0"
                            Maximum="255"
                            IsEnabled="{Binding Operation.EnableLineDivisions}"
                            Value="{Binding Operation.LineDivisionThickness}"/>
 
-            <TextBlock Grid.Row="8" Grid.Column="4"
-                       VerticalAlignment="Center"
-                       IsEnabled="{Binding Operation.EnableLineDivisions}"
-                       Text="px"/>
-
-            <TextBlock Grid.Row="8" Grid.Column="6"
-                       VerticalAlignment="Center"
-                       HorizontalAlignment="Right"
-                       IsEnabled="{Binding Operation.EnableLineDivisions}"
-                       Text="Div. brightness:"/>
-
-            <NumericUpDown Grid.Row="8" Grid.Column="9"
-                           Grid.ColumnSpan="2"
-                           
-                           Increment="1"
-                           Minimum="0"
-                           Maximum="255"
+            <StackPanel Grid.Row="8" Grid.Column="6" Grid.ColumnSpan="5" 
+                        Spacing="10" Orientation="Horizontal">
+                <TextBlock 
+                           VerticalAlignment="Center"
                            IsEnabled="{Binding Operation.EnableLineDivisions}"
-                           Value="{Binding Operation.LineDivisionBrightness}"/>
+                           Text="Div. brightness:"/>
 
-            <TextBlock Grid.Row="8" Grid.Column="12"
-                       VerticalAlignment="Center"
-                       IsEnabled="{Binding Operation.EnableLineDivisions}"
-                       Text="{Binding Operation.LineDivisionBrightnessPercent, StringFormat=(\{0\}%)}"/>
+                <NumericUpDown Classes="ValueLabel ValueLabel_sun"
+                               Increment="1"
+                               Minimum="0"
+                               Maximum="255"
+                               IsEnabled="{Binding Operation.EnableLineDivisions}"
+                               Value="{Binding Operation.LineDivisionBrightness}"/>
+
+                <TextBlock
+                           VerticalAlignment="Center"
+                           IsEnabled="{Binding Operation.EnableLineDivisions}"
+                           Text="{Binding Operation.LineDivisionBrightnessPercent, StringFormat=(\{0\}%)}"/>
+            </StackPanel>
 
             <TextBlock Grid.Row="10" Grid.Column="0"
                        VerticalAlignment="Center"
@@ -301,15 +273,12 @@
                        Text="X text offset:"/>
 
             <NumericUpDown Grid.Row="10" Grid.Column="2"
-                           
+                           Classes="ValueLabel ValueLabel_px"
                            Increment="1"
                            Minimum="-10000"
                            Maximum="10000"
                            Value="{Binding Operation.TextXOffset}"/>
 
-            <TextBlock Grid.Row="10" Grid.Column="4"
-                       VerticalAlignment="Center"
-                       Text="px"/>
           </Grid>
       </Expander>
 

@@ -29,14 +29,165 @@
         <Setter Property="AcceptsTab" Value="True" />
     </Style>
 
+  <Style Selector="TextBox.NumericUpDownValueLabel">
+    
+    <Setter Property="IsEnabled" Value="False" />
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="CaretBrush" Value="Transparent" />
+    <Setter Property="BorderBrush" Value="Transparent" />
+      <Setter Property="IsReadOnly" Value="True" />
+      <Setter Property="MinWidth" Value="40" />
+      
+      <Setter Property="CornerRadius" Value="0" />
+      
+      <Setter Property="VerticalAlignment" Value="Stretch" />
+      <Setter Property="HorizontalAlignment" Value="Stretch" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+      <Setter Property="HorizontalContentAlignment" Value="Center" />
+    <Setter Property="Padding" Value="5,0" />
+  </Style>
+
+  <Style Selector="NumericUpDown.ValueLabel /template/ TextBox">
+      <Setter Property="InnerRightContent">
+        <Template>
+          <TextBox Classes="NumericUpDownValueLabel" />
+        </Template>
+      </Setter>
+  </Style>
+
+    <Style Selector="NumericUpDown.ValueLabel_percent /template/ TextBox">
+        <Setter Property="InnerRightContent">
+            <Template>
+              <TextBox Classes="NumericUpDownValueLabel" Text="%" ToolTip.Tip="Percent" />
+            </Template>
+        </Setter>
+    </Style>
+
+    <Style Selector="NumericUpDown.ValueLabel_deg /template/ TextBox">
+        <Setter Property="InnerRightContent">
+            <Template>
+              <TextBox Classes="NumericUpDownValueLabel" Text="º" ToolTip.Tip="Degree(s)" />
+            </Template>
+        </Setter>
+    </Style>
+
+    <Style Selector="NumericUpDown.ValueLabel_s /template/ TextBox">
+        <Setter Property="InnerRightContent">
+            <Template>
+              <TextBox Classes="NumericUpDownValueLabel" Text="s" ToolTip.Tip="Second(s)" />
+            </Template>
+        </Setter>
+    </Style>
+
+    <Style Selector="NumericUpDown.ValueLabel_mm /template/ TextBox">
+        <Setter Property="InnerRightContent">
+            <Template>
+              <TextBox Classes="NumericUpDownValueLabel" Text="mm" ToolTip.Tip="Millimeter(s)" />
+            </Template>
+        </Setter>
+    </Style>
+
+    <Style Selector="NumericUpDown.ValueLabel_mm2 /template/ TextBox">
+        <Setter Property="InnerRightContent">
+            <Template>
+              <TextBox Classes="NumericUpDownValueLabel" Text="mm²" ToolTip.Tip="Square Millimeter(s)" />
+            </Template>
+        </Setter>
+    </Style>
+
+    <Style Selector="NumericUpDown.ValueLabel_mm3 /template/ TextBox">
+        <Setter Property="InnerRightContent">
+            <Template>
+              <TextBox Classes="NumericUpDownValueLabel" Text="mm³" ToolTip.Tip="Cubic Millimeter(s)" />
+            </Template>
+        </Setter>
+    </Style>
+
+
+  <Style Selector="NumericUpDown.ValueLabel_mmmin /template/ TextBox">
+        <Setter Property="InnerRightContent">
+            <Template>
+              <TextBox Classes="NumericUpDownValueLabel" Text="mm/min" ToolTip.Tip="Millimeters per minute" />
+            </Template>
+        </Setter>
+    </Style>
+
+    <Style Selector="NumericUpDown.ValueLabel_px /template/ TextBox">
+        <Setter Property="InnerRightContent">
+            <Template>
+              <TextBox Classes="NumericUpDownValueLabel" Text="px" ToolTip.Tip="Pixel(s)" />
+            </Template>
+        </Setter>
+    </Style>
+
+    <Style Selector="NumericUpDown.ValueLabel_px2 /template/ TextBox">
+        <Setter Property="InnerRightContent">
+            <Template>
+              <TextBox Classes="NumericUpDownValueLabel" Text="px²" ToolTip.Tip="Squared Pixel(s)" />
+            </Template>
+        </Setter>
+    </Style>
+
+    <Style Selector="NumericUpDown.ValueLabel_px3 /template/ TextBox">
+        <Setter Property="InnerRightContent">
+            <Template>
+              <TextBox Classes="NumericUpDownValueLabel" Text="px³" ToolTip.Tip="Cubic Pixel(s)" />
+            </Template>
+        </Setter>
+    </Style>
+
+    <Style Selector="NumericUpDown.ValueLabel_sun /template/ TextBox">
+        <Setter Property="InnerRightContent">
+            <Template>
+              <TextBox Classes="NumericUpDownValueLabel" Text="☀" ToolTip.Tip="Brightness" />
+            </Template>
+        </Setter>
+    </Style>
+
+    <Style Selector="NumericUpDown.ValueLabel_GB /template/ TextBox">
+        <Setter Property="InnerRightContent">
+            <Template>
+                <TextBox Classes="NumericUpDownValueLabel" Text="GB" ToolTip.Tip="Gigabyte(s)" />
+            </Template>
+        </Setter>
+    </Style>
+
+    <Style Selector="NumericUpDown.ValueLabel_g /template/ TextBox">
+        <Setter Property="InnerRightContent">
+            <Template>
+                <TextBox Classes="NumericUpDownValueLabel" Text="g" ToolTip.Tip="Gram(s)" />
+            </Template>
+        </Setter>
+    </Style>
+
+    <Style Selector="NumericUpDown.ValueLabel_gml /template/ TextBox">
+        <Setter Property="InnerRightContent">
+            <Template>
+                <TextBox Classes="NumericUpDownValueLabel" Text="g/ml" ToolTip.Tip="Grams per milliliter" />
+            </Template>
+        </Setter>
+    </Style>
+
+    <Style Selector="NumericUpDown.ValueLabel_ml /template/ TextBox">
+        <Setter Property="InnerRightContent">
+            <Template>
+                <TextBox Classes="NumericUpDownValueLabel" Text="ml" ToolTip.Tip="Milliliter(s)" />
+            </Template>
+        </Setter>
+    </Style>
+
 
     <Style Selector="NumericUpDown">
-        <Setter Property="MinWidth" Value="130"></Setter>
-        <Setter Property="ClipValueToMinMax" Value="True"></Setter>
+        <Setter Property="MinWidth" Value="130"/>
+        <Setter Property="ClipValueToMinMax" Value="True"/>
+    </Style>
+
+    <Style Selector="NumericUpDown.ValueLabel">
+        <Setter Property="MinWidth" Value="180"/>
     </Style>
 
     <Style Selector="TabControl">
-        <Setter Property="Padding" Value="0"></Setter>
+        <Setter Property="Padding" Value="0"/>
     </Style>
 
     <Style Selector="Expander /template/ ToggleButton">

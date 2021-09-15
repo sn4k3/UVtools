@@ -20,13 +20,10 @@
       VerticalAlignment="Center" />
 
     <NumericUpDown
-      Width="200"
+        Classes="ValueLabel ValueLabel_px2"
+        Width="200"
       Minimum="1"
       Maximum="4294967295"
-      Value="{Binding Operation.MinimumArea}"
-      />
-    <TextBlock
-      Text="px²"
-      VerticalAlignment="Center" />
+      Value="{Binding Operation.MinimumArea}"/>
   </StackPanel>
 </UserControl>

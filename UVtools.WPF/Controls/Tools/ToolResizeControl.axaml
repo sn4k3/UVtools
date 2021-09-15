@@ -9,11 +9,12 @@
       <StackPanel Orientation="Horizontal" Spacing="10">
         <TextBlock VerticalAlignment="Center" Text="X:"/>
         <NumericUpDown
-            Width="150"
+            Classes="ValueLabel ValueLabel_percent"
+            Width="180"
           Minimum="1"
           Maximum="10000"
           Increment="0.1"
-          FormatString="{}{0:F2} %"
+          FormatString="F2"
           Value="{Binding Operation.X}"/>
     
         <TextBlock 
@@ -22,11 +23,12 @@
           Text="Y:"
           IsEnabled="{Binding !#ConstrainXY.IsChecked}"/>
         <NumericUpDown 
-          Width="150"
+            Classes="ValueLabel ValueLabel_percent"
+            Width="180"
           Minimum="1"
           Maximum="10000"
           Increment="0.1"
-          FormatString="{}{0:F2} %"
+          FormatString="F2"
           Value="{Binding Operation.Y}"
           IsEnabled="{Binding !#ConstrainXY.IsChecked}"
           />

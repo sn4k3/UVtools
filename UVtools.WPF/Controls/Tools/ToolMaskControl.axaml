@@ -38,44 +38,33 @@
           <TextBlock 
             VerticalAlignment="Center"
             Text="Minimum brightness:"/>
-          <NumericUpDown
-            Grid.Row="0"
-            Grid.Column="2"
-            Minimum="0"
-            Maximum="255"
-            Value="{Binding GenMinimumBrightness}"
-            />
-          <TextBlock
-            Grid.Row="0"
-            Grid.Column="4"
-            VerticalAlignment="Center"
-            HorizontalAlignment="Center"
-            Text="(0-255)"/>
-          <TextBlock
-            Grid.Row="0"
-            Grid.Column="6"
-            VerticalAlignment="Center"
-            Text="Maximum brightness:"
-            />
-          <NumericUpDown
-            Grid.Row="0"
-            Grid.Column="8"
-            Minimum="0"
-            Maximum="255"
-            Value="{Binding GenMaximumBrightness}"
-            />
+          <NumericUpDown Grid.Row="0" Grid.Column="2"
+                         Classes="ValueLabel ValueLabel_sun"
+                         Minimum="0"
+                         Maximum="255"
+                         Value="{Binding GenMinimumBrightness}"/>
+          <TextBlock Grid.Row="0" Grid.Column="4"
+                     VerticalAlignment="Center"
+                     HorizontalAlignment="Center"
+                     Text="(0-255)"/>
+          <TextBlock Grid.Row="0" Grid.Column="6"
+                     VerticalAlignment="Center"
+                     Text="Maximum brightness:"/>
+          <NumericUpDown Grid.Row="0" Grid.Column="8"
+                         Classes="ValueLabel ValueLabel_sun"
+                         Minimum="0"
+                         Maximum="255"
+                         Value="{Binding GenMaximumBrightness}"
+          />
 
-          <TextBlock
-            Grid.Row="2"
-            VerticalAlignment="Center"
-            Text="Diameter in pixels:"/>
-          <NumericUpDown
-            Grid.Row="2"
-            Grid.Column="2"
-            Minimum="0"
-            Maximum="10000"
-            Value="{Binding GenDiameter}"
-            />
+          <TextBlock Grid.Row="2" Grid.Column="0"
+                     VerticalAlignment="Center"
+                     Text="Diameter in pixels:"/>
+          <NumericUpDown Grid.Row="2" Grid.Column="2"
+                         Classes="ValueLabel ValueLabel_px"
+                         Minimum="0"
+                         Maximum="10000"
+                         Value="{Binding GenDiameter}"/>
           <Button
             Grid.Row="2"
             Grid.Column="4"
