@@ -524,6 +524,14 @@ namespace UVtools.WPF
             foreach (var value in issuesCountPerLayer)
             {
                 var yPos = tickFrequencySize * value.Key;
+                if (value.Key == 0)
+                {
+                    yPos += tickFrequencySize / 2;
+                }
+                else if(value.Key == SlicerFile.LastLayerIndex)
+                {
+                    yPos -= tickFrequencySize / 2;
+                }
                 var line = new Line{StrokeThickness = stroke, Stroke = Brushes.Red, EndPoint = new Avalonia.Point(_issuesSliderCanvas.Width, 0)};
                 _issuesSliderCanvas.Children.Add(line);
                 Canvas.SetBottom(line, yPos);
