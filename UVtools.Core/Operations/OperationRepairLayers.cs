@@ -21,6 +21,7 @@ using Emgu.CV.CvEnum;
 using Emgu.CV.Util;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
+using UVtools.Core.PixelEditor;
 
 namespace UVtools.Core.Operations
 {
@@ -31,6 +32,8 @@ namespace UVtools.Core.Operations
         private bool _repairIslands = true;
         private bool _repairResinTraps = true;
         private bool _removeEmptyLayers = true;
+        /* Suction Cup repair disabled by default, needs UI component to toggle */
+        private bool _repairSuctionCups = false;
         private ushort _removeIslandsBelowEqualPixelCount = 5;
         private ushort _removeIslandsRecursiveIterations = 4;
         private ushort _attachIslandsBelowLayers = 2;
@@ -401,6 +404,64 @@ namespace UVtools.Core.Operations
 
                     progress.LockAndIncrement();
                 });
+            }
+
+
+            if (_repairSuctionCups)
+            {
+                (bool canDrill, Point location) GetDrillLocation(LayerIssue issue, int diameter)
+                {
+                    var centroid = EmguCV.EmguContour.GetCentroid(new VectorOfPoint(issue.Contours[0]));
+                    using Mat circleCheck = EmguExtensions.InitMat(issue.BoundingRectangle.Size);
+                    using Mat contourMat = EmguExtensions.InitMat(issue.BoundingRectangle.Size);
+                    using Mat overlapCheck = EmguExtensions.InitMat(issue.BoundingRectangle.Size);
+
+                    var inverseOffset = new Point(issue.BoundingRectangle.X * -1, issue.BoundingRectangle.Y * -1);
+
+                    CvInvoke.DrawContours(contourMat, new VectorOfVectorOfPoint(issue.Contours), -1, EmguExtensions.WhiteColor, -1, Emgu.CV.CvEnum.LineType.EightConnected, null, int.MaxValue, inverseOffset);
+
+                    CvInvoke.Circle(circleCheck, new(centroid.X + inverseOffset.X, centroid.Y + inverseOffset.Y), 5, EmguExtensions.WhiteColor, -1);
+
+                    CvInvoke.BitwiseAnd(circleCheck, contourMat, overlapCheck);
+
+                    if (CvInvoke.CountNonZero(overlapCheck) > 0)
+                    {
+
+                        /* 5px centroid is inside layer! drill baby drill */
+                        return (true,centroid);
+
+                    } else
+                    {
+                        /* centroid is not inside the actual contour, no drill */
+                        return (false, new Point());
+                    }
+
+                }
+                ConcurrentBag<PixelOperation> drillOps = new ConcurrentBag<PixelOperation>();
+                var suctionReliefSize = (int)Math.Max(SlicerFile.PpmmMax * 1, 20);
+                Parallel.For(LayerIndexStart, LayerIndexEnd, CoreSettings.ParallelOptions, layerIndex =>
+                {
+                    if (progress.Token.IsCancellationRequested) return;
+                    var layer = SlicerFile[layerIndex];
+                    
+
+                    if (Issues is not null)
+                    {
+                        /* for each suction cup issue that is an initial layer */
+                        foreach (var issue in Issues.Where(issue => issue.LayerIndex == layerIndex && issue.Type == LayerIssue.IssueType.SuctionCup && (issue.ChildIssues is null)))
+                        {
+                            var drillPoint = GetDrillLocation(issue, suctionReliefSize);
+                            if (drillPoint.canDrill)
+                            {
+                                drillOps.Add(new PixelDrainHole((uint)layerIndex, drillPoint.location, (byte)suctionReliefSize));
+                            }
+                        }
+                    }
+
+                });
+
+                SlicerFile.LayerManager.DrawModifications(drillOps.ToList(), progress);
+
             }
 
             if (_removeEmptyLayers)
