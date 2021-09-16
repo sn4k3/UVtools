@@ -3575,6 +3575,45 @@ namespace UVtools.Core.FileFormats
         }
 
         /// <summary>
+        /// Converts millimeters to pixels given the current resolution and display size
+        /// </summary>
+        /// <param name="mm">Millimeters to convert</param>
+        /// <param name="fallbackToPixels">Fallback to this value in pixels if no ratio is available to make the convertion</param>
+        /// <returns>Pixels</returns>
+        public uint MillimetersXToPixels(ushort mm, uint fallbackToPixels = 0)
+        {
+            var ppmm = Xppmm;
+            if (ppmm <= 0) return fallbackToPixels;
+            return (uint)(ppmm * mm);
+        }
+
+        /// <summary>
+        /// Converts millimeters to pixels given the current resolution and display size
+        /// </summary>
+        /// <param name="mm">Millimeters to convert</param>
+        /// <param name="fallbackToPixels">Fallback to this value in pixels if no ratio is available to make the convertion</param>
+        /// <returns>Pixels</returns>
+        public uint MillimetersYToPixels(ushort mm, uint fallbackToPixels = 0)
+        {
+            var ppmm = Yppmm;
+            if (ppmm <= 0) return fallbackToPixels;
+            return (uint)(ppmm * mm);
+        }
+
+        /// <summary>
+        /// Converts millimeters to pixels given the current resolution and display size
+        /// </summary>
+        /// <param name="mm">Millimeters to convert</param>
+        /// <param name="fallbackToPixels">Fallback to this value in pixels if no ratio is available to make the convertion</param>
+        /// <returns>Pixels</returns>
+        public uint MillimetersToPixels(ushort mm, uint fallbackToPixels = 0)
+        {
+            var ppmm = PpmmMax;
+            if (ppmm <= 0) return fallbackToPixels;
+            return (uint)(ppmm * mm);
+        }
+
+        /// <summary>
         /// From a pixel position get the equivalent position on the display
         /// </summary>
         /// <param name="x">X position in pixels</param>

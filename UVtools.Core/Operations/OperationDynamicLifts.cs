@@ -24,10 +24,10 @@ namespace UVtools.Core.Operations
         public enum DynamicLiftsSetMethod : byte
         {
             // Reduces maximal lift height with the number of pixels in layer divided by maximal number of pixels in any layer. Increases the minimal speed with the same ratio.
-            [Description("Traditional: Reduces maximal lift height with the number of pixels in layer divided by the maximal of all layers")]
+            [Description("Traditional: Reduces maximal lift height with the surface area divided by the maximal of all layers")]
             Traditional,
             //Squeezes lift height and lift speed within full range of min/max values. E.g. the layer with the least pixels gets minimal lift height and maximal lift speed. The layer with the most pixels gets maximal lift height and minimal lift speed.
-            [Description("Full Range: Squeezes lift height and lift speed within full range of min/max values")]
+            [Description("Full Range: Squeezes lift height and lift speed within full range of smallest/largest values")]
             FullRange
         }
 
@@ -69,8 +69,8 @@ namespace UVtools.Core.Operations
         public override string Title => "Dynamic lifts";
 
         public override string Description =>
-            "Generate dynamic lift height and speeds for each layer given it mass.\n" +
-            "Larger masses requires more lift height and less speed while smaller masses can go with shorter lift height and more speed.\n" +
+            "Generate dynamic lift height and speeds for each layer given it surface area.\n" +
+            "Larger surface areas requires more lift height and less speed while smaller surface areas can go with shorter lift height and more speed.\n" +
             "If you have a raft, start after it layer number to not influence the calculations.\n" +
             "Note: Only few printers support this. Running this on an unsupported printer will cause no harm.";
 
