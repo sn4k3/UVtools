@@ -10,21 +10,18 @@
       <StackPanel Spacing="10">
         <Grid
               RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto"
-              ColumnDefinitions="Auto,10,150,5,Auto,20,Auto,10,150,5,Auto"
-      >
+              ColumnDefinitions="Auto,10,190,5,Auto,20,Auto,10,190,5,Auto">
 
           <TextBlock Grid.Row="0" Grid.Column="0"
                      VerticalAlignment="Center"
                      Text="Layer height:"/>
           <NumericUpDown Grid.Row="0" Grid.Column="2"
+                         Classes="ValueLabel ValueLabel_mm"
                          Increment="0.01"
                          Minimum="0.01"
                          Maximum="0.30"
                          FormatString="F3"
                          Value="{Binding Operation.LayerHeight}"/>
-          <TextBlock Grid.Row="0" Grid.Column="4"
-                     VerticalAlignment="Center"
-                     Text="mm"/>
 
           <CheckBox Grid.Row="0" Grid.Column="8"
                     Content="Sync layers"
@@ -35,7 +32,7 @@
                      VerticalAlignment="Center"
                      Text="Bottom layers:"/>
           <NumericUpDown Grid.Row="2" Grid.Column="2"
-                         
+                         Classes="ValueLabel ValueLabel_layers"
                          Increment="1"
                          Minimum="1"
                          Maximum="1000"
@@ -51,7 +48,7 @@
                      IsEnabled="{Binding !Operation.SyncLayers}"
                      Text="Normal layers:"/>
           <NumericUpDown Grid.Row="2" Grid.Column="8"
-                         
+                         Classes="ValueLabel ValueLabel_layers"
                          IsEnabled="{Binding !Operation.SyncLayers}"
                          Increment="1"
                          Minimum="1"
@@ -66,52 +63,42 @@
                      VerticalAlignment="Center"
                      Text="Bottom exposure:"/>
           <NumericUpDown Grid.Row="4" Grid.Column="2"
-                         
+                         Classes="ValueLabel ValueLabel_s"
                          Increment="0.5"
                          Minimum="0.1"
                          Maximum="200"
                          Value="{Binding Operation.BottomExposure}"/>
-          <TextBlock Grid.Row="4" Grid.Column="4"
-                     VerticalAlignment="Center"
-                     Text="s"/>
+
 
           <TextBlock Grid.Row="4" Grid.Column="6"
                      VerticalAlignment="Center"
                      Text="Normal exposure:"/>
           <NumericUpDown Grid.Row="4" Grid.Column="8"
-                         
+                         Classes="ValueLabel ValueLabel_s"
                          Increment="0.5"
                          Minimum="0.1"
                          Maximum="200"
                          Value="{Binding Operation.NormalExposure}"/>
-          <TextBlock Grid.Row="4" Grid.Column="10"
-                     VerticalAlignment="Center"
-                     Text="s"/>
 
           <TextBlock Grid.Row="6" Grid.Column="0"
                      VerticalAlignment="Center"
                      Text="Part scale:"/>
           <NumericUpDown Grid.Row="6" Grid.Column="2"
-                         
+                         Classes="ValueLabel ValueLabel_times"
                          Increment="0.1"
                          Minimum="1"
                          Maximum="10"
                          Value="{Binding Operation.PartScale}"/>
-          <TextBlock Grid.Row="6" Grid.Column="4"
-                     VerticalAlignment="Center"
-                     Text="x"/>
 
           <TextBlock Grid.Row="6" Grid.Column="6"
                      VerticalAlignment="Center"
                      Text="Margin:"/>
           <NumericUpDown Grid.Row="6" Grid.Column="8"
+                         Classes="ValueLabel ValueLabel_px"
                          Increment="1"
                          Minimum="0"
                          Maximum="255"
                          Value="{Binding Operation.Margin}"/>
-          <TextBlock Grid.Row="6" Grid.Column="10"
-                     VerticalAlignment="Center"
-                     Text="px"/>
 
           <TextBlock Grid.Row="8" Grid.Column="0"
                      VerticalAlignment="Center"
@@ -128,6 +115,7 @@
                      Text="Text height:"/>
 
           <NumericUpDown Grid.Row="8" Grid.Column="8"
+                         Classes="ValueLabel ValueLabel_mm"
                          Increment="0.5"
                          Minimum="0.5"
                          Maximum="10"
@@ -135,12 +123,6 @@
                          IsEnabled="{Binding Operation.ExtrudeText}"
                          Value="{Binding Operation.TextHeight}"/>
           
-          <TextBlock Grid.Row="8" Grid.Column="10"
-                     VerticalAlignment="Center"
-                     IsEnabled="{Binding Operation.ExtrudeText}"
-                     Text="mm"/>
-
-
           <StackPanel Grid.Row="10" Grid.Column="0" 
                       VerticalAlignment="Center"
                       Spacing="0">
@@ -197,8 +179,7 @@
           <Grid
               
               RowDefinitions="Auto,10,Auto"
-              ColumnDefinitions="Auto,10,Auto,5,Auto,5,Auto,5,Auto,30,Auto,10,Auto"
-                >
+              ColumnDefinitions="Auto,10,180,5,Auto,5,180,30,Auto,10,180">
 
             <CheckBox Grid.Row="0" Grid.Column="2"
                        VerticalAlignment="Center"
@@ -211,7 +192,7 @@
                          Text="Iterations range:"/>
 
             <NumericUpDown Grid.Row="2" Grid.Column="2"
-                           
+                           Classes="ValueLabel ValueLabel_px"
                            IsEnabled="{Binding Operation.IsErodeEnabled}"
                            Increment="1"
                            Minimum="1"
@@ -224,23 +205,20 @@
                        Text="-"/>
 
             <NumericUpDown Grid.Row="2" Grid.Column="6"
-                           
+                           Classes="ValueLabel ValueLabel_px"
                            IsEnabled="{Binding Operation.IsErodeEnabled}"
                            Increment="1"
                            Minimum="1"
                            Maximum="30"
                            Value="{Binding Operation.ErodeEndIteration}"/>
 
-            <TextBlock Grid.Row="2" Grid.Column="8"
-                       VerticalAlignment="Center"
-                       Text="px"/>
 
-            <TextBlock Grid.Row="2" Grid.Column="10"
+            <TextBlock Grid.Row="2" Grid.Column="8"
                        VerticalAlignment="Center"
                        Text="Step increment(s):"/>
 
-            <NumericUpDown Grid.Row="2" Grid.Column="12"
-                           
+            <NumericUpDown Grid.Row="2" Grid.Column="10"
+                           Classes="ValueLabel ValueLabel_px"
                            IsEnabled="{Binding Operation.IsErodeEnabled}"
                            Increment="1"
                            Minimum="1"
@@ -251,17 +229,10 @@
 
           <Border
               Margin="0,10,0,0">
-            <Expander>
-              <Expander.Header>
-                <TextBlock Text="Kernel - Advanced options (Click to expand)"
-                           FontWeight="Bold"
-                           Cursor="Hand"
-                          />
-              </Expander.Header>
+            <Expander Header="Kernel - Advanced options (Click to expand)">
               <controls:KernelControl
                   Name="KernelCtrl"
-                  Margin="0,10,0,0"
-                      />
+                  Margin="0,10,0,0"/>
             </Expander>
           </Border>
 
@@ -276,11 +247,10 @@
 
         <Grid
             RowDefinitions="Auto,10,Auto,10,Auto,5,Auto"
-            ColumnDefinitions="Auto,10,Auto,5,Auto,5,Auto,5,Auto,20,Auto,10,Auto"
-                >
+            ColumnDefinitions="Auto,10,180,5,Auto,5,180,20,Auto,10,180">
 
           <CheckBox Grid.Row="0" Grid.Column="2"
-                    Grid.ColumnSpan="11"
+                    Grid.ColumnSpan="9"
                      VerticalAlignment="Center"
                      IsChecked="{Binding Operation.IsDimmingEnabled}"
                      Content="Enable - Requires a compatible anti-aliased file format and printer"/>
@@ -290,24 +260,19 @@
                      Text="Wall thickness:"/>
 
           <NumericUpDown Grid.Row="2" Grid.Column="2"
-                         
+                         Classes="ValueLabel ValueLabel_px"
                          IsEnabled="{Binding Operation.IsDimmingEnabled}"
                          Increment="1"
                          Minimum="1"
                          Maximum="255"
                          Value="{Binding Operation.DimmingWallThickness}"/>
 
-          <TextBlock Grid.Row="2" Grid.Column="4"
-                     VerticalAlignment="Center"
-                     Text="px"/>
-
-
           <TextBlock Grid.Row="4" Grid.Column="0"
                        VerticalAlignment="Center"
                        Text="Brightness range:"/>
 
           <NumericUpDown Grid.Row="4" Grid.Column="2"
-                         
+                         Classes="ValueLabel ValueLabel_sun"
                          IsEnabled="{Binding Operation.IsDimmingEnabled}"
                          Increment="1"
                          Minimum="1"
@@ -321,19 +286,19 @@
                      Text="-"/>
 
           <NumericUpDown Grid.Row="4" Grid.Column="6"
-                         
+                         Classes="ValueLabel ValueLabel_sun"
                          IsEnabled="{Binding Operation.IsDimmingEnabled}"
                          Increment="1"
                          Minimum="2"
                          Maximum="254"
                          Value="{Binding Operation.DimmingEndBrightness}"/>
 
-          <TextBlock Grid.Row="4" Grid.Column="10"
+          <TextBlock Grid.Row="4" Grid.Column="8"
                      VerticalAlignment="Center"
                      Text="Step increment(s):"/>
 
-          <NumericUpDown Grid.Row="4" Grid.Column="12"
-                         
+          <NumericUpDown Grid.Row="4" Grid.Column="10"
+                         Classes="ValueLabel ValueLabel_sun"
                          IsEnabled="{Binding Operation.IsDimmingEnabled}"
                          Increment="1"
                          Minimum="2"

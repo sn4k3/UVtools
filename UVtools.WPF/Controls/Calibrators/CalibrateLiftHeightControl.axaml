@@ -41,7 +41,7 @@
                    VerticalAlignment="Center"
                    Text="Bottom layers:"/>
         <NumericUpDown Grid.Row="2" Grid.Column="2"
-                         
+                       Classes="ValueLabel ValueLabel_layers"
                        Increment="1"
                        Minimum="1"
                        Maximum="1000"
@@ -56,6 +56,7 @@
                    VerticalAlignment="Center"
                    Text="Normal layers:"/>
         <NumericUpDown Grid.Row="2" Grid.Column="8"
+                       Classes="ValueLabel ValueLabel_layers"
                        Increment="1"
                        Minimum="1"
                        Maximum="1000"

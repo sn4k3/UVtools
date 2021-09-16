@@ -14,6 +14,7 @@
 
           <ComboBox Grid.Row="0" Grid.Column="2" Grid.ColumnSpan="5"
                     HorizontalAlignment="Stretch"
+                    Width="500"
                     Items="{Binding Operation.SetMethod, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
                     SelectedItem="{Binding Operation.SetMethod, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
 

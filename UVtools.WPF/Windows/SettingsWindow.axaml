@@ -27,6 +27,7 @@
                   <CheckBox IsChecked="{Binding Settings.General.StartMaximized}" Content="Start maximized"/>
                   <CheckBox IsChecked="{Binding Settings.General.CheckForUpdatesOnStartup}" Content="Check for updates on startup"/>
                   <CheckBox IsChecked="{Binding Settings.General.LoadDemoFileOnStartup}" Content="Loads a demo file on startup if no file was specified"/>
+                  <CheckBox IsChecked="{Binding Settings.General.LoadLastRecentFileOnStartup}" Content="Loads the last recent file on startup if no file was specified"/>
                 </StackPanel>
 
               </StackPanel>

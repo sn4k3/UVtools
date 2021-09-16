@@ -34,7 +34,7 @@
         />
       </StackPanel>
 
-    <Grid ColumnDefinitions="Auto,10,Auto,5,Auto"
+    <Grid ColumnDefinitions="Auto,10,190,5,Auto"
           RowDefinitions="Auto,10,Auto,10,Auto,10,Auto">
 
       <!-- Remove islands equal or smaller than -->
@@ -73,6 +73,7 @@
                  Text="Recursively remove islands for up to:"/>
 
       <NumericUpDown Grid.Row="2" Grid.Column="2"
+                     Classes="ValueLabel ValueLabel_layers"
                      Increment="1"
                      Minimum="0"
                      Maximum="65535"
@@ -82,8 +83,7 @@
 &#x0a;NOTE: Use with caution as this can remove large portions of your model if proper supports have not been added beforehand.
 &#x0a;This repair method requires the issues to be manually computed before hand.
 &#x0a;Using this function with high values can be extremely slow depending on resolution and issue count."
-                     Value="{Binding Operation.RemoveIslandsRecursiveIterations}"
-      />
+                     Value="{Binding Operation.RemoveIslandsRecursiveIterations}"/>
         
       <TextBlock Grid.Row="2" Grid.Column="4"
                  VerticalAlignment="Center"
@@ -102,6 +102,7 @@
                  Text="Attempt to attach islands down to:"/>
 
       <NumericUpDown Grid.Row="4" Grid.Column="2"
+                     Classes="ValueLabel ValueLabel_layers"
                      Increment="1"
                      Minimum="0"
                      Maximum="65535"

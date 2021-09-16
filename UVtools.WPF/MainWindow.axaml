@@ -1014,14 +1014,11 @@
                     Grid.Column="0"
                     VerticalAlignment="Center"
                     Text="Layers depth below:" />
-                  <NumericUpDown
-                    Grid.Row="14"
-                    Grid.Column="2"
-                    Grid.ColumnSpan="3"
-                    Minimum="0"
-                    
-                    HorizontalAlignment="Stretch"
-                    Value="{Binding DrawingPixelDrawing.LayersBelow}"/>
+                  <NumericUpDown Grid.Row="14" Grid.Column="2" Grid.ColumnSpan="3"
+                                 Classes="ValueLabel ValueLabel_layers"
+                                 Minimum="0"
+                                 HorizontalAlignment="Stretch"
+                                 Value="{Binding DrawingPixelDrawing.LayersBelow}"/>
 
 
                   <TextBlock
@@ -1029,14 +1026,11 @@
                       Grid.Column="0"
                       VerticalAlignment="Center"
                       Text="Layers depth above:" />
-                  <NumericUpDown
-                    Grid.Row="16"
-                    Grid.Column="2"
-                    Grid.ColumnSpan="3"
-                    Minimum="0"
-                    
-                    HorizontalAlignment="Stretch"
-                    Value="{Binding DrawingPixelDrawing.LayersAbove}"/>
+                  <NumericUpDown Grid.Row="16" Grid.Column="2" Grid.ColumnSpan="3"
+                                 Classes="ValueLabel ValueLabel_layers"
+                                 Minimum="0"
+                                 HorizontalAlignment="Stretch"
+                                 Value="{Binding DrawingPixelDrawing.LayersAbove}"/>
 
                 </Grid>
 
@@ -1207,13 +1201,10 @@
                     Grid.Column="0"
                     VerticalAlignment="Center"
                     Text="Layers depth below:" />
-                  <NumericUpDown
-                    Grid.Row="20"
-                    Grid.Column="2"
-                    Grid.ColumnSpan="3"
-                    Minimum="0"
-                    
-                    Value="{Binding DrawingPixelText.LayersBelow}"/>
+                  <NumericUpDown Grid.Row="20" Grid.Column="2" Grid.ColumnSpan="3"
+                                 Classes="ValueLabel ValueLabel_layers"
+                                 Minimum="0"
+                                Value="{Binding DrawingPixelText.LayersBelow}"/>
 
 
                   <TextBlock
@@ -1221,13 +1212,10 @@
                       Grid.Column="0"
                       VerticalAlignment="Center"
                       Text="Layers depth above:" />
-                  <NumericUpDown
-                    Grid.Row="22"
-                    Grid.Column="2"
-                    Grid.ColumnSpan="3"
-                    Minimum="0"
-                    
-                    Value="{Binding DrawingPixelText.LayersAbove}"/>
+                  <NumericUpDown Grid.Row="22" Grid.Column="2" Grid.ColumnSpan="3"
+                                 Classes="ValueLabel ValueLabel_layers"
+                                 Minimum="0"
+                                 Value="{Binding DrawingPixelText.LayersAbove}"/>
 
                 </Grid>
 
@@ -1279,26 +1267,20 @@
                     Grid.Column="0"
                     VerticalAlignment="Center"
                     Text="Layers depth below:" />
-                  <NumericUpDown
-                    Grid.Row="2"
-                    Grid.Column="2"
-                    Grid.ColumnSpan="3"
-                    Minimum="0"
-                    
-                    Value="{Binding DrawingPixelEraser.LayersBelow}"/>
+                  <NumericUpDown Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="3"
+                                 Classes="ValueLabel ValueLabel_layers"
+                                 Minimum="0"
+                                 Value="{Binding DrawingPixelEraser.LayersBelow}"/>
 
                 <TextBlock
                     Grid.Row="4"
                     Grid.Column="0"
                     VerticalAlignment="Center"
                     Text="Layers depth above:" />
-                  <NumericUpDown
-                    Grid.Row="4"
-                    Grid.Column="2"
-                    Grid.ColumnSpan="3"
-                    Minimum="0"
-                    
-                    Value="{Binding DrawingPixelEraser.LayersAbove}"/>
+                  <NumericUpDown Grid.Row="4" Grid.Column="2" Grid.ColumnSpan="3"
+                                 Classes="ValueLabel ValueLabel_layers"
+                                 Minimum="0"
+                                 Value="{Binding DrawingPixelEraser.LayersAbove}"/>
 
 
                 </Grid>

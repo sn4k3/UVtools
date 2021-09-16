@@ -28,6 +28,7 @@ you must manually input the layer index of the last raft where it ends and suppo
         Text="Mask layer index:" VerticalAlignment="Center"/>
 
     <NumericUpDown Grid.Row="2" Grid.Column="2"
+                   Classes="ValueLabel ValueLabel_layers"
                    Minimum="0"
                    Maximum="{Binding SlicerFile.LastLayerIndex}"
                    Value="{Binding Operation.MaskLayerIndex}"/>
@@ -46,6 +47,7 @@ you must manually input the layer index of the last raft where it ends and suppo
         Text="Ignore first:" VerticalAlignment="Center"/>
 
     <NumericUpDown Grid.Row="4" Grid.Column="2"
+                   Classes="ValueLabel ValueLabel_layers"
                    Minimum="0"
                    Maximum="255"
                    Value="{Binding Operation.IgnoreFirstLayers}"/>

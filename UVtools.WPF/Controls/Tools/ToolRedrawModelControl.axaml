@@ -35,8 +35,7 @@
                 <ComboBox
                       SelectedItem="{Binding Operation.RedrawType}"
                       Items="{Binding Operation.RedrawTypesItems}"
-                      Width="120"
-                      />
+                      Width="120"/>
 
                 <CheckBox
                     VerticalAlignment="Center"
@@ -60,6 +59,7 @@
             <StackPanel Grid.Row="4" Grid.Column="2" Orientation="Horizontal" Spacing="5">
               <NumericUpDown 
                             Classes="ValueLabel ValueLabel_sun"
+                            Width="180"
                              Minimum="0"
                              Maximum="255"
                              Increment="1"

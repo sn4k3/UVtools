@@ -20,6 +20,7 @@
                Text="Dim subsequent pixels by:"/>
 
     <TextBox Grid.Row="2" Grid.Column="2"
+             Classes="ValueLabel ValueLabel_sun"
                  VerticalAlignment="Center"
                  Text="{Binding Operation.DimBy}"/>
         

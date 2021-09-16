@@ -37,6 +37,7 @@ namespace UVtools.WPF
             private bool _startMaximized = true;
             private bool _checkForUpdatesOnStartup = true;
             private bool _loadDemoFileOnStartup = true;
+            private bool _loadLastRecentFileOnStartup;
             private int _maxDegreeOfParallelism = -1;
 
             private bool _windowsCanResize;
@@ -72,6 +73,12 @@ namespace UVtools.WPF
             {
                 get => _loadDemoFileOnStartup;
                 set => RaiseAndSetIfChanged(ref _loadDemoFileOnStartup, value);
+            }
+
+            public bool LoadLastRecentFileOnStartup
+            {
+                get => _loadLastRecentFileOnStartup;
+                set => RaiseAndSetIfChanged(ref _loadLastRecentFileOnStartup, value);
             }
 
             /// <summary>

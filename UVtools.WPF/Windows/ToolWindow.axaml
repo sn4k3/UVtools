@@ -60,7 +60,7 @@
         
         <Grid
           RowDefinitions="Auto,5,Auto"
-          ColumnDefinitions="Auto,150,Auto,150,Auto"
+          ColumnDefinitions="Auto,180,Auto,180,Auto"
           Margin="15">
           <TextBlock
             Grid.Row="0"
@@ -70,14 +70,13 @@
             Margin="0,0,10,0"
             />
 
-          <NumericUpDown
-            Grid.Row="0"
-            Grid.Column="1"
-            VerticalAlignment="Center"
-            Minimum="0"
-            Maximum="{Binding MaximumLayerIndex}"
-            Value="{Binding LayerIndexStart}"
-            />
+          <NumericUpDown Grid.Row="0" Grid.Column="1"
+                         Classes="ValueLabel ValueLabel_layers"
+                         VerticalAlignment="Center"
+                         Minimum="0"
+                         Maximum="{Binding MaximumLayerIndex}"
+                         Value="{Binding LayerIndexStart}"
+          />
 
           <TextBlock
             Grid.Row="0"
@@ -88,13 +87,12 @@
             Margin="20,0,10,0"
             />
 
-          <NumericUpDown
-            Grid.Row="0"
-            Grid.Column="3"
-            VerticalAlignment="Center"
-            Minimum="0"
-            Maximum="{Binding MaximumLayerIndex}"
-            Value="{Binding LayerIndexEnd}">
+          <NumericUpDown Grid.Row="0" Grid.Column="3"
+                         Classes="ValueLabel ValueLabel_layers"
+                         VerticalAlignment="Center"
+                         Minimum="0"
+                         Maximum="{Binding MaximumLayerIndex}"
+                         Value="{Binding LayerIndexEnd}">
               <NumericUpDown.IsEnabled>
                   <MultiBinding Converter="{x:Static BoolConverters.And}">
                       <Binding Path="LayerIndexEndEnabled"/>

@@ -1053,8 +1053,8 @@ namespace UVtools.Core
                                         )
                                         {
                                             points.Clear();
-                                            using var imageRoi = new Mat(image, rect);
-                                            using var previousImageRoi = new Mat(previousImage, rect);
+                                            using var imageRoi = image.Roi(rect);
+                                            using var previousImageRoi = previousImage.Roi(rect);
                                             using var subtractedImage = new Mat();
                                             var anchor = new Point(-1, -1);
                                             CvInvoke.Subtract(imageRoi, previousImageRoi, subtractedImage);
@@ -1165,8 +1165,7 @@ namespace UVtools.Core
                                 needDispose = true;
                                 resinTrapImage = image;
                             }
-                            
-                            var contourLayer = new Mat(resinTrapImage, BoundingRectangle);
+                            var contourLayer = resinTrapImage.Roi(BoundingRectangle);
 
                             using var contours = contourLayer.FindContours(out var heirarchy, RetrType.Tree);
                             externalContours[layerIndex] = EmguContours.GetExternalContours(contours, heirarchy);
@@ -1227,7 +1226,7 @@ namespace UVtools.Core
                     i =>
                     {
                         matCache[i] = this[i].LayerMat;
-                        matTargetCache[i] = new Mat(matCache[i], BoundingRectangle);
+                        matTargetCache[i] = matCache[i].Roi(BoundingRectangle);
                         if (resinTrapConfig.MaximumPixelBrightnessToDrain > 0)
                         {
                             CvInvoke.Threshold(matTargetCache[i], matTargetCache[i], resinTrapConfig.MaximumPixelBrightnessToDrain, byte.MaxValue, ThresholdType.Binary);
@@ -1244,18 +1243,11 @@ namespace UVtools.Core
                 /* define all mats up front, reducing allocations */
                 var currentAirMap = EmguExtensions.InitMat(BoundingRectangle.Size);
                 var layerAirMap = currentAirMap.NewBlank();
-                //var airOverlap = currentAirMap.NewBlank();
                 /* the first pass does bottom to top, and tracks anything it thinks is a resin trap */
                 for (var layerIndex = resinTrapConfig.StartLayerIndex; layerIndex < LayerCount; layerIndex++)
                 {
                     if (progress.Token.IsCancellationRequested) return result.OrderBy(issue => issue.Type).ThenBy(issue => issue.LayerIndex).ThenBy(issue => issue.Area).ToList();
-                    /*using var layerMat = this[layerIndex].LayerMat;
-                    var curLayer = new Mat(layerMat, BoundingRectangle);
-                    if (resinTrapConfig.BinaryThreshold > 0)
-                    {
-                        CvInvoke.Threshold(curLayer, curLayer, resinTrapConfig.BinaryThreshold, byte.MaxValue, ThresholdType.Binary);
-                    }*/
-
+                    
                     CacheLayers(layerIndex, true);
                     var curLayer = matTargetCache[layerIndex];
 
@@ -1356,13 +1348,6 @@ namespace UVtools.Core
                     CacheLayers((uint)layerIndex, false);
                     var curLayer = matTargetCache[layerIndex];
                     
-                    /*using var layerMat = this[layerIndex].LayerMat;
-                    var curLayer = new Mat(layerMat, BoundingRectangle);
-                    if (resinTrapConfig.BinaryThreshold > 0)
-                    {
-                        CvInvoke.Threshold(curLayer, curLayer, resinTrapConfig.BinaryThreshold, byte.MaxValue, ThresholdType.Binary);
-                    }*/
-
                     if (layerIndex == resinTraps.Length - 1)
                     {
                         /* this is subtly different that for the first pass, we don't use GenerateAirMap for the initial airmap */

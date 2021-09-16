@@ -23,7 +23,11 @@ namespace UVtools.Core.Operations
 
         public enum DynamicLiftsSetMethod : byte
         {
+            // Reduces maximal lift height with the number of pixels in layer divided by maximal number of pixels in any layer. Increases the minimal speed with the same ratio.
+            [Description("Traditional: Reduces maximal lift height with the number of pixels in layer divided by the maximal of all layers")]
             Traditional,
+            //Squeezes lift height and lift speed within full range of min/max values. E.g. the layer with the least pixels gets minimal lift height and maximal lift speed. The layer with the most pixels gets maximal lift height and minimal lift speed.
+            [Description("Full Range: Squeezes lift height and lift speed within full range of min/max values")]
             FullRange
         }
 
@@ -42,7 +46,7 @@ namespace UVtools.Core.Operations
 
         #region Members
 
-        private DynamicLiftsSetMethod _setMethod;
+        private DynamicLiftsSetMethod _setMethod = DynamicLiftsSetMethod.FullRange;
         private float _minBottomLiftHeight;
         private float _maxBottomLiftHeight;
         private float _minLiftHeight;

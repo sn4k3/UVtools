@@ -31,7 +31,7 @@
             IsChecked="{Binding Operation.RenderLayerCount}"/>
 
         <Grid RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10"
-              ColumnDefinitions="Auto,10,150,5,Auto,20,Auto">
+              ColumnDefinitions="Auto,10,180,5,Auto,20,Auto">
         <TextBlock Grid.Row="0" Grid.Column="0"
                    VerticalAlignment="Center"
                    ToolTip.Tip="Frames-per-second: Number of shown layers within a second"
@@ -58,6 +58,7 @@
                    Text="Repeats:" />
 
         <NumericUpDown Grid.Row="2" Grid.Column="2"
+                       Classes="ValueLabel ValueLabel_times"
                        Minimum="0"
                        Maximum="65535"
                        Value="{Binding Operation.Repeats}"/>
@@ -72,6 +73,7 @@
                    Text="Skip:" />
 
         <NumericUpDown Grid.Row="4" Grid.Column="2"
+                       Classes="ValueLabel ValueLabel_layers"
                        Minimum="0"
                        Maximum="65535"
                        Value="{Binding Operation.Skip}"/>
@@ -90,14 +92,11 @@
                    Text="Scale:" />
 
         <NumericUpDown Grid.Row="6" Grid.Column="2"
+                       Classes="ValueLabel ValueLabel_percent"
                        Minimum="1"
                        Maximum="100"
                        FormatString="F2"
                        Value="{Binding Operation.Scale}"/>
-
-        <TextBlock Grid.Row="6" Grid.Column="4"
-                   VerticalAlignment="Center"
-                   Text="%" />
 
         <TextBlock Grid.Row="8" Grid.Column="0"
                    VerticalAlignment="Center"

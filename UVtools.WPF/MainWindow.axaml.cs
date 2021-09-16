@@ -876,6 +876,16 @@ namespace UVtools.WPF
             }
 
             ProcessFiles(Program.Args);
+
+            if (!IsFileLoaded && Settings.General.LoadLastRecentFileOnStartup)
+            {
+                RecentFiles.Load();
+                if (RecentFiles.Instance.Count > 0)
+                {
+                    ProcessFile(Path.Combine(App.ApplicationPath, RecentFiles.Instance[0]));
+                }
+            }
+
             if (!IsFileLoaded && Settings.General.LoadDemoFileOnStartup)
             {
                 ProcessFile(Path.Combine(App.ApplicationPath, About.DemoFile));

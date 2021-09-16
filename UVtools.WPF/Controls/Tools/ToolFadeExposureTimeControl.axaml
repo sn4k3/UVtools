@@ -10,12 +10,12 @@
     <TextBlock Grid.Row="0" Grid.Column="0"
                VerticalAlignment="Center"
                Text="Layer count:"/>
-    <NumericUpDown
-               Grid.Row="0" Grid.Column="2"
-               Minimum="1"
-               Maximum="{Binding Operation.MaximumLayerCount}"
-               Increment="1"
-               Value="{Binding Operation.LayerCount}"/>
+    <NumericUpDown Grid.Row="0" Grid.Column="2"
+                   Classes="ValueLabel ValueLabel_layers"
+                   Minimum="1"
+                   Maximum="{Binding Operation.MaximumLayerCount}"
+                   Increment="1"
+                   Value="{Binding Operation.LayerCount}"/>
 
     <TextBlock Grid.Row="2" Grid.Column="0"
                VerticalAlignment="Center"

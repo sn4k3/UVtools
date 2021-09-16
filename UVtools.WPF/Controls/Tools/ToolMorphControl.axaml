@@ -22,8 +22,9 @@
         Orientation="Horizontal" Spacing="10">
 
         <NumericUpDown
+            Classes="ValueLabel ValueLabel_px"
           Minimum="1"
-          Width="140"
+          Width="180"
           Value="{Binding Operation.IterationsStart}"
           />
 
@@ -33,8 +34,9 @@
           IsEnabled="{Binding Operation.Chamfer}"/>
 
         <NumericUpDown
+            Classes="ValueLabel ValueLabel_px"
           Minimum="1"
-          Width="140"
+          Width="180"
           Value="{Binding Operation.IterationsEnd}"
           IsEnabled="{Binding Operation.Chamfer}"
           />

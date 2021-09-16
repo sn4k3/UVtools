@@ -13,7 +13,7 @@
 
       <Grid
           RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto"
-          ColumnDefinitions="Auto,10,Auto,20,Auto,10,Auto">
+          ColumnDefinitions="Auto,10,190,20,Auto,10,190">
 
         <TextBlock
                   Grid.Row="0" Grid.Column="0"
@@ -55,6 +55,7 @@
                    VerticalAlignment="Center"
                    Text="Bottom layers:"/>
         <NumericUpDown Grid.Row="2" Grid.Column="6"
+                       Classes="ValueLabel ValueLabel_layers"
                        Increment="1"
                        Minimum="1"
                        Maximum="1000"
@@ -158,7 +159,7 @@
                    ToolTip.Tip="Chamfer the bottom layers"
                    Text="Chamfer layers:"/>
         <NumericUpDown Grid.Row="10" Grid.Column="2"
-                       
+                       Classes="ValueLabel ValueLabel_layers"
                        Increment="1"
                        Minimum="0"
                        Maximum="255"
@@ -184,7 +185,7 @@
             IsExpanded="True">
 
           <Grid RowDefinitions="Auto,5,Auto"
-                ColumnDefinitions="Auto,10,Auto,20,Auto,10,Auto,5,Auto">
+                ColumnDefinitions="Auto,10,190,20,Auto,10,190,5,Auto">
 
 
             <TextBlock Grid.Row="0" Grid.Column="0"

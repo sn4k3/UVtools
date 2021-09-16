@@ -7,7 +7,7 @@
 
   <StackPanel Spacing="10">
     <Grid RowDefinitions="Auto,10,Auto,10,Auto,10,Auto"
-          ColumnDefinitions="Auto,10,150,5,Auto,20,Auto">
+          ColumnDefinitions="Auto,10,180,5,Auto,20,Auto">
 
       <TextBlock Grid.Row="0" Grid.Column="0"
           VerticalAlignment="Center"
@@ -44,7 +44,7 @@
                              VerticalAlignment="Center"
                              Text="Start at layer:"/>
       <NumericUpDown Grid.Row="2" Grid.Column="2"
-                     
+                     Classes="ValueLabel ValueLabel_layers"
                      Minimum="0"
                      Maximum="{Binding MaximumLayer}"
                      Value="{Binding Operation.StartLayerIndex}"/>
@@ -63,15 +63,11 @@
                  IsVisible="{Binding Operation.IsImportStackType}"
                  Text="Stack margin:"/>
       <NumericUpDown Grid.Row="6" Grid.Column="2"
-                     
+                     Classes="ValueLabel ValueLabel_px"
                      IsVisible="{Binding Operation.IsImportStackType}"
                      Minimum="0"
                      Maximum="65535"
                      Value="{Binding Operation.StackMargin}"/>
-      <TextBlock Grid.Row="6" Grid.Column="4"
-                 VerticalAlignment="Center"
-                 IsVisible="{Binding Operation.IsImportStackType}"
-                 Text="px"/>
     </Grid>
 
 

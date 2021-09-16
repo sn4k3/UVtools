@@ -15,8 +15,9 @@
         VerticalAlignment="Center"
         Text="Clones:"/>
       <NumericUpDown 
+          Classes="ValueLabel ValueLabel_layers"
         Minimum="1"
-        Width="150"
+        Width="180"
         Value="{Binding Operation.Clones}"
         />
       <TextBlock
