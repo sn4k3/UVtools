@@ -1,6 +1,6 @@
 # Changelog
 
-## /09/2021 - v2.21.2
+## 16/09/2021 - v2.22.0
 
 - **UI:**
    - (Add) Context menu for ROI button at status bar with the following:
@@ -13,20 +13,38 @@
    - (Add) Allow to choose custom locations for "Send to"
    - (Add) Network remote printers: Send files remotely directly to printer
    - (Add) Layer image shortcut: Right-click + ALT + CTRL on a specific object to select all it enclosing areas as a Mask
+   - (Improvement) Redesign numerical input box with value labels into the box
+   - (Improvement) Layer tracker highlight issues: Scale line stroke to make sequential layers with issues shows all togther as a group
    - (Fix) Outline - Hollow areas: Not outlining the second closing contour for contours with child
    - (Fix) Pixel editor - Eraser: It was selecting the whole blob even if have inner parents
    - (Fix) Setting window: When open it will change tabs quickly to fix the windows height/scroll problem
+   - (Fix) Minor problems with autosizes on some input boxes
 - **Tools:**
    - **Import layers:**
       - (Add) 'MergeMax' to import type (#289)
       - (Add) 'AbsDiff' to import type
       - (Add) Description of operations on the combo box
+   - **Dynamic Lifts:**
+      - (Add) Set methods: Traditional and FullRange (#291)
+      - (Improvement) Rearrange the layout
+      - (Fix) Normal pixels were being used to calculate bottom lift speed
    - (Improvement) Solidify: Area threshold are now calculated by the real area instead of rectangle area
+   - (Improvement) Dynamic layer height: Perform the maximum of layer pixels instead of sum to improve files with AA and prevent glare
+- **Resin traps & Suction cups:**
+   - **By Timothy Slater [tslater2006] (#292):**
+   - (Add) Suction cups detection: Air trapped inside hollow areas that create a suction force. Calculated during resin trap algorithm.  
+           This issues will not be auto fixed and require a vent hole as proper fix
+   - (Improvement) New and improved algorithm for resin trap detection
+- **Settings:**
+   - (Add) Option: Loads the last recent file on startup if no file was specified
+   - (Change) Resin trap hightlight default color
+   - (Fix) Unable to set resin trap threshold to 0 (disabled)
 - (Improvement) Better random generation for benchmark
 - (Improvement) Allow to cancel the new version download
 - (Improvement) Better version checker and file download methods
 - (Fix) Disable Centroids by default on settings
 - (Fix) Settings: Automations were not being cloned when required
+- (Upgrade) .NET from 5.0.9 to 5.0.10
 
 ## 06/09/2021 - v2.21.1
 
