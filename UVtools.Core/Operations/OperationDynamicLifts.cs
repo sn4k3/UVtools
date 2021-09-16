@@ -46,15 +46,15 @@ namespace UVtools.Core.Operations
 
         #region Members
 
-        private DynamicLiftsSetMethod _setMethod = DynamicLiftsSetMethod.FullRange;
-        private float _minBottomLiftHeight;
-        private float _maxBottomLiftHeight;
-        private float _minLiftHeight;
-        private float _maxLiftHeight;
-        private float _minBottomLiftSpeed;
-        private float _maxBottomLiftSpeed;
-        private float _minLiftSpeed;
-        private float _maxLiftSpeed;
+        private DynamicLiftsSetMethod _setMethod = DynamicLiftsSetMethod.Traditional;
+        private float _smallestBottomLiftHeight;
+        private float _largestBottomLiftHeight;
+        private float _smallestLiftHeight;
+        private float _largestLiftHeight;
+        private float _slowestBottomLiftSpeed;
+        private float _fastestBottomLiftSpeed;
+        private float _slowestLiftSpeed;
+        private float _fastestLiftSpeed;
 
         private float _lightOffDelayBottomExtraTime = 3;
         private float _lightOffDelayExtraTime = 2.5f;
@@ -96,30 +96,30 @@ namespace UVtools.Core.Operations
         {
             var sb = new StringBuilder();
 
-            if (_minBottomLiftHeight > _maxBottomLiftHeight)
+            if (_smallestBottomLiftHeight > _largestBottomLiftHeight)
             {
-                sb.AppendLine("Minimum bottom lift height can't be higher than the maximum.");
+                sb.AppendLine("Smallest bottom lift height can't be higher than the largest.");
             }
-            if (_minBottomLiftSpeed > _maxBottomLiftSpeed)
+            if (_slowestBottomLiftSpeed > _fastestBottomLiftSpeed)
             {
-                sb.AppendLine("Minimum bottom lift speed can't be higher than the maximum.");
-            }
-
-            if (_minLiftHeight > _maxLiftHeight)
-            {
-                sb.AppendLine("Minimum lift height can't be higher than the maximum.");
-            }
-            if (_minLiftSpeed > _maxLiftSpeed)
-            {
-                sb.AppendLine("Minimum lift speed can't be higher than the maximum.");
+                sb.AppendLine("Slowest bottom lift speed can't be higher than the fastest.");
             }
 
-            if (_minBottomLiftHeight == _maxBottomLiftHeight &&
-                _minBottomLiftSpeed == _maxBottomLiftSpeed &&
-                _minLiftHeight == _maxLiftHeight &&
-                _minLiftSpeed == _maxLiftSpeed)
+            if (_smallestLiftHeight > _largestLiftHeight)
             {
-                sb.AppendLine("The selected min/max settings are all equal and will not produce a change.");
+                sb.AppendLine("Smallest lift height can't be higher than the largest.");
+            }
+            if (_slowestLiftSpeed > _fastestLiftSpeed)
+            {
+                sb.AppendLine("Slowest lift speed can't be higher than the fastest.");
+            }
+
+            if (_smallestBottomLiftHeight == _largestBottomLiftHeight &&
+                _slowestBottomLiftSpeed == _fastestBottomLiftSpeed &&
+                _smallestLiftHeight == _largestLiftHeight &&
+                _slowestLiftSpeed == _fastestLiftSpeed)
+            {
+                sb.AppendLine("The selected smallest/largest settings are all equal and will not produce a change.");
             }
 
             return sb.ToString();
@@ -129,10 +129,10 @@ namespace UVtools.Core.Operations
         {
             var result = 
                  $"[Method: {_setMethod}]" +
-                 $" [Bottom height: {_minBottomLiftHeight}/{_maxBottomLiftHeight}mm]" +
-                 $" [Bottom speed: {_minBottomLiftSpeed}/{_maxBottomLiftSpeed}mm/min]" +
-                 $" [Height: {_minLiftHeight}/{_maxLiftHeight}mm]" +
-                 $" [Speed: {_minLiftSpeed}/{_maxLiftSpeed}mm/min]" +
+                 $" [Bottom height: {_smallestBottomLiftHeight}/{_largestBottomLiftHeight}mm]" +
+                 $" [Bottom speed: {_slowestBottomLiftSpeed}/{_fastestBottomLiftSpeed}mm/min]" +
+                 $" [Height: {_smallestLiftHeight}/{_largestLiftHeight}mm]" +
+                 $" [Speed: {_slowestLiftSpeed}/{_fastestLiftSpeed}mm/min]" +
                  $" [Light-off: {_lightOffDelaySetMode} {_lightOffDelayBottomExtraTime}/{_lightOffDelayExtraTime}s]" +
                  LayerRangeString;
             if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
@@ -149,52 +149,52 @@ namespace UVtools.Core.Operations
             set => RaiseAndSetIfChanged(ref _setMethod, value);
         }
 
-        public float MinBottomLiftHeight
+        public float SmallestBottomLiftHeight
         {
-            get => _minBottomLiftHeight;
-            set => RaiseAndSetIfChanged(ref _minBottomLiftHeight, (float)Math.Round(value, 2));
+            get => _smallestBottomLiftHeight;
+            set => RaiseAndSetIfChanged(ref _smallestBottomLiftHeight, (float)Math.Round(value, 2));
         }
 
-        public float MaxBottomLiftHeight
+        public float LargestBottomLiftHeight
         {
-            get => _maxBottomLiftHeight;
-            set => RaiseAndSetIfChanged(ref _maxBottomLiftHeight, (float)Math.Round(value, 2));
+            get => _largestBottomLiftHeight;
+            set => RaiseAndSetIfChanged(ref _largestBottomLiftHeight, (float)Math.Round(value, 2));
         }
 
-        public float MinLiftHeight
+        public float SmallestLiftHeight
         {
-            get => _minLiftHeight;
-            set => RaiseAndSetIfChanged(ref _minLiftHeight, (float)Math.Round(value, 2));
+            get => _smallestLiftHeight;
+            set => RaiseAndSetIfChanged(ref _smallestLiftHeight, (float)Math.Round(value, 2));
         }
 
-        public float MaxLiftHeight
+        public float LargestLiftHeight
         {
-            get => _maxLiftHeight;
-            set => RaiseAndSetIfChanged(ref _maxLiftHeight, (float)Math.Round(value, 2));
+            get => _largestLiftHeight;
+            set => RaiseAndSetIfChanged(ref _largestLiftHeight, (float)Math.Round(value, 2));
         }
 
-        public float MinBottomLiftSpeed
+        public float SlowestBottomLiftSpeed
         {
-            get => _minBottomLiftSpeed;
-            set => RaiseAndSetIfChanged(ref _minBottomLiftSpeed, (float)Math.Round(value, 2));
+            get => _slowestBottomLiftSpeed;
+            set => RaiseAndSetIfChanged(ref _slowestBottomLiftSpeed, (float)Math.Round(value, 2));
         }
 
-        public float MaxBottomLiftSpeed
+        public float FastestBottomLiftSpeed
         {
-            get => _maxBottomLiftSpeed;
-            set => RaiseAndSetIfChanged(ref _maxBottomLiftSpeed, (float)Math.Round(value, 2));
+            get => _fastestBottomLiftSpeed;
+            set => RaiseAndSetIfChanged(ref _fastestBottomLiftSpeed, (float)Math.Round(value, 2));
         }
 
-        public float MinLiftSpeed
+        public float SlowestLiftSpeed
         {
-            get => _minLiftSpeed;
-            set => RaiseAndSetIfChanged(ref _minLiftSpeed, (float)Math.Round(value, 2));
+            get => _slowestLiftSpeed;
+            set => RaiseAndSetIfChanged(ref _slowestLiftSpeed, (float)Math.Round(value, 2));
         }
 
-        public float MaxLiftSpeed
+        public float FastestLiftSpeed
         {
-            get => _maxLiftSpeed;
-            set => RaiseAndSetIfChanged(ref _maxLiftSpeed, (float)Math.Round(value, 2));
+            get => _fastestLiftSpeed;
+            set => RaiseAndSetIfChanged(ref _fastestLiftSpeed, (float)Math.Round(value, 2));
         }
 
         public DynamicLiftsLightOffDelaySetMode LightOffDelaySetMode
@@ -260,17 +260,17 @@ namespace UVtools.Core.Operations
         {
             base.InitWithSlicerFile();
 
-            if(_minBottomLiftHeight <= 0) _minBottomLiftHeight = SlicerFile.BottomLiftHeightTotal;
-            if (_maxBottomLiftHeight <= 0 || _maxBottomLiftHeight < _minBottomLiftHeight) _maxBottomLiftHeight = _minBottomLiftHeight;
+            if(_smallestBottomLiftHeight <= 0) _smallestBottomLiftHeight = SlicerFile.BottomLiftHeightTotal;
+            if (_largestBottomLiftHeight <= 0 || _largestBottomLiftHeight < _smallestBottomLiftHeight) _largestBottomLiftHeight = _smallestBottomLiftHeight;
 
-            if (_minLiftHeight <= 0) _minLiftHeight = SlicerFile.LiftHeightTotal;
-            if (_maxLiftHeight <= 0 || _maxLiftHeight < _minLiftHeight) _maxLiftHeight = _minLiftHeight;
+            if (_smallestLiftHeight <= 0) _smallestLiftHeight = SlicerFile.LiftHeightTotal;
+            if (_largestLiftHeight <= 0 || _largestLiftHeight < _smallestLiftHeight) _largestLiftHeight = _smallestLiftHeight;
 
-            if (_minBottomLiftSpeed <= 0) _minBottomLiftSpeed = SlicerFile.BottomLiftSpeed;
-            if (_maxBottomLiftSpeed <= 0 || _maxBottomLiftSpeed < _minBottomLiftSpeed) _maxBottomLiftSpeed = _minBottomLiftSpeed;
+            if (_slowestBottomLiftSpeed <= 0) _slowestBottomLiftSpeed = SlicerFile.BottomLiftSpeed;
+            if (_fastestBottomLiftSpeed <= 0 || _fastestBottomLiftSpeed < _slowestBottomLiftSpeed) _fastestBottomLiftSpeed = _slowestBottomLiftSpeed;
 
-            if(_minLiftSpeed <= 0) _minLiftSpeed = SlicerFile.LiftSpeed;
-            if (_maxLiftSpeed <= 0 || _maxLiftSpeed < _minLiftSpeed) _maxLiftSpeed = _minLiftSpeed;
+            if(_slowestLiftSpeed <= 0) _slowestLiftSpeed = SlicerFile.LiftSpeed;
+            if (_fastestLiftSpeed <= 0 || _fastestLiftSpeed < _slowestLiftSpeed) _fastestLiftSpeed = _slowestLiftSpeed;
         }
 
         #endregion
@@ -339,13 +339,13 @@ namespace UVtools.Core.Operations
                     switch (_setMethod)
                     {
                         case DynamicLiftsSetMethod.Traditional:
-                            liftHeight = (_maxBottomLiftHeight * layer.NonZeroPixelCount / maxBottomPixels).Clamp(_minBottomLiftHeight, _maxBottomLiftHeight);
-                            liftSpeed = (_maxBottomLiftSpeed - (_maxBottomLiftSpeed * layer.NonZeroPixelCount / maxBottomPixels)).Clamp(_minBottomLiftSpeed, _maxBottomLiftSpeed);
+                            liftHeight = (_largestBottomLiftHeight * layer.NonZeroPixelCount / maxBottomPixels).Clamp(_smallestBottomLiftHeight, _largestBottomLiftHeight);
+                            liftSpeed = (_fastestBottomLiftSpeed - (_fastestBottomLiftSpeed * layer.NonZeroPixelCount / maxBottomPixels)).Clamp(_slowestBottomLiftSpeed, _fastestBottomLiftSpeed);
                             break;
                         case DynamicLiftsSetMethod.FullRange:
                             var pixelRatio = (layer.NonZeroPixelCount - minBottomPixels) / (float)(maxBottomPixels - minBottomPixels); // pixel_ratio is between 0 and 1
-                            liftHeight = (_minBottomLiftHeight + ((_maxBottomLiftHeight - _minBottomLiftHeight) * pixelRatio)).Clamp(_minBottomLiftHeight, _maxBottomLiftHeight);
-                            liftSpeed = (_maxBottomLiftSpeed - ((_maxBottomLiftSpeed - _minBottomLiftSpeed) * pixelRatio)).Clamp(_minBottomLiftSpeed, _maxBottomLiftSpeed);
+                            liftHeight = (_smallestBottomLiftHeight + ((_largestBottomLiftHeight - _smallestBottomLiftHeight) * pixelRatio)).Clamp(_smallestBottomLiftHeight, _largestBottomLiftHeight);
+                            liftSpeed = (_fastestBottomLiftSpeed - ((_fastestBottomLiftSpeed - _slowestBottomLiftSpeed) * pixelRatio)).Clamp(_slowestBottomLiftSpeed, _fastestBottomLiftSpeed);
                             break;
                     }
                     
@@ -355,13 +355,13 @@ namespace UVtools.Core.Operations
                     switch (_setMethod)
                     {
                         case DynamicLiftsSetMethod.Traditional:
-                            liftHeight = (_maxLiftHeight * layer.NonZeroPixelCount / maxNormalPixels).Clamp(_minLiftHeight, _maxLiftHeight);
-                            liftSpeed = (_maxLiftSpeed - (_maxLiftSpeed * layer.NonZeroPixelCount / maxNormalPixels)).Clamp(_minLiftSpeed, _maxLiftSpeed);
+                            liftHeight = (_largestLiftHeight * layer.NonZeroPixelCount / maxNormalPixels).Clamp(_smallestLiftHeight, _largestLiftHeight);
+                            liftSpeed = (_fastestLiftSpeed - (_fastestLiftSpeed * layer.NonZeroPixelCount / maxNormalPixels)).Clamp(_slowestLiftSpeed, _fastestLiftSpeed);
                             break;
                         case DynamicLiftsSetMethod.FullRange:
                             var pixelRatio = (layer.NonZeroPixelCount - minNormalPixels) / (float)(maxNormalPixels - minNormalPixels); // pixel_ratio is between 0 and 1
-                            liftHeight = (_minLiftHeight + ((_maxLiftHeight - _minLiftHeight) * pixelRatio)).Clamp(_minLiftHeight, _maxLiftHeight);
-                            liftSpeed = (_maxLiftSpeed - ((_maxLiftSpeed - _minLiftSpeed) * pixelRatio)).Clamp(_minLiftSpeed, _maxLiftSpeed);
+                            liftHeight = (_smallestLiftHeight + ((_largestLiftHeight - _smallestLiftHeight) * pixelRatio)).Clamp(_smallestLiftHeight, _largestLiftHeight);
+                            liftSpeed = (_fastestLiftSpeed - ((_fastestLiftSpeed - _slowestLiftSpeed) * pixelRatio)).Clamp(_slowestLiftSpeed, _fastestLiftSpeed);
                             break;
                     }
                 }
@@ -409,7 +409,7 @@ namespace UVtools.Core.Operations
 
         private bool Equals(OperationDynamicLifts other)
         {
-            return _setMethod == other._setMethod && _minBottomLiftHeight.Equals(other._minBottomLiftHeight) && _maxBottomLiftHeight.Equals(other._maxBottomLiftHeight) && _minLiftHeight.Equals(other._minLiftHeight) && _maxLiftHeight.Equals(other._maxLiftHeight) && _minBottomLiftSpeed.Equals(other._minBottomLiftSpeed) && _maxBottomLiftSpeed.Equals(other._maxBottomLiftSpeed) && _minLiftSpeed.Equals(other._minLiftSpeed) && _maxLiftSpeed.Equals(other._maxLiftSpeed) && _lightOffDelayBottomExtraTime.Equals(other._lightOffDelayBottomExtraTime) && _lightOffDelayExtraTime.Equals(other._lightOffDelayExtraTime) && _lightOffDelaySetMode == other._lightOffDelaySetMode;
+            return _setMethod == other._setMethod && _smallestBottomLiftHeight.Equals(other._smallestBottomLiftHeight) && _largestBottomLiftHeight.Equals(other._largestBottomLiftHeight) && _smallestLiftHeight.Equals(other._smallestLiftHeight) && _largestLiftHeight.Equals(other._largestLiftHeight) && _slowestBottomLiftSpeed.Equals(other._slowestBottomLiftSpeed) && _fastestBottomLiftSpeed.Equals(other._fastestBottomLiftSpeed) && _slowestLiftSpeed.Equals(other._slowestLiftSpeed) && _fastestLiftSpeed.Equals(other._fastestLiftSpeed) && _lightOffDelayBottomExtraTime.Equals(other._lightOffDelayBottomExtraTime) && _lightOffDelayExtraTime.Equals(other._lightOffDelayExtraTime) && _lightOffDelaySetMode == other._lightOffDelaySetMode;
         }
 
         public override bool Equals(object obj)
@@ -421,14 +421,14 @@ namespace UVtools.Core.Operations
         {
             var hashCode = new HashCode();
             hashCode.Add((int)_setMethod);
-            hashCode.Add(_minBottomLiftHeight);
-            hashCode.Add(_maxBottomLiftHeight);
-            hashCode.Add(_minLiftHeight);
-            hashCode.Add(_maxLiftHeight);
-            hashCode.Add(_minBottomLiftSpeed);
-            hashCode.Add(_maxBottomLiftSpeed);
-            hashCode.Add(_minLiftSpeed);
-            hashCode.Add(_maxLiftSpeed);
+            hashCode.Add(_smallestBottomLiftHeight);
+            hashCode.Add(_largestBottomLiftHeight);
+            hashCode.Add(_smallestLiftHeight);
+            hashCode.Add(_largestLiftHeight);
+            hashCode.Add(_slowestBottomLiftSpeed);
+            hashCode.Add(_fastestBottomLiftSpeed);
+            hashCode.Add(_slowestLiftSpeed);
+            hashCode.Add(_fastestLiftSpeed);
             hashCode.Add(_lightOffDelayBottomExtraTime);
             hashCode.Add(_lightOffDelayExtraTime);
             hashCode.Add((int)_lightOffDelaySetMode);

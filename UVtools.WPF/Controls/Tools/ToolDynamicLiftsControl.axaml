@@ -46,7 +46,7 @@
         <TextBlock Grid.Row="4" Grid.Column="0"
                    IsEnabled="{Binding Operation.LayerRangeHaveBottoms}"
                    VerticalAlignment="Center"
-                   Text="Minimum bottom lift:"/>
+                   Text="Smallest bottom lift:"/>
 
         <NumericUpDown Grid.Row="4" Grid.Column="2"
                        Classes="ValueLabel ValueLabel_mm"
@@ -56,7 +56,7 @@
                        Maximum="100"
                        Increment="0.5"
                        FormatString="F2"
-                       Value="{Binding Operation.MinBottomLiftHeight}"/>
+                       Value="{Binding Operation.SmallestBottomLiftHeight}"/>
 
         <TextBlock Grid.Row="4" Grid.Column="3"
                    Margin="5,0"
@@ -72,7 +72,7 @@
                        Maximum="1000"
                        Increment="1"
                        FormatString="F2"
-                       Value="{Binding Operation.MaxBottomLiftSpeed}"/>
+                       Value="{Binding Operation.FastestBottomLiftSpeed}"/>
 
         <Button Grid.Row="4" Grid.Column="6"
                 IsEnabled="{Binding Operation.LayerRangeHaveBottoms}"
@@ -87,7 +87,7 @@
         <TextBlock Grid.Row="6" Grid.Column="0"
                    IsEnabled="{Binding Operation.LayerRangeHaveBottoms}"
                    VerticalAlignment="Center"
-                   Text="Maximum bottom lift:"/>
+                   Text="Largest bottom lift:"/>
 
         <NumericUpDown Grid.Row="6" Grid.Column="2"
                        Classes="ValueLabel ValueLabel_mm"
@@ -97,7 +97,7 @@
                        Maximum="100"
                        Increment="0.5"
                        FormatString="F2"
-                       Value="{Binding Operation.MaxBottomLiftHeight}"/>
+                       Value="{Binding Operation.LargestBottomLiftHeight}"/>
 
         <TextBlock Grid.Row="6" Grid.Column="3"
                    Margin="5,0"
@@ -113,7 +113,7 @@
                        Maximum="1000"
                        Increment="1"
                        FormatString="F2"
-                       Value="{Binding Operation.MinBottomLiftSpeed}"/>
+                       Value="{Binding Operation.SlowestBottomLiftSpeed}"/>
 
         <Button Grid.Row="6" Grid.Column="6"
                 IsEnabled="{Binding Operation.LayerRangeHaveBottoms}"
@@ -128,7 +128,7 @@
         <TextBlock Grid.Row="8" Grid.Column="0"
                    IsEnabled="{Binding Operation.LayerRangeHaveNormals}"
                    VerticalAlignment="Center"
-                   Text="Minimum lift:"/>
+                   Text="Smallest lift:"/>
 
         <NumericUpDown Grid.Row="8" Grid.Column="2"
                        Classes="ValueLabel ValueLabel_mm"
@@ -138,7 +138,7 @@
                        Maximum="100"
                        Increment="0.5"
                        FormatString="F2"
-                       Value="{Binding Operation.MinLiftHeight}"/>
+                       Value="{Binding Operation.SmallestLiftHeight}"/>
 
         <TextBlock Grid.Row="8" Grid.Column="3"
                    Margin="5,0"
@@ -154,7 +154,7 @@
                        Maximum="1000"
                        Increment="1"
                        FormatString="F2"
-                       Value="{Binding Operation.MinLiftSpeed}"/>
+                       Value="{Binding Operation.FastestLiftSpeed}"/>
 
         <Button Grid.Row="8" Grid.Column="6"
                 IsEnabled="{Binding Operation.LayerRangeHaveNormals}"
@@ -169,7 +169,7 @@
         <TextBlock Grid.Row="10" Grid.Column="0"
                    IsEnabled="{Binding Operation.LayerRangeHaveNormals}"
                    VerticalAlignment="Center"
-                   Text="Maximum lift:"/>
+                   Text="Largest lift:"/>
 
         <NumericUpDown Grid.Row="10" Grid.Column="2"
                        Classes="ValueLabel ValueLabel_mm"
@@ -179,7 +179,7 @@
                        Maximum="100"
                        Increment="0.5"
                        FormatString="F2"
-                       Value="{Binding Operation.MaxLiftHeight}"/>
+                       Value="{Binding Operation.LargestLiftHeight}"/>
 
         <TextBlock Grid.Row="10" Grid.Column="3"
                    Margin="5,0"
@@ -195,7 +195,7 @@
                        Maximum="1000"
                        Increment="1"
                        FormatString="F2"
-                       Value="{Binding Operation.MaxLiftSpeed}"/>
+                       Value="{Binding Operation.SlowestLiftSpeed}"/>
 
         <Button Grid.Row="10" Grid.Column="6"
                 IsEnabled="{Binding Operation.LayerRangeHaveNormals}"
