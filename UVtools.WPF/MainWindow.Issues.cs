@@ -132,7 +132,7 @@ namespace UVtools.WPF
                             var bytes = image.GetDataSpan<byte>();
 
                             bool edited = false;
-
+                            bool hasSuctionCups = false;
                             foreach (var issue in layerIssues.Value)
                             {
                                 if (issue.Type == LayerIssue.IssueType.Island)
@@ -154,12 +154,19 @@ namespace UVtools.WPF
                                     }
                                     edited = true;
                                 }
-                                
+                                else if (issue.Type == LayerIssue.IssueType.SuctionCup)
+                                {
+                                    hasSuctionCups = true;
+                                }
                             }
 
                             if (edited)
                             {
                                 SlicerFile[layerIssues.Key].LayerMat = image;
+                            }
+
+                            if (edited || hasSuctionCups)
+                            {
                                 result = true;
                             }
                         }
@@ -199,7 +206,8 @@ namespace UVtools.WPF
             {
                 if (issue.Type != LayerIssue.IssueType.Island &&
                     issue.Type != LayerIssue.IssueType.ResinTrap &&
-                    issue.Type != LayerIssue.IssueType.EmptyLayer) continue;
+                    issue.Type != LayerIssue.IssueType.EmptyLayer &&
+                    issue.Type != LayerIssue.IssueType.SuctionCup) continue;
 
                 issueRemoveList.Add(issue);
 
@@ -211,12 +219,39 @@ namespace UVtools.WPF
                     whiteListLayers.Add(nextLayer);
                 }
 
+                if (issue.Type == LayerIssue.IssueType.SuctionCup)
+                {
+                    var currentIssue = issue.ParentIssue ?? issue;
+                    /* find the parent */
+                    while(currentIssue.ParentIssue != null)
+                    {
+                        currentIssue = currentIssue.ParentIssue;
+                    }
+
+                    /* now currentIssue is the top most parent for the range */
+                    Stack<LayerIssue> children = new Stack<LayerIssue>();
+                    children.Push(currentIssue);
+                    while(children.Count > 0)
+                    {
+                        var child = children.Pop();
+                        issueRemoveList.Add(child);
+                        if (child.ChildIssues != null)
+                        {
+                            foreach (var c in child.ChildIssues)
+                            {
+                                children.Push(c);
+                            }
+                        }
+                    }
+                }
+
                 //Issues.Remove(issue);
 
             }
 
             Clipboard.Clip($"Manually removed {issueRemoveList.Count} issues");
-
+            
+            IssuesGrid.SelectedIndex = -1;
             Issues.RemoveRange(issueRemoveList);
 
             if (layersRemove.Count > 0)
