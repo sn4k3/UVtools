@@ -1593,15 +1593,13 @@ namespace UVtools.Core
                         int yStart = Math.Max(0, operation.Location.Y - operationSupport.TipDiameter / 2);
                         int xStart = Math.Max(0, operation.Location.X - operationSupport.TipDiameter / 2);
 
-                        using (Mat matCircleRoi = new(mat, new Rectangle(xStart, yStart, operationSupport.TipDiameter, operationSupport.TipDiameter)))
+                        using (var matCircleRoi = new Mat(mat, new Rectangle(xStart, yStart, operationSupport.TipDiameter, operationSupport.TipDiameter)))
                         {
-                            using (Mat matCircleMask = matCircleRoi.NewBlank())
-                            {
-                                CvInvoke.Circle(matCircleMask, new Point(operationSupport.TipDiameter / 2, operationSupport.TipDiameter / 2),
-                                    operationSupport.TipDiameter / 2, new MCvScalar(operation.PixelBrightness), -1);
-                                CvInvoke.BitwiseAnd(matCircleRoi, matCircleMask, matCircleMask);
-                                whitePixels = (uint) CvInvoke.CountNonZero(matCircleMask);
-                            }
+                            using var matCircleMask = matCircleRoi.NewBlank();
+                            CvInvoke.Circle(matCircleMask, new Point(operationSupport.TipDiameter / 2, operationSupport.TipDiameter / 2),
+                                operationSupport.TipDiameter / 2, new MCvScalar(operation.PixelBrightness), -1);
+                            CvInvoke.BitwiseAnd(matCircleRoi, matCircleMask, matCircleMask);
+                            whitePixels = (uint) CvInvoke.CountNonZero(matCircleMask);
                         }
 
                         if (whitePixels >= Math.Pow(operationSupport.TipDiameter, 2) / 3)
@@ -1628,18 +1626,14 @@ namespace UVtools.Core
                         int yStart = Math.Max(0, operation.Location.Y - radius);
                         int xStart = Math.Max(0, operation.Location.X - radius);
 
-                        using (Mat matCircleRoi = new(mat, new Rectangle(xStart, yStart, operationDrainHole.Diameter, operationDrainHole.Diameter)))
+                        using (var matCircleRoi = new Mat(mat, new Rectangle(xStart, yStart, operationDrainHole.Diameter, operationDrainHole.Diameter)))
                         {
-                            using (Mat matCircleRoiInv = new())
-                            {
-                                CvInvoke.Threshold(matCircleRoi, matCircleRoiInv, 100, 255, ThresholdType.BinaryInv);
-                                using (Mat matCircleMask = matCircleRoi.NewBlank())
-                                {
-                                    CvInvoke.Circle(matCircleMask, new Point(radius, radius), radius, new MCvScalar(255), -1);
-                                    CvInvoke.BitwiseAnd(matCircleRoiInv, matCircleMask, matCircleMask);
-                                    blackPixels = (uint) CvInvoke.CountNonZero(matCircleMask);
-                                }
-                            }
+                            using var matCircleRoiInv = new Mat();
+                            CvInvoke.Threshold(matCircleRoi, matCircleRoiInv, 100, 255, ThresholdType.BinaryInv);
+                            using var matCircleMask = matCircleRoi.NewBlank();
+                            CvInvoke.Circle(matCircleMask, new Point(radius, radius), radius, EmguExtensions.WhiteColor, -1);
+                            CvInvoke.BitwiseAnd(matCircleRoiInv, matCircleMask, matCircleMask);
+                            blackPixels = (uint) CvInvoke.CountNonZero(matCircleMask);
                         }
 
                         if (blackPixels >= Math.Pow(operationDrainHole.Diameter, 2) / 3) // Enough area to drain?
@@ -1648,7 +1642,7 @@ namespace UVtools.Core
                             break; // Stop drill drain found!
                         }
                         
-                        CvInvoke.Circle(mat, operation.Location, radius, new MCvScalar(0), -1, operationDrainHole.LineType);
+                        CvInvoke.Circle(mat, operation.Location, radius, EmguExtensions.BlackColor, -1, operationDrainHole.LineType);
                         drawnLayers++;
                     }
                 }
