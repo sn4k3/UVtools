@@ -19,9 +19,11 @@ using Emgu.CV.Structure;
 using Emgu.CV.Util;
 using MessageBox.Avalonia.Enums;
 using UVtools.Core;
+using UVtools.Core.EmguCV;
 using UVtools.Core.Extensions;
 using UVtools.Core.Operations;
 using UVtools.WPF.Extensions;
+using static UVtools.Core.LayerIssue;
 using Brushes = Avalonia.Media.Brushes;
 
 namespace UVtools.WPF
@@ -81,6 +83,25 @@ namespace UVtools.WPF
         {
             if (!IssueCanGoNext) return;
             IssueSelectedIndex++;
+        }
+
+        public List<LayerIssue> GetOverlappingIssues(LayerIssue targetIssue, int indexOffset)
+        {
+            List<LayerIssue> retValue = new();
+
+            var targetLayerIndex = targetIssue.LayerIndex + indexOffset;
+            if (targetLayerIndex > SlicerFile.LayerCount - 1 || targetLayerIndex < 0) return retValue;
+
+            foreach (var candidate in Issues.Where(candidate => candidate.LayerIndex == targetLayerIndex && candidate.Type == LayerIssue.IssueType.SuctionCup))
+            {
+                if (EmguContours.CheckContoursIntersect(new VectorOfVectorOfPoint(targetIssue.Contours), new VectorOfVectorOfPoint(candidate.Contours)))
+                {
+                    retValue.Add(candidate);
+                    break;
+                }
+            }
+
+            return retValue;
         }
 
         public async void OnClickIssueRemove()
@@ -209,8 +230,6 @@ namespace UVtools.WPF
                     issue.Type != LayerIssue.IssueType.EmptyLayer &&
                     issue.Type != LayerIssue.IssueType.SuctionCup) continue;
 
-                issueRemoveList.Add(issue);
-
                 if (issue.Type == LayerIssue.IssueType.Island)
                 {
                     var nextLayer = issue.Layer.Index + 1;
@@ -221,30 +240,35 @@ namespace UVtools.WPF
 
                 if (issue.Type == LayerIssue.IssueType.SuctionCup)
                 {
-                    var currentIssue = issue.ParentIssue ?? issue;
-                    /* find the parent */
-                    while(currentIssue.ParentIssue != null)
-                    {
-                        currentIssue = currentIssue.ParentIssue;
-                    }
+                    if (issueRemoveList.Contains(issue)) continue;
 
-                    /* now currentIssue is the top most parent for the range */
-                    Stack<LayerIssue> children = new Stack<LayerIssue>();
-                    children.Push(currentIssue);
-                    while(children.Count > 0)
+                    Stack<LayerIssue> upDirection = new Stack<LayerIssue>();
+                    Stack<LayerIssue> downDirection = new Stack<LayerIssue>();
+                    upDirection.Push(issue);
+                    downDirection.Push(issue);
+
+                    while (upDirection.Count > 0)
                     {
-                        var child = children.Pop();
-                        issueRemoveList.Add(child);
-                        if (child.ChildIssues != null)
+                        var current = upDirection.Pop();
+                        foreach(var iss in GetOverlappingIssues(current,1))
                         {
-                            foreach (var c in child.ChildIssues)
-                            {
-                                children.Push(c);
-                            }
+                            upDirection.Push(iss);
+                            issueRemoveList.Add(iss);
                         }
                     }
+                    while(downDirection.Count > 0)
+                    {
+                        var current = downDirection.Pop();
+                        foreach (var iss in GetOverlappingIssues(current, -1))
+                        {
+                            downDirection.Push(iss);
+                            issueRemoveList.Add(iss);
+                        }
+                    }
+
                 }
 
+                issueRemoveList.Add(issue);
                 //Issues.Remove(issue);
 
             }

@@ -301,9 +301,6 @@ namespace UVtools.Core
         /// </summary>
         public Point[][] Contours { get; init; }
 
-        public LayerIssue ParentIssue = null;
-        public List<LayerIssue> ChildIssues = null;
-
         public int PixelsCount
         {
             get

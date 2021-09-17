@@ -1493,22 +1493,7 @@ namespace UVtools.Core
                             var suctionTrapArea = EmguContours.GetContourArea(trap);
                             if (suctionTrapArea < minimumSuctionArea) continue;
                             var rect = CvInvoke.BoundingRectangle(trap[0]);
-                            var newIssue = new LayerIssue(this[layerIndex], LayerIssue.IssueType.SuctionCup, trap.ToArrayOfArray(), rect) { Area = suctionTrapArea };
-
-                            if (layerIndex < LayerCount - 1 && suctionTraps[layerIndex + 1] is not null)
-                            {
-
-                                foreach (var issue in result.Where(issue => issue.LayerIndex == layerIndex + 1 && issue.Type == LayerIssue.IssueType.SuctionCup))
-                                {
-                                    if (EmguContours.CheckContoursIntersect(new VectorOfVectorOfPoint(issue.Contours), trap))
-                                    {
-                                        issue.ChildIssues ??= new List<LayerIssue>();
-                                        issue.ChildIssues.Add(newIssue);
-                                        newIssue.ParentIssue = issue;
-                                    }
-                                }
-                            }
-                            AddIssue(newIssue);
+                            AddIssue(new LayerIssue(this[layerIndex], LayerIssue.IssueType.SuctionCup, trap.ToArrayOfArray(), rect) { Area = suctionTrapArea });
                         }
                     }
                 }
