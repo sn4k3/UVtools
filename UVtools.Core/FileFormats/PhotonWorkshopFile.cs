@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using BinarySerialization;
 using Emgu.CV;
@@ -1453,7 +1454,9 @@ namespace UVtools.Core.FileFormats
                     {
                         var layer = new Layer((uint)layerIndex, mat, this)
                         {
-                            PositionZ = Layer.RoundHeight(LayersDefinition[(uint)layerIndex].LayerHeight),
+                            PositionZ = LayersDefinition.Layers
+                                .Where((_, i) => i <= layerIndex)
+                                .Sum(def => def.LayerHeight),
                         };
                         LayersDefinition[layerIndex].CopyTo(layer);
                         this[layerIndex] = layer;
@@ -1461,15 +1464,6 @@ namespace UVtools.Core.FileFormats
 
                     progress.LockAndIncrement();
                 });
-            }
-
-            // Fix position z height values
-            if (LayerCount > 0)
-            {
-                for (uint layerIndex = 1; layerIndex < LayerCount; layerIndex++)
-                {
-                    this[layerIndex].PositionZ = Layer.RoundHeight(this[layerIndex-1].PositionZ + this[layerIndex].PositionZ);
-                }
             }
         }
 
