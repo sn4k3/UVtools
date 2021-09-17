@@ -73,7 +73,7 @@ namespace UVtools.Core
             get => _nonZeroPixelCount;
             internal set
             {
-                if(!RaiseAndSetIfChanged(ref _nonZeroPixelCount, value)) return;
+                if (!RaiseAndSetIfChanged(ref _nonZeroPixelCount, value)) return;
                 RaisePropertyChanged(nameof(ExposureMillimeters));
                 MaterialMilliliters = -1; // Recalculate
             }
@@ -478,7 +478,7 @@ namespace UVtools.Core
             }
         }
 
-        public Mat LayerMatBoundingRectangle => new(LayerMat, BoundingRectangle);
+        //public Mat LayerMatBoundingRectangle => new(LayerMat, BoundingRectangle);
 
         /// <summary>
         /// Gets a new Brg image instance
@@ -799,15 +799,17 @@ namespace UVtools.Core
             bool needDispose = false;
             if (mat is null)
             {
-                if (_compressedBytes is null || _compressedBytes.Length == 0) return Rectangle.Empty;
+                if (_compressedBytes is null || _compressedBytes.Length == 0)
+                {
+                    NonZeroPixelCount = 0;
+                    return Rectangle.Empty;
+                }
                 mat = LayerMat;
                 needDispose = true;
             }
 
-            using var nonZeroMat = new Mat();
-            CvInvoke.FindNonZero(mat, nonZeroMat);
-            NonZeroPixelCount = (uint)nonZeroMat.Height;
-            BoundingRectangle = NonZeroPixelCount > 0 ? CvInvoke.BoundingRectangle(nonZeroMat) : Rectangle.Empty;
+            NonZeroPixelCount = (uint)CvInvoke.CountNonZero(mat);
+            BoundingRectangle = _nonZeroPixelCount > 0 ? CvInvoke.BoundingRectangle(mat) : Rectangle.Empty;
 
 
             if (needDispose) mat.Dispose();
