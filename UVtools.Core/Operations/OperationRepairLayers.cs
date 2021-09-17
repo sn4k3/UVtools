@@ -19,8 +19,10 @@ using System.Xml.Serialization;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Util;
+using UVtools.Core.EmguCV;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
+using UVtools.Core.PixelEditor;
 
 namespace UVtools.Core.Operations
 {
@@ -31,6 +33,8 @@ namespace UVtools.Core.Operations
         private bool _repairIslands = true;
         private bool _repairResinTraps = true;
         private bool _removeEmptyLayers = true;
+        /* Suction Cup repair disabled by default, needs UI component to toggle */
+        private bool _repairSuctionCups = false;
         private ushort _removeIslandsBelowEqualPixelCount = 5;
         private ushort _removeIslandsRecursiveIterations = 4;
         private ushort _attachIslandsBelowLayers = 2;
@@ -401,6 +405,80 @@ namespace UVtools.Core.Operations
 
                     progress.LockAndIncrement();
                 });
+            }
+
+
+            if (_repairSuctionCups)
+            {
+                /* build out parent/child relationships between all detected suction cups */
+
+                ConcurrentBag<LayerIssue> bottomSuctionIssues = new();
+
+                var layerCount = SlicerFile.LayerCount;
+                Parallel.ForEach(Issues.Where(issue => issue.Type == LayerIssue.IssueType.SuctionCup), issue => {
+
+                    if (issue.LayerIndex == 0)
+                    {
+                        bottomSuctionIssues.Add(issue);
+                        return;
+                    }
+                    bool overlapFound = false;
+                    
+                    foreach(var candidate in Issues.Where(candidate => candidate.LayerIndex == issue.LayerIndex - 1 && candidate.Type  == LayerIssue.IssueType.SuctionCup))
+                    {
+                        if (EmguContours.CheckContoursIntersect(new VectorOfVectorOfPoint(issue.Contours), new VectorOfVectorOfPoint(candidate.Contours))) {
+                            overlapFound = true;
+                            break;
+                        }
+                    }
+                    if (!overlapFound)
+                    {
+                        bottomSuctionIssues.Add(issue);
+                    }
+                });
+
+                (bool canDrill, Point location) GetDrillLocation(LayerIssue issue, int diameter)
+                {
+                    var centroid = EmguCV.EmguContour.GetCentroid(new VectorOfPoint(issue.Contours[0]));
+                    using Mat circleCheck = EmguExtensions.InitMat(issue.BoundingRectangle.Size);
+                    using Mat contourMat = EmguExtensions.InitMat(issue.BoundingRectangle.Size);
+                    using Mat overlapCheck = EmguExtensions.InitMat(issue.BoundingRectangle.Size);
+
+                    var inverseOffset = new Point(issue.BoundingRectangle.X * -1, issue.BoundingRectangle.Y * -1);
+
+                    CvInvoke.DrawContours(contourMat, new VectorOfVectorOfPoint(issue.Contours), -1, EmguExtensions.WhiteColor, -1, Emgu.CV.CvEnum.LineType.EightConnected, null, int.MaxValue, inverseOffset);
+
+                    CvInvoke.Circle(circleCheck, new(centroid.X + inverseOffset.X, centroid.Y + inverseOffset.Y), diameter, EmguExtensions.WhiteColor, -1);
+
+                    CvInvoke.BitwiseAnd(circleCheck, contourMat, overlapCheck);
+
+                    if (CvInvoke.CountNonZero(overlapCheck) > 0)
+                    {
+
+                        /* 5px centroid is inside layer! drill baby drill */
+                        return (true,centroid);
+
+                    } else
+                    {
+                        /* centroid is not inside the actual contour, no drill */
+                        return (false, new Point());
+                    }
+
+                }
+                List<PixelOperation> drillOps = new List<PixelOperation>();
+                var suctionReliefSize = (int)Math.Max(SlicerFile.PpmmMax * .5, 15);
+                /* for each suction cup issue that is an initial layer */
+                foreach (var issue in bottomSuctionIssues)
+                {
+                    var drillPoint = GetDrillLocation(issue, suctionReliefSize);
+                    if (drillPoint.canDrill)
+                    {
+                        drillOps.Add(new PixelDrainHole(issue.LayerIndex, drillPoint.location, (byte)suctionReliefSize));
+                    }
+                }
+
+                SlicerFile.LayerManager.DrawModifications(drillOps, progress);
+
             }
 
             if (_removeEmptyLayers)

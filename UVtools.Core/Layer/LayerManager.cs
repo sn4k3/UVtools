@@ -1484,7 +1484,7 @@ namespace UVtools.Core
                 if (resinTrapConfig.DetectSuctionCups)
                 {
                     var minimumSuctionArea = resinTrapConfig.RequiredAreaToConsiderSuctionCup;
-                    for (var layerIndex = 0; layerIndex < suctionTraps.Length; layerIndex++)
+                    for (var layerIndex = suctionTraps.Length - 1; layerIndex >= 0 ; layerIndex--)
                     {
                         if (suctionTraps[layerIndex] == null) continue;
 

@@ -19,9 +19,11 @@ using Emgu.CV.Structure;
 using Emgu.CV.Util;
 using MessageBox.Avalonia.Enums;
 using UVtools.Core;
+using UVtools.Core.EmguCV;
 using UVtools.Core.Extensions;
 using UVtools.Core.Operations;
 using UVtools.WPF.Extensions;
+using static UVtools.Core.LayerIssue;
 using Brushes = Avalonia.Media.Brushes;
 
 namespace UVtools.WPF
@@ -83,6 +85,25 @@ namespace UVtools.WPF
             IssueSelectedIndex++;
         }
 
+        public List<LayerIssue> GetOverlappingIssues(LayerIssue targetIssue, int indexOffset)
+        {
+            List<LayerIssue> retValue = new();
+
+            var targetLayerIndex = targetIssue.LayerIndex + indexOffset;
+            if (targetLayerIndex > SlicerFile.LayerCount - 1 || targetLayerIndex < 0) return retValue;
+
+            foreach (var candidate in Issues.Where(candidate => candidate.LayerIndex == targetLayerIndex && candidate.Type == LayerIssue.IssueType.SuctionCup))
+            {
+                if (EmguContours.CheckContoursIntersect(new VectorOfVectorOfPoint(targetIssue.Contours), new VectorOfVectorOfPoint(candidate.Contours)))
+                {
+                    retValue.Add(candidate);
+                    break;
+                }
+            }
+
+            return retValue;
+        }
+
         public async void OnClickIssueRemove()
         {
             if (IssuesGrid.SelectedItems.Count == 0) return;
@@ -132,7 +153,7 @@ namespace UVtools.WPF
                             var bytes = image.GetDataSpan<byte>();
 
                             bool edited = false;
-
+                            bool hasSuctionCups = false;
                             foreach (var issue in layerIssues.Value)
                             {
                                 if (issue.Type == LayerIssue.IssueType.Island)
@@ -154,12 +175,19 @@ namespace UVtools.WPF
                                     }
                                     edited = true;
                                 }
-                                
+                                else if (issue.Type == LayerIssue.IssueType.SuctionCup)
+                                {
+                                    hasSuctionCups = true;
+                                }
                             }
 
                             if (edited)
                             {
                                 SlicerFile[layerIssues.Key].LayerMat = image;
+                            }
+
+                            if (edited || hasSuctionCups)
+                            {
                                 result = true;
                             }
                         }
@@ -199,9 +227,8 @@ namespace UVtools.WPF
             {
                 if (issue.Type != LayerIssue.IssueType.Island &&
                     issue.Type != LayerIssue.IssueType.ResinTrap &&
-                    issue.Type != LayerIssue.IssueType.EmptyLayer) continue;
-
-                issueRemoveList.Add(issue);
+                    issue.Type != LayerIssue.IssueType.EmptyLayer &&
+                    issue.Type != LayerIssue.IssueType.SuctionCup) continue;
 
                 if (issue.Type == LayerIssue.IssueType.Island)
                 {
@@ -211,12 +238,44 @@ namespace UVtools.WPF
                     whiteListLayers.Add(nextLayer);
                 }
 
+                if (issue.Type == LayerIssue.IssueType.SuctionCup)
+                {
+                    if (issueRemoveList.Contains(issue)) continue;
+
+                    Stack<LayerIssue> upDirection = new Stack<LayerIssue>();
+                    Stack<LayerIssue> downDirection = new Stack<LayerIssue>();
+                    upDirection.Push(issue);
+                    downDirection.Push(issue);
+
+                    while (upDirection.Count > 0)
+                    {
+                        var current = upDirection.Pop();
+                        foreach(var iss in GetOverlappingIssues(current,1))
+                        {
+                            upDirection.Push(iss);
+                            issueRemoveList.Add(iss);
+                        }
+                    }
+                    while(downDirection.Count > 0)
+                    {
+                        var current = downDirection.Pop();
+                        foreach (var iss in GetOverlappingIssues(current, -1))
+                        {
+                            downDirection.Push(iss);
+                            issueRemoveList.Add(iss);
+                        }
+                    }
+
+                }
+
+                issueRemoveList.Add(issue);
                 //Issues.Remove(issue);
 
             }
 
             Clipboard.Clip($"Manually removed {issueRemoveList.Count} issues");
-
+            
+            IssuesGrid.SelectedIndex = -1;
             Issues.RemoveRange(issueRemoveList);
 
             if (layersRemove.Count > 0)

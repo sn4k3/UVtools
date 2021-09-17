@@ -988,6 +988,9 @@ namespace UVtools.WPF
                             case LayerIssue.IssueType.TouchingBound:
                                 color = Settings.LayerPreview.TouchingBoundsColor;
                                 break;
+                            case LayerIssue.IssueType.Debug:
+                                color = new Color(255, 15, 112, 16);
+                                break;
                         }
 
                         if (color.IsEmpty) continue;

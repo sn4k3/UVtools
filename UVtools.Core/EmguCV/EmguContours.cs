@@ -11,6 +11,7 @@ using System.Drawing;
 using System.Threading.Tasks;
 using Emgu.CV;
 using Emgu.CV.Util;
+using UVtools.Core.Extensions;
 
 namespace UVtools.Core.EmguCV
 {
@@ -207,6 +208,36 @@ namespace UVtools.Core.EmguCV
             }
             
             return result;
+        }
+
+        public static bool CheckContoursIntersect(VectorOfVectorOfPoint contour1, VectorOfVectorOfPoint contour2)
+        {
+            var contour1Rect = CvInvoke.BoundingRectangle(contour1[0]);
+            var contour2Rect = CvInvoke.BoundingRectangle(contour2[0]);
+
+            /* early exit if the bounding rectangles don't intersect */
+            if (!contour1Rect.IntersectsWith(contour2Rect)) return false;
+
+            var minX = contour1Rect.X < contour2Rect.X ? contour1Rect.X : contour2Rect.X;
+            var minY = contour1Rect.Y < contour2Rect.Y ? contour1Rect.Y : contour2Rect.Y;
+
+            var maxX = (contour1Rect.X + contour1Rect.Width) < (contour2Rect.X + contour2Rect.Width) ? (contour2Rect.X + contour2Rect.Width) : (contour1Rect.X + contour1Rect.Width);
+            var maxY = (contour1Rect.Y + contour1Rect.Height) < (contour2Rect.Y + contour2Rect.Height) ? (contour2Rect.Y + contour2Rect.Height) : (contour1Rect.Y + contour1Rect.Height);
+
+            var totalRect = new Rectangle(minX, minY, maxX - minX, maxY - minY);
+
+            using Mat contour1Mat = EmguExtensions.InitMat(totalRect.Size);
+            using Mat contour2Mat = EmguExtensions.InitMat(totalRect.Size);
+            using Mat overlapCheck = EmguExtensions.InitMat(totalRect.Size);
+
+            var inverseOffset = new Point(minX * -1, minY * -1);
+            CvInvoke.DrawContours(contour1Mat, contour1, -1, EmguExtensions.WhiteColor, -1, Emgu.CV.CvEnum.LineType.EightConnected, null, int.MaxValue, inverseOffset);
+            CvInvoke.DrawContours(contour2Mat, contour2, -1, EmguExtensions.WhiteColor, -1, Emgu.CV.CvEnum.LineType.EightConnected, null, int.MaxValue, inverseOffset);
+
+            CvInvoke.BitwiseAnd(contour1Mat, contour2Mat, overlapCheck);
+
+            return (CvInvoke.CountNonZero(overlapCheck) > 0);
+
         }
     }
 }

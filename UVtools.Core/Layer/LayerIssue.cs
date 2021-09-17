@@ -272,6 +272,7 @@ namespace UVtools.Core
             TouchingBound,
             PrintHeight,
             EmptyLayer,
+            Debug
             //HoleSandwich,
         }
 
