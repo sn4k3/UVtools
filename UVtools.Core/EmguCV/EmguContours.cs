@@ -215,6 +215,9 @@ namespace UVtools.Core.EmguCV
             var contour1Rect = CvInvoke.BoundingRectangle(contour1[0]);
             var contour2Rect = CvInvoke.BoundingRectangle(contour2[0]);
 
+            /* early exit if the bounding rectangles don't intersect */
+            if (!contour1Rect.IntersectsWith(contour2Rect)) return false;
+
             var minX = contour1Rect.X < contour2Rect.X ? contour1Rect.X : contour2Rect.X;
             var minY = contour1Rect.Y < contour2Rect.Y ? contour1Rect.Y : contour2Rect.Y;
 
