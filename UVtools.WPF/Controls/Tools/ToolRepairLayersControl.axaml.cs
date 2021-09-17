@@ -24,11 +24,13 @@ namespace UVtools.WPF.Controls.Tools
         {
             RepairIslands = UserSettings.Instance.LayerRepair.RepairIslands,
             RepairResinTraps = UserSettings.Instance.LayerRepair.RepairResinTraps,
+            RepairSuctionCups = UserSettings.Instance.LayerRepair.RepairSuctionCups,
             RemoveEmptyLayers = UserSettings.Instance.LayerRepair.RemoveEmptyLayers,
             RemoveIslandsBelowEqualPixelCount = UserSettings.Instance.LayerRepair.RemoveIslandsBelowEqualPixels,
             RemoveIslandsRecursiveIterations = UserSettings.Instance.LayerRepair.RemoveIslandsRecursiveIterations,
             AttachIslandsBelowLayers = UserSettings.Instance.LayerRepair.AttachIslandsBelowLayers,
             ResinTrapsOverlapBy = UserSettings.Instance.LayerRepair.ResinTrapsOverlapBy,
+            SuctionCupsVentHole = UserSettings.Instance.LayerRepair.SuctionCupsVentHole,
             GapClosingIterations = UserSettings.Instance.LayerRepair.ClosingIterations,
             NoiseRemovalIterations = UserSettings.Instance.LayerRepair.OpeningIterations,
         };
@@ -37,11 +39,13 @@ namespace UVtools.WPF.Controls.Tools
         {
             Operation.RepairIslands = UserSettings.Instance.LayerRepair.RepairIslands;
             Operation.RepairResinTraps = UserSettings.Instance.LayerRepair.RepairResinTraps;
+            Operation.RepairSuctionCups = UserSettings.Instance.LayerRepair.RepairSuctionCups;
             Operation.RemoveEmptyLayers = UserSettings.Instance.LayerRepair.RemoveEmptyLayers;
             Operation.RemoveIslandsBelowEqualPixelCount = UserSettings.Instance.LayerRepair.RemoveIslandsBelowEqualPixels;
             Operation.RemoveIslandsRecursiveIterations = UserSettings.Instance.LayerRepair.RemoveIslandsRecursiveIterations;
             Operation.AttachIslandsBelowLayers = UserSettings.Instance.LayerRepair.AttachIslandsBelowLayers;
             Operation.ResinTrapsOverlapBy = UserSettings.Instance.LayerRepair.ResinTrapsOverlapBy;
+            Operation.SuctionCupsVentHole = UserSettings.Instance.LayerRepair.SuctionCupsVentHole;
             Operation.GapClosingIterations = UserSettings.Instance.LayerRepair.ClosingIterations;
             Operation.NoiseRemovalIterations = UserSettings.Instance.LayerRepair.OpeningIterations;
         }

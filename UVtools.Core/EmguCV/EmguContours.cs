@@ -210,7 +210,7 @@ namespace UVtools.Core.EmguCV
             return result;
         }
 
-        public static bool CheckContoursIntersect(VectorOfVectorOfPoint contour1, VectorOfVectorOfPoint contour2)
+        public static bool ContoursIntersect(VectorOfVectorOfPoint contour1, VectorOfVectorOfPoint contour2)
         {
             var contour1Rect = CvInvoke.BoundingRectangle(contour1[0]);
             var contour2Rect = CvInvoke.BoundingRectangle(contour2[0]);
@@ -226,17 +226,17 @@ namespace UVtools.Core.EmguCV
 
             var totalRect = new Rectangle(minX, minY, maxX - minX, maxY - minY);
 
-            using Mat contour1Mat = EmguExtensions.InitMat(totalRect.Size);
-            using Mat contour2Mat = EmguExtensions.InitMat(totalRect.Size);
-            using Mat overlapCheck = EmguExtensions.InitMat(totalRect.Size);
-
+            using var contour1Mat = EmguExtensions.InitMat(totalRect.Size);
+            using var contour2Mat = EmguExtensions.InitMat(totalRect.Size);
+            using var overlapCheck = EmguExtensions.InitMat(totalRect.Size);
+            
             var inverseOffset = new Point(minX * -1, minY * -1);
             CvInvoke.DrawContours(contour1Mat, contour1, -1, EmguExtensions.WhiteColor, -1, Emgu.CV.CvEnum.LineType.EightConnected, null, int.MaxValue, inverseOffset);
             CvInvoke.DrawContours(contour2Mat, contour2, -1, EmguExtensions.WhiteColor, -1, Emgu.CV.CvEnum.LineType.EightConnected, null, int.MaxValue, inverseOffset);
 
             CvInvoke.BitwiseAnd(contour1Mat, contour2Mat, overlapCheck);
 
-            return (CvInvoke.CountNonZero(overlapCheck) > 0);
+            return CvInvoke.CountNonZero(overlapCheck) > 0;
 
         }
     }

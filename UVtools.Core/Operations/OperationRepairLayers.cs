@@ -33,12 +33,12 @@ namespace UVtools.Core.Operations
         private bool _repairIslands = true;
         private bool _repairResinTraps = true;
         private bool _removeEmptyLayers = true;
-        /* Suction Cup repair disabled by default, needs UI component to toggle */
-        private bool _repairSuctionCups = false;
+        private bool _repairSuctionCups;
         private ushort _removeIslandsBelowEqualPixelCount = 5;
         private ushort _removeIslandsRecursiveIterations = 4;
         private ushort _attachIslandsBelowLayers = 2;
         private byte _resinTrapsOverlapBy = 5;
+        private byte _suctionCupsVentHole = 16;
         private uint _gapClosingIterations = 1;
         private uint _noiseRemovalIterations;
 
@@ -62,7 +62,7 @@ namespace UVtools.Core.Operations
         {
             var sb = new StringBuilder();
 
-            if (!RepairIslands && !RemoveEmptyLayers && !RepairResinTraps)
+            if (!_repairIslands && !_repairResinTraps && !_repairSuctionCups && !_removeEmptyLayers)
             {
                 sb.AppendLine("You must select at least one repair operation.");
             }
@@ -90,6 +90,12 @@ namespace UVtools.Core.Operations
         {
             get => _repairResinTraps;
             set => RaiseAndSetIfChanged(ref _repairResinTraps, value);
+        }
+
+        public bool RepairSuctionCups
+        {
+            get => _repairSuctionCups;
+            set => RaiseAndSetIfChanged(ref _repairSuctionCups, value);
         }
 
         public bool RemoveEmptyLayers
@@ -120,6 +126,12 @@ namespace UVtools.Core.Operations
         {
             get => _resinTrapsOverlapBy;
             set => RaiseAndSetIfChanged(ref _resinTrapsOverlapBy, value);
+        }
+
+        public byte SuctionCupsVentHole
+        {
+            get => _suctionCupsVentHole;
+            set => RaiseAndSetIfChanged(ref _suctionCupsVentHole, value);
         }
 
         public uint GapClosingIterations
@@ -193,9 +205,9 @@ namespace UVtools.Core.Operations
                     Parallel.ForEach(issuesGroup, CoreSettings.ParallelOptions, group =>
                     {
                         if (progress.Token.IsCancellationRequested) return;
-                        Layer layer = SlicerFile[group.Key];
-                        Mat image = layer.LayerMat;
-                        Span<byte> bytes = image.GetDataSpan<byte>();
+                        var layer = SlicerFile[group.Key];
+                        var image = layer.LayerMat;
+                        var bytes = image.GetDataByteSpan();
                         foreach (var issue in group)
                         {
                             foreach (var issuePixel in issue.Pixels)
@@ -382,7 +394,7 @@ namespace UVtools.Core.Operations
                     if (_repairIslands && (_gapClosingIterations > 0 || _noiseRemovalIterations > 0))
                     {
                         initImage();
-                        using Mat kernel = CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(3, 3),
+                        using var kernel = CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(3, 3),
                             new Point(-1, -1));
                         if (_gapClosingIterations > 0)
                         {
@@ -408,13 +420,12 @@ namespace UVtools.Core.Operations
             }
 
 
-            if (_repairSuctionCups)
+            if (_repairSuctionCups && Issues is not null)
             {
                 /* build out parent/child relationships between all detected suction cups */
 
-                ConcurrentBag<LayerIssue> bottomSuctionIssues = new();
+                var bottomSuctionIssues = new ConcurrentBag<LayerIssue>();
 
-                var layerCount = SlicerFile.LayerCount;
                 Parallel.ForEach(Issues.Where(issue => issue.Type == LayerIssue.IssueType.SuctionCup), issue => {
 
                     if (issue.LayerIndex == 0)
@@ -422,11 +433,12 @@ namespace UVtools.Core.Operations
                         bottomSuctionIssues.Add(issue);
                         return;
                     }
+
                     bool overlapFound = false;
                     
                     foreach(var candidate in Issues.Where(candidate => candidate.LayerIndex == issue.LayerIndex - 1 && candidate.Type  == LayerIssue.IssueType.SuctionCup))
                     {
-                        if (EmguContours.CheckContoursIntersect(new VectorOfVectorOfPoint(issue.Contours), new VectorOfVectorOfPoint(candidate.Contours))) {
+                        if (EmguContours.ContoursIntersect(new VectorOfVectorOfPoint(issue.Contours), new VectorOfVectorOfPoint(candidate.Contours))) {
                             overlapFound = true;
                             break;
                         }
@@ -439,52 +451,42 @@ namespace UVtools.Core.Operations
 
                 (bool canDrill, Point location) GetDrillLocation(LayerIssue issue, int diameter)
                 {
-                    var centroid = EmguCV.EmguContour.GetCentroid(new VectorOfPoint(issue.Contours[0]));
-                    using Mat circleCheck = EmguExtensions.InitMat(issue.BoundingRectangle.Size);
-                    using Mat contourMat = EmguExtensions.InitMat(issue.BoundingRectangle.Size);
-                    using Mat overlapCheck = EmguExtensions.InitMat(issue.BoundingRectangle.Size);
+                    using var vecCentroid = new VectorOfPoint(issue.Contours[0]);
+                    var centroid = EmguContour.GetCentroid(vecCentroid);
+                    using var circleCheck = EmguExtensions.InitMat(issue.BoundingRectangle.Size);
+                    using var contourMat = EmguExtensions.InitMat(issue.BoundingRectangle.Size);
+                    using var overlapCheck = EmguExtensions.InitMat(issue.BoundingRectangle.Size);
 
                     var inverseOffset = new Point(issue.BoundingRectangle.X * -1, issue.BoundingRectangle.Y * -1);
-
-                    CvInvoke.DrawContours(contourMat, new VectorOfVectorOfPoint(issue.Contours), -1, EmguExtensions.WhiteColor, -1, Emgu.CV.CvEnum.LineType.EightConnected, null, int.MaxValue, inverseOffset);
+                    using var vec = new VectorOfVectorOfPoint(issue.Contours);
+                    CvInvoke.DrawContours(contourMat, vec, -1, EmguExtensions.WhiteColor, -1, LineType.EightConnected, null, int.MaxValue, inverseOffset);
 
                     CvInvoke.Circle(circleCheck, new(centroid.X + inverseOffset.X, centroid.Y + inverseOffset.Y), diameter, EmguExtensions.WhiteColor, -1);
 
                     CvInvoke.BitwiseAnd(circleCheck, contourMat, overlapCheck);
 
-                    if (CvInvoke.CountNonZero(overlapCheck) > 0)
-                    {
-
-                        /* 5px centroid is inside layer! drill baby drill */
-                        return (true,centroid);
-
-                    } else
-                    {
-                        /* centroid is not inside the actual contour, no drill */
-                        return (false, new Point());
-                    }
-
+                    return CvInvoke.CountNonZero(overlapCheck) > 0 
+                        ? (true,centroid)       /* 5px centroid is inside layer! drill baby drill */
+                        : (false, new Point()); /* centroid is not inside the actual contour, no drill */
                 }
-                List<PixelOperation> drillOps = new List<PixelOperation>();
-                var suctionReliefSize = (int)Math.Max(SlicerFile.PpmmMax * .5, 15);
+
+                var drillOps = new List<PixelOperation>();
+                //var suctionReliefSize = (ushort)Math.Max(SlicerFile.PpmmMax * 0.8, 17);
                 /* for each suction cup issue that is an initial layer */
                 foreach (var issue in bottomSuctionIssues)
                 {
-                    var drillPoint = GetDrillLocation(issue, suctionReliefSize);
-                    if (drillPoint.canDrill)
-                    {
-                        drillOps.Add(new PixelDrainHole(issue.LayerIndex, drillPoint.location, (byte)suctionReliefSize));
-                    }
+                    var drillPoint = GetDrillLocation(issue, _suctionCupsVentHole);
+                    if (!drillPoint.canDrill) continue;
+                    drillOps.Add(new PixelDrainHole(issue.LayerIndex, drillPoint.location, _suctionCupsVentHole));
                 }
 
                 SlicerFile.LayerManager.DrawModifications(drillOps, progress);
-
             }
 
             if (_removeEmptyLayers)
             {
-                List<uint> removeLayers = new();
-                for (uint layerIndex = LayerIndexStart; layerIndex <= LayerIndexEnd; layerIndex++)
+                var removeLayers = new List<uint>();
+                for (var layerIndex = LayerIndexStart; layerIndex <= LayerIndexEnd; layerIndex++)
                 {
                     if (SlicerFile[layerIndex].NonZeroPixelCount == 0)
                     {

@@ -12,8 +12,7 @@
       <CheckBox
         IsChecked="{Binding Operation.RepairIslands}"
         ToolTip.Tip="If enabled, repair will first attempt to eliminate islands smaller than the pixel area removal threshold, and then runs the “gap closure” technique."
-        Content="Repair islands"
-        />
+        Content="Repair islands"/>
 
 
       <!-- Repair resin traps -->
@@ -21,8 +20,13 @@
         IsChecked="{Binding Operation.RepairResinTraps}"
         ToolTip.Tip="If enabled, repair will fill black pixels found within a resin trap with white pixels.
 &#x0a;Hollow areas will become solid."
-        Content="Repair resin traps"
-        />
+        Content="Repair resin traps"/>
+
+      <!-- Repair resin traps -->
+      <CheckBox
+          IsChecked="{Binding Operation.RepairSuctionCups}"
+          ToolTip.Tip="If enabled, repair will drill suction cup layers with a vertical hole at the specified size."
+          Content="Repair suction cups"/>
 
 
       <!-- Remove empty layers -->
@@ -30,12 +34,10 @@
         IsChecked="{Binding Operation.RemoveEmptyLayers}"
         ToolTip.Tip="If enabled, repair will remove all layers with no white pixels.
 &#x0a;The model will be recalculated to ensure the correct Z height is maintained."
-        Content="Remove empty layers"
-        />
+        Content="Remove empty layers"/>
       </StackPanel>
 
-    <Grid ColumnDefinitions="Auto,10,190,5,Auto"
-          RowDefinitions="Auto,10,Auto,10,Auto,10,Auto">
+    <Grid RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto" ColumnDefinitions="Auto,10,190,5,Auto">
 
       <!-- Remove islands equal or smaller than -->
       <TextBlock Grid.Row="0" Grid.Column="0"
@@ -137,6 +139,22 @@
 &#x0a;Use this field when you have aggressive blur on model and a visible margin between white pixels and the resin trap highlight area.
 &#x0a;(0 = Fill the found area without overlap nearby pixels)"
                      Value="{Binding Operation.ResinTrapsOverlapBy}"/>
+
+      <!-- Suction cup vent hole -->
+      <TextBlock Grid.Row="8" Grid.Column="0"
+                 VerticalAlignment="Center"
+                 IsEnabled="{Binding Operation.RepairSuctionCups}"
+                 ToolTip.Tip="Hole diameter to drill the layers with"
+                 Text="Suction cup vent hole diameter:"/>
+
+      <NumericUpDown Grid.Row="8" Grid.Column="2"
+                     Classes="ValueLabel ValueLabel_px"
+                     Increment="1"
+                     Minimum="4"
+                     Maximum="255"
+                     IsEnabled="{Binding Operation.RepairSuctionCups}"
+                     ToolTip.Tip="Hole diameter to drill the layers with"
+                     Value="{Binding Operation.SuctionCupsVentHole}"/>
     </Grid>
 
 

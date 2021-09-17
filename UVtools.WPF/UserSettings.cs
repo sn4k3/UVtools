@@ -788,7 +788,7 @@ namespace UVtools.WPF
             private byte _resinTrapRequiredAreaToProcessCheck = 17;
             private byte _resinTrapRequiredBlackPixelsToDrain = 10;
             private byte _resinTrapMaximumPixelBrightnessToDrain = 30;
-            private uint _suctionCupRequiredAreaToConsider = 5000;
+            private uint _suctionCupRequiredAreaToConsider = 10000;
             private byte _touchingBoundMinimumPixelBrightness = 127;
             private byte _touchingBoundMarginLeft = 5;
             private byte _touchingBoundMarginTop = 5;
@@ -1219,11 +1219,13 @@ namespace UVtools.WPF
         {
             private bool _repairIslands = true;
             private bool _repairResinTraps = true;
+            private bool _repairSuctionCups;
             private bool _removeEmptyLayers = true;
             private ushort _removeIslandsBelowEqualPixels = 5;
             private ushort _removeIslandsRecursiveIterations = 4;
             private ushort _attachIslandsBelowLayers = 2;
             private byte _resinTrapsOverlapBy = 0;
+            private byte _suctionCupsVentHole = 16;
             private byte _closingIterations = 2;
             private byte _openingIterations = 0;
 
@@ -1237,6 +1239,12 @@ namespace UVtools.WPF
             {
                 get => _repairResinTraps;
                 set => RaiseAndSetIfChanged(ref _repairResinTraps, value);
+            }
+
+            public bool RepairSuctionCups
+            {
+                get => _repairSuctionCups;
+                set => RaiseAndSetIfChanged(ref _repairSuctionCups, value);
             }
 
             public bool RemoveEmptyLayers
@@ -1267,6 +1275,12 @@ namespace UVtools.WPF
             {
                 get => _resinTrapsOverlapBy;
                 set => RaiseAndSetIfChanged(ref _resinTrapsOverlapBy, value);
+            }
+
+            public byte SuctionCupsVentHole
+            {
+                get => _suctionCupsVentHole;
+                set => RaiseAndSetIfChanged(ref _suctionCupsVentHole, value);
             }
 
             public byte ClosingIterations

@@ -23,7 +23,6 @@ using UVtools.Core.EmguCV;
 using UVtools.Core.Extensions;
 using UVtools.Core.Operations;
 using UVtools.WPF.Extensions;
-using static UVtools.Core.LayerIssue;
 using Brushes = Avalonia.Media.Brushes;
 
 namespace UVtools.WPF
@@ -87,18 +86,18 @@ namespace UVtools.WPF
 
         public List<LayerIssue> GetOverlappingIssues(LayerIssue targetIssue, int indexOffset)
         {
-            List<LayerIssue> retValue = new();
+            var retValue = new List<LayerIssue>();
 
             var targetLayerIndex = targetIssue.LayerIndex + indexOffset;
             if (targetLayerIndex > SlicerFile.LayerCount - 1 || targetLayerIndex < 0) return retValue;
 
             foreach (var candidate in Issues.Where(candidate => candidate.LayerIndex == targetLayerIndex && candidate.Type == LayerIssue.IssueType.SuctionCup))
             {
-                if (EmguContours.CheckContoursIntersect(new VectorOfVectorOfPoint(targetIssue.Contours), new VectorOfVectorOfPoint(candidate.Contours)))
-                {
-                    retValue.Add(candidate);
-                    break;
-                }
+                using var vec1 = new VectorOfVectorOfPoint(targetIssue.Contours);
+                using var vec2 = new VectorOfVectorOfPoint(candidate.Contours);
+                if (!EmguContours.ContoursIntersect(vec1, vec2)) continue;
+                retValue.Add(candidate);
+                break;
             }
 
             return retValue;
@@ -242,8 +241,8 @@ namespace UVtools.WPF
                 {
                     if (issueRemoveList.Contains(issue)) continue;
 
-                    Stack<LayerIssue> upDirection = new Stack<LayerIssue>();
-                    Stack<LayerIssue> downDirection = new Stack<LayerIssue>();
+                    var upDirection = new Stack<LayerIssue>();
+                    var downDirection = new Stack<LayerIssue>();
                     upDirection.Push(issue);
                     downDirection.Push(issue);
 

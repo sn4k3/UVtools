@@ -11,10 +11,10 @@ namespace UVtools.Core.PixelEditor
 {
     public class PixelDrainHole : PixelOperation
     {
-        private byte _diameter = 50;
+        private ushort _diameter = 50;
         public override PixelOperationType OperationType => PixelOperationType.DrainHole;
 
-        public byte Diameter
+        public ushort Diameter
         {
             get => _diameter;
             set => RaiseAndSetIfChanged(ref _diameter, value);
@@ -22,7 +22,7 @@ namespace UVtools.Core.PixelEditor
 
         public PixelDrainHole(){ _pixelBrightness = 0; }
 
-        public PixelDrainHole(uint layerIndex, Point location, byte diameter) : base(layerIndex, location)
+        public PixelDrainHole(uint layerIndex, Point location, ushort diameter) : base(layerIndex, location)
         {
             Diameter = diameter;
             Size = new Size(diameter, diameter);

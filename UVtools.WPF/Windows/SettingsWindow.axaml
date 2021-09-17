@@ -1596,11 +1596,13 @@
                 <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Default values"/>
 
                 <CheckBox IsChecked="{Binding Settings.LayerRepair.RepairIslands}"
-                  Margin="10,0" Content="Attempt to repair islands by default"/>
+                          Margin="10,0" Content="Attempt to repair islands by default"/>
                 <CheckBox IsChecked="{Binding Settings.LayerRepair.RepairResinTraps}"
-                  Margin="10,0" Content="Attempt to repair resin traps by default"/>
+                          Margin="10,0" Content="Attempt to repair resin traps by default"/>
+                <CheckBox IsChecked="{Binding Settings.LayerRepair.RepairSuctionCups}"
+                          Margin="10,0" Content="Attempt to repair suction cups by default"/>
                 <CheckBox IsChecked="{Binding Settings.LayerRepair.RemoveEmptyLayers}"
-                  Margin="10,0" Content="Remove empty layers by default"/>
+                          Margin="10,0" Content="Remove empty layers by default"/>
 
                 <StackPanel Orientation="Horizontal" Margin="10,0" Spacing="10">
                   <NumericUpDown
@@ -1638,6 +1640,15 @@
                         Minimum="0"
                         Maximum="255"/>
                     <TextBlock VerticalAlignment="Center" Text="Resin traps: Overlap and expand resin trap area by this value in pixels (0 = Disabled)"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="10,0" Spacing="10">
+                    <NumericUpDown
+                        Value="{Binding Settings.LayerRepair.SuctionCupsVentHole}"
+                        Width="70"
+                        Minimum="4"
+                        Maximum="255"/>
+                    <TextBlock VerticalAlignment="Center" Text="Suction cups: Hole diameter to drill the layers with"/>
                 </StackPanel>
 
                 <StackPanel Orientation="Horizontal" Margin="10,0" Spacing="10">
