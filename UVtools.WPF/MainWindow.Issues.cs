@@ -598,10 +598,7 @@ namespace UVtools.WPF
             {
                 var issue = Issues
                     .Where(issue => issue.LayerIndex == layerIndex)
-                    .OrderBy(issue => issue.Type == LayerIssue.IssueType.Island)
-                    .ThenBy(issue => issue.Type == LayerIssue.IssueType.Overhang)
-                    .ThenBy(issue => issue.Type == LayerIssue.IssueType.ResinTrap)
-                    .ThenBy(issue => issue.Type == LayerIssue.IssueType.SuctionCup)
+                    .OrderBy(issue => issue.Type)
                     .FirstOrDefault();
 
                 if(issue is null) continue;
