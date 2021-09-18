@@ -13,6 +13,8 @@ using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
 using Avalonia.Input;
+using Avalonia.Media;
+using Avalonia.Media.Immutable;
 using Avalonia.Threading;
 using Emgu.CV;
 using Emgu.CV.Structure;
@@ -567,10 +569,60 @@ namespace UVtools.WPF
             return layerIndexIssueCount;
         }
 
-        void UpdateLayerTrackerHighlightIssues()
+        public Dictionary<LayerIssue.IssueType, ISolidColorBrush> GetIssueColors(bool highlightColors = false)
+        {
+            return new Dictionary<LayerIssue.IssueType, ISolidColorBrush>
+            {
+                {LayerIssue.IssueType.Island,     highlightColors ? Settings.LayerPreview.IslandHighlightBrush : Settings.LayerPreview.IslandBrush},
+                {LayerIssue.IssueType.Overhang,   highlightColors ? Settings.LayerPreview.OverhangHighlightBrush : Settings.LayerPreview.OverhangBrush},
+                {LayerIssue.IssueType.ResinTrap,  highlightColors ? Settings.LayerPreview.ResinTrapHighlightBrush : Settings.LayerPreview.ResinTrapBrush},
+                {LayerIssue.IssueType.SuctionCup, highlightColors ? Settings.LayerPreview.SuctionCupHighlightBrush : Settings.LayerPreview.SuctionCupBrush},
+                {LayerIssue.IssueType.TouchingBound, Settings.LayerPreview.TouchingBoundsBrush},
+                {LayerIssue.IssueType.EmptyLayer, Brushes.Red},
+                {LayerIssue.IssueType.PrintHeight, Brushes.Red},
+                {LayerIssue.IssueType.Debug, new ImmutableSolidColorBrush(new Color(255, 15, 112, 16))},
+            };
+        }
+
+        private void UpdateLayerTrackerHighlightIssues()
         {
             _issuesSliderCanvas.Children.Clear();
-            var issuesCountPerLayer = GetIssuesCountPerLayer();
+            if (Issues is null || Issues.Count == 0) return;
+
+            var tickFrequencySize = _issuesSliderCanvas.Bounds.Height * LayerSlider.TickFrequency / (LayerSlider.Maximum - LayerSlider.Minimum);
+            var stroke = (int)Math.Ceiling(tickFrequencySize);
+
+            var colorDictionary = GetIssueColors(true);
+
+            for (int layerIndex = 0; layerIndex < SlicerFile.LayerCount; layerIndex++)
+            {
+                var issue = Issues
+                    .Where(issue => issue.LayerIndex == layerIndex)
+                    .OrderBy(issue => issue.Type == LayerIssue.IssueType.Island)
+                    .ThenBy(issue => issue.Type == LayerIssue.IssueType.Overhang)
+                    .ThenBy(issue => issue.Type == LayerIssue.IssueType.ResinTrap)
+                    .ThenBy(issue => issue.Type == LayerIssue.IssueType.SuctionCup)
+                    .FirstOrDefault();
+
+                if(issue is null) continue;
+
+                var color = Brushes.Red;
+                colorDictionary.TryGetValue(issue.Type, out color);
+
+                var yPos = tickFrequencySize * layerIndex;
+                if (layerIndex == 0 && stroke > 3)
+                {
+                    yPos += tickFrequencySize / 2;
+                }
+                else if (layerIndex == SlicerFile.LastLayerIndex && stroke > 3)
+                {
+                    yPos -= tickFrequencySize / 2;
+                }
+                var line = new Line { StrokeThickness = stroke, Stroke = color, EndPoint = new Avalonia.Point(_issuesSliderCanvas.Width, 0) };
+                _issuesSliderCanvas.Children.Add(line);
+                Canvas.SetBottom(line, yPos);
+            }
+            /*var issuesCountPerLayer = GetIssuesCountPerLayer();
             if (issuesCountPerLayer is null)
             {
                 return;
@@ -593,7 +645,7 @@ namespace UVtools.WPF
                 var line = new Line{StrokeThickness = stroke, Stroke = Brushes.Red, EndPoint = new Avalonia.Point(_issuesSliderCanvas.Width, 0)};
                 _issuesSliderCanvas.Children.Add(line);
                 Canvas.SetBottom(line, yPos);
-            }
+            }*/
         }
 
         public void IssuesClear(bool clearIgnored = true)
