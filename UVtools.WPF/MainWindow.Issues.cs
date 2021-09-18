@@ -589,13 +589,15 @@ namespace UVtools.WPF
             _issuesSliderCanvas.Children.Clear();
             if (Issues is null || Issues.Count == 0) return;
 
-            var tickFrequencySize = _issuesSliderCanvas.Bounds.Height * LayerSlider.TickFrequency / (LayerSlider.Maximum - LayerSlider.Minimum);
+            var tickFrequencySize = _issuesSliderCanvas.Bounds.Height * LayerSlider.TickFrequency / LayerSlider.Maximum;
             var stroke = (int)Math.Ceiling(tickFrequencySize);
 
             var colorDictionary = GetIssueColors(true);
 
             for (int layerIndex = 0; layerIndex < SlicerFile.LayerCount; layerIndex++)
             {
+                var color = Brushes.Red;
+
                 var issue = Issues
                     .Where(issue => issue.LayerIndex == layerIndex)
                     .OrderBy(issue => issue.Type)
@@ -603,8 +605,7 @@ namespace UVtools.WPF
 
                 if(issue is null) continue;
 
-                var color = Brushes.Red;
-                colorDictionary.TryGetValue(issue.Type, out color);
+                if(Settings.LayerPreview.UseIssueColorOnTracker) colorDictionary.TryGetValue(issue.Type, out color);
 
                 var yPos = tickFrequencySize * layerIndex;
                 if (layerIndex == 0 && stroke > 3)
@@ -619,6 +620,7 @@ namespace UVtools.WPF
                 _issuesSliderCanvas.Children.Add(line);
                 Canvas.SetBottom(line, yPos);
             }
+            
             /*var issuesCountPerLayer = GetIssuesCountPerLayer();
             if (issuesCountPerLayer is null)
             {

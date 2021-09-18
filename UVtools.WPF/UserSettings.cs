@@ -228,6 +228,7 @@ namespace UVtools.WPF
             private Color _bothLayerDifferenceColor = new(255, 246, 240, 216);
             private bool _showLayerDifference = false;
             private bool _layerDifferenceHighlightSimilarityInstead = false;
+            private bool _useIssueColorOnTracker = true;
             private Color _islandColor = new(255, 255, 255, 0); 
             private Color _islandHighlightColor = new(255, 255, 215, 0);
             private Color _overhangColor = new(255, 255, 105, 180);
@@ -249,7 +250,7 @@ namespace UVtools.WPF
             private bool _autoFlipLayerIfMirrored = true;
             private bool _layerZoomToFitOnLoad = true;
             private bool _showBackgroudGrid;
-
+            
             public Color TooltipOverlayBackgroundColor
             {
                 get => _tooltipOverlayBackgroundColor;
@@ -514,6 +515,12 @@ namespace UVtools.WPF
             {
                 get => _layerDifferenceHighlightSimilarityInstead;
                 set => RaiseAndSetIfChanged(ref _layerDifferenceHighlightSimilarityInstead, value);
+            }
+
+            public bool UseIssueColorOnTracker
+            {
+                get => _useIssueColorOnTracker;
+                set => RaiseAndSetIfChanged(ref _useIssueColorOnTracker, value);
             }
 
             public Color IslandColor
