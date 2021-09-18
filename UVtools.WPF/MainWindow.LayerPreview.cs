@@ -1684,7 +1684,7 @@ namespace UVtools.WPF
             // If location clicked is within an issue, activate it.
             for (var i = 0; i < Issues.Count; i++)
             {
-                LayerIssue issue = Issues[i];
+                var issue = Issues[i];
 
                 if (issue.LayerIndex != ActualLayer) continue;
                 if (!GetTransposedIssueBounds(issue).Contains(location)) continue;
@@ -1885,7 +1885,7 @@ namespace UVtools.WPF
 
             if ((e.KeyModifiers & KeyModifiers.Control) != 0)
             {
-                Point realLocation = GetTransposedPoint(location);
+                var realLocation = GetTransposedPoint(location);
                 unsafe
                 {
                     var brightness = LayerCache.ImageSpan[LayerCache.Image.GetPixelPos(realLocation)];

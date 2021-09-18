@@ -393,6 +393,7 @@ namespace UVtools.WPF
             set
             {
                 if (!RaiseAndSetIfChanged(ref _issueSelectedIndex, value)) return;
+                IssuesGrid.ScrollIntoView(Issues[_issueSelectedIndex], null);
                 RaisePropertyChanged(nameof(IssueSelectedIndexStr));
                 RaisePropertyChanged(nameof(IssueCanGoPrevious));
                 RaisePropertyChanged(nameof(IssueCanGoNext));
