@@ -23,6 +23,7 @@ namespace UVtools.Core.Layers
         {
             Contours = contours;
             PixelsCount = (uint)area;
+            FirstPoint = contours[0][0];
         }
 
         public IssueOfContours(Layer layer, Point[][] contours, Rectangle boundingRectangle = default) : this(layer, contours, boundingRectangle, boundingRectangle.Area())

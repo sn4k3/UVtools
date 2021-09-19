@@ -950,8 +950,10 @@ namespace UVtools.WPF
 
                 if (_showLayerImageIssues && SlicerFile.IssueManager.Count > 0)
                 {
+                    //var count = 0;
                     foreach (var issue in SlicerFile.IssueManager.GetIssuesBy(_actualLayer).Where(issue => issue.Parent.Type is not MainIssue.IssueType.PrintHeight and not MainIssue.IssueType.EmptyLayer))
                     {
+                        //count++;
                         var color = Color.Empty;
                         bool drawCrosshair = false;
 
@@ -1000,28 +1002,38 @@ namespace UVtools.WPF
                             DrawCrosshair(issue.BoundingRectangle);
                         }
 
-                        if (issue is IssueOfContours issueOfContours)
+                        /*var point = issue.FirstPoint;
+                        if (!point.IsBothNegative())
                         {
-                            using var vec = new VectorOfVectorOfPoint(issueOfContours.Contours);
-                            CvInvoke.DrawContours(LayerCache.ImageBgr, vec, -1, new MCvScalar(color.B, color.G, color.R), -1);
-                            continue;
-                        }
+                            CvInvoke.PutText(LayerCache.ImageBgr, count.ToString(), point, FontFace.HersheyDuplex, 2, new MCvScalar(0,255,0), 2, LineType.AntiAlias);
+                        }*/
 
-                        if (issue is IssueOfPoints issueOfPoints)
+                        switch (issue)
                         {
-                            foreach (var pixel in issueOfPoints.Points)
+                            case IssueOfContours issueOfContours:
                             {
-                                int pixelPos = LayerCache.Image.GetPixelPos(pixel);
-                                byte brightness = imageSpan[pixelPos];
-                                if (brightness == 0) continue;
+                                using var vec = new VectorOfVectorOfPoint(issueOfContours.Contours);
+                                CvInvoke.DrawContours(LayerCache.ImageBgr, vec, -1, new MCvScalar(color.B, color.G, color.R), -1);
+                                break;
+                            }
+                            case IssueOfPoints issueOfPoints:
+                            {
+                                foreach (var pixel in issueOfPoints.Points)
+                                {
+                                    int pixelPos = LayerCache.Image.GetPixelPos(pixel);
+                                    byte brightness = imageSpan[pixelPos];
+                                    if (brightness == 0) continue;
 
-                                int pixelBgrPos = pixelPos * LayerCache.ImageBgr.NumberOfChannels;
+                                    int pixelBgrPos = pixelPos * LayerCache.ImageBgr.NumberOfChannels;
 
-                                var newColor = color.FactorColor(brightness, 80);
+                                    var newColor = color.FactorColor(brightness, 80);
 
-                                imageBgrSpan[pixelBgrPos] = newColor.B; // B
-                                imageBgrSpan[pixelBgrPos + 1] = newColor.G; // G
-                                imageBgrSpan[pixelBgrPos + 2] = newColor.R; // R
+                                    imageBgrSpan[pixelBgrPos] = newColor.B; // B
+                                    imageBgrSpan[pixelBgrPos + 1] = newColor.G; // G
+                                    imageBgrSpan[pixelBgrPos + 2] = newColor.R; // R
+                                }
+
+                                break;
                             }
                         }
                         

@@ -1452,7 +1452,11 @@ namespace UVtools.WPF
         {
             get
             {
-                var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), About.Software);
+                var folder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+                if (string.IsNullOrWhiteSpace(folder)) folder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+                if (string.IsNullOrWhiteSpace(folder)) folder = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData);
+                if (string.IsNullOrWhiteSpace(folder)) folder = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+                var path = Path.Combine(folder, About.Software);
                 try
                 {
                     if (!Directory.Exists(path))
@@ -1696,6 +1700,8 @@ namespace UVtools.WPF
             catch (Exception e)
             {
                 Debug.WriteLine(e.Message);
+                Console.WriteLine(e.Message);
+                //File.WriteAllText(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), "uvtools.txt"), e.Message);
                 Reset();
             }
         }

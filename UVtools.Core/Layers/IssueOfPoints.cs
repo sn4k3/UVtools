@@ -22,6 +22,7 @@ namespace UVtools.Core.Layers
         {
             Points = points;
             PixelsCount = (uint)points.Length;
+            FirstPoint = points[0];
         }
 
         private bool Equals(IssueOfPoints other)

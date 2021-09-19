@@ -46,6 +46,8 @@ namespace UVtools.Core.Layers
         /// </summary>
         public double Area { get; init; }
 
+        public Point FirstPoint { get; init; } = new(-1,-1);
+
         public Issue(Layer layer, Rectangle boundingRectangle, double area)
         {
             Layer = layer;
