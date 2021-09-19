@@ -1,4 +1,5 @@
 ﻿using System;
+using UVtools.Core.Layers;
 
 namespace UVtools.Core.Objects
 {

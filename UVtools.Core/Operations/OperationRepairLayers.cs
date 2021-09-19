@@ -22,6 +22,8 @@ using Emgu.CV.Util;
 using UVtools.Core.EmguCV;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
+using UVtools.Core.Layers;
+using UVtools.Core.Managers;
 using UVtools.Core.PixelEditor;
 
 namespace UVtools.Core.Operations
@@ -149,8 +151,6 @@ namespace UVtools.Core.Operations
         [XmlIgnore]
         public IslandDetectionConfiguration IslandDetectionConfig { get; set; }
 
-        [XmlIgnore]
-        public List<LayerIssue> Issues { get; set; }
         #endregion
 
         #region Methods
@@ -158,8 +158,8 @@ namespace UVtools.Core.Operations
         protected override bool ExecuteInternally(OperationProgress progress)
         {
             // Remove islands
-            if (Issues is not null
-                && IslandDetectionConfig is not null
+            if (//Issues is not null
+                IslandDetectionConfig is not null
                 && _repairIslands
                 && _removeIslandsBelowEqualPixelCount > 0
                 && _removeIslandsRecursiveIterations != 1)
@@ -169,7 +169,9 @@ namespace UVtools.Core.Operations
                     ? ushort.MaxValue
                     : _removeIslandsRecursiveIterations;
 
-                var recursiveIssues = Issues;
+                var issues = SlicerFile.IssueManager.ToList();
+
+                var recursiveIssues = issues.ToList();
                 var islandsToRecompute = new ConcurrentBag<uint>();
                 var islandConfig = IslandDetectionConfig.Clone();
                 var overhangConfig = new OverhangDetectionConfiguration(false);
@@ -189,15 +191,14 @@ namespace UVtools.Core.Operations
                             .Select(grp => grp.First())
                             .ToList();*/
                         islandConfig.WhiteListLayers = islandsToRecompute.ToList();
-                        recursiveIssues = SlicerFile.LayerManager.GetAllIssues(islandConfig, overhangConfig, resinTrapsConfig, touchingBoundsConfig, printHeightConfig, emptyLayersConfig);
+                        recursiveIssues = SlicerFile.IssueManager.DetectIssues(islandConfig, overhangConfig, resinTrapsConfig, touchingBoundsConfig, printHeightConfig, emptyLayersConfig);
                         //Debug.WriteLine(i);
                     }
 
-                    var issuesGroup =
-                        recursiveIssues
-                        .Where(issue => issue.Type == LayerIssue.IssueType.Island &&
-                                        issue.Pixels.Length <= RemoveIslandsBelowEqualPixelCount)
+                    var issuesGroup = IssueManager.GetIssuesBy(recursiveIssues, MainIssue.IssueType.Island)
+                        .Where(issue => issue.PixelsCount <= RemoveIslandsBelowEqualPixelCount)
                         .GroupBy(issue => issue.LayerIndex);
+                        
 
                     if (!issuesGroup.Any()) break; // Nothing to process
 
@@ -208,9 +209,9 @@ namespace UVtools.Core.Operations
                         var layer = SlicerFile[group.Key];
                         var image = layer.LayerMat;
                         var bytes = image.GetDataByteSpan();
-                        foreach (var issue in group)
+                        foreach (IssueOfPoints issue in group)
                         {
-                            foreach (var issuePixel in issue.Pixels)
+                            foreach (var issuePixel in issue.Points)
                             {
                                 bytes[image.GetPixelPos(issuePixel)] = 0;
                             }
@@ -226,7 +227,7 @@ namespace UVtools.Core.Operations
                     });
 
                     // Remove from main list due the replicate below repair
-                    Issues.RemoveAll(issue => issue.Type == LayerIssue.IssueType.Island && issue.Pixels.Length <= RemoveIslandsBelowEqualPixelCount);
+                    issues.RemoveAll(mainIssue => mainIssue.Type == MainIssue.IssueType.Island && mainIssue.Area <= RemoveIslandsBelowEqualPixelCount);
 
                     if (islandsToRecompute.IsEmpty) break; // No more leftovers
                 }
@@ -234,9 +235,9 @@ namespace UVtools.Core.Operations
 
             if (_repairIslands && _attachIslandsBelowLayers > 0)
             {
-                var islandsToProcess = Issues;
+                var islandsToProcess = SlicerFile.IssueManager.ToList();
 
-                if (islandsToProcess is null)
+                if (islandsToProcess.Count == 0)
                 {
                     var islandConfig = IslandDetectionConfig.Clone();
                     var overhangConfig = new OverhangDetectionConfiguration(false);
@@ -247,14 +248,11 @@ namespace UVtools.Core.Operations
 
                     islandConfig.Enabled = true;
 
-                    islandsToProcess = SlicerFile.LayerManager.GetAllIssues(islandConfig, overhangConfig, resinTrapsConfig, touchingBoundsConfig, printHeightConfig, emptyLayersConfig, null, progress);
+                    islandsToProcess = SlicerFile.IssueManager.DetectIssues(islandConfig, overhangConfig, resinTrapsConfig, touchingBoundsConfig, printHeightConfig, emptyLayersConfig, progress);
                 }
 
-                var issuesGroup =
-                    islandsToProcess
-                        .Where(issue => issue.Type == LayerIssue.IssueType.Island)
-                        .GroupBy(issue => issue.LayerIndex);
-
+                var issuesGroup = IssueManager.GetIssuesBy(islandsToProcess, MainIssue.IssueType.Island)
+                    .GroupBy(issue => issue.LayerIndex);
 
                 progress.Reset("Attempt to attach islands below", (uint) islandsToProcess.Count);
                 Parallel.ForEach(issuesGroup, CoreSettings.ParallelOptions, group =>
@@ -274,7 +272,7 @@ namespace UVtools.Core.Operations
                         matCacheModified.Add((uint) layerIndex, false);
                     }
 
-                    foreach (var issue in group)
+                    foreach (IssueOfPoints issue in group)
                     {
                         int foundAt = startLayer == 0 ? 0 : - 1;
                         var requiredSupportingPixels = Math.Max(1, issue.PixelsCount * IslandDetectionConfig.RequiredPixelsToSupportMultiplier);
@@ -286,13 +284,11 @@ namespace UVtools.Core.Operations
                             unsafe
                             {
                                 var span = matCache[(uint) layerIndex].GetBytePointer();
-                                foreach (var point in issue.Pixels)
+
+                                foreach (var point in issue.Points)
                                 {
-                                    if (span[mat.GetPixelPos(point)] <
-                                        IslandDetectionConfig.RequiredPixelBrightnessToSupport)
-                                    {
+                                    if (span[mat.GetPixelPos(point)] < IslandDetectionConfig.RequiredPixelBrightnessToSupport)
                                         continue;
-                                    }
 
                                     pixelsSupportingIsland++;
 
@@ -302,6 +298,7 @@ namespace UVtools.Core.Operations
                                         break;
                                     }
                                 }
+                                
                             }
                         }
 
@@ -314,10 +311,11 @@ namespace UVtools.Core.Operations
                                 unsafe
                                 {
                                     var span = matCache[(uint) layerIndex].GetBytePointer();
-                                    foreach (var point in issue.Pixels)
+
+                                    foreach (var point in issue.Points)
                                     {
                                         var pos = mat.GetPixelPos(point);
-                                        span[pos] = (byte) Math.Min(span[pos] + matSpan[pos], byte.MaxValue);
+                                        span[pos] = (byte)Math.Min(span[pos] + matSpan[pos], byte.MaxValue);
                                     }
                                 }
                             }
@@ -353,23 +351,20 @@ namespace UVtools.Core.Operations
                         image ??= layer.LayerMat;
                     }
 
-                    if (Issues is not null)
+                    if (SlicerFile.IssueManager.Count > 0)
                     {
                         if (_repairIslands && _removeIslandsBelowEqualPixelCount > 0 && _removeIslandsRecursiveIterations == 1)
                         {
                             Span<byte> bytes = null;
-                            foreach (var issue in Issues)
+                            foreach (IssueOfPoints issue in SlicerFile.IssueManager.GetIssuesBy(MainIssue.IssueType.Island, (uint)layerIndex))
                             {
-                                if (
-                                    issue.LayerIndex != layerIndex ||
-                                    issue.Type != LayerIssue.IssueType.Island ||
-                                    issue.Pixels.Length > _removeIslandsBelowEqualPixelCount) continue;
+                                if (issue.PixelsCount > _removeIslandsBelowEqualPixelCount) continue;
 
                                 initImage();
                                 if (bytes == null)
                                     bytes = image.GetDataSpan<byte>();
 
-                                foreach (var issuePixel in issue.Pixels)
+                                foreach (var issuePixel in issue.Points)
                                 {
                                     bytes[image.GetPixelPos(issuePixel)] = 0;
                                 }
@@ -378,7 +373,7 @@ namespace UVtools.Core.Operations
 
                         if (_repairResinTraps)
                         {
-                            foreach (var issue in Issues.Where(issue => issue.LayerIndex == layerIndex && issue.Type == LayerIssue.IssueType.ResinTrap))
+                            foreach (IssueOfContours issue in SlicerFile.IssueManager.GetIssuesBy(MainIssue.IssueType.ResinTrap, (uint)layerIndex))
                             {
                                 initImage();
                                 using var vec = new VectorOfVectorOfPoint(issue.Contours);
@@ -420,36 +415,39 @@ namespace UVtools.Core.Operations
             }
 
 
-            if (_repairSuctionCups && Issues is not null)
+            if (_repairSuctionCups && SlicerFile.IssueManager.Count > 0)
             {
                 /* build out parent/child relationships between all detected suction cups */
 
-                var bottomSuctionIssues = new ConcurrentBag<LayerIssue>();
-
-                Parallel.ForEach(Issues.Where(issue => issue.Type == LayerIssue.IssueType.SuctionCup), issue => {
-
+                var bottomSuctionIssues = new ConcurrentBag<IssueOfContours>();
+                var suctionCups = SlicerFile.IssueManager.GetIssuesBy(MainIssue.IssueType.SuctionCup);
+                Parallel.ForEach(suctionCups, issue =>
+                {
+                    var issueOfContours = (IssueOfContours)issue;
                     if (issue.LayerIndex == 0)
                     {
-                        bottomSuctionIssues.Add(issue);
+                        bottomSuctionIssues.Add(issueOfContours);
                         return;
                     }
 
                     bool overlapFound = false;
                     
-                    foreach(var candidate in Issues.Where(candidate => candidate.LayerIndex == issue.LayerIndex - 1 && candidate.Type  == LayerIssue.IssueType.SuctionCup))
+                    foreach(IssueOfContours candidate in suctionCups.Where(candidate => candidate.LayerIndex == issue.LayerIndex - 1))
                     {
-                        if (EmguContours.ContoursIntersect(new VectorOfVectorOfPoint(issue.Contours), new VectorOfVectorOfPoint(candidate.Contours))) {
+                        using var vec1 = new VectorOfVectorOfPoint(issueOfContours.Contours);
+                        using var vec2 = new VectorOfVectorOfPoint(candidate.Contours);
+                        if (EmguContours.ContoursIntersect(vec1, vec2)) {
                             overlapFound = true;
                             break;
                         }
                     }
                     if (!overlapFound)
                     {
-                        bottomSuctionIssues.Add(issue);
+                        bottomSuctionIssues.Add(issueOfContours);
                     }
                 });
 
-                (bool canDrill, Point location) GetDrillLocation(LayerIssue issue, int diameter)
+                (bool canDrill, Point location) GetDrillLocation(IssueOfContours issue, int diameter)
                 {
                     using var vecCentroid = new VectorOfPoint(issue.Contours[0]);
                     var centroid = EmguContour.GetCentroid(vecCentroid);

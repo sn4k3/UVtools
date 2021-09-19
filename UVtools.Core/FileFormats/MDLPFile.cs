@@ -20,6 +20,7 @@ using Emgu.CV;
 using Emgu.CV.CvEnum;
 using MoreLinq;
 using UVtools.Core.Extensions;
+using UVtools.Core.Layers;
 using UVtools.Core.Operations;
 
 namespace UVtools.Core.FileFormats

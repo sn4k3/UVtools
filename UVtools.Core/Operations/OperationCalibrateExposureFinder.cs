@@ -22,6 +22,7 @@ using Emgu.CV.Util;
 using MoreLinq;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
+using UVtools.Core.Layers;
 using UVtools.Core.Objects;
 
 namespace UVtools.Core.Operations

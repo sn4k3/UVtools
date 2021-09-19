@@ -11,8 +11,8 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using Org.BouncyCastle.Asn1.X509;
 using QuantumConcepts.Formats.StereoLithography;
+using UVtools.Core.Layers;
 
 namespace UVtools.Core.Slicer
 {

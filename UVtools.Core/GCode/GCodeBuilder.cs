@@ -18,6 +18,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
+using UVtools.Core.Layers;
 using UVtools.Core.Objects;
 using UVtools.Core.Operations;
 

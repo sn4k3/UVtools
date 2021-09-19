@@ -13,6 +13,7 @@ using System.Text;
 using MoreLinq.Extensions;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
+using UVtools.Core.Layers;
 
 namespace UVtools.Core.Operations
 {

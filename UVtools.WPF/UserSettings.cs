@@ -781,6 +781,8 @@ namespace UVtools.WPF
             private bool _computeTouchingBounds = true;
             private bool _computePrintHeight = true;
             private bool _computeEmptyLayers = true;
+            private bool _dataGridGroupByType = true;
+            private bool _dataGridGroupByLayerIndex;
             private bool _islandEnhancedDetection = true;
             private bool _islandAllowDiagonalBonds;
             private byte _islandBinaryThreshold;
@@ -862,6 +864,18 @@ namespace UVtools.WPF
             {
                 get => _computeEmptyLayers;
                 set => RaiseAndSetIfChanged(ref _computeEmptyLayers, value);
+            }
+
+            public bool DataGridGroupByType
+            {
+                get => _dataGridGroupByType;
+                set => RaiseAndSetIfChanged(ref _dataGridGroupByType, value);
+            }
+
+            public bool DataGridGroupByLayerIndex
+            {
+                get => _dataGridGroupByLayerIndex;
+                set => RaiseAndSetIfChanged(ref _dataGridGroupByLayerIndex, value);
             }
 
             public bool IslandEnhancedDetection

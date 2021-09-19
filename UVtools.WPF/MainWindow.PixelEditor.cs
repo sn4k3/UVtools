@@ -23,6 +23,7 @@ using MessageBox.Avalonia.Enums;
 using SkiaSharp;
 using UVtools.Core;
 using UVtools.Core.Extensions;
+using UVtools.Core.Layers;
 using UVtools.Core.PixelEditor;
 using UVtools.WPF.Extensions;
 using DrawingExtensions = UVtools.Core.Extensions.DrawingExtensions;
@@ -81,7 +82,7 @@ namespace UVtools.WPF
         private void DrawingsGridOnCellPointerPressed(object? sender, DataGridCellPointerPressedEventArgs e)
         {
             if (e.PointerPressedEventArgs.ClickCount == 2) return;
-            if (DrawingsGrid.SelectedItem is not LayerIssue) return;
+            if (DrawingsGrid.SelectedItem is not MainIssue) return;
             // Double clicking an issue will center and zoom into the 
             // selected issue. Left click on an issue will zoom to fit.
 

@@ -28,6 +28,7 @@ using UVtools.AvaloniaControls;
 using UVtools.Core;
 using UVtools.Core.EmguCV;
 using UVtools.Core.Extensions;
+using UVtools.Core.Layers;
 using UVtools.Core.PixelEditor;
 using UVtools.WPF.Extensions;
 using UVtools.WPF.Structures;
@@ -117,13 +118,14 @@ namespace UVtools.WPF
             
             LayerImageBox.GetObservable(AdvancedImageBox.ZoomProperty).Subscribe(zoom =>
             {
+                if (!IsFileLoaded) return;
                 var newZoom = zoom;
                 var oldZoom = LayerImageBox.OldZoom;
                 RaisePropertyChanged(nameof(LayerZoomStr));
                 AddLogVerbose($"Zoomed from {oldZoom} to {newZoom}");
                 
                 if (_showLayerImageCrosshairs &&
-                    Issues.Count > 0 &&
+                    SlicerFile.IssueManager.Count > 0 &&
                     (oldZoom < 50 &&
                      newZoom >= 50 // Trigger refresh as crosshair thickness increases at lower zoom levels
                      || oldZoom > 100 && newZoom <= 100
@@ -136,17 +138,16 @@ namespace UVtools.WPF
                 {
                     if (Settings.LayerPreview.CrosshairShowOnlyOnSelectedIssues)
                     {
-                        if (IssuesGrid.SelectedItems.Count == 0 || !IssuesGrid.SelectedItems.Cast<LayerIssue>().Any(
-                            issue => // Find a valid candidate to update layer preview, otherwise quit
-                                issue.LayerIndex == _actualLayer && issue.Type != LayerIssue.IssueType.EmptyLayer &&
-                                issue.Type != LayerIssue.IssueType.TouchingBound)) return;
+                        if (IssuesGrid.SelectedItems.Count == 0 || !IssuesGrid.SelectedItems.Cast<MainIssue>().Any(
+                            mainIssue => // Find a valid candidate to update layer preview, otherwise quit
+                                mainIssue.IsIssueInBetween(_actualLayer) 
+                                && mainIssue.Type is not MainIssue.IssueType.EmptyLayer and not MainIssue.IssueType.TouchingBound)) return;
                     }
                     else
                     {
-                        if (!Issues.Any(
-                            issue => // Find a valid candidate to update layer preview, otherwise quit
-                                issue.LayerIndex == _actualLayer && issue.Type != LayerIssue.IssueType.EmptyLayer &&
-                                issue.Type != LayerIssue.IssueType.TouchingBound)) return;
+                        if (!SlicerFile.IssueManager.Any(
+                            mainIssue => // Find a valid candidate to update layer preview, otherwise quit
+                                mainIssue.IsIssueInBetween(_actualLayer) && mainIssue.Type is not MainIssue.IssueType.EmptyLayer and not MainIssue.IssueType.TouchingBound)) return;
                     }
 
                     // A timer is used here rather than invoking ShowLayer directly to eliminate sublte visual flashing
@@ -947,48 +948,45 @@ namespace UVtools.WPF
 
                 var selectedIssues = IssuesGrid.SelectedItems;
 
-                if (_showLayerImageIssues && Issues.Count > 0)
+                if (_showLayerImageIssues && SlicerFile.IssueManager.Count > 0)
                 {
-                    foreach (var issue in Issues)
+                    foreach (var issue in SlicerFile.IssueManager.GetIssuesBy(_actualLayer).Where(issue => issue.Parent.Type is not MainIssue.IssueType.PrintHeight and not MainIssue.IssueType.EmptyLayer))
                     {
-                        if (issue.LayerIndex != ActualLayer) continue;
-                        if (!issue.HaveValidPoint) continue;
-
                         var color = Color.Empty;
                         bool drawCrosshair = false;
 
-                        switch (issue.Type)
+                        switch (issue.Parent.Type)
                         {
-                            case LayerIssue.IssueType.Island:
+                            case MainIssue.IssueType.Island:
                                 color = selectedIssues.Count > 0 && selectedIssues.Contains(issue)
                                     ? Settings.LayerPreview.IslandHighlightColor
                                     : Settings.LayerPreview.IslandColor;
                                 drawCrosshair = true;
 
                                 break;
-                            case LayerIssue.IssueType.Overhang:
+                            case MainIssue.IssueType.Overhang:
                                 color = selectedIssues.Count > 0 && selectedIssues.Contains(issue)
                                     ? Settings.LayerPreview.OverhangHighlightColor
                                     : Settings.LayerPreview.OverhangColor;
                                 drawCrosshair = true;
 
                                 break;
-                            case LayerIssue.IssueType.ResinTrap:
+                            case MainIssue.IssueType.ResinTrap:
                                 color = selectedIssues.Count > 0 && selectedIssues.Contains(issue)
                                     ? Settings.LayerPreview.ResinTrapHighlightColor
                                     : Settings.LayerPreview.ResinTrapColor;
                                 drawCrosshair = true;
                                 break;
-                            case LayerIssue.IssueType.SuctionCup:
+                            case MainIssue.IssueType.SuctionCup:
                                 color = selectedIssues.Count > 0 && selectedIssues.Contains(issue)
                                     ? Settings.LayerPreview.SuctionCupHighlightColor
                                     : Settings.LayerPreview.SuctionCupColor;
                                 drawCrosshair = true;
                                 break;
-                            case LayerIssue.IssueType.TouchingBound:
+                            case MainIssue.IssueType.TouchingBound:
                                 color = Settings.LayerPreview.TouchingBoundsColor;
                                 break;
-                            case LayerIssue.IssueType.Debug:
+                            case MainIssue.IssueType.Debug:
                                 color = new Color(255, 15, 112, 16);
                                 break;
                         }
@@ -1002,28 +1000,31 @@ namespace UVtools.WPF
                             DrawCrosshair(issue.BoundingRectangle);
                         }
 
-                        if (issue.Contours is not null)
+                        if (issue is IssueOfContours issueOfContours)
                         {
-                            using var vec = new VectorOfVectorOfPoint(issue.Contours);
+                            using var vec = new VectorOfVectorOfPoint(issueOfContours.Contours);
                             CvInvoke.DrawContours(LayerCache.ImageBgr, vec, -1, new MCvScalar(color.B, color.G, color.R), -1);
                             continue;
                         }
 
-                        if (issue.Pixels is null) continue;
-                        foreach (var pixel in issue.Pixels)
+                        if (issue is IssueOfPoints issueOfPoints)
                         {
-                            int pixelPos = LayerCache.Image.GetPixelPos(pixel);
-                            byte brightness = imageSpan[pixelPos];
-                            if (brightness == 0) continue;
+                            foreach (var pixel in issueOfPoints.Points)
+                            {
+                                int pixelPos = LayerCache.Image.GetPixelPos(pixel);
+                                byte brightness = imageSpan[pixelPos];
+                                if (brightness == 0) continue;
 
-                            int pixelBgrPos = pixelPos * LayerCache.ImageBgr.NumberOfChannels;
+                                int pixelBgrPos = pixelPos * LayerCache.ImageBgr.NumberOfChannels;
 
-                            var newColor = color.FactorColor(brightness, 80);
+                                var newColor = color.FactorColor(brightness, 80);
 
-                            imageBgrSpan[pixelBgrPos] = newColor.B; // B
-                            imageBgrSpan[pixelBgrPos + 1] = newColor.G; // G
-                            imageBgrSpan[pixelBgrPos + 2] = newColor.R; // R
+                                imageBgrSpan[pixelBgrPos] = newColor.B; // B
+                                imageBgrSpan[pixelBgrPos + 1] = newColor.G; // G
+                                imageBgrSpan[pixelBgrPos + 2] = newColor.R; // R
+                            }
                         }
+                        
                     }
                 }
 
@@ -1248,7 +1249,7 @@ namespace UVtools.WPF
                 // Even when enabled, crosshairs are hidden in pixel edit mode when SHIFT is pressed.
                 if (_showLayerImageCrosshairs &&
                     Settings.LayerPreview.CrosshairShowOnlyOnSelectedIssues &&
-                    Issues.Count > 0 &&
+                    SlicerFile.IssueManager.Count > 0 &&
                     IssuesGrid.SelectedItems.Count > 0 &&
                     LayerImageBox.Zoom <=
                     AppSettings.CrosshairFadeLevel && // Only draw crosshairs when zoom level is below the configurable crosshair fade threshold.
@@ -1256,14 +1257,17 @@ namespace UVtools.WPF
                 {
 
 
-                    foreach (LayerIssue issue in selectedIssues)
+                    foreach (MainIssue mainIssue in selectedIssues)
                     {
                         // Don't render crosshairs for selected issue that are not on the current layer, or for 
                         // issue types that don't have a specific location or bounds.
-                        if (issue.LayerIndex != ActualLayer || issue.Type is LayerIssue.IssueType.EmptyLayer or LayerIssue.IssueType.TouchingBound)
-                            continue;
+                        foreach (var issue in SlicerFile.IssueManager.GetIssuesBy(_actualLayer)
+                            .Where(issue => issue.Parent.Type is not MainIssue.IssueType.PrintHeight and not MainIssue.IssueType.EmptyLayer))
+                        {
+                            DrawCrosshair(issue.BoundingRectangle);
+                        }
 
-                        DrawCrosshair(issue.BoundingRectangle);
+                        
                     }
                 }
 
@@ -1492,11 +1496,13 @@ namespace UVtools.WPF
         /// preview image is rotated.  Used to ensure images are properly zoomed or
         /// centered independent of the layer preview rotation.
         /// </summary>
-        private Rectangle GetTransposedIssueBounds(LayerIssue issue)
+        private Rectangle GetTransposedIssueBounds(Issue issue)
         {
-            if (issue.X >= 0 && issue.Y >= 0 && (issue.BoundingRectangle.IsEmpty || issue.PixelsCount == 1))
-                return new Rectangle(GetTransposedPoint(issue.FirstPoint, true), new Size(1, 1));
-            //return new Rectangle(LayerCache.Image.Height - 1 - issue.Y, issue.X, 1, 1);
+            if (issue.BoundingRectangle.IsEmpty /*|| issue.PixelsCount == 1*/)
+            {
+                return GetTransposedRectangle(LayerCache.Layer.BoundingRectangle);
+            }
+            //return new Rectangle(GetTransposedPoint(issue.FirstPoint, true), new Size(1, 1));
 
             return GetTransposedRectangle(issue.BoundingRectangle);
         }
@@ -1565,16 +1571,15 @@ namespace UVtools.WPF
         /// Zoom the layer preview to the passed issue, or if appropriate for issue type,
         /// Zoom to fit the plate or print bounds.
         /// </summary>
-        private void ZoomToIssue(LayerIssue issue)
+        private void ZoomToIssue(Issue issue)
         {
-            if (issue.Type == LayerIssue.IssueType.TouchingBound || issue.Type == LayerIssue.IssueType.EmptyLayer ||
-                (issue.X == -1 && issue.Y == -1))
+            if (issue.Parent.Type is MainIssue.IssueType.TouchingBound or MainIssue.IssueType.EmptyLayer || issue.BoundingRectangle.IsEmpty)
             {
                 ZoomToFit();
                 return;
             }
 
-            if (issue.X >= 0 && issue.Y >= 0)
+            if (!issue.BoundingRectangle.IsEmpty)
             {
                 // Check to see if this zoom action will cross the crosshair fade threshold
                 /*if (tsLayerImageShowCrosshairs.Checked && !ReferenceEquals(Issues, null) && flvIssues.SelectedIndices.Count > 0
@@ -1598,14 +1603,14 @@ namespace UVtools.WPF
         /// Center the layer preview on the passed issue, or if appropriate for issue type,
         /// Zoom to fit the plate or print bounds.
         /// </summary>
-        private void CenterAtIssue(LayerIssue issue)
+        private void CenterAtIssue(Issue issue)
         {
-            if (issue.Type is LayerIssue.IssueType.TouchingBound or LayerIssue.IssueType.EmptyLayer || (issue.X == -1 && issue.Y == -1))
+            if (issue.Parent.Type is MainIssue.IssueType.TouchingBound or MainIssue.IssueType.EmptyLayer || issue.BoundingRectangle.IsEmpty)
             {
                 ZoomToFit();
             }
 
-            if (issue.X >= 0 && issue.Y >= 0)
+            if (!issue.BoundingRectangle.IsEmpty)
             {
                 CenterLayerAt(GetTransposedIssueBounds(issue));
             }
@@ -1682,14 +1687,11 @@ namespace UVtools.WPF
         {
             //location = GetTransposedPoint(location);
             // If location clicked is within an issue, activate it.
-            for (var i = 0; i < Issues.Count; i++)
+            foreach (var issue in SlicerFile.IssueManager.GetIssuesBy(_actualLayer))
             {
-                var issue = Issues[i];
-
-                if (issue.LayerIndex != ActualLayer) continue;
                 if (!GetTransposedIssueBounds(issue).Contains(location)) continue;
 
-                IssueSelectedIndex = i;
+                IssuesGrid.SelectedItem = issue.Parent;
                 SelectedTabItem = TabIssues;
                 break;
             }

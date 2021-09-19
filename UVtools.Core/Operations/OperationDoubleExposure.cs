@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using UVtools.Core.FileFormats;
+using UVtools.Core.Layers;
 
 namespace UVtools.Core.Operations
 {

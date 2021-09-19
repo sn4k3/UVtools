@@ -6,15 +6,14 @@
  *  of this license document, but changing it is not allowed.
  */
 
-using System;
 using Avalonia.Media.Imaging;
 using Avalonia.Skia;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Util;
 using SkiaSharp;
-using UVtools.Core;
 using UVtools.Core.Extensions;
+using UVtools.Core.Layers;
 
 namespace UVtools.WPF
 {

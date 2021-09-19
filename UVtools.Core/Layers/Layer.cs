@@ -5,9 +5,11 @@
  *  Everyone is permitted to copy and distribute verbatim copies
  *  of this license document, but changing it is not allowed.
  */
+
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
@@ -15,9 +17,8 @@ using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Objects;
 using UVtools.Core.Operations;
-using Stream = System.IO.Stream;
 
-namespace UVtools.Core
+namespace UVtools.Core.Layers
 {
     /// <summary>
     /// Represent a Layer

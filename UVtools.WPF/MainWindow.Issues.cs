@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
+using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
 using Avalonia.Input;
@@ -17,12 +18,13 @@ using Avalonia.Media;
 using Avalonia.Media.Immutable;
 using Avalonia.Threading;
 using Emgu.CV;
-using Emgu.CV.Structure;
 using Emgu.CV.Util;
 using MessageBox.Avalonia.Enums;
+using MoreLinq;
 using UVtools.Core;
 using UVtools.Core.EmguCV;
 using UVtools.Core.Extensions;
+using UVtools.Core.Layers;
 using UVtools.Core.Operations;
 using UVtools.WPF.Extensions;
 using Brushes = Avalonia.Media.Brushes;
@@ -32,7 +34,6 @@ namespace UVtools.WPF
     public partial class MainWindow
     {
         #region Members
-        private RangeObservableCollection<LayerIssue> _issues = new();
         private bool _firstTimeOnIssues = true;
         public DataGrid IssuesGrid;
 
@@ -40,17 +41,11 @@ namespace UVtools.WPF
         #endregion
 
         #region Properties
-        public RangeObservableCollection<LayerIssue> Issues
-        {
-            get => _issues;
-            private set => RaiseAndSetIfChanged(ref _issues, value);
-        }
 
-        public readonly List<LayerIssue> IgnoredIssues = new();
         private uint _resinTrapDetectionStartLayer;
 
-        public bool IssueCanGoPrevious => Issues.Count > 0 && _issueSelectedIndex > 0;
-        public bool IssueCanGoNext => Issues.Count > 0 && _issueSelectedIndex < Issues.Count - 1;
+        public bool IssueCanGoPrevious => IsFileLoaded && SlicerFile.IssueManager.Count > 0 && _issueSelectedIndex > 0;
+        public bool IssueCanGoNext => IsFileLoaded && SlicerFile.IssueManager.Count > 0 && _issueSelectedIndex < SlicerFile.IssueManager.Count - 1;
 
         public uint ResinTrapDetectionStartLayer
         {
@@ -68,10 +63,6 @@ namespace UVtools.WPF
             IssuesGrid.CellPointerPressed += IssuesGridOnCellPointerPressed;
             IssuesGrid.SelectionChanged += IssuesGridOnSelectionChanged;
             IssuesGrid.KeyUp += IssuesGridOnKeyUp;
-            Issues.CollectionChanged += (sender, e) =>
-            {
-                UpdateLayerTrackerHighlightIssues();
-            };
         }
 
         public void IssueGoPrevious()
@@ -86,14 +77,14 @@ namespace UVtools.WPF
             IssueSelectedIndex++;
         }
 
-        public List<LayerIssue> GetOverlappingIssues(LayerIssue targetIssue, int indexOffset)
+        public List<IssueOfContours> GetOverlappingIssues(IssueOfContours targetIssue, int indexOffset)
         {
-            var retValue = new List<LayerIssue>();
+            var retValue = new List<IssueOfContours>();
 
-            var targetLayerIndex = targetIssue.LayerIndex + indexOffset;
+            int targetLayerIndex = (int)targetIssue.LayerIndex + indexOffset;
             if (targetLayerIndex > SlicerFile.LayerCount - 1 || targetLayerIndex < 0) return retValue;
 
-            foreach (var candidate in Issues.Where(candidate => candidate.LayerIndex == targetLayerIndex && candidate.Type == LayerIssue.IssueType.SuctionCup))
+            foreach (IssueOfContours candidate in SlicerFile.IssueManager.GetIssuesBy(MainIssue.IssueType.SuctionCup, (uint)targetLayerIndex))
             {
                 using var vec1 = new VectorOfVectorOfPoint(targetIssue.Contours);
                 using var vec2 = new VectorOfVectorOfPoint(candidate.Contours);
@@ -113,25 +104,30 @@ namespace UVtools.WPF
                                     "Warning: Removing an island can cause other issues to appear if there is material present in the layers above it.\n" +
                                     "Always check previous and next layers before performing an island removal.", $"Remove {IssuesGrid.SelectedItems.Count} Issues?") != ButtonResult.Yes) return;
 
-            Dictionary<uint, List<LayerIssue>> processIssues = new();
+            Dictionary<uint, List<Issue>> processIssues = new();
             List<uint> layersRemove = new();
 
 
-            foreach (LayerIssue issue in IssuesGrid.SelectedItems)
+            foreach (MainIssue mainIssue in IssuesGrid.SelectedItems)
             {
-                if (issue.Type == LayerIssue.IssueType.TouchingBound) continue;
+                if (mainIssue.Type == MainIssue.IssueType.TouchingBound) continue;
 
-                if (!processIssues.TryGetValue(issue.Layer.Index, out var issueList))
+                foreach (var issue in mainIssue)
                 {
-                    issueList = new List<LayerIssue>();
-                    processIssues.Add(issue.Layer.Index, issueList);
+                    if (!processIssues.TryGetValue(issue.LayerIndex, out var issueList))
+                    {
+                        issueList = new List<Issue>();
+                        processIssues.Add(issue.LayerIndex, issueList);
+                    }
+
+                    issueList.Add(issue);
+                    if (mainIssue.Type == MainIssue.IssueType.EmptyLayer)
+                    {
+                        layersRemove.Add(issue.LayerIndex);
+                    }
                 }
 
-                issueList.Add(issue);
-                if (issue.Type == LayerIssue.IssueType.EmptyLayer)
-                {
-                    layersRemove.Add(issue.Layer.Index);
-                }
+                
             }
 
 
@@ -157,18 +153,20 @@ namespace UVtools.WPF
                             bool hasSuctionCups = false;
                             foreach (var issue in layerIssues.Value)
                             {
-                                if (issue.Type == LayerIssue.IssueType.Island)
+                                if (issue.Type == MainIssue.IssueType.Island)
                                 {
-                                    foreach (var pixel in issue)
+                                    var issueOfPoints = (IssueOfPoints)issue;
+                                    foreach (var pixel in issueOfPoints.Points)
                                     {
                                         bytes[image.GetPixelPos(pixel.X, pixel.Y)] = 0;
                                     }
 
                                     edited = true;
                                 }
-                                else if (issue.Type == LayerIssue.IssueType.ResinTrap)
+                                else if (issue.Type == MainIssue.IssueType.ResinTrap)
                                 {
-                                    using var contours = new VectorOfVectorOfPoint(issue.Contours);
+                                    var issueOfContours = (IssueOfContours)issue;
+                                    using var contours = new VectorOfVectorOfPoint(issueOfContours.Contours);
                                     CvInvoke.DrawContours(image, contours, -1, EmguExtensions.WhiteColor, -1);
                                     if (Settings.LayerRepair.ResinTrapsOverlapBy > 0)
                                     {
@@ -176,7 +174,7 @@ namespace UVtools.WPF
                                     }
                                     edited = true;
                                 }
-                                else if (issue.Type == LayerIssue.IssueType.SuctionCup)
+                                else if (issue.Type == MainIssue.IssueType.SuctionCup)
                                 {
                                     hasSuctionCups = true;
                                 }
@@ -223,25 +221,26 @@ namespace UVtools.WPF
             var whiteListLayers = new List<uint>();
 
             // Update GUI
-            var issueRemoveList = new List<LayerIssue>();
-            foreach (LayerIssue issue in IssuesGrid.SelectedItems)
+            var issueRemoveList = new List<MainIssue>();
+            foreach (MainIssue issue in IssuesGrid.SelectedItems)
             {
-                if (issue.Type != LayerIssue.IssueType.Island &&
-                    issue.Type != LayerIssue.IssueType.ResinTrap &&
-                    issue.Type != LayerIssue.IssueType.EmptyLayer &&
-                    issue.Type != LayerIssue.IssueType.SuctionCup) continue;
+                if (issue.Type != MainIssue.IssueType.Island &&
+                    issue.Type != MainIssue.IssueType.ResinTrap &&
+                    issue.Type != MainIssue.IssueType.EmptyLayer &&
+                    issue.Type != MainIssue.IssueType.SuctionCup) continue;
 
-                if (issue.Type == LayerIssue.IssueType.Island)
+                if (issue.Type == MainIssue.IssueType.Island)
                 {
-                    var nextLayer = issue.Layer.Index + 1;
+                    var nextLayer = issue.StartLayerIndex + 1;
                     if (nextLayer >= SlicerFile.LayerCount) continue;
                     if (whiteListLayers.Contains(nextLayer)) continue;
                     whiteListLayers.Add(nextLayer);
                 }
 
-                if (issue.Type == LayerIssue.IssueType.SuctionCup)
+                if (issue.Type == MainIssue.IssueType.SuctionCup)
                 {
-                    if (issueRemoveList.Contains(issue)) continue;
+                    // Need redo
+                    /*if (issueRemoveList.Contains(issue)) continue;
 
                     var upDirection = new Stack<LayerIssue>();
                     var downDirection = new Stack<LayerIssue>();
@@ -265,7 +264,7 @@ namespace UVtools.WPF
                             downDirection.Push(iss);
                             issueRemoveList.Add(iss);
                         }
-                    }
+                    }*/
 
                 }
 
@@ -277,7 +276,7 @@ namespace UVtools.WPF
             Clipboard.Clip($"Manually removed {issueRemoveList.Count} issues");
             
             IssuesGrid.SelectedIndex = -1;
-            Issues.RemoveRange(issueRemoveList);
+            SlicerFile.IssueManager.RemoveRange(issueRemoveList);
 
             if (layersRemove.Count > 0)
             {
@@ -297,13 +296,13 @@ namespace UVtools.WPF
         {
             if ((_globalModifiers & KeyModifiers.Alt) != 0)
             {
-                if(IgnoredIssues.Count == 0) return;
+                if(SlicerFile.IssueManager.IgnoredIssues.Count == 0) return;
                 if (await this.MessageBoxQuestion(
-                        $"Are you sure you want to re-enable {IgnoredIssues.Count} ignored issues?\n" +
-                        "A full re-detect will be required to get the ignored issues.\n", $"Re-enable {IgnoredIssues.Count} Issues?") !=
+                        $"Are you sure you want to re-enable {SlicerFile.IssueManager.IgnoredIssues.Count} ignored issues?\n" +
+                        "A full re-detect will be required to get the ignored issues.\n", $"Re-enable {SlicerFile.IssueManager.IgnoredIssues.Count} Issues?") !=
                     ButtonResult.Yes) return;
 
-                IgnoredIssues.Clear();
+                SlicerFile.IssueManager.IgnoredIssues.Clear();
 
                 return;
             }
@@ -315,10 +314,10 @@ namespace UVtools.WPF
                     "The ignored issues won't be re-detected.\n", $"Ignore {IssuesGrid.SelectedItems.Count} Issues?") !=
                 ButtonResult.Yes) return;
 
-            var list = IssuesGrid.SelectedItems.Cast<LayerIssue>().ToArray();
-            IgnoredIssues.AddRange(list);
+            var list = IssuesGrid.SelectedItems.Cast<MainIssue>().ToArray();
+            SlicerFile.IssueManager.IgnoredIssues.AddRange(list);
             IssuesGrid.SelectedItems.Clear();
-            Issues.RemoveRange(list);
+            SlicerFile.IssueManager.RemoveRange(list);
             ShowLayer();
         }
 
@@ -340,10 +339,9 @@ namespace UVtools.WPF
             ShowProgressWindow("Updating Issues");
 
 
-            var issueList = Issues.ToList();
+            var issueList = SlicerFile.IssueManager.ToList();
             issueList.RemoveAll(issue =>
-                islandConfig.WhiteListLayers.Contains(issue.LayerIndex) && (issue.Type == LayerIssue.IssueType.Island ||
-                                                                               issue.Type == LayerIssue.IssueType.Overhang));
+                islandConfig.WhiteListLayers.Contains(issue.StartLayerIndex) && issue.Type is MainIssue.IssueType.Island or MainIssue.IssueType.Overhang);
             /*foreach (var layerIndex in islandConfig.WhiteListLayers)
             {
                 issueList.RemoveAll(issue =>
@@ -356,10 +354,10 @@ namespace UVtools.WPF
             {
                 try
                 {
-                    var issues = SlicerFile.LayerManager.GetAllIssues(islandConfig, overhangConfig, resinTrapConfig,
-                        touchingBoundConfig, printHeightConfig, false, IgnoredIssues, Progress);
+                    var issues = SlicerFile.IssueManager.DetectIssues(islandConfig, overhangConfig, resinTrapConfig,
+                        touchingBoundConfig, printHeightConfig, false, Progress);
 
-                    issues.RemoveAll(issue => issue.Type != LayerIssue.IssueType.Island && issue.Type != LayerIssue.IssueType.Overhang); // Remove all non islands and overhangs
+                    issues.RemoveAll(issue => issue.Type is not MainIssue.IssueType.Island and not MainIssue.IssueType.Overhang); // Remove all non islands and overhangs
                     return issues;
                 }
 
@@ -381,10 +379,10 @@ namespace UVtools.WPF
             if (resultIssues is not null && resultIssues.Count > 0) issueList.AddRange(resultIssues);
 
             issueList = issueList.OrderBy(issue => issue.Type)
-                .ThenBy(issue => issue.LayerIndex)
-                .ThenBy(issue => issue.PixelsCount).ToList();
-
-            Issues.ReplaceCollection(issueList);
+                .ThenBy(issue => issue.StartLayerIndex)
+                .ThenBy(issue => issue.Area).ToList();
+            
+            SlicerFile.IssueManager.ReplaceCollection(issueList);
         }
 
         public int IssueSelectedIndex
@@ -393,31 +391,35 @@ namespace UVtools.WPF
             set
             {
                 if (!RaiseAndSetIfChanged(ref _issueSelectedIndex, value)) return;
-                IssuesGrid.ScrollIntoView(Issues[_issueSelectedIndex], null);
+                if(_issueSelectedIndex > 0) IssuesGrid.ScrollIntoView(SlicerFile.IssueManager.FirstOrDefault(issue => ReferenceEquals(issue, IssuesGrid.SelectedItem)), null);
                 RaisePropertyChanged(nameof(IssueSelectedIndexStr));
                 RaisePropertyChanged(nameof(IssueCanGoPrevious));
                 RaisePropertyChanged(nameof(IssueCanGoNext));
             }
         }
 
-        public string IssueSelectedIndexStr => (_issueSelectedIndex + 1).ToString().PadLeft(Issues.Count.ToString().Length, '0');
+        public string IssueSelectedIndexStr => IsFileLoaded 
+            ? (_issueSelectedIndex + 1).ToString().PadLeft(SlicerFile.IssueManager.Count.ToString().Length, '0')
+            : "0";
 
         private void IssuesGridOnSelectionChanged(object? sender, SelectionChangedEventArgs e)
         {
             if (DataContext is null) return;
 
-            if (IssuesGrid.SelectedItem is not LayerIssue issue)
+            if (IssuesGrid.SelectedItem is not MainIssue mainIssue)
             {
                 ShowLayer();
                 return;
             }
 
-            var firstPoint = issue.FirstPoint;
-            if (issue.Type is LayerIssue.IssueType.TouchingBound or LayerIssue.IssueType.EmptyLayer || (firstPoint.X == -1 && firstPoint.Y == -1))
+            var issue = mainIssue.FirstOrDefault();
+
+
+            if (mainIssue.Type is MainIssue.IssueType.TouchingBound or MainIssue.IssueType.EmptyLayer || mainIssue.BoundingRectangle.IsEmpty)
             {
                 ZoomToFit();
             }
-            else if (firstPoint.X >= 0 && firstPoint.Y >= 0)
+            else if (!mainIssue.BoundingRectangle.IsEmpty && issue is not null)
             {
 
                 if (Settings.LayerPreview.ZoomIssues ^ (_globalModifiers & KeyModifiers.Alt) != 0)
@@ -438,14 +440,14 @@ namespace UVtools.WPF
                 }
             }
 
-            ForceUpdateActualLayer(issue.LayerIndex);
+            ForceUpdateActualLayer(mainIssue.StartLayerIndex);
         }
 
         
         private void IssuesGridOnCellPointerPressed(object? sender, DataGridCellPointerPressedEventArgs e)
         {
             if (e.PointerPressedEventArgs.ClickCount == 2) return;
-            if (IssuesGrid.SelectedItem is not LayerIssue) return;
+            if (IssuesGrid.SelectedItem is not MainIssue) return;
             // Double clicking an issue will center and zoom into the 
             // selected issue. Left click on an issue will zoom to fit.
             
@@ -469,9 +471,9 @@ namespace UVtools.WPF
                     IssuesGrid.SelectedItems.Clear();
                     break;
                 case Key.Multiply:
-                    var selectedItems = IssuesGrid.SelectedItems.OfType<LayerIssue>().ToList();
+                    var selectedItems = IssuesGrid.SelectedItems.OfType<MainIssue>().ToList();
                     IssuesGrid.SelectedItems.Clear();
-                    foreach (LayerIssue item in Issues)
+                    foreach (var item in SlicerFile.IssueManager)
                     {
                         if (!selectedItems.Contains(item))
                             IssuesGrid.SelectedItems.Add(item);
@@ -510,7 +512,7 @@ namespace UVtools.WPF
             bool emptyLayersConfig = true)
         {
 
-            Issues.Clear();
+            SlicerFile.IssueManager.Clear();
             IsGUIEnabled = false;
             ShowProgressWindow("Computing Issues");
 
@@ -518,8 +520,8 @@ namespace UVtools.WPF
             {
                 try
                 {
-                    var issues = SlicerFile.LayerManager.GetAllIssues(islandConfig, overhangConfig, resinTrapConfig, touchingBoundConfig,
-                        printHeightConfig, emptyLayersConfig, IgnoredIssues, Progress);
+                    var issues = SlicerFile.IssueManager.DetectIssues(islandConfig, overhangConfig, resinTrapConfig, touchingBoundConfig,
+                        printHeightConfig, emptyLayersConfig, Progress);
                     return issues;
                 }
                 catch (OperationCanceledException)
@@ -541,7 +543,7 @@ namespace UVtools.WPF
             {
                 return;
             }
-            Issues.AddRange(resultIssues);
+            SlicerFile.IssueManager.AddRange(resultIssues);
             
             ShowLayer();
 
@@ -551,13 +553,13 @@ namespace UVtools.WPF
 
         }
 
-        public Dictionary<uint, uint> GetIssuesCountPerLayer()
+        /*public Dictionary<uint, uint> GetIssuesCountPerLayer()
         {
-            if (Issues is null || Issues.Count == 0) return null;
+            if (SlicerFile.IssueManager.Count == 0) return null;
             Dictionary<uint, uint> layerIndexIssueCount = new();
             foreach (var issue in Issues)
             {
-                if (!layerIndexIssueCount.ContainsKey(issue.LayerIndex))
+                if (!layerIndexIssueCount.ContainsKey(issue.StartLayerIndex))
                 {
                     layerIndexIssueCount.Add(issue.LayerIndex, 1);
                 }
@@ -568,43 +570,59 @@ namespace UVtools.WPF
             }
 
             return layerIndexIssueCount;
-        }
+        }*/
 
-        public Dictionary<LayerIssue.IssueType, ISolidColorBrush> GetIssueColors(bool highlightColors = false)
+        public Dictionary<MainIssue.IssueType, ISolidColorBrush> GetIssueColors(bool highlightColors = false)
         {
-            return new Dictionary<LayerIssue.IssueType, ISolidColorBrush>
+            return new Dictionary<MainIssue.IssueType, ISolidColorBrush>
             {
-                {LayerIssue.IssueType.Island,     highlightColors ? Settings.LayerPreview.IslandHighlightBrush : Settings.LayerPreview.IslandBrush},
-                {LayerIssue.IssueType.Overhang,   highlightColors ? Settings.LayerPreview.OverhangHighlightBrush : Settings.LayerPreview.OverhangBrush},
-                {LayerIssue.IssueType.ResinTrap,  highlightColors ? Settings.LayerPreview.ResinTrapHighlightBrush : Settings.LayerPreview.ResinTrapBrush},
-                {LayerIssue.IssueType.SuctionCup, highlightColors ? Settings.LayerPreview.SuctionCupHighlightBrush : Settings.LayerPreview.SuctionCupBrush},
-                {LayerIssue.IssueType.TouchingBound, Settings.LayerPreview.TouchingBoundsBrush},
-                {LayerIssue.IssueType.EmptyLayer, Brushes.Red},
-                {LayerIssue.IssueType.PrintHeight, Brushes.Red},
-                {LayerIssue.IssueType.Debug, new ImmutableSolidColorBrush(new Color(255, 15, 112, 16))},
+                {MainIssue.IssueType.Island,     highlightColors ? Settings.LayerPreview.IslandHighlightBrush : Settings.LayerPreview.IslandBrush},
+                {MainIssue.IssueType.Overhang,   highlightColors ? Settings.LayerPreview.OverhangHighlightBrush : Settings.LayerPreview.OverhangBrush},
+                {MainIssue.IssueType.ResinTrap,  highlightColors ? Settings.LayerPreview.ResinTrapHighlightBrush : Settings.LayerPreview.ResinTrapBrush},
+                {MainIssue.IssueType.SuctionCup, highlightColors ? Settings.LayerPreview.SuctionCupHighlightBrush : Settings.LayerPreview.SuctionCupBrush},
+                {MainIssue.IssueType.TouchingBound, Settings.LayerPreview.TouchingBoundsBrush},
+                {MainIssue.IssueType.EmptyLayer, Brushes.Red},
+                {MainIssue.IssueType.PrintHeight, Brushes.Red},
+                {MainIssue.IssueType.Debug, new ImmutableSolidColorBrush(new Color(255, 15, 112, 16))},
             };
         }
 
         private void UpdateLayerTrackerHighlightIssues()
         {
             _issuesSliderCanvas.Children.Clear();
-            if (Issues is null || Issues.Count == 0) return;
+            if (!IsFileLoaded || SlicerFile.IssueManager.Count == 0) return;
 
             var tickFrequencySize = _issuesSliderCanvas.Bounds.Height * LayerSlider.TickFrequency / LayerSlider.Maximum;
             var stroke = (int)Math.Ceiling(tickFrequencySize);
 
             var colorDictionary = GetIssueColors(true);
 
-            for (int layerIndex = 0; layerIndex < SlicerFile.LayerCount; layerIndex++)
+
+            var issues = SlicerFile.IssueManager.GetIssues().OrderBy(issue => issue.Parent.Type).DistinctBy(mainIssue => mainIssue.LayerIndex);
+
+            foreach (var issue in issues)
             {
                 var color = Brushes.Red;
 
-                var issue = Issues
-                    .Where(issue => issue.LayerIndex == layerIndex)
-                    .OrderBy(issue => issue.Type)
-                    .FirstOrDefault();
+                if (Settings.LayerPreview.UseIssueColorOnTracker) colorDictionary.TryGetValue(issue.Parent.Type, out color);
 
-                if(issue is null) continue;
+                var yPos = tickFrequencySize * issue.LayerIndex;
+                if (issue.LayerIndex == 0 && stroke > 3)
+                {
+                    yPos += tickFrequencySize / 2;
+                }
+                else if (issue.LayerIndex == SlicerFile.LastLayerIndex && stroke > 3)
+                {
+                    yPos -= tickFrequencySize / 2;
+                }
+                var line = new Line { StrokeThickness = stroke, Stroke = color, EndPoint = new Avalonia.Point(_issuesSliderCanvas.Width, 0) };
+                _issuesSliderCanvas.Children.Add(line);
+                Canvas.SetBottom(line, yPos);
+            }
+
+            /*for (int layerIndex = 0; layerIndex < SlicerFile.LayerCount; layerIndex++)
+            {
+                var color = Brushes.Red;
 
                 if(Settings.LayerPreview.UseIssueColorOnTracker) colorDictionary.TryGetValue(issue.Type, out color);
 
@@ -620,7 +638,7 @@ namespace UVtools.WPF
                 var line = new Line { StrokeThickness = stroke, Stroke = color, EndPoint = new Avalonia.Point(_issuesSliderCanvas.Width, 0) };
                 _issuesSliderCanvas.Children.Add(line);
                 Canvas.SetBottom(line, yPos);
-            }
+            }*/
             
             /*var issuesCountPerLayer = GetIssuesCountPerLayer();
             if (issuesCountPerLayer is null)
@@ -650,8 +668,9 @@ namespace UVtools.WPF
 
         public void IssuesClear(bool clearIgnored = true)
         {
-            Issues.Clear();
-            if(clearIgnored) IgnoredIssues.Clear();
+            if (!IsFileLoaded) return;
+            SlicerFile.IssueManager.Clear();
+            if(clearIgnored) SlicerFile.IssueManager.IgnoredIssues.Clear();
         }
 
         public void SetResinTrapDetectionStartLayer(char which)

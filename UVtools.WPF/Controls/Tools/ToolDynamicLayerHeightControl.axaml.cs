@@ -2,6 +2,7 @@ using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using UVtools.Core;
 using UVtools.Core.FileFormats;
+using UVtools.Core.Layers;
 using UVtools.Core.Operations;
 using UVtools.WPF.Extensions;
 using UVtools.WPF.Windows;

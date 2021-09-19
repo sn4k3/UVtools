@@ -11,6 +11,7 @@ using System.Text;
 using Emgu.CV;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
+using UVtools.Core.Layers;
 
 namespace UVtools.Core.Operations
 {

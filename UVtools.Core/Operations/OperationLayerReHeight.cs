@@ -16,6 +16,7 @@ using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
+using UVtools.Core.Layers;
 
 namespace UVtools.Core.Operations
 {

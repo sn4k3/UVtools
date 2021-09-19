@@ -19,6 +19,7 @@ using Emgu.CV.CvEnum;
 using Emgu.CV.Util;
 using UVtools.Core.Extensions;
 using UVtools.Core.GCode;
+using UVtools.Core.Layers;
 using UVtools.Core.Operations;
 
 namespace UVtools.Core.FileFormats

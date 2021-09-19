@@ -15,6 +15,7 @@ using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Newtonsoft.Json;
 using UVtools.Core.Extensions;
+using UVtools.Core.Layers;
 using UVtools.Core.Operations;
 
 namespace UVtools.Core.FileFormats

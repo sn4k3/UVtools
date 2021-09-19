@@ -15,8 +15,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using BinarySerialization;
 using Emgu.CV;
-using Emgu.CV.CvEnum;
 using UVtools.Core.Extensions;
+using UVtools.Core.Layers;
 using UVtools.Core.Operations;
 
 namespace UVtools.Core.FileFormats

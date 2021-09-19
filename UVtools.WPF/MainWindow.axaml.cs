@@ -24,10 +24,12 @@ using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Avalonia.Collections;
 using UVtools.AvaloniaControls;
 using UVtools.Core;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
+using UVtools.Core.Layers;
 using UVtools.Core.Managers;
 using UVtools.Core.Network;
 using UVtools.Core.Operations;
@@ -1168,8 +1170,23 @@ namespace UVtools.WPF
 
         public async void MenuFileSettingsClicked()
         {
-            SettingsWindow settingsWindow = new();
+            var settingsWindow = new SettingsWindow();
             await settingsWindow.ShowDialog(this);
+            if (settingsWindow.DialogResult == DialogResults.OK)
+            {
+                if (Settings.Issues.DataGridGroupByType || Settings.Issues.DataGridGroupByLayerIndex)
+                {
+                    var groupView = new DataGridCollectionView(SlicerFile.IssueManager);
+                    if (Settings.Issues.DataGridGroupByType) groupView.GroupDescriptions.Add(new DataGridPathGroupDescription("Type"));
+                    if (Settings.Issues.DataGridGroupByLayerIndex) groupView.GroupDescriptions.Add(new DataGridPathGroupDescription("StartLayerIndex"));
+
+                    IssuesGrid.Items = groupView;
+                }
+                else
+                {
+                    IssuesGrid.Items = SlicerFile.IssueManager;
+                }
+            }
         }
 
         public void OpenHomePage()
@@ -1607,11 +1624,25 @@ namespace UVtools.WPF
                 }
             }
 
+            if (Settings.Issues.DataGridGroupByType || Settings.Issues.DataGridGroupByLayerIndex)
+            {
+                var groupView = new DataGridCollectionView(SlicerFile.IssueManager);
+                if(Settings.Issues.DataGridGroupByType) groupView.GroupDescriptions.Add(new DataGridPathGroupDescription("Type"));
+                if (Settings.Issues.DataGridGroupByLayerIndex) groupView.GroupDescriptions.Add(new DataGridPathGroupDescription("StartLayerIndex"));
+
+                IssuesGrid.Items = groupView;
+            }
+
+            SlicerFile.IssueManager.CollectionChanged += (sender, e) =>
+            {
+                UpdateLayerTrackerHighlightIssues();
+            };
+
             if (Settings.Issues.ComputeIssuesOnLoad)
             {
                 _firstTimeOnIssues = false;
                 await OnClickDetectIssues();
-                if (Issues.Count > 0)
+                if (SlicerFile.IssueManager.Count > 0)
                 {
                     SelectedTabItem = TabIssues;
                     if(Settings.Issues.AutoRepairIssuesOnLoad)
@@ -1627,7 +1658,7 @@ namespace UVtools.WPF
                     GetTouchingBoundsDetectionConfiguration(false),
                     GetPrintHeightDetectionConfiguration(true),
                     true);
-                if (Issues.Count > 0)
+                if (SlicerFile.IssueManager.Count > 0)
                 {
                     SelectedTabItem = TabIssues;
                 }
@@ -1961,7 +1992,7 @@ namespace UVtools.WPF
                     operation.Execute();
                     return true;
                 case OperationRepairLayers operation:
-                    if (Issues is null)
+                    if (SlicerFile.IssueManager.Count == 0)
                     {
                         var islandConfig = GetIslandDetectionConfiguration();
                         islandConfig.Enabled = operation.RepairIslands && operation.RemoveIslandsBelowEqualPixelCount > 0;
@@ -1977,7 +2008,6 @@ namespace UVtools.WPF
                         }
                     }
 
-                    operation.Issues = Issues.ToList();
                     operation.IslandDetectionConfig = GetIslandDetectionConfiguration();
                     break;
             }

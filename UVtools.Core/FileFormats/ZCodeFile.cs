@@ -22,6 +22,7 @@ using Org.BouncyCastle.Crypto.Engines;
 using Org.BouncyCastle.OpenSsl;
 using UVtools.Core.Extensions;
 using UVtools.Core.GCode;
+using UVtools.Core.Layers;
 using UVtools.Core.Operations;
 
 namespace UVtools.Core.FileFormats

@@ -972,7 +972,7 @@
                 Margin="5">
 
               <StackPanel Orientation="Vertical">
-                <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Common"/>
+                <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Startup"/>
 
 
                 <StackPanel Orientation="Horizontal" Spacing="20">
@@ -1024,6 +1024,39 @@
                                   IsChecked="{Binding Settings.Issues.ComputeEmptyLayers}"/>
                       </StackPanel>
                     </StackPanel>
+                </Grid>
+
+              </StackPanel>
+            </Border>
+
+            <Border
+              Classes="GroupBox"
+              Margin="5">
+
+              <StackPanel Orientation="Vertical">
+                <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Issues list"/>
+
+                <Grid
+                    RowDefinitions="Auto"
+                    ColumnDefinitions="Auto,10,Auto"
+                    Margin="10">
+                  <TextBlock
+                      Grid.Row="0"
+                      Grid.Column="0"
+                      Text="Group view by:" VerticalAlignment="Center"/>
+                  <StackPanel
+                      Grid.Row="0"
+                      Grid.Column="2"
+                      Orientation="Vertical" Spacing="10">
+
+                    <StackPanel
+                        Orientation="Horizontal" Spacing="10">
+                      <CheckBox Content="Type"
+                                IsChecked="{Binding Settings.Issues.DataGridGroupByType}"/>
+                      <CheckBox Content="Layer"
+                                IsChecked="{Binding Settings.Issues.DataGridGroupByLayerIndex}"/>
+                     </StackPanel>
+                  </StackPanel>
                 </Grid>
 
               </StackPanel>

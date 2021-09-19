@@ -1,6 +1,5 @@
-﻿using System;
-using Avalonia.Markup.Xaml;
-using UVtools.Core;
+﻿using Avalonia.Markup.Xaml;
+using UVtools.Core.Layers;
 using UVtools.Core.Operations;
 using UVtools.WPF.Windows;
 

@@ -14,6 +14,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Xml.Serialization;
 using UVtools.Core.Extensions;
+using UVtools.Core.Layers;
 using UVtools.Core.Operations;
 
 namespace UVtools.Core.FileFormats

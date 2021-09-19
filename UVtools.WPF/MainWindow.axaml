@@ -713,7 +713,7 @@
               <TextBlock.Text>
                 <MultiBinding StringFormat="{}{0}/{1}">
                   <Binding Path="IssueSelectedIndexStr"/>
-                  <Binding Path="Issues.Count"/>
+                  <Binding Path="SlicerFile.IssueManager.Count"/>
                 </MultiBinding>
               </TextBlock.Text>
             </TextBlock>
@@ -857,19 +857,17 @@
                     SelectedIndex="{Binding IssueSelectedIndex, Mode=TwoWay}"
                     IsReadOnly="True"
                     ClipboardCopyMode="IncludeHeader"
-                    Items="{Binding Issues}">
-            <DataGrid.Columns>
-              <DataGridTextColumn  Header="Type"
-                                    Binding="{Binding Type}"
-                                    Width="Auto" />
-              <DataGridTextColumn Header="Layer"
-                                  Binding="{Binding LayerIndex}"
+                    Items="{Binding SlicerFile.IssueManager}">
+              <DataGrid.Columns>
+
+                  <DataGridTextColumn  Header="Type"
+                                       Binding="{Binding Type}"
+                                       Width="Auto" />
+                <DataGridTextColumn Header="Layer(s)"
+                                  Binding="{Binding LayerInfoStr}"
                                   Width="Auto" />
-              <DataGridTextColumn Header="Position (X, Y)"
-                                  Binding="{Binding FirstPoint}"
-                                  Width="Auto" />
-              <DataGridTextColumn Header="Pixels"
-                                  Binding="{Binding PixelsCount}"
+                <DataGridTextColumn Header="Area"
+                                  Binding="{Binding Area}"
                                   Width="Auto" />
             </DataGrid.Columns>
 

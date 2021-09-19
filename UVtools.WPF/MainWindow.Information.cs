@@ -17,6 +17,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using MessageBox.Avalonia.Enums;
 using UVtools.Core;
+using UVtools.Core.Layers;
 using UVtools.Core.Objects;
 using UVtools.WPF.Extensions;
 using UVtools.WPF.Structures;

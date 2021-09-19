@@ -22,6 +22,8 @@ using Emgu.CV;
 using Emgu.CV.CvEnum;
 using UVtools.Core.Extensions;
 using UVtools.Core.GCode;
+using UVtools.Core.Layers;
+using UVtools.Core.Managers;
 using UVtools.Core.Objects;
 using UVtools.Core.Operations;
 
@@ -695,7 +697,6 @@ namespace UVtools.Core.FileFormats
         public object Mutex = new();
 
         private bool _haveModifiedLayers;
-        private LayerManager _layerManager;
 
         private byte _antiAliasing = 1;
 
@@ -890,8 +891,7 @@ namespace UVtools.Core.FileFormats
         /// </summary>
         public LayerManager LayerManager
         {
-            get => _layerManager;
-            private init => _layerManager = value;
+            get;
             /*set
             {
                 var oldLayerManager = _layerManager;
@@ -919,30 +919,32 @@ namespace UVtools.Core.FileFormats
             }*/
         }
 
+        public IssueManager IssueManager { get; }
+
         /// <summary>
         /// Gets the first layer
         /// </summary>
-        public Layer FirstLayer => _layerManager?.FirstLayer;
+        public Layer FirstLayer => LayerManager?.FirstLayer;
 
         /// <summary>
         /// Gets the first layer normal layer
         /// </summary>
-        public Layer FirstNormalLayer => _layerManager?.Layers.FirstOrDefault(layer => layer.IsNormalLayer);
+        public Layer FirstNormalLayer => LayerManager?.Layers.FirstOrDefault(layer => layer.IsNormalLayer);
 
         /// <summary>
         /// Gets the last layer
         /// </summary>
-        public Layer LastLayer => _layerManager?.LastLayer;
+        public Layer LastLayer => LayerManager?.LastLayer;
 
         /// <summary>
         /// Gets the bounding rectangle of the object
         /// </summary>
-        public Rectangle BoundingRectangle => _layerManager?.BoundingRectangle ?? Rectangle.Empty;
+        public Rectangle BoundingRectangle => LayerManager?.BoundingRectangle ?? Rectangle.Empty;
 
         /// <summary>
         /// Gets the bounding rectangle of the object in millimeters
         /// </summary>
-        public RectangleF BoundingRectangleMillimeters => _layerManager?.BoundingRectangleMillimeters ?? Rectangle.Empty;
+        public RectangleF BoundingRectangleMillimeters => LayerManager?.BoundingRectangleMillimeters ?? Rectangle.Empty;
 
         /// <summary>
         /// Gets or sets if modifications require a full encode to save
@@ -1175,7 +1177,7 @@ namespace UVtools.Core.FileFormats
         /// </summary>
         public virtual uint LayerCount
         {
-            get => _layerManager?.LayerCount ?? 0;
+            get => LayerManager?.LayerCount ?? 0;
             set {
                 RaisePropertyChanged();
                 RaisePropertyChanged(nameof(NormalLayerCount));
@@ -2178,6 +2180,7 @@ namespace UVtools.Core.FileFormats
         protected FileFormat()
         {
             LayerManager = new(this);
+            IssueManager = new(this);
             Thumbnails = new Mat[ThumbnailsCount];
             PropertyChanged += OnPropertyChanged;
             _queueTimerPrintTime.Elapsed += (sender, e) => UpdatePrintTime();
@@ -2504,7 +2507,7 @@ namespace UVtools.Core.FileFormats
             }
 #endif
 
-            _layerManager.Sanitize();
+            LayerManager.Sanitize();
 
             FileFullPath = fileFullPath;
 
@@ -2557,7 +2560,7 @@ namespace UVtools.Core.FileFormats
                                                    "Lower and fix your layer height on slicer to avoid precision errors.", fileFullPath);
             }
 
-            bool reSaveFile = _layerManager.Sanitize();
+            bool reSaveFile = LayerManager.Sanitize();
 
             if (reSaveFile)
             {
@@ -3345,9 +3348,9 @@ namespace UVtools.Core.FileFormats
 
             slicerFile.SuppressRebuildPropertiesWork(() =>
             {
-                slicerFile.LayerManager.Init(_layerManager.CloneLayers());
+                slicerFile.LayerManager.Init(LayerManager.CloneLayers());
                 slicerFile.AntiAliasing = ValidateAntiAliasingLevel();
-                slicerFile.LayerCount = _layerManager.LayerCount;
+                slicerFile.LayerCount = LayerManager.LayerCount;
                 slicerFile.BottomLayerCount = BottomLayerCount;
                 slicerFile.LayerHeight = LayerHeight;
                 slicerFile.ResolutionX = ResolutionX;

@@ -9,6 +9,7 @@ using Avalonia.Threading;
 using MessageBox.Avalonia.Enums;
 using UVtools.Core;
 using UVtools.Core.Extensions;
+using UVtools.Core.Layers;
 using UVtools.Core.Managers;
 using UVtools.Core.Operations;
 using UVtools.WPF.Controls;

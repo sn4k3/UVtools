@@ -9,6 +9,7 @@
 using System;
 using System.Collections.Generic;
 using UVtools.Core.FileFormats;
+using UVtools.Core.Layers;
 using UVtools.Core.Operations;
 
 namespace UVtools.Core.GCode
