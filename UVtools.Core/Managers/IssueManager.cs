@@ -827,7 +827,9 @@ namespace UVtools.Core.Managers
 
                 if (progress.Token.IsCancellationRequested) return GetResult();
 
-                for (var layerIndex = 0; layerIndex < resinTraps.Length; layerIndex++)
+                List<List<IssueOfContours>> resinTrapGroups = new();
+
+                for (var layerIndex = resinTraps.Length - 1; layerIndex >= 0 ; layerIndex--)
                 {
                     if (resinTraps[layerIndex] == null) continue;
 
@@ -836,8 +838,54 @@ namespace UVtools.Core.Managers
                     {
                         var area = EmguContours.GetContourArea(trap);
                         var rect = CvInvoke.BoundingRectangle(trap[0]);
-                        AddIssue(new MainIssue(MainIssue.IssueType.ResinTrap, new IssueOfContours(SlicerFile[layerIndex], trap.ToArrayOfArray(), rect, area)));
+                        var trapIssue = new IssueOfContours(SlicerFile[layerIndex], trap.ToArrayOfArray(), rect, area);
+
+                        List<int> overlappingGroupIndexes = new List<int>();
+                        for (var x = 0; x < resinTrapGroups.Count; x++)
+                        {
+                            if (resinTrapGroups[x].Last().LayerIndex != layerIndex + 1) continue;
+
+                            if (EmguContours.ContoursIntersect(trap, new VectorOfVectorOfPoint(resinTrapGroups[x].Last().Contours)))
+                            {
+                                overlappingGroupIndexes.Add(x);
+                            }
+                        }
+
+                        if (overlappingGroupIndexes.Count == 0)
+                        {
+                            /* no overlaps, make a new group */
+                            List<IssueOfContours> newGroup = new();
+                            newGroup.Add(trapIssue);
+                            resinTrapGroups.Add(newGroup);
+                        }
+                        else if (overlappingGroupIndexes.Count == 1)
+                        {
+                            resinTrapGroups[overlappingGroupIndexes[0]].Add(trapIssue);
+                        }
+                        else
+                        {
+                            List<IssueOfContours> combinedGroup = new();
+                            foreach (var index in overlappingGroupIndexes)
+                            {
+                                combinedGroup.AddRange(resinTrapGroups[index]);
+                            }
+
+                            for(var index = overlappingGroupIndexes.Count - 1; index >= 0; index--)
+                            {
+                                resinTrapGroups[index].Clear();
+                                resinTrapGroups.RemoveAt(index);
+                            }
+
+                            combinedGroup.Add(trapIssue);
+                            resinTrapGroups.Add(combinedGroup);
+                        }
+
                     }
+                }
+
+                foreach (var group in resinTrapGroups)
+                {
+                    AddIssue(new MainIssue(MainIssue.IssueType.ResinTrap, group.ToArray()));
                 }
 
                 /* only report suction cup issues if enabled */
