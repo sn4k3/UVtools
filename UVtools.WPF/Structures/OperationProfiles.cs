@@ -24,6 +24,8 @@ namespace UVtools.WPF.Structures
         /// </summary>
         private static string FilePath => Path.Combine(UserSettings.SettingsFolder, "operation_profiles.xml");
 
+        [XmlElement(typeof(OperationRepairLayers))]
+
         [XmlElement(typeof(OperationResize))]
         [XmlElement(typeof(OperationFlip))]
         [XmlElement(typeof(OperationRotate))]

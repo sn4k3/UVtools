@@ -55,14 +55,14 @@ namespace UVtools.WPF.Controls.Tools
             switch (callback)
             {
                 case ToolWindow.Callbacks.Init:
-                case ToolWindow.Callbacks.Loaded:
-                    if (callback is ToolWindow.Callbacks.Init)
-                    {
-                        ParentWindow.LayerRangeVisible = false;
-                        ParentWindow.IsCheckBox1Visible = true;
-                    }
+                    ParentWindow.LayerRangeVisible = false;
+                    ParentWindow.IsCheckBox1Visible = true;
 
                     SetFromUserSettings();
+                    Operation.IslandDetectionConfig = App.MainWindow.GetIslandDetectionConfiguration();
+                    break;
+                case ToolWindow.Callbacks.Loaded:
+                    Operation.IslandDetectionConfig = App.MainWindow.GetIslandDetectionConfiguration();
                     break;
                 case ToolWindow.Callbacks.Checkbox1:
                     ParentWindow.LayerRangeVisible = ParentWindow.IsCheckBox1Checked;

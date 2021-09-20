@@ -22,11 +22,20 @@ namespace UVtools.Core.Managers
     {
         public FileFormat SlicerFile { get; }
 
-        public readonly List<MainIssue> IgnoredIssues = new();
+        public List<MainIssue> IgnoredIssues { get; } = new();
 
         public IssueManager(FileFormat slicerFile)
         {
             SlicerFile = slicerFile;
+        }
+
+        /// <summary>
+        /// Gets the visible <see cref="MainIssue"/> aka not ignored
+        /// </summary>
+        /// <returns></returns>
+        public MainIssue[] GetVisible()
+        {
+            return this.Where(mainIssue => !IgnoredIssues.Contains(mainIssue)).ToArray();
         }
 
         public static Issue[] GetIssues(IEnumerable<MainIssue> issues)
@@ -125,7 +134,7 @@ namespace UVtools.Core.Managers
             var result = new ConcurrentBag<MainIssue>();
             //var layerHollowAreas = new ConcurrentDictionary<uint, List<LayerHollowArea>>();
             var resinTraps = new List<VectorOfVectorOfPoint>[SlicerFile.LayerCount];
-            var suctionTraps = new List<VectorOfVectorOfPoint>[SlicerFile.LayerCount];
+            var suctionCups = new List<VectorOfVectorOfPoint>[SlicerFile.LayerCount];
             var externalContours = new VectorOfVectorOfPoint[SlicerFile.LayerCount];
             var hollows = new List<VectorOfVectorOfPoint>[SlicerFile.LayerCount];
             var airContours = new List<VectorOfVectorOfPoint>[SlicerFile.LayerCount];
@@ -735,7 +744,7 @@ namespace UVtools.Core.Managers
 
                     if (resinTraps[layerIndex] is not null)
                     {
-                        suctionTraps[layerIndex] = new();
+                        suctionCups[layerIndex] = new();
                         /* here we don't worry about finding contours on the layer, the bottom to top pass did that already */
                         /* all we care about is contours the first pass thought were resin traps, since there was no access to air from the bottom */
                         Parallel.For(0, resinTraps[layerIndex].Count, CoreSettings.ParallelOptions, x =>
@@ -764,7 +773,7 @@ namespace UVtools.Core.Managers
 
 
                                     /* since we know it isn't a resin trap, it becomes a suction trap */
-                                    suctionTraps[layerIndex].Add(resinTraps[layerIndex][x]);
+                                    suctionCups[layerIndex].Add(resinTraps[layerIndex][x]);
 
                                     /* to keep things tidy while we iterate resin traps, it will be left in the list for now, and removed later */
                                 }
@@ -777,11 +786,11 @@ namespace UVtools.Core.Managers
                         });
 
                         /* anything that converted to a suction trap needs to removed from resinTraps. Loop backwards so indexes don't shift */
-                        if (suctionTraps[layerIndex] is not null)
+                        if (suctionCups[layerIndex] is not null)
                         {
-                            for (var i = suctionTraps[layerIndex].Count - 1; i >= 0; i--)
+                            for (var i = suctionCups[layerIndex].Count - 1; i >= 0; i--)
                             {
-                                resinTraps[layerIndex].Remove(suctionTraps[layerIndex][i]);
+                                resinTraps[layerIndex].Remove(suctionCups[layerIndex][i]);
                                 if (resinTraps[layerIndex].Count > 0) continue;
                                 resinTraps[layerIndex] = null;
                                 break;
@@ -798,19 +807,15 @@ namespace UVtools.Core.Managers
                 }
                 if (progress.Token.IsCancellationRequested) return GetResult();
 
-                progress.Reset("Translate contours (Resin traps)", 0/*(uint)(resinTraps.Length + suctionTraps.Length)*/);
-
                 /* translate all contour points by ROI x and y */
                 var offsetBy = new Point(SlicerFile.BoundingRectangle.X, SlicerFile.BoundingRectangle.Y);
-                foreach (var listOfLayers in new[] { resinTraps, suctionTraps })
+                foreach (var listOfLayers in new[] { resinTraps, suctionCups })
                 {
-                    Parallel.ForEach(listOfLayers, contoursGroups =>
+                    Parallel.ForEach(listOfLayers.Where(list => list is not null), contoursGroups =>
                     {
-                        if (contoursGroups is null) return;
                         for (var groupIndex = 0; groupIndex < contoursGroups.Count; groupIndex++)
                         {
                             var contours = contoursGroups[groupIndex];
-                            if (contours is null) continue;
 
                             var arrayOfArrayOfPoints = contours.ToArrayOfArray();
 
@@ -828,6 +833,11 @@ namespace UVtools.Core.Managers
 
                 if (progress.Token.IsCancellationRequested) return GetResult();
 
+                if (resinTrapConfig.DetectSuctionCups)
+                    progress.Reset("Interpolating areas (Resin traps & suction cups)", (uint)(resinTraps.Count(list => list is not null) + suctionCups.Count(list => list is not null)));
+                else
+                    progress.Reset("Interpolating areas (Resin traps)", (uint)(resinTraps.Count(list => list is not null)));
+
                 Parallel.Invoke(() =>
                 {
                     var resinTrapGroups = new List<List<IssueOfContours>>();
@@ -839,6 +849,8 @@ namespace UVtools.Core.Managers
                         /* select new LayerIssue(this[layerIndex], LayerIssue.IssueType.ResinTrap, area.Contour, area.BoundingRectangle)) */
                         foreach (var trap in resinTraps[layerIndex])
                         {
+                            if (progress.Token.IsCancellationRequested) return;
+
                             var area = EmguContours.GetContourArea(trap);
                             var rect = CvInvoke.BoundingRectangle(trap[0]);
                             var trapIssue = new IssueOfContours(SlicerFile[layerIndex], trap.ToArrayOfArray(), rect, area);
@@ -881,8 +893,8 @@ namespace UVtools.Core.Managers
                                 combinedGroup.Add(trapIssue);
                                 resinTrapGroups.Add(combinedGroup);
                             }
-
                         }
+                        progress.LockAndIncrement();
                     }
 
                     foreach (var group in resinTrapGroups)
@@ -898,12 +910,14 @@ namespace UVtools.Core.Managers
                         var minimumSuctionArea = resinTrapConfig.RequiredAreaToConsiderSuctionCup;
                         var suctionGroups = new List<List<IssueOfContours>>();
 
-                        for (var layerIndex = suctionTraps.Length - 1; layerIndex >= 0; layerIndex--)
+                        for (var layerIndex = suctionCups.Length - 1; layerIndex >= 0; layerIndex--)
                         {
-                            if (suctionTraps[layerIndex] is null) continue;
+                            if (suctionCups[layerIndex] is null) continue;
 
-                            foreach (var trap in suctionTraps[layerIndex])
+                            foreach (var trap in suctionCups[layerIndex])
                             {
+                                if (progress.Token.IsCancellationRequested) return;
+
                                 var area = EmguContours.GetContourArea(trap);
                                 if (area < minimumSuctionArea) continue;
                                 var rect = CvInvoke.BoundingRectangle(trap[0]);
@@ -944,6 +958,7 @@ namespace UVtools.Core.Managers
                                     suctionGroups.Add(combinedGroup);
                                 }
                             }
+                            progress.LockAndIncrement();
                         }
 
                         foreach (var group in suctionGroups)
@@ -953,9 +968,8 @@ namespace UVtools.Core.Managers
                     }
                 });
 
-
                 // Dispose
-                foreach (var listOfVectors in new[] { resinTraps, suctionTraps, hollows, airContours })
+                foreach (var listOfVectors in new[] { resinTraps, suctionCups, hollows, airContours })
                 {
                     foreach (var vectorArray in listOfVectors)
                     {

@@ -2008,7 +2008,6 @@ namespace UVtools.WPF
                         }
                     }
 
-                    operation.IslandDetectionConfig = GetIslandDetectionConfiguration();
                     break;
             }
 
