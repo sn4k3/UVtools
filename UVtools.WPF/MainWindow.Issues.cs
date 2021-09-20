@@ -104,32 +104,45 @@ namespace UVtools.WPF
                                     "Warning: Removing an island can cause other issues to appear if there is material present in the layers above it.\n" +
                                     "Always check previous and next layers before performing an island removal.", $"Remove {IssuesGrid.SelectedItems.Count} Issues?") != ButtonResult.Yes) return;
 
-            Dictionary<uint, List<Issue>> processIssues = new();
-            List<uint> layersRemove = new();
+            var processParallelIssues = new Dictionary<uint, List<Issue>>();
+            var processSuctionCups = new List<MainIssue>();
+            var layersToRemove = new List<uint>();
 
 
             foreach (MainIssue mainIssue in IssuesGrid.SelectedItems)
             {
-                if (mainIssue.Type == MainIssue.IssueType.TouchingBound) continue;
-
-                foreach (var issue in mainIssue)
+                switch (mainIssue.Type)
                 {
-                    if (!processIssues.TryGetValue(issue.LayerIndex, out var issueList))
-                    {
-                        issueList = new List<Issue>();
-                        processIssues.Add(issue.LayerIndex, issueList);
-                    }
+                    case MainIssue.IssueType.Island:
+                    case MainIssue.IssueType.ResinTrap:
+                        foreach (var issue in mainIssue)
+                        {
+                            // Islands and resin traps
+                            if (!processParallelIssues.TryGetValue(issue.LayerIndex, out var issueList))
+                            {
+                                issueList = new List<Issue>();
+                                processParallelIssues.Add(issue.LayerIndex, issueList);
+                            }
 
-                    issueList.Add(issue);
-                    if (mainIssue.Type == MainIssue.IssueType.EmptyLayer)
-                    {
-                        layersRemove.Add(issue.LayerIndex);
-                    }
+                            issueList.Add(issue);
+
+                        }
+                        continue;
+                    case MainIssue.IssueType.SuctionCup:
+                        if(mainIssue.StartLayerIndex == 0) continue;
+                        processSuctionCups.Add(mainIssue);
+                        continue;
+                    case MainIssue.IssueType.EmptyLayer:
+                        layersToRemove.AddRange(mainIssue.Select(issue => issue.LayerIndex));
+                        continue;
                 }
-
-                
             }
 
+
+            var totalIssues = processParallelIssues.Count + processSuctionCups.Count + layersToRemove.Count;
+            if (totalIssues == 0) return;
+
+            var issueRemoveList = new List<MainIssue>();
 
             IsGUIEnabled = false;
             ShowProgressWindow("Removing selected issues", false);
@@ -138,11 +151,10 @@ namespace UVtools.WPF
 
             var task = await Task.Factory.StartNew(() =>
             {
-                Progress.Reset("Removing selected issues", (uint)processIssues.Count);
-                bool result = false;
+                Progress.Reset("Removing selected issues", (uint)processParallelIssues.Count);
                 try
                 {
-                    Parallel.ForEach(processIssues, CoreSettings.ParallelOptions, layerIssues =>
+                    Parallel.ForEach(processParallelIssues, CoreSettings.ParallelOptions, layerIssues =>
                     {
                         if (Progress.Token.IsCancellationRequested) return;
                         using (var image = SlicerFile[layerIssues.Key].LayerMat)
@@ -150,7 +162,6 @@ namespace UVtools.WPF
                             var bytes = image.GetDataSpan<byte>();
 
                             bool edited = false;
-                            bool hasSuctionCups = false;
                             foreach (var issue in layerIssues.Value)
                             {
                                 if (issue.Type == MainIssue.IssueType.Island)
@@ -174,40 +185,34 @@ namespace UVtools.WPF
                                     }
                                     edited = true;
                                 }
-                                else if (issue.Type == MainIssue.IssueType.SuctionCup)
-                                {
-                                    hasSuctionCups = true;
-                                }
                             }
 
                             if (edited)
                             {
                                 SlicerFile[layerIssues.Key].LayerMat = image;
                             }
-
-                            if (edited || hasSuctionCups)
-                            {
-                                result = true;
-                            }
                         }
 
                         Progress.LockAndIncrement();
                     });
 
-                    if (layersRemove.Count > 0)
+                    if (layersToRemove.Count > 0)
                     {
-                        OperationLayerRemove.RemoveLayers(SlicerFile, layersRemove);
-                        result = true;
+                        OperationLayerRemove.RemoveLayers(SlicerFile, layersToRemove);
                     }
+
+                    issueRemoveList.AddRange(SlicerFile.IssueManager.DrillSuctionCupsForIssues(processSuctionCups, UserSettings.Instance.LayerRepair.SuctionCupsVentHole, Progress));
 
                 }
                 catch (Exception ex)
                 {
                     Dispatcher.UIThread.InvokeAsync(async () =>
                         await this.MessageBoxError(ex.ToString(), "Removal failed"));
+
+                    return false;
                 }
 
-                return result;
+                return true;
             });
 
             IsGUIEnabled = true;
@@ -221,14 +226,14 @@ namespace UVtools.WPF
             var whiteListLayers = new List<uint>();
 
             // Update GUI
-            var issueRemoveList = new List<MainIssue>();
-            var suctionCupList = new List<MainIssue>();
+            
             foreach (MainIssue issue in IssuesGrid.SelectedItems)
             {
-                if (issue.Type != MainIssue.IssueType.Island &&
-                    issue.Type != MainIssue.IssueType.ResinTrap &&
-                    issue.Type != MainIssue.IssueType.EmptyLayer &&
-                    issue.Type != MainIssue.IssueType.SuctionCup) continue;
+                if (issue.Type 
+                    is not MainIssue.IssueType.Island
+                    and not MainIssue.IssueType.ResinTrap
+                    and not MainIssue.IssueType.EmptyLayer) continue;
+
 
                 if (issue.Type == MainIssue.IssueType.Island)
                 {
@@ -237,26 +242,20 @@ namespace UVtools.WPF
                     if (whiteListLayers.Contains(nextLayer)) continue;
                     whiteListLayers.Add(nextLayer);
                 }
-
-                if (issue.Type == MainIssue.IssueType.SuctionCup)
-                {
-                    suctionCupList.Add(issue);
-
-                }
-
+                
                 issueRemoveList.Add(issue);
                 //Issues.Remove(issue);
 
             }
-            
-            SlicerFile.IssueManager.DrillSuctionCupsForIssues(suctionCupList.ToArray(), UserSettings.Instance.LayerRepair.SuctionCupsVentHole, Progress);
+
+            if (issueRemoveList.Count == 0) return;
 
             Clipboard.Clip($"Manually removed {issueRemoveList.Count} issues");
             
             IssuesGrid.SelectedIndex = -1;
             SlicerFile.IssueManager.RemoveRange(issueRemoveList);
 
-            if (layersRemove.Count > 0)
+            if (layersToRemove.Count > 0)
             {
                 ResetDataContext();
             }

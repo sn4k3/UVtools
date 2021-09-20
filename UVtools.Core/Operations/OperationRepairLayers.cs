@@ -417,9 +417,7 @@ namespace UVtools.Core.Operations
 
             if (_repairSuctionCups && SlicerFile.IssueManager.Count > 0)
             {
-                var bottomSuctionIssues = new ConcurrentBag<IssueOfContours>();
-                var suctionCups = SlicerFile.IssueManager.GetIssuesBy(MainIssue.IssueType.SuctionCup);
-                SlicerFile.IssueManager.DrillSuctionCupsForIssues(SlicerFile.IssueManager.Where(issue => issue.Type == MainIssue.IssueType.SuctionCup).ToArray(), _suctionCupsVentHole, progress);
+                SlicerFile.IssueManager.DrillSuctionCupsForIssues(SlicerFile.IssueManager.Where(mainIssue => mainIssue.Type == MainIssue.IssueType.SuctionCup), _suctionCupsVentHole, progress);
             }
 
             if (_removeEmptyLayers)

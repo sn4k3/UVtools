@@ -867,7 +867,7 @@
                                   Binding="{Binding LayerInfoStr}"
                                   Width="Auto" />
                 <DataGridTextColumn Header="Area"
-                                  Binding="{Binding Area}"
+                                  Binding="{Binding Area, StringFormat={}{0:F0}}"
                                   Width="Auto" />
             </DataGrid.Columns>
 

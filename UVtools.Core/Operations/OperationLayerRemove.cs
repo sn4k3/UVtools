@@ -8,6 +8,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UVtools.Core.FileFormats;
@@ -82,13 +83,13 @@ namespace UVtools.Core.Operations
             return RemoveLayers(SlicerFile, layersRemove, progress);
         }
 
-        public static bool RemoveLayers(FileFormat slicerFile, List<uint> layersRemove, OperationProgress progress = null)
+        public static bool RemoveLayers(FileFormat slicerFile, IEnumerable<uint> layersRemove, OperationProgress progress = null)
         {
-            if (layersRemove.Count == 0) return false;
+            if (!layersRemove.Any()) return false;
 
             progress ??= new OperationProgress(false);
 
-            progress.Reset("Removed layers", (uint)layersRemove.Count);
+            progress.Reset("Removed layers", (uint)layersRemove.Count());
 
             foreach (var layerIndex in layersRemove)
             {

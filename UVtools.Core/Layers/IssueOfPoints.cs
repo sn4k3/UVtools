@@ -6,6 +6,7 @@
  *  of this license document, but changing it is not allowed.
  */
 
+using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 
@@ -18,11 +19,11 @@ namespace UVtools.Core.Layers
         /// </summary>
         public Point[] Points { get; init; }
 
-        public IssueOfPoints(Layer layer, Point[] points, Rectangle boundingRectangle = default) : base(layer, boundingRectangle, points.Length)
+        public IssueOfPoints(Layer layer, IEnumerable<Point> points, Rectangle boundingRectangle = default) : base(layer, boundingRectangle, points.Count())
         {
-            Points = points;
-            PixelsCount = (uint)points.Length;
-            FirstPoint = points[0];
+            Points = points.ToArray();
+            PixelsCount = (uint)Points.Length;
+            FirstPoint = Points[0];
         }
 
         private bool Equals(IssueOfPoints other)

@@ -1134,11 +1134,11 @@ namespace UVtools.WPF
 
             ClipboardManager.Instance.Reset();
 
+            IssuesClear(true);
             SlicerFile?.Dispose();
             SlicerFile = null;
 
             SlicerProperties.Clear();
-            IssuesClear(true);
             Drawings.Clear();
 
             SelectedTabItem = TabInformation;

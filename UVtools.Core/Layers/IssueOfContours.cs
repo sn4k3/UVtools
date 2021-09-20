@@ -6,6 +6,7 @@
  *  of this license document, but changing it is not allowed.
  */
 
+using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using UVtools.Core.Extensions;
@@ -19,14 +20,14 @@ namespace UVtools.Core.Layers
         /// </summary>
         public Point[][] Contours { get; init; }
 
-        public IssueOfContours(Layer layer, Point[][] contours, Rectangle boundingRectangle, double area) : base(layer, boundingRectangle, area)
+        public IssueOfContours(Layer layer, IEnumerable<Point[]> contours, Rectangle boundingRectangle, double area) : base(layer, boundingRectangle, area)
         {
-            Contours = contours;
+            Contours = contours.ToArray();
             PixelsCount = (uint)area;
-            FirstPoint = contours[0][0];
+            FirstPoint = Contours[0][0];
         }
 
-        public IssueOfContours(Layer layer, Point[][] contours, Rectangle boundingRectangle = default) : this(layer, contours, boundingRectangle, boundingRectangle.Area())
+        public IssueOfContours(Layer layer, IEnumerable<Point[]> contours, Rectangle boundingRectangle = default) : this(layer, contours, boundingRectangle, boundingRectangle.Area())
         { }
 
         private bool Equals(IssueOfContours other)

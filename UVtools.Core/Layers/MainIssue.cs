@@ -62,7 +62,7 @@ namespace UVtools.Core.Layers
 
         public string LayerInfoStr => StartLayerIndex == EndLayerIndex
             ? $"{StartLayerIndex}"
-            : $"{StartLayerIndex} - {EndLayerIndex}  ({LayerRangeCount})";
+            : $"{StartLayerIndex}-{EndLayerIndex}  ({LayerRangeCount})";
 
 
         /// <summary>
@@ -99,7 +99,7 @@ namespace UVtools.Core.Layers
             PixelCount = issue.PixelsCount;
         }
 
-        public MainIssue(IssueType type, Issue[] issues) : this(type)
+        public MainIssue(IssueType type, IEnumerable<Issue> issues) : this(type)
         {
             var boundingRectangle = Rectangle.Empty;
             double area = 0;
@@ -120,7 +120,7 @@ namespace UVtools.Core.Layers
 
             BoundingRectangle = boundingRectangle;
             Area = area;
-            Childs = issues;
+            Childs = issues.ToArray();
             Sort();
         }
 

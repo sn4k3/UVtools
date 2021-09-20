@@ -290,7 +290,7 @@ namespace UVtools.Core.Managers
 
                             if (pixels.Count > 0)
                             {
-                                AddIssue(new MainIssue(MainIssue.IssueType.TouchingBound, new IssueOfPoints(layer, pixels.ToArray())));
+                                AddIssue(new MainIssue(MainIssue.IssueType.TouchingBound, new IssueOfPoints(layer, pixels)));
                             }
                         }
 
@@ -449,7 +449,7 @@ namespace UVtools.Core.Managers
                                             if (points.Count >= overhangConfig.RequiredPixelsToConsider
                                             ) // Overhang
                                             {
-                                                AddIssue(new MainIssue(MainIssue.IssueType.Overhang, new IssueOfPoints(layer, points.ToArray(), rect)));
+                                                AddIssue(new MainIssue(MainIssue.IssueType.Overhang, new IssueOfPoints(layer, points, rect)));
                                             }
                                             else if (islandConfig.EnhancedDetection) // No overhang
                                             {
@@ -828,91 +828,28 @@ namespace UVtools.Core.Managers
 
                 if (progress.Token.IsCancellationRequested) return GetResult();
 
-                List<List<IssueOfContours>> resinTrapGroups = new();
-
-                for (var layerIndex = resinTraps.Length - 1; layerIndex >= 0 ; layerIndex--)
+                Parallel.Invoke(() =>
                 {
-                    if (resinTraps[layerIndex] == null) continue;
+                    var resinTrapGroups = new List<List<IssueOfContours>>();
 
-                    /* select new LayerIssue(this[layerIndex], LayerIssue.IssueType.ResinTrap, area.Contour, area.BoundingRectangle)) */
-                    foreach (var trap in resinTraps[layerIndex])
+                    for (var layerIndex = resinTraps.Length - 1; layerIndex >= 0; layerIndex--)
                     {
-                        var area = EmguContours.GetContourArea(trap);
-                        var rect = CvInvoke.BoundingRectangle(trap[0]);
-                        var trapIssue = new IssueOfContours(SlicerFile[layerIndex], trap.ToArrayOfArray(), rect, area);
+                        if (resinTraps[layerIndex] is null) continue;
 
-                        List<int> overlappingGroupIndexes = new List<int>();
-                        for (var x = 0; x < resinTrapGroups.Count; x++)
-                        {
-                            if (resinTrapGroups[x].Last().LayerIndex != layerIndex + 1) continue;
-
-                            if (EmguContours.ContoursIntersect(trap, new VectorOfVectorOfPoint(resinTrapGroups[x].Last().Contours)))
-                            {
-                                overlappingGroupIndexes.Add(x);
-                            }
-                        }
-
-                        if (overlappingGroupIndexes.Count == 0)
-                        {
-                            /* no overlaps, make a new group */
-                            List<IssueOfContours> newGroup = new();
-                            newGroup.Add(trapIssue);
-                            resinTrapGroups.Add(newGroup);
-                        }
-                        else if (overlappingGroupIndexes.Count == 1)
-                        {
-                            resinTrapGroups[overlappingGroupIndexes[0]].Add(trapIssue);
-                        }
-                        else
-                        {
-                            List<IssueOfContours> combinedGroup = new();
-                            foreach (var index in overlappingGroupIndexes)
-                            {
-                                combinedGroup.AddRange(resinTrapGroups[index]);
-                            }
-
-                            for(var index = overlappingGroupIndexes.Count - 1; index >= 0; index--)
-                            {
-                                resinTrapGroups[index].Clear();
-                                resinTrapGroups.RemoveAt(index);
-                            }
-
-                            combinedGroup.Add(trapIssue);
-                            resinTrapGroups.Add(combinedGroup);
-                        }
-
-                    }
-                }
-
-                foreach (var group in resinTrapGroups)
-                {
-                    AddIssue(new MainIssue(MainIssue.IssueType.ResinTrap, group.ToArray()));
-                }
-
-                /* only report suction cup issues if enabled */
-                if (resinTrapConfig.DetectSuctionCups)
-                {
-                    var minimumSuctionArea = resinTrapConfig.RequiredAreaToConsiderSuctionCup;
-                    List<List<IssueOfContours>> suctionGroups = new();
-
-                    for (var layerIndex = suctionTraps.Length - 1; layerIndex >= 0; layerIndex--)
-                    {
-                        if (suctionTraps[layerIndex] == null) continue;
-
-                        foreach (var trap in suctionTraps[layerIndex])
+                        /* select new LayerIssue(this[layerIndex], LayerIssue.IssueType.ResinTrap, area.Contour, area.BoundingRectangle)) */
+                        foreach (var trap in resinTraps[layerIndex])
                         {
                             var area = EmguContours.GetContourArea(trap);
-                            if (area < minimumSuctionArea) continue;
                             var rect = CvInvoke.BoundingRectangle(trap[0]);
-
                             var trapIssue = new IssueOfContours(SlicerFile[layerIndex], trap.ToArrayOfArray(), rect, area);
 
-                            List<int> overlappingGroupIndexes = new List<int>();
-                            for(var x = 0; x < suctionGroups.Count; x++)
+                            var overlappingGroupIndexes = new List<int>();
+                            for (var x = 0; x < resinTrapGroups.Count; x++)
                             {
-                                if (suctionGroups[x].Last().LayerIndex != layerIndex + 1) continue;
+                                if (resinTrapGroups[x].Last().LayerIndex != layerIndex + 1) continue;
 
-                                if (EmguContours.ContoursIntersect(trap,new VectorOfVectorOfPoint(suctionGroups[x].Last().Contours)))
+                                using var vec = new VectorOfVectorOfPoint(resinTrapGroups[x].Last().Contours);
+                                if (EmguContours.ContoursIntersect(trap, vec))
                                 {
                                     overlappingGroupIndexes.Add(x);
                                 }
@@ -920,34 +857,102 @@ namespace UVtools.Core.Managers
 
                             if (overlappingGroupIndexes.Count == 0)
                             {
-                                /* no overlaps, make a new group */
-                                List<IssueOfContours> newGroup = new();
-                                newGroup.Add(trapIssue);
-                                suctionGroups.Add(newGroup);
+                                /* no overlaps, make a single issue */
+                                resinTrapGroups.Add(new List<IssueOfContours> { trapIssue });
                             }
                             else if (overlappingGroupIndexes.Count == 1)
                             {
-                                suctionGroups[overlappingGroupIndexes[0]].Add(trapIssue);
-                            } else
-                            {
-                                List<IssueOfContours> combinedGroup = new();
-                                foreach(var index in overlappingGroupIndexes)
-                                {
-                                    combinedGroup.AddRange(suctionGroups[index]);
-                                    suctionGroups[index].Clear();
-                                    suctionGroups.RemoveAt(index);
-                                }
-                                combinedGroup.Add(trapIssue);
-                                suctionGroups.Add(combinedGroup);
+                                resinTrapGroups[overlappingGroupIndexes[0]].Add(trapIssue);
                             }
+                            else
+                            {
+                                var combinedGroup = new List<IssueOfContours>();
+                                foreach (var index in overlappingGroupIndexes)
+                                {
+                                    combinedGroup.AddRange(resinTrapGroups[index]);
+                                }
+
+                                for (var index = overlappingGroupIndexes.Count - 1; index >= 0; index--)
+                                {
+                                    resinTrapGroups[index].Clear();
+                                    resinTrapGroups.RemoveAt(index);
+                                }
+
+                                combinedGroup.Add(trapIssue);
+                                resinTrapGroups.Add(combinedGroup);
+                            }
+
                         }
                     }
 
-                    foreach(var group in suctionGroups)
+                    foreach (var group in resinTrapGroups)
                     {
-                        AddIssue(new MainIssue(MainIssue.IssueType.SuctionCup, group.ToArray()));
+                        AddIssue(new MainIssue(MainIssue.IssueType.ResinTrap, group));
                     }
-                }
+                },
+                () =>
+                {
+                    /* only report suction cup issues if enabled */
+                    if (resinTrapConfig.DetectSuctionCups)
+                    {
+                        var minimumSuctionArea = resinTrapConfig.RequiredAreaToConsiderSuctionCup;
+                        var suctionGroups = new List<List<IssueOfContours>>();
+
+                        for (var layerIndex = suctionTraps.Length - 1; layerIndex >= 0; layerIndex--)
+                        {
+                            if (suctionTraps[layerIndex] is null) continue;
+
+                            foreach (var trap in suctionTraps[layerIndex])
+                            {
+                                var area = EmguContours.GetContourArea(trap);
+                                if (area < minimumSuctionArea) continue;
+                                var rect = CvInvoke.BoundingRectangle(trap[0]);
+
+                                var trapIssue = new IssueOfContours(SlicerFile[layerIndex], trap.ToArrayOfArray(), rect, area);
+
+                                var overlappingGroupIndexes = new List<int>();
+                                for (var x = 0; x < suctionGroups.Count; x++)
+                                {
+                                    if (suctionGroups[x].Last().LayerIndex != layerIndex + 1) continue;
+
+                                    using var vec = new VectorOfVectorOfPoint(suctionGroups[x].Last().Contours);
+                                    if (EmguContours.ContoursIntersect(trap, vec))
+                                    {
+                                        overlappingGroupIndexes.Add(x);
+                                    }
+                                }
+
+                                if (overlappingGroupIndexes.Count == 0)
+                                {
+                                    /* no overlaps, make a new group */
+                                    suctionGroups.Add(new List<IssueOfContours> { trapIssue });
+                                }
+                                else if (overlappingGroupIndexes.Count == 1)
+                                {
+                                    suctionGroups[overlappingGroupIndexes[0]].Add(trapIssue);
+                                }
+                                else
+                                {
+                                    var combinedGroup = new List<IssueOfContours>();
+                                    foreach (var index in overlappingGroupIndexes)
+                                    {
+                                        combinedGroup.AddRange(suctionGroups[index]);
+                                        suctionGroups[index].Clear();
+                                        suctionGroups.RemoveAt(index);
+                                    }
+                                    combinedGroup.Add(trapIssue);
+                                    suctionGroups.Add(combinedGroup);
+                                }
+                            }
+                        }
+
+                        foreach (var group in suctionGroups)
+                        {
+                            AddIssue(new MainIssue(MainIssue.IssueType.SuctionCup, group));
+                        }
+                    }
+                });
+
 
                 // Dispose
                 foreach (var listOfVectors in new[] { resinTraps, suctionTraps, hollows, airContours })
@@ -972,37 +977,8 @@ namespace UVtools.Core.Managers
             return GetResult();
         }
 
-        public void DrillSuctionCupsForIssues(MainIssue[] issues, int ventHoleDiameter, OperationProgress progress)
+        public MainIssue[] DrillSuctionCupsForIssues(IEnumerable<MainIssue> issues, int ventHoleDiameter, OperationProgress progress)
         {
-            List<Issue> combinedIssues = issues.SelectMany(issue => issue.Childs).ToList();
-            List<IssueOfContours> bottomSuctionIssues = new();
-            Parallel.ForEach(combinedIssues, issue =>
-            {
-                var issueOfContours = (IssueOfContours)issue;
-                if (issue.LayerIndex == 0)
-                {
-                    bottomSuctionIssues.Add(issueOfContours);
-                    return;
-                }
-
-                bool overlapFound = false;
-
-                foreach (IssueOfContours candidate in combinedIssues.Where(candidate => candidate.LayerIndex == issue.LayerIndex - 1))
-                {
-                    using var vec1 = new VectorOfVectorOfPoint(issueOfContours.Contours);
-                    using var vec2 = new VectorOfVectorOfPoint(candidate.Contours);
-                    if (EmguContours.ContoursIntersect(vec1, vec2))
-                    {
-                        overlapFound = true;
-                        break;
-                    }
-                }
-                if (!overlapFound)
-                {
-                    bottomSuctionIssues.Add(issueOfContours);
-                }
-            });
-
             (bool canDrill, Point location) GetDrillLocation(IssueOfContours issue, int diameter)
             {
                 using var vecCentroid = new VectorOfPoint(issue.Contours[0]);
@@ -1025,16 +1001,20 @@ namespace UVtools.Core.Managers
             }
 
             var drillOps = new List<PixelOperation>();
+            var drilledIssues = new List<MainIssue>();
             //var suctionReliefSize = (ushort)Math.Max(SlicerFile.PpmmMax * 0.8, 17);
             /* for each suction cup issue that is an initial layer */
-            foreach (var issue in bottomSuctionIssues)
+            foreach (var mainIssue in issues)
             {
-                var drillPoint = GetDrillLocation(issue, ventHoleDiameter);
+                var drillPoint = GetDrillLocation((IssueOfContours)mainIssue[0], ventHoleDiameter);
                 if (!drillPoint.canDrill) continue;
-                drillOps.Add(new PixelDrainHole(issue.LayerIndex, drillPoint.location, (ushort)ventHoleDiameter));
+                drillOps.Add(new PixelDrainHole(mainIssue.StartLayerIndex, drillPoint.location, (ushort)ventHoleDiameter));
+                drilledIssues.Add(mainIssue);
             }
 
             SlicerFile.LayerManager.DrawModifications(drillOps, progress);
+
+            return drilledIssues.ToArray();
         }
     }
 }
