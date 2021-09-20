@@ -14,6 +14,7 @@ using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Layers;
 using UVtools.Core.Operations;
+using UVtools.Core.PixelEditor;
 
 namespace UVtools.Core.Managers
 {
@@ -969,6 +970,71 @@ namespace UVtools.Core.Managers
             }
 
             return GetResult();
+        }
+
+        public void DrillSuctionCupsForIssues(MainIssue[] issues, int ventHoleDiameter, OperationProgress progress)
+        {
+            List<Issue> combinedIssues = issues.SelectMany(issue => issue.Childs).ToList();
+            List<IssueOfContours> bottomSuctionIssues = new();
+            Parallel.ForEach(combinedIssues, issue =>
+            {
+                var issueOfContours = (IssueOfContours)issue;
+                if (issue.LayerIndex == 0)
+                {
+                    bottomSuctionIssues.Add(issueOfContours);
+                    return;
+                }
+
+                bool overlapFound = false;
+
+                foreach (IssueOfContours candidate in combinedIssues.Where(candidate => candidate.LayerIndex == issue.LayerIndex - 1))
+                {
+                    using var vec1 = new VectorOfVectorOfPoint(issueOfContours.Contours);
+                    using var vec2 = new VectorOfVectorOfPoint(candidate.Contours);
+                    if (EmguContours.ContoursIntersect(vec1, vec2))
+                    {
+                        overlapFound = true;
+                        break;
+                    }
+                }
+                if (!overlapFound)
+                {
+                    bottomSuctionIssues.Add(issueOfContours);
+                }
+            });
+
+            (bool canDrill, Point location) GetDrillLocation(IssueOfContours issue, int diameter)
+            {
+                using var vecCentroid = new VectorOfPoint(issue.Contours[0]);
+                var centroid = EmguContour.GetCentroid(vecCentroid);
+                using var circleCheck = EmguExtensions.InitMat(issue.BoundingRectangle.Size);
+                using var contourMat = EmguExtensions.InitMat(issue.BoundingRectangle.Size);
+                using var overlapCheck = EmguExtensions.InitMat(issue.BoundingRectangle.Size);
+
+                var inverseOffset = new Point(issue.BoundingRectangle.X * -1, issue.BoundingRectangle.Y * -1);
+                using var vec = new VectorOfVectorOfPoint(issue.Contours);
+                CvInvoke.DrawContours(contourMat, vec, -1, EmguExtensions.WhiteColor, -1, LineType.EightConnected, null, int.MaxValue, inverseOffset);
+
+                CvInvoke.Circle(circleCheck, new(centroid.X + inverseOffset.X, centroid.Y + inverseOffset.Y), diameter, EmguExtensions.WhiteColor, -1);
+
+                CvInvoke.BitwiseAnd(circleCheck, contourMat, overlapCheck);
+
+                return CvInvoke.CountNonZero(overlapCheck) > 0
+                    ? (true, centroid)       /* 5px centroid is inside layer! drill baby drill */
+                    : (false, new Point()); /* centroid is not inside the actual contour, no drill */
+            }
+
+            var drillOps = new List<PixelOperation>();
+            //var suctionReliefSize = (ushort)Math.Max(SlicerFile.PpmmMax * 0.8, 17);
+            /* for each suction cup issue that is an initial layer */
+            foreach (var issue in bottomSuctionIssues)
+            {
+                var drillPoint = GetDrillLocation(issue, ventHoleDiameter);
+                if (!drillPoint.canDrill) continue;
+                drillOps.Add(new PixelDrainHole(issue.LayerIndex, drillPoint.location, (ushort)ventHoleDiameter));
+            }
+
+            SlicerFile.LayerManager.DrawModifications(drillOps, progress);
         }
     }
 }

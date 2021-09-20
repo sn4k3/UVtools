@@ -222,6 +222,7 @@ namespace UVtools.WPF
 
             // Update GUI
             var issueRemoveList = new List<MainIssue>();
+            var suctionCupList = new List<MainIssue>();
             foreach (MainIssue issue in IssuesGrid.SelectedItems)
             {
                 if (issue.Type != MainIssue.IssueType.Island &&
@@ -239,32 +240,7 @@ namespace UVtools.WPF
 
                 if (issue.Type == MainIssue.IssueType.SuctionCup)
                 {
-                    // Need redo
-                    /*if (issueRemoveList.Contains(issue)) continue;
-
-                    var upDirection = new Stack<LayerIssue>();
-                    var downDirection = new Stack<LayerIssue>();
-                    upDirection.Push(issue);
-                    downDirection.Push(issue);
-
-                    while (upDirection.Count > 0)
-                    {
-                        var current = upDirection.Pop();
-                        foreach(var iss in GetOverlappingIssues(current,1))
-                        {
-                            upDirection.Push(iss);
-                            issueRemoveList.Add(iss);
-                        }
-                    }
-                    while(downDirection.Count > 0)
-                    {
-                        var current = downDirection.Pop();
-                        foreach (var iss in GetOverlappingIssues(current, -1))
-                        {
-                            downDirection.Push(iss);
-                            issueRemoveList.Add(iss);
-                        }
-                    }*/
+                    suctionCupList.Add(issue);
 
                 }
 
@@ -272,6 +248,8 @@ namespace UVtools.WPF
                 //Issues.Remove(issue);
 
             }
+            
+            SlicerFile.IssueManager.DrillSuctionCupsForIssues(suctionCupList.ToArray(), UserSettings.Instance.LayerRepair.SuctionCupsVentHole, Progress);
 
             Clipboard.Clip($"Manually removed {issueRemoveList.Count} issues");
             
