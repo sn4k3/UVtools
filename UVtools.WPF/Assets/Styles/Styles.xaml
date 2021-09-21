@@ -111,6 +111,14 @@
         </Setter>
     </Style>
 
+    <Style Selector="TextBox.ValueLabel_diametermm, NumericUpDown.ValueLabel_diametermm /template/ TextBox">
+        <Setter Property="InnerRightContent">
+            <Template>
+                <TextBox Classes="NumericUpDownValueLabel" Text="⌀mm" ToolTip.Tip="Diameter Millimeter(s)" />
+            </Template>
+        </Setter>
+    </Style>
+
     <Style Selector="TextBox.ValueLabel_mmmin, NumericUpDown.ValueLabel_mmmin /template/ TextBox">
         <Setter Property="InnerRightContent">
             <Template>
@@ -139,6 +147,14 @@
         <Setter Property="InnerRightContent">
             <Template>
               <TextBox Classes="NumericUpDownValueLabel" Text="px³" ToolTip.Tip="Cubic Pixel(s)" />
+            </Template>
+        </Setter>
+    </Style>
+
+    <Style Selector="TextBox.ValueLabel_diameterpx, NumericUpDown.ValueLabel_diameterpx /template/ TextBox">
+        <Setter Property="InnerRightContent">
+            <Template>
+                <TextBox Classes="NumericUpDownValueLabel" Text="⌀px" ToolTip.Tip="Diameter Pixel(s)" />
             </Template>
         </Setter>
     </Style>

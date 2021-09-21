@@ -7,7 +7,7 @@
         x:Class="UVtools.WPF.Windows.SettingsWindow"
         WindowStartupLocation="Manual"
         MinWidth="600"
-        Width="740"
+        Width="780"
         SizeToContent="Height"
         CanResize="False"
         Title="UVtools - Settings"
@@ -184,7 +184,7 @@
                 <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="File dialog"/>
                 <Grid Margin="10" 
                       RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto" 
-                      ColumnDefinitions="Auto,10,429,Auto,Auto">
+                      ColumnDefinitions="Auto,10,449,Auto,Auto">
                   <TextBlock
                     VerticalAlignment="Center"
                     Grid.Row="0" Grid.Column="0"
@@ -192,7 +192,7 @@
                   <ComboBox Items="{Binding FileOpenDialogFilters}"
                             SelectedIndex="{Binding Settings.General.DefaultOpenFileExtensionIndex}"
                             HorizontalAlignment="Left"
-                            Width="490"
+                            Width="517"
                             MaxDropDownHeight="350"
                             Grid.ColumnSpan="3" Grid.Row="0" Grid.Column="2"/>
 
@@ -1087,12 +1087,12 @@
 
 
                 <StackPanel Orientation="Horizontal" Margin="10,0,10,10" Spacing="10">
-                  <NumericUpDown Width="60"
-                                 
-                                  Minimum="0"
-                                  Maximum="254"
+                  <NumericUpDown Width="150"
+                                 Classes="ValueLabel ValueLabel_sun"
+                                 Minimum="0"
+                                 Maximum="254"
                                  Value="{Binding Settings.Issues.IslandBinaryThreshold}"
-                                />
+                  />
                   <TextBlock
                     VerticalAlignment="Center"
                     Text="Pixel intensity threshold for island detection"
@@ -1103,12 +1103,12 @@
                 </StackPanel>
 
                 <StackPanel Orientation="Horizontal" Margin="10,0,10,10" Spacing="10">
-                  <NumericUpDown Width="60"
-                                 
-                                  Minimum="1"
-                                  Maximum="255"
+                  <NumericUpDown Width="150"
+                                 Classes="ValueLabel ValueLabel_px2"
+                                 Minimum="1"
+                                 Maximum="255"
                                  Value="{Binding Settings.Issues.IslandRequiredAreaToProcessCheck}"
-                                />
+                  />
                   <TextBlock
                     VerticalAlignment="Center"
                     Text="Bounding area required for an object to be considered an island"
@@ -1117,12 +1117,12 @@
                 </StackPanel>
 
                 <StackPanel Orientation="Horizontal" Margin="10,0,10,10" Spacing="10">
-                  <NumericUpDown Width="60"
-                                 
-                                  Minimum="1"
-                                  Maximum="255"
+                  <NumericUpDown Width="150"
+                                 Classes="ValueLabel ValueLabel_sun"
+                                 Minimum="1"
+                                 Maximum="255"
                                  Value="{Binding Settings.Issues.IslandRequiredPixelBrightnessToProcessCheck}"
-                                />
+                  />
                   <TextBlock
                     VerticalAlignment="Center"
                     Text="Minimum pixel intensity to consider a pixel part of an island"
@@ -1131,13 +1131,14 @@
                 </StackPanel>
 
                 <StackPanel Orientation="Horizontal" Margin="10,0,10,10" Spacing="10">
-                  <NumericUpDown Width="60"
-                                 
-                                  Minimum="0.05"
-                                  Maximum="0.95"
-                                  Increment="0.05"
-                                  Value="{Binding Settings.Issues.IslandRequiredPixelsToSupportMultiplier}"
-                                />
+                  <NumericUpDown Width="150"
+                                 Classes="ValueLabel ValueLabel_times"
+                                 Minimum="0.05"
+                                 Maximum="0.95"
+                                 Increment="0.05"
+                                 FormatString="F2"
+                                 Value="{Binding Settings.Issues.IslandRequiredPixelsToSupportMultiplier}"
+                  />
                   <TextBlock
                     VerticalAlignment="Center"
                     Text="Supporting safe pixels required over a multiplier on island pixels"
@@ -1148,12 +1149,12 @@
 
 
                 <StackPanel Orientation="Horizontal" Margin="10,0,10,10" Spacing="10">
-                  <NumericUpDown Width="60"
-                                 
-                                  Minimum="50"
-                                  Maximum="255"
+                  <NumericUpDown Width="150"
+                                 Classes="ValueLabel ValueLabel_sun"
+                                 Minimum="50"
+                                 Maximum="255"
                                  Value="{Binding Settings.Issues.IslandRequiredPixelBrightnessToSupport}"
-                                />
+                  />
                   <TextBlock
                     VerticalAlignment="Center"
                     Text="Minimum intensity of a supporting pixel before it is considered safe"
@@ -1213,12 +1214,12 @@
                   IsChecked="{Binding Settings.Issues.OverhangIndependentFromIslands}"/>
 
                 <StackPanel Orientation="Horizontal" Margin="10,0,10,10" Spacing="10">
-                  <NumericUpDown Width="60"
-                                 
-                                  Minimum="2"
-                                  Maximum="255"
-                                  Value="{Binding Settings.Issues.OverhangErodeIterations}"
-                                />
+                  <NumericUpDown Width="150"
+                                 Classes="ValueLabel ValueLabel_px"
+                                 Minimum="2"
+                                 Maximum="255"
+                                 Value="{Binding Settings.Issues.OverhangErodeIterations}"
+                  />
                   <TextBlock
                     VerticalAlignment="Center"
                     Text="Minimum overhang depth"
@@ -1239,10 +1240,10 @@
                            Text="Resin traps"/>
 
                 <StackPanel Orientation="Horizontal" Margin="10" Spacing="10">
-                  <NumericUpDown Width="60"
-                                 
-                                  Minimum="0"
-                                  Maximum="254"
+                  <NumericUpDown Width="150"
+                                 Classes="ValueLabel ValueLabel_sun"
+                                 Minimum="0"
+                                 Maximum="254"
                                  Value="{Binding Settings.Issues.ResinTrapBinaryThreshold}"/>
                   <TextBlock
                     VerticalAlignment="Center"
@@ -1255,10 +1256,10 @@
                 </StackPanel>
 
                 <StackPanel Orientation="Horizontal" Margin="10,0,10,10" Spacing="10">
-                  <NumericUpDown Width="60"
-                                 
-                                  Minimum="1"
-                                  Maximum="255"
+                  <NumericUpDown Width="150"
+                                 Classes="ValueLabel ValueLabel_px2"
+                                 Minimum="1"
+                                 Maximum="255"
                                  Value="{Binding Settings.Issues.ResinTrapRequiredAreaToProcessCheck}"/>
                   <TextBlock
                     VerticalAlignment="Center"
@@ -1267,12 +1268,12 @@
                 </StackPanel>
 
                 <StackPanel Orientation="Horizontal" Margin="10,0,10,10" Spacing="10">
-                  <NumericUpDown Width="60"
-                                 
-                                  Minimum="1"
-                                  Maximum="255"
+                  <NumericUpDown Width="150"
+                                 Classes="ValueLabel ValueLabel_px"
+                                 Minimum="1"
+                                 Maximum="255"
                                  Value="{Binding Settings.Issues.ResinTrapRequiredBlackPixelsToDrain}"
-                                />
+                  />
                   <TextBlock
                     VerticalAlignment="Center"
                     Text="Number of drain pixels required to disqualify a potential resin trap"
@@ -1281,12 +1282,12 @@
                 </StackPanel>
 
                 <StackPanel Orientation="Horizontal" Margin="10,0,10,10" Spacing="10">
-                  <NumericUpDown Width="60"
-                                 
-                                  Minimum="1"
-                                  Maximum="150"
+                  <NumericUpDown Width="150"
+                                 Classes="ValueLabel ValueLabel_sun"
+                                 Minimum="1"
+                                 Maximum="150"
                                  Value="{Binding Settings.Issues.ResinTrapMaximumPixelBrightnessToDrain}"
-                                />
+                  />
                   <TextBlock
                     VerticalAlignment="Center"
                     Text="Maximum pixel intensity for a pixel to be considered a drain pixel"
@@ -1306,7 +1307,8 @@
                                  Text="Suction cups"/>
 
                       <StackPanel Orientation="Horizontal" Margin="10" Spacing="10">
-                          <NumericUpDown Width="60"
+                          <NumericUpDown Width="150"
+                                         Classes="ValueLabel ValueLabel_px2"
                                          Minimum="1"
                                          Maximum="4294967295"
                                          Value="{Binding Settings.Issues.SuctionCupRequiredAreaToConsider}"/>
@@ -1316,15 +1318,17 @@
                             ToolTip.Tip="Objects with bounding area smaller than this value will not be processed during suction cup detection."/>
                       </StackPanel>
 					  <StackPanel Orientation="Horizontal" Margin="10" Spacing="10">
-						  <NumericUpDown Width="60" 
+						  <NumericUpDown Width="150" 
+                            Classes="ValueLabel ValueLabel_mm"
 										 Minimum="0.05" 
 										 Maximum="4294967295" 
 										 Increment="0.05" 
+                            FormatString="F2"
 										 Value="{Binding Settings.Issues.SuctionCupRequiredHeightToConsider}"
                                 />
 						  <TextBlock
 							  VerticalAlignment="Center"
-							  Text="Minimum height required (mm) for a suction cup detection to be reported"
+							  Text="Minimum height required for a suction cup detection to be reported"
 							  ToolTip.Tip="Objects with a smaller height than this value will not be reported during suction cup detection."/>
 					  </StackPanel>
                     </StackPanel>
@@ -1340,8 +1344,8 @@
                            Text="Touching boundary"/>
 
                 <StackPanel Orientation="Horizontal" Margin="10" Spacing="10">
-                  <NumericUpDown Width="60"
-                                 
+                  <NumericUpDown Width="150"
+                                 Classes="ValueLabel ValueLabel_sun"
                                   Minimum="1"
                                   Maximum="255"
                                   Value="{Binding Settings.Issues.TouchingBoundMinimumPixelBrightness}"
@@ -1397,15 +1401,14 @@
                     Grid.Row="2"
                     VerticalAlignment="Center"
                     Text="Left " />
-                  <NumericUpDown
-                    Grid.Column="1"
-                    Grid.Row="2"
-                    Width="70"
-                    Minimum="1"
-                    Maximum="255"
-                    Margin="0,0,5,0"
+                  <NumericUpDown Grid.Column="1" Grid.Row="2"
+                                 Width="150"
+                                 Classes="ValueLabel ValueLabel_px"
+                                 Minimum="1"
+                                 Maximum="255"
+                                 Margin="0,0,5,0"
                     
-                    Value="{Binding Settings.Issues.TouchingBoundMarginLeft}" />
+                                 Value="{Binding Settings.Issues.TouchingBoundMarginLeft}" />
 
                  
                   <TextBlock
@@ -1415,15 +1418,14 @@
                     HorizontalAlignment="Center"
                     Margin="0,0,0,2"
                     Text="Top" />
-                  <NumericUpDown
-                    Grid.Column="2"
-                    Grid.Row="1"
-                    Width="70"
-                    Minimum="1"
-                    Maximum="255"
-                    Margin="0,0,0,5"
+                  <NumericUpDown Grid.Column="2"  Grid.Row="1"
+                                 Width="150"
+                                 Classes="ValueLabel ValueLabel_px"
+                                 Minimum="1"
+                                 Maximum="255"
+                                 Margin="0,0,0,5"
                     
-                    Value="{Binding Settings.Issues.TouchingBoundMarginTop}" />
+                                 Value="{Binding Settings.Issues.TouchingBoundMarginTop}" />
 
                   <TextBlock
                     Grid.Column="4"
@@ -1431,15 +1433,14 @@
                     VerticalAlignment="Center"
                     HorizontalAlignment="Center"
                     Text=" Right" />
-                  <NumericUpDown
-                    Grid.Column="3"
-                    Grid.Row="2"
-                    Width="70"
-                    Minimum="1"
-                    Maximum="255"
-                    Margin="5,0,0,0"
+                  <NumericUpDown Grid.Column="3" Grid.Row="2"
+                                 Width="150"
+                                 Classes="ValueLabel ValueLabel_px"
+                                 Minimum="1"
+                                 Maximum="255"
+                                 Margin="5,0,0,0"
                     
-                    Value="{Binding Settings.Issues.TouchingBoundMarginRight}" />
+                                 Value="{Binding Settings.Issues.TouchingBoundMarginRight}" />
 
                   <TextBlock
                     Grid.Column="2"
@@ -1448,15 +1449,14 @@
                     HorizontalAlignment="Center"
                     Margin="0,2,0,0"
                     Text="Bottom" />
-                  <NumericUpDown
-                    Grid.Column="2"
-                    Grid.Row="3"
-                    Width="70"
-                    Minimum="1"
-                    Maximum="255"
-                    Margin="0,5,0,0"
+                  <NumericUpDown Grid.Column="2" Grid.Row="3"
+                                 Width="150"
+                                 Classes="ValueLabel ValueLabel_px"
+                                 Minimum="1"
+                                 Maximum="255"
+                                 Margin="0,5,0,0"
                     
-                    Value="{Binding Settings.Issues.TouchingBoundMarginBottom}" />
+                                 Value="{Binding Settings.Issues.TouchingBoundMarginBottom}" />
 
                   <CheckBox
                     Grid.Row="2"
@@ -1480,11 +1480,12 @@
                                  Text="Print height"/>
 
                       <StackPanel Orientation="Horizontal" Margin="10" Spacing="10">
-                          <NumericUpDown Width="60"
+                          <NumericUpDown Width="150"
                                          Classes="ValueLabel ValueLabel_mm"
                                          Minimum="-50"
                                          Maximum="50"
                                          Increment="0.1"
+                                         FormatString="F2"
                                          Value="{Binding Settings.Issues.PrintHeightOffset}"/>
                           <TextBlock
                               VerticalAlignment="Center"
@@ -1658,8 +1659,8 @@
                 <StackPanel Orientation="Horizontal" Margin="10,0" Spacing="10">
                   <NumericUpDown
                     Value="{Binding Settings.LayerRepair.RemoveIslandsBelowEqualPixels}"
-                    Width="70"
-                    
+                    Width="150"
+                    Classes="ValueLabel ValueLabel_px2"
                     Minimum="0"
                     Maximum="255"/>
                   <TextBlock VerticalAlignment="Center" Text="Islands: Maximum pixel area for Island removal (0 = disable)"/>
@@ -1668,8 +1669,8 @@
                 <StackPanel Orientation="Horizontal" Margin="10,0" Spacing="10">
                   <NumericUpDown
                     Value="{Binding Settings.LayerRepair.RemoveIslandsRecursiveIterations}"
-                    Width="70"
-                    
+                    Width="150"
+                    Classes="ValueLabel ValueLabel_layers"
                     Minimum="0"
                     Maximum="65535"/>
                   <TextBlock VerticalAlignment="Center" Text="Islands: Maximum layers for recursive island removal (0 = All)"/>
@@ -1678,7 +1679,8 @@
                 <StackPanel Orientation="Horizontal" Margin="10,0" Spacing="10">
                     <NumericUpDown
                         Value="{Binding Settings.LayerRepair.AttachIslandsBelowLayers}"
-                        Width="70"
+                        Width="150"
+                        Classes="ValueLabel ValueLabel_layers"
                         Minimum="0"
                         Maximum="65535"/>
                     <TextBlock VerticalAlignment="Center" Text="Islands: Attempt to attach islands down to this layers (0 = Disabled)"/>
@@ -1687,7 +1689,8 @@
                 <StackPanel Orientation="Horizontal" Margin="10,0" Spacing="10">
                     <NumericUpDown
                         Value="{Binding Settings.LayerRepair.ResinTrapsOverlapBy}"
-                        Width="70"
+                        Width="150"
+                        Classes="ValueLabel ValueLabel_px"
                         Minimum="0"
                         Maximum="255"/>
                     <TextBlock VerticalAlignment="Center" Text="Resin traps: Overlap and expand resin trap area by this value in pixels (0 = Disabled)"/>
@@ -1696,7 +1699,8 @@
                 <StackPanel Orientation="Horizontal" Margin="10,0" Spacing="10">
                     <NumericUpDown
                         Value="{Binding Settings.LayerRepair.SuctionCupsVentHole}"
-                        Width="70"
+                        Width="150"
+                        Classes="ValueLabel ValueLabel_px2"
                         Minimum="4"
                         Maximum="255"/>
                     <TextBlock VerticalAlignment="Center" Text="Suction cups: Hole diameter to drill the layers with"/>
@@ -1705,8 +1709,8 @@
                 <StackPanel Orientation="Horizontal" Margin="10,0" Spacing="10">
                   <NumericUpDown
                     Value="{Binding Settings.LayerRepair.ClosingIterations}"
-                    Width="70"
-                    
+                    Width="150"
+                    Classes="ValueLabel ValueLabel_px"
                     Minimum="0"
                     Maximum="255"/>
                   <TextBlock VerticalAlignment="Center" Text="'Gap Closing' iterations"/>
@@ -1715,8 +1719,8 @@
                 <StackPanel Orientation="Horizontal" Margin="10,0,10,10" Spacing="10">
                   <NumericUpDown
                     Value="{Binding Settings.LayerRepair.OpeningIterations}"
-                    Width="70"
-                    
+                    Width="150"
+                    Classes="ValueLabel ValueLabel_px"
                     Minimum="0"
                     Maximum="255"/>
                   <TextBlock VerticalAlignment="Center" Text="'Noise Removal' iterations"/>

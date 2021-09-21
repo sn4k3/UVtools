@@ -151,7 +151,7 @@ namespace UVtools.Core.Managers
 
             List<MainIssue> GetResult()
             {
-                return result.OrderBy(issue => issue.Type).ThenBy(issue => issue.StartLayerIndex).ThenByDescending(issue => issue.Area).ToList();
+                return result.OrderBy(mainIssue => mainIssue.Type).ThenBy(issue => issue.StartLayerIndex).ThenByDescending(issue => issue.Area).ToList();
             }
 
             void GenerateAirMap(IInputArray input, IInputOutputArray output, VectorOfVectorOfPoint externals)
@@ -966,10 +966,7 @@ namespace UVtools.Core.Managers
                             var mainIssue = new MainIssue(MainIssue.IssueType.SuctionCup, group);
                             if ((decimal)mainIssue.TotalHeight >= resinTrapConfig.RequiredHeightToConsiderSuctionCup) { 
                                 AddIssue(mainIssue);
-                            } else
-                            {
-                                mainIssue = null;
-                            }
+                            } 
                         }
                     }
                 });
