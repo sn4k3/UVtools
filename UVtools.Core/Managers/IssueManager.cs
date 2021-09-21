@@ -961,14 +961,14 @@ namespace UVtools.Core.Managers
                             progress.LockAndIncrement();
                         }
 
-                        var minSuctionHeight = resinTrapConfig.RequiredHeightToConsiderSuctionCup;
-                        var minNumLayers = Math.Ceiling((minSuctionHeight / (decimal)SlicerFile.LayerHeight));
-
                         foreach (var group in suctionGroups)
                         {
-                            if (group.Count >= minNumLayers)
+                            var mainIssue = new MainIssue(MainIssue.IssueType.SuctionCup, group);
+                            if ((decimal)mainIssue.TotalHeight >= resinTrapConfig.RequiredHeightToConsiderSuctionCup) { 
+                                AddIssue(mainIssue);
+                            } else
                             {
-                                AddIssue(new MainIssue(MainIssue.IssueType.SuctionCup, group));
+                                mainIssue = null;
                             }
                         }
                     }
