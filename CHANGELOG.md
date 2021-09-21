@@ -1,5 +1,24 @@
 # Changelog
 
+## 21/09/2021 - v2.23.0
+
+- Issues:
+   - **Suction cups:**
+      - Add a auto repair feature for this issues by drill a vertical vent hole (#296)
+      - Add a manual repair feature for this issues by drill a vertical vent hole when click on remove (#301)
+   - (Add) Allow to group issues by type and/or layer on display list (Configurable)
+   - (Add) Linked issues (Resin traps and suction traps) are now grouped into a single main issue (#300)
+   - (Add) Tracker bar: Colorize the issue tracker map with it own colors (Configurable)
+   - (Improvement) Order issues by area in descending order
+   - (Improvement) Always bring the selected issue into UI view on the list
+   - (Fix) When manually removing a issue from the list, it will no longer reselect other and make the user loss track of the remove issue view
+   - (Fix) Allow to ignore all issue type
+- Tool - Repair layers and issues:
+   - (Improvement) Allow to have profiles in the dialog
+   - (Improvement) Ignored issues are not repaired
+- (Fix) Material ml calculation was calculating a bad value for PhotonWorkshop files
+- (Fix) Settings were not being saved on systems that lacks special folder information, ie Rosetta. Now it will use up to 4 possible special folders as fallback if the prior doesn't exists (#299)
+
 ## 16/09/2021 - v2.22.0
 
 - **UI:**
