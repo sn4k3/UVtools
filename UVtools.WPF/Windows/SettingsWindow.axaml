@@ -1315,6 +1315,18 @@
                             Text="Bounding area required for an object to be processed during suction cup detection"
                             ToolTip.Tip="Objects with bounding area smaller than this value will not be processed during suction cup detection."/>
                       </StackPanel>
+					  <StackPanel Orientation="Horizontal" Margin="10" Spacing="10">
+						  <NumericUpDown Width="60" 
+										 Minimum="0.05" 
+										 Maximum="4294967295" 
+										 Increment="0.05" 
+										 Value="{Binding Settings.Issues.SuctionCupRequiredHeightToConsider}"
+                                />
+						  <TextBlock
+							  VerticalAlignment="Center"
+							  Text="Minimum height required (mm) for a suction cup detection to be reported"
+							  ToolTip.Tip="Objects with a smaller height than this value will not be reported during suction cup detection."/>
+					  </StackPanel>
                     </StackPanel>
                 </Border>
 

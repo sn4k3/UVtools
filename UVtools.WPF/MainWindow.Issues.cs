@@ -698,7 +698,8 @@ namespace UVtools.WPF
                 RequiredBlackPixelsToDrain = Settings.Issues.ResinTrapRequiredBlackPixelsToDrain,
                 MaximumPixelBrightnessToDrain = Settings.Issues.ResinTrapMaximumPixelBrightnessToDrain,
                 DetectSuctionCups = Settings.Issues.ComputeSuctionCups,
-                RequiredAreaToConsiderSuctionCup = Settings.Issues.SuctionCupRequiredAreaToConsider
+                RequiredAreaToConsiderSuctionCup = Settings.Issues.SuctionCupRequiredAreaToConsider,
+                RequiredHeightToConsiderSuctionCup = Settings.Issues.SuctionCupRequiredHeightToConsider
             };
         }
         public ResinTrapDetectionConfiguration GetResinTrapDetectionConfiguration() => GetResinTrapDetectionConfiguration(Settings.Issues.ComputeResinTraps);

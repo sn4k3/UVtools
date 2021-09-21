@@ -190,6 +190,12 @@ namespace UVtools.Core.Layers
         /// </summary>
         public uint RequiredAreaToConsiderSuctionCup { get; set; } = 100;
 
+        /// <summary>
+        /// Required minimum height (in mm) to be considered a suction cup
+        /// </summary>
+        public decimal RequiredHeightToConsiderSuctionCup { get; set; } = 0.5m;
+
+
         public ResinTrapDetectionConfiguration(bool enabled = true)
         {
             Enabled = enabled;

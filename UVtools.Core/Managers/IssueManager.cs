@@ -961,9 +961,15 @@ namespace UVtools.Core.Managers
                             progress.LockAndIncrement();
                         }
 
+                        var minSuctionHeight = resinTrapConfig.RequiredHeightToConsiderSuctionCup;
+                        var minNumLayers = Math.Ceiling((minSuctionHeight / (decimal)SlicerFile.LayerHeight));
+
                         foreach (var group in suctionGroups)
                         {
-                            AddIssue(new MainIssue(MainIssue.IssueType.SuctionCup, group));
+                            if (group.Count >= minNumLayers)
+                            {
+                                AddIssue(new MainIssue(MainIssue.IssueType.SuctionCup, group));
+                            }
                         }
                     }
                 });

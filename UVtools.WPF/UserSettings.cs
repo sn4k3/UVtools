@@ -798,6 +798,7 @@ namespace UVtools.WPF
             private byte _resinTrapRequiredBlackPixelsToDrain = 10;
             private byte _resinTrapMaximumPixelBrightnessToDrain = 30;
             private uint _suctionCupRequiredAreaToConsider = 10000;
+            private decimal _suctionCupRequiredHeightToConsider = 0.5m;
             private byte _touchingBoundMinimumPixelBrightness = 127;
             private byte _touchingBoundMarginLeft = 5;
             private byte _touchingBoundMarginTop = 5;
@@ -966,6 +967,12 @@ namespace UVtools.WPF
             {
                 get => _suctionCupRequiredAreaToConsider;
                 set => RaiseAndSetIfChanged(ref _suctionCupRequiredAreaToConsider, value);
+            }
+
+            public decimal SuctionCupRequiredHeightToConsider
+            {
+                get => _suctionCupRequiredHeightToConsider;
+                set => RaiseAndSetIfChanged(ref _suctionCupRequiredHeightToConsider, value);
             }
 
             public byte TouchingBoundMinimumPixelBrightness
