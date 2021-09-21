@@ -740,10 +740,11 @@
 
             <Button
                 VerticalAlignment="Stretch"
-              ToolTip.Tip="Remove selected issue when possible.
+              ToolTip.Tip="Remove the selected issue(s) when possible.
 &#x0a;Islands: All pixels are removed (turn black).
-&#x0a;ResinTrap: All trap areas are filled with white pixels.
-&#x0a;TouchingBounds: No action, need re-slice."
+&#x0a;ResinTrap: All areas are filled with white pixels.
+&#x0a;SuctionCup: Drills a vertical vent hole.
+&#x0a;EmptyLayers: Layers are removed."
               IsEnabled="{Binding #IssuesGrid.SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}"
               Command="{Binding OnClickIssueRemove}">
               <StackPanel Orientation="Horizontal" Spacing="5">
