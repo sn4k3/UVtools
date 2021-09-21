@@ -963,7 +963,13 @@ namespace UVtools.Core.Managers
 
                         foreach (var group in suctionGroups)
                         {
-                            AddIssue(new MainIssue(MainIssue.IssueType.SuctionCup, group));
+                            var mainIssue = new MainIssue(MainIssue.IssueType.SuctionCup, group);
+                            if ((decimal)mainIssue.TotalHeight >= resinTrapConfig.RequiredHeightToConsiderSuctionCup) { 
+                                AddIssue(mainIssue);
+                            } else
+                            {
+                                mainIssue = null;
+                            }
                         }
                     }
                 });
