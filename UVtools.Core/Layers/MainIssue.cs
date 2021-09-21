@@ -11,6 +11,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using MoreLinq;
 using UVtools.Core.Extensions;
 
 namespace UVtools.Core.Layers
@@ -64,6 +65,10 @@ namespace UVtools.Core.Layers
             ? $"{StartLayerIndex}"
             : $"{StartLayerIndex}-{EndLayerIndex}  ({LayerRangeCount})";
 
+        /// <summary>
+        /// Gets the total height that represents this issue
+        /// </summary>
+        public float TotalHeight => Layer.RoundHeight(StartLayer.LayerHeight + EndLayer.PositionZ - StartLayer.PositionZ);
 
         /// <summary>
         /// Gets the bounding rectangle of the area
