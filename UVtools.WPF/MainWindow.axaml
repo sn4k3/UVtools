@@ -857,7 +857,7 @@
                     SelectedIndex="{Binding IssueSelectedIndex, Mode=TwoWay}"
                     IsReadOnly="True"
                     ClipboardCopyMode="IncludeHeader"
-                    Items="{Binding SlicerFile.IssueManager}">
+                    Items="{Binding IssuesGridItems}">
               <DataGrid.Columns>
 
                   <DataGridTextColumn  Header="Type"

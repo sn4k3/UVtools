@@ -6,8 +6,8 @@
  *  of this license document, but changing it is not allowed.
  */
 using System;
+using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Collections;
@@ -38,6 +38,24 @@ namespace UVtools.WPF
         public DataGrid IssuesGrid;
 
         private int _issueSelectedIndex = -1;
+
+        public IEnumerable IssuesGridItems 
+        {
+            get
+            {
+                if (!IsFileLoaded || DataContext is null) return null;
+                if (Settings.Issues.DataGridGroupByType || Settings.Issues.DataGridGroupByLayerIndex)
+                {
+                    var groupView = new DataGridCollectionView(SlicerFile.IssueManager);
+                    if (Settings.Issues.DataGridGroupByType) groupView.GroupDescriptions.Add(new DataGridPathGroupDescription("Type"));
+                    if (Settings.Issues.DataGridGroupByLayerIndex) groupView.GroupDescriptions.Add(new DataGridPathGroupDescription("StartLayerIndex"));
+
+                    return groupView;
+                }
+
+                return SlicerFile.IssueManager;
+            }
+        }
         #endregion
 
         #region Properties
@@ -52,6 +70,8 @@ namespace UVtools.WPF
             get => _resinTrapDetectionStartLayer;
             set => RaiseAndSetIfChanged(ref _resinTrapDetectionStartLayer, value);
         }
+
+        public bool SuppressIssueGridSelectionEvent { get; set; }
 
         #endregion
 
@@ -381,7 +401,7 @@ namespace UVtools.WPF
 
         private void IssuesGridOnSelectionChanged(object? sender, SelectionChangedEventArgs e)
         {
-            if (DataContext is null) return;
+            if (DataContext is null || SuppressIssueGridSelectionEvent) return;
 
             if (IssuesGrid.SelectedItem is not MainIssue mainIssue)
             {
@@ -390,34 +410,7 @@ namespace UVtools.WPF
             }
 
             var issue = mainIssue.FirstOrDefault();
-
-
-            if (mainIssue.Type is MainIssue.IssueType.TouchingBound or MainIssue.IssueType.EmptyLayer || mainIssue.BoundingRectangle.IsEmpty)
-            {
-                ZoomToFit();
-            }
-            else if (!mainIssue.BoundingRectangle.IsEmpty && issue is not null)
-            {
-
-                if (Settings.LayerPreview.ZoomIssues ^ (_globalModifiers & KeyModifiers.Alt) != 0)
-                {
-                    ZoomToIssue(issue);
-                }
-                else
-                {
-                    //CenterLayerAt(GetTransposedIssueBounds(issue));
-                    // If issue is not already visible, center on it and bring it into view.
-                    // Issues already in view will not be centered, though their color may
-                    // change and the crosshair may move to reflect active selections.
-
-                    if (!LayerImageBox.GetSourceImageRegion().Contains(GetTransposedIssueBounds(issue).ToAvalonia()))
-                    {
-                        CenterAtIssue(issue);
-                    }
-                }
-            }
-
-            ForceUpdateActualLayer(mainIssue.StartLayerIndex);
+            ZoomToIssue(issue, true);
         }
 
         

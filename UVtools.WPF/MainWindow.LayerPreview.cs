@@ -960,27 +960,27 @@ namespace UVtools.WPF
                         switch (issue.Parent.Type)
                         {
                             case MainIssue.IssueType.Island:
-                                color = selectedIssues.Count > 0 && selectedIssues.Contains(issue)
+                                color = selectedIssues.Count > 0 && selectedIssues.Contains(issue.Parent)
                                     ? Settings.LayerPreview.IslandHighlightColor
                                     : Settings.LayerPreview.IslandColor;
                                 drawCrosshair = true;
 
                                 break;
                             case MainIssue.IssueType.Overhang:
-                                color = selectedIssues.Count > 0 && selectedIssues.Contains(issue)
+                                color = selectedIssues.Count > 0 && selectedIssues.Contains(issue.Parent)
                                     ? Settings.LayerPreview.OverhangHighlightColor
                                     : Settings.LayerPreview.OverhangColor;
                                 drawCrosshair = true;
 
                                 break;
                             case MainIssue.IssueType.ResinTrap:
-                                color = selectedIssues.Count > 0 && selectedIssues.Contains(issue)
+                                color = selectedIssues.Count > 0 && selectedIssues.Contains(issue.Parent)
                                     ? Settings.LayerPreview.ResinTrapHighlightColor
                                     : Settings.LayerPreview.ResinTrapColor;
                                 drawCrosshair = true;
                                 break;
                             case MainIssue.IssueType.SuctionCup:
-                                color = selectedIssues.Count > 0 && selectedIssues.Contains(issue)
+                                color = selectedIssues.Count > 0 && selectedIssues.Contains(issue.Parent)
                                     ? Settings.LayerPreview.SuctionCupHighlightColor
                                     : Settings.LayerPreview.SuctionCupColor;
                                 drawCrosshair = true;
@@ -1583,32 +1583,35 @@ namespace UVtools.WPF
         /// Zoom the layer preview to the passed issue, or if appropriate for issue type,
         /// Zoom to fit the plate or print bounds.
         /// </summary>
-        private void ZoomToIssue(Issue issue)
+        private void ZoomToIssue(Issue issue, bool forceRefreshLayer = false)
         {
-            if (issue.Parent.Type is MainIssue.IssueType.TouchingBound or MainIssue.IssueType.EmptyLayer || issue.BoundingRectangle.IsEmpty)
+            if (issue.Type is MainIssue.IssueType.TouchingBound or MainIssue.IssueType.EmptyLayer || issue.BoundingRectangle.IsEmpty)
             {
                 ZoomToFit();
+                if (forceRefreshLayer) ForceUpdateActualLayer(issue.LayerIndex);
                 return;
             }
 
-            if (!issue.BoundingRectangle.IsEmpty)
+            if (issue.BoundingRectangle.IsEmpty) return;
+
+            if (Settings.LayerPreview.ZoomIssues ^ (_globalModifiers & KeyModifiers.Alt) != 0)
             {
-                // Check to see if this zoom action will cross the crosshair fade threshold
-                /*if (tsLayerImageShowCrosshairs.Checked && !ReferenceEquals(Issues, null) && flvIssues.SelectedIndices.Count > 0
-                   && pbLayer.Zoom <= CrosshairFadeLevel && LockedZoomLevel > CrosshairFadeLevel)
-                {
-                    // Refresh the preview without the crosshairs before zooming-in.
-                    // Prevents zoomed-in crosshairs from breifly being displayed before
-                    // the Layer Preview is refreshed post-zoom.
-                    tsLayerImageShowCrosshairs.Checked = false;
-                    ShowLayer();
-                    tsLayerImageShowCrosshairs.Checked = true;
-                }*/
-
-
                 CenterLayerAt(GetTransposedIssueBounds(issue), AppSettings.LockedZoomLevel);
-
             }
+            else
+            {
+                //CenterLayerAt(GetTransposedIssueBounds(issue));
+                // If issue is not already visible, center on it and bring it into view.
+                // Issues already in view will not be centered, though their color may
+                // change and the crosshair may move to reflect active selections.
+
+                if (!LayerImageBox.GetSourceImageRegion().Contains(GetTransposedIssueBounds(issue).ToAvalonia()))
+                {
+                    CenterAtIssue(issue);
+                }
+            }
+
+            if(forceRefreshLayer) ForceUpdateActualLayer(issue.LayerIndex);
         }
 
         /// <summary>
@@ -1699,11 +1702,16 @@ namespace UVtools.WPF
         {
             //location = GetTransposedPoint(location);
             // If location clicked is within an issue, activate it.
-            foreach (var issue in SlicerFile.IssueManager.GetIssuesBy(_actualLayer))
+            foreach (var issue in SlicerFile.IssueManager.GetIssuesBy(_actualLayer).Reverse())
             {
                 if (!GetTransposedIssueBounds(issue).Contains(location)) continue;
 
+                SuppressIssueGridSelectionEvent = true;
                 IssuesGrid.SelectedItem = issue.Parent;
+                SuppressIssueGridSelectionEvent = false;
+
+                ZoomToIssue(issue, true);
+
                 SelectedTabItem = TabIssues;
                 break;
             }

@@ -19,7 +19,6 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -1174,18 +1173,7 @@ namespace UVtools.WPF
             await settingsWindow.ShowDialog(this);
             if (settingsWindow.DialogResult == DialogResults.OK)
             {
-                if (Settings.Issues.DataGridGroupByType || Settings.Issues.DataGridGroupByLayerIndex)
-                {
-                    var groupView = new DataGridCollectionView(SlicerFile.IssueManager);
-                    if (Settings.Issues.DataGridGroupByType) groupView.GroupDescriptions.Add(new DataGridPathGroupDescription("Type"));
-                    if (Settings.Issues.DataGridGroupByLayerIndex) groupView.GroupDescriptions.Add(new DataGridPathGroupDescription("StartLayerIndex"));
-
-                    IssuesGrid.Items = groupView;
-                }
-                else
-                {
-                    IssuesGrid.Items = SlicerFile.IssueManager;
-                }
+                RaisePropertyChanged(nameof(IssuesGridItems));
             }
         }
 
@@ -1622,15 +1610,6 @@ namespace UVtools.WPF
                     SlicerFile.Resolution = mat.Size;
                     RaisePropertyChanged(nameof(LayerResolutionStr));
                 }
-            }
-
-            if (Settings.Issues.DataGridGroupByType || Settings.Issues.DataGridGroupByLayerIndex)
-            {
-                var groupView = new DataGridCollectionView(SlicerFile.IssueManager);
-                if(Settings.Issues.DataGridGroupByType) groupView.GroupDescriptions.Add(new DataGridPathGroupDescription("Type"));
-                if (Settings.Issues.DataGridGroupByLayerIndex) groupView.GroupDescriptions.Add(new DataGridPathGroupDescription("StartLayerIndex"));
-
-                IssuesGrid.Items = groupView;
             }
 
             SlicerFile.IssueManager.CollectionChanged += (sender, e) =>
