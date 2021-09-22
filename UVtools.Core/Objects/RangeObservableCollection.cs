@@ -10,6 +10,16 @@
     using System.Diagnostics;
     using System.Linq;
 
+    public static class RangeObservableCollectionExtensions
+    {
+        public static RangeObservableCollection<T> ToRangeObservableCollection<T>(this IEnumerable<T> collection)
+        {
+            var list = new RangeObservableCollection<T>();
+            list.AddRange(collection);
+            return list;
+        }
+    }
+
     /// <summary>
     /// Implementation of a dynamic data collection based on generic Collection&lt;T&gt;,
     /// implementing INotifyCollectionChanged to notify listeners

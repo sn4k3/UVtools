@@ -255,6 +255,9 @@ namespace UVtools.WPF
                     and not MainIssue.IssueType.EmptyLayer) continue;
 
 
+                issueRemoveList.Add(issue);
+
+
                 if (issue.Type == MainIssue.IssueType.Island)
                 {
                     var nextLayer = issue.StartLayerIndex + 1;
@@ -263,7 +266,6 @@ namespace UVtools.WPF
                     whiteListLayers.Add(nextLayer);
                 }
                 
-                issueRemoveList.Add(issue);
                 //Issues.Remove(issue);
 
             }
