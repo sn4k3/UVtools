@@ -123,7 +123,7 @@ namespace UVtools.Core.Managers
             PrintHeightDetectionConfiguration printHeightConfig = null,
             bool emptyLayersConfig = true,
             OperationProgress progress = null)
-        { 
+        {
             islandConfig ??= new IslandDetectionConfiguration();
             overhangConfig ??= new OverhangDetectionConfiguration();
             resinTrapConfig ??= new ResinTrapDetectionConfiguration();
@@ -321,8 +321,8 @@ namespace UVtools.Core.Managers
 
                             if (pixels.Count > 0)
                             {
-                                AddIssue(new MainIssue(MainIssue.IssueType.TouchingBound, new IssueOfPoints(layer, pixels, 
-                                    new Rectangle(minx, miny, maxx-minx+1, maxy-miny+1))));
+                                AddIssue(new MainIssue(MainIssue.IssueType.TouchingBound, new IssueOfPoints(layer, pixels,
+                                    new Rectangle(minx, miny, maxx - minx + 1, maxy - miny + 1))));
                             }
                         }
 
@@ -784,19 +784,20 @@ namespace UVtools.Core.Managers
                             CvInvoke.BitwiseAnd(currentAirMap, currentContour, airOverlap);
                             var overlapCount = CvInvoke.CountNonZero(airOverlap);
 
-                            lock (SlicerFile[layerIndex].Mutex)
+                            //lock (SlicerFile[layerIndex].Mutex)
+                            //{
+                            if (overlapCount >= resinTrapConfig.RequiredBlackPixelsToDrain)
                             {
-                                if (overlapCount >= resinTrapConfig.RequiredBlackPixelsToDrain)
+                                /* this contour does overlap air, add this it our air map */
+                                CvInvoke.BitwiseOr(currentContour, currentAirMap, currentAirMap, currentContour);
+                                /* Always add the removed contour to suctionTraps (even if we aren't reporting suction traps)
+                                 * This is because contours that are placed on here get removed from resin traps in the next stage
+                                 * if you don't put them here, they never get removed even if they should :) */
+
+                                /* if we haven't defined a suctionTrap list for this layer, do so */
+
+                                lock (SlicerFile[layerIndex].Mutex)
                                 {
-                                    /* this contour does overlap air, add this it our air map */
-                                    CvInvoke.BitwiseOr(currentContour, currentAirMap, currentAirMap);
-                                    /* Always add the removed contour to suctionTraps (even if we aren't reporting suction traps)
-                                     * This is because contours that are placed on here get removed from resin traps in the next stage
-                                     * if you don't put them here, they never get removed even if they should :) */
-
-                                    /* if we haven't defined a suctionTrap list for this layer, do so */
-
-
                                     /* since we know it isn't a resin trap, it becomes a suction trap */
                                     suctionCups[layerIndex].Add(resinTraps[layerIndex][x]);
 
@@ -827,19 +828,22 @@ namespace UVtools.Core.Managers
                                                     resinTraps[item.layerIndex].Remove(item.contour);
                                                 }
                                             }
+
                                             group.Clear();
                                             resinTrapGroups.Remove(group);
                                             break;
-
                                         }
                                     }
-                                    /* to keep things tidy while we iterate resin traps, it will be left in the list for now, and removed later */
                                 }
-                                else
-                                {
-                                    /* doesn't overlap by enough, remove from air map */
-                                    CvInvoke.Subtract(currentAirMap, currentContour, currentAirMap);
+                                /* to keep things tidy while we iterate resin traps, it will be left in the list for now, and removed later */
+                            }
+                            else
+                            {
+                                /* doesn't overlap by enough, remove from air map */
+                                CvInvoke.Subtract(currentAirMap, currentContour, currentAirMap, currentContour);
 
+                                lock (SlicerFile[layerIndex].Mutex)
+                                {
                                     /* put it in a group of resin traps, used when a subsequent layer becomes a suction cup, it can convert any overlapping groups to suction cup */
                                     /* select new LayerIssue(this[layerIndex], LayerIssue.IssueType.ResinTrap, area.Contour, area.BoundingRectangle)) */
                                     var overlappingGroupIndexes = new List<int>();
@@ -847,7 +851,8 @@ namespace UVtools.Core.Managers
                                     {
                                         if (resinTrapGroups[groupIndex].Last().layerIndex != layerIndex + 1) continue;
 
-                                        if (EmguContours.ContoursIntersect(resinTrapGroups[groupIndex].Last().contour, resinTraps[layerIndex][x]))
+                                        if (EmguContours.ContoursIntersect(resinTrapGroups[groupIndex].Last().contour,
+                                            resinTraps[layerIndex][x]))
                                         {
                                             overlappingGroupIndexes.Add(groupIndex);
                                         }
@@ -881,6 +886,7 @@ namespace UVtools.Core.Managers
                                     }
                                 }
                             }
+                            //}
                         });
 
                         /* anything that converted to a suction trap needs to removed from resinTraps. Loop backwards so indexes don't shift */
