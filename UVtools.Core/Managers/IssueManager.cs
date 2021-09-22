@@ -949,7 +949,7 @@ namespace UVtools.Core.Managers
                                 {
                                     var combinedGroup = new List<IssueOfContours>();
                                     /* iterate backwards to not screw up indexes */
-                                    for (var i = overlappingGroupIndexes.Count - 1; i >= 0; i++)
+                                    for (var i = overlappingGroupIndexes.Count - 1; i >= 0; i--)
                                     {
                                         var index = overlappingGroupIndexes[i];
                                         combinedGroup.AddRange(suctionGroups[index]);
