@@ -857,7 +857,7 @@
                     SelectionMode="Extended"
                     SelectedIndex="{Binding IssueSelectedIndex, Mode=TwoWay}"
                     IsReadOnly="True"
-                    ClipboardCopyMode="IncludeHeader"
+                    ClipboardCopyMode="None"
                     Items="{Binding IssuesGridItems}">
               <DataGrid.Columns>
 
