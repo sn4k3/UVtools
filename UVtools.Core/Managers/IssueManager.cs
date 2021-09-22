@@ -733,7 +733,9 @@ namespace UVtools.Core.Managers
                     currentAirMap = null;
                 }
 
-                for (int layerIndex = resinTraps.Length-1; layerIndex >= resinTrapConfig.StartLayerIndex; layerIndex--)
+                List<List<(VectorOfVectorOfPoint contour, uint layerIndex)>> resinTrapGroups = new List<List<(VectorOfVectorOfPoint contour, uint layerIndex)>>();
+
+                for (int layerIndex = resinTraps.Length - 1; layerIndex >= resinTrapConfig.StartLayerIndex; layerIndex--)
                 {
                     if (progress.Token.IsCancellationRequested) return GetResult();
 
@@ -798,12 +800,92 @@ namespace UVtools.Core.Managers
                                     /* since we know it isn't a resin trap, it becomes a suction trap */
                                     suctionCups[layerIndex].Add(resinTraps[layerIndex][x]);
 
+                                    for (var groupIndex = resinTrapGroups.Count - 1; groupIndex >= 0; groupIndex--)
+                                    {
+                                        var group = resinTrapGroups[groupIndex];
+                                        if (group[group.Count - 1].layerIndex > layerIndex + 1)
+                                        {
+                                            // this group is disconnected from current layer by at least 1 layer, no need to process anything from here anymore 
+                                            //group.Clear();
+                                            //resinTrapGroups.Remove(group);
+                                            continue;
+                                        }
+
+                                        for (var contourIndex = group.Count - 1; contourIndex >= 0; contourIndex--)
+                                        {
+                                            if (group[contourIndex].layerIndex > layerIndex + 1) { break; }
+                                            var testContour = group[contourIndex].contour;
+
+                                            if (EmguContours.ContoursIntersect(testContour, resinTraps[layerIndex][x]))
+                                            {
+                                                // if any contours in this group, that are on the previous layer, overlap the new suction area, they are all suction areas 
+
+                                                foreach (var item in group)
+                                                {
+                                                    suctionCups[item.layerIndex].Add(item.contour);
+                                                    if (item.layerIndex != layerIndex)
+                                                    {
+                                                        lock (SlicerFile[layerIndex].Mutex)
+                                                        {
+                                                            resinTraps[item.layerIndex].Remove(item.contour);
+                                                        }
+                                                    }
+                                                }
+                                                group.Clear();
+                                                resinTrapGroups.Remove(group);
+                                                break;
+                                            }
+
+                                        }
+                                    }
                                     /* to keep things tidy while we iterate resin traps, it will be left in the list for now, and removed later */
                                 }
                                 else
                                 {
                                     /* doesn't overlap by enough, remove from air map */
                                     CvInvoke.Subtract(currentAirMap, currentContour, currentAirMap);
+
+                                    /* put it in a group of resin traps, used when a subsequent layer becomes a suction cup, it can convert any overlapping groups to suction cup */
+                                    /* select new LayerIssue(this[layerIndex], LayerIssue.IssueType.ResinTrap, area.Contour, area.BoundingRectangle)) */
+                                    var overlappingGroupIndexes = new List<int>();
+                                    for (var groupIndex = 0; groupIndex < resinTrapGroups.Count; groupIndex++)
+                                    {
+                                        if (resinTrapGroups[groupIndex].Last().layerIndex != layerIndex + 1) continue;
+
+                                        if (EmguContours.ContoursIntersect(resinTrapGroups[groupIndex].Last().contour, resinTraps[layerIndex][x]))
+                                        {
+                                            overlappingGroupIndexes.Add(groupIndex);
+                                        }
+                                    }
+
+                                    if (overlappingGroupIndexes.Count == 0)
+                                    {
+                                        // no overlaps, make a single issue 
+                                        resinTrapGroups.Add(new List<(VectorOfVectorOfPoint contour, uint layerIndex)> { (resinTraps[layerIndex][x], (uint)layerIndex) });
+                                    }
+                                    else if (overlappingGroupIndexes.Count == 1)
+                                    {
+                                        resinTrapGroups[overlappingGroupIndexes[0]].Add((resinTraps[layerIndex][x], (uint)layerIndex));
+                                    }
+                                    else
+                                    {
+                                        var combinedGroup = new List<(VectorOfVectorOfPoint contour, uint layerIndex)>();
+                                        foreach (var index in overlappingGroupIndexes)
+                                        {
+                                            combinedGroup.AddRange(resinTrapGroups[index]);
+                                        }
+
+                                        for (var index = overlappingGroupIndexes.Count - 1; index >= 0; index--)
+                                        {
+                                            resinTrapGroups[index].Clear();
+                                            resinTrapGroups.RemoveAt(index);
+                                        }
+
+                                        combinedGroup.Add((resinTraps[layerIndex][x], (uint)layerIndex));
+                                        resinTrapGroups.Add(combinedGroup);
+                                    }
+
+
                                 }
                             }
                         });
@@ -989,9 +1071,10 @@ namespace UVtools.Core.Managers
                         foreach (var group in suctionGroups)
                         {
                             var mainIssue = new MainIssue(MainIssue.IssueType.SuctionCup, group);
-                            if ((decimal)mainIssue.TotalHeight >= resinTrapConfig.RequiredHeightToConsiderSuctionCup) { 
+                            if ((decimal)mainIssue.TotalHeight >= resinTrapConfig.RequiredHeightToConsiderSuctionCup)
+                            {
                                 AddIssue(mainIssue);
-                            } 
+                            }
                         }
                     }
                 });
