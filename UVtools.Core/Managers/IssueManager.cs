@@ -733,7 +733,7 @@ namespace UVtools.Core.Managers
                     currentAirMap = null;
                 }
 
-                List<List<(VectorOfVectorOfPoint contour, uint layerIndex)>> resinTrapGroups = new List<List<(VectorOfVectorOfPoint contour, uint layerIndex)>>();
+                var resinTrapGroups = new List<List<(VectorOfVectorOfPoint contour, uint layerIndex)>>();
 
                 for (int layerIndex = resinTraps.Length - 1; layerIndex >= resinTrapConfig.StartLayerIndex; layerIndex--)
                 {
@@ -803,7 +803,7 @@ namespace UVtools.Core.Managers
                                     for (var groupIndex = resinTrapGroups.Count - 1; groupIndex >= 0; groupIndex--)
                                     {
                                         var group = resinTrapGroups[groupIndex];
-                                        if (group[group.Count - 1].layerIndex > layerIndex + 1)
+                                        if (group[^1].layerIndex > layerIndex + 1)
                                         {
                                             // this group is disconnected from current layer by at least 1 layer, no need to process anything from here anymore 
                                             //group.Clear();
@@ -813,28 +813,23 @@ namespace UVtools.Core.Managers
 
                                         for (var contourIndex = group.Count - 1; contourIndex >= 0; contourIndex--)
                                         {
-                                            if (group[contourIndex].layerIndex > layerIndex + 1) { break; }
+                                            if (group[contourIndex].layerIndex > layerIndex + 1) break;
                                             var testContour = group[contourIndex].contour;
 
-                                            if (EmguContours.ContoursIntersect(testContour, resinTraps[layerIndex][x]))
-                                            {
-                                                // if any contours in this group, that are on the previous layer, overlap the new suction area, they are all suction areas 
+                                            if (!EmguContours.ContoursIntersect(testContour, resinTraps[layerIndex][x])) continue;
+                                            // if any contours in this group, that are on the previous layer, overlap the new suction area, they are all suction areas 
 
-                                                foreach (var item in group)
+                                            foreach (var item in group)
+                                            {
+                                                suctionCups[item.layerIndex].Add(item.contour);
+                                                if (item.layerIndex != layerIndex)
                                                 {
-                                                    suctionCups[item.layerIndex].Add(item.contour);
-                                                    if (item.layerIndex != layerIndex)
-                                                    {
-                                                        lock (SlicerFile[layerIndex].Mutex)
-                                                        {
-                                                            resinTraps[item.layerIndex].Remove(item.contour);
-                                                        }
-                                                    }
+                                                    resinTraps[item.layerIndex].Remove(item.contour);
                                                 }
-                                                group.Clear();
-                                                resinTrapGroups.Remove(group);
-                                                break;
                                             }
+                                            group.Clear();
+                                            resinTrapGroups.Remove(group);
+                                            break;
 
                                         }
                                     }
@@ -884,8 +879,6 @@ namespace UVtools.Core.Managers
                                         combinedGroup.Add((resinTraps[layerIndex][x], (uint)layerIndex));
                                         resinTrapGroups.Add(combinedGroup);
                                     }
-
-
                                 }
                             }
                         });
