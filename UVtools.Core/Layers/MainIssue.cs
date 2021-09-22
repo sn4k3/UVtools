@@ -11,7 +11,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-using MoreLinq;
 using UVtools.Core.Extensions;
 
 namespace UVtools.Core.Layers
@@ -125,7 +124,7 @@ namespace UVtools.Core.Layers
 
             BoundingRectangle = boundingRectangle;
             Area = area;
-            Childs = issues.ToArray();
+            Childs = issues.OrderBy(issue => issue.LayerIndex).ToArray();
             Sort();
         }
 
