@@ -1574,60 +1574,54 @@
         
         <StackPanel Orientation="Vertical">
 
-          <Grid ColumnDefinitions="Auto,Auto,*">
-            <Button 
-              Grid.Column="0"
-              Command="{Binding Logs.Clear}">
+          <Grid RowDefinitions="Auto"
+                ColumnDefinitions="Auto,Auto,*">
+            <Button Grid.Row="0" Grid.Column="0"
+                     Command="{Binding Logs.Clear}">
               <StackPanel Orientation="Horizontal">
                 <Image Source="/Assets/Icons/trash-16x16.png" Width="16"/>
                 <TextBlock Margin="5,0,0,0">Clear</TextBlock>
               </StackPanel>
             </Button>
 
-            <CheckBox
-              Grid.Column="1"
-              VerticalAlignment="Center"
+            <CheckBox Grid.Row="0" Grid.Column="1"
+                      VerticalAlignment="Center"
                       ToolTip.Tip="Shows extra information usefull to debug problems."
                       IsChecked="{Binding IsVerbose}" 
                       Content="Verbose"
-                      Margin="5,0,0,0"
-                      />
+                      Margin="5,0,0,0"/>
 
-            <TextBlock
-              Grid.Column="2"
-              HorizontalAlignment="Right"
-              VerticalAlignment="Center" 
-              Text="{Binding Logs.Count, StringFormat=Operations: \{0\}}"/>
+            <TextBlock Grid.Row="0" Grid.Column="2"
+                       HorizontalAlignment="Right"
+                       VerticalAlignment="Center" 
+                       Text="{Binding Logs.Count, StringFormat=Operations: \{0\}}"/>
           </Grid>
-          
-          
-          <StackPanel HorizontalAlignment="Stretch" VerticalAlignment="Center" Orientation="Horizontal">
-            
-          </StackPanel>
-          <DataGrid Items="{Binding Logs}"
-                    CanUserReorderColumns="True"
-                    CanUserResizeColumns="True"
-                    CanUserSortColumns="True"
-                    GridLinesVisibility="All"
-                    IsReadOnly="True"
-                    ClipboardCopyMode="IncludeHeader"
-                    SelectionMode="Extended"
-                    >
-            <DataGrid.Columns>
-              <DataGridTextColumn  Header="#"
-                                    Binding="{Binding Index}"
-                                    Width="Auto" />
-              <DataGridTextColumn Header="Started"
-                                  Binding="{Binding StartTime}"
-                                  Width="Auto" />
-              <DataGridTextColumn Header="Time(s)"
-                                  Binding="{Binding ElapsedTime}"
-                                  Width="Auto" />
-              <DataGridTextColumn Header="Description"
-                                  Binding="{Binding Description}"
-                                  Width="Auto" />
-              </DataGrid.Columns>
-          </DataGrid>
+
+            <DataGrid Items="{Binding Logs}"
+                      VerticalAlignment="Stretch"
+                      CanUserReorderColumns="True"
+                      CanUserResizeColumns="True"
+                      CanUserSortColumns="True"
+                      GridLinesVisibility="All"
+                      IsReadOnly="True"
+                      ClipboardCopyMode="IncludeHeader"
+                      SelectionMode="Extended">
+                <DataGrid.Columns>
+                    <DataGridTextColumn  Header="#"
+                                         Binding="{Binding Index}"
+                                         Width="Auto" />
+                    <DataGridTextColumn Header="Started"
+                                        Binding="{Binding StartTime}"
+                                        Width="Auto" />
+                    <DataGridTextColumn Header="Time(s)"
+                                        Binding="{Binding ElapsedTime}"
+                                        Width="Auto" />
+                    <DataGridTextColumn Header="Description"
+                                        Binding="{Binding Description}"
+                                        Width="Auto" />
+                </DataGrid.Columns>
+            </DataGrid>
+
         </StackPanel>
       </TabItem>
 
