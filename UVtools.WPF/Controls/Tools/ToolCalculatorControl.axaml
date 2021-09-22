@@ -311,7 +311,7 @@
             HorizontalAlignment="Right"
             Text="Bottom lift height:"/>
           <NumericUpDown Grid.Row="0" Grid.Column="6"
-                         Classes="ValueLabel ValueLabel_s"
+                         Classes="ValueLabel ValueLabel_mm"
                          IsVisible="{Binding SlicerFile.CanUseBottomLightOffDelay}"
                          IsEnabled="{Binding SlicerFile.CanUseBottomLightOffDelay}"
                          VerticalAlignment="Center"
