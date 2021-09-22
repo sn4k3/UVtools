@@ -948,6 +948,8 @@ namespace UVtools.Core.Managers
                                 else
                                 {
                                     var combinedGroup = new List<IssueOfContours>();
+                                    /* reverse them for removal */
+                                    overlappingGroupIndexes.Reverse();
                                     foreach (var index in overlappingGroupIndexes)
                                     {
                                         combinedGroup.AddRange(suctionGroups[index]);
