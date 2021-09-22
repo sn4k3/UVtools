@@ -19,7 +19,7 @@ namespace UVtools.Core.Layers
         /// </summary>
         public MainIssue Parent { get; internal set; }
 
-        public MainIssue.IssueType Type => Parent.Type;
+        public MainIssue.IssueType? Type => Parent?.Type;
 
         /// <summary>
         /// Gets the layer where this issue is present

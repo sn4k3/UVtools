@@ -17,7 +17,6 @@ using System.Threading.Tasks;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
-using Emgu.CV.Util;
 using MoreLinq.Extensions;
 using UVtools.Core.EmguCV;
 using UVtools.Core.Extensions;

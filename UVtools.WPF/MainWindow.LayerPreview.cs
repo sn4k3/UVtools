@@ -141,13 +141,14 @@ namespace UVtools.WPF
                         if (IssuesGrid.SelectedItems.Count == 0 || !IssuesGrid.SelectedItems.Cast<MainIssue>().Any(
                             mainIssue => // Find a valid candidate to update layer preview, otherwise quit
                                 mainIssue.IsIssueInBetween(_actualLayer) 
-                                && mainIssue.Type is not MainIssue.IssueType.EmptyLayer and not MainIssue.IssueType.TouchingBound)) return;
+                                && mainIssue.Type is not MainIssue.IssueType.TouchingBound and not MainIssue.IssueType.EmptyLayer)) return;
                     }
                     else
                     {
                         if (!SlicerFile.IssueManager.Any(
                             mainIssue => // Find a valid candidate to update layer preview, otherwise quit
-                                mainIssue.IsIssueInBetween(_actualLayer) && mainIssue.Type is not MainIssue.IssueType.EmptyLayer and not MainIssue.IssueType.TouchingBound)) return;
+                                mainIssue.IsIssueInBetween(_actualLayer)
+                                && mainIssue.Type is not MainIssue.IssueType.TouchingBound and not MainIssue.IssueType.EmptyLayer)) return;
                     }
 
                     // A timer is used here rather than invoking ShowLayer directly to eliminate sublte visual flashing
@@ -951,7 +952,10 @@ namespace UVtools.WPF
                 if (_showLayerImageIssues && SlicerFile.IssueManager.Count > 0)
                 {
                     //var count = 0;
-                    foreach (var issue in SlicerFile.IssueManager.GetIssuesBy(_actualLayer).Where(issue => issue.Parent.Type is not MainIssue.IssueType.PrintHeight and not MainIssue.IssueType.EmptyLayer))
+                    foreach (var issue in SlicerFile.IssueManager.GetIssuesBy(_actualLayer)
+                        .Where(issue => issue.Parent.Type 
+                            is not MainIssue.IssueType.PrintHeight 
+                            and not MainIssue.IssueType.EmptyLayer))
                     {
                         //count++;
                         var color = Color.Empty;
@@ -1269,17 +1273,15 @@ namespace UVtools.WPF
                 {
 
 
-                    foreach (MainIssue mainIssue in selectedIssues)
+                    // Don't render crosshairs for selected issue that are not on the current layer, or for 
+                    // issue types that don't have a specific location or bounds.
+                    foreach (var issue in SlicerFile.IssueManager.GetIssuesBy(_actualLayer)
+                        .Where(issue => issue.Parent.Type 
+                            is not MainIssue.IssueType.TouchingBound 
+                            and not MainIssue.IssueType.PrintHeight 
+                            and not MainIssue.IssueType.EmptyLayer))
                     {
-                        // Don't render crosshairs for selected issue that are not on the current layer, or for 
-                        // issue types that don't have a specific location or bounds.
-                        foreach (var issue in SlicerFile.IssueManager.GetIssuesBy(_actualLayer)
-                            .Where(issue => issue.Parent.Type is not MainIssue.IssueType.PrintHeight and not MainIssue.IssueType.EmptyLayer))
-                        {
-                            DrawCrosshair(issue.BoundingRectangle);
-                        }
-
-                        
+                        DrawCrosshair(issue.BoundingRectangle);
                     }
                 }
 
@@ -1334,10 +1336,10 @@ namespace UVtools.WPF
 
 
             // LEFT
-            var startPoint = new System.Drawing.Point(Math.Max(0, rect.X - Settings.LayerPreview.CrosshairMargin - 1),
+            var startPoint = new Point(Math.Max(0, rect.X - Settings.LayerPreview.CrosshairMargin - 1),
                 rect.Y + rect.Height / 2);
             var endPoint =
-                new System.Drawing.Point(
+                new Point(
                     Settings.LayerPreview.CrosshairLength == 0
                         ? 0
                         : (int)Math.Max(0, startPoint.X - Settings.LayerPreview.CrosshairLength + 1),
@@ -1364,9 +1366,9 @@ namespace UVtools.WPF
                 lineThickness);
 
             // TOP
-            startPoint = new System.Drawing.Point(rect.X + rect.Width / 2,
+            startPoint = new Point(rect.X + rect.Width / 2,
                 Math.Max(0, rect.Y - Settings.LayerPreview.CrosshairMargin - 1));
-            endPoint = new System.Drawing.Point(startPoint.X,
+            endPoint = new Point(startPoint.X,
                 (int)(Settings.LayerPreview.CrosshairLength == 0
                     ? 0
                     : Math.Max(0, startPoint.Y - Settings.LayerPreview.CrosshairLength + 1)));
@@ -1585,14 +1587,12 @@ namespace UVtools.WPF
         /// </summary>
         private void ZoomToIssue(Issue issue, bool forceRefreshLayer = false)
         {
-            if (issue.Type is MainIssue.IssueType.TouchingBound or MainIssue.IssueType.EmptyLayer || issue.BoundingRectangle.IsEmpty)
+            if (issue.Type is MainIssue.IssueType.EmptyLayer || issue.BoundingRectangle.IsEmpty)
             {
                 ZoomToFit();
                 if (forceRefreshLayer) ForceUpdateActualLayer(issue.LayerIndex);
                 return;
             }
-
-            if (issue.BoundingRectangle.IsEmpty) return;
 
             if (Settings.LayerPreview.ZoomIssues ^ (_globalModifiers & KeyModifiers.Alt) != 0)
             {
@@ -1620,7 +1620,7 @@ namespace UVtools.WPF
         /// </summary>
         private void CenterAtIssue(Issue issue)
         {
-            if (issue.Parent.Type is MainIssue.IssueType.TouchingBound or MainIssue.IssueType.EmptyLayer || issue.BoundingRectangle.IsEmpty)
+            if (issue.Parent.Type is MainIssue.IssueType.EmptyLayer || issue.BoundingRectangle.IsEmpty)
             {
                 ZoomToFit();
             }
@@ -1702,15 +1702,16 @@ namespace UVtools.WPF
         {
             //location = GetTransposedPoint(location);
             // If location clicked is within an issue, activate it.
-            foreach (var issue in SlicerFile.IssueManager.GetIssuesBy(_actualLayer).Reverse())
+            var issues = SlicerFile.IssueManager.GetIssuesBy(_actualLayer);
+            for (var i = issues.Length-1; i >= 0; i--)
             {
-                if (!GetTransposedIssueBounds(issue).Contains(location)) continue;
+                if (!GetTransposedIssueBounds(issues[i]).Contains(location)) continue;
 
                 SuppressIssueGridSelectionEvent = true;
-                IssuesGrid.SelectedItem = issue.Parent;
+                IssuesGrid.SelectedItem = issues[i].Parent;
                 SuppressIssueGridSelectionEvent = false;
 
-                ZoomToIssue(issue, true);
+                ZoomToIssue(issues[i], true);
 
                 SelectedTabItem = TabIssues;
                 break;

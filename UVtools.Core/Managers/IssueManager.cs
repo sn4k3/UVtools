@@ -219,7 +219,7 @@ namespace UVtools.Core.Managers
                     using (var image = layer.LayerMat)
                     {
                         int step = image.Step;
-                        var span = image.GetDataSpan<byte>();
+                        var span = image.GetDataByteSpan();
 
                         if (touchBoundConfig.Enabled)
                         {
@@ -230,6 +230,12 @@ namespace UVtools.Core.Managers
                             bool touchLeft = layer.BoundingRectangle.Left <= touchBoundConfig.MarginLeft;
                             bool touchRight = layer.BoundingRectangle.Right >=
                                               image.Width - touchBoundConfig.MarginRight;
+
+                            int minx = int.MaxValue;
+                            int miny = int.MaxValue;
+                            int maxx = 0;
+                            int maxy = 0;
+
                             if (touchTop || touchBottom)
                             {
                                 for (int x = 0; x < image.Width; x++) // Check Top and Bottom bounds
@@ -242,6 +248,10 @@ namespace UVtools.Core.Managers
                                                 touchBoundConfig.MinimumPixelBrightness)
                                             {
                                                 pixels.Add(new Point(x, y));
+                                                minx = Math.Min(minx, x);
+                                                miny = Math.Min(miny, y);
+                                                maxx = Math.Max(maxx, x);
+                                                maxy = Math.Max(maxy, y);
                                             }
                                         }
                                     }
@@ -256,6 +266,10 @@ namespace UVtools.Core.Managers
                                                 touchBoundConfig.MinimumPixelBrightness)
                                             {
                                                 pixels.Add(new Point(x, y));
+                                                minx = Math.Min(minx, x);
+                                                miny = Math.Min(miny, y);
+                                                maxx = Math.Max(maxx, x);
+                                                maxy = Math.Max(maxy, y);
                                             }
                                         }
                                     }
@@ -277,6 +291,10 @@ namespace UVtools.Core.Managers
                                                 touchBoundConfig.MinimumPixelBrightness)
                                             {
                                                 pixels.Add(new Point(x, y));
+                                                minx = Math.Min(minx, x);
+                                                miny = Math.Min(miny, y);
+                                                maxx = Math.Max(maxx, x);
+                                                maxy = Math.Max(maxy, y);
                                             }
                                         }
                                     }
@@ -291,6 +309,10 @@ namespace UVtools.Core.Managers
                                                 touchBoundConfig.MinimumPixelBrightness)
                                             {
                                                 pixels.Add(new Point(x, y));
+                                                minx = Math.Min(minx, x);
+                                                miny = Math.Min(miny, y);
+                                                maxx = Math.Max(maxx, x);
+                                                maxy = Math.Max(maxy, y);
                                             }
                                         }
                                     }
@@ -299,7 +321,8 @@ namespace UVtools.Core.Managers
 
                             if (pixels.Count > 0)
                             {
-                                AddIssue(new MainIssue(MainIssue.IssueType.TouchingBound, new IssueOfPoints(layer, pixels)));
+                                AddIssue(new MainIssue(MainIssue.IssueType.TouchingBound, new IssueOfPoints(layer, pixels, 
+                                    new Rectangle(minx, miny, maxx-minx+1, maxy-miny+1))));
                             }
                         }
 
