@@ -527,6 +527,114 @@ namespace UVtools.Core.Extensions
         }
         #endregion
 
+        #region Find methods
+
+        /// <summary>
+        /// Finds the first negative (Black) pixel
+        /// </summary>
+        /// <param name="mat"></param>
+        /// <returns>Pixel position in the span, or -1 if not found</returns>
+        public static int FindFirstNegativePixel(this Mat mat)
+        {
+            return mat.FindFirstPixelEqualTo(0);
+        }
+
+        /// <summary>
+        /// Finds the first positive pixel
+        /// </summary>
+        /// <param name="mat"></param>
+        /// <returns>Pixel position in the span, or -1 if not found</returns>
+        public static int FindFirstPositivePixel(this Mat mat)
+        {
+            return mat.FindFirstPixelEqualOrGreaterThan(1);
+        }
+
+        /// <summary>
+        /// Finds the first pixel that is <see cref="value"/>
+        /// </summary>
+        /// <param name="mat"></param>
+        /// <param name="value"></param>
+        /// <returns>Pixel position in the span, or -1 if not found</returns>
+        public static int FindFirstPixelEqualTo(this Mat mat, byte value)
+        {
+            var span = mat.GetDataByteSpan();
+            for (var i = 0; i < span.Length; i++)
+            {
+                if (span[i] == value) return i;
+            }
+
+            return -1;
+        }
+
+        /// <summary>
+        /// Finds the first pixel that is at less than <see cref="value"/>
+        /// </summary>
+        /// <param name="mat"></param>
+        /// <param name="value"></param>
+        /// <returns>Pixel position in the span, or -1 if not found</returns>
+        public static int FindFirstPixelLessThan(this Mat mat, byte value)
+        {
+            var span = mat.GetDataByteSpan();
+            for (var i = 0; i < span.Length; i++)
+            {
+                if (span[i] < value) return i;
+            }
+
+            return -1;
+        }
+
+        /// <summary>
+        /// Finds the first pixel that is at less or equal than <see cref="value"/>
+        /// </summary>
+        /// <param name="mat"></param>
+        /// <param name="value"></param>
+        /// <returns>Pixel position in the span, or -1 if not found</returns>
+        public static int FindFirstPixelEqualOrLessThan(this Mat mat, byte value)
+        {
+            var span = mat.GetDataByteSpan();
+            for (var i = 0; i < span.Length; i++)
+            {
+                if (span[i] <= value) return i;
+            }
+
+            return -1;
+        }
+
+        /// <summary>
+        /// Finds the first pixel that is at greater than <see cref="value"/>
+        /// </summary>
+        /// <param name="mat"></param>
+        /// <param name="value"></param>
+        /// <returns>Pixel position in the span, or -1 if not found</returns>
+        public static int FindFirstPixelGreaterThan(this Mat mat, byte value)
+        {
+            var span = mat.GetDataByteSpan();
+            for (var i = 0; i < span.Length; i++)
+            {
+                if (span[i] > value) return i;
+            }
+
+            return -1;
+        }
+
+        /// <summary>
+        /// Finds the first pixel that is at equal or greater than <see cref="value"/>
+        /// </summary>
+        /// <param name="mat"></param>
+        /// <param name="value"></param>
+        /// <returns>Pixel position in the span, or -1 if not found</returns>
+        public static int FindFirstPixelEqualOrGreaterThan(this Mat mat, byte value)
+        {
+            var span = mat.GetDataByteSpan();
+            for (var i = 0; i < span.Length; i++)
+            {
+                if (span[i] >= value) return i;
+            }
+
+            return -1;
+        }
+        #endregion
+
         #region Transform methods
         public static void Transform(this Mat src, double xScale, double yScale, double xTrans = 0, double yTrans = 0, Size dstSize = default, Inter interpolation = Inter.Linear)
         {
@@ -1009,7 +1117,7 @@ namespace UVtools.Core.Extensions
 
                 // if there are no more 'white' pixels in the image, then
                 // break from the loop
-                if (CvInvoke.CountNonZero(image) == 0) break;
+                if (image.FindFirstPixelEqualOrGreaterThan(1) == -1) break;
             }
 
             return skeleton;

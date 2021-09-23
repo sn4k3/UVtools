@@ -606,12 +606,12 @@ namespace UVtools.Core.Managers
             {
                 if (matCache[layerIndex] is not null) return;
                 int fromLayerIndex = (int)layerIndex;
-                int toLayerIndex = (int)Math.Min(SlicerFile.LayerCount, layerIndex + Environment.ProcessorCount * 10 + 1);
+                int toLayerIndex = (int)Math.Min(SlicerFile.LayerCount, layerIndex + 1 + Environment.ProcessorCount * 5);
 
                 if (!direction)
                 {
                     toLayerIndex = fromLayerIndex + 1;
-                    fromLayerIndex = (int)Math.Max(resinTrapConfig.StartLayerIndex, fromLayerIndex - Environment.ProcessorCount * 10);
+                    fromLayerIndex = (int)Math.Max(resinTrapConfig.StartLayerIndex, fromLayerIndex - Environment.ProcessorCount * 5);
                 }
 
                 Parallel.For(fromLayerIndex, toLayerIndex,
@@ -899,7 +899,6 @@ namespace UVtools.Core.Managers
                                 resinTraps[layerIndex] = null;
                                 break;
                             }
-
                         }
                     }
 
@@ -1031,9 +1030,8 @@ namespace UVtools.Core.Managers
                                 var overlappingGroupIndexes = new List<int>();
                                 for (var x = 0; x < suctionGroups.Count; x++)
                                 {
-                                    if (suctionGroups[x].Last().LayerIndex != layerIndex + 1) continue;
-
-                                    using var vec = new VectorOfVectorOfPoint(suctionGroups[x].Last().Contours);
+                                    if (suctionGroups[x][^1].LayerIndex != layerIndex + 1) continue;
+                                    using var vec = new VectorOfVectorOfPoint(suctionGroups[x][^1].Contours);
                                     if (EmguContours.ContoursIntersect(trap, vec))
                                     {
                                         overlappingGroupIndexes.Add(x);
@@ -1103,25 +1101,23 @@ namespace UVtools.Core.Managers
 
         public MainIssue[] DrillSuctionCupsForIssues(IEnumerable<MainIssue> issues, int ventHoleDiameter, OperationProgress progress)
         {
-            (bool canDrill, Point location) GetDrillLocation(IssueOfContours issue, int diameter)
+            Point GetDrillLocation(IssueOfContours issue, int diameter)
             {
                 using var vecCentroid = new VectorOfPoint(issue.Contours[0]);
                 var centroid = EmguContour.GetCentroid(vecCentroid);
+                if (centroid.IsAnyNegative()) return centroid;
                 using var circleCheck = EmguExtensions.InitMat(issue.BoundingRectangle.Size);
                 using var contourMat = EmguExtensions.InitMat(issue.BoundingRectangle.Size);
-                using var overlapCheck = EmguExtensions.InitMat(issue.BoundingRectangle.Size);
 
                 var inverseOffset = new Point(issue.BoundingRectangle.X * -1, issue.BoundingRectangle.Y * -1);
                 using var vec = new VectorOfVectorOfPoint(issue.Contours);
                 CvInvoke.DrawContours(contourMat, vec, -1, EmguExtensions.WhiteColor, -1, LineType.EightConnected, null, int.MaxValue, inverseOffset);
-
                 CvInvoke.Circle(circleCheck, new(centroid.X + inverseOffset.X, centroid.Y + inverseOffset.Y), diameter, EmguExtensions.WhiteColor, -1);
+                CvInvoke.BitwiseAnd(circleCheck, contourMat, circleCheck);
 
-                CvInvoke.BitwiseAnd(circleCheck, contourMat, overlapCheck);
-
-                return CvInvoke.CountNonZero(overlapCheck) > 0
-                    ? (true, centroid)       /* 5px centroid is inside layer! drill baby drill */
-                    : (false, new Point()); /* centroid is not inside the actual contour, no drill */
+                return circleCheck.FindFirstPositivePixel() != -1
+                    ? centroid       /* 5px centroid is inside layer! drill baby drill */
+                    : new Point(-1,-1); /* centroid is not inside the actual contour, no drill */
             }
 
             var drillOps = new List<PixelOperation>();
@@ -1131,8 +1127,8 @@ namespace UVtools.Core.Managers
             foreach (var mainIssue in issues)
             {
                 var drillPoint = GetDrillLocation((IssueOfContours)mainIssue[0], ventHoleDiameter);
-                if (!drillPoint.canDrill) continue;
-                drillOps.Add(new PixelDrainHole(mainIssue.StartLayerIndex, drillPoint.location, (ushort)ventHoleDiameter));
+                if (drillPoint.IsAnyNegative()) continue;
+                drillOps.Add(new PixelDrainHole(mainIssue.StartLayerIndex, drillPoint, (ushort)ventHoleDiameter));
                 drilledIssues.Add(mainIssue);
             }
 

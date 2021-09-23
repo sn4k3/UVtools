@@ -14,6 +14,7 @@ namespace UVtools.Core.Extensions
     {
         public static double FindLength(Point start, Point end) => Math.Sqrt(Math.Pow(end.Y - start.Y, 2) + Math.Pow(end.X - start.X, 2));
 
+        public static bool IsAnyNegative(this Point point) => point.X < 0 || point.Y < 0;
         public static bool IsBothNegative(this Point point) => point.X < 0 && point.Y < 0;
         public static bool IsBothZeroOrPositive(this Point point) => point.X >= 0 && point.Y >= 0;
 
