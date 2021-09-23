@@ -241,7 +241,7 @@ namespace UVtools.Core.EmguCV
 
             CvInvoke.BitwiseAnd(contour1Mat, contour2Mat, contour1Mat);
 
-            return contour1Mat.FindFirstPositivePixel() != -1;
+            return !contour1Mat.IsZeroed();
         }
     }
 }

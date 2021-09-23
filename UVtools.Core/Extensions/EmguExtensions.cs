@@ -515,15 +515,9 @@ namespace UVtools.Core.Extensions
         /// <param name="mat"></param>
         /// <param name="threshold">Pixel brightness threshold</param>
         /// <returns></returns>
-        public static unsafe bool IsZeroed(this Mat mat, byte threshold = 0)
+        public static bool IsZeroed(this Mat mat, byte threshold = 0)
         {
-            var ptr = mat.GetBytePointer();
-            var length = mat.GetLength();
-            for (var i = 0; i < length; i++)
-            {
-                if (ptr[i] > threshold) return false;
-            }
-            return true;
+            return mat.FindFirstPixelGreaterThan(threshold) == -1;
         }
         #endregion
 
@@ -546,7 +540,7 @@ namespace UVtools.Core.Extensions
         /// <returns>Pixel position in the span, or -1 if not found</returns>
         public static int FindFirstPositivePixel(this Mat mat)
         {
-            return mat.FindFirstPixelEqualOrGreaterThan(1);
+            return mat.FindFirstPixelGreaterThan(0);
         }
 
         /// <summary>
@@ -1117,7 +1111,7 @@ namespace UVtools.Core.Extensions
 
                 // if there are no more 'white' pixels in the image, then
                 // break from the loop
-                if (image.FindFirstPixelEqualOrGreaterThan(1) == -1) break;
+                if (image.IsZeroed()) break;
             }
 
             return skeleton;

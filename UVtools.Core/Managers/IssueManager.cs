@@ -1115,7 +1115,7 @@ namespace UVtools.Core.Managers
                 CvInvoke.Circle(circleCheck, new(centroid.X + inverseOffset.X, centroid.Y + inverseOffset.Y), diameter, EmguExtensions.WhiteColor, -1);
                 CvInvoke.BitwiseAnd(circleCheck, contourMat, circleCheck);
 
-                return circleCheck.FindFirstPositivePixel() != -1
+                return !circleCheck.IsZeroed()
                     ? centroid       /* 5px centroid is inside layer! drill baby drill */
                     : new Point(-1,-1); /* centroid is not inside the actual contour, no drill */
             }

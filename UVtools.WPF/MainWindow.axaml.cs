@@ -88,7 +88,7 @@ namespace UVtools.WPF
                 Tag = new OperationResize(),
                 Icon = new Avalonia.Controls.Image
                 {
-                    Source = new Bitmap(App.GetAsset("/Assets/Icons/crop-16x16.png"))
+                    Source = new Bitmap(App.GetAsset("/Assets/Icons/expand-alt-16x16.png"))
                 }
             },
             new()

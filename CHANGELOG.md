@@ -1,8 +1,26 @@
 # Changelog
 
+## 23/09/2021 - v2.23.1
+
+- **Issues:**
+   - (Add) Suction cups: Additional setting to specify the required minimum height to be flagged as a issue (#302)
+   - (Change) Allow touching bounds to have a bounding rectangle and zoom into the issue
+   - (Change) Disable the ability to copy issues row text from list as this is crashing the program
+   - (Change) Decrease cache count of the layers from x10 to x5 to free RAM
+   - (Fix) Touching bounds are reporting areas of 0
+   - (Fix) Draw crosshair for issues are called multiple times
+   - (Fix) Detection error when resin traps are enabled on some cases (#303)
+   - (Fix) Resin trap false-positives (#305)
+   - (Fix) When removing multiple islands at once only the first is cleared from the issue list
+- **UI:**
+   - (Change) Tool - Resize icon
+   - (Change) Move "Crosshairs" button inside "Issues" button
+- (Add) Tool - Morph - Offset crop: Like erode but discards the outer pixels
+- (Fix) Corrected bottom lift unit label in light-off delay calculator (#304)
+
 ## 21/09/2021 - v2.23.0
 
-- Issues:
+- **Issues:**
    - **Suction cups:**
       - Add a auto repair feature for this issues by drill a vertical vent hole (#296)
       - Add a manual repair feature for this issues by drill a vertical vent hole when click on remove (#301)

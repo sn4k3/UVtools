@@ -31,14 +31,17 @@ namespace UVtools.Core.Operations
             [Description("Dilate: Expands the boundaries within the object")]
             Dilate = MorphOp.Dilate,
 
-            [Description("Gap Closing - Closes small holes inside the objects")]
+            [Description("Gap closing: Closes small holes inside the objects")]
             Close = MorphOp.Close,
 
-            [Description("Noise Removal - Removes small isolated pixels")]
+            [Description("Noise removal: Removes small isolated pixels")]
             Open = MorphOp.Open,
 
-            [Description("Gradient - Removes the interior areas of objects")]
+            [Description("Gradient: Removes the interior areas of objects")]
             Gradient = MorphOp.Gradient,
+
+            [Description("Offset crop: Like erode but discards the outer pixels")]
+            OffsetCrop,
         }
         #endregion
 
@@ -66,6 +69,9 @@ namespace UVtools.Core.Operations
         #endregion
 
         #region Properties
+
+        public MorphOp MorphOperationOpenCV => _morphOperation == MorphOperations.OffsetCrop ? MorphOp.Erode : (MorphOp)_morphOperation;
+
         public MorphOperations MorphOperation
         {
             get => _morphOperation;
@@ -186,13 +192,19 @@ namespace UVtools.Core.Operations
             if (CoreSettings.CanUseCuda)
             {
                 var gpuMat = target.ToGpuMat();
-                using var morph = new CudaMorphologyFilter((MorphOp)MorphOperation, target.Depth, target.NumberOfChannels, Kernel.Matrix, Kernel.Anchor, iterations);
+                using var morph = new CudaMorphologyFilter(MorphOperationOpenCV, target.Depth, target.NumberOfChannels, Kernel.Matrix, Kernel.Anchor, iterations);
                 morph.Apply(gpuMat, gpuMat);
                 gpuMat.Download(target);
             }
             else
             {
-                CvInvoke.MorphologyEx(target, target, (MorphOp) MorphOperation, Kernel.Matrix, Kernel.Anchor, iterations, BorderType.Reflect101, default);
+                CvInvoke.MorphologyEx(target, target, MorphOperationOpenCV, Kernel.Matrix, Kernel.Anchor, iterations, BorderType.Reflect101, default);
+
+                if (_morphOperation == MorphOperations.OffsetCrop)
+                {
+                    var originalRoi = GetRoiOrDefault(original);
+                    originalRoi.CopyTo(target, target);
+                }
             }
 
             ApplyMask(original, target);

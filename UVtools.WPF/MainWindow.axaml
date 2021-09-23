@@ -1868,25 +1868,38 @@
             IsChecked="{Binding ShowLayerImageIssues}"
             ToolTip.Tip="Highlight Issues on current layer. Valid only if Issues are calculated."
             VerticalAlignment="Stretch"
-            Margin="1,0,0,0"
-          >
-            <StackPanel Orientation="Horizontal">
+            Margin="1,0,0,0">
+              <Button.ContextMenu>
+                  <ContextMenu PlacementMode="Bottom">
+                      <CheckBox
+                          ToolTip.Tip="Show crosshairs for selected issues on the current layer"
+                          IsChecked="{Binding ShowLayerImageCrosshairs}">
+                          <StackPanel Orientation="Horizontal">
+                              <Image Source="/Assets/Icons/crosshairs-16x16.png"/>
+                              <TextBlock Margin="5,0,5,0" Text="Crosshairs"/>
+                          </StackPanel>
+                      </CheckBox>
+                        
+                  </ContextMenu>
+              </Button.ContextMenu>
+              <StackPanel Orientation="Horizontal">
               <Image Source="/Assets/Icons/warning-16x16.png"/>
-              <TextBlock Margin="5,0,5,0" Text="Issues"/>
+              <TextBlock Margin="5,0,5,0" Text="Issues ⮟"/>
             </StackPanel>
           </ToggleButton>
 
+            <!--
           <ToggleButton
             IsChecked="{Binding ShowLayerImageCrosshairs}"
-            ToolTip.Tip="Show crosshairs for selected issues on the current layer."
+            ToolTip.Tip="Show crosshairs for selected issues on the current layer"
             VerticalAlignment="Stretch"
-            Margin="1,0,0,0"
-          >
+            Margin="1,0,0,0">
             <StackPanel Orientation="Horizontal">
               <Image Source="/Assets/Icons/crosshairs-16x16.png"/>
               <TextBlock Margin="5,0,5,0" Text="Crosshairs"/>
             </StackPanel>
           </ToggleButton>
+          !-->
 
           <Button Name="LayerPreviewOutlineButton"
             ToolTip.Tip="Click to access the various outlines."
