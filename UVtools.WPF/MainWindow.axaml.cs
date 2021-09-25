@@ -1571,20 +1571,26 @@ namespace UVtools.WPF
             UpdateTitle();
 
 
-            if (mat is not null && Settings.LayerPreview.AutoRotateLayerBestView)
+            if (mat is not null)
             {
-                _showLayerImageRotated = mat.Height > mat.Width;
-            }
+                if (Settings.LayerPreview.AutoRotateLayerBestView)
+                {
+                    _showLayerImageRotated = mat.Height > mat.Width;
+                }
 
-            if (SlicerFile.DisplayMirror == Enumerations.FlipDirection.None)
-            {
-                _showLayerImageFlipped = false;
-            }
-            else
-            {
-                _showLayerImageFlipped = true;
-                _showLayerImageFlippedHorizontally = SlicerFile.DisplayMirror is Enumerations.FlipDirection.Horizontally or Enumerations.FlipDirection.Both;
-                _showLayerImageFlippedVertically = SlicerFile.DisplayMirror is Enumerations.FlipDirection.Vertically or Enumerations.FlipDirection.Both;
+                if (Settings.LayerPreview.AutoFlipLayerIfMirrored)
+                {
+                    if (SlicerFile.DisplayMirror == Enumerations.FlipDirection.None)
+                    {
+                        _showLayerImageFlipped = false;
+                    }
+                    else
+                    {
+                        _showLayerImageFlipped = true;
+                        _showLayerImageFlippedHorizontally = SlicerFile.DisplayMirror is Enumerations.FlipDirection.Horizontally or Enumerations.FlipDirection.Both;
+                        _showLayerImageFlippedVertically = SlicerFile.DisplayMirror is Enumerations.FlipDirection.Vertically or Enumerations.FlipDirection.Both;
+                    }
+                }
             }
 
             ResetDataContext();
