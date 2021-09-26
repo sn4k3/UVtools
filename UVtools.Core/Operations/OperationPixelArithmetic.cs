@@ -10,6 +10,7 @@ using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
@@ -95,7 +96,9 @@ namespace UVtools.Core.Operations
             [Description("Keep Region: in the selected ROI or masks")]
             KeepRegion,
             [Description("Discard Region: in the selected ROI or masks")]
-            DiscardRegion
+            DiscardRegion,
+            [Description("Corrode: randomly remove pixels, adds microtexture and diffuses layer lines (WIP)")]
+            Corrode
         }
 
         public enum PixelArithmeticApplyMethod : byte
@@ -316,6 +319,7 @@ namespace UVtools.Core.Operations
             is not PixelArithmeticOperators.BitwiseNot
             and not PixelArithmeticOperators.KeepRegion
             and not PixelArithmeticOperators.DiscardRegion
+            and not PixelArithmeticOperators.Corrode
             ;
 
         public bool IsUsePatternVisible => _operator
@@ -323,6 +327,7 @@ namespace UVtools.Core.Operations
             and not PixelArithmeticOperators.BitwiseNot
             and not PixelArithmeticOperators.KeepRegion
             and not PixelArithmeticOperators.DiscardRegion
+            and not PixelArithmeticOperators.Corrode
             ;
 
         public bool UsePattern
@@ -646,6 +651,32 @@ namespace UVtools.Core.Operations
                         case PixelArithmeticOperators.DiscardRegion:
                             target.SetTo(EmguExtensions.BlackColor);
                             break;
+                        case PixelArithmeticOperators.Corrode:
+                            {
+                                byte[,] originalData = (byte[,])target.GetData(); // don't need for now, but needed for more subtle noise effects
+                                byte[,] targetData = (byte[,])target.GetData();
+
+                                var zeroMatEntry = new byte[] { 0 }; // add value to ui (or maybe replace by a dimming option)
+                                var noiseThreshold = 280; // add value to ui, values > 255 delete white and increases corrosion intensity
+
+                                var rand = new Random();
+                                for (int i = original.Rows - 1; i >= 0; i--)
+                                {
+                                    for (int j = original.Cols - 1; j >= 0; j--)
+                                    {
+                                        if (originalData[i, j] > 0 
+                                        && rand.Next(noiseThreshold) >= originalData[i, j])
+                                        {
+                                            // target.SetByte(i, j, 0); not sure why this form (also when reading) isn't working
+                                            // so using direct byte copy to array instead, seems equivalent
+
+                                            Marshal.Copy(zeroMatEntry, 0, target.DataPointer + (i * target.Cols + j) * target.ElementSize, 1);
+                                        }
+                                    }
+                                }
+
+                                break;
+                            }
                         default:
                             throw new NotImplementedException();
                     }
