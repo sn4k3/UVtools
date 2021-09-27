@@ -59,8 +59,8 @@ namespace UVtools.Core.Operations
         private byte _patternGenInfillThickness = 10;
         private byte _patternGenInfillSpacing = 20;
         private bool _preserveVoids = true;
-        private int _minNoiseOffset = -128;
-        private int _maxNoiseOffset = 128;
+        private short _minNoiseOffset = -128;
+        private short _maxNoiseOffset = 128;
 
 
         #endregion
@@ -318,13 +318,13 @@ namespace UVtools.Core.Operations
             set => RaiseAndSetIfChanged(ref _preserveVoids, value);
         }
 
-        public int NoiseMinOffset
+        public short NoiseMinOffset
         {
             get => _minNoiseOffset;
             set => RaiseAndSetIfChanged(ref _minNoiseOffset, value);
         }
 
-        public int NoiseMaxOffset
+        public short NoiseMaxOffset
         {
             get => _maxNoiseOffset;
             set => RaiseAndSetIfChanged(ref _maxNoiseOffset, value);
@@ -684,7 +684,7 @@ namespace UVtools.Core.Operations
                             {
                                 var pixels = target.GetDataByteSpan();
 
-                                for (int i = pixels.Length - 1; i >= 0; i--)
+                                for (int i = 0; i < pixels.Length; i++)
                                 {
                                     if (!_preserveVoids || pixels[i] > 0)
                                     {
