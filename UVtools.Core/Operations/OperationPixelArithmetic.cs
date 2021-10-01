@@ -10,6 +10,7 @@ using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
@@ -57,7 +58,10 @@ namespace UVtools.Core.Operations
         private byte _patternGenBrightness = 128;
         private byte _patternGenInfillThickness = 10;
         private byte _patternGenInfillSpacing = 20;
-        
+        private bool _preserveVoids = true;
+        private short _minNoiseOffset = -128;
+        private short _maxNoiseOffset = 128;
+
 
         #endregion
 
@@ -95,7 +99,9 @@ namespace UVtools.Core.Operations
             [Description("Keep Region: in the selected ROI or masks")]
             KeepRegion,
             [Description("Discard Region: in the selected ROI or masks")]
-            DiscardRegion
+            DiscardRegion,
+            [Description("Corrode: diffuse pixels using uniform random noise")]
+            Corrode
         }
 
         public enum PixelArithmeticApplyMethod : byte
@@ -162,6 +168,10 @@ namespace UVtools.Core.Operations
             else if (_operator == PixelArithmeticOperators.Divide && _value == 0)
             {
                 sb.AppendLine("Can't divide by 0.");
+            }
+            else if (_operator == PixelArithmeticOperators.Corrode && _minNoiseOffset >= _maxNoiseOffset)
+            {
+                sb.AppendLine("Minimum noise offset must be less than the maximum offset.");
             }
 
             if (_applyMethod is PixelArithmeticApplyMethod.ModelWalls //or PixelArithmeticApplyMethod.ModelWallsMinimum
@@ -252,6 +262,7 @@ namespace UVtools.Core.Operations
                 RaisePropertyChanged(nameof(IsUsePatternVisible));
                 RaisePropertyChanged(nameof(ThresholdEnabled));
                 RaisePropertyChanged(nameof(IsApplyMethodEnabled));
+                RaisePropertyChanged(nameof(IsDiffusionSettingsVisible));
             }
         }
 
@@ -298,6 +309,27 @@ namespace UVtools.Core.Operations
             set => RaiseAndSetIfChanged(ref _wallChamfer, value);
         }
 
+
+        public bool IsDiffusionSettingsVisible => _operator is PixelArithmeticOperators.Corrode;
+
+        public bool PreserveVoids
+        {
+            get => _preserveVoids;
+            set => RaiseAndSetIfChanged(ref _preserveVoids, value);
+        }
+
+        public short NoiseMinOffset
+        {
+            get => _minNoiseOffset;
+            set => RaiseAndSetIfChanged(ref _minNoiseOffset, value);
+        }
+
+        public short NoiseMaxOffset
+        {
+            get => _maxNoiseOffset;
+            set => RaiseAndSetIfChanged(ref _maxNoiseOffset, value);
+        }
+
         public byte Value
         {
             get => _value;
@@ -316,6 +348,7 @@ namespace UVtools.Core.Operations
             is not PixelArithmeticOperators.BitwiseNot
             and not PixelArithmeticOperators.KeepRegion
             and not PixelArithmeticOperators.DiscardRegion
+            and not PixelArithmeticOperators.Corrode
             ;
 
         public bool IsUsePatternVisible => _operator
@@ -323,6 +356,7 @@ namespace UVtools.Core.Operations
             and not PixelArithmeticOperators.BitwiseNot
             and not PixelArithmeticOperators.KeepRegion
             and not PixelArithmeticOperators.DiscardRegion
+            and not PixelArithmeticOperators.Corrode
             ;
 
         public bool UsePattern
@@ -646,6 +680,22 @@ namespace UVtools.Core.Operations
                         case PixelArithmeticOperators.DiscardRegion:
                             target.SetTo(EmguExtensions.BlackColor);
                             break;
+                        case PixelArithmeticOperators.Corrode:
+                            {
+                                var pixels = target.GetDataByteSpan();
+
+                                for (int i = 0; i < pixels.Length; i++)
+                                {
+                                    if (!_preserveVoids || pixels[i] > 0)
+                                    {
+                                        pixels[i] = (byte) Math.Clamp(RandomNumberGenerator.GetInt32(_minNoiseOffset, _maxNoiseOffset) + pixels[i], byte.MinValue, byte.MaxValue);
+                                    }
+                                }
+
+                                if (_applyMethod != PixelArithmeticApplyMethod.All) ApplyMask(originalRoi, target, applyMask);
+
+                                break;
+                            }
                         default:
                             throw new NotImplementedException();
                     }
@@ -1159,7 +1209,7 @@ namespace UVtools.Core.Operations
 
         protected bool Equals(OperationPixelArithmetic other)
         {
-            return _operator == other._operator && _applyMethod == other._applyMethod && _wallThicknessStart == other._wallThicknessStart && _wallThicknessEnd == other._wallThicknessEnd && _wallChamfer == other._wallChamfer && _value == other._value && _usePattern == other._usePattern && _thresholdType == other._thresholdType && _thresholdMaxValue == other._thresholdMaxValue && _patternAlternatePerLayersNumber == other._patternAlternatePerLayersNumber && _patternInvert == other._patternInvert && _patternText == other._patternText && _patternTextAlternate == other._patternTextAlternate && _patternGenMinBrightness == other._patternGenMinBrightness && _patternGenBrightness == other._patternGenBrightness && _patternGenInfillThickness == other._patternGenInfillThickness && _patternGenInfillSpacing == other._patternGenInfillSpacing;
+            return _operator == other._operator && _applyMethod == other._applyMethod && _wallThicknessStart == other._wallThicknessStart && _wallThicknessEnd == other._wallThicknessEnd && _wallChamfer == other._wallChamfer && _value == other._value && _usePattern == other._usePattern && _thresholdType == other._thresholdType && _thresholdMaxValue == other._thresholdMaxValue && _patternAlternatePerLayersNumber == other._patternAlternatePerLayersNumber && _patternInvert == other._patternInvert && _patternText == other._patternText && _patternTextAlternate == other._patternTextAlternate && _patternGenMinBrightness == other._patternGenMinBrightness && _patternGenBrightness == other._patternGenBrightness && _patternGenInfillThickness == other._patternGenInfillThickness && _patternGenInfillSpacing == other._patternGenInfillSpacing && _preserveVoids == other._preserveVoids && _minNoiseOffset == other._minNoiseOffset && _maxNoiseOffset == other._maxNoiseOffset;
         }
 
         public override bool Equals(object obj)
@@ -1190,6 +1240,9 @@ namespace UVtools.Core.Operations
             hashCode.Add(_patternGenBrightness);
             hashCode.Add(_patternGenInfillThickness);
             hashCode.Add(_patternGenInfillSpacing);
+            hashCode.Add(_preserveVoids);
+            hashCode.Add(_minNoiseOffset);
+            hashCode.Add(_maxNoiseOffset);
             return hashCode.ToHashCode();
         }
 

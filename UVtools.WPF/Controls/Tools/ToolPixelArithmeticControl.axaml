@@ -6,7 +6,7 @@
              x:Class="UVtools.WPF.Controls.Tools.ToolPixelArithmeticControl">
 
   <Grid RowDefinitions="Auto,10,Auto">
-    <Grid RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto"
+    <Grid RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto, 10, Auto"
           ColumnDefinitions="Auto,10,Auto,20,Auto,10,Auto,20,Auto,10,Auto">
         
         <TextBlock Grid.Row="0" Grid.Column="0"
@@ -70,13 +70,59 @@
                     IsChecked="{Binding Operation.WallChamfer}"/>
       </StackPanel>
 
-        <TextBlock Grid.Row="6" Grid.Column="0"
+
+      <TextBlock Grid.Row="6" Grid.Column="0"
+           VerticalAlignment="Center"
+           IsVisible="{Binding Operation.IsDiffusionSettingsVisible}"
+           Text="Diffusion:"/>
+
+      <StackPanel Grid.Row="6" Grid.Column="2" Grid.ColumnSpan="9"
+            IsVisible="{Binding Operation.IsDiffusionSettingsVisible}"
+            Spacing="10" Orientation="Horizontal">
+
+        <CheckBox
+          Margin="10,0,0,0"
+          Content="Preserve voids"
+          ToolTip.Tip="Preserve voids (black pixels) when applying diffusion."
+          IsChecked="{Binding Operation.PreserveVoids}"/>
+
+        <TextBlock
+           VerticalAlignment="Center"
+           Text="Noise range:"/>
+        
+        <TextBlock
+           VerticalAlignment="Center"
+           Text="Min:"/>
+
+        <NumericUpDown
+               Minimum="-1000"
+               Maximum="1000"
+               Width="80"
+               Value="{Binding Operation.NoiseMinOffset}"
+               ToolTip.Tip="Minimum value of random noise offset."
+               IsEnabled="true"/>
+
+        <TextBlock
+               VerticalAlignment="Center"
+               Text="Max:"/>
+
+        <NumericUpDown
+               Minimum="-1000"
+               Maximum="1000"
+               Width="80"
+               Value="{Binding Operation.NoiseMaxOffset}"
+               ToolTip.Tip="Maximum value of random noise offset."
+               IsEnabled="true"/>
+
+      </StackPanel>
+
+        <TextBlock Grid.Row="8" Grid.Column="0"
                    VerticalAlignment="Center"
                    IsVisible="{Binding Operation.ValueEnabled}"
                    IsEnabled="{Binding Operation.ValueEnabled}"
                    Text="Brightness:"/>
 
-        <StackPanel Grid.Row="6" Grid.Column="2"
+        <StackPanel Grid.Row="8" Grid.Column="2"
                     VerticalAlignment="Center"
                     Orientation="Horizontal" Spacing="5"
                     IsVisible="{Binding Operation.ValueEnabled}"
@@ -101,28 +147,28 @@
 
         </StackPanel>
 
-        <TextBlock Grid.Row="6" Grid.Column="4"
+        <TextBlock Grid.Row="8" Grid.Column="4"
                    VerticalAlignment="Center"
                    HorizontalAlignment="Right"
                    IsVisible="{Binding Operation.ThresholdEnabled}"
                    IsEnabled="{Binding Operation.ThresholdEnabled}"
                    Text="Max.:"/>
 
-        <NumericUpDown Grid.Row="6" Grid.Column="6"
+        <NumericUpDown Grid.Row="8" Grid.Column="6"
                        Minimum="0"
                        Maximum="255"
                        IsVisible="{Binding Operation.ThresholdEnabled}"
                        IsEnabled="{Binding Operation.ThresholdEnabled}"
                        Value="{Binding Operation.ThresholdMaxValue}"/>
 
-        <TextBlock Grid.Row="6" Grid.Column="8"
+        <TextBlock Grid.Row="8" Grid.Column="8"
                    VerticalAlignment="Center"
                    HorizontalAlignment="Right"
                    IsVisible="{Binding Operation.ThresholdEnabled}"
                    IsEnabled="{Binding Operation.ThresholdEnabled}"
                    Text="Threshold:"/>
 
-        <ComboBox Grid.Row="6" Grid.Column="10"
+        <ComboBox Grid.Row="8" Grid.Column="10"
                   Width="130"
                   IsVisible="{Binding Operation.ThresholdEnabled}"
                   IsEnabled="{Binding Operation.ThresholdEnabled}"
@@ -130,11 +176,11 @@
                   SelectedItem="{Binding Operation.ThresholdType, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
 
 
-        <TextBlock Grid.Row="8" Grid.Column="0"
+        <TextBlock Grid.Row="10" Grid.Column="0"
                    VerticalAlignment="Center"
                    Text="Presets:"/>
 
-        <StackPanel Grid.Row="8" Grid.Column="2"
+        <StackPanel Grid.Row="10" Grid.Column="2"
                     Grid.ColumnSpan="9"
                     VerticalAlignment="Center"
                     Orientation="Horizontal" Spacing="5">
