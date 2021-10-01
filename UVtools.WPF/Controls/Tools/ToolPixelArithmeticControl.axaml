@@ -73,18 +73,12 @@
 
       <TextBlock Grid.Row="6" Grid.Column="0"
            VerticalAlignment="Center"
-           IsVisible="{Binding Operation.IsDiffusionSettingsVisible}"
+           IsVisible="{Binding Operation.IsCorrodeVisible}"
            Text="Diffusion:"/>
 
       <StackPanel Grid.Row="6" Grid.Column="2" Grid.ColumnSpan="9"
-            IsVisible="{Binding Operation.IsDiffusionSettingsVisible}"
+            IsVisible="{Binding Operation.IsCorrodeVisible}"
             Spacing="10" Orientation="Horizontal">
-
-        <CheckBox
-          Margin="10,0,0,0"
-          Content="Preserve voids"
-          ToolTip.Tip="Preserve voids (black pixels) when applying diffusion."
-          IsChecked="{Binding Operation.PreserveVoids}"/>
 
         <TextBlock
            VerticalAlignment="Center"
@@ -95,24 +89,34 @@
            Text="Min:"/>
 
         <NumericUpDown
-               Minimum="-1000"
-               Maximum="1000"
+               Minimum="-255"
+               Maximum="255"
                Width="80"
                Value="{Binding Operation.NoiseMinOffset}"
-               ToolTip.Tip="Minimum value of random noise offset."
-               IsEnabled="true"/>
+               ToolTip.Tip="Minimum value of random noise offset."/>
 
         <TextBlock
                VerticalAlignment="Center"
                Text="Max:"/>
 
         <NumericUpDown
-               Minimum="-1000"
-               Maximum="1000"
+               Minimum="-255"
+               Maximum="255"
                Width="80"
                Value="{Binding Operation.NoiseMaxOffset}"
-               ToolTip.Tip="Maximum value of random noise offset."
-               IsEnabled="true"/>
+               ToolTip.Tip="Maximum value of random noise offset."/>
+
+        <TextBlock
+            VerticalAlignment="Center"
+            Text="Threshold:"/>
+
+        <NumericUpDown
+            Classes="ValueLabel ValueLabel_sun"
+            Minimum="0"
+            Maximum="255"
+            Width="80"
+            Value="{Binding Operation.NoiseThreshold}"
+            ToolTip.Tip="Only the pixels with brightness above this threshold are processed"/>
 
       </StackPanel>
 
@@ -150,28 +154,28 @@
         <TextBlock Grid.Row="8" Grid.Column="4"
                    VerticalAlignment="Center"
                    HorizontalAlignment="Right"
-                   IsVisible="{Binding Operation.ThresholdEnabled}"
-                   IsEnabled="{Binding Operation.ThresholdEnabled}"
+                   IsVisible="{Binding Operation.IsThresholdVisible}"
+                   IsEnabled="{Binding Operation.IsThresholdVisible}"
                    Text="Max.:"/>
 
         <NumericUpDown Grid.Row="8" Grid.Column="6"
                        Minimum="0"
                        Maximum="255"
-                       IsVisible="{Binding Operation.ThresholdEnabled}"
-                       IsEnabled="{Binding Operation.ThresholdEnabled}"
+                       IsVisible="{Binding Operation.IsThresholdVisible}"
+                       IsEnabled="{Binding Operation.IsThresholdVisible}"
                        Value="{Binding Operation.ThresholdMaxValue}"/>
 
         <TextBlock Grid.Row="8" Grid.Column="8"
                    VerticalAlignment="Center"
                    HorizontalAlignment="Right"
-                   IsVisible="{Binding Operation.ThresholdEnabled}"
-                   IsEnabled="{Binding Operation.ThresholdEnabled}"
+                   IsVisible="{Binding Operation.IsThresholdVisible}"
+                   IsEnabled="{Binding Operation.IsThresholdVisible}"
                    Text="Threshold:"/>
 
         <ComboBox Grid.Row="8" Grid.Column="10"
                   Width="130"
-                  IsVisible="{Binding Operation.ThresholdEnabled}"
-                  IsEnabled="{Binding Operation.ThresholdEnabled}"
+                  IsVisible="{Binding Operation.IsThresholdVisible}"
+                  IsEnabled="{Binding Operation.IsThresholdVisible}"
                   Items="{Binding Operation.ThresholdType, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
                   SelectedItem="{Binding Operation.ThresholdType, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
 
