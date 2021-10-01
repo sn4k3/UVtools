@@ -1002,6 +1002,7 @@ namespace UVtools.Core.Managers
 
                     foreach (var group in resinTrapGroups)
                     {
+                        if(group.Any(issue => issue.LayerIndex == 0)) continue; // Not a trap if on plate
                         AddIssue(new MainIssue(MainIssue.IssueType.ResinTrap, group));
                     }
                 },
