@@ -7,7 +7,6 @@
  */
 
 using System;
-using System.Buffers;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
@@ -18,7 +17,6 @@ using System.Xml.Serialization;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
-using UVtools.Core.EmguCV;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 
@@ -27,6 +25,18 @@ namespace UVtools.Core.Operations
     [Serializable]
     public class OperationPixelArithmetic : Operation
     {
+        #region Enums
+
+        public enum PixelArithmeticIgnoreAreaOperator
+        {
+            [Description("Smaller than")]
+            SmallerThan,
+            [Description("Larger than")]
+            LargerThan
+        }
+
+        #endregion
+
         #region Subclasses
         class StringMatrix
         {
@@ -46,7 +56,8 @@ namespace UVtools.Core.Operations
         private uint _wallThicknessStart = 20;
         private uint _wallThicknessEnd = 20;
         private bool _wallChamfer;
-        private uint _ignoreAreasSmallerThan;
+        private PixelArithmeticIgnoreAreaOperator _ignoreAreaOperator = PixelArithmeticIgnoreAreaOperator.SmallerThan;
+        private uint _ignoreAreaThreshold;
         private byte _value = byte.MaxValue;
         private bool _usePattern;
         private ThresholdType _thresholdType = ThresholdType.Binary;
@@ -311,10 +322,16 @@ namespace UVtools.Core.Operations
             set => RaiseAndSetIfChanged(ref _wallChamfer, value);
         }
 
-        public uint IgnoreAreasSmallerThan
+        public PixelArithmeticIgnoreAreaOperator IgnoreAreaOperator
         {
-            get => _ignoreAreasSmallerThan;
-            set => RaiseAndSetIfChanged(ref _ignoreAreasSmallerThan, value);
+            get => _ignoreAreaOperator;
+            set => RaiseAndSetIfChanged(ref _ignoreAreaOperator, value);
+        }
+
+        public uint IgnoreAreaThreshold
+        {
+            get => _ignoreAreaThreshold;
+            set => RaiseAndSetIfChanged(ref _ignoreAreaThreshold, value);
         }
 
 
@@ -705,7 +722,17 @@ namespace UVtools.Core.Operations
                             throw new NotImplementedException();
                     }
 
-                    originalRoi.CopyAreasSmallerThan(_ignoreAreasSmallerThan, target);
+                    switch (_ignoreAreaOperator)
+                    {
+                        case PixelArithmeticIgnoreAreaOperator.SmallerThan:
+                            originalRoi.CopyAreasSmallerThan(_ignoreAreaThreshold, target);
+                            break;
+                        case PixelArithmeticIgnoreAreaOperator.LargerThan:
+                            originalRoi.CopyAreasLargerThan(_ignoreAreaThreshold, target);
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException(nameof(_ignoreAreaOperator));
+                    }
                     ApplyMask(originalRoi, target);
 
                     SlicerFile[layerIndex].LayerMat = mat;
@@ -886,6 +913,16 @@ namespace UVtools.Core.Operations
             Value = 127;
             ThresholdMaxValue = 255;
             ThresholdType = ThresholdType.Binary;
+        }
+
+        public void PresetHealAntiAliasing()
+        {
+            Operator = PixelArithmeticOperators.Threshold;
+            ApplyMethod = PixelArithmeticApplyMethod.All;
+            UsePattern = false;
+            Value = 169;
+            //ThresholdMaxValue = 255;
+            ThresholdType = ThresholdType.ToZero;
         }
 
         public void PresetHalfBrightness()

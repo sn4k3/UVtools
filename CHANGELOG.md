@@ -1,5 +1,14 @@
 # Changelog
 
+## 02/10/2021 - v2.23.2
+
+- **Pixel arithmetic**
+   - (Add) Corrode: Random dithering, use for eliminating visual prominence of layer lines. Can also be used to add a microtexture to enhance paint bonding (#307)
+   - (Add) Ignore areas smaller or larger than an threshold
+   - (Add) Preset - Heal anti-aliasing: Discard uncured faded pixels and turn them into solid black (0)
+- (Fix) Resin traps: Discard traps with drain holes directly on first layer / build plate
+- (Fix) The setting 'Auto flip layer on file load' is not respected when off
+
 ## 23/09/2021 - v2.23.1
 
 - **Issues:**
