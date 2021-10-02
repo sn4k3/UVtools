@@ -123,6 +123,10 @@ namespace UVtools.Core.Operations
             All,
             [Description("Model: Apply only to model pixels")]
             Model,
+            [Description("Model surface: Apply only to model surface/visible pixels")]
+            ModelSurface,
+            [Description("Model surface & inset: Apply only to model surface/visible pixels and within a inset from walls")]
+            ModelSurfaceAndInset,
             [Description("Model inner: Apply only to model pixels within a margin from walls")]
             ModelInner,
             [Description("Model walls: Apply only to model walls with a set thickness")]
@@ -292,7 +296,10 @@ namespace UVtools.Core.Operations
             }
         }
 
-        public bool IsWallSettingVisible => _applyMethod is PixelArithmeticApplyMethod.ModelInner or PixelArithmeticApplyMethod.ModelWalls; //or PixelArithmeticApplyMethod.ModelWallsMinimum;
+        public bool IsWallSettingVisible => _applyMethod 
+            is PixelArithmeticApplyMethod.ModelSurfaceAndInset
+            or PixelArithmeticApplyMethod.ModelInner 
+            or PixelArithmeticApplyMethod.ModelWalls; //or PixelArithmeticApplyMethod.ModelWallsMinimum;
 
         public uint WallThickness
         {
@@ -593,6 +600,37 @@ namespace UVtools.Core.Operations
                         case PixelArithmeticApplyMethod.Model:
                             applyMask = target;
                             break;
+                        case PixelArithmeticApplyMethod.ModelSurface:
+                        case PixelArithmeticApplyMethod.ModelSurfaceAndInset:
+                            if (layerIndex == SlicerFile.LastLayerIndex)
+                            {
+                                applyMask = target;
+                            }
+                            else
+                            {
+                                applyMask = new Mat();
+
+                                // Difference
+                                using var nextMat = SlicerFile[layerIndex + 1].LayerMat;
+                                var nextMatRoi = GetRoiOrDefault(nextMat);
+                                CvInvoke.Subtract(target, nextMatRoi, applyMask);
+
+                                // 1px walls
+                                using var erode = new Mat();
+                                CvInvoke.Erode(target, erode, kernel, anchor, 1, BorderType.Reflect101, default);
+                                CvInvoke.Subtract(target, erode, erode);
+                                CvInvoke.Add(applyMask, erode, applyMask);
+                                
+
+                                // Inset from walls
+                                if (_applyMethod == PixelArithmeticApplyMethod.ModelSurfaceAndInset && (wallThickness-1) > 0)
+                                {
+                                    CvInvoke.Dilate(applyMask, erode, kernel, anchor, wallThickness-1, BorderType.Reflect101, default);
+                                    erode.CopyTo(applyMask, target);
+                                }
+                            }
+
+                            break;
                         case PixelArithmeticApplyMethod.ModelInner:
                             applyMask = wallThickness <= 0 ? target : new Mat();
                             CvInvoke.Erode(target, applyMask, kernel, anchor, wallThickness, BorderType.Reflect101, default);
@@ -684,15 +722,30 @@ namespace UVtools.Core.Operations
                         case PixelArithmeticOperators.BitwiseXor:
                             CvInvoke.BitwiseXor(target, tempMat, target, applyMask);
                             break;
+                        case PixelArithmeticOperators.AbsDiff:
+                            CvInvoke.AbsDiff(target, tempMat, target);
+                            if (_applyMethod != PixelArithmeticApplyMethod.All) ApplyMask(originalRoi, target, applyMask);
+                            break;
                         case PixelArithmeticOperators.Threshold:
                             var tempThreshold = _thresholdType;
                             if (_thresholdType is ThresholdType.Otsu or ThresholdType.Triangle) tempThreshold |= ThresholdType.Binary;
                             CvInvoke.Threshold(target, target, _value, _thresholdMaxValue, tempThreshold);
                             if (_applyMethod != PixelArithmeticApplyMethod.All) ApplyMask(originalRoi, target, applyMask);
                             break;
-                        case PixelArithmeticOperators.AbsDiff:
-                            CvInvoke.AbsDiff(target, tempMat, target);
-                            if (_applyMethod != PixelArithmeticApplyMethod.All) ApplyMask(originalRoi, target, applyMask);
+                        case PixelArithmeticOperators.Corrode:
+                            var span = target.GetDataByteSpan();
+                            var spanMask = applyMask.GetDataByteSpan();
+
+                            for (var i = 0; i < span.Length; i++)
+                            {
+                                if (span[i] <= _noiseThreshold || spanMask[i] == 0) continue;
+                                span[i] = (byte)Math.Clamp(RandomNumberGenerator.GetInt32(_noiseMinOffset, _noiseMaxOffset + 1) + span[i], byte.MinValue, byte.MaxValue);
+                            }
+
+                            /*if (_applyMethod 
+                                is not PixelArithmeticApplyMethod.All 
+                                and not PixelArithmeticApplyMethod.Model) 
+                                ApplyMask(originalRoi, target, applyMask);*/
                             break;
                         case PixelArithmeticOperators.KeepRegion:
                             {
@@ -705,19 +758,6 @@ namespace UVtools.Core.Operations
                         case PixelArithmeticOperators.DiscardRegion:
                             target.SetTo(EmguExtensions.BlackColor);
                             break;
-                        case PixelArithmeticOperators.Corrode:
-                            {
-                                var span = target.GetDataByteSpan();
-
-                                for (var i = 0; i < span.Length; i++)
-                                {
-                                    if (span[i] <= _noiseThreshold) continue;
-                                    span[i] = (byte) Math.Clamp(RandomNumberGenerator.GetInt32(_noiseMinOffset, _noiseMaxOffset+1) + span[i], byte.MinValue, byte.MaxValue);
-                                }
-
-                                if (_applyMethod != PixelArithmeticApplyMethod.All) ApplyMask(originalRoi, target, applyMask);
-                                break;
-                            }
                         default:
                             throw new NotImplementedException();
                     }

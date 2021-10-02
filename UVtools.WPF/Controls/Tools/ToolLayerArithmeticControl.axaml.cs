@@ -26,7 +26,7 @@ namespace UVtools.WPF.Controls.Tools
             {
                 case ToolWindow.Callbacks.Init:
                 case ToolWindow.Callbacks.Loaded:
-                    ParentWindow.ButtonOkEnabled = !string.IsNullOrWhiteSpace(Operation.Sentence);
+                    if(ParentWindow is not null) ParentWindow.ButtonOkEnabled = !string.IsNullOrWhiteSpace(Operation.Sentence);
                     Operation.PropertyChanged += (sender, e) =>
                     {
                         if (e.PropertyName == nameof(Operation.Sentence))
