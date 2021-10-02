@@ -235,8 +235,11 @@
                 Content="Half brightness"/>
         </StackPanel>
 
-          <StackPanel VerticalAlignment="Center"
-                      Orientation="Horizontal" Spacing="5">
+          <StackPanel VerticalAlignment="Center" Orientation="Horizontal" Spacing="5">
+
+              <Button Command="{Binding Operation.PresetFuzySkin}"
+                      Content="Fuzy skin"
+                      ToolTip.Tip="Corrode surface to apply bumps on the surface"/>
 
               <Button Command="{Binding Operation.PresetStripAntiAliasing}"
                       Content="Strip anti-aliasing"

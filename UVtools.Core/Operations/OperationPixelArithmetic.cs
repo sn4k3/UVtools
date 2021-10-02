@@ -945,6 +945,15 @@ namespace UVtools.Core.Operations
             Operator = PixelArithmeticOperators.Add;
         }
 
+        public void PresetFuzySkin()
+        {
+            Operator = PixelArithmeticOperators.Corrode;
+            ApplyMethod = PixelArithmeticApplyMethod.ModelSurfaceAndInset;
+            NoiseMinOffset = -200;
+            NoiseMaxOffset = 127;
+            WallThickness = 4;
+        }
+
         public void PresetStripAntiAliasing()
         {
             Operator = PixelArithmeticOperators.Threshold;
