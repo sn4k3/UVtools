@@ -14,6 +14,7 @@ using Emgu.CV.Cuda;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
 using Emgu.CV.Util;
+using UVtools.Core.EmguCV;
 using UVtools.Core.Objects;
 
 namespace UVtools.Core.Extensions
@@ -441,6 +442,17 @@ namespace UVtools.Core.Extensions
         }
         #endregion
 
+        #region Create methods
+
+        public static Mat CreateMask(this Mat src, VectorOfVectorOfPoint contours)
+        {
+            var mask = src.NewBlank();
+            CvInvoke.DrawContours(mask, contours, -1, WhiteColor, -1);
+            return mask;
+        }
+
+        #endregion
+
         #region Copy methods
         /// <summary>
         /// Copy a <see cref="Mat"/> to center of other <see cref="Mat"/>
@@ -463,6 +475,58 @@ namespace UVtools.Core.Extensions
                 Mat m = new(src, new Rectangle(dx, dy, dst.Width, dst.Height));
                 m.CopyTo(dst);
             }
+        }
+
+        public static void CopyAreasSmallerThan(this Mat src, double threshold, Mat dst)
+        {
+            if (threshold <= 1) return;
+            using var contours = src.FindContours(out var hierarchy, RetrType.Tree);
+            var contourGroups = EmguContours.GetContoursInGroups(contours, hierarchy);
+
+            var mask = src.NewBlank();
+            uint drawContours = 0;
+            foreach (var contourGroup in contourGroups)
+            {
+                using var selectedContours = new VectorOfVectorOfPoint();
+                foreach (var group in contourGroup)
+                {
+                    var area = EmguContours.GetContourArea(group);
+                    if (area >= threshold) continue;
+                    drawContours++;
+                    selectedContours.Push(group);
+                }
+
+                if (selectedContours.Size == 0) continue;
+                CvInvoke.DrawContours(mask, selectedContours, -1, WhiteColor, -1);
+
+            }
+            if (drawContours > 0) src.CopyTo(dst, mask);
+        }
+
+        public static void CopyAreasLargerThan(this Mat src, double threshold, Mat dst)
+        {
+            if (threshold <= 0) return;
+            using var contours = src.FindContours(out var hierarchy, RetrType.Tree);
+            var contourGroups = EmguContours.GetContoursInGroups(contours, hierarchy);
+
+            var mask = src.NewBlank();
+            uint drawContours = 0;
+            foreach (var contourGroup in contourGroups)
+            {
+                using var selectedContours = new VectorOfVectorOfPoint();
+                foreach (var group in contourGroup)
+                {
+                    var area = EmguContours.GetContourArea(group);
+                    if (area <= threshold) continue;
+                    drawContours++;
+                    selectedContours.Push(group);
+                }
+
+                if (selectedContours.Size == 0) continue;
+                CvInvoke.DrawContours(mask, selectedContours, -1, WhiteColor, -1);
+                
+            }
+            if(drawContours > 0) src.CopyTo(dst, mask);
         }
         #endregion
 

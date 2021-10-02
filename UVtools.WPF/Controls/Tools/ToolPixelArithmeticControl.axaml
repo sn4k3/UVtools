@@ -6,7 +6,7 @@
              x:Class="UVtools.WPF.Controls.Tools.ToolPixelArithmeticControl">
 
   <Grid RowDefinitions="Auto,10,Auto">
-    <Grid RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto"
+    <Grid RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto"
           ColumnDefinitions="Auto,10,Auto,20,Auto,10,Auto,20,Auto,10,Auto">
         
         <TextBlock Grid.Row="0" Grid.Column="0"
@@ -70,13 +70,34 @@
                     IsChecked="{Binding Operation.WallChamfer}"/>
       </StackPanel>
 
+        <TextBlock Grid.Row="6" Grid.Column="0"
+                   VerticalAlignment="Center"
+                   Text="Ignore areas:"/>
 
-      <TextBlock Grid.Row="6" Grid.Column="0"
+        <StackPanel Grid.Row="6" Grid.Column="2" Grid.ColumnSpan="9"
+                    Spacing="5" Orientation="Horizontal">
+
+            <NumericUpDown
+                Classes="ValueLabel ValueLabel_px2"
+                Minimum="0"
+                Maximum="4294967295"
+                Width="150"
+                Value="{Binding Operation.IgnoreAreasSmallerThan}"
+                ToolTip.Tip="Ignore all areas smaller than this threshold.
+&#x0a;0 = Disabled"/>
+
+            <TextBlock
+                VerticalAlignment="Center"
+                Text="(less than)"/>
+        </StackPanel>
+
+
+      <TextBlock Grid.Row="8" Grid.Column="0"
            VerticalAlignment="Center"
            IsVisible="{Binding Operation.IsCorrodeVisible}"
            Text="Diffusion:"/>
 
-      <StackPanel Grid.Row="6" Grid.Column="2" Grid.ColumnSpan="9"
+      <StackPanel Grid.Row="8" Grid.Column="2" Grid.ColumnSpan="9"
             IsVisible="{Binding Operation.IsCorrodeVisible}"
             Spacing="10" Orientation="Horizontal">
 
@@ -120,13 +141,13 @@
 
       </StackPanel>
 
-        <TextBlock Grid.Row="6" Grid.Column="0"
+        <TextBlock Grid.Row="8" Grid.Column="0"
                    VerticalAlignment="Center"
                    IsVisible="{Binding Operation.ValueEnabled}"
                    IsEnabled="{Binding Operation.ValueEnabled}"
                    Text="Brightness:"/>
 
-        <StackPanel Grid.Row="6" Grid.Column="2"
+        <StackPanel Grid.Row="8" Grid.Column="2"
                     VerticalAlignment="Center"
                     Orientation="Horizontal" Spacing="5"
                     IsVisible="{Binding Operation.ValueEnabled}"
@@ -151,28 +172,28 @@
 
         </StackPanel>
 
-        <TextBlock Grid.Row="6" Grid.Column="4"
+        <TextBlock Grid.Row="8" Grid.Column="4"
                    VerticalAlignment="Center"
                    HorizontalAlignment="Right"
                    IsVisible="{Binding Operation.IsThresholdVisible}"
                    IsEnabled="{Binding Operation.IsThresholdVisible}"
                    Text="Max.:"/>
 
-        <NumericUpDown Grid.Row="6" Grid.Column="6"
+        <NumericUpDown Grid.Row="8" Grid.Column="6"
                        Minimum="0"
                        Maximum="255"
                        IsVisible="{Binding Operation.IsThresholdVisible}"
                        IsEnabled="{Binding Operation.IsThresholdVisible}"
                        Value="{Binding Operation.ThresholdMaxValue}"/>
 
-        <TextBlock Grid.Row="6" Grid.Column="8"
+        <TextBlock Grid.Row="8" Grid.Column="8"
                    VerticalAlignment="Center"
                    HorizontalAlignment="Right"
                    IsVisible="{Binding Operation.IsThresholdVisible}"
                    IsEnabled="{Binding Operation.IsThresholdVisible}"
                    Text="Threshold:"/>
 
-        <ComboBox Grid.Row="6" Grid.Column="10"
+        <ComboBox Grid.Row="8" Grid.Column="10"
                   Width="130"
                   IsVisible="{Binding Operation.IsThresholdVisible}"
                   IsEnabled="{Binding Operation.IsThresholdVisible}"
@@ -180,11 +201,11 @@
                   SelectedItem="{Binding Operation.ThresholdType, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
 
 
-        <TextBlock Grid.Row="8" Grid.Column="0"
+        <TextBlock Grid.Row="10" Grid.Column="0"
                    VerticalAlignment="Center"
                    Text="Presets:"/>
 
-        <StackPanel Grid.Row="8" Grid.Column="2"
+        <StackPanel Grid.Row="10" Grid.Column="2"
                     Grid.ColumnSpan="9"
                     VerticalAlignment="Center"
                     Orientation="Horizontal" Spacing="5">

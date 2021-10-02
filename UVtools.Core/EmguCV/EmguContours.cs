@@ -110,6 +110,16 @@ namespace UVtools.Core.EmguCV
         }
 
         /// <summary>
+        /// Gets contours that are positive and negative pixels and group them by areas
+        /// Only compatible with Tree type of contour detection
+        /// </summary>
+        /// <returns></returns>
+        public static List<VectorOfVectorOfPoint>[] GetContoursInGroups(VectorOfVectorOfPoint contours, int[,] hierarchy)
+        {
+            return new []{GetPositiveContoursInGroups(contours, hierarchy), GetNegativeContoursInGroups(contours, hierarchy)};
+        }
+
+        /// <summary>
         /// Gets contours that are positive pixels and group them by areas
         /// Only compatible with Tree type of contour detection
         /// </summary>

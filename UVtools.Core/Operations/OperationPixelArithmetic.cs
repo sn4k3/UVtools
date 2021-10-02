@@ -18,6 +18,7 @@ using System.Xml.Serialization;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
+using UVtools.Core.EmguCV;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 
@@ -45,6 +46,7 @@ namespace UVtools.Core.Operations
         private uint _wallThicknessStart = 20;
         private uint _wallThicknessEnd = 20;
         private bool _wallChamfer;
+        private uint _ignoreAreasSmallerThan;
         private byte _value = byte.MaxValue;
         private bool _usePattern;
         private ThresholdType _thresholdType = ThresholdType.Binary;
@@ -62,7 +64,6 @@ namespace UVtools.Core.Operations
         private short _noiseMinOffset = -128;
         private short _noiseMaxOffset = 128;
         private byte _noiseThreshold;
-
 
         #endregion
 
@@ -308,6 +309,12 @@ namespace UVtools.Core.Operations
         {
             get => _wallChamfer;
             set => RaiseAndSetIfChanged(ref _wallChamfer, value);
+        }
+
+        public uint IgnoreAreasSmallerThan
+        {
+            get => _ignoreAreasSmallerThan;
+            set => RaiseAndSetIfChanged(ref _ignoreAreasSmallerThan, value);
         }
 
 
@@ -687,10 +694,8 @@ namespace UVtools.Core.Operations
 
                                 for (var i = 0; i < span.Length; i++)
                                 {
-                                    if (span[i] > _noiseThreshold)
-                                    {
-                                        span[i] = (byte) Math.Clamp(RandomNumberGenerator.GetInt32(_noiseMinOffset, _noiseMaxOffset+1) + span[i], byte.MinValue, byte.MaxValue);
-                                    }
+                                    if (span[i] <= _noiseThreshold) continue;
+                                    span[i] = (byte) Math.Clamp(RandomNumberGenerator.GetInt32(_noiseMinOffset, _noiseMaxOffset+1) + span[i], byte.MinValue, byte.MaxValue);
                                 }
 
                                 if (_applyMethod != PixelArithmeticApplyMethod.All) ApplyMask(originalRoi, target, applyMask);
@@ -700,7 +705,8 @@ namespace UVtools.Core.Operations
                             throw new NotImplementedException();
                     }
 
-                    ApplyMask(original, target);
+                    originalRoi.CopyAreasSmallerThan(_ignoreAreasSmallerThan, target);
+                    ApplyMask(originalRoi, target);
 
                     SlicerFile[layerIndex].LayerMat = mat;
 
