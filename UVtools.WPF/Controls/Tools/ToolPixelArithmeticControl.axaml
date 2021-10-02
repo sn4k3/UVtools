@@ -110,22 +110,22 @@
            Text="Min:"/>
 
         <NumericUpDown
-               Minimum="-255"
-               Maximum="255"
+               Minimum="-1000"
+               Maximum="1000"
                Width="80"
                Value="{Binding Operation.NoiseMinOffset}"
-               ToolTip.Tip="Minimum value of random noise offset."/>
+               ToolTip.Tip="Minimum value of random noise offset"/>
 
         <TextBlock
                VerticalAlignment="Center"
                Text="Max:"/>
 
         <NumericUpDown
-               Minimum="-255"
-               Maximum="255"
+            Minimum="-1000"
+            Maximum="1000"
                Width="80"
                Value="{Binding Operation.NoiseMaxOffset}"
-               ToolTip.Tip="Maximum value of random noise offset."/>
+               ToolTip.Tip="Maximum value of random noise offset"/>
 
         <TextBlock
             VerticalAlignment="Center"
