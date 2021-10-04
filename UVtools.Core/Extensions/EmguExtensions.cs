@@ -329,7 +329,7 @@ namespace UVtools.Core.Extensions
         /// <returns>The total length of this <see cref="Mat"/></returns>
         public static int GetLength(this Mat mat)
         {
-            return mat.Total.ToInt32();
+            return mat.Total.ToInt32() * mat.NumberOfChannels;
         }
 
         /// <summary>

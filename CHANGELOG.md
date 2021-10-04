@@ -1,5 +1,9 @@
 # Changelog
 
+## 04/10/2021 - v2.23.4
+
+- (Fix) RGB images was preventing file open/save/convertion
+
 ## 04/10/2021 - v2.23.3
 
 - **Pixel arithmetic**
