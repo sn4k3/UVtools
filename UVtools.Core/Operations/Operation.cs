@@ -455,9 +455,7 @@ namespace UVtools.Core.Operations
         {
             if (!HaveMask) return null;
 
-            var mask = EmguExtensions.InitMat(mat.Size);
-            using VectorOfVectorOfPoint vec = new(points);
-            CvInvoke.DrawContours(mask, vec, -1, EmguExtensions.WhiteColor, -1);
+            var mask = mat.CreateMask(points);
             return GetRoiOrDefault(mask);
         }
 

@@ -181,9 +181,9 @@ namespace UVtools.Core.Extensions
         /// </summary>
         /// <param name="mat"></param>
         /// <returns></returns>
-        public static Span<byte> GetDataByteSpan(this Mat mat)
+        public static unsafe Span<byte> GetDataByteSpan(this Mat mat)
         {
-            return mat.GetDataSpan<byte>();
+            return new(mat.DataPointer.ToPointer(), mat.GetLength());
         }
 
         public static unsafe Span<byte> GetDataByteSpan(this Mat mat, int length, int offset = 0)
@@ -240,7 +240,7 @@ namespace UVtools.Core.Extensions
         /// <returns></returns>
         public static unsafe Span<T> GetRowSpan<T>(this Mat mat, int y, int length = 0, int offset = 0)
         {
-            return new(IntPtr.Add(mat.DataPointer, y * mat.Step + offset).ToPointer(), length <= 0 ? mat.Step : length);
+            return new(IntPtr.Add(mat.DataPointer, y * mat.GetRealStep() + offset).ToPointer(), length <= 0 ? mat.GetRealStep() : length);
         }
 
         /// <summary>
@@ -310,6 +310,18 @@ namespace UVtools.Core.Extensions
         #endregion
 
         #region Get/Set methods
+
+        /// <summary>
+        /// .Step return the original Mat step, if ROI step still from original matrix which lead to errors.
+        /// Use this to get the real step size
+        /// </summary>
+        /// <param name="mat"></param>
+        /// <returns></returns>
+        public static int GetRealStep(this Mat mat)
+        {
+            return mat.Width * mat.NumberOfChannels;
+        }
+
         /// <summary>
         /// Gets the total length of this <see cref="Mat"/></param>
         /// </summary>
@@ -317,7 +329,7 @@ namespace UVtools.Core.Extensions
         /// <returns>The total length of this <see cref="Mat"/></returns>
         public static int GetLength(this Mat mat)
         {
-            return mat.Step * mat.Height;
+            return mat.Total.ToInt32();
         }
 
         /// <summary>
@@ -329,7 +341,7 @@ namespace UVtools.Core.Extensions
         /// <returns>The pixel index position</returns>
         public static int GetPixelPos(this Mat mat, int x, int y)
         {
-            return y * mat.Step + x * mat.NumberOfChannels;
+            return y * mat.GetRealStep() + x * mat.NumberOfChannels;
         }
 
         /// <summary>
@@ -340,7 +352,7 @@ namespace UVtools.Core.Extensions
         /// <returns>The pixel index position</returns>
         public static int GetPixelPos(this Mat mat, Point point)
         {
-            return point.Y * mat.Step + point.X * mat.NumberOfChannels;
+            return mat.GetPixelPos(point.X, point.Y);
         }
 
         /// <summary>
@@ -421,7 +433,7 @@ namespace UVtools.Core.Extensions
         /// <param name="y"></param>
         /// <param name="value"></param>
         public static void SetByte(this Mat mat, int x, int y, byte[] value) =>
-            SetByte(mat, y * mat.Step + x * mat.NumberOfChannels, value);
+            SetByte(mat, y * mat.GetRealStep() + x * mat.NumberOfChannels, value);
 
         /// <summary>
         /// Sets bytes
@@ -451,6 +463,12 @@ namespace UVtools.Core.Extensions
             return mask;
         }
 
+        public static Mat CreateMask(this Mat src, Point[][] contours)
+        {
+            using var vec = new VectorOfVectorOfPoint(contours);
+            return src.CreateMask(vec);
+        }
+
         #endregion
 
         #region Copy methods
@@ -461,16 +479,18 @@ namespace UVtools.Core.Extensions
         /// <param name="dst">Target <see cref="Mat"/> to paste the <param name="src"></param></param>
         public static void CopyToCenter(this Mat src, Mat dst)
         {
-            if (dst.Step > src.Step && dst.Height > src.Height)
+            var srcStep = src.GetRealStep();
+            var dstStep = dst.GetRealStep();
+            if (dstStep > srcStep && dst.Height > src.Height)
             {
-                var dx = Math.Abs(dst.Step - src.Step) / 2;
+                var dx = Math.Abs(dstStep - srcStep) / 2;
                 var dy = Math.Abs(dst.Height - src.Height) / 2;
                 Mat m = new(dst, new Rectangle(dx, dy, src.Width, src.Height));
                 src.CopyTo(m);
             }
-            else if (dst.Step < src.Step && dst.Height < src.Height)
+            else if (dstStep < srcStep && dst.Height < src.Height)
             {
-                var dx = Math.Abs(dst.Step - src.Step) / 2;
+                var dx = Math.Abs(dstStep - srcStep) / 2;
                 var dy = Math.Abs(dst.Height - src.Height) / 2;
                 Mat m = new(src, new Rectangle(dx, dy, dst.Width, dst.Height));
                 m.CopyTo(dst);

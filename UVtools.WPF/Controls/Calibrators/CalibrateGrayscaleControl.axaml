@@ -222,12 +222,16 @@
                       IsChecked="{Binding Operation.EnableCenterHoleRelief}"/>
 
 
-            <StackPanel Grid.Row="6" Grid.Column="2" Grid.ColumnSpan="9"
-                         Orientation="Horizontal" Spacing="20">
+            <StackPanel Grid.Row="6" Grid.Column="2" Grid.ColumnSpan="9" Orientation="Horizontal" Spacing="20">
                 <CheckBox VerticalAlignment="Center"
-                    ToolTip.Tip="Convert the raw brightness text value to exposure time in seconds and intrude on divisions"
-                    Content="Convert brightness to exposure time"
-                    IsChecked="{Binding Operation.ConvertBrightnessToExposureTime}"/>
+                          ToolTip.Tip="Show divisions text"
+                          Content="Enable text"
+                          IsChecked="{Binding Operation.TextEnabled}"/>
+
+              <CheckBox VerticalAlignment="Center"
+                        ToolTip.Tip="Convert the raw brightness text value to exposure time in seconds and intrude on divisions"
+                        Content="Convert brightness to exposure time"
+                        IsChecked="{Binding Operation.ConvertBrightnessToExposureTime}"/>
 
                 <CheckBox VerticalAlignment="Center"
                           Content="Enable division lines"

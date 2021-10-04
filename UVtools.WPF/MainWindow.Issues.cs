@@ -179,7 +179,7 @@ namespace UVtools.WPF
                         if (Progress.Token.IsCancellationRequested) return;
                         using (var image = SlicerFile[layerIssues.Key].LayerMat)
                         {
-                            var bytes = image.GetDataSpan<byte>();
+                            var bytes = image.GetDataByteSpan();
 
                             bool edited = false;
                             foreach (var issue in layerIssues.Value)

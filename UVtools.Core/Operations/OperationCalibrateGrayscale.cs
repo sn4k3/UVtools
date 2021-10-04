@@ -26,19 +26,20 @@ namespace UVtools.Core.Operations
         #region Members
         private decimal _layerHeight;
         private ushort _bottomLayers;
-        private ushort _interfaceLayers = 5;
-        private ushort _normalLayers = 30;
+        private ushort _interfaceLayers = 20;
+        private ushort _normalLayers = 20;
         private decimal _bottomExposure;
         private decimal _normalExposure;
         private ushort _outerMargin = 200;
         private ushort _innerMargin = 50;
-        private bool _enableAntiAliasing = true;
+        private bool _enableAntiAliasing = false;
         private bool _mirrorOutput;
         private byte _startBrightness = 175;
         private byte _endBrightness = 255;
         private byte _brightnessSteps = 10;
         private bool _enableCenterHoleRelief = true;
         private ushort _centerHoleDiameter = 200;
+        private bool _textEnabled = true;
         private bool _convertBrightnessToExposureTime;
         private bool _enableLineDivisions = true;
         private byte _lineDivisionThickness = 30;
@@ -269,6 +270,12 @@ namespace UVtools.Core.Operations
             set => RaiseAndSetIfChanged(ref _centerHoleDiameter, value);
         }
 
+        public bool TextEnabled
+        {
+            get => _textEnabled;
+            set => RaiseAndSetIfChanged(ref _textEnabled, value);
+        }
+
         public bool ConvertBrightnessToExposureTime
         {
             get => _convertBrightnessToExposureTime;
@@ -311,7 +318,7 @@ namespace UVtools.Core.Operations
 
         private bool Equals(OperationCalibrateGrayscale other)
         {
-            return _layerHeight == other._layerHeight && _bottomLayers == other._bottomLayers && _normalLayers == other._normalLayers && _interfaceLayers == other._interfaceLayers && _bottomExposure == other._bottomExposure && _normalExposure == other._normalExposure && _outerMargin == other._outerMargin && _innerMargin == other._innerMargin && _startBrightness == other._startBrightness && _endBrightness == other._endBrightness && _brightnessSteps == other._brightnessSteps && _enableCenterHoleRelief == other._enableCenterHoleRelief && _centerHoleDiameter == other._centerHoleDiameter && _enableLineDivisions == other._enableLineDivisions && _lineDivisionThickness == other._lineDivisionThickness && _lineDivisionBrightness == other._lineDivisionBrightness && _textXOffset == other._textXOffset && _enableAntiAliasing == other._enableAntiAliasing && _mirrorOutput == other._mirrorOutput;
+            return _layerHeight == other._layerHeight && _bottomLayers == other._bottomLayers && _interfaceLayers == other._interfaceLayers && _normalLayers == other._normalLayers && _bottomExposure == other._bottomExposure && _normalExposure == other._normalExposure && _outerMargin == other._outerMargin && _innerMargin == other._innerMargin && _enableAntiAliasing == other._enableAntiAliasing && _mirrorOutput == other._mirrorOutput && _startBrightness == other._startBrightness && _endBrightness == other._endBrightness && _brightnessSteps == other._brightnessSteps && _enableCenterHoleRelief == other._enableCenterHoleRelief && _centerHoleDiameter == other._centerHoleDiameter && _textEnabled == other._textEnabled && _convertBrightnessToExposureTime == other._convertBrightnessToExposureTime && _enableLineDivisions == other._enableLineDivisions && _lineDivisionThickness == other._lineDivisionThickness && _lineDivisionBrightness == other._lineDivisionBrightness && _textXOffset == other._textXOffset;
         }
 
         public override bool Equals(object obj)
@@ -324,8 +331,8 @@ namespace UVtools.Core.Operations
             var hashCode = new HashCode();
             hashCode.Add(_layerHeight);
             hashCode.Add(_bottomLayers);
-            hashCode.Add(_normalLayers);
             hashCode.Add(_interfaceLayers);
+            hashCode.Add(_normalLayers);
             hashCode.Add(_bottomExposure);
             hashCode.Add(_normalExposure);
             hashCode.Add(_outerMargin);
@@ -337,6 +344,8 @@ namespace UVtools.Core.Operations
             hashCode.Add(_brightnessSteps);
             hashCode.Add(_enableCenterHoleRelief);
             hashCode.Add(_centerHoleDiameter);
+            hashCode.Add(_textEnabled);
+            hashCode.Add(_convertBrightnessToExposureTime);
             hashCode.Add(_enableLineDivisions);
             hashCode.Add(_lineDivisionThickness);
             hashCode.Add(_lineDivisionBrightness);
@@ -363,11 +372,13 @@ namespace UVtools.Core.Operations
             int innerRadius = Math.Max(100, radius - _innerMargin);
             double topLineLength = 0;
 
-            CvInvoke.Circle(layers[0], center, radius, EmguExtensions.WhiteColor, -1, LineType.AntiAlias);
+            LineType lineType = _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected;
+
+            CvInvoke.Circle(layers[0], center, radius, EmguExtensions.WhiteColor, -1, lineType);
             layers[1] = layers[0].Clone();
             layers[2] = layers[0].Clone();
 
-            LineType lineType = _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected;
+            
 
             int i = 0;
             for (ushort brightness = _startBrightness; brightness <= _endBrightness; brightness += _brightnessSteps)
@@ -397,30 +408,36 @@ namespace UVtools.Core.Operations
 
                 i++;
             }
-            
+
+
             FontFace fontFace = FontFace.HersheyDuplex;
             double fontScale = 2;
             int fontThickness = 5;
-            Point fontPoint = new((int) (center.X + radius / 2.5f + _textXOffset), (int)(center.Y + AngleStep / 1.5));
 
-            var halfAngleStep = AngleStep / 2;
-            var rotatedAngle = halfAngleStep;
-
-
-            layers[2].Rotate(halfAngleStep);
-            for (ushort brightness = _startBrightness; brightness <= _endBrightness; brightness += _brightnessSteps)
+            if (_textEnabled)
             {
-                var text = brightness.ToString();
-                if (_convertBrightnessToExposureTime)
+                Point fontPoint = new((int)(center.X + radius / 2.5f + _textXOffset), (int)(center.Y + AngleStep / 1.5));
+
+                var halfAngleStep = AngleStep / 2;
+                var rotatedAngle = halfAngleStep;
+
+
+                layers[2].Rotate(halfAngleStep);
+                for (ushort brightness = _startBrightness; brightness <= _endBrightness; brightness += _brightnessSteps)
                 {
-                    text = $"{Math.Round(brightness * _normalExposure / byte.MaxValue, 2)}s";
+                    var text = brightness.ToString();
+                    if (_convertBrightnessToExposureTime)
+                    {
+                        text = $"{Math.Round(brightness * _normalExposure / byte.MaxValue, 2)}s";
+                    }
+
+                    CvInvoke.PutText(layers[2], text, fontPoint, fontFace, fontScale, EmguExtensions.BlackColor, fontThickness, lineType);
+                    rotatedAngle += AngleStep;
+                    layers[2].Rotate(AngleStep);
                 }
-                CvInvoke.PutText(layers[2], text, fontPoint, fontFace, fontScale, EmguExtensions.BlackColor, fontThickness, lineType);
-                rotatedAngle += AngleStep;
-                layers[2].Rotate(AngleStep);
+
+                layers[2].Rotate(-rotatedAngle);
             }
-            
-            layers[2].Rotate(-rotatedAngle);
 
             if (_enableCenterHoleRelief && _centerHoleDiameter > 1)
             {

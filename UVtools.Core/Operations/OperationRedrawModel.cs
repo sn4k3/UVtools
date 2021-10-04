@@ -188,9 +188,9 @@ namespace UVtools.Core.Operations
                     if (contours.Size <= 0) return;
                     using var nextLayerMat = otherFile[layerIndex + 1].LayerMat;
                     using var nextLayerMatRoi = GetRoiOrDefault(nextLayerMat);
-                    var fullSpan = fullMatRoi.GetDataSpan<byte>();
-                    var supportsSpan = supportsMat.GetDataSpan<byte>();
-                    var nextSpan = nextLayerMatRoi.GetDataSpan<byte>();
+                    var fullSpan = fullMatRoi.GetDataByteSpan();
+                    var supportsSpan = supportsMat.GetDataByteSpan();
+                    var nextSpan = nextLayerMatRoi.GetDataByteSpan();
                     for (int i = 0; i < contours.Size; i++)
                     {
                         var foundContour = false;

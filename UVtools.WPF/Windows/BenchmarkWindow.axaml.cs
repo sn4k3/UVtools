@@ -217,7 +217,7 @@ namespace UVtools.WPF.Windows
         public byte[] EncodeCbddlpImage(Mat image, byte bit = 0)
         {
             List<byte> rawData = new();
-            var span = image.GetDataSpan<byte>();
+            var span = image.GetDataByteSpan();
 
             bool obit = false;
             int rep = 0;
@@ -279,7 +279,7 @@ namespace UVtools.WPF.Windows
             List<byte> rawData = new();
             byte color = byte.MaxValue >> 1;
             uint stride = 0;
-            var span = image.GetDataSpan<byte>();
+            var span = image.GetDataByteSpan();
 
             void AddRep()
             {
@@ -357,7 +357,7 @@ namespace UVtools.WPF.Windows
         public byte[] EncodePW0Image(Mat image)
         {
             List<byte> rawData = new();
-            var span = image.GetDataSpan<byte>();
+            var span = image.GetDataByteSpan();
 
             int lastColor = -1;
             int reps = 0;

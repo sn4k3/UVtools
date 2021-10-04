@@ -59,7 +59,7 @@ namespace UVtools.WPF.Controls.Calibrators
                             return;
                         }
                     };
-                    ParentWindow.ButtonOkEnabled = Operation.Divisions > 0;
+                    if(ParentWindow is not null) ParentWindow.ButtonOkEnabled = Operation.Divisions > 0;
                     _timer.Stop();
                     _timer.Start();
                     break;

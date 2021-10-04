@@ -1,5 +1,19 @@
 # Changelog
 
+## 04/10/2021 - v2.23.3
+
+- **Pixel arithmetic**
+   - (Add) Apply to - Model surface: Apply only to model surface/visible pixels
+   - (Add) Apply to - Model surface & inset: Apply only to model surface/visible pixels and within a inset from walls
+   - (Add) Preset: Fuzy skin
+   - (Improvement) Speed up the Corrode method
+   - (Change) Heal anti-aliasing threshold from 169 to 119
+- **Calibration - Grayscale:**
+   - (Add) Enable or disable text
+   - (Fix) Calibration - Grayscale: Crash program when redo (Ctrl+Z)
+   - (Change) Some defaults to better values
+- (Fix) Layer arithmetic: Crash program when redo (Ctrl+Z)
+
 ## 02/10/2021 - v2.23.2
 
 - **Pixel arithmetic**

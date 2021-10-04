@@ -890,7 +890,7 @@ namespace UVtools.WPF
                         //var nextSpan = nextImage.GetPixelSpan<byte>();
 
 
-                        int width = LayerCache.Image.Step;
+                        int width = LayerCache.Image.GetRealStep();
                         int channels = LayerCache.ImageBgr.NumberOfChannels;
                         bool showSimilarityInstead =
                             Settings.LayerPreview.LayerDifferenceHighlightSimilarityInstead;

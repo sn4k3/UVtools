@@ -218,7 +218,7 @@ namespace UVtools.Core.Managers
 
                     using (var image = layer.LayerMat)
                     {
-                        int step = image.Step;
+                        var step = image.GetRealStep();
                         var span = image.GetDataByteSpan();
 
                         if (touchBoundConfig.Enabled)
@@ -396,7 +396,7 @@ namespace UVtools.Core.Managers
                                         if (previousImage is null)
                                         {
                                             previousImage = SlicerFile[layerIndex - 1].LayerMat;
-                                            previousSpan = previousImage.GetDataSpan<byte>();
+                                            previousSpan = previousImage.GetDataByteSpan();
                                         }
 
                                         List<Point> points = new();
@@ -463,10 +463,11 @@ namespace UVtools.Core.Managers
                                                 anchor, overhangConfig.ErodeIterations, BorderType.Default,
                                                 new MCvScalar());
 
-                                            var subtractedSpan = subtractedImage.GetDataSpan<byte>();
+                                            var subtractedSpan = subtractedImage.GetDataByteSpan();
+                                            var subtractedStep = subtractedImage.GetRealStep();
 
                                             for (int y = 0; y < subtractedImage.Height; y++)
-                                                for (int x = 0; x < subtractedImage.Step; x++)
+                                                for (int x = 0; x < subtractedStep; x++)
                                                 {
                                                     int labelX = rect.X + x;
                                                     int labelY = rect.Y + y;

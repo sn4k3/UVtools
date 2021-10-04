@@ -733,19 +733,33 @@ namespace UVtools.Core.Operations
                             if (_applyMethod != PixelArithmeticApplyMethod.All) ApplyMask(originalRoi, target, applyMask);
                             break;
                         case PixelArithmeticOperators.Corrode:
-                            var span = target.GetDataByteSpan();
-                            var spanMask = applyMask.GetDataByteSpan();
-
-                            for (var i = 0; i < span.Length; i++)
+                            var span = mat.GetDataByteSpan();
+                            if (HaveROI)
                             {
-                                if (span[i] <= _noiseThreshold || spanMask[i] == 0) continue;
-                                span[i] = (byte)Math.Clamp(RandomNumberGenerator.GetInt32(_noiseMinOffset, _noiseMaxOffset + 1) + span[i], byte.MinValue, byte.MaxValue);
-                            }
+                                for (var y = ROI.Y; y < ROI.Bottom; y++)
+                                for (var x = ROI.X; x < ROI.Right; x++)
+                                {
+                                    var pos = mat.GetPixelPos(x, y);
+                                    if (span[pos] <= _noiseThreshold) continue;
+                                    span[pos] = (byte)Math.Clamp(RandomNumberGenerator.GetInt32(_noiseMinOffset, _noiseMaxOffset + 1) + span[pos], byte.MinValue, byte.MaxValue);
+                                }
 
-                            /*if (_applyMethod 
-                                is not PixelArithmeticApplyMethod.All 
-                                and not PixelArithmeticApplyMethod.Model) 
-                                ApplyMask(originalRoi, target, applyMask);*/
+                                if (_applyMethod
+                                    is not PixelArithmeticApplyMethod.All
+                                    and not PixelArithmeticApplyMethod.Model)
+                                    ApplyMask(originalRoi, target, applyMask);
+                            }
+                            else // Whole image
+                            {
+                                var spanMask = applyMask is null ? span : applyMask.GetDataByteSpan();
+
+                                for (var i = 0; i < span.Length; i++)
+                                {
+                                    if (span[i] <= _noiseThreshold || spanMask[i] == 0) continue;
+                                    span[i] = (byte)Math.Clamp(RandomNumberGenerator.GetInt32(_noiseMinOffset, _noiseMaxOffset + 1) + span[i], byte.MinValue, byte.MaxValue);
+                                }
+                            }
+                           
                             break;
                         case PixelArithmeticOperators.KeepRegion:
                             {
@@ -951,7 +965,7 @@ namespace UVtools.Core.Operations
             ApplyMethod = PixelArithmeticApplyMethod.ModelSurfaceAndInset;
             NoiseMinOffset = -200;
             NoiseMaxOffset = 127;
-            WallThickness = 4;
+            WallThickness = 6;
         }
 
         public void PresetStripAntiAliasing()
@@ -969,7 +983,7 @@ namespace UVtools.Core.Operations
             Operator = PixelArithmeticOperators.Threshold;
             ApplyMethod = PixelArithmeticApplyMethod.All;
             UsePattern = false;
-            Value = 169;
+            Value = 119;
             //ThresholdMaxValue = 255;
             ThresholdType = ThresholdType.ToZero;
         }

@@ -410,7 +410,7 @@ namespace UVtools.Core.Operations
                                 if (issue.PixelsCount > _removeIslandsBelowEqualPixelCount) continue;
 
                                 InitImage();
-                                if (bytes == null) bytes = image.GetDataSpan<byte>();
+                                if (bytes == null) bytes = image.GetDataByteSpan();
 
                                 foreach (var issuePixel in issue.Points)
                                 {
