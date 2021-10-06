@@ -877,8 +877,8 @@ namespace UVtools.Core.Managers
 
                                         for (var index = overlappingGroupIndexes.Count - 1; index >= 0; index--)
                                         {
-                                            resinTrapGroups[index].Clear();
-                                            resinTrapGroups.RemoveAt(index);
+                                            resinTrapGroups[overlappingGroupIndexes[index]].Clear();
+                                            resinTrapGroups.RemoveAt(overlappingGroupIndexes[index]);
                                         }
 
                                         combinedGroup.Add((resinTraps[layerIndex][x], (uint)layerIndex));
