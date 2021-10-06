@@ -850,10 +850,9 @@ namespace UVtools.Core.Managers
                                     var overlappingGroupIndexes = new List<int>();
                                     for (var groupIndex = 0; groupIndex < resinTrapGroups.Count; groupIndex++)
                                     {
-                                        if (resinTrapGroups[groupIndex][^1].layerIndex != layerIndex + 1 && resinTrapGroups[groupIndex][^1].layerIndex != layerIndex) continue;
+                                        if (resinTrapGroups[groupIndex][^1].layerIndex != layerIndex && resinTrapGroups[groupIndex][^1].layerIndex != layerIndex + 1) continue;
 
-                                        if (EmguContours.ContoursIntersect(resinTrapGroups[groupIndex].Last().contour,
-                                            resinTraps[layerIndex][x]))
+                                        if (EmguContours.ContoursIntersect(resinTrapGroups[groupIndex][^1].contour, resinTraps[layerIndex][x]))
                                         {
                                             overlappingGroupIndexes.Add(groupIndex);
                                         }
@@ -962,9 +961,9 @@ namespace UVtools.Core.Managers
                             var overlappingGroupIndexes = new List<int>();
                             for (var x = 0; x < resinTrapGroups.Count; x++)
                             {
-                                if (resinTrapGroups[x].Last().LayerIndex != layerIndex + 1) continue;
+                                if (resinTrapGroups[x][^1].LayerIndex != layerIndex && resinTrapGroups[x][^1].LayerIndex != layerIndex + 1) continue;
 
-                                using var vec = new VectorOfVectorOfPoint(resinTrapGroups[x].Last().Contours);
+                                using var vec = new VectorOfVectorOfPoint(resinTrapGroups[x][^1].Contours);
                                 if (EmguContours.ContoursIntersect(trap, vec))
                                 {
                                     overlappingGroupIndexes.Add(x);
@@ -990,8 +989,8 @@ namespace UVtools.Core.Managers
 
                                 for (var index = overlappingGroupIndexes.Count - 1; index >= 0; index--)
                                 {
-                                    resinTrapGroups[index].Clear();
-                                    resinTrapGroups.RemoveAt(index);
+                                    resinTrapGroups[overlappingGroupIndexes[index]].Clear();
+                                    resinTrapGroups.RemoveAt(overlappingGroupIndexes[index]);
                                 }
 
                                 combinedGroup.Add(trapIssue);
@@ -1032,7 +1031,7 @@ namespace UVtools.Core.Managers
                                 var overlappingGroupIndexes = new List<int>();
                                 for (var x = 0; x < suctionGroups.Count; x++)
                                 {
-                                    if (suctionGroups[x][^1].LayerIndex != layerIndex + 1) continue;
+                                    if (suctionGroups[x][^1].LayerIndex != layerIndex && suctionGroups[x][^1].LayerIndex != layerIndex + 1) continue;
                                     using var vec = new VectorOfVectorOfPoint(suctionGroups[x][^1].Contours);
                                     if (EmguContours.ContoursIntersect(trap, vec))
                                     {
