@@ -959,7 +959,7 @@ namespace UVtools.Core.Operations
             Operator = PixelArithmeticOperators.Add;
         }
 
-        public void PresetFuzySkin()
+        public void PresetFuzzySkin()
         {
             Operator = PixelArithmeticOperators.Corrode;
             ApplyMethod = PixelArithmeticApplyMethod.ModelSurfaceAndInset;
