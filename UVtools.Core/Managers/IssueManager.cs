@@ -871,10 +871,23 @@ namespace UVtools.Core.Managers
                                     else
                                     {
                                         var combinedGroup = new List<(VectorOfVectorOfPoint contour, uint layerIndex)>();
+
+                                        /* for reasons not fully understood, in rare cases you can end up with the same contour in multiple groups that are 
+                                         * about to merge. This can cause a use-after-free type error later on when we dispose of a contour.
+                                         * We can (at least in the short term) remedy this by de-duping the result of the merge */
+                                        var uniqueCombinedGroup = new HashSet<(VectorOfVectorOfPoint contour, uint layerIndex)>();
                                         foreach (var index in overlappingGroupIndexes)
                                         {
-                                            combinedGroup.AddRange(resinTrapGroups[index]);
+                                            foreach (var p in resinTrapGroups[index])
+                                            {
+                                                uniqueCombinedGroup.Add(p);
+                                            }
                                         }
+                                        combinedGroup.AddRange(uniqueCombinedGroup.ToList());
+                                        combinedGroup.Add((resinTraps[layerIndex][x], (uint)layerIndex));
+
+                                        uniqueCombinedGroup.Clear();
+                                        uniqueCombinedGroup = null;
 
                                         for (var index = overlappingGroupIndexes.Count - 1; index >= 0; index--)
                                         {
@@ -882,7 +895,6 @@ namespace UVtools.Core.Managers
                                             resinTrapGroups.RemoveAt(index);
                                         }
 
-                                        combinedGroup.Add((resinTraps[layerIndex][x], (uint)layerIndex));
                                         resinTrapGroups.Add(combinedGroup);
                                     }
                                 }
