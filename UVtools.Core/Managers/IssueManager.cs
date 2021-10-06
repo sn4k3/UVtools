@@ -850,7 +850,7 @@ namespace UVtools.Core.Managers
                                     var overlappingGroupIndexes = new List<int>();
                                     for (var groupIndex = 0; groupIndex < resinTrapGroups.Count; groupIndex++)
                                     {
-                                        if (resinTrapGroups[groupIndex].Last().layerIndex != layerIndex + 1) continue;
+                                        if (resinTrapGroups[groupIndex][^1].layerIndex != layerIndex + 1 && resinTrapGroups[groupIndex][^1].layerIndex != layerIndex) continue;
 
                                         if (EmguContours.ContoursIntersect(resinTrapGroups[groupIndex].Last().contour,
                                             resinTraps[layerIndex][x]))
