@@ -15,6 +15,7 @@ namespace UVtools.Core.Extensions
 {
     public static class ParallelExtensions
     {
+        //public static readonly ParallelOptions ParallelSingleThread = new() { MaxDegreeOfParallelism = 1 };
         public static void ForAllInApproximateOrder<TSource>(this ParallelQuery<TSource> source, Action<TSource> action)
         {
             Partitioner.Create(source)

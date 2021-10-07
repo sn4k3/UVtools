@@ -1,5 +1,9 @@
 # Changelog
 
+## 07/10/2021 - v2.23.5
+
+- (Fix) Odd crash when detecing for resin trap issues which was duplicating contours
+
 ## 04/10/2021 - v2.23.4
 
 - (Fix) RGB images was preventing file open/save/convertion
