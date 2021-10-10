@@ -1,0 +1,130 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="UVtools.WPF.Controls.Tools.ToolCustomExposureTestControl">
+    <StackPanel Spacing="10">
+        <Grid RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto"
+              ColumnDefinitions="Auto,10,Auto,40,Auto">
+            <TextBlock Grid.Row="0" Grid.Column="2"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Center"
+                       FontWeight="Bold"
+                       IsEnabled="{Binding Operation.LayerRangeHaveBottoms}"
+                       Text="Bottom layers"/>
+            <TextBlock Grid.Row="0" Grid.Column="4"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Center"
+                       FontWeight="Bold"
+                       IsEnabled="{Binding Operation.LayerRangeHaveNormals}"
+                       Text="Normal layers"/>
+
+            <TextBlock Grid.Row="2" Grid.Column="0"
+                       VerticalAlignment="Center"
+                       Text="1º exposure:"/>
+
+            <NumericUpDown Grid.Row="2" Grid.Column="2"
+                           Classes="ValueLabel ValueLabel_s"
+                           IsEnabled="{Binding Operation.LayerRangeHaveBottoms}"
+                           VerticalAlignment="Center"
+                           Minimum="0.01"
+                           Maximum="1000"
+                           Increment="0.5"
+                           Value="{Binding Operation.FirstBottomExposure}"/>
+
+              <NumericUpDown Grid.Row="2" Grid.Column="4"
+                             Classes="ValueLabel ValueLabel_s"
+                              IsEnabled="{Binding Operation.LayerRangeHaveNormals}"
+                              VerticalAlignment="Center"
+                              Minimum="0.01"
+                              Maximum="1000"
+                              Increment="0.5"
+                              Value="{Binding Operation.FirstNormalExposure}"/>
+
+        </Grid>
+
+      <Grid RowDefinitions="Auto,10,Auto,10,Auto"
+            ColumnDefinitions="Auto,10,Auto">
+
+          <TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" Text="Number of copies:"/>
+          <NumericUpDown Grid.Row="0" Grid.Column="2" Minimum="1" Maximum="10" Increment="1" Value="{Binding Operation.NumberOfCopies}" />
+
+          <TextBlock Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" Text="Exposure Step:"/>
+          <NumericUpDown Grid.Row="2" Grid.Column="2" Classes="ValueLabel ValueLabel_s" Minimum="0" Maximum="10" Increment="0.1" FormatString="F3" Value="{Binding Operation.ExposureStep}" />
+
+          <TextBlock Grid.Row="4" Grid.Column="0" VerticalAlignment="Center" Text="Margin between copies:"/>
+          <NumericUpDown Grid.Row="4" Grid.Column="2" Classes="ValueLabel ValueLabel_px" Minimum="0" Maximum="1000" Increment="10" Value="{Binding Operation.Margin}" />
+      </Grid>      
+
+      <Grid RowDefinitions="Auto,10,Auto,10,Auto"
+            ColumnDefinitions="Auto,10,Auto">
+
+          <CheckBox Grid.Row="0" Grid.Column="0" ToolTip.Tip="Override flat layers with a rectangular raft" Content="Override Raft:" IsChecked="{Binding Operation.OverrideRaft}" />
+
+          <TextBlock Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" Text="Flat Layers (Same exposure on all copies):"/>
+          <NumericUpDown Grid.Row="2" Grid.Column="2" Minimum="0" Maximum="100" Increment="1" Value="{Binding Operation.FlatLayers}" />
+
+          <TextBlock Grid.Row="4" Grid.Column="0" VerticalAlignment="Center" Text="Label Layers:"/>
+          <NumericUpDown Grid.Row="4" Grid.Column="2" Minimum="0" Maximum="100" Increment="1" Value="{Binding Operation.LabelLayers}" />
+      </Grid>      
+
+
+      <CheckBox
+              ToolTip.Tip="Change some defined settings for the second layers"
+              Content="Use different settings for the second layer:"
+              IsChecked="{Binding Operation.DifferentSettingsForAdditionalLayers}"/>
+
+      <Grid RowDefinitions="Auto,10,Auto" ColumnDefinitions="Auto,10,Auto" 
+            IsEnabled="{Binding Operation.DifferentSettingsForAdditionalLayers}">
+        <CheckBox Grid.Row="0" Grid.Column="0"
+                   ToolTip.Tip="Use a low value to speed up layers with same Z position, lift is not really required here.
+&#x0a;Set no lift height (0mm) will not work on most of the printers, so far, only gcode printers are known/able to use no lifts.
+&#x0a;However set 0mm on a not compatible printer will cause no harm, value will be contained inside a min-max inside firmware."
+                   Content="Lift height:"
+                   IsVisible="{Binding SlicerFile.CanUseLayerLiftHeight}"
+                   IsChecked="{Binding Operation.AdditionalLayersLiftHeightEnabled}"
+                   VerticalAlignment="Center"/>
+        <NumericUpDown Grid.Row="0" Grid.Column="2"
+                       Classes="ValueLabel ValueLabel_mm"
+                       Increment="0.5"
+                       Minimum="0"
+                       Maximum="1000"
+                       FormatString="F2"
+                       IsVisible="{Binding SlicerFile.CanUseLayerLiftHeight}"
+                       IsEnabled="{Binding Operation.AdditionalLayersLiftHeightEnabled}"
+                       Value="{Binding Operation.AdditionalLayersLiftHeight}"/>
+
+        <CheckBox Grid.Row="2" Grid.Column="0"
+                  ToolTip.Tip="Use a low value to speed up layers with same Z position, a delay is not really required here.
+&#x0a;Set no delay (0s) is not recommended for gcode printers, as most need some time to render the image before move to the next command, 2s is recommended as a safe-guard."
+                  Content="Wait time before cure:"
+                  IsChecked="{Binding Operation.AdditionalLayersWaitTimeBeforeCureEnabled}"
+                  VerticalAlignment="Center">
+          <CheckBox.IsVisible>
+            <MultiBinding Converter="{x:Static BoolConverters.Or}">
+              <Binding Path="SlicerFile.CanUseLayerLightOffDelay"/>
+              <Binding Path="SlicerFile.CanUseLayerWaitTimeBeforeCure"/>
+            </MultiBinding>
+          </CheckBox.IsVisible>
+        </CheckBox>
+        <NumericUpDown Grid.Row="2" Grid.Column="2"
+                       Classes="ValueLabel ValueLabel_s"
+                       Increment="0.5"
+                       Minimum="0"
+                       Maximum="1000"
+                       FormatString="F2"
+                       IsEnabled="{Binding Operation.AdditionalLayersWaitTimeBeforeCureEnabled}"
+                       Value="{Binding Operation.AdditionalLayersWaitTimeBeforeCure}">
+          <NumericUpDown.IsVisible>
+            <MultiBinding Converter="{x:Static BoolConverters.Or}">
+              <Binding Path="SlicerFile.CanUseLayerLightOffDelay"/>
+              <Binding Path="SlicerFile.CanUseLayerWaitTimeBeforeCure"/>
+            </MultiBinding>
+          </NumericUpDown.IsVisible>
+        </NumericUpDown>
+
+      </Grid>
+
+    </StackPanel>
+</UserControl>

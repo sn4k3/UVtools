@@ -229,6 +229,14 @@ namespace UVtools.WPF
             },
             new()
             {
+                Tag = new OperationCustomExposureTest(),
+                Icon = new Avalonia.Controls.Image
+                {
+                    Source = new Bitmap(App.GetAsset("/Assets/Icons/equals-16x16.png"))
+                }
+            },
+            new()
+            {
                 Tag = new OperationDynamicLifts(),
                 Icon = new Avalonia.Controls.Image
                 {
