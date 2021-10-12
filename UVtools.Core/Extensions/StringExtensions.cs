@@ -31,7 +31,7 @@ namespace UVtools.Core.Extensions
             {
                 case null: throw new ArgumentNullException(nameof(input));
                 case "": throw new ArgumentException($"{nameof(input)} cannot be empty", nameof(input));
-                default: return input.First().ToString().ToUpper() + input[1..];
+                default: return $"{char.ToUpper(input[0])}{input[1..]}";
             }
         }
 
@@ -52,7 +52,7 @@ namespace UVtools.Core.Extensions
                 //Cast ConvertFromString(string text) : object to (T)
                 return (T)converter.ConvertFromString(input);
             }
-            return default(T);
+            return default;
         }
     }
 }

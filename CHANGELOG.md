@@ -1,8 +1,18 @@
 # Changelog
 
+## 12/10/2021 - v2.23.6
+
+- **(Improvement) SL1:** (#314)
+   - Complete the SL1 file format with some defaults for convertions
+   - Change some data types from bool to byte as in recent prusaslicer changes
+- (Upgrade) .NET from 5.0.10 to 5.0.11
+- (Upgrade) AvaloniaUI from 0.10.7 to 0.10.8
+- (Fix) PWS, PW0, PWM, PWMX, PWMO, PWMS: Incorrect set of layer height for the layer definition when using same positioned layers
+
+
 ## 07/10/2021 - v2.23.5
 
-- (Fix) Odd crash when detecing for resin trap issues which was duplicating contours
+- (Fix) Odd crash when detecting for resin trap issues which was duplicating contours (#311, #312)
 
 ## 04/10/2021 - v2.23.4
 

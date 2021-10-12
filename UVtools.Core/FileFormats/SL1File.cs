@@ -63,24 +63,24 @@ namespace UVtools.Core.FileFormats
         {
             #region Printer
             public string InheritsCummulative { get; set; }
-            public string HostType { get; set; }
+            public string HostType { get; set; } = "octoprint";
             public string PhysicalPrinterSettingsId { get; set; }
             public string PrinterSettingsId { get; set; }
-            public string PrinterTechnology { get; set; }
-            public string PrinterModel { get; set; }
-            public string PrinterVariant { get; set; }
+            public string PrinterTechnology { get; set; } = "SLA";
+            public string PrinterModel { get; set; } = "SL1";
+            public string PrinterVariant { get; set; } = "default";
             public string PrinterVendor { get; set; }
             public string DefaultSlaMaterialProfile { get; set; }
-            public string DefaultSlaPrintProfile { get; set; }
+            public string DefaultSlaPrintProfile { get; set; } = "0.05 Normal";
             public string PrinterNotes { get; set; }
-            public string Thumbnails { get; set; }
+            public string Thumbnails { get; set; } = "400x400,800x480";
             #endregion
 
             #region Size and Coordinates
             public string BedCustomModel { get; set; }
             public string BedCustomTexture { get; set; }
-            public string BedShape { get; set; }
-            public float MaxPrintHeight { get; set; }
+            public string BedShape { get; set; } = "1.48x1.02,119.48x1.02,119.48x67.02,1.48x67.02";
+            public float MaxPrintHeight { get; set; } = 150;
             #endregion
 
             #region Display
@@ -88,32 +88,34 @@ namespace UVtools.Core.FileFormats
             public float DisplayHeight { get; set; }
             public uint DisplayPixelsX { get; set; }
             public uint DisplayPixelsY { get; set; }
-            public string DisplayOrientation { get; set; }
-            public bool DisplayMirrorX { get; set; }
-            public bool DisplayMirrorY { get; set; }
+            public string DisplayOrientation { get; set; } = "portrait";
+            public byte DisplayMirrorX { get; set; } = 1;
+            public byte DisplayMirrorY { get; set; }
             #endregion
 
             #region Tilt
-            public float FastTiltTime { get; set; }
-            public float SlowTiltTime { get; set; }
-            public float AreaFill { get; set; }
+
+            public float FastTiltTime { get; set; } = 5;
+            public float SlowTiltTime { get; set; } = 8;
+            public float AreaFill { get; set; } = 50;
             #endregion
 
             #region Corrections
-            public string RelativeCorrection { get; set; }
+
+            public string RelativeCorrection { get; set; } = "1,1";
             public float AbsoluteCorrection { get; set; }
-            public float ElefantFootCompensation { get; set; }
-            public float ElefantFootMinWidth { get; set; }
-            public float GammaCorrection { get; set; }
+            public float ElefantFootCompensation { get; set; } = 0.2f;
+            public float ElefantFootMinWidth { get; set; } = 0.2f;
+            public float GammaCorrection { get; set; } = 1;
 
             #endregion
 
             #region Exposure
 
-            public float MinExposureTime { get; set; }
-            public float MaxExposureTime { get; set; }
-            public float MinInitialExposureTime { get; set; }
-            public float MaxInitialExposureTime { get; set; }
+            public float MinExposureTime { get; set; } = 1;
+            public float MaxExposureTime { get; set; } = 120;
+            public float MinInitialExposureTime { get; set; } = 1;
+            public float MaxInitialExposureTime { get; set; } = 300;
 
             #endregion
 
@@ -188,9 +190,9 @@ namespace UVtools.Core.FileFormats
             #endregion
 
             #region Supports
-            public bool SupportsEnable { get; set; }
 
-
+            public byte SupportsEnable { get; set; }
+            
             public float SupportHeadFrontDiameter { get; set; }
             public float SupportHeadPenetration { get; set; }
             public float SupportHeadWidth { get; set; }
@@ -200,11 +202,11 @@ namespace UVtools.Core.FileFormats
             public string SupportSmallPillarDiameterPercent { get; set; }
             public float SupportMaxBridgesOnPillar { get; set; }
             public string SupportPillarConnectionMode { get; set; }
-            public bool SupportBuildplateOnly { get; set; }
+            public byte SupportBuildplateOnly { get; set; }
             public float SupportBaseDiameter { get; set; }
             public float SupportBaseHeight { get; set; }
             public float SupportBaseSafetyDistance { get; set; }
-            public bool PadAroundObject { get; set; }
+            public byte PadAroundObject { get; set; }
             public float SupportObjectElevation { get; set; }
 
 
@@ -220,14 +222,14 @@ namespace UVtools.Core.FileFormats
 
             #region Pad
 
-            public bool PadEnable { set; get; }
+            public byte PadEnable { set; get; }
             public float PadWallThickness { set; get; }
             public float PadWallHeight { set; get; }
             public float PadBrimSize { set; get; }
             public float PadMaxMergeDistance { set; get; }
             public float PadWallSlope { set; get; }
             //public float PadAroundObject { set; get; }
-            public bool PadAroundObjectEverywhere { set; get; }
+            public byte PadAroundObjectEverywhere { set; get; }
             public float PadObjectGap { set; get; }
             public float PadObjectConnectorStride { set; get; }
             public float PadObjectConnectorWidth { set; get; }
@@ -235,7 +237,7 @@ namespace UVtools.Core.FileFormats
             #endregion
 
             #region Hollowing
-            public bool HollowingEnable { set; get; }
+            public byte HollowingEnable { set; get; }
             public float HollowingMinThickness { set; get; }
             public float HollowingQuality { set; get; }
             public float HollowingClosingDistance { set; get; }
@@ -291,7 +293,7 @@ namespace UVtools.Core.FileFormats
             public string PrinterModel { get; set; } = "SL1";
             public string PrinterProfile { get; set; } = About.Software;
             public string PrinterVariant { get; set; } = "default";
-            public string PrusaSlicerVersion { get; set; } = "PrusaSlicer-2.3.0+win64-202101111315";
+            public string PrusaSlicerVersion { get; set; } = "PrusaSlicer-2.3.3+win64-202107161027";
             public float UsedMaterial { get; set; }
 
             public override string ToString()
@@ -388,15 +390,15 @@ namespace UVtools.Core.FileFormats
         {
             get
             {
-                if (PrinterSettings.DisplayMirrorX && PrinterSettings.DisplayMirrorY) return Enumerations.FlipDirection.Both;
-                if (PrinterSettings.DisplayMirrorX) return Enumerations.FlipDirection.Horizontally;
-                if (PrinterSettings.DisplayMirrorY) return Enumerations.FlipDirection.Vertically;
+                if (PrinterSettings.DisplayMirrorX > 0 && PrinterSettings.DisplayMirrorY > 0) return Enumerations.FlipDirection.Both;
+                if (PrinterSettings.DisplayMirrorX > 0) return Enumerations.FlipDirection.Horizontally;
+                if (PrinterSettings.DisplayMirrorY > 0) return Enumerations.FlipDirection.Vertically;
                 return Enumerations.FlipDirection.None;
             }
             set
             {
-                PrinterSettings.DisplayMirrorX = value is Enumerations.FlipDirection.Horizontally or Enumerations.FlipDirection.Both;
-                PrinterSettings.DisplayMirrorY = value is Enumerations.FlipDirection.Vertically or Enumerations.FlipDirection.Both;
+                PrinterSettings.DisplayMirrorX = (byte)(value is Enumerations.FlipDirection.Horizontally or Enumerations.FlipDirection.Both ? 1 : 0);
+                PrinterSettings.DisplayMirrorY = (byte)(value is Enumerations.FlipDirection.Vertically or Enumerations.FlipDirection.Both ? 1 : 0);
                 RaisePropertyChanged();
             }
         }   

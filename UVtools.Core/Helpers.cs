@@ -59,19 +59,34 @@ namespace UVtools.Core
                     attribute.SetValue(obj, value.Convert<string>());
                     return true;
                 case "boolean":
-                    if(char.IsDigit(value[0]))
-                        attribute.SetValue(obj, !value.Equals("0"));
-                    else
-                        attribute.SetValue(obj, value.Equals("True", StringComparison.InvariantCultureIgnoreCase));
+                    if(char.IsDigit(value[0])) attribute.SetValue(obj, !value.Equals("0"));
+                    else attribute.SetValue(obj, value.Equals("True", StringComparison.InvariantCultureIgnoreCase));
                     return true;
                 case "byte":
-                    attribute.SetValue(obj, value.Convert<byte>());
+                    if (value.Equals("true", StringComparison.InvariantCultureIgnoreCase)) attribute.SetValue(obj, (byte)1);
+                    else if (value.Equals("false", StringComparison.InvariantCultureIgnoreCase)) attribute.SetValue(obj, byte.MinValue);
+                    else attribute.SetValue(obj, value.Convert<byte>());
+                    return true;
+                case "sbyte":
+                    attribute.SetValue(obj, value.Convert<sbyte>());
                     return true;
                 case "uint16":
                     attribute.SetValue(obj, value.Convert<ushort>());
                     return true;
+                case "int16":
+                    attribute.SetValue(obj, value.Convert<short>());
+                    return true;
                 case "uint32":
                     attribute.SetValue(obj, value.Convert<uint>());
+                    return true;
+                case "int32":
+                    attribute.SetValue(obj, value.Convert<int>());
+                    return true;
+                case "uint64":
+                    attribute.SetValue(obj, value.Convert<ulong>());
+                    return true;
+                case "int64":
+                    attribute.SetValue(obj, value.Convert<long>());
                     return true;
                 case "single":
                     attribute.SetValue(obj, (float)Math.Round(float.Parse(value, CultureInfo.InvariantCulture.NumberFormat), 3));

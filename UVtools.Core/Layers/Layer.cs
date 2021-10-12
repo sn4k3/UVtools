@@ -410,6 +410,18 @@ namespace UVtools.Core.Layers
         }
 
         /// <summary>
+        /// Gets the layer height in millimeters of this layer relative to the previous layer
+        /// </summary>
+        public float RelativeLayerHeight
+        {
+            get
+            {
+                var previousLayer = PreviousLayer();
+                return previousLayer is null ? LayerHeight : RoundHeight(_positionZ - previousLayer.PositionZ);
+            }
+        }
+
+        /// <summary>
         /// Gets the computed material milliliters spent on this layer
         /// </summary>
         public float MaterialMilliliters

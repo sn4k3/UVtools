@@ -536,7 +536,7 @@ namespace UVtools.Core.FileFormats
 
             public void SetFrom(Layer layer)
             {
-                LayerHeight = layer.LayerHeight;
+                LayerHeight = layer.RelativeLayerHeight;
                 ExposureTime = layer.ExposureTime;
                 LiftHeight = layer.LiftHeight;
                 LiftSpeed = (float) Math.Round(layer.LiftSpeed / 60, 2);
@@ -545,6 +545,7 @@ namespace UVtools.Core.FileFormats
 
             public void CopyTo(Layer layer)
             {
+                // Don't forget to compute LayerHeight outside here
                 layer.ExposureTime = ExposureTime;
                 layer.LiftHeight = LiftHeight;
                 layer.LiftSpeed = (float)Math.Round(LiftSpeed * 60, 2);
