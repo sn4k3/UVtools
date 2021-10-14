@@ -42,6 +42,9 @@ namespace UVtools.Core.Operations
 
             [Description("Offset crop: Like erode but discards the outer pixels")]
             OffsetCrop,
+
+            [Description("Isolate features: Isolates thin features and discards other pixels")]
+            IsolateFeatures,
         }
         #endregion
 
@@ -51,7 +54,7 @@ namespace UVtools.Core.Operations
         private uint _iterationsEnd = 1;
         private bool _chamfer;
         #endregion
-        
+
         #region Overrides
 
         public override string Title => "Morph";
@@ -70,7 +73,21 @@ namespace UVtools.Core.Operations
 
         #region Properties
 
-        public MorphOp MorphOperationOpenCV => _morphOperation == MorphOperations.OffsetCrop ? MorphOp.Erode : (MorphOp)_morphOperation;
+        public MorphOp MorphOperationOpenCV
+        {
+            get
+            {
+                switch (_morphOperation)
+                {
+                    case MorphOperations.OffsetCrop:
+                        return MorphOp.Erode;
+                    case MorphOperations.IsolateFeatures:
+                        return MorphOp.Open;
+                    default:
+                        return (MorphOp)_morphOperation;
+                }
+            }
+        }
 
         public MorphOperations MorphOperation
         {
@@ -205,6 +222,11 @@ namespace UVtools.Core.Operations
                     var originalRoi = GetRoiOrDefault(original);
                     originalRoi.CopyTo(target, target);
                 }
+            }
+
+            if (_morphOperation == MorphOperations.IsolateFeatures)
+            {
+                CvInvoke.Subtract(original, target, target);
             }
 
             ApplyMask(original, target);
