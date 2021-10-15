@@ -287,7 +287,7 @@
 
                   <TextBlock VerticalAlignment="Center"
                              Grid.Row="10" Grid.Column="0"
-                             Text="File convert default directory:"/>
+                             Text="Scripts default directory:"/>
                   <TextBox
                       Name="General.DefaultDirectoryScripts"
                       Text="{Binding Settings.General.DefaultDirectoryScripts}"
