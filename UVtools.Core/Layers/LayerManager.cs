@@ -1002,7 +1002,7 @@ namespace UVtools.Core
         public Layer[] AllocateFromMat(Mat[] mats)
         {
             var layers = new Layer[mats.Length];
-            Parallel.For(0L, mats.Length, CoreSettings.ParallelOptions, i =>
+            Parallel.For(0, mats.Length, CoreSettings.ParallelOptions, i =>
             {
                 layers[i] = new Layer((uint)i, mats[i], this);
             });

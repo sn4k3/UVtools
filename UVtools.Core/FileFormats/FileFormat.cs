@@ -1004,6 +1004,37 @@ namespace UVtools.Core.FileFormats
         public virtual float DisplayHeight { get; set; }
 
         /// <summary>
+        /// Gets the display diagonal in millimeters
+        /// </summary>
+        public float DisplayDiagonal => (float)Math.Round(Math.Sqrt(Math.Pow(DisplayWidth, 2) + Math.Pow(DisplayHeight, 2)), 2);
+
+        /// <summary>
+        /// Gets the display diagonal in inch's
+        /// </summary>
+        public float DisplayDiagonalInches => (float)Math.Round(Math.Sqrt(Math.Pow(DisplayWidth, 2) + Math.Pow(DisplayHeight, 2)) * UnitExtensions.MillimeterInInch, 2);
+
+        /// <summary>
+        /// Gets the display ratio
+        /// </summary>
+        public Size DisplayAspectRatio
+        {
+            get
+            {
+                var gcd = MathExtensions.GCD(ResolutionX, ResolutionY);
+                return new((int)(ResolutionX / gcd), (int)(ResolutionY / gcd));
+            }
+        }
+
+        public string DisplayAspectRatioStr
+        {
+            get
+            {
+                var aspect = DisplayAspectRatio;
+                return $"{aspect.Width}:{aspect.Height}";
+            }
+        }
+
+        /// <summary>
         /// Gets or sets if images need to be mirrored on lcd to print on the correct orientation
         /// </summary>
         public virtual Enumerations.FlipDirection DisplayMirror { get; set; } = Enumerations.FlipDirection.None;

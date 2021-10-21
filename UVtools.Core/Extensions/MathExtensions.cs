@@ -114,5 +114,45 @@ namespace UVtools.Core.Extensions
         public static bool IsInteger(this float val, float tolerance = 0.0001f) => Math.Abs(val - Math.Floor(val)) < tolerance;
         public static bool IsInteger(this double val, double tolerance = 0.0001) => Math.Abs(val - Math.Floor(val)) < tolerance;
         public static bool IsInteger(this decimal val) => val == Math.Floor(val);
+
+        public static int GCD(int a, int b)
+        {
+            while (a != 0 && b != 0)
+            {
+                if (a > b)
+                    a %= b;
+                else
+                    b %= a;
+            }
+
+            return a | b;
+        }
+
+        public static uint GCD(uint a, uint b)
+        {
+            while (a != 0 && b != 0)
+            {
+                if (a > b)
+                    a %= b;
+                else
+                    b %= a;
+            }
+
+            return a | b;
+        }
+
+        public static ulong GCD(ulong a, ulong b)
+        {
+            while (a != 0 && b != 0)
+            {
+                if (a > b)
+                    a %= b;
+                else
+                    b %= a;
+            }
+
+            return a | b;
+        }
+
     }
 }

@@ -39,7 +39,7 @@ namespace UVtools.Core
         public static ParallelOptions ParallelOptions => new() {MaxDegreeOfParallelism = _maxDegreeOfParallelism};
 
         /// <summary>
-        /// Gets or sets if operations run via cuda when possible
+        /// Gets or sets if operations run via CUDA when possible
         /// </summary>
         public static bool EnableCuda { get; set; }
 

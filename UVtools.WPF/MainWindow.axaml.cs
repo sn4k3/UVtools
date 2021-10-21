@@ -1602,6 +1602,28 @@ namespace UVtools.WPF
                 ZoomToFit();
             }
 
+            var display = SlicerFile.Display;
+            if (!display.HaveZero() &&
+                //SlicerFile is not LGSFile &&
+                ((SlicerFile.ResolutionX > SlicerFile.ResolutionY &&
+                  SlicerFile.DisplayWidth < SlicerFile.DisplayHeight)
+                 || (SlicerFile.ResolutionX < SlicerFile.ResolutionY &&
+                     SlicerFile.DisplayWidth > SlicerFile.DisplayHeight)))
+            {
+                var ppm = SlicerFile.Ppmm;
+                var ppmMax = ppm.Max();
+                var xRatio = Math.Round(ppmMax - ppm.Width + 1);
+                var yRatio = Math.Round(ppmMax - ppm.Height + 1);
+                await this.MessageBoxWaring(
+                    "It looks like this file was sliced with an incorrect image ratio.\n" +
+                    "Printing this file may produce a stretched model with wrong proportions or a failed print.\n" +
+                    "Please go back to Slicer configuration and validate the printer resolution and display size.\n\n" +
+                    $"Resolution: {SlicerFile.Resolution}\n" +
+                    $"Display: {display}\n" +
+                    $"Ratio: {xRatio}:{yRatio}\n",
+                    "Incorrect image ratio detected");
+            }
+
             if (mat.Size != SlicerFile.Resolution)
             {
                 var result = await this.MessageBoxWaring($"Layer image resolution of {mat.Size} mismatch with printer resolution of {SlicerFile.Resolution}.\n" +
