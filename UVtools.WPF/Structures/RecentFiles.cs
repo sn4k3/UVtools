@@ -85,6 +85,7 @@ namespace UVtools.WPF.Structures
                     }
                     catch (Exception e)
                     {
+                        Debug.WriteLine(e.ToString());
                         continue;
                     }
 
