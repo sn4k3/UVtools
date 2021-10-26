@@ -13,7 +13,7 @@
           UseFloatingWatermark="True"
           VerticalAlignment="Center"
           IsReadOnly="True"
-          Width="500"
+          Width="600"
           Text="{Binding Operation.FilePath}"/>
       <Button
           VerticalAlignment="Stretch"
@@ -21,6 +21,27 @@
         <Image Source="/Assets/Icons/open-16x16.png"/>
       </Button>
     </StackPanel>
+
+      <Grid RowDefinitions="Auto,10,Auto"
+            ColumnDefinitions="Auto,10,520">
+
+
+          <TextBlock Grid.Row="0" Grid.Column="0"
+                     VerticalAlignment="Center"
+                     Text="Rotate direction:"/>
+          <ComboBox Grid.Row="0" Grid.Column="2"
+                    HorizontalAlignment="Stretch"
+                    Items="{Binding Operation.RotateDirection, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                    SelectedItem="{Binding Operation.RotateDirection, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
+
+          <TextBlock Grid.Row="2" Grid.Column="0"
+                     VerticalAlignment="Center"
+                     Text="Flip direction:"/>
+          <ComboBox Grid.Row="2" Grid.Column="2"
+                    HorizontalAlignment="Stretch"
+                    Items="{Binding Operation.FlipDirection, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                    SelectedItem="{Binding Operation.FlipDirection, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
+      </Grid>
 
     <CheckBox
         Content="Crop image by selected ROI"

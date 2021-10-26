@@ -159,6 +159,7 @@ namespace UVtools.Core.Operations
         public OperationLayerExportImage(FileFormat slicerFile) : base(slicerFile)
         {
             _outputFolder = Path.Combine(Path.GetDirectoryName(SlicerFile.FileFullPath) ?? string.Empty, FileFormat.GetFileNameStripExtensions(SlicerFile.FileFullPath));
+            _flipDirection = SlicerFile.DisplayMirror;
         }
 
         #endregion

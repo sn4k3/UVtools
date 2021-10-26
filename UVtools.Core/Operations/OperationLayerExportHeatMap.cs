@@ -21,6 +21,8 @@ namespace UVtools.Core.Operations
     {
         #region Members
         private string _filePath;
+        private Enumerations.RotateDirection _rotateDirection = Enumerations.RotateDirection.None;
+        private Enumerations.FlipDirection _flipDirection = Enumerations.FlipDirection.None;
         private bool _cropByRoi = true;
 
         #endregion
@@ -72,6 +74,18 @@ namespace UVtools.Core.Operations
             set => RaiseAndSetIfChanged(ref _filePath, value);
         }
 
+        public Enumerations.RotateDirection RotateDirection
+        {
+            get => _rotateDirection;
+            set => RaiseAndSetIfChanged(ref _rotateDirection, value);
+        }
+
+        public Enumerations.FlipDirection FlipDirection
+        {
+            get => _flipDirection;
+            set => RaiseAndSetIfChanged(ref _flipDirection, value);
+        }
+
         public bool CropByROI
         {
             get => _cropByRoi;
@@ -88,6 +102,7 @@ namespace UVtools.Core.Operations
         public OperationLayerExportHeatMap(FileFormat slicerFile) : base(slicerFile)
         {
             _filePath = SlicerFile.FileFullPath + ".heatmap.png";
+            _flipDirection = SlicerFile.DisplayMirror;
         }
 
         #endregion
@@ -121,6 +136,17 @@ namespace UVtools.Core.Operations
             {
                 using var sumMat = EmguExtensions.InitMat(sumMat32.Size);
                 sumMat32.ConvertTo(sumMat, DepthType.Cv8U, 1.0 / LayerRangeCount);
+
+                if (_flipDirection != Enumerations.FlipDirection.None)
+                {
+                    CvInvoke.Flip(sumMat, sumMat, Enumerations.ToOpenCVFlipType(_flipDirection));
+                }
+
+                if (_rotateDirection != Enumerations.RotateDirection.None)
+                {
+                    CvInvoke.Rotate(sumMat, sumMat, Enumerations.ToOpenCVRotateFlags(_rotateDirection));
+                }
+
                 if (_cropByRoi && HaveROI)
                 {
                     var sumMatRoi = GetRoiOrDefault(sumMat);
@@ -141,7 +167,7 @@ namespace UVtools.Core.Operations
 
         private bool Equals(OperationLayerExportHeatMap other)
         {
-            return _filePath == other._filePath && _cropByRoi == other._cropByRoi;
+            return _filePath == other._filePath && _rotateDirection == other._rotateDirection && _flipDirection == other._flipDirection && _cropByRoi == other._cropByRoi;
         }
 
         public override bool Equals(object obj)
@@ -151,7 +177,7 @@ namespace UVtools.Core.Operations
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(_filePath, _cropByRoi);
+            return HashCode.Combine(_filePath, (int)_rotateDirection, (int)_flipDirection, _cropByRoi);
         }
 
         #endregion

@@ -186,7 +186,7 @@ namespace UVtools.Core.Operations
         public OperationLayerExportGif(FileFormat slicerFile) : base(slicerFile)
         {
             _filePath = SlicerFile.FileFullPath + ".gif";
-
+            _flipDirection = SlicerFile.DisplayMirror;
             _skip = TotalLayers switch
             {
                 > 5000 => 2,
