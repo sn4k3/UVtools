@@ -51,6 +51,7 @@
     <PackageReference Include="AnimatedGif" Version="1.0.5" />
     <PackageReference Include="BinarySerializer" Version="8.6.0" />
     <PackageReference Include="Emgu.CV" Version="4.5.3.4721" />
+    <PackageReference Include="KdTree" Version="1.4.1" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="4.0.0-6.final" />
     <PackageReference Include="morelinq" Version="3.3.2" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
