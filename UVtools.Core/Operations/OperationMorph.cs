@@ -206,7 +206,7 @@ namespace UVtools.Core.Operations
             using var original = mat.Clone();
             var target = GetRoiOrDefault(mat);
 
-            if (CoreSettings.CanUseCuda)
+            /*if (CoreSettings.CanUseCuda)
             {
                 var gpuMat = target.ToGpuMat();
                 using var morph = new CudaMorphologyFilter(MorphOperationOpenCV, target.Depth, target.NumberOfChannels, Kernel.Matrix, Kernel.Anchor, iterations);
@@ -214,21 +214,22 @@ namespace UVtools.Core.Operations
                 gpuMat.Download(target);
             }
             else
+            {*/
+            CvInvoke.MorphologyEx(target, target, MorphOperationOpenCV, Kernel.Matrix, Kernel.Anchor, iterations, BorderType.Reflect101, default);
+
+            if (_morphOperation == MorphOperations.OffsetCrop)
             {
-                CvInvoke.MorphologyEx(target, target, MorphOperationOpenCV, Kernel.Matrix, Kernel.Anchor, iterations, BorderType.Reflect101, default);
-
-                if (_morphOperation == MorphOperations.OffsetCrop)
-                {
-                    var originalRoi = GetRoiOrDefault(original);
-                    originalRoi.CopyTo(target, target);
-                }
+                var originalRoi = GetRoiOrDefault(original);
+                originalRoi.CopyTo(target, target);
             }
-
-            if (_morphOperation == MorphOperations.IsolateFeatures)
+            else if (_morphOperation == MorphOperations.IsolateFeatures)
             {
-                CvInvoke.Subtract(original, target, target);
+                var originalRoi = GetRoiOrDefault(original);
+                CvInvoke.Subtract(originalRoi, target, target);
             }
+            //}
 
+            
             ApplyMask(original, target);
             return true;
         }
