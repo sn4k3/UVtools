@@ -133,18 +133,18 @@ namespace UVtools.Core.Voxel
             layerBelow ??= curLayer.NewBlank();
 
             /* anything that is in the current layer but is not in the layer above, by definition has an exposed face */
-            var upperXor = curLayer.NewBlank();
-            CvInvoke.BitwiseXor(curLayer, layerAbove, upperXor);
+            Mat upperSubtract = new Mat();
+            CvInvoke.Subtract(curLayer, layerAbove, upperSubtract);
 
             /* anything that is in the current layer but is not in the layer below, by definition has an exposed face */
-            var lowerXor = curLayer.NewBlank();
-            CvInvoke.BitwiseXor(curLayer, layerBelow, lowerXor);
+            Mat lowerSubtract = new Mat();
+            CvInvoke.Subtract(curLayer, layerBelow, lowerSubtract);
 
             /* Or all of these together to get the list of pixels that have exposed face(s) */
             var voxelLayer = curLayer.NewBlank();
             CvInvoke.BitwiseOr(onlyContours, voxelLayer, voxelLayer);
-            CvInvoke.BitwiseOr(upperXor, voxelLayer, voxelLayer);
-            CvInvoke.BitwiseOr(lowerXor, voxelLayer, voxelLayer);
+            CvInvoke.BitwiseOr(upperSubtract, voxelLayer, voxelLayer);
+            CvInvoke.BitwiseOr(lowerSubtract, voxelLayer, voxelLayer);
 
             /* dispoose of the layerAbove/layerBelow if they were allocated here */
             if (needAboveDispose)
