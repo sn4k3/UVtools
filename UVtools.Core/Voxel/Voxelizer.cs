@@ -31,7 +31,7 @@ namespace UVtools.Core.Voxel
             public FaceOrientation Type;
             public uint LayerIndex;
             public Rectangle FaceRect;
-
+            public float LayerHeight;
             /* Doubly linked list of UVFaces, used during Stage 3, collapsing the faces vertically.
              * instead of modifying properties and having to remove items from lists, we keep all faces 
              * and just link parents and children together.
@@ -172,7 +172,7 @@ namespace UVtools.Core.Voxel
         /* CreateVoxelMesh is no longer used, see OperationLayerExportMesh for the logic that used to be here */
 
         /* NOTE: this took a lot, a lot, a lot, of trial and error, just trust that it generates the correct triangles for a given face ;) */
-        public static IEnumerable<(Vector3 p1, Vector3 p2, Vector3 p3, Vector3 normal)> MakeFacetsForUVFace(UVFace face, float xSize, float ySize, float layerHeight, uint layerStart)
+        public static IEnumerable<(Vector3 p1, Vector3 p2, Vector3 p3, Vector3 normal)> MakeFacetsForUVFace(UVFace face, float xSize, float ySize, float positionZ)
         {
             /* triangles need "normal" vectors to show which is the outside of the triangle */
             /* also, triangle points need to be provided in counter clockwise direction...*/
@@ -185,65 +185,68 @@ namespace UVtools.Core.Voxel
             var FrontNormal = new Vector3(0, -1, 0);
 
             /* count the "height" of this face, which is == to itself + number of children in its doubly linked list chain */
-            var height = 1;
+            float height = 0;
+            var totalFaceCount = 1;
             UVFace child = face;
             while (child.Child is not null)
             {
-                height++;
+                height += child.LayerHeight;
+                totalFaceCount++;
                 child = child.Child;
             }
-            face.LayerIndex += layerStart;
+            height += child.LayerHeight;
+
             if (face.Type == FaceOrientation.Front)
             {
-                var lowerLeft = new Vector3(face.FaceRect.X * xSize, face.FaceRect.Y * ySize, face.LayerIndex * layerHeight);
-                var lowerRight = new Vector3((face.FaceRect.X + face.FaceRect.Width) * xSize, face.FaceRect.Y * ySize, face.LayerIndex * layerHeight);
-                var upperLeft = new Vector3(lowerLeft.X, lowerLeft.Y, lowerLeft.Z + ((height) * layerHeight));
-                var upperRight = new Vector3(lowerRight.X, lowerRight.Y, lowerRight.Z + ((height) * layerHeight));
+                var lowerLeft = new Vector3(face.FaceRect.X * xSize, face.FaceRect.Y * ySize, positionZ);
+                var lowerRight = new Vector3((face.FaceRect.X + face.FaceRect.Width) * xSize, face.FaceRect.Y * ySize, positionZ);
+                var upperLeft = new Vector3(lowerLeft.X, lowerLeft.Y, lowerLeft.Z + height);
+                var upperRight = new Vector3(lowerRight.X, lowerRight.Y, lowerRight.Z + height);
                 yield return (lowerLeft, lowerRight, upperRight, FrontNormal);
                 yield return (upperRight, upperLeft, lowerLeft, FrontNormal);
             }
             else if (face.Type == FaceOrientation.Back)
             {
-                var lowerRight = new Vector3(face.FaceRect.X * xSize, face.FaceRect.Y * ySize + ySize, face.LayerIndex * layerHeight);
-                var lowerLeft = new Vector3((face.FaceRect.X + face.FaceRect.Width) * xSize, face.FaceRect.Y * ySize + ySize, face.LayerIndex * layerHeight);
-                var upperLeft = new Vector3(lowerLeft.X, lowerLeft.Y, lowerLeft.Z + ((height) * layerHeight));
-                var upperRight = new Vector3(lowerRight.X, lowerRight.Y, lowerRight.Z + ((height) * layerHeight));
+                var lowerRight = new Vector3(face.FaceRect.X * xSize, face.FaceRect.Y * ySize + ySize, positionZ);
+                var lowerLeft = new Vector3((face.FaceRect.X + face.FaceRect.Width) * xSize, face.FaceRect.Y * ySize + ySize, positionZ);
+                var upperLeft = new Vector3(lowerLeft.X, lowerLeft.Y, lowerLeft.Z + height);
+                var upperRight = new Vector3(lowerRight.X, lowerRight.Y, lowerRight.Z + height);
                 yield return (lowerLeft, lowerRight, upperRight, BackNormal);
                 yield return (upperRight, upperLeft, lowerLeft, BackNormal);
             }
             else if (face.Type == FaceOrientation.Left)
             {
-                var lowerLeft = new Vector3(face.FaceRect.X * xSize, (face.FaceRect.Y + face.FaceRect.Width) * ySize, face.LayerIndex * layerHeight);
-                var lowerRight = new Vector3(face.FaceRect.X * xSize, (face.FaceRect.Y) * ySize, face.LayerIndex * layerHeight);
-                var upperLeft = new Vector3(lowerLeft.X, lowerLeft.Y, lowerLeft.Z + ((height) * layerHeight));
-                var upperRight = new Vector3(lowerRight.X, lowerRight.Y, lowerRight.Z + ((height) * layerHeight));
+                var lowerLeft = new Vector3(face.FaceRect.X * xSize, (face.FaceRect.Y + face.FaceRect.Width) * ySize, positionZ);
+                var lowerRight = new Vector3(face.FaceRect.X * xSize, (face.FaceRect.Y) * ySize, positionZ);
+                var upperLeft = new Vector3(lowerLeft.X, lowerLeft.Y, lowerLeft.Z + height);
+                var upperRight = new Vector3(lowerRight.X, lowerRight.Y, lowerRight.Z + height);
                 yield return (lowerLeft, lowerRight, upperRight, LeftNormal);
                 yield return (upperRight, upperLeft, lowerLeft, LeftNormal);
             }
             else if (face.Type == FaceOrientation.Right)
             {
-                var lowerRight = new Vector3(face.FaceRect.X * xSize + xSize, (face.FaceRect.Y + face.FaceRect.Width) * ySize, face.LayerIndex * layerHeight);
-                var lowerLeft = new Vector3(face.FaceRect.X * xSize + xSize, (face.FaceRect.Y) * ySize, face.LayerIndex * layerHeight);
-                var upperLeft = new Vector3(lowerLeft.X, lowerLeft.Y, lowerLeft.Z + ((height) * layerHeight));
-                var upperRight = new Vector3(lowerRight.X, lowerRight.Y, lowerRight.Z + ((height) * layerHeight));
+                var lowerRight = new Vector3(face.FaceRect.X * xSize + xSize, (face.FaceRect.Y + face.FaceRect.Width) * ySize, positionZ);
+                var lowerLeft = new Vector3(face.FaceRect.X * xSize + xSize, (face.FaceRect.Y) * ySize, positionZ);
+                var upperLeft = new Vector3(lowerLeft.X, lowerLeft.Y, lowerLeft.Z + height);
+                var upperRight = new Vector3(lowerRight.X, lowerRight.Y, lowerRight.Z + height);
                 yield return (lowerLeft, lowerRight, upperRight, RightNormal);
                 yield return (upperRight, upperLeft, lowerLeft, RightNormal);
             }
             else if (face.Type == FaceOrientation.Top)
             {
-                var upperLeft = new Vector3(face.FaceRect.X * xSize, face.FaceRect.Y * ySize, face.LayerIndex * layerHeight + layerHeight);
-                var upperRight = new Vector3(face.FaceRect.X * xSize, (face.FaceRect.Y + height) * ySize, face.LayerIndex * layerHeight + layerHeight);
-                var lowerLeft = new Vector3(upperLeft.X + (face.FaceRect.Width * xSize), upperLeft.Y, face.LayerIndex * layerHeight + layerHeight);
-                var lowerRight = new Vector3(upperRight.X + (face.FaceRect.Width * xSize), upperRight.Y, face.LayerIndex * layerHeight + layerHeight);
+                var upperLeft = new Vector3(face.FaceRect.X * xSize, face.FaceRect.Y * ySize, positionZ + face.LayerHeight);
+                var upperRight = new Vector3(face.FaceRect.X * xSize, (face.FaceRect.Y + totalFaceCount) * ySize, positionZ + face.LayerHeight);
+                var lowerLeft = new Vector3(upperLeft.X + (face.FaceRect.Width * xSize), upperLeft.Y, positionZ + face.LayerHeight);
+                var lowerRight = new Vector3(upperRight.X + (face.FaceRect.Width * xSize), upperRight.Y, positionZ + face.LayerHeight);
                 yield return (lowerLeft, lowerRight, upperRight, TopNormal);
                 yield return (upperRight, upperLeft, lowerLeft, TopNormal);
             }
             else if (face.Type == FaceOrientation.Bottom)
             {
-                var upperRight = new Vector3(face.FaceRect.X * xSize, face.FaceRect.Y * ySize, face.LayerIndex * layerHeight);
-                var upperLeft = new Vector3(face.FaceRect.X * xSize, (face.FaceRect.Y + height) * ySize, face.LayerIndex * layerHeight);
-                var lowerLeft = new Vector3(upperLeft.X + (face.FaceRect.Width * xSize), upperLeft.Y, face.LayerIndex * layerHeight);
-                var lowerRight = new Vector3(upperRight.X + (face.FaceRect.Width * xSize), upperRight.Y, face.LayerIndex * layerHeight);
+                var upperRight = new Vector3(face.FaceRect.X * xSize, face.FaceRect.Y * ySize, positionZ);
+                var upperLeft = new Vector3(face.FaceRect.X * xSize, (face.FaceRect.Y + totalFaceCount) * ySize, positionZ);
+                var lowerLeft = new Vector3(upperLeft.X + (face.FaceRect.Width * xSize), upperLeft.Y, positionZ);
+                var lowerRight = new Vector3(upperRight.X + (face.FaceRect.Width * xSize), upperRight.Y, positionZ);
                 yield return (lowerLeft, lowerRight, upperRight, BottomNormal);
                 yield return (upperRight, upperLeft, lowerLeft, BottomNormal);
             }
