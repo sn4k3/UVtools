@@ -1,10 +1,18 @@
-﻿using Emgu.CV;
+﻿/*
+ *                     GNU AFFERO GENERAL PUBLIC LICENSE
+ *                       Version 3, 19 November 2007
+ *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
+ *  Everyone is permitted to copy and distribute verbatim copies
+ *  of this license document, but changing it is not allowed.
+ */
+using Emgu.CV;
 using Emgu.CV.CvEnum;
 using KdTree;
 using KdTree.Math;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
@@ -17,8 +25,8 @@ namespace UVtools.Core.Voxel
 {
     public class Voxelizer
     {
-        
-        class UVFace
+
+        public class UVFace
         {
             public FaceOrientation Type;
             public uint LayerIndex;
@@ -38,7 +46,7 @@ namespace UVtools.Core.Voxel
         }
 
         [Flags]
-        enum FaceOrientation : short
+        public enum FaceOrientation : short
         {
             None = 0,
             Top = 1,
@@ -49,13 +57,13 @@ namespace UVtools.Core.Voxel
             Back = 32
         }
 
-        unsafe FaceOrientation GetOpenFaces(Mat layer, int x, int y, Mat layerBelow = null, Mat layerAbove = null)
+        public static FaceOrientation GetOpenFaces(Mat layer, int x, int y, Mat layerBelow = null, Mat layerAbove = null)
         {
-            var layerSpan = layer.GetBytePointer();
+            var layerSpan = layer.GetDataByteSpan();
 
-            FaceOrientation foundFaces = FaceOrientation.None;
-
-            if (layerSpan[layer.GetPixelPos(x, y)] == 0)
+            var foundFaces = FaceOrientation.None;
+            var pixelPos = layer.GetPixelPos(x, y);
+            if (layerSpan[pixelPos] == 0)
             {
                 return foundFaces;
             }
@@ -66,8 +74,8 @@ namespace UVtools.Core.Voxel
             }
             else
             {
-                var belowSpan = layerBelow.GetBytePointer();
-                if (belowSpan[layerBelow.GetPixelPos(x, y)] == 0)
+                var belowSpan = layerBelow.GetDataByteSpan();
+                if (belowSpan[pixelPos] == 0)
                 {
                     foundFaces |= FaceOrientation.Bottom;
                 }
@@ -79,19 +87,19 @@ namespace UVtools.Core.Voxel
             }
             else
             {
-                var aboveSpan = layerAbove.GetBytePointer();
-                if (aboveSpan[layerAbove.GetPixelPos(x, y)] == 0)
+                var aboveSpan = layerAbove.GetDataByteSpan();
+                if (aboveSpan[pixelPos] == 0)
                 {
                     foundFaces |= FaceOrientation.Top;
                 }
             }
 
-            if (x == 0 || layerSpan[layer.GetPixelPos(x - 1, y)] == 0)
+            if (x == 0 || layerSpan[pixelPos-1] == 0)
             {
                 foundFaces |= FaceOrientation.Left;
             }
 
-            if (x == layer.Width - 1 || layerSpan[layer.GetPixelPos(x + 1, y)] == 0)
+            if (x == layer.Width - 1 || layerSpan[pixelPos+1] == 0)
             {
                 foundFaces |= FaceOrientation.Right;
             }
@@ -109,12 +117,12 @@ namespace UVtools.Core.Voxel
             return foundFaces;
         }
 
-        Mat BuildVoxelLayerImage(Mat curLayer, Mat layerAbove = null, Mat layerBelow = null)
+        public static Mat BuildVoxelLayerImage(Mat curLayer, Mat layerAbove = null, Mat layerBelow = null)
         {
             /* The goal of the VoxelLayerImage is to reduce as much as possible, the number of pixels we need to do 6 direction neighbor checking on */
 
             /* the outer contours of the current layer should always be checked, they by definition should have an exposed face */
-            using var contours = curLayer.FindContours(out var heirarchy, RetrType.Tree);
+            using var contours = curLayer.FindContours(RetrType.Tree);
             var onlyContours = curLayer.NewBlank();
             CvInvoke.DrawContours(onlyContours, contours, -1, EmguExtensions.WhiteColor, 1);
 
@@ -125,15 +133,15 @@ namespace UVtools.Core.Voxel
             layerBelow ??= curLayer.NewBlank();
 
             /* anything that is in the current layer but is not in the layer above, by definition has an exposed face */
-            Mat upperXor = curLayer.NewBlank();
+            var upperXor = curLayer.NewBlank();
             CvInvoke.BitwiseXor(curLayer, layerAbove, upperXor);
 
             /* anything that is in the current layer but is not in the layer below, by definition has an exposed face */
-            Mat lowerXor = curLayer.NewBlank();
+            var lowerXor = curLayer.NewBlank();
             CvInvoke.BitwiseXor(curLayer, layerBelow, lowerXor);
 
             /* Or all of these together to get the list of pixels that have exposed face(s) */
-            Mat voxelLayer = curLayer.NewBlank();
+            var voxelLayer = curLayer.NewBlank();
             CvInvoke.BitwiseOr(onlyContours, voxelLayer, voxelLayer);
             CvInvoke.BitwiseOr(upperXor, voxelLayer, voxelLayer);
             CvInvoke.BitwiseOr(lowerXor, voxelLayer, voxelLayer);
@@ -151,7 +159,7 @@ namespace UVtools.Core.Voxel
 
             return voxelLayer;
         }
-        public enum VoxelQuality : int
+        public enum VoxelQuality : byte
         {
             ACCURATE = 1,
             AVERAGE = 2,
@@ -161,7 +169,7 @@ namespace UVtools.Core.Voxel
             MINECRAFT = 8
         }
 
-        public unsafe void CreateVoxelMesh(MeshFile mesh, FileFormat file, string filePath, OperationProgress progress, VoxelQuality quality = VoxelQuality.ACCURATE, uint layerStart = 0, uint layerStop = 0)
+        public unsafe void CreateVoxelMesh(Type meshType, FileFormat file, string filePath, OperationProgress progress, VoxelQuality quality = VoxelQuality.ACCURATE, uint layerStart = 0, uint layerStop = 0)
         {
             var layerManager = file.LayerManager;
             /* Voxelization has 4 overall stages
@@ -577,9 +585,10 @@ namespace UVtools.Core.Voxel
 
             progress.Reset();
             progress.Title = "Generating STL...";
-            progress.ItemCount = (uint)layerCount;
+            progress.ItemCount = layerCount;
 
-            mesh.Create();
+            using var mesh = meshType.CreateInstance<MeshFile>(filePath, FileMode.Create);
+            mesh.BeginWrite();
 
             /* Begin Stage 4, generating triangles and saving to STL */
             foreach (var tree in layerTrees)
@@ -600,15 +609,12 @@ namespace UVtools.Core.Voxel
                 /* check for cancellation at every layer, and if so, close the STL file properly */
                 if (progress.Token.IsCancellationRequested)
                 {
-                    mesh.Close();
                     Cleanup();
                     return;
                 }
                 progress.LockAndIncrement();
             }
-
-            mesh.Close();
-
+            
             void Cleanup()
             {
                 /* dispose of everything */
@@ -628,23 +634,25 @@ namespace UVtools.Core.Voxel
                     rootFaces[x] = null;
                 }
                 rootFaces = null;
-                System.GC.Collect();
+                GC.Collect();
             }
-            
+
+            mesh.EndWrite();
+
         }
 
         /* NOTE: this took a lot, a lot, a lot, of trial and error, just trust that it generates the correct triangles for a given face ;) */
-        IEnumerable<(Vector3 p1, Vector3 p2, Vector3 p3, Vector3 normal)> MakeFacetsForUVFace(UVFace face, float xSize, float ySize, float layerHeight, uint layerStart)
+        public static IEnumerable<(Vector3 p1, Vector3 p2, Vector3 p3, Vector3 normal)> MakeFacetsForUVFace(UVFace face, float xSize, float ySize, float layerHeight, uint layerStart)
         {
             /* triangles need "normal" vectors to show which is the outside of the triangle */
             /* also, triangle points need to be provided in counter clockwise direction...*/
 
-            Vector3 LeftNormal = new Vector3(-1, 0, 0);
-            Vector3 RightNormal = new Vector3(1, 0, 0);
-            Vector3 TopNormal = new Vector3(0, 0, 1);
-            Vector3 BottomNormal = new Vector3(0, 0, -1);
-            Vector3 BackNormal = new Vector3(0, 1, 0);
-            Vector3 FrontNormal = new Vector3(0, -1, 0);
+            var LeftNormal = new Vector3(-1, 0, 0);
+            var RightNormal = new Vector3(1, 0, 0);
+            var TopNormal = new Vector3(0, 0, 1);
+            var BottomNormal = new Vector3(0, 0, -1);
+            var BackNormal = new Vector3(0, 1, 0);
+            var FrontNormal = new Vector3(0, -1, 0);
 
             /* count the "height" of this face, which is == to itself + number of children in its doubly linked list chain */
             var height = 1;

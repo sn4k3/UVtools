@@ -411,6 +411,14 @@ namespace UVtools.WPF
                     Source = new Bitmap(App.GetAsset("/Assets/Icons/file-image-16x16.png"))
                 }
             },
+            new()
+            {
+                Tag = new OperationLayerExportMesh(),
+                Icon = new Avalonia.Controls.Image
+                {
+                    Source = new Bitmap(App.GetAsset("/Assets/Icons/cubes-16x16.png"))
+                }
+            },
         };
 
         #region DataSets

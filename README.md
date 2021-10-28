@@ -215,6 +215,11 @@ The UVtools executable allow to set some arguments to do special functions:
    - **Example 2:** UVtools -e model.zip mymodel
    - **Example 3:** UVtools --extract model.zip .
    - **Note:** Nothing happen when providing wrong files/folder, will quit.
+- **Export a file to a 3D mesh**
+   - **Syntax:** UVtools --export-mesh \<input_file\> [output_mesh_file]
+   - **Example 1:** UVtools --export-mesh model.zip
+   - **Example 2:** UVtools --export-mesh model.zip model_exported.stl
+   - **Note:** Nothing happen when providing wrong files, will quit.
 
 # Requirements
 

@@ -49,7 +49,7 @@
 
   <ItemGroup>
     <PackageReference Include="AnimatedGif" Version="1.0.5" />
-    <PackageReference Include="BinarySerializer" Version="8.6.0" />
+    <PackageReference Include="BinarySerializer" Version="8.6.1" />
     <PackageReference Include="Emgu.CV" Version="4.5.3.4721" />
     <PackageReference Include="KdTree" Version="1.4.1" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="4.0.0-6.final" />

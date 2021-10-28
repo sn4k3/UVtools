@@ -11,6 +11,8 @@ using System.IO;
 using System.Linq;
 using MoreLinq;
 using UVtools.Core.FileFormats;
+using UVtools.Core.MeshFormats;
+using UVtools.Core.Operations;
 
 namespace UVtools.WPF
 {
@@ -138,6 +140,58 @@ namespace UVtools.WPF
                 slicerFile.Extract(outputFolder);
                 Console.WriteLine("Extracted");
                 Console.WriteLine("OK");
+                return true;
+            }
+
+            // Convert to other file
+            if (args[0] is "--export-mesh")
+            {
+                if (args.Length < 2)
+                {
+                    Console.WriteLine("Invalid syntax: <input_file> [output_mesh_file]");
+                    return true;
+                }
+                if (!File.Exists(args[1]))
+                {
+                    Console.WriteLine($"Input file does not exists: {args[1]}");
+                    return true;
+                }
+
+                var slicerFile = FileFormat.FindByExtensionOrFilePath(args[1], true);
+                if (slicerFile is null)
+                {
+                    Console.WriteLine($"Invalid input file: {args[1]}");
+                    return true;
+                }
+
+                var outputFile = Path.Combine(Path.GetDirectoryName(args[1]), $"{Path.GetFileNameWithoutExtension(args[1])}.stl");
+
+                if (args.Length >= 3 && !string.IsNullOrWhiteSpace(args[2]))
+                {
+                    outputFile = args[2];
+                }
+
+                var outputExtension = MeshFile.FindFileExtension(outputFile);
+                if (outputExtension is null)
+                {
+                    Console.WriteLine($"Invalid output file extension: {outputFile}");
+                    return true;
+                }
+
+
+                Console.WriteLine($"Loading file: {args[1]}");
+                slicerFile.Decode(args[1]);
+
+                Console.WriteLine($"Exporting mesh to: {outputFile}");
+                var operation = new OperationLayerExportMesh(slicerFile)
+                {
+                    FilePath = outputFile
+                };
+                operation.Execute();
+                Console.WriteLine("Exported");
+
+                Console.WriteLine("OK");
+
                 return true;
             }
 

@@ -1,0 +1,52 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="UVtools.WPF.Controls.Tools.ToolLayerExportMeshControl">
+    <StackPanel Spacing="10">
+
+        <StackPanel Orientation="Horizontal" Spacing="5">
+            <TextBox
+                Watermark="Output filepath"
+                UseFloatingWatermark="True"
+                VerticalAlignment="Center"
+                IsReadOnly="True"
+                Width="600"
+                Text="{Binding Operation.FilePath}"/>
+            <Button
+                VerticalAlignment="Stretch"
+                Command="{Binding ChooseFilePath}">
+                <Image Source="/Assets/Icons/open-16x16.png"/>
+            </Button>
+        </StackPanel>
+
+        <Grid RowDefinitions="Auto,10,Auto,10,Auto"
+              ColumnDefinitions="Auto,10,520">
+
+            <TextBlock Grid.Row="0" Grid.Column="0"
+                       VerticalAlignment="Center"
+                       Text="Mesh quality:"/>
+            <ComboBox Grid.Row="0" Grid.Column="2"
+                      HorizontalAlignment="Stretch"
+                      Items="{Binding Operation.Quality, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                      SelectedItem="{Binding Operation.Quality, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
+
+            <TextBlock Grid.Row="2" Grid.Column="0"
+                       VerticalAlignment="Center"
+                       Text="Rotate direction:"/>
+            <ComboBox Grid.Row="2" Grid.Column="2"
+                      HorizontalAlignment="Stretch"
+                      Items="{Binding Operation.RotateDirection, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                      SelectedItem="{Binding Operation.RotateDirection, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
+
+            <TextBlock Grid.Row="4" Grid.Column="0"
+                       VerticalAlignment="Center"
+                       Text="Flip direction:"/>
+            <ComboBox Grid.Row="4" Grid.Column="2"
+                      HorizontalAlignment="Stretch"
+                      Items="{Binding Operation.FlipDirection, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                      SelectedItem="{Binding Operation.FlipDirection, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
+        </Grid>
+    </StackPanel>
+</UserControl>

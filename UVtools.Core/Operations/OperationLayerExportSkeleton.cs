@@ -71,6 +71,9 @@ namespace UVtools.Core.Operations
         { }
 
         public OperationLayerExportSkeleton(FileFormat slicerFile) : base(slicerFile)
+        { }
+        
+        public override void InitWithSlicerFile()
         {
             _filePath = SlicerFile.FileFullPath + ".skeleton.png";
         }

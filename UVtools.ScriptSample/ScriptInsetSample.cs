@@ -7,16 +7,13 @@
  */
 
 using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.Text;
 using System.Threading.Tasks;
 using UVtools.Core.Scripting;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
-using Emgu.CV.Util;
 using UVtools.Core;
-using UVtools.Core.Extensions;
 
 namespace UVtools.ScriptSample
 {

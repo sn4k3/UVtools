@@ -101,8 +101,12 @@ namespace UVtools.Core.Operations
 
         public OperationLayerExportHeatMap(FileFormat slicerFile) : base(slicerFile)
         {
-            _filePath = SlicerFile.FileFullPath + ".heatmap.png";
             _flipDirection = SlicerFile.DisplayMirror;
+        }
+
+        public override void InitWithSlicerFile()
+        {
+            _filePath = SlicerFile.FileFullPath + ".heatmap.png";
         }
 
         #endregion

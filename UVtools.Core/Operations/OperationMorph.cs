@@ -11,9 +11,7 @@ using System.ComponentModel;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
 using Emgu.CV;
-using Emgu.CV.Cuda;
 using Emgu.CV.CvEnum;
-using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Objects;
 

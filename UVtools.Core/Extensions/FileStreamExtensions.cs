@@ -106,6 +106,16 @@ namespace UVtools.Core.Extensions
             return (uint)bytes.Length;
         }
 
+        public static uint WriteLine(this FileStream fs, string text, int offset = 0)
+            => fs.WriteLine(text, Encoding.UTF8, offset);
+
+        public static uint WriteLine(this FileStream fs, string text, Encoding encoding, int offset = 0)
+        {
+            var bytes = encoding.GetBytes(text+Environment.NewLine);
+            fs.Write(bytes, offset, bytes.Length);
+            return (uint)bytes.Length;
+        }
+
         public static uint WriteSerialize(this FileStream fs, object data, int offset = 0)
         {
             return Helpers.SerializeWriteFileStream(fs, data, offset);
