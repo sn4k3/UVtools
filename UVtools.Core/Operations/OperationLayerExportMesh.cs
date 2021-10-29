@@ -239,7 +239,9 @@ namespace UVtools.Core.Operations
 
                     if ((byte)_quality > 1)
                     {
-                        CvInvoke.Resize(matRoi, aboveLayer, new Size(), 1.0 / (int)_quality, 1.0 / (int)_quality, Inter.Area);
+                        Mat resizedMat = new Mat();
+                        CvInvoke.Resize(matRoi, resizedMat, new Size(), 1.0 / (int)_quality, 1.0 / (int)_quality, Inter.Area);
+                        aboveLayer = resizedMat;
                     }
                     else
                     {
