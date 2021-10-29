@@ -15,6 +15,7 @@ Before continue, please look/search on closed topics if your case was already be
  - OS: [e.g. Windows 10 x64 v20H2]
  - Slicer: 
  - Printer: 
+ - UVtools version: 
 
 ## Describe the bug
 A clear and concise description of what the bug is.
