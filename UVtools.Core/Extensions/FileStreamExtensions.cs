@@ -106,6 +106,8 @@ namespace UVtools.Core.Extensions
             return (uint)bytes.Length;
         }
 
+        public static uint WriteLine(this FileStream fs) => fs.WriteString(Environment.NewLine);
+
         public static uint WriteLine(this FileStream fs, string text, int offset = 0)
             => fs.WriteLine(text, Encoding.UTF8, offset);
 

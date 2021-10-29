@@ -18,9 +18,12 @@ namespace UVtools.Core.MeshFormats
     public abstract class MeshFile : IDisposable
     {
         #region Static
+        public static string HeaderComment => $"Exported from {About.SoftwareWithVersion} @ {DateTime.UtcNow:u}";
+
         public static readonly FileExtension[] AvailableMeshFiles =
         {
-            STLMeshFile.FileExtension
+            STLMeshFile.FileExtension,
+            OBJMeshFile.FileExtension
         };
 
         public static FileExtension FindFileExtension(string filePath)

@@ -205,8 +205,6 @@ namespace UVtools.Core.Operations
             progress.Title = "Stage 1: Generating faces from layers";
             //progress.ItemCount = LayerRangeCount;
 
-            SlicerFile.LayerManager.GetSamePositionedLayers();
-
             /* Begin Stage 1, identifying all faces that are visible from outside the model */
             for (uint layerIndex = 0; layerIndex < distinctLayers.Length; layerIndex++)
             {
@@ -560,7 +558,7 @@ namespace UVtools.Core.Operations
                 return false;
             }
 
-            progress.Title = "Stage 4: Generating STL";
+            progress.Title = "Stage 4: Writing the file";
             progress.ProcessedItems = 0;
 
 
