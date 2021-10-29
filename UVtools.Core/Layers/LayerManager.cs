@@ -623,6 +623,23 @@ namespace UVtools.Core
             return layers;
         }
 
+        public Mat GetMergedMatForLayerAtIndex(uint startIndex)
+        {
+            /* This operates backwards because GetSamePositionedLayers returns the highest layer index with the same postion z, not the lowest */
+            var startLayer = this[startIndex];
+
+            Mat layerMat = startLayer.LayerMat;
+
+            for (var curIndex = startIndex + 1; curIndex < LayerCount && (this[curIndex].PositionZ == startLayer.PositionZ); curIndex++)
+            {
+                var nextLayer = this[curIndex].LayerMat;
+                CvInvoke.BitwiseOr(nextLayer, layerMat, layerMat);
+                nextLayer.Dispose();
+            }
+
+            return layerMat;
+        }
+
         public Rectangle GetBoundingRectangle(OperationProgress progress = null)
         {
             if (!_boundingRectangle.IsEmpty || LayerCount == 0 || this[0] is null) return _boundingRectangle;

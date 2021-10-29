@@ -17,6 +17,7 @@ using Emgu.CV;
 using Emgu.CV.CvEnum;
 using KdTree;
 using KdTree.Math;
+using MoreLinq;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 using UVtools.Core.MeshFormats;
@@ -156,12 +157,14 @@ namespace UVtools.Core.Operations
             float yWidth = (pixelSize.Height > 0 ? pixelSize.Height : 0.035f) * (byte)_quality;
             var zHeight = SlicerFile.LayerHeight;
 
+            var totalLayerCount = SlicerFile.LayerManager.LayerCount;
+            var distinctLayers = SlicerFile.Where(layer => layer.Index >= LayerIndexStart && layer.Index <= LayerIndexEnd).DistinctBy(layer => layer.PositionZ).ToList();
 
             /* For the 1st stage, we maintain up to 3 mats, the current layer, the one below us, and the one above us 
              * (below will be null when current layer is 0, above will be null when currentlayer is layercount-1) */
             /* We init the aboveLayer to the first layer, in the loop coming up we shift above->current->below, so this effectively inits current layer */
             Mat aboveLayer = null;
-            using (var mat = SlicerFile[LayerIndexStart].LayerMat)
+            using (var mat = SlicerFile.LayerManager.GetMergedMatForLayerAtIndex(distinctLayers[0].Index))
             {
                 var matRoi = mat.Roi(SlicerFile.BoundingRectangle);
 
@@ -184,6 +187,7 @@ namespace UVtools.Core.Operations
                 {
                     aboveLayer = matRoi.Clone(); /* clone and then dispose of the ROI mat, not efficient but keeps the GetPixelPos working and clean */
                 }
+
             }
 
             Mat curLayer = null;
@@ -193,18 +197,19 @@ namespace UVtools.Core.Operations
             var facesToCheck = new[] { Voxelizer.FaceOrientation.Front, Voxelizer.FaceOrientation.Back, Voxelizer.FaceOrientation.Left, Voxelizer.FaceOrientation.Right, Voxelizer.FaceOrientation.Top, Voxelizer.FaceOrientation.Bottom };
 
             /* Init of other objects that will be used in subsequent stages */
-            var rootFaces = new Voxelizer.UVFace[LayerRangeCount];
-            var layerFaceCounts = new uint[LayerRangeCount];
-            var layerTrees = new KdTree<float, Voxelizer.UVFace>[LayerRangeCount];
+            var rootFaces = new Voxelizer.UVFace[distinctLayers.Count];
+            var layerFaceCounts = new uint[distinctLayers.Count];
+            var layerTrees = new KdTree<float, Voxelizer.UVFace>[distinctLayers.Count];
 
-            progress.Reset("layers", LayerRangeCount);
+            progress.Reset("layers", (uint)distinctLayers.Count);
             progress.Title = "Stage 1: Generating faces from layers";
             //progress.ItemCount = LayerRangeCount;
 
+            SlicerFile.LayerManager.GetSamePositionedLayers();
+
             /* Begin Stage 1, identifying all faces that are visible from outside the model */
-            for (uint treeIndex = 0; treeIndex < LayerRangeCount; treeIndex++)
+            for (uint layerIndex = 0; layerIndex < distinctLayers.Count; layerIndex++)
             {
-                var layerIndex = LayerIndexStart + treeIndex;
                 Voxelizer.UVFace currentFaceItem = null;
 
                 /* Should contain a list of all found faces on this layer, keyed by the face orientation */
@@ -217,9 +222,9 @@ namespace UVtools.Core.Operations
                 curLayer = aboveLayer;
 
                 /* bring in a new aboveLayer if we need to */
-                if (layerIndex < LayerIndexEnd)
+                if (layerIndex < distinctLayers.Count - 1)
                 {
-                    using var mat = SlicerFile[layerIndex + 1].LayerMat;
+                    using var mat = SlicerFile.LayerManager.GetMergedMatForLayerAtIndex(distinctLayers[(int)layerIndex+1].Index);
                     var matRoi = mat.Roi(SlicerFile.BoundingRectangle);
 
                     if (_flipDirection != Enumerations.FlipDirection.None)
@@ -315,15 +320,15 @@ namespace UVtools.Core.Operations
                                 {
                                     /* This face is disconnected by at least 1 pixel from the chain we've been building */
                                     /* Create a UVFace for the current chain and reset to this one */
-                                    layerFaceCounts[treeIndex]++;
+                                    layerFaceCounts[layerIndex]++;
                                     if (currentFaceItem is null)
                                     {
-                                        rootFaces[treeIndex] = new Voxelizer.UVFace { LayerIndex = treeIndex, Type = faceType, FaceRect = new Rectangle(startX, startY, curX - startX + 1, 1) };
-                                        currentFaceItem = rootFaces[treeIndex];
+                                        rootFaces[layerIndex] = new Voxelizer.UVFace { LayerIndex = layerIndex, Type = faceType, FaceRect = new Rectangle(startX, startY, curX - startX + 1, 1), LayerHeight = distinctLayers[(int)layerIndex].LayerHeight};
+                                        currentFaceItem = rootFaces[layerIndex];
                                     }
                                     else
                                     {
-                                        currentFaceItem.FlatListNext = new Voxelizer.UVFace { LayerIndex = treeIndex, Type = faceType, FaceRect = new Rectangle(startX, startY, curX - startX + 1, 1) };
+                                        currentFaceItem.FlatListNext = new Voxelizer.UVFace { LayerIndex = layerIndex, Type = faceType, FaceRect = new Rectangle(startX, startY, curX - startX + 1, 1), LayerHeight = distinctLayers[(int)layerIndex].LayerHeight };
                                         currentFaceItem = currentFaceItem.FlatListNext;
                                     }
                                     //faceTree.Add(new float[] { (float)faceType, startX, startY, layerIndex }, new UVFace() { LayerIndex = layerIndex, Type = faceType, FaceRect = new Rectangle(startX, startY, curX - startX + 1, 1) });
@@ -337,15 +342,15 @@ namespace UVtools.Core.Operations
                             {
                                 /* this face isn't on the same Y row as previous, therefore it is disconnected. */
                                 /* Create a UVFace for the current chain and reset to this one */
-                                layerFaceCounts[treeIndex]++;
+                                layerFaceCounts[layerIndex]++;
                                 if (currentFaceItem is null)
                                 {
-                                    rootFaces[treeIndex] = new Voxelizer.UVFace { LayerIndex = treeIndex, Type = faceType, FaceRect = new Rectangle(startX, startY, curX - startX + 1, 1) };
-                                    currentFaceItem = rootFaces[treeIndex];
+                                    rootFaces[layerIndex] = new Voxelizer.UVFace { LayerIndex = layerIndex, Type = faceType, FaceRect = new Rectangle(startX, startY, curX - startX + 1, 1), LayerHeight = distinctLayers[(int)layerIndex].LayerHeight };
+                                    currentFaceItem = rootFaces[layerIndex];
                                 }
                                 else
                                 {
-                                    currentFaceItem.FlatListNext = new Voxelizer.UVFace { LayerIndex = treeIndex, Type = faceType, FaceRect = new Rectangle(startX, startY, curX - startX + 1, 1) };
+                                    currentFaceItem.FlatListNext = new Voxelizer.UVFace { LayerIndex = layerIndex, Type = faceType, FaceRect = new Rectangle(startX, startY, curX - startX + 1, 1), LayerHeight = distinctLayers[(int)layerIndex].LayerHeight };
                                     currentFaceItem = currentFaceItem.FlatListNext;
                                 }
                                 startY = f.Y;
@@ -356,15 +361,15 @@ namespace UVtools.Core.Operations
                         }
                         /* we've gone through all the faces, add the final chain we've been building */
                         /* Create a UVFace for the final chain */
-                        layerFaceCounts[treeIndex]++;
+                        layerFaceCounts[layerIndex]++;
                         if (currentFaceItem is null)
                         {
-                            rootFaces[treeIndex] = new Voxelizer.UVFace { LayerIndex = treeIndex, Type = faceType, FaceRect = new Rectangle(startX, startY, curX - startX + 1, 1) };
-                            currentFaceItem = rootFaces[treeIndex];
+                            rootFaces[layerIndex] = new Voxelizer.UVFace { LayerIndex = layerIndex, Type = faceType, FaceRect = new Rectangle(startX, startY, curX - startX + 1, 1), LayerHeight = distinctLayers[(int)layerIndex].LayerHeight };
+                            currentFaceItem = rootFaces[layerIndex];
                         }
                         else
                         {
-                            currentFaceItem.FlatListNext = new Voxelizer.UVFace { LayerIndex = treeIndex, Type = faceType, FaceRect = new Rectangle(startX, startY, curX - startX + 1, 1) };
+                            currentFaceItem.FlatListNext = new Voxelizer.UVFace { LayerIndex = layerIndex, Type = faceType, FaceRect = new Rectangle(startX, startY, curX - startX + 1, 1), LayerHeight = distinctLayers[(int)layerIndex].LayerHeight };
                             currentFaceItem = currentFaceItem.FlatListNext;
                         }
                     }
@@ -392,15 +397,15 @@ namespace UVtools.Core.Operations
                                 {
                                     /* This face is disconnected by at least 1 pixel from the chain we've been building */
                                     /* Create a UVFace for the current chain and reset to this one */
-                                    layerFaceCounts[treeIndex]++;
+                                    layerFaceCounts[layerIndex]++;
                                     if (currentFaceItem is null)
                                     {
-                                        rootFaces[treeIndex] = new Voxelizer.UVFace { LayerIndex = treeIndex, Type = faceType, FaceRect = new Rectangle(startX, startY, curY - startY + 1, 1) };
-                                        currentFaceItem = rootFaces[treeIndex];
+                                        rootFaces[layerIndex] = new Voxelizer.UVFace { LayerIndex = layerIndex, Type = faceType, FaceRect = new Rectangle(startX, startY, curY - startY + 1, 1), LayerHeight = distinctLayers[(int)layerIndex].LayerHeight };
+                                        currentFaceItem = rootFaces[layerIndex];
                                     }
                                     else
                                     {
-                                        currentFaceItem.FlatListNext = new Voxelizer.UVFace { LayerIndex = treeIndex, Type = faceType, FaceRect = new Rectangle(startX, startY, curY - startY + 1, 1) };
+                                        currentFaceItem.FlatListNext = new Voxelizer.UVFace { LayerIndex = layerIndex, Type = faceType, FaceRect = new Rectangle(startX, startY, curY - startY + 1, 1), LayerHeight = distinctLayers[(int)layerIndex].LayerHeight };
                                         currentFaceItem = currentFaceItem.FlatListNext;
                                     }
                                     startY = f.Y;
@@ -411,15 +416,15 @@ namespace UVtools.Core.Operations
                             {
                                 /* this face is on a different column, cannot be part of the current chain we're building */
                                 /* Create a UVFace for the current chain and reset to this one */
-                                layerFaceCounts[treeIndex]++;
+                                layerFaceCounts[layerIndex]++;
                                 if (currentFaceItem is null)
                                 {
-                                    rootFaces[treeIndex] = new Voxelizer.UVFace { LayerIndex = treeIndex, Type = faceType, FaceRect = new Rectangle(startX, startY, curY - startY + 1, 1) };
-                                    currentFaceItem = rootFaces[treeIndex];
+                                    rootFaces[layerIndex] = new Voxelizer.UVFace { LayerIndex = layerIndex, Type = faceType, FaceRect = new Rectangle(startX, startY, curY - startY + 1, 1), LayerHeight = distinctLayers[(int)layerIndex].LayerHeight };
+                                    currentFaceItem = rootFaces[layerIndex];
                                 }
                                 else
                                 {
-                                    currentFaceItem.FlatListNext = new Voxelizer.UVFace { LayerIndex = treeIndex, Type = faceType, FaceRect = new Rectangle(startX, startY, curY - startY + 1, 1) };
+                                    currentFaceItem.FlatListNext = new Voxelizer.UVFace { LayerIndex = layerIndex, Type = faceType, FaceRect = new Rectangle(startX, startY, curY - startY + 1, 1), LayerHeight = distinctLayers[(int)layerIndex].LayerHeight };
                                     currentFaceItem = currentFaceItem.FlatListNext;
                                 }
                                 startY = f.Y;
@@ -428,15 +433,15 @@ namespace UVtools.Core.Operations
                                 curX = f.X;
                             }
                         }
-                        layerFaceCounts[treeIndex]++;
+                        layerFaceCounts[layerIndex]++;
                         if (currentFaceItem is null)
                         {
-                            rootFaces[treeIndex] = new Voxelizer.UVFace { LayerIndex = treeIndex, Type = faceType, FaceRect = new Rectangle(startX, startY, curY - startY + 1, 1) };
-                            currentFaceItem = rootFaces[treeIndex];
+                            rootFaces[layerIndex] = new Voxelizer.UVFace { LayerIndex = layerIndex, Type = faceType, FaceRect = new Rectangle(startX, startY, curY - startY + 1, 1), LayerHeight = distinctLayers[(int)layerIndex].LayerHeight };
+                            currentFaceItem = rootFaces[layerIndex];
                         }
                         else
                         {
-                            currentFaceItem.FlatListNext = new Voxelizer.UVFace { LayerIndex = treeIndex, Type = faceType, FaceRect = new Rectangle(startX, startY, curY - startY + 1, 1) };
+                            currentFaceItem.FlatListNext = new Voxelizer.UVFace { LayerIndex = layerIndex, Type = faceType, FaceRect = new Rectangle(startX, startY, curY - startY + 1, 1), LayerHeight = distinctLayers[(int)layerIndex].LayerHeight };
                             currentFaceItem = currentFaceItem.FlatListNext;
                         }
                     }
@@ -456,7 +461,7 @@ namespace UVtools.Core.Operations
             progress.ProcessedItems = 0;
 
             /* We build out a 3 dimensional KD tree for each layer, having 1 big KD tree is prohibitive when you get to millions and millions of faces. */
-            Parallel.For(0, LayerRangeCount, layerIndex =>
+            Parallel.For(0, distinctLayers.Count, layerIndex =>
             {
                 if (progress.Token.IsCancellationRequested) return;
 
@@ -490,7 +495,7 @@ namespace UVtools.Core.Operations
              * Since we don't modify the lists/objects and only connect them via doubly linked list
              * we can process each layer independant of the others.
              */
-            Parallel.For(0, LayerRangeCount, i =>
+            Parallel.For(0, distinctLayers.Count, i =>
             {
                 if (progress.Token.IsCancellationRequested)
                 {
@@ -562,15 +567,15 @@ namespace UVtools.Core.Operations
             mesh.BeginWrite();
 
             /* Begin Stage 4, generating triangles and saving to STL */
-            foreach (var tree in layerTrees)
-            {
+            for (var treeIndex = 0; treeIndex < layerTrees.Length; treeIndex++) {
+                var tree = layerTrees[treeIndex];
                 if (tree is null) continue;
 
                 /* only process UVFaces that do not have a parent, these are the "root" faces that couldn't be combined with something above them */
                 foreach (var p in tree.Where(p => p.Value.Parent is null))
                 {
                     /* generate the triangles */
-                    foreach (var f in Voxelizer.MakeFacetsForUVFace(p.Value, xWidth, yWidth, zHeight, LayerIndexStart))
+                    foreach (var f in Voxelizer.MakeFacetsForUVFace(p.Value, xWidth, yWidth,distinctLayers[treeIndex].PositionZ))
                     {
                         /* write to file */
                         mesh.WriteTriangle(f.p1, f.p2, f.p3, f.normal);
