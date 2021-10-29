@@ -36,5 +36,24 @@ namespace UVtools.Core.Extensions
 
             return path;
         }
+
+        public static string GetTempFilePathWithFilename(string fileName)
+        {
+            var path = Path.GetTempPath();
+            return Path.Combine(path, fileName);
+        }
+
+        /// <summary>
+        /// Gets a temporary file with a extension and a prepend string
+        /// </summary>
+        /// <param name="extension">Extension name without the dot (.)</param>
+        /// <param name="prepend">Optional prepend file name</param>
+        /// <returns></returns>
+        public static string GetTempFilePathWithExtension(string extension, string prepend = null)
+        {
+            var path = Path.GetTempPath();
+            var fileName = $"{prepend}{Guid.NewGuid()}.{extension}";
+            return Path.Combine(path, fileName);
+        }
     }
 }

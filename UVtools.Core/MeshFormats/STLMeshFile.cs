@@ -90,6 +90,7 @@ namespace UVtools.Core.MeshFormats
             }
 
             TriangleCount++;
+            VertexCount += 3;
         }
 
         public override void EndWrite()

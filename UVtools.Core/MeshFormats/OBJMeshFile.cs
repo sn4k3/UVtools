@@ -19,7 +19,12 @@ namespace UVtools.Core.MeshFormats
     {
         #region Constants
         public const string DefaultObjectName = "Object.1";
-        const int VertexCacheSize = 3000;
+        public const int VertexCacheSize = 84000; // About 1MB
+        #endregion
+
+        #region Members
+        private readonly Dictionary<Vector3, uint> _vertexCache = new(VertexCacheSize);
+        private FileStream _triangleStream;
         #endregion
 
         #region Properties
@@ -40,17 +45,13 @@ namespace UVtools.Core.MeshFormats
 
 
         #endregion
-
-        #region Members
-        Dictionary<Vector3, uint> VertexCache = new Dictionary<Vector3, uint>(VertexCacheSize);
-        StreamWriter triangleStream = null;
-        #endregion
-
+        
         #region Methods
         public override void BeginWrite()
         {
             /* Create a stream to store the triangles (faces) as they come through */
-            triangleStream = File.CreateText(FilePath + ".tris");
+            _triangleStream = new FileStream(PathExtensions.GetTempFilePathWithExtension("trig", $"{About.Software}_"), FileMode.Create, FileAccess.ReadWrite, FileShare.None, 81920, FileOptions.DeleteOnClose);
+            
             MeshStream.WriteLine($"# {HeaderComment}");
             MeshStream.WriteLine($"o {ObjectName}");
             MeshStream.WriteLine();
@@ -59,53 +60,53 @@ namespace UVtools.Core.MeshFormats
 
         public override void WriteTriangle(Vector3 p1, Vector3 p2, Vector3 p3, Vector3 normal)
         {
-            if (!VertexCache.ContainsKey(p1))
+            if (!_vertexCache.ContainsKey(p1))
             {
                 MeshStream.WriteLine($"v {p1.X:F6} {p1.Y:F6} {p1.Z:F6}");
                 VertexCount++;
-                VertexCache.Add(p1, VertexCount);
+                _vertexCache.Add(p1, VertexCount);
             }
-            if (!VertexCache.ContainsKey(p2))
+
+            if (!_vertexCache.ContainsKey(p2))
             {
                 MeshStream.WriteLine($"v {p2.X:F6} {p2.Y:F6} {p2.Z:F6}");
                 VertexCount++;
-                VertexCache.Add(p2, VertexCount);
+                _vertexCache.Add(p2, VertexCount);
             }
-            if (!VertexCache.ContainsKey(p3))
+
+            if (!_vertexCache.ContainsKey(p3))
             {
                 MeshStream.WriteLine($"v {p3.X:F6} {p3.Y:F6} {p3.Z:F6}");
                 VertexCount++;
-                VertexCache.Add(p3, VertexCount);
+                _vertexCache.Add(p3, VertexCount);
             }
 
-            triangleStream.WriteLine($"f {VertexCache[p1]} {VertexCache[p2]} {VertexCache[p3]}");
+            _triangleStream.WriteLine($"f {_vertexCache[p1]} {_vertexCache[p2]} {_vertexCache[p3]}");
+
+            TriangleCount++;
             
             /* If we are getting close to the cache size. we do *not* want to go over the capacity as that will trigger
              * an allocation of a bigger buffer and copy of the kvp's */
-            if (VertexCache.Count >= VertexCacheSize - 10)
+            if (_vertexCache.Count >= VertexCacheSize - 10)
             {
-                VertexCache.Clear();
+                _vertexCache.Clear();
             }
         }
 
         public override void EndWrite()
         {
-            VertexCache.Clear();
+            _vertexCache.Clear();
+
             MeshStream.WriteLine();
             MeshStream.WriteLine("# Polygonal face elements");
 
-            /* Make sure all triangles are flushed to disk */
-            triangleStream.Flush();
-            triangleStream.Close();
+            _triangleStream.Seek(0, SeekOrigin.Begin);
+            _triangleStream.CopyTo(MeshStream);
+            _triangleStream.Dispose();
 
-            /* copy the triangles to the main OBJ mesh file */
-            var fileReader = File.OpenRead(FilePath + ".tris");
-            fileReader.CopyTo(MeshStream);
-            fileReader.Close();
-            fileReader.Dispose();
-            File.Delete(FilePath + ".tris");
-
+            MeshStream.WriteLine();
             MeshStream.WriteLine($"# Triangles: {TriangleCount}");
+            MeshStream.WriteLine($"# Unique Vertexes: {VertexCount}");
         }
 
         #endregion

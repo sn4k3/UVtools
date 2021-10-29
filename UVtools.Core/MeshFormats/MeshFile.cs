@@ -63,18 +63,26 @@ namespace UVtools.Core.MeshFormats
         public string FilePath { get; }
 
         /// <summary>
+        /// Gets the file name with extension from <see cref="FilePath"/>
+        /// </summary>
+        public string Filename => Path.GetFileName(FilePath);
+
+        /// <summary>
         /// Gets the current file stream
         /// </summary>
         public FileStream MeshStream { get; }
 
+        /// <summary>
+        /// Gets the number of vertexes, this is often triangle count * 3
+        /// </summary>
         public uint VertexCount { get; protected set; }
+
         /// <summary>
         /// Gets the number of triangles
         /// </summary>
         public uint TriangleCount { get; protected set; }
         #endregion
-
-
+        
         #region Constructor
         protected MeshFile(string filePath, FileMode fileMode, MeshFileFormat meshFileFormat = MeshFileFormat.BINARY)
         {

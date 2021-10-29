@@ -28,7 +28,7 @@ namespace UVtools.Core.Operations
     [Serializable]
     public sealed class OperationLayerExportMesh : Operation
     {
-        #region MyRegion
+        #region Enums
         public enum ExportMeshQuality : byte
         {
             Accurate = 1,
@@ -41,8 +41,7 @@ namespace UVtools.Core.Operations
 
 
         #endregion
-
-
+        
         #region Members
         private string _filePath;
         private ExportMeshQuality _quality = ExportMeshQuality.Accurate;
@@ -128,7 +127,7 @@ namespace UVtools.Core.Operations
 
         public override void InitWithSlicerFile()
         {
-            _filePath = Path.Combine(Path.GetDirectoryName(SlicerFile.FileFullPath), $"{SlicerFile.FilenameNoExt}.stl");
+            _filePath = Path.Combine(Path.GetDirectoryName(SlicerFile.FileFullPath), $"{SlicerFile.FilenameNoExt}.{STLMeshFile.FileExtension.Extension}");
         }
 
         #endregion
@@ -148,14 +147,13 @@ namespace UVtools.Core.Operations
              * 1.) Generate all visible faces, this is for each pixel we determine which of its faces are visible from outside the model
              * 2.) Collapse faces horizontally, this combines faces that are coplanar horizontally into a longer face, this reduces triangles
              * 3.) Collapse faces that are coplanar and the same size vertically leveraging KD Trees for fast lookups, O(logn) vs O(n) for a normal list
-             * 4.) Generate triangles for faces and write out to STL
+             * 4.) Generate triangles for faces and write out to file
              */
 
             /* Basic information for the file, how many layers, how big should each voxel be) */
             var pixelSize = SlicerFile.PixelSize;
             float xWidth = (pixelSize.Width > 0 ? pixelSize.Width : 0.035f) * (byte)_quality;
             float yWidth = (pixelSize.Height > 0 ? pixelSize.Height : 0.035f) * (byte)_quality;
-            var zHeight = SlicerFile.LayerHeight;
 
             //var totalLayerCount = SlicerFile.LayerCount;
             var distinctLayers = SlicerFile.Where((_, layerIndex) => layerIndex >= LayerIndexStart && layerIndex <= LayerIndexEnd).DistinctBy(layer => layer.PositionZ).ToArray();
@@ -446,7 +444,7 @@ namespace UVtools.Core.Operations
                     }
                 }
 
-                progress.LockAndIncrement();
+                progress++;
 
                 if (progress.Token.IsCancellationRequested)
                 {
@@ -565,7 +563,7 @@ namespace UVtools.Core.Operations
             using var mesh = fileExtension.FileFormatType.CreateInstance<MeshFile>(_filePath, FileMode.Create);
             mesh.BeginWrite();
 
-            /* Begin Stage 4, generating triangles and saving to STL */
+            /* Begin Stage 4, generating triangles and saving to file */
             for (var treeIndex = 0; treeIndex < layerTrees.Length; treeIndex++) {
                 var tree = layerTrees[treeIndex];
                 if (tree is null) continue;
@@ -581,13 +579,14 @@ namespace UVtools.Core.Operations
                     }
                 }
 
-                /* check for cancellation at every layer, and if so, close the STL file properly */
+                /* check for cancellation at every layer, and if so, close the file properly */
                 if (progress.Token.IsCancellationRequested)
                 {
                     Cleanup();
                     return false;
                 }
-                progress.LockAndIncrement();
+
+                progress++;
             }
 
             void Cleanup()
@@ -610,7 +609,6 @@ namespace UVtools.Core.Operations
             }
 
             mesh.EndWrite();
-
 
             return !progress.Token.IsCancellationRequested;
         }
