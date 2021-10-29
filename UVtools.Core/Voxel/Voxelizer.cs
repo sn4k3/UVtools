@@ -7,19 +7,11 @@
  */
 using Emgu.CV;
 using Emgu.CV.CvEnum;
-using KdTree;
-using KdTree.Math;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.IO;
-using System.Linq;
 using System.Numerics;
-using System.Threading.Tasks;
 using UVtools.Core.Extensions;
-using UVtools.Core.FileFormats;
-using UVtools.Core.MeshFormats;
-using UVtools.Core.Operations;
 
 namespace UVtools.Core.Voxel
 {
@@ -159,15 +151,6 @@ namespace UVtools.Core.Voxel
 
             return voxelLayer;
         }
-        public enum VoxelQuality : byte
-        {
-            ACCURATE = 1,
-            AVERAGE = 2,
-            QUICK = 3,
-
-            DIRTY = 6,
-            MINECRAFT = 8
-        }
 
         /* CreateVoxelMesh is no longer used, see OperationLayerExportMesh for the logic that used to be here */
 
@@ -250,10 +233,10 @@ namespace UVtools.Core.Voxel
                 yield return (lowerLeft, lowerRight, upperRight, BottomNormal);
                 yield return (upperRight, upperLeft, lowerLeft, BottomNormal);
             }
-            else
+            /*else
             {
                 yield break;
-            }
+            }*/
 
         }
     }

@@ -157,14 +157,14 @@ namespace UVtools.Core.Operations
             float yWidth = (pixelSize.Height > 0 ? pixelSize.Height : 0.035f) * (byte)_quality;
             var zHeight = SlicerFile.LayerHeight;
 
-            var totalLayerCount = SlicerFile.LayerManager.LayerCount;
-            var distinctLayers = SlicerFile.Where(layer => layer.Index >= LayerIndexStart && layer.Index <= LayerIndexEnd).DistinctBy(layer => layer.PositionZ).ToList();
+            //var totalLayerCount = SlicerFile.LayerCount;
+            var distinctLayers = SlicerFile.Where((_, layerIndex) => layerIndex >= LayerIndexStart && layerIndex <= LayerIndexEnd).DistinctBy(layer => layer.PositionZ).ToArray();
 
             /* For the 1st stage, we maintain up to 3 mats, the current layer, the one below us, and the one above us 
              * (below will be null when current layer is 0, above will be null when currentlayer is layercount-1) */
             /* We init the aboveLayer to the first layer, in the loop coming up we shift above->current->below, so this effectively inits current layer */
             Mat aboveLayer = null;
-            using (var mat = SlicerFile.LayerManager.GetMergedMatForLayerAtIndex(distinctLayers[0].Index))
+            using (var mat = SlicerFile.LayerManager.GetMergedMatForSequentialPositionedLayers(distinctLayers[0].Index))
             {
                 var matRoi = mat.Roi(SlicerFile.BoundingRectangle);
 
@@ -197,18 +197,18 @@ namespace UVtools.Core.Operations
             var facesToCheck = new[] { Voxelizer.FaceOrientation.Front, Voxelizer.FaceOrientation.Back, Voxelizer.FaceOrientation.Left, Voxelizer.FaceOrientation.Right, Voxelizer.FaceOrientation.Top, Voxelizer.FaceOrientation.Bottom };
 
             /* Init of other objects that will be used in subsequent stages */
-            var rootFaces = new Voxelizer.UVFace[distinctLayers.Count];
-            var layerFaceCounts = new uint[distinctLayers.Count];
-            var layerTrees = new KdTree<float, Voxelizer.UVFace>[distinctLayers.Count];
+            var rootFaces = new Voxelizer.UVFace[distinctLayers.Length];
+            var layerFaceCounts = new uint[distinctLayers.Length];
+            var layerTrees = new KdTree<float, Voxelizer.UVFace>[distinctLayers.Length];
 
-            progress.Reset("layers", (uint)distinctLayers.Count);
+            progress.Reset("layers", (uint)distinctLayers.Length);
             progress.Title = "Stage 1: Generating faces from layers";
             //progress.ItemCount = LayerRangeCount;
 
             SlicerFile.LayerManager.GetSamePositionedLayers();
 
             /* Begin Stage 1, identifying all faces that are visible from outside the model */
-            for (uint layerIndex = 0; layerIndex < distinctLayers.Count; layerIndex++)
+            for (uint layerIndex = 0; layerIndex < distinctLayers.Length; layerIndex++)
             {
                 Voxelizer.UVFace currentFaceItem = null;
 
@@ -222,9 +222,9 @@ namespace UVtools.Core.Operations
                 curLayer = aboveLayer;
 
                 /* bring in a new aboveLayer if we need to */
-                if (layerIndex < distinctLayers.Count - 1)
+                if (layerIndex < distinctLayers.Length - 1)
                 {
-                    using var mat = SlicerFile.LayerManager.GetMergedMatForLayerAtIndex(distinctLayers[(int)layerIndex+1].Index);
+                    using var mat = SlicerFile.LayerManager.GetMergedMatForSequentialPositionedLayers(distinctLayers[(int)layerIndex+1].Index);
                     var matRoi = mat.Roi(SlicerFile.BoundingRectangle);
 
                     if (_flipDirection != Enumerations.FlipDirection.None)
@@ -461,7 +461,7 @@ namespace UVtools.Core.Operations
             progress.ProcessedItems = 0;
 
             /* We build out a 3 dimensional KD tree for each layer, having 1 big KD tree is prohibitive when you get to millions and millions of faces. */
-            Parallel.For(0, distinctLayers.Count, layerIndex =>
+            Parallel.For(0, distinctLayers.Length, layerIndex =>
             {
                 if (progress.Token.IsCancellationRequested) return;
 
@@ -495,7 +495,7 @@ namespace UVtools.Core.Operations
              * Since we don't modify the lists/objects and only connect them via doubly linked list
              * we can process each layer independant of the others.
              */
-            Parallel.For(0, distinctLayers.Count, i =>
+            Parallel.For(0, distinctLayers.Length, i =>
             {
                 if (progress.Token.IsCancellationRequested)
                 {
