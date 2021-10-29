@@ -67,6 +67,7 @@ namespace UVtools.Core.MeshFormats
         /// </summary>
         public FileStream MeshStream { get; }
 
+        public uint VertexCount { get; protected set; }
         /// <summary>
         /// Gets the number of triangles
         /// </summary>
