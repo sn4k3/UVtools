@@ -623,22 +623,23 @@ namespace UVtools.Core
             return layers;
         }
 
-        public Mat GetMergedMatForLayerAtIndex(uint startIndex)
+        public Mat GetMergedMatForSequentialPositionedLayers(uint startLayerIndex, out uint lastLayerIndex)
         {
-            /* This operates backwards because GetSamePositionedLayers returns the highest layer index with the same postion z, not the lowest */
-            var startLayer = this[startIndex];
+            var startLayer = this[startLayerIndex];
+            lastLayerIndex = startLayerIndex;
+            var layerMat = startLayer.LayerMat;
 
-            Mat layerMat = startLayer.LayerMat;
-
-            for (var curIndex = startIndex + 1; curIndex < LayerCount && (this[curIndex].PositionZ == startLayer.PositionZ); curIndex++)
+            for (var curIndex = startLayerIndex + 1; curIndex < LayerCount && this[curIndex].PositionZ == startLayer.PositionZ; curIndex++)
             {
-                var nextLayer = this[curIndex].LayerMat;
-                CvInvoke.BitwiseOr(nextLayer, layerMat, layerMat);
-                nextLayer.Dispose();
+                using var nextLayer = this[curIndex].LayerMat;
+                CvInvoke.Max(nextLayer, layerMat, layerMat);
+                lastLayerIndex = curIndex;
             }
 
             return layerMat;
         }
+
+        public Mat GetMergedMatForSequentialPositionedLayers(uint startLayerIndex) => GetMergedMatForSequentialPositionedLayers(startLayerIndex, out _);
 
         public Rectangle GetBoundingRectangle(OperationProgress progress = null)
         {
