@@ -436,12 +436,12 @@ namespace UVtools.Core.Operations
                         layerFaceCounts[layerIndex]++;
                         if (currentFaceItem is null)
                         {
-                            rootFaces[layerIndex] = new Voxelizer.UVFace { LayerIndex = layerIndex, Type = faceType, FaceRect = new Rectangle(startX, startY, curY - startY + 1, 1) };
+                            rootFaces[layerIndex] = new Voxelizer.UVFace { LayerIndex = layerIndex, Type = faceType, FaceRect = new Rectangle(startX, startY, curY - startY + 1, 1), LayerHeight = distinctLayers[(int)layerIndex].LayerHeight };
                             currentFaceItem = rootFaces[layerIndex];
                         }
                         else
                         {
-                            currentFaceItem.FlatListNext = new Voxelizer.UVFace { LayerIndex = layerIndex, Type = faceType, FaceRect = new Rectangle(startX, startY, curY - startY + 1, 1) };
+                            currentFaceItem.FlatListNext = new Voxelizer.UVFace { LayerIndex = layerIndex, Type = faceType, FaceRect = new Rectangle(startX, startY, curY - startY + 1, 1), LayerHeight = distinctLayers[(int)layerIndex].LayerHeight };
                             currentFaceItem = currentFaceItem.FlatListNext;
                         }
                     }
