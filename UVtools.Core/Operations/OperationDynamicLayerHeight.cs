@@ -19,6 +19,7 @@ using Emgu.CV.CvEnum;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Layers;
+using UVtools.Core.Managers;
 using UVtools.Core.Objects;
 
 namespace UVtools.Core.Operations
@@ -564,8 +565,23 @@ namespace UVtools.Core.Operations
             var anchor = new Point(-1, -1);
             using var kernel = CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(3, 3), anchor);
 
-            var matCache = new Mat[SlicerFile.LayerCount];
-            var matThresholdCache = new Mat[SlicerFile.LayerCount];
+            var matCache = new MatCacheManager(this, (ushort)CacheObjectCount, 2)
+            {
+                AutoDispose = true,
+                AutoDisposeKeepLast = 1,
+                AfterCacheAction = mats =>
+                {
+                    mats[1] = new Mat();
+                    // Clean AA
+                    CvInvoke.Threshold(mats[0], mats[1], 127, 255, ThresholdType.Binary);
+
+                    if (_stripAntiAliasing)
+                    {
+                        mats[0].Dispose();
+                        mats[0] = mats[1];
+                    }
+                }
+            };
 
             List<Layer> layers = new();
 
@@ -573,50 +589,13 @@ namespace UVtools.Core.Operations
             Mat matXorSum = null;
             Mat matSum = null;
 
-            //decimal xyResolutionUm = XYResolutionUm;
-
+            //float xyResolutionUm = SlicerFile.PixelSizeMicronsMax;
+            //if (xyResolutionUm == 0) xyResolutionUm = 35;
             //const double xyRes = 35;
             //var stepAngle = Math.Atan(SlicerFile.LayerHeight*1000 / xyRes) * (180 / Math.PI);
-            //byte maximumErodes = (byte) (_maximumLayerHeight * 100 - (decimal) (slicerFile.LayerHeight * 100f));
-
-            void CacheLayers(uint fromLayerIndex)
-            {
-                for (int layerIndex = (int) fromLayerIndex-2; layerIndex >= 0; layerIndex--) // clean up only the required layers
-                {
-                    if (matCache[layerIndex] is null) break;
-                    matCache[layerIndex].Dispose();
-                    matCache[layerIndex] = null;
-                    matThresholdCache[layerIndex].Dispose();
-                    matThresholdCache[layerIndex] = null;
-                }
-                Parallel.For(fromLayerIndex, Math.Min(fromLayerIndex + CacheObjectCount, SlicerFile.LayerCount), CoreSettings.ParallelOptions, layerIndex =>
-                {
-                    if (matCache[layerIndex] is not null) return; // Already cached
-                    matCache[layerIndex] = SlicerFile[layerIndex].LayerMat;
-                    matThresholdCache[layerIndex] = new Mat();
-
-                    // Clean AA
-                    CvInvoke.Threshold(matCache[layerIndex], matThresholdCache[layerIndex], 127, 255, ThresholdType.Binary);
-
-                    if (_stripAntiAliasing)
-                    {
-                        matCache[layerIndex].Dispose();
-                        matCache[layerIndex] = matThresholdCache[layerIndex];
-                    }
-                });
-            }
+            //byte maximumErodes = (byte) (_maximumLayerHeight * 100 - (decimal) (SlicerFile.LayerHeight * 100f));
 
             float GetLastPositionZ(float layerHeight) => layers.Count > 0 ? Layer.RoundHeight(layers[^1].PositionZ + layerHeight) : layerHeight;
-
-            (Mat, Mat) GetLayer(uint layerIndex)
-            {
-                if (matCache[layerIndex] is null)
-                {
-                    CacheLayers(layerIndex);
-                }
-
-                return (matCache[layerIndex], matThresholdCache[layerIndex]);
-            }
 
             void AddNewLayer(Mat mat, float layerHeight)
             {
@@ -644,7 +623,7 @@ namespace UVtools.Core.Operations
                 layer.IsModified = true;
                 if (_stripAntiAliasing)
                 {
-                    var (mat, matThreshold) = GetLayer(layerIndex);
+                    var matThreshold = matCache.Get(layerIndex, 1);
                     if (_reconstructAntiAliasing)
                     {
                         var blurMat = new Mat();
@@ -687,27 +666,28 @@ namespace UVtools.Core.Operations
                 while (true) // In a stack
                 {
                     progress.Token.ThrowIfCancellationRequested();
-                    progress.ProcessedItems = layerIndex;
+                    progress.ProcessedItems = layerIndex - LayerIndexStart;
 
                     if (currentLayerHeight >= (float)_maximumLayerHeight || layerIndex == LayerIndexEnd)
                     {
                         // Cant perform any additional stack. Maximum layer height reached!
                         // Break this cycle and restart from same layer
-                        matSum ??= GetLayer(layerIndex).Item1.Clone(); // This only happen when layer height is already the maximum supported layer height
+                        matSum ??= matCache.Get(layerIndex, 1).Clone(); // This only happen when layer height is already the maximum supported layer height
                         layerIndex++;
                         break;
                     }
 
                     var previousLayerHeight = currentLayerHeight;
                     currentLayerHeight = Layer.RoundHeight(currentLayerHeight + SlicerFile.LayerHeight);
+                    //var currentLayerHeightUm = currentLayerHeight * 1000;
 
-                    var (mat1, mat1Threshold) = GetLayer(layerIndex);
-                    var (mat2, mat2Threshold) = GetLayer(++layerIndex);
+                    var (mat1, mat1Threshold) = matCache.Get2(layerIndex);
+                    var (mat2, mat2Threshold) = matCache.Get2(++layerIndex);
 
                     Debug.Write($"  Stacking layer: {layerIndex} ({currentLayerHeight}mm)");
 
                     matSum ??= mat1.Clone();
-                    
+
                     CvInvoke.BitwiseXor(mat1Threshold, mat2Threshold, matXor);
                     if (matXorSum is null)
                     {
@@ -719,29 +699,32 @@ namespace UVtools.Core.Operations
                     }
 
                     //var currentLayerHeigthUm = currentLayerHeight * 1000.0;
-
+                    //CvInvoke.Imshow("test", matXorSum);
+                    //CvInvoke.WaitKey();
                     if (CvInvoke.CountNonZero(matXorSum) > 0) // Layers are different
+                    //if (!matXorSum.IsZeroed(0, startPos, endPos + 1)) // Layers are different
                     {
                         //byte innerErodeCount = 0;
                         bool meetRequirement = false;
+                        using var erodeMatXor = matXorSum.Clone();
                         while (erodeCount < _maximumErodes)
                         {
                             //innerErodeCount++;
                             erodeCount++;
                             //maxErodeCount = Math.Max(maxErodeCount, erodeCount);
 
-                            /*var slope = Math.Atan(currentLayerHeigthUm / (double) (xyResolutionUm * erodeCount)) * (180 / Math.PI);
-                            var stepover = Math.Round(currentLayerHeigthUm / Math.Tan(slope * (Math.PI / 180)));
-                            Debug.Write($" [Slope: {slope:F2} Stepover: {stepover} <= {xyResolutionUm} = {stepover <= (double) xyResolutionUm}]");
+                            /*var slope = Math.Atan(currentLayerHeightUm / (double) (xyResolutionUm * erodeCount)) * (180 / Math.PI);
+                            var stepover = Math.Round(currentLayerHeightUm / Math.Tan(slope * (Math.PI / 180)));
+                            Debug.Write($" [Slope: {slope:F2} Stepover: {stepover} <= {xyResolutionUm} = {stepover <= xyResolutionUm}]");
 
-                            if (stepover > (double) xyResolutionUm)
+                            if (stepover > xyResolutionUm)
                             {
-                                meetRequirement = false;
                                 break;
                             }*/
                             
-                            CvInvoke.Erode(matXorSum, matXor, kernel, anchor, 1, BorderType.Reflect101, default);
-                            if (CvInvoke.CountNonZero(matXor) == 0) // Image pixels exhausted and got empty image, can pack and go next
+                            CvInvoke.Erode(erodeMatXor, erodeMatXor, kernel, anchor, 1, BorderType.Reflect101, default);
+                            if (CvInvoke.CountNonZero(erodeMatXor) == 0)
+                            //if (erodeMatXor.IsZeroed(0, startPos, endPos+1)) // Image pixels exhausted and got empty image, can pack and go next
                             {
                                 meetRequirement = true;
                                 break;
@@ -785,13 +768,6 @@ namespace UVtools.Core.Operations
                     throw new InvalidOperationException($"Model height integrity has been violated at layer {layerIndex}/{layers.Count} ({positionZ}mm != {SlicerFile[layerIndex - 1].PositionZ}mm), this operation will not proceed.");
                 }
                 AddNewLayer(matSum, currentLayerHeight);
-            }
-
-            for (int i = (int) LayerIndexEnd; i >= 0; i--)
-            {
-                if(matCache[i] is null) break;
-                matCache[i].Dispose();
-                matThresholdCache[i].Dispose();
             }
 
             for (uint layerIndex = LayerIndexEnd+1; layerIndex < SlicerFile.LayerCount; layerIndex++) // Add left-overs

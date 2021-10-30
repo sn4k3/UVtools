@@ -233,25 +233,19 @@ namespace UVtools.Core.EmguCV
 
             /* early exit if the bounding rectangles don't intersect */
             if (!contour1Rect.IntersectsWith(contour2Rect)) return false;
-
-            var minX = contour1Rect.X < contour2Rect.X ? contour1Rect.X : contour2Rect.X;
-            var minY = contour1Rect.Y < contour2Rect.Y ? contour1Rect.Y : contour2Rect.Y;
-
-            var maxX = (contour1Rect.X + contour1Rect.Width) < (contour2Rect.X + contour2Rect.Width) ? (contour2Rect.X + contour2Rect.Width) : (contour1Rect.X + contour1Rect.Width);
-            var maxY = (contour1Rect.Y + contour1Rect.Height) < (contour2Rect.Y + contour2Rect.Height) ? (contour2Rect.Y + contour2Rect.Height) : (contour1Rect.Y + contour1Rect.Height);
-
-            var totalRect = new Rectangle(minX, minY, maxX - minX, maxY - minY);
+            var totalRect = Rectangle.Union(contour1Rect, contour2Rect);
 
             using var contour1Mat = EmguExtensions.InitMat(totalRect.Size);
             using var contour2Mat = EmguExtensions.InitMat(totalRect.Size);
             
-            var inverseOffset = new Point(minX * -1, minY * -1);
+            var inverseOffset = new Point(-totalRect.X, -totalRect.Y);
             CvInvoke.DrawContours(contour1Mat, contour1, -1, EmguExtensions.WhiteColor, -1, Emgu.CV.CvEnum.LineType.EightConnected, null, int.MaxValue, inverseOffset);
             CvInvoke.DrawContours(contour2Mat, contour2, -1, EmguExtensions.WhiteColor, -1, Emgu.CV.CvEnum.LineType.EightConnected, null, int.MaxValue, inverseOffset);
 
             CvInvoke.BitwiseAnd(contour1Mat, contour2Mat, contour1Mat);
 
-            return !contour1Mat.IsZeroed();
+            //return !contour1Mat.IsZeroed();
+            return CvInvoke.CountNonZero(contour1Mat) > 0;
         }
     }
 }

@@ -22,6 +22,7 @@ using UVtools.Core.EmguCV;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Layers;
+using UVtools.Core.Managers;
 using UVtools.Core.Objects;
 using UVtools.Core.Operations;
 using UVtools.Core.PixelEditor;
@@ -623,13 +624,31 @@ namespace UVtools.Core
             return layers;
         }
 
-        public Mat GetMergedMatForSequentialPositionedLayers(uint startLayerIndex, out uint lastLayerIndex)
+        public Mat GetMergedMatForSequentialPositionedLayers(uint layerIndex, MatCacheManager cacheManager, out uint lastLayerIndex)
         {
-            var startLayer = this[startLayerIndex];
-            lastLayerIndex = startLayerIndex;
+            var startLayerPositionZ = this[layerIndex].PositionZ;
+            lastLayerIndex = layerIndex;
+            var layerMat = cacheManager.Get1(layerIndex).Clone();
+
+            for (var curIndex = layerIndex + 1; curIndex < LayerCount && this[curIndex].PositionZ == startLayerPositionZ; curIndex++)
+            {
+                CvInvoke.Max(layerMat, cacheManager.Get1(curIndex), layerMat);
+                lastLayerIndex = curIndex;
+            }
+
+            return layerMat;
+        }
+
+        public Mat GetMergedMatForSequentialPositionedLayers(uint layerIndex, MatCacheManager cacheManager) 
+            => GetMergedMatForSequentialPositionedLayers(layerIndex, cacheManager, out _);
+
+        public Mat GetMergedMatForSequentialPositionedLayers(uint layerIndex, out uint lastLayerIndex)
+        {
+            var startLayer = this[layerIndex];
+            lastLayerIndex = layerIndex;
             var layerMat = startLayer.LayerMat;
 
-            for (var curIndex = startLayerIndex + 1; curIndex < LayerCount && this[curIndex].PositionZ == startLayer.PositionZ; curIndex++)
+            for (var curIndex = layerIndex + 1; curIndex < LayerCount && this[curIndex].PositionZ == startLayer.PositionZ; curIndex++)
             {
                 using var nextLayer = this[curIndex].LayerMat;
                 CvInvoke.Max(nextLayer, layerMat, layerMat);
@@ -639,7 +658,8 @@ namespace UVtools.Core
             return layerMat;
         }
 
-        public Mat GetMergedMatForSequentialPositionedLayers(uint startLayerIndex) => GetMergedMatForSequentialPositionedLayers(startLayerIndex, out _);
+        public Mat GetMergedMatForSequentialPositionedLayers(uint layerIndex) 
+            => GetMergedMatForSequentialPositionedLayers(layerIndex, out _);
 
         public Rectangle GetBoundingRectangle(OperationProgress progress = null)
         {

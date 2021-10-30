@@ -601,37 +601,23 @@ namespace UVtools.Core.Managers
                 }); // Parallel end
             }
 
-            var matCache = new Mat[SlicerFile.LayerCount];
-            var matTargetCache = new Mat[SlicerFile.LayerCount];
-            void CacheLayers(uint layerIndex, bool direction)
-            {
-                if (matCache[layerIndex] is not null) return;
-                int fromLayerIndex = (int)layerIndex;
-                int toLayerIndex = (int)Math.Min(SlicerFile.LayerCount, layerIndex + 1 + Environment.ProcessorCount * 5);
-
-                if (!direction)
-                {
-                    toLayerIndex = fromLayerIndex + 1;
-                    fromLayerIndex = (int)Math.Max(resinTrapConfig.StartLayerIndex, fromLayerIndex - Environment.ProcessorCount * 5);
-                }
-
-                Parallel.For(fromLayerIndex, toLayerIndex,
-                    i =>
-                    {
-                        matCache[i] = SlicerFile[i].LayerMat;
-                        matTargetCache[i] = matCache[i].Roi(SlicerFile.BoundingRectangle);
-                        if (resinTrapConfig.MaximumPixelBrightnessToDrain > 0)
-                        {
-                            CvInvoke.Threshold(matTargetCache[i], matTargetCache[i], resinTrapConfig.MaximumPixelBrightnessToDrain, byte.MaxValue, ThresholdType.Binary);
-                        }
-                    });
-            }
-
             if (resinTrapConfig.Enabled)
             {
                 //progress.Reset("Detecting Air Boundaries (Resin traps)", LayerCount);
                 //if (progress.Token.IsCancellationRequested) return result.OrderBy(issue => issue.Type).ThenBy(issue => issue.LayerIndex).ThenBy(issue => issue.Area).ToList();
                 progress.Reset("Detection pass 1 of 2 (Resin traps)", SlicerFile.LayerCount, resinTrapConfig.StartLayerIndex);
+
+                using var matCache = new MatCacheManager(SlicerFile, 0, 2)
+                {
+                    AfterCacheAction = mats =>
+                    {
+                        mats[1] = mats[0].Roi(SlicerFile.BoundingRectangle);
+                        if (resinTrapConfig.MaximumPixelBrightnessToDrain > 0)
+                        {
+                            CvInvoke.Threshold(mats[1], mats[1], resinTrapConfig.MaximumPixelBrightnessToDrain, byte.MaxValue, ThresholdType.Binary);
+                        }
+                    }
+                };
 
                 /* define all mats up front, reducing allocations */
                 var currentAirMap = EmguExtensions.InitMat(SlicerFile.BoundingRectangle.Size);
@@ -641,8 +627,9 @@ namespace UVtools.Core.Managers
                 {
                     if (progress.Token.IsCancellationRequested) return GetResult();
 
-                    CacheLayers(layerIndex, true);
-                    var curLayer = matTargetCache[layerIndex];
+                    var curLayer = matCache.Get(layerIndex, 1);
+                    //CacheLayers(layerIndex, true);
+                    //var curLayer = matTargetCache[layerIndex];
 
                     //curLayer.Save($"D:\\dump\\{layerIndex}_a.png");
 
@@ -718,9 +705,10 @@ namespace UVtools.Core.Managers
                             return GetResult();
                     }
 
-                    matCache[layerIndex].Dispose();
-                    matCache[layerIndex] = null;
-                    matTargetCache[layerIndex] = null;
+                    //matCache[layerIndex].Dispose();
+                    //matCache[layerIndex] = null;
+                    //matTargetCache[layerIndex] = null;
+                    matCache.Consume(layerIndex);
 
                     progress++;
                 }
@@ -736,12 +724,14 @@ namespace UVtools.Core.Managers
 
                 var resinTrapGroups = new List<List<(VectorOfVectorOfPoint contour, uint layerIndex)>>();
 
+                matCache.Direction = false;
+                matCache.Clear();
+
                 for (int layerIndex = resinTraps.Length - 1; layerIndex >= resinTrapConfig.StartLayerIndex; layerIndex--)
                 {
                     if (progress.Token.IsCancellationRequested) return GetResult();
-
-                    CacheLayers((uint)layerIndex, false);
-                    var curLayer = matTargetCache[layerIndex];
+                    
+                    var curLayer = matCache.Get((uint)layerIndex, 1);
 
                     if (layerIndex == resinTraps.Length - 1)
                     {
@@ -902,9 +892,7 @@ namespace UVtools.Core.Managers
                         }
                     }
 
-                    matCache[layerIndex].Dispose();
-                    matCache[layerIndex] = null;
-                    matTargetCache[layerIndex] = null;
+                    matCache.Consume((uint)layerIndex);
 
                     progress++;
                 }
@@ -1116,7 +1104,7 @@ namespace UVtools.Core.Managers
                 CvInvoke.Circle(circleCheck, new(centroid.X + inverseOffset.X, centroid.Y + inverseOffset.Y), diameter, EmguExtensions.WhiteColor, -1);
                 CvInvoke.BitwiseAnd(circleCheck, contourMat, circleCheck);
 
-                return !circleCheck.IsZeroed()
+                return CvInvoke.CountNonZero(circleCheck) > 0
                     ? centroid       /* 5px centroid is inside layer! drill baby drill */
                     : new Point(-1,-1); /* centroid is not inside the actual contour, no drill */
             }

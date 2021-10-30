@@ -593,15 +593,18 @@ namespace UVtools.Core.Extensions
         #endregion
 
         #region Is methods
+
         /// <summary>
         /// Gets if a <see cref="Mat"/> is all zeroed by a threshold
         /// </summary>
         /// <param name="mat"></param>
         /// <param name="threshold">Pixel brightness threshold</param>
+        /// <param name="startPos">Start pixel position</param>
+        /// <param name="length">Pixel span length</param>
         /// <returns></returns>
-        public static bool IsZeroed(this Mat mat, byte threshold = 0)
+        public static bool IsZeroed(this Mat mat, byte threshold = 0, int startPos = 0, int length = 0)
         {
-            return mat.FindFirstPixelGreaterThan(threshold) == -1;
+            return mat.FindFirstPixelGreaterThan(threshold, startPos, length) == -1;
         }
         #endregion
 
@@ -611,20 +614,24 @@ namespace UVtools.Core.Extensions
         /// Finds the first negative (Black) pixel
         /// </summary>
         /// <param name="mat"></param>
+        /// <param name="startPos">Start pixel position</param>
+        /// <param name="length">Pixel span length</param>
         /// <returns>Pixel position in the span, or -1 if not found</returns>
-        public static int FindFirstNegativePixel(this Mat mat)
+        public static int FindFirstNegativePixel(this Mat mat, int startPos = 0, int length = 0)
         {
-            return mat.FindFirstPixelEqualTo(0);
+            return mat.FindFirstPixelEqualTo(0, startPos, length);
         }
 
         /// <summary>
         /// Finds the first positive pixel
         /// </summary>
         /// <param name="mat"></param>
+        /// <param name="startPos">Start pixel position</param>
+        /// <param name="length">Pixel span length</param>
         /// <returns>Pixel position in the span, or -1 if not found</returns>
-        public static int FindFirstPositivePixel(this Mat mat)
+        public static int FindFirstPositivePixel(this Mat mat, int startPos = 0, int length = 0)
         {
-            return mat.FindFirstPixelGreaterThan(0);
+            return mat.FindFirstPixelGreaterThan(0, startPos, length);
         }
 
         /// <summary>
@@ -632,11 +639,14 @@ namespace UVtools.Core.Extensions
         /// </summary>
         /// <param name="mat"></param>
         /// <param name="value"></param>
+        /// <param name="startPos">Start pixel position</param>
+        /// <param name="length">Pixel span length</param>
         /// <returns>Pixel position in the span, or -1 if not found</returns>
-        public static int FindFirstPixelEqualTo(this Mat mat, byte value)
+        public static int FindFirstPixelEqualTo(this Mat mat, byte value, int startPos = 0, int length = 0)
         {
             var span = mat.GetDataByteSpan();
-            for (var i = 0; i < span.Length; i++)
+            if (length <= 0) length = span.Length;
+            for (var i = startPos; i < length; i++)
             {
                 if (span[i] == value) return i;
             }
@@ -649,11 +659,14 @@ namespace UVtools.Core.Extensions
         /// </summary>
         /// <param name="mat"></param>
         /// <param name="value"></param>
+        /// <param name="startPos">Start pixel position</param>
+        /// <param name="length">Pixel span length</param>
         /// <returns>Pixel position in the span, or -1 if not found</returns>
-        public static int FindFirstPixelLessThan(this Mat mat, byte value)
+        public static int FindFirstPixelLessThan(this Mat mat, byte value, int startPos = 0, int length = 0)
         {
             var span = mat.GetDataByteSpan();
-            for (var i = 0; i < span.Length; i++)
+            if (length <= 0) length = span.Length;
+            for (var i = startPos; i < length; i++)
             {
                 if (span[i] < value) return i;
             }
@@ -666,11 +679,14 @@ namespace UVtools.Core.Extensions
         /// </summary>
         /// <param name="mat"></param>
         /// <param name="value"></param>
+        /// <param name="startPos">Start pixel position</param>
+        /// <param name="length">Pixel span length</param>
         /// <returns>Pixel position in the span, or -1 if not found</returns>
-        public static int FindFirstPixelEqualOrLessThan(this Mat mat, byte value)
+        public static int FindFirstPixelEqualOrLessThan(this Mat mat, byte value, int startPos = 0, int length = 0)
         {
             var span = mat.GetDataByteSpan();
-            for (var i = 0; i < span.Length; i++)
+            if (length <= 0) length = span.Length;
+            for (var i = startPos; i < length; i++)
             {
                 if (span[i] <= value) return i;
             }
@@ -683,11 +699,14 @@ namespace UVtools.Core.Extensions
         /// </summary>
         /// <param name="mat"></param>
         /// <param name="value"></param>
+        /// <param name="startPos">Start pixel position</param>
+        /// <param name="length">Pixel span length</param>
         /// <returns>Pixel position in the span, or -1 if not found</returns>
-        public static int FindFirstPixelGreaterThan(this Mat mat, byte value)
+        public static int FindFirstPixelGreaterThan(this Mat mat, byte value, int startPos = 0, int length = 0)
         {
             var span = mat.GetDataByteSpan();
-            for (var i = 0; i < span.Length; i++)
+            if (length <= 0) length = span.Length;
+            for (var i = startPos; i < length; i++)
             {
                 if (span[i] > value) return i;
             }
@@ -700,11 +719,14 @@ namespace UVtools.Core.Extensions
         /// </summary>
         /// <param name="mat"></param>
         /// <param name="value"></param>
+        /// <param name="startPos">Start pixel position</param>
+        /// <param name="length">Pixel span length</param>
         /// <returns>Pixel position in the span, or -1 if not found</returns>
-        public static int FindFirstPixelEqualOrGreaterThan(this Mat mat, byte value)
+        public static int FindFirstPixelEqualOrGreaterThan(this Mat mat, byte value, int startPos = 0, int length = 0)
         {
             var span = mat.GetDataByteSpan();
-            for (var i = 0; i < span.Length; i++)
+            if (length <= 0) length = span.Length;
+            for (var i = startPos; i < length; i++)
             {
                 if (span[i] >= value) return i;
             }
@@ -1195,7 +1217,7 @@ namespace UVtools.Core.Extensions
 
                 // if there are no more 'white' pixels in the image, then
                 // break from the loop
-                if (image.IsZeroed()) break;
+                if (CvInvoke.CountNonZero(image) == 0) break;
             }
 
             return skeleton;

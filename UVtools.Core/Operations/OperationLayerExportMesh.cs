@@ -20,6 +20,7 @@ using KdTree.Math;
 using MoreLinq;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
+using UVtools.Core.Managers;
 using UVtools.Core.MeshFormats;
 using UVtools.Core.Voxel;
 
@@ -158,11 +159,19 @@ namespace UVtools.Core.Operations
             //var totalLayerCount = SlicerFile.LayerCount;
             var distinctLayers = SlicerFile.Where((_, layerIndex) => layerIndex >= LayerIndexStart && layerIndex <= LayerIndexEnd).DistinctBy(layer => layer.PositionZ).ToArray();
 
+            using var cacheManager = new MatCacheManager(this)
+            {
+                AutoDispose = true,
+                AutoDisposeKeepLast = 1,
+                //Rotate = _rotateDirection,
+                //Flip = _flipDirection
+            };
+
             /* For the 1st stage, we maintain up to 3 mats, the current layer, the one below us, and the one above us 
              * (below will be null when current layer is 0, above will be null when currentlayer is layercount-1) */
             /* We init the aboveLayer to the first layer, in the loop coming up we shift above->current->below, so this effectively inits current layer */
             Mat aboveLayer = null;
-            using (var mat = SlicerFile.LayerManager.GetMergedMatForSequentialPositionedLayers(distinctLayers[0].Index))
+            using (var mat = SlicerFile.LayerManager.GetMergedMatForSequentialPositionedLayers(distinctLayers[0].Index, cacheManager))
             {
                 var matRoi = mat.Roi(SlicerFile.BoundingRectangle);
 
@@ -185,7 +194,6 @@ namespace UVtools.Core.Operations
                 {
                     aboveLayer = matRoi.Clone(); /* clone and then dispose of the ROI mat, not efficient but keeps the GetPixelPos working and clean */
                 }
-
             }
 
             Mat curLayer = null;
@@ -220,7 +228,7 @@ namespace UVtools.Core.Operations
                 /* bring in a new aboveLayer if we need to */
                 if (layerIndex < distinctLayers.Length - 1)
                 {
-                    using var mat = SlicerFile.LayerManager.GetMergedMatForSequentialPositionedLayers(distinctLayers[(int)layerIndex+1].Index);
+                    using var mat = SlicerFile.LayerManager.GetMergedMatForSequentialPositionedLayers(distinctLayers[(int)layerIndex+1].Index, cacheManager);
                     var matRoi = mat.Roi(SlicerFile.BoundingRectangle);
 
                     if (_flipDirection != Enumerations.FlipDirection.None)
