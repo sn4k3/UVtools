@@ -48,5 +48,9 @@
                       Items="{Binding Operation.FlipDirection, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
                       SelectedItem="{Binding Operation.FlipDirection, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
         </Grid>
+
+        <CheckBox
+            Content="Strip anti-aliasing"
+            IsChecked="{Binding Operation.StripAntiAliasing}"/>
     </StackPanel>
 </UserControl>

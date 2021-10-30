@@ -10,6 +10,7 @@ using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Emgu.CV;
+using Emgu.CV.CvEnum;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Operations;
 
@@ -56,6 +57,11 @@ namespace UVtools.Core.Managers
         /// Gets the image flip to cache
         /// </summary>
         public Enumerations.FlipDirection Flip { get; init; } = Enumerations.FlipDirection.None;
+
+        /// <summary>
+        /// Gets if striping anti-aliasing is enabled, cache will be threshold'ed
+        /// </summary>
+        public bool StripAntiAliasing { get; init; }
 
         /// <summary>
         /// Gets or sets the cache direction, false to go backwards, true to go forward
@@ -170,6 +176,11 @@ namespace UVtools.Core.Managers
                         if (Rotate != Enumerations.RotateDirection.None)
                         {
                             CvInvoke.Rotate(MatCache[currentCacheIndex][0], MatCache[currentCacheIndex][0], Enumerations.ToOpenCVRotateFlags(Rotate));
+                        }
+
+                        if (StripAntiAliasing)
+                        {
+                            CvInvoke.Threshold(MatCache[currentCacheIndex][0], MatCache[currentCacheIndex][0], 127, byte.MaxValue, ThresholdType.Binary);
                         }
 
                         AfterCacheAction?.Invoke(MatCache[currentCacheIndex]);

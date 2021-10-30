@@ -565,7 +565,7 @@ namespace UVtools.Core.Operations
             var anchor = new Point(-1, -1);
             using var kernel = CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(3, 3), anchor);
 
-            var matCache = new MatCacheManager(this, (ushort)CacheObjectCount, 2)
+            var matCache = new MatCacheManager(this, (ushort)CacheObjectCount, ObjectsPerCache)
             {
                 AutoDispose = true,
                 AutoDisposeKeepLast = 1,
@@ -706,7 +706,10 @@ namespace UVtools.Core.Operations
                     {
                         //byte innerErodeCount = 0;
                         bool meetRequirement = false;
-                        using var erodeMatXor = matXorSum.Clone();
+                        //using var erodeMatXor = matXorSum.Clone();
+                        //Debug.WriteLine($"\n\n{layerIndex} - 0");
+                        //CvInvoke.Imshow("Render", erodeMatXor.Roi(SlicerFile.BoundingRectangle));
+                        //CvInvoke.WaitKey();
                         while (erodeCount < _maximumErodes)
                         {
                             //innerErodeCount++;
@@ -721,9 +724,11 @@ namespace UVtools.Core.Operations
                             {
                                 break;
                             }*/
-                            
-                            CvInvoke.Erode(erodeMatXor, erodeMatXor, kernel, anchor, 1, BorderType.Reflect101, default);
-                            if (CvInvoke.CountNonZero(erodeMatXor) == 0)
+                            //Debug.WriteLine($"{layerIndex} - {erodeCount}");
+                            CvInvoke.Erode(matXorSum, matXor, kernel, anchor, 1, BorderType.Reflect101, default);
+                            //CvInvoke.Imshow("Render", erodeMatXor.Roi(SlicerFile.BoundingRectangle));
+                            //CvInvoke.WaitKey();
+                            if (CvInvoke.CountNonZero(matXor) == 0)
                             //if (erodeMatXor.IsZeroed(0, startPos, endPos+1)) // Image pixels exhausted and got empty image, can pack and go next
                             {
                                 meetRequirement = true;

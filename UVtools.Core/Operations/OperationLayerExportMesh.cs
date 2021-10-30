@@ -48,6 +48,8 @@ namespace UVtools.Core.Operations
         private ExportMeshQuality _quality = ExportMeshQuality.Accurate;
         private Enumerations.RotateDirection _rotateDirection = Enumerations.RotateDirection.None;
         private Enumerations.FlipDirection _flipDirection = Enumerations.FlipDirection.None;
+        private bool _stripAntiAliasing = true;
+
         #endregion
 
         #region Overrides
@@ -115,6 +117,12 @@ namespace UVtools.Core.Operations
             set => RaiseAndSetIfChanged(ref _flipDirection, value);
         }
 
+        public bool StripAntiAliasing
+        {
+            get => _stripAntiAliasing;
+            set => RaiseAndSetIfChanged(ref _stripAntiAliasing, value);
+        }
+
         #endregion
 
         #region Constructor
@@ -163,8 +171,9 @@ namespace UVtools.Core.Operations
             {
                 AutoDispose = true,
                 AutoDisposeKeepLast = 1,
-                //Rotate = _rotateDirection,
-                //Flip = _flipDirection
+                Rotate = _rotateDirection,
+                Flip = _flipDirection,
+                StripAntiAliasing = _stripAntiAliasing
             };
 
             /* For the 1st stage, we maintain up to 3 mats, the current layer, the one below us, and the one above us 
@@ -175,7 +184,7 @@ namespace UVtools.Core.Operations
             {
                 var matRoi = mat.Roi(SlicerFile.BoundingRectangle);
 
-                if (_flipDirection != Enumerations.FlipDirection.None)
+                /*if (_flipDirection != Enumerations.FlipDirection.None)
                 {
                     CvInvoke.Flip(matRoi, matRoi, Enumerations.ToOpenCVFlipType(_flipDirection));
                 }
@@ -183,7 +192,7 @@ namespace UVtools.Core.Operations
                 if (_rotateDirection != Enumerations.RotateDirection.None)
                 {
                     CvInvoke.Rotate(matRoi, matRoi, Enumerations.ToOpenCVRotateFlags(_rotateDirection));
-                }
+                }*/
 
                 if ((byte)_quality > 1)
                 {
@@ -231,7 +240,7 @@ namespace UVtools.Core.Operations
                     using var mat = SlicerFile.LayerManager.GetMergedMatForSequentialPositionedLayers(distinctLayers[(int)layerIndex+1].Index, cacheManager);
                     var matRoi = mat.Roi(SlicerFile.BoundingRectangle);
 
-                    if (_flipDirection != Enumerations.FlipDirection.None)
+                    /*if (_flipDirection != Enumerations.FlipDirection.None)
                     {
                         CvInvoke.Flip(matRoi, matRoi, Enumerations.ToOpenCVFlipType(_flipDirection));
                     }
@@ -239,7 +248,7 @@ namespace UVtools.Core.Operations
                     if (_rotateDirection != Enumerations.RotateDirection.None)
                     {
                         CvInvoke.Rotate(matRoi, matRoi, Enumerations.ToOpenCVRotateFlags(_rotateDirection));
-                    }
+                    }*/
 
                     if ((byte)_quality > 1)
                     {
