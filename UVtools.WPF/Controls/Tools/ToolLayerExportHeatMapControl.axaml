@@ -43,6 +43,10 @@
                     SelectedItem="{Binding Operation.FlipDirection, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
       </Grid>
 
+      <CheckBox
+          Content="Merge layers on same position"
+          IsChecked="{Binding Operation.MergeSamePositionedLayers}"/>
+
     <CheckBox
         Content="Crop image by selected ROI"
         IsVisible="{Binding ParentWindow.IsROIVisible}"

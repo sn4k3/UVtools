@@ -7,6 +7,7 @@
  */
 
 using System;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Emgu.CV;
@@ -23,6 +24,7 @@ namespace UVtools.Core.Operations
         private string _filePath;
         private Enumerations.RotateDirection _rotateDirection = Enumerations.RotateDirection.None;
         private Enumerations.FlipDirection _flipDirection = Enumerations.FlipDirection.None;
+        private bool _mergeSamePositionedLayers = true;
         private bool _cropByRoi = true;
 
         #endregion
@@ -86,6 +88,12 @@ namespace UVtools.Core.Operations
             set => RaiseAndSetIfChanged(ref _flipDirection, value);
         }
 
+        public bool MergeSamePositionedLayers
+        {
+            get => _mergeSamePositionedLayers;
+            set => RaiseAndSetIfChanged(ref _mergeSamePositionedLayers, value);
+        }
+
         public bool CropByROI
         {
             get => _cropByRoi;
@@ -118,13 +126,38 @@ namespace UVtools.Core.Operations
             using var sumMat32 = EmguExtensions.InitMat(SlicerFile.Resolution, 1, DepthType.Cv32S);
             var sumMat32Roi = GetRoiOrDefault(sumMat32);
             using var mask = GetMask(sumMat32);
-            
 
-            Parallel.For(LayerIndexStart, LayerIndexEnd+1, CoreSettings.ParallelOptions, layerIndex =>
+            var layerRange = _mergeSamePositionedLayers 
+                ? SlicerFile.LayerManager.GetDistinctLayersByPositionZ(LayerIndexStart, LayerIndexEnd) .ToArray()
+                : GetSelectedLayerRange().ToArray();
+
+            progress.ItemCount = (uint)layerRange.Length;
+
+
+            /*Parallel.For(LayerIndexStart, LayerIndexEnd+1, CoreSettings.ParallelOptions, layerIndex =>
             {
                 if (progress.Token.IsCancellationRequested) return;
 
                 using var mat = SlicerFile[layerIndex].LayerMat;
+                using var mat32 = new Mat();
+                mat.ConvertTo(mat32, DepthType.Cv32S);
+                var mat32Roi = GetRoiOrDefault(mat32);
+
+                lock (progress.Mutex)
+                {
+                    CvInvoke.Add(sumMat32Roi, mat32Roi, sumMat32Roi, mask);
+                    progress++;
+                }
+            });*/
+
+            Parallel.ForEach(layerRange, CoreSettings.ParallelOptions, layer =>
+            {
+                if (progress.Token.IsCancellationRequested) return;
+
+                using var mat = _mergeSamePositionedLayers 
+                        ? SlicerFile.LayerManager.GetMergedMatForSequentialPositionedLayers(layer.Index)
+                        : layer.LayerMat;
+
                 using var mat32 = new Mat();
                 mat.ConvertTo(mat32, DepthType.Cv32S);
                 var mat32Roi = GetRoiOrDefault(mat32);
@@ -139,7 +172,7 @@ namespace UVtools.Core.Operations
             if (!progress.Token.IsCancellationRequested)
             {
                 using var sumMat = EmguExtensions.InitMat(sumMat32.Size);
-                sumMat32.ConvertTo(sumMat, DepthType.Cv8U, 1.0 / LayerRangeCount);
+                sumMat32.ConvertTo(sumMat, DepthType.Cv8U, 1.0 / layerRange.Length);
 
                 if (_flipDirection != Enumerations.FlipDirection.None)
                 {
@@ -171,7 +204,7 @@ namespace UVtools.Core.Operations
 
         private bool Equals(OperationLayerExportHeatMap other)
         {
-            return _filePath == other._filePath && _rotateDirection == other._rotateDirection && _flipDirection == other._flipDirection && _cropByRoi == other._cropByRoi;
+            return _filePath == other._filePath && _rotateDirection == other._rotateDirection && _flipDirection == other._flipDirection && _mergeSamePositionedLayers == other._mergeSamePositionedLayers && _cropByRoi == other._cropByRoi;
         }
 
         public override bool Equals(object obj)
@@ -181,7 +214,7 @@ namespace UVtools.Core.Operations
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(_filePath, (int)_rotateDirection, (int)_flipDirection, _cropByRoi);
+            return HashCode.Combine(_filePath, (int)_rotateDirection, (int)_flipDirection, _mergeSamePositionedLayers, _cropByRoi);
         }
 
         #endregion
