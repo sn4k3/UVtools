@@ -637,7 +637,7 @@ namespace UVtools.Core.Operations
 
         private bool Equals(OperationLayerExportMesh other)
         {
-            return _filePath == other._filePath && _rotateDirection == other._rotateDirection && _flipDirection == other._flipDirection;
+            return _filePath == other._filePath && _quality == other._quality && _rotateDirection == other._rotateDirection && _flipDirection == other._flipDirection && _stripAntiAliasing == other._stripAntiAliasing;
         }
 
         public override bool Equals(object obj)
@@ -647,7 +647,7 @@ namespace UVtools.Core.Operations
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(_filePath, (int)_rotateDirection, (int)_flipDirection);
+            return HashCode.Combine(_filePath, (int)_quality, (int)_rotateDirection, (int)_flipDirection, _stripAntiAliasing);
         }
 
         #endregion
