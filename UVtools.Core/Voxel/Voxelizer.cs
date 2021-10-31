@@ -17,7 +17,6 @@ namespace UVtools.Core.Voxel
 {
     public class Voxelizer
     {
-
         public class UVFace
         {
             public FaceOrientation Type;
@@ -125,11 +124,11 @@ namespace UVtools.Core.Voxel
             layerBelow ??= curLayer.NewBlank();
 
             /* anything that is in the current layer but is not in the layer above, by definition has an exposed face */
-            Mat upperSubtract = new Mat();
+            var upperSubtract = new Mat();
             CvInvoke.Subtract(curLayer, layerAbove, upperSubtract);
 
             /* anything that is in the current layer but is not in the layer below, by definition has an exposed face */
-            Mat lowerSubtract = new Mat();
+            var lowerSubtract = new Mat();
             CvInvoke.Subtract(curLayer, layerBelow, lowerSubtract);
 
             /* Or all of these together to get the list of pixels that have exposed face(s) */

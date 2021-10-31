@@ -366,6 +366,8 @@ namespace UVtools.Core
             set => SetLayer((uint) index, value);
         }
 
+        public Layer[] this[System.Range range] => _layers[range];
+
         #endregion
 
         #region Numerators
@@ -613,15 +615,22 @@ namespace UVtools.Core
 
         public IEnumerable<Layer> GetSamePositionedLayers()
         {
-            var layers = new List<Layer>();
             for (int layerIndex = 1; layerIndex < LayerCount; layerIndex++)
             {
                 var layer = this[layerIndex];
                 if (this[layerIndex - 1].PositionZ != layer.PositionZ) continue;
-                layers.Add(layer);
+                yield return layer;
             }
+        }
 
-            return layers;
+        public IEnumerable<Layer> GetDistinctLayersByPositionZ(uint layerIndexStart = 0) =>
+            GetDistinctLayersByPositionZ(layerIndexStart, LastLayerIndex);
+
+        public IEnumerable<Layer> GetDistinctLayersByPositionZ(uint layerIndexStart, uint layerIndexEnd)
+        {
+            return layerIndexEnd - layerIndexStart >= LastLayerIndex 
+                ? SlicerFile.DistinctBy(layer => layer.PositionZ) 
+                : SlicerFile.Where((_, layerIndex) => layerIndex >= layerIndexStart && layerIndex <= layerIndexEnd).DistinctBy(layer => layer.PositionZ);
         }
 
         public Mat GetMergedMatForSequentialPositionedLayers(uint layerIndex, MatCacheManager cacheManager, out uint lastLayerIndex)

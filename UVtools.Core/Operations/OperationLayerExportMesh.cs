@@ -165,7 +165,7 @@ namespace UVtools.Core.Operations
             float yWidth = (pixelSize.Height > 0 ? pixelSize.Height : 0.035f) * (byte)_quality;
 
             //var totalLayerCount = SlicerFile.LayerCount;
-            var distinctLayers = SlicerFile.Where((_, layerIndex) => layerIndex >= LayerIndexStart && layerIndex <= LayerIndexEnd).DistinctBy(layer => layer.PositionZ).ToArray();
+            var distinctLayers = SlicerFile.LayerManager.GetDistinctLayersByPositionZ(LayerIndexStart, LayerIndexEnd).ToArray();
 
             using var cacheManager = new MatCacheManager(this)
             {

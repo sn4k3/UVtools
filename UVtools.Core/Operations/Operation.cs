@@ -7,8 +7,10 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
 using Emgu.CV;
@@ -16,6 +18,7 @@ using Emgu.CV.Cuda;
 using Emgu.CV.Util;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
+using UVtools.Core.Layers;
 using UVtools.Core.Objects;
 
 namespace UVtools.Core.Operations
@@ -523,6 +526,17 @@ namespace UVtools.Core.Operations
         }
 
         public async Task<bool> ExecuteAsync(Mat mat, params object[] arguments) => await new Task<bool>(() => Execute(mat, arguments));
+
+        /// <summary>
+        /// Get the selected layer range in a new array, array index will not match layer index when a range is selected
+        /// </summary>
+        /// <returns></returns>
+        public Layer[] GetSelectedLayerRange()
+        {
+            return LayerRangeCount == SlicerFile.LayerCount 
+                ? SlicerFile.ToArray() 
+                : SlicerFile.Where((_, layerIndex) => layerIndex >= _layerIndexStart && layerIndex <= _layerIndexEnd).ToArray();
+        }
 
         /// <summary>
         /// Copy this operation base configuration to another operation.

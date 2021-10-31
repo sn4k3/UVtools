@@ -2279,6 +2279,9 @@ namespace UVtools.Core.FileFormats
             get => LayerManager[index];
             set => LayerManager[index] = value;
         }
+
+        public Layer[] this[Range range] => LayerManager[range];
+
         #endregion
 
         #region Numerators
