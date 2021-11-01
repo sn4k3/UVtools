@@ -5,13 +5,12 @@
  *  Everyone is permitted to copy and distribute verbatim copies
  *  of this license document, but changing it is not allowed.
  */
-using QuantumConcepts.Formats.StereoLithography;
 
 namespace UVtools.Core.Slicer
 {
     public static class RangeUtils
     {
-        public static float CalculateHighX(STLDocument stl)
+        /*public static float CalculateHighX(STLDocument stl)
         {
             float highestX = stl.Facets[0].Vertices[0].X;
             stl.Facets.ForEach(f => f.Vertices.ForEach(v =>
@@ -72,6 +71,6 @@ namespace UVtools.Core.Slicer
                     lowestZ = v.Z;
             }));
             return lowestZ;
-        }
+        }*/
     }
 }

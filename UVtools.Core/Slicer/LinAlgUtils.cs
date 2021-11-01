@@ -8,15 +8,13 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Globalization;
-using System.Linq;
-using QuantumConcepts.Formats.StereoLithography;
+using System.Numerics;
 
 namespace UVtools.Core.Slicer
 {
     public static class LinAlgUtils
     {
-        #region Find Facets
+        /*#region Find Facets
         public static List<Facet> FindFacetsIntersectingZIndex(STLDocument stl, float z)
         {
             return stl.Facets.Where(f => f.Vertices.Any(v => v.Z <= z) && f.Vertices.Any(v => v.Z >= z) && Math.Abs(f.Normal.Z) != 1).ToList();
@@ -74,7 +72,7 @@ namespace UVtools.Core.Slicer
             return returnLine;
         }
 
-        public static PointF CalculateZIntercept(Vertex v1, Vertex v2, float z)
+        public static PointF CalculateZIntercept(Vector3 v1, Vector3 v2, float z)
         {
             var returnX = CalculateDimensionalValueAtIndex(new PointF(v1.Z, v1.X), new PointF(v2.Z, v2.X), z);
             var returnY = CalculateDimensionalValueAtIndex(new PointF(v1.Z, v1.Y), new PointF(v2.Z, v2.Y), z);
@@ -97,6 +95,6 @@ namespace UVtools.Core.Slicer
             // but that's what I've got right now, so that's what I'm doing.
             //var strVal = rawVal.ToString($"0.{precision}");
             //return float.Parse(strVal, CultureInfo.InvariantCulture.NumberFormat);
-        }
+        }*/
     }
 }

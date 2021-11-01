@@ -321,7 +321,7 @@ this process is very slow but only need to run once. Open a terminal on any fold
 
 ```bash
 sudo pacman -Syu
-sudo pacman -S base-devel git cmake msbuild libusb
+sudo pacman -S base-devel git cmake msbuild gtk3 gstreamer ffmpeg libdc1394 v4l-utils ocl-icd freeglut libgeotiff libusb
 git clone https://github.com/emgucv/emgucv emgucv 
 cd emgucv
 git submodule update --init --recursive
@@ -368,7 +368,7 @@ this process is very slow but only need to run once. Open a terminal on any fold
 ```bash
 sudo yum update -y
 sudo yum groupinstall -y "Development Tools" "Development Libraries"
-sudo yum install -y cmake gcc-c++ dotnet-sdk-5.0 libusb
+sudo yum install -y cmake gcc-c++ dotnet-sdk-5.0 gtk3-devel gstreamer1-devel ffmpeg ffmpeg-devel libdc1394 libv4l-devel cmake-gui ocl-icd-devel freeglut libgeotiff libusb
 git clone https://github.com/emgucv/emgucv emgucv 
 cd emgucv
 git submodule update --init --recursive
@@ -420,6 +420,7 @@ To run UVtools open it folder on a terminal and call one of:
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
 brew analytics off
 brew install git cmake mono mono-libgdiplus
+brew install --cask dotnet
 git clone https://github.com/emgucv/emgucv emgucv 
 cd emgucv
 git submodule update --init --recursive

@@ -260,6 +260,9 @@
         <Component Id="owcB4617140E4B8CB31110519BDA453AF9F" Guid="91471bb5-2f18-7710-ec5c-84629d1a627c" Win64="yes">
           <File Id="owfB4617140E4B8CB31110519BDA453AF9F" Source="$(var.SourceDir)\JetBrains.Annotations.dll" KeyPath="yes" />
         </Component>
+        <Component Id="owc96517AD5C0C6DD946591A0DEB7467A43" Guid="b8d0a4ec-0d88-9bdb-2809-18d0472f5e32" Win64="yes">
+          <File Id="owf96517AD5C0C6DD946591A0DEB7467A43" Source="$(var.SourceDir)\KdTreeLib.dll" KeyPath="yes" />
+        </Component>
         <Component Id="owc41446B36203B82310F233D8008B969AA" Guid="ea7a7559-9953-2c8d-a8e4-e4518a2b49d5" Win64="yes">
           <File Id="owf41446B36203B82310F233D8008B969AA" Source="$(var.SourceDir)\libHarfBuzzSharp.dll" KeyPath="yes" />
         </Component>
@@ -344,14 +347,11 @@
         <Component Id="owc3FC8434C1A84605AEEBC6A100CA2F3E1" Guid="47d7e276-db6d-424e-d797-1a69e1e24b3b" Win64="yes">
           <File Id="owf3FC8434C1A84605AEEBC6A100CA2F3E1" Source="$(var.SourceDir)\Newtonsoft.Json.dll" KeyPath="yes" />
         </Component>
-        <Component Id="owcCB6DF5BB7A5BDAA67D11BB13C52A4927" Guid="dc9a18cc-9c4c-5a90-c668-983489a0805d" Win64="yes">
-          <File Id="owfCB6DF5BB7A5BDAA67D11BB13C52A4927" Source="$(var.SourceDir)\opencv_videoio_ffmpeg453_64.dll" KeyPath="yes" />
+        <Component Id="owcB31A030E18B3AEFE06E4BF4C96CFFFA1" Guid="5702bba3-1ce1-59a4-83aa-69c210ec428a" Win64="yes">
+          <File Id="owfB31A030E18B3AEFE06E4BF4C96CFFFA1" Source="$(var.SourceDir)\opencv_videoio_ffmpeg454_64.dll" KeyPath="yes" />
         </Component>
         <Component Id="owc363CAFE6342F1E71AB07D13BAEEE5FF0" Guid="8e946fdc-ea52-7c4b-a8b3-69e1ecf51086" Win64="yes">
           <File Id="owf363CAFE6342F1E71AB07D13BAEEE5FF0" Source="$(var.SourceDir)\SkiaSharp.dll" KeyPath="yes" />
-        </Component>
-        <Component Id="owc57FFE4BD9EBED4E6F6741F389009CBAA" Guid="63b5b00e-b356-ad17-9580-4a6ac8da581a" Win64="yes">
-          <File Id="owf57FFE4BD9EBED4E6F6741F389009CBAA" Source="$(var.SourceDir)\STL-netcore.dll" KeyPath="yes" />
         </Component>
         <Component Id="owc25FBE4153F32A5634B0ADA8A6954CC89" Guid="6c98bea6-1304-2fb8-4ce3-709ad7fb9601" Win64="yes">
           <File Id="owf25FBE4153F32A5634B0ADA8A6954CC89" Source="$(var.SourceDir)\System.AppContext.dll" KeyPath="yes" />

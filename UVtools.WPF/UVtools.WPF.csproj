@@ -39,7 +39,7 @@
     <PackageReference Include="Avalonia.Controls.DataGrid" Version="0.10.10" />
     <PackageReference Include="Avalonia.Desktop" Version="0.10.10" />
     <PackageReference Include="Avalonia.Diagnostics" Version="0.10.10" />
-    <PackageReference Include="Emgu.CV.runtime.windows" Version="4.5.3.4721" />
+    <PackageReference Include="Emgu.CV.runtime.windows" Version="4.5.4.4788" />
     <PackageReference Include="MessageBox.Avalonia" Version="1.5.5" />
     <PackageReference Include="ThemeEditor.Controls.ColorPicker" Version="0.10.8" />
   </ItemGroup>

@@ -9,10 +9,6 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.IO;
-using System.Linq;
-using QuantumConcepts.Formats.StereoLithography;
-using UVtools.Core.Layers;
 
 namespace UVtools.Core.Slicer
 {
@@ -24,10 +20,8 @@ namespace UVtools.Core.Slicer
         private float _highY = float.NaN;
         private float _lowZ = float.NaN;
         private float _highZ = float.NaN;
-        private readonly STLDocument _stl;
         protected Dictionary<float, Slice> _slices = new ();
 
-        private STLDocument Stl => _stl;
 
         /// <summary>
         /// Gets the size of resolution
@@ -44,7 +38,7 @@ namespace UVtools.Core.Slicer
         /// </summary>
         public SizeF Ppmm { get; private set; }
 
-        public float LowX
+        /*public float LowX
         {
             get
             {
@@ -108,14 +102,14 @@ namespace UVtools.Core.Slicer
 
                 return _highZ;
             }
-        }
+        }*/
 
         public Slicer(Size resolution, SizeF display)
         {
             Init(resolution, display);
         }
 
-        public Slicer(Size resolution, SizeF display, STLDocument stl) : this(resolution, display)
+        /*public Slicer(Size resolution, SizeF display, STLDocument stl) : this(resolution, display)
         {
             _stl = stl;
         }
@@ -126,7 +120,7 @@ namespace UVtools.Core.Slicer
 
             if (_stl is null)
                 throw new FileNotFoundException(null, stlPath);
-        }
+        }*/
 
         public void Init(Size resolution, SizeF display)
         {
@@ -137,7 +131,7 @@ namespace UVtools.Core.Slicer
         }
 
         #region Slice Methods
-        public Slice GetSliceAtZIndex(float z)
+        /*public Slice GetSliceAtZIndex(float z)
         {
             // cache this in the event you have to retrieve a single value more than once,
             // we don't want to have to do this math again
@@ -149,11 +143,11 @@ namespace UVtools.Core.Slicer
             }
 
             return _slices[z];
-        }
+        }*/
 
-        public Dictionary<float, Slice> SliceModel(float layerHeight)
+        /*public Dictionary<float, Slice> SliceModel(float layerHeight)
         {
-            /*float volume = 0;
+            float volume = 0;
             _stl.Facets.ForEach(facet =>
             {
                 var v1 = facet.Vertices[0];
@@ -168,8 +162,8 @@ namespace UVtools.Core.Slicer
                     - (v2.X * v1.Y * v3.Z)
                     + (v1.X * v2.Y * v3.Z)
                 ) / 6;
-            });*/
-            var newDict = new Dictionary<float, Slice>();
+            });
+            /*var newDict = new Dictionary<float, Slice>();
             
             for (var z = Layer.RoundHeight(LowZ); z <= HighZ; z = Layer.RoundHeight(z+layerHeight))
             {
@@ -182,7 +176,7 @@ namespace UVtools.Core.Slicer
                 }
             }
             return newDict;
-        }
+        }*/
 
         public void SliceModel2()
         {
