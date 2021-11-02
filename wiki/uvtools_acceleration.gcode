@@ -8,8 +8,8 @@
 ; Instructions:
 ; 1. Put this and the "uvtools_dump_eeprom.gcode" files in the printer USB
 ; 2. Print the "uvtools_dump_eeprom.gcode" to store the old configuration on USB (Optional but safer!)
-; 2. Print this file
-; 3. Reboot the printer to fetch the new configuration
+; 3. Print this file
+; 4. Reboot the printer to fetch the new configuration
 ; 
 
 ;
