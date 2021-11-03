@@ -2,7 +2,7 @@
 ; https://github.com/sn4k3/UVtools/wiki/Rest-times-and-TSMC
 ;
 ; Changelog:
-; Version 3: (1/1/10/4/NOTMC) @ 03/11/2021
+; Version 3: (1/1/10/4/NOTSMC) @ 03/11/2021
 ; Version 2: (1/1/400/5) @ 02/11/2021
 ; Version 1: (0.7/0.4/400/5) @ 28/08/2021
 ; 
