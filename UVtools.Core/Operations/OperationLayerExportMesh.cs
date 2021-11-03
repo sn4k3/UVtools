@@ -167,29 +167,26 @@ namespace UVtools.Core.Operations
             //var totalLayerCount = SlicerFile.LayerCount;
             var distinctLayers = SlicerFile.LayerManager.GetDistinctLayersByPositionZ(LayerIndexStart, LayerIndexEnd).ToArray();
 
+
+
+            /* work around the mirror effect, this is caused by the voxel algorithm assuming 0,0 is bottom left, when 0,0 is top left for a Mat
+             * ideally we would fix the algorithm itself but that's more invovled. for the time being we'll just flip it verticaly. */
+            var workAroundFlip = _flipDirection switch
+            {
+                Enumerations.FlipDirection.None => Enumerations.FlipDirection.Vertically,
+                Enumerations.FlipDirection.Vertically => Enumerations.FlipDirection.None,
+                Enumerations.FlipDirection.Both => Enumerations.FlipDirection.Horizontally,
+                _ => Enumerations.FlipDirection.None
+            };
+
             using var cacheManager = new MatCacheManager(this)
             {
                 AutoDispose = true,
                 AutoDisposeKeepLast = 1,
                 Rotate = _rotateDirection,
-                Flip = _flipDirection,
+                Flip = workAroundFlip,
                 StripAntiAliasing = _stripAntiAliasing
             };
-
-            /* work around the mirror effect, this is caused by the voxel algorithm assuming 0,0 is bottom left, when 0,0 is top left for a Mat
-             * ideally we would fix the algorithm itself but that's more invovled. for the time being we'll just flip it verticaly. */
-            switch (_flipDirection)
-            {
-                case Enumerations.FlipDirection.None:
-                    _flipDirection = Enumerations.FlipDirection.Vertically;
-                    break;
-                case Enumerations.FlipDirection.Vertically:
-                    _flipDirection = Enumerations.FlipDirection.None;
-                    break;
-                case Enumerations.FlipDirection.Both:
-                    _flipDirection = Enumerations.FlipDirection.Horizontally;
-                    break;
-            }
 
 
             /* For the 1st stage, we maintain up to 3 mats, the current layer, the one below us, and the one above us 
@@ -199,16 +196,6 @@ namespace UVtools.Core.Operations
             using (var mat = SlicerFile.LayerManager.GetMergedMatForSequentialPositionedLayers(distinctLayers[0].Index, cacheManager))
             {
                 var matRoi = mat.Roi(SlicerFile.BoundingRectangle);
-
-                /*if (_flipDirection != Enumerations.FlipDirection.None)
-                {
-                    CvInvoke.Flip(matRoi, matRoi, Enumerations.ToOpenCVFlipType(_flipDirection));
-                }
-
-                if (_rotateDirection != Enumerations.RotateDirection.None)
-                {
-                    CvInvoke.Rotate(matRoi, matRoi, Enumerations.ToOpenCVRotateFlags(_rotateDirection));
-                }*/
 
                 if ((byte)_quality > 1)
                 {
@@ -255,16 +242,6 @@ namespace UVtools.Core.Operations
                 {
                     using var mat = SlicerFile.LayerManager.GetMergedMatForSequentialPositionedLayers(distinctLayers[(int)layerIndex+1].Index, cacheManager);
                     var matRoi = mat.Roi(SlicerFile.BoundingRectangle);
-
-                    /*if (_flipDirection != Enumerations.FlipDirection.None)
-                    {
-                        CvInvoke.Flip(matRoi, matRoi, Enumerations.ToOpenCVFlipType(_flipDirection));
-                    }
-
-                    if (_rotateDirection != Enumerations.RotateDirection.None)
-                    {
-                        CvInvoke.Rotate(matRoi, matRoi, Enumerations.ToOpenCVRotateFlags(_rotateDirection));
-                    }*/
 
                     if ((byte)_quality > 1)
                     {
