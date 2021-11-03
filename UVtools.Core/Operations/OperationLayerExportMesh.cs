@@ -176,6 +176,22 @@ namespace UVtools.Core.Operations
                 StripAntiAliasing = _stripAntiAliasing
             };
 
+            /* work around the mirror effect, this is caused by the voxel algorithm assuming 0,0 is bottom left, when 0,0 is top left for a Mat
+             * ideally we would fix the algorithm itself but that's more invovled. for the time being we'll just flip it verticaly. */
+            switch (_flipDirection)
+            {
+                case Enumerations.FlipDirection.None:
+                    _flipDirection = Enumerations.FlipDirection.Vertically;
+                    break;
+                case Enumerations.FlipDirection.Vertically:
+                    _flipDirection = Enumerations.FlipDirection.None;
+                    break;
+                case Enumerations.FlipDirection.Both:
+                    _flipDirection = Enumerations.FlipDirection.Horizontally;
+                    break;
+            }
+
+
             /* For the 1st stage, we maintain up to 3 mats, the current layer, the one below us, and the one above us 
              * (below will be null when current layer is 0, above will be null when currentlayer is layercount-1) */
             /* We init the aboveLayer to the first layer, in the loop coming up we shift above->current->below, so this effectively inits current layer */
