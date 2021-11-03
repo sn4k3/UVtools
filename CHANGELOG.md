@@ -1,5 +1,23 @@
 # Changelog
 
+## 03/11/2021 - v2.24.0
+
+- (Add) File formats properties:
+   - `DisplayDiagonal`: Display diagonal size in millimeters
+   - `DisplayDiagonalInches`: Display diagonal size in inches
+   - `DisplayAspectRatio`: Display aspect ratio
+- (Add) Action - Export layers to mesh: Reconstructs and export a layer range to a 3D mesh via voxelization (#329)
+- (Add) Detect incorrect image ratio upon file load and warn user about it
+- (Add) Export layers to heatmap: Mirror, rotate and merge layers on same position options
+- (Improvement) Calibration - Elephant foot: For dimming method adds a warning text for files with emulated antialiasing and prevent run the test when AntiAliasing is less than 2
+- (Improvement) Export layers to image, GIF and heatmap: Auto select the flip method based on sliced file mirror information, it will output images in thier original form/orientation
+- (Upgrade) AvaloniaUI from 0.10.8 to 0.10.10
+- (Upgrade) EmguCV from 4.5.3 to 4.5.4
+- (Fix) Corrected incorrect label for default scripting directory (#322)
+- (Fix) Recursively remove islands wasn't removing above islands (#333)
+- (Fix) Dynamic layer heights: Incorrect progress bar when selecting a starting layer range bigger than 0
+- (Fix) PrusaSlicer printers: Set vertical mirror to NovaMaker printers
+
 ## 12/10/2021 - v2.23.6
 
 - **(Improvement) SL1:** (#314)
@@ -8,7 +26,6 @@
 - (Upgrade) .NET from 5.0.10 to 5.0.11
 - (Upgrade) AvaloniaUI from 0.10.7 to 0.10.8
 - (Fix) PWS, PW0, PWM, PWMX, PWMO, PWMS: Incorrect set of layer height for the layer definition when using same positioned layers
-
 
 ## 07/10/2021 - v2.23.5
 
