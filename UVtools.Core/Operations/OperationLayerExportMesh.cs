@@ -174,9 +174,10 @@ namespace UVtools.Core.Operations
             var workAroundFlip = _flipDirection switch
             {
                 Enumerations.FlipDirection.None => Enumerations.FlipDirection.Vertically,
+                Enumerations.FlipDirection.Horizontally => Enumerations.FlipDirection.Both,
                 Enumerations.FlipDirection.Vertically => Enumerations.FlipDirection.None,
                 Enumerations.FlipDirection.Both => Enumerations.FlipDirection.Horizontally,
-                _ => Enumerations.FlipDirection.None
+                _ => throw new NotImplementedException($"Flip type: {_flipDirection} not handled!")
             };
 
             using var cacheManager = new MatCacheManager(this)
