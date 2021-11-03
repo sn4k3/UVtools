@@ -17,7 +17,6 @@ using Emgu.CV;
 using Emgu.CV.CvEnum;
 using KdTree;
 using KdTree.Math;
-using MoreLinq;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Managers;
@@ -45,6 +44,7 @@ namespace UVtools.Core.Operations
         
         #region Members
         private string _filePath;
+        private MeshFile.MeshFileFormat _meshFileFormat = MeshFile.MeshFileFormat.BINARY;
         private ExportMeshQuality _quality = ExportMeshQuality.Accurate;
         private Enumerations.RotateDirection _rotateDirection = Enumerations.RotateDirection.None;
         private Enumerations.FlipDirection _flipDirection = Enumerations.FlipDirection.None;
@@ -97,6 +97,12 @@ namespace UVtools.Core.Operations
         {
             get => _filePath;
             set => RaiseAndSetIfChanged(ref _filePath, value);
+        }
+
+        public MeshFile.MeshFileFormat MeshFileFormat
+        {
+            get => _meshFileFormat;
+            set => RaiseAndSetIfChanged(ref _meshFileFormat, value);
         }
 
         public ExportMeshQuality Quality
@@ -571,7 +577,7 @@ namespace UVtools.Core.Operations
             progress.ProcessedItems = 0;
 
 
-            using var mesh = fileExtension.FileFormatType.CreateInstance<MeshFile>(_filePath, FileMode.Create);
+            using var mesh = fileExtension.FileFormatType.CreateInstance<MeshFile>(_filePath, FileMode.Create, _meshFileFormat);
             mesh.BeginWrite();
 
             /* Begin Stage 4, generating triangles and saving to file */
@@ -631,7 +637,7 @@ namespace UVtools.Core.Operations
 
         private bool Equals(OperationLayerExportMesh other)
         {
-            return _filePath == other._filePath && _quality == other._quality && _rotateDirection == other._rotateDirection && _flipDirection == other._flipDirection && _stripAntiAliasing == other._stripAntiAliasing;
+            return _filePath == other._filePath && _meshFileFormat == other._meshFileFormat && _quality == other._quality && _rotateDirection == other._rotateDirection && _flipDirection == other._flipDirection && _stripAntiAliasing == other._stripAntiAliasing;
         }
 
         public override bool Equals(object obj)
@@ -641,7 +647,7 @@ namespace UVtools.Core.Operations
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(_filePath, (int)_quality, (int)_rotateDirection, (int)_flipDirection, _stripAntiAliasing);
+            return HashCode.Combine(_filePath, (int)_meshFileFormat, (int)_quality, (int)_rotateDirection, (int)_flipDirection, _stripAntiAliasing);
         }
 
         #endregion
