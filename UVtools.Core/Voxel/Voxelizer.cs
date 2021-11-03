@@ -17,7 +17,7 @@ namespace UVtools.Core.Voxel
 {
     public class Voxelizer
     {
-        public class UVFace
+        public sealed class UVFace
         {
             public FaceOrientation Type;
             public uint LayerIndex;
