@@ -245,75 +245,95 @@
           Header="{Binding Operation.DimmingObjects, StringFormat=Wall dimming    [\{0\} objects]}"
           IsExpanded="True">
 
-        <Grid
-            RowDefinitions="Auto,10,Auto,10,Auto,5,Auto"
-            ColumnDefinitions="Auto,10,180,5,Auto,5,180,20,Auto,10,180">
+          <StackPanel Orientation="Vertical"  Spacing="10">
+              <TextBlock
+                  IsVisible="{Binding SlicerFile.IsAntiAliasingEmulated}"
+                  TextWrapping="Wrap"
+                  FontWeight="Bold"
+                  Text="Note: This file format uses time fractions to emulate AntiAliasing, which may be problematic.
+&#x0a;Meaning, it will have a limited grey space up to the used AntiAliasing level, and files must be sliced with same level.
+&#x0a;Using different AntiAliasing levels per model invalidate this test, as a AA=4 will have different grey space compared to AA=8.
+&#x0a;You need to run this test per different AntiAliasing level, in order to have the correct dimming value per each level.
+&#x0a;Due this, running this method is not recommend! Either you know what are you doing, or else, use the Erode method instead.
+&#x0a;As another alternative for elephant foot compensation, look at the 'Tool - Double exposure'."/>
 
-          <CheckBox Grid.Row="0" Grid.Column="2"
-                    Grid.ColumnSpan="9"
-                     VerticalAlignment="Center"
-                     IsChecked="{Binding Operation.IsDimmingEnabled}"
-                     Content="Enable - Requires a compatible anti-aliased file format and printer"/>
-
-          <TextBlock Grid.Row="2" Grid.Column="0"
-                     VerticalAlignment="Center"
-                     Text="Wall thickness:"/>
-
-          <NumericUpDown Grid.Row="2" Grid.Column="2"
-                         Classes="ValueLabel ValueLabel_px"
-                         IsEnabled="{Binding Operation.IsDimmingEnabled}"
-                         Increment="1"
-                         Minimum="1"
-                         Maximum="255"
-                         Value="{Binding Operation.DimmingWallThickness}"/>
-
-          <TextBlock Grid.Row="4" Grid.Column="0"
-                       VerticalAlignment="Center"
-                       Text="Brightness range:"/>
-
-          <NumericUpDown Grid.Row="4" Grid.Column="2"
-                         Classes="ValueLabel ValueLabel_sun"
-                         IsEnabled="{Binding Operation.IsDimmingEnabled}"
-                         Increment="1"
-                         Minimum="1"
-                         Maximum="254"
-                         Value="{Binding Operation.DimmingStartBrightness}"/>
+              <TextBlock
+                  IsVisible="{Binding SlicerFile.IsAntiAliasingEmulated}"
+                  TextWrapping="Wrap"
+                  FontWeight="Bold"
+                  Text="{Binding SlicerFile.AntiAliasing, StringFormat=Current AntiAliasing level: {0}x}"/>
 
 
-          <TextBlock Grid.Row="4" Grid.Column="4"
-                     VerticalAlignment="Center"
-                     HorizontalAlignment="Center"
-                     Text="-"/>
+              <Grid
+                RowDefinitions="Auto,10,Auto,10,Auto,5,Auto"
+                ColumnDefinitions="Auto,10,180,5,Auto,5,180,20,Auto,10,180">
 
-          <NumericUpDown Grid.Row="4" Grid.Column="6"
-                         Classes="ValueLabel ValueLabel_sun"
-                         IsEnabled="{Binding Operation.IsDimmingEnabled}"
-                         Increment="1"
-                         Minimum="2"
-                         Maximum="254"
-                         Value="{Binding Operation.DimmingEndBrightness}"/>
+              <CheckBox Grid.Row="0" Grid.Column="2"
+                        Grid.ColumnSpan="9"
+                         VerticalAlignment="Center"
+                         IsChecked="{Binding Operation.IsDimmingEnabled}"
+                         Content="Enable - Requires a compatible anti-aliased file format and printer"/>
 
-          <TextBlock Grid.Row="4" Grid.Column="8"
-                     VerticalAlignment="Center"
-                     Text="Step increment(s):"/>
+              <TextBlock Grid.Row="2" Grid.Column="0"
+                         VerticalAlignment="Center"
+                         Text="Wall thickness:"/>
 
-          <NumericUpDown Grid.Row="4" Grid.Column="10"
-                         Classes="ValueLabel ValueLabel_sun"
-                         IsEnabled="{Binding Operation.IsDimmingEnabled}"
-                         Increment="1"
-                         Minimum="2"
-                         Maximum="254"
-                         Value="{Binding Operation.DimmingBrightnessSteps}"/>
+              <NumericUpDown Grid.Row="2" Grid.Column="2"
+                             Classes="ValueLabel ValueLabel_px"
+                             IsEnabled="{Binding Operation.IsDimmingEnabled}"
+                             Increment="1"
+                             Minimum="1"
+                             Maximum="255"
+                             Value="{Binding Operation.DimmingWallThickness}"/>
 
-          <TextBlock Grid.Row="6" Grid.Column="2"
-                     VerticalAlignment="Center"
-                     HorizontalAlignment="Center"
-                     Text="{Binding Operation.DimmingStartBrightnessPercent, StringFormat=(\{0\}%)}"/>
-          <TextBlock Grid.Row="6" Grid.Column="6"
-                     VerticalAlignment="Center"
-                     HorizontalAlignment="Center"
-                     Text="{Binding Operation.DimmingEndBrightnessPercent, StringFormat=(\{0\}%)}"/>
-        </Grid>
+              <TextBlock Grid.Row="4" Grid.Column="0"
+                           VerticalAlignment="Center"
+                           Text="Brightness range:"/>
+
+              <NumericUpDown Grid.Row="4" Grid.Column="2"
+                             Classes="ValueLabel ValueLabel_sun"
+                             IsEnabled="{Binding Operation.IsDimmingEnabled}"
+                             Increment="1"
+                             Minimum="1"
+                             Maximum="254"
+                             Value="{Binding Operation.DimmingStartBrightness}"/>
+
+
+              <TextBlock Grid.Row="4" Grid.Column="4"
+                         VerticalAlignment="Center"
+                         HorizontalAlignment="Center"
+                         Text="-"/>
+
+              <NumericUpDown Grid.Row="4" Grid.Column="6"
+                             Classes="ValueLabel ValueLabel_sun"
+                             IsEnabled="{Binding Operation.IsDimmingEnabled}"
+                             Increment="1"
+                             Minimum="2"
+                             Maximum="254"
+                             Value="{Binding Operation.DimmingEndBrightness}"/>
+
+              <TextBlock Grid.Row="4" Grid.Column="8"
+                         VerticalAlignment="Center"
+                         Text="Step increment(s):"/>
+
+              <NumericUpDown Grid.Row="4" Grid.Column="10"
+                             Classes="ValueLabel ValueLabel_sun"
+                             IsEnabled="{Binding Operation.IsDimmingEnabled}"
+                             Increment="1"
+                             Minimum="2"
+                             Maximum="254"
+                             Value="{Binding Operation.DimmingBrightnessSteps}"/>
+
+              <TextBlock Grid.Row="6" Grid.Column="2"
+                         VerticalAlignment="Center"
+                         HorizontalAlignment="Center"
+                         Text="{Binding Operation.DimmingStartBrightnessPercent, StringFormat=(\{0\}%)}"/>
+              <TextBlock Grid.Row="6" Grid.Column="6"
+                         VerticalAlignment="Center"
+                         HorizontalAlignment="Center"
+                         Text="{Binding Operation.DimmingEndBrightnessPercent, StringFormat=(\{0\}%)}"/>
+            </Grid>
+          </StackPanel>
 
       </Expander>
 

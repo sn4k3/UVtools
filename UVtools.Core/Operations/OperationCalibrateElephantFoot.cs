@@ -85,10 +85,20 @@ namespace UVtools.Core.Operations
                 sb.AppendLine("Erode start iterations can't be higher than end iterations.");
             }
 
-            if (_isDimmingEnabled && _dimmingStartBrightness > _dimmingEndBrightness)
+            if (_isDimmingEnabled)
             {
-                sb.AppendLine("Wall dimming start brightness can't be higher than end brightness.");
+                if (_dimmingStartBrightness > _dimmingEndBrightness)
+                {
+                    sb.AppendLine("Wall dimming start brightness can't be higher than end brightness.");
+                }
+
+                if (SlicerFile.IsAntiAliasingEmulated && SlicerFile.AntiAliasing < 2)
+                {
+                    sb.AppendLine($"With a emulated anti-aliasing of {SlicerFile.AntiAliasing}x, is not possible to run the dimming method, use the erode instead.");
+                    sb.AppendLine("As alternative, re-slice the file with a AntiAliasing level greater than 1 and run this tool again.");
+                }
             }
+            
 
             if (ObjectCount <= 0)
             {
