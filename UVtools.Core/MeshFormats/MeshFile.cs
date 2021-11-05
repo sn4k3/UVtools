@@ -23,17 +23,19 @@ namespace UVtools.Core.MeshFormats
         #endregion
 
         #region Static
-        public static string HeaderComment => $"Exported from {About.SoftwareWithVersion} @ {DateTime.UtcNow:u}";
 
         public static readonly FileExtension[] AvailableMeshFiles =
         {
             STLMeshFile.FileExtension,
             Consortium3MFMeshFile.FileExtension,
             AMFMeshFile.FileExtension,
+            WRLMeshFile.FileExtension,
             OBJMeshFile.FileExtension,
             PLYMeshFile.FileExtension,
-            OFFMeshFile.FileExtension
+            OFFMeshFile.FileExtension,
         };
+
+        public static string HeaderComment => $"Exported from {About.SoftwareWithVersion} @ {DateTime.UtcNow:u}";
 
         public static FileExtension FindFileExtension(string filePath)
         {
