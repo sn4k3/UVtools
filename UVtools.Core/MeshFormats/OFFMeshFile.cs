@@ -14,32 +14,22 @@ using UVtools.Core.FileFormats;
 
 namespace UVtools.Core.MeshFormats
 {
-    public class OBJMeshFile : MeshFile
+    public class OFFMeshFile : MeshFile
     {
-        #region Constants
-        public const string DefaultObjectName = "Object.1";
-        #endregion
-
         #region Members
         private readonly Dictionary<Vector3, uint> _vertexCache = new(VertexCacheSize);
         private FileStream _triangleStream;
+        private long _vertexCountWritePosition;
         #endregion
 
         #region Properties
-        public static FileExtension FileExtension => new(typeof(OBJMeshFile), "obj", "Wavefront");
-
-        public string ObjectName { get; } = DefaultObjectName;
+        public static FileExtension FileExtension => new(typeof(OFFMeshFile), "off", "Object File Format");
         #endregion
 
         #region Constructor
-        public OBJMeshFile(string filePath, FileMode fileMode, MeshFileFormat fileFormat, string name) : base(filePath, fileMode, MeshFileFormat.ASCII)
-        {
-            ObjectName = name ?? DefaultObjectName;
-        }
-
-        public OBJMeshFile(string filePath, FileMode fileMode, MeshFileFormat fileFormat) : this(filePath, fileMode, MeshFileFormat.ASCII, DefaultObjectName) { }
+        public OFFMeshFile(string filePath, FileMode fileMode, MeshFileFormat fileFormat) : base(filePath, fileMode, MeshFileFormat.ASCII) { }
         
-        public OBJMeshFile(string filePath, FileMode fileMode) : this(filePath, fileMode, MeshFileFormat.ASCII, DefaultObjectName) { }
+        public OFFMeshFile(string filePath, FileMode fileMode) : this(filePath, fileMode, MeshFileFormat.ASCII) { }
 
 
         #endregion
@@ -50,36 +40,37 @@ namespace UVtools.Core.MeshFormats
             /* Create a stream to store the triangles (faces) as they come through */
             _triangleStream = new FileStream(PathExtensions.GetTempFilePathWithExtension("trig", $"{About.Software}_"), FileMode.Create, FileAccess.ReadWrite, FileShare.None, 81920, FileOptions.DeleteOnClose);
             
-            MeshStream.WriteLine($"# {HeaderComment}");
-            MeshStream.WriteLine($"o {ObjectName}");
-            MeshStream.WriteLine();
-            MeshStream.WriteLine("# List of geometric vertices, with (x, y, z [,w]) coordinates, w is optional and defaults to 1.0");
+            MeshStream.WriteLineLF("OFF");
+            MeshStream.WriteLineLF($"# {HeaderComment}");
+            //MeshStream.WriteLineLF("# vertex_count face_count edge_count");
+            _vertexCountWritePosition = MeshStream.Position;
+            MeshStream.WriteLineLF("0000000000 0000000000 0");
         }
 
         public override void WriteTriangle(Vector3 p1, Vector3 p2, Vector3 p3, Vector3 normal)
         {
             if (!_vertexCache.ContainsKey(p1))
             {
-                MeshStream.WriteLine($"v {p1.X:F6} {p1.Y:F6} {p1.Z:F6}");
-                VertexCount++;
+                MeshStream.WriteLineLF($"{p1.X:F6} {p1.Y:F6} {p1.Z:F6}");
                 _vertexCache.Add(p1, VertexCount);
+                VertexCount++;
             }
 
             if (!_vertexCache.ContainsKey(p2))
             {
-                MeshStream.WriteLine($"v {p2.X:F6} {p2.Y:F6} {p2.Z:F6}");
-                VertexCount++;
+                MeshStream.WriteLineLF($"{p2.X:F6} {p2.Y:F6} {p2.Z:F6}");
                 _vertexCache.Add(p2, VertexCount);
+                VertexCount++;
             }
 
             if (!_vertexCache.ContainsKey(p3))
             {
-                MeshStream.WriteLine($"v {p3.X:F6} {p3.Y:F6} {p3.Z:F6}");
-                VertexCount++;
+                MeshStream.WriteLineLF($"{p3.X:F6} {p3.Y:F6} {p3.Z:F6}");
                 _vertexCache.Add(p3, VertexCount);
+                VertexCount++;
             }
 
-            _triangleStream.WriteLine($"f {_vertexCache[p1]} {_vertexCache[p2]} {_vertexCache[p3]}");
+            _triangleStream.WriteLineLF($"3 {_vertexCache[p1]} {_vertexCache[p2]} {_vertexCache[p3]}");
 
             TriangleCount++;
             
@@ -95,16 +86,17 @@ namespace UVtools.Core.MeshFormats
         {
             _vertexCache.Clear();
 
-            MeshStream.WriteLine();
-            MeshStream.WriteLine("# Polygonal face elements");
+            //MeshStream.WriteLineLF("# Polygonal face elements");
 
             _triangleStream.Seek(0, SeekOrigin.Begin);
             _triangleStream.CopyTo(MeshStream);
             _triangleStream.Dispose();
 
-            MeshStream.WriteLine();
-            MeshStream.WriteLine($"# Triangles: {TriangleCount}");
-            MeshStream.WriteLine($"# Unique Vertexes: {VertexCount}");
+            MeshStream.Seek(_vertexCountWritePosition + 10 - VertexCount.ToString().Length, SeekOrigin.Begin);
+            MeshStream.WriteString(VertexCount.ToString());
+            MeshStream.Seek(11 - TriangleCount.ToString().Length, SeekOrigin.Current);
+            MeshStream.WriteString(TriangleCount.ToString());
+            MeshStream.Seek(0, SeekOrigin.End);
         }
 
         #endregion

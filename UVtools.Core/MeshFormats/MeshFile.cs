@@ -7,6 +7,7 @@
  */
 
 using System;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Numerics;
@@ -17,13 +18,19 @@ namespace UVtools.Core.MeshFormats
 {
     public abstract class MeshFile : IDisposable
     {
+        #region Constants
+        public const int VertexCacheSize = 84000; // About 1MB
+        #endregion
+
         #region Static
         public static string HeaderComment => $"Exported from {About.SoftwareWithVersion} @ {DateTime.UtcNow:u}";
 
         public static readonly FileExtension[] AvailableMeshFiles =
         {
             STLMeshFile.FileExtension,
-            OBJMeshFile.FileExtension
+            OBJMeshFile.FileExtension,
+            PLYMeshFile.FileExtension,
+            OFFMeshFile.FileExtension
         };
 
         public static FileExtension FindFileExtension(string filePath)
@@ -44,8 +51,10 @@ namespace UVtools.Core.MeshFormats
 
         public enum MeshFileFormat : byte
         {
-            ASCII,
-            BINARY
+            [Description("Binary")]
+            BINARY,
+            [Description("ASCII")]
+            ASCII
         }
 
         #endregion

@@ -44,7 +44,7 @@ namespace UVtools.Core.MeshFormats
         {
             if (FileFormat == MeshFileFormat.ASCII)
             {
-                MeshStream.WriteLine($"solid \"{ObjectName}\"");
+                MeshStream.WriteLineLF($"solid \"{ObjectName}\"");
             }
             else
             {
@@ -60,31 +60,31 @@ namespace UVtools.Core.MeshFormats
         {
             if (FileFormat == MeshFileFormat.ASCII)
             {
-                MeshStream.WriteLine($"  facet normal {normal.X} {normal.Y} {normal.Z}");
-                MeshStream.WriteLine("    outer loop");
-                MeshStream.WriteLine($"      vertex {p1.X:E11} {p1.Y:E11} {p1.Z:E11}");
-                MeshStream.WriteLine($"      vertex {p2.X:E11} {p2.Y:E11} {p2.Z:E11}");
-                MeshStream.WriteLine($"      vertex {p3.X:E11} {p3.Y:E11} {p3.Z:E11}");
-                MeshStream.WriteLine("    endloop");
-                MeshStream.WriteLine("  endfacet");
+                MeshStream.WriteLineLF($"  facet normal {normal.X} {normal.Y} {normal.Z}");
+                MeshStream.WriteLineLF("    outer loop");
+                MeshStream.WriteLineLF($"      vertex {p1.X:E11} {p1.Y:E11} {p1.Z:E11}");
+                MeshStream.WriteLineLF($"      vertex {p2.X:E11} {p2.Y:E11} {p2.Z:E11}");
+                MeshStream.WriteLineLF($"      vertex {p3.X:E11} {p3.Y:E11} {p3.Z:E11}");
+                MeshStream.WriteLineLF("    endloop");
+                MeshStream.WriteLineLF("  endfacet");
             } 
             else
             {
-                MeshStream.Write(BitConverter.GetBytes(normal.X));
-                MeshStream.Write(BitConverter.GetBytes(normal.Y));
-                MeshStream.Write(BitConverter.GetBytes(normal.Z));
+                MeshStream.WriteFloatLittleEndian(normal.X);
+                MeshStream.WriteFloatLittleEndian(normal.Y);
+                MeshStream.WriteFloatLittleEndian(normal.Z);
 
-                MeshStream.Write(BitConverter.GetBytes(p1.X));
-                MeshStream.Write(BitConverter.GetBytes(p1.Y));
-                MeshStream.Write(BitConverter.GetBytes(p1.Z));
+                MeshStream.WriteFloatLittleEndian(p1.X);
+                MeshStream.WriteFloatLittleEndian(p1.Y);
+                MeshStream.WriteFloatLittleEndian(p1.Z);
 
-                MeshStream.Write(BitConverter.GetBytes(p2.X));
-                MeshStream.Write(BitConverter.GetBytes(p2.Y));
-                MeshStream.Write(BitConverter.GetBytes(p2.Z));
+                MeshStream.WriteFloatLittleEndian(p2.X);
+                MeshStream.WriteFloatLittleEndian(p2.Y);
+                MeshStream.WriteFloatLittleEndian(p2.Z);
 
-                MeshStream.Write(BitConverter.GetBytes(p3.X));
-                MeshStream.Write(BitConverter.GetBytes(p3.Y));
-                MeshStream.Write(BitConverter.GetBytes(p3.Z));
+                MeshStream.WriteFloatLittleEndian(p3.X);
+                MeshStream.WriteFloatLittleEndian(p3.Y);
+                MeshStream.WriteFloatLittleEndian(p3.Z);
                 
                 MeshStream.Write(new byte[2]);
             }
@@ -97,7 +97,7 @@ namespace UVtools.Core.MeshFormats
         {
             if (FileFormat == MeshFileFormat.ASCII)
             {
-                MeshStream.WriteLine($"endsolid \"{ObjectName}\"");
+                MeshStream.WriteLineLF($"endsolid \"{ObjectName}\"");
             } 
             else
             {

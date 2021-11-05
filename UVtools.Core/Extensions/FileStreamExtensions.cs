@@ -79,6 +79,19 @@ namespace UVtools.Core.Extensions
             fs.WriteBytes(BitExtensions.ToBytesBigEndian(value), offset);
         }
 
+        public static void WriteFloatLittleEndian(this FileStream fs, float value, int offset = 0)
+        {
+            var bytes = BitConverter.GetBytes(value);
+            if (!BitConverter.IsLittleEndian) Array.Reverse(bytes); //reverse it so we get little endian.
+            fs.WriteBytes(BitConverter.GetBytes(value), offset);
+        }
+        public static void WriteFloatBigEndian(this FileStream fs, float value, int offset = 0)
+        {
+            var bytes = BitConverter.GetBytes(value);
+            if (BitConverter.IsLittleEndian) Array.Reverse(bytes); //reverse it so we get big endian.
+            fs.WriteBytes(BitConverter.GetBytes(value), offset);
+        }
+
         public static uint WriteStream(this FileStream fs, MemoryStream stream, int offset = 0)
         {
             return fs.WriteBytes(stream.ToArray(), offset);
@@ -102,7 +115,7 @@ namespace UVtools.Core.Extensions
         public static uint WriteString(this FileStream fs, string text, Encoding encoding, int offset = 0)
         {
             var bytes = encoding.GetBytes(text);
-            fs.Write(bytes, offset, bytes.Length);
+            fs.WriteBytes(bytes, offset);
             return (uint)bytes.Length;
         }
 
@@ -113,8 +126,24 @@ namespace UVtools.Core.Extensions
 
         public static uint WriteLine(this FileStream fs, string text, Encoding encoding, int offset = 0)
         {
-            var bytes = encoding.GetBytes(text+Environment.NewLine);
-            fs.Write(bytes, offset, bytes.Length);
+            var bytes = encoding.GetBytes($"{text}{Environment.NewLine}");
+            fs.WriteBytes(bytes, offset);
+            return (uint)bytes.Length;
+        }
+
+        public static uint WriteLineLF(this FileStream fs)
+        {
+            fs.WriteByte(0x0A);
+            return 1;
+        }
+
+        public static uint WriteLineLF(this FileStream fs, string text, int offset = 0)
+            => fs.WriteLineLF(text, Encoding.UTF8, offset);
+
+        public static uint WriteLineLF(this FileStream fs, string text, Encoding encoding, int offset = 0)
+        {
+            var bytes = encoding.GetBytes($"{text}\n");
+            fs.WriteBytes(bytes, offset);
             return (uint)bytes.Length;
         }
 
