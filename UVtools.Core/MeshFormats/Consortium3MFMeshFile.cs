@@ -105,8 +105,8 @@ namespace UVtools.Core.MeshFormats
             MeshStream.WriteLineLF("\t</build>");
             MeshStream.WriteLineLF("</model>");
 
-            var tmpFile = PathExtensions.GetTempFilePathWithFilename($"{Filename}.tmp");
-            if(File.Exists(tmpFile)) File.Delete(tmpFile);
+            var tmpFile = PathExtensions.GetTempFilePathWithExtension("tmp", $"{About.Software}_");
+            if (File.Exists(tmpFile)) File.Delete(tmpFile);
             bool haveThumbnail = SlicerFile is not null && SlicerFile.CreatedThumbnailsCount > 0;
             using (var zip = ZipFile.Open(tmpFile, ZipArchiveMode.Create))
             {

@@ -29,6 +29,7 @@ namespace UVtools.Core.MeshFormats
         {
             STLMeshFile.FileExtension,
             Consortium3MFMeshFile.FileExtension,
+            AMFMeshFile.FileExtension,
             OBJMeshFile.FileExtension,
             PLYMeshFile.FileExtension,
             OFFMeshFile.FileExtension
@@ -81,6 +82,7 @@ namespace UVtools.Core.MeshFormats
         /// Gets the file name with extension from <see cref="FilePath"/>
         /// </summary>
         public string Filename => Path.GetFileName(FilePath);
+        public string FilenameWithoutExtension => Path.GetFileNameWithoutExtension(FilePath);
 
         /// <summary>
         /// Gets the current file stream
