@@ -311,8 +311,6 @@ namespace UVtools.Core.Extensions
             if (mode == ZipArchiveMode.Update) stream.SetLength(0);
             using TextWriter tw = new StreamWriter(stream);
             tw.Write(content);
-            tw.Close();
-
             return entry;
         }
 
@@ -322,6 +320,7 @@ namespace UVtools.Core.Extensions
         /// <param name="input"><see cref="ZipArchive"/></param>
         /// <param name="filename">Filename to create</param>
         /// <param name="content">Content to write</param>
+        /// <param name="mode"></param>
         /// <returns>Created <see cref="ZipArchiveEntry"/></returns>
         public static ZipArchiveEntry PutFileContent(this ZipArchive input, string filename, byte[] content, ZipArchiveMode mode)
         {
@@ -339,7 +338,33 @@ namespace UVtools.Core.Extensions
             using var stream = entry.Open();
             if (mode == ZipArchiveMode.Update) stream.SetLength(0);
             stream.Write(content, 0, content.Length);
-            stream.Close();
+            return entry;
+        }
+
+        /// <summary>
+        /// Create or update a file into archive and write content to it
+        /// </summary>
+        /// <param name="input"><see cref="ZipArchive"/></param>
+        /// <param name="filename">Filename to create</param>
+        /// <param name="content">Content to write</param>
+        /// <param name="mode"></param>
+        /// <returns>Created <see cref="ZipArchiveEntry"/></returns>
+        public static ZipArchiveEntry PutFileContent(this ZipArchive input, string filename, Stream content, ZipArchiveMode mode)
+        {
+            ZipArchiveEntry entry;
+            if (mode == ZipArchiveMode.Update)
+            {
+                entry = input.GetEntry(filename) ?? input.CreateEntry(filename);
+            }
+            else
+            {
+                entry = input.CreateEntry(filename);
+            }
+
+            if (content is null) return entry;
+            using var stream = entry.Open();
+            if (mode == ZipArchiveMode.Update) stream.SetLength(0);
+            content.CopyTo(stream);
             return entry;
         }
     }

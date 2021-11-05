@@ -577,7 +577,7 @@ namespace UVtools.Core.Operations
             progress.ProcessedItems = 0;
 
 
-            using var mesh = fileExtension.FileFormatType.CreateInstance<MeshFile>(_filePath, FileMode.Create, _meshFileFormat);
+            using var mesh = fileExtension.FileFormatType.CreateInstance<MeshFile>(_filePath, FileMode.Create, _meshFileFormat, SlicerFile);
             mesh.BeginWrite();
 
             /* Begin Stage 4, generating triangles and saving to file */

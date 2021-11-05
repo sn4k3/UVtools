@@ -28,12 +28,7 @@ namespace UVtools.Core.MeshFormats
         #endregion
 
         #region Constructor
-        public PLYMeshFile(string filePath, FileMode fileMode, MeshFileFormat fileFormat) : base(filePath, fileMode, fileFormat)
-        { }
-
-        public PLYMeshFile(string filePath, FileMode fileMode) : this(filePath, fileMode, MeshFileFormat.BINARY) { }
-
-
+        public PLYMeshFile(string filePath, FileMode fileMode, MeshFileFormat fileFormat = MeshFileFormat.BINARY, FileFormat slicerFile = null) : base(filePath, fileMode, fileFormat, slicerFile) { }
         #endregion
         
         #region Methods

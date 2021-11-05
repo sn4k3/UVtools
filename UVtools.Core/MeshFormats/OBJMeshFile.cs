@@ -32,16 +32,7 @@ namespace UVtools.Core.MeshFormats
         #endregion
 
         #region Constructor
-        public OBJMeshFile(string filePath, FileMode fileMode, MeshFileFormat fileFormat, string name) : base(filePath, fileMode, MeshFileFormat.ASCII)
-        {
-            ObjectName = name ?? DefaultObjectName;
-        }
-
-        public OBJMeshFile(string filePath, FileMode fileMode, MeshFileFormat fileFormat) : this(filePath, fileMode, MeshFileFormat.ASCII, DefaultObjectName) { }
-        
-        public OBJMeshFile(string filePath, FileMode fileMode) : this(filePath, fileMode, MeshFileFormat.ASCII, DefaultObjectName) { }
-
-
+        public OBJMeshFile(string filePath, FileMode fileMode, MeshFileFormat fileFormat = MeshFileFormat.ASCII, FileFormat slicerFile = null) : base(filePath, fileMode, MeshFileFormat.ASCII, slicerFile) { }
         #endregion
         
         #region Methods

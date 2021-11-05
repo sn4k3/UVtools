@@ -27,14 +27,8 @@ namespace UVtools.Core.MeshFormats
         #endregion
 
         #region Constructor
-        public STLMeshFile(string filePath, FileMode fileMode, MeshFileFormat fileFormat, string name) : base(filePath, fileMode, fileFormat)
-        {
-            ObjectName = name ?? DefaultObjectName;
-        }
-
-        public STLMeshFile(string filePath, FileMode fileMode, MeshFileFormat fileFormat) : this(filePath, fileMode, fileFormat, DefaultObjectName) { }
-        
-        public STLMeshFile(string filePath, FileMode fileMode) : this(filePath, fileMode, MeshFileFormat.BINARY, DefaultObjectName) { }
+        public STLMeshFile(string filePath, FileMode fileMode, MeshFileFormat fileFormat = MeshFileFormat.BINARY, FileFormat slicerFile = null) : base(filePath, fileMode, fileFormat, slicerFile)
+        { }
 
         
         #endregion

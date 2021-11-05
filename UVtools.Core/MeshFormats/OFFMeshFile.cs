@@ -27,11 +27,7 @@ namespace UVtools.Core.MeshFormats
         #endregion
 
         #region Constructor
-        public OFFMeshFile(string filePath, FileMode fileMode, MeshFileFormat fileFormat) : base(filePath, fileMode, MeshFileFormat.ASCII) { }
-        
-        public OFFMeshFile(string filePath, FileMode fileMode) : this(filePath, fileMode, MeshFileFormat.ASCII) { }
-
-
+        public OFFMeshFile(string filePath, FileMode fileMode, MeshFileFormat fileFormat = MeshFileFormat.ASCII, FileFormat slicerFile = null) : base(filePath, fileMode, MeshFileFormat.ASCII, slicerFile) { }
         #endregion
         
         #region Methods

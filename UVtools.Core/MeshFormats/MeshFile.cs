@@ -28,6 +28,7 @@ namespace UVtools.Core.MeshFormats
         public static readonly FileExtension[] AvailableMeshFiles =
         {
             STLMeshFile.FileExtension,
+            Consortium3MFMeshFile.FileExtension,
             OBJMeshFile.FileExtension,
             PLYMeshFile.FileExtension,
             OFFMeshFile.FileExtension
@@ -39,10 +40,10 @@ namespace UVtools.Core.MeshFormats
             return AvailableMeshFiles.FirstOrDefault(fileExtension => $".{fileExtension.Extension}" == ext);
         }
 
-        public static MeshFile CreateInstance(string filePath, FileMode fileMode, MeshFileFormat fileFormat = MeshFileFormat.BINARY)
+        public static MeshFile CreateInstance(string filePath, FileMode fileMode, MeshFileFormat fileFormat = MeshFileFormat.BINARY, FileFormat slicerFile = null)
         {
             var fileExtension = FindFileExtension(filePath);
-            return fileExtension?.FileFormatType.CreateInstance<MeshFile>(filePath, fileMode, fileFormat);
+            return fileExtension?.FileFormatType.CreateInstance<MeshFile>(filePath, fileMode, fileFormat, slicerFile);
         }
 
         #endregion
@@ -65,6 +66,11 @@ namespace UVtools.Core.MeshFormats
         /// Gets the file format for this mesh
         /// </summary>
         public MeshFileFormat FileFormat { get; } = MeshFileFormat.BINARY;
+
+        /// <summary>
+        /// Gets the <see cref="FileFormat"/> from model export
+        /// </summary>
+        public FileFormat SlicerFile { get; }
 
         /// <summary>
         /// Gets the file path of the stream
@@ -93,10 +99,11 @@ namespace UVtools.Core.MeshFormats
         #endregion
         
         #region Constructor
-        protected MeshFile(string filePath, FileMode fileMode, MeshFileFormat meshFileFormat = MeshFileFormat.BINARY)
+        protected MeshFile(string filePath, FileMode fileMode, MeshFileFormat meshFileFormat = MeshFileFormat.BINARY, FileFormat slicerFile = null)
         {
             FilePath = filePath;
             FileFormat = meshFileFormat;
+            SlicerFile = slicerFile;
             MeshStream = new FileStream(filePath, fileMode);
         }
         #endregion
