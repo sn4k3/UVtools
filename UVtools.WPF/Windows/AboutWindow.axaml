@@ -44,11 +44,19 @@
           UseFloatingWatermark="True"/>
 
         <TextBox
+            Text="{Binding AvaloniaUIDescription}"
+            IsReadOnly="True"
+            BorderBrush="Transparent"
+            CaretBrush="Transparent"
+            Watermark="AvaloniaUI:"
+            UseFloatingWatermark="True"/>
+
+        <TextBox
             Text="{Binding OpenCVDescription}"
             IsReadOnly="True"
             BorderBrush="Transparent"
             CaretBrush="Transparent"
-            Watermark="OpenCV Version:"
+            Watermark="OpenCV:"
             UseFloatingWatermark="True"/>
 
         <TextBox
@@ -71,7 +79,13 @@
             Margin="0,20,0,0"
             HorizontalAlignment="Stretch"
             Content="Copy OpenCV build information to clipboard"
-            Command="{Binding SetOpenCVInformationToClipboard}" /> 
+            Command="{Binding CopyOpenCVInformationToClipboard}" />
+
+        <Button
+            Margin="0,10,0,0"
+            HorizontalAlignment="Stretch"
+            Content="Copy loaded assemblies to clipboard"
+            Command="{Binding CopyLoadedAssembliesToClipboard}" />
       </StackPanel>
       </Border>
       <Grid 
@@ -93,7 +107,7 @@
 
         <TextBox Grid.Row="10" 
                  IsReadOnly="True"
-                 MaxHeight="550"
+                 MaxHeight="560"
                  Text="{Binding Description}"/>
       </Grid>
     </StackPanel>

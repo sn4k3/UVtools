@@ -24,6 +24,7 @@ namespace UVtools.WPF.Windows
         public string RuntimeDescription => RuntimeInformation.RuntimeIdentifier;
 
         public string FrameworkDescription => RuntimeInformation.FrameworkDescription;
+        public string AvaloniaUIDescription => typeof(AvaloniaObject).Assembly.GetName().Version.ToString(3);
 
         public string OpenCVDescription
         {
@@ -71,9 +72,20 @@ namespace UVtools.WPF.Windows
             AvaloniaXamlLoader.Load(this);
         }
 
-        public void SetOpenCVInformationToClipboard()
+        public void CopyOpenCVInformationToClipboard()
         {
             Application.Current.Clipboard.SetTextAsync(CvInvoke.BuildInformation);
+        }
+
+        public void CopyLoadedAssembliesToClipboard()
+        {
+            var loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies();
+            var sb = new StringBuilder();
+            foreach (var assembly in loadedAssemblies)
+            {
+                sb.AppendLine(assembly.FullName);
+            }
+            Application.Current.Clipboard.SetTextAsync(sb.ToString());
         }
 
         public void OpenLicense() => App.OpenBrowser(About.LicenseUrl);

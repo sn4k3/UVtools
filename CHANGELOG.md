@@ -1,5 +1,22 @@
 # Changelog
 
+## 05/11/2021 - v2.24.2
+
+- **Export layers to mesh:**
+   - (Add) Mesh format: 3MF - 3D Manufacturing Format
+   - (Add) Mesh format: AMF - Additive Manufacturing Format
+   - (Add) Mesh format: WRL - Virtual Reality Modeling Language
+   - (Add) Mesh format: PLY - Polygon File Format / Stanford Triangle Format
+   - (Add) Mesh format: OFF - Object File Format
+   - (Add) File format (Binary or ASCII) option selection on the UI
+   - (Improvement) ASCII file types strict use \n instead of \r\n
+- **Exposure time finder:**
+   - (Add) Option to enable/disable bottom text on 'pattern model' mode
+   - (Fix) Importing a profile with 'Pattern loaded model' enabled, will trigger an error and prevent the import
+- **About box:**
+   - (Add) AvaloniaUI version information
+   - (Add) Copy loaded assemblies to clipboard
+- (Downgrade) AvaloniaUI from 0.10.10 to 0.10.8 to fix macOS menus
 
 ## 03/11/2021 - v2.24.1
 
