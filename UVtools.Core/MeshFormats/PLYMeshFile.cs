@@ -114,10 +114,10 @@ namespace UVtools.Core.MeshFormats
             }
             else
             {
-                MeshStream.WriteByte(3);
-                MeshStream.WriteUIntLittleEndian(_vertexCache[p1]);
-                MeshStream.WriteUIntLittleEndian(_vertexCache[p2]);
-                MeshStream.WriteUIntLittleEndian(_vertexCache[p3]);
+                _triangleStream.WriteByte(3);
+                _triangleStream.WriteUIntLittleEndian(_vertexCache[p1]);
+                _triangleStream.WriteUIntLittleEndian(_vertexCache[p2]);
+                _triangleStream.WriteUIntLittleEndian(_vertexCache[p3]);
             }
 
             TriangleCount++;
