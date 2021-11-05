@@ -1102,6 +1102,12 @@
                 IsEnabled="{Binding Operation.PatternModel}"
                 IsChecked="{Binding Operation.PatternModelGlueBottomLayers}"/>
 
+            <CheckBox
+                Content="Intrude text in bottom layers with the model parameters"
+                ToolTip.Tip="If enabled, it will intrude text on each model bottom layers with information about the parameters"
+                IsEnabled="{Binding Operation.PatternModel}"
+                IsChecked="{Binding Operation.PatternModelTextEnabled}"/>
+
             <!--
             <Grid RowDefinitions="Auto"
                   ColumnDefinitions="Auto,10,Auto,5,Auto,20,Auto,10,Auto,5,Auto,20,Auto,10,Auto,5,Auto"
