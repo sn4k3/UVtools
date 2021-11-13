@@ -248,17 +248,17 @@ namespace UVtools.Core.FileFormats
             /// <summary>
             /// 48
             /// </summary>
-            [FieldOrder(3)] public float LayerExposureTime { get; set; }
+            [FieldOrder(3)] public float ExposureTime { get; set; }
 
             /// <summary>
             /// 4C
             /// </summary>
-            [FieldOrder(4)] public float LightOffDelay { get; set; } = 1;
+            [FieldOrder(4)] public float WaitTimeBeforeCure { get; set; } = 1;
 
             /// <summary>
             /// 50
             /// </summary>
-            [FieldOrder(5)] public float BottomExposureSeconds { get; set; } 
+            [FieldOrder(5)] public float BottomExposureTime { get; set; } 
 
             /// <summary>
             /// 54
@@ -320,17 +320,13 @@ namespace UVtools.Core.FileFormats
             {
                 get
                 {
-                    switch (PriceCurrencyDec)
+                    return PriceCurrencyDec switch
                     {
-                        case 0x24:
-                            return '$';
-                        case 0xA5C2:
-                            return '¥';
-                        case 0x000020AC:
-                            return '€';
-                        default:
-                            return '$';
-                    }
+                        0x24 => '$',
+                        0xA5C2 => '¥',
+                        0x000020AC => '€',
+                        _ => '$'
+                    };
                 }
             }
 
@@ -359,7 +355,7 @@ namespace UVtools.Core.FileFormats
                 Section = new SectionHeader(SectionMark, this);
             }
 
-            public override string ToString() => $"{nameof(Section)}: {Section}, {nameof(PixelSizeUm)}: {PixelSizeUm}, {nameof(LayerHeight)}: {LayerHeight}, {nameof(LayerExposureTime)}: {LayerExposureTime}, {nameof(LightOffDelay)}: {LightOffDelay}, {nameof(BottomExposureSeconds)}: {BottomExposureSeconds}, {nameof(BottomLayersCount)}: {BottomLayersCount}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(RetractSpeed)}: {RetractSpeed}, {nameof(VolumeMl)}: {VolumeMl}, {nameof(AntiAliasing)}: {AntiAliasing}, {nameof(ResolutionX)}: {ResolutionX}, {nameof(ResolutionY)}: {ResolutionY}, {nameof(WeightG)}: {WeightG}, {nameof(Price)}: {Price}, {nameof(PriceCurrencyDec)}: {PriceCurrencyDec}, {nameof(PerLayerOverride)}: {PerLayerOverride}, {nameof(PrintTime)}: {PrintTime}, {nameof(Padding1)}: {Padding1}, {nameof(Padding2)}: {Padding2}";
+            public override string ToString() => $"{nameof(Section)}: {Section}, {nameof(PixelSizeUm)}: {PixelSizeUm}, {nameof(LayerHeight)}: {LayerHeight}, {nameof(ExposureTime)}: {ExposureTime}, {nameof(WaitTimeBeforeCure)}: {WaitTimeBeforeCure}, {nameof(BottomExposureTime)}: {BottomExposureTime}, {nameof(BottomLayersCount)}: {BottomLayersCount}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(RetractSpeed)}: {RetractSpeed}, {nameof(VolumeMl)}: {VolumeMl}, {nameof(AntiAliasing)}: {AntiAliasing}, {nameof(ResolutionX)}: {ResolutionX}, {nameof(ResolutionY)}: {ResolutionY}, {nameof(WeightG)}: {WeightG}, {nameof(Price)}: {Price}, {nameof(PriceCurrencyDec)}: {PriceCurrencyDec}, {nameof(PerLayerOverride)}: {PerLayerOverride}, {nameof(PrintTime)}: {PrintTime}, {nameof(Padding1)}: {Padding1}, {nameof(Padding2)}: {Padding2}";
 
             public void Validate()
             {
@@ -946,14 +942,11 @@ namespace UVtools.Core.FileFormats
         {
             PrintParameterModifier.BottomLayerCount,
 
-            PrintParameterModifier.LightOffDelay,
+            PrintParameterModifier.WaitTimeBeforeCure,
 
             PrintParameterModifier.BottomExposureTime,
             PrintParameterModifier.ExposureTime,
 
-            //PrintParameterModifier.BottomLightOffDelay,
-            //PrintParameterModifier.BottomLiftHeight,
-            //PrintParameterModifier.BottomLiftSpeed,
             PrintParameterModifier.LiftHeight,
             PrintParameterModifier.LiftSpeed,
             PrintParameterModifier.RetractSpeed,
@@ -1086,44 +1079,28 @@ namespace UVtools.Core.FileFormats
             set => base.BottomLayerCount = (ushort) (HeaderSettings.BottomLayersCount = value);
         }
 
-        public override float BottomLightOffDelay => LightOffDelay;
+        public override float BottomLightOffDelay => BottomWaitTimeBeforeCure;
 
-        public override float LightOffDelay
-        {
-            get => HeaderSettings.LightOffDelay;
-            set => base.LightOffDelay = HeaderSettings.LightOffDelay = (float)Math.Round(value, 2);
-        }
+        public override float LightOffDelay => WaitTimeBeforeCure;
 
-        public override float BottomWaitTimeBeforeCure
-        {
-            get => base.BottomWaitTimeBeforeCure;
-            set
-            {
-                SetBottomLightOffDelay(value);
-                base.BottomWaitTimeBeforeCure = value;
-            }
-        }
+        public override float BottomWaitTimeBeforeCure => WaitTimeBeforeCure;
 
         public override float WaitTimeBeforeCure
         {
-            get => base.WaitTimeBeforeCure;
-            set
-            {
-                SetNormalLightOffDelay(value);
-                base.WaitTimeBeforeCure = value;
-            }
+            get => HeaderSettings.WaitTimeBeforeCure;
+            set => base.WaitTimeBeforeCure = HeaderSettings.WaitTimeBeforeCure = (float)Math.Round(value, 2);
         }
 
         public override float BottomExposureTime
         {
-            get => HeaderSettings.BottomExposureSeconds;
-            set => base.BottomExposureTime = HeaderSettings.BottomExposureSeconds = (float) Math.Round(value, 2);
+            get => HeaderSettings.BottomExposureTime;
+            set => base.BottomExposureTime = HeaderSettings.BottomExposureTime = (float) Math.Round(value, 2);
         }
 
         public override float ExposureTime
         {
-            get => HeaderSettings.LayerExposureTime;
-            set => base.ExposureTime = HeaderSettings.LayerExposureTime = (float) Math.Round(value, 2);
+            get => HeaderSettings.ExposureTime;
+            set => base.ExposureTime = HeaderSettings.ExposureTime = (float) Math.Round(value, 2);
         }
 
         public override float BottomLiftHeight => LiftHeight;

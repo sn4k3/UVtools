@@ -32,7 +32,7 @@ struct HEADER {
     float LayerHeight <fgcolor=cBlack, bgcolor=cRed>;
     float LayerExposureTime <fgcolor=cBlack, bgcolor=cRed>;
        
-    float LightOffDelay <fgcolor=cBlack, bgcolor=cRed>;
+    float WaitTimeBeforeCure <fgcolor=cBlack, bgcolor=cRed>;
     float BottomExposureSeconds <fgcolor=cBlack, bgcolor=cRed>;
     float BottomLayersCount <fgcolor=cBlack, bgcolor=cRed>;
     float LiftHeight <fgcolor=cBlack, bgcolor=cRed>;

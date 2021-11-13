@@ -1,5 +1,10 @@
 # Changelog
 
+## 12/11/2021 - v2.24.3
+
+- (Upgrade) .NET from 5.0.11 to 5.0.12
+- (Fix) Anycubic formats: LightOffDelay is WaitTimeBeforeCure (#308)
+
 ## 05/11/2021 - v2.24.2
 
 - **Export layers to mesh:**
