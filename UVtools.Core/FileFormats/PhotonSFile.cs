@@ -227,11 +227,13 @@ namespace UVtools.Core.FileFormats
                     }*/
                 }
 
-                if (pixelPos != imageLength && pixelPos-1 != imageLength)
+                // Some slicers will not fill the pixel RLE to the end when the remaining pixels are trailing black,
+                // this was triggering error on read because data checksum was incomplete, ignoring checksum now (#344)
+                /*if (pixelPos != imageLength && pixelPos-1 != imageLength)
                 {
                     mat.Dispose();
                     throw new FileLoadException($"Error image ran shortly or off the end, expecting {imageLength} pixels, got {pixelPos} pixels.");
-                }
+                }*/
 
                 // Not required as mat is all black by default
                 //for (;pixel < imageLength; pixel++) matSpan[pixel] = 0;
