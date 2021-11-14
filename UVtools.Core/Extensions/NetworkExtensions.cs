@@ -40,7 +40,7 @@ namespace UVtools.Core.Extensions
             // Convert absolute progress (bytes downloaded) into relative progress (0% - 100%)
             var relativeProgress = new Progress<long>(downloadedBytes => progress.Report(new (contentLength.Value, downloadedBytes)));
             // Use extension method to report progress while downloading
-            await download.CopyToAsync(destination, 81920, relativeProgress, cancellationToken);
+            await download.CopyToAsync(destination, relativeProgress, cancellationToken);
             progress.Report(new(contentLength.Value, contentLength.Value));
             return response;
         }

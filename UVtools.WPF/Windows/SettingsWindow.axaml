@@ -351,7 +351,12 @@
                   </Grid>
 
                   <StackPanel Margin="10" Orientation="Vertical" Spacing="10">
-                    <DataGrid
+
+                      <CheckBox 
+                          IsChecked="{Binding Settings.General.SendToPromptForRemovableDeviceEject}"
+                          Content="When send to a removable device, prompt for device ejection after copied [Windows only]"/>
+
+                      <DataGrid
                         Name="SendToCustomLocationsGrid"
                         CanUserReorderColumns="True"
                         CanUserResizeColumns="True"

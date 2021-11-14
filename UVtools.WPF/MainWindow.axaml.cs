@@ -625,7 +625,7 @@ namespace UVtools.WPF
                 {
                     if(drive.DriveType != DriveType.Removable || !drive.IsReady) continue; // Not our target, skip
                     if (SlicerFile.FileFullPath.StartsWith(drive.Name)) continue; // File already on this device, skip
-
+                    
                     var header = drive.Name;
                     if (!string.IsNullOrWhiteSpace(drive.VolumeLabel))
                     {
@@ -758,7 +758,7 @@ namespace UVtools.WPF
                 }
             }
 
-            ShowProgressWindow($"Copying: {SlicerFile.Filename} to {path}", false);
+            ShowProgressWindow($"Copying: {SlicerFile.Filename} to {path}", true);
             Progress.ItemName = "Copying";
 
 
@@ -783,17 +783,17 @@ namespace UVtools.WPF
 
 
                     Progress.ItemCount = (uint)(stream.Length / 1000000);
-                    using var token = new CancellationTokenSource();
+                    bool isCopying = true;
                     try
                     {
-                        new Task(() =>
+                        var task = new Task(() =>
                         {
-                            while (!token.IsCancellationRequested)
+                            while (isCopying)
                             {
                                 Progress.ProcessedItems = (uint)(stream.Position / 1000000);
                                 Thread.Sleep(200);
                             }
-                        }, token.Token);
+                        });
                     }
                     catch (Exception)
                     {
@@ -801,7 +801,7 @@ namespace UVtools.WPF
                     }
 
                     response = await remotePrinter.RequestUploadFile.SendRequest(remotePrinter, Progress, SlicerFile.Filename, httpContent);
-                    token.Cancel();
+                    isCopying = false;
                     if (!response.IsSuccessStatusCode)
                     {
                         await this.MessageBoxError(response.ToString(), "Send to printer");
@@ -842,26 +842,120 @@ namespace UVtools.WPF
             }
             else
             {
-                await Task.Factory.StartNew(() =>
+                /*var copyResult = await Task.Factory.StartNew(() =>
                 {
                     try
                     {
-                        File.Copy(SlicerFile.FileFullPath, $"{Path.Combine(path, SlicerFile.Filename)}", true);
-                        return true;
-                    }
-                    catch (OperationCanceledException) { }
-                    catch (Exception exception)
-                    {
-                        Dispatcher.UIThread.InvokeAsync(async () =>
-                            await this.MessageBoxError(exception.ToString(), "Unable to copy the file"));
-                    }
+                        var fileDest = Path.Combine(path, SlicerFile.Filename);
+                        //File.Copy(SlicerFile.FileFullPath, $"{Path.Combine(path, SlicerFile.Filename)}", true);
+                        var buffer = new byte[1024 * 1024]; // 1MB buffer
 
-                    return false;
-                });
+                        using var source = File.OpenRead(SlicerFile.FileFullPath);
+                        using var dest = new FileStream(fileDest, FileMode.Create, FileAccess.Write);
+                        //long totalBytes = 0;
+                        //int currentBlockSize;
+
+                        Progress.Reset("Megabyte(s)", (uint)(source.Length / 1000000));
+                        var copyProgress = new Progress<long>(copiedBytes => Progress.ProcessedItems = (uint)(copiedBytes / 1000000));
+                        source.CopyToAsync(dest, 0, copyProgress, Progress.Token).ConfigureAwait(false);
+
+                        /*while ((currentBlockSize = source.Read(buffer)) > 0)
+                        {
+                            totalBytes += currentBlockSize;
+
+                            dest.Write(buffer, 0, currentBlockSize);
+
+                            if (Progress.Token.IsCancellationRequested)
+                            {
+                                // Delete dest file here
+                                dest.Dispose();
+                                File.Delete(fileDest);
+                                return false;
+                            }
+
+                            Progress.ProcessedItems = (uint)(totalBytes / 1000000);
+                        }*/
+
+                /*    return true;
+                }
+                catch (OperationCanceledException) { }
+                catch (Exception exception)
+                {
+                    Dispatcher.UIThread.InvokeAsync(async () =>
+                        await this.MessageBoxError(exception.ToString(), "Unable to copy the file"));
+                }
+
+                return false;
+            });*/
+
+                bool copyResult = false;
+                var fileDest = Path.Combine(path, SlicerFile.Filename);
+                try
+                {
+                    await using var source = File.OpenRead(SlicerFile.FileFullPath);
+                    await using var dest = new FileStream(fileDest, FileMode.Create, FileAccess.Write);
+
+                    Progress.Reset("Megabyte(s)", (uint)(source.Length / 1000000));
+                    var copyProgress = new Progress<long>(copiedBytes => Progress.ProcessedItems = (uint)(copiedBytes / 1000000));
+                    await source.CopyToAsync(dest, copyProgress, Progress.Token);
+
+                    copyResult = true;
+                }
+                catch (OperationCanceledException)
+                {
+                    try
+                    {
+                        if (File.Exists(fileDest)) File.Delete(fileDest);
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine(ex);
+                    }
+                    
+                }
+                catch (Exception exception)
+                {
+                    await this.MessageBoxError(exception.ToString(), "Unable to copy the file");
+                }
+
+                if(copyResult && menuItem.Tag is DriveInfo removableDrive && OperatingSystem.IsWindows() && Settings.General.SendToPromptForRemovableDeviceEject)
+                {
+                    if (await this.MessageBoxQuestion(
+                        $"File '{SlicerFile.Filename}' has copied successfully into {removableDrive.Name}\n" +
+                        $"Do you want to eject the {removableDrive.Name} drive now?", "Copied ok, eject the drive?") == ButtonResult.Yes)
+                    {
+                        Progress.ResetAll($"Ejecting {removableDrive.Name}");
+                        var ejectResult = await Task.Factory.StartNew(() =>
+                        {
+                            try
+                            {
+                                return SystemOS.Windows.USB.USBEject(removableDrive.Name);
+                            }
+                            catch (OperationCanceledException) { }
+                            catch (Exception exception)
+                            {
+                                Dispatcher.UIThread.InvokeAsync(async () =>
+                                    await this.MessageBoxError(exception.ToString(), $"Unable to eject the drive {removableDrive.Name}"));
+                            }
+
+                            return false;
+                        });
+
+                        if (!ejectResult)
+                        {
+                            await this.MessageBoxError($"Unable to eject the drive {removableDrive.Name}\n\n" +
+                                                       "Possible causes:\n" +
+                                                       "- Drive may be busy or locked\n" +
+                                                       "- Drive was already ejected\n" +
+                                                       "- No permission to eject the drive\n" +
+                                                       "- Another error while trying to eject the drive\n\n" +
+                                                       "Please try to eject the drive manually.", $"Unable to eject the drive {removableDrive.Name}");
+                        }
+                    }
+                }
             }
 
             
-
             IsGUIEnabled = true;
         }
 
@@ -917,7 +1011,7 @@ namespace UVtools.WPF
                 ShowLayer();
                 return;
             }*/
-        }
+                }
 
         private void InitializeComponent()
         {

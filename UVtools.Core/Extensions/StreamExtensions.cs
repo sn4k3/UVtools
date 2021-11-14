@@ -15,6 +15,10 @@ namespace UVtools.Core.Extensions
 {
     public static class StreamExtensions
     {
+        //public const int DefaultCopyBufferSize = 81920; // 81.92 kilobytes, .NET default
+        //public const int DefaultCopyBufferSize = 512000; // 512 kilobytes
+        public const int DefaultCopyBufferSize = 1048576; // 1 MB
+
         /// <summary>
         /// Converts stream into byte array
         /// </summary>
@@ -39,6 +43,7 @@ namespace UVtools.Core.Extensions
                 throw new ArgumentException("Has to be writable", nameof(destination));
             if (bufferSize < 0)
                 throw new ArgumentOutOfRangeException(nameof(bufferSize));
+            if (bufferSize == 0) bufferSize = DefaultCopyBufferSize;
 
             var buffer = new byte[bufferSize];
             long totalBytesRead = 0;
@@ -49,6 +54,11 @@ namespace UVtools.Core.Extensions
                 totalBytesRead += bytesRead;
                 progress?.Report(totalBytesRead);
             }
+        }
+
+        public static async Task CopyToAsync(this Stream source, Stream destination, IProgress<long> progress = null, CancellationToken cancellationToken = default)
+        {
+            await CopyToAsync(source, destination, DefaultCopyBufferSize, progress, cancellationToken);
         }
     }
 }

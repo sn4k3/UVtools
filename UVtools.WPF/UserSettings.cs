@@ -54,6 +54,7 @@ namespace UVtools.WPF
             private bool _promptOverwriteFileSave = true;
             private string _fileSaveNamePrefix;
             private string _fileSaveNameSuffix = "_copy";
+            private bool _sendToPromptForRemovableDeviceEject = true;
             private RangeObservableCollection<MappedDevice> _sendToCustomLocations = new();
 
 
@@ -173,6 +174,12 @@ namespace UVtools.WPF
             {
                 get => _fileSaveNameSuffix;
                 set => RaiseAndSetIfChanged(ref _fileSaveNameSuffix, value);
+            }
+
+            public bool SendToPromptForRemovableDeviceEject
+            {
+                get => _sendToPromptForRemovableDeviceEject;
+                set => RaiseAndSetIfChanged(ref _sendToPromptForRemovableDeviceEject, value);
             }
 
             public RangeObservableCollection<MappedDevice> SendToCustomLocations

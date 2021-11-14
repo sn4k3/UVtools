@@ -179,6 +179,12 @@ namespace UVtools.Core.Operations
             RaisePropertyChanged(nameof(CanCancel));
         }
 
+        public void ResetAll(string title, string name = "", uint itemCount = 0, uint items = 0)
+        {
+            Title = title;
+            Reset(name, itemCount, items);
+        }
+
         public void Reset(string name = "", uint itemCount = 0, uint items = 0)
         {
             ItemName = name;
