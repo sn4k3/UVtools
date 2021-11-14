@@ -1,5 +1,12 @@
 # Changelog
 
+## 14/11/2021 - v2.24.4
+
+- **File - Send to - Device**
+   - (Add) Progress with the transfered megabyte(s) and allow to cancel the transfer
+   - (Add) It will prompt for drive ejection [Configurable - On by default] [Windows only] (#340)
+- (Fix) PhotonS: Some slicers will not fill the pixel RLE to the end when the remaining pixels are trailing black, this was triggering error on read because data checksum was incomplete, ignoring checksum now (#344)
+
 ## 12/11/2021 - v2.24.3
 
 - (Upgrade) .NET from 5.0.11 to 5.0.12
