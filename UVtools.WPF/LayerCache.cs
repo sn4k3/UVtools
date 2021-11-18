@@ -36,6 +36,7 @@ namespace UVtools.WPF
                 Clear();
                 _layer = value;
                 Image = _layer.LayerMat;
+                if (Image is null) return;
                 ImageBgr = new Mat();
                 CvInvoke.CvtColor(Image, ImageBgr, ColorConversion.Gray2Bgr);
 

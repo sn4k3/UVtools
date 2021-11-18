@@ -467,9 +467,9 @@ namespace UVtools.Core.FileFormats
 
         #region Methods
 
-        protected override void EncodeInternally(string fileFullPath, OperationProgress progress)
+        protected override void EncodeInternally(OperationProgress progress)
         {
-            using ZipArchive outputFile = ZipFile.Open(fileFullPath, ZipArchiveMode.Create);
+            using var outputFile = ZipFile.Open(FileFullPath, ZipArchiveMode.Create);
             if (Thumbnails.Length > 0 && Thumbnails[0] is not null)
             {
                 using var thumbnailsStream = outputFile.CreateEntry(PreviewFilename).Open();
@@ -497,14 +497,14 @@ namespace UVtools.Core.FileFormats
             outputFile.PutFileContent(GCodeFilename, EncryptGCode(progress), ZipArchiveMode.Create);
         }
 
-        protected override void DecodeInternally(string fileFullPath, OperationProgress progress)
+        protected override void DecodeInternally(OperationProgress progress)
         {
             using var inputFile = ZipFile.Open(FileFullPath, ZipArchiveMode.Read);
             var entry = inputFile.GetEntry(ManifestFilename);
             if (entry is null)
             {
                 Clear();
-                throw new FileLoadException($"{ManifestFilename} not found", fileFullPath);
+                throw new FileLoadException($"{ManifestFilename} not found", FileFullPath);
             }
 
             try
@@ -516,14 +516,14 @@ namespace UVtools.Core.FileFormats
             catch (Exception e)
             {
                 Clear();
-                throw new FileLoadException($"Unable to deserialize '{entry.Name}'\n{e}", fileFullPath);
+                throw new FileLoadException($"Unable to deserialize '{entry.Name}'\n{e}", FileFullPath);
             }
 
             entry = inputFile.GetEntry(GCodeFilename);
             if (entry is null)
             {
                 Clear();
-                throw new FileLoadException($"{GCodeFilename} not found", fileFullPath);
+                throw new FileLoadException($"{GCodeFilename} not found", FileFullPath);
             }
 
             var encryptEngine = new RsaEngine();
@@ -551,7 +551,7 @@ namespace UVtools.Core.FileFormats
                 tr.Close();
             }
 
-            LayerManager.Init(ManifestFile.Job.LayerCount);
+            LayerManager.Init(ManifestFile.Job.LayerCount, DecodeType == FileDecodeType.Partial);
             progress.Reset(OperationProgress.StatusDecodeLayers, LayerCount);
 
             //var gcode = GCode.ToString();
@@ -564,12 +564,15 @@ namespace UVtools.Core.FileFormats
                 if (entry is null)
                 {
                     Clear();
-                    throw new FileLoadException($"Layer {layerIndex+1} not found", fileFullPath);
+                    throw new FileLoadException($"Layer {layerIndex+1} not found", FileFullPath);
                 }
 
-                using var stream = entry.Open();
-                this[layerIndex] = new Layer(layerIndex, stream, LayerManager);
-
+                if (DecodeType == FileDecodeType.Full)
+                {
+                    using var stream = entry.Open();
+                    this[layerIndex] = new Layer(layerIndex, stream, LayerManager);
+                }
+                
                 progress++;
             }
 
@@ -585,24 +588,8 @@ namespace UVtools.Core.FileFormats
             LayerManager.GetBoundingRectangle(progress);
         }
 
-        public override void SaveAs(string filePath = null, OperationProgress progress = null)
+        protected override void PartialSaveInternally(OperationProgress progress)
         {
-            if (RequireFullEncode)
-            {
-                if (!string.IsNullOrEmpty(filePath))
-                {
-                    FileFullPath = filePath;
-                }
-                Encode(FileFullPath, progress);
-                return;
-            }
-
-            if (!string.IsNullOrEmpty(filePath))
-            {
-                File.Copy(FileFullPath, filePath, true);
-                FileFullPath = filePath;
-            }
-
             using var outputFile = ZipFile.Open(FileFullPath, ZipArchiveMode.Update);
 
             var entriesToRemove = outputFile.Entries.Where(zipEntry => zipEntry.Name.EndsWith(".gcode") || zipEntry.Name.EndsWith(".xml")).ToArray();

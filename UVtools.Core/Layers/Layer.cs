@@ -479,6 +479,7 @@ namespace UVtools.Core.Layers
         {
             get
             {
+                if (!HaveImage) return null;
                 Mat mat = new();
                 CvInvoke.Imdecode(_compressedBytes, ImreadModes.Grayscale, mat);
                 return mat;
@@ -604,6 +605,8 @@ namespace UVtools.Core.Layers
             _lightPWM = SlicerFile.GetBottomOrNormalValue(this, SlicerFile.BottomLightPWM, SlicerFile.LightPWM);
         }
 
+        public Layer(uint index, FileFormat slicerFile) : this(index, slicerFile.LayerManager) {}
+
         public Layer(uint index, byte[] compressedBytes, LayerManager parentLayerManager) : this(index, parentLayerManager)
         {
             CompressedBytes = compressedBytes;
@@ -625,8 +628,8 @@ namespace UVtools.Core.Layers
 
         public Layer(uint index, Mat layerMat, FileFormat slicerFile) : this(index, layerMat, slicerFile.LayerManager) { }
 
-        public Layer(uint index, Stream stream, LayerManager parentLayerManager) : this(index, stream.ToArray(), parentLayerManager) { }
-        public Layer(uint index, Stream stream, FileFormat slicerFile) : this(index, stream.ToArray(), slicerFile.LayerManager) { }
+        public Layer(uint index, Stream stream, LayerManager parentLayerManager) : this(index, stream?.ToArray(), parentLayerManager) { }
+        public Layer(uint index, Stream stream, FileFormat slicerFile) : this(index, stream?.ToArray(), slicerFile.LayerManager) { }
         #endregion
 
         #region Equatables
@@ -671,7 +674,7 @@ namespace UVtools.Core.Layers
             if (other is null) return false;
             if (ReferenceEquals(this, other)) return true;
             if (_index != other._index) return false;
-            if (_compressedBytes.Length != other._compressedBytes.Length) return false;
+            if (_compressedBytes?.Length != other._compressedBytes?.Length) return false;
             return _compressedBytes.AsSpan().SequenceEqual(other._compressedBytes.AsSpan());
             //return Equals(_compressedBytes, other._compressedBytes);
         }
@@ -1112,7 +1115,7 @@ namespace UVtools.Core.Layers
             //layer.CompressedBytes = _compressedBytes.ToArray();
             //Debug.WriteLine(ReferenceEquals(_compressedBytes, layer.CompressedBytes));
             //return layer;
-            return new (_index, CompressedBytes.ToArray(), ParentLayerManager)
+            return new (_index, CompressedBytes?.ToArray(), ParentLayerManager)
             {
                 _positionZ = _positionZ,
                 _lightOffDelay = _lightOffDelay,

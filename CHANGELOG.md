@@ -1,5 +1,17 @@
 # Changelog
 
+## 18/11/2021 - v2.25.0
+
+- **File formats:**
+   - (Add) Allow to partial open the files for read and/or change properties, the layer images won't be read nor cached (Fast)
+   - (Add) More abstraction on partial save
+- **Scripting:**
+   - (Add) ScriptOpenFolderDialogInput - Selects a folder path
+   - (Add) ScriptOpenFileDialogInput - Selectes a file to open
+   - (Add) ScriptSaveFileDialogInput - Selects a file to save
+- (Add) [UNSAVED] tag to the title bar when there are unsaved changes on the current session
+- (Improvement) Better handling of empty images on the UI
+
 ## 14/11/2021 - v2.24.4
 
 - **File - Send to - Device**

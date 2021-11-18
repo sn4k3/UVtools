@@ -434,10 +434,10 @@ namespace UVtools.Core.FileFormats
 
         #region Methods
         
-        protected override void EncodeInternally(string fileFullPath, OperationProgress progress)
+        protected override void EncodeInternally(OperationProgress progress)
         {
             //throw new NotSupportedException("PhotonS is read-only format, please use pws instead!");
-            using var outputFile = new FileStream(fileFullPath, FileMode.Create, FileAccess.Write);
+            using var outputFile = new FileStream(FileFullPath, FileMode.Create, FileAccess.Write);
             outputFile.WriteSerialize(HeaderSettings);
             outputFile.WriteBytes(EncodeImage(DATATYPE_BGR565, Thumbnails[0]));
             outputFile.WriteSerialize(LayerSettings);
@@ -474,13 +474,13 @@ namespace UVtools.Core.FileFormats
             Debug.WriteLine("-End-");
         }
 
-        protected override void DecodeInternally(string fileFullPath, OperationProgress progress)
+        protected override void DecodeInternally(OperationProgress progress)
         {
-            using var inputFile = new FileStream(fileFullPath, FileMode.Open, FileAccess.Read);
+            using var inputFile = new FileStream(FileFullPath, FileMode.Open, FileAccess.Read);
             HeaderSettings = Helpers.Deserialize<Header>(inputFile);
             if (HeaderSettings.Tag1 != Header.TAG1 || HeaderSettings.Tag2 != Header.TAG2)
             {
-                throw new FileLoadException("Not a valid PHOTONS file! TAGs doesn't match", fileFullPath);
+                throw new FileLoadException("Not a valid PHOTONS file! TAGs doesn't match", FileFullPath);
             }
 
             int previewSize = (int) (HeaderSettings.PreviewResolutionX * HeaderSettings.PreviewResolutionY * 2);
@@ -495,7 +495,7 @@ namespace UVtools.Core.FileFormats
             Debug.WriteLine(LayerSettings);
   
 
-            LayerManager.Init(LayerSettings.LayerCount);
+            LayerManager.Init(LayerSettings.LayerCount, DecodeType == FileDecodeType.Partial);
             var layersDefinitions = new LayerDef[LayerSettings.LayerCount];
 
             progress.Reset(OperationProgress.StatusDecodeLayers, LayerCount);
@@ -508,7 +508,8 @@ namespace UVtools.Core.FileFormats
                     var layerDef = Helpers.Deserialize<LayerDef>(inputFile);
                     layersDefinitions[layerIndex] = layerDef;
 
-                    layerDef.EncodedRle = inputFile.ReadBytes(layerDef.RleDataSize);
+                    if (DecodeType == FileDecodeType.Full) layerDef.EncodedRle = inputFile.ReadBytes(layerDef.RleDataSize);
+                    else inputFile.Seek(layerDef.RleDataSize, SeekOrigin.Current);
 
                     Debug.Write($"LAYER {layerIndex} -> ");
                     Debug.WriteLine(layerDef);
@@ -521,40 +522,23 @@ namespace UVtools.Core.FileFormats
                     }
                 }
 
-                Parallel.ForEach(batch, CoreSettings.ParallelOptions, layerIndex =>
+                if (DecodeType == FileDecodeType.Full)
                 {
-                    if (progress.Token.IsCancellationRequested) return;
-                    using (var mat = layersDefinitions[layerIndex].Decode())
+                    Parallel.ForEach(batch, CoreSettings.ParallelOptions, layerIndex =>
                     {
+                        if (progress.Token.IsCancellationRequested) return;
+                        using var mat = layersDefinitions[layerIndex].Decode();
                         this[layerIndex] = new Layer((uint)layerIndex, mat, this);
-                    }
-
-                    progress.LockAndIncrement();
-                });
+                        progress.LockAndIncrement();
+                    });
+                }
             }
 
             LayerManager.RebuildLayersProperties();
         }
 
-        public override void SaveAs(string filePath = null, OperationProgress progress = null)
+        protected override void PartialSaveInternally(OperationProgress progress)
         {
-            if (RequireFullEncode)
-            {
-                if (!string.IsNullOrEmpty(filePath))
-                {
-                    FileFullPath = filePath;
-                }
-                Encode(FileFullPath, progress);
-                return;
-            }
-
-
-            if (!string.IsNullOrEmpty(filePath))
-            {
-                File.Copy(FileFullPath, filePath, true);
-                FileFullPath = filePath;
-            }
-
             using var outputFile = new FileStream(FileFullPath, FileMode.Open, FileAccess.Write);
             outputFile.Seek(0, SeekOrigin.Begin);
             Helpers.SerializeWriteFileStream(outputFile, HeaderSettings);

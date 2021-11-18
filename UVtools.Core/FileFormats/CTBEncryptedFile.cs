@@ -1097,15 +1097,15 @@ namespace UVtools.Core.FileFormats
         }
 
 
-        protected override void DecodeInternally(string fileFullPath, OperationProgress progress)
+        protected override void DecodeInternally(OperationProgress progress)
         {
-            using var inputFile = new FileStream(fileFullPath, FileMode.Open, FileAccess.Read);
+            using var inputFile = new FileStream(FileFullPath, FileMode.Open, FileAccess.Read);
             Header = Helpers.Deserialize<FileHeader>(inputFile);
             Debug.WriteLine($"Header: {Header}");
 
             if (Header.Magic is not MAGIC_CBT_ENCRYPTED)
             {
-                throw new FileLoadException($"Not a valid CTB encrypted file! Magic Value: {Header.Magic}", fileFullPath);
+                throw new FileLoadException($"Not a valid CTB encrypted file! Magic Value: {Header.Magic}", FileFullPath);
             }
 
             inputFile.Seek(Header.SettingsOffset, SeekOrigin.Begin);
@@ -1127,7 +1127,7 @@ namespace UVtools.Core.FileFormats
             var hash = inputFile.ReadBytes(HASH_LENGTH);
             if (!hash.SequenceEqual(encryptedHash))
             {
-                throw new FileLoadException("The file checksum does not match, malformed file.", fileFullPath);
+                throw new FileLoadException("The file checksum does not match, malformed file.", FileFullPath);
             }
 
             progress.Reset(OperationProgress.StatusDecodePreviews, ThumbnailsCount);
@@ -1174,7 +1174,7 @@ namespace UVtools.Core.FileFormats
             }
 
             progress.Reset(OperationProgress.StatusDecodeLayers, Settings.LayerCount);
-            LayerManager.Init(Settings.LayerCount);
+            LayerManager.Init(Settings.LayerCount, DecodeType == FileDecodeType.Partial);
             LayersDefinition = new LayerDef[LayerCount];
             var buggyLayers = new ConcurrentBag<uint>();
 
@@ -1187,43 +1187,48 @@ namespace UVtools.Core.FileFormats
                     inputFile.Seek(LayersPointer[layerIndex].LayerOffset, SeekOrigin.Begin);
                     LayersDefinition[layerIndex] = Helpers.Deserialize<LayerDef>(inputFile);
                     LayersDefinition[layerIndex].Parent = this;
-                    LayersDefinition[layerIndex].RLEData = inputFile.ReadBytes(LayersDefinition[layerIndex].DataLength);
+                    if (DecodeType == FileDecodeType.Full) LayersDefinition[layerIndex].RLEData = inputFile.ReadBytes(LayersDefinition[layerIndex].DataLength);
                     Debug.WriteLine($"layer[{layerIndex}]: {LayersDefinition[layerIndex]}");
                 }
 
-
-                Parallel.ForEach(batch, CoreSettings.ParallelOptions, layerIndex =>
+                if (DecodeType == FileDecodeType.Full)
                 {
-                    if (progress.Token.IsCancellationRequested) return;
-
-                    var layerDef = LayersDefinition[layerIndex];
-
-                    if (layerDef.EncryptedDataLength > 0)
+                    Parallel.ForEach(batch, CoreSettings.ParallelOptions, layerIndex =>
                     {
-                        /* Decrypt RLE data here */
+                        if (progress.Token.IsCancellationRequested) return;
 
-                        var byteBuffer = new byte[layerDef.EncryptedDataLength];
-                        Array.Copy(layerDef.RLEData, (int)layerDef.EncryptedDataOffset, byteBuffer, 0, (int)layerDef.EncryptedDataLength);
+                        var layerDef = LayersDefinition[layerIndex];
 
-                        byteBuffer = CryptExtensions.AesCryptBytes(byteBuffer, Bigfoot, CipherMode.CBC, PaddingMode.None, false, CookieMonster);
-                        Array.Copy(byteBuffer, 0, layerDef.RLEData, layerDef.EncryptedDataOffset, layerDef.EncryptedDataLength);
-                    }
 
-                    bool isBugged = false;
-                    /* bug fix for Chitubox when a small layer RLE data is encrypted */
-                    if (layerDef.EncryptedDataLength > 0 && layerDef.RLEData.Length < RLEEncryptedMinimumLength && layerDef.RLEData.Length % 16 != 0)
-                    {
-                        buggyLayers.Add((uint)layerIndex);
-                        isBugged = true;
-                        layerDef.RLEData = null; /* clean up RLE data */
-                    }
+                        if (layerDef.EncryptedDataLength > 0)
+                        {
+                            /* Decrypt RLE data here */
 
-                    var layer = new Layer((uint)layerIndex, isBugged ? null : layerDef.DecodeImage((uint)layerIndex), this);
-                    layerDef.CopyTo(layer);
-                    this[layerIndex] = layer;
-                    
-                    progress.LockAndIncrement();
-                });
+                            var byteBuffer = new byte[layerDef.EncryptedDataLength];
+                            Array.Copy(layerDef.RLEData, (int)layerDef.EncryptedDataOffset, byteBuffer, 0,
+                                (int)layerDef.EncryptedDataLength);
+
+                            byteBuffer = CryptExtensions.AesCryptBytes(byteBuffer, Bigfoot, CipherMode.CBC,
+                                PaddingMode.None, false, CookieMonster);
+                            Array.Copy(byteBuffer, 0, layerDef.RLEData, layerDef.EncryptedDataOffset,
+                                layerDef.EncryptedDataLength);
+                        }
+
+                        bool isBugged = false;
+                        /* bug fix for Chitubox when a small layer RLE data is encrypted */
+                        if (layerDef.EncryptedDataLength > 0 && layerDef.RLEData.Length < RLEEncryptedMinimumLength &&
+                            layerDef.RLEData.Length % 16 != 0)
+                        {
+                            buggyLayers.Add((uint)layerIndex);
+                            isBugged = true;
+                            layerDef.RLEData = null; /* clean up RLE data */
+                        }
+
+                        this[layerIndex] = new Layer((uint)layerIndex, isBugged ? null : layerDef.DecodeImage((uint)layerIndex), this);
+
+                        progress.LockAndIncrement();
+                    });
+                }
             }
 
             if (buggyLayers.Count == LayerCount)
@@ -1231,7 +1236,12 @@ namespace UVtools.Core.FileFormats
                 throw new FileLoadException("Unable to load this file due to Chitubox bug affecting every layer." +
                                             "Please increase the portion of the plate in use and reslice the file.");
             }
-            
+
+            for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
+            {
+                LayersDefinition[layerIndex].CopyTo(this[layerIndex]);
+            }
+
             if (!buggyLayers.IsEmpty)
             {
                 var sortedLayerIndexes = buggyLayers.ToArray();
@@ -1267,13 +1277,13 @@ namespace UVtools.Core.FileFormats
             //inputFile.ReadBytes(HashLength);
         }
 
-        protected override void EncodeInternally(string fileFullPath, OperationProgress progress)
+        protected override void EncodeInternally(OperationProgress progress)
         {
 #if !DEBUG
             throw new NotSupportedException(Preamble);
 #endif
 
-            using var outputFile = new FileStream(fileFullPath, FileMode.Create, FileAccess.Write);
+            using var outputFile = new FileStream(FileFullPath, FileMode.Create, FileAccess.Write);
             //uint currentOffset = 0;
 
             /* Create the file header and fill out what we can. SignatureOffset will have to be populated later
@@ -1401,25 +1411,8 @@ namespace UVtools.Core.FileFormats
             Helpers.SerializeWriteFileStream(outputFile, Header);
         }
 
-        public override void SaveAs(string filePath = null, OperationProgress progress = null)
+        protected override void PartialSaveInternally(OperationProgress progress)
         {
-            if (RequireFullEncode)
-            {
-                if (!string.IsNullOrEmpty(filePath))
-                {
-                    FileFullPath = filePath;
-                }
-                Encode(FileFullPath, progress);
-                return;
-            }
-
-
-            if (!string.IsNullOrEmpty(filePath))
-            {
-                File.Copy(FileFullPath, filePath, true);
-                FileFullPath = filePath;
-            }
-
             SanitizeProperties();
 
             using var outputFile = new FileStream(FileFullPath, FileMode.Open, FileAccess.Write);

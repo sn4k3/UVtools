@@ -487,7 +487,7 @@ namespace UVtools.Core.FileFormats
 
         #region Methods
 
-       protected override void EncodeInternally(string fileFullPath, OperationProgress progress)
+       protected override void EncodeInternally(OperationProgress progress)
         {
             if (FileEndsWith(".lgs")) // Longer Orange 10
             {
@@ -511,7 +511,7 @@ namespace UVtools.Core.FileFormats
             }
 
             //uint currentOffset = (uint)Helpers.Serializer.SizeOf(HeaderSettings);
-            using (var outputFile = new FileStream(fileFullPath, FileMode.Create, FileAccess.Write))
+            using (var outputFile = new FileStream(FileFullPath, FileMode.Create, FileAccess.Write))
             {
                 outputFile.WriteSerialize(HeaderSettings);
                 outputFile.WriteBytes(EncodeImage(DATATYPE_RGB565_BE, Thumbnails[0]));
@@ -566,13 +566,13 @@ namespace UVtools.Core.FileFormats
             Debug.WriteLine("-End-");
         }
 
-        protected override void DecodeInternally(string fileFullPath, OperationProgress progress)
+        protected override void DecodeInternally(OperationProgress progress)
         {
-            using var inputFile = new FileStream(fileFullPath, FileMode.Open, FileAccess.Read);
+            using var inputFile = new FileStream(FileFullPath, FileMode.Open, FileAccess.Read);
             HeaderSettings = Helpers.Deserialize<Header>(inputFile);
             if (HeaderSettings.Name != Header.NameValue)
             {
-                throw new FileLoadException("Not a valid LGS file!", fileFullPath);
+                throw new FileLoadException("Not a valid LGS file!", FileFullPath);
             }
 
             //if (HeaderSettings.PrinterModel is 10 or 30 or 120)
@@ -594,54 +594,38 @@ namespace UVtools.Core.FileFormats
             }
 
 
-            LayerManager.Init(HeaderSettings.LayerCount);
+            LayerManager.Init(HeaderSettings.LayerCount, DecodeType == FileDecodeType.Partial);
             var layerData = new LayerDef[LayerCount];
 
-            progress.Reset(OperationProgress.StatusDecodeLayers, LayerCount);
-            foreach (var batch in BatchLayersIndexes())
+            if (DecodeType == FileDecodeType.Full)
             {
-                foreach (var layerIndex in batch)
+                progress.Reset(OperationProgress.StatusDecodeLayers, LayerCount);
+                foreach (var batch in BatchLayersIndexes())
                 {
-                    progress.Token.ThrowIfCancellationRequested();
-
-                    layerData[layerIndex] = Helpers.Deserialize<LayerDef>(inputFile);
-                    layerData[layerIndex].Parent = this;
-                }
-
-                Parallel.ForEach(batch, CoreSettings.ParallelOptions, layerIndex =>
-                {
-                    if (progress.Token.IsCancellationRequested) return;
-                    using (var mat = layerData[layerIndex].Decode())
+                    foreach (var layerIndex in batch)
                     {
-                        this[layerIndex] = new Layer((uint)layerIndex, mat, this);
+                        progress.Token.ThrowIfCancellationRequested();
+
+                        layerData[layerIndex] = Helpers.Deserialize<LayerDef>(inputFile);
+                        layerData[layerIndex].Parent = this;
                     }
 
-                    progress.LockAndIncrement();
-                });
+                    Parallel.ForEach(batch, CoreSettings.ParallelOptions, layerIndex =>
+                    {
+                        if (progress.Token.IsCancellationRequested) return;
+                        using var mat = layerData[layerIndex].Decode();
+                        this[layerIndex] = new Layer((uint)layerIndex, mat, this);
+
+                        progress.LockAndIncrement();
+                    });
+                }
             }
 
             LayerManager.RebuildLayersProperties();
         }
 
-        public override void SaveAs(string filePath = null, OperationProgress progress = null)
+        protected override void PartialSaveInternally(OperationProgress progress)
         {
-            if (RequireFullEncode)
-            {
-                if (!string.IsNullOrEmpty(filePath))
-                {
-                    FileFullPath = filePath;
-                }
-                Encode(FileFullPath, progress);
-                return;
-            }
-
-
-            if (!string.IsNullOrEmpty(filePath))
-            {
-                File.Copy(FileFullPath, filePath, true);
-                FileFullPath = filePath;
-            }
-
             using var outputFile = new FileStream(FileFullPath, FileMode.Open, FileAccess.Write);
             outputFile.Seek(0, SeekOrigin.Begin);
             Helpers.SerializeWriteFileStream(outputFile, HeaderSettings);

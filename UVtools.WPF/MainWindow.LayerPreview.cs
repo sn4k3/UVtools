@@ -799,7 +799,11 @@ namespace UVtools.WPF
 
             var watch = Stopwatch.StartNew();
             LayerCache.Layer = SlicerFile[_actualLayer];
-            
+            if (LayerCache.Image is null)
+            {
+                RefreshCurrentLayerData();
+                return;
+            }
             try
             {
                 //var imageSpan = LayerCache.Image.GetPixelSpan<byte>();
@@ -1303,9 +1307,6 @@ namespace UVtools.WPF
                 {
                     CvInvoke.Rotate(LayerCache.ImageBgr, LayerCache.ImageBgr, _showLayerImageRotateCcwDirection ? RotateFlags.Rotate90CounterClockwise : RotateFlags.Rotate90Clockwise);
                 }
-
-                
-
 
                 LayerImageBox.Image = LayerCache.Bitmap = LayerCache.ImageBgr.ToBitmap();
                 

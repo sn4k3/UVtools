@@ -24,6 +24,7 @@ using MoreLinq;
 using UVtools.Core;
 using UVtools.Core.EmguCV;
 using UVtools.Core.Extensions;
+using UVtools.Core.FileFormats;
 using UVtools.Core.Layers;
 using UVtools.Core.Operations;
 using UVtools.WPF.Extensions;
@@ -467,6 +468,13 @@ namespace UVtools.WPF
         public async Task OnClickDetectIssues()
         {
             if (!IsFileLoaded) return;
+            if (SlicerFile.DecodeType == FileFormat.FileDecodeType.Partial)
+            {
+                await this.MessageBoxError("The file was open in partial mode and the detect issues is unable to run in this mode.\n" +
+                                           "Please reload the file in full mode in order to use detect issues.", "Unable to run in partial mode");
+                return;
+
+            }
             await ComputeIssues(
                 GetIslandDetectionConfiguration(),
                 GetOverhangDetectionConfiguration(),

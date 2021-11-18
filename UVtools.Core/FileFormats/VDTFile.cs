@@ -149,6 +149,42 @@ namespace UVtools.Core.FileFormats
             [JsonProperty("retract_distance2")] public float RetractHeight2 { get; set; } = DefaultRetractHeight2;
             [JsonProperty("retract_speed2")] public float RetractSpeed2 { get; set; } = DefaultRetractSpeed2;
             [JsonProperty("light_pwm")] public byte LightPWM { get; set; } = DefaultLightPWM;
+
+            public void SetFrom(Layer layer)
+            {
+                PositionZ = layer.PositionZ;
+                LightOffDelay = layer.LightOffDelay;
+                WaitTimeBeforeCure = layer.WaitTimeBeforeCure;
+                ExposureTime = layer.ExposureTime;
+                WaitTimeAfterCure = layer.WaitTimeAfterCure;
+                LiftHeight = layer.LiftHeight;
+                LiftSpeed = layer.LiftSpeed;
+                LiftHeight2 = layer.LiftHeight2;
+                LiftSpeed2 = layer.LiftSpeed2;
+                WaitTimeAfterLift = layer.WaitTimeAfterLift;
+                RetractSpeed = layer.RetractSpeed;
+                RetractHeight2 = layer.RetractHeight2;
+                RetractSpeed2 = layer.RetractSpeed2;
+                LightPWM = layer.LightPWM;
+            }
+
+            public void CopyTo(Layer layer)
+            {
+                layer.PositionZ = PositionZ;
+                layer.LightOffDelay = LightOffDelay;
+                layer.WaitTimeBeforeCure = WaitTimeBeforeCure;
+                layer.ExposureTime = ExposureTime;
+                layer.WaitTimeAfterCure = WaitTimeAfterCure;
+                layer.LiftHeight = LiftHeight;
+                layer.LiftSpeed = LiftSpeed;
+                layer.LiftHeight2 = LiftHeight2;
+                layer.LiftSpeed2 = LiftSpeed2;
+                layer.WaitTimeAfterLift = WaitTimeAfterLift;
+                layer.RetractSpeed = RetractSpeed;
+                layer.RetractHeight2 = RetractHeight2;
+                layer.RetractSpeed2 = RetractSpeed2;
+                layer.LightPWM = LightPWM;
+            }
         }
 
         #endregion
@@ -566,12 +602,12 @@ namespace UVtools.Core.FileFormats
             }
         }
 
-        protected override void EncodeInternally(string fileFullPath, OperationProgress progress)
+        protected override void EncodeInternally(OperationProgress progress)
         {
             // Redo layer data
             RebuildVDTLayers();
 
-            using var outputFile = ZipFile.Open(fileFullPath, ZipArchiveMode.Create);
+            using var outputFile = ZipFile.Open(FileFullPath, ZipArchiveMode.Create);
             outputFile.PutFileContent(FileManifestName, JsonConvert.SerializeObject(ManifestFile, Formatting.Indented), ZipArchiveMode.Create);
 
             if (CreatedThumbnailsCount > 0)
@@ -598,20 +634,20 @@ namespace UVtools.Core.FileFormats
             }
         }
 
-        protected override void DecodeInternally(string fileFullPath, OperationProgress progress)
+        protected override void DecodeInternally(OperationProgress progress)
         {
-            using (var inputFile = ZipFile.Open(fileFullPath, ZipArchiveMode.Read))
+            using (var inputFile = ZipFile.Open(FileFullPath, ZipArchiveMode.Read))
             {
                 var entry = inputFile.GetEntry(FileManifestName);
                 if (entry is null)
                 {
                     Clear();
-                    throw new FileLoadException($"{FileManifestName} not found", fileFullPath);
+                    throw new FileLoadException($"{FileManifestName} not found", FileFullPath);
                 }
 
                 ManifestFile = Helpers.JsonDeserializeObject<VDTManifest>(entry.Open());
                 
-                LayerManager.Init((uint) ManifestFile.Layers.Length);
+                LayerManager.Init((uint) ManifestFile.Layers.Length, DecodeType == FileDecodeType.Partial);
 
                 for (int i = 0; i < FilePreviewNames.Length; i++)
                 {
@@ -631,24 +667,14 @@ namespace UVtools.Core.FileFormats
                     var manifestLayer = ManifestFile.Layers[layerIndex];
                     entry = inputFile.GetEntry($"{layerIndex}.png");
                     if (entry is null) continue;
-                    using var stream = entry.Open();
-                    this[layerIndex] = new Layer(layerIndex, stream, LayerManager)
+
+                    if (DecodeType == FileDecodeType.Full)
                     {
-                        PositionZ = manifestLayer.PositionZ,
-                        LightOffDelay = manifestLayer.LightOffDelay,
-                        WaitTimeBeforeCure = manifestLayer.WaitTimeBeforeCure,
-                        ExposureTime = manifestLayer.ExposureTime,
-                        WaitTimeAfterCure = manifestLayer.WaitTimeAfterCure,
-                        LiftHeight = manifestLayer.LiftHeight,
-                        LiftSpeed = manifestLayer.LiftSpeed,
-                        LiftHeight2 = manifestLayer.LiftHeight2,
-                        LiftSpeed2 = manifestLayer.LiftSpeed2,
-                        WaitTimeAfterLift = manifestLayer.WaitTimeAfterLift,
-                        RetractSpeed = manifestLayer.RetractSpeed,
-                        RetractHeight2 = manifestLayer.RetractHeight2,
-                        RetractSpeed2 = manifestLayer.RetractSpeed2,
-                        LightPWM = manifestLayer.LightPWM,
-                    };
+                        using var stream = entry.Open();
+                        this[layerIndex] = new Layer(layerIndex, stream, LayerManager);
+                    }
+
+                    manifestLayer.CopyTo(this[layerIndex]);
                 }
                 
                 progress.ProcessedItems++;
@@ -657,25 +683,8 @@ namespace UVtools.Core.FileFormats
             LayerManager.GetBoundingRectangle(progress);
         }
 
-        public override void SaveAs(string filePath = null, OperationProgress progress = null)
+        protected override void PartialSaveInternally(OperationProgress progress)
         {
-            if (RequireFullEncode)
-            {
-                if (!string.IsNullOrEmpty(filePath))
-                {
-                    FileFullPath = filePath;
-                }
-                Encode(FileFullPath, progress);
-                return;
-            }
-
-            if (!string.IsNullOrEmpty(filePath))
-            {
-                File.Copy(FileFullPath, filePath, true);
-                FileFullPath = filePath;
-
-            }
-
             RebuildVDTLayers();
             using var outputFile = ZipFile.Open(FileFullPath, ZipArchiveMode.Update);
             outputFile.PutFileContent(FileManifestName, JsonConvert.SerializeObject(ManifestFile, Formatting.Indented), ZipArchiveMode.Update);

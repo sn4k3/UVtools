@@ -65,6 +65,8 @@ namespace UVtools.Core.Operations
 
         #region Overrides
 
+        public override bool CanRunInPartialMode => true;
+
         public override Enumerations.LayerRangeSelection StartLayerRangeSelection => Enumerations.LayerRangeSelection.Normal;
 
         public override string Title => "Dynamic lifts";

@@ -27,6 +27,8 @@ namespace UVtools.Core.Operations
 
         #region Overrides
 
+        public override bool CanRunInPartialMode => true;
+
         public override Enumerations.LayerRangeSelection StartLayerRangeSelection => Enumerations.LayerRangeSelection.None;
 
         public override bool CanROI => false;

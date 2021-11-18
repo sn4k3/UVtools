@@ -275,11 +275,11 @@ namespace UVtools.Core.Managers
         /// <param name="slicerFile"></param>
         public void Init(FileFormat slicerFile)
         {
+            Clear();
+            SlicerFile = slicerFile;
+            if (slicerFile is null || slicerFile.DecodeType == FileFormat.FileDecodeType.Partial) return;
             SuppressRestoreWork(() =>
             {
-                Clear();
-                SlicerFile = slicerFile;
-                if (slicerFile is null) return;
                 var clip = new ClipboardItem(SlicerFile, "Original layers", true);
                 clip.AddRange(SlicerFile.LayerManager.CloneLayers());
                 Add(clip);

@@ -2117,7 +2117,7 @@ namespace UVtools.AvaloniaControls
         /// <returns></returns>
         public Rect GetImageViewPort()
         {
-            if (ViewPortSize.Width == 0 && ViewPortSize.Height == 0) return Rect.Empty;
+            if (!IsImageLoaded || (ViewPortSize.Width == 0 && ViewPortSize.Height == 0)) return Rect.Empty;
 
             double xOffset = 0;
             double yOffset = 0;

@@ -121,6 +121,19 @@ namespace UVtools.Core.FileFormats
             Small = 0,
             Large
         }
+
+        public enum FileDecodeType : byte
+        {
+            /// <summary>
+            /// Decodes all the file information and caches layer images
+            /// </summary>
+            Full,
+
+            /// <summary>
+            /// Decodes only the information in the file and thumbnails, no layer image is read nor cached, fast
+            /// </summary>
+            Partial,
+        }
         #endregion
 
         #region Sub Classes
@@ -440,6 +453,17 @@ namespace UVtools.Core.FileFormats
             //if (file.EndsWith(TemporaryFileAppend)) file = Path.GetFileNameWithoutExtension(file);
             return PathExtensions.GetFileNameStripExtensions(filepath, AllFileExtensionsString.OrderByDescending(s => s.Length).ToList(), out strippedExtension);
         }
+
+        public static FileFormat Open(string fileFullPath, FileDecodeType decodeType, OperationProgress progress = null)
+        {
+            var slicerFile = FindByExtensionOrFilePath(fileFullPath, true);
+            if (slicerFile is null) return null;
+            slicerFile.Decode(fileFullPath, decodeType, progress);
+            return slicerFile;
+        }
+
+        public static FileFormat Open(string fileFullPath, OperationProgress progress = null) =>
+            Open(fileFullPath, FileDecodeType.Full, progress);
 
 
         public static byte[] EncodeImage(string dataType, Mat mat)
@@ -762,6 +786,8 @@ namespace UVtools.Core.FileFormats
         /// </summary>
         public abstract FileExtension[] FileExtensions { get; }
 
+        public FileDecodeType DecodeType { get; private set; } = FileDecodeType.Full;
+
         /// <summary>
         /// Gets the available <see cref="PrintParameterModifier"/>
         /// </summary>
@@ -847,6 +873,7 @@ namespace UVtools.Core.FileFormats
         /// </summary>
         public string FileFullPath { get; set; }
 
+        public string FileDirectoryPath => Path.GetDirectoryName(FileFullPath);
         public string Filename => Path.GetFileName(FileFullPath);
         public string FileExtension => Path.GetExtension(FileFullPath);
         public string FilenameNoExt => GetFileNameStripExtensions(FileFullPath);
@@ -2520,9 +2547,8 @@ namespace UVtools.Core.FileFormats
         /// <summary>
         /// Encode to an output file
         /// </summary>
-        /// <param name="fileFullPath">Output file</param>
         /// <param name="progress"></param>
-        protected abstract void EncodeInternally(string fileFullPath, OperationProgress progress);
+        protected abstract void EncodeInternally(OperationProgress progress);
 
         /// <summary>
         /// Encode to an output file
@@ -2531,6 +2557,11 @@ namespace UVtools.Core.FileFormats
         /// <param name="progress"></param>
         public void Encode(string fileFullPath, OperationProgress progress = null)
         {
+            if (DecodeType == FileDecodeType.Partial)
+            {
+                throw new InvalidOperationException("File was partial decoded, a full encode is not possible.");
+            }
+
             progress ??= new OperationProgress();
             progress.Reset(OperationProgress.StatusEncodeLayers, LayerCount);
 
@@ -2543,12 +2574,9 @@ namespace UVtools.Core.FileFormats
 
             LayerManager.Sanitize();
 
-            FileFullPath = fileFullPath;
+            if (File.Exists(fileFullPath)) File.Delete(fileFullPath);
 
-            if (File.Exists(fileFullPath))
-            {
-                File.Delete(fileFullPath);
-            }
+            FileFullPath = fileFullPath;
 
             for (var i = 0; i < Thumbnails.Length; i++)
             {
@@ -2557,7 +2585,7 @@ namespace UVtools.Core.FileFormats
                 CvInvoke.Resize(Thumbnails[i], Thumbnails[i], new Size(ThumbnailsOriginalSize[i].Width, ThumbnailsOriginalSize[i].Height));
             }
 
-            EncodeInternally(fileFullPath, progress);
+            EncodeInternally(progress);
 
             LayerManager.SetAllIsModified(false);
             RequireFullEncode = false;
@@ -2566,24 +2594,32 @@ namespace UVtools.Core.FileFormats
         /// <summary>
         /// Decode a slicer file
         /// </summary>
-        /// <param name="fileFullPath"></param>
         /// <param name="progress"></param>
-        protected abstract void DecodeInternally(string fileFullPath, OperationProgress progress);
+        protected abstract void DecodeInternally(OperationProgress progress);
 
         /// <summary>
         /// Decode a slicer file
         /// </summary>
         /// <param name="fileFullPath"></param>
         /// <param name="progress"></param>
-        public void Decode(string fileFullPath, OperationProgress progress = null)
+        public void Decode(string fileFullPath, OperationProgress progress = null) => Decode(fileFullPath, FileDecodeType.Full, progress);
+
+        /// <summary>
+        /// Decode a slicer file
+        /// </summary>
+        /// <param name="fileFullPath"></param>
+        /// <param name="fileDecodeType"></param>
+        /// <param name="progress"></param>
+        public void Decode(string fileFullPath, FileDecodeType fileDecodeType, OperationProgress progress = null)
         {
             Clear();
             FileValidation(fileFullPath);
             FileFullPath = fileFullPath;
+            DecodeType = fileDecodeType;
             progress ??= new OperationProgress();
             progress.Reset(OperationProgress.StatusGatherLayers, LayerCount);
 
-            DecodeInternally(fileFullPath, progress);
+            DecodeInternally(progress);
 
             progress.Token.ThrowIfCancellationRequested();
 
@@ -2745,20 +2781,15 @@ namespace UVtools.Core.FileFormats
                     }
                 }
 
-                if (LayerCount > 0)
+                if (LayerCount > 0 && DecodeType == FileDecodeType.Full)
                 {
                     Parallel.ForEach(this, CoreSettings.ParallelOptions, layer =>
                     {
                         if (progress.Token.IsCancellationRequested) return;
                         var byteArr = layer.CompressedBytes;
-                        using var stream = File.Create(Path.Combine(path, layer.Filename),
-                            byteArr.Length);
+                        if (byteArr is null) return;
+                        using var stream = new FileStream(Path.Combine(path, layer.Filename), FileMode.Create, FileAccess.Write);
                         stream.Write(byteArr, 0, byteArr.Length);
-                        stream.Close();
-
-                        //using var mat = layer.LayerMat;
-                        //mat.Save(Path.Combine(path, $"{layer.Filename}.jpg"));
-
                         progress.LockAndIncrement();
                     });
                 }
@@ -3343,7 +3374,34 @@ namespace UVtools.Core.FileFormats
         /// </summary>
         /// <param name="filePath">File path to save copy as, use null to overwrite active file (Same as <see cref="Save"/>)</param>
         /// <param name="progress"></param>
-        public abstract void SaveAs(string filePath = null, OperationProgress progress = null);
+        public void SaveAs(string filePath = null, OperationProgress progress = null)
+        {
+            if (RequireFullEncode)
+            {
+                if (!string.IsNullOrEmpty(filePath))
+                {
+                    FileFullPath = filePath;
+                }
+                Encode(FileFullPath, progress);
+                return;
+            }
+
+            if (!string.IsNullOrEmpty(filePath))
+            {
+                File.Copy(FileFullPath, filePath, true);
+                FileFullPath = filePath;
+
+            }
+
+            PartialSaveInternally(progress);
+        }
+
+        /// <summary>
+        /// Partial save of the file, this is the file information only.
+        /// When this function is called it's already ready to save to file
+        /// </summary>
+        /// <param name="progress"></param>
+        protected abstract void PartialSaveInternally(OperationProgress progress);
 
         /// <summary>
         /// Triggers when a conversion is valid and before start converting values

@@ -302,10 +302,10 @@ namespace UVtools.Core.FileFormats
             return false;
         }
 
-        protected override void EncodeInternally(string fileFullPath, OperationProgress progress)
+        protected override void EncodeInternally(OperationProgress progress)
         {
-            using var outputFile = ZipFile.Open(fileFullPath, ZipArchiveMode.Create);
-            var manifestFilename = Path.GetFileName(fileFullPath).
+            using var outputFile = ZipFile.Open(FileFullPath, ZipArchiveMode.Create);
+            var manifestFilename = Filename.
                 Replace($".{FileExtensions[0].Extension}{TemporaryFileAppend}", ".xml").
                 Replace($".{FileExtensions[0].Extension}", ".xml");
 
@@ -328,7 +328,7 @@ namespace UVtools.Core.FileFormats
             serializer.Serialize(stream, ManifestFile, ns);
         }
 
-        protected override void DecodeInternally(string fileFullPath, OperationProgress progress)
+        protected override void DecodeInternally(OperationProgress progress)
         {
             using (var inputFile = ZipFile.Open(FileFullPath, ZipArchiveMode.Read))
             {
@@ -336,7 +336,7 @@ namespace UVtools.Core.FileFormats
                 if (entry is null)
                 {
                     Clear();
-                    throw new FileLoadException($".xml manifest not found", fileFullPath);
+                    throw new FileLoadException($".xml manifest not found", FileFullPath);
                 }
 
                 try
@@ -348,11 +348,11 @@ namespace UVtools.Core.FileFormats
                 catch (Exception e)
                 {
                     Clear();
-                    throw new FileLoadException($"Unable to deserialize '{entry.Name}'\n{e}", fileFullPath);
+                    throw new FileLoadException($"Unable to deserialize '{entry.Name}'\n{e}", FileFullPath);
                 }
 
 
-                LayerManager.Init(ManifestFile.Slices.LayerCount);
+                LayerManager.Init(ManifestFile.Slices.LayerCount, DecodeType == FileDecodeType.Partial);
                 progress.Reset(OperationProgress.StatusDecodeLayers, LayerCount);
 
 
@@ -364,11 +364,14 @@ namespace UVtools.Core.FileFormats
                     if (entry is null)
                     {
                         Clear();
-                        throw new FileLoadException($"Layer {filename} not found", fileFullPath);
+                        throw new FileLoadException($"Layer {filename} not found", FileFullPath);
                     }
 
-                    using var stream = entry.Open();
-                    this[layerIndex] = new Layer(layerIndex, stream, LayerManager);
+                    if (DecodeType == FileDecodeType.Full)
+                    {
+                        using var stream = entry.Open();
+                        this[layerIndex] = new Layer(layerIndex, stream, LayerManager);
+                    }
 
                     progress++;
                 }
@@ -377,24 +380,8 @@ namespace UVtools.Core.FileFormats
             LayerManager.GetBoundingRectangle(progress);
         }
 
-        public override void SaveAs(string filePath = null, OperationProgress progress = null)
+        protected override void PartialSaveInternally(OperationProgress progress)
         {
-            if (RequireFullEncode)
-            {
-                if (!string.IsNullOrEmpty(filePath))
-                {
-                    FileFullPath = filePath;
-                }
-                Encode(FileFullPath, progress);
-                return;
-            }
-
-            if (!string.IsNullOrEmpty(filePath))
-            {
-                File.Copy(FileFullPath, filePath, true);
-                FileFullPath = filePath;
-            }
-
             using var outputFile = ZipFile.Open(FileFullPath, ZipArchiveMode.Update);
             bool deleted;
 

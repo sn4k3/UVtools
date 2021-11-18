@@ -927,7 +927,7 @@ namespace UVtools.Core.FileFormats
             LayersDefinitions = null;
         }
 
-        protected override void EncodeInternally(string fileFullPath, OperationProgress progress)
+        protected override void EncodeInternally(OperationProgress progress)
         {
             /*if (HeaderSettings.EncryptionKey == 0)
             {
@@ -936,7 +936,7 @@ namespace UVtools.Core.FileFormats
             }*/
 
             LayersDefinitions = new LayerDef[HeaderSettings.LayerCount];
-            using var outputFile = new FileStream(fileFullPath, FileMode.Create, FileAccess.Write);
+            using var outputFile = new FileStream(FileFullPath, FileMode.Create, FileAccess.Write);
             outputFile.Seek(Helpers.Serializer.SizeOf(HeaderSettings), SeekOrigin.Begin);
 
             for (byte i = 0; i < ThumbnailsCount; i++)
@@ -1046,15 +1046,15 @@ namespace UVtools.Core.FileFormats
             Debug.WriteLine("-End-");
         }
 
-        protected override void DecodeInternally(string fileFullPath, OperationProgress progress)
+        protected override void DecodeInternally(OperationProgress progress)
         {
-            using var inputFile = new FileStream(fileFullPath, FileMode.Open, FileAccess.Read);
+            using var inputFile = new FileStream(FileFullPath, FileMode.Open, FileAccess.Read);
             //HeaderSettings = Helpers.ByteToType<CbddlpFile.Header>(InputFile);
             //HeaderSettings = Helpers.Serializer.Deserialize<Header>(InputFile.ReadBytes(Helpers.Serializer.SizeOf(typeof(Header))));
             HeaderSettings = Helpers.Deserialize<Header>(inputFile);
             if (HeaderSettings.Magic != MAGIC_PHZ)
             {
-                throw new FileLoadException("Not a valid PHZ file!", fileFullPath);
+                throw new FileLoadException("Not a valid PHZ file!", FileFullPath);
             }
 
             HeaderSettings.AntiAliasLevel = 1;
@@ -1093,7 +1093,7 @@ namespace UVtools.Core.FileFormats
             }
 
 
-            LayerManager.Init(HeaderSettings.LayerCount);
+            LayerManager.Init(HeaderSettings.LayerCount, DecodeType == FileDecodeType.Partial);
             LayersDefinitions = new LayerDef[HeaderSettings.LayerCount];
 
             progress.Reset(OperationProgress.StatusDecodeLayers, HeaderSettings.LayerCount);
@@ -1110,45 +1110,34 @@ namespace UVtools.Core.FileFormats
                     Debug.Write($"LAYER {layerIndex} -> ");
                     Debug.WriteLine(layerDef);
 
-                    inputFile.SeekDoWorkAndRewind(layerDef.DataAddress, () =>
+                    if (DecodeType == FileDecodeType.Full)
                     {
-                        layerDef.EncodedRle = inputFile.ReadBytes(layerDef.DataSize);
-                    });
+                        inputFile.SeekDoWorkAndRewind(layerDef.DataAddress,
+                            () => { layerDef.EncodedRle = inputFile.ReadBytes(layerDef.DataSize); });
+                    }
                 }
 
-                Parallel.ForEach(batch, CoreSettings.ParallelOptions, layerIndex =>
+                if (DecodeType == FileDecodeType.Full)
                 {
-                    if (progress.Token.IsCancellationRequested) return;
-                    using (var mat = LayersDefinitions[layerIndex].Decode((uint)layerIndex))
+                    Parallel.ForEach(batch, CoreSettings.ParallelOptions, layerIndex =>
                     {
-                        var layer = new Layer((uint)layerIndex, mat, this);
-                        LayersDefinitions[layerIndex].CopyTo(layer);
-                        this[layerIndex] = layer;
-                    }
+                        if (progress.Token.IsCancellationRequested) return;
 
-                    progress.LockAndIncrement();
-                });
+                        using var mat = LayersDefinitions[layerIndex].Decode((uint)layerIndex);
+                        this[layerIndex] = new Layer((uint)layerIndex, mat, this);
+                        progress.LockAndIncrement();
+                    });
+                }
+            }
+
+            for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
+            {
+                LayersDefinitions[layerIndex].CopyTo(this[layerIndex]);
             }
         }
 
-        public override void SaveAs(string filePath = null, OperationProgress progress = null)
+        protected override void PartialSaveInternally(OperationProgress progress)
         {
-            if (RequireFullEncode)
-            {
-                if (!string.IsNullOrEmpty(filePath))
-                {
-                    FileFullPath = filePath;
-                }
-                Encode(FileFullPath, progress);
-                return;
-            }
-
-            if (!string.IsNullOrEmpty(filePath))
-            {
-                File.Copy(FileFullPath, filePath, true);
-                FileFullPath = filePath;
-            }
-
             using var outputFile = new FileStream(FileFullPath, FileMode.Open, FileAccess.Write);
             outputFile.Seek(0, SeekOrigin.Begin);
             Helpers.SerializeWriteFileStream(outputFile, HeaderSettings);

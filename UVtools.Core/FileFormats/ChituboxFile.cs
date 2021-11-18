@@ -1775,7 +1775,7 @@ namespace UVtools.Core.FileFormats
             return true;
         }
 
-        protected override void EncodeInternally(string fileFullPath, OperationProgress progress)
+        protected override void EncodeInternally(OperationProgress progress)
         {
             SanitizeMagicVersion();
             SanitizeProperties();
@@ -1799,7 +1799,7 @@ namespace UVtools.Core.FileFormats
 
             //uint currentOffset = (uint)Helpers.Serializer.SizeOf(HeaderSettings);
             LayerDefinitions = new LayerDef[HeaderSettings.AntiAliasLevel, HeaderSettings.LayerCount];
-            using var outputFile = new FileStream(fileFullPath, FileMode.Create, FileAccess.Write);
+            using var outputFile = new FileStream(FileFullPath, FileMode.Create, FileAccess.Write);
             outputFile.Seek(Helpers.Serializer.SizeOf(HeaderSettings), SeekOrigin.Begin);
 
             Mat[] thumbnails = {GetThumbnail(true), GetThumbnail(false)};
@@ -1956,24 +1956,22 @@ namespace UVtools.Core.FileFormats
         }
 
 
-        protected override void DecodeInternally(string fileFullPath, OperationProgress progress)
+        protected override void DecodeInternally(OperationProgress progress)
         {
-            using var inputFile = new FileStream(fileFullPath, FileMode.Open, FileAccess.Read);
+            using var inputFile = new FileStream(FileFullPath, FileMode.Open, FileAccess.Read);
             //HeaderSettings = Helpers.ByteToType<CbddlpFile.Header>(InputFile);
             //HeaderSettings = Helpers.Serializer.Deserialize<Header>(InputFile.ReadBytes(Helpers.Serializer.SizeOf(typeof(Header))));
             HeaderSettings = Helpers.Deserialize<Header>(inputFile);
 
             if (HeaderSettings.Magic is not MAGIC_CBDDLP and not MAGIC_CTB and not MAGIC_CTBv4)
             {
-                throw new FileLoadException($"Not a valid PHOTON nor CBDDLP nor CTB file! Magic Value: {HeaderSettings.Magic}", fileFullPath);
+                throw new FileLoadException($"Not a valid PHOTON nor CBDDLP nor CTB file! Magic Value: {HeaderSettings.Magic}", FileFullPath);
             }
 
             if (HeaderSettings.Version == 1 || HeaderSettings.AntiAliasLevel == 0)
             {
                 HeaderSettings.AntiAliasLevel = 1;
             }
-
-            FileFullPath = fileFullPath;
 
             progress.Reset(OperationProgress.StatusDecodePreviews, ThumbnailsCount);
 
@@ -2031,7 +2029,7 @@ namespace UVtools.Core.FileFormats
                 {
                     throw new FileLoadException(
                         $"Malformed file, PrintParametersV4Address is missing",
-                        fileFullPath);
+                        FileFullPath);
                 }
 
                 inputFile.Seek(SlicerInfoSettings.PrintParametersV4Address, SeekOrigin.Begin);
@@ -2044,7 +2042,7 @@ namespace UVtools.Core.FileFormats
                     throw new FileLoadException(
                         $"Malformed file, PrintParametersV4 found invalid validation values, expected (4, 4) " +
                         $"but got ({PrintParametersV4Settings.Four1}, {PrintParametersV4Settings.Four2})",
-                        fileFullPath);
+                        FileFullPath);
                 }
             }
 
@@ -2053,8 +2051,7 @@ namespace UVtools.Core.FileFormats
 
             uint layerOffset = HeaderSettings.LayersDefinitionOffsetAddress;
 
-            progress.Reset(OperationProgress.StatusGatherLayers,
-                HeaderSettings.AntiAliasLevel * HeaderSettings.LayerCount);
+            progress.Reset(OperationProgress.StatusGatherLayers, HeaderSettings.AntiAliasLevel * HeaderSettings.LayerCount);
 
             for (byte aaIndex = 0; aaIndex < HeaderSettings.AntiAliasLevel; aaIndex++)
             {
@@ -2089,65 +2086,52 @@ namespace UVtools.Core.FileFormats
                 }
             }
 
-            LayerManager.Init(HeaderSettings.LayerCount);
+            LayerManager.Init(HeaderSettings.LayerCount, DecodeType == FileDecodeType.Partial);
 
-            progress.Reset(OperationProgress.StatusDecodeLayers, LayerCount);
-
-            foreach (var batch in BatchLayersIndexes())
+            if (DecodeType == FileDecodeType.Full)
             {
-                foreach (var layerIndex in batch)
-                {
-                    for (byte aaIndex = 0; aaIndex < HeaderSettings.AntiAliasLevel; aaIndex++)
-                    {
-                        progress.Token.ThrowIfCancellationRequested();
+                progress.Reset(OperationProgress.StatusDecodeLayers, LayerCount);
 
-                        inputFile.Seek(LayerDefinitions[aaIndex, layerIndex].DataAddress, SeekOrigin.Begin);
-                        LayerDefinitions[aaIndex, layerIndex].EncodedRle = inputFile.ReadBytes(LayerDefinitions[aaIndex, layerIndex].DataSize);
+                foreach (var batch in BatchLayersIndexes())
+                {
+                    foreach (var layerIndex in batch)
+                    {
+                        for (byte aaIndex = 0; aaIndex < HeaderSettings.AntiAliasLevel; aaIndex++)
+                        {
+                            progress.Token.ThrowIfCancellationRequested();
+
+                            inputFile.Seek(LayerDefinitions[aaIndex, layerIndex].DataAddress, SeekOrigin.Begin);
+                            LayerDefinitions[aaIndex, layerIndex].EncodedRle = inputFile.ReadBytes(LayerDefinitions[aaIndex, layerIndex].DataSize);
+                        }
                     }
+
+                    Parallel.ForEach(batch, CoreSettings.ParallelOptions, layerIndex =>
+                    {
+                        if (progress.Token.IsCancellationRequested) return;
+                        using var mat = LayerDefinitions[0, layerIndex].Decode((uint)layerIndex);
+                        this[layerIndex] = new Layer((uint)layerIndex, mat, this);
+
+                        progress.LockAndIncrement();
+                    });
                 }
-
-                Parallel.ForEach(batch, CoreSettings.ParallelOptions, layerIndex =>
-                {
-                    if (progress.Token.IsCancellationRequested) return;
-                    using (var mat = LayerDefinitions[0, layerIndex].Decode((uint)layerIndex))
-                    {
-                        var layer = new Layer((uint)layerIndex, mat, this);
-                        if (layerDefinitionsEx is not null) // CTBv4
-                        {
-                            layerDefinitionsEx[layerIndex].CopyTo(layer);
-                        }
-                        else // others
-                        {
-                            LayerDefinitions[0, layerIndex].CopyTo(layer);
-                        }
-
-                        this[layerIndex] = layer;
-                    }
-
-                    progress.LockAndIncrement();
-                });
             }
+
+            for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
+            {
+                if (layerDefinitionsEx is not null) // CTBv4
+                {
+                    layerDefinitionsEx[layerIndex].CopyTo(this[layerIndex]);
+                }
+                else // others
+                {
+                    LayerDefinitions[0, layerIndex].CopyTo(this[layerIndex]);
+                }
+            }
+
         }
 
-        public override void SaveAs(string filePath = null, OperationProgress progress = null)
+        protected override void PartialSaveInternally(OperationProgress progress)
         {
-            if (RequireFullEncode)
-            {
-                if (!string.IsNullOrEmpty(filePath))
-                {
-                    FileFullPath = filePath;
-                }
-                Encode(FileFullPath, progress);
-                return;
-            }
-
-
-            if (!string.IsNullOrEmpty(filePath))
-            {
-                File.Copy(FileFullPath, filePath, true);
-                FileFullPath = filePath;
-            }
-
             SanitizeProperties();
             using var outputFile = new FileStream(FileFullPath, FileMode.Open, FileAccess.Write);
             outputFile.Seek(0, SeekOrigin.Begin);

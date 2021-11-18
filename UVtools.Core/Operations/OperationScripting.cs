@@ -30,6 +30,8 @@ namespace UVtools.Core.Operations
 
         #region Overrides
 
+        public override bool CanRunInPartialMode => true;
+
         public override bool CanHaveProfiles => false;
 
         public override string Title => "Scripting";

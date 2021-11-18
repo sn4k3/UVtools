@@ -25,6 +25,7 @@ namespace UVtools.Core.Operations
         #endregion
 
         #region Overrides
+        public override bool CanRunInPartialMode => true;
         public override Enumerations.LayerRangeSelection StartLayerRangeSelection => Enumerations.LayerRangeSelection.Normal;
         public override bool LayerIndexEndEnabled => false;
         public override string Title => "Fade exposure time";

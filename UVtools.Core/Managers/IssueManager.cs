@@ -124,6 +124,8 @@ namespace UVtools.Core.Managers
             bool emptyLayersConfig = true,
             OperationProgress progress = null)
         {
+            if (SlicerFile.DecodeType == FileFormat.FileDecodeType.Partial) return null;
+
             islandConfig ??= new IslandDetectionConfiguration();
             overhangConfig ??= new OverhangDetectionConfiguration();
             resinTrapConfig ??= new ResinTrapDetectionConfiguration();

@@ -7,15 +7,12 @@
  */
 
 using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
 using Emgu.CV;
-using Emgu.CV.Cuda;
-using Emgu.CV.Util;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Layers;
@@ -119,6 +116,11 @@ namespace UVtools.Core.Operations
         /// Gets if this operation should set layer range to the actual layer index on layer preview
         /// </summary>
         public virtual bool PassActualLayerIndex => false;
+
+        /// <summary>
+        /// Gets if this operation can run in a file open as partial mode
+        /// </summary>
+        public virtual bool CanRunInPartialMode => false;
 
         /// <summary>
         /// Gets if this operation can make use of ROI
@@ -502,6 +504,7 @@ namespace UVtools.Core.Operations
         public bool Execute(OperationProgress progress = null)
         {
             if (_slicerFile is null) throw new InvalidOperationException($"{Title} can't execute due the lacking of a file parent.");
+            if (_slicerFile.DecodeType == FileFormat.FileDecodeType.Partial && !CanRunInPartialMode) throw new InvalidOperationException($"The file was open in partial mode and the tool \"{Title}\" is unable to run in this mode.\nPlease reload the file in full mode in order to use this tool.");
             if (!IsValidated)
             {
                 var msg = Validate();

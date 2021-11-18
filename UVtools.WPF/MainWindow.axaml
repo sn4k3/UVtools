@@ -43,6 +43,13 @@
                   <Image Source="\Assets\Icons\file-import-16x16.png"/>
               </MenuItem.Icon>
           </MenuItem>
+          <MenuItem Name="MainMenu.File.OpenInPartialMode" Header="Open in partial mode" Command="{Binding MenuFileOpenInPartialModeClicked}"
+                    ToolTip.Tip="Open a file only to see and/or edit properties.
+&#x0a;Layer images won't be loaded and most tools won't run in this mode.">
+              <MenuItem.Icon>
+                  <Image Source="\Assets\Icons\file-import-16x16.png"/>
+              </MenuItem.Icon>
+          </MenuItem>
         <MenuItem 
           Name="MainMenu.File.Reload" 
           Header="_Reload" 

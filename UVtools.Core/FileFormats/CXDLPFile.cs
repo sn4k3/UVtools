@@ -17,7 +17,6 @@ using System.Text;
 using System.Threading.Tasks;
 using BinarySerialization;
 using Emgu.CV;
-using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
 using MoreLinq;
 using UVtools.Core.Extensions;
@@ -571,9 +570,9 @@ namespace UVtools.Core.FileFormats
             SlicerInfoSettings.WaitTimeBeforeCure = (ushort)Math.Max(1, WaitTimeBeforeCure);
         }
 
-        protected override void EncodeInternally(string fileFullPath, OperationProgress progress)
+        protected override void EncodeInternally(OperationProgress progress)
         {
-            using var outputFile = new FileStream(fileFullPath, FileMode.Create, FileAccess.ReadWrite);
+            using var outputFile = new FileStream(FileFullPath, FileMode.Create, FileAccess.ReadWrite);
 
             if (ResolutionX == 1620 && ResolutionY == 2560)
             {
@@ -790,9 +789,9 @@ namespace UVtools.Core.FileFormats
             Debug.WriteLine("-End-");
         }
 
-        protected override void DecodeInternally(string fileFullPath, OperationProgress progress)
+        protected override void DecodeInternally(OperationProgress progress)
         {
-            using var inputFile = new FileStream(fileFullPath, FileMode.Open, FileAccess.Read);
+            using var inputFile = new FileStream(FileFullPath, FileMode.Open, FileAccess.Read);
 
             inputFile.Seek(0, SeekOrigin.Begin);
 
@@ -812,10 +811,10 @@ namespace UVtools.Core.FileFormats
             if (expectedCheckSum != checkSum)
             {
                 throw new FileLoadException($"Checksum fails, expecting: {expectedCheckSum} but got: {checkSum}.\n" +
-                                            $"Try to reslice the file.", fileFullPath);
+                                            $"Try to reslice the file.", FileFullPath);
             }
             
-            byte[][] previews = new byte[ThumbnailsOriginalSize.Length][];
+            var previews = new byte[ThumbnailsOriginalSize.Length][];
             for (int i = 0; i < ThumbnailsOriginalSize.Length; i++)
             {
                 previews[i] = new byte[ThumbnailsOriginalSize[i].Area() * 2];
@@ -833,116 +832,80 @@ namespace UVtools.Core.FileFormats
             SlicerInfoSettings = Helpers.Deserialize<SlicerInfo>(inputFile);
             Debug.WriteLine(SlicerInfoSettings);
 
-            LayerManager.Init(HeaderSettings.LayerCount);
+            LayerManager.Init(HeaderSettings.LayerCount, DecodeType == FileDecodeType.Partial);
             inputFile.Seek(LayerCount * 4 + 2, SeekOrigin.Current); // Skip pre layers
-            progress.Reset(OperationProgress.StatusDecodeLayers, LayerCount);
-            /*var preLayers = new PreLayer[LayerCount];
-            for (int layerIndex = 0; layerIndex < LayerCount; layerIndex++)
+
+            if (DecodeType == FileDecodeType.Full)
             {
-                progress.Token.ThrowIfCancellationRequested();
-                preLayers[layerIndex] = Helpers.Deserialize<PreLayer>(inputFile);
-                progress++;
-            }*/
+                progress.Reset(OperationProgress.StatusDecodeLayers, LayerCount);
 
-            //inputFile.Seek(2, SeekOrigin.Current);
-
-            var linesBytes = new byte[LayerCount][];
-            foreach (var batch in BatchLayersIndexes())
-            {
-                progress.Token.ThrowIfCancellationRequested();
-
-                foreach (var layerIndex in batch)
+                var linesBytes = new byte[LayerCount][];
+                foreach (var batch in BatchLayersIndexes())
                 {
-                    inputFile.Seek(4, SeekOrigin.Current);
-                    var lineCount = BitExtensions.ToUIntBigEndian(inputFile.ReadBytes(4));
-
-                    linesBytes[layerIndex] = new byte[lineCount * 6];
-                    inputFile.ReadBytes(linesBytes[layerIndex]);
-                    inputFile.Seek(2, SeekOrigin.Current);
-
                     progress.Token.ThrowIfCancellationRequested();
-                }
 
-                Parallel.ForEach(batch, CoreSettings.ParallelOptions, layerIndex =>
-                {
-                    if (progress.Token.IsCancellationRequested) return;
-                    using (var mat = EmguExtensions.InitMat(Resolution))
+                    foreach (var layerIndex in batch)
                     {
+                        inputFile.Seek(4, SeekOrigin.Current);
+                        var lineCount = BitExtensions.ToUIntBigEndian(inputFile.ReadBytes(4));
 
-                        for (int i = 0; i < linesBytes[layerIndex].Length; i++)
-                        {
-                            LayerLine line = new()
-                            {
-                                Coordinates =
-                                {
-                                    [0] = linesBytes[layerIndex][i++],
-                                    [1] = linesBytes[layerIndex][i++],
-                                    [2] = linesBytes[layerIndex][i++],
-                                    [3] = linesBytes[layerIndex][i++],
-                                    [4] = linesBytes[layerIndex][i++]
-                                },
-                                Gray = linesBytes[layerIndex][i]
-                            };
+                        linesBytes[layerIndex] = new byte[lineCount * 6];
+                        inputFile.ReadBytes(linesBytes[layerIndex]);
+                        inputFile.Seek(2, SeekOrigin.Current);
 
-                            CvInvoke.Line(mat, new Point(line.StartX, line.StartY), new Point(line.StartX, line.EndY),
-                                new MCvScalar(line.Gray));
-                        }
-
-                        linesBytes[layerIndex] = null;
-
-                        this[layerIndex] = new Layer((uint)layerIndex, mat, this);
+                        progress.Token.ThrowIfCancellationRequested();
                     }
 
-                    progress.LockAndIncrement();
-                });
+                    Parallel.ForEach(batch, CoreSettings.ParallelOptions, layerIndex =>
+                    {
+                        if (progress.Token.IsCancellationRequested) return;
+                        using (var mat = EmguExtensions.InitMat(Resolution))
+                        {
+
+                            for (int i = 0; i < linesBytes[layerIndex].Length; i++)
+                            {
+                                LayerLine line = new()
+                                {
+                                    Coordinates =
+                                    {
+                                        [0] = linesBytes[layerIndex][i++],
+                                        [1] = linesBytes[layerIndex][i++],
+                                        [2] = linesBytes[layerIndex][i++],
+                                        [3] = linesBytes[layerIndex][i++],
+                                        [4] = linesBytes[layerIndex][i++]
+                                    },
+                                    Gray = linesBytes[layerIndex][i]
+                                };
+
+                                CvInvoke.Line(mat, new Point(line.StartX, line.StartY),
+                                    new Point(line.StartX, line.EndY),
+                                    new MCvScalar(line.Gray));
+                            }
+
+                            linesBytes[layerIndex] = null;
+
+                            this[layerIndex] = new Layer((uint)layerIndex, mat, this);
+                        }
+
+                        progress.LockAndIncrement();
+                    });
+                }
+            }
+            else // Partial read
+            {
+                inputFile.Seek(-Helpers.Serializer.SizeOf(FooterSettings), SeekOrigin.End);
             }
 
             progress.Token.ThrowIfCancellationRequested();
 
-            /*var layerDefs = new LayerDef[LayerCount];
-            for (int layerIndex = 0; layerIndex < LayerCount; layerIndex++)
-            {
-                progress.Token.ThrowIfCancellationRequested();
-                layerDefs[layerIndex] = Helpers.Deserialize<LayerDef>(inputFile);
-                progress++;
-            }
 
-            progress.Reset(OperationProgress.StatusDecodeLayers, LayerCount);
-            Parallel.For(0, LayerCount,  CoreSettings.ParallelOptions, layerIndex =>
-            {
-                if (progress.Token.IsCancellationRequested) return;
-                using var mat = EmguExtensions.InitMat(Resolution);
-                foreach (var line in layerDefs[layerIndex].Lines)
-                {
-                    CvInvoke.Line(mat, new Point(line.StartX, line.StartY), new Point(line.StartX, line.EndY), new MCvScalar(line.Gray));
-                }
-
-                this[layerIndex] = new Layer((uint)layerIndex, mat, this);
-                progress.LockAndIncrement();
-            });*/
 
             FooterSettings = Helpers.Deserialize<Footer>(inputFile);
             FooterSettings.Validate();
         }
 
-        public override void SaveAs(string filePath = null, OperationProgress progress = null)
+        protected override void PartialSaveInternally(OperationProgress progress)
         {
-            if (RequireFullEncode)
-            {
-                if (!string.IsNullOrEmpty(filePath))
-                {
-                    FileFullPath = filePath;
-                }
-                Encode(FileFullPath, progress);
-                return;
-            }
-
-            if (!string.IsNullOrEmpty(filePath))
-            {
-                File.Copy(FileFullPath, filePath, true);
-                FileFullPath = filePath;
-            }
-
             var offset = Helpers.Serializer.SizeOf(HeaderSettings);
             foreach (var size in ThumbnailsOriginalSize)
             {

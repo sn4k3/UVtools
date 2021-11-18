@@ -374,7 +374,7 @@ namespace UVtools.Core.FileFormats
             LayersSettings.Clear();
         }
 
-        protected override void EncodeInternally(string fileFullPath, OperationProgress progress) 
+        protected override void EncodeInternally(OperationProgress progress) 
         { 
             float usedMaterial = MaterialMilliliters / LayerCount;
             ResinMetadataSettings.Layers.Clear();
@@ -387,87 +387,83 @@ namespace UVtools.Core.FileFormats
                 });
             }
 
-            using (ZipArchive outputFile = ZipFile.Open(fileFullPath, ZipArchiveMode.Create))
-            {
-                outputFile.PutFileContent("ResinMetadata", JsonConvert.SerializeObject(ResinMetadataSettings, Formatting.Indented), ZipArchiveMode.Create);
-                outputFile.PutFileContent("UserSettingsData", JsonConvert.SerializeObject(UserSettings, Formatting.Indented), ZipArchiveMode.Create);
-                outputFile.PutFileContent("ZCodeMetadata", JsonConvert.SerializeObject(ZCodeMetadataSettings, Formatting.Indented), ZipArchiveMode.Create);
+            using var outputFile = ZipFile.Open(FileFullPath, ZipArchiveMode.Create);
+            outputFile.PutFileContent("ResinMetadata", JsonConvert.SerializeObject(ResinMetadataSettings, Formatting.Indented), ZipArchiveMode.Create);
+            outputFile.PutFileContent("UserSettingsData", JsonConvert.SerializeObject(UserSettings, Formatting.Indented), ZipArchiveMode.Create);
+            outputFile.PutFileContent("ZCodeMetadata", JsonConvert.SerializeObject(ZCodeMetadataSettings, Formatting.Indented), ZipArchiveMode.Create);
 
-                if (CreatedThumbnailsCount > 0)
+            if (CreatedThumbnailsCount > 0)
+            {
+                using var stream = outputFile.CreateEntry("Preview.png").Open();
+                stream.WriteBytes(Thumbnails[0].GetPngByes());
+                stream.Close();
+            }
+
+            GCode.Clear();
+
+            float lastZPosition = 0;
+            for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
+            {
+                progress.Token.ThrowIfCancellationRequested();
+
+                var layer = this[layerIndex];
+                GCode.AppendLine($"{GCodeKeywordSlice} {layerIndex}");
+
+                if (lastZPosition != layer.PositionZ)
                 {
-                    using (var stream = outputFile.CreateEntry("Preview.png").Open())
+                    if (layer.LiftHeight > 0)
                     {
-                        stream.WriteBytes(Thumbnails[0].GetPngByes());
-                        stream.Close();
+                        GCode.AppendLine($"G1 Z{layer.LiftHeight} F{layer.LiftSpeed}");
+                        GCode.AppendLine($"G1 Z-{Layer.RoundHeight(layer.LiftHeight - layer.PositionZ + lastZPosition)} F{layer.RetractSpeed}");
+                    }
+                    else
+                    {
+                        GCode.AppendLine($"G1 Z{Layer.RoundHeight(layer.PositionZ- lastZPosition)} F{layer.LiftSpeed}");
                     }
                 }
-
-                GCode.Clear();
-
-                float lastZPosition = 0;
-                for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
-                {
-                    progress.Token.ThrowIfCancellationRequested();
-
-                    Layer layer = this[layerIndex];
-                    GCode.AppendLine($"{GCodeKeywordSlice} {layerIndex}");
-
-                    if (lastZPosition != layer.PositionZ)
-                    {
-                        if (layer.LiftHeight > 0)
-                        {
-                            GCode.AppendLine($"G1 Z{layer.LiftHeight} F{layer.LiftSpeed}");
-                            GCode.AppendLine($"G1 Z-{Layer.RoundHeight(layer.LiftHeight - layer.PositionZ + lastZPosition)} F{layer.RetractSpeed}");
-                        }
-                        else
-                        {
-                            GCode.AppendLine($"G1 Z{Layer.RoundHeight(layer.PositionZ- lastZPosition)} F{layer.LiftSpeed}");
-                        }
-                    }
-                    /*else
+                /*else
                     {
                         //GCode.AppendLine($";G1 Z{LiftHeight} F{LiftSpeed}; Already here");
                         //GCode.AppendLine($";G1 Z-{LiftHeight - layer.PositionZ + lastZPosition} F{RetractSpeed}; Already here");
                     }*/
 
-                    //GCode.AppendLine($"G1 Z{LiftHeight} F{LiftSpeed}");
-                    //GCode.AppendLine($"G1 Z-{LiftHeight - LayerHeight} F{RetractSpeed}");
-                    GCode.AppendLine(GCodeKeywordDelayBlank);
-                    GCode.AppendLine("M106 S255");
-                    GCode.AppendLine(GCodeKeywordDelayModel);
-                    GCode.AppendLine("M106 S0");
+                //GCode.AppendLine($"G1 Z{LiftHeight} F{LiftSpeed}");
+                //GCode.AppendLine($"G1 Z-{LiftHeight - LayerHeight} F{RetractSpeed}");
+                GCode.AppendLine(GCodeKeywordDelayBlank);
+                GCode.AppendLine("M106 S255");
+                GCode.AppendLine(GCodeKeywordDelayModel);
+                GCode.AppendLine("M106 S0");
 
 
-                    var layerimagePath = $"{FolderImages}/{FolderImageName}{layerIndex:D5}.png";
-                    using (Stream stream = outputFile.CreateEntry(layerimagePath).Open())
-                    {
-                        //image.Save(stream, Helpers.PngEncoder);
-                        var byteArr = this[layerIndex].CompressedBytes;
-                        stream.Write(byteArr, 0, byteArr.Length);
-                        stream.Close();
-                    }
-
-                    lastZPosition = layer.PositionZ;
-
-                    progress++;
+                var layerimagePath = $"{FolderImages}/{FolderImageName}{layerIndex:D5}.png";
+                using (var stream = outputFile.CreateEntry(layerimagePath).Open())
+                {
+                    //image.Save(stream, Helpers.PngEncoder);
+                    var byteArr = this[layerIndex].CompressedBytes;
+                    stream.Write(byteArr, 0, byteArr.Length);
+                    stream.Close();
                 }
 
-                GCode.AppendLine($"G1 Z40.0 F{UserSettings.ZLiftFeedRate}");
-                GCode.AppendLine("M18");
+                lastZPosition = layer.PositionZ;
 
-                outputFile.PutFileContent("ResinGCodeData", GCode.ToString(), ZipArchiveMode.Create);
+                progress++;
             }
+
+            GCode.AppendLine($"G1 Z40.0 F{UserSettings.ZLiftFeedRate}");
+            GCode.AppendLine("M18");
+
+            outputFile.PutFileContent("ResinGCodeData", GCode.ToString(), ZipArchiveMode.Create);
         }
 
-        protected override void DecodeInternally(string fileFullPath, OperationProgress progress)
+        protected override void DecodeInternally(OperationProgress progress)
         {
-            using (var inputFile = ZipFile.Open(fileFullPath, ZipArchiveMode.Read))
+            using (var inputFile = ZipFile.Open(FileFullPath, ZipArchiveMode.Read))
             {
                 var entry = inputFile.GetEntry("ResinMetadata");
                 if (entry is null)
                 {
                     Clear();
-                    throw new FileLoadException("ResinMetadata not found", fileFullPath);
+                    throw new FileLoadException("ResinMetadata not found", FileFullPath);
                 }
 
                 ResinMetadataSettings = Helpers.JsonDeserializeObject<ResinMetadata>(entry.Open());
@@ -476,7 +472,7 @@ namespace UVtools.Core.FileFormats
                 if (entry is null)
                 {
                     Clear();
-                    throw new FileLoadException("UserSettingsData not found", fileFullPath);
+                    throw new FileLoadException("UserSettingsData not found", FileFullPath);
                 }
 
                 UserSettings = Helpers.JsonDeserializeObject<UserSettingsdata>(entry.Open());
@@ -485,7 +481,7 @@ namespace UVtools.Core.FileFormats
                 if (entry is null)
                 {
                     Clear();
-                    throw new FileLoadException("ZCodeMetadata not found", fileFullPath);
+                    throw new FileLoadException("ZCodeMetadata not found", FileFullPath);
                 }
 
                 ZCodeMetadataSettings = Helpers.JsonDeserializeObject<ZCodeMetadata>(entry.Open());
@@ -494,10 +490,10 @@ namespace UVtools.Core.FileFormats
                 if (entry is null)
                 {
                     Clear();
-                    throw new FileLoadException("ResinGCodeData not found", fileFullPath);
+                    throw new FileLoadException("ResinGCodeData not found", FileFullPath);
                 }
 
-                LayerManager.Init(ResinMetadataSettings.TotalLayersCount);
+                LayerManager.Init(ResinMetadataSettings.TotalLayersCount, DecodeType == FileDecodeType.Partial);
                 GCode.Clear();
                 using (TextReader tr = new StreamReader(entry.Open()))
                 {
@@ -577,14 +573,18 @@ M106 S0
                            
                             LayersSettings[layerIndex].LayerFileIndex = layerFileIndex;
                             LayersSettings[layerIndex].LayerEntry = inputFile.GetEntry(layerimagePath);
-                            this[layerIndex] = new Layer((uint) layerIndex, LayersSettings[layerIndex].LayerEntry.Open(), LayerManager)
+
+                            if (DecodeType == FileDecodeType.Full)
                             {
-                                PositionZ = currentHeight,
-                                LiftHeight = liftHeight,
-                                LiftSpeed = liftSpeed,
-                                RetractSpeed = retractSpeed,
-                                LightPWM = pwm
-                            };
+                                using var stream = LayersSettings[layerIndex].LayerEntry.Open();
+                                this[layerIndex] = new Layer((uint)layerIndex, stream, LayerManager);
+                            }
+
+                            this[layerIndex].PositionZ = currentHeight;
+                            this[layerIndex].LiftHeight = liftHeight;
+                            this[layerIndex].LiftSpeed = liftSpeed;
+                            this[layerIndex].RetractSpeed = retractSpeed;
+                            this[layerIndex].LightPWM = pwm;
                             layerIndex++;
 
                             progress++;
@@ -595,9 +595,9 @@ M106 S0
                 }
 
                 entry = inputFile.GetEntry("Preview.png");
-                if (!ReferenceEquals(entry, null))
+                if (entry is not null)
                 {
-                    using Stream stream = entry.Open();
+                    using var stream = entry.Open();
                     CvInvoke.Imdecode(stream.ToArray(), ImreadModes.AnyColor, Thumbnails[0]);
                     stream.Close();
                 }
@@ -622,36 +622,15 @@ M106 S0
             RaisePropertyChanged(nameof(GCodeStr));
         }
 
-        public override void SaveAs(string filePath = null, OperationProgress progress = null)
+        protected override void PartialSaveInternally(OperationProgress progress)
         {
-            if (RequireFullEncode)
-            {
-                if (!string.IsNullOrEmpty(filePath))
-                {
-                    FileFullPath = filePath;
-                }
-                Encode(FileFullPath, progress);
-                return;
-            }
-
-            if (!string.IsNullOrEmpty(filePath))
-            {
-                File.Copy(FileFullPath, filePath, true);
-                FileFullPath = filePath;
-
-            }
-
-            using (var outputFile = ZipFile.Open(FileFullPath, ZipArchiveMode.Update))
-            {
-                outputFile.PutFileContent("ResinMetadata", JsonConvert.SerializeObject(ResinMetadataSettings, Formatting.Indented), ZipArchiveMode.Update);
-                outputFile.PutFileContent("UserSettingsData", JsonConvert.SerializeObject(UserSettings, Formatting.Indented), ZipArchiveMode.Update);
-                outputFile.PutFileContent("ZCodeMetadata", JsonConvert.SerializeObject(ZCodeMetadataSettings, Formatting.Indented), ZipArchiveMode.Update);
-                outputFile.PutFileContent("ResinGCodeData", GCodeStr, ZipArchiveMode.Update);
-            }
-
-            //Decode(FileFullPath, progress);
+            using var outputFile = ZipFile.Open(FileFullPath, ZipArchiveMode.Update);
+            outputFile.PutFileContent("ResinMetadata", JsonConvert.SerializeObject(ResinMetadataSettings, Formatting.Indented), ZipArchiveMode.Update);
+            outputFile.PutFileContent("UserSettingsData", JsonConvert.SerializeObject(UserSettings, Formatting.Indented), ZipArchiveMode.Update);
+            outputFile.PutFileContent("ZCodeMetadata", JsonConvert.SerializeObject(ZCodeMetadataSettings, Formatting.Indented), ZipArchiveMode.Update);
+            outputFile.PutFileContent("ResinGCodeData", GCodeStr, ZipArchiveMode.Update);
         }
 
-        #endregion
+    #endregion
     }
 }

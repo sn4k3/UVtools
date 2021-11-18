@@ -9,10 +9,8 @@
 using System;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Xml.Serialization;
 using UVtools.Core.FileFormats;
-using UVtools.Core.Objects;
 
 namespace UVtools.Core.Operations
 {
@@ -29,6 +27,8 @@ namespace UVtools.Core.Operations
         #endregion
 
         #region Overrides
+
+        public override bool CanRunInPartialMode => true;
         public override Enumerations.LayerRangeSelection StartLayerRangeSelection => Enumerations.LayerRangeSelection.None;
 
         public override bool CanROI => false;

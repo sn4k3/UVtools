@@ -401,9 +401,9 @@ namespace UVtools.Core.FileFormats
             return false;
         }
 
-        protected override void EncodeInternally(string fileFullPath, OperationProgress progress)
+        protected override void EncodeInternally(OperationProgress progress)
         {
-            using (ZipArchive outputFile = ZipFile.Open(fileFullPath, ZipArchiveMode.Create))
+            using (ZipArchive outputFile = ZipFile.Open(FileFullPath, ZipArchiveMode.Create))
             {
                 if (Thumbnails.Length > 0 && Thumbnails[0] is not null)
                 {
@@ -416,14 +416,10 @@ namespace UVtools.Core.FileFormats
 
                 if (Thumbnails.Length > 1 && Thumbnails[1] is not null)
                 {
-                    using (Stream stream = outputFile.CreateEntry("preview_cropping.png").Open())
-                    {
-                        using (var vec = new VectorOfByte())
-                        {
-                            stream.WriteBytes(Thumbnails[1].GetPngByes());
-                            stream.Close();
-                        }
-                    }
+                    using Stream stream = outputFile.CreateEntry("preview_cropping.png").Open();
+                    using var vec = new VectorOfByte();
+                    stream.WriteBytes(Thumbnails[1].GetPngByes());
+                    stream.Close();
                 }
 
                 if (!IsPHZZip)
@@ -443,7 +439,7 @@ namespace UVtools.Core.FileFormats
             }
         }
 
-        protected override void DecodeInternally(string fileFullPath, OperationProgress progress)
+        protected override void DecodeInternally(OperationProgress progress)
         {
             using (var inputFile = ZipFile.Open(FileFullPath, ZipArchiveMode.Read))
             {
@@ -497,24 +493,27 @@ namespace UVtools.Core.FileFormats
                     }
                 }
 
-                LayerManager.Init(HeaderSettings.LayerCount);
+                LayerManager.Init(HeaderSettings.LayerCount, DecodeType == FileDecodeType.Partial);
 
                 progress.ItemCount = LayerCount;
 
-                for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
+                if (DecodeType == FileDecodeType.Full)
                 {
-                    if (progress.Token.IsCancellationRequested) break;
-                    entry = inputFile.GetEntry($"{layerIndex+1}.png");
-                    if (entry is null)
+                    for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
                     {
-                        Clear();
-                        throw new FileLoadException($"Layer {layerIndex+1} not found", fileFullPath);
+                        if (progress.Token.IsCancellationRequested) break;
+                        entry = inputFile.GetEntry($"{layerIndex + 1}.png");
+                        if (entry is null)
+                        {
+                            Clear();
+                            throw new FileLoadException($"Layer {layerIndex + 1} not found", FileFullPath);
+                        }
+
+                        using var stream = entry.Open();
+                        this[layerIndex] = new Layer(layerIndex, stream, LayerManager);
+
+                        progress++;
                     }
-
-                    using var stream = entry.Open();
-                    this[layerIndex] = new Layer(layerIndex, stream, LayerManager);
-
-                    progress++;
                 }
 
                 if (IsPHZZip) // PHZ file
@@ -561,24 +560,8 @@ namespace UVtools.Core.FileFormats
             RaisePropertyChanged(nameof(GCodeStr));
         }
 
-        public override void SaveAs(string filePath = null, OperationProgress progress = null)
+        protected override void PartialSaveInternally(OperationProgress progress)
         {
-            if (RequireFullEncode)
-            {
-                if (!string.IsNullOrEmpty(filePath))
-                {
-                    FileFullPath = filePath;
-                }
-                Encode(FileFullPath, progress);
-                return;
-            }
-
-            if (!string.IsNullOrEmpty(filePath))
-            {
-                File.Copy(FileFullPath, filePath, true);
-                FileFullPath = filePath;
-            }
-
             using var outputFile = ZipFile.Open(FileFullPath, ZipArchiveMode.Update);
             var entriesToRemove = outputFile.Entries.Where(zipEntry => zipEntry.Name.EndsWith(".gcode")).ToArray();
             foreach (var zipEntry in entriesToRemove)

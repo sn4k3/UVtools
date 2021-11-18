@@ -465,9 +465,9 @@ namespace UVtools.Core.FileFormats
             Previews = null;
         }
 
-        protected override void EncodeInternally(string fileFullPath, OperationProgress progress)
+        protected override void EncodeInternally(OperationProgress progress)
         {
-            using var outputFile = new FileStream(fileFullPath, FileMode.Create, FileAccess.Write);
+            using var outputFile = new FileStream(FileFullPath, FileMode.Create, FileAccess.Write);
             FileSettings.Update();
             var fileDefSize = Helpers.SerializeWriteFileStream(outputFile, FileSettings);
             HeaderSettings.TableSize = (uint)Helpers.Serializer.SizeOf(HeaderSettings);
@@ -598,9 +598,9 @@ namespace UVtools.Core.FileFormats
             Debug.WriteLine("-End-");
         }
 
-        protected override void DecodeInternally(string fileFullPath, OperationProgress progress)
+        protected override void DecodeInternally(OperationProgress progress)
         {
-            using var inputFile = new FileStream(fileFullPath, FileMode.Open, FileAccess.Read);
+            using var inputFile = new FileStream(FileFullPath, FileMode.Open, FileAccess.Read);
             FileSettings = Helpers.Deserialize<FileDef>(inputFile);
             Debug.Write("File -> ");
             Debug.WriteLine(FileSettings);
@@ -646,7 +646,7 @@ namespace UVtools.Core.FileFormats
 
             inputFile.Seek(HeaderSettings.LayerDefinitionsAddress, SeekOrigin.Begin);
 
-            LayerManager.Init(HeaderSettings.LayerCount);
+            LayerManager.Init(HeaderSettings.LayerCount, DecodeType == FileDecodeType.Partial);
             var layerDef = new LayerDef[LayerCount];
 
 
@@ -672,34 +672,37 @@ namespace UVtools.Core.FileFormats
             }
 
             
-
-            progress.Reset(OperationProgress.StatusDecodeLayers, HeaderSettings.LayerCount);
-            foreach (var batch in BatchLayersIndexes())
+            if (DecodeType == FileDecodeType.Full)
             {
-                var layerBytes = new byte[LayerCount][];
-
-                foreach (var layerIndex in batch)
+                progress.Reset(OperationProgress.StatusDecodeLayers, HeaderSettings.LayerCount);
+                foreach (var batch in BatchLayersIndexes())
                 {
-                    progress.Token.ThrowIfCancellationRequested();
+                    var layerBytes = new byte[LayerCount][];
 
-                    inputFile.Seek(layerDataAddresses[layerIndex], SeekOrigin.Begin);
-                    layerBytes[layerIndex] = inputFile.ReadBytes(inputFile.ReadUIntLittleEndian());
-                }
-
-                Parallel.ForEach(batch, CoreSettings.ParallelOptions, layerIndex =>
-                {
-                    if (progress.Token.IsCancellationRequested) return;
-                    using (var mat = DecodeImage(HeaderSettings.LayerDataType, layerBytes[layerIndex], Resolution))
+                    foreach (var layerIndex in batch)
                     {
-                        layerBytes[layerIndex] = null; // Clean
+                        progress.Token.ThrowIfCancellationRequested();
 
-                        var layer = new Layer((uint)layerIndex, mat, this);
-                        layerDef[layerIndex].CopyTo(layer);
-                        this[layerIndex] = layer;
+                        inputFile.Seek(layerDataAddresses[layerIndex], SeekOrigin.Begin);
+                        layerBytes[layerIndex] = inputFile.ReadBytes(inputFile.ReadUIntLittleEndian());
                     }
 
-                    progress.LockAndIncrement();
-                });
+                    Parallel.ForEach(batch, CoreSettings.ParallelOptions, layerIndex =>
+                    {
+                        if (progress.Token.IsCancellationRequested) return;
+                        using var mat = DecodeImage(HeaderSettings.LayerDataType, layerBytes[layerIndex], Resolution);
+                        layerBytes[layerIndex] = null; // Clean
+
+                        this[layerIndex] = new Layer((uint)layerIndex, mat, this);
+
+                        progress.LockAndIncrement();
+                    });
+                }
+            }
+
+            for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
+            {
+                layerDef[layerIndex].CopyTo(this[layerIndex]);
             }
 
             progress.Reset(OperationProgress.StatusDecodeGcode);
@@ -711,24 +714,8 @@ namespace UVtools.Core.FileFormats
             UpdateGlobalPropertiesFromLayers();
         }
 
-        public override void SaveAs(string filePath = null, OperationProgress progress = null)
+        protected override void PartialSaveInternally(OperationProgress progress)
         {
-            if (RequireFullEncode)
-            {
-                if (!string.IsNullOrEmpty(filePath))
-                {
-                    FileFullPath = filePath;
-                }
-                Encode(FileFullPath, progress);
-                return;
-            }
-
-            if (!string.IsNullOrEmpty(filePath))
-            {
-                File.Copy(FileFullPath, filePath, true);
-                FileFullPath = filePath;
-            }
-
             using var outputFile = new FileStream(FileFullPath, FileMode.Open, FileAccess.Write);
             outputFile.Seek(0, SeekOrigin.Begin);
             FileSettings.Update();

@@ -584,8 +584,7 @@ namespace UVtools.WPF
                     menuTool.Click += async (sender, args) => await ShowRunOperation(operation.GetType());
                 }
             }
-
-
+            
             /*LayerSlider.PropertyChanged += (sender, args) =>
             {
                 Debug.WriteLine(args.Property.Name);
@@ -1146,6 +1145,7 @@ namespace UVtools.WPF
 
         public void MenuFileOpenClicked() => OpenFile();
         public void MenuFileOpenNewWindowClicked() => OpenFile(true);
+        public void MenuFileOpenInPartialModeClicked() => OpenFile(false, FileFormat.FileDecodeType.Partial);
 
         public void MenuFileOpenCurrentFileFolderClicked()
         {
@@ -1196,7 +1196,7 @@ namespace UVtools.WPF
             await SaveFile(file);
         }
 
-        public async void OpenFile(bool newWindow = false)
+        public async void OpenFile(bool newWindow = false, FileFormat.FileDecodeType fileDecodeType = FileFormat.FileDecodeType.Full)
         {
             var filters = Helpers.ToAvaloniaFileFilter(FileFormat.AllFileFiltersAvalonia);
             var orderedFilters = new List<FileDialogFilter> {filters[Settings.General.DefaultOpenFileExtensionIndex]};
@@ -1213,7 +1213,7 @@ namespace UVtools.WPF
                 Directory = Settings.General.DefaultDirectoryOpenFile
             };
             var files = await dialog.ShowAsync(this);
-            ProcessFiles(files, newWindow);
+            ProcessFiles(files, newWindow, fileDecodeType);
         }
 
         public async void OnMenuFileCloseFile()
@@ -1386,19 +1386,36 @@ namespace UVtools.WPF
 
         private void UpdateTitle()
         {
-            Title = SlicerFile is null
-                    ? $"{About.Software}   Version: {App.VersionStr}"
-                    : $"{About.Software}   File: {Path.GetFileName(SlicerFile.FileFullPath)} ({Math.Round(LastStopWatch.ElapsedMilliseconds / 1000m, 2)}s)   Version: {App.VersionStr}"
-                    ;
+            var title = $"{About.Software}   ";
 
-            Title += $"   RAM: {SizeExtensions.SizeSuffix(Environment.WorkingSet)}";
+            if (IsFileLoaded)
+            {
+                title += $"File: {Path.GetFileName(SlicerFile.FileFullPath)} ({Math.Round(LastStopWatch.ElapsedMilliseconds / 1000m, 2)}s)   ";
+            }
+
+            title += $"Version: {App.VersionStr}   RAM: {SizeExtensions.SizeSuffix(Environment.WorkingSet)}";
+
+            if (IsFileLoaded)
+            {
+                if (CanSave)
+                {
+                    title += "   [UNSAVED]";
+                }
+
+                if (SlicerFile.DecodeType == FileFormat.FileDecodeType.Partial)
+                {
+                    title += "   [PARTIAL MODE]";
+                }
+            }
 
 #if DEBUG
-            Title += "   [DEBUG]";
+            title += "   [DEBUG]";
 #endif
+
+            Title = title;
         }
 
-        public async void ProcessFiles(string[] files, bool openNewWindow = false)
+        public async void ProcessFiles(string[] files, bool openNewWindow = false, FileFormat.FileDecodeType fileDecodeType = FileFormat.FileDecodeType.Full)
         {
             if (files is null || files.Length == 0) return;
 
@@ -1436,7 +1453,7 @@ namespace UVtools.WPF
 
                 if (i == 0 && !openNewWindow && (_globalModifiers & KeyModifiers.Shift) == 0)
                 {
-                    ProcessFile(files[i]);
+                    ProcessFile(files[i], fileDecodeType);
                     continue;
                 }
 
@@ -1450,10 +1467,11 @@ namespace UVtools.WPF
         void ReloadFile(uint actualLayer)
         {
             if (App.SlicerFile is null) return;
-            ProcessFile(SlicerFile.FileFullPath, _actualLayer);
+            ProcessFile(SlicerFile.FileFullPath, SlicerFile.DecodeType, _actualLayer);
         }
 
-        async void ProcessFile(string fileName, uint actualLayer = 0)
+        void ProcessFile(string fileName, uint actualLayer = 0) => ProcessFile(fileName, FileFormat.FileDecodeType.Full, actualLayer);
+        async void ProcessFile(string fileName, FileFormat.FileDecodeType fileDecodeType, uint actualLayer = 0)
         {
             if (!File.Exists(fileName)) return;
             CloseFile();
@@ -1468,7 +1486,7 @@ namespace UVtools.WPF
             {
                 try
                 {
-                    SlicerFile.Decode(fileName, Progress);
+                    SlicerFile.Decode(fileName, fileDecodeType, Progress);
                     return true;
                 }
                 catch (OperationCanceledException)
@@ -1507,7 +1525,7 @@ namespace UVtools.WPF
                 return;
             }
 
-            if (Settings.Automations.AutoConvertFiles)
+            if (Settings.Automations.AutoConvertFiles && SlicerFile.DecodeType == FileFormat.FileDecodeType.Full)
             {
                 string convertFileExtension = SlicerFile switch
                 {
@@ -1626,7 +1644,7 @@ namespace UVtools.WPF
 
             Clipboard.Init(SlicerFile);
 
-            if (SlicerFile is not ImageFile)
+            if (SlicerFile is not ImageFile && SlicerFile.DecodeType == FileFormat.FileDecodeType.Full)
             {
                 List<MenuItem> menuItems = new();
                 foreach (var fileFormat in FileFormat.AvailableFormats)
@@ -1664,14 +1682,13 @@ namespace UVtools.WPF
                 MenuFileConvertItems = menuItems.ToArray();
             }
 
-            using var mat = SlicerFile[0].LayerMat;
+            using var mat = SlicerFile.FirstLayer?.LayerMat;
 
             VisibleThumbnailIndex = 1;
 
             RefreshProperties();
 
             UpdateTitle();
-
 
             if (mat is not null)
             {
@@ -1726,7 +1743,7 @@ namespace UVtools.WPF
                     "Incorrect image ratio detected");
             }
 
-            if (mat.Size != SlicerFile.Resolution)
+            if (mat is not null && mat.Size != SlicerFile.Resolution)
             {
                 var result = await this.MessageBoxWaring($"Layer image resolution of {mat.Size} mismatch with printer resolution of {SlicerFile.Resolution}.\n" +
                                             "1) Printing this file can lead to problems or malformed model, please verify your slicer printer settings;\n" +
@@ -1747,29 +1764,32 @@ namespace UVtools.WPF
                 UpdateLayerTrackerHighlightIssues();
             };
 
-            if (Settings.Issues.ComputeIssuesOnLoad)
+            if (SlicerFile.DecodeType == FileFormat.FileDecodeType.Full)
             {
-                _firstTimeOnIssues = false;
-                await OnClickDetectIssues();
-                if (SlicerFile.IssueManager.Count > 0)
+                if (Settings.Issues.ComputeIssuesOnLoad)
                 {
-                    SelectedTabItem = TabIssues;
-                    if(Settings.Issues.AutoRepairIssuesOnLoad)
-                        await RunOperation(ToolRepairLayersControl.GetOperationRepairLayers());
+                    _firstTimeOnIssues = false;
+                    await OnClickDetectIssues();
+                    if (SlicerFile.IssueManager.Count > 0)
+                    {
+                        SelectedTabItem = TabIssues;
+                        if (Settings.Issues.AutoRepairIssuesOnLoad)
+                            await RunOperation(ToolRepairLayersControl.GetOperationRepairLayers());
+                    }
                 }
-            }
-            else
-            {
-                await ComputeIssues(
-                    GetIslandDetectionConfiguration(false),
-                    GetOverhangDetectionConfiguration(false),
-                    GetResinTrapDetectionConfiguration(false),
-                    GetTouchingBoundsDetectionConfiguration(false),
-                    GetPrintHeightDetectionConfiguration(true),
-                    true);
-                if (SlicerFile.IssueManager.Count > 0)
+                else
                 {
-                    SelectedTabItem = TabIssues;
+                    await ComputeIssues(
+                        GetIslandDetectionConfiguration(false),
+                        GetOverhangDetectionConfiguration(false),
+                        GetResinTrapDetectionConfiguration(false),
+                        GetTouchingBoundsDetectionConfiguration(false),
+                        GetPrintHeightDetectionConfiguration(true),
+                        true);
+                    if (SlicerFile.IssueManager.Count > 0)
+                    {
+                        SelectedTabItem = TabIssues;
+                    }
                 }
             }
 
@@ -2063,6 +2083,13 @@ namespace UVtools.WPF
 
             if (!control.CanRun)
             {
+                return null;
+            }
+
+            if (SlicerFile.DecodeType == FileFormat.FileDecodeType.Partial && !control.BaseOperation.CanRunInPartialMode)
+            {
+                await this.MessageBoxError($"The file was open in partial mode and the tool \"{control.BaseOperation.Title}\" is unable to run in this mode.\n" +
+                                           "Please reload the file in full mode in order to use this tool.", "Unable to run in partial mode");
                 return null;
             }
 

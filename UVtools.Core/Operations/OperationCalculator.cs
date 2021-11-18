@@ -18,6 +18,9 @@ namespace UVtools.Core.Operations
     public class OperationCalculator : Operation
     {
         #region Overrides
+
+        public override bool CanRunInPartialMode => true;
+
         public override string Title => "Calculator";
         public override string Description => null;
 

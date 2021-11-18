@@ -575,7 +575,7 @@ namespace UVtools.Core.FileFormats
 
         #region Methods
 
-        protected override void EncodeInternally(string fileFullPath, OperationProgress progress)
+        protected override void EncodeInternally(OperationProgress progress)
         {
             //var filename = fileFullPath.EndsWith(TemporaryFileAppend) ? Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(fileFullPath)) : Path.GetFileNameWithoutExtension(fileFullPath);
 
@@ -610,7 +610,7 @@ namespace UVtools.Core.FileFormats
                 throw new InvalidOperationException($"Filename for this format should not end with a digit: {filename}");
             }
 
-            using ZipArchive outputFile = ZipFile.Open(fileFullPath, ZipArchiveMode.Create);
+            using var outputFile = ZipFile.Open(FileFullPath, ZipArchiveMode.Create);
             if (Printer == PrinterType.Wanhao)
             {
                 var manifest = new CWSManifest
@@ -703,9 +703,9 @@ namespace UVtools.Core.FileFormats
             outputFile.PutFileContent($"{filename}.gcode", GCodeStr, ZipArchiveMode.Create);
         }
 
-        protected override void DecodeInternally(string fileFullPath, OperationProgress progress)
+        protected override void DecodeInternally(OperationProgress progress)
         {
-            using var inputFile = ZipFile.Open(fileFullPath, ZipArchiveMode.Read);
+            using var inputFile = ZipFile.Open(FileFullPath, ZipArchiveMode.Read);
             var entry = inputFile.GetEntry("manifest.xml");
             if (entry is not null) // Wanhao
             {
@@ -722,7 +722,7 @@ namespace UVtools.Core.FileFormats
                 catch (Exception e)
                 {
                     Clear();
-                    throw new FileLoadException($"Unable to deserialize '{entry.Name}'\n{e}", fileFullPath);
+                    throw new FileLoadException($"Unable to deserialize '{entry.Name}'\n{e}", FileFullPath);
                 }
                     
 
@@ -741,7 +741,7 @@ namespace UVtools.Core.FileFormats
                     catch (Exception e)
                     {
                         Clear();
-                        throw new FileLoadException($"Unable to deserialize '{entry.Name}'\n{e}", fileFullPath);
+                        throw new FileLoadException($"Unable to deserialize '{entry.Name}'\n{e}", FileFullPath);
                     }
                 }
             }
@@ -751,7 +751,7 @@ namespace UVtools.Core.FileFormats
                 if (entry is null)
                 {
                     Clear();
-                    throw new FileLoadException("slice.conf not found", fileFullPath);
+                    throw new FileLoadException("slice.conf not found", FileFullPath);
                 }
 
                 using TextReader tr = new StreamReader(entry.Open());
@@ -780,8 +780,7 @@ namespace UVtools.Core.FileFormats
             if (entry is null)
             {
                 Clear();
-                throw new FileLoadException("Unable to find .gcode file",
-                    fileFullPath);
+                throw new FileLoadException("Unable to find .gcode file", FileFullPath);
             }
 
             using (TextReader tr = new StreamReader(entry.Open()))
@@ -821,32 +820,36 @@ namespace UVtools.Core.FileFormats
                 tr.Close();
             }
 
-            LayerManager.Init(OutputSettings.LayersNum);
+            LayerManager.Init(OutputSettings.LayersNum, DecodeType == FileDecodeType.Partial);
 
             progress.ItemCount = OutputSettings.LayersNum;
 
             if(LayerCount > 0)
             {
-                var inputFilename = Path.GetFileNameWithoutExtension(fileFullPath);
-                foreach (var pngEntry in inputFile.Entries)
+                if (DecodeType == FileDecodeType.Full)
                 {
-                    if (!pngEntry.Name.EndsWith(".png")) continue;
-                    var filename = Path.GetFileNameWithoutExtension(pngEntry.Name).Replace(inputFilename, string.Empty, StringComparison.Ordinal);
-                    
-                    var layerIndexStr = string.Empty;
-                    var layerStr = filename;
-                    for (int i = layerStr.Length - 1; i >= 0; i--)
+                    var inputFilename = Path.GetFileNameWithoutExtension(FileFullPath);
+                    foreach (var pngEntry in inputFile.Entries)
                     {
-                        if (layerStr[i] < '0' || layerStr[i] > '9') break;
-                        layerIndexStr = $"{layerStr[i]}{layerIndexStr}";
+                        if (!pngEntry.Name.EndsWith(".png")) continue;
+                        var filename = Path.GetFileNameWithoutExtension(pngEntry.Name)
+                            .Replace(inputFilename, string.Empty, StringComparison.Ordinal);
+
+                        var layerIndexStr = string.Empty;
+                        var layerStr = filename;
+                        for (int i = layerStr.Length - 1; i >= 0; i--)
+                        {
+                            if (layerStr[i] < '0' || layerStr[i] > '9') break;
+                            layerIndexStr = $"{layerStr[i]}{layerIndexStr}";
+                        }
+
+                        if (string.IsNullOrEmpty(layerIndexStr)) continue;
+                        if (!uint.TryParse(layerIndexStr, out var layerIndex)) continue;
+                        using var stream = pngEntry.Open();
+                        this[layerIndex] = new Layer(layerIndex, stream, LayerManager);
                     }
-
-                    if (string.IsNullOrEmpty(layerIndexStr)) continue;
-                    if (!uint.TryParse(layerIndexStr, out var layerIndex)) continue;
-                    using var stream = pngEntry.Open();
-                    this[layerIndex] = new Layer(layerIndex, stream, LayerManager);
                 }
-
+                
                 GCode.ParseLayersFromGCode(this);
 
                 var firstLayer = FirstLayer;
@@ -993,61 +996,43 @@ namespace UVtools.Core.FileFormats
             RaisePropertyChanged(nameof(GCodeStr));
         }
 
-        public override void SaveAs(string filePath = null, OperationProgress progress = null)
+        protected override void PartialSaveInternally(OperationProgress progress)
         {
-            if (RequireFullEncode)
+            using var outputFile = ZipFile.Open(FileFullPath, ZipArchiveMode.Update);
+            var arch = Environment.Is64BitOperatingSystem ? "64-bits" : "32-bits";
+            var entry = outputFile.GetPutFile("slice.conf");
+            var stream = entry.Open();
+            stream.SetLength(0);
+
+            using (TextWriter tw = new StreamWriter(stream))
             {
-                if (!string.IsNullOrEmpty(filePath))
+
+                tw.WriteLine($"# {About.Website} {About.Software} {Assembly.GetExecutingAssembly().GetName().Version} {arch} {DateTime.UtcNow}");
+                tw.WriteLine("# conf version 1.0");
+                tw.WriteLine("");
+
+                foreach (var propertyInfo in SliceSettings.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
                 {
-                    FileFullPath = filePath;
+                    var displayNameAttribute = propertyInfo.GetCustomAttributes(false).OfType<DisplayNameAttribute>().FirstOrDefault();
+                    if (displayNameAttribute is null) continue;
+                    tw.WriteLine($"{displayNameAttribute.DisplayName.PadRight(24)}= {propertyInfo.GetValue(SliceSettings)}");
                 }
-                Encode(FileFullPath, progress);
-                return;
             }
 
-            if (!string.IsNullOrEmpty(filePath))
+            var entriesToRemove = outputFile.Entries.Where(zipEntry => zipEntry.Name.EndsWith(".gcode")).ToArray();
+            foreach (var zipEntry in entriesToRemove)
             {
-                File.Copy(FileFullPath, filePath, true);
-                FileFullPath = filePath;
+                zipEntry.Delete();
             }
 
-            using (var outputFile = ZipFile.Open(FileFullPath, ZipArchiveMode.Update))
-            {
-                string arch = Environment.Is64BitOperatingSystem ? "64-bits" : "32-bits";
-                var entry = outputFile.GetPutFile("slice.conf");
-                var stream = entry.Open();
-                stream.SetLength(0);
+            outputFile.PutFileContent($"{About.Software}.gcode", GCodeStr, ZipArchiveMode.Update);
 
-                using (TextWriter tw = new StreamWriter(stream))
-                {
-
-                    tw.WriteLine($"# {About.Website} {About.Software} {Assembly.GetExecutingAssembly().GetName().Version} {arch} {DateTime.UtcNow}");
-                    tw.WriteLine("# conf version 1.0");
-                    tw.WriteLine("");
-
-                    foreach (var propertyInfo in SliceSettings.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
-                    {
-                        var displayNameAttribute = propertyInfo.GetCustomAttributes(false).OfType<DisplayNameAttribute>().FirstOrDefault();
-                        if (displayNameAttribute is null) continue;
-                        tw.WriteLine($"{displayNameAttribute.DisplayName.PadRight(24)}= {propertyInfo.GetValue(SliceSettings)}");
-                    }
-                }
-
-                var entriesToRemove = outputFile.Entries.Where(zipEntry => zipEntry.Name.EndsWith(".gcode")).ToArray();
-                foreach (var zipEntry in entriesToRemove)
-                {
-                    zipEntry.Delete();
-                }
-
-                outputFile.PutFileContent($"{About.Software}.gcode", GCodeStr, ZipArchiveMode.Update);
-
-                /*foreach (var layer in this)
+            /*foreach (var layer in this)
                 {
                     if (!layer.IsModified) continue;
                     outputFile.PutFileContent(layer.Filename, layer.CompressedBytes, ZipArchiveMode.Update);
                     layer.IsModified = false;
                 }*/
-            }
 
             //Decode(FileFullPath, progress);
         }

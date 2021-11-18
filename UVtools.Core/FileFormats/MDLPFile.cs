@@ -315,9 +315,9 @@ namespace UVtools.Core.FileFormats
         #endregion
 
         #region Methods
-        protected override void EncodeInternally(string fileFullPath, OperationProgress progress)
+        protected override void EncodeInternally(OperationProgress progress)
         {
-            using var outputFile = new FileStream(fileFullPath, FileMode.Create, FileAccess.Write);
+            using var outputFile = new FileStream(FileFullPath, FileMode.Create, FileAccess.Write);
             var pageBreak = PageBreak.Bytes;
 
             Helpers.SerializeWriteFileStream(outputFile, HeaderSettings);
@@ -425,9 +425,9 @@ namespace UVtools.Core.FileFormats
 
 
 
-        protected override void DecodeInternally(string fileFullPath, OperationProgress progress)
+        protected override void DecodeInternally(OperationProgress progress)
         {
-            using var inputFile = new FileStream(fileFullPath, FileMode.Open, FileAccess.Read);
+            using var inputFile = new FileStream(FileFullPath, FileMode.Open, FileAccess.Read);
             //HeaderSettings = Helpers.ByteToType<CbddlpFile.Header>(InputFile);
             //HeaderSettings = Helpers.Serializer.Deserialize<Header>(InputFile.ReadBytes(Helpers.Serializer.SizeOf(typeof(Header))));
             HeaderSettings = Helpers.Deserialize<Header>(inputFile);
@@ -450,76 +450,62 @@ namespace UVtools.Core.FileFormats
 
             SlicerInfoSettings = Helpers.Deserialize<SlicerInfo>(inputFile);
 
-            LayerManager.Init(SlicerInfoSettings.LayerCount);
+            LayerManager.Init(SlicerInfoSettings.LayerCount, DecodeType == FileDecodeType.Partial);
 
-
-            progress.Reset(OperationProgress.StatusDecodeLayers, LayerCount);
-
-            var range = Enumerable.Range(0, (int)LayerCount);
-
-            var linesBytes = new byte[LayerCount][];
-            foreach (var batch in BatchLayersIndexes())
+            if (DecodeType == FileDecodeType.Full)
             {
-                progress.Token.ThrowIfCancellationRequested();
-
-                foreach (var layerIndex in batch)
+                progress.Reset(OperationProgress.StatusDecodeLayers, LayerCount);
+                var linesBytes = new byte[LayerCount][];
+                foreach (var batch in BatchLayersIndexes())
                 {
-                    var lineCount = BitExtensions.ToUIntBigEndian(inputFile.ReadBytes(4));
-
-                    linesBytes[layerIndex] = new byte[lineCount * 6];
-                    inputFile.ReadBytes(linesBytes[layerIndex]);
-                    inputFile.Seek(2, SeekOrigin.Current);
-
                     progress.Token.ThrowIfCancellationRequested();
-                }
 
-                Parallel.ForEach(batch, CoreSettings.ParallelOptions, layerIndex =>
-                {
-                    if (progress.Token.IsCancellationRequested) return;
-                    using (var mat = EmguExtensions.InitMat(Resolution))
+                    foreach (var layerIndex in batch)
                     {
+                        var lineCount = BitExtensions.ToUIntBigEndian(inputFile.ReadBytes(4));
 
-                        for (int i = 0; i < linesBytes[layerIndex].Length; i++)
-                        {
-                            var startY = BitExtensions.ToUShortBigEndian(linesBytes[layerIndex][i++], linesBytes[layerIndex][i++]);
-                            var endY = BitExtensions.ToUShortBigEndian(linesBytes[layerIndex][i++], linesBytes[layerIndex][i++]);
-                            var startX = BitExtensions.ToUShortBigEndian(linesBytes[layerIndex][i++], linesBytes[layerIndex][i]);
+                        linesBytes[layerIndex] = new byte[lineCount * 6];
+                        inputFile.ReadBytes(linesBytes[layerIndex]);
+                        inputFile.Seek(2, SeekOrigin.Current);
 
-                            CvInvoke.Line(mat, new Point(startX, startY), new Point(startX, endY), EmguExtensions.WhiteColor);
-                        }
-
-                        linesBytes[layerIndex] = null;
-
-                        this[layerIndex] = new Layer((uint)layerIndex, mat, this);
+                        progress.Token.ThrowIfCancellationRequested();
                     }
 
-                    progress.LockAndIncrement();
-                });
+                    Parallel.ForEach(batch, CoreSettings.ParallelOptions, layerIndex =>
+                    {
+                        if (progress.Token.IsCancellationRequested) return;
+                        using (var mat = EmguExtensions.InitMat(Resolution))
+                        {
+
+                            for (int i = 0; i < linesBytes[layerIndex].Length; i++)
+                            {
+                                var startY = BitExtensions.ToUShortBigEndian(linesBytes[layerIndex][i++], linesBytes[layerIndex][i++]);
+                                var endY = BitExtensions.ToUShortBigEndian(linesBytes[layerIndex][i++], linesBytes[layerIndex][i++]);
+                                var startX = BitExtensions.ToUShortBigEndian(linesBytes[layerIndex][i++], linesBytes[layerIndex][i]);
+
+                                CvInvoke.Line(mat, new Point(startX, startY), new Point(startX, endY), EmguExtensions.WhiteColor);
+                            }
+
+                            linesBytes[layerIndex] = null;
+
+                            this[layerIndex] = new Layer((uint)layerIndex, mat, this);
+                        }
+
+                        progress.LockAndIncrement();
+                    });
+                }
+            }
+            else // Partial read
+            {
+                inputFile.Seek(-Helpers.Serializer.SizeOf(HeaderSettings), SeekOrigin.End);
             }
 
             HeaderSettings = Helpers.Deserialize<Header>(inputFile);
             HeaderSettings.Validate();
         }
 
-        public override void SaveAs(string filePath = null, OperationProgress progress = null)
+        protected override void PartialSaveInternally(OperationProgress progress)
         {
-            if (RequireFullEncode)
-            {
-                if (!string.IsNullOrEmpty(filePath))
-                {
-                    FileFullPath = filePath;
-                }
-                Encode(FileFullPath, progress);
-                return;
-            }
-
-
-            if (!string.IsNullOrEmpty(filePath))
-            {
-                File.Copy(FileFullPath, filePath, true);
-                FileFullPath = filePath;
-            }
-
             using var outputFile = new FileStream(FileFullPath, FileMode.Open, FileAccess.Write);
             outputFile.Seek(SlicerInfoAddress, SeekOrigin.Begin);
             Helpers.SerializeWriteFileStream(outputFile, SlicerInfoSettings);

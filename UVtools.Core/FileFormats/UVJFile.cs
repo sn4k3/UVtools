@@ -467,7 +467,7 @@ namespace UVtools.Core.FileFormats
             JsonSettings.Layers = new List<LayerDef>();
         }
 
-        protected override void EncodeInternally(string fileFullPath, OperationProgress progress)
+        protected override void EncodeInternally(OperationProgress progress)
         {
             // Redo layer data
             if (JsonSettings.Layers is null)
@@ -484,7 +484,7 @@ namespace UVtools.Core.FileFormats
                 JsonSettings.Layers.Add(new LayerDef(this[layerIndex]));
             }
 
-            using var outputFile = ZipFile.Open(fileFullPath, ZipArchiveMode.Create);
+            using var outputFile = ZipFile.Open(FileFullPath, ZipArchiveMode.Create);
             outputFile.PutFileContent(FileConfigName, JsonConvert.SerializeObject(JsonSettings, Formatting.Indented), ZipArchiveMode.Create);
 
             if (CreatedThumbnailsCount > 0)
@@ -514,20 +514,20 @@ namespace UVtools.Core.FileFormats
             }
         }
 
-        protected override void DecodeInternally(string fileFullPath, OperationProgress progress)
+        protected override void DecodeInternally(OperationProgress progress)
         {
-            using (var inputFile = ZipFile.Open(fileFullPath, ZipArchiveMode.Read))
+            using (var inputFile = ZipFile.Open(FileFullPath, ZipArchiveMode.Read))
             {
                 var entry = inputFile.GetEntry(FileConfigName);
                 if (entry is null)
                 {
                     Clear();
-                    throw new FileLoadException($"{FileConfigName} not found", fileFullPath);
+                    throw new FileLoadException($"{FileConfigName} not found", FileFullPath);
                 }
 
                 JsonSettings = Helpers.JsonDeserializeObject<Settings>(entry.Open());
                 
-                LayerManager.Init(JsonSettings.Properties.Size.Layers);
+                LayerManager.Init(JsonSettings.Properties.Size.Layers, DecodeType == FileDecodeType.Partial);
 
                 entry = inputFile.GetEntry(FilePreviewTinyName);
                 if (entry is not null)
@@ -554,15 +554,16 @@ namespace UVtools.Core.FileFormats
                     entry = inputFile.GetEntry($"{FolderImageName}/{layerIndex:D8}.png");
                     if (entry is null) continue;
 
-                    using var stream = entry.Open();
-                    var layer = new Layer(layerIndex, stream, LayerManager);
+                    if (DecodeType == FileDecodeType.Full)
+                    {
+                        using var stream = entry.Open();
+                        this[layerIndex] = new Layer(layerIndex, stream, LayerManager);
+                    }
 
                     if (JsonSettings.Layers?.Count > layerIndex)
                     {
-                        JsonSettings.Layers[(int)layerIndex].CopyTo(layer);
+                        JsonSettings.Layers[(int)layerIndex].CopyTo(this[layerIndex]);
                     }
-
-                    this[layerIndex] = layer;
                 }
                 
                 progress.ProcessedItems++;
@@ -571,25 +572,8 @@ namespace UVtools.Core.FileFormats
             LayerManager.GetBoundingRectangle(progress);
         }
 
-        public override void SaveAs(string filePath = null, OperationProgress progress = null)
+        protected override void PartialSaveInternally(OperationProgress progress)
         {
-            if (RequireFullEncode)
-            {
-                if (!string.IsNullOrEmpty(filePath))
-                {
-                    FileFullPath = filePath;
-                }
-                Encode(FileFullPath, progress);
-                return;
-            }
-
-            if (!string.IsNullOrEmpty(filePath))
-            {
-                File.Copy(FileFullPath, filePath, true);
-                FileFullPath = filePath;
-
-            }
-
             if (JsonSettings.Layers is null)
             {
                 JsonSettings.Layers = new List<LayerDef>();

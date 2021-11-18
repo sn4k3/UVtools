@@ -446,17 +446,17 @@ namespace UVtools.Core.FileFormats
         #endregion
 
         #region Methods
-        protected override void EncodeInternally(string fileFullPath, OperationProgress progress)
+        protected override void EncodeInternally(OperationProgress progress)
         {
             if (SVGDocument.PrintParameters.ResolutionX == 0 || SVGDocument.PrintParameters.ResolutionY == 0 ||
                 SVGDocument.PrintParameters.DisplayWidth == 0 || SVGDocument.PrintParameters.DisplayHeight == 0)
             {
                 throw new FileLoadException("This file does not contain a resolution and/or display size information needed to generate the layer images.\n" +
                                             "Note that FlashDLPrint slicer is unable to output files with the required information to load in here.\n" +
-                                            "Please use other compatible slicer capable of output the correct information to load the file in here.", fileFullPath);
+                                            "Please use other compatible slicer capable of output the correct information to load the file in here.", FileFullPath);
             }
 
-            using var outputFile = new FileStream(fileFullPath, FileMode.Create, FileAccess.Write);
+            using var outputFile = new FileStream(FileFullPath, FileMode.Create, FileAccess.Write);
             outputFile.Seek(Helpers.Serializer.SizeOf(HeaderSettings), SeekOrigin.Begin);
 
             HeaderSettings.Preview1Address = 0;
@@ -594,13 +594,13 @@ namespace UVtools.Core.FileFormats
             Debug.WriteLine("-End-");
         }
 
-        protected override void DecodeInternally(string fileFullPath, OperationProgress progress)
+        protected override void DecodeInternally(OperationProgress progress)
         {
-            using var inputFile = new FileStream(fileFullPath, FileMode.Open, FileAccess.Read);
+            using var inputFile = new FileStream(FileFullPath, FileMode.Open, FileAccess.Read);
             HeaderSettings = Helpers.Deserialize<Header>(inputFile);
             if (HeaderSettings.Identifier != Header.IdentifierText)
             {
-                throw new FileLoadException("Not a valid Flashforge SVGX file!", fileFullPath);
+                throw new FileLoadException("Not a valid Flashforge SVGX file!", FileFullPath);
             }
 
             progress.Reset(OperationProgress.StatusDecodePreviews, ThumbnailsCount);
@@ -644,15 +644,16 @@ namespace UVtools.Core.FileFormats
             {
                 throw new FileLoadException("This file does not contain a resolution and/or display size information needed to generate the layer images.\n" +
                                             "Note that FlashDLPrint slicer is unable to output files with the required information to load in here.\n" +
-                                            "Please use other compatible slicer capable of output the correct information to load the file in here.", fileFullPath);
+                                            "Please use other compatible slicer capable of output the correct information to load the file in here.", FileFullPath);
             }
 
             var halfDisplay = Display.Half();
             var ppmm = Ppmm;
 
-            LayerManager.Init(SVGDocument.PrintParameters.LayerCount);
-            progress.Reset(OperationProgress.StatusDecodeLayers, LayerCount);
+            LayerManager.Init(SVGDocument.PrintParameters.LayerCount, DecodeType == FileDecodeType.Partial);
 
+            if (DecodeType != FileDecodeType.Full) return;
+            progress.Reset(OperationProgress.StatusDecodeLayers, LayerCount);
             Parallel.For(0, LayerCount, CoreSettings.ParallelOptions, layerIndex =>
             {
                 if (progress.Token.IsCancellationRequested) return;
@@ -661,14 +662,15 @@ namespace UVtools.Core.FileFormats
 
                 var group = SVGDocument.Groups.FirstOrDefault(g => g.Id == $"layer-{layerIndex}");
 
-                if (group is not null)
+                if (@group is not null)
                 {
                     var pointsOfPoints = new List<Point[]>();
                     var points = new List<Point>();
-                    foreach (var path in group.Paths)
+                    foreach (var path in @group.Paths)
                     {
                         if (progress.Token.IsCancellationRequested) break;
-                        var spaceSplit = path.Value.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+                        var spaceSplit = path.Value.Split(' ',
+                            StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
 
                         for (int i = 0; i < spaceSplit.Length; i++)
                         {
@@ -679,8 +681,10 @@ namespace UVtools.Core.FileFormats
                                     pointsOfPoints.Add(points.ToArray());
                                     points.Clear();
                                 }
+
                                 continue;
                             }
+
                             if (spaceSplit[i] == "Z")
                             {
                                 if (points.Count > 0)
@@ -688,9 +692,12 @@ namespace UVtools.Core.FileFormats
                                     pointsOfPoints.Add(points.ToArray());
                                     points.Clear();
                                 }
+
                                 continue;
                             }
-                            if (spaceSplit[i].Length == 1 && !char.IsDigit(spaceSplit[i][0])) continue; // Ignore any other not processed 1 char that's not a digit (L)
+
+                            if (spaceSplit[i].Length == 1 && !char.IsDigit(spaceSplit[i][0]))
+                                continue; // Ignore any other not processed 1 char that's not a digit (L)
 
                             if (i + 1 >= spaceSplit.Length) break; // No more to see
 
@@ -730,24 +737,8 @@ namespace UVtools.Core.FileFormats
             });
         }
 
-        public override void SaveAs(string filePath = null, OperationProgress progress = null)
+        protected override void PartialSaveInternally(OperationProgress progress)
         {
-            if (RequireFullEncode)
-            {
-                if (!string.IsNullOrEmpty(filePath))
-                {
-                    FileFullPath = filePath;
-                }
-                Encode(FileFullPath, progress);
-                return;
-            }
-
-            if (!string.IsNullOrEmpty(filePath))
-            {
-                File.Copy(FileFullPath, filePath, true);
-                FileFullPath = filePath;
-            }
-
             using var outputFile = new FileStream(FileFullPath, FileMode.Open, FileAccess.Write);
             outputFile.Seek(HeaderSettings.SVGDocumentAddress, SeekOrigin.Begin);
             outputFile.SetLength(outputFile.Position);

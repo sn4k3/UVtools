@@ -533,13 +533,13 @@ namespace UVtools.Core.FileFormats
             Statistics.Clear();
         }
 
-        protected override void EncodeInternally(string fileFullPath, OperationProgress progress)
+        protected override void EncodeInternally(OperationProgress progress)
         {
-            var filename = fileFullPath;
+            var filename = FileFullPath;
             if (filename.EndsWith(TemporaryFileAppend)) filename = Path.GetFileNameWithoutExtension(filename); // tmp
             filename = Path.GetFileNameWithoutExtension(filename); // sl1
             OutputConfigSettings.JobDir = filename;
-            using ZipArchive outputFile = ZipFile.Open(fileFullPath, ZipArchiveMode.Create);
+            using ZipArchive outputFile = ZipFile.Open(FileFullPath, ZipArchiveMode.Create);
             var entry = outputFile.CreateEntry("config.ini");
             using (TextWriter tw = new StreamWriter(entry.Open()))
             {
@@ -596,7 +596,7 @@ namespace UVtools.Core.FileFormats
         }
 
 
-        protected override void DecodeInternally(string fileFullPath, OperationProgress progress)
+        protected override void DecodeInternally(OperationProgress progress)
         {
             PrinterSettings = new Printer();
             MaterialSettings = new Material();
@@ -605,7 +605,7 @@ namespace UVtools.Core.FileFormats
 
             Statistics.ExecutionTime.Restart();
 
-            using (var inputFile = ZipFile.OpenRead(fileFullPath))
+            using (var inputFile = ZipFile.OpenRead(FileFullPath))
             {
                 List<string> iniFiles = new();
                 foreach (ZipArchiveEntry entity in inputFile.Entries)
@@ -689,7 +689,7 @@ namespace UVtools.Core.FileFormats
                     LightPWM = LookupCustomValue(Keyword_LightPWM, DefaultBottomLightPWM);
                 });
                 
-                LayerManager.Init(OutputConfigSettings.NumSlow + OutputConfigSettings.NumFast);
+                LayerManager.Init(OutputConfigSettings.NumSlow + OutputConfigSettings.NumFast, DecodeType == FileDecodeType.Partial);
 
                 progress.ItemCount = LayerCount;
 
@@ -698,7 +698,7 @@ namespace UVtools.Core.FileFormats
                     if (!entity.Name.EndsWith(".png")) continue;
                     if (entity.Name.StartsWith("thumbnail"))
                     {
-                        using Stream stream = entity.Open();
+                        using var stream = entity.Open();
                         Mat image = new();
                         CvInvoke.Imdecode(stream.ToArray(), ImreadModes.AnyColor, image);
                         byte thumbnailIndex =
@@ -707,17 +707,21 @@ namespace UVtools.Core.FileFormats
                                 ? FileThumbnailSize.Small
                                 : FileThumbnailSize.Large);
                         Thumbnails[thumbnailIndex] = image;
-                        stream.Close();
 
                         //thumbnailIndex++;
 
                         continue;
                     }
-
-                    // - .png - 5 numbers
-                    string layerStr = entity.Name.Substring(entity.Name.Length - 4 - 5, 5);
-                    uint iLayer = uint.Parse(layerStr);
-                    this[iLayer] = new Layer(iLayer, entity.Open(), LayerManager);
+                    
+                    if (DecodeType == FileDecodeType.Full)
+                    {
+                        // - .png - 5 numbers
+                        string layerStr = entity.Name.Substring(entity.Name.Length - 4 - 5, 5);
+                        uint iLayer = uint.Parse(layerStr);
+                        using var stream = entity.Open();
+                        this[iLayer] = new Layer(iLayer, stream, LayerManager);
+                    }
+                    
                     progress.ProcessedItems++;
                 }
             }
@@ -729,26 +733,8 @@ namespace UVtools.Core.FileFormats
             Debug.WriteLine(Statistics);
         }
 
-        public override void SaveAs(string filePath = null, OperationProgress progress = null)
+        protected override void PartialSaveInternally(OperationProgress progress)
         {
-            if (RequireFullEncode)
-            {
-                if (!string.IsNullOrEmpty(filePath))
-                {
-                    FileFullPath = filePath;
-                }
-                Encode(FileFullPath, progress);
-                return;
-            }
-
-
-            if (!string.IsNullOrEmpty(filePath))
-            {
-                File.Copy(FileFullPath, filePath, true);
-                FileFullPath = filePath;
-
-            }
-
             using var outputFile = ZipFile.Open(FileFullPath, ZipArchiveMode.Update);
             //InputFile.CreateEntry("Modified");
             using (TextWriter tw = new StreamWriter(outputFile.PutFileContent("config.ini", string.Empty, ZipArchiveMode.Update).Open()))

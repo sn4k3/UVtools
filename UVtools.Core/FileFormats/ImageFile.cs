@@ -77,14 +77,14 @@ namespace UVtools.Core.FileFormats
 
         private Mat ImageMat { get; set; }
 
-        protected override void EncodeInternally(string fileFullPath, OperationProgress progress)
+        protected override void EncodeInternally(OperationProgress progress)
         {
-            throw new NotSupportedException();
+            this[0].LayerMat.Save(FileFullPath);
         }
 
-        protected override void DecodeInternally(string fileFullPath, OperationProgress progress)
+        protected override void DecodeInternally(OperationProgress progress)
         {
-            ImageMat = CvInvoke.Imread(fileFullPath, ImreadModes.Grayscale);
+            ImageMat = CvInvoke.Imread(FileFullPath, ImreadModes.Grayscale);
             const byte startDivisor = 2;
             for (int i = 0; i < ThumbnailsCount; i++)
             {
@@ -102,9 +102,9 @@ namespace UVtools.Core.FileFormats
             this[0] = new Layer(0, ImageMat, LayerManager);
         }
 
-        public override void SaveAs(string filePath = null, OperationProgress progress = null)
+        protected override void PartialSaveInternally(OperationProgress progress)
         {
-            this[0].LayerMat.Save(filePath ?? FileFullPath);
+            this[0].LayerMat.Save(FileFullPath);
         }
 
         public override FileFormat Convert(Type to, string fileFullPath, OperationProgress progress = null)

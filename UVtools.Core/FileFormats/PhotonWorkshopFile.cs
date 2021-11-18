@@ -1256,7 +1256,7 @@ namespace UVtools.Core.FileFormats
             LayersDefinition = null;
         }
 
-        protected override void EncodeInternally(string fileFullPath, OperationProgress progress)
+        protected override void EncodeInternally(OperationProgress progress)
         {
             HeaderSettings.PixelSizeUm = PixelSizeMicronsMax;
                 
@@ -1277,7 +1277,7 @@ namespace UVtools.Core.FileFormats
 
 
             FileMarkSettings.HeaderAddress = (uint) Helpers.Serializer.SizeOf(FileMarkSettings);
-            using var outputFile = new FileStream(fileFullPath, FileMode.Create, FileAccess.Write);
+            using var outputFile = new FileStream(FileFullPath, FileMode.Create, FileAccess.Write);
             outputFile.Seek((int)FileMarkSettings.HeaderAddress, SeekOrigin.Begin);
             Helpers.SerializeWriteFileStream(outputFile, HeaderSettings);
 
@@ -1348,9 +1348,9 @@ namespace UVtools.Core.FileFormats
             Helpers.SerializeWriteFileStream(outputFile, FileMarkSettings);
         }
 
-        protected override void DecodeInternally(string fileFullPath, OperationProgress progress)
+        protected override void DecodeInternally(OperationProgress progress)
         {
-            using var inputFile = new FileStream(fileFullPath, FileMode.Open, FileAccess.Read);
+            using var inputFile = new FileStream(FileFullPath, FileMode.Open, FileAccess.Read);
             FileMarkSettings = Helpers.Deserialize<FileMark>(inputFile);
 
             Debug.Write("FileMark -> ");
@@ -1359,16 +1359,13 @@ namespace UVtools.Core.FileFormats
             if (!FileMarkSettings.Mark.Equals(FileMark.SectionMarkFile))
             {
                 throw new FileLoadException(
-                    $"Invalid Filemark {FileMarkSettings.Mark}, expected {FileMark.SectionMarkFile}", fileFullPath);
+                    $"Invalid Filemark {FileMarkSettings.Mark}, expected {FileMark.SectionMarkFile}", FileFullPath);
             }
 
             if (FileMarkSettings.Version is not VERSION_1 and not VERSION_515)
             {
-                throw new FileLoadException($"Invalid Version {FileMarkSettings.Version}, expected {VERSION_1} or {VERSION_515}",
-                    fileFullPath);
+                throw new FileLoadException($"Invalid Version {FileMarkSettings.Version}, expected {VERSION_1} or {VERSION_515}", FileFullPath);
             }
-
-            FileFullPath = fileFullPath;
 
             inputFile.Seek(FileMarkSettings.HeaderAddress, SeekOrigin.Begin);
             HeaderSettings = Helpers.Deserialize<Header>(inputFile);
@@ -1402,7 +1399,7 @@ namespace UVtools.Core.FileFormats
             Debug.Write("LayersDefinition -> ");
             Debug.WriteLine(LayersDefinition);
 
-            LayerManager.Init(LayersDefinition.LayerCount);
+            LayerManager.Init(LayersDefinition.LayerCount, DecodeType == FileDecodeType.Partial);
             LayersDefinition.Layers = new LayerDef[LayerCount];
             
             LayersDefinition.Validate();
@@ -1418,52 +1415,43 @@ namespace UVtools.Core.FileFormats
                     LayersDefinition[layerIndex].Parent = this;
                     Debug.WriteLine($"Layer {layerIndex}: {LayersDefinition[layerIndex]}");
 
-
-                    inputFile.SeekDoWorkAndRewind(LayersDefinition[layerIndex].DataAddress, () =>
+                    if (DecodeType == FileDecodeType.Full)
                     {
-                        LayersDefinition[layerIndex].EncodedRle = inputFile.ReadBytes(LayersDefinition[layerIndex].DataLength);
-                    });
+                        inputFile.SeekDoWorkAndRewind(LayersDefinition[layerIndex].DataAddress,
+                            () =>
+                            {
+                                LayersDefinition[layerIndex].EncodedRle = inputFile.ReadBytes(LayersDefinition[layerIndex].DataLength);
+                            });
+                    }
                 }
 
-                Parallel.ForEach(batch, CoreSettings.ParallelOptions, layerIndex =>
+                if (DecodeType == FileDecodeType.Full)
                 {
-                    if (progress.Token.IsCancellationRequested) return;
-                    using (var mat = LayersDefinition[layerIndex].Decode())
+                    Parallel.ForEach(batch, CoreSettings.ParallelOptions, layerIndex =>
                     {
-                        var layer = new Layer((uint)layerIndex, mat, this)
+                        if (progress.Token.IsCancellationRequested) return;
+
+                        using var mat = LayersDefinition[layerIndex].Decode();
+                        this[layerIndex] = new Layer((uint)layerIndex, mat, this)
                         {
                             PositionZ = LayersDefinition.Layers
                                 .Where((_, i) => i <= layerIndex)
                                 .Sum(def => def.LayerHeight),
                         };
-                        LayersDefinition[layerIndex].CopyTo(layer);
-                        this[layerIndex] = layer;
-                    }
 
-                    progress.LockAndIncrement();
-                });
+                        progress.LockAndIncrement();
+                    });
+                }
+            }
+
+            for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
+            {
+                LayersDefinition[layerIndex].CopyTo(this[layerIndex]);
             }
         }
 
-        public override void SaveAs(string filePath = null, OperationProgress progress = null)
+        protected override void PartialSaveInternally(OperationProgress progress)
         {
-            if (RequireFullEncode)
-            {
-                if (!string.IsNullOrEmpty(filePath))
-                {
-                    FileFullPath = filePath;
-                }
-                Encode(FileFullPath, progress);
-                return;
-            }
-
-
-            if (!string.IsNullOrEmpty(filePath))
-            {
-                File.Copy(FileFullPath, filePath, true);
-                FileFullPath = filePath;
-            }
-
             HeaderSettings.PerLayerOverride = LayerManager.AllLayersAreUsingGlobalParameters ? 0 : 1u;
 
             using var outputFile = new FileStream(FileFullPath, FileMode.Open, FileAccess.Write);

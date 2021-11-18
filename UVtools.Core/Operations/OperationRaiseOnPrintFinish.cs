@@ -29,6 +29,9 @@ namespace UVtools.Core.Operations
         #endregion
 
         #region Overrides
+
+        public override bool CanRunInPartialMode => true;
+
         public override Enumerations.LayerRangeSelection StartLayerRangeSelection => Enumerations.LayerRangeSelection.None;
 
         public override string Title => "Raise platform on print finish";

@@ -176,9 +176,14 @@ namespace UVtools.Core
             }
         }
 
-        public void Init(uint layerCount)
+        public void Init(uint layerCount, bool initializeLayers = false)
         {
             _layers = new Layer[layerCount];
+            if (!initializeLayers) return;
+            for (uint layerIndex = 0; layerIndex < layerCount; layerIndex++)
+            {
+                this[layerIndex] = new Layer(layerIndex, this);
+            }
         }
 
         public void Init(Layer[] layers)
@@ -672,9 +677,10 @@ namespace UVtools.Core
 
         public Rectangle GetBoundingRectangle(OperationProgress progress = null)
         {
-            if (!_boundingRectangle.IsEmpty || LayerCount == 0 || this[0] is null) return _boundingRectangle;
+            var firstLayer = FirstLayer;
+            if (!_boundingRectangle.IsEmpty || LayerCount == 0 || firstLayer is null || !firstLayer.HaveImage) return _boundingRectangle;
             progress ??= new OperationProgress(OperationProgress.StatusOptimizingBounds, LayerCount - 1);
-            _boundingRectangle = this[0].BoundingRectangle;
+            _boundingRectangle = firstLayer.BoundingRectangle;
             if (_boundingRectangle.IsEmpty) // Safe checking
             {
                 progress.Reset(OperationProgress.StatusOptimizingBounds, LayerCount-1);
@@ -687,9 +693,9 @@ namespace UVtools.Core
                     if (progress is null) return;
                     progress.LockAndIncrement();
                 });
-                _boundingRectangle = this[0].BoundingRectangle;
+                _boundingRectangle = firstLayer.BoundingRectangle;
 
-                if (progress is not null && progress.Token.IsCancellationRequested)
+                if (progress.Token.IsCancellationRequested)
                 {
                     _boundingRectangle = Rectangle.Empty;
                     progress.Token.ThrowIfCancellationRequested();
