@@ -951,27 +951,27 @@ namespace UVtools.Core.FileFormats
         /// <summary>
         /// Gets the first layer
         /// </summary>
-        public Layer FirstLayer => LayerManager?.FirstLayer;
+        public Layer FirstLayer => LayerManager.FirstLayer;
 
         /// <summary>
         /// Gets the first layer normal layer
         /// </summary>
-        public Layer FirstNormalLayer => LayerManager?.Layers.FirstOrDefault(layer => layer.IsNormalLayer);
+        public Layer FirstNormalLayer => LayerManager.FirstOrDefault(layer => layer.IsNormalLayer);
 
         /// <summary>
         /// Gets the last layer
         /// </summary>
-        public Layer LastLayer => LayerManager?.LastLayer;
+        public Layer LastLayer => LayerManager.LastLayer;
 
         /// <summary>
         /// Gets the bounding rectangle of the object
         /// </summary>
-        public Rectangle BoundingRectangle => LayerManager?.BoundingRectangle ?? Rectangle.Empty;
+        public Rectangle BoundingRectangle => LayerManager.BoundingRectangle;
 
         /// <summary>
         /// Gets the bounding rectangle of the object in millimeters
         /// </summary>
-        public RectangleF BoundingRectangleMillimeters => LayerManager?.BoundingRectangleMillimeters ?? Rectangle.Empty;
+        public RectangleF BoundingRectangleMillimeters => LayerManager.BoundingRectangleMillimeters;
 
         /// <summary>
         /// Gets or sets if modifications require a full encode to save
@@ -1223,7 +1223,7 @@ namespace UVtools.Core.FileFormats
         /// <summary>
         /// Gets the last layer index
         /// </summary>
-        public uint LastLayerIndex => LayerManager?.LastLayerIndex ?? 0;
+        public uint LastLayerIndex => LayerManager.LastLayerIndex;
 
         /// <summary>
         /// Checks if this file format supports per layer settings
@@ -1235,7 +1235,7 @@ namespace UVtools.Core.FileFormats
         /// </summary>
         public virtual uint LayerCount
         {
-            get => LayerManager?.LayerCount ?? 0;
+            get => LayerManager.LayerCount;
             set {
                 RaisePropertyChanged();
                 RaisePropertyChanged(nameof(NormalLayerCount));
@@ -2278,7 +2278,7 @@ namespace UVtools.Core.FileFormats
                     or nameof(LightPWM)
             )
             {
-                LayerManager?.RebuildLayersProperties(false, e.PropertyName);
+                LayerManager.RebuildLayersProperties(false, e.PropertyName);
 
                 if(e.PropertyName != nameof(BottomLightPWM) && e.PropertyName != nameof(LightPWM))
                     UpdatePrintTimeQueued();
