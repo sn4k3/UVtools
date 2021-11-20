@@ -216,6 +216,14 @@
         </Setter>
     </Style>
 
+    <Style Selector="TextBox.ValueLabel_ms, NumericUpDown.ValueLabel_ms /template/ TextBox">
+        <Setter Property="InnerRightContent">
+            <Template>
+                <TextBox Classes="NumericUpDownValueLabel" Text="ms" ToolTip.Tip="Milliseconds" />
+            </Template>
+        </Setter>
+    </Style>
+
 
     <Style Selector="NumericUpDown">
         <Setter Property="MinWidth" Value="130"/>

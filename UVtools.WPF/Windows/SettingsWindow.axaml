@@ -957,9 +957,29 @@
 
                 <CheckBox
                   Margin="10,0,10,10"
-                  Content="Show square grid as background "
-                  IsChecked="{Binding Settings.LayerPreview.ShowBackgroudGrid}"
-                />
+                  Content="Show square grid as background"
+                  IsChecked="{Binding Settings.LayerPreview.ShowBackgroudGrid}"/>
+
+                <StackPanel Orientation="Horizontal" Spacing="10">
+                    <NumericUpDown
+                        Classes="ValueLabel ValueLabel_ms"
+                        Margin="10,0,0,10"
+                        VerticalAlignment="Center"
+                        Minimum="0"
+                        Maximum="1000"
+                        Increment="5"
+                        Value="{Binding Settings.LayerPreview.LayerSliderDebounce}"/>
+
+                  <TextBlock
+                      Margin="0,0,0,10"
+                        VerticalAlignment="Center"
+                        Text="Layer slider debounce time to render the image"
+                      ToolTip.Tip="Time to wait in milliseconds to render the layer image after navigating on the layer slider while dragging.
+&#x0a;The timer resets every time the slider changes value.
+&#x0a;Use this option when layer images are heavy to load and you can't get a smooth navigation on the slider while dragging.
+&#x0a;Use 0 to disable the delay and instant render the layer."/>
+
+                </StackPanel>
 
               </StackPanel>
             </Border>

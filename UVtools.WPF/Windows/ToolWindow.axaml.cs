@@ -151,6 +151,8 @@ namespace UVtools.WPF.Windows
                 if (!RaiseAndSetIfChanged(ref _layerIndexEnd, value)) return;
                 RaisePropertyChanged(nameof(LayerEndMM));
                 RaisePropertyChanged(nameof(LayerRangeCountStr));
+
+                //App.MainWindow.ActualLayer = _layerIndexEnd;
             }
         }
 

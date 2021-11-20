@@ -23,7 +23,6 @@ using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using Avalonia.Collections;
 using UVtools.AvaloniaControls;
 using UVtools.Core;
 using UVtools.Core.Extensions;
@@ -1275,6 +1274,7 @@ namespace UVtools.WPF
             await settingsWindow.ShowDialog(this);
             if (settingsWindow.DialogResult == DialogResults.OK)
             {
+                _layerNavigationSliderDebounceTimer.Interval = Settings.LayerPreview.LayerSliderDebounce == 0 ? 1 : Settings.LayerPreview.LayerSliderDebounce;
                 RaisePropertyChanged(nameof(IssuesGridItems));
             }
         }
@@ -1390,7 +1390,7 @@ namespace UVtools.WPF
 
             if (IsFileLoaded)
             {
-                title += $"File: {Path.GetFileName(SlicerFile.FileFullPath)} ({Math.Round(LastStopWatch.ElapsedMilliseconds / 1000m, 2)}s)   ";
+                title += $"File: {SlicerFile.Filename} ({Math.Round(LastStopWatch.ElapsedMilliseconds / 1000m, 2)}s)   ";
             }
 
             title += $"Version: {App.VersionStr}   RAM: {SizeExtensions.SizeSuffix(Environment.WorkingSet)}";

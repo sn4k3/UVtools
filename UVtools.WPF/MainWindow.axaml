@@ -1692,7 +1692,7 @@
           Name="Layer.Navigation.Slider"
           Minimum="0"
           Maximum="{Binding SliderMaximumValue}"
-          Value="{Binding ActualLayer}"
+          Value="{Binding ActualLayerSlider}"
           TickFrequency="1"
           TickPlacement="Outside"
           SmallChange="1"

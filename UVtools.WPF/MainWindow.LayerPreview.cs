@@ -61,7 +61,10 @@ namespace UVtools.WPF
 
 
         private Timer _layerNavigationTooltipTimer = new(0.1) { AutoReset = false };
+        private Timer _layerNavigationSliderDebounceTimer = new(25) { AutoReset = false };
+        private uint _actualLayerSlider;
         private uint _actualLayer;
+
 
         private bool _showLayerImageRotated;
         private bool _showLayerImageRotateCwDirection = true;
@@ -91,7 +94,6 @@ namespace UVtools.WPF
         public LayerCache LayerCache = new ();
         private Point _lastPixelMouseLocation = Point.Empty;
         private readonly List<Point[]> _maskPoints = new ();
-
 
 
         public void InitLayerPreview()
@@ -173,6 +175,11 @@ namespace UVtools.WPF
             _layerNavigationTooltipTimer.Elapsed += (sender, args) =>
             {
                 Dispatcher.UIThread.InvokeAsync(() => RaisePropertyChanged(nameof(LayerNavigationTooltipMargin)));
+            };
+            _layerNavigationSliderDebounceTimer.Interval = Settings.LayerPreview.LayerSliderDebounce == 0 ? 1 : Settings.LayerPreview.LayerSliderDebounce;
+            _layerNavigationSliderDebounceTimer.Elapsed += (sender, args) =>
+            {
+                Dispatcher.UIThread.InvokeAsync(ShowLayer);
             };
         }
 
@@ -454,8 +461,8 @@ namespace UVtools.WPF
         }
 
         public string MinimumLayerString => SlicerFile is null ? "???" : $"{SlicerFile.LayerHeight}mm\n0";
-        public string MaximumLayerString => SlicerFile is null ? "???" : $"{SlicerFile.PrintHeight}mm\n{SlicerFile.LayerCount - 1}";
-        public string ActualLayerTooltip => SlicerFile is null ? "???" : $"{Layer.ShowHeight(LayerCache.Layer?.PositionZ ?? 0)}mm\n" +
+        public string MaximumLayerString => SlicerFile is null ? "???" : $"{SlicerFile.PrintHeight}mm\n{SlicerFile.LastLayerIndex}";
+        public string ActualLayerTooltip => SlicerFile is null ? "???" : $"{Layer.ShowHeight(SlicerFile[_actualLayer]?.PositionZ ?? 0)}mm\n" +
                                                                          $"{ActualLayer}\n" +
                                                                          $"{(ActualLayer + 1) * 100 / SlicerFile.LayerCount}%";
 
@@ -562,6 +569,26 @@ namespace UVtools.WPF
             }
         }
 
+        public uint ActualLayerSlider
+        {
+            get => _actualLayerSlider;
+            set
+            {
+                if (DataContext is null) return;
+                if (!RaiseAndSetIfChanged(ref _actualLayerSlider, value)) return;
+                if (Settings.LayerPreview.LayerSliderDebounce == 0)
+                {
+                    ActualLayer = _actualLayerSlider;
+                }
+                else
+                {
+                    _layerNavigationSliderDebounceTimer.Stop();
+                    _layerNavigationSliderDebounceTimer.Start();
+                    ActualLayer = _actualLayerSlider;
+                }
+            }
+        }
+
         public uint ActualLayer
         {
             get => _actualLayer;
@@ -569,7 +596,14 @@ namespace UVtools.WPF
             {
                 if (DataContext is null) return;
                 if (!RaiseAndSetIfChanged(ref _actualLayer, value)) return;
-                ShowLayer();
+
+                
+                if (!_layerNavigationSliderDebounceTimer.Enabled) // Doesn't come from ActualLayerSlider timer
+                {
+                    ActualLayerSlider = _actualLayer; // sync when required
+                    ShowLayer(); // Show layer only if timer is not present
+                }
+
                 InvalidateLayerNavigation();
             }
         }

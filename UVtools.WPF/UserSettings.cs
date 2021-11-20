@@ -257,7 +257,8 @@ namespace UVtools.WPF
             private bool _autoFlipLayerIfMirrored = true;
             private bool _layerZoomToFitOnLoad = true;
             private bool _showBackgroudGrid;
-            
+            private ushort _layerSliderDebounce;
+
             public Color TooltipOverlayBackgroundColor
             {
                 get => _tooltipOverlayBackgroundColor;
@@ -764,6 +765,12 @@ namespace UVtools.WPF
             {
                 get => _showBackgroudGrid;
                 set => RaiseAndSetIfChanged(ref _showBackgroudGrid, value);
+            }
+
+            public ushort LayerSliderDebounce
+            {
+                get => _layerSliderDebounce;
+                set => RaiseAndSetIfChanged(ref _layerSliderDebounce, value);
             }
 
             public LayerPreviewUserSettings Clone()
