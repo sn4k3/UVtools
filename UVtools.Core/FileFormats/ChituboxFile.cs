@@ -1150,6 +1150,15 @@ namespace UVtools.Core.FileFormats
             get
             {
                 if (!IsCtbFile) return null; // Only ctb files
+                /* Disable for v2 beside the fields on format they are not used
+                 if (HeaderSettings.Version <= 2)
+                {
+                    return new[]
+                    {
+                        PrintParameterModifier.ExposureSeconds,
+                        PrintParameterModifier.LightOffDelay,
+                    };
+                }*/
                 if (HeaderSettings.Version == 3)
                 {
                     return new[]
@@ -1182,15 +1191,7 @@ namespace UVtools.Core.FileFormats
                     };
                 }
 
-                /* Disable for v2 beside the fields on format they are not used
-                 if (HeaderSettings.Version <= 2)
-                {
-                    return new[]
-                    {
-                        PrintParameterModifier.ExposureSeconds,
-                        PrintParameterModifier.LightOffDelay,
-                    };
-                }*/
+                
 
                 return null;
             } 
@@ -1328,7 +1329,7 @@ namespace UVtools.Core.FileFormats
 
         public override float LightOffDelay
         {
-            get => PrintParametersSettings.LightOffDelay;
+            get => HeaderSettings.LightOffDelay;
             set
             {
                 base.LightOffDelay = HeaderSettings.LightOffDelay = PrintParametersSettings.LightOffDelay = (float) Math.Round(value, 2);
