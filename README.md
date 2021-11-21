@@ -13,7 +13,7 @@
 https://github.com/sn4k3/UVtools/releases/latest  
 
 ## To auto install on Windows via a package manager:
-- **Winget:** winget -e --id PTRTECH.UVtools
+- **Winget:** winget install -e --id PTRTECH.UVtools
 - **Chocolatey:** choco install -y uvtools
 
 **Note:** Winget is included on Windows 11 by default.
