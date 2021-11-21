@@ -7,7 +7,7 @@
 [![Nuget](https://img.shields.io/nuget/v/UVtools.Core?style=flat-square)](https://www.nuget.org/packages/UVtools.Core)
 [![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/sn4k3/UVtools?include_prereleases&style=flat-square)](https://github.com/sn4k3/UVtools/releases)
 [![Downloads](https://img.shields.io/github/downloads/sn4k3/UVtools/total?style=flat-square)](https://github.com/sn4k3/UVtools/releases)
-![Chocolatey](https://img.shields.io/chocolatey/dt/uvtools?color=brown&label=Chocolatey&style=flat-square)
+[![Chocolatey](https://img.shields.io/chocolatey/dt/uvtools?color=brown&label=Chocolatey&style=flat-square)](https://community.chocolatey.org/packages/uvtools)
 
 ## Download the latest version at:
 https://github.com/sn4k3/UVtools/releases/latest  
