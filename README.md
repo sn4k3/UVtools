@@ -7,10 +7,18 @@
 [![Nuget](https://img.shields.io/nuget/v/UVtools.Core?style=flat-square)](https://www.nuget.org/packages/UVtools.Core)
 [![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/sn4k3/UVtools?include_prereleases&style=flat-square)](https://github.com/sn4k3/UVtools/releases)
 [![Downloads](https://img.shields.io/github/downloads/sn4k3/UVtools/total?style=flat-square)](https://github.com/sn4k3/UVtools/releases)
+![Chocolatey](https://img.shields.io/chocolatey/dt/uvtools?color=brown&label=Chocolatey&style=flat-square)
 
-**Download the latest version at:** https://github.com/sn4k3/UVtools/releases/latest
+## Download the latest version at:
+https://github.com/sn4k3/UVtools/releases/latest  
 
-**MSLA/DLP, file analysis, calibration, repair, conversion and manipulation**
+## To auto install on Windows via a package manager:
+- **Winget:** winget -e --id PTRTECH.UVtools
+- **Chocolatey:** choco install -y uvtools
+
+**Note:** Winget is included on Windows 11 by default.
+
+# MSLA/DLP, file analysis, calibration, repair, conversion and manipulation
 
 This simple tool can give you insight of supports and find some failures. Did you forget what resin or other settings you used on a project? This can also save you, check every setting that were used with or simply change them!
 
