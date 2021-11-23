@@ -58,7 +58,7 @@ Version: $version
 Url: $msiUrl
 "
 
-$actionInput = Read-Host -Prompt "Do you want to update the manifest with the current release v$version? (Y/Yes or N/No)"
+$actionInput = Read-Host -Prompt "Do you want to update the manifest with the current release v$($version)? (Y/Yes or N/No)"
 if($actionInput -eq "y" || $actionInput -eq "yes")
 {
     Remove-Item $outputFolder -Recurse -ErrorAction Ignore # Clean
