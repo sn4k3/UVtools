@@ -15,5 +15,6 @@ jobs:
           iwr https://aka.ms/wingetcreate/latest -OutFile wingetcreate.exe
           $github = Get-Content '${{ github.event_path }}' | ConvertFrom-Json
           $installerUrl = $github.release.assets | Where-Object -Property name -match '.+win-x64.+\.msi' | Select -ExpandProperty browser_download_url -First 1
+          if ($null -eq $installerUrl){ return }
           $version = $github.release.tag_name.Replace('v', '')
           .\wingetcreate.exe update PTRTECH.UVtools --version $version --urls $installerUrl --token ${{ secrets.WINGET_TOKEN }} --submit
