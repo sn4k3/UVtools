@@ -1807,6 +1807,17 @@ namespace UVtools.WPF
             if (e.PropertyName == nameof(SlicerFile.Thumbnails))
             {
                 RefreshThumbnail();
+                return;
+            }
+            if (e.PropertyName == nameof(SlicerFile.Resolution))
+            {
+                RaisePropertyChanged(nameof(LayerResolutionStr));
+                return;
+            }
+            if (e.PropertyName == nameof(SlicerFile.Ppmm))
+            {
+                RaisePropertyChanged(nameof(LayerZoomStr));
+                return;
             }
         }
 

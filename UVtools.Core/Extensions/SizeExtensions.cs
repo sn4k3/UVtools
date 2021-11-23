@@ -6,9 +6,7 @@
  *  of this license document, but changing it is not allowed.
  */
 using System;
-using System.Collections.Generic;
 using System.Drawing;
-using System.Text;
 
 namespace UVtools.Core.Extensions
 {
@@ -43,10 +41,25 @@ namespace UVtools.Core.Extensions
                 SizeSuffixes[mag]);
         }
 
-        public static Size Inflate(this Size size, Size otherSize) => new (size.Width + otherSize.Width, size.Height + otherSize.Height);
-        public static Size Inflate(this Size size) => size.Inflate(size);
-        public static Size Inflate(this Size size, int pixels) => new (size.Width + pixels, size.Height + pixels);
-        public static Size Inflate(this Size size, int width, int height) => new (size.Width + width, size.Height + height);
+        public static Size Add(this Size size, Size otherSize) => new (size.Width + otherSize.Width, size.Height + otherSize.Height);
+        public static Size Add(this Size size) => size.Add(size);
+        public static Size Add(this Size size, int pixels) => new (size.Width + pixels, size.Height + pixels);
+        public static Size Add(this Size size, int width, int height) => new (size.Width + width, size.Height + height);
+
+        public static Size Subtract(this Size size, Size otherSize) => new(size.Width - otherSize.Width, size.Height - otherSize.Height);
+        public static Size Subtract(this Size size) => size.Subtract(size);
+        public static Size Subtract(this Size size, int pixels) => new(size.Width - pixels, size.Height - pixels);
+        public static Size Subtract(this Size size, int width, int height) => new(size.Width - width, size.Height - height);
+
+        public static Size Multiply(this Size size, SizeF otherSize) => new((int)(size.Width * otherSize.Width), (int)(size.Height * otherSize.Height));
+        public static Size Multiply(this Size size) => size.Multiply(size);
+        public static Size Multiply(this Size size, double dxy) => new((int)(size.Width * dxy), (int)(size.Height * dxy));
+        public static Size Multiply(this Size size, double dx, double dy) => new((int)(size.Width * dx), (int)(size.Height * dy));
+
+        public static Size Divide(this Size size, SizeF otherSize) => new((int)(size.Width / otherSize.Width), (int)(size.Height / otherSize.Height));
+        public static Size Divide(this Size size) => size.Divide(size);
+        public static Size Divide(this Size size, double dxy) => new((int)(size.Width / dxy), (int)(size.Height / dxy));
+        public static Size Divide(this Size size, double dx, double dy) => new((int)(size.Width / dx), (int)(size.Height / dy));
 
         /// <summary>
         /// Gets if this size have a zero value on width or height

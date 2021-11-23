@@ -11,6 +11,7 @@ using System.Drawing;
 using System.Text;
 using System.Threading.Tasks;
 using Emgu.CV;
+using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 
 namespace UVtools.Core.Operations
@@ -21,6 +22,8 @@ namespace UVtools.Core.Operations
         #region Members
         private uint _newResolutionX;
         private uint _newResolutionY;
+        private bool _fixRatio;
+
         #endregion
 
         #region Subclasses
@@ -81,9 +84,11 @@ namespace UVtools.Core.Operations
                 sb.AppendLine($"The new resolution must be different from current resolution ({SlicerFile.ResolutionX} x {SlicerFile.ResolutionY}).");
             }
 
-            if (NewResolutionX < SlicerFile.BoundingRectangle.Width || NewResolutionY < SlicerFile.BoundingRectangle.Height)
+            var finalBoundsWidth = FinalBoundsWidth;
+            var finalBoundsHeight = FinalBoundsHeight;
+            if (NewResolutionX < finalBoundsWidth || NewResolutionY < finalBoundsHeight)
             {
-                sb.AppendLine($"The new resolution ({NewResolutionX} x {NewResolutionY}) is not large enough to hold the model volume ({SlicerFile.BoundingRectangle.Width} x {SlicerFile.BoundingRectangle.Height}), continuing operation would clip the model");
+                sb.AppendLine($"The new resolution ({NewResolutionX} x {NewResolutionY}) is not large enough to hold the model volume ({finalBoundsWidth} x {finalBoundsHeight}), continuing operation would clip the model.");
                 sb.AppendLine("To fix this, try to rotate the object and/or resize to fit on this new resolution.");
             }
 
@@ -92,7 +97,7 @@ namespace UVtools.Core.Operations
 
         public override string ToString()
         {
-            var result = $"{_newResolutionX} x {_newResolutionY}";
+            var result = $"{_newResolutionX} x {_newResolutionY} [Fix ratio: {_fixRatio}]";
             if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
             return result;
         }
@@ -103,16 +108,46 @@ namespace UVtools.Core.Operations
         public uint NewResolutionX
         {
             get => _newResolutionX;
-            set => RaiseAndSetIfChanged(ref _newResolutionX, value);
+            set
+            {
+                if(!RaiseAndSetIfChanged(ref _newResolutionX, value)) return;
+                RaisePropertyChanged(nameof(NewRatioX));
+                RaisePropertyChanged(nameof(NewFixedRatioX));
+                RaisePropertyChanged(nameof(FinalBoundsWidth));
+            }
         }
 
         public uint NewResolutionY
         {
             get => _newResolutionY;
-            set => RaiseAndSetIfChanged(ref _newResolutionY, value);
+            set
+            {
+                RaiseAndSetIfChanged(ref _newResolutionY, value);
+                RaisePropertyChanged(nameof(NewRatioY));
+                RaisePropertyChanged(nameof(NewFixedRatioY));
+                RaisePropertyChanged(nameof(FinalBoundsHeight));
+            }
         }
 
-        public Size VolumeBondsSize => SlicerFile.BoundingRectangle.Size;
+        public double NewRatioX => Math.Round((double)SlicerFile.ResolutionX / _newResolutionX, 2);
+        public double NewRatioY => Math.Round((double)SlicerFile.ResolutionY / _newResolutionY, 2);
+
+        public double NewFixedRatioX => Math.Round((double)_newResolutionX / SlicerFile.ResolutionX, 2);
+        public double NewFixedRatioY => Math.Round((double)_newResolutionY / SlicerFile.ResolutionY, 2);
+
+        public bool FixRatio
+        {
+            get => _fixRatio;
+            set
+            {
+                if(!RaiseAndSetIfChanged(ref _fixRatio, value)) return;
+                RaisePropertyChanged(nameof(FinalBoundsWidth));
+                RaisePropertyChanged(nameof(FinalBoundsHeight));
+            }
+        }
+
+        public uint FinalBoundsWidth => (uint)(_fixRatio ? SlicerFile.BoundingRectangle.Width * NewFixedRatioX : SlicerFile.BoundingRectangle.Width);
+        public uint FinalBoundsHeight => (uint)(_fixRatio ? SlicerFile.BoundingRectangle.Height * NewFixedRatioY : SlicerFile.BoundingRectangle.Height);
 
         #endregion
 
@@ -151,6 +186,9 @@ namespace UVtools.Core.Operations
                 new Resolution(2560, 1620, "WQXGA"),
                 new Resolution(3840, 2160, "4K UHD"),
                 new Resolution(3840, 2400, "WQUXGA"),
+                new Resolution(4920, 2880, "5K UHD"),
+                new Resolution(5448, 3064, "6K"),
+                new Resolution(7680, 4320, "8K UHD"),
             };
         }
 
@@ -160,8 +198,12 @@ namespace UVtools.Core.Operations
         protected override bool ExecuteInternally(OperationProgress progress)
         {
             progress.ItemCount = SlicerFile.LayerCount;
-            var boundingRectangle = SlicerFile.BoundingRectangle;
             var newSize = new Size((int) NewResolutionX, (int) NewResolutionY);
+            var finalBoundsWidth = FinalBoundsWidth;
+            var finalBoundsHeight = FinalBoundsHeight;
+
+            var finalBounds = new Size((int)finalBoundsWidth, (int)finalBoundsHeight);
+
             Parallel.For(0, SlicerFile.LayerCount, CoreSettings.ParallelOptions, layerIndex =>
             {
                 if (progress.Token.IsCancellationRequested) return;
@@ -170,14 +212,17 @@ namespace UVtools.Core.Operations
 
                 if (mat.Size != newSize)
                 {
-                    using var matRoi = new Mat(mat, boundingRectangle);
-                    using var matDst = new Mat(newSize, mat.Depth, mat.NumberOfChannels);
-                    using var matDstRoi = new Mat(matDst,
-                        new Rectangle((int) (NewResolutionX / 2 - boundingRectangle.Width / 2),
-                            (int) NewResolutionY / 2 - boundingRectangle.Height / 2,
-                            boundingRectangle.Width, boundingRectangle.Height));
-                    matRoi.CopyTo(matDstRoi);
-                    //Execute(mat);
+                    using var matDst = EmguExtensions.InitMat(newSize);
+
+                    var newFixedRatioX = NewFixedRatioX;
+                    var newFixedRatioY = NewFixedRatioY;
+                    if (_fixRatio && (newFixedRatioX != 1.0 || newFixedRatioY != 1.0))
+                    {
+                        CvInvoke.Resize(mat, mat, SlicerFile.Resolution.Multiply(newFixedRatioX, newFixedRatioY));
+                    }
+
+                    mat.CopyCenterToCenter(finalBounds, matDst);
+
                     SlicerFile[layerIndex].LayerMat = matDst;
                 }
 
@@ -212,7 +257,7 @@ namespace UVtools.Core.Operations
 
         private bool Equals(OperationChangeResolution other)
         {
-            return _newResolutionX == other._newResolutionX && _newResolutionY == other._newResolutionY;
+            return _newResolutionX == other._newResolutionX && _newResolutionY == other._newResolutionY && _fixRatio == other._fixRatio;
         }
 
         public override bool Equals(object obj)
@@ -222,10 +267,7 @@ namespace UVtools.Core.Operations
 
         public override int GetHashCode()
         {
-            unchecked
-            {
-                return ((int) _newResolutionX * 397) ^ (int) _newResolutionY;
-            }
+            return HashCode.Combine(_newResolutionX, _newResolutionY, _fixRatio);
         }
 
         #endregion

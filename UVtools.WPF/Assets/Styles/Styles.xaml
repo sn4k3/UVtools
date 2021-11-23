@@ -29,6 +29,12 @@
         <Setter Property="AcceptsTab" Value="True" />
     </Style>
 
+    <Style Selector="NumericUpDown.ReadOnly">
+        <Setter Property="IsReadOnly" Value="True" />
+        <Setter Property="AllowSpin" Value="False" />
+        <Setter Property="ShowButtonSpinner" Value="False" />
+    </Style>
+
   <Style Selector="TextBox.NumericUpDownValueLabel">
     
     <Setter Property="IsEnabled" Value="False" />

@@ -176,19 +176,28 @@ namespace UVtools.Core
             }
         }
 
-        public void Init(uint layerCount, bool initializeLayers = false)
+        public void Init(Layer[] layers)
         {
-            _layers = new Layer[layerCount];
-            if (!initializeLayers) return;
-            for (uint layerIndex = 0; layerIndex < layerCount; layerIndex++)
+            var oldLayerCount = LayerCount;
+            _layers = layers;
+            if (LayerCount != oldLayerCount)
             {
-                this[layerIndex] = new Layer(layerIndex, this);
+                SlicerFile.LayerCount = LayerCount;
             }
         }
 
-        public void Init(Layer[] layers)
+        public void Init(uint layerCount, bool initializeLayers = false)
         {
-            _layers = layers;
+            var layers = new Layer[layerCount];
+            if (initializeLayers)
+            {
+                for (uint layerIndex = 0; layerIndex < layerCount; layerIndex++)
+                {
+                    layers[layerIndex] = new Layer(layerIndex, this);
+                }
+            }
+
+            Init(layers);
         }
 
         public void Add(Layer layer)
@@ -348,7 +357,7 @@ namespace UVtools.Core
         public LayerManager(uint layerCount, FileFormat slicerFile) : this(slicerFile)
         {
             SlicerFile = slicerFile;
-            _layers = new Layer[layerCount];
+            Init(layerCount);
         }
         #endregion
 
@@ -970,14 +979,24 @@ namespace UVtools.Core
             var oldLayerCount = LayerCount;
             int differenceLayerCount = (int)newLayerCount - Count;
             if (differenceLayerCount == 0) return;
-            Array.Resize(ref _layers, (int) newLayerCount);
+            var newLayers = new Layer[newLayerCount];
+
+            Array.Copy(_layers, 0, newLayers, 0, Math.Min(newLayerCount, newLayers.Length));
+            
             if (differenceLayerCount > 0 && initBlack)
             {
-                Parallel.For(oldLayerCount, newLayerCount, CoreSettings.ParallelOptions, layerIndex =>
+                using var blackMat = EmguExtensions.InitMat(SlicerFile.Resolution);
+                var pngBytes = blackMat.GetPngByes();
+                for (var layerIndex = oldLayerCount; layerIndex < newLayerCount; layerIndex++)
                 {
-                    this[layerIndex] = new Layer((uint)layerIndex, EmguExtensions.InitMat(SlicerFile.Resolution), this);
-                });
+                    newLayers[layerIndex] = new Layer(layerIndex, pngBytes.ToArray(), this);
+                }
             }
+
+            SlicerFile.SuppressRebuildPropertiesWork(() =>
+            {
+                Layers = newLayers;
+            });
         }
 
         /// <summary>
@@ -986,34 +1005,41 @@ namespace UVtools.Core
         /// <returns></returns>
         public void ReallocateInsert(uint insertAtLayerIndex, uint layerCount, bool initBlack = false)
         {
+            if (layerCount == 0) return;
+            insertAtLayerIndex = Math.Min(insertAtLayerIndex, LayerCount);
             var newLayers = new Layer[LayerCount + layerCount];
 
-            // Rearrange
-            for (uint layerIndex = 0; layerIndex < insertAtLayerIndex; layerIndex++)
-            {
-                newLayers[layerIndex] = _layers[layerIndex];
-            }
+            // Copy from start to insert index
+            if(insertAtLayerIndex > 0) 
+                Array.Copy(_layers, 0, newLayers, 0, insertAtLayerIndex);
 
-            // Rearrange
-            for (uint layerIndex = insertAtLayerIndex; layerIndex < _layers.Length; layerIndex++)
+            // Rearrange from last insert to end
+            if(insertAtLayerIndex < LayerCount)
+                Array.Copy(
+                    _layers, insertAtLayerIndex, 
+                    newLayers, insertAtLayerIndex + layerCount,
+                    LayerCount - insertAtLayerIndex);
+            /*for (uint layerIndex = insertAtLayerIndex; layerIndex < _layers.Length; layerIndex++)
             {
                 newLayers[layerCount + layerIndex] = _layers[layerIndex];
                 newLayers[layerCount + layerIndex].Index = layerCount + layerIndex;
-            }
+            }*/
 
-            // Allocate new layers
+            // Allocate new layers in between
             if (initBlack)
             {
-                Parallel.For(insertAtLayerIndex, insertAtLayerIndex + layerCount, CoreSettings.ParallelOptions, layerIndex =>
+                using var blackMat = EmguExtensions.InitMat(SlicerFile.Resolution);
+                var pngBytes = blackMat.GetPngByes();
+                for (var layerIndex = insertAtLayerIndex; layerIndex < insertAtLayerIndex + layerCount; layerIndex++)
                 {
-                    newLayers[layerIndex] = new Layer((uint) layerIndex, EmguExtensions.InitMat(SlicerFile.Resolution), this);
-                });
+                    newLayers[layerIndex] = new Layer(layerIndex, pngBytes.ToArray(), this);
+                }
             }
-            /*for (uint layerIndex = insertAtLayerIndex; layerIndex < insertAtLayerIndex + layerCount; layerIndex++)
+
+            SlicerFile.SuppressRebuildPropertiesWork(() =>
             {
-                Layers[layerIndex] = initBlack ? new Layer(layerIndex, EmguExtensions.InitMat(SlicerFile.Resolution), this) : null;
-            }*/
-            _layers = newLayers;
+                Layers = newLayers;
+            });
         }
 
         /// <summary>
@@ -1021,18 +1047,22 @@ namespace UVtools.Core
         /// </summary>
         /// <param name="startLayerIndex"></param>
         /// <param name="endLayerIndex"></param>
-        public void ReallocateRange(uint startLayerIndex, uint endLayerIndex)
+        public void ReallocateKeepRange(uint startLayerIndex, uint endLayerIndex)
         {
             if ((int)(endLayerIndex - startLayerIndex) < 0) return;
             var newLayers = new Layer[1 + endLayerIndex - startLayerIndex];
 
-            uint currentLayerIndex = 0;
+            Array.Copy(_layers, startLayerIndex, newLayers, 0, newLayers.Length);
+            /*uint currentLayerIndex = 0;
             for (uint layerIndex = startLayerIndex; layerIndex <= endLayerIndex; layerIndex++)
             {
                 newLayers[currentLayerIndex++] = _layers[layerIndex];
-            }
+            }*/
 
-            _layers = newLayers;
+            SlicerFile.SuppressRebuildPropertiesWork(() =>
+            {
+                Layers = newLayers;
+            });
         }
 
         /// <summary>

@@ -159,7 +159,7 @@ namespace UVtools.WPF.Controls.Tools
         {
             RaisePropertyChanged(nameof(InfoLayerHeightStr));
             RaisePropertyChanged(nameof(InfoImportResult));
-            ParentWindow.ButtonOkEnabled = Operation.Files.Count > 0;
+            if(ParentWindow is not null) ParentWindow.ButtonOkEnabled = Operation.Files.Count > 0;
         }
 
         public async void AddFiles()

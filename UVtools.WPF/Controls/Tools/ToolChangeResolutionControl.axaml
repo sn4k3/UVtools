@@ -7,33 +7,73 @@
   <StackPanel Orientation="Vertical" Spacing="10">
     <TextBlock Text="{Binding Operation.SlicerFile.Resolution, StringFormat=Current resolution (X/Y): {0}}"/>
     <TextBlock Text="{Binding Operation.SlicerFile.PixelSizeMicrons, StringFormat=Current pixel pitch (X/Y): {0}µm}"/>
-    <TextBlock Text="{Binding Operation.VolumeBondsSize, StringFormat=Object volume (X/Y): {0}}"/>
+    <TextBlock Text="{Binding SlicerFile.BoundingRectangle.Size, StringFormat=Object volume (X/Y): {0}}"/>
+    <TextBlock FontWeight="Bold">
+        <TextBlock.Text>
+            <MultiBinding StringFormat="Resulting pixel ratio: {{X={0}x, Y={1}x}}">
+                <Binding Path="Operation.NewRatioX"/>
+                <Binding Path="Operation.NewRatioY"/>
+            </MultiBinding>
+        </TextBlock.Text>
+    </TextBlock>
 
-    <StackPanel Orientation="Horizontal" Spacing="10">
-      <TextBlock VerticalAlignment="Center" Text="New X/Y:"/>
-      <NumericUpDown
-        MinWidth="120"
-        Minimum="1"
-        Maximum="50000"
-        Width="150"
-        Value="{Binding Operation.NewResolutionX}"/>
+    <Grid RowDefinitions="Auto,10,Auto"
+          ColumnDefinitions="Auto,10,Auto,5,Auto,5,Auto,10,Auto">
 
-      <TextBlock VerticalAlignment="Center" Text="x"/>
+      <TextBlock Grid.Row="0" Grid.Column="0"
+                 VerticalAlignment="Center" Text="New X/Y:"/>
 
-      <NumericUpDown
-        MinWidth="120"
-        Minimum="1"
-        Maximum="50000"
-        Width="150"
-        Value="{Binding Operation.NewResolutionY}"
-        />
+      <NumericUpDown Grid.Row="0" Grid.Column="2"
+                     MinWidth="120"
+                     Minimum="1"
+                     Maximum="50000"
+                     Width="150"
+                     Value="{Binding Operation.NewResolutionX}"/>
 
-      <ComboBox 
-        MinWidth="250"
-        SelectedItem="{Binding SelectedPresetItem}"
-        Items="{Binding Operation.Presets}"
-        PlaceholderText="Resolution presets"/>
-    </StackPanel>
+      <TextBlock Grid.Row="0" Grid.Column="4" VerticalAlignment="Center" Text="x"/>
+
+      <NumericUpDown Grid.Row="0" Grid.Column="6"
+                     MinWidth="120"
+                     Minimum="1"
+                     Maximum="50000"
+                     Width="150"
+                     Value="{Binding Operation.NewResolutionY}"/>
+
+      <ComboBox Grid.Row="0" Grid.Column="8"
+                MinWidth="250"
+                SelectedItem="{Binding SelectedPresetItem}"
+                Items="{Binding Operation.Presets}"
+                PlaceholderText="Resolution presets"/>
+
+      <TextBlock Grid.Row="2" Grid.Column="0"
+                 VerticalAlignment="Center" Text="Fix pixel ratio:"/>
+
+      <NumericUpDown Grid.Row="2" Grid.Column="2"
+                     Classes="ValueLabel ValueLabel_times ReadOnly"
+                     FormatString="F2"
+                     MinWidth="120"
+                     Width="150"
+                     IsEnabled="{Binding Operation.FixRatio}"
+                     Value="{Binding Operation.NewFixedRatioX}"/>
+
+      <TextBlock Grid.Row="2" Grid.Column="4" VerticalAlignment="Center" Text="x"/>
+
+      <NumericUpDown Grid.Row="2" Grid.Column="6"
+                     Classes="ValueLabel ValueLabel_times ReadOnly"
+                     FormatString="F2"
+                     MinWidth="120"
+                     Width="150"
+                     IsEnabled="{Binding Operation.FixRatio}"
+                     Value="{Binding Operation.NewFixedRatioY}"/>
+
+      <CheckBox Grid.Row="2" Grid.Column="8"
+                Content="Resize layers with proposed ratio"
+                IsChecked="{Binding Operation.FixRatio}"
+                ToolTip.Tip="Fix the pixel ratio by resize the layers images with the proposed ratio to match the new resolution.
+&#x0a;Only use this option when both source and target display have the same dimensions / build volume. 
+Otherwise, the new display size must be taken into account and you need to manually resize after this."/>
+    </Grid>
+    
     
   </StackPanel>
 </UserControl>

@@ -473,6 +473,30 @@ namespace UVtools.Core.Extensions
 
         #region Copy methods
         /// <summary>
+        /// Copy a region from <see cref="Mat"/> to center of other <see cref="Mat"/>
+        /// </summary>
+        /// <param name="src">Source <see cref="Mat"/> to be copied to</param>
+        /// <param name="size">Size of the center offset</param>
+        /// <param name="dst">Target <see cref="Mat"/> to paste the <param name="src"></param></param>
+        public static void CopyCenterToCenter(this Mat src, Size size, Mat dst)
+        {
+            var srcRoi = src.RoiFromCenter(size);
+            CopyToCenter(srcRoi, dst);
+        }
+
+        /// <summary>
+        /// Copy a region from <see cref="Mat"/> to center of other <see cref="Mat"/>
+        /// </summary>
+        /// <param name="src">Source <see cref="Mat"/> to be copied to</param>
+        /// <param name="region">Region to copy</param>
+        /// <param name="dst">Target <see cref="Mat"/> to paste the <param name="src"></param></param>
+        public static void CopyRegionToCenter(this Mat src, Rectangle region, Mat dst)
+        {
+            var srcRoi = src.Roi(region);
+            CopyToCenter(srcRoi, dst);
+        }
+
+        /// <summary>
         /// Copy a <see cref="Mat"/> to center of other <see cref="Mat"/>
         /// </summary>
         /// <param name="src">Source <see cref="Mat"/> to be copied to</param>
@@ -481,20 +505,30 @@ namespace UVtools.Core.Extensions
         {
             var srcStep = src.GetRealStep();
             var dstStep = dst.GetRealStep();
+            var dx = Math.Abs(dstStep - srcStep) / 2;
+            var dy = Math.Abs(dst.Height - src.Height) / 2;
+
+            if (src.Size == dst.Size)
+            {
+                src.CopyTo(dst);
+                return;
+            }
+
             if (dstStep > srcStep && dst.Height > src.Height)
             {
-                var dx = Math.Abs(dstStep - srcStep) / 2;
-                var dy = Math.Abs(dst.Height - src.Height) / 2;
-                Mat m = new(dst, new Rectangle(dx, dy, src.Width, src.Height));
-                src.CopyTo(m);
+                using var dstRoi = dst.Roi(new Rectangle(dx, dy, src.Width, src.Height));
+                src.CopyTo(dstRoi);
+                return;
             }
-            else if (dstStep < srcStep && dst.Height < src.Height)
+            
+            if (dstStep < srcStep && dst.Height < src.Height)
             {
-                var dx = Math.Abs(dstStep - srcStep) / 2;
-                var dy = Math.Abs(dst.Height - src.Height) / 2;
-                Mat m = new(src, new Rectangle(dx, dy, dst.Width, dst.Height));
-                m.CopyTo(dst);
+                using var srcRoi = src.Roi(new Rectangle(dx, dy, dst.Width, dst.Height));
+                srcRoi.CopyTo(dst);
+                return;
             }
+
+            throw new InvalidOperationException("Unable to copy, out of bounds");
         }
 
         public static void CopyAreasSmallerThan(this Mat src, double threshold, Mat dst)
@@ -564,29 +598,47 @@ namespace UVtools.Core.Extensions
         }
 
         /// <summary>
+        /// Gets a Roi from center, but return source when have same size as source
+        /// </summary>
+        /// <param name="mat"></param>
+        /// <param name="size"></param>
+        /// <returns></returns>
+        public static Mat RoiFromCenter(this Mat mat, Size size)
+        {
+            if(mat.Size == size) return mat;
+
+            var newRoi = mat.Roi(new Rectangle(
+                mat.Width / 2 - size.Width / 2,
+                mat.Height / 2 - size.Height / 2,
+                size.Width,
+                size.Height
+            ));
+
+            return newRoi;
+        }
+
+        /// <summary>
         /// Gets a new mat obtained from it center at a target size and roi
         /// </summary>
         /// <param name="mat"></param>
         /// <param name="targetSize"></param>
         /// <param name="roi"></param>
         /// <returns></returns>
-        public static Mat NewRoiFromCenter(this Mat mat, Size targetSize, Rectangle roi)
+        public static Mat NewMatFromCenterRoi(this Mat mat, Size targetSize, Rectangle roi)
         {
             if (targetSize == mat.Size) return mat.Clone();
             var newMat = InitMat(targetSize);
-
-            var roiMat = new Mat(mat, roi);
-
-
+            var roiMat = mat.Roi(roi);
+            
             //int xStart = mat.Width / 2 - targetSize.Width / 2;
             //int yStart = mat.Height / 2 - targetSize.Height / 2;
-
-            var newMatRoi = new Mat(newMat, new Rectangle(
+            var newMatRoi = newMat.RoiFromCenter(roi.Size);
+            /*var newMatRoi = new Mat(newMat, new Rectangle(
                 targetSize.Width / 2 - roi.Width / 2,
                 targetSize.Height / 2 - roi.Height / 2,
                 roi.Width,
                 roi.Height
-            ));
+            ));*/
             roiMat.CopyTo(newMatRoi);
             return newMat;
         }

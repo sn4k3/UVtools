@@ -1,5 +1,17 @@
 # Changelog
 
+## 23/11/2021 - v2.25.1
+
+- **Change resolution:**
+   - (Add) Presets: 5K UHD, 6K and 8K UHD
+   - (Add) Resulting pixel ratio information
+   - (Add) Fix the pixel ratio by resize the layers images with the proposed ratio to match the new resolution
+   - (Fix) New images could have noise when processed on linux and macos
+- (Add) Layer slider debounce time to render the image [Configurable] (#343)
+- (Fix) CTB v1: Incorrect getter for the LightOffDelay 
+- (Fix) Reallocating layers were not notifying nor updating the layer collection about the changes, leading to wrong layer count
+- (Fix) Undo and redo now also reverts the file resolution when changed
+
 ## 18/11/2021 - v2.25.0
 
 - **File formats:**
@@ -7,7 +19,7 @@
    - (Add) More abstraction on partial save
 - **Scripting:**
    - (Add) ScriptOpenFolderDialogInput - Selects a folder path
-   - (Add) ScriptOpenFileDialogInput - Selectes a file to open
+   - (Add) ScriptOpenFileDialogInput - Selects a file to open
    - (Add) ScriptSaveFileDialogInput - Selects a file to save
 - (Add) [UNSAVED] tag to the title bar when there are unsaved changes on the current session
 - (Improvement) Better handling of empty images on the UI

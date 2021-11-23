@@ -416,7 +416,7 @@
 
             <TextBlock VerticalAlignment="Center">
               <TextBlock.Text>
-                <MultiBinding StringFormat="\{0\}/\{1\}">
+                <MultiBinding StringFormat="{}{0}/{1}">
                   <Binding Path="VisibleThumbnailIndex"/>
                   <Binding Path="SlicerFile.CreatedThumbnailsCount"/>
                 </MultiBinding>
@@ -1521,7 +1521,7 @@
 
             <TextBlock VerticalAlignment="Center">
               <TextBlock.Text>
-                <MultiBinding StringFormat="\{0\}/\{1\}">
+                <MultiBinding StringFormat="{}{0}/{1}">
                   <Binding Path="Clipboard.CurrentIndexCountStr"/>
                   <Binding Path="Clipboard.Items.Count"/>
                 </MultiBinding>

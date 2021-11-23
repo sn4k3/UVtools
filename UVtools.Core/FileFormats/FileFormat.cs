@@ -993,6 +993,9 @@ namespace UVtools.Core.FileFormats
                 ResolutionX = (uint) value.Width;
                 ResolutionY = (uint) value.Height;
                 RaisePropertyChanged();
+                RaisePropertyChanged(nameof(Xppmm));
+                RaisePropertyChanged(nameof(Yppmm));
+                RaisePropertyChanged(nameof(Ppmm));
             }
         }
 

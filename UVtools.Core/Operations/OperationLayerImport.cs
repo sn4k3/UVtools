@@ -35,8 +35,8 @@ namespace UVtools.Core.Operations
             Replace,
             [Description("Stack: Stacks and combine imported layers in the current layers")]
             Stack,
-            [Description("Merge: Merges current layers with the imported content by summing value of layer pixels")]
-            Merge,
+            [Description("MergeSum: Merges current layers with the imported content by summing value of layer pixels")]
+            MergeSum,
             [Description("MergeMax: Merges current layers with the imported content by using the maximum value of layer pixels")]
             MergeMax,
             [Description("Subtract: Subtracts current layers with the imported content")]
@@ -158,7 +158,7 @@ namespace UVtools.Core.Operations
             set => RaiseAndSetIfChanged(ref _extendBeyondLayerCount, value);
         }
 
-        public bool IsExtendBeyondLayerCountVisible => _importType is ImportTypes.Replace or ImportTypes.Stack or ImportTypes.Merge or ImportTypes.MergeMax;
+        public bool IsExtendBeyondLayerCountVisible => _importType is ImportTypes.Replace or ImportTypes.Stack or ImportTypes.MergeSum or ImportTypes.MergeMax;
 
         public bool DiscardUnmodifiedLayers
         {
@@ -354,7 +354,7 @@ namespace UVtools.Core.Operations
                             }
 
                             break;
-                        case ImportTypes.Merge:
+                        case ImportTypes.MergeSum:
                         case ImportTypes.MergeMax:
                             if (SlicerFile.Resolution != fileFormat.Resolution) continue;
                             if (_extendBeyondLayerCount)
@@ -393,7 +393,7 @@ namespace UVtools.Core.Operations
                                         }
 
                                         using var layer = fileFormat[i].LayerMat;
-                                        using var layerRoi = layer.NewRoiFromCenter(SlicerFile.Resolution, fileFormatBoundingRectangle);
+                                        using var layerRoi = layer.NewMatFromCenterRoi(SlicerFile.Resolution, fileFormatBoundingRectangle);
                                         SlicerFile[layerIndex] = new Layer(layerIndex, layerRoi, SlicerFile);
 
                                         break;
@@ -408,7 +408,7 @@ namespace UVtools.Core.Operations
                                         }
 
                                         using var layer = fileFormat[i].LayerMat;
-                                        using var layerRoi = layer.NewRoiFromCenter(SlicerFile.Resolution, fileFormatBoundingRectangle);
+                                        using var layerRoi = layer.NewMatFromCenterRoi(SlicerFile.Resolution, fileFormatBoundingRectangle);
                                         SlicerFile[layerIndex] = new Layer(layerIndex, layerRoi, SlicerFile);
                                         break;
                                     }
@@ -424,7 +424,7 @@ namespace UVtools.Core.Operations
 
                                         break;
                                     }
-                                case ImportTypes.Merge:
+                                case ImportTypes.MergeSum:
                                     {
                                         if (layerIndex >= SlicerFile.LayerCount) return;
                                         using var originalMat = SlicerFile[layerIndex].LayerMat;
@@ -512,7 +512,7 @@ namespace UVtools.Core.Operations
 
                 if (lastProcessedLayerIndex + 1 < SlicerFile.LayerCount && _discardUnmodifiedLayers)
                 {
-                    SlicerFile.LayerManager.ReallocateRange(0, (uint)lastProcessedLayerIndex);
+                    SlicerFile.LayerManager.Reallocate((uint)lastProcessedLayerIndex + 1);
                 }
 
                 return true;

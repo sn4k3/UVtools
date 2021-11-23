@@ -2160,7 +2160,7 @@ namespace UVtools.WPF
                     var size = EmguExtensions.GetTextSizeExtended(text, DrawingPixelText.Font, DrawingPixelText.FontScale, DrawingPixelText.Thickness, ref baseLine, DrawingPixelText.LineAlignment);
                     //var rotatedSize = size.Rotate(DrawingPixelText.Angle);
                     //Point point = (rotatedSize.Inflate(rotatedSize)).Rotate(DrawingPixelText.Angle, rotatedSize.ToPoint());
-                    cursor = EmguExtensions.InitMat(size.Inflate(), 4);
+                    cursor = EmguExtensions.InitMat(size.Add(), 4);
                     //CvInvoke.Rectangle(cursor, new Rectangle(Point.Empty, size), _pixelEditorCursorColor, -1, DrawingPixelText.LineType);
                     //_pixelEditorCursorColor.V3 = 255;
                     //CvInvoke.Rectangle(cursor, new Rectangle(new Point(size.Width, 0), size), _pixelEditorCursorColor, 1, DrawingPixelText.LineType);

@@ -10,6 +10,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Drawing;
 using System.Linq;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Layers;
@@ -29,7 +30,15 @@ namespace UVtools.Core.Managers
         /// </summary>
         public uint LayerCount { get; }
 
+        /// <summary>
+        /// Gets the LayerHeight for this clip
+        /// </summary>
         public float LayerHeight { get; }
+
+        /// <summary>
+        /// Gets the Resolution for this clip
+        /// </summary>
+        public Size Resolution { get; }
 
         /// <summary>
         /// Gets the description of this operation
@@ -39,7 +48,7 @@ namespace UVtools.Core.Managers
         public bool IsFullBackup { get; set; }
 
 
-        public Operations.Operation Operation
+        public Operation Operation
         {
             get => _operation;
             set
@@ -52,19 +61,19 @@ namespace UVtools.Core.Managers
         #endregion
 
         #region Constructor
-        public ClipboardItem(FileFormat slicerFile, Operations.Operation operation, bool isFullBackup = false) : this(slicerFile)
+        public ClipboardItem(FileFormat slicerFile, Operation operation, bool isFullBackup = false) : this(slicerFile, string.Empty, isFullBackup)
         {
             Operation = operation;
             string description = operation.ToString();
             if (!description.StartsWith(operation.Title)) description = $"{operation.Title}: {description}";
             Description = description;
-            IsFullBackup = isFullBackup;
         }
         
         public ClipboardItem(FileFormat slicerFile, string description = null, bool isFullBackup = false)
         {
             LayerCount = slicerFile.LayerCount;
             LayerHeight = slicerFile.LayerHeight;
+            Resolution = slicerFile.Resolution;
             Description = description;
             IsFullBackup = isFullBackup;
         }
@@ -140,6 +149,11 @@ namespace UVtools.Core.Managers
                         if (SlicerFile.LayerHeight != clip.LayerHeight)
                         {
                             SlicerFile.LayerHeight = clip.LayerHeight;
+                        }
+
+                        if (SlicerFile.Resolution != clip.Resolution)
+                        {
+                            SlicerFile.Resolution = clip.Resolution;
                         }
 
                         SlicerFile.SuppressRebuildPropertiesWork(() =>
@@ -394,7 +408,7 @@ namespace UVtools.Core.Managers
         /// <summary>
         /// Collect differences and create a clip
         /// </summary>
-        public ClipboardItem Clip(Operations.Operation operation, Layer[] layersSnapshot = null, bool doFullBackup = false)
+        public ClipboardItem Clip(Operation operation, Layer[] layersSnapshot = null, bool doFullBackup = false)
         {
             string description = operation.ToString();
             if (!description.StartsWith(operation.Title)) description = $"{operation.Title}: {description}";

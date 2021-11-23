@@ -90,8 +90,7 @@
       </Border>
       <Grid 
         RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,*"
-        Margin="20"
-        >
+        Margin="20">
 
         <TextBlock Grid.Row="0" Text="{Binding Software}" FontWeight="Bold"/>
         <TextBlock Grid.Row="2" Text="{Binding Version}"/>

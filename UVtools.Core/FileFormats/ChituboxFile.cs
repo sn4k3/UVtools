@@ -1799,7 +1799,7 @@ namespace UVtools.Core.FileFormats
             }
 
             //uint currentOffset = (uint)Helpers.Serializer.SizeOf(HeaderSettings);
-            LayerDefinitions = new LayerDef[HeaderSettings.AntiAliasLevel, HeaderSettings.LayerCount];
+            LayerDefinitions = new LayerDef[HeaderSettings.AntiAliasLevel, LayerCount];
             using var outputFile = new FileStream(FileFullPath, FileMode.Create, FileAccess.Write);
             outputFile.Seek(Helpers.Serializer.SizeOf(HeaderSettings), SeekOrigin.Begin);
 
@@ -1869,7 +1869,7 @@ namespace UVtools.Core.FileFormats
             HeaderSettings.LayersDefinitionOffsetAddress = (uint)outputFile.Position;
             uint layerDefSize = (uint)Helpers.Serializer.SizeOf(new LayerDef());
             //uint layerDefCurrentOffset = HeaderSettings.LayersDefinitionOffsetAddress;
-            uint layerDataCurrentOffset = HeaderSettings.LayersDefinitionOffsetAddress + layerDefSize * HeaderSettings.LayerCount * HeaderSettings.AntiAliasLevel;
+            uint layerDataCurrentOffset = HeaderSettings.LayersDefinitionOffsetAddress + layerDefSize * LayerCount * HeaderSettings.AntiAliasLevel;
 
             var layersHash = new Dictionary<string, LayerDef>();
             progress.Reset(OperationProgress.StatusEncodeLayers, LayerCount);
@@ -1932,7 +1932,7 @@ namespace UVtools.Core.FileFormats
                         }
 
                         outputFile.Seek(HeaderSettings.LayersDefinitionOffsetAddress +
-                                        aaIndex * HeaderSettings.LayerCount * layerDefSize +
+                                        aaIndex * LayerCount * layerDefSize +
                                         layerDefSize * layerIndex
                             , SeekOrigin.Begin);
                         Helpers.SerializeWriteFileStream(outputFile, layerDef);
@@ -2047,17 +2047,18 @@ namespace UVtools.Core.FileFormats
                 }
             }
 
-            LayerDefinitions = new LayerDef[HeaderSettings.AntiAliasLevel, HeaderSettings.LayerCount];
-            var layerDefinitionsEx = HeaderSettings.Version >= 3 ? new LayerDefEx[HeaderSettings.LayerCount] : null;
+            LayerManager.Init(HeaderSettings.LayerCount, DecodeType == FileDecodeType.Partial);
+            LayerDefinitions = new LayerDef[HeaderSettings.AntiAliasLevel, LayerCount];
+            var layerDefinitionsEx = HeaderSettings.Version >= 3 ? new LayerDefEx[LayerCount] : null;
 
             uint layerOffset = HeaderSettings.LayersDefinitionOffsetAddress;
 
-            progress.Reset(OperationProgress.StatusGatherLayers, HeaderSettings.AntiAliasLevel * HeaderSettings.LayerCount);
+            progress.Reset(OperationProgress.StatusGatherLayers, HeaderSettings.AntiAliasLevel * LayerCount);
 
             for (byte aaIndex = 0; aaIndex < HeaderSettings.AntiAliasLevel; aaIndex++)
             {
                 Debug.WriteLine($"-Image GROUP {aaIndex}-");
-                for (uint layerIndex = 0; layerIndex < HeaderSettings.LayerCount; layerIndex++)
+                for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
                 {
                     progress.Token.ThrowIfCancellationRequested();
                     inputFile.Seek(layerOffset, SeekOrigin.Begin);
@@ -2086,8 +2087,6 @@ namespace UVtools.Core.FileFormats
                     progress++;
                 }
             }
-
-            LayerManager.Init(HeaderSettings.LayerCount, DecodeType == FileDecodeType.Partial);
 
             if (DecodeType == FileDecodeType.Full)
             {
@@ -2148,7 +2147,7 @@ namespace UVtools.Core.FileFormats
             uint layerOffset = HeaderSettings.LayersDefinitionOffsetAddress;
             for (byte aaIndex = 0; aaIndex < HeaderSettings.AntiAliasLevel; aaIndex++)
             {
-                for (uint layerIndex = 0; layerIndex < HeaderSettings.LayerCount; layerIndex++)
+                for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
                 {
                     var layer = this[layerIndex];
                     LayerDefinitions[aaIndex, layerIndex].SetFrom(layer);
@@ -2160,7 +2159,7 @@ namespace UVtools.Core.FileFormats
 
             if (HeaderSettings.Version >= 3)
             {
-                for (uint layerIndex = 0; layerIndex < HeaderSettings.LayerCount; layerIndex++)
+                for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
                 {
                     outputFile.Seek(LayerDefinitions[0, layerIndex].DataAddress - 84, SeekOrigin.Begin);
                     Helpers.SerializeWriteFileStream(outputFile, new LayerDefEx(LayerDefinitions[0, layerIndex], this[layerIndex]));

@@ -10,7 +10,7 @@
     <RepositoryUrl>https://github.com/sn4k3/UVtools</RepositoryUrl>
     <PackageProjectUrl>https://github.com/sn4k3/UVtools</PackageProjectUrl>
     <Description>MSLA/DLP, file analysis, calibration, repair, conversion and manipulation</Description>
-    <Version>2.25.0</Version>
+    <Version>2.25.1</Version>
     <Copyright>Copyright © 2020 PTRTECH</Copyright>
     <PackageIcon>UVtools.png</PackageIcon>
     <Platforms>AnyCPU;x64</Platforms>
@@ -49,7 +49,7 @@
 
   <ItemGroup>
     <PackageReference Include="AnimatedGif" Version="1.0.5" />
-    <PackageReference Include="BinarySerializer" Version="8.6.1.1" />
+    <PackageReference Include="BinarySerializer" Version="8.6.1.2" />
     <PackageReference Include="Emgu.CV" Version="4.5.4.4788" />
     <PackageReference Include="KdTree" Version="1.4.1" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="4.0.1" />
