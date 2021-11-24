@@ -24,7 +24,6 @@ Before continue, please look/search on closed topics if your case was already be
 
 ```
 
-
 ## Describe the bug
 A clear and concise description of what the bug is.
 
@@ -42,7 +41,7 @@ A clear and concise description of what you expected to happen.
 
 ## Screenshots
 <!--
-If applicable, add screenshots to help explain your problem. Never hide information, full GUI/window screenshot is always a must!
+If applicable, add screenshots to help explain your problem. Never hide information! Full GUI/window screenshot is always a must!
 If bug is related to GUI/visuals print a screenshot from Help -> About
 !-->
 
@@ -55,10 +54,16 @@ Were possible attach the problematic file, both source and output file if applic
 <!--
 In some unexpected exceptions errors and application crash it will generate and save a log file under AppData\Local\UVtools\errors.log. 
 To navigate to the error.log folder you can open UVtools, go to Help -> Open settings folder
-If present you can attach the log file here.
+If present you can attach the log file or the content here.
 !-->
 
 ## Additional context
 <!--
 Add any other context about the problem here.
+!-->
+
+
+<!--
+Use descriptive and complete title! 
+Review all information and make sure it's clear and complete.
 !-->
