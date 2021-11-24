@@ -64,6 +64,8 @@ Add any other context about the problem here.
 
 
 <!--
-Use descriptive and complete title! 
-Review all information and make sure it's clear and complete.
+# Overview:
+1. Use descriptive and complete title! 
+2. Review all information and make sure it's clear and complete.
+3. Erase all unused sections.
 !-->

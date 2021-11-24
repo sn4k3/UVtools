@@ -33,3 +33,10 @@ If applicable, add screenshots to help explain your request.
 <!--
 Add any other context or screenshots about the feature request here.
 !-->
+
+<!--
+# Overview:
+1. Use descriptive and complete title! 
+2. Review all information and make sure it's clear and complete.
+3. Erase all unused sections.
+!-->
