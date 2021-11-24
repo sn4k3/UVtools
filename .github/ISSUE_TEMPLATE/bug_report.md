@@ -17,6 +17,14 @@ Before continue, please look/search on closed topics if your case was already be
  - Printer: 
  - UVtools version: 
 
+```
+1. Go to "UVtools -> Help -> About"
+2. Click on "Copy information"
+3. Paste that infomation bellow this line:
+
+```
+
+
 ## Describe the bug
 A clear and concise description of what the bug is.
 
