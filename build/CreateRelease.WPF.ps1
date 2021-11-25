@@ -36,7 +36,7 @@ $enableMSI = $true
 #$buildOnly = 'win-x64'
 #$buildOnly = 'linux-x64'
 #$buildOnly = 'osx-x64'
-$enableNugetPublish = $true
+#$enableNugetPublish = $true
 # Profilling
 $stopWatch = New-Object -TypeName System.Diagnostics.Stopwatch 
 $deployStopWatch = New-Object -TypeName System.Diagnostics.Stopwatch
@@ -166,6 +166,7 @@ foreach ($obj in $runtimes.GetEnumerator()) {
     Write-Output "################################
 Building: $runtime"
     dotnet publish $project -o "$publishFolder/$runtime" -c $buildWith -r $runtime $extraCmd
+    New-Item "$publishFolder/$runtime/runtime_package.dat" -ItemType File -Value $runtime
     if(!$runtime.Equals('win-x64'))
     {
         # Fix permissions
