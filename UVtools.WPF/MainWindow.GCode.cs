@@ -10,6 +10,7 @@ using System.IO;
 using Avalonia;
 using Avalonia.Controls;
 using MessageBox.Avalonia.Enums;
+using UVtools.Core.SystemOS;
 using UVtools.WPF.Extensions;
 using Helpers = UVtools.WPF.Controls.Helpers;
 
@@ -64,7 +65,7 @@ namespace UVtools.WPF
                 "GCode save complete");
             if (result != ButtonResult.Yes) return;
 
-            App.StartProcess(file);
+            SystemAware.StartProcess(file);
         }
 
         public void OnClickGCodeSaveClipboard()

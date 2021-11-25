@@ -1,5 +1,17 @@
 # Changelog
 
+## 25/11/2021 - v2.25.2
+
+- **About box:**
+   - (Add) Processor name
+   - (Add) Memory RAM (Used / Total GB)
+   - (Add) OpenCV and Assemblies tab
+   - (Add) "Copy information" button to copy the whole dialog information, usefull for bug reports
+   - (Improvement) Enumerate the loaded assemblies
+   - (Improvement) Rearrange the elements and put them inside scroll viewers to not strech the window
+   - (Improvement) Allow to resize and maximize the window
+- (Fix) Auto updater: From this version forward, the linux packages are correctly identified (linux, arch, rhel) and will download the same package as installed. Were downloading the linux-x64 no matter what
+
 ## 23/11/2021 - v2.25.1
 
 - **Change resolution:**

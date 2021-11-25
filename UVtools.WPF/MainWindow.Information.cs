@@ -19,6 +19,7 @@ using MessageBox.Avalonia.Enums;
 using UVtools.Core;
 using UVtools.Core.Layers;
 using UVtools.Core.Objects;
+using UVtools.Core.SystemOS;
 using UVtools.WPF.Extensions;
 using UVtools.WPF.Structures;
 using Bitmap = Avalonia.Media.Imaging.Bitmap;
@@ -274,7 +275,7 @@ namespace UVtools.WPF
                 "Properties save complete");
             if (result != ButtonResult.Yes) return;
 
-            App.StartProcess(file);
+            SystemAware.StartProcess(file);
         }
 
         public void OnClickPropertiesSaveClipboard()

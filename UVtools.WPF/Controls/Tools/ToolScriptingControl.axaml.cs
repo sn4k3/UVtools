@@ -7,6 +7,7 @@ using Avalonia.Layout;
 using Avalonia.Markup.Xaml;
 using UVtools.Core.Operations;
 using UVtools.Core.Scripting;
+using UVtools.Core.SystemOS;
 using UVtools.WPF.Extensions;
 using UVtools.WPF.Windows;
 
@@ -86,13 +87,13 @@ namespace UVtools.WPF.Controls.Tools
         public void OpenScriptFolder()
         {
             if (!Operation.HaveFile) return;
-            App.StartProcess(Path.GetDirectoryName(Operation.FilePath));
+            SystemAware.StartProcess(Path.GetDirectoryName(Operation.FilePath));
         }
 
         public void OpenScriptFile()
         {
             if (!Operation.HaveFile) return;
-            App.StartProcess(Operation.FilePath);
+            SystemAware.StartProcess(Operation.FilePath);
         }
 
         public void ReloadGUI()

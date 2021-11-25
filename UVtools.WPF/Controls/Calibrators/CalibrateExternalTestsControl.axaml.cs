@@ -1,5 +1,6 @@
 ﻿using Avalonia.Markup.Xaml;
 using UVtools.Core.Operations;
+using UVtools.Core.SystemOS;
 using UVtools.WPF.Controls.Tools;
 
 namespace UVtools.WPF.Controls.Calibrators
@@ -22,7 +23,7 @@ namespace UVtools.WPF.Controls.Calibrators
 
         public void ButtonClicked(string url)
         {
-            App.OpenBrowser(url);
+            SystemAware.OpenBrowser(url);
         }
     }
 }

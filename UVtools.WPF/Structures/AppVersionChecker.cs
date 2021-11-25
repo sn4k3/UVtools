@@ -12,6 +12,7 @@ using System.IO.Compression;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics.X86;
 using System.Threading.Tasks;
 using Avalonia.Threading;
 using Newtonsoft.Json.Linq;
@@ -19,6 +20,7 @@ using UVtools.Core;
 using UVtools.Core.Extensions;
 using UVtools.Core.Objects;
 using UVtools.Core.Operations;
+using UVtools.Core.SystemOS;
 using UVtools.WPF.Extensions;
 
 namespace UVtools.WPF.Structures
@@ -26,6 +28,7 @@ namespace UVtools.WPF.Structures
     public class AppVersionChecker : BindableBase
     {
         public const string GitHubReleaseApi = "https://api.github.com/repos/sn4k3/UVtools/releases/latest";
+        public const string RuntimePackageFile = "runtime_package.dat";
         private string _version;
         private string _changelog;
 
@@ -39,6 +42,23 @@ namespace UVtools.WPF.Structures
                 }
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                 {
+                    var file = Path.Combine(App.ApplicationPath, RuntimePackageFile);
+                    if (File.Exists(file))
+                    {
+                        try
+                        {
+                            var package = File.ReadAllText(file);
+                            if (!string.IsNullOrWhiteSpace(package) && package.EndsWith("-x64"))
+                            {
+                                return $"{About.Software}_{package}_v{_version}.zip";
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            Debug.WriteLine(e);
+                        }
+                        
+                    }
                     return $"{About.Software}_linux-x64_v{_version}.zip";
                 }
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
@@ -176,7 +196,7 @@ namespace UVtools.WPF.Structures
 
                 if (OperatingSystem.IsWindows())
                 {
-                    App.StartProcess(DownloadedFile);
+                    SystemAware.StartProcess(DownloadedFile);
                     Environment.Exit(0);
                 }
                 else
@@ -225,7 +245,7 @@ namespace UVtools.WPF.Structures
                         stream.Close();
                     }
 
-                    App.StartProcess("bash", $"\"{upgradeFile}\"");
+                    SystemAware.StartProcess("bash", $"\"{upgradeFile}\"");
 
                     //App.NewInstance(App.MainWindow.SlicerFile?.FileFullPath);
                     Environment.Exit(0);

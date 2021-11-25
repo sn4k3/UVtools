@@ -5,11 +5,12 @@
  *  Everyone is permitted to copy and distribute verbatim copies
  *  of this license document, but changing it is not allowed.
  */
+
 using System;
 using System.Runtime.InteropServices;
 using System.Threading;
 
-namespace UVtools.WPF.SystemOS.Windows
+namespace UVtools.Core.SystemOS.Windows
 {
     public static class USB
     {

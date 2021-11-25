@@ -8,6 +8,7 @@ using Avalonia.Media.Imaging;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Objects;
 using UVtools.Core.Operations;
+using UVtools.Core.SystemOS;
 using UVtools.WPF.Windows;
 
 namespace UVtools.WPF.Controls.Tools
@@ -92,7 +93,7 @@ namespace UVtools.WPF.Controls.Tools
             FilesListBox.DoubleTapped += (sender, args) =>
             {
                 if (FilesListBox.SelectedItem is not ValueDescription file) return;
-                App.StartProcess(file.ValueAsString);
+                SystemAware.StartProcess(file.ValueAsString);
             };
             FilesListBox.KeyUp += (sender, e) =>
             {

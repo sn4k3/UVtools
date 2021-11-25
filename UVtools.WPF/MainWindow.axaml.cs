@@ -31,6 +31,7 @@ using UVtools.Core.Layers;
 using UVtools.Core.Managers;
 using UVtools.Core.Network;
 using UVtools.Core.Operations;
+using UVtools.Core.SystemOS;
 using UVtools.WPF.Controls;
 using UVtools.WPF.Controls.Calibrators;
 using UVtools.WPF.Controls.Tools;
@@ -927,7 +928,7 @@ namespace UVtools.WPF
                         {
                             try
                             {
-                                return SystemOS.Windows.USB.USBEject(removableDrive.Name);
+                                return Core.SystemOS.Windows.USB.USBEject(removableDrive.Name);
                             }
                             catch (OperationCanceledException) { }
                             catch (Exception exception)
@@ -1149,7 +1150,7 @@ namespace UVtools.WPF
         public void MenuFileOpenCurrentFileFolderClicked()
         {
             if (!IsFileLoaded) return;
-            App.SelectFileOnExplorer(SlicerFile.FileFullPath);
+            SystemAware.SelectFileOnExplorer(SlicerFile.FileFullPath);
         } 
 
         public async void MenuFileSaveClicked()
@@ -1281,17 +1282,17 @@ namespace UVtools.WPF
 
         public void OpenHomePage()
         {
-            App.OpenBrowser(About.Website);
+            SystemAware.OpenBrowser(About.Website);
         }
 
         public void OpenDonateWebsite()
         {
-            App.OpenBrowser(About.Donate);
+            SystemAware.OpenBrowser(About.Donate);
         }
 
         public void OpenWebsite(string url)
         {
-            App.OpenBrowser(url);
+            SystemAware.OpenBrowser(url);
         }
 
         public async void MenuHelpAboutClicked()
@@ -1306,7 +1307,7 @@ namespace UVtools.WPF
 
         public void MenuHelpOpenSettingsFolderClicked()
         {
-            App.StartProcess(UserSettings.SettingsFolder);
+            SystemAware.StartProcess(UserSettings.SettingsFolder);
         }
 
         private async void MenuHelpMaterialManagerClicked()
@@ -1324,7 +1325,7 @@ namespace UVtools.WPF
                     $"Was looking on: {PEFolder}\n\n" +
                     "Click 'Yes' to open the PrusaSlicer webpage for download\n" +
                     "Click 'No' to dismiss",
-                    "Unable to detect PrusaSlicer") == ButtonResult.Yes) App.OpenBrowser("https://www.prusa3d.com/prusaslicer/");
+                    "Unable to detect PrusaSlicer") == ButtonResult.Yes) SystemAware.OpenBrowser("https://www.prusa3d.com/prusaslicer/");
                 return;
             }
             await new PrusaSlicerManagerWindow().ShowDialog(this);
@@ -1344,7 +1345,7 @@ namespace UVtools.WPF
 
             if (result == ButtonResult.No)
             {
-                App.OpenBrowser(VersionChecker.UrlLatestRelease);
+                SystemAware.OpenBrowser(VersionChecker.UrlLatestRelease);
                 return;
             }
             if (result == ButtonResult.Yes)
@@ -2056,7 +2057,7 @@ namespace UVtools.WPF
                 "'Yes' to open target folder, 'No' to continue.",
                 "Extraction complete") == ButtonResult.Yes)
             {
-                App.StartProcess(finalPath);
+                SystemAware.StartProcess(finalPath);
             }
 
         }

@@ -3,14 +3,227 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:controls="clr-namespace:UVtools.WPF.Controls"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        mc:Ignorable="d" d:DesignWidth="960" d:DesignHeight="700"
         x:Class="UVtools.WPF.Windows.AboutWindow"
+        Width="960" Height="710"
+        MinWidth="600" MinHeight="550"
         WindowStartupLocation="CenterOwner"
-        SizeToContent="WidthAndHeight"
-        CanResize="False"
+        SizeToContent="Manual"
+        CanResize="True"
         Title="About UVtools"
         Icon="/Assets/Icons/UVtools.ico">
 
+    <DockPanel>
+		<Border DockPanel.Dock="Bottom" Background="WhiteSmoke">
+			<Grid ColumnDefinitions="Auto,*" Margin="15">
+				<Button
+                    Grid.Column="0"
+                    Command="{Binding CopyInformationToClipboard}"
+                    Padding="10"
+                    VerticalContentAlignment="Center"
+                    HorizontalAlignment="Right">
+                    <StackPanel Spacing="10" VerticalAlignment="Center" Orientation="Horizontal">
+                        <Image Width="16" Height="16" Source="/Assets/Icons/clipboard-16x16.png"/>
+                        <TextBlock Text="Copy information ⮝"/>
+                    </StackPanel>
+                    <Button.ContextMenu>
+                        <ContextMenu PlacementAnchor="Top" PlacementMode="Top">
+                            <MenuItem Header="Copy the essential information" Command="{Binding CopyEssentialInformation}"/>
+                            <MenuItem Header="Copy OpenCV build information" Command="{Binding CopyOpenCVInformationToClipboard}"/>
+                            <MenuItem Header="Copy loaded assemblies" Command="{Binding CopyLoadedAssembliesToClipboard}"/>
+                            <MenuItem Header="All information" Command="{Binding CopyInformationToClipboard}"/>
+						</ContextMenu>
+					</Button.ContextMenu>
+                </Button>
+                
+                <Button
+                    Grid.Column="1"
+                    Command="{Binding Close}"
+                    IsCancel="True"
+                    Padding="10"
+                    VerticalContentAlignment="Center"
+                    HorizontalAlignment="Right">
+                    <StackPanel Spacing="10" VerticalAlignment="Center" Orientation="Horizontal">
+                        <Image Width="16" Height="16" Source="/Assets/Icons/exit-16x16.png"/>
+                        <TextBlock Text="Close"/>
+                    </StackPanel>
+                </Button>
+            </Grid>
+		</Border>
+
+		<ScrollViewer DockPanel.Dock="Left"
+                      VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Auto">
+		    <StackPanel Spacing="5" Margin="20" MaxWidth="380">
+			    <Image Margin="0,0,0,10"
+				       HorizontalAlignment="Center"
+				       Source="/Assets/Icons/UVtools_alt.ico"
+				       Width="256"/>
+			    <TextBox
+			      Text="{Binding OSDescription}"
+			      IsReadOnly="True"
+			      BorderBrush="Transparent"
+			      CaretBrush="Transparent"
+			      Watermark="Operative System:"
+			      UseFloatingWatermark="True"/>
+
+                <TextBox
+                    Text="{Binding ProcessorName}"
+                    IsReadOnly="True"
+                    BorderBrush="Transparent"
+                    CaretBrush="Transparent"
+                    Watermark="Processor:"
+                    UseFloatingWatermark="True"/>
+
+                <Grid ColumnDefinitions="*,*">
+                    <TextBox
+                        Grid.Column="0"
+                        Text="{Binding ProcessorCount}"
+                        IsReadOnly="True"
+                        BorderBrush="Transparent"
+                        CaretBrush="Transparent"
+                        Watermark="Processor cores:"
+                        UseFloatingWatermark="True"/>
+
+                    <TextBox
+                        Grid.Column="1"
+                        Text="{Binding MemoryRAMDescription}"
+                        IsReadOnly="True"
+                        BorderBrush="Transparent"
+                        CaretBrush="Transparent"
+                        Watermark="Memory RAM:"
+                        UseFloatingWatermark="True"/>
+                </Grid>
+
+                <Grid ColumnDefinitions="*,*">
+					<TextBox
+                        Grid.Column="0"
+				        Text="{Binding RuntimeDescription}"
+				        IsReadOnly="True"
+				        BorderBrush="Transparent"
+				        CaretBrush="Transparent"
+				        Watermark="Runtime:"
+				        UseFloatingWatermark="True"/>
+
+					<TextBox
+                        Grid.Column="1"
+                        Text="{Binding OpenCVVersion}"
+                        IsReadOnly="True"
+                        BorderBrush="Transparent"
+                        CaretBrush="Transparent"
+                        Watermark="OpenCV:"
+                        UseFloatingWatermark="True"/>
+                </Grid>
+
+                <Grid ColumnDefinitions="*,*">
+                    <TextBox
+                        Grid.Column="0"
+                        Text="{Binding FrameworkDescription}"
+                        IsReadOnly="True"
+                        BorderBrush="Transparent"
+                        CaretBrush="Transparent"
+                        Watermark="Framework:"
+                        UseFloatingWatermark="True"/>
+
+					<TextBox
+                        Grid.Column="1"
+                        Text="{Binding AvaloniaUIDescription}"
+                        IsReadOnly="True"
+                        BorderBrush="Transparent"
+                        CaretBrush="Transparent"
+                        Watermark="AvaloniaUI:"
+                        UseFloatingWatermark="True"/>
+                </Grid>
+
+                
+
+                
+
+				
+
+			    <TextBox
+			      Text="{Binding ScreensDescription}"
+			      IsReadOnly="True"
+			      BorderBrush="Transparent"
+			      CaretBrush="Transparent"
+			      Watermark="Screens, resolution, working area, usable area:"
+			      UseFloatingWatermark="True"/>
+
+				<!--<Button
+				    Margin="0,20,0,0"
+				    HorizontalAlignment="Stretch"
+				    Command="{Binding CopyOpenCVInformationToClipboard}">
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <Image Source="/Assets/Icons/clipboard-16x16.png"/>
+                        <TextBlock VerticalAlignment="Center" Text="Copy OpenCV build information"/>
+                    </StackPanel>
+				</Button>
+
+			    <Button
+				    Margin="0,0,0,0"
+				    HorizontalAlignment="Stretch"
+				    Command="{Binding CopyLoadedAssembliesToClipboard}">
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <Image Source="/Assets/Icons/clipboard-16x16.png"/>
+                        <TextBlock VerticalAlignment="Center" Text="Copy loaded assemblies"/>
+                    </StackPanel>
+                </Button>
+				!-->
+		    </StackPanel>
+	    </ScrollViewer>
+
+    
+
+    <Border>
+        <Grid
+            RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,*"
+            Margin="20">
+
+            <TextBlock Grid.Row="0" Text="{Binding Software}" FontWeight="Bold"/>
+            <TextBlock Grid.Row="2" Text="{Binding Version}"/>
+            <TextBlock Grid.Row="4" Text="{Binding Copyright}"/>
+            <TextBlock Grid.Row="6" Text="{Binding Company}"/>
+            <Button Grid.Row="8" VerticalAlignment="Center"
+                    Command="{Binding OpenLicense}">
+                <StackPanel Orientation="Horizontal" Spacing="10">
+                    <Image Source="/Assets/Icons/balance-scale-16x16.png"></Image>
+                    <TextBlock VerticalAlignment="Center" Text="{Binding License}"/>
+                </StackPanel>
+            </Button>
+
+            <TabControl Grid.Row="10">
+                <TabItem Header="Description">
+                    <TextBox 
+                             IsReadOnly="True"
+                             ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                             ScrollViewer.VerticalScrollBarVisibility="Auto"
+                             Text="{Binding Description}"/>
+				</TabItem>
+
+                <TabItem Header="OpenCV">
+                    <TextBox
+                        IsReadOnly="True"
+                        ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                        ScrollViewer.VerticalScrollBarVisibility="Auto"
+                        Text="{Binding OpenCVBuildInformation}"/>
+                </TabItem>
+
+                <TabItem Header="Assemblies">
+                    <TextBox
+                        IsReadOnly="True"
+                        ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                        ScrollViewer.VerticalScrollBarVisibility="Auto"
+                        Text="{Binding LoadedAssemblies}"/>
+                </TabItem>
+
+			</TabControl>
+
+
+		</Grid>
+	</Border>
+</DockPanel>
+
+	<!--
   <StackPanel Orientation="Vertical">
     <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
       <Border Margin="20,20,0,20">
@@ -126,4 +339,5 @@
     </Border>
     
   </StackPanel>
+  -->
 </controls:WindowEx>

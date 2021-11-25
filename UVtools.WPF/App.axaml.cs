@@ -21,6 +21,7 @@ using Emgu.CV;
 using UVtools.Core;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Managers;
+using UVtools.Core.SystemOS;
 using UVtools.WPF.Extensions;
 using UVtools.WPF.Structures;
 
@@ -109,78 +110,16 @@ namespace UVtools.WPF
             {
                 if (OperatingSystem.IsWindows())
                 {
-                    StartProcess($"{AppExecutable}.exe", $"\"{filePath}\"");
+                    SystemAware.StartProcess($"{AppExecutable}.exe", $"\"{filePath}\"");
                 }
                 else if(File.Exists(AppExecutable)) // Direct execute
                 {
-                    StartProcess(AppExecutable, $"\"{filePath}\"");
+                    SystemAware.StartProcess(AppExecutable, $"\"{filePath}\"");
                 }
                 else
                 {
-                    StartProcess("dotnet", $"UVtools.dll \"{filePath}\"");
+                    SystemAware.StartProcess("dotnet", $"UVtools.dll \"{filePath}\"");
                 }
-            }
-            catch (Exception e)
-            {
-                Debug.WriteLine(e);
-            }
-        }
-
-        public static bool SelectFileOnExplorer(string filePath)
-        {
-            if (!File.Exists(filePath))
-            {
-                return false;
-            }
-            
-            if (OperatingSystem.IsWindows())
-            {
-                StartProcess("explorer.exe", $"/select,\"{filePath}\"");
-            }
-            else
-            {
-                StartProcess(Path.GetDirectoryName(filePath));
-            }
-
-            return true;
-        }
-
-        public static void OpenBrowser(string url)
-        {
-            try
-            {
-                if (OperatingSystem.IsWindows())
-                {
-                    Process.Start(new ProcessStartInfo(url) { UseShellExecute = true }).Dispose();
-                }
-                else if (OperatingSystem.IsLinux())
-                {
-                    Process.Start("xdg-open", url).Dispose();
-                }
-                else if (OperatingSystem.IsMacOS())
-                {
-                    Process.Start("open", url).Dispose();
-                }
-                else
-                {
-                    // throw 
-                }
-            }
-            catch (Exception e)
-            {
-                Debug.WriteLine(e);
-            }
-            
-        }
-
-        public static void StartProcess(string name, string arguments = null)
-        {
-            try
-            {
-                using (Process.Start(new ProcessStartInfo(name, arguments)
-                {
-                    UseShellExecute = true
-                })) { }
             }
             catch (Exception e)
             {

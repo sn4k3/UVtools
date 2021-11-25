@@ -350,6 +350,9 @@
         <Component Id="owcB31A030E18B3AEFE06E4BF4C96CFFFA1" Guid="5702bba3-1ce1-59a4-83aa-69c210ec428a" Win64="yes">
           <File Id="owfB31A030E18B3AEFE06E4BF4C96CFFFA1" Source="$(var.SourceDir)\opencv_videoio_ffmpeg454_64.dll" KeyPath="yes" />
         </Component>
+        <Component Id="owc7BB28EFC52A49429849339DF748B25E7" Guid="ded507d6-fd2b-41f2-bd03-cf489e47df7a" Win64="yes">
+          <File Id="owf7BB28EFC52A49429849339DF748B25E7" Source="$(var.SourceDir)\runtime_package.dat" KeyPath="yes" />
+        </Component>
         <Component Id="owc363CAFE6342F1E71AB07D13BAEEE5FF0" Guid="8e946fdc-ea52-7c4b-a8b3-69e1ecf51086" Win64="yes">
           <File Id="owf363CAFE6342F1E71AB07D13BAEEE5FF0" Source="$(var.SourceDir)\SkiaSharp.dll" KeyPath="yes" />
         </Component>
