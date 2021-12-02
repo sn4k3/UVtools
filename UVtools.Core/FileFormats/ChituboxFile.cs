@@ -2038,13 +2038,13 @@ namespace UVtools.Core.FileFormats
                 Debug.Write("Print Parameters V4 -> ");
                 Debug.WriteLine(PrintParametersV4Settings);
 
-                if (PrintParametersV4Settings.Four1 != 4 && PrintParametersV4Settings.Four2 != 4)
+                /*if (PrintParametersV4Settings.Four1 != 4 && PrintParametersV4Settings.Four2 != 4)
                 {
                     throw new FileLoadException(
                         $"Malformed file, PrintParametersV4 found invalid validation values, expected (4, 4) " +
                         $"but got ({PrintParametersV4Settings.Four1}, {PrintParametersV4Settings.Four2})",
                         FileFullPath);
-                }
+                }*/
             }
 
             LayerManager.Init(HeaderSettings.LayerCount, DecodeType == FileDecodeType.Partial);

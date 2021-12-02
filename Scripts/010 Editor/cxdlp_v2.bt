@@ -88,6 +88,18 @@ struct LAYER_DEF {
     ubyte rn3[2] <fgcolor=cBlack, bgcolor=cRed>;
 } layerDefs;
 
+if(header.version >= 3){
+    struct SLICER_INFO {
+        uint32 SoftwareNameSize;
+        char SoftwareName[SoftwareNameSize];
+        uint32 MaterialNameSize;
+        char MaterialName[MaterialNameSize];
+        ubyte offset[67-SoftwareNameSize-MaterialNameSize];
+        ubyte rn0[2] <fgcolor=cBlack, bgcolor=cRed>;
+    } slicerInfo;
+}
+
+
 struct LAYERS {
     local int i;
     for( i = 0; i < header.totalLayers; i++ ){

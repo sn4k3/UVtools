@@ -10,6 +10,7 @@ using Avalonia.Threading;
 using MessageBox.Avalonia.Enums;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Network;
+using UVtools.Core.Objects;
 using UVtools.WPF.Controls;
 using UVtools.WPF.Extensions;
 using Color = UVtools.WPF.Structures.Color;
@@ -21,6 +22,7 @@ namespace UVtools.WPF.Windows
         private double _scrollViewerMaxHeight;
         private int _selectedTabIndex;
         private DataGrid _sendToCustomLocationsGrid;
+        private DataGrid _sendToProcessGrid;
         private ComboBox _networkRemotePrinterComboBox;
 
         public int MaxProcessorCount => Environment.ProcessorCount;
@@ -83,6 +85,7 @@ namespace UVtools.WPF.Windows
             InitializeComponent();
 
             _sendToCustomLocationsGrid = this.FindControl<DataGrid>("SendToCustomLocationsGrid");
+            _sendToProcessGrid = this.FindControl<DataGrid>("SendToProcessGrid");
             _networkRemotePrinterComboBox = this.FindControl<ComboBox>("NetworkRemotePrinterComboBox");
         }
 
@@ -200,6 +203,34 @@ namespace UVtools.WPF.Windows
                 ButtonResult.Yes) return;
 
             Settings.General.SendToCustomLocations.RemoveRange(_sendToCustomLocationsGrid.SelectedItems.Cast<MappedDevice>());
+        }
+
+        public async void SendToAddProcess()
+        {
+            var openFolder = new OpenFileDialog();
+            var result = await openFolder.ShowAsync(this);
+
+            if (result is null || result.Length == 0) return;
+            var file = new MappedProcess(result[0]);
+            if (Settings.General.SendToProcess.Contains(file))
+            {
+                await this.MessageBoxError("The selected process already exists on the list:\n" +
+                                           $"{result}");
+                return;
+            }
+
+            Settings.General.SendToProcess.Add(file);
+        }
+
+        public async void SendToRemoveProcess()
+        {
+            if (_sendToProcessGrid.SelectedItems.Count == 0) return;
+
+            if (await this.MessageBoxQuestion(
+                    $"Are you sure you want to remove the {_sendToProcessGrid.SelectedItems.Count} selected entries?") !=
+                ButtonResult.Yes) return;
+
+            Settings.General.SendToProcess.RemoveRange(_sendToProcessGrid.SelectedItems.Cast<MappedProcess>());
         }
 
         public async void SelectColor(string property)

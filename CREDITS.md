@@ -65,3 +65,4 @@
 - Chris Luginbuhl
 - Tim Savage
 - Peopoly Inc
+- Riccardo Kocmann

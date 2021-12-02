@@ -1,5 +1,14 @@
 # Changelog
 
+## 02/12/2021 - v2.25.3
+
+- **File - Send to:**
+   - (Add) Icons to distinguish each send type
+   - (Add) Allow to configure processes to open the file with (#352)
+- (Improvement) CXDLP: When encoding the file, only attempt to change the machine name if not starts with 'CL-' (#351)
+- (Improvement) UI: Remove the "0/?" and just show the title on the progress bar
+- (Change) CTBv4: Remove the following validation to be compatible with lychee and CTB SDK: "Malformed file, PrintParametersV4 found invalid validation values, expected (4, 4) got (x, y)" (#354)
+
 ## 25/11/2021 - v2.25.2
 
 - **About box:**

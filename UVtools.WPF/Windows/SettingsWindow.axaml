@@ -332,7 +332,7 @@
                   <Grid RowDefinitions="Auto" ColumnDefinitions="*,Auto"  Background="LightBlue">
                     <TextBlock Grid.Row="0" Grid.Column="0"
                                VerticalAlignment="Center"
-                               Padding="10" FontWeight="Bold" Text="Send to - Custom locations"/>
+                               Padding="10" FontWeight="Bold" Text="Send to - Custom location"/>
 
                     <StackPanel Grid.Row="0" Grid.Column="1"  
                                 HorizontalAlignment="Right" Orientation="Horizontal" Spacing="2">
@@ -363,6 +363,7 @@
                         CanUserSortColumns="True"
                         GridLinesVisibility="Horizontal"
                         IsReadOnly="False"
+                        MinHeight="100"
                         SelectionMode="Extended"
                         ClipboardCopyMode="IncludeHeader"
                         Items="{Binding Settings.General.SendToCustomLocations}">
@@ -390,6 +391,81 @@
 
               </StackPanel>
             </Border>
+
+			  <Border
+                Classes="GroupBox"
+                Margin="5">
+
+				  <StackPanel Orientation="Vertical">
+					  <Grid RowDefinitions="Auto" ColumnDefinitions="*,Auto"  Background="LightBlue">
+						  <TextBlock Grid.Row="0" Grid.Column="0"
+                                     ToolTip.Tip="Allow to open a new process with arguments and pass the current file.&#x0a;
+&#x0a;Wait exit: Interrupt the UI and wait for process completion/exit.
+&#x0a;Arguments: Use &quot;{0}&quot; to indicate the current loaded file path, when empty, it will pass  &quot;{0}&quot; by default."
+									 VerticalAlignment="Center"
+									 Padding="10" FontWeight="Bold" Text="Send to - Process"/>
+
+						  <StackPanel Grid.Row="0" Grid.Column="1"
+									  HorizontalAlignment="Right" Orientation="Horizontal" Spacing="2">
+							  <Button ToolTip.Tip="Add location" VerticalAlignment="Center"
+									  Command="{Binding SendToAddProcess}">
+								  <Image Source="/Assets/Icons/plus-16x16.png"/>
+							  </Button>
+
+							  <Button ToolTip.Tip="Remove selected process(es)" VerticalAlignment="Center"
+									  IsEnabled="{Binding #SendToProcessGrid.SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}"
+									  Command="{Binding SendToRemoveProcess}">
+								  <Image Source="/Assets/Icons/trash-16x16.png"/>
+							  </Button>
+						  </StackPanel>
+
+					  </Grid>
+
+					  <StackPanel Margin="10" Orientation="Vertical" Spacing="10">
+
+						  <DataGrid
+							Name="SendToProcessGrid"
+							CanUserReorderColumns="True"
+							CanUserResizeColumns="True"
+							CanUserSortColumns="True"
+							GridLinesVisibility="Horizontal"
+							IsReadOnly="False"
+							SelectionMode="Extended"
+							ClipboardCopyMode="IncludeHeader"
+                            MinHeight="100"
+							Items="{Binding Settings.General.SendToProcess}">
+							  <DataGrid.Columns>
+								  <DataGridCheckBoxColumn  Header="Enabled"
+														  Binding="{Binding IsEnabled}"
+														  IsReadOnly="False"
+														  Width="Auto" />
+                                  <DataGridCheckBoxColumn  Header="Wait exit"
+                                                           Binding="{Binding WaitForExit}"
+                                                           IsReadOnly="False"
+                                                           Width="Auto" />
+                                  <DataGridTextColumn Header="Alias name"
+                                                      Binding="{Binding Name}"
+                                                      IsReadOnly="False"
+                                                      Width="150" />
+								  <DataGridTextColumn  Header="Process path"
+													   Binding="{Binding ApplicationPath}"
+													   IsReadOnly="True"
+													   Width="*" />
+                                  <DataGridTextColumn Header="Arguments"
+                                                      Binding="{Binding Arguments}"
+                                                      IsReadOnly="False"
+                                                      Width="110" />
+								  <DataGridTextColumn Header="Extensions"
+													  Binding="{Binding CompatibleExtensions}"
+													  IsReadOnly="False"
+													  Width="150" />
+							  </DataGrid.Columns>
+
+						  </DataGrid>
+					  </StackPanel>
+
+				  </StackPanel>
+			  </Border>
 
           </StackPanel>
         </ScrollViewer>

@@ -7,6 +7,7 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
@@ -15,6 +16,7 @@ using Avalonia.Media;
 using JetBrains.Annotations;
 using UVtools.Core;
 using UVtools.Core.Extensions;
+using UVtools.Core.FileFormats;
 using UVtools.Core.Network;
 using UVtools.Core.Objects;
 using Color=UVtools.WPF.Structures.Color;
@@ -56,6 +58,7 @@ namespace UVtools.WPF
             private string _fileSaveNameSuffix = "_copy";
             private bool _sendToPromptForRemovableDeviceEject = true;
             private RangeObservableCollection<MappedDevice> _sendToCustomLocations = new();
+            private RangeObservableCollection<MappedProcess> _sendToProcess = new();
 
 
             public bool StartMaximized
@@ -186,6 +189,12 @@ namespace UVtools.WPF
             {
                 get => _sendToCustomLocations;
                 set => RaiseAndSetIfChanged(ref _sendToCustomLocations, value);
+            }
+
+            public RangeObservableCollection<MappedProcess> SendToProcess
+            {
+                get => _sendToProcess;
+                set => RaiseAndSetIfChanged(ref _sendToProcess, value);
             }
 
             public GeneralUserSettings() { }
@@ -1716,6 +1725,175 @@ namespace UVtools.WPF
                             //RequestPrinterInfo = new (RemotePrinterRequest.RequestType.PrinterInfo, RemotePrinterRequest.RequestMethod.GET, "setting/printerInfo"),
                         }*/
                     });
+                }
+
+                if (_instance.General.SendToProcess.Count == 0)
+                {
+                    if (OperatingSystem.IsWindows())
+                    {
+                        var findDirectories = new List<string>
+                        {
+                            Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles)
+                        };
+                        if (Environment.Is64BitOperatingSystem)
+                        {
+                            findDirectories.Add(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86));
+                        }
+                        
+                        foreach (var path in findDirectories)
+                        {
+                            var directories = Directory.GetDirectories(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles));
+                            foreach (var directory in directories)
+                            {
+                                /*if (directory.StartsWith($"{path}\\Prusa3D", StringComparison.InvariantCultureIgnoreCase))
+                                {
+                                    var executable = $"{directory}\\PrusaSlicer\\prusa-slicer.exe";
+                                    if (File.Exists(executable))
+                                    {
+                                        var application = new MappedApplication(executable, "Slicer: PrusaSlicer");
+                                        foreach (var slicerFile in FileFormat.AvailableFormats)
+                                        {
+                                            if (slicerFile is not SL1File) continue;
+                                            application.CompatibleExtensions += slicerFile.GetFileExtensions(string.Empty, ";");
+                                        }
+
+                                        _instance.General.SendToApplications.Add(application);
+                                    }
+                                    
+                                    continue;
+                                }*/
+
+                                if (directory.StartsWith($"{path}\\Chitubox", StringComparison.InvariantCultureIgnoreCase))
+                                {
+                                    var executable = $"{directory}\\CHITUBOX.exe";
+                                    //var executablePro = $"{directory}\\CHITUBOXPro.exe";
+                                    if (File.Exists(executable))
+                                    {
+                                        _instance.General.SendToProcess.Add(new MappedProcess(executable, "Slicer: Chitubox")
+                                        {
+                                            CompatibleExtensions = "cbddlp;ctb;phz;photon;photons;fdg"
+                                        });
+                                    }
+                                    /*else if (File.Exists(executablePro))
+                                    {
+                                        _instance.General.SendToApplications.Add(new MappedApplication(executablePro, "Slicer: Chitubox Pro")
+                                        {
+                                            CompatibleExtensions = "cbddlp;ctb;phz;photon;photons;fdg"
+                                        });
+                                    }*/
+                                    continue;
+                                }
+
+                                if (directory.StartsWith($"{path}\\Photon_WorkShop", StringComparison.InvariantCultureIgnoreCase))
+                                {
+                                    var directoryName = Path.GetFileName(directory);
+                                    var executable = $"{directory}\\{directoryName}.exe";
+                                    if (File.Exists(executable))
+                                    {
+                                        var application = new MappedProcess(executable, $"Slicer: {directoryName.Replace('_', ' ')}")
+                                            {
+                                                CompatibleExtensions = "photon;photons;"
+                                            };
+                                        foreach (var slicerFile in FileFormat.AvailableFormats)
+                                        {
+                                            if (slicerFile is not PhotonWorkshopFile) continue;
+                                            application.CompatibleExtensions += slicerFile.GetFileExtensions(string.Empty, ";");
+                                        }
+
+                                        
+                                        _instance.General.SendToProcess.Add(application);
+                                    }
+                                    continue;
+                                }
+
+                                if (directory.StartsWith($"{path}\\UNIZ", StringComparison.InvariantCultureIgnoreCase))
+                                {
+                                    var executable = $"{directory}\\UnizMaker\\UnizMaker.exe";
+                                    if (File.Exists(executable))
+                                    {
+                                        _instance.General.SendToProcess.Add(new MappedProcess(executable, "Slicer: UnizMaker")
+                                        {
+                                            CompatibleExtensions = "zcode"
+                                        });
+                                    }
+                                    continue;
+                                }
+
+                                if (directory.StartsWith($"{path}\\Zortrax", StringComparison.InvariantCultureIgnoreCase))
+                                {
+                                    var executable = $"{directory}\\Z-Suite\\Z-SUITE.exe";
+                                    if (File.Exists(executable))
+                                    {
+                                        _instance.General.SendToProcess.Add(new MappedProcess(executable, "Slicer: Z-SUITE")
+                                        {
+                                            CompatibleExtensions = "zcodex"
+                                        });
+                                    }
+                                    continue;
+                                }
+
+                                if (directory.StartsWith($"{path}\\WinRAR", StringComparison.InvariantCultureIgnoreCase))
+                                {
+                                    var executable = $"{directory}\\WinRAR.exe";
+                                    if (File.Exists(executable))
+                                    {
+                                        var application = new MappedProcess(executable, "Open archive: WinRAR")
+                                        {
+                                            CompatibleExtensions = "zip;sl1;sl1s;cws;zcode;zcodex;vdt;uvt"
+                                        };
+                                        _instance.General.SendToProcess.Add(application);
+                                    }
+
+                                    continue;
+                                }
+
+                                if (directory.StartsWith($"{path}\\7-Zip", StringComparison.InvariantCultureIgnoreCase))
+                                {
+                                    var executable = $"{directory}\\7zFM.exe";
+                                    if (File.Exists(executable))
+                                    {
+                                        var application = new MappedProcess(executable, "Open archive: 7-Zip")
+                                        {
+                                            CompatibleExtensions = "zip;sl1;sl1s;cws;zcode;zcodex;vdt;uvt"
+                                        };
+                                        _instance.General.SendToProcess.Add(application);
+                                    }
+
+                                    continue;
+                                }
+
+
+                                if (directory.StartsWith($"{path}\\010 Editor", StringComparison.InvariantCultureIgnoreCase))
+                                {
+                                    var executable = $"{directory}\\010Editor.exe";
+                                    if (File.Exists(executable))
+                                    {
+                                        var application = new MappedProcess(true, executable, "Hex editor: 010");
+                                        _instance.General.SendToProcess.Add(application);
+                                    }
+
+                                    continue;
+                                }
+
+                                if (directory.StartsWith($"{path}\\HxD", StringComparison.InvariantCultureIgnoreCase))
+                                {
+                                    var executable = $"{directory}\\HxD.exe";
+                                    if (File.Exists(executable))
+                                    {
+                                        var application = new MappedProcess(false, executable, "Hex editor: HxD");
+                                        _instance.General.SendToProcess.Add(application);
+                                    }
+
+                                    continue;
+                                }
+                            }
+                        }
+
+                        if (_instance.General.SendToProcess.Count > 0)
+                        {
+                            _instance.General.SendToProcess.Sort((process, mappedProcess) => string.Compare(process.Name, mappedProcess.Name, StringComparison.Ordinal));
+                        }
+                    }
                 }
             }
             catch (Exception e)

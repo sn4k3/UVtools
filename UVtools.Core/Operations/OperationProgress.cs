@@ -95,7 +95,11 @@ namespace UVtools.Core.Operations
         public string ItemName
         {
             get => _itemName;
-            set => RaiseAndSetIfChanged(ref _itemName, value);
+            set
+            {
+                if(!RaiseAndSetIfChanged(ref _itemName, value)) return;
+                RaisePropertyChanged(nameof(Description));
+            }
         }
 
         /// <summary>
@@ -201,9 +205,20 @@ namespace UVtools.Core.Operations
 
         public override string ToString()
         {
-            return _itemCount == 0 ?
+            if (_itemCount == 0 && _processedItems == 0)
+            {
+                return $"{_itemName}";
+            }
+
+            if (_itemCount == 0 && _processedItems > 0)
+            {
+                return $"{_processedItems} {_itemName}";
+            }
+
+            return $"{_processedItems.ToString().PadLeft(_itemCount.ToString().Length, '0')}/{_itemCount} {_itemName} | {ProgressPercent:F2}%";
+            /*return _itemCount == 0 ?
 $"{_processedItems}/? {_itemName}" :
-$"{_processedItems.ToString().PadLeft(_itemCount.ToString().Length, '0')}/{_itemCount} {_itemName} | {ProgressPercent:F2}%";
+$"{_processedItems.ToString().PadLeft(_itemCount.ToString().Length, '0')}/{_itemCount} {_itemName} | {ProgressPercent:F2}%";*/
         }
 
         public void TriggerRefresh()

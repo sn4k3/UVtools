@@ -30,6 +30,7 @@ using UVtools.Core.FileFormats;
 using UVtools.Core.Layers;
 using UVtools.Core.Managers;
 using UVtools.Core.Network;
+using UVtools.Core.Objects;
 using UVtools.Core.Operations;
 using UVtools.Core.SystemOS;
 using UVtools.WPF.Controls;
@@ -620,27 +621,35 @@ namespace UVtools.WPF
 
                 var drives = DriveInfo.GetDrives();
 
-                foreach (var drive in drives)
+                if (drives.Length > 0)
                 {
-                    if(drive.DriveType != DriveType.Removable || !drive.IsReady) continue; // Not our target, skip
-                    if (SlicerFile.FileFullPath.StartsWith(drive.Name)) continue; // File already on this device, skip
-                    
-                    var header = drive.Name;
-                    if (!string.IsNullOrWhiteSpace(drive.VolumeLabel))
+                    foreach (var drive in drives)
                     {
-                        header += $"  {drive.VolumeLabel}";
+                        if (drive.DriveType != DriveType.Removable || !drive.IsReady) continue; // Not our target, skip
+                        if (SlicerFile.FileFullPath.StartsWith(drive.Name))
+                            continue; // File already on this device, skip
+
+                        var header = drive.Name;
+                        if (!string.IsNullOrWhiteSpace(drive.VolumeLabel))
+                        {
+                            header += $"  {drive.VolumeLabel}";
+                        }
+
+                        header += $"  ({SizeExtensions.SizeSuffix(drive.AvailableFreeSpace)}) [{drive.DriveFormat}]";
+
+                        var menuItem = new MenuItem
+                        {
+                            Header = header,
+                            Tag = drive,
+                            Icon = new Image
+                            {
+                                Source = new Bitmap(App.GetAsset("/Assets/Icons/usb-16x16.png"))
+                            }
+                        };
+                        menuItem.Click += FileSendToItemClick;
+
+                        menuItems.Add(menuItem);
                     }
-
-                    header += $"  ({SizeExtensions.SizeSuffix(drive.AvailableFreeSpace)}) [{drive.DriveFormat}]";
-
-                    var menuItem = new MenuItem
-                    {
-                        Header = header,
-                        Tag = drive,
-                    };
-                    menuItem.Click += FileSendToItemClick;
-
-                    menuItems.Add(menuItem);
                 }
 
                 if (Settings.General.SendToCustomLocations is not null && Settings.General.SendToCustomLocations.Count > 0)
@@ -666,6 +675,10 @@ namespace UVtools.WPF
                         {
                             Header = location.ToString(),
                             Tag = location,
+                            Icon = new Image
+                            {
+                                Source = new Bitmap(App.GetAsset("/Assets/Icons/folder-16x16.png"))
+                            }
                         };
                         menuItem.Click += FileSendToItemClick;
 
@@ -696,6 +709,44 @@ namespace UVtools.WPF
                         {
                             Header = remotePrinter.ToString(),
                             Tag = remotePrinter,
+                            Icon = new Image
+                            {
+                                Source = new Bitmap(App.GetAsset("/Assets/Icons/network-wired-16x16.png"))
+                            }
+                        };
+                        menuItem.Click += FileSendToItemClick;
+
+                        menuItems.Add(menuItem);
+                    }
+                }
+
+                if (Settings.General.SendToProcess is not null && Settings.General.SendToProcess.Count > 0)
+                {
+                    foreach (var application in Settings.General.SendToProcess)
+                    {
+                        if (!application.IsEnabled ) continue;
+
+                        if (!string.IsNullOrWhiteSpace(application.CompatibleExtensions))
+                        {
+                            var extensions = application.CompatibleExtensions.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+                            var found = false;
+                            foreach (var ext in extensions)
+                            {
+                                found = SlicerFile.FileFullPath.EndsWith($".{ext}");
+                                if (found) break;
+                            }
+                            if (!found) continue;
+                        }
+
+                        var menuItem = new MenuItem
+                        {
+                            Header = application.Name,
+                            Tag = application,
+                            Icon = new Image
+                            {
+                                Source = new Bitmap(App.GetAsset("/Assets/Icons/cog-16x16.png"))
+                            }
                         };
                         menuItem.Click += FileSendToItemClick;
 
@@ -735,6 +786,10 @@ namespace UVtools.WPF
             {
                 path = preRemotePrinter.HostUrl;
             }
+            else if (menuItem.Tag is MappedProcess process)
+            {
+                path = process.Name;
+            }
             else
             {
                 return;
@@ -757,8 +812,8 @@ namespace UVtools.WPF
                 }
             }
 
-            ShowProgressWindow($"Copying: {SlicerFile.Filename} to {path}", true);
-            Progress.ItemName = "Copying";
+            ShowProgressWindow($"Sending: {SlicerFile.Filename} to {path}");
+            Progress.ItemName = "Sending";
 
 
             if (menuItem.Tag is RemotePrinter remotePrinter)
@@ -839,6 +894,20 @@ namespace UVtools.WPF
                     }
                 }
             }
+            else if (menuItem.Tag is MappedProcess process)
+            {
+                Progress.ItemName = "Waiting for completion";
+                try
+                {
+                    await process.StartProcess(SlicerFile, Progress.Token);
+                }
+                catch (OperationCanceledException){}
+                catch (Exception ex)
+                {
+                    await this.MessageBoxError(ex.Message, $"Unable to start the process {process.Name}");
+                }
+                
+            }
             else
             {
                 /*var copyResult = await Task.Factory.StartNew(() =>
@@ -914,7 +983,7 @@ namespace UVtools.WPF
                 }
                 catch (Exception exception)
                 {
-                    await this.MessageBoxError(exception.ToString(), "Unable to copy the file");
+                    await this.MessageBoxError(exception.Message, "Unable to copy the file");
                 }
 
                 if(copyResult && menuItem.Tag is DriveInfo removableDrive && OperatingSystem.IsWindows() && Settings.General.SendToPromptForRemovableDeviceEject)
@@ -934,7 +1003,7 @@ namespace UVtools.WPF
                             catch (Exception exception)
                             {
                                 Dispatcher.UIThread.InvokeAsync(async () =>
-                                    await this.MessageBoxError(exception.ToString(), $"Unable to eject the drive {removableDrive.Name}"));
+                                    await this.MessageBoxError(exception.Message, $"Unable to eject the drive {removableDrive.Name}"));
                             }
 
                             return false;
@@ -1891,7 +1960,7 @@ namespace UVtools.WPF
                     }
 
                     Dispatcher.UIThread.InvokeAsync(async () =>
-                        await this.MessageBoxError($"Convertion was not successful! Maybe not implemented...\n{extraMessage}{ex}", "Convertion unsuccessful"));
+                        await this.MessageBoxError($"{extraMessage}{ex}", "Convertion unsuccessful"));
                 }
                 
                 return false;

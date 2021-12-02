@@ -18,7 +18,6 @@ using System.Threading.Tasks;
 using BinarySerialization;
 using Emgu.CV;
 using Emgu.CV.Structure;
-using MoreLinq;
 using UVtools.Core.Extensions;
 using UVtools.Core.Layers;
 using UVtools.Core.Operations;
@@ -82,7 +81,7 @@ namespace UVtools.Core.FileFormats
 
             [FieldOrder(4)]
             [FieldLength(nameof(PrinterModelSize))]
-            public byte[] PrinterModelArray { get; set; } = { 0x43, 0x4C, 0x2D, 0x38, 0x39, 0x0 }; // CL-89
+            public byte[] PrinterModelArray { get; set; } = Array.Empty<byte>(); // CL-89 { 0x43, 0x4C, 0x2D, 0x38, 0x39, 0x0 }
 
             [Ignore]
             public string PrinterModel
@@ -215,7 +214,7 @@ namespace UVtools.Core.FileFormats
         }
         #endregion
 
-        #region Layer Def
+        #region PreLayer
 
         public sealed class PreLayer
         {
@@ -232,6 +231,27 @@ namespace UVtools.Core.FileFormats
                 LayerArea = layerArea;
             }
         }
+
+        #endregion
+
+        #region SlicerInfoV3
+
+        public sealed class SlicerInfoV3
+        {
+            [FieldOrder(0)] [FieldEndianness(Endianness.Big)] public uint SoftwareNameSize { get; set; } = (uint)About.SoftwareWithVersion.Length;
+
+            [FieldOrder(1)] [FieldLength(nameof(SoftwareNameSize))] public string SoftwareName { get; set; } = About.SoftwareWithVersion;
+
+            [FieldOrder(2)] [FieldEndianness(Endianness.Big)] public uint MaterialNameSize { get; set; }
+
+            [FieldOrder(3)] [FieldLength(nameof(MaterialNameSize))] public string MaterialName { get; set; }
+
+            //[FieldOrder(4)] [FieldOffset(67 - SoftwareNameSize - MaterialNameSize)] public PageBreak PageBreak { get; set; } = new();
+        }
+
+        #endregion
+
+        #region Layer Def
 
         public sealed class LayerDef
         {
@@ -355,6 +375,7 @@ namespace UVtools.Core.FileFormats
 
         public Header HeaderSettings { get; protected internal set; } = new();
         public SlicerInfo SlicerInfoSettings { get; protected internal set; } = new();
+        public SlicerInfoV3 SlicerInfoV3Settings { get; protected internal set; } = new();
         public Footer FooterSettings { get; protected internal set; } = new();
 
         public override FileFormatType FileType => FileFormatType.Binary;
@@ -556,6 +577,12 @@ namespace UVtools.Core.FileFormats
             set => base.MachineName = HeaderSettings.PrinterModel = value;
         }
 
+        public override string MaterialName
+        {
+            get => SlicerInfoV3Settings.MaterialName;
+            set => base.MaterialName = SlicerInfoV3Settings.MaterialName = value;
+        }
+
         public override object[] Configs => new object[] { HeaderSettings, SlicerInfoSettings, FooterSettings };
 
         #endregion
@@ -574,21 +601,24 @@ namespace UVtools.Core.FileFormats
         {
             using var outputFile = new FileStream(FileFullPath, FileMode.Create, FileAccess.ReadWrite);
 
-            if (ResolutionX == 1620 && ResolutionY == 2560)
+            if (!MachineName.StartsWith("CL-"))
             {
-                MachineName = "CL-60";
-            }
-            else if (ResolutionX == 3840 && ResolutionY == 2400)
-            {
-                MachineName = "CL-89";
-            }
-            else if (ResolutionX == 3840 && ResolutionY == 2160)
-            {
-                MachineName = "CL-133";
-            }
-            else if (!MachineName.StartsWith("CL-"))
-            {
-                throw new Exception("Unable to detect the printer model from resolution, check if resolution is well defined on slicer for your printer model.");
+                if (ResolutionX == 1620 && ResolutionY == 2560)
+                {
+                    MachineName = "CL-60"; // One
+                }
+                else if (ResolutionX == 3840 && ResolutionY == 2400) // Sky or lite
+                {
+                    MachineName = "CL-89"; // Sky
+                }
+                else if (ResolutionX == 3840 && ResolutionY == 2160)
+                {
+                    MachineName = "CL-133"; // Max
+                }
+                else
+                {
+                    throw new InvalidDataException("Unable to detect the printer model from resolution, check if resolution is well defined on slicer for your printer model.");
+                }
             }
 
             SanitizeProperties();
