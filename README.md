@@ -234,7 +234,12 @@ The UVtools executable allow to set some arguments to do special functions:
 ## Windows
 
 1. Windows 7 SP1 or greater
-   1. If on Windows 10 N or NK: [Media Feature Pack](https://www.microsoft.com/download/details.aspx?id=48231) must be installed
+   1. If on Windows 10/11 N or NK:
+      - [Media Feature Pack](https://www.microsoft.com/download/details.aspx?id=48231) must be installed
+      - Press Windows + R
+      - Type: appwiz.cpl (and press Enter key)
+      - Click on: Turn Windows features on or off
+      - Check the "Media Extensions" and click Ok
 <!-- 1. [.NET 5.0](https://dotnet.microsoft.com/download/dotnet/5.0) installed (Comes pre-installed on Windows 10 with last updates)!-->
 1. 4GB RAM or higher
 1. 1920 x 1080 @ 100% scale as minimum resolution
