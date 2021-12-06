@@ -1,5 +1,21 @@
 # Changelog
 
+## 06/12/2021 - v2.26.0
+
+- **File formats - Photon Workshop: (#360)**
+   - (Add) Allow to globally edit bottom lift height and bottom lift speed
+   - (Add) Support for file version 515, 516 and TSMC
+   - (Add) AnyCubic Photon Ultra (DLP)
+   - (Add) AnyCubic Photon Mono SQ (PMSQ)
+   - (Add) AnyCubic Photon Mono 4K (PMSA)
+   - (Add) AnyCubic Photon Mono X 6K (PMSB)
+- **PrusaSlicer printers:**
+   - (Add) AnyCubic Photon Mono 4K
+   - (Add) Photon Mono X 6K
+- (Add) PrusaSlicer profiles manager: Allow to install profiles into SuperSlicer (#355)
+- (Fix) CTBv4: Setting the LiftHeight2 was defining the base.LiftHeight2 to BottomLiftHeight2
+- (Fix) CWS: Typo on the "resolution must be multiple of 3" error
+
 ## 02/12/2021 - v2.25.3
 
 - **File - Send to:**

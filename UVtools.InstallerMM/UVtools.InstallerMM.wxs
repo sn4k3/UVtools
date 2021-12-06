@@ -885,11 +885,17 @@
         <Directory Id="owd9F9F77C9E3C3E4DA718760164D5303B8" Name="Assets">
           <Directory Id="owd09EA423812736FC896B5C82AE8837139" Name="PrusaSlicer">
             <Directory Id="owd44E5BD2F3F078D3F66FB8FE12300C21C" Name="printer">
+              <Component Id="owcF8943AB6BE1EEBE5615C6CE1958E0E50" Guid="91eab260-c0f0-3711-c9ac-fe6e0a2a6e28" Win64="yes">
+                <File Id="owfF8943AB6BE1EEBE5615C6CE1958E0E50" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\AnyCubic Photon Mono 4K.ini" KeyPath="yes" />
+              </Component>
               <Component Id="owcB1F9239297148807EDD6F0AD6A16F055" Guid="319838b0-55af-2be6-09e9-f97a8270196b" Win64="yes">
                 <File Id="owfB1F9239297148807EDD6F0AD6A16F055" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\AnyCubic Photon Mono SE.ini" KeyPath="yes" />
               </Component>
               <Component Id="owc67D0DCEBE8B3912065D33D90635862C5" Guid="321b01b8-d6da-009e-ab2e-a78fc841fcf7" Win64="yes">
                 <File Id="owf67D0DCEBE8B3912065D33D90635862C5" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\AnyCubic Photon Mono SQ.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owc7CD8548E5D273DC5891BB49F991E96A8" Guid="86045a7b-2a43-e318-5121-50a7ea572a76" Win64="yes">
+                <File Id="owf7CD8548E5D273DC5891BB49F991E96A8" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\AnyCubic Photon Mono X 6K.ini" KeyPath="yes" />
               </Component>
               <Component Id="owc5438DE5556A7860A5A4B999D2C8549E6" Guid="18d012cf-f45e-421f-9e5f-f2530fd82cdf" Win64="yes">
                 <File Id="owf5438DE5556A7860A5A4B999D2C8549E6" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\AnyCubic Photon Mono X.ini" KeyPath="yes" />

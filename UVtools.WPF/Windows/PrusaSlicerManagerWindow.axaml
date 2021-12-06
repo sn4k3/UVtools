@@ -133,116 +133,234 @@
       
     </Border>
 
-    <Grid
-        ColumnDefinitions="*,*"
-        RowDefinitions="*"
-        >
+      <TabControl SelectedIndex="{Binding TabSlicerSelectedIndex}">
+          <TabItem
+              IsVisible="{Binding HavePrusaSlicer}">
+              <TabItem.Header>
+                  <StackPanel Orientation="Horizontal" Spacing="5">
+                      <Image Stretch="None" Source="/Assets/Icons/PrusaSlicer-32.png" />
+                      <TextBlock VerticalAlignment="Center"
+                                 Text="PrusaSlicer"/>
+                  </StackPanel>
+              </TabItem.Header>
+              <Grid
+					  ColumnDefinitions="*,*"
+					  RowDefinitions="*">
 
-      <Border
-          Grid.Column="0"
-          Classes="GroupBox"
-          Margin="5"
-          >
+				  <Border
+					  Grid.Column="0"
+					  Classes="GroupBox"
+					  Margin="5">
 
-        <Grid RowDefinitions="Auto,Auto,*">
+					  <Grid RowDefinitions="Auto,Auto,*">
 
-          <TextBlock Classes="GroupBoxHeader" Text="Print profiles"/>
-          <TextBlock HorizontalAlignment="Right" 
-                     Padding="10">
-              <TextBlock.Text>
-                  <MultiBinding StringFormat="\{0\} Update(s) | {1} Installed | {2} Profiles">
-                      <Binding Path="Profiles[0].Updates"/>
-                      <Binding Path="Profiles[0].Installed"/>
-                      <Binding Path="Profiles[0].Items.Count"/>
-                  </MultiBinding>
-              </TextBlock.Text>
-          </TextBlock>
+						  <TextBlock Grid.Row="0" Classes="GroupBoxHeader" Text="Print profiles"/>
+						  <TextBlock Grid.Row="0" HorizontalAlignment="Right"
+									 Padding="10">
+							  <TextBlock.Text>
+								  <MultiBinding StringFormat="\{0\} Update(s) | {1} Installed | {2} Profiles">
+									  <Binding Path="PrusaSlicerProfiles[0].Updates"/>
+									  <Binding Path="PrusaSlicerProfiles[0].Installed"/>
+									  <Binding Path="PrusaSlicerProfiles[0].Items.Count"/>
+								  </MultiBinding>
+							  </TextBlock.Text>
+						  </TextBlock>
 
-          <StackPanel
-            Grid.Row="1"
-            Orientation="Horizontal" Spacing="1">
-            <Button Padding="10"
-                    IsEnabled="{Binding Profiles[0].Updates}"
-                    Command="{Binding Profiles[0].SelectNone}"
-                      >
-              <StackPanel Orientation="Horizontal" Spacing="5">
-                <Image Source="/Assets/Icons/checkbox-unmarked-16x16.png"/>
-                <TextBlock Text="Unselect all"/>
-              </StackPanel>
-            </Button>
+						  <StackPanel
+							Grid.Row="1"
+							Orientation="Horizontal" Spacing="1">
+							  <Button Padding="10"
+									  IsEnabled="{Binding PrusaSlicerProfiles[0].Updates}"
+									  Command="{Binding PrusaSlicerProfiles[0].SelectNone}">
+								  <StackPanel Orientation="Horizontal" Spacing="5">
+									  <Image Source="/Assets/Icons/checkbox-unmarked-16x16.png"/>
+									  <TextBlock Text="Unselect all"/>
+								  </StackPanel>
+							  </Button>
 
-            <Button Padding="10"
-                    IsEnabled="{Binding Profiles[0].Updates}"
-                    Command="{Binding Profiles[0].SelectAll}"
-                      >
-              <StackPanel Orientation="Horizontal" Spacing="5">
-                <Image Source="/Assets/Icons/checkbox-marked-16x16.png"/>
-                <TextBlock Text="Select all"/>
-              </StackPanel>
-            </Button>
+							  <Button Padding="10"
+									  IsEnabled="{Binding PrusaSlicerProfiles[0].Updates}"
+									  Command="{Binding PrusaSlicerProfiles[0].SelectAll}">
+								  <StackPanel Orientation="Horizontal" Spacing="5">
+									  <Image Source="/Assets/Icons/checkbox-marked-16x16.png"/>
+									  <TextBlock Text="Select all"/>
+								  </StackPanel>
+							  </Button>
 
-          </StackPanel>
+						  </StackPanel>
 
-          <ListBox
-            Grid.Row="2"
-            SelectionMode="Toggle"
-            VirtualizationMode="None"
-            Items="{Binding Profiles[0].Items}"/>
-        </Grid>
-      </Border>
+						  <ListBox
+							Grid.Row="2"
+							SelectionMode="Toggle"
+							VirtualizationMode="None"
+							Items="{Binding PrusaSlicerProfiles[0].Items}"/>
+					  </Grid>
+				  </Border>
 
-      <Border
-          Grid.Column="1"
-          Classes="GroupBox"
-          Margin="0,5,5,5"
-          >
-        
-          <Grid RowDefinitions="Auto,Auto,*">
+				  <Border Grid.Column="1"
+					      Classes="GroupBox"
+                          Margin="0,5,5,5">
 
-            <TextBlock Classes="GroupBoxHeader" Text="Printer profiles"/>
-            <TextBlock HorizontalAlignment="Right"
-                       Padding="10">
-                <TextBlock.Text>
-                    <MultiBinding StringFormat="\{0\} Update(s) | {1} Installed | {2} Profiles">
-                        <Binding Path="Profiles[1].Updates"/>
-                        <Binding Path="Profiles[1].Installed"/>
-                        <Binding Path="Profiles[1].Items.Count"/>
-                    </MultiBinding>
-                </TextBlock.Text>
-            </TextBlock>
+					  <Grid RowDefinitions="Auto,Auto,*">
 
-            <StackPanel 
-              Grid.Row="1"
-              Orientation="Horizontal" Spacing="1">
-              <Button Padding="10"
-                      IsEnabled="{Binding Profiles[1].Updates}"
-                      Command="{Binding Profiles[1].SelectNone}"
-                      >
-                <StackPanel Orientation="Horizontal" Spacing="5">
-                  <Image Source="/Assets/Icons/checkbox-unmarked-16x16.png"/>
-                  <TextBlock Text="Unselect all"/>
-                </StackPanel>
-              </Button>
+						  <TextBlock Grid.Row="0" Classes="GroupBoxHeader" Text="Printer profiles"/>
+						  <TextBlock Grid.Row="0" HorizontalAlignment="Right"
+									 Padding="10">
+							  <TextBlock.Text>
+								  <MultiBinding StringFormat="\{0\} Update(s) | {1} Installed | {2} Profiles">
+									  <Binding Path="PrusaSlicerProfiles[1].Updates"/>
+									  <Binding Path="PrusaSlicerProfiles[1].Installed"/>
+									  <Binding Path="PrusaSlicerProfiles[1].Items.Count"/>
+								  </MultiBinding>
+							  </TextBlock.Text>
+						  </TextBlock>
 
-              <Button Padding="10"
-                      IsEnabled="{Binding Profiles[1].Updates}"
-                      Command="{Binding Profiles[1].SelectAll}"
-                      >
-                <StackPanel Orientation="Horizontal" Spacing="5">
-                  <Image Source="/Assets/Icons/checkbox-marked-16x16.png"/>
-                  <TextBlock Text="Select all"/>
-                </StackPanel>
-              </Button>
+						  <StackPanel
+							Grid.Row="1"
+							Orientation="Horizontal" Spacing="1">
+							  <Button Padding="10"
+									  IsEnabled="{Binding PrusaSlicerProfiles[1].Updates}"
+									  Command="{Binding PrusaSlicerProfiles[1].SelectNone}">
+								  <StackPanel Orientation="Horizontal" Spacing="5">
+									  <Image Source="/Assets/Icons/checkbox-unmarked-16x16.png"/>
+									  <TextBlock Text="Unselect all"/>
+								  </StackPanel>
+							  </Button>
 
-            </StackPanel>
+							  <Button Padding="10"
+									  IsEnabled="{Binding PrusaSlicerProfiles[1].Updates}"
+									  Command="{Binding PrusaSlicerProfiles[1].SelectAll}">
+								  <StackPanel Orientation="Horizontal" Spacing="5">
+									  <Image Source="/Assets/Icons/checkbox-marked-16x16.png"/>
+									  <TextBlock Text="Select all"/>
+								  </StackPanel>
+							  </Button>
 
-            <ListBox
-              Grid.Row="2"
-            SelectionMode="Toggle"
-            VirtualizationMode="None"
-            Items="{Binding Profiles[1].Items}"/>
-          </Grid>
-      </Border>
-    </Grid>
+						  </StackPanel>
+
+						  <ListBox
+							Grid.Row="2"
+						  SelectionMode="Toggle"
+						  VirtualizationMode="None"
+						  Items="{Binding PrusaSlicerProfiles[1].Items}"/>
+					  </Grid>
+				  </Border>
+			  </Grid>
+          </TabItem>
+
+		  <TabItem
+              IsVisible="{Binding HaveSuperSlicer}">
+			  <TabItem.Header>
+				  <StackPanel Orientation="Horizontal" Spacing="5">
+					  <Image Stretch="None" Source="/Assets/Icons/SuperSlicer-32.png" />
+					  <TextBlock VerticalAlignment="Center"
+                                 Text="SuperSlicer"/>
+				  </StackPanel>
+			  </TabItem.Header>
+			  <Grid
+					  ColumnDefinitions="*,*"
+					  RowDefinitions="*">
+
+				  <Border
+					  Grid.Column="0"
+					  Classes="GroupBox"
+					  Margin="5">
+
+					  <Grid RowDefinitions="Auto,Auto,*">
+
+						  <TextBlock Grid.Row="0" Classes="GroupBoxHeader" Text="Print profiles"/>
+						  <TextBlock Grid.Row="0" HorizontalAlignment="Right"
+									 Padding="10">
+							  <TextBlock.Text>
+								  <MultiBinding StringFormat="\{0\} Update(s) | {1} Installed | {2} Profiles">
+									  <Binding Path="SuperSlicerProfiles[0].Updates"/>
+									  <Binding Path="SuperSlicerProfiles[0].Installed"/>
+									  <Binding Path="SuperSlicerProfiles[0].Items.Count"/>
+								  </MultiBinding>
+							  </TextBlock.Text>
+						  </TextBlock>
+
+						  <StackPanel
+							Grid.Row="1"
+							Orientation="Horizontal" Spacing="1">
+							  <Button Padding="10"
+									  IsEnabled="{Binding SuperSlicerProfiles[0].Updates}"
+									  Command="{Binding SuperSlicerProfiles[0].SelectNone}">
+								  <StackPanel Orientation="Horizontal" Spacing="5">
+									  <Image Source="/Assets/Icons/checkbox-unmarked-16x16.png"/>
+									  <TextBlock Text="Unselect all"/>
+								  </StackPanel>
+							  </Button>
+
+							  <Button Padding="10"
+									  IsEnabled="{Binding SuperSlicerProfiles[0].Updates}"
+									  Command="{Binding SuperSlicerProfiles[0].SelectAll}">
+								  <StackPanel Orientation="Horizontal" Spacing="5">
+									  <Image Source="/Assets/Icons/checkbox-marked-16x16.png"/>
+									  <TextBlock Text="Select all"/>
+								  </StackPanel>
+							  </Button>
+
+						  </StackPanel>
+
+						  <ListBox
+							Grid.Row="2"
+							SelectionMode="Toggle"
+							VirtualizationMode="None"
+							Items="{Binding SuperSlicerProfiles[0].Items}"/>
+					  </Grid>
+				  </Border>
+
+				  <Border Grid.Column="1"
+					      Classes="GroupBox"
+                          Margin="0,5,5,5">
+
+					  <Grid RowDefinitions="Auto,Auto,*">
+
+						  <TextBlock Grid.Row="0" Classes="GroupBoxHeader" Text="Printer profiles"/>
+						  <TextBlock Grid.Row="0" HorizontalAlignment="Right"
+									 Padding="10">
+							  <TextBlock.Text>
+								  <MultiBinding StringFormat="\{0\} Update(s) | {1} Installed | {2} Profiles">
+									  <Binding Path="SuperSlicerProfiles[1].Updates"/>
+									  <Binding Path="SuperSlicerProfiles[1].Installed"/>
+									  <Binding Path="SuperSlicerProfiles[1].Items.Count"/>
+								  </MultiBinding>
+							  </TextBlock.Text>
+						  </TextBlock>
+
+						  <StackPanel
+							Grid.Row="1"
+							Orientation="Horizontal" Spacing="1">
+							  <Button Padding="10"
+									  IsEnabled="{Binding SuperSlicerProfiles[1].Updates}"
+									  Command="{Binding SuperSlicerProfiles[1].SelectNone}">
+								  <StackPanel Orientation="Horizontal" Spacing="5">
+									  <Image Source="/Assets/Icons/checkbox-unmarked-16x16.png"/>
+									  <TextBlock Text="Unselect all"/>
+								  </StackPanel>
+							  </Button>
+
+							  <Button Padding="10"
+									  IsEnabled="{Binding SuperSlicerProfiles[1].Updates}"
+									  Command="{Binding SuperSlicerProfiles[1].SelectAll}">
+								  <StackPanel Orientation="Horizontal" Spacing="5">
+									  <Image Source="/Assets/Icons/checkbox-marked-16x16.png"/>
+									  <TextBlock Text="Select all"/>
+								  </StackPanel>
+							  </Button>
+
+						  </StackPanel>
+
+						  <ListBox
+							Grid.Row="2"
+						  SelectionMode="Toggle"
+						  VirtualizationMode="None"
+						  Items="{Binding SuperSlicerProfiles[1].Items}"/>
+					  </Grid>
+				  </Border>
+			  </Grid>
+		  </TabItem>
+      </TabControl>
   </DockPanel>
 </controls:WindowEx>

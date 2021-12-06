@@ -9,15 +9,23 @@ LittleEndian();
 
 struct FILEMARK {
     char Mark[12] <fgcolor=cBlack, bgcolor=cRed>;
-    uint Version <fgcolor=cBlack, bgcolor=cRed>; // 1 or 515
+    uint Version <fgcolor=cBlack, bgcolor=cRed>; // 1 or 515 or 516
     uint AreaNum <fgcolor=cBlack, bgcolor=cRed>;
     uint HeaderAddress <fgcolor=cBlack, bgcolor=cRed>;
-    uint Padding1 <fgcolor=cBlack, bgcolor=cRed>;
+    uint Unknown <fgcolor=cBlack, bgcolor=cRed>; // 6357060 for 516
     uint PreviewAddress <fgcolor=cBlack, bgcolor=cRed>;
     uint PreviewEndAddress <fgcolor=cBlack, bgcolor=cRed>; // Version 515 only
     uint LayerDefinitionAddress <fgcolor=cBlack, bgcolor=cRed>;
-    uint Padding3 <fgcolor=cBlack, bgcolor=cRed>;
-    uint LayerImageAddress <fgcolor=cBlack, bgcolor=cRed>;
+    uint ExtraAddress <fgcolor=cBlack, bgcolor=cRed>;
+    
+    if(Version < 516)
+    {
+        uint LayerImageAddress <fgcolor=cBlack, bgcolor=cRed>;
+    }
+    else{
+        uint MachineAddress <fgcolor=cBlack, bgcolor=cRed>;
+        uint LayerImageAddress <fgcolor=cBlack, bgcolor=cRed>;
+    }
 } fileMark;
 
 struct SECTION {
@@ -47,8 +55,12 @@ struct HEADER {
     uint PriceCurrencyDec <fgcolor=cBlack, bgcolor=cRed>;
     uint PerLayerOverride <fgcolor=cBlack, bgcolor=cRed>;
     uint PrintTime <fgcolor=cBlack, bgcolor=cRed>;
-    uint Padding1 <fgcolor=cBlack, bgcolor=cRed>;
-    uint Padding2 <fgcolor=cBlack, bgcolor=cRed>;
+    uint TransitionLayerCount <fgcolor=cBlack, bgcolor=cRed>;
+    uint Padding <fgcolor=cBlack, bgcolor=cRed>;
+
+    if(fileMark.Version > 515){
+        uint Padding <fgcolor=cBlack, bgcolor=cRed>;
+    }
 };
 
 if(fileMark.HeaderAddress > 0){
@@ -74,6 +86,11 @@ struct PREVIEW {
 if(fileMark.PreviewAddress > 0){
     FSeek(fileMark.PreviewAddress);
     PREVIEW preview;
+
+    if(fileMark.Version >= 515)
+    {
+        uint Reserved[7] <fgcolor=cWhite, bgcolor=cBlack>;
+    }
 }
 
 
@@ -103,6 +120,39 @@ struct LAYER_DEF {
 };
 
 
+if(fileMark.Version >= 516 && fileMark.ExtraAddress > 0){
+    FSeek(fileMark.ExtraAddress);
+    struct EXTRA {
+        SECTION section;
+        uint Unknown <fgcolor=cBlack, bgcolor=cRed>; // 2
+        float BottomLiftHeight0 <fgcolor=cBlack, bgcolor=cGreen>;
+        float BottomLiftSpeed0 <fgcolor=cBlack, bgcolor=cGreen>;
+        float BottomRetractSpeed0 <fgcolor=cBlack, bgcolor=cGreen>;
+        float BottomLiftHeight1 <fgcolor=cBlack, bgcolor=cGreen>;
+        float BottomLiftSpeed1 <fgcolor=cBlack, bgcolor=cGreen>;
+        float BottomRetractSpeed1 <fgcolor=cBlack, bgcolor=cGreen>;
+        uint Unknown <fgcolor=cBlack, bgcolor=cGreen>; // 2
+        float LiftHeight0 <fgcolor=cBlack, bgcolor=cGreen>;
+        float LiftSpeed0 <fgcolor=cBlack, bgcolor=cGreen>;
+        float RetractSpeed0 <fgcolor=cBlack, bgcolor=cGreen>;
+        float LiftHeight1 <fgcolor=cBlack, bgcolor=cGreen>;
+        float LiftSpeed1 <fgcolor=cBlack, bgcolor=cGreen>;
+        float RetractSpeed1 <fgcolor=cBlack, bgcolor=cGreen>;
+    } extra;
+}
+
+if(fileMark.Version >= 516 && fileMark.MachineAddress > 0){
+    struct MACHINE {
+        SECTION section;
+        char MachineName[96] <fgcolor=cBlack, bgcolor=cRed>;
+        char ImageFormat[24] <fgcolor=cWhite, bgcolor=cRed>;
+        float DisplayWidth <fgcolor=cBlack, bgcolor=cRed>;
+        float DisplayHeight <fgcolor=cBlack, bgcolor=cRed>;
+        float MachineZ <fgcolor=cBlack, bgcolor=cRed>;
+        uint Version <fgcolor=cBlack, bgcolor=cRed>; // Version again? 516
+        uint Unknown <fgcolor=cBlack, bgcolor=cRed>; // 6506241
+    } machine;
+}
 
 if(fileMark.LayerDefinitionAddress > 0){
     FSeek(fileMark.LayerDefinitionAddress);

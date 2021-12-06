@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
@@ -10,8 +9,9 @@ using UVtools.Core.Objects;
 
 namespace UVtools.WPF.Structures
 {
-    public class PEProfileFolder : BindableBase
+    public class PSProfileFolder : BindableBase
     {
+        public static string AssetsPrusaSlicer => Path.Combine(App.ApplicationPath, "Assets", "PrusaSlicer");
         private RangeObservableCollection<CheckBox> _items = new ();
         private ushort _installed;
         private ushort _updates;
@@ -23,6 +23,8 @@ namespace UVtools.WPF.Structures
         }
 
         public FolderType Type { get; }
+
+        public bool IsSuperSlicer { get; }
 
         public string SourcePath { get; }
         public string TargetPath { get; }
@@ -50,7 +52,7 @@ namespace UVtools.WPF.Structures
             get
             {
                 StringBuilder sb = new();
-                foreach (CheckBox item in Items)
+                foreach (var item in Items)
                 {
                     if (!item.IsChecked.HasValue || !item.IsChecked.Value) continue;
                     sb.AppendLine(item.Content.ToString());
@@ -60,22 +62,23 @@ namespace UVtools.WPF.Structures
             }
         }
 
-        public PEProfileFolder(FolderType type)
+        public PSProfileFolder(FolderType type, bool isSuperSlicer = false)
         {
             Type = type;
-            
+            IsSuperSlicer = isSuperSlicer;
+
             switch (type)
             {
                 case FolderType.Print:
-                    SourcePath = string.Format("{0}{1}Assets{1}PrusaSlicer{1}sla_print",
-                        App.ApplicationPath, Path.DirectorySeparatorChar);
-                    TargetPath = $"{App.GetPrusaSlicerDirectory()}{Path.DirectorySeparatorChar}sla_print";
+                    SourcePath = Path.Combine(AssetsPrusaSlicer, "sla_print");
+                    TargetPath = Path.Combine(App.GetPrusaSlicerDirectory(isSuperSlicer), "sla_print");
                     break;
                 case FolderType.Printer:
-                    SourcePath = string.Format("{0}{1}Assets{1}PrusaSlicer{1}printer",
-                        App.ApplicationPath, Path.DirectorySeparatorChar);
-                    TargetPath = $"{App.GetPrusaSlicerDirectory()}{Path.DirectorySeparatorChar}printer";
+                    SourcePath = Path.Combine(AssetsPrusaSlicer, "printer");
+                    TargetPath = Path.Combine(App.GetPrusaSlicerDirectory(isSuperSlicer), "printer");
                     break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(type), type, null);
             }
 
             Reset();
@@ -101,29 +104,27 @@ namespace UVtools.WPF.Structures
                     Tag = files[i]
                 });
 
-                if (folderExists)
+                if (!folderExists) continue;
+                var targetFile = $"{TargetPath}{Path.DirectorySeparatorChar}{files[i].Name}";
+                FileInfo targetFileInfo = new(targetFile);
+                if (targetFileInfo.Exists)
                 {
-                    var targetFile = $"{TargetPath}{Path.DirectorySeparatorChar}{files[i].Name}";
-                    FileInfo targetFileInfo = new(targetFile);
-                    if (targetFileInfo.Exists)
+                    Installed++;
+                    if (targetFileInfo.Length != files[i].Length || !StaticObjects.GetHashSha256(targetFileInfo.FullName).SequenceEqual(StaticObjects.GetHashSha256(files[i].FullName)))
                     {
-                        Installed++;
-                        if (targetFileInfo.Length != files[i].Length || !StaticObjects.GetHashSha256(targetFileInfo.FullName).SequenceEqual(StaticObjects.GetHashSha256(files[i].FullName)))
-                        {
-                            Items[i].Foreground = Brushes.Red;
-                            Items[i].IsChecked = true;
-                            Updates++;
-                        }
-                        else
-                        {
-                            Items[i].Foreground = Brushes.Green;
-                            Items[i].IsEnabled = false;
-                        }
+                        Items[i].Foreground = Brushes.Red;
+                        Items[i].IsChecked = true;
+                        Updates++;
                     }
                     else
                     {
-                        Updates++;
+                        Items[i].Foreground = Brushes.Green;
+                        Items[i].IsEnabled = false;
                     }
+                }
+                else
+                {
+                    Updates++;
                 }
             }
         }

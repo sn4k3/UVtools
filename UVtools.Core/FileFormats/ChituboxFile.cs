@@ -1426,7 +1426,7 @@ namespace UVtools.Core.FileFormats
             get
             {
                 if (HeaderSettings.Version <= 3) return PrintParametersSettings.BottomLiftHeight;
-                return Math.Max(0, PrintParametersSettings.BottomLiftHeight - SlicerInfoSettings.BottomLiftHeight2);
+                return (float)Math.Round(Math.Max(0, PrintParametersSettings.BottomLiftHeight - SlicerInfoSettings.BottomLiftHeight2), 2);
             }
             set
             {
@@ -1497,7 +1497,7 @@ namespace UVtools.Core.FileFormats
                 var liftHeight = LiftHeight;
                 SlicerInfoSettings.LiftHeight2 = (float)Math.Round(value, 2);
                 LiftHeight = liftHeight;
-                base.LiftHeight2 = SlicerInfoSettings.BottomLiftHeight2;
+                base.LiftHeight2 = SlicerInfoSettings.LiftHeight2;
             }
         }
 

@@ -46,12 +46,12 @@ Take **[Erode-Bottom.ps1](https://github.com/sn4k3/UVtools/blob/master/UVtools.S
 
 
 * [Core - Source code](https://github.com/sn4k3/UVtools/tree/master/UVtools.Core)
-* [IFileFormat.cs - File format functions & variables](https://github.com/sn4k3/UVtools/blob/master/UVtools.Core/FileFormats/IFileFormat.cs)
+* [FileFormat.cs - File format functions & variables](https://github.com/sn4k3/UVtools/blob/master/UVtools.Core/FileFormats/FileFormat.cs)
   * How to load file: 
     ```Powershell
     # Find a file format given a file path, $true = is file path, $true = Create a new instance
     # Returns null if file is invalid
-    $slicerFile = [UVtools.Core.FileFormats.FileFormat]::FindByExtension($inputFile, $true, $true)
+    $slicerFile = [UVtools.Core.FileFormats.FileFormat]::FindByExtensionOrFilePath($inputFile, $true)
     if(!$slicerFile){ return } # Invalid file, exit
     $slicerFile.Decode($inputFile)
     ```

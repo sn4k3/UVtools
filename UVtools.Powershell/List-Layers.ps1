@@ -78,7 +78,7 @@ $inputFile = read-host "Enter input file"
         $inputFile = $null
     }
     else {
-        $slicerFile = [UVtools.Core.FileFormats.FileFormat]::FindByExtension($inputFile, $true, $true)
+        $slicerFile = [UVtools.Core.FileFormats.FileFormat]::FindByExtensionOrFilePath($inputFile, $true)
         if(!$slicerFile){
             Write-host "Invalid file format, re-enter."
             $inputFile = $null

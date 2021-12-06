@@ -150,24 +150,35 @@ namespace UVtools.WPF
 
         public static string ApplicationPath => Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 
-        public static string GetPrusaSlicerDirectory()
+        public static string GetPrusaSlicerDirectory(bool isSuperSlicer = false)
         {
+            var slicerFolder = isSuperSlicer ? "SuperSlicer" : "PrusaSlicer";
             if (OperatingSystem.IsWindows())
             {
-                return $"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}{Path.DirectorySeparatorChar}PrusaSlicer";
+                return Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                    slicerFolder);
             }
 
             if (OperatingSystem.IsLinux())
             {
-                var folder1 = $"{Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)}{Path.DirectorySeparatorChar}.config{Path.DirectorySeparatorChar}PrusaSlicer";
+                var folder1 = Path.Combine(
+                                        Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                                        ".config",
+                                        slicerFolder);
                 if (Directory.Exists(folder1)) return folder1;
-                return $"{Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)}{Path.DirectorySeparatorChar}.PrusaSlicer";
+                return Path.Combine(
+                            Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                            $".{slicerFolder}");
             }
 
             if (OperatingSystem.IsMacOS())
             {
-                return string.Format("{0}{1}Library{1}Application Support{1}PrusaSlicer",
-                    Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), Path.DirectorySeparatorChar);
+                return Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                    "Library",
+                    "Application Support",
+                    slicerFolder);
             }
 
             return null;

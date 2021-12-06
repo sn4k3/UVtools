@@ -594,7 +594,7 @@ namespace UVtools.Core.FileFormats
                 if (ResolutionX % 3 != 0)
                 {
                     throw new InvalidOperationException($"Resolution width of {ResolutionX}px is invalid. Width must be in multiples of 3.\n" +
-                                                        $"Fix your printer slicing settings with the correct with.");
+                                                        "Fix your printer slicing settings with the correct width that is multiple of 3.");
                 }
             }
 
