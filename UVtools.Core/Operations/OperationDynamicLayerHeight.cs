@@ -563,7 +563,7 @@ namespace UVtools.Core.Operations
             };
 
             var anchor = new Point(-1, -1);
-            using var kernel = CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(3, 3), anchor);
+            var kernel = EmguExtensions.Kernel3x3Rectangle;
 
             var matCache = new MatCacheManager(this, (ushort)CacheObjectCount, ObjectsPerCache)
             {

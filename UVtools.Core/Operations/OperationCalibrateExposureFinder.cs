@@ -1847,7 +1847,7 @@ namespace UVtools.Core.Operations
             int partMarginYPx = (int)(_partMargin * Yppmm);
 
             var anchor = new Point(-1, -1);
-            using var kernel = CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(3, 3), anchor);
+            var kernel = EmguExtensions.Kernel3x3Rectangle;
 
             if (_patternModel)
             {

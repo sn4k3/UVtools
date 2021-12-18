@@ -77,7 +77,7 @@ namespace UVtools.Core.FileFormats
         {
             public const ushort TABLE_SIZE = 288;
 
-            private string _machineName;
+            private string _machineName = DefaultMachineName;
 
             /// <summary>
             /// Checksum of unix timestamp
@@ -123,7 +123,7 @@ namespace UVtools.Core.FileFormats
             [FieldOrder(38)] public float RetractSpeed2 { get; set; }
             [FieldOrder(39)] public float RestTimeAfterLift { get; set; }
             [FieldOrder(40)] public uint MachineNameOffset { get; set; }
-            [FieldOrder(41)] public uint MachineNameSize { get; set; }
+            [FieldOrder(41)] public uint MachineNameSize { get; set; } = (uint)(string.IsNullOrEmpty(DefaultMachineName) ? 0 : DefaultMachineName.Length);
             [FieldOrder(42)] public uint PerLayerSettings { get; set; } = PERLAYER_SETTINGS_DISALLOW;
             [FieldOrder(43)] public uint Unknown4 { get; set; }
             [FieldOrder(44)] public uint Unknown5 { get; set; } = 8; // Also 1
@@ -161,6 +161,7 @@ namespace UVtools.Core.FileFormats
                 get => _machineName;
                 set
                 {
+                    if (string.IsNullOrEmpty(value)) value = DefaultMachineName;
                     _machineName = value;
                     MachineNameSize = string.IsNullOrEmpty(_machineName) ? 0 : (uint)_machineName.Length;
                 }
@@ -1280,12 +1281,11 @@ namespace UVtools.Core.FileFormats
         protected override void EncodeInternally(OperationProgress progress)
         {
 #if !DEBUG
-            throw new NotSupportedException(Preamble);
+            if (Settings.LayerPointersOffset > 0) throw new NotSupportedException(Preamble);
 #endif
 
             using var outputFile = new FileStream(FileFullPath, FileMode.Create, FileAccess.Write);
             //uint currentOffset = 0;
-
             /* Create the file header and fill out what we can. SignatureOffset will have to be populated later
              * this will be the last thing written to file */
             Header.SettingsSize = (uint)Helpers.Serializer.SizeOf(Settings);

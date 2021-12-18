@@ -2,10 +2,11 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:controls="clr-namespace:UVtools.WPF.Controls"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="UVtools.WPF.Controls.Tools.ToolPixelArithmeticControl">
 
-  <Grid RowDefinitions="Auto,10,Auto">
+  <StackPanel Orientation="Vertical" Spacing="10">
     <Grid RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto"
           ColumnDefinitions="Auto,10,Auto,20,Auto,10,Auto,20,Auto,10,Auto">
         
@@ -68,6 +69,7 @@
                     Content="Chamfer walls"
                     ToolTip.Tip="Allow the number of walls pixels to be gradually varied as the operation progresses from the starting layer to the ending layer."
                     IsChecked="{Binding Operation.WallChamfer}"/>
+
       </StackPanel>
 
         <TextBlock Grid.Row="6" Grid.Column="0"
@@ -254,8 +256,7 @@
 
       </Grid>
 
-      <Expander Grid.Row="2" 
-                Header="Pattern" 
+      <Expander Header="Pattern" 
                 IsExpanded="True">
         <!--
         <Border.IsVisible>
@@ -365,29 +366,25 @@
                       Content="Chessboard"
                       Width="100"
                       Command="{Binding Operation.GeneratePattern}"
-                      CommandParameter="Chessboard"
-            />
+                      CommandParameter="Chessboard"/>
                     <Button
                       Padding="10"
                       Content="Sparse"
                       Width="100"
                       Command="{Binding Operation.GeneratePattern}"
-                      CommandParameter="Sparse"
-            />
+                      CommandParameter="Sparse"/>
                     <Button
                       Padding="10"
                       Content="Crosses"
                       Width="100"
                       Command="{Binding Operation.GeneratePattern}"
-                      CommandParameter="Crosses"
-            />
+                      CommandParameter="Crosses"/>
                     <Button
                       Padding="10"
                       Content="Strips"
                       Width="100"
                       Command="{Binding Operation.GeneratePattern}"
-                      CommandParameter="Strips"
-            />
+                      CommandParameter="Strips"/>
                   </StackPanel>
 
                   <StackPanel Orientation="Horizontal" Spacing="10">
@@ -396,30 +393,26 @@
                       Content="Pyramid"
                       Width="100"
                       Command="{Binding Operation.GeneratePattern}"
-                      CommandParameter="Pyramid"
-            />
+                      CommandParameter="Pyramid"/>
 
                     <Button
                       Padding="10"
                       Content="Rhombus"
                       Width="100"
                       Command="{Binding Operation.GeneratePattern}"
-                      CommandParameter="Rhombus"
-            />
+                      CommandParameter="Rhombus"/>
                     <Button
                       Padding="10"
                       Content="Waves"
                       Width="100"
                       Command="{Binding Operation.GeneratePattern}"
-                      CommandParameter="Waves"
-            />
+                      CommandParameter="Waves"/>
                     <Button
                       Padding="10"
                       Content="Slashes"
                       Width="100"
                       Command="{Binding Operation.GeneratePattern}"
-                      CommandParameter="Slashes"
-            />
+                      CommandParameter="Slashes"/>
                   </StackPanel>
 
                   <StackPanel Orientation="Horizontal" Spacing="10">
@@ -428,15 +421,13 @@
                       Content="Hearts"
                       Width="100"
                       Command="{Binding Operation.GeneratePattern}"
-                      CommandParameter="Hearts"
-            />
+                      CommandParameter="Hearts"/>
                     <Button
                       Padding="10"
                       Content="Solid"
                       Width="100"
                       Command="{Binding Operation.GeneratePattern}"
-                      CommandParameter="Solid"
-            />
+                      CommandParameter="Solid"/>
                   </StackPanel>
 
                 </StackPanel>
@@ -447,8 +438,7 @@
                 Grid.Column="2"
               BorderBrush="LightGray"
               BorderThickness="1"
-              Padding="5"
-      >
+              Padding="5">
 
                 <StackPanel Spacing="10">
                   <TextBlock FontWeight="Bold" Text="Infill generator"/>
@@ -484,29 +474,25 @@
                       Content="Rectilinear"
                       Width="100"
                       Command="{Binding Operation.GenerateInfill}"
-                      CommandParameter="Rectilinear"
-            />
+                      CommandParameter="Rectilinear"/>
                     <Button
                       Padding="10"
                       Content="Square grid"
                       Width="100"
                       Command="{Binding Operation.GenerateInfill}"
-                      CommandParameter="Square grid"
-            />
+                      CommandParameter="Square grid"/>
                     <Button
                       Padding="10"
                       Content="Waves"
                       Width="100"
                       Command="{Binding Operation.GenerateInfill}"
-                      CommandParameter="Waves"
-            />
+                      CommandParameter="Waves"/>
                     <Button
                       Padding="10"
                       Content="Lattice"
                       Width="100"
                       Command="{Binding Operation.GenerateInfill}"
-                      CommandParameter="Lattice"
-            />
+                      CommandParameter="Lattice"/>
                   </StackPanel>
                 </StackPanel>
               </Border>
@@ -516,6 +502,15 @@
           </StackPanel>
         </Expander>
 
-  </Grid>
+      <Expander Header="Kernel - Advanced options (Click to expand)" 
+                Margin="0,10,0,0"
+                IsVisible="{Binding Operation.IsWallSettingVisible}">
+          <controls:KernelControl
+              Name="KernelCtrl"
+              Kernel="{Binding $parent[UserControl].DataContext.Operation.Kernel}"
+              Margin="0,10,0,0"/>
+      </Expander>
+
+  </StackPanel>
 
 </UserControl>

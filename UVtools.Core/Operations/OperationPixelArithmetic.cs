@@ -19,6 +19,7 @@ using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
+using UVtools.Core.Objects;
 
 namespace UVtools.Core.Operations
 {
@@ -490,6 +491,8 @@ namespace UVtools.Core.Operations
             set => RaiseAndSetIfChanged(ref _patternGenInfillSpacing, value);
         }
 
+        public KernelConfiguration Kernel { get; set; } = new();
+
         #endregion
 
         #region Constructor
@@ -509,8 +512,6 @@ namespace UVtools.Core.Operations
             Mat patternMatMask = null;
             Mat patternAlternateMatMask = null;
             var anchor = new Point(-1, -1);
-            var kernel = CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(3, 3), anchor);
-
 
             if (_usePattern && IsUsePatternVisible)
             {
@@ -617,7 +618,9 @@ namespace UVtools.Core.Operations
 
                                 // 1px walls
                                 using var erode = new Mat();
-                                CvInvoke.Erode(target, erode, kernel, anchor, 1, BorderType.Reflect101, default);
+                                int iterations = 1;
+                                var kernel = Kernel.GetKernel(ref iterations);
+                                CvInvoke.Erode(target, erode, kernel, anchor, iterations, BorderType.Reflect101, default);
                                 CvInvoke.Subtract(target, erode, erode);
                                 CvInvoke.Add(applyMask, erode, applyMask);
                                 
@@ -625,16 +628,22 @@ namespace UVtools.Core.Operations
                                 // Inset from walls
                                 if (_applyMethod == PixelArithmeticApplyMethod.ModelSurfaceAndInset && (wallThickness-1) > 0)
                                 {
-                                    CvInvoke.Dilate(applyMask, erode, kernel, anchor, wallThickness-1, BorderType.Reflect101, default);
+                                    iterations = wallThickness - 1;
+                                    kernel = Kernel.GetKernel(ref iterations);
+                                    CvInvoke.Dilate(applyMask, erode, kernel, anchor, iterations, BorderType.Reflect101, default);
                                     erode.CopyTo(applyMask, target);
                                 }
                             }
 
                             break;
                         case PixelArithmeticApplyMethod.ModelInner:
+                        {
                             applyMask = wallThickness <= 0 ? target : new Mat();
-                            CvInvoke.Erode(target, applyMask, kernel, anchor, wallThickness, BorderType.Reflect101, default);
+                            int iterations = wallThickness;
+                            var kernel = Kernel.GetKernel(ref iterations);
+                                CvInvoke.Erode(target, applyMask, kernel, anchor, iterations, BorderType.Reflect101, default);
                             break;
+                        }
                         case PixelArithmeticApplyMethod.ModelWalls:
                         {
                             if (wallThickness <= 0) // No effect, skip
@@ -645,7 +654,9 @@ namespace UVtools.Core.Operations
 
                             using var erode = new Mat();
                             applyMask = target.Clone();
-                            CvInvoke.Erode(target, erode, kernel, anchor, wallThickness, BorderType.Reflect101, default);
+                            int iterations = wallThickness;
+                            var kernel = Kernel.GetKernel(ref iterations);
+                            CvInvoke.Erode(target, erode, kernel, anchor, iterations, BorderType.Reflect101, default);
                             applyMask.SetTo(EmguExtensions.BlackColor, erode);
                             break;
                         }
@@ -1315,7 +1326,7 @@ namespace UVtools.Core.Operations
 
         protected bool Equals(OperationPixelArithmetic other)
         {
-            return _operator == other._operator && _applyMethod == other._applyMethod && _wallThicknessStart == other._wallThicknessStart && _wallThicknessEnd == other._wallThicknessEnd && _wallChamfer == other._wallChamfer && _value == other._value && _usePattern == other._usePattern && _thresholdType == other._thresholdType && _thresholdMaxValue == other._thresholdMaxValue && _patternAlternatePerLayersNumber == other._patternAlternatePerLayersNumber && _patternInvert == other._patternInvert && _patternText == other._patternText && _patternTextAlternate == other._patternTextAlternate && _patternGenMinBrightness == other._patternGenMinBrightness && _patternGenBrightness == other._patternGenBrightness && _patternGenInfillThickness == other._patternGenInfillThickness && _patternGenInfillSpacing == other._patternGenInfillSpacing && _noiseMinOffset == other._noiseMinOffset && _noiseMaxOffset == other._noiseMaxOffset && _noiseThreshold == other._noiseThreshold;
+            return _operator == other._operator && _applyMethod == other._applyMethod && _wallThicknessStart == other._wallThicknessStart && _wallThicknessEnd == other._wallThicknessEnd && _wallChamfer == other._wallChamfer && _ignoreAreaOperator == other._ignoreAreaOperator && _ignoreAreaThreshold == other._ignoreAreaThreshold && _value == other._value && _usePattern == other._usePattern && _thresholdType == other._thresholdType && _thresholdMaxValue == other._thresholdMaxValue && _patternAlternatePerLayersNumber == other._patternAlternatePerLayersNumber && _patternInvert == other._patternInvert && _patternText == other._patternText && _patternTextAlternate == other._patternTextAlternate && Equals(_pattern, other._pattern) && Equals(_patternAlternate, other._patternAlternate) && _patternGenMinBrightness == other._patternGenMinBrightness && _patternGenBrightness == other._patternGenBrightness && _patternGenInfillThickness == other._patternGenInfillThickness && _patternGenInfillSpacing == other._patternGenInfillSpacing && _noiseMinOffset == other._noiseMinOffset && _noiseMaxOffset == other._noiseMaxOffset && _noiseThreshold == other._noiseThreshold;
         }
 
         public override bool Equals(object obj)
@@ -1334,6 +1345,8 @@ namespace UVtools.Core.Operations
             hashCode.Add(_wallThicknessStart);
             hashCode.Add(_wallThicknessEnd);
             hashCode.Add(_wallChamfer);
+            hashCode.Add((int)_ignoreAreaOperator);
+            hashCode.Add(_ignoreAreaThreshold);
             hashCode.Add(_value);
             hashCode.Add(_usePattern);
             hashCode.Add((int)_thresholdType);
@@ -1342,6 +1355,8 @@ namespace UVtools.Core.Operations
             hashCode.Add(_patternInvert);
             hashCode.Add(_patternText);
             hashCode.Add(_patternTextAlternate);
+            hashCode.Add(_pattern);
+            hashCode.Add(_patternAlternate);
             hashCode.Add(_patternGenMinBrightness);
             hashCode.Add(_patternGenBrightness);
             hashCode.Add(_patternGenInfillThickness);

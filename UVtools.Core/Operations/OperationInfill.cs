@@ -153,7 +153,7 @@ namespace UVtools.Core.Operations
         {
             if (arguments is null || arguments.Length < 1) return false;
             var anchor = new Point(-1, -1);
-            var kernel = CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(3, 3), anchor);
+            var kernel = EmguExtensions.Kernel3x3Rectangle;
             uint index = Convert.ToUInt32(arguments[0]);
             uint layerIndex = index - LayerIndexStart;
             var infillColor = new MCvScalar(_infillBrightness);

@@ -270,6 +270,18 @@ namespace UVtools.Core.FileFormats
             new(48, 48),
         };
 
+        public override uint[] AvailableVersions { get; } = { 1 };
+
+        public override uint Version
+        {
+            get => ManifestFile.FileVersion;
+            set
+            {
+                base.Version = value;
+                ManifestFile.FileVersion = (byte)base.Version;
+            }
+        }
+
         public override uint ResolutionX
         {
             get => ManifestFile.Machine.ResolutionX;

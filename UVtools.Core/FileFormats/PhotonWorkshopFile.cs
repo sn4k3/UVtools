@@ -168,7 +168,7 @@ namespace UVtools.Core.FileFormats
             /// <summary>
             /// 2C, Spotted on version 516 only
             /// </summary>
-            [SerializeWhen(nameof(Version), VERSION_516)]
+            [SerializeWhen(nameof(Version), VERSION_516, ComparisonOperator.GreaterThanOrEqual)]
             [FieldOrder(9)] public uint MachineAddress { get; set; }
 
             /// <summary>
@@ -1096,6 +1096,18 @@ namespace UVtools.Core.FileFormats
 
         public override Size[] ThumbnailsOriginalSize { get; } = {new(224, 168)};
 
+        public override uint[] AvailableVersions { get; } = { VERSION_1, VERSION_515, VERSION_516 };
+
+        public override uint Version
+        {
+            get => FileMarkSettings.Version;
+            set
+            {
+                base.Version = value;
+                FileMarkSettings.Version = base.Version;
+            }
+        }
+
         public override uint ResolutionX
         {
             get => HeaderSettings.ResolutionX;
@@ -1265,7 +1277,7 @@ namespace UVtools.Core.FileFormats
             get
             {
                 if (FileMarkSettings.Version >= VERSION_516) return ExtraSettings.BottomLiftHeight1;
-                return base.BottomLiftHeight > 0 ? base.BottomLiftHeight : FirstLayer?.LiftHeight ?? 0;
+                return FirstLayer?.LiftHeight ?? LiftHeight;
             }
             set
             {
@@ -1289,7 +1301,7 @@ namespace UVtools.Core.FileFormats
             get
             {
                 if (FileMarkSettings.Version >= VERSION_516) return (float)Math.Round(ExtraSettings.BottomLiftSpeed1 * 60, 2);
-                return base.BottomLiftSpeed > 0 ? base.BottomLiftSpeed : FirstLayer?.LiftSpeed ?? 0;
+                return FirstLayer?.LiftSpeed ?? LiftSpeed;
             }
             set
             {

@@ -11,7 +11,6 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Text;
 using System.Threading.Tasks;
-using System.Xml.Serialization;
 using Emgu.CV;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Objects;
@@ -108,8 +107,7 @@ namespace UVtools.Core.Operations
 
         public bool IsKernelVisible => BlurOperation == BlurAlgorithm.Filter2D;
 
-        [XmlIgnore]
-        public Kernel Kernel { get; set; } = new ();
+        public KernelConfiguration Kernel { get; set; } = new ();
 
         public override string ToString()
         {
@@ -171,7 +169,7 @@ namespace UVtools.Core.Operations
                     CvInvoke.GaussianBlur(target, target, size, 0);
                     break;
                 case BlurAlgorithm.Filter2D:
-                    CvInvoke.Filter2D(target, target, Kernel.Matrix, anchor);
+                    CvInvoke.Filter2D(target, target, Kernel.GetKernel(), anchor);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();

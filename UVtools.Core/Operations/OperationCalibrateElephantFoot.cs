@@ -11,7 +11,6 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Text;
 using System.Threading.Tasks;
-using System.Xml.Serialization;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
@@ -49,7 +48,6 @@ namespace UVtools.Core.Operations
         private byte _dimmingEndBrightness = 200;
         private byte _dimmingBrightnessSteps = 20;
         private bool _outputOriginalPart = true;
-        
 
         #endregion
 
@@ -294,8 +292,7 @@ namespace UVtools.Core.Operations
             }
         }
 
-        [XmlIgnore]
-        public Kernel ErodeKernel { get; set; } = new();
+        public KernelConfiguration ErodeKernel { get; set; } = new();
 
         public bool IsDimmingEnabled
         {
@@ -352,6 +349,8 @@ namespace UVtools.Core.Operations
                 RaisePropertyChanged(nameof(ObjectCount));
             }
         }
+
+        public KernelConfiguration DimmingKernel { get; set; } = new();
 
         public uint ErodeObjects => _isErodeEnabled ? 
             (uint)((_erodeEndIteration - _erodeStartIteration) / (decimal)_erodeIterationSteps) + 1 
@@ -438,8 +437,7 @@ namespace UVtools.Core.Operations
         {
             var layers = new Mat[3];
             var anchor = new Point(-1, -1);
-            var kernel = CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(3, 3), anchor);
-
+            
             layers[0] = EmguExtensions.InitMat(SlicerFile.Resolution);
             layers[2] = layers[0].Clone();
             LineType lineType = _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected;
@@ -603,11 +601,12 @@ namespace UVtools.Core.Operations
                         
                     }
 
-                    using (var roi = new Mat(layers[0],
-                        new Rectangle(new Point(currentX, currentY), shape.Size)))
+                    using (var roi = layers[0].Roi(new Rectangle(new Point(currentX, currentY), shape.Size)))
                     using (var erode = new Mat())
                     {
-                        CvInvoke.Erode(shape, erode, ErodeKernel.Matrix, ErodeKernel.Anchor, iteration, BorderType.Reflect101, default);
+                        var tempIterations = iteration;
+                        var kernel = ErodeKernel.GetKernel(ref tempIterations);
+                        CvInvoke.Erode(shape, erode, kernel, ErodeKernel.Anchor, tempIterations, BorderType.Reflect101, default);
                         erode.CopyTo(roi);
                         //addText(roi, count, $"E: {iteration}i");
                     }
@@ -634,7 +633,7 @@ namespace UVtools.Core.Operations
                     }
 
                     count++;
-                    using (var roi = new Mat(layers[1], new Rectangle(new Point(currentX, currentY), shape.Size)))
+                    using (var roi = layers[1].Roi(new Rectangle(new Point(currentX, currentY), shape.Size)))
                     {
                         shape.CopyTo(roi);
                         if (_extrudeText)
@@ -648,14 +647,15 @@ namespace UVtools.Core.Operations
                         }
                     }
 
-                    using (var roi = new Mat(layers[0],
-                        new Rectangle(new Point(currentX, currentY), shape.Size)))
+                    using (var roi = new Mat(layers[0], new Rectangle(new Point(currentX, currentY), shape.Size)))
                     using (var erode = new Mat())
                     using (var target = new Mat())
                     using (var mask = shape.NewBlank())
                     {
                         mask.SetTo(new MCvScalar(byte.MaxValue-brightness));
-                        CvInvoke.Erode(shape, erode, kernel, anchor, DimmingWallThickness, BorderType.Reflect101, default);
+                        int tempIterations = DimmingWallThickness;
+                        var kernel = DimmingKernel.GetKernel(ref tempIterations);
+                        CvInvoke.Erode(shape, erode, kernel, anchor, tempIterations, BorderType.Reflect101, default);
                         //CvInvoke.Subtract(shape, erode, diff);
                         //CvInvoke.BitwiseAnd(diff, mask, target);
                         //CvInvoke.Add(erode, target, target);

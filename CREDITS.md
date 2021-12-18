@@ -66,3 +66,4 @@
 - Tim Savage
 - Peopoly Inc
 - Riccardo Kocmann
+- Joshua Pitts

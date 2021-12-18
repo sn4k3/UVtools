@@ -12,8 +12,12 @@
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <RepositoryUrl>https://github.com/sn4k3/UVtools</RepositoryUrl>
     <RepositoryType>Git</RepositoryType>
-    <Version>2.26.0</Version>
+    <Version>2.27.0</Version>
     <Platforms>AnyCPU;x64</Platforms>
+    <PackageIcon>UVtools.png</PackageIcon>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+    <PackageTags>msla, dlp, resin, printer, slicer, 3d printing, image processing, layers</PackageTags>
   </PropertyGroup>
   
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -40,7 +44,7 @@
     <PackageReference Include="Avalonia.Desktop" Version="0.10.8" />
     <PackageReference Include="Avalonia.Diagnostics" Version="0.10.8" />
     <PackageReference Include="Emgu.CV.runtime.windows" Version="4.5.4.4788" />
-    <PackageReference Include="MessageBox.Avalonia" Version="1.6.0" />
+    <PackageReference Include="MessageBox.Avalonia" Version="1.7.1" />
     <PackageReference Include="ThemeEditor.Controls.ColorPicker" Version="0.10.8" />
   </ItemGroup>
   <ItemGroup>
@@ -71,7 +75,14 @@
       <PackagePath></PackagePath>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="..\README.md" Link="README.md" />
+    <None Include="..\README.md" Link="README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="..\UVtools.CAD\UVtools.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
     <None Include="..\UVtools.CAD\UVtools_demo_file.sl1" Link="UVtools_demo_file.sl1">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

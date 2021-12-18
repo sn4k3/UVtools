@@ -29,20 +29,31 @@ namespace UVtools.Core.Operations
             [Description("Dilate: Expands the boundaries within the object")]
             Dilate = MorphOp.Dilate,
 
-            [Description("Gap closing: Closes small holes inside the objects")]
-            Close = MorphOp.Close,
-
-            [Description("Noise removal: Removes small isolated pixels")]
+            [Description("Noise removal: Removes small isolated pixels (Erode -> Dilate)")]
             Open = MorphOp.Open,
 
-            [Description("Gradient: Removes the interior areas of objects")]
+            [Description("Gap closing: Closes small holes inside the objects (Dilate -> Erode)")]
+            Close = MorphOp.Close,
+            
+            [Description("Gradient: Removes the interior areas of objects and expand the boundaries by half (Dilate - Erode)")]
             Gradient = MorphOp.Gradient,
+
+            // White top-hat transform: This is the difference between the image and its opening.
+            [Description("White tophat: Removes small isolated pixels and only return its affected pixels (Image - Noise removal)")]
+            WhiteTopHat = MorphOp.Tophat,
+
+            // Black top-hat transform: Difference between the closing and the input image.
+            [Description("Black tophat: Closes small holes inside the objects and only return its affected pixels (Gap closing - Image)")]
+            BlackTopHat = MorphOp.Blackhat,
+
+            [Description("Hit or miss: Finds pixels in a given kernel pattern")]
+            HitMiss = MorphOp.HitMiss,
 
             [Description("Offset crop: Like erode but discards the outer pixels")]
             OffsetCrop,
 
-            [Description("Isolate features: Isolates thin features and discards other pixels")]
-            IsolateFeatures,
+            //[Description("Isolate features: Isolates thin features and discards other pixels (Opening - )")]
+            //IsolateFeatures,
         }
         #endregion
 
@@ -79,8 +90,6 @@ namespace UVtools.Core.Operations
                 {
                     case MorphOperations.OffsetCrop:
                         return MorphOp.Erode;
-                    case MorphOperations.IsolateFeatures:
-                        return MorphOp.Open;
                     default:
                         return (MorphOp)_morphOperation;
                 }
@@ -117,8 +126,7 @@ namespace UVtools.Core.Operations
             set => RaiseAndSetIfChanged(ref _chamfer, value);
         }
 
-        [XmlIgnore]
-        public Kernel Kernel { get; set; } = new();
+        public KernelConfiguration Kernel { get; set; } = new();
 
         public override string ToString()
         {
@@ -151,14 +159,7 @@ namespace UVtools.Core.Operations
 
         public override int GetHashCode()
         {
-            unchecked
-            {
-                var hashCode = (int) _morphOperation;
-                hashCode = (hashCode * 397) ^ (int) _iterationsStart;
-                hashCode = (hashCode * 397) ^ (int) _iterationsEnd;
-                hashCode = (hashCode * 397) ^ _chamfer.GetHashCode();
-                return hashCode;
-            }
+            return HashCode.Combine((int)_morphOperation, _iterationsStart, _iterationsEnd, _chamfer);
         }
 
         #endregion
@@ -213,18 +214,20 @@ namespace UVtools.Core.Operations
             }
             else
             {*/
-            CvInvoke.MorphologyEx(target, target, MorphOperationOpenCV, Kernel.Matrix, Kernel.Anchor, iterations, BorderType.Reflect101, default);
+
+            var kernel = Kernel.GetKernel(ref iterations);
+            CvInvoke.MorphologyEx(target, target, MorphOperationOpenCV, kernel, Kernel.Anchor, iterations, BorderType.Reflect101, default);
 
             if (_morphOperation == MorphOperations.OffsetCrop)
             {
                 var originalRoi = GetRoiOrDefault(original);
                 originalRoi.CopyTo(target, target);
             }
-            else if (_morphOperation == MorphOperations.IsolateFeatures)
+            /*else if (_morphOperation == MorphOperations.IsolateFeatures)
             {
                 var originalRoi = GetRoiOrDefault(original);
                 CvInvoke.Subtract(originalRoi, target, target);
-            }
+            }*/
             //}
 
             

@@ -7,7 +7,7 @@
              x:Class="UVtools.WPF.Controls.Tools.ToolMorphControl">
 
   <StackPanel>
-    <Grid RowDefinitions="Auto,10,Auto" ColumnDefinitions="Auto,10,*">
+    <Grid RowDefinitions="Auto,10,Auto,10,Auto" ColumnDefinitions="Auto,10,*">
       <TextBlock
         ToolTip.Tip="Selects the number of iterations/passes to perform on each layer using this mutator.
   &#x0a;Enable the 'Chamfer' to chamfer the iteration over layers, you can use a start iteration higher than end to perform a inverse chamfer.
@@ -63,14 +63,12 @@
 
     </Grid>
 
-
-  <Expander
-      Header="Kernel - Advanced options (Click to expand)"
-      Margin="0,10,0,0">
+      
+  <Expander Header="Kernel - Advanced options (Click to expand)" Margin="0,10,0,0">
     <uc:KernelControl
       Name="KernelCtrl"
-      Margin="0,10,0,0"
-      />
+      Kernel="{Binding $parent[UserControl].DataContext.Operation.Kernel}"
+      Margin="0,10,0,0"/>
   </Expander>
 
   </StackPanel>

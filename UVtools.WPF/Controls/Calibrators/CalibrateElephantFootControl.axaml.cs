@@ -1,5 +1,4 @@
 ﻿using System.Timers;
-using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
@@ -23,8 +22,6 @@ namespace UVtools.WPF.Controls.Calibrators
             set => RaiseAndSetIfChanged(ref _previewImage, value);
         }
 
-        private KernelControl _kernelCtrl;
-        
 
         public CalibrateElephantFootControl()
         {
@@ -33,8 +30,6 @@ namespace UVtools.WPF.Controls.Calibrators
 
             InitializeComponent();
             
-            _kernelCtrl = this.Find<KernelControl>("KernelCtrl");
-
             _timer = new Timer(20)
             {
                 AutoReset = false
@@ -64,18 +59,11 @@ namespace UVtools.WPF.Controls.Calibrators
                             return;
                         }
                     };
-                    ParentWindow.ButtonOkEnabled = Operation.ObjectCount > 0;
+                    if(ParentWindow is not null) ParentWindow.ButtonOkEnabled = Operation.ObjectCount > 0;
                     _timer.Stop();
                     _timer.Start();
                     break;
             }
-        }
-
-        public override bool UpdateOperation()
-        {
-            Operation.ErodeKernel.Matrix = _kernelCtrl.GetMatrix();
-            Operation.ErodeKernel.Anchor = _kernelCtrl.Anchor;
-            return Operation.ErodeKernel.Matrix is not null;
         }
 
         public void UpdatePreview()

@@ -173,7 +173,7 @@ namespace UVtools.Core.Operations
 
             Mat supportsMat = null;
             var anchor = new Point(-1, -1);
-            var kernel = CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(3, 3), anchor);
+            var kernel = EmguExtensions.Kernel3x3Rectangle;
 
 
             uint firstSupportLayerIndex = _maskLayerIndex;
@@ -256,8 +256,7 @@ namespace UVtools.Core.Operations
                                 CvInvoke.Erode(mask, mask, kernel, anchor, operation.WallMargin, BorderType.Reflect101, new MCvScalar());
                                 CvInvoke.Subtract(target, patternMat, target, mask);*/
 
-                            CvInvoke.Erode(target, mask, kernel, anchor, WallMargin, BorderType.Reflect101,
-                                default);
+                            CvInvoke.Erode(target, mask, kernel, anchor, WallMargin, BorderType.Reflect101, default);
                             CvInvoke.Subtract(mask, supportsMat, mask);
                             CvInvoke.Subtract(target, patternMat, target, mask);
                         }

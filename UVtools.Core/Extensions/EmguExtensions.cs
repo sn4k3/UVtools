@@ -32,6 +32,8 @@ namespace UVtools.Core.Extensions
         /// </summary>
         public static readonly MCvScalar BlackColor = new(0, 0, 0, 255);
         //public static readonly MCvScalar TransparentColor = new();
+
+        public static readonly Mat Kernel3x3Rectangle = CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(3, 3), new Point(-1, -1));
         #endregion
 
         #region Initializers methods
@@ -1246,7 +1248,7 @@ namespace UVtools.Core.Extensions
             if (ksize.IsEmpty) ksize = new Size(3, 3);
             Point anchor = new(-1, -1);
             var skeleton = src.NewBlank();
-            using var kernel = CvInvoke.GetStructuringElement(elementShape, ksize, anchor);
+            var kernel = Kernel3x3Rectangle;
 
             var image = src;
             using var temp = new Mat();
@@ -1285,6 +1287,22 @@ namespace UVtools.Core.Extensions
         /// <param name="elementShape"></param>
         public static Mat Skeletonize(this Mat src, Size ksize = default, ElementShape elementShape = ElementShape.Rectangle)
             => src.Skeletonize(out _, ksize, elementShape);
+        #endregion
+
+        #region Kernel methods
+
+        /// <summary>
+        /// Reduces iterations to 1 and generate a kernel to match the iterations effect
+        /// </summary>
+        /// <param name="iterations"></param>
+        /// <param name="elementShape"></param>
+        /// <returns></returns>
+        public static Mat GetDynamicKernel(ref int iterations, ElementShape elementShape = ElementShape.Ellipse)
+        {
+            var size = Math.Max(iterations, 1) * 2 + 1;
+            iterations = 1;
+            return CvInvoke.GetStructuringElement(elementShape, new Size(size, size), new Point(-1, -1));
+        }
         #endregion
     }
 }

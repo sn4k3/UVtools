@@ -511,7 +511,7 @@ namespace UVtools.Core.Operations
             LineType lineType = _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected;
 
             var anchor = new Point(-1, -1);
-            var kernel = CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(3, 3), anchor);
+            var kernel = EmguExtensions.Kernel3x3Rectangle;
 
             var pointTextList = new List<KeyValuePair<Point, string>>();
 

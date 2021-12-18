@@ -14,6 +14,7 @@ using Emgu.CV;
 using Emgu.CV.CvEnum;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Layers;
+using UVtools.Core.Objects;
 
 namespace UVtools.Core.Operations
 {
@@ -191,6 +192,9 @@ namespace UVtools.Core.Operations
             set => RaiseAndSetIfChanged(ref _secondLayerWaitTimeBeforeCure, value);
         }
 
+
+        public KernelConfiguration Kernel { get; set; } = new();
+
         #endregion
 
         #region Constructor
@@ -269,8 +273,7 @@ namespace UVtools.Core.Operations
         protected override bool ExecuteInternally(OperationProgress progress)
         {
             var anchor = new Point(-1, -1);
-            var kernel = CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(3, 3), anchor);
-
+            
             var layers = new Layer[SlicerFile.LayerCount+LayerRangeCount];
 
             // Untouched
@@ -304,14 +307,18 @@ namespace UVtools.Core.Operations
                     //using Mat matOriginal = _secondExposureLayerDifference ? mat.Clone() : null;
                     if (firstErodeIterations > 0 && firstErodeIterations == secondErodeIterations)
                     {
-                        CvInvoke.Erode(mat, mat, kernel, anchor, firstErodeIterations, BorderType.Reflect101, default);
+                        int tempIterations = firstErodeIterations;
+                        var kernel = Kernel.GetKernel(ref tempIterations);
+                        CvInvoke.Erode(mat, mat, kernel, anchor, tempIterations, BorderType.Reflect101, default);
                         firstLayer.LayerMat = mat;
                         firstLayer.CopyImageTo(secondLayer);
 
                         if (_secondLayerDifference && _secondLayerDifferenceOverlapErodeIterations > 0)
                         {
+                            tempIterations = _secondLayerDifferenceOverlapErodeIterations;
+                            kernel = Kernel.GetKernel(ref tempIterations);
                             using var matErode = new Mat();
-                            CvInvoke.Erode(mat, matErode, kernel, anchor, _secondLayerDifferenceOverlapErodeIterations, BorderType.Reflect101, default);
+                            CvInvoke.Erode(mat, matErode, kernel, anchor, tempIterations, BorderType.Reflect101, default);
                             //CvInvoke.Threshold(matErode, matErode, 127, 255, ThresholdType.Binary);
                             CvInvoke.Subtract(mat, matErode, mat);
                             secondLayer.LayerMat = mat;
@@ -327,15 +334,19 @@ namespace UVtools.Core.Operations
                         Mat secondMat = null;
                         if (firstErodeIterations > 0)
                         {
+                            int tempIterations = firstErodeIterations;
+                            var kernel = Kernel.GetKernel(ref tempIterations);
                             firstMat = new Mat();
-                            CvInvoke.Erode(mat, firstMat, kernel, anchor, firstErodeIterations, BorderType.Reflect101, default);
+                            CvInvoke.Erode(mat, firstMat, kernel, anchor, tempIterations, BorderType.Reflect101, default);
                             firstLayer.LayerMat = firstMat;
                         }
 
                         if (secondErodeIterations > 0)
                         {
+                            int tempIterations = secondErodeIterations;
+                            var kernel = Kernel.GetKernel(ref tempIterations);
                             secondMat = new Mat();
-                            CvInvoke.Erode(mat, secondMat, kernel, anchor, secondErodeIterations, BorderType.Reflect101, default);
+                            CvInvoke.Erode(mat, secondMat, kernel, anchor, tempIterations, BorderType.Reflect101, default);
                         }
 
                         if(firstMat is not null && _secondLayerDifference)
@@ -345,7 +356,9 @@ namespace UVtools.Core.Operations
                                 if (_secondLayerDifferenceOverlapErodeIterations > 0 &&
                                     firstErodeIterations + _secondLayerDifferenceOverlapErodeIterations != secondErodeIterations)
                                 {
-                                    CvInvoke.Erode(firstMat, firstMat, kernel, anchor, _secondLayerDifferenceOverlapErodeIterations, BorderType.Reflect101, default);
+                                    int tempIterations = _secondLayerDifferenceOverlapErodeIterations;
+                                    var kernel = Kernel.GetKernel(ref tempIterations);
+                                    CvInvoke.Erode(firstMat, firstMat, kernel, anchor, tempIterations, BorderType.Reflect101, default);
                                     //CvInvoke.Threshold(firstMat, firstMat, 127, 255, ThresholdType.Binary);
                                 }
 

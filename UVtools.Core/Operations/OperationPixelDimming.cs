@@ -666,7 +666,7 @@ namespace UVtools.Core.Operations
         {
             if (arguments is null || arguments.Length < 2) return false;
             var anchor = new Point(-1, -1);
-            var kernel = CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(3, 3), anchor);
+            var kernel = EmguExtensions.Kernel3x3Rectangle;
 
             uint layerIndex = Convert.ToUInt32(arguments[0]);
             Mat patternMask = (Mat)arguments[1];

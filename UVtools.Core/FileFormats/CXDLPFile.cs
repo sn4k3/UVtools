@@ -410,6 +410,18 @@ namespace UVtools.Core.FileFormats
             new(290, 290)
         };
 
+        public override uint[] AvailableVersions { get; } = { 2, 3 };
+
+        public override uint Version
+        {
+            get => HeaderSettings.Version;
+            set
+            {
+                base.Version = value;
+                HeaderSettings.Version = (ushort)base.Version;
+            }
+        }
+
         public override uint ResolutionX
         {
             get => HeaderSettings.ResolutionX;

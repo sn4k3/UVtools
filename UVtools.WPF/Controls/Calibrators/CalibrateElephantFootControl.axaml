@@ -186,7 +186,6 @@
                        IsChecked="{Binding Operation.IsErodeEnabled}"
                        Content="Enable"/>
 
-
             <TextBlock Grid.Row="2" Grid.Column="0"
                          VerticalAlignment="Center"
                          Text="Iterations range:"/>
@@ -227,12 +226,11 @@
 
           </Grid>
 
-          <Border
-              Margin="0,10,0,0">
+          <Border Margin="0,10,0,0">
             <Expander Header="Kernel - Advanced options (Click to expand)">
-              <controls:KernelControl
-                  Name="KernelCtrl"
-                  Margin="0,10,0,0"/>
+              <controls:KernelControl Name="ErodeKernelCtrl"
+                                      Kernel="{Binding $parent[UserControl].DataContext.Operation.ErodeKernel}"
+                                      Margin="0,10,0,0"/>
             </Expander>
           </Border>
 
@@ -333,7 +331,18 @@
                          HorizontalAlignment="Center"
                          Text="{Binding Operation.DimmingEndBrightnessPercent, StringFormat=(\{0\}%)}"/>
             </Grid>
-          </StackPanel>
+
+              <Border Margin="0,10,0,0">
+                  <Expander Header="Kernel - Advanced options (Click to expand)">
+                      <controls:KernelControl Name="DimmingKernelCtrl"
+                                              Kernel="{Binding $parent[UserControl].DataContext.Operation.DimmingKernel}"
+                                              Margin="0,10,0,0"/>
+                  </Expander>
+              </Border>
+
+
+
+		  </StackPanel>
 
       </Expander>
 

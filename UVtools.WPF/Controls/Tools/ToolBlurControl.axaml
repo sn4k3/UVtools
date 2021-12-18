@@ -38,7 +38,7 @@
         />
     </Grid>
 
-    <uc:KernelControl Name="KernelCtrl"
+    <uc:KernelControl Name="KernelCtrl" Kernel="{Binding $parent[UserControl].DataContext.Operation.Kernel}"
       IsVisible="{Binding $parent[UserControl].DataContext.Operation.IsKernelVisible}"/>
     
   </StackPanel>

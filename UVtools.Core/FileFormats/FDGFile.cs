@@ -38,7 +38,7 @@ namespace UVtools.Core.FileFormats
         #region Header
         public class Header
         {
-            private string _machineName;
+            private string _machineName = DefaultMachineName;
 
             /// <summary>
             /// Gets a magic number identifying the file type.
@@ -184,7 +184,7 @@ namespace UVtools.Core.FileFormats
             /// <summary>
             /// Gets the machine size in bytes
             /// </summary>
-            [FieldOrder(31)] public uint MachineNameSize { get; set; }
+            [FieldOrder(31)] public uint MachineNameSize { get; set; } = (uint)(string.IsNullOrEmpty(DefaultMachineName) ? 0 : DefaultMachineName.Length);
 
             /// <summary>
             /// Gets the machine name. string is not nul-terminated.
@@ -197,6 +197,7 @@ namespace UVtools.Core.FileFormats
                 get => _machineName;
                 set
                 {
+                    if (string.IsNullOrEmpty(value)) value = DefaultMachineName;
                     _machineName = value;
                     MachineNameSize = string.IsNullOrEmpty(_machineName) ? 0 : (uint)_machineName.Length;
                 }
@@ -659,6 +660,18 @@ namespace UVtools.Core.FileFormats
             new(200, 125)
         };
 
+        public override uint[] AvailableVersions { get; } = { 1, 2 };
+
+        public override uint Version
+        {
+            get => HeaderSettings.Version;
+            set
+            {
+                base.Version = value;
+                HeaderSettings.Version = (ushort)base.Version;
+            }
+        }
+
         public override uint ResolutionX
         {
             get => HeaderSettings.ResolutionX;
@@ -873,11 +886,7 @@ namespace UVtools.Core.FileFormats
         public override string MachineName
         {
             get => HeaderSettings.MachineName;
-            set
-            {
-                base.MachineName = HeaderSettings.MachineName = value;
-                HeaderSettings.MachineNameSize = (uint)HeaderSettings.MachineName.Length;
-            }
+            set => base.MachineName = HeaderSettings.MachineName = value;
         }
 
         public override object[] Configs => new object[] { HeaderSettings };

@@ -1,5 +1,31 @@
 # Changelog
 
+## 18/12/2021 - v2.27.0
+
+- **Tool - Morph:**
+   - (Add) Operator: White tophat - Removes small isolated pixels and only return its affected pixels (Image - Noise removal)
+   - (Add) Operator: Black tophat - Closes small holes inside the objects and only return its affected pixels (Gap closing - Image)
+   - (Add) Operator: Hit or miss - Finds pixels in a given kernel pattern
+   - (Remove) Operator: 'Isolate features' as that is the same as the 'White tophat' and is already inbuilt into OpenCV
+- **Kernels:**
+   - (Add) Option: Use dynamic kernel to enhancement the quality of the borders (#367)
+   - (Add) Kernels are now saved with the operation profile
+- **PrusaSlicer:**
+   - (Add) Support to slice files to be converted for encrypted CTB format
+   - (Add) Printer: Elegoo Mars 3 (#370)
+   - (Add) Printer: EPAX E10 5K
+   - (Add) Printer: EPAX X10 5K
+   - (Add) Printer: Phrozen Sonic Mini 8K
+   - (Add) Printer: Phrozen Sonic Mega 8K
+   - (Fix) Printer: AnyCubic Photon Mono 4K - display size (#369)
+   - (Fix) Printer: AnyCubic Photon Mono X 6K - display size (#369)
+- (Add) Tool - Double exposure: Kernel configuration
+- (Add) Tool - Pixel arithmetic: Kernel configuration
+- (Add) Calibration - Elephant foot: Use dynamic kernel to enhancement the quality of the borders (#367)
+- (Fix) Calibrate - Elephant foot: Redo (Ctrl + Z) the operation was crashing the application
+- (Fix) CTB, PHZ, FDG: Converting files with a null machine name would cause a exception
+- (Fix) Anycubic files: Bottom lift and speed were showing default values instead of real used value
+
 ## 06/12/2021 - v2.26.0
 
 - **File formats - Photon Workshop: (#360)**

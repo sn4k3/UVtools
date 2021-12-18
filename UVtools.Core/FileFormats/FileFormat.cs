@@ -10,6 +10,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data;
 using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
@@ -68,6 +69,8 @@ namespace UVtools.Core.FileFormats
 
         public const byte DefaultBottomLightPWM = 255;
         public const byte DefaultLightPWM = 255;
+
+        public const string DefaultMachineName = "Unknown";
 
         public const byte MaximumAntiAliasing = 16;
 
@@ -772,6 +775,8 @@ namespace UVtools.Core.FileFormats
         private bool _suppressRebuildGCode;
 
         private readonly Timer _queueTimerPrintTime = new(QueueTimerPrintTime){AutoReset = false};
+        private uint _version;
+
         #endregion
 
         #region Properties
@@ -878,6 +883,23 @@ namespace UVtools.Core.FileFormats
         public string FileExtension => Path.GetExtension(FileFullPath);
         public string FilenameNoExt => GetFileNameStripExtensions(FileFullPath);
 
+        public virtual uint[] AvailableVersions { get; }
+
+        /// <summary>
+        /// Gets or sets the version of this file format
+        /// </summary>
+        public virtual uint Version
+        {
+            get => _version;
+            set
+            {
+                if (AvailableVersions is not null && !AvailableVersions.Contains(value))
+                {
+                    throw new VersionNotFoundException($"Version {value} not known for this file format");
+                }
+                _version = value;
+            }
+        }
 
         /// <summary>
         /// Gets the thumbnails count present in this file format
@@ -2569,7 +2591,7 @@ namespace UVtools.Core.FileFormats
             progress.Reset(OperationProgress.StatusEncodeLayers, LayerCount);
 
 #if !DEBUG
-            if (this is CTBEncryptedFile)
+            if (this is CTBEncryptedFile file && file.Settings.LayerPointersOffset > 0)
             {
                 throw new NotSupportedException(CTBEncryptedFile.Preamble);
             }

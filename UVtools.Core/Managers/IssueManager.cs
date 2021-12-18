@@ -405,30 +405,26 @@ namespace UVtools.Core.Managers
                                         uint pixelsSupportingIsland = 0;
 
                                         for (int y = rect.Y; y < rect.Bottom; y++)
-                                            for (int x = rect.X; x < rect.Right; x++)
+                                        for (int x = rect.X; x < rect.Right; x++)
+                                        {
+                                            int pixel = step * y + x;
+                                            if (
+                                                labelSpan[pixel] !=
+                                                i || // Background pixel or a pixel from another component within the bounding rectangle
+                                                span[pixel] < islandConfig.RequiredPixelBrightnessToProcessCheck // Low brightness, ignore
+                                            ) continue;
+
+                                            points.Add(new Point(x, y));
+
+                                            if (previousSpan[pixel] >= islandConfig.RequiredPixelBrightnessToSupport)
                                             {
-                                                int pixel = step * y + x;
-                                                if (
-                                                    labelSpan[pixel] !=
-                                                    i || // Background pixel or a pixel from another component within the bounding rectangle
-                                                    span[pixel] <
-                                                    islandConfig
-                                                        .RequiredPixelBrightnessToProcessCheck // Low brightness, ignore
-                                                ) continue;
-
-                                                points.Add(new Point(x, y));
-
-                                                if (previousSpan[pixel] >=
-                                                    islandConfig.RequiredPixelBrightnessToSupport)
-                                                {
-                                                    pixelsSupportingIsland++;
-                                                }
+                                                pixelsSupportingIsland++;
                                             }
+                                        }
 
                                         if (points.Count == 0) continue; // Should never happen
 
-                                        var requiredSupportingPixels = Math.Max(1,
-                                            points.Count * islandConfig.RequiredPixelsToSupportMultiplier);
+                                        var requiredSupportingPixels = Math.Max(1, points.Count * islandConfig.RequiredPixelsToSupportMultiplier);
 
                                         /*if (pixelsSupportingIsland >= islandConfig.RequiredPixelsToSupport)
                                                 isIsland = false; // Not a island, bounding is strong, i think...
@@ -459,11 +455,8 @@ namespace UVtools.Core.Managers
                                             CvInvoke.Threshold(subtractedImage, subtractedImage, 127, 255,
                                                 ThresholdType.Binary);
 
-                                            CvInvoke.Erode(subtractedImage, subtractedImage,
-                                                CvInvoke.GetStructuringElement(ElementShape.Rectangle,
-                                                    new Size(3, 3), anchor),
-                                                anchor, overhangConfig.ErodeIterations, BorderType.Default,
-                                                new MCvScalar());
+                                            CvInvoke.Erode(subtractedImage, subtractedImage, EmguExtensions.Kernel3x3Rectangle,
+                                                anchor, overhangConfig.ErodeIterations, BorderType.Default, default);
 
                                             var subtractedSpan = subtractedImage.GetDataByteSpan();
                                             var subtractedStep = subtractedImage.GetRealStep();
@@ -525,11 +518,8 @@ namespace UVtools.Core.Managers
                                     CvInvoke.Threshold(subtractedImage, subtractedImage, 127, 255,
                                         ThresholdType.Binary);
 
-                                    CvInvoke.Erode(subtractedImage, subtractedImage,
-                                        CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(3, 3),
-                                            anchor),
-                                        anchor, overhangConfig.ErodeIterations, BorderType.Default,
-                                        new MCvScalar());
+                                    CvInvoke.Erode(subtractedImage, subtractedImage, EmguExtensions.Kernel3x3Rectangle,
+                                        anchor, overhangConfig.ErodeIterations, BorderType.Default, default);
 
                                     CvInvoke.FindNonZero(subtractedImage, vecPoints);
                                     if (vecPoints.Size >= overhangConfig.RequiredPixelsToConsider)

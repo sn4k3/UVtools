@@ -939,6 +939,9 @@
               <Component Id="owcAB1BB9D30236925105FC2E5CE2ED6D1A" Guid="8ba56c46-b915-5a96-dde6-e9c2084379d8" Win64="yes">
                 <File Id="owfAB1BB9D30236925105FC2E5CE2ED6D1A" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Elegoo Mars 2 Pro.ini" KeyPath="yes" />
               </Component>
+              <Component Id="owc7D701ADCEF568986B3894C6F9A2708E6" Guid="2abd1583-abd3-db42-7971-994c6cd88bed" Win64="yes">
+                <File Id="owf7D701ADCEF568986B3894C6F9A2708E6" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Elegoo Mars 3.ini" KeyPath="yes" />
+              </Component>
               <Component Id="owc99BA1976940D6CE22287790F6985BB6A" Guid="ce2d1d6b-39d2-a53b-8702-6412a7c5afc0" Win64="yes">
                 <File Id="owf99BA1976940D6CE22287790F6985BB6A" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Elegoo Mars C.ini" KeyPath="yes" />
               </Component>
@@ -947,6 +950,9 @@
               </Component>
               <Component Id="owc87C1B7E42025B6AC6C87D1D36775BBDE" Guid="b9b191bf-dadb-4140-1220-41a04f4cbc28" Win64="yes">
                 <File Id="owf87C1B7E42025B6AC6C87D1D36775BBDE" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Elegoo Saturn.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owc39BC270594983D7C26A0559290C2FE12" Guid="38c1ca54-b6f1-475b-027d-90166b969eac" Win64="yes">
+                <File Id="owf39BC270594983D7C26A0559290C2FE12" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\EPAX E10 5K.ini" KeyPath="yes" />
               </Component>
               <Component Id="owc4C4D2614316012195906A5E4914A2378" Guid="47ad31b3-87d5-b2bb-ba98-e95100744f0b" Win64="yes">
                 <File Id="owf4C4D2614316012195906A5E4914A2378" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\EPAX E10 Mono.ini" KeyPath="yes" />
@@ -959,6 +965,9 @@
               </Component>
               <Component Id="owc6CD1D731C774A9FC303E119C78FDD2CD" Guid="e75de2d4-c7e2-71ee-338a-0ffcc7da4607" Win64="yes">
                 <File Id="owf6CD1D731C774A9FC303E119C78FDD2CD" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\EPAX X10 4K Mono.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owcFA59E2BFF4457899ECCB40C3A067893F" Guid="30d6cea5-64c9-e38d-d265-beb2e5bd790f" Win64="yes">
+                <File Id="owfFA59E2BFF4457899ECCB40C3A067893F" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\EPAX X10 5K.ini" KeyPath="yes" />
               </Component>
               <Component Id="owcAAF100D9FA50AAFA27C478251BD36C84" Guid="5e816d43-7553-1fe3-d9f9-d1bb491c0c89" Win64="yes">
                 <File Id="owfAAF100D9FA50AAFA27C478251BD36C84" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\EPAX X10.ini" KeyPath="yes" />
@@ -1068,11 +1077,17 @@
               <Component Id="owcD15E0DC3059CA06E77AAFA92F637FC45" Guid="2445b075-6cd5-7cac-0619-61929f0bbf89" Win64="yes">
                 <File Id="owfD15E0DC3059CA06E77AAFA92F637FC45" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Phrozen Sonic 4K.ini" KeyPath="yes" />
               </Component>
+              <Component Id="owc0665E0F6FD44E9D7F66E4ACD0A203532" Guid="89b8be21-9c85-1025-ba6d-c735970e5987" Win64="yes">
+                <File Id="owf0665E0F6FD44E9D7F66E4ACD0A203532" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Phrozen Sonic Mega 8K.ini" KeyPath="yes" />
+              </Component>
               <Component Id="owc36D6BBE9B18A4A65DFD3D79CF21B429B" Guid="2596c453-e070-b45d-df5c-9669e1a8c625" Win64="yes">
                 <File Id="owf36D6BBE9B18A4A65DFD3D79CF21B429B" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Phrozen Sonic Mighty 4K.ini" KeyPath="yes" />
               </Component>
               <Component Id="owc89B07C29965B83AB351559075302123F" Guid="678cf4a8-183b-35b9-47fa-ab71d6ec8723" Win64="yes">
                 <File Id="owf89B07C29965B83AB351559075302123F" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Phrozen Sonic Mini 4K.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owcA955DD79DDB53B6B23A8E93C8FF69184" Guid="9fb9f309-4ca6-162f-ccb4-fb1c8b93585f" Win64="yes">
+                <File Id="owfA955DD79DDB53B6B23A8E93C8FF69184" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Phrozen Sonic Mini 8K.ini" KeyPath="yes" />
               </Component>
               <Component Id="owc62BB0F9A288719E16F573299E1D996F7" Guid="f1f6e606-dfa0-07b5-2cae-26f89b424056" Win64="yes">
                 <File Id="owf62BB0F9A288719E16F573299E1D996F7" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Phrozen Sonic Mini.ini" KeyPath="yes" />

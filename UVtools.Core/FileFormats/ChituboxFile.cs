@@ -283,7 +283,7 @@ namespace UVtools.Core.FileFormats
 
         public class SlicerInfo
         {
-            private string _machineName;
+            private string _machineName = DefaultMachineName;
             [FieldOrder(0)] public float BottomLiftHeight2 { get; set; }
             [FieldOrder(1)] public float BottomLiftSpeed2    { get; set; }
             [FieldOrder(2)] public float LiftHeight2         { get; set; }
@@ -300,7 +300,7 @@ namespace UVtools.Core.FileFormats
             /// <summary>
             /// Gets the machine size in bytes
             /// </summary>
-            [FieldOrder(8)] public uint MachineNameSize    { get; set; }
+            [FieldOrder(8)] public uint MachineNameSize { get; set; } = (uint)(string.IsNullOrEmpty(DefaultMachineName) ? 0 : DefaultMachineName.Length);
 
             /// <summary>
             /// Gets the parameter used to control encryption.
@@ -343,6 +343,7 @@ namespace UVtools.Core.FileFormats
                 get => _machineName;
                 set
                 {
+                    if (string.IsNullOrEmpty(value)) value = DefaultMachineName;
                     _machineName = value;
                     MachineNameSize = string.IsNullOrEmpty(_machineName) ? 0 : (uint)_machineName.Length;
                 }
@@ -1197,13 +1198,23 @@ namespace UVtools.Core.FileFormats
             } 
         }
 
-
-
         public override Size[] ThumbnailsOriginalSize { get; } =
         {
             new(400, 300),
             new(200, 125)
         };
+
+        public override uint[] AvailableVersions { get; } = { 1, 2, 3, 4 };
+
+        public override uint Version
+        {
+            get => HeaderSettings.Version;
+            set
+            {
+                base.Version = value;
+                HeaderSettings.Version = base.Version;
+            }
+        }
 
         public override uint ResolutionX
         {
@@ -1637,24 +1648,22 @@ namespace UVtools.Core.FileFormats
         public override string MachineName
         {
             get => SlicerInfoSettings.MachineName;
-            set
-            {
-                base.MachineName = SlicerInfoSettings.MachineName = value;
-                SlicerInfoSettings.MachineNameSize = (uint) SlicerInfoSettings.MachineName.Length;
-            }
+            set => base.MachineName = SlicerInfoSettings.MachineName = value;
         }
 
         public override object[] Configs
         {
             get
             {
-                if (HeaderSettings.Version <= 1)
-                    return new object[] { HeaderSettings };
-
-                if (HeaderSettings.Version <= 3)
-                    return new object[] {HeaderSettings, PrintParametersSettings, SlicerInfoSettings};
-                
-                return new object[] { HeaderSettings, PrintParametersSettings, SlicerInfoSettings, PrintParametersV4Settings };
+                return HeaderSettings.Version switch
+                {
+                    <= 1 => new object[] { HeaderSettings },
+                    <= 3 => new object[] { HeaderSettings, PrintParametersSettings, SlicerInfoSettings },
+                    _ => new object[] // v4
+                    {
+                        HeaderSettings, PrintParametersSettings, SlicerInfoSettings, PrintParametersV4Settings
+                    }
+                };
             }
         }
 
