@@ -22,6 +22,7 @@
 - (Add) Tool - Double exposure: Kernel configuration
 - (Add) Tool - Pixel arithmetic: Kernel configuration
 - (Add) Calibration - Elephant foot: Use dynamic kernel to enhancement the quality of the borders (#367)
+- (Upgrade) .NET from 5.0.12 to 5.0.13
 - (Fix) Calibrate - Elephant foot: Redo (Ctrl + Z) the operation was crashing the application
 - (Fix) CTB, PHZ, FDG: Converting files with a null machine name would cause a exception
 - (Fix) Anycubic files: Bottom lift and speed were showing default values instead of real used value
