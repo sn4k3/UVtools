@@ -19,7 +19,7 @@ Before continue, please look/search on closed topics if your case was already be
 
 ```
 1. Go to "UVtools -> Help -> About"
-2. Click on "Copy information"
+2. Right click on "Copy information" -> "Copy the essential information"
 3. Paste that infomation bellow this line:
 
 ```
