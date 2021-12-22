@@ -26,6 +26,17 @@ class FixedEncoder : System.Text.UTF8Encoding {
     }
 }
 
+function WriteXmlToScreen ([xml]$xml)
+{
+    $StringWriter = New-Object System.IO.StringWriter;
+    $XmlWriter = New-Object System.Xml.XmlTextWriter $StringWriter;
+    $XmlWriter.Formatting = "indented";
+    $xml.WriteTo($XmlWriter);
+    $XmlWriter.Flush();
+    $StringWriter.Flush();
+    Write-Output $StringWriter.ToString();
+}
+
 # Script working directory
 Set-Location $PSScriptRoot\..
 
@@ -70,8 +81,143 @@ if([string]::IsNullOrWhiteSpace($version)){
 
 # MSI Variables
 $installers = @("UVtools.InstallerMM", "UVtools.Installer")
-$msiSourceFile = "UVtools.Installer\bin\x64\Release\UVtools.msi"
+$msiOutputFile = "UVtools.Installer\bin\x64\Release\UVtools.msi"
+$msiComponentsFile = "UVtools.InstallerMM\UVtools.InstallerMM.wxs"
+$msiSourceFiles = "$(Get-Location)\$publishFolder\win-x64"
 $msbuild = "`"${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\MSBuild.exe`" /t:Build /p:Configuration=$buildWith /p:MSIProductVersion=$version"
+
+function wixCleanUpElement([System.Xml.XmlElement]$element, [string]$rootPath)
+{
+    $files = Get-ChildItem -Path $rootPath -File -Force -ErrorAction SilentlyContinue
+    $folders = Get-ChildItem -Path $rootPath -Directory -Force -ErrorAction SilentlyContinue
+    
+    # Removing not existant files
+    foreach($e in $element.Component)
+    {
+        $found = $false
+        foreach($file in $files)
+        {
+            if($e.File.Source.EndsWith("\$($file.Name)")){
+                $found = $true
+                break
+            }
+        }
+
+        if ($found -eq $false){
+            # File not found on this directory, remove element
+            Write-Host("WIX: File '$($e.File.Source)' does not exist anymore, removing...")
+            $e.ParentNode.RemoveChild($e) | Out-Null
+        }
+    }
+
+    # Adding not existant files
+    foreach($file in $files)
+    {
+        $found = $false
+        foreach($e in $element.Component)
+        {
+            if($null -ne $e.File.Source -and $e.File.Source.EndsWith("\$($file.Name)")){
+                $found = $true
+                break
+            }
+        }
+
+        if ($found -eq $false){
+            # File not found on manifest, add element
+            $guid = [guid]::NewGuid().ToString().ToUpper()
+            $guidNoSeparator = $guid.Replace('-', '')
+            $filePath = $file.FullName.Substring($msiSourceFiles.Length)
+            while ($filePath.StartsWith('\'))
+            {
+                $filePath = $filePath.Remove(0, 1)
+            }
+            Write-Host("WIX: File '$filePath' does not exist on manifest, adding with GUID: $guid")
+            $xmlComponent = $element.OwnerDocument.CreateElement("Component", $element.OwnerDocument.DocumentElement.NamespaceURI)
+            $xmlComponent.SetAttribute("Id", "owc$guidNoSeparator")
+            $xmlComponent.SetAttribute("Guid", $guid)
+
+            $xmlFile = $element.OwnerDocument.CreateElement("File", $element.OwnerDocument.DocumentElement.NamespaceURI)
+            $xmlFile.SetAttribute("Id", "owf$guidNoSeparator")
+            $xmlFile.SetAttribute("Source", "`$(var.SourceDir)\$filePath")
+            $xmlFile.SetAttribute("KeyPath", 'yes')
+
+            $xmlComponent.AppendChild($xmlFile) | Out-Null
+            $element.AppendChild($xmlComponent) | Out-Null
+        }
+    }
+    
+    # Removing not existant folters
+    foreach($e in $element.Directory)
+    {
+        $found = $false
+        foreach($folder in $folders)
+        {
+            if($e.Name -eq $folder.Name){
+                $found = $true
+                break
+            }
+        }
+
+        if ($found -eq $false){
+            # Directory not found on this directory, remove element
+            Write-Host("WIX: Directory '$($e.Name)' does not exist anymore, removing...")
+            $e.ParentNode.RemoveChild($e) | Out-Null
+        }
+    }
+    
+    # Adding not existant directories
+    foreach($folder in $folders)
+    {
+        $foundDirectoryElement = $null
+        foreach($e in $element.Directory)
+        {
+            #Write-Host("$($e.Name) == $($folder.Name)")
+            if($null -ne $e.Name -and $e.Name -eq $folder.Name){
+                $foundDirectoryElement = $e
+                break
+            }
+        }
+
+        if ($null -eq $foundDirectoryElement){
+            # Folder not found on manifest, add element
+            $guid = [guid]::NewGuid().ToString().ToUpper()
+            $guidNoSeparator = $guid.Replace('-', '')
+
+            $directoryRelativePath = $folder.FullName.Substring($msiSourceFiles.Length)
+            while ($directoryRelativePath.StartsWith('\'))
+            {
+                $directoryRelativePath = $directoryRelativePath.Remove(0, 1)
+            }
+
+            Write-Host("WIX: Directory '$directoryRelativePath' does not exist on manifest, adding with GUID: $guid")
+            $xmlDirectory = $element.OwnerDocument.CreateElement("Directory", $element.OwnerDocument.DocumentElement.NamespaceURI)
+            $xmlDirectory.SetAttribute("Id", "owd$guidNoSeparator")
+            $xmlDirectory.SetAttribute("Name", $folder.Name)
+            $element.AppendChild($xmlDirectory) | Out-Null
+            
+            wixCleanUpElement $xmlDirectory $folder.FullName
+        }else{
+            # Folder found on manifest, recursive from this folder
+            wixCleanUpElement $foundDirectoryElement $folder.FullName
+        }
+    }
+}
+
+
+<#
+$msiComponentsXml = [Xml] (Get-Content $msiComponentsFile)
+foreach($element in $msiComponentsXml.Wix.Module.Directory.Directory)
+{
+    if($element.Id -eq 'MergeRedirectFolder')
+    {
+        wixCleanUpElement $element $msiSourceFiles
+        WriteXmlToScreen($msiComponentsXml);
+        $msiComponentsXml.Save("$publishFolder\test.xml")
+        return
+        break
+    }
+}
+#>
 
 Write-Output "
 ####################################
@@ -257,24 +403,42 @@ if($null -ne $enableMSI -and $enableMSI)
 {
     $deployStopWatch.Restart()
     $runtime = 'win-x64'
-    $msiTargetFile = "$publishFolder\${software}_${runtime}_v$version.msi"
-    Write-Output "################################
-    Building: $runtime MSI Installer"
+    if (Test-Path -Path $msiSourceFiles) {
+        $msiTargetFile = "$publishFolder\${software}_${runtime}_v$version.msi"
+        Write-Output "################################"
+        Write-Output "Clean and build MSI components manifest file"
+        $msiComponentsXml = [Xml] (Get-Content $msiComponentsFile)
+        foreach($element in $msiComponentsXml.Wix.Module.Directory.Directory)
+        {
+            if($element.Id -eq 'MergeRedirectFolder')
+            {
+                wixCleanUpElement $element $msiSourceFiles
+                $msiComponentsXml.Save($msiComponentsFile)
+                break
+            }
+        }
 
-    foreach($installer in $installers)
-    {
-        # Clean and build MSI
-        Remove-Item "$installer\obj" -Recurse -ErrorAction Ignore
-        Remove-Item "$installer\bin" -Recurse -ErrorAction Ignore
-        Invoke-Expression "& $msbuild $installer\$installer.wixproj"
+        Write-Output "Building: $runtime MSI Installer"
+
+        foreach($installer in $installers)
+        {
+            # Clean and build MSI
+            Remove-Item "$installer\obj" -Recurse -ErrorAction Ignore
+            Remove-Item "$installer\bin" -Recurse -ErrorAction Ignore
+            Invoke-Expression "& $msbuild $installer\$installer.wixproj"
+        }
+
+        Write-Output "Coping $runtime MSI to: $msiTargetFile"
+        Copy-Item $msiOutputFile $msiTargetFile
+
+        Write-Output "Took: $($deployStopWatch.Elapsed)
+        ################################
+        "
     }
-
-    Write-Output "Coping $runtime MSI to: $msiTargetFile"
-    Copy-Item $msiSourceFile $msiTargetFile
-
-    Write-Output "Took: $($deployStopWatch.Elapsed)
-    ################################
-    "
+    else {
+        Write-Error "MSI build is enabled but the runtime '$runtime' is not found."
+    }
+    
 }
 
 
