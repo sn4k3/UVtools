@@ -246,7 +246,14 @@ namespace UVtools.Core.FileFormats
 
             [FieldOrder(3)] [FieldLength(nameof(MaterialNameSize))] public string MaterialName { get; set; }
 
-            //[FieldOrder(4)] [FieldOffset(67 - SoftwareNameSize - MaterialNameSize)] public PageBreak PageBreak { get; set; } = new();
+            [FieldOrder(4)] public uint Padding1 { get; set; }
+            [FieldOrder(5)] public uint Padding2 { get; set; }
+            [FieldOrder(6)] public uint Padding3 { get; set; }
+            [FieldOrder(7)] public uint Padding4 { get; set; }
+            [FieldOrder(8)] public byte Padding5 { get; set; }
+            [FieldOrder(9)] public byte LightPWM { get; set; } = byte.MaxValue;
+            [FieldOrder(10)] public ushort MyControl { get; set; }
+            [FieldOrder(11)] public PageBreak PageBreak { get; set; } = new();
         }
 
         #endregion
@@ -595,7 +602,7 @@ namespace UVtools.Core.FileFormats
             set => base.MaterialName = SlicerInfoV3Settings.MaterialName = value;
         }
 
-        public override object[] Configs => new object[] { HeaderSettings, SlicerInfoSettings, FooterSettings };
+        public override object[] Configs => new object[] { HeaderSettings, SlicerInfoSettings, SlicerInfoV3Settings, FooterSettings };
 
         #endregion
 
@@ -683,6 +690,11 @@ namespace UVtools.Core.FileFormats
             //Helpers.SerializeWriteFileStream(outputFile, preLayers);
             //Helpers.SerializeWriteFileStream(outputFile, pageBreak);
             outputFile.WriteBytes(pageBreak);
+
+            if (HeaderSettings.Version >= 2 && SlicerInfoV3Settings.MyControl > 0)
+            {
+                Helpers.SerializeWriteFileStream(outputFile, SlicerInfoV3Settings);
+            }
 
             var layerBytes = new List<byte>[LayerCount];
             foreach (var batch in BatchLayersIndexes())
@@ -875,7 +887,17 @@ namespace UVtools.Core.FileFormats
             Debug.WriteLine(SlicerInfoSettings);
 
             LayerManager.Init(HeaderSettings.LayerCount, DecodeType == FileDecodeType.Partial);
-            inputFile.Seek(LayerCount * 4 + 2, SeekOrigin.Current); // Skip pre layers
+            uint firstPreLayerArea = inputFile.ReadUIntBigEndian();
+            inputFile.Seek(LayerCount * 4 + 2 - 4, SeekOrigin.Current); // Skip pre layers
+            uint afterPreLayersUint = inputFile.ReadUIntBigEndian();
+            inputFile.Seek(-4, SeekOrigin.Current);
+
+            if (HeaderSettings.Version >= 2 && firstPreLayerArea != afterPreLayersUint) // New informative header v3
+            {
+                SlicerInfoV3Settings = Helpers.Deserialize<SlicerInfoV3>(inputFile);
+                SlicerInfoV3Settings.MyControl = 1; // To know v3 is present
+            }
+
 
             if (DecodeType == FileDecodeType.Full)
             {

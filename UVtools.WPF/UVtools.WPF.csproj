@@ -12,7 +12,7 @@
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <RepositoryUrl>https://github.com/sn4k3/UVtools</RepositoryUrl>
     <RepositoryType>Git</RepositoryType>
-    <Version>2.27.0</Version>
+    <Version>2.27.1</Version>
     <Platforms>AnyCPU;x64</Platforms>
     <PackageIcon>UVtools.png</PackageIcon>
     <PackageReadmeFile>README.md</PackageReadmeFile>
@@ -38,14 +38,14 @@
     <NoWarn>1701;1702;</NoWarn>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Avalonia" Version="0.10.8" />
+    <PackageReference Include="Avalonia" Version="0.10.11" />
     <PackageReference Include="Avalonia.Angle.Windows.Natives" Version="2.1.0.2020091801" />
-    <PackageReference Include="Avalonia.Controls.DataGrid" Version="0.10.8" />
-    <PackageReference Include="Avalonia.Desktop" Version="0.10.8" />
-    <PackageReference Include="Avalonia.Diagnostics" Version="0.10.8" />
+    <PackageReference Include="Avalonia.Controls.DataGrid" Version="0.10.11" />
+    <PackageReference Include="Avalonia.Desktop" Version="0.10.11" />
+    <PackageReference Include="Avalonia.Diagnostics" Version="0.10.11" />
     <PackageReference Include="Emgu.CV.runtime.windows" Version="4.5.4.4788" />
     <PackageReference Include="MessageBox.Avalonia" Version="1.7.1" />
-    <PackageReference Include="ThemeEditor.Controls.ColorPicker" Version="0.10.8" />
+    <PackageReference Include="ThemeEditor.Controls.ColorPicker" Version="0.10.11" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\UVtools.AvaloniaControls\UVtools.AvaloniaControls.csproj" />

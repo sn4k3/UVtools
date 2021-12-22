@@ -102,73 +102,7 @@ But also, i need victims for test subject. Proceed at your own risk!
 
 # Available printers for PrusaSlicer
 
-- **EPAX**
-  - E6 Mono
-  - E10 Mono
-  - X1
-  - X10
-  - X10 4K Mono
-  - X133 4K Mono
-  - X156 4K Color
-  - X1K 2K Mono
-- **Nova3D**
-  - Elfin
-  - Bene4 Mono
-- **AnyCubic**
-  - Photon
-  - Photon S
-  - Photon Zero
-- **Elegoo**
-  - Mars
-  - Mars 2 Pro
-  - Mars C
-  - Saturn
-- **Peopoly**
-  - Phenom
-  - Phenom L
-  - Phenom XXL
-  - Phenom Noir
-- **QIDI**
-  - Shadow5.5
-  - Shadow6.0 Pro
-  - S-Box
-  - 3D ibox mono
-- **Phrozen**
-  - Shuffle
-  - Shuffle Lite
-  - Shuffle XL
-  - Shuffle XL Lite
-  - Shuffle 16
-  - Shuffle 4K
-  - Sonic
-  - Sonic 4K
-  - Sonic Mighty 4K
-  - Sonic Mini
-  - Sonic Mini 4K
-  - Transform
-- **Kelant S400**
-- **Wanhao**
-  - D7
-  - D8
-  - CGR Mini Mono
-  - CGR Mono
-- **Creality**
-  - LD-002R
-  - LD-002H
-  - LD-006
-  - HALOT-ONE CL-60
-  - HALOT-SKY CL-89
-- **Voxelab**
-  - Polaris 5.5
-  - Proxima 6
-  - Ceres 8.9
-- **Longer**
-  - Orange 10
-  - Orange 30
-  - Orange 120
-  - Orange 4K
-- **Uniz IBEE**
-- **Zortrax Inkspire**
+See at: https://github.com/sn4k3/UVtools/tree/master/PrusaSlicer/printer
 
 # Available profiles for PrusaSlicer
 
@@ -199,6 +133,7 @@ Replace the "xxx" by your desired value in the correct units
 - **RetractSpeed_xxx:** Sets the retract speed in millimeters/minute
 - **BottomLightPWM_xxx:** Sets the bottom LED light power (0-255)
 - **LightPWM_xxx:** Sets the LED light power (0-255)
+- **FILEVERSION_n:** Sets the output file format version/revision
 - **FILEFORMAT_xxx:** Sets the output file format extension to be auto converted once open on UVtools
 
 # File Convertion

@@ -610,21 +610,17 @@
               Text="{Binding GCodeLines, StringFormat=Lines: \{0\}}"
               VerticalAlignment="Center"/>
 
-            <TextBlock
-              Text="|"
-              VerticalAlignment="Center"/>
+            <TextBlock Text="|" VerticalAlignment="Center"/>
 
-            <TextBlock
-              Text="{Binding #GCodeText.Text.Length, StringFormat=Chars: \{0\}}"
-              VerticalAlignment="Center"/>
+            <TextBlock Text="{Binding #GCodeText.Text.Length, StringFormat=Chars: \{0\}}"
+                       VerticalAlignment="Center"/>
           </StackPanel>
 
-          <StackPanel
-            Grid.Row="0"
-            Orientation="Horizontal"
-            Spacing="2"
-            HorizontalAlignment="Right"
-            VerticalAlignment="Center">
+          <StackPanel Grid.Row="0"
+                      Orientation="Horizontal"
+                      Spacing="2"
+                      HorizontalAlignment="Right"
+                      VerticalAlignment="Center">
 
               <ToggleButton
                   IsChecked="{Binding SlicerFile.SuppressRebuildGCode}"

@@ -897,7 +897,9 @@ namespace UVtools.Core.FileFormats
                 {
                     throw new VersionNotFoundException($"Version {value} not known for this file format");
                 }
-                _version = value;
+
+                RequireFullEncode = true;
+                RaiseAndSet(ref _version, value);
             }
         }
 
@@ -3431,16 +3433,30 @@ namespace UVtools.Core.FileFormats
         /// <summary>
         /// Triggers when a conversion is valid and before start converting values
         /// </summary>
-        /// <param name="source">Target file format</param>
+        /// <param name="source">Source file format</param>
         /// <returns>True to continue the conversion, otherwise false to stop</returns>
         protected virtual bool OnBeforeConvertFrom(FileFormat source) => true;
 
         /// <summary>
+        /// Triggers when a conversion is valid and before start converting values
+        /// </summary>
+        /// <param name="output">Target file format</param>
+        /// <returns>True to continue the conversion, otherwise false to stop</returns>
+        protected virtual bool OnBeforeConvertTo(FileFormat output) => true;
+
+        /// <summary>
         /// Triggers when the conversion is made but before encoding
         /// </summary>
-        /// <param name="source">Target file format</param>
+        /// <param name="source">Source file format</param>
         /// <returns>True to continue the conversion, otherwise false to stop</returns>
         protected virtual bool OnAfterConvertFrom(FileFormat source) => true;
+
+        /// <summary>
+        /// Triggers when the conversion is made but before encoding
+        /// </summary>
+        /// <param name="output">Output file format</param>
+        /// <returns>True to continue the conversion, otherwise false to stop</returns>
+        protected virtual bool OnAfterConvertTo(FileFormat output) => true;
 
         /// <summary>
         /// Converts this file type to another file type
@@ -3462,6 +3478,7 @@ namespace UVtools.Core.FileFormats
             slicerFile.FileFullPath = fileFullPath;
 
             if (!slicerFile.OnBeforeConvertFrom(this)) return null;
+            if (!OnBeforeConvertTo(slicerFile)) return null;
 
             slicerFile.SuppressRebuildPropertiesWork(() =>
             {
@@ -3560,6 +3577,7 @@ namespace UVtools.Core.FileFormats
             });
 
             if (!slicerFile.OnAfterConvertFrom(this)) return null;
+            if (!OnAfterConvertTo(slicerFile)) return null;
 
             slicerFile.Encode(fileFullPath, progress);
 

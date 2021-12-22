@@ -533,6 +533,17 @@ namespace UVtools.Core.FileFormats
             Statistics.Clear();
         }
 
+        protected override bool OnBeforeConvertTo(FileFormat output)
+        {
+            int fileVersion = LookupCustomValue("FILEVERSION", int.MinValue);
+            if (fileVersion > 0)
+            {
+                output.Version = (uint)fileVersion;
+            }
+
+            return true;
+        }
+
         protected override void EncodeInternally(OperationProgress progress)
         {
             var filename = FileFullPath;

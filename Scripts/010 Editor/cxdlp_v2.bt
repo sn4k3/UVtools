@@ -31,40 +31,40 @@ typedef struct() {
 
 typedef struct(int size) {
     ubyte layerDataBlock[size] <fgcolor=cBlack, bgcolor=0x00FF00>;
-} rgbPreviewImageRawData;
+} RgbPreviewImageRawData;
 
 struct HEADER {
-    uint32 headerSize <fgcolor=cBlack, bgcolor=cWhite>;
-    char header[headerSize] <fgcolor=cBlack, bgcolor=cRed>;
+    uint32 HeaderSize <fgcolor=cBlack, bgcolor=cWhite>;
+    char Header[HeaderSize] <fgcolor=cBlack, bgcolor=cRed>;
 
-    uint16 version <fgcolor=cBlack, bgcolor=cWhite>;
+    uint16 Version <fgcolor=cBlack, bgcolor=cWhite>;
 
-    uint32 modelSize <fgcolor=cBlack, bgcolor=cWhite>;
-    char model[modelSize] <fgcolor=cBlack, bgcolor=cRed>;
+    uint32 PrinterModelSize <fgcolor=cBlack, bgcolor=cWhite>;
+    char PrinterModel[PrinterModelSize] <fgcolor=cBlack, bgcolor=cRed>;
 
-    uint16 totalLayers <fgcolor=cBlack, bgcolor=cWhite>;
-    uint16 resolutionX <fgcolor=cBlack, bgcolor=cWhite>;
-    uint16 resolutionY <fgcolor=cBlack, bgcolor=cWhite>;
+    uint16 TotalLayers <fgcolor=cBlack, bgcolor=cWhite>;
+    uint16 ResolutionX <fgcolor=cBlack, bgcolor=cWhite>;
+    uint16 ResolutionY <fgcolor=cBlack, bgcolor=cWhite>;
 
-    ubyte offset[64];
+    ubyte Offset[64];
 
-    rgbPreviewImageRawData preview(116*116*2);
+    RgbPreviewImageRawData preview(116*116*2);
     ubyte rn0[2] <fgcolor=cBlack, bgcolor=cRed>;
 
-    rgbPreviewImageRawData preview2(290*290*2);
+    RgbPreviewImageRawData preview2(290*290*2);
     ubyte rn1[2] <fgcolor=cBlack, bgcolor=cRed>;
 
-    rgbPreviewImageRawData preview2(290*290*2);
+    RgbPreviewImageRawData preview2(290*290*2);
     ubyte rn2[2] <fgcolor=cBlack, bgcolor=cRed>;   
 
-    uint32 plateformXLength <fgcolor=cBlack, bgcolor=cWhite>;
-    wchar_t plateformX[plateformXLength/2];
+    uint32 PlateformXLength <fgcolor=cBlack, bgcolor=cWhite>;
+    wchar_t plateformX[PlateformXLength/2];
 
-    uint32 plateformYLength <fgcolor=cBlack, bgcolor=cWhite>;
-    wchar_t plateformY[plateformYLength/2];
+    uint32 PlateformYLength <fgcolor=cBlack, bgcolor=cWhite>;
+    wchar_t PlateformY[PlateformYLength/2];
 
-    uint32 layerThicknessLength <fgcolor=cBlack, bgcolor=cWhite>;
-    wchar_t layerThickness[layerThicknessLength/2];
+    uint32 LayerThicknessLength <fgcolor=cBlack, bgcolor=cWhite>;
+    wchar_t LayerThickness[LayerThicknessLength/2];
 
     uint16 ExposureTime <fgcolor=cBlack, bgcolor=cWhite>;
     uint16 WaitTimeBeforeCure <fgcolor=cBlack, bgcolor=cWhite>; // Cant be 0!
@@ -82,19 +82,29 @@ struct HEADER {
 
 struct LAYER_DEF {
     local int i;
-    for( i = 0; i < header.totalLayers; i++ ){
-        layerDef lD();
+    for( i = 0; i < header.TotalLayers; i++ ){
+        layerDef ID;
     }
     ubyte rn3[2] <fgcolor=cBlack, bgcolor=cRed>;
 } layerDefs;
 
-if(header.version >= 3){
+local uint versionIdentifier = ReadUInt();
+//Printf( "%d\n", layerDefs.ID[0].layerArea ); 
+if(header.Version >= 2 && versionIdentifier != layerDefs.ID[0].layerArea){
     struct SLICER_INFO {
         uint32 SoftwareNameSize;
         char SoftwareName[SoftwareNameSize];
         uint32 MaterialNameSize;
         char MaterialName[MaterialNameSize];
-        ubyte offset[67-SoftwareNameSize-MaterialNameSize];
+        //ubyte offset[67-SoftwareNameSize-MaterialNameSize];
+        //ubyte offset[20];
+        uint Padding;
+        uint Padding;
+        uint Padding;
+        uint Padding;
+        ubyte Padding;
+        ubyte LightPWM;
+        ushort Padding;
         ubyte rn0[2] <fgcolor=cBlack, bgcolor=cRed>;
     } slicerInfo;
 }
@@ -102,14 +112,14 @@ if(header.version >= 3){
 
 struct LAYERS {
     local int i;
-    for( i = 0; i < header.totalLayers; i++ ){
+    for( i = 0; i < header.TotalLayers; i++ ){
         layerData lD();
     }
 } layers;
  
 struct FOOTER {
-    uint32 footerSize <fgcolor=cBlack, bgcolor=cWhite>;
-    char str[footer.footerSize] <fgcolor=cBlack, bgcolor=cRed>;
+    uint32 FooterSize <fgcolor=cBlack, bgcolor=cWhite>;
+    char Marker[FooterSize] <fgcolor=cBlack, bgcolor=cRed>;
 
-    uint checkSum <fgcolor=cBlack, bgcolor=cWhite>;
+    uint CheckSum <fgcolor=cBlack, bgcolor=cWhite>;
 } footer;

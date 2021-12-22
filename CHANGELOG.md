@@ -1,5 +1,17 @@
 # Changelog
 
+## 22/12/2021 - v2.27.1
+
+- **PrusaSlicer:**
+   - (Add) Keyword 'FILEVERSION_n' to allow set the file format version/revision
+   - (Change) Printer: AnyCubic Photon Mono 4K and Mono X 6K, to use version 516
+- **Anycubic file format:**
+   - (Fix) Encoding or converting a new file with version 516 was setting wrong length for the new tables
+   - (Fix) Setting bottom lift height or speed was not working and keep the same value
+- (Add) FileFormats: Abstract `Version` property to set or get the version on file formats
+- (Add) CXDLP: Compability with new file v2 revsion (#376)
+- (Upgrade) AvaloniaUI from 0.10.8 to 0.10.11
+- 
 ## 18/12/2021 - v2.27.0
 
 - **Tool - Morph:**

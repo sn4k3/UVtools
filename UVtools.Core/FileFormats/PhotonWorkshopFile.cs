@@ -997,6 +997,17 @@ namespace UVtools.Core.FileFormats
                 Section = new SectionHeader(SectionMark, this);
             }
 
+            public Machine(int extraLength)
+            {
+                Section = new SectionHeader(SectionMark, this, extraLength);
+            }
+
+
+            public Machine(bool includeSectionOnLength)
+            {
+                Section = new SectionHeader(SectionMark, this, includeSectionOnLength ? 16 : 0);
+            }
+
             public void Validate()
             {
                 Section.Validate(SectionMark, 0, this);
@@ -1016,7 +1027,7 @@ namespace UVtools.Core.FileFormats
 
         public LayerDefinition LayersDefinition { get; protected internal set; } = new();
         public Extra ExtraSettings { get; protected internal set; } = new();
-        public Machine MachineSettings { get; protected internal set; } = new();
+        public Machine MachineSettings { get; protected internal set; } = new(true);
 
         public override FileFormatType FileType => FileFormatType.Binary;
 
@@ -1277,7 +1288,7 @@ namespace UVtools.Core.FileFormats
             get
             {
                 if (FileMarkSettings.Version >= VERSION_516) return ExtraSettings.BottomLiftHeight1;
-                return FirstLayer?.LiftHeight ?? LiftHeight;
+                return base.BottomLiftHeight;
             }
             set
             {
@@ -1301,7 +1312,7 @@ namespace UVtools.Core.FileFormats
             get
             {
                 if (FileMarkSettings.Version >= VERSION_516) return (float)Math.Round(ExtraSettings.BottomLiftSpeed1 * 60, 2);
-                return FirstLayer?.LiftSpeed ?? LiftSpeed;
+                return base.BottomLiftSpeed;
             }
             set
             {
@@ -1610,10 +1621,16 @@ namespace UVtools.Core.FileFormats
 
             FileMarkSettings.HeaderAddress = (uint) Helpers.Serializer.SizeOf(FileMarkSettings);
             using var outputFile = new FileStream(FileFullPath, FileMode.Create, FileAccess.Write);
+            if (FileMarkSettings.Version >= VERSION_516)
+            {
+                HeaderSettings.Section.Length = 84;
+            }
+
             outputFile.Seek((int)FileMarkSettings.HeaderAddress, SeekOrigin.Begin);
             Helpers.SerializeWriteFileStream(outputFile, HeaderSettings);
             if (FileMarkSettings.Version >= VERSION_516)
             {
+                //outputFile.WriteUIntLittleEndian(0);
                 outputFile.Seek(4, SeekOrigin.Current); // Extra padding
             }
 
@@ -1831,6 +1848,16 @@ namespace UVtools.Core.FileFormats
             for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
             {
                 LayersDefinition[layerIndex].CopyTo(this[layerIndex]);
+            }
+
+            if (FileMarkSettings.Version < VERSION_516)
+            {
+                // Fix the base.Bottoms
+                SuppressRebuildPropertiesWork(() =>
+                {
+                    BottomLiftHeight = FirstLayer?.LiftHeight ?? LiftHeight;
+                    BottomLiftSpeed = FirstLayer?.LiftSpeed ?? LiftSpeed;
+                });
             }
         }
 

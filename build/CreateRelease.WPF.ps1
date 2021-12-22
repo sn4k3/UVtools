@@ -59,6 +59,7 @@ $software = "UVtools"
 $project = "UVtools.WPF"
 $buildWith = "Release"
 $netFolder = "net5.0"
+$rootFolder = $(Get-Location)
 $releaseFolder = "$project\bin\$buildWith\$netFolder"
 $objFolder = "$project\obj\$buildWith\$netFolder"
 $publishFolder = "publish"
@@ -81,10 +82,10 @@ if([string]::IsNullOrWhiteSpace($version)){
 
 # MSI Variables
 $installers = @("UVtools.InstallerMM", "UVtools.Installer")
-$msiOutputFile = "UVtools.Installer\bin\x64\Release\UVtools.msi"
-$msiComponentsFile = "UVtools.InstallerMM\UVtools.InstallerMM.wxs"
-$msiSourceFiles = "$(Get-Location)\$publishFolder\win-x64"
-$msbuild = "`"${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\MSBuild.exe`" /t:Build /p:Configuration=$buildWith /p:MSIProductVersion=$version"
+$msiOutputFile = "$rootFolder\UVtools.Installer\bin\x64\Release\UVtools.msi"
+$msiComponentsFile = "$rootFolder\UVtools.InstallerMM\UVtools.InstallerMM.wxs"
+$msiSourceFiles = "$rootFolder\$publishFolder\win-x64"
+$msbuild = "`"${env:ProgramFiles}\Microsoft Visual Studio\2022\Enterprise\MSBuild\Current\Bin\MSBuild.exe`" /t:Build /p:Configuration=$buildWith /p:MSIProductVersion=$version"
 
 function wixCleanUpElement([System.Xml.XmlElement]$element, [string]$rootPath)
 {

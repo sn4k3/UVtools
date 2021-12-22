@@ -9,8 +9,7 @@
       <Button 
         Padding="10"
         Content="Import grayscale mask image from file"
-        Command="{Binding ImportImageMask}"
-        />
+        Command="{Binding ImportImageMask}"/>
 
       <CheckBox 
         VerticalAlignment="Center"
@@ -23,8 +22,7 @@
       BorderBrush="LightGray"
       BorderThickness="1"
       Margin="0,5"
-      Padding="5"
-      >
+      Padding="5">
 
       <StackPanel>
         <TextBlock FontWeight="Bold" Text="Mask generator (Round from center):"/>
@@ -32,8 +30,7 @@
         <Grid
           RowDefinitions="Auto,10,Auto"
           ColumnDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto"
-          Margin="0,10,0,0"
-          >
+          Margin="0,10,0,0">
 
           <TextBlock 
             VerticalAlignment="Center"
@@ -42,6 +39,7 @@
                          Classes="ValueLabel ValueLabel_sun"
                          Minimum="0"
                          Maximum="255"
+                         Width="180"
                          Value="{Binding GenMinimumBrightness}"/>
           <TextBlock Grid.Row="0" Grid.Column="4"
                      VerticalAlignment="Center"
@@ -54,8 +52,8 @@
                          Classes="ValueLabel ValueLabel_sun"
                          Minimum="0"
                          Maximum="255"
-                         Value="{Binding GenMaximumBrightness}"
-          />
+                         Width="180"
+                         Value="{Binding GenMaximumBrightness}"/>
 
           <TextBlock Grid.Row="2" Grid.Column="0"
                      VerticalAlignment="Center"
@@ -64,6 +62,7 @@
                          Classes="ValueLabel ValueLabel_px"
                          Minimum="0"
                          Maximum="10000"
+                         Width="180"
                          Value="{Binding GenDiameter}"/>
           <Button
             Grid.Row="2"

@@ -48,7 +48,7 @@
       
       <Setter Property="VerticalAlignment" Value="Stretch" />
       <Setter Property="HorizontalAlignment" Value="Stretch" />
-    <Setter Property="VerticalContentAlignment" Value="Center" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
       <Setter Property="HorizontalContentAlignment" Value="Center" />
     <Setter Property="Padding" Value="5,0" />
   </Style>
@@ -230,6 +230,9 @@
         </Setter>
     </Style>
 
+    <Style Selector="NumericUpDown /template/ TextBox:not(.empty)">
+        <Setter Property="MinWidth" Value="0"/>
+    </Style>
 
     <Style Selector="NumericUpDown">
         <Setter Property="MinWidth" Value="130"/>
