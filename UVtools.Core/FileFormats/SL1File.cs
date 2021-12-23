@@ -29,6 +29,7 @@ namespace UVtools.Core.FileFormats
         public const string IniPrusaslicer = "prusaslicer.ini";
 
         public const string Keyword_FileFormat = "FILEFORMAT";
+        public const string Keyword_FileVersion = "FILEVERSION";
 
         public const string Keyword_BottomLightOffDelay = "BottomLightOffDelay";
         public const string Keyword_LightOffDelay = "LightOffDelay";
@@ -535,7 +536,7 @@ namespace UVtools.Core.FileFormats
 
         protected override bool OnBeforeConvertTo(FileFormat output)
         {
-            int fileVersion = LookupCustomValue("FILEVERSION", int.MinValue);
+            int fileVersion = LookupCustomValue(Keyword_FileVersion, int.MinValue);
             if (fileVersion > 0)
             {
                 output.Version = (uint)fileVersion;

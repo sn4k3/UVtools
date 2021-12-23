@@ -1602,12 +1602,19 @@ namespace UVtools.WPF
 
             if (Settings.Automations.AutoConvertFiles && SlicerFile.DecodeType == FileFormat.FileDecodeType.Full)
             {
-                string convertFileExtension = SlicerFile switch
+                string convertFileExtension = null;
+                switch (SlicerFile)
                 {
-                    SL1File sl1File => sl1File.LookupCustomValue<string>(SL1File.Keyword_FileFormat, null),
-                    VDTFile vdtFile => vdtFile.ManifestFile.Machine.UVToolsConvertTo,
-                    _ => null
-                };
+                    case SL1File sl1File:
+                        convertFileExtension = sl1File.LookupCustomValue<string>(SL1File.Keyword_FileFormat, null);
+                        break;
+                    case VDTFile vdtFile:
+                        if (string.IsNullOrWhiteSpace(vdtFile.ManifestFile.Machine.UVToolsConvertTo) || vdtFile.ManifestFile.Machine.UVToolsConvertTo == "None")
+                            convertFileExtension = vdtFile.LookupCustomValue<string>(SL1File.Keyword_FileFormat, null);
+                        else
+                            convertFileExtension = vdtFile.ManifestFile.Machine.UVToolsConvertTo;
+                        break;
+                }
 
                 if (!string.IsNullOrWhiteSpace(convertFileExtension))
                 {

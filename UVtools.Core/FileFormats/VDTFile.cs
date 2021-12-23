@@ -614,6 +614,17 @@ namespace UVtools.Core.FileFormats
             }
         }
 
+        protected override bool OnBeforeConvertTo(FileFormat output)
+        {
+            int fileVersion = LookupCustomValue(SL1File.Keyword_FileVersion, int.MinValue);
+            if (fileVersion > 0)
+            {
+                output.Version = (uint)fileVersion;
+            }
+
+            return true;
+        }
+
         protected override void EncodeInternally(OperationProgress progress)
         {
             // Redo layer data

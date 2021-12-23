@@ -1,5 +1,16 @@
 # Changelog
 
+## 23/12/2021 - v2.27.2
+
+- **(Core) Layer:**
+  - (Add) Property: IsFirstLayer -  Gets if is the first layer
+  - (Add) Property: IsIntermediateLayer - Gets if layer is between first and last layer, aka, not first nor last layer
+  - (Add) Property: IsLastLayer - Gets if is the last layer
+  - (Rename) Property: RelativeLayerHeight to RelativePositionZ
+- **VDT:**
+   - (Add) Keyword 'FILEFORMAT_xxx' to allow set the file format to auto convertion on machine notes
+   - (Add) Keyword 'FILEVERSION_n' to allow set the file format version/revision on machine notes
+
 ## 22/12/2021 - v2.27.1
 
 - **PrusaSlicer:**

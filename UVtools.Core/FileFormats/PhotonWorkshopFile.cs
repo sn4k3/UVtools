@@ -554,7 +554,7 @@ namespace UVtools.Core.FileFormats
 
             public void SetFrom(Layer layer)
             {
-                LayerHeight = layer.RelativeLayerHeight;
+                LayerHeight = layer.RelativePositionZ;
                 ExposureTime = layer.ExposureTime;
                 LiftHeight = layer.LiftHeight;
                 LiftSpeed = (float) Math.Round(layer.LiftSpeed / 60, 2);

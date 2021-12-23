@@ -26,7 +26,7 @@ class FixedEncoder : System.Text.UTF8Encoding {
     }
 }
 
-function WriteXmlToScreen ([xml]$xml)
+function WriteXmlToScreen([xml]$xml)
 {
     $StringWriter = New-Object System.IO.StringWriter;
     $XmlWriter = New-Object System.Xml.XmlTextWriter $StringWriter;
@@ -212,8 +212,8 @@ foreach($element in $msiComponentsXml.Wix.Module.Directory.Directory)
     if($element.Id -eq 'MergeRedirectFolder')
     {
         wixCleanUpElement $element $msiSourceFiles
-        WriteXmlToScreen($msiComponentsXml);
-        $msiComponentsXml.Save("$publishFolder\test.xml")
+        #WriteXmlToScreen($msiComponentsXml);
+        #$msiComponentsXml.Save("$rootFolder\$publishFolder\test.xml")
         return
         break
     }
@@ -313,6 +313,7 @@ foreach ($obj in $runtimes.GetEnumerator()) {
     Write-Output "################################
 Building: $runtime"
     dotnet publish $project -o "$publishFolder/$runtime" -c $buildWith -r $runtime $extraCmd
+
     New-Item "$publishFolder/$runtime/runtime_package.dat" -ItemType File -Value $runtime
     if(!$runtime.Equals('win-x64'))
     {
@@ -429,7 +430,7 @@ if($null -ne $enableMSI -and $enableMSI)
             Invoke-Expression "& $msbuild $installer\$installer.wixproj"
         }
 
-        Write-Output "Coping $runtime MSI to: $msiTargetFile"
+        Write-Output "Copying $runtime MSI to: $msiTargetFile"
         Copy-Item $msiOutputFile $msiTargetFile
 
         Write-Output "Took: $($deployStopWatch.Elapsed)

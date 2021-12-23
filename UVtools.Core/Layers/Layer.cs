@@ -124,8 +124,55 @@ namespace UVtools.Core.Layers
             }
         }
 
+        /// <summary>
+        /// Gets if is the first layer
+        /// </summary>
+        public bool IsFirstLayer => _index == 0;
+
+        /// <summary>
+        /// Gets if layer is between first and last layer, aka, not first nor last layer
+        /// </summary>
+        public bool IsIntermediateLayer => !IsFirstLayer && !IsLastLayer;
+
+        /// <summary>
+        /// Gets if is the last layer
+        /// </summary>
+        public bool IsLastLayer => _index >= ParentLayerManager.LastLayerIndex;
+
+        /// <summary>
+        /// Gets if is in the bottom layer group
+        /// </summary>
         public bool IsBottomLayer => (uint)(PositionZ / SlicerFile.LayerHeight) <= SlicerFile.BottomLayerCount;
+
+        /// <summary>
+        /// Gets if is in the normal layer group
+        /// </summary>
         public bool IsNormalLayer => !IsBottomLayer;
+
+        /// <summary>
+        /// Gets the previous layer, returns null if no previous layer
+        /// </summary>
+        public Layer PreviousLayer
+        {
+            get
+            {
+                if (ParentLayerManager is null || IsFirstLayer || _index > ParentLayerManager.Count) return null;
+                return ParentLayerManager[_index - 1];
+            }
+
+        }
+
+        /// <summary>
+        /// Gets the next layer, returns null if no next layer
+        /// </summary>
+        public Layer NextLayer
+        {
+            get
+            {
+                if (ParentLayerManager is null || _index >= ParentLayerManager.LastLayerIndex) return null;
+                return ParentLayerManager[_index + 1];
+            }
+        }
 
         /// <summary>
         /// Gets the layer index
@@ -146,7 +193,7 @@ namespace UVtools.Core.Layers
         public uint Number => _index + 1;
 
         /// <summary>
-        /// Gets or sets the layer position on Z in mm
+        /// Gets or sets the absolute layer position on Z in mm
         /// </summary>
         public float PositionZ
         {
@@ -154,8 +201,21 @@ namespace UVtools.Core.Layers
             set
             {
                 if (!RaiseAndSetIfChanged(ref _positionZ, RoundHeight(value))) return;
+                RaisePropertyChanged(nameof(RelativePositionZ));
                 RaisePropertyChanged(nameof(LayerHeight));
                 //MaterialMilliliters = -1; // Recalculate
+            }
+        }
+
+        /// <summary>
+        /// Gets the relative layer position on Z in mm (Relative to the previous layer)
+        /// </summary>
+        public float RelativePositionZ
+        {
+            get
+            {
+                var previousLayer = PreviousLayer;
+                return previousLayer is null ? LayerHeight : RoundHeight(_positionZ - previousLayer.PositionZ);
             }
         }
 
@@ -393,10 +453,10 @@ namespace UVtools.Core.Layers
         {
             get
             {
-                if (_index == 0) return _positionZ;
+                if (IsFirstLayer) return _positionZ;
                 var previousLayer = this;
 
-                while ((previousLayer = previousLayer.PreviousLayer()) is not null) // This cycle returns the correct layer height if two or more layers have the same position z
+                while ((previousLayer = previousLayer.PreviousLayer) is not null) // This cycle returns the correct layer height if two or more layers have the same position z
                 {
                     var layerHeight = RoundHeight(_positionZ - previousLayer.PositionZ);
                     //Debug.WriteLine($"Layer {_index}-{previousLayer.Index}: {_positionZ} - {previousLayer.PositionZ}: {layerHeight}");
@@ -406,18 +466,6 @@ namespace UVtools.Core.Layers
                 }
 
                 return SlicerFile.LayerHeight;
-            }
-        }
-
-        /// <summary>
-        /// Gets the layer height in millimeters of this layer relative to the previous layer
-        /// </summary>
-        public float RelativeLayerHeight
-        {
-            get
-            {
-                var previousLayer = PreviousLayer();
-                return previousLayer is null ? LayerHeight : RoundHeight(_positionZ - previousLayer.PositionZ);
             }
         }
 
@@ -831,18 +879,6 @@ namespace UVtools.Core.Layers
             if (needDispose) mat.Dispose();
 
             return BoundingRectangle;
-        }
-
-        public Layer PreviousLayer()
-        {
-            if (ParentLayerManager is null || _index == 0 || _index > ParentLayerManager.Count) return null;
-            return ParentLayerManager[_index - 1];
-        }
-
-        public Layer NextLayer()
-        {
-            if (ParentLayerManager is null || _index >= ParentLayerManager.LayerCount - 1) return null;
-            return ParentLayerManager[_index + 1];
         }
 
         public bool SetValueFromPrintParameterModifier(FileFormat.PrintParameterModifier modifier, decimal value)
