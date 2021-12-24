@@ -177,7 +177,7 @@ namespace UVtools.Core.FileFormats
         public override FileFormatType FileType => FileFormatType.Archive;
 
         public override FileExtension[] FileExtensions { get; } = {
-            new(typeof(ZCodeFile), "zcode", "UnizMaker ZCode")
+            new(typeof(ZCodeFile), "zcode", "UnizMaker IBEE (ZCode)")
         };
 
         public override PrintParameterModifier[] PrintParameterModifiers { get; } = {

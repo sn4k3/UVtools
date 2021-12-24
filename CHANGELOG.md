@@ -1,5 +1,15 @@
 # Changelog
 
+## 24/12/2021 - v2.27.3
+
+- **Encrypted CTB:**
+   - (Add) Allow convert files to this format in the UI
+   - (Fix) Converting files with a null machine name would cause an exception
+   - (Fix) Converting files was generating malformed files
+-  **UI:**
+   - (Change) CTB: Extension display order (Will require readjust settings for default extension if you are using any of them)
+   - (Fix) 'File - Open recent file' would not enable first item when closing the file
+
 ## 23/12/2021 - v2.27.2
 
 - **(Core) Layer:**

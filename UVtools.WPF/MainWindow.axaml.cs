@@ -1327,8 +1327,11 @@ namespace UVtools.WPF
 
             ClearROIAndMask();
 
-            if(!Settings.Tools.LastUsedSettingsKeepOnCloseFile)
-                OperationSessionManager.Instance.Clear();
+            if(!Settings.Tools.LastUsedSettingsKeepOnCloseFile) OperationSessionManager.Instance.Clear();
+            if(_menuFileOpenRecentItems.Length > 0)
+            {
+                _menuFileOpenRecentItems[0].IsEnabled = true; // Re-enable last file
+            }
 
             ResetDataContext();
         }
@@ -2320,7 +2323,7 @@ namespace UVtools.WPF
                 {
                     Header = Path.GetFileName(file),
                     Tag = file,
-                    IsEnabled = SlicerFile?.FileFullPath != file
+                    IsEnabled = !IsFileLoaded || SlicerFile.FileFullPath != file
                 };
                 ToolTip.SetTip(item, file);
                 ToolTip.SetPlacement(item, PlacementMode.Right);

@@ -1066,13 +1066,13 @@ namespace UVtools.Core.FileFormats
         public override FileFormatType FileType => FileFormatType.Binary;
 
         public override FileExtension[] FileExtensions { get; } = {
+            new(typeof(ChituboxFile), "photon", "Chitubox Photon"),
+            new(typeof(ChituboxFile), "cbddlp", "Chitubox CBDDLP"),
             new(typeof(ChituboxFile), "ctb", $"Chitubox CTBv{USED_VERSION}"),
             //new(typeof(ChituboxFile), "v2.ctb", "Chitubox CTBv2"),
             //new(typeof(ChituboxFile), "v3.ctb", "Chitubox CTBv3"),
             new(typeof(ChituboxFile), "v4.ctb", "Chitubox CTBv4", false),
             //new(typeof(ChituboxFile), "encrypted.ctb", "Chitubox encrypted CTB"),
-            new(typeof(ChituboxFile), "cbddlp", "Chitubox CBDDLP"),
-            new(typeof(ChituboxFile), "photon", "Chitubox Photon"),
         };
 
         public override PrintParameterModifier[] PrintParameterModifiers

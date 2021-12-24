@@ -581,55 +581,9 @@ namespace UVtools.Core.FileFormats
         public override FileFormatType FileType => FileFormatType.Binary;
 
         public override FileExtension[] FileExtensions { get; } = {
-            new(typeof(CTBEncryptedFile), "ctb",           "Chitubox CTB (Encrypted)", true
-#if !DEBUG
-            , false
-#endif
-                ),
+            new(typeof(CTBEncryptedFile), "ctb",           "Chitubox CTB (Encrypted)"),
             new(typeof(CTBEncryptedFile), "encrypted.ctb", "Chitubox CTB (Encrypted)", false, false),
         };
-
-        public override string MachineName
-        {
-            get => Settings.MachineName;
-            set
-            {
-                Settings.MachineName = value;
-                Settings.MachineNameSize = (uint)value.Length;
-            }
-        }
-
-        public override uint ResolutionX
-        {
-            get => Settings.ResolutionX;
-            set
-            {
-                Settings.ResolutionX = value;
-                RaisePropertyChanged();
-            }
-        }
-
-        public override uint ResolutionY
-        {
-            get => Settings.ResolutionY;
-            set
-            {
-                Settings.ResolutionY = value;
-                RaisePropertyChanged();
-            }
-        }
-
-        public override float LayerHeight
-        {
-            get => Settings.LayerHeight;
-            set
-            {
-                Settings.LayerHeight = value;
-                RaisePropertyChanged();
-            }
-        }
-
-        public override byte AntiAliasing { get => 8; set { } }
 
         public override Size[] ThumbnailsOriginalSize { get; } =
         {
@@ -682,9 +636,7 @@ namespace UVtools.Core.FileFormats
             PrintParameterModifier.BottomLightPWM,
             PrintParameterModifier.LightPWM
         };
-
-
-
+        
         public override PrintParameterModifier[] PrintParameterPerLayerModifiers { get; } = {
             PrintParameterModifier.LightOffDelay,
             PrintParameterModifier.WaitTimeBeforeCure,
@@ -701,7 +653,37 @@ namespace UVtools.Core.FileFormats
             PrintParameterModifier.LightPWM
         };
 
+        public override uint ResolutionX
+        {
+            get => Settings.ResolutionX;
+            set
+            {
+                Settings.ResolutionX = value;
+                RaisePropertyChanged();
+            }
+        }
 
+        public override uint ResolutionY
+        {
+            get => Settings.ResolutionY;
+            set
+            {
+                Settings.ResolutionY = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public override float LayerHeight
+        {
+            get => Settings.LayerHeight;
+            set
+            {
+                Settings.LayerHeight = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public override byte AntiAliasing { get => 8; set { } }
 
         public override float DisplayWidth
         {
@@ -1012,6 +994,12 @@ namespace UVtools.Core.FileFormats
             }
         }
 
+        public override string MachineName
+        {
+            get => Settings.MachineName;
+            set => base.MachineName = Settings.MachineName = value;
+        }
+
         public override float MaterialMilliliters
         {
             get => base.MaterialMilliliters;
@@ -1315,9 +1303,11 @@ namespace UVtools.Core.FileFormats
                 };
 
                 var previewBytes = preview.Encode(image);
+
 #if !DEBUG
-                Bigfoot = new byte[32]; CookieMonster = new byte[16];
+                if (Settings.LayerPointersOffset > 0) { Bigfoot = new byte[32]; CookieMonster = new byte[16]; }
 #endif
+
                 if (previewBytes.Length == 0) continue;
 
                 if (i == 0)
@@ -1369,9 +1359,13 @@ namespace UVtools.Core.FileFormats
 
                 progress.LockAndIncrement();
             });
+
+            /*
 #if !DEBUG
             Bigfoot = new byte[32]; CookieMonster = new byte[16];
 #endif
+            */
+
             progress.Reset(OperationProgress.StatusWritingFile, LayerCount);
             for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
             {
