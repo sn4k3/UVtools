@@ -1637,7 +1637,7 @@ namespace UVtools.WPF
                             try
                             {
                                 convertedFile = SlicerFile.Convert(convertToFormat,
-                                    Path.Combine(directory, $"{filename}.{convertFileExtension}"),
+                                    Path.Combine(directory, $"{filename}.{convertFileExtension}"), 0,
                                     Progress);
                                 return true;
                             }
@@ -1940,6 +1940,22 @@ namespace UVtools.WPF
             if (sender is not MenuItem item) return;
             if (item.Tag is not FileExtension fileExtension) return;
 
+            var fileFormat = fileExtension.GetFileFormat();
+            uint version = fileFormat.DefaultVersion;
+            if (fileFormat.AvailableVersionsCount > 1)
+            {
+                var versionSelectorWindow = new VersionSelectorWindow(fileFormat, fileExtension);
+                await versionSelectorWindow.ShowDialog(this);
+                switch (versionSelectorWindow.DialogResult)
+                {
+                    case DialogResults.OK:
+                        version = versionSelectorWindow.Version;
+                        break;
+                    case DialogResults.Cancel:
+                        return;
+                }
+            }
+
             SaveFileDialog saveDialog = new()
             {
                 InitialFileName = Path.GetFileNameWithoutExtension(SlicerFile.FileFullPath),
@@ -1952,7 +1968,6 @@ namespace UVtools.WPF
             var result = await saveDialog.ShowAsync(this);
             if (string.IsNullOrEmpty(result)) return;
 
-
             IsGUIEnabled = false;
             ShowProgressWindow($"Converting {Path.GetFileName(SlicerFile.FileFullPath)} to {Path.GetExtension(result)}");
 
@@ -1960,7 +1975,7 @@ namespace UVtools.WPF
             {
                 try
                 {
-                    return SlicerFile.Convert(fileExtension.GetFileFormat(), result, Progress) is not null;
+                    return SlicerFile.Convert(fileFormat, result, version, Progress) is not null;
                 }
                 catch (OperationCanceledException)
                 {

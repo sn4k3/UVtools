@@ -80,7 +80,7 @@ namespace UVtools.WPF.Controls
 
         public UserSettings Settings => UserSettings.Instance;
 
-        public FileFormat SlicerFile
+        public virtual FileFormat SlicerFile
         {
             get => App.SlicerFile;
             set => App.SlicerFile = value;

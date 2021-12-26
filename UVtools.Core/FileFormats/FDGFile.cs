@@ -660,7 +660,9 @@ namespace UVtools.Core.FileFormats
             new(200, 125)
         };
 
-        public override uint[] AvailableVersions { get; } = { 1, 2 };
+        public override uint[] AvailableVersions { get; } = { 2 };
+
+        public override uint DefaultVersion => 2;
 
         public override uint Version
         {

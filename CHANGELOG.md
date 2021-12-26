@@ -1,5 +1,13 @@
 # Changelog
 
+## 26/12/2021 - v2.27.4
+
+- **UI:**
+   - (Add) When converting file formats with multiple available versions, it will prompt to select the version to use
+   - (Add) Remove CTBv4 from convert menu (Will require readjust settings for default extension if you are using an below extension) (#286)
+   - (Change) Rename CTBv3 to CTB on the convert menu
+- (Fix) CXDLP: Set version 3 was setting wrong information
+
 ## 24/12/2021 - v2.27.3
 
 - **Encrypted CTB:**

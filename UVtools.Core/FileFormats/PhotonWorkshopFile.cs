@@ -1109,6 +1109,8 @@ namespace UVtools.Core.FileFormats
 
         public override uint[] AvailableVersions { get; } = { VERSION_1, VERSION_515, VERSION_516 };
 
+        public override uint DefaultVersion => VERSION_1;
+
         public override uint Version
         {
             get => FileMarkSettings.Version;

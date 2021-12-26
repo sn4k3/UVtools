@@ -725,6 +725,8 @@ namespace UVtools.Core.FileFormats
 
         private bool _haveModifiedLayers;
 
+        private uint _version;
+
         private byte _antiAliasing = 1;
 
         private ushort _bottomLayerCount = DefaultBottomLayerCount;
@@ -775,7 +777,6 @@ namespace UVtools.Core.FileFormats
         private bool _suppressRebuildGCode;
 
         private readonly Timer _queueTimerPrintTime = new(QueueTimerPrintTime){AutoReset = false};
-        private uint _version;
 
         #endregion
 
@@ -883,7 +884,20 @@ namespace UVtools.Core.FileFormats
         public string FileExtension => Path.GetExtension(FileFullPath);
         public string FilenameNoExt => GetFileNameStripExtensions(FileFullPath);
 
+        /// <summary>
+        /// Gets the available versions to set in this file format
+        /// </summary>
         public virtual uint[] AvailableVersions { get; }
+
+        /// <summary>
+        /// Gets the amount of available versions in this file format
+        /// </summary>
+        public virtual byte AvailableVersionsCount => (byte)(AvailableVersions?.Length ?? 0);
+
+        /// <summary>
+        /// Gets the default version to use in this file when not setting the version
+        /// </summary>
+        public virtual uint DefaultVersion => 0;
 
         /// <summary>
         /// Gets or sets the version of this file format
@@ -899,7 +913,7 @@ namespace UVtools.Core.FileFormats
                 }
 
                 RequireFullEncode = true;
-                RaiseAndSet(ref _version, value);
+                RaiseAndSetIfChanged(ref _version, value);
             }
         }
 
@@ -3463,9 +3477,10 @@ namespace UVtools.Core.FileFormats
         /// </summary>
         /// <param name="to">Target file format</param>
         /// <param name="fileFullPath">Output path file</param>
+        /// <param name="version">File version to use</param>
         /// <param name="progress"></param>
         /// <returns>The converted file if successful, otherwise null</returns>
-        public virtual FileFormat Convert(Type to, string fileFullPath, OperationProgress progress = null)
+        public virtual FileFormat Convert(Type to, string fileFullPath, uint version = 0, OperationProgress progress = null)
         {
             if (!IsValid) return null;
             var found = AvailableFormats.Any(format => to == format.GetType());
@@ -3479,6 +3494,11 @@ namespace UVtools.Core.FileFormats
 
             if (!slicerFile.OnBeforeConvertFrom(this)) return null;
             if (!OnBeforeConvertTo(slicerFile)) return null;
+
+            if (version > 0 && version != DefaultVersion)
+            {
+                slicerFile.Version = version;
+            }
 
             slicerFile.SuppressRebuildPropertiesWork(() =>
             {
@@ -3589,10 +3609,11 @@ namespace UVtools.Core.FileFormats
         /// </summary>
         /// <param name="to">Target file format</param>
         /// <param name="fileFullPath">Output path file</param>
+        /// <param name="version">File version</param>
         /// <param name="progress"></param>
         /// <returns>TThe converted file if successful, otherwise null</returns>
-        public FileFormat Convert(FileFormat to, string fileFullPath, OperationProgress progress = null)
-            => Convert(to.GetType(), fileFullPath, progress);
+        public FileFormat Convert(FileFormat to, string fileFullPath, uint version = 0, OperationProgress progress = null)
+            => Convert(to.GetType(), fileFullPath, version, progress);
 
         /// <summary>
         /// Validate AntiAlias Level

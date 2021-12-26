@@ -419,12 +419,23 @@ namespace UVtools.Core.FileFormats
 
         public override uint[] AvailableVersions { get; } = { 2, 3 };
 
+        public override uint DefaultVersion => 2;
+
         public override uint Version
         {
             get => HeaderSettings.Version;
             set
             {
-                base.Version = value;
+                if (base.Version == 3)
+                {
+                    base.Version = 2;
+                    SlicerInfoV3Settings.MyControl = 1;
+                }
+                else
+                {
+                    base.Version = value;
+                }
+
                 HeaderSettings.Version = (ushort)base.Version;
             }
         }

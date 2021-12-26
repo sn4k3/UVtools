@@ -272,6 +272,8 @@ namespace UVtools.Core.FileFormats
 
         public override uint[] AvailableVersions { get; } = { 1 };
 
+        public override uint DefaultVersion => 1;
+
         public override uint Version
         {
             get => ManifestFile.FileVersion;

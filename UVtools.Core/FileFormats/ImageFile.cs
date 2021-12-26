@@ -107,7 +107,7 @@ namespace UVtools.Core.FileFormats
             this[0].LayerMat.Save(FileFullPath);
         }
 
-        public override FileFormat Convert(Type to, string fileFullPath, OperationProgress progress = null)
+        public override FileFormat Convert(Type to, string fileFullPath, uint version = 0, OperationProgress progress = null)
         {
             throw new NotSupportedException();
         }
