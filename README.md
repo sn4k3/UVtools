@@ -13,10 +13,13 @@
 https://github.com/sn4k3/UVtools/releases/latest  
 
 ## To auto install on Windows via a package manager:
-- **Winget:** winget install -e --id PTRTECH.UVtools
-- **Chocolatey:** choco install -y uvtools
+- **Winget:** `winget install -e --id PTRTECH.UVtools`
+- **Chocolatey:** `choco install -y uvtools`
 
 **Note:** Winget is included on Windows 11 by default.
+
+## To auto install on MacOS via homebrew:
+`brew install --cask uvtools`
 
 # MSLA/DLP, file analysis, calibration, repair, conversion and manipulation
 
