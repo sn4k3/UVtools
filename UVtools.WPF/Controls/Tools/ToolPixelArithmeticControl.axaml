@@ -102,47 +102,63 @@
 
       <StackPanel Grid.Row="8" Grid.Column="2" Grid.ColumnSpan="9"
             IsVisible="{Binding Operation.IsCorrodeVisible}"
-            Spacing="10" Orientation="Horizontal">
+            Spacing="10" Orientation="Vertical">
 
-        <TextBlock
-           VerticalAlignment="Center"
-           Text="Noise range:"/>
-        
-        <TextBlock
-           VerticalAlignment="Center"
-           Text="Min:"/>
+          <StackPanel Spacing="10" Orientation="Horizontal">
 
-        <NumericUpDown
-               Minimum="-1000"
-               Maximum="1000"
-               Width="80"
-               Value="{Binding Operation.NoiseMinOffset}"
-               ToolTip.Tip="Minimum value of random noise offset"/>
-
-        <TextBlock
+            <TextBlock
                VerticalAlignment="Center"
-               Text="Max:"/>
+               Text="Noise range:"/>
+            
+            <TextBlock
+               VerticalAlignment="Center"
+               Text="Min:"/>
 
-        <NumericUpDown
-            Minimum="-1000"
-            Maximum="1000"
-               Width="80"
-               Value="{Binding Operation.NoiseMaxOffset}"
-               ToolTip.Tip="Maximum value of random noise offset"/>
+            <NumericUpDown
+                   Minimum="-1000"
+                   Maximum="1000"
+                   Width="80"
+                   Value="{Binding Operation.NoiseMinOffset}"
+                   ToolTip.Tip="Minimum value of random noise offset"/>
 
-        <TextBlock
-            VerticalAlignment="Center"
-            Text="Threshold:"/>
+            <TextBlock
+                   VerticalAlignment="Center"
+                   Text="Max:"/>
 
-        <NumericUpDown
-            Classes="ValueLabel ValueLabel_sun"
-            Minimum="0"
-            Maximum="255"
-            Width="80"
-            Value="{Binding Operation.NoiseThreshold}"
-            ToolTip.Tip="Only the pixels with brightness above this threshold are processed"/>
+            <NumericUpDown
+                Minimum="-1000"
+                Maximum="1000"
+                   Width="80"
+                   Value="{Binding Operation.NoiseMaxOffset}"
+                   ToolTip.Tip="Maximum value of random noise offset"/>
 
-      </StackPanel>
+            <TextBlock
+                VerticalAlignment="Center"
+                Text="Threshold:"/>
+
+            <NumericUpDown
+                Classes="ValueLabel ValueLabel_sun"
+                Minimum="0"
+                Maximum="255"
+                Width="80"
+                Value="{Binding Operation.NoiseThreshold}"
+                ToolTip.Tip="Only the pixels with brightness above this threshold are processed"/>
+          </StackPanel>
+
+          <StackPanel Spacing="10" Orientation="Horizontal">
+              <TextBlock
+                  VerticalAlignment="Center"
+                  Text="Noise pixel area:   "/>
+
+              <NumericUpDown
+                  Classes="ValueLabel ValueLabel_px2"
+                  Minimum="1"
+                  Maximum="65535"
+                  Width="80"
+                  Value="{Binding Operation.NoisePixelArea}"/>
+          </StackPanel>
+
+        </StackPanel>
 
         <TextBlock Grid.Row="8" Grid.Column="0"
                    VerticalAlignment="Center"

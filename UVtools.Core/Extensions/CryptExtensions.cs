@@ -14,13 +14,13 @@ namespace UVtools.Core.Extensions
 {
     public static class CryptExtensions
     {
-        public static SHA1CryptoServiceProvider SHA1 { get; } = new();
+        public static readonly SHA1CryptoServiceProvider SHA1 = new();
         public static string ComputeSHA1Hash(byte[] input)
         {
             return Convert.ToBase64String(SHA1.ComputeHash(input));
         }
 
-        public static SHA256 SHA256 { get; } = SHA256.Create();
+        public static readonly SHA256 SHA256 = SHA256.Create();
         public static byte[] ComputeSHA256Hash(byte[] input)
         {
             return SHA256.ComputeHash(input);

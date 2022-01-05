@@ -41,6 +41,7 @@ namespace UVtools.Core.Operations
 
         #region Members
         private FileFormat _slicerFile;
+        private Rectangle _originalBoundingRectangle;
         private OperationImportFrom _importedFrom = OperationImportFrom.None;
         private Rectangle _roi = Rectangle.Empty;
         private Point[][] _maskPoints;
@@ -71,8 +72,16 @@ namespace UVtools.Core.Operations
             set
             {
                 if(!RaiseAndSetIfChanged(ref _slicerFile, value)) return;
+                OriginalBoundingRectangle = _slicerFile.BoundingRectangle;
                 InitWithSlicerFile();
             }
+        }
+
+        [XmlIgnore]
+        public Rectangle OriginalBoundingRectangle
+        {
+            get => _originalBoundingRectangle;
+            private set => RaiseAndSetIfChanged(ref _originalBoundingRectangle, value);
         }
 
         [XmlIgnore]
@@ -287,6 +296,7 @@ namespace UVtools.Core.Operations
         protected Operation(FileFormat slicerFile) : this()
         {
             _slicerFile = slicerFile;
+            OriginalBoundingRectangle = _slicerFile.BoundingRectangle;
             SelectAllLayers();
             InitWithSlicerFile();
         }
@@ -431,16 +441,29 @@ namespace UVtools.Core.Operations
         }
 
         public Size GetRoiSizeOrDefault() => GetRoiSizeOrDefault(SlicerFile.Resolution);
-        public Size GetRoiSizeOrDefault(Mat defaultMat) => GetRoiSizeOrDefault(defaultMat.Size);
-        
-        public Size GetRoiSizeOrDefault(Size defaultSize)
+        public Size GetRoiSizeOrDefault(Mat defaultMat) => defaultMat is null ? GetRoiSizeOrDefault() : GetRoiSizeOrDefault(defaultMat.Size);
+        public Size GetRoiSizeOrDefault(Rectangle fallbackRectangle) => GetRoiSizeOrDefault(fallbackRectangle.Size);
+        public Size GetRoiSizeOrDefault(Size fallbackSize)
         {
-            return HaveROI && defaultSize != _roi.Size ? _roi.Size : defaultSize;
+            return HaveROI ? _roi.Size : fallbackSize;
         }
+
 
         public Mat GetRoiOrDefault(Mat defaultMat)
         {
-            return HaveROI && defaultMat.Size != _roi.Size ? new Mat(defaultMat, _roi) : defaultMat;
+            return HaveROI && defaultMat.Size != _roi.Size ? defaultMat.Roi(_roi) : defaultMat;
+        }
+
+        public Mat GetRoiOrDefault(Mat defaultMat, Rectangle fallbackRoi)
+        {
+            if (HaveROI && defaultMat.Size != _roi.Size) return defaultMat.Roi(_roi);
+            if (fallbackRoi.IsEmpty) return defaultMat;
+            return defaultMat.Size != fallbackRoi.Size ? defaultMat.Roi(fallbackRoi) : defaultMat;
+        }
+
+        public Mat GetRoiOrVolumeBounds(Mat defaultMat)
+        {
+            return GetRoiOrDefault(defaultMat, _originalBoundingRectangle);
         }
 
         public void ClearMasks()

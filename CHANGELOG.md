@@ -1,5 +1,17 @@
 # Changelog
 
+## 05/01/2022 - v2.27.5
+
+- **Pixel Arithmetic:**
+  - (Add) Corode: Noise pixel area, defaulting to 3px2
+  - (Change) Corode: Cryptonumeric random to normal random to speed up calculation
+  - (Change) Fuzzy skin preset: Set a ignore threshold area of 5000px2
+  - (Improvement) Masking performance and auto crop the layer to speed up the processing when using an "Apply to" other than "All"
+  - (Fix) Some "Apply to" methods was creating a wrong mask with some operators
+- **CXDLP V3:**
+   - (Fix) Checksum (CRC32) (#389)
+   - (Fix) Software name and material name serialization
+
 ## 26/12/2021 - v2.27.4
 
 - **UI:**

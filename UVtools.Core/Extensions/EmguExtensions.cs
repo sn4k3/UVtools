@@ -600,6 +600,25 @@ namespace UVtools.Core.Extensions
         }
 
         /// <summary>
+        /// Gets a Roi at x=0 and y=0 given a size, but return source when roi is empty or have same size as source
+        /// </summary>
+        /// <param name="mat"></param>
+        /// <param name="size"></param>
+        /// <returns></returns>
+        public static Mat Roi(this Mat mat, Size size)
+        {
+            return size.IsEmpty || size == mat.Size ? mat : new Mat(mat, new(Point.Empty, size));
+        }
+
+        /// <summary>
+        /// Gets a Roi from a mat size, but return source when roi is empty or have same size as source
+        /// </summary>
+        /// <param name="mat"></param>
+        /// <param name="fromMat"></param>
+        /// <returns></returns>
+        public static Mat Roi(this Mat mat, Mat fromMat) => mat.Roi(fromMat.Size);
+
+        /// <summary>
         /// Gets a Roi from center, but return source when have same size as source
         /// </summary>
         /// <param name="mat"></param>
@@ -1302,6 +1321,17 @@ namespace UVtools.Core.Extensions
             var size = Math.Max(iterations, 1) * 2 + 1;
             iterations = 1;
             return CvInvoke.GetStructuringElement(elementShape, new Size(size, size), new Point(-1, -1));
+        }
+        #endregion
+
+        #region Disposes
+        /// <summary>
+        /// Dispose this <see cref="Mat"/> if it's a sub matrix / roi
+        /// </summary>
+        /// <param name="mat">Mat to dispose</param>
+        public static void DisposeIfSubMatrix(this Mat mat)
+        {
+            if(mat.IsSubmatrix) mat.Dispose();
         }
         #endregion
     }

@@ -20,6 +20,7 @@ using Emgu.CV;
 using Emgu.CV.Structure;
 using UVtools.Core.Extensions;
 using UVtools.Core.Layers;
+using UVtools.Core.Objects;
 using UVtools.Core.Operations;
 
 namespace UVtools.Core.FileFormats
@@ -238,22 +239,27 @@ namespace UVtools.Core.FileFormats
 
         public sealed class SlicerInfoV3
         {
-            [FieldOrder(0)] [FieldEndianness(Endianness.Big)] public uint SoftwareNameSize { get; set; } = (uint)About.SoftwareWithVersion.Length;
+            //[FieldOrder(0)] [FieldEndianness(Endianness.Big)] public uint SoftwareNameSize { get; set; } = (uint)About.SoftwareWithVersion.Length + 1;
 
-            [FieldOrder(1)] [FieldLength(nameof(SoftwareNameSize))] public string SoftwareName { get; set; } = About.SoftwareWithVersion;
+            [FieldOrder(0)] public NullTerminatedUintStringBigEndian SoftwareName { get; set; } = new(About.SoftwareWithVersion);
 
-            [FieldOrder(2)] [FieldEndianness(Endianness.Big)] public uint MaterialNameSize { get; set; }
+            //[FieldOrder(2)] [FieldEndianness(Endianness.Big)] public uint MaterialNameSize { get; set; }
 
-            [FieldOrder(3)] [FieldLength(nameof(MaterialNameSize))] public string MaterialName { get; set; }
+            [FieldOrder(1)] public NullTerminatedUintStringBigEndian MaterialName { get; set; } = new();
 
-            [FieldOrder(4)] public uint Padding1 { get; set; }
-            [FieldOrder(5)] public uint Padding2 { get; set; }
-            [FieldOrder(6)] public uint Padding3 { get; set; }
-            [FieldOrder(7)] public uint Padding4 { get; set; }
-            [FieldOrder(8)] public byte Padding5 { get; set; }
-            [FieldOrder(9)] public byte LightPWM { get; set; } = byte.MaxValue;
-            [FieldOrder(10)] public ushort MyControl { get; set; }
-            [FieldOrder(11)] public PageBreak PageBreak { get; set; } = new();
+            [FieldOrder(2)] public uint Unknown1 { get; set; }
+            [FieldOrder(3)] public uint Unknown2 { get; set; }
+            [FieldOrder(4)] public uint Unknown3 { get; set; }
+            [FieldOrder(5)] public uint Unknown4 { get; set; }
+            [FieldOrder(6)] public byte Unknown5 { get; set; } = 1;
+            [FieldOrder(7)] public byte LightPWM { get; set; } = byte.MaxValue;
+            [FieldOrder(8)] public ushort Unknown6 { get; set; } = 2;
+            [FieldOrder(9)] public PageBreak PageBreak { get; set; } = new();
+
+            public override string ToString()
+            {
+                return $"{nameof(SoftwareName)}: {SoftwareName}, {nameof(MaterialName)}: {MaterialName}, {nameof(Unknown1)}: {Unknown1}, {nameof(Unknown2)}: {Unknown2}, {nameof(Unknown3)}: {Unknown3}, {nameof(Unknown4)}: {Unknown4}, {nameof(Unknown5)}: {Unknown5}, {nameof(LightPWM)}: {LightPWM}, {nameof(Unknown6)}: {Unknown6}, {nameof(PageBreak)}: {PageBreak}";
+            }
         }
 
         #endregion
@@ -426,16 +432,7 @@ namespace UVtools.Core.FileFormats
             get => HeaderSettings.Version;
             set
             {
-                if (base.Version == 3)
-                {
-                    base.Version = 2;
-                    SlicerInfoV3Settings.MyControl = 1;
-                }
-                else
-                {
-                    base.Version = value;
-                }
-
+                base.Version = value;
                 HeaderSettings.Version = (ushort)base.Version;
             }
         }
@@ -609,8 +606,8 @@ namespace UVtools.Core.FileFormats
 
         public override string MaterialName
         {
-            get => SlicerInfoV3Settings.MaterialName;
-            set => base.MaterialName = SlicerInfoV3Settings.MaterialName = value;
+            get => SlicerInfoV3Settings.MaterialName.Value;
+            set => base.MaterialName = SlicerInfoV3Settings.MaterialName.Value = value;
         }
 
         public override object[] Configs => new object[] { HeaderSettings, SlicerInfoSettings, SlicerInfoV3Settings, FooterSettings };
@@ -702,7 +699,7 @@ namespace UVtools.Core.FileFormats
             //Helpers.SerializeWriteFileStream(outputFile, pageBreak);
             outputFile.WriteBytes(pageBreak);
 
-            if (HeaderSettings.Version >= 2 && SlicerInfoV3Settings.MyControl > 0)
+            if (HeaderSettings.Version >= 3)
             {
                 Helpers.SerializeWriteFileStream(outputFile, SlicerInfoV3Settings);
             }
@@ -845,6 +842,7 @@ namespace UVtools.Core.FileFormats
 
             Helpers.SerializeWriteFileStream(outputFile, FooterSettings);
 
+            progress.Reset("Calculating checksum");
             uint checkSum = CalculateCheckSum(outputFile, false);
 
             outputFile.Write(BitExtensions.ToBytesBigEndian(checkSum));
@@ -866,19 +864,26 @@ namespace UVtools.Core.FileFormats
 
             var position = inputFile.Position;
 
+            progress.Reset("Validating checksum");
             var expectedCheckSum = CalculateCheckSum(inputFile, false, -4);
-            inputFile.Seek(3, SeekOrigin.Current);
-            byte checkSum = (byte) inputFile.ReadByte();
-
-            inputFile.Seek(position, SeekOrigin.Begin);
-
+            uint checkSum;
+            if (HeaderSettings.Version <= 2)
+            {
+                inputFile.Seek(3, SeekOrigin.Current);
+                checkSum = (uint) inputFile.ReadByte();
+            }
+            else
+            {
+                checkSum = inputFile.ReadUIntBigEndian();
+            }
 
             if (expectedCheckSum != checkSum)
             {
                 throw new FileLoadException($"Checksum fails, expecting: {expectedCheckSum} but got: {checkSum}.\n" +
                                             $"Try to reslice the file.", FileFullPath);
             }
-            
+
+            inputFile.Seek(position, SeekOrigin.Begin);
             var previews = new byte[ThumbnailsOriginalSize.Length][];
             for (int i = 0; i < ThumbnailsOriginalSize.Length; i++)
             {
@@ -898,15 +903,12 @@ namespace UVtools.Core.FileFormats
             Debug.WriteLine(SlicerInfoSettings);
 
             LayerManager.Init(HeaderSettings.LayerCount, DecodeType == FileDecodeType.Partial);
-            uint firstPreLayerArea = inputFile.ReadUIntBigEndian();
-            inputFile.Seek(LayerCount * 4 + 2 - 4, SeekOrigin.Current); // Skip pre layers
-            uint afterPreLayersUint = inputFile.ReadUIntBigEndian();
-            inputFile.Seek(-4, SeekOrigin.Current);
+            inputFile.Seek(LayerCount * 4 + 2, SeekOrigin.Current); // Skip pre layers
 
-            if (HeaderSettings.Version >= 2 && firstPreLayerArea != afterPreLayersUint) // New informative header v3
+            if (HeaderSettings.Version >= 3) // New informative header v3
             {
                 SlicerInfoV3Settings = Helpers.Deserialize<SlicerInfoV3>(inputFile);
-                SlicerInfoV3Settings.MyControl = 1; // To know v3 is present
+                Debug.WriteLine(SlicerInfoV3Settings);
             }
 
 
@@ -993,34 +995,85 @@ namespace UVtools.Core.FileFormats
             outputFile.Seek(offset, SeekOrigin.Begin);
             Helpers.SerializeWriteFileStream(outputFile, SlicerInfoSettings);
 
+            if (HeaderSettings.Version >= 3)
+            {
+                outputFile.Seek(LayerCount * 4 + 2, SeekOrigin.Current); // Skip pre layers
+                Helpers.SerializeWriteFileStream(outputFile, SlicerInfoV3Settings);
+            }
+
             uint checkSum = CalculateCheckSum(outputFile, false, -4);
             outputFile.WriteBytes(BitExtensions.ToBytesBigEndian(checkSum));
         }
 
-        private byte CalculateCheckSum(FileStream fs, bool restorePosition = true, int offsetSize = 0)
+        private uint CalculateCheckSum(FileStream fs, bool restorePosition = true, int offsetSize = 0)
         {
-            byte checkSum = 0;
+            uint checkSum = 0;
             var position = fs.Position;
             var dataSize = fs.Length + offsetSize;
             const int bufferSize = 50 * 1024 * 1024;
 
             fs.Seek(0, SeekOrigin.Begin);
 
-            for (
-                int chunkSize = (int)Math.Min(bufferSize, dataSize - fs.Position); 
-                chunkSize > 0; 
-                chunkSize = (int)Math.Min(chunkSize, dataSize - fs.Position))
+            if (HeaderSettings.Version >= 3)
             {
-                var bytes = fs.ReadBytes(chunkSize);
-                for (int i = 0; i < bytes.Length; i++)
+                // https://github.com/dotnet/runtime/blob/main/src/libraries/System.IO.Hashing/src/System/IO/Hashing/Crc32.Table.cs
+                var table = new uint[256];
+
+                for (uint i = 0; i < 256; i++)
                 {
-                    checkSum ^= bytes[i];
+                    uint val = i;
+
+                    for (int j = 0; j < 8; j++)
+                    {
+                        if ((val & 0b0000_0001) == 0)
+                        {
+                            val >>= 1;
+                        }
+                        else
+                        {
+                            val = (val >> 1) ^ 0xEDB88320u;
+                        }
+                    }
+
+                    table[i] = val;
+                }
+
+                for (
+                    int chunkSize = (int)Math.Min(bufferSize, dataSize - fs.Position);
+                    chunkSize > 0;
+                    chunkSize = (int)Math.Min(chunkSize, dataSize - fs.Position))
+                {
+                    var bytes = fs.ReadBytes(chunkSize);
+                    for (int i = 0; i < bytes.Length; i++)
+                    {
+                        // https://github.com/dotnet/runtime/blob/main/src/libraries/System.IO.Hashing/src/System/IO/Hashing/Crc32.cs
+                        byte idx = (byte)checkSum;
+                        idx ^= bytes[i];
+                        checkSum = table[idx] ^ (checkSum >> 8);
+                    }
                 }
             }
+            else
+            {
+                for (
+                    int chunkSize = (int)Math.Min(bufferSize, dataSize - fs.Position);
+                    chunkSize > 0;
+                    chunkSize = (int)Math.Min(chunkSize, dataSize - fs.Position))
+                {
+                    var bytes = fs.ReadBytes(chunkSize);
+                    for (int i = 0; i < bytes.Length; i++)
+                    {
+                        checkSum ^= bytes[i];
+                    }
+                }
+            }
+            
 
             if (restorePosition) fs.Seek(position, SeekOrigin.Begin);
 
             return checkSum;
+
+
         }
 
         #endregion

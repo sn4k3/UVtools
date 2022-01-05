@@ -5,6 +5,7 @@
 //   Authors: Julien Delnatte
 //------------------------------------------------
 // CHANGELOG:
+// Add version 3
 // Add uint16 unknown after header (Set to 2)
 // Add uint32 modelSize and ubyte model[modelSize] after unknown
 // Add ubyte offset[64] after resolutionY (Zeros)
@@ -47,7 +48,10 @@ struct HEADER {
     uint16 ResolutionY <fgcolor=cBlack, bgcolor=cWhite>;
 
     ubyte Offset[64];
+} header;
 
+
+struct PREVIEWS {
     RgbPreviewImageRawData preview(116*116*2);
     ubyte rn0[2] <fgcolor=cBlack, bgcolor=cRed>;
 
@@ -56,7 +60,9 @@ struct HEADER {
 
     RgbPreviewImageRawData preview2(290*290*2);
     ubyte rn2[2] <fgcolor=cBlack, bgcolor=cRed>;   
+} previews;
 
+struct SLICER_INFO {
     uint32 PlateformXLength <fgcolor=cBlack, bgcolor=cWhite>;
     wchar_t plateformX[PlateformXLength/2];
 
@@ -78,7 +84,7 @@ struct HEADER {
     uint16 BottomLightPWM <fgcolor=cBlack, bgcolor=cWhite>;
     uint16 LightPWM <fgcolor=cBlack, bgcolor=cWhite>;
 
-} header;
+} slicerInfo;
 
 struct LAYER_DEF {
     local int i;
@@ -88,25 +94,23 @@ struct LAYER_DEF {
     ubyte rn3[2] <fgcolor=cBlack, bgcolor=cRed>;
 } layerDefs;
 
-local uint versionIdentifier = ReadUInt();
-//Printf( "%d\n", layerDefs.ID[0].layerArea ); 
-if(header.Version >= 2 && versionIdentifier != layerDefs.ID[0].layerArea){
-    struct SLICER_INFO {
+if(header.Version >= 3){
+    struct SLICER_INFO_V3 {
         uint32 SoftwareNameSize;
         char SoftwareName[SoftwareNameSize];
         uint32 MaterialNameSize;
         char MaterialName[MaterialNameSize];
         //ubyte offset[67-SoftwareNameSize-MaterialNameSize];
         //ubyte offset[20];
-        uint Padding;
-        uint Padding;
-        uint Padding;
-        uint Padding;
-        ubyte Padding;
+        uint Unknown;
+        uint Unknown;
+        uint Unknown;
+        uint Unknown;
+        ubyte Unknown;
         ubyte LightPWM;
-        ushort Padding;
+        ushort Unknown;
         ubyte rn0[2] <fgcolor=cBlack, bgcolor=cRed>;
-    } slicerInfo;
+    } slicerInfoV3;
 }
 
 
@@ -120,6 +124,21 @@ struct LAYERS {
 struct FOOTER {
     uint32 FooterSize <fgcolor=cBlack, bgcolor=cWhite>;
     char Marker[FooterSize] <fgcolor=cBlack, bgcolor=cRed>;
-
-    uint CheckSum <fgcolor=cBlack, bgcolor=cWhite>;
 } footer;
+
+
+//ubyte CheckSum <fgcolor=cBlack, bgcolor=cWhite>;
+//ubyte CheckSum <fgcolor=cBlack, bgcolor=cWhite>;
+//ubyte CheckSum <fgcolor=cBlack, bgcolor=cWhite>;
+//ubyte CheckSum <fgcolor=cBlack, bgcolor=cWhite>;
+uint CheckSum <fgcolor=cBlack, bgcolor=cWhite>;
+
+/*
+local ubyte calculatedChecksum = 0;
+local ulong i = 0;
+for(i = 0; i < FileSize()-4; i++ ){
+        calculatedChecksum ^= ReadByte(i);
+}
+
+ubyte CalculatedChecksum = calculatedChecksum;
+*/
