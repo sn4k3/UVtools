@@ -215,27 +215,77 @@ namespace UVtools.WPF
                         }
 
                         int halfBrush = operationDrawing.BrushSize / 2;
+                        double angle = operationDrawing.RotationAngle;
                         switch (operationDrawing.BrushShape)
                         {
                             case PixelDrawing.BrushShapeType.Line:
                                 Point point1 = new(location.X - halfBrush, location.Y);
                                 Point point2 = new(location.X + halfBrush, location.Y);
-                                point1 = point1.Rotate(operationDrawing.RotationAngle, location);
-                                point2 = point2.Rotate(operationDrawing.RotationAngle, location);
 
                                 if (_showLayerImageRotated)
                                 {
                                     if (_showLayerImageRotateCcwDirection)
                                     {
-                                        point1 = point1.Rotate(90, location);
-                                        point2 = point2.Rotate(90, location);
+                                        angle += 90;
                                     }
                                     else
                                     {
-                                        point1 = point1.Rotate(-90, location);
-                                        point2 = point2.Rotate(-90, location);
+                                        angle -= 90;
                                     }
                                 }
+
+                                point1 = point1.Rotate(angle, location);
+                                point2 = point2.Rotate(angle, location);
+                                
+
+                                if (_showLayerImageFlipped)
+                                {
+                                    if (_showLayerImageFlippedHorizontally)
+                                    {
+                                        var newPoint1 = new Point(point2.X, point1.Y);
+                                        var newPoint2 = new Point(point1.X, point2.Y);
+
+                                        point1 = newPoint1;
+                                        point2 = newPoint2;
+                                    }
+
+                                    if (_showLayerImageFlippedVertically)
+                                    {
+                                        var newPoint1 = new Point(point1.X, point2.Y);
+                                        var newPoint2 = new Point(point2.X, point1.Y);
+
+                                        point1 = newPoint1;
+                                        point2 = newPoint2;
+                                    }
+                                }
+
+                                /*if (_showLayerImageRotated)
+                                {
+                                    if (!_showLayerImageFlipped || _showLayerImageFlippedHorizontally && _showLayerImageFlippedVertically)
+                                    {
+                                        if (_showLayerImageRotateCcwDirection)
+                                        {
+                                            angle -= 90;
+                                        }
+                                        else
+                                        {
+                                            angle += 90;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        if (_showLayerImageRotateCcwDirection)
+                                        {
+                                            angle += 90;
+                                        }
+                                        else
+                                        {
+                                            angle -= 90;
+                                        }
+                                    }
+                                }*/
+
+
 
                                 LayerCache.Canvas.DrawLine(point1.X, point1.Y, point2.X, point2.Y, new SKPaint
                                 {
@@ -276,7 +326,6 @@ namespace UVtools.WPF
                                     operationDrawing.LineType);*/
                                 break;
                             default:
-                                var angle = operationDrawing.RotationAngle;
                                 if (_showLayerImageRotated)
                                 {
                                     if (!_showLayerImageFlipped || _showLayerImageFlippedHorizontally && _showLayerImageFlippedVertically)

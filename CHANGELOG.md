@@ -1,5 +1,13 @@
 # Changelog
 
+## 07/01/2022 - v2.27.6
+
+- **PrusaSlicer:**
+   - (Fix) Printer: AnyCubic Photon Mono 4K - bed origin (#369)
+   - (Fix) Printer: AnyCubic Photon Mono X 6K - bed origin (#369)
+- (Fix) Anycubic files: Soft-save on versions below 516 can corrupt the file (#396)
+- (Fix) Pixel editor: Place a line on a mirrored virtual layer was previewing the line in the wrong orientation (#399)
+
 ## 05/01/2022 - v2.27.5
 
 - **Pixel Arithmetic:**

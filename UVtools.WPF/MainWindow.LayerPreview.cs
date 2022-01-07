@@ -2072,7 +2072,7 @@ namespace UVtools.WPF
         public void UpdatePixelEditorCursor()
         {
             Mat cursor = null;
-            MCvScalar _pixelEditorCursorColor = new(
+            var _pixelEditorCursorColor = new MCvScalar(
                 Settings.PixelEditor.CursorColor.B, 
                 Settings.PixelEditor.CursorColor.G,
                 Settings.PixelEditor.CursorColor.R,

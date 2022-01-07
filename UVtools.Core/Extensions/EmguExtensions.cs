@@ -983,10 +983,27 @@ namespace UVtools.Core.Extensions
         {
             if (sides == 1)
             {
-                Point point1 = new(center.X - radius, center.Y);
+                var point1 = new Point(center.X - radius, center.Y);
+                var point2 = new Point(center.X + radius, center.Y);
                 point1 = point1.Rotate(startingAngle, center);
-                Point point2 = new(center.X + radius, center.Y);
                 point2 = point2.Rotate(startingAngle, center);
+
+                if (flip is FlipType.Horizontal or FlipType.Both)
+                {
+                    var newPoint1 = new Point(point2.X, point1.Y);
+                    var newPoint2 = new Point(point1.X, point2.Y);
+                    point1 = newPoint1;
+                    point2 = newPoint2;
+                }
+
+                if (flip is FlipType.Vertical or FlipType.Both)
+                {
+                    var newPoint1 = new Point(point1.X, point2.Y);
+                    var newPoint2 = new Point(point2.X, point1.Y);
+                    point1 = newPoint1;
+                    point2 = newPoint2;
+                }
+
                 CvInvoke.Line(src, point1, point2, color, thickness < 1 ? 1 : thickness, lineType);
                 return;
             }

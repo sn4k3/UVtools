@@ -1871,7 +1871,7 @@ namespace UVtools.Core.FileFormats
             outputFile.Seek(FileMarkSettings.HeaderAddress, SeekOrigin.Begin);
             Helpers.SerializeWriteFileStream(outputFile, HeaderSettings);
 
-            if (FileMarkSettings.ExtraAddress > 0)
+            if (FileMarkSettings.Version >= VERSION_516 && FileMarkSettings.ExtraAddress > 0)
             {
                 outputFile.Seek(FileMarkSettings.ExtraAddress, SeekOrigin.Begin);
                 Helpers.SerializeWriteFileStream(outputFile, ExtraSettings);
