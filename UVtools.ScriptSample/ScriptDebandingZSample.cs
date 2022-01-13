@@ -145,17 +145,18 @@ namespace UVtools.ScriptSample
 
             if (CreateEmptyLayerInput.Value)
             {
-                var firstLayer = SlicerFile.FirstLayer.Clone();
-                using var mat = EmguExtensions.InitMat(SlicerFile.Resolution);
-                var pixelPos = firstLayer.BoundingRectangle.Center();
-                mat.SetByte(pixelPos.X, pixelPos.Y, 1); // Print a very fade pixel to ignore empty layer detection
-                firstLayer.LayerMat = mat;
-                firstLayer.ExposureTime = SlicerFile.SupportsGCode ? 0 : 0.1f;
-                SlicerFile.SuppressRebuildPropertiesWork(() =>
+                var firstLayer = SlicerFile.FirstLayer;
+                if (firstLayer.NonZeroPixelCount > 1) // First layer is not blank as it seems, lets create one
                 {
-                    SlicerFile.LayerManager.Prepend(firstLayer);
-                });
-                
+                    firstLayer = firstLayer.Clone();
+                    using var mat = EmguExtensions.InitMat(SlicerFile.Resolution);
+                    var pixelPos = firstLayer.BoundingRectangle.Center();
+                    mat.SetByte(pixelPos.X, pixelPos.Y, 1); // Print a very fade pixel to ignore empty layer detection
+                    firstLayer.LayerMat = mat;
+                    firstLayer.ExposureTime = SlicerFile.SupportsGCode ? 0 : 0.1f;
+                    SlicerFile.SuppressRebuildPropertiesWork(() => { SlicerFile.LayerManager.Prepend(firstLayer); });
+                }
+
             }
 
             // return true if not cancelled by user
