@@ -11,9 +11,6 @@ using UVtools.Core.Scripting;
 using System.IO;
 using System.Collections.Generic;
 using UVtools.Core.FileFormats;
-using System.Threading.Tasks;
-using UVtools.Core;
-using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Linq;
 
