@@ -7,6 +7,7 @@
  */
 
 using System;
+using UVtools.Core;
 using UVtools.Core.Extensions;
 using UVtools.Core.Scripting;
 
@@ -90,10 +91,10 @@ namespace UVtools.ScriptSample
         public void ScriptInit()
         {
             Script.Name = "Debanding Z with wait time";
-            Script.Description = "Applies wait time at certain layers to help layer adhesion and deband the Z axis.\n" +
+            Script.Description = "Applies wait time at certain layers to help layer adhesion and debanding the Z axis.\n" +
                                  "Based on the guide: https://bit.ly/3nkXAOa\n";
             Script.Author = "Tiago Conceição";
-            Script.Version = new Version(0, 1);
+            Script.Version = new Version(0, 2);
             if (SlicerFile.SupportsGCode) CreateEmptyLayerInput.Value = false;
             Script.UserInputs.Add(CreateEmptyLayerInput);
             Script.UserInputs.Add(BottomSafeDebandingHeightInput);
@@ -125,7 +126,6 @@ namespace UVtools.ScriptSample
                 SlicerFile.BottomLightOffDelay = 0;
                 SlicerFile.LightOffDelay = 0;
                 SlicerFile.BottomWaitTimeBeforeCure = (float) BottomWaitTimeBeforeCureInput.Value;
-
                 SlicerFile.WaitTimeBeforeCure = (float)NormalWaitTimeBeforeCureInput.Value;
             }
             else
@@ -151,7 +151,6 @@ namespace UVtools.ScriptSample
                 mat.SetByte(pixelPos.X, pixelPos.Y, 1); // Print a very fade pixel to ignore empty layer detection
                 firstLayer.LayerMat = mat;
                 firstLayer.ExposureTime = SlicerFile.SupportsGCode ? 0 : 0.1f;
-                firstLayer.SetNoDelays();
                 SlicerFile.SuppressRebuildPropertiesWork(() =>
                 {
                     SlicerFile.LayerManager.Prepend(firstLayer);
