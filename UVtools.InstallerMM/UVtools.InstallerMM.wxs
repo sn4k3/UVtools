@@ -347,9 +347,6 @@
         <Component Id="owc3FC8434C1A84605AEEBC6A100CA2F3E1" Guid="47d7e276-db6d-424e-d797-1a69e1e24b3b" Win64="yes">
           <File Id="owf3FC8434C1A84605AEEBC6A100CA2F3E1" Source="$(var.SourceDir)\Newtonsoft.Json.dll" KeyPath="yes" />
         </Component>
-        <Component Id="owcB31A030E18B3AEFE06E4BF4C96CFFFA1" Guid="5702bba3-1ce1-59a4-83aa-69c210ec428a" Win64="yes">
-          <File Id="owfB31A030E18B3AEFE06E4BF4C96CFFFA1" Source="$(var.SourceDir)\opencv_videoio_ffmpeg454_64.dll" KeyPath="yes" />
-        </Component>
         <Component Id="owc7BB28EFC52A49429849339DF748B25E7" Guid="ded507d6-fd2b-41f2-bd03-cf489e47df7a" Win64="yes">
           <File Id="owf7BB28EFC52A49429849339DF748B25E7" Source="$(var.SourceDir)\runtime_package.dat" KeyPath="yes" />
         </Component>
@@ -1413,6 +1410,9 @@
             <File Id="owf505D5854210A555AEF782935C164E813" Source="$(var.SourceDir)\zh-Hant\Microsoft.CodeAnalysis.Scripting.resources.dll" KeyPath="yes" />
           </Component>
         </Directory>
+        <Component Id="owc2B1C136C44C740F48CDFE91A80F48B4B" Guid="2B1C136C-44C7-40F4-8CDF-E91A80F48B4B">
+          <File Id="owf2B1C136C44C740F48CDFE91A80F48B4B" Source="$(var.SourceDir)\opencv_videoio_ffmpeg455_64.dll" KeyPath="yes" />
+        </Component>
       </Directory>
       <Directory Id="ProgramMenuFolder">
         <Directory Id="scd220707349D4C8FA275285514283F3E2A" Name="UVtools" />
