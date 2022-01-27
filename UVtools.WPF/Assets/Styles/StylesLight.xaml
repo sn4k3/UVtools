@@ -16,5 +16,5 @@
   <Style Selector="Border.FooterActions">
       <Setter Property="Background" Value="LightGray" />
   </Style>
-    
+   
 </Styles>

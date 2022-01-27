@@ -43,6 +43,7 @@ namespace UVtools.WPF.Controls.Tools
                 case ToolWindow.Callbacks.Loaded:
                     if(ParentWindow is not null) ParentWindow.ButtonOkEnabled = Operation.CanExecute;
                     ReloadGUI();
+                    ReloadScript();
                     Operation.PropertyChanged += (sender, e) =>
                     {
                         if (e.PropertyName == nameof(Operation.CanExecute))

@@ -142,7 +142,7 @@ namespace UVtools.WPF
                 uri = new Uri($"avares://{assemblyName}{url}");
             }
             
-            var res = AvaloniaLocator.Current.GetService<IAssetLoader>().Open(uri);
+            var res = AvaloniaLocator.Current.GetService<IAssetLoader>()?.Open(uri);
             return res;
         }
 

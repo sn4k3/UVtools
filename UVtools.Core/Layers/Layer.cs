@@ -75,7 +75,8 @@ namespace UVtools.Core.Layers
             internal set
             {
                 if (!RaiseAndSetIfChanged(ref _nonZeroPixelCount, value)) return;
-                RaisePropertyChanged(nameof(ExposureMillimeters));
+                RaisePropertyChanged(nameof(Area));
+                RaisePropertyChanged(nameof(Volume));
                 MaterialMilliliters = -1; // Recalculate
             }
         }
@@ -85,14 +86,17 @@ namespace UVtools.Core.Layers
         /// </summary>
         public bool IsEmpty => _nonZeroPixelCount == 0;
 
-        public float ExposureMillimeters
-        {
-            get
-            {
-                if (SlicerFile is null) return 0;
-                return (float) Math.Round(SlicerFile.PixelSizeMax * _nonZeroPixelCount, 2);
-            }
-        }
+        /// <summary>
+        /// Gets the layer area (XY)
+        /// Pixel size * number of pixels
+        /// </summary>
+        public float Area => GetArea(3);
+
+        /// <summary>
+        /// Gets the layer volume (XYZ)
+        /// Pixel size * number of pixels * layer height
+        /// </summary>
+        public float Volume => GetVolume(3);
 
         /// <summary>
         /// Gets the bounding rectangle for the image area
@@ -465,7 +469,7 @@ namespace UVtools.Core.Layers
                     return layerHeight;
                 }
 
-                return SlicerFile.LayerHeight;
+                return SlicerFile?.LayerHeight ?? 0;
             }
         }
 
@@ -481,7 +485,7 @@ namespace UVtools.Core.Layers
                 //var globalMilliliters = SlicerFile.MaterialMilliliters - _materialMilliliters;
                 if (value < 0)
                 {
-                    value = (float) Math.Round(SlicerFile.PixelArea * LayerHeight * NonZeroPixelCount / 1000f, 4);
+                    value = (float) Math.Round(GetVolume() / 1000f, 4);
                 }
 
                 if(!RaiseAndSetIfChanged(ref _materialMilliliters, value)) return;
@@ -786,6 +790,31 @@ namespace UVtools.Core.Layers
         #endregion
 
         #region Methods
+
+        /// <summary>
+        /// Gets the layer area (XY)
+        /// Pixel size * number of pixels
+        /// </summary>
+        public float GetArea() => (SlicerFile?.PixelArea ?? 0) * _nonZeroPixelCount;
+
+
+        /// <summary>
+        /// Gets the layer area (XY)
+        /// Pixel size * number of pixels
+        /// </summary>
+        public float GetArea(byte roundToDigits) => (float)Math.Round(GetArea(), roundToDigits);
+
+        /// <summary>
+        /// Gets the layer volume (XYZ)
+        /// Pixel size * number of pixels * layer height
+        /// </summary>
+        public float GetVolume() => GetArea() * LayerHeight;
+
+        /// <summary>
+        /// Gets the layer volume (XYZ)
+        /// Pixel size * number of pixels * layer height
+        /// </summary>
+        public float GetVolume(byte roundToDigits) => (float)Math.Round(GetArea() * LayerHeight, roundToDigits);
 
         public float CalculateMotorMovementTime(float extraTime = 0)
         {

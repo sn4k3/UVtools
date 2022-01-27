@@ -883,6 +883,134 @@
       
       </TabItem>
 
+      <!-- 
+       Suggestions Tab
+      -->
+      <TabItem
+          Name="TabSuggestions"
+          ToolTip.Tip="Suggestions, automations and analyzer"
+          IsVisible="{Binding Suggestions.Length}"
+          IsEnabled="{Binding IsFileLoaded}" >
+          <TabItem.Header>
+              <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                  <Image Source="/Assets/Icons/shield-virus-32x32.png" Width="32"/>
+                  <!--<TextBlock Margin="5,0,0,0">Suggestions</TextBlock>!-->
+              </StackPanel>
+          </TabItem.Header>
+
+          <Grid RowDefinitions="Auto,2*,Auto,*" ColumnDefinitions="*">
+              
+              <Grid Grid.Row="0" RowDefinitions="Auto" ColumnDefinitions="Auto,2,Auto,*">
+				  <Button Grid.Column="0" 
+                          Command="{Binding #SuggestionsAvailableListBox.UnselectAll}">
+                      <StackPanel Orientation="Horizontal" Spacing="5">
+                          <Image Source="/Assets/Icons/checkbox-unmarked-16x16.png"/>
+                          <TextBlock Text="Unselect all"/>
+                      </StackPanel>
+                  </Button>
+
+                  <Button Grid.Column="2"
+                          Command="{Binding #SuggestionsAvailableListBox.SelectAll}">
+                      <StackPanel Orientation="Horizontal" Spacing="5">
+                          <Image Source="/Assets/Icons/checkbox-marked-16x16.png"/>
+                          <TextBlock Text="Select all"/>
+                      </StackPanel>
+                  </Button>
+
+                  <Button Grid.Column="3" 
+                          HorizontalAlignment="Right"
+                          IsEnabled="{Binding #SuggestionsAvailableListBox.SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}"
+                          Command="{Binding ApplySuggestionsClicked}">
+                      <StackPanel Orientation="Horizontal" Spacing="5">
+                          <Image Source="/Assets/Icons/accept-16x16.png"/>
+                          <TextBlock Text="Apply"/>
+                      </StackPanel>
+                  </Button>
+              </Grid>
+
+              <ListBox
+                  Grid.Row="1"
+                  Name="SuggestionsAvailableListBox"
+                  SelectionMode="Multiple,Toggle"
+                  Items="{Binding SuggestionsAvailable}">
+                      <ListBox.ItemTemplate>
+                          <DataTemplate>
+                              <TextBlock Text="{Binding Message}"
+                                         TextWrapping="Wrap"
+                                         ToolTip.Tip="{Binding ToolTip}">
+                                  <!--<TextBlock.IsVisible>
+									  <MultiBinding Converter="{x:Static BoolConverters.And}">
+										  <Binding Path="Enabled"/>
+										  <Binding Path="!IsApplied"/>
+									  </MultiBinding>
+								  </TextBlock.IsVisible>
+								  !-->
+                                  <TextBlock.ContextMenu>
+                                      <ContextMenu>
+                                          <MenuItem
+                                              Command="{Binding $parent[uc:WindowEx].DataContext.ApplySuggestionClicked}"
+                                              CommandParameter="{Binding .}"
+                                              Header="Apply"
+                                              IsVisible="{Binding !IsInformativeOnly}">
+                                              <MenuItem.Icon>
+                                                  <Image Source="/Assets/Icons/accept-16x16.png"/>
+                                              </MenuItem.Icon>
+                                          </MenuItem>
+                                          <MenuItem
+                                              Command="{Binding $parent[uc:WindowEx].DataContext.OpenWebsite}"
+                                              CommandParameter="{Binding InformationUrl}"
+                                              Header="More information (Web)"
+                                              IsVisible="{Binding InformationUrl, Converter={x:Static ObjectConverters.IsNotNull}}">
+                                              <MenuItem.Icon>
+                                                  <Image Source="/Assets/Icons/info-circle-16x16.png"/>
+                                              </MenuItem.Icon>
+                                          </MenuItem>
+                                      </ContextMenu>
+                                  </TextBlock.ContextMenu>
+                              </TextBlock>
+                          </DataTemplate>
+                      </ListBox.ItemTemplate>
+                </ListBox>
+
+              <TextBlock Grid.Row="2" Text="Applied suggestions:" HorizontalAlignment="Center" FontWeight="Bold"/>
+
+              <ListBox
+                  Grid.Row="3"
+                  SelectionMode="AlwaysSelected"
+                  Items="{Binding SuggestionsApplied}">
+                  <ListBox.ItemTemplate>
+                      <DataTemplate>
+						  <TextBlock Text="{Binding Message}"
+                                     TextWrapping="Wrap"
+                                     ToolTip.Tip="{Binding ToolTip}">
+                              <!--<TextBlock.IsVisible>
+                                  <MultiBinding Converter="{x:Static BoolConverters.And}">
+                                      <Binding Path="Enabled"/>
+                                      <Binding Path="IsApplied"/>
+                                  </MultiBinding>
+                              </TextBlock.IsVisible>
+							  !-->
+                              <TextBlock.ContextMenu>
+                                  <ContextMenu>
+                                      <MenuItem
+                                          Command="{Binding $parent[uc:WindowEx].DataContext.OpenWebsite}"
+                                          CommandParameter="{Binding InformationUrl}"
+                                          Header="More information (Web)"
+                                          IsVisible="{Binding InformationUrl, Converter={x:Static ObjectConverters.IsNotNull}}">
+                                          <MenuItem.Icon>
+                                              <Image Source="/Assets/Icons/info-circle-16x16.png"/>
+                                          </MenuItem.Icon>
+                                      </MenuItem>
+                                  </ContextMenu>
+                              </TextBlock.ContextMenu>
+                          </TextBlock>
+                      </DataTemplate>
+                  </ListBox.ItemTemplate>
+              </ListBox>
+          </Grid>
+
+        </TabItem>
+
       <!-- Pixel Editor !-->
       <TabItem
         Name="TabPixelEditor"

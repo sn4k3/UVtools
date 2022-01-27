@@ -75,7 +75,8 @@ namespace UVtools.Core.Operations
         private short _noiseMinOffset = -128;
         private short _noiseMaxOffset = 128;
         private byte _noiseThreshold;
-        private ushort _noisePixelArea = 3;
+        private ushort _noisePixelArea = 1;
+        private byte _noisePasses = 1;
 
         #endregion
 
@@ -366,7 +367,13 @@ namespace UVtools.Core.Operations
         public ushort NoisePixelArea
         {
             get => _noisePixelArea;
-            set => RaiseAndSetIfChanged(ref _noisePixelArea, value);
+            set => RaiseAndSetIfChanged(ref _noisePixelArea, Math.Max((byte)1, value));
+        }
+
+        public byte NoisePasses
+        {
+            get => _noisePasses;
+            set => RaiseAndSetIfChanged(ref _noisePasses, Math.Max((byte)1, value));
         }
 
         public byte Value
@@ -781,7 +788,13 @@ namespace UVtools.Core.Operations
                                 }
 
                                 if (zoneBrightness <= _noiseThreshold) continue;
-                                byte brightness = (byte)Math.Clamp(random.Next(_noiseMinOffset, _noiseMaxOffset + 1) + zoneBrightness, byte.MinValue, byte.MaxValue);
+                                byte brightness = zoneBrightness;
+
+                                for (ushort i = 0; i < _noisePasses; i++)
+                                {
+                                    brightness = (byte)Math.Clamp(random.Next(_noiseMinOffset, _noiseMaxOffset + 1) + brightness, byte.MinValue, byte.MaxValue);
+                                }
+
                                 //byte brightness = (byte)Math.Clamp(RandomNumberGenerator.GetInt32(_noiseMinOffset, _noiseMaxOffset + 1) + zoneBrightness, byte.MinValue, byte.MaxValue);
                                 for (var y1 = y; y1 < y + _noisePixelArea && y1 < bounds.Bottom; y1++)
                                 {
@@ -904,8 +917,8 @@ namespace UVtools.Core.Operations
             Operator = PixelArithmeticOperators.Corrode;
             ApplyMethod = PixelArithmeticApplyMethod.ModelSurfaceAndInset;
             NoiseMinOffset = -200;
-            NoiseMaxOffset = 127;
-            WallThickness = 6;
+            NoiseMaxOffset = 64;
+            WallThickness = 4;
             IgnoreAreaOperator = PixelArithmeticIgnoreAreaOperator.SmallerThan;
             IgnoreAreaThreshold = 5000;
         }
@@ -1257,7 +1270,7 @@ namespace UVtools.Core.Operations
 
         protected bool Equals(OperationPixelArithmetic other)
         {
-            return _operator == other._operator && _applyMethod == other._applyMethod && _wallThicknessStart == other._wallThicknessStart && _wallThicknessEnd == other._wallThicknessEnd && _wallChamfer == other._wallChamfer && _ignoreAreaOperator == other._ignoreAreaOperator && _ignoreAreaThreshold == other._ignoreAreaThreshold && _value == other._value && _usePattern == other._usePattern && _thresholdType == other._thresholdType && _thresholdMaxValue == other._thresholdMaxValue && _patternAlternatePerLayersNumber == other._patternAlternatePerLayersNumber && _patternInvert == other._patternInvert && _patternText == other._patternText && _patternTextAlternate == other._patternTextAlternate && _patternGenMinBrightness == other._patternGenMinBrightness && _patternGenBrightness == other._patternGenBrightness && _patternGenInfillThickness == other._patternGenInfillThickness && _patternGenInfillSpacing == other._patternGenInfillSpacing && _noiseMinOffset == other._noiseMinOffset && _noiseMaxOffset == other._noiseMaxOffset && _noiseThreshold == other._noiseThreshold && _noisePixelArea == other._noisePixelArea;
+            return _operator == other._operator && _applyMethod == other._applyMethod && _wallThicknessStart == other._wallThicknessStart && _wallThicknessEnd == other._wallThicknessEnd && _wallChamfer == other._wallChamfer && _ignoreAreaOperator == other._ignoreAreaOperator && _ignoreAreaThreshold == other._ignoreAreaThreshold && _value == other._value && _usePattern == other._usePattern && _thresholdType == other._thresholdType && _thresholdMaxValue == other._thresholdMaxValue && _patternAlternatePerLayersNumber == other._patternAlternatePerLayersNumber && _patternInvert == other._patternInvert && _patternText == other._patternText && _patternTextAlternate == other._patternTextAlternate && _patternGenMinBrightness == other._patternGenMinBrightness && _patternGenBrightness == other._patternGenBrightness && _patternGenInfillThickness == other._patternGenInfillThickness && _patternGenInfillSpacing == other._patternGenInfillSpacing && _noiseMinOffset == other._noiseMinOffset && _noiseMaxOffset == other._noiseMaxOffset && _noiseThreshold == other._noiseThreshold && _noisePixelArea == other._noisePixelArea && _noisePasses == other._noisePasses;
         }
 
         public override bool Equals(object obj)
@@ -1294,6 +1307,7 @@ namespace UVtools.Core.Operations
             hashCode.Add(_noiseMaxOffset);
             hashCode.Add(_noiseThreshold);
             hashCode.Add(_noisePixelArea);
+            hashCode.Add(_noisePasses);
             return hashCode.ToHashCode();
         }
 

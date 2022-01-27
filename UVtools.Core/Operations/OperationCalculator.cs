@@ -354,7 +354,7 @@ namespace UVtools.Core.Operations
             private decimal _layerHeight = 0.05m;
 
             public override string Description => "Calculates the optimal model tilt angle for printing and to minimize the visual layer effect.";
-            public override string Formula => "Angleº = tanh(Layer height / XYResolution) * (180 / PI)";
+            public override string Formula => "Angleº = arctan(Layer height / XYResolution) * (180 / PI)";
 
             public OptimalModelTilt(Size resolution, SizeF display, decimal layerHeight = 0.05m)
             {
@@ -437,7 +437,7 @@ namespace UVtools.Core.Operations
             public decimal XYResolutionUm => Math.Round(XYResolution * 1000, 2);
 
             public decimal TiltAngleDegrees =>
-                XYResolution > 0 ? (decimal) Math.Round(Math.Tanh((double) (_layerHeight / XYResolution)) * (180 / Math.PI), 3) : 0;
+                XYResolution > 0 ? (decimal) Math.Round(Math.Atan((double) (_layerHeight / XYResolution)) * (180 / Math.PI), 3) : 0;
 
         }
     }

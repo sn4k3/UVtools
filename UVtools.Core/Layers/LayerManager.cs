@@ -689,8 +689,24 @@ namespace UVtools.Core
             var firstLayer = FirstLayer;
             if (!_boundingRectangle.IsEmpty || LayerCount == 0 || firstLayer is null || !firstLayer.HaveImage) return _boundingRectangle;
             progress ??= new OperationProgress(OperationProgress.StatusOptimizingBounds, LayerCount - 1);
-            _boundingRectangle = firstLayer.BoundingRectangle;
-            if (_boundingRectangle.IsEmpty) // Safe checking
+            _boundingRectangle = Rectangle.Empty;
+            uint firstValidLayerBounds = 0;
+
+            void FindFirstBoundingRectangle()
+            {
+                for (uint layerIndex = 0; layerIndex < Count; layerIndex++)
+                {
+                    firstValidLayerBounds = layerIndex;
+                    if (this[layerIndex] is null || this[layerIndex].BoundingRectangle == Rectangle.Empty) continue;
+                    _boundingRectangle = this[layerIndex].BoundingRectangle;
+                    break;
+                }
+            }
+
+            FindFirstBoundingRectangle();
+            //_boundingRectangle = firstLayer.BoundingRectangle;
+
+            if (_boundingRectangle.IsEmpty) // Safe checking, all layers haven't a bounding rectangle
             {
                 progress.Reset(OperationProgress.StatusOptimizingBounds, LayerCount-1);
                 Parallel.For(0, LayerCount, CoreSettings.ParallelOptions, layerIndex =>
@@ -699,25 +715,29 @@ namespace UVtools.Core
                     
                     this[layerIndex].GetBoundingRectangle();
 
-                    if (progress is null) return;
                     progress.LockAndIncrement();
                 });
-                _boundingRectangle = firstLayer.BoundingRectangle;
 
                 if (progress.Token.IsCancellationRequested)
                 {
                     _boundingRectangle = Rectangle.Empty;
                     progress.Token.ThrowIfCancellationRequested();
                 }
+
+                FindFirstBoundingRectangle();
             }
 
-            progress.Reset(OperationProgress.StatusCalculatingBounds, LayerCount-1);
-            for (int i = 1; i < LayerCount; i++)
+            if (firstValidLayerBounds+1 < LayerCount)
             {
-                if(this[i] is null || this[i].BoundingRectangle.IsEmpty) continue;
-                _boundingRectangle = Rectangle.Union(_boundingRectangle, this[i].BoundingRectangle);
-                progress++;
+                progress.Reset(OperationProgress.StatusCalculatingBounds, LayerCount - firstValidLayerBounds - 1);
+                for (var i = firstValidLayerBounds+1; i < LayerCount; i++)
+                {
+                    if (this[i] is null || this[i].BoundingRectangle.IsEmpty) continue;
+                    _boundingRectangle = Rectangle.Union(_boundingRectangle, this[i].BoundingRectangle);
+                    progress++;
+                }
             }
+
             RaisePropertyChanged(nameof(BoundingRectangle));
             return _boundingRectangle;
         }
@@ -768,6 +788,16 @@ namespace UVtools.Core
         public Layer GetLargestLayerBetween(uint layerStartIndex, uint layerEndIndex)
         {
             return _layers?.Where((layer, index) => !layer.IsEmpty && index >= layerStartIndex && index <= layerEndIndex).MaxBy(layer => layer.NonZeroPixelCount).FirstOrDefault();
+        }
+
+        public IEnumerable<Layer> GetLayersFromHeightRange(float startPositionZ, float endPositionZ)
+        {
+            return this.Where(layer => layer.PositionZ >= startPositionZ && layer.PositionZ <= endPositionZ);
+        }
+
+        public IEnumerable<Layer> GetLayersFromHeightRange(float endPositionZ)
+        {
+            return this.Where(layer => layer.PositionZ <= endPositionZ);
         }
 
         public static void MutateGetVarsIterationChamfer(uint startLayerIndex, uint endLayerIndex, int iterationsStart, int iterationsEnd, ref bool isFade, out float iterationSteps, out int maxIteration)

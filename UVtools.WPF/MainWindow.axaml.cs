@@ -32,6 +32,7 @@ using UVtools.Core.Managers;
 using UVtools.Core.Network;
 using UVtools.Core.Objects;
 using UVtools.Core.Operations;
+using UVtools.Core.Suggestions;
 using UVtools.Core.SystemOS;
 using UVtools.WPF.Controls;
 using UVtools.WPF.Controls.Calibrators;
@@ -566,6 +567,7 @@ namespace UVtools.WPF
             InitPixelEditor();
             InitClipboardLayers();
             InitLayerPreview();
+            InitSuggestions();
 
             RefreshRecentFiles(true);
             
@@ -1544,7 +1546,7 @@ namespace UVtools.WPF
 
         void ReloadFile(uint actualLayer)
         {
-            if (App.SlicerFile is null) return;
+            if (!IsFileLoaded) return;
             ProcessFile(SlicerFile.FileFullPath, SlicerFile.DecodeType, _actualLayer);
         }
 
@@ -1879,6 +1881,9 @@ namespace UVtools.WPF
             }
 
             SlicerFile.PropertyChanged += SlicerFileOnPropertyChanged;
+
+            PopulateSuggestions();
+
 #if !DEBUG
             if (SlicerFile is CTBEncryptedFile)
             {
@@ -2233,6 +2238,8 @@ namespace UVtools.WPF
                     RefreshCurrentLayerData();
                     ResetDataContext();
 
+                    PopulateSuggestions();
+
                     CanSave = true;
                     return true;
                 case OperationIPrintedThisFile operation:
@@ -2291,6 +2298,8 @@ namespace UVtools.WPF
                 ShowLayer();
                 RefreshProperties();
                 ResetDataContext();
+
+                PopulateSuggestions();
 
                 CanSave = true;
 

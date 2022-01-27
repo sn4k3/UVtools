@@ -1,5 +1,19 @@
 # Changelog
 
+## 27/01/2022 - v2.27.7
+
+- **Pixel Arithmetic:**
+   - (Add) Corrode: Number of passes
+   - (Change) Corrode: Noise area default from 3px² to 1px²
+   - (Change) Fuzzy skin preset: Wall thickness from 6px to 4px
+   - (Change) Fuzzy skin preset: Max noise offset: 64
+- (Add) Core: More helper functions: Area, Volume, LastBottomLayer, BottomLayersHeight, SetNoDelays, SetWaitTimeBeforeCureOrLightOffDelay
+- (Change) Display the current layer volume instead of area
+- (Fix) Having a first empty layer will miscalculate the model rectangle bounds
+- (Fix) Tool - Calculator - Model tilt: Change formula to use arctan instead of tanh
+- (Upgrade) OpenCV from 4.5.4 to 4.5.5
+- (Upgrade) AvaloniaUI from 0.10.11 to 0.10.12 (#378)
+
 ## 07/01/2022 - v2.27.6
 
 - **PrusaSlicer:**
@@ -11,7 +25,7 @@
 ## 05/01/2022 - v2.27.5
 
 - **Pixel Arithmetic:**
-  - (Add) Corode: Noise pixel area, defaulting to 3px2
+  - (Add) Corode: Noise pixel area, defaulting to 3px²
   - (Change) Corode: Cryptonumeric random to normal random to speed up calculation
   - (Change) Fuzzy skin preset: Set a ignore threshold area of 5000px2
   - (Improvement) Masking performance and auto crop the layer to speed up the processing when using an "Apply to" other than "All"

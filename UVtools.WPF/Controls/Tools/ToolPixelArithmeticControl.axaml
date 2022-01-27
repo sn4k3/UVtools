@@ -156,6 +156,17 @@
                   Maximum="65535"
                   Width="80"
                   Value="{Binding Operation.NoisePixelArea}"/>
+
+              <TextBlock
+                  VerticalAlignment="Center"
+                  Text="Number of passes:"/>
+
+              <NumericUpDown
+                  Classes="ValueLabel ValueLabel_times"
+                  Minimum="1"
+                  Maximum="255"
+                  Width="80"
+                  Value="{Binding Operation.NoisePasses}"/>
           </StackPanel>
 
         </StackPanel>

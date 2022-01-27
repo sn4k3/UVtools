@@ -992,6 +992,11 @@ namespace UVtools.Core.FileFormats
         public Layer FirstLayer => LayerManager.FirstLayer;
 
         /// <summary>
+        /// Gets the last bottom layer
+        /// </summary>
+        public Layer LastBottomLayer => LayerManager.LastOrDefault(layer => layer.IsBottomLayer);
+
+        /// <summary>
         /// Gets the first layer normal layer
         /// </summary>
         public Layer FirstNormalLayer => LayerManager.FirstOrDefault(layer => layer.IsNormalLayer);
@@ -1282,6 +1287,15 @@ namespace UVtools.Core.FileFormats
                 RaisePropertyChanged(nameof(NormalLayerCount));
             }
         }
+
+        /// <summary>
+        /// Gets or sets the total height for the bottom layers in millimeters
+        /// </summary>
+        public float BottomLayersHeight
+        {
+            get => LastBottomLayer?.PositionZ ?? 0;
+            set => BottomLayerCount = (ushort)Math.Ceiling(value / LayerHeight);
+        } 
 
         #region Universal Properties
 
@@ -3346,6 +3360,18 @@ namespace UVtools.Core.FileFormats
             return changed;
         }
 
+        public void SetNoDelays()
+        {
+            BottomLightOffDelay = 0;
+            LightOffDelay = 0;
+            BottomWaitTimeBeforeCure = 0;
+            WaitTimeBeforeCure = 0;
+            BottomWaitTimeAfterCure = 0;
+            WaitTimeAfterCure = 0;
+            BottomWaitTimeAfterLift = 0;
+            WaitTimeAfterLift = 0;
+        }
+
         public float CalculateBottomLightOffDelay(float extraTime = 0) => CalculateLightOffDelay(true, extraTime);
 
         public bool SetBottomLightOffDelay(float extraTime = 0) => SetLightOffDelay(true, extraTime);
@@ -3389,6 +3415,61 @@ namespace UVtools.Core.FileFormats
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Attempt to set wait time before cure if supported, otherwise fallback to light-off delay
+        /// </summary>
+        /// <param name="time">The time to set</param>
+        /// <param name="zeroLightOffDelayCalculateBase">When true and time is zero, it will calculate light-off delay without extra time, otherwise false to set light-off delay to 0 when time is 0</param>
+        public void SetWaitTimeBeforeCureOrLightOffDelay(bool isBottomLayer, float time = 0, bool zeroLightOffDelayCalculateBase = false)
+        {
+            if (isBottomLayer)
+            {
+                SetBottomWaitTimeBeforeCureOrLightOffDelay(time, zeroLightOffDelayCalculateBase);
+            }
+            else
+            {
+                SetNormalWaitTimeBeforeCureOrLightOffDelay(time, zeroLightOffDelayCalculateBase);
+            }
+        }
+
+        public void SetBottomWaitTimeBeforeCureOrLightOffDelay(float time = 0, bool zeroLightOffDelayCalculateBase = false)
+        {
+            if (CanUseBottomWaitTimeBeforeCure)
+            {
+                BottomLightOffDelay = 0;
+                BottomWaitTimeBeforeCure = time;
+            }
+            else if (CanUseBottomLightOffDelay)
+            {
+                if (time == 0 && !zeroLightOffDelayCalculateBase)
+                {
+                    BottomLightOffDelay = 0;
+                    return;
+                }
+
+                SetBottomLightOffDelay(time);
+            }
+        }
+
+        public void SetNormalWaitTimeBeforeCureOrLightOffDelay(float time = 0, bool zeroLightOffDelayCalculateBase = false)
+        {
+            if (CanUseWaitTimeBeforeCure)
+            {
+                LightOffDelay = 0;
+                WaitTimeBeforeCure = time;
+            }
+            else if (CanUseLightOffDelay)
+            {
+                if (time == 0 && !zeroLightOffDelayCalculateBase)
+                {
+                    LightOffDelay = 0;
+                    return;
+                }
+
+                SetNormalLightOffDelay(time);
+            }
         }
 
         /// <summary>

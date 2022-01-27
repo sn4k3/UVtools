@@ -14,8 +14,7 @@ namespace UVtools.Core.Extensions
     {
         public static Point Center(this Rectangle src)
         {
-            return new Point(src.X + src.Width / 2,
-                             src.Y + src.Height / 2);
+            return new Point(src.Right / 2, src.Bottom / 2);
         }
 
     }

@@ -489,11 +489,11 @@ namespace UVtools.WPF
             {
                 if (!LayerCache.IsCached) return "Pixels: 0";
                 var pixelPercent = Math.Round(LayerCache.Layer.NonZeroPixelCount * 100.0 / (SlicerFile.ResolutionX * SlicerFile.ResolutionY), 2);
-                string text = $"Pixels: {LayerCache.Layer.NonZeroPixelCount} ({pixelPercent}%)";
-                var exposedMillimeters = LayerCache.Layer.ExposureMillimeters;
-                if (exposedMillimeters > 0)
+                var text = $"Pixels: {LayerCache.Layer.NonZeroPixelCount} ({pixelPercent}%)";
+                var volume = LayerCache.Layer.Volume;
+                if (volume > 0)
                 {
-                    text += $"\nMillimeters: {exposedMillimeters}";
+                    text += $"\nVolume: {volume:F2}mm³";
                 }
                 return text;
             }
