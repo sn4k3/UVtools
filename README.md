@@ -27,8 +27,8 @@ This simple tool can give you insight of supports and find some failures. Did yo
 
 - Facebook group: https://www.facebook.com/groups/uvtools
 
-![GUI Screenshot](https://raw.githubusercontent.com/sn4k3/UVtools/master/UVtools.GUI/Images/Screenshots/UVtools_GUI.png)
-![GUI Screenshot Islands](https://raw.githubusercontent.com/sn4k3/UVtools/master/UVtools.GUI/Images/Screenshots/UVtools_GUI_Islands.png)
+![GUI Screenshot](https://raw.githubusercontent.com/sn4k3/UVtools/master/wiki/UI1.png)
+![GUI Screenshot Islands](https://raw.githubusercontent.com/sn4k3/UVtools/master/wiki/UI2.png)
 ![Convertion Screenshot](https://raw.githubusercontent.com/sn4k3/UVtools/master/UVtools.GUI/Images/Screenshots/SL1ToCbddlp.png)
 
 # Why this project?
