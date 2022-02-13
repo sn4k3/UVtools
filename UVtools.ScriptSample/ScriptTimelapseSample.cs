@@ -52,9 +52,10 @@ namespace UVtools.ScriptSample
             DecimalPlates = 2
         };
 
-        private ScriptCheckBoxInput InputUseVirtualLayer = new()
+        private ScriptToggleSwitchInput InputUseVirtualLayer = new()
         {
-            Label = "Use blank layers to go to the target height",
+            OnText = "Use blank layers to go to the target height",
+            OffText = "Use lift movement to go to the target height",
             ToolTip = "Use this option if you printer is unable to use large lifts or waits after lift"
         };
 
@@ -140,7 +141,7 @@ namespace UVtools.ScriptSample
                 var layer = new Layer(SlicerFile.LayerCount, mat, SlicerFile)
                 {
                     PositionZ = InputPositionZ.Value,
-                    ExposureTime = SlicerFile.SupportsGCode ? 0 : 0.1f,
+                    ExposureTime = SlicerFile.SupportsGCode ? 0 : 0.05f,
                     LiftSpeed = InputLiftSpeed.Value,
                     RetractSpeed = InputRetractSpeed.Value
                 };

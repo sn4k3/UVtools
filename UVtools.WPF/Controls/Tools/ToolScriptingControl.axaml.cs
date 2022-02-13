@@ -152,7 +152,7 @@ namespace UVtools.WPF.Controls.Tools
             {
                 var variable = Operation.ScriptGlobals.Script.UserInputs[i];
 
-                if (!string.IsNullOrWhiteSpace(variable.Label) && variable is not ScriptCheckBoxInput)
+                if (!string.IsNullOrWhiteSpace(variable.Label) && variable is not ScriptCheckBoxInput and not ScriptToggleSwitchInput)
                 {
                     TextBlock tbLabel = new()
                     {
@@ -476,6 +476,32 @@ namespace UVtools.WPF.Controls.Tools
                         valueProperty.Subscribe(value =>
                         {
                             if (value != null) inputCheckBox.Value = value.Value;
+                        });
+
+                        _scriptVariablesGrid.Children.Add(control);
+                        Grid.SetRow(control, i * 2);
+                        Grid.SetColumn(control, 2);
+
+                        if (!string.IsNullOrWhiteSpace(variable.ToolTip))
+                        {
+                            ToolTip.SetTip(control, variable.ToolTip);
+                        }
+
+                        continue;
+                    }
+                    case ScriptToggleSwitchInput inputToggleSwitch:
+                    {
+                        var control = new ToggleSwitch
+                        {
+                            OnContent = inputToggleSwitch.OnText,
+                            OffContent = inputToggleSwitch.OffText,
+                            IsChecked = inputToggleSwitch.Value
+                        };
+
+                        var valueProperty = control.GetObservable(ToggleSwitch.IsCheckedProperty);
+                        valueProperty.Subscribe(value =>
+                        {
+                            if (value != null) inputToggleSwitch.Value = value.Value;
                         });
 
                         _scriptVariablesGrid.Children.Add(control);

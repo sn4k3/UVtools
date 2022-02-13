@@ -14,6 +14,11 @@
         <Setter Property="FontWeight" Value="Bold" />
     </Style>
 
+    <Style Selector="Border.Header">
+        <Setter Property="Padding" Value="10,10" />
+        <Setter Property="Margin" Value="0,0,0,10" />
+    </Style>
+
   <Style Selector="Border.FooterActions">
       <Setter Property="Padding" Value="10,20" />
       <Setter Property="Margin" Value="0,10,0, 0" />

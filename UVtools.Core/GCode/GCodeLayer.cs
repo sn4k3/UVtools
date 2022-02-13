@@ -154,7 +154,7 @@ namespace UVtools.Core.GCode
         public void AssignMovements(GCodeBuilder.GCodePositioningTypes positionType)
         {
             if (Movements.Count == 0) return;
-            var currentZ = PreviousPositionZ;
+            float currentZ = PreviousPositionZ;
 
             PositionZ = null;
             LiftHeight = null;
@@ -165,18 +165,20 @@ namespace UVtools.Core.GCode
             RetractHeight2 = null;
             RetractSpeed2 = null;
 
+            var previousLayerEmpty = LayerIndex > 0 && SlicerFile[LayerIndex.Value - 1].NonZeroPixelCount <= 1;
+
             for (int i = 0; i < Movements.Count; i++)
             {
                 var (pos, speed) = Movements[i];
-                float heightRaw;
+                float partialPositionZ;
                 switch (positionType)
                 {
                     case GCodeBuilder.GCodePositioningTypes.Absolute:
-                        heightRaw = Layer.RoundHeight(pos - currentZ);
+                        partialPositionZ = Layer.RoundHeight(pos - currentZ);
                         currentZ = pos;
                         break;
                     case GCodeBuilder.GCodePositioningTypes.Partial:
-                        heightRaw = pos;
+                        partialPositionZ = pos;
                         currentZ = Layer.RoundHeight(currentZ + pos);
                         break;
                     default:
@@ -184,26 +186,31 @@ namespace UVtools.Core.GCode
                 }
 
                 // Fail-safe check
-                if (currentZ < PreviousPositionZ)
-                    throw new NotSupportedException("GCode parsing error: Attempting to crash the print on the LCD with negative position.\n" +
+                
+                if (currentZ < PreviousPositionZ && !previousLayerEmpty)
+                {
+                    throw new NotSupportedException(
+                    $"GCode parsing error: Attempting to crash the print on the LCD due a lower position ({currentZ}mm) than the previous layer ({PreviousPositionZ}mm).\n" +
                     "Do not attempt to print this file!");
+                }
 
-                // Is position Z
+                // Last movement on the list, must be position Z
                 if (i == Movements.Count - 1)
                 {
                     PositionZ = currentZ;
-                    if (LiftHeight.HasValue) 
+                    if (LiftHeight.HasValue && partialPositionZ < 0) 
                     {
-                        RetractSpeed = speed; // A lift exists, set to retract speed of this move
+                        RetractSpeed = speed; // A lift exists, and its descending, set to retract speed of this move
                     }
-                    continue;
+                    break;
                 }
 
-                if (heightRaw == 0) continue;
-                var height = Math.Abs(heightRaw);
+                if (partialPositionZ == 0) continue;
+                var height = Math.Abs(partialPositionZ);
 
-                if (heightRaw > 0) // Is a lift
+                if (partialPositionZ > 0) // Is a lift
                 {
+                    // Lift 1
                     if (!LiftHeight.HasValue)
                     {
                         LiftHeight = height;
@@ -211,6 +218,7 @@ namespace UVtools.Core.GCode
                         continue;
                     }
 
+                    // Lift 2
                     LiftHeight2 ??= 0;
                     LiftHeight2 += height;
                     LiftSpeed2 = speed;
@@ -240,7 +248,7 @@ namespace UVtools.Core.GCode
                 LiftHeight = liftHeight;
             }
 
-            if (RetractHeight2.HasValue) // Need to fix the propose of this value
+            if (RetractHeight2.HasValue) // Need to fix the purpose of this value
             {
                 RetractHeight2 = Layer.RoundHeight(LiftHeightTotal - RetractHeight2.Value);
                 (RetractSpeed, RetractSpeed2) = (RetractSpeed2, RetractSpeed);

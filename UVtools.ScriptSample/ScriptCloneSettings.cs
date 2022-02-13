@@ -70,7 +70,7 @@ namespace UVtools.ScriptSample
             Script.UserInputs.Add(Report);
             Script.UserInputs.Add(OpenReport);
             Script.UserInputs.Add(FolderPath);
-            FolderPath.Value = SlicerFile.FileDirectoryPath;
+            FolderPath.Value = SlicerFile.DirectoryPath;
         }
 
         /// <summary>

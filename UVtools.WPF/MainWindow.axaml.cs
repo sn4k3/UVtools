@@ -20,7 +20,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using UVtools.AvaloniaControls;
@@ -32,7 +31,6 @@ using UVtools.Core.Managers;
 using UVtools.Core.Network;
 using UVtools.Core.Objects;
 using UVtools.Core.Operations;
-using UVtools.Core.Suggestions;
 using UVtools.Core.SystemOS;
 using UVtools.WPF.Controls;
 using UVtools.WPF.Controls.Calibrators;
@@ -267,6 +265,14 @@ namespace UVtools.WPF
                 Icon = new Avalonia.Controls.Image
                 {
                     Source = new Bitmap(App.GetAsset("/Assets/Icons/resize-16x16.png"))
+                }
+            },
+            new()
+            {
+                Tag = new OperationTimelapse(),
+                Icon = new Avalonia.Controls.Image
+                {
+                    Source = new Bitmap(App.GetAsset("/Assets/Icons/camera-16x16.png"))
                 }
             },
             new()
@@ -1218,7 +1224,7 @@ namespace UVtools.WPF
         public void MenuFileOpenNewWindowClicked() => OpenFile(true);
         public void MenuFileOpenInPartialModeClicked() => OpenFile(false, FileFormat.FileDecodeType.Partial);
 
-        public void MenuFileOpenCurrentFileFolderClicked()
+        public void MenuFileOpenContainingFolderClicked()
         {
             if (!IsFileLoaded) return;
             SystemAware.SelectFileOnExplorer(SlicerFile.FileFullPath);
@@ -1508,18 +1514,8 @@ namespace UVtools.WPF
                     if(!IsFileLoaded) continue;
                     try
                     {
-                        var fileText = await File.ReadAllTextAsync(files[i]);
-                        var match = Regex.Match(fileText, @"(?:<\/\s*Operation)([a-zA-Z0-9_]+)(?:\s*>)");
-                        if(!match.Success) continue;
-                        if(match.Groups.Count < 1) continue;
-                        var operationName = match.Groups[1].Value;
-                        var baseType = typeof(Operation).FullName;
-                        if(string.IsNullOrWhiteSpace(baseType)) continue;
-                        var classname = baseType + operationName+", UVtools.Core";
-                        var type = Type.GetType(classname);
-                        if(type is null) continue;
-                        var operation = Operation.Deserialize(files[i], type);
-                        await ShowRunOperation(type, operation);
+                        var operation = Operation.Deserialize(files[i]);
+                        await ShowRunOperation(operation);
                     }
                     catch (Exception e)
                     {
@@ -1624,43 +1620,97 @@ namespace UVtools.WPF
                 if (!string.IsNullOrWhiteSpace(convertFileExtension))
                 {
                     convertFileExtension = convertFileExtension.ToLower(CultureInfo.InvariantCulture);
-                    var convertToFormat = FileFormat.FindByExtensionOrFilePath(convertFileExtension);
-                    if (convertToFormat is not null)
+                    var fileExtension = FileFormat.FindExtension(convertFileExtension);
+                    //var convertToFormat = FileFormat.FindByExtensionOrFilePath(convertFileExtension);
+                    var convertToFormat = fileExtension?.GetFileFormat();
+                    if (fileExtension is not null && convertToFormat is not null)
                     {
-                        var directory = Path.GetDirectoryName(SlicerFile.FileFullPath);
+                        var directory = SlicerFile.DirectoryPath;
                         var filename = FileFormat.GetFileNameStripExtensions(SlicerFile.FileFullPath);
+                        var targetFilename = $"{filename}.{convertFileExtension}";
+                        var outputFile = Path.Combine(directory, targetFilename);
                         FileFormat convertedFile = null;
 
-                        IsGUIEnabled = false;
-                        ShowProgressWindow($"Converting {Path.GetFileName(SlicerFile.FileFullPath)} to {convertFileExtension}");
-
-                        task = await Task.Factory.StartNew(() =>
+                        bool canConvert = true;
+                        if (File.Exists(outputFile))
                         {
-                            try
+                            var result = await this.MessageBoxQuestion(
+                                $"The file '{SlicerFile.Filename}' is about to get auto-converted to '{targetFilename}'.\n" +
+                                $"But a file with same name already exists on the output directory '{directory}'.\n" +
+                                "Do you want to overwrite the existing file?\n\n" +
+                                "Yes: Overwrite the file.\n" +
+                                "No: Choose a location for the file.\n" +
+                                "Cancel: Do not auto-convert the file.",
+
+                                $"File '{SlicerFile.Filename}' already exists",
+                                ButtonEnum.YesNoCancel);
+
+                            if (result is ButtonResult.Cancel or ButtonResult.Abort)
                             {
-                                convertedFile = SlicerFile.Convert(convertToFormat,
-                                    Path.Combine(directory, $"{filename}.{convertFileExtension}"), 0,
-                                    Progress);
-                                return true;
+                                canConvert = false;
                             }
-                            catch (OperationCanceledException)
-                            { }
-                            catch (Exception exception)
+                            else if (result == ButtonResult.No)
                             {
-                                Dispatcher.UIThread.InvokeAsync(async () =>
-                                    await this.MessageBoxError(exception.ToString(),
-                                        "Error while converting the file"));
+                                var dialog = new SaveFileDialog
+                                {
+                                    Directory = directory,
+                                    InitialFileName = filename,
+                                    DefaultExtension = $".{convertFileExtension}",
+                                    Filters = new List<FileDialogFilter>
+                                    {
+                                        new()
+                                        {
+                                            Name = fileExtension.Description,
+                                            Extensions = new List<string>{ convertFileExtension }
+                                        }
+                                    }
+                                };
+
+                                var saveResult = await dialog.ShowAsync(this);
+                                if (string.IsNullOrWhiteSpace(saveResult))
+                                {
+                                    canConvert = false;
+                                }
+                                else
+                                {
+                                    outputFile = saveResult;
+                                }
                             }
+                        }
 
-                            return false;
-                        });
-
-                        IsGUIEnabled = true;
-
-                        if (task && convertedFile is not null)
+                        if (canConvert)
                         {
-                            SlicerFile = convertedFile;
-                            AddRecentFile(SlicerFile.FileFullPath);
+                            IsGUIEnabled = false;
+                            ShowProgressWindow(
+                                $"Converting {Path.GetFileName(SlicerFile.FileFullPath)} to {convertFileExtension}");
+
+                            task = await Task.Factory.StartNew(() =>
+                            {
+                                try
+                                {
+                                    convertedFile = SlicerFile.Convert(convertToFormat, outputFile, 0, Progress);
+                                    return true;
+                                }
+                                catch (OperationCanceledException)
+                                {
+                                }
+                                catch (Exception exception)
+                                {
+                                    Dispatcher.UIThread.InvokeAsync(async () =>
+                                        await this.MessageBoxError(exception.ToString(),
+                                            "Error while converting the file"));
+                                }
+
+                                return false;
+                            });
+
+                            IsGUIEnabled = true;
+
+                            if (task && convertedFile is not null)
+                            {
+                                SlicerFile = convertedFile;
+                                AddRecentFile(SlicerFile.FileFullPath);
+                            }
                         }
                     }
                 }
@@ -1799,13 +1849,38 @@ namespace UVtools.WPF
                 }
             }
 
-            ResetDataContext();
-
-            ForceUpdateActualLayer(actualLayer.Clamp(actualLayer, SliderMaximumValue));
-
-            if (Settings.LayerPreview.ZoomToFitPrintVolumeBounds)
+            if (mat is not null && mat.Size != SlicerFile.Resolution)
             {
-                ZoomToFit();
+                var result = await this.MessageBoxWaring($"Layer image resolution of {mat.Size} mismatch with printer resolution of {SlicerFile.Resolution}.\n" +
+                                            "1) Printing this file can lead to problems or malformed model, please verify your slicer printer settings;\n" +
+                                            "2) Processing this file with some of the tools can lead to program crash or misfunction;\n" +
+                                            "3) If you used PrusaSlicer to slice this file, you must use it with compatible UVtools printer profiles (Help - Install profiles into PrusaSlicer).\n\n" +
+                                            "Click 'Yes' to auto fix and set the file resolution with the layer resolution, but only use this option if you are sure it's ok to!\n" +
+                                            "Click 'No' to continue as it is and ignore this warning, you can still repair issues and use some of the tools.",
+                    "File and layer resolution mismatch!", ButtonEnum.YesNo);
+                if(result == ButtonResult.Yes)
+                {
+                    SlicerFile.Resolution = mat.Size;
+                    RaisePropertyChanged(nameof(LayerResolutionStr));
+                }
+            }
+
+            if (SlicerFile.LayerHeight <= 0)
+            {
+                /*await this.MessageBoxWaring(
+                    $"This file have a incorrect or not present layer height of {SlicerFile.LayerHeight}mm\n" +
+                    $"It may not be required for some printers to work properly, but this information is crucial to {About.Software}.\n",
+                    "Incorrect layer height detected");*/
+
+                await new MissingInformationWindow().ShowDialog(this);
+            }
+
+            if (SlicerFile.LayerHeight <= 0)
+            {
+                await this.MessageBoxWaring(
+                    $"This file have a incorrect or not present layer height of {SlicerFile.LayerHeight}mm\n" +
+                    $"It may not be required for some printers to work properly, but this information is crucial to {About.Software}.\n",
+                    "Incorrect layer height detected");
             }
 
             var display = SlicerFile.Display;
@@ -1830,20 +1905,13 @@ namespace UVtools.WPF
                     "Incorrect image ratio detected");
             }
 
-            if (mat is not null && mat.Size != SlicerFile.Resolution)
+            ResetDataContext();
+
+            ForceUpdateActualLayer(actualLayer.Clamp(actualLayer, SliderMaximumValue));
+
+            if (Settings.LayerPreview.ZoomToFitPrintVolumeBounds)
             {
-                var result = await this.MessageBoxWaring($"Layer image resolution of {mat.Size} mismatch with printer resolution of {SlicerFile.Resolution}.\n" +
-                                            "1) Printing this file can lead to problems or malformed model, please verify your slicer printer settings;\n" +
-                                            "2) Processing this file with some of the tools can lead to program crash or misfunction;\n" +
-                                            "3) If you used PrusaSlicer to slice this file, you must use it with compatible UVtools printer profiles (Help - Install profiles into PrusaSlicer).\n\n" +
-                                            "Click 'Yes' to auto fix and set the file resolution with the layer resolution, but only use this option if you are sure it's ok to!\n" +
-                                            "Click 'No' to continue as it is and ignore this warning, you can still repair issues and use some of the tools.",
-                    "File and layer resolution mismatch!", ButtonEnum.YesNo);
-                if(result == ButtonResult.Yes)
-                {
-                    SlicerFile.Resolution = mat.Size;
-                    RaisePropertyChanged(nameof(LayerResolutionStr));
-                }
+                ZoomToFit();
             }
 
             SlicerFile.IssueManager.CollectionChanged += (sender, e) =>
@@ -2166,7 +2234,11 @@ namespace UVtools.WPF
 
         }
 
-#region Operations
+        #region Operations
+
+        public async Task<Operation> ShowRunOperation(Operation loadOperation) =>
+            await ShowRunOperation(loadOperation.GetType(), loadOperation);
+
         public async Task<Operation> ShowRunOperation(Type type, Operation loadOperation = null)
         {
             var operation = await ShowOperation(type, loadOperation);

@@ -59,7 +59,7 @@ namespace UVtools.Core.Operations
 
         public override string ValidateSpawn()
         {
-            if (!SlicerFile.CanUseLayerLiftHeight || !SlicerFile.CanUseLayerExposureTime)
+            if (!SlicerFile.CanUseLayerPositionZ || !SlicerFile.CanUseLayerLiftHeight || !SlicerFile.CanUseLayerExposureTime)
             {
                 return NotSupportedMessage;
             }

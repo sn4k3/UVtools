@@ -234,7 +234,8 @@ namespace UVtools.Core.Layers
             get => _waitTimeBeforeCure;
             set
             {
-                value = Math.Max(0, (float)Math.Round(value, 2));
+                value = (float)Math.Round(value, 2);
+                if (value < 0) value = SlicerFile.GetBottomOrNormalValue(this, SlicerFile.BottomWaitTimeBeforeCure, SlicerFile.WaitTimeBeforeCure);
                 if (!RaiseAndSetIfChanged(ref _waitTimeBeforeCure, value)) return;
                 SlicerFile?.UpdatePrintTimeQueued();
             }
@@ -249,7 +250,7 @@ namespace UVtools.Core.Layers
             set
             {
                 value = (float)Math.Round(value, 2);
-                if (value <= 0) value = SlicerFile.GetBottomOrNormalValue(this, SlicerFile.BottomExposureTime, SlicerFile.ExposureTime);
+                if (value < 0) value = SlicerFile.GetBottomOrNormalValue(this, SlicerFile.BottomExposureTime, SlicerFile.ExposureTime);
                 if(!RaiseAndSetIfChanged(ref _exposureTime, value)) return;
                 SlicerFile?.UpdatePrintTimeQueued();
             }
@@ -265,7 +266,8 @@ namespace UVtools.Core.Layers
             get => _waitTimeAfterCure;
             set
             {
-                value = Math.Max(0, (float)Math.Round(value, 2));
+                value = (float)Math.Round(value, 2);
+                if (value < 0) value = SlicerFile.GetBottomOrNormalValue(this, SlicerFile.BottomWaitTimeAfterCure, SlicerFile.WaitTimeAfterCure);
                 if (!RaiseAndSetIfChanged(ref _waitTimeAfterCure, value)) return;
                 SlicerFile?.UpdatePrintTimeQueued();
             }
@@ -369,7 +371,8 @@ namespace UVtools.Core.Layers
             get => _waitTimeAfterLift;
             set
             {
-                value = Math.Max(0, (float)Math.Round(value, 2));
+                value = (float)Math.Round(value, 2);
+                if (value < 0) value = SlicerFile.GetBottomOrNormalValue(this, SlicerFile.BottomWaitTimeAfterLift, SlicerFile.WaitTimeAfterLift);
                 if (!RaiseAndSetIfChanged(ref _waitTimeAfterLift, value)) return;
                 SlicerFile?.UpdatePrintTimeQueued();
             }
@@ -442,6 +445,40 @@ namespace UVtools.Core.Layers
                 //if (value == 0) value = SlicerFile.GetInitialLayerValueOrNormal(Index, SlicerFile.BottomLightPWM, SlicerFile.LightPWM);
                 //if (value == 0) value = FileFormat.DefaultLightPWM;
                 RaiseAndSetIfChanged(ref _lightPWM, value);
+            }
+        }
+
+        /// <summary>
+        /// Gets the minimum used speed in mm/min
+        /// </summary>
+        public float MinimumSpeed
+        {
+            get
+            {
+                float speed = float.MaxValue;
+                if (LiftSpeed > 0) speed = Math.Min(speed, LiftSpeed);
+                if (LiftSpeed2 > 0) speed = Math.Min(speed, LiftSpeed2);
+                if (RetractSpeed > 0) speed = Math.Min(speed, RetractSpeed);
+                if (RetractSpeed2 > 0) speed = Math.Min(speed, RetractSpeed2);
+                if (Math.Abs(speed - float.MaxValue) < 0.01) return 0;
+
+                return speed;
+            }
+        }
+
+        /// <summary>
+        /// Gets the maximum used speed in mm/min
+        /// </summary>
+        public float MaximumSpeed
+        {
+            get
+            {
+                float speed = LiftSpeed;
+                speed = Math.Max(speed, LiftSpeed2);
+                speed = Math.Max(speed, RetractSpeed);
+                speed = Math.Max(speed, RetractSpeed2);
+
+                return speed;
             }
         }
 
@@ -912,6 +949,12 @@ namespace UVtools.Core.Layers
 
         public bool SetValueFromPrintParameterModifier(FileFormat.PrintParameterModifier modifier, decimal value)
         {
+            if (ReferenceEquals(modifier, FileFormat.PrintParameterModifier.PositionZ))
+            {
+                PositionZ = (float)value;
+                return true;
+            }
+
             if (ReferenceEquals(modifier, FileFormat.PrintParameterModifier.LightOffDelay))
             {
                 LightOffDelay = (float)value;
@@ -1166,6 +1209,25 @@ namespace UVtools.Core.Layers
             return result;
         }*/
 
+        /// <summary>
+        /// Copy all lift parameters from this layer to an target layer
+        /// </summary>
+        /// <param name="layer"></param>
+        public void CopyLiftTo(Layer layer)
+        {
+            layer.LiftHeight = _liftHeight;
+            layer.LiftHeight2 = _liftHeight2;
+            layer.LiftSpeed = _liftSpeed;
+            layer.LiftSpeed2 = _liftSpeed2;
+            layer.RetractHeight2 = _retractHeight2;
+            layer.RetractSpeed =  _retractSpeed;
+            layer.RetractSpeed2 = _retractSpeed2;
+        }
+
+        /// <summary>
+        /// Copy the image and related parameters from this layer to an target layer
+        /// </summary>
+        /// <param name="layer"></param>
         public void CopyImageTo(Layer layer)
         {
             if (!HaveImage) return;

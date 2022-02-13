@@ -99,6 +99,7 @@ But also, i need victims for test subject. Proceed at your own risk!
 - LGS120 (Longer Orange 120)
 - LGS4K (Longer Orange 4K & mono)
 - Flashforge SVGX
+- ZIP (Generic / Phrozen Zip)
 - VDA.ZIP (Voxeldance Additive)
 - VDT (Voxeldance Tango)
 - UVJ (Zip file format for manual manipulation)
@@ -170,6 +171,18 @@ The UVtools executable allow to set some arguments to do special functions:
    - **Example 1:** UVtools --export-mesh model.zip
    - **Example 2:** UVtools --export-mesh model.zip model_exported.stl
    - **Note:** Nothing happen when providing wrong files, will quit.
+- **Run a operation and save the file**
+   - **Syntax:** UVtools --run-operation \<input_file\> \<operation_file.uvtop\>
+   - **Example 1:** UVtools --run-operation model.zip MyMorph.uvtop
+   - **Note:** Nothing happen when providing wrong files, will quit.
+- **Run a script and save the file**
+   - **Syntax:** UVtools --run-script \<input_file\> \<script_file.cs\>
+   - **Example 1:** UVtools --run-script model.zip myScript.cs
+   - **Note:** Nothing happen when providing wrong files, will quit.
+- **Copy print parameters from one file to another**
+   - **Syntax:** UVtools --copy-parameters \<from_file\> \<to_file\>
+   - **Example 1:** UVtools --copy-parameters model.zip otherfile.zip
+   - **Note:** Nothing happen when providing wrong files, will quit.
 
 # Requirements
 
@@ -207,6 +220,12 @@ dotnet-runtime-5.0
 ```bash
 sudo apt-get update
 sudo apt-get install -y libjpeg-dev libpng-dev libgeotiff-dev libdc1394-22 libavcodec-dev libavformat-dev libswscale-dev libopenexr24 libtbb-dev libgl1-mesa-dev libgdiplus
+```
+
+**Ubuntu 21.xx extra requirement:**
+
+```bash
+sudo ln -s /lib/x86_64-linux-gnu/libdl.so.2 /lib/x86_64-linux-gnu/libdl.so
 ```
 
 
@@ -306,6 +325,11 @@ sudo yum install -y https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-non
 sudo yum install -y libjpeg-devel libjpeg-turbo-devel libpng-devel libgeotiff-devel libdc1394-devel ffmpeg-devel tbb-devel mesa-libGL
 ```
 
+**Fedora 35 extra requirement:**
+
+```bash
+sudo ln -s /usr/lib64/libdl.so.2 /usr/lib64/libdl.so
+```
 
 ### Compile libcvextern.so:
 

@@ -5,7 +5,6 @@
  *  Everyone is permitted to copy and distribute verbatim copies
  *  of this license document, but changing it is not allowed.
  */
-using System;
 using System.Drawing;
 
 namespace UVtools.Core.Extensions
@@ -14,7 +13,7 @@ namespace UVtools.Core.Extensions
     {
         public static Point Center(this Rectangle src)
         {
-            return new Point(src.Right / 2, src.Bottom / 2);
+            return new Point(src.Left + src.Width / 2, src.Top + src.Height / 2);
         }
 
     }

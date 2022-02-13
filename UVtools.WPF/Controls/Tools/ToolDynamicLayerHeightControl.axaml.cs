@@ -1,6 +1,5 @@
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
-using UVtools.Core;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Layers;
 using UVtools.Core.Operations;
@@ -24,7 +23,7 @@ namespace UVtools.WPF.Controls.Tools
             BaseOperation = new OperationDynamicLayerHeight(SlicerFile);
             if (!ValidateSpawn()) return;
 
-            if (!SlicerFile.HaveLayerParameterModifier(FileFormat.PrintParameterModifier.ExposureTime))
+            if (!SlicerFile.CanUseLayerExposureTime)
             {
                 App.MainWindow.MessageBoxWaring($"Your printer seems to not support this tool, still you are allowed to run it for analyze, packing layers or simulation.\n" +
                                                       $"Do not print this file after run this tool on a not compatible printer, it will result in malformed model and height violation.\n" +

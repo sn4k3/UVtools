@@ -168,13 +168,8 @@ namespace UVtools.Core.Managers
                 float printHeightWithOffset = Layer.RoundHeight(SlicerFile.MachineZ + printHeightConfig.Offset);
                 if (SlicerFile.PrintHeight > printHeightWithOffset)
                 {
-                    foreach (var layer in SlicerFile)
-                    {
-                        if (layer.PositionZ > printHeightWithOffset)
-                        {
-                            AddIssue(new MainIssue(MainIssue.IssueType.PrintHeight, new Issue(layer)));
-                        }
-                    }
+                    var issues = (from layer in SlicerFile where layer.PositionZ > printHeightWithOffset select new Issue(layer)).ToList();
+                    if(issues.Count > 0) AddIssue(new MainIssue(MainIssue.IssueType.PrintHeight, issues));
                 }
             }
 

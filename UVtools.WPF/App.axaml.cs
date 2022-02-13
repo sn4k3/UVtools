@@ -8,7 +8,6 @@
 
 using System;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -44,9 +43,6 @@ namespace UVtools.WPF
         {
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
-                CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
-                CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
-
                 UserSettings.Load();
                 UserSettings.SetVersion();
 

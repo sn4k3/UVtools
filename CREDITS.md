@@ -67,3 +67,5 @@
 - Peopoly Inc
 - Riccardo Kocmann
 - Joshua Pitts
+- Tim Anderson
+- Sakari Toivonen

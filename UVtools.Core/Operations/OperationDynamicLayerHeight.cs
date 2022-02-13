@@ -142,10 +142,15 @@ namespace UVtools.Core.Operations
 
         public override string ValidateSpawn()
         {
+            if (!SlicerFile.CanUseLayerPositionZ || !SlicerFile.CanUseLayerExposureTime)
+            {
+                return NotSupportedMessage;
+            }
+
             if (SlicerFile.LayerHeight * 2 > FileFormat.MaximumLayerHeight)
             {
                 return $"This file already uses the maximum layer height possible ({SlicerFile.LayerHeight}mm).\n" +
-                       $"Layers can not be stacked, please re-slice your file with the lowest layer height of 0.01mm.";
+                       "Layers can not be stacked, please re-slice your file with the lowest layer height of 0.01mm.";
             }
 
             for (uint layerIndex = 1; layerIndex < SlicerFile.LayerCount; layerIndex++)

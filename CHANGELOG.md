@@ -1,5 +1,42 @@
 # Changelog
 
+## 13/02/2022 - v2.28.0
+
+- **Core:**
+   - (Add) Utilities methods (`MinimumSpeed`, `MaximumSpeed`, `CreateMat`, `CreateMatWithDummyPixel`, `FileFormat.CopyParameters`)
+   - (Improvement) Issues - Print Height: Group all layers outside the valid print height
+   - (Fix) `Rectangle.Center` return a wrong center
+- **FileFormats:**
+   - (Add) Generic / Phrozen ZIP format
+   - (Add) Information/modifier to file formats to tell whatever is possible to use custom PositionZ per layer
+   - (Add) Safe checks in order to run some tools, related to the previous "PositionZ" point
+   - (Improvement) if blank, allow the previous layer to have a higher Z position than the successor layer
+   - (Improvement) SL1: Implement the missing keys from new features of PrusaSlicer 2.4.0
+   - (Fix) Calling a partial save action without a progress instance would cause a crash
+   - (Fix) GCode: Unable to parse the "Wait time after lift" when a second lift (TSMC) was present, leading to a sum on "Wait time before cure" 
+- **Tools:**
+   - (Add) Timelapse: Raise the build platform to a set position every odd-even height to be able to take a photo and create a time-lapse video of the print
+   - (Add) Scripting: ScriptToggleSwitchInput
+   - **Raise on print finish:**
+      - (Add) Reapply check and prevent run the tool in that case
+      - (Fix) It was incorrectly marked to be able to run in partial mode
+      - (Fix) The dummy pixel was beeing set to a wrong location
+- **Layers:**:
+   - (Change) When set Wait times to a negative value, it will set the global wait time value accordingly
+   - (Change) Allow ExposureTime to be 0
+- **Commandline arguments**
+   - (Add) --run-operation \<input_file\> \<operation_file.uvtop\>
+   - (Add) --run-script \<input_file\> \<script_file.cs\>
+   - (Add) --copy-parameters \<from_file\> \<to_file\>
+- **UI:**
+   - (Add) When open a file with missing crucial information, prompt the user to fill in that information (Optional)
+   - (Add) Warn user about misfunction when open a file with invalid layer height of 0mm
+   - (Improvement) Layer information: Only show the "Exposure time" when its availiable on the file format
+   - (Improvement) When a file is about to get auto-converted once loaded and the output file already exists, prompt user for overwrite action
+- (Improvement) Set default culture info at top most of the program to avoid strange problems with commandline arguments
+- (Upgrade) .NET from 5.0.13 to 5.0.14
+- (Downgrade) OpenCV from 4.5.5 to 4.5.4 due the crash while detecting islands (Linux and MacOS) (#411, #415, #416)
+
 ## 27/01/2022 - v2.27.7
 
 - **Pixel Arithmetic:**

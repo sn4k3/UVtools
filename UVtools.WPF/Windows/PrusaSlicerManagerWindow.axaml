@@ -111,8 +111,7 @@
           Spacing="5">
             <Button Padding="10"
                     IsDefault="True"
-                    Command="{Binding InstallProfiles}"
-                    >
+                    Command="{Binding InstallProfiles}">
               <StackPanel Orientation="Horizontal" Spacing="10">
                 <Image Source="/Assets/Icons/accept-16x16.png"/>
                 <TextBlock Text="Install selected profiles"/>

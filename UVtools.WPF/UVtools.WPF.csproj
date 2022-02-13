@@ -12,7 +12,7 @@
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <RepositoryUrl>https://github.com/sn4k3/UVtools</RepositoryUrl>
     <RepositoryType>Git</RepositoryType>
-    <Version>2.27.7</Version>
+    <Version>2.28.0</Version>
     <Platforms>AnyCPU;x64</Platforms>
     <PackageIcon>UVtools.png</PackageIcon>
     <PackageReadmeFile>README.md</PackageReadmeFile>
@@ -45,7 +45,7 @@
     <PackageReference Include="Avalonia.Diagnostics" Version="0.10.12" />
     <PackageReference Include="Emgu.CV.runtime.windows" Version="4.5.5.4823" />
     <PackageReference Include="MessageBox.Avalonia" Version="1.7.1" />
-    <PackageReference Include="ThemeEditor.Controls.ColorPicker" Version="0.10.11" />
+    <PackageReference Include="ThemeEditor.Controls.ColorPicker" Version="0.10.12" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\UVtools.AvaloniaControls\UVtools.AvaloniaControls.csproj" />

@@ -13,6 +13,10 @@
         <Setter Property="Background" Value="LightBlue" />
     </Style>
 
+    <Style Selector="Border.Header">
+        <Setter Property="Background" Value="LightGray" />
+    </Style>
+
   <Style Selector="Border.FooterActions">
       <Setter Property="Background" Value="LightGray" />
   </Style>

@@ -45,6 +45,7 @@ namespace UVtools.WPF.Structures
         [XmlElement(typeof(OperationDynamicLifts))]
         [XmlElement(typeof(OperationRaiseOnPrintFinish))]
         [XmlElement(typeof(OperationChangeResolution))]
+        [XmlElement(typeof(OperationTimelapse))]
         
         [XmlElement(typeof(OperationLayerExportGif))]
 

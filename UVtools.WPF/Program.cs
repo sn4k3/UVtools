@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Globalization;
+using System.IO;
 using System.Runtime.ExceptionServices;
 using Avalonia;
+using UVtools.Core.FileFormats;
 using UVtools.WPF.Extensions;
 
 namespace UVtools.WPF
@@ -17,6 +20,9 @@ namespace UVtools.WPF
         [STAThread]
         public static void Main(string[] args)
         {
+            CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
+            CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
+
             ProgramStartupTime = Stopwatch.StartNew();
             Args = args;
             try
@@ -28,7 +34,7 @@ namespace UVtools.WPF
                 Console.WriteLine(e);
                 return;
             }
-            
+
             /*Slicer slicer = new(Size.Empty, SizeF.Empty, "D:\\Cube100x100x100.stl");
             var slices = slicer.SliceModel(0.05f);
             

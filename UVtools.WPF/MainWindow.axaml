@@ -112,7 +112,7 @@
               </MenuItem.Icon>
           </MenuItem>
 
-          <MenuItem Name="MainMenu.File.OpenCurrentFileFolder" Header="Open current file fo_lder" HotKey="Ctrl+Shift+L" InputGesture="Ctrl+Shift+L" IsEnabled="{Binding IsFileLoaded}" Command="{Binding MenuFileOpenCurrentFileFolderClicked}">
+          <MenuItem Name="MainMenu.File.OpenContainingFileFolder" Header="Open containing fo_lder" HotKey="Ctrl+Shift+L" InputGesture="Ctrl+Shift+L" IsEnabled="{Binding IsFileLoaded}" Command="{Binding MenuFileOpenContainingFolderClicked}">
               <MenuItem.Icon>
                   <Image Source="\Assets\Icons\folder-open-16x16.png"/>
               </MenuItem.Icon>

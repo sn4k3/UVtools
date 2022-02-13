@@ -147,6 +147,7 @@ namespace UVtools.Core.FileFormats
         {
             
             #region Instances
+            public static PrintParameterModifier PositionZ { get; } = new ("Position Z", "Absolute Z position", "mm",0, 100000, Layer.HeightPrecision);
             public static PrintParameterModifier BottomLayerCount { get; } = new ("Bottom layers count", "Number of bottom/burn-in layers", "layers",0, ushort.MaxValue, 0);
 
             public static PrintParameterModifier BottomLightOffDelay { get; } = new("Bottom light-off seconds", "Total motor movement time + rest time to wait before cure a new bottom layer", "s");
@@ -187,7 +188,7 @@ namespace UVtools.Core.FileFormats
             public static PrintParameterModifier BottomLightPWM { get; } = new ("Bottom light PWM", "UV LED power for bottom layers", "☀", 1, byte.MaxValue, 0);
             public static PrintParameterModifier LightPWM { get; } = new ("Light PWM", "UV LED power for layers", "☀", 1, byte.MaxValue, 0);
 
-            public static PrintParameterModifier[] Parameters = {
+            /*public static PrintParameterModifier[] Parameters = {
                 BottomLayerCount,
 
                 BottomWaitTimeBeforeCure,
@@ -209,7 +210,7 @@ namespace UVtools.Core.FileFormats
 
                 BottomLightPWM,
                 LightPWM
-            };
+            };*/
             #endregion
 
             #region Properties
@@ -279,6 +280,25 @@ namespace UVtools.Core.FileFormats
             #endregion
 
             #region Overrides
+
+            protected bool Equals(PrintParameterModifier other)
+            {
+                return Name == other.Name;
+            }
+
+            public override bool Equals(object obj)
+            {
+                if (ReferenceEquals(null, obj)) return false;
+                if (ReferenceEquals(this, obj)) return true;
+                if (obj.GetType() != this.GetType()) return false;
+                return Equals((PrintParameterModifier) obj);
+            }
+
+            public override int GetHashCode()
+            {
+                return (Name != null ? Name.GetHashCode() : 0);
+            }
+
             public override string ToString()
             {
                 return $"{nameof(Name)}: {Name}, {nameof(Description)}: {Description}, {nameof(ValueUnit)}: {ValueUnit}, {nameof(Minimum)}: {Minimum}, {nameof(Maximum)}: {Maximum}, {nameof(DecimalPlates)}: {DecimalPlates}, {nameof(OldValue)}: {OldValue}, {nameof(NewValue)}: {NewValue}, {nameof(HasChanged)}: {HasChanged}";
@@ -311,6 +331,7 @@ namespace UVtools.Core.FileFormats
             new CXDLPFile(),   // Creality Box
             new LGSFile(),   // LGS, LGS30
             new FlashForgeSVGXFile(), // SVGX
+            new GenericZIPFile(),   // Generic zip files
             new VDAFile(),   // VDA
             new VDTFile(),   // VDT
             new UVJFile(),   // UVJ
@@ -468,6 +489,38 @@ namespace UVtools.Core.FileFormats
         public static FileFormat Open(string fileFullPath, OperationProgress progress = null) =>
             Open(fileFullPath, FileDecodeType.Full, progress);
 
+        /// <summary>
+        /// Copy parameters from one file to another
+        /// </summary>
+        /// <param name="from">From source file</param>
+        /// <param name="to">To target file</param>
+        /// <returns>Number of affected parameters</returns>
+        public static uint CopyParameters(FileFormat from, FileFormat to)
+        {
+            if (ReferenceEquals(from, to)) return 0;
+            if (from.PrintParameterModifiers is null || to.PrintParameterModifiers is null) return 0;
+
+            uint count = 0;
+
+            to.RefreshPrintParametersModifiersValues();
+            var targetPrintModifier = to.PrintParameterModifiers.ToArray();
+            from.RefreshPrintParametersModifiersValues();
+            foreach (var sourceModifier in from.PrintParameterModifiers)
+            {
+                if (!targetPrintModifier.Contains(sourceModifier)) continue;
+
+                var fromValueStr = from.GetValueFromPrintParameterModifier(sourceModifier).ToString();
+                var toValueStr = to.GetValueFromPrintParameterModifier(sourceModifier).ToString();
+
+                if (decimal.TryParse(fromValueStr, out var fromValue) && decimal.TryParse(toValueStr, out var toValue) && fromValue != toValue)
+                {
+                    to.SetValueFromPrintParameterModifier(sourceModifier, fromValue);
+                    count++;
+                }
+            }
+            
+            return count;
+        }
 
         public static byte[] EncodeImage(string dataType, Mat mat)
         {
@@ -879,7 +932,7 @@ namespace UVtools.Core.FileFormats
         /// </summary>
         public string FileFullPath { get; set; }
 
-        public string FileDirectoryPath => Path.GetDirectoryName(FileFullPath);
+        public string DirectoryPath => Path.GetDirectoryName(FileFullPath);
         public string Filename => Path.GetFileName(FileFullPath);
         public string FileExtension => Path.GetExtension(FileFullPath);
         public string FilenameNoExt => GetFileNameStripExtensions(FileFullPath);
@@ -1265,6 +1318,11 @@ namespace UVtools.Core.FileFormats
             get => LayerCount == 0 ? 0 : LastLayer?.PositionZ ?? 0;
             set => RaisePropertyChanged();
         }
+
+        /// <summary>
+        /// First layer index, this is always 0
+        /// </summary>
+        public const uint FirstLayerIndex = 0;
 
         /// <summary>
         /// Gets the last layer index
@@ -1713,6 +1771,95 @@ namespace UVtools.Core.FileFormats
             set => RaiseAndSet(ref _lightPwm, value);
         }
 
+        /// <summary>
+        /// Gets the minimum used speed for bottom layers in mm/min
+        /// </summary>
+        public float MinimumBottomSpeed
+        {
+            get
+            {
+                float speed = float.MaxValue;
+                if (BottomLiftSpeed > 0)     speed = Math.Min(speed, BottomLiftSpeed);
+                if (BottomLiftSpeed2 > 0)    speed = Math.Min(speed, BottomLiftSpeed2);
+                if (BottomRetractSpeed > 0)  speed = Math.Min(speed, BottomRetractSpeed);
+                if (BottomRetractSpeed2 > 0) speed = Math.Min(speed, BottomRetractSpeed2);
+                if (Math.Abs(speed - float.MaxValue) < 0.01) return 0;
+
+                return speed;
+            }
+        }
+
+        /// <summary>
+        /// Gets the minimum used speed for normal bottom layers in mm/min
+        /// </summary>
+        public float MinimumNormalSpeed
+        {
+            get
+            {
+                float speed = float.MaxValue;
+                if (LiftSpeed > 0)     speed = Math.Min(speed, LiftSpeed);
+                if (LiftSpeed2 > 0)    speed = Math.Min(speed, LiftSpeed2);
+                if (RetractSpeed > 0)  speed = Math.Min(speed, RetractSpeed);
+                if (RetractSpeed2 > 0) speed = Math.Min(speed, RetractSpeed2);
+                if (Math.Abs(speed - float.MaxValue) < 0.01) return 0;
+
+                return speed;
+            }
+        }
+
+        /// <summary>
+        /// Gets the minimum used speed in mm/min
+        /// </summary>
+        public float MinimumSpeed
+        {
+            get
+            {
+                var bottomSpeed = MinimumBottomSpeed;
+                var normalSpeed = MinimumNormalSpeed;
+                if (bottomSpeed <= 0) return normalSpeed;
+                if (normalSpeed <= 0) return bottomSpeed;
+
+                return Math.Min(bottomSpeed, normalSpeed);
+            }
+        }
+
+        /// <summary>
+        /// Gets the maximum used speed for bottom layers in mm/min
+        /// </summary>
+        public float MaximumBottomSpeed
+        {
+            get
+            {
+                float speed = BottomLiftSpeed;
+                speed = Math.Max(speed, BottomLiftSpeed2);
+                speed = Math.Max(speed, BottomRetractSpeed);
+                speed = Math.Max(speed, BottomRetractSpeed2);
+
+                return speed;
+            }
+        }
+
+        /// <summary>
+        /// Gets the maximum used speed for normal bottom layers in mm/min
+        /// </summary>
+        public float MaximumNormalSpeed
+        {
+            get
+            {
+                float speed = LiftSpeed;
+                speed = Math.Max(speed, LiftSpeed2);
+                speed = Math.Max(speed, RetractSpeed);
+                speed = Math.Max(speed, RetractSpeed2);
+
+                return speed;
+            }
+        }
+
+        /// <summary>
+        /// Gets the maximum used speed in mm/min
+        /// </summary>
+        public float MaximumSpeed => Math.Max(MaximumBottomSpeed, MaximumNormalSpeed);
+
         public bool CanUseBottomLayerCount => HavePrintParameterModifier(PrintParameterModifier.BottomLayerCount);
 
         public bool CanUseBottomLightOffDelay => HavePrintParameterModifier(PrintParameterModifier.BottomLightOffDelay);
@@ -1769,6 +1916,7 @@ namespace UVtools.Core.FileFormats
         public bool CanUseLightPWM => HavePrintParameterModifier(PrintParameterModifier.LightPWM);
         public bool CanUseAnyLightPWM => CanUseBottomLightPWM || CanUseLightPWM;
 
+        public bool CanUseLayerPositionZ => HaveLayerParameterModifier(PrintParameterModifier.PositionZ);
         public bool CanUseLayerWaitTimeBeforeCure => HaveLayerParameterModifier(PrintParameterModifier.WaitTimeBeforeCure);
         public bool CanUseLayerExposureTime => HaveLayerParameterModifier(PrintParameterModifier.ExposureTime);
         public bool CanUseLayerWaitTimeAfterCure => HaveLayerParameterModifier(PrintParameterModifier.WaitTimeAfterCure);
@@ -2686,7 +2834,6 @@ namespace UVtools.Core.FileFormats
             }
 
             bool reSaveFile = LayerManager.Sanitize();
-
             if (reSaveFile)
             {
                 Save(progress);
@@ -3037,6 +3184,11 @@ namespace UVtools.Core.FileFormats
         {
             if (PrintParameterPerLayerModifiers is null) return;
             var layer = this[layerIndex];
+
+            if (PrintParameterPerLayerModifiers.Contains(PrintParameterModifier.PositionZ))
+            {
+                PrintParameterModifier.PositionZ.Value = (decimal)layer.PositionZ;
+            }
 
             if (PrintParameterPerLayerModifiers.Contains(PrintParameterModifier.LightOffDelay))
             {
@@ -3515,6 +3667,7 @@ namespace UVtools.Core.FileFormats
 
             }
 
+            progress ??= new OperationProgress();
             PartialSaveInternally(progress);
         }
 
@@ -3901,6 +4054,56 @@ namespace UVtools.Core.FileFormats
         /// <returns>Resolution position in pixels</returns>
         public Point DisplayToPixelPosition(float x, float y) => new(DisplayToPixelPositionX(x), DisplayToPixelPositionY(y));
         public Point DisplayToPixelPosition(PointF point) => new(DisplayToPixelPositionX(point.X), DisplayToPixelPositionY(point.Y));
+
+        /// <summary>
+        /// Creates a empty mat of file <see cref="Resolution"/> size and create a dummy pixel to prevent a empty layer detection
+        /// </summary>
+        /// <param name="dummyPixelLocation">Location to set the dummy pixel, use a negative value (-1,-1) to set to the bounding center</param>
+        /// <param name="dummyPixelBrightness">Dummy pixel brightness</param>
+        /// <returns></returns>
+        public Mat CreateMatWithDummyPixel(Point dummyPixelLocation, byte dummyPixelBrightness)
+        {
+            var newMat = EmguExtensions.InitMat(Resolution);
+            if (dummyPixelBrightness > 0)
+            {
+                if (dummyPixelLocation.IsAnyNegative()) dummyPixelLocation = BoundingRectangle.Center();
+                newMat.SetByte(newMat.GetPixelPos(dummyPixelLocation), dummyPixelBrightness);
+            }
+
+            return newMat;
+        }
+
+        /// <summary>
+        /// Creates a empty mat of file <see cref="Resolution"/> size and create a dummy pixel to prevent a empty layer detection
+        /// </summary>
+        /// <param name="dummyPixelLocation">Location to set the dummy pixel, use a negative value (-1,-1) to set to the bounding center</param>
+        /// <returns></returns>
+        public Mat CreateMatWithDummyPixel(Point dummyPixelLocation) => CreateMatWithDummyPixel(dummyPixelLocation, SupportsGCode ? (byte) 1 : (byte) 128);
+
+        /// <summary>
+        /// Creates a empty mat of file <see cref="Resolution"/> size
+        /// </summary>
+        /// <param name="dummyPixelBrightness">Dummy pixel brightness</param>
+        /// <returns></returns>
+        public Mat CreateMatWithDummyPixel(byte dummyPixelBrightness) => CreateMatWithDummyPixel(BoundingRectangle.Center(), dummyPixelBrightness);
+
+        /// <summary>
+        /// Creates a empty mat of file <see cref="Resolution"/> size
+        /// </summary>
+        /// <returns></returns>
+        public Mat CreateMatWithDummyPixel() => CreateMatWithDummyPixel(SupportsGCode ? (byte)1 : (byte)128);
+      
+        /// <summary>
+        /// Creates a empty mat of file <see cref="Resolution"/> size
+        /// </summary>
+        /// <param name="initMat">True to black out the mat</param>
+        /// <returns></returns>
+        public Mat CreateMat(bool initMat = true)
+        {
+            return initMat
+                ? EmguExtensions.InitMat(Resolution)
+                : new Mat(Resolution, DepthType.Cv8U, 1);
+        }
 
         #endregion
     }

@@ -40,9 +40,11 @@ namespace UVtools.WPF.Controls.Tools
             InitializeComponent();
         }
 
-        public ToolControl(Operation operation) : this()
+        public ToolControl(Operation operation)
         {
             BaseOperation = operation;
+            if (!ValidateSpawn()) return;
+            InitializeComponent();
         }
 
         private void InitializeComponent()

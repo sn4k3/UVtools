@@ -350,11 +350,12 @@ namespace UVtools.WPF
             CurrentLayerProperties.Add(new ValueDescription($"{Layer.ShowHeight(layer.PositionZ)}mm", nameof(layer.PositionZ)));
             CurrentLayerProperties.Add(new ValueDescription(layer.IsBottomLayer.ToString(), nameof(layer.IsBottomLayer)));
             CurrentLayerProperties.Add(new ValueDescription(layer.IsModified.ToString(), nameof(layer.IsModified)));
-            CurrentLayerProperties.Add(new ValueDescription($"{layer.ExposureTime:F2}s", nameof(layer.ExposureTime)));
-            
+
+            if (SlicerFile.CanUseExposureTime)
+                CurrentLayerProperties.Add(new ValueDescription($"{layer.ExposureTime:F2}s", nameof(layer.ExposureTime)));
+
             if (SlicerFile.SupportPerLayerSettings)
             {
-
                 if (SlicerFile.CanUseLayerLiftHeight)
                     CurrentLayerProperties.Add(new ValueDescription($"{layer.LiftHeight.ToString(CultureInfo.InvariantCulture)}mm @ {layer.LiftSpeed.ToString(CultureInfo.InvariantCulture)}mm/min", nameof(layer.LiftHeight)));
                 if (SlicerFile.CanUseLayerLiftHeight2)

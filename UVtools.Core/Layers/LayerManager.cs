@@ -463,7 +463,8 @@ namespace UVtools.Core
                 if (this[layerIndex] is null) throw new InvalidDataException($"Layer {layerIndex} was defined but doesn't contain a valid image.");
                 if (layerIndex <= 0) continue;
                 // Check for bigger position z than it successor
-                if (this[layerIndex - 1].PositionZ > this[layerIndex].PositionZ) throw new InvalidDataException($"Layer {layerIndex - 1} ({this[layerIndex - 1].PositionZ}mm) have a higher Z position than the successor layer {layerIndex} ({this[layerIndex].PositionZ}mm).\n");
+                if (this[layerIndex - 1].PositionZ > this[layerIndex].PositionZ && this[layerIndex - 1].NonZeroPixelCount > 1)
+                    throw new InvalidDataException($"Layer {layerIndex - 1} ({this[layerIndex - 1].PositionZ}mm) have a higher Z position than the successor layer {layerIndex} ({this[layerIndex].PositionZ}mm).\n");
             }
 
             if (SlicerFile.ResolutionX == 0 || SlicerFile.ResolutionY == 0)

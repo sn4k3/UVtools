@@ -119,6 +119,7 @@ namespace UVtools.Core.FileFormats
         };
 
         public override PrintParameterModifier[] PrintParameterPerLayerModifiers { get; } = {
+            PrintParameterModifier.PositionZ,
             PrintParameterModifier.WaitTimeBeforeCure,
             PrintParameterModifier.ExposureTime,
             PrintParameterModifier.WaitTimeAfterCure,
@@ -403,39 +404,35 @@ namespace UVtools.Core.FileFormats
 
         protected override void EncodeInternally(OperationProgress progress)
         {
-            using (ZipArchive outputFile = ZipFile.Open(FileFullPath, ZipArchiveMode.Create))
+            using var outputFile = ZipFile.Open(FileFullPath, ZipArchiveMode.Create);
+            if (Thumbnails.Length > 0 && Thumbnails[0] is not null)
             {
-                if (Thumbnails.Length > 0 && Thumbnails[0] is not null)
-                {
-                    using (Stream stream = outputFile.CreateEntry("preview.png").Open())
-                    {
-                        stream.WriteBytes(Thumbnails[0].GetPngByes());
-                        stream.Close();
-                    }
-                }
+                using var stream = outputFile.CreateEntry("preview.png").Open();
+                stream.WriteBytes(Thumbnails[0].GetPngByes());
+                stream.Close();
+            }
 
-                if (Thumbnails.Length > 1 && Thumbnails[1] is not null)
-                {
-                    using Stream stream = outputFile.CreateEntry("preview_cropping.png").Open();
-                    using var vec = new VectorOfByte();
-                    stream.WriteBytes(Thumbnails[1].GetPngByes());
-                    stream.Close();
-                }
+            if (Thumbnails.Length > 1 && Thumbnails[1] is not null)
+            {
+                using var stream = outputFile.CreateEntry("preview_cropping.png").Open();
+                using var vec = new VectorOfByte();
+                stream.WriteBytes(Thumbnails[1].GetPngByes());
+                stream.Close();
+            }
 
-                if (!IsPHZZip)
-                {
-                    RebuildGCode();
-                    outputFile.PutFileContent(GCodeFilename, GCodeStr, ZipArchiveMode.Create);
-                }
+            if (!IsPHZZip)
+            {
+                RebuildGCode();
+                outputFile.PutFileContent(GCodeFilename, GCodeStr, ZipArchiveMode.Create);
+            }
 
-                for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
-                {
-                    progress.Token.ThrowIfCancellationRequested();
-                    Layer layer = this[layerIndex];
-                    outputFile.PutFileContent($"{layerIndex + 1}.png", layer.CompressedBytes,
-                        ZipArchiveMode.Create);
-                    progress++;
-                }
+            for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
+            {
+                progress.Token.ThrowIfCancellationRequested();
+                var layer = this[layerIndex];
+                outputFile.PutFileContent($"{layerIndex + 1}.png", layer.CompressedBytes,
+                    ZipArchiveMode.Create);
+                progress++;
             }
         }
 
@@ -448,33 +445,31 @@ namespace UVtools.Core.FileFormats
                 {
                     //Clear();
                     //throw new FileLoadException("run.gcode not found", fileFullPath);
-                    using (TextReader tr = new StreamReader(entry.Open()))
+                    using TextReader tr = new StreamReader(entry.Open());
+                    string line;
+                    GCode.Clear();
+                    while ((line = tr.ReadLine()) != null)
                     {
-                        string line;
-                        GCode.Clear();
-                        while ((line = tr.ReadLine()) != null)
+                        GCode.AppendLine(line);
+                        if (string.IsNullOrEmpty(line)) continue;
+
+                        if (line[0] != ';')
                         {
-                            GCode.AppendLine(line);
-                            if (string.IsNullOrEmpty(line)) continue;
-
-                            if (line[0] != ';')
-                            {
-                                continue;
-                            }
-
-                            var splitLine = line.Split(':');
-                            if (splitLine.Length < 2) continue;
-
-                            foreach (var propertyInfo in HeaderSettings.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
-                            {
-                                var displayNameAttribute = propertyInfo.GetCustomAttributes(false).OfType<DisplayNameAttribute>().FirstOrDefault();
-                                if (displayNameAttribute is null) continue;
-                                if (!splitLine[0].Trim(' ', ';').Equals(displayNameAttribute.DisplayName)) continue;
-                                Helpers.SetPropertyValue(propertyInfo, HeaderSettings, splitLine[1].Trim());
-                            }
+                            continue;
                         }
-                        tr.Close();
+
+                        var splitLine = line.Split(':');
+                        if (splitLine.Length < 2) continue;
+
+                        foreach (var propertyInfo in HeaderSettings.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
+                        {
+                            var displayNameAttribute = propertyInfo.GetCustomAttributes(false).OfType<DisplayNameAttribute>().FirstOrDefault();
+                            if (displayNameAttribute is null) continue;
+                            if (!splitLine[0].Trim(' ', ';').Equals(displayNameAttribute.DisplayName)) continue;
+                            Helpers.SetPropertyValue(propertyInfo, HeaderSettings, splitLine[1].Trim());
+                        }
                     }
+                    tr.Close();
                 }
                 else
                 {
@@ -523,15 +518,6 @@ namespace UVtools.Core.FileFormats
                 else
                 {
                     GCode.ParseLayersFromGCode(this);
-                }
-
-                if (HeaderSettings.LayerCount > 0 && ResolutionX == 0)
-                {
-                    using (var mat = this[0].LayerMat)
-                    {
-                        HeaderSettings.ResolutionX = (uint)mat.Width;
-                        HeaderSettings.ResolutionY = (uint)mat.Height;
-                    }
                 }
 
                 entry = inputFile.GetEntry("preview.png");

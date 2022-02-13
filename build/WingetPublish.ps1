@@ -62,8 +62,8 @@ $actionInput = Read-Host -Prompt "Do you want to update the manifest with the cu
 if($actionInput -eq "y" || $actionInput -eq "yes")
 {
     Remove-Item $outputFolder -Recurse -ErrorAction Ignore # Clean
-    #wingetcreate.exe update PTRTECH.UVtools
-    wingetcreate.exe update PTRTECH.UVtools --urls $msiUrl --version $version --token $wingetTokenKeyFile --submit
+    #wingetcreate.exe update PTRTECH.UVtools --interactive
+    wingetcreate.exe update PTRTECH.UVtools --urls "$msiUrl|x64" --version $version --token $wingetTokenKeyFile --submit
     Remove-Item $outputFolder -Recurse -ErrorAction Ignore # Clean
 }
 

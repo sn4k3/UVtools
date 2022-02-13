@@ -758,7 +758,13 @@
 
         <Expander
             Header="Multiple exposures"
-            IsExpanded="True" IsVisible="{Binding CanSupportPerLayerSettings}">
+            IsExpanded="True">
+            <Expander.IsVisible>
+                <MultiBinding Converter="{x:Static BoolConverters.And}">
+                    <Binding Path="CanSupportPerLayerPositionZ"/>
+                    <Binding Path="CanSupportPerLayerExposureTime"/>
+                </MultiBinding>
+            </Expander.IsVisible>
 
             <StackPanel Spacing="10">
 

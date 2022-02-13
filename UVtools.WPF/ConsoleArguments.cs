@@ -195,6 +195,155 @@ namespace UVtools.WPF
                 return true;
             }
 
+            // Run operation and save file
+            if (args[0] is "--run-operation")
+            {
+                if (args.Length < 3)
+                {
+                    Console.WriteLine("Invalid syntax: <input_file> <operation_file.uvtop>");
+                    return true;
+                }
+
+                if (!File.Exists(args[1]))
+                {
+                    Console.WriteLine($"Input file does not exists: {args[1]}");
+                    return true;
+                }
+
+                if (!File.Exists(args[2]))
+                {
+                    Console.WriteLine($"Operation file does not exists: {args[2]}");
+                    return true;
+                }
+
+                var slicerFile = FileFormat.FindByExtensionOrFilePath(args[1], true);
+                if (slicerFile is null)
+                {
+                    Console.WriteLine($"Invalid input file: {args[1]}");
+                    return true;
+                }
+
+                var operation = Operation.Deserialize(args[2]);
+
+                if (operation is null)
+                {
+                    Console.WriteLine($"Invalid operation file: {args[2]}");
+                    return true;
+                }
+
+                Console.WriteLine($"Loading file: {args[1]}");
+                slicerFile.Decode(args[1]);
+
+                Console.WriteLine($"Running operation: {operation.Title}");
+                operation.SlicerFile = slicerFile;
+                operation.Execute();
+                slicerFile.Save();
+                Console.WriteLine("Saved");
+                Console.WriteLine("OK");
+
+                return true;
+            }
+
+            // Run operation and save file
+            if (args[0] is "--run-script")
+            {
+                if (args.Length < 3)
+                {
+                    Console.WriteLine("Invalid syntax: <input_file> <script_file.cs>");
+                    return true;
+                }
+
+                if (!File.Exists(args[1]))
+                {
+                    Console.WriteLine($"Input file does not exists: {args[1]}");
+                    return true;
+                }
+
+                if (!File.Exists(args[2]) || !(args[2].EndsWith(".csx") || args[2].EndsWith(".cs")))
+                {
+                    Console.WriteLine($"Script file does not exists or invalid: {args[2]}");
+                    return true;
+                }
+
+                var slicerFile = FileFormat.FindByExtensionOrFilePath(args[1], true);
+                if (slicerFile is null)
+                {
+                    Console.WriteLine($"Invalid input file: {args[1]}");
+                    return true;
+                }
+
+                Console.WriteLine($"Loading file: {args[1]}");
+                slicerFile.Decode(args[1]);
+
+                var operation = new OperationScripting(slicerFile);
+                operation.ReloadScriptFromFile(args[2]);
+                
+                Console.WriteLine($"Running script: {operation.Title}");
+                operation.Execute();
+                slicerFile.Save();
+                Console.WriteLine("Saved");
+                Console.WriteLine("OK");
+
+                return true;
+            }
+
+            // Run operation and save file
+            if (args[0] is "--copy-parameters")
+            {
+                if (args.Length < 3)
+                {
+                    Console.WriteLine("Invalid syntax: <from_file> <to_file>");
+                    return true;
+                }
+
+                if (args[1] == args[2])
+                {
+                    Console.WriteLine($"Source file must be different from target file");
+                    return true;
+                }
+
+                if (!File.Exists(args[1]))
+                {
+                    Console.WriteLine($"Source file does not exists: {args[1]}");
+                    return true;
+                }
+
+                if (!File.Exists(args[2]))
+                {
+                    Console.WriteLine($"Target file does not exists: {args[1]}");
+                    return true;
+                }
+                
+                var fromFile = FileFormat.FindByExtensionOrFilePath(args[1], true);
+                if (fromFile is null)
+                {
+                    Console.WriteLine($"Invalid source file: {args[1]}");
+                    return true;
+                }
+
+                var toFile = FileFormat.FindByExtensionOrFilePath(args[2], true);
+                if (toFile is null)
+                {
+                    Console.WriteLine($"Invalid target file: {args[2]}");
+                    return true;
+                }
+                
+                Console.WriteLine("Loading files");
+                fromFile.Decode(args[1], FileFormat.FileDecodeType.Partial);
+                toFile.Decode(args[2], FileFormat.FileDecodeType.Partial);
+
+                var count = FileFormat.CopyParameters(fromFile, toFile);
+                Console.WriteLine($"Modified parameters: {count}");
+                if (count > 0)
+                {
+                    toFile.Save();
+                    Console.WriteLine("Saved");
+                }
+                Console.WriteLine("OK");
+
+                return true;
+            }
+
             if (args[0] == "--crypt-ctb")
             {
                 if (!File.Exists(args[1]))

@@ -28,9 +28,11 @@ namespace UVtools.WPF
         #region Properties
         public Suggestion[] Suggestions { get; } = 
         {
+#if DEBUG
             //new SuggestionBottomLayerCount(),
             //new SuggestionWaitTimeAfterCure(),
             //new SuggestionLayerHeight()
+#endif
         };
 
         public RangeObservableCollection<Suggestion> SuggestionsAvailable { get; } = new();

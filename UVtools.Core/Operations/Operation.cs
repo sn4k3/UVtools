@@ -10,6 +10,7 @@ using System;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
 using Emgu.CV;
@@ -320,7 +321,14 @@ namespace UVtools.Core.Operations
             return string.IsNullOrWhiteSpace(message);
         }
 
-        public virtual string ValidateInternally() => null;
+        public virtual string ValidateInternally()
+        {
+            if (!ValidateSpawn(out var message))
+            {
+                return message;
+            }
+            return null;
+        }
 
         /// <summary>
         /// Validates the operation
@@ -603,6 +611,24 @@ namespace UVtools.Core.Operations
         #endregion
 
         #region Static Methods
+
+        public static Operation Deserialize(string path)
+        {
+            if (!File.Exists(path)) return null;
+
+            var fileText = File.ReadAllText(path);
+            var match = Regex.Match(fileText, @"(?:<\/\s*Operation)([a-zA-Z0-9_]+)(?:\s*>)");
+            if (!match.Success) return null;
+            if (match.Groups.Count < 1) return null;
+            var operationName = match.Groups[1].Value;
+            var baseType = typeof(Operation).FullName;
+            if (string.IsNullOrWhiteSpace(baseType)) return null;
+            var classname = baseType + operationName + ", UVtools.Core";
+            var type = Type.GetType(classname);
+            if (type is null) return null;
+
+            return Deserialize(path, type);
+        }
 
         public static Operation Deserialize(string path, Type type)
         {

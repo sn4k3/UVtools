@@ -19,7 +19,6 @@ namespace UVtools.Core.Operations
     public class OperationRaiseOnPrintFinish : Operation
     {
         #region Constants
-        public const byte DummyPixelBrightness = 128;
         #endregion
 
         #region Members
@@ -29,8 +28,6 @@ namespace UVtools.Core.Operations
         #endregion
 
         #region Overrides
-
-        public override bool CanRunInPartialMode => true;
 
         public override Enumerations.LayerRangeSelection StartLayerRangeSelection => Enumerations.LayerRangeSelection.None;
 
@@ -51,9 +48,21 @@ namespace UVtools.Core.Operations
 
         public override string ValidateSpawn()
         {
-            if(!SlicerFile.CanUseLayerLiftHeight)
+            if(!SlicerFile.CanUseLayerPositionZ)
             {
                 return NotSupportedMessage;
+            }
+
+            if (SlicerFile.LayerCount >= 2)
+            {
+                var layerHeight = SlicerFile.LastLayer.LayerHeight;
+                var criteria = Math.Max((float) Layer.MaximumHeight, SlicerFile.LayerHeight);
+
+                if (layerHeight > criteria)
+                {
+                    return $"With a difference of {layerHeight}mm between the last two layers, it looks like this tool had already been applied.\n" +
+                           $"The difference must be less or equal to {criteria}mm in order to run this tool.";
+                }
             }
 
             return null;
@@ -150,34 +159,24 @@ namespace UVtools.Core.Operations
 
         protected override bool ExecuteInternally(OperationProgress progress)
         {
-            return Execute(null, null);
-            //return !progress.Token.IsCancellationRequested;
-        }
-
-        public override bool Execute(Mat mat, params object[] arguments)
-        {
             var layer = SlicerFile.LastLayer.Clone();
             layer.PositionZ = (float)_positionZ;
-            layer.ExposureTime = 0.05f; // Very low exposure time
+            layer.ExposureTime = SlicerFile.SupportsGCode ? 0 : 0.05f; // Very low exposure time
             layer.LightPWM = 0; // Try to disable light if possible
             layer.SetNoDelays();
-            using var newMat = EmguExtensions.InitMat(SlicerFile.Resolution);
-            if(_outputDummyPixel)
-            {
-                newMat.SetByte(newMat.GetPixelPos(layer.BoundingRectangle.Center()), DummyPixelBrightness);
-            }
-
+            using var newMat = _outputDummyPixel 
+                ? SlicerFile.CreateMatWithDummyPixel(layer.BoundingRectangle.Center())
+                : SlicerFile.CreateMat();
+               
             layer.LayerMat = newMat;
 
             SlicerFile.SuppressRebuildPropertiesWork(() =>
             {
                 SlicerFile.LayerManager.Append(layer);
-                return true;
             });
-            
             return true;
+            //return !progress.Token.IsCancellationRequested;
         }
-
         #endregion
     }
 }

@@ -177,6 +177,7 @@ namespace UVtools.Core.FileFormats
         };
 
         public override PrintParameterModifier[] PrintParameterPerLayerModifiers { get; } = {
+            PrintParameterModifier.PositionZ,
             PrintParameterModifier.LiftHeight,
             PrintParameterModifier.LiftSpeed,
             PrintParameterModifier.RetractSpeed,

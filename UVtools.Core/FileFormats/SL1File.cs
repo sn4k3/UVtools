@@ -104,6 +104,9 @@ namespace UVtools.Core.FileFormats
             #region Corrections
 
             public string RelativeCorrection { get; set; } = "1,1";
+            public float RelativeCorrectionX { get; set; } = 1;
+            public float RelativeCorrectionY { get; set; } = 1;
+            public float RelativeCorrectionZ { get; set; } = 1;
             public float AbsoluteCorrection { get; set; }
             public float ElefantFootCompensation { get; set; } = 0.2f;
             public float ElefantFootMinWidth { get; set; } = 0.2f;
@@ -136,6 +139,7 @@ namespace UVtools.Core.FileFormats
             public string MaterialVendor { get; set; }
             public string MaterialType { get; set; }
             public string SlaMaterialSettingsId { get; set; }
+            public string MaterialColour { get; set; } = "#29B2B2";
             public float BottleCost { get; set; }
             public float BottleVolume { get; set; }
             public float BottleWeight { get; set; }
@@ -156,7 +160,16 @@ namespace UVtools.Core.FileFormats
             #endregion
 
             #region Corrections
-            public string MaterialCorrection { get; set; }
+            public string MaterialCorrection { get; set; } = "1,1,1";
+            public float MaterialCorrectionX { get; set; } = 1;
+            public float MaterialCorrectionY { get; set; } = 1;
+            public float MaterialCorrectionZ { get; set; } = 1;
+
+            #endregion
+
+            #region Material print profile
+
+            public string MaterialPrintSpeed { get; set; } = "fast";
 
             #endregion
 
@@ -246,6 +259,7 @@ namespace UVtools.Core.FileFormats
 
             #region Advanced
             public float SliceClosingRadius { set; get; }
+            public string SlicingMode { set; get; } = "regular";
             #endregion
 
             #region Output
@@ -274,6 +288,7 @@ namespace UVtools.Core.FileFormats
             public string JobDir { get; set; }
             public float ExpTime { get; set; }
             public float ExpTimeFirst { get; set; }
+            public float ExpUserProfile { get; set; }
             //public string FileCreationTimestamp { get; set; }
             public string FileCreationTimestamp { 
                 get
@@ -284,6 +299,7 @@ namespace UVtools.Core.FileFormats
                 }
                 set{}
             }
+            public byte Hollow { get; set; }
             public float LayerHeight { get; set; }
             public string MaterialName { get; set; } = About.Software;
             public ushort NumFade { get; set; }
@@ -663,7 +679,7 @@ namespace UVtools.Core.FileFormats
                 {
                     throw new FileLoadException($"Malformed file: {IniPrusaslicer} is missing.");
                 }
-
+                
                 SuppressRebuildPropertiesWork(() =>
                 {
                     BottomLightOffDelay = LookupCustomValue(Keyword_BottomLightOffDelay, 0f);

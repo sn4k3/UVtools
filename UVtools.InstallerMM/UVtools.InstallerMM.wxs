@@ -314,9 +314,6 @@
         <Component Id="owc6F31DEF09608AA645959666A4CB7FBBC" Guid="c94570a5-5bb4-a53f-e12f-9581bddf7d08" Win64="yes">
           <File Id="owf6F31DEF09608AA645959666A4CB7FBBC" Source="$(var.SourceDir)\mscordaccore.dll" KeyPath="yes" />
         </Component>
-        <Component Id="owcBCADC5DC1EF24D8E4326B45081E898A1" Guid="80807612-765f-6dc1-1534-37735987a448" Win64="yes">
-          <File Id="owfBCADC5DC1EF24D8E4326B45081E898A1" Source="$(var.SourceDir)\mscordaccore_amd64_amd64_5.0.1321.56516.dll" KeyPath="yes" />
-        </Component>
         <Component Id="owc5FC34571A1AE47A011FC6C2A95B00DA6" Guid="2591451e-0fe5-ccad-abf6-1d1097251253" Win64="yes">
           <File Id="owf5FC34571A1AE47A011FC6C2A95B00DA6" Source="$(var.SourceDir)\mscordbi.dll" KeyPath="yes" />
         </Component>
@@ -1412,6 +1409,9 @@
         </Directory>
         <Component Id="owc2B1C136C44C740F48CDFE91A80F48B4B" Guid="2B1C136C-44C7-40F4-8CDF-E91A80F48B4B">
           <File Id="owf2B1C136C44C740F48CDFE91A80F48B4B" Source="$(var.SourceDir)\opencv_videoio_ffmpeg455_64.dll" KeyPath="yes" />
+        </Component>
+        <Component Id="owc32E45984571E4D3293714751B0645034" Guid="32E45984-571E-4D32-9371-4751B0645034">
+          <File Id="owf32E45984571E4D3293714751B0645034" Source="$(var.SourceDir)\mscordaccore_amd64_amd64_5.0.1422.5710.dll" KeyPath="yes" />
         </Component>
       </Directory>
       <Directory Id="ProgramMenuFolder">

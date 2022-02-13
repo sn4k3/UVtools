@@ -1164,6 +1164,7 @@ namespace UVtools.Core.FileFormats
                 {
                     return new[]
                     {
+                        PrintParameterModifier.PositionZ,
                         PrintParameterModifier.LightOffDelay,
                         PrintParameterModifier.ExposureTime,
                         PrintParameterModifier.LiftHeight,
@@ -1176,6 +1177,7 @@ namespace UVtools.Core.FileFormats
                 {
                     return new[]
                     {
+                        PrintParameterModifier.PositionZ,
                         PrintParameterModifier.LightOffDelay,
                         PrintParameterModifier.WaitTimeBeforeCure,
                         PrintParameterModifier.ExposureTime,

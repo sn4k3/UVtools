@@ -293,6 +293,7 @@ namespace UVtools.Core.FileFormats
         };
 
         public override PrintParameterModifier[] PrintParameterPerLayerModifiers { get; } = {
+            PrintParameterModifier.PositionZ,
             PrintParameterModifier.WaitTimeBeforeCure,
             PrintParameterModifier.ExposureTime,
             PrintParameterModifier.WaitTimeAfterCure,

@@ -1,0 +1,107 @@
+<uc:WindowEx xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:uc="clr-namespace:UVtools.WPF.Controls"
+             mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="450"
+             x:Class="UVtools.WPF.Windows.MissingInformationWindow"
+             CanResize="False"
+             SizeToContent="Height"
+             WindowStartupLocation="CenterOwner"
+             Width="500"
+             Icon="/Assets/Icons/UVtools.ico"
+             Title="Missing information on the file">
+  <StackPanel Orientation="Vertical" Spacing="10">
+    <Border Classes="Header">
+        <TextBox Classes="TransparentReadOnly" 
+                 Text="There are crucial information missing on this file in order to UVtools work properly and/or provide the correct information.
+&#x0a;Fill in the missing information only if you know the correct values, otherwise leave it unchanged if unsure.
+&#x0a;In most cases the missing information is not required by the printer.
+&#x0a;Note: Some fields may rebuild the layers information."/>
+    </Border>
+
+
+      <Border Margin="20,0">
+        <Grid RowDefinitions="Auto,10,Auto,10,Auto" 
+              ColumnDefinitions="Auto,10,220,10,Auto">
+
+            <TextBlock Grid.Row="0" Grid.Column="0"
+                       VerticalAlignment="Center"
+                       IsVisible="{Binding LayerHeightIsVisible}"
+                       Text="Layer height:"/>
+
+            <NumericUpDown Grid.Row="0" Grid.Column="2"
+                            Classes="ValueLabel ValueLabel_mm"
+                            IsVisible="{Binding LayerHeightIsVisible}"
+                            Minimum="0"
+                            Maximum="0.200"
+                            Increment="0.01"
+                            Value="{Binding LayerHeight}"/>
+
+            <TextBlock Grid.Row="0" Grid.Column="4"
+                       VerticalAlignment="Center"
+                       IsVisible="{Binding LayerHeightIsVisible}"
+                       Text="(Critical)"/>
+
+            <TextBlock Grid.Row="2" Grid.Column="0"
+                       VerticalAlignment="Center"
+                       IsVisible="{Binding DisplayWidthIsVisible}"
+                       Text="Display width:"/>
+
+            <NumericUpDown Grid.Row="2" Grid.Column="2"
+                           Classes="ValueLabel ValueLabel_mm"
+                           IsVisible="{Binding DisplayWidthIsVisible}"
+                           Minimum="0"
+                           Maximum="10000"
+                           Increment="10"
+                           Value="{Binding DisplayWidth}"/>
+
+            <TextBlock Grid.Row="2" Grid.Column="4"
+                       VerticalAlignment="Center"
+                       IsVisible="{Binding DisplayWidthIsVisible}"
+                       Text="(Regular)"/>
+
+            <TextBlock Grid.Row="4" Grid.Column="0"
+                       VerticalAlignment="Center"
+                       IsVisible="{Binding DisplayHeightIsVisible}"
+                       Text="Display height:"/>
+
+            <NumericUpDown Grid.Row="4" Grid.Column="2"
+                           Classes="ValueLabel ValueLabel_mm"
+                           IsVisible="{Binding DisplayHeightIsVisible}"
+                           Minimum="0"
+                           Maximum="10000"
+                           Increment="10"
+                           Value="{Binding DisplayHeight}"/>
+
+            <TextBlock Grid.Row="4" Grid.Column="4"
+                       VerticalAlignment="Center"
+                       IsVisible="{Binding DisplayHeightIsVisible}"
+                       Text="(Regular)"/>
+
+        </Grid>
+      </Border>
+
+      <Border Classes="FooterActions">
+          <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Right">
+              <Button Padding="10"
+                      IsDefault="True"
+                      Command="{Binding Apply}">
+                  <StackPanel Orientation="Horizontal" Spacing="10">
+                      <Image Source="/Assets/Icons/accept-16x16.png"/>
+                      <TextBlock Text="Apply"/>
+                  </StackPanel>
+              </Button>
+
+			  <Button Padding="10"
+                      IsCancel="True"
+                      Command="{Binding Close}">
+                  <StackPanel Orientation="Horizontal" Spacing="10">
+                      <Image Source="/Assets/Icons/exit-16x16.png"/>
+                      <TextBlock Text="Cancel"/>
+                  </StackPanel>
+              </Button>
+          </StackPanel>
+      </Border>
+  </StackPanel>
+</uc:WindowEx>
