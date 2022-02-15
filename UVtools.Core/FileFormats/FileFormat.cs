@@ -147,46 +147,46 @@ namespace UVtools.Core.FileFormats
         {
             
             #region Instances
-            public static PrintParameterModifier PositionZ { get; } = new ("Position Z", "Absolute Z position", "mm",0, 100000, Layer.HeightPrecision);
-            public static PrintParameterModifier BottomLayerCount { get; } = new ("Bottom layers count", "Number of bottom/burn-in layers", "layers",0, ushort.MaxValue, 0);
-
+            public static PrintParameterModifier PositionZ { get; } = new ("Position Z", "Absolute Z position", "mm",0, 100000, 0.01, Layer.HeightPrecision);
+            public static PrintParameterModifier BottomLayerCount { get; } = new ("Bottom layers count", "Number of bottom/burn-in layers", "layers",0, ushort.MaxValue, 1, 0);
+            
             public static PrintParameterModifier BottomLightOffDelay { get; } = new("Bottom light-off seconds", "Total motor movement time + rest time to wait before cure a new bottom layer", "s");
             public static PrintParameterModifier LightOffDelay { get; } = new("Light-off seconds", "Total motor movement time + rest time to wait before cure a new layer", "s");
 
-            public static PrintParameterModifier BottomWaitTimeBeforeCure { get; } = new ("Bottom wait before cure", "Time to wait/rest before cure a new bottom layer\nChitubox: Rest after retract\nLychee: Wait before print", "s", 0, 1000, 2);
-            public static PrintParameterModifier WaitTimeBeforeCure { get; } = new ("Wait before cure", "Time to wait/rest before cure a new layer\nChitubox: Rest after retract\nLychee: Wait before print", "s", 0, 1000, 2);
+            public static PrintParameterModifier BottomWaitTimeBeforeCure { get; } = new ("Bottom wait before cure", "Time to wait/rest before cure a new bottom layer\nChitubox: Rest after retract\nLychee: Wait before print", "s");
+            public static PrintParameterModifier WaitTimeBeforeCure { get; } = new ("Wait before cure", "Time to wait/rest before cure a new layer\nChitubox: Rest after retract\nLychee: Wait before print", "s");
             
-            public static PrintParameterModifier BottomExposureTime { get; } = new ("Bottom exposure time", "Bottom layers cure time", "s", 0.1M, 1000, 2);
-            public static PrintParameterModifier ExposureTime { get; } = new ("Exposure time", "Layers cure time", "s", 0.1M, 1000, 2);
+            public static PrintParameterModifier BottomExposureTime { get; } = new ("Bottom exposure time", "Bottom layers cure time", "s", 0.1M);
+            public static PrintParameterModifier ExposureTime { get; } = new ("Exposure time", "Layers cure time", "s", 0.1M);
            
-            public static PrintParameterModifier BottomWaitTimeAfterCure { get; } = new("Bottom wait after cure", "Time to wait/rest after cure a new bottom layer\nChitubox: Rest before lift\nLychee: Wait after print", "s", 0, 1000, 2);
-            public static PrintParameterModifier WaitTimeAfterCure { get; } = new("Wait after cure", "Time to wait/rest after cure a new bottom layer\nChitubox: Rest before lift\nLychee: Wait after print", "s", 0, 1000, 2);
+            public static PrintParameterModifier BottomWaitTimeAfterCure { get; } = new("Bottom wait after cure", "Time to wait/rest after cure a new bottom layer\nChitubox: Rest before lift\nLychee: Wait after print", "s");
+            public static PrintParameterModifier WaitTimeAfterCure { get; } = new("Wait after cure", "Time to wait/rest after cure a new bottom layer\nChitubox: Rest before lift\nLychee: Wait after print", "s");
             
             public static PrintParameterModifier BottomLiftHeight { get; } = new ("Bottom lift height", "Bottom lift/peel height between layers", "mm", 1);
             public static PrintParameterModifier LiftHeight { get; } = new ("Lift height", @"Lift/peel height between layers", "mm", 1);
             
-            public static PrintParameterModifier BottomLiftSpeed { get; } = new ("Bottom lift speed", null, "mm/min", 10, 5000, 2);
-            public static PrintParameterModifier LiftSpeed { get; } = new ("Lift speed", null, "mm/min", 10, 5000, 2);
+            public static PrintParameterModifier BottomLiftSpeed { get; } = new ("Bottom lift speed", null, "mm/min", 10, 5000, 5);
+            public static PrintParameterModifier LiftSpeed { get; } = new ("Lift speed", null, "mm/min", 10, 5000, 5);
 
             public static PrintParameterModifier BottomLiftHeight2 { get; } = new("2) Bottom lift height", "Bottom second lift/peel height between layers", "mm");
             public static PrintParameterModifier LiftHeight2 { get; } = new("2) Lift height", @"Second lift/peel height between layers", "mm");
 
-            public static PrintParameterModifier BottomLiftSpeed2 { get; } = new("2) Bottom lift speed", null, "mm/min", 10, 5000, 2);
-            public static PrintParameterModifier LiftSpeed2 { get; } = new("2) Lift speed", null, "mm/min", 10, 5000, 2);
+            public static PrintParameterModifier BottomLiftSpeed2 { get; } = new("2) Bottom lift speed", null, "mm/min", 10, 5000, 5);
+            public static PrintParameterModifier LiftSpeed2 { get; } = new("2) Lift speed", null, "mm/min", 10, 5000, 5);
 
-            public static PrintParameterModifier BottomWaitTimeAfterLift { get; } = new("Bottom wait after lift", "Time to wait/rest after a lift/peel sequence at bottom layers\nChitubox: Rest after lift\nLychee: Wait after lift", "s", 0, 1000, 2);
-            public static PrintParameterModifier WaitTimeAfterLift { get; } = new("Wait after lift", "Time to wait/rest after a lift/peel sequence at layers\nChitubox: Rest after lift\nLychee: Wait after lift", "s", 0, 1000, 2);
+            public static PrintParameterModifier BottomWaitTimeAfterLift { get; } = new("Bottom wait after lift", "Time to wait/rest after a lift/peel sequence at bottom layers\nChitubox: Rest after lift\nLychee: Wait after lift", "s");
+            public static PrintParameterModifier WaitTimeAfterLift { get; } = new("Wait after lift", "Time to wait/rest after a lift/peel sequence at layers\nChitubox: Rest after lift\nLychee: Wait after lift", "s");
            
-            public static PrintParameterModifier BottomRetractSpeed { get; } = new ("Bottom retract speed", "Bottom down speed from lift height to next layer cure position", "mm/min", 10, 5000, 2);
-            public static PrintParameterModifier RetractSpeed { get; } = new ("Retract speed", "Down speed from lift height to next layer cure position", "mm/min", 10, 5000, 2);
+            public static PrintParameterModifier BottomRetractSpeed { get; } = new ("Bottom retract speed", "Bottom down speed from lift height to next layer cure position", "mm/min", 10, 5000, 5);
+            public static PrintParameterModifier RetractSpeed { get; } = new ("Retract speed", "Down speed from lift height to next layer cure position", "mm/min", 10, 5000, 5);
 
             public static PrintParameterModifier BottomRetractHeight2 { get; } = new("2) Bottom retract height", null, "mm");
             public static PrintParameterModifier RetractHeight2 { get; } = new("2) Retract height", null, "mm");
-            public static PrintParameterModifier BottomRetractSpeed2 { get; } = new("2) Bottom retract speed", null, "mm/min", 10, 5000, 2);
-            public static PrintParameterModifier RetractSpeed2 { get; } = new("2) Retract speed", null, "mm/min", 10, 5000, 2);
+            public static PrintParameterModifier BottomRetractSpeed2 { get; } = new("2) Bottom retract speed", null, "mm/min", 10, 5000, 5);
+            public static PrintParameterModifier RetractSpeed2 { get; } = new("2) Retract speed", null, "mm/min", 10, 5000, 5);
 
-            public static PrintParameterModifier BottomLightPWM { get; } = new ("Bottom light PWM", "UV LED power for bottom layers", "☀", 1, byte.MaxValue, 0);
-            public static PrintParameterModifier LightPWM { get; } = new ("Light PWM", "UV LED power for layers", "☀", 1, byte.MaxValue, 0);
+            public static PrintParameterModifier BottomLightPWM { get; } = new ("Bottom light PWM", "UV LED power for bottom layers", "☀", 1, byte.MaxValue, 5, 0);
+            public static PrintParameterModifier LightPWM { get; } = new ("Light PWM", "UV LED power for layers", "☀", 1, byte.MaxValue, 5, 0);
 
             /*public static PrintParameterModifier[] Parameters = {
                 BottomLayerCount,
@@ -241,6 +241,11 @@ namespace UVtools.Core.FileFormats
             public decimal Maximum { get; }
 
             /// <summary>
+            /// Gets the incrementing value for the dropdown
+            /// </summary>
+            public double Increment { get; set; } = 1;
+
+            /// <summary>
             /// Gets the number of decimal plates
             /// </summary>
             public byte DecimalPlates { get; }
@@ -268,13 +273,14 @@ namespace UVtools.Core.FileFormats
             #endregion
 
             #region Constructor
-            public PrintParameterModifier(string name, string description = null, string valueUnit = null, decimal minimum = 0, decimal maximum = 1000, byte decimalPlates = 2)
+            public PrintParameterModifier(string name, string description = null, string valueUnit = null, decimal minimum = 0, decimal maximum = 1000, double increment = 0.5, byte decimalPlates = 2)
             {
                 Name = name;
                 Description = description ?? $"Modify '{name}'";
                 ValueUnit = valueUnit ?? string.Empty;
                 Minimum = minimum;
                 Maximum = maximum;
+                Increment = decimalPlates == 0 ? Math.Max(1, increment) : increment;
                 DecimalPlates = decimalPlates;
             }
             #endregion

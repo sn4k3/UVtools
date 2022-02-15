@@ -22,7 +22,7 @@ namespace UVtools.Core.Operations
         private bool _propagateModificationsToLayers = true;
         private bool _perLayerOverride;
         private uint _setNumberOfLayer = 1;
-        private uint _skipNumberOfLayer = 0;
+        private uint _skipNumberOfLayer;
 
         #endregion
 
@@ -92,6 +92,15 @@ namespace UVtools.Core.Operations
                 sb.AppendLine("Nothing changed\nDo some changes or cancel the operation.");
             }
 
+            if (Modifiers.Contains(FileFormat.PrintParameterModifier.PositionZ) 
+                && FileFormat.PrintParameterModifier.PositionZ.HasChanged
+                && _skipNumberOfLayer > 0
+                && LayerRangeCount > 1 
+                && _setNumberOfLayer + _skipNumberOfLayer < LayerRangeCount)
+            {
+                sb.AppendLine("Can not change the PositionZ in layers with an active alternating pattern.");
+            }
+
 
             return sb.ToString();
         }
@@ -156,18 +165,18 @@ namespace UVtools.Core.Operations
 
         protected override bool ExecuteInternally(OperationProgress progress)
         {
-            if (PerLayerOverride)
+            if (_perLayerOverride)
             {
                 uint setLayers = 0;
                 for (uint layerIndex = LayerIndexStart; layerIndex <= LayerIndexEnd; layerIndex++)
                 {
                     SlicerFile[layerIndex].SetValuesFromPrintParametersModifiers(Modifiers);
-                    if (SkipNumberOfLayer <= 0) continue;
+                    if (_skipNumberOfLayer == 0) continue;
                     setLayers++;
-                    if (setLayers >= SetNumberOfLayer)
+                    if (setLayers >= _setNumberOfLayer)
                     {
                         setLayers = 0;
-                        layerIndex += SkipNumberOfLayer;
+                        layerIndex += _skipNumberOfLayer;
                     }
                 }
 

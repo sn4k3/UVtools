@@ -62,7 +62,7 @@ namespace UVtools.WPF.Controls.Tools
                     HorizontalAlignment = HorizontalAlignment.Stretch,
                     Minimum = (double) modifier.Minimum,
                     Maximum = (double) modifier.Maximum,
-                    Increment = modifier.DecimalPlates == 0 ? 1 : 0.5,
+                    Increment = modifier.Increment,
                     Value = (double)modifier.NewValue,
                     Tag = this,
                     //Width = 100,
@@ -70,7 +70,7 @@ namespace UVtools.WPF.Controls.Tools
                 };
                 if (modifier.DecimalPlates > 0)
                 {
-                    NewValue.FormatString = "F02";
+                    NewValue.FormatString = $"F{modifier.DecimalPlates}";
                 }
 
                 Unit = new TextBlock

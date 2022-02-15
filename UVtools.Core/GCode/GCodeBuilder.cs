@@ -673,15 +673,15 @@ namespace UVtools.Core.GCode
                 {
                     AppendLiftMoveGx(lifts, retracts, waitAfterLift, 0, layer);
                 }
-                else if (lastZPosition < layer.PositionZ) // Ensure Z is on correct position
+                else if (lastZPosition != layer.PositionZ) // Ensure Z is on correct position
                 {
                     switch (GCodePositioningType)
                     {
                         case GCodePositioningTypes.Absolute:
-                            AppendMoveGx(layer.PositionZ, liftSpeed);
+                            AppendMoveGx(layer.PositionZ, lastZPosition < layer.PositionZ ? Math.Max(liftSpeed, liftSpeed2) : Math.Max(retractSpeed, retractSpeed2));
                             break;
                         case GCodePositioningTypes.Partial:
-                            AppendMoveGx(Layer.RoundHeight(layer.PositionZ - lastZPosition), liftSpeed);
+                            AppendMoveGx(Layer.RoundHeight(layer.PositionZ - lastZPosition), lastZPosition < layer.PositionZ ? Math.Max(liftSpeed, liftSpeed2) : Math.Max(retractSpeed, retractSpeed2));
                             break;
                     }
 

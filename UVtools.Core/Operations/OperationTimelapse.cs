@@ -105,11 +105,6 @@ namespace UVtools.Core.Operations
 
         #region Properties
 
-        /// <summary>
-        /// Gets the minimum possible
-        /// </summary>
-        public float MinimumPositionZ => Layer.RoundHeight(SlicerFile.PrintHeight + SlicerFile.LayerHeight);
-
         public TimelapseRaiseMode RaiseMode
         {
             get => _raiseMode;
@@ -177,6 +172,8 @@ namespace UVtools.Core.Operations
             get => _useCustomLift;
             set => RaiseAndSetIfChanged(ref _useCustomLift, value);
         }
+
+        public bool CanUseCustomLift => _useCustomLift && SlicerFile.CanUseLayerLiftHeight;
 
         public decimal SlowLiftHeight
         {
@@ -307,7 +304,7 @@ namespace UVtools.Core.Operations
                 switch (_raiseMode)
                 {
                     case TimelapseRaiseMode.LiftHeight:
-                        if (_useCustomLift)
+                        if (CanUseCustomLift)
                         {
                             layer.LiftSpeed = (float)_liftSpeed;
                             layer.RetractSpeed = (float)_retractSpeed;
@@ -333,7 +330,7 @@ namespace UVtools.Core.Operations
                             }
                         }
 
-                        if (SlicerFile.CanUseLayerLiftHeight2 && (layer.LiftHeight2 > 0 || _useCustomLift && _slowLiftHeight > 0)) // TSMC
+                        if (SlicerFile.CanUseLayerLiftHeight2 && (layer.LiftHeight2 > 0 || CanUseCustomLift && _slowLiftHeight > 0)) // TSMC
                         {
                             layer.LiftHeight2 = Math.Max(0, (float)_raisePositionZ - layer.PositionZ - layer.LiftHeight);
                         }
@@ -375,37 +372,52 @@ namespace UVtools.Core.Operations
                     RetractHeight2 = 0
                 };
 
-                layer.SetNoDelays();
-
-                /*if (_useCustomLift)
+                if (CanUseCustomLift)
                 {
-                    layer.LiftSpeed = (float) _liftSpeed;
-                    layer.RetractSpeed = (float) _retractSpeed;
+                    layer.LiftSpeed = (float)_liftSpeed;
+                    layer.RetractSpeed = (float)_retractSpeed;
+
+                    /*if (SlicerFile.CanUseLayerLiftHeight2)
+                    {
+                        layer.LiftHeight = (float)_slowLiftHeight;
+                    }*/
 
                     if (SlicerFile.CanUseLayerLiftSpeed2)
                     {
-                        layer.LiftSpeed2 = (float) _liftSpeed2;
+                        layer.LiftSpeed2 = (float)_liftSpeed2;
                     }
 
                     if (SlicerFile.CanUseLayerRetractSpeed2)
                     {
-                        layer.RetractSpeed2 = (float) _retractSpeed2;
+                        layer.RetractSpeed2 = (float)_retractSpeed2;
                     }
-                }*/
+                }
+
+                layer.SetNoDelays();
 
                 var layers = SlicerFile.ToList();
                 for (int i = 0; i < virtualLayers.Count; i++)
                 {
-                    /*var newLayer = layer.Clone();
-                    if (!_useCustomLift)
+                    int insertIndex = (int)virtualLayers[i];
+                    SlicerFile[insertIndex].LiftHeightTotal = SlicerFile.SupportsGCode ? 0 : 0.1f;
+
+                    if (CanUseCustomLift)
                     {
-                        var intersectLayer = Math.Clamp(virtualLayers[i] + i, 0, SlicerFile.LastLayerIndex);
-                        SlicerFile[intersectLayer].CopyLiftTo(newLayer);
-                        // This layer does not require a lift procedure
-                        newLayer.LiftHeightTotal = SlicerFile.SupportsGCode ? 0 : 0.1f;
-                        newLayer.RetractHeight2 = 0;
-                    }*/
-                    layers.Insert((int)(virtualLayers[i] + i), layer.Clone());
+                        SlicerFile[insertIndex].LiftSpeed = (float)_liftSpeed;
+                        SlicerFile[insertIndex].RetractSpeed = (float)_retractSpeed;
+
+                        if (SlicerFile.CanUseLayerLiftSpeed2)
+                        {
+                            SlicerFile[insertIndex].LiftSpeed2 = (float)_retractSpeed2;
+                        }
+
+                        if (SlicerFile.CanUseLayerRetractSpeed2)
+                        {
+                            SlicerFile[insertIndex].RetractSpeed2 = (float)_retractSpeed2;
+                        }
+                    }
+
+                    layers.Insert(insertIndex + i, layer.Clone());
                 }
                 SlicerFile.SuppressRebuildPropertiesWork(() => SlicerFile.LayerManager.Layers = layers.ToArray());
             }

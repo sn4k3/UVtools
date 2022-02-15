@@ -127,8 +127,19 @@
             <Image Source="\Assets\Icons\extract-object-16x16.png"/>
           </MenuItem.Icon>
         </MenuItem>
-        
-        <MenuItem 
+
+          <MenuItem Name="MainMenu.File.Terminal"
+                    HotKey="Ctrl+Shift+T" InputGesture="Ctrl+Shift+T"
+                    Header="_Terminal"
+                    Command="{Binding OpenTerminal}"
+                    IsEnabled="{Binding IsFileLoaded}">
+              <MenuItem.Icon>
+                  <Image Source="\Assets\Icons\terminal-16x16.png"/>
+              </MenuItem.Icon>
+          </MenuItem>
+
+
+		  <MenuItem 
           Name="MainMenu.File.Convert" 
           Header="_Convert to" 
           IsEnabled="{Binding IsFileLoaded}"

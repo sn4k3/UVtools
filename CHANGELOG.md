@@ -1,5 +1,13 @@
 # Changelog
 
+## 15/02/2022 - v2.28.1
+
+- (Add) File - Terminal: Inject C# code into UVtools with an interactive terminal
+- (Improvement) Modifiers: Better increment values for the spin up/down buttons
+- (Improvement) Tool - Timelapse: Better lift and feeds for virtual layer, also allow to set custom lift speed for that mode
+- (Fix) Tool - Edit print parameters: Disallow to change PositionZ in layers with an active alternating pattern
+- (Fix) GCode: When generating layers higher than the next, it will not return to the correct position z
+
 ## 13/02/2022 - v2.28.0
 
 - **Core:**

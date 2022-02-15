@@ -20,7 +20,7 @@ namespace UVtools.WPF.Extensions
     public static class WindowExtensions
     {
         public static async Task<ButtonResult> MessageBoxGeneric(this Window window, string message, string title = null, 
-            ButtonEnum buttons = ButtonEnum.Ok, Icon icon = Icon.None, bool topMost = false, WindowStartupLocation location = WindowStartupLocation.CenterOwner, Style style = Style.None)
+            ButtonEnum buttons = ButtonEnum.Ok, Icon icon = Icon.None, bool topMost = false, WindowStartupLocation location = WindowStartupLocation.CenterOwner)
         {
             var messageBoxStandardWindow = MessageBox.Avalonia.MessageBoxManager.GetMessageBoxStandardWindow(
                 new MessageBoxStandardParams
@@ -29,7 +29,6 @@ namespace UVtools.WPF.Extensions
                     ContentTitle = title ?? window.Title,
                     ContentMessage = message,
                     Icon = icon,
-                    Style = style,
                     WindowIcon = new WindowIcon(App.GetAsset("/Assets/Icons/UVtools.ico")),
                     WindowStartupLocation = location,
                     CanResize = UserSettings.Instance.General.WindowsCanResize,
@@ -42,17 +41,17 @@ namespace UVtools.WPF.Extensions
             return await messageBoxStandardWindow.ShowDialog(window);
         }
 
-        public static async Task<ButtonResult> MessageBoxInfo(this Window window, string message, string title = null, ButtonEnum buttons = ButtonEnum.Ok, bool topMost = false, Style style = Style.None)
-            => await window.MessageBoxGeneric(message, title ?? $"{window.Title} - Information", buttons, Icon.Info, topMost, WindowStartupLocation.CenterOwner, style);
+        public static async Task<ButtonResult> MessageBoxInfo(this Window window, string message, string title = null, ButtonEnum buttons = ButtonEnum.Ok, bool topMost = false)
+            => await window.MessageBoxGeneric(message, title ?? $"{window.Title} - Information", buttons, Icon.Info, topMost, WindowStartupLocation.CenterOwner);
 
-        public static async Task<ButtonResult> MessageBoxError(this Window window, string message, string title = null, ButtonEnum buttons = ButtonEnum.Ok, bool topMost = false, Style style = Style.None)
-            => await window.MessageBoxGeneric(message, title ?? $"{window.Title} - Error", buttons, Icon.Error, topMost, WindowStartupLocation.CenterOwner, style);
+        public static async Task<ButtonResult> MessageBoxError(this Window window, string message, string title = null, ButtonEnum buttons = ButtonEnum.Ok, bool topMost = false)
+            => await window.MessageBoxGeneric(message, title ?? $"{window.Title} - Error", buttons, Icon.Error, topMost, WindowStartupLocation.CenterOwner);
 
-        public static async Task<ButtonResult> MessageBoxQuestion(this Window window, string message, string title = null, ButtonEnum buttons = ButtonEnum.YesNo, bool topMost = false, Style style = Style.None)
-            => await window.MessageBoxGeneric(message, title ?? $"{window.Title} - Question", buttons, Icon.Setting, topMost, WindowStartupLocation.CenterOwner, style);
+        public static async Task<ButtonResult> MessageBoxQuestion(this Window window, string message, string title = null, ButtonEnum buttons = ButtonEnum.YesNo, bool topMost = false)
+            => await window.MessageBoxGeneric(message, title ?? $"{window.Title} - Question", buttons, Icon.Setting, topMost, WindowStartupLocation.CenterOwner);
 
-        public static async Task<ButtonResult> MessageBoxWaring(this Window window, string message, string title = null, ButtonEnum buttons = ButtonEnum.Ok, bool topMost = false, Style style = Style.None)
-            => await window.MessageBoxGeneric(message, title ?? $"{window.Title} - Question", buttons, Icon.Warning, topMost, WindowStartupLocation.CenterOwner, style);
+        public static async Task<ButtonResult> MessageBoxWaring(this Window window, string message, string title = null, ButtonEnum buttons = ButtonEnum.Ok, bool topMost = false)
+            => await window.MessageBoxGeneric(message, title ?? $"{window.Title} - Question", buttons, Icon.Warning, topMost, WindowStartupLocation.CenterOwner);
 
 
         public static void ShowDialogSync(this Window window, Window parent = null)

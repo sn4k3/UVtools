@@ -617,7 +617,7 @@ namespace UVtools.WPF
 
             AddHandler(DragDrop.DropEvent, (sender, e) =>
             {
-                ProcessFiles(e.Data.GetFileNames().ToArray());
+                ProcessFiles(e.Data.GetFileNames()?.ToArray());
             });
 
             _menuFileSendTo = this.FindControl<MenuItem>("MainMenu.File.SendTo");
@@ -1823,8 +1823,6 @@ namespace UVtools.WPF
 
             VisibleThumbnailIndex = 1;
 
-            RefreshProperties();
-
             UpdateTitle();
 
             if (mat is not null)
@@ -1904,7 +1902,7 @@ namespace UVtools.WPF
                     $"Ratio: {xRatio}:{yRatio}\n",
                     "Incorrect image ratio detected");
             }
-
+            RefreshProperties();
             ResetDataContext();
 
             ForceUpdateActualLayer(actualLayer.Clamp(actualLayer, SliderMaximumValue));
@@ -2232,6 +2230,11 @@ namespace UVtools.WPF
                 SystemAware.StartProcess(finalPath);
             }
 
+        }
+
+        public void OpenTerminal()
+        {
+            new TerminalWindow().Show(this);
         }
 
         #region Operations
