@@ -154,6 +154,7 @@ namespace UVtools.ScriptSample
                     mat.SetByte(pixelPos.X, pixelPos.Y, 1); // Print a very fade pixel to ignore empty layer detection
                     firstLayer.LayerMat = mat;
                     firstLayer.ExposureTime = SlicerFile.SupportsGCode ? 0 : 0.05f;
+                    firstLayer.SetNoDelays();
                     SlicerFile.SuppressRebuildPropertiesWork(() => { SlicerFile.LayerManager.Prepend(firstLayer); });
                 }
 
