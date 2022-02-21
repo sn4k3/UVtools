@@ -4,7 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="UVtools.WPF.Controls.Tools.ToolFadeExposureTimeControl">
-  <Grid RowDefinitions="Auto,10,Auto,10,Auto,10,Auto"
+  <Grid RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto"
         ColumnDefinitions="Auto,10,180,5,Auto,5,180">
 
     <TextBlock Grid.Row="0" Grid.Column="0"
@@ -49,6 +49,18 @@
     <TextBlock Grid.Row="4" Grid.Column="4" Grid.ColumnSpan="3"
                VerticalAlignment="Center"
                Text="/ per layer"/>
+
+    <CheckBox Grid.Row="6" Grid.Column="2" Grid.ColumnSpan="5"
+              IsChecked="{Binding Operation.DisableFirmwareTransitionLayers}"
+              ToolTip.Tip="Attempt to disable firmware strict transition layers in favor of this tool"
+              Content="Disable firmware transition layers">
+        <CheckBox.IsVisible>
+			<MultiBinding Converter="{x:Static BoolConverters.And}">
+				<Binding Path="SlicerFile.CanUseTransitionLayerCount"/>
+				<Binding Path="SlicerFile.HaveTransitionLayers"/>
+            </MultiBinding>
+        </CheckBox.IsVisible>
+    </CheckBox>
 
   </Grid>
 </UserControl>

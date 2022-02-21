@@ -1056,6 +1056,7 @@ namespace UVtools.Core.FileFormats
                     return new[]
                     {
                         PrintParameterModifier.BottomLayerCount,
+                        PrintParameterModifier.TransitionLayerCount, 
 
                         PrintParameterModifier.WaitTimeBeforeCure,
 
@@ -1260,6 +1261,14 @@ namespace UVtools.Core.FileFormats
         {
             get => (ushort) HeaderSettings.BottomLayersCount;
             set => base.BottomLayerCount = (ushort) (HeaderSettings.BottomLayersCount = value);
+        }
+
+        public override TransitionLayerTypes TransitionLayerType => TransitionLayerTypes.Firmware;
+
+        public override ushort TransitionLayerCount
+        {
+            get => (ushort)(Version >= VERSION_516 ? HeaderSettings.TransitionLayerCount : 0);
+            set => base.TransitionLayerCount = (ushort)(HeaderSettings.TransitionLayerCount = Math.Min(value, MaximumPossibleTransitionLayerCount));
         }
 
         public override float BottomLightOffDelay => BottomWaitTimeBeforeCure;

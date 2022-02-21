@@ -123,6 +123,7 @@ Complete guide: https://github.com/sn4k3/UVtools/wiki/Setup-PrusaSlicer
 Note that some variables will only work if the target format supports them, otherwise they will be ignored.
 Replace the "xxx" by your desired value in the correct units
 
+- **TransitionLayerCount_xxx:** Sets the number of transition layers
 - **BottomLightOffDelay_xxx:** Sets the bottom light off delay time in seconds
 - **LightOffDelay_xxx:** Sets the light off delay time in seconds
 - **BottomWaitTimeBeforeCure_xxx:** Sets the bottom wait time before cure in seconds

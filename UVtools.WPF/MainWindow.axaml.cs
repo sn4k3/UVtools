@@ -466,8 +466,13 @@ namespace UVtools.WPF
                 if (!RaiseAndSetIfChanged(ref _isGUIEnabled, value)) return;
                 if (!_isGUIEnabled)
                 {
+                    DragDrop.SetAllowDrop(this, false);
                     //ProgressWindow = new ProgressWindow();
                     return;
+                }
+                else
+                {
+                    DragDrop.SetAllowDrop(this, true);
                 }
 
                 LastStopWatch = Progress.StopWatch;
@@ -515,7 +520,7 @@ namespace UVtools.WPF
                     _firstTimeOnIssues = false;
                     if (ReferenceEquals(_selectedTabItem, TabIssues) && Settings.Issues.ComputeIssuesOnClickTab)
                     {
-                        OnClickDetectIssues();
+                        OnClickDetectIssues().ConfigureAwait(false);
                     }
                 }
             }
@@ -617,6 +622,7 @@ namespace UVtools.WPF
 
             AddHandler(DragDrop.DropEvent, (sender, e) =>
             {
+                if (!_isGUIEnabled) return;
                 ProcessFiles(e.Data.GetFileNames()?.ToArray());
             });
 
@@ -1312,6 +1318,8 @@ namespace UVtools.WPF
 
             ClipboardManager.Instance.Reset();
 
+            TabGCode.IsVisible = false;
+
             IssuesClear(true);
             SlicerFile?.Dispose();
             SlicerFile = null;
@@ -1946,6 +1954,8 @@ namespace UVtools.WPF
                 }
             }
 
+            TabGCode.IsVisible = HaveGCode;
+
             SlicerFile.PropertyChanged += SlicerFileOnPropertyChanged;
 
             PopulateSuggestions();
@@ -2170,6 +2180,7 @@ namespace UVtools.WPF
                 SavesCount++;
                 CanSave = false;
                 UpdateTitle();
+                if(oldFile != SlicerFile.FileFullPath) AddRecentFile(SlicerFile.FileFullPath);
             }
 
             return task;

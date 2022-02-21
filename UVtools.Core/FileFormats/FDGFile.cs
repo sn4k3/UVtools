@@ -251,7 +251,9 @@ namespace UVtools.Core.FileFormats
             /// <summary>
             /// Gets the minutes since Jan 1, 1970 UTC
             /// </summary>
-            [FieldOrder(47)] public uint Timestamp { get; set; }
+            [FieldOrder(47)] public uint ModifiedTimestampMinutes { get; set; } = (uint) DateTimeExtensions.Timestamp.TotalMinutes;
+
+            [Ignore] public string ModifiedDate => DateTimeExtensions.GetDateTimeFromTimestampMinutes(ModifiedTimestampMinutes).ToString("dd/MM/yyyy HH:mm");
 
             [FieldOrder(48)] public uint SoftwareVersion { get; set; } = 0x01060300;
 
@@ -264,7 +266,7 @@ namespace UVtools.Core.FileFormats
 
             public override string ToString()
             {
-                return $"{nameof(Magic)}: {Magic}, {nameof(Version)}: {Version}, {nameof(LayerCount)}: {LayerCount}, {nameof(BottomLayersCount)}: {BottomLayersCount}, {nameof(ProjectorType)}: {ProjectorType}, {nameof(BottomLayersCount2)}: {BottomLayersCount2}, {nameof(ResolutionX)}: {ResolutionX}, {nameof(ResolutionY)}: {ResolutionY}, {nameof(LayerHeightMilimeter)}: {LayerHeightMilimeter}, {nameof(LayerExposureSeconds)}: {LayerExposureSeconds}, {nameof(BottomExposureSeconds)}: {BottomExposureSeconds}, {nameof(PreviewLargeOffsetAddress)}: {PreviewLargeOffsetAddress}, {nameof(PreviewSmallOffsetAddress)}: {PreviewSmallOffsetAddress}, {nameof(LayersDefinitionOffsetAddress)}: {LayersDefinitionOffsetAddress}, {nameof(PrintTime)}: {PrintTime}, {nameof(AntiAliasLevel)}: {AntiAliasLevel}, {nameof(LightPWM)}: {LightPWM}, {nameof(BottomLightPWM)}: {BottomLightPWM}, {nameof(Padding1)}: {Padding1}, {nameof(Padding2)}: {Padding2}, {nameof(OverallHeightMilimeter)}: {OverallHeightMilimeter}, {nameof(BedSizeX)}: {BedSizeX}, {nameof(BedSizeY)}: {BedSizeY}, {nameof(BedSizeZ)}: {BedSizeZ}, {nameof(EncryptionKey)}: {EncryptionKey}, {nameof(AntiAliasLevelInfo)}: {AntiAliasLevelInfo}, {nameof(EncryptionMode)}: {EncryptionMode}, {nameof(VolumeMl)}: {VolumeMl}, {nameof(WeightG)}: {WeightG}, {nameof(CostDollars)}: {CostDollars}, {nameof(MachineNameAddress)}: {MachineNameAddress}, {nameof(MachineNameSize)}: {MachineNameSize}, {nameof(MachineName)}: {MachineName}, {nameof(BottomLightOffDelay)}: {BottomLightOffDelay}, {nameof(LightOffDelay)}: {LightOffDelay}, {nameof(Padding4)}: {Padding4}, {nameof(BottomLiftHeight)}: {BottomLiftHeight}, {nameof(BottomLiftSpeed)}: {BottomLiftSpeed}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(RetractSpeed)}: {RetractSpeed}, {nameof(Padding5)}: {Padding5}, {nameof(Padding6)}: {Padding6}, {nameof(Padding7)}: {Padding7}, {nameof(Padding8)}: {Padding8}, {nameof(Padding9)}: {Padding9}, {nameof(Padding10)}: {Padding10}, {nameof(Padding11)}: {Padding11}, {nameof(Timestamp)}: {Timestamp}, {nameof(SoftwareVersion)}: {SoftwareVersion}, {nameof(Padding12)}: {Padding12}, {nameof(Padding13)}: {Padding13}, {nameof(Padding14)}: {Padding14}, {nameof(Padding15)}: {Padding15}, {nameof(Padding16)}: {Padding16}, {nameof(Padding17)}: {Padding17}";
+                return $"{nameof(_machineName)}: {_machineName}, {nameof(Magic)}: {Magic}, {nameof(Version)}: {Version}, {nameof(LayerCount)}: {LayerCount}, {nameof(BottomLayersCount)}: {BottomLayersCount}, {nameof(ProjectorType)}: {ProjectorType}, {nameof(BottomLayersCount2)}: {BottomLayersCount2}, {nameof(ResolutionX)}: {ResolutionX}, {nameof(ResolutionY)}: {ResolutionY}, {nameof(LayerHeightMilimeter)}: {LayerHeightMilimeter}, {nameof(LayerExposureSeconds)}: {LayerExposureSeconds}, {nameof(BottomExposureSeconds)}: {BottomExposureSeconds}, {nameof(PreviewLargeOffsetAddress)}: {PreviewLargeOffsetAddress}, {nameof(PreviewSmallOffsetAddress)}: {PreviewSmallOffsetAddress}, {nameof(LayersDefinitionOffsetAddress)}: {LayersDefinitionOffsetAddress}, {nameof(PrintTime)}: {PrintTime}, {nameof(AntiAliasLevel)}: {AntiAliasLevel}, {nameof(LightPWM)}: {LightPWM}, {nameof(BottomLightPWM)}: {BottomLightPWM}, {nameof(Padding1)}: {Padding1}, {nameof(Padding2)}: {Padding2}, {nameof(OverallHeightMilimeter)}: {OverallHeightMilimeter}, {nameof(BedSizeX)}: {BedSizeX}, {nameof(BedSizeY)}: {BedSizeY}, {nameof(BedSizeZ)}: {BedSizeZ}, {nameof(EncryptionKey)}: {EncryptionKey}, {nameof(AntiAliasLevelInfo)}: {AntiAliasLevelInfo}, {nameof(EncryptionMode)}: {EncryptionMode}, {nameof(VolumeMl)}: {VolumeMl}, {nameof(WeightG)}: {WeightG}, {nameof(CostDollars)}: {CostDollars}, {nameof(MachineNameAddress)}: {MachineNameAddress}, {nameof(MachineNameSize)}: {MachineNameSize}, {nameof(MachineName)}: {MachineName}, {nameof(BottomLightOffDelay)}: {BottomLightOffDelay}, {nameof(LightOffDelay)}: {LightOffDelay}, {nameof(Padding4)}: {Padding4}, {nameof(BottomLiftHeight)}: {BottomLiftHeight}, {nameof(BottomLiftSpeed)}: {BottomLiftSpeed}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(RetractSpeed)}: {RetractSpeed}, {nameof(Padding5)}: {Padding5}, {nameof(Padding6)}: {Padding6}, {nameof(Padding7)}: {Padding7}, {nameof(Padding8)}: {Padding8}, {nameof(Padding9)}: {Padding9}, {nameof(Padding10)}: {Padding10}, {nameof(Padding11)}: {Padding11}, {nameof(ModifiedTimestampMinutes)}: {ModifiedTimestampMinutes}, {nameof(ModifiedDate)}: {ModifiedDate}, {nameof(SoftwareVersion)}: {SoftwareVersion}, {nameof(Padding12)}: {Padding12}, {nameof(Padding13)}: {Padding13}, {nameof(Padding14)}: {Padding14}, {nameof(Padding15)}: {Padding15}, {nameof(Padding16)}: {Padding16}, {nameof(Padding17)}: {Padding17}";
             }
         }
         #endregion
@@ -1021,7 +1023,7 @@ namespace UVtools.Core.FileFormats
                 }
             }
 
-
+            HeaderSettings.ModifiedTimestampMinutes = (uint)DateTimeExtensions.TimestampMinutes;
             outputFile.Seek(0, SeekOrigin.Begin);
             Helpers.SerializeWriteFileStream(outputFile, HeaderSettings);
 
@@ -1126,6 +1128,7 @@ namespace UVtools.Core.FileFormats
 
         protected override void PartialSaveInternally(OperationProgress progress)
         {
+            HeaderSettings.ModifiedTimestampMinutes = (uint)DateTimeExtensions.TimestampMinutes;
             using var outputFile = new FileStream(FileFullPath, FileMode.Open, FileAccess.Write);
             outputFile.Seek(0, SeekOrigin.Begin);
             Helpers.SerializeWriteFileStream(outputFile, HeaderSettings);

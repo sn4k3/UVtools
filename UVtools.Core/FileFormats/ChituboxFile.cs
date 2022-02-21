@@ -309,9 +309,11 @@ namespace UVtools.Core.FileFormats
             [FieldOrder(9)] public uint PerLayerSettings     { get; set; } = PERLAYER_SETTINGS_DISALLOW;
 
             /// <summary>
-            /// Gets a number that increments with time or number of models sliced, or both. Zeroing it in output seems to have no effect. Possibly a user tracking bug.
+            /// Gets the minutes since Jan 1, 1970 UTC
             /// </summary>
-            [FieldOrder(10)] public uint MysteriousId      { get; set; } = 305419896; // v3 = 305419896 | v4 = 27087675
+            [FieldOrder(10)] public uint ModifiedTimestampMinutes { get; set; } = (uint)DateTimeExtensions.Timestamp.TotalMinutes;
+
+            [Ignore] public string ModifiedDate => DateTimeExtensions.GetDateTimeFromTimestampMinutes(ModifiedTimestampMinutes).ToString("dd/MM/yyyy HH:mm");
 
             /// <summary>
             /// Gets the user-selected antialiasing level. For cbddlp files this will match the level_set_count. For ctb files, this number is essentially arbitrary.
@@ -352,7 +354,7 @@ namespace UVtools.Core.FileFormats
 
             public override string ToString()
             {
-                return $"{nameof(BottomLiftHeight2)}: {BottomLiftHeight2}, {nameof(BottomLiftSpeed2)}: {BottomLiftSpeed2}, {nameof(LiftHeight2)}: {LiftHeight2}, {nameof(LiftSpeed2)}: {LiftSpeed2}, {nameof(RetractHeight2)}: {RetractHeight2}, {nameof(RetractSpeed2)}: {RetractSpeed2}, {nameof(RestTimeAfterLift)}: {RestTimeAfterLift}, {nameof(MachineNameAddress)}: {MachineNameAddress}, {nameof(MachineNameSize)}: {MachineNameSize}, {nameof(PerLayerSettings)}: {PerLayerSettings}, {nameof(MysteriousId)}: {MysteriousId}, {nameof(AntiAliasLevel)}: {AntiAliasLevel}, {nameof(SoftwareVersion)}: {SoftwareVersion}, {nameof(RestTimeAfterRetract)}: {RestTimeAfterRetract}, {nameof(RestTimeAfterLift2)}: {RestTimeAfterLift2}, {nameof(TransitionLayerCount)}: {TransitionLayerCount}, {nameof(PrintParametersV4Address)}: {PrintParametersV4Address}, {nameof(Padding2)}: {Padding2}, {nameof(Padding3)}: {Padding3}, {nameof(MachineName)}: {MachineName}";
+                return $"{nameof(BottomLiftHeight2)}: {BottomLiftHeight2}, {nameof(BottomLiftSpeed2)}: {BottomLiftSpeed2}, {nameof(LiftHeight2)}: {LiftHeight2}, {nameof(LiftSpeed2)}: {LiftSpeed2}, {nameof(RetractHeight2)}: {RetractHeight2}, {nameof(RetractSpeed2)}: {RetractSpeed2}, {nameof(RestTimeAfterLift)}: {RestTimeAfterLift}, {nameof(MachineNameAddress)}: {MachineNameAddress}, {nameof(MachineNameSize)}: {MachineNameSize}, {nameof(PerLayerSettings)}: {PerLayerSettings}, {nameof(ModifiedTimestampMinutes)}: {ModifiedTimestampMinutes}, {nameof(ModifiedDate)}: {ModifiedDate}, {nameof(AntiAliasLevel)}: {AntiAliasLevel}, {nameof(SoftwareVersion)}: {SoftwareVersion}, {nameof(RestTimeAfterRetract)}: {RestTimeAfterRetract}, {nameof(RestTimeAfterLift2)}: {RestTimeAfterLift2}, {nameof(TransitionLayerCount)}: {TransitionLayerCount}, {nameof(PrintParametersV4Address)}: {PrintParametersV4Address}, {nameof(Padding2)}: {Padding2}, {nameof(Padding3)}: {Padding3}, {nameof(MachineName)}: {MachineName}";
             }
         }
 
@@ -1085,6 +1087,7 @@ namespace UVtools.Core.FileFormats
                     {
 
                         PrintParameterModifier.BottomLayerCount,
+                        PrintParameterModifier.TransitionLayerCount,
 
                         PrintParameterModifier.BottomLightOffDelay,
                         PrintParameterModifier.LightOffDelay,
@@ -1119,6 +1122,27 @@ namespace UVtools.Core.FileFormats
 
                         PrintParameterModifier.BottomLightPWM,
                         PrintParameterModifier.LightPWM,
+                    };
+                }
+
+                if (HeaderSettings.Version == 3)
+                {
+                    return new[]
+                    {
+
+                        PrintParameterModifier.BottomLayerCount,
+                        PrintParameterModifier.TransitionLayerCount, 
+
+                        PrintParameterModifier.BottomLightOffDelay,
+                        PrintParameterModifier.LightOffDelay,
+                        PrintParameterModifier.BottomExposureTime,
+                        PrintParameterModifier.ExposureTime,
+
+                        PrintParameterModifier.BottomLiftHeight,
+                        PrintParameterModifier.BottomLiftSpeed,
+                        PrintParameterModifier.LiftHeight,
+                        PrintParameterModifier.LiftSpeed,
+                        PrintParameterModifier.RetractSpeed,
                     };
                 }
 
@@ -1325,6 +1349,14 @@ namespace UVtools.Core.FileFormats
         {
             get => (ushort) HeaderSettings.BottomLayersCount;
             set => base.BottomLayerCount = (ushort) (HeaderSettings.BottomLayersCount = PrintParametersSettings.BottomLayerCount = value);
+        }
+
+        public override TransitionLayerTypes TransitionLayerType => TransitionLayerTypes.Software;
+
+        public override ushort TransitionLayerCount
+        {
+            get => (ushort)SlicerInfoSettings.TransitionLayerCount;
+            set => base.TransitionLayerCount = (ushort)(SlicerInfoSettings.TransitionLayerCount = Math.Min(value, MaximumPossibleTransitionLayerCount));
         }
 
         public override float BottomLightOffDelay
@@ -1730,25 +1762,18 @@ namespace UVtools.Core.FileFormats
                 {
                     SlicerInfoSettings.PerLayerSettings = PERLAYER_SETTINGS_CTBv2;
                     PrintParametersSettings.Padding4 = 0x1234; // 4660
-
-                    if (SlicerInfoSettings.MysteriousId == 0)
-                        SlicerInfoSettings.MysteriousId = 305419896;
                 }
                 else if (HeaderSettings.Version == 3)
                 {
                     SlicerInfoSettings.PerLayerSettings = LayerManager.AllLayersAreUsingGlobalParameters ? PERLAYER_SETTINGS_DISALLOW : PERLAYER_SETTINGS_CTBv3;
-
-                    if (SlicerInfoSettings.MysteriousId == 0)
-                        SlicerInfoSettings.MysteriousId = 305419896;
                 }
                 else if (HeaderSettings.Version >= 4)
                 {
                     SlicerInfoSettings.PerLayerSettings = LayerManager.AllLayersAreUsingGlobalParameters ? PERLAYER_SETTINGS_DISALLOW : PERLAYER_SETTINGS_CTBv4;
-
-                    if (SlicerInfoSettings.MysteriousId == 0)
-                        SlicerInfoSettings.MysteriousId = 27087820;
                 }
             }
+
+            SlicerInfoSettings.ModifiedTimestampMinutes = (uint)DateTimeExtensions.TimestampMinutes;
         }
 
         private void SanitizeMagicVersion()

@@ -140,6 +140,30 @@ namespace UVtools.Core
         /// </summary>
         public Layer LargestLayer => _layers?.MaxBy(layer => layer.NonZeroPixelCount).FirstOrDefault();
 
+        /// <summary>
+        /// Gets all bottom layers
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<Layer> BottomLayers => this.Where(layer => layer.IsBottomLayer);
+
+        /// <summary>
+        /// Gets all normal layers
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<Layer> NormalLayers => this.Where(layer => layer.IsNormalLayer);
+
+        /// <summary>
+        /// Gets all transition layers
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<Layer> TransitionLayers => this.Where(layer => layer.IsTransitionLayer);
+
+        /// <summary>
+        /// Gets all layers that use TSMC values
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<Layer> TsmcLayers => this.Where(layer => layer.IsUsingTSMC);
+
 
         /// <summary>
         /// Gets the bounding rectangle of the object

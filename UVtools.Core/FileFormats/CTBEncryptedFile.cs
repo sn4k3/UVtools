@@ -140,7 +140,7 @@ namespace UVtools.Core.FileFormats
             [FieldOrder(55)] public float RestTimeAfterLift3 { get; set; }
             [FieldOrder(56)] public float RestTimeBeforeLift { get; set; }
             [FieldOrder(57)] public float BottomRetractHeight2 { get; set; }
-            [FieldOrder(58)] public float Unknown6 { get; set; } // Same as CTBv4.PrintParametersV4.Unknown1)
+            [FieldOrder(58)] public uint Unknown6 { get; set; } // Same as CTBv4.PrintParametersV4.Unknown1)
             [FieldOrder(59)] public uint Unknown7 { get; set; } //  Same as  CTBv4.PrintParametersV4.Unknown2)
             [FieldOrder(60)] public uint Unknown8 { get; set; } = 4; // Same as CTBv4.PrintParametersV4.Unknown3)
             [FieldOrder(61)] public uint LastLayerIndex { get; set; }
@@ -601,6 +601,7 @@ namespace UVtools.Core.FileFormats
 
         public override PrintParameterModifier[] PrintParameterModifiers { get; } = {
             PrintParameterModifier.BottomLayerCount,
+            PrintParameterModifier.TransitionLayerCount,
 
             PrintParameterModifier.BottomLightOffDelay,
             PrintParameterModifier.LightOffDelay,
@@ -754,6 +755,14 @@ namespace UVtools.Core.FileFormats
         {
             get => (ushort)Settings.BottomLayerCount;
             set => base.BottomLayerCount = (ushort)(Settings.BottomLayerCount = value);
+        }
+
+        public override TransitionLayerTypes TransitionLayerType => TransitionLayerTypes.Software;
+
+        public override ushort TransitionLayerCount
+        {
+            get => (ushort)Settings.TransitionLayerCount;
+            set => base.TransitionLayerCount = (ushort)(Settings.TransitionLayerCount = Math.Min(value, MaximumPossibleTransitionLayerCount));
         }
 
         public override float BottomLightOffDelay

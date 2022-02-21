@@ -208,6 +208,14 @@ namespace UVtools.Core.GCode
                 if (partialPositionZ == 0) continue;
                 var height = Math.Abs(partialPositionZ);
 
+                if (currentZ < PreviousPositionZ) // Check for inverse lifts
+                {
+                    LiftHeight ??= 0;
+                    LiftHeight = Math.Min(LiftHeight.Value, -currentZ);
+                    LiftSpeed = speed;
+                    continue;
+                }
+                
                 if (partialPositionZ > 0) // Is a lift
                 {
                     // Lift 1
@@ -241,11 +249,23 @@ namespace UVtools.Core.GCode
             }
 
             // Sanitize
-            if (PositionZ.HasValue && LiftHeight.HasValue && !IsExposed) // Lift before exposure order, need to remove layer height as offset
+            if (PositionZ.HasValue && LiftHeight.HasValue)
             {
-                var liftHeight = Layer.RoundHeight(LiftHeight.Value - (PositionZ.Value - PreviousPositionZ));
-                if(liftHeight <= 0) return; // Something not right or not the correct moment, skip
-                LiftHeight = liftHeight;
+                if (LiftHeight < 0) // Inverse lift
+                {
+                    LiftHeight = Layer.RoundHeight(Math.Abs(PositionZ.Value + LiftHeight.Value));
+                }
+                else if (!IsExposed) // Lift before exposure order, need to remove layer height as offset
+                {
+                    var liftHeight = Layer.RoundHeight(LiftHeight.Value - (PositionZ.Value - PreviousPositionZ));
+                    if (liftHeight <= 0) return; // Something not right or not the correct moment, skip
+                    LiftHeight = liftHeight;
+                }
+            }
+
+            if (PositionZ.HasValue && LiftHeight.HasValue && !IsExposed) 
+            {
+                
             }
 
             if (RetractHeight2.HasValue) // Need to fix the purpose of this value
@@ -272,7 +292,7 @@ namespace UVtools.Core.GCode
             PositionZ ??= PreviousPositionZ;
             layer.PositionZ = PositionZ.Value;
             layer.WaitTimeBeforeCure = WaitTimeBeforeCure ?? 0;
-            layer.ExposureTime = ExposureTime ?? SlicerFile.GetBottomOrNormalValue(layer, SlicerFile.BottomExposureTime, SlicerFile.ExposureTime);
+            layer.ExposureTime = ExposureTime ?? 0;
             layer.WaitTimeAfterCure = WaitTimeAfterCure ?? 0;
             layer.LiftHeight = LiftHeight ?? 0;
             layer.LiftSpeed = LiftSpeed ?? SlicerFile.GetBottomOrNormalValue(layer, SlicerFile.BottomLiftSpeed, SlicerFile.LiftSpeed);

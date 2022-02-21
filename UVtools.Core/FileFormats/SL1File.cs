@@ -31,6 +31,7 @@ namespace UVtools.Core.FileFormats
         public const string Keyword_FileFormat = "FILEFORMAT";
         public const string Keyword_FileVersion = "FILEVERSION";
 
+        public const string Keyword_TransitionLayerCount = "TransitionLayerCount";
         public const string Keyword_BottomLightOffDelay = "BottomLightOffDelay";
         public const string Keyword_LightOffDelay = "LightOffDelay";
         public const string Keyword_BottomWaitTimeBeforeCure = "BottomWaitTimeBeforeCure";
@@ -679,9 +680,10 @@ namespace UVtools.Core.FileFormats
                 {
                     throw new FileLoadException($"Malformed file: {IniPrusaslicer} is missing.");
                 }
-                
+
                 SuppressRebuildPropertiesWork(() =>
                 {
+                    TransitionLayerCount = LookupCustomValue<ushort>(Keyword_TransitionLayerCount, 0);
                     BottomLightOffDelay = LookupCustomValue(Keyword_BottomLightOffDelay, 0f);
                     LightOffDelay = LookupCustomValue(Keyword_LightOffDelay, 0f);
 
@@ -716,7 +718,7 @@ namespace UVtools.Core.FileFormats
                     BottomLightPWM = LookupCustomValue(Keyword_BottomLightPWM, DefaultLightPWM);
                     LightPWM = LookupCustomValue(Keyword_LightPWM, DefaultBottomLightPWM);
                 });
-                
+
                 LayerManager.Init(OutputConfigSettings.NumSlow + OutputConfigSettings.NumFast, DecodeType == FileDecodeType.Partial);
 
                 progress.ItemCount = LayerCount;
@@ -752,6 +754,11 @@ namespace UVtools.Core.FileFormats
                     
                     progress.ProcessedItems++;
                 }
+            }
+
+            if (TransitionLayerCount > 0)
+            {
+                SetTransitionLayers(TransitionLayerCount, false);
             }
 
             LayerManager.GetBoundingRectangle(progress);

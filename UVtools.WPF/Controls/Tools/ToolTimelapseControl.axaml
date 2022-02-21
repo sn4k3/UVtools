@@ -5,7 +5,7 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="UVtools.WPF.Controls.Tools.ToolTimelapseControl">
     <StackPanel Spacing="10" Orientation="Vertical">
-        <Grid RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto"
+        <Grid RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto"
               ColumnDefinitions="Auto,10,Auto">
 
             <TextBlock Grid.Row="0" Grid.Column="0"
@@ -47,15 +47,25 @@
     &#x0a;Use 0mm to raise at each layer."
                        Text="Raise each:"/>
 
-			<NumericUpDown Grid.Row="4" Grid.Column="2"
-                           Classes="ValueLabel ValueLabel_mm"
-                           HorizontalAlignment="Left"
-                           Minimum="0"
-                           Maximum="10000"
-                           Increment="0.5"
-                           Width="100"
-                           Value="{Binding Operation.RaiseEachNthHeight}"/>
+			<StackPanel Grid.Row="4" Grid.Column="2"
+                        Orientation="Horizontal" Spacing="5">
+			    <NumericUpDown Classes="ValueLabel ValueLabel_mm"
+                               HorizontalAlignment="Left"
+                               Minimum="0"
+                               Maximum="10000"
+                               Increment="0.5"
+                               Width="100"
+                               Value="{Binding Operation.RaiseEachNthHeight}"/>
 
+                <TextBlock VerticalAlignment="Center"
+                           Text="{Binding Operation.RaiseEachNthLayers, StringFormat={}{0} layer(s)  |}"/>
+
+                <TextBlock VerticalAlignment="Center"
+                           Margin="5,0,0,0"
+                           FontWeight="Bold"
+                           Text="{Binding Operation.NumberOfLifts, StringFormat=Lifts: {0}}"/>
+
+			</StackPanel>
 
 		    <!-- LiftHeight: Wait time after lift -->
             <TextBlock Grid.Row="6" Grid.Column="0"
@@ -147,16 +157,20 @@
 
             <CheckBox Grid.Row="8" Grid.Column="2"
                       VerticalAlignment="Center"
+                      Content="Ensure the last layer"
+                      ToolTip.Tip="If enabled, it will generate an obligatory layer to cover the last layer.
+&#x0a;Use this option to make sure you have the whole and complete model on your last photo."
+                      IsVisible="{Binding Operation.IsVirtualLayerMode}"
+                      IsChecked="{Binding Operation.EnsureLastLayer}"/>
+
+            <CheckBox Grid.Row="10" Grid.Column="2"
+                      VerticalAlignment="Center"
                       Content="Set custom lift parameters"
-                      IsChecked="{Binding Operation.UseCustomLift}">
-			    <CheckBox.IsVisible>
-				    <MultiBinding Converter="{x:Static BoolConverters.And}">
-					    <Binding Path="SlicerFile.CanUseLayerLiftHeight"/>
-				    </MultiBinding>
-			    </CheckBox.IsVisible>
-            </CheckBox>
+                      IsVisible="{Binding SlicerFile.CanUseLayerLiftHeight}"
+                      IsChecked="{Binding Operation.UseCustomLift}"/>
 	    </Grid>
 
+		<!-- Custom lift -->
         <Grid RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto"
               ColumnDefinitions="Auto,10,210,5,Auto,5,210">
 			<Grid.IsVisible>
@@ -166,136 +180,175 @@
 				</MultiBinding>
 			</Grid.IsVisible>
 
-                <TextBlock Grid.Row="0" Grid.Column="0"
-                           VerticalAlignment="Center"
-                           ToolTip.Tip="The slow first lift sequence (TSMC).
+			<!-- Slow lift height-->
+            <TextBlock Grid.Row="0" Grid.Column="0"
+                       VerticalAlignment="Center"
+                       ToolTip.Tip="The slow first lift sequence (TSMC).
 &#x0a;Use a low value or 0 to disable."
-                           IsVisible="{Binding !Operation.IsVirtualLayerMode}"
-                           Text="Slow lift height:"/>
+                       Text="Slow lift height:"/>
 
-                <NumericUpDown Grid.Row="0" Grid.Column="2"
-                               Classes="ValueLabel ValueLabel_mm"
-                               Minimum="0"
-                               Maximum="20"
-                               Increment="1"
-                               Value="{Binding Operation.SlowLiftHeight}">
-                    <NumericUpDown.IsVisible>
-                        <MultiBinding Converter="{x:Static BoolConverters.And}">
-                            <Binding Path="SlicerFile.CanUseLayerLiftHeight2"/>
-                            <Binding Path="!Operation.IsVirtualLayerMode"/>
-                        </MultiBinding>
-                    </NumericUpDown.IsVisible>
-                </NumericUpDown>
+            <NumericUpDown Grid.Row="0" Grid.Column="2"
+                           Classes="ValueLabel ValueLabel_mm"
+                           Minimum="0"
+                           Maximum="20"
+                           Increment="1"
+                           Value="{Binding Operation.SlowLiftHeight}">
+                <NumericUpDown.IsVisible>
+                    <MultiBinding Converter="{x:Static BoolConverters.Or}">
+                        <Binding Path="SlicerFile.CanUseLayerLiftHeight2"/>
+                        <Binding Path="Operation.IsVirtualLayerMode"/>
+                    </MultiBinding>
+                </NumericUpDown.IsVisible>
+            </NumericUpDown>
 
-                <TextBlock Grid.Row="0" Grid.Column="2"
-                           VerticalAlignment="Center"
-                           ToolTip.Tip="(Not supported by your printer / file format)"
-                           Text="(Not supported)">
-					<TextBlock.IsVisible>
-						<MultiBinding Converter="{x:Static BoolConverters.And}">
-							<Binding Path="!SlicerFile.CanUseLayerLiftHeight2"/>
-							<Binding Path="!Operation.IsVirtualLayerMode"/>
-						</MultiBinding>
-					</TextBlock.IsVisible>
-				</TextBlock>
+            <TextBlock Grid.Row="0" Grid.Column="2"
+                       VerticalAlignment="Center"
+                       ToolTip.Tip="(Not supported by your printer / file format)"
+                       Text="(Not supported)">
+				<TextBlock.IsVisible>
+					<MultiBinding Converter="{x:Static BoolConverters.And}">
+						<Binding Path="!SlicerFile.CanUseLayerLiftHeight2"/>
+						<Binding Path="!Operation.IsVirtualLayerMode"/>
+					</MultiBinding>
+				</TextBlock.IsVisible>
+			</TextBlock>
 
-                <TextBlock Grid.Row="2" Grid.Column="0"
-                           VerticalAlignment="Center"
-                           Text="Lift speed:"/>
+			<!-- Lift Speed -->
+            <TextBlock Grid.Row="2" Grid.Column="0"
+                       VerticalAlignment="Center"
+                       Text="Lift speed:"/>
 
-                <NumericUpDown Grid.Row="2" Grid.Column="2"
-                               Classes="ValueLabel ValueLabel_mmmin"
-                               Minimum="0"
-                               Maximum="10000"
-                               Increment="10"
-                               IsVisible="{Binding SlicerFile.CanUseLayerLiftSpeed}"
-                               Value="{Binding Operation.LiftSpeed}">
-                </NumericUpDown>
+            <NumericUpDown Grid.Row="2" Grid.Column="2"
+                           Classes="ValueLabel ValueLabel_mmmin"
+                           Minimum="0"
+                           Maximum="10000"
+                           Increment="10"
+                           IsVisible="{Binding SlicerFile.CanUseLayerLiftSpeed}"
+                           Value="{Binding Operation.LiftSpeed}">
+            </NumericUpDown>
 
-                <TextBlock Grid.Row="2" Grid.Column="2"
-                           VerticalAlignment="Center"
-                           ToolTip.Tip="(Not supported by your printer / file format)"
-                           IsVisible="{Binding !SlicerFile.CanUseLayerLiftSpeed}"
-                           Text="(Not supported)"/>
+            <TextBlock Grid.Row="2" Grid.Column="2"
+                       VerticalAlignment="Center"
+                       ToolTip.Tip="(Not supported by your printer / file format)"
+                       Text="(Not supported)">
+                <TextBlock.IsVisible>
+                    <MultiBinding Converter="{x:Static BoolConverters.And}">
+                        <Binding Path="!SlicerFile.CanUseLayerLiftSpeed"/>
+                        <Binding Path="!Operation.IsVirtualLayerMode"/>
+                    </MultiBinding>
+                </TextBlock.IsVisible>
+            </TextBlock>
 
-                <TextBlock Grid.Row="2" Grid.Column="4"
-                           VerticalAlignment="Center"
-                           IsVisible="{Binding SlicerFile.CanUseLayerLiftSpeed2}"
-                           Text="-"/>
+			<TextBlock Grid.Row="2" Grid.Column="4"
+					   VerticalAlignment="Center"
+					   Text="-">
+				<TextBlock.IsVisible>
+					<MultiBinding Converter="{x:Static BoolConverters.Or}">
+						<Binding Path="SlicerFile.CanUseLayerLiftSpeed2"/>
+						<Binding Path="Operation.IsVirtualLayerMode"/>
+					</MultiBinding>
+				</TextBlock.IsVisible>
+			</TextBlock>
 
-                <NumericUpDown Grid.Row="2" Grid.Column="6"
-                               Classes="ValueLabel ValueLabel_mmmin"
-                               Minimum="0"
-                               Maximum="10000"
-                               Increment="10"
-                               IsVisible="{Binding SlicerFile.CanUseLayerLiftSpeed2}"
-                               Value="{Binding Operation.LiftSpeed2}"/>
+            <NumericUpDown Grid.Row="2" Grid.Column="6"
+                           Classes="ValueLabel ValueLabel_mmmin"
+                           Minimum="0"
+                           Maximum="10000"
+                           Increment="10"
+                           Value="{Binding Operation.LiftSpeed2}">
+                <NumericUpDown.IsVisible>
+                    <MultiBinding Converter="{x:Static BoolConverters.Or}">
+                        <Binding Path="SlicerFile.CanUseLayerLiftSpeed2"/>
+                        <Binding Path="Operation.IsVirtualLayerMode"/>
+                    </MultiBinding>
+                </NumericUpDown.IsVisible>
+            </NumericUpDown>
 
-                <TextBlock Grid.Row="4" Grid.Column="0"
-                           VerticalAlignment="Center"
-                           ToolTip.Tip="The slow last retract sequence (TSMC).
+			<!-- Slow retract -->
+            <TextBlock Grid.Row="4" Grid.Column="0"
+                       VerticalAlignment="Center"
+                       ToolTip.Tip="The slow last retract sequence (TSMC).
 &#x0a;Use a low value or 0 to disable."
-                           IsVisible="{Binding !Operation.IsVirtualLayerMode}"
-                           Text="Slow retract height:"/>
+                       Text="Slow retract height:"/>
 
-                <NumericUpDown Grid.Row="4" Grid.Column="2"
-                               Classes="ValueLabel ValueLabel_mm"
-                               Minimum="0"
-                               Maximum="20"
-                               Increment="1"
-                               Value="{Binding Operation.SlowRetractHeight}">
-                    <NumericUpDown.IsVisible>
-                        <MultiBinding Converter="{x:Static BoolConverters.And}">
-                            <Binding Path="SlicerFile.CanUseLayerRetractHeight2"/>
-                            <Binding Path="!Operation.IsVirtualLayerMode"/>
-                        </MultiBinding>
-					</NumericUpDown.IsVisible>
-                </NumericUpDown>
+            <NumericUpDown Grid.Row="4" Grid.Column="2"
+                           Classes="ValueLabel ValueLabel_mm"
+                           Minimum="0"
+                           Maximum="20"
+                           Increment="1"
+                           Value="{Binding Operation.SlowRetractHeight}">
+                <NumericUpDown.IsVisible>
+                    <MultiBinding Converter="{x:Static BoolConverters.Or}">
+                        <Binding Path="SlicerFile.CanUseLayerRetractHeight2"/>
+                        <Binding Path="Operation.IsVirtualLayerMode"/>
+                    </MultiBinding>
+				</NumericUpDown.IsVisible>
+            </NumericUpDown>
 
-                <TextBlock Grid.Row="4" Grid.Column="2"
-                           VerticalAlignment="Center"
-                           ToolTip.Tip="(Not supported by your printer / file format)"
-                           Text="(Not supported)">
-					<TextBlock.IsVisible>
-						<MultiBinding Converter="{x:Static BoolConverters.And}">
-							<Binding Path="!SlicerFile.CanUseLayerRetractHeight2"/>
-							<Binding Path="!Operation.IsVirtualLayerMode"/>
-						</MultiBinding>
-					</TextBlock.IsVisible>
-				</TextBlock>
+            <TextBlock Grid.Row="4" Grid.Column="2"
+                       VerticalAlignment="Center"
+                       ToolTip.Tip="(Not supported by your printer / file format)"
+                       Text="(Not supported)">
+				<TextBlock.IsVisible>
+					<MultiBinding Converter="{x:Static BoolConverters.And}">
+						<Binding Path="!SlicerFile.CanUseLayerRetractHeight2"/>
+						<Binding Path="!Operation.IsVirtualLayerMode"/>
+					</MultiBinding>
+				</TextBlock.IsVisible>
+			</TextBlock>
 
 
-                <TextBlock Grid.Row="6" Grid.Column="0"
-                           VerticalAlignment="Center"
-                           Text="Retract speed:"/>
+			<!-- Retract speed -->
+            <TextBlock Grid.Row="6" Grid.Column="0"
+                       VerticalAlignment="Center"
+                       Text="Retract speed:"/>
 
-                <NumericUpDown Grid.Row="6" Grid.Column="2"
-                               Classes="ValueLabel ValueLabel_mmmin"
-                               Minimum="0"
-                               Maximum="10000"
-                               Increment="10"
-                               IsVisible="{Binding SlicerFile.CanUseLayerRetractSpeed}"
-                               Value="{Binding Operation.RetractSpeed}">
-                </NumericUpDown>
+            <NumericUpDown Grid.Row="6" Grid.Column="2"
+                           Classes="ValueLabel ValueLabel_mmmin"
+                           Minimum="0"
+                           Maximum="10000"
+                           Increment="10"
+                           IsVisible="{Binding SlicerFile.CanUseLayerRetractSpeed}"
+                           Value="{Binding Operation.RetractSpeed}">
+            </NumericUpDown>
 
-                <TextBlock Grid.Row="6" Grid.Column="2"
-                           VerticalAlignment="Center"
-                           ToolTip.Tip="(Not supported by your printer / file format)"
-                           IsVisible="{Binding !SlicerFile.CanUseLayerRetractSpeed}"
-                           Text="(Not supported)"/>
+            <TextBlock Grid.Row="6" Grid.Column="2"
+                       VerticalAlignment="Center"
+                       ToolTip.Tip="(Not supported by your printer / file format)"
+                       Text="(Not supported)">
+                <TextBlock.IsVisible>
+                    <MultiBinding Converter="{x:Static BoolConverters.And}">
+                        <Binding Path="!SlicerFile.CanUseLayerRetractSpeed"/>
+                        <Binding Path="!Operation.IsVirtualLayerMode"/>
+                    </MultiBinding>
+                </TextBlock.IsVisible>
+            </TextBlock>
 
-                <TextBlock Grid.Row="6" Grid.Column="4"
-                           VerticalAlignment="Center"
-                           IsVisible="{Binding SlicerFile.CanUseLayerRetractSpeed2}"
-                           Text="-"/>
+            <TextBlock Grid.Row="6" Grid.Column="4"
+                       VerticalAlignment="Center"
+                       Text="-">
+				<TextBlock.IsVisible>
+					<MultiBinding Converter="{x:Static BoolConverters.Or}">
+						<Binding Path="SlicerFile.CanUseLayerRetractSpeed2"/>
+						<Binding Path="Operation.IsVirtualLayerMode"/>
+					</MultiBinding>
+				</TextBlock.IsVisible>
+			</TextBlock>
 
-                <NumericUpDown Grid.Row="6" Grid.Column="6"
-                               Classes="ValueLabel ValueLabel_mmmin"
-                               Minimum="0"
-                               Maximum="10000"
-                               Increment="10"
-                               IsVisible="{Binding SlicerFile.CanUseLayerRetractSpeed2}"
-                               Value="{Binding Operation.RetractSpeed2}"/>
+
+            <NumericUpDown Grid.Row="6" Grid.Column="6"
+                           Classes="ValueLabel ValueLabel_mmmin"
+                           Minimum="0"
+                           Maximum="10000"
+                           Increment="10"
+                           Value="{Binding Operation.RetractSpeed2}">
+				<NumericUpDown.IsVisible>
+					<MultiBinding Converter="{x:Static BoolConverters.Or}">
+						<Binding Path="SlicerFile.CanUseLayerRetractSpeed2"/>
+						<Binding Path="Operation.IsVirtualLayerMode"/>
+					</MultiBinding>
+				</NumericUpDown.IsVisible>
+			</NumericUpDown>
             
         </Grid>
 

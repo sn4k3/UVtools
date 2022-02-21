@@ -400,7 +400,7 @@
       <TabItem
         Name="TabInformation"
         ToolTip.Tip="Information"
-        IsEnabled="{Binding IsFileLoaded}" >
+        IsEnabled="{Binding IsFileLoaded}">
         <TabItem.Header>
           <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
             <Image Source="/Assets/Icons/info-circle-32x32.png" Width="32"/>
@@ -408,202 +408,204 @@
           </StackPanel>
         </TabItem.Header>
 
-        <Grid 
-          IsVisible="{Binding IsFileLoaded}" 
-          RowDefinitions="Auto,Auto,Auto,Auto,*,Auto,Auto">
-          <!-- Thumbnails -->
-          <StackPanel 
-            IsVisible="{Binding SlicerFile.CreatedThumbnailsCount}"
-            Grid.Row="0" 
-            Orientation="Horizontal"
-            Spacing="5"
-            VerticalAlignment="Center">
-            <Button
-              IsEnabled="{Binding ThumbnailCanGoPrevious}"
-              Command="{Binding ThumbnailGoPrevious}"
-                    >
-              <Image Source="/Assets/Icons/back-16x16.png" Width="16"/>
-            </Button>
+		  <Grid ColumnDefinitions="*" IsVisible="{Binding IsFileLoaded}">
+			  <Grid.RowDefinitions>
+				  <RowDefinition Height="Auto"/>
+				  <RowDefinition Height="Auto" MaxHeight="400"/>
+				  <RowDefinition Height="Auto"/>
+				  <RowDefinition Height="Auto"/>
+				  <RowDefinition Height="*" MinHeight="200"/>
+				  <RowDefinition Height="Auto"/>
+				  <RowDefinition Height="Auto" MinHeight="220"/>
+			  </Grid.RowDefinitions>
+			  <!-- Thumbnails -->
+			  <StackPanel Grid.Row="0"
+						  IsVisible="{Binding SlicerFile.CreatedThumbnailsCount}"
+						  Orientation="Horizontal"
+						  Spacing="5"
+						  VerticalAlignment="Center">
+				  <Button IsEnabled="{Binding ThumbnailCanGoPrevious}"
+						  Command="{Binding ThumbnailGoPrevious}">
+					  <Image Source="/Assets/Icons/back-16x16.png" Width="16"/>
+				  </Button>
 
-            <TextBlock VerticalAlignment="Center">
-              <TextBlock.Text>
-                <MultiBinding StringFormat="{}{0}/{1}">
-                  <Binding Path="VisibleThumbnailIndex"/>
-                  <Binding Path="SlicerFile.CreatedThumbnailsCount"/>
-                </MultiBinding>
-              </TextBlock.Text>
-            </TextBlock>
+				  <TextBlock VerticalAlignment="Center">
+					  <TextBlock.Text>
+						  <MultiBinding StringFormat="{}{0}/{1}">
+							  <Binding Path="VisibleThumbnailIndex"/>
+							  <Binding Path="SlicerFile.CreatedThumbnailsCount"/>
+						  </MultiBinding>
+					  </TextBlock.Text>
+				  </TextBlock>
 
-            <Button
-              IsEnabled="{Binding ThumbnailCanGoNext}"
-              Command="{Binding ThumbnailGoNext}"
-                    >
-              <Image Source="/Assets/Icons/next-16x16.png" Width="16"/>
-            </Button>
+				  <Button IsEnabled="{Binding ThumbnailCanGoNext}"
+						  Command="{Binding ThumbnailGoNext}">
+					  <Image Source="/Assets/Icons/next-16x16.png" Width="16"/>
+				  </Button>
 
-          </StackPanel>
+			  </StackPanel>
 
-          <StackPanel 
-            IsVisible="{Binding SlicerFile.CreatedThumbnailsCount}"
-            Grid.Row="0" 
-            Orientation="Horizontal" 
-            Spacing="2"
-            HorizontalAlignment="Right"
-            VerticalAlignment="Center">
-            <TextBlock VerticalAlignment="Center"
-                       Text="{Binding VisibleThumbnailResolution}"/>
+			  <StackPanel Grid.Row="0"
+						  IsVisible="{Binding SlicerFile.CreatedThumbnailsCount}"
+						  Orientation="Horizontal"
+						  Spacing="2"
+						  HorizontalAlignment="Right"
+						  VerticalAlignment="Center">
+				  <TextBlock VerticalAlignment="Center"
+							 Text="{Binding VisibleThumbnailResolution}"/>
 
-            <Button
-              IsEnabled="{Binding VisibleThumbnailIndex}"
-              ToolTip.Tip="Replace the current preview image"
-              Command="{Binding OnClickThumbnailImport}">
-              <Image Source="/Assets/Icons/photo-16x16.png" />
-            </Button>
+				  <Button IsEnabled="{Binding VisibleThumbnailIndex}"
+						  ToolTip.Tip="Replace the current preview image"
+						  Command="{Binding OnClickThumbnailImport}">
+					  <Image Source="/Assets/Icons/photo-16x16.png" />
+				  </Button>
 
-            <Button
-              IsEnabled="{Binding VisibleThumbnailIndex}"
-              ToolTip.Tip="Save thumbnail image to a file"
-              Command="{Binding OnClickThumbnailSave}">
-              <Image Source="/Assets/Icons/save-16x16.png" />
-            </Button>
-            
-          </StackPanel>
+				  <Button IsEnabled="{Binding VisibleThumbnailIndex}"
+						  ToolTip.Tip="Save thumbnail image to a file"
+						  Command="{Binding OnClickThumbnailSave}">
+					  <Image Source="/Assets/Icons/save-16x16.png" />
+				  </Button>
 
-          <!-- Preview image -->
-          <Image
-            IsVisible="{Binding SlicerFile.CreatedThumbnailsCount}"
-            Stretch="Uniform"
-            Grid.Row="1" Source="{Binding VisibleThumbnailImage}"/>
-          
-          <GridSplitter Grid.Row="2" ResizeDirection="Rows" ResizeBehavior="PreviousAndNext" Background="Transparent" Height="5"/>
+			  </StackPanel>
 
-          <!-- Properties -->
-          <StackPanel
-            IsVisible="{Binding SlicerProperties.Count}"
-            Grid.Row="3"
-            Orientation="Horizontal"
-            Spacing="5"
-            VerticalAlignment="Center">
+			  <!-- Preview image -->
+			  <Image Grid.Row="1"
+					 IsVisible="{Binding SlicerFile.CreatedThumbnailsCount}"
+					 Stretch="Uniform"
+					 Source="{Binding VisibleThumbnailImage}"/>
 
-            <TextBlock 
-              VerticalAlignment="Center"
-              Text="{Binding SlicerProperties.Count, StringFormat=Properties: \{0\}}"
-              />
+			  <GridSplitter Grid.Row="2" ResizeDirection="Rows" ResizeBehavior="PreviousAndNext" Background="White" Height="5"/>
 
-            <TextBlock Text="|"/>
+			  <!-- Properties -->
+			  <StackPanel
+				IsVisible="{Binding SlicerProperties.Count}"
+				Grid.Row="3"
+				Orientation="Horizontal"
+				Spacing="5"
+				VerticalAlignment="Center">
 
-            <TextBlock
-              VerticalAlignment="Center"
-              Text="{Binding SlicerFile.Configs.Length, StringFormat=Groups: \{0\}}"
-              />
+				  <TextBlock
+					VerticalAlignment="Center"
+					Text="{Binding SlicerProperties.Count, StringFormat=Properties: \{0\}}"/>
 
-          </StackPanel>
-          
-          <StackPanel
-            IsVisible="{Binding SlicerProperties.Count}"
-            Grid.Row="3"
-            Orientation="Horizontal"
-            Spacing="2"
-            HorizontalAlignment="Right"
-            VerticalAlignment="Center">
+				  <TextBlock VerticalAlignment="Center" Text="|"/>
 
-            <Button
-                Name="PropertiesSaveButton"
-                IsEnabled="{Binding SlicerFile.CreatedThumbnailsCount}"
-                ToolTip.Tip="Save properties to a file or clipboard"
-                Command="{Binding OpenContextMenu}"
-                CommandParameter="PropertiesSave"
-              >
-              <Button.ContextMenu>
-                <ContextMenu Name="PropertiesSaveContextMenu" PlacementMode="Bottom">
-                  <MenuItem
-                    Command="{Binding OnClickPropertiesSaveFile}"
-                    Header="To File">
-                    <MenuItem.Icon>
-                      <Image Source="/Assets/Icons/file-image-16x16.png"/>
-                    </MenuItem.Icon>
-                  </MenuItem>
+				  <TextBlock
+					VerticalAlignment="Center"
+					Text="{Binding SlicerFile.Configs.Length, StringFormat=Groups: \{0\}}"/>
 
-                  <MenuItem
-                    Command="{Binding OnClickPropertiesSaveClipboard}"
-                    Header="To Clipboard">
-                    <MenuItem.Icon>
-                      <Image Source="/Assets/Icons/clipboard-16x16.png"/>
-                    </MenuItem.Icon>
-                  </MenuItem>
+			  </StackPanel>
 
-                </ContextMenu>
-              </Button.ContextMenu>
-              <StackPanel Orientation="Horizontal">
-                <Image Source="/Assets/Icons/save-16x16.png" />
-                <TextBlock Text=" ⮟"/>
-              </StackPanel>
-            </Button>
+			  <StackPanel
+				IsVisible="{Binding SlicerProperties.Count}"
+				Grid.Row="3"
+				Orientation="Horizontal"
+				Spacing="2"
+				HorizontalAlignment="Right"
+				VerticalAlignment="Center">
 
-          </StackPanel>
-          
-          <DataGrid 
-                    IsVisible="{Binding SlicerProperties.Count}"
-                    Name="PropertiesGrid"
-                    Grid.Row="4"
-                    CanUserReorderColumns="True"
-                    CanUserResizeColumns="True"
-                    CanUserSortColumns="True"
-                    GridLinesVisibility="Horizontal"
-                    IsReadOnly="True"
-                    SelectionMode="Extended"
-                    ClipboardCopyMode="IncludeHeader"
-                    Items="{Binding SlicerProperties}">
-            <DataGrid.Columns>
-              <DataGridTextColumn  Header="Name"
-                                    Binding="{Binding Name}"
-                                    Width="Auto" />
-              <DataGridTextColumn Header="Value"
-                                  Binding="{Binding Value}"
-                                  Width="Auto" />
-              <DataGridTextColumn Header="Group"
-                                  Binding="{Binding Group}"
-                                  Width="Auto" />
-            </DataGrid.Columns>
-            
-            </DataGrid>
+				  <Button
+					  Name="PropertiesSaveButton"
+					  IsEnabled="{Binding SlicerFile.CreatedThumbnailsCount}"
+					  ToolTip.Tip="Save properties to a file or clipboard"
+					  Command="{Binding OpenContextMenu}"
+					  CommandParameter="PropertiesSave">
+					  <Button.ContextMenu>
+						  <ContextMenu Name="PropertiesSaveContextMenu" PlacementMode="Bottom">
+							  <MenuItem
+								Command="{Binding OnClickPropertiesSaveFile}"
+								Header="To File">
+								  <MenuItem.Icon>
+									  <Image Source="/Assets/Icons/file-image-16x16.png"/>
+								  </MenuItem.Icon>
+							  </MenuItem>
 
-          <!-- Layer data -->
-            <TextBlock Grid.Row="5"
-                       Text="Layer data" 
-                       ToolTip.Tip="Shows the properties for the current selected layer"
-                       FontWeight="Bold" 
-                       TextAlignment="Center"
-                       Padding="0,10"/>
-            <DataGrid 
-                    IsVisible="{Binding IsFileLoaded}"
-                    Name="CurrentLayerGrid"
-                    Grid.Row="6"
-                    CanUserReorderColumns="False"
-                    CanUserResizeColumns="False"
-                    CanUserSortColumns="False"
-                    GridLinesVisibility="Horizontal"
-                    IsReadOnly="True"
-                    ClipboardCopyMode="IncludeHeader"
-                    Items="{Binding CurrentLayerProperties}">
-            <DataGrid.Columns>
-              <DataGridTextColumn  Header="Name"
-                                    Binding="{Binding Description}"
-                                    Width="Auto" />
-              <DataGridTextColumn Header="Value"
-                                  Binding="{Binding Value}"
-                                  Width="Auto" />
-            </DataGrid.Columns>
-            
-          </DataGrid>
-      
-        </Grid>
+							  <MenuItem
+								Command="{Binding OnClickPropertiesSaveClipboard}"
+								Header="To Clipboard">
+								  <MenuItem.Icon>
+									  <Image Source="/Assets/Icons/clipboard-16x16.png"/>
+								  </MenuItem.Icon>
+							  </MenuItem>
+
+						  </ContextMenu>
+					  </Button.ContextMenu>
+					  <StackPanel Orientation="Horizontal">
+						  <Image Source="/Assets/Icons/save-16x16.png" />
+						  <TextBlock Text=" ⮟"/>
+					  </StackPanel>
+				  </Button>
+
+			  </StackPanel>
+
+			  <DataGrid
+						IsVisible="{Binding SlicerProperties.Count}"
+						Name="PropertiesGrid"
+						Grid.Row="4"
+						CanUserReorderColumns="True"
+						CanUserResizeColumns="True"
+						CanUserSortColumns="True"
+						GridLinesVisibility="Horizontal"
+						IsReadOnly="True"
+						SelectionMode="Extended"
+						ClipboardCopyMode="IncludeHeader"
+						Items="{Binding SlicerProperties}">
+				  <DataGrid.Columns>
+					  <DataGridTextColumn  Header="Name"
+											Binding="{Binding Name}"
+											Width="Auto" />
+					  <DataGridTextColumn Header="Value"
+										  Binding="{Binding Value}"
+										  Width="Auto" />
+					  <DataGridTextColumn Header="Group"
+										  Binding="{Binding Group}"
+										  Width="Auto" />
+				  </DataGrid.Columns>
+
+			  </DataGrid>
+
+			  <GridSplitter Grid.Row="5" ResizeDirection="Rows" ResizeBehavior="PreviousAndNext" Background="White" Height="5"/>
+
+			  <!-- Layer data -->
+			  <Grid Grid.Row="6"
+					RowDefinitions="Auto,5,*" ColumnDefinitions="*">
+				  <TextBlock Grid.Row="0"
+							 Text="Layer data"
+							 ToolTip.Tip="Shows the properties for the current selected layer"
+							 FontWeight="Bold"
+							 TextAlignment="Center"/>
+				  <DataGrid Grid.Row="2"
+							IsVisible="{Binding IsFileLoaded}"
+							Name="CurrentLayerGrid"
+							CanUserReorderColumns="False"
+							CanUserResizeColumns="False"
+							CanUserSortColumns="False"
+							GridLinesVisibility="Horizontal"
+							IsReadOnly="True"
+							ClipboardCopyMode="IncludeHeader"
+							Items="{Binding CurrentLayerProperties}">
+					  <DataGrid.Columns>
+						  <DataGridTextColumn  Header="Name"
+											   Binding="{Binding Description}"
+											   Width="Auto" />
+						  <DataGridTextColumn Header="Value"
+											  Binding="{Binding Value}"
+											  Width="Auto" />
+					  </DataGrid.Columns>
+
+				  </DataGrid>
+			  </Grid>
+
+
+
+		  </Grid>
         
       </TabItem>
 
       <TabItem
         Name="TabGCode"
         ToolTip.Tip="GCode"
+        IsVisible="False"
         IsEnabled="{Binding HaveGCode}">
         <TabItem.Header>
           <StackPanel VerticalAlignment="Center" Orientation="Horizontal">

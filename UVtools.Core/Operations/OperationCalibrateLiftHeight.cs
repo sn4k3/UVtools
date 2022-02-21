@@ -431,6 +431,7 @@ namespace UVtools.Core.Operations
                 SlicerFile.LiftSpeed = (float)_liftSpeed;
                 SlicerFile.RetractSpeed = (float)_retractSpeed;
                 SlicerFile.BottomLayerCount = _bottomLayers;
+                SlicerFile.TransitionLayerCount = 0;
 
                 SlicerFile.LayerManager.Layers = newLayers;
             }, true);

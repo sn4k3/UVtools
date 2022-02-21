@@ -40,6 +40,7 @@ namespace UVtools.Core.Operations
         private TimelapseRaiseMode _raiseMode = TimelapseRaiseMode.LiftHeight;
         private decimal _waitTimeAfterLift = 1;
         private decimal _exposureTime = 1;
+        private bool _ensureLastLayer = true;
         private bool _useCustomLift;
         private decimal _slowLiftHeight = 3;
         private decimal _liftSpeed;
@@ -61,7 +62,7 @@ namespace UVtools.Core.Operations
             "NOTE: Only use this tool once. It will delay the total print time significantly.";
 
         public override string ConfirmationText =>
-            $"raise the platform at every odd-even {_raiseEachNthHeight}mm to Z={_raisePositionZ}mm";
+            $"raise the platform at every odd-even {_raiseEachNthHeight}mm to Z={_raisePositionZ}mm and generate {NumberOfLifts} additional lifts?";
 
         public override string ProgressTitle => "Raising layers";
 
@@ -113,6 +114,7 @@ namespace UVtools.Core.Operations
                 if(!RaiseAndSetIfChanged(ref _raiseMode, value)) return;
                 RaisePropertyChanged(nameof(IsLiftHeightMode));
                 RaisePropertyChanged(nameof(IsVirtualLayerMode));
+                RaisePropertyChanged(nameof(NumberOfLifts));
             }
         }
 
@@ -143,9 +145,17 @@ namespace UVtools.Core.Operations
         public decimal RaiseEachNthHeight
         {
             get => _raiseEachNthHeight;
-            set => RaiseAndSetIfChanged(ref _raiseEachNthHeight, Math.Max(0, value));
+            set
+            {
+                if(!RaiseAndSetIfChanged(ref _raiseEachNthHeight, Math.Max(0, Layer.RoundHeight(value)))) return;
+                RaisePropertyChanged(nameof(RaiseEachNthLayers));
+                RaisePropertyChanged(nameof(NumberOfLifts));
+            }
         }
 
+        /// <summary>
+        /// Gets or sets the alternating layer count to raise when, it will raise only at each defined layers and skip the same next layers
+        /// </summary>
         public ushort RaiseEachNthLayers
         {
             get
@@ -153,7 +163,14 @@ namespace UVtools.Core.Operations
                 if (_raiseEachNthHeight == 0) return 1;
                 return (ushort)Math.Max(1, _raiseEachNthHeight / (decimal)SlicerFile.LayerHeight);
             }
+            set => RaiseEachNthHeight = (decimal)SlicerFile.LayerHeight * value;
         }
+
+        /// <summary>
+        /// Gets the total number of additional lifts
+        /// </summary>
+        public uint NumberOfLifts => (uint)(Math.Min(SlicerFile.PrintHeight, (float)_raisePositionZ) / Math.Max(SlicerFile.LayerHeight, (float)_raiseEachNthHeight)) 
+                                     + (_ensureLastLayer && _raiseMode == TimelapseRaiseMode.VirtualLayer ? 1u : 0);
 
         public decimal WaitTimeAfterLift
         {
@@ -165,6 +182,20 @@ namespace UVtools.Core.Operations
         {
             get => _exposureTime;
             set => RaiseAndSetIfChanged(ref _exposureTime, Math.Max(0, value));
+        }
+
+        /// <summary>
+        /// Gets or sets if last layer must be ensured in the sequence,
+        /// If true, it will generate an obligatory additional layer to cover the last layer
+        /// </summary>
+        public bool EnsureLastLayer
+        {
+            get => _ensureLastLayer;
+            set
+            {
+                if(!RaiseAndSetIfChanged(ref _ensureLastLayer, value)) return;
+                RaisePropertyChanged(nameof(NumberOfLifts));
+            }
         }
 
         public bool UseCustomLift
@@ -215,9 +246,7 @@ namespace UVtools.Core.Operations
 
         #region Constructor
 
-        public OperationTimelapse()
-        {
-        }
+        public OperationTimelapse() { }
 
         public OperationTimelapse(FileFormat slicerFile) : base(slicerFile) 
         {
@@ -235,6 +264,7 @@ namespace UVtools.Core.Operations
             else
             {
                 if (_retractSpeed <= 0) _retractSpeed = (decimal)SlicerFile.RetractSpeed;
+                if (_retractSpeed2 <= 0) _retractSpeed2 = (decimal)SlicerFile.MaximumSpeed;
             }
             
         }
@@ -245,7 +275,7 @@ namespace UVtools.Core.Operations
 
         protected bool Equals(OperationTimelapse other)
         {
-            return _raisePositionZ == other._raisePositionZ && _outputDummyPixel == other._outputDummyPixel && _raiseEachNthHeight == other._raiseEachNthHeight && _raiseMode == other._raiseMode && _waitTimeAfterLift == other._waitTimeAfterLift && _exposureTime == other._exposureTime && _useCustomLift == other._useCustomLift && _slowLiftHeight == other._slowLiftHeight && _liftSpeed == other._liftSpeed && _liftSpeed2 == other._liftSpeed2 && _slowRetractHeight == other._slowRetractHeight && _retractSpeed == other._retractSpeed && _retractSpeed2 == other._retractSpeed2;
+            return _raisePositionZ == other._raisePositionZ && _outputDummyPixel == other._outputDummyPixel && _raiseEachNthHeight == other._raiseEachNthHeight && _raiseMode == other._raiseMode && _waitTimeAfterLift == other._waitTimeAfterLift && _exposureTime == other._exposureTime && _ensureLastLayer == other._ensureLastLayer && _useCustomLift == other._useCustomLift && _slowLiftHeight == other._slowLiftHeight && _liftSpeed == other._liftSpeed && _liftSpeed2 == other._liftSpeed2 && _slowRetractHeight == other._slowRetractHeight && _retractSpeed == other._retractSpeed && _retractSpeed2 == other._retractSpeed2;
         }
 
         public override bool Equals(object obj)
@@ -265,6 +295,7 @@ namespace UVtools.Core.Operations
             hashCode.Add((int) _raiseMode);
             hashCode.Add(_waitTimeAfterLift);
             hashCode.Add(_exposureTime);
+            hashCode.Add(_ensureLastLayer);
             hashCode.Add(_useCustomLift);
             hashCode.Add(_slowLiftHeight);
             hashCode.Add(_liftSpeed);
@@ -293,12 +324,18 @@ namespace UVtools.Core.Operations
         {
             var virtualLayers = new List<uint>();
             float checkpointHeight = SlicerFile[0].PositionZ;
+
             for (uint layerIndex = LayerIndexStart; layerIndex <= LayerIndexEnd; layerIndex++)
             {
                 progress++;
                 var layer = SlicerFile[layerIndex];
-                if (_raiseEachNthHeight > 0 && (decimal)Layer.RoundHeight(layer.PositionZ - checkpointHeight) < _raiseEachNthHeight) continue;
                 if ((decimal)layer.PositionZ >= _raisePositionZ) break; // pass the target height, do not continue
+                if (_raiseMode == TimelapseRaiseMode.VirtualLayer && _ensureLastLayer && layerIndex == LayerIndexEnd)
+                {
+                    virtualLayers.Add(layerIndex+1);
+                    break;
+                }
+                if (_raiseEachNthHeight > 0 && (decimal)Layer.RoundHeight(layer.PositionZ - checkpointHeight) < _raiseEachNthHeight) continue;
                 checkpointHeight = layer.PositionZ;
 
                 switch (_raiseMode)
@@ -355,70 +392,88 @@ namespace UVtools.Core.Operations
 
             if (virtualLayers.Count > 0 && _raiseMode == TimelapseRaiseMode.VirtualLayer)
             {
+                var minLiftSpeed = CanUseCustomLift ? (float)Math.Min(_liftSpeed, _liftSpeed2) : SlicerFile.MinimumNormalSpeed;
+                var minRetractSpeed = CanUseCustomLift ? (float)Math.Min(_retractSpeed, _retractSpeed2) : SlicerFile.MinimumNormalSpeed;
+                var maxLiftSpeed = CanUseCustomLift ? (float)Math.Max(_liftSpeed, _liftSpeed2) : SlicerFile.MaximumSpeed;
+                var maxRetractSpeed = CanUseCustomLift ? (float)Math.Max(_retractSpeed, _retractSpeed2) : SlicerFile.MaximumSpeed;
+
                 using var mat = _outputDummyPixel
                     ? SlicerFile.CreateMatWithDummyPixel()
                     : SlicerFile.CreateMat();
 
-                var layer = new Layer(SlicerFile.LayerCount, mat, SlicerFile)
+                var virtualSlowLiftLayer = new Layer(SlicerFile.LayerCount, mat, SlicerFile)
                 {
-                    PositionZ = (float) _raisePositionZ,
-                    ExposureTime = (float) _exposureTime,
-                    // This layer does not require a lift procedure
+                    PositionZ = (float)_raisePositionZ,
+                    ExposureTime = SlicerFile.SupportsGCode ? 0 : 0.01f,
                     LiftHeightTotal = SlicerFile.SupportsGCode ? 0 : 0.1f, 
-                    LiftSpeed = SlicerFile.MaximumSpeed,
-                    LiftSpeed2 = SlicerFile.MaximumSpeed,
-                    RetractSpeed = SlicerFile.MaximumSpeed,
-                    RetractSpeed2 = SlicerFile.MaximumSpeed,
+                    LiftSpeed = minLiftSpeed,
+                    LiftSpeed2 = maxLiftSpeed,
+                    RetractSpeed = maxRetractSpeed,
+                    RetractSpeed2 = maxRetractSpeed,
                     RetractHeight2 = 0
                 };
 
-                if (CanUseCustomLift)
-                {
-                    layer.LiftSpeed = (float)_liftSpeed;
-                    layer.RetractSpeed = (float)_retractSpeed;
+                virtualSlowLiftLayer.SetNoDelays();
 
-                    /*if (SlicerFile.CanUseLayerLiftHeight2)
-                    {
-                        layer.LiftHeight = (float)_slowLiftHeight;
-                    }*/
+                var virtualPhotoLayer = virtualSlowLiftLayer.Clone();
+                virtualPhotoLayer.ExposureTime = (float)_exposureTime;
+                virtualPhotoLayer.LiftSpeed = maxLiftSpeed;
 
-                    if (SlicerFile.CanUseLayerLiftSpeed2)
-                    {
-                        layer.LiftSpeed2 = (float)_liftSpeed2;
-                    }
+                virtualSlowLiftLayer.LightPWM = 0; // Disable light power if possible
 
-                    if (SlicerFile.CanUseLayerRetractSpeed2)
-                    {
-                        layer.RetractSpeed2 = (float)_retractSpeed2;
-                    }
-                }
-
-                layer.SetNoDelays();
+                var slowLiftHeight = CanUseCustomLift ? (float)_slowLiftHeight : SlicerFile.LiftHeight;
 
                 var layers = SlicerFile.ToList();
-                for (int i = 0; i < virtualLayers.Count; i++)
+                uint insertedLayers = 0;
+                foreach (var insertIndex in virtualLayers)
                 {
-                    int insertIndex = (int)virtualLayers[i];
-                    SlicerFile[insertIndex].LiftHeightTotal = SlicerFile.SupportsGCode ? 0 : 0.1f;
-
-                    if (CanUseCustomLift)
+                    if (insertIndex < LayerIndexEnd)
                     {
-                        SlicerFile[insertIndex].LiftSpeed = (float)_liftSpeed;
-                        SlicerFile[insertIndex].RetractSpeed = (float)_retractSpeed;
-
-                        if (SlicerFile.CanUseLayerLiftSpeed2)
+                        // Replace lift with retract
+                        if (SlicerFile.CanUseLayerRetractHeight2 && SlicerFile[insertIndex].RetractHeight2 > 0)
                         {
-                            SlicerFile[insertIndex].LiftSpeed2 = (float)_retractSpeed2;
+                            SlicerFile[insertIndex].LiftHeightTotal = SlicerFile[insertIndex].RetractHeight2;
                         }
 
-                        if (SlicerFile.CanUseLayerRetractSpeed2)
+                        SlicerFile[insertIndex].RetractHeight2 = 0;
+                        SlicerFile[insertIndex].LiftSpeed = maxRetractSpeed;
+
+                        if (CanUseCustomLift)
                         {
-                            SlicerFile[insertIndex].RetractSpeed2 = (float)_retractSpeed2;
+                            SlicerFile[insertIndex].LiftHeight = (float) _slowRetractHeight;
+                            SlicerFile[insertIndex].RetractSpeed = minRetractSpeed;
+
+                            if (SlicerFile.CanUseLayerLiftSpeed2)
+                            {
+                                SlicerFile[insertIndex].LiftSpeed2 = maxLiftSpeed;
+                            }
+
+                            if (SlicerFile.CanUseLayerRetractSpeed2)
+                            {
+                                SlicerFile[insertIndex].RetractSpeed2 = maxRetractSpeed;
+                            }
                         }
                     }
 
-                    layers.Insert(insertIndex + i, layer.Clone());
+                    layers.Insert((int)(insertIndex + insertedLayers), virtualPhotoLayer.Clone());
+
+                    if (slowLiftHeight > 0 && insertIndex > 0)
+                    {
+                        virtualSlowLiftLayer.PositionZ = SlicerFile[insertIndex - 1].PositionZ + slowLiftHeight;
+                        if (virtualSlowLiftLayer.PositionZ >= virtualPhotoLayer.PositionZ)
+                        {
+                            // Slow lift layer must be lower than photo layer, break this insertion from now on 
+                            slowLiftHeight = 0;
+                            virtualPhotoLayer.LiftSpeed = minLiftSpeed;
+                            continue;
+                        }
+                        layers.Insert((int)(insertIndex + insertedLayers), virtualSlowLiftLayer.Clone());
+                        insertedLayers++;
+                    }
+
+                    insertedLayers++;
                 }
+
                 SlicerFile.SuppressRebuildPropertiesWork(() => SlicerFile.LayerManager.Layers = layers.ToArray());
             }
 

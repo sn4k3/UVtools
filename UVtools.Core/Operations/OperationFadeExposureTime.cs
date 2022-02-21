@@ -21,6 +21,7 @@ namespace UVtools.Core.Operations
         private uint _layerCount = 10;
         private decimal _fromExposureTime;
         private decimal _toExposureTime;
+        private bool _disableFirmwareTransitionLayers = true;
 
         #endregion
 
@@ -124,6 +125,12 @@ namespace UVtools.Core.Operations
             }
         }
 
+        public bool DisableFirmwareTransitionLayers
+        {
+            get => _disableFirmwareTransitionLayers;
+            set => RaiseAndSetIfChanged(ref _disableFirmwareTransitionLayers, value);
+        }
+
         public decimal IncrementValue => Math.Round(IncrementValueRaw, 2);
         public decimal IncrementValueRaw => (_toExposureTime - _fromExposureTime) / (LayerRangeCount + 1);
 
@@ -150,7 +157,7 @@ namespace UVtools.Core.Operations
 
         protected bool Equals(OperationFadeExposureTime other)
         {
-            return _fromExposureTime == other._fromExposureTime && _toExposureTime == other._toExposureTime && _layerCount == other._layerCount;
+            return _layerCount == other._layerCount && _fromExposureTime == other._fromExposureTime && _toExposureTime == other._toExposureTime && _disableFirmwareTransitionLayers == other._disableFirmwareTransitionLayers;
         }
 
         public override bool Equals(object obj)
@@ -158,12 +165,12 @@ namespace UVtools.Core.Operations
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
             if (obj.GetType() != this.GetType()) return false;
-            return Equals((OperationFadeExposureTime)obj);
+            return Equals((OperationFadeExposureTime) obj);
         }
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(_fromExposureTime, _toExposureTime, _layerCount);
+            return HashCode.Combine(_layerCount, _fromExposureTime, _toExposureTime, _disableFirmwareTransitionLayers);
         }
 
         #endregion
@@ -173,6 +180,11 @@ namespace UVtools.Core.Operations
         protected override bool ExecuteInternally(OperationProgress progress)
         {
             LayerIndexEnd = LayerIndexStart + _layerCount - 1; // Sanitize
+
+            if (_disableFirmwareTransitionLayers)
+            {
+                SlicerFile.TransitionLayerCount = 0;
+            }
 
             var increment = IncrementValueRaw;
             var exposure = _fromExposureTime;

@@ -45,6 +45,7 @@ namespace UVtools.Core.FileFormats
 
         public const float DefaultLayerHeight = 0.05f;
         public const ushort DefaultBottomLayerCount = 4;
+        public const ushort DefaultTransitionLayerCount = 0;
 
         public const float DefaultBottomExposureTime = 30;
         public const float DefaultExposureTime = 3;
@@ -125,6 +126,19 @@ namespace UVtools.Core.FileFormats
             Large
         }
 
+        public enum TransitionLayerTypes : byte
+        {
+            /// <summary>
+            /// Firmware transition layers are handled by printer firmware
+            /// </summary>
+            Firmware,
+
+            /// <summary>
+            /// Software transition layers are handled by software and written on layer data
+            /// </summary>
+            Software
+        }
+
         public enum FileDecodeType : byte
         {
             /// <summary>
@@ -147,8 +161,9 @@ namespace UVtools.Core.FileFormats
         {
             
             #region Instances
-            public static PrintParameterModifier PositionZ { get; } = new ("Position Z", "Absolute Z position", "mm",0, 100000, 0.01, Layer.HeightPrecision);
-            public static PrintParameterModifier BottomLayerCount { get; } = new ("Bottom layers count", "Number of bottom/burn-in layers", "layers",0, ushort.MaxValue, 1, 0);
+            public static PrintParameterModifier PositionZ { get; } = new ("Position Z", "Absolute Z position", "mm", 0, 100000, 0.01, Layer.HeightPrecision);
+            public static PrintParameterModifier BottomLayerCount { get; } = new ("Bottom layer count", "Number of bottom/burn-in layers", "layers", 0, ushort.MaxValue, 1, 0);
+            public static PrintParameterModifier TransitionLayerCount { get; } = new ("Transition layer count", "Number of transition layers", "layers",0, ushort.MaxValue, 1, 0);
             
             public static PrintParameterModifier BottomLightOffDelay { get; } = new("Bottom light-off seconds", "Total motor movement time + rest time to wait before cure a new bottom layer", "s");
             public static PrintParameterModifier LightOffDelay { get; } = new("Light-off seconds", "Total motor movement time + rest time to wait before cure a new layer", "s");
@@ -162,8 +177,8 @@ namespace UVtools.Core.FileFormats
             public static PrintParameterModifier BottomWaitTimeAfterCure { get; } = new("Bottom wait after cure", "Time to wait/rest after cure a new bottom layer\nChitubox: Rest before lift\nLychee: Wait after print", "s");
             public static PrintParameterModifier WaitTimeAfterCure { get; } = new("Wait after cure", "Time to wait/rest after cure a new bottom layer\nChitubox: Rest before lift\nLychee: Wait after print", "s");
             
-            public static PrintParameterModifier BottomLiftHeight { get; } = new ("Bottom lift height", "Bottom lift/peel height between layers", "mm", 1);
-            public static PrintParameterModifier LiftHeight { get; } = new ("Lift height", @"Lift/peel height between layers", "mm", 1);
+            public static PrintParameterModifier BottomLiftHeight { get; } = new ("Bottom lift height", "Bottom lift/peel height between layers", "mm");
+            public static PrintParameterModifier LiftHeight { get; } = new ("Lift height", @"Lift/peel height between layers", "mm");
             
             public static PrintParameterModifier BottomLiftSpeed { get; } = new ("Bottom lift speed", null, "mm/min", 10, 5000, 5);
             public static PrintParameterModifier LiftSpeed { get; } = new ("Lift speed", null, "mm/min", 10, 5000, 5);
@@ -789,6 +804,8 @@ namespace UVtools.Core.FileFormats
         private byte _antiAliasing = 1;
 
         private ushort _bottomLayerCount = DefaultBottomLayerCount;
+        private ushort _transitionLayerCount = DefaultTransitionLayerCount;
+
 
         private float _bottomLightOffDelay;
         private float _lightOffDelay;
@@ -1056,7 +1073,7 @@ namespace UVtools.Core.FileFormats
         public Layer LastBottomLayer => LayerManager.LastOrDefault(layer => layer.IsBottomLayer);
 
         /// <summary>
-        /// Gets the first layer normal layer
+        /// Gets the first normal layer
         /// </summary>
         public Layer FirstNormalLayer => LayerManager.FirstOrDefault(layer => layer.IsNormalLayer);
 
@@ -1064,6 +1081,30 @@ namespace UVtools.Core.FileFormats
         /// Gets the last layer
         /// </summary>
         public Layer LastLayer => LayerManager.LastLayer;
+
+        /// <summary>
+        /// Gets all bottom layers
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<Layer> BottomLayers => LayerManager.BottomLayers;
+
+        /// <summary>
+        /// Gets all normal layers
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<Layer> NormalLayers => LayerManager.NormalLayers;
+
+        /// <summary>
+        /// Gets all transition layers
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<Layer> TransitionLayers => LayerManager.TransitionLayers;
+
+        /// <summary>
+        /// Gets all layers that use TSMC values
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<Layer> TsmcLayers => LayerManager.TsmcLayers;
 
         /// <summary>
         /// Gets the bounding rectangle of the object
@@ -1373,6 +1414,44 @@ namespace UVtools.Core.FileFormats
             {
                 RaiseAndSet(ref _bottomLayerCount, value);
                 RaisePropertyChanged(nameof(NormalLayerCount));
+            }
+        }
+
+        /// <summary>
+        /// Gets the transition layer type
+        /// </summary>
+        public virtual TransitionLayerTypes TransitionLayerType => TransitionLayerTypes.Firmware;
+
+        /// <summary>
+        /// Gets or sets the number of transition layers
+        /// </summary>
+        public virtual ushort TransitionLayerCount
+        {
+            get => _transitionLayerCount;
+            set
+            {
+                RaiseAndSet(ref _transitionLayerCount, (ushort)Math.Min(value, MaximumPossibleTransitionLayerCount));
+                RaisePropertyChanged(nameof(HaveTransitionLayers));
+            }
+        }
+
+        /// <summary>
+        /// Gets if have transition layers
+        /// </summary>
+        public bool HaveTransitionLayers => _transitionLayerCount > 0;
+
+        /// <summary>
+        /// Gets the maximum transition layers this layer collection supports
+        /// </summary>
+        public uint MaximumPossibleTransitionLayerCount
+        {
+            get
+            {
+                if (BottomLayerCount == 0) return 0;
+                if (LayerManager.Layers is null) return uint.MaxValue;
+                int layerCount = (int)LayerCount - BottomLayerCount - 1;
+                if (layerCount <= 0) return 0;
+                return (uint)layerCount;
             }
         }
 
@@ -1785,10 +1864,10 @@ namespace UVtools.Core.FileFormats
             get
             {
                 float speed = float.MaxValue;
-                if (BottomLiftSpeed > 0)     speed = Math.Min(speed, BottomLiftSpeed);
-                if (BottomLiftSpeed2 > 0)    speed = Math.Min(speed, BottomLiftSpeed2);
-                if (BottomRetractSpeed > 0)  speed = Math.Min(speed, BottomRetractSpeed);
-                if (BottomRetractSpeed2 > 0) speed = Math.Min(speed, BottomRetractSpeed2);
+                if (BottomLiftSpeed > 0) speed = Math.Min(speed, BottomLiftSpeed);
+                if (CanUseBottomLiftSpeed2 && BottomLiftSpeed2 > 0) speed = Math.Min(speed, BottomLiftSpeed2);
+                if (CanUseBottomRetractSpeed && BottomRetractSpeed > 0) speed = Math.Min(speed, BottomRetractSpeed);
+                if (CanUseBottomRetractSpeed2 && BottomRetractSpeed2 > 0) speed = Math.Min(speed, BottomRetractSpeed2);
                 if (Math.Abs(speed - float.MaxValue) < 0.01) return 0;
 
                 return speed;
@@ -1803,10 +1882,10 @@ namespace UVtools.Core.FileFormats
             get
             {
                 float speed = float.MaxValue;
-                if (LiftSpeed > 0)     speed = Math.Min(speed, LiftSpeed);
-                if (LiftSpeed2 > 0)    speed = Math.Min(speed, LiftSpeed2);
-                if (RetractSpeed > 0)  speed = Math.Min(speed, RetractSpeed);
-                if (RetractSpeed2 > 0) speed = Math.Min(speed, RetractSpeed2);
+                if (LiftSpeed > 0) speed = Math.Min(speed, LiftSpeed);
+                if (CanUseLiftSpeed2 && LiftSpeed2 > 0) speed = Math.Min(speed, LiftSpeed2);
+                if (CanUseRetractSpeed && RetractSpeed > 0) speed = Math.Min(speed, RetractSpeed);
+                if (CanUseRetractSpeed2 && RetractSpeed2 > 0) speed = Math.Min(speed, RetractSpeed2);
                 if (Math.Abs(speed - float.MaxValue) < 0.01) return 0;
 
                 return speed;
@@ -1837,9 +1916,9 @@ namespace UVtools.Core.FileFormats
             get
             {
                 float speed = BottomLiftSpeed;
-                speed = Math.Max(speed, BottomLiftSpeed2);
-                speed = Math.Max(speed, BottomRetractSpeed);
-                speed = Math.Max(speed, BottomRetractSpeed2);
+                if (CanUseBottomLiftSpeed2) speed = Math.Max(speed, BottomLiftSpeed2);
+                if (CanUseBottomRetractSpeed) speed = Math.Max(speed, BottomRetractSpeed);
+                if (CanUseBottomRetractSpeed2) speed = Math.Max(speed, BottomRetractSpeed2);
 
                 return speed;
             }
@@ -1853,9 +1932,9 @@ namespace UVtools.Core.FileFormats
             get
             {
                 float speed = LiftSpeed;
-                speed = Math.Max(speed, LiftSpeed2);
-                speed = Math.Max(speed, RetractSpeed);
-                speed = Math.Max(speed, RetractSpeed2);
+                if (CanUseLiftSpeed2) speed = Math.Max(speed, LiftSpeed2);
+                if (CanUseRetractSpeed) speed = Math.Max(speed, RetractSpeed);
+                if (CanUseRetractSpeed2) speed = Math.Max(speed, RetractSpeed2);
 
                 return speed;
             }
@@ -1867,6 +1946,7 @@ namespace UVtools.Core.FileFormats
         public float MaximumSpeed => Math.Max(MaximumBottomSpeed, MaximumNormalSpeed);
 
         public bool CanUseBottomLayerCount => HavePrintParameterModifier(PrintParameterModifier.BottomLayerCount);
+        public bool CanUseTransitionLayerCount => HavePrintParameterModifier(PrintParameterModifier.TransitionLayerCount);
 
         public bool CanUseBottomLightOffDelay => HavePrintParameterModifier(PrintParameterModifier.BottomLightOffDelay);
         public bool CanUseLightOffDelay => HavePrintParameterModifier(PrintParameterModifier.LightOffDelay);
@@ -2488,9 +2568,25 @@ namespace UVtools.Core.FileFormats
             )
             {
                 LayerManager.RebuildLayersProperties(false, e.PropertyName);
+                if(e.PropertyName 
+                   is nameof(BottomLayerCount) 
+                   or nameof(BottomExposureTime)
+                   or nameof(ExposureTime)
+                   && TransitionLayerType == TransitionLayerTypes.Software
+                   ) ResetCurrentTransitionLayers(false);
+                
+                if(e.PropertyName 
+                   is not nameof(BottomLightPWM) 
+                   and not nameof(LightPWM)
+                   ) UpdatePrintTimeQueued();
 
-                if(e.PropertyName != nameof(BottomLightPWM) && e.PropertyName != nameof(LightPWM))
-                    UpdatePrintTimeQueued();
+                return;
+            }
+
+            // Fix transition layers times in software mode
+            if (e.PropertyName is nameof(TransitionLayerCount) && TransitionLayerType == TransitionLayerTypes.Software)
+            {
+                ResetCurrentTransitionLayers();
                 return;
             }
         }
@@ -3005,6 +3101,47 @@ namespace UVtools.Core.FileFormats
         }
 
         /// <summary>
+        /// Re-set exposure time to the transition layers
+        /// </summary>
+        /// <param name="resetExposureTimes">True to default all the previous transition layers exposure time, otherwise false</param>
+        public void ResetCurrentTransitionLayers(bool resetExposureTimes = true)
+        {
+            if (TransitionLayerType != TransitionLayerTypes.Software) return;
+            SetTransitionLayers(TransitionLayerCount, resetExposureTimes);
+        }
+
+        /// <summary>
+        /// Set transition layers and exposure times, but do not set that count to file property <see cref="TransitionLayerCount"/>
+        /// </summary>
+        /// <param name="transitionLayerCount">Number of transition layers to set</param>
+        /// <param name="resetExposureTimes">True to default all the previous transition layers exposure time, otherwise false</param>
+        public void SetTransitionLayers(ushort transitionLayerCount, bool resetExposureTimes = true)
+        {
+            if (resetExposureTimes)
+            {
+                for (uint layerIndex = BottomLayerCount; layerIndex < LayerCount; layerIndex++)
+                {
+                    var layer = this[layerIndex];
+                    if (layer.ExposureTime == ExposureTime) break; // First equal layer, transition ended
+
+                    layer.ExposureTime = ExposureTime;
+                }
+            }
+
+            if (transitionLayerCount == 0) return;
+
+            float increment = Math.Max((BottomExposureTime - ExposureTime) / (transitionLayerCount + 1), 0f);
+            if (increment <= 0) return;
+
+            uint appliedLayers = 0;
+            for (uint layerIndex = BottomLayerCount; appliedLayers < transitionLayerCount && layerIndex < LayerCount; layerIndex++)
+            {
+                appliedLayers++;
+                this[layerIndex].ExposureTime = Math.Clamp(BottomExposureTime - (increment * appliedLayers), ExposureTime, BottomExposureTime);
+            }
+        }
+
+        /// <summary>
         /// Get height in mm from layer height
         /// </summary>
         /// <param name="layerIndex"></param>
@@ -3050,6 +3187,11 @@ namespace UVtools.Core.FileFormats
             if (PrintParameterModifiers.Contains(PrintParameterModifier.BottomLayerCount))
             {
                 PrintParameterModifier.BottomLayerCount.Value = BottomLayerCount;
+            }
+
+            if (PrintParameterModifiers.Contains(PrintParameterModifier.TransitionLayerCount))
+            {
+                PrintParameterModifier.TransitionLayerCount.Value = TransitionLayerCount;
             }
 
             if (PrintParameterModifiers.Contains(PrintParameterModifier.BottomLightOffDelay))
@@ -3272,6 +3414,9 @@ namespace UVtools.Core.FileFormats
             if (ReferenceEquals(modifier, PrintParameterModifier.BottomLayerCount))
                 return BottomLayerCount;
 
+            if (ReferenceEquals(modifier, PrintParameterModifier.TransitionLayerCount))
+                return TransitionLayerCount;
+
             if (ReferenceEquals(modifier, PrintParameterModifier.BottomLightOffDelay))
                 return BottomLightOffDelay;
             if (ReferenceEquals(modifier, PrintParameterModifier.LightOffDelay))
@@ -3350,6 +3495,12 @@ namespace UVtools.Core.FileFormats
             if (ReferenceEquals(modifier, PrintParameterModifier.BottomLayerCount))
             {
                 BottomLayerCount = (ushort)value;
+                return true;
+            }
+
+            if (ReferenceEquals(modifier, PrintParameterModifier.TransitionLayerCount))
+            {
+                TransitionLayerCount = (ushort)value;
                 return true;
             }
 
@@ -3746,6 +3897,7 @@ namespace UVtools.Core.FileFormats
                 slicerFile.AntiAliasing = ValidateAntiAliasingLevel();
                 slicerFile.LayerCount = LayerManager.LayerCount;
                 slicerFile.BottomLayerCount = BottomLayerCount;
+                slicerFile.TransitionLayerCount = TransitionLayerCount;
                 slicerFile.LayerHeight = LayerHeight;
                 slicerFile.ResolutionX = ResolutionX;
                 slicerFile.ResolutionY = ResolutionY;

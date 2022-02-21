@@ -229,7 +229,7 @@ namespace UVtools.Core.FileFormats
                         using var stream = entry.Open();
                         ManifestFile = (GenericZipManifest) serializer.Deserialize(stream);
                     }
-                    catch (Exception e)
+                    catch (Exception)
                     {
                         // Not required
                         //Clear();

@@ -154,6 +154,18 @@ namespace UVtools.Core.Layers
         public bool IsNormalLayer => !IsBottomLayer;
 
         /// <summary>
+        /// Gets if this layer is also an transition layer
+        /// </summary>
+        public bool IsTransitionLayer
+        {
+            get
+            {
+                if (SlicerFile is null) return false;
+                return SlicerFile.TransitionLayerCount <= Number;
+            }
+        }
+
+        /// <summary>
         /// Gets the previous layer, returns null if no previous layer
         /// </summary>
         public Layer PreviousLayer

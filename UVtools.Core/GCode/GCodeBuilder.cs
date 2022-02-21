@@ -678,10 +678,10 @@ namespace UVtools.Core.GCode
                     switch (GCodePositioningType)
                     {
                         case GCodePositioningTypes.Absolute:
-                            AppendMoveGx(layer.PositionZ, lastZPosition < layer.PositionZ ? Math.Max(liftSpeed, liftSpeed2) : Math.Max(retractSpeed, retractSpeed2));
+                            AppendMoveGx(layer.PositionZ, lastZPosition < layer.PositionZ ? liftSpeed : retractSpeed);
                             break;
                         case GCodePositioningTypes.Partial:
-                            AppendMoveGx(Layer.RoundHeight(layer.PositionZ - lastZPosition), lastZPosition < layer.PositionZ ? Math.Max(liftSpeed, liftSpeed2) : Math.Max(retractSpeed, retractSpeed2));
+                            AppendMoveGx(Layer.RoundHeight(layer.PositionZ - lastZPosition), lastZPosition < layer.PositionZ ? liftSpeed : retractSpeed);
                             break;
                     }
 
@@ -899,6 +899,7 @@ namespace UVtools.Core.GCode
                         var waitTime = float.Parse(match.Groups[1].Value);
 
                         if (layerBlock.PositionZ.HasValue &&
+                            layerBlock.LiftHeight.HasValue &&
                             !layerBlock.RetractSpeed.HasValue) // Must be wait time after lift, if not, don't blame me!
                         {
                             layerBlock.WaitTimeAfterLift ??= 0;
@@ -922,8 +923,7 @@ namespace UVtools.Core.GCode
 
                         if (layerBlock.IsAfterLightOff)
                         {
-                            if (!layerBlock.WaitTimeBeforeCure
-                                .HasValue) // Novamaker fix, delay on last line, broke logic but safer
+                            if (!layerBlock.WaitTimeBeforeCure.HasValue) // Novamaker fix, delay on last line, broke logic but safer
                             {
                                 layerBlock.WaitTimeBeforeCure ??= 0;
                                 layerBlock.WaitTimeBeforeCure += ConvertToSeconds(waitTime);

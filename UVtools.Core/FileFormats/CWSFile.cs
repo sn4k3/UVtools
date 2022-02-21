@@ -854,7 +854,7 @@ namespace UVtools.Core.FileFormats
                 GCode.ParseLayersFromGCode(this);
 
                 var firstLayer = FirstLayer;
-                if (firstLayer is not null)
+                if (firstLayer is not null && DecodeType == FileDecodeType.Full)
                 {
                     if (Printer == PrinterType.Unknown)
                     {

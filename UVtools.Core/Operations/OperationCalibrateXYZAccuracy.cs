@@ -802,6 +802,7 @@ namespace UVtools.Core.Operations
                 SlicerFile.BottomExposureTime = (float)BottomExposure;
                 SlicerFile.ExposureTime = (float)NormalExposure;
                 SlicerFile.BottomLayerCount = BottomLayers;
+                SlicerFile.TransitionLayerCount = 0;
                 SlicerFile.LayerManager.Layers = newLayers;
             }, true);
             

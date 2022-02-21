@@ -283,7 +283,7 @@
                 return 0;
 
             //List<T>? cluster = null;
-            var clusterIndex = -1;
+            //var clusterIndex = -1;
             var removedCount = 0;
 
             using (BlockReentrancy())

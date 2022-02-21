@@ -1,5 +1,43 @@
 # Changelog
 
+## 21/02/2022 - v2.29.0
+
+- **File formats:**
+   - (Add) Transition layer count to the supported files and auto compute transition time on corresponding layers in software mode
+   - (Add) `HaveTransitionLayers`, `TransitionLayersType`, `BottomLayers`, `NormalLayers`, `TransitionLayers`, `TsmcLayers` properties
+   - (Add) Layer: `IsTransitionLayer` property
+   - (Add) SL1: Keyword `TransitionLayerCount_xxx` - Sets the number of transition layers
+   - (Improvement) CTB, PHZ, FDG: Implement the `ModifiedTimestampMinutes` field, it was the MysteriousId before as an unknown field
+   - (Fix) CWS: Open in partial mode will cause an exception and prevent file from load
+- **CCode:**
+   - (Add) Allow inverse lifts to work as an retract
+   - (Fix) Parsing of WaitTimeAfterLift was incorrect when lacking a lift sequence
+   - (Fix) Layers lacking an exposure time was defaulting to global time, now defaults to 0
+   - (Fix) Layers without a LED ON (M106) was setting `LightPWM` to the max value (255), now defaults to 0
+- **Tools:**
+   - **Timelapse:**
+      - (Add) Information: Raise Layer count equivalence 
+      - (Add) Information: Additional lifts to be generated
+      - (Add) Option: Ensure the last layer - If enabled, it will generate an obligatory layer to cover the last layer
+      - (Improvement) Optimize lift for virtual layer mode, allowing set a slow and fast lift / retract by using another virtual layyer to emulate a lift
+      - (Improvement) Allow to define slow and fast speed for virtual layer mode even if TSMC isn't supported
+   - (Add) Fade exposure time: Setting 'Disable firmware transition layers' - Attempt to disable firmware strict transition layers in favor of this tool
+   - (Add) Calibration tests: Attempt to auto disable the firmware transifiton layers
+   - (Change) Edit print parameters: Allow set `BottomLiftHeight` and `LiftHeight` to 0mm
+- **UI:**
+   - (Improvement) Disallow drop files into UI when is processing data / disabled and prevent crashing from that action
+   - (Improvement) Information tab visibility and MinHeight for data grids
+   - (Improvement) Hide/show GCode tab when necessary (dependent on file format)
+   - (Improvement) The 'save as' will show the new file into 'Open recent' files
+- **PrusaSlicer printers:**
+   - (Add) Elegoo Jupiter
+   - (Add) EPAX X1 4KS
+   - (Add) EPAX DX1 Pro
+   - (Add) EPAX DX10 Pro 5K
+   - (Add) EPAX DX10 Pro 8K
+   - (Add) EPAX E10 8K
+   - (Add) EPAX X133 6K
+
 ## 15/02/2022 - v2.28.1
 
 - (Add) File - Terminal: Inject C# code into UVtools with an interactive terminal
