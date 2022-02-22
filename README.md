@@ -74,7 +74,7 @@ But also, i need victims for test subject. Proceed at your own risk!
 - Photon (Chitubox)
 - Photons (Chitubox)
 - CBDDLP (Chitubox)
-- CBT (Chitubox)
+- CTB (Chitubox)
 - PHZ (Chitubox)
 - FDG (Voxelab)
 - PWS (Photon Workshop)
