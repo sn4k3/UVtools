@@ -10,35 +10,34 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 
-namespace UVtools.Core.Layers
+namespace UVtools.Core.Layers;
+
+public sealed class IssueOfPoints : Issue
 {
-    public sealed class IssueOfPoints : Issue
+    /// <summary>
+    /// Gets the points containing the coordinates of the issue
+    /// </summary>
+    public Point[] Points { get; init; }
+
+    public IssueOfPoints(Layer layer, IEnumerable<Point> points, Rectangle boundingRectangle = default) : base(layer, boundingRectangle, points.Count())
     {
-        /// <summary>
-        /// Gets the points containing the coordinates of the issue
-        /// </summary>
-        public Point[] Points { get; init; }
+        Points = points.ToArray();
+        PixelsCount = (uint)Points.Length;
+        FirstPoint = Points[0];
+    }
 
-        public IssueOfPoints(Layer layer, IEnumerable<Point> points, Rectangle boundingRectangle = default) : base(layer, boundingRectangle, points.Count())
-        {
-            Points = points.ToArray();
-            PixelsCount = (uint)Points.Length;
-            FirstPoint = Points[0];
-        }
+    private bool Equals(IssueOfPoints other)
+    {
+        return Points.SequenceEqual(other.Points);
+    }
 
-        private bool Equals(IssueOfPoints other)
-        {
-            return Points.SequenceEqual(other.Points);
-        }
+    public override bool Equals(object? obj)
+    {
+        return ReferenceEquals(this, obj) || obj is IssueOfPoints other && Equals(other);
+    }
 
-        public override bool Equals(object obj)
-        {
-            return ReferenceEquals(this, obj) || obj is IssueOfPoints other && Equals(other);
-        }
-
-        public override int GetHashCode()
-        {
-            return (Points != null ? Points.GetHashCode() : 0);
-        }
+    public override int GetHashCode()
+    {
+        return (Points != null ? Points.GetHashCode() : 0);
     }
 }

@@ -2,6 +2,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:controls="clr-namespace:UVtools.WPF.Controls"
         mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="450"
         x:Class="UVtools.WPF.Windows.VersionSelectorWindow"
         CanResize="False"
@@ -25,19 +26,16 @@
 
         <Border DockPanel.Dock="Bottom" Classes="FooterActions" Margin="-10" Padding="10,15">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="5">
-                <Button Command="{Binding SelectVersion}" IsDefault="True">
-                    <StackPanel Orientation="Horizontal" Spacing="5">
-                        <Image Source="/Assets/Icons/accept-16x16.png"/>
-                        <TextBlock Text="{Binding Version, StringFormat=Select v{0}}" VerticalAlignment="Center"/>
-                    </StackPanel>
-                </Button>
+				<controls:ButtonWithIcon Command="{Binding SelectVersion}" IsDefault="True"
+                                         Icon="fas fa-check"
+                                         Text="{Binding Version, StringFormat=Select v{0}}">
+                </controls:ButtonWithIcon>
                 <Button Content="Use the default" Command="{Binding SelectDefault}"/>
-                <Button Command="{Binding Close}" IsCancel="True">
-                    <StackPanel Orientation="Horizontal" Spacing="5">
-                        <Image Source="/Assets/Icons/exit-16x16.png"/>
-                        <TextBlock Text="Cancel" VerticalAlignment="Center"/>
-                    </StackPanel>
-                </Button>
+                <controls:ButtonWithIcon IsCancel="True"
+                                         Icon="fas fa-sign-out-alt"
+                                         Text="Cancel"
+                                         Command="{Binding Close}">
+                </controls:ButtonWithIcon>
             </StackPanel>
         </Border>
 

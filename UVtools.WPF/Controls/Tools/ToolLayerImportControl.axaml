@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:controls="clr-namespace:UVtools.WPF.Controls"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="UVtools.WPF.Controls.Tools.ToolLayerImportControl">
 
@@ -82,43 +83,36 @@
     <Border BorderBrush="Gray" BorderThickness="1" Padding="5">
       <Grid>
         <StackPanel Spacing="5" Orientation="Horizontal">
-          <Button Padding="5" Command="{Binding AddFiles}">
-            <StackPanel Spacing="5" Orientation="Horizontal">
-              <TextBlock Text="Add"/>
-              <Image Source="/Assets/Icons/plus-16x16.png"/>
-            </StackPanel>
-          </Button>
-          <Button
-            Padding="5"
-            IsEnabled="{Binding #FilesListBox.SelectedItems.Count}"
-            Command="{Binding RemoveFiles}">
-            <StackPanel Spacing="5" Orientation="Horizontal">
-              <TextBlock Text="Remove"/>
-              <Image Source="/Assets/Icons/minus-16x16.png"/>
-            </StackPanel>
-          </Button>
+          <controls:ButtonWithIcon Padding="5" 
+                                   Command="{Binding AddFiles}"
+                                   Text="Add"
+                                   Spacing="5"
+                                   Icon="fas fa-plus"/>
+
+          <controls:ButtonWithIcon Padding="5"
+                                   IsEnabled="{Binding #FilesListBox.SelectedItems.Count}"
+                                   Command="{Binding RemoveFiles}"
+                                   Text="Remove"
+                                   Spacing="5"
+                                   Icon="fas fa-minus"/>
         </StackPanel>
 
         <StackPanel
           HorizontalAlignment="Right"
           Spacing="5" Orientation="Horizontal">
-          <Button Padding="5" 
+          <controls:ButtonWithIcon Padding="5" 
                   IsEnabled="{Binding Operation.Files.Count}"
-                  Command="{Binding Operation.Sort}">
-            <StackPanel Spacing="5" Orientation="Horizontal">
-              <TextBlock Text="Sort by file name"/>
-              <Image Source="/Assets/Icons/sort-alpha-up-16x16.png"/>
-            </StackPanel>
-          </Button>
+                  Command="{Binding Operation.Sort}"
+                  Text="Sort by file name"
+                  Spacing="5"
+                  Icon="fas fa-sort-alpha-up"/>
 
-          <Button 
+          <controls:ButtonWithIcon
             IsEnabled="{Binding Operation.Files.Count}"
-            Padding="5" Command="{Binding ClearFiles}">
-            <StackPanel Spacing="5" Orientation="Horizontal">
-              <TextBlock Text="Clear"/>
-              <Image Source="/Assets/Icons/delete-16x16.png"/>
-            </StackPanel>
-          </Button>
+            Padding="5" Command="{Binding ClearFiles}"
+            Text="Clear"
+            Spacing="5"
+            Icon="fas fa-times"/>
 
           <TextBlock
             VerticalAlignment="Center"

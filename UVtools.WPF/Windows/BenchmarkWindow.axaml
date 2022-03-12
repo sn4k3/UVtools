@@ -22,7 +22,7 @@
     Auto"
     >
   <Border
-    Background="WhiteSmoke"
+      Background="{DynamicResource LightBackground}"
     Padding="10"
     BorderBrush="Black"
     BorderThickness="1"

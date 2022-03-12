@@ -221,9 +221,6 @@
         <Component Id="owc0D5E901B0EDC9AC66EDED7744C9C0EC4" Guid="bf900338-6ac3-e652-0358-b6c5a433ead1" Win64="yes">
           <File Id="owf0D5E901B0EDC9AC66EDED7744C9C0EC4" Source="$(var.SourceDir)\BouncyCastle.Crypto.dll" KeyPath="yes" />
         </Component>
-        <Component Id="owc3D4C6D44ECDB03E5FE1F04B44BCF854F" Guid="7357d916-7bf8-aecc-ec52-30bed411500d" Win64="yes">
-          <File Id="owf3D4C6D44ECDB03E5FE1F04B44BCF854F" Source="$(var.SourceDir)\clrcompression.dll" KeyPath="yes" />
-        </Component>
         <Component Id="owc1EB8A6523152350CEBC63B9D1BC2930F" Guid="a49af45a-fa09-479b-2625-4fdd580aa598" Win64="yes">
           <File Id="owf1EB8A6523152350CEBC63B9D1BC2930F" Source="$(var.SourceDir)\clretwrc.dll" KeyPath="yes" />
         </Component>
@@ -307,9 +304,6 @@
         </Component>
         <Component Id="owc7609DFEE03B95E830FD72B0699C9CF8C" Guid="c7b987b7-1a3c-0d2c-7831-ad6f4c3871e7" Win64="yes">
           <File Id="owf7609DFEE03B95E830FD72B0699C9CF8C" Source="$(var.SourceDir)\Microsoft.Win32.SystemEvents.dll" KeyPath="yes" />
-        </Component>
-        <Component Id="owc14CB9EF1BBF3C31A43771E2849BBB039" Guid="785bdc3f-43ca-90d5-d8be-40de895dae62" Win64="yes">
-          <File Id="owf14CB9EF1BBF3C31A43771E2849BBB039" Source="$(var.SourceDir)\MoreLinq.dll" KeyPath="yes" />
         </Component>
         <Component Id="owc6F31DEF09608AA645959666A4CB7FBBC" Guid="c94570a5-5bb4-a53f-e12f-9581bddf7d08" Win64="yes">
           <File Id="owf6F31DEF09608AA645959666A4CB7FBBC" Source="$(var.SourceDir)\mscordaccore.dll" KeyPath="yes" />
@@ -1137,6 +1131,27 @@
               <Component Id="owc5A0969A08E1AC292A7F06D07A9C219FC" Guid="c767b03e-f767-4482-621d-04b79c6735f9" Win64="yes">
                 <File Id="owf5A0969A08E1AC292A7F06D07A9C219FC" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Zortrax Inkspire.ini" KeyPath="yes" />
               </Component>
+              <Component Id="owc9FB83579A8F84D6F9FF9A9A8484A58EB" Guid="9FB83579-A8F8-4D6F-9FF9-A9A8484A58EB">
+                <File Id="owf9FB83579A8F84D6F9FF9A9A8484A58EB" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Elegoo Jupiter.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owc82970A1CD8C44090848360459C2A215F" Guid="82970A1C-D8C4-4090-8483-60459C2A215F">
+                <File Id="owf82970A1CD8C44090848360459C2A215F" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\EPAX DX1 PRO.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owc6EDEFD442039448C9136490D663E5E61" Guid="6EDEFD44-2039-448C-9136-490D663E5E61">
+                <File Id="owf6EDEFD442039448C9136490D663E5E61" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\EPAX DX10 Pro 5K.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owc842C8C8131634222B3AB4A8AE42EA416" Guid="842C8C81-3163-4222-B3AB-4A8AE42EA416">
+                <File Id="owf842C8C8131634222B3AB4A8AE42EA416" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\EPAX DX10 Pro 8K.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owc318341AC165041A4B1B4EB091AE038D4" Guid="318341AC-1650-41A4-B1B4-EB091AE038D4">
+                <File Id="owf318341AC165041A4B1B4EB091AE038D4" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\EPAX E10 8K.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owcA62B68A4B6C441CFAE564C091A135E47" Guid="A62B68A4-B6C4-41CF-AE56-4C091A135E47">
+                <File Id="owfA62B68A4B6C441CFAE564C091A135E47" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Epax X1 4KS.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owc935F38E5C9A44BB897F2C3B7EF7EED98" Guid="935F38E5-C9A4-4BB8-97F2-C3B7EF7EED98">
+                <File Id="owf935F38E5C9A44BB897F2C3B7EF7EED98" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\EPAX X133 6K.ini" KeyPath="yes" />
+              </Component>
             </Directory>
             <Directory Id="owd324203F33CD6B2D491618D3D363F997F" Name="sla_print">
               <Component Id="owc988205CB4C2FC6EA3D41704B657C5681" Guid="5dd3f394-0e58-76db-f891-78c219b5339e">
@@ -1410,8 +1425,29 @@
         <Component Id="owc2B1C136C44C740F48CDFE91A80F48B4B" Guid="2B1C136C-44C7-40F4-8CDF-E91A80F48B4B">
           <File Id="owf2B1C136C44C740F48CDFE91A80F48B4B" Source="$(var.SourceDir)\opencv_videoio_ffmpeg455_64.dll" KeyPath="yes" />
         </Component>
-        <Component Id="owc32E45984571E4D3293714751B0645034" Guid="32E45984-571E-4D32-9371-4751B0645034">
-          <File Id="owf32E45984571E4D3293714751B0645034" Source="$(var.SourceDir)\mscordaccore_amd64_amd64_5.0.1422.5710.dll" KeyPath="yes" />
+        <Component Id="owc8DBF076FA26C4EC39811CAD12FD3937C" Guid="8DBF076F-A26C-4EC3-9811-CAD12FD3937C">
+          <File Id="owf8DBF076FA26C4EC39811CAD12FD3937C" Source="$(var.SourceDir)\api-ms-win-core-fibers-l1-1-0.dll" KeyPath="yes" />
+        </Component>
+        <Component Id="owc04789579CAEC4E9D884765B39BA4BC5D" Guid="04789579-CAEC-4E9D-8847-65B39BA4BC5D">
+          <File Id="owf04789579CAEC4E9D884765B39BA4BC5D" Source="$(var.SourceDir)\mscordaccore_amd64_amd64_6.0.322.12309.dll" KeyPath="yes" />
+        </Component>
+        <Component Id="owcF431B2B5B6264D78AAFA361A07841A68" Guid="F431B2B5-B626-4D78-AAFA-361A07841A68">
+          <File Id="owfF431B2B5B6264D78AAFA361A07841A68" Source="$(var.SourceDir)\msquic.dll" KeyPath="yes" />
+        </Component>
+        <Component Id="owcE030A605EE934F1B985D02784D2973A2" Guid="E030A605-EE93-4F1B-985D-02784D2973A2">
+          <File Id="owfE030A605EE934F1B985D02784D2973A2" Source="$(var.SourceDir)\Projektanker.Icons.Avalonia.dll" KeyPath="yes" />
+        </Component>
+        <Component Id="owc753E17D7CA9541B5944BC3F23884494C" Guid="753E17D7-CA95-41B5-944B-C3F23884494C">
+          <File Id="owf753E17D7CA9541B5944BC3F23884494C" Source="$(var.SourceDir)\Projektanker.Icons.Avalonia.FontAwesome.dll" KeyPath="yes" />
+        </Component>
+        <Component Id="owc76C7A5596AF7490AAA0F02BD144948E5" Guid="76C7A559-6AF7-490A-AA0F-02BD144948E5">
+          <File Id="owf76C7A5596AF7490AAA0F02BD144948E5" Source="$(var.SourceDir)\Projektanker.Icons.Avalonia.MaterialDesign.dll" KeyPath="yes" />
+        </Component>
+        <Component Id="owc168F20362B05422CB839BE56376CE621" Guid="168F2036-2B05-422C-B839-BE56376CE621">
+          <File Id="owf168F20362B05422CB839BE56376CE621" Source="$(var.SourceDir)\System.IO.Compression.Native.dll" KeyPath="yes" />
+        </Component>
+        <Component Id="owc9C1F0C0351694913958CEBFB4D988C2D" Guid="9C1F0C03-5169-4913-958C-EBFB4D988C2D">
+          <File Id="owf9C1F0C0351694913958CEBFB4D988C2D" Source="$(var.SourceDir)\System.Net.Quic.dll" KeyPath="yes" />
         </Component>
       </Directory>
       <Directory Id="ProgramMenuFolder">

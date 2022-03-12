@@ -6,6 +6,7 @@
  *  of this license document, but changing it is not allowed.
  */
 
+using Emgu.CV;
 using System;
 using System.Drawing;
 using System.IO;
@@ -13,634 +14,635 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
-using Emgu.CV;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Layers;
 using UVtools.Core.Objects;
 
-namespace UVtools.Core.Operations
+namespace UVtools.Core.Operations;
+
+[Serializable]
+public abstract class Operation : BindableBase, IDisposable
 {
-    [Serializable]
-    public abstract class Operation : BindableBase, IDisposable
+    #region Constants
+    public const string NotSupportedMessage = "The current printer and/or file format is not compatible with this tool.";
+    public string NotSupportedTitle => $"{Title} - Unable to run";
+    #endregion
+
+    #region Enums
+
+    public enum OperationImportFrom : byte
     {
-        #region Constants
-        public const string NotSupportedMessage = "The current printer and/or file format is not compatible with this tool.";
-        public string NotSupportedTitle => $"{Title} - Unable to run";
-        #endregion
+        None,
+        Profile,
+        Session,
+        Undo,
+    }
+    #endregion
 
-        #region Enums
+    #region Members
+    private FileFormat _slicerFile = null!;
+    private Rectangle _originalBoundingRectangle;
+    private OperationImportFrom _importedFrom = OperationImportFrom.None;
+    private Rectangle _roi = Rectangle.Empty;
+    private Point[][]? _maskPoints;
+    private uint _layerIndexEnd;
+    private uint _layerIndexStart;
+    private string? _profileName;
+    private bool _profileIsDefault;
+    private Enumerations.LayerRangeSelection _layerRangeSelection = Enumerations.LayerRangeSelection.All;
+    public const byte ClassNameLength = 9;
+    #endregion
 
-        public enum OperationImportFrom : byte
+    #region Properties
+
+    /// <summary>
+    /// Gets or sets from where this option got loaded/imported
+    /// </summary>
+    [XmlIgnore]
+    public OperationImportFrom ImportedFrom
+    {
+        get => _importedFrom;
+        set => RaiseAndSetIfChanged(ref _importedFrom, value);
+    }
+
+    [XmlIgnore]
+    public FileFormat SlicerFile
+    {
+        get => _slicerFile;
+        set
         {
-            None,
-            Profile,
-            Session,
-            Undo,
-        }
-        #endregion
-
-        #region Members
-        private FileFormat _slicerFile;
-        private Rectangle _originalBoundingRectangle;
-        private OperationImportFrom _importedFrom = OperationImportFrom.None;
-        private Rectangle _roi = Rectangle.Empty;
-        private Point[][] _maskPoints;
-        private uint _layerIndexEnd;
-        private uint _layerIndexStart;
-        private string _profileName;
-        private bool _profileIsDefault;
-        private Enumerations.LayerRangeSelection _layerRangeSelection = Enumerations.LayerRangeSelection.All;
-        public const byte ClassNameLength = 9;
-        #endregion
-
-        #region Properties
-
-        /// <summary>
-        /// Gets or sets from where this option got loaded/imported
-        /// </summary>
-        [XmlIgnore]
-        public OperationImportFrom ImportedFrom
-        {
-            get => _importedFrom;
-            set => RaiseAndSetIfChanged(ref _importedFrom, value);
-        }
-
-        [XmlIgnore]
-        public FileFormat SlicerFile
-        {
-            get => _slicerFile;
-            set
-            {
-                if(!RaiseAndSetIfChanged(ref _slicerFile, value)) return;
-                OriginalBoundingRectangle = _slicerFile.BoundingRectangle;
-                InitWithSlicerFile();
-            }
-        }
-
-        [XmlIgnore]
-        public Rectangle OriginalBoundingRectangle
-        {
-            get => _originalBoundingRectangle;
-            private set => RaiseAndSetIfChanged(ref _originalBoundingRectangle, value);
-        }
-
-        [XmlIgnore]
-        public object Tag { get; set; }
-
-        /// <summary>
-        /// Gets the ID name of this operation, this comes from class name with "Operation" removed
-        /// </summary>
-        public string Id => GetType().Name.Remove(0, ClassNameLength);
-
-        public virtual Enumerations.LayerRangeSelection StartLayerRangeSelection => Enumerations.LayerRangeSelection.All;
-
-        /// <summary>
-        /// Gets the last used layer range selection, returns none if custom
-        /// </summary>
-        public Enumerations.LayerRangeSelection LayerRangeSelection
-        {
-            get => _layerRangeSelection;
-            set => RaiseAndSetIfChanged(ref _layerRangeSelection, value);
-        }
-
-        public virtual string LayerRangeString
-        {
-            get
-            {
-                if (LayerRangeSelection == Enumerations.LayerRangeSelection.None)
-                {
-                    return $" [Layers: {LayerIndexStart}-{LayerIndexEnd}]";
-                }
-
-                return $" [Layers: {LayerRangeSelection}]";
-            }
-        }
-
-        /// <summary>
-        /// Gets if the LayerIndexEnd selector is enabled
-        /// </summary>
-        public virtual bool LayerIndexEndEnabled => true;
-
-        /// <summary>
-        /// Gets if this operation should set layer range to the actual layer index on layer preview
-        /// </summary>
-        public virtual bool PassActualLayerIndex => false;
-
-        /// <summary>
-        /// Gets if this operation can run in a file open as partial mode
-        /// </summary>
-        public virtual bool CanRunInPartialMode => false;
-
-        /// <summary>
-        /// Gets if this operation can make use of ROI
-        /// </summary>
-        public virtual bool CanROI => true;
-
-        /// <summary>
-        /// Gets if this operation can make use maskable areas
-        /// </summary>
-        public virtual bool CanMask => CanROI;
-
-        /// <summary>
-        /// Gets if this operation can store profiles
-        /// </summary>
-        public virtual bool CanHaveProfiles => true;
-
-        /// <summary>
-        /// Gets if this operation supports cancellation
-        /// </summary>
-        public virtual bool CanCancel => true;
-
-        /// <summary>
-        /// Gets the title of this operation
-        /// </summary>
-        public virtual string Title => Id;
-
-        /// <summary>
-        /// Gets a descriptive text of this operation
-        /// </summary>
-        public virtual string Description => Id;
-
-        /// <summary>
-        /// Gets the Ok button text
-        /// </summary>
-        public virtual string ButtonOkText => Title;
-
-        /// <summary>
-        /// Gets the confirmation text for the operation
-        /// </summary>
-        public virtual string ConfirmationText => $"Are you sure you want to {Id}";
-
-        /// <summary>
-        /// Gets the progress window title
-        /// </summary>
-        public virtual string ProgressTitle => "Processing items";
-
-        /// <summary>
-        /// Gets the progress action name
-        /// </summary>
-        public virtual string ProgressAction => Id;
-
-        /// <summary>
-        /// Gets if this operation have a action text
-        /// </summary>
-        public bool HaveAction => !string.IsNullOrEmpty(ProgressAction);
-
-        /// <summary>
-        /// Gets the start layer index where operation will starts in
-        /// </summary>
-        public virtual uint LayerIndexStart
-        {
-            get => _layerIndexStart;
-            set
-            {
-                if (SlicerFile is not null)
-                {
-                    value = Math.Min(value, SlicerFile.LastLayerIndex);
-                }
-                if (!RaiseAndSetIfChanged(ref _layerIndexStart, value)) return;
-                RaisePropertyChanged(nameof(LayerRangeCount));
-                RaisePropertyChanged(nameof(LayerRangeHaveBottoms));
-            }
-        }
-
-        /// <summary>
-        /// Gets the end layer index where operation will ends in
-        /// </summary>
-        public virtual uint LayerIndexEnd
-        {
-            get => _layerIndexEnd;
-            set
-            {
-                if (SlicerFile is not null)
-                {
-                    value = Math.Min(value, SlicerFile.LastLayerIndex);
-                }
-                if(!RaiseAndSetIfChanged(ref _layerIndexEnd, value)) return;
-                RaisePropertyChanged(nameof(LayerRangeCount));
-                RaisePropertyChanged(nameof(LayerRangeHaveNormals));
-            }
-        }
-
-        public bool LayerRangeHaveBottoms => LayerIndexStart < (SlicerFile.FirstNormalLayer?.Index ?? 0);
-        public bool LayerRangeHaveNormals => LayerIndexEnd >= (SlicerFile.FirstNormalLayer?.Index ?? 0);
-
-        public uint LayerRangeCount => LayerIndexEnd - LayerIndexStart + 1;
-
-        /// <summary>
-        /// Gets the name for this profile
-        /// </summary>
-        public string ProfileName
-        {
-            get => _profileName;
-            set => RaiseAndSetIfChanged(ref _profileName, value);
-        }
-
-        public bool ProfileIsDefault
-        {
-            get => _profileIsDefault;
-            set => RaiseAndSetIfChanged(ref _profileIsDefault, value);
-        }
-
-        /// <summary>
-        /// Gets or sets an ROI to process this operation
-        /// </summary>
-        [XmlIgnore]
-        public Rectangle ROI
-        {
-            get => _roi;
-            set
-            {
-                if (!CanROI) return;
-                RaiseAndSetIfChanged(ref _roi, value);
-            }
-        }
-
-        public bool HaveROI => !ROI.IsEmpty;
-
-        /// <summary>
-        /// Gets or sets an Mask to process this operation
-        /// </summary>
-        [XmlIgnore]
-        public Point[][] MaskPoints
-        {
-            get => _maskPoints;
-            set
-            {
-                if (!CanMask) return;
-                if(!RaiseAndSetIfChanged(ref _maskPoints, value)) return;
-                //if(HaveMask) ROI = Rectangle.Empty;
-            }
-        }
-
-        public bool HaveMask => _maskPoints is not null && _maskPoints.Length > 0;
-
-        public bool HaveROIorMask => HaveROI || HaveMask;
-
-        /// <summary>
-        /// Gets if this operation have been executed once
-        /// </summary>
-        [XmlIgnore]
-        public bool HaveExecuted { get; private set; }
-
-        /// <summary>
-        /// Gets if this operation have validated at least once
-        /// </summary>
-        [XmlIgnore]
-        public bool IsValidated { get; private set; }
-        #endregion
-
-        #region Constructor
-        protected Operation() { }
-
-        protected Operation(FileFormat slicerFile) : this()
-        {
-            _slicerFile = slicerFile;
+            if(!RaiseAndSetIfChanged(ref _slicerFile, value)) return;
             OriginalBoundingRectangle = _slicerFile.BoundingRectangle;
-            SelectAllLayers();
             InitWithSlicerFile();
         }
-        #endregion
+    }
 
-        #region Methods
+    [XmlIgnore]
+    public Rectangle OriginalBoundingRectangle
+    {
+        get => _originalBoundingRectangle;
+        private set => RaiseAndSetIfChanged(ref _originalBoundingRectangle, value);
+    }
 
-        public bool CanSpawn => string.IsNullOrWhiteSpace(ValidateSpawn());
+    [XmlIgnore]
+    public object? Tag { get; set; }
 
-        /// <summary>
-        /// Gets if this operation can spawn under the <see cref="SlicerFile"/>
-        /// </summary>
-        public virtual string ValidateSpawn() => null;
+    /// <summary>
+    /// Gets the ID name of this operation, this comes from class name with "Operation" removed
+    /// </summary>
+    public string Id => GetType().Name.Remove(0, ClassNameLength);
 
-        /// <summary>
-        /// Gets if this operation can spawn under the <see cref="SlicerFile"/>
-        /// </summary>
-        public bool ValidateSpawn(out string message)
+    public virtual Enumerations.LayerRangeSelection StartLayerRangeSelection => Enumerations.LayerRangeSelection.All;
+
+    /// <summary>
+    /// Gets the last used layer range selection, returns none if custom
+    /// </summary>
+    public Enumerations.LayerRangeSelection LayerRangeSelection
+    {
+        get => _layerRangeSelection;
+        set => RaiseAndSetIfChanged(ref _layerRangeSelection, value);
+    }
+
+    public virtual string LayerRangeString
+    {
+        get
         {
-            message = ValidateSpawn();
-            return string.IsNullOrWhiteSpace(message);
-        }
-
-        public virtual string ValidateInternally()
-        {
-            if (!ValidateSpawn(out var message))
+            if (LayerRangeSelection == Enumerations.LayerRangeSelection.None)
             {
-                return message;
+                return $" [Layers: {LayerIndexStart}-{LayerIndexEnd}]";
             }
-            return null;
-        }
 
-        /// <summary>
-        /// Validates the operation
-        /// </summary>
-        /// <returns>null or empty if validates, otherwise return a string with error message</returns>
-        public string Validate()
-        {
-            IsValidated = true;
-            return ValidateInternally();
+            return $" [Layers: {LayerRangeSelection}]";
         }
+    }
 
-        public bool CanValidate()
-        {
-            return string.IsNullOrWhiteSpace(Validate());
-        }
+    /// <summary>
+    /// Gets if the LayerIndexEnd selector is enabled
+    /// </summary>
+    public virtual bool LayerIndexEndEnabled => true;
 
-        public void SelectAllLayers()
-        {
-            LayerIndexStart = 0;
-            LayerIndexEnd = SlicerFile.LastLayerIndex;
-            LayerRangeSelection = Enumerations.LayerRangeSelection.All;
-        }
+    /// <summary>
+    /// Gets if this operation should set layer range to the actual layer index on layer preview
+    /// </summary>
+    public virtual bool PassActualLayerIndex => false;
 
-        public void SelectCurrentLayer(uint layerIndex)
-        {
-            LayerIndexStart = LayerIndexEnd = layerIndex;
-            LayerRangeSelection = Enumerations.LayerRangeSelection.Current;
-        }
+    /// <summary>
+    /// Gets if this operation can run in a file open as partial mode
+    /// </summary>
+    public virtual bool CanRunInPartialMode => false;
 
-        public void SelectBottomLayers()
-        {
-            LayerIndexStart = 0;
-            LayerIndexEnd = Math.Max(1, SlicerFile.FirstNormalLayer?.Index ?? 1) - 1u;
-            LayerRangeSelection = Enumerations.LayerRangeSelection.Bottom;
-        }
+    /// <summary>
+    /// Gets if this operation can make use of ROI
+    /// </summary>
+    public virtual bool CanROI => true;
 
-        public void SelectNormalLayers()
-        {
-            LayerIndexStart = SlicerFile.FirstNormalLayer?.Index ?? 0;
-            LayerIndexEnd = SlicerFile.LastLayerIndex;
-            LayerRangeSelection = Enumerations.LayerRangeSelection.Normal;
-        }
+    /// <summary>
+    /// Gets if this operation can make use maskable areas
+    /// </summary>
+    public virtual bool CanMask => CanROI;
 
-        public void SelectFirstLayer()
-        {
-            LayerIndexStart = LayerIndexEnd = 0;
-            LayerRangeSelection = Enumerations.LayerRangeSelection.First;
-        }
+    /// <summary>
+    /// Gets if this operation can store profiles
+    /// </summary>
+    public virtual bool CanHaveProfiles => true;
 
-        public void SelectLastLayer()
-        {
-            LayerIndexStart = LayerIndexEnd = SlicerFile.LastLayerIndex; 
-            LayerRangeSelection = Enumerations.LayerRangeSelection.Last;
-        }
+    /// <summary>
+    /// Gets if this operation supports cancellation
+    /// </summary>
+    public virtual bool CanCancel => true;
 
-        public void SelectFirstToCurrentLayer(uint currentLayerIndex)
-        {
-            LayerIndexStart = 0;
-            LayerIndexEnd = Math.Min(currentLayerIndex, SlicerFile.LastLayerIndex);
-        }
+    /// <summary>
+    /// Gets the icon class to show on the UI
+    /// </summary>
+    public virtual string IconClass => null!;
 
-        public void SelectCurrentToLastLayer(uint currentLayerIndex)
-        {
-            LayerIndexStart = Math.Min(currentLayerIndex, SlicerFile.LastLayerIndex);
-            LayerIndexEnd = SlicerFile.LastLayerIndex;
-        }
+    /// <summary>
+    /// Gets the title of this operation
+    /// </summary>
+    public virtual string Title => Id;
 
-        public void SelectLayers(Enumerations.LayerRangeSelection range)
+    /// <summary>
+    /// Gets a descriptive text of this operation
+    /// </summary>
+    public virtual string Description => Id;
+
+    /// <summary>
+    /// Gets the Ok button text
+    /// </summary>
+    public virtual string ButtonOkText => Title;
+
+    /// <summary>
+    /// Gets the confirmation text for the operation
+    /// </summary>
+    public virtual string ConfirmationText => $"Are you sure you want to {Id}";
+
+    /// <summary>
+    /// Gets the progress window title
+    /// </summary>
+    public virtual string ProgressTitle => "Processing items";
+
+    /// <summary>
+    /// Gets the progress action name
+    /// </summary>
+    public virtual string ProgressAction => Id;
+
+    /// <summary>
+    /// Gets if this operation have a action text
+    /// </summary>
+    public bool HaveAction => !string.IsNullOrEmpty(ProgressAction);
+
+    /// <summary>
+    /// Gets the start layer index where operation will starts in
+    /// </summary>
+    public virtual uint LayerIndexStart
+    {
+        get => _layerIndexStart;
+        set
         {
-            switch (range)
+            if (SlicerFile is not null)
             {
-                case Enumerations.LayerRangeSelection.None:
-                    break;
-                case Enumerations.LayerRangeSelection.All:
-                    SelectAllLayers();
-                    break;
-                case Enumerations.LayerRangeSelection.Current:
-                    //SelectCurrentLayer();
-                    break;
-                case Enumerations.LayerRangeSelection.Bottom:
-                    SelectBottomLayers();
-                    break;
-                case Enumerations.LayerRangeSelection.Normal:
-                    SelectNormalLayers();
-                    break;
-                case Enumerations.LayerRangeSelection.First:
-                    SelectFirstLayer();
-                    break;
-                case Enumerations.LayerRangeSelection.Last:
-                    SelectLastLayer();
-                    break;
-                default:
-                    throw new NotImplementedException();
+                value = Math.Min(value, SlicerFile.LastLayerIndex);
             }
+            if (!RaiseAndSetIfChanged(ref _layerIndexStart, value)) return;
+            RaisePropertyChanged(nameof(LayerRangeCount));
+            RaisePropertyChanged(nameof(LayerRangeHaveBottoms));
         }
+    }
+
+    /// <summary>
+    /// Gets the end layer index where operation will ends in
+    /// </summary>
+    public virtual uint LayerIndexEnd
+    {
+        get => _layerIndexEnd;
+        set
+        {
+            if (SlicerFile is not null)
+            {
+                value = Math.Min(value, SlicerFile.LastLayerIndex);
+            }
+            if(!RaiseAndSetIfChanged(ref _layerIndexEnd, value)) return;
+            RaisePropertyChanged(nameof(LayerRangeCount));
+            RaisePropertyChanged(nameof(LayerRangeHaveNormals));
+        }
+    }
+
+    public bool LayerRangeHaveBottoms => LayerIndexStart < (SlicerFile.FirstNormalLayer?.Index ?? 0);
+    public bool LayerRangeHaveNormals => LayerIndexEnd >= (SlicerFile.FirstNormalLayer?.Index ?? 0);
+
+    public uint LayerRangeCount => (uint)Math.Max(0, (int)LayerIndexEnd - LayerIndexStart + 1);
+
+    /// <summary>
+    /// Gets the name for this profile
+    /// </summary>
+    public string? ProfileName
+    {
+        get => _profileName;
+        set => RaiseAndSetIfChanged(ref _profileName, value);
+    }
+
+    public bool ProfileIsDefault
+    {
+        get => _profileIsDefault;
+        set => RaiseAndSetIfChanged(ref _profileIsDefault, value);
+    }
+
+    /// <summary>
+    /// Gets or sets an ROI to process this operation
+    /// </summary>
+    [XmlIgnore]
+    public Rectangle ROI
+    {
+        get => _roi;
+        set
+        {
+            if (!CanROI) return;
+            RaiseAndSetIfChanged(ref _roi, value);
+        }
+    }
+
+    public bool HaveROI => !ROI.IsEmpty;
+
+    /// <summary>
+    /// Gets or sets an Mask to process this operation
+    /// </summary>
+    [XmlIgnore]
+    public Point[][]? MaskPoints
+    {
+        get => _maskPoints;
+        set
+        {
+            if (!CanMask) return;
+            if(!RaiseAndSetIfChanged(ref _maskPoints, value)) return;
+            //if(HaveMask) ROI = Rectangle.Empty;
+        }
+    }
+
+    public bool HaveMask => _maskPoints is not null && _maskPoints.Length > 0;
+
+    public bool HaveROIorMask => HaveROI || HaveMask;
+
+    /// <summary>
+    /// Gets if this operation have been executed once
+    /// </summary>
+    [XmlIgnore]
+    public bool HaveExecuted { get; private set; }
+
+    /// <summary>
+    /// Gets if this operation have validated at least once
+    /// </summary>
+    [XmlIgnore]
+    public bool IsValidated { get; private set; }
+    #endregion
+
+    #region Constructor
+    protected Operation() { }
+
+    protected Operation(FileFormat slicerFile) : this()
+    {
+        _slicerFile = slicerFile;
+        OriginalBoundingRectangle = _slicerFile.BoundingRectangle;
+        SelectAllLayers();
+        InitWithSlicerFile();
+    }
+    #endregion
+
+    #region Methods
+
+    public bool CanSpawn => string.IsNullOrWhiteSpace(ValidateSpawn());
+
+    /// <summary>
+    /// Gets if this operation can spawn under the <see cref="SlicerFile"/>
+    /// </summary>
+    public virtual string? ValidateSpawn() => null;
+
+    /// <summary>
+    /// Gets if this operation can spawn under the <see cref="SlicerFile"/>
+    /// </summary>
+    public bool ValidateSpawn(out string? message)
+    {
+        message = ValidateSpawn();
+        return string.IsNullOrWhiteSpace(message);
+    }
+
+    public virtual string? ValidateInternally()
+    {
+        if (!ValidateSpawn(out var message))
+        {
+            return message;
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// Validates the operation
+    /// </summary>
+    /// <returns>null or empty if validates, otherwise return a string with error message</returns>
+    public string? Validate()
+    {
+        IsValidated = true;
+        return ValidateInternally();
+    }
+
+    public bool CanValidate()
+    {
+        return string.IsNullOrWhiteSpace(Validate());
+    }
+
+    public void SelectAllLayers()
+    {
+        LayerIndexStart = 0;
+        LayerIndexEnd = SlicerFile.LastLayerIndex;
+        LayerRangeSelection = Enumerations.LayerRangeSelection.All;
+    }
+
+    public void SelectCurrentLayer(uint layerIndex)
+    {
+        LayerIndexStart = LayerIndexEnd = layerIndex;
+        LayerRangeSelection = Enumerations.LayerRangeSelection.Current;
+    }
+
+    public void SelectBottomLayers()
+    {
+        LayerIndexStart = 0;
+        LayerIndexEnd = Math.Max(1, SlicerFile.FirstNormalLayer?.Index ?? 1) - 1u;
+        LayerRangeSelection = Enumerations.LayerRangeSelection.Bottom;
+    }
+
+    public void SelectNormalLayers()
+    {
+        LayerIndexStart = SlicerFile.FirstNormalLayer?.Index ?? 0;
+        LayerIndexEnd = SlicerFile.LastLayerIndex;
+        LayerRangeSelection = Enumerations.LayerRangeSelection.Normal;
+    }
+
+    public void SelectFirstLayer()
+    {
+        LayerIndexStart = LayerIndexEnd = 0;
+        LayerRangeSelection = Enumerations.LayerRangeSelection.First;
+    }
+
+    public void SelectLastLayer()
+    {
+        LayerIndexStart = LayerIndexEnd = SlicerFile.LastLayerIndex; 
+        LayerRangeSelection = Enumerations.LayerRangeSelection.Last;
+    }
+
+    public void SelectFirstToCurrentLayer(uint currentLayerIndex)
+    {
+        LayerIndexStart = 0;
+        LayerIndexEnd = Math.Min(currentLayerIndex, SlicerFile.LastLayerIndex);
+    }
+
+    public void SelectCurrentToLastLayer(uint currentLayerIndex)
+    {
+        LayerIndexStart = Math.Min(currentLayerIndex, SlicerFile.LastLayerIndex);
+        LayerIndexEnd = SlicerFile.LastLayerIndex;
+    }
+
+    public void SelectLayers(Enumerations.LayerRangeSelection range)
+    {
+        switch (range)
+        {
+            case Enumerations.LayerRangeSelection.None:
+                break;
+            case Enumerations.LayerRangeSelection.All:
+                SelectAllLayers();
+                break;
+            case Enumerations.LayerRangeSelection.Current:
+                //SelectCurrentLayer();
+                break;
+            case Enumerations.LayerRangeSelection.Bottom:
+                SelectBottomLayers();
+                break;
+            case Enumerations.LayerRangeSelection.Normal:
+                SelectNormalLayers();
+                break;
+            case Enumerations.LayerRangeSelection.First:
+                SelectFirstLayer();
+                break;
+            case Enumerations.LayerRangeSelection.Last:
+                SelectLastLayer();
+                break;
+            default:
+                throw new NotImplementedException();
+        }
+    }
         
 
-        /// <summary>
-        /// Called to init the object when <see cref="SlicerFile"/> changes
-        /// </summary>
-        public virtual void InitWithSlicerFile() { }
+    /// <summary>
+    /// Called to init the object when <see cref="SlicerFile"/> changes
+    /// </summary>
+    public virtual void InitWithSlicerFile() { }
 
-        public void ClearROI()
-        {
-            ROI = Rectangle.Empty;
-        }
-
-        public void ClearROIandMasks()
-        {
-            ClearROI();
-            ClearMasks();
-        }
-
-        public void SetROIIfEmpty(Rectangle roi)
-        {
-            if (HaveROI) return;
-            ROI = roi;
-        }
-
-        public Size GetRoiSizeOrDefault() => GetRoiSizeOrDefault(SlicerFile.Resolution);
-        public Size GetRoiSizeOrDefault(Mat defaultMat) => defaultMat is null ? GetRoiSizeOrDefault() : GetRoiSizeOrDefault(defaultMat.Size);
-        public Size GetRoiSizeOrDefault(Rectangle fallbackRectangle) => GetRoiSizeOrDefault(fallbackRectangle.Size);
-        public Size GetRoiSizeOrDefault(Size fallbackSize)
-        {
-            return HaveROI ? _roi.Size : fallbackSize;
-        }
-
-
-        public Mat GetRoiOrDefault(Mat defaultMat)
-        {
-            return HaveROI && defaultMat.Size != _roi.Size ? defaultMat.Roi(_roi) : defaultMat;
-        }
-
-        public Mat GetRoiOrDefault(Mat defaultMat, Rectangle fallbackRoi)
-        {
-            if (HaveROI && defaultMat.Size != _roi.Size) return defaultMat.Roi(_roi);
-            if (fallbackRoi.IsEmpty) return defaultMat;
-            return defaultMat.Size != fallbackRoi.Size ? defaultMat.Roi(fallbackRoi) : defaultMat;
-        }
-
-        public Mat GetRoiOrVolumeBounds(Mat defaultMat)
-        {
-            return GetRoiOrDefault(defaultMat, _originalBoundingRectangle);
-        }
-
-        public void ClearMasks()
-        {
-            MaskPoints = null;
-        }
-
-        public void SetMasksIfEmpty(Point[][] points)
-        {
-            if (HaveMask) return;
-            MaskPoints = points;
-        }
-
-        public Mat GetMask(Mat mat) => GetMask(_maskPoints, mat);
-
-        public Mat GetMask(Point[][] points, Mat mat)
-        {
-            if (!HaveMask) return null;
-
-            var mask = mat.CreateMask(points);
-            return GetRoiOrDefault(mask);
-        }
-
-        public void ApplyMask(Mat original, Mat result, Mat mask)
-        {
-            if (mask is null) return;
-            var originalRoi = GetRoiOrDefault(original);
-            var resultRoi = result;
-            if (originalRoi.Size != result.Size) // Accept a ROI mat
-            {
-                resultRoi = GetRoiOrDefault(result);
-            }
-
-            if (mask.Size != resultRoi.Size) // Accept a full size mask
-            {
-                mask = GetRoiOrDefault(mask);
-            }
-
-            using var tempMat = originalRoi.Clone();
-            resultRoi.CopyTo(tempMat, mask);
-            tempMat.CopyTo(resultRoi);
-        }
-
-        /// <summary>
-        /// Gets a mask and apply it
-        /// </summary>
-        /// <param name="original">Original unmodified image</param>
-        /// <param name="result">Result image which will also be modified</param>
-        public void ApplyMask(Mat original, Mat result)
-        {
-            using var mask = GetMask(original);
-            ApplyMask(original, result, mask);
-        }
-
-
-        protected virtual bool ExecuteInternally(OperationProgress progress)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool Execute(OperationProgress progress = null)
-        {
-            if (_slicerFile is null) throw new InvalidOperationException($"{Title} can't execute due the lacking of a file parent.");
-            if (_slicerFile.DecodeType == FileFormat.FileDecodeType.Partial && !CanRunInPartialMode) throw new InvalidOperationException($"The file was open in partial mode and the tool \"{Title}\" is unable to run in this mode.\nPlease reload the file in full mode in order to use this tool.");
-            if (!IsValidated)
-            {
-                var msg = Validate();
-                if(!string.IsNullOrWhiteSpace(msg)) throw new InvalidOperationException($"{Title} can't execute due some errors:\n{msg}");
-            }
-            
-            progress ??= new OperationProgress();
-            progress.Reset(ProgressAction, LayerRangeCount);
-            HaveExecuted = true;
-
-            var result = ExecuteInternally(progress);
-
-            progress.Token.ThrowIfCancellationRequested();
-            return result;
-        }
-
-        public async Task<bool> ExecuteAsync(OperationProgress progress = null) => await new Task<bool>(() => Execute(progress));
-
-        public virtual bool Execute(Mat mat, params object[] arguments)
-        {
-            throw new NotImplementedException();
-        }
-
-        public async Task<bool> ExecuteAsync(Mat mat, params object[] arguments) => await new Task<bool>(() => Execute(mat, arguments));
-
-        /// <summary>
-        /// Get the selected layer range in a new array, array index will not match layer index when a range is selected
-        /// </summary>
-        /// <returns></returns>
-        public Layer[] GetSelectedLayerRange()
-        {
-            return LayerRangeCount == SlicerFile.LayerCount 
-                ? SlicerFile.ToArray() 
-                : SlicerFile.Where((_, layerIndex) => layerIndex >= _layerIndexStart && layerIndex <= _layerIndexEnd).ToArray();
-        }
-
-        /// <summary>
-        /// Copy this operation base configuration to another operation.
-        /// Layer range, ROI, Masks
-        /// </summary>
-        /// <param name="operation"></param>
-        public void CopyConfigurationTo(Operation operation)
-        {
-            operation.LayerIndexStart = LayerIndexStart;
-            operation.LayerIndexEnd = LayerIndexEnd;
-            operation.ROI = ROI;
-            operation.MaskPoints = MaskPoints;
-        }
-
-        public void Serialize(string path)
-        {
-            XmlSerializer serializer = new(GetType());
-            using StreamWriter writer = new(path);
-            serializer.Serialize(writer, this);
-        }
-
-        public virtual Operation Clone()
-        {
-            var operation = MemberwiseClone() as Operation;
-            operation.SlicerFile = _slicerFile;
-            return operation;
-        }
-
-        public override string ToString()
-        {
-            if (!string.IsNullOrEmpty(ProfileName)) return ProfileName;
-
-            var result = $"{Title}: {LayerRangeString}";
-            return result;
-        }
-
-        public virtual void Dispose() { GC.SuppressFinalize(this); }
-        #endregion
-
-        #region Static Methods
-
-        public static Operation Deserialize(string path)
-        {
-            if (!File.Exists(path)) return null;
-
-            var fileText = File.ReadAllText(path);
-            var match = Regex.Match(fileText, @"(?:<\/\s*Operation)([a-zA-Z0-9_]+)(?:\s*>)");
-            if (!match.Success) return null;
-            if (match.Groups.Count < 1) return null;
-            var operationName = match.Groups[1].Value;
-            var baseType = typeof(Operation).FullName;
-            if (string.IsNullOrWhiteSpace(baseType)) return null;
-            var classname = baseType + operationName + ", UVtools.Core";
-            var type = Type.GetType(classname);
-            if (type is null) return null;
-
-            return Deserialize(path, type);
-        }
-
-        public static Operation Deserialize(string path, Type type)
-        {
-            XmlSerializer serializer = new(type);
-            using var stream = File.OpenRead(path);
-            var operation = (Operation)serializer.Deserialize(stream);
-            operation.ImportedFrom = OperationImportFrom.Session;
-            return operation;
-        }
-
-        public static Operation Deserialize(string path, Operation operation) => Deserialize(path, operation.GetType());
-
-        #endregion
+    public void ClearROI()
+    {
+        ROI = Rectangle.Empty;
     }
+
+    public void ClearROIandMasks()
+    {
+        ClearROI();
+        ClearMasks();
+    }
+
+    public void SetROIIfEmpty(Rectangle roi)
+    {
+        if (HaveROI) return;
+        ROI = roi;
+    }
+
+    public Size GetRoiSizeOrDefault() => GetRoiSizeOrDefault(SlicerFile.Resolution);
+    public Size GetRoiSizeOrDefault(Mat? defaultMat) => defaultMat is null ? GetRoiSizeOrDefault() : GetRoiSizeOrDefault(defaultMat.Size);
+    public Size GetRoiSizeOrDefault(Rectangle fallbackRectangle) => GetRoiSizeOrDefault(fallbackRectangle.Size);
+    public Size GetRoiSizeOrDefault(Size fallbackSize)
+    {
+        return HaveROI ? _roi.Size : fallbackSize;
+    }
+
+
+    public Mat GetRoiOrDefault(Mat defaultMat)
+    {
+        return HaveROI && defaultMat.Size != _roi.Size ? defaultMat.Roi(_roi) : defaultMat;
+    }
+
+    public Mat GetRoiOrDefault(Mat defaultMat, Rectangle fallbackRoi)
+    {
+        if (HaveROI && defaultMat.Size != _roi.Size) return defaultMat.Roi(_roi);
+        if (fallbackRoi.IsEmpty) return defaultMat;
+        return defaultMat.Size != fallbackRoi.Size ? defaultMat.Roi(fallbackRoi) : defaultMat;
+    }
+
+    public Mat GetRoiOrVolumeBounds(Mat defaultMat)
+    {
+        return GetRoiOrDefault(defaultMat, _originalBoundingRectangle);
+    }
+
+    public void ClearMasks()
+    {
+        MaskPoints = null;
+    }
+
+    public void SetMasksIfEmpty(Point[][] points)
+    {
+        if (HaveMask) return;
+        MaskPoints = points;
+    }
+
+    public Mat? GetMask(Mat mat) => GetMask(_maskPoints, mat);
+
+    public Mat? GetMask(Point[][]? points, Mat mat)
+    {
+        if (!HaveMask) return null;
+
+        var mask = mat.CreateMask(points!);
+        return GetRoiOrDefault(mask);
+    }
+
+    public void ApplyMask(Mat original, Mat result, Mat? mask)
+    {
+        if (mask is null) return;
+        var originalRoi = GetRoiOrDefault(original);
+        var resultRoi = result;
+        if (originalRoi.Size != result.Size) // Accept a ROI mat
+        {
+            resultRoi = GetRoiOrDefault(result);
+        }
+
+        if (mask.Size != resultRoi.Size) // Accept a full size mask
+        {
+            mask = GetRoiOrDefault(mask);
+        }
+
+        using var tempMat = originalRoi.Clone();
+        resultRoi.CopyTo(tempMat, mask);
+        tempMat.CopyTo(resultRoi);
+    }
+
+    /// <summary>
+    /// Gets a mask and apply it
+    /// </summary>
+    /// <param name="original">Original unmodified image</param>
+    /// <param name="result">Result image which will also be modified</param>
+    public void ApplyMask(Mat original, Mat result)
+    {
+        using var mask = GetMask(original);
+        ApplyMask(original, result, mask);
+    }
+
+
+    protected virtual bool ExecuteInternally(OperationProgress progress)
+    {
+        throw new NotImplementedException();
+    }
+
+    public bool Execute(OperationProgress? progress = null)
+    {
+        if (_slicerFile is null) throw new InvalidOperationException($"{Title} can't execute due the lacking of a file parent.");
+        if (_slicerFile.DecodeType == FileFormat.FileDecodeType.Partial && !CanRunInPartialMode) throw new InvalidOperationException($"The file was open in partial mode and the tool \"{Title}\" is unable to run in this mode.\nPlease reload the file in full mode in order to use this tool.");
+        if (!IsValidated)
+        {
+            var msg = Validate();
+            if(!string.IsNullOrWhiteSpace(msg)) throw new InvalidOperationException($"{Title} can't execute due some errors:\n{msg}");
+        }
+            
+        progress ??= new OperationProgress();
+        progress.Reset(ProgressAction, LayerRangeCount);
+        HaveExecuted = true;
+
+        var result = ExecuteInternally(progress);
+
+        progress.Token.ThrowIfCancellationRequested();
+        return result;
+    }
+
+    public async Task<bool> ExecuteAsync(OperationProgress? progress = null) => await new Task<bool>(() => Execute(progress));
+
+    public virtual bool Execute(Mat mat, params object[]? arguments)
+    {
+        throw new NotImplementedException();
+    }
+
+    public async Task<bool> ExecuteAsync(Mat mat, params object[]? arguments) => await new Task<bool>(() => Execute(mat, arguments));
+
+    /// <summary>
+    /// Get the selected layer range in a new array, array index will not match layer index when a range is selected
+    /// </summary>
+    /// <returns></returns>
+    public Layer[] GetSelectedLayerRange()
+    {
+        return LayerRangeCount == SlicerFile.LayerCount 
+            ? SlicerFile.ToArray() 
+            : SlicerFile.Where((_, layerIndex) => layerIndex >= _layerIndexStart && layerIndex <= _layerIndexEnd).ToArray();
+    }
+
+    /// <summary>
+    /// Copy this operation base configuration to another operation.
+    /// Layer range, ROI, Masks
+    /// </summary>
+    /// <param name="operation"></param>
+    public void CopyConfigurationTo(Operation operation)
+    {
+        operation.LayerIndexStart = LayerIndexStart;
+        operation.LayerIndexEnd = LayerIndexEnd;
+        operation.ROI = ROI;
+        operation.MaskPoints = MaskPoints;
+    }
+
+    public void Serialize(string path)
+    {
+        XmlExtensions.SerializeToFile(this, path);
+    }
+
+    public virtual Operation Clone()
+    {
+        var operation = MemberwiseClone() as Operation;
+        operation!.SlicerFile = _slicerFile;
+        return operation;
+    }
+
+    public override string ToString()
+    {
+        if (!string.IsNullOrEmpty(ProfileName)) return ProfileName;
+
+        var result = $"{Title}: {LayerRangeString}";
+        return result;
+    }
+
+    public virtual void Dispose() { GC.SuppressFinalize(this); }
+    #endregion
+
+    #region Static Methods
+
+    public static Operation? Deserialize(string path)
+    {
+        if (!File.Exists(path)) return null;
+
+        var fileText = File.ReadAllText(path);
+        var match = Regex.Match(fileText, @"(?:<\/\s*Operation)([a-zA-Z0-9_]+)(?:\s*>)");
+        if (!match.Success) return null;
+        if (match.Groups.Count < 1) return null;
+        var operationName = match.Groups[1].Value;
+        var baseType = typeof(Operation).FullName;
+        if (string.IsNullOrWhiteSpace(baseType)) return null;
+        var classname = baseType + operationName + ", UVtools.Core";
+        var type = Type.GetType(classname);
+        if (type is null) return null;
+
+        return Deserialize(path, type);
+    }
+
+    public static Operation Deserialize(string path, Type type)
+    {
+        var serializer = new XmlSerializer(type);
+        using var stream = File.OpenRead(path);
+        var operation = serializer.Deserialize(stream) as Operation;
+        operation!.ImportedFrom = OperationImportFrom.Session;
+        return operation;
+    }
+
+    public static Operation Deserialize(string path, Operation operation) => Deserialize(path, operation.GetType());
+
+    #endregion
 }

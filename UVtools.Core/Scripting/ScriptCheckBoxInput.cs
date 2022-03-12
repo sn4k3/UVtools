@@ -6,9 +6,8 @@
  *  of this license document, but changing it is not allowed.
  */
 
-namespace UVtools.Core.Scripting
+namespace UVtools.Core.Scripting;
+
+public class ScriptCheckBoxInput : ScriptBaseInput<bool>
 {
-    public class ScriptCheckBoxInput : ScriptBaseInput<bool>
-    {
-    }
 }

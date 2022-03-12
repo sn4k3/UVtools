@@ -2,30 +2,29 @@
 using System.Diagnostics;
 using System.IO;
 
-namespace UVtools.WPF
+namespace UVtools.WPF;
+
+public static class ErrorLog
 {
-    public static class ErrorLog
+    private const string Filename = "errors.log";
+
+    public static string FullPath = Path.Combine(UserSettings.SettingsFolder, Filename);
+
+    public static void AppendLine(string errorType, string text)
     {
-        private const string Filename = "errors.log";
-
-        public static string FullPath = Path.Combine(UserSettings.SettingsFolder, Filename);
-
-        public static void AppendLine(string errorType, string text)
+        try
         {
-            try
-            {
-                File.AppendAllText(FullPath,
-                    $"[v{App.VersionStr}] ({errorType}) @ {DateTime.Now}: {text}{Environment.NewLine}");
-            }
-            catch (Exception exception)
-            {
-                Debug.WriteLine(exception);
-            }
+            File.AppendAllText(FullPath,
+                $"[v{App.VersionStr}] ({errorType}) @ {DateTime.Now}: {text}{Environment.NewLine}");
         }
-
-        public static StreamWriter GetStreamWriter()
+        catch (Exception exception)
         {
-            return File.AppendText(FullPath);
+            Debug.WriteLine(exception);
         }
+    }
+
+    public static StreamWriter GetStreamWriter()
+    {
+        return File.AppendText(FullPath);
     }
 }

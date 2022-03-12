@@ -14,7 +14,14 @@
         Icon="/Assets/Icons/UVtools.ico"
         x:Class="UVtools.WPF.Windows.TerminalWindow"
         Title="UVtools interactive terminal">
-  <Grid RowDefinitions="4*,5,*,5,Auto">
+	<Grid>
+      <Grid.RowDefinitions>
+          <RowDefinition Height="4*" MinHeight="100"/>
+          <RowDefinition Height="Auto"/>
+          <RowDefinition Height="*" MinHeight="50"/>
+          <RowDefinition Height="5"/>
+          <RowDefinition Height="Auto"/>
+      </Grid.RowDefinitions>
       <TextBox Grid.Row="0" 
                Name="TerminalTextBox"
                AcceptsReturn="True"

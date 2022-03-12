@@ -1,22 +1,21 @@
 using Avalonia.Markup.Xaml;
 using UVtools.Core.Operations;
 
-namespace UVtools.WPF.Controls.Tools
+namespace UVtools.WPF.Controls.Tools;
+
+public class ToolIPrintedThisFileControl : ToolControl
 {
-    public class ToolIPrintedThisFileControl : ToolControl
+    public OperationIPrintedThisFile Operation => BaseOperation as OperationIPrintedThisFile;
+
+    public ToolIPrintedThisFileControl()
     {
-        public OperationIPrintedThisFile Operation => BaseOperation as OperationIPrintedThisFile;
+        BaseOperation = new OperationIPrintedThisFile(SlicerFile);
+        if (!ValidateSpawn()) return;
+        InitializeComponent();
+    }
 
-        public ToolIPrintedThisFileControl()
-        {
-            BaseOperation = new OperationIPrintedThisFile(SlicerFile);
-            if (!ValidateSpawn()) return;
-            InitializeComponent();
-        }
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
-        }
+    private void InitializeComponent()
+    {
+        AvaloniaXamlLoader.Load(this);
     }
 }

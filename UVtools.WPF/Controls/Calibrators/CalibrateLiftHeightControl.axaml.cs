@@ -8,68 +8,67 @@ using UVtools.WPF.Controls.Tools;
 using UVtools.WPF.Extensions;
 using UVtools.WPF.Windows;
 
-namespace UVtools.WPF.Controls.Calibrators
+namespace UVtools.WPF.Controls.Calibrators;
+
+public class CalibrateLiftHeightControl : ToolControl
 {
-    public class CalibrateLiftHeightControl : ToolControl
+    public OperationCalibrateLiftHeight Operation => BaseOperation as OperationCalibrateLiftHeight;
+
+    private readonly Timer _timer;
+
+    private Bitmap _previewImage;
+    public Bitmap PreviewImage
     {
-        public OperationCalibrateLiftHeight Operation => BaseOperation as OperationCalibrateLiftHeight;
+        get => _previewImage;
+        set => RaiseAndSetIfChanged(ref _previewImage, value);
+    }
 
-        private readonly Timer _timer;
+    public CalibrateLiftHeightControl()
+    {
+        BaseOperation = new OperationCalibrateLiftHeight(SlicerFile);
+        if (!ValidateSpawn()) return;
 
-        private Bitmap _previewImage;
-        public Bitmap PreviewImage
+        InitializeComponent();
+
+
+        _timer = new Timer(20)
         {
-            get => _previewImage;
-            set => RaiseAndSetIfChanged(ref _previewImage, value);
-        }
+            AutoReset = false
+        };
+        _timer.Elapsed += (sender, e) => Dispatcher.UIThread.InvokeAsync(UpdatePreview);
+    }
 
-        public CalibrateLiftHeightControl()
+    private void InitializeComponent()
+    {
+        AvaloniaXamlLoader.Load(this);
+    }
+
+    public override void Callback(ToolWindow.Callbacks callback)
+    {
+        if (App.SlicerFile is null) return;
+        switch (callback)
         {
-            BaseOperation = new OperationCalibrateLiftHeight(SlicerFile);
-            if (!ValidateSpawn()) return;
-
-            InitializeComponent();
-
-
-            _timer = new Timer(20)
-            {
-                AutoReset = false
-            };
-            _timer.Elapsed += (sender, e) => Dispatcher.UIThread.InvokeAsync(UpdatePreview);
-        }
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
-        }
-
-        public override void Callback(ToolWindow.Callbacks callback)
-        {
-            if (App.SlicerFile is null) return;
-            switch (callback)
-            {
-                case ToolWindow.Callbacks.Init:
-                case ToolWindow.Callbacks.Loaded:
-                    Operation.PropertyChanged += (sender, e) =>
-                    {
-                        _timer.Stop();
-                        _timer.Start();
-                    };
+            case ToolWindow.Callbacks.Init:
+            case ToolWindow.Callbacks.Loaded:
+                Operation.PropertyChanged += (sender, e) =>
+                {
                     _timer.Stop();
                     _timer.Start();
-                    break;
-            }
+                };
+                _timer.Stop();
+                _timer.Start();
+                break;
         }
+    }
 
-        public void UpdatePreview()
+    public void UpdatePreview()
+    {
+        var layers = Operation.GetLayers();
+        _previewImage?.Dispose();
+        PreviewImage = layers[0].ToBitmap();
+        foreach (var layer in layers)
         {
-            var layers = Operation.GetLayers();
-            _previewImage?.Dispose();
-            PreviewImage = layers[0].ToBitmap();
-            foreach (var layer in layers)
-            {
-                layer.Dispose();
-            }
+            layer.Dispose();
         }
     }
 }

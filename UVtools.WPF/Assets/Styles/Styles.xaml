@@ -5,21 +5,34 @@
         <Border Padding="20"></Border>
     </Design.PreviewWith>
 
-    <Style Selector="Border.GroupBox">
+
+    <Style Selector="Border.LayerNavigationToolTip">
+        <Setter Property="BorderThickness" Value="5"/>
+        <Setter Property="CornerRadius" Value="5"/>
+    </Style>
+
+	<Style Selector="Border.GroupBox">
         <Setter Property="BorderThickness" Value="4" />
+        <Setter Property="BorderBrush" Value="{DynamicResource GroupBoxHeaderBackground}" />
+    </Style>
+
+    <Style Selector="Grid.GroupBoxHeader">
+        <Setter Property="Background" Value="{DynamicResource GroupBoxHeaderBackground}" />
     </Style>
 
     <Style Selector="TextBlock.GroupBoxHeader">
+        <Setter Property="Background" Value="{DynamicResource GroupBoxHeaderBackground}" />
         <Setter Property="Padding" Value="10" />
         <Setter Property="FontWeight" Value="Bold" />
     </Style>
 
     <Style Selector="Border.Header">
-        <Setter Property="Padding" Value="10,10" />
-        <Setter Property="Margin" Value="0,0,0,10" />
+        <Setter Property="Background" Value="{DynamicResource HeaderFooterBackground}" />
+        <Setter Property="Padding" Value="10,20" />
     </Style>
 
   <Style Selector="Border.FooterActions">
+      <Setter Property="Background" Value="{DynamicResource HeaderFooterBackground}" />
       <Setter Property="Padding" Value="10,20" />
       <Setter Property="Margin" Value="0,10,0, 0" />
   </Style>
@@ -235,9 +248,11 @@
         </Setter>
     </Style>
 
+	<!--
     <Style Selector="NumericUpDown /template/ TextBox:not(.empty)">
         <Setter Property="MinWidth" Value="0"/>
     </Style>
+    -->
 
     <Style Selector="NumericUpDown">
         <Setter Property="MinWidth" Value="130"/>

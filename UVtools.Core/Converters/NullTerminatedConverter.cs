@@ -7,18 +7,17 @@
  */
 using BinarySerialization;
 
-namespace UVtools.Core.Converters
-{
-    public class NullTerminatedConverter : IValueConverter
-    {
-        public object Convert(object value, object converterParameter, BinarySerializationContext context)
-        {
-            return value.ToString()?.TrimEnd(char.MinValue);
-        }
+namespace UVtools.Core.Converters;
 
-        public object ConvertBack(object value, object converterParameter, BinarySerializationContext context)
-        {
-            return value is null ? null : $"{value}{char.MinValue}";
-        }
+public class NullTerminatedConverter : IValueConverter
+{
+    public object Convert(object value, object converterParameter, BinarySerializationContext context)
+    {
+        return value.ToString()!.TrimEnd(char.MinValue);
+    }
+
+    public object ConvertBack(object value, object converterParameter, BinarySerializationContext context)
+    {
+        return $"{value}{char.MinValue}";
     }
 }

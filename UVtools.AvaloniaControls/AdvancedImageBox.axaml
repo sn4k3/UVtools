@@ -30,10 +30,12 @@
       Maximum="0"
       Visibility="Auto"/>
 
+	  <!--
     <Border
       Grid.Row="1"
       Grid.Column="1"
-      Background="WhiteSmoke"/>
+      Background="{DynamicResource ThemeBackgroundColor}"/>
+	  -->
 
   </Grid>
 </UserControl>

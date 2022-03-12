@@ -10,51 +10,52 @@ using System;
 using System.IO;
 using System.Text.RegularExpressions;
 
-namespace UVtools.Core.Scripting
+namespace UVtools.Core.Scripting;
+
+public static class ScriptParser
 {
-    public static class ScriptParser
+    public static string ParseScriptFromFile(string path)
     {
-        public static string ParseScriptFromFile(string path)
+        return ParseScriptFromText(File.ReadAllText(path));
+    }
+
+    /// <summary>
+    /// Parse the script and clean forbidden keywords
+    /// </summary>
+    /// <param name="text">Text to parse</param>
+    /// <returns>The parsed text</returns>
+    public static string ParseScriptFromText(string text)
+    {
+        if(!Regex.Match(text, @"(void\s+ScriptInit\s*\(\s*\))").Success)
         {
-            return ParseScriptFromText(File.ReadAllText(path));
+            throw new ArgumentException("The method \"void ScriptInit()\" was not found on script, please verify the script.");
+        }
+        if (!Regex.Match(text, @"(string\s*[?]?\s+ScriptValidate\s*\(\s*\))").Success)
+        {
+            throw new ArgumentException("The method \"string ScriptValidate()\" was not found on script, please verify the script.");
+        }
+        if (!Regex.Match(text, @"(bool\s+ScriptExecute\s*\(\s*\))").Success)
+        {
+            throw new ArgumentException("The method \"bool ScriptExecute()\" was not found on script, please verify the script.");
         }
 
-        /// <summary>
-        /// Parse the script and clean forbidden keywords
-        /// </summary>
-        /// <param name="text">Text to parse</param>
-        /// <returns>The parsed text</returns>
-        public static string ParseScriptFromText(string text)
+        var textLength = text.Length;
+        sbyte bracketsToRemove = 0;
+        text = Regex.Replace(text, @"(namespace\s+.+\n*.*{)", string.Empty);
+        if (textLength != text.Length) bracketsToRemove++;
+        else text = Regex.Replace(text, @"(namespace\s+.+\n*.*;)", string.Empty); // NET 6.0
+
+        textLength = text.Length;
+        text = Regex.Replace(text, @"(.*class\s+.*\n*.*{)", string.Empty);
+        if (textLength != text.Length) bracketsToRemove++;
+
+        if (bracketsToRemove <= 0) return text;
+
+        for (textLength = text.Length - 1; textLength >= 0 && bracketsToRemove > 0; textLength--)
         {
-            if(!Regex.Match(text, @"(void\s*ScriptInit\s*\(\s*\))").Success)
-            {
-                throw new ArgumentException("The method \"void ScriptInit()\" was not found on script, please verify the script.");
-            }
-            if (!Regex.Match(text, @"(string\s*ScriptValidate\s*\(\s*\))").Success)
-            {
-                throw new ArgumentException("The method \"string ScriptValidate()\" was not found on script, please verify the script.");
-            }
-            if (!Regex.Match(text, @"(bool\s*ScriptExecute\s*\(\s*\))").Success)
-            {
-                throw new ArgumentException("The method \"bool ScriptExecute()\" was not found on script, please verify the script.");
-            }
-
-            var textLength = text.Length;
-            sbyte bracketsToRemove = 0;
-            text = Regex.Replace(text, @"(namespace .*\n*.*{)", string.Empty);
-            if (textLength != text.Length) bracketsToRemove++;
-            textLength = text.Length;
-            text = Regex.Replace(text, "(.*class .*\n*.*{)", string.Empty);
-            if (textLength != text.Length) bracketsToRemove++;
-
-            if (bracketsToRemove <= 0) return text;
-
-            for (textLength = text.Length - 1; textLength >= 0 && bracketsToRemove > 0; textLength--)
-            {
-                if (text[textLength] == '}') bracketsToRemove--;
-            }
-
-            return text.Substring(0, textLength);
+            if (text[textLength] == '}') bracketsToRemove--;
         }
+
+        return text[..textLength];
     }
 }

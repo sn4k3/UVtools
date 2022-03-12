@@ -6,65 +6,62 @@
  *  of this license document, but changing it is not allowed.
  */
 
-using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Text;
 
-namespace UVtools.Core.PixelEditor
+namespace UVtools.Core.PixelEditor;
+
+public class PixelHistory : IEnumerable<PixelOperation>
 {
-    public class PixelHistory : IEnumerable<PixelOperation>
+    public List<PixelOperation> Items { get; } = new List<PixelOperation>();
+
+    public int Count => Items.Count;
+
+    #region Indexers
+    public PixelOperation this[uint index] => Items[(int) index];
+
+    public PixelOperation this[int index] => Items[index];
+
+    public PixelOperation this[long index] => Items[(int) index];
+
+    #endregion
+
+    #region Numerators
+    public IEnumerator<PixelOperation> GetEnumerator()
     {
-        public List<PixelOperation> Items { get; } = new List<PixelOperation>();
+        return ((IEnumerable<PixelOperation>)Items).GetEnumerator();
+    }
 
-        public int Count => Items.Count;
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return GetEnumerator();
+    }
+    #endregion
 
-        #region Indexers
-        public PixelOperation this[uint index] => Items[(int) index];
+    #region Methods
 
-        public PixelOperation this[int index] => Items[index];
+    public void Add(PixelOperation item) => Items.Add(item);
+    public void Clear() => Items.Clear();
 
-        public PixelOperation this[long index] => Items[(int) index];
-
-        #endregion
-
-        #region Numerators
-        public IEnumerator<PixelOperation> GetEnumerator()
+    public bool Contains(PixelOperation operation)
+    {
+        for (int i = 0; i < Count; i++)
         {
-            return ((IEnumerable<PixelOperation>)Items).GetEnumerator();
+            if (Items[i].Location == operation.Location && 
+                Items[i].OperationType == operation.OperationType &&
+                Items[i].LayerIndex == operation.LayerIndex) return true;
         }
 
-        IEnumerator IEnumerable.GetEnumerator()
+        return false;
+    }
+
+    #endregion
+
+    public void Renumber()
+    {
+        for (int i = 0; i < Count; i++)
         {
-            return GetEnumerator();
-        }
-        #endregion
-
-        #region Methods
-
-        public void Add(PixelOperation item) => Items.Add(item);
-        public void Clear() => Items.Clear();
-
-        public bool Contains(PixelOperation operation)
-        {
-            for (int i = 0; i < Count; i++)
-            {
-                if (Items[i].Location == operation.Location && 
-                    Items[i].OperationType == operation.OperationType &&
-                    Items[i].LayerIndex == operation.LayerIndex) return true;
-            }
-
-            return false;
-        }
-
-        #endregion
-
-        public void Renumber()
-        {
-            for (int i = 0; i < Count; i++)
-            {
-                Items[i].Index = (uint) (i + 1);
-            }
+            Items[i].Index = (uint) (i + 1);
         }
     }
 }

@@ -3,6 +3,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:controls="clr-namespace:UVtools.WPF.Controls"
+        xmlns:i="clr-namespace:Projektanker.Icons.Avalonia;assembly=Projektanker.Icons.Avalonia"
         mc:Ignorable="d" d:DesignWidth="700" d:DesignHeight="450"
         x:Class="UVtools.WPF.Windows.SettingsWindow"
         WindowStartupLocation="Manual"
@@ -22,12 +23,21 @@
               Margin="5">
 
               <StackPanel Orientation="Vertical">
-                <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Startup"/>
+                <TextBlock Classes="GroupBoxHeader" Text="Startup"/>
                 <StackPanel Margin="10" Orientation="Vertical" Spacing="10">
-                  <CheckBox IsChecked="{Binding Settings.General.StartMaximized}" Content="Start maximized"/>
-                  <CheckBox IsChecked="{Binding Settings.General.CheckForUpdatesOnStartup}" Content="Check for updates on startup"/>
-                  <CheckBox IsChecked="{Binding Settings.General.LoadDemoFileOnStartup}" Content="Loads a demo file on startup if no file was specified"/>
-                  <CheckBox IsChecked="{Binding Settings.General.LoadLastRecentFileOnStartup}" Content="Loads the last recent file on startup if no file was specified"/>
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <TextBlock VerticalAlignment="Center" Text="Theme:" />
+                        <ComboBox
+                            HorizontalAlignment="Stretch"
+                            Width="150"
+                            Items="{Binding Settings.General.Theme, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                            SelectedItem="{Binding Settings.General.Theme, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
+
+					</StackPanel>
+                    <CheckBox IsChecked="{Binding Settings.General.StartMaximized}" Content="Start maximized"/>
+                    <CheckBox IsChecked="{Binding Settings.General.CheckForUpdatesOnStartup}" Content="Check for updates on startup"/>
+                    <CheckBox IsChecked="{Binding Settings.General.LoadDemoFileOnStartup}" Content="Loads a demo file on startup if no file was specified"/>
+                    <CheckBox IsChecked="{Binding Settings.General.LoadLastRecentFileOnStartup}" Content="Loads the last recent file on startup if no file was specified"/>
                 </StackPanel>
 
               </StackPanel>
@@ -38,7 +48,7 @@
                   Margin="5">
 
                   <StackPanel Orientation="Vertical">
-                      <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Tasks"/>
+                      <TextBlock Classes="GroupBoxHeader" Text="Tasks"/>
                       <StackPanel Margin="10" Orientation="Vertical" Spacing="10">
                         <Grid RowDefinitions="Auto"
                               ColumnDefinitions="Auto,10,150,5,Auto,20,Auto,2,Auto,2,Auto,2,Auto,2,Auto,2,Auto,2,Auto">
@@ -125,7 +135,7 @@
                   Margin="5">
 
                   <StackPanel Orientation="Vertical">
-                      <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Windows / dialogs"/>
+                      <TextBlock Classes="GroupBoxHeader" Text="Windows / dialogs"/>
                       <StackPanel Margin="10" Orientation="Vertical" Spacing="10">
 
                           <CheckBox IsChecked="{Binding Settings.General.WindowsCanResize}"
@@ -181,7 +191,7 @@
               Margin="5">
 
               <StackPanel Orientation="Vertical">
-                <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="File dialog"/>
+                <TextBlock Classes="GroupBoxHeader" Text="File dialog"/>
                 <Grid Margin="10" 
                       RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto" 
                       ColumnDefinitions="Auto,10,449,Auto,Auto">
@@ -206,17 +216,15 @@
                   <Button Grid.Row="2" Grid.Column="3"
                           VerticalAlignment="Stretch"
                           HorizontalAlignment="Stretch"
+                          i:Attached.Icon="fas fa-folder"
                           Command="{Binding GeneralOpenFolderField}"
-                          CommandParameter="DefaultDirectoryOpenFile">
-                    <Image Source="/Assets/Icons/open-16x16.png"/>
-                  </Button>
+                          CommandParameter="DefaultDirectoryOpenFile"/>
                   <Button Grid.Row="2" Grid.Column="4"
                           VerticalAlignment="Stretch"
                           HorizontalAlignment="Stretch"
+                          i:Attached.Icon="fas fa-times"
                           Command="{Binding GeneralClearField}"
-                          CommandParameter="DefaultDirectoryOpenFile">
-                    <Image Source="/Assets/Icons/delete-16x16.png"/>
-                  </Button>
+                          CommandParameter="DefaultDirectoryOpenFile"/>
 
                   <TextBlock VerticalAlignment="Center"
                              Grid.Row="4" Grid.Column="0"
@@ -228,17 +236,16 @@
                   <Button Grid.Row="4" Grid.Column="3"
                           VerticalAlignment="Stretch"
                           HorizontalAlignment="Stretch"
+                          i:Attached.Icon="fas fa-folder"
                           Command="{Binding GeneralOpenFolderField}"
-                          CommandParameter="DefaultDirectorySaveFile">
-                    <Image Source="/Assets/Icons/open-16x16.png"/>
-                  </Button>
+                          CommandParameter="DefaultDirectorySaveFile"/>
                   <Button Grid.Row="4" Grid.Column="4"
                           VerticalAlignment="Stretch"
                           HorizontalAlignment="Stretch"
+                          i:Attached.Icon="fas fa-times"
                           Command="{Binding GeneralClearField}"
-                          CommandParameter="DefaultDirectorySaveFile">
-                    <Image Source="/Assets/Icons/delete-16x16.png"/>
-                  </Button>
+                          CommandParameter="DefaultDirectorySaveFile"/>
+                  
 
                   <TextBlock VerticalAlignment="Center"
                              Grid.Row="6" Grid.Column="0"
@@ -250,17 +257,15 @@
                   <Button Grid.Row="6" Grid.Column="3"
                           VerticalAlignment="Stretch"
                           HorizontalAlignment="Stretch"
+                          i:Attached.Icon="fas fa-folder"
                           Command="{Binding GeneralOpenFolderField}"
-                          CommandParameter="DefaultDirectoryExtractFile">
-                    <Image Source="/Assets/Icons/open-16x16.png"/>
-                  </Button>
+                          CommandParameter="DefaultDirectoryExtractFile"/>
                   <Button Grid.Row="6" Grid.Column="4"
                           VerticalAlignment="Stretch"
                           HorizontalAlignment="Stretch"
+                          i:Attached.Icon="fas fa-times"
                           Command="{Binding GeneralClearField}"
-                          CommandParameter="DefaultDirectoryExtractFile">
-                    <Image Source="/Assets/Icons/delete-16x16.png"/>
-                  </Button>
+                          CommandParameter="DefaultDirectoryExtractFile"/>
 
                   <TextBlock VerticalAlignment="Center"
                              Grid.Row="8" Grid.Column="0"
@@ -272,18 +277,15 @@
                   <Button Grid.Row="8" Grid.Column="3"
                           VerticalAlignment="Stretch"
                           HorizontalAlignment="Stretch"
+                          i:Attached.Icon="fas fa-folder"
                           Command="{Binding GeneralOpenFolderField}"
-                          CommandParameter="DefaultDirectoryConvertFile">
-                    <Image Source="/Assets/Icons/open-16x16.png"/>
-                  </Button>
-                  <Button
-                    Command="{Binding GeneralClearField}"
-                    CommandParameter="DefaultDirectoryConvertFile"
-                    VerticalAlignment="Stretch"
-                    HorizontalAlignment="Stretch"
-                    Grid.Row="8" Grid.Column="4">
-                    <Image Source="/Assets/Icons/delete-16x16.png"/>
-                  </Button>
+                          CommandParameter="DefaultDirectoryConvertFile"/>
+                  <Button Grid.Row="8" Grid.Column="4"
+                          Command="{Binding GeneralClearField}"
+                          CommandParameter="DefaultDirectoryConvertFile"
+                          VerticalAlignment="Stretch"
+                          HorizontalAlignment="Stretch"
+                          i:Attached.Icon="fas fa-times"/>
 
                   <TextBlock VerticalAlignment="Center"
                              Grid.Row="10" Grid.Column="0"
@@ -295,18 +297,15 @@
                   <Button Grid.Row="10" Grid.Column="3"
                           VerticalAlignment="Stretch"
                           HorizontalAlignment="Stretch"
+                          i:Attached.Icon="fas fa-folder"
                           Command="{Binding GeneralOpenFolderField}"
-                          CommandParameter="DefaultDirectoryScripts">
-                      <Image Source="/Assets/Icons/open-16x16.png"/>
-                  </Button>
-                  <Button
-                      Command="{Binding GeneralClearField}"
-                      CommandParameter="DefaultDirectoryScripts"
-                      VerticalAlignment="Stretch"
-                      HorizontalAlignment="Stretch"
-                      Grid.Row="10" Grid.Column="4">
-                      <Image Source="/Assets/Icons/delete-16x16.png"/>
-                  </Button>
+                          CommandParameter="DefaultDirectoryScripts"/>
+                  <Button Grid.Row="10" Grid.Column="4"
+                          Command="{Binding GeneralClearField}"
+                          CommandParameter="DefaultDirectoryScripts"
+                          VerticalAlignment="Stretch"
+                          HorizontalAlignment="Stretch"
+                          i:Attached.Icon="fas fa-times"/>
 
                 </Grid>
                 <CheckBox IsChecked="{Binding Settings.General.PromptOverwriteFileSave}" Margin="10,0" Content="On file 'Save' prompt for file overwrite for the first time" />
@@ -324,12 +323,10 @@
 
             </Border>
 
-            <Border
-                Classes="GroupBox"
-                Margin="5">
+            <Border Classes="GroupBox" Margin="5">
 
               <StackPanel Orientation="Vertical">
-                  <Grid RowDefinitions="Auto" ColumnDefinitions="*,Auto"  Background="LightBlue">
+                  <Grid RowDefinitions="Auto" ColumnDefinitions="*,Auto" Classes="GroupBoxHeader">
                     <TextBlock Grid.Row="0" Grid.Column="0"
                                VerticalAlignment="Center"
                                Padding="10" FontWeight="Bold" Text="Send to - Custom location"/>
@@ -337,15 +334,13 @@
                     <StackPanel Grid.Row="0" Grid.Column="1"  
                                 HorizontalAlignment="Right" Orientation="Horizontal" Spacing="2">
                         <Button ToolTip.Tip="Add location" VerticalAlignment="Center"
-                                Command="{Binding SendToAddCustomLocation}">
-                            <Image Source="/Assets/Icons/plus-16x16.png"/>
-                        </Button>
+                                i:Attached.Icon="fas fa-plus"
+                                Command="{Binding SendToAddCustomLocation}"/>
 
                         <Button ToolTip.Tip="Remove selected locations" VerticalAlignment="Center"
                                 IsEnabled="{Binding #SendToCustomLocationsGrid.SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}"
-                                Command="{Binding SendToRemoveCustomLocations}">
-                            <Image Source="/Assets/Icons/trash-16x16.png"/>
-                        </Button>
+                                i:Attached.Icon="fas fa-trash-alt"
+                                Command="{Binding SendToRemoveCustomLocations}"/>
                     </StackPanel>
 
                   </Grid>
@@ -397,7 +392,7 @@
                 Margin="5">
 
 				  <StackPanel Orientation="Vertical">
-					  <Grid RowDefinitions="Auto" ColumnDefinitions="*,Auto"  Background="LightBlue">
+					  <Grid RowDefinitions="Auto" ColumnDefinitions="*,Auto" Classes="GroupBoxHeader">
 						  <TextBlock Grid.Row="0" Grid.Column="0"
                                      ToolTip.Tip="Allow to open a new process with arguments and pass the current file.&#x0a;
 &#x0a;Wait exit: Interrupt the UI and wait for process completion/exit.
@@ -408,15 +403,13 @@
 						  <StackPanel Grid.Row="0" Grid.Column="1"
 									  HorizontalAlignment="Right" Orientation="Horizontal" Spacing="2">
 							  <Button ToolTip.Tip="Add location" VerticalAlignment="Center"
-									  Command="{Binding SendToAddProcess}">
-								  <Image Source="/Assets/Icons/plus-16x16.png"/>
-							  </Button>
+                                      i:Attached.Icon="fas fa-plus"
+									  Command="{Binding SendToAddProcess}"/>
 
 							  <Button ToolTip.Tip="Remove selected process(es)" VerticalAlignment="Center"
 									  IsEnabled="{Binding #SendToProcessGrid.SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}"
-									  Command="{Binding SendToRemoveProcess}">
-								  <Image Source="/Assets/Icons/trash-16x16.png"/>
-							  </Button>
+                                      i:Attached.Icon="fas fa-trash-alt"
+									  Command="{Binding SendToRemoveProcess}"/>
 						  </StackPanel>
 
 					  </Grid>
@@ -479,7 +472,7 @@
                 Margin="5">
 
               <StackPanel Orientation="Vertical">
-                <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Layer colors"/>
+                <TextBlock Classes="GroupBoxHeader" Text="Layer colors"/>
 
                 <Grid Margin="10" RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto" ColumnDefinitions="Auto,Auto,Auto,Auto,*">
 
@@ -909,7 +902,7 @@
                 Margin="5">
 
               <StackPanel Orientation="Vertical">
-                <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Zoom"/>
+                <TextBlock Classes="GroupBoxHeader" Text="Zoom"/>
                 <Grid Margin="10" RowDefinitions="Auto" ColumnDefinitions="Auto,250,*,100">
                   <TextBlock Grid.Row="0" Grid.Column="0"
                              VerticalAlignment="Center"
@@ -958,7 +951,7 @@
               Margin="5">
 
               <StackPanel Orientation="Vertical">
-                <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Crosshairs"/>
+                <TextBlock Classes="GroupBoxHeader" Text="Crosshairs"/>
                 <Grid Margin="10" RowDefinitions="Auto,10,Auto" ColumnDefinitions="Auto,150,*,Auto">
                   <CheckBox Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2"
                              VerticalAlignment="Center"
@@ -1010,7 +1003,7 @@
               Margin="5">
 
               <StackPanel Orientation="Vertical">
-                <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Miscellaneous"/>
+                <TextBlock Classes="GroupBoxHeader" Text="Miscellaneous"/>
 
                 <StackPanel Orientation="Horizontal">
                   <CheckBox
@@ -1073,7 +1066,7 @@
                 Margin="5">
 
               <StackPanel Orientation="Vertical">
-                <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Startup"/>
+                <TextBlock Classes="GroupBoxHeader" Text="Startup"/>
 
 
                 <StackPanel Orientation="Horizontal" Spacing="20">
@@ -1135,7 +1128,7 @@
               Margin="5">
 
               <StackPanel Orientation="Vertical">
-                <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Issues list"/>
+                <TextBlock Classes="GroupBoxHeader" Text="Issues list"/>
 
                 <Grid
                     RowDefinitions="Auto"
@@ -1168,7 +1161,7 @@
                 Margin="5">
 
               <StackPanel Orientation="Vertical">
-                <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold"
+                <TextBlock Classes="GroupBoxHeader"
                            ToolTip.Tip="Unsupported pixels"
                            Text="Islands"/>
 
@@ -1302,7 +1295,7 @@
                 Margin="5">
 
               <StackPanel Orientation="Vertical">
-                <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold"
+                <TextBlock Classes="GroupBoxHeader"
                            ToolTip.Tip="Unsupported pixels that goes beyond a certain angle/threshold"
                            Text="Overhangs"/>
 
@@ -1336,7 +1329,7 @@
                 Margin="5">
 
               <StackPanel Orientation="Vertical">
-                <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold"
+                <TextBlock Classes="GroupBoxHeader"
                            ToolTip.Tip="Trapped resin inside hollow objects"
                            Text="Resin traps"/>
 
@@ -1403,7 +1396,7 @@
                   Margin="5">
 
                   <StackPanel Orientation="Vertical">
-                      <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold"
+                      <TextBlock Classes="GroupBoxHeader"
                                  ToolTip.Tip="Hollow areas that aren't resin traps but lacks a venting hole at that level to prevent suction and pressure"
                                  Text="Suction cups"/>
 
@@ -1440,7 +1433,7 @@
                 Margin="5">
 
               <StackPanel Orientation="Vertical">
-                <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" 
+                <TextBlock Classes="GroupBoxHeader" 
                            ToolTip.Tip="White pixels that nearly or touch the build plate edges"
                            Text="Touching boundary"/>
 
@@ -1576,7 +1569,7 @@
                   Margin="5">
 
                   <StackPanel Orientation="Vertical">
-                      <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold"
+                      <TextBlock Classes="GroupBoxHeader"
                                  ToolTip.Tip="Layers that surpass printer maximum height"
                                  Text="Print height"/>
 
@@ -1611,7 +1604,7 @@
                   Margin="5">
 
               <StackPanel Orientation="Vertical">
-                <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Colors &amp; highlights"/>
+                <TextBlock Classes="GroupBoxHeader" Text="Colors &amp; highlights"/>
 
                 <Grid Margin="10" RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto" ColumnDefinitions="Auto,Auto,Auto">
                   <TextBlock Grid.Row="0" Grid.Column="0"
@@ -1721,7 +1714,7 @@
                   Margin="5">
 
               <StackPanel Orientation="Vertical">
-                <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Actions"/>
+                <TextBlock Classes="GroupBoxHeader" Text="Actions"/>
 
                 <CheckBox
                   IsChecked="{Binding Settings.PixelEditor.PartialUpdateIslandsOnEditing}"
@@ -1746,7 +1739,7 @@
                   Margin="5">
 
               <StackPanel Orientation="Vertical" Spacing="10">
-                <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Default values"/>
+                <TextBlock Classes="GroupBoxHeader" Text="Default values"/>
 
                 <CheckBox IsChecked="{Binding Settings.LayerRepair.RepairIslands}"
                           Margin="10,0" Content="Attempt to repair islands by default"/>
@@ -1842,7 +1835,7 @@
               Margin="5">
 
               <StackPanel Orientation="Vertical">
-                <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Common"/>
+                <TextBlock Classes="GroupBoxHeader" Text="Common"/>
                 <StackPanel Margin="10" Orientation="Vertical" Spacing="10">
                   <CheckBox IsChecked="{Binding Settings.Tools.RestoreLastUsedSettings}" 
                             Content="Keep and restore the last used settings on operations per user session/instance"/>
@@ -1864,104 +1857,44 @@
         </ScrollViewer>
       </TabItem>
 
-      <TabItem Header="Automations" VerticalContentAlignment="Center">
-        <ScrollViewer Name="ScrollViewer6">
-          <StackPanel Orientation="Vertical" Spacing="5">
-            <Border
-                Classes="GroupBox"
-              Margin="5">
+		<TabItem Header="Automations" VerticalContentAlignment="Center">
+			<ScrollViewer Name="ScrollViewer6">
+				<StackPanel Orientation="Vertical" Spacing="5">
+					<Border
+						Classes="GroupBox"
+					  Margin="5">
 
-              <StackPanel Orientation="Vertical">
-                <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Common"/>
-                <StackPanel Margin="10" Orientation="Vertical" Spacing="10">
-                  <CheckBox IsChecked="{Binding Settings.Automations.SaveFileAfterModifications}" Content="Auto save the file after apply any automation(s)"/>
-                </StackPanel>
+						<StackPanel Orientation="Vertical">
+							<TextBlock Classes="GroupBoxHeader" Text="Common"/>
+							<StackPanel Margin="10" Orientation="Vertical" Spacing="10">
+								<CheckBox IsChecked="{Binding Settings.Automations.SaveFileAfterModifications}" Content="Auto save the file after apply any automation(s)"/>
+							</StackPanel>
 
-              </StackPanel>
-            </Border>
+						</StackPanel>
+					</Border>
 
-            <Border
-                Margin="5"
-                BorderBrush="LightBlue"
-                BorderThickness="4"
-              >
+					<Border
+						Margin="5"
+						Classes="GroupBox">
 
-              <StackPanel Orientation="Vertical">
-                <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="File convertion"/>
-                <StackPanel Margin="10" Orientation="Vertical" Spacing="10">
-                  <CheckBox IsChecked="{Binding Settings.Automations.AutoConvertFiles}"
-                            ToolTip.Tip="1) Converts the SL1 files to the format specified on 'PrusaSlicer - Printer - Notes' on 'FILEFORMAT_XXX' variable.
+						<StackPanel Orientation="Vertical">
+							<TextBlock Classes="GroupBoxHeader" Text="File convertion"/>
+							<StackPanel Margin="10" Orientation="Vertical" Spacing="10">
+								<CheckBox IsChecked="{Binding Settings.Automations.AutoConvertFiles}"
+										  ToolTip.Tip="1) Converts the SL1 files to the format specified on 'PrusaSlicer - Printer - Notes' on 'FILEFORMAT_XXX' variable.
 &#x0a;2) Converts the VDT files to the format specified on 'Voxeldance Tango - Printer settings - Notes' on 'FILEFORMAT_XXX' variable.
 &#x0a;A new file with same name but a new extension will be created and overwrite any previous file.
 &#x0a;After a successful conversion the new file will automatically load in instead of the loaded SL1 file."
-                            Content="Auto convert SL1 and VDT files to the target format when possible and load it back"/>
-                </StackPanel>
+										  Content="Auto convert SL1 and VDT files to the target format when possible and load it back"/>
+							</StackPanel>
 
-              </StackPanel>
-            </Border>
-
-
-            <Border
-                Classes="GroupBox"
-                  Margin="5">
-
-                  <StackPanel Orientation="Vertical">
-                      <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Light-off delay"/>
-
-                    <ComboBox 
-                              Margin="10"
-                              HorizontalAlignment="Stretch"
-                              Items="{Binding Settings.Automations.LightOffDelaySetMode, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
-                              SelectedItem="{Binding Settings.Automations.LightOffDelaySetMode, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
-
-                      <CheckBox Margin="10,0,10,10"
-                                Content="Change only light-off delay if value is zero"
-                                ToolTip.Tip="If enabled, it will only change light-off delay to the defined values if the original value is zero.
-&#x0a;If disabled, it will always change the light-off delay to the defined values."
-                                IsVisible="{Binding Settings.Automations.ChangeOnlyLightOffDelayIfZeroVisible}"
-                                IsChecked="{Binding Settings.Automations.ChangeOnlyLightOffDelayIfZero}"/>
-
-                      <Grid Margin="10,0,10,10"
-                            IsVisible="{Binding Settings.Automations.LightOffDelayExtraTimeVisible}"
-                            RowDefinitions="Auto"
-                            ColumnDefinitions="Auto,10,Auto,30,Auto,10,Auto">
-                            
-                            <TextBlock Grid.Row="0" Grid.Column="0" 
-                                       VerticalAlignment="Center"
-                                       ToolTip.Tip="Auto set the extra 'light-off delay' based on lift height and speed."
-                                       Text="Light-off delay:" />
-
-                            <NumericUpDown Grid.Row="0" Grid.Column="2"
-                                           Classes="ValueLabel ValueLabel_s"
-                                           Minimum="0"
-                                           Maximum="255"
-                                           Increment="0.5"
-                                           FormatString="F2"
-                                           Value="{Binding Settings.Automations.LightOffDelay}"/>
-
-                            <TextBlock Grid.Row="0" Grid.Column="4"
-                                       VerticalAlignment="Center"
-                                       ToolTip.Tip="Auto set the extra 'bottom light-off delay' based on bottom lift height and speed."
-                                       Text="Bottom light-off delay:" />
-                            <NumericUpDown Grid.Row="0" Grid.Column="6"
-                                           Classes="ValueLabel ValueLabel_s"
-                                           Minimum="0"
-                                           Maximum="255"
-                                           Increment="0.5"
-                                           FormatString="F2"
-                                           Value="{Binding Settings.Automations.BottomLightOffDelay}"/>
-
-                      </Grid>
-
-                  </StackPanel>
-              </Border>
+						</StackPanel>
+					</Border>
 
 
-
-
-            </StackPanel>
-            </ScrollViewer>
-          </TabItem>
+				</StackPanel>
+			</ScrollViewer>
+		</TabItem>
 
 
       <TabItem Header="Network" VerticalContentAlignment="Center">
@@ -1972,7 +1905,7 @@
               Margin="5">
 
               <StackPanel Orientation="Vertical">
-                <TextBlock Padding="10" Background="LightBlue" FontWeight="Bold" Text="Remote printers"/>
+                <TextBlock Classes="GroupBoxHeader" Text="Remote printers"/>
                 <StackPanel Margin="10" Orientation="Vertical" Spacing="10">
 
                     <Grid RowDefinitions="Auto" ColumnDefinitions="*,2,Auto">
@@ -1984,21 +1917,18 @@
                         <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="2">
                             <Button
                                 VerticalAlignment="Stretch"
-                                Command="{Binding AddNetworkRemotePrinter}">
-                                <Image Source="/Assets/Icons/plus-16x16.png"/>
-                            </Button>
+                                i:Attached.Icon="fas fa-plus"
+                                Command="{Binding AddNetworkRemotePrinter}"/>
                           <Button
                               VerticalAlignment="Stretch"
                                 IsEnabled="{Binding #NetworkRemotePrinterComboBox.SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}"
-                                Command="{Binding DuplicateSelectedNetworkRemotePrinter}">
-                                <Image Source="/Assets/Icons/copy-16x16.png"/>
-                            </Button>
+                                i:Attached.Icon="fas fa-copy"
+                                Command="{Binding DuplicateSelectedNetworkRemotePrinter}"/>
                           <Button
                               VerticalAlignment="Stretch"
                                 IsEnabled="{Binding #NetworkRemotePrinterComboBox.SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}"
-                                Command="{Binding RemoveSelectedNetworkRemotePrinter}">
-                                <Image Source="/Assets/Icons/trash-16x16.png"/>
-                            </Button>
+                                i:Attached.Icon="fas fa-trash-alt"
+                                Command="{Binding RemoveSelectedNetworkRemotePrinter}"/>
                         </StackPanel>
 
                       </Grid>
@@ -2113,34 +2043,25 @@
               ColumnDefinitions="*,*">
 
               <StackPanel Grid.Column="0" Orientation="Horizontal">
-                  <Button Name="Actions.ResetAllSettings" Padding="10"
-                          Command="{Binding OnClickResetAllDefaults}">
-                      <StackPanel Orientation="Horizontal">
-                          <Image Source="/Assets/Icons/undo-alt-16x16.png"/>
-                          <TextBlock Margin="10,0,0,0">Reset all settings</TextBlock>
-                      </StackPanel>
-                  </Button>
+                  <controls:ButtonWithIcon Name="Actions.ResetAllSettings" Padding="10"
+                                           Icon="fas fa-undo-alt"
+                                           Text="Reset all settings"
+                                           Command="{Binding OnClickResetAllDefaults}"/>
               </StackPanel>
 
               <StackPanel Grid.Column="1"
                           HorizontalAlignment="Right"
                           VerticalAlignment="Center"
                           Orientation="Horizontal">
-                  <Button Name="Actions.Save" Margin="0,0,10,0" Padding="10" IsDefault="True"
-                          Command="{Binding OnClickSave}">
-                      <StackPanel Orientation="Horizontal">
-                          <Image Source="/Assets/Icons/save-16x16.png"/>
-                          <TextBlock Margin="10,0,0,0">Save</TextBlock>
-                      </StackPanel>
-                  </Button>
+                  <controls:ButtonWithIcon Name="Actions.Save" Margin="0,0,10,0" Padding="10" IsDefault="True"
+                                           Text="Save"
+                                           Icon="fas fa-save"
+                                           Command="{Binding OnClickSave}"/>
 
-                  <Button Name="Actions.Cancel" Padding="10" IsCancel="True"
-                          Command="{Binding Close}">
-                      <StackPanel Orientation="Horizontal">
-                          <Image Source="/Assets/Icons/exit-16x16.png"/>
-                          <TextBlock Margin="10,0,0,0">Cancel</TextBlock>
-                      </StackPanel>
-                  </Button>
+				  <controls:ButtonWithIcon Name="Actions.Cancel" Padding="10" IsCancel="True"
+                                           Icon="fas fa-sign-out-alt"
+                                           Text="Cancel"
+                                           Command="{Binding Close}"/>
               </StackPanel>
           </Grid>
       </Border>

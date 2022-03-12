@@ -11,83 +11,82 @@ using MessageBox.Avalonia.Enums;
 using UVtools.WPF.Controls;
 using UVtools.WPF.Extensions;
 
-namespace UVtools.WPF.Windows
+namespace UVtools.WPF.Windows;
+
+public partial class MissingInformationWindow : WindowEx
 {
-    public partial class MissingInformationWindow : WindowEx
+    #region Members
+    private decimal _layerHeight;
+    private decimal _displayWidth;
+    private decimal _displayHeight;
+    #endregion
+
+    #region Properties
+    public decimal LayerHeight
     {
-        #region Members
-        private decimal _layerHeight;
-        private decimal _displayWidth;
-        private decimal _displayHeight;
-        #endregion
+        get => _layerHeight;
+        set => RaiseAndSetIfChanged(ref _layerHeight, value);
+    }
 
-        #region Properties
-        public decimal LayerHeight
-        {
-            get => _layerHeight;
-            set => RaiseAndSetIfChanged(ref _layerHeight, value);
-        }
+    public bool LayerHeightIsVisible => SlicerFile?.LayerHeight <= 0;
 
-        public bool LayerHeightIsVisible => SlicerFile?.LayerHeight <= 0;
+    public decimal DisplayWidth
+    {
+        get => _displayWidth;
+        set => RaiseAndSetIfChanged(ref _displayWidth, value);
+    }
 
-        public decimal DisplayWidth
-        {
-            get => _displayWidth;
-            set => RaiseAndSetIfChanged(ref _displayWidth, value);
-        }
+    public bool DisplayWidthIsVisible => SlicerFile?.DisplayWidth <= 0;
 
-        public bool DisplayWidthIsVisible => SlicerFile?.DisplayWidth <= 0;
+    public decimal DisplayHeight
+    {
+        get => _displayHeight;
+        set => RaiseAndSetIfChanged(ref _displayHeight, value);
+    }
 
-        public decimal DisplayHeight
-        {
-            get => _displayHeight;
-            set => RaiseAndSetIfChanged(ref _displayHeight, value);
-        }
+    public bool DisplayHeightIsVisible => SlicerFile?.DisplayHeight <= 0;
+    #endregion
 
-        public bool DisplayHeightIsVisible => SlicerFile?.DisplayHeight <= 0;
-        #endregion
-
-        public MissingInformationWindow()
-        {
-            InitializeComponent();
+    public MissingInformationWindow()
+    {
+        InitializeComponent();
 #if DEBUG
-            this.AttachDevTools();
+        this.AttachDevTools();
 #endif
-            if (SlicerFile is not null)
-            {
-                _layerHeight = (decimal) SlicerFile.LayerHeight;
-                _displayWidth = (decimal) SlicerFile.DisplayWidth;
-                _displayHeight = (decimal) SlicerFile.DisplayHeight;
-            }
-
-            DataContext = this;
-        }
-
-        private void InitializeComponent()
+        if (SlicerFile is not null)
         {
-            AvaloniaXamlLoader.Load(this);
+            _layerHeight = (decimal) SlicerFile.LayerHeight;
+            _displayWidth = (decimal) SlicerFile.DisplayWidth;
+            _displayHeight = (decimal) SlicerFile.DisplayHeight;
         }
 
-        public async void Apply()
+        DataContext = this;
+    }
+
+    private void InitializeComponent()
+    {
+        AvaloniaXamlLoader.Load(this);
+    }
+
+    public async void Apply()
+    {
+        if (await this.MessageBoxQuestion("Are you sure you want to submit and apply the information?", "Submit and apply the information?") != ButtonResult.Yes) return;
+
+        if ((decimal)SlicerFile.DisplayWidth != _displayWidth && _displayWidth > 0)
         {
-            if (await this.MessageBoxQuestion("Are you sure you want to submit and apply the information?", "Submit and apply the information?") != ButtonResult.Yes) return;
-
-            if ((decimal)SlicerFile.DisplayWidth != _displayWidth && _displayWidth > 0)
-            {
-                SlicerFile.DisplayWidth = (float) _displayWidth;
-            }
-            if ((decimal)SlicerFile.DisplayHeight != _displayHeight && _displayHeight > 0)
-            {
-                SlicerFile.DisplayHeight = (float)_displayHeight;
-            }
-            if ((decimal)SlicerFile.LayerHeight != _layerHeight && _layerHeight > 0)
-            {
-                SlicerFile.LayerHeight = (float)_layerHeight;
-                SlicerFile.LayerManager.RebuildLayersProperties();
-            }
-
-            DialogResult = DialogResults.OK;
-            Close();
+            SlicerFile.DisplayWidth = (float) _displayWidth;
         }
+        if ((decimal)SlicerFile.DisplayHeight != _displayHeight && _displayHeight > 0)
+        {
+            SlicerFile.DisplayHeight = (float)_displayHeight;
+        }
+        if ((decimal)SlicerFile.LayerHeight != _layerHeight && _layerHeight > 0)
+        {
+            SlicerFile.LayerHeight = (float)_layerHeight;
+            SlicerFile.RebuildLayersProperties();
+        }
+
+        DialogResult = DialogResults.OK;
+        Close();
     }
 }

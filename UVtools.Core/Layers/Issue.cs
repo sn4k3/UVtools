@@ -10,72 +10,71 @@ using System;
 using System.Drawing;
 using UVtools.Core.Extensions;
 
-namespace UVtools.Core.Layers
+namespace UVtools.Core.Layers;
+
+public class Issue
 {
-    public class Issue
+    /// <summary>
+    /// Gets the issue type associated
+    /// </summary>
+    public MainIssue? Parent { get; internal set; }
+
+    public MainIssue.IssueType? Type => Parent?.Type;
+
+    /// <summary>
+    /// Gets the layer where this issue is present
+    /// </summary>
+    public Layer Layer { get; init; }
+
+    /// <summary>
+    /// Gets the layer index
+    /// </summary>
+    public uint LayerIndex => Layer.Index;
+
+    /// <summary>
+    /// Gets the bounding rectangle of the area
+    /// </summary>
+    public Rectangle BoundingRectangle { get; init; }
+
+    /// <summary>
+    /// Gets the number of pixels 
+    /// </summary>
+    public uint PixelsCount { get; init; }
+
+    /// <summary>
+    /// Gets the area of the issue
+    /// </summary>
+    public double Area { get; init; }
+
+    public Point FirstPoint { get; init; } = new(-1,-1);
+
+    public Issue(Layer layer, Rectangle boundingRectangle, double area)
     {
-        /// <summary>
-        /// Gets the issue type associated
-        /// </summary>
-        public MainIssue Parent { get; internal set; }
+        Layer = layer;
+        BoundingRectangle = boundingRectangle;
+        Area = area;
+    }
 
-        public MainIssue.IssueType? Type => Parent?.Type;
+    public Issue(Layer layer, Rectangle boundingRectangle = default) : this(layer, boundingRectangle, boundingRectangle.Area())
+    { }
 
-        /// <summary>
-        /// Gets the layer where this issue is present
-        /// </summary>
-        public Layer Layer { get; init; }
+    public virtual void Sort(){ }
 
-        /// <summary>
-        /// Gets the layer index
-        /// </summary>
-        public uint LayerIndex => Layer.Index;
+    protected bool Equals(Issue other)
+    {
+        return Type == other.Type && LayerIndex == other.LayerIndex && BoundingRectangle.Equals(other.BoundingRectangle) && PixelsCount == other.PixelsCount && Area.Equals(other.Area);
+    }
 
-        /// <summary>
-        /// Gets the bounding rectangle of the area
-        /// </summary>
-        public Rectangle BoundingRectangle { get; init; }
+    public override bool Equals(object? obj)
+    {
+        if (ReferenceEquals(null, obj)) return false;
+        if (ReferenceEquals(this, obj)) return true;
+        if (obj.GetType() != this.GetType()) return false;
+        return Equals((Issue)obj);
+    }
 
-        /// <summary>
-        /// Gets the number of pixels 
-        /// </summary>
-        public uint PixelsCount { get; init; }
-
-        /// <summary>
-        /// Gets the area of the issue
-        /// </summary>
-        public double Area { get; init; }
-
-        public Point FirstPoint { get; init; } = new(-1,-1);
-
-        public Issue(Layer layer, Rectangle boundingRectangle, double area)
-        {
-            Layer = layer;
-            BoundingRectangle = boundingRectangle;
-            Area = area;
-        }
-
-        public Issue(Layer layer, Rectangle boundingRectangle = default) : this(layer, boundingRectangle, boundingRectangle.Area())
-        { }
-
-        public virtual void Sort(){ }
-
-        protected bool Equals(Issue other)
-        {
-            return Type == other.Type && LayerIndex == other.LayerIndex && BoundingRectangle.Equals(other.BoundingRectangle) && PixelsCount == other.PixelsCount && Area.Equals(other.Area);
-        }
-
-        public override bool Equals(object obj)
-        {
-            if (ReferenceEquals(null, obj)) return false;
-            if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != this.GetType()) return false;
-            return Equals((Issue)obj);
-        }
-
-        public override int GetHashCode()
-        {
-            return HashCode.Combine(Layer, BoundingRectangle, PixelsCount, Area);
-        }
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(Layer, BoundingRectangle, PixelsCount, Area);
     }
 }

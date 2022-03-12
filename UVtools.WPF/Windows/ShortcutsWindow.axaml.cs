@@ -9,21 +9,20 @@ using Avalonia;
 using Avalonia.Markup.Xaml;
 using UVtools.WPF.Controls;
 
-namespace UVtools.WPF.Windows
-{
-    public partial class ShortcutsWindow : WindowEx
-    {
-        public ShortcutsWindow()
-        {
-            InitializeComponent();
-#if DEBUG
-            this.AttachDevTools();
-#endif
-        }
+namespace UVtools.WPF.Windows;
 
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
-        }
+public partial class ShortcutsWindow : WindowEx
+{
+    public ShortcutsWindow()
+    {
+        InitializeComponent();
+#if DEBUG
+        this.AttachDevTools();
+#endif
+    }
+
+    private void InitializeComponent()
+    {
+        AvaloniaXamlLoader.Load(this);
     }
 }

@@ -12,6 +12,23 @@
     <TextBlock
         VerticalAlignment="Center"
         Text="{Binding InfoHeightsStr}"/>
+
+    <Grid RowDefinitions="Auto" ColumnDefinitions="Auto,10,200">
+        <CheckBox Grid.Row="0" Grid.Column="0"
+                  VerticalAlignment="Center"
+                  ToolTip.Tip="If enabled, use a pixel threshold, where all layers with less or equal amount of pixels will be removed.
+&#x0a;Note: You still need to input a layer range, select all layers for a better effect with this mode."
+                  Content="Pixel threshold:"
+                  IsChecked="{Binding Operation.UseThreshold}"/>
+
+        <NumericUpDown Grid.Row="0" Grid.Column="2"
+                       Classes="ValueLabel ValueLabel_px"
+                       VerticalAlignment="Center"
+                       Minimum="0"
+                       Increment="1"
+                       IsEnabled="{Binding Operation.UseThreshold}"
+                       Value="{Binding Operation.PixelThreshold}"/>
+    </Grid>
     
   </StackPanel>
 </UserControl>

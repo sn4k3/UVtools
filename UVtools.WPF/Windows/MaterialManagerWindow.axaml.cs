@@ -9,88 +9,87 @@ using UVtools.Core.Objects;
 using UVtools.WPF.Controls;
 using UVtools.WPF.Extensions;
 
-namespace UVtools.WPF.Windows
+namespace UVtools.WPF.Windows;
+
+public class MaterialManagerWindow : WindowEx
 {
-    public class MaterialManagerWindow : WindowEx
+    private Material _material = new();
+    private readonly DataGrid _grid;
+    public MaterialManager Manager => MaterialManager.Instance;
+
+    public Material Material
     {
-        private Material _material = new();
-        private readonly DataGrid _grid;
-        public MaterialManager Manager => MaterialManager.Instance;
+        get => _material;
+        set => RaiseAndSetIfChanged(ref _material, value);
+    }
 
-        public Material Material
-        {
-            get => _material;
-            set => RaiseAndSetIfChanged(ref _material, value);
-        }
-
-        public MaterialManagerWindow()
-        {
-            InitializeComponent();
+    public MaterialManagerWindow()
+    {
+        InitializeComponent();
 #if DEBUG
-            this.AttachDevTools();
+        this.AttachDevTools();
 #endif
 
-            _grid = this.FindControl<DataGrid>("MaterialsTable");
+        _grid = this.FindControl<DataGrid>("MaterialsTable");
 
-            MaterialManager.Load(); // Reload
+        MaterialManager.Load(); // Reload
 
-            DataContext = this;
-        }
+        DataContext = this;
+    }
 
-        private void InitializeComponent()
+    private void InitializeComponent()
+    {
+        AvaloniaXamlLoader.Load(this);
+    }
+
+    protected override void OnClosed(EventArgs e)
+    {
+        base.OnClosed(e);
+        MaterialManager.Save(); // Apply changes
+    }
+
+    public void RefreshStatistics()
+    {
+        Manager.RaisePropertiesChanged();
+    }
+
+    public async void AddNewMaterial()
+    {
+        if (string.IsNullOrWhiteSpace(Material.Name))
         {
-            AvaloniaXamlLoader.Load(this);
+            await this.MessageBoxError("Material name can't be empty");
+            return;
         }
 
-        protected override void OnClosed(EventArgs e)
+        if (Manager.Contains(Material))
         {
-            base.OnClosed(e);
-            MaterialManager.Save(); // Apply changes
+            await this.MessageBoxError("A material with same name already exists.");
+            return;
         }
 
-        public void RefreshStatistics()
-        {
-            Manager.RaisePropertiesChanged();
-        }
+        Material.BottleRemainingVolume = Material.BottleVolume;
 
-        public async void AddNewMaterial()
-        {
-            if (string.IsNullOrWhiteSpace(Material.Name))
-            {
-                await this.MessageBoxError("Material name can't be empty");
-                return;
-            }
+        if (await this.MessageBoxQuestion("Are you sure you want to add the following material:\n" +
+                                          $"{Material}") != ButtonResult.Yes) return;
 
-            if (Manager.Contains(Material))
-            {
-                await this.MessageBoxError("A material with same name already exists.");
-                return;
-            }
+        Manager.Add(Material);
+        Manager.SortByName();
+        MaterialManager.Save();
+        Material = new();
+    }
 
-            Material.BottleRemainingVolume = Material.BottleVolume;
+    public async void RemoveSelectedMaterials()
+    {
+        if (_grid.SelectedItems.Count <= 0) return;
+        if (await this.MessageBoxQuestion($"Are you sure you want to remove {_grid.SelectedItems.Count} materials?") != ButtonResult.Yes) return;
+        Manager.RemoveRange(_grid.SelectedItems.Cast<Material>());
+        MaterialManager.Save();
+    }
 
-            if (await this.MessageBoxQuestion("Are you sure you want to add the following material:\n" +
-                                             $"{Material}") != ButtonResult.Yes) return;
-
-            Manager.Add(Material);
-            Manager.SortByName();
-            MaterialManager.Save();
-            Material = new();
-        }
-
-        public async void RemoveSelectedMaterials()
-        {
-            if (_grid.SelectedItems.Count <= 0) return;
-            if (await this.MessageBoxQuestion($"Are you sure you want to remove {_grid.SelectedItems.Count} materials?") != ButtonResult.Yes) return;
-            Manager.RemoveRange(_grid.SelectedItems.Cast<Material>());
-            MaterialManager.Save();
-        }
-
-        public async void ClearMaterials()
-        {
-            if (Manager.Count == 0) return;
-            if (await this.MessageBoxQuestion($"Are you sure you want to clear {Manager.Count} materials?") != ButtonResult.Yes) return;
-            Manager.Clear(true);
-        }
+    public async void ClearMaterials()
+    {
+        if (Manager.Count == 0) return;
+        if (await this.MessageBoxQuestion($"Are you sure you want to clear {Manager.Count} materials?") != ButtonResult.Yes) return;
+        Manager.Clear(true);
     }
 }

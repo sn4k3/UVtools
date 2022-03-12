@@ -7,14 +7,13 @@
  */
 using System.Drawing;
 
-namespace UVtools.Core.Extensions
-{
-    public static class RectangleExtensions
-    {
-        public static Point Center(this Rectangle src)
-        {
-            return new Point(src.Left + src.Width / 2, src.Top + src.Height / 2);
-        }
+namespace UVtools.Core.Extensions;
 
+public static class RectangleExtensions
+{
+    public static Point Center(this Rectangle src)
+    {
+        return new Point(src.Left + src.Width / 2, src.Top + src.Height / 2);
     }
+
 }

@@ -10,135 +10,205 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using UVtools.Core.FileFormats;
-using UVtools.Core.Objects;
+using UVtools.Core.Layers;
 
-namespace UVtools.Core.Operations
+namespace UVtools.Core.Operations;
+
+[Serializable]
+public sealed class OperationLayerRemove : Operation
 {
-    [Serializable]
-    public sealed class OperationLayerRemove : Operation
+    #region Members
+    private bool _useThreshold;
+    private uint _pixelThreshold;
+    #endregion
+
+    #region Overrides
+
+    public override Enumerations.LayerRangeSelection StartLayerRangeSelection => Enumerations.LayerRangeSelection.Current;
+    public override bool CanROI => false;
+    public override bool PassActualLayerIndex => true;
+    public override string IconClass => "mdi-layers-remove";
+    public override string Title => "Remove layers";
+
+    public override string Description =>
+        "Remove layers in a given range.";
+
+    public override string ConfirmationText =>
+        $"remove layers {LayerIndexStart} through {LayerIndexEnd}"+
+        (_useThreshold ? $" with an pixel threshold of {_pixelThreshold}px" : string.Empty)
+        +"?";
+
+    public override string ProgressTitle => 
+        $"Removing layers {LayerIndexStart} through {LayerIndexEnd}" +
+        (_useThreshold ? $" with an pixel threshold of {_pixelThreshold}px" : string.Empty);
+
+    public override string ProgressAction => "Removed layers";
+
+    public override bool CanCancel => false;
+
+    public override bool CanHaveProfiles => false;
+
+    public override string? ValidateInternally()
     {
-        #region Overrides
+        var sb = new StringBuilder();
 
-        public override Enumerations.LayerRangeSelection StartLayerRangeSelection => Enumerations.LayerRangeSelection.Current;
-        public override bool CanROI => false;
-        public override bool PassActualLayerIndex => true;
-
-        public override string Title => "Remove layers";
-
-        public override string Description =>
-            "Remove Layers in a given range.";
-
-        public override string ConfirmationText =>
-            $"remove layers {LayerIndexStart} through {LayerIndexEnd}?";
-
-        public override string ProgressTitle =>
-            $"Removing layers {LayerIndexStart} through {LayerIndexEnd}";
-
-        public override string ProgressAction => "Removed layers";
-
-        public override bool CanCancel => false;
-
-        public override bool CanHaveProfiles => false;
-
-        public override string ValidateInternally()
+        var layersToRemove = LayerRemoveCount;
+        if (LayerRemoveCount == 0)
         {
-            var sb = new StringBuilder();
-
-            if (LayerRangeCount == SlicerFile.LayerCount)
-            {
-                sb.AppendLine("You can't remove all layers from the file. Keep at least one.");
-            }
-
-            return sb.ToString();
+            sb.AppendLine("The used values will not remove any layer, please adjust.");
         }
 
-        #endregion
-
-        #region Properties
-
-
-        #endregion
-
-        #region Constructor
-
-        public OperationLayerRemove() { }
-
-        public OperationLayerRemove(FileFormat slicerFile) : base(slicerFile) { }
-
-        #endregion
-
-        #region Methods
-
-        protected override bool ExecuteInternally(OperationProgress progress)
+        if (layersToRemove == SlicerFile.LayerCount)
         {
-            progress.CanCancel = false;
-            var layersRemove = new List<uint>();
+            sb.AppendLine("You can't remove all layers from the file. Keep at least one.");
+        }
+
+        return sb.ToString();
+    }
+
+    #endregion
+
+    #region Properties
+
+    public bool UseThreshold
+    {
+        get => _useThreshold;
+        set
+        {
+            if(!RaiseAndSetIfChanged(ref _useThreshold, value)) return;
+            RaisePropertyChanged(nameof(LayerRemoveCount));
+        }
+    }
+
+    public uint PixelThreshold
+    {
+        get => _pixelThreshold;
+        set
+        {
+            if(!RaiseAndSetIfChanged(ref _pixelThreshold, value)) return;
+            RaisePropertyChanged(nameof(LayerRemoveCount));
+        }
+    }
+
+    public uint LayerRemoveCount
+    {
+        get
+        {
+            if (!_useThreshold) return LayerRangeCount;
+            uint layers = 0;
             for (uint layerIndex = LayerIndexStart; layerIndex <= LayerIndexEnd; layerIndex++)
             {
-                layersRemove.Add(layerIndex);
+                if (SlicerFile[layerIndex].NonZeroPixelCount > _pixelThreshold) continue;
+                layers++;
             }
 
-            return RemoveLayers(SlicerFile, layersRemove, progress);
+            return layers;
         }
-
-        public static bool RemoveLayers(FileFormat slicerFile, IEnumerable<uint> layersRemove, OperationProgress progress = null)
-        {
-            if (!layersRemove.Any()) return false;
-
-            progress ??= new OperationProgress(false);
-
-            progress.Reset("Removed layers", (uint)layersRemove.Count());
-
-            foreach (var layerIndex in layersRemove)
-            {
-                slicerFile[layerIndex] = null;
-                progress++;
-            }
-
-            slicerFile.LayerManager.RemoveNulls();
-
-            /*var oldLayers = slicerFile.LayerManager.Layers;
-            var layerHeight = slicerFile.LayerHeight;
-
-            var layers = new Layer[oldLayers.Length - layersRemove.Count];
-
-            // Re-set
-            uint newLayerIndex = 0;
-            for (uint layerIndex = 0; layerIndex < oldLayers.Length; layerIndex++)
-            {
-                if (layersRemove.Contains(layerIndex)) continue;
-                layers[newLayerIndex] = oldLayers[layerIndex];
-                layers[newLayerIndex].Index = newLayerIndex;
-
-                // Re-Z
-                float posZ = layerHeight;
-                if (newLayerIndex > 0)
-                {
-                    if (oldLayers[layerIndex - 1].PositionZ == oldLayers[layerIndex].PositionZ)
-                    {
-                        posZ = layers[newLayerIndex - 1].PositionZ;
-                    }
-                    else
-                    {
-                        posZ = Layer.RoundHeight(layers[newLayerIndex - 1].PositionZ + layerHeight);
-                    }
-                }
-
-                layers[newLayerIndex].PositionZ = posZ;
-                layers[newLayerIndex].IsModified = true;
-
-                newLayerIndex++;
-                progress++;
-            }
-
-            slicerFile.LayerManager.Layers = layers;*/
-
-
-
-            return true;
-        }
-        #endregion
     }
+
+    #endregion
+
+    #region Constructor
+
+    public OperationLayerRemove() { }
+
+    public OperationLayerRemove(FileFormat slicerFile) : base(slicerFile) { }
+
+    #endregion
+
+    #region Equality
+    private bool Equals(OperationLayerRemove other)
+    {
+        return _useThreshold == other._useThreshold && _pixelThreshold == other._pixelThreshold;
+    }
+
+    public override bool Equals(object? obj)
+    {
+        return ReferenceEquals(this, obj) || obj is OperationLayerRemove other && Equals(other);
+    }
+
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(_useThreshold, _pixelThreshold);
+    }
+    #endregion
+
+    #region Methods
+
+    protected override bool ExecuteInternally(OperationProgress progress)
+    {
+        progress.CanCancel = false;
+        var layersRemove = new List<uint>();
+        for (uint layerIndex = LayerIndexStart; layerIndex <= LayerIndexEnd; layerIndex++)
+        {
+            if(_useThreshold && SlicerFile[layerIndex].NonZeroPixelCount > _pixelThreshold) continue;
+            layersRemove.Add(layerIndex);
+        }
+
+        return RemoveLayers(SlicerFile, layersRemove, progress);
+    }
+
+    public static bool RemoveLayers(FileFormat slicerFile, IEnumerable<uint> layersRemove, OperationProgress? progress = null)
+    {
+        if (!layersRemove.Any()) return false;
+
+        progress ??= new OperationProgress(false);
+
+        progress.Reset("Removed layers", (uint)layersRemove.Count());
+
+        var layers = slicerFile.ToList();
+        int removedBottomLayers = 0;
+        //uint lastRemovedBottomLayerIndex = 0;
+
+        var lastBottomLayer = slicerFile.LastBottomLayer;
+
+        // Register bottom layers
+        if (slicerFile.BottomLayerCount > 0)
+        {
+            var layersRemoveAsc = layersRemove.OrderBy(index => index);
+            foreach (var layerIndex in layersRemoveAsc)
+            {
+                if (!slicerFile[layerIndex].IsBottomLayer) continue;
+                removedBottomLayers++;
+                //lastRemovedBottomLayerIndex = layerIndex;
+            }
+        }
+
+        // Remove layers
+        var layersRemoveDesc = layersRemove.OrderByDescending(index => index);
+        foreach (var layerIndex in layersRemoveDesc)
+        {
+            layers.RemoveAt((int)layerIndex);
+
+            // Shift layer positions
+            var relativeZ = slicerFile[layerIndex].RelativePositionZ;
+            if (relativeZ <= 0) continue;
+            for (uint i = layerIndex + 1; i < slicerFile.LayerCount; i++)
+            {
+                slicerFile[i].PositionZ -= relativeZ;
+            }
+            progress++;
+        }
+
+        // Should never happen, still use this safe-check
+        if (slicerFile.LayerCount != layers.Count)
+        {
+            // Try to copy bottom parameters to shifted new bottom layers
+            if (removedBottomLayers > 0 && lastBottomLayer is not null)
+            {
+                var startIndex = (uint) Math.Max(lastBottomLayer.Index + 1, layersRemove.Count());
+                var endIndex = startIndex + removedBottomLayers;
+                var copyFromFromLayerIndex = (uint)Math.Max(0, (int)lastBottomLayer.Index);
+                for (var layerIndex = startIndex; layerIndex < endIndex && layerIndex < slicerFile.LayerCount; layerIndex++)
+                {
+                    slicerFile[copyFromFromLayerIndex].CopyParametersTo(slicerFile[layerIndex]);
+                }
+            }
+            slicerFile.SuppressRebuildPropertiesWork(() => slicerFile.Layers = layers.ToArray());
+        }
+
+        return true;
+    }
+    #endregion
 }

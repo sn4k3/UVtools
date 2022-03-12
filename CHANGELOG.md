@@ -1,5 +1,67 @@
 # Changelog
 
+## 12/03/2022 - v3.0.0
+
+- **(Add) Suggestions:**
+   - A new module that detect bad or parameters out of a defined range and suggest a change on the file, those can be auto applied if configured to do so
+   - **Avaliable suggestions:**
+      - **Bottom layer count:** Bottom layers should be kept to a minimum, usually from 2 to 3, it function is to provide a good adhesion to the first layer on the build plate, using a high count have disadvantages.  
+      - **Wait time before cure:** Rest some time before cure the layer is crucial to let the resin settle after the lift sequence and allow some time for the arm settle at the correct Z position as the resin will offer some resistance and push the structure.  
+                                   This lead to better quality with more successful prints, less lamination problems, better first layers with more success of stick to the build plate and less elephant foot effect.
+      - **Wait time after cure:** Rest some time after cure the layer and before the lift sequence can be important to allow the layer to cooldown a bit and detach better from the FEP.
+      - **Layer height:** Using the right layer height is important to get successful prints:  
+                          Thin layers may cause problems on adhesion, lamination, will print much slower and have no real visual benefits.  
+                          Thick layers may not fully cure no matter the exposure time you use, causing lamination and other hazards. Read your resin dtasheet to know the limits.  
+                          Using layer height with too many decimal digits may produce a wrong positioning due stepper step loss and/or Z axis quality.
+- **Core:**
+   - Convert the project to Nullable aware and "null-safe"
+- **File Formats:**
+   - (Add) `Volume` property to get the total model volume
+   - (Add) `SanitizeLayers` method to reassign indexes and force attribute parent file
+   - (Improvement) Merge `LayerManager` into `FileFormat` and cleanup: This affects the whole project and external scripts.
+   If using scripts please update them, search for `.LayerManager.` and replace by `.`
+   - (Change) Chitubox encrypted format can now be saved as normal
+   - (Fix) Converted files layers was pointing to the source file and related to it
+- **Layers:**
+   - (Add) Methods: `ResetParameters`, `CopyParametersTo`, `CopyExposureTo`, `CopyWaitTimesTo`
+   - (Improvement) `IsBottomLayer` property will also return true when the index is inside bottom layer count
+- **Scripting:**
+   - (Add) Configuration variable: `MinimumVersionToRun` - Sets the minimum version able to run the script
+   - (Improvement) Allow run scripts written in C# 10 with the new namespace; style as well as nullables methods
+   - (Improvement) Convert scripts to use Nullable code
+- **UI:**
+   - (Add) Fluent Dark theme
+   - (Add) Default Light theme
+   - (Add) Default Dark theme
+   - (Change) Use fontawesome and material design to render the icons instead of static png images
+   - (Change) Some icons
+   - (Change) Move log tab to clipboard tab
+   - (Change) Tooltip overlay default color
+   - (Improvement) Windows position for tool windows, sometimes framework can return negative values affecting positions, now limits to 0 (#387)
+   - (Fix) Center image icon for layer action button
+   - (Fix) Center image icon for save layer image button
+- **Tools:**
+   - (Add) Layer re-height: Offset mode, change layers position by a defined offset (#423)
+   - (Improvement) Rotate: Unable to use an angle of 0
+   - (Improvement) Remove layers: Will not recalcualte and reset properties of layers anymore, allowing removing layers on dynamic layer height models and others
+   - (Improvement) Clone layers: Will not recalcualte and reset properties of layers anymore, allowing cloning layers on dynamic layer height models and others
+   - (Fix) Exposure time finder: Very small printers may not print the stock object as it is configured, lead to a unknown error while generating the test. It will now show a better error message and advice a solution (#426)
+- **Terminal:**
+   - (Add) More default namespaces
+   - (Improvement) Set a MinHeight for the rows to prevent spliter from eat the elements
+   - (Change) Set working space to the MainWindow instead of TerminalWindow
+- **(Upgrade) .NET from 5.0.14 to 6.0.3**
+   - This brings big performance improvements, better JIT, faster I/O operations and others
+   - Read more: https://devblogs.microsoft.com/dotnet/performance-improvements-in-net-6
+   - Due this macOS requirement starts at 10.15 (Catalina)
+   - Read more: https://github.com/dotnet/core/blob/main/release-notes/6.0/supported-os.md
+- (Add) Native support for MacOS ARM64 architecture (Mac M1 and upcomming Mac's) (#187)
+- (Exchange) Dependency Newtonsoft Json by System.Text.Json to parse the json documents
+- (Remove) Dependency: MoreLinq
+- (Remove) "Automations - Light-off delay" in favor of new suggestion "wait time before cure" module
+- (Fix) File - Send to: Winrar or 7zip have a wrong extension on the list (uvt) when should be (uvj)
+- (Upgrade) AvaloniaUI from 0.10.12 to 0.10.13
+
 ## 21/02/2022 - v2.29.0
 
 - **File formats:**
@@ -9,7 +71,7 @@
    - (Add) SL1: Keyword `TransitionLayerCount_xxx` - Sets the number of transition layers
    - (Improvement) CTB, PHZ, FDG: Implement the `ModifiedTimestampMinutes` field, it was the MysteriousId before as an unknown field
    - (Fix) CWS: Open in partial mode will cause an exception and prevent file from load
-- **CCode:**
+- **GCode:**
    - (Add) Allow inverse lifts to work as an retract
    - (Fix) Parsing of WaitTimeAfterLift was incorrect when lacking a lift sequence
    - (Fix) Layers lacking an exposure time was defaulting to global time, now defaults to 0
@@ -19,7 +81,7 @@
       - (Add) Information: Raise Layer count equivalence 
       - (Add) Information: Additional lifts to be generated
       - (Add) Option: Ensure the last layer - If enabled, it will generate an obligatory layer to cover the last layer
-      - (Improvement) Optimize lift for virtual layer mode, allowing set a slow and fast lift / retract by using another virtual layyer to emulate a lift
+      - (Improvement) Optimize lift for virtual layer mode, allowing set a slow and fast lift / retract by using another virtual layer to emulate a lift
       - (Improvement) Allow to define slow and fast speed for virtual layer mode even if TSMC isn't supported
    - (Add) Fade exposure time: Setting 'Disable firmware transition layers' - Attempt to disable firmware strict transition layers in favor of this tool
    - (Add) Calibration tests: Attempt to auto disable the firmware transifiton layers
@@ -769,6 +831,7 @@
   - (Fix) macOS: Include libusb-1.0.0.dylib
   - Note: `brew install libusb` still required
 - **UI:**
+  - (Add) Shorcuts: Arrow up and down to navigate layers while layer image is on focus
   - (Fix) Refresh gcode does not update text on UI for ZIP, CWS, ZCODEX files
   - (Fix) Operations: Import a .uvtop file by drag and drop into the UI would not load the layer range
   - (Change) When convert a file, the result dialog will have Yes, No and Cancel actions, where No will open the converted file on current window, while Cancel will not perform any action (The old No behaviour)

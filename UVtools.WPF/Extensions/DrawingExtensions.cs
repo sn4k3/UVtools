@@ -9,28 +9,27 @@
 using System.Drawing;
 using Avalonia;
 
-namespace UVtools.WPF.Extensions
+namespace UVtools.WPF.Extensions;
+
+public static class DrawingExtensions
 {
-    public static class DrawingExtensions
+    public static Avalonia.Media.Color ToAvalonia(this System.Drawing.Color color)
     {
-        public static Avalonia.Media.Color ToAvalonia(this System.Drawing.Color color)
-        {
-            return new(color.A, color.R, color.G, color.B);
-        }
+        return new(color.A, color.R, color.G, color.B);
+    }
 
-        public static System.Drawing.Color ToDotNet(this Avalonia.Media.Color color)
-        {
-            return Color.FromArgb(color.A, color.R, color.G, color.B);
-        }
+    public static System.Drawing.Color ToDotNet(this Avalonia.Media.Color color)
+    {
+        return Color.FromArgb(color.A, color.R, color.G, color.B);
+    }
 
-        public static Rect ToAvalonia(this Rectangle rectangle)
-        {
-            return new(rectangle.X, rectangle.Y, rectangle.Width, rectangle.Height); 
-        }
+    public static Rect ToAvalonia(this Rectangle rectangle)
+    {
+        return new(rectangle.X, rectangle.Y, rectangle.Width, rectangle.Height); 
+    }
 
-        public static Rectangle ToDotNet(this Rect rectangle)
-        {
-            return new((int) rectangle.X, (int) rectangle.Y, (int) rectangle.Width, (int) rectangle.Height);
-        }
+    public static Rectangle ToDotNet(this Rect rectangle)
+    {
+        return new((int) rectangle.X, (int) rectangle.Y, (int) rectangle.Width, (int) rectangle.Height);
     }
 }

@@ -2,22 +2,21 @@
 using Avalonia.Markup.Xaml;
 using UVtools.Core.Operations;
 
-namespace UVtools.WPF.Controls.Tools
+namespace UVtools.WPF.Controls.Tools;
+
+public class ToolMorphControl : ToolControl
 {
-    public class ToolMorphControl : ToolControl
+    public OperationMorph Operation => BaseOperation as OperationMorph;
+
+    public ToolMorphControl()
     {
-        public OperationMorph Operation => BaseOperation as OperationMorph;
+        BaseOperation = new OperationMorph(SlicerFile);
+        if (!ValidateSpawn()) return;
+        InitializeComponent();
+    }
 
-        public ToolMorphControl()
-        {
-            BaseOperation = new OperationMorph(SlicerFile);
-            if (!ValidateSpawn()) return;
-            InitializeComponent();
-        }
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
-        }
+    private void InitializeComponent()
+    {
+        AvaloniaXamlLoader.Load(this);
     }
 }

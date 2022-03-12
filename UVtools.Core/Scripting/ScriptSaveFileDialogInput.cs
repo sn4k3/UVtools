@@ -6,13 +6,12 @@
  *  of this license document, but changing it is not allowed.
  */
 
-namespace UVtools.Core.Scripting
+namespace UVtools.Core.Scripting;
+
+public class ScriptSaveFileDialogInput : ScriptFileDialogInput
 {
-    public class ScriptSaveFileDialogInput : ScriptFileDialogInput
-    {
-        /// <summary>
-        /// Gets or sets the default extension for the dialog
-        /// </summary>
-        public string DefaultExtension { get; set; }
-    }
+    /// <summary>
+    /// Gets or sets the default extension for the dialog
+    /// </summary>
+    public string? DefaultExtension { get; set; }
 }

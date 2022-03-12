@@ -4,41 +4,40 @@ using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using UVtools.Core.Operations;
 
-namespace UVtools.WPF.Controls.Tools
+namespace UVtools.WPF.Controls.Tools;
+
+public class ToolLayerExportGifControl : ToolControl
 {
-    public class ToolLayerExportGifControl : ToolControl
+    public OperationLayerExportGif Operation => BaseOperation as OperationLayerExportGif;
+    public ToolLayerExportGifControl()
     {
-        public OperationLayerExportGif Operation => BaseOperation as OperationLayerExportGif;
-        public ToolLayerExportGifControl()
-        {
-            BaseOperation = new OperationLayerExportGif(SlicerFile);
-            if (!ValidateSpawn()) return;
-            InitializeComponent();
-        }
+        BaseOperation = new OperationLayerExportGif(SlicerFile);
+        if (!ValidateSpawn()) return;
+        InitializeComponent();
+    }
 
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
-        }
+    private void InitializeComponent()
+    {
+        AvaloniaXamlLoader.Load(this);
+    }
 
-        public async void ChooseFilePath()
+    public async void ChooseFilePath()
+    {
+        var dialog = new SaveFileDialog
         {
-            var dialog = new SaveFileDialog
+            Filters = new List<FileDialogFilter>
             {
-                Filters = new List<FileDialogFilter>
+                new()
                 {
-                    new()
-                    {
-                        Extensions = new List<string>{"gif"},
-                        Name = "GIF files"
-                    }
-                },
-                InitialFileName = Path.GetFileName(SlicerFile.FileFullPath)+".gif",
-                Directory = Path.GetDirectoryName(SlicerFile.FileFullPath)
-            };
-            var file = await dialog.ShowAsync(ParentWindow);
-            if (string.IsNullOrWhiteSpace(file)) return;
-            Operation.FilePath = file;
-        }
+                    Extensions = new List<string>{"gif"},
+                    Name = "GIF files"
+                }
+            },
+            InitialFileName = Path.GetFileName(SlicerFile.FileFullPath)+".gif",
+            Directory = Path.GetDirectoryName(SlicerFile.FileFullPath)
+        };
+        var file = await dialog.ShowAsync(ParentWindow);
+        if (string.IsNullOrWhiteSpace(file)) return;
+        Operation.FilePath = file;
     }
 }

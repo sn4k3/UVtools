@@ -2,18 +2,17 @@
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 
-namespace UVtools.WPF.Controls
-{
-    public class DummyControl : UserControl
-    {
-        public DummyControl()
-        {
-            this.InitializeComponent();
-        }
+namespace UVtools.WPF.Controls;
 
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
-        }
+public class DummyControl : UserControl
+{
+    public DummyControl()
+    {
+        this.InitializeComponent();
+    }
+
+    private void InitializeComponent()
+    {
+        AvaloniaXamlLoader.Load(this);
     }
 }

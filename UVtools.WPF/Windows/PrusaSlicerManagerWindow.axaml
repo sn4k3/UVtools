@@ -90,17 +90,13 @@
             Classes="FooterActions">
 
       <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto">
-        <Button
+        <controls:ButtonWithIcon
           Grid.Row="0"
           Grid.Column="0"
           Padding="10"
-          Command="{Binding RefreshProfiles}"
-          >
-          <StackPanel Orientation="Horizontal" Spacing="10">
-            <Image Source="/Assets/Icons/refresh-16x16.png"/>
-            <TextBlock Text="Refresh profiles"/>
-          </StackPanel>
-        </Button>
+		  Icon="fas fa-sync-alt"
+		  Text="Refresh profiles"
+          Command="{Binding RefreshProfiles}"/>
 
         <StackPanel 
           Margin="0,0,5,5"
@@ -109,23 +105,17 @@
           HorizontalAlignment="Right"
           Orientation="Horizontal" 
           Spacing="5">
-            <Button Padding="10"
+            <controls:ButtonWithIcon Padding="10"
                     IsDefault="True"
-                    Command="{Binding InstallProfiles}">
-              <StackPanel Orientation="Horizontal" Spacing="10">
-                <Image Source="/Assets/Icons/accept-16x16.png"/>
-                <TextBlock Text="Install selected profiles"/>
-              </StackPanel>
-            </Button>
+					Icon="fas fa-check"
+					Text="Install selected profiles"
+                    Command="{Binding InstallProfiles}"/>
 
-          <Button Padding="10" 
+          <controls:ButtonWithIcon Padding="10" 
                   IsCancel="True"
-                  Command="{Binding Close}">
-            <StackPanel Orientation="Horizontal" Spacing="10">
-              <Image Source="/Assets/Icons/exit-16x16.png"/>
-              <TextBlock Text="Close"/>
-            </StackPanel>
-          </Button>
+				  Icon="fas fa-sign-out-alt"
+				  Text="Close"
+                  Command="{Binding Close}"/>
         </StackPanel>
         
       </Grid>
@@ -133,8 +123,7 @@
     </Border>
 
       <TabControl SelectedIndex="{Binding TabSlicerSelectedIndex}">
-          <TabItem
-              IsVisible="{Binding HavePrusaSlicer}">
+          <TabItem IsVisible="{Binding HavePrusaSlicer}">
               <TabItem.Header>
                   <StackPanel Orientation="Horizontal" Spacing="5">
                       <Image Stretch="None" Source="/Assets/Icons/PrusaSlicer-32.png" />
@@ -168,23 +157,17 @@
 						  <StackPanel
 							Grid.Row="1"
 							Orientation="Horizontal" Spacing="1">
-							  <Button Padding="10"
+							  <controls:ButtonWithIcon Padding="10"
 									  IsEnabled="{Binding PrusaSlicerProfiles[0].Updates}"
-									  Command="{Binding PrusaSlicerProfiles[0].SelectNone}">
-								  <StackPanel Orientation="Horizontal" Spacing="5">
-									  <Image Source="/Assets/Icons/checkbox-unmarked-16x16.png"/>
-									  <TextBlock Text="Unselect all"/>
-								  </StackPanel>
-							  </Button>
+									  Icon="far fa-square"
+                                      Text="Unselect all"
+									  Command="{Binding PrusaSlicerProfiles[0].SelectNone}"/>
 
-							  <Button Padding="10"
-									  IsEnabled="{Binding PrusaSlicerProfiles[0].Updates}"
-									  Command="{Binding PrusaSlicerProfiles[0].SelectAll}">
-								  <StackPanel Orientation="Horizontal" Spacing="5">
-									  <Image Source="/Assets/Icons/checkbox-marked-16x16.png"/>
-									  <TextBlock Text="Select all"/>
-								  </StackPanel>
-							  </Button>
+							  <controls:ButtonWithIcon Padding="10"
+                                              IsEnabled="{Binding PrusaSlicerProfiles[0].Updates}"
+											  Icon="far fa-check-square"
+											  Text="Select all"
+                                              Command="{Binding PrusaSlicerProfiles[0].SelectAll}"/>
 
 						  </StackPanel>
 
@@ -217,23 +200,17 @@
 						  <StackPanel
 							Grid.Row="1"
 							Orientation="Horizontal" Spacing="1">
-							  <Button Padding="10"
-									  IsEnabled="{Binding PrusaSlicerProfiles[1].Updates}"
-									  Command="{Binding PrusaSlicerProfiles[1].SelectNone}">
-								  <StackPanel Orientation="Horizontal" Spacing="5">
-									  <Image Source="/Assets/Icons/checkbox-unmarked-16x16.png"/>
-									  <TextBlock Text="Unselect all"/>
-								  </StackPanel>
-							  </Button>
+                              <controls:ButtonWithIcon Padding="10"
+                                                       IsEnabled="{Binding PrusaSlicerProfiles[1].Updates}"
+                                                       Icon="far fa-square"
+                                                       Text="Unselect all"
+                                                       Command="{Binding PrusaSlicerProfiles[1].SelectNone}"/>
 
-							  <Button Padding="10"
-									  IsEnabled="{Binding PrusaSlicerProfiles[1].Updates}"
-									  Command="{Binding PrusaSlicerProfiles[1].SelectAll}">
-								  <StackPanel Orientation="Horizontal" Spacing="5">
-									  <Image Source="/Assets/Icons/checkbox-marked-16x16.png"/>
-									  <TextBlock Text="Select all"/>
-								  </StackPanel>
-							  </Button>
+                              <controls:ButtonWithIcon Padding="10"
+                                                       IsEnabled="{Binding PrusaSlicerProfiles[1].Updates}"
+                                                       Icon="far fa-check-square"
+                                                       Text="Select all"
+                                                       Command="{Binding PrusaSlicerProfiles[1].SelectAll}"/>
 
 						  </StackPanel>
 
@@ -282,23 +259,17 @@
 						  <StackPanel
 							Grid.Row="1"
 							Orientation="Horizontal" Spacing="1">
-							  <Button Padding="10"
-									  IsEnabled="{Binding SuperSlicerProfiles[0].Updates}"
-									  Command="{Binding SuperSlicerProfiles[0].SelectNone}">
-								  <StackPanel Orientation="Horizontal" Spacing="5">
-									  <Image Source="/Assets/Icons/checkbox-unmarked-16x16.png"/>
-									  <TextBlock Text="Unselect all"/>
-								  </StackPanel>
-							  </Button>
+                              <controls:ButtonWithIcon Padding="10"
+                                                       IsEnabled="{Binding SuperSlicerProfiles[0].Updates}"
+                                                       Icon="far fa-square"
+                                                       Text="Unselect all"
+                                                       Command="{Binding SuperSlicerProfiles[0].SelectNone}"/>
 
-							  <Button Padding="10"
-									  IsEnabled="{Binding SuperSlicerProfiles[0].Updates}"
-									  Command="{Binding SuperSlicerProfiles[0].SelectAll}">
-								  <StackPanel Orientation="Horizontal" Spacing="5">
-									  <Image Source="/Assets/Icons/checkbox-marked-16x16.png"/>
-									  <TextBlock Text="Select all"/>
-								  </StackPanel>
-							  </Button>
+                              <controls:ButtonWithIcon Padding="10"
+                                                       IsEnabled="{Binding SuperSlicerProfiles[0].Updates}"
+                                                       Icon="far fa-check-square"
+                                                       Text="Select all"
+                                                       Command="{Binding SuperSlicerProfiles[0].SelectAll}"/>
 
 						  </StackPanel>
 
@@ -331,23 +302,17 @@
 						  <StackPanel
 							Grid.Row="1"
 							Orientation="Horizontal" Spacing="1">
-							  <Button Padding="10"
-									  IsEnabled="{Binding SuperSlicerProfiles[1].Updates}"
-									  Command="{Binding SuperSlicerProfiles[1].SelectNone}">
-								  <StackPanel Orientation="Horizontal" Spacing="5">
-									  <Image Source="/Assets/Icons/checkbox-unmarked-16x16.png"/>
-									  <TextBlock Text="Unselect all"/>
-								  </StackPanel>
-							  </Button>
+                              <controls:ButtonWithIcon Padding="10"
+                                                       IsEnabled="{Binding SuperSlicerProfiles[1].Updates}"
+                                                       Icon="far fa-square"
+                                                       Text="Unselect all"
+                                                       Command="{Binding SuperSlicerProfiles[1].SelectNone}"/>
 
-							  <Button Padding="10"
-									  IsEnabled="{Binding SuperSlicerProfiles[1].Updates}"
-									  Command="{Binding SuperSlicerProfiles[1].SelectAll}">
-								  <StackPanel Orientation="Horizontal" Spacing="5">
-									  <Image Source="/Assets/Icons/checkbox-marked-16x16.png"/>
-									  <TextBlock Text="Select all"/>
-								  </StackPanel>
-							  </Button>
+                              <controls:ButtonWithIcon Padding="10"
+                                                       IsEnabled="{Binding SuperSlicerProfiles[1].Updates}"
+                                                       Icon="far fa-check-square"
+                                                       Text="Select all"
+                                                       Command="{Binding SuperSlicerProfiles[1].SelectAll}"/>
 
 						  </StackPanel>
 

@@ -1,27 +1,26 @@
 ﻿using Avalonia.Markup.Xaml;
 using UVtools.Core.Operations;
 
-namespace UVtools.WPF.Controls.Tools
+namespace UVtools.WPF.Controls.Tools;
+
+public class ToolRaftReliefControl : ToolControl
 {
-    public class ToolRaftReliefControl : ToolControl
+    public OperationRaftRelief Operation => BaseOperation as OperationRaftRelief;
+
+    public ToolRaftReliefControl()
     {
-        public OperationRaftRelief Operation => BaseOperation as OperationRaftRelief;
+        BaseOperation = new OperationRaftRelief(SlicerFile);
+        if (!ValidateSpawn()) return;
+        InitializeComponent();
+    }
 
-        public ToolRaftReliefControl()
-        {
-            BaseOperation = new OperationRaftRelief(SlicerFile);
-            if (!ValidateSpawn()) return;
-            InitializeComponent();
-        }
+    private void InitializeComponent()
+    {
+        AvaloniaXamlLoader.Load(this);
+    }
 
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
-        }
-
-        public void UseCurrentLayerAsMask()
-        {
-            Operation.MaskLayerIndex = App.MainWindow.ActualLayer;
-        }
+    public void UseCurrentLayerAsMask()
+    {
+        Operation.MaskLayerIndex = App.MainWindow.ActualLayer;
     }
 }

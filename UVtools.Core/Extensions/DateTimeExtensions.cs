@@ -9,43 +9,42 @@
 
 using System;
 
-namespace UVtools.Core.Extensions
+namespace UVtools.Core.Extensions;
+
+public static class DateTimeExtensions
 {
-    public static class DateTimeExtensions
+    /// <summary>
+    /// Gets the Unix timestamp since Jan 1, 1970 UTC
+    /// </summary>
+    public static TimeSpan Timestamp => DateTime.UtcNow.Subtract(DateTime.UnixEpoch);
+
+    /// <summary>
+    /// Gets the Unix timestamp in seconds since Jan 1, 1970 UTC
+    /// </summary>
+    public static double TimestampSeconds => Timestamp.TotalSeconds;
+
+    /// <summary>
+    /// Gets the Unix minutes in seconds since Jan 1, 1970 UTC
+    /// </summary>
+    public static double TimestampMinutes => Timestamp.TotalMinutes;
+
+    /// <summary>
+    /// Gets the <see cref="DateTime"/> from a unix timestamp in seconds
+    /// </summary>
+    /// <param name="seconds"></param>
+    /// <returns></returns>
+    public static DateTime GetDateTimeFromTimestampSeconds(double seconds)
     {
-        /// <summary>
-        /// Gets the Unix timestamp since Jan 1, 1970 UTC
-        /// </summary>
-        public static TimeSpan Timestamp => DateTime.UtcNow.Subtract(DateTime.UnixEpoch);
+        return DateTime.UnixEpoch.AddSeconds(seconds);
+    }
 
-        /// <summary>
-        /// Gets the Unix timestamp in seconds since Jan 1, 1970 UTC
-        /// </summary>
-        public static double TimestampSeconds => Timestamp.TotalSeconds;
-
-        /// <summary>
-        /// Gets the Unix minutes in seconds since Jan 1, 1970 UTC
-        /// </summary>
-        public static double TimestampMinutes => Timestamp.TotalMinutes;
-
-        /// <summary>
-        /// Gets the <see cref="DateTime"/> from a unix timestamp in seconds
-        /// </summary>
-        /// <param name="seconds"></param>
-        /// <returns></returns>
-        public static DateTime GetDateTimeFromTimestampSeconds(double seconds)
-        {
-            return DateTime.UnixEpoch.AddSeconds(seconds);
-        }
-
-        /// <summary>
-        /// Gets the <see cref="DateTime"/> from a unix timestamp in minutes
-        /// </summary>
-        /// <param name="minutes"></param>
-        /// <returns></returns>
-        public static DateTime GetDateTimeFromTimestampMinutes(double minutes)
-        {
-            return DateTime.UnixEpoch.AddMinutes(minutes);
-        }
+    /// <summary>
+    /// Gets the <see cref="DateTime"/> from a unix timestamp in minutes
+    /// </summary>
+    /// <param name="minutes"></param>
+    /// <returns></returns>
+    public static DateTime GetDateTimeFromTimestampMinutes(double minutes)
+    {
+        return DateTime.UnixEpoch.AddMinutes(minutes);
     }
 }

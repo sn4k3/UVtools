@@ -196,7 +196,7 @@ The UVtools executable allow to set some arguments to do special functions:
       - Type: appwiz.cpl (and press Enter key)
       - Click on: Turn Windows features on or off
       - Check the "Media Extensions" and click Ok
-<!-- 1. [.NET 5.0](https://dotnet.microsoft.com/download/dotnet/5.0) installed (Comes pre-installed on Windows 10 with last updates)!-->
+<!-- 1. [.NET 6.0](https://dotnet.microsoft.com/download/dotnet/6.0) installed (Comes pre-installed on Windows 10 with last updates)!-->
 1. 4GB RAM or higher
 1. 1920 x 1080 @ 100% scale as minimum resolution
 
@@ -215,7 +215,7 @@ sudo dpkg -i packages-microsoft-prod.deb
 rm packages-microsoft-prod.deb
 sudo apt-get update
 sudo apt-get install -y apt-transport-https
-dotnet-runtime-5.0
+dotnet-runtime-6.0
 !-->
 
 ```bash
@@ -348,7 +348,7 @@ this process is very slow but only need to run once. Open a terminal on any fold
 ```bash
 sudo yum update -y
 sudo yum groupinstall -y "Development Tools" "Development Libraries"
-sudo yum install -y cmake gcc-c++ dotnet-sdk-5.0 gtk3-devel gstreamer1-devel ffmpeg ffmpeg-devel libdc1394 libv4l-devel cmake-gui ocl-icd-devel freeglut libgeotiff libusb
+sudo yum install -y cmake gcc-c++ dotnet-sdk-6.0 gtk3-devel gstreamer1-devel ffmpeg ffmpeg-devel libdc1394 libv4l-devel cmake-gui ocl-icd-devel freeglut libgeotiff libusb
 git clone https://github.com/emgucv/emgucv emgucv 
 cd emgucv
 git submodule update --init --recursive
@@ -370,11 +370,11 @@ anyone with same system version can make use of it without the need of the compi
 
 ## Mac
 
-1. macOS 10.13 High Sierra
+1. macOS 10.15 Catalina or higher
 1. 4GB RAM or higher
 
 <!--- 
-* Donwload and install: https://dotnet.microsoft.com/download/dotnet/thank-you/sdk-5.0.101-macos-x64-installer
+* Donwload and install: https://dotnet.microsoft.com/download/dotnet/thank-you/sdk-6.0.101-macos-x64-installer
 brew install libjpeg libpng libgeotiff libdc1394 ffmpeg openexr tbb
 ```bash
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
@@ -420,7 +420,7 @@ There are multiple ways to open your file:
 # Library -> Developers
 
 Are you a developer? 
-This project include a .NET 5.0 library (UVtools.Core) that can be referenced in your application to make use of my work. 
+This project include a .NET 6.0 library (UVtools.Core) that can be referenced in your application to make use of my work. 
 Easy to use calls that allow you work with the formats. For more information navigate main code to see some calls.
 
 Nuget package: https://www.nuget.org/packages/UVtools.Core
@@ -437,8 +437,8 @@ dotnet add package UVtools.Core
 The fastest way to compile the project is by run the `build/CompileWindows.bat`, however if you wish to develop with visual studio follow the following steps:
 
 1. Install Visual Studio and include .NET development support
-1. Install the .NET 5.0 SDK if not included on previous instalation
-   - https://dotnet.microsoft.com/download/dotnet/5.0
+1. Install the .NET 6.0 SDK if not included on previous instalation
+   - https://dotnet.microsoft.com/download/dotnet/6.0
 1. Install the Avalonia for Visual Sutdio:
    - https://marketplace.visualstudio.com/items?itemName=AvaloniaTeam.AvaloniaforVisualStudio
 1. Install the Wix Toolset: (Required only for MSI build, **optional**)

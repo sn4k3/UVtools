@@ -3,56 +3,55 @@ using UVtools.Core.Layers;
 using UVtools.Core.Operations;
 using UVtools.WPF.Windows;
 
-namespace UVtools.WPF.Controls.Tools
+namespace UVtools.WPF.Controls.Tools;
+
+public class ToolLayerCloneControl : ToolControl
 {
-    public class ToolLayerCloneControl : ToolControl
-    {
-        public OperationLayerClone Operation => BaseOperation as OperationLayerClone;
+    public OperationLayerClone Operation => BaseOperation as OperationLayerClone;
 
         
-        public string InfoLayersStr
+    public string InfoLayersStr
+    {
+        get
         {
-            get
-            {
-                uint extraLayers = Operation.ExtraLayers;
-                return $"Layers: {App.SlicerFile.LayerCount} → {SlicerFile.LayerCount + extraLayers} (+ {extraLayers})";
-            }
+            uint extraLayers = Operation.ExtraLayers;
+            return $"Layers: {App.SlicerFile.LayerCount} → {SlicerFile.LayerCount + extraLayers} (+ {extraLayers})";
         }
+    }
 
-        public string InfoHeightsStr
+    public string InfoHeightsStr
+    {
+        get
         {
-            get
-            {
-                float extraHeight = Operation.KeepSamePositionZ ? 0 : Layer.RoundHeight(Operation.ExtraLayers * SlicerFile.LayerHeight);
-                return $"Height: {App.SlicerFile.PrintHeight}mm → {Layer.RoundHeight(SlicerFile.PrintHeight + extraHeight)}mm (+ {extraHeight}mm)";
-            }
+            float extraHeight = Operation.KeepSamePositionZ ? 0 : Layer.RoundHeight(Operation.ExtraLayers * SlicerFile.LayerHeight);
+            return $"Height: {App.SlicerFile.PrintHeight}mm → {Layer.RoundHeight(SlicerFile.PrintHeight + extraHeight)}mm (+ {extraHeight}mm)";
         }
+    }
 
-        public ToolLayerCloneControl()
-        {
-            BaseOperation = new OperationLayerClone(SlicerFile);
-            if (!ValidateSpawn()) return;
-            InitializeComponent();
-        }
+    public ToolLayerCloneControl()
+    {
+        BaseOperation = new OperationLayerClone(SlicerFile);
+        if (!ValidateSpawn()) return;
+        InitializeComponent();
+    }
 
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
-        }
+    private void InitializeComponent()
+    {
+        AvaloniaXamlLoader.Load(this);
+    }
 
-        public override void Callback(ToolWindow.Callbacks callback)
+    public override void Callback(ToolWindow.Callbacks callback)
+    {
+        switch (callback)
         {
-            switch (callback)
-            {
-                case ToolWindow.Callbacks.Init:
-                case ToolWindow.Callbacks.Loaded:
-                    Operation.PropertyChanged += (sender, args) =>
-                    {
-                        RaisePropertyChanged(nameof(InfoLayersStr));
-                        RaisePropertyChanged(nameof(InfoHeightsStr));
-                    };
-                    break;
-            }
+            case ToolWindow.Callbacks.Init:
+            case ToolWindow.Callbacks.Loaded:
+                Operation.PropertyChanged += (sender, args) =>
+                {
+                    RaisePropertyChanged(nameof(InfoLayersStr));
+                    RaisePropertyChanged(nameof(InfoHeightsStr));
+                };
+                break;
         }
     }
 }

@@ -14,18 +14,16 @@
         Icon="/Assets/Icons/UVtools.ico">
 
     <DockPanel>
-		<Border DockPanel.Dock="Bottom" Background="WhiteSmoke">
-			<Grid ColumnDefinitions="Auto,*" Margin="15">
-				<Button
+		<Border DockPanel.Dock="Bottom" Classes="FooterActions">
+			<Grid ColumnDefinitions="Auto,*">
+                <controls:ButtonWithIcon
                     Grid.Column="0"
                     Command="{Binding CopyInformationToClipboard}"
                     Padding="10"
                     VerticalContentAlignment="Center"
-                    HorizontalAlignment="Right">
-                    <StackPanel Spacing="10" VerticalAlignment="Center" Orientation="Horizontal">
-                        <Image Width="16" Height="16" Source="/Assets/Icons/clipboard-16x16.png"/>
-                        <TextBlock Text="Copy information ⮝"/>
-                    </StackPanel>
+                    HorizontalAlignment="Right"
+                    Icon="far fa-clipboard"
+                    Text="Copy information ⮝">
                     <Button.ContextMenu>
                         <ContextMenu PlacementAnchor="Top" PlacementMode="Top">
                             <MenuItem Header="Copy the essential information" Command="{Binding CopyEssentialInformation}"/>
@@ -34,20 +32,17 @@
                             <MenuItem Header="All information" Command="{Binding CopyInformationToClipboard}"/>
 						</ContextMenu>
 					</Button.ContextMenu>
-                </Button>
+                </controls:ButtonWithIcon>
                 
-                <Button
-                    Grid.Column="1"
-                    Command="{Binding Close}"
-                    IsCancel="True"
-                    Padding="10"
-                    VerticalContentAlignment="Center"
-                    HorizontalAlignment="Right">
-                    <StackPanel Spacing="10" VerticalAlignment="Center" Orientation="Horizontal">
-                        <Image Width="16" Height="16" Source="/Assets/Icons/exit-16x16.png"/>
-                        <TextBlock Text="Close"/>
-                    </StackPanel>
-                </Button>
+                <controls:ButtonWithIcon Grid.Column="1"
+                        Command="{Binding Close}"
+                        IsCancel="True"
+                        Padding="10"
+                        VerticalContentAlignment="Center"
+                        HorizontalAlignment="Right"
+                        Icon="fas fa-sign-out-alt"
+                        Text="Close">
+                </controls:ButtonWithIcon>
             </Grid>
 		</Border>
 
@@ -135,12 +130,6 @@
                         UseFloatingWatermark="True"/>
                 </Grid>
 
-                
-
-                
-
-				
-
 			    <TextBox
 			      Text="{Binding ScreensDescription}"
 			      IsReadOnly="True"
@@ -148,27 +137,6 @@
 			      CaretBrush="Transparent"
 			      Watermark="Screens, resolution, working area, usable area:"
 			      UseFloatingWatermark="True"/>
-
-				<!--<Button
-				    Margin="0,20,0,0"
-				    HorizontalAlignment="Stretch"
-				    Command="{Binding CopyOpenCVInformationToClipboard}">
-                    <StackPanel Orientation="Horizontal" Spacing="10">
-                        <Image Source="/Assets/Icons/clipboard-16x16.png"/>
-                        <TextBlock VerticalAlignment="Center" Text="Copy OpenCV build information"/>
-                    </StackPanel>
-				</Button>
-
-			    <Button
-				    Margin="0,0,0,0"
-				    HorizontalAlignment="Stretch"
-				    Command="{Binding CopyLoadedAssembliesToClipboard}">
-                    <StackPanel Orientation="Horizontal" Spacing="10">
-                        <Image Source="/Assets/Icons/clipboard-16x16.png"/>
-                        <TextBlock VerticalAlignment="Center" Text="Copy loaded assemblies"/>
-                    </StackPanel>
-                </Button>
-				!-->
 		    </StackPanel>
 	    </ScrollViewer>
 
@@ -183,13 +151,10 @@
             <TextBlock Grid.Row="2" Text="{Binding Version}"/>
             <TextBlock Grid.Row="4" Text="{Binding Copyright}"/>
             <TextBlock Grid.Row="6" Text="{Binding Company}"/>
-            <Button Grid.Row="8" VerticalAlignment="Center"
-                    Command="{Binding OpenLicense}">
-                <StackPanel Orientation="Horizontal" Spacing="10">
-                    <Image Source="/Assets/Icons/balance-scale-16x16.png"></Image>
-                    <TextBlock VerticalAlignment="Center" Text="{Binding License}"/>
-                </StackPanel>
-            </Button>
+            <controls:ButtonWithIcon Grid.Row="8" VerticalAlignment="Center"
+                    Command="{Binding OpenLicense}"
+                    Text="{Binding License}"
+					Icon="fas fa-balance-scale"/>
 
             <TabControl Grid.Row="10">
                 <TabItem Header="Description">
@@ -215,129 +180,9 @@
                         ScrollViewer.VerticalScrollBarVisibility="Auto"
                         Text="{Binding LoadedAssemblies}"/>
                 </TabItem>
-
 			</TabControl>
-
-
 		</Grid>
 	</Border>
 </DockPanel>
 
-	<!--
-  <StackPanel Orientation="Vertical">
-    <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
-      <Border Margin="20,20,0,20">
-      <StackPanel Spacing="5" MaxWidth="360">
-        <Image Margin="0,0,0,15" 
-               HorizontalAlignment="Center"
-               Source="/Assets/Icons/UVtools_alt.ico"
-               Width="256"/>
-        <TextBox 
-          Text="{Binding OSDescription}"
-          IsReadOnly="True" 
-          BorderBrush="Transparent"
-          CaretBrush="Transparent"
-          Watermark="Operative System:"
-          UseFloatingWatermark="True"/>
-
-        <TextBox
-            Text="{Binding RuntimeDescription}"
-            IsReadOnly="True"
-            BorderBrush="Transparent"
-            CaretBrush="Transparent"
-            Watermark="Runtime:"
-            UseFloatingWatermark="True"/>
-
-        <TextBox
-          Text="{Binding FrameworkDescription}"
-          IsReadOnly="True"
-          BorderBrush="Transparent"
-          CaretBrush="Transparent"
-          Watermark="Framework:"
-          UseFloatingWatermark="True"/>
-
-        <TextBox
-            Text="{Binding AvaloniaUIDescription}"
-            IsReadOnly="True"
-            BorderBrush="Transparent"
-            CaretBrush="Transparent"
-            Watermark="AvaloniaUI:"
-            UseFloatingWatermark="True"/>
-
-        <TextBox
-            Text="{Binding OpenCVDescription}"
-            IsReadOnly="True"
-            BorderBrush="Transparent"
-            CaretBrush="Transparent"
-            Watermark="OpenCV:"
-            UseFloatingWatermark="True"/>
-
-        <TextBox
-          Text="{Binding ProcessorCount}"
-          IsReadOnly="True"
-          BorderBrush="Transparent"
-          CaretBrush="Transparent"
-          Watermark="Processor Count:"
-          UseFloatingWatermark="True"/>
-
-        <TextBox
-          Text="{Binding ScreensDescription}"
-          IsReadOnly="True"
-          BorderBrush="Transparent"
-          CaretBrush="Transparent"
-          Watermark="Screens, resolution, working area, usable area:"
-          UseFloatingWatermark="True"/>
-
-        <Button 
-            Margin="0,20,0,0"
-            HorizontalAlignment="Stretch"
-            Content="Copy OpenCV build information to clipboard"
-            Command="{Binding CopyOpenCVInformationToClipboard}" />
-
-        <Button
-            Margin="0,10,0,0"
-            HorizontalAlignment="Stretch"
-            Content="Copy loaded assemblies to clipboard"
-            Command="{Binding CopyLoadedAssembliesToClipboard}" />
-      </StackPanel>
-      </Border>
-      <Grid 
-        RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,*"
-        Margin="20">
-
-        <TextBlock Grid.Row="0" Text="{Binding Software}" FontWeight="Bold"/>
-        <TextBlock Grid.Row="2" Text="{Binding Version}"/>
-        <TextBlock Grid.Row="4" Text="{Binding Copyright}"/>
-        <TextBlock Grid.Row="6" Text="{Binding Company}"/>
-        <Button Grid.Row="8" VerticalAlignment="Center"
-                Command="{Binding OpenLicense}">
-            <StackPanel Orientation="Horizontal" Spacing="10">
-                <Image Source="/Assets/Icons/balance-scale-16x16.png"></Image>
-                <TextBlock VerticalAlignment="Center" Text="{Binding License}"/>
-            </StackPanel>
-        </Button>
-
-        <TextBox Grid.Row="10" 
-                 IsReadOnly="True"
-                 MaxHeight="560"
-                 Text="{Binding Description}"/>
-      </Grid>
-    </StackPanel>
-
-    <Border Background="WhiteSmoke">
-        <Button 
-          Command="{Binding Close}"
-          IsCancel="True"
-          Padding="10" 
-          Margin="20" 
-          HorizontalAlignment="Right">
-          <StackPanel Spacing="10" VerticalAlignment="Center" Orientation="Horizontal">
-            <Image Source="/Assets/Icons/exit-16x16.png"/>
-            <TextBlock Grid.Row="6" Text="Close"/>
-          </StackPanel>
-        </Button>
-    </Border>
-    
-  </StackPanel>
-  -->
 </controls:WindowEx>

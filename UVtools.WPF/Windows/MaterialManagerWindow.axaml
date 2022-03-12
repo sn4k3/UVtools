@@ -18,15 +18,6 @@
                 IsExpanded="True">
 
                 <StackPanel>
-                  <!--<Button VerticalAlignment="Center"
-                            Command="{Binding RefreshStatistics}">
-                        <StackPanel Orientation="Horizontal" Spacing="10">
-                            <Image Source="/Assets/Icons/refresh-16x16.png"/>
-                            <TextBlock Text="Refresh statistics"/>
-                        </StackPanel>
-                    </Button>
-                    !-->
-
                   <WrapPanel Orientation="Horizontal">
                     <StackPanel Orientation="Horizontal">
                       <TextBlock Text="Bottles in stock:" VerticalAlignment="Center" FontWeight="Bold"/>
@@ -91,19 +82,14 @@
                        Watermark="A descriptive material name, eg: Epax Hard Grey"
                        Text="{Binding Material.Name}"/>
 
-              <Button
+              <controls:ButtonWithIcon
                   Grid.Row="0" Grid.Column="14" Grid.ColumnSpan="3"
                   VerticalContentAlignment="Center"
                   HorizontalContentAlignment="Stretch"
                   VerticalAlignment="Stretch"
-                  Command="{Binding AddNewMaterial}">
-                  <StackPanel Orientation="Horizontal" Spacing="10">
-                      <Image Source="/Assets/Icons/plus-16x16.png"/>
-                      <TextBlock
-                          VerticalAlignment="Center"
-                          Text="Add new material"/>
-                  </StackPanel>
-              </Button>
+                  Icon="fas fa-plus"
+                  Text="Add new material"
+                  Command="{Binding AddNewMaterial}"/>
 
               <TextBlock Grid.Row="2" Grid.Column="0"
                          VerticalAlignment="Center"
@@ -164,27 +150,19 @@
 
         <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="1">
 
-          <Button VerticalAlignment="Center" 
+          <controls:ButtonWithIcon VerticalAlignment="Center" 
                   IsEnabled="{Binding #MaterialsTable.SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}"
-                  Command="{Binding RemoveSelectedMaterials}">
-            <StackPanel Orientation="Horizontal" Spacing="10">
-              <Image Source="/Assets/Icons/trash-16x16.png"/>
-              <TextBlock Text="Remove selected materials"/>
-            </StackPanel>
-          </Button>
+                  Icon="fas fa-trash-alt"
+                  Text="Remove selected materials"
+                  Command="{Binding RemoveSelectedMaterials}"/>
 
-            <Button VerticalAlignment="Center" 
+            <controls:ButtonWithIcon VerticalAlignment="Center" 
                     IsEnabled="{Binding Manager.Count}"
-                    Command="{Binding ClearMaterials}">
-                <StackPanel Orientation="Horizontal" Spacing="10">
-                    <Image Source="/Assets/Icons/delete-16x16.png"/>
-                    <TextBlock Text="{Binding Manager.Count, StringFormat=Clear {0} materials}"/>
-                </StackPanel>
-            </Button>
+                    Icon="fas fa-times"
+                    Text="{Binding Manager.Count, StringFormat=Clear {0} materials}"
+                    Command="{Binding ClearMaterials}"/>
 
         </StackPanel>
-
-        
 
       <DataGrid Grid.Row="3"
       Name="MaterialsTable"

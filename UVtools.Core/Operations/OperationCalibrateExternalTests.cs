@@ -9,49 +9,49 @@
 
 using UVtools.Core.FileFormats;
 
-namespace UVtools.Core.Operations
+namespace UVtools.Core.Operations;
+
+public class OperationCalibrateExternalTests : Operation
 {
-    public class OperationCalibrateExternalTests : Operation
-    {
-        #region Members
-        #endregion
+    #region Members
+    #endregion
 
-        #region Overrides
+    #region Overrides
 
-        public override Enumerations.LayerRangeSelection StartLayerRangeSelection => Enumerations.LayerRangeSelection.None;
-        public override bool CanROI => false;
-        public override bool CanHaveProfiles => false;
-        public override string ButtonOkText => null;
-        public override string Title => "External tests";
-        public override string Description =>
-            "A set of useful external tests to run within your slicer.\nClick on a button to open website and instructions.";
+    public override Enumerations.LayerRangeSelection StartLayerRangeSelection => Enumerations.LayerRangeSelection.None;
+    public override bool CanROI => false;
+    public override bool CanHaveProfiles => false;
+    public override string ButtonOkText => null!;
+    public override string IconClass => "fas fa-bookmark";
+    public override string Title => "External tests";
+    public override string Description =>
+        "A set of useful external tests to run within your slicer.\nClick on a button to open website and instructions.";
 
-        public override string ConfirmationText => null;
+    public override string ConfirmationText => null!;
 
-        public override string ProgressTitle => null;
+    public override string ProgressTitle => null!;
 
-        public override string ProgressAction => null;
+    public override string ProgressAction => null!;
 
-        #endregion
+    #endregion
 
-        #region Constructor
+    #region Constructor
 
-        public OperationCalibrateExternalTests() { }
+    public OperationCalibrateExternalTests() { }
 
-        public OperationCalibrateExternalTests(FileFormat slicerFile) : base(slicerFile) { }
+    public OperationCalibrateExternalTests(FileFormat slicerFile) : base(slicerFile) { }
 
-        #endregion
+    #endregion
 
-        #region Properties
+    #region Properties
 
-        #endregion
+    #endregion
 
-        #region Equality
+    #region Equality
 
-        #endregion
+    #endregion
 
-        #region Methods
+    #region Methods
 
-        #endregion
-    }
+    #endregion
 }

@@ -1,22 +1,21 @@
 ﻿using Avalonia.Markup.Xaml;
 using UVtools.Core.Operations;
 
-namespace UVtools.WPF.Controls.Tools
+namespace UVtools.WPF.Controls.Tools;
+
+public class ToolRotateControl : ToolControl
 {
-    public class ToolRotateControl : ToolControl
+    public OperationRotate Operation => BaseOperation as OperationRotate;
+
+    public ToolRotateControl()
     {
-        public OperationRotate Operation => BaseOperation as OperationRotate;
+        BaseOperation = new OperationRotate(SlicerFile);
+        if (!ValidateSpawn()) return;
+        InitializeComponent();
+    }
 
-        public ToolRotateControl()
-        {
-            BaseOperation = new OperationRotate(SlicerFile);
-            if (!ValidateSpawn()) return;
-            InitializeComponent();
-        }
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
-        }
+    private void InitializeComponent()
+    {
+        AvaloniaXamlLoader.Load(this);
     }
 }

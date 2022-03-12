@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:i="clr-namespace:Projektanker.Icons.Avalonia;assembly=Projektanker.Icons.Avalonia"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="UVtools.WPF.Controls.Tools.ToolScriptingControl">
   <StackPanel Orientation="Vertical">
@@ -21,33 +22,29 @@
           <Button 
               ToolTip.Tip="Loads an script file"
               VerticalAlignment="Center"
-              Command="{Binding LoadScript}">
-              <Image Source="/Assets/Icons/file-import-16x16.png" />
-          </Button>
+              Command="{Binding LoadScript}"
+              i:Attached.Icon="fas fa-file-import"/>
 
           <Button
               IsEnabled="{Binding Operation.HaveFile}"
               ToolTip.Tip="Reloads the script"
               VerticalAlignment="Center"
-              Command="{Binding ReloadScript}">
-              <Image Source="/Assets/Icons/refresh-16x16.png" />
-          </Button>
+              Command="{Binding ReloadScript}"
+              i:Attached.Icon="fas fa-sync-alt"/>
 
         <Button
               IsEnabled="{Binding Operation.HaveFile}"
               ToolTip.Tip="Open the script folder"
               VerticalAlignment="Center"
-              Command="{Binding OpenScriptFolder}">
-              <Image Source="/Assets/Icons/open-16x16.png" />
-          </Button>
+              Command="{Binding OpenScriptFolder}"
+              i:Attached.Icon="fas fa-folder"/>
 
           <Button
               IsEnabled="{Binding Operation.HaveFile}"
               ToolTip.Tip="Open the script file"
               VerticalAlignment="Center"
-              Command="{Binding OpenScriptFile}">
-              <Image Source="/Assets/Icons/file-code-16x16.png" />
-          </Button>
+              Command="{Binding OpenScriptFile}"
+              i:Attached.Icon="fas fa-file-code"/>
       </StackPanel>
 
     </Grid>

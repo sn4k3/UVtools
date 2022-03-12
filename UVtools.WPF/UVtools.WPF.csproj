@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <AssemblyName>UVtools</AssemblyName>
     <ApplicationIcon>UVtools.ico</ApplicationIcon>
     <Authors>Tiago Conceição</Authors>
@@ -12,12 +12,13 @@
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <RepositoryUrl>https://github.com/sn4k3/UVtools</RepositoryUrl>
     <RepositoryType>Git</RepositoryType>
-    <Version>2.29.0</Version>
+    <Version>3.0.0</Version>
     <Platforms>AnyCPU;x64</Platforms>
     <PackageIcon>UVtools.png</PackageIcon>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
     <PackageTags>msla, dlp, resin, printer, slicer, 3d printing, image processing, layers</PackageTags>
+    <Nullable>disable</Nullable>
   </PropertyGroup>
   
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -38,13 +39,15 @@
     <NoWarn>1701;1702;</NoWarn>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Avalonia" Version="0.10.12" />
+    <PackageReference Include="Avalonia" Version="0.10.13" />
     <PackageReference Include="Avalonia.Angle.Windows.Natives" Version="2.1.0.2020091801" />
-    <PackageReference Include="Avalonia.Controls.DataGrid" Version="0.10.12" />
-    <PackageReference Include="Avalonia.Desktop" Version="0.10.12" />
-    <PackageReference Include="Avalonia.Diagnostics" Version="0.10.12" />
+    <PackageReference Include="Avalonia.Controls.DataGrid" Version="0.10.13" />
+    <PackageReference Include="Avalonia.Desktop" Version="0.10.13" />
+    <PackageReference Include="Avalonia.Diagnostics" Version="0.10.13" />
     <PackageReference Include="Emgu.CV.runtime.windows" Version="4.5.5.4823" />
     <PackageReference Include="MessageBox.Avalonia" Version="1.8.1-night" />
+    <PackageReference Include="Projektanker.Icons.Avalonia.FontAwesome" Version="4.1.0" />
+    <PackageReference Include="Projektanker.Icons.Avalonia.MaterialDesign" Version="4.1.0" />
     <PackageReference Include="ThemeEditor.Controls.ColorPicker" Version="0.10.12" />
   </ItemGroup>
   <ItemGroup>
@@ -63,9 +66,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="UVtools.sh">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="x64\libcvextern.so">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="..\CHANGELOG.md" Link="CHANGELOG.md" />
@@ -95,5 +95,10 @@
       <SubType>Designer</SubType>
     </AvaloniaResource>
     <AvaloniaResource Include="Assets\Icons\*" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="Windows\SuggestionSettingsWindow.axaml.cs">
+      <DependentUpon>SuggestionSettingsWindow.axaml</DependentUpon>
+    </Compile>
   </ItemGroup>
 </Project>

@@ -7,25 +7,24 @@
  */
 using System.Drawing;
 
-namespace UVtools.Core.PixelEditor
+namespace UVtools.Core.PixelEditor;
+
+public class PixelDrainHole : PixelOperation
 {
-    public class PixelDrainHole : PixelOperation
+    private ushort _diameter = 50;
+    public override PixelOperationType OperationType => PixelOperationType.DrainHole;
+
+    public ushort Diameter
     {
-        private ushort _diameter = 50;
-        public override PixelOperationType OperationType => PixelOperationType.DrainHole;
+        get => _diameter;
+        set => RaiseAndSetIfChanged(ref _diameter, value);
+    }
 
-        public ushort Diameter
-        {
-            get => _diameter;
-            set => RaiseAndSetIfChanged(ref _diameter, value);
-        }
+    public PixelDrainHole(){ _pixelBrightness = 0; }
 
-        public PixelDrainHole(){ _pixelBrightness = 0; }
-
-        public PixelDrainHole(uint layerIndex, Point location, ushort diameter) : base(layerIndex, location)
-        {
-            Diameter = diameter;
-            Size = new Size(diameter, diameter);
-        }
+    public PixelDrainHole(uint layerIndex, Point location, ushort diameter) : base(layerIndex, location)
+    {
+        Diameter = diameter;
+        Size = new Size(diameter, diameter);
     }
 }

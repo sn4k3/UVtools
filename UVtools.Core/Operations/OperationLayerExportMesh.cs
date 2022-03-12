@@ -6,6 +6,10 @@
  *  of this license document, but changing it is not allowed.
  */
 
+using Emgu.CV;
+using Emgu.CV.CvEnum;
+using KdTree;
+using KdTree.Math;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -13,195 +17,239 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Emgu.CV;
-using Emgu.CV.CvEnum;
-using KdTree;
-using KdTree.Math;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Managers;
 using UVtools.Core.MeshFormats;
 using UVtools.Core.Voxel;
 
-namespace UVtools.Core.Operations
+namespace UVtools.Core.Operations;
+
+[Serializable]
+public sealed class OperationLayerExportMesh : Operation
 {
-    [Serializable]
-    public sealed class OperationLayerExportMesh : Operation
+    #region Enums
+    public enum ExportMeshQuality : byte
     {
-        #region Enums
-        public enum ExportMeshQuality : byte
-        {
-            Accurate = 1,
-            Average = 2,
-            Quick = 3,
+        Accurate = 1,
+        Average = 2,
+        Quick = 3,
 
-            Dirty = 6,
-            Minecraft = 8
-        }
+        Dirty = 6,
+        Minecraft = 8
+    }
 
 
-        #endregion
+    #endregion
         
-        #region Members
-        private string _filePath;
-        private MeshFile.MeshFileFormat _meshFileFormat = MeshFile.MeshFileFormat.BINARY;
-        private ExportMeshQuality _quality = ExportMeshQuality.Accurate;
-        private Enumerations.RotateDirection _rotateDirection = Enumerations.RotateDirection.None;
-        private Enumerations.FlipDirection _flipDirection = Enumerations.FlipDirection.None;
-        private bool _stripAntiAliasing = true;
+    #region Members
+    private string _filePath = null!;
+    private MeshFile.MeshFileFormat _meshFileFormat = MeshFile.MeshFileFormat.BINARY;
+    private ExportMeshQuality _quality = ExportMeshQuality.Accurate;
+    private Enumerations.RotateDirection _rotateDirection = Enumerations.RotateDirection.None;
+    private Enumerations.FlipDirection _flipDirection = Enumerations.FlipDirection.None;
+    private bool _stripAntiAliasing = true;
 
-        #endregion
+    #endregion
 
-        #region Overrides
+    #region Overrides
 
-        public override bool CanHaveProfiles => false;
-        public override string Title => "Export layers to mesh";
+    public override bool CanHaveProfiles => false;
 
-        public override string Description =>
-            "Reconstructs and export a layer range to a 3D mesh via voxelization.\n" +
-            "Note: Depending on quality and triangle count, this will often render heavy files.\n" +
-            "This process will not recover your original 3D model as data was already lost when sliced.";
+    public override string IconClass => "fas fa-cubes";
+    public override string Title => "Export layers to mesh";
 
-        public override string ConfirmationText =>
-            $"generate a mesh from layers {LayerIndexStart} through {LayerIndexEnd}?";
+    public override string Description =>
+        "Reconstructs and export a layer range to a 3D mesh via voxelization.\n" +
+        "Note: Depending on quality and triangle count, this will often render heavy files.\n" +
+        "This process will not recover your original 3D model as data was already lost when sliced.";
 
-        public override string ProgressTitle =>
-            $"Generating a mesh from layers {LayerIndexStart} through {LayerIndexEnd}";
+    public override string ConfirmationText =>
+        $"generate a mesh from layers {LayerIndexStart} through {LayerIndexEnd}?";
 
-        public override string ProgressAction => "Packed layers";
-        public override string ValidateInternally()
+    public override string ProgressTitle =>
+        $"Generating a mesh from layers {LayerIndexStart} through {LayerIndexEnd}";
+
+    public override string ProgressAction => "Packed layers";
+    public override string? ValidateInternally()
+    {
+        var sb = new StringBuilder();
+
+        if (MeshFile.FindFileExtension(_filePath) is null)
         {
-            var sb = new StringBuilder();
-
-            if (MeshFile.FindFileExtension(_filePath) is null)
-            {
-                sb.AppendLine("The used file extension is invalid.");
-            }
+            sb.AppendLine("The used file extension is invalid.");
+        }
             
-            return sb.ToString();
-        }
+        return sb.ToString();
+    }
 
-        /*public override string ToString()
+    /*public override string ToString()
+    {
+        var result = $"[Crop by ROI: {_cropByRoi}]" +
+                     LayerRangeString;
+        if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
+        return result;
+    }*/
+
+    #endregion
+
+    #region Properties
+
+    public string FilePath
+    {
+        get => _filePath;
+        set => RaiseAndSetIfChanged(ref _filePath, value);
+    }
+
+    public MeshFile.MeshFileFormat MeshFileFormat
+    {
+        get => _meshFileFormat;
+        set => RaiseAndSetIfChanged(ref _meshFileFormat, value);
+    }
+
+    public ExportMeshQuality Quality
+    {
+        get => _quality;
+        set => RaiseAndSetIfChanged(ref _quality, value);
+    }
+
+    public Enumerations.RotateDirection RotateDirection
+    {
+        get => _rotateDirection;
+        set => RaiseAndSetIfChanged(ref _rotateDirection, value);
+    }
+
+    public Enumerations.FlipDirection FlipDirection
+    {
+        get => _flipDirection;
+        set => RaiseAndSetIfChanged(ref _flipDirection, value);
+    }
+
+    public bool StripAntiAliasing
+    {
+        get => _stripAntiAliasing;
+        set => RaiseAndSetIfChanged(ref _stripAntiAliasing, value);
+    }
+
+    #endregion
+
+    #region Constructor
+
+    public OperationLayerExportMesh() { }
+
+    public OperationLayerExportMesh(FileFormat slicerFile) : base(slicerFile)
+    {
+        _flipDirection = SlicerFile.DisplayMirror;
+    }
+
+    public override void InitWithSlicerFile()
+    {
+        _filePath = Path.Combine(Path.GetDirectoryName(SlicerFile.FileFullPath) ?? string.Empty, $"{SlicerFile.FilenameNoExt}.{STLMeshFile.FileExtension.Extension}");
+    }
+
+    #endregion
+
+    #region Methods
+
+    protected override unsafe bool ExecuteInternally(OperationProgress progress)
+    {
+        var fileExtension = MeshFile.FindFileExtension(_filePath);
+        if (fileExtension is null) return false;
+
+        //using var meshFile = fileExtension.FileFormatType.CreateInstance<MeshFile>(_filePath, FileMode.Create);
+        //new Voxelizer().CreateVoxelMesh(fileExtension.FileFormatType, SlicerFile, _filePath, progress);
+
+
+        /* Voxelization has 4 overall stages
+         * 1.) Generate all visible faces, this is for each pixel we determine which of its faces are visible from outside the model
+         * 2.) Collapse faces horizontally, this combines faces that are coplanar horizontally into a longer face, this reduces triangles
+         * 3.) Collapse faces that are coplanar and the same size vertically leveraging KD Trees for fast lookups, O(logn) vs O(n) for a normal list
+         * 4.) Generate triangles for faces and write out to file
+         */
+
+        /* Basic information for the file, how many layers, how big should each voxel be) */
+        var pixelSize = SlicerFile.PixelSize;
+        float xWidth = (pixelSize.Width > 0 ? pixelSize.Width : 0.035f) * (byte)_quality;
+        float yWidth = (pixelSize.Height > 0 ? pixelSize.Height : 0.035f) * (byte)_quality;
+
+        //var totalLayerCount = SlicerFile.LayerCount;
+        var distinctLayers = SlicerFile.GetDistinctLayersByPositionZ(LayerIndexStart, LayerIndexEnd).ToArray();
+
+
+
+        /* work around the mirror effect, this is caused by the voxel algorithm assuming 0,0 is bottom left, when 0,0 is top left for a Mat
+         * ideally we would fix the algorithm itself but that's more invovled. for the time being we'll just flip it verticaly. */
+        var workAroundFlip = _flipDirection switch
         {
-            var result = $"[Crop by ROI: {_cropByRoi}]" +
-                         LayerRangeString;
-            if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
-            return result;
-        }*/
+            Enumerations.FlipDirection.None => Enumerations.FlipDirection.Vertically,
+            Enumerations.FlipDirection.Horizontally => Enumerations.FlipDirection.Both,
+            Enumerations.FlipDirection.Vertically => Enumerations.FlipDirection.None,
+            Enumerations.FlipDirection.Both => Enumerations.FlipDirection.Horizontally,
+            _ => throw new NotImplementedException($"Flip type: {_flipDirection} not handled!")
+        };
 
-        #endregion
-
-        #region Properties
-
-        public string FilePath
+        using var cacheManager = new MatCacheManager(this)
         {
-            get => _filePath;
-            set => RaiseAndSetIfChanged(ref _filePath, value);
-        }
+            AutoDispose = true,
+            AutoDisposeKeepLast = 1,
+            Rotate = _rotateDirection,
+            Flip = workAroundFlip,
+            StripAntiAliasing = _stripAntiAliasing
+        };
 
-        public MeshFile.MeshFileFormat MeshFileFormat
+
+        /* For the 1st stage, we maintain up to 3 mats, the current layer, the one below us, and the one above us 
+         * (below will be null when current layer is 0, above will be null when currentlayer is layercount-1) */
+        /* We init the aboveLayer to the first layer, in the loop coming up we shift above->current->below, so this effectively inits current layer */
+        Mat? aboveLayer;
+        using (var mat = SlicerFile.GetMergedMatForSequentialPositionedLayers(distinctLayers[0].Index, cacheManager))
         {
-            get => _meshFileFormat;
-            set => RaiseAndSetIfChanged(ref _meshFileFormat, value);
-        }
+            var matRoi = mat.Roi(SlicerFile.BoundingRectangle);
 
-        public ExportMeshQuality Quality
-        {
-            get => _quality;
-            set => RaiseAndSetIfChanged(ref _quality, value);
-        }
-
-        public Enumerations.RotateDirection RotateDirection
-        {
-            get => _rotateDirection;
-            set => RaiseAndSetIfChanged(ref _rotateDirection, value);
-        }
-
-        public Enumerations.FlipDirection FlipDirection
-        {
-            get => _flipDirection;
-            set => RaiseAndSetIfChanged(ref _flipDirection, value);
-        }
-
-        public bool StripAntiAliasing
-        {
-            get => _stripAntiAliasing;
-            set => RaiseAndSetIfChanged(ref _stripAntiAliasing, value);
-        }
-
-        #endregion
-
-        #region Constructor
-
-        public OperationLayerExportMesh() { }
-
-        public OperationLayerExportMesh(FileFormat slicerFile) : base(slicerFile)
-        {
-            _flipDirection = SlicerFile.DisplayMirror;
-        }
-
-        public override void InitWithSlicerFile()
-        {
-            _filePath = Path.Combine(Path.GetDirectoryName(SlicerFile.FileFullPath), $"{SlicerFile.FilenameNoExt}.{STLMeshFile.FileExtension.Extension}");
-        }
-
-        #endregion
-
-        #region Methods
-
-        protected override unsafe bool ExecuteInternally(OperationProgress progress)
-        {
-            var fileExtension = MeshFile.FindFileExtension(_filePath);
-            if (fileExtension is null) return false;
-
-            //using var meshFile = fileExtension.FileFormatType.CreateInstance<MeshFile>(_filePath, FileMode.Create);
-            //new Voxelizer().CreateVoxelMesh(fileExtension.FileFormatType, SlicerFile, _filePath, progress);
-
-
-            /* Voxelization has 4 overall stages
-             * 1.) Generate all visible faces, this is for each pixel we determine which of its faces are visible from outside the model
-             * 2.) Collapse faces horizontally, this combines faces that are coplanar horizontally into a longer face, this reduces triangles
-             * 3.) Collapse faces that are coplanar and the same size vertically leveraging KD Trees for fast lookups, O(logn) vs O(n) for a normal list
-             * 4.) Generate triangles for faces and write out to file
-             */
-
-            /* Basic information for the file, how many layers, how big should each voxel be) */
-            var pixelSize = SlicerFile.PixelSize;
-            float xWidth = (pixelSize.Width > 0 ? pixelSize.Width : 0.035f) * (byte)_quality;
-            float yWidth = (pixelSize.Height > 0 ? pixelSize.Height : 0.035f) * (byte)_quality;
-
-            //var totalLayerCount = SlicerFile.LayerCount;
-            var distinctLayers = SlicerFile.LayerManager.GetDistinctLayersByPositionZ(LayerIndexStart, LayerIndexEnd).ToArray();
-
-
-
-            /* work around the mirror effect, this is caused by the voxel algorithm assuming 0,0 is bottom left, when 0,0 is top left for a Mat
-             * ideally we would fix the algorithm itself but that's more invovled. for the time being we'll just flip it verticaly. */
-            var workAroundFlip = _flipDirection switch
+            if ((byte)_quality > 1)
             {
-                Enumerations.FlipDirection.None => Enumerations.FlipDirection.Vertically,
-                Enumerations.FlipDirection.Horizontally => Enumerations.FlipDirection.Both,
-                Enumerations.FlipDirection.Vertically => Enumerations.FlipDirection.None,
-                Enumerations.FlipDirection.Both => Enumerations.FlipDirection.Horizontally,
-                _ => throw new NotImplementedException($"Flip type: {_flipDirection} not handled!")
-            };
-
-            using var cacheManager = new MatCacheManager(this)
+                aboveLayer = new Mat();
+                CvInvoke.Resize(matRoi, aboveLayer, Size.Empty, 1.0 / (int)_quality, 1.0 / (int)_quality, Inter.Area);
+            }
+            else
             {
-                AutoDispose = true,
-                AutoDisposeKeepLast = 1,
-                Rotate = _rotateDirection,
-                Flip = workAroundFlip,
-                StripAntiAliasing = _stripAntiAliasing
-            };
+                aboveLayer = matRoi.Clone(); /* clone and then dispose of the ROI mat, not efficient but keeps the GetPixelPos working and clean */
+            }
+        }
 
+        Mat? curLayer = null;
+        Mat? belowLayer;
 
-            /* For the 1st stage, we maintain up to 3 mats, the current layer, the one below us, and the one above us 
-             * (below will be null when current layer is 0, above will be null when currentlayer is layercount-1) */
-            /* We init the aboveLayer to the first layer, in the loop coming up we shift above->current->below, so this effectively inits current layer */
-            Mat aboveLayer = null;
-            using (var mat = SlicerFile.LayerManager.GetMergedMatForSequentialPositionedLayers(distinctLayers[0].Index, cacheManager))
+        /* List of faces to process, great for debugging if you are haveing issues with a face of particular orientation. */
+        var facesToCheck = new[] { Voxelizer.FaceOrientation.Front, Voxelizer.FaceOrientation.Back, Voxelizer.FaceOrientation.Left, Voxelizer.FaceOrientation.Right, Voxelizer.FaceOrientation.Top, Voxelizer.FaceOrientation.Bottom };
+
+        /* Init of other objects that will be used in subsequent stages */
+        var rootFaces = new Voxelizer.UVFace?[distinctLayers.Length];
+        var layerFaceCounts = new uint[distinctLayers.Length];
+        var layerTrees = new KdTree<float, Voxelizer.UVFace>[distinctLayers.Length];
+            
+        progress.Reset("layers", (uint)distinctLayers.Length);
+        progress.Title = "Stage 1: Generating faces from layers";
+        //progress.ItemCount = LayerRangeCount;
+
+        /* Begin Stage 1, identifying all faces that are visible from outside the model */
+        for (uint layerIndex = 0; layerIndex < distinctLayers.Length; layerIndex++)
+        {
+            Voxelizer.UVFace? currentFaceItem = null;
+
+            /* Should contain a list of all found faces on this layer, keyed by the face orientation */
+            var foundFaces = new Dictionary<Voxelizer.FaceOrientation, List<Point>>();
+
+            /* move current layer to below */
+            belowLayer = curLayer;
+
+            /* move above layer to us */
+            curLayer = aboveLayer;
+
+            /* bring in a new aboveLayer if we need to */
+            if (layerIndex < distinctLayers.Length - 1)
             {
+                using var mat = SlicerFile.GetMergedMatForSequentialPositionedLayers(distinctLayers[(int)layerIndex+1].Index, cacheManager);
                 var matRoi = mat.Roi(SlicerFile.BoundingRectangle);
 
                 if ((byte)_quality > 1)
@@ -211,155 +259,87 @@ namespace UVtools.Core.Operations
                 }
                 else
                 {
-                    aboveLayer = matRoi.Clone(); /* clone and then dispose of the ROI mat, not efficient but keeps the GetPixelPos working and clean */
+                    aboveLayer = matRoi.Clone();
                 }
+
+                //CvInvoke.Threshold(aboveLayer, aboveLayer, 1, 255, ThresholdType.Binary);
+            }
+            else
+            {
+                aboveLayer = null;
             }
 
-            Mat curLayer = null;
-            Mat belowLayer = null;
+            /* get image of pixels to do neighbor checks on */
+            var voxelLayer = Voxelizer.BuildVoxelLayerImage(curLayer!, aboveLayer, belowLayer);
+            var voxelSpan = voxelLayer.GetBytePointer();
 
-            /* List of faces to process, great for debugging if you are haveing issues with a face of particular orientation. */
-            var facesToCheck = new[] { Voxelizer.FaceOrientation.Front, Voxelizer.FaceOrientation.Back, Voxelizer.FaceOrientation.Left, Voxelizer.FaceOrientation.Right, Voxelizer.FaceOrientation.Top, Voxelizer.FaceOrientation.Bottom };
-
-            /* Init of other objects that will be used in subsequent stages */
-            var rootFaces = new Voxelizer.UVFace[distinctLayers.Length];
-            var layerFaceCounts = new uint[distinctLayers.Length];
-            var layerTrees = new KdTree<float, Voxelizer.UVFace>[distinctLayers.Length];
-
-            progress.Reset("layers", (uint)distinctLayers.Length);
-            progress.Title = "Stage 1: Generating faces from layers";
-            //progress.ItemCount = LayerRangeCount;
-
-            /* Begin Stage 1, identifying all faces that are visible from outside the model */
-            for (uint layerIndex = 0; layerIndex < distinctLayers.Length; layerIndex++)
+            /* Seems to be faster to parallel on the Y and not the X */
+            Parallel.For(0, curLayer!.Height, CoreSettings.ParallelOptions, y =>
             {
-                Voxelizer.UVFace currentFaceItem = null;
-
-                /* Should contain a list of all found faces on this layer, keyed by the face orientation */
-                var foundFaces = new Dictionary<Voxelizer.FaceOrientation, List<Point>>();
-
-                /* move current layer to below */
-                belowLayer = curLayer;
-
-                /* move above layer to us */
-                curLayer = aboveLayer;
-
-                /* bring in a new aboveLayer if we need to */
-                if (layerIndex < distinctLayers.Length - 1)
+                /* Collects all the faces found for this thread, will be combined into the main dictionary later */
+                var threadDict = new Dictionary<Voxelizer.FaceOrientation, List<Point>>();
+                for (var x = 0; x < curLayer.Width; x++)
                 {
-                    using var mat = SlicerFile.LayerManager.GetMergedMatForSequentialPositionedLayers(distinctLayers[(int)layerIndex+1].Index, cacheManager);
-                    var matRoi = mat.Roi(SlicerFile.BoundingRectangle);
+                    if (voxelSpan[voxelLayer.GetPixelPos(x, y)] == 0) continue;
 
-                    if ((byte)_quality > 1)
+                    var faces = Voxelizer.GetOpenFaces(curLayer, x, y, belowLayer, aboveLayer);
+                    if (faces == Voxelizer.FaceOrientation.None) continue;
+                    foreach (var face in facesToCheck)
                     {
-                        aboveLayer = new Mat();
-                        CvInvoke.Resize(matRoi, aboveLayer, Size.Empty, 1.0 / (int)_quality, 1.0 / (int)_quality, Inter.Area);
+                        if (!faces.HasFlag(face)) continue;
+                        if (!threadDict.ContainsKey(face)) threadDict.Add(face, new());
+                        threadDict[face].Add(new Point(x, y));
                     }
-                    else
-                    {
-                        aboveLayer = matRoi.Clone();
-                    }
-
-                    //CvInvoke.Threshold(aboveLayer, aboveLayer, 1, 255, ThresholdType.Binary);
-                }
-                else
-                {
-                    aboveLayer = null;
                 }
 
-                /* get image of pixels to do neighbor checks on */
-                var voxelLayer = Voxelizer.BuildVoxelLayerImage(curLayer, aboveLayer, belowLayer);
-                var voxelSpan = voxelLayer.GetBytePointer();
-
-                /* Seems to be faster to parallel on the Y and not the X */
-                Parallel.For(0, curLayer.Height, CoreSettings.ParallelOptions, y =>
+                /* merge all found faces to main foundFaces dictionary */
+                lock (foundFaces)
                 {
-                    /* Collects all the faces found for this thread, will be combined into the main dictionary later */
-                    var threadDict = new Dictionary<Voxelizer.FaceOrientation, List<Point>>();
-                    for (var x = 0; x < curLayer.Width; x++)
+                    foreach (var kvp in threadDict)
                     {
-                        if (voxelSpan[voxelLayer.GetPixelPos(x, y)] == 0) continue;
-
-                        var faces = Voxelizer.GetOpenFaces(curLayer, x, y, belowLayer, aboveLayer);
-                        if (faces == Voxelizer.FaceOrientation.None) continue;
-                        foreach (var face in facesToCheck)
-                        {
-                            if (!faces.HasFlag(face)) continue;
-                            if (!threadDict.ContainsKey(face)) threadDict.Add(face, new());
-                            threadDict[face].Add(new Point(x, y));
-                        }
+                        if (!foundFaces.ContainsKey(kvp.Key)) foundFaces.Add(kvp.Key, new());
+                        lock (foundFaces[kvp.Key]) foundFaces[kvp.Key].AddRange(kvp.Value);
                     }
+                }
+            });
 
-                    /* merge all found faces to main foundFaces dictionary */
-                    lock (foundFaces)
-                    {
-                        foreach (var kvp in threadDict)
-                        {
-                            if (!foundFaces.ContainsKey(kvp.Key)) foundFaces.Add(kvp.Key, new());
-                            lock (foundFaces[kvp.Key]) foundFaces[kvp.Key].AddRange(kvp.Value);
-                        }
-                    }
-                });
+            /* Begin stage 2, horizontal combining of coplanar faces */
+            foreach (var faceType in facesToCheck)
+            {
+                if (foundFaces.ContainsKey(faceType) == false || foundFaces[faceType].Count == 0) continue;
 
-                /* Begin stage 2, horizontal combining of coplanar faces */
-                foreach (var faceType in facesToCheck)
+                if (faceType 
+                    is Voxelizer.FaceOrientation.Front 
+                    or Voxelizer.FaceOrientation.Back 
+                    or Voxelizer.FaceOrientation.Top 
+                    or Voxelizer.FaceOrientation.Bottom)
                 {
-                    if (foundFaces.ContainsKey(faceType) == false || foundFaces[faceType].Count == 0) continue;
+                    /* sort the faces by coordinate */
+                    foundFaces[faceType] = foundFaces[faceType].OrderBy(f => f.Y).ThenBy(f => f.X).ToList();
 
-                    if (faceType 
-                        is Voxelizer.FaceOrientation.Front 
-                        or Voxelizer.FaceOrientation.Back 
-                        or Voxelizer.FaceOrientation.Top 
-                        or Voxelizer.FaceOrientation.Bottom)
+                    var startX = foundFaces[faceType][0].X;
+                    var curX = foundFaces[faceType][0].X;
+                    var startY = foundFaces[faceType][0].Y;
+                    var curY = foundFaces[faceType][0].Y;
+
+                    foreach (var f in foundFaces[faceType].Skip(1))
                     {
-                        /* sort the faces by coordinate */
-                        foundFaces[faceType] = foundFaces[faceType].OrderBy(f => f.Y).ThenBy(f => f.X).ToList();
-
-                        var startX = foundFaces[faceType][0].X;
-                        var curX = foundFaces[faceType][0].X;
-                        var startY = foundFaces[faceType][0].Y;
-                        var curY = foundFaces[faceType][0].Y;
-
-                        foreach (var f in foundFaces[faceType].Skip(1))
+                        if (f.Y == curY)
                         {
-                            if (f.Y == curY)
+                            /* same row...*/
+                            if (f.X == curX + 1)
                             {
-                                /* same row...*/
-                                if (f.X == curX + 1)
-                                {
-                                    /* this face is adjecent to the previous, just increase the "width" */
-                                    curX++;
-                                }
-                                else
-                                {
-                                    /* This face is disconnected by at least 1 pixel from the chain we've been building */
-                                    /* Create a UVFace for the current chain and reset to this one */
-                                    layerFaceCounts[layerIndex]++;
-                                    if (currentFaceItem is null)
-                                    {
-                                        rootFaces[layerIndex] = new Voxelizer.UVFace { LayerIndex = layerIndex, Type = faceType, FaceRect = new Rectangle(startX, startY, curX - startX + 1, 1), LayerHeight = distinctLayers[(int)layerIndex].LayerHeight};
-                                        currentFaceItem = rootFaces[layerIndex];
-                                    }
-                                    else
-                                    {
-                                        currentFaceItem.FlatListNext = new Voxelizer.UVFace { LayerIndex = layerIndex, Type = faceType, FaceRect = new Rectangle(startX, startY, curX - startX + 1, 1), LayerHeight = distinctLayers[(int)layerIndex].LayerHeight };
-                                        currentFaceItem = currentFaceItem.FlatListNext;
-                                    }
-                                    //faceTree.Add(new float[] { (float)faceType, startX, startY, layerIndex }, new UVFace() { LayerIndex = layerIndex, Type = faceType, FaceRect = new Rectangle(startX, startY, curX - startX + 1, 1) });
-                                    /* disconnected */
-                                    startX = f.X;
-                                    curX = f.X;
-
-                                }
+                                /* this face is adjecent to the previous, just increase the "width" */
+                                curX++;
                             }
                             else
                             {
-                                /* this face isn't on the same Y row as previous, therefore it is disconnected. */
+                                /* This face is disconnected by at least 1 pixel from the chain we've been building */
                                 /* Create a UVFace for the current chain and reset to this one */
                                 layerFaceCounts[layerIndex]++;
                                 if (currentFaceItem is null)
                                 {
-                                    rootFaces[layerIndex] = new Voxelizer.UVFace { LayerIndex = layerIndex, Type = faceType, FaceRect = new Rectangle(startX, startY, curX - startX + 1, 1), LayerHeight = distinctLayers[(int)layerIndex].LayerHeight };
+                                    rootFaces[layerIndex] = new Voxelizer.UVFace { LayerIndex = layerIndex, Type = faceType, FaceRect = new Rectangle(startX, startY, curX - startX + 1, 1), LayerHeight = distinctLayers[(int)layerIndex].LayerHeight};
                                     currentFaceItem = rootFaces[layerIndex];
                                 }
                                 else
@@ -367,68 +347,71 @@ namespace UVtools.Core.Operations
                                     currentFaceItem.FlatListNext = new Voxelizer.UVFace { LayerIndex = layerIndex, Type = faceType, FaceRect = new Rectangle(startX, startY, curX - startX + 1, 1), LayerHeight = distinctLayers[(int)layerIndex].LayerHeight };
                                     currentFaceItem = currentFaceItem.FlatListNext;
                                 }
-                                startY = f.Y;
-                                curY = f.Y;
+                                //faceTree.Add(new float[] { (float)faceType, startX, startY, layerIndex }, new UVFace() { LayerIndex = layerIndex, Type = faceType, FaceRect = new Rectangle(startX, startY, curX - startX + 1, 1) });
+                                /* disconnected */
                                 startX = f.X;
                                 curX = f.X;
+
                             }
-                        }
-                        /* we've gone through all the faces, add the final chain we've been building */
-                        /* Create a UVFace for the final chain */
-                        layerFaceCounts[layerIndex]++;
-                        if (currentFaceItem is null)
-                        {
-                            rootFaces[layerIndex] = new Voxelizer.UVFace { LayerIndex = layerIndex, Type = faceType, FaceRect = new Rectangle(startX, startY, curX - startX + 1, 1), LayerHeight = distinctLayers[(int)layerIndex].LayerHeight };
-                            currentFaceItem = rootFaces[layerIndex];
                         }
                         else
                         {
-                            currentFaceItem.FlatListNext = new Voxelizer.UVFace { LayerIndex = layerIndex, Type = faceType, FaceRect = new Rectangle(startX, startY, curX - startX + 1, 1), LayerHeight = distinctLayers[(int)layerIndex].LayerHeight };
-                            currentFaceItem = currentFaceItem.FlatListNext;
-                        }
-                    }
-
-                    if (faceType is Voxelizer.FaceOrientation.Left or Voxelizer.FaceOrientation.Right)
-                    {
-                        /* sort the faces by coordinate */
-                        foundFaces[faceType] = foundFaces[faceType].OrderBy(f => f.X).ThenBy(f => f.Y).ToList();
-
-                        var startX = foundFaces[faceType][0].X;
-                        var curX = foundFaces[faceType][0].X;
-                        var startY = foundFaces[faceType][0].Y;
-                        var curY = foundFaces[faceType][0].Y;
-                        foreach (var f in foundFaces[faceType].Skip(1))
-                        {
-                            if (f.X == curX)
+                            /* this face isn't on the same Y row as previous, therefore it is disconnected. */
+                            /* Create a UVFace for the current chain and reset to this one */
+                            layerFaceCounts[layerIndex]++;
+                            if (currentFaceItem is null)
                             {
-                                /* same column...*/
-                                if (f.Y == curY + 1)
-                                {
-                                    /* this face is adjecent to the previous, just increase the "width" */
-                                    curY++;
-                                }
-                                else
-                                {
-                                    /* This face is disconnected by at least 1 pixel from the chain we've been building */
-                                    /* Create a UVFace for the current chain and reset to this one */
-                                    layerFaceCounts[layerIndex]++;
-                                    if (currentFaceItem is null)
-                                    {
-                                        rootFaces[layerIndex] = new Voxelizer.UVFace { LayerIndex = layerIndex, Type = faceType, FaceRect = new Rectangle(startX, startY, curY - startY + 1, 1), LayerHeight = distinctLayers[(int)layerIndex].LayerHeight };
-                                        currentFaceItem = rootFaces[layerIndex];
-                                    }
-                                    else
-                                    {
-                                        currentFaceItem.FlatListNext = new Voxelizer.UVFace { LayerIndex = layerIndex, Type = faceType, FaceRect = new Rectangle(startX, startY, curY - startY + 1, 1), LayerHeight = distinctLayers[(int)layerIndex].LayerHeight };
-                                        currentFaceItem = currentFaceItem.FlatListNext;
-                                    }
-                                    startY = f.Y;
-                                    curY = f.Y;
-                                }
+                                rootFaces[layerIndex] = new Voxelizer.UVFace { LayerIndex = layerIndex, Type = faceType, FaceRect = new Rectangle(startX, startY, curX - startX + 1, 1), LayerHeight = distinctLayers[(int)layerIndex].LayerHeight };
+                                currentFaceItem = rootFaces[layerIndex];
                             }
                             else
                             {
-                                /* this face is on a different column, cannot be part of the current chain we're building */
+                                currentFaceItem.FlatListNext = new Voxelizer.UVFace { LayerIndex = layerIndex, Type = faceType, FaceRect = new Rectangle(startX, startY, curX - startX + 1, 1), LayerHeight = distinctLayers[(int)layerIndex].LayerHeight };
+                                currentFaceItem = currentFaceItem.FlatListNext;
+                            }
+                            startY = f.Y;
+                            curY = f.Y;
+                            startX = f.X;
+                            curX = f.X;
+                        }
+                    }
+                    /* we've gone through all the faces, add the final chain we've been building */
+                    /* Create a UVFace for the final chain */
+                    layerFaceCounts[layerIndex]++;
+                    if (currentFaceItem is null)
+                    {
+                        rootFaces[layerIndex] = new Voxelizer.UVFace { LayerIndex = layerIndex, Type = faceType, FaceRect = new Rectangle(startX, startY, curX - startX + 1, 1), LayerHeight = distinctLayers[(int)layerIndex].LayerHeight };
+                        currentFaceItem = rootFaces[layerIndex];
+                    }
+                    else
+                    {
+                        currentFaceItem.FlatListNext = new Voxelizer.UVFace { LayerIndex = layerIndex, Type = faceType, FaceRect = new Rectangle(startX, startY, curX - startX + 1, 1), LayerHeight = distinctLayers[(int)layerIndex].LayerHeight };
+                        currentFaceItem = currentFaceItem.FlatListNext;
+                    }
+                }
+
+                if (faceType is Voxelizer.FaceOrientation.Left or Voxelizer.FaceOrientation.Right)
+                {
+                    /* sort the faces by coordinate */
+                    foundFaces[faceType] = foundFaces[faceType].OrderBy(f => f.X).ThenBy(f => f.Y).ToList();
+
+                    var startX = foundFaces[faceType][0].X;
+                    var curX = foundFaces[faceType][0].X;
+                    var startY = foundFaces[faceType][0].Y;
+                    var curY = foundFaces[faceType][0].Y;
+                    foreach (var f in foundFaces[faceType].Skip(1))
+                    {
+                        if (f.X == curX)
+                        {
+                            /* same column...*/
+                            if (f.Y == curY + 1)
+                            {
+                                /* this face is adjecent to the previous, just increase the "width" */
+                                curY++;
+                            }
+                            else
+                            {
+                                /* This face is disconnected by at least 1 pixel from the chain we've been building */
                                 /* Create a UVFace for the current chain and reset to this one */
                                 layerFaceCounts[layerIndex]++;
                                 if (currentFaceItem is null)
@@ -443,129 +426,44 @@ namespace UVtools.Core.Operations
                                 }
                                 startY = f.Y;
                                 curY = f.Y;
-                                startX = f.X;
-                                curX = f.X;
                             }
                         }
-                        layerFaceCounts[layerIndex]++;
-                        if (currentFaceItem is null)
-                        {
-                            rootFaces[layerIndex] = new Voxelizer.UVFace { LayerIndex = layerIndex, Type = faceType, FaceRect = new Rectangle(startX, startY, curY - startY + 1, 1), LayerHeight = distinctLayers[(int)layerIndex].LayerHeight };
-                            currentFaceItem = rootFaces[layerIndex];
-                        }
                         else
                         {
-                            currentFaceItem.FlatListNext = new Voxelizer.UVFace { LayerIndex = layerIndex, Type = faceType, FaceRect = new Rectangle(startX, startY, curY - startY + 1, 1), LayerHeight = distinctLayers[(int)layerIndex].LayerHeight };
-                            currentFaceItem = currentFaceItem.FlatListNext;
+                            /* this face is on a different column, cannot be part of the current chain we're building */
+                            /* Create a UVFace for the current chain and reset to this one */
+                            layerFaceCounts[layerIndex]++;
+                            if (currentFaceItem is null)
+                            {
+                                rootFaces[layerIndex] = new Voxelizer.UVFace { LayerIndex = layerIndex, Type = faceType, FaceRect = new Rectangle(startX, startY, curY - startY + 1, 1), LayerHeight = distinctLayers[(int)layerIndex].LayerHeight };
+                                currentFaceItem = rootFaces[layerIndex];
+                            }
+                            else
+                            {
+                                currentFaceItem.FlatListNext = new Voxelizer.UVFace { LayerIndex = layerIndex, Type = faceType, FaceRect = new Rectangle(startX, startY, curY - startY + 1, 1), LayerHeight = distinctLayers[(int)layerIndex].LayerHeight };
+                                currentFaceItem = currentFaceItem.FlatListNext;
+                            }
+                            startY = f.Y;
+                            curY = f.Y;
+                            startX = f.X;
+                            curX = f.X;
                         }
                     }
-                }
-
-                progress++;
-
-                if (progress.Token.IsCancellationRequested)
-                {
-                    Cleanup();
-                    return false;
-                }
-
-            }
-
-            progress.Title = "Stage 2: Building KD Trees";
-            progress.ProcessedItems = 0;
-
-            /* We build out a 3 dimensional KD tree for each layer, having 1 big KD tree is prohibitive when you get to millions and millions of faces. */
-            Parallel.For(0, distinctLayers.Length, layerIndex =>
-            {
-                if (progress.Token.IsCancellationRequested) return;
-
-                /* Create the KD tree for the layer, in practice there should never be dups, but just in case, set to skip */
-                layerTrees[layerIndex] = new KdTree<float, Voxelizer.UVFace>(3, new FloatMath(), AddDuplicateBehavior.Skip);
-
-                /* Walk the linked list of UVFaces, adding them to the tree */
-                var currentFaceItem = rootFaces[layerIndex];
-                if (currentFaceItem is null) return;
-                while (currentFaceItem.FlatListNext is not null)
-                {
-                    layerTrees[layerIndex].Add(new[] { (float)currentFaceItem.Type, currentFaceItem.FaceRect.X, currentFaceItem.FaceRect.Y }, currentFaceItem);
-                    currentFaceItem = currentFaceItem.FlatListNext;
-                }
-                layerTrees[layerIndex].Add(new[] { (float)currentFaceItem.Type, currentFaceItem.FaceRect.X, currentFaceItem.FaceRect.Y }, currentFaceItem);
-
-                progress.LockAndIncrement();
-            });
-
-            if (progress.Token.IsCancellationRequested)
-            {
-                Cleanup();
-                return false;
-            }
-
-            progress.Title = "Stage 3: Collapsing faces";
-            progress.ProcessedItems = 0;
-            long collapseCount = 0;
-
-            /* Begin Stage 3: Vertical collapse 
-             * Since we don't modify the lists/objects and only connect them via doubly linked list
-             * we can process each layer independant of the others.
-             */
-            Parallel.For(0, distinctLayers.Length, i =>
-            {
-                if (progress.Token.IsCancellationRequested)
-                {
-                    return;
-                }
-
-                /* if no faces on this layer... skip.... needed for empty layers */
-                if (layerTrees[i] is null) return;
-
-                /* check each point in the current layers tree */
-                foreach (var point in layerTrees[i])
-                {
-                    /* if this point already has a parent, skip */
-                    if (point.Value.Parent is not null) continue;
-
-
-                    /* deterimine the point below to check. 
-                     * For front/back/left/right its the same X/Y point and Z is different, and Z is done basically by looking at the layer tree below us 
-                     * For Top/Bottom its a bit different, the Z stays the same (we query our own layer tree) but the Y coordinate is 1 less */
-
-                    float[] pointBelow = null;
-                    KdTree<float, Voxelizer.UVFace> treeBelow = null;
-                    if (point.Value.Type is Voxelizer.FaceOrientation.Top or Voxelizer.FaceOrientation.Bottom)
+                    layerFaceCounts[layerIndex]++;
+                    if (currentFaceItem is null)
                     {
-                        if (point.Value.Type == Voxelizer.FaceOrientation.Top)
-                        {
-                            pointBelow = new[] { point.Point[0], point.Point[1], point.Point[2] - 1 };
-                        }
-                        else
-                        {
-                            pointBelow = new[] { point.Point[0], point.Point[1], point.Point[2] - 1 };
-                        }
-                        treeBelow = layerTrees[i];
+                        rootFaces[layerIndex] = new Voxelizer.UVFace { LayerIndex = layerIndex, Type = faceType, FaceRect = new Rectangle(startX, startY, curY - startY + 1, 1), LayerHeight = distinctLayers[(int)layerIndex].LayerHeight };
+                        currentFaceItem = rootFaces[layerIndex];
                     }
                     else
                     {
-                        pointBelow = new[] { point.Point[0], point.Point[1], point.Point[2] };
-                        if (i > 0)
-                        {
-                            treeBelow = layerTrees[i - 1];
-                        }
-                    }
-
-                    var faceBelow = treeBelow?.FindValueAt(pointBelow);
-                    if (faceBelow is null) continue;
-                    /* if we find a face below us it has to be the same width too */
-                    if (point.Value.FaceRect.Width == faceBelow.FaceRect.Width)
-                    {
-                        /* same coordinate, same width, safe to merge together. Do so by doubly linking the items */
-                        point.Value.Parent = faceBelow;
-                        faceBelow.Child = point.Value;
-                        collapseCount++;
+                        currentFaceItem.FlatListNext = new Voxelizer.UVFace { LayerIndex = layerIndex, Type = faceType, FaceRect = new Rectangle(startX, startY, curY - startY + 1, 1), LayerHeight = distinctLayers[(int)layerIndex].LayerHeight };
+                        currentFaceItem = currentFaceItem.FlatListNext;
                     }
                 }
-                progress.LockAndIncrement();
-            });
+            }
+
+            progress++;
 
             if (progress.Token.IsCancellationRequested)
             {
@@ -573,83 +471,186 @@ namespace UVtools.Core.Operations
                 return false;
             }
 
-            progress.Title = "Stage 4: Writing the file";
-            progress.ProcessedItems = 0;
+        }
+
+        progress.Title = "Stage 2: Building KD Trees";
+        progress.ProcessedItems = 0;
+
+        /* We build out a 3 dimensional KD tree for each layer, having 1 big KD tree is prohibitive when you get to millions and millions of faces. */
+        Parallel.For(0, distinctLayers.Length, layerIndex =>
+        {
+            if (progress.Token.IsCancellationRequested) return;
+
+            /* Create the KD tree for the layer, in practice there should never be dups, but just in case, set to skip */
+            layerTrees[layerIndex] = new KdTree<float, Voxelizer.UVFace>(3, new FloatMath(), AddDuplicateBehavior.Skip);
+
+            /* Walk the linked list of UVFaces, adding them to the tree */
+            var currentFaceItem = rootFaces[layerIndex];
+            if (currentFaceItem is null) return;
+            while (currentFaceItem.FlatListNext is not null)
+            {
+                layerTrees[layerIndex].Add(new[] { (float)currentFaceItem.Type, currentFaceItem.FaceRect.X, currentFaceItem.FaceRect.Y }, currentFaceItem);
+                currentFaceItem = currentFaceItem.FlatListNext;
+            }
+            layerTrees[layerIndex].Add(new[] { (float)currentFaceItem.Type, currentFaceItem.FaceRect.X, currentFaceItem.FaceRect.Y }, currentFaceItem);
+
+            progress.LockAndIncrement();
+        });
+
+        if (progress.Token.IsCancellationRequested)
+        {
+            Cleanup();
+            return false;
+        }
+
+        progress.Title = "Stage 3: Collapsing faces";
+        progress.ProcessedItems = 0;
+        long collapseCount = 0;
+
+        /* Begin Stage 3: Vertical collapse 
+         * Since we don't modify the lists/objects and only connect them via doubly linked list
+         * we can process each layer independant of the others.
+         */
+        Parallel.For(0, distinctLayers.Length, i =>
+        {
+            if (progress.Token.IsCancellationRequested)
+            {
+                return;
+            }
+
+            /* if no faces on this layer... skip.... needed for empty layers */
+            if (layerTrees[i] is null) return;
+
+            /* check each point in the current layers tree */
+            foreach (var point in layerTrees[i])
+            {
+                /* if this point already has a parent, skip */
+                if (point.Value.Parent is not null) continue;
 
 
-            using var mesh = fileExtension.FileFormatType.CreateInstance<MeshFile>(_filePath, FileMode.Create, _meshFileFormat, SlicerFile);
-            mesh.BeginWrite();
+                /* deterimine the point below to check. 
+                 * For front/back/left/right its the same X/Y point and Z is different, and Z is done basically by looking at the layer tree below us 
+                 * For Top/Bottom its a bit different, the Z stays the same (we query our own layer tree) but the Y coordinate is 1 less */
 
-            /* Begin Stage 4, generating triangles and saving to file */
-            for (var treeIndex = 0; treeIndex < layerTrees.Length; treeIndex++) {
-                var tree = layerTrees[treeIndex];
-                if (tree is null) continue;
-
-                /* only process UVFaces that do not have a parent, these are the "root" faces that couldn't be combined with something above them */
-                foreach (var p in tree.Where(p => p.Value.Parent is null))
+                float[]? pointBelow = null;
+                KdTree<float, Voxelizer.UVFace>? treeBelow = null;
+                if (point.Value.Type is Voxelizer.FaceOrientation.Top or Voxelizer.FaceOrientation.Bottom)
                 {
-                    /* generate the triangles */
-                    foreach (var f in Voxelizer.MakeFacetsForUVFace(p.Value, xWidth, yWidth,distinctLayers[treeIndex].PositionZ))
+                    if (point.Value.Type == Voxelizer.FaceOrientation.Top)
                     {
-                        /* write to file */
-                        mesh.WriteTriangle(f.p1, f.p2, f.p3, f.normal);
+                        pointBelow = new[] { point.Point[0], point.Point[1], point.Point[2] - 1 };
+                    }
+                    else
+                    {
+                        pointBelow = new[] { point.Point[0], point.Point[1], point.Point[2] - 1 };
+                    }
+                    treeBelow = layerTrees[i];
+                }
+                else
+                {
+                    pointBelow = new[] { point.Point[0], point.Point[1], point.Point[2] };
+                    if (i > 0)
+                    {
+                        treeBelow = layerTrees[i - 1];
                     }
                 }
 
-                /* check for cancellation at every layer, and if so, close the file properly */
-                if (progress.Token.IsCancellationRequested)
+                var faceBelow = treeBelow?.FindValueAt(pointBelow);
+                if (faceBelow is null) continue;
+                /* if we find a face below us it has to be the same width too */
+                if (point.Value.FaceRect.Width == faceBelow.FaceRect.Width)
                 {
-                    Cleanup();
-                    return false;
+                    /* same coordinate, same width, safe to merge together. Do so by doubly linking the items */
+                    point.Value.Parent = faceBelow;
+                    faceBelow.Child = point.Value;
+                    collapseCount++;
                 }
-
-                progress++;
             }
+            progress.LockAndIncrement();
+        });
 
-            void Cleanup()
+        if (progress.Token.IsCancellationRequested)
+        {
+            Cleanup();
+            return false;
+        }
+
+        progress.Title = "Stage 4: Writing the file";
+        progress.ProcessedItems = 0;
+
+
+        using var mesh = fileExtension.FileFormatType.CreateInstance<MeshFile>(_filePath, FileMode.Create, _meshFileFormat, SlicerFile);
+        mesh!.BeginWrite();
+
+        /* Begin Stage 4, generating triangles and saving to file */
+        for (var treeIndex = 0; treeIndex < layerTrees.Length; treeIndex++) {
+            var tree = layerTrees[treeIndex];
+            if (tree is null) continue;
+
+            /* only process UVFaces that do not have a parent, these are the "root" faces that couldn't be combined with something above them */
+            foreach (var p in tree.Where(p => p.Value.Parent is null))
             {
-                /* dispose of everything */
-                for (var x = 0; x < layerTrees.Length; x++)
+                /* generate the triangles */
+                foreach (var f in Voxelizer.MakeFacetsForUVFace(p.Value, xWidth, yWidth,distinctLayers[treeIndex].PositionZ))
                 {
-                    layerTrees[x] = null;
+                    /* write to file */
+                    mesh.WriteTriangle(f.p1, f.p2, f.p3, f.normal);
                 }
-
-                layerTrees = null;
-
-                for (var x = 0; x < rootFaces.Length; x++)
-                {
-                    if (rootFaces[x] is not null) rootFaces[x].FlatListNext = null;
-                    rootFaces[x] = null;
-                }
-                rootFaces = null;
-                GC.Collect();
             }
 
-            mesh.EndWrite();
+            /* check for cancellation at every layer, and if so, close the file properly */
+            if (progress.Token.IsCancellationRequested)
+            {
+                Cleanup();
+                return false;
+            }
 
-            return !progress.Token.IsCancellationRequested;
+            progress++;
         }
 
-
-        #endregion
-
-        #region Equality
-
-        private bool Equals(OperationLayerExportMesh other)
+        void Cleanup()
         {
-            return _filePath == other._filePath && _meshFileFormat == other._meshFileFormat && _quality == other._quality && _rotateDirection == other._rotateDirection && _flipDirection == other._flipDirection && _stripAntiAliasing == other._stripAntiAliasing;
+            /* dispose of everything */
+            for (var x = 0; x < layerTrees.Length; x++)
+            {
+                layerTrees[x] = null!;
+            }
+
+            layerTrees = null;
+
+            for (var x = 0; x < rootFaces.Length; x++)
+            {
+                if (rootFaces[x] is not null) rootFaces[x]!.FlatListNext = null;
+                rootFaces[x] = null!;
+            }
+            rootFaces = null;
+            GC.Collect();
         }
 
-        public override bool Equals(object obj)
-        {
-            return ReferenceEquals(this, obj) || obj is OperationLayerExportMesh other && Equals(other);
-        }
+        mesh.EndWrite();
 
-        public override int GetHashCode()
-        {
-            return HashCode.Combine(_filePath, (int)_meshFileFormat, (int)_quality, (int)_rotateDirection, (int)_flipDirection, _stripAntiAliasing);
-        }
-
-        #endregion
+        return !progress.Token.IsCancellationRequested;
     }
+
+
+    #endregion
+
+    #region Equality
+
+    private bool Equals(OperationLayerExportMesh other)
+    {
+        return _filePath == other._filePath && _meshFileFormat == other._meshFileFormat && _quality == other._quality && _rotateDirection == other._rotateDirection && _flipDirection == other._flipDirection && _stripAntiAliasing == other._stripAntiAliasing;
+    }
+
+    public override bool Equals(object? obj)
+    {
+        return ReferenceEquals(this, obj) || obj is OperationLayerExportMesh other && Equals(other);
+    }
+
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(_filePath, (int)_meshFileFormat, (int)_quality, (int)_rotateDirection, (int)_flipDirection, _stripAntiAliasing);
+    }
+
+    #endregion
 }

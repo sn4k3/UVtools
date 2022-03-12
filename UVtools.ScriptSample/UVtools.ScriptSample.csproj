@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <Company>PTRTECH</Company>
     <Description>Scripting samples</Description>
     <Authors>Tiago Conceição</Authors>
@@ -11,6 +11,7 @@
     <RepositoryType>Git</RepositoryType>
     <Copyright>Copyright © 2020 PTRTECH</Copyright>
     <Platforms>AnyCPU;x64</Platforms>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

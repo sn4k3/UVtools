@@ -10,55 +10,122 @@ using System.Text;
 using System.Xml;
 using System.Xml.Serialization;
 
-namespace UVtools.Core.Extensions
+namespace UVtools.Core.Extensions;
+
+public static class XmlExtensions
 {
-    public static class XmlExtensions
+    public static readonly XmlWriterSettings SettingsIndent = new()
     {
-        public static string SerializeObject(object toSerialize)
+        CloseOutput = false,
+        Indent = true,
+    };
+
+    public static void Serialize(object toSerialize, Stream stream, bool noNameSpace = false)
+    {
+        var xmlSerializer = new XmlSerializer(toSerialize.GetType());
+        XmlSerializerNamespaces? ns = null;
+        if (noNameSpace)
         {
-            var xmlSerializer = new XmlSerializer(toSerialize.GetType());
-            
-            using var textWriter = new StringWriter();
-            xmlSerializer.Serialize(textWriter, toSerialize);
-            return textWriter.ToString();
+            ns = new();
+            ns.Add("", "");
         }
-
-        public static string SerializeObject(object toSerialize, XmlWriterSettings settings, bool standalone = false)
-        {
-            settings.CloseOutput = false;
-
-            using var ms = new MemoryStream();
-            using (var xw = XmlWriter.Create(ms, settings))
-            {
-                xw.WriteStartDocument(standalone); // that bool parameter is called "standalone"
-
-                var s = new XmlSerializer(toSerialize.GetType());
-                s.Serialize(xw, toSerialize);
-            }
-
-            return settings.Encoding.GetString(ms.ToArray());
-        }
-
-        public static string SerializeObject(object toSerialize, Encoding encoding, bool indent = true, bool omitXmlDeclaration = false, bool standalone = false)
-        {
-            var settings = new XmlWriterSettings
-            {
-                // If set to true XmlWriter would close MemoryStream automatically and using would then do double dispose
-                // Code analysis does not understand that. That's why there is a suppress message.
-                CloseOutput = false,
-                Encoding = encoding,
-                OmitXmlDeclaration = omitXmlDeclaration,
-                Indent = indent,
-            };
-            return SerializeObject(toSerialize, settings, standalone);
-        }
-
-        public static T DeserializeObject<T>(string text)
-        {
-            var serializer = new XmlSerializer(typeof(T));
-            using TextReader reader = new StringReader(text);
-            return (T)serializer.Deserialize(reader);
-        }
-
+        xmlSerializer.Serialize(stream, toSerialize, ns);
     }
+
+    public static void Serialize(object toSerialize, Stream stream, XmlWriterSettings settings, bool noNameSpace = false, bool standalone = false)
+    {
+        settings.CloseOutput = false;
+
+        using var xw = XmlWriter.Create(stream, settings);
+        xw.WriteStartDocument(standalone); // that bool parameter is called "standalone"
+
+        var s = new XmlSerializer(toSerialize.GetType());
+        XmlSerializerNamespaces? ns = null;
+        if (noNameSpace)
+        {
+            ns = new();
+            ns.Add("", "");
+        }
+        s.Serialize(xw, toSerialize, ns);
+    }
+
+    public static void Serialize(object toSerialize, Stream stream, Encoding encoding, bool indent = true, bool omitXmlDeclaration = false, bool noNameSpace = false, bool standalone = false)
+    {
+        var settings = new XmlWriterSettings
+        {
+            // If set to true XmlWriter would close MemoryStream automatically and using would then do double dispose
+            // Code analysis does not understand that. That's why there is a suppress message.
+            CloseOutput = false,
+            Encoding = encoding,
+            OmitXmlDeclaration = omitXmlDeclaration,
+            Indent = indent,
+        };
+        Serialize(toSerialize, stream, settings, noNameSpace, standalone);
+    }
+
+    public static void SerializeToFile(object toSerialize, string path, bool noNameSpace = false)
+    {
+        using var stream = new FileStream(path, FileMode.Create);
+        Serialize(toSerialize, stream, noNameSpace);
+    }
+
+    public static void SerializeToFile(object toSerialize, string path, XmlWriterSettings settings, bool noNameSpace = false, bool standalone = false)
+    {
+        using var stream = new FileStream(path, FileMode.Create);
+        Serialize(toSerialize, stream, settings, noNameSpace, standalone);
+    }
+
+    public static void SerializeToFile(object toSerialize, string path, Encoding encoding, bool indent = true, bool omitXmlDeclaration = false, bool noNameSpace = false, bool standalone = false)
+    {
+        using var stream = new FileStream(path, FileMode.Create);
+        Serialize(toSerialize, stream, encoding, indent, omitXmlDeclaration, noNameSpace, standalone);
+    }
+
+
+    public static string SerializeObject(object toSerialize, bool noNameSpace = false)
+    {
+        using var stream = new MemoryStream();
+        Serialize(toSerialize, stream, noNameSpace);
+        stream.Seek(0, SeekOrigin.Begin);
+        using var reader = new StreamReader(stream);
+        return reader.ReadToEnd();
+    }
+
+    public static string SerializeObject(object toSerialize, XmlWriterSettings settings, bool noNameSpace = false, bool standalone = false)
+    {
+        using var stream = new MemoryStream();
+        Serialize(toSerialize, stream, settings, noNameSpace, standalone);
+        stream.Seek(0, SeekOrigin.Begin);
+        using var reader = new StreamReader(stream);
+        return reader.ReadToEnd();
+    }
+
+    public static string SerializeObject(object toSerialize, Encoding encoding, bool indent = true, bool omitXmlDeclaration = false, bool noNameSpace = false, bool standalone = false)
+    {
+        using var stream = new MemoryStream();
+        Serialize(toSerialize, stream, encoding, indent, omitXmlDeclaration, noNameSpace, standalone);
+        stream.Seek(0, SeekOrigin.Begin);
+        using var reader = new StreamReader(stream);
+        return reader.ReadToEnd();
+    }
+
+    public static T DeserializeFromStream<T>(Stream stream)
+    {
+        var serializer = new XmlSerializer(typeof(T));
+        return (T)serializer.Deserialize(stream)!;
+    }
+
+    public static T DeserializeFromFile<T>(string filePath)
+    {
+        using var stream = File.OpenRead(filePath);
+        return DeserializeFromStream<T>(stream);
+    }
+
+    public static T DeserializeFromText<T>(string text)
+    {
+        var serializer = new XmlSerializer(typeof(T));
+        using TextReader reader = new StringReader(text);
+        return (T)serializer.Deserialize(reader)!;
+    }
+
 }

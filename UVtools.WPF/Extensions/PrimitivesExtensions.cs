@@ -8,18 +8,17 @@
 
 using Avalonia;
 
-namespace UVtools.WPF.Extensions
-{
-    public static class PrimitivesExtensions
-    {
-        public static System.Drawing.Point ToDotNet(this Point point)
-        {
-            return new System.Drawing.Point((int) point.X, (int) point.Y);
-        }
+namespace UVtools.WPF.Extensions;
 
-        public static Point ToAvalonia(this System.Drawing.Point point)
-        {
-            return new Point(point.X, point.Y);
-        }
+public static class PrimitivesExtensions
+{
+    public static System.Drawing.Point ToDotNet(this Point point)
+    {
+        return new System.Drawing.Point((int) point.X, (int) point.Y);
+    }
+
+    public static Point ToAvalonia(this System.Drawing.Point point)
+    {
+        return new Point(point.X, point.Y);
     }
 }

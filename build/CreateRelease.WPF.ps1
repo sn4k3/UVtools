@@ -26,66 +26,6 @@ class FixedEncoder : System.Text.UTF8Encoding {
     }
 }
 
-function WriteXmlToScreen([xml]$xml)
-{
-    $StringWriter = New-Object System.IO.StringWriter;
-    $XmlWriter = New-Object System.Xml.XmlTextWriter $StringWriter;
-    $XmlWriter.Formatting = "indented";
-    $xml.WriteTo($XmlWriter);
-    $XmlWriter.Flush();
-    $StringWriter.Flush();
-    Write-Output $StringWriter.ToString();
-}
-
-# Script working directory
-Set-Location $PSScriptRoot\..
-
-####################################
-###         Configuration        ###
-####################################
-$enableMSI = $true
-#$buildOnly = 'win-x64'
-#$buildOnly = 'linux-x64'
-#$buildOnly = 'osx-x64'
-$enableNugetPublish = $true
-# Profilling
-$stopWatch = New-Object -TypeName System.Diagnostics.Stopwatch 
-$deployStopWatch = New-Object -TypeName System.Diagnostics.Stopwatch
-$stopWatch.Start()
-
-
-# Variables
-$software = "UVtools"
-$project = "UVtools.WPF"
-$buildWith = "Release"
-$netFolder = "net5.0"
-$rootFolder = $(Get-Location)
-$releaseFolder = "$project\bin\$buildWith\$netFolder"
-$objFolder = "$project\obj\$buildWith\$netFolder"
-$publishFolder = "publish"
-$platformsFolder = "UVtools.Platforms"
-
-# Not supported yet! No fuse on WSL
-$appImageFile = 'appimagetool-x86_64.AppImage'
-$appImageFilePath = "$platformsFolder/AppImage/$appImageFile"
-$appImageUrl = "https://github.com/AppImage/AppImageKit/releases/download/continuous/$appImageFile"
-
-$macIcns = "UVtools.CAD/UVtools.icns"
-
-#$version = (Get-Command "$releaseFolder\UVtools.dll").FileVersionInfo.ProductVersion
-$projectXml = [Xml] (Get-Content "$project\$project.csproj")
-$version = "$($projectXml.Project.PropertyGroup.Version)".Trim();
-if([string]::IsNullOrWhiteSpace($version)){
-    Write-Error "Can not detect the UVtools version, does $project\$project.csproj exists?"
-    exit
-}
-
-# MSI Variables
-$installers = @("UVtools.InstallerMM", "UVtools.Installer")
-$msiOutputFile = "$rootFolder\UVtools.Installer\bin\x64\Release\UVtools.msi"
-$msiComponentsFile = "$rootFolder\UVtools.InstallerMM\UVtools.InstallerMM.wxs"
-$msiSourceFiles = "$rootFolder\$publishFolder\win-x64"
-$msbuild = "`"${env:ProgramFiles}\Microsoft Visual Studio\2022\Enterprise\MSBuild\Current\Bin\MSBuild.exe`" /t:Build /p:Configuration=$buildWith /p:MSIProductVersion=$version"
 
 function wixCleanUpElement([System.Xml.XmlElement]$element, [string]$rootPath)
 {
@@ -220,6 +160,70 @@ foreach($element in $msiComponentsXml.Wix.Module.Directory.Directory)
 }
 #>
 
+function WriteXmlToScreen([xml]$xml)
+{
+    $StringWriter = New-Object System.IO.StringWriter;
+    $XmlWriter = New-Object System.Xml.XmlTextWriter $StringWriter;
+    $XmlWriter.Formatting = "indented";
+    $xml.WriteTo($XmlWriter);
+    $XmlWriter.Flush();
+    $StringWriter.Flush();
+    Write-Output $StringWriter.ToString();
+}
+
+# Script working directory
+Set-Location $PSScriptRoot\..
+
+####################################
+###         Configuration        ###
+####################################
+$enableMSI = $true
+#$buildOnly = 'win-x64'
+#$buildOnly = 'linux-x64'
+#$buildOnly = 'osx-x64'
+#$buildOnly = 'osx-arm64'
+$zipPackages = $true
+#$enableNugetPublish = $true
+
+# Profilling
+$stopWatch = New-Object -TypeName System.Diagnostics.Stopwatch 
+$deployStopWatch = New-Object -TypeName System.Diagnostics.Stopwatch
+$stopWatch.Start()
+
+
+# Variables
+$software = "UVtools"
+$project = "UVtools.WPF"
+$buildWith = "Release"
+$netFolder = "net6.0"
+$rootFolder = $(Get-Location)
+$releaseFolder = "$project\bin\$buildWith\$netFolder"
+$objFolder = "$project\obj\$buildWith\$netFolder"
+$publishFolder = "publish"
+$platformsFolder = "UVtools.Platforms"
+
+# Not supported yet! No fuse on WSL
+$appImageFile = 'appimagetool-x86_64.AppImage'
+$appImageFilePath = "$platformsFolder/AppImage/$appImageFile"
+$appImageUrl = "https://github.com/AppImage/AppImageKit/releases/download/continuous/$appImageFile"
+
+$macIcns = "UVtools.CAD/UVtools.icns"
+
+#$version = (Get-Command "$releaseFolder\UVtools.dll").FileVersionInfo.ProductVersion
+$projectXml = [Xml] (Get-Content "$project\$project.csproj")
+$version = "$($projectXml.Project.PropertyGroup.Version)".Trim();
+if([string]::IsNullOrWhiteSpace($version)){
+    Write-Error "Can not detect the UVtools version, does $project\$project.csproj exists?"
+    exit
+}
+
+# MSI Variables
+$installers = @("UVtools.InstallerMM", "UVtools.Installer")
+$msiOutputFile = "$rootFolder\UVtools.Installer\bin\x64\Release\UVtools.msi"
+$msiComponentsFile = "$rootFolder\UVtools.InstallerMM\UVtools.InstallerMM.wxs"
+$msiSourceFiles = "$rootFolder\$publishFolder\win-x64"
+$msbuild = "`"${env:ProgramFiles}\Microsoft Visual Studio\2022\Enterprise\MSBuild\Current\Bin\MSBuild.exe`" /t:Build /p:Configuration=$buildWith /p:MSIProductVersion=$version"
+
 Write-Output "
 ####################################
 ###  UVtools builder & deployer  ###
@@ -239,36 +243,41 @@ Remove-Item $publishFolder -Recurse -ErrorAction Ignore # Clean
 $runtimes = 
 @{
     "win-x64" = @{
-        "extraCmd" = "-p:PublishReadyToRun=true"
+        "extraCmd" = ""
         "exclude" = @("UVtools.sh")
         "include" = @()
     }
     "linux-x64" = @{
-        "extraCmd" = "-p:PublishReadyToRun=true"
+        "extraCmd" = ""
         "exclude" = @()
         "include" = @("libcvextern.so")
     }
     "arch-x64" = @{
-        "extraCmd" = "-p:PublishReadyToRun=true"
+        "extraCmd" = ""
         "exclude" = @()
         "include" = @("libcvextern.so")
     }
     "rhel-x64" = @{
-        "extraCmd" = "-p:PublishReadyToRun=true"
+        "extraCmd" = ""
         "exclude" = @()
         "include" = @("libcvextern.so")
     }
     #"linux-arm64" = @{
-    #    "extraCmd" = "-p:PublishReadyToRun=true"
+    #    "extraCmd" = ""
     #    "exclude" = @()
     #    "include" = @("libcvextern.so")
     #}
     #"unix-x64" = @{
-    #    "extraCmd" = "-p:PublishReadyToRun=true"
+    #    "extraCmd" = ""
     #    "exclude" = @("x86", "x64", "libcvextern.dylib")
     #}
     "osx-x64" = @{
-        "extraCmd" = "-p:PublishReadyToRun=true"
+        "extraCmd" = ""
+        "exclude" = @()
+        "include" = @("libcvextern.dylib")
+    }
+    "osx-arm64" = @{
+        "extraCmd" = ""
         "exclude" = @()
         "include" = @("libcvextern.dylib")
     }
@@ -312,7 +321,7 @@ foreach ($obj in $runtimes.GetEnumerator()) {
     # Deploy
     Write-Output "################################
 Building: $runtime"
-    dotnet publish $project -o "$publishFolder/$runtime" -c $buildWith -r $runtime $extraCmd
+    dotnet publish $project -o "$publishFolder/$runtime" -c $buildWith -r $runtime -p:PublishReadyToRun=true --self-contained $extraCmd
 
     New-Item "$publishFolder/$runtime/runtime_package.dat" -ItemType File -Value $runtime
     if(!$runtime.Equals('win-x64'))
@@ -344,7 +353,7 @@ Building: $runtime"
     #    wsl cp -a "$publishFolder/$runtime/." "$appDirDest/usr/bin"
     #    wsl $appImageFilePath $appDirDest
     #}
-    if($runtime.Equals('osx-x64')){
+    if($runtime.StartsWith('osx-')){
         $macAppFolder = "${software}.app"
         $macPublishFolder = "$publishFolder/${macAppFolder}"
         $macInfoplist = "$platformsFolder/$runtime/Info.plist"
@@ -360,15 +369,24 @@ Building: $runtime"
         Copy-Item "$macIcns" -Destination "$macPublishFolder/Contents/Resources"
         ((Get-Content -Path "$macInfoplist") -replace '#VERSION',"$version") | Set-Content -Path "$macOutputInfoplist/Info.plist"
         wsl cp -a "$publishFolder/$runtime/." "$macPublishFolder/Contents/MacOS"
+        wsl chmod +x "$macPublishFolder/Contents/MacOS/UVtools"
 
-        wsl cd "$publishFolder/" `&`& pwd `&`& zip -r "../$targetZip" "$macAppFolder/*"
-        #wsl cd "$publishFolder/$runtime" `&`& pwd `&`& zip -r "../../$macTargetZipLegacy" .
+        if($null -ne $zipPackages -and $zipPackages)
+        {
+            wsl cd "$publishFolder/" `&`& pwd `&`& zip -r "../$targetZip" "$macAppFolder/*"
+            #wsl cd "$publishFolder/$runtime" `&`& pwd `&`& zip -r "../../$macTargetZipLegacy" .
+        }
+
+        Rename-Item -Path $macPublishFolder -NewName "${macAppFolder}_${runtime}"
         
     }
     else {
-        Write-Output "Compressing $runtime to: $targetZip"
-        Write-Output $targetZip "$publishFolder/$runtime"
-        wsl cd "$publishFolder/$runtime" `&`& pwd `&`& zip -r "../../$targetZip" .
+        if($null -ne $zipPackages -and $zipPackages)
+        {
+            Write-Output "Compressing $runtime to: $targetZip"
+            Write-Output $targetZip "$publishFolder/$runtime"
+            wsl cd "$publishFolder/$runtime" `&`& pwd `&`& zip -r "../../$targetZip" .
+        }
     }
 
     # Zip
@@ -449,3 +467,5 @@ Write-Output "
 ###           Completed          ###
 ####################################
 In: $($stopWatch.Elapsed)"
+
+

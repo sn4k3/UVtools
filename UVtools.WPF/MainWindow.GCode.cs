@@ -14,64 +14,63 @@ using UVtools.Core.SystemOS;
 using UVtools.WPF.Extensions;
 using Helpers = UVtools.WPF.Controls.Helpers;
 
-namespace UVtools.WPF
+namespace UVtools.WPF;
+
+public partial class MainWindow
 {
-    public partial class MainWindow
+    public bool HaveGCode => IsFileLoaded && SlicerFile.SupportsGCode;
+
+    public uint GCodeLines => !HaveGCode ? 0 : SlicerFile.GCode.LineCount;
+
+    public void OnClickRebuildGcode()
     {
-        public bool HaveGCode => IsFileLoaded && SlicerFile.SupportsGCode;
+        if (!HaveGCode) return;
+        var temp = SlicerFile.SuppressRebuildGCode;
+        SlicerFile.SuppressRebuildGCode = false;
+        SlicerFile.RebuildGCode();
+        SlicerFile.SuppressRebuildGCode = temp;
+        RaisePropertyChanged(nameof(GCodeLines));
 
-        public uint GCodeLines => !HaveGCode ? 0 : SlicerFile.GCode.LineCount;
+        CanSave = true;
+    }
 
-        public void OnClickRebuildGcode()
+    public async void OnClickGCodeSaveFile()
+    {
+        if (!HaveGCode) return;
+
+        var dialog = new SaveFileDialog
         {
-            if (!HaveGCode) return;
-            var temp = SlicerFile.SuppressRebuildGCode;
-            SlicerFile.SuppressRebuildGCode = false;
-            SlicerFile.RebuildGCode();
-            SlicerFile.SuppressRebuildGCode = temp;
-            RaisePropertyChanged(nameof(GCodeLines));
+            Filters = Helpers.IniFileFilter,
+            Directory = Path.GetDirectoryName(SlicerFile.FileFullPath),
+            InitialFileName = $"{Path.GetFileNameWithoutExtension(SlicerFile.FileFullPath)}_gcode.txt"
+        };
+        var file = await dialog.ShowAsync(this);
 
-            CanSave = true;
+        if (string.IsNullOrEmpty(file)) return;
+
+        try
+        {
+            await using TextWriter tw = new StreamWriter(file);
+            await tw.WriteAsync(SlicerFile.GCodeStr);
+            tw.Close();
+        }
+        catch (Exception e)
+        {
+            await this.MessageBoxError(e.ToString(), "Error occur while save gcode");
+            return;
         }
 
-        public async void OnClickGCodeSaveFile()
-        {
-            if (!HaveGCode) return;
+        var result = await this.MessageBoxQuestion(
+            "GCode save was successful. Do you want open the file in the default editor?",
+            "GCode save complete");
+        if (result != ButtonResult.Yes) return;
 
-            var dialog = new SaveFileDialog
-            {
-                Filters = Helpers.IniFileFilter,
-                Directory = Path.GetDirectoryName(SlicerFile.FileFullPath),
-                InitialFileName = $"{Path.GetFileNameWithoutExtension(SlicerFile.FileFullPath)}_gcode.txt"
-            };
-            var file = await dialog.ShowAsync(this);
+        SystemAware.StartProcess(file);
+    }
 
-            if (string.IsNullOrEmpty(file)) return;
-
-            try
-            {
-                await using TextWriter tw = new StreamWriter(file);
-                await tw.WriteAsync(SlicerFile.GCodeStr);
-                tw.Close();
-            }
-            catch (Exception e)
-            {
-                await this.MessageBoxError(e.ToString(), "Error occur while save gcode");
-                return;
-            }
-
-            var result = await this.MessageBoxQuestion(
-                "GCode save was successful. Do you want open the file in the default editor?",
-                "GCode save complete");
-            if (result != ButtonResult.Yes) return;
-
-            SystemAware.StartProcess(file);
-        }
-
-        public void OnClickGCodeSaveClipboard()
-        {
-            if (!HaveGCode) return;
-            Application.Current.Clipboard.SetTextAsync(SlicerFile.GCodeStr);
-        }
+    public void OnClickGCodeSaveClipboard()
+    {
+        if (!HaveGCode) return;
+        Application.Current.Clipboard.SetTextAsync(SlicerFile.GCodeStr);
     }
 }

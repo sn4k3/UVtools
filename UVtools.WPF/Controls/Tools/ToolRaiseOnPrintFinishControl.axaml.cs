@@ -1,23 +1,22 @@
 using Avalonia.Markup.Xaml;
 using UVtools.Core.Operations;
 
-namespace UVtools.WPF.Controls.Tools
+namespace UVtools.WPF.Controls.Tools;
+
+public partial class ToolRaiseOnPrintFinishControl : ToolControl
 {
-    public partial class ToolRaiseOnPrintFinishControl : ToolControl
+    public OperationRaiseOnPrintFinish Operation => BaseOperation as OperationRaiseOnPrintFinish;
+
+    public ToolRaiseOnPrintFinishControl()
     {
-        public OperationRaiseOnPrintFinish Operation => BaseOperation as OperationRaiseOnPrintFinish;
+        BaseOperation = new OperationRaiseOnPrintFinish(SlicerFile);
+        if (!ValidateSpawn()) return;
 
-        public ToolRaiseOnPrintFinishControl()
-        {
-            BaseOperation = new OperationRaiseOnPrintFinish(SlicerFile);
-            if (!ValidateSpawn()) return;
+        InitializeComponent();
+    }
 
-            InitializeComponent();
-        }
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
-        }
+    private void InitializeComponent()
+    {
+        AvaloniaXamlLoader.Load(this);
     }
 }

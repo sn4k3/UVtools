@@ -1,24 +1,43 @@
 ﻿<Styles xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:i="clr-namespace:Projektanker.Icons.Avalonia;assembly=Projektanker.Icons.Avalonia">
 
     <Design.PreviewWith>
         <Border Padding="20"></Border>
     </Design.PreviewWith>
 
-    <Style Selector="Border.GroupBox">
-        <Setter Property="BorderBrush" Value="LightBlue" />
+    <Styles.Resources>
+        <SolidColorBrush x:Key="GroupBoxHeaderBackground" Color="LightBlue" />
+        <SolidColorBrush x:Key="HeaderFooterBackground" Color="LightGray" />
+        <SolidColorBrush x:Key="LightBackground" Color="WhiteSmoke" />
+
+        <SolidColorBrush x:Key="AdvancedImageBoxGridColor" Color="White" />
+        <SolidColorBrush x:Key="AdvancedImageBoxGridAlternateColor" Color="Gainsboro" />
+    </Styles.Resources>
+
+    <Style Selector="GridSplitter">
+        <Setter Property="Background" Value="Gainsboro"/>
     </Style>
 
-    <Style Selector="TextBlock.GroupBoxHeader">
-        <Setter Property="Background" Value="LightBlue" />
+    <Style Selector="Border.LayerNavigationToolTip">
+        <Setter Property="BorderBrush" Value="AliceBlue"/>
     </Style>
 
-    <Style Selector="Border.Header">
-        <Setter Property="Background" Value="LightGray" />
+    <Style Selector="Canvas.IssuesTrackerCanvas">
+        <Setter Property="Background" Value="{StaticResource LightBackground}"/>
     </Style>
 
-  <Style Selector="Border.FooterActions">
-      <Setter Property="Background" Value="LightGray" />
-  </Style>
+    <Style Selector="Border.ProgressLoading">
+        <Setter Property="Background" Value="White"/>
+        <Setter Property="BorderBrush" Value="{StaticResource LightBackground}"/>
+	</Style>
+
+    <Style Selector="Border.BoxBackground">
+        <Setter Property="Background" Value="WhiteSmoke"/>
+    </Style>
+
+    <Style Selector="i|Icon">
+        <Setter Property="Foreground" Value="#1E1E1E" />
+    </Style>
    
 </Styles>

@@ -16,26 +16,22 @@
   <StackPanel Orientation="Vertical">
     <cp:ColorPicker Color="{Binding ResultColor, Mode=TwoWay}" />
 
-    <Panel Background="LightGray">
-      <StackPanel HorizontalAlignment="Right" Margin="15" Orientation="Horizontal">
-        <Button HorizontalAlignment="Right" Name="Actions.Save" Margin="0,0,10,0" Padding="10" IsDefault="True"
+    <Border Classes="FooterActions">
+      <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" Spacing="10">
+        <controls:ButtonWithIcon HorizontalAlignment="Right" Name="Actions.Save" Padding="10" IsDefault="True"
+                Icon="fas fa-check"
+                Text="Select"
                   Command="{Binding OnClickOk}">
-          <StackPanel Orientation="Horizontal">
-            <Image Source="/Assets/Icons/accept-16x16.png"/>
-            <TextBlock Margin="10,0,0,0">Select</TextBlock>
-          </StackPanel>
-        </Button>
+          <StackPanel Orientation="Horizontal"/>
+        </controls:ButtonWithIcon>
 
-        <Button HorizontalAlignment="Right" 
+        <controls:ButtonWithIcon HorizontalAlignment="Right" 
                 Name="Actions.Cancel" Padding="10" IsCancel="True"
-                Command="{Binding Close}">
-          <StackPanel Orientation="Horizontal">
-            <Image Source="/Assets/Icons/exit-16x16.png"/>
-            <TextBlock Margin="10,0,0,0">Cancel</TextBlock>
-          </StackPanel>
-        </Button>
+                Icon="fas fa-sign-out-alt"
+                Text="Cancel"
+                Command="{Binding Close}"/>
       </StackPanel>
-    </Panel>
+    </Border>
 
   </StackPanel>
 

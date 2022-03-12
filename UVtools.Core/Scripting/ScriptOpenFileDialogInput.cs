@@ -6,18 +6,17 @@
  *  of this license document, but changing it is not allowed.
  */
 
-namespace UVtools.Core.Scripting
-{
-    public class ScriptOpenFileDialogInput : ScriptFileDialogInput
-    {
-        /// <summary>
-        /// Gets or sets if allow multiple file selection
-        /// </summary>
-        public bool AllowMultiple { get; set; }
+namespace UVtools.Core.Scripting;
 
-        /// <summary>
-        /// Gets or sets the selected files
-        /// </summary>
-        public string[] Files {get; set; }
-    }
+public class ScriptOpenFileDialogInput : ScriptFileDialogInput
+{
+    /// <summary>
+    /// Gets or sets if allow multiple file selection
+    /// </summary>
+    public bool AllowMultiple { get; set; }
+
+    /// <summary>
+    /// Gets or sets the selected files
+    /// </summary>
+    public string[]? Files {get; set; }
 }

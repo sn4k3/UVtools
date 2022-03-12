@@ -6,137 +6,138 @@
  *  of this license document, but changing it is not allowed.
  */
 
+using Emgu.CV;
 using System;
 using System.Threading.Tasks;
-using Emgu.CV;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 
-namespace UVtools.Core.Operations
+namespace UVtools.Core.Operations;
+
+[Serializable]
+public sealed class OperationLayerExportSkeleton : Operation
 {
-    [Serializable]
-    public sealed class OperationLayerExportSkeleton : Operation
+    #region Members
+    private string _filePath = null!;
+    private bool _cropByRoi = true;
+
+    #endregion
+
+    #region Overrides
+
+    public override bool CanHaveProfiles => false;
+
+    public override string IconClass => "fas fa-file-image";
+    public override string Title => "Export layers to skeleton";
+
+    public override string Description =>
+        "Export a layer range to a skeletonized image that is the sum of each layer skeleton.";
+
+    public override string ConfirmationText =>
+        $"skeletonize from layers {LayerIndexStart} through {LayerIndexEnd}?";
+
+    public override string ProgressTitle =>
+        $"Skeletonizing from layers {LayerIndexStart} through {LayerIndexEnd}";
+
+    public override string ProgressAction => "Skeletonized layers";
+
+    public override string ToString()
     {
-        #region Members
-        private string _filePath;
-        private bool _cropByRoi = true;
+        var result = $"[Crop by ROI: {_cropByRoi}]" +
+                     LayerRangeString;
+        if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
+        return result;
+    }
 
-        #endregion
+    #endregion
 
-        #region Overrides
+    #region Properties
 
-        public override bool CanHaveProfiles => false;
-        public override string Title => "Export layers to skeleton";
+    public string FilePath
+    {
+        get => _filePath;
+        set => RaiseAndSetIfChanged(ref _filePath, value);
+    }
 
-        public override string Description =>
-            "Export a layer range to a skeletonized image that is the sum of each layer skeleton.";
+    public bool CropByROI
+    {
+        get => _cropByRoi;
+        set => RaiseAndSetIfChanged(ref _cropByRoi, value);
+    }
 
-        public override string ConfirmationText =>
-            $"skeletonize from layers {LayerIndexStart} through {LayerIndexEnd}?";
+    #endregion
 
-        public override string ProgressTitle =>
-            $"Skeletonizing from layers {LayerIndexStart} through {LayerIndexEnd}";
+    #region Constructor
 
-        public override string ProgressAction => "Skeletonized layers";
+    public OperationLayerExportSkeleton()
+    { }
 
-        public override string ToString()
-        {
-            var result = $"[Crop by ROI: {_cropByRoi}]" +
-                         LayerRangeString;
-            if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
-            return result;
-        }
-
-        #endregion
-
-        #region Properties
-
-        public string FilePath
-        {
-            get => _filePath;
-            set => RaiseAndSetIfChanged(ref _filePath, value);
-        }
-
-        public bool CropByROI
-        {
-            get => _cropByRoi;
-            set => RaiseAndSetIfChanged(ref _cropByRoi, value);
-        }
-
-        #endregion
-
-        #region Constructor
-
-        public OperationLayerExportSkeleton()
-        { }
-
-        public OperationLayerExportSkeleton(FileFormat slicerFile) : base(slicerFile)
-        { }
+    public OperationLayerExportSkeleton(FileFormat slicerFile) : base(slicerFile)
+    { }
         
-        public override void InitWithSlicerFile()
-        {
-            _filePath = SlicerFile.FileFullPath + ".skeleton.png";
-        }
+    public override void InitWithSlicerFile()
+    {
+        _filePath = SlicerFile.FileFullPath + ".skeleton.png";
+    }
 
-        #endregion
+    #endregion
 
-        #region Methods
+    #region Methods
 
-        protected override bool ExecuteInternally(OperationProgress progress)
-        {
-            using var skeletonSum = EmguExtensions.InitMat(SlicerFile.Resolution);
-            var skeletonSumRoi = GetRoiOrDefault(skeletonSum);
-            using var mask = GetMask(skeletonSum);
+    protected override bool ExecuteInternally(OperationProgress progress)
+    {
+        using var skeletonSum = EmguExtensions.InitMat(SlicerFile.Resolution);
+        var skeletonSumRoi = GetRoiOrDefault(skeletonSum);
+        using var mask = GetMask(skeletonSum);
             
 
-            Parallel.For(LayerIndexStart, LayerIndexEnd+1, CoreSettings.ParallelOptions, layerIndex =>
-            {
-                if (progress.Token.IsCancellationRequested) return;
+        Parallel.For(LayerIndexStart, LayerIndexEnd+1, CoreSettings.ParallelOptions, layerIndex =>
+        {
+            if (progress.Token.IsCancellationRequested) return;
 
-                using var mat = SlicerFile[layerIndex].LayerMat;
-                var matRoi = GetRoiOrDefault(mat);
-                using var skeletonRoi = matRoi.Skeletonize();
-                lock (progress.Mutex)
-                {
-                    CvInvoke.Add(skeletonSumRoi, skeletonRoi, skeletonSumRoi, mask);
-                    progress++;
-                }
-            });
-
-            if (!progress.Token.IsCancellationRequested)
+            using var mat = SlicerFile[layerIndex].LayerMat;
+            var matRoi = GetRoiOrDefault(mat);
+            using var skeletonRoi = matRoi.Skeletonize();
+            lock (progress.Mutex)
             {
-                if (_cropByRoi && HaveROI)
-                {
-                    skeletonSumRoi.Save(_filePath);
-                }
-                else
-                {
-                    skeletonSum.Save(_filePath);
-                }
+                CvInvoke.Add(skeletonSumRoi, skeletonRoi, skeletonSumRoi, mask);
+                progress++;
             }
+        });
 
-            return !progress.Token.IsCancellationRequested;
-        }
-
-        #endregion
-
-        #region Equality
-
-        private bool Equals(OperationLayerExportSkeleton other)
+        if (!progress.Token.IsCancellationRequested)
         {
-            return _filePath == other._filePath && _cropByRoi == other._cropByRoi;
+            if (_cropByRoi && HaveROI)
+            {
+                skeletonSumRoi.Save(_filePath);
+            }
+            else
+            {
+                skeletonSum.Save(_filePath);
+            }
         }
 
-        public override bool Equals(object obj)
-        {
-            return ReferenceEquals(this, obj) || obj is OperationLayerExportSkeleton other && Equals(other);
-        }
-
-        public override int GetHashCode()
-        {
-            return HashCode.Combine(_filePath, _cropByRoi);
-        }
-
-        #endregion
+        return !progress.Token.IsCancellationRequested;
     }
+
+    #endregion
+
+    #region Equality
+
+    private bool Equals(OperationLayerExportSkeleton other)
+    {
+        return _filePath == other._filePath && _cropByRoi == other._cropByRoi;
+    }
+
+    public override bool Equals(object? obj)
+    {
+        return ReferenceEquals(this, obj) || obj is OperationLayerExportSkeleton other && Equals(other);
+    }
+
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(_filePath, _cropByRoi);
+    }
+
+    #endregion
 }

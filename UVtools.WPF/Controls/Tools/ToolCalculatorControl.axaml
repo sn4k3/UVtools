@@ -9,7 +9,7 @@
     <TabItem Header="Millimeters to pixels">
       <Grid RowDefinitions="Auto,10,Auto,30,Auto">
         <Border 
-          Background="White"
+          Background="{DynamicResource LightBackground}"
           BorderBrush="Black" BorderThickness="1">
           <TextBox VerticalAlignment="Center"
                      Classes="TransparentReadOnly"
@@ -171,7 +171,7 @@
 
       <Grid RowDefinitions="Auto,10,Auto">
         <Border
-          Background="White"
+            Background="{DynamicResource LightBackground}"
           BorderBrush="Black" BorderThickness="1">
           <TextBox VerticalAlignment="Center"
                    Classes="TransparentReadOnly"
@@ -401,7 +401,7 @@
     <TabItem Header="Optimal model tilt">
       <Grid RowDefinitions="Auto,10,Auto,30,Auto">
         <Border
-          Background="White"
+            Background="{DynamicResource LightBackground}"
           BorderBrush="Black" BorderThickness="1">
           <TextBox VerticalAlignment="Center" Classes="TransparentReadOnly" Padding="10">
             <TextBox.Text>

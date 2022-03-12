@@ -16,104 +16,103 @@ using UVtools.Core.Operations;
 using UVtools.WPF.Controls;
 using UVtools.WPF.Structures;
 
-namespace UVtools.WPF.Windows
+namespace UVtools.WPF.Windows;
+
+public class ProgressWindow : WindowEx, IDisposable
 {
-    public class ProgressWindow : WindowEx, IDisposable
+    public Stopwatch StopWatch => Progress.StopWatch;
+    public OperationProgress Progress { get; } = new ();
+
+    private LogItem _logItem = new ();
+
+    private Timer _timer = new (200) { AutoReset = true };
+
+    private long _lastTotalSeconds = 0;
+
+    public bool CanCancel
     {
-        public Stopwatch StopWatch => Progress.StopWatch;
-        public OperationProgress Progress { get; } = new ();
-
-        private LogItem _logItem = new ();
-
-        private Timer _timer = new (200) { AutoReset = true };
-
-        private long _lastTotalSeconds = 0;
-
-        public bool CanCancel
+        get => Progress?.CanCancel ?? false;
+        set
         {
-            get => Progress?.CanCancel ?? false;
-            set
-            {
-                Progress.CanCancel = value;
-                RaisePropertyChanged();
-            }
+            Progress.CanCancel = value;
+            RaisePropertyChanged();
         }
+    }
 
-        public ProgressWindow()
-        {
-            InitializeComponent();
+    public ProgressWindow()
+    {
+        InitializeComponent();
 
-            Cursor = new Cursor(StandardCursorType.AppStarting);
+        Cursor = new Cursor(StandardCursorType.AppStarting);
             
-            _timer.Elapsed += (sender, args) =>
-            {
-                var elapsedSeconds = StopWatch.ElapsedMilliseconds / 1000;
-                if (_lastTotalSeconds == elapsedSeconds) return;
-                /*Debug.WriteLine(StopWatch.ElapsedMilliseconds);
-                Debug.WriteLine(elapsedSeconds);
-                Debug.WriteLine(_lastTotalSeconds);*/
-                _lastTotalSeconds = elapsedSeconds;
-
-
-                Dispatcher.UIThread.InvokeAsync(() => Progress.TriggerRefresh(), DispatcherPriority.Render);
-
-            };
-
-            DataContext = this;
-        }
-
-        public ProgressWindow(string title) : this()
+        _timer.Elapsed += (sender, args) =>
         {
-            SetTitle(title);
-        }
+            var elapsedSeconds = StopWatch.ElapsedMilliseconds / 1000;
+            if (_lastTotalSeconds == elapsedSeconds) return;
+            /*Debug.WriteLine(StopWatch.ElapsedMilliseconds);
+            Debug.WriteLine(elapsedSeconds);
+            Debug.WriteLine(_lastTotalSeconds);*/
+            _lastTotalSeconds = elapsedSeconds;
 
-        private void InitializeComponent()
+
+            Dispatcher.UIThread.InvokeAsync(() => Progress.TriggerRefresh(), DispatcherPriority.Render);
+
+        };
+
+        DataContext = this;
+    }
+
+    public ProgressWindow(string title) : this()
+    {
+        SetTitle(title);
+    }
+
+    private void InitializeComponent()
+    {
+        AvaloniaXamlLoader.Load(this);
+    }
+
+    protected override void OnClosed(EventArgs e)
+    {
+        base.OnClosed(e);
+        _timer.Stop();
+        Progress.StopWatch.Stop();
+        _logItem.ElapsedTime = Math.Round(Progress.StopWatch.Elapsed.TotalSeconds, 2);
+        App.MainWindow.AddLog(_logItem);
+    }
+
+    public void OnClickCancel()
+    {
+        if (!CanCancel) return;
+        DialogResult = DialogResults.Cancel;
+        RaisePropertyChanged(nameof(CanCancel));
+        Progress.TokenSource.Cancel();
+    }
+
+    public void SetTitle(string title)
+    {
+        Progress.Title = title;
+        _logItem.Description = title;
+    }
+
+    public OperationProgress RestartProgress(bool canCancel = true)
+    {
+        CanCancel = canCancel;
+        Progress.StopWatch.Restart();
+        _lastTotalSeconds = 0;
+
+        if (!_timer.Enabled)
         {
-            AvaloniaXamlLoader.Load(this);
+            _timer.Enabled = true;
+            _timer.Start();
         }
 
-        protected override void OnClosed(EventArgs e)
-        {
-            base.OnClosed(e);
-            _timer.Stop();
-            Progress.StopWatch.Stop();
-            _logItem.ElapsedTime = Math.Round(Progress.StopWatch.Elapsed.TotalSeconds, 2);
-            App.MainWindow.AddLog(_logItem);
-        }
+        return Progress;
+    }
 
-        public void OnClickCancel()
-        {
-            if (!CanCancel) return;
-            DialogResult = DialogResults.Cancel;
-            RaisePropertyChanged(nameof(CanCancel));
-            Progress.TokenSource.Cancel();
-        }
-
-        public void SetTitle(string title)
-        {
-            Progress.Title = title;
-            _logItem.Description = title;
-        }
-
-        public OperationProgress RestartProgress(bool canCancel = true)
-        {
-            CanCancel = canCancel;
-            Progress.StopWatch.Restart();
-            _lastTotalSeconds = 0;
-
-            if (!_timer.Enabled)
-            {
-                _timer.Enabled = true;
-                _timer.Start();
-            }
-
-            return Progress;
-        }
-
-        public void Dispose()
-        {
-            _timer.Close();
-            _timer.Dispose();
-        }
+    public void Dispose()
+    {
+        _timer.Close();
+        _timer.Dispose();
     }
 }

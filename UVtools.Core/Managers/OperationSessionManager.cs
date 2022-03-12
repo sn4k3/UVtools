@@ -11,121 +11,120 @@ using System.Collections.Generic;
 using System.Linq;
 using UVtools.Core.Operations;
 
-namespace UVtools.Core.Managers
+namespace UVtools.Core.Managers;
+
+public class OperationSessionManager : IList<Operation>
 {
-    public class OperationSessionManager : IList<Operation>
-    {
-        #region Settings
+    #region Settings
 
-        //public static string FilePath;
-        #endregion
+    //public static string FilePath;
+    #endregion
 
-        #region Singleton
+    #region Singleton
 
-        private static Lazy<OperationSessionManager> _instanceHolder =
-            new(() => new OperationSessionManager());
+    private static readonly Lazy<OperationSessionManager> _instanceHolder =
+        new(() => new OperationSessionManager());
 
-        public static OperationSessionManager Instance => _instanceHolder.Value;
+    public static OperationSessionManager Instance => _instanceHolder.Value;
 
-        #endregion
+    #endregion
 
-        #region Members
+    #region Members
 
-        private readonly List<Operation> _operations = new();
+    private readonly List<Operation> _operations = new();
 
-        #endregion
+    #endregion
 
-        #region Properties
+    #region Properties
 
         
-        #endregion
+    #endregion
 
-        #region Constructor
-        private OperationSessionManager()
-        {
-        }
-        #endregion
-
-        #region Methods
-
-        public Operation Find(Type type)
-        {
-            return this.FirstOrDefault(operation => operation.GetType() == type);
-        }
-
-        public Operation Find(Operation fromOperation) => Find(fromOperation.GetType());
-
-        #endregion
-
-        #region List Implementation
-        public IEnumerator<Operation> GetEnumerator()
-        {
-            return _operations.GetEnumerator();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return ((IEnumerable) _operations).GetEnumerator();
-        }
-
-        public void Add(Operation item)
-        {
-            if (item is null) return;
-            _operations.RemoveAll(operation => operation.GetType() == item.GetType());
-            var operation = item.Clone();
-            operation.ClearROIandMasks();
-            operation.ImportedFrom = Operation.OperationImportFrom.Session;
-            _operations.Add(operation);
-        }
-
-        public void Clear()
-        {
-            _operations.Clear();
-        }
-
-        public bool Contains(Operation item)
-        {
-            return _operations.Contains(item);
-        }
-
-        public void CopyTo(Operation[] array, int arrayIndex)
-        {
-            _operations.CopyTo(array, arrayIndex);
-        }
-
-        public bool Remove(Operation item)
-        {
-            return _operations.Remove(item);
-        }
-
-        public int Count => _operations.Count;
-
-        public bool IsReadOnly => ((ICollection<Operation>) _operations).IsReadOnly;
-
-        public int IndexOf(Operation item)
-        {
-            return _operations.IndexOf(item);
-        }
-
-        public void Insert(int index, Operation item)
-        {
-            if (item is null) return;
-            _operations.RemoveAll(operation => operation.GetType() == item.GetType());
-            var operation = item.Clone();
-            operation.ImportedFrom = Operation.OperationImportFrom.Session;
-            _operations.Insert(index, operation);
-        }
-
-        public void RemoveAt(int index)
-        {
-            _operations.RemoveAt(index);
-        }
-
-        public Operation this[int index]
-        {
-            get => _operations[index];
-            set => _operations[index] = value;
-        }
-        #endregion
+    #region Constructor
+    private OperationSessionManager()
+    {
     }
+    #endregion
+
+    #region Methods
+
+    public Operation? Find(Type type)
+    {
+        return this.FirstOrDefault(operation => operation.GetType() == type);
+    }
+
+    public Operation? Find(Operation fromOperation) => Find(fromOperation.GetType());
+
+    #endregion
+
+    #region List Implementation
+    public IEnumerator<Operation> GetEnumerator()
+    {
+        return _operations.GetEnumerator();
+    }
+
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return ((IEnumerable) _operations).GetEnumerator();
+    }
+
+    public void Add(Operation item)
+    {
+        if (item is null) return;
+        _operations.RemoveAll(operation => operation.GetType() == item.GetType());
+        var operation = item.Clone();
+        operation.ClearROIandMasks();
+        operation.ImportedFrom = Operation.OperationImportFrom.Session;
+        _operations.Add(operation);
+    }
+
+    public void Clear()
+    {
+        _operations.Clear();
+    }
+
+    public bool Contains(Operation item)
+    {
+        return _operations.Contains(item);
+    }
+
+    public void CopyTo(Operation[] array, int arrayIndex)
+    {
+        _operations.CopyTo(array, arrayIndex);
+    }
+
+    public bool Remove(Operation item)
+    {
+        return _operations.Remove(item);
+    }
+
+    public int Count => _operations.Count;
+
+    public bool IsReadOnly => ((ICollection<Operation>) _operations).IsReadOnly;
+
+    public int IndexOf(Operation item)
+    {
+        return _operations.IndexOf(item);
+    }
+
+    public void Insert(int index, Operation item)
+    {
+        if (item is null) return;
+        _operations.RemoveAll(operation => operation.GetType() == item.GetType());
+        var operation = item.Clone();
+        operation.ImportedFrom = Operation.OperationImportFrom.Session;
+        _operations.Insert(index, operation);
+    }
+
+    public void RemoveAt(int index)
+    {
+        _operations.RemoveAt(index);
+    }
+
+    public Operation this[int index]
+    {
+        get => _operations[index];
+        set => _operations[index] = value;
+    }
+    #endregion
 }

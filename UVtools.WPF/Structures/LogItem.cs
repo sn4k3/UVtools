@@ -9,53 +9,52 @@
 using System;
 using UVtools.Core.Objects;
 
-namespace UVtools.WPF.Structures
+namespace UVtools.WPF.Structures;
+
+public sealed class LogItem : BindableBase
 {
-    public sealed class LogItem : BindableBase
+    private int _index;
+    private string _startTime;
+    private double _elapsedTime;
+    private string _description;
+
+    public int Index
     {
-        private int _index;
-        private string _startTime;
-        private double _elapsedTime;
-        private string _description;
+        get => _index;
+        set => RaiseAndSetIfChanged(ref _index, value);
+    }
 
-        public int Index
-        {
-            get => _index;
-            set => RaiseAndSetIfChanged(ref _index, value);
-        }
+    public string StartTime
+    {
+        get => _startTime;
+        set => RaiseAndSetIfChanged(ref _startTime, value);
+    }
 
-        public string StartTime
-        {
-            get => _startTime;
-            set => RaiseAndSetIfChanged(ref _startTime, value);
-        }
+    public double ElapsedTime
+    {
+        get => _elapsedTime;
+        set => RaiseAndSetIfChanged(ref _elapsedTime, Math.Round(value, 2));
+    }
 
-        public double ElapsedTime
-        {
-            get => _elapsedTime;
-            set => RaiseAndSetIfChanged(ref _elapsedTime, Math.Round(value, 2));
-        }
+    public string Description
+    {
+        get => _description;
+        set => RaiseAndSetIfChanged(ref _description, value);
+    }
 
-        public string Description
-        {
-            get => _description;
-            set => RaiseAndSetIfChanged(ref _description, value);
-        }
+    public LogItem(int index, string description, double elapsedTime = 0)
+    {
+        _index = index;
+        _description = description;
+        ElapsedTime = elapsedTime;
+        _startTime = DateTime.Now.ToString("HH:mm:ss");
+    }
 
-        public LogItem(int index, string description, double elapsedTime = 0)
-        {
-            _index = index;
-            _description = description;
-            ElapsedTime = elapsedTime;
-            _startTime = DateTime.Now.ToString("HH:mm:ss");
-        }
+    public LogItem(string description = null, uint elapsedTime = 0) : this(0, description, elapsedTime)
+    { }
 
-        public LogItem(string description = null, uint elapsedTime = 0) : this(0, description, elapsedTime)
-        { }
-
-        public override string ToString()
-        {
-            return Description;
-        }
+    public override string ToString()
+    {
+        return Description;
     }
 }

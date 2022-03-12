@@ -6,18 +6,17 @@
  *  of this license document, but changing it is not allowed.
  */
 
-namespace UVtools.Core.Scripting
-{
-    public class ScriptToggleSwitchInput : ScriptBaseInput<bool>
-    {
-        /// <summary>
-        /// Gets or sets the text when the switch is turned off
-        /// </summary>
-        public string OffText { get; set; }
+namespace UVtools.Core.Scripting;
 
-        /// <summary>
-        /// Gets or sets the text when the switch is turned on
-        /// </summary>
-        public string OnText { get; set; }
-    }
+public class ScriptToggleSwitchInput : ScriptBaseInput<bool>
+{
+    /// <summary>
+    /// Gets or sets the text when the switch is turned off
+    /// </summary>
+    public string OffText { get; set; } = "Off";
+
+    /// <summary>
+    /// Gets or sets the text when the switch is turned on
+    /// </summary>
+    public string OnText { get; set; } = "On";
 }

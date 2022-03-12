@@ -2,53 +2,52 @@
 using UVtools.Core.Operations;
 using UVtools.WPF.Windows;
 
-namespace UVtools.WPF.Controls.Tools
+namespace UVtools.WPF.Controls.Tools;
+
+public class ToolMoveControl : ToolControl
 {
-    public class ToolMoveControl : ToolControl
+    private bool _isMiddleCenterChecked = true;
+    public OperationMove Operation => BaseOperation as OperationMove;
+
+    public bool IsMiddleCenterChecked
     {
-        private bool _isMiddleCenterChecked = true;
-        public OperationMove Operation => BaseOperation as OperationMove;
+        get => _isMiddleCenterChecked;
+        set => RaiseAndSetIfChanged(ref _isMiddleCenterChecked, value);
+    }
 
-        public bool IsMiddleCenterChecked
-        {
-            get => _isMiddleCenterChecked;
-            set => RaiseAndSetIfChanged(ref _isMiddleCenterChecked, value);
-        }
-
-        public ToolMoveControl()
-        {
-            BaseOperation = new OperationMove(SlicerFile);
-            if (!ValidateSpawn()) return;
-            InitializeComponent();
+    public ToolMoveControl()
+    {
+        BaseOperation = new OperationMove(SlicerFile);
+        if (!ValidateSpawn()) return;
+        InitializeComponent();
             
 
-            Operation.PropertyChanged += (sender, e) =>
-            {
-                if (e.PropertyName.Equals(nameof(Operation.IsWithinBoundary)))
-                {
-                    ParentWindow.ButtonOkEnabled = Operation.IsWithinBoundary;
-                }
-            };
-        }
-
-        private void InitializeComponent()
+        Operation.PropertyChanged += (sender, e) =>
         {
-            AvaloniaXamlLoader.Load(this);
-        }
-
-        public override void Callback(ToolWindow.Callbacks callback)
-        {
-            switch (callback)
+            if (e.PropertyName.Equals(nameof(Operation.IsWithinBoundary)))
             {
-                case ToolWindow.Callbacks.Init:
-                case ToolWindow.Callbacks.Loaded:
-                    Operation.ROI = App.MainWindow.ROI.IsEmpty ? SlicerFile.BoundingRectangle : App.MainWindow.ROI;
-                    break;
-                case ToolWindow.Callbacks.ClearROI:
-                    Operation.ROI = SlicerFile.BoundingRectangle;
-                    Operation.Reset();
-                    break;
+                ParentWindow.ButtonOkEnabled = Operation.IsWithinBoundary;
             }
+        };
+    }
+
+    private void InitializeComponent()
+    {
+        AvaloniaXamlLoader.Load(this);
+    }
+
+    public override void Callback(ToolWindow.Callbacks callback)
+    {
+        switch (callback)
+        {
+            case ToolWindow.Callbacks.Init:
+            case ToolWindow.Callbacks.Loaded:
+                Operation.ROI = App.MainWindow.ROI.IsEmpty ? SlicerFile.BoundingRectangle : App.MainWindow.ROI;
+                break;
+            case ToolWindow.Callbacks.ClearROI:
+                Operation.ROI = SlicerFile.BoundingRectangle;
+                Operation.Reset();
+                break;
         }
     }
 }

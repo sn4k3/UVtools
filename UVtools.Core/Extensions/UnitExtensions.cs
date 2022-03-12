@@ -6,15 +6,12 @@
  *  of this license document, but changing it is not allowed.
  */
 
-using System;
+namespace UVtools.Core.Extensions;
 
-namespace UVtools.Core.Extensions
+public static class UnitExtensions
 {
-    public static class UnitExtensions
-    {
-        /// <summary>
-        /// 1 mm to 1 inch
-        /// </summary>
-        public const double MillimeterInInch = 0.0393700787;
-    }
+    /// <summary>
+    /// 1 mm to 1 inch
+    /// </summary>
+    public const double MillimeterInInch = 0.0393700787;
 }

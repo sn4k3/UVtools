@@ -9,31 +9,30 @@
 
 using System;
 
-namespace UVtools.Core.Extensions
+namespace UVtools.Core.Extensions;
+
+public static class TimeExtensions
 {
-    public static class TimeExtensions
-    {
-        /// <summary>
-        /// Converts seconds to milliseconds
-        /// </summary>
-        /// <param name="value"></param>
-        /// <param name="rounding"></param>
-        /// <returns></returns>
-        public static float SecondsToMilliseconds(float value, byte rounding = 2) => (float)Math.Round(value * 1000f, rounding);
+    /// <summary>
+    /// Converts seconds to milliseconds
+    /// </summary>
+    /// <param name="value"></param>
+    /// <param name="rounding"></param>
+    /// <returns></returns>
+    public static float SecondsToMilliseconds(float value, byte rounding = 2) => (float)Math.Round(value * 1000f, rounding);
 
-        /// <summary>
-        /// Converts seconds to milliseconds
-        /// </summary>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        public static uint SecondsToMillisecondsUint(float value) => (uint)(value * 1000f);
+    /// <summary>
+    /// Converts seconds to milliseconds
+    /// </summary>
+    /// <param name="value"></param>
+    /// <returns></returns>
+    public static uint SecondsToMillisecondsUint(float value) => (uint)(value * 1000f);
 
-        /// <summary>
-        /// Converts milliseconds to seconds
-        /// </summary>
-        /// <param name="value"></param>
-        /// <param name="rounding"></param>
-        /// <returns></returns>
-        public static float MillisecondsToSeconds(float value, byte rounding = 2) => (float)Math.Round(value / 1000f, rounding);
-    }
+    /// <summary>
+    /// Converts milliseconds to seconds
+    /// </summary>
+    /// <param name="value"></param>
+    /// <param name="rounding"></param>
+    /// <returns></returns>
+    public static float MillisecondsToSeconds(float value, byte rounding = 2) => (float)Math.Round(value / 1000f, rounding);
 }

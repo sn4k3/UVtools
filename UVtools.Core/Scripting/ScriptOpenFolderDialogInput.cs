@@ -6,13 +6,12 @@
  *  of this license document, but changing it is not allowed.
  */
 
-namespace UVtools.Core.Scripting
+namespace UVtools.Core.Scripting;
+
+public class ScriptOpenFolderDialogInput : ScriptBaseInput<string>
 {
-    public class ScriptOpenFolderDialogInput : ScriptBaseInput<string>
-    {
-        /// <summary>
-        /// Gets the title for the dialog
-        /// </summary>
-        public string Title { get; set; }
-    }
+    /// <summary>
+    /// Gets the title for the dialog
+    /// </summary>
+    public string? Title { get; set; }
 }

@@ -6,22 +6,21 @@
  *  of this license document, but changing it is not allowed.
  */
 
-using Newtonsoft.Json;
+using System.Text.Json;
 
-namespace UVtools.Core.Extensions
+namespace UVtools.Core.Extensions;
+
+public static class ClassExtensions
 {
-    public static class ClassExtensions
+    public static T? CloneByJsonSerialization<T>(this T classToClone) where T : class
     {
-        public static T CloneByJsonSerialization<T>(this T classToClone) where T : class
-        {
-            var clone = JsonConvert.SerializeObject (classToClone);
-            return JsonConvert.DeserializeObject<T>(clone);
-        }
+        var clone = JsonSerializer.SerializeToUtf8Bytes(classToClone);
+        return JsonSerializer.Deserialize<T>(clone);
+    }
 
-        public static T CloneByXmlSerialization<T>(this T classToClone) where T : class
-        {
-            var clone = XmlExtensions.SerializeObject(classToClone);
-            return XmlExtensions.DeserializeObject<T>(clone);
-        }
+    public static T CloneByXmlSerialization<T>(this T classToClone) where T : class
+    {
+        var clone = XmlExtensions.SerializeObject(classToClone);
+        return XmlExtensions.DeserializeFromText<T>(clone);
     }
 }

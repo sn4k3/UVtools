@@ -10,37 +10,36 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
-namespace UVtools.Core
+namespace UVtools.Core;
+
+public class Statistics
 {
-    public class Statistics
+    #region Properties
+
+    public List<string> ImplementedKeys { get; } = new List<string>();
+    public List<string> MissingKeys { get; } = new List<string>();
+    public ushort TotalKeys => (ushort)(ImplementedKeys.Count + MissingKeys.Count);
+
+    public Stopwatch ExecutionTime { get; } = new Stopwatch();
+    #endregion
+
+    #region Overrides
+    public override string ToString()
     {
-        #region Properties
-
-        public List<string> ImplementedKeys { get; } = new List<string>();
-        public List<string> MissingKeys { get; } = new List<string>();
-        public ushort TotalKeys => (ushort)(ImplementedKeys.Count + MissingKeys.Count);
-
-        public Stopwatch ExecutionTime { get; } = new Stopwatch();
-        #endregion
-
-        #region Overrides
-        public override string ToString()
-        {
-            string message = $"{nameof(ImplementedKeys)}: {ImplementedKeys.Count}, {nameof(MissingKeys)}: {MissingKeys.Count}, {nameof(TotalKeys)}: {TotalKeys}, {nameof(ExecutionTime)}: {ExecutionTime.ElapsedMilliseconds}ms";
-            message = MissingKeys.Aggregate(message, (current, missingKey) => current + ("\n" + missingKey));
-            return message;
-        }
-
-        #endregion
-
-        #region Methods
-
-        public void Clear()
-        {
-            ImplementedKeys.Clear();
-            MissingKeys.Clear();
-            ExecutionTime.Reset();
-        }
-        #endregion
+        string message = $"{nameof(ImplementedKeys)}: {ImplementedKeys.Count}, {nameof(MissingKeys)}: {MissingKeys.Count}, {nameof(TotalKeys)}: {TotalKeys}, {nameof(ExecutionTime)}: {ExecutionTime.ElapsedMilliseconds}ms";
+        message = MissingKeys.Aggregate(message, (current, missingKey) => current + ("\n" + missingKey));
+        return message;
     }
+
+    #endregion
+
+    #region Methods
+
+    public void Clear()
+    {
+        ImplementedKeys.Clear();
+        MissingKeys.Clear();
+        ExecutionTime.Reset();
+    }
+    #endregion
 }

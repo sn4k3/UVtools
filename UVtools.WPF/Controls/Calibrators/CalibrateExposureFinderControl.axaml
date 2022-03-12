@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:controls="clr-namespace:UVtools.WPF.Controls"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="UVtools.WPF.Controls.Calibrators.CalibrateExposureFinderControl">
   <Grid ColumnDefinitions="Auto,10,380">
@@ -506,13 +507,11 @@
 
         <Expander IsExpanded="False">
             <Expander.Header>
-                <StackPanel Orientation="Horizontal" Cursor="Hand">
+                <StackPanel Orientation="Horizontal">
                 <TextBlock Text="Multiple brightness"
-                           IsVisible="{Binding !SlicerFile.IsAntiAliasingEmulated}"
-                           FontWeight="Bold"/>
+                           IsVisible="{Binding !SlicerFile.IsAntiAliasingEmulated}"/>
                 <TextBlock Text="Multiple brightness/exposures with emulated AntiAliasing and time fractions"
-                           IsVisible="{Binding SlicerFile.IsAntiAliasingEmulated}"
-                           FontWeight="Bold"/>
+                           IsVisible="{Binding SlicerFile.IsAntiAliasingEmulated}"/>
                 </StackPanel>
 
             </Expander.Header>
@@ -574,19 +573,14 @@
                                    Value="{Binding Operation.MultipleBrightnessGenExposureTime}"/>
 
 
-                    <Button
+                    <controls:ButtonWithIcon
                         Grid.Row="0" Grid.Column="10" VerticalContentAlignment="Center"
                         IsVisible="{Binding !SlicerFile.IsAntiAliasingEmulated}"
                         HorizontalContentAlignment="Center"
                         VerticalAlignment="Stretch"
-                        Command="{Binding BrightnessExposureGenAdd}">
-                        <StackPanel Orientation="Horizontal" Spacing="10">
-                            <Image Source="/Assets/Icons/plus-16x16.png"/>
-                            <TextBlock
-                                VerticalAlignment="Center"
-                                Text="Add"/>
-                        </StackPanel>
-                    </Button>
+                        Command="{Binding BrightnessExposureGenAdd}"
+                        Text="Add"
+                        Icon="fas fa-plus"/>
 
                     <TextBlock Grid.Row="2" Grid.Column="0"
                                Text="Brightnesses:"
@@ -644,22 +638,7 @@
                                IsVisible="{Binding SlicerFile.IsAntiAliasingEmulated}"
                                Text="÷"
                                VerticalAlignment="Center"/>
-
-                <!--<Button
-                    IsVisible="{Binding SlicerFile.IsAntiAliasingEmulated}"
-                    Grid.Row="4" Grid.Column="12" VerticalContentAlignment="Center"
-                    HorizontalContentAlignment="Center"
-                    VerticalAlignment="Stretch"
-                    Command="{Binding Operation.GenerateBrightnessExposureFractions}">
-                  <StackPanel Orientation="Horizontal" Spacing="10">
-                    <Image Source="/Assets/Icons/refresh-16x16.png"/>
-                    <TextBlock
-                        VerticalAlignment="Center"
-                        Text="Gen"/>
-                  </StackPanel>
-                </Button>
-                !-->
-                </Grid>
+              </Grid>
 
                 
                 <DataGrid
@@ -888,19 +867,14 @@
                                  FormatString="F2"
                                  Value="{Binding Operation.ExposureGenManualNormal}"/>
 
-                    <Button
+                    <controls:ButtonWithIcon
                         Grid.Row="0" Grid.Column="14" VerticalContentAlignment="Center"
                         HorizontalContentAlignment="Center"
                         VerticalAlignment="Stretch"
                         IsEnabled="{Binding Operation.ExposureGenManualLayerHeight}"
-                        Command="{Binding ExposureTableAddManual}">
-                        <StackPanel Orientation="Horizontal" Spacing="10">
-                            <Image Source="/Assets/Icons/plus-16x16.png"/>
-                            <TextBlock
-                                VerticalAlignment="Center"
-                                Text="Add"/>
-                        </StackPanel>
-                    </Button>
+                        Command="{Binding ExposureTableAddManual}"
+                        Text="Add"
+                        Icon="fas fa-plus"/>
                 </Grid>
 
                 <Grid RowDefinitions="Auto" ColumnDefinitions="Auto,*,Auto"
@@ -908,35 +882,24 @@
                       Margin="0,10,0,0">
                     <TextBlock Text="{Binding Operation.ExposureTable.Count, StringFormat=Exposure table: {0} entries}" FontWeight="Bold"/>
 
-                    <Button
+                    <controls:ButtonWithIcon
                         Grid.Column="1" VerticalContentAlignment="Center"
                         HorizontalContentAlignment="Center"
                         HorizontalAlignment="Right"
                         IsEnabled="{Binding #ExposureTable.SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}"
-                        Command="{Binding ExposureTableRemoveSelectedEntries}">
-                        <StackPanel Orientation="Horizontal" Spacing="10">
-                            <Image Source="/Assets/Icons/trash-16x16.png"/>
-                            <TextBlock
-                                VerticalAlignment="Center"
-                                Text="Remove selected entries"/>
-                        </StackPanel>
-                    </Button>
+                        Command="{Binding ExposureTableRemoveSelectedEntries}"
+                        Text="Remove selected entries"
+                        Icon="fas fa-trash-alt"/>
 
-                    <Button
+                    <controls:ButtonWithIcon
                         Grid.Column="2" VerticalContentAlignment="Center"
                         Margin="10,0,0,0"
                         HorizontalContentAlignment="Center"
                         HorizontalAlignment="Right"
                         IsEnabled="{Binding Operation.ExposureTable.Count}"
-                        Command="{Binding ExposureTableClearEntries}">
-                        <StackPanel Orientation="Horizontal" Spacing="10">
-                            <Image Source="/Assets/Icons/delete-16x16.png"/>
-                            <TextBlock
-                                VerticalAlignment="Center"
-                                Text="{Binding Operation.ExposureTable.Count, StringFormat=Clear {0} entries}"/>
-                        </StackPanel>
-                    </Button>
-
+                        Command="{Binding ExposureTableClearEntries}"
+                        Text="{Binding Operation.ExposureTable.Count, StringFormat=Clear {0} entries}"
+                        Icon="fas fa-times"/>
                 </Grid>
 
               

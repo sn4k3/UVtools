@@ -2,34 +2,33 @@
 using Avalonia.Media;
 using UVtools.WPF.Controls;
 
-namespace UVtools.WPF.Windows
+namespace UVtools.WPF.Windows;
+
+public class ColorPickerWindow : WindowEx
 {
-    public class ColorPickerWindow : WindowEx
+    public Color ResultColor { get; set; }
+
+    public ColorPickerWindow()
     {
-        public Color ResultColor { get; set; }
+        DataContext = this;
+        InitializeComponent();
 
-        public ColorPickerWindow()
-        {
-            DataContext = this;
-            InitializeComponent();
+    }
+    public ColorPickerWindow(Color defaultColor)
+    {
+        ResultColor = defaultColor;
+        DataContext = this;
+        InitializeComponent();
+    }
 
-        }
-        public ColorPickerWindow(Color defaultColor)
-        {
-            ResultColor = defaultColor;
-            DataContext = this;
-            InitializeComponent();
-        }
+    private void InitializeComponent()
+    {
+        AvaloniaXamlLoader.Load(this);
+    }
 
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
-        }
-
-        public void OnClickOk()
-        {
-            DialogResult = DialogResults.OK;
-            CloseWithResult();
-        }
+    public void OnClickOk()
+    {
+        DialogResult = DialogResults.OK;
+        CloseWithResult();
     }
 }

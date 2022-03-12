@@ -12,84 +12,83 @@ using Avalonia.Threading;
 using UVtools.Core.Operations;
 using UVtools.WPF.Structures;
 
-namespace UVtools.WPF
+namespace UVtools.WPF;
+
+public partial class MainWindow
 {
-    public partial class MainWindow
+    #region Members
+    public OperationProgress Progress { get; } = new();
+    private readonly Timer _progressTimer = new(200) { AutoReset = true };
+    private long _progressLastTotalSeconds;
+    private LogItem _progressLogItem;
+    private bool _isProgressVisible;
+
+    #endregion
+
+    #region Properties
+
+    public bool IsProgressVisible
     {
-        #region Members
-        public OperationProgress Progress { get; } = new();
-        private readonly Timer _progressTimer = new(200) { AutoReset = true };
-        private long _progressLastTotalSeconds;
-        private LogItem _progressLogItem;
-        private bool _isProgressVisible;
+        get => _isProgressVisible;
+        set => RaiseAndSetIfChanged(ref _isProgressVisible, value);
+    }
 
-        #endregion
+    #endregion
 
-        #region Properties
-
-        public bool IsProgressVisible
+    public void InitProgress()
+    {
+        _progressTimer.Elapsed += (sender, args) =>
         {
-            get => _isProgressVisible;
-            set => RaiseAndSetIfChanged(ref _isProgressVisible, value);
+            var elapsedSeconds = Progress.StopWatch.ElapsedMilliseconds / 1000;
+            if (_progressLastTotalSeconds == elapsedSeconds) return;
+            /*Debug.WriteLine(StopWatch.ElapsedMilliseconds);
+            Debug.WriteLine(elapsedSeconds);
+            Debug.WriteLine(_lastTotalSeconds);*/
+            _progressLastTotalSeconds = elapsedSeconds;
+
+
+            Dispatcher.UIThread.InvokeAsync(() => Progress.TriggerRefresh(), DispatcherPriority.Render);
+
+        };
+    }
+
+    public void ProgressOnClickCancel()
+    {
+        if (!Progress.CanCancel) return;
+        DialogResult = DialogResults.Cancel;
+        Progress.CanCancel = false;
+        Progress.TokenSource.Cancel();
+    }
+
+    public void ProgressShow(string title, bool canCancel = true)
+    {
+        IsGUIEnabled = false;
+        Progress.Init(canCancel);
+        Progress.Title = title;
+        _progressLogItem = new(title);
+
+        Progress.StopWatch.Restart();
+        _progressLastTotalSeconds = 0;
+
+        if (!_progressTimer.Enabled)
+        {
+            _progressTimer.Start();
         }
 
-        #endregion
+        Progress.TriggerRefresh();
 
-        public void InitProgress()
-        {
-            _progressTimer.Elapsed += (sender, args) =>
-            {
-                var elapsedSeconds = Progress.StopWatch.ElapsedMilliseconds / 1000;
-                if (_progressLastTotalSeconds == elapsedSeconds) return;
-                /*Debug.WriteLine(StopWatch.ElapsedMilliseconds);
-                Debug.WriteLine(elapsedSeconds);
-                Debug.WriteLine(_lastTotalSeconds);*/
-                _progressLastTotalSeconds = elapsedSeconds;
+        IsProgressVisible = true;
 
+        InvalidateVisual();
+    }
 
-                Dispatcher.UIThread.InvokeAsync(() => Progress.TriggerRefresh(), DispatcherPriority.Render);
-
-            };
-        }
-
-        public void ProgressOnClickCancel()
-        {
-            if (!Progress.CanCancel) return;
-            DialogResult = DialogResults.Cancel;
-            Progress.CanCancel = false;
-            Progress.TokenSource.Cancel();
-        }
-
-        public void ProgressShow(string title, bool canCancel = true)
-        {
-            IsGUIEnabled = false;
-            Progress.Init(canCancel);
-            Progress.Title = title;
-            _progressLogItem = new(title);
-
-            Progress.StopWatch.Restart();
-            _progressLastTotalSeconds = 0;
-
-            if (!_progressTimer.Enabled)
-            {
-                _progressTimer.Start();
-            }
-
-            Progress.TriggerRefresh();
-
-            IsProgressVisible = true;
-
-            InvalidateVisual();
-        }
-
-        public void ProgressFinish()
-        {
-            _progressTimer.Stop();
-            Progress.StopWatch.Stop();
-            _progressLogItem.ElapsedTime = Math.Round(Progress.StopWatch.Elapsed.TotalSeconds, 2);
-            App.MainWindow.AddLog(_progressLogItem);
-            IsProgressVisible = false;
-            InvalidateVisual();
-        }
+    public void ProgressFinish()
+    {
+        _progressTimer.Stop();
+        Progress.StopWatch.Stop();
+        _progressLogItem.ElapsedTime = Math.Round(Progress.StopWatch.Elapsed.TotalSeconds, 2);
+        App.MainWindow.AddLog(_progressLogItem);
+        IsProgressVisible = false;
+        InvalidateVisual();
     }
 }

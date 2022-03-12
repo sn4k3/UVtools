@@ -3,46 +3,45 @@ using Avalonia.Markup.Xaml;
 using UVtools.Core.Operations;
 using UVtools.WPF.Windows;
 
-namespace UVtools.WPF.Controls.Tools
+namespace UVtools.WPF.Controls.Tools;
+
+public partial class ToolFadeExposureTimeControl : ToolControl
 {
-    public partial class ToolFadeExposureTimeControl : ToolControl
+    public OperationFadeExposureTime Operation => BaseOperation as OperationFadeExposureTime;
+
+    public ToolFadeExposureTimeControl()
     {
-        public OperationFadeExposureTime Operation => BaseOperation as OperationFadeExposureTime;
+        BaseOperation = new OperationFadeExposureTime(SlicerFile);
+        if (!ValidateSpawn()) return;
+        InitializeComponent();
+    }
 
-        public ToolFadeExposureTimeControl()
-        {
-            BaseOperation = new OperationFadeExposureTime(SlicerFile);
-            if (!ValidateSpawn()) return;
-            InitializeComponent();
-        }
+    private void InitializeComponent()
+    {
+        AvaloniaXamlLoader.Load(this);
+    }
 
-        private void InitializeComponent()
+    public override void Callback(ToolWindow.Callbacks callback)
+    {
+        switch (callback)
         {
-            AvaloniaXamlLoader.Load(this);
-        }
-
-        public override void Callback(ToolWindow.Callbacks callback)
-        {
-            switch (callback)
-            {
-                case ToolWindow.Callbacks.Init:
-                case ToolWindow.Callbacks.Loaded:
+            case ToolWindow.Callbacks.Init:
+            case ToolWindow.Callbacks.Loaded:
+                ParentWindow.LayerIndexEnd = Operation.LayerIndexStart + Operation.LayerCount - 1;
+                Operation.PropertyChanged += (sender, e) =>
+                {
+                    if (e.PropertyName != nameof(Operation.LayerCount)) return;
                     ParentWindow.LayerIndexEnd = Operation.LayerIndexStart + Operation.LayerCount - 1;
-                    Operation.PropertyChanged += (sender, e) =>
+                };
+                ParentWindow.PropertyChanged += (sender, e) =>
+                {
+                    if (e.PropertyName is nameof(ParentWindow.LayerIndexStart) or nameof(ParentWindow.LayerIndexEnd))
                     {
-                        if (e.PropertyName != nameof(Operation.LayerCount)) return;
                         ParentWindow.LayerIndexEnd = Operation.LayerIndexStart + Operation.LayerCount - 1;
-                    };
-                    ParentWindow.PropertyChanged += (sender, e) =>
-                    {
-                        if (e.PropertyName is nameof(ParentWindow.LayerIndexStart) or nameof(ParentWindow.LayerIndexEnd))
-                        {
-                            ParentWindow.LayerIndexEnd = Operation.LayerIndexStart + Operation.LayerCount - 1;
-                        }
-                    };
-                    break;
-            }
-
+                    }
+                };
+                break;
         }
+
     }
 }

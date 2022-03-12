@@ -21,7 +21,7 @@
     </Border>
 
 
-      <Border Margin="20,0">
+      <Border Margin="20,10,20,0">
         <Grid RowDefinitions="Auto,10,Auto,10,Auto" 
               ColumnDefinitions="Auto,10,220,10,Auto">
 
@@ -84,23 +84,17 @@
 
       <Border Classes="FooterActions">
           <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Right">
-              <Button Padding="10"
+              <uc:ButtonWithIcon Padding="10"
                       IsDefault="True"
-                      Command="{Binding Apply}">
-                  <StackPanel Orientation="Horizontal" Spacing="10">
-                      <Image Source="/Assets/Icons/accept-16x16.png"/>
-                      <TextBlock Text="Apply"/>
-                  </StackPanel>
-              </Button>
+                      Icon="fas fa-check"
+                      Text="Apply"
+                      Command="{Binding Apply}"/>
 
-			  <Button Padding="10"
+			  <uc:ButtonWithIcon Padding="10"
                       IsCancel="True"
-                      Command="{Binding Close}">
-                  <StackPanel Orientation="Horizontal" Spacing="10">
-                      <Image Source="/Assets/Icons/exit-16x16.png"/>
-                      <TextBlock Text="Cancel"/>
-                  </StackPanel>
-              </Button>
+                      Icon="fas fa-sign-out-alt"
+                      Text="Cancel"
+                      Command="{Binding Close}"/>
           </StackPanel>
       </Border>
   </StackPanel>

@@ -69,3 +69,5 @@
 - Joshua Pitts
 - Tim Anderson
 - Sakari Toivonen
+- Ed Wagaman
+- Marcin Chomiczuk

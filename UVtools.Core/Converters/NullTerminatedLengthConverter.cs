@@ -7,25 +7,24 @@
  */
 using BinarySerialization;
 
-namespace UVtools.Core.Converters
-{
-    public class NullTerminatedLengthConverter : IValueConverter
-    {
-        // Read
-        public object Convert(object value, object converterParameter, BinarySerializationContext context)
-        {
-            //var uintValue = System.Convert.ToUInt32(value);
-            //if (uintValue == 0) return 0;
-            //return uintValue - 1;
-            return value;
-        }
+namespace UVtools.Core.Converters;
 
-        // Write
-        public object ConvertBack(object value, object converterParameter, BinarySerializationContext context)
-        {
-            var uintValue = System.Convert.ToUInt32(value);
-            if (uintValue == 0) return 0;
-            return uintValue + 1;
-        }
+public class NullTerminatedLengthConverter : IValueConverter
+{
+    // Read
+    public object Convert(object value, object converterParameter, BinarySerializationContext context)
+    {
+        //var uintValue = System.Convert.ToUInt32(value);
+        //if (uintValue == 0) return 0;
+        //return uintValue - 1;
+        return value;
+    }
+
+    // Write
+    public object ConvertBack(object value, object converterParameter, BinarySerializationContext context)
+    {
+        var uintValue = System.Convert.ToUInt32(value);
+        if (uintValue == 0) return 0;
+        return uintValue + 1;
     }
 }

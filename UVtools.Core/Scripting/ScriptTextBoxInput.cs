@@ -6,13 +6,12 @@
  *  of this license document, but changing it is not allowed.
  */
 
-namespace UVtools.Core.Scripting
+namespace UVtools.Core.Scripting;
+
+public class ScriptTextBoxInput : ScriptBaseInput<string>
 {
-    public class ScriptTextBoxInput : ScriptBaseInput<string>
-    {
-        /// <summary>
-        /// Gets if this input accepts multi lines
-        /// </summary>
-        public bool MultiLine { get; set; }
-    }
+    /// <summary>
+    /// Gets if this input accepts multi lines
+    /// </summary>
+    public bool MultiLine { get; set; }
 }

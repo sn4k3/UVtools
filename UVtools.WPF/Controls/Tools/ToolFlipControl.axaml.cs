@@ -1,22 +1,21 @@
 ﻿using Avalonia.Markup.Xaml;
 using UVtools.Core.Operations;
 
-namespace UVtools.WPF.Controls.Tools
+namespace UVtools.WPF.Controls.Tools;
+
+public class ToolFlipControl : ToolControl
 {
-    public class ToolFlipControl : ToolControl
+    public OperationFlip Operation => BaseOperation as OperationFlip;
+
+    public ToolFlipControl()
     {
-        public OperationFlip Operation => BaseOperation as OperationFlip;
+        BaseOperation = new OperationFlip(SlicerFile);
+        if (!ValidateSpawn()) return;
+        InitializeComponent();
+    }
 
-        public ToolFlipControl()
-        {
-            BaseOperation = new OperationFlip(SlicerFile);
-            if (!ValidateSpawn()) return;
-            InitializeComponent();
-        }
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
-        }
+    private void InitializeComponent()
+    {
+        AvaloniaXamlLoader.Load(this);
     }
 }

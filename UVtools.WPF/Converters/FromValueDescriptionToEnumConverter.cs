@@ -11,21 +11,20 @@ using System.Linq;
 using Avalonia.Data.Converters;
 using UVtools.Core.Extensions;
 
-namespace UVtools.WPF.Converters
-{
-    public class FromValueDescriptionToEnumConverter : IValueConverter
-    {
-        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-        {
-            var list = EnumExtensions.GetAllValuesAndDescriptions(value.GetType());
-            return list.FirstOrDefault(vd => vd.Value.Equals(value));
-        }
+namespace UVtools.WPF.Converters;
 
-        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-        {
-            if (value is null) return null;
-            var list = EnumExtensions.GetAllValuesAndDescriptions(targetType);
-            return list.FirstOrDefault(vd => vd.Description == value.ToString())?.Value;
-        }
+public class FromValueDescriptionToEnumConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+    {
+        var list = EnumExtensions.GetAllValuesAndDescriptions(value.GetType());
+        return list.FirstOrDefault(vd => vd.Value.Equals(value));
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+    {
+        if (value is null) return null;
+        var list = EnumExtensions.GetAllValuesAndDescriptions(targetType);
+        return list.FirstOrDefault(vd => vd.Description == value.ToString())?.Value;
     }
 }

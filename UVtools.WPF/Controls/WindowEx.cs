@@ -15,104 +15,109 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Styling;
 using UVtools.Core.FileFormats;
+using UVtools.Core.SystemOS;
 using UVtools.WPF.Extensions;
 
-namespace UVtools.WPF.Controls
+namespace UVtools.WPF.Controls;
+
+public class WindowEx : Window, INotifyPropertyChanged, IStyleable
 {
-    public class WindowEx : Window, INotifyPropertyChanged, IStyleable
+    #region BindableBase
+    /// <summary>
+    ///     Multicast event for property change notifications.
+    /// </summary>
+    private PropertyChangedEventHandler _propertyChanged;
+    private readonly List<string> events = new();
+
+    public new event PropertyChangedEventHandler PropertyChanged
     {
-        #region BindableBase
-        /// <summary>
-        ///     Multicast event for property change notifications.
-        /// </summary>
-        private PropertyChangedEventHandler _propertyChanged;
-        private readonly List<string> events = new();
+        add { _propertyChanged += value; events.Add("added"); }
+        remove { _propertyChanged -= value; events.Add("removed"); }
+    }
 
-        public new event PropertyChangedEventHandler PropertyChanged
-        {
-            add { _propertyChanged += value; events.Add("added"); }
-            remove { _propertyChanged -= value; events.Add("removed"); }
-        }
-
-        protected bool RaiseAndSetIfChanged<T>(ref T field, T value, [CallerMemberName] string propertyName = null)
-        {
-            if (EqualityComparer<T>.Default.Equals(field, value)) return false;
-            field = value;
-            RaisePropertyChanged(propertyName);
-            return true;
-        }
+    protected bool RaiseAndSetIfChanged<T>(ref T field, T value, [CallerMemberName] string propertyName = null)
+    {
+        if (EqualityComparer<T>.Default.Equals(field, value)) return false;
+        field = value;
+        RaisePropertyChanged(propertyName);
+        return true;
+    }
 
 
-        protected virtual void OnPropertyChanged(PropertyChangedEventArgs e)
-        {
-        }
+    protected virtual void OnPropertyChanged(PropertyChangedEventArgs e)
+    {
+    }
 
-        /// <summary>
-        ///     Notifies listeners that a property value has changed.
-        /// </summary>
-        /// <param name="propertyName">
-        ///     Name of the property used to notify listeners.  This
-        ///     value is optional and can be provided automatically when invoked from compilers
-        ///     that support <see cref="CallerMemberNameAttribute" />.
-        /// </param>
-        protected void RaisePropertyChanged([CallerMemberName] string propertyName = null)
-        {
-            var e = new PropertyChangedEventArgs(propertyName);
-            OnPropertyChanged(e);
-            _propertyChanged?.Invoke(this, e);
-        }
-        #endregion
+    /// <summary>
+    ///     Notifies listeners that a property value has changed.
+    /// </summary>
+    /// <param name="propertyName">
+    ///     Name of the property used to notify listeners.  This
+    ///     value is optional and can be provided automatically when invoked from compilers
+    ///     that support <see cref="CallerMemberNameAttribute" />.
+    /// </param>
+    protected void RaisePropertyChanged([CallerMemberName] string propertyName = null)
+    {
+        var e = new PropertyChangedEventArgs(propertyName);
+        OnPropertyChanged(e);
+        _propertyChanged?.Invoke(this, e);
+    }
+    #endregion
         
-        Type IStyleable.StyleKey => typeof(Window);
+    Type IStyleable.StyleKey => typeof(Window);
 
-        public DialogResults DialogResult { get; set; } = DialogResults.Unknown;
-        public enum DialogResults
-        {
-            Unknown,
-            OK,
-            Cancel
-        }
+    public DialogResults DialogResult { get; set; } = DialogResults.Unknown;
+    public enum DialogResults
+    {
+        Unknown,
+        OK,
+        Cancel
+    }
 
-        public double WindowMaxWidth => this.GetScreenWorkingArea().Width - UserSettings.Instance.General.WindowsHorizontalMargin;
+    public double WindowMaxWidth => this.GetScreenWorkingArea().Width - UserSettings.Instance.General.WindowsHorizontalMargin;
 
-        public double WindowMaxHeight => this.GetScreenWorkingArea().Height - UserSettings.Instance.General.WindowsVerticalMargin;
+    public double WindowMaxHeight => this.GetScreenWorkingArea().Height - UserSettings.Instance.General.WindowsVerticalMargin;
 
-        public UserSettings Settings => UserSettings.Instance;
+    public UserSettings Settings => UserSettings.Instance;
 
-        public virtual FileFormat SlicerFile
-        {
-            get => App.SlicerFile;
-            set => App.SlicerFile = value;
-        }
+    public virtual FileFormat SlicerFile
+    {
+        get => App.SlicerFile;
+        set => App.SlicerFile = value;
+    }
 
-        public WindowEx()
-        {
+    public WindowEx()
+    {
 #if DEBUG
-            this.AttachDevTools(new KeyGesture(Key.F12, KeyModifiers.Control));
+        this.AttachDevTools(new KeyGesture(Key.F12, KeyModifiers.Control));
 #endif
-            //TransparencyLevelHint = WindowTransparencyLevel.AcrylicBlur;
-        }
-        
-        protected override void OnOpened(EventArgs e)
-        {
-            base.OnOpened(e);
-            if (!CanResize && WindowState == WindowState.Normal)
-            {
-                MaxWidth = WindowMaxWidth;
-                MaxHeight = WindowMaxHeight;
-            }
-        }
+        //TransparencyLevelHint = WindowTransparencyLevel.AcrylicBlur;
+    }
 
-        public void CloseWithResult()
+    protected override void OnOpened(EventArgs e)
+    {
+        base.OnOpened(e);
+        if (!CanResize && WindowState == WindowState.Normal)
         {
-            Close(DialogResult);
+            MaxWidth = WindowMaxWidth;
+            MaxHeight = WindowMaxHeight;
         }
+    }
 
-        public virtual void ResetDataContext(object newObject = null)
-        {
-            var old = DataContext;
-            DataContext = null;
-            DataContext = newObject ?? old;
-        }
+    public void CloseWithResult()
+    {
+        Close(DialogResult);
+    }
+
+    public virtual void ResetDataContext(object newObject = null)
+    {
+        var old = DataContext;
+        DataContext = null;
+        DataContext = newObject ?? old;
+    }
+
+    public void OpenWebsite(string url)
+    {
+        SystemAware.OpenBrowser(url);
     }
 }

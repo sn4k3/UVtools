@@ -2,40 +2,39 @@
 using UVtools.Core.Operations;
 using UVtools.WPF.Windows;
 
-namespace UVtools.WPF.Controls.Tools
+namespace UVtools.WPF.Controls.Tools;
+
+public class ToolLayerArithmeticControl : ToolControl
 {
-    public class ToolLayerArithmeticControl : ToolControl
+    public OperationLayerArithmetic Operation => BaseOperation as OperationLayerArithmetic;
+
+    public ToolLayerArithmeticControl()
     {
-        public OperationLayerArithmetic Operation => BaseOperation as OperationLayerArithmetic;
+        BaseOperation = new OperationLayerArithmetic(SlicerFile);
+        if (!ValidateSpawn()) return;
+        InitializeComponent();
+    }
 
-        public ToolLayerArithmeticControl()
-        {
-            BaseOperation = new OperationLayerArithmetic(SlicerFile);
-            if (!ValidateSpawn()) return;
-            InitializeComponent();
-        }
+    private void InitializeComponent()
+    {
+        AvaloniaXamlLoader.Load(this);
+    }
 
-        private void InitializeComponent()
+    public override void Callback(ToolWindow.Callbacks callback)
+    {
+        switch (callback)
         {
-            AvaloniaXamlLoader.Load(this);
-        }
-
-        public override void Callback(ToolWindow.Callbacks callback)
-        {
-            switch (callback)
-            {
-                case ToolWindow.Callbacks.Init:
-                case ToolWindow.Callbacks.Loaded:
-                    if(ParentWindow is not null) ParentWindow.ButtonOkEnabled = !string.IsNullOrWhiteSpace(Operation.Sentence);
-                    Operation.PropertyChanged += (sender, e) =>
+            case ToolWindow.Callbacks.Init:
+            case ToolWindow.Callbacks.Loaded:
+                if(ParentWindow is not null) ParentWindow.ButtonOkEnabled = !string.IsNullOrWhiteSpace(Operation.Sentence);
+                Operation.PropertyChanged += (sender, e) =>
+                {
+                    if (e.PropertyName == nameof(Operation.Sentence))
                     {
-                        if (e.PropertyName == nameof(Operation.Sentence))
-                        {
-                            ParentWindow.ButtonOkEnabled = !string.IsNullOrWhiteSpace(Operation.Sentence);
-                        }
-                    };
-                    break;
-            }
+                        ParentWindow.ButtonOkEnabled = !string.IsNullOrWhiteSpace(Operation.Sentence);
+                    }
+                };
+                break;
         }
     }
 }

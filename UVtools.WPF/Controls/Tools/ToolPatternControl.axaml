@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:i="clr-namespace:Projektanker.Icons.Avalonia;assembly=Projektanker.Icons.Avalonia"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="UVtools.WPF.Controls.Tools.ToolPatternControl">
 
@@ -46,9 +47,7 @@
         Padding="10,5"
         ToolTip.Tip="Fill spacing given the current number of columns, object size and left over space."
         Command="{Binding Operation.FillColumnSpacing}"
-      >
-        <Image Source="/Assets/Icons/resize-16x16.png" />
-      </Button>
+        i:Attached.Icon="fas fa-expand-alt"/>
       <TextBlock
         Grid.Column="10"
         Grid.Row="0"
@@ -60,40 +59,34 @@
                  Grid.Row="2"
                  VerticalAlignment="Center"
                  HorizontalAlignment="Right"
-                 ToolTip.Tip="Number of copies in Y direction."
-               />
+                 ToolTip.Tip="Number of copies in Y direction."/>
       <NumericUpDown
         Grid.Column="2"
         Grid.Row="2"
         Minimum="1"
         Maximum="{Binding Operation.MaxRows}"
         Value="{Binding Operation.Rows}"
-        ToolTip.Tip="Number of copies in Y direction."
-      />
+        ToolTip.Tip="Number of copies in Y direction."/>
       <TextBlock Text="Spacing:"
                  Grid.Column="4"
                  Grid.Row="2"
                  VerticalAlignment="Center"
                  HorizontalAlignment="Right"
-                 ToolTip.Tip="Spacing between copies in Y direction."
-               />
+                 ToolTip.Tip="Spacing between copies in Y direction."/>
       <NumericUpDown
           Grid.Column="6"
           Grid.Row="2"
           Minimum="1"
           Maximum="65535"
           Value="{Binding Operation.RowSpacing}"
-          ToolTip.Tip="Spacing between copies in Y direction"
-        />
+          ToolTip.Tip="Spacing between copies in Y direction"/>
       <Button
         Grid.Column="8"
         Grid.Row="2"
         Padding="10,5"
         ToolTip.Tip="Fill spacing given the current number of rows, object size and left over space."
         Command="{Binding Operation.FillRowSpacing}"
-      >
-        <Image Source="/Assets/Icons/resize-16x16.png" />
-      </Button>
+        i:Attached.Icon="fas fa-expand-alt"/>
       <TextBlock
         Grid.Column="10"
         Grid.Row="2"
@@ -102,10 +95,8 @@
 
     </Grid>
 
-    <Grid
-      RowDefinitions="Auto"
-      ColumnDefinitions="Auto,20,Auto"
-      >
+    <Grid RowDefinitions="Auto"
+          ColumnDefinitions="Auto,20,Auto">
 
       <StackPanel Spacing="10">
         <TextBlock Text="{Binding Operation.InfoWidthStr}" />

@@ -1,0 +1,61 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="550" d:DesignHeight="150"
+             x:Class="UVtools.WPF.Controls.Suggestions.SuggestionLayerHeightControl">
+	<Grid RowDefinitions="Auto,10,Auto,2,Auto"
+			ColumnDefinitions="Auto,10,180,5,Auto,5,180">
+
+		<TextBlock Grid.Row="0" Grid.Column="0"
+                   VerticalAlignment="Center"
+                   ToolTip.Tip="Layer heights with more decimal plates than this defined value will raise an recommendation"
+                   Text="Max decimal plates:"/>
+
+		<NumericUpDown Grid.Row="0" Grid.Column="2"
+                       VerticalAlignment="Center"
+                       Minimum="2"
+                       Maximum="10"
+                       Increment="1"
+                       Value="{Binding Suggestion.MaximumLayerHeightDecimalPlates}"/>
+
+        <TextBlock Grid.Row="2" Grid.Column="2"
+                   VerticalAlignment="Center"
+                   HorizontalAlignment="Center"
+                   FontWeight="Bold"
+                   Text="Minimum:"/>
+
+        <TextBlock Grid.Row="2" Grid.Column="6"
+                   VerticalAlignment="Center"
+                   HorizontalAlignment="Center"
+                   FontWeight="Bold"
+                   Text="Maximum:"/>
+
+		<TextBlock Grid.Row="4" Grid.Column="0"
+                   VerticalAlignment="Center"
+                   ToolTip.Tip="Sets the limits in millimeters for the trigger detection (Min-Max)"
+                   Text="Layer height limits:"/>
+
+		<NumericUpDown Grid.Row="4" Grid.Column="2"
+                       VerticalAlignment="Center"
+                       Classes="ValueLabel ValueLabel_mm"
+                       Minimum="0"
+                       Maximum="1000"
+                       FormatString="F3"
+                       Increment="0.01"
+                       Value="{Binding Suggestion.MinimumLayerHeight}"/>
+
+		<TextBlock Grid.Row="4" Grid.Column="4"
+                   VerticalAlignment="Center"
+                   Text="-"/>
+
+		<NumericUpDown Grid.Row="4" Grid.Column="6"
+                       VerticalAlignment="Center"
+                       Classes="ValueLabel ValueLabel_mm"
+                       Minimum="0"
+                       Maximum="1000"
+                       FormatString="F3"
+                       Increment="0.01"
+                       Value="{Binding Suggestion.MaximumLayerHeight}"/>
+	</Grid>
+</UserControl>

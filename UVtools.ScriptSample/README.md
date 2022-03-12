@@ -106,7 +106,7 @@ namespace UVtools.ScriptSample // Require to compile and have the IDE help
         /// Validate user inputs here, this function trigger when user click on execute
         /// </summary>
         /// <returns>A error message, empty or null if validation passes.</returns>
-        public string ScriptValidate()
+        public string? ScriptValidate()
         {
             StringBuilder sb = new();
             

@@ -12,28 +12,29 @@ using System.Globalization;
 using System.Linq;
 using UVtools.Core.Objects;
 
-namespace UVtools.Core.Extensions
+namespace UVtools.Core.Extensions;
+
+public static class EnumExtensions
 {
-    public static class EnumExtensions
+    public static string GetDescription(this Enum value)
     {
-        public static string GetDescription(this Enum value)
+        var attributes = value.GetType().GetField(value.ToString())?.GetCustomAttributes(typeof(DescriptionAttribute), false);
+        if (attributes is not null && attributes.Any())
         {
-            var attributes = value.GetType().GetField(value.ToString()).GetCustomAttributes(typeof(DescriptionAttribute), false);
-            if (attributes.Any())
-                return (attributes.First() as DescriptionAttribute)?.Description;
-
-            // If no description is found, the least we can do is replace underscores with spaces
-            // You can add your own custom default formatting logic here
-            var ti = CultureInfo.CurrentCulture.TextInfo;
-            return ti.ToTitleCase(ti.ToLower(value.ToString().Replace("_", " ")));
+            if (attributes.First() is DescriptionAttribute attr) return attr.Description;
         }
 
-        public static IEnumerable<ValueDescription> GetAllValuesAndDescriptions(Type t)
-        {
-            if (!t.IsEnum)
-                throw new ArgumentException($"{nameof(t)} must be an enum type");
+        // If no description is found, the least we can do is replace underscores with spaces
+        // You can add your own custom default formatting logic here
+        var ti = CultureInfo.CurrentCulture.TextInfo;
+        return ti.ToTitleCase(ti.ToLower(value.ToString().Replace("_", " ")));
+    }
 
-            return Enum.GetValues(t).Cast<Enum>().OrderBy(e => e).Select(e => new ValueDescription(e, e.GetDescription())).ToList();
-        }
+    public static IEnumerable<ValueDescription> GetAllValuesAndDescriptions(Type t)
+    {
+        if (!t.IsEnum)
+            throw new ArgumentException($"{nameof(t)} must be an enum type");
+
+        return Enum.GetValues(t).Cast<Enum>().OrderBy(e => e).Select(e => new ValueDescription(e, e.GetDescription())).ToList();
     }
 }

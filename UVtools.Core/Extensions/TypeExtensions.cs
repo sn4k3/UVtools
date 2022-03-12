@@ -8,30 +8,32 @@
 
 using System;
 
-namespace UVtools.Core.Extensions
+namespace UVtools.Core.Extensions;
+
+public static class TypeExtensions
 {
-    public static class TypeExtensions
+    /// <summary>
+    /// Creates a new instance of this type
+    /// </summary>
+    /// <param name="type"></param>
+    public static object? CreateInstance(this Type type, params object[]? paramArray)
     {
-        /// <summary>
-        /// Creates a new instance of this type
-        /// </summary>
-        /// <param name="type"></param>
-        public static object CreateInstance(this Type type, params object[]? paramArray)
-        {
-            return Activator.CreateInstance(type, paramArray);
-        }
-
-        /// <summary>
-        /// Creates a new instance of this type
-        /// </summary>
-        /// <typeparam name="T">Target type</typeparam>
-        /// <param name="type"></param>
-        /// <returns>New instance of <see cref="T"/></returns>
-        public static T CreateInstance<T>(this Type type, params object[]? paramArray)
-        {
-            return (T)Activator.CreateInstance(type, paramArray);
-        }
-
-        public static byte ToByte(this bool value) => (byte)(value ? 1 : 0);
+        return Activator.CreateInstance(type, paramArray);
     }
+
+    /// <summary>
+    /// Creates a new instance of this type
+    /// </summary>
+    /// <typeparam name="T">Target type</typeparam>
+    /// <param name="type"></param>
+    /// <param name="paramArray"></param>
+    /// <returns>New instance of <see cref="T"/></returns>
+    public static T? CreateInstance<T>(this Type type, params object[]? paramArray)
+    {
+        var instance = Activator.CreateInstance(type, paramArray);
+        if (instance is null) return default;
+        return (T)instance;
+    }
+
+    public static byte ToByte(this bool value) => (byte)(value ? 1 : 0);
 }

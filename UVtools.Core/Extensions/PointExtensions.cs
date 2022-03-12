@@ -8,76 +8,75 @@
 using System;
 using System.Drawing;
 
-namespace UVtools.Core.Extensions
+namespace UVtools.Core.Extensions;
+
+public static class PointExtensions
 {
-    public static class PointExtensions
+    public static double FindLength(Point start, Point end) => Math.Sqrt(Math.Pow(end.Y - start.Y, 2) + Math.Pow(end.X - start.X, 2));
+
+    public static bool IsAnyNegative(this Point point) => point.X < 0 || point.Y < 0;
+    public static bool IsBothNegative(this Point point) => point.X < 0 && point.Y < 0;
+    public static bool IsBothZeroOrPositive(this Point point) => point.X >= 0 && point.Y >= 0;
+
+    public static Point Rotate(this Point point, double angleDegree, Point pivot = default)
     {
-        public static double FindLength(Point start, Point end) => Math.Sqrt(Math.Pow(end.Y - start.Y, 2) + Math.Pow(end.X - start.X, 2));
+        if (angleDegree % 360 == 0) return point;
+        double angle = angleDegree * Math.PI / 180;
+        double cos = Math.Cos(angle);
+        double sin = Math.Sin(angle);
+        int dx = point.X - pivot.X;
+        int dy = point.Y - pivot.Y;
+        double x = cos * dx - sin * dy + pivot.X;
+        double y = sin * dx + cos * dy + pivot.Y;
 
-        public static bool IsAnyNegative(this Point point) => point.X < 0 || point.Y < 0;
-        public static bool IsBothNegative(this Point point) => point.X < 0 && point.Y < 0;
-        public static bool IsBothZeroOrPositive(this Point point) => point.X >= 0 && point.Y >= 0;
+        return new((int)Math.Round(x), (int)Math.Round(y));
+    }
 
-        public static Point Rotate(this Point point, double angleDegree, Point pivot = default)
+    public static PointF Rotate(this PointF point, double angleDegree, PointF pivot = default)
+    {
+        if (angleDegree % 360 == 0) return point;
+        double angle = angleDegree * Math.PI / 180;
+        double cos = Math.Cos(angle);
+        double sin = Math.Sin(angle);
+        double dx = point.X - pivot.X;
+        double dy = point.Y - pivot.Y;
+        double x = cos * dx - sin * dy + pivot.X;
+        double y = sin * dx + cos * dy + pivot.Y;
+
+        return new((float) x, (float) y);
+    }
+
+    public static void Rotate(Point[] points, double angleDegree, Point pivot = default)
+    {
+        for (int i = 0; i < points.Length; i++)
         {
-            if (angleDegree % 360 == 0) return point;
-            double angle = angleDegree * Math.PI / 180;
-            double cos = Math.Cos(angle);
-            double sin = Math.Sin(angle);
-            int dx = point.X - pivot.X;
-            int dy = point.Y - pivot.Y;
-            double x = cos * dx - sin * dy + pivot.X;
-            double y = sin * dx + cos * dy + pivot.Y;
-
-            return new((int)Math.Round(x), (int)Math.Round(y));
+            points[i] = points[i].Rotate(angleDegree, pivot);
         }
+    }
 
-        public static PointF Rotate(this PointF point, double angleDegree, PointF pivot = default)
+    public static void Rotate(PointF[] points, double angleDegree, PointF pivot = default)
+    {
+        for (int i = 0; i < points.Length; i++)
         {
-            if (angleDegree % 360 == 0) return point;
-            double angle = angleDegree * Math.PI / 180;
-            double cos = Math.Cos(angle);
-            double sin = Math.Sin(angle);
-            double dx = point.X - pivot.X;
-            double dy = point.Y - pivot.Y;
-            double x = cos * dx - sin * dy + pivot.X;
-            double y = sin * dx + cos * dy + pivot.Y;
-
-            return new((float) x, (float) y);
+            points[i] = points[i].Rotate(angleDegree, pivot);
         }
+    }
 
-        public static void Rotate(Point[] points, double angleDegree, Point pivot = default)
-        {
-            for (int i = 0; i < points.Length; i++)
-            {
-                points[i] = points[i].Rotate(angleDegree, pivot);
-            }
-        }
-
-        public static void Rotate(PointF[] points, double angleDegree, PointF pivot = default)
-        {
-            for (int i = 0; i < points.Length; i++)
-            {
-                points[i] = points[i].Rotate(angleDegree, pivot);
-            }
-        }
-
-        public static Point OffsetBy(this Point point, int value)=> new(point.X + value, point.Y + value);
-        public static Point OffsetBy(this Point point, int x, int y) => new(point.X + x, point.Y + y);
-        public static Point OffsetBy(this Point point, Point other) => new(point.X + other.X, point.Y + other.Y);
+    public static Point OffsetBy(this Point point, int value)=> new(point.X + value, point.Y + value);
+    public static Point OffsetBy(this Point point, int x, int y) => new(point.X + x, point.Y + y);
+    public static Point OffsetBy(this Point point, Point other) => new(point.X + other.X, point.Y + other.Y);
 
 
-        public static Point Half(this Point point) => new(point.X / 2, point.Y / 2);
-        public static PointF Half(this PointF point) => new(point.X / 2, point.Y / 2);
-        public static Point ToPoint(this PointF point) => new((int) Math.Round(point.X), (int) Math.Round(point.Y));
+    public static Point Half(this Point point) => new(point.X / 2, point.Y / 2);
+    public static PointF Half(this PointF point) => new(point.X / 2, point.Y / 2);
+    public static Point ToPoint(this PointF point) => new((int) Math.Round(point.X), (int) Math.Round(point.Y));
 
 
 
-        public static Size ToSize(this Point point) => new(point.X, point.Y);
+    public static Size ToSize(this Point point) => new(point.X, point.Y);
 
-        public static SizeF ToSize(this PointF point) => new(point.X, point.Y);
+    public static SizeF ToSize(this PointF point) => new(point.X, point.Y);
 
         
 
-    }
 }

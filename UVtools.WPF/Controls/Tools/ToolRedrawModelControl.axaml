@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:i="clr-namespace:Projektanker.Icons.Avalonia;assembly=Projektanker.Icons.Avalonia"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="UVtools.WPF.Controls.Tools.ToolRedrawModelControl">
     <Grid RowDefinitions="Auto,10,Auto,10,Auto,10,Auto"
@@ -21,9 +22,8 @@
                 <Button
                         VerticalAlignment="Stretch"
                         ToolTip.Tip="Select the sliced file without supports and raft. (Model B)"
-                        Command="{Binding ImportFile}">
-                    <Image Source="/Assets/Icons/file-import-16x16.png"/>
-                </Button>
+                        Command="{Binding ImportFile}"
+                        i:Attached.Icon="fas fa-file-import"/>
             </StackPanel>
 
 

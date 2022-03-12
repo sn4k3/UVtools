@@ -7,74 +7,73 @@ using UVtools.WPF.Controls.Tools;
 using UVtools.WPF.Extensions;
 using UVtools.WPF.Windows;
 
-namespace UVtools.WPF.Controls.Calibrators
+namespace UVtools.WPF.Controls.Calibrators;
+
+public class CalibrateElephantFootControl : ToolControl
 {
-    public class CalibrateElephantFootControl : ToolControl
+    public OperationCalibrateElephantFoot Operation => BaseOperation as OperationCalibrateElephantFoot;
+
+    private readonly Timer _timer;
+
+    private Bitmap _previewImage;
+    public Bitmap PreviewImage
     {
-        public OperationCalibrateElephantFoot Operation => BaseOperation as OperationCalibrateElephantFoot;
-
-        private readonly Timer _timer;
-
-        private Bitmap _previewImage;
-        public Bitmap PreviewImage
-        {
-            get => _previewImage;
-            set => RaiseAndSetIfChanged(ref _previewImage, value);
-        }
+        get => _previewImage;
+        set => RaiseAndSetIfChanged(ref _previewImage, value);
+    }
 
 
-        public CalibrateElephantFootControl()
-        {
-            BaseOperation = new OperationCalibrateElephantFoot(SlicerFile);
-            if (!ValidateSpawn()) return;
+    public CalibrateElephantFootControl()
+    {
+        BaseOperation = new OperationCalibrateElephantFoot(SlicerFile);
+        if (!ValidateSpawn()) return;
 
-            InitializeComponent();
+        InitializeComponent();
             
-            _timer = new Timer(20)
-            {
-                AutoReset = false
-            };
-            _timer.Elapsed += (sender, e) => Dispatcher.UIThread.InvokeAsync(UpdatePreview);
-        }
-
-        private void InitializeComponent()
+        _timer = new Timer(20)
         {
-            AvaloniaXamlLoader.Load(this);
-        }
+            AutoReset = false
+        };
+        _timer.Elapsed += (sender, e) => Dispatcher.UIThread.InvokeAsync(UpdatePreview);
+    }
 
-        public override void Callback(ToolWindow.Callbacks callback)
+    private void InitializeComponent()
+    {
+        AvaloniaXamlLoader.Load(this);
+    }
+
+    public override void Callback(ToolWindow.Callbacks callback)
+    {
+        if (App.SlicerFile is null) return;
+        switch (callback)
         {
-            if (App.SlicerFile is null) return;
-            switch (callback)
-            {
-                case ToolWindow.Callbacks.Init:
-                case ToolWindow.Callbacks.Loaded:
-                    Operation.PropertyChanged += (sender, e) =>
-                    {
-                        _timer.Stop();
-                        _timer.Start();
-                        if (e.PropertyName == nameof(Operation.ObjectCount))
-                        {
-                            ParentWindow.ButtonOkEnabled = Operation.ObjectCount > 0;
-                            return;
-                        }
-                    };
-                    if(ParentWindow is not null) ParentWindow.ButtonOkEnabled = Operation.ObjectCount > 0;
+            case ToolWindow.Callbacks.Init:
+            case ToolWindow.Callbacks.Loaded:
+                Operation.PropertyChanged += (sender, e) =>
+                {
                     _timer.Stop();
                     _timer.Start();
-                    break;
-            }
+                    if (e.PropertyName == nameof(Operation.ObjectCount))
+                    {
+                        ParentWindow.ButtonOkEnabled = Operation.ObjectCount > 0;
+                        return;
+                    }
+                };
+                if(ParentWindow is not null) ParentWindow.ButtonOkEnabled = Operation.ObjectCount > 0;
+                _timer.Stop();
+                _timer.Start();
+                break;
         }
+    }
 
-        public void UpdatePreview()
+    public void UpdatePreview()
+    {
+        var layers = Operation.GetLayers();
+        _previewImage?.Dispose();
+        PreviewImage = layers[0].ToBitmap();
+        foreach (var layer in layers)
         {
-            var layers = Operation.GetLayers();
-            _previewImage?.Dispose();
-            PreviewImage = layers[0].ToBitmap();
-            foreach (var layer in layers)
-            {
-                layer.Dispose();
-            }
+            layer.Dispose();
         }
     }
 }
