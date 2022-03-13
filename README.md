@@ -322,11 +322,6 @@ sudo yum install -y libjpeg-devel libjpeg-turbo-devel libpng-devel libgeotiff-de
 wget -qO - https://raw.githubusercontent.com/sn4k3/UVtools/master/Scripts/libdl-solver.sh | sudo bash
 ```
 
-**Fedora 35 extra requirement:**
-
-```bash
-sudo ln -s /usr/lib64/libdl.so.2 /usr/lib64/libdl.so
-```
 
 ### Compile libcvextern.so:
 
