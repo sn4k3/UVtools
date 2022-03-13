@@ -37,7 +37,7 @@
    - (Change) Some icons
    - (Change) Move log tab to clipboard tab
    - (Change) Tooltip overlay default color
-   - (Improvement) Windows position for tool windows, sometimes framework can return negative values affecting positions, now limits to 0 (#387)
+   - (Improvement) Windows position for tool windows, sometimes framework can return negative values affecting positions, now limits to 0 (#426)
    - (Fix) Center image icon for layer action button
    - (Fix) Center image icon for save layer image button
 - **Tools:**

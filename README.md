@@ -277,7 +277,7 @@ To run UVtools open it folder on a terminal and call one of:
 
 * Double-click UVtools file
 * `./UVtools`
-* `sh UVtools.sh`
+* `bash UVtools.sh`
 * `dotnet UVtools.dll` [For universal package only, requires dotnet-runtime]
 * As a pratical alternative you can create a shortcut on Desktop
 
