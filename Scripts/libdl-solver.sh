@@ -15,8 +15,8 @@ libdlso="libdl.so"
 libdlso2="libdl.so.2"
 
 directories="/lib"
-directories="${directories} /usr/lib64"
-directories="${directories} /lib/x86_64-linux-gnu"
+directories="$directories /usr/lib64"
+directories="$directories /lib/x86_64-linux-gnu"
 
 #####################
 ##   DON'T TOUCH   ##
