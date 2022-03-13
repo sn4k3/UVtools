@@ -270,11 +270,11 @@ wget -qO - https://raw.githubusercontent.com/sn4k3/UVtools/master/Scripts/libdl-
 
 To run UVtools open it folder on a terminal and call one of:
 
-* Double-click UVtools file
-* `./UVtools`
-* `bash UVtools.sh`
-* `dotnet UVtools.dll` [For universal package only, requires dotnet-runtime]
-* As a pratical alternative you can create a shortcut on Desktop
+- Double-click UVtools file
+- `./UVtools`
+- `bash UVtools.sh`
+- `dotnet UVtools.dll` [For universal package only, requires dotnet-runtime]
+- As a pratical alternative you can create a shortcut on Desktop
 
 ### Compile libcvextern.so:
 
@@ -363,6 +363,19 @@ anyone with same system version can make use of it without the need of the compi
 
 1. macOS 10.15 Catalina or higher
 1. 4GB RAM or higher
+3. **For Mac M1 (ARM):**
+   1. Install homebrew if not already:
+      ```bash
+      /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
+      brew analytics off
+      ```
+   2. Downgrade ffmpeg:
+      ```bash
+      brew install cmake ffmpeg@4
+      brew link ffmpeg@4
+      ```
+    3. Reboot
+
 
 <!--- 
 * Donwload and install: https://dotnet.microsoft.com/download/dotnet/thank-you/sdk-6.0.101-macos-x64-installer
@@ -378,11 +391,10 @@ brew install git cmake libjpeg libpng libgeotiff libdc1394 ffmpeg openexr tbb mo
 
 To run UVtools open it folder on a terminal and call one of:
 
-* Double-click UVtools file
-* `./UVtools`
-* `sh UVtools.sh`
-* `dotnet UVtools.dll` [For universal package only, requires dotnet-runtime]
-* As a pratical alternative you can create a shortcut on Desktop
+- Double-click UVtools file
+- `./UVtools.app/Contents/MacOS/UVtools`
+- `bash UVtools.app/Contents/MacOS/UVtools.sh`
+- As a pratical alternative you can create a shortcut on Desktop
 
 
 ### Compile libcvextern.dylib: 
