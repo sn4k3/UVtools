@@ -23,7 +23,9 @@ directories="$directories /lib/x86_64-linux-gnu"
 #####################
 checks=0
 links=0
-echo "Attempting to create symbolic from $libdlso2 to $libdlso on known path's"
+echo "Attempting to create symbolic from $libdlso2 to $libdlso on known path's:"
+ldconfig -p | grep libdl
+echo ""
 for directory in $directories; do
     let "checks++"
     echo "Checking for $directory/$libdlso2"
@@ -34,6 +36,7 @@ for directory in $directories; do
     fi
 done
 
+echo ""
 echo "######## Results #########"
 echo "File checks: $checks"
 echo "Created links: $links"
