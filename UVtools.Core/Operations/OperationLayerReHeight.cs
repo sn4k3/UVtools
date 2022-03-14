@@ -122,7 +122,7 @@ public sealed class OperationLayerReHeight : Operation
                     break;
                 }
                 
-                for (var layerIndex = LayerIndexStart; layerIndex < LayerIndexEnd; layerIndex++)
+                for (var layerIndex = LayerIndexStart; layerIndex <= LayerIndexEnd; layerIndex++)
                 {
                     if ((decimal) SlicerFile[layerIndex].PositionZ + _positionZOffset < 0)
                     {
@@ -407,7 +407,7 @@ public sealed class OperationLayerReHeight : Operation
         }
         else if (_method == OperationLayerReHeightMethod.OffsetPositionZ)
         {
-            for (var layerIndex = LayerIndexStart; layerIndex < LayerIndexEnd; layerIndex++)
+            for (var layerIndex = LayerIndexStart; layerIndex <= LayerIndexEnd; layerIndex++)
             {
                 SlicerFile[layerIndex].PositionZ += (float)_positionZOffset;
                 progress++;
