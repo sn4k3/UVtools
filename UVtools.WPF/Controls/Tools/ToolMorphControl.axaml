@@ -25,8 +25,7 @@
             Classes="ValueLabel ValueLabel_px"
           Minimum="1"
           Width="180"
-          Value="{Binding Operation.IterationsStart}"
-          />
+          Value="{Binding Operation.IterationsStart}"/>
 
         <TextBlock
           VerticalAlignment="Center"
@@ -38,14 +37,12 @@
           Minimum="1"
           Width="180"
           Value="{Binding Operation.IterationsEnd}"
-          IsEnabled="{Binding Operation.Chamfer}"
-          />
+          IsEnabled="{Binding Operation.Chamfer}"/>
 
         <CheckBox
           ToolTip.Tip="Allow the number of iterations to be gradually varied as the operation progresses from the starting layer to the ending layer."
           Content="Chamfer"
-          IsChecked="{Binding Operation.Chamfer}"
-          />
+          IsChecked="{Binding Operation.Chamfer}"/>
       </StackPanel>
 
       <TextBlock
