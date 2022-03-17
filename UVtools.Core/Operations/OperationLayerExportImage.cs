@@ -180,10 +180,8 @@ public sealed class OperationLayerExportImage : Operation
 
         var slicedFileNameNoExt = SlicerFile.FilenameNoExt;
 
-        Parallel.For(LayerIndexStart, LayerIndexEnd+1, CoreSettings.ParallelOptions, layerIndex =>
+        Parallel.For(LayerIndexStart, LayerIndexEnd+1, CoreSettings.GetParallelOptions(progress), layerIndex =>
         {
-            if (progress.Token.IsCancellationRequested) return;
-
             using var mat = SlicerFile[layerIndex].LayerMat;
             var matRoi = mat;
             if (_cropByRoi && HaveROI)
@@ -201,7 +199,7 @@ public sealed class OperationLayerExportImage : Operation
                 CvInvoke.Rotate(matRoi, matRoi, Enumerations.ToOpenCVRotateFlags(_rotateDirection));
             }
 
-            var filename = SlicerFile[layerIndex].FormatFileName(_filename, _padLayerIndex ? SlicerFile.LayerDigits : byte.MinValue, true, string.Empty);
+            var filename = SlicerFile[layerIndex].FormatFileName(_filename, _padLayerIndex ? SlicerFile.LayerDigits : byte.MinValue, Enumerations.IndexStartNumber.Zero, string.Empty);
             var fileFullPath = Path.Combine(_outputFolder, $"{filename}.{_imageType.ToString().ToLower()}");
 
             if (_imageType != LayerExportImageTypes.SVG)

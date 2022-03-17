@@ -447,9 +447,8 @@ public class PhotonSFile : FileFormat
 
         foreach (var batch in BatchLayersIndexes())
         {
-            Parallel.ForEach(batch, CoreSettings.ParallelOptions, layerIndex =>
+            Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), layerIndex =>
             {
-                if (progress.Token.IsCancellationRequested) return;
                 using (var mat = this[layerIndex].LayerMat)
                 {
                     layerData[layerIndex] = new LayerDef(mat);
@@ -460,7 +459,7 @@ public class PhotonSFile : FileFormat
 
             foreach (var layerIndex in batch)
             {
-                progress.Token.ThrowIfCancellationRequested();
+                progress.ThrowIfCancellationRequested();
 
                 outputFile.WriteSerialize(layerData[layerIndex]);
                 outputFile.WriteBytes(layerData[layerIndex].EncodedRle);
@@ -503,7 +502,7 @@ public class PhotonSFile : FileFormat
         {
             foreach (var layerIndex in batch)
             {
-                progress.Token.ThrowIfCancellationRequested();
+                progress.ThrowIfCancellationRequested();
 
                 var layerDef = Helpers.Deserialize<LayerDef>(inputFile);
                 layersDefinitions[layerIndex] = layerDef;
@@ -524,9 +523,8 @@ public class PhotonSFile : FileFormat
 
             if (DecodeType == FileDecodeType.Full)
             {
-                Parallel.ForEach(batch, CoreSettings.ParallelOptions, layerIndex =>
+                Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), layerIndex =>
                 {
-                    if (progress.Token.IsCancellationRequested) return;
                     using var mat = layersDefinitions[layerIndex].Decode();
                     this[layerIndex] = new Layer((uint)layerIndex, mat, this);
                     progress.LockAndIncrement();

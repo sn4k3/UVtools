@@ -32,7 +32,7 @@ public sealed class OperationScripting : Operation
 
     public override bool CanRunInPartialMode => true;
 
-    public override bool CanHaveProfiles => false;
+    //public override bool CanHaveProfiles => false;
     public override string IconClass => "fas fa-code";
     public override string Title => "Scripting";
 
@@ -67,6 +67,13 @@ public sealed class OperationScripting : Operation
         return scriptValidation.ReturnValue;
     }
 
+    public override string ToString()
+    {
+        var result = $"[{Path.GetFileName(_filePath)}]" + LayerRangeString;
+        if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
+        return result;
+    }
+
     #endregion
 
     #region Enums
@@ -75,6 +82,7 @@ public sealed class OperationScripting : Operation
 
     #region Properties
 
+    [XmlIgnore]
     public ScriptGlobals? ScriptGlobals { get; private set; }
 
     public string? FilePath
@@ -104,10 +112,8 @@ public sealed class OperationScripting : Operation
         set => RaiseAndSetIfChanged(ref _scriptText, value);
     }
 
-    [XmlIgnore]
     public bool CanExecute => !string.IsNullOrWhiteSpace(_filePath) && _scriptState is not null && ScriptGlobals is not null && About.Version.CompareTo(ScriptGlobals.Script.MinimumVersionToRun) >= 0;
 
-    [XmlIgnore]
     public bool HaveFile => !string.IsNullOrWhiteSpace(_filePath);
 
     /*public override string ToString()
@@ -131,7 +137,22 @@ public sealed class OperationScripting : Operation
     #endregion
 
     #region Equality
-        
+
+    private bool Equals(OperationScripting other)
+    {
+        return _filePath == other._filePath;
+    }
+
+    public override bool Equals(object? obj)
+    {
+        return ReferenceEquals(this, obj) || obj is OperationScripting other && Equals(other);
+    }
+
+    public override int GetHashCode()
+    {
+        return (_filePath != null ? _filePath.GetHashCode() : 0);
+    }
+
     #endregion
 
     #region Methods

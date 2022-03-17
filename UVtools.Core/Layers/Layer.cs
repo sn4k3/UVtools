@@ -10,9 +10,12 @@ using Emgu.CV;
 using Emgu.CV.CvEnum;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Drawing;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
+using K4os.Compression.LZ4;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Objects;
@@ -25,6 +28,24 @@ namespace UVtools.Core.Layers;
 /// </summary>
 public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
 {
+    #region Enums
+
+    public enum LayerCompressionMethod : byte
+    {
+        [Description("PNG: Compression=High Speed=Slow (Use with low RAM)")]
+        Png,
+        [Description("GZip: Compression=Medium Speed=Medium (Optimal)")]
+        GZip,
+        [Description("Deflate: Compression=Medium Speed=Medium (Optimal)")]
+        Deflate,
+        [Description("LZ4: Compression=Low Speed=Fast (Use with high RAM)")]
+        Lz4,
+        //[Description("None: Compression=None Speed=Fastest (Your soul belongs to RAM)")]
+        //None
+    }
+    
+    #endregion
+
     #region Constants
     public const byte HeightPrecision = 3;
     public const decimal HeightPrecisionIncrement = 0.001M;
@@ -35,6 +56,7 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
     #region Members
 
     public object Mutex = new();
+    private LayerCompressionMethod _compressionMethod;
     private byte[]? _compressedBytes;
     private uint _nonZeroPixelCount;
     private Rectangle _boundingRectangle = Rectangle.Empty;
@@ -55,6 +77,7 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
     private float _retractSpeed2 = FileFormat.DefaultRetractSpeed2;
     private byte _lightPWM = FileFormat.DefaultLightPWM;
     private float _materialMilliliters;
+
     #endregion
 
     #region Properties
@@ -568,6 +591,29 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
     public float MaterialMillilitersPercent => _materialMilliliters * 100 / SlicerFile.MaterialMilliliters;
 
     /// <summary>
+    /// Gets or sets the compression method used to cache the image
+    /// </summary>
+    public LayerCompressionMethod CompressionMethod
+    {
+        get => _compressionMethod;
+        set
+        {
+            if (!HaveImage)
+            {
+                RaiseAndSetIfChanged(ref _compressionMethod, value);
+                return;
+            }
+
+            // Handle conversion
+            if (_compressionMethod == value) return;
+            using var mat = LayerMat;
+            _compressionMethod = value;
+            _compressedBytes = CompressMat(mat, value);
+            RaisePropertyChanged();
+        }
+    }
+
+    /// <summary>
     /// Gets or sets layer image compressed data
     /// </summary>
     public byte[]? CompressedBytes
@@ -580,6 +626,18 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
             SlicerFile.BoundingRectangle = Rectangle.Empty;
             RaisePropertyChanged();
             RaisePropertyChanged(nameof(HaveImage));
+        }
+    }
+
+    public byte[]? CompressedPngBytes
+    {
+        get
+        {
+            if (_compressedBytes is null) return null;
+            if (_compressionMethod == LayerCompressionMethod.Png) return _compressedBytes;
+
+            using var mat = LayerMat;
+            return mat.GetPngByes();
         }
     }
 
@@ -596,13 +654,70 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
         get
         {
             if (!HaveImage) return null!;
-            Mat mat = new();
-            CvInvoke.Imdecode(_compressedBytes, ImreadModes.Grayscale, mat);
-            return mat;
+
+            Mat mat;
+            switch (_compressionMethod)
+            {
+                case LayerCompressionMethod.Png:
+                    mat = new Mat();
+                    CvInvoke.Imdecode(_compressedBytes, ImreadModes.Grayscale, mat);
+                    break;
+                case LayerCompressionMethod.Lz4:
+                    mat = new Mat(SlicerFile.Resolution, DepthType.Cv8U, 1);
+                    LZ4Codec.Decode(_compressedBytes.AsSpan(), mat.GetDataByteSpan());
+                    break;
+                case LayerCompressionMethod.GZip:
+                {
+                    mat = new(SlicerFile.Resolution, DepthType.Cv8U, 1);
+                    var matSpan = mat.GetDataByteSpan();
+                    unsafe
+                    {
+                        fixed (byte* pBuffer = _compressedBytes)
+                        {
+                            using var compressedStream = new UnmanagedMemoryStream(pBuffer, _compressedBytes!.Length);
+                            using var matStream = new UnmanagedMemoryStream(mat.GetBytePointer(), matSpan.Length, matSpan.Length, FileAccess.Write);
+                            using var gZipStream = new GZipStream(compressedStream, CompressionMode.Decompress);
+                            gZipStream.CopyTo(matStream);
+                        }
+                    }
+
+                    break;
+                }
+                case LayerCompressionMethod.Deflate:
+                {
+                    mat = new(SlicerFile.Resolution, DepthType.Cv8U, 1);
+                    var matSpan = mat.GetDataByteSpan();
+                    unsafe
+                    {
+                        fixed (byte* pBuffer = _compressedBytes)
+                        {
+                            using var compressedStream = new UnmanagedMemoryStream(pBuffer, _compressedBytes!.Length);
+                            using var matStream = new UnmanagedMemoryStream(mat.GetBytePointer(), matSpan.Length, matSpan.Length, FileAccess.Write);
+                            using var deflateStream = new DeflateStream(compressedStream, CompressionMode.Decompress);
+                            deflateStream.CopyTo(matStream);
+                        }
+                    }
+
+                    break;
+                }
+                /*case LayerCompressionMethod.None:
+                    mat = new(SlicerFile.Resolution, DepthType.Cv8U, 1);
+                    //mat.SetBytes(_compressedBytes!);
+                    _compressedBytes.CopyTo(mat.GetDataByteSpan());
+                    break;*/
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(LayerMat));
+            }
+            
+            return mat; 
         }
         set
         {
-            CompressedBytes = value?.GetPngByes();
+            if (value is not null)
+            {
+                CompressedBytes = CompressMat(value, _compressionMethod);
+            }
+
             GetBoundingRectangle(value, true);
             RaisePropertyChanged();
         }
@@ -627,7 +742,7 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
     /// <summary>
     /// Gets a computed layer filename, padding zeros are equal to layer count digits
     /// </summary>
-    public string Filename => FormatFileName("layer");
+    public string Filename => FormatFileNameWithLayerDigits("layer");
 
     /// <summary>
     /// Gets if layer image has been modified
@@ -700,29 +815,55 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
 
     #region Constructor
 
-    public Layer(uint index, FileFormat slicerFile)
+    public Layer(uint index, FileFormat slicerFile, LayerCompressionMethod? compressionMethod = null)
     {
+        compressionMethod ??= CoreSettings.DefaultLayerCompressionMethod;
+        _compressionMethod = compressionMethod.Value;
+
         SlicerFile = slicerFile;
         _index = index;
-
+        
         //if (slicerFile is null) return;
         _positionZ = SlicerFile.GetHeightFromLayer(index);
         ResetParameters();
     }
 
-    public Layer(uint index, byte[] compressedBytes, FileFormat slicerFile) : this(index, slicerFile)
+    public Layer(uint index, byte[] pngBytes, FileFormat slicerFile, LayerCompressionMethod? compressionMethod = null) : this(index, slicerFile, compressionMethod)
     {
-        CompressedBytes = compressedBytes;
+        if (_compressionMethod == LayerCompressionMethod.Png)
+        {
+            CompressedBytes = pngBytes;
+        }
+        else
+        {
+            var mat = new Mat();
+            CvInvoke.Imdecode(pngBytes, ImreadModes.Grayscale, mat);
+            LayerMat = mat;
+        }
+
         _isModified = false;
     }
 
-    public Layer(uint index, Mat layerMat, FileFormat slicerFile) : this(index, slicerFile)
+    public Layer(uint index, Mat layerMat, FileFormat slicerFile, LayerCompressionMethod? compressionMethod = null) : this(index, slicerFile, compressionMethod)
     {
         LayerMat = layerMat;
         _isModified = false;
     }
 
-    public Layer(uint index, Stream stream, FileFormat slicerFile) : this(index, stream.ToArray(), slicerFile) { }
+    public Layer(uint index, Stream stream, FileFormat slicerFile, LayerCompressionMethod? compressionMethod = null) : this(index, stream.ToArray(), slicerFile, compressionMethod) 
+    { }
+
+    public Layer(FileFormat slicerFile, LayerCompressionMethod? compressionMethod = null) : this(0, slicerFile, compressionMethod)
+    { }
+
+    public Layer(byte[] pngBytes, FileFormat slicerFile, LayerCompressionMethod? compressionMethod = null) : this(0, pngBytes, slicerFile, compressionMethod)
+    { }
+
+    public Layer(Mat layerMat, FileFormat slicerFile, LayerCompressionMethod? compressionMethod = null) : this(0, layerMat, slicerFile, compressionMethod)
+    { }
+
+    public Layer(Stream stream, FileFormat slicerFile, LayerCompressionMethod? compressionMethod = null) : this(0, stream, slicerFile, compressionMethod) { }
+
     #endregion
 
     #region Equatables
@@ -946,22 +1087,22 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
         WaitTimeAfterLift = 0;
     }
 
-    public string FormatFileName(string prepend, byte padDigits, bool layerIndexZeroStarted = true, string appendExt = ".png")
+    public string FormatFileName(string prepend  = "", byte padDigits = 0, Enumerations.IndexStartNumber layerIndexStartNumber = default, string appendExt = ".png")
     {
         var index = Index;
-        if (!layerIndexZeroStarted)
+        if (layerIndexStartNumber == Enumerations.IndexStartNumber.One)
         {
             index++;
         }
         return $"{prepend}{index.ToString().PadLeft(padDigits, '0')}{appendExt}";
     }
 
-    public string FormatFileName(string prepend = "", bool layerIndexZeroStarted = true, string appendExt = ".png")
-        => FormatFileName(prepend, SlicerFile.LayerDigits, layerIndexZeroStarted, appendExt);
-
-    public string FormatFileName(byte padDigits, bool layerIndexZeroStarted = true, string appendExt = ".png")
-        => FormatFileName(string.Empty, padDigits, layerIndexZeroStarted, appendExt);
-
+    public string FormatFileName(byte padDigits, Enumerations.IndexStartNumber layerIndexStartNumber = default, string appendExt = ".png")
+        => FormatFileName(string.Empty, padDigits, layerIndexStartNumber, appendExt);
+    
+    public string FormatFileNameWithLayerDigits(string prepend = "", Enumerations.IndexStartNumber layerIndexStartNumber = default, string appendExt = ".png")
+        => FormatFileName(prepend, SlicerFile.LayerDigits, layerIndexStartNumber, appendExt);
+    
 
     public Rectangle GetBoundingRectangle(Mat? mat = null, bool reCalculate = false)
     {
@@ -1314,12 +1455,13 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
 
     public Layer Clone()
     {
-        //var layer = (Layer)MemberwiseClone();
-        //layer.CompressedBytes = _compressedBytes.ToArray();
+        var layer = (Layer)MemberwiseClone();
+        layer._compressedBytes = _compressedBytes?.ToArray();
         //Debug.WriteLine(ReferenceEquals(_compressedBytes, layer.CompressedBytes));
-        //return layer;
-        return new (_index, CompressedBytes?.ToArray()!, SlicerFile)
+        return layer;
+        /*return new (_index, CompressedBytes?.ToArray()!, SlicerFile)
         {
+            _compressionMethod = _compressionMethod,
             _positionZ = _positionZ,
             _lightOffDelay = _lightOffDelay,
             _waitTimeBeforeCure = _waitTimeBeforeCure,
@@ -1337,8 +1479,8 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
             _boundingRectangle = _boundingRectangle,
             _nonZeroPixelCount = _nonZeroPixelCount,
             _isModified = _isModified,
-            _materialMilliliters = _materialMilliliters
-        };
+            _materialMilliliters = _materialMilliliters,
+        };*/
     }
     #endregion
 
@@ -1360,6 +1502,53 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
             clonedLayers[layerIndex] = layers[layerIndex].Clone();
         }
         return clonedLayers;
+    }
+
+    public static byte[] CompressMat(Mat mat, LayerCompressionMethod method)
+    {
+        switch (method)
+        {
+            case LayerCompressionMethod.Png:
+                return mat.GetPngByes();
+            case LayerCompressionMethod.Lz4:
+            {
+                var span = mat.GetDataByteSpan();
+                var target = new byte[LZ4Codec.MaximumOutputSize(span.Length)];
+                var encodedLength = LZ4Codec.Encode(span, target.AsSpan());
+                return target[..encodedLength];
+            }
+            case LayerCompressionMethod.GZip:
+            {
+                /*var matSpan = mat.GetDataByteSpan();
+                var compressedBytes = new byte[matSpan.Length];
+                unsafe
+                {
+                    fixed (byte* pBuffer = compressedBytes)
+                    {
+                        using var compressedStream = new UnmanagedMemoryStream(pBuffer, compressedBytes.Length, compressedBytes.Length, FileAccess.Write);
+                        using var gZipStream = new GZipStream(compressedStream, CompressionLevel.Fastest);
+                        gZipStream.Write(mat.GetDataByteSpan());
+                        //return compressedBytes;
+                    }
+                }*/
+
+                using var compressedStream = new MemoryStream();
+                using var gZipStream = new GZipStream(compressedStream, CompressionLevel.Fastest);
+                gZipStream.Write(mat.GetDataByteSpan());
+                return compressedStream.ToArray();
+            }
+            case LayerCompressionMethod.Deflate:
+            {
+                using var compressedStream = new MemoryStream();
+                using var deflateStream = new DeflateStream(compressedStream, CompressionLevel.Fastest);
+                deflateStream.Write(mat.GetDataByteSpan());
+                return compressedStream.ToArray();
+            }
+            /*case LayerCompressionMethod.None:
+                return mat.GetBytes();*/
+            default:
+                throw new ArgumentOutOfRangeException(nameof(method));
+        }
     }
 
     #endregion

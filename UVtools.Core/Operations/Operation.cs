@@ -553,7 +553,7 @@ public abstract class Operation : BindableBase, IDisposable
 
         var result = ExecuteInternally(progress);
 
-        progress.Token.ThrowIfCancellationRequested();
+        progress.ThrowIfCancellationRequested();
         return result;
     }
 

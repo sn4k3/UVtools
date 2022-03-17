@@ -401,12 +401,14 @@ public class ZCodexFile : FileFormat
             stream.Close();
         }
 
+        EncodeLayersInZip(outputFile, FolderImageName, 5, Enumerations.IndexStartNumber.Zero, progress, FolderImages);
+
         GCode!.Clear();
 
         float lastZPosition = 0;
         for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
         {
-            progress.Token.ThrowIfCancellationRequested();
+            progress.ThrowIfCancellationRequested();
 
             var layer = this[layerIndex];
             GCode.AppendLine($"{GCodeKeywordSlice} {layerIndex}");
@@ -436,19 +438,7 @@ public class ZCodexFile : FileFormat
             GCode.AppendLine(GCodeKeywordDelayModel);
             GCode.AppendLine("M106 S0");
 
-
-            var layerimagePath = $"{FolderImages}/{FolderImageName}{layerIndex:D5}.png";
-            using (var stream = outputFile.CreateEntry(layerimagePath).Open())
-            {
-                //image.Save(stream, Helpers.PngEncoder);
-                var byteArr = this[layerIndex].CompressedBytes;
-                stream.Write(byteArr!, 0, byteArr!.Length);
-                stream.Close();
-            }
-
             lastZPosition = layer.PositionZ;
-
-            progress++;
         }
 
         GCode.AppendLine($"G1 Z40.0 F{UserSettings.ZLiftFeedRate}");
@@ -496,6 +486,8 @@ public class ZCodexFile : FileFormat
             }
 
             Init(ResinMetadataSettings.TotalLayersCount, DecodeType == FileDecodeType.Partial);
+            DecodeLayersFromZip(inputFile, FolderImageName, Enumerations.IndexStartNumber.Zero, progress);
+
             GCode!.Clear();
             using (TextReader tr = new StreamReader(entry.Open()))
             {
@@ -576,11 +568,11 @@ M106 S0
                         LayersSettings[layerIndex].LayerFileIndex = layerFileIndex;
                         LayersSettings[layerIndex].LayerEntry = inputFile.GetEntry(layerimagePath);
 
-                        if (DecodeType == FileDecodeType.Full)
+                        /*if (DecodeType == FileDecodeType.Full)
                         {
                             using var stream = LayersSettings[layerIndex].LayerEntry!.Open();
                             this[layerIndex] = new Layer((uint)layerIndex, stream, this);
-                        }
+                        }*/
 
                         this[layerIndex].PositionZ = currentHeight;
                         this[layerIndex].LiftHeight = liftHeight;
@@ -588,8 +580,6 @@ M106 S0
                         this[layerIndex].RetractSpeed = retractSpeed;
                         this[layerIndex].LightPWM = pwm;
                         layerIndex++;
-
-                        progress++;
                     }
                 }
 
@@ -606,7 +596,6 @@ M106 S0
         }
 
         BottomRetractSpeed = RetractSpeed; // Compability
-        GetBoundingRectangle(progress);
     }
 
     public override void RebuildGCode()

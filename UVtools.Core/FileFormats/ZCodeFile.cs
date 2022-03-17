@@ -13,11 +13,13 @@ using Org.BouncyCastle.Crypto.Engines;
 using Org.BouncyCastle.OpenSsl;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using System.Xml.Serialization;
 using UVtools.Core.Extensions;
 using UVtools.Core.GCode;
@@ -477,13 +479,7 @@ public class ZCodeFile : FileFormat
             thumbnailsStream.Close();
         }
 
-        for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
-        {
-            progress.Token.ThrowIfCancellationRequested();
-            var layer = this[layerIndex];
-            outputFile.PutFileContent($"{layerIndex + 1}.png", layer.CompressedBytes, ZipArchiveMode.Create);
-            progress++;
-        }
+        EncodeLayersInZip(outputFile, Enumerations.IndexStartNumber.One, progress);
 
         var entry = outputFile.CreateEntry(ManifestFilename);
         using (var stream = entry.Open())
@@ -549,29 +545,8 @@ public class ZCodeFile : FileFormat
         }
 
         Init(ManifestFile.Job.LayerCount, DecodeType == FileDecodeType.Partial);
-        progress.Reset(OperationProgress.StatusDecodeLayers, LayerCount);
 
-        //var gcode = GCode.ToString();
-        //float lastPostZ = LayerHeight;
-
-        for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
-        {
-            if (progress.Token.IsCancellationRequested) break;
-            entry = inputFile.GetEntry($"{layerIndex+1}.png");
-            if (entry is null)
-            {
-                Clear();
-                throw new FileLoadException($"Layer {layerIndex+1} not found", FileFullPath);
-            }
-
-            if (DecodeType == FileDecodeType.Full)
-            {
-                using var stream = entry.Open();
-                this[layerIndex] = new Layer(layerIndex, stream, this);
-            }
-                
-            progress++;
-        }
+        DecodeLayersFromZip(inputFile, Enumerations.IndexStartNumber.One, progress);
 
         GCode!.ParseLayersFromGCode(this);
 
@@ -581,8 +556,6 @@ public class ZCodeFile : FileFormat
             Thumbnails[0] = new Mat();
             CvInvoke.Imdecode(entry.Open().ToArray(), ImreadModes.AnyColor, Thumbnails[0]);
         }
-
-        GetBoundingRectangle(progress);
     }
 
     protected override void PartialSaveInternally(OperationProgress progress)

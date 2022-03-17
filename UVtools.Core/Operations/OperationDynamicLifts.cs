@@ -325,7 +325,7 @@ public sealed class OperationDynamicLifts : Operation
 
         for (uint layerIndex = LayerIndexStart; layerIndex <= LayerIndexEnd; layerIndex++)
         {
-            progress.Token.ThrowIfCancellationRequested();
+            progress.ThrowIfCancellationRequested();
             var layer = SlicerFile[layerIndex];
                 
             // Height

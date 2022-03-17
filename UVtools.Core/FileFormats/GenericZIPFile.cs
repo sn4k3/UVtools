@@ -167,6 +167,7 @@ public class GenericZIPFile : FileFormat
             {
                 if (entry.Name == ManifestFileName) return true;
                 if (entry.Name.EndsWith(".gcode")) return false;
+                if (entry.Name.EndsWith(".xml")) return false;
             }
         }
         catch (Exception e)
@@ -201,14 +202,7 @@ public class GenericZIPFile : FileFormat
             }
         }
 
-        for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
-        {
-            progress.Token.ThrowIfCancellationRequested();
-            var layer = this[layerIndex];
-            var filename = $"{layerIndex + 1}.png";
-            outputFile.PutFileContent(filename, layer.CompressedBytes, ZipArchiveMode.Create);
-            progress++;
-        }
+        EncodeLayersInZip(outputFile, Enumerations.IndexStartNumber.One, progress);
 
         ManifestFile.Update();
 
@@ -219,81 +213,56 @@ public class GenericZIPFile : FileFormat
 
     protected override void DecodeInternally(OperationProgress progress)
     {
-        using (var inputFile = ZipFile.Open(FileFullPath!, ZipArchiveMode.Read))
+        using var inputFile = ZipFile.Open(FileFullPath!, ZipArchiveMode.Read);
+        var entry = inputFile.Entries.FirstOrDefault(zipEntry => zipEntry.Name == ManifestFileName);
+        if (entry is not null)
         {
-            var entry = inputFile.Entries.FirstOrDefault(zipEntry => zipEntry.Name == ManifestFileName);
-            if (entry is not null)
+            try
             {
-                try
-                {
-                    using var stream = entry.Open();
-                    ManifestFile = XmlExtensions.DeserializeFromStream<GenericZipManifest>(stream);
-                }
-                catch (Exception)
-                {
-                    // Not required
-                    //Clear();
-                    //throw new FileLoadException($"Unable to deserialize '{entry.Name}'\n{e}", FileFullPath);
-                }
+                using var stream = entry.Open();
+                ManifestFile = XmlExtensions.DeserializeFromStream<GenericZipManifest>(stream);
             }
-
-            uint layerCount = 0;
-            foreach (var zipEntry in inputFile.Entries)
+            catch (Exception)
             {
-                if (!zipEntry.Name.EndsWith(".png")) continue;
-                var filename = Path.GetFileNameWithoutExtension(zipEntry.Name);
-                if (!filename.All(char.IsDigit)) continue;
-                if (!uint.TryParse(filename, out var layerIndex)) continue;
-                layerCount = Math.Max(layerCount, layerIndex);
-            }
-
-            if (layerCount == 0)
-            {
-                Clear();
-                throw new FileLoadException("Unable to detect layer images in the file", FileFullPath);
-            }
-
-            Init(layerCount, DecodeType == FileDecodeType.Partial);
-            progress.Reset(OperationProgress.StatusDecodeLayers, LayerCount);
-
-
-            for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
-            {
-                if (progress.Token.IsCancellationRequested) break;
-                var filename = $"{layerIndex + 1}.png";
-                entry = inputFile.GetEntry(filename);
-                if (entry is null)
-                {
-                    Clear();
-                    throw new FileLoadException($"Layer {filename} not found", FileFullPath);
-                }
-
-                if (DecodeType == FileDecodeType.Full)
-                {
-                    using var stream = entry.Open();
-                    this[layerIndex] = new Layer(layerIndex, stream, this);
-                }
-
-                progress++;
-            }
-
-            entry = inputFile.GetEntry("preview.png");
-            if (entry is not null)
-            {
-                Thumbnails[0] = new Mat();
-                CvInvoke.Imdecode(entry.Open().ToArray(), ImreadModes.AnyColor, Thumbnails[0]);
-            }
-
-            entry = inputFile.GetEntry("preview_cropping.png");
-            if (entry is not null)
-            {
-                var count = CreatedThumbnailsCount;
-                Thumbnails[count] = new Mat();
-                CvInvoke.Imdecode(entry.Open().ToArray(), ImreadModes.AnyColor, Thumbnails[count]);
+                // Not required
+                //Clear();
+                //throw new FileLoadException($"Unable to deserialize '{entry.Name}'\n{e}", FileFullPath);
             }
         }
 
-        GetBoundingRectangle(progress);
+        uint layerCount = 0;
+        foreach (var zipEntry in inputFile.Entries)
+        {
+            if (!zipEntry.Name.EndsWith(".png")) continue;
+            var filename = Path.GetFileNameWithoutExtension(zipEntry.Name);
+            if (!filename.All(char.IsDigit)) continue;
+            if (!uint.TryParse(filename, out var layerIndex)) continue;
+            layerCount = Math.Max(layerCount, layerIndex);
+        }
+
+        if (layerCount == 0)
+        {
+            Clear();
+            throw new FileLoadException("Unable to detect layer images in the file", FileFullPath);
+        }
+
+        Init(layerCount, DecodeType == FileDecodeType.Partial);
+        DecodeLayersFromZip(inputFile, Enumerations.IndexStartNumber.One, progress);
+            
+        entry = inputFile.GetEntry("preview.png");
+        if (entry is not null)
+        {
+            Thumbnails[0] = new Mat();
+            CvInvoke.Imdecode(entry.Open().ToArray(), ImreadModes.AnyColor, Thumbnails[0]);
+        }
+
+        entry = inputFile.GetEntry("preview_cropping.png");
+        if (entry is not null)
+        {
+            var count = CreatedThumbnailsCount;
+            Thumbnails[count] = new Mat();
+            CvInvoke.Imdecode(entry.Open().ToArray(), ImreadModes.AnyColor, Thumbnails[count]);
+        }
     }
 
     protected override void PartialSaveInternally(OperationProgress progress)

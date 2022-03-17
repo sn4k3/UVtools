@@ -100,7 +100,7 @@ public class ScriptAutomateWorkflowSample : ScriptGlobals
 
             foreach (var operation in operations) // Loop all my created operations to execute them
             {
-                Progress.Token.ThrowIfCancellationRequested(); // Abort operation, user requested cancellation
+                Progress.ThrowIfCancellationRequested(); // Abort operation, user requested cancellation
                 operation.ROI = Operation.ROI; // Copy user selected ROI to my operation
                 operation.MaskPoints = Operation.MaskPoints; // Copy user selected Masks to my operation
                 if (!operation.CanValidate()) continue; // If cant validate don't execute the operation

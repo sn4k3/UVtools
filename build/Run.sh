@@ -1,4 +1,4 @@
 #!/bin/bash
 cd "$(dirname "$0")"
-cd ..
-dotnet build
+cd ../UVtools.WPF
+dotnet run

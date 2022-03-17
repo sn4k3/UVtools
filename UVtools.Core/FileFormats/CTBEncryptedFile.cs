@@ -1169,7 +1169,7 @@ public class CTBEncryptedFile : FileFormat
         LayersPointer = new LayerPointer[Settings.LayerCount];
         for (uint layerIndex = 0; layerIndex < Settings.LayerCount; layerIndex++)
         {
-            progress.Token.ThrowIfCancellationRequested();
+            progress.ThrowIfCancellationRequested();
             LayersPointer[layerIndex] = Helpers.Deserialize<LayerPointer>(inputFile);
             Debug.WriteLine($"pointer[{layerIndex}]: {LayersPointer[layerIndex]}");
             progress++;
@@ -1184,7 +1184,7 @@ public class CTBEncryptedFile : FileFormat
         {
             foreach (var layerIndex in batch)
             {
-                progress.Token.ThrowIfCancellationRequested();
+                progress.ThrowIfCancellationRequested();
 
                 inputFile.Seek(LayersPointer[layerIndex].LayerOffset, SeekOrigin.Begin);
                 LayersDefinition[layerIndex] = Helpers.Deserialize<LayerDef>(inputFile);
@@ -1195,10 +1195,8 @@ public class CTBEncryptedFile : FileFormat
 
             if (DecodeType == FileDecodeType.Full)
             {
-                Parallel.ForEach(batch, CoreSettings.ParallelOptions, layerIndex =>
+                Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), layerIndex =>
                 {
-                    if (progress.Token.IsCancellationRequested) return;
-
                     var layerDef = LayersDefinition[layerIndex];
 
 
@@ -1359,9 +1357,8 @@ public class CTBEncryptedFile : FileFormat
         outputFile.Seek(outputFile.Position + layerTableSize, SeekOrigin.Begin);
 
         progress.Reset(OperationProgress.StatusEncodeLayers, LayerCount);
-        Parallel.For(0, LayerCount, CoreSettings.ParallelOptions, layerIndex =>
+        Parallel.For(0, LayerCount, CoreSettings.GetParallelOptions(progress), layerIndex =>
         {
-            if (progress.Token.IsCancellationRequested) return;
             var layerDef = new LayerDef(this, this[layerIndex]);
             using (var mat = this[layerIndex].LayerMat)
             {
@@ -1375,6 +1372,7 @@ public class CTBEncryptedFile : FileFormat
         progress.Reset(OperationProgress.StatusWritingFile, LayerCount);
         for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
         {
+            progress.ThrowIfCancellationRequested();
             var layerDef = LayersDefinition[layerIndex];
             LayersPointer[layerIndex] = new LayerPointer((uint)outputFile.Position);
 

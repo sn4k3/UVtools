@@ -20,7 +20,7 @@
       <StackPanel Grid.Row="0" Grid.Column="4"
                               Orientation="Horizontal" Spacing="1">
           <Button 
-              ToolTip.Tip="Loads an script file"
+              ToolTip.Tip="Load script file"
               VerticalAlignment="Center"
               Command="{Binding LoadScript}"
               i:Attached.Icon="fas fa-file-import"/>

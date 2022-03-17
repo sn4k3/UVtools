@@ -426,116 +426,87 @@ public class ChituboxZipFile : FileFormat
             outputFile.PutFileContent(GCodeFilename, GCodeStr, ZipArchiveMode.Create);
         }
 
-        for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
-        {
-            progress.Token.ThrowIfCancellationRequested();
-            var layer = this[layerIndex];
-            outputFile.PutFileContent($"{layerIndex + 1}.png", layer.CompressedBytes, ZipArchiveMode.Create);
-            progress++;
-        }
+        EncodeLayersInZip(outputFile, Enumerations.IndexStartNumber.One, progress);
     }
 
     protected override void DecodeInternally(OperationProgress progress)
     {
-        using (var inputFile = ZipFile.Open(FileFullPath!, ZipArchiveMode.Read))
+        using var inputFile = ZipFile.Open(FileFullPath!, ZipArchiveMode.Read);
+        var entry = inputFile.GetEntry(GCodeFilename);
+        if (entry is not null)
         {
-            var entry = inputFile.GetEntry(GCodeFilename);
-            if (entry is not null)
+            //Clear();
+            //throw new FileLoadException("run.gcode not found", fileFullPath);
+            using TextReader tr = new StreamReader(entry.Open());
+            string? line;
+            GCode!.Clear();
+            while ((line = tr.ReadLine()) != null)
             {
-                //Clear();
-                //throw new FileLoadException("run.gcode not found", fileFullPath);
-                using TextReader tr = new StreamReader(entry.Open());
-                string? line;
-                GCode!.Clear();
-                while ((line = tr.ReadLine()) != null)
+                GCode.AppendLine(line);
+                if (string.IsNullOrEmpty(line)) continue;
+
+                if (line[0] != ';')
                 {
-                    GCode.AppendLine(line);
-                    if (string.IsNullOrEmpty(line)) continue;
-
-                    if (line[0] != ';')
-                    {
-                        continue;
-                    }
-
-                    var splitLine = line.Split(':');
-                    if (splitLine.Length < 2) continue;
-
-                    foreach (var propertyInfo in HeaderSettings.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
-                    {
-                        var displayNameAttribute = propertyInfo.GetCustomAttributes(false).OfType<DisplayNameAttribute>().FirstOrDefault();
-                        if (displayNameAttribute is null) continue;
-                        if (!splitLine[0].Trim(' ', ';').Equals(displayNameAttribute.DisplayName)) continue;
-                        Helpers.SetPropertyValue(propertyInfo, HeaderSettings, splitLine[1].Trim());
-                    }
+                    continue;
                 }
-                tr.Close();
-            }
-            else
-            {
-                IsPHZZip = true;
-            }
 
-            if (HeaderSettings.LayerCount == 0)
-            {
-                foreach (var zipEntry in inputFile.Entries)
+                var splitLine = line.Split(':');
+                if (splitLine.Length < 2) continue;
+
+                foreach (var propertyInfo in HeaderSettings.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
                 {
-                    if(!zipEntry.Name.EndsWith(".png")) continue;
-                    var filename = Path.GetFileNameWithoutExtension(zipEntry.Name);
-                    if (!filename.All(char.IsDigit)) continue;
-                    if (!uint.TryParse(filename, out var layerIndex)) continue;
-                    HeaderSettings.LayerCount = Math.Max(HeaderSettings.LayerCount, layerIndex);
+                    var displayNameAttribute = propertyInfo.GetCustomAttributes(false).OfType<DisplayNameAttribute>().FirstOrDefault();
+                    if (displayNameAttribute is null) continue;
+                    if (!splitLine[0].Trim(' ', ';').Equals(displayNameAttribute.DisplayName)) continue;
+                    Helpers.SetPropertyValue(propertyInfo, HeaderSettings, splitLine[1].Trim());
                 }
             }
+            tr.Close();
+        }
+        else
+        {
+            IsPHZZip = true;
+        }
 
-            Init(HeaderSettings.LayerCount, DecodeType == FileDecodeType.Partial);
-
-            progress.ItemCount = LayerCount;
-
-            if (DecodeType == FileDecodeType.Full)
+        if (HeaderSettings.LayerCount == 0)
+        {
+            foreach (var zipEntry in inputFile.Entries)
             {
-                for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
-                {
-                    if (progress.Token.IsCancellationRequested) break;
-                    entry = inputFile.GetEntry($"{layerIndex + 1}.png");
-                    if (entry is null)
-                    {
-                        Clear();
-                        throw new FileLoadException($"Layer {layerIndex + 1} not found", FileFullPath);
-                    }
-
-                    using var stream = entry.Open();
-                    this[layerIndex] = new Layer(layerIndex, stream, this);
-
-                    progress++;
-                }
-            }
-
-            if (IsPHZZip) // PHZ file
-            {
-                RebuildLayersProperties();
-            }
-            else
-            {
-                GCode?.ParseLayersFromGCode(this);
-            }
-
-            entry = inputFile.GetEntry("preview.png");
-            if (entry is not null)
-            {
-                Thumbnails![0] = new Mat();
-                CvInvoke.Imdecode(entry.Open().ToArray(), ImreadModes.AnyColor, Thumbnails[0]);
-            }
-
-            entry = inputFile.GetEntry("preview_cropping.png");
-            if (entry is not null)
-            {
-                var count = CreatedThumbnailsCount;
-                Thumbnails![count] = new Mat();
-                CvInvoke.Imdecode(entry.Open().ToArray(), ImreadModes.AnyColor, Thumbnails[count]);
+                if(!zipEntry.Name.EndsWith(".png")) continue;
+                var filename = Path.GetFileNameWithoutExtension(zipEntry.Name);
+                if (!filename.All(char.IsDigit)) continue;
+                if (!uint.TryParse(filename, out var layerIndex)) continue;
+                HeaderSettings.LayerCount = Math.Max(HeaderSettings.LayerCount, layerIndex);
             }
         }
 
-        GetBoundingRectangle(progress);
+        Init(HeaderSettings.LayerCount, DecodeType == FileDecodeType.Partial);
+
+        DecodeLayersFromZip(inputFile, Enumerations.IndexStartNumber.One, progress);
+
+        if (IsPHZZip) // PHZ file
+        {
+            RebuildLayersProperties();
+        }
+        else
+        {
+            GCode?.ParseLayersFromGCode(this);
+        }
+
+        entry = inputFile.GetEntry("preview.png");
+        if (entry is not null)
+        {
+            Thumbnails![0] = new Mat();
+            CvInvoke.Imdecode(entry.Open().ToArray(), ImreadModes.AnyColor, Thumbnails[0]);
+        }
+
+        entry = inputFile.GetEntry("preview_cropping.png");
+        if (entry is not null)
+        {
+            var count = CreatedThumbnailsCount;
+            Thumbnails![count] = new Mat();
+            CvInvoke.Imdecode(entry.Open().ToArray(), ImreadModes.AnyColor, Thumbnails[count]);
+        }
     }
 
     public override void RebuildGCode()

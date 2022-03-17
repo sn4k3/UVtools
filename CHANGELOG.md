@@ -1,5 +1,35 @@
 # Changelog
 
+## 17/03/2022 - v3.1.0
+
+- **Benchmark:**
+   - (Add) PNG, GZip, Deflate and LZ4 compress tests
+   - (Change) Test against a known image instead of random noise
+   - (Change) Single-thread tests from 100 to 200 and multi-thread tests from 1000 to 5000
+   - (Improvement) Same image instance is shared between tests instead of create new per test
+   - (Fix) Encode typo
+- **Core:**
+   - (Add) Layer compression method: Allow to choose the compression method for layer image
+      - **PNG:** Compression=High Speed=Slow (Use with low RAM)
+      - **GZip:** Compression=Medium Speed=Medium (Optimal)
+      - **Deflate:** Compression=Medium Speed=Medium (Optimal)
+      - **LZ4:** Compression=Low Speed=Fast (Use with high RAM)
+   - (Improvement) Better handling on cancel operations and more immediate response
+   - (Fix) Extract: Zip Slip Vulnerability (CWE-22)
+- **File formats:**
+   - (Improvement) Better handling of encode/decoding layers from zip files
+   - (Fix) ZCode: Canceling the file load can trigger an error
+   - (Fix) VDA: Unable to open vda zip files
+- **Tools:**
+   - (Improvement) Allow operations to be aware of ROI and Masks before execution (#436)
+   - (Improvement) Scripting: Allow save and load profiles (#436)
+   - (Fix) Adjust layer height: When using the Offset type the last layer in the range was not taken in account (#435)
+- **UI:**
+   - (Improvement) Allow layer zoom levels of 0.1x and 64x but constrain minimum zoom to the level of image fit
+   - (Improvement) Update change log now shows with markdown style and more readable
+   - (Fix) Windows MSI upgrade to this version (#432)
+   - (Fix) Auto-updater for Mac ARM, was downloading x64 instead
+
 ## 12/03/2022 - v3.0.0
 
 - **(Add) Suggestions:**

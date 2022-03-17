@@ -101,9 +101,8 @@ public class OperationFlip : Operation
     #region Methods
     protected override bool ExecuteInternally(OperationProgress progress)
     {
-        Parallel.For(LayerIndexStart, LayerIndexEnd + 1, CoreSettings.ParallelOptions, layerIndex =>
+        Parallel.For(LayerIndexStart, LayerIndexEnd + 1, CoreSettings.GetParallelOptions(progress), layerIndex =>
         {
-            if (progress.Token.IsCancellationRequested) return;
             using var mat = SlicerFile[layerIndex].LayerMat;
             Execute(mat);
             SlicerFile[layerIndex].LayerMat = mat;

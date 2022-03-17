@@ -299,10 +299,8 @@ public class OperationPattern : Operation
 
     protected override bool ExecuteInternally(OperationProgress progress)
     {
-        Parallel.For(LayerIndexStart, LayerIndexEnd + 1, CoreSettings.ParallelOptions, layerIndex =>
+        Parallel.For(LayerIndexStart, LayerIndexEnd + 1, CoreSettings.GetParallelOptions(progress), layerIndex =>
         {
-            if (progress.Token.IsCancellationRequested) return;
-
             using var mat = SlicerFile[layerIndex].LayerMat;
             using var layerRoi = new Mat(mat, ROI);
             using var dstLayer = mat.NewBlank();
@@ -320,8 +318,6 @@ public class OperationPattern : Operation
         });
 
         SlicerFile.BoundingRectangle = Rectangle.Empty;
-
-        progress.Token.ThrowIfCancellationRequested();
 
         if (Anchor == Enumerations.Anchor.None) return true;
         var operationMove = new OperationMove(SlicerFile, Anchor)

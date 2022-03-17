@@ -17,6 +17,7 @@ using JetBrains.Annotations;
 using UVtools.Core;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
+using UVtools.Core.Layers;
 using UVtools.Core.Network;
 using UVtools.Core.Objects;
 using Color=UVtools.WPF.Structures.Color;
@@ -42,6 +43,7 @@ public sealed class UserSettings : BindableBase
         private bool _loadDemoFileOnStartup = true;
         private bool _loadLastRecentFileOnStartup;
         private int _maxDegreeOfParallelism = -1;
+        private Layer.LayerCompressionMethod _layerCompressionMethod = CoreSettings.DefaultLayerCompressionMethod;
 
         private bool _windowsCanResize;
         private bool _windowsTakeIntoAccountScreenScaling = true;
@@ -98,6 +100,12 @@ public sealed class UserSettings : BindableBase
         {
             get => _maxDegreeOfParallelism;
             set => RaiseAndSetIfChanged(ref _maxDegreeOfParallelism, Math.Min(value, Environment.ProcessorCount));
+        }
+
+        public Layer.LayerCompressionMethod LayerCompressionMethod
+        {
+            get => _layerCompressionMethod;
+            set => RaiseAndSetIfChanged(ref _layerCompressionMethod, value);
         }
 
         public bool WindowsCanResize
@@ -1633,6 +1641,7 @@ public sealed class UserSettings : BindableBase
             }
 
             CoreSettings.MaxDegreeOfParallelism = _instance.General.MaxDegreeOfParallelism;
+            CoreSettings.DefaultLayerCompressionMethod = _instance.General.LayerCompressionMethod;
 
             if (_instance.Network.RemotePrinters.Count == 0)
             {
@@ -1855,6 +1864,7 @@ public sealed class UserSettings : BindableBase
         Instance.SavesCount++;
         _instance.ModifiedDateTime = DateTime.Now;
         CoreSettings.MaxDegreeOfParallelism = _instance.General.MaxDegreeOfParallelism;
+        CoreSettings.DefaultLayerCompressionMethod = _instance.General.LayerCompressionMethod;
         try
         {
             XmlExtensions.SerializeToFile(_instance, FilePath, XmlExtensions.SettingsIndent);

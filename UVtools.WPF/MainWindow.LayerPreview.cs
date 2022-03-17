@@ -844,6 +844,50 @@ public partial class MainWindow
             //var imageSpan = LayerCache.Image.GetPixelSpan<byte>();
             //var imageBgrSpan = LayerCache.ImageBgr.GetPixelSpan<byte>();
 
+            /*var mat = LayerCache.Layer.LayerMat;
+            var layers = Enum.GetValues<Layer.LayerCompressionMethod>().Select(value => new Layer(mat, SlicerFile, value)).ToList();
+
+            const ushort tests = 100;
+            Debug.WriteLine($"Looping {tests} tests on {SlicerFile.Resolution} resolution");
+
+            var sw = Stopwatch.StartNew();
+
+            foreach (var layer in layers)
+            {
+                Debug.WriteLine($"{layer.CompressionMethod} compressed size: {layer.CompressedBytes.Length} bytes");
+                sw.Restart();
+                for (var i = 0; i < tests; i++)
+                {
+                    using (layer.LayerMat) { }
+                }
+                Debug.WriteLine($"Single thread - Decompress: {sw.ElapsedMilliseconds}ms");
+
+                sw.Restart();
+                for (var i = 0; i < tests; i++)
+                {
+                    layer.LayerMat = mat;
+                }
+                Debug.WriteLine($"Single thread - Compress: {sw.ElapsedMilliseconds}ms");
+
+
+                sw.Restart();
+                Parallel.For(0, tests, i =>
+                {
+                    using (layer.LayerMat) { }
+                });
+                Debug.WriteLine($"Multi thread - Decompress: {sw.ElapsedMilliseconds}ms");
+
+                sw.Restart();
+                Parallel.For(0, tests, i =>
+                {
+                    layer.LayerMat = mat;
+                });
+                Debug.WriteLine($"Multi thread - Compress: {sw.ElapsedMilliseconds}ms");
+
+                Debug.WriteLine(string.Empty);
+            }*/
+
+            
             var imageSpan = LayerCache.ImageSpan;
             var imageBgrSpan = LayerCache.ImageBgrSpan;
 

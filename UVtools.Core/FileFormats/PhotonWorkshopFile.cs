@@ -1695,9 +1695,8 @@ public class PhotonWorkshopFile : FileFormat
 
         foreach (var batch in BatchLayersIndexes())
         {
-            Parallel.ForEach(batch, CoreSettings.ParallelOptions, layerIndex =>
+            Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), layerIndex =>
             {
-                if (progress.Token.IsCancellationRequested) return;
                 using (var mat = this[layerIndex].LayerMat)
                 {
                     LayersDefinition.Layers[layerIndex] = new LayerDef(this, this[layerIndex]);
@@ -1708,7 +1707,7 @@ public class PhotonWorkshopFile : FileFormat
 
             foreach (var layerIndex in batch)
             {
-                progress.Token.ThrowIfCancellationRequested();
+                progress.ThrowIfCancellationRequested();
 
                 var layerDef = LayersDefinition.Layers[layerIndex];
 
@@ -1822,7 +1821,7 @@ public class PhotonWorkshopFile : FileFormat
         {
             foreach (var layerIndex in batch)
             {
-                progress.Token.ThrowIfCancellationRequested();
+                progress.ThrowIfCancellationRequested();
 
                 LayersDefinition[layerIndex] = Helpers.Deserialize<LayerDef>(inputFile);
                 LayersDefinition[layerIndex].Parent = this;
@@ -1840,10 +1839,8 @@ public class PhotonWorkshopFile : FileFormat
 
             if (DecodeType == FileDecodeType.Full)
             {
-                Parallel.ForEach(batch, CoreSettings.ParallelOptions, layerIndex =>
+                Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), layerIndex =>
                 {
-                    if (progress.Token.IsCancellationRequested) return;
-
                     using var mat = LayersDefinition[layerIndex].Decode();
                     this[layerIndex] = new Layer((uint)layerIndex, mat, this)
                     {

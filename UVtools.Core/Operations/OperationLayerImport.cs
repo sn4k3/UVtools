@@ -255,9 +255,8 @@ public sealed class OperationLayerImport : Operation
                 SL1File format = new();
                 format.Init((uint)keyImage.Count);
 
-                Parallel.ForEach(keyImage, CoreSettings.ParallelOptions, pair =>
+                Parallel.ForEach(keyImage, CoreSettings.GetParallelOptions(progress), pair =>
                 {
-                    if (progress.Token.IsCancellationRequested) return;
                     using var mat = CvInvoke.Imread(pair.Value, ImreadModes.Grayscale);
                     if (pair.Key == 0) format.Resolution = mat.Size;
                     format[pair.Key] = new Layer(pair.Key, mat, format);
@@ -265,7 +264,6 @@ public sealed class OperationLayerImport : Operation
                     progress.LockAndIncrement();
                 });
 
-                progress.Token.ThrowIfCancellationRequested();
                 fileFormats.Add(format);
             }
 
@@ -284,7 +282,7 @@ public sealed class OperationLayerImport : Operation
                 fileFormats.Add(fileFormat);
             }
 
-            progress.Token.ThrowIfCancellationRequested();
+            progress.ThrowIfCancellationRequested();
 
             if (fileFormats.Count == 0) return false;
 
@@ -379,9 +377,8 @@ public sealed class OperationLayerImport : Operation
                 }
 
                 progress.Reset(ProgressAction, fileFormat.LayerCount);
-                Parallel.For(0, fileFormat.LayerCount, CoreSettings.ParallelOptions, i =>
+                Parallel.For(0, fileFormat.LayerCount, CoreSettings.GetParallelOptions(progress), i =>
                 {
-                    if (progress.Token.IsCancellationRequested) return;
                     uint layerIndex = (uint)(_startLayerIndex + i);
 
                     switch (_importType)
@@ -503,7 +500,6 @@ public sealed class OperationLayerImport : Operation
                 });
 
                 fileFormat.Dispose();
-                progress.Token.ThrowIfCancellationRequested();
             }
 
             if (_importType == ImportTypes.Stack)

@@ -10,7 +10,10 @@ using Emgu.CV.Cuda;
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
+using UVtools.Core.Layers;
+using UVtools.Core.Operations;
 
 namespace UVtools.Core;
 
@@ -41,6 +44,21 @@ public static class CoreSettings
     public static ParallelOptions ParallelOptions => new() {MaxDegreeOfParallelism = _maxDegreeOfParallelism};
 
     /// <summary>
+    /// Gets the ParallelOptions with <see cref="MaxDegreeOfParallelism"/> and the <see cref="CancellationToken"/> set
+    /// </summary>
+    public static ParallelOptions GetParallelOptions(CancellationToken token = default)
+    {
+        var options = ParallelOptions;
+        options.CancellationToken = token;
+        return options;
+    }
+
+    /// <summary>
+    /// Gets the ParallelOptions with <see cref="MaxDegreeOfParallelism"/> and the <see cref="CancellationToken"/> set
+    /// </summary>
+    public static ParallelOptions GetParallelOptions(OperationProgress progress) => GetParallelOptions(progress.Token);
+
+    /// <summary>
     /// Gets or sets if operations run via CUDA when possible
     /// </summary>
     public static bool EnableCuda { get; set; }
@@ -49,6 +67,11 @@ public static class CoreSettings
     /// Gets if we can use cuda on operations
     /// </summary>
     public static bool CanUseCuda => EnableCuda && CudaInvoke.HasCuda;
+
+    /// <summary>
+    /// Gets or sets the default compression type for layers
+    /// </summary>
+    public static Layer.LayerCompressionMethod DefaultLayerCompressionMethod { get; set; } = Layer.LayerCompressionMethod.Png;
 
     /// <summary>
     /// Gets the default folder to save the settings

@@ -12,7 +12,7 @@
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <RepositoryUrl>https://github.com/sn4k3/UVtools</RepositoryUrl>
     <RepositoryType>Git</RepositoryType>
-    <Version>3.0.0</Version>
+    <Version>3.1.0</Version>
     <Platforms>AnyCPU;x64</Platforms>
     <PackageIcon>UVtools.png</PackageIcon>
     <PackageReadmeFile>README.md</PackageReadmeFile>
@@ -40,14 +40,14 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="0.10.13" />
-    <PackageReference Include="Avalonia.Angle.Windows.Natives" Version="2.1.0.2020091801" />
     <PackageReference Include="Avalonia.Controls.DataGrid" Version="0.10.13" />
     <PackageReference Include="Avalonia.Desktop" Version="0.10.13" />
     <PackageReference Include="Avalonia.Diagnostics" Version="0.10.13" />
     <PackageReference Include="Emgu.CV.runtime.windows" Version="4.5.5.4823" />
-    <PackageReference Include="MessageBox.Avalonia" Version="1.8.1-night" />
-    <PackageReference Include="Projektanker.Icons.Avalonia.FontAwesome" Version="4.1.0" />
-    <PackageReference Include="Projektanker.Icons.Avalonia.MaterialDesign" Version="4.1.0" />
+    <PackageReference Include="MessageBox.Avalonia" Version="2.0.0" />
+    <PackageReference Include="Projektanker.Icons.Avalonia" Version="4.2.1" />
+    <PackageReference Include="Projektanker.Icons.Avalonia.FontAwesome" Version="4.2.1" />
+    <PackageReference Include="Projektanker.Icons.Avalonia.MaterialDesign" Version="4.2.1" />
     <PackageReference Include="ThemeEditor.Controls.ColorPicker" Version="0.10.12" />
   </ItemGroup>
   <ItemGroup>
@@ -95,6 +95,7 @@
       <SubType>Designer</SubType>
     </AvaloniaResource>
     <AvaloniaResource Include="Assets\Icons\*" />
+    <AvaloniaResource Include="Assets\benchmark.png" />
   </ItemGroup>
   <ItemGroup>
     <Compile Update="Windows\SuggestionSettingsWindow.axaml.cs">

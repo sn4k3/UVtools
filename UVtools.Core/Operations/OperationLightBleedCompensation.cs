@@ -203,10 +203,8 @@ public class OperationLightBleedCompensation : Operation
     {
         var dimMats = GetDimMats();
         if (dimMats.Length == 0) return false;
-        Parallel.For(LayerIndexStart, LayerIndexEnd + 1, CoreSettings.ParallelOptions, layerIndex =>
+        Parallel.For(LayerIndexStart, LayerIndexEnd + 1, CoreSettings.GetParallelOptions(progress), layerIndex =>
         {
-            if (progress.Token.IsCancellationRequested) return; // Abort operation, user requested cancellation
-
             var layer = SlicerFile[layerIndex];
             using var mat = layer.LayerMat;    
             using var original = mat.Clone();    

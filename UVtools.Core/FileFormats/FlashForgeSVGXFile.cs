@@ -503,10 +503,8 @@ public class FlashForgeSVGXFile : FileFormat
         SVGDocument.Groups = new List<FlashForgeSVGXSvgGroup> { new("background") };
         var groups = new FlashForgeSVGXSvgGroup[LayerCount];
 
-        Parallel.For(0, LayerCount, CoreSettings.ParallelOptions, layerIndex =>
+        Parallel.For(0, LayerCount, CoreSettings.GetParallelOptions(progress), layerIndex =>
         {
-            if (progress.Token.IsCancellationRequested) return;
-
             groups[layerIndex] = new FlashForgeSVGXSvgGroup($"layer-{layerIndex}");
 
             using var mat = this[layerIndex].LayerMat;
@@ -651,10 +649,8 @@ public class FlashForgeSVGXFile : FileFormat
 
         if (DecodeType != FileDecodeType.Full) return;
         progress.Reset(OperationProgress.StatusDecodeLayers, LayerCount);
-        Parallel.For(0, LayerCount, CoreSettings.ParallelOptions, layerIndex =>
+        Parallel.For(0, LayerCount, CoreSettings.GetParallelOptions(progress), layerIndex =>
         {
-            if (progress.Token.IsCancellationRequested) return;
-
             var mat = EmguExtensions.InitMat(Resolution);
 
             var group = SVGDocument.Groups.FirstOrDefault(g => g.Id == $"layer-{layerIndex}");
@@ -665,7 +661,7 @@ public class FlashForgeSVGXFile : FileFormat
                 var points = new List<Point>();
                 foreach (var path in @group.Paths)
                 {
-                    if (progress.Token.IsCancellationRequested) break;
+                    progress.ThrowIfCancellationRequested();
                     var spaceSplit = path.Value.Split(' ',
                         StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
 
@@ -726,8 +722,6 @@ public class FlashForgeSVGXFile : FileFormat
                 }
 
             }
-
-            progress.Token.ThrowIfCancellationRequested();
 
             this[layerIndex] = new Layer((uint)layerIndex, mat, this);
             progress.LockAndIncrement();

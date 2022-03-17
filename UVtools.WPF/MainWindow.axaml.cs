@@ -38,7 +38,6 @@ using UVtools.WPF.Controls.Tools;
 using UVtools.WPF.Extensions;
 using UVtools.WPF.Structures;
 using UVtools.WPF.Windows;
-using Bitmap = Avalonia.Media.Imaging.Bitmap;
 using Helpers = UVtools.WPF.Controls.Helpers;
 using Path = System.IO.Path;
 using Point = Avalonia.Point;
@@ -1164,6 +1163,7 @@ public partial class MainWindow : WindowEx
     public async void MenuFileSettingsClicked()
     {
         var oldTheme = Settings.General.Theme;
+        var oldLayerCompressionMethod = Settings.General.LayerCompressionMethod;
         var settingsWindow = new SettingsWindow();
         await settingsWindow.ShowDialog(this);
         if (settingsWindow.DialogResult == DialogResults.OK)
@@ -1171,6 +1171,33 @@ public partial class MainWindow : WindowEx
             if (oldTheme != Settings.General.Theme)
             {
                 App.ApplyTheme();
+            }
+
+            if (oldLayerCompressionMethod != Settings.General.LayerCompressionMethod)
+            {
+                IsGUIEnabled = false;
+                ShowProgressWindow($"Changing layer compression method from {oldLayerCompressionMethod.ToString().ToUpper()} to {Settings.General.LayerCompressionMethod.ToString().ToUpper()}");
+
+                await Task.Factory.StartNew(() =>
+                {
+                    try
+                    {
+                        SlicerFile.ChangeLayersCompressionMethod(Settings.General.LayerCompressionMethod, Progress);
+                        return true;
+                    }
+                    catch (OperationCanceledException)
+                    {
+                    }
+                    catch (Exception exception)
+                    {
+                        Dispatcher.UIThread.InvokeAsync(async () =>
+                            await this.MessageBoxError(exception.ToString(), "Error while converting layers"));
+                    }
+
+                    return false;
+                });
+
+                IsGUIEnabled = true;
             }
 
             _layerNavigationSliderDebounceTimer.Interval = Settings.LayerPreview.LayerSliderDebounce == 0 ? 1 : Settings.LayerPreview.LayerSliderDebounce;
@@ -1232,13 +1259,16 @@ public partial class MainWindow : WindowEx
     public async void MenuNewVersionClicked()
     {
         var result =
-            await this.MessageBoxQuestion(
-                $"Do you like to auto-update {About.Software} v{App.VersionStr} to v{VersionChecker.Version}?\n" +
-                "Yes: Auto update\n" +
-                "No:  Manual update\n" +
-                "Cancel: No action\n\n" +
-                "Changelog:\n" +
-                $"{VersionChecker.Changelog}", $"Update UVtools to v{VersionChecker.Version}?", ButtonEnum.YesNoCancel);
+            await this.MessageBoxWithHeaderQuestion(
+                $"Do you like to auto-update {About.Software} v{App.VersionStr} to v{VersionChecker.Version}?",
+                "Yes: Auto update  \n" +
+                "No:  Manual update  \n" +
+                "Cancel: No action  \n\n" +
+                "Changelog:  \n\n" +
+                $"{VersionChecker.Changelog}", 
+                $"Update UVtools to v{VersionChecker.Version}?",
+                
+                ButtonEnum.YesNoCancel, true);
 
 
         if (result == ButtonResult.No)

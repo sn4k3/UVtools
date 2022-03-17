@@ -17,6 +17,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
 using UVtools.Core.Extensions;
@@ -624,7 +625,7 @@ public class CWSFile : FileFormat
 
             for (int layerIndex = 0; layerIndex < LayerCount; layerIndex++)
             {
-                manifest.Slices[layerIndex] = new CWSManifest.Slice(this[layerIndex].FormatFileName(filename));
+                manifest.Slices[layerIndex] = new CWSManifest.Slice(this[layerIndex].FormatFileNameWithLayerDigits(filename));
             }
 
             var entry = outputFile.CreateEntry(CWSManifest.FileName);
@@ -659,16 +660,27 @@ public class CWSFile : FileFormat
 
         if (Printer == PrinterType.BeneMono)
         {
-            Parallel.For(0, LayerCount, CoreSettings.ParallelOptions,
+            EncodeLayersInZip(outputFile, filename, LayerDigits, Enumerations.IndexStartNumber.Zero, progress, matGenFunc:
+                (_, mat) =>
+                {
+                    var matEncode = new Mat(mat.Height, mat.GetRealStep() / 3, DepthType.Cv8U, 3);
+                    var span = mat.GetDataByteSpan();
+                    var spanEncode = matEncode.GetDataByteSpan();
+                    for (int i = 0; i < span.Length; i++)
+                    {
+                        spanEncode[i] = span[i];
+                    }
+
+                    return matEncode;
+                });
+            /*Parallel.For(0, LayerCount, CoreSettings.GetParallelOptions(progress),
                 //new ParallelOptions { MaxDegreeOfParallelism = Printer == PrinterType.BeneMono ? 1 : 1 },
                 layerIndex =>
                 {
-                    if (progress.Token.IsCancellationRequested) return;
-
                     var layer = this[layerIndex];
-                    var layerImagePath = layer.FormatFileName(filename);
+                    var layerImagePath = layer.FormatFileNameWithLayerDigits(filename);
 
-                    using var mat = layer.LayerMat!;
+                    using var mat = layer.LayerMat;
                     using var matEncode = new Mat(mat.Height, mat.GetRealStep() / 3, DepthType.Cv8U, 3);
                     var span = mat.GetDataByteSpan();
                     var spanEncode = matEncode.GetDataByteSpan();
@@ -683,18 +695,11 @@ public class CWSFile : FileFormat
                         outputFile.PutFileContent(layerImagePath, bytes, ZipArchiveMode.Create);
                         progress++;
                     }
-                });
+                });*/
         }
         else
         {
-            for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
-            {
-                progress.Token.ThrowIfCancellationRequested();
-                var layer = this[layerIndex];
-                var layerImagePath = layer.FormatFileName(filename);
-                outputFile.PutFileContent(layerImagePath, layer.CompressedBytes, ZipArchiveMode.Create);
-                progress++;
-            }
+            EncodeLayersInZip(outputFile, filename, LayerDigits, Enumerations.IndexStartNumber.Zero, progress);
         }
 
         RebuildGCode();
@@ -822,70 +827,65 @@ public class CWSFile : FileFormat
 
         Init(OutputSettings.LayersNum, DecodeType == FileDecodeType.Partial);
 
-        progress.ItemCount = OutputSettings.LayersNum;
-
-        if(LayerCount > 0)
+        if (LayerCount <= 0) return;
+        
+        // Must discover png depth grayscale or color
+        if (DecodeType == FileDecodeType.Full && Printer == PrinterType.Unknown)
         {
-            if (DecodeType == FileDecodeType.Full)
+            var inputFilename = Path.GetFileNameWithoutExtension(FileFullPath)!;
+            foreach (var pngEntry in inputFile.Entries)
             {
-                var inputFilename = Path.GetFileNameWithoutExtension(FileFullPath)!;
-                foreach (var pngEntry in inputFile.Entries)
-                {
-                    if (!pngEntry.Name.EndsWith(".png")) continue;
-                    var filename = Path.GetFileNameWithoutExtension(pngEntry.Name).Replace(inputFilename, string.Empty, StringComparison.Ordinal);
-
-                    var layerIndexStr = string.Empty;
-                    var layerStr = filename;
-                    for (int i = layerStr.Length - 1; i >= 0; i--)
-                    {
-                        if (layerStr[i] < '0' || layerStr[i] > '9') break;
-                        layerIndexStr = $"{layerStr[i]}{layerIndexStr}";
-                    }
-
-                    if (string.IsNullOrEmpty(layerIndexStr)) continue;
-                    if (!uint.TryParse(layerIndexStr, out var layerIndex)) continue;
-                    using var stream = pngEntry.Open();
-                    this[layerIndex] = new Layer(layerIndex, stream, this);
-                }
-            }
+                if (!pngEntry.Name.EndsWith(".png")) continue;
+                var match = Regex.Match(pngEntry.Name, @"(\d+).png");
+                if (!match.Success || match.Groups.Count < 2) continue;
+                if (!uint.TryParse(match.Groups[1].Value, out var layerIndex)) continue;
                 
-            GCode.ParseLayersFromGCode(this);
+                /*var filename = Path.GetFileNameWithoutExtension(pngEntry.Name).Replace(inputFilename, string.Empty, StringComparison.Ordinal);
 
-            var firstLayer = FirstLayer;
-            if (firstLayer is not null && DecodeType == FileDecodeType.Full)
-            {
-                if (Printer == PrinterType.Unknown)
+                var layerIndexStr = string.Empty;
+                var layerStr = filename;
+                for (int i = layerStr.Length - 1; i >= 0; i--)
                 {
-                    using Mat mat = new ();
-                    CvInvoke.Imdecode(firstLayer.CompressedBytes, ImreadModes.AnyColor, mat);
-                    Printer = mat.NumberOfChannels == 1 ? PrinterType.Elfin : PrinterType.BeneMono;
+                    if (layerStr[i] < '0' || layerStr[i] > '9') break;
+                    layerIndexStr = $"{layerStr[i]}{layerIndexStr}";
                 }
 
-                if (Printer == PrinterType.BeneMono)
-                {
-                    Parallel.For(0, LayerCount, CoreSettings.ParallelOptions, layerIndex =>
-                    {
-                        if (progress.Token.IsCancellationRequested) return;
-                        var layer = this[layerIndex];
-                        using Mat mat = new();
-                        CvInvoke.Imdecode(layer.CompressedBytes, ImreadModes.Color, mat);
-                        using Mat matDecode = new(mat.Height, mat.GetRealStep(), DepthType.Cv8U, 1);
-                        var span = mat.GetDataByteSpan();
-                        var spanDecode = matDecode.GetDataByteSpan();
-                        for (int i = 0; i < span.Length; i++)
-                        {
-                            spanDecode[i] = span[i];
-                        }
-
-                        layer.LayerMat = matDecode;
-                        layer.IsModified = false;
-                        progress.LockAndIncrement();
-                    });
-                }
+                if (string.IsNullOrEmpty(layerIndexStr)) continue;
+                if (!uint.TryParse(layerIndexStr, out var layerIndex)) continue;*/
+                
+                using var stream = pngEntry.Open();
+                using var mat = new Mat();
+                CvInvoke.Imdecode(stream.ToArray(), ImreadModes.AnyColor, mat);
+                Printer = mat.NumberOfChannels == 1 ? PrinterType.Elfin : PrinterType.BeneMono;
+                break;
             }
         }
 
-        GetBoundingRectangle(progress);
+        if (Printer == PrinterType.BeneMono)
+        {
+            DecodeLayersFromZipRegex(inputFile, @"(\d+).png", Enumerations.IndexStartNumber.Zero, progress,
+                (layerIndex, pngBytes) =>
+                {
+                    using Mat mat = new();
+                    CvInvoke.Imdecode(pngBytes, ImreadModes.AnyColor, mat);
+                    var matDecode = new Mat(mat.Height, mat.GetRealStep(), DepthType.Cv8U, 1);
+                    var span = mat.GetDataByteSpan();
+                    var spanDecode = matDecode.GetDataByteSpan();
+                    for (int i = 0; i < span.Length; i++)
+                    {
+                        spanDecode[i] = span[i];
+                    }
+
+                    return matDecode;
+                });
+        }
+        else
+        {
+            DecodeLayersFromZipRegex(inputFile, @"(\d+).png", Enumerations.IndexStartNumber.Zero, progress);
+        }
+
+        GCode.ParseLayersFromGCode(this);
+        
     }
 
     public override void RebuildGCode()

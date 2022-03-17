@@ -582,9 +582,8 @@ public class OperationPixelArithmetic : Operation
         }
 
 
-        Parallel.For(LayerIndexStart, LayerIndexEnd + 1, CoreSettings.ParallelOptions, layerIndex =>
+        Parallel.For(LayerIndexStart, LayerIndexEnd + 1, CoreSettings.GetParallelOptions(progress), layerIndex =>
         {
-            if (progress.Token.IsCancellationRequested) return;
             var layer = SlicerFile[layerIndex];
             using (var mat = layer.LayerMat)
             {

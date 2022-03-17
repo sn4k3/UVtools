@@ -152,10 +152,8 @@ public sealed class OperationLayerExportHeatMap : Operation
             }
         });*/
 
-        Parallel.ForEach(layerRange, CoreSettings.ParallelOptions, layer =>
+        Parallel.ForEach(layerRange, CoreSettings.GetParallelOptions(progress), layer =>
         {
-            if (progress.Token.IsCancellationRequested) return;
-
             using var mat = _mergeSamePositionedLayers 
                 ? SlicerFile.GetMergedMatForSequentialPositionedLayers(layer.Index)
                 : layer.LayerMat;
@@ -171,31 +169,30 @@ public sealed class OperationLayerExportHeatMap : Operation
             }
         });
 
-        if (!progress.Token.IsCancellationRequested)
+
+        using var sumMat = EmguExtensions.InitMat(sumMat32.Size);
+        sumMat32.ConvertTo(sumMat, DepthType.Cv8U, 1.0 / layerRange.Length);
+
+        if (_flipDirection != Enumerations.FlipDirection.None)
         {
-            using var sumMat = EmguExtensions.InitMat(sumMat32.Size);
-            sumMat32.ConvertTo(sumMat, DepthType.Cv8U, 1.0 / layerRange.Length);
-
-            if (_flipDirection != Enumerations.FlipDirection.None)
-            {
-                CvInvoke.Flip(sumMat, sumMat, Enumerations.ToOpenCVFlipType(_flipDirection));
-            }
-
-            if (_rotateDirection != Enumerations.RotateDirection.None)
-            {
-                CvInvoke.Rotate(sumMat, sumMat, Enumerations.ToOpenCVRotateFlags(_rotateDirection));
-            }
-
-            if (_cropByRoi && HaveROI)
-            {
-                var sumMatRoi = GetRoiOrDefault(sumMat);
-                sumMatRoi.Save(_filePath);
-            }
-            else
-            {
-                sumMat.Save(_filePath);
-            }
+            CvInvoke.Flip(sumMat, sumMat, Enumerations.ToOpenCVFlipType(_flipDirection));
         }
+
+        if (_rotateDirection != Enumerations.RotateDirection.None)
+        {
+            CvInvoke.Rotate(sumMat, sumMat, Enumerations.ToOpenCVRotateFlags(_rotateDirection));
+        }
+
+        if (_cropByRoi && HaveROI)
+        {
+            var sumMatRoi = GetRoiOrDefault(sumMat);
+            sumMatRoi.Save(_filePath);
+        }
+        else
+        {
+            sumMat.Save(_filePath);
+        }
+
 
         return !progress.Token.IsCancellationRequested;
     }

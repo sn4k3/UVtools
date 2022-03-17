@@ -1,9 +1,11 @@
 using System;
 using System.IO;
+using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Layout;
 using Avalonia.Markup.Xaml;
+using Avalonia.Threading;
 using UVtools.Core;
 using UVtools.Core.Operations;
 using UVtools.Core.Scripting;
@@ -43,7 +45,10 @@ public class ToolScriptingControl : ToolControl
             case ToolWindow.Callbacks.Loaded:
                 if(ParentWindow is not null) ParentWindow.ButtonOkEnabled = Operation.CanExecute;
                 ReloadGUI();
-                ReloadScript();
+                Dispatcher.UIThread.Post(() =>
+                {
+                    ReloadScript();
+                }, DispatcherPriority.Loaded);
                 Operation.PropertyChanged += (sender, e) =>
                 {
                     if (e.PropertyName == nameof(Operation.CanExecute))
@@ -93,13 +98,13 @@ public class ToolScriptingControl : ToolControl
     public void OpenScriptFolder()
     {
         if (!Operation.HaveFile) return;
-        SystemAware.StartProcess(Path.GetDirectoryName(Operation.FilePath));
+        SystemAware.SelectFileOnExplorer(Operation.FilePath!);
     }
 
     public void OpenScriptFile()
     {
         if (!Operation.HaveFile) return;
-        SystemAware.StartProcess(Operation.FilePath);
+        SystemAware.StartProcess(Operation.FilePath!);
     }
 
     public void ReloadGUI()

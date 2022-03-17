@@ -71,3 +71,5 @@
 - Sakari Toivonen
 - Ed Wagaman
 - Marcin Chomiczuk
+- Patrick Hofmann
+- Ajilus

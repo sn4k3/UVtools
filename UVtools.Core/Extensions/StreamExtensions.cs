@@ -60,4 +60,9 @@ public static class StreamExtensions
     {
         await CopyToAsync(source, destination, DefaultCopyBufferSize, progress, cancellationToken);
     }
+
+    public static MemoryStream ToStream(this byte[] arr)
+    {
+        return new MemoryStream(arr);
+    }
 }

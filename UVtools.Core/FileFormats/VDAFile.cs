@@ -309,15 +309,8 @@ public class VDAFile : FileFormat
             Replace($".{FileExtensions[0].Extension}{TemporaryFileAppend}", ".xml").
             Replace($".{FileExtensions[0].Extension}", ".xml");
 
-        for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
-        {
-            progress.Token.ThrowIfCancellationRequested();
-            var layer = this[layerIndex];
-            var filename = $"{layerIndex + 1}".PadLeft(4, '0') + ".png";
-            outputFile.PutFileContent(filename, layer.CompressedBytes, ZipArchiveMode.Create);
-            progress++;
-        }
-
+        EncodeLayersInZip(outputFile, 4, Enumerations.IndexStartNumber.One, progress);
+        
         UpdateManifest();
 
         var entry = outputFile.CreateEntry(manifestFilename);
@@ -327,53 +320,28 @@ public class VDAFile : FileFormat
 
     protected override void DecodeInternally(OperationProgress progress)
     {
-        using (var inputFile = ZipFile.Open(FileFullPath!, ZipArchiveMode.Read))
+        using var inputFile = ZipFile.Open(FileFullPath!, ZipArchiveMode.Read);
+        var entry = inputFile.Entries.FirstOrDefault(zipEntry => zipEntry.Name.EndsWith(".xml"));
+        if (entry is null)
         {
-            var entry = inputFile.Entries.FirstOrDefault(zipEntry => zipEntry.Name.EndsWith(".xml"));
-            if (entry is null)
-            {
-                Clear();
-                throw new FileLoadException($".xml manifest not found", FileFullPath);
-            }
-
-            try
-            {
-                using var stream = entry.Open();
-                ManifestFile = XmlExtensions.DeserializeFromStream<VDARoot>(stream);
-            }
-            catch (Exception e)
-            {
-                Clear();
-                throw new FileLoadException($"Unable to deserialize '{entry.Name}'\n{e}", FileFullPath);
-            }
-
-
-            Init(ManifestFile.Slices.LayerCount, DecodeType == FileDecodeType.Partial);
-            progress.Reset(OperationProgress.StatusDecodeLayers, LayerCount);
-
-
-            for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
-            {
-                if (progress.Token.IsCancellationRequested) break;
-                var filename = $"{layerIndex + 1}".PadLeft(4, '0')+".png";
-                entry = inputFile.GetEntry(filename);
-                if (entry is null)
-                {
-                    Clear();
-                    throw new FileLoadException($"Layer {filename} not found", FileFullPath);
-                }
-
-                if (DecodeType == FileDecodeType.Full)
-                {
-                    using var stream = entry.Open();
-                    this[layerIndex] = new Layer(layerIndex, stream, this);
-                }
-
-                progress++;
-            }
+            Clear();
+            throw new FileLoadException($".xml manifest not found", FileFullPath);
         }
 
-        GetBoundingRectangle(progress);
+        try
+        {
+            using var stream = entry.Open();
+            ManifestFile = XmlExtensions.DeserializeFromStream<VDARoot>(stream);
+        }
+        catch (Exception e)
+        {
+            Clear();
+            throw new FileLoadException($"Unable to deserialize '{entry.Name}'\n{e}", FileFullPath);
+        }
+
+
+        Init(ManifestFile.Slices.LayerCount, DecodeType == FileDecodeType.Partial);
+        DecodeLayersFromZip(inputFile, Enumerations.IndexStartNumber.One, progress);
     }
 
     protected override void PartialSaveInternally(OperationProgress progress)
@@ -413,7 +381,7 @@ public class VDAFile : FileFormat
         for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
         {
             var layer = this[layerIndex];
-            ManifestFile.Layers.Add(new VDARoot.VDALayer(layerIndex, layer.PositionZ, layer.FormatFileName(4, false)));
+            ManifestFile.Layers.Add(new VDARoot.VDALayer(layerIndex, layer.PositionZ, layer.FormatFileName(4, Enumerations.IndexStartNumber.One)));
         }
     }
     #endregion

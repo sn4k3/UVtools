@@ -205,10 +205,8 @@ public sealed class OperationChangeResolution : Operation
 
         var finalBounds = new Size((int)finalBoundsWidth, (int)finalBoundsHeight);
 
-        Parallel.For(0, SlicerFile.LayerCount, CoreSettings.ParallelOptions, layerIndex =>
+        Parallel.For(0, SlicerFile.LayerCount, CoreSettings.GetParallelOptions(progress), layerIndex =>
         {
-            if (progress.Token.IsCancellationRequested) return;
-
             using var mat = SlicerFile[layerIndex].LayerMat;
 
             if (mat.Size != newSize)
@@ -229,8 +227,6 @@ public sealed class OperationChangeResolution : Operation
 
             progress.LockAndIncrement();
         });
-
-        progress.Token.ThrowIfCancellationRequested();
 
         SlicerFile.ResolutionX = NewResolutionX;
         SlicerFile.ResolutionY = NewResolutionY;

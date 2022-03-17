@@ -157,9 +157,8 @@ public class OperationResize : Operation
         decimal xSteps = Math.Abs(100 - _x) / (LayerIndexEnd - LayerIndexStart + 1);
         decimal ySteps = Math.Abs(100 - _y) / (LayerIndexEnd - LayerIndexStart + 1);
 
-        Parallel.For(LayerIndexStart, LayerIndexEnd + 1, CoreSettings.ParallelOptions, layerIndex =>
+        Parallel.For(LayerIndexStart, LayerIndexEnd + 1, CoreSettings.GetParallelOptions(progress), layerIndex =>
         {
-            if (progress.Token.IsCancellationRequested) return;
             var newX = _x;
             var newY = _y;
             if (IsFade)

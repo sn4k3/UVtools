@@ -1002,9 +1002,8 @@ public class PHZFile : FileFormat
 
         foreach (var batch in BatchLayersIndexes())
         {
-            Parallel.ForEach(batch, CoreSettings.ParallelOptions, layerIndex =>
+            Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), layerIndex =>
             {
-                if (progress.Token.IsCancellationRequested) return;
                 using (var mat = this[layerIndex].LayerMat)
                 {
                     LayersDefinitions[layerIndex] = new LayerDef(this, this[layerIndex]);
@@ -1015,7 +1014,7 @@ public class PHZFile : FileFormat
 
             foreach (var layerIndex in batch)
             {
-                progress.Token.ThrowIfCancellationRequested();
+                progress.ThrowIfCancellationRequested();
 
                 var layerDef = LayersDefinitions[layerIndex];
                 LayerDef? layerDefHash = null;
@@ -1116,7 +1115,7 @@ public class PHZFile : FileFormat
         {
             foreach (var layerIndex in batch)
             {
-                progress.Token.ThrowIfCancellationRequested();
+                progress.ThrowIfCancellationRequested();
 
                 var layerDef = Helpers.Deserialize<LayerDef>(inputFile);
                 layerDef.Parent = this;
@@ -1134,10 +1133,8 @@ public class PHZFile : FileFormat
 
             if (DecodeType == FileDecodeType.Full)
             {
-                Parallel.ForEach(batch, CoreSettings.ParallelOptions, layerIndex =>
+                Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), layerIndex =>
                 {
-                    if (progress.Token.IsCancellationRequested) return;
-
                     using var mat = LayersDefinitions[layerIndex].Decode((uint)layerIndex);
                     this[layerIndex] = new Layer((uint)layerIndex, mat, this);
                     progress.LockAndIncrement();

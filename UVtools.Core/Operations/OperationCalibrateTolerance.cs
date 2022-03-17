@@ -729,7 +729,7 @@ public sealed class OperationCalibrateTolerance : Operation
 
         var layers = GetLayers();
 
-        Parallel.For(0, LayerCount, CoreSettings.ParallelOptions, layerIndex =>
+        Parallel.For(0, LayerCount, CoreSettings.GetParallelOptions(progress), layerIndex =>
         {
             newLayers[layerIndex] = new Layer((uint)layerIndex, layers[layerIndex], SlicerFile) {IsModified = true};
             layers[layerIndex].Dispose();

@@ -50,7 +50,7 @@
                   <StackPanel Orientation="Vertical">
                       <TextBlock Classes="GroupBoxHeader" Text="Tasks"/>
                       <StackPanel Margin="10" Orientation="Vertical" Spacing="10">
-                        <Grid RowDefinitions="Auto"
+                        <Grid RowDefinitions="Auto,10,Auto"
                               ColumnDefinitions="Auto,10,150,5,Auto,20,Auto,2,Auto,2,Auto,2,Auto,2,Auto,2,Auto,2,Auto">
 
                           <TextBlock Grid.Row="0" Grid.Column="0"
@@ -123,7 +123,18 @@
                                   ToolTip.Tip="{Binding MaxProcessorCount, StringFormat=All of the available threads [{0}] (Full performance)}"
                                   Command="{Binding SetMaxDegreeOfParallelism}"
                                   CommandParameter="{Binding MaxProcessorCount}"/>
-                          
+
+							<TextBlock Grid.Row="2" Grid.Column="0"
+                                       VerticalAlignment="Center"
+                                       ToolTip.Tip="Sets the compression method used to store layer image cache.
+&#x0a;The selected method will impact RAM usage and operations speed."
+                                       Text="Layer compression:"/>
+
+                          <ComboBox Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="17"
+                                  VerticalAlignment="Center"
+                                  HorizontalAlignment="Stretch"
+                                  Items="{Binding Settings.General.LayerCompressionMethod, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                                  SelectedItem="{Binding Settings.General.LayerCompressionMethod, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
                         </Grid>
                       </StackPanel>
 

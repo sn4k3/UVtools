@@ -114,7 +114,7 @@ public class ScriptTestPerLayerSettingsSample : ScriptGlobals
         CvInvoke.Ellipse(mats[0], new Point(x, y), new Size(eyeDiameter+faceSpacing+noseThickness/2, mouthHeight), 0, 0, 180, EmguExtensions.WhiteColor, -1, lineType);
         CvInvoke.Ellipse(mats[4], new Point(x, y), new Size(eyeDiameter+faceSpacing+noseThickness/2, mouthHeight), 0, 0, 180, EmguExtensions.WhiteColor, -1, lineType);
 
-        SlicerFile.AllocateAndSetFromMat(mats); // Replace layers and rebuild properties
+        SlicerFile.AllocateAndSetFromMat(mats, Progress); // Replace layers and rebuild properties
 
         SlicerFile.BottomLayerCount = 1;    // Set one bottom layer, the whole face
         SlicerFile.BottomExposureTime = 5;  // Set exposure to be fixed at 5s

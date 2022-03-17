@@ -530,9 +530,8 @@ public class LGSFile : FileFormat
 
             foreach (var batch in BatchLayersIndexes())
             {
-                Parallel.ForEach(batch, CoreSettings.ParallelOptions, layerIndex =>
+                Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), layerIndex =>
                 {
-                    if (progress.Token.IsCancellationRequested) return;
                     using (var mat = this[layerIndex].LayerMat)
                     {
                         layerData[layerIndex] = new LayerDef(this);
@@ -543,7 +542,7 @@ public class LGSFile : FileFormat
 
                 foreach (var layerIndex in batch)
                 {
-                    progress.Token.ThrowIfCancellationRequested();
+                    progress.ThrowIfCancellationRequested();
                     outputFile.WriteSerialize(layerData[layerIndex]);
                     layerData[layerIndex].EncodedRle = null!; // Free this
                 }
@@ -555,7 +554,7 @@ public class LGSFile : FileFormat
 
             for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
             {
-                progress.Token.ThrowIfCancellationRequested();
+                progress.ThrowIfCancellationRequested();
                 outputFile.WriteSerialize(layerData[layerIndex]);
                 progress++;
             }
@@ -604,15 +603,14 @@ public class LGSFile : FileFormat
             {
                 foreach (var layerIndex in batch)
                 {
-                    progress.Token.ThrowIfCancellationRequested();
+                    progress.ThrowIfCancellationRequested();
 
                     layerData[layerIndex] = Helpers.Deserialize<LayerDef>(inputFile);
                     layerData[layerIndex].Parent = this;
                 }
 
-                Parallel.ForEach(batch, CoreSettings.ParallelOptions, layerIndex =>
+                Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), layerIndex =>
                 {
-                    if (progress.Token.IsCancellationRequested) return;
                     using var mat = layerData[layerIndex].Decode();
                     this[layerIndex] = new Layer((uint)layerIndex, mat, this);
 

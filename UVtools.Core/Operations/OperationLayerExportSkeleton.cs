@@ -91,10 +91,8 @@ public sealed class OperationLayerExportSkeleton : Operation
         using var mask = GetMask(skeletonSum);
             
 
-        Parallel.For(LayerIndexStart, LayerIndexEnd+1, CoreSettings.ParallelOptions, layerIndex =>
+        Parallel.For(LayerIndexStart, LayerIndexEnd+1, CoreSettings.GetParallelOptions(progress), layerIndex =>
         {
-            if (progress.Token.IsCancellationRequested) return;
-
             using var mat = SlicerFile[layerIndex].LayerMat;
             var matRoi = GetRoiOrDefault(mat);
             using var skeletonRoi = matRoi.Skeletonize();
@@ -104,17 +102,14 @@ public sealed class OperationLayerExportSkeleton : Operation
                 progress++;
             }
         });
-
-        if (!progress.Token.IsCancellationRequested)
+        
+        if (_cropByRoi && HaveROI)
         {
-            if (_cropByRoi && HaveROI)
-            {
-                skeletonSumRoi.Save(_filePath);
-            }
-            else
-            {
-                skeletonSum.Save(_filePath);
-            }
+            skeletonSumRoi.Save(_filePath);
+        }
+        else
+        {
+            skeletonSum.Save(_filePath);
         }
 
         return !progress.Token.IsCancellationRequested;

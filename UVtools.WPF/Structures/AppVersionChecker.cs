@@ -12,10 +12,9 @@ using System.IO.Compression;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Runtime.InteropServices;
-using System.Runtime.Intrinsics.X86;
+using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using Avalonia.Threading;
-using Newtonsoft.Json.Linq;
 using UVtools.Core;
 using UVtools.Core.Extensions;
 using UVtools.Core.Objects;
@@ -36,33 +35,35 @@ public class AppVersionChecker : BindableBase
     {
         get
         {
+            var file = Path.Combine(App.ApplicationPath, RuntimePackageFile);
+            if (File.Exists(file))
+            {
+                try
+                {
+                    var package = File.ReadAllText(file);
+                    if (!string.IsNullOrWhiteSpace(package) && (package.EndsWith("-x64") || package.EndsWith("-arm64")))
+                    {
+                        return $"{About.Software}_{package}_v{_version}.zip";
+                    }
+                }
+                catch (Exception e)
+                {
+                    Debug.WriteLine(e);
+                }
+            }
+
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 return $"{About.Software}_win-x64_v{_version}.msi";
             }
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                var file = Path.Combine(App.ApplicationPath, RuntimePackageFile);
-                if (File.Exists(file))
-                {
-                    try
-                    {
-                        var package = File.ReadAllText(file);
-                        if (!string.IsNullOrWhiteSpace(package) && package.EndsWith("-x64"))
-                        {
-                            return $"{About.Software}_{package}_v{_version}.zip";
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        Debug.WriteLine(e);
-                    }
-                        
-                }
                 return $"{About.Software}_linux-x64_v{_version}.zip";
             }
             if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
+                if (RuntimeInformation.ProcessArchitecture is Architecture.Arm or Architecture.Arm64) return $"{About.Software}_osx-arm64_v{_version}.zip";
+
                 return $"{About.Software}_osx-x64_v{_version}.zip";
             }
 
@@ -131,7 +132,8 @@ public class AppVersionChecker : BindableBase
 
             var result= NetworkExtensions.HttpClient.Send(request);
 
-            var json = JObject.Parse(result.Content.ReadAsStringAsync().Result);
+            var json = JsonNode.Parse(result.Content.ReadAsStream());
+            
             string tag_name = json["tag_name"]?.ToString();
             if (string.IsNullOrEmpty(tag_name)) return false;
             tag_name = tag_name.Trim(' ', 'v', 'V');

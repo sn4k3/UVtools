@@ -38,6 +38,7 @@ public sealed class OperationProgress : BindableBase
 
     public CancellationTokenSource TokenSource { get; private set; } = null!;
     public CancellationToken Token => TokenSource.Token;
+    public void ThrowIfCancellationRequested() => TokenSource.Token.ThrowIfCancellationRequested();
 
     private bool _canCancel = true;
     private string _title = "Operation";

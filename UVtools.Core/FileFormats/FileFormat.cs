@@ -19,8 +19,10 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Timers;
 using UVtools.Core.EmguCV;
@@ -3229,7 +3231,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
 
         DecodeInternally(progress);
 
-        progress.Token.ThrowIfCancellationRequested();
+        progress.ThrowIfCancellationRequested();
 
         var layerHeightDigits = LayerHeight.DecimalDigits();
         if (layerHeightDigits > Layer.HeightPrecision)
@@ -3243,7 +3245,127 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         {
             Save(progress);
         }
+
+        GetBoundingRectangle(progress);
     }
+
+    public void EncodeLayersInZip(ZipArchive zipArchive, string prepend, byte padDigits, Enumerations.IndexStartNumber layerIndexStartNumber = default, 
+        OperationProgress? progress = null, string path = "", Func<uint, Mat, Mat>? matGenFunc = null)
+    {
+        if (DecodeType != FileDecodeType.Full || LayerCount == 0) return;
+        progress ??= new OperationProgress();
+        progress.Reset(OperationProgress.StatusEncodeLayers, LayerCount);
+        var batches = BatchLayersIndexes();
+        var pngLayerBytes = new byte[LayerCount][];
+        foreach (var batch in batches)
+        {
+            Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), layerIndex =>
+            {
+                if (matGenFunc is null)
+                {
+                    pngLayerBytes[layerIndex] = this[layerIndex].CompressedPngBytes!;
+                }
+                else
+                {
+                    using var mat = this[layerIndex].LayerMat;
+                    using var newMat = matGenFunc.Invoke((uint) layerIndex, mat);
+                    pngLayerBytes[layerIndex] = newMat.GetPngByes();
+                }
+
+                progress.LockAndIncrement();
+            });
+
+            foreach (var layerIndex in batch)
+            {
+                zipArchive.PutFileContent(Path.Combine(path, this[layerIndex].FormatFileName(prepend, padDigits, layerIndexStartNumber)), pngLayerBytes[layerIndex], ZipArchiveMode.Create);
+                pngLayerBytes[layerIndex] = null!;
+            }
+        }
+    }
+
+    public void EncodeLayersInZip(ZipArchive zipArchive, byte padDigits, Enumerations.IndexStartNumber layerIndexStartNumber = default, OperationProgress? progress = null, string path = "", Func<uint, Mat, Mat>? matGenFunc = null)
+        => EncodeLayersInZip(zipArchive, string.Empty, padDigits, layerIndexStartNumber, progress, path, matGenFunc);
+
+    public void EncodeLayersInZip(ZipArchive zipArchive, string prepend, Enumerations.IndexStartNumber layerIndexStartNumber = default, OperationProgress? progress = null, string path = "", Func<uint, Mat, Mat>? matGenFunc = null)
+        => EncodeLayersInZip(zipArchive, prepend, 0, layerIndexStartNumber, progress, path, matGenFunc);
+
+    public void EncodeLayersInZip(ZipArchive zipArchive, Enumerations.IndexStartNumber layerIndexStartNumber, OperationProgress? progress = null, string path = "", Func<uint, Mat, Mat>? matGenFunc = null)
+        => EncodeLayersInZip(zipArchive, string.Empty, 0, layerIndexStartNumber, progress, path, matGenFunc);
+
+    public void EncodeLayersInZip(ZipArchive zipArchive, OperationProgress progress, string path = "", Func<uint, Mat, Mat>? matGenFunc = null)
+        => EncodeLayersInZip(zipArchive, string.Empty, 0, Enumerations.IndexStartNumber.Zero, progress, path, matGenFunc);
+
+
+    public void DecodeLayersFromZip(ZipArchiveEntry[] layerEntries, OperationProgress? progress = null, Func<uint, byte[], Mat>? matGenFunc = null)
+    {
+        if (DecodeType != FileDecodeType.Full || LayerCount == 0) return;
+        progress ??= new OperationProgress();
+        progress.Reset(OperationProgress.StatusDecodeLayers, LayerCount);
+
+        Parallel.For(0, LayerCount, CoreSettings.GetParallelOptions(progress), layerIndex =>
+        {
+            byte[] pngBytes;
+            lock (Mutex)
+            {
+                using var stream = layerEntries[layerIndex].Open();
+                pngBytes = stream.ToArray();
+            }
+
+            if (matGenFunc is null)
+            {
+                this[layerIndex] = new Layer((uint)layerIndex, pngBytes, this);
+            }
+            if (matGenFunc is not null)
+            {
+                using var mat = matGenFunc.Invoke((uint) layerIndex, pngBytes);
+                this[layerIndex] = new Layer((uint)layerIndex, mat, this);
+            }
+
+            progress.LockAndIncrement();
+        });
+    }
+
+    public void DecodeLayersFromZipRegex(ZipArchive zipArchive, string regex, Enumerations.IndexStartNumber layerIndexStartNumber = Enumerations.IndexStartNumber.Zero, OperationProgress? progress = null, Func<uint, byte[], Mat>? matGenFunc = null)
+    {
+        var layerEntries = new ZipArchiveEntry?[LayerCount];
+
+        foreach (var entry in zipArchive.Entries)
+        {
+            var match = Regex.Match(entry.Name, regex);
+            if (!match.Success || match.Groups.Count < 2) continue;
+            if (!uint.TryParse(match.Groups[1].Value, out var layerIndex)) continue;
+
+            if (layerIndexStartNumber == Enumerations.IndexStartNumber.One && layerIndex > 0) layerIndex--;
+            if (layerIndex >= LayerCount)
+            {
+                continue;
+            }
+
+            layerEntries[layerIndex] = entry;
+        }
+
+        for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
+        {
+            if (layerEntries[layerIndex] is not null) continue;
+            Clear();
+            throw new FileLoadException($"Layer {layerIndex} not found", FileFullPath);
+        }
+
+
+        DecodeLayersFromZip(layerEntries!, progress, matGenFunc);
+    }
+
+    public void DecodeLayersFromZip(ZipArchive zipArchive, byte padDigits, Enumerations.IndexStartNumber layerIndexStartNumber = Enumerations.IndexStartNumber.Zero, OperationProgress? progress = null, Func<uint, byte[], Mat>? matGenFunc = null)
+        => DecodeLayersFromZipRegex(zipArchive, $@"(\d{{{padDigits}}}).png", layerIndexStartNumber, progress, matGenFunc);
+
+    public void DecodeLayersFromZip(ZipArchive zipArchive, Enumerations.IndexStartNumber layerIndexStartNumber = Enumerations.IndexStartNumber.Zero, OperationProgress? progress = null, Func<uint, byte[], Mat>? matGenFunc = null) 
+        => DecodeLayersFromZipRegex(zipArchive, @"^(\d+).png", layerIndexStartNumber, progress, matGenFunc);
+
+    public void DecodeLayersFromZip(ZipArchive zipArchive, string prepend, Enumerations.IndexStartNumber layerIndexStartNumber = Enumerations.IndexStartNumber.Zero, OperationProgress? progress = null, Func<uint, byte[], Mat>? matGenFunc = null)
+        => DecodeLayersFromZipRegex(zipArchive, $@"^{Regex.Escape(prepend)}(\d+).png", layerIndexStartNumber, progress, matGenFunc);
+
+    public void DecodeLayersFromZip(ZipArchive zipArchive, OperationProgress progress, Func<uint, byte[], Mat>? matGenFunc = null)
+        => DecodeLayersFromZipRegex(zipArchive, @"^(\d+).png", Enumerations.IndexStartNumber.Zero, progress, matGenFunc);
 
     /// <summary>
     /// Extract contents to a folder
@@ -3389,10 +3511,9 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
 
             if (LayerCount > 0 && DecodeType == FileDecodeType.Full)
             {
-                Parallel.ForEach(this, CoreSettings.ParallelOptions, layer =>
+                Parallel.ForEach(this, CoreSettings.GetParallelOptions(progress), layer =>
                 {
-                    if (progress.Token.IsCancellationRequested) return;
-                    var byteArr = layer.CompressedBytes;
+                    var byteArr = layer.CompressedPngBytes;
                     if (byteArr is null) return;
                     using var stream = new FileStream(Path.Combine(path, layer.Filename), FileMode.Create, FileAccess.Write);
                     stream.Write(byteArr, 0, byteArr.Length);
@@ -4367,6 +4488,23 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         => Convert(to.GetType(), fileFullPath, version, progress);
 
     /// <summary>
+    /// Changes the compression method of all layers to a new method
+    /// </summary>
+    /// <param name="to">The new method to change to</param>
+    /// <param name="progress"></param>
+    public void ChangeLayersCompressionMethod(Layer.LayerCompressionMethod to, OperationProgress? progress = null)
+    {
+        progress ??= new OperationProgress($"Changing layers compress method to {to}");
+        progress.Reset("Layers", LayerCount);
+
+        Parallel.ForEach(this, CoreSettings.GetParallelOptions(progress), layer =>
+        {
+            layer.CompressionMethod = to;
+            progress.LockAndIncrement();
+        });
+    }
+
+    /// <summary>
     /// Validate AntiAlias Level
     /// </summary>
     public byte ValidateAntiAliasingLevel()
@@ -4598,20 +4736,11 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         if (_boundingRectangle.IsEmpty) // Safe checking, all layers haven't a bounding rectangle
         {
             progress.Reset(OperationProgress.StatusOptimizingBounds, LayerCount - 1);
-            Parallel.For(0, LayerCount, CoreSettings.ParallelOptions, layerIndex =>
+            Parallel.For(0, LayerCount, CoreSettings.GetParallelOptions(progress), layerIndex =>
             {
-                if (progress.Token.IsCancellationRequested) return;
-
                 this[layerIndex].GetBoundingRectangle();
-
                 progress.LockAndIncrement();
             });
-
-            if (progress.Token.IsCancellationRequested)
-            {
-                _boundingRectangle = Rectangle.Empty;
-                progress.Token.ThrowIfCancellationRequested();
-            }
 
             FindFirstBoundingRectangle();
         }
@@ -4960,10 +5089,11 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// </summary>
     /// <param name="mats"></param>
     /// <returns>The new Layer array</returns>
-    public Layer[] AllocateFromMat(Mat[] mats)
+    public Layer[] AllocateFromMat(Mat[] mats, OperationProgress? progress = null)
     {
+        progress ??= new OperationProgress();
         var layers = new Layer[mats.Length];
-        Parallel.For(0, mats.Length, CoreSettings.ParallelOptions, i =>
+        Parallel.For(0, mats.Length, CoreSettings.GetParallelOptions(progress), i =>
         {
             layers[i] = new Layer((uint)i, mats[i], this);
         });
@@ -4976,9 +5106,9 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// </summary>
     /// <param name="mats"></param>
     /// /// <returns>The new Layer array</returns>
-    public Layer[] AllocateAndSetFromMat(Mat[] mats)
+    public Layer[] AllocateAndSetFromMat(Mat[] mats, OperationProgress? progress = null)
     {
-        var layers = AllocateFromMat(mats);
+        var layers = AllocateFromMat(mats, progress);
         Layers = layers;
         return layers;
     }
@@ -5349,7 +5479,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         }
 
         progress.Reset("Saving", (uint)modifiedLayers.Count);
-        Parallel.ForEach(modifiedLayers, CoreSettings.ParallelOptions, modifiedLayer =>
+        Parallel.ForEach(modifiedLayers, CoreSettings.GetParallelOptions(progress), modifiedLayer =>
         {
             this[modifiedLayer.Key].LayerMat = modifiedLayer.Value;
             modifiedLayer.Value.Dispose();

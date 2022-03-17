@@ -14,6 +14,15 @@ namespace UVtools.Core;
 
 public class Enumerations
 {
+    /// <summary>
+    /// Gets index start number
+    /// </summary>
+    public enum IndexStartNumber : byte
+    {
+        Zero,
+        One
+    }
+
     public enum LayerRangeSelection : byte
     {
         None,

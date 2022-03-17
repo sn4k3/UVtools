@@ -183,7 +183,7 @@ $enableMSI = $true
 #$buildOnly = 'osx-x64'
 #$buildOnly = 'osx-arm64'
 $zipPackages = $true
-#$enableNugetPublish = $true
+$enableNugetPublish = $true
 
 # Profilling
 $stopWatch = New-Object -TypeName System.Diagnostics.Stopwatch 
@@ -357,17 +357,19 @@ Building: $runtime"
         $macAppFolder = "${software}.app"
         $macPublishFolder = "$publishFolder/${macAppFolder}"
         $macInfoplist = "$platformsFolder/$runtime/Info.plist"
-        $macOutputInfoplist = "$macPublishFolder/Contents"
+        $macEntitlements = "$platformsFolder/$runtime/UVtools.entitlements"
+        $macContents = "$macPublishFolder/Contents"
         $macTargetZipLegacy = "$publishFolder/${software}_${runtime}-legacy_v$version.zip"
 
-        New-Item -ItemType directory -Path "$macPublishFolder"
+        New-Item -ItemType directory -Path $macPublishFolder
         New-Item -ItemType directory -Path "$macPublishFolder/Contents"
         New-Item -ItemType directory -Path "$macPublishFolder/Contents/MacOS"
         New-Item -ItemType directory -Path "$macPublishFolder/Contents/Resources"
 
         
-        Copy-Item "$macIcns" -Destination "$macPublishFolder/Contents/Resources"
-        ((Get-Content -Path "$macInfoplist") -replace '#VERSION',"$version") | Set-Content -Path "$macOutputInfoplist/Info.plist"
+        Copy-Item $macIcns -Destination "$macPublishFolder/Contents/Resources"
+        ((Get-Content -Path $macInfoplist) -replace '#VERSION',"$version") | Set-Content -Path "$macContents/Info.plist"
+        Copy-Item $macEntitlements -Destination $macContents
         wsl cp -a "$publishFolder/$runtime/." "$macPublishFolder/Contents/MacOS"
         wsl chmod +x "$macPublishFolder/Contents/MacOS/UVtools"
 

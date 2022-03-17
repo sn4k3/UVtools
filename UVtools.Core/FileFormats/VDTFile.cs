@@ -651,64 +651,45 @@ public class VDTFile : FileFormat
             }
         }
 
-        for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
-        {
-            progress.Token.ThrowIfCancellationRequested();
-
-            var layer = this[layerIndex];
-            var layerImagePath = $"{layerIndex}.png";
-            outputFile.PutFileContent(layerImagePath, layer.CompressedBytes, ZipArchiveMode.Create);
-            progress++;
-        }
+        EncodeLayersInZip(outputFile, progress);
     }
 
     protected override void DecodeInternally(OperationProgress progress)
     {
-        using (var inputFile = ZipFile.Open(FileFullPath!, ZipArchiveMode.Read))
+        using var inputFile = ZipFile.Open(FileFullPath!, ZipArchiveMode.Read);
+        var entry = inputFile.GetEntry(FileManifestName);
+        if (entry is null)
         {
-            var entry = inputFile.GetEntry(FileManifestName);
-            if (entry is null)
-            {
-                Clear();
-                throw new FileLoadException($"{FileManifestName} not found", FileFullPath);
-            }
-
-            ManifestFile = JsonSerializer.Deserialize<VDTManifest>(entry.Open())!;
-                
-            Init((uint) ManifestFile.Layers!.Length, DecodeType == FileDecodeType.Partial);
-
-            for (int i = 0; i < FilePreviewNames.Length; i++)
-            {
-                if (Thumbnails.Length <= i) break;
-
-                entry = inputFile.GetEntry(FilePreviewNames[i]);
-                if (entry is null) continue;
-                using var stream = entry.Open();
-                Mat image = new();
-                CvInvoke.Imdecode(stream.ToArray(), ImreadModes.AnyColor, image);
-                Thumbnails[i] = image;
-                stream.Close();
-            }
-
-            for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
-            {
-                var manifestLayer = ManifestFile.Layers[layerIndex];
-                entry = inputFile.GetEntry($"{layerIndex}.png");
-                if (entry is null) continue;
-
-                if (DecodeType == FileDecodeType.Full)
-                {
-                    using var stream = entry.Open();
-                    this[layerIndex] = new Layer(layerIndex, stream, this);
-                }
-
-                manifestLayer.CopyTo(this[layerIndex]);
-            }
-                
-            progress.ProcessedItems++;
+            Clear();
+            throw new FileLoadException($"{FileManifestName} not found", FileFullPath);
         }
 
-        GetBoundingRectangle(progress);
+        ManifestFile = JsonSerializer.Deserialize<VDTManifest>(entry.Open())!;
+                
+        Init((uint) ManifestFile.Layers!.Length, DecodeType == FileDecodeType.Partial);
+
+        for (int i = 0; i < FilePreviewNames.Length; i++)
+        {
+            if (Thumbnails.Length <= i) break;
+
+            entry = inputFile.GetEntry(FilePreviewNames[i]);
+            if (entry is null) continue;
+            using var stream = entry.Open();
+            Mat image = new();
+            CvInvoke.Imdecode(stream.ToArray(), ImreadModes.AnyColor, image);
+            Thumbnails[i] = image;
+            stream.Close();
+        }
+
+        DecodeLayersFromZip(inputFile, progress);
+
+        for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
+        {
+            var manifestLayer = ManifestFile.Layers[layerIndex];
+            manifestLayer.CopyTo(this[layerIndex]);
+        }
+                
+        progress.ProcessedItems++;
     }
 
     protected override void PartialSaveInternally(OperationProgress progress)

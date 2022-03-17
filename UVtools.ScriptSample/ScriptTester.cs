@@ -53,7 +53,7 @@ public class ScriptChangeLayesrPropertiesSample : ScriptGlobals
     public bool ScriptExecute()
     {
         var dict = new Dictionary<uint, List<(Point[] points, Rectangle rect)>>();
-        Parallel.For(Operation.LayerIndexStart, Operation.LayerIndexEnd + 1, CoreSettings.ParallelOptions, layerIndex =>
+        Parallel.For(Operation.LayerIndexStart, Operation.LayerIndexEnd + 1, CoreSettings.GetParallelOptions(Progress), layerIndex =>
         {
             using var mat = SlicerFile[layerIndex].LayerMat;
             using var contours = mat.FindContours(out var hierarchy, RetrType.Tree);

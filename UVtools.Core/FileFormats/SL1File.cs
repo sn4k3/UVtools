@@ -614,15 +614,7 @@ public class SL1File : FileFormat
             stream.Close();
         }
 
-        for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
-        {
-            progress.Token.ThrowIfCancellationRequested();
-            Layer layer = this[layerIndex];
-            var layerImagePath = $"{filename}{layerIndex:D5}.png";
-            //layer.Filename = layerImagePath;
-            outputFile.PutFileContent(layerImagePath, layer.CompressedBytes, ZipArchiveMode.Create);
-            progress++;
-        }
+        EncodeLayersInZip(outputFile, filename, 5, Enumerations.IndexStartNumber.Zero, progress);
     }
 
 
@@ -635,134 +627,117 @@ public class SL1File : FileFormat
 
         Statistics.ExecutionTime.Restart();
 
-        using (var inputFile = ZipFile.OpenRead(FileFullPath!))
+        using var inputFile = ZipFile.OpenRead(FileFullPath!);
+        List<string> iniFiles = new();
+        foreach (var entity in inputFile.Entries)
         {
-            List<string> iniFiles = new();
-            foreach (ZipArchiveEntry entity in inputFile.Entries)
+            if (!entity.Name.EndsWith(".ini")) continue;
+            iniFiles.Add(entity.Name);
+            using StreamReader streamReader = new(entity.Open());
+            string? line;
+            while ((line = streamReader.ReadLine()) != null)
             {
-                if (!entity.Name.EndsWith(".ini")) continue;
-                iniFiles.Add(entity.Name);
-                using StreamReader streamReader = new(entity.Open());
-                string? line;
-                while ((line = streamReader.ReadLine()) != null)
-                {
-                    string[] keyValue = line.Split(new[] {'='}, 2);
-                    if (keyValue.Length < 2) continue;
-                    keyValue[0] = keyValue[0].Trim();
-                    keyValue[1] = keyValue[1].Trim();
+                string[] keyValue = line.Split(new[] {'='}, 2);
+                if (keyValue.Length < 2) continue;
+                keyValue[0] = keyValue[0].Trim();
+                keyValue[1] = keyValue[1].Trim();
 
-                    var fieldName = IniKeyToMemberName(keyValue[0]);
-                    bool foundMember = false;
+                var fieldName = IniKeyToMemberName(keyValue[0]);
+                bool foundMember = false;
 
                             
-                    foreach (var obj in Configs)
-                    {
-                        var attribute = obj.GetType().GetProperty(fieldName);
-                        if (attribute is null || !attribute.CanWrite) continue;
-                        //Debug.WriteLine(attribute.Name);
-                        Helpers.SetPropertyValue(attribute, obj, keyValue[1]);
+                foreach (var obj in Configs)
+                {
+                    var attribute = obj.GetType().GetProperty(fieldName);
+                    if (attribute is null || !attribute.CanWrite) continue;
+                    //Debug.WriteLine(attribute.Name);
+                    Helpers.SetPropertyValue(attribute, obj, keyValue[1]);
 
-                        Statistics.ImplementedKeys.Add(keyValue[0]);
-                        foundMember = true;
-                    }
+                    Statistics.ImplementedKeys.Add(keyValue[0]);
+                    foundMember = true;
+                }
                            
-                    if (!foundMember)
-                    {
-                        Statistics.MissingKeys.Add(keyValue[0]);
-                    }
-                }
-            }
-
-            if (!iniFiles.Contains(IniConfig))
-            {
-                throw new FileLoadException($"Malformed file: {IniConfig} is missing.");
-            }
-            if (!iniFiles.Contains(IniPrusaslicer))
-            {
-                throw new FileLoadException($"Malformed file: {IniPrusaslicer} is missing.");
-            }
-
-            SuppressRebuildPropertiesWork(() =>
-            {
-                TransitionLayerCount = LookupCustomValue<ushort>(Keyword_TransitionLayerCount, 0);
-                BottomLightOffDelay = LookupCustomValue(Keyword_BottomLightOffDelay, 0f);
-                LightOffDelay = LookupCustomValue(Keyword_LightOffDelay, 0f);
-
-                BottomWaitTimeBeforeCure = LookupCustomValue(Keyword_BottomWaitTimeBeforeCure, 0f);
-                WaitTimeBeforeCure = LookupCustomValue(Keyword_WaitTimeBeforeCure, 0f);
-
-                BottomWaitTimeAfterCure = LookupCustomValue(Keyword_BottomWaitTimeAfterCure, 0f);
-                WaitTimeAfterCure = LookupCustomValue(Keyword_WaitTimeAfterCure, 0f);
-
-                BottomLiftHeight = LookupCustomValue(Keyword_BottomLiftHeight, DefaultBottomLiftHeight);
-                BottomLiftSpeed = LookupCustomValue(Keyword_BottomLiftSpeed, DefaultBottomLiftSpeed);
-
-                LiftHeight = LookupCustomValue(Keyword_LiftHeight, DefaultLiftHeight);
-                LiftSpeed = LookupCustomValue(Keyword_LiftSpeed, DefaultLiftSpeed);
-
-                BottomLiftHeight2 = LookupCustomValue(Keyword_BottomLiftHeight2, DefaultBottomLiftHeight2);
-                BottomLiftSpeed2 = LookupCustomValue(Keyword_BottomLiftSpeed2, DefaultBottomLiftSpeed2);
-
-                LiftHeight2 = LookupCustomValue(Keyword_LiftHeight2, DefaultLiftHeight2);
-                LiftSpeed2 = LookupCustomValue(Keyword_LiftSpeed2, DefaultLiftSpeed2);
-
-                BottomWaitTimeAfterLift = LookupCustomValue(Keyword_BottomWaitTimeAfterLift, 0f);
-                WaitTimeAfterLift = LookupCustomValue(Keyword_WaitTimeAfterLift, 0f);
-
-                BottomRetractSpeed = LookupCustomValue(Keyword_BottomRetractSpeed, DefaultBottomRetractSpeed);
-                RetractSpeed = LookupCustomValue(Keyword_RetractSpeed, DefaultRetractSpeed);
-
-                BottomRetractHeight2 = LookupCustomValue(Keyword_BottomRetractHeight2, DefaultBottomRetractHeight2);
-                RetractHeight2 = LookupCustomValue(Keyword_RetractHeight2, DefaultRetractHeight2);
-                BottomRetractSpeed2 = LookupCustomValue(Keyword_BottomRetractSpeed2, DefaultBottomRetractSpeed2);
-                RetractSpeed2 = LookupCustomValue(Keyword_RetractSpeed2, DefaultRetractSpeed2);
-                BottomLightPWM = LookupCustomValue(Keyword_BottomLightPWM, DefaultLightPWM);
-                LightPWM = LookupCustomValue(Keyword_LightPWM, DefaultBottomLightPWM);
-            });
-
-            Init(OutputConfigSettings.NumSlow + OutputConfigSettings.NumFast, DecodeType == FileDecodeType.Partial);
-
-            progress.ItemCount = LayerCount;
-
-            foreach (var entity in inputFile.Entries)
-            {
-                if (!entity.Name.EndsWith(".png")) continue;
-                if (entity.Name.StartsWith("thumbnail"))
+                if (!foundMember)
                 {
-                    using var stream = entity.Open();
-                    Mat image = new();
-                    CvInvoke.Imdecode(stream.ToArray(), ImreadModes.AnyColor, image);
-                    byte thumbnailIndex =
-                        (byte) (image.Width == ThumbnailsOriginalSize![(int) FileThumbnailSize.Small].Width &&
-                                image.Height == ThumbnailsOriginalSize[(int) FileThumbnailSize.Small].Height
-                            ? FileThumbnailSize.Small
-                            : FileThumbnailSize.Large);
-                    Thumbnails[thumbnailIndex] = image;
-
-                    //thumbnailIndex++;
-
-                    continue;
+                    Statistics.MissingKeys.Add(keyValue[0]);
                 }
-                    
-                if (DecodeType == FileDecodeType.Full)
-                {
-                    // - .png - 5 numbers
-                    string layerStr = entity.Name.Substring(entity.Name.Length - 4 - 5, 5);
-                    uint iLayer = uint.Parse(layerStr);
-                    using var stream = entity.Open();
-                    this[iLayer] = new Layer(iLayer, stream, this);
-                }
-                    
-                progress.ProcessedItems++;
             }
         }
+
+        if (!iniFiles.Contains(IniConfig))
+        {
+            throw new FileLoadException($"Malformed file: {IniConfig} is missing.");
+        }
+        if (!iniFiles.Contains(IniPrusaslicer))
+        {
+            throw new FileLoadException($"Malformed file: {IniPrusaslicer} is missing.");
+        }
+
+        SuppressRebuildPropertiesWork(() =>
+        {
+            TransitionLayerCount = LookupCustomValue<ushort>(Keyword_TransitionLayerCount, 0);
+            BottomLightOffDelay = LookupCustomValue(Keyword_BottomLightOffDelay, 0f);
+            LightOffDelay = LookupCustomValue(Keyword_LightOffDelay, 0f);
+
+            BottomWaitTimeBeforeCure = LookupCustomValue(Keyword_BottomWaitTimeBeforeCure, 0f);
+            WaitTimeBeforeCure = LookupCustomValue(Keyword_WaitTimeBeforeCure, 0f);
+
+            BottomWaitTimeAfterCure = LookupCustomValue(Keyword_BottomWaitTimeAfterCure, 0f);
+            WaitTimeAfterCure = LookupCustomValue(Keyword_WaitTimeAfterCure, 0f);
+
+            BottomLiftHeight = LookupCustomValue(Keyword_BottomLiftHeight, DefaultBottomLiftHeight);
+            BottomLiftSpeed = LookupCustomValue(Keyword_BottomLiftSpeed, DefaultBottomLiftSpeed);
+
+            LiftHeight = LookupCustomValue(Keyword_LiftHeight, DefaultLiftHeight);
+            LiftSpeed = LookupCustomValue(Keyword_LiftSpeed, DefaultLiftSpeed);
+
+            BottomLiftHeight2 = LookupCustomValue(Keyword_BottomLiftHeight2, DefaultBottomLiftHeight2);
+            BottomLiftSpeed2 = LookupCustomValue(Keyword_BottomLiftSpeed2, DefaultBottomLiftSpeed2);
+
+            LiftHeight2 = LookupCustomValue(Keyword_LiftHeight2, DefaultLiftHeight2);
+            LiftSpeed2 = LookupCustomValue(Keyword_LiftSpeed2, DefaultLiftSpeed2);
+
+            BottomWaitTimeAfterLift = LookupCustomValue(Keyword_BottomWaitTimeAfterLift, 0f);
+            WaitTimeAfterLift = LookupCustomValue(Keyword_WaitTimeAfterLift, 0f);
+
+            BottomRetractSpeed = LookupCustomValue(Keyword_BottomRetractSpeed, DefaultBottomRetractSpeed);
+            RetractSpeed = LookupCustomValue(Keyword_RetractSpeed, DefaultRetractSpeed);
+
+            BottomRetractHeight2 = LookupCustomValue(Keyword_BottomRetractHeight2, DefaultBottomRetractHeight2);
+            RetractHeight2 = LookupCustomValue(Keyword_RetractHeight2, DefaultRetractHeight2);
+            BottomRetractSpeed2 = LookupCustomValue(Keyword_BottomRetractSpeed2, DefaultBottomRetractSpeed2);
+            RetractSpeed2 = LookupCustomValue(Keyword_RetractSpeed2, DefaultRetractSpeed2);
+            BottomLightPWM = LookupCustomValue(Keyword_BottomLightPWM, DefaultLightPWM);
+            LightPWM = LookupCustomValue(Keyword_LightPWM, DefaultBottomLightPWM);
+        });
+
+        Init(OutputConfigSettings.NumSlow + OutputConfigSettings.NumFast, DecodeType == FileDecodeType.Partial);
+
+        progress.ItemCount = LayerCount;
+
+        foreach (var entity in inputFile.Entries)
+        {
+            if (!entity.Name.EndsWith(".png")) continue;
+            if (!entity.Name.StartsWith("thumbnail")) continue;
+            using var stream = entity.Open();
+            Mat image = new();
+            CvInvoke.Imdecode(stream.ToArray(), ImreadModes.AnyColor, image);
+            byte thumbnailIndex =
+                (byte) (image.Width == ThumbnailsOriginalSize![(int) FileThumbnailSize.Small].Width &&
+                        image.Height == ThumbnailsOriginalSize[(int) FileThumbnailSize.Small].Height
+                    ? FileThumbnailSize.Small
+                    : FileThumbnailSize.Large);
+            Thumbnails[thumbnailIndex] = image;
+
+            //thumbnailIndex++;
+        }
+
+        DecodeLayersFromZip(inputFile, 5, Enumerations.IndexStartNumber.Zero, progress);
 
         if (TransitionLayerCount > 0)
         {
             SetTransitionLayers(TransitionLayerCount, false);
         }
-
-        GetBoundingRectangle(progress);
 
         Statistics.ExecutionTime.Stop();
 

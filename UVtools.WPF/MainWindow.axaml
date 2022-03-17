@@ -569,6 +569,7 @@
             IsReadOnly="{Binding !SlicerFile.SuppressRebuildGCode}"
             AcceptsReturn="True"
             Text="{Binding SlicerFile.GCodeStr}" />
+			
         </Grid>
         
       </TabItem>

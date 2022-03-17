@@ -335,9 +335,6 @@
         <Component Id="owc79156F385239CEA4DEA3C87C1DA3E1D8" Guid="68380c80-6708-5eb6-415d-10e278417679" Win64="yes">
           <File Id="owf79156F385239CEA4DEA3C87C1DA3E1D8" Source="$(var.SourceDir)\netstandard.dll" KeyPath="yes" />
         </Component>
-        <Component Id="owc3FC8434C1A84605AEEBC6A100CA2F3E1" Guid="47d7e276-db6d-424e-d797-1a69e1e24b3b" Win64="yes">
-          <File Id="owf3FC8434C1A84605AEEBC6A100CA2F3E1" Source="$(var.SourceDir)\Newtonsoft.Json.dll" KeyPath="yes" />
-        </Component>
         <Component Id="owc7BB28EFC52A49429849339DF748B25E7" Guid="ded507d6-fd2b-41f2-bd03-cf489e47df7a" Win64="yes">
           <File Id="owf7BB28EFC52A49429849339DF748B25E7" Source="$(var.SourceDir)\runtime_package.dat" KeyPath="yes" />
         </Component>
@@ -1448,6 +1445,21 @@
         </Component>
         <Component Id="owc9C1F0C0351694913958CEBFB4D988C2D" Guid="9C1F0C03-5169-4913-958C-EBFB4D988C2D">
           <File Id="owf9C1F0C0351694913958CEBFB4D988C2D" Source="$(var.SourceDir)\System.Net.Quic.dll" KeyPath="yes" />
+        </Component>
+        <Component Id="owcE9728785ABFF46BBBB650949E58582F6" Guid="E9728785-ABFF-46BB-BB65-0949E58582F6">
+          <File Id="owfE9728785ABFF46BBBB650949E58582F6" Source="$(var.SourceDir)\AvaloniaEdit.dll" KeyPath="yes" />
+        </Component>
+        <Component Id="owc457BCA8E75BC42FFAB4C395A1E488E86" Guid="457BCA8E-75BC-42FF-AB4C-395A1E488E86">
+          <File Id="owf457BCA8E75BC42FFAB4C395A1E488E86" Source="$(var.SourceDir)\ColorTextBlock.Avalonia.dll" KeyPath="yes" />
+        </Component>
+        <Component Id="owcBD9F04FC618C4C23A76BC23A5949C99E" Guid="BD9F04FC-618C-4C23-A76B-C23A5949C99E">
+          <File Id="owfBD9F04FC618C4C23A76BC23A5949C99E" Source="$(var.SourceDir)\K4os.Compression.LZ4.dll" KeyPath="yes" />
+        </Component>
+        <Component Id="owc016FC6E6F2AC48FFA8AA1DF1773755ED" Guid="016FC6E6-F2AC-48FF-A8AA-1DF1773755ED">
+          <File Id="owf016FC6E6F2AC48FFA8AA1DF1773755ED" Source="$(var.SourceDir)\Markdown.Avalonia.dll" KeyPath="yes" />
+        </Component>
+        <Component Id="owc1BDB050EB61B44609ECD990453AC8FB5" Guid="1BDB050E-B61B-4460-9ECD-990453AC8FB5">
+          <File Id="owf1BDB050EB61B44609ECD990453AC8FB5" Source="$(var.SourceDir)\Markdown.Avalonia.SyntaxHigh.dll" KeyPath="yes" />
         </Component>
       </Directory>
       <Directory Id="ProgramMenuFolder">

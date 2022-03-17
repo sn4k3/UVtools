@@ -174,9 +174,8 @@ public partial class MainWindow
             Progress.Reset("Removing selected issues", (uint)processParallelIssues.Count);
             try
             {
-                Parallel.ForEach(processParallelIssues, CoreSettings.ParallelOptions, layerIssues =>
+                Parallel.ForEach(processParallelIssues, CoreSettings.GetParallelOptions(Progress), layerIssues =>
                 {
-                    if (Progress.Token.IsCancellationRequested) return;
                     using (var image = SlicerFile[layerIssues.Key].LayerMat)
                     {
                         var bytes = image.GetDataByteSpan();

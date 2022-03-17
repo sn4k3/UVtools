@@ -48,7 +48,7 @@ public class ScriptChangeLayerPropertiesSample : ScriptGlobals
 
         for (uint layerIndex = Operation.LayerIndexStart; layerIndex <= Operation.LayerIndexEnd; layerIndex++)
         {
-            Progress.Token.ThrowIfCancellationRequested(); // Abort operation, user requested cancellation
+            Progress.ThrowIfCancellationRequested(); // Abort operation, user requested cancellation
             var layer = SlicerFile[layerIndex]; // Unpack and expose layer variable for easier use
 
             layer.LiftHeight = random.Next(3, 10);     // Random value from 3 to 10

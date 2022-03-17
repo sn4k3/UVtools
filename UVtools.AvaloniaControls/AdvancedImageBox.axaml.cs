@@ -113,7 +113,7 @@ public class AdvancedImageBox : UserControl
         /// </summary>
         public static ZoomLevelCollection Default =>
             new(new[] {
-                7, 10, 15, 20, 25, 30, 50, 70, 100, 150, 200, 300, 400, 500, 600, 700, 800, 1200, 1600, 3200
+                7, 10, 15, 20, 25, 30, 50, 70, 100, 150, 200, 300, 400, 500, 600, 700, 800, 1200, 1600, 3200, 6400
             });
 
         #endregion
@@ -276,32 +276,28 @@ public class AdvancedImageBox : UserControl
         /// Returns the next increased zoom level for the given current zoom.
         /// </summary>
         /// <param name="zoomLevel">The current zoom level.</param>
+        /// <param name="constrainZoomLevel">When positive, constrain maximum zoom to this value</param>
         /// <returns>The next matching increased zoom level for the given current zoom if applicable, otherwise the nearest zoom.</returns>
-        public int NextZoom(int zoomLevel)
+        public int NextZoom(int zoomLevel, int constrainZoomLevel = 0)
         {
             var index = IndexOf(FindNearest(zoomLevel));
-            if (index < Count - 1)
-            {
-                index++;
-            }
+            if (index < Count - 1) index++;
 
-            return this[index];
+            return constrainZoomLevel > 0 && this[index] >= constrainZoomLevel ? constrainZoomLevel : this[index];
         }
 
         /// <summary>
         /// Returns the next decreased zoom level for the given current zoom.
         /// </summary>
         /// <param name="zoomLevel">The current zoom level.</param>
+        /// <param name="constrainZoomLevel">When positive, constrain minimum zoom to this value</param>
         /// <returns>The next matching decreased zoom level for the given current zoom if applicable, otherwise the nearest zoom.</returns>
-        public int PreviousZoom(int zoomLevel)
+        public int PreviousZoom(int zoomLevel, int constrainZoomLevel = 0)
         {
             var index = IndexOf(FindNearest(zoomLevel));
-            if (index > 0)
-            {
-                index--;
-            }
+            if (index > 0) index--;
 
-            return this[index];
+            return constrainZoomLevel > 0 && this[index] <= constrainZoomLevel ? constrainZoomLevel : this[index];
         }
 
         /// <summary>
@@ -842,7 +838,7 @@ public class AdvancedImageBox : UserControl
     }
 
     public static readonly StyledProperty<int> MaxZoomProperty =
-        AvaloniaProperty.Register<AdvancedImageBox, int>(nameof(MaxZoom), 3500);
+        AvaloniaProperty.Register<AdvancedImageBox, int>(nameof(MaxZoom), 6400);
 
     /// <summary>
     /// Gets or sets the maximum possible zoom.
@@ -852,6 +848,18 @@ public class AdvancedImageBox : UserControl
     {
         get => GetValue(MaxZoomProperty);
         set => SetValue(MaxZoomProperty, value);
+    }
+
+    public static readonly StyledProperty<bool> ConstrainZoomOutToFitLevelProperty =
+        AvaloniaProperty.Register<AdvancedImageBox, bool>(nameof(ConstrainZoomOutToFitLevel), true);
+
+    /// <summary>
+    /// Gets or sets if the zoom out should constrain to fit image as the lowest zoom level.
+    /// </summary>
+    public bool ConstrainZoomOutToFitLevel
+    {
+        get => GetValue(ConstrainZoomOutToFitLevelProperty);
+        set => SetValue(ConstrainZoomOutToFitLevelProperty, value);
     }
 
 
@@ -884,12 +892,14 @@ public class AdvancedImageBox : UserControl
         get => GetValue(ZoomProperty);
         set
         {
-            var newZoom = Math.Clamp(value, MinZoom, MaxZoom);
+            var minZoom = MinZoom;
+            if (ConstrainZoomOutToFitLevel) minZoom = Math.Max(ZoomLevelToFit, minZoom);
+            var newZoom = Math.Clamp(value, minZoom, MaxZoom);
 
             var previousZoom = Zoom;
             if (previousZoom == newZoom) return;
             OldZoom = previousZoom;
-            SetValue(ZoomProperty, value);
+            SetValue(ZoomProperty, newZoom);
 
             UpdateViewPort();
             TriggerRender();
@@ -899,12 +909,57 @@ public class AdvancedImageBox : UserControl
         }
     }
 
+    /// <summary>
+    /// <para>Gets if the image have zoom.</para>
+    /// <para>True if zoomed in or out</para>
+    /// <para>False if no zoom applied</para>
+    /// </summary>
     public bool IsActualSize => Zoom == 100;
 
     /// <summary>
-    /// Gets the zoom factor, the zoom / 100
+    /// Gets the zoom factor, the zoom / 100.0
     /// </summary>
     public double ZoomFactor => Zoom / 100.0;
+
+    /// <summary>
+    /// Gets the zoom to fit level which shows all the image
+    /// </summary>
+    public int ZoomLevelToFit
+    {
+        get
+        {
+            if (!IsImageLoaded) return 100;
+            var image = Image!;
+
+            double zoom;
+            double aspectRatio;
+
+            if (image.Size.Width > image.Size.Height)
+            {
+                aspectRatio = ViewPortSize.Width / image.Size.Width;
+                zoom = aspectRatio * 100.0;
+
+                if (ViewPortSize.Height < image.Size.Height * zoom / 100.0)
+                {
+                    aspectRatio = ViewPortSize.Height / image.Size.Height;
+                    zoom = aspectRatio * 100.0;
+                }
+            }
+            else
+            {
+                aspectRatio = ViewPortSize.Height / image.Size.Height;
+                zoom = aspectRatio * 100.0;
+
+                if (ViewPortSize.Width < image.Size.Width * zoom / 100.0)
+                {
+                    aspectRatio = ViewPortSize.Width / image.Size.Width;
+                    zoom = aspectRatio * 100.0;
+                }
+            }
+
+            return (int) zoom;
+        }
+    }
 
     /// <summary>
     /// Gets the width of the scaled image.
@@ -1442,36 +1497,8 @@ public class AdvancedImageBox : UserControl
     /// </summary>
     public void ZoomToFit()
     {
-        var image = Image;
-        if (image is null) return;
-
-        double zoom;
-        double aspectRatio;
-
-        if (image.Size.Width > image.Size.Height)
-        {
-            aspectRatio = ViewPortSize.Width / image.Size.Width;
-            zoom = aspectRatio * 100.0;
-
-            if (ViewPortSize.Height < image.Size.Height * zoom / 100.0)
-            {
-                aspectRatio = ViewPortSize.Height / image.Size.Height;
-                zoom = aspectRatio * 100.0;
-            }
-        }
-        else
-        {
-            aspectRatio = ViewPortSize.Height / image.Size.Height;
-            zoom = aspectRatio * 100.0;
-
-            if (ViewPortSize.Width < image.Size.Width * zoom / 100.0)
-            {
-                aspectRatio = ViewPortSize.Width / image.Size.Width;
-                zoom = aspectRatio * 100.0;
-            }
-        }
-
-        Zoom = (int)zoom;
+        if (!IsImageLoaded) return;
+        Zoom = ZoomLevelToFit;
     }
 
     /// <summary>

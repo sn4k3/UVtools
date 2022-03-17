@@ -1914,9 +1914,8 @@ public class ChituboxFile : FileFormat
 
         foreach (var batch in BatchLayersIndexes())
         {
-            Parallel.ForEach(batch, CoreSettings.ParallelOptions, layerIndex =>
+            Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), layerIndex =>
             {
-                if (progress.Token.IsCancellationRequested) return;
                 using (var mat = this[layerIndex].LayerMat)
                 {
                     for (byte aaIndex = 0; aaIndex < HeaderSettings.AntiAliasLevel; aaIndex++)
@@ -1934,7 +1933,7 @@ public class ChituboxFile : FileFormat
                 if (layerIndex == 0) layerDefSize = (uint)Helpers.Serializer.SizeOf(LayerDefinitions[0, layerIndex]);
                 for (byte aaIndex = 0; aaIndex < HeaderSettings.AntiAliasLevel; aaIndex++)
                 {
-                    progress.Token.ThrowIfCancellationRequested();
+                    progress.ThrowIfCancellationRequested();
 
                     var layerDef = LayerDefinitions[aaIndex, layerIndex];
                     LayerDef? layerDefHash = null;
@@ -2098,7 +2097,7 @@ public class ChituboxFile : FileFormat
             Debug.WriteLine($"-Image GROUP {aaIndex}-");
             for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
             {
-                progress.Token.ThrowIfCancellationRequested();
+                progress.ThrowIfCancellationRequested();
                 inputFile.Seek(layerOffset, SeekOrigin.Begin);
                 var layerDef = Helpers.Deserialize<LayerDef>(inputFile);
                 layerDef.Parent = this;
@@ -2136,16 +2135,15 @@ public class ChituboxFile : FileFormat
                 {
                     for (byte aaIndex = 0; aaIndex < HeaderSettings.AntiAliasLevel; aaIndex++)
                     {
-                        progress.Token.ThrowIfCancellationRequested();
+                        progress.ThrowIfCancellationRequested();
 
                         inputFile.Seek(LayerDefinitions[aaIndex, layerIndex].DataAddress, SeekOrigin.Begin);
                         LayerDefinitions[aaIndex, layerIndex].EncodedRle = inputFile.ReadBytes(LayerDefinitions[aaIndex, layerIndex].DataSize);
                     }
                 }
 
-                Parallel.ForEach(batch, CoreSettings.ParallelOptions, layerIndex =>
+                Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), layerIndex =>
                 {
-                    if (progress.Token.IsCancellationRequested) return;
                     using var mat = LayerDefinitions[0, layerIndex].Decode((uint)layerIndex);
                     this[layerIndex] = new Layer((uint)layerIndex, mat, this);
 

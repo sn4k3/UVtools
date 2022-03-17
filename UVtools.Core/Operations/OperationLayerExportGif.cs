@@ -224,9 +224,8 @@ public sealed class OperationLayerExportGif : Operation
             ROI = SlicerFile.BoundingRectangle;
         }
 
-        Parallel.For(0, TotalLayers, CoreSettings.ParallelOptions, i =>
+        Parallel.For(0, TotalLayers, CoreSettings.GetParallelOptions(progress), i =>
         {
-            if (progress.Token.IsCancellationRequested) return;
             uint layerIndex = (uint) (LayerIndexStart + i * (_skip + 1));
             var layer = SlicerFile[layerIndex];
             using var mat = layer.LayerMat;
@@ -270,8 +269,8 @@ public sealed class OperationLayerExportGif : Operation
         progress.ResetNameAndProcessed("Packed layers");
         foreach (var buffer in layerBuffer)
         {
-            if (progress.Token.IsCancellationRequested) break;
-            using Stream stream = new MemoryStream(buffer);
+            progress.ThrowIfCancellationRequested();
+            using var stream = new MemoryStream(buffer);
             using var img = Image.FromStream(stream);
             gif.AddFrame(img, -1, GifQuality.Bit8);
             progress++;

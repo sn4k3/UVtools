@@ -18,15 +18,17 @@ namespace UVtools.WPF.Extensions;
 
 public static class WindowExtensions
 {
-    public static async Task<ButtonResult> MessageBoxGeneric(this Window window, string message, string title = null, 
-        ButtonEnum buttons = ButtonEnum.Ok, Icon icon = Icon.None, bool topMost = false, WindowStartupLocation location = WindowStartupLocation.CenterOwner)
+    public static async Task<ButtonResult> MessageBoxGeneric(this Window window, string message, string title = null, string header = null,
+        ButtonEnum buttons = ButtonEnum.Ok, Icon icon = Icon.None, bool markdown = false, bool topMost = false, WindowStartupLocation location = WindowStartupLocation.CenterOwner)
     {
         var messageBoxStandardWindow = MessageBox.Avalonia.MessageBoxManager.GetMessageBoxStandardWindow(
             new MessageBoxStandardParams
             {
                 ButtonDefinitions = buttons,
                 ContentTitle = title ?? window.Title,
+                ContentHeader = header,
                 ContentMessage = message,
+                Markdown = markdown,
                 Icon = icon,
                 WindowIcon = new WindowIcon(App.GetAsset("/Assets/Icons/UVtools.ico")),
                 WindowStartupLocation = location,
@@ -40,17 +42,29 @@ public static class WindowExtensions
         return await messageBoxStandardWindow.ShowDialog(window);
     }
 
-    public static async Task<ButtonResult> MessageBoxInfo(this Window window, string message, string title = null, ButtonEnum buttons = ButtonEnum.Ok, bool topMost = false)
-        => await window.MessageBoxGeneric(message, title ?? $"{window.Title} - Information", buttons, Icon.Info, topMost, WindowStartupLocation.CenterOwner);
+    public static async Task<ButtonResult> MessageBoxInfo(this Window window, string message, string title = null, ButtonEnum buttons = ButtonEnum.Ok, bool markdown = false, bool topMost = false)
+        => await window.MessageBoxGeneric(message, title ?? $"{window.Title} - Information", null, buttons, Icon.Info, markdown, topMost, WindowStartupLocation.CenterOwner);
 
-    public static async Task<ButtonResult> MessageBoxError(this Window window, string message, string title = null, ButtonEnum buttons = ButtonEnum.Ok, bool topMost = false)
-        => await window.MessageBoxGeneric(message, title ?? $"{window.Title} - Error", buttons, Icon.Error, topMost, WindowStartupLocation.CenterOwner);
+    public static async Task<ButtonResult> MessageBoxError(this Window window, string message, string title = null, ButtonEnum buttons = ButtonEnum.Ok, bool markdown = false, bool topMost = false)
+        => await window.MessageBoxGeneric(message, title ?? $"{window.Title} - Error", null, buttons, Icon.Error, markdown, topMost, WindowStartupLocation.CenterOwner);
 
-    public static async Task<ButtonResult> MessageBoxQuestion(this Window window, string message, string title = null, ButtonEnum buttons = ButtonEnum.YesNo, bool topMost = false)
-        => await window.MessageBoxGeneric(message, title ?? $"{window.Title} - Question", buttons, Icon.Setting, topMost, WindowStartupLocation.CenterOwner);
+    public static async Task<ButtonResult> MessageBoxQuestion(this Window window, string message, string title = null, ButtonEnum buttons = ButtonEnum.YesNo, bool markdown = false, bool topMost = false)
+        => await window.MessageBoxGeneric(message, title ?? $"{window.Title} - Question", null, buttons, Icon.Question, markdown, topMost, WindowStartupLocation.CenterOwner);
 
-    public static async Task<ButtonResult> MessageBoxWaring(this Window window, string message, string title = null, ButtonEnum buttons = ButtonEnum.Ok, bool topMost = false)
-        => await window.MessageBoxGeneric(message, title ?? $"{window.Title} - Question", buttons, Icon.Warning, topMost, WindowStartupLocation.CenterOwner);
+    public static async Task<ButtonResult> MessageBoxWaring(this Window window, string message, string title = null, ButtonEnum buttons = ButtonEnum.Ok, bool markdown = false, bool topMost = false)
+        => await window.MessageBoxGeneric(message, title ?? $"{window.Title} - Question", null, buttons, Icon.Warning, markdown, topMost, WindowStartupLocation.CenterOwner);
+
+    public static async Task<ButtonResult> MessageBoxWithHeaderInfo(this Window window, string header, string message, string title = null, ButtonEnum buttons = ButtonEnum.Ok, bool markdown = false, bool topMost = false)
+        => await window.MessageBoxGeneric(message, title ?? $"{window.Title} - Information", header, buttons, Icon.Info, markdown, topMost, WindowStartupLocation.CenterOwner);
+
+    public static async Task<ButtonResult> MessageBoxWithHeaderError(this Window window, string header, string message, string title = null, ButtonEnum buttons = ButtonEnum.Ok, bool markdown = false, bool topMost = false)
+        => await window.MessageBoxGeneric(message, title ?? $"{window.Title} - Error", header, buttons, Icon.Error, markdown, topMost, WindowStartupLocation.CenterOwner);
+
+    public static async Task<ButtonResult> MessageBoxWithHeaderQuestion(this Window window, string header, string message, string title = null, ButtonEnum buttons = ButtonEnum.YesNo, bool markdown = false, bool topMost = false)
+        => await window.MessageBoxGeneric(message, title ?? $"{window.Title} - Question", header, buttons, Icon.Question, markdown, topMost, WindowStartupLocation.CenterOwner);
+
+    public static async Task<ButtonResult> MessageBoxWithHeaderWaring(this Window window, string header, string message, string title = null, ButtonEnum buttons = ButtonEnum.Ok, bool markdown = false, bool topMost = false)
+        => await window.MessageBoxGeneric(message, title ?? $"{window.Title} - Question", header, buttons, Icon.Warning, markdown, topMost, WindowStartupLocation.CenterOwner);
 
 
     public static void ShowDialogSync(this Window window, Window parent = null)

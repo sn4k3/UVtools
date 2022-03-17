@@ -103,16 +103,12 @@ public static class ZipArchiveExtensions
     {
         //Gets the complete path for the destination file, including any
         //relative paths that were in the zip file
-        string destinationFileName = Path.Combine(destinationPath, file.FullName);
-
-        //Gets just the new path, minus the file name so we can create the
-        //directory if it does not exist
-        string? destinationFilePath = Path.GetDirectoryName(destinationFileName);
-
-        destinationFilePath ??= string.Empty;
+        var destFileName = Path.Combine(destinationPath, file.FullName);
+        var fullDestDirPath = Path.GetFullPath(destinationPath + Path.DirectorySeparatorChar);
+        if (!destFileName.StartsWith(fullDestDirPath)) return; // Entry is outside the target dir
 
         //Creates the directory (if it doesn't exist) for the new path
-        Directory.CreateDirectory(destinationFilePath);
+        Directory.CreateDirectory(fullDestDirPath);
 
         //Determines what to do with the file based upon the
         //method of overwriting chosen
@@ -120,26 +116,28 @@ public static class ZipArchiveExtensions
         {
             case Overwrite.Always:
                 //Just put the file in and overwrite anything that is found
-                file.ExtractToFile(destinationFileName, true);
+                file.ExtractToFile(destFileName, true);
                 break;
             case Overwrite.IfNewer:
                 //Checks to see if the file exists, and if so, if it should
                 //be overwritten
-                if (!File.Exists(destinationFileName) || File.GetLastWriteTime(destinationFileName) < file.LastWriteTime)
+                if (!File.Exists(destFileName) || File.GetLastWriteTime(destFileName) < file.LastWriteTime)
                 {
                     //Either the file didn't exist or this file is newer, so
                     //we will extract it and overwrite any existing file
-                    file.ExtractToFile(destinationFileName, true);
+                    file.ExtractToFile(destFileName, true);
                 }
                 break;
             case Overwrite.Never:
                 //Put the file in if it is new but ignores the 
                 //file if it already exists
-                if (!File.Exists(destinationFileName))
+                if (!File.Exists(destFileName))
                 {
-                    file.ExtractToFile(destinationFileName);
+                    file.ExtractToFile(destFileName);
                 }
                 break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(overwriteMethod), overwriteMethod, null);
         }
     }
 
@@ -194,7 +192,7 @@ public static class ZipArchiveExtensions
                 //Throws an error if the file exists
                 if (archiveExists)
                 {
-                    throw new IOException(String.Format("The zip file {0} already exists.", archiveFullName));
+                    throw new IOException(string.Format("The zip file {0} already exists.", archiveFullName));
                 }
                 break;
             case ArchiveAction.Ignore:

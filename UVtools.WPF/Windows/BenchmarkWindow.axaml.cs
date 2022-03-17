@@ -9,6 +9,7 @@ using Avalonia.Threading;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using UVtools.Core.Extensions;
+using UVtools.Core.Layers;
 using UVtools.WPF.Controls;
 using UVtools.WPF.Extensions;
 using UVtools.WPF.Structures;
@@ -24,27 +25,56 @@ public class BenchmarkWindow : WindowEx
     private string _devMultiThreadTdps = $"{Tests[0].DevMultiThreadResult} {RunsAbbreviation} ({MultiThreadTests} tests / {Math.Round(MultiThreadTests / Tests[0].DevMultiThreadResult, 2)}s)";
     private bool _isRunning;
     private string _startStopButtonText = "Start";
-    private const ushort SingleThreadTests = 100;
-    private const ushort MultiThreadTests = 1000;
+    private const ushort SingleThreadTests = 200;
+    private const ushort MultiThreadTests = 5000;
 
     public const string RunsAbbreviation = "TDPS";
     public const string StressCPUTestName = "Stress CPU (Run until stop)";
+
+    private readonly Dictionary<BenchmarkResolution, Mat> Mats = new();
 
     //private readonly RNGCryptoServiceProvider _randomProvider = new();
 
     private CancellationTokenSource _tokenSource;
     private CancellationToken _token => _tokenSource.Token;
 
+    public enum BenchmarkResolution
+    { 
+        Resolution4K,
+        Resolution8K
+    }
+
     public static BenchmarkTest[] Tests =>
         new[]
         {
-            new BenchmarkTest("4K Random CBBDLP Enconde", "Test4KRandomCBBDLPEncode", 57.14f, 401.61f),
-            new BenchmarkTest("8K Random CBBDLP Enconde", "Test8KRandomCBBDLPEncode", 12.03f, 99.80f),
-            new BenchmarkTest("4K Random CBT Enconde", "Test4KRandomCBTEncode", 19.05f, 124.38f),
-            new BenchmarkTest("8K Random CBT Enconde", "Test8KRandomCBTEncode", 4.03f, 35.64f),
-            new BenchmarkTest("4K Random PW0 Enconde", "Test4KRandomPW0Encode", 18.85f, 103.00f),
-            new BenchmarkTest("8K Random PW0 Enconde", "Test8KRandomPW0Encode", 4.07f, 26.65f),
-            new BenchmarkTest(StressCPUTestName, "Test4KRandomCBTEncode", 0, 0),
+            new BenchmarkTest("CBBDLP 4K Encode", "TestCBBDLPEncode", BenchmarkResolution.Resolution4K, 108.70f, 912.41f),
+            new BenchmarkTest("CBBDLP 8K Encode", "TestCBBDLPEncode", BenchmarkResolution.Resolution8K, 27.47f, 226.76f),
+            new BenchmarkTest("CBT 4K Encode", "TestCBTEncode", BenchmarkResolution.Resolution4K, 86.96f, 782.47f),
+            new BenchmarkTest("CBT 8K Encode", "TestCBTEncode", BenchmarkResolution.Resolution8K, 21.86f, 196.15f),
+            new BenchmarkTest("PW0 4K Encode", "TestPW0Encode",BenchmarkResolution.Resolution4K,  84.03f, 886.53f),
+            new BenchmarkTest("PW0 8K Encode", "TestPW0Encode", BenchmarkResolution.Resolution8K, 21.05f, 221.63f),
+            
+            new BenchmarkTest("PNG 4K Compress", "TestPNGCompress", BenchmarkResolution.Resolution4K, 55.25f, 501.00f),
+            //new BenchmarkTest("PNG 4K Decompress", "TestPNGDecompress", BenchmarkResolution.Resolution4K, 4.07f, 26.65f),
+            new BenchmarkTest("PNG 8K Compress", "TestPNGCompress", BenchmarkResolution.Resolution8K, 14.28f, 124.10f),
+            //new BenchmarkTest("PNG 8K Decompress", "TestPNGDecompress", BenchmarkResolution.Resolution8K, 4.07f, 26.65f),
+
+            new BenchmarkTest("GZip 4K Compress", "TestGZipCompress", BenchmarkResolution.Resolution4K, 169.49f, 1506.02f),
+            //new BenchmarkTest("GZip 4K Decompress", "TestGZipDecompress", BenchmarkResolution.Resolution4K, 4.07f, 26.65f),
+            new BenchmarkTest("GZip 8K Compress", "TestGZipCompress", BenchmarkResolution.Resolution8K, 45.77f, 397.47f),
+            //new BenchmarkTest("GZip 8K Decompress", "TestGZipDecompress", BenchmarkResolution.Resolution8K, 4.07f, 26.65f),
+
+            new BenchmarkTest("Deflate 4K Compress", "TestDeflateCompress", BenchmarkResolution.Resolution4K, 170.94f, 1592.36f),
+            //new BenchmarkTest("Deflate 4K Decompress", "TestDeflateDecompress", BenchmarkResolution.Resolution4K, 4.07f, 26.65f),
+            new BenchmarkTest("Deflate 8K Compress", "TestDeflateCompress", BenchmarkResolution.Resolution8K, 46.30f, 406.50f),
+            //new BenchmarkTest("Deflate 8K Decompress", "TestDeflateDecompress", BenchmarkResolution.Resolution8K, 4.07f, 26.65f),
+
+            new BenchmarkTest("LZ4 4K Compress", "TestLZ4Compress", BenchmarkResolution.Resolution4K, 665.12f, 2762.43f),
+            //new BenchmarkTest("LZ4 4K Decompress", "TestLZ4Decompress", BenchmarkResolution.Resolution4K, 4.07f, 26.65f),
+            new BenchmarkTest("LZ4 8K Compress", "TestLZ4Compress", BenchmarkResolution.Resolution8K, 148.15f, 907.44f),
+            //new BenchmarkTest("LZ4 8K Decompress", "TestLZ4Decompress", BenchmarkResolution.Resolution8K, 4.07f, 26.65f),
+
+            new BenchmarkTest(StressCPUTestName, "TestCBTEncode", BenchmarkResolution.Resolution4K, 0, 0),
         };
 
     public string Description  => "Benchmark your machine against pre-defined tests.\n" +
@@ -112,6 +142,12 @@ public class BenchmarkWindow : WindowEx
         InitializeComponent();
 
         DataContext = this;
+
+
+        foreach (var resolution in Enum.GetValues<BenchmarkResolution>())
+        {
+            Mats.Add(resolution, GetBenchmarkMat(resolution));
+        }
     }
 
     private void InitializeComponent()
@@ -146,22 +182,18 @@ public class BenchmarkWindow : WindowEx
                     {
                         while (true)
                         {
-                            if (_token.IsCancellationRequested) break;
-                            Parallel.For(0, MultiThreadTests, i =>
+                            Parallel.For(0, MultiThreadTests, new ParallelOptions{CancellationToken = _tokenSource.Token }, i =>
                             {
-                                if (_token.IsCancellationRequested) return;
-                                theMethod.Invoke(this, null);
+                                theMethod.Invoke(this, new object[]{benchmark.Resolution});
                             });
                         }
-
-                        return;
                     }
 
                         
                     for (int i = 0; i < SingleThreadTests; i++)
                     {
                         if (_token.IsCancellationRequested) _token.ThrowIfCancellationRequested();
-                        theMethod.Invoke(this, null);
+                        theMethod.Invoke(this, new object[] { benchmark.Resolution });
                     }
 
                     sw.Stop();
@@ -171,15 +203,13 @@ public class BenchmarkWindow : WindowEx
                     if (_token.IsCancellationRequested) _token.ThrowIfCancellationRequested();
 
                     sw.Restart();
-                    Parallel.For(0, MultiThreadTests, i =>
+                    Parallel.For(0, MultiThreadTests, new ParallelOptions { CancellationToken = _tokenSource.Token }, i =>
                     {
-                        if (_token.IsCancellationRequested) return;
-                        theMethod.Invoke(this, null);
+                        theMethod.Invoke(this, new object[] { benchmark.Resolution });
                     });
 
                     sw.Stop();
 
-                    if (_token.IsCancellationRequested) _token.ThrowIfCancellationRequested();
                     var multiMiliseconds = sw.ElapsedMilliseconds;
                     Dispatcher.UIThread.InvokeAsync(() => UpdateResults(false, multiMiliseconds));
                 }
@@ -417,11 +447,30 @@ public class BenchmarkWindow : WindowEx
         return rawData.ToArray();
     }
 
-    public Mat RandomMat(int width, int height)
+    public static Mat RandomMat(int width, int height)
     {
         Mat mat = new(new Size(width, height), DepthType.Cv8U, 1);
         CvInvoke.Randu(mat, EmguExtensions.BlackColor, EmguExtensions.WhiteColor);
         return mat;
+    }
+
+    public static Mat GetBenchmarkMat(BenchmarkResolution resolution = default)
+    {
+        using var stream = App.GetAsset("/Assets/benchmark.png");
+        var mat4K = new Mat();
+        CvInvoke.Imdecode(stream.ToArray(), ImreadModes.Grayscale, mat4K);
+        switch (resolution)
+        {
+            case BenchmarkResolution.Resolution4K:
+                return mat4K;
+            case BenchmarkResolution.Resolution8K:
+                var mat8K = new Mat();
+                CvInvoke.Repeat(mat4K, 2, 2, mat8K);
+                mat4K.Dispose();
+                return mat8K;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(resolution), resolution, null);
+        }
     }
 
     public void Test4KRandomCBBDLPEncode()
@@ -436,6 +485,11 @@ public class BenchmarkWindow : WindowEx
         EncodeCbddlpImage(mat);
     }
 
+    public void TestCBBDLPEncode(BenchmarkResolution resolution)
+    {
+        EncodeCbddlpImage(Mats[resolution]);
+    }
+
     public void Test4KRandomCBTEncode()
     {
         using var mat = RandomMat(3840, 2160);
@@ -446,6 +500,11 @@ public class BenchmarkWindow : WindowEx
     {
         using var mat = RandomMat(7680, 4320);
         EncodeCbtImage(mat);
+    }
+
+    public void TestCBTEncode(BenchmarkResolution resolution)
+    {
+        EncodeCbtImage(Mats[resolution]);
     }
 
     public void Test4KRandomPW0Encode()
@@ -459,6 +518,43 @@ public class BenchmarkWindow : WindowEx
         using var mat = RandomMat(7680, 4320);
         EncodePW0Image(mat);
     }
+
+    public void TestPW0Encode(BenchmarkResolution resolution)
+    {
+        EncodePW0Image(Mats[resolution]);
+    }
+
+    public void TestPNGCompress(BenchmarkResolution resolution)
+    {
+        Layer.CompressMat(Mats[resolution], Layer.LayerCompressionMethod.Png); 
+    }
+
+    public void TestPNGDecompress(BenchmarkResolution resolution)
+    { }
+
+    public void TestGZipCompress(BenchmarkResolution resolution)
+    {
+        Layer.CompressMat(Mats[resolution], Layer.LayerCompressionMethod.GZip);
+    }
+
+    public void TestGZipDecompress(BenchmarkResolution resolution)
+    { }
+
+    public void TestDeflateCompress(BenchmarkResolution resolution)
+    {
+        Layer.CompressMat(Mats[resolution], Layer.LayerCompressionMethod.Deflate);
+    }
+
+    public void TestDeflateDecompress(BenchmarkResolution resolution)
+    { }
+
+    public void TestLZ4Compress(BenchmarkResolution resolution)
+    {
+        Layer.CompressMat(Mats[resolution], Layer.LayerCompressionMethod.Lz4);
+    }
+
+    public void TestLZ4Decompress(BenchmarkResolution resolution)
+    { }
 
     #endregion
 }

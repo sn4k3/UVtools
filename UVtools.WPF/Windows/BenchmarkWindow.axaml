@@ -9,33 +9,28 @@
         Icon="/Assets/Icons/UVtools.ico"
         SizeToContent="WidthAndHeight"
         WindowStartupLocation="CenterOwner"
-        CanResize="False"
-        >
+        CanResize="False">
 
-  <Grid
-    RowDefinitions="Auto,10,
+  <Grid RowDefinitions="Auto,10,
     Auto,10,
     Auto,10,
     Auto,20,
     Auto,10,
     Auto,20,
-    Auto"
-    >
+    Auto">
   <Border
       Background="{DynamicResource LightBackground}"
     Padding="10"
     BorderBrush="Black"
-    BorderThickness="1"
-    >
-    <TextBlock Text="{Binding Description}"/>
+    BorderThickness="1">
+    <TextBox Classes="TransparentReadOnly" Text="{Binding Description}"/>
     
   </Border>
 
     <Grid
       ColumnDefinitions="Auto,10,*"
       Grid.Row="2"
-      Margin="10"
-      >
+      Margin="10">
 
       <TextBlock
         VerticalAlignment="Center"
@@ -45,27 +40,25 @@
         HorizontalAlignment="Stretch"
         SelectedIndex="{Binding TestSelectedIndex}"
         Items="{Binding Tests}"
-        IsEnabled="{Binding !IsRunning}"
-        />
+        IsEnabled="{Binding !IsRunning}"/>
     </Grid>
 
     <TextBlock
       Margin="10,0"
       Grid.Row="4"
-      FontWeight="Bold" Text="Your results:" />
+      FontWeight="Bold" Text="Your results:"/>
 
     <Grid
     Grid.Row="6"  
     ColumnDefinitions="Auto,5,Auto"
     RowDefinitions="Auto,5,Auto"
-    Margin="10,0"
-    >
+    Margin="10,0">
       <TextBlock 
         HorizontalAlignment="Right"
         Text="Single Thread:" />
       <TextBlock
         Grid.Column="2"
-        Text="{Binding SingleThreadTDPS}" />
+        Text="{Binding SingleThreadTDPS}"/>
 
       <TextBlock
         Grid.Row="2"
@@ -74,13 +67,13 @@
       <TextBlock
         Grid.Row="2"
         Grid.Column="2"
-        Text="{Binding MultiThreadTDPS}" />
+        Text="{Binding MultiThreadTDPS}"/>
     </Grid>
 
     <TextBlock
       Margin="10,0"
       Grid.Row="8"
-      FontWeight="Bold" Text="Developer results:" />
+      FontWeight="Bold" Text="Developer results:"/>
 
     <Grid
     Grid.Row="10"
@@ -93,7 +86,7 @@
         Text="Single Thread:" />
       <TextBlock
         Grid.Column="2"
-        Text="{Binding DevSingleThreadTDPS}" />
+        Text="{Binding DevSingleThreadTDPS}"/>
 
       <TextBlock
         Grid.Row="2"
@@ -102,7 +95,7 @@
       <TextBlock
         Grid.Row="2"
         Grid.Column="2"
-        Text="{Binding DevMultiThreadTDPS}" />
+        Text="{Binding DevMultiThreadTDPS}"/>
     </Grid>
 
     <Grid
@@ -112,8 +105,7 @@
       <ProgressBar
          IsIndeterminate="{Binding IsRunning}"
          IsEnabled="{Binding IsRunning}"
-         VerticalAlignment="Stretch"
-        />
+         VerticalAlignment="Stretch"/>
 
       <Button 
         Name="StartStopButton"
@@ -121,8 +113,7 @@
         Padding="40,10"
         IsDefault="True"
         Content="{Binding StartStopButtonText}"
-        Command="{Binding StartStop}"
-        />
+        Command="{Binding StartStop}"/>
       
     </Grid>
 

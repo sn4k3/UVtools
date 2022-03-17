@@ -283,10 +283,8 @@ public class OperationDoubleExposure : Operation
             layers[i] = SlicerFile[i];
         }
 
-        Parallel.For(LayerIndexStart, LayerIndexEnd + 1, CoreSettings.ParallelOptions, layerIndex =>
+        Parallel.For(LayerIndexStart, LayerIndexEnd + 1, CoreSettings.GetParallelOptions(progress), layerIndex =>
         {
-            if (progress.Token.IsCancellationRequested) return;
-
             var firstLayer = SlicerFile[layerIndex];
             var secondLayer = firstLayer.Clone();
             var isBottomLayer = firstLayer.IsBottomLayer;

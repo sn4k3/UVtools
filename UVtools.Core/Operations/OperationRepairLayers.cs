@@ -247,9 +247,8 @@ public class OperationRepairLayers : Operation
                 if (!issuesGroup.Any()) break; // Nothing to process
 
                 islandsToRecompute.Clear();
-                Parallel.ForEach(issuesGroup, CoreSettings.ParallelOptions, group =>
+                Parallel.ForEach(issuesGroup, CoreSettings.GetParallelOptions(progress), group =>
                 {
-                    if (progress.Token.IsCancellationRequested) return;
                     var layer = SlicerFile[group.Key];
                     var image = layer.LayerMat;
                     var bytes = image.GetDataByteSpan();
@@ -300,7 +299,7 @@ public class OperationRepairLayers : Operation
 
             progress.Reset("Attempt to attach islands below", (uint) islandsToProcess!.Count);
             var sync = new object();
-            Parallel.ForEach(issuesGroup, CoreSettings.ParallelOptions, group =>
+            Parallel.ForEach(issuesGroup, CoreSettings.GetParallelOptions(progress), group =>
             {
                 using var mat = SlicerFile[group.Key].LayerMat;
                 var matSpan = mat.GetDataByteSpan();
@@ -390,9 +389,8 @@ public class OperationRepairLayers : Operation
         progress.Reset(ProgressAction, LayerRangeCount);
         if (_repairIslands || _repairResinTraps)
         {
-            Parallel.For(LayerIndexStart, LayerIndexEnd, CoreSettings.ParallelOptions, layerIndex =>
+            Parallel.For(LayerIndexStart, LayerIndexEnd, CoreSettings.GetParallelOptions(progress), layerIndex =>
             {
-                if (progress.Token.IsCancellationRequested) return;
                 var layer = SlicerFile[layerIndex];
                 Mat? image = null;
 

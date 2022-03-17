@@ -603,6 +603,8 @@ public class ToolWindow : WindowEx
         ToolControl = toolControl;
         toolControl.ParentWindow = this;
         toolControl.Margin = new Thickness(15);
+        ToolControl.BaseOperation.ROI = ROI;
+        ToolControl.BaseOperation.MaskPoints = Masks;
 
         Title = toolControl.BaseOperation.Title;
         //LayerRangeVisible = toolControl.BaseOperation.StartLayerRangeSelection != Enumerations.LayerRangeSelection.None;

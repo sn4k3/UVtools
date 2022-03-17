@@ -519,9 +519,8 @@ public class CXDLPv1File : FileFormat
         var previews = new byte[ThumbnailsOriginalSize!.Length][];
 
         // Previews
-        Parallel.For(0, previews.Length, CoreSettings.ParallelOptions, previewIndex =>
+        Parallel.For(0, previews.Length, CoreSettings.GetParallelOptions(progress), previewIndex =>
         {
-            if (progress.Token.IsCancellationRequested) return;
             var encodeLength = ThumbnailsOriginalSize[previewIndex].Area() * 2;
             if (Thumbnails[previewIndex] is null)
             {
@@ -557,11 +556,8 @@ public class CXDLPv1File : FileFormat
         var layerBytes = new List<byte>[LayerCount];
         foreach (var batch in BatchLayersIndexes())
         {
-            progress.Token.ThrowIfCancellationRequested();
-
-            Parallel.ForEach(batch, CoreSettings.ParallelOptions, layerIndex =>
+            Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), layerIndex =>
             {
-                if (progress.Token.IsCancellationRequested) return;
                 var layer = this[layerIndex];
                 using (var mat = layer.LayerMat)
                 {
@@ -610,8 +606,6 @@ public class CXDLPv1File : FileFormat
                 progress.LockAndIncrement();
             });
 
-            progress.Token.ThrowIfCancellationRequested();
-
             foreach (var layerIndex in batch)
             {
                 outputFile.WriteBytes(layerBytes[layerIndex].ToArray());
@@ -644,7 +638,7 @@ public class CXDLPv1File : FileFormat
             inputFile.Seek(2, SeekOrigin.Current);
         }
 
-        Parallel.For(0, previews.Length, CoreSettings.ParallelOptions, previewIndex =>
+        Parallel.For(0, previews.Length, CoreSettings.GetParallelOptions(progress), previewIndex =>
         {
             Thumbnails[previewIndex] = DecodeImage(DATATYPE_RGB565_BE, previews[previewIndex], ThumbnailsOriginalSize[previewIndex]);
             previews[previewIndex] = null!;
@@ -664,10 +658,10 @@ public class CXDLPv1File : FileFormat
             var linesBytes = new byte[LayerCount][];
             foreach (var batch in BatchLayersIndexes())
             {
-                progress.Token.ThrowIfCancellationRequested();
-
                 foreach (var layerIndex in batch)
                 {
+                    progress.ThrowIfCancellationRequested();
+
                     inputFile.Seek(4, SeekOrigin.Current);
                     var lineCount = BitExtensions.ToUIntBigEndian(inputFile.ReadBytes(4));
 
@@ -675,12 +669,10 @@ public class CXDLPv1File : FileFormat
                     inputFile.ReadBytes(linesBytes[layerIndex]);
                     inputFile.Seek(2, SeekOrigin.Current);
 
-                    progress.Token.ThrowIfCancellationRequested();
                 }
 
-                Parallel.ForEach(batch, CoreSettings.ParallelOptions, layerIndex =>
+                Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), layerIndex =>
                 {
-                    if (progress.Token.IsCancellationRequested) return;
                     using (var mat = EmguExtensions.InitMat(Resolution))
                     {
                         for (int i = 0; i < linesBytes[layerIndex].Length; i++)
@@ -716,8 +708,6 @@ public class CXDLPv1File : FileFormat
         {
             inputFile.Seek(-Helpers.Serializer.SizeOf(FooterSettings), SeekOrigin.End);
         }
-
-        progress.Token.ThrowIfCancellationRequested();
 
         FooterSettings = Helpers.Deserialize<Footer>(inputFile);
         FooterSettings.Validate();

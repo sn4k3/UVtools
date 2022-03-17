@@ -1892,9 +1892,8 @@ public sealed class OperationCalibrateExposureFinder : Operation
             var tableGrouped = table.GroupBy(pair => new {pair.Key.LayerHeight, pair.Key.BottomExposure, pair.Key.Exposure}).Distinct();
             SlicerFile.BottomLayerCount = _bottomLayers;
             progress.ItemCount = (uint) (SlicerFile.LayerCount * table.Count); 
-            Parallel.For(0, SlicerFile.LayerCount, CoreSettings.ParallelOptions, layerIndex =>
+            Parallel.For(0, SlicerFile.LayerCount, CoreSettings.GetParallelOptions(progress), layerIndex =>
             {
-                if (progress.Token.IsCancellationRequested) return;
                 var layer = SlicerFile[layerIndex];
                 using var mat = layer.LayerMat;
                 var matRoi = new Mat(mat, boundingRectangle);
@@ -1964,7 +1963,6 @@ public sealed class OperationCalibrateExposureFinder : Operation
                 }
             });
 
-            progress.Token.ThrowIfCancellationRequested();
             if (parallelLayers.IsEmpty) return false;
             var layers = parallelLayers.OrderBy(layer => layer.PositionZ).ThenBy(layer => layer.ExposureTime).ToList();
 
@@ -1973,7 +1971,7 @@ public sealed class OperationCalibrateExposureFinder : Operation
             Layer currentLayer = layers[0];
             for (var layerIndex = 1; layerIndex < layers.Count; layerIndex++)
             {
-                progress.Token.ThrowIfCancellationRequested();
+                progress.ThrowIfCancellationRequested();
                 progress++;
                 var layer = layers[layerIndex];
                 if (currentLayer.PositionZ != layer.PositionZ ||
@@ -2206,7 +2204,7 @@ public sealed class OperationCalibrateExposureFinder : Operation
                 currentHeight = Layer.RoundHeight(currentHeight);
                 for (decimal layerHeight = _layerHeight; layerHeight <= endLayerHeight; layerHeight += _multipleLayerHeightStep)
                 {
-                    progress.Token.ThrowIfCancellationRequested();
+                    progress.ThrowIfCancellationRequested();
                     layerHeight = Layer.RoundHeight(layerHeight);
 
                     if (_multipleExposures)

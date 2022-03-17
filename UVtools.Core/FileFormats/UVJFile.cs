@@ -502,75 +502,52 @@ public class UVJFile : FileFormat
             stream.Close();
         }
 
-        for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
-        {
-            progress.Token.ThrowIfCancellationRequested();
-
-            Layer layer = this[layerIndex];
-
-            var layerimagePath = $"{FolderImageName}/{layerIndex:D8}.png";
-            outputFile.PutFileContent(layerimagePath, layer.CompressedBytes, ZipArchiveMode.Create);
-                    
-            progress++;
-        }
+        EncodeLayersInZip(outputFile, 8, Enumerations.IndexStartNumber.Zero, progress, FolderImageName);
     }
 
     protected override void DecodeInternally(OperationProgress progress)
     {
-        using (var inputFile = ZipFile.Open(FileFullPath!, ZipArchiveMode.Read))
+        using var inputFile = ZipFile.Open(FileFullPath!, ZipArchiveMode.Read);
+        var entry = inputFile.GetEntry(FileConfigName);
+        if (entry is null)
         {
-            var entry = inputFile.GetEntry(FileConfigName);
-            if (entry is null)
-            {
-                Clear();
-                throw new FileLoadException($"{FileConfigName} not found", FileFullPath);
-            }
-
-            JsonSettings = JsonSerializer.Deserialize<Settings>(entry.Open())!;
-                
-            Init(JsonSettings.Properties.Size.Layers, DecodeType == FileDecodeType.Partial);
-
-            entry = inputFile.GetEntry(FilePreviewTinyName);
-            if (entry is not null)
-            {
-                using var stream = entry.Open();
-                Mat image = new();
-                CvInvoke.Imdecode(stream.ToArray(), ImreadModes.AnyColor, image);
-                Thumbnails[0] = image;
-                stream.Close();
-            }
-
-            entry = inputFile.GetEntry(FilePreviewHugeName);
-            if (entry is not null)
-            {
-                using var stream = entry.Open();
-                Mat image = new();
-                CvInvoke.Imdecode(stream.ToArray(), ImreadModes.AnyColor, image);
-                Thumbnails[1] = image;
-                stream.Close();
-            }
-
-            for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
-            {
-                entry = inputFile.GetEntry($"{FolderImageName}/{layerIndex:D8}.png");
-                if (entry is null) continue;
-
-                if (DecodeType == FileDecodeType.Full)
-                {
-                    using var stream = entry.Open();
-                    this[layerIndex] = new Layer(layerIndex, stream, this);
-                }
-
-                if (JsonSettings.Layers?.Count > layerIndex)
-                {
-                    JsonSettings.Layers[(int)layerIndex].CopyTo(this[layerIndex]);
-                }
-            }
-                
-            progress.ProcessedItems++;
+            Clear();
+            throw new FileLoadException($"{FileConfigName} not found", FileFullPath);
         }
 
-        GetBoundingRectangle(progress);
+        JsonSettings = JsonSerializer.Deserialize<Settings>(entry.Open())!;
+                
+        Init(JsonSettings.Properties.Size.Layers, DecodeType == FileDecodeType.Partial);
+
+        entry = inputFile.GetEntry(FilePreviewTinyName);
+        if (entry is not null)
+        {
+            using var stream = entry.Open();
+            Mat image = new();
+            CvInvoke.Imdecode(stream.ToArray(), ImreadModes.AnyColor, image);
+            Thumbnails[0] = image;
+            stream.Close();
+        }
+
+        entry = inputFile.GetEntry(FilePreviewHugeName);
+        if (entry is not null)
+        {
+            using var stream = entry.Open();
+            Mat image = new();
+            CvInvoke.Imdecode(stream.ToArray(), ImreadModes.AnyColor, image);
+            Thumbnails[1] = image;
+            stream.Close();
+        }
+
+        DecodeLayersFromZip(inputFile, progress);
+
+        for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
+        {
+            if (JsonSettings.Layers?.Count > layerIndex)
+            {
+                JsonSettings.Layers[(int)layerIndex].CopyTo(this[layerIndex]);
+            }
+        }
     }
 
     protected override void PartialSaveInternally(OperationProgress progress)
