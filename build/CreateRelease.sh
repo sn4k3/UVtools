@@ -44,7 +44,7 @@ while getopts 'bzk' flag; do
     *) echo "Usage:"
         echo "clean Cleans the publish folder and it's contents"
         echo "-b    Bundle and wrap the appication into (.App for mac) or (.AppImage for linux)"
-        echo "-k    Keep the publish contents for the packed runtimes when bundling .App and .AppImage"
+        echo "-k    Keeps the publish contents for the packed runtimes when bundling .App and .AppImage (-b)"
         echo "-z    Zip published package"
         exit 1 ;;
   esac
