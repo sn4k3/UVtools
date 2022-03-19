@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright 2022 PTRTECH -->
+<component type="desktop-application">
+  <id>org.UVtools</id>
+  <metadata_license>FSFAP</metadata_license>
+  <project_license>AGPL-3.0</project_license>
+  <name>UVtools</name>
+  <summary>MSLA/DLP, file analysis, calibration, repair, conversion and manipulation</summary>
+
+  <description>
+    <p>
+      MSLA/DLP, file analysis, calibration, repair, conversion and manipulation
+    </p>
+  </description>
+
+  <launchable type="desktop-id">UVtools.desktop</launchable>
+
+  <screenshots>
+    <screenshot type="default">
+      <caption>The options dialog</caption>
+      <image>https://raw.githubusercontent.com/sn4k3/UVtools/master/wiki/UI1.png</image>
+    </screenshot>
+  </screenshots>
+
+  <url type="homepage">https://github.com/sn4k3/UVtools</url>
+  <developer_name>Tiago Conceição</developer_name>
+  <update_contact>tiago_caza_AT_hotmail.com</update_contact>
+
+  <provides>
+    <binary>UVtools</binary>
+  </provides>
+
+    <!--
+  <releases>
+    <release version="3.12.2" date="2013-04-12">
+      <description>
+        <p>Fixes issues X, Y and Z</p>
+      </description>
+    </release>
+  </releases>
+  -->
+</component>
