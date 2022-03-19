@@ -1,7 +1,7 @@
 #!/bin/bash
 #
-# Script to publish UVtools to a platform
-# Clone first from git
+# Script to publish and pack UVtools to a platform
+# Clone the repo first from github:
 # git clone https://github.com/sn4k3/UVtools
 # Then run this script
 # usage: ./CreateRelease.sh osx-x64
