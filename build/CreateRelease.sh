@@ -143,6 +143,7 @@ else
         rm -rf "$linuxApp" 2>/dev/null
         
         cp -rf "$platformsDir/AppImage/." "$linuxApp"
+        cp -f "$rootDir/UVtools.CAD/UVtools.png" "$linuxApp/"
         mkdir -p "$linuxApp/usr/bin"
         cp -a "$publishRuntimeDir/." "$linuxApp/usr/bin"   
 
