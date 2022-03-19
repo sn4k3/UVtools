@@ -1,5 +1,5 @@
 # Script working directory
-Set-Location $PSScriptRoot\..
+Set-Location $PSScriptRoot\..\..
 
 ####################################
 ###         Configuration        ###

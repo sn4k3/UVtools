@@ -1,4 +1,4 @@
-Set-Location $PSScriptRoot\..
+Set-Location $PSScriptRoot\..\..
 ####################################
 ###         Configuration        ###
 ####################################
