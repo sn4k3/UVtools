@@ -33,15 +33,18 @@ if [[ $runtime = "clean" ]]; then
     exit
 fi
 
+bundlePublish=false
 keepNetPublish=false
 zipPackage=false
-while getopts 'zk' flag; do
+while getopts 'bzk' flag; do
   case "${flag}" in
+    b) bundlePublish=true ;;
     k) keepNetPublish=true ;;
     z) zipPackage=true ;;
     *) echo "Usage:"
-        echo "clean Cleans the publish folder"
-        echo "-k    Keep the .NET publish for the packed runtimes when bundling .App and .AppImage"
+        echo "clean Cleans the publish folder and it's contents"
+        echo "-b    Bundle and wrap the appication into (.App for mac) or (.AppImage for linux)"
+        echo "-k    Keep the publish contents for the packed runtimes when bundling .App and .AppImage"
         echo "-z    Zip published package"
         exit 1 ;;
   esac
@@ -100,74 +103,78 @@ chmod -fv a+x "$publishRuntimeDir/UVtools"
 chmod -fv a+x "$publishRuntimeDir/UVtools.sh"
 
 if [[ $runtime = osx-* ]]; then
-    echo "6. macOS: Creating app bundle"
-    osxApp="$publishDir/$publishName.app"
-    rm -rf "$osxApp" 2>/dev/null
-    mkdir -p "$osxApp/Contents/MacOS"
-    mkdir -p "$osxApp/Contents/Resources"
+    if [[ $bundlePublish = true ]]; then
+        echo "6. macOS: Creating app bundle"
+        osxApp="$publishDir/$publishName.app"
+        rm -rf "$osxApp" 2>/dev/null
+        mkdir -p "$osxApp/Contents/MacOS"
+        mkdir -p "$osxApp/Contents/Resources"
 
-    cp -f "$rootDir/UVtools.CAD/UVtools.icns" "$osxApp/Contents/Resources/"
-    cp -f "$platformsDir/osx/Info.plist" "$osxApp/Contents/"
-    cp -f "$platformsDir/osx/UVtools.entitlements" "$osxApp/Contents/"
-    cp -a "$publishRuntimeDir/." "$osxApp/Contents/MacOS"
-    sed -i "s/#VERSION/$version/g" "$osxApp/Contents/Info.plist"
+        cp -f "$rootDir/UVtools.CAD/UVtools.icns" "$osxApp/Contents/Resources/"
+        cp -f "$platformsDir/osx/Info.plist" "$osxApp/Contents/"
+        cp -f "$platformsDir/osx/UVtools.entitlements" "$osxApp/Contents/"
+        cp -a "$publishRuntimeDir/." "$osxApp/Contents/MacOS"
+        sed -i "s/#VERSION/$version/g" "$osxApp/Contents/Info.plist"
 
-    # Remove the base publish if able
-    [ "$keepNetPublish" = false ] && rm -rf "$publishRuntimeDir" 2>/dev/null
+        # Remove the base publish if able
+        [ "$keepNetPublish" = false ] && rm -rf "$publishRuntimeDir" 2>/dev/null
 
-    # Packing AppImage
-    if [ "$zipPackage" = true -a -d "$osxApp" ] ; then
-        echo "7. Compressing '$publishName.app' to '$publishName.zip'"
-        cd "$publishDir"
-        mv "$publishName.app" "UVtools.app"
-        zip -r "$publishDir/$publishName.zip" "UVtools.app"
-        mv "UVtools.app" "$publishName.app"
-        cd "$rootDir"
-        zipPackage=false
-    else
-        echo "7. Skipping Zip"
+        # Packing AppImage
+        if [ "$zipPackage" = true -a -d "$osxApp" ] ; then
+            echo "7. Compressing '$publishName.app' to '$publishName.zip'"
+            cd "$publishDir"
+            mv "$publishName.app" "UVtools.app"
+            zip -r "$publishDir/$publishName.zip" "UVtools.app"
+            mv "UVtools.app" "$publishName.app"
+            cd "$rootDir"
+            zipPackage=false
+        else
+            echo "7. Skipping Zip"
+        fi
     fi
 elif [[ $runtime = win-* ]]; then
     echo "6. Windows should be published in a windows machine!"
 else
-    echo "6. Linux: Creating AppImage bundle"
-    linuxApp="$publishDir/$publishName.AppDir"
-    linuxAppImage="$publishDir/$publishName.AppImage"
-    rm -f "$linuxAppImage" 2>/dev/null
-    rm -rf "$linuxApp" 2>/dev/null
-    
-    cp -rf "$platformsDir/AppImage/." "$linuxApp"
-    mkdir -p "$linuxApp/usr/bin"
-    cp -a "$publishRuntimeDir/." "$linuxApp/usr/bin"   
+    if [[ $bundlePublish = true ]]; then
+        echo "6. Linux: Creating AppImage bundle"
+        linuxApp="$publishDir/$publishName.AppDir"
+        linuxAppImage="$publishDir/$publishName.AppImage"
+        rm -f "$linuxAppImage" 2>/dev/null
+        rm -rf "$linuxApp" 2>/dev/null
+        
+        cp -rf "$platformsDir/AppImage/." "$linuxApp"
+        mkdir -p "$linuxApp/usr/bin"
+        cp -a "$publishRuntimeDir/." "$linuxApp/usr/bin"   
 
-    # Download the AppImage creation tool and make it executable
-    wget "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage"
-    chmod a+x "appimagetool-x86_64.AppImage"
-    # Extract AppImage so it can be run in Docker containers and on  machines that don't have FUSE installed
-    # Note: Extracting requires libglib2.0-0 to be installed
-    ./appimagetool-x86_64.AppImage --appimage-extract
+        # Download the AppImage creation tool and make it executable
+        wget "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage"
+        chmod a+x "appimagetool-x86_64.AppImage"
+        # Extract AppImage so it can be run in Docker containers and on  machines that don't have FUSE installed
+        # Note: Extracting requires libglib2.0-0 to be installed
+        ./appimagetool-x86_64.AppImage --appimage-extract
 
-    # Create the AppImage
-    ARCH=x86_64 ./squashfs-root/AppRun "$linuxApp" "$linuxAppImage"
-    chmod a+x "$linuxAppImage"
+        # Create the AppImage
+        ARCH=x86_64 ./squashfs-root/AppRun "$linuxApp" "$linuxAppImage"
+        chmod a+x "$linuxAppImage"
 
-    # Remove the tool
-    rm -f "appimagetool-x86_64.AppImage"
-    rm -rf "./squashfs-root"
+        # Remove the tool
+        rm -f "appimagetool-x86_64.AppImage"
+        rm -rf "./squashfs-root"
 
-    # Remove the base publish if able
-    [ "$keepNetPublish" = false ] && rm -rf "$publishRuntimeDir" 2>/dev/null
+        # Remove the base publish if able
+        [ "$keepNetPublish" = false ] && rm -rf "$publishRuntimeDir" 2>/dev/null
 
-    # Packing AppImage
-    if [ "$zipPackage" = true -a -f "$linuxAppImage" ] ; then
-        echo "7. Compressing '$publishName.AppImage' to '$publishName.zip'"
-        cd "$publishDir"
-        zip "$publishDir/$publishName.zip" "$publishName.AppImage"
-        printf "@ $publishName.AppImage\n@=UVtools.AppImage\n" | zipnote -w "$publishDir/$publishName.zip"
-        cd "$rootDir"
-        zipPackage=false
-    else
-        echo "7. Skipping Zip"
+        # Packing AppImage
+        if [ "$zipPackage" = true -a -f "$linuxAppImage" ] ; then
+            echo "7. Compressing '$publishName.AppImage' to '$publishName.zip'"
+            cd "$publishDir"
+            zip "$publishDir/$publishName.zip" "$publishName.AppImage"
+            printf "@ $publishName.AppImage\n@=UVtools.AppImage\n" | zipnote -w "$publishDir/$publishName.zip"
+            cd "$rootDir"
+            zipPackage=false
+        else
+            echo "7. Skipping Zip"
+        fi
     fi
 fi
 
