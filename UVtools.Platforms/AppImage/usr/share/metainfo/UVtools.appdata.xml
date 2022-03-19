@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Copyright 2022 PTRTECH -->
 <component type="desktop-application">
-  <id>org.UVtools</id>
+  <id>org.UVtools.</id>
   <metadata_license>FSFAP</metadata_license>
   <project_license>AGPL-3.0</project_license>
   <name>UVtools</name>
