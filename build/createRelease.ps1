@@ -179,11 +179,11 @@ Set-Location $PSScriptRoot\..
 ####################################
 $enableMSI = $true
 #$buildOnly = 'win-x64'
-#$buildOnly = 'linux-x64'
+$buildOnly = 'linux-x64'
 #$buildOnly = 'osx-x64'
 #$buildOnly = 'osx-arm64'
 $zipPackages = $true
-$enableNugetPublish = $true
+#$enableNugetPublish = $true
 
 # Profilling
 $stopWatch = New-Object -TypeName System.Diagnostics.Stopwatch 
@@ -197,15 +197,11 @@ $project = "UVtools.WPF"
 $buildWith = "Release"
 $netFolder = "net6.0"
 $rootFolder = $(Get-Location)
+$buildFolder = "$rootFolder\build"
 $releaseFolder = "$project\bin\$buildWith\$netFolder"
 $objFolder = "$project\obj\$buildWith\$netFolder"
 $publishFolder = "publish"
 $platformsFolder = "UVtools.Platforms"
-
-# Not supported yet! No fuse on WSL
-$appImageFile = 'appimagetool-x86_64.AppImage'
-$appImageFilePath = "$platformsFolder/AppImage/$appImageFile"
-$appImageUrl = "https://github.com/AppImage/AppImageKit/releases/download/continuous/$appImageFile"
 
 $macIcns = "UVtools.CAD/UVtools.icns"
 
@@ -235,7 +231,7 @@ Version: $version [$buildWith]
 ###   Clean up previous publish  ###
 ####################################
 # Clean up previous publish
-Remove-Item $publishFolder -Recurse -ErrorAction Ignore # Clean
+#Remove-Item $publishFolder -Recurse -ErrorAction Ignore # Clean
 
 ####################################
 ###    Self-contained runtimes   ###
@@ -284,10 +280,6 @@ $runtimes =
 }
 
 
-# https://github.com/AppImage/AppImageKit/wiki/Bundling-.NET-Core-apps
-#Invoke-WebRequest -Uri $appImageUrl -OutFile $appImageFilePath
-#wsl chmod a+x $appImageFilePath
-
 if($null -ne $enableNugetPublish -and $enableNugetPublish)
 {
     $nugetApiKeyFile = 'build/secret/nuget_api.key'
@@ -316,73 +308,40 @@ foreach ($obj in $runtimes.GetEnumerator()) {
     $deployStopWatch.Restart()
     $runtime = $obj.Name;       # runtime name
     $extraCmd = $obj.extraCmd;  # extra cmd to run with dotnet
-    $targetZip = "$publishFolder/${software}_${runtime}_v$version.zip"  # Target zip filename
-    
-    # Deploy
-    Write-Output "################################
-Building: $runtime"
-    dotnet publish $project -o "$publishFolder/$runtime" -c $buildWith -r $runtime -p:PublishReadyToRun=true --self-contained $extraCmd
 
-    New-Item "$publishFolder/$runtime/runtime_package.dat" -ItemType File -Value $runtime
-    if(!$runtime.Equals('win-x64'))
+    $publishName="UVtools_${runtime}_v$version"
+    if($runtime.StartsWith("win-"))
     {
-        # Fix permissions
-        wsl chmod +x "$publishFolder/$runtime/UVtools" `|`| :
-        wsl chmod +x "$publishFolder/$runtime/UVtools.sh" `|`| :
-    }
-    
-    # Cleanup
-    Remove-Item "$releaseFolder\$runtime" -Recurse -ErrorAction Ignore
-    Remove-Item "$objFolder\$runtime" -Recurse -ErrorAction Ignore
-    Write-Output "$releaseFolder\$runtime"
-    
-    foreach ($excludeObj in $obj.Value.exclude) {
-        Write-Output "Excluding: $excludeObj"
-        Remove-Item "$publishFolder\$runtime\$excludeObj" -Recurse -ErrorAction Ignore
-    }
-
-    foreach ($includeObj in $obj.Value.include) {
-        Write-Output "Including: $includeObj"
-        Copy-Item "$platformsFolder\$runtime\$includeObj" -Destination "$publishFolder\$runtime"  -Recurse -ErrorAction Ignore
-    }
-
-    #if($runtime.Equals('linux-x64')){
-    #    $appDirDest = "$publishFolder/AppImage.$runtime/AppDir"
-    #    Copy-Item "$platformsFolder/AppImage/AppDir" $appDirDest -Force -Recurse
-    #    wsl chmod 755 "$appDirDest/AppRun"
-    #    wsl cp -a "$publishFolder/$runtime/." "$appDirDest/usr/bin"
-    #    wsl $appImageFilePath $appDirDest
-    #}
-    if($runtime.StartsWith('osx-')){
-        $macAppFolder = "${software}.app"
-        $macPublishFolder = "$publishFolder/${macAppFolder}"
-        $macInfoplist = "$platformsFolder/osx/Info.plist"
-        $macEntitlements = "$platformsFolder/osx/UVtools.entitlements"
-        $macContents = "$macPublishFolder/Contents"
-        $macTargetZipLegacy = "$publishFolder/${software}_${runtime}-legacy_v$version.zip"
-
-        New-Item -ItemType directory -Path $macPublishFolder
-        New-Item -ItemType directory -Path "$macPublishFolder/Contents"
-        New-Item -ItemType directory -Path "$macPublishFolder/Contents/MacOS"
-        New-Item -ItemType directory -Path "$macPublishFolder/Contents/Resources"
-
+        $targetZip = "$publishFolder/${software}_${runtime}_v$version.zip"  # Target zip filename
         
-        Copy-Item $macIcns -Destination "$macPublishFolder/Contents/Resources"
-        ((Get-Content -Path $macInfoplist) -replace '#VERSION',"$version") | Set-Content -Path "$macContents/Info.plist"
-        Copy-Item $macEntitlements -Destination $macContents
-        wsl cp -a "$publishFolder/$runtime/." "$macPublishFolder/Contents/MacOS"
-        wsl chmod +x "$macPublishFolder/Contents/MacOS/UVtools"
+        # Deploy
+        Write-Output "################################
+    Building: $runtime"
+        dotnet publish $project -o "$publishFolder/$publishName" -c $buildWith -r $runtime -p:PublishReadyToRun=true --self-contained $extraCmd
 
-        if($null -ne $zipPackages -and $zipPackages)
-        {
-            wsl cd "$publishFolder/" `&`& pwd `&`& zip -r "../$targetZip" "$macAppFolder/*"
-            #wsl cd "$publishFolder/$runtime" `&`& pwd `&`& zip -r "../../$macTargetZipLegacy" .
+        New-Item "$publishFolder/$publishName/runtime_package.dat" -ItemType File -Value $runtime
+        #if(!$runtime.Equals('win-x64'))
+        #{
+        #    # Fix permissions
+        #    wsl chmod +x "$publishFolder/$runtime/UVtools" `|`| :
+        #    wsl chmod +x "$publishFolder/$runtime/UVtools.sh" `|`| :
+        #}
+        
+        # Cleanup
+        Remove-Item "$releaseFolder\$runtime" -Recurse -ErrorAction Ignore
+        Remove-Item "$objFolder\$runtime" -Recurse -ErrorAction Ignore
+        Write-Output "$releaseFolder\$runtime"
+        
+        foreach ($excludeObj in $obj.Value.exclude) {
+            Write-Output "Excluding: $excludeObj"
+            Remove-Item "$publishFolder\$runtime\$excludeObj" -Recurse -ErrorAction Ignore
         }
 
-        Rename-Item -Path $macPublishFolder -NewName "${macAppFolder}_${runtime}"
-        
-    }
-    else {
+        foreach ($includeObj in $obj.Value.include) {
+            Write-Output "Including: $includeObj"
+            Copy-Item "$platformsFolder\$runtime\$includeObj" -Destination "$publishFolder\$runtime"  -Recurse -ErrorAction Ignore
+        }
+
         if($null -ne $zipPackages -and $zipPackages)
         {
             Write-Output "Compressing $runtime to: $targetZip"
@@ -390,6 +349,56 @@ Building: $runtime"
             wsl cd "$publishFolder/$runtime" `&`& pwd `&`& zip -r "../../$targetZip" .
         }
     }
+    else
+    {
+        wsl bash "build/createRelease.sh" -b -z $runtime
+    }
+
+    # Old
+    #if($runtime.Equals('linux-x64')){
+    #    $appDirDest = "$publishFolder/AppImage.$runtime/AppDir"
+    #    Copy-Item "$platformsFolder/AppImage/AppDir" $appDirDest -Force -Recurse
+    #    wsl chmod 755 "$appDirDest/AppRun"
+    #    wsl cp -a "$publishFolder/$runtime/." "$appDirDest/usr/bin"
+    #    wsl $appImageFilePath $appDirDest
+    #}
+    #if($runtime.StartsWith('osx-')){
+    #    $macAppFolder = "${software}.app"
+    #    $macPublishFolder = "$publishFolder/${macAppFolder}"
+    #    $macInfoplist = "$platformsFolder/osx/Info.plist"
+    #    $macEntitlements = "$platformsFolder/osx/UVtools.entitlements"
+    #    $macContents = "$macPublishFolder/Contents"
+    #    $macTargetZipLegacy = "$publishFolder/${software}_${runtime}-legacy_v$version.zip"
+    #
+    #    New-Item -ItemType directory -Path $macPublishFolder
+    #    New-Item -ItemType directory -Path "$macPublishFolder/Contents"
+    #    New-Item -ItemType directory -Path "$macPublishFolder/Contents/MacOS"
+    #    New-Item -ItemType directory -Path "$macPublishFolder/Contents/Resources"
+    #
+    #    
+    #    Copy-Item $macIcns -Destination "$macPublishFolder/Contents/Resources"
+    #    ((Get-Content -Path $macInfoplist) -replace '#VERSION',"$version") | Set-Content -Path "$macContents/Info.plist"
+    #    Copy-Item $macEntitlements -Destination $macContents
+    #    wsl cp -a "$publishFolder/$runtime/." "$macPublishFolder/Contents/MacOS"
+    #    wsl chmod +x "$macPublishFolder/Contents/MacOS/UVtools"
+    #
+    #    if($null -ne $zipPackages -and $zipPackages)
+    #    {
+    #        wsl cd "$publishFolder/" `&`& pwd `&`& zip -r "../$targetZip" "$macAppFolder/*"
+    #        #wsl cd "$publishFolder/$runtime" `&`& pwd `&`& zip -r "../../$macTargetZipLegacy" .
+    #    }
+    #
+    #    Rename-Item -Path $macPublishFolder -NewName "${macAppFolder}_${runtime}"
+    #    
+    #}
+    #else {
+    #    if($null -ne $zipPackages -and $zipPackages)
+    #    {
+    #        Write-Output "Compressing $runtime to: $targetZip"
+    #        Write-Output $targetZip "$publishFolder/$runtime"
+    #        wsl cd "$publishFolder/$runtime" `&`& pwd `&`& zip -r "../../$targetZip" .
+    #    }
+    #}
 
     # Zip
     #Write-Output "Compressing $runtime to: $targetZip"
