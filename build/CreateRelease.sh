@@ -5,8 +5,8 @@
 # git clone https://github.com/sn4k3/UVtools
 # Then run this script
 # usage 1: ./CreateRelease.sh clean
-# usage 2: ./CreateRelease.sh osx-x64
-# usage 3: ./CreateRelease.sh -z osx-x64
+# usage 2: ./CreateRelease.sh -b osx-x64
+# usage 3: ./CreateRelease.sh -b -z osx-x64
 #
 cd "$(dirname "$0")"
 cd ..

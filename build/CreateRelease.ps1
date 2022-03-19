@@ -290,7 +290,7 @@ $runtimes =
 
 if($null -ne $enableNugetPublish -and $enableNugetPublish)
 {
-    $nugetApiKeyFile = 'build/nuget_api.key'
+    $nugetApiKeyFile = 'build/secret/nuget_api.key'
     if (Test-Path -Path $nugetApiKeyFile -PathType Leaf)
     {
         Write-Output "Creating nuget package"

@@ -4,7 +4,7 @@ Set-Location $PSScriptRoot\..
 ####################################
 # Variables
 $package = "UVtools.AvaloniaControls"
-$nugetApiKeyFile = 'build/nuget_api.key'
+$nugetApiKeyFile = 'build/secret/nuget_api.key'
 $outputFolder = "$package/bin/Release"
 
 $projectXml = [Xml] (Get-Content "$package\$package.csproj")
