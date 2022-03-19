@@ -33,8 +33,8 @@ if [[ $runtime = "clean" ]]; then
     exit
 fi
 
-zipPackage=false
 keepNetPublish=false
+zipPackage=false
 while getopts 'zk' flag; do
   case "${flag}" in
     k) keepNetPublish=true ;;
