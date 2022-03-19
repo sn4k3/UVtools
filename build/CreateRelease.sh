@@ -10,6 +10,7 @@
 #
 cd "$(dirname "$0")"
 cd ..
+[ ! -d "UVtools.Core" ] && echo "UVtools.Core not found!" && exit -1
 
 #runtime=$1
 for runtime in $@; do :; done # Get last argument
