@@ -4,9 +4,9 @@
 # Clone the repo first from github:
 # git clone https://github.com/sn4k3/UVtools
 # Then run this script
-# usage 1: ./createRelease.sh clean
-# usage 2: ./createRelease.sh -b osx-x64
-# usage 3: ./createRelease.sh -b -z osx-x64
+# usage 1: ./CreateRelease.sh clean
+# usage 2: ./CreateRelease.sh -b osx-x64
+# usage 3: ./CreateRelease.sh -b -z osx-x64
 #
 cd "$(dirname "$0")"
 cd ..
@@ -15,7 +15,6 @@ cd ..
 #runtime=$1
 for runtime in $@; do :; done # Get last argument
 rootDir="$(pwd)"
-toolsDir="$rootDir/build/tools"
 coreDir="$rootDir/UVtools.Core"
 version="$(grep -oP '<Version>\K(\d\.\d\.\d)(?=<\/Version>)' $coreDir/UVtools.Core.csproj)"
 platformsDir="$rootDir/UVtools.Platforms"
@@ -27,8 +26,6 @@ buildProject="UVtools.WPF"
 buildWith="Release"
 projectDir="$rootDir/$buildProject"
 netVersion="6.0"
-
-toolAppImage="$toolsDir/appimagetool-x86_64/AppRun"
 
 if [[ $runtime = "clean" ]]; then
     echo "Cleaning publish directory"
@@ -148,10 +145,20 @@ else
         cp -f "$rootDir/UVtools.CAD/UVtools.png" "$linuxAppDir/"
         mkdir -p "$linuxAppDir/usr/bin"
         cp -a "$publishRuntimeDir/." "$linuxAppDir/usr/bin"   
-       
+
+        # Download the AppImage creation tool and make it executable
+        tempDir="$(mktemp -d /tmp/uvtoolspublish.XXXXXX)" # Allow parallel publishes
+        appImageFile="appimagetool-x86_64"
+        wget -O "$tempDir/appimagetool-x86_64.AppImage" "https://github.com/AppImage/AppImageKit/releases/download/continuous/$appImageFile.AppImage"
+        chmod a+x "$tempDir/$appImageFile.AppImage"
+        # Extract AppImage so it can be run in Docker containers and on  machines that don't have FUSE installed
+        # Note: Extracting requires libglib2.0-0 to be installed
+        cd "$tempDir"
+        "./$appImageFile.AppImage" --appimage-extract
+        cd "$rootDir"
+
         # Create the AppImage
-        chmod a+x "$toolAppImage"
-        ARCH=x86_64 "$toolAppImage" "$linuxAppDir" "$linuxAppImage"
+        ARCH=x86_64 "$tempDir/squashfs-root/AppRun" "$linuxAppDir" "$linuxAppImage"
         chmod a+x "$linuxAppImage"
 
         # Remove the base publish if able
@@ -170,6 +177,7 @@ else
         #fi
 
         # Remove the tool & cleanup
+        rm -rf "$tempDir"
         rm -rf "$linuxAppDir" 2>/dev/null
     fi
 fi
