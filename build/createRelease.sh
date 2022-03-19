@@ -16,7 +16,8 @@ cd ..
 for runtime in $@; do :; done # Get last argument
 rootDir="$(pwd)"
 coreDir="$rootDir/UVtools.Core"
-version="$(grep -oP '<Version>\K(\d\.\d\.\d)(?=<\/Version>)' $coreDir/UVtools.Core.csproj)"
+#version="$(grep -oP '<Version>\K(\d\.\d\.\d)(?=<\/Version>)' "$coreDir/UVtools.Core.csproj")" # Not supported on recent macos!
+version="$(perl -nle'print $& while m{<Version>\K(\d\.\d\.\d)(?=<\/Version>)}g' "$coreDir/UVtools.Core.csproj")"
 platformsDir="$rootDir/UVtools.Platforms"
 runtimePlatformDir="$platformsDir/$runtime"
 publishName="UVtools_${runtime}_v$version"
@@ -91,7 +92,8 @@ dotnet publish $buildProject -o "$publishRuntimeDir" -c $buildWith -r $runtime -
 
 echo "3. Copying dependencies"
 echo $runtime > "$publishRuntimeDir/runtime_package.dat"
-find "$runtimePlatformDir" -type f | grep -i lib | xargs -i cp -fv {} "$publishRuntimeDir/"
+#find "$runtimePlatformDir" -type f | grep -i lib | xargs -i cp -fv {} "$publishRuntimeDir/"
+cp -afv "$runtimePlatformDir/." "$publishRuntimeDir/"
 
 echo "4. Cleaning up"
 rm -rf "$projectDir/bin/$buildWith/net$netVersion/$runtime" 2>/dev/null
@@ -109,9 +111,9 @@ if [[ $runtime = osx-* ]]; then
         mkdir -p "$osxApp/Contents/MacOS"
         mkdir -p "$osxApp/Contents/Resources"
 
-        cp -f "$rootDir/UVtools.CAD/UVtools.icns" "$osxApp/Contents/Resources/"
-        cp -f "$platformsDir/osx/Info.plist" "$osxApp/Contents/"
-        cp -f "$platformsDir/osx/UVtools.entitlements" "$osxApp/Contents/"
+        cp -af "$rootDir/UVtools.CAD/UVtools.icns" "$osxApp/Contents/Resources/"
+        cp -af "$platformsDir/osx/Info.plist" "$osxApp/Contents/"
+        cp -af "$platformsDir/osx/UVtools.entitlements" "$osxApp/Contents/"
         cp -a "$publishRuntimeDir/." "$osxApp/Contents/MacOS"
         sed -i "s/#VERSION/$version/g" "$osxApp/Contents/Info.plist"
 
@@ -141,8 +143,8 @@ else
         rm -f "$linuxAppImage" 2>/dev/null
         rm -rf "$linuxAppDir" 2>/dev/null
         
-        cp -rf "$platformsDir/AppImage/." "$linuxAppDir"
-        cp -f "$rootDir/UVtools.CAD/UVtools.png" "$linuxAppDir/"
+        cp -arf "$platformsDir/AppImage/." "$linuxAppDir"
+        cp -af "$rootDir/UVtools.CAD/UVtools.png" "$linuxAppDir/"
         mkdir -p "$linuxAppDir/usr/bin"
         cp -a "$publishRuntimeDir/." "$linuxAppDir/usr/bin"   
 
