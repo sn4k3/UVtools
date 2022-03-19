@@ -55,7 +55,7 @@ then
 fi
 
 if [ -z "$version" ]; then
-    echo "Core version not found, please check path and script"
+    echo "UVtools version not found, please check path and script"
     exit -1
 fi
 
