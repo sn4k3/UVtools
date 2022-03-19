@@ -356,8 +356,8 @@ Building: $runtime"
     if($runtime.StartsWith('osx-')){
         $macAppFolder = "${software}.app"
         $macPublishFolder = "$publishFolder/${macAppFolder}"
-        $macInfoplist = "$platformsFolder/$runtime/Info.plist"
-        $macEntitlements = "$platformsFolder/$runtime/UVtools.entitlements"
+        $macInfoplist = "$platformsFolder/osx/Info.plist"
+        $macEntitlements = "$platformsFolder/osx/UVtools.entitlements"
         $macContents = "$macPublishFolder/Contents"
         $macTargetZipLegacy = "$publishFolder/${software}_${runtime}-legacy_v$version.zip"
 
