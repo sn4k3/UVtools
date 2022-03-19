@@ -123,7 +123,7 @@ if [[ $runtime = osx-* ]]; then
             echo "7. Compressing '$publishName.app' to '$publishName.zip'"
             cd "$publishDir"
             mv "$publishName.app" "UVtools.app"
-            zip -r "$publishDir/$publishName.zip" "UVtools.app"
+            zip -rq "$publishDir/$publishName.zip" "UVtools.app"
             mv "UVtools.app" "$publishName.app"
             cd "$rootDir"
             zipPackage=false
@@ -168,7 +168,7 @@ else
         #if [ "$zipPackage" = true -a -f "$linuxAppImage" ] ; then
         #    echo "7. Compressing '$publishName.AppImage' to '$publishName.zip'"
         #    cd "$publishDir"
-        #    zip "$publishDir/$publishName.zip" "$publishName.AppImage"
+        #    zip -q "$publishDir/$publishName.zip" "$publishName.AppImage"
         #    printf "@ $publishName.AppImage\n@=UVtools.AppImage\n" | zipnote -w "$publishDir/$publishName.zip"
         #    cd "$rootDir"
         #    zipPackage=false
@@ -186,7 +186,7 @@ fi
 if [ "$zipPackage" = true -a -d "$publishRuntimeDir" ] ; then
     echo "7. Compressing '$runtime' to '$publishName.zip'"
     cd "$publishRuntimeDir"
-    zip -r "$publishDir/$publishName.zip" .
+    zip -rq "$publishDir/$publishName.zip" .
     cd "$rootDir"
 else
      echo "7. Skipping Zip"
