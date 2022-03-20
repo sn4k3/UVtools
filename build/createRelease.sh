@@ -55,29 +55,29 @@ done
 # Checks
 if ! command -v dotnet &> /dev/null
 then
-    echo "dotnet not installed, please install .NET SDK $netVersion.x, dotnet-sdk or dotnet-sdk-$netVersion"
+    echo "Error: dotnet not installed, please install .NET SDK $netVersion.x, dotnet-sdk or dotnet-sdk-$netVersion"
     exit
 fi
 
 if [ -z "$version" ]; then
-    echo "UVtools version not found, please check path and script"
+    echo "Error: UVtools version not found, please check path and script"
     exit -1
 fi
 
 if [ -z "$runtime" ]; then
-    echo "No runtime selected, please pick one of the following:"
+    echo "Error: No runtime selected, please pick one of the following:"
     ls "$platformsDir"
     exit -1
 fi
 
 if [[ ! $runtime == *-* && ! $runtime == *-arm && ! $runtime == *-x64 && ! $runtime == *-x86 ]]; then
-    echo "The runtime '$runtime' is not valid, please pick one of the following:"
+    echo "Error: The runtime '$runtime' is not valid, please pick one of the following:"
     ls "$platformsDir"
     exit -1
 fi
 
 if [ ! $runtime == "win-x64" -a ! -d "$platformsDir/$runtime" ]; then
-    echo "The runtime '$runtime' is not valid, please pick one of the following:"
+    echo "Error: The runtime '$runtime' is not valid, please pick one of the following:"
     ls "$platformsDir"
     exit -1
 fi
