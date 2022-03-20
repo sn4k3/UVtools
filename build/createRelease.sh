@@ -29,7 +29,7 @@ buildWith="Release"
 projectDir="$rootDir/$buildProject"
 netVersion="6.0"
 
-if [[ $runtime == "clean" ]]; then
+if [ $runtime == "clean" ]; then
     echo "Cleaning publish directory"
     rm -rf "$publishDir" 2>/dev/null
     exit
@@ -70,13 +70,13 @@ if [ -z "$runtime" ]; then
     exit -1
 fi
 
-if [[ ! $runtime == *-* && ! $runtime == *-arm && ! $runtime == *-x64 && ! $runtime == *-x86 ]]; then
+if [[ $runtime != *-* && $runtime != *-arm && $runtime != *-x64 && $runtime != *-x86 ]]; then
     echo "Error: The runtime '$runtime' is not valid, please pick one of the following:"
     ls "$platformsDir"
     exit -1
 fi
 
-if [ ! $runtime == "win-x64" -a ! -d "$platformsDir/$runtime" ]; then
+if [ $runtime != "win-x64" -a ! -d "$platformsDir/$runtime" ]; then
     echo "Error: The runtime '$runtime' is not valid, please pick one of the following:"
     ls "$platformsDir"
     exit -1
