@@ -69,7 +69,7 @@ if [ -z "$runtime" ]; then
     exit -1
 fi
 
-if [[ ! $runtime = *-* && ! $runtime = *-arm && ! $runtime = *-x64 && ! $runtime = *-x86 ]]; then
+if [[ ! $runtime == *-* && ! $runtime == *-arm && ! $runtime == *-x64 && ! $runtime == *-x86 ]]; then
     echo "The runtime '$runtime' is not valid, please pick one of the following:"
     ls "$platformsDir"
     exit -1
@@ -103,7 +103,9 @@ echo "5. Setting Permissions"
 chmod -fv a+x "$publishRuntimeDir/UVtools"
 chmod -fv a+x "$publishRuntimeDir/UVtools.sh"
 
-if [[ $runtime = osx-* ]]; then
+if [[ $runtime == win-* ]]; then
+    echo "6. Windows should be published in a windows machine!"
+elif [[ $runtime == osx-* ]]; then
     if [[ $bundlePublish = true ]]; then
         echo "6. macOS: Creating app bundle"
         osxApp="$publishDir/$publishName.app"
@@ -115,7 +117,7 @@ if [[ $runtime = osx-* ]]; then
         cp -af "$platformsDir/osx/Info.plist" "$osxApp/Contents/"
         cp -af "$platformsDir/osx/UVtools.entitlements" "$osxApp/Contents/"
         cp -a "$publishRuntimeDir/." "$osxApp/Contents/MacOS"
-        sed -i "s/#VERSION/$version/g" "$osxApp/Contents/Info.plist"
+        sed -i '' "s/#VERSION/$version/g" "$osxApp/Contents/Info.plist"
 
         # Remove the base publish if able
         [ "$keepNetPublish" = false ] && rm -rf "$publishRuntimeDir" 2>/dev/null
@@ -129,12 +131,8 @@ if [[ $runtime = osx-* ]]; then
             mv "UVtools.app" "$publishName.app"
             cd "$rootDir"
             zipPackage=false
-        else
-            echo "7. Skipping Zip"
         fi
     fi
-elif [[ $runtime = win-* ]]; then
-    echo "6. Windows should be published in a windows machine!"
 else
     if [[ $bundlePublish = true ]]; then
         echo "6. Linux: Creating AppImage bundle"
