@@ -39,7 +39,7 @@ if [[ $OSTYPE == 'darwin'* ]]; then
     if [ installDependencies == true ]; then
         /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
         brew analytics off
-        brew install git cmake mono mono-libgdiplus
+        brew install git cmake mono-libgdiplus
         brew install --cask dotnet
     fi
 elif command -v apt-get &> /dev/null
@@ -47,7 +47,7 @@ then
     osVariant="debian"
     if [ "$installDependencies" == true ]; then
         sudo apt-get update
-        sudo apt-get -y install build-essential libgtk-3-dev libgstreamer1.0-dev libavcodec-dev libswscale-dev libavformat-dev libdc1394-22-dev libv4l-dev cmake-curses-gui ocl-icd-dev freeglut3-dev libgeotiff-dev libusb-1.0-0-dev
+        sudo apt-get -y install git build-essential libgtk-3-dev libgstreamer1.0-dev libavcodec-dev libswscale-dev libavformat-dev libdc1394-22-dev libv4l-dev cmake-curses-gui ocl-icd-dev freeglut3-dev libgeotiff-dev libusb-1.0-0-dev
         sudo apt-get install -y apt-transport-https
         sudo apt-get update
         sudo apt-get install -y dotnet-sdk-6.0
@@ -57,16 +57,15 @@ then
     osVariant="arch"
     if [ "$installDependencies" == true ]; then
         sudo pacman -Syu
-        sudo pacman -S base-devel git cmake msbuild gtk3 gstreamer ffmpeg libdc1394 v4l-utils ocl-icd freeglut libgeotiff libusb dotnet-sdk
+        sudo pacman -S git base-devel cmake msbuild gtk3 gstreamer ffmpeg libdc1394 v4l-utils ocl-icd freeglut libgeotiff libusb dotnet-sdk
     fi
 elif command -v yum &> /dev/null
 then
     osVariant="rhel"
     if [ "$installDependencies" == true ]; then
         sudo yum update -y
-        sudo yum install -y https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm
-        sudo yum install -y https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm
-        sudo yum install -y libjpeg-devel libjpeg-turbo-devel libpng-devel libgeotiff-devel libdc1394-devel ffmpeg-devel tbb-devel mesa-libGL wget dotnet-sdk-6.0
+        sudo yum groupinstall -y "Development Tools" "Development Libraries"
+        sudo yum install -y git cmake gcc-c++ gtk3-devel gstreamer1-devel ffmpeg ffmpeg-devel libdc1394 libv4l-devel cmake-gui ocl-icd-devel freeglut libgeotiff libusb dotnet-sdk-6.0
     fi
 fi
 
