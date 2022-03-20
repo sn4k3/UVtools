@@ -9,11 +9,17 @@
 #
 cd "$(dirname "$0")"
 directory="emgucv"
+arch_name="$(uname -m)"
 osVariant=""
+
+if [[ "$arch_name" != "x86_64" && "$arch_name" != "arm64" ]]; then
+    echo "Error: Unsupported host arch: $arch_name"
+    exit -1
+fi
 
 for lastArg in $@; do :; done # Get last argument
 
-if [[ $lastArg == "clean" ]]; then
+if [ $lastArg == "clean" ]; then
     echo "Cleaning $directory directory"
     rm -rf "$directory" 2>/dev/null
     exit
@@ -30,7 +36,7 @@ while getopts 'i' flag; do
   esac
 done
 
-echo "Script to build libcvextern.so|dylib"
+echo "Script to build libcvextern.so|dylib on $(uname -a) $arch_name"
 
 echo "- Detecting OS"
 [ "$installDependencies" == true ] && echo "- Installing all the dependencies"
@@ -92,7 +98,11 @@ fi
 echo "- Bulding"
 if [ osVariant == "macOS" ]; then
     cd platforms/macos
-    ./configure
+    if [ "${arch_name}" = "x86_64" ]; then
+        ./configure_x86_64
+    elif [ "${arch_name}" = "arm64" ]; then
+        ./configure_arm64
+    fi
 else
     cd platforms/ubuntu/20.04
     ./cmake_configure
