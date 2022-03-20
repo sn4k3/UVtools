@@ -2,7 +2,7 @@
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
   <?define ComponentRules="OneToOne"?>
   <!-- SourceDir instructs IsWiX the location of the directory that contains files for this merge module -->
-  <?define SourceDir="..\publish\win-x64"?>
+  <?define SourceDir="..\publish\UVtools_win-x64_v3.1.0"?>
   <Module Id="UVtools" Language="1033" Version="1.0.0.0">
     <Package Id="12aaa1cf-ff06-4a02-abd5-2ac01ac4f83b" Manufacturer="PTRTECH" InstallerVersion="200" Keywords="MSLA, DLP" Description="MSLA/DLP, file analysis, repair, conversion and manipulation" InstallScope="perMachine" Platform="x64" />
     <Directory Id="TARGETDIR" Name="SourceDir">
@@ -1460,6 +1460,9 @@
         </Component>
         <Component Id="owc1BDB050EB61B44609ECD990453AC8FB5" Guid="1BDB050E-B61B-4460-9ECD-990453AC8FB5">
           <File Id="owf1BDB050EB61B44609ECD990453AC8FB5" Source="$(var.SourceDir)\Markdown.Avalonia.SyntaxHigh.dll" KeyPath="yes" />
+        </Component>
+        <Component Id="owc2DE24885E97D4FD3AB633AA53F125FED" Guid="2DE24885-E97D-4FD3-AB63-3AA53F125FED">
+          <File Id="owf2DE24885E97D4FD3AB633AA53F125FED" Source="$(var.SourceDir)\UVtools.sh" KeyPath="yes" />
         </Component>
       </Directory>
       <Directory Id="ProgramMenuFolder">

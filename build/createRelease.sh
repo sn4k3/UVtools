@@ -15,10 +15,11 @@ cd ..
 #runtime=$1
 for runtime in $@; do :; done # Get last argument
 rootDir="$(pwd)"
+buildDir="$rootDir/build"
 coreDir="$rootDir/UVtools.Core"
 #version="$(grep -oP '<Version>\K(\d\.\d\.\d)(?=<\/Version>)' "$coreDir/UVtools.Core.csproj")" # Not supported on recent macos!
 version="$(perl -nle'print $& while m{<Version>\K(\d\.\d\.\d)(?=<\/Version>)}g' "$coreDir/UVtools.Core.csproj")"
-platformsDir="$rootDir/UVtools.Platforms"
+platformsDir="$buildDir/platforms"
 runtimePlatformDir="$platformsDir/$runtime"
 publishName="UVtools_${runtime}_v$version"
 publishDir="$rootDir/publish"
@@ -28,7 +29,7 @@ buildWith="Release"
 projectDir="$rootDir/$buildProject"
 netVersion="6.0"
 
-if [[ $runtime = "clean" ]]; then
+if [[ $runtime == "clean" ]]; then
     echo "Cleaning publish directory"
     rm -rf "$publishDir" 2>/dev/null
     exit
@@ -75,7 +76,7 @@ if [[ ! $runtime == *-* && ! $runtime == *-arm && ! $runtime == *-x64 && ! $runt
     exit -1
 fi
 
-if [ ! $runtime = "win-x64" -a ! -d "$platformsDir/$runtime" ]; then
+if [ ! $runtime == "win-x64" -a ! -d "$platformsDir/$runtime" ]; then
     echo "The runtime '$runtime' is not valid, please pick one of the following:"
     ls "$platformsDir"
     exit -1
@@ -84,7 +85,7 @@ fi
 
 echo "1. Preparing the environment"
 rm -rf "$publishRuntimeDir" 2>/dev/null
-[ "$zipPackage" = true ] && rm -f "$publishDir/$publishName.zip" 2>/dev/null
+[ "$zipPackage" == true ] && rm -f "$publishDir/$publishName.zip" 2>/dev/null
 
 
 echo "2. Publishing UVtools v$version for: $runtime"
@@ -93,7 +94,8 @@ dotnet publish $buildProject -o "$publishRuntimeDir" -c $buildWith -r $runtime -
 echo "3. Copying dependencies"
 echo $runtime > "$publishRuntimeDir/runtime_package.dat"
 #find "$runtimePlatformDir" -type f | grep -i lib | xargs -i cp -fv {} "$publishRuntimeDir/"
-cp -afv "$runtimePlatformDir/." "$publishRuntimeDir/"
+#cp -afv "$runtimePlatformDir/." "$publishRuntimeDir/"
+[ -f "$runtimePlatformDir/libcvextern.zip" ] && unzip "$runtimePlatformDir/libcvextern.zip" -d "$publishRuntimeDir"
 
 echo "4. Cleaning up"
 rm -rf "$projectDir/bin/$buildWith/net$netVersion/$runtime" 2>/dev/null
@@ -106,7 +108,7 @@ chmod -fv a+x "$publishRuntimeDir/UVtools.sh"
 if [[ $runtime == win-* ]]; then
     echo "6. Windows should be published in a windows machine!"
 elif [[ $runtime == osx-* ]]; then
-    if [[ $bundlePublish = true ]]; then
+    if [ $bundlePublish == true ]; then
         echo "6. macOS: Creating app bundle"
         osxApp="$publishDir/$publishName.app"
         rm -rf "$osxApp" 2>/dev/null
@@ -120,10 +122,10 @@ elif [[ $runtime == osx-* ]]; then
         sed -i '' "s/#VERSION/$version/g" "$osxApp/Contents/Info.plist"
 
         # Remove the base publish if able
-        [ "$keepNetPublish" = false ] && rm -rf "$publishRuntimeDir" 2>/dev/null
+        [ "$keepNetPublish" == false ] && rm -rf "$publishRuntimeDir" 2>/dev/null
 
         # Packing AppImage
-        if [ "$zipPackage" = true -a -d "$osxApp" ] ; then
+        if [ "$zipPackage" == true -a -d "$osxApp" ] ; then
             echo "7. Compressing '$publishName.app' to '$publishName.zip'"
             cd "$publishDir"
             mv "$publishName.app" "UVtools.app"
@@ -134,14 +136,14 @@ elif [[ $runtime == osx-* ]]; then
         fi
     fi
 else
-    if [[ $bundlePublish = true ]]; then
+    if [ $bundlePublish == true ]; then
         echo "6. Linux: Creating AppImage bundle"
         linuxAppDir="$publishDir/$publishName.AppDir"
         linuxAppImage="$publishDir/$publishName.AppImage"
         rm -f "$linuxAppImage" 2>/dev/null
         rm -rf "$linuxAppDir" 2>/dev/null
         
-        cp -arf "$platformsDir/AppImage/." "$linuxAppDir"
+        cp -arf "$platformsDir/linux/AppImage/." "$linuxAppDir"
         cp -af "$rootDir/UVtools.CAD/UVtools.png" "$linuxAppDir/"
         mkdir -p "$linuxAppDir/usr/bin"
         cp -a "$publishRuntimeDir/." "$linuxAppDir/usr/bin"   
@@ -162,10 +164,10 @@ else
         chmod a+x "$linuxAppImage"
 
         # Remove the base publish if able
-        #[ "$keepNetPublish" = false ] && rm -rf "$publishRuntimeDir" 2>/dev/null
+        #[ "$keepNetPublish" == false ] && rm -rf "$publishRuntimeDir" 2>/dev/null
         #
         # Packing AppImage
-        #if [ "$zipPackage" = true -a -f "$linuxAppImage" ] ; then
+        #if [ "$zipPackage" == true -a -f "$linuxAppImage" ] ; then
         #    echo "7. Compressing '$publishName.AppImage' to '$publishName.zip'"
         #    cd "$publishDir"
         #    zip -q "$publishDir/$publishName.zip" "$publishName.AppImage"
@@ -183,7 +185,7 @@ else
 fi
 
 # Zip generic builds
-if [ "$zipPackage" = true -a -d "$publishRuntimeDir" ] ; then
+if [ "$zipPackage" == true -a -d "$publishRuntimeDir" ]; then
     echo "7. Compressing '$runtime' to '$publishName.zip'"
     cd "$publishRuntimeDir"
     zip -rq "$publishDir/$publishName.zip" .

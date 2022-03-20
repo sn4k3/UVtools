@@ -178,8 +178,8 @@ Set-Location $PSScriptRoot\..
 ###         Configuration        ###
 ####################################
 $enableMSI = $true
-#$buildOnly = 'win-x64'
-$buildOnly = 'linux-x64'
+$buildOnly = 'win-x64'
+#$buildOnly = 'linux-x64'
 #$buildOnly = 'osx-x64'
 #$buildOnly = 'osx-arm64'
 $zipPackages = $true
@@ -201,9 +201,7 @@ $buildFolder = "$rootFolder\build"
 $releaseFolder = "$project\bin\$buildWith\$netFolder"
 $objFolder = "$project\obj\$buildWith\$netFolder"
 $publishFolder = "publish"
-$platformsFolder = "UVtools.Platforms"
-
-$macIcns = "UVtools.CAD/UVtools.icns"
+$platformsFolder = "$buildFolder\platforms"
 
 #$version = (Get-Command "$releaseFolder\UVtools.dll").FileVersionInfo.ProductVersion
 $projectXml = [Xml] (Get-Content "$project\$project.csproj")
@@ -217,7 +215,7 @@ if([string]::IsNullOrWhiteSpace($version)){
 $installers = @("UVtools.InstallerMM", "UVtools.Installer")
 $msiOutputFile = "$rootFolder\UVtools.Installer\bin\x64\Release\UVtools.msi"
 $msiComponentsFile = "$rootFolder\UVtools.InstallerMM\UVtools.InstallerMM.wxs"
-$msiSourceFiles = "$rootFolder\$publishFolder\win-x64"
+$msiSourceFiles = "$rootFolder\$publishFolder\${software}_win-x64_v$version"
 $msbuild = "`"${env:ProgramFiles}\Microsoft Visual Studio\2022\Enterprise\MSBuild\Current\Bin\MSBuild.exe`" /t:Build /p:Configuration=$buildWith /p:MSIProductVersion=$version"
 
 Write-Output "
@@ -265,7 +263,7 @@ $runtimes =
     #}
     #"unix-x64" = @{
     #    "extraCmd" = ""
-    #    "exclude" = @("x86", "x64", "libcvextern.dylib")
+    #    "exclude" = @()
     #}
     "osx-x64" = @{
         "extraCmd" = ""
@@ -309,10 +307,12 @@ foreach ($obj in $runtimes.GetEnumerator()) {
     $runtime = $obj.Name;       # runtime name
     $extraCmd = $obj.extraCmd;  # extra cmd to run with dotnet
 
-    $publishName="UVtools_${runtime}_v$version"
+    $publishName="${software}_${runtime}_v$version"
     if($runtime.StartsWith("win-"))
     {
         $targetZip = "$publishFolder/${software}_${runtime}_v$version.zip"  # Target zip filename
+        Remove-Item "$publishFolder/$publishName" -Recurse -ErrorAction Ignore
+        Remove-Item "$targetZip" -ErrorAction Ignore
         
         # Deploy
         Write-Output "################################
@@ -320,12 +320,6 @@ foreach ($obj in $runtimes.GetEnumerator()) {
         dotnet publish $project -o "$publishFolder/$publishName" -c $buildWith -r $runtime -p:PublishReadyToRun=true --self-contained $extraCmd
 
         New-Item "$publishFolder/$publishName/runtime_package.dat" -ItemType File -Value $runtime
-        #if(!$runtime.Equals('win-x64'))
-        #{
-        #    # Fix permissions
-        #    wsl chmod +x "$publishFolder/$runtime/UVtools" `|`| :
-        #    wsl chmod +x "$publishFolder/$runtime/UVtools.sh" `|`| :
-        #}
         
         # Cleanup
         Remove-Item "$releaseFolder\$runtime" -Recurse -ErrorAction Ignore
@@ -339,72 +333,27 @@ foreach ($obj in $runtimes.GetEnumerator()) {
 
         foreach ($includeObj in $obj.Value.include) {
             Write-Output "Including: $includeObj"
-            Copy-Item "$platformsFolder\$runtime\$includeObj" -Destination "$publishFolder\$runtime"  -Recurse -ErrorAction Ignore
+            Copy-Item "$platformsFolder\$runtime\$includeObj" -Destination "$publishFolder\$publishName"  -Recurse -ErrorAction Ignore
         }
 
         if($null -ne $zipPackages -and $zipPackages)
         {
             Write-Output "Compressing $runtime to: $targetZip"
-            Write-Output $targetZip "$publishFolder/$runtime"
-            wsl cd "$publishFolder/$runtime" `&`& pwd `&`& zip -r "../../$targetZip" .
+            wsl cd "$publishFolder/$publishName" `&`& pwd `&`& zip -rq "../../$targetZip" .
         }
     }
     else
     {
-        wsl bash "build/createRelease.sh" -b -z $runtime
+        if($null -ne $zipPackages -and $zipPackages)
+        {
+            wsl bash "build/createRelease.sh" -b -z $runtime
+        }
+        else
+        {
+            wsl bash "build/createRelease.sh" -b $runtime
+        }
     }
-
-    # Old
-    #if($runtime.Equals('linux-x64')){
-    #    $appDirDest = "$publishFolder/AppImage.$runtime/AppDir"
-    #    Copy-Item "$platformsFolder/AppImage/AppDir" $appDirDest -Force -Recurse
-    #    wsl chmod 755 "$appDirDest/AppRun"
-    #    wsl cp -a "$publishFolder/$runtime/." "$appDirDest/usr/bin"
-    #    wsl $appImageFilePath $appDirDest
-    #}
-    #if($runtime.StartsWith('osx-')){
-    #    $macAppFolder = "${software}.app"
-    #    $macPublishFolder = "$publishFolder/${macAppFolder}"
-    #    $macInfoplist = "$platformsFolder/osx/Info.plist"
-    #    $macEntitlements = "$platformsFolder/osx/UVtools.entitlements"
-    #    $macContents = "$macPublishFolder/Contents"
-    #    $macTargetZipLegacy = "$publishFolder/${software}_${runtime}-legacy_v$version.zip"
-    #
-    #    New-Item -ItemType directory -Path $macPublishFolder
-    #    New-Item -ItemType directory -Path "$macPublishFolder/Contents"
-    #    New-Item -ItemType directory -Path "$macPublishFolder/Contents/MacOS"
-    #    New-Item -ItemType directory -Path "$macPublishFolder/Contents/Resources"
-    #
-    #    
-    #    Copy-Item $macIcns -Destination "$macPublishFolder/Contents/Resources"
-    #    ((Get-Content -Path $macInfoplist) -replace '#VERSION',"$version") | Set-Content -Path "$macContents/Info.plist"
-    #    Copy-Item $macEntitlements -Destination $macContents
-    #    wsl cp -a "$publishFolder/$runtime/." "$macPublishFolder/Contents/MacOS"
-    #    wsl chmod +x "$macPublishFolder/Contents/MacOS/UVtools"
-    #
-    #    if($null -ne $zipPackages -and $zipPackages)
-    #    {
-    #        wsl cd "$publishFolder/" `&`& pwd `&`& zip -r "../$targetZip" "$macAppFolder/*"
-    #        #wsl cd "$publishFolder/$runtime" `&`& pwd `&`& zip -r "../../$macTargetZipLegacy" .
-    #    }
-    #
-    #    Rename-Item -Path $macPublishFolder -NewName "${macAppFolder}_${runtime}"
-    #    
-    #}
-    #else {
-    #    if($null -ne $zipPackages -and $zipPackages)
-    #    {
-    #        Write-Output "Compressing $runtime to: $targetZip"
-    #        Write-Output $targetZip "$publishFolder/$runtime"
-    #        wsl cd "$publishFolder/$runtime" `&`& pwd `&`& zip -r "../../$targetZip" .
-    #    }
-    #}
-
-    # Zip
-    #Write-Output "Compressing $runtime to: $targetZip"
-    #Write-Output $targetZip "$publishFolder/$runtime"
-    #[System.IO.Compression.ZipFile]::CreateFromDirectory("$publishFolder\$runtime", $targetZip, [System.IO.Compression.CompressionLevel]::Optimal, $false, [FixedEncoder]::new())
-	#wsl cd "$publishFolder/$runtime" `&`& pwd `&`& chmod +x -f "./$software" `|`| : `&`& zip -r "../../$targetZip" "."
+    
     $deployStopWatch.Stop()
     Write-Output "Took: $($deployStopWatch.Elapsed)
 ################################
@@ -438,7 +387,10 @@ if($null -ne $enableMSI -and $enableMSI)
         $msiTargetFile = "$publishFolder\${software}_${runtime}_v$version.msi"
         Write-Output "################################"
         Write-Output "Clean and build MSI components manifest file"
-        $msiComponentsXml = [Xml] (Get-Content $msiComponentsFile)
+
+        (Get-Content "$msiComponentsFile") -replace 'SourceDir="\.\.\\publish\\.+"', "SourceDir=`"..\publish\${software}_win-x64_v$version`"" | Out-File "$msiComponentsFile"
+        
+        $msiComponentsXml = [Xml] (Get-Content "$msiComponentsFile")
         foreach($element in $msiComponentsXml.Wix.Module.Directory.Directory)
         {
             if($element.Id -eq 'MergeRedirectFolder')
@@ -466,9 +418,9 @@ if($null -ne $enableMSI -and $enableMSI)
         ################################
         "
     }
-    else {
-        Write-Error "MSI build is enabled but the runtime '$runtime' is not found."
-    }
+    #else {
+    #    Write-Error "MSI build is enabled but the runtime '$runtime' is not found."
+    #}
     
 }
 
