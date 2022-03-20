@@ -437,7 +437,8 @@ dotnet add package UVtools.Core
 
 ## Develop and build from Source
 
-The fastest way to compile the project is by run the `build/CompileWindows.bat`, however if you wish to develop with visual studio follow the following steps:
+[Build directions](https://github.com/sn4k3/UVtools/tree/master/build)  
+The fastest way to compile the project is by run the `build/compile.bat`, however if you wish to develop with visual studio follow the following steps:
 
 1. Install Visual Studio and include .NET development support
 1. Install the .NET 6.0 SDK if not included on previous instalation

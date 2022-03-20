@@ -21,6 +21,6 @@
 
 ## Scripts
 
-- **compile.(ps1|sh):** Compiles project under default configurations
-- **run.(ps1|sh):** Compiles and runs the project under default configurations
+- **compile.(bat|sh):** Compiles project under default configurations
+- **run.(bat|sh):** Compiles and runs the project under default configurations
 - **createRelease.(ps1|sh):** Compiles, publish and pack a release for a target runtime
