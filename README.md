@@ -206,9 +206,6 @@ The UVtools executable allow to set some arguments to do special functions:
 2. 64 bit System
 1. 1920 x 1080 @ 100% scale as minimum resolution
 
-If you downloaded the **.AppImage** package variant you must set run permissions to it before attempt to run it:  
-![AppImage permissions](https://github.com/sn4k3/UVtools/raw/master/wiki/linux_AppImage_permissions.png)
-
 ### Ubuntu/Mint/Debian/Similars
 
 ```bash
@@ -217,42 +214,6 @@ sudo apt-get install -y libjpeg-dev libpng-dev libgeotiff-dev libdc1394-22 libav
 wget -qO - https://raw.githubusercontent.com/sn4k3/UVtools/master/Scripts/libdl-solver.sh | sudo bash
 ```
 
-### Compile libcvextern.so:
-
-**After this if you run UVtools and got a error like:**
-> System.DllNotFoundException: unable to load shared library 'cvextern' or one of its dependencies
-
-This means you haven't the required dependencies to run the cvextern library, 
-that may due system version and included libraries version, they must match the compiled version of libcvextern.
-
-To know what is missing you can open a terminal on UVtools folder and run the following command: `ldd libcvextern.so |grep not` 
-That will return the missing dependencies from libcvextern, you can try install them by other means if you can, 
-but most of the time you will need compile the EmguCV to compile the dependencies and correct link them, 
-this process is very slow but only need to run once. Open a terminal on any folder of your preference and run the following commands:
-
-```bash
-sudo apt-get install -y git build-essential cmake
-git clone https://github.com/emgucv/emgucv emgucv 
-cd emgucv
-git submodule update --init --recursive
-cd platforms/ubuntu/20.04
-./apt_install_dependency
-./cmake_configure
-```
-
-Make sure all commands run with success.
-After run these commands you can try run UVtools again,
-if it runs then nothing more is needed and you can remove the emgucv folder, 
-this means you only need the dependencies on your system.
- 
-Otherwise you need to copy the output 'emgucv/libs/x64/libcvextern.so' file created by this compilation to the UVtools folder and replace the original. 
-Keep a copy of file somewhere safe, you will need to replace it everytime you update UVtools.
-Additionally you can share your libcvextern.so on UVtools GitHub with your system information (Name Version) to help others with same problem, 
-anyone with same system version can make use of it without the need of the compilation process.
-
-**Note:** You need to repeat this process everytime UVtools upgrades OpenCV version, keep a eye on changelog.
-
-
 ### Arch/Manjaro/Similars
 
 ```bash
@@ -260,49 +221,6 @@ sudo pacman -Syu
 sudo pacman -S openjpeg2 libjpeg-turbo libpng libgeotiff libdc1394 libdc1394 ffmpeg openexr tbb libgdiplus wget
 wget -qO - https://raw.githubusercontent.com/sn4k3/UVtools/master/Scripts/libdl-solver.sh | sudo bash
 ```
-
-To run UVtools open it folder on a terminal and call one of:
-
-- Double-click UVtools file
-- `./UVtools`
-- `bash UVtools.sh`
-- `dotnet UVtools.dll` [For universal package only, requires dotnet-runtime]
-- As a pratical alternative you can create a shortcut on Desktop
-
-### Compile libcvextern.so:
-
-**After this if you run UVtools and got a error like:**
-> System.DllNotFoundException: unable to load shared library 'cvextern' or one of its dependencies
-
-This means you haven't the required dependencies to run the cvextern library, 
-that may due system version and included libraries version, they must match the compiled version of libcvextern.
-
-To know what is missing you can open a terminal on UVtools folder and run the following command: `ldd libcvextern.so |grep not` 
-That will return the missing dependencies from libcvextern, you can try install them by other means if you can, 
-but most of the time you will need compile the EmguCV to compile the dependencies and correct link them, 
-this process is very slow but only need to run once. Open a terminal on any folder of your preference and run the following commands:
-
-```bash
-sudo pacman -Syu
-sudo pacman -S base-devel git cmake msbuild gtk3 gstreamer ffmpeg libdc1394 v4l-utils ocl-icd freeglut libgeotiff libusb
-git clone https://github.com/emgucv/emgucv emgucv 
-cd emgucv
-git submodule update --init --recursive
-cd platforms/ubuntu/20.04
-./cmake_configure
-```
-
-Make sure all commands run with success.
-After run these commands you can try run UVtools again,
-if it runs then nothing more is needed and you can remove the emgucv folder, 
-this means you only need the dependencies on your system.
- 
-Otherwise you need to copy the output 'emgucv/libs/x64/libcvextern.so' file created by this compilation to the UVtools folder and replace the original. 
-Keep a copy of file somewhere safe, you will need to replace it everytime you update UVtools.
-Additionally you can share your libcvextern.so on UVtools GitHub with your system information (Name Version) to help others with same problem, 
-anyone with same system version can make use of it without the need of the compilation process.
-
-**Note:** You need to repeat this process everytime UVtools upgrades OpenCV version, keep a eye on changelog.
 
 ### RHEL/Fedora/CentOS
 
@@ -316,41 +234,16 @@ wget -qO - https://raw.githubusercontent.com/sn4k3/UVtools/master/Scripts/libdl-
 ```
 
 
-### Compile libcvextern.so:
+**To run UVtools open it folder on a terminal and call one of:**
 
-**After this if you run UVtools and got a error like:**
-> System.DllNotFoundException: unable to load shared library 'cvextern' or one of its dependencies
+- Double-click UVtools file
+- `./UVtools`
+- `bash UVtools.sh`
+- `dotnet UVtools.dll` [For universal package only, requires dotnet-runtime]
+- As a pratical alternative you can create a shortcut on Desktop
 
-This means you haven't the required dependencies to run the cvextern library, 
-that may due system version and included libraries version, they must match the compiled version of libcvextern.
-
-To know what is missing you can open a terminal on UVtools folder and run the following command: `ldd libcvextern.so |grep not` 
-That will return the missing dependencies from libcvextern, you can try install them by other means if you can, 
-but most of the time you will need compile the EmguCV to compile the dependencies and correct link them, 
-this process is very slow but only need to run once. Open a terminal on any folder of your preference and run the following commands:
-
-```bash
-sudo yum update -y
-sudo yum groupinstall -y "Development Tools" "Development Libraries"
-sudo yum install -y cmake gcc-c++ dotnet-sdk-6.0 gtk3-devel gstreamer1-devel ffmpeg ffmpeg-devel libdc1394 libv4l-devel cmake-gui ocl-icd-devel freeglut libgeotiff libusb
-git clone https://github.com/emgucv/emgucv emgucv 
-cd emgucv
-git submodule update --init --recursive
-cd platforms/ubuntu/20.04
-./cmake_configure
-```
-
-Make sure all commands run with success.
-After run these commands you can try run UVtools again,
-if it runs then nothing more is needed and you can remove the emgucv folder, 
-this means you only need the dependencies on your system.
- 
-Otherwise you need to copy the output 'emgucv/libs/x64/libcvextern.so' file created by this compilation to the UVtools folder and replace the original. 
-Keep a copy of file somewhere safe, you will need to replace it everytime you update UVtools.
-Additionally you can share your libcvextern.so on UVtools GitHub with your system information (Name Version) to help others with same problem, 
-anyone with same system version can make use of it without the need of the compilation process.
-
-**Note:** You need to repeat this process everytime UVtools upgrades OpenCV version, keep a eye on changelog.
+If you downloaded the **.AppImage** package variant you must set run permissions to it before attempt to run it:  
+![AppImage permissions](https://github.com/sn4k3/UVtools/raw/master/wiki/linux_AppImage_permissions.png)
 
 ## Mac
 
@@ -368,7 +261,6 @@ anyone with same system version can make use of it without the need of the compi
       brew link ffmpeg@4
       ```
     3. Reboot
-
 
 <!--- 
 * Donwload and install: https://dotnet.microsoft.com/download/dotnet/thank-you/sdk-6.0.101-macos-x64-installer
@@ -389,24 +281,9 @@ To run UVtools open it folder on a terminal and call one of:
 - `bash UVtools.app/Contents/MacOS/UVtools.sh`
 - As a pratical alternative you can create a shortcut on Desktop
 
-
-### Compile libcvextern.dylib: 
-
-```bash
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
-brew analytics off
-brew install git cmake mono mono-libgdiplus
-brew install --cask dotnet
-git clone https://github.com/emgucv/emgucv emgucv 
-cd emgucv
-git submodule update --init --recursive
-cd platforms/macos
-./configure
-```
-
 # How to use
 
-There are multiple ways to open your file:
+There are multiple ways to open your file in UVtools:
 
 1. Open UVtools and load your file (CTRL + O) (File -> Open)
 2. Open UVtools and drag and drop your file inside window
