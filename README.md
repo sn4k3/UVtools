@@ -200,23 +200,16 @@ The UVtools executable allow to set some arguments to do special functions:
 1. 4GB RAM or higher
 1. 1920 x 1080 @ 100% scale as minimum resolution
 
-
 ## Linux
 
 1. 4GB RAM or higher
 2. 64 bit System
 1. 1920 x 1080 @ 100% scale as minimum resolution
 
-### Ubuntu/Mint/Debian/Similars
+If you downloaded the **.AppImage** package variant you must set run permissions to it before attempt to run it:  
+![AppImage permissions](https://github.com/sn4k3/UVtools/raw/master/wiki/linux_AppImage_permissions.png)
 
-<!--
-wget https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
-sudo dpkg -i packages-microsoft-prod.deb
-rm packages-microsoft-prod.deb
-sudo apt-get update
-sudo apt-get install -y apt-transport-https
-dotnet-runtime-6.0
-!-->
+### Ubuntu/Mint/Debian/Similars
 
 ```bash
 sudo apt-get update
