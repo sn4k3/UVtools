@@ -6,6 +6,7 @@
 # usage 1: ./libcvextern.sh clean
 # usage 2: ./libcvextern.sh -i
 # usage 3: ./libcvextern.sh 
+# usage 3: ./libcvextern.sh 4.5.5
 #
 cd "$(dirname "$0")"
 directory="emgucv"
@@ -31,6 +32,7 @@ while getopts 'i' flag; do
     i) installDependencies=true ;;
     *) echo "Usage:"
         echo "clean Cleans the emgucv folder and it's contents"
+        echo "x.x.x Tag name to clone"
         echo "-i    Install all the dependencies to build libcvextern"
         exit 1 ;;
   esac
@@ -88,7 +90,13 @@ if [ -z "$osVariant" ]; then
 fi
 
 if [ ! -d "$directory" ]; then
-    git clone https://github.com/emgucv/emgucv "$directory"
+    if [ -z "$lastArg" ]; then
+        echo "Cloning master"
+        git clone https://github.com/emgucv/emgucv "$directory"
+    else
+        echo "Cloning $lastArg"
+        git clone --depth 1 --branch "$lastArg" https://github.com/emgucv/emgucv "$directory"
+    fi
     cd "$directory"
     git submodule update --init --recursive
 else
