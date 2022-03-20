@@ -78,7 +78,7 @@ fi
 echo "- Checks"
 if ! command -v git &> /dev/null
 then
-    echo "Error: git not installed. Please re-run this script with -r flag."
+    echo "Error: git not installed. Please re-run this script with -i flag."
     exit -1
 fi
 
