@@ -9,7 +9,6 @@ jobs:
   winget:
     name: Winget - Pull request
     runs-on: windows-latest
-    timeout-minutes: 10
     steps:
       - name: Submit package to Windows Package Manager Community Repository
         run: |
@@ -25,7 +24,6 @@ jobs:
   nuget:
     name: Nuget - Publish package
     runs-on: ubuntu-latest
-    timeout-minutes: 15
     steps:
       - name: Checkout
         uses: actions/checkout@v2
