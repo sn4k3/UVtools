@@ -6,7 +6,8 @@
 - (Add) Linux AppImage binaries (You won't get them with auto-update, please download AppImage once before can use auto-update feature in the future)
 - (Change) Rename "layer compression method" to "layer compression codec", please redefine the codec setting if you changed before
 - (Improvement) Linux and macOS releases are now compiled, published and packed under Linux (WSL). Windows release still and must be published under windows.
-- (Fix) Windows auto-upgrade was downloading `.zip` instead of `.msi` (Bug was introduced on v3.1.0). You still need to download v3.1.1 manually in order to get this fix on future releases.
+- (Fix) Windows auto-upgrade was downloading `.zip` instead of `.msi` (Bug was introduced on v3.1.0).  
+        You still need to download v3.1.1 manually in order to get this fix on future releases if you come from v3.1.0.
 
 ## 17/03/2022 - v3.1.0
 
