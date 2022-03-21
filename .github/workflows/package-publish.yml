@@ -11,14 +11,14 @@ jobs:
     runs-on: windows-latest
     timeout-minutes: 10
     steps:
-    - name: Submit package to Windows Package Manager Community Repository
-      run: |
-        iwr https://aka.ms/wingetcreate/latest -OutFile wingetcreate.exe
-        $installerUrl = $github.event.release.assets | Where-Object -Property name -match '.+win-x64.+\.msi' | Select -ExpandProperty browser_download_url -First 1
-        if($null -eq $installerUrl){ exit 1 }
-        $version = $github.event.release.tag_name.Replace('v', '')
-        if($version.Length -lt 5){ exit 2 }
-        .\wingetcreate.exe update PTRTECH.UVtools --version $version --urls $installerUrl --token ${WINGET_TOKEN} --submit
+      - name: Submit package to Windows Package Manager Community Repository
+        run: |
+          iwr https://aka.ms/wingetcreate/latest -OutFile wingetcreate.exe
+          $installerUrl = $github.event.release.assets | Where-Object -Property name -match '.+win-x64.+\.msi' | Select -ExpandProperty browser_download_url -First 1
+          if($null -eq $installerUrl){ exit 1 }
+          $version = $github.event.release.tag_name.Replace('v', '')
+          if($version.Length -lt 5){ exit 2 }
+          .\wingetcreate.exe update PTRTECH.UVtools --version $version --urls $installerUrl --token ${WINGET_TOKEN} --submit
     env:
       WINGET_TOKEN: ${{ secrets.WINGET_TOKEN }}
         
@@ -27,21 +27,21 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-    - name: Checkout
-      uses: actions/checkout@v2
-    - name: Verify commit exists in origin/main
-      run: |
-        git fetch --no-tags --prune --depth=1 origin +refs/heads/*:refs/remotes/origin/*
-        git branch --remote --contains | grep origin/main
-    - name: Set VERSION variable from tag
-      run: | 
-        echo "VERSION=${{ github.event.release.tag_name }}" >> $GITHUB_ENV
-        echo "VERSION=${VERSION:1}" >> $GITHUB_ENV
-    - name: Build
-      run: dotnet build --configuration Release
-    - name: Pack
-      run: dotnet pack UVtools.Core --configuration Release --no-build --output .
-    - name: Push nuget.org
-      run: dotnet nuget push UVtools.Core.${VERSION}.nupkg --source https://api.nuget.org/v3/index.json --api-key ${NUGET_TOKEN}
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Verify commit exists in origin/main
+        run: |
+          git fetch --no-tags --prune --depth=1 origin +refs/heads/*:refs/remotes/origin/*
+          git branch --remote --contains | grep origin/main
+      - name: Set VERSION variable from tag
+        run: | 
+          echo "VERSION=${{ github.event.release.tag_name }}" >> $GITHUB_ENV
+          echo "VERSION=${VERSION:1}" >> $GITHUB_ENV
+      - name: Build
+        run: dotnet build --configuration Release
+      - name: Pack
+        run: dotnet pack UVtools.Core --configuration Release --no-build --output .
+      - name: Push nuget.org
+        run: dotnet nuget push UVtools.Core.${VERSION}.nupkg --source https://api.nuget.org/v3/index.json --api-key ${NUGET_TOKEN}
     env:
       NUGET_TOKEN: ${{ secrets.NUGET_TOKEN }}
