@@ -126,15 +126,15 @@
 
 							<TextBlock Grid.Row="2" Grid.Column="0"
                                        VerticalAlignment="Center"
-                                       ToolTip.Tip="Sets the compression method used to store layer image cache.
+                                       ToolTip.Tip="Sets the compression codec used to store the layer image cache.
 &#x0a;The selected method will impact RAM usage and operations speed."
-                                       Text="Layer compression:"/>
+                                       Text="Layer compression codec:"/>
 
                           <ComboBox Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="17"
                                   VerticalAlignment="Center"
                                   HorizontalAlignment="Stretch"
-                                  Items="{Binding Settings.General.LayerCompressionMethod, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
-                                  SelectedItem="{Binding Settings.General.LayerCompressionMethod, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
+                                  Items="{Binding Settings.General.LayerCompressionCodec, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                                  SelectedItem="{Binding Settings.General.LayerCompressionCodec, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
                         </Grid>
                       </StackPanel>
 

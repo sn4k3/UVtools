@@ -1,5 +1,12 @@
 # Changelog
 
+## 21/03/2022 - v3.1.1
+
+- (Add) Raft relief: Tabs type - Creates tabs around the raft to easily insert a tool under it and detach the raft from build plate
+- (Add) Linux AppImage binaries (You won't get them with auto-update, please download AppImage once before can use auto-update feature in the future)
+- (Change) Rename "layer compression method" to "layer compression codec", please redefine the codec setting if you changed before
+- (Improvement) Linux and macOS releases are now compiled, published and packed under Linux (WSL). Windows release still and must be published under windows.
+
 ## 17/03/2022 - v3.1.0
 
 - **Benchmark:**

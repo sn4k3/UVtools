@@ -71,7 +71,7 @@ public static class CoreSettings
     /// <summary>
     /// Gets or sets the default compression type for layers
     /// </summary>
-    public static Layer.LayerCompressionMethod DefaultLayerCompressionMethod { get; set; } = Layer.LayerCompressionMethod.Png;
+    public static Layer.LayerCompressionCodec DefaultLayerCompressionCodec { get; set; } = Layer.LayerCompressionCodec.Png;
 
     /// <summary>
     /// Gets the default folder to save the settings

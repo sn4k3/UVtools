@@ -13,6 +13,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Runtime.InteropServices;
 using System.Text.Json.Nodes;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Avalonia.Threading;
 using UVtools.Core;
@@ -43,7 +44,9 @@ public class AppVersionChecker : BindableBase
                     var package = File.ReadAllText(file);
                     if (!string.IsNullOrWhiteSpace(package) && (package.EndsWith("-x64") || package.EndsWith("-arm64")))
                     {
-                        return $"{About.Software}_{package}_v{_version}.zip";
+                        return SystemAware.IsRunningLinuxAppImage()
+                            ? $"{About.Software}_{package}_v{_version}.AppImage"
+                            : $"{About.Software}_{package}_v{_version}.zip";
                     }
                 }
                 catch (Exception e)
@@ -58,20 +61,22 @@ public class AppVersionChecker : BindableBase
             }
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                return $"{About.Software}_linux-x64_v{_version}.zip";
+                return SystemAware.IsRunningLinuxAppImage() 
+                        ? $"{About.Software}_linux-x64_v{_version}.AppImage"
+                        : $"{About.Software}_linux-x64_v{_version}.zip";
             }
             if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
-                if (RuntimeInformation.ProcessArchitecture is Architecture.Arm or Architecture.Arm64) return $"{About.Software}_osx-arm64_v{_version}.zip";
-
-                return $"{About.Software}_osx-x64_v{_version}.zip";
+                return RuntimeInformation.ProcessArchitecture is Architecture.Arm or Architecture.Arm64 
+                    ? $"{About.Software}_osx-arm64_v{_version}.zip" 
+                    : $"{About.Software}_osx-x64_v{_version}.zip";
             }
 
             return $"{About.Software}_universal-x86-x64_v{_version}.zip";
         }
     }
 
-    public string Runtime
+    /*public string Runtime
     {
         get
         {
@@ -90,7 +95,7 @@ public class AppVersionChecker : BindableBase
 
             return "universal-x86-x64";
         }
-    }
+    }*/
 
     public string Version
     {
@@ -180,8 +185,9 @@ public class AppVersionChecker : BindableBase
         progress.ItemName = "Megabytes";
         try
         {
+            var downloadFilename = Filename;
             var path = Path.GetTempPath();
-            DownloadedFile = Path.Combine(path, Filename);
+            DownloadedFile = Path.Combine(path, downloadFilename);
             Debug.WriteLine($"Downloading to: {DownloadedFile}");
             progress.ItemName = "Megabytes";
 
@@ -203,53 +209,70 @@ public class AppVersionChecker : BindableBase
             }
             else
             {
-                string upgradeFolder = "UPDATED_VERSION";
-                var targetDir = Path.Combine(App.ApplicationPath, upgradeFolder);
-                await using (var stream = File.Open(DownloadedFile, FileMode.Open))
+                // Linux AppImage
+                if (downloadFilename.EndsWith(".AppImage") && SystemAware.IsRunningLinuxAppImage(out var appImagePath))
                 {
-                    using ZipArchive zip = new(stream, ZipArchiveMode.Read);
-                    zip.ExtractToDirectory(targetDir, true);
+                    var directory = Path.GetDirectoryName(appImagePath);
+                    var oldFileName = Path.GetFileName(appImagePath);
+                    // Try to keep same filename logic if user renamed the file, like UVtools.AppImage would keep same same
+                    var newFilename = Regex.Replace(oldFileName, @"v\d.\d.\d", $"v{_version}");
+                    var newFullPath = Path.Combine(directory, newFilename);
+
+                    if (File.Exists(appImagePath)) File.Delete(appImagePath);
+                    File.Move(DownloadedFile, newFullPath, true);
+                    SystemAware.StartProcess("chmod", $"a+x \"{newFullPath}\"");
+                    SystemAware.StartProcess(newFullPath);
                 }
-
-                File.Delete(DownloadedFile);
-
-                string upgradeFileName = $"{About.Software}_upgrade.sh";
-                var upgradeFile = Path.Combine(App.ApplicationPath, upgradeFileName);
-                await using (var stream = File.CreateText(upgradeFile))
+                else // others
                 {
-                    await stream.WriteLineAsync("#!/bin/bash");
-                    await stream.WriteLineAsync($"echo {About.Software} v{App.Version} updater script");
-                    await stream.WriteLineAsync($"cd '{App.ApplicationPath}'");
-                    await stream.WriteLineAsync($"killall {About.Software}");
-                    await stream.WriteLineAsync("sleep 0.5");
-
-
-                    //stream.WriteLine($"[ -f {About.Software} ] && {App.AppExecutableQuoted} & || dotnet {About.Software}.dll &");
-                    if (OperatingSystem.IsMacOS() && App.ApplicationPath.EndsWith(".app/Contents/MacOS"))
+                    var upgradeFolder = "UPDATED_VERSION";
+                    var targetDir = Path.Combine(App.ApplicationPath, upgradeFolder);
+                    await using (var stream = File.Open(DownloadedFile, FileMode.Open))
                     {
-                        await stream.WriteLineAsync($"cp -fR {upgradeFolder}/* ../../../");
-                        await stream.WriteLineAsync($"open ../../../{About.Software}.app");
-                    }
-                    else
-                    {
-                        await stream.WriteLineAsync($"cp -fR {upgradeFolder}/* .");
-                        await stream.WriteLineAsync($"if [ -f '{About.Software}' ]; then");
-                        await stream.WriteLineAsync($"  ./{About.Software} &");
-                        await stream.WriteLineAsync("else");
-                        await stream.WriteLineAsync($"  dotnet {About.Software}.dll &");
-                        await stream.WriteLineAsync("fi");
+                        using ZipArchive zip = new(stream, ZipArchiveMode.Read);
+                        zip.ExtractToDirectory(targetDir, true);
                     }
 
-                    await stream.WriteLineAsync($"rm -fr {upgradeFolder}");
-                    await stream.WriteLineAsync("sleep 0.5");
-                    await stream.WriteLineAsync($"rm -f {upgradeFileName}");
-                    //stream.WriteLine("exit");
-                    stream.Close();
+                    File.Delete(DownloadedFile);
+
+                    var upgradeFileName = $"{About.Software}_upgrade.sh";
+                    var upgradeFile = Path.Combine(App.ApplicationPath, upgradeFileName);
+                    await using (var stream = File.CreateText(upgradeFile))
+                    {
+                        stream.NewLine = "\n";
+                        await stream.WriteLineAsync("#!/bin/bash");
+                        await stream.WriteLineAsync($"echo {About.Software} v{App.Version} updater script");
+                        await stream.WriteLineAsync($"cd '{App.ApplicationPath}'");
+                        await stream.WriteLineAsync($"killall {About.Software}");
+                        await stream.WriteLineAsync("sleep 0.5");
+
+
+                        //stream.WriteLine($"[ -f {About.Software} ] && {App.AppExecutableQuoted} & || dotnet {About.Software}.dll &");
+                        if (SystemAware.IsRunningMacOSApp)
+                        {
+                            await stream.WriteLineAsync($"cp -fR {upgradeFolder}/* ../../../");
+                            await stream.WriteLineAsync($"open ../../../{About.Software}.app");
+                        }
+                        else
+                        {
+                            await stream.WriteLineAsync($"cp -fR {upgradeFolder}/* .");
+                            await stream.WriteLineAsync($"if [ -f '{About.Software}' ]; then");
+                            await stream.WriteLineAsync($"  ./{About.Software} &");
+                            await stream.WriteLineAsync("else");
+                            await stream.WriteLineAsync($"  dotnet {About.Software}.dll &");
+                            await stream.WriteLineAsync("fi");
+                        }
+
+                        await stream.WriteLineAsync($"rm -fr {upgradeFolder}");
+                        await stream.WriteLineAsync("sleep 0.5");
+                        await stream.WriteLineAsync($"rm -f {upgradeFileName}");
+                        //stream.WriteLine("exit");
+                    }
+
+                    SystemAware.StartProcess("bash", $"\"{upgradeFile}\"");
+                    //App.NewInstance(App.MainWindow.SlicerFile?.FileFullPath);
                 }
 
-                SystemAware.StartProcess("bash", $"\"{upgradeFile}\"");
-
-                //App.NewInstance(App.MainWindow.SlicerFile?.FileFullPath);
                 Environment.Exit(0);
             }
         }

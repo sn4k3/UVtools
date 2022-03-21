@@ -178,7 +178,7 @@ Set-Location $PSScriptRoot\..
 ###         Configuration        ###
 ####################################
 $enableMSI = $true
-$buildOnly = 'win-x64'
+#$buildOnly = 'win-x64'
 #$buildOnly = 'linux-x64'
 #$buildOnly = 'osx-x64'
 #$buildOnly = 'osx-arm64'

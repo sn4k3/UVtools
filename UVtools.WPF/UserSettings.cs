@@ -43,7 +43,7 @@ public sealed class UserSettings : BindableBase
         private bool _loadDemoFileOnStartup = true;
         private bool _loadLastRecentFileOnStartup;
         private int _maxDegreeOfParallelism = -1;
-        private Layer.LayerCompressionMethod _layerCompressionMethod = CoreSettings.DefaultLayerCompressionMethod;
+        private Layer.LayerCompressionCodec _layerCompressionCodec = CoreSettings.DefaultLayerCompressionCodec;
 
         private bool _windowsCanResize;
         private bool _windowsTakeIntoAccountScreenScaling = true;
@@ -102,10 +102,10 @@ public sealed class UserSettings : BindableBase
             set => RaiseAndSetIfChanged(ref _maxDegreeOfParallelism, Math.Min(value, Environment.ProcessorCount));
         }
 
-        public Layer.LayerCompressionMethod LayerCompressionMethod
+        public Layer.LayerCompressionCodec LayerCompressionCodec
         {
-            get => _layerCompressionMethod;
-            set => RaiseAndSetIfChanged(ref _layerCompressionMethod, value);
+            get => _layerCompressionCodec;
+            set => RaiseAndSetIfChanged(ref _layerCompressionCodec, value);
         }
 
         public bool WindowsCanResize
@@ -1641,7 +1641,7 @@ public sealed class UserSettings : BindableBase
             }
 
             CoreSettings.MaxDegreeOfParallelism = _instance.General.MaxDegreeOfParallelism;
-            CoreSettings.DefaultLayerCompressionMethod = _instance.General.LayerCompressionMethod;
+            CoreSettings.DefaultLayerCompressionCodec = _instance.General.LayerCompressionCodec;
 
             if (_instance.Network.RemotePrinters.Count == 0)
             {
@@ -1864,7 +1864,7 @@ public sealed class UserSettings : BindableBase
         Instance.SavesCount++;
         _instance.ModifiedDateTime = DateTime.Now;
         CoreSettings.MaxDegreeOfParallelism = _instance.General.MaxDegreeOfParallelism;
-        CoreSettings.DefaultLayerCompressionMethod = _instance.General.LayerCompressionMethod;
+        CoreSettings.DefaultLayerCompressionCodec = _instance.General.LayerCompressionCodec;
         try
         {
             XmlExtensions.SerializeToFile(_instance, FilePath, XmlExtensions.SettingsIndent);

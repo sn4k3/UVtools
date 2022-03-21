@@ -103,7 +103,7 @@ public static class ZipArchiveExtensions
     {
         //Gets the complete path for the destination file, including any
         //relative paths that were in the zip file
-        var destFileName = Path.Combine(destinationPath, file.FullName);
+        var destFileName = Path.GetFullPath(Path.Combine(destinationPath, file.FullName));
         var fullDestDirPath = Path.GetFullPath(destinationPath + Path.DirectorySeparatorChar);
         if (!destFileName.StartsWith(fullDestDirPath)) return; // Entry is outside the target dir
 

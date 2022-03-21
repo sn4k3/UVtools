@@ -4490,16 +4490,16 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <summary>
     /// Changes the compression method of all layers to a new method
     /// </summary>
-    /// <param name="to">The new method to change to</param>
+    /// <param name="newCodec">The new method to change to</param>
     /// <param name="progress"></param>
-    public void ChangeLayersCompressionMethod(Layer.LayerCompressionMethod to, OperationProgress? progress = null)
+    public void ChangeLayersCompressionMethod(Layer.LayerCompressionCodec newCodec, OperationProgress? progress = null)
     {
-        progress ??= new OperationProgress($"Changing layers compress method to {to}");
+        progress ??= new OperationProgress($"Changing layers compression codec to {newCodec}");
         progress.Reset("Layers", LayerCount);
 
         Parallel.ForEach(this, CoreSettings.GetParallelOptions(progress), layer =>
         {
-            layer.CompressionMethod = to;
+            layer.CompressionCodec = newCodec;
             progress.LockAndIncrement();
         });
     }

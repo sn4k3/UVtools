@@ -1163,7 +1163,7 @@ public partial class MainWindow : WindowEx
     public async void MenuFileSettingsClicked()
     {
         var oldTheme = Settings.General.Theme;
-        var oldLayerCompressionMethod = Settings.General.LayerCompressionMethod;
+        var oldLayerCompressionCodec = Settings.General.LayerCompressionCodec;
         var settingsWindow = new SettingsWindow();
         await settingsWindow.ShowDialog(this);
         if (settingsWindow.DialogResult == DialogResults.OK)
@@ -1173,16 +1173,16 @@ public partial class MainWindow : WindowEx
                 App.ApplyTheme();
             }
 
-            if (oldLayerCompressionMethod != Settings.General.LayerCompressionMethod)
+            if (oldLayerCompressionCodec != Settings.General.LayerCompressionCodec)
             {
                 IsGUIEnabled = false;
-                ShowProgressWindow($"Changing layer compression method from {oldLayerCompressionMethod.ToString().ToUpper()} to {Settings.General.LayerCompressionMethod.ToString().ToUpper()}");
+                ShowProgressWindow($"Changing layers compression codec from {oldLayerCompressionCodec.ToString().ToUpper()} to {Settings.General.LayerCompressionCodec.ToString().ToUpper()}");
 
                 await Task.Factory.StartNew(() =>
                 {
                     try
                     {
-                        SlicerFile.ChangeLayersCompressionMethod(Settings.General.LayerCompressionMethod, Progress);
+                        SlicerFile.ChangeLayersCompressionMethod(Settings.General.LayerCompressionCodec, Progress);
                         return true;
                     }
                     catch (OperationCanceledException)

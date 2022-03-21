@@ -30,7 +30,7 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
 {
     #region Enums
 
-    public enum LayerCompressionMethod : byte
+    public enum LayerCompressionCodec : byte
     {
         [Description("PNG: Compression=High Speed=Slow (Use with low RAM)")]
         Png,
@@ -56,7 +56,7 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
     #region Members
 
     public object Mutex = new();
-    private LayerCompressionMethod _compressionMethod;
+    private LayerCompressionCodec _compressionCodec;
     private byte[]? _compressedBytes;
     private uint _nonZeroPixelCount;
     private Rectangle _boundingRectangle = Rectangle.Empty;
@@ -593,21 +593,21 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
     /// <summary>
     /// Gets or sets the compression method used to cache the image
     /// </summary>
-    public LayerCompressionMethod CompressionMethod
+    public LayerCompressionCodec CompressionCodec
     {
-        get => _compressionMethod;
+        get => _compressionCodec;
         set
         {
             if (!HaveImage)
             {
-                RaiseAndSetIfChanged(ref _compressionMethod, value);
+                RaiseAndSetIfChanged(ref _compressionCodec, value);
                 return;
             }
 
             // Handle conversion
-            if (_compressionMethod == value) return;
+            if (_compressionCodec == value) return;
             using var mat = LayerMat;
-            _compressionMethod = value;
+            _compressionCodec = value;
             _compressedBytes = CompressMat(mat, value);
             RaisePropertyChanged();
         }
@@ -634,7 +634,7 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
         get
         {
             if (_compressedBytes is null) return null;
-            if (_compressionMethod == LayerCompressionMethod.Png) return _compressedBytes;
+            if (_compressionCodec == LayerCompressionCodec.Png) return _compressedBytes;
 
             using var mat = LayerMat;
             return mat.GetPngByes();
@@ -656,17 +656,17 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
             if (!HaveImage) return null!;
 
             Mat mat;
-            switch (_compressionMethod)
+            switch (_compressionCodec)
             {
-                case LayerCompressionMethod.Png:
+                case LayerCompressionCodec.Png:
                     mat = new Mat();
                     CvInvoke.Imdecode(_compressedBytes, ImreadModes.Grayscale, mat);
                     break;
-                case LayerCompressionMethod.Lz4:
+                case LayerCompressionCodec.Lz4:
                     mat = new Mat(SlicerFile.Resolution, DepthType.Cv8U, 1);
                     LZ4Codec.Decode(_compressedBytes.AsSpan(), mat.GetDataByteSpan());
                     break;
-                case LayerCompressionMethod.GZip:
+                case LayerCompressionCodec.GZip:
                 {
                     mat = new(SlicerFile.Resolution, DepthType.Cv8U, 1);
                     var matSpan = mat.GetDataByteSpan();
@@ -683,7 +683,7 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
 
                     break;
                 }
-                case LayerCompressionMethod.Deflate:
+                case LayerCompressionCodec.Deflate:
                 {
                     mat = new(SlicerFile.Resolution, DepthType.Cv8U, 1);
                     var matSpan = mat.GetDataByteSpan();
@@ -715,7 +715,7 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
         {
             if (value is not null)
             {
-                CompressedBytes = CompressMat(value, _compressionMethod);
+                CompressedBytes = CompressMat(value, _compressionCodec);
             }
 
             GetBoundingRectangle(value, true);
@@ -815,10 +815,10 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
 
     #region Constructor
 
-    public Layer(uint index, FileFormat slicerFile, LayerCompressionMethod? compressionMethod = null)
+    public Layer(uint index, FileFormat slicerFile, LayerCompressionCodec? compressionMethod = null)
     {
-        compressionMethod ??= CoreSettings.DefaultLayerCompressionMethod;
-        _compressionMethod = compressionMethod.Value;
+        compressionMethod ??= CoreSettings.DefaultLayerCompressionCodec;
+        _compressionCodec = compressionMethod.Value;
 
         SlicerFile = slicerFile;
         _index = index;
@@ -828,9 +828,9 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
         ResetParameters();
     }
 
-    public Layer(uint index, byte[] pngBytes, FileFormat slicerFile, LayerCompressionMethod? compressionMethod = null) : this(index, slicerFile, compressionMethod)
+    public Layer(uint index, byte[] pngBytes, FileFormat slicerFile, LayerCompressionCodec? compressionMethod = null) : this(index, slicerFile, compressionMethod)
     {
-        if (_compressionMethod == LayerCompressionMethod.Png)
+        if (_compressionCodec == LayerCompressionCodec.Png)
         {
             CompressedBytes = pngBytes;
         }
@@ -844,25 +844,25 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
         _isModified = false;
     }
 
-    public Layer(uint index, Mat layerMat, FileFormat slicerFile, LayerCompressionMethod? compressionMethod = null) : this(index, slicerFile, compressionMethod)
+    public Layer(uint index, Mat layerMat, FileFormat slicerFile, LayerCompressionCodec? compressionMethod = null) : this(index, slicerFile, compressionMethod)
     {
         LayerMat = layerMat;
         _isModified = false;
     }
 
-    public Layer(uint index, Stream stream, FileFormat slicerFile, LayerCompressionMethod? compressionMethod = null) : this(index, stream.ToArray(), slicerFile, compressionMethod) 
+    public Layer(uint index, Stream stream, FileFormat slicerFile, LayerCompressionCodec? compressionMethod = null) : this(index, stream.ToArray(), slicerFile, compressionMethod) 
     { }
 
-    public Layer(FileFormat slicerFile, LayerCompressionMethod? compressionMethod = null) : this(0, slicerFile, compressionMethod)
+    public Layer(FileFormat slicerFile, LayerCompressionCodec? compressionMethod = null) : this(0, slicerFile, compressionMethod)
     { }
 
-    public Layer(byte[] pngBytes, FileFormat slicerFile, LayerCompressionMethod? compressionMethod = null) : this(0, pngBytes, slicerFile, compressionMethod)
+    public Layer(byte[] pngBytes, FileFormat slicerFile, LayerCompressionCodec? compressionMethod = null) : this(0, pngBytes, slicerFile, compressionMethod)
     { }
 
-    public Layer(Mat layerMat, FileFormat slicerFile, LayerCompressionMethod? compressionMethod = null) : this(0, layerMat, slicerFile, compressionMethod)
+    public Layer(Mat layerMat, FileFormat slicerFile, LayerCompressionCodec? compressionMethod = null) : this(0, layerMat, slicerFile, compressionMethod)
     { }
 
-    public Layer(Stream stream, FileFormat slicerFile, LayerCompressionMethod? compressionMethod = null) : this(0, stream, slicerFile, compressionMethod) { }
+    public Layer(Stream stream, FileFormat slicerFile, LayerCompressionCodec? compressionMethod = null) : this(0, stream, slicerFile, compressionMethod) { }
 
     #endregion
 
@@ -1504,20 +1504,20 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
         return clonedLayers;
     }
 
-    public static byte[] CompressMat(Mat mat, LayerCompressionMethod method)
+    public static byte[] CompressMat(Mat mat, LayerCompressionCodec codec)
     {
-        switch (method)
+        switch (codec)
         {
-            case LayerCompressionMethod.Png:
+            case LayerCompressionCodec.Png:
                 return mat.GetPngByes();
-            case LayerCompressionMethod.Lz4:
+            case LayerCompressionCodec.Lz4:
             {
                 var span = mat.GetDataByteSpan();
                 var target = new byte[LZ4Codec.MaximumOutputSize(span.Length)];
                 var encodedLength = LZ4Codec.Encode(span, target.AsSpan());
                 return target[..encodedLength];
             }
-            case LayerCompressionMethod.GZip:
+            case LayerCompressionCodec.GZip:
             {
                 /*var matSpan = mat.GetDataByteSpan();
                 var compressedBytes = new byte[matSpan.Length];
@@ -1537,7 +1537,7 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
                 gZipStream.Write(mat.GetDataByteSpan());
                 return compressedStream.ToArray();
             }
-            case LayerCompressionMethod.Deflate:
+            case LayerCompressionCodec.Deflate:
             {
                 using var compressedStream = new MemoryStream();
                 using var deflateStream = new DeflateStream(compressedStream, CompressionLevel.Fastest);
@@ -1547,7 +1547,7 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
             /*case LayerCompressionMethod.None:
                 return mat.GetBytes();*/
             default:
-                throw new ArgumentOutOfRangeException(nameof(method));
+                throw new ArgumentOutOfRangeException(nameof(codec));
         }
     }
 

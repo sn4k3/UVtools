@@ -15,8 +15,8 @@
     <ComboBox Grid.Row="0"
               Grid.Column="2"
               HorizontalAlignment="Stretch"
-              SelectedItem="{Binding Operation.ReliefType}"
-              Items="{Binding Operation.RaftReliefItems}"/>
+              Items="{Binding Operation.ReliefType, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+              SelectedItem="{Binding Operation.ReliefType, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
 
     <TextBlock
         Grid.Row="2"
@@ -65,49 +65,99 @@ you must manually input the layer index of the last raft where it ends and suppo
                    Classes="ValueLabel ValueLabel_sun"
                    Minimum="0"
                    Maximum="255"
-                   IsVisible="{Binding !Operation.IsDecimate}"
-                   Value="{Binding Operation.Brightness}"/>
-    <TextBlock
-        Grid.Row="6" Grid.Column="4"
-        IsVisible="{Binding !Operation.IsDecimate}"
-        Text="{Binding Operation.BrightnessPercent, StringFormat=\{0:F2\}%}" VerticalAlignment="Center"/>
+                   Value="{Binding Operation.Brightness}">
+        <NumericUpDown.IsVisible>
+            <MultiBinding Converter="{x:Static BoolConverters.Or}">
+                <Binding Path="Operation.IsRelief"/>
+                <Binding Path="Operation.IsDimming"/>
+            </MultiBinding>
+        </NumericUpDown.IsVisible>
+    </NumericUpDown>
 
+    <NumericUpDown Grid.Row="6" Grid.Column="2"
+                   Classes="ValueLabel ValueLabel_sun"
+                   Minimum="0"
+                   Maximum="255"
+                   IsVisible="{Binding Operation.IsTabs}"
+                   Value="{Binding Operation.TabBrightness}"/>
 
+	  <TextBlock Grid.Row="6" Grid.Column="4"
+                 IsVisible="{Binding !Operation.IsDecimate}"
+                 Text="{Binding Operation.BrightnessPercent, StringFormat=\{0:F2\}%}" VerticalAlignment="Center"/>
 
-    <TextBlock
-        Grid.Row="8" Grid.Column="0"
-        IsVisible="{Binding !Operation.IsDecimate}"
-        Text="Supports margin:" VerticalAlignment="Center"/>
+    <TextBlock Grid.Row="8" Grid.Column="0"
+               Text="Supports margin:" VerticalAlignment="Center">
+        <TextBlock.IsVisible>
+			<MultiBinding Converter="{x:Static BoolConverters.Or}">
+                <Binding Path="Operation.IsRelief"/>
+                <Binding Path="Operation.IsDimming"/>
+            </MultiBinding>
+        </TextBlock.IsVisible>
+    </TextBlock>
 
-    <TextBlock
-      Grid.Row="8" Grid.Column="0"
-      IsVisible="{Binding Operation.IsDecimate}"
-      ToolTip.Tip="Raft will be replaced by the present supports and then dilated by this value to thicken the supports and increase the adhesion. 
+    <TextBlock Grid.Row="8" Grid.Column="0"
+               IsVisible="{Binding Operation.IsDecimate}"
+               ToolTip.Tip="Raft will be replaced by the present supports and then dilated by this value to thicken the supports and increase the adhesion. 
 &#x0a;Use large numbers with tiny supports for best adhesion."
-      Text="Dilate supports by:" VerticalAlignment="Center"/>
+               Text="Dilate supports by:" VerticalAlignment="Center"/>
+
+    <TextBlock Grid.Row="8" Grid.Column="0"
+               IsVisible="{Binding Operation.IsTabs}"
+               Text="Tab triangle base:" VerticalAlignment="Center"/>
 
     <NumericUpDown Grid.Row="8" Grid.Column="2"
                    Classes="ValueLabel ValueLabel_px"
-              Minimum="0"
-              Maximum="255"
-              Value="{Binding Operation.DilateIterations}"/>
+                   Minimum="0"
+                   Maximum="255"
+                   IsVisible="{Binding !Operation.IsTabs}"
+                   Value="{Binding Operation.DilateIterations}"/>
 
 
-    <TextBlock
-      Grid.Row="10" Grid.Column="0"
-      Text="Wall margin:" VerticalAlignment="Center"
-      IsVisible="{Binding !Operation.IsDecimate}"
-      />
+      <NumericUpDown Grid.Row="8" Grid.Column="2"
+                     Classes="ValueLabel ValueLabel_px"
+                     Minimum="5"
+                     Maximum="65535"
+                     IsVisible="{Binding Operation.IsTabs}"
+                     Value="{Binding Operation.TabTriangleBase}"/>
+
+
+    <TextBlock Grid.Row="10" Grid.Column="0"
+               Text="Wall margin:" VerticalAlignment="Center">
+        <TextBlock.IsVisible>
+            <MultiBinding Converter="{x:Static BoolConverters.Or}">
+                <Binding Path="Operation.IsRelief"/>
+                <Binding Path="Operation.IsDimming"/>
+            </MultiBinding>
+        </TextBlock.IsVisible>
+    </TextBlock>
+
+    <TextBlock Grid.Row="10" Grid.Column="0"
+               IsVisible="{Binding Operation.IsTabs}"
+               Text="Tab triangle height:" VerticalAlignment="Center"/>
 
     <NumericUpDown Grid.Row="10" Grid.Column="2"
                    Classes="ValueLabel ValueLabel_px"
               Minimum="1"
               Maximum="255"
-              Value="{Binding Operation.WallMargin}"
-              IsVisible="{Binding !Operation.IsDecimate}"/>
+              Value="{Binding Operation.WallMargin}">
+		<NumericUpDown.IsVisible>
+            <MultiBinding Converter="{x:Static BoolConverters.Or}">
+                <Binding Path="Operation.IsRelief"/>
+                <Binding Path="Operation.IsDimming"/>
+            </MultiBinding>
+		</NumericUpDown.IsVisible>
+    </NumericUpDown>
 
-    <TextBlock
-      Grid.Row="12"
+    <NumericUpDown Grid.Row="10" Grid.Column="2"
+                   Classes="ValueLabel ValueLabel_px"
+                   Minimum="5"
+                   Maximum="65535"
+                   IsVisible="{Binding Operation.IsTabs}"
+                   Value="{Binding Operation.TabTriangleHeight}"/>
+
+
+
+    <TextBlock Grid.Row="12" Grid.Column="0"
       Text="Hole diameter:" VerticalAlignment="Center"
       IsVisible="{Binding Operation.IsRelief}"/>
 
@@ -121,8 +171,7 @@ you must manually input the layer index of the last raft where it ends and suppo
     <TextBlock
       Grid.Row="14" Grid.Column="0"
       Text="Hole spacing:" VerticalAlignment="Center"
-      IsVisible="{Binding Operation.IsRelief}"
-      />
+      IsVisible="{Binding Operation.IsRelief}"/>
 
     <NumericUpDown Grid.Row="14" Grid.Column="2"
                    Classes="ValueLabel ValueLabel_px"
