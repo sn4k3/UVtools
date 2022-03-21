@@ -14,6 +14,7 @@ using System.Net.Http.Headers;
 using System.Runtime.InteropServices;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Threading;
 using UVtools.Core;
@@ -223,7 +224,8 @@ public class AppVersionChecker : BindableBase
 
                     if (File.Exists(appImagePath)) File.Delete(appImagePath);
                     File.Move(DownloadedFile, newFullPath, true);
-                    SystemAware.StartProcess("chmod", $"a+x \"{newFullPath}\"");
+                    SystemAware.StartProcess("chmod", $"a+x \"{newFullPath}\"", true);
+                    Thread.Sleep(500);
                     SystemAware.StartProcess(newFullPath);
                 }
                 else // others

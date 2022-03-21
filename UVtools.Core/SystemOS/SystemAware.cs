@@ -13,6 +13,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 
 namespace UVtools.Core.SystemOS;
 
@@ -240,11 +241,13 @@ public static class SystemAware
 
     }
 
-    public static void StartProcess(string name, string? arguments = null)
+    public static void StartProcess(string name, string? arguments = null, bool waitForCompletion = false, int waitTimeout = Timeout.Infinite)
     {
         try
         {
-            using (Process.Start(new ProcessStartInfo(name, arguments!) { UseShellExecute = true })) { }
+            using var process = Process.Start(new ProcessStartInfo(name, arguments!) {UseShellExecute = true});
+            if (process is null) return;
+            if (waitForCompletion) process.WaitForExit(waitTimeout);
         }
         catch (Exception e)
         {
