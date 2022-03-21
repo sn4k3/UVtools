@@ -388,6 +388,7 @@ if($null -ne $enableMSI -and $enableMSI)
         Write-Output "################################"
         Write-Output "Clean and build MSI components manifest file"
 
+        Remove-Item "$msiTargetFile" -ErrorAction Ignore
         (Get-Content "$msiComponentsFile") -replace 'SourceDir="\.\.\\publish\\.+"', "SourceDir=`"..\publish\${software}_win-x64_v$version`"" | Out-File "$msiComponentsFile"
         
         $msiComponentsXml = [Xml] (Get-Content "$msiComponentsFile")

@@ -44,6 +44,9 @@ public class AppVersionChecker : BindableBase
                     var package = File.ReadAllText(file);
                     if (!string.IsNullOrWhiteSpace(package) && (package.EndsWith("-x64") || package.EndsWith("-arm64")))
                     {
+                        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                            return $"{About.Software}_{package}_v{_version}.msi";
+
                         return SystemAware.IsRunningLinuxAppImage()
                             ? $"{About.Software}_{package}_v{_version}.AppImage"
                             : $"{About.Software}_{package}_v{_version}.zip";
