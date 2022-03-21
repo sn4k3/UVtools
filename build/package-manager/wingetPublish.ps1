@@ -1,12 +1,12 @@
 # Script working directory
-Set-Location $PSScriptRoot\..\..
+Set-Location $PSScriptRoot
 
 ####################################
 ###         Configuration        ###
 ####################################
 # Variables
 $projectAPIUrl = "https://api.github.com/repos/sn4k3/UVtools/releases/latest"
-$outputFolder = "manifests"
+$outputFolder = "winget-pr-manifests"
 $msiUrl = $null
 
 Write-Output "
@@ -15,7 +15,7 @@ Write-Output "
 ####################################
 "
 
-$wingetTokenKeyFile = 'build/winget_token.key'
+$wingetTokenKeyFile = '../secret/winget_token.key'
 if (Test-Path -Path $wingetTokenKeyFile -PathType Leaf)
 {
     $wingetTokenKeyFile = (Get-Content $wingetTokenKeyFile)
