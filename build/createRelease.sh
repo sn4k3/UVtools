@@ -119,7 +119,8 @@ elif [[ $runtime == osx-* ]]; then
         cp -af "$platformsDir/osx/Info.plist" "$osxApp/Contents/"
         cp -af "$platformsDir/osx/UVtools.entitlements" "$osxApp/Contents/"
         cp -a "$publishRuntimeDir/." "$osxApp/Contents/MacOS"
-        sed -i '' "s/#VERSION/$version/g" "$osxApp/Contents/Info.plist"
+        sed -i "s/#VERSION/$version/g" "$osxApp/Contents/Info.plist" 2>/dev/null
+        sed -i '' "s/#VERSION/$version/g" "$osxApp/Contents/Info.plist" 2>/dev/null
 
         # Remove the base publish if able
         [ "$keepNetPublish" == false ] && rm -rf "$publishRuntimeDir" 2>/dev/null
