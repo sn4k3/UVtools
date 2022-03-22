@@ -210,7 +210,7 @@ The UVtools executable allow to set some arguments to do special functions:
 
 ```bash
 sudo apt-get update
-sudo apt-get install -y libjpeg-dev libpng-dev libgeotiff-dev libdc1394-22 libavcodec-dev libavformat-dev libswscale-dev libopenexr24 libtbb-dev libgl1-mesa-dev libgdiplus wget
+sudo apt-get install -y libjpeg-dev libpng-dev libgeotiff-dev libgeotiff5 libdc1394-22 libavcodec-dev libavformat-dev libswscale-dev libopenexr24 libtbb-dev libgl1-mesa-dev libgdiplus wget
 wget -qO - https://raw.githubusercontent.com/sn4k3/UVtools/master/Scripts/libdl-solver.sh | sudo bash
 ```
 
