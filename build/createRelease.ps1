@@ -195,11 +195,11 @@ $stopWatch.Start()
 $software = "UVtools"
 $project = "UVtools.WPF"
 $buildWith = "Release"
-$netFolder = "net6.0"
+$netVersion = "6.0"
 $rootFolder = $(Get-Location)
 $buildFolder = "$rootFolder\build"
-$releaseFolder = "$project\bin\$buildWith\$netFolder"
-$objFolder = "$project\obj\$buildWith\$netFolder"
+$releaseFolder = "$project\bin\$buildWith\net$netVersion"
+$objFolder = "$project\obj\$buildWith\net$netVersion"
 $publishFolder = "publish"
 $platformsFolder = "$buildFolder\platforms"
 
@@ -317,13 +317,18 @@ foreach ($obj in $runtimes.GetEnumerator()) {
         # Deploy
         Write-Output "################################
     Building: $runtime"
+        dotnet publish "UVtools.Cmd" -o "$publishFolder/$publishName" -c $buildWith -r $runtime -p:PublishReadyToRun=true --self-contained $extraCmd
         dotnet publish $project -o "$publishFolder/$publishName" -c $buildWith -r $runtime -p:PublishReadyToRun=true --self-contained $extraCmd
 
         New-Item "$publishFolder/$publishName/runtime_package.dat" -ItemType File -Value $runtime
         
         # Cleanup
+        Remove-Item "UVtools.Cmd\bin\$buildWith\net$netVersion\$runtime" -Recurse -ErrorAction Ignore
+        Remove-Item "UVtools.Cmd\obj\$buildWith\net$netVersion\$runtime" -Recurse -ErrorAction Ignore
+
         Remove-Item "$releaseFolder\$runtime" -Recurse -ErrorAction Ignore
         Remove-Item "$objFolder\$runtime" -Recurse -ErrorAction Ignore
+        
         Write-Output "$releaseFolder\$runtime"
         
         foreach ($excludeObj in $obj.Value.exclude) {

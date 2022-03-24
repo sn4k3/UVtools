@@ -25,8 +25,10 @@ publishName="UVtools_${runtime}_v$version"
 publishDir="$rootDir/publish"
 publishRuntimeDir="$publishDir/$publishName"
 buildProject="UVtools.WPF"
+cmdProject="UVtools.Cmd"
 buildWith="Release"
 projectDir="$rootDir/$buildProject"
+cmdProjectDir="$rootDir/$cmdProject"
 netVersion="6.0"
 
 if [ $runtime == "clean" ]; then
@@ -89,7 +91,8 @@ rm -rf "$publishRuntimeDir" 2>/dev/null
 
 
 echo "2. Publishing UVtools v$version for: $runtime"
-dotnet publish $buildProject -o "$publishRuntimeDir" -c $buildWith -r $runtime -p:PublishReadyToRun=true --self-contained
+dotnet publish $cmdProject -o "$publishRuntimeDir" -c $buildWith -r $runtime /p:PublishReadyToRun=true --self-contained
+dotnet publish $buildProject -o "$publishRuntimeDir" -c $buildWith -r $runtime /p:PublishReadyToRun=true --self-contained
 
 echo "3. Copying dependencies"
 echo $runtime > "$publishRuntimeDir/runtime_package.dat"
@@ -98,6 +101,8 @@ echo $runtime > "$publishRuntimeDir/runtime_package.dat"
 [ -f "$runtimePlatformDir/libcvextern.zip" ] && unzip "$runtimePlatformDir/libcvextern.zip" -d "$publishRuntimeDir"
 
 echo "4. Cleaning up"
+rm -rf "$cmdProjectDir/bin/$buildWith/net$netVersion/$runtime" 2>/dev/null
+rm -rf "$cmdProjectDir/obj/$buildWith/net$netVersion/$runtime" 2>/dev/null
 rm -rf "$projectDir/bin/$buildWith/net$netVersion/$runtime" 2>/dev/null
 rm -rf "$projectDir/obj/$buildWith/net$netVersion/$runtime" 2>/dev/null
 
