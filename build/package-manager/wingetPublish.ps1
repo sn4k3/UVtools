@@ -6,7 +6,7 @@ Set-Location $PSScriptRoot
 ####################################
 # Variables
 $projectAPIUrl = "https://api.github.com/repos/sn4k3/UVtools/releases/latest"
-$outputFolder = "winget-pr-manifests"
+$outputFolder = "manifests"
 $msiUrl = $null
 
 Write-Output "
@@ -59,7 +59,7 @@ Url: $msiUrl
 "
 
 $actionInput = Read-Host -Prompt "Do you want to update the manifest with the current release v$($version)? (Y/Yes or N/No)"
-if($actionInput -eq "y" || $actionInput -eq "yes")
+if($actionInput -eq "y" -or $actionInput -eq "yes")
 {
     Remove-Item $outputFolder -Recurse -ErrorAction Ignore # Clean
     #wingetcreate.exe update PTRTECH.UVtools --interactive
