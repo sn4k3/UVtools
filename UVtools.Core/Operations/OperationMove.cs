@@ -63,7 +63,7 @@ public class OperationMove : Operation
     private Rectangle _dstRoi = Rectangle.Empty;
     private uint _imageWidth;
     private uint _imageHeight;
-    private Enumerations.Anchor _anchor = Enumerations.Anchor.MiddleCenter;
+    private Anchor _anchor = Anchor.MiddleCenter;
     private int _marginLeft;
     private int _marginTop;
     private int _marginRight;
@@ -96,7 +96,7 @@ public class OperationMove : Operation
         set => RaiseAndSetIfChanged(ref _imageHeight, value);
     }
 
-    public Enumerations.Anchor Anchor
+    public Anchor Anchor
     {
         get => _anchor;
         set
@@ -176,15 +176,15 @@ public class OperationMove : Operation
 
     public OperationMove() { }
 
-    public OperationMove(FileFormat slicerFile) : this(slicerFile, Enumerations.Anchor.MiddleCenter)
+    public OperationMove(FileFormat slicerFile) : this(slicerFile, Anchor.MiddleCenter)
     { }
 
-    public OperationMove(FileFormat slicerFile, Enumerations.Anchor anchor) : base(slicerFile)
+    public OperationMove(FileFormat slicerFile, Anchor anchor) : base(slicerFile)
     {
         _anchor = anchor;
     }
 
-    public OperationMove(FileFormat slicerFile, Rectangle srcRoi, Enumerations.Anchor anchor = Enumerations.Anchor.MiddleCenter) : this(slicerFile, anchor)
+    public OperationMove(FileFormat slicerFile, Rectangle srcRoi, Anchor anchor = Anchor.MiddleCenter) : this(slicerFile, anchor)
     {
         if(!srcRoi.IsEmpty) ROI = srcRoi;
     }
@@ -197,7 +197,7 @@ public class OperationMove : Operation
         _imageHeight = SlicerFile.ResolutionY;
     }
 
-    /*public OperationMove(FileFormat slicerFile, Rectangle srcRoi, Mat mat, Enumerations.Anchor anchor = Enumerations.Anchor.MiddleCenter) : this(slicerFile, srcRoi, anchor)
+    /*public OperationMove(FileFormat slicerFile, Rectangle srcRoi, Mat mat, Anchor anchor = Anchor.MiddleCenter) : this(slicerFile, srcRoi, anchor)
     {
         ImageWidth = (uint) mat.Width;
         ImageHeight = (uint) mat.Height;
@@ -212,15 +212,15 @@ public class OperationMove : Operation
 
         _dstRoi.Location = Anchor switch
         {
-            Enumerations.Anchor.TopLeft => new Point(0, 0),
-            Enumerations.Anchor.TopCenter => new Point((int) (ImageWidth / 2 - ROI.Width / 2), 0),
-            Enumerations.Anchor.TopRight => new Point((int) (ImageWidth - ROI.Width), 0),
-            Enumerations.Anchor.MiddleLeft => new Point(0, (int) (ImageHeight / 2 - ROI.Height / 2)),
-            Enumerations.Anchor.MiddleCenter => new Point((int) (ImageWidth / 2 - ROI.Width / 2), (int) (ImageHeight / 2 - ROI.Height / 2)),
-            Enumerations.Anchor.MiddleRight => new Point((int) (ImageWidth - ROI.Width), (int) (ImageHeight / 2 - ROI.Height / 2)),
-            Enumerations.Anchor.BottomLeft => new Point(0, (int) (ImageHeight - ROI.Height)),
-            Enumerations.Anchor.BottomCenter => new Point((int) (ImageWidth / 2 - ROI.Width / 2), (int) (ImageHeight - ROI.Height)),
-            Enumerations.Anchor.BottomRight => new Point((int) (ImageWidth - ROI.Width), (int) (ImageHeight - ROI.Height)),
+            Anchor.TopLeft => new Point(0, 0),
+            Anchor.TopCenter => new Point((int) (ImageWidth / 2 - ROI.Width / 2), 0),
+            Anchor.TopRight => new Point((int) (ImageWidth - ROI.Width), 0),
+            Anchor.MiddleLeft => new Point(0, (int) (ImageHeight / 2 - ROI.Height / 2)),
+            Anchor.MiddleCenter => new Point((int) (ImageWidth / 2 - ROI.Width / 2), (int) (ImageHeight / 2 - ROI.Height / 2)),
+            Anchor.MiddleRight => new Point((int) (ImageWidth - ROI.Width), (int) (ImageHeight / 2 - ROI.Height / 2)),
+            Anchor.BottomLeft => new Point(0, (int) (ImageHeight - ROI.Height)),
+            Anchor.BottomCenter => new Point((int) (ImageWidth / 2 - ROI.Width / 2), (int) (ImageHeight - ROI.Height)),
+            Anchor.BottomRight => new Point((int) (ImageWidth - ROI.Width), (int) (ImageHeight - ROI.Height)),
             _ => throw new ArgumentOutOfRangeException()
         };
 
@@ -242,14 +242,14 @@ public class OperationMove : Operation
     public void Reset()
     {
         MarginLeft = MarginTop = MarginRight = MarginBottom = 0;
-        Anchor = Enumerations.Anchor.MiddleCenter;
+        Anchor = Anchor.MiddleCenter;
         IsCutMove = true;
     }
 
 
     public void SetAnchor(byte value)
     {
-        Anchor = (Enumerations.Anchor)value;
+        Anchor = (Anchor)value;
     }
 
 

@@ -229,7 +229,7 @@ public class GR1File : FileFormat
         }
     }
 
-    public override Enumerations.FlipDirection DisplayMirror { get; set; }
+    public override FlipDirection DisplayMirror { get; set; }
 
     public override float LayerHeight
     {
@@ -356,7 +356,7 @@ public class GR1File : FileFormat
     #region Methods
     protected override void EncodeInternally(OperationProgress progress)
     {
-        using var outputFile = new FileStream(FileFullPath!, FileMode.Create, FileAccess.Write);
+        using var outputFile = new FileStream(TemporaryOutputFileFullPath, FileMode.Create, FileAccess.Write);
         var pageBreak = PageBreak.Bytes;
 
         Helpers.SerializeWriteFileStream(outputFile, HeaderSettings);
@@ -520,7 +520,7 @@ public class GR1File : FileFormat
 
                     linesBytes[layerIndex] = null!;
 
-                    this[layerIndex] = new Layer((uint)layerIndex, mat, this);
+                    _layers[layerIndex] = new Layer((uint)layerIndex, mat, this);
 
                     progress.LockAndIncrement();
                 });
@@ -540,7 +540,7 @@ public class GR1File : FileFormat
 
     protected override void PartialSaveInternally(OperationProgress progress)
     {
-        using var outputFile = new FileStream(FileFullPath!, FileMode.Open, FileAccess.Write);
+        using var outputFile = new FileStream(TemporaryOutputFileFullPath, FileMode.Open, FileAccess.Write);
         outputFile.Seek(SlicerInfoAddress, SeekOrigin.Begin);
         Helpers.SerializeWriteFileStream(outputFile, SlicerInfoSettings);
     }

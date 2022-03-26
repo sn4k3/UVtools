@@ -7,6 +7,9 @@
  */
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 
 namespace UVtools.Core.Extensions;
 
@@ -36,4 +39,10 @@ public static class TypeExtensions
     }
 
     public static byte ToByte(this bool value) => (byte)(value ? 1 : 0);
+
+    public static IEnumerable<Type> GetTypesInNamespace(Assembly assembly, string nameSpace)
+    {
+        return assembly.GetTypes()
+                .Where(t => string.Equals(t.Namespace, nameSpace, StringComparison.Ordinal));
+    }
 }

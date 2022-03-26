@@ -46,7 +46,7 @@ public sealed class OperationCalibrateLiftHeight : Operation
 
     public override bool CanCancel => false;
 
-    public override Enumerations.LayerRangeSelection StartLayerRangeSelection => Enumerations.LayerRangeSelection.None;
+    public override LayerRangeSelection StartLayerRangeSelection => LayerRangeSelection.None;
     public override string IconClass => "mdi-arrow-expand-up";
     public override string Title => "Lift height";
     public override string Description =>

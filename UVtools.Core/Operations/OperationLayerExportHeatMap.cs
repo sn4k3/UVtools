@@ -22,8 +22,8 @@ public sealed class OperationLayerExportHeatMap : Operation
 {
     #region Members
     private string _filePath = null!;
-    private Enumerations.RotateDirection _rotateDirection = Enumerations.RotateDirection.None;
-    private Enumerations.FlipDirection _flipDirection = Enumerations.FlipDirection.None;
+    private RotateDirection _rotateDirection = RotateDirection.None;
+    private FlipDirection _flipDirection = FlipDirection.None;
     private bool _mergeSamePositionedLayers = true;
     private bool _cropByRoi = true;
 
@@ -78,13 +78,13 @@ public sealed class OperationLayerExportHeatMap : Operation
         set => RaiseAndSetIfChanged(ref _filePath, value);
     }
 
-    public Enumerations.RotateDirection RotateDirection
+    public RotateDirection RotateDirection
     {
         get => _rotateDirection;
         set => RaiseAndSetIfChanged(ref _rotateDirection, value);
     }
 
-    public Enumerations.FlipDirection FlipDirection
+    public FlipDirection FlipDirection
     {
         get => _flipDirection;
         set => RaiseAndSetIfChanged(ref _flipDirection, value);
@@ -173,12 +173,12 @@ public sealed class OperationLayerExportHeatMap : Operation
         using var sumMat = EmguExtensions.InitMat(sumMat32.Size);
         sumMat32.ConvertTo(sumMat, DepthType.Cv8U, 1.0 / layerRange.Length);
 
-        if (_flipDirection != Enumerations.FlipDirection.None)
+        if (_flipDirection != FlipDirection.None)
         {
             CvInvoke.Flip(sumMat, sumMat, Enumerations.ToOpenCVFlipType(_flipDirection));
         }
 
-        if (_rotateDirection != Enumerations.RotateDirection.None)
+        if (_rotateDirection != RotateDirection.None)
         {
             CvInvoke.Rotate(sumMat, sumMat, Enumerations.ToOpenCVRotateFlags(_rotateDirection));
         }

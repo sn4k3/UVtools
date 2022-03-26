@@ -713,12 +713,12 @@ public class CTBEncryptedFile : FileFormat
         set => base.MachineZ = Settings.MachineZ = (float)Math.Round(value, 2);
     }
 
-    public override Enumerations.FlipDirection DisplayMirror
+    public override FlipDirection DisplayMirror
     {
-        get => Settings.ProjectorType == 0 ? Enumerations.FlipDirection.None : Enumerations.FlipDirection.Horizontally;
+        get => Settings.ProjectorType == 0 ? FlipDirection.None : FlipDirection.Horizontally;
         set
         {
-            Settings.ProjectorType = value == Enumerations.FlipDirection.None ? 0u : 1;
+            Settings.ProjectorType = value == FlipDirection.None ? 0u : 1;
             RaisePropertyChanged();
         }
     }
@@ -1070,13 +1070,13 @@ public class CTBEncryptedFile : FileFormat
         }
     }
 
-    public override bool CanProcess(string fileFullPath)
+    public override bool CanProcess(string? fileFullPath)
     {
         if (!base.CanProcess(fileFullPath)) return false;
 
         try
         {
-            using var fs = new BinaryReader(new FileStream(fileFullPath, FileMode.Open, FileAccess.Read));
+            using var fs = new BinaryReader(new FileStream(fileFullPath!, FileMode.Open, FileAccess.Read));
             var magic = fs.ReadUInt32();
             return magic is MAGIC_CBT_ENCRYPTED;
         }
@@ -1226,11 +1226,11 @@ public class CTBEncryptedFile : FileFormat
 
                     if (isBugged)
                     {
-                        this[layerIndex] = new Layer((uint)layerIndex, this);
+                        _layers[layerIndex] = new Layer((uint)layerIndex, this);
                     }
                     else
                     {
-                        this[layerIndex] = new Layer((uint) layerIndex, layerDef.DecodeImage((uint) layerIndex), this);
+                        _layers[layerIndex] = new Layer((uint) layerIndex, layerDef.DecodeImage((uint) layerIndex), this);
                     }
 
                     progress.LockAndIncrement();
@@ -1286,7 +1286,7 @@ public class CTBEncryptedFile : FileFormat
 
     protected override void EncodeInternally(OperationProgress progress)
     {
-        using var outputFile = new FileStream(FileFullPath!, FileMode.Create, FileAccess.Write);
+        using var outputFile = new FileStream(TemporaryOutputFileFullPath, FileMode.Create, FileAccess.Write);
         //uint currentOffset = 0;
         /* Create the file header and fill out what we can. SignatureOffset will have to be populated later
          * this will be the last thing written to file */
@@ -1413,7 +1413,7 @@ public class CTBEncryptedFile : FileFormat
     {
         SanitizeProperties();
 
-        using var outputFile = new FileStream(FileFullPath!, FileMode.Open, FileAccess.Write);
+        using var outputFile = new FileStream(TemporaryOutputFileFullPath, FileMode.Open, FileAccess.Write);
             
         outputFile.Seek(Header.SettingsOffset, SeekOrigin.Begin);
         var settingsBytes = Helpers.Serialize(Settings).ToArray();

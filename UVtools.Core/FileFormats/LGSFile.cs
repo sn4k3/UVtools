@@ -15,6 +15,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Threading.Tasks;
+using UVtools.Core.Converters;
 using UVtools.Core.Extensions;
 using UVtools.Core.Layers;
 using UVtools.Core.Operations;
@@ -345,9 +346,9 @@ public class LGSFile : FileFormat
         set => base.MachineZ = HeaderSettings.MachineZ = (float)Math.Round(value, 2);
     }
 
-    public override Enumerations.FlipDirection DisplayMirror
+    public override FlipDirection DisplayMirror
     {
-        get => Enumerations.FlipDirection.Horizontally;
+        get => FlipDirection.Horizontally;
         set { }
     }      
 
@@ -379,20 +380,20 @@ public class LGSFile : FileFormat
 
     public override float BottomLightOffDelay
     {
-        get => TimeExtensions.MillisecondsToSeconds(HeaderSettings.BottomLightOffDelayMs);
+        get => TimeConverter.MillisecondsToSeconds(HeaderSettings.BottomLightOffDelayMs);
         set
         {
-            HeaderSettings.BottomLightOffDelayMs = TimeExtensions.SecondsToMilliseconds(value);
+            HeaderSettings.BottomLightOffDelayMs = TimeConverter.SecondsToMilliseconds(value);
             base.BottomLightOffDelay = value;
         }
     }
 
     public override float LightOffDelay
     {
-        get => TimeExtensions.MillisecondsToSeconds(HeaderSettings.LightOffDelayMs);
+        get => TimeConverter.MillisecondsToSeconds(HeaderSettings.LightOffDelayMs);
         set
         {
-            HeaderSettings.LightOffDelayMs = TimeExtensions.SecondsToMilliseconds(value);
+            HeaderSettings.LightOffDelayMs = TimeConverter.SecondsToMilliseconds(value);
             base.LightOffDelay = value;
         }
     }
@@ -419,20 +420,20 @@ public class LGSFile : FileFormat
 
     public override float BottomExposureTime
     {
-        get => TimeExtensions.MillisecondsToSeconds(HeaderSettings.BottomExposureTimeMs);
+        get => TimeConverter.MillisecondsToSeconds(HeaderSettings.BottomExposureTimeMs);
         set
         {
-            HeaderSettings.BottomExposureTimeMs = TimeExtensions.SecondsToMilliseconds(value);
+            HeaderSettings.BottomExposureTimeMs = TimeConverter.SecondsToMilliseconds(value);
             base.BottomExposureTime = value;
         }
     }
 
     public override float ExposureTime
     {
-        get => TimeExtensions.MillisecondsToSeconds(HeaderSettings.ExposureTimeMs);
+        get => TimeConverter.MillisecondsToSeconds(HeaderSettings.ExposureTimeMs);
         set
         {
-            HeaderSettings.ExposureTimeMs = TimeExtensions.SecondsToMilliseconds(value);
+            HeaderSettings.ExposureTimeMs = TimeConverter.SecondsToMilliseconds(value);
             base.ExposureTime = value;
         }
     }
@@ -511,7 +512,7 @@ public class LGSFile : FileFormat
         }
 
         //uint currentOffset = (uint)Helpers.Serializer.SizeOf(HeaderSettings);
-        using (var outputFile = new FileStream(FileFullPath!, FileMode.Create, FileAccess.Write))
+        using (var outputFile = new FileStream(TemporaryOutputFileFullPath, FileMode.Create, FileAccess.Write))
         {
             outputFile.WriteSerialize(HeaderSettings);
             outputFile.WriteBytes(EncodeImage(DATATYPE_RGB565_BE, Thumbnails[0]!));
@@ -612,7 +613,7 @@ public class LGSFile : FileFormat
                 Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), layerIndex =>
                 {
                     using var mat = layerData[layerIndex].Decode();
-                    this[layerIndex] = new Layer((uint)layerIndex, mat, this);
+                    _layers[layerIndex] = new Layer((uint)layerIndex, mat, this);
 
                     progress.LockAndIncrement();
                 });
@@ -624,7 +625,7 @@ public class LGSFile : FileFormat
 
     protected override void PartialSaveInternally(OperationProgress progress)
     {
-        using var outputFile = new FileStream(FileFullPath!, FileMode.Open, FileAccess.Write);
+        using var outputFile = new FileStream(TemporaryOutputFileFullPath, FileMode.Open, FileAccess.Write);
         outputFile.Seek(0, SeekOrigin.Begin);
         Helpers.SerializeWriteFileStream(outputFile, HeaderSettings);
     }

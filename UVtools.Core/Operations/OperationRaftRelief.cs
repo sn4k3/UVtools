@@ -70,8 +70,8 @@ public class OperationRaftRelief : Operation
 
     public override string ProgressAction => "Relieved layers";
 
-    public override Enumerations.LayerRangeSelection StartLayerRangeSelection =>
-        Enumerations.LayerRangeSelection.None;
+    public override LayerRangeSelection StartLayerRangeSelection =>
+        LayerRangeSelection.None;
 
     public override string? ValidateInternally()
     {

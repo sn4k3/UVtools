@@ -86,6 +86,7 @@ But also, i need victims for test subject. Proceed at your own risk!
 - PWMX (Photon Workshop)
 - PWMB (Photon Workshop)
 - PWSQ (Photon Workshop)
+- JXS (GKone Slicer)
 - ZCode (UnizMaker)
 - ZCodex (Z-Suite)
 - CWS (NovaMaker)
@@ -146,15 +147,52 @@ Replace the "xxx" by your desired value in the correct units
 
 https://github.com/sn4k3/UVtools/wiki/Sliced-File-Conversion
 
-# Command-line arguments
+# Command-line
 
-The UVtools executable allow to set some arguments to do special functions:
+## UVtoolsCmd (Console) executable
+
+```bash
+Usage:
+  UVtoolsCmd [command] [options]
+
+Options:
+  -q, --quiet     Make output silent but exceptions error will still show
+  --no-progress   Show no progress
+  --core-version  Show core version information
+  --version       Show version information
+  -?, -h, --help  Show help and usage information
+
+Commands:
+  run <input-file> <files>                              Run operations and/or scripts
+  convert <input-file> <target-type/ext> <output-file>  Convert input file into a output file format by a known type or
+                                                        extension []
+  extract <input-file> <output-folder>                  Extract file contents to a folder []
+  copy-parameters <input-file> <target-files>           Copy print parameters from one file to another
+  print-properties <input-file>                         Prints available properties
+  print-layers <input-file>                             Prints layer(s) properties
+  print-gcode <input-file>                              Prints the gcode of the file if available
+  print-machines                                        Prints machine settings
+```
+
+Note: On each command you can use -? to see specific command help and extra options
+
+## UVtools (UI) executable
 
 - **Open file(s):**
    - **Syntax:** UVtools \<file1\> [file2] [file3] ...
    - **Example 1:** UVtools C:\model.osla
    - **Example 2:** UVtools C:\model.zip D:\other_model.osla
    - **Note:** When a invalid file is pass, the program will open as default.
+- **Redirect a command to UVtoolsCmd:**
+   - **Syntax:** UVtools --cmd \<commands ...\>
+   - **Example 1:** UVtools --cmd convert C:\model.osla zip
+   - **Note:** This can be used when UVtoolsCmd is not directly exposed, for example if you are running via a .AppImage.  
+               All commands will be redirected to `UVtoolsCmd` and the UI will not run. It still shows the terminal window.
+
+### Legacy
+
+The following commands are the old way and commands under the UI executable, they will be removed in near future, try to not use them, please prefer **UVtoolsCmd**.
+
 - **Convert a file into another type(s)**
    - **Syntax:** UVtools -c/--convert \<input_file\> \<output_file1_or_ext\> [output_file2_or_ext] ...
    - **Example 1:** UVtools -c model.zip osla

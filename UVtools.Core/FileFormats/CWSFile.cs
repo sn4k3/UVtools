@@ -20,6 +20,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
+using UVtools.Core.Converters;
 using UVtools.Core.Extensions;
 using UVtools.Core.GCode;
 using UVtools.Core.Layers;
@@ -414,19 +415,19 @@ public class CWSFile : FileFormat
         set => base.MachineZ = OutputSettings.PlatformZSize = (float)Math.Round(value, 2);
     }
 
-    public override Enumerations.FlipDirection DisplayMirror
+    public override FlipDirection DisplayMirror
     {
         get
         {
-            if (OutputSettings.FlipX && OutputSettings.FlipY) return Enumerations.FlipDirection.Both;
-            if (OutputSettings.FlipX) return Enumerations.FlipDirection.Horizontally;
-            if (OutputSettings.FlipY) return Enumerations.FlipDirection.Vertically;
-            return Enumerations.FlipDirection.None;
+            if (OutputSettings.FlipX && OutputSettings.FlipY) return FlipDirection.Both;
+            if (OutputSettings.FlipX) return FlipDirection.Horizontally;
+            if (OutputSettings.FlipY) return FlipDirection.Vertically;
+            return FlipDirection.None;
         }
         set
         {
-            OutputSettings.FlipX = value is Enumerations.FlipDirection.Horizontally or Enumerations.FlipDirection.Both;
-            OutputSettings.FlipY = value is Enumerations.FlipDirection.Vertically or Enumerations.FlipDirection.Both;
+            OutputSettings.FlipX = value is FlipDirection.Horizontally or FlipDirection.Both;
+            OutputSettings.FlipY = value is FlipDirection.Vertically or FlipDirection.Both;
             RaisePropertyChanged();
         }
     }
@@ -483,32 +484,32 @@ public class CWSFile : FileFormat
 
     public override float WaitTimeBeforeCure
     {
-        get => TimeExtensions.MillisecondsToSeconds(SliceSettings.WaitBeforeExpoMs);
+        get => TimeConverter.MillisecondsToSeconds(SliceSettings.WaitBeforeExpoMs);
         set
         {
-            SliceSettings.WaitBeforeExpoMs = TimeExtensions.SecondsToMillisecondsUint(value);
+            SliceSettings.WaitBeforeExpoMs = TimeConverter.SecondsToMillisecondsUint(value);
             base.WaitTimeBeforeCure = base.LightOffDelay = value;
         }
     }
 
     public override float BottomExposureTime
     {
-        get => TimeExtensions.MillisecondsToSeconds(OutputSettings.BottomLayersTime);
+        get => TimeConverter.MillisecondsToSeconds(OutputSettings.BottomLayersTime);
         set
         {
             OutputSettings.BottomLayersTime =
-                SliceSettings.HeadLayersExpoMs = TimeExtensions.SecondsToMillisecondsUint(value);
+                SliceSettings.HeadLayersExpoMs = TimeConverter.SecondsToMillisecondsUint(value);
             base.BottomExposureTime = value;
         }
     }
 
     public override float ExposureTime
     {
-        get => TimeExtensions.MillisecondsToSeconds(OutputSettings.LayerTime);
+        get => TimeConverter.MillisecondsToSeconds(OutputSettings.LayerTime);
         set
         {
             OutputSettings.LayerTime = 
-                SliceSettings.LayersExpoMs = TimeExtensions.SecondsToMillisecondsUint(value);
+                SliceSettings.LayersExpoMs = TimeConverter.SecondsToMillisecondsUint(value);
             base.ExposureTime = value;
         }
     }
@@ -564,7 +565,7 @@ public class CWSFile : FileFormat
         {
             SyncMovementsWithDelay = true,
             UseComments = true,
-            GCodePositioningType = GCodeBuilder.GCodePositioningTypes.Partial,
+            GCodePositioningType = GCodeBuilder.GCodePositioningTypes.Relative,
             GCodeSpeedUnit = GCodeBuilder.GCodeSpeedUnits.MillimetersPerMinute,
             GCodeTimeUnit = GCodeBuilder.GCodeTimeUnits.Milliseconds,
             GCodeShowImageType = GCodeBuilder.GCodeShowImageTypes.LayerIndex0Started,
@@ -613,7 +614,7 @@ public class CWSFile : FileFormat
             throw new InvalidOperationException($"Filename for this format should not end with a digit: {filename}");
         }
 
-        using var outputFile = ZipFile.Open(FileFullPath!, ZipArchiveMode.Create);
+        using var outputFile = ZipFile.Open(TemporaryOutputFileFullPath, ZipArchiveMode.Create);
         if (Printer == PrinterType.Wanhao)
         {
             var manifest = new CWSManifest
@@ -660,18 +661,18 @@ public class CWSFile : FileFormat
 
         if (Printer == PrinterType.BeneMono)
         {
-            EncodeLayersInZip(outputFile, filename, LayerDigits, Enumerations.IndexStartNumber.Zero, progress, matGenFunc:
+            EncodeLayersInZip(outputFile, filename, LayerDigits, IndexStartNumber.Zero, progress, matGenFunc:
                 (_, mat) =>
                 {
-                    var matEncode = new Mat(mat.Height, mat.GetRealStep() / 3, DepthType.Cv8U, 3);
-                    var span = mat.GetDataByteSpan();
-                    var spanEncode = matEncode.GetDataByteSpan();
-                    for (int i = 0; i < span.Length; i++)
+                    var bgrMat = new Mat(mat.Height, mat.GetRealStep() / 3, DepthType.Cv8U, 3);
+                    var bgrMatSpan = bgrMat.GetDataByteSpan();
+                    var greySpan = mat.GetDataByteSpan();
+                    for (int i = 0; i < greySpan.Length; i++)
                     {
-                        spanEncode[i] = span[i];
+                        bgrMatSpan[i] = greySpan[i];
                     }
 
-                    return matEncode;
+                    return bgrMat;
                 });
             /*Parallel.For(0, LayerCount, CoreSettings.GetParallelOptions(progress),
                 //new ParallelOptions { MaxDegreeOfParallelism = Printer == PrinterType.BeneMono ? 1 : 1 },
@@ -699,7 +700,7 @@ public class CWSFile : FileFormat
         }
         else
         {
-            EncodeLayersInZip(outputFile, filename, LayerDigits, Enumerations.IndexStartNumber.Zero, progress);
+            EncodeLayersInZip(outputFile, filename, LayerDigits, IndexStartNumber.Zero, progress);
         }
 
         RebuildGCode();
@@ -863,25 +864,25 @@ public class CWSFile : FileFormat
 
         if (Printer == PrinterType.BeneMono)
         {
-            DecodeLayersFromZipRegex(inputFile, @"(\d+).png", Enumerations.IndexStartNumber.Zero, progress,
+            DecodeLayersFromZipRegex(inputFile, @"(\d+).png", IndexStartNumber.Zero, progress,
                 (layerIndex, pngBytes) =>
                 {
-                    using Mat mat = new();
-                    CvInvoke.Imdecode(pngBytes, ImreadModes.AnyColor, mat);
-                    var matDecode = new Mat(mat.Height, mat.GetRealStep(), DepthType.Cv8U, 1);
-                    var span = mat.GetDataByteSpan();
-                    var spanDecode = matDecode.GetDataByteSpan();
-                    for (int i = 0; i < span.Length; i++)
+                    using Mat bgrMat = new();
+                    CvInvoke.Imdecode(pngBytes, ImreadModes.AnyColor, bgrMat);
+                    var greyMat = new Mat(bgrMat.Height, bgrMat.GetRealStep(), DepthType.Cv8U, 1);
+                    var bgrSpan = bgrMat.GetDataByteSpan();
+                    var greySpan = greyMat.GetDataByteSpan();
+                    for (int i = 0; i < bgrSpan.Length; i++)
                     {
-                        spanDecode[i] = span[i];
+                        greySpan[i] = bgrSpan[i];
                     }
 
-                    return matDecode;
+                    return greyMat;
                 });
         }
         else
         {
-            DecodeLayersFromZipRegex(inputFile, @"(\d+).png", Enumerations.IndexStartNumber.Zero, progress);
+            DecodeLayersFromZipRegex(inputFile, @"(\d+).png", IndexStartNumber.Zero, progress);
         }
 
         GCode.ParseLayersFromGCode(this);
@@ -997,7 +998,7 @@ public class CWSFile : FileFormat
 
     protected override void PartialSaveInternally(OperationProgress progress)
     {
-        using var outputFile = ZipFile.Open(FileFullPath!, ZipArchiveMode.Update);
+        using var outputFile = ZipFile.Open(TemporaryOutputFileFullPath, ZipArchiveMode.Update);
         var arch = Environment.Is64BitOperatingSystem ? "64-bits" : "32-bits";
         var entry = outputFile.GetPutFile("slice.conf");
         var stream = entry.Open();

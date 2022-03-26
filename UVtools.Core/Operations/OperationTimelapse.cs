@@ -50,7 +50,7 @@ public class OperationTimelapse : Operation
 
     #region Overrides
 
-    public override Enumerations.LayerRangeSelection StartLayerRangeSelection => Enumerations.LayerRangeSelection.Normal;
+    public override LayerRangeSelection StartLayerRangeSelection => LayerRangeSelection.Normal;
     public override string IconClass => "fas fa-camera";
     public override string Title => "Timelapse";
     public override string Description =>

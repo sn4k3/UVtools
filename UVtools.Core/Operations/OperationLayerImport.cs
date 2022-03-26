@@ -63,7 +63,7 @@ public sealed class OperationLayerImport : Operation
 
     #region Overrides
 
-    public override Enumerations.LayerRangeSelection StartLayerRangeSelection => Enumerations.LayerRangeSelection.None;
+    public override LayerRangeSelection StartLayerRangeSelection => LayerRangeSelection.None;
     public override bool CanROI => false;
 
     public override string IconClass => "mdi-database-import";
@@ -288,7 +288,7 @@ public sealed class OperationLayerImport : Operation
 
             if (_importType == ImportTypes.Stack)
             {
-                new OperationMove(SlicerFile, Enumerations.Anchor.TopLeft).Execute(progress);
+                new OperationMove(SlicerFile, Anchor.TopLeft).Execute(progress);
             }
 
             foreach (var fileFormat in fileFormats)

@@ -25,7 +25,9 @@ public static class About
 
     public const string DemoFile = "UVtools_demo_file.sl1";
 
-    public static Version Version => Assembly.GetExecutingAssembly().GetName().Version!;
+    public static Version Version => CoreAssembly.GetName().Version!;
     public static string VersionStr => Version.ToString(3);
     public static string Arch => Environment.Is64BitOperatingSystem ? "64-bits" : "32-bits";
+
+    public static Assembly CoreAssembly => Assembly.GetExecutingAssembly();
 }

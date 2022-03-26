@@ -50,7 +50,7 @@ public abstract class Operation : BindableBase, IDisposable
     private uint _layerIndexStart;
     private string? _profileName;
     private bool _profileIsDefault;
-    private Enumerations.LayerRangeSelection _layerRangeSelection = Enumerations.LayerRangeSelection.All;
+    private LayerRangeSelection _layerRangeSelection = LayerRangeSelection.All;
     public const byte ClassNameLength = 9;
     #endregion
 
@@ -93,12 +93,12 @@ public abstract class Operation : BindableBase, IDisposable
     /// </summary>
     public string Id => GetType().Name.Remove(0, ClassNameLength);
 
-    public virtual Enumerations.LayerRangeSelection StartLayerRangeSelection => Enumerations.LayerRangeSelection.All;
+    public virtual LayerRangeSelection StartLayerRangeSelection => LayerRangeSelection.All;
 
     /// <summary>
     /// Gets the last used layer range selection, returns none if custom
     /// </summary>
-    public Enumerations.LayerRangeSelection LayerRangeSelection
+    public LayerRangeSelection LayerRangeSelection
     {
         get => _layerRangeSelection;
         set => RaiseAndSetIfChanged(ref _layerRangeSelection, value);
@@ -108,7 +108,7 @@ public abstract class Operation : BindableBase, IDisposable
     {
         get
         {
-            if (LayerRangeSelection == Enumerations.LayerRangeSelection.None)
+            if (LayerRangeSelection == LayerRangeSelection.None)
             {
                 return $" [Layers: {LayerIndexStart}-{LayerIndexEnd}]";
             }
@@ -354,39 +354,39 @@ public abstract class Operation : BindableBase, IDisposable
     {
         LayerIndexStart = 0;
         LayerIndexEnd = SlicerFile.LastLayerIndex;
-        LayerRangeSelection = Enumerations.LayerRangeSelection.All;
+        LayerRangeSelection = LayerRangeSelection.All;
     }
 
     public void SelectCurrentLayer(uint layerIndex)
     {
         LayerIndexStart = LayerIndexEnd = layerIndex;
-        LayerRangeSelection = Enumerations.LayerRangeSelection.Current;
+        LayerRangeSelection = LayerRangeSelection.Current;
     }
 
     public void SelectBottomLayers()
     {
         LayerIndexStart = 0;
         LayerIndexEnd = Math.Max(1, SlicerFile.FirstNormalLayer?.Index ?? 1) - 1u;
-        LayerRangeSelection = Enumerations.LayerRangeSelection.Bottom;
+        LayerRangeSelection = LayerRangeSelection.Bottom;
     }
 
     public void SelectNormalLayers()
     {
         LayerIndexStart = SlicerFile.FirstNormalLayer?.Index ?? 0;
         LayerIndexEnd = SlicerFile.LastLayerIndex;
-        LayerRangeSelection = Enumerations.LayerRangeSelection.Normal;
+        LayerRangeSelection = LayerRangeSelection.Normal;
     }
 
     public void SelectFirstLayer()
     {
         LayerIndexStart = LayerIndexEnd = 0;
-        LayerRangeSelection = Enumerations.LayerRangeSelection.First;
+        LayerRangeSelection = LayerRangeSelection.First;
     }
 
     public void SelectLastLayer()
     {
         LayerIndexStart = LayerIndexEnd = SlicerFile.LastLayerIndex; 
-        LayerRangeSelection = Enumerations.LayerRangeSelection.Last;
+        LayerRangeSelection = LayerRangeSelection.Last;
     }
 
     public void SelectFirstToCurrentLayer(uint currentLayerIndex)
@@ -401,28 +401,28 @@ public abstract class Operation : BindableBase, IDisposable
         LayerIndexEnd = SlicerFile.LastLayerIndex;
     }
 
-    public void SelectLayers(Enumerations.LayerRangeSelection range)
+    public void SelectLayers(LayerRangeSelection range)
     {
         switch (range)
         {
-            case Enumerations.LayerRangeSelection.None:
+            case LayerRangeSelection.None:
                 break;
-            case Enumerations.LayerRangeSelection.All:
+            case LayerRangeSelection.All:
                 SelectAllLayers();
                 break;
-            case Enumerations.LayerRangeSelection.Current:
+            case LayerRangeSelection.Current:
                 //SelectCurrentLayer();
                 break;
-            case Enumerations.LayerRangeSelection.Bottom:
+            case LayerRangeSelection.Bottom:
                 SelectBottomLayers();
                 break;
-            case Enumerations.LayerRangeSelection.Normal:
+            case LayerRangeSelection.Normal:
                 SelectNormalLayers();
                 break;
-            case Enumerations.LayerRangeSelection.First:
+            case LayerRangeSelection.First:
                 SelectFirstLayer();
                 break;
-            case Enumerations.LayerRangeSelection.Last:
+            case LayerRangeSelection.Last:
                 SelectLastLayer();
                 break;
             default:
@@ -557,14 +557,14 @@ public abstract class Operation : BindableBase, IDisposable
         return result;
     }
 
-    public async Task<bool> ExecuteAsync(OperationProgress? progress = null) => await new Task<bool>(() => Execute(progress));
+    public Task<bool> ExecuteAsync(OperationProgress? progress = null) => Task.Run(() => Execute(progress), progress?.Token ?? default);
 
     public virtual bool Execute(Mat mat, params object[]? arguments)
     {
         throw new NotImplementedException();
     }
 
-    public async Task<bool> ExecuteAsync(Mat mat, params object[]? arguments) => await new Task<bool>(() => Execute(mat, arguments));
+    public Task<bool> ExecuteAsync(Mat mat, params object[]? arguments) => Task.Run(() => Execute(mat, arguments));
 
     /// <summary>
     /// Get the selected layer range in a new array, array index will not match layer index when a range is selected

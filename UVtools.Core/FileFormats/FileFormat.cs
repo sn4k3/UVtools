@@ -43,6 +43,8 @@ namespace UVtools.Core.FileFormats;
 public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFormat>, IList<Layer>
 {
     #region Constants
+
+    public const SpeedUnit DefaultSpeedUnit = SpeedUnit.MillimetersPerMinute;
     public const string TemporaryFileAppend = ".tmp";
     public const ushort ExtraPrintTime = 300;
 
@@ -351,6 +353,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         new PhotonWorkshopFile(),   // PSW
         new CWSFile(),   // CWS
         new OSLAFile(),  // OSLA
+        new JXSFile(),      // jxs
         new ZCodeFile(),   // zcode
         new ZCodexFile(),   // zcodex
         new MDLPFile(),   // MKS v1
@@ -476,9 +479,37 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             : fileFormats[0];
     }
 
-    public static FileExtension? FindExtension(string extension)
+    /// <summary>
+    /// Find <see cref="FileFormat"/> by an type name
+    /// </summary>
+    /// <param name="type">Type name to find</param>
+    /// <param name="createNewInstance">True to create a new instance of found file format, otherwise will return a pre created one which should be used for read-only purpose</param>
+    /// <returns><see cref="FileFormat"/> object or null if not found</returns>
+    public static FileFormat? FindByType(string type, bool createNewInstance = false)
     {
-        return AvailableFormats.SelectMany(format => format.FileExtensions).FirstOrDefault(ext => ext.Equals(extension));
+        if (!type.EndsWith("File"))
+        {
+            type += "File";
+        }
+
+        var fileFormat = AvailableFormats.FirstOrDefault(format => string.Equals(format.GetType().Name, type, StringComparison.OrdinalIgnoreCase));
+        if (fileFormat is null) return null;
+        return createNewInstance
+            ? Activator.CreateInstance(fileFormat.GetType()) as FileFormat
+            : fileFormat;
+        //return (from t in AvailableFormats where type == t.GetType() select createNewInstance ? (FileFormat) Activator.CreateInstance(type) : t).FirstOrDefault();
+    }
+
+    /// <summary>
+    /// Find <see cref="FileFormat"/> by any means (type name, extension, filepath)
+    /// </summary>
+    /// <param name="name">Name to find</param>
+    /// <param name="createNewInstance">True to create a new instance of found file format, otherwise will return a pre created one which should be used for read-only purpose</param>
+    /// <returns><see cref="FileFormat"/> object or null if not found</returns>
+    public static FileFormat? FindByAnyMeans(string name, bool createNewInstance = false)
+    {
+        return FindByType(name, true)
+               ?? FindByExtensionOrFilePath(name, true);
     }
 
     /// <summary>
@@ -495,6 +526,11 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             ? Activator.CreateInstance(type) as FileFormat
             : fileFormat;
         //return (from t in AvailableFormats where type == t.GetType() select createNewInstance ? (FileFormat) Activator.CreateInstance(type) : t).FirstOrDefault();
+    }
+
+    public static FileExtension? FindExtension(string extension)
+    {
+        return AvailableFormats.SelectMany(format => format.FileExtensions).FirstOrDefault(ext => ext.Equals(extension));
     }
 
     public static string? GetFileNameStripExtensions(string? filepath)
@@ -520,6 +556,11 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
 
     public static FileFormat? Open(string fileFullPath, OperationProgress? progress = null) =>
         Open(fileFullPath, FileDecodeType.Full, progress);
+
+    public static Task<FileFormat?> OpenAsync(string fileFullPath, FileDecodeType decodeType, OperationProgress? progress = null) 
+        => Task.Run(() => Open(fileFullPath, decodeType, progress), progress?.Token ?? default);
+
+    public static Task<FileFormat?> OpenAsync(string fileFullPath, OperationProgress? progress = null) => OpenAsync(fileFullPath, FileDecodeType.Full, progress);
 
     /// <summary>
     /// Copy parameters from one file to another
@@ -889,7 +930,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     #region Members
     public object Mutex = new();
 
-    private Layer[] _layers = Array.Empty<Layer>();
+    protected Layer[] _layers = Array.Empty<Layer>();
 
     private bool _haveModifiedLayers;
     private uint _version;
@@ -1044,6 +1085,11 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// Gets or sets if change a global property should rebuild every layer data based on them
     /// </summary>
     public bool SuppressRebuildProperties { get; set; }
+
+    /// <summary>
+    /// Gets the temporary output file path to use on save and encode
+    /// </summary>
+    public string TemporaryOutputFileFullPath => $"{FileFullPath}{TemporaryFileAppend}";
 
     /// <summary>
     /// Gets the input file path loaded into this <see cref="FileFormat"/>
@@ -1476,7 +1522,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <summary>
     /// Gets or sets if images need to be mirrored on lcd to print on the correct orientation
     /// </summary>
-    public virtual Enumerations.FlipDirection DisplayMirror { get; set; } = Enumerations.FlipDirection.None;
+    public virtual FlipDirection DisplayMirror { get; set; } = FlipDirection.None;
 
     /// <summary>
     /// Gets if the display is in portrait mode
@@ -2984,7 +3030,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// </summary>
     /// <param name="fileFullPath"></param>
     /// <returns></returns>
-    public virtual bool CanProcess(string fileFullPath)
+    public virtual bool CanProcess(string? fileFullPath)
     {
         if (fileFullPath is null) return false;
         if (!File.Exists(fileFullPath)) return false;
@@ -2997,17 +3043,12 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// Validate if a file is a valid <see cref="FileFormat"/>
     /// </summary>
     /// <param name="fileFullPath">Full file path</param>
-    public void FileValidation(string fileFullPath)
+    public void FileValidation(string? fileFullPath)
     {
         if (string.IsNullOrWhiteSpace(fileFullPath)) throw new ArgumentNullException(nameof(FileFullPath), "FileFullPath can't be null nor empty.");
         if (!File.Exists(fileFullPath)) throw new FileNotFoundException("The specified file does not exists.", fileFullPath);
 
-        if (IsExtensionValid(fileFullPath, true))
-        {
-            return;
-        }
-
-        throw new FileLoadException($"The specified file is not valid.", fileFullPath);
+        if (!IsExtensionValid(fileFullPath, true)) throw new FileLoadException("The specified file is not valid.", fileFullPath);
     }
 
     /// <summary>
@@ -3169,24 +3210,15 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <param name="progress"></param>
     public void Encode(string? fileFullPath, OperationProgress? progress = null)
     {
-        if (fileFullPath is null)
-        {
-            throw new ArgumentNullException(nameof(fileFullPath));
-        }
+        fileFullPath ??= FileFullPath ?? throw new ArgumentNullException(nameof(fileFullPath));
 
         if (DecodeType == FileDecodeType.Partial)
-        {
             throw new InvalidOperationException("File was partial decoded, a full encode is not possible.");
-        }
 
         progress ??= new OperationProgress();
         progress.Reset(OperationProgress.StatusEncodeLayers, LayerCount);
 
         Sanitize();
-
-        if (File.Exists(fileFullPath)) File.Delete(fileFullPath);
-
-        FileFullPath = fileFullPath;
 
         for (var i = 0; i < Thumbnails.Length; i++)
         {
@@ -3195,11 +3227,37 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             CvInvoke.Resize(Thumbnails[i], Thumbnails[i], new Size(ThumbnailsOriginalSize[i].Width, ThumbnailsOriginalSize[i].Height));
         }
 
-        EncodeInternally(progress);
+        // Backup old file name and prepare the temporary file to be written next
+        var oldFilePath = FileFullPath;
+        FileFullPath = fileFullPath;
+        var tempFile = TemporaryOutputFileFullPath;
+        if (File.Exists(tempFile)) File.Delete(tempFile);
 
-        IsModified = false;
-        RequireFullEncode = false;
+        try
+        {
+            EncodeInternally(progress);
+
+            IsModified = false;
+            RequireFullEncode = false;
+
+            // Move temporary output file in place
+            File.Move(tempFile, fileFullPath, true);
+        }
+        catch (Exception)
+        {
+            // Restore backup file path and delete the temporary
+            FileFullPath = oldFilePath;
+            if (File.Exists(tempFile)) File.Delete(tempFile);
+            throw;
+        }
     }
+
+    public void Encode(OperationProgress progress) => Encode(null, progress);
+
+    public Task EncodeAsync(string? fileFullPath, OperationProgress? progress = null) =>
+        Task.Run(() => Encode(fileFullPath, progress), progress?.Token ?? default);
+
+    public Task EncodeAsync(OperationProgress progress) => EncodeAsync(null, progress);
 
     /// <summary>
     /// Decode a slicer file
@@ -3210,26 +3268,28 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <summary>
     /// Decode a slicer file
     /// </summary>
-    /// <param name="fileFullPath"></param>
+    /// <param name="fileFullPath">file path to load, use null to reload file</param>
     /// <param name="progress"></param>
-    public void Decode(string fileFullPath, OperationProgress? progress = null) => Decode(fileFullPath, FileDecodeType.Full, progress);
+    public void Decode(string? fileFullPath = null, OperationProgress? progress = null) => Decode(fileFullPath, FileDecodeType.Full, progress);
 
     /// <summary>
     /// Decode a slicer file
     /// </summary>
-    /// <param name="fileFullPath"></param>
+    /// <param name="fileFullPath">file path to load, use null to reload file</param>
     /// <param name="fileDecodeType"></param>
     /// <param name="progress"></param>
-    public void Decode(string fileFullPath, FileDecodeType fileDecodeType, OperationProgress? progress = null)
+    public void Decode(string? fileFullPath, FileDecodeType fileDecodeType, OperationProgress? progress = null)
     {
         Clear();
-        FileValidation(fileFullPath);
-        FileFullPath = fileFullPath;
+        if(!string.IsNullOrWhiteSpace(fileFullPath)) FileFullPath = fileFullPath;
+        FileValidation(FileFullPath);
+        
         DecodeType = fileDecodeType;
         progress ??= new OperationProgress();
         progress.Reset(OperationProgress.StatusGatherLayers, LayerCount);
 
         DecodeInternally(progress);
+        IsModified = false;
 
         progress.ThrowIfCancellationRequested();
 
@@ -3249,7 +3309,40 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         GetBoundingRectangle(progress);
     }
 
-    public void EncodeLayersInZip(ZipArchive zipArchive, string prepend, byte padDigits, Enumerations.IndexStartNumber layerIndexStartNumber = default, 
+    public Task DecodeAsync(string? fileFullPath, FileDecodeType fileDecodeType, OperationProgress? progress = null) =>
+        Task.Run(() => Decode(fileFullPath, fileDecodeType, progress), progress?.Token ?? default);
+
+    public Task DecodeAsync(string? fileFullPath = null, OperationProgress? progress = null) 
+        => DecodeAsync(fileFullPath, FileDecodeType.Full, progress);
+
+    
+    /// <summary>
+    /// Reloads the file
+    /// </summary>
+    /// <param name="fileDecodeType"></param>
+    /// <param name="progress"></param>
+    public void Reload(FileDecodeType fileDecodeType, OperationProgress? progress = null) => Decode(null, fileDecodeType, progress);
+
+    /// <summary>
+    /// Reloads the file
+    /// </summary>
+    /// <param name="progress"></param>
+    public void Reload(OperationProgress? progress = null) => Reload(FileDecodeType.Full, progress);
+
+    /// <summary>
+    /// Reloads the file
+    /// </summary>
+    /// <param name="fileDecodeType"></param>
+    /// <param name="progress"></param>
+    public Task ReloadAsync(FileDecodeType fileDecodeType, OperationProgress? progress = null) => DecodeAsync(null, fileDecodeType, progress);
+
+    /// <summary>
+    /// Reloads the file
+    /// </summary>
+    /// <param name="progress"></param>
+    public Task ReloadAsync(OperationProgress? progress = null) => ReloadAsync(FileDecodeType.Full, progress);
+
+    public void EncodeLayersInZip(ZipArchive zipArchive, string prepend, byte padDigits, IndexStartNumber layerIndexStartNumber = default, 
         OperationProgress? progress = null, string path = "", Func<uint, Mat, Mat>? matGenFunc = null)
     {
         if (DecodeType != FileDecodeType.Full || LayerCount == 0) return;
@@ -3283,17 +3376,17 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         }
     }
 
-    public void EncodeLayersInZip(ZipArchive zipArchive, byte padDigits, Enumerations.IndexStartNumber layerIndexStartNumber = default, OperationProgress? progress = null, string path = "", Func<uint, Mat, Mat>? matGenFunc = null)
+    public void EncodeLayersInZip(ZipArchive zipArchive, byte padDigits, IndexStartNumber layerIndexStartNumber = default, OperationProgress? progress = null, string path = "", Func<uint, Mat, Mat>? matGenFunc = null)
         => EncodeLayersInZip(zipArchive, string.Empty, padDigits, layerIndexStartNumber, progress, path, matGenFunc);
 
-    public void EncodeLayersInZip(ZipArchive zipArchive, string prepend, Enumerations.IndexStartNumber layerIndexStartNumber = default, OperationProgress? progress = null, string path = "", Func<uint, Mat, Mat>? matGenFunc = null)
+    public void EncodeLayersInZip(ZipArchive zipArchive, string prepend, IndexStartNumber layerIndexStartNumber = default, OperationProgress? progress = null, string path = "", Func<uint, Mat, Mat>? matGenFunc = null)
         => EncodeLayersInZip(zipArchive, prepend, 0, layerIndexStartNumber, progress, path, matGenFunc);
 
-    public void EncodeLayersInZip(ZipArchive zipArchive, Enumerations.IndexStartNumber layerIndexStartNumber, OperationProgress? progress = null, string path = "", Func<uint, Mat, Mat>? matGenFunc = null)
+    public void EncodeLayersInZip(ZipArchive zipArchive, IndexStartNumber layerIndexStartNumber, OperationProgress? progress = null, string path = "", Func<uint, Mat, Mat>? matGenFunc = null)
         => EncodeLayersInZip(zipArchive, string.Empty, 0, layerIndexStartNumber, progress, path, matGenFunc);
 
     public void EncodeLayersInZip(ZipArchive zipArchive, OperationProgress progress, string path = "", Func<uint, Mat, Mat>? matGenFunc = null)
-        => EncodeLayersInZip(zipArchive, string.Empty, 0, Enumerations.IndexStartNumber.Zero, progress, path, matGenFunc);
+        => EncodeLayersInZip(zipArchive, string.Empty, 0, IndexStartNumber.Zero, progress, path, matGenFunc);
 
 
     public void DecodeLayersFromZip(ZipArchiveEntry[] layerEntries, OperationProgress? progress = null, Func<uint, byte[], Mat>? matGenFunc = null)
@@ -3313,19 +3406,19 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
 
             if (matGenFunc is null)
             {
-                this[layerIndex] = new Layer((uint)layerIndex, pngBytes, this);
+                _layers[layerIndex] = new Layer((uint)layerIndex, pngBytes, this);
             }
-            if (matGenFunc is not null)
+            else
             {
                 using var mat = matGenFunc.Invoke((uint) layerIndex, pngBytes);
-                this[layerIndex] = new Layer((uint)layerIndex, mat, this);
+                _layers[layerIndex] = new Layer((uint)layerIndex, mat, this);
             }
 
             progress.LockAndIncrement();
         });
     }
 
-    public void DecodeLayersFromZipRegex(ZipArchive zipArchive, string regex, Enumerations.IndexStartNumber layerIndexStartNumber = Enumerations.IndexStartNumber.Zero, OperationProgress? progress = null, Func<uint, byte[], Mat>? matGenFunc = null)
+    public void DecodeLayersFromZipRegex(ZipArchive zipArchive, string regex, IndexStartNumber layerIndexStartNumber = IndexStartNumber.Zero, OperationProgress? progress = null, Func<uint, byte[], Mat>? matGenFunc = null)
     {
         var layerEntries = new ZipArchiveEntry?[LayerCount];
 
@@ -3335,7 +3428,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             if (!match.Success || match.Groups.Count < 2) continue;
             if (!uint.TryParse(match.Groups[1].Value, out var layerIndex)) continue;
 
-            if (layerIndexStartNumber == Enumerations.IndexStartNumber.One && layerIndex > 0) layerIndex--;
+            if (layerIndexStartNumber == IndexStartNumber.One && layerIndex > 0) layerIndex--;
             if (layerIndex >= LayerCount)
             {
                 continue;
@@ -3355,17 +3448,17 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         DecodeLayersFromZip(layerEntries!, progress, matGenFunc);
     }
 
-    public void DecodeLayersFromZip(ZipArchive zipArchive, byte padDigits, Enumerations.IndexStartNumber layerIndexStartNumber = Enumerations.IndexStartNumber.Zero, OperationProgress? progress = null, Func<uint, byte[], Mat>? matGenFunc = null)
+    public void DecodeLayersFromZip(ZipArchive zipArchive, byte padDigits, IndexStartNumber layerIndexStartNumber = IndexStartNumber.Zero, OperationProgress? progress = null, Func<uint, byte[], Mat>? matGenFunc = null)
         => DecodeLayersFromZipRegex(zipArchive, $@"(\d{{{padDigits}}}).png", layerIndexStartNumber, progress, matGenFunc);
 
-    public void DecodeLayersFromZip(ZipArchive zipArchive, Enumerations.IndexStartNumber layerIndexStartNumber = Enumerations.IndexStartNumber.Zero, OperationProgress? progress = null, Func<uint, byte[], Mat>? matGenFunc = null) 
+    public void DecodeLayersFromZip(ZipArchive zipArchive, IndexStartNumber layerIndexStartNumber = IndexStartNumber.Zero, OperationProgress? progress = null, Func<uint, byte[], Mat>? matGenFunc = null) 
         => DecodeLayersFromZipRegex(zipArchive, @"^(\d+).png", layerIndexStartNumber, progress, matGenFunc);
 
-    public void DecodeLayersFromZip(ZipArchive zipArchive, string prepend, Enumerations.IndexStartNumber layerIndexStartNumber = Enumerations.IndexStartNumber.Zero, OperationProgress? progress = null, Func<uint, byte[], Mat>? matGenFunc = null)
+    public void DecodeLayersFromZip(ZipArchive zipArchive, string prepend, IndexStartNumber layerIndexStartNumber = IndexStartNumber.Zero, OperationProgress? progress = null, Func<uint, byte[], Mat>? matGenFunc = null)
         => DecodeLayersFromZipRegex(zipArchive, $@"^{Regex.Escape(prepend)}(\d+).png", layerIndexStartNumber, progress, matGenFunc);
 
     public void DecodeLayersFromZip(ZipArchive zipArchive, OperationProgress progress, Func<uint, byte[], Mat>? matGenFunc = null)
-        => DecodeLayersFromZipRegex(zipArchive, @"^(\d+).png", Enumerations.IndexStartNumber.Zero, progress, matGenFunc);
+        => DecodeLayersFromZipRegex(zipArchive, @"^(\d+).png", IndexStartNumber.Zero, progress, matGenFunc);
 
     /// <summary>
     /// Extract contents to a folder
@@ -4281,11 +4374,12 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// </summary>
     /// <param name="filePath">File path to save copy as, use null to overwrite active file (Same as <see cref="Save"/>)</param>
     /// <param name="progress"></param>
+    /// <exception cref="ArgumentNullException"><see cref="FileFullPath"/></exception>
     public void SaveAs(string? filePath = null, OperationProgress? progress = null)
     {
         if (RequireFullEncode)
         {
-            if (!string.IsNullOrEmpty(filePath))
+            if (!string.IsNullOrWhiteSpace(filePath))
             {
                 FileFullPath = filePath;
             }
@@ -4293,20 +4387,39 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             return;
         }
 
-        if (FileFullPath is null)
+        if (string.IsNullOrWhiteSpace(FileFullPath))
         {
-            throw new ArgumentNullException(nameof(FileFullPath));
+            if (!string.IsNullOrWhiteSpace(filePath))
+            {
+                Encode(filePath, progress);
+                return;
+            }
+            throw new ArgumentNullException(nameof(FileFullPath), "Not encoded yet and both source and output files are null");
         }
 
-        if (!string.IsNullOrEmpty(filePath))
+
+        // Backup old file name and prepare the temporary file to be written next
+        var oldFilePath = FileFullPath!;
+        if(!string.IsNullOrWhiteSpace(filePath)) FileFullPath = filePath;
+        var tempFile = TemporaryOutputFileFullPath;
+        File.Copy(oldFilePath, tempFile, true);
+        
+        try
         {
-            File.Copy(FileFullPath, filePath, true);
-            FileFullPath = filePath;
+            progress ??= new OperationProgress();
+            PartialSaveInternally(progress);
 
+            // Move temporary output file in place
+            File.Move(tempFile, FileFullPath, true);
         }
-
-        progress ??= new OperationProgress();
-        PartialSaveInternally(progress);
+        catch (Exception)
+        {
+            // Restore backup file path and delete the temporary
+            FileFullPath = oldFilePath;
+            if (File.Exists(tempFile)) File.Delete(tempFile);
+            throw;
+        }
+        
     }
 
     /// <summary>

@@ -56,7 +56,7 @@ public sealed class OperationLayerReHeight : Operation
 
     #region Overrides
 
-    public override Enumerations.LayerRangeSelection StartLayerRangeSelection => Enumerations.LayerRangeSelection.None;
+    public override LayerRangeSelection StartLayerRangeSelection => LayerRangeSelection.None;
     public override bool CanROI => false;
     public override string IconClass => "mdi-arrow-split-horizontal";
     public override string Title => "Adjust layer height";

@@ -1789,7 +1789,7 @@ public sealed class UserSettings : BindableBase
                                 {
                                     var application = new MappedProcess(executable, "Open archive: WinRAR")
                                     {
-                                        CompatibleExtensions = "zip;sl1;sl1s;cws;zcode;zcodex;vdt;uvj"
+                                        CompatibleExtensions = "zip;sl1;sl1s;cws;zcode;zcodex;jxs;vdt;uvj"
                                     };
                                     _instance.General.SendToProcess.Add(application);
                                 }

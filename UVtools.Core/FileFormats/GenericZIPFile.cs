@@ -156,13 +156,13 @@ public class GenericZIPFile : FileFormat
 
     #region Methods
 
-    public override bool CanProcess(string fileFullPath)
+    public override bool CanProcess(string? fileFullPath)
     {
         if(!base.CanProcess(fileFullPath)) return false;
 
         try
         {
-            using var zip = ZipFile.Open(fileFullPath, ZipArchiveMode.Read);
+            using var zip = ZipFile.Open(fileFullPath!, ZipArchiveMode.Read);
             foreach (var entry in zip.Entries)
             {
                 if (entry.Name == ManifestFileName) return true;
@@ -182,7 +182,7 @@ public class GenericZIPFile : FileFormat
 
     protected override void EncodeInternally(OperationProgress progress)
     {
-        using var outputFile = ZipFile.Open(FileFullPath!, ZipArchiveMode.Create);
+        using var outputFile = ZipFile.Open(TemporaryOutputFileFullPath, ZipArchiveMode.Create);
 
         if (Thumbnails is not null)
         {
@@ -202,7 +202,7 @@ public class GenericZIPFile : FileFormat
             }
         }
 
-        EncodeLayersInZip(outputFile, Enumerations.IndexStartNumber.One, progress);
+        EncodeLayersInZip(outputFile, IndexStartNumber.One, progress);
 
         ManifestFile.Update();
 
@@ -247,7 +247,7 @@ public class GenericZIPFile : FileFormat
         }
 
         Init(layerCount, DecodeType == FileDecodeType.Partial);
-        DecodeLayersFromZip(inputFile, Enumerations.IndexStartNumber.One, progress);
+        DecodeLayersFromZip(inputFile, IndexStartNumber.One, progress);
             
         entry = inputFile.GetEntry("preview.png");
         if (entry is not null)
@@ -267,7 +267,7 @@ public class GenericZIPFile : FileFormat
 
     protected override void PartialSaveInternally(OperationProgress progress)
     {
-        using var outputFile = ZipFile.Open(FileFullPath!, ZipArchiveMode.Update);
+        using var outputFile = ZipFile.Open(TemporaryOutputFileFullPath, ZipArchiveMode.Update);
         bool deleted;
 
         do

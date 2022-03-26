@@ -29,7 +29,7 @@ public class OperationIPrintedThisFile : Operation
 
     public override bool CanRunInPartialMode => true;
 
-    public override Enumerations.LayerRangeSelection StartLayerRangeSelection => Enumerations.LayerRangeSelection.None;
+    public override LayerRangeSelection StartLayerRangeSelection => LayerRangeSelection.None;
 
     public override bool CanROI => false;
     public override bool CanHaveProfiles => false;

@@ -1290,12 +1290,12 @@ public class ChituboxFile : FileFormat
         set => base.MachineZ = HeaderSettings.BedSizeZ = (float)Math.Round(value, 2);
     }
 
-    public override Enumerations.FlipDirection DisplayMirror
+    public override FlipDirection DisplayMirror
     {
-        get => HeaderSettings.ProjectorType == 0 ? Enumerations.FlipDirection.None : Enumerations.FlipDirection.Horizontally;
+        get => HeaderSettings.ProjectorType == 0 ? FlipDirection.None : FlipDirection.Horizontally;
         set
         {
-            HeaderSettings.ProjectorType = value == Enumerations.FlipDirection.None ? 0u : 1;
+            HeaderSettings.ProjectorType = value == FlipDirection.None ? 0u : 1;
             RaisePropertyChanged();
         }
     }
@@ -1729,13 +1729,13 @@ public class ChituboxFile : FileFormat
         LayerDefinitions = null;
     }
 
-    public override bool CanProcess(string fileFullPath)
+    public override bool CanProcess(string? fileFullPath)
     {
         if (!base.CanProcess(fileFullPath)) return false;
 
         try
         {
-            using var fs = new BinaryReader(new FileStream(fileFullPath, FileMode.Open, FileAccess.Read));
+            using var fs = new BinaryReader(new FileStream(fileFullPath!, FileMode.Open, FileAccess.Read));
             var magic = fs.ReadUInt32();
             return magic is MAGIC_CBDDLP or MAGIC_CTB or MAGIC_CTBv4;
         }
@@ -1838,7 +1838,7 @@ public class ChituboxFile : FileFormat
 
         //uint currentOffset = (uint)Helpers.Serializer.SizeOf(HeaderSettings);
         LayerDefinitions = new LayerDef[HeaderSettings.AntiAliasLevel, LayerCount];
-        using var outputFile = new FileStream(FileFullPath!, FileMode.Create, FileAccess.Write);
+        using var outputFile = new FileStream(TemporaryOutputFileFullPath, FileMode.Create, FileAccess.Write);
         outputFile.Seek(Helpers.Serializer.SizeOf(HeaderSettings), SeekOrigin.Begin);
 
         Mat?[] thumbnails = {GetThumbnail(true), GetThumbnail(false)};
@@ -2145,7 +2145,7 @@ public class ChituboxFile : FileFormat
                 Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), layerIndex =>
                 {
                     using var mat = LayerDefinitions[0, layerIndex].Decode((uint)layerIndex);
-                    this[layerIndex] = new Layer((uint)layerIndex, mat, this);
+                    _layers[layerIndex] = new Layer((uint)layerIndex, mat, this);
 
                     progress.LockAndIncrement();
                 });
@@ -2169,7 +2169,7 @@ public class ChituboxFile : FileFormat
     protected override void PartialSaveInternally(OperationProgress progress)
     {
         SanitizeProperties();
-        using var outputFile = new FileStream(FileFullPath!, FileMode.Open, FileAccess.Write);
+        using var outputFile = new FileStream(TemporaryOutputFileFullPath, FileMode.Open, FileAccess.Write);
         outputFile.Seek(0, SeekOrigin.Begin);
         Helpers.SerializeWriteFileStream(outputFile, HeaderSettings);
 

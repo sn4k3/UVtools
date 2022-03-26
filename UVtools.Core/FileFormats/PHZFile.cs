@@ -743,12 +743,12 @@ public class PHZFile : FileFormat
         }
     }
 
-    public override Enumerations.FlipDirection DisplayMirror
+    public override FlipDirection DisplayMirror
     {
-        get => HeaderSettings.ProjectorType == 0 ? Enumerations.FlipDirection.None : Enumerations.FlipDirection.Horizontally;
+        get => HeaderSettings.ProjectorType == 0 ? FlipDirection.None : FlipDirection.Horizontally;
         set
         {
-            HeaderSettings.ProjectorType = value == Enumerations.FlipDirection.None ? 0u : 1;
+            HeaderSettings.ProjectorType = value == FlipDirection.None ? 0u : 1;
             RaisePropertyChanged();
         }
     }
@@ -950,7 +950,7 @@ public class PHZFile : FileFormat
         }*/
 
         LayersDefinitions = new LayerDef[HeaderSettings.LayerCount];
-        using var outputFile = new FileStream(FileFullPath!, FileMode.Create, FileAccess.Write);
+        using var outputFile = new FileStream(TemporaryOutputFileFullPath, FileMode.Create, FileAccess.Write);
         outputFile.Seek(Helpers.Serializer.SizeOf(HeaderSettings), SeekOrigin.Begin);
 
         for (byte i = 0; i < ThumbnailsCount; i++)
@@ -1136,7 +1136,7 @@ public class PHZFile : FileFormat
                 Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), layerIndex =>
                 {
                     using var mat = LayersDefinitions[layerIndex].Decode((uint)layerIndex);
-                    this[layerIndex] = new Layer((uint)layerIndex, mat, this);
+                    _layers[layerIndex] = new Layer((uint)layerIndex, mat, this);
                     progress.LockAndIncrement();
                 });
             }
@@ -1151,7 +1151,7 @@ public class PHZFile : FileFormat
     protected override void PartialSaveInternally(OperationProgress progress)
     {
         HeaderSettings.ModifiedTimestampMinutes = (uint) DateTimeExtensions.TimestampMinutes;
-        using var outputFile = new FileStream(FileFullPath!, FileMode.Open, FileAccess.Write);
+        using var outputFile = new FileStream(TemporaryOutputFileFullPath, FileMode.Open, FileAccess.Write);
         outputFile.Seek(0, SeekOrigin.Begin);
         Helpers.SerializeWriteFileStream(outputFile, HeaderSettings);
 

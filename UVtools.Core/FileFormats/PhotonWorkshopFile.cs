@@ -1223,9 +1223,9 @@ public class PhotonWorkshopFile : FileFormat
         }
     }
 
-    public override Enumerations.FlipDirection DisplayMirror
+    public override FlipDirection DisplayMirror
     {
-        get => Enumerations.FlipDirection.Horizontally;
+        get => FlipDirection.Horizontally;
         set {}
     }
 
@@ -1632,7 +1632,7 @@ public class PhotonWorkshopFile : FileFormat
 
 
         FileMarkSettings.HeaderAddress = (uint) Helpers.Serializer.SizeOf(FileMarkSettings);
-        using var outputFile = new FileStream(FileFullPath!, FileMode.Create, FileAccess.Write);
+        using var outputFile = new FileStream(TemporaryOutputFileFullPath, FileMode.Create, FileAccess.Write);
         if (FileMarkSettings.Version >= VERSION_516)
         {
             HeaderSettings.Section.Length = 84;
@@ -1842,7 +1842,7 @@ public class PhotonWorkshopFile : FileFormat
                 Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), layerIndex =>
                 {
                     using var mat = LayersDefinition[layerIndex].Decode();
-                    this[layerIndex] = new Layer((uint)layerIndex, mat, this)
+                    _layers[layerIndex] = new Layer((uint)layerIndex, mat, this)
                     {
                         PositionZ = LayersDefinition.Layers
                             .Where((_, i) => i <= layerIndex)
@@ -1874,7 +1874,7 @@ public class PhotonWorkshopFile : FileFormat
     {
         HeaderSettings.PerLayerOverride = AllLayersAreUsingGlobalParameters ? 0 : 1u;
 
-        using var outputFile = new FileStream(FileFullPath!, FileMode.Open, FileAccess.Write);
+        using var outputFile = new FileStream(TemporaryOutputFileFullPath, FileMode.Open, FileAccess.Write);
         outputFile.Seek(FileMarkSettings.HeaderAddress, SeekOrigin.Begin);
         Helpers.SerializeWriteFileStream(outputFile, HeaderSettings);
 

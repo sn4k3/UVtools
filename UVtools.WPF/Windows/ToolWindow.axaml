@@ -370,7 +370,7 @@
                                 i:MenuItem.Icon="fas fa-file-import"/>
 
 
-                        <MenuItem IsVisible="{Binding CanHaveProfiles}"
+                        <MenuItem 
                                   Command="{Binding ExportSettings}"
                                   Header="Export settings"
                                   i:MenuItem.Icon="fas fa-file-export"/>

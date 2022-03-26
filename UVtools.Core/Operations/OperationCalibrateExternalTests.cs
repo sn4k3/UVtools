@@ -18,7 +18,7 @@ public class OperationCalibrateExternalTests : Operation
 
     #region Overrides
 
-    public override Enumerations.LayerRangeSelection StartLayerRangeSelection => Enumerations.LayerRangeSelection.None;
+    public override LayerRangeSelection StartLayerRangeSelection => LayerRangeSelection.None;
     public override bool CanROI => false;
     public override bool CanHaveProfiles => false;
     public override string ButtonOkText => null!;

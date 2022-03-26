@@ -23,6 +23,8 @@ public sealed class OperationChangeResolution : Operation
     private uint _newResolutionX;
     private uint _newResolutionY;
     private bool _fixRatio;
+    private decimal _newDisplayWidth;
+    private decimal _newDisplayHeight;
 
     #endregion
 
@@ -56,7 +58,7 @@ public sealed class OperationChangeResolution : Operation
 
     #region Overrides
 
-    public override Enumerations.LayerRangeSelection StartLayerRangeSelection => Enumerations.LayerRangeSelection.None;
+    public override LayerRangeSelection StartLayerRangeSelection => LayerRangeSelection.None;
     public override bool CanROI => false;
     public override string IconClass => "mdi-resize";
     public override string Title => "Change print resolution";
@@ -64,13 +66,11 @@ public sealed class OperationChangeResolution : Operation
         "Crops or resizes all layer images to fit an alternate print resolution.\n" +
         "Useful to make files printable on a different printer than they were originally sliced for without the need to re-slice.\n\n" +
         "NOTE: Please ensure that the actual model will fit within the new print resolution. The operation will be aborted if it will result in any of the actual model being clipped.\n" +
-        "Only use this tool if both source and target printer have the same pixel pitch spec, otherwise the model size will be invalidated and result in a different size than the originally sliced for. " +
-        "As alternative is possible to resize the model to match the new pixel pitch.";
+        "Only use this tool if both source and target printer have the same pixel pitch spec, otherwise the model size will be invalidated and result in a different size than the originally sliced for.\n" +
+        "As alternative, set the correct display size of the target printer or select an machine preset to match the new pixel pitch and let it auto fix the pixel ratio. It's always good practice to set the correct display size, even if you don't want to fix the pixel ratio, that is a critical information for both software and printers.";
 
     public override string ConfirmationText => 
-        "change print resolution " +
-        $"from {SlicerFile.ResolutionX}x{SlicerFile.ResolutionY} " +
-        $"to {NewResolutionX}x{NewResolutionY}?";
+        $"change print resolution from {SlicerFile.ResolutionX}x{SlicerFile.ResolutionY} to {NewResolutionX}x{NewResolutionY}?";
 
     public override string ProgressTitle =>
         $"Changing print resolution from ({SlicerFile.ResolutionX}x{SlicerFile.ResolutionY}) to ({NewResolutionX}x{NewResolutionY})";
@@ -98,7 +98,7 @@ public sealed class OperationChangeResolution : Operation
 
     public override string ToString()
     {
-        var result = $"{_newResolutionX} x {_newResolutionY} [Fix ratio: {_fixRatio}]";
+        var result = $"{_newResolutionX}x{_newResolutionY} [Display: {_newDisplayWidth}x{_newDisplayHeight}] [Fix ratio: {_fixRatio}]";
         if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
         return result;
     }
@@ -111,8 +111,8 @@ public sealed class OperationChangeResolution : Operation
         get => _newResolutionX;
         set
         {
-            if(!RaiseAndSetIfChanged(ref _newResolutionX, value)) return;
-            RaisePropertyChanged(nameof(NewRatioX));
+            if(!RaiseAndSetIfChanged(ref _newResolutionX, Math.Max(1, value))) return;
+            RaisePropertyChanged(nameof(NewPixelSizeMicrons));
             RaisePropertyChanged(nameof(NewFixedRatioX));
             RaisePropertyChanged(nameof(FinalBoundsWidth));
         }
@@ -123,18 +123,63 @@ public sealed class OperationChangeResolution : Operation
         get => _newResolutionY;
         set
         {
-            RaiseAndSetIfChanged(ref _newResolutionY, value);
-            RaisePropertyChanged(nameof(NewRatioY));
+            if(!RaiseAndSetIfChanged(ref _newResolutionY, Math.Max(1, value))) return;
+            RaisePropertyChanged(nameof(NewPixelSizeMicrons));
             RaisePropertyChanged(nameof(NewFixedRatioY));
             RaisePropertyChanged(nameof(FinalBoundsHeight));
         }
     }
 
-    public double NewRatioX => Math.Round((double)SlicerFile.ResolutionX / _newResolutionX, 2);
-    public double NewRatioY => Math.Round((double)SlicerFile.ResolutionY / _newResolutionY, 2);
+    public decimal NewDisplayWidth
+    {
+        get => _newDisplayWidth;
+        set
+        {
+            if(!RaiseAndSetIfChanged(ref _newDisplayWidth, Math.Max(0, value))) return;
+            RaisePropertyChanged(nameof(NewPixelSizeMicrons));
+            RaisePropertyChanged(nameof(NewFixedRatioX));
+        }
+    }
 
-    public double NewFixedRatioX => Math.Round((double)_newResolutionX / SlicerFile.ResolutionX, 2);
-    public double NewFixedRatioY => Math.Round((double)_newResolutionY / SlicerFile.ResolutionY, 2);
+    public decimal NewDisplayHeight
+    {
+        get => _newDisplayHeight;
+        set
+        {
+            if (!RaiseAndSetIfChanged(ref _newDisplayHeight, Math.Max(0, value))) return;
+            RaisePropertyChanged(nameof(NewPixelSizeMicrons));
+            RaisePropertyChanged(nameof(NewFixedRatioY));
+        }
+    }
+
+    public SizeF NewPixelSizeMicrons =>
+        new (_newResolutionX <= 0 || SlicerFile.Display.Width <= 0 || _newDisplayWidth <= 0
+                ? SlicerFile.PixelWidthMicrons
+                : (float) Math.Round((float) _newDisplayWidth / _newResolutionX * 1000, 3),
+            _newResolutionY <= 0 || SlicerFile.Display.Height <= 0 || _newDisplayHeight <= 0
+                ? SlicerFile.PixelHeightMicrons
+                : (float) Math.Round((float) _newDisplayHeight / _newResolutionY * 1000, 3));
+
+    public double NewFixedRatioX
+    {
+
+        get
+        {
+            if (_newResolutionX <= 0 || SlicerFile.Display.Width <= 0 || _newDisplayWidth <= 0) return 1;
+            var ratio = SlicerFile.PixelWidth / ((double)_newDisplayWidth / _newResolutionX);
+            return Math.Round(ratio, 3);
+        }
+    }
+
+    public double NewFixedRatioY
+    {
+        get
+        {
+            if (_newResolutionY <= 0 || SlicerFile.Display.Height <= 0 || _newDisplayHeight <= 0) return 1;
+            var ratio = SlicerFile.PixelHeight / ((double)_newDisplayHeight / _newResolutionY);
+            return Math.Round(ratio, 3);
+        }
+    }
 
     public bool FixRatio
     {
@@ -164,6 +209,8 @@ public sealed class OperationChangeResolution : Operation
         base.InitWithSlicerFile();
         if(_newResolutionX <= 0) _newResolutionX = SlicerFile.ResolutionX;
         if(_newResolutionY <= 0) _newResolutionY = SlicerFile.ResolutionY;
+        if(_newDisplayWidth <= 0) _newDisplayWidth = (decimal) SlicerFile.DisplayWidth;
+        if(_newDisplayHeight <= 0) _newDisplayHeight = (decimal) SlicerFile.DisplayHeight;
     }
 
     #endregion
@@ -217,6 +264,7 @@ public sealed class OperationChangeResolution : Operation
                 var newFixedRatioY = NewFixedRatioY;
                 if (_fixRatio && (newFixedRatioX != 1.0 || newFixedRatioY != 1.0))
                 {
+                    //mat.TransformFromCenter();
                     CvInvoke.Resize(mat, mat, SlicerFile.Resolution.Multiply(newFixedRatioX, newFixedRatioY));
                 }
 
@@ -228,8 +276,19 @@ public sealed class OperationChangeResolution : Operation
             progress.LockAndIncrement();
         });
 
-        SlicerFile.ResolutionX = NewResolutionX;
-        SlicerFile.ResolutionY = NewResolutionY;
+        SlicerFile.ResolutionX = _newResolutionX;
+        SlicerFile.ResolutionY = _newResolutionY;
+        if (_newDisplayWidth > 0)
+        {
+            SlicerFile.DisplayWidth = (float) _newDisplayWidth;
+        }
+
+        if (_newDisplayHeight > 0)
+        {
+            SlicerFile.DisplayHeight = (float)_newDisplayHeight;
+        }
+
+        SlicerFile.BoundingRectangle = Rectangle.Empty;
 
         return !progress.Token.IsCancellationRequested;
     }
@@ -254,7 +313,7 @@ public sealed class OperationChangeResolution : Operation
 
     private bool Equals(OperationChangeResolution other)
     {
-        return _newResolutionX == other._newResolutionX && _newResolutionY == other._newResolutionY && _fixRatio == other._fixRatio;
+        return _newResolutionX == other._newResolutionX && _newResolutionY == other._newResolutionY && _fixRatio == other._fixRatio && _newDisplayWidth == other._newDisplayWidth && _newDisplayHeight == other._newDisplayHeight;
     }
 
     public override bool Equals(object? obj)
@@ -264,7 +323,7 @@ public sealed class OperationChangeResolution : Operation
 
     public override int GetHashCode()
     {
-        return HashCode.Combine(_newResolutionX, _newResolutionY, _fixRatio);
+        return HashCode.Combine(_newResolutionX, _newResolutionY, _fixRatio, _newDisplayWidth, _newDisplayHeight);
     }
 
     #endregion

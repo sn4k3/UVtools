@@ -60,7 +60,7 @@ public sealed class OperationCalibrateXYZAccuracy : Operation
 
     public override bool CanCancel => false;
 
-    public override Enumerations.LayerRangeSelection StartLayerRangeSelection => Enumerations.LayerRangeSelection.None;
+    public override LayerRangeSelection StartLayerRangeSelection => LayerRangeSelection.None;
     public override string IconClass => "fas fa-cubes";
     public override string Title => "XYZ Accuracy";
     public override string Description =>
@@ -464,7 +464,7 @@ public sealed class OperationCalibrateXYZAccuracy : Operation
         if (_bottomLayers <= 0) _bottomLayers = SlicerFile.BottomLayerCount;
         if (_bottomExposure <= 0) _bottomExposure = (decimal)SlicerFile.BottomExposureTime;
         if (_normalExposure <= 0) _normalExposure = (decimal)SlicerFile.ExposureTime;
-        _mirrorOutput = SlicerFile.DisplayMirror != Enumerations.FlipDirection.None;
+        _mirrorOutput = SlicerFile.DisplayMirror != FlipDirection.None;
 
         if (SlicerFile.DisplayWidth > 0)
             DisplayWidth = (decimal)SlicerFile.DisplayWidth;
@@ -721,7 +721,7 @@ public sealed class OperationCalibrateXYZAccuracy : Operation
         if (_mirrorOutput)
         {
             var flip = SlicerFile.DisplayMirror;
-            if (flip == Enumerations.FlipDirection.None) flip = Enumerations.FlipDirection.Horizontally;
+            if (flip == FlipDirection.None) flip = FlipDirection.Horizontally;
             Parallel.ForEach(layers, CoreSettings.ParallelOptions, mat => CvInvoke.Flip(mat, mat, Enumerations.ToOpenCVFlipType(flip)));
         }
 

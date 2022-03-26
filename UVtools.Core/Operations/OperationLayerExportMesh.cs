@@ -46,8 +46,8 @@ public sealed class OperationLayerExportMesh : Operation
     private string _filePath = null!;
     private MeshFile.MeshFileFormat _meshFileFormat = MeshFile.MeshFileFormat.BINARY;
     private ExportMeshQuality _quality = ExportMeshQuality.Accurate;
-    private Enumerations.RotateDirection _rotateDirection = Enumerations.RotateDirection.None;
-    private Enumerations.FlipDirection _flipDirection = Enumerations.FlipDirection.None;
+    private RotateDirection _rotateDirection = RotateDirection.None;
+    private FlipDirection _flipDirection = FlipDirection.None;
     private bool _stripAntiAliasing = true;
 
     #endregion
@@ -113,13 +113,13 @@ public sealed class OperationLayerExportMesh : Operation
         set => RaiseAndSetIfChanged(ref _quality, value);
     }
 
-    public Enumerations.RotateDirection RotateDirection
+    public RotateDirection RotateDirection
     {
         get => _rotateDirection;
         set => RaiseAndSetIfChanged(ref _rotateDirection, value);
     }
 
-    public Enumerations.FlipDirection FlipDirection
+    public FlipDirection FlipDirection
     {
         get => _flipDirection;
         set => RaiseAndSetIfChanged(ref _flipDirection, value);
@@ -181,10 +181,10 @@ public sealed class OperationLayerExportMesh : Operation
          * ideally we would fix the algorithm itself but that's more invovled. for the time being we'll just flip it verticaly. */
         var workAroundFlip = _flipDirection switch
         {
-            Enumerations.FlipDirection.None => Enumerations.FlipDirection.Vertically,
-            Enumerations.FlipDirection.Horizontally => Enumerations.FlipDirection.Both,
-            Enumerations.FlipDirection.Vertically => Enumerations.FlipDirection.None,
-            Enumerations.FlipDirection.Both => Enumerations.FlipDirection.Horizontally,
+            FlipDirection.None => FlipDirection.Vertically,
+            FlipDirection.Horizontally => FlipDirection.Both,
+            FlipDirection.Vertically => FlipDirection.None,
+            FlipDirection.Both => FlipDirection.Horizontally,
             _ => throw new NotImplementedException($"Flip type: {_flipDirection} not handled!")
         };
 

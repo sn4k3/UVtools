@@ -186,13 +186,13 @@ public class ChituboxZipFile : FileFormat
         set => base.MachineZ = HeaderSettings.MachineZ = (float)Math.Round(value, 2);
     }
 
-    public override Enumerations.FlipDirection DisplayMirror
+    public override FlipDirection DisplayMirror
     {
-        get => HeaderSettings.Mirror == 0 ? Enumerations.FlipDirection.None : Enumerations.FlipDirection.Horizontally;
+        get => HeaderSettings.Mirror == 0 ? FlipDirection.None : FlipDirection.Horizontally;
         set
         {
-            HeaderSettings.ProjectType = value == Enumerations.FlipDirection.None ? "Normal" : "LCD_mirror";
-            HeaderSettings.Mirror = (byte)(value == Enumerations.FlipDirection.None ? 0 : 1);
+            HeaderSettings.ProjectType = value == FlipDirection.None ? "Normal" : "LCD_mirror";
+            HeaderSettings.Mirror = (byte)(value == FlipDirection.None ? 0 : 1);
             RaisePropertyChanged();
         }
     }
@@ -384,13 +384,13 @@ public class ChituboxZipFile : FileFormat
 
     #region Methods
 
-    public override bool CanProcess(string fileFullPath)
+    public override bool CanProcess(string? fileFullPath)
     {
         if (!base.CanProcess(fileFullPath)) return false;
 
         try
         {
-            var zip = ZipFile.Open(fileFullPath, ZipArchiveMode.Read);
+            var zip = ZipFile.Open(fileFullPath!, ZipArchiveMode.Read);
             if (zip.Entries.Any(entry => entry.Name.EndsWith(".gcode"))) return true;
         }
         catch (Exception e)
@@ -404,7 +404,7 @@ public class ChituboxZipFile : FileFormat
 
     protected override void EncodeInternally(OperationProgress progress)
     {
-        using var outputFile = ZipFile.Open(FileFullPath!, ZipArchiveMode.Create);
+        using var outputFile = ZipFile.Open(TemporaryOutputFileFullPath, ZipArchiveMode.Create);
         if (Thumbnails is not null && Thumbnails.Length > 0 && Thumbnails[0] is not null)
         {
             using var stream = outputFile.CreateEntry("preview.png").Open();
@@ -426,7 +426,7 @@ public class ChituboxZipFile : FileFormat
             outputFile.PutFileContent(GCodeFilename, GCodeStr, ZipArchiveMode.Create);
         }
 
-        EncodeLayersInZip(outputFile, Enumerations.IndexStartNumber.One, progress);
+        EncodeLayersInZip(outputFile, IndexStartNumber.One, progress);
     }
 
     protected override void DecodeInternally(OperationProgress progress)
@@ -482,7 +482,7 @@ public class ChituboxZipFile : FileFormat
 
         Init(HeaderSettings.LayerCount, DecodeType == FileDecodeType.Partial);
 
-        DecodeLayersFromZip(inputFile, Enumerations.IndexStartNumber.One, progress);
+        DecodeLayersFromZip(inputFile, IndexStartNumber.One, progress);
 
         if (IsPHZZip) // PHZ file
         {
@@ -518,7 +518,7 @@ public class ChituboxZipFile : FileFormat
 
     protected override void PartialSaveInternally(OperationProgress progress)
     {
-        using var outputFile = ZipFile.Open(FileFullPath!, ZipArchiveMode.Update);
+        using var outputFile = ZipFile.Open(TemporaryOutputFileFullPath, ZipArchiveMode.Update);
         var entriesToRemove = outputFile.Entries.Where(zipEntry => zipEntry.Name.EndsWith(".gcode")).ToArray();
         foreach (var zipEntry in entriesToRemove)
         {

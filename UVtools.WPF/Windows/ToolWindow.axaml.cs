@@ -123,7 +123,7 @@ public class ToolWindow : WindowEx
 
             if (ToolControl?.BaseOperation is not null)
             {
-                ToolControl.BaseOperation.LayerRangeSelection = Enumerations.LayerRangeSelection.None;
+                ToolControl.BaseOperation.LayerRangeSelection = LayerRangeSelection.None;
                 ToolControl.BaseOperation.LayerIndexStart = value;
             }
 
@@ -151,7 +151,7 @@ public class ToolWindow : WindowEx
 
             if (ToolControl?.BaseOperation is not null)
             {
-                ToolControl.BaseOperation.LayerRangeSelection = Enumerations.LayerRangeSelection.None;
+                ToolControl.BaseOperation.LayerRangeSelection = LayerRangeSelection.None;
                 ToolControl.BaseOperation.LayerIndexEnd = value;
             }
 
@@ -189,14 +189,14 @@ public class ToolWindow : WindowEx
         LayerIndexStart = 0;
         LayerIndexEnd = MaximumLayerIndex;
         if(ToolControl is not null)
-            ToolControl.BaseOperation.LayerRangeSelection = Enumerations.LayerRangeSelection.All;
+            ToolControl.BaseOperation.LayerRangeSelection = LayerRangeSelection.All;
     }
 
     public void SelectCurrentLayer()
     {
         LayerIndexStart = LayerIndexEnd = App.MainWindow.ActualLayer;
         if (ToolControl is not null)
-            ToolControl.BaseOperation.LayerRangeSelection = Enumerations.LayerRangeSelection.Current;
+            ToolControl.BaseOperation.LayerRangeSelection = LayerRangeSelection.Current;
     }
 
     public void SelectFirstToCurrentLayer()
@@ -204,7 +204,7 @@ public class ToolWindow : WindowEx
         LayerIndexEnd = App.MainWindow.ActualLayer;
         LayerIndexStart = 0;
         if (ToolControl is not null)
-            ToolControl.BaseOperation.LayerRangeSelection = Enumerations.LayerRangeSelection.None;
+            ToolControl.BaseOperation.LayerRangeSelection = LayerRangeSelection.None;
     }
 
     public void SelectCurrentToLastLayer()
@@ -212,7 +212,7 @@ public class ToolWindow : WindowEx
         LayerIndexStart = App.MainWindow.ActualLayer;
         LayerIndexEnd = SlicerFile.LastLayerIndex;
         if (ToolControl is not null)
-            ToolControl.BaseOperation.LayerRangeSelection = Enumerations.LayerRangeSelection.None;
+            ToolControl.BaseOperation.LayerRangeSelection = LayerRangeSelection.None;
     }
 
     public void SelectBottomLayers()
@@ -220,7 +220,7 @@ public class ToolWindow : WindowEx
         LayerIndexStart = 0;
         LayerIndexEnd = Math.Max(1, SlicerFile.FirstNormalLayer?.Index ?? 1) - 1u;
         if (ToolControl is not null)
-            ToolControl.BaseOperation.LayerRangeSelection = Enumerations.LayerRangeSelection.Bottom;
+            ToolControl.BaseOperation.LayerRangeSelection = LayerRangeSelection.Bottom;
     }
 
     public void SelectNormalLayers()
@@ -228,45 +228,45 @@ public class ToolWindow : WindowEx
         LayerIndexStart = SlicerFile.FirstNormalLayer?.Index ?? 0;
         LayerIndexEnd = MaximumLayerIndex;
         if (ToolControl is not null)
-            ToolControl.BaseOperation.LayerRangeSelection = Enumerations.LayerRangeSelection.Normal;
+            ToolControl.BaseOperation.LayerRangeSelection = LayerRangeSelection.Normal;
     }
 
     public void SelectFirstLayer()
     {
         LayerIndexStart = LayerIndexEnd = 0;
         if (ToolControl is not null)
-            ToolControl.BaseOperation.LayerRangeSelection = Enumerations.LayerRangeSelection.First;
+            ToolControl.BaseOperation.LayerRangeSelection = LayerRangeSelection.First;
     }
 
     public void SelectLastLayer()
     {
         LayerIndexStart = LayerIndexEnd = MaximumLayerIndex;
         if (ToolControl is not null)
-            ToolControl.BaseOperation.LayerRangeSelection = Enumerations.LayerRangeSelection.Last;
+            ToolControl.BaseOperation.LayerRangeSelection = LayerRangeSelection.Last;
     }
 
-    public void SelectLayers(Enumerations.LayerRangeSelection range)
+    public void SelectLayers(LayerRangeSelection range)
     {
         switch (range)
         {
-            case Enumerations.LayerRangeSelection.None:
+            case LayerRangeSelection.None:
                 break;
-            case Enumerations.LayerRangeSelection.All:
+            case LayerRangeSelection.All:
                 SelectAllLayers();
                 break;
-            case Enumerations.LayerRangeSelection.Current:
+            case LayerRangeSelection.Current:
                 SelectCurrentLayer();
                 break;
-            case Enumerations.LayerRangeSelection.Bottom:
+            case LayerRangeSelection.Bottom:
                 SelectBottomLayers();
                 break;
-            case Enumerations.LayerRangeSelection.Normal:
+            case LayerRangeSelection.Normal:
                 SelectNormalLayers();
                 break;
-            case Enumerations.LayerRangeSelection.First:
+            case LayerRangeSelection.First:
                 SelectFirstLayer();
                 break;
-            case Enumerations.LayerRangeSelection.Last:
+            case LayerRangeSelection.Last:
                 SelectLastLayer();
                 break;
             default:
@@ -387,7 +387,7 @@ public class ToolWindow : WindowEx
             ToolControl.BaseOperation = operation;
             switch (operation.LayerRangeSelection)
             {
-                case Enumerations.LayerRangeSelection.None:
+                case LayerRangeSelection.None:
                     LayerIndexStart = operation.LayerIndexStart;
                     LayerIndexEnd = operation.LayerIndexEnd;
                     break;
@@ -598,7 +598,7 @@ public class ToolWindow : WindowEx
         _layerIndexEndEnabled = layerEndIndexEnabled;
     }
 
-    public ToolWindow(ToolControl toolControl) : this(toolControl.BaseOperation.Description, toolControl.BaseOperation.StartLayerRangeSelection != Enumerations.LayerRangeSelection.None, toolControl.BaseOperation.LayerIndexEndEnabled)
+    public ToolWindow(ToolControl toolControl) : this(toolControl.BaseOperation.Description, toolControl.BaseOperation.StartLayerRangeSelection != LayerRangeSelection.None, toolControl.BaseOperation.LayerIndexEndEnabled)
     {
         ToolControl = toolControl;
         toolControl.ParentWindow = this;
@@ -607,7 +607,7 @@ public class ToolWindow : WindowEx
         ToolControl.BaseOperation.MaskPoints = Masks;
 
         Title = toolControl.BaseOperation.Title;
-        //LayerRangeVisible = toolControl.BaseOperation.StartLayerRangeSelection != Enumerations.LayerRangeSelection.None;
+        //LayerRangeVisible = toolControl.BaseOperation.StartLayerRangeSelection != LayerRangeSelection.None;
         //IsROIVisible = toolControl.BaseOperation.CanROI;
         _contentControl = toolControl;
         _buttonOkText = toolControl.BaseOperation.ButtonOkText;
@@ -639,7 +639,7 @@ public class ToolWindow : WindowEx
                 App.MainWindow.AddMaskPoints(toolControl.BaseOperation.MaskPoints);
             }
 
-            if (toolControl.BaseOperation.LayerRangeSelection == Enumerations.LayerRangeSelection.None)
+            if (toolControl.BaseOperation.LayerRangeSelection == LayerRangeSelection.None)
             {
                 LayerIndexStart = toolControl.BaseOperation.LayerIndexStart;
                 LayerIndexEnd = toolControl.BaseOperation.LayerIndexEnd;
@@ -884,7 +884,7 @@ public class ToolWindow : WindowEx
             ToolControl.BaseOperation = operation;
             switch (operation.LayerRangeSelection)
             {
-                case Enumerations.LayerRangeSelection.None:
+                case LayerRangeSelection.None:
                     LayerIndexStart = operation.LayerIndexStart;
                     LayerIndexEnd = operation.LayerIndexEnd;
                     break;

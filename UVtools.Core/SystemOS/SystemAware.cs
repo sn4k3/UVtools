@@ -255,6 +255,11 @@ public static class SystemAware
         }
     }
 
+    public static string GetExecutableName(string executable)
+    {
+        return OperatingSystem.IsWindows() ? $"{executable}.exe" : executable;
+    }
+
     public static string? GetProcessOutput(string filename, string? arguments = null)
     {
         using var proc = Process.Start(new ProcessStartInfo

@@ -57,7 +57,7 @@ public sealed class OperationCalibrateElephantFoot : Operation
 
     public override bool CanCancel => false;
 
-    public override Enumerations.LayerRangeSelection StartLayerRangeSelection => Enumerations.LayerRangeSelection.None;
+    public override LayerRangeSelection StartLayerRangeSelection => LayerRangeSelection.None;
     public override string IconClass => "mdi-elephant";
     public override string Title => "Elephant foot";
     public override string Description =>
@@ -380,7 +380,7 @@ public sealed class OperationCalibrateElephantFoot : Operation
         if (_bottomLayers <= 0) _bottomLayers = (ushort) Slicer.Slicer.MillimetersToLayers(1M, _layerHeight);
         if (_normalLayers <= 0) _normalLayers = (ushort) Slicer.Slicer.MillimetersToLayers(3.5M, _layerHeight);
 
-        _mirrorOutput = SlicerFile.DisplayMirror != Enumerations.FlipDirection.None;
+        _mirrorOutput = SlicerFile.DisplayMirror != FlipDirection.None;
     }
 
     #endregion
@@ -670,7 +670,7 @@ public sealed class OperationCalibrateElephantFoot : Operation
         if (_mirrorOutput)
         {
             var flip = SlicerFile.DisplayMirror;
-            if (flip == Enumerations.FlipDirection.None) flip = Enumerations.FlipDirection.Horizontally;
+            if (flip == FlipDirection.None) flip = FlipDirection.Horizontally;
             Parallel.ForEach(layers, CoreSettings.ParallelOptions, mat => CvInvoke.Flip(mat, mat, Enumerations.ToOpenCVFlipType(flip)));
         }
 

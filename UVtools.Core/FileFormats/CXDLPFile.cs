@@ -17,11 +17,14 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using UVtools.Core.Converters;
 using UVtools.Core.Extensions;
 using UVtools.Core.Layers;
 using UVtools.Core.Objects;
 using UVtools.Core.Operations;
+using UVtools.Core.Printer;
 
 namespace UVtools.Core.FileFormats;
 
@@ -33,6 +36,7 @@ public class CXDLPFile : FileFormat
     #endregion
 
     #region Sub Classes
+
     #region Header
     public sealed class Header
     {
@@ -247,18 +251,24 @@ public class CXDLPFile : FileFormat
 
         [FieldOrder(1)] public NullTerminatedUintStringBigEndian MaterialName { get; set; } = new();
 
-        [FieldOrder(2)] public uint Unknown1 { get; set; }
-        [FieldOrder(3)] public uint Unknown2 { get; set; }
-        [FieldOrder(4)] public uint Unknown3 { get; set; }
-        [FieldOrder(5)] public uint Unknown4 { get; set; }
-        [FieldOrder(6)] public byte Unknown5 { get; set; } = 1;
-        [FieldOrder(7)] public byte LightPWM { get; set; } = byte.MaxValue;
-        [FieldOrder(8)] public ushort Unknown6 { get; set; } = 2;
-        [FieldOrder(9)] public PageBreak PageBreak { get; set; } = new();
+        [FieldOrder(2)] public byte DistortionCompensationEnabled { get; set; }
+        [FieldOrder(3)] public uint DistortionCompensationThickness { get; set; } = 600;
+        [FieldOrder(4)] public uint DistortionCompensationFocalLength { get; set; } = 300000;
+        [FieldOrder(5)] public byte XYAxisProfileCompensationEnabled { get; set; } = 1;
+        [FieldOrder(6)] public ushort XYAxisProfileCompensationValue { get; set; }
+        [FieldOrder(7)] public byte ZPenetrationCompensationEnabled { get; set; }
+        [FieldOrder(8)] public ushort ZPenetrationCompensationLevel { get; set; } = 1000;
+        [FieldOrder(9)] public byte AntiAliasEnabled { get; set; } = 1;
+        [FieldOrder(10)] public byte AntiAliasGreyMinValue { get; set; } = 1;
+        [FieldOrder(11)] public byte AntiAliasGreyMaxValue { get; set; } = byte.MaxValue;
+        [FieldOrder(12)] public byte ImageBlurEnabled { get; set; } = 0;
+        [FieldOrder(13)] public byte ImageBlurLevel { get; set; } = 2;
+        [FieldOrder(14)] public PageBreak PageBreak { get; set; } = new();
+
 
         public override string ToString()
         {
-            return $"{nameof(SoftwareName)}: {SoftwareName}, {nameof(MaterialName)}: {MaterialName}, {nameof(Unknown1)}: {Unknown1}, {nameof(Unknown2)}: {Unknown2}, {nameof(Unknown3)}: {Unknown3}, {nameof(Unknown4)}: {Unknown4}, {nameof(Unknown5)}: {Unknown5}, {nameof(LightPWM)}: {LightPWM}, {nameof(Unknown6)}: {Unknown6}, {nameof(PageBreak)}: {PageBreak}";
+            return $"{nameof(SoftwareName)}: {SoftwareName}, {nameof(MaterialName)}: {MaterialName}, {nameof(DistortionCompensationEnabled)}: {DistortionCompensationEnabled}, {nameof(DistortionCompensationThickness)}: {DistortionCompensationThickness}, {nameof(DistortionCompensationFocalLength)}: {DistortionCompensationFocalLength}, {nameof(XYAxisProfileCompensationEnabled)}: {XYAxisProfileCompensationEnabled}, {nameof(XYAxisProfileCompensationValue)}: {XYAxisProfileCompensationValue}, {nameof(ZPenetrationCompensationEnabled)}: {ZPenetrationCompensationEnabled}, {nameof(ZPenetrationCompensationLevel)}: {ZPenetrationCompensationLevel}, {nameof(AntiAliasEnabled)}: {AntiAliasEnabled}, {nameof(AntiAliasGreyMinValue)}: {AntiAliasGreyMinValue}, {nameof(AntiAliasGreyMaxValue)}: {AntiAliasGreyMaxValue}, {nameof(ImageBlurEnabled)}: {ImageBlurEnabled}, {nameof(ImageBlurLevel)}: {ImageBlurLevel}, {nameof(PageBreak)}: {PageBreak}";
         }
     }
 
@@ -550,8 +560,13 @@ public class CXDLPFile : FileFormat
 
     public override float ExposureTime
     {
-        get => SlicerInfoSettings.ExposureTime;
-        set => base.ExposureTime = SlicerInfoSettings.ExposureTime = (ushort) value;
+        get => (float)Math.Round(SlicerInfoSettings.ExposureTime / 10.0f, 1);
+        set
+        {
+            value = (float)Math.Round(value, 1);
+            SlicerInfoSettings.ExposureTime = (ushort) (value * 10);
+            base.ExposureTime = value;
+        }
     }
 
     public override float BottomLiftHeight
@@ -560,30 +575,30 @@ public class CXDLPFile : FileFormat
         set => base.BottomLiftHeight = SlicerInfoSettings.BottomLiftHeight = (ushort) value;
     }
 
+    public override float BottomLiftSpeed
+    {
+        get => SpeedConverter.Convert(SlicerInfoSettings.BottomLiftSpeed, SpeedUnit.MillimetersPerSecond, DefaultSpeedUnit);
+        set => base.BottomLiftSpeed = SlicerInfoSettings.BottomLiftSpeed = SlicerInfoSettings.BottomLiftSpeed = (ushort)SpeedConverter.Convert(value, DefaultSpeedUnit, SpeedUnit.MillimetersPerSecond);
+    }
+
     public override float LiftHeight
     {
         get => SlicerInfoSettings.LiftHeight;
         set => base.LiftHeight = SlicerInfoSettings.LiftHeight = (ushort)value;
     }
 
-    public override float BottomLiftSpeed
-    {
-        get => SlicerInfoSettings.BottomLiftSpeed;
-        set => base.BottomLiftSpeed = SlicerInfoSettings.BottomLiftSpeed = (ushort)value;
-    }
-
     public override float LiftSpeed
     {
-        get => SlicerInfoSettings.LiftSpeed;
-        set => base.LiftSpeed = SlicerInfoSettings.LiftSpeed = (ushort)value;
+        get => SpeedConverter.Convert(SlicerInfoSettings.LiftSpeed, SpeedUnit.MillimetersPerSecond, DefaultSpeedUnit);
+        set => base.LiftSpeed = SlicerInfoSettings.LiftSpeed = (ushort)SpeedConverter.Convert(value, DefaultSpeedUnit, SpeedUnit.MillimetersPerSecond);
     }
 
     public override float BottomRetractSpeed => RetractSpeed;
 
     public override float RetractSpeed
     {
-        get => SlicerInfoSettings.RetractSpeed;
-        set => base.RetractSpeed = SlicerInfoSettings.RetractSpeed = (ushort)value;
+        get => SpeedConverter.Convert(SlicerInfoSettings.RetractSpeed, SpeedUnit.MillimetersPerSecond, DefaultSpeedUnit);
+        set => base.RetractSpeed = SlicerInfoSettings.RetractSpeed = (ushort)SpeedConverter.Convert(value, DefaultSpeedUnit, SpeedUnit.MillimetersPerSecond);
     }
 
     public override byte BottomLightPWM
@@ -601,7 +616,19 @@ public class CXDLPFile : FileFormat
     public override string MachineName
     {
         get => HeaderSettings.PrinterModel;
-        set => base.MachineName = HeaderSettings.PrinterModel = value;
+        set
+        {
+            if (!string.IsNullOrWhiteSpace(value) && !value.StartsWith("CL-") && !value.StartsWith("CT-"))
+            {
+                // Parse from machine name, if coming from PrusaSlicer this will help
+                var match = Regex.Match(value, @"(CL|CT)-\d+");
+                if (match.Success && match.Groups.Count > 1)
+                {
+                    value = match.Value;
+                }
+            }
+            base.MachineName = HeaderSettings.PrinterModel = value;
+        }
     }
 
     public override string? MaterialName
@@ -626,26 +653,31 @@ public class CXDLPFile : FileFormat
 
     protected override void EncodeInternally(OperationProgress progress)
     {
-        using var outputFile = new FileStream(FileFullPath!, FileMode.Create, FileAccess.ReadWrite);
+        using var outputFile = new FileStream(TemporaryOutputFileFullPath, FileMode.Create, FileAccess.ReadWrite);
 
-        if (!MachineName.StartsWith("CL-"))
+        if (string.IsNullOrWhiteSpace(MachineName))
         {
-            if (ResolutionX == 1620 && ResolutionY == 2560)
+            throw new InvalidDataException("Unable to detect the printer model from resolution, check if resolution is well defined on slicer for your printer model.");
+        }
+
+
+        if (!MachineName.StartsWith("CL-") && !MachineName.StartsWith("CT"))
+        {
+            bool found = false;
+            foreach (var machine in Printer.Machine.Machines
+                         .Where(machine => machine.Brand == PrinterBrand.Creality
+                                           && (machine.Model.StartsWith("CL-") || machine.Model.StartsWith("CT"))
+                                           ))
             {
-                MachineName = "CL-60"; // One
+                if (ResolutionX == machine.ResolutionX && ResolutionY == machine.ResolutionY)
+                {
+                    found = true;
+                    MachineName = machine.Model;
+                    break;
+                }
             }
-            else if (ResolutionX == 3840 && ResolutionY == 2400) // Sky or lite
-            {
-                MachineName = "CL-89"; // Sky
-            }
-            else if (ResolutionX == 3840 && ResolutionY == 2160)
-            {
-                MachineName = "CL-133"; // Max
-            }
-            else
-            {
-                throw new InvalidDataException("Unable to detect the printer model from resolution, check if resolution is well defined on slicer for your printer model.");
-            }
+            
+            if(!found) throw new InvalidDataException("Unable to detect the printer model from resolution, check if resolution is well defined on slicer for your printer model.");
         }
 
         SanitizeProperties();
@@ -952,7 +984,7 @@ public class CXDLPFile : FileFormat
 
                         linesBytes[layerIndex] = null!;
 
-                        this[layerIndex] = new Layer((uint)layerIndex, mat, this);
+                        _layers[layerIndex] = new Layer((uint)layerIndex, mat, this);
                     }
 
                     progress.LockAndIncrement();
@@ -978,7 +1010,7 @@ public class CXDLPFile : FileFormat
 
         SanitizeProperties();
             
-        using var outputFile = new FileStream(FileFullPath!, FileMode.Open, FileAccess.ReadWrite);
+        using var outputFile = new FileStream(TemporaryOutputFileFullPath, FileMode.Open, FileAccess.ReadWrite);
         outputFile.Seek(offset, SeekOrigin.Begin);
         Helpers.SerializeWriteFileStream(outputFile, SlicerInfoSettings);
 

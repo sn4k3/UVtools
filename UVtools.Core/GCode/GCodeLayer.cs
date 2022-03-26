@@ -177,7 +177,7 @@ public class GCodeLayer
                     partialPositionZ = Layer.RoundHeight(pos - currentZ);
                     currentZ = pos;
                     break;
-                case GCodeBuilder.GCodePositioningTypes.Partial:
+                case GCodeBuilder.GCodePositioningTypes.Relative:
                     partialPositionZ = pos;
                     currentZ = Layer.RoundHeight(currentZ + pos);
                     break;

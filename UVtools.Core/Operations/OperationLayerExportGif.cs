@@ -32,8 +32,8 @@ public sealed class OperationLayerExportGif : Operation
     private ushort _repeats;
     private ushort _skip;
     private decimal _scale = 50;
-    private Enumerations.RotateDirection _rotateDirection = Enumerations.RotateDirection.None;
-    private Enumerations.FlipDirection _flipDirection = Enumerations.FlipDirection.None;
+    private RotateDirection _rotateDirection = RotateDirection.None;
+    private FlipDirection _flipDirection = FlipDirection.None;
 
     #endregion
 
@@ -165,13 +165,13 @@ public sealed class OperationLayerExportGif : Operation
 
     public float ScaleFactor => (float)_scale / 100f;
 
-    public Enumerations.RotateDirection RotateDirection
+    public RotateDirection RotateDirection
     {
         get => _rotateDirection;
         set => RaiseAndSetIfChanged(ref _rotateDirection, value);
     }
 
-    public Enumerations.FlipDirection FlipDirection
+    public FlipDirection FlipDirection
     {
         get => _flipDirection;
         set => RaiseAndSetIfChanged(ref _flipDirection, value);
@@ -237,12 +237,12 @@ public sealed class OperationLayerExportGif : Operation
                 CvInvoke.Resize(matRoi, matRoi, new Size((int) (matRoi.Width * ScaleFactor), (int)(matRoi.Height * ScaleFactor)));
             }
 
-            if (_flipDirection != Enumerations.FlipDirection.None)
+            if (_flipDirection != FlipDirection.None)
             {
                 CvInvoke.Flip(matRoi, matRoi, Enumerations.ToOpenCVFlipType(_flipDirection));
             }
 
-            if (_rotateDirection != Enumerations.RotateDirection.None)
+            if (_rotateDirection != RotateDirection.None)
             {
                 CvInvoke.Rotate(matRoi, matRoi, Enumerations.ToOpenCVRotateFlags(_rotateDirection));
             }

@@ -337,19 +337,19 @@ public class VDTFile : FileFormat
         }
     }
 
-    public override Enumerations.FlipDirection DisplayMirror
+    public override FlipDirection DisplayMirror
     {
         get
         {
-            if (ManifestFile.Machine.XMirror && ManifestFile.Machine.YMirror) return Enumerations.FlipDirection.Both;
-            if (ManifestFile.Machine.XMirror) return Enumerations.FlipDirection.Horizontally;
-            if (ManifestFile.Machine.YMirror) return Enumerations.FlipDirection.Vertically;
-            return Enumerations.FlipDirection.None;
+            if (ManifestFile.Machine.XMirror && ManifestFile.Machine.YMirror) return FlipDirection.Both;
+            if (ManifestFile.Machine.XMirror) return FlipDirection.Horizontally;
+            if (ManifestFile.Machine.YMirror) return FlipDirection.Vertically;
+            return FlipDirection.None;
         }
         set
         {
-            ManifestFile.Machine.XMirror = value is Enumerations.FlipDirection.Horizontally or Enumerations.FlipDirection.Both;
-            ManifestFile.Machine.YMirror = value is Enumerations.FlipDirection.Vertically or Enumerations.FlipDirection.Both;
+            ManifestFile.Machine.XMirror = value is FlipDirection.Horizontally or FlipDirection.Both;
+            ManifestFile.Machine.YMirror = value is FlipDirection.Vertically or FlipDirection.Both;
             RaisePropertyChanged();
         }
     }
@@ -635,7 +635,7 @@ public class VDTFile : FileFormat
         // Redo layer data
         RebuildVDTLayers();
 
-        using var outputFile = ZipFile.Open(FileFullPath!, ZipArchiveMode.Create);
+        using var outputFile = ZipFile.Open(TemporaryOutputFileFullPath, ZipArchiveMode.Create);
         outputFile.PutFileContent(FileManifestName, JsonSerializer.SerializeToUtf8Bytes(ManifestFile, JsonExtensions.SettingsIndent), ZipArchiveMode.Create);
 
         if (CreatedThumbnailsCount > 0)
@@ -695,7 +695,7 @@ public class VDTFile : FileFormat
     protected override void PartialSaveInternally(OperationProgress progress)
     {
         RebuildVDTLayers();
-        using var outputFile = ZipFile.Open(FileFullPath!, ZipArchiveMode.Update);
+        using var outputFile = ZipFile.Open(TemporaryOutputFileFullPath, ZipArchiveMode.Update);
         outputFile.PutFileContent(FileManifestName, JsonSerializer.SerializeToUtf8Bytes(ManifestFile, JsonExtensions.SettingsIndent), ZipArchiveMode.Update);
 
         //Decode(FileFullPath, progress);

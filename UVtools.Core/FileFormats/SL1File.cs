@@ -405,19 +405,19 @@ public class SL1File : FileFormat
         }
     }
 
-    public override Enumerations.FlipDirection DisplayMirror
+    public override FlipDirection DisplayMirror
     {
         get
         {
-            if (PrinterSettings.DisplayMirrorX > 0 && PrinterSettings.DisplayMirrorY > 0) return Enumerations.FlipDirection.Both;
-            if (PrinterSettings.DisplayMirrorX > 0) return Enumerations.FlipDirection.Horizontally;
-            if (PrinterSettings.DisplayMirrorY > 0) return Enumerations.FlipDirection.Vertically;
-            return Enumerations.FlipDirection.None;
+            if (PrinterSettings.DisplayMirrorX > 0 && PrinterSettings.DisplayMirrorY > 0) return FlipDirection.Both;
+            if (PrinterSettings.DisplayMirrorX > 0) return FlipDirection.Horizontally;
+            if (PrinterSettings.DisplayMirrorY > 0) return FlipDirection.Vertically;
+            return FlipDirection.None;
         }
         set
         {
-            PrinterSettings.DisplayMirrorX = (byte)(value is Enumerations.FlipDirection.Horizontally or Enumerations.FlipDirection.Both ? 1 : 0);
-            PrinterSettings.DisplayMirrorY = (byte)(value is Enumerations.FlipDirection.Vertically or Enumerations.FlipDirection.Both ? 1 : 0);
+            PrinterSettings.DisplayMirrorX = (byte)(value is FlipDirection.Horizontally or FlipDirection.Both ? 1 : 0);
+            PrinterSettings.DisplayMirrorY = (byte)(value is FlipDirection.Vertically or FlipDirection.Both ? 1 : 0);
             RaisePropertyChanged();
         }
     }   
@@ -569,7 +569,7 @@ public class SL1File : FileFormat
         if (filename!.EndsWith(TemporaryFileAppend)) filename = Path.GetFileNameWithoutExtension(filename); // tmp
         filename = Path.GetFileNameWithoutExtension(filename); // sl1
         OutputConfigSettings.JobDir = filename;
-        using ZipArchive outputFile = ZipFile.Open(FileFullPath!, ZipArchiveMode.Create);
+        using var outputFile = ZipFile.Open(TemporaryOutputFileFullPath, ZipArchiveMode.Create);
         var entry = outputFile.CreateEntry("config.ini");
         using (TextWriter tw = new StreamWriter(entry.Open()))
         {
@@ -614,7 +614,7 @@ public class SL1File : FileFormat
             stream.Close();
         }
 
-        EncodeLayersInZip(outputFile, filename, 5, Enumerations.IndexStartNumber.Zero, progress);
+        EncodeLayersInZip(outputFile, filename, 5, IndexStartNumber.Zero, progress);
     }
 
 
@@ -637,10 +637,8 @@ public class SL1File : FileFormat
             string? line;
             while ((line = streamReader.ReadLine()) != null)
             {
-                string[] keyValue = line.Split(new[] {'='}, 2);
+                var keyValue = line.Split('=', 2, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
                 if (keyValue.Length < 2) continue;
-                keyValue[0] = keyValue[0].Trim();
-                keyValue[1] = keyValue[1].Trim();
 
                 var fieldName = IniKeyToMemberName(keyValue[0]);
                 bool foundMember = false;
@@ -732,7 +730,7 @@ public class SL1File : FileFormat
             //thumbnailIndex++;
         }
 
-        DecodeLayersFromZip(inputFile, 5, Enumerations.IndexStartNumber.Zero, progress);
+        DecodeLayersFromZip(inputFile, 5, IndexStartNumber.Zero, progress);
 
         if (TransitionLayerCount > 0)
         {
@@ -746,7 +744,7 @@ public class SL1File : FileFormat
 
     protected override void PartialSaveInternally(OperationProgress progress)
     {
-        using var outputFile = ZipFile.Open(FileFullPath!, ZipArchiveMode.Update);
+        using var outputFile = ZipFile.Open(TemporaryOutputFileFullPath, ZipArchiveMode.Update);
         //InputFile.CreateEntry("Modified");
         using (TextWriter tw = new StreamWriter(outputFile.PutFileContent("config.ini", string.Empty, ZipArchiveMode.Update).Open()))
         {

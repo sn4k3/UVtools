@@ -1,5 +1,55 @@
 # Changelog
 
+## 26/03/2022 - v3.2.0
+
+- **Core:**
+   - (Add) Machine presets and able to load machine collection from PrusaSlicer
+   - (Improvement) Core: Reference EmguCV runtimes into core instead of the UI project
+- **File formats:**
+   - **CXDLP:**
+      - (Add) Detection support for Halot One Pro
+      - (Add) Detection support for Halot One Plus
+      - (Add) Detection support for Halot Sky Plus
+      - (Add) Detection support for Halot Lite
+      - (Improvement) Better handling and detection of printer model when converting
+      - (Improvement) Discovered more fields meanings on format
+      - (Fix) Exposure time in format is `round(time * 10, 1)`
+      - (Fix) Speeds in format are in mm/s, was using mm/min before
+   - (Add) JXS format for Uniformation GKone [Zip+GCode]
+   - (Improvement) Saving and converting files now handle the file backup on Core instead on the UI, which prevents scripts and other projects lose the original file in case of error while saving
+   - (Improvement) When saving files the .tmp extension is no longer shown on `FileFullPath`, which now `TemporaryOutputFileFullPath` is who holds the file.tmp
+   - (Fix) After load files they was flagged as requiring a full encode, preventing fast save a fresh file 
+- **UVtoolsCmd:**
+   - Bring back the commandline project
+   - Consult README to see the available commands and syntax
+   - Old terminal commands on UVtools still works for now, but consider switch to UVtoolsCmd or redirect the command using `UVtools --cmd "commands"`
+- **Tools:**
+   - **Change print resolution:**
+      - (Add) Allow to change the display size to match the new printer
+      - (Add) Machine presets to help set both resolution and display size to a correct printer and auto set fix pixel ratio
+      - (Improvement) Real pixel pitch fixer due new display size information, this allow full transfers between different printers "without" invalidating the model size
+      - (Improvement) Better arrangement of  the layout 
+   - (Add) Infill: Option "Reinforce infill if possible", it was always on before, now default is off and configurable
+   - (Improvement) Always allow to export settings from tools
+- **GCode:**
+   - (Improvement) After print the last layer, do one lift with the same layer settings before attempt a fast move to top
+   - (Improvement) Use the highest defined speed to send the build plate to top after finish print
+   - (Improvement) Append a wait sync command in the end of gcode if needed
+   - (Fix) When lift without a retract it still output the motor sync delay for the retract time and the wait time after retract
+- **PrusaSlicer:**
+   - (Add) Printer: Creality Halot One Pro CL-70
+   - (Add) Printer: Creality Halot One Plus CL-79
+   - (Add) Printer: Creality Halot Sky Plus CL-92
+   - (Add) Printer: Creality Halot Lite CL-89L
+   - (Add) Printer: Creality Halot Lite CL-89L
+   - (Add) Printer: Creality CT133 Pro 
+   - (Add) Printer: Creality CT-005 Pro
+   - (Add) Printer: Uniformation GKone
+   - (Add) Printer: FlashForge Foto 8.9S
+   - (Add) Printer: Elegoo Mars 2
+   - (Improvement) Rename all Creality printers
+   - (Fix) Creality model in print notes
+
 ## 21/03/2022 - v3.1.1
 
 - (Add) Raft relief: Tabs type - Creates tabs around the raft to easily insert a tool under it and detach the raft from build plate

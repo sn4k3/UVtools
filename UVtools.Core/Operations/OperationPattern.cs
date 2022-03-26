@@ -20,7 +20,7 @@ namespace UVtools.Core.Operations;
 public class OperationPattern : Operation
 {
     #region Members
-    private Enumerations.Anchor _anchor = Enumerations.Anchor.None;
+    private Anchor _anchor = Anchor.None;
     private ushort _colSpacing;
     private ushort _rowSpacing;
     private ushort _maxColSpacing;
@@ -80,7 +80,7 @@ public class OperationPattern : Operation
     #endregion
 
     #region Properties
-    public Enumerations.Anchor Anchor
+    public Anchor Anchor
     {
         get => _anchor;
         set => RaiseAndSetIfChanged(ref _anchor, value);
@@ -227,7 +227,7 @@ public class OperationPattern : Operation
     #region Methods
     public void SetAnchor(byte value)
     {
-        Anchor = (Enumerations.Anchor)value;
+        Anchor = (Anchor)value;
     }
 
     public void SetRoi(Rectangle srcRoi)
@@ -319,7 +319,7 @@ public class OperationPattern : Operation
 
         SlicerFile.BoundingRectangle = Rectangle.Empty;
 
-        if (Anchor == Enumerations.Anchor.None) return true;
+        if (Anchor == Anchor.None) return true;
         var operationMove = new OperationMove(SlicerFile, Anchor)
         {
             LayerIndexStart = LayerIndexStart,

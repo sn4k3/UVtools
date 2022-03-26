@@ -9,9 +9,9 @@
 
 using System;
 
-namespace UVtools.Core.Extensions;
+namespace UVtools.Core.Converters;
 
-public static class TimeExtensions
+public static class TimeConverter
 {
     /// <summary>
     /// Converts seconds to milliseconds

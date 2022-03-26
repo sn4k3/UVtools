@@ -41,7 +41,7 @@ public class OperationDoubleExposure : Operation
     #endregion
 
     #region Overrides
-    public override Enumerations.LayerRangeSelection StartLayerRangeSelection => Enumerations.LayerRangeSelection.Bottom;
+    public override LayerRangeSelection StartLayerRangeSelection => LayerRangeSelection.Bottom;
     public override string IconClass => "fas fa-grip-lines";
     public override string Title => "Double exposure";
     public override string Description =>

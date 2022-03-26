@@ -15,6 +15,8 @@ using System.Drawing;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Text.Json.Serialization;
+using System.Xml.Serialization;
 using K4os.Compression.LZ4;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
@@ -649,6 +651,8 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
     /// <summary>
     /// Gets or sets a new image instance
     /// </summary>
+    [XmlIgnore]
+    [JsonInclude]
     public Mat LayerMat
     {
         get
@@ -728,6 +732,8 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
     /// <summary>
     /// Gets a new Brg image instance
     /// </summary>
+    [XmlIgnore]
+    [JsonInclude]
     public Mat BrgMat
     {
         get
@@ -1087,20 +1093,20 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
         WaitTimeAfterLift = 0;
     }
 
-    public string FormatFileName(string prepend  = "", byte padDigits = 0, Enumerations.IndexStartNumber layerIndexStartNumber = default, string appendExt = ".png")
+    public string FormatFileName(string prepend  = "", byte padDigits = 0, IndexStartNumber layerIndexStartNumber = default, string appendExt = ".png")
     {
         var index = Index;
-        if (layerIndexStartNumber == Enumerations.IndexStartNumber.One)
+        if (layerIndexStartNumber == IndexStartNumber.One)
         {
             index++;
         }
         return $"{prepend}{index.ToString().PadLeft(padDigits, '0')}{appendExt}";
     }
 
-    public string FormatFileName(byte padDigits, Enumerations.IndexStartNumber layerIndexStartNumber = default, string appendExt = ".png")
+    public string FormatFileName(byte padDigits, IndexStartNumber layerIndexStartNumber = default, string appendExt = ".png")
         => FormatFileName(string.Empty, padDigits, layerIndexStartNumber, appendExt);
     
-    public string FormatFileNameWithLayerDigits(string prepend = "", Enumerations.IndexStartNumber layerIndexStartNumber = default, string appendExt = ".png")
+    public string FormatFileNameWithLayerDigits(string prepend = "", IndexStartNumber layerIndexStartNumber = default, string appendExt = ".png")
         => FormatFileName(prepend, SlicerFile.LayerDigits, layerIndexStartNumber, appendExt);
     
 

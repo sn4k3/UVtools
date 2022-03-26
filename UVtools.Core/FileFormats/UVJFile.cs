@@ -278,7 +278,7 @@ public class UVJFile : FileFormat
         }
     }
 
-    public override Enumerations.FlipDirection DisplayMirror { get; set; }
+    public override FlipDirection DisplayMirror { get; set; }
 
     public override byte AntiAliasing
     {
@@ -485,7 +485,7 @@ public class UVJFile : FileFormat
             JsonSettings.Layers.Add(new LayerDef(this[layerIndex]));
         }
 
-        using var outputFile = ZipFile.Open(FileFullPath!, ZipArchiveMode.Create);
+        using var outputFile = ZipFile.Open(TemporaryOutputFileFullPath, ZipArchiveMode.Create);
         outputFile.PutFileContent(FileConfigName, JsonSerializer.SerializeToUtf8Bytes(JsonSettings, JsonExtensions.SettingsIndent), ZipArchiveMode.Create);
 
         if (CreatedThumbnailsCount > 0)
@@ -502,7 +502,7 @@ public class UVJFile : FileFormat
             stream.Close();
         }
 
-        EncodeLayersInZip(outputFile, 8, Enumerations.IndexStartNumber.Zero, progress, FolderImageName);
+        EncodeLayersInZip(outputFile, 8, IndexStartNumber.Zero, progress, FolderImageName);
     }
 
     protected override void DecodeInternally(OperationProgress progress)
@@ -566,7 +566,7 @@ public class UVJFile : FileFormat
             JsonSettings.Layers.Add(new LayerDef(this[layerIndex]));
         }
 
-        using var outputFile = ZipFile.Open(FileFullPath!, ZipArchiveMode.Update);
+        using var outputFile = ZipFile.Open(TemporaryOutputFileFullPath, ZipArchiveMode.Update);
         outputFile.PutFileContent(FileConfigName, JsonSerializer.SerializeToUtf8Bytes(JsonSettings, JsonExtensions.SettingsIndent), ZipArchiveMode.Update);
 
         //Decode(FileFullPath, progress);

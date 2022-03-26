@@ -78,7 +78,7 @@ public class ImageFile : FileFormat
 
     protected override void EncodeInternally(OperationProgress progress)
     {
-        this[0].LayerMat.Save(FileFullPath);
+        this[0].LayerMat.Save(TemporaryOutputFileFullPath);
     }
 
     protected override void DecodeInternally(OperationProgress progress)
@@ -103,7 +103,7 @@ public class ImageFile : FileFormat
 
     protected override void PartialSaveInternally(OperationProgress progress)
     {
-        this[0].LayerMat.Save(FileFullPath);
+        this[0].LayerMat.Save(TemporaryOutputFileFullPath);
     }
 
     public override FileFormat Convert(Type to, string fileFullPath, uint version = 0, OperationProgress? progress = null)

@@ -16,7 +16,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
-using UVtools.Core.Extensions;
+using UVtools.Core.Converters;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Layers;
 using UVtools.Core.Objects;
@@ -51,7 +51,7 @@ public class GCodeBuilder : BindableBase
     public enum GCodePositioningTypes : byte
     {
         Absolute,
-        Partial
+        Relative
     }
 
     public enum GCodeTimeUnits : byte
@@ -317,15 +317,74 @@ public class GCodeBuilder : BindableBase
         AppendLineIfCanComment(BeginStartGCodeComments);
         AppendUnitsMmG21();
         AppendPositioningType();
-        AppendLightOffM106();
         AppendMotorsOn();
+        AppendLightOffM106();
         AppendClearImage();
         AppendHomeZG28();
         AppendLineIfCanComment(EndStartGCodeComments);
         AppendLine();
     }
 
-    public void AppendEndGCode(float raiseZ = 0, float feedRate = 0)
+    public void AppendEndGCode(FileFormat slicerFile)
+    {
+        AppendLineIfCanComment(BeginEndGCodeComments);
+        AppendLightOffM106();
+
+        var lastLayer = slicerFile.LastLayer;
+
+        if (lastLayer is not null && lastLayer.PositionZ < slicerFile.MachineZ)
+        {
+            float lastLiftHeight = Math.Max(4, lastLayer.LiftHeight);
+            float lastPosition = Math.Min(Layer.RoundHeight(lastLayer.PositionZ + lastLiftHeight), slicerFile.MachineZ);
+
+            var lift = new List<(float z, float feedrate)>();
+            switch (_gCodePositioningType)
+            {
+                case GCodePositioningTypes.Absolute:
+                    lift.Add((lastPosition, ConvertFromMillimetersPerMinute(slicerFile.LiftSpeed)));
+                    break;
+                case GCodePositioningTypes.Relative:
+                    lift.Add((lastLiftHeight, ConvertFromMillimetersPerMinute(slicerFile.LiftSpeed)));
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+
+            AppendLiftMoveGx(lift, new List<(float z, float feedrate)>(), 0, 0, lastLayer);
+
+            if (lastPosition < slicerFile.MachineZ)
+            {
+                float finalRaiseZPositionRelative = Layer.RoundHeight(slicerFile.MachineZ - lastPosition);
+                var finalRaiseZPosition = _gCodePositioningType switch
+                {
+                    GCodePositioningTypes.Relative => finalRaiseZPositionRelative,
+                    _ => slicerFile.MachineZ
+                };
+
+
+                if (finalRaiseZPositionRelative > 0)
+                {
+                    if (_endGCodeMoveCommand == GCodeMoveCommands.G0)
+                        AppendMoveG0(finalRaiseZPosition, ConvertFromMillimetersPerMinute(slicerFile.MaximumSpeed));
+                    else
+                        AppendMoveG1(finalRaiseZPosition, ConvertFromMillimetersPerMinute(slicerFile.MaximumSpeed));
+
+                    if (_syncMovementsWithDelay)
+                    {
+                        var seconds = OperationCalculator.LightOffDelayC.CalculateSecondsLiftOnly(
+                            finalRaiseZPositionRelative + lastLiftHeight, slicerFile.MaximumSpeed, 0.75f);
+                        var time = ConvertFromSeconds(seconds);
+                        if (seconds > 0) AppendWaitG4($"0{time}", "Sync movement");
+                    }
+                }
+            }
+        }
+
+        AppendMotorsOff();
+        AppendLineIfCanComment(EndEndGCodeComments);
+    }
+
+    public void AppendEndGCode(float raiseZ = 0, float feedRate = 0, float absRaiseZ = 0, float rawSpeed = 0)
     {
         AppendLineIfCanComment(BeginEndGCodeComments);
         AppendLightOffM106();
@@ -335,6 +394,13 @@ public class GCodeBuilder : BindableBase
                 AppendMoveG0(raiseZ, feedRate);
             else
                 AppendMoveG1(raiseZ, feedRate);
+
+            if (_syncMovementsWithDelay)
+            {
+                var seconds = OperationCalculator.LightOffDelayC.CalculateSecondsLiftOnly(absRaiseZ, rawSpeed, 0.75f);
+                var time = ConvertFromSeconds(seconds);
+                AppendWaitG4($"0{time}", "Sync movement");
+            }
         }
 
         AppendMotorsOff();
@@ -353,7 +419,7 @@ public class GCodeBuilder : BindableBase
             case GCodePositioningTypes.Absolute:
                 AppendLine(CommandPositioningAbsoluteG90);
                 break;
-            case GCodePositioningTypes.Partial:
+            case GCodePositioningTypes.Relative:
                 AppendLine(CommandPositioningPartialG91);
                 break;
             default:
@@ -429,7 +495,7 @@ public class GCodeBuilder : BindableBase
             AppendWaitG4(waitAfterLift, "Wait after lift");
         }
 
-        if (retracts.Count > 0 || retracts.All(tuple => tuple.z != 0))
+        if (retracts.Count > 0 && retracts.All(tuple => tuple.z != 0))
         {
             for (var i = 0; i < retracts.Count; i++)
             {
@@ -443,11 +509,11 @@ public class GCodeBuilder : BindableBase
                 var time = ConvertFromSeconds(seconds);
                 AppendWaitG4($"0{time}", "Sync movement");
             }
-        }
 
-        if (waitAfterRetract > 0)
-        {
-            AppendWaitG4(waitAfterRetract, "Wait after retract");
+            if (waitAfterRetract > 0)
+            {
+                AppendWaitG4(waitAfterRetract, "Wait after retract");
+            }
         }
     }
 
@@ -486,7 +552,7 @@ public class GCodeBuilder : BindableBase
             AppendWaitG4(waitAfterLift, "Wait after lift");
         }
 
-        if (retracts.Count > 0 || retracts.All(tuple => tuple.z != 0))
+        if (retracts.Count > 0 && retracts.All(tuple => tuple.z != 0))
         {
             for (var i = 0; i < retracts.Count; i++)
             {
@@ -500,11 +566,11 @@ public class GCodeBuilder : BindableBase
                 var time = ConvertFromSeconds(seconds);
                 AppendWaitG4($"0{time}", "Sync movement");
             }
-        }
 
-        if (waitAfterRetract > 0)
-        {
-            AppendWaitG4(waitAfterRetract, "Wait after retract");
+            if (waitAfterRetract > 0)
+            {
+                AppendWaitG4(waitAfterRetract, "Wait after retract");
+            }
         }
     }
 
@@ -637,7 +703,7 @@ public class GCodeBuilder : BindableBase
                     if (retractHeight > 0 && absRetractPos >= layer.PositionZ) retracts.Add((absRetractPos, retractSpeed));
                     if (retractHeight2 > 0 && absRetractPos > layer.PositionZ) retracts.Add((layer.PositionZ, retractSpeed2));
                     break;
-                case GCodePositioningTypes.Partial:
+                case GCodePositioningTypes.Relative:
                     var partialLiftPos = Layer.RoundHeight(layer.PositionZ - lastZPosition + liftHeight);
                     if (liftHeight > 0)
                     {
@@ -680,7 +746,7 @@ public class GCodeBuilder : BindableBase
                     case GCodePositioningTypes.Absolute:
                         AppendMoveGx(layer.PositionZ, lastZPosition < layer.PositionZ ? liftSpeed : retractSpeed);
                         break;
-                    case GCodePositioningTypes.Partial:
+                    case GCodePositioningTypes.Relative:
                         AppendMoveGx(Layer.RoundHeight(layer.PositionZ - lastZPosition), lastZPosition < layer.PositionZ ? liftSpeed : retractSpeed);
                         break;
                 }
@@ -697,17 +763,7 @@ public class GCodeBuilder : BindableBase
             lastZPosition = layer.PositionZ;
         }
 
-        float finalRaiseZPosition = Math.Max(lastZPosition, slicerFile.MachineZ);
-        switch (GCodePositioningType)
-        {
-
-            case GCodePositioningTypes.Partial:
-                finalRaiseZPosition = Layer.RoundHeight(finalRaiseZPosition - lastZPosition);
-                break;
-        }
-
-
-        AppendEndGCode(finalRaiseZPosition, ConvertFromMillimetersPerMinute(slicerFile.RetractSpeed));
+        AppendEndGCode(slicerFile);
     }
 
     public void RebuildGCode(FileFormat slicerFile, object[]? configs, string separator = ":")
@@ -746,7 +802,7 @@ public class GCodeBuilder : BindableBase
         while ((line = reader.ReadLine()) != null)
         {
             if (line.StartsWith(CommandPositioningAbsoluteG90.Command)) return GCodePositioningTypes.Absolute;
-            if (line.StartsWith(CommandPositioningPartialG91.Command)) return GCodePositioningTypes.Partial;
+            if (line.StartsWith(CommandPositioningPartialG91.Command)) return GCodePositioningTypes.Relative;
         }
 
         return _gCodePositioningType;
@@ -797,7 +853,7 @@ public class GCodeBuilder : BindableBase
 
             if (line.StartsWith(CommandPositioningPartialG91.Command))
             {
-                positionType = GCodePositioningTypes.Partial;
+                positionType = GCodePositioningTypes.Relative;
                 continue;
             }
 
@@ -1098,7 +1154,7 @@ public class GCodeBuilder : BindableBase
         return _gCodeTimeUnit switch
         {
             GCodeTimeUnits.Seconds => seconds,
-            GCodeTimeUnits.Milliseconds => TimeExtensions.SecondsToMilliseconds(seconds),
+            GCodeTimeUnits.Milliseconds => TimeConverter.SecondsToMilliseconds(seconds),
             _ => throw new InvalidExpressionException($"Unhandled time unit for {_gCodeTimeUnit}")
         };
     }
@@ -1129,7 +1185,7 @@ public class GCodeBuilder : BindableBase
         return _gCodeTimeUnit switch
         {
             GCodeTimeUnits.Seconds => time,
-            GCodeTimeUnits.Milliseconds => TimeExtensions.MillisecondsToSeconds(time),
+            GCodeTimeUnits.Milliseconds => TimeConverter.MillisecondsToSeconds(time),
             _ => throw new InvalidExpressionException($"Unhandled time unit for {_gCodeTimeUnit}")
         };
     }

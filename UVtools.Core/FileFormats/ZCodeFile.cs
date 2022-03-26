@@ -13,14 +13,13 @@ using Org.BouncyCastle.Crypto.Engines;
 using Org.BouncyCastle.OpenSsl;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Xml.Serialization;
+using UVtools.Core.Converters;
 using UVtools.Core.Extensions;
 using UVtools.Core.GCode;
 using UVtools.Core.Layers;
@@ -86,10 +85,10 @@ public class ZCodePrint
             public float LiftSpeed { get; set; } = FileFormat.DefaultLiftSpeed;
 
             [XmlAttribute("cooldown_bottom")]
-            public uint BottomLightOffDelay { get; set; }
+            public uint BottomWaitTimeBeforeCure { get; set; }
 
             [XmlAttribute("cooldown")]
-            public uint LightOffDelay { get; set; }
+            public uint WaitTimeBeforeCure { get; set; }
 
             [XmlAttribute("thickness")]
             public float LayerHeight { get; set; } = FileFormat.DefaultLayerHeight;
@@ -279,7 +278,7 @@ public class ZCodeFile : FileFormat
         }
     }
 
-    public override Enumerations.FlipDirection DisplayMirror => Enumerations.FlipDirection.Vertically;
+    public override FlipDirection DisplayMirror => FlipDirection.Vertically;
 
     public override byte AntiAliasing
     {
@@ -323,40 +322,40 @@ public class ZCodeFile : FileFormat
 
     public override float BottomWaitTimeBeforeCure
     {
-        get => TimeExtensions.MillisecondsToSeconds(ManifestFile.Profile.Slice.BottomLightOffDelay);
+        get => TimeConverter.MillisecondsToSeconds(ManifestFile.Profile.Slice.BottomWaitTimeBeforeCure);
         set
         {
-            ManifestFile.Profile.Slice.BottomLightOffDelay = TimeExtensions.SecondsToMillisecondsUint(value);
+            ManifestFile.Profile.Slice.BottomWaitTimeBeforeCure = TimeConverter.SecondsToMillisecondsUint(value);
             base.BottomWaitTimeBeforeCure = base.BottomLightOffDelay = value;
         }
     }
 
     public override float WaitTimeBeforeCure
     {
-        get => TimeExtensions.MillisecondsToSeconds(ManifestFile.Profile.Slice.LightOffDelay);
+        get => TimeConverter.MillisecondsToSeconds(ManifestFile.Profile.Slice.WaitTimeBeforeCure);
         set
         {
-            ManifestFile.Profile.Slice.LightOffDelay = TimeExtensions.SecondsToMillisecondsUint(value);
+            ManifestFile.Profile.Slice.WaitTimeBeforeCure = TimeConverter.SecondsToMillisecondsUint(value);
             base.WaitTimeBeforeCure = base.LightOffDelay = value;
         }
     }
 
     public override float BottomExposureTime
     {
-        get => TimeExtensions.MillisecondsToSeconds(ManifestFile.Profile.Slice.BottomExposureTime);
+        get => TimeConverter.MillisecondsToSeconds(ManifestFile.Profile.Slice.BottomExposureTime);
         set
         {
-            ManifestFile.Profile.Slice.BottomExposureTime = TimeExtensions.SecondsToMillisecondsUint(value);
+            ManifestFile.Profile.Slice.BottomExposureTime = TimeConverter.SecondsToMillisecondsUint(value);
             base.BottomExposureTime = value;
         }
     }
 
     public override float ExposureTime
     {
-        get => TimeExtensions.MillisecondsToSeconds(ManifestFile.Profile.Slice.ExposureTime);
+        get => TimeConverter.MillisecondsToSeconds(ManifestFile.Profile.Slice.ExposureTime);
         set
         {
-            ManifestFile.Profile.Slice.ExposureTime = TimeExtensions.SecondsToMillisecondsUint(value);
+            ManifestFile.Profile.Slice.ExposureTime = TimeConverter.SecondsToMillisecondsUint(value);
             base.ExposureTime = value;
         }
     }
@@ -471,7 +470,7 @@ public class ZCodeFile : FileFormat
 
     protected override void EncodeInternally(OperationProgress progress)
     {
-        using var outputFile = ZipFile.Open(FileFullPath!, ZipArchiveMode.Create);
+        using var outputFile = ZipFile.Open(TemporaryOutputFileFullPath, ZipArchiveMode.Create);
         if (Thumbnails.Length > 0 && Thumbnails[0] is not null)
         {
             using var thumbnailsStream = outputFile.CreateEntry(PreviewFilename).Open();
@@ -479,7 +478,7 @@ public class ZCodeFile : FileFormat
             thumbnailsStream.Close();
         }
 
-        EncodeLayersInZip(outputFile, Enumerations.IndexStartNumber.One, progress);
+        EncodeLayersInZip(outputFile, IndexStartNumber.One, progress);
 
         var entry = outputFile.CreateEntry(ManifestFilename);
         using (var stream = entry.Open())
@@ -546,7 +545,7 @@ public class ZCodeFile : FileFormat
 
         Init(ManifestFile.Job.LayerCount, DecodeType == FileDecodeType.Partial);
 
-        DecodeLayersFromZip(inputFile, Enumerations.IndexStartNumber.One, progress);
+        DecodeLayersFromZip(inputFile, IndexStartNumber.One, progress);
 
         GCode!.ParseLayersFromGCode(this);
 
@@ -560,7 +559,7 @@ public class ZCodeFile : FileFormat
 
     protected override void PartialSaveInternally(OperationProgress progress)
     {
-        using var outputFile = ZipFile.Open(FileFullPath!, ZipArchiveMode.Update);
+        using var outputFile = ZipFile.Open(TemporaryOutputFileFullPath, ZipArchiveMode.Update);
 
         var entriesToRemove = outputFile.Entries.Where(zipEntry => zipEntry.Name.EndsWith(".gcode") || zipEntry.Name.EndsWith(".xml")).ToArray();
         foreach (var zipEntry in entriesToRemove)

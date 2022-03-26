@@ -363,9 +363,9 @@ public class OSLAFile : FileFormat
         }
     }
 
-    public override Enumerations.FlipDirection DisplayMirror
+    public override FlipDirection DisplayMirror
     {
-        get => (Enumerations.FlipDirection)HeaderSettings.DisplayMirror;
+        get => (FlipDirection)HeaderSettings.DisplayMirror;
         set
         {
             HeaderSettings.DisplayMirror = (byte)value;
@@ -458,7 +458,7 @@ public class OSLAFile : FileFormat
     #region Methods
     protected override void EncodeInternally(OperationProgress progress)
     {
-        using var outputFile = new FileStream(FileFullPath!, FileMode.Create, FileAccess.Write);
+        using var outputFile = new FileStream(TemporaryOutputFileFullPath, FileMode.Create, FileAccess.Write);
         FileSettings.Update();
         var fileDefSize = Helpers.SerializeWriteFileStream(outputFile, FileSettings);
         HeaderSettings.TableSize = (uint)Helpers.Serializer.SizeOf(HeaderSettings);
@@ -680,7 +680,7 @@ public class OSLAFile : FileFormat
                     using var mat = DecodeImage(HeaderSettings.LayerDataType, layerBytes[layerIndex], Resolution);
                     layerBytes[layerIndex] = null!; // Clean
 
-                    this[layerIndex] = new Layer((uint)layerIndex, mat, this);
+                    _layers[layerIndex] = new Layer((uint)layerIndex, mat, this);
 
                     progress.LockAndIncrement();
                 });
@@ -703,7 +703,7 @@ public class OSLAFile : FileFormat
 
     protected override void PartialSaveInternally(OperationProgress progress)
     {
-        using var outputFile = new FileStream(FileFullPath!, FileMode.Open, FileAccess.Write);
+        using var outputFile = new FileStream(TemporaryOutputFileFullPath, FileMode.Open, FileAccess.Write);
         outputFile.Seek(0, SeekOrigin.Begin);
         FileSettings.Update();
         Helpers.SerializeWriteFileStream(outputFile, FileSettings);

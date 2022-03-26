@@ -12,74 +12,102 @@ using System.ComponentModel;
 
 namespace UVtools.Core;
 
-public class Enumerations
+/// <summary>
+/// Gets index start number, if starts on 0 or 1
+/// </summary>
+public enum IndexStartNumber : byte
+{
+    Zero,
+    One
+}
+
+public enum LayerRangeSelection : byte
+{
+    None,
+    All,
+    Current,
+    Bottom,
+    Normal,
+    First,
+    Last
+}
+
+public enum FlipDirection : byte
+{
+    None,
+    Horizontally,
+    Vertically,
+    Both,
+}
+
+public enum RotateDirection : sbyte
+{
+    [Description("None")]
+    None = -1,
+    /// <summary>Rotate 90 degrees clockwise (0)</summary>
+    [Description("Rotate 90º CW")]
+    Rotate90Clockwise = 0,
+    /// <summary>Rotate 180 degrees clockwise (1)</summary>
+    [Description("Rotate 180º")]
+    Rotate180 = 1,
+    /// <summary>Rotate 270 degrees clockwise (2)</summary>
+    [Description("Rotate 90º CCW")]
+    Rotate90CounterClockwise = 2,
+}
+
+public enum Anchor : byte
+{
+    TopLeft, TopCenter, TopRight,
+    MiddleLeft, MiddleCenter, MiddleRight,
+    BottomLeft, BottomCenter, BottomRight,
+    None
+}
+
+public enum LightOffDelaySetMode : byte
+{
+    [Description("Set the light-off with an extra delay")]
+    UpdateWithExtraDelay,
+
+    [Description("Set the light-off without an extra delay")]
+    UpdateWithoutExtraDelay,
+
+    [Description("Set the light-off to zero")]
+    SetToZero,
+
+    [Description("Disabled")]
+    NoAction
+}
+
+public enum SpeedUnit : byte
 {
     /// <summary>
-    /// Gets index start number
+    /// mm/s
     /// </summary>
-    public enum IndexStartNumber : byte
-    {
-        Zero,
-        One
-    }
+    MillimetersPerSecond,
+    /// <summary>
+    /// mm/m
+    /// </summary>
+    MillimetersPerMinute,
+    /// <summary>
+    /// cm/m
+    /// </summary>
+    CentimetersPerMinute,
+}
 
-    public enum LayerRangeSelection : byte
-    {
-        None,
-        All,
-        Current,
-        Bottom,
-        Normal,
-        First,
-        Last
-    }
+public enum TimeUnits : byte
+{
+    /// <summary>
+    /// ms
+    /// </summary>
+    Milliseconds,
+    /// <summary>
+    /// s
+    /// </summary>
+    Seconds
+}
 
-    public enum FlipDirection : byte
-    {
-        None,
-        Horizontally,
-        Vertically,
-        Both,
-    }
-
-    public enum RotateDirection : sbyte
-    {
-        [Description("None")]
-        None = -1,
-        /// <summary>Rotate 90 degrees clockwise (0)</summary>
-        [Description("Rotate 90º CW")]
-        Rotate90Clockwise = 0,
-        /// <summary>Rotate 180 degrees clockwise (1)</summary>
-        [Description("Rotate 180º")]
-        Rotate180 = 1,
-        /// <summary>Rotate 270 degrees clockwise (2)</summary>
-        [Description("Rotate 90º CCW")]
-        Rotate90CounterClockwise = 2,
-    }
-
-    public enum Anchor : byte
-    {
-        TopLeft, TopCenter, TopRight,
-        MiddleLeft, MiddleCenter, MiddleRight,
-        BottomLeft, BottomCenter, BottomRight,
-        None
-    }
-
-    public enum LightOffDelaySetMode : byte
-    {
-        [Description("Set the light-off with an extra delay")]
-        UpdateWithExtraDelay,
-
-        [Description("Set the light-off without an extra delay")]
-        UpdateWithoutExtraDelay,
-
-        [Description("Set the light-off to zero")]
-        SetToZero,
-
-        [Description("Disabled")]
-        NoAction
-    }
-
+public static class Enumerations
+{
     public static FlipType ToOpenCVFlipType(FlipDirection flip)
     {
         return flip switch

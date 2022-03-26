@@ -12,6 +12,7 @@ using System.Linq;
 using UVtools.Core.FileFormats;
 using UVtools.Core.MeshFormats;
 using UVtools.Core.Operations;
+using UVtools.Core.SystemOS;
 
 namespace UVtools.WPF;
 
@@ -25,6 +26,13 @@ public static class ConsoleArguments
     public static bool ParseArgs(string[] args)
     {
         if(args is null || args.Length == 0) return false;
+
+        if (args[0] is "--cmd" && args.Length > 1)
+        {
+            var newArgs = string.Join(' ', args[1..]);
+            SystemAware.StartProcess(Path.Combine(App.ApplicationPath, SystemAware.GetExecutableName("UVtoolsCmd")), newArgs);
+            return true;
+        }
 
         // Convert to other file
         if (args[0] is "-c" or "--convert")

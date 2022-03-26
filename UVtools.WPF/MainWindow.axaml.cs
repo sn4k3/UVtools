@@ -1401,6 +1401,18 @@ public partial class MainWindow : WindowEx
         IsGUIEnabled = false;
         ShowProgressWindow($"Opening: {fileNameOnly}");
 
+        /*var success = false;
+        try
+        {
+            await SlicerFile.DecodeAsync(fileName, fileDecodeType, Progress);
+            success = true;
+        }
+        catch (OperationCanceledException) { }
+        catch (Exception exception)
+        {
+            await this.MessageBoxError(exception.ToString(), "Error opening the file");
+        }*/
+
         var task = await Task.Factory.StartNew( () =>
         {
             try
@@ -1408,10 +1420,8 @@ public partial class MainWindow : WindowEx
                 SlicerFile.Decode(fileName, fileDecodeType, Progress);
                 return true;
             }
-            catch (OperationCanceledException)
-            {
-            }
-            catch (Exception exception)
+            catch (OperationCanceledException) {}
+            catch (Exception exception) 
             {
                 Dispatcher.UIThread.InvokeAsync(async () =>
                     await this.MessageBoxError(exception.ToString(), "Error opening the file"));
@@ -1626,15 +1636,15 @@ public partial class MainWindow : WindowEx
 
             if (Settings.LayerPreview.AutoFlipLayerIfMirrored)
             {
-                if (SlicerFile.DisplayMirror == Enumerations.FlipDirection.None)
+                if (SlicerFile.DisplayMirror == FlipDirection.None)
                 {
                     _showLayerImageFlipped = false;
                 }
                 else
                 {
                     _showLayerImageFlipped = true;
-                    _showLayerImageFlippedHorizontally = SlicerFile.DisplayMirror is Enumerations.FlipDirection.Horizontally or Enumerations.FlipDirection.Both;
-                    _showLayerImageFlippedVertically = SlicerFile.DisplayMirror is Enumerations.FlipDirection.Vertically or Enumerations.FlipDirection.Both;
+                    _showLayerImageFlippedHorizontally = SlicerFile.DisplayMirror is FlipDirection.Horizontally or FlipDirection.Both;
+                    _showLayerImageFlippedVertically = SlicerFile.DisplayMirror is FlipDirection.Vertically or FlipDirection.Both;
                 }
             }
         }
@@ -1910,44 +1920,25 @@ public partial class MainWindow : WindowEx
 
                 if(result != ButtonResult.Yes) return false;
             }
-
-            filepath = SlicerFile.FileFullPath;
         }
-
-        var oldFile = SlicerFile.FileFullPath;
-        var tempFile = filepath + FileFormat.TemporaryFileAppend;
 
         IsGUIEnabled = false;
         ShowProgressWindow($"Saving {Path.GetFileName(filepath)}");
-            
+
+        var oldFile = SlicerFile.FileFullPath;
+
         var task = await Task.Factory.StartNew( () =>
         {
             try
             {
-                SlicerFile.SaveAs(tempFile, Progress);
-                if (File.Exists(filepath))
-                {
-                    File.Delete(filepath);
-                }
-                File.Move(tempFile, filepath);
-                SlicerFile.FileFullPath = filepath;
+                SlicerFile.SaveAs(filepath, Progress);
                 return true;
             }
             catch (OperationCanceledException)
             {
-                SlicerFile.FileFullPath = oldFile;
-                if (File.Exists(tempFile))
-                {
-                    File.Delete(tempFile);
-                }
             }
             catch (Exception ex)
             {
-                SlicerFile.FileFullPath = oldFile;
-                if (File.Exists(tempFile))
-                {
-                    File.Delete(tempFile);
-                }
                 Dispatcher.UIThread.InvokeAsync(async () =>
                     await this.MessageBoxError(ex.ToString(), "Error while saving the file"));
             }

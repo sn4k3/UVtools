@@ -59,8 +59,8 @@ public sealed class OperationLayerExportImage : Operation
     private string _outputFolder = null!;
     private string _filename = "layer";
     private LayerExportImageTypes _imageType = LayerExportImageTypes.PNG;
-    private Enumerations.RotateDirection _rotateDirection = Enumerations.RotateDirection.None;
-    private Enumerations.FlipDirection _flipDirection = Enumerations.FlipDirection.None;
+    private RotateDirection _rotateDirection = RotateDirection.None;
+    private FlipDirection _flipDirection = FlipDirection.None;
     private bool _padLayerIndex = true;
     private bool _cropByRoi = true;
 
@@ -126,13 +126,13 @@ public sealed class OperationLayerExportImage : Operation
         set => RaiseAndSetIfChanged(ref _imageType, value);
     }
 
-    public Enumerations.RotateDirection RotateDirection
+    public RotateDirection RotateDirection
     {
         get => _rotateDirection;
         set => RaiseAndSetIfChanged(ref _rotateDirection, value);
     }
 
-    public Enumerations.FlipDirection FlipDirection
+    public FlipDirection FlipDirection
     {
         get => _flipDirection;
         set => RaiseAndSetIfChanged(ref _flipDirection, value);
@@ -189,17 +189,17 @@ public sealed class OperationLayerExportImage : Operation
                 matRoi = GetRoiOrDefault(mat);
             }
 
-            if (_flipDirection != Enumerations.FlipDirection.None)
+            if (_flipDirection != FlipDirection.None)
             {
                 CvInvoke.Flip(matRoi, matRoi, Enumerations.ToOpenCVFlipType(_flipDirection));
             }
 
-            if (_rotateDirection != Enumerations.RotateDirection.None)
+            if (_rotateDirection != RotateDirection.None)
             {
                 CvInvoke.Rotate(matRoi, matRoi, Enumerations.ToOpenCVRotateFlags(_rotateDirection));
             }
 
-            var filename = SlicerFile[layerIndex].FormatFileName(_filename, _padLayerIndex ? SlicerFile.LayerDigits : byte.MinValue, Enumerations.IndexStartNumber.Zero, string.Empty);
+            var filename = SlicerFile[layerIndex].FormatFileName(_filename, _padLayerIndex ? SlicerFile.LayerDigits : byte.MinValue, IndexStartNumber.Zero, string.Empty);
             var fileFullPath = Path.Combine(_outputFolder, $"{filename}.{_imageType.ToString().ToLower()}");
 
             if (_imageType != LayerExportImageTypes.SVG)

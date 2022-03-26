@@ -16,6 +16,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using UVtools.Core.Converters;
 using UVtools.Core.Extensions;
 using UVtools.Core.GCode;
 using UVtools.Core.Layers;
@@ -210,9 +211,9 @@ public class ZCodexFile : FileFormat
         set { }
     }
 
-    public override Enumerations.FlipDirection DisplayMirror
+    public override FlipDirection DisplayMirror
     {
-        get => Enumerations.FlipDirection.Horizontally;
+        get => FlipDirection.Horizontally;
         set { }
     }
 
@@ -256,30 +257,30 @@ public class ZCodexFile : FileFormat
     public override float BottomWaitTimeBeforeCure => WaitTimeBeforeCure;
     public override float WaitTimeBeforeCure
     {
-        get => TimeExtensions.MillisecondsToSeconds(ResinMetadataSettings.BlankingLayerTime);
+        get => TimeConverter.MillisecondsToSeconds(ResinMetadataSettings.BlankingLayerTime);
         set
         {
-            UserSettings.ExposureOffTime = ResinMetadataSettings.BlankingLayerTime = TimeExtensions.SecondsToMillisecondsUint(value);
+            UserSettings.ExposureOffTime = ResinMetadataSettings.BlankingLayerTime = TimeConverter.SecondsToMillisecondsUint(value);
             base.WaitTimeBeforeCure = base.LightOffDelay = value;
         }
     }
 
     public override float BottomExposureTime
     {
-        get => TimeExtensions.MillisecondsToSeconds(UserSettings.BottomLayerExposureTime);
+        get => TimeConverter.MillisecondsToSeconds(UserSettings.BottomLayerExposureTime);
         set
         {
-            ResinMetadataSettings.BottomLayersTime = UserSettings.BottomLayerExposureTime = TimeExtensions.SecondsToMillisecondsUint(value);
+            ResinMetadataSettings.BottomLayersTime = UserSettings.BottomLayerExposureTime = TimeConverter.SecondsToMillisecondsUint(value);
             base.BottomExposureTime = value;
         }
     }
 
     public override float ExposureTime
     {
-        get => TimeExtensions.MillisecondsToSeconds(UserSettings.LayerExposureTime);
+        get => TimeConverter.MillisecondsToSeconds(UserSettings.LayerExposureTime);
         set
         {
-            ResinMetadataSettings.LayerTime = UserSettings.LayerExposureTime = TimeExtensions.SecondsToMillisecondsUint(value);
+            ResinMetadataSettings.LayerTime = UserSettings.LayerExposureTime = TimeConverter.SecondsToMillisecondsUint(value);
             base.ExposureTime = value;
         }
     }
@@ -357,7 +358,7 @@ public class ZCodexFile : FileFormat
         GCode = new()
         {
             UseComments = true,
-            GCodePositioningType = GCodeBuilder.GCodePositioningTypes.Partial,
+            GCodePositioningType = GCodeBuilder.GCodePositioningTypes.Relative,
             GCodeSpeedUnit = GCodeBuilder.GCodeSpeedUnits.MillimetersPerMinute,
             GCodeTimeUnit = GCodeBuilder.GCodeTimeUnits.Milliseconds,
             GCodeShowImageType = GCodeBuilder.GCodeShowImageTypes.LayerIndex0Started,
@@ -389,7 +390,7 @@ public class ZCodexFile : FileFormat
             });
         }
 
-        using var outputFile = ZipFile.Open(FileFullPath!, ZipArchiveMode.Create);
+        using var outputFile = ZipFile.Open(TemporaryOutputFileFullPath, ZipArchiveMode.Create);
         outputFile.PutFileContent("ResinMetadata", JsonSerializer.SerializeToUtf8Bytes(ResinMetadataSettings, JsonExtensions.SettingsIndent), ZipArchiveMode.Create);
         outputFile.PutFileContent("UserSettingsData", JsonSerializer.SerializeToUtf8Bytes(UserSettings, JsonExtensions.SettingsIndent), ZipArchiveMode.Create);
         outputFile.PutFileContent("ZCodeMetadata", JsonSerializer.SerializeToUtf8Bytes(ZCodeMetadataSettings, JsonExtensions.SettingsIndent), ZipArchiveMode.Create);
@@ -401,7 +402,7 @@ public class ZCodexFile : FileFormat
             stream.Close();
         }
 
-        EncodeLayersInZip(outputFile, FolderImageName, 5, Enumerations.IndexStartNumber.Zero, progress, FolderImages);
+        EncodeLayersInZip(outputFile, FolderImageName, 5, IndexStartNumber.Zero, progress, FolderImages);
 
         GCode!.Clear();
 
@@ -486,7 +487,7 @@ public class ZCodexFile : FileFormat
             }
 
             Init(ResinMetadataSettings.TotalLayersCount, DecodeType == FileDecodeType.Partial);
-            DecodeLayersFromZip(inputFile, FolderImageName, Enumerations.IndexStartNumber.Zero, progress);
+            DecodeLayersFromZip(inputFile, FolderImageName, IndexStartNumber.Zero, progress);
 
             GCode!.Clear();
             using (TextReader tr = new StreamReader(entry.Open()))
@@ -571,7 +572,7 @@ M106 S0
                         /*if (DecodeType == FileDecodeType.Full)
                         {
                             using var stream = LayersSettings[layerIndex].LayerEntry!.Open();
-                            this[layerIndex] = new Layer((uint)layerIndex, stream, this);
+                            _layers[layerIndex] = new Layer((uint)layerIndex, stream, this);
                         }*/
 
                         this[layerIndex].PositionZ = currentHeight;
@@ -615,7 +616,7 @@ M106 S0
 
     protected override void PartialSaveInternally(OperationProgress progress)
     {
-        using var outputFile = ZipFile.Open(FileFullPath!, ZipArchiveMode.Update);
+        using var outputFile = ZipFile.Open(TemporaryOutputFileFullPath, ZipArchiveMode.Update);
         outputFile.PutFileContent("ResinMetadata", JsonSerializer.SerializeToUtf8Bytes(ResinMetadataSettings, JsonExtensions.SettingsIndent), ZipArchiveMode.Update);
         outputFile.PutFileContent("UserSettingsData", JsonSerializer.SerializeToUtf8Bytes(UserSettings, JsonExtensions.SettingsIndent), ZipArchiveMode.Update);
         outputFile.PutFileContent("ZCodeMetadata", JsonSerializer.SerializeToUtf8Bytes(ZCodeMetadataSettings, JsonExtensions.SettingsIndent), ZipArchiveMode.Update);

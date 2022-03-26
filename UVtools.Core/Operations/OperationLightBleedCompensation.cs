@@ -47,7 +47,7 @@ public class OperationLightBleedCompensation : Operation
 
     #region Overrides
 
-    public override Enumerations.LayerRangeSelection StartLayerRangeSelection => Enumerations.LayerRangeSelection.Normal;
+    public override LayerRangeSelection StartLayerRangeSelection => LayerRangeSelection.Normal;
     public override string IconClass => "mdi-lightbulb-on";
     public override string Title => "Light bleed compensation";
     public override string Description =>

@@ -316,9 +316,9 @@ public class FlashForgeSVGXFile : FileFormat
         }
     }
         
-    public override Enumerations.FlipDirection DisplayMirror
+    public override FlipDirection DisplayMirror
     {
-        get => Enumerations.FlipDirection.Vertically;
+        get => FlipDirection.Vertically;
         set {}
     }
 
@@ -456,7 +456,7 @@ public class FlashForgeSVGXFile : FileFormat
                                         "Please use other compatible slicer capable of output the correct information to load the file in here.", FileFullPath);
         }
 
-        using var outputFile = new FileStream(FileFullPath!, FileMode.Create, FileAccess.Write);
+        using var outputFile = new FileStream(TemporaryOutputFileFullPath, FileMode.Create, FileAccess.Write);
         outputFile.Seek(Helpers.Serializer.SizeOf(HeaderSettings), SeekOrigin.Begin);
 
         HeaderSettings.Preview1Address = 0;
@@ -723,14 +723,14 @@ public class FlashForgeSVGXFile : FileFormat
 
             }
 
-            this[layerIndex] = new Layer((uint)layerIndex, mat, this);
+            _layers[layerIndex] = new Layer((uint)layerIndex, mat, this);
             progress.LockAndIncrement();
         });
     }
 
     protected override void PartialSaveInternally(OperationProgress progress)
     {
-        using var outputFile = new FileStream(FileFullPath!, FileMode.Open, FileAccess.Write);
+        using var outputFile = new FileStream(TemporaryOutputFileFullPath, FileMode.Open, FileAccess.Write);
         outputFile.Seek(HeaderSettings.SVGDocumentAddress, SeekOrigin.Begin);
         outputFile.SetLength(outputFile.Position);
         outputFile.WriteString(SVGDocument.SerializeToString());

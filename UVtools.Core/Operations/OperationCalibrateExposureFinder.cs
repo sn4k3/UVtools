@@ -202,7 +202,7 @@ public sealed class OperationCalibrateExposureFinder : Operation
 
     public override bool CanROI => false;
 
-    public override Enumerations.LayerRangeSelection StartLayerRangeSelection => Enumerations.LayerRangeSelection.None;
+    public override LayerRangeSelection StartLayerRangeSelection => LayerRangeSelection.None;
     public override string IconClass => "mdi-timer-cog";
     public override string Title => "Exposure time finder";
     public override string Description =>
@@ -1162,7 +1162,7 @@ public sealed class OperationCalibrateExposureFinder : Operation
     {
         base.InitWithSlicerFile();
            
-        _mirrorOutput = SlicerFile.DisplayMirror != Enumerations.FlipDirection.None;
+        _mirrorOutput = SlicerFile.DisplayMirror != FlipDirection.None;
 
         if (SlicerFile.DisplayWidth > 0)
             DisplayWidth = (decimal)SlicerFile.DisplayWidth;
@@ -2237,7 +2237,7 @@ public sealed class OperationCalibrateExposureFinder : Operation
             if (_mirrorOutput)
             {
                 var flip = SlicerFile.DisplayMirror;
-                if (flip == Enumerations.FlipDirection.None) flip = Enumerations.FlipDirection.Horizontally;
+                if (flip == FlipDirection.None) flip = FlipDirection.Horizontally;
                 new OperationFlip(SlicerFile) { FlipDirection = Enumerations.ToOpenCVFlipType(flip) }.Execute(progress);
             }
         }

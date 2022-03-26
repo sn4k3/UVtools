@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29926.136
+# Visual Studio Version 17
+VisualStudioVersion = 17.1.32228.430
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "UVtools.InstallerMM", "UVtools.InstallerMM\UVtools.InstallerMM.wixproj", "{E53BAA5D-29A8-4287-B3AA-1AFF5A4BDC6C}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -24,6 +24,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UVtools.ScriptSample", "UVt
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UVtools.AvaloniaControls", "UVtools.AvaloniaControls\UVtools.AvaloniaControls.csproj", "{0858E09F-023D-4F9B-A0E9-802C26EF9C0A}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UVtools.Cmd", "UVtools.Cmd\UVtools.Cmd.csproj", "{D0733F51-0CB1-483B-8F93-36B815FBFFF3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -99,6 +101,18 @@ Global
 		{0858E09F-023D-4F9B-A0E9-802C26EF9C0A}.Release|x64.Build.0 = Release|Any CPU
 		{0858E09F-023D-4F9B-A0E9-802C26EF9C0A}.Release|x86.ActiveCfg = Release|Any CPU
 		{0858E09F-023D-4F9B-A0E9-802C26EF9C0A}.Release|x86.Build.0 = Release|Any CPU
+		{D0733F51-0CB1-483B-8F93-36B815FBFFF3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D0733F51-0CB1-483B-8F93-36B815FBFFF3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D0733F51-0CB1-483B-8F93-36B815FBFFF3}.Debug|x64.ActiveCfg = Debug|x64
+		{D0733F51-0CB1-483B-8F93-36B815FBFFF3}.Debug|x64.Build.0 = Debug|x64
+		{D0733F51-0CB1-483B-8F93-36B815FBFFF3}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{D0733F51-0CB1-483B-8F93-36B815FBFFF3}.Debug|x86.Build.0 = Debug|Any CPU
+		{D0733F51-0CB1-483B-8F93-36B815FBFFF3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D0733F51-0CB1-483B-8F93-36B815FBFFF3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D0733F51-0CB1-483B-8F93-36B815FBFFF3}.Release|x64.ActiveCfg = Release|x64
+		{D0733F51-0CB1-483B-8F93-36B815FBFFF3}.Release|x64.Build.0 = Release|x64
+		{D0733F51-0CB1-483B-8F93-36B815FBFFF3}.Release|x86.ActiveCfg = Release|Any CPU
+		{D0733F51-0CB1-483B-8F93-36B815FBFFF3}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

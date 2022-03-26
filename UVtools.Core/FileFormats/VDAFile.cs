@@ -284,13 +284,13 @@ public class VDAFile : FileFormat
 
     #region Methods
 
-    public override bool CanProcess(string fileFullPath)
+    public override bool CanProcess(string? fileFullPath)
     {
         if(!base.CanProcess(fileFullPath)) return false;
 
         try
         {
-            using var zip = ZipFile.Open(fileFullPath, ZipArchiveMode.Read);
+            using var zip = ZipFile.Open(fileFullPath!, ZipArchiveMode.Read);
             if (zip.Entries.Any(entry => entry.Name.EndsWith(".xml"))) return true;
         }
         catch (Exception e)
@@ -304,12 +304,12 @@ public class VDAFile : FileFormat
 
     protected override void EncodeInternally(OperationProgress progress)
     {
-        using var outputFile = ZipFile.Open(FileFullPath!, ZipArchiveMode.Create);
+        using var outputFile = ZipFile.Open(TemporaryOutputFileFullPath, ZipArchiveMode.Create);
         var manifestFilename = Filename!.
             Replace($".{FileExtensions[0].Extension}{TemporaryFileAppend}", ".xml").
             Replace($".{FileExtensions[0].Extension}", ".xml");
 
-        EncodeLayersInZip(outputFile, 4, Enumerations.IndexStartNumber.One, progress);
+        EncodeLayersInZip(outputFile, 4, IndexStartNumber.One, progress);
         
         UpdateManifest();
 
@@ -341,12 +341,12 @@ public class VDAFile : FileFormat
 
 
         Init(ManifestFile.Slices.LayerCount, DecodeType == FileDecodeType.Partial);
-        DecodeLayersFromZip(inputFile, Enumerations.IndexStartNumber.One, progress);
+        DecodeLayersFromZip(inputFile, IndexStartNumber.One, progress);
     }
 
     protected override void PartialSaveInternally(OperationProgress progress)
     {
-        using var outputFile = ZipFile.Open(FileFullPath!, ZipArchiveMode.Update);
+        using var outputFile = ZipFile.Open(TemporaryOutputFileFullPath, ZipArchiveMode.Update);
         bool deleted;
 
         do
@@ -381,7 +381,7 @@ public class VDAFile : FileFormat
         for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
         {
             var layer = this[layerIndex];
-            ManifestFile.Layers.Add(new VDARoot.VDALayer(layerIndex, layer.PositionZ, layer.FormatFileName(4, Enumerations.IndexStartNumber.One)));
+            ManifestFile.Layers.Add(new VDARoot.VDALayer(layerIndex, layer.PositionZ, layer.FormatFileName(4, IndexStartNumber.One)));
         }
     }
     #endregion

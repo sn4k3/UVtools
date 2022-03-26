@@ -129,7 +129,13 @@ public sealed class FileExtension : IEquatable<FileExtension>, IEquatable<string
             ? FileFormat.FindByExtensionOrFilePath(Extension, createNewInstance)
             : FileFormat.FindByType(FileFormatType, createNewInstance);
 
-    public static FileExtension? Find(string extension) =>
-        FileFormat.FindExtension(extension);
+    public static FileExtension? Find(string extension)
+    {
+        if (string.IsNullOrWhiteSpace(extension)) return null;
+        if (extension.StartsWith('.')) extension = extension.Remove(1);
+        return FileFormat.FindExtension(extension);
+    }
+
+        
     #endregion
 }

@@ -100,15 +100,18 @@ if(header.Version >= 3){
         char SoftwareName[SoftwareNameSize];
         uint32 MaterialNameSize;
         char MaterialName[MaterialNameSize];
-        //ubyte offset[67-SoftwareNameSize-MaterialNameSize];
-        //ubyte offset[20];
-        uint Unknown;
-        uint Unknown;
-        uint Unknown;
-        uint Unknown;
-        ubyte Unknown;
-        ubyte LightPWM;
-        ushort Unknown;
+        ubyte DistortionCompensationEnabled;
+        uint DistortionCompensationThickness;
+        uint DistortionCompensationFocalLength;
+        ubyte XYAxisProfileCompensationEnabled;
+        ushort XYAxisProfileCompensation;
+        ubyte ZPenetrationCompensationEnabled;
+        ushort ZPenetrationCompensationLevel;
+        ubyte AntiAliasEnabled;
+        ubyte AntiAliasGreyMinValue;
+        ubyte AntiAliasGreyMaxValue;
+        ubyte ImageBlurEnabled;
+        ubyte ImageBlurLevel;
         ubyte rn0[2] <fgcolor=cBlack, bgcolor=cRed>;
     } slicerInfoV3;
 }

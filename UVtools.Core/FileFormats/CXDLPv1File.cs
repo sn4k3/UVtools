@@ -501,7 +501,7 @@ public class CXDLPv1File : FileFormat
 
     protected override void EncodeInternally(OperationProgress progress)
     {
-        using var outputFile = new FileStream(FileFullPath!, FileMode.Create, FileAccess.Write);
+        using var outputFile = new FileStream(TemporaryOutputFileFullPath, FileMode.Create, FileAccess.Write);
 
         if (ResolutionX == 2560 && ResolutionY == 1620)
         {
@@ -697,7 +697,7 @@ public class CXDLPv1File : FileFormat
 
                         linesBytes[layerIndex] = null!;
 
-                        this[layerIndex] = new Layer((uint)layerIndex, mat, this);
+                        _layers[layerIndex] = new Layer((uint)layerIndex, mat, this);
                     }
 
                     progress.LockAndIncrement();
@@ -721,7 +721,7 @@ public class CXDLPv1File : FileFormat
             offset += size.Area() * 2 + 2; // + page break
         }
 
-        using var outputFile = new FileStream(FileFullPath!, FileMode.Open, FileAccess.Write);
+        using var outputFile = new FileStream(TemporaryOutputFileFullPath, FileMode.Open, FileAccess.Write);
         outputFile.Seek(offset, SeekOrigin.Begin);
         Helpers.SerializeWriteFileStream(outputFile, SlicerInfoSettings);
     }

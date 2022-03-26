@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Globalization;
-using System.IO;
 using System.Runtime.ExceptionServices;
 using Avalonia;
 using Projektanker.Icons.Avalonia;
@@ -39,6 +38,39 @@ public static class Program
             return;
         }
 
+        //var mat = EmguExtensions.InitMat(new System.Drawing.Size(2000, 1080));
+        /*const byte z = 1;
+        int pixel = 1000;
+
+        for (int y = 0; y < mat.Height; y+=200)
+        for (int x = 0; x < mat.Width; x+=1)
+        {
+            float x1 = x / (float)mat.Width;
+            float y1 = y / (float)mat.Height;
+
+            //var result = Math.Sin(x1) * Math.Cos(y1) + Math.Sin(y1) * Math.Cos(1) + Math.Sin(1) * Math.Cos(x1);
+            //mat.SetByte((int) result* mat.Width, 255);
+
+            //CvInvoke.Circle(mat, new Point(x, (int)pixelY + y), 1, EmguExtensions.WhiteColor, -1, LineType.AntiAlias);
+        }*/
+
+
+        /*var sineHeight = 100;
+        var sineWidth = 100;
+        byte radius = 10;
+
+        for (int y1 = 0; y1 < mat.Height; y1 += sineHeight)
+        for (int x = 0; x < mat.Width; x++)
+        {
+            int y2 = (int)(Math.Sin((double)x / sineWidth) * sineHeight / 2.0 + sineHeight / 2.0 + radius);
+
+            CvInvoke.Circle(mat, new Point(x, y1+y2), radius, EmguExtensions.WhiteColor, -1, LineType.AntiAlias);          
+        }
+
+        CvInvoke.Imshow("gyroid", mat);
+        CvInvoke.WaitKey();
+        return;*/
+
         /*Slicer slicer = new(Size.Empty, SizeF.Empty, "D:\\Cube100x100x100.stl");
         var slices = slicer.SliceModel(0.05f);
         
@@ -50,6 +82,10 @@ public static class Program
             CvInvoke.FillPoly(mat, vec, EmguExtensions.WhiteColor, LineType.AntiAlias);
             mat.Save(@$"D:\SLICE\{slice.Key}.png");
         }*/
+
+        // PrusaSlicer to Machine.cs
+        //var machines = Machine.GetMachinesFromPrusaSlicer();
+        //var machinesText = Machine.GenerateMachinePresetsFromPrusaSlicer();
 
         // Add the event handler for handling non-UI thread exceptions to the event.
         AppDomain.CurrentDomain.UnhandledException += CurrentDomainOnUnhandledException;

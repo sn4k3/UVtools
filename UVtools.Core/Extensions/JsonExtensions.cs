@@ -5,7 +5,10 @@
  *  Everyone is permitted to copy and distribute verbatim copies
  *  of this license document, but changing it is not allowed.
  */
+
+using System.Text.Encodings.Web;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace UVtools.Core.Extensions;
 
@@ -13,6 +16,10 @@ public static class JsonExtensions
 {
     public static readonly JsonSerializerOptions SettingsIndent = new()
     {
-        WriteIndented = true
+        WriteIndented = true,
+        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+        Converters ={
+            new JsonStringEnumConverter()
+        },
     };
 }

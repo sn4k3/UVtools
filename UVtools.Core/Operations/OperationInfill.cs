@@ -10,6 +10,7 @@ using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
 using System;
+using System.ComponentModel;
 using System.Drawing;
 using System.Threading.Tasks;
 using UVtools.Core.Extensions;
@@ -21,11 +22,13 @@ namespace UVtools.Core.Operations;
 public sealed class OperationInfill : Operation
 {
     #region Members
-    private InfillAlgorithm _infillType = InfillAlgorithm.CubicDynamicLink;
+    private InfillAlgorithm _infillType = InfillAlgorithm.CubicCrossAlternating;
     private ushort _wallThickness = 64;
     private ushort _infillThickness = 45;
-    private ushort _infillSpacing = 160;
+    private ushort _infillSpacing = 200;
     private ushort _infillBrightness = 255;
+    private bool _reinforceInfill;
+
     #endregion
 
     #region Overrides
@@ -49,16 +52,24 @@ public sealed class OperationInfill : Operation
     public enum InfillAlgorithm
     {
         //Rhombus,
-        Cubic,
-        CubicCenterLink,
-        CubicDynamicLink,
-        CubicInterlinked,
+        [Description("Straight pillars (Weak)")]
+        Pillars,
+
+        [Description("Cubic cross: Fixed pilars with crossing sections (Optimal)")]
+        CubicCross,
+
+        [Description("Cubic alternating cross: Fixed pilars with crossing sections alternating in directions (Optimal)")]
+        CubicCrossAlternating,
+
+        [Description("Cubic star: Fixed pilars with crossing sections in star pattern (Strong)")]
+        CubicStar,
+
+        [Description("Honeycomb (Strong)")]
         Honeycomb
     }
     #endregion
 
     #region Properties
-    public static Array InfillAlgorithmTypes => Enum.GetValues(typeof(InfillAlgorithm));
     public InfillAlgorithm InfillType
     {
         get => _infillType;
@@ -89,9 +100,15 @@ public sealed class OperationInfill : Operation
         set => RaiseAndSetIfChanged(ref _infillSpacing, value);
     }
 
+    public bool ReinforceInfill
+    {
+        get => _reinforceInfill;
+        set => RaiseAndSetIfChanged(ref _reinforceInfill, value);
+    }
+
     public override string ToString()
     {
-        var result = $"[{_infillType}] [Wall: {_wallThickness}px] [B: {_infillBrightness}px] [T: {_infillThickness}px] [S: {_infillSpacing}px]" + LayerRangeString;
+        var result = $"[{_infillType}] [Wall: {_wallThickness}px] [B: {_infillBrightness}px] [T: {_infillThickness}px] [S: {_infillSpacing}px] [R: {_reinforceInfill}]" + LayerRangeString;
         if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
         return result;
     }
@@ -110,7 +127,7 @@ public sealed class OperationInfill : Operation
 
     private bool Equals(OperationInfill other)
     {
-        return _infillType == other._infillType && _wallThickness == other._wallThickness && _infillThickness == other._infillThickness && _infillSpacing == other._infillSpacing && _infillBrightness == other._infillBrightness;
+        return _infillType == other._infillType && _wallThickness == other._wallThickness && _infillThickness == other._infillThickness && _infillSpacing == other._infillSpacing && _infillBrightness == other._infillBrightness && _reinforceInfill == other._reinforceInfill;
     }
 
     public override bool Equals(object? obj)
@@ -120,7 +137,7 @@ public sealed class OperationInfill : Operation
 
     public override int GetHashCode()
     {
-        return HashCode.Combine((int) _infillType, _wallThickness, _infillThickness, _infillSpacing, _infillBrightness);
+        return HashCode.Combine((int) _infillType, _wallThickness, _infillThickness, _infillSpacing, _infillBrightness, _reinforceInfill);
     }
 
     #endregion
@@ -163,10 +180,10 @@ public sealed class OperationInfill : Operation
         using var mask = GetMask(mat);
         bool disposeTargetMask = true;
              
-        if (_infillType is InfillAlgorithm.Cubic 
-            or InfillAlgorithm.CubicCenterLink 
-            or InfillAlgorithm.CubicDynamicLink 
-            or InfillAlgorithm.CubicInterlinked)
+        if (_infillType is InfillAlgorithm.Pillars 
+            or InfillAlgorithm.CubicCross 
+            or InfillAlgorithm.CubicCrossAlternating 
+            or InfillAlgorithm.CubicStar)
         {
             using var infillPattern = EmguExtensions.InitMat(new Size(_infillSpacing, _infillSpacing));
             using var matPattern = mat.NewBlank();
@@ -180,8 +197,16 @@ public sealed class OperationInfill : Operation
                 accumulator += _infillSpacing;
 
                 if (accumulator >= layerIndex) break;
-                firstPattern = false;
-                accumulator += _infillThickness;
+
+                if (_reinforceInfill)
+                {
+                    firstPattern = false;
+                    accumulator += _infillThickness;
+                }
+                else
+                {
+                    //accumulator += _infillSpacing;
+                }
             }
 
             if (firstPattern)
@@ -212,10 +237,10 @@ public sealed class OperationInfill : Operation
                 int margin = (int) (InfillSpacing - accumulator + layerIndex) - thickness;
                 int marginInv = (int) (accumulator - layerIndex) - thickness;
 
-                if (_infillType == InfillAlgorithm.CubicCenterLink ||
-                    (_infillType == InfillAlgorithm.CubicDynamicLink &&
+                if (_infillType == InfillAlgorithm.CubicCross ||
+                    (_infillType == InfillAlgorithm.CubicCrossAlternating &&
                      dynamicCenter) ||
-                    _infillType == InfillAlgorithm.CubicInterlinked)
+                    _infillType == InfillAlgorithm.CubicStar)
                 {
 
                     CvInvoke.Rectangle(infillPattern,
@@ -239,8 +264,8 @@ public sealed class OperationInfill : Operation
                 }
 
 
-                if (_infillType == InfillAlgorithm.CubicInterlinked ||
-                    (_infillType == InfillAlgorithm.CubicDynamicLink &&
+                if (_infillType == InfillAlgorithm.CubicStar ||
+                    (_infillType == InfillAlgorithm.CubicCrossAlternating &&
                      !dynamicCenter))
                 {
                     CvInvoke.Rectangle(infillPattern,

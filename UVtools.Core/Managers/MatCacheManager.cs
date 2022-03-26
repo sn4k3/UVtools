@@ -51,12 +51,12 @@ public class MatCacheManager : IDisposable
     /// <summary>
     /// Gets the image rotation to cache
     /// </summary>
-    public Enumerations.RotateDirection Rotate { get; init; } = Enumerations.RotateDirection.None;
+    public RotateDirection Rotate { get; init; } = RotateDirection.None;
 
     /// <summary>
     /// Gets the image flip to cache
     /// </summary>
-    public Enumerations.FlipDirection Flip { get; init; } = Enumerations.FlipDirection.None;
+    public FlipDirection Flip { get; init; } = FlipDirection.None;
 
     /// <summary>
     /// Gets if striping anti-aliasing is enabled, cache will be threshold'ed
@@ -168,12 +168,12 @@ public class MatCacheManager : IDisposable
                     MatCache[currentCacheIndex] = new Mat[ElementsPerCache];
                     MatCache[currentCacheIndex][0] = SlicerFile[currentLayerIndex].LayerMat;
 
-                    if (Flip != Enumerations.FlipDirection.None)
+                    if (Flip != FlipDirection.None)
                     {
                         CvInvoke.Flip(MatCache[currentCacheIndex][0], MatCache[currentCacheIndex][0], Enumerations.ToOpenCVFlipType(Flip));
                     }
 
-                    if (Rotate != Enumerations.RotateDirection.None)
+                    if (Rotate != RotateDirection.None)
                     {
                         CvInvoke.Rotate(MatCache[currentCacheIndex][0], MatCache[currentCacheIndex][0], Enumerations.ToOpenCVRotateFlags(Rotate));
                     }

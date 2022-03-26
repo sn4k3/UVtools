@@ -311,9 +311,9 @@ public class PhotonSFile : FileFormat
         set { }
     }
 
-    public override Enumerations.FlipDirection DisplayMirror
+    public override FlipDirection DisplayMirror
     {
-        get => Enumerations.FlipDirection.Horizontally;
+        get => FlipDirection.Horizontally;
         set { }
     }
         
@@ -437,7 +437,7 @@ public class PhotonSFile : FileFormat
     protected override void EncodeInternally(OperationProgress progress)
     {
         //throw new NotSupportedException("PhotonS is read-only format, please use pws instead!");
-        using var outputFile = new FileStream(FileFullPath!, FileMode.Create, FileAccess.Write);
+        using var outputFile = new FileStream(TemporaryOutputFileFullPath, FileMode.Create, FileAccess.Write);
         outputFile.WriteSerialize(HeaderSettings);
         outputFile.WriteBytes(EncodeImage(DATATYPE_BGR565, Thumbnails[0]!));
         outputFile.WriteSerialize(LayerSettings);
@@ -526,7 +526,7 @@ public class PhotonSFile : FileFormat
                 Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), layerIndex =>
                 {
                     using var mat = layersDefinitions[layerIndex].Decode();
-                    this[layerIndex] = new Layer((uint)layerIndex, mat, this);
+                    _layers[layerIndex] = new Layer((uint)layerIndex, mat, this);
                     progress.LockAndIncrement();
                 });
             }
@@ -537,7 +537,7 @@ public class PhotonSFile : FileFormat
 
     protected override void PartialSaveInternally(OperationProgress progress)
     {
-        using var outputFile = new FileStream(FileFullPath!, FileMode.Open, FileAccess.Write);
+        using var outputFile = new FileStream(TemporaryOutputFileFullPath, FileMode.Open, FileAccess.Write);
         outputFile.Seek(0, SeekOrigin.Begin);
         Helpers.SerializeWriteFileStream(outputFile, HeaderSettings);
     }

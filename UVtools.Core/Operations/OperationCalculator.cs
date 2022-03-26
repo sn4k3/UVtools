@@ -32,7 +32,7 @@ public class OperationCalculator : Operation
 
     public override string ProgressAction => null!;
 
-    public override Enumerations.LayerRangeSelection StartLayerRangeSelection => Enumerations.LayerRangeSelection.None;
+    public override LayerRangeSelection StartLayerRangeSelection => LayerRangeSelection.None;
     public override bool CanROI => false;
 
     public override bool CanHaveProfiles => false;

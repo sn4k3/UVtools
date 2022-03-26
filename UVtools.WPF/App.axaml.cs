@@ -9,7 +9,6 @@
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -182,7 +181,7 @@ public class App : Application
                 LayerHeight = 0.05f,
                 Resolution = new (1440, 2560),
                 Display = new (68.04f, 120.96f),
-                DisplayMirror = Enumerations.FlipDirection.Horizontally,
+                DisplayMirror = FlipDirection.Horizontally,
                 MachineZ = 155,
                 BottomLayerCount = 3,
                 MachineName = "Epax X1"

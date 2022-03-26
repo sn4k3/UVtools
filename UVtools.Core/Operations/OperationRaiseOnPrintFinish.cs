@@ -28,7 +28,7 @@ public class OperationRaiseOnPrintFinish : Operation
 
     #region Overrides
 
-    public override Enumerations.LayerRangeSelection StartLayerRangeSelection => Enumerations.LayerRangeSelection.None;
+    public override LayerRangeSelection StartLayerRangeSelection => LayerRangeSelection.None;
     public override string IconClass => "fas fa-level-up-alt";
     public override string Title => "Raise platform on print finish";
     public override string Description =>
