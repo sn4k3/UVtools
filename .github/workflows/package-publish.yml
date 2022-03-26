@@ -5,7 +5,7 @@ on:
     types: [published]
 
 env:
-   PACKAGE_NAME_REGEX: .+win-x64.+\.msi
+   PACKAGE_NAME: .+win-x64.+\.msi
    PACKAGE_ID: PTRTECH.UVtools
    WINGET_TOKEN: ${{ secrets.WINGET_TOKEN }}
    NUGET_TOKEN: ${{ secrets.NUGET_TOKEN }}
@@ -29,9 +29,9 @@ jobs:
           }
           Write-Output "Version: ${version}"
           "VERSION=${version}" >> $env:GITHUB_ENV
-      - name: Set VERSION variable from tag
+      - name: Set INSTALLER_URL variable from release asset
         run: | 
-          $installerUrl = $github.event.release.assets | Where-Object -Property name -match "${PACKAGE_NAME_REGEX}" | Select -ExpandProperty browser_download_url -First 1
+          $installerUrl = $github.event.release.assets | Where-Object -Property name -match "${PACKAGE_NAME}" | Select -ExpandProperty browser_download_url -First 1
           if($null -eq $installerUrl)
           { 
              Write-Error "Installer URL not found on ${github.event.release.assets}"
