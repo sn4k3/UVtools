@@ -4,6 +4,12 @@ on:
   release:
     types: [published]
 
+env:
+   PACKAGE_NAME_REGEX: .+win-x64.+\.msi
+   PACKAGE_ID: PTRTECH.UVtools
+   WINGET_TOKEN: ${{ secrets.WINGET_TOKEN }}
+   NUGET_TOKEN: ${{ secrets.NUGET_TOKEN }}
+   
 jobs:
 
   winget:
@@ -11,16 +17,30 @@ jobs:
     runs-on: windows-latest
     timeout-minutes: 10
     steps:
-      - name: Submit package to Windows Package Manager Community Repository
-        run: |
-          Invoke-WebRequest -Uri https://aka.ms/wingetcreate/latest -OutFile wingetcreate.exe
-          $installerUrl = $github.event.release.assets | Where-Object -Property name -match '.+win-x64.+\.msi' | Select -ExpandProperty browser_download_url -First 1
-          if($null -eq $installerUrl){ exit 1 }
+      - name: Download WingetCreate.exe
+        run: iwr -Uri https://aka.ms/wingetcreate/latest -OutFile wingetcreate.exe
+      - name: Set VERSION variable from tag
+        run: | 
           $version = $github.event.release.tag_name.Replace('v', '')
-          if($version.Length -lt 5){ exit 2 }
-          .\wingetcreate.exe update PTRTECH.UVtools --version $version --urls $installerUrl --token ${WINGET_TOKEN} --submit
-    env:
-      WINGET_TOKEN: ${{ secrets.WINGET_TOKEN }}
+          if($version.Length -lt 5)
+          { 
+             Write-Error "Version $version is too short!"
+             exit -1 
+          }
+          Write-Output "Version: ${version}"
+          "VERSION=${version}" >> $env:GITHUB_ENV
+      - name: Set VERSION variable from tag
+        run: | 
+          $installerUrl = $github.event.release.assets | Where-Object -Property name -match "${PACKAGE_NAME_REGEX}" | Select -ExpandProperty browser_download_url -First 1
+          if($null -eq $installerUrl)
+          { 
+             Write-Error "Installer URL not found on ${github.event.release.assets}"
+             exit -1 
+          }
+          Write-Output "Installer url: ${installerUrl}"
+          "INSTALLER_URL=${installerUrl}" >> $env:GITHUB_ENV
+      - name: Submit package to Windows Package Manager Community Repository
+        run: .\wingetcreate.exe update ${PACKAGE_ID} --version ${VERSION} --urls ${INSTALLER_URL} --token ${WINGET_TOKEN} --submit
         
   nuget:
     name: Nuget - Publish package
@@ -35,7 +55,7 @@ jobs:
           git branch --remote --contains | grep origin/master
       - name: Set VERSION variable from tag
         run: | 
-          echo "VERSION=${{ github.event.release.tag_name }}" >> $GITHUB_ENV
+          VERSION=${{ github.event.release.tag_name }}
           echo "VERSION=${VERSION:1}" >> $GITHUB_ENV
       - name: Build
         run: dotnet build --configuration Release
@@ -43,5 +63,3 @@ jobs:
         run: dotnet pack UVtools.Core --configuration Release --no-build --output .
       - name: Push nuget.org
         run: dotnet nuget push UVtools.Core.${VERSION}.nupkg --source https://api.nuget.org/v3/index.json --api-key ${NUGET_TOKEN}
-    env:
-      NUGET_TOKEN: ${{ secrets.NUGET_TOKEN }}
