@@ -284,8 +284,8 @@ $foundHashTag = $false
 $sb = [System.Text.StringBuilder]::new()
 foreach($line in $changelog) {
     $line = $line.TrimEnd()
-    if($line -eq '') { continue }
-    if($line.StartsWith("##")) { 
+    if([string]::IsNullOrWhiteSpace($line)) { continue }
+    if($line.StartsWith('##')) { 
         if(!$foundHashTag)
         {
             $foundHashTag = $true
@@ -298,6 +298,7 @@ foreach($line in $changelog) {
     }
 }
 Write-Host $sb.ToString()
+Set-Content -Path "UVtools.Core/RELEASE_NOTES.md" -Value $sb.ToString()
 
 
 if($null -ne $enableNugetPublish -and $enableNugetPublish)
