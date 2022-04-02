@@ -407,6 +407,8 @@ public class CXDLPFile : FileFormat
         new(typeof(CXDLPFile), "cxdlp", "Creality CXDLP"),
     };
 
+    public override SpeedUnit FormatSpeedUnit => SpeedUnit.MillimetersPerSecond;
+
     public override PrintParameterModifier[]? PrintParameterModifiers { get; } =
     {
         PrintParameterModifier.BottomLayerCount,
@@ -577,8 +579,8 @@ public class CXDLPFile : FileFormat
 
     public override float BottomLiftSpeed
     {
-        get => SpeedConverter.Convert(SlicerInfoSettings.BottomLiftSpeed, SpeedUnit.MillimetersPerSecond, DefaultSpeedUnit);
-        set => base.BottomLiftSpeed = SlicerInfoSettings.BottomLiftSpeed = SlicerInfoSettings.BottomLiftSpeed = (ushort)SpeedConverter.Convert(value, DefaultSpeedUnit, SpeedUnit.MillimetersPerSecond);
+        get => SpeedConverter.Convert(SlicerInfoSettings.BottomLiftSpeed, FormatSpeedUnit, CoreSpeedUnit);
+        set => base.BottomLiftSpeed = SlicerInfoSettings.BottomLiftSpeed = SlicerInfoSettings.BottomLiftSpeed = (ushort)SpeedConverter.Convert(value, CoreSpeedUnit, FormatSpeedUnit);
     }
 
     public override float LiftHeight
@@ -589,16 +591,16 @@ public class CXDLPFile : FileFormat
 
     public override float LiftSpeed
     {
-        get => SpeedConverter.Convert(SlicerInfoSettings.LiftSpeed, SpeedUnit.MillimetersPerSecond, DefaultSpeedUnit);
-        set => base.LiftSpeed = SlicerInfoSettings.LiftSpeed = (ushort)SpeedConverter.Convert(value, DefaultSpeedUnit, SpeedUnit.MillimetersPerSecond);
+        get => SpeedConverter.Convert(SlicerInfoSettings.LiftSpeed, FormatSpeedUnit, CoreSpeedUnit);
+        set => base.LiftSpeed = SlicerInfoSettings.LiftSpeed = (ushort)SpeedConverter.Convert(value, CoreSpeedUnit, FormatSpeedUnit);
     }
 
     public override float BottomRetractSpeed => RetractSpeed;
 
     public override float RetractSpeed
     {
-        get => SpeedConverter.Convert(SlicerInfoSettings.RetractSpeed, SpeedUnit.MillimetersPerSecond, DefaultSpeedUnit);
-        set => base.RetractSpeed = SlicerInfoSettings.RetractSpeed = (ushort)SpeedConverter.Convert(value, DefaultSpeedUnit, SpeedUnit.MillimetersPerSecond);
+        get => SpeedConverter.Convert(SlicerInfoSettings.RetractSpeed, FormatSpeedUnit, CoreSpeedUnit);
+        set => base.RetractSpeed = SlicerInfoSettings.RetractSpeed = (ushort)SpeedConverter.Convert(value, CoreSpeedUnit, FormatSpeedUnit);
     }
 
     public override byte BottomLightPWM

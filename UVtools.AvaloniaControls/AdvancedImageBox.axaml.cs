@@ -10,6 +10,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Drawing;
 using System.Runtime.CompilerServices;
 using Avalonia;
@@ -1074,7 +1075,10 @@ public class AdvancedImageBox : UserControl
 
         HorizontalScrollBar.Scroll += ScrollBarOnScroll;
         VerticalScrollBar.Scroll += ScrollBarOnScroll;
-        ViewPort.PointerWheelChanged += FillContainerOnPointerWheelChanged;
+        ViewPort.PointerPressed += ViewPortOnPointerPressed;
+        ViewPort.PointerLeave += ViewPortOnPointerLeave;
+        ViewPort.PointerMoved += ViewPortOnPointerMoved;
+        ViewPort.PointerWheelChanged += ViewPortOnPointerWheelChanged;
     }
 
     private void InitializeComponent()
@@ -1088,7 +1092,6 @@ public class AdvancedImageBox : UserControl
     {
         if (!_canRender) return;
         if (renderOnlyCursorTracker && _trackerImage is null) return;
-                
         InvalidateVisual();
     }
 
@@ -1096,7 +1099,8 @@ public class AdvancedImageBox : UserControl
     {
         //Debug.WriteLine($"Render: {DateTime.Now.Ticks}");
         base.Render(context);
-
+        
+        var viewPortSize = ViewPortSize;
         // Draw Grid
         var gridCellSize = GridCellSize;
         if (ShowGrid & gridCellSize > 0 && (!IsHorizontalBarVisible || !IsVerticalBarVisible))
@@ -1105,11 +1109,11 @@ public class AdvancedImageBox : UserControl
             var gridColor = GridColor;
             var altColor = GridColorAlternate;
             var currentColor = gridColor;
-            for (int y = 0; y < ViewPortSize.Height; y += gridCellSize)
+            for (int y = 0; y < viewPortSize.Height; y += gridCellSize)
             {
                 var firstRowColor = currentColor;
 
-                for (int x = 0; x < ViewPortSize.Width; x += gridCellSize)
+                for (int x = 0; x < viewPortSize.Width; x += gridCellSize)
                 {
                     context.FillRectangle(currentColor, new Rect(x, y, gridCellSize, gridCellSize));
                     currentColor = ReferenceEquals(currentColor, gridColor) ? altColor : gridColor;
@@ -1127,15 +1131,17 @@ public class AdvancedImageBox : UserControl
 
         var image = Image;
         if (image is null) return;
+        var imageViewPort = GetImageViewPort();
+
+
         // Draw iamge
         context.DrawImage(image,
             GetSourceImageRegion(),
-            GetImageViewPort()
+            imageViewPort
         );
 
         var zoomFactor = ZoomFactor;
-
-
+        
         if (HaveTrackerImage && _pointerPosition.X >= 0 && _pointerPosition.Y >= 0)
         {
             var destSize = TrackerImageAutoZoom
@@ -1155,22 +1161,21 @@ public class AdvancedImageBox : UserControl
         // Draw pixel grid
         if (zoomFactor > PixelGridZoomThreshold && SizeMode == SizeModes.Normal)
         {
-            var viewport = GetImageViewPort();
             var offsetX = Offset.X % zoomFactor;
             var offsetY = Offset.Y % zoomFactor;
 
             Pen pen = new(PixelGridColor);
-            for (double x = viewport.X + zoomFactor - offsetX; x < viewport.Right; x += zoomFactor)
+            for (double x = imageViewPort.X + zoomFactor - offsetX; x < imageViewPort.Right; x += zoomFactor)
             {
-                context.DrawLine(pen, new Point(x, viewport.X), new Point(x, viewport.Bottom));
+                context.DrawLine(pen, new Point(x, imageViewPort.X), new Point(x, imageViewPort.Bottom));
             }
 
-            for (double y = viewport.Y + zoomFactor - offsetY; y < viewport.Bottom; y += zoomFactor)
+            for (double y = imageViewPort.Y + zoomFactor - offsetY; y < imageViewPort.Bottom; y += zoomFactor)
             {
-                context.DrawLine(pen, new Point(viewport.Y, y), new Point(viewport.Right, y));
+                context.DrawLine(pen, new Point(imageViewPort.Y, y), new Point(imageViewPort.Right, y));
             }
 
-            context.DrawRectangle(pen, viewport);
+            context.DrawRectangle(pen, imageViewPort);
         }
 
         if (!SelectionRegion.IsEmpty)
@@ -1178,7 +1183,7 @@ public class AdvancedImageBox : UserControl
             var rect = GetOffsetRectangle(SelectionRegion);
             var selectionColor = SelectionColor;
             context.FillRectangle(selectionColor, rect);
-            Color color = Color.FromArgb(255, selectionColor.Color.R, selectionColor.Color.G, selectionColor.Color.B);
+            var color = Color.FromArgb(255, selectionColor.Color.R, selectionColor.Color.G, selectionColor.Color.B);
             context.DrawRectangle(new Pen(color.ToUint32()), rect);
         }
     }
@@ -1248,7 +1253,7 @@ public class AdvancedImageBox : UserControl
         base.OnScrollChanged(e);
     }*/
 
-    private void FillContainerOnPointerWheelChanged(object? sender, PointerWheelEventArgs e)
+    private void ViewPortOnPointerWheelChanged(object? sender, PointerWheelEventArgs e)
     {
         e.Handled = true;
         if (Image is null) return;
@@ -1265,9 +1270,8 @@ public class AdvancedImageBox : UserControl
         }
     }
 
-    protected override void OnPointerPressed(PointerPressedEventArgs e)
+    private void ViewPortOnPointerPressed(object? sender, PointerPressedEventArgs e)
     {
-        base.OnPointerPressed(e);
         if (e.Handled
             || _isPanning
             || _isSelecting
@@ -1307,6 +1311,49 @@ public class AdvancedImageBox : UserControl
         _startMousePosition = location;
     }
 
+    /*protected override void OnPointerPressed(PointerPressedEventArgs e)
+    {
+        base.OnPointerPressed(e);
+        
+        if (e.Handled
+            || _isPanning
+            || _isSelecting
+            || Image is null) return;
+
+        var pointer = e.GetCurrentPoint(this);
+
+        if (SelectionMode != SelectionModes.None)
+        {
+            if (!(
+                    pointer.Properties.IsLeftButtonPressed && (SelectWithMouseButtons & MouseButtons.LeftButton) != 0 ||
+                    pointer.Properties.IsMiddleButtonPressed && (SelectWithMouseButtons & MouseButtons.MiddleButton) != 0 ||
+                    pointer.Properties.IsRightButtonPressed && (SelectWithMouseButtons & MouseButtons.RightButton) != 0
+                )
+               ) return;
+            IsSelecting = true;
+        }
+        else
+        {
+            if (!(
+                    pointer.Properties.IsLeftButtonPressed && (PanWithMouseButtons & MouseButtons.LeftButton) != 0 ||
+                    pointer.Properties.IsMiddleButtonPressed && (PanWithMouseButtons & MouseButtons.MiddleButton) != 0 ||
+                    pointer.Properties.IsRightButtonPressed && (PanWithMouseButtons & MouseButtons.RightButton) != 0
+                )
+                || !AutoPan
+                || SizeMode != SizeModes.Normal
+
+               ) return;
+
+            IsPanning = true;
+        }
+
+        var location = pointer.Position;
+
+        if (location.X > ViewPortSize.Width) return;
+        if (location.Y > ViewPortSize.Height) return;
+        _startMousePosition = location;
+    }*/
+
     protected override void OnPointerReleased(PointerReleasedEventArgs e)
     {
         base.OnPointerReleased(e);
@@ -1316,20 +1363,111 @@ public class AdvancedImageBox : UserControl
         IsSelecting = false;
     }
 
-    protected override void OnPointerLeave(PointerEventArgs e)
+    private void ViewPortOnPointerLeave(object? sender, PointerEventArgs e)
     {
-        base.OnPointerLeave(e);
         PointerPosition = new Point(-1, -1);
         TriggerRender(true);
         e.Handled = true;
     }
 
-    protected override void OnPointerMoved(PointerEventArgs e)
+    /*protected override void OnPointerLeave(PointerEventArgs e)
     {
-        base.OnPointerMoved(e);
+        base.OnPointerLeave(e);
+        PointerPosition = new Point(-1, -1);
+        TriggerRender(true);
+        e.Handled = true;
+    }*/
+
+    private void ViewPortOnPointerMoved(object? sender, PointerEventArgs e)
+    {
         if (e.Handled) return;
 
-        var pointer = e.GetCurrentPoint(this);
+        var pointer = e.GetCurrentPoint(ViewPort);
+        PointerPosition = pointer.Position;
+        
+        if (!_isPanning && !_isSelecting)
+        {
+            TriggerRender(true);
+            return;
+        }
+
+        if (_isPanning)
+        {
+            double x;
+            double y;
+
+            if (!InvertMousePan)
+            {
+                x = _startScrollPosition.X + (_startMousePosition.X - _pointerPosition.X);
+                y = _startScrollPosition.Y + (_startMousePosition.Y - _pointerPosition.Y);
+            }
+            else
+            {
+                x = (_startScrollPosition.X - (_startMousePosition.X - _pointerPosition.X));
+                y = (_startScrollPosition.Y - (_startMousePosition.Y - _pointerPosition.Y));
+            }
+
+            Offset = new Vector(x, y);
+        }
+        else if (_isSelecting)
+        {
+            var viewPortPoint = new Point(
+                Math.Min(_pointerPosition.X, ViewPort.Bounds.Right),
+                Math.Min(_pointerPosition.Y, ViewPort.Bounds.Bottom));
+            
+            double x;
+            double y;
+            double w;
+            double h;
+
+            var imageOffset = GetImageViewPort().Position;
+
+            if (viewPortPoint.X < _startMousePosition.X)
+            {
+                x = viewPortPoint.X;
+                w = _startMousePosition.X - viewPortPoint.X;
+            }
+            else
+            {
+                x = _startMousePosition.X;
+                w = viewPortPoint.X - _startMousePosition.X;
+            }
+
+            if (viewPortPoint.Y < _startMousePosition.Y)
+            {
+                y = viewPortPoint.Y;
+                h = _startMousePosition.Y - viewPortPoint.Y;
+            }
+            else
+            {
+                y = _startMousePosition.Y;
+                h = viewPortPoint.Y - _startMousePosition.Y;
+            }
+
+            x -= imageOffset.X - Offset.X;
+            y -= imageOffset.Y - Offset.Y;
+
+            var zoomFactor = ZoomFactor;
+            x /= zoomFactor;
+            y /= zoomFactor;
+            w /= zoomFactor;
+            h /= zoomFactor;
+
+            if (w > 0 && h > 0)
+            {
+                SelectionRegion = FitRectangle(new Rect(x, y, w, h));
+            }
+        }
+
+        e.Handled = true;
+    }
+
+    /*protected override void OnPointerMoved(PointerEventArgs e)
+    {
+        base.OnPointerMoved(e);
+        if (e.Handled || !ViewPort.IsPointerOver) return;
+
+        var pointer = e.GetCurrentPoint(ViewPort);
         PointerPosition = pointer.Position;
 
         if (!_isPanning && !_isSelecting)
@@ -1396,14 +1534,15 @@ public class AdvancedImageBox : UserControl
             w /= zoomFactor;
             h /= zoomFactor;
 
-            if (w != 0 && h != 0)
+            if (w > 0 && h > 0)
             {
+
                 SelectionRegion = FitRectangle(new Rect(x, y, w, h));
             }
         }
 
         e.Handled = true;
-    }
+    }*/
     #endregion
 
     #region Zoom and Size modes
@@ -1729,7 +1868,7 @@ public class AdvancedImageBox : UserControl
         var scaled = GetScaledRectangle(source);
         var offsetX = viewport.Left - Offset.X;
         var offsetY = viewport.Top - Offset.Y;
-
+        
         return new(new Point(scaled.Left + offsetX, scaled.Top + offsetY), scaled.Size);
     }
 
@@ -2151,7 +2290,8 @@ public class AdvancedImageBox : UserControl
     /// <returns></returns>
     public Rect GetImageViewPort()
     {
-        if (!IsImageLoaded || (ViewPortSize.Width == 0 && ViewPortSize.Height == 0)) return Rect.Empty;
+        var viewPortSize = ViewPortSize;
+        if (!IsImageLoaded || (viewPortSize.Width == 0 && viewPortSize.Height == 0)) return Rect.Empty;
 
         double xOffset = 0;
         double yOffset = 0;
@@ -2163,28 +2303,28 @@ public class AdvancedImageBox : UserControl
             case SizeModes.Normal:
                 if (AutoCenter)
                 {
-                    xOffset = (!IsHorizontalBarVisible ? (ViewPortSize.Width - ScaledImageWidth) / 2 : 0);
-                    yOffset = (!IsVerticalBarVisible ? (ViewPortSize.Height - ScaledImageHeight) / 2 : 0);
+                    xOffset = (!IsHorizontalBarVisible ? (viewPortSize.Width - ScaledImageWidth) / 2 : 0);
+                    yOffset = (!IsVerticalBarVisible ? (viewPortSize.Height - ScaledImageHeight) / 2 : 0);
                 }
 
-                width = Math.Min(ScaledImageWidth - Math.Abs(Offset.X), ViewPortSize.Width);
-                height = Math.Min(ScaledImageHeight - Math.Abs(Offset.Y), ViewPortSize.Height);
+                width = Math.Min(ScaledImageWidth - Math.Abs(Offset.X), viewPortSize.Width);
+                height = Math.Min(ScaledImageHeight - Math.Abs(Offset.Y), viewPortSize.Height);
                 break;
             case SizeModes.Stretch:
-                width = ViewPortSize.Width;
-                height = ViewPortSize.Height;
+                width = viewPortSize.Width;
+                height = viewPortSize.Height;
                 break;
             case SizeModes.Fit:
                 var image = Image;
-                double scaleFactor = Math.Min(ViewPortSize.Width / image!.Size.Width, ViewPortSize.Height / image.Size.Height);
+                double scaleFactor = Math.Min(viewPortSize.Width / image!.Size.Width, viewPortSize.Height / image.Size.Height);
                     
                 width = Math.Floor(image.Size.Width * scaleFactor);
                 height = Math.Floor(image.Size.Height * scaleFactor);
 
                 if (AutoCenter)
                 {
-                    xOffset = (ViewPortSize.Width - width) / 2;
-                    yOffset = (ViewPortSize.Height - height) / 2;
+                    xOffset = (viewPortSize.Width - width) / 2;
+                    yOffset = (viewPortSize.Height - height) / 2;
                 }
 
                 break;

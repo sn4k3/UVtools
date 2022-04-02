@@ -15,6 +15,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using UVtools.Core.Converters;
 using UVtools.Core.Extensions;
 using UVtools.Core.Layers;
 using UVtools.Core.Operations;
@@ -287,18 +288,18 @@ public class PhotonWorkshopFile : FileFormat
         /// <summary>
         /// 58
         /// </summary>
-        [FieldOrder(7)] public float LiftHeight { get; set; } = 6;
+        [FieldOrder(7)] public float LiftHeight { get; set; } = DefaultLiftHeight;
         /// <summary>
         /// Gets the lift speed in mm/s
         /// 5C
         /// </summary>
-        [FieldOrder(8)] public float LiftSpeed { get; set; } = 3; // mm/s
+        [FieldOrder(8)] public float LiftSpeed { get; set; } = SpeedConverter.Convert(DefaultLiftSpeed, CoreSpeedUnit, SpeedUnit.MillimetersPerSecond); // mm/s
 
         /// <summary>
         /// Gets the retract speed in mm/s
         /// 60
         /// </summary>
-        [FieldOrder(9)] public float RetractSpeed { get; set; } = 3; // mm/s
+        [FieldOrder(9)] public float RetractSpeed { get; set; } = SpeedConverter.Convert(DefaultRetractSpeed, CoreSpeedUnit, SpeedUnit.MillimetersPerSecond); // mm/s
 
         /// <summary>
         /// 64
@@ -557,7 +558,7 @@ public class PhotonWorkshopFile : FileFormat
             LayerHeight = layer.RelativePositionZ;
             ExposureTime = layer.ExposureTime;
             LiftHeight = layer.LiftHeight;
-            LiftSpeed = (float) Math.Round(layer.LiftSpeed / 60, 2);
+            LiftSpeed = SpeedConverter.Convert(layer.LiftSpeed, CoreSpeedUnit, SpeedUnit.MillimetersPerSecond);
             NonZeroPixelCount = layer.NonZeroPixelCount;
         }
 
@@ -566,7 +567,7 @@ public class PhotonWorkshopFile : FileFormat
             // Don't forget to compute LayerHeight outside here
             layer.ExposureTime = ExposureTime;
             layer.LiftHeight = LiftHeight;
-            layer.LiftSpeed = (float)Math.Round(LiftSpeed * 60, 2);
+            layer.LiftSpeed = SpeedConverter.Convert(LiftSpeed, SpeedUnit.MillimetersPerSecond, CoreSpeedUnit);
         }
 
         public Mat Decode(bool consumeData = true)
@@ -942,18 +943,18 @@ public class PhotonWorkshopFile : FileFormat
         [FieldOrder(1)] public uint Unknown0 { get; set; } = 24;
         [FieldOrder(2)] public uint Unknown1 { get; set; } = 2;
         [FieldOrder(3)] public float BottomLiftHeight1 { get; set; }
-        [FieldOrder(4)] public float BottomLiftSpeed1 { get; set; }
-        [FieldOrder(5)] public float BottomRetractSpeed1 { get; set; }
+        [FieldOrder(4)] public float BottomLiftSpeed1 { get; set; } = SpeedConverter.Convert(DefaultBottomLiftSpeed, CoreSpeedUnit, SpeedUnit.MillimetersPerSecond);
+        [FieldOrder(5)] public float BottomRetractSpeed1 { get; set; } = SpeedConverter.Convert(DefaultBottomRetractSpeed, CoreSpeedUnit, SpeedUnit.MillimetersPerSecond);
         [FieldOrder(6)] public float BottomLiftHeight2 { get; set; }
-        [FieldOrder(7)] public float BottomLiftSpeed2 { get; set; }
-        [FieldOrder(8)] public float BottomRetractSpeed2 { get; set; }
+        [FieldOrder(7)] public float BottomLiftSpeed2 { get; set; } = SpeedConverter.Convert(DefaultBottomLiftSpeed2, CoreSpeedUnit, SpeedUnit.MillimetersPerSecond);
+        [FieldOrder(8)] public float BottomRetractSpeed2 { get; set; } = SpeedConverter.Convert(DefaultBottomRetractSpeed2, CoreSpeedUnit, SpeedUnit.MillimetersPerSecond);
         [FieldOrder(9)] public uint Unknown2 { get; set; } = 2;
         [FieldOrder(10)] public float LiftHeight1 { get; set; }
-        [FieldOrder(11)] public float LiftSpeed1 { get; set; }
-        [FieldOrder(12)] public float RetractSpeed1 { get; set; }
+        [FieldOrder(11)] public float LiftSpeed1 { get; set; } = SpeedConverter.Convert(DefaultLiftSpeed, CoreSpeedUnit, SpeedUnit.MillimetersPerSecond);
+        [FieldOrder(12)] public float RetractSpeed1 { get; set; } = SpeedConverter.Convert(DefaultRetractSpeed, CoreSpeedUnit, SpeedUnit.MillimetersPerSecond);
         [FieldOrder(13)] public float LiftHeight2 { get; set; }
-        [FieldOrder(14)] public float LiftSpeed2 { get; set; }
-        [FieldOrder(15)] public float RetractSpeed2 { get; set; }
+        [FieldOrder(14)] public float LiftSpeed2 { get; set; } = SpeedConverter.Convert(DefaultLiftSpeed2, CoreSpeedUnit, SpeedUnit.MillimetersPerSecond);
+        [FieldOrder(15)] public float RetractSpeed2 { get; set; } = SpeedConverter.Convert(DefaultRetractSpeed2, CoreSpeedUnit, SpeedUnit.MillimetersPerSecond);
 
         public Extra()
         {
@@ -1043,9 +1044,9 @@ public class PhotonWorkshopFile : FileFormat
         new(typeof(PhotonWorkshopFile), "pwms", "Photon Mono SE (PWMS)"),
         new(typeof(PhotonWorkshopFile), "pwma", "Photon Mono 4K (PWMA)"),
         new(typeof(PhotonWorkshopFile), "pmsq", "Photon Mono SQ (PMSQ)"),
-            
-            
     };
+
+    public override SpeedUnit FormatSpeedUnit => SpeedUnit.MillimetersPerSecond;
 
     public override PrintParameterModifier[]? PrintParameterModifiers
     {
@@ -1297,11 +1298,7 @@ public class PhotonWorkshopFile : FileFormat
 
     public override float BottomLiftHeight
     {
-        get
-        {
-            if (FileMarkSettings.Version >= VERSION_516) return ExtraSettings.BottomLiftHeight1;
-            return base.BottomLiftHeight;
-        }
+        get => FileMarkSettings.Version >= VERSION_516 ? ExtraSettings.BottomLiftHeight1 : base.BottomLiftHeight;
         set
         {
             value = (float)Math.Round(value, 2);
@@ -1321,26 +1318,20 @@ public class PhotonWorkshopFile : FileFormat
 
     public override float BottomLiftSpeed
     {
-        get
-        {
-            if (FileMarkSettings.Version >= VERSION_516) return (float)Math.Round(ExtraSettings.BottomLiftSpeed1 * 60, 2);
-            return base.BottomLiftSpeed;
-        }
+        get => FileMarkSettings.Version >= VERSION_516 
+            ? SpeedConverter.Convert(ExtraSettings.BottomLiftSpeed1, FormatSpeedUnit, CoreSpeedUnit) 
+            : base.BottomLiftSpeed;
         set
         {
             value = (float)Math.Round(value, 2);
-            ExtraSettings.BottomLiftSpeed1 = (float)Math.Round(value / 60, 2);
+            ExtraSettings.BottomLiftSpeed1 = SpeedConverter.Convert(value, CoreSpeedUnit, FormatSpeedUnit);
             base.BottomLiftSpeed = value;
         }
     }
 
     public override float LiftHeight
     {
-        get
-        {
-            if (FileMarkSettings.Version >= VERSION_516) return ExtraSettings.LiftHeight1;
-            return HeaderSettings.LiftHeight;
-        }
+        get => FileMarkSettings.Version >= VERSION_516 ? ExtraSettings.LiftHeight1 : HeaderSettings.LiftHeight;
         set
         {
             value = (float)Math.Round(value, 2);
@@ -1354,21 +1345,17 @@ public class PhotonWorkshopFile : FileFormat
                     layer.LiftHeight = base.LiftHeight;
                 }
             }
-            else base.LiftHeight = value;
+            else base.LiftHeight = HeaderSettings.LiftHeight = value;
         }
     }
 
     public override float LiftSpeed
     {
-        get
-        {
-            if (FileMarkSettings.Version >= VERSION_516) return (float)Math.Round(ExtraSettings.LiftSpeed1 * 60, 2);
-            return (float)Math.Round(HeaderSettings.LiftSpeed * 60, 2);
-        }
+        get => SpeedConverter.Convert(FileMarkSettings.Version >= VERSION_516 ? ExtraSettings.LiftSpeed1 : HeaderSettings.LiftSpeed, FormatSpeedUnit, CoreSpeedUnit);
         set
         {
             value = (float)Math.Round(value, 2);
-            HeaderSettings.LiftSpeed = ExtraSettings.LiftSpeed1 = (float)Math.Round(value / 60, 2);
+            HeaderSettings.LiftSpeed = ExtraSettings.LiftSpeed1 = SpeedConverter.Convert(value, CoreSpeedUnit, FormatSpeedUnit);
             base.LiftSpeed = value;
         }
     }
@@ -1388,12 +1375,12 @@ public class PhotonWorkshopFile : FileFormat
 
     public override float BottomLiftSpeed2
     {
-        get => FileMarkSettings.Version >= VERSION_516 ? (float)Math.Round(ExtraSettings.BottomLiftSpeed2 * 60, 2) : 0;
+        get => FileMarkSettings.Version >= VERSION_516 ? SpeedConverter.Convert(ExtraSettings.BottomLiftSpeed2, FormatSpeedUnit, CoreSpeedUnit) : 0;
         set
         {
             if (FileMarkSettings.Version < VERSION_516) return;
             value = (float)Math.Round(value, 2);
-            ExtraSettings.BottomLiftSpeed2 = (float)Math.Round(value / 60, 2);
+            ExtraSettings.BottomLiftSpeed2 = SpeedConverter.Convert(value, CoreSpeedUnit, FormatSpeedUnit);
             base.BottomLiftSpeed2 = value;
         }
     }
@@ -1413,67 +1400,59 @@ public class PhotonWorkshopFile : FileFormat
 
     public override float LiftSpeed2
     {
-        get => FileMarkSettings.Version >= VERSION_516 ? (float)Math.Round(ExtraSettings.LiftSpeed2 * 60, 2) : 0;
+        get => FileMarkSettings.Version >= VERSION_516 ? SpeedConverter.Convert(ExtraSettings.LiftSpeed2, FormatSpeedUnit, CoreSpeedUnit) : 0;
         set
         {
             if (FileMarkSettings.Version < VERSION_516) return;
-            base.LiftSpeed2 = ExtraSettings.LiftSpeed2 = (float)Math.Round(value / 60, 2);
+            value = (float)Math.Round(value, 2);
+            ExtraSettings.LiftSpeed2 = SpeedConverter.Convert(value, CoreSpeedUnit, FormatSpeedUnit);
+            base.LiftSpeed2 = value;
         }
     }
 
     public override float BottomRetractSpeed
     {
-        get
-        {
-            if (FileMarkSettings.Version >= VERSION_516) return (float)Math.Round(ExtraSettings.BottomRetractSpeed1 * 60, 2);
-            return RetractSpeed;
-        }
+        get => FileMarkSettings.Version >= VERSION_516 ? SpeedConverter.Convert(ExtraSettings.BottomRetractSpeed1, FormatSpeedUnit, CoreSpeedUnit) : RetractSpeed;
         set
         {
             value = (float)Math.Round(value, 2);
 
-            if (FileMarkSettings.Version >= VERSION_516)
-            {
-                ExtraSettings.BottomRetractSpeed1 = (float)Math.Round(value / 60, 2);
-            }
-            else
-            {
-                RetractSpeed = value;
-            }
+            if (FileMarkSettings.Version < VERSION_516) return;
+            ExtraSettings.BottomRetractSpeed1 = SpeedConverter.Convert(value, CoreSpeedUnit, FormatSpeedUnit);
         }
     }
 
     public override float RetractSpeed
     {
-        get => (float)Math.Round(HeaderSettings.RetractSpeed * 60, 2);
+        get => SpeedConverter.Convert(FileMarkSettings.Version >= VERSION_516 ? ExtraSettings.RetractSpeed1 : HeaderSettings.RetractSpeed, FormatSpeedUnit, CoreSpeedUnit);
         set
         {
             value = (float)Math.Round(value, 2);
-            ExtraSettings.RetractSpeed1 = HeaderSettings.RetractSpeed = (float) Math.Round(value / 60, 2);
+            ExtraSettings.RetractSpeed1 = HeaderSettings.RetractSpeed = SpeedConverter.Convert(value, CoreSpeedUnit, FormatSpeedUnit);
             base.RetractSpeed = value;
         }
     }
 
     public override float BottomRetractSpeed2
     {
-        get => FileMarkSettings.Version >= VERSION_516 ? (float)Math.Round(ExtraSettings.BottomRetractSpeed2 * 60, 2) : 0;
+        get => FileMarkSettings.Version >= VERSION_516 ? SpeedConverter.Convert(ExtraSettings.BottomRetractSpeed2, FormatSpeedUnit, CoreSpeedUnit) : 0;
         set
         {
             if (FileMarkSettings.Version < VERSION_516) return;
             value = (float)Math.Round(value, 2);
-            ExtraSettings.BottomRetractSpeed2 = (float)Math.Round(value / 60, 2);
+            ExtraSettings.BottomRetractSpeed2 = SpeedConverter.Convert(value, CoreSpeedUnit, FormatSpeedUnit);
             base.BottomRetractSpeed2 = value;
         }
     }
 
     public override float RetractSpeed2
     {
-        get => FileMarkSettings.Version >= VERSION_516 ? (float)Math.Round(ExtraSettings.RetractSpeed2 * 60, 2) : 0;
+        get => FileMarkSettings.Version >= VERSION_516 ? SpeedConverter.Convert(ExtraSettings.RetractSpeed2, FormatSpeedUnit, CoreSpeedUnit) : 0;
         set
         {
             if (FileMarkSettings.Version < VERSION_516) return;
             value = (float)Math.Round(value, 2);
-            ExtraSettings.RetractSpeed2 = (float)Math.Round(value / 60, 2);
+            ExtraSettings.RetractSpeed2 = SpeedConverter.Convert(value, CoreSpeedUnit, FormatSpeedUnit);
             base.RetractSpeed2 = value;
         }
     }

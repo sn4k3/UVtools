@@ -10,8 +10,10 @@ using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
+using System.Linq;
 using System.Threading.Tasks;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
@@ -25,8 +27,8 @@ public sealed class OperationInfill : Operation
     private InfillAlgorithm _infillType = InfillAlgorithm.CubicCrossAlternating;
     private ushort _wallThickness = 64;
     private ushort _infillThickness = 45;
-    private ushort _infillSpacing = 200;
-    private ushort _infillBrightness = 255;
+    private ushort _infillSpacing = 300;
+    private byte _infillBrightness = 255;
     private bool _reinforceInfill;
 
     #endregion
@@ -55,6 +57,12 @@ public sealed class OperationInfill : Operation
         [Description("Straight pillars (Weak)")]
         Pillars,
 
+        [Description("Concentric (Weak)")]
+        Concentric,
+
+        [Description("Waves (Medium)")]
+        Waves,
+
         [Description("Cubic cross: Fixed pilars with crossing sections (Optimal)")]
         CubicCross,
 
@@ -65,7 +73,10 @@ public sealed class OperationInfill : Operation
         CubicStar,
 
         [Description("Honeycomb (Strong)")]
-        Honeycomb
+        Honeycomb,
+
+        [Description("Gyroid (Strong)")]
+        Gyroid,
     }
     #endregion
 
@@ -82,7 +93,7 @@ public sealed class OperationInfill : Operation
         set => RaiseAndSetIfChanged(ref _wallThickness, value);
     }
 
-    public ushort InfillBrightness
+    public byte InfillBrightness
     {
         get => _infillBrightness;
         set => RaiseAndSetIfChanged(ref _infillBrightness, value);
@@ -149,7 +160,11 @@ public sealed class OperationInfill : Operation
         Mat? mask = null;
         if (_infillType == InfillAlgorithm.Honeycomb)
         {
-            mask = GetHoneycombMask(GetRoiSizeOrDefault());
+            mask = GetHoneycombMask(GetRoiSizeOrVolumeSize());
+        }
+        else if (_infillType == InfillAlgorithm.Concentric)
+        {
+            mask = GetConcentricMask(GetRoiSizeOrVolumeSize());
         }
 
         Parallel.For(LayerIndexStart, LayerIndexEnd + 1, CoreSettings.GetParallelOptions(progress), layerIndex =>
@@ -176,7 +191,7 @@ public sealed class OperationInfill : Operation
         Mat? patternMask = null;
         using Mat erode = new ();
         using Mat diff = new ();
-        var target = GetRoiOrDefault(mat);
+        var target = GetRoiOrVolumeBounds(mat);
         using var mask = GetMask(mat);
         bool disposeTargetMask = true;
              
@@ -202,10 +217,6 @@ public sealed class OperationInfill : Operation
                 {
                     firstPattern = false;
                     accumulator += _infillThickness;
-                }
-                else
-                {
-                    //accumulator += _infillSpacing;
                 }
             }
 
@@ -319,7 +330,7 @@ public sealed class OperationInfill : Operation
 
             CvInvoke.Repeat(infillPattern, target.Rows / infillPattern.Rows + 1,
                 target.Cols / infillPattern.Cols + 1, matPattern);
-            patternMask = new Mat(matPattern, new Rectangle(0, 0, target.Width, target.Height));
+            patternMask = matPattern.Roi(target);
             disposeTargetMask = true;
         }
         else if (_infillType == InfillAlgorithm.Honeycomb)
@@ -335,6 +346,124 @@ public sealed class OperationInfill : Operation
                 disposeTargetMask = true;
             }
         }
+        else if (_infillType == InfillAlgorithm.Concentric)
+        {
+            if (arguments.Length >= 2)
+            {
+                patternMask = (Mat)arguments[1];
+                disposeTargetMask = false;
+            }
+            else
+            {
+                patternMask = GetConcentricMask(target.Size);
+                disposeTargetMask = true;
+            }
+        }
+        else if (_infillType == InfillAlgorithm.Waves)
+        {
+            var sineHeight = 100;
+            var sineWidth = 100;
+            var radius = (ushort)(_infillThickness / 2);
+
+            var points = new List<Point>();
+
+            bool isHorizontal = true;
+            float accumulator = 0;
+            for (int i = 0; i <= layerIndex; i++)
+            {
+                accumulator += SlicerFile[index].RelativePositionZ;
+                if (accumulator >= 2)
+                {
+                    isHorizontal = !isHorizontal;
+                    accumulator = 0;
+                }
+            }
+
+            //using var infillPattern = EmguExtensions.InitMat(new Size(_infillSpacing, _infillSpacing));
+            //using var matPattern = new Mat();
+            using var infillPattern = mat.NewBlank();
+
+            int maxY = 0;
+
+            if (isHorizontal)
+            {
+                for (int x = 0; x < mat.Width; x += radius)
+                {
+                    int y = (int) (Math.Sin((double) x / sineWidth /*+ sineWidth * layerIndex*/) * sineHeight / 2.0 +
+                                   sineHeight / 2.0 + radius);
+                    points.Add(new Point(x, y));
+                    maxY = Math.Max(maxY, y);
+                }
+                var infillPatternRoi = infillPattern.Roi(new Size(infillPattern.Width, maxY + radius + 2 + _infillSpacing));
+                CvInvoke.Polylines(infillPatternRoi, points.ToArray(), false, infillColor, _infillThickness);
+
+                CvInvoke.Repeat(infillPatternRoi, target.Rows / infillPatternRoi.Rows + 1, 1, infillPattern);
+            }
+            else
+            {
+                for (int y = 0; y < mat.Height; y += radius)
+                {
+                    int x = (int)(Math.Sin((double)y / sineWidth /*+ sineWidth * layerIndex*/) * sineHeight / 2.0 +
+                                  sineHeight / 2.0 + radius);
+                    points.Add(new Point(x, y));
+                    maxY = Math.Max(maxY, x);
+                }
+                var infillPatternRoi = infillPattern.Roi(new Size(maxY + radius + 2 + _infillSpacing, infillPattern.Height));
+                CvInvoke.Polylines(infillPatternRoi, points.ToArray(), false, infillColor, _infillThickness);
+                CvInvoke.Repeat(infillPatternRoi, 1, target.Cols / infillPatternRoi.Cols + 1, infillPattern);
+                
+            }
+            points.Clear();
+
+            patternMask = infillPattern.Roi(target);
+            disposeTargetMask = true;
+        }
+        else if (_infillType == InfillAlgorithm.Gyroid)
+        {
+            patternMask = target.NewBlank();
+
+            var scaleRatio = 0.0012 / (_infillSpacing + _infillThickness / 2);
+            //var scaleX = 0.04 * _infillSpacing * Math.PI / target.Width;
+            //var scaleY = 0.04 * _infillSpacing * Math.PI / target.Height;
+            var scaleX = scaleRatio * mat.Width;
+            var scaleY = scaleRatio * mat.Height;
+            
+            //const double scaleZ = 2.0 * Math.PI;
+            //var dz = 2.0 * scaleZ / LayerRangeCount; // z step
+            //var zz = 0.05 * (SlicerFile[index].LayerHeight / 0.05f) * (layerIndex + 1);
+            float zz = 0;
+            for (var i = LayerIndexStart; i <= index; i++)
+            {
+                zz += SlicerFile[i].RelativePositionZ;
+            }
+
+            for (int y = 0; y < patternMask.Height; y++)
+            {
+                var span = patternMask.GetRowSpan<byte>(y);
+                var yy = y * scaleY; // y position of pixel
+                for (int x = 0; x < patternMask.Width; x++)
+                {
+                    var xx = x * scaleX; // x position of pixel                
+
+                    var d = Math.Sin(xx) * Math.Cos(yy) // compute gyroid equation
+                            + Math.Sin(yy) * Math.Cos(zz)
+                            + Math.Sin(zz) * Math.Cos(xx);
+                    //if (d > 1e-6) continue; // Far from surface
+                    if (Math.Abs(d) - 0.006*_infillThickness > 0) continue;
+                    //if (d - 0.05 > 1e-6) continue;
+
+                    span[x] = _infillBrightness;
+                }
+            }
+
+
+            //using var contours = patternMask.FindContours();
+            //CvInvoke.DrawContours(patternMask, contours, -1, infillColor, _infillThickness);
+
+            disposeTargetMask = true;
+        }
+
+
         //patternMask.Save("D:\\pattern.png");
         CvInvoke.Erode(target, erode, kernel, anchor, WallThickness, BorderType.Reflect101,
             default);
@@ -386,6 +515,59 @@ public sealed class OperationInfill : Operation
                 CvInvoke.Polylines(patternMask, points, true, infillColor, _infillThickness);
             }
         }
+
+        return patternMask;
+    }
+
+    public Mat GetConcentricMask(Size targetSize)
+    {
+        var patternMask = EmguExtensions.InitMat(targetSize);
+
+        //var halfInfillSpacing = _infillSpacing / 2;
+        //var halfThickenss = _infillThickness / 2;
+        int multiplicator = 1;
+        byte position = 0;
+
+        int x = patternMask.Width / 2;
+        int y = patternMask.Height / 2;
+
+        Point[] directions = {
+            new(0, -_infillSpacing), // top
+            new(_infillSpacing, 0), // right
+            new(0, _infillSpacing), // bottom
+            new(-_infillSpacing, 0), // left
+        };
+
+        bool[] hitLimits =
+        {
+            false,
+            false,
+            false,
+            false
+        };
+
+        var points = new List<Point> {new(x, y)};
+
+        while (hitLimits.Any(hitLimit => !hitLimit))
+        {
+            x += directions[position].X * multiplicator;
+            y += directions[position].Y * multiplicator;
+            if (x < 0 || y < 0 || x >= patternMask.Width || y >= patternMask.Height) hitLimits[position] = true;
+            points.Add(new Point(x, y));
+            position++;
+            if (position == 2)
+            {
+                multiplicator++;
+            }
+            else if (position == 4)
+            {
+                multiplicator++;
+                position = 0;
+            }
+        }
+        
+
+        CvInvoke.Polylines(patternMask, points.ToArray(), false, new MCvScalar(_infillBrightness), _infillThickness);
 
         return patternMask;
     }

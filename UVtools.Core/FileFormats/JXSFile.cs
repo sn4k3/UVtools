@@ -53,11 +53,11 @@ public class JXSFile : FileFormat
         [DisplayName("nJobName")] public string JobName { get; set; } = string.Empty;
         [DisplayName("NumBottomLayers")] public ushort BottomLayerCount { get; set; } = DefaultBottomLayerCount;
         [DisplayName("LiftDistance1")] public float LiftHeight1 { get; set; } = DefaultBottomLiftHeight;
-        [DisplayName("LiftFeedrate1")] public float LiftSpeed1 { get; set; } = SpeedConverter.Convert(DefaultLiftSpeed, SpeedUnit.MillimetersPerMinute, SpeedUnit.MillimetersPerSecond);
+        [DisplayName("LiftFeedrate1")] public float LiftSpeed1 { get; set; } = DefaultLiftSpeed;
         [DisplayName("LiftDistance2")] public float LiftHeight2 { get; set; } = DefaultLiftHeight2;
-        [DisplayName("LiftFeedrate2")] public float LiftSpeed2 { get; set; } = SpeedConverter.Convert(DefaultLiftSpeed2, SpeedUnit.MillimetersPerMinute, SpeedUnit.MillimetersPerSecond);
-        [DisplayName("BottomLiftFeedrate")] public float BottomLiftSpeed { get; set; } = SpeedConverter.Convert(DefaultBottomLiftSpeed, SpeedUnit.MillimetersPerMinute, SpeedUnit.MillimetersPerSecond);
-        [DisplayName("RetractFeedrate")] public float RetractSpeed { get; set; } = SpeedConverter.Convert(DefaultRetractSpeed, SpeedUnit.MillimetersPerMinute, SpeedUnit.MillimetersPerSecond);
+        [DisplayName("LiftFeedrate2")] public float LiftSpeed2 { get; set; } = DefaultLiftSpeed2;
+        [DisplayName("BottomLiftFeedrate")] public float BottomLiftSpeed { get; set; } = DefaultBottomLiftSpeed;
+        [DisplayName("RetractFeedrate")] public float RetractSpeed { get; set; } = DefaultRetractSpeed;
         [DisplayName("ZMoveTimeCompensation")] public uint WaitTimeBeforeCure { get; set; } = 1500;
         [DisplayName("ZMoveTimeCompensationBottom")] public uint BottomWaitTimeBeforeCure { get; set; } = 8000;
         public string OnLightCode { get; set; } = "M106 S255";
@@ -80,8 +80,8 @@ public class JXSFile : FileFormat
     #endregion
 
     #region Properties
-    public JXSConfig ConfigFile { get; set; } = new ();
-    public JXSControl ControlFile { get; set; } = new ();
+    public JXSConfig ConfigFile { get; set; } = new();
+    public JXSControl ControlFile { get; set; } = new();
 
     public override FileFormatType FileType => FileFormatType.Archive;
 

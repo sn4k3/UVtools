@@ -202,6 +202,7 @@ $releaseFolder = "$project\bin\$buildWith\net$netVersion"
 $objFolder = "$project\obj\$buildWith\net$netVersion"
 $publishFolder = "publish"
 $platformsFolder = "$buildFolder\platforms"
+$changelogFile = "$rootFolder\CHANGELOG.md"
 
 #$version = (Get-Command "$releaseFolder\UVtools.dll").FileVersionInfo.ProductVersion
 $projectXml = [Xml] (Get-Content "$project\$project.csproj")
@@ -276,6 +277,27 @@ $runtimes =
         "include" = @("libcvextern.dylib")
     }
 }
+
+# Set release notes on projects
+$changelog = Get-Content -Path "$changelogFile"
+$foundHashTag = $false
+$sb = [System.Text.StringBuilder]::new()
+foreach($line in $changelog) {
+    $line = $line.TrimEnd()
+    if($line -eq '') { continue }
+    if($line.StartsWith("##")) { 
+        if(!$foundHashTag)
+        {
+            $foundHashTag = $true
+            continue
+        }
+        else { break }
+    }
+    elseif($foundHashTag){
+        [void]$sb.AppendLine($line)
+    }
+}
+Write-Host $sb.ToString()
 
 
 if($null -ne $enableNugetPublish -and $enableNugetPublish)
@@ -388,7 +410,8 @@ if($null -ne $enableMSI -and $enableMSI)
 {
     $deployStopWatch.Restart()
     $runtime = 'win-x64'
-    if (Test-Path -Path $msiSourceFiles) {
+    
+    if ((Test-Path -Path $msiSourceFiles) -and ((Get-ChildItem "$msiSourceFiles" | Measure-Object).Count) -gt 0) {
         $msiTargetFile = "$publishFolder\${software}_${runtime}_v$version.msi"
         Write-Output "################################"
         Write-Output "Clean and build MSI components manifest file"

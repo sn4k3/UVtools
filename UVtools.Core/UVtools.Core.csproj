@@ -1,75 +1,85 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
-    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-    <PackageLicenseFile>LICENSE</PackageLicenseFile>
-    <Company>PTRTECH</Company>
-    <Authors>Tiago Conceição</Authors>
-    <RepositoryType>Git</RepositoryType>
-    <RepositoryUrl>https://github.com/sn4k3/UVtools</RepositoryUrl>
-    <PackageProjectUrl>https://github.com/sn4k3/UVtools</PackageProjectUrl>
-    <Description>MSLA/DLP, file analysis, calibration, repair, conversion and manipulation</Description>
-    <Version>3.2.0</Version>
-    <Copyright>Copyright © 2020 PTRTECH</Copyright>
-    <PackageIcon>UVtools.png</PackageIcon>
-    <Platforms>AnyCPU;x64</Platforms>
-    <SignAssembly>false</SignAssembly>
-    <PackageIconUrl />
-    <PackageTags>msla, dlp, resin, printer, slicer, 3d printing, image processing, layers</PackageTags>
-    <ApplicationIcon>UVtools.ico</ApplicationIcon>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+		<PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+		<PackageLicenseFile>LICENSE</PackageLicenseFile>
+		<Company>PTRTECH</Company>
+		<Authors>Tiago Conceição</Authors>
+		<RepositoryType>Git</RepositoryType>
+		<RepositoryUrl>https://github.com/sn4k3/UVtools</RepositoryUrl>
+		<PackageProjectUrl>https://github.com/sn4k3/UVtools</PackageProjectUrl>
+		<Description>MSLA/DLP, file analysis, calibration, repair, conversion and manipulation</Description>
+		<Version>3.2.1</Version>
+		<Copyright>Copyright © 2020 PTRTECH</Copyright>
+		<PackageIcon>UVtools.png</PackageIcon>
+		<Platforms>AnyCPU;x64</Platforms>
+		<SignAssembly>false</SignAssembly>
+		<PackageIconUrl />
+		<PackageTags>msla, dlp, resin, printer, slicer, 3d printing, image processing, layers</PackageTags>
+		<ApplicationIcon>UVtools.ico</ApplicationIcon>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <DocumentationFile></DocumentationFile>
-  </PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<DocumentationFile></DocumentationFile>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-  </PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-  </PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-  </PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <Content Include="UVtools.ico" />
-  </ItemGroup>
+	<ItemGroup>
+		<Content Include="UVtools.ico" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <None Include="..\LICENSE">
-      <Pack>True</Pack>
-      <PackagePath></PackagePath>
-    </None>
-    <None Include="..\README.md">
-      <Pack>True</Pack>
-      <PackagePath>\</PackagePath>
-    </None>
-    <None Include="..\UVtools.CAD\UVtools.png">
-      <Pack>True</Pack>
-      <PackagePath></PackagePath>
-    </None>
-  </ItemGroup>
+	<ItemGroup>
+		<None Include="..\LICENSE">
+			<Pack>True</Pack>
+			<PackagePath></PackagePath>
+		</None>
+		<None Include="..\README.md">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+		<None Include="..\UVtools.CAD\UVtools.png">
+			<Pack>True</Pack>
+			<PackagePath></PackagePath>
+		</None>
+	</ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="AnimatedGif" Version="1.0.5" />
-    <PackageReference Include="BinarySerializer" Version="8.6.2.2" />
-    <PackageReference Include="Emgu.CV" Version="4.5.5.4823" />
-    <PackageReference Include="Emgu.CV.runtime.ubuntu.20.04-x64" Version="4.5.4.4788" />
-    <PackageReference Include="Emgu.CV.runtime.windows" Version="4.5.5.4823" />
-    <PackageReference Include="K4os.Compression.LZ4" Version="1.2.16" />
-    <PackageReference Include="KdTree" Version="1.4.1" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="4.1.0" />
-    <PackageReference Include="Portable.BouncyCastle" Version="1.9.0" />
-    <PackageReference Include="System.Memory" Version="4.5.4" />
-    <PackageReference Include="System.Reflection.TypeExtensions" Version="4.7.0" />
-    <PackageReference Include="System.Text.Json" Version="6.0.2" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="AnimatedGif" Version="1.0.5" />
+		<PackageReference Include="BinarySerializer" Version="8.6.2.2" />
+		<PackageReference Include="Emgu.CV" Version="4.5.5.4823" />
+		<PackageReference Include="Emgu.CV.runtime.ubuntu.20.04-x64" Version="4.5.4.4788" />
+		<PackageReference Include="Emgu.CV.runtime.windows" Version="4.5.5.4823" />
+		<PackageReference Include="K4os.Compression.LZ4" Version="1.2.16" />
+		<PackageReference Include="KdTree" Version="1.4.1" />
+		<PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="4.1.0" />
+		<PackageReference Include="Portable.BouncyCastle" Version="1.9.0" />
+		<PackageReference Include="System.Memory" Version="4.5.4" />
+		<PackageReference Include="System.Reflection.TypeExtensions" Version="4.7.0" />
+		<PackageReference Include="System.Text.Json" Version="6.0.2" />
+	</ItemGroup>
+
+	<Target Name="PreparePackageReleaseNotesFromFile" BeforeTargets="GenerateNuspec">
+		<ReadLinesFromFile File="../CHANGELOG.md">
+			<Output TaskParameter="Lines" ItemName="ReleaseNoteLines" />
+		</ReadLinesFromFile>
+		<PropertyGroup>
+			<PackageReleaseNotes>@(ReleaseNoteLines, '%0a')</PackageReleaseNotes>
+		</PropertyGroup>
+	</Target>
+
 </Project>

@@ -461,6 +461,13 @@ public abstract class Operation : BindableBase, IDisposable
         return HaveROI ? _roi.Size : fallbackSize;
     }
 
+    public Size GetRoiSizeOrVolumeSize() => GetRoiSizeOrVolumeSize(_originalBoundingRectangle.Size);
+
+    public Size GetRoiSizeOrVolumeSize(Size fallbackSize)
+    {
+        return HaveROI ? _roi.Size : fallbackSize;
+    }
+
 
     public Mat GetRoiOrDefault(Mat defaultMat)
     {

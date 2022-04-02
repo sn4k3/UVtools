@@ -44,7 +44,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
 {
     #region Constants
 
-    public const SpeedUnit DefaultSpeedUnit = SpeedUnit.MillimetersPerMinute;
+    public const SpeedUnit CoreSpeedUnit = SpeedUnit.MillimetersPerMinute;
     public const string TemporaryFileAppend = ".tmp";
     public const ushort ExtraPrintTime = 300;
 
@@ -994,6 +994,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
 
     #region Properties
 
+    public FileDecodeType DecodeType { get; private set; } = FileDecodeType.Full;
+
     /// <summary>
     /// Gets the file format type
     /// </summary>
@@ -1004,8 +1006,11 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// </summary>
     public abstract FileExtension[] FileExtensions { get; }
 
-    public FileDecodeType DecodeType { get; private set; } = FileDecodeType.Full;
-
+    /// <summary>
+    /// The speed unit used by this file format in his internal data
+    /// </summary>
+    public virtual SpeedUnit FormatSpeedUnit => CoreSpeedUnit;
+    
     /// <summary>
     /// Gets the available <see cref="PrintParameterModifier"/>
     /// </summary>

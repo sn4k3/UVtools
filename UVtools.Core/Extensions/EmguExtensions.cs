@@ -174,24 +174,18 @@ public static class EmguExtensions
     /// <param name="mat"></param>
     /// <returns></returns>
     public static unsafe byte* GetBytePointer(this Mat mat)
-    {
-        return (byte*)mat.DataPointer.ToPointer();
-    }
+        => (byte*)mat.DataPointer.ToPointer();
 
     /// <summary>
     /// Gets the whole data span to manipulate or read pixels
     /// </summary>
     /// <param name="mat"></param>
     /// <returns></returns>
-    public static unsafe Span<byte> GetDataByteSpan(this Mat mat)
-    {
-        return new(mat.DataPointer.ToPointer(), mat.GetLength());
-    }
+    public static unsafe Span<byte> GetDataByteSpan(this Mat mat) 
+        => new(mat.DataPointer.ToPointer(), mat.GetLength());
 
-    public static unsafe Span<byte> GetDataByteSpan(this Mat mat, int length, int offset = 0)
-    {
-        return new(IntPtr.Add(mat.DataPointer, offset).ToPointer(), length <= 0 ? mat.GetLength() : length);
-    }
+    public static unsafe Span<byte> GetDataByteSpan(this Mat mat, int length, int offset = 0) 
+        => new(IntPtr.Add(mat.DataPointer, offset).ToPointer(), length <= 0 ? mat.GetLength() : length);
 
     /// <summary>
     /// Gets the data span to manipulate or read pixels given a length and offset
@@ -201,10 +195,8 @@ public static class EmguExtensions
     /// <param name="length"></param>
     /// <param name="offset"></param>
     /// <returns></returns>
-    public static unsafe Span<T> GetDataSpan<T>(this Mat mat, int length = 0, int offset = 0)
-    {
-        return new(IntPtr.Add(mat.DataPointer, offset).ToPointer(), length <= 0 ? mat.GetLength() : length);
-    }
+    public static unsafe Span<T> GetDataSpan<T>(this Mat mat, int length = 0, int offset = 0) 
+        => new(IntPtr.Add(mat.DataPointer, offset).ToPointer(), length <= 0 ? mat.GetLength() : length);
 
     /// <summary>
     /// Gets a single pixel span to manipulate or read pixels
@@ -214,10 +206,8 @@ public static class EmguExtensions
     /// <param name="x"></param>
     /// <param name="y"></param>
     /// <returns></returns>
-    public static Span<T> GetPixelSpan<T>(this Mat mat, int x, int y)
-    {
-        return mat.GetDataSpan<T>(mat.NumberOfChannels, mat.GetPixelPos(x, y));
-    }
+    public static Span<T> GetPixelSpan<T>(this Mat mat, int x, int y) 
+        => mat.GetDataSpan<T>(mat.NumberOfChannels, mat.GetPixelPos(x, y));
 
     /// <summary>
     /// Gets a single pixel span to manipulate or read pixels
@@ -226,10 +216,8 @@ public static class EmguExtensions
     /// <param name="mat"></param>
     /// <param name="pos"></param>
     /// <returns></returns>
-    public static Span<T> GetPixelSpan<T>(this Mat mat, int pos)
-    {
-        return mat.GetDataSpan<T>(mat.NumberOfChannels, pos);
-    }
+    public static Span<T> GetPixelSpan<T>(this Mat mat, int pos) 
+        => mat.GetDataSpan<T>(mat.NumberOfChannels, pos);
 
     /// <summary>
     /// Gets a row span to manipulate or read pixels
@@ -240,10 +228,8 @@ public static class EmguExtensions
     /// <param name="length"></param>
     /// <param name="offset"></param>
     /// <returns></returns>
-    public static unsafe Span<T> GetRowSpan<T>(this Mat mat, int y, int length = 0, int offset = 0)
-    {
-        return new(IntPtr.Add(mat.DataPointer, y * mat.GetRealStep() + offset).ToPointer(), length <= 0 ? mat.GetRealStep() : length);
-    }
+    public static unsafe Span<T> GetRowSpan<T>(this Mat mat, int y, int length = 0, int offset = 0) 
+        => new(IntPtr.Add(mat.DataPointer, y * mat.GetRealStep() + offset).ToPointer(), length <= 0 ? mat.GetRealStep() : length);
 
     /// <summary>
     /// Gets a col span to manipulate or read pixels
@@ -325,7 +311,7 @@ public static class EmguExtensions
     }
 
     /// <summary>
-    /// Gets the total length of this <see cref="Mat"/></param>
+    /// Gets the total length of this <see cref="Mat"/>
     /// </summary>
     /// <param name="mat"></param>
     /// <returns>The total length of this <see cref="Mat"/></returns>
@@ -470,6 +456,23 @@ public static class EmguExtensions
         using var vec = new VectorOfVectorOfPoint(contours);
         return src.CreateMask(vec);
     }
+
+    public static Mat TrimByBounds(this Mat src)
+    {
+        var rect = CvInvoke.BoundingRectangle(src);
+        if (rect.Size == Size.Empty) return src.New();
+        if (src.Size == rect.Size) return src.Clone();
+        using var roi = src.Roi(rect);
+        return roi.Clone();
+    }
+
+    public static void TrimByBounds(this Mat src, Mat dst)
+    {
+        var mat = src.TrimByBounds();
+        CvInvoke.Swap(mat, dst);
+        src.Dispose();
+    }
+
 
     #endregion
 
