@@ -1479,8 +1479,10 @@ public partial class MainWindow : WindowEx
                 if (fileExtension is not null && convertToFormat is not null)
                 {
                     var directory = SlicerFile.DirectoryPath;
-                    var filename = FileFormat.GetFileNameStripExtensions(SlicerFile.FileFullPath);
-                    var targetFilename = $"{filename}.{convertFileExtension}";
+                    var oldFile = SlicerFile.FileFullPath;
+                    var oldFileName = SlicerFile.Filename;
+                    var filenameNoExt = SlicerFile.FilenameNoExt;
+                    var targetFilename = $"{filenameNoExt}.{convertFileExtension}";
                     var outputFile = Path.Combine(directory, targetFilename);
                     FileFormat convertedFile = null;
 
@@ -1507,7 +1509,7 @@ public partial class MainWindow : WindowEx
                             var dialog = new SaveFileDialog
                             {
                                 Directory = directory,
-                                InitialFileName = filename,
+                                InitialFileName = filenameNoExt,
                                 DefaultExtension = $".{convertFileExtension}",
                                 Filters = new List<FileDialogFilter>
                                 {
@@ -1563,6 +1565,31 @@ public partial class MainWindow : WindowEx
                         {
                             SlicerFile = convertedFile;
                             AddRecentFile(SlicerFile.FileFullPath);
+
+                            bool removeSourceFile = false;
+                            switch (Settings.Automations.RemoveSourceFileAfterAutoConversion)
+                            {
+                                case RemoveSourceFileAction.Yes:
+                                    removeSourceFile = true;
+                                    break;
+                                case RemoveSourceFileAction.Prompt:
+                                    if (await this.MessageBoxQuestion($"File was successfully converted to: {targetFilename}\n" +
+                                                                      $"Do you want to remove the source file: {oldFileName}", $"Remove source file: {oldFileName}") == ButtonResult.Yes) removeSourceFile = true;
+                                    break;
+                            }
+
+                            if (removeSourceFile)
+                            {
+                                try
+                                {
+                                    File.Delete(oldFile!);
+                                    RemoveRecentFile(oldFile);
+                                }
+                                catch (Exception e)
+                                {
+                                    Debug.WriteLine(e);
+                                }
+                            }
                         }
                     }
                 }
@@ -1838,17 +1865,19 @@ public partial class MainWindow : WindowEx
                 : Settings.General.DefaultDirectoryConvertFile
         };
 
-        var result = await saveDialog.ShowAsync(this);
-        if (string.IsNullOrEmpty(result)) return;
+        var newFilePath = await saveDialog.ShowAsync(this);
+        if (string.IsNullOrEmpty(newFilePath)) return;
 
         IsGUIEnabled = false;
-        ShowProgressWindow($"Converting {Path.GetFileName(SlicerFile.FileFullPath)} to {Path.GetExtension(result)}");
+        var oldFileName = SlicerFile.Filename!;
+        var oldFile = SlicerFile.FileFullPath!;
+        ShowProgressWindow($"Converting {oldFileName} to {Path.GetExtension(newFilePath)}");
 
         var task = await Task.Factory.StartNew(() =>
         {
             try
             {
-                return SlicerFile.Convert(fileFormat, result, version, Progress) is not null;
+                return SlicerFile.Convert(fileFormat, newFilePath, version, Progress) is not null;
             }
             catch (OperationCanceledException)
             {
@@ -1856,7 +1885,7 @@ public partial class MainWindow : WindowEx
             catch (Exception ex)
             {
                 string extraMessage = string.Empty;
-                if (SlicerFile.FileFullPath.EndsWith(".sl1"))
+                if (SlicerFile.FileFullPath!.EndsWith(".sl1"))
                 {
                     extraMessage = "Note: When converting from SL1 make sure you have the correct printer selected, you MUST use a UVtools base printer.\n" +
                                    "Go to \"Help\" -> \"Install profiles into PrusaSlicer\" to install printers.\n";
@@ -1870,38 +1899,50 @@ public partial class MainWindow : WindowEx
         });
 
         IsGUIEnabled = true;
-           
+        
         if (task)
         {
             var question = await this.MessageBoxQuestion(
                 $"Conversion completed in {LastStopWatch.ElapsedMilliseconds / 1000}s\n\n" +
-                $"Do you want to open '{Path.GetFileName(result)}' in a new window?\n" +
+                $"Do you want to open '{Path.GetFileName(newFilePath)}' in a new window?\n" +
                 "Yes: Open in a new window.\n" +
                 "No: Open in this window.\n" +
                 "Cancel: Do not perform any action.\n",
                 "Conversion complete", ButtonEnum.YesNoCancel);
+
             switch (question)
             {
                 case ButtonResult.No:
-                    ProcessFile(result, _actualLayer);
+                    ProcessFile(newFilePath, _actualLayer);
                     break;
                 case ButtonResult.Yes:
-                    App.NewInstance(result);
+                    App.NewInstance(newFilePath);
                     break;
             }
-        }
-        else
-        {
-            try
+
+            bool removeSourceFile = false;
+            switch (Settings.Automations.RemoveSourceFileAfterAutoConversion)
             {
-                if (File.Exists(result))
-                {
-                    File.Delete(result);
-                }
+                case RemoveSourceFileAction.Yes:
+                    removeSourceFile = true;
+                    break;
+                case RemoveSourceFileAction.Prompt:
+                    if (await this.MessageBoxQuestion($"File was successfully converted to: {Path.GetFileName(newFilePath)}\n" +
+                                                      $"Do you want to remove the source file: {oldFileName}", $"Remove source file: {oldFileName}") == ButtonResult.Yes) removeSourceFile = true;
+                    break;
             }
-            catch (Exception ex)
+
+            if (removeSourceFile)
             {
-                Debug.WriteLine(ex);
+                try
+                {
+                    File.Delete(oldFile!);
+                    RemoveRecentFile(oldFile);
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine(ex);
+                }
             }
         }
     }
@@ -2219,6 +2260,25 @@ public partial class MainWindow : WindowEx
         MenuFileOpenRecentItems = items.ToArray();
     }
 
+    private void RemoveRecentFile(string file)
+    {
+        RecentFiles.Load();
+        RecentFiles.Instance.Remove(file);
+        RecentFiles.Save();
+        RefreshRecentFiles();
+    }
+
+    private void RemoveRecentFile(IEnumerable<string> files)
+    {
+        RecentFiles.Load();
+        foreach (var file in files)
+        {
+            RecentFiles.Instance.Remove(file);
+        }
+        RecentFiles.Save();
+        RefreshRecentFiles();
+    }
+
     private void AddRecentFile(string file)
     {
         if (file == Path.Combine(App.ApplicationPath, About.DemoFile)) return;
@@ -2256,11 +2316,7 @@ public partial class MainWindow : WindowEx
             if (await this.MessageBoxQuestion($"Are you sure you want to remove the selected file from the recent list?\n{file}",
                     "Remove the file from recent list?") == ButtonResult.Yes)
             {
-                RecentFiles.Load();
-                RecentFiles.Instance.Remove(file);
-                RecentFiles.Save();
-
-                RefreshRecentFiles();
+                RemoveRecentFile(file);
             }
 
             return;

@@ -1878,7 +1878,7 @@
 						<StackPanel Orientation="Vertical">
 							<TextBlock Classes="GroupBoxHeader" Text="Common"/>
 							<StackPanel Margin="10" Orientation="Vertical" Spacing="10">
-								<CheckBox IsChecked="{Binding Settings.Automations.SaveFileAfterModifications}" Content="Auto save the file after apply any automation(s)"/>
+								<CheckBox IsChecked="{Binding Settings.Automations.SaveFileAfterModifications}" Content="Automatically save the file after apply any automation(s)"/>
 							</StackPanel>
 
 						</StackPanel>
@@ -1896,7 +1896,29 @@
 &#x0a;2) Converts the VDT files to the format specified on 'Voxeldance Tango - Printer settings - Notes' on 'FILEFORMAT_XXX' variable.
 &#x0a;A new file with same name but a new extension will be created and overwrite any previous file.
 &#x0a;After a successful conversion the new file will automatically load in instead of the loaded SL1 file."
-										  Content="Auto convert SL1 and VDT files to the target format when possible and load it back"/>
+										  Content="Automatically convert SL1 and VDT files to the target format when possible and load it back"/>
+                                
+                                <Grid RowDefinitions="Auto,10,Auto" ColumnDefinitions="Auto,10,*">
+                                    <TextBlock Grid.Row="0" Grid.Column="0"
+                                               VerticalAlignment="Center"
+                                               Text="Remove source file after automatic conversion:"/>
+                                    <ComboBox Grid.Row="0" Grid.Column="2"
+                                              HorizontalAlignment="Stretch"
+                                              Items="{Binding Settings.Automations.RemoveSourceFileAfterAutoConversion, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                                              SelectedItem="{Binding Settings.Automations.RemoveSourceFileAfterAutoConversion, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
+
+                                    <TextBlock Grid.Row="2" Grid.Column="0"
+                                               VerticalAlignment="Center"
+                                               Text="Remove source file after manual conversion:"/>
+                                    <ComboBox Grid.Row="2" Grid.Column="2"
+                                              HorizontalAlignment="Stretch"
+                                              Items="{Binding Settings.Automations.RemoveSourceFileAfterManualConversion, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                                              SelectedItem="{Binding Settings.Automations.RemoveSourceFileAfterManualConversion, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
+
+								</Grid>
+
+
+
 							</StackPanel>
 
 						</StackPanel>

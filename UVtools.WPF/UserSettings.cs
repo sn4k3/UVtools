@@ -1404,6 +1404,8 @@ public sealed class UserSettings : BindableBase
     {
         private bool _saveFileAfterModifications = true;
         private bool _autoConvertFiles = true;
+        private RemoveSourceFileAction _removeSourceFileAfterAutoConversion = RemoveSourceFileAction.No;
+        private RemoveSourceFileAction _removeSourceFileAfterManualConversion = RemoveSourceFileAction.No;
 
         public bool SaveFileAfterModifications
         {
@@ -1415,6 +1417,18 @@ public sealed class UserSettings : BindableBase
         {
             get => _autoConvertFiles;
             set => RaiseAndSetIfChanged(ref _autoConvertFiles, value);
+        }
+
+        public RemoveSourceFileAction RemoveSourceFileAfterAutoConversion
+        {
+            get => _removeSourceFileAfterAutoConversion;
+            set => RaiseAndSetIfChanged(ref _removeSourceFileAfterAutoConversion, value);
+        }
+        
+        public RemoveSourceFileAction RemoveSourceFileAfterManualConversion
+        {
+            get => _removeSourceFileAfterManualConversion;
+            set => RaiseAndSetIfChanged(ref _removeSourceFileAfterManualConversion, value);
         }
 
         public AutomationsUserSettings Clone()

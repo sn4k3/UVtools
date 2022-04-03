@@ -106,6 +106,18 @@ public enum TimeUnits : byte
     Seconds
 }
 
+public enum RemoveSourceFileAction : byte
+{
+    [Description("Keep source file")]
+    No,
+
+    [Description("Remove source file")]
+    Yes,
+
+    [Description("Prompt before remove source file")]
+    Prompt
+}
+
 public static class Enumerations
 {
     public static FlipType ToOpenCVFlipType(FlipDirection flip)
