@@ -5,8 +5,8 @@ on:
     types: [published]
 
 env:
-   PACKAGE_NAME: .+win-x64.+\.msi
-   PACKAGE_ID: PTRTECH.UVtools
+   WINGET_PACKAGE_NAME: .+win-x64.+\.msi
+   WINGET_PACKAGE_ID: PTRTECH.UVtools
    WINGET_TOKEN: ${{ secrets.WINGET_TOKEN }}
    NUGET_TOKEN: ${{ secrets.NUGET_TOKEN }}
    
@@ -21,7 +21,8 @@ jobs:
         run: iwr -Uri https://aka.ms/wingetcreate/latest -OutFile wingetcreate.exe
       - name: Set VERSION variable from tag
         run: | 
-          $version = $github.event.release.tag_name.Replace('v', '')
+          $github = Get-Content '${{ github.event_path }}' | ConvertFrom-Json
+          $version = $github.release.tag_name.Replace('v', '')
           if($version.Length -lt 5)
           { 
              Write-Error "Version $version is too short!"
@@ -31,16 +32,17 @@ jobs:
           "VERSION=${version}" >> $env:GITHUB_ENV
       - name: Set INSTALLER_URL variable from release asset
         run: | 
-          $installerUrl = $github.event.release.assets | Where-Object -Property name -match "${PACKAGE_NAME}" | Select -ExpandProperty browser_download_url -First 1
+          $github = Get-Content '${{ github.event_path }}' | ConvertFrom-Json
+          $installerUrl = $github.release.assets | Where-Object -Property name -match "${env:WINGET_PACKAGE_NAME}" | Select -ExpandProperty browser_download_url -First 1
           if($null -eq $installerUrl)
           { 
-             Write-Error "Installer URL not found on ${github.event.release.assets}"
+             Write-Error "Installer URL not found on ${github.release.assets}"
              exit -1 
           }
           Write-Output "Installer url: ${installerUrl}"
           "INSTALLER_URL=${installerUrl}" >> $env:GITHUB_ENV
       - name: Submit package to Windows Package Manager Community Repository
-        run: .\wingetcreate.exe update ${PACKAGE_ID} --version ${VERSION} --urls ${INSTALLER_URL} --token ${WINGET_TOKEN} --submit
+        run: .\wingetcreate.exe update ${env:WINGET_PACKAGE_ID} --version ${env:VERSION} --urls ${env:INSTALLER_URL} --token ${env:WINGET_TOKEN} --submit
         
   nuget:
     name: Nuget - Publish package
