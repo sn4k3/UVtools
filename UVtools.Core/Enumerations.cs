@@ -108,13 +108,13 @@ public enum TimeUnits : byte
 
 public enum RemoveSourceFileAction : byte
 {
-    [Description("Keep source file")]
+    [Description("Keep the source file")]
     No,
 
-    [Description("Remove source file")]
+    [Description("Remove the source file")]
     Yes,
 
-    [Description("Prompt before remove source file")]
+    [Description("Prompt before remove the source file")]
     Prompt
 }
 
