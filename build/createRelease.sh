@@ -108,6 +108,7 @@ rm -rf "$projectDir/obj/$buildWith/net$netVersion/$runtime" 2>/dev/null
 
 echo "5. Setting Permissions"
 chmod -fv a+x "$publishRuntimeDir/UVtools"
+chmod -fv a+x "$publishRuntimeDir/UVtoolsCmd"
 chmod -fv a+x "$publishRuntimeDir/UVtools.sh"
 
 if [[ $runtime == win-* ]]; then
@@ -134,9 +135,11 @@ elif [[ $runtime == osx-* ]]; then
         if [ "$zipPackage" == true -a -d "$osxApp" ] ; then
             echo "7. Compressing '$publishName.app' to '$publishName.zip'"
             cd "$publishDir"
-            mv "$publishName.app" "UVtools.app"
+            #mv "$publishName.app" "UVtools.app"
+            ln -s "$publishName.app" "UVtools.app"
             zip -rq "$publishDir/$publishName.zip" "UVtools.app"
-            mv "UVtools.app" "$publishName.app"
+            #mv "UVtools.app" "$publishName.app"
+            rm -f "UVtools.app"
             cd "$rootDir"
             zipPackage=false
         fi
