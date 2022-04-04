@@ -80,6 +80,7 @@ But also, i need victims for test subject. Proceed at your own risk!
 - PWS (Photon Workshop)
 - PW0 (Photon Workshop)
 - PWX (Photon Workshop)
+- DLP (Photon Workshop)
 - PWMO (Photon Workshop)
 - PWMA (Photon Workshop)
 - PWMS (Photon Workshop)
@@ -104,7 +105,7 @@ But also, i need victims for test subject. Proceed at your own risk!
 - VDA.ZIP (Voxeldance Additive)
 - VDT (Voxeldance Tango)
 - UVJ (Zip file format for manual manipulation)
-- Image files (png, jpg, jpeg, gif, bmp)
+- Image files (png, jpg, jpeg, jp2, tif, bmp, pbm, pgm, ras, sr)
 
 # Available printers for PrusaSlicer
 
