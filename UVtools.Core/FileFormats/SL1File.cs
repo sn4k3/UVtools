@@ -488,7 +488,10 @@ public class SL1File : FileFormat
 
     public override float MaterialGrams => (float) Math.Round(OutputConfigSettings.UsedMaterial * MaterialSettings.MaterialDensity, 3);
 
-    public override float MaterialCost => MaterialSettings.BottleVolume > 0 ? (float) Math.Round(OutputConfigSettings.UsedMaterial * MaterialSettings.BottleCost / MaterialSettings.BottleVolume, 3) : 0;
+    public override float MaterialCost =>
+        MaterialSettings.BottleVolume > 0
+            ? (float) Math.Round(OutputConfigSettings.UsedMaterial * MaterialSettings.BottleCost / MaterialSettings.BottleVolume, 3)
+            : base.MaterialCost;
 
     public override string? MaterialName
     {

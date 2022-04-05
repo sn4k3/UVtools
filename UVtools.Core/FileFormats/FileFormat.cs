@@ -2725,6 +2725,11 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     }
 
     /// <summary>
+    /// Gets the starting material milliliters when the file loaded
+    /// </summary>
+    public float StartingMaterialMilliliters { get; private set; }
+
+    /// <summary>
     /// Gets the estimate used material in ml
     /// </summary>
     public virtual float MaterialMilliliters {
@@ -2740,7 +2745,13 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
                 value = (float)Math.Round(value, 3);
             }
 
-            RaiseAndSetIfChanged(ref _materialMilliliters, value);
+            if(!RaiseAndSetIfChanged(ref _materialMilliliters, value)) return;
+
+            if (StartingMaterialMilliliters > 0 && StartingMaterialCost > 0)
+            {
+                MaterialCost = _materialMilliliters * StartingMaterialCost / StartingMaterialMilliliters;
+            }
+            //RaisePropertyChanged(nameof(MaterialCost));
         }
     }
 
@@ -2753,8 +2764,13 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     public virtual float MaterialGrams
     {
         get => _materialGrams;
-        set => RaiseAndSetIfChanged(ref _materialGrams, value);
+        set => RaiseAndSetIfChanged(ref _materialGrams, (float)Math.Round(value, 3));
     }
+
+    /// <summary>
+    /// Gets the starting material cost when the file loaded
+    /// </summary>
+    public float StartingMaterialCost { get; private set; }
 
     /// <summary>
     /// Gets the estimate material cost
@@ -2762,7 +2778,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     public virtual float MaterialCost
     {
         get => _materialCost;
-        set => RaiseAndSetIfChanged(ref _materialCost, value);
+        set => RaiseAndSetIfChanged(ref _materialCost, (float)Math.Round(value, 3));
     }
 
     /// <summary>
@@ -3295,6 +3311,9 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
 
         DecodeInternally(progress);
         IsModified = false;
+        StartingMaterialMilliliters = MaterialMilliliters;
+        StartingMaterialCost = MaterialCost;
+        
 
         progress.ThrowIfCancellationRequested();
 
