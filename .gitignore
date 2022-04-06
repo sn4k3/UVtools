@@ -359,4 +359,4 @@ MigrationBackup/
 
 build/secret/
 manifests/
-
+.idea/
