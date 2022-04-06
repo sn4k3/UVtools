@@ -343,6 +343,10 @@ Nuget package: https://www.nuget.org/packages/UVtools.Core
 dotnet add package UVtools.Core
 ```
 
+## Scripting:
+
+- [Powershell](https://github.com/sn4k3/UVtools/tree/master/Scripts/UVtools.Powershell)
+- [Python](https://github.com/sn4k3/UVtools/tree/master/Scripts/UVtools.Python)
 
 ## Develop and build from Source
 
@@ -359,7 +363,6 @@ The fastest way to compile the project is by run the `build/compile.bat`, howeve
    1. https://marketplace.visualstudio.com/items?itemName=WixToolset.WiXToolset
 1. Open UVtools.sln
 1. Build
-
 
 # TODO
 - More file formats
