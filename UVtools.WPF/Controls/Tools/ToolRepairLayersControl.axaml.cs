@@ -33,6 +33,7 @@ public class ToolRepairLayersControl : ToolControl
         SuctionCupsVentHole = UserSettings.Instance.LayerRepair.SuctionCupsVentHole,
         GapClosingIterations = UserSettings.Instance.LayerRepair.ClosingIterations,
         NoiseRemovalIterations = UserSettings.Instance.LayerRepair.OpeningIterations,
+        IslandDetectionConfig = App.MainWindow.GetIslandDetectionConfiguration()
     };
 
     public void SetFromUserSettings()
