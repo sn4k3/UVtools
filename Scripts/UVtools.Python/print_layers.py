@@ -2,7 +2,7 @@
 """print_layers.py: Print all layers from a file."""
 __author__      = "Someone"
 __copyright__   = "Copyright 2022, Planet Earth"
-from UVToolsBootstrap import *
+from UVtoolsBootstrap import *
 
 file = input('Input the file path: ')
 
