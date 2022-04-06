@@ -43,13 +43,12 @@ public sealed class UserSettings : BindableBase
         private bool _loadDemoFileOnStartup = true;
         private bool _loadLastRecentFileOnStartup;
         private int _maxDegreeOfParallelism = -1;
-        private Layer.LayerCompressionCodec _layerCompressionCodec = CoreSettings.DefaultLayerCompressionCodec;
-
+        private LayerCompressionCodec _layerCompressionCodec = CoreSettings.DefaultLayerCompressionCodec;
+        private float _averageResin1000MlBottleCost = CoreSettings.AverageResin1000MlBottleCost;
         private bool _windowsCanResize;
         private bool _windowsTakeIntoAccountScreenScaling = true;
         private ushort _windowsHorizontalMargin = 100;
         private ushort _windowsVerticalMargin = 60;
-        private bool _expandDescriptions = true;
         private byte _defaultOpenFileExtensionIndex;
         private string _defaultDirectoryOpenFile;
         private string _defaultDirectorySaveFile;
@@ -102,10 +101,16 @@ public sealed class UserSettings : BindableBase
             set => RaiseAndSetIfChanged(ref _maxDegreeOfParallelism, Math.Min(value, Environment.ProcessorCount));
         }
 
-        public Layer.LayerCompressionCodec LayerCompressionCodec
+        public LayerCompressionCodec LayerCompressionCodec
         {
             get => _layerCompressionCodec;
             set => RaiseAndSetIfChanged(ref _layerCompressionCodec, value);
+        }
+
+        public float AverageResin1000MlBottleCost
+        {
+            get => _averageResin1000MlBottleCost;
+            set => RaiseAndSetIfChanged(ref _averageResin1000MlBottleCost, value);
         }
 
         public bool WindowsCanResize
@@ -130,12 +135,6 @@ public sealed class UserSettings : BindableBase
         {
             get => _windowsVerticalMargin;
             set => RaiseAndSetIfChanged(ref _windowsVerticalMargin, value);
-        }
-
-        public bool ExpandDescriptions
-        {
-            get => _expandDescriptions;
-            set => RaiseAndSetIfChanged(ref _expandDescriptions, value);
         }
 
         public byte DefaultOpenFileExtensionIndex
@@ -1372,9 +1371,16 @@ public sealed class UserSettings : BindableBase
     [Serializable]
     public sealed class ToolsUserSettings : BindableBase
     {
+        private bool _expandDescriptions = true;
         private bool _restoreLastUsedSettings;
         private bool _lastUsedSettingsKeepOnCloseFile = true;
         private bool _lastUsedSettingsPriorityOverDefaultProfile = true;
+
+        public bool ExpandDescriptions
+        {
+            get => _expandDescriptions;
+            set => RaiseAndSetIfChanged(ref _expandDescriptions, value);
+        }
 
         public bool RestoreLastUsedSettings
         {
@@ -1571,7 +1577,7 @@ public sealed class UserSettings : BindableBase
     [NotNull]
     public string AppVersion
     {
-        get => _appVersion ??= App.Version.ToString();
+        get => _appVersion ??= About.VersionStr;
         set => RaiseAndSetIfChanged(ref _appVersion, value);
     }
 
@@ -1656,6 +1662,7 @@ public sealed class UserSettings : BindableBase
 
             CoreSettings.MaxDegreeOfParallelism = _instance.General.MaxDegreeOfParallelism;
             CoreSettings.DefaultLayerCompressionCodec = _instance.General.LayerCompressionCodec;
+            CoreSettings.AverageResin1000MlBottleCost = _instance.General.AverageResin1000MlBottleCost;
 
             if (_instance.Network.RemotePrinters.Count == 0)
             {
@@ -1879,6 +1886,7 @@ public sealed class UserSettings : BindableBase
         _instance.ModifiedDateTime = DateTime.Now;
         CoreSettings.MaxDegreeOfParallelism = _instance.General.MaxDegreeOfParallelism;
         CoreSettings.DefaultLayerCompressionCodec = _instance.General.LayerCompressionCodec;
+        CoreSettings.AverageResin1000MlBottleCost = _instance.General.AverageResin1000MlBottleCost;
         try
         {
             XmlExtensions.SerializeToFile(_instance, FilePath, XmlExtensions.SettingsIndent);
@@ -1891,7 +1899,7 @@ public sealed class UserSettings : BindableBase
 
     public static void SetVersion()
     {
-        Instance.AppVersion = App.Version.ToString();
+        Instance.AppVersion = About.VersionStr;
     }
 
     public static object[] PackObjects => 

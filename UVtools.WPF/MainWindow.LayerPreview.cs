@@ -1540,7 +1540,7 @@ public partial class MainWindow
 
             if (_showLayerImageFlippedVertically)
             {
-                rectangle.Location = new Point(rectangle.X, LayerCache.Image.Height - 1 - rectangle.Bottom);
+                rectangle.Location = new Point(rectangle.X, LayerCache.Image.Height - rectangle.Bottom);
             }
         }
 

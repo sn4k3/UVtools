@@ -298,7 +298,7 @@ foreach($line in $changelog) {
     }
 }
 Write-Host $sb.ToString()
-Set-Content -Path "UVtools.Core/RELEASE_NOTES.md" -Value $sb.ToString()
+Set-Content -Path "$rootFolder/RELEASE_NOTES.md" -Value $sb.ToString()
 
 
 if($null -ne $enableNugetPublish -and $enableNugetPublish)

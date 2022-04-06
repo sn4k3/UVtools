@@ -146,11 +146,11 @@ public class AppVersionChecker : BindableBase
             string tag_name = json["tag_name"]?.ToString();
             if (string.IsNullOrEmpty(tag_name)) return false;
             tag_name = tag_name.Trim(' ', 'v', 'V');
-            Debug.WriteLine($"Version checker: v{App.VersionStr} <=> v{tag_name}");
+            Debug.WriteLine($"Version checker: v{About.VersionStr} <=> v{tag_name}");
             Version checkVersion = new(tag_name);
             Changelog = json["body"]?.ToString();
             //if (string.Compare(tag_name, App.VersionStr, StringComparison.OrdinalIgnoreCase) > 0)
-            if (App.Version.CompareTo(checkVersion) < 0)
+            if (About.Version.CompareTo(checkVersion) < 0)
             {
                 Debug.WriteLine($"New version detected: {DownloadLink}\n" +
                                 $"{_changelog}");
@@ -246,7 +246,7 @@ public class AppVersionChecker : BindableBase
                     {
                         stream.NewLine = "\n";
                         await stream.WriteLineAsync("#!/bin/bash");
-                        await stream.WriteLineAsync($"echo {About.Software} v{App.Version} updater script");
+                        await stream.WriteLineAsync($"echo {About.Software} v{About.Version} updater script");
                         await stream.WriteLineAsync($"cd '{App.ApplicationPath}'");
                         await stream.WriteLineAsync($"killall {About.Software}");
                         await stream.WriteLineAsync("sleep 0.5");

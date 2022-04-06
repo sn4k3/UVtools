@@ -330,10 +330,10 @@ public class App : Application
 
     #endregion
 
-    #region Assembly Attribute Accessors
+    #region Assembly properties
+    public static Assembly WpfAssembly => Assembly.GetExecutingAssembly();
 
-    public static Version Version => Assembly.GetExecutingAssembly().GetName().Version!;
-    public static string VersionStr => Version.ToString(3);
+    public static string AssemblyVersion => WpfAssembly.GetName().Version?.ToString()!;
 
     public static string AssemblyName => Assembly.GetExecutingAssembly().GetName().Name!;
 
@@ -341,32 +341,30 @@ public class App : Application
     {
         get
         {
-            object[] attributes = Assembly.GetExecutingAssembly().GetCustomAttributes(typeof(AssemblyTitleAttribute), false);
+            var attributes = Assembly.GetExecutingAssembly().GetCustomAttributes(typeof(AssemblyTitleAttribute), false);
             if (attributes.Length > 0)
             {
-                AssemblyTitleAttribute titleAttribute = (AssemblyTitleAttribute)attributes[0];
-                if (titleAttribute.Title != "")
+                var titleAttribute = (AssemblyTitleAttribute)attributes[0];
+                if (titleAttribute.Title != string.Empty)
                 {
                     return titleAttribute.Title;
                 }
             }
-            return Path.GetFileNameWithoutExtension(Assembly.GetExecutingAssembly().Location);
+            return Path.GetFileNameWithoutExtension(WpfAssembly.Location);
         }
     }
-
-    public static string AssemblyVersion => Assembly.GetExecutingAssembly().GetName().Version?.ToString()!;
 
     public static string AssemblyDescription
     {
         get
         {
-            object[] attributes = Assembly.GetExecutingAssembly().GetCustomAttributes(typeof(AssemblyDescriptionAttribute), false);
+            var attributes = WpfAssembly.GetCustomAttributes(typeof(AssemblyDescriptionAttribute), false);
             if (attributes.Length == 0)
             {
-                return "";
+                return string.Empty;
             }
 
-            string description = ((AssemblyDescriptionAttribute)attributes[0]).Description + $"{Environment.NewLine}{Environment.NewLine}Available File Formats:";
+            var description = ((AssemblyDescriptionAttribute)attributes[0]).Description + $"{Environment.NewLine}{Environment.NewLine}Available File Formats:";
 
             return FileFormat.AvailableFormats.SelectMany(fileFormat => fileFormat.FileExtensions).Aggregate(description, (current, fileExtension) => current + $"{Environment.NewLine}- {fileExtension.Description} (.{fileExtension.Extension})");
         }
@@ -376,12 +374,8 @@ public class App : Application
     {
         get
         {
-            object[] attributes = Assembly.GetExecutingAssembly().GetCustomAttributes(typeof(AssemblyProductAttribute), false);
-            if (attributes.Length == 0)
-            {
-                return "";
-            }
-            return ((AssemblyProductAttribute)attributes[0]).Product;
+            var attributes = WpfAssembly.GetCustomAttributes(typeof(AssemblyProductAttribute), false);
+            return attributes.Length == 0 ? string.Empty : ((AssemblyProductAttribute)attributes[0]).Product;
         }
     }
 
@@ -389,12 +383,8 @@ public class App : Application
     {
         get
         {
-            object[] attributes = Assembly.GetExecutingAssembly().GetCustomAttributes(typeof(AssemblyCopyrightAttribute), false);
-            if (attributes.Length == 0)
-            {
-                return "";
-            }
-            return ((AssemblyCopyrightAttribute)attributes[0]).Copyright;
+            var attributes = WpfAssembly.GetCustomAttributes(typeof(AssemblyCopyrightAttribute), false);
+            return attributes.Length == 0 ? string.Empty : ((AssemblyCopyrightAttribute)attributes[0]).Copyright;
         }
     }
 
@@ -402,14 +392,9 @@ public class App : Application
     {
         get
         {
-            object[] attributes = Assembly.GetExecutingAssembly().GetCustomAttributes(typeof(AssemblyCompanyAttribute), false);
-            if (attributes.Length == 0)
-            {
-                return "";
-            }
-            return ((AssemblyCompanyAttribute)attributes[0]).Company;
+            var attributes = WpfAssembly.GetCustomAttributes(typeof(AssemblyCompanyAttribute), false);
+            return attributes.Length == 0 ? string.Empty : ((AssemblyCompanyAttribute)attributes[0]).Company;
         }
     }
-
     #endregion
 }

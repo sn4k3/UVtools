@@ -8,6 +8,7 @@ using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
 using MessageBox.Avalonia.Enums;
+using UVtools.Core;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Network;
 using UVtools.Core.Objects;
@@ -63,7 +64,7 @@ public class SettingsWindow : WindowEx
 
     public SettingsWindow()
     {
-        Title += $" [v{App.VersionStr}]";
+        Title += $" [v{About.VersionStr}]";
         SettingsBackup = UserSettings.Instance.Clone();
 
         var fileFormats = new List<string>

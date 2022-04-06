@@ -71,7 +71,13 @@ public static class CoreSettings
     /// <summary>
     /// Gets or sets the default compression type for layers
     /// </summary>
-    public static Layer.LayerCompressionCodec DefaultLayerCompressionCodec { get; set; } = Layer.LayerCompressionCodec.Png;
+    public static LayerCompressionCodec DefaultLayerCompressionCodec { get; set; } = LayerCompressionCodec.Png;
+
+    /// <summary>
+    /// <para>The average resin 1000ml bottle cost, to use when bottle cost is not available.</para>
+    /// <para>Use 0 to disable.</para>
+    /// </summary>
+    public static float AverageResin1000MlBottleCost = 60f;
 
     /// <summary>
     /// Gets the default folder to save the settings

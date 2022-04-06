@@ -3,6 +3,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:controls="clr-namespace:UVtools.WPF.Controls"
+        xmlns:core="clr-namespace:UVtools.Core;assembly=UVtools.Core"
         mc:Ignorable="d" d:DesignWidth="960" d:DesignHeight="700"
         x:Class="UVtools.WPF.Windows.AboutWindow"
         Width="960" Height="710"
@@ -18,7 +19,7 @@
 			<Grid ColumnDefinitions="Auto,*">
                 <controls:ButtonWithIcon
                     Grid.Column="0"
-                    Command="{Binding CopyInformationToClipboard}"
+                    Command="{Binding CopyEssentialInformation}"
                     Padding="10"
                     VerticalContentAlignment="Center"
                     HorizontalAlignment="Right"
@@ -144,16 +145,17 @@
 
     <Border>
         <Grid
-            RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,*"
+            RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,5,*"
             Margin="20">
 
-            <TextBlock Grid.Row="0" Text="{Binding Software}" FontWeight="Bold"/>
-            <TextBlock Grid.Row="2" Text="{Binding Version}"/>
-            <TextBlock Grid.Row="4" Text="{Binding Copyright}"/>
-            <TextBlock Grid.Row="6" Text="{Binding Company}"/>
+            <TextBlock Grid.Row="0" Text="{Binding Source={x:Static core:About.Software}}" FontWeight="Bold"/>
+            <TextBlock Grid.Row="2" Text="{Binding Source={x:Static core:About.VersionArch}, StringFormat=Version: {0}}"/>
+            <TextBlock Grid.Row="4" Text="{Binding Source={x:Static core:About.AssemblyCopyright}}"/>
+            <TextBlock Grid.Row="6" Text="{Binding Source={x:Static core:About.Author}}"/>
+			<!--<TextBlock Grid.Row="8" Text="{Binding AgeStr, StringFormat=Age: {0}}"/>-->
             <controls:ButtonWithIcon Grid.Row="8" VerticalAlignment="Center"
                     Command="{Binding OpenLicense}"
-                    Text="{Binding License}"
+                    Text="{Binding Source={x:Static core:About.License}}"
 					Icon="fas fa-balance-scale"/>
 
             <TabControl Grid.Row="10">
@@ -162,7 +164,7 @@
                              IsReadOnly="True"
                              ScrollViewer.HorizontalScrollBarVisibility="Auto"
                              ScrollViewer.VerticalScrollBarVisibility="Auto"
-                             Text="{Binding Description}"/>
+                             Text="{Binding Source={x:Static core:About.AssemblyDescription}}"/>
 				</TabItem>
 
                 <TabItem Header="OpenCV">

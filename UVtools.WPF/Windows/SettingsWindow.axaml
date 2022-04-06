@@ -50,8 +50,8 @@
                   <StackPanel Orientation="Vertical">
                       <TextBlock Classes="GroupBoxHeader" Text="Tasks"/>
                       <StackPanel Margin="10" Orientation="Vertical" Spacing="10">
-                        <Grid RowDefinitions="Auto,10,Auto"
-                              ColumnDefinitions="Auto,10,150,5,Auto,20,Auto,2,Auto,2,Auto,2,Auto,2,Auto,2,Auto,2,Auto">
+                        <Grid RowDefinitions="Auto,10,Auto,10,Auto"
+                              ColumnDefinitions="Auto,10,180,5,Auto,20,Auto,2,Auto,2,Auto,2,Auto,2,Auto,2,Auto,2,Auto">
 
                           <TextBlock Grid.Row="0" Grid.Column="0"
                                      VerticalAlignment="Center"
@@ -135,6 +135,29 @@
                                   HorizontalAlignment="Stretch"
                                   Items="{Binding Settings.General.LayerCompressionCodec, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
                                   SelectedItem="{Binding Settings.General.LayerCompressionCodec, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
+
+                          <TextBlock Grid.Row="4" Grid.Column="0"
+                                     VerticalAlignment="Center"
+                                     ToolTip.Tip="The average cost per one resin bottle of 1000ml.
+&#x0a;Used to calculate the material cost when the file lacks that information.
+&#x0a;Use 0 to disable this feature and only show the cost if file have that information.
+&#x0a;If this value is changed, you need to reload the current file to update the cost."
+                                     Text="Average resin bottle cost:"/>
+
+                          <NumericUpDown Grid.Row="4" Grid.Column="2"
+                                         Classes="ValueLabel ValueLabel_euro"
+                                         VerticalAlignment="Center"
+                                         ToolTip.Tip="The average cost per one resin bottle of 1000ml.
+&#x0a;Used to calculate the material cost when the file lacks that information.
+&#x0a;Use 0 to disable this feature and only show the cost if file have that information.
+&#x0a;If this value is changed, you need to reload the current file to update the cost."
+                                         Minimum="0"
+                                         Maximum="10000"
+                                         Increment="1"
+                                         Value="{Binding Settings.General.AverageResin1000MlBottleCost}"/>
+                          <TextBlock Grid.Row="4" Grid.Column="4" Grid.ColumnSpan="15"
+                                     VerticalAlignment="Center"
+                                     Text="/ 1000ml bottle"/>
                         </Grid>
                       </StackPanel>
 
@@ -188,10 +211,6 @@
                                              Increment="1"
                                              Value="{Binding Settings.General.WindowsVerticalMargin}"/>
                           </Grid>
-
-                          <CheckBox IsChecked="{Binding Settings.General.ExpandDescriptions}"
-                                    ToolTip.Tip="Disable this if you want to gain some vertical space for windows, you can still toggle the descriptions and read them if required."
-                                    Content="Expand and show tool descriptions by default"/>
                       </StackPanel>
 
                   </StackPanel>
@@ -1848,8 +1867,12 @@
               <StackPanel Orientation="Vertical">
                 <TextBlock Classes="GroupBoxHeader" Text="Common"/>
                 <StackPanel Margin="10" Orientation="Vertical" Spacing="10">
-                  <CheckBox IsChecked="{Binding Settings.Tools.RestoreLastUsedSettings}" 
-                            Content="Keep and restore the last used settings on operations per user session/instance"/>
+                    <CheckBox IsChecked="{Binding Settings.Tools.ExpandDescriptions}"
+                              ToolTip.Tip="Disable this if you want to gain some vertical space for windows, you can still toggle the descriptions and read them if required."
+                              Content="Expand and show descriptions by default"/>
+
+					<CheckBox IsChecked="{Binding Settings.Tools.RestoreLastUsedSettings}"
+                              Content="Keep and restore the last used settings on operations per user session/instance"/>
 
                   <ToggleSwitch IsChecked="{Binding Settings.Tools.LastUsedSettingsKeepOnCloseFile}"
                         OffContent="Discard the session when closing or loading files"

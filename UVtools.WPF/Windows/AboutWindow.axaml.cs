@@ -13,14 +13,8 @@ namespace UVtools.WPF.Windows;
 
 public class AboutWindow : WindowEx
 {
-    public string Software => About.Software;
-    public string Version => $"Version: {App.VersionStr} {RuntimeInformation.ProcessArchitecture}";
-    public string Copyright => App.AssemblyCopyright;
-    public string Company => App.AssemblyCompany;
-    public string License => About.License;
-    public string Description => App.AssemblyDescription;
-    public string OpenCVBuildInformation => CvInvoke.BuildInformation;
-    public string LoadedAssemblies 
+    public static string OpenCVBuildInformation => CvInvoke.BuildInformation;
+    public static string LoadedAssemblies 
     {
         get
         {
@@ -36,14 +30,14 @@ public class AboutWindow : WindowEx
         }
     }
 
-    public string OSDescription => $"{RuntimeInformation.OSDescription} {RuntimeInformation.OSArchitecture}";
+    public static string OSDescription => $"{RuntimeInformation.OSDescription} {RuntimeInformation.OSArchitecture}";
 
-    public string RuntimeDescription => RuntimeInformation.RuntimeIdentifier;
+    public static string RuntimeDescription => RuntimeInformation.RuntimeIdentifier;
 
-    public string FrameworkDescription => RuntimeInformation.FrameworkDescription;
-    public string AvaloniaUIDescription => typeof(AvaloniaObject).Assembly.GetName().Version.ToString(3);
+    public static string FrameworkDescription => RuntimeInformation.FrameworkDescription;
+    public static string AvaloniaUIDescription => typeof(AvaloniaObject).Assembly.GetName().Version!.ToString(3);
 
-    public string OpenCVVersion
+    public static string OpenCVVersion
     {
         get
         {
@@ -56,11 +50,11 @@ public class AboutWindow : WindowEx
         }
     }
 
-    public string ProcessorName => SystemAware.GetProcessorName();
+    public static string ProcessorName => SystemAware.GetProcessorName();
 
-    public int ProcessorCount => Environment.ProcessorCount;
+    public static int ProcessorCount => Environment.ProcessorCount;
 
-    public string MemoryRAMDescription
+    public static string MemoryRAMDescription
     {
         get
         {
@@ -85,7 +79,7 @@ public class AboutWindow : WindowEx
         get
         {
             var result = new StringBuilder();
-            for (int i = 0; i < Screens.All.Count; i++)
+            for (var i = 0; i < Screens.All.Count; i++)
             {
                 var onScreen = Screens.ScreenFromVisual(App.MainWindow);
                 var screen = Screens.All[i];
@@ -116,7 +110,7 @@ public class AboutWindow : WindowEx
     private string GetEssentialInformation()
     {
         var message = new StringBuilder();
-        message.AppendLine($"{About.SoftwareWithVersion}");
+        message.AppendLine($"{About.SoftwareWithVersionArch}");
         message.AppendLine($"Operative system: {OSDescription}");
         message.AppendLine($"Processor: {ProcessorName}");
         message.AppendLine($"Processor cores: {ProcessorCount}");
@@ -129,24 +123,25 @@ public class AboutWindow : WindowEx
         message.AppendLine("Sreens, resolution, working area, usable area:");
         message.AppendLine(ScreensDescription);
         message.AppendLine();
-        message.AppendLine($"Path: {App.ApplicationPath}");
+        message.AppendLine($"Path:       {App.ApplicationPath}");
+        message.AppendLine($"Executable: {App.AppExecutable}");
         return message.ToString();
     }
 
     public void CopyEssentialInformation()
     {
-        Application.Current.Clipboard.SetTextAsync(GetEssentialInformation());
+        Application.Current?.Clipboard?.SetTextAsync(GetEssentialInformation());
     }
         
 
     public void CopyOpenCVInformationToClipboard()
     {
-        Application.Current.Clipboard.SetTextAsync(CvInvoke.BuildInformation);
+        Application.Current?.Clipboard?.SetTextAsync(CvInvoke.BuildInformation);
     }
 
     public void CopyLoadedAssembliesToClipboard()
     {
-        Application.Current.Clipboard.SetTextAsync(LoadedAssemblies);
+        Application.Current?.Clipboard?.SetTextAsync(LoadedAssemblies);
     }
 
     public async void CopyInformationToClipboard()
@@ -156,6 +151,6 @@ public class AboutWindow : WindowEx
         message.AppendLine(CvInvoke.BuildInformation);
         message.AppendLine("Loaded Assemblies:");
         message.AppendLine(LoadedAssemblies);
-        await Application.Current.Clipboard.SetTextAsync(message.ToString());
+        await Application.Current?.Clipboard?.SetTextAsync(message.ToString())!;
     }
 }

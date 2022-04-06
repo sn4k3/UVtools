@@ -2725,7 +2725,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     }
 
     /// <summary>
-    /// Gets the starting material milliliters when the file loaded
+    /// Gets the starting material milliliters when the file was loaded
     /// </summary>
     public float StartingMaterialMilliliters { get; private set; }
 
@@ -2749,7 +2749,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
 
             if (StartingMaterialMilliliters > 0 && StartingMaterialCost > 0)
             {
-                MaterialCost = _materialMilliliters * StartingMaterialCost / StartingMaterialMilliliters;
+                MaterialCost = GetMaterialCostPer(_materialMilliliters);
             }
             //RaisePropertyChanged(nameof(MaterialCost));
         }
@@ -2768,7 +2768,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     }
 
     /// <summary>
-    /// Gets the starting material cost when the file loaded
+    /// Gets the starting material cost when the file was loaded
     /// </summary>
     public float StartingMaterialCost { get; private set; }
 
@@ -2780,6 +2780,13 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get => _materialCost;
         set => RaiseAndSetIfChanged(ref _materialCost, (float)Math.Round(value, 3));
     }
+
+    /// <summary>
+    /// Gets the material cost per one milliliter
+    /// </summary>
+    public float MaterialMilliliterCost => StartingMaterialMilliliters > 0 ? StartingMaterialCost / StartingMaterialMilliliters : 0;
+
+    public float GetMaterialCostPer(float milliliters, byte roundDigits = 3) => (float)Math.Round(MaterialMilliliterCost * milliliters, roundDigits);
 
     /// <summary>
     /// Gets the material name
@@ -3313,7 +3320,11 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         IsModified = false;
         StartingMaterialMilliliters = MaterialMilliliters;
         StartingMaterialCost = MaterialCost;
-        
+        if (StartingMaterialCost <= 0)
+        {
+            StartingMaterialCost = StartingMaterialMilliliters * CoreSettings.AverageResin1000MlBottleCost / 1000f;
+            MaterialCost = StartingMaterialCost;
+        }
 
         progress.ThrowIfCancellationRequested();
 
@@ -4629,7 +4640,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// </summary>
     /// <param name="newCodec">The new method to change to</param>
     /// <param name="progress"></param>
-    public void ChangeLayersCompressionMethod(Layer.LayerCompressionCodec newCodec, OperationProgress? progress = null)
+    public void ChangeLayersCompressionMethod(LayerCompressionCodec newCodec, OperationProgress? progress = null)
     {
         progress ??= new OperationProgress($"Changing layers compression codec to {newCodec}");
         progress.Reset("Layers", LayerCount);

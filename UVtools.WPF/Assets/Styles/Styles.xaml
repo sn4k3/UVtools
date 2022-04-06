@@ -248,6 +248,14 @@
         </Setter>
     </Style>
 
+    <Style Selector="TextBox.ValueLabel_euro, NumericUpDown.ValueLabel_euro /template/ TextBox">
+        <Setter Property="InnerRightContent">
+            <Template>
+                <TextBox Classes="NumericUpDownValueLabel" Text="€" ToolTip.Tip="Euros" />
+            </Template>
+        </Setter>
+    </Style>
+
 	<!--
     <Style Selector="NumericUpDown /template/ TextBox:not(.empty)">
         <Setter Property="MinWidth" Value="0"/>

@@ -885,6 +885,13 @@ public partial class MainWindow : WindowEx
             return true;
         }, TimeSpan.FromSeconds(1));
         Program.ProgramStartupTime.Stop();
+
+        /*if (About.IsBirthday)
+        {
+            this.MessageBoxInfo($"Age: {About.AgeStr}\n" +
+                                $"This message will only show today, see you in next year!\n" +
+                                $"Thank you for using {About.Software}.", $"Today it's the {About.Software} birthday!").ConfigureAwait(false);
+        }*/
     }
 
     private void OnPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -1260,7 +1267,7 @@ public partial class MainWindow : WindowEx
     {
         var result =
             await this.MessageBoxWithHeaderQuestion(
-                $"Do you like to auto-update {About.Software} v{App.VersionStr} to v{VersionChecker.Version}?",
+                $"Do you like to auto-update {About.Software} v{About.VersionStr} to v{VersionChecker.Version}?",
                 "Yes: Auto update  \n" +
                 "No:  Manual update  \n" +
                 "Cancel: No action  \n\n" +
@@ -1322,7 +1329,7 @@ public partial class MainWindow : WindowEx
             title += $"File: {SlicerFile.Filename} ({Math.Round(LastStopWatch.ElapsedMilliseconds / 1000m, 2)}s)   ";
         }
 
-        title += $"Version: {App.VersionStr}   RAM: {SizeExtensions.SizeSuffix(Environment.WorkingSet)}";
+        title += $"Version: {About.VersionStr}   RAM: {SizeExtensions.SizeSuffix(Environment.WorkingSet)}";
 
         if (IsFileLoaded)
         {
@@ -1755,8 +1762,7 @@ public partial class MainWindow : WindowEx
                 if (SlicerFile.IssueManager.Count > 0)
                 {
                     SelectedTabItem = TabIssues;
-                    if (Settings.Issues.AutoRepairIssuesOnLoad)
-                        await RunOperation(ToolRepairLayersControl.GetOperationRepairLayers());
+                    if (Settings.Issues.AutoRepairIssuesOnLoad) await RunOperation(ToolRepairLayersControl.GetOperationRepairLayers());
                 }
             }
             else

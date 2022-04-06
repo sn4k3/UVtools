@@ -8,13 +8,12 @@
 
   <Grid
     ColumnDefinitions="Auto,10,200,5,Auto"
-    RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto"
-    >
+    RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto">
 
     <TextBlock Text="Relief type:" VerticalAlignment="Center"/>
-    <ComboBox Grid.Row="0"
-              Grid.Column="2"
-              HorizontalAlignment="Stretch"
+    <ComboBox Grid.Row="0" Grid.Column="2" Grid.ColumnSpan="3"
+              Width="458"
+              HorizontalAlignment="Left"
               Items="{Binding Operation.ReliefType, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
               SelectedItem="{Binding Operation.ReliefType, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
 
@@ -31,6 +30,7 @@ you must manually input the layer index of the last raft where it ends and suppo
                    Classes="ValueLabel ValueLabel_layers"
                    Minimum="0"
                    Maximum="{Binding SlicerFile.LastLayerIndex}"
+                   Increment="1"
                    Value="{Binding Operation.MaskLayerIndex}"/>
     <StackPanel Grid.Row="2" Grid.Column="4"
                 Orientation="Horizontal" Spacing="5">
@@ -50,6 +50,7 @@ you must manually input the layer index of the last raft where it ends and suppo
                    Classes="ValueLabel ValueLabel_layers"
                    Minimum="0"
                    Maximum="255"
+                   Increment="1"
                    Value="{Binding Operation.IgnoreFirstLayers}"/>
     <TextBlock
         Grid.Row="4" Grid.Column="4"
@@ -65,7 +66,8 @@ you must manually input the layer index of the last raft where it ends and suppo
                    Classes="ValueLabel ValueLabel_sun"
                    Minimum="0"
                    Maximum="255"
-                   Value="{Binding Operation.Brightness}">
+                   Increment="1"
+                   Value="{Binding Operation.LowBrightness}">
         <NumericUpDown.IsVisible>
             <MultiBinding Converter="{x:Static BoolConverters.Or}">
                 <Binding Path="Operation.IsRelief"/>
@@ -78,8 +80,15 @@ you must manually input the layer index of the last raft where it ends and suppo
                    Classes="ValueLabel ValueLabel_sun"
                    Minimum="0"
                    Maximum="255"
-                   IsVisible="{Binding Operation.IsTabs}"
-                   Value="{Binding Operation.TabBrightness}"/>
+                   Increment="1"
+                   Value="{Binding Operation.HighBrightness}">
+        <NumericUpDown.IsVisible>
+            <MultiBinding Converter="{x:Static BoolConverters.Or}">
+                <Binding Path="Operation.IsLinkedLines"/>
+                <Binding Path="Operation.IsTabs"/>
+            </MultiBinding>
+        </NumericUpDown.IsVisible>
+    </NumericUpDown>
 
 	  <TextBlock Grid.Row="6" Grid.Column="4"
                  IsVisible="{Binding !Operation.IsDecimate}"
@@ -96,10 +105,16 @@ you must manually input the layer index of the last raft where it ends and suppo
     </TextBlock>
 
     <TextBlock Grid.Row="8" Grid.Column="0"
-               IsVisible="{Binding Operation.IsDecimate}"
                ToolTip.Tip="Raft will be replaced by the present supports and then dilated by this value to thicken the supports and increase the adhesion. 
 &#x0a;Use large numbers with tiny supports for best adhesion."
-               Text="Dilate supports by:" VerticalAlignment="Center"/>
+               Text="Dilate supports by:" VerticalAlignment="Center">
+        <TextBlock.IsVisible>
+            <MultiBinding Converter="{x:Static BoolConverters.Or}">
+                <Binding Path="Operation.IsLinkedLines"/>
+                <Binding Path="Operation.IsDecimate"/>
+            </MultiBinding>
+        </TextBlock.IsVisible>
+    </TextBlock>
 
     <TextBlock Grid.Row="8" Grid.Column="0"
                IsVisible="{Binding Operation.IsTabs}"
@@ -109,6 +124,7 @@ you must manually input the layer index of the last raft where it ends and suppo
                    Classes="ValueLabel ValueLabel_px"
                    Minimum="0"
                    Maximum="255"
+                   Increment="1"
                    IsVisible="{Binding !Operation.IsTabs}"
                    Value="{Binding Operation.DilateIterations}"/>
 
@@ -117,6 +133,7 @@ you must manually input the layer index of the last raft where it ends and suppo
                      Classes="ValueLabel ValueLabel_px"
                      Minimum="5"
                      Maximum="65535"
+                     Increment="1"
                      IsVisible="{Binding Operation.IsTabs}"
                      Value="{Binding Operation.TabTriangleBase}"/>
 
@@ -132,14 +149,20 @@ you must manually input the layer index of the last raft where it ends and suppo
     </TextBlock>
 
     <TextBlock Grid.Row="10" Grid.Column="0"
+               IsVisible="{Binding Operation.IsLinkedLines}"
+               ToolTip.Tip="Each support will be linked to the nearby neighbours at least the defined times."
+               Text="Minimum links:" VerticalAlignment="Center"/>
+
+    <TextBlock Grid.Row="10" Grid.Column="0"
                IsVisible="{Binding Operation.IsTabs}"
                Text="Tab triangle height:" VerticalAlignment="Center"/>
 
     <NumericUpDown Grid.Row="10" Grid.Column="2"
                    Classes="ValueLabel ValueLabel_px"
-              Minimum="1"
-              Maximum="255"
-              Value="{Binding Operation.WallMargin}">
+                   Minimum="1"
+                   Maximum="255"
+                   Increment="1"
+                   Value="{Binding Operation.WallMargin}">
 		<NumericUpDown.IsVisible>
             <MultiBinding Converter="{x:Static BoolConverters.Or}">
                 <Binding Path="Operation.IsRelief"/>
@@ -149,9 +172,25 @@ you must manually input the layer index of the last raft where it ends and suppo
     </NumericUpDown>
 
     <NumericUpDown Grid.Row="10" Grid.Column="2"
+                   Classes="ValueLabel ValueLabel_times"
+                   Minimum="0"
+                   Maximum="255"
+                   Increment="1"
+                   IsVisible="{Binding Operation.IsLinkedLines}"
+                   Value="{Binding Operation.LinkedMinimumLinks}"/>
+
+    <CheckBox Grid.Row="10" Grid.Column="4"
+              VerticalAlignment="Center"
+              Content="Links outer-most supports"
+              ToolTip.Tip="Links outer-most supports all together, creating a perimeter around inner supports."
+              IsVisible="{Binding Operation.IsLinkedLines}"
+              IsChecked="{Binding Operation.LinkedExternalSupports}"/>
+
+    <NumericUpDown Grid.Row="10" Grid.Column="2"
                    Classes="ValueLabel ValueLabel_px"
                    Minimum="5"
                    Maximum="65535"
+                   Increment="1"
                    IsVisible="{Binding Operation.IsTabs}"
                    Value="{Binding Operation.TabTriangleHeight}"/>
 
@@ -161,12 +200,25 @@ you must manually input the layer index of the last raft where it ends and suppo
       Text="Hole diameter:" VerticalAlignment="Center"
       IsVisible="{Binding Operation.IsRelief}"/>
 
+    <TextBlock Grid.Row="12" Grid.Column="0"
+               Text="Line thickness:" VerticalAlignment="Center"
+               IsVisible="{Binding Operation.IsLinkedLines}"/>
+
     <NumericUpDown Grid.Row="12" Grid.Column="2"
                    Classes="ValueLabel ValueLabel_px"
-              Minimum="10"
-              Maximum="255"
-              Value="{Binding Operation.HoleDiameter}"
-              IsVisible="{Binding Operation.IsRelief}"/>
+                   Minimum="10"
+                   Maximum="255"
+                   Increment="1"
+                   Value="{Binding Operation.HoleDiameter}"
+                   IsVisible="{Binding Operation.IsRelief}"/>
+
+    <NumericUpDown Grid.Row="12" Grid.Column="2"
+                   Classes="ValueLabel ValueLabel_px"
+                   Minimum="4"
+                   Maximum="255"
+                   Increment="1"
+                   IsVisible="{Binding Operation.IsLinkedLines}"
+                   Value="{Binding Operation.LinkedLineThickness}"/>
 
     <TextBlock
       Grid.Row="14" Grid.Column="0"
@@ -175,10 +227,11 @@ you must manually input the layer index of the last raft where it ends and suppo
 
     <NumericUpDown Grid.Row="14" Grid.Column="2"
                    Classes="ValueLabel ValueLabel_px"
-              Minimum="10"
-              Maximum="255"
-              Value="{Binding Operation.HoleSpacing}"
-              IsVisible="{Binding Operation.IsRelief}"/>
+                   Minimum="10"
+                   Maximum="255"
+                   Increment="1"
+                   Value="{Binding Operation.HoleSpacing}"
+                   IsVisible="{Binding Operation.IsRelief}"/>
 
   </Grid>
 

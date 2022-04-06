@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
-    <Authors>Tiago Conceição</Authors>
+    <Authors>Tiago Conceição, sn4k3</Authors>
     <Company>PTRTECH</Company>
     <Copyright>Copyright © 2020 PTRTECH</Copyright>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using UVtools.Core;
 
 namespace UVtools.WPF;
 
@@ -15,7 +16,7 @@ public static class ErrorLog
         try
         {
             File.AppendAllText(FullPath,
-                $"[v{App.VersionStr}] ({errorType}) @ {DateTime.Now}: {text}{Environment.NewLine}");
+                $"[v{About.VersionStr}] ({errorType}) @ {DateTime.Now}: {text}{Environment.NewLine}");
         }
         catch (Exception exception)
         {

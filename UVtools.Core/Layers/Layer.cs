@@ -25,29 +25,29 @@ using UVtools.Core.Operations;
 
 namespace UVtools.Core.Layers;
 
+#region Enums
+
+public enum LayerCompressionCodec : byte
+{
+    [Description("PNG: Compression=High Speed=Slow (Use with low RAM)")]
+    Png,
+    [Description("GZip: Compression=Medium Speed=Medium (Optimal)")]
+    GZip,
+    [Description("Deflate: Compression=Medium Speed=Medium (Optimal)")]
+    Deflate,
+    [Description("LZ4: Compression=Low Speed=Fast (Use with high RAM)")]
+    Lz4,
+    //[Description("None: Compression=None Speed=Fastest (Your soul belongs to RAM)")]
+    //None
+}
+
+#endregion
+
 /// <summary>
 /// Represent a Layer
 /// </summary>
 public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
 {
-    #region Enums
-
-    public enum LayerCompressionCodec : byte
-    {
-        [Description("PNG: Compression=High Speed=Slow (Use with low RAM)")]
-        Png,
-        [Description("GZip: Compression=Medium Speed=Medium (Optimal)")]
-        GZip,
-        [Description("Deflate: Compression=Medium Speed=Medium (Optimal)")]
-        Deflate,
-        [Description("LZ4: Compression=Low Speed=Fast (Use with high RAM)")]
-        Lz4,
-        //[Description("None: Compression=None Speed=Fastest (Your soul belongs to RAM)")]
-        //None
-    }
-    
-    #endregion
-
     #region Constants
     public const byte HeightPrecision = 3;
     public const decimal HeightPrecisionIncrement = 0.001M;

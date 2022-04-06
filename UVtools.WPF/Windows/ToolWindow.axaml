@@ -20,7 +20,7 @@
       Padding="10"
       IsVisible="{Binding Description, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
         <Expander 
-            IsExpanded="{Binding Settings.General.ExpandDescriptions}"
+            IsExpanded="{Binding Settings.Tools.ExpandDescriptions}"
             Header="Description (Click to toggle)">
         <TextBox Classes="TransparentReadOnly"
                  HorizontalAlignment="Left"

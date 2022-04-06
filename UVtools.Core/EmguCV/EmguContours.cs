@@ -6,10 +6,13 @@
  *  of this license document, but changing it is not allowed.
  */
 
+using System;
+using System.Collections;
 using Emgu.CV;
 using Emgu.CV.Util;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using System.Threading.Tasks;
 using UVtools.Core.Extensions;
 
@@ -19,8 +22,71 @@ namespace UVtools.Core.EmguCV;
 /// Utility methods for contour handling.  
 /// Use only with Tree type
 /// </summary>
-public static class EmguContours
+public class EmguContours : IReadOnlyList<EmguContour>, IDisposable
 {
+    private readonly EmguContour[] _contours;
+
+    public IEnumerator<EmguContour> GetEnumerator()
+    {
+        return ((IEnumerable<EmguContour>)_contours).GetEnumerator();
+    }
+
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return _contours.GetEnumerator();
+    }
+
+    public int Count => _contours.Length;
+
+
+
+    public EmguContour this[int index] => _contours[index];
+
+    public EmguContours(VectorOfVectorOfPoint vectorOfPointsOfPoints)
+    {
+        _contours = new EmguContour[vectorOfPointsOfPoints.Size];
+        for (int i = 0; i < _contours.Length; i++)
+        {
+            _contours[i] = new EmguContour(vectorOfPointsOfPoints[i]);
+        }
+    }
+
+    public (int Index, EmguContour Contour, double Distance)[][] CalculateCentroidDistances(bool includeOwn = false, bool sortByDistance = true)
+    {
+        var items = new (int Index, EmguContour Contour, double Distance)[Count][];
+        for (int i = 0; i < Count; i++)
+        {
+            items[i] = new (int Index, EmguContour Contour, double Distance)[Count-1];
+            int count = 0;
+            for (int x = 0; x < Count; x++)
+            {
+                if (x == i)
+                {
+                    if (includeOwn)
+                    {
+                        items[i][count] = new(x, this[x], 0);
+                    }
+                    continue;
+                }
+                items[i][count] = new (x, this[x], PointExtensions.FindLength(this[i].Centroid, this[x].Centroid));
+
+                count++;
+            }
+
+            if(sortByDistance) items[i] = items[i].OrderBy(tuple => tuple.Distance).ToArray();
+        }
+
+        return items;
+    }
+
+    public void Dispose()
+    {
+        foreach (var contour in _contours)
+        {
+            contour.Dispose();
+        }
+    }
+
     /// <summary>
     /// Gets contours inside a point
     /// </summary>

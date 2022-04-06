@@ -4,7 +4,7 @@
     <TargetFramework>net6.0</TargetFramework>
     <AssemblyName>UVtools</AssemblyName>
     <ApplicationIcon>UVtools.ico</ApplicationIcon>
-    <Authors>Tiago Conceição</Authors>
+    <Authors>Tiago Conceição, sn4k3</Authors>
     <Company>PTRTECH</Company>
     <Description>MSLA/DLP, file analysis, calibration, repair, conversion and manipulation</Description>
     <Copyright>Copyright © 2020 PTRTECH</Copyright>
@@ -12,7 +12,7 @@
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <RepositoryUrl>https://github.com/sn4k3/UVtools</RepositoryUrl>
     <RepositoryType>Git</RepositoryType>
-    <Version>3.2.1</Version>
+    <Version>3.2.2</Version>
     <Platforms>AnyCPU;x64</Platforms>
     <PackageIcon>UVtools.png</PackageIcon>
     <PackageReadmeFile>README.md</PackageReadmeFile>
@@ -44,9 +44,9 @@
     <PackageReference Include="Avalonia.Desktop" Version="0.10.13" />
     <PackageReference Include="Avalonia.Diagnostics" Version="0.10.13" />
     <PackageReference Include="MessageBox.Avalonia" Version="2.0.0" />
-    <PackageReference Include="Projektanker.Icons.Avalonia" Version="4.3.0" />
-    <PackageReference Include="Projektanker.Icons.Avalonia.FontAwesome" Version="4.3.0" />
-    <PackageReference Include="Projektanker.Icons.Avalonia.MaterialDesign" Version="4.3.0" />
+    <PackageReference Include="Projektanker.Icons.Avalonia" Version="4.4.0" />
+    <PackageReference Include="Projektanker.Icons.Avalonia.FontAwesome" Version="4.4.0" />
+    <PackageReference Include="Projektanker.Icons.Avalonia.MaterialDesign" Version="4.4.0" />
     <PackageReference Include="ThemeEditor.Controls.ColorPicker" Version="0.10.12" />
   </ItemGroup>
   <ItemGroup>
@@ -76,11 +76,11 @@
     </None>
     <None Include="..\README.md" Link="README.md">
       <Pack>True</Pack>
-      <PackagePath>\</PackagePath>
+      <PackagePath></PackagePath>
     </None>
     <None Include="..\UVtools.CAD\UVtools.png">
       <Pack>True</Pack>
-      <PackagePath>\</PackagePath>
+      <PackagePath></PackagePath>
     </None>
     <None Include="..\UVtools.CAD\UVtools_demo_file.sl1" Link="UVtools_demo_file.sl1">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

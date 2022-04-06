@@ -526,7 +526,7 @@ public class BenchmarkWindow : WindowEx
 
     public void TestPNGCompress(BenchmarkResolution resolution)
     {
-        Layer.CompressMat(Mats[resolution], Layer.LayerCompressionCodec.Png); 
+        Layer.CompressMat(Mats[resolution], LayerCompressionCodec.Png); 
     }
 
     public void TestPNGDecompress(BenchmarkResolution resolution)
@@ -534,7 +534,7 @@ public class BenchmarkWindow : WindowEx
 
     public void TestGZipCompress(BenchmarkResolution resolution)
     {
-        Layer.CompressMat(Mats[resolution], Layer.LayerCompressionCodec.GZip);
+        Layer.CompressMat(Mats[resolution], LayerCompressionCodec.GZip);
     }
 
     public void TestGZipDecompress(BenchmarkResolution resolution)
@@ -542,7 +542,7 @@ public class BenchmarkWindow : WindowEx
 
     public void TestDeflateCompress(BenchmarkResolution resolution)
     {
-        Layer.CompressMat(Mats[resolution], Layer.LayerCompressionCodec.Deflate);
+        Layer.CompressMat(Mats[resolution], LayerCompressionCodec.Deflate);
     }
 
     public void TestDeflateDecompress(BenchmarkResolution resolution)
@@ -550,7 +550,7 @@ public class BenchmarkWindow : WindowEx
 
     public void TestLZ4Compress(BenchmarkResolution resolution)
     {
-        Layer.CompressMat(Mats[resolution], Layer.LayerCompressionCodec.Lz4);
+        Layer.CompressMat(Mats[resolution], LayerCompressionCodec.Lz4);
     }
 
     public void TestLZ4Decompress(BenchmarkResolution resolution)

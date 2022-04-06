@@ -159,8 +159,7 @@ public class OperationRepairLayers : Operation
         set => RaiseAndSetIfChanged(ref _noiseRemovalIterations, value);
     }
 
-    [XmlIgnore]
-    public IslandDetectionConfiguration? IslandDetectionConfig { get; set; }
+    [XmlIgnore] public IslandDetectionConfiguration IslandDetectionConfig { get; set; } = new();
 
     #endregion
 
@@ -205,8 +204,8 @@ public class OperationRepairLayers : Operation
         var issues = SlicerFile.IssueManager.GetVisible().ToList();
         // Remove islands
         if (//Issues is not null
-            IslandDetectionConfig is not null
-            && _repairIslands
+            //IslandDetectionConfig is not null
+            _repairIslands
             && _removeIslandsBelowEqualPixelCount > 0
             && _removeIslandsRecursiveIterations != 1)
         {
@@ -282,7 +281,7 @@ public class OperationRepairLayers : Operation
 
             if (islandsToProcess.Count == 0)
             {
-                var islandConfig = IslandDetectionConfig?.Clone() ?? new IslandDetectionConfiguration();
+                var islandConfig = IslandDetectionConfig.Clone();
                 var overhangConfig = new OverhangDetectionConfiguration(false);
                 var touchingBoundsConfig = new TouchingBoundDetectionConfiguration(false);
                 var printHeightConfig = new PrintHeightDetectionConfiguration(false);
@@ -292,12 +291,12 @@ public class OperationRepairLayers : Operation
                 islandConfig.Enabled = true;
 
                 islandsToProcess = SlicerFile.IssueManager.DetectIssues(islandConfig, overhangConfig, resinTrapsConfig, touchingBoundsConfig, printHeightConfig, emptyLayersConfig, progress);
-                islandsToProcess?.RemoveAll(mainIssue => SlicerFile.IssueManager.IgnoredIssues.Contains(mainIssue));
+                islandsToProcess.RemoveAll(mainIssue => SlicerFile.IssueManager.IgnoredIssues.Contains(mainIssue));
             }
 
-            var issuesGroup = IssueManager.GetIssuesBy(islandsToProcess!, MainIssue.IssueType.Island).GroupBy(issue => issue.LayerIndex);
+            var issuesGroup = IssueManager.GetIssuesBy(islandsToProcess, MainIssue.IssueType.Island).GroupBy(issue => issue.LayerIndex);
 
-            progress.Reset("Attempt to attach islands below", (uint) islandsToProcess!.Count);
+            progress.Reset("Attempt to attach islands below", (uint) islandsToProcess.Count);
             var sync = new object();
             Parallel.ForEach(issuesGroup, CoreSettings.GetParallelOptions(progress), group =>
             {
@@ -310,7 +309,7 @@ public class OperationRepairLayers : Operation
                     
                 for (var layerIndex = startLayer+1; layerIndex >= lowestPossibleLayer; layerIndex--)
                 {
-                    Debug.WriteLine(layerIndex);
+                    //Debug.WriteLine(layerIndex);
                     Monitor.Enter(SlicerFile[layerIndex].Mutex);
                     matCache.Add((uint) layerIndex, SlicerFile[layerIndex].LayerMat);
                     matCacheModified.Add((uint) layerIndex, false);
@@ -319,7 +318,7 @@ public class OperationRepairLayers : Operation
                 foreach (IssueOfPoints issue in group)
                 {
                     int foundAt = startLayer == 0 ? 0 : - 1;
-                    var requiredSupportingPixels = Math.Max(1, issue.PixelsCount * IslandDetectionConfig!.RequiredPixelsToSupportMultiplier);
+                    var requiredSupportingPixels = Math.Max(1, issue.PixelsCount * IslandDetectionConfig.RequiredPixelsToSupportMultiplier);
 
                     for (var layerIndex = startLayer; layerIndex >= lowestPossibleLayer && foundAt < 0; layerIndex--)
                     {
