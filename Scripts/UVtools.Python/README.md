@@ -1,6 +1,8 @@
 # UVtools Python Scripting
 
+<p style="text-align: center;">
 ![Logo](https://github.com/sn4k3/UVtools/raw/master/UVtools.CAD/UVtools_python.png)
+</p>
 
 ## Requirements
 
