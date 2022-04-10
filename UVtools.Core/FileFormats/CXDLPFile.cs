@@ -19,7 +19,9 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Emgu.CV.CvEnum;
 using UVtools.Core.Converters;
+using UVtools.Core.EmguCV;
 using UVtools.Core.Extensions;
 using UVtools.Core.Layers;
 using UVtools.Core.Objects;
@@ -720,16 +722,10 @@ public class CXDLPFile : FileFormat
         //var preLayers = new PreLayer[LayerCount];
         //var layerDefs = new LayerDef[LayerCount];
         //var layersStreams = new MemoryStream[LayerCount];
-            
 
-        for (int layerIndex = 0; layerIndex < LayerCount; layerIndex++)
-        {
-            //var layer = this[layerIndex];
-            outputFile.WriteBytes(BitExtensions.ToBytesBigEndian((uint)Math.Round(this[layerIndex].BoundingRectangleMillimeters.Area()*1000)));
-            //preLayers[layerIndex] = new(layer.NonZeroPixelCount);
-        }
-        //Helpers.SerializeWriteFileStream(outputFile, preLayers);
-        //Helpers.SerializeWriteFileStream(outputFile, pageBreak);
+
+        var layerAreaPosition = outputFile.Position;
+        outputFile.Seek(4 * LayerCount, SeekOrigin.Current);
         outputFile.WriteBytes(pageBreak);
 
         if (HeaderSettings.Version >= 3)
@@ -737,7 +733,9 @@ public class CXDLPFile : FileFormat
             Helpers.SerializeWriteFileStream(outputFile, SlicerInfoV3Settings);
         }
 
+        var layerLargestContourArea = new uint[LayerCount];
         var layerBytes = new List<byte>[LayerCount];
+        var pixelArea = PixelArea;
         foreach (var batch in BatchLayersIndexes())
         {
             Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), layerIndex =>
@@ -745,6 +743,10 @@ public class CXDLPFile : FileFormat
                 var layer = this[layerIndex];
                 using (var mat = layer.LayerMat)
                 {
+                    using var contours = mat.FindContours(RetrType.External);
+                    layerLargestContourArea[layerIndex] = (uint)(EmguContours.GetLargestContourArea(contours) * pixelArea * 1000);
+                    //Debug.WriteLine($"Area: {contourArea} ({contourArea * PixelArea * 1000})  BR: {max.Bounds.Area()} ({max.Bounds.Area() * PixelArea * 1000})");
+
                     var span = mat.GetDataByteSpan();
 
                     layerBytes[layerIndex] = new();
@@ -783,9 +785,7 @@ public class CXDLPFile : FileFormat
                         }
                     }
 
-                    layerBytes[layerIndex].InsertRange(0, LayerDef.GetHeaderBytes(
-                        (uint)Math.Round(layer.BoundingRectangleMillimeters.Area() * 1000),
-                        lineCount));
+                    layerBytes[layerIndex].InsertRange(0, LayerDef.GetHeaderBytes(layerLargestContourArea[layerIndex], lineCount));
                     layerBytes[layerIndex].AddRange(pageBreak);
                 }
 
@@ -799,75 +799,14 @@ public class CXDLPFile : FileFormat
             }
         }
 
-
-        /*Parallel.For(0, LayerCount,  CoreSettings.ParallelOptions, 
-            //new ParallelOptions{MaxDegreeOfParallelism = 1}, 
-            layerIndex =>
+        // Write layer largest contour area (mm^2 * 1000)
+        outputFile.Seek(layerAreaPosition, SeekOrigin.Begin);
+        foreach (var area in layerLargestContourArea)
         {
-            if (progress.Token.IsCancellationRequested) return;
-            //List<LayerLine> layerLines = new();
-            var layer = this[layerIndex];
-            using var mat = layer.LayerMat;
-            var span = mat.GetDataByteSpan();
+            outputFile.WriteUIntBigEndian(area);
+        }
 
-            layerBytes[layerIndex] = new();
-            
-            for (int x = layer.BoundingRectangle.X; x < layer.BoundingRectangle.Right; x++)
-            {
-                int y = layer.BoundingRectangle.Y;
-                int startY = -1;
-                byte lastColor = 0;
-                for (; y < layer.BoundingRectangle.Bottom; y++)
-                {
-                    int pos = mat.GetPixelPos(x, y);
-                    byte color = span[pos];
-
-                    if (lastColor == color && color != 0) continue;
-
-                    if (startY >= 0)
-                    {
-                        layerBytes[layerIndex].AddRange(LayerLine.GetBytes((ushort)startY, (ushort)(y - 1), (ushort)x, lastColor));
-                        //layerLines.Add(new LayerLine((ushort)startY, (ushort)(y - 1), (ushort)x, lastColor));
-                        //Debug.WriteLine(layerLines[^1]);
-                    }
-
-                    startY = color == 0 ? -1 : y;
-
-                    lastColor = color;
-                }
-
-                if (startY >= 0)
-                {
-                    layerBytes[layerIndex].AddRange(LayerLine.GetBytes((ushort)startY, (ushort)(y - 1), (ushort)x, lastColor));
-                    //layerLines.Add(new LayerLine((ushort)startY, (ushort)(y - 1), (ushort)x, lastColor));
-                    //Debug.WriteLine(layerLines[^1]);
-                }
-            }
-
-            //layerDefs[layerIndex] = new LayerDef(layer.NonZeroPixelCount, (uint)layerLines.Count, layerLines.ToArray());
-            //var layerDef = new LayerDef(layer.NonZeroPixelCount, (uint)layerLines.Count, layerLines.ToArray());
-            //layersStreams[layerIndex] = new MemoryStream();
-            //Helpers.Serializer.Serialize(layersStreams[layerIndex], layerDef);
-
-            //layerBytes[layerIndex].InsertRange(0, LayerDef.GetHeaderBytes(layer.NonZeroPixelCount, (uint) layerBytes[layerIndex].Count));
-            //layerBytes[layerIndex].AddRange(PageBreak.Bytes);
-
-            progress.LockAndIncrement();
-        });
-
-        progress.Reset(OperationProgress.StatusWritingFile, LayerCount);
-        for (int layerIndex = 0; layerIndex < LayerCount; layerIndex++)
-        {
-            progress.Token.ThrowIfCancellationRequested();
-            //Helpers.SerializeWriteFileStream(outputFile, layerDefs[layerIndex]);
-            //outputFile.WriteStream(layersStreams[layerIndex]);
-            //layersStreams[layerIndex].Dispose();
-            outputFile.WriteBytes(LayerDef.GetHeaderBytes(this[layerIndex].NonZeroPixelCount, (uint)layerBytes[layerIndex].Count));
-            outputFile.WriteBytes(layerBytes[layerIndex].ToArray());
-            outputFile.WriteBytes(pageBreak);
-            progress++;
-        }*/
-
+        outputFile.Seek(0, SeekOrigin.End);
         Helpers.SerializeWriteFileStream(outputFile, FooterSettings);
 
         progress.Reset("Calculating checksum");
@@ -986,7 +925,7 @@ public class CXDLPFile : FileFormat
 
                         linesBytes[layerIndex] = null!;
 
-                        _layers[layerIndex] = new Layer((uint)layerIndex, mat, this);
+                       _layers[layerIndex] = new Layer((uint)layerIndex, mat, this);
                     }
 
                     progress.LockAndIncrement();

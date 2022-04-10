@@ -866,7 +866,7 @@ public class OperationPixelArithmetic : Operation
                     default:
                         throw new ArgumentOutOfRangeException(nameof(_ignoreAreaOperator));
                 }
-                ApplyMask(originalRoi, target);
+                ApplyMask(original, mat);
 
                 SlicerFile[layerIndex].LayerMat = mat;
 

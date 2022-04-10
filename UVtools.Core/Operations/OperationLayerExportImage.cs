@@ -191,12 +191,12 @@ public sealed class OperationLayerExportImage : Operation
 
             if (_flipDirection != FlipDirection.None)
             {
-                CvInvoke.Flip(matRoi, matRoi, Enumerations.ToOpenCVFlipType(_flipDirection));
+                CvInvoke.Flip(matRoi, matRoi, (FlipType)_flipDirection);
             }
 
             if (_rotateDirection != RotateDirection.None)
             {
-                CvInvoke.Rotate(matRoi, matRoi, Enumerations.ToOpenCVRotateFlags(_rotateDirection));
+                CvInvoke.Rotate(matRoi, matRoi, (RotateFlags)_rotateDirection);
             }
 
             var filename = SlicerFile[layerIndex].FormatFileName(_filename, _padLayerIndex ? SlicerFile.LayerDigits : byte.MinValue, IndexStartNumber.Zero, string.Empty);

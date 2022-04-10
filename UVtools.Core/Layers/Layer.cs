@@ -1488,6 +1488,17 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
             _materialMilliliters = _materialMilliliters,
         };*/
     }
+
+    public Layer[] Clone(uint times)
+    {
+        var layers = new Layer[times];
+        for (int i = 0; i < times; i++)
+        {
+            layers[i] = Clone();
+        }
+
+        return layers;
+    }
     #endregion
 
     #region Static Methods

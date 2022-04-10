@@ -170,12 +170,12 @@ public class MatCacheManager : IDisposable
 
                     if (Flip != FlipDirection.None)
                     {
-                        CvInvoke.Flip(MatCache[currentCacheIndex][0], MatCache[currentCacheIndex][0], Enumerations.ToOpenCVFlipType(Flip));
+                        CvInvoke.Flip(MatCache[currentCacheIndex][0], MatCache[currentCacheIndex][0], (FlipType)Flip);
                     }
 
                     if (Rotate != RotateDirection.None)
                     {
-                        CvInvoke.Rotate(MatCache[currentCacheIndex][0], MatCache[currentCacheIndex][0], Enumerations.ToOpenCVRotateFlags(Rotate));
+                        CvInvoke.Rotate(MatCache[currentCacheIndex][0], MatCache[currentCacheIndex][0], (RotateFlags) Rotate);
                     }
 
                     if (StripAntiAliasing)

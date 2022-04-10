@@ -24,9 +24,9 @@ typedef struct {
 
 typedef struct() {
     uint32 layerArea <fgcolor=cBlack, bgcolor=cWhite>;
-    uint32 layerPointNum <fgcolor=cBlack, bgcolor=cWhite>;
+    uint32 layerLineCount <fgcolor=cBlack, bgcolor=cWhite>;
 
-    layerPointsData pD()[layerPointNum];
+    layerPointsData pD()[layerLineCount];
     ubyte CR_LF2[2] <fgcolor=cBlack, bgcolor=cRed>;
 } layerData;
 

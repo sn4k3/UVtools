@@ -1,5 +1,22 @@
 # Changelog
 
+## 10/04/2022 - v3.3.0
+
+- **Shortcuts:**
+   - (Add) **Delete:** While on layer preview and with roi or mask(s) selected, will remove the selected area from layer
+   - (Add) **Alt + Delete:** While on layer preview and with roi or mask(s) selected, will remove the selected area from all layers
+   - (Add) **Ctrl + Delete:** While on layer preview, will remove the current layer
+   - (Add) **Insert:** While on layer preview and with roi or mask(s) selected, will keep only the selected area in layer
+   - (Add) **Alt + Insert:** While on layer preview and with roi or mask(s) selected, will keep only the selected area in all layers
+   - (Add) **Ctrl + Insert:** While on layer preview, will clone the current layer   
+   - (Add) **Home:** While on layer preview will go to first layer
+   - (Add) **End:** While on layer preview will go to last layer
+   - (Add) **Page up:** While on layer preview will skip +10 layers
+   - (Add) **Page down:** While on layer preview will skip -10 layers
+- (Add) Tool - Lithophane: Generate lithophane from a picture
+- (Fix) Pixel arithmetic: When run with masks it produce a incorrect outcome
+- (Fix) CXDLP: Layer area table miscalculation, causing slow down prints
+
 ## 06/04/2022 - v3.2.2
 
 - **Settings:**

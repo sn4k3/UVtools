@@ -168,6 +168,10 @@ public partial class MainWindow : WindowEx
         },
         new()
         {
+            Tag = new OperationLithophane(),
+        },
+        new()
+        {
             Tag = new OperationScripting(),
         },
         new()

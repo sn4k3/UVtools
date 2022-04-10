@@ -440,6 +440,9 @@ public static class EmguExtensions
     {
         return CvInvoke.Imencode(".png", mat);
     }
+
+    public static Point GetCenterPoint(this Mat mat) => new(mat.Width / 2, mat.Height / 2);
+
     #endregion
 
     #region Create methods
@@ -457,20 +460,28 @@ public static class EmguExtensions
         return src.CreateMask(vec);
     }
 
-    public static Mat TrimByBounds(this Mat src)
+    public static Mat CropByBounds(this Mat src, bool cloneInsteadRoi = false)
     {
         var rect = CvInvoke.BoundingRectangle(src);
         if (rect.Size == Size.Empty) return src.New();
-        if (src.Size == rect.Size) return src.Clone();
-        using var roi = src.Roi(rect);
-        return roi.Clone();
+        if (src.Size == rect.Size) return cloneInsteadRoi ? src.Roi(src.Size) : src.Clone();
+        var roi = src.Roi(rect);
+        
+        if (cloneInsteadRoi)
+        {
+            var clone = roi.Clone();
+            roi.Dispose();
+            return clone;
+        }
+
+        return roi;
     }
 
-    public static void TrimByBounds(this Mat src, Mat dst)
+    public static void CropByBounds(this Mat src, Mat dst)
     {
-        var mat = src.TrimByBounds();
-        CvInvoke.Swap(mat, dst);
-        src.Dispose();
+        using var mat = src.CropByBounds();
+        dst.Create(mat.Rows, mat.Cols, mat.Depth, mat.NumberOfChannels);
+        src.CopyTo(dst);
     }
 
 
@@ -917,6 +928,18 @@ public static class EmguExtensions
         src.Transform(xScale, yScale,
             xTrans + (src.Width - src.Width * xScale) / 2.0, 
             yTrans + (src.Height - src.Height * yScale) / 2.0, dstSize, interpolation);
+    }
+
+    /// <summary>
+    /// Resize source mat proportional to a scale
+    /// </summary>
+    /// <param name="src"></param>
+    /// <param name="scale"></param>
+    /// <param name="interpolation"></param>
+    public static void Resize(this Mat src, double scale, Inter interpolation = Inter.Linear)
+    {
+        if (scale == 1) return;
+        CvInvoke.Resize(src, src, new Size((int) (src.Width * scale), (int) (src.Height * scale)), 0, 0, interpolation);
     }
     #endregion
 

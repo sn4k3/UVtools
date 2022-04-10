@@ -239,12 +239,12 @@ public sealed class OperationLayerExportGif : Operation
 
             if (_flipDirection != FlipDirection.None)
             {
-                CvInvoke.Flip(matRoi, matRoi, Enumerations.ToOpenCVFlipType(_flipDirection));
+                CvInvoke.Flip(matRoi, matRoi, (FlipType)_flipDirection);
             }
 
             if (_rotateDirection != RotateDirection.None)
             {
-                CvInvoke.Rotate(matRoi, matRoi, Enumerations.ToOpenCVRotateFlags(_rotateDirection));
+                CvInvoke.Rotate(matRoi, matRoi, (RotateFlags)_rotateDirection);
             }
 
             if (_renderLayerCount)

@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
+using Emgu.CV.CvEnum;
 using UVtools.Core.Extensions;
 
 namespace UVtools.Core.EmguCV;
@@ -38,6 +39,7 @@ public class EmguContours : IReadOnlyList<EmguContour>, IDisposable
 
     public int Count => _contours.Length;
 
+    public readonly int[,] Hierarchy = new int[0,0];
 
 
     public EmguContour this[int index] => _contours[index];
@@ -48,6 +50,21 @@ public class EmguContours : IReadOnlyList<EmguContour>, IDisposable
         for (int i = 0; i < _contours.Length; i++)
         {
             _contours[i] = new EmguContour(vectorOfPointsOfPoints[i]);
+        }
+    }
+
+    public EmguContours(VectorOfVectorOfPoint vectorOfPointsOfPoints, int[,] hierarchy) : this(vectorOfPointsOfPoints)
+    {
+        Hierarchy = hierarchy;
+    }
+
+    public EmguContours(IInputOutputArray mat, RetrType mode = RetrType.List, ChainApproxMethod method = ChainApproxMethod.ChainApproxSimple, Point offset = default)
+    {
+        using var contours = mat.FindContours(out Hierarchy, mode, method, offset);
+        _contours = new EmguContour[contours.Size];
+        for (int i = 0; i < _contours.Length; i++)
+        {
+            _contours[i] = new EmguContour(contours[i]);
         }
     }
 
@@ -259,6 +276,24 @@ public class EmguContours : IReadOnlyList<EmguContour>, IDisposable
     }
 
     /// <summary>
+    /// Gets the largest contour area from a contour list
+    /// </summary>
+    /// <param name="contours">Contour list</param>
+    /// <returns></returns>
+    public static double GetLargestContourArea(VectorOfVectorOfPoint contours)
+    {
+        var vectorSize = contours.Size;
+        if (vectorSize == 0) return 0;
+
+        double result = 0;
+        for (var i = 0; i < vectorSize; i++)
+        {
+            result = Math.Max(result, CvInvoke.ContourArea(contours[i]));
+        }
+        return result;
+    }
+
+    /// <summary>
     /// Gets contours real area for a group of contours
     /// </summary>
     /// <param name="contours">Grouped contours</param>
@@ -305,8 +340,8 @@ public class EmguContours : IReadOnlyList<EmguContour>, IDisposable
         using var contour2Mat = EmguExtensions.InitMat(totalRect.Size);
             
         var inverseOffset = new Point(-totalRect.X, -totalRect.Y);
-        CvInvoke.DrawContours(contour1Mat, contour1, -1, EmguExtensions.WhiteColor, -1, Emgu.CV.CvEnum.LineType.EightConnected, null, int.MaxValue, inverseOffset);
-        CvInvoke.DrawContours(contour2Mat, contour2, -1, EmguExtensions.WhiteColor, -1, Emgu.CV.CvEnum.LineType.EightConnected, null, int.MaxValue, inverseOffset);
+        CvInvoke.DrawContours(contour1Mat, contour1, -1, EmguExtensions.WhiteColor, -1, LineType.EightConnected, null, int.MaxValue, inverseOffset);
+        CvInvoke.DrawContours(contour2Mat, contour2, -1, EmguExtensions.WhiteColor, -1, LineType.EightConnected, null, int.MaxValue, inverseOffset);
 
         CvInvoke.BitwiseAnd(contour1Mat, contour2Mat, contour1Mat);
 

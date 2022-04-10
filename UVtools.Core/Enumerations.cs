@@ -32,27 +32,33 @@ public enum LayerRangeSelection : byte
     Last
 }
 
-public enum FlipDirection : byte
+/// <summary>
+/// Flip direction, same as <see cref="FlipType"/>, but add None which must be taken care/ignored on code
+/// </summary>
+public enum FlipDirection : sbyte
 {
-    None,
-    Horizontally,
-    Vertically,
-    Both,
+    None = sbyte.MinValue,
+    Horizontally = FlipType.Horizontal,
+    Vertically = FlipType.Vertical,
+    Both = FlipType.Both,
 }
 
+/// <summary>
+/// Rotate direction, same as <see cref="RotateFlags"/>, but add None which must be taken care/ignored on code
+/// </summary>
 public enum RotateDirection : sbyte
 {
     [Description("None")]
     None = -1,
     /// <summary>Rotate 90 degrees clockwise (0)</summary>
     [Description("Rotate 90º CW")]
-    Rotate90Clockwise = 0,
+    Rotate90Clockwise = RotateFlags.Rotate90Clockwise,
     /// <summary>Rotate 180 degrees clockwise (1)</summary>
     [Description("Rotate 180º")]
-    Rotate180 = 1,
+    Rotate180 = RotateFlags.Rotate180,
     /// <summary>Rotate 270 degrees clockwise (2)</summary>
     [Description("Rotate 90º CCW")]
-    Rotate90CounterClockwise = 2,
+    Rotate90CounterClockwise = RotateFlags.Rotate90CounterClockwise,
 }
 
 public enum Anchor : byte
@@ -118,6 +124,7 @@ public enum RemoveSourceFileAction : byte
     Prompt
 }
 
+/*
 public static class Enumerations
 {
     public static FlipType ToOpenCVFlipType(FlipDirection flip)
@@ -143,4 +150,4 @@ public static class Enumerations
             _ => throw new ArgumentOutOfRangeException(nameof(rotate), rotate, null)
         };
     }
-}
+}*/

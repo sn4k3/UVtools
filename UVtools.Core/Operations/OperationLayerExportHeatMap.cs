@@ -175,12 +175,12 @@ public sealed class OperationLayerExportHeatMap : Operation
 
         if (_flipDirection != FlipDirection.None)
         {
-            CvInvoke.Flip(sumMat, sumMat, Enumerations.ToOpenCVFlipType(_flipDirection));
+            CvInvoke.Flip(sumMat, sumMat, (FlipType)_flipDirection);
         }
 
         if (_rotateDirection != RotateDirection.None)
         {
-            CvInvoke.Rotate(sumMat, sumMat, Enumerations.ToOpenCVRotateFlags(_rotateDirection));
+            CvInvoke.Rotate(sumMat, sumMat, (RotateFlags)_rotateDirection);
         }
 
         if (_cropByRoi && HaveROI)

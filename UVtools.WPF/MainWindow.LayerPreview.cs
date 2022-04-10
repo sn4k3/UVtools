@@ -24,11 +24,13 @@ using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
 using Emgu.CV.Util;
+using MessageBox.Avalonia.Enums;
 using UVtools.AvaloniaControls;
 using UVtools.Core;
 using UVtools.Core.EmguCV;
 using UVtools.Core.Extensions;
 using UVtools.Core.Layers;
+using UVtools.Core.Operations;
 using UVtools.Core.PixelEditor;
 using UVtools.WPF.Extensions;
 using UVtools.WPF.Structures;
@@ -796,6 +798,18 @@ public partial class MainWindow
         if (!IsFileLoaded) return;
         if (!CanGoUp) return;
         ActualLayer = SliderMaximumValue;
+    }
+
+    public void GoUpLayers(uint layers)
+    {
+        if (!IsFileLoaded) return;
+        ActualLayer = Math.Min(SlicerFile.LastLayerIndex, ActualLayer + layers);
+    }
+
+    public void GoDownLayers(uint layers)
+    {
+        if (!IsFileLoaded) return;
+        ActualLayer = (uint)Math.Max(0, (int)ActualLayer - layers);
     }
 
     public void GoMassLayer(string which)
@@ -1884,40 +1898,140 @@ public partial class MainWindow
 
     private void LayerImageBox_KeyDown(object? sender, KeyEventArgs e)
     {
-        if (e.Key == Key.Up)
+        switch (e.Key)
         {
-            GoNextLayer();
-            e.Handled = true;
-            return;
-        }
-
-        if (e.Key == Key.Down)
-        {
-            GoPreviousLayer();
-            e.Handled = true;
-            return;
+            case Key.Up:
+                GoNextLayer();
+                e.Handled = true;
+                return;
+            case Key.Down:
+                GoPreviousLayer();
+                e.Handled = true;
+                return;
+            case Key.PageUp:
+                GoUpLayers(10);
+                e.Handled = true;
+                return;
+            case Key.PageDown:
+                GoDownLayers(10);
+                e.Handled = true;
+                return;
         }
     }
 
-    private void LayerImageBox_KeyUp(object? sender, KeyEventArgs e)
+    private async void LayerImageBox_KeyUp(object? sender, KeyEventArgs e)
     {
-        if (e.Key == Key.Escape)
+        switch (e.Key)
         {
-            if (e.KeyModifiers == KeyModifiers.Shift)
+            case Key.Escape:
             {
-                ClearROI();
+                if (e.KeyModifiers == KeyModifiers.Shift)
+                {
+                    ClearROI();
+                }
+                /*else if(e.KeyModifiers == KeyModifiers.Alt)
+                {
+                    ClearMask();
+                }*/
+                else
+                {
+                    ClearROIAndMask();
+                }
+                e.Handled = true;
+                return;
             }
-            /*else if(e.KeyModifiers == KeyModifiers.Alt)
+            case Key.Insert:
             {
-                ClearMask();
-            }*/
-            else
-            {
-                ClearROIAndMask();
+                if (e.KeyModifiers == KeyModifiers.Control)
+                {
+                    if (await this.MessageBoxQuestion($"Are you sure you want to clone the current layer {_actualLayer}?",
+                            "Clone the current layer?") != ButtonResult.Yes) return;
+
+                    var operationLayerClone = new OperationLayerClone(SlicerFile);
+                    operationLayerClone.SelectCurrentLayer(_actualLayer);
+                    await RunOperation(operationLayerClone);
+
+                    e.Handled = true;
+                    return;
+                }
+
+                if (ROI == Rectangle.Empty && _maskPoints.Count == 0) return;
+                var operation = new OperationPixelArithmetic(SlicerFile)
+                {
+                    Operator = OperationPixelArithmetic.PixelArithmeticOperators.KeepRegion,
+                    ROI = ROI,
+                    MaskPoints = _maskPoints.ToArray()
+                };
+
+                string layerRange;
+                if (e.KeyModifiers == KeyModifiers.Alt)
+                {
+                    operation.SelectAllLayers();
+                    layerRange = $"within all {SlicerFile.LayerCount} layers";
+                }
+                else
+                {
+                    operation.SelectCurrentLayer(ActualLayer);
+                    layerRange = $"in the current {ActualLayer} layer";
+                }
+
+                if (await this.MessageBoxQuestion($"Are you sure you want to keep only the selected region/mask(s) {layerRange}?",
+                        "Keep only selected region/mask(s)?") != ButtonResult.Yes) return;
+                await RunOperation(operation);
+                e.Handled = true;
+                return;
             }
-            e.Handled = true;
-            return;
+            case Key.Delete:
+            {
+                if (e.KeyModifiers == KeyModifiers.Control)
+                {
+                    if (await this.MessageBoxQuestion($"Are you sure you want to remove the current layer {_actualLayer}?",
+                            "Remove the current layer?") != ButtonResult.Yes) return;
+
+                    var operationLayerRemove = new OperationLayerRemove(SlicerFile);
+                    operationLayerRemove.SelectCurrentLayer(_actualLayer);
+                    await RunOperation(operationLayerRemove);
+
+                    e.Handled = true;
+                    return;
+                }
+
+                if (ROI == Rectangle.Empty && _maskPoints.Count == 0) return;
+                var operation = new OperationPixelArithmetic(SlicerFile)
+                {
+                    Operator = OperationPixelArithmetic.PixelArithmeticOperators.DiscardRegion,
+                    ROI = ROI,
+                    MaskPoints = _maskPoints.ToArray()
+                };
+
+                string layerRange;
+                if (e.KeyModifiers == KeyModifiers.Alt)
+                {
+                    operation.SelectAllLayers();
+                    layerRange = $"within all {SlicerFile.LayerCount} layers";
+                }
+                else
+                {
+                    operation.SelectCurrentLayer(ActualLayer);
+                    layerRange = $"in the current {ActualLayer} layer";
+                }
+
+                if (await this.MessageBoxQuestion($"Are you sure you want to discard the selected region/mask(s) {layerRange}?",
+                        "Discard selected region/mask(s)?") != ButtonResult.Yes) return;
+                await RunOperation(operation);
+                e.Handled = true;
+                return;
+            }
+            case Key.Home:
+                GoFirstLayer();
+                e.Handled = true;
+                return;
+            case Key.End:
+                GoLastLayer();
+                e.Handled = true;
+                return;
         }
+
 
         if ((e.KeyModifiers & KeyModifiers.Control) != 0)
         {
@@ -1968,6 +2082,7 @@ public partial class MainWindow
                 if (e.Key == Key.B)
                 {
                     SelectModelVolumeRoi();
+                    e.Handled = true;
                     return;
                 }
 

@@ -2238,7 +2238,7 @@ public sealed class OperationCalibrateExposureFinder : Operation
             {
                 var flip = SlicerFile.DisplayMirror;
                 if (flip == FlipDirection.None) flip = FlipDirection.Horizontally;
-                new OperationFlip(SlicerFile) { FlipDirection = Enumerations.ToOpenCVFlipType(flip) }.Execute(progress);
+                new OperationFlip(SlicerFile) { FlipDirection = (FlipType)flip }.Execute(progress);
             }
         }
 

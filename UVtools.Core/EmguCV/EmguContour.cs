@@ -14,6 +14,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using UVtools.Core.Extensions;
 
 namespace UVtools.Core.EmguCV;
@@ -21,7 +22,7 @@ namespace UVtools.Core.EmguCV;
 /// <summary>
 /// A contour cache for OpenCV
 /// </summary>
-public class EmguContour : IReadOnlyCollection<Point>, IDisposable
+public class EmguContour : IReadOnlyCollection<Point>, IDisposable, IComparable<EmguContour>, IComparer<EmguContour>
 {
     #region Constants
 
@@ -257,4 +258,43 @@ public class EmguContour : IReadOnlyCollection<Point>, IDisposable
         _moments?.Dispose();
     }
     #endregion
+
+    #region Equality
+
+    protected bool Equals(EmguContour other)
+    {
+        if (Count != other.Count) return false;
+        return _points.ToArray().SequenceEqual(other.ToArray());
+    }
+
+    public override bool Equals(object? obj)
+    {
+        if (ReferenceEquals(null, obj)) return false;
+        if (ReferenceEquals(this, obj)) return true;
+        if (obj.GetType() != this.GetType()) return false;
+        return Equals((EmguContour) obj);
+    }
+
+    public override int GetHashCode()
+    {
+        return _points.GetHashCode();
+    }
+
+    public int CompareTo(EmguContour? other)
+    {
+        if (ReferenceEquals(this, other)) return 0;
+        if (ReferenceEquals(null, other)) return 1;
+        return _area.CompareTo(other._area);
+    }
+
+    public int Compare(EmguContour? x, EmguContour? y)
+    {
+        if (ReferenceEquals(x, y)) return 0;
+        if (ReferenceEquals(null, y)) return 1;
+        if (ReferenceEquals(null, x)) return -1;
+        return x._area.CompareTo(y._area);
+    }
+    #endregion
+
+
 }
