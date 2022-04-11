@@ -2,7 +2,7 @@
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
   <?define ComponentRules="OneToOne"?>
   <!-- SourceDir instructs IsWiX the location of the directory that contains files for this merge module -->
-  <?define SourceDir="..\publish\UVtools_win-x64_v3.3.0"?>
+  <?define SourceDir="..\publish\UVtools_win-x64_v3.3.1"?>
   <Module Id="UVtools" Language="1033" Version="1.0.0.0">
     <Package Id="12aaa1cf-ff06-4a02-abd5-2ac01ac4f83b" Manufacturer="PTRTECH" InstallerVersion="200" Keywords="MSLA, DLP" Description="MSLA/DLP, file analysis, repair, conversion and manipulation" InstallScope="perMachine" Platform="x64" />
     <Directory Id="TARGETDIR" Name="SourceDir">
@@ -1175,6 +1175,15 @@
               </Component>
               <Component Id="owcE58B020744224713A7CD07B20B6ECB5A" Guid="E58B0207-4422-4713-A7CD-07B20B6ECB5A">
                 <File Id="owfE58B020744224713A7CD07B20B6ECB5A" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\Uniformation GKone.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owcA2F91C684CE645F6813B62176068913F" Guid="A2F91C68-4CE6-45F6-813B-62176068913F">
+                <File Id="owfA2F91C684CE645F6813B62176068913F" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\AnyCubic Photon M3 Max.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owc5199831A1AB0411C8D8E94D593B7556B" Guid="5199831A-1AB0-411C-8D8E-94D593B7556B">
+                <File Id="owf5199831A1AB0411C8D8E94D593B7556B" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\AnyCubic Photon M3 Plus.ini" KeyPath="yes" />
+              </Component>
+              <Component Id="owc3DB1625C977247EAA456B791FE93809C" Guid="3DB1625C-9772-47EA-A456-B791FE93809C">
+                <File Id="owf3DB1625C977247EAA456B791FE93809C" Source="$(var.SourceDir)\Assets\PrusaSlicer\printer\AnyCubic Photon M3.ini" KeyPath="yes" />
               </Component>
             </Directory>
             <Directory Id="owd324203F33CD6B2D491618D3D363F997F" Name="sla_print">

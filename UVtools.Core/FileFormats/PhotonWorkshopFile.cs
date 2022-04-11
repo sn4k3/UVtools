@@ -99,8 +99,10 @@ public class PhotonWorkshopFile : FileFormat
         AnyCubicPhotonMonoSE,
         AnyCubicPhotonMono4K,
         AnyCubicPhotonMonoX,
-        AnyCubicPhotonMonoX6K,
+        AnyCubicPhotonMonoX6KM3Plus,
         AnyCubicPhotonMonoSQ,
+        AnyCubicPhotonM3,
+        AnyCubicPhotonM3Max,
     }
     #endregion
 
@@ -1039,11 +1041,14 @@ public class PhotonWorkshopFile : FileFormat
         new(typeof(PhotonWorkshopFile), "pwx", "Photon X (PWX)"),
         new(typeof(PhotonWorkshopFile), "dlp", "Photon Ultra (DLP)"),
         new(typeof(PhotonWorkshopFile), "pwmx", "Photon Mono X (PWMX)"),
-        new(typeof(PhotonWorkshopFile), "pwmb", "Photon Mono X 6K (PWMB)"),
+        new(typeof(PhotonWorkshopFile), "pwmb", "Photon Mono X 6K / Photon M3 Plus (PWMB)"),
         new(typeof(PhotonWorkshopFile), "pwmo", "Photon Mono (PWMO)"),
         new(typeof(PhotonWorkshopFile), "pwms", "Photon Mono SE (PWMS)"),
         new(typeof(PhotonWorkshopFile), "pwma", "Photon Mono 4K (PWMA)"),
         new(typeof(PhotonWorkshopFile), "pmsq", "Photon Mono SQ (PMSQ)"),
+        new(typeof(PhotonWorkshopFile), "pm3", "Photon M3 (PM3)"),
+        new(typeof(PhotonWorkshopFile), "pm3m", "Photon M3 Max (PM3M)"),
+        //new(typeof(PhotonWorkshopFile), "pwmb", "Photon M3 Plus (PWMB)"),
     };
 
     public override SpeedUnit FormatSpeedUnit => SpeedUnit.MillimetersPerSecond;
@@ -1157,10 +1162,12 @@ public class PhotonWorkshopFile : FileFormat
                 AnyCubicMachine.AnyCubicPhotonUltra => 102.40f,
                 AnyCubicMachine.AnyCubicPhotonMono => 82.62f,
                 AnyCubicMachine.AnyCubicPhotonMonoSE => 82.62f,
-                AnyCubicMachine.AnyCubicPhotonMono4K => 132.90f,
+                AnyCubicMachine.AnyCubicPhotonMono4K => 134.40f,
                 AnyCubicMachine.AnyCubicPhotonMonoX => 192,
-                AnyCubicMachine.AnyCubicPhotonMonoX6K => 197,
+                AnyCubicMachine.AnyCubicPhotonMonoX6KM3Plus => 198.15f,
                 AnyCubicMachine.AnyCubicPhotonMonoSQ => 120,
+                AnyCubicMachine.AnyCubicPhotonM3 => 163.84f,
+                AnyCubicMachine.AnyCubicPhotonM3Max => 298.08f,
                 _ => 0
             };
         }
@@ -1183,10 +1190,12 @@ public class PhotonWorkshopFile : FileFormat
                 AnyCubicMachine.AnyCubicPhotonUltra => 57.60f,
                 AnyCubicMachine.AnyCubicPhotonMono => 130.56f,
                 AnyCubicMachine.AnyCubicPhotonMonoSE => 130.56f,
-                AnyCubicMachine.AnyCubicPhotonMono4K => 80,
+                AnyCubicMachine.AnyCubicPhotonMono4K => 84,
                 AnyCubicMachine.AnyCubicPhotonMonoX => 120,
-                AnyCubicMachine.AnyCubicPhotonMonoX6K => 122.80f,
+                AnyCubicMachine.AnyCubicPhotonMonoX6KM3Plus => 123.84f,
                 AnyCubicMachine.AnyCubicPhotonMonoSQ => 128,
+                AnyCubicMachine.AnyCubicPhotonM3 => 102.40f,
+                AnyCubicMachine.AnyCubicPhotonM3Max => 165.60f,
                 _ => 0
             };
         }
@@ -1212,8 +1221,10 @@ public class PhotonWorkshopFile : FileFormat
                 AnyCubicMachine.AnyCubicPhotonMonoSE => 160,
                 AnyCubicMachine.AnyCubicPhotonMono4K => 165,
                 AnyCubicMachine.AnyCubicPhotonMonoX => 245,
-                AnyCubicMachine.AnyCubicPhotonMonoX6K => 245,
+                AnyCubicMachine.AnyCubicPhotonMonoX6KM3Plus => 245,
                 AnyCubicMachine.AnyCubicPhotonMonoSQ => 200,
+                AnyCubicMachine.AnyCubicPhotonM3 => 180f,
+                AnyCubicMachine.AnyCubicPhotonM3Max => 300f,
                 _ => 0
             };
         }
@@ -1504,8 +1515,10 @@ public class PhotonWorkshopFile : FileFormat
                 AnyCubicMachine.AnyCubicPhotonMonoSE  => "Photon Mono SE",
                 AnyCubicMachine.AnyCubicPhotonMono4K  => "Photon Mono 4K",
                 AnyCubicMachine.AnyCubicPhotonMonoX   => "Photon Mono X",
-                AnyCubicMachine.AnyCubicPhotonMonoX6K => "Photon Mono X 6K",
+                AnyCubicMachine.AnyCubicPhotonMonoX6KM3Plus => "Photon Mono X 6K / M3 Plus",
                 AnyCubicMachine.AnyCubicPhotonMonoSQ  => "Photon Mono SQ",
+                AnyCubicMachine.AnyCubicPhotonM3  => "Photon M3",
+                AnyCubicMachine.AnyCubicPhotonM3Max  => "Photon M3 Max",
                 _ => base.MachineName
             };
         }
@@ -1565,12 +1578,22 @@ public class PhotonWorkshopFile : FileFormat
 
             if (FileEndsWith(".pwmb"))
             {
-                return AnyCubicMachine.AnyCubicPhotonMonoX6K;
+                return AnyCubicMachine.AnyCubicPhotonMonoX6KM3Plus;
             }
 
             if (FileEndsWith(".pmsq"))
             {
                 return AnyCubicMachine.AnyCubicPhotonMonoSQ;
+            }
+
+            if (FileEndsWith(".pm3"))
+            {
+                return AnyCubicMachine.AnyCubicPhotonM3;
+            }
+
+            if (FileEndsWith(".pm3m"))
+            {
+                return AnyCubicMachine.AnyCubicPhotonM3Max;
             }
 
             return AnyCubicMachine.AnyCubicPhotonS;

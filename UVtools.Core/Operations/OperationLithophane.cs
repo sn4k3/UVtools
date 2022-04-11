@@ -91,29 +91,31 @@ public class OperationLithophane : Operation
         {
             sb.AppendLine("The selected file does not exists");
         }
+        else
+        {
+            using var mat = GetSourceMat();
+            if (mat is null)
+            {
+                sb.AppendLine("Unable to generate the mat from source file, is it a valid image file?");
+            }
+            else
+            {
+                if (SlicerFile.ResolutionX < mat.Width * _resizeFactor / 100 || SlicerFile.ResolutionY < mat.Height * _resizeFactor / 100)
+                {
+                    //int differenceX = (int)SlicerFile.ResolutionX - mat.Width;
+                    //int differenceY = (int)SlicerFile.ResolutionY - mat.Height;
+                    var scaleX = SlicerFile.ResolutionX * 100f / mat.Width;
+                    var scaleY = SlicerFile.ResolutionY * 100f / mat.Height;
+                    var maxScale = Math.Min(scaleX, scaleY);
+
+                    sb.AppendLine($"The printer resolution is not enough to accomodate the lithophane image, please scale down to a maximum of {maxScale:F0}%");
+                }
+            }
+        }
 
         if (_startThresholdRange > _endThresholdRange)
         {
             sb.AppendLine("Start threshold can't be higher than end threshold");
-        }
-
-        using var mat = GetSourceMat();
-        if (mat is null)
-        {
-            sb.AppendLine("Unable to generate the mat from source file, is it a valid image file?");
-        }
-        else
-        {
-            if (SlicerFile.ResolutionX < mat.Width * _resizeFactor / 100 || SlicerFile.ResolutionY < mat.Height * _resizeFactor / 100)
-            {
-                //int differenceX = (int)SlicerFile.ResolutionX - mat.Width;
-                //int differenceY = (int)SlicerFile.ResolutionY - mat.Height;
-                var scaleX = SlicerFile.ResolutionX * 100f / mat.Width;
-                var scaleY = SlicerFile.ResolutionY * 100f / mat.Height;
-                var maxScale = Math.Min(scaleX, scaleY);
-
-                sb.AppendLine($"The printer resolution is not enough to accomodate the lithophane image, please scale down to a maximum of {maxScale:F0}%");
-            }
         }
 
         return sb.ToString();

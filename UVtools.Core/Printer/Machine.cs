@@ -183,10 +183,13 @@ namespace UVtools.Core.Printer
                 new(PrinterBrand.Creality, "CT133 Pro",      "CT133PRO", 3840, 2160, 293.76f, 165.24f, 300),
                 new(PrinterBrand.Creality, "CT-005 Pro",     "CT-005",   3840, 2400, 192,     120,     250),*/
 
-                new(PrinterBrand.AnyCubic, "AnyCubic Photon Mono 4K", "Photon Mono 4K", 3840, 2400, 134.4f, 84f, 165f, FlipDirection.Horizontally),
+                new(PrinterBrand.AnyCubic, "AnyCubic Photon M3", "Photon M3", 4096, 2560, 163.84f, 102.40f, 180f, FlipDirection.Horizontally),
+                new(PrinterBrand.AnyCubic, "AnyCubic Photon M3 Max", "Photon M3 Max", 6480, 3600, 298.08f, 165.60f, 300f, FlipDirection.Horizontally),
+                new(PrinterBrand.AnyCubic, "AnyCubic Photon M3 Plus", "Photon M3 Plus", 5760, 3600, 198.15f, 123.84f, 245f, FlipDirection.Horizontally),
+                new(PrinterBrand.AnyCubic, "AnyCubic Photon Mono 4K", "Photon Mono 4K", 3840, 2400, 134.40f, 84f, 165f, FlipDirection.Horizontally),
                 new(PrinterBrand.AnyCubic, "AnyCubic Photon Mono SE", "Photon Mono SE", 1620, 2560, 82.62f, 130.56f, 160f, FlipDirection.Horizontally),
                 new(PrinterBrand.AnyCubic, "AnyCubic Photon Mono SQ", "Photon Mono SQ", 2400, 2560, 120f, 128f, 200f, FlipDirection.Horizontally),
-                new(PrinterBrand.AnyCubic, "AnyCubic Photon Mono X 6K", "Photon Mono X 6K", 5760, 3600, 198.14f, 123.84f, 245f, FlipDirection.Horizontally),
+                new(PrinterBrand.AnyCubic, "AnyCubic Photon Mono X 6K", "Photon Mono X 6K", 5760, 3600, 198.15f, 123.84f, 245f, FlipDirection.Horizontally),
                 new(PrinterBrand.AnyCubic, "AnyCubic Photon Mono X", "Photon Mono X", 3840, 2400, 192f, 120f, 245f, FlipDirection.Horizontally),
                 new(PrinterBrand.AnyCubic, "AnyCubic Photon Mono", "Photon Mono", 1620, 2560, 82.62f, 130.56f, 165f, FlipDirection.Horizontally),
                 new(PrinterBrand.AnyCubic, "AnyCubic Photon S", "Photon S", 1440, 2560, 68.04f, 120.96f, 165f, FlipDirection.Horizontally),

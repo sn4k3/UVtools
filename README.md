@@ -87,6 +87,8 @@ But also, i need victims for test subject. Proceed at your own risk!
 - PWMX (Photon Workshop)
 - PWMB (Photon Workshop)
 - PWSQ (Photon Workshop)
+- PM3 (Photon Workshop)
+- PM3M (Photon Workshop)
 - JXS (GKone Slicer)
 - ZCode (UnizMaker)
 - ZCodex (Z-Suite)

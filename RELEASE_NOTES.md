@@ -1,15 +1,9 @@
-- **Shortcuts:**
-   - (Add) **Delete:** While on layer preview and with roi or mask(s) selected, will remove the selected area from layer
-   - (Add) **Alt + Delete:** While on layer preview and with roi or mask(s) selected, will remove the selected area from all layers
-   - (Add) **Ctrl + Delete:** While on layer preview, will remove the current layer
-   - (Add) **Insert:** While on layer preview and with roi or mask(s) selected, will keep only the selected area in layer
-   - (Add) **Alt + Insert:** While on layer preview and with roi or mask(s) selected, will keep only the selected area in all layers
-   - (Add) **Ctrl + Insert:** While on layer preview, will clone the current layer
-   - (Add) **Home:** While on layer preview will go to first layer
-   - (Add) **End:** While on layer preview will go to last layer
-   - (Add) **Page up:** While on layer preview will skip +10 layers
-   - (Add) **Page down:** While on layer preview will skip -10 layers
-- (Add) Tool - Lithophane: Generate lithophane from a picture
-- (Fix) Pixel arithmetic: When run with masks it produce a incorrect outcome
-- (Fix) CXDLP: Layer area table miscalculation, causing slow down prints
+- **PrusaSlicer:**
+   - (Add) AnyCubic M3
+   - (Add) AnyCubic M3 Max
+   - (Add) AnyCubic M3 Plus
+   - (Change) AnyCubic Photon Mono 4K: Display size and remove offset from bed shape
+   - (Change) AnyCubic Photon Mono X 6K: Display size and remove offset from bed shape
+- (Add) File format: AnyCubic PM3 and PM3M (#454)
+- (Fix) Tool - Lithophane: Value unit for "Lithophane height" was in px instead of mm
 
