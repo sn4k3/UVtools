@@ -13,7 +13,23 @@ namespace UVtools.WPF.Windows;
 
 public class AboutWindow : WindowEx
 {
-    public static string OpenCVBuildInformation => CvInvoke.BuildInformation;
+    public static string OpenCVBuildInformation
+    {
+        get
+        {
+            try
+            {
+                return CvInvoke.BuildInformation;
+            }
+            catch
+            {
+                // ignored
+            }
+
+            return "Error: Unable to load the library.";
+        }
+    }
+
     public static string LoadedAssemblies 
     {
         get
@@ -41,12 +57,20 @@ public class AboutWindow : WindowEx
     {
         get
         {
-            var match = Regex.Match(CvInvoke.BuildInformation, @"(?:Version control:\s*)(\S*)");
-            if (!match.Success) return "Not found!";
-            var index = match.Groups[1].Value.LastIndexOf('-');
-            if (index < 0) return match.Groups[1].Value;
-            return match.Groups[1].Value[..index];
-            //return match.Groups[1].Value;
+            try
+            {
+                var match = Regex.Match(CvInvoke.BuildInformation, @"(?:Version control:\s*)(\S*)");
+                if (!match.Success) return "Not found!";
+                var index = match.Groups[1].Value.LastIndexOf('-');
+                if (index < 0) return match.Groups[1].Value;
+                return match.Groups[1].Value[..index];
+            }
+            catch 
+            {
+                // ignored
+            }
+
+            return "???";
         }
     }
 
@@ -81,7 +105,8 @@ public class AboutWindow : WindowEx
             var result = new StringBuilder();
             for (var i = 0; i < Screens.All.Count; i++)
             {
-                var onScreen = Screens.ScreenFromVisual(App.MainWindow);
+                // ReSharper disable once ConditionIsAlwaysTrueOrFalse
+                var onScreen = Screens.ScreenFromVisual(App.MainWindow is not null ? App.MainWindow : this);
                 var screen = Screens.All[i];
                 result.AppendLine($"{i+1}: {screen.Bounds.Width} x {screen.Bounds.Height} @ {screen.PixelDensity * 100}%" + 
                                   (screen.Primary ? " (Primary)" : string.Empty) +

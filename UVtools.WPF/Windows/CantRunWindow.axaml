@@ -1,0 +1,102 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:i="clr-namespace:Projektanker.Icons.Avalonia;assembly=Projektanker.Icons.Avalonia"
+        xmlns:core="clr-namespace:UVtools.Core;assembly=UVtools.Core"
+        xmlns:uc="clr-namespace:UVtools.WPF.Controls"
+        xmlns:systemOs="clr-namespace:UVtools.Core.SystemOS;assembly=UVtools.Core"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="UVtools.WPF.Windows.CantRunWindow"
+        Icon="/Assets/Icons/UVtools.ico"
+        WindowStartupLocation="CenterScreen"
+        CanResize="False"
+        SizeToContent="WidthAndHeight"
+        Title="{Binding Source={x:Static core:About.SoftwareWithVersion}, StringFormat={}{0} is unable to run}}">
+  <Grid RowDefinitions="Auto,*,Auto">
+      <Border Grid.Row="0" 
+              Padding="20"
+              Classes="Header">
+          <StackPanel Orientation="Horizontal"
+                      Spacing="10">
+              <i:Icon FontSize="64"
+                      FontWeight="Bold"
+                      Value="far fa-frown"
+                      Foreground="{StaticResource LogoColor}"
+                      HorizontalAlignment="Center"/>
+
+              <TextBox Classes="TransparentReadOnly"
+                       FontWeight="Bold">
+                  <TextBlock.Text>
+                      <MultiBinding StringFormat="{}{0}  [{1}]
+&#x0a;Unable to run due one or more missing dependencies.
+&#x0a;Triggered by: libcvextern  (OpenCV)">
+                          <Binding Source="{x:Static core:About.SoftwareWithVersionArch}"/>
+                          <Binding Source="{x:Static systemOs:SystemAware.OperatingSystemName}"/>
+                      </MultiBinding>
+                  </TextBlock.Text>
+              </TextBox>
+
+          </StackPanel>
+	  </Border>
+
+
+	  <TextBox Grid.Row="1"
+               Classes="TransparentReadOnly"
+               Padding="20"
+               Text="Your system doesn't have the required dependencies in order to run.
+&#x0a;Those dependencies are required at libcvextern/OpenCV library.
+&#x0a;UVtools is built on top of the OpenCV and therefore cannot run.
+&#x0a;
+&#x0a;Please install or build the dependencies in order to run the software.
+&#x0a;Check the manual page at 'Requirements' section for help."/>
+
+      <Border Grid.Row="2"
+              Margin="0"
+              Classes="FooterActions">
+
+          <Grid ColumnDefinitions="Auto,*">
+              <Button Grid.Column="0"
+                      Command="{Binding OpenAboutWindow}">
+                  <StackPanel Orientation="Horizontal" Spacing="10">
+                      <Image Source="/Assets/Icons/UVtools.ico" 
+                             Height="26"/>
+
+                      <TextBlock VerticalAlignment="Center"
+                                 Text="About"/>
+				  </StackPanel>
+			  </Button>
+
+			  <StackPanel Grid.Column="1" Orientation="Horizontal"
+                          Spacing="5"
+                          HorizontalAlignment="Right">
+
+                  <uc:ButtonWithIcon Padding="10"
+                                     VerticalContentAlignment="Center"
+                                     Icon="fab fa-edge"
+                                     Text="Open manual"
+                                     Command="{Binding OpenBrowser}"
+                                     CommandParameter="https://github.com/sn4k3/UVtools#requirements"/>
+
+                  <uc:ButtonWithIcon Padding="10"
+                                     VerticalContentAlignment="Center"
+                                     Icon="fas fa-question"
+                                     Text="Ask for help"
+                                     Command="{Binding OpenBrowser}"
+                                     CommandParameter="https://github.com/sn4k3/UVtools/discussions/categories/q-a"/>
+
+                  <uc:ButtonWithIcon Command="{Binding Close}"
+                                     IsCancel="True"
+                                     Padding="10"
+                                     VerticalContentAlignment="Center"
+                                     Icon="fas fa-sign-out-alt"
+                                     Text="Exit"/>
+              </StackPanel>
+          </Grid>
+
+          
+
+
+		</Border>
+  </Grid>
+</Window>

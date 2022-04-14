@@ -2,7 +2,7 @@
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
   <?define ComponentRules="OneToOne"?>
   <!-- SourceDir instructs IsWiX the location of the directory that contains files for this merge module -->
-  <?define SourceDir="..\publish\UVtools_win-x64_v3.3.1"?>
+  <?define SourceDir="..\publish\UVtools_win-x64_v3.3.2"?>
   <Module Id="UVtools" Language="1033" Version="1.0.0.0">
     <Package Id="12aaa1cf-ff06-4a02-abd5-2ac01ac4f83b" Manufacturer="PTRTECH" InstallerVersion="200" Keywords="MSLA, DLP" Description="MSLA/DLP, file analysis, repair, conversion and manipulation" InstallScope="perMachine" Platform="x64" />
     <Directory Id="TARGETDIR" Name="SourceDir">
@@ -1500,9 +1500,6 @@
         <Component Id="owc8DBF076FA26C4EC39811CAD12FD3937C" Guid="8DBF076F-A26C-4EC3-9811-CAD12FD3937C">
           <File Id="owf8DBF076FA26C4EC39811CAD12FD3937C" Source="$(var.SourceDir)\api-ms-win-core-fibers-l1-1-0.dll" KeyPath="yes" />
         </Component>
-        <Component Id="owc04789579CAEC4E9D884765B39BA4BC5D" Guid="04789579-CAEC-4E9D-8847-65B39BA4BC5D">
-          <File Id="owf04789579CAEC4E9D884765B39BA4BC5D" Source="$(var.SourceDir)\mscordaccore_amd64_amd64_6.0.322.12309.dll" KeyPath="yes" />
-        </Component>
         <Component Id="owcF431B2B5B6264D78AAFA361A07841A68" Guid="F431B2B5-B626-4D78-AAFA-361A07841A68">
           <File Id="owfF431B2B5B6264D78AAFA361A07841A68" Source="$(var.SourceDir)\msquic.dll" KeyPath="yes" />
         </Component>
@@ -1556,6 +1553,9 @@
         </Component>
         <Component Id="owcD2245B900E5C448485AD96FE57629D9D" Guid="D2245B90-0E5C-4484-85AD-96FE57629D9D">
           <File Id="owfD2245B900E5C448485AD96FE57629D9D" Source="$(var.SourceDir)\UVtoolsCmd.runtimeconfig.json" KeyPath="yes" />
+        </Component>
+        <Component Id="owc47E738FB97A34F13812E87CF7F2B4643" Guid="47E738FB-97A3-4F13-812E-87CF7F2B4643">
+          <File Id="owf47E738FB97A34F13812E87CF7F2B4643" Source="$(var.SourceDir)\mscordaccore_amd64_amd64_6.0.422.16404.dll" KeyPath="yes" />
         </Component>
       </Directory>
       <Directory Id="ProgramMenuFolder">

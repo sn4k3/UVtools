@@ -300,4 +300,29 @@ public static class SystemAware
     /// Gets if is running under MacOS and under app format
     /// </summary>
     public static bool IsRunningMacOSApp => OperatingSystem.IsMacOS() && AppContext.BaseDirectory.EndsWith(".app/Contents/MacOS");
+
+    /// <summary>
+    /// Gets the main name of the operative system
+    /// </summary>
+    public static string OperatingSystemName
+    {
+        get
+        {
+            if (OperatingSystem.IsWindows()) return "Windows";
+            if (OperatingSystem.IsMacOS()) return "macOS";
+            if (OperatingSystem.IsLinux()) return "Linux";
+            if (OperatingSystem.IsFreeBSD()) return "FreeBSD";
+            if (OperatingSystem.IsAndroid()) return "Android";
+            if (OperatingSystem.IsIOS()) return "iOS";
+            if (OperatingSystem.IsTvOS()) return "Tv OS";
+            if (OperatingSystem.IsWatchOS()) return "WatchOS";
+            if (OperatingSystem.IsBrowser()) return "Browser";
+            return "Unknown";
+        }
+    }
+
+    /// <summary>
+    /// Gets the main name of the operative system with architecture
+    /// </summary>
+    public static string OperatingSystemNameWithArch => $"{OperatingSystemName} {RuntimeInformation.OSArchitecture}";
 }

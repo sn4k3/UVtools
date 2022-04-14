@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.Xml.Serialization;
 using Avalonia.Media;
@@ -38,7 +39,10 @@ public sealed class UserSettings : BindableBase
     public sealed class GeneralUserSettings : BindableBase
     {
         private App.ApplicationTheme _theme = App.ApplicationTheme.FluentLight;
+        internal Rectangle _lastWindowBounds = new(40, 40, 1024, 600);
         private bool _startMaximized = true;
+        private bool _restoreWindowLastPosition;
+        private bool _restoreWindowLastSize;
         private bool _checkForUpdatesOnStartup = true;
         private bool _loadDemoFileOnStartup = true;
         private bool _loadLastRecentFileOnStartup;
@@ -68,10 +72,28 @@ public sealed class UserSettings : BindableBase
             set => RaiseAndSetIfChanged(ref _theme, value);
         }
 
+        public Rectangle LastWindowBounds
+        {
+            get => _lastWindowBounds;
+            set => RaiseAndSetIfChanged(ref _lastWindowBounds, value);
+        }
+
         public bool StartMaximized
         {
             get => _startMaximized;
             set => RaiseAndSetIfChanged(ref _startMaximized, value);
+        }
+
+        public bool RestoreWindowLastPosition
+        {
+            get => _restoreWindowLastPosition;
+            set => RaiseAndSetIfChanged(ref _restoreWindowLastPosition, value);
+        }
+
+        public bool RestoreWindowLastSize
+        {
+            get => _restoreWindowLastSize;
+            set => RaiseAndSetIfChanged(ref _restoreWindowLastSize, value);
         }
 
         public bool CheckForUpdatesOnStartup

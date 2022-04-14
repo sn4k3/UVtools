@@ -431,19 +431,8 @@ public partial class MainWindow : WindowEx
 
         UpdateTitle();
 
-        var clientSizeObs = this.GetObservable(ClientSizeProperty);
-        clientSizeObs.Subscribe(size => UpdateLayerTrackerHighlightIssues());
-        var windowStateObs = this.GetObservable(WindowStateProperty);
-        windowStateObs.Subscribe(windowsState => UpdateLayerTrackerHighlightIssues());
-
-
+        
         DataContext = this;
-
-        AddHandler(DragDrop.DropEvent, (sender, e) =>
-        {
-            if (!_isGUIEnabled) return;
-            ProcessFiles(e.Data.GetFileNames()?.ToArray());
-        });
 
         _menuFileSendTo = this.FindControl<MenuItem>("MainMenu.File.SendTo");
         this.FindControl<MenuItem>("MainMenu.File").SubmenuOpened += (sender, e) =>
@@ -853,9 +842,28 @@ public partial class MainWindow : WindowEx
         base.OnOpened(e);
         var windowSize = this.GetScreenWorkingArea();
 
-        if (Settings.General.StartMaximized
-            || ClientSize.Width > windowSize.Width
-            || ClientSize.Height > windowSize.Height)
+        var clientSizeObs = this.GetObservable(ClientSizeProperty);
+        clientSizeObs.Subscribe(size =>
+        {
+            Settings.General._lastWindowBounds.Width = (int)size.Width;
+            Settings.General._lastWindowBounds.Height = (int)size.Height;
+            UpdateLayerTrackerHighlightIssues();
+        });
+        var windowStateObs = this.GetObservable(WindowStateProperty);
+        windowStateObs.Subscribe(windowsState => UpdateLayerTrackerHighlightIssues());
+        PositionChanged += (sender, args) =>
+        {
+            Settings.General._lastWindowBounds.X = Math.Max(0, Position.X);
+            Settings.General._lastWindowBounds.Y = Math.Max(0, Position.Y);
+        };
+
+        AddHandler(DragDrop.DropEvent, (sender, args) =>
+        {
+            if (!_isGUIEnabled) return;
+            ProcessFiles(args.Data.GetFileNames()?.ToArray());
+        });
+
+        if (!Settings.General.StartMaximized && (ClientSize.Width >= windowSize.Width || ClientSize.Height >= windowSize.Height))
         {
             WindowState = WindowState.Maximized;
         }
@@ -896,6 +904,18 @@ public partial class MainWindow : WindowEx
                                 $"This message will only show today, see you in next year!\n" +
                                 $"Thank you for using {About.Software}.", $"Today it's the {About.Software} birthday!").ConfigureAwait(false);
         }*/
+    }
+
+    protected override void OnClosed(EventArgs e)
+    {
+        base.OnClosed(e);
+
+        if (!UserSettings.Instance.General.StartMaximized && 
+            (UserSettings.Instance.General.RestoreWindowLastPosition ||
+            UserSettings.Instance.General.RestoreWindowLastSize))
+        {
+            UserSettings.Save();
+        }
     }
 
     private void OnPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -1347,6 +1367,8 @@ public partial class MainWindow : WindowEx
                 title += "   [PARTIAL MODE]";
             }
         }
+
+        //title += $"   [{RuntimeInformation.RuntimeIdentifier}]";
 
 #if DEBUG
         title += "   [DEBUG]";

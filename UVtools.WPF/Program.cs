@@ -58,6 +58,8 @@ public static class Program
         AppDomain.CurrentDomain.UnhandledException += CurrentDomainOnUnhandledException;
         //AppDomain.CurrentDomain.FirstChanceException += CurrentDomainOnFirstChanceException;
         BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
+
+        // Closing
     }
 
     private static void CurrentDomainOnFirstChanceException(object? sender, FirstChanceExceptionEventArgs e)

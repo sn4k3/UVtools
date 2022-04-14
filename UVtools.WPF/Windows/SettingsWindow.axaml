@@ -34,8 +34,23 @@
                             SelectedItem="{Binding Settings.General.Theme, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
 
 					</StackPanel>
-                    <CheckBox IsChecked="{Binding Settings.General.StartMaximized}" Content="Start maximized"/>
-                    <CheckBox IsChecked="{Binding Settings.General.CheckForUpdatesOnStartup}" Content="Check for updates on startup"/>
+
+                    <StackPanel Orientation="Horizontal" Spacing="20">
+                        <CheckBox IsChecked="{Binding Settings.General.StartMaximized}"
+                                  ToolTip.Tip="If enabled, the main window will show up maximized"
+                                  Content="Start maximized"/>
+
+                        <CheckBox IsChecked="{Binding Settings.General.RestoreWindowLastPosition}" 
+                                  IsEnabled="{Binding !Settings.General.StartMaximized}"
+                                  ToolTip.Tip="If enabled, it will restore the main window last known client position on startup"
+                                  Content="Restore window last position"/>
+
+                        <CheckBox IsChecked="{Binding Settings.General.RestoreWindowLastSize}"
+                                  IsEnabled="{Binding !Settings.General.StartMaximized}"
+                                  ToolTip.Tip="If enabled, it will restore the main window last known client size on startup"
+                                  Content="Restore window last size"/>
+					</StackPanel>
+					<CheckBox IsChecked="{Binding Settings.General.CheckForUpdatesOnStartup}" Content="Check for updates on startup"/>
                     <CheckBox IsChecked="{Binding Settings.General.LoadDemoFileOnStartup}" Content="Loads a demo file on startup if no file was specified"/>
                     <CheckBox IsChecked="{Binding Settings.General.LoadLastRecentFileOnStartup}" Content="Loads the last recent file on startup if no file was specified"/>
                 </StackPanel>

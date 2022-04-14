@@ -1379,6 +1379,11 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// </summary>
     public bool AnyLayerIsUsingTSMC => this.Any(layer => layer.IsUsingTSMC);
 
+    /// <summary>
+    /// True if the file global property is using TSMC, otherwise false when not using
+    /// </summary>
+    public bool IsUsingTSMC => (CanUseAnyLiftHeight2 || CanUseAnyRetractHeight2) && (LiftHeight2 > 0 || RetractHeight2 > 0);
+
 
     /// <summary>
     /// Gets if any layer got modified, otherwise false

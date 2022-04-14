@@ -49,8 +49,8 @@ public class OperationLithophane : Operation
     private decimal _resizeFactor = 100;
     private bool _enhanceContrast;
     private sbyte _brightnessGain;
-    private byte _gapClosingIterations = 4;
-    private byte _removeNoiseIterations = 4;
+    private byte _gapClosingIterations;
+    private byte _removeNoiseIterations;
     private byte _gaussianBlur;
     private byte _startThresholdRange = 1;
     private byte _endThresholdRange = byte.MaxValue;

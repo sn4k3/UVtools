@@ -122,7 +122,7 @@
 
                 <TextBlock Grid.Row="12" Grid.Column="0"
                            VerticalAlignment="Center"
-                           Text="Remove noise:"/>
+                           Text="Noise removal:"/>
 
                 <NumericUpDown Grid.Row="12" Grid.Column="2"
                                Classes="ValueLabel ValueLabel_px"

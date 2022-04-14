@@ -11,6 +11,7 @@ using Avalonia.Controls;
 using Avalonia.Layout;
 using Avalonia.Styling;
 using Avalonia.Threading;
+using JetBrains.Annotations;
 
 namespace UVtools.WPF.Controls;
 
@@ -44,9 +45,10 @@ public class ButtonWithIcon : Button, IStyleable
         set => SetValue(IconPlacementProperty, value);
     }
 
-    public static readonly StyledProperty<string> IconProperty =
-        AvaloniaProperty.Register<ButtonWithIcon, string>(nameof(Icon));
+    public static readonly StyledProperty<string?> IconProperty =
+        AvaloniaProperty.Register<ButtonWithIcon, string?>(nameof(Icon));
 
+    [CanBeNull]
     public string Icon
     {
         get => GetValue(IconProperty);

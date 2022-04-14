@@ -1,5 +1,18 @@
 # Changelog
 
+## 14/04/2022 - v3.3.2
+
+- **UI:**
+   - (Add) Setting: Restore window last position - If enabled, it will restore the main window last known client position on startup (#460)
+   - (Add) Setting: Restore window last size - If enabled, it will restore the main window last known client size on startup (#460)
+   - (Improvement) If there are missing dependencies it will show a proper window with information instead of crashing application without any visuals
+   - (Improvement) Start maximized is set before windows spawn to prevent the flicker effect on main window
+- (Add) File formats: Property `IsUsingTSMC` - Indicates whatever file globals are using TSMC or not
+- (Change) Lithophane: Noise removal and gap closing iterations defaults to 0
+- (Fix) Anycubic files: Printers are unable to use TSMC values after save (#457)
+- (Fix) Pixel Editor button is hidden when using screens with scalling > 100% [dirty-fix] (#458)
+- (Upgrade) .NET from 6.0.3 to 6.0.4
+
 ## 11/04/2022 - v3.3.1
 
 - **PrusaSlicer:**

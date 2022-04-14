@@ -42,8 +42,7 @@
                         VerticalContentAlignment="Center"
                         HorizontalAlignment="Right"
                         Icon="fas fa-sign-out-alt"
-                        Text="Close">
-                </controls:ButtonWithIcon>
+                        Text="Close"/>
             </Grid>
 		</Border>
 

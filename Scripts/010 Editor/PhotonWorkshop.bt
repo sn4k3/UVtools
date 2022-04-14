@@ -52,14 +52,15 @@ struct HEADER {
     uint ResolutionY <fgcolor=cBlack, bgcolor=cRed>;
     float WeightG <fgcolor=cBlack, bgcolor=cRed>;
     float Price <fgcolor=cBlack, bgcolor=cRed>;
-    uint PriceCurrencyDec <fgcolor=cBlack, bgcolor=cRed>;
+    wstring PriceCurrencyDec <fgcolor=cBlack, bgcolor=cRed>;
     uint PerLayerOverride <fgcolor=cBlack, bgcolor=cRed>;
     uint PrintTime <fgcolor=cBlack, bgcolor=cRed>;
     uint TransitionLayerCount <fgcolor=cBlack, bgcolor=cRed>;
     uint Padding <fgcolor=cBlack, bgcolor=cRed>;
 
-    if(fileMark.Version > 515){
-        uint Padding <fgcolor=cBlack, bgcolor=cRed>;
+    if(fileMark.Version >= 516){
+        // 0 = Basic mode | 1 = Advanced mode which allows TSMC
+        uint AdvancedMode <fgcolor=cBlack, bgcolor=cRed>;
     }
 };
 

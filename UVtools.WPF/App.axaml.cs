@@ -27,6 +27,7 @@ using UVtools.Core.Managers;
 using UVtools.Core.SystemOS;
 using UVtools.WPF.Extensions;
 using UVtools.WPF.Structures;
+using UVtools.WPF.Windows;
 using Bitmap = Avalonia.Media.Imaging.Bitmap;
 
 namespace UVtools.WPF;
@@ -172,21 +173,8 @@ public class App : Application
         AvaloniaXamlLoader.Load(this);
     }
 
-    public override async void OnFrameworkInitializationCompleted()
+    public override void OnFrameworkInitializationCompleted()
     {
-        if (Design.IsDesignMode)
-        {
-            SlicerFile = new ChituboxFile
-            {
-                LayerHeight = 0.05f,
-                Resolution = new (1440, 2560),
-                Display = new (68.04f, 120.96f),
-                DisplayMirror = FlipDirection.Horizontally,
-                MachineZ = 155,
-                BottomLayerCount = 3,
-                MachineName = "Epax X1"
-            };
-        }
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             UserSettings.Load();
@@ -208,20 +196,69 @@ public class App : Application
                 }
             }*/
 
-            if (!CvInvoke.Init())
+            /*if (!CvInvoke.Init())
             {
                 Console.WriteLine("UVtools can not init OpenCV library\n" +
                                   "Please build or install this dependencies in order to run UVtools\n" +
                                   "Check manual or page at 'Requirements' section for help");
-            }
+            }*/
 
             if (UserSettings.Instance.General.Theme != ApplicationTheme.FluentLight)
             {
                 ApplyTheme();
             }
 
-            MainWindow = new MainWindow();
             try
+            {
+                if (CvInvoke.Init())
+                {
+                    if (Design.IsDesignMode)
+                    {
+                        SlicerFile = new ChituboxFile
+                        {
+                            LayerHeight = 0.05f,
+                            Resolution = new(1440, 2560),
+                            Display = new(68.04f, 120.96f),
+                            DisplayMirror = FlipDirection.Horizontally,
+                            MachineZ = 155,
+                            BottomLayerCount = 3,
+                            MachineName = "Epax X1"
+                        };
+                    }
+
+                    MainWindow = new MainWindow();
+                    if (UserSettings.Instance.General.StartMaximized)
+                    {
+                        MainWindow.WindowState = WindowState.Maximized;
+                    }
+                    else
+                    {
+                        if (UserSettings.Instance.General.RestoreWindowLastSize)
+                        {
+                            MainWindow.Width = UserSettings.Instance.General.LastWindowBounds.Width;
+                            MainWindow.Height = UserSettings.Instance.General.LastWindowBounds.Height;
+                        }
+
+                        if (UserSettings.Instance.General.RestoreWindowLastPosition)
+                        {
+                            MainWindow.Position = new PixelPoint(UserSettings.Instance.General.LastWindowBounds.Location.X, UserSettings.Instance.General.LastWindowBounds.Location.Y);
+                        }
+                    }
+                    desktop.MainWindow = MainWindow;
+                }
+                else
+                {
+                    desktop.MainWindow = new CantRunWindow();
+                }
+            }
+            catch (Exception e)
+            {
+                desktop.MainWindow = new CantRunWindow();
+                Console.WriteLine(e.ToString());
+            }
+            
+
+            /*try
             {
                 if(!CvInvoke.Init())
                     await MainWindow.MessageBoxError("UVtools can not init OpenCV library\n" +
@@ -237,9 +274,9 @@ public class App : Application
                                                  "Additional information:\n" +
                                                  $"{e}", "UVtools can not run");
                 return;
-            }
+            }*/
 
-            desktop.MainWindow = MainWindow;
+            
             //desktop.Exit += (sender, e) => ThemeSelector.SaveSelectedTheme(Path.Combine(UserSettings.SettingsFolder, "selected.theme"));
         }
 

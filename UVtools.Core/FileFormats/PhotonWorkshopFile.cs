@@ -334,7 +334,7 @@ public class PhotonWorkshopFile : FileFormat
         [FieldOrder(15)] public float Price { get; set; }
 
         /// <summary>
-        /// 24 00 00 00 $ or ¥ C2 A5 00 or € = E2 82 AC 00
+        /// 24 00 00 00 $ or ¥ C2 A5 00 00 or € = E2 82 AC 00
         /// 7C
         /// </summary>
         [FieldOrder(16)] public uint PriceCurrencyDec { get; set; } = 0x24;
@@ -1644,8 +1644,8 @@ public class PhotonWorkshopFile : FileFormat
         Helpers.SerializeWriteFileStream(outputFile, HeaderSettings);
         if (FileMarkSettings.Version >= VERSION_516)
         {
-            //outputFile.WriteUIntLittleEndian(0);
-            outputFile.Seek(4, SeekOrigin.Current); // Extra padding
+            outputFile.WriteUIntLittleEndian(System.Convert.ToUInt32(IsUsingTSMC));
+            //outputFile.Seek(4, SeekOrigin.Current); // Extra padding
         }
 
         if (CreatedThumbnailsCount > 0)

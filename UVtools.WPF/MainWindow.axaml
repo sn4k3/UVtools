@@ -1838,7 +1838,7 @@
 						  Command="{Binding OpenContextMenu}"
 						  CommandParameter="LayerPreviewOutline"
 						  VerticalAlignment="Stretch"
-						  Margin="1,0,0,0"
+						  Margin="1,0,2,0"
 						  Text="Outline ⮟"
 						  Spacing="5"
 						  Icon="fas fa-vector-square">
@@ -1895,11 +1895,11 @@
 						</uc:ButtonWithIcon>
 
 
-						<uc:ToggleButtonWithIcon HorizontalAlignment="Right"
+						<uc:ToggleButtonWithIcon
 						  IsChecked="{Binding IsPixelEditorActive}"
 						  ToolTip.Tip="Edit layer image: Draw pixels, add supports and/or drain holes."
 						  VerticalAlignment="Stretch"
-						  Margin="0,0,0,0"
+						  Margin="-1,0,0,0"
 						  Text="Pixel editor"
 						  Spacing="5"
 						  Icon="fas fa-drafting-compass"/>
