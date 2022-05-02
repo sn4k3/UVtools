@@ -15,7 +15,6 @@ using System.Drawing;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
-using System.Xml.Serialization;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Layers;
@@ -85,8 +84,6 @@ public sealed class OperationLayerImport : Operation
 
     public override uint LayerIndexEnd => _startLayerIndex + Count - 1;
 
-    public override bool CanHaveProfiles => false;
-
     public override string? ValidateInternally()
     {
         /*var result = new ConcurrentBag<StringTag>();
@@ -125,6 +122,16 @@ public sealed class OperationLayerImport : Operation
         if (_files.Count == 0)
         {
             sb.AppendLine("No files to import.");
+        }
+        else
+        {
+            foreach (var keyValue in _files)
+            {
+                if (!File.Exists(keyValue.ValueAsString))
+                {
+                    sb.AppendLine($"The file '{keyValue.ValueAsString}' does not exists.");
+                }
+            }
         }
 
         return sb.ToString();
@@ -175,7 +182,6 @@ public sealed class OperationLayerImport : Operation
         set => RaiseAndSetIfChanged(ref _stackMargin, value);
     }
 
-    [XmlIgnore]
     public RangeObservableCollection<ValueDescription> Files
     {
         get => _files;
@@ -224,7 +230,7 @@ public sealed class OperationLayerImport : Operation
 
     public override string ToString()
     {
-        var result = $"[Files: {Count}]" + LayerRangeString;
+        var result = $"[{_importType}] [Start at: {_startLayerIndex}] [Files: {Count}]";
         if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
         return result;
     }

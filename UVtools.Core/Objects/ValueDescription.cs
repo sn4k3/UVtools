@@ -7,6 +7,8 @@
  */
 
 using System;
+using System.Text.Json.Serialization;
+using System.Xml.Serialization;
 
 namespace UVtools.Core.Objects;
 
@@ -27,11 +29,17 @@ public class ValueDescription : BindableBase, IEquatable<ValueDescription>
         set => RaiseAndSetIfChanged(ref _description, value);
     }
 
+    [XmlIgnore]
+    [JsonIgnore]
     public string ValueAsString
     {
         get => Value?.ToString() ?? string.Empty;
         set => Value = value;
-    } 
+    }
+
+    public ValueDescription()
+    {
+    }
 
     public ValueDescription(object value, string? description = null)
     {

@@ -187,6 +187,8 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
         {
             progress.Reset(OperationProgress.StatusIslands, SlicerFile.LayerCount);
 
+            var firstLayer = SlicerFile.FirstLayer;
+
             // Detect contours
             Parallel.For(0, SlicerFile.LayerCount, CoreSettings.ParallelOptions, layerIndexInt =>
             {
@@ -203,8 +205,8 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
                 // Spare a decoding cycle
                 if (!touchBoundConfig.Enabled &&
                     !resinTrapConfig.Enabled &&
-                    (!overhangConfig.Enabled || overhangConfig.Enabled && (layerIndex == 0 || overhangConfig.WhiteListLayers is not null && !overhangConfig.WhiteListLayers.Contains(layerIndex))) &&
-                    (!islandConfig.Enabled || islandConfig.Enabled && (layerIndex == 0 || islandConfig.WhiteListLayers is not null && !islandConfig.WhiteListLayers.Contains(layerIndex)))
+                    (!overhangConfig.Enabled || overhangConfig.Enabled && (layerIndex == 0 || layer.PositionZ <= firstLayer!.PositionZ || overhangConfig.WhiteListLayers is not null && !overhangConfig.WhiteListLayers.Contains(layerIndex))) &&
+                    (!islandConfig.Enabled || islandConfig.Enabled && (layerIndex == 0 || layer.PositionZ <= firstLayer!.PositionZ || islandConfig.WhiteListLayers is not null && !islandConfig.WhiteListLayers.Contains(layerIndex)))
                    )
                 {
                     progress.LockAndIncrement();
@@ -322,7 +324,7 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
                         }
                     }
 
-                    if (layerIndex > 0) // No islands nor overhangs for layer 0
+                    if (layerIndex > 0 && layer.PositionZ > firstLayer!.PositionZ) // No islands nor overhangs for layer 0 or on plate
                     {
                         Mat? previousImage = null;
                         Span<byte> previousSpan = null;
@@ -488,7 +490,7 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
                         // Overhangs
                         if (!islandConfig.Enabled && overhangConfig.Enabled ||
                             (islandConfig.Enabled && overhangConfig.Enabled &&
-                             overhangConfig.IndependentFromIslands))
+                             overhangConfig.IndependentFromIslands) )
                         {
                             bool canProcessCheck = true;
                             if (overhangConfig.WhiteListLayers is not null) // Check white list

@@ -8,6 +8,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace UVtools.Core.FileFormats;
 
@@ -136,6 +137,13 @@ public sealed class FileExtension : IEquatable<FileExtension>, IEquatable<string
         return FileFormat.FindExtension(extension);
     }
 
-        
+    public static IEnumerable<FileExtension> FindAll(string extension)
+    {
+        if (string.IsNullOrWhiteSpace(extension)) return Enumerable.Empty<FileExtension>();
+        if (extension.StartsWith('.')) extension = extension.Remove(1);
+        return FileFormat.FindExtensions(extension);
+    }
+
+
     #endregion
 }

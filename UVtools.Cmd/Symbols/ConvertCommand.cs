@@ -8,6 +8,8 @@
 using System;
 using System.CommandLine;
 using System.IO;
+using System.Linq;
+using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 
 namespace UVtools.Cmd.Symbols;
@@ -28,22 +30,40 @@ internal static class ConvertCommand
 
         command.SetHandler((FileInfo inputFile, string targetTypeExt, FileInfo? outputFile, ushort version, bool noOverwrite) =>
             {
-
-                var targetType = FileFormat.FindByAnyMeans(targetTypeExt);
+                var targetType = FileFormat.FindByType(targetTypeExt);
                 if (targetType is null)
                 {
-                    Program.WriteLineError($"Unable to find a valid convert type candidate from {targetTypeExt}.");
+                    targetType = FileFormat.FindByExtensionOrFilePath(targetTypeExt, out var fileFormatsSharingExt);
+                    if (targetType is not null && fileFormatsSharingExt > 1)
+                    {
+                        Program.WriteLineError($"The extension '{targetTypeExt}' is shared by multiple encoders, use the strict encoder name instead.", false);
+                        Program.WriteLineError($"Available {FileFormat.AvailableFormats.Length} encoders:", false, false);
+                        foreach (var fileFormat in FileFormat.AvailableFormats)
+                        {
+                            Program.WriteLineError($"{fileFormat.GetType().Name.RemoveFromEnd("File".Length)} ({string.Join(", ", fileFormat.FileExtensions.Select(extension => extension.Extension))})", false, false);
+                        }
+                        Environment.Exit(-1);
+                        return;
+                    }
+                }
+
+                if (targetType is null)
+                {
+                    Program.WriteLineError($"Unable to find a valid encoder from {targetTypeExt}.", false);
+                    Program.WriteLineError($"Available {FileFormat.AvailableFormats.Length} encoders:", false, false);
+                    foreach (var fileFormat in FileFormat.AvailableFormats)
+                    {
+                        Program.WriteLineError($"{fileFormat.GetType().Name.RemoveFromEnd("File".Length)} ({string.Join(", ", fileFormat.FileExtensions.Select(extension => extension.Extension))})", false, false);
+                    }
+                    Environment.Exit(-1);
                     return;
                 }
 
                 string? outputFilePath;
-                if (outputFile is not null)
+                string inputFileName = FileFormat.GetFileNameStripExtensions(inputFile.Name)!;
+                if (outputFile is null)
                 {
-                    outputFilePath = outputFile.FullName;
-                }
-                else
-                {
-                    outputFilePath = FileFormat.GetFileNameStripExtensions(inputFile.Name)!;
+                    outputFilePath = inputFileName;
                     if (targetType.FileExtensions.Length == 1)
                     {
                         outputFilePath = Path.Combine(inputFile.DirectoryName!, $"{outputFilePath}.{targetType.FileExtensions[0].Extension}");
@@ -53,22 +73,62 @@ internal static class ConvertCommand
                         var ext = FileExtension.Find(targetTypeExt);
                         if (ext is null)
                         {
-                            Program.WriteLineError($"Unable to construct the output filename from {targetTypeExt}, there are {targetType.FileExtensions.Length} extensions on this format, please specify an output file.");
+                            Program.WriteLineError($"Unable to construct the output filename and guess the extension from the {targetTypeExt} encoder.", false);
+                            Program.WriteLineError($"There are {targetType.FileExtensions.Length} possible extensions on this format ({string.Join(", ", targetType.FileExtensions.Select(extension => extension.Extension))}), please specify an output file.", false, false);
                             return;
                         }
 
                         outputFilePath = Path.Combine(inputFile.DirectoryName!, $"{outputFilePath}.{ext.Extension}");
                     }
                 }
+                else
+                {
+                    outputFilePath = string.Format(outputFile.FullName, inputFileName);
+                }
 
                 var outputFileName = Path.GetFileName(outputFilePath);
+                var outputFileDirectory = Path.GetDirectoryName(outputFilePath)!;
+
+                if (outputFileName == string.Empty)
+                {
+                    Program.WriteLineError("No output file was specified.");
+                    return;
+                }
+
+                if (!outputFileName.Contains('.'))
+                {
+                    if (targetType.IsExtensionValid(outputFileName))
+                    {
+                        outputFileName = $"{inputFileName}.{outputFileName}";
+                        outputFilePath = Path.Combine(outputFileDirectory, outputFileName);
+                    }
+                    else if (targetType.FileExtensions.Length == 1)
+                    {
+                        outputFileName = $"{outputFileName}.{targetType.FileExtensions[0].Extension}";
+                        outputFilePath = Path.Combine(outputFileDirectory, outputFileName);
+                    }
+                }
+
+                if (!targetType.IsExtensionValid(outputFileName, true))
+                {
+                    Program.WriteLineError($"The extension on '{outputFileName}' file is not valid for the {targetType.GetType().Name} encoder.", false);
+                    Program.WriteLineError($"Available {targetType.FileExtensions.Length} extension(s):", false, false);
+                    foreach (var fileExtension in targetType.FileExtensions)
+                    {
+                        Program.WriteLineError(fileExtension.Extension, false, false);
+                    }
+
+                    Environment.Exit(-1);
+
+                    return;
+                }
 
                 if (noOverwrite && File.Exists(outputFilePath))
                 {
                     Program.WriteLineError($"{outputFileName} already exits! --no-overwrite is enabled.");
                     return;
                 }
-                
+
                 var slicerFile = Program.OpenInputFile(inputFile);
 
                 Program.ProgressBarWork($"Converting to {outputFileName}",

@@ -437,13 +437,26 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <param name="extensionOrFilePath"> name to find</param>
     /// <param name="createNewInstance">True to create a new instance of found file format, otherwise will return a pre created one which should be used for read-only purpose</param>
     /// <returns><see cref="FileFormat"/> object or null if not found</returns>
-    public static FileFormat? FindByExtensionOrFilePath(string extensionOrFilePath, bool createNewInstance = false)
+    public static FileFormat? FindByExtensionOrFilePath(string extensionOrFilePath, bool createNewInstance = false) =>
+        FindByExtensionOrFilePath(extensionOrFilePath, out _, createNewInstance);
+
+    /// <summary>
+    /// Find <see cref="FileFormat"/> by an extension
+    /// </summary>
+    /// <param name="extensionOrFilePath"> name to find</param>
+    /// <param name="fileFormatsSharingExt">Number of file formats sharing the input extension</param>
+    /// <param name="createNewInstance">True to create a new instance of found file format, otherwise will return a pre created one which should be used for read-only purpose</param>
+    /// <returns><see cref="FileFormat"/> object or null if not found</returns>
+    public static FileFormat? FindByExtensionOrFilePath(string extensionOrFilePath, out byte fileFormatsSharingExt, bool createNewInstance = false)
     {
+        fileFormatsSharingExt = 0;
         if (string.IsNullOrWhiteSpace(extensionOrFilePath)) return null;
 
         bool isFilePath = false;
         // Test for ext first
         var fileFormats = AvailableFormats.Where(fileFormat => fileFormat.IsExtensionValid(extensionOrFilePath)).ToArray();
+        fileFormatsSharingExt = (byte)fileFormats.Length;
+
         if (fileFormats.Length == 0) // Extension not found, can be filepath, try to find it
         {
             GetFileNameStripExtensions(extensionOrFilePath, out var extension);
@@ -460,7 +473,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
                 ? Activator.CreateInstance(fileFormats[0].GetType()) as FileFormat
                 : fileFormats[0];
         }
-                
+
 
         // Multiple instances using Check for valid candidate
         foreach (var fileFormat in fileFormats)
@@ -531,6 +544,11 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     public static FileExtension? FindExtension(string extension)
     {
         return AvailableFormats.SelectMany(format => format.FileExtensions).FirstOrDefault(ext => ext.Equals(extension));
+    }
+
+    public static IEnumerable<FileExtension> FindExtensions(string extension)
+    {
+        return AvailableFormats.SelectMany(format => format.FileExtensions).Where(ext => ext.Equals(extension));
     }
 
     public static string? GetFileNameStripExtensions(string? filepath)

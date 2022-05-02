@@ -26,7 +26,6 @@ class FixedEncoder : System.Text.UTF8Encoding {
     }
 }
 
-
 function wixCleanUpElement([System.Xml.XmlElement]$element, [string]$rootPath)
 {
     $files = Get-ChildItem -Path $rootPath -File -Force -ErrorAction SilentlyContinue
@@ -216,6 +215,7 @@ if([string]::IsNullOrWhiteSpace($version)){
 $installers = @("UVtools.InstallerMM", "UVtools.Installer")
 $msiOutputFile = "$rootFolder\UVtools.Installer\bin\x64\Release\UVtools.msi"
 $msiComponentsFile = "$rootFolder\UVtools.InstallerMM\UVtools.InstallerMM.wxs"
+$msiProductFile = "$rootFolder\UVtools.Installer\Code\Product.wxs"
 $msiSourceFiles = "$rootFolder\$publishFolder\${software}_win-x64_v$version"
 $msbuild = "`"${env:ProgramFiles}\Microsoft Visual Studio\2022\Enterprise\MSBuild\Current\Bin\MSBuild.exe`" /t:Build /p:Configuration=$buildWith /p:MSIProductVersion=$version"
 
@@ -329,8 +329,11 @@ foreach ($obj in $runtimes.GetEnumerator()) {
     $deployStopWatch.Restart()
     $runtime = $obj.Name;       # runtime name
     $extraCmd = $obj.extraCmd;  # extra cmd to run with dotnet
-
     $publishName="${software}_${runtime}_v$version"
+
+    #dotnet build "UVtools.Cmd" -c $buildWith
+    #dotnet build $project -c $buildWith
+
     if($runtime.StartsWith("win-"))
     {
         $targetZip = "$publishFolder/${software}_${runtime}_v$version.zip"  # Target zip filename
@@ -372,14 +375,13 @@ foreach ($obj in $runtimes.GetEnumerator()) {
     }
     else
     {
+        $args = '-b' # Bundle
         if($null -ne $zipPackages -and $zipPackages)
         {
-            wsl bash "build/createRelease.sh" -b -z $runtime
+            $args += ' -z' # Zip
         }
-        else
-        {
-            wsl bash "build/createRelease.sh" -b $runtime
-        }
+        bash -c "'build/createRelease.sh' $args $runtime"
+        #Start-Job { bash -c "'build/createRelease.sh' $using:args $using:runtime" }
     }
     
     $deployStopWatch.Stop()
@@ -387,6 +389,26 @@ foreach ($obj in $runtimes.GetEnumerator()) {
 ################################
 "
 }
+
+<#
+$deployStopWatch.Restart()
+#Wait for all jobs to finish.
+While ($(Get-Job -State Running).count -gt 0){
+    Write-Host -NoNewline "."
+    Start-Sleep 1
+}
+
+Write-Output " Took: $($deployStopWatch.Elapsed)"
+
+#Get information from each job.
+foreach($job in Get-Job){
+    $job
+    #Receive-Job -Id ($job.Id)
+}
+
+#Remove all jobs created.
+Get-Job | Remove-Job
+#>
 
 # Universal package
 <#
@@ -411,14 +433,15 @@ if($null -ne $enableMSI -and $enableMSI)
 {
     $deployStopWatch.Restart()
     $runtime = 'win-x64'
+    $publishName = "${software}_${runtime}_v$version";
     
     if ((Test-Path -Path $msiSourceFiles) -and ((Get-ChildItem "$msiSourceFiles" | Measure-Object).Count) -gt 0) {
-        $msiTargetFile = "$publishFolder\${software}_${runtime}_v$version.msi"
+        $msiTargetFile = "$publishFolder\$publishName.msi"
         Write-Output "################################"
         Write-Output "Clean and build MSI components manifest file"
 
         Remove-Item "$msiTargetFile" -ErrorAction Ignore
-        (Get-Content "$msiComponentsFile") -replace 'SourceDir="\.\.\\publish\\.+"', "SourceDir=`"..\publish\${software}_win-x64_v$version`"" | Out-File "$msiComponentsFile"
+        (Get-Content "$msiComponentsFile") -replace 'SourceDir="\.\.\\publish\\.+"', "SourceDir=`"..\publish\$publishName`"" | Out-File "$msiComponentsFile"
         
         $msiComponentsXml = [Xml] (Get-Content "$msiComponentsFile")
         foreach($element in $msiComponentsXml.Wix.Module.Directory.Directory)
@@ -429,6 +452,30 @@ if($null -ne $enableMSI -and $enableMSI)
                 $msiComponentsXml.Save($msiComponentsFile)
                 break
             }
+        }
+
+        if(Test-Path "$publishFolder\$publishName\UVtools.Core.dll" -PathType Leaf){
+            Add-Type -Path "$publishFolder\$publishName\UVtools.Core.dll"
+        } else {
+            Write-Error "Unable to find UVtools.Core.dll"
+            return
+        }
+
+        # Add edit with UVtools possible extensions
+        $extensions = [UVtools.Core.FileFormats.FileFormat]::AllFileExtensions;
+        $extensionList = New-Object Collections.Generic.List[String]
+        foreach($ext in $extensions)
+        {
+            if($ext.Extension.Contains('.')) { continue; } # Virtual extension
+
+            $extKey = "System.FileName:&quot;*.$($ext.Extension.ToLowerInvariant())&quot;";
+            if($extensionList.Contains($extKey)) { continue; } # Already here
+            $extensionList.Add($extKey);
+        }
+        if($extensionList.Count -gt 0)
+        {
+            $regValue = [String]::Join(' OR ', $extensionList)
+            (Get-Content "$msiProductFile") -replace '(?<A><RegistryValue Root="HKCR".+Name="AppliesTo".+Value=").+(?<B>" Type=.+)', "`${A}$regValue`${B}" | Out-File "$msiProductFile"
         }
 
         Write-Output "Building: $runtime MSI Installer"

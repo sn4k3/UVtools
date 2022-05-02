@@ -1,0 +1,80 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:i="clr-namespace:Projektanker.Icons.Avalonia;assembly=Projektanker.Icons.Avalonia"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="UVtools.WPF.Controls.Tools.ToolPCBExposureControl">
+	<Grid ColumnDefinitions="Auto,10,350">
+		<StackPanel Spacing="10">
+			<Grid
+				  RowDefinitions="Auto,10,Auto,10,Auto,10,Auto"
+				  ColumnDefinitions="Auto,10,400">
+
+                <TextBlock Grid.Row="0" Grid.Column="0"
+                           VerticalAlignment="Center"
+                           Text="Gerber file:"/>
+
+                <Grid Grid.Row="0" Grid.Column="2"
+                      ColumnDefinitions="*,Auto">
+                    <TextBox Grid.Column="0"
+                             IsReadOnly="True"
+                             VerticalAlignment="Center"
+                             Text="{Binding Operation.FilePath}"/>
+                    <Button Grid.Column="1"
+                            VerticalAlignment="Stretch"
+                            Command="{Binding SelectFile}"
+                            i:Attached.Icon="fas fa-file-import"/>
+                </Grid>
+
+                <TextBlock Grid.Row="2" Grid.Column="0"
+                           VerticalAlignment="Center"
+                           Text="Layer height:"/>
+				<NumericUpDown Grid.Row="2" Grid.Column="2"
+							   Classes="ValueLabel ValueLabel_mm"
+							   Increment="0.01"
+							   Minimum="0.01"
+							   Maximum="500"
+							   FormatString="F3"
+							   Value="{Binding Operation.LayerHeight}"/>
+
+				
+				<TextBlock Grid.Row="4" Grid.Column="0"
+						   VerticalAlignment="Center"
+						   Text="Exposure time:"/>
+				<NumericUpDown Grid.Row="4" Grid.Column="2"
+							   Classes="ValueLabel ValueLabel_s"
+							   Increment="0.5"
+							   Minimum="0.1"
+							   Maximum="200"
+							   FormatString="F2"
+							   Value="{Binding Operation.ExposureTime}"/>
+				
+				<StackPanel Grid.Row="6" Grid.Column="2"
+                            Orientation="Horizontal" Spacing="20">
+					<CheckBox VerticalAlignment="Center"
+                              IsChecked="{Binding Operation.Mirror}"
+                              Content="Mirror"/>
+
+					<CheckBox VerticalAlignment="Center"
+                              IsChecked="{Binding Operation.InvertColor}"
+                              Content="Invert color"/>
+
+                    <CheckBox VerticalAlignment="Center"
+                              IsChecked="{Binding Operation.EnableAntiAliasing}"
+                              Content="Enable Anti-Aliasing"/>
+				</StackPanel>
+
+				
+			</Grid>
+
+		</StackPanel>
+
+		<StackPanel Grid.Column="2" Orientation="Vertical" Spacing="10">
+			<Image Stretch="Uniform"
+                   Source="{Binding PreviewImage}"/>
+
+			<TextBlock Text="{Binding PreviewImage.Size, StringFormat=Size: {0}}" HorizontalAlignment="Center"/>
+		</StackPanel>
+	</Grid>
+</UserControl>

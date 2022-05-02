@@ -25,7 +25,7 @@ public class ImageFile : FileFormat
         new (typeof(ImageFile), "pgm", "PGM: Portable Greymap"),
         //new (typeof(ImageFile), "gif", "GIF"),
         new (typeof(ImageFile), "sr", "SR: Sun raster"),
-        new (typeof(ImageFile), "RAS", "RAS: Sun raster"),
+        new (typeof(ImageFile), "ras", "RAS: Sun raster"),
     };
     public override PrintParameterModifier[]? PrintParameterModifiers => null;
 

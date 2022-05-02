@@ -597,9 +597,10 @@ public abstract class Operation : BindableBase, IDisposable
         operation.MaskPoints = MaskPoints;
     }
 
-    public void Serialize(string path)
+    public void Serialize(string path, bool indent = false)
     {
-        XmlExtensions.SerializeToFile(this, path);
+        if(indent) XmlExtensions.SerializeToFile(this, path, XmlExtensions.SettingsIndent);
+        else XmlExtensions.SerializeToFile(this, path);
     }
 
     public virtual Operation Clone()

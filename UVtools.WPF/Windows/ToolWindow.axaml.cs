@@ -857,7 +857,7 @@ public class ToolWindow : WindowEx
 
         try
         {
-            ToolControl.BaseOperation.Serialize(file);
+            ToolControl.BaseOperation.Serialize(file, true);
         }
         catch (Exception e)
         {

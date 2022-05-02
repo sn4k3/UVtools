@@ -1,11 +1,16 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Drawing;
 using System.Globalization;
 using System.Runtime.ExceptionServices;
 using Avalonia;
+using Emgu.CV;
+using Emgu.CV.Structure;
 using Projektanker.Icons.Avalonia;
 using Projektanker.Icons.Avalonia.FontAwesome;
 using Projektanker.Icons.Avalonia.MaterialDesign;
+using UVtools.Core.Extensions;
+using UVtools.Core.Gerber;
 using UVtools.WPF.Extensions;
 
 namespace UVtools.WPF;

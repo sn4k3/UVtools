@@ -85,11 +85,11 @@ public class OperationLithophane : Operation
         var sb = new StringBuilder();
         if (string.IsNullOrWhiteSpace(_filePath))
         {
-            sb.AppendLine("The selected file is empty");
+            sb.AppendLine("The input file is empty");
         }
         else if(!File.Exists(_filePath))
         {
-            sb.AppendLine("The selected file does not exists");
+            sb.AppendLine("The input file does not exists");
         }
         else
         {
@@ -113,7 +113,11 @@ public class OperationLithophane : Operation
             }
         }
 
-        if (_startThresholdRange > _endThresholdRange)
+        if (_startThresholdRange == _endThresholdRange)
+        {
+            sb.AppendLine($"Start threshold can't be equal than end threshold ({_endThresholdRange})");
+        }
+        else if (_startThresholdRange > _endThresholdRange)
         {
             sb.AppendLine("Start threshold can't be higher than end threshold");
         }
@@ -405,6 +409,11 @@ public class OperationLithophane : Operation
             progress.LockAndIncrement();
         });
 
+        if (layersBag.Count == 0)
+        {
+            throw new InvalidOperationException("Unable to continue due to no threshold layers was generated, either by lack of pixels or by using a short range.");
+        }
+
         var thresholdLayers = layersBag.OrderBy(pair => pair.Key).Select(pair => pair.Value).ToArray();
 
         if (!_oneLayerPerThreshold)
@@ -444,7 +453,7 @@ public class OperationLithophane : Operation
             }
             else if (layerIncrementF < 1)
             {
-                var layerIncrement = (uint)(1/layerIncrementF);
+                var layerIncrement = (uint)Math.Ceiling(1/layerIncrementF);
                 if (layerIncrement > 1)
                 {
                     progress.Reset("Packed layers");

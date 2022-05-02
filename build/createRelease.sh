@@ -31,7 +31,7 @@ projectDir="$rootDir/$buildProject"
 cmdProjectDir="$rootDir/$cmdProject"
 netVersion="6.0"
 
-if [ $runtime == "clean" ]; then
+if [ "$runtime" == "clean" ]; then
     echo "Cleaning publish directory"
     rm -rf "$publishDir" 2>/dev/null
     exit
@@ -72,13 +72,13 @@ if [ -z "$runtime" ]; then
     exit -1
 fi
 
-if [[ $runtime != *-* && $runtime != *-arm && $runtime != *-x64 && $runtime != *-x86 ]]; then
+if [[ "$runtime" != *-* && $runtime != *-arm && $runtime != *-x64 && $runtime != *-x86 ]]; then
     echo "Error: The runtime '$runtime' is not valid, please pick one of the following:"
     ls "$platformsDir"
     exit -1
 fi
 
-if [ $runtime != "win-x64" -a ! -d "$platformsDir/$runtime" ]; then
+if [ "$runtime" != "win-x64" -a ! -d "$platformsDir/$runtime" ]; then
     echo "Error: The runtime '$runtime' is not valid, please pick one of the following:"
     ls "$platformsDir"
     exit -1
@@ -111,9 +111,9 @@ chmod -fv a+x "$publishRuntimeDir/UVtools"
 chmod -fv a+x "$publishRuntimeDir/UVtoolsCmd"
 chmod -fv a+x "$publishRuntimeDir/UVtools.sh"
 
-if [[ $runtime == win-* ]]; then
+if [[ "$runtime" == win-* ]]; then
     echo "6. Windows should be published in a windows machine!"
-elif [[ $runtime == osx-* ]]; then
+elif [[ "$runtime" == osx-* ]]; then
     if [ $bundlePublish == true ]; then
         echo "6. macOS: Creating app bundle"
         osxApp="$publishDir/$publishName.app"
@@ -134,13 +134,16 @@ elif [[ $runtime == osx-* ]]; then
         # Packing AppImage
         if [ "$zipPackage" == true -a -d "$osxApp" ] ; then
             echo "7. Compressing '$publishName.app' to '$publishName.zip'"
-            cd "$publishDir"
+            tempFolder="$publishDir/$publishName.app.ln"
+            mkdir "$tempFolder"
+            cd "$tempFolder"
+
             #mv "$publishName.app" "UVtools.app"
-            ln -s "$publishName.app" "UVtools.app"
+            ln -s "$publishDir/$publishName.app" "UVtools.app"
             zip -rq "$publishDir/$publishName.zip" "UVtools.app"
             #mv "UVtools.app" "$publishName.app"
-            rm -f "UVtools.app"
             cd "$rootDir"
+            rm -rf "$tempFolder"
             zipPackage=false
         fi
     fi

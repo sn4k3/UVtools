@@ -169,7 +169,7 @@ internal class Program
     {
         if (Quiet) return;
         Console.ForegroundColor = ConsoleColor.Yellow;
-        Console.WriteLine(obj);
+        Console.Write(obj);
         Console.ResetColor();
     }
 
@@ -190,12 +190,12 @@ internal class Program
             return;
         }
         Console.ForegroundColor = ConsoleColor.Red;
-        Console.WriteLine(obj);
+        Console.Write(obj);
         Console.ResetColor();
         if (exit) Environment.Exit(-1);
     }
 
-    internal static void WriteLineError(object? obj, bool exit = true)
+    internal static void WriteLineError(object? obj, bool exit = true, bool prependError = true)
     {
         if (Quiet)
         {
@@ -204,7 +204,7 @@ internal class Program
         }
 
         var str = obj?.ToString();
-        if(str is not null && !str.StartsWith("Error:")) str = $"Error: {str}";
+        if(str is not null && prependError && !str.StartsWith("Error:")) str = $"Error: {str}";
 
         Console.ForegroundColor = ConsoleColor.Red;
         Console.WriteLine(str);

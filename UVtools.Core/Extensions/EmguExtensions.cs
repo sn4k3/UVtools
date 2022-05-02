@@ -351,7 +351,8 @@ public static class EmguExtensions
     public static byte[] GetBytes(this Mat mat)
     {
         var data = new byte[mat.GetLength()];
-        Marshal.Copy(mat.DataPointer, data, 0, data.Length);
+        //Marshal.Copy(mat.DataPointer, data, 0, data.Length);
+        mat.CopyTo(data);
         return data;
     }
 
@@ -428,8 +429,10 @@ public static class EmguExtensions
     /// </summary>
     /// <param name="mat"></param>
     /// <param name="value"></param>
-    public static void SetBytes(this Mat mat, byte[] value) =>
-        Marshal.Copy(value, 0, mat.DataPointer, value.Length);
+    public static void SetBytes(this Mat mat, byte[] value)
+    {
+        mat.SetTo(value);
+    }
 
     /// <summary>
     /// Gets PNG byte array
@@ -475,6 +478,23 @@ public static class EmguExtensions
         }
 
         return roi;
+    }
+
+    public static Mat CropByBounds(this Mat src, ushort margin) => src.CropByBounds(new Size(margin, margin));
+
+    public static Mat CropByBounds(this Mat src, Size margin)
+    {
+        var rect = CvInvoke.BoundingRectangle(src);
+        if (rect.Size == Size.Empty) return src.New();
+        using var roi = src.Size == rect.Size ? src.Roi(src.Size) : src.Roi(rect);
+
+        var numberOfChannels = roi.NumberOfChannels;
+        var cropped = new Mat(roi.Rows + margin.Height * 2, roi.Cols + margin.Width * 2, roi.Depth, numberOfChannels);
+        
+        using var dest = new Mat(cropped, new Rectangle(margin.Width, margin.Height, roi.Width, roi.Height));
+        roi.CopyTo(dest);
+
+        return cropped;
     }
 
     public static void CropByBounds(this Mat src, Mat dst)

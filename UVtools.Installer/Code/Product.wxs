@@ -1,6 +1,6 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-  <!-- 
+	<!-- 
   MSIProductVersion is defined in UVtools.Installer.wixproj as 0.0.1 for local desktop builds.  
   You should pass in the MSBuild Property 'MSIProductVersion' to override it during an automated build.
   See http://msdn.microsoft.com/en-us/library/windows/desktop/aa370859%28v=vs.85%29.aspx for information on allowable values.
@@ -9,41 +9,42 @@
   is a seamless uninstall/reinstall.
   Version="$(var.MSIProductVersion)"
   -->
-  <Product Id="*" Name="UVtools" Language="1033" Version="$(var.MSIProductVersion)" Manufacturer="PTRTECH" UpgradeCode="1ea6d212-15c0-425e-b2ec-4b6c60817552">
-    <Package InstallerVersion="301" Compressed="yes" InstallScope="perMachine" Platform="x64" />
-    <MediaTemplate EmbedCab="yes" />
-    <!-- Major Upgrade Rule to disallow downgrades -->
-    <MajorUpgrade
-      AllowDowngrades="no"
-      AllowSameVersionUpgrades="yes"
-      IgnoreRemoveFailure="no"
-      DowngradeErrorMessage="A newer version of [ProductName] is already installed."
-      Schedule="afterInstallInitialize" />
-    <!--Common Launch Condition-->
-    <!-- Examples at http://wixtoolset.org/documentation/manual/v3/customactions/wixnetfxextension.html -->
-    <!--
-    <PropertyRef Id="NETFRAMEWORK45" />
-    <Condition Message="[ProductName] requires .NET Framework 4.8.">Installed OR NETFRAMEWORK45</Condition>
-    -->
-    <!-- Include User Interface Experience -->
-    <Icon Id="Icon.ico" SourceFile="..\UVtools.CAD\UVtools.ico" />
-    <Property Id="ARPPRODUCTICON" Value="Icon.ico"></Property>
-    <UIRef Id="UI" />
-    <!-- Include Features and Directories Fragment -->
-    <DirectoryRef Id="INSTALLLOCATION">
-      <Component Id="RegistryEntries" Guid="C3603223-A8C1-4393-8C06-36B48DED2652">
-        <RegistryKey
-          Root="HKCU"
-          Key="Software\UVtools"
-          ForceCreateOnInstall="yes"
-          ForceDeleteOnUninstall="yes" />
-        <RegistryValue
-          Root="HKCU"
-          Key="Software\UVtools"
-          Name="InstallDir"
-          Type="string"
-          Value="[INSTALLLOCATION]" />
-      </Component>
-    </DirectoryRef>
-  </Product>
+	<Product Id="*" Name="UVtools" Language="1033" Version="$(var.MSIProductVersion)" Manufacturer="PTRTECH" UpgradeCode="1ea6d212-15c0-425e-b2ec-4b6c60817552">
+		<Package InstallerVersion="301" Compressed="yes" InstallScope="perMachine" Platform="x64" />
+		<MediaTemplate EmbedCab="yes" />
+		<!-- Major Upgrade Rule to disallow downgrades -->
+		<MajorUpgrade
+		  AllowDowngrades="no"
+		  AllowSameVersionUpgrades="yes"
+		  IgnoreRemoveFailure="no"
+		  DowngradeErrorMessage="A newer version of [ProductName] is already installed."
+		  Schedule="afterInstallInitialize" />
+		<!--Common Launch Condition-->
+		<!-- Examples at http://wixtoolset.org/documentation/manual/v3/customactions/wixnetfxextension.html -->
+		<!--
+		    <PropertyRef Id="NETFRAMEWORK45" />
+		    <Condition Message="[ProductName] requires .NET Framework 4.8.">Installed OR NETFRAMEWORK45</Condition>
+		    -->
+		<!-- Include User Interface Experience -->
+		<Icon Id="Icon.ico" SourceFile="..\UVtools.CAD\UVtools.ico" />
+		<Property Id="ARPPRODUCTICON" Value="Icon.ico"></Property>
+		<UIRef Id="UI" />
+		<!-- Include Features and Directories Fragment -->
+		<DirectoryRef Id="INSTALLLOCATION">
+			<Component Id="RegistryEntries" Guid="C3603223-A8C1-4393-8C06-36B48DED2652">
+				<!-- Install directory -->
+				<RegistryKey   Root="HKCU" Key="Software\UVtools" ForceCreateOnInstall="yes" ForceDeleteOnUninstall="yes" />
+				<RegistryValue Root="HKCU" Key="Software\UVtools" Name="InstallDir" Value="[INSTALLLOCATION]" Type="string" />
+
+				<!-- Open file with UVtools -->
+				<RegistryKey   Root="HKCR" Key="*\shell\UVtools" ForceCreateOnInstall="yes" ForceDeleteOnUninstall="yes" />
+				<RegistryValue Root="HKCR" Key="*\shell\UVtools" Value="Open with UVtools" Type="string" />
+				<RegistryValue Root="HKCR" Key="*\shell\UVtools" Name="Icon" Value="[INSTALLLOCATION]UVtools.exe" Type="string" />
+				<RegistryValue Root="HKCR" Key="*\shell\UVtools" Name="Position"  Value="Top" Type="string" />
+				<RegistryValue Root="HKCR" Key="*\shell\UVtools" Name="AppliesTo" Value="System.FileName:&quot;*.sl1&quot; OR System.FileName:&quot;*.sl1s&quot; OR System.FileName:&quot;*.zip&quot; OR System.FileName:&quot;*.photon&quot; OR System.FileName:&quot;*.cbddlp&quot; OR System.FileName:&quot;*.ctb&quot; OR System.FileName:&quot;*.photons&quot; OR System.FileName:&quot;*.phz&quot; OR System.FileName:&quot;*.fdg&quot; OR System.FileName:&quot;*.pws&quot; OR System.FileName:&quot;*.pw0&quot; OR System.FileName:&quot;*.pwx&quot; OR System.FileName:&quot;*.dlp&quot; OR System.FileName:&quot;*.pwmx&quot; OR System.FileName:&quot;*.pwmb&quot; OR System.FileName:&quot;*.pwmo&quot; OR System.FileName:&quot;*.pwms&quot; OR System.FileName:&quot;*.pwma&quot; OR System.FileName:&quot;*.pmsq&quot; OR System.FileName:&quot;*.pm3&quot; OR System.FileName:&quot;*.pm3m&quot; OR System.FileName:&quot;*.cws&quot; OR System.FileName:&quot;*.osla&quot; OR System.FileName:&quot;*.jxs&quot; OR System.FileName:&quot;*.zcode&quot; OR System.FileName:&quot;*.zcodex&quot; OR System.FileName:&quot;*.mdlp&quot; OR System.FileName:&quot;*.gr1&quot; OR System.FileName:&quot;*.cxdlp&quot; OR System.FileName:&quot;*.lgs&quot; OR System.FileName:&quot;*.lgs30&quot; OR System.FileName:&quot;*.lgs120&quot; OR System.FileName:&quot;*.lgs4k&quot; OR System.FileName:&quot;*.svgx&quot; OR System.FileName:&quot;*.vdt&quot; OR System.FileName:&quot;*.uvj&quot; OR System.FileName:&quot;*.png&quot; OR System.FileName:&quot;*.jpg&quot; OR System.FileName:&quot;*.jpeg&quot; OR System.FileName:&quot;*.jp2&quot; OR System.FileName:&quot;*.tif&quot; OR System.FileName:&quot;*.tiff&quot; OR System.FileName:&quot;*.bmp&quot; OR System.FileName:&quot;*.pbm&quot; OR System.FileName:&quot;*.pgm&quot; OR System.FileName:&quot;*.sr&quot; OR System.FileName:&quot;*.ras&quot;" Type="string" />
+				<RegistryKey   Root="HKCR" Key="*\shell\UVtools\command" ForceCreateOnInstall="yes" ForceDeleteOnUninstall="yes" />
+				<RegistryValue Root="HKCR" Key="*\shell\UVtools\command" Value="&quot;[INSTALLLOCATION]UVtools.exe&quot; &quot;%1&quot;" Type="string" />
+			</Component>
+		</DirectoryRef>
+	</Product>
 </Wix>

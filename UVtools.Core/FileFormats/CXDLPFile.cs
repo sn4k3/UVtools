@@ -659,16 +659,10 @@ public class CXDLPFile : FileFormat
     {
         using var outputFile = new FileStream(TemporaryOutputFileFullPath, FileMode.Create, FileAccess.ReadWrite);
 
-        if (string.IsNullOrWhiteSpace(MachineName))
-        {
-            throw new InvalidDataException("Unable to detect the printer model from resolution, check if resolution is well defined on slicer for your printer model.");
-        }
-
-
-        if (!MachineName.StartsWith("CL-") && !MachineName.StartsWith("CT"))
+       if (string.IsNullOrWhiteSpace(MachineName) || (!MachineName.StartsWith("CL-") && !MachineName.StartsWith("CT")))
         {
             bool found = false;
-            foreach (var machine in Printer.Machine.Machines
+            foreach (var machine in Machine.Machines
                          .Where(machine => machine.Brand == PrinterBrand.Creality
                                            && (machine.Model.StartsWith("CL-") || machine.Model.StartsWith("CT"))
                                            ))

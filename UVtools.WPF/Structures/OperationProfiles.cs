@@ -48,6 +48,7 @@ public class OperationProfiles //: IList<Operation>
     [XmlElement(typeof(OperationChangeResolution))]
     [XmlElement(typeof(OperationTimelapse))]
     [XmlElement(typeof(OperationLithophane))]
+    [XmlElement(typeof(OperationPCBExposure))]
     [XmlElement(typeof(OperationScripting))]
         
     [XmlElement(typeof(OperationLayerExportGif))]

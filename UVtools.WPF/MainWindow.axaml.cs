@@ -58,198 +58,61 @@ public partial class MainWindow : WindowEx
 
     public static MenuItem[] MenuTools { get; } =
     {
-        new()
-        {
-            Tag = new OperationEditParameters(),
-        },
-        new()
-        {
-            Tag = new OperationRepairLayers(),
-        },
-        new()
-        {
-            Tag = new OperationMove(),
-        },
-        new()
-        {
-            Tag = new OperationResize(),
-        },
-        new()
-        {
-            Tag = new OperationFlip(),
-        },
-        new()
-        {
-            Tag = new OperationRotate(),
-        },
-        new()
-        {
-            Tag = new OperationSolidify(),
-        },
-        new()
-        {
-            Tag = new OperationMorph(),
-        },
-        new()
-        {
-            Tag = new OperationRaftRelief(),
-        },
-        new()
-        {
-            Tag = new OperationRedrawModel(),
-        },
-        /*new()
-        {
-            Tag = new OperationThreshold(),
-        },*/
-        new()
-        {
-            Tag = new OperationLayerArithmetic(),
-        },
-        new()
-        {
-            Tag = new OperationPixelArithmetic(),
-        },
-        new()
-        {
-            Tag = new OperationMask(),
-        },
-        /*new()
-        {
-            Tag = new OperationPixelDimming(),
-        },*/
-        new()
-        {
-            Tag = new OperationLightBleedCompensation(),
-        },
-        new()
-        {
-            Tag = new OperationInfill(),
-        },
-        new()
-        {
-            Tag = new OperationBlur(),
-        },
-        new()
-        {
-            Tag = new OperationPattern(),
-        },
-        new()
-        {
-            Tag = new OperationFadeExposureTime(),
-        },
-        new()
-        {
-            Tag = new OperationDoubleExposure(),
-        },
-        new()
-        {
-            Tag = new OperationDynamicLifts(),
-        },
-        new()
-        {
-            Tag = new OperationDynamicLayerHeight(),
-        },
-        new()
-        {
-            Tag = new OperationLayerReHeight(),
-        },
-        new()
-        {
-            Tag = new OperationRaiseOnPrintFinish(),
-        },
-        new()
-        {
-            Tag = new OperationChangeResolution(),
-        },
-        new()
-        {
-            Tag = new OperationTimelapse(),
-        },
-        new()
-        {
-            Tag = new OperationLithophane(),
-        },
-        new()
-        {
-            Tag = new OperationScripting(),
-        },
-        new()
-        {
-            Tag = new OperationCalculator(),
-        },
+        new() { Tag = new OperationEditParameters()},
+        new() { Tag = new OperationRepairLayers()},
+        new() { Tag = new OperationMove()},
+        new() { Tag = new OperationResize()},
+        new() { Tag = new OperationFlip()},
+        new() { Tag = new OperationRotate()},
+        new() { Tag = new OperationSolidify()},
+        new() { Tag = new OperationMorph()},
+        new() { Tag = new OperationRaftRelief()},
+        new() { Tag = new OperationRedrawModel()},
+        /*new() { Tag = new OperationThreshold()},*/
+        new() { Tag = new OperationLayerArithmetic()},
+        new() { Tag = new OperationPixelArithmetic()},
+        new() { Tag = new OperationMask()},
+        /*new() { Tag = new OperationPixelDimming()},*/
+        new() { Tag = new OperationLightBleedCompensation()},
+        new() { Tag = new OperationInfill()},
+        new() { Tag = new OperationBlur()},
+        new() { Tag = new OperationPattern()},
+        new() { Tag = new OperationFadeExposureTime()},
+        new() { Tag = new OperationDoubleExposure()},
+        new() { Tag = new OperationDynamicLifts()},
+        new() { Tag = new OperationDynamicLayerHeight()},
+        new() { Tag = new OperationLayerReHeight()},
+        new() { Tag = new OperationRaiseOnPrintFinish()},
+        new() { Tag = new OperationChangeResolution()},
+        new() { Tag = new OperationTimelapse()},
+        new() { Tag = new OperationLithophane()},
+        new() { Tag = new OperationPCBExposure()},
+        new() { Tag = new OperationScripting()},
+        new() { Tag = new OperationCalculator()},
     };
 
     public static MenuItem[] MenuCalibration { get; } =
     {
-        new()
-        {
-            Tag = new OperationCalibrateExposureFinder(),
-        },
-        new()
-        {
-            Tag = new OperationCalibrateElephantFoot(),
-        },
-        new()
-        {
-            Tag = new OperationCalibrateXYZAccuracy(),
-        },
-        new()
-        {
-            Tag = new OperationCalibrateLiftHeight(),
-        },
-        new()
-        {
-            Tag = new OperationCalibrateTolerance(),
-        },
-        new()
-        {
-            Tag = new OperationCalibrateGrayscale(),
-        },
-        new()
-        {
-            Tag = new OperationCalibrateStressTower(),
-        },
-        new()
-        {
-            Tag = new OperationCalibrateExternalTests(),
-        },
+        new() { Tag = new OperationCalibrateExposureFinder()},
+        new() { Tag = new OperationCalibrateElephantFoot()},
+        new() { Tag = new OperationCalibrateXYZAccuracy()},
+        new() { Tag = new OperationCalibrateLiftHeight()},
+        new() { Tag = new OperationCalibrateTolerance()},
+        new() { Tag = new OperationCalibrateGrayscale()},
+        new() { Tag = new OperationCalibrateStressTower()},
+        new() { Tag = new OperationCalibrateExternalTests()},
     };
 
     public static MenuItem[] LayerActionsMenu { get; } =
     {
-        new()
-        {
-            Tag = new OperationLayerImport(),
-        },
-        new()
-        {
-            Tag = new OperationLayerClone(),
-        },
-        new()
-        {
-            Tag = new OperationLayerRemove(),
-        },
-        new()
-        {
-            Tag = new OperationLayerExportImage(),
-        },
-        new()
-        {
-            Tag = new OperationLayerExportGif(),
-        },
-        new()
-        {
-            Tag = new OperationLayerExportSkeleton(),
-        },
-        new()
-        {
-            Tag = new OperationLayerExportHeatMap(),
-        },
-        new()
-        {
-            Tag = new OperationLayerExportMesh(),
-        },
+        new() { Tag = new OperationLayerImport()},
+        new() { Tag = new OperationLayerClone()},
+        new() { Tag = new OperationLayerRemove()},
+        new() { Tag = new OperationLayerExportImage()},
+        new() { Tag = new OperationLayerExportGif()},
+        new() { Tag = new OperationLayerExportSkeleton()},
+        new() { Tag = new OperationLayerExportHeatMap()},
+        new() { Tag = new OperationLayerExportMesh()},
     };
 
 
