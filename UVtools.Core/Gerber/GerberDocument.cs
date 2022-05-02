@@ -51,7 +51,7 @@ namespace UVtools.Core.Gerber
         {
         }
 
-        public static GerberDocument ParseAndDraw(string filePath, Mat mat, bool enableAntialiasing = false)
+        public static GerberDocument ParseAndDraw(string filePath, Mat mat, SizeF xyPpmm, bool enableAntialiasing = false)
         {
             using var file = new StreamReader(filePath);
             var document = new GerberDocument();
@@ -59,8 +59,6 @@ namespace UVtools.Core.Gerber
             int FSlength = "%FSLAX46Y46*%".Length;
             int MOlength = "%MOMM*%".Length;
             int LPlength = "%LPD*%".Length;
-
-            SizeF xyPpmm = new SizeF(20, 20);
 
             double currentX = 0;
             double currentY = 0;
@@ -302,12 +300,12 @@ namespace UVtools.Core.Gerber
                                     {
                                         // TODO: Fix this
                                         throw new NotImplementedException("Partial arcs are not yet implemented (G03)\nTo be fixed in the future...");
-                                        CvInvoke.Ellipse(mat, new Point((int)((nowX + xOffset) * xyPpmm.Width), (int)((currentY) * xyPpmm.Height)),
+                                        /*CvInvoke.Ellipse(mat, new Point((int)((nowX + xOffset) * xyPpmm.Width), (int)((currentY) * xyPpmm.Height)),
                                             new Size((int)(Math.Abs(xOffset) * xyPpmm.Width), (int)(Math.Abs(yOffset) * xyPpmm.Width)),
                                             0, Math.Abs(currentY - nowY), 360.0 / Math.Abs(currentX - nowX), document.Polarity == GerberPolarityType.Dark ? EmguExtensions.WhiteColor : EmguExtensions.BlackColor,
                                             (int)(circleAperture.Diameter * xyPpmm.Max()),
                                             enableAntialiasing ? LineType.AntiAlias : LineType.EightConnected
-                                        );
+                                        );*/
                                     }
                                     
                                 }

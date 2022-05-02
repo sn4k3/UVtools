@@ -8,6 +8,7 @@
 
 using System;
 using System.ComponentModel;
+using System.Linq;
 using System.Text;
 using UVtools.Core.Extensions;
 using UVtools.Core.Layers;
@@ -33,6 +34,7 @@ public sealed class SuggestionWaitTimeBeforeCure : Suggestion
     private decimal _bottomHeight = 1;
     private decimal _fixedBottomWaitTimeBeforeCure = 20;
     private decimal _fixedWaitTimeBeforeCure = 2;
+    private byte _waitTimeBeforeCureTransitionLayerCount = 8;
     private decimal _proportionalBottomWaitTimeBeforeCure = 20;
     private decimal _proportionalWaitTimeBeforeCure = 2;
     private uint _proportionalBottomLayerPixels = 1000000;
@@ -85,7 +87,7 @@ public sealed class SuggestionWaitTimeBeforeCure : Suggestion
                         foreach (var layer in SlicerFile)
                         {
                             if (layer.NonZeroPixelCount <= 1) continue; // Ignore empty layers
-                            var waitTime = (decimal)layer.GetBottomWaitTimeBeforeCure();
+                            var waitTime = (decimal)layer.GetWaitTimeBeforeCure();
                             if (waitTime < _minimumWaitTimeBeforeCure || waitTime > _maximumWaitTimeBeforeCure) return false;
                         }
                     }
@@ -106,7 +108,7 @@ public sealed class SuggestionWaitTimeBeforeCure : Suggestion
                         foreach (var layer in SlicerFile)
                         {
                             if (layer.NonZeroPixelCount <= 1) continue; // Ignore empty layers
-                            if (Math.Abs(layer.GetBottomWaitTimeBeforeCure() - CalculateWaitTime(layer)) > 0.1) return false;
+                            if (Math.Abs(layer.GetWaitTimeBeforeCure() - CalculateWaitTime(layer)) > 0.1) return false;
                         }
                     }
                     break;
@@ -162,14 +164,34 @@ public sealed class SuggestionWaitTimeBeforeCure : Suggestion
     public decimal FixedBottomWaitTimeBeforeCure
     {
         get => _fixedBottomWaitTimeBeforeCure;
-        set => RaiseAndSetIfChanged(ref _fixedBottomWaitTimeBeforeCure, Math.Round(value, 2));
+        set
+        {
+            if(!RaiseAndSetIfChanged(ref _fixedBottomWaitTimeBeforeCure, Math.Round(value, 2))) return;
+            RaisePropertyChanged(nameof(WaitTimeBeforeCureTransitionDecrement));
+        }
     }
 
     public decimal FixedWaitTimeBeforeCure
     {
         get => _fixedWaitTimeBeforeCure;
-        set => RaiseAndSetIfChanged(ref _fixedWaitTimeBeforeCure, Math.Round(value, 2));
+        set
+        {
+            if (!RaiseAndSetIfChanged(ref _fixedWaitTimeBeforeCure, Math.Round(value, 2))) return;
+            RaisePropertyChanged(nameof(WaitTimeBeforeCureTransitionDecrement));
+        }
     }
+
+    public byte WaitTimeBeforeCureTransitionLayerCount
+    {
+        get => _waitTimeBeforeCureTransitionLayerCount;
+        set
+        {
+            if(!RaiseAndSetIfChanged(ref _waitTimeBeforeCureTransitionLayerCount, value)) return;
+            RaisePropertyChanged(nameof(WaitTimeBeforeCureTransitionDecrement));
+        }
+    }
+
+    public decimal WaitTimeBeforeCureTransitionDecrement => _waitTimeBeforeCureTransitionLayerCount == 0 ? 0 : Math.Round((_fixedBottomWaitTimeBeforeCure - _fixedWaitTimeBeforeCure) / (_waitTimeBeforeCureTransitionLayerCount + 1), 2);
 
     public decimal ProportionalBottomWaitTimeBeforeCure
     {
@@ -360,6 +382,26 @@ public sealed class SuggestionWaitTimeBeforeCure : Suggestion
         {
             // Reassign isBottomLayer given the layer
             isBottomLayer = layer.IsBottomLayer || (_bottomHeight > 0 && (decimal)layer.PositionZ <= _bottomHeight);
+        }
+
+        if (_setType == SuggestionWaitTimeBeforeCureSetType.Fixed)
+        {
+            if(layer is null || isBottomLayer || _waitTimeBeforeCureTransitionLayerCount == 0) return (float)(isBottomLayer ? _fixedBottomWaitTimeBeforeCure : _fixedWaitTimeBeforeCure);
+            
+            // Check for transition layer
+            var firstNormalLayer = SlicerFile.FirstOrDefault(target => (decimal) target.PositionZ > _bottomHeight);
+            if (firstNormalLayer is not null)
+            {
+                if (layer.Index >= firstNormalLayer.Index &&
+                    layer.Index <= firstNormalLayer.Index + _waitTimeBeforeCureTransitionLayerCount)
+                {
+                    // Is transition layer
+                    return (float)Math.Round(Math.Max(_fixedBottomWaitTimeBeforeCure - WaitTimeBeforeCureTransitionDecrement * (layer.Index - firstNormalLayer.Index + 1), _minimumWaitTimeBeforeCure), 2);
+                }
+            }
+
+            // Fallback
+            return (float)(isBottomLayer ? _fixedBottomWaitTimeBeforeCure : _fixedWaitTimeBeforeCure);
         }
 
         if (layer is null || _setType == SuggestionWaitTimeBeforeCureSetType.Fixed)

@@ -7,6 +7,7 @@
  */
 
 using System;
+using System.Drawing;
 using System.IO;
 using System.Text;
 using Emgu.CV;
@@ -59,6 +60,16 @@ public class OperationPCBExposure : Operation
         "Generating PCB traces";
 
     public override string ProgressAction => "Tracing";
+
+    public override string? ValidateSpawn()
+    {
+        if(SlicerFile.DisplayWidth <= 0 || SlicerFile.DisplayHeight <= 0)
+        {
+            return $"{NotSupportedMessage}\nReason: No display size information is available to calculate the correct pixel pitch, and so, it's unable to produce a pixel perfect image.";
+        }
+
+        return null;
+    }
 
     public override string? ValidateInternally()
     {
@@ -164,7 +175,7 @@ public class OperationPCBExposure : Operation
     {
         var mat = SlicerFile.CreateMat();
         if (!FileExists) return mat;
-        GerberDocument.ParseAndDraw(_filePath!, mat, _enableAntiAliasing);
+        GerberDocument.ParseAndDraw(_filePath!, mat, SlicerFile.Ppmm, _enableAntiAliasing);
 
         //var boundingRectangle = CvInvoke.BoundingRectangle(mat);
         //var cropped = mat.Roi(new Size(boundingRectangle.Right, boundingRectangle.Bottom));

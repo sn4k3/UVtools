@@ -88,9 +88,31 @@
 
         <TextBlock Grid.Row="10" Grid.Column="0"
                    VerticalAlignment="Center"
+                   ToolTip.Tip="Sets the number of layers to smooth transition from bottom to normal wait time"
+                   IsVisible="{Binding Suggestion.IsSetTypeFixed}"
+                   Text="Transition layers:"/>
+
+        <TextBlock Grid.Row="10" Grid.Column="0"
+                   VerticalAlignment="Center"
                    ToolTip.Tip="Sets the wait time according an (wait time - exposure time) ratio"
                    IsVisible="{Binding !Suggestion.IsSetTypeFixed}"
                    Text="Proportional wait time:"/>
+
+        <NumericUpDown Grid.Row="10" Grid.Column="2"
+                       VerticalAlignment="Center"
+                       Classes="ValueLabel ValueLabel_layers"
+                       Minimum="0"
+                       Maximum="255"
+                       Increment="1"
+                       IsVisible="{Binding Suggestion.IsSetTypeFixed}"
+                       Value="{Binding Suggestion.WaitTimeBeforeCureTransitionLayerCount}"/>
+
+        <TextBlock Grid.Row="10" Grid.Column="6"
+                   VerticalAlignment="Center"
+                   ToolTip.Tip="Decrement step per layer"
+                   IsEnabled="{Binding Suggestion.WaitTimeBeforeCureTransitionLayerCount}"
+                   IsVisible="{Binding Suggestion.IsSetTypeFixed}"
+                   Text="{Binding Suggestion.WaitTimeBeforeCureTransitionDecrement, StringFormat=Decrement: {0:F2}s per layer}"/>
 
 		<NumericUpDown Grid.Row="10" Grid.Column="2"
                        VerticalAlignment="Center"

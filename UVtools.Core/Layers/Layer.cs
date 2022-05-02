@@ -1044,7 +1044,7 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
     /// Gets the wait time before cure, if not available calculate it from light off delay
     /// </summary>
     /// <returns></returns>
-    public float GetBottomWaitTimeBeforeCure()
+    public float GetWaitTimeBeforeCure()
     {
         if (SlicerFile.CanUseLayerWaitTimeBeforeCure)
         {
