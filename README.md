@@ -366,10 +366,12 @@ The fastest way to compile the project is by run the `build/compile.bat`, howeve
 1. Open UVtools.sln
 1. Build
 
+
 # TODO
 - More file formats
 - Clean up & performance (always)
 - See features request under Github
+
 
 # Support my work / Donate
 
@@ -378,3 +380,10 @@ If you're happy to contribute for a better program and for my work i will apprec
 
 - Sponsor: https://github.com/sponsors/sn4k3
 - PayPal: https://paypal.me/SkillTournament
+
+
+# Contributors 
+
+[![Contributors](https://contrib.rocks/image?repo=sn4k3/UVtools)](https://github.com/Tanu-N-Prabhu/Python/graphs/contributors)
+
+![Your Repository's Stats](https://github-readme-stats.vercel.app/api/top-langs/?username=sn4k3&theme=white-black)
