@@ -386,4 +386,3 @@ If you're happy to contribute for a better program and for my work i will apprec
 
 [![Contributors](https://contrib.rocks/image?repo=sn4k3/UVtools)](https://github.com/Tanu-N-Prabhu/Python/graphs/contributors)
 
-![Your Repository's Stats](https://github-readme-stats.vercel.app/api/top-langs/?username=sn4k3&theme=white-black)
