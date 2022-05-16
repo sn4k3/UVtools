@@ -6,21 +6,18 @@
  *  of this license document, but changing it is not allowed.
  */
 using Avalonia;
-using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using UVtools.Core.SystemOS;
+using UVtools.WPF.Controls;
 
 namespace UVtools.WPF.Windows
 {
-    public partial class CantRunWindow : Window
+    public partial class CantRunWindow : WindowEx
     {
         public CantRunWindow()
         {
             InitializeComponent();
             DataContext = this;
-#if DEBUG
-            this.AttachDevTools();
-#endif
         }
 
         private void InitializeComponent()

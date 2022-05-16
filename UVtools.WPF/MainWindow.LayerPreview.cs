@@ -491,8 +491,7 @@ public partial class MainWindow
         get
         {
             if (!LayerCache.IsCached) return "Pixels: 0";
-            var pixelPercent = Math.Round(LayerCache.Layer.NonZeroPixelCount * 100.0 / (SlicerFile.ResolutionX * SlicerFile.ResolutionY), 2);
-            var text = $"Pixels: {LayerCache.Layer.NonZeroPixelCount} ({pixelPercent}%)";
+            var text = $"Pixels: {LayerCache.Layer.NonZeroPixelCount} ({LayerCache.Layer.NonZeroPixelPercentage:F2}%)";
             var volume = LayerCache.Layer.Volume;
             if (volume > 0)
             {

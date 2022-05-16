@@ -489,7 +489,7 @@ public static class EmguExtensions
         using var roi = src.Size == rect.Size ? src.Roi(src.Size) : src.Roi(rect);
 
         var numberOfChannels = roi.NumberOfChannels;
-        var cropped = new Mat(roi.Rows + margin.Height * 2, roi.Cols + margin.Width * 2, roi.Depth, numberOfChannels);
+        var cropped = InitMat(new Size(roi.Width + margin.Width * 2, roi.Height + margin.Height * 2), numberOfChannels, roi.Depth);
         
         using var dest = new Mat(cropped, new Rectangle(margin.Width, margin.Height, roi.Width, roi.Height));
         roi.CopyTo(dest);

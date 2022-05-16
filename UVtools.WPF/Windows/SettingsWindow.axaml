@@ -1886,6 +1886,9 @@
                               ToolTip.Tip="Disable this if you want to gain some vertical space for windows, you can still toggle the descriptions and read them if required."
                               Content="Expand and show descriptions by default"/>
 
+                    <CheckBox IsChecked="{Binding Settings.Tools.PromptForConfirmation}"
+                              Content="Always prompt for confirmation before execute the operation"/>
+
 					<CheckBox IsChecked="{Binding Settings.Tools.RestoreLastUsedSettings}"
                               Content="Keep and restore the last used settings on operations per user session/instance"/>
 

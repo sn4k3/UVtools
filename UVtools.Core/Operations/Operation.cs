@@ -66,6 +66,9 @@ public abstract class Operation : BindableBase, IDisposable
         set => RaiseAndSetIfChanged(ref _importedFrom, value);
     }
 
+    /// <summary>
+    /// Gets or sets the parent <see cref="FileFormat"/>
+    /// </summary>
     [XmlIgnore]
     public FileFormat SlicerFile
     {
@@ -78,6 +81,9 @@ public abstract class Operation : BindableBase, IDisposable
         }
     }
 
+    /// <summary>
+    /// Gets the bounding rectangle of the model, preserved from any change during and after execution
+    /// </summary>
     [XmlIgnore]
     public Rectangle OriginalBoundingRectangle
     {
@@ -85,6 +91,9 @@ public abstract class Operation : BindableBase, IDisposable
         private set => RaiseAndSetIfChanged(ref _originalBoundingRectangle, value);
     }
 
+    /// <summary>
+    /// Gets or sets any object which is not used internally
+    /// </summary>
     [XmlIgnore]
     public object? Tag { get; set; }
 
@@ -93,6 +102,9 @@ public abstract class Operation : BindableBase, IDisposable
     /// </summary>
     public string Id => GetType().Name.Remove(0, ClassNameLength);
 
+    /// <summary>
+    /// Gets the starting layer selection
+    /// </summary>
     public virtual LayerRangeSelection StartLayerRangeSelection => LayerRangeSelection.All;
 
     /// <summary>
@@ -104,6 +116,9 @@ public abstract class Operation : BindableBase, IDisposable
         set => RaiseAndSetIfChanged(ref _layerRangeSelection, value);
     }
 
+    /// <summary>
+    /// Gets a string representing the layer range, used with profiles
+    /// </summary>
     public virtual string LayerRangeString
     {
         get
@@ -228,9 +243,19 @@ public abstract class Operation : BindableBase, IDisposable
         }
     }
 
+    /// <summary>
+    /// Gets if any bottom layer is included in the selected layer range
+    /// </summary>
     public bool LayerRangeHaveBottoms => LayerIndexStart < (SlicerFile.FirstNormalLayer?.Index ?? 0);
+
+    /// <summary>
+    /// Gets if any normal layer is included in the selected layer range
+    /// </summary>
     public bool LayerRangeHaveNormals => LayerIndexEnd >= (SlicerFile.FirstNormalLayer?.Index ?? 0);
 
+    /// <summary>
+    /// Gets the number of selected layers
+    /// </summary>
     public uint LayerRangeCount => (uint)Math.Max(0, (int)LayerIndexEnd - LayerIndexStart + 1);
 
     /// <summary>
@@ -242,6 +267,9 @@ public abstract class Operation : BindableBase, IDisposable
         set => RaiseAndSetIfChanged(ref _profileName, value);
     }
 
+    /// <summary>
+    /// Gets if this profile is the default to load
+    /// </summary>
     public bool ProfileIsDefault
     {
         get => _profileIsDefault;
@@ -262,6 +290,9 @@ public abstract class Operation : BindableBase, IDisposable
         }
     }
 
+    /// <summary>
+    /// Gets if there is an ROI associated
+    /// </summary>
     public bool HaveROI => !ROI.IsEmpty;
 
     /// <summary>
@@ -279,8 +310,14 @@ public abstract class Operation : BindableBase, IDisposable
         }
     }
 
+    /// <summary>
+    /// Gets if there is masks associated
+    /// </summary>
     public bool HaveMask => _maskPoints is not null && _maskPoints.Length > 0;
 
+    /// <summary>
+    /// Gets if there is roi or masks associated
+    /// </summary>
     public bool HaveROIorMask => HaveROI || HaveMask;
 
     /// <summary>
@@ -310,6 +347,9 @@ public abstract class Operation : BindableBase, IDisposable
 
     #region Methods
 
+    /// <summary>
+    /// Gets if the operation can spawn
+    /// </summary>
     public bool CanSpawn => string.IsNullOrWhiteSpace(ValidateSpawn());
 
     /// <summary>
@@ -326,6 +366,10 @@ public abstract class Operation : BindableBase, IDisposable
         return string.IsNullOrWhiteSpace(message);
     }
 
+    /// <summary>
+    /// Validates the operation, return null or empty if validates
+    /// </summary>
+    /// <returns></returns>
     public virtual string? ValidateInternally()
     {
         if (!ValidateSpawn(out var message))
@@ -345,11 +389,18 @@ public abstract class Operation : BindableBase, IDisposable
         return ValidateInternally();
     }
 
+    /// <summary>
+    /// Gets if the operation is able to execute
+    /// </summary>
+    /// <returns></returns>
     public bool CanValidate()
     {
         return string.IsNullOrWhiteSpace(Validate());
     }
 
+    /// <summary>
+    /// Selects all layers from first to last layer
+    /// </summary>
     public void SelectAllLayers()
     {
         LayerIndexStart = 0;
@@ -357,12 +408,19 @@ public abstract class Operation : BindableBase, IDisposable
         LayerRangeSelection = LayerRangeSelection.All;
     }
 
+    /// <summary>
+    /// Selects one layer
+    /// </summary>
+    /// <param name="layerIndex">Layer index to select</param>
     public void SelectCurrentLayer(uint layerIndex)
     {
         LayerIndexStart = LayerIndexEnd = layerIndex;
         LayerRangeSelection = LayerRangeSelection.Current;
     }
 
+    /// <summary>
+    /// Selects all bottom layers
+    /// </summary>
     public void SelectBottomLayers()
     {
         LayerIndexStart = 0;
@@ -370,6 +428,9 @@ public abstract class Operation : BindableBase, IDisposable
         LayerRangeSelection = LayerRangeSelection.Bottom;
     }
 
+    /// <summary>
+    /// Selects all normal layers
+    /// </summary>
     public void SelectNormalLayers()
     {
         LayerIndexStart = SlicerFile.FirstNormalLayer?.Index ?? 0;
@@ -377,30 +438,49 @@ public abstract class Operation : BindableBase, IDisposable
         LayerRangeSelection = LayerRangeSelection.Normal;
     }
 
+    /// <summary>
+    /// Select the first layer (0)
+    /// </summary>
     public void SelectFirstLayer()
     {
         LayerIndexStart = LayerIndexEnd = 0;
         LayerRangeSelection = LayerRangeSelection.First;
     }
 
+    /// <summary>
+    /// Select the last layer
+    /// </summary>
     public void SelectLastLayer()
     {
         LayerIndexStart = LayerIndexEnd = SlicerFile.LastLayerIndex; 
         LayerRangeSelection = LayerRangeSelection.Last;
     }
 
+    /// <summary>
+    /// Selects from first to a layer index
+    /// </summary>
+    /// <param name="currentLayerIndex">To layer index to select</param>
     public void SelectFirstToCurrentLayer(uint currentLayerIndex)
     {
         LayerIndexStart = 0;
         LayerIndexEnd = Math.Min(currentLayerIndex, SlicerFile.LastLayerIndex);
     }
 
+    /// <summary>
+    /// Selects from a layer index to the last layer
+    /// </summary>
+    /// <param name="currentLayerIndex">From layer index to select</param>
     public void SelectCurrentToLastLayer(uint currentLayerIndex)
     {
         LayerIndexStart = Math.Min(currentLayerIndex, SlicerFile.LastLayerIndex);
         LayerIndexEnd = SlicerFile.LastLayerIndex;
     }
 
+    /// <summary>
+    /// Selects layer given a range type
+    /// </summary>
+    /// <param name="range"></param>
+    /// <exception cref="NotImplementedException"></exception>
     public void SelectLayers(LayerRangeSelection range)
     {
         switch (range)
@@ -436,67 +516,141 @@ public abstract class Operation : BindableBase, IDisposable
     /// </summary>
     public virtual void InitWithSlicerFile() { }
 
+    /// <summary>
+    /// Clears the ROI and set to empty
+    /// </summary>
     public void ClearROI()
     {
         ROI = Rectangle.Empty;
     }
 
+    /// <summary>
+    /// Clear <see cref="ROI"/> and <see cref="MaskPoints"/>
+    /// </summary>
     public void ClearROIandMasks()
     {
         ClearROI();
         ClearMasks();
     }
 
+    /// <summary>
+    /// Set <see cref="ROI"/> only if not set already
+    /// </summary>
+    /// <param name="roi">ROI to set</param>
     public void SetROIIfEmpty(Rectangle roi)
     {
         if (HaveROI) return;
         ROI = roi;
     }
 
+    /// <summary>
+    /// Gets the <see cref="ROI"/> size, but if empty returns the file resolution size instead
+    /// </summary>
+    /// <returns></returns>
     public Size GetRoiSizeOrDefault() => GetRoiSizeOrDefault(SlicerFile.Resolution);
-    public Size GetRoiSizeOrDefault(Mat? defaultMat) => defaultMat is null ? GetRoiSizeOrDefault() : GetRoiSizeOrDefault(defaultMat.Size);
+
+    /// <summary>
+    /// Gets the <see cref="ROI"/> size, but if empty returns <see cref="src"/> size instead
+    /// </summary>
+    /// <param name="src"></param>
+    /// <returns></returns>
+    public Size GetRoiSizeOrDefault(Mat? src) => src is null ? GetRoiSizeOrDefault() : GetRoiSizeOrDefault(src.Size);
+
+    /// <summary>
+    /// Gets the <see cref="ROI"/> size, but if empty returns the size from <see cref="fallbackRectangle"/> instead
+    /// </summary>
+    /// <param name="fallbackRectangle"></param>
+    /// <returns></returns>
     public Size GetRoiSizeOrDefault(Rectangle fallbackRectangle) => GetRoiSizeOrDefault(fallbackRectangle.Size);
+
+    /// <summary>
+    /// Gets the <see cref="ROI"/> size, but if empty returns the <see cref="fallbackSize"/> instead
+    /// </summary>
+    /// <param name="fallbackSize"></param>
+    /// <returns></returns>
     public Size GetRoiSizeOrDefault(Size fallbackSize)
     {
         return HaveROI ? _roi.Size : fallbackSize;
     }
 
+    /// <summary>
+    /// Gets the <see cref="ROI"/> size, but if empty returns the model volume bounds size instead
+    /// </summary>
+    /// <returns></returns>
     public Size GetRoiSizeOrVolumeSize() => GetRoiSizeOrVolumeSize(_originalBoundingRectangle.Size);
 
+    /// <summary>
+    /// Gets the <see cref="ROI"/> size, but if empty returns the <see cref="fallbackSize"/> instead
+    /// </summary>
+    /// <param name="fallbackSize"></param>
+    /// <returns></returns>
     public Size GetRoiSizeOrVolumeSize(Size fallbackSize)
     {
         return HaveROI ? _roi.Size : fallbackSize;
     }
 
-
-    public Mat GetRoiOrDefault(Mat defaultMat)
+    /// <summary>
+    /// Gets a cropped shared <see cref="Mat"/> from <see cref="src"/> by the <see cref="ROI"/>, but if empty return the <see cref="src"/> instead
+    /// </summary>
+    /// <param name="src"></param>
+    /// <returns></returns>
+    public Mat GetRoiOrDefault(Mat src)
     {
-        return HaveROI && defaultMat.Size != _roi.Size ? defaultMat.Roi(_roi) : defaultMat;
+        return HaveROI && src.Size != _roi.Size ? src.Roi(_roi) : src;
     }
 
-    public Mat GetRoiOrDefault(Mat defaultMat, Rectangle fallbackRoi)
+    /// <summary>
+    /// Gets a cropped shared <see cref="Mat"/> from <see cref="src"/> by the <see cref="ROI"/>, but if empty crop by <see cref="fallbackRoi"/>
+    /// </summary>
+    /// <param name="src"></param>
+    /// <param name="fallbackRoi"></param>
+    /// <returns></returns>
+    public Mat GetRoiOrDefault(Mat src, Rectangle fallbackRoi)
     {
-        if (HaveROI && defaultMat.Size != _roi.Size) return defaultMat.Roi(_roi);
-        if (fallbackRoi.IsEmpty) return defaultMat;
-        return defaultMat.Size != fallbackRoi.Size ? defaultMat.Roi(fallbackRoi) : defaultMat;
+        if (HaveROI && src.Size != _roi.Size) return src.Roi(_roi);
+        if (fallbackRoi.IsEmpty) return src;
+        return src.Size != fallbackRoi.Size ? src.Roi(fallbackRoi) : src;
     }
 
+    /// <summary>
+    /// Gets a cropped shared <see cref="Mat"/> from <see cref="src"/> by the <see cref="ROI"/>, but if empty crop by <see cref="OriginalBoundingRectangle"/>
+    /// </summary>
+    /// <param name="defaultMat"></param>
+    /// <returns></returns>
     public Mat GetRoiOrVolumeBounds(Mat defaultMat)
     {
         return GetRoiOrDefault(defaultMat, _originalBoundingRectangle);
     }
 
+    /// <summary>
+    /// Gets the <see cref="ROI"/>, but if empty returns <see cref="OriginalBoundingRectangle"/>
+    /// </summary>
+    /// <returns></returns>
+    public Rectangle GetRoiOrVolumeBounds() => HaveROI ? _roi : _originalBoundingRectangle;
+
+    /// <summary>
+    /// Clears all masks
+    /// </summary>
     public void ClearMasks()
     {
         MaskPoints = null;
     }
 
+    /// <summary>
+    /// Sets masks only if they are empty
+    /// </summary>
+    /// <param name="points"></param>
     public void SetMasksIfEmpty(Point[][] points)
     {
         if (HaveMask) return;
         MaskPoints = points;
     }
 
+    /// <summary>
+    /// Returns a mask given <see cref="MaskPoints"/>
+    /// </summary>
+    /// <param name="mat"></param>
+    /// <returns></returns>
     public Mat? GetMask(Mat mat) => GetMask(_maskPoints, mat);
 
     public Mat? GetMask(Point[][]? points, Mat mat)
@@ -507,6 +661,12 @@ public abstract class Operation : BindableBase, IDisposable
         return GetRoiOrDefault(mask);
     }
 
+    /// <summary>
+    /// Apply a mask to a mat <see cref="result"/>
+    /// </summary>
+    /// <param name="original">Original untouched mat</param>
+    /// <param name="result">Mat to modify and apply the mask</param>
+    /// <param name="mask">Mask</param>
     public void ApplyMask(Mat original, Mat result, Mat? mask)
     {
         if (mask is null) return;
@@ -538,12 +698,23 @@ public abstract class Operation : BindableBase, IDisposable
         ApplyMask(original, result, mask);
     }
 
-
+    /// <summary>
+    /// Execute the operation internally, to be override by class
+    /// </summary>
+    /// <param name="progress"></param>
+    /// <returns></returns>
+    /// <exception cref="NotImplementedException"></exception>
     protected virtual bool ExecuteInternally(OperationProgress progress)
     {
         throw new NotImplementedException();
     }
 
+    /// <summary>
+    /// Execute the operation
+    /// </summary>
+    /// <param name="progress"></param>
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException"></exception>
     public bool Execute(OperationProgress? progress = null)
     {
         if (_slicerFile is null) throw new InvalidOperationException($"{Title} can't execute due the lacking of a file parent.");
@@ -566,6 +737,13 @@ public abstract class Operation : BindableBase, IDisposable
 
     public Task<bool> ExecuteAsync(OperationProgress? progress = null) => Task.Run(() => Execute(progress), progress?.Token ?? default);
 
+    /// <summary>
+    /// Execute the operation on a given <see cref="Mat"/>
+    /// </summary>
+    /// <param name="mat"></param>
+    /// <param name="arguments"></param>
+    /// <returns></returns>
+    /// <exception cref="NotImplementedException"></exception>
     public virtual bool Execute(Mat mat, params object[]? arguments)
     {
         throw new NotImplementedException();
@@ -597,12 +775,21 @@ public abstract class Operation : BindableBase, IDisposable
         operation.MaskPoints = MaskPoints;
     }
 
+    /// <summary>
+    /// Serialize class to XML file
+    /// </summary>
+    /// <param name="path"></param>
+    /// <param name="indent"></param>
     public void Serialize(string path, bool indent = false)
     {
         if(indent) XmlExtensions.SerializeToFile(this, path, XmlExtensions.SettingsIndent);
         else XmlExtensions.SerializeToFile(this, path);
     }
 
+    /// <summary>
+    /// Clone object
+    /// </summary>
+    /// <returns></returns>
     public virtual Operation Clone()
     {
         var operation = MemberwiseClone() as Operation;
@@ -623,6 +810,11 @@ public abstract class Operation : BindableBase, IDisposable
 
     #region Static Methods
 
+    /// <summary>
+    /// Deserialize <see cref="Operation"/> from a XML file
+    /// </summary>
+    /// <param name="path">XML file path</param>
+    /// <returns></returns>
     public static Operation? Deserialize(string path)
     {
         if (!File.Exists(path)) return null;
@@ -641,6 +833,12 @@ public abstract class Operation : BindableBase, IDisposable
         return Deserialize(path, type);
     }
 
+    /// <summary>
+    /// Deserialize <see cref="Operation"/> from a XML file
+    /// </summary>
+    /// <param name="path">XML file path</param>
+    /// <param name="type"></param>
+    /// <returns></returns>
     public static Operation Deserialize(string path, Type type)
     {
         var serializer = new XmlSerializer(type);
@@ -650,6 +848,12 @@ public abstract class Operation : BindableBase, IDisposable
         return operation;
     }
 
+    /// <summary>
+    /// Deserialize <see cref="Operation"/> from a XML file
+    /// </summary>
+    /// <param name="path">XML file path</param>
+    /// <param name="operation"></param>
+    /// <returns></returns>
     public static Operation Deserialize(string path, Operation operation) => Deserialize(path, operation.GetType());
 
     #endregion

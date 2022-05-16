@@ -9,6 +9,7 @@
 using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Scripting;
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Xml.Serialization;
 using UVtools.Core.FileFormats;
@@ -176,7 +177,7 @@ public sealed class OperationScripting : Operation
         _scriptState = CSharpScript.RunAsync(_scriptText,
             ScriptOptions.Default.AddReferences(typeof(About).Assembly).WithAllowUnsafe(true),
             ScriptGlobals).Result;
-
+        
         var result = _scriptState.ContinueWithAsync("ScriptInit();").Result;
 
         RaisePropertyChanged(nameof(CanExecute));

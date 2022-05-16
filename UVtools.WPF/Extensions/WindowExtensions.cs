@@ -95,7 +95,7 @@ public static class WindowExtensions
     public static Screen GetCurrentScreen(this Window window)
     {
         return //window.Screens.ScreenFromVisual(window) ??
-            window.Screens.ScreenFromVisual(App.MainWindow) ??
+            window.Screens.ScreenFromVisual(App.MainWindow ?? window) ??
             window.Screens.Primary ??
             window.Screens.All[0];
     }

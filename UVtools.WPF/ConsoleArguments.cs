@@ -25,7 +25,7 @@ public static class ConsoleArguments
     /// <returns>True if is a valid argument, otherwise false</returns>
     public static bool ParseArgs(string[] args)
     {
-        if(args is null || args.Length == 0) return false;
+        if(args.Length == 0) return false;
 
         if (args[0] is "--cmd" && args.Length > 1)
         {

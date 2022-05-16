@@ -20,6 +20,7 @@ public static class ErrorLog
         }
         catch (Exception exception)
         {
+            Console.WriteLine(exception);
             Debug.WriteLine(exception);
         }
     }

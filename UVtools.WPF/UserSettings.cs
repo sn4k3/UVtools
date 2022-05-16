@@ -12,6 +12,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
+using System.Reactive.Disposables;
 using System.Xml.Serialization;
 using Avalonia.Media;
 using JetBrains.Annotations;
@@ -1394,6 +1395,7 @@ public sealed class UserSettings : BindableBase
     public sealed class ToolsUserSettings : BindableBase
     {
         private bool _expandDescriptions = true;
+        private bool _promptForConfirmation = true;
         private bool _restoreLastUsedSettings;
         private bool _lastUsedSettingsKeepOnCloseFile = true;
         private bool _lastUsedSettingsPriorityOverDefaultProfile = true;
@@ -1402,6 +1404,12 @@ public sealed class UserSettings : BindableBase
         {
             get => _expandDescriptions;
             set => RaiseAndSetIfChanged(ref _expandDescriptions, value);
+        }
+
+        public bool PromptForConfirmation
+        {
+            get => _promptForConfirmation;
+            set => RaiseAndSetIfChanged(ref _promptForConfirmation, value);
         }
 
         public bool RestoreLastUsedSettings

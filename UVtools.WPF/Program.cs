@@ -1,17 +1,12 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Drawing;
 using System.Globalization;
-using System.Runtime.ExceptionServices;
+using System.Threading.Tasks;
 using Avalonia;
-using Emgu.CV;
-using Emgu.CV.Structure;
 using Projektanker.Icons.Avalonia;
 using Projektanker.Icons.Avalonia.FontAwesome;
 using Projektanker.Icons.Avalonia.MaterialDesign;
-using UVtools.Core.Extensions;
-using UVtools.Core.Gerber;
-using UVtools.WPF.Extensions;
+using UVtools.Core.SystemOS;
 
 namespace UVtools.WPF;
 
@@ -19,7 +14,8 @@ namespace UVtools.WPF;
 
 public static class Program
 {
-    public static string[] Args = null!;
+    public static string[] Args = Array.Empty<string>();
+    public static bool IsCrashReport;
 
     public static Stopwatch ProgramStartupTime = null!;
     // Initialization code. Don't use any Avalonia, third-party APIs or any
@@ -43,6 +39,11 @@ public static class Program
             return;
         }
 
+        if (Args.Length > 2 && Args[0] == "--crash-report")
+        {
+            IsCrashReport = true;
+        }
+
         /*Slicer slicer = new(Size.Empty, SizeF.Empty, "D:\\Cube100x100x100.stl");
         var slices = slicer.SliceModel(0.05f);
     
@@ -60,33 +61,43 @@ public static class Program
         //var machinesText = Machine.GenerateMachinePresetsFromPrusaSlicer();
 
         // Add the event handler for handling non-UI thread exceptions to the event.
-        AppDomain.CurrentDomain.UnhandledException += CurrentDomainOnUnhandledException;
+        AppDomain.CurrentDomain.UnhandledException += (sender, e) => HandleUnhandledException("Non-UI", (Exception)e.ExceptionObject);
+        TaskScheduler.UnobservedTaskException += (sender, e) => HandleUnhandledException("Task", e.Exception);
         //AppDomain.CurrentDomain.FirstChanceException += CurrentDomainOnFirstChanceException;
-        BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
+        
+        try
+        {
+            BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
+        }
+        catch (Exception e)
+        {
+            HandleUnhandledException("Application", e);
+        }
+        
 
         // Closing
     }
 
-    private static void CurrentDomainOnFirstChanceException(object? sender, FirstChanceExceptionEventArgs e)
+    private static void HandleUnhandledException(string category, Exception ex)
     {
-        ErrorLog.AppendLine("First chance exception", e.Exception.ToString());
-    }
+        ErrorLog.AppendLine($"Fatal {category} Error", ex.ToString());
 
-
-    private static async void CurrentDomainOnUnhandledException(object sender, UnhandledExceptionEventArgs e)
-    {
-        var ex = (Exception)e.ExceptionObject;
-        ErrorLog.AppendLine("Fatal Non-UI Error", ex.ToString());
-
-        try
+        if (!IsCrashReport)
         {
-            var errorMsg = $"An application error occurred. Please contact the administrator with the following information:\n\n{ex}";
-            await App.MainWindow.MessageBoxError(errorMsg, "Fatal Non-UI Error");
+            try
+            {
+                SystemAware.StartThisApplication($"--crash-report \"{category}\" \"{ex}\"");
+                //var errorMsg = $"An application error occurred. Please contact the administrator with the following information:\n\n{ex}";
+                //await App.MainWindow.MessageBoxError(errorMsg, "Fatal Non-UI Error");
+            }
+            catch (Exception exception)
+            {
+                Debug.WriteLine(exception);
+                Console.WriteLine(exception);
+            }
         }
-        catch (Exception exception)
-        {
-            Debug.WriteLine(exception);
-        }
+
+        Environment.Exit(-1);
     }
 
     // Avalonia configuration, don't remove; also used by visual designer.

@@ -98,9 +98,37 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
         internal set
         {
             if (!RaiseAndSetIfChanged(ref _nonZeroPixelCount, value)) return;
+            RaisePropertyChanged(nameof(NonZeroPixelRatio));
+            RaisePropertyChanged(nameof(NonZeroPixelPercentage));
             RaisePropertyChanged(nameof(Area));
             RaisePropertyChanged(nameof(Volume));
             MaterialMilliliters = -1; // Recalculate
+        }
+    }
+
+    /// <summary>
+    /// Gets the ratio between non zero pixels and display number of pixels
+    /// </summary>
+    public double NonZeroPixelRatio
+    {
+        get
+        {
+            var displayPixelCount = SlicerFile.DisplayPixelCount;
+            if (displayPixelCount == 0) return double.NaN;
+            return (double)_nonZeroPixelCount / displayPixelCount;
+        }
+    }
+
+    /// <summary>
+    /// Gets the percentage of non zero pixels relative to the display number of pixels
+    /// </summary>
+    public double NonZeroPixelPercentage
+    {
+        get
+        {
+            var pixelRatio = NonZeroPixelRatio;
+            if (double.IsNaN(pixelRatio)) return double.NaN;
+            return pixelRatio * 100.0;
         }
     }
 
@@ -214,7 +242,37 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
             if (IsFirstLayer || _index > SlicerFile.Count) return null;
             return SlicerFile[_index - 1];
         }
+    }
 
+    /// <summary>
+    /// Gets the previous layer with a different height from the current, returns null if no previous layer
+    /// </summary>
+    public Layer? PreviousHeightLayer
+    {
+        get
+        {
+            if (IsFirstLayer || _index > SlicerFile.Count) return null;
+            for (int i = (int)_index - 1; i >= 0; i--)
+            {
+                if (SlicerFile[i].PositionZ < _positionZ) return SlicerFile[i];
+            }
+
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// Gets the previous layer matching at least <param name="numberOfPixels"/> pixels, returns null if no previous layer
+    /// </summary>
+    public Layer? GetPreviousLayerWithAtLeastPixelCountOf(uint numberOfPixels)
+    {
+        if (IsFirstLayer || _index > SlicerFile.Count) return null;
+        for (int i = (int)_index - 1; i >= 0; i--)
+        {
+            if (SlicerFile[i].NonZeroPixelCount >= numberOfPixels) return SlicerFile[i];
+        }
+
+        return null;
     }
 
     /// <summary>
@@ -227,6 +285,37 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
             if (_index >= SlicerFile.LastLayerIndex) return null;
             return SlicerFile[_index + 1];
         }
+    }
+
+    /// <summary>
+    /// Gets the next layer with a different height from the current, returns null if no next layer
+    /// </summary>
+    public Layer? NextHeightLayer
+    {
+        get
+        {
+            if (_index >= SlicerFile.LastLayerIndex) return null;
+            for (var i = _index + 1; i < SlicerFile.LayerCount; i++)
+            {
+                if (SlicerFile[i].PositionZ > _positionZ) return SlicerFile[i];
+            }
+
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// Gets the next layer matching at least <param name="numberOfPixels"/> pixels, returns null if no next layer
+    /// </summary>
+    public Layer? GetNextLayerWithAtLeastPixelCountOf(uint numberOfPixels)
+    {
+        if (_index >= SlicerFile.LastLayerIndex) return null;
+        for (var i = _index + 1; i < SlicerFile.LayerCount; i++)
+        {
+            if (SlicerFile[i].NonZeroPixelCount >= numberOfPixels) return SlicerFile[i];
+        }
+
+        return null;
     }
 
     /// <summary>

@@ -195,9 +195,7 @@ public class OperationPCBExposure : Operation
     protected override bool ExecuteInternally(OperationProgress progress)
     {
         using var mat = GetMat();
-        var layer = new Layer(mat, SlicerFile);
-        layer.SetNoDelays();
-
+        
         SlicerFile.SuppressRebuildPropertiesWork(() =>
         {
             SlicerFile.LayerHeight = (float) _layerHeight;
@@ -207,7 +205,7 @@ public class OperationPCBExposure : Operation
             SlicerFile.LiftHeightTotal = 0;
             SlicerFile.SetNoDelays();
 
-            SlicerFile.Layers = new[] { layer };
+            SlicerFile.Layers = new[] { new Layer(mat, SlicerFile) };
         }, true);
 
 

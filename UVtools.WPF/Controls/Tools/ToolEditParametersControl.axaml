@@ -50,7 +50,7 @@
     <Grid
       Name="grid"
       RowDefinitions="Auto"
-      ColumnDefinitions="Auto,Auto,*,Auto,Auto"
+      ColumnDefinitions="Auto,Auto,*,Auto"
       VerticalAlignment="Center"
       ShowGridLines="True">
 
@@ -76,12 +76,6 @@
         Text="New value"/>
       <TextBlock
         Grid.Column="3"
-        VerticalAlignment="Center"
-        FontWeight="Bold"
-        Padding="15"
-        Text="Unit"/>
-      <TextBlock
-        Grid.Column="4"
         VerticalAlignment="Center"
         HorizontalAlignment="Center"
         FontWeight="Bold"

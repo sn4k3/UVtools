@@ -1,5 +1,39 @@
 # Changelog
 
+## 16/05/2022 - v3.4.2
+
+- **Core:**
+   - (Add) Getter `FileFormat.DisplayPixelCount` Gets the display total number of pixels (ResolutionX * ResolutionY)
+   - (Add) Getter `Layer.NonZeroPixelRatio` Gets the ratio between non zero pixels and display number of pixels
+   - (Add) Getter `Layer.NonZeroPixelPercentage` Gets the percentage of non zero pixels relative to the display number of pixels
+   - (Add) Getter `Layer.PreviousHeightLayer()` Gets the previous layer with a different height from the current, returns null if no previous layer
+   - (Add) Getter `Layer.NextHeightLayer()` Gets the next layer with a different height from the current, returns null if no next layer
+   - (Add) Method `Layer.GetPreviousLayerWithAtLeastPixelCountOf()` Gets the previous layer matching at least a number of pixels, returns null if no previous layer
+   - (Add) Method `Layer.GetNextLayerWithAtLeastPixelCountOf()` Gets the next layer matching at least a number of pixels, returns null if no next layer
+   - (Add) Method `Operation.GetRoiOrVolumeBounds()` returns the selected ROI rectangle or model volume bounds rectangle
+   - (Add) Documentation around `Operation` methods
+   - (Fix) Open files in partial mode when the resolution is not defined would cause a `NullPointerException` (#474)
+- **Suggestion: Wait time before cure**
+   - (Add) Proportional maximum time change: Sets the maximum allowed time difference relative to the previous layer (#471)
+   - (Add) Proportional mass get modes: Previous, Average and Maximum relative to a defined height (#471)
+   - (Change) Proportional set type sets fallback time to the first layer
+   - (Fix) Proportional set type was taking current layer mass instead of looking to the previous cured layer (#471)
+- **Tools:**
+   - **Edit print parameters:**
+      - (Change) Incorporate the unit label into the numeric input box
+      - (Change) Allow TSMC speeds to be 0 as minimum value (#472)
+   - (Fix) PCB Exposure: The thumbnail has random noise around the image
+- **Settings:**
+   - (Add) Tools: "Always prompt for confirmation before execute the operation"
+   - (Fix) Changing layer compression method when no file is loaded would cause a error
+- **UI:**
+   - (Add) Holding Shift key while drag and drop a .uvtop file will try to execute the operation without showing the window or prompt
+   - (Add) Drag and drop a .cs or .csx file into UVtools will load and show the scripting dialog with the file selected
+- (Add) Errors that crash application will now show an report window with the crash information and able to fast report them
+- (Add) "Version" key and value on registry to tell the current installed version (Windows MSI only)
+- (Upgrade) AvaloniaUI from 0.10.13 to 0.10.14
+- (Upgrade) .NET from 6.0.4 to 6.0.5
+- 
 ## 02/05/2022 - v3.4.1
 
 - (Add) Suggestion - Wait time before cure: Allow to set the number of layers to smooth transition from bottom to normal wait time (Defaults to 8)

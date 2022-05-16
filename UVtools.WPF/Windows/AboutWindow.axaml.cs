@@ -132,6 +132,24 @@ public class AboutWindow : WindowEx
 
     public void OpenLicense() => SystemAware.OpenBrowser(About.LicenseUrl);
 
+    public static string GetEssentialInformationStatic()
+    {
+        var message = new StringBuilder();
+        message.AppendLine($"{About.SoftwareWithVersionArch}");
+        message.AppendLine($"Operative system: {OSDescription}");
+        message.AppendLine($"Processor: {ProcessorName}");
+        message.AppendLine($"Processor cores: {ProcessorCount}");
+        message.AppendLine($"Memory RAM: {MemoryRAMDescription}");
+        message.AppendLine($"Runtime: {RuntimeDescription}");
+        message.AppendLine($"Framework: {FrameworkDescription}");
+        message.AppendLine($"AvaloniaUI: {AvaloniaUIDescription}");
+        message.AppendLine($"OpenCV: {OpenCVVersion}");
+        message.AppendLine();
+        message.AppendLine($"Path:       {App.ApplicationPath}");
+        message.AppendLine($"Executable: {App.AppExecutable}");
+        return message.ToString();
+    }
+
     private string GetEssentialInformation()
     {
         var message = new StringBuilder();

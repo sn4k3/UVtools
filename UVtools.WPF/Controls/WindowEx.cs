@@ -17,6 +17,7 @@ using Avalonia.Styling;
 using UVtools.Core.FileFormats;
 using UVtools.Core.SystemOS;
 using UVtools.WPF.Extensions;
+using Size = Avalonia.Size;
 
 namespace UVtools.WPF.Controls;
 
@@ -63,7 +64,17 @@ public class WindowEx : Window, INotifyPropertyChanged, IStyleable
         _propertyChanged?.Invoke(this, e);
     }
     #endregion
-        
+
+    #region Enum
+
+    public enum WindowConstrainsMaxSizeType : byte
+    {
+        None,
+        UserSettings,
+        Ratio
+    }
+    #endregion
+
     Type IStyleable.StyleKey => typeof(Window);
 
     public DialogResults DialogResult { get; set; } = DialogResults.Unknown;
@@ -77,6 +88,21 @@ public class WindowEx : Window, INotifyPropertyChanged, IStyleable
     public double WindowMaxWidth => this.GetScreenWorkingArea().Width - UserSettings.Instance.General.WindowsHorizontalMargin;
 
     public double WindowMaxHeight => this.GetScreenWorkingArea().Height - UserSettings.Instance.General.WindowsVerticalMargin;
+
+    public Size WindowMaxSize
+    {
+        get
+        {
+            var size = this.GetScreenWorkingArea();
+            return new Size(size.Width - UserSettings.Instance.General.WindowsHorizontalMargin,
+                this.GetScreenWorkingArea().Height - UserSettings.Instance.General.WindowsVerticalMargin);
+        }
+    }
+
+    public WindowConstrainsMaxSizeType WindowConstrainMaxSize { get; set; } = WindowConstrainsMaxSizeType.UserSettings;
+
+    public double WindowsWidthMaxSizeRatio { get; set; } = 1;
+    public double WindowsHeightMaxSizeRatio { get; set; } = 1;
 
     public UserSettings Settings => UserSettings.Instance;
 
@@ -97,10 +123,42 @@ public class WindowEx : Window, INotifyPropertyChanged, IStyleable
     protected override void OnOpened(EventArgs e)
     {
         base.OnOpened(e);
-        if (!CanResize && WindowState == WindowState.Normal)
+        AutoConstainsWindowMaxSize();
+    }
+
+    /*protected override Size MeasureOverride(Size availableSize)
+    {
+        var result = base.MeasureOverride(availableSize);
+        if (SizeToContent == SizeToContent.Manual) return result;
+        
+        if (MaxWidth > 0 && MaxWidth < result.Width)
         {
-            MaxWidth = WindowMaxWidth;
-            MaxHeight = WindowMaxHeight;
+            result = result.WithWidth(MaxWidth);
+        }
+        if (MaxHeight > 0 && MaxHeight < result.Height)
+        {
+            result = result.WithHeight(MaxHeight);
+        }
+
+        return result;
+    }*/
+
+    public void AutoConstainsWindowMaxSize()
+    {
+        if (!CanResize && WindowState == WindowState.Normal && WindowConstrainMaxSize != WindowConstrainsMaxSizeType.None)
+        {
+            switch (WindowConstrainMaxSize)
+            {
+                case WindowConstrainsMaxSizeType.UserSettings:
+                    MaxWidth = WindowMaxWidth;
+                    MaxHeight = WindowMaxHeight;
+                    break;
+                case WindowConstrainsMaxSizeType.Ratio:
+                    var size = this.GetScreenWorkingArea();
+                    if (WindowsWidthMaxSizeRatio is > 0 and < 1) MaxWidth = size.Width * WindowsWidthMaxSizeRatio;
+                    if (WindowsHeightMaxSizeRatio is > 0 and < 1) MaxHeight = size.Height * WindowsHeightMaxSizeRatio;
+                    break;
+            }
         }
     }
 

@@ -1,0 +1,90 @@
+<uc:WindowEx xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:uc="clr-namespace:UVtools.WPF.Controls"
+             xmlns:i="clr-namespace:Projektanker.Icons.Avalonia;assembly=Projektanker.Icons.Avalonia"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="UVtools.WPF.Windows.MessageWindow"
+             Icon="/Assets/Icons/UVtools.ico"
+             WindowStartupLocation="CenterOwner"
+             CanResize="False"
+             SizeToContent="Manual"
+			 MinWidth="300"
+			 MinHeight="200"
+			 Width="800"
+			 Height="600"
+			 WindowConstrainMaxSize="Ratio"
+			 WindowsWidthMaxSizeRatio="0.75"
+			 WindowsHeightMaxSizeRatio="0.75"
+             Title="UVtools Message">
+	<Grid RowDefinitions="Auto,*,Auto">
+		<Border Grid.Row="0"
+				Padding="20"
+				IsVisible="{Binding HeaderIsVisible}"
+				Classes="Header">
+
+			<Grid ColumnDefinitions="Auto,10,*">
+                <i:Icon Grid.Column="0"
+                        FontSize="{Binding HeaderIconSize}"
+                        FontWeight="Bold"
+                        IsVisible="{Binding HeaderIcon, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                        Value="{Binding HeaderIcon}"
+                        Foreground="{StaticResource LogoColor}"
+                        HorizontalAlignment="Center"/>
+
+                <TextBox Grid.Column="2"
+                         Classes="TransparentReadOnly"
+                         FontWeight="Bold"
+                         IsVisible="{Binding HeaderTitle, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                         Text="{Binding HeaderTitle}"/>
+			</Grid>
+		</Border>
+
+
+		<TextBox Grid.Row="1"
+				 Classes="TransparentReadOnly"
+				 Padding="20"
+				 ScrollViewer.HorizontalScrollBarVisibility="Auto"
+				 ScrollViewer.VerticalScrollBarVisibility="Auto"
+                 TextWrapping="Wrap"
+				 Text="{Binding Message}"/>
+
+		<Border Grid.Row="2"
+				Margin="0"
+				Classes="FooterActions">
+
+			<Grid ColumnDefinitions="Auto,*">
+				<Button Grid.Column="0"
+						IsVisible="{Binding AboutButtonIsVisible}"
+						Command="{Binding OpenAboutWindow}">
+					<StackPanel Orientation="Horizontal" Spacing="10">
+						<Image Source="/Assets/Icons/UVtools.ico"
+							   Height="26"/>
+
+						<TextBlock VerticalAlignment="Center"
+								   Text="About"/>
+					</StackPanel>
+				</Button>
+
+
+				<StackPanel Grid.Column="1" Orientation="Horizontal"
+                            Name="ButtonsRightPanel"
+							Spacing="5"
+							HorizontalAlignment="Right">
+
+					<uc:ButtonWithIcon Command="{Binding Close}"
+									   IsCancel="True"
+									   Padding="10"
+									   VerticalContentAlignment="Center"
+									   Icon="fas fa-sign-out-alt"
+									   Text="Close"/>
+				</StackPanel>
+			</Grid>
+
+
+
+
+		</Border>
+	</Grid>
+</uc:WindowEx>

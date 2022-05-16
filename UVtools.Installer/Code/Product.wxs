@@ -35,6 +35,7 @@
 				<!-- Install directory -->
 				<RegistryKey   Root="HKCU" Key="Software\UVtools" ForceCreateOnInstall="yes" ForceDeleteOnUninstall="yes" />
 				<RegistryValue Root="HKCU" Key="Software\UVtools" Name="InstallDir" Value="[INSTALLLOCATION]" Type="string" />
+				<RegistryValue Root="HKCU" Key="Software\UVtools" Name="Version" Value="$(var.MSIProductVersion)" Type="string" />
 
 				<!-- Open file with UVtools -->
 				<RegistryKey   Root="HKCR" Key="*\shell\UVtools" ForceCreateOnInstall="yes" ForceDeleteOnUninstall="yes" />

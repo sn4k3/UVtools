@@ -815,10 +815,9 @@ public class ToolWindow : WindowEx
             ToolControl.BaseOperation.SetMasksIfEmpty(Masks);
 
             if (!await ToolControl.ValidateForm()) return;
-            if (!string.IsNullOrEmpty(ToolControl.BaseOperation.ConfirmationText))
+            if (Settings.Tools.PromptForConfirmation && !string.IsNullOrEmpty(ToolControl.BaseOperation.ConfirmationText))
             {
-                var result =
-                    await this.MessageBoxQuestion(
+                var result = await this.MessageBoxQuestion(
                         $"Are you sure you want to {ToolControl.BaseOperation.ConfirmationText}");
                 if (result != ButtonResult.Yes) return;
             }

@@ -255,6 +255,16 @@ public static class SystemAware
         }
     }
 
+    public static void StartThisApplication(string? arguments = null)
+    {
+        var executable = Environment.ProcessPath;
+
+        if (File.Exists(executable)) // Direct execute
+        {
+            StartProcess(executable, arguments);
+        }
+    }
+
     public static string GetExecutableName(string executable)
     {
         return OperatingSystem.IsWindows() ? $"{executable}.exe" : executable;

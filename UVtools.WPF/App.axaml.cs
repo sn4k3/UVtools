@@ -12,6 +12,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Web;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -25,7 +26,6 @@ using UVtools.Core;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Managers;
 using UVtools.Core.SystemOS;
-using UVtools.WPF.Extensions;
 using UVtools.WPF.Structures;
 using UVtools.WPF.Windows;
 using Bitmap = Avalonia.Media.Imaging.Bitmap;
@@ -180,10 +180,6 @@ public class App : Application
             UserSettings.Load();
             UserSettings.SetVersion();
 
-            MaterialManager.Load();
-            OperationProfiles.Load();
-            SuggestionManager.Load();
-
             /*ThemeSelector = ThemeSelector.Create(Path.Combine(ApplicationPath, "Assets", "Themes"));
             ThemeSelector.LoadSelectedTheme(Path.Combine(UserSettings.SettingsFolder, "selected.theme"));
             if (ThemeSelector.SelectedTheme.Name == "UVtoolsDark" || ThemeSelector.SelectedTheme.Name == "Light")
@@ -208,9 +204,92 @@ public class App : Application
                 ApplyTheme();
             }
 
-            try
+            if (Program.IsCrashReport)
             {
-                if (CvInvoke.Init())
+                //Program.Args = new[] {"--crash-report", "test2", "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum." };
+                if (string.IsNullOrWhiteSpace(Program.Args[1])) return;
+                if(string.IsNullOrWhiteSpace(Program.Args[2])) return;
+                var category = Program.Args[1];
+                var message = $"{Program.Args[2]}\nCategory: {category}";
+
+                var bugReportMessageMk = $"# Report\n```\n{message}\n```";
+
+                try
+                {
+                    var append = $"\n\n# System\n{AboutWindow.GetEssentialInformationStatic()}";
+                    message += append;
+                    bugReportMessageMk += append;
+                }
+                catch
+                {
+                    // ignored
+                }
+
+                var append2 = $"\n\nMachine date time: {DateTime.Now}\n    UTC date time: {DateTime.UtcNow}";
+                message += append2;
+                bugReportMessageMk += $"{append2}\n\n# Additional information and Workflow\nComplete with additional information and the workflow that caused this crash.";
+
+                try
+                {
+                    Current?.Clipboard?.SetTextAsync(bugReportMessageMk);
+                }
+                catch
+                {
+                    // ignored
+                }
+
+
+                var reportButton = MessageWindow.CreateButton("Report", "fas fa-bug");
+                reportButton.Click += (sender, e) =>
+                {
+                    Current?.Clipboard?.SetTextAsync(bugReportMessageMk);
+                    using var reader = new StringReader(message);
+                    SystemAware.OpenBrowser($"https://github.com/sn4k3/UVtools/issues/new?assignees=sn4k3&labels=&template=bug_report.md&title={HttpUtility.UrlEncode($"[Crash] {reader.ReadLine()}")}&body={HttpUtility.UrlEncode("<!--\n# Instructions:\n1. Click on this box;\n2. Select all it text (Ctrl + A);\n3. Paste the report content (Ctrl + V);\n4. Review the content;\n5. Submit the issue.\n!-->")}");
+                    e.Handled = true;
+                };
+
+                var helpButton = MessageWindow.CreateButton("Help", "fas fa-question");
+                helpButton.Click += (sender, e) =>
+                {
+                    Current?.Clipboard?.SetTextAsync(bugReportMessageMk);
+                    SystemAware.OpenBrowser("https://github.com/sn4k3/UVtools/discussions/categories/q-a");
+                    e.Handled = true;
+                };
+
+                var restartButton = MessageWindow.CreateButton("Restart", "fas fa-redo-alt");
+                restartButton.Click += (sender, e) =>
+                {
+                    SystemAware.StartThisApplication();
+                };
+
+                desktop.MainWindow = new MessageWindow($"{About.SoftwareWithVersion} - Crash report", 
+                    "far fa-frown", 
+                    $"{About.Software} crashed due an unexpected {category.ToLowerInvariant()} error.\nYou can report this error if you find necessary.\nFind more details below:\n", 
+                    message,
+                    new[]
+                    {
+                        reportButton,
+                        helpButton,
+                        restartButton,
+                        MessageWindow.CreateCloseButton("fas fa-sign-out-alt")
+                    });
+            }
+            else
+            {
+                try
+                {
+                    if (!CvInvoke.Init())
+                    {
+                        desktop.MainWindow = new CantRunWindow();
+                    }
+                }
+                catch (Exception e)
+                {
+                    desktop.MainWindow = new CantRunWindow();
+                    Console.WriteLine(e.ToString());
+                }
+
+                if (desktop.MainWindow is null)
                 {
                     if (Design.IsDesignMode)
                     {
@@ -226,56 +305,15 @@ public class App : Application
                         };
                     }
 
-                    MainWindow = new MainWindow();
-                    if (UserSettings.Instance.General.StartMaximized)
-                    {
-                        MainWindow.WindowState = WindowState.Maximized;
-                    }
-                    else
-                    {
-                        if (UserSettings.Instance.General.RestoreWindowLastSize)
-                        {
-                            MainWindow.Width = UserSettings.Instance.General.LastWindowBounds.Width;
-                            MainWindow.Height = UserSettings.Instance.General.LastWindowBounds.Height;
-                        }
+                    MaterialManager.Load();
+                    OperationProfiles.Load();
+                    SuggestionManager.Load();
 
-                        if (UserSettings.Instance.General.RestoreWindowLastPosition)
-                        {
-                            MainWindow.Position = new PixelPoint(UserSettings.Instance.General.LastWindowBounds.Location.X, UserSettings.Instance.General.LastWindowBounds.Location.Y);
-                        }
-                    }
+                    MainWindow = new MainWindow();
                     desktop.MainWindow = MainWindow;
                 }
-                else
-                {
-                    desktop.MainWindow = new CantRunWindow();
-                }
-            }
-            catch (Exception e)
-            {
-                desktop.MainWindow = new CantRunWindow();
-                Console.WriteLine(e.ToString());
             }
             
-
-            /*try
-            {
-                if(!CvInvoke.Init())
-                    await MainWindow.MessageBoxError("UVtools can not init OpenCV library\n" +
-                                                     "Please build or install this dependencies in order to run UVtools\n" +
-                                                     "Check manual or page at 'Requirements' section for help", 
-                        "UVtools can not run");
-            }
-            catch (Exception e)
-            {
-                await MainWindow.MessageBoxError("UVtools can not run due lack of dependencies from cvextern/OpenCV\n" +
-                                                 "Please build or install this dependencies in order to run UVtools\n" +
-                                                 "Check manual or page at 'Requirements' section for help\n\n" +
-                                                 "Additional information:\n" +
-                                                 $"{e}", "UVtools can not run");
-                return;
-            }*/
-
             
             //desktop.Exit += (sender, e) => ThemeSelector.SaveSelectedTheme(Path.Combine(UserSettings.SettingsFolder, "selected.theme"));
         }

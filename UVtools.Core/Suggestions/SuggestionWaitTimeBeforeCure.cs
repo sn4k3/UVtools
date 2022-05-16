@@ -18,7 +18,7 @@ namespace UVtools.Core.Suggestions;
 public sealed class SuggestionWaitTimeBeforeCure : Suggestion
 {
     #region Enums
-    public enum SuggestionWaitTimeBeforeCureSetType
+    public enum SuggestionWaitTimeBeforeCureSetType : byte
     {
         [Description("Fixed: Use a fixed time")]
         Fixed,
@@ -27,10 +27,21 @@ public sealed class SuggestionWaitTimeBeforeCure : Suggestion
         [Description("Proportional to layer area")]
         ProportionalLayerArea,
     }
+
+    public enum SuggestionWaitTimeBeforeCureProportionalCalculateMassFrom : byte
+    {
+        [Description("Previous mass")]
+        Previous,
+        [Description("Average of previous masses")]
+        Average,
+        [Description("Maximum of previous masses")]
+        Maximum,
+    }
     #endregion
 
     #region Members
     private SuggestionWaitTimeBeforeCureSetType _setType = SuggestionWaitTimeBeforeCureSetType.Fixed;
+    
     private decimal _bottomHeight = 1;
     private decimal _fixedBottomWaitTimeBeforeCure = 20;
     private decimal _fixedWaitTimeBeforeCure = 2;
@@ -41,12 +52,16 @@ public sealed class SuggestionWaitTimeBeforeCure : Suggestion
     private uint _proportionalLayerPixels = 1000000;
     private uint _proportionalBottomLayerArea = 1000;
     private uint _proportionalLayerArea = 1000;
+    private decimal _proportionalBottomWaitTimeBeforeCureMaximumDifference = 1;
+    private decimal _proportionalWaitTimeBeforeCureMaximumDifference = 1;
+    private SuggestionWaitTimeBeforeCureProportionalCalculateMassFrom _proportionalCalculateMassFrom = SuggestionWaitTimeBeforeCureProportionalCalculateMassFrom.Previous;
+    private decimal _proportionalMassRelativeHeight = 0.2m;
     private decimal _minimumBottomWaitTimeBeforeCure = 5;
     private decimal _minimumWaitTimeBeforeCure = 1;
     private decimal _maximumBottomWaitTimeBeforeCure = 120;
     private decimal _maximumWaitTimeBeforeCure = 12;
     private bool _createEmptyFirstLayer = true;
-
+    
     #endregion
 
     #region Properties
@@ -154,11 +169,29 @@ public sealed class SuggestionWaitTimeBeforeCure : Suggestion
     public bool IsSetTypeFixed => _setType == SuggestionWaitTimeBeforeCureSetType.Fixed;
     public bool IsSetTypeProportionalLayerPixels => _setType == SuggestionWaitTimeBeforeCureSetType.ProportionalLayerPixels;
     public bool IsSetTypeProportionalLayerArea => _setType == SuggestionWaitTimeBeforeCureSetType.ProportionalLayerArea;
-        
+
+    public SuggestionWaitTimeBeforeCureProportionalCalculateMassFrom ProportionalCalculateMassFrom
+    {
+        get => _proportionalCalculateMassFrom;
+        set
+        {
+            if (!RaiseAndSetIfChanged(ref _proportionalCalculateMassFrom, value)) return;
+            RaisePropertyChanged(nameof(IsProportionalCalculateMassFromPrevious));
+        }
+    }
+
+    public decimal ProportionalMassRelativeHeight
+    {
+        get => _proportionalMassRelativeHeight;
+        set => RaiseAndSetIfChanged(ref _proportionalMassRelativeHeight, Math.Max(0, Math.Round(value, Layer.HeightPrecision)));
+    }
+
+    public bool IsProportionalCalculateMassFromPrevious => _proportionalCalculateMassFrom == SuggestionWaitTimeBeforeCureProportionalCalculateMassFrom.Previous;
+
     public decimal BottomHeight
     {
         get => _bottomHeight;
-        set => RaiseAndSetIfChanged(ref _bottomHeight, value);
+        set => RaiseAndSetIfChanged(ref _bottomHeight, Math.Max(0, value));
     }
 
     public decimal FixedBottomWaitTimeBeforeCure
@@ -166,7 +199,7 @@ public sealed class SuggestionWaitTimeBeforeCure : Suggestion
         get => _fixedBottomWaitTimeBeforeCure;
         set
         {
-            if(!RaiseAndSetIfChanged(ref _fixedBottomWaitTimeBeforeCure, Math.Round(value, 2))) return;
+            if(!RaiseAndSetIfChanged(ref _fixedBottomWaitTimeBeforeCure, Math.Round(Math.Max(0, value), 2))) return;
             RaisePropertyChanged(nameof(WaitTimeBeforeCureTransitionDecrement));
         }
     }
@@ -176,7 +209,7 @@ public sealed class SuggestionWaitTimeBeforeCure : Suggestion
         get => _fixedWaitTimeBeforeCure;
         set
         {
-            if (!RaiseAndSetIfChanged(ref _fixedWaitTimeBeforeCure, Math.Round(value, 2))) return;
+            if (!RaiseAndSetIfChanged(ref _fixedWaitTimeBeforeCure, Math.Round(Math.Max(0, value), 2))) return;
             RaisePropertyChanged(nameof(WaitTimeBeforeCureTransitionDecrement));
         }
     }
@@ -196,13 +229,13 @@ public sealed class SuggestionWaitTimeBeforeCure : Suggestion
     public decimal ProportionalBottomWaitTimeBeforeCure
     {
         get => _proportionalBottomWaitTimeBeforeCure;
-        set => RaiseAndSetIfChanged(ref _proportionalBottomWaitTimeBeforeCure, Math.Round(value, 2));
+        set => RaiseAndSetIfChanged(ref _proportionalBottomWaitTimeBeforeCure, Math.Round(Math.Max(0, value), 2));
     }
 
     public decimal ProportionalWaitTimeBeforeCure
     {
         get => _proportionalWaitTimeBeforeCure;
-        set => RaiseAndSetIfChanged(ref _proportionalWaitTimeBeforeCure, Math.Round(value, 2));
+        set => RaiseAndSetIfChanged(ref _proportionalWaitTimeBeforeCure, Math.Round(Math.Max(0, value), 2));
     }
 
 
@@ -230,28 +263,40 @@ public sealed class SuggestionWaitTimeBeforeCure : Suggestion
         set => RaiseAndSetIfChanged(ref _proportionalLayerArea, Math.Max(1, value));
     }
 
+    public decimal ProportionalBottomWaitTimeBeforeCureMaximumDifference
+    {
+        get => _proportionalBottomWaitTimeBeforeCureMaximumDifference;
+        set => RaiseAndSetIfChanged(ref _proportionalBottomWaitTimeBeforeCureMaximumDifference, Math.Round(Math.Max(0, value), 2));
+    }
+
+    public decimal ProportionalWaitTimeBeforeCureMaximumDifference
+    {
+        get => _proportionalWaitTimeBeforeCureMaximumDifference;
+        set => RaiseAndSetIfChanged(ref _proportionalWaitTimeBeforeCureMaximumDifference, Math.Round(Math.Max(0, value), 2));
+    }
+
     public decimal MinimumBottomWaitTimeBeforeCure
     {
         get => _minimumBottomWaitTimeBeforeCure;
-        set => RaiseAndSetIfChanged(ref _minimumBottomWaitTimeBeforeCure, Math.Round(value, 2));
+        set => RaiseAndSetIfChanged(ref _minimumBottomWaitTimeBeforeCure, Math.Round(Math.Max(0, value), 2));
     }
 
     public decimal MinimumWaitTimeBeforeCure
     {
         get => _minimumWaitTimeBeforeCure;
-        set => RaiseAndSetIfChanged(ref _minimumWaitTimeBeforeCure, Math.Round(value, 2));
+        set => RaiseAndSetIfChanged(ref _minimumWaitTimeBeforeCure, Math.Round(Math.Max(0, value), 2));
     }
 
     public decimal MaximumBottomWaitTimeBeforeCure
     {
         get => _maximumBottomWaitTimeBeforeCure;
-        set => RaiseAndSetIfChanged(ref _maximumBottomWaitTimeBeforeCure, Math.Round(value, 2));
+        set => RaiseAndSetIfChanged(ref _maximumBottomWaitTimeBeforeCure, Math.Round(Math.Max(0, value), 2));
     }
 
     public decimal MaximumWaitTimeBeforeCure
     {
         get => _maximumWaitTimeBeforeCure;
-        set => RaiseAndSetIfChanged(ref _maximumWaitTimeBeforeCure, Math.Round(value, 2));
+        set => RaiseAndSetIfChanged(ref _maximumWaitTimeBeforeCure, Math.Round(Math.Max(0, value), 2));
     }
 
     public bool CreateEmptyFirstLayer
@@ -410,23 +455,97 @@ public sealed class SuggestionWaitTimeBeforeCure : Suggestion
         }
 
         if (layer.NonZeroPixelCount <= 1) return 0; // Empty layer, don't need wait time
-            
-        return _setType switch
+
+        float mass = 0;
+        if (layer.Index > 0 && _proportionalCalculateMassFrom != SuggestionWaitTimeBeforeCureProportionalCalculateMassFrom.Previous && _proportionalMassRelativeHeight > 0)
         {
-            SuggestionWaitTimeBeforeCureSetType.ProportionalLayerPixels => (float)Math.Round(
-                (isBottomLayer 
-                    ? layer.NonZeroPixelCount * _proportionalBottomWaitTimeBeforeCure / _proportionalBottomLayerPixels 
-                    : layer.NonZeroPixelCount * _proportionalWaitTimeBeforeCure / _proportionalLayerPixels).Clamp(
-                    isBottomLayer ? _minimumBottomWaitTimeBeforeCure : _minimumWaitTimeBeforeCure,
-                    isBottomLayer ? _maximumBottomWaitTimeBeforeCure : _maximumWaitTimeBeforeCure), 2),
-            SuggestionWaitTimeBeforeCureSetType.ProportionalLayerArea => (float) Math.Round(
-                (isBottomLayer 
-                    ? (decimal)layer.GetArea() * _proportionalBottomWaitTimeBeforeCure / _proportionalBottomLayerArea
-                    : (decimal)layer.GetArea() * _proportionalWaitTimeBeforeCure / _proportionalLayerArea).Clamp(
-                    isBottomLayer ? _minimumBottomWaitTimeBeforeCure : _minimumWaitTimeBeforeCure,
-                    isBottomLayer ? _maximumBottomWaitTimeBeforeCure : _maximumWaitTimeBeforeCure), 2),
+            //var previousLayer = layer.GetPreviousLayerWithAtLeastPixelCountOf(2); // Skip all previous empty layer
+            //if (previousLayer is not null) layer = previousLayer;
+            uint count = 0;
+
+            Layer? previousLayer = layer;
+
+            while ((previousLayer = previousLayer!.PreviousLayer) is not null && (layer.PositionZ - previousLayer.PositionZ) <= (float)_proportionalMassRelativeHeight)
+            {
+                if(previousLayer.NonZeroPixelCount < 2) continue; // Skip empty layers
+
+                count++;
+                switch (_proportionalCalculateMassFrom)
+                {
+                    case SuggestionWaitTimeBeforeCureProportionalCalculateMassFrom.Average:
+                        mass += _setType == SuggestionWaitTimeBeforeCureSetType.ProportionalLayerPixels
+                            ? previousLayer.NonZeroPixelCount
+                            : previousLayer.GetArea();
+                        break;
+                    case SuggestionWaitTimeBeforeCureProportionalCalculateMassFrom.Maximum:
+                        mass = Math.Max(_setType == SuggestionWaitTimeBeforeCureSetType.ProportionalLayerPixels
+                            ? previousLayer.NonZeroPixelCount
+                            : previousLayer.GetArea(), mass);
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
+
+            if (_proportionalCalculateMassFrom == SuggestionWaitTimeBeforeCureProportionalCalculateMassFrom.Average && mass > 0 && count > 0)
+            {
+                mass /= count;
+            }
+        }
+
+        if (mass <= 0)
+        {
+            var previousLayer = layer.GetPreviousLayerWithAtLeastPixelCountOf(2); // Skip all previous empty layer
+            if (previousLayer is null)
+            {
+                return isBottomLayer ? (float)_fixedBottomWaitTimeBeforeCure : (float)_fixedWaitTimeBeforeCure;
+            }
+            mass = _setType == SuggestionWaitTimeBeforeCureSetType.ProportionalLayerPixels
+                ? previousLayer.NonZeroPixelCount
+                : previousLayer.GetArea();
+        }
+
+        float value = _setType switch
+        {
+            SuggestionWaitTimeBeforeCureSetType.ProportionalLayerPixels => (float) (isBottomLayer 
+                    ? (decimal)mass * _proportionalBottomWaitTimeBeforeCure / _proportionalBottomLayerPixels 
+                    : (decimal)mass * _proportionalWaitTimeBeforeCure / _proportionalLayerPixels),
+            SuggestionWaitTimeBeforeCureSetType.ProportionalLayerArea => (float) (isBottomLayer 
+                    ? (decimal)mass * _proportionalBottomWaitTimeBeforeCure / _proportionalBottomLayerArea
+                    : (decimal)mass * _proportionalWaitTimeBeforeCure / _proportionalLayerArea),
             _ => throw new ArgumentOutOfRangeException()
         };
+
+        if (isBottomLayer)
+        {
+            if (_proportionalBottomWaitTimeBeforeCureMaximumDifference > 0)
+            {
+                var previousLayer = layer.GetPreviousLayerWithAtLeastPixelCountOf(2);
+                if(previousLayer is not null)
+                {
+                    value = value.Clamp(
+                        Math.Max(0, previousLayer.WaitTimeBeforeCure - (float)_proportionalBottomWaitTimeBeforeCureMaximumDifference),
+                        previousLayer.WaitTimeBeforeCure + (float)_proportionalBottomWaitTimeBeforeCureMaximumDifference);
+                }
+            }
+        }
+        else
+        {
+            if (_proportionalWaitTimeBeforeCureMaximumDifference > 0)
+            {
+                var previousLayer = layer.GetPreviousLayerWithAtLeastPixelCountOf(2);
+                if (previousLayer is not null)
+                {
+                    value = value.Clamp(
+                        Math.Max(0, previousLayer.WaitTimeBeforeCure - (float)_proportionalWaitTimeBeforeCureMaximumDifference),
+                        previousLayer.WaitTimeBeforeCure + (float)_proportionalWaitTimeBeforeCureMaximumDifference);
+                }
+            }
+        }
+
+        return (float)Math.Round((decimal)value, 2).Clamp(
+            isBottomLayer ? _minimumBottomWaitTimeBeforeCure : _minimumWaitTimeBeforeCure,
+            isBottomLayer ? _maximumBottomWaitTimeBeforeCure : _maximumWaitTimeBeforeCure);
     }
 
     public float CalculateWaitTime(Layer layer) => CalculateWaitTime(false, layer);

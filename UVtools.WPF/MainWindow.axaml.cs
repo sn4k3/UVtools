@@ -22,6 +22,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Org.BouncyCastle.Operators;
 using UVtools.AvaloniaControls;
 using UVtools.Core;
 using UVtools.Core.Extensions;
@@ -250,6 +251,30 @@ public partial class MainWindow : WindowEx
 
     public MainWindow()
     {
+        if (Settings.General.StartMaximized)
+        {
+            WindowState = WindowState.Maximized;
+        }
+        else 
+        {
+            if (Settings.General.RestoreWindowLastPosition)
+            {
+                Position = new PixelPoint(Settings.General.LastWindowBounds.Location.X, Settings.General.LastWindowBounds.Location.Y);
+            }
+
+            if (Settings.General.RestoreWindowLastSize)
+            {
+                Width = Settings.General.LastWindowBounds.Width;
+                Height = Settings.General.LastWindowBounds.Height;
+            }
+
+            var windowSize = this.GetScreenWorkingArea();
+            if (Width >= windowSize.Width || Height >= windowSize.Height)
+            {
+                WindowState = WindowState.Maximized;
+            }
+        }
+
         InitializeComponent();
 
         //App.ThemeSelector?.EnableThemes(this);
@@ -703,7 +728,6 @@ public partial class MainWindow : WindowEx
     protected override void OnOpened(EventArgs e)
     {
         base.OnOpened(e);
-        var windowSize = this.GetScreenWorkingArea();
 
         var clientSizeObs = this.GetObservable(ClientSizeProperty);
         clientSizeObs.Subscribe(size =>
@@ -725,11 +749,6 @@ public partial class MainWindow : WindowEx
             if (!_isGUIEnabled) return;
             ProcessFiles(args.Data.GetFileNames()?.ToArray());
         });
-
-        if (!Settings.General.StartMaximized && (ClientSize.Width >= windowSize.Width || ClientSize.Height >= windowSize.Height))
-        {
-            WindowState = WindowState.Maximized;
-        }
 
         AddLog($"{About.Software} start", Program.ProgramStartupTime.Elapsed.TotalSeconds);
 
@@ -1067,7 +1086,7 @@ public partial class MainWindow : WindowEx
                 App.ApplyTheme();
             }
 
-            if (oldLayerCompressionCodec != Settings.General.LayerCompressionCodec)
+            if (oldLayerCompressionCodec != Settings.General.LayerCompressionCodec && IsFileLoaded)
             {
                 IsGUIEnabled = false;
                 ShowProgressWindow($"Changing layers compression codec from {oldLayerCompressionCodec.ToString().ToUpper()} to {Settings.General.LayerCompressionCodec.ToString().ToUpper()}");
@@ -1210,7 +1229,7 @@ public partial class MainWindow : WindowEx
     private void UpdateTitle()
     {
         var title = $"{About.Software}   ";
-
+        
         if (IsFileLoaded)
         {
             title += $"File: {SlicerFile.Filename} ({Math.Round(LastStopWatch.ElapsedMilliseconds / 1000m, 2)}s)   ";
@@ -1254,14 +1273,36 @@ public partial class MainWindow : WindowEx
                 try
                 {
                     var operation = Operation.Deserialize(files[i]);
-                    await ShowRunOperation(operation);
+                    operation.SlicerFile = SlicerFile;
+                    if ((_globalModifiers & KeyModifiers.Shift) != 0) await RunOperation(operation);
+                    else await ShowRunOperation(operation);
                 }
                 catch (Exception e)
                 {
                     Debug.WriteLine(e);
-                    throw;
                 }
                     
+                continue;
+            }
+
+            if (files[i].EndsWith(".cs") || files[i].EndsWith(".csx"))
+            {
+                if (!IsFileLoaded) continue;
+                try
+                {
+                    var operation = new OperationScripting(SlicerFile);
+                    operation.ReloadScriptFromFile(files[i]);
+                    if (operation.CanExecute)
+                    {
+                        if ((_globalModifiers & KeyModifiers.Shift) != 0) await RunOperation(operation);
+                        else await ShowRunOperation(operation);
+                    }
+                }
+                catch (Exception e)
+                {
+                    Debug.WriteLine(e);
+                }
+
                 continue;
             }
 
@@ -1293,7 +1334,7 @@ public partial class MainWindow : WindowEx
         var fileNameOnly = Path.GetFileName(fileName);
         SlicerFile = FileFormat.FindByExtensionOrFilePath(fileName, true);
         if (SlicerFile is null) return;
-
+        
         IsGUIEnabled = false;
         ShowProgressWindow($"Opening: {fileNameOnly}");
 
@@ -2024,6 +2065,8 @@ public partial class MainWindow : WindowEx
     public async Task<bool> RunOperation(Operation baseOperation)
     {
         if (baseOperation is null) return false;
+        // ReSharper disable once ConditionIsAlwaysTrueOrFalse
+        baseOperation.SlicerFile ??= SlicerFile;
 
         switch (baseOperation)
         {

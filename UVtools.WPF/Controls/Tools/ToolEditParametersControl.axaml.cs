@@ -1,5 +1,7 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using System.Globalization;
+using System.Threading;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
@@ -27,7 +29,7 @@ public class ToolEditParametersControl : ToolControl
         public TextBlock Name { get; }
         public TextBlock OldValue { get; }
         public NumericUpDown NewValue { get; }
-        public TextBlock Unit { get; }
+        //public TextBlock Unit { get; }
         public Button ResetButton { get; }
 
         public RowControl(FileFormat.PrintParameterModifier modifier)
@@ -73,13 +75,19 @@ public class ToolEditParametersControl : ToolControl
                 NewValue.FormatString = $"F{modifier.DecimalPlates}";
             }
 
-            Unit = new TextBlock
+            if (!string.IsNullOrWhiteSpace(modifier.ValueUnit))
+            {
+                var valueLabel = modifier.ValueUnit == "☀" ? "sun" : modifier.ValueUnit.Replace("/", string.Empty);
+                NewValue.Classes = new Classes("ValueLabel",  $"ValueLabel_{valueLabel}");
+            }
+
+            /*Unit = new TextBlock
             {
                 Text = modifier.ValueUnit,
                 VerticalAlignment = VerticalAlignment.Center,
                 Padding = new Thickness(10, 0, 15, 0),
                 Tag = this
-            };
+            };*/
 
             ResetButton = new Button
             {
@@ -141,7 +149,7 @@ public class ToolEditParametersControl : ToolControl
             grid.Children.Add(rowControl.Name);
             grid.Children.Add(rowControl.OldValue);
             grid.Children.Add(rowControl.NewValue);
-            grid.Children.Add(rowControl.Unit);
+            //grid.Children.Add(rowControl.Unit);
             grid.Children.Add(rowControl.ResetButton);
             Grid.SetRow(rowControl.Name, rowIndex);
             Grid.SetColumn(rowControl.Name, column++);
@@ -152,8 +160,8 @@ public class ToolEditParametersControl : ToolControl
             Grid.SetRow(rowControl.NewValue, rowIndex);
             Grid.SetColumn(rowControl.NewValue, column++);
 
-            Grid.SetRow(rowControl.Unit, rowIndex);
-            Grid.SetColumn(rowControl.Unit, column++);
+            //Grid.SetRow(rowControl.Unit, rowIndex);
+            //Grid.SetColumn(rowControl.Unit, column++);
 
             Grid.SetRow(rowControl.ResetButton, rowIndex);
             Grid.SetColumn(rowControl.ResetButton, column++);

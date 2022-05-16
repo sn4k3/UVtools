@@ -623,7 +623,7 @@ public class PhotonWorkshopFile : FileFormat
                     if (pixel > imageLength)
                     {
                         image.Dispose();
-                        throw new FileLoadException("Error image ran off the end");
+                        throw new FileLoadException("Image ran off the end.");
                     }
                 }
             }
@@ -763,6 +763,12 @@ public class PhotonWorkshopFile : FileFormat
 
                 //color &= 0xff;
 
+                if (pixelPos + repeat > imageLength)
+                {
+                    mat.Dispose();
+                    throw new FileLoadException($"Image ran off the end: {pixelPos}+ {repeat} = {pixelPos + repeat}, expecting: {imageLength}");
+                }
+
                 // We only need to set the non-zero pixels
                 mat.FillSpan(ref pixelPos, repeat, color);
 
@@ -772,18 +778,12 @@ public class PhotonWorkshopFile : FileFormat
                     //i++;
                     break;
                 }
-
-                if (pixelPos > imageLength)
-                {
-                    mat.Dispose();
-                    throw new FileLoadException($"Error image ran off the end: {pixelPos - repeat}({repeat}) of {imageLength}");
-                }
             }
 
             if (pixelPos > 0 && pixelPos != imageLength)
             {
                 mat.Dispose();
-                throw new FileLoadException($"Error image ended short: {pixelPos} of {imageLength}");
+                throw new FileLoadException($"Image ended short: {pixelPos}, expecting: {imageLength}");
             }
 
             return mat;
