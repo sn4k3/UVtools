@@ -120,11 +120,18 @@ public class WindowEx : Window, INotifyPropertyChanged, IStyleable
         //TransparencyLevelHint = WindowTransparencyLevel.AcrylicBlur;
     }
 
-    protected override void OnOpened(EventArgs e)
+    protected override void OnInitialized()
+    {
+        AutoConstainsWindowMaxSize();
+        base.OnInitialized();
+    }
+
+    /*protected override void OnOpened(EventArgs e)
     {
         base.OnOpened(e);
+        Debug.WriteLine("OnOpened");
         AutoConstainsWindowMaxSize();
-    }
+    }*/
 
     /*protected override Size MeasureOverride(Size availableSize)
     {
@@ -145,6 +152,11 @@ public class WindowEx : Window, INotifyPropertyChanged, IStyleable
 
     public void AutoConstainsWindowMaxSize()
     {
+        if (WindowStartupLocation == WindowStartupLocation.CenterOwner && Owner is null)
+        {
+            WindowStartupLocation = WindowStartupLocation.CenterScreen;
+        }
+
         if (!CanResize && WindowState == WindowState.Normal && WindowConstrainMaxSize != WindowConstrainsMaxSizeType.None)
         {
             switch (WindowConstrainMaxSize)

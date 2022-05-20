@@ -22,7 +22,6 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Org.BouncyCastle.Operators;
 using UVtools.AvaloniaControls;
 using UVtools.Core;
 using UVtools.Core.Extensions;
@@ -1583,6 +1582,16 @@ public partial class MainWindow : WindowEx
             }
 
             MenuFileConvertItems = menuItems.ToArray();
+        }
+
+        foreach (var menuItem in new[] { MenuTools, MenuCalibration, LayerActionsMenu })
+        {
+            foreach (var menuTool in menuItem)
+            {
+                if (menuTool.Tag is not Operation operation) continue;
+                operation.SlicerFile = SlicerFile;
+                menuTool.IsEnabled = operation.CanSpawn && (SlicerFile.DecodeType == FileFormat.FileDecodeType.Full || (SlicerFile.DecodeType == FileFormat.FileDecodeType.Partial && operation.CanRunInPartialMode));
+            }
         }
 
         using var mat = SlicerFile.FirstLayer?.LayerMat;

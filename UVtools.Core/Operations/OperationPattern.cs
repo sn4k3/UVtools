@@ -234,6 +234,7 @@ public class OperationPattern : Operation
     {
         ROI = srcRoi;
 
+        if (srcRoi.IsEmpty) return;
         MaxCols = (ushort)(ImageWidth / srcRoi.Width);
         MaxRows = (ushort)(ImageHeight / srcRoi.Height);
 

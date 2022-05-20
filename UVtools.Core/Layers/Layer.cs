@@ -762,13 +762,12 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
                 case LayerCompressionCodec.GZip:
                 {
                     mat = new(SlicerFile.Resolution, DepthType.Cv8U, 1);
-                    var matSpan = mat.GetDataByteSpan();
                     unsafe
                     {
                         fixed (byte* pBuffer = _compressedBytes)
                         {
                             using var compressedStream = new UnmanagedMemoryStream(pBuffer, _compressedBytes!.Length);
-                            using var matStream = new UnmanagedMemoryStream(mat.GetBytePointer(), matSpan.Length, matSpan.Length, FileAccess.Write);
+                            using var matStream = mat.GetUnmanagedMemoryStream(FileAccess.Write);
                             using var gZipStream = new GZipStream(compressedStream, CompressionMode.Decompress);
                             gZipStream.CopyTo(matStream);
                         }
@@ -779,13 +778,12 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
                 case LayerCompressionCodec.Deflate:
                 {
                     mat = new(SlicerFile.Resolution, DepthType.Cv8U, 1);
-                    var matSpan = mat.GetDataByteSpan();
                     unsafe
                     {
                         fixed (byte* pBuffer = _compressedBytes)
                         {
                             using var compressedStream = new UnmanagedMemoryStream(pBuffer, _compressedBytes!.Length);
-                            using var matStream = new UnmanagedMemoryStream(mat.GetBytePointer(), matSpan.Length, matSpan.Length, FileAccess.Write);
+                            using var matStream = mat.GetUnmanagedMemoryStream(FileAccess.Write);
                             using var deflateStream = new DeflateStream(compressedStream, CompressionMode.Decompress);
                             deflateStream.CopyTo(matStream);
                         }
@@ -1625,30 +1623,20 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
             }
             case LayerCompressionCodec.GZip:
             {
-                /*var matSpan = mat.GetDataByteSpan();
-                var compressedBytes = new byte[matSpan.Length];
-                unsafe
-                {
-                    fixed (byte* pBuffer = compressedBytes)
-                    {
-                        using var compressedStream = new UnmanagedMemoryStream(pBuffer, compressedBytes.Length, compressedBytes.Length, FileAccess.Write);
-                        using var gZipStream = new GZipStream(compressedStream, CompressionLevel.Fastest);
-                        gZipStream.Write(mat.GetDataByteSpan());
-                        //return compressedBytes;
-                    }
-                }*/
-
-                using var compressedStream = new MemoryStream();
-                using var gZipStream = new GZipStream(compressedStream, CompressionLevel.Fastest);
-                gZipStream.Write(mat.GetDataByteSpan());
-                return compressedStream.ToArray();
+                return CompressionExtensions.GZipCompressToBytes(mat.GetBytes(), CompressionLevel.Fastest);
+                /*using var compressedStream = new MemoryStream();
+                using var matStream = mat.GetUnmanagedMemoryStream(FileAccess.Read);
+                using var gzipStream = new GZipStream(compressedStream, CompressionLevel.Fastest);
+                matStream.CopyTo(gzipStream);
+                return compressedStream.ToArray();*/
             }
             case LayerCompressionCodec.Deflate:
             {
-                using var compressedStream = new MemoryStream();
+                return CompressionExtensions.DeflateCompressToBytes(mat.GetBytes(), CompressionLevel.Fastest);
+                /*using var compressedStream = new MemoryStream();
                 using var deflateStream = new DeflateStream(compressedStream, CompressionLevel.Fastest);
                 deflateStream.Write(mat.GetDataByteSpan());
-                return compressedStream.ToArray();
+                return compressedStream.ToArray();*/
             }
             /*case LayerCompressionMethod.None:
                 return mat.GetBytes();*/

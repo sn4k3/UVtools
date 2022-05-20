@@ -13,7 +13,9 @@ using Emgu.CV.Structure;
 using Emgu.CV.Util;
 using System;
 using System.Drawing;
+using System.IO;
 using System.Runtime.InteropServices;
+using Microsoft.Toolkit.HighPerformance;
 using UVtools.Core.EmguCV;
 using UVtools.Core.Objects;
 
@@ -169,6 +171,18 @@ public static class EmguExtensions
     #region Memory accessors
 
     /// <summary>
+    /// Gets the mat bytes as <see cref="UnmanagedMemoryStream"/>
+    /// </summary>
+    /// <param name="mat"></param>
+    /// <param name="accessMode"></param>
+    /// <returns></returns>
+    public static unsafe UnmanagedMemoryStream GetUnmanagedMemoryStream(this Mat mat, FileAccess accessMode)
+    {
+        var length = mat.GetLength();
+        return new UnmanagedMemoryStream(mat.GetBytePointer(), length, length, accessMode);
+    }
+
+    /// <summary>
     /// Gets the byte pointer of this <see cref="Mat"/>
     /// </summary>
     /// <param name="mat"></param>
@@ -184,8 +198,24 @@ public static class EmguExtensions
     public static unsafe Span<byte> GetDataByteSpan(this Mat mat) 
         => new(mat.DataPointer.ToPointer(), mat.GetLength());
 
-    public static unsafe Span<byte> GetDataByteSpan(this Mat mat, int length, int offset = 0) 
-        => new(IntPtr.Add(mat.DataPointer, offset).ToPointer(), length <= 0 ? mat.GetLength() : length);
+    /// <summary>
+    /// Gets the whole data span to manipulate or read pixels
+    /// </summary>
+    /// <returns></returns>
+    public static Span<byte> GetDataByteSpan(this Mat mat, int length, int offset = 0)
+        => GetDataSpan<byte>(mat, length, offset);
+
+    /// <summary>
+    /// Gets the whole data span to manipulate or read pixels, use this when possibly using ROI
+    /// </summary>
+    /// <returns></returns>
+    public static unsafe Span2D<byte> GetDataByteSpan2D(this Mat mat)
+    {
+        if (!mat.IsSubmatrix) return new(mat.GetBytePointer(), mat.Height, mat.Step, 0);
+        var step = mat.GetRealStep();
+        return new(mat.GetBytePointer(), mat.Height, step, mat.Step - step);
+    }
+       
 
     /// <summary>
     /// Gets the data span to manipulate or read pixels given a length and offset
@@ -242,6 +272,7 @@ public static class EmguExtensions
     /// <returns></returns>
     public static unsafe Span<T> GetColSpan<T>(this Mat mat, int x, int length = 0, int offset = 0)
     {
+        // Fix with Span2D
         var colMat = mat.Col(x);
         return new(IntPtr.Add(colMat.DataPointer, offset).ToPointer(), length <= 0 ? mat.Height : length);
     }

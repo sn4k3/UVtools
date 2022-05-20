@@ -1,7 +1,5 @@
-﻿using System;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Globalization;
-using System.Threading;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
@@ -10,7 +8,6 @@ using Avalonia.Markup.Xaml;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Operations;
-using UVtools.WPF.Extensions;
 using UVtools.WPF.Windows;
 
 namespace UVtools.WPF.Controls.Tools;
@@ -127,7 +124,7 @@ public class ToolEditParametersControl : ToolControl
 
     public void PopulateGrid()
     {
-        const byte cols = 5;
+        const byte cols = 4;
         if (grid.Children.Count > cols)
         {
             grid.Children.RemoveRange(cols, grid.Children.Count - cols);
@@ -212,12 +209,12 @@ public class ToolEditParametersControl : ToolControl
         {
             if (Operation.PerLayerOverride)
             {
-                Operation.Modifiers = App.SlicerFile.PrintParameterPerLayerModifiers;
+                Operation.Modifiers = SlicerFile.PrintParameterPerLayerModifiers;
                 SlicerFile.RefreshPrintParametersPerLayerModifiersValues(Operation.LayerIndexStart);
             }
             else
             {
-                Operation.Modifiers = App.SlicerFile.PrintParameterModifiers;
+                Operation.Modifiers = SlicerFile.PrintParameterModifiers;
                 SlicerFile.RefreshPrintParametersModifiersValues();
             }
 

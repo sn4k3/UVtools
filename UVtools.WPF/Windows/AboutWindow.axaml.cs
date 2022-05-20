@@ -147,6 +147,11 @@ public class AboutWindow : WindowEx
         message.AppendLine();
         message.AppendLine($"Path:       {App.ApplicationPath}");
         message.AppendLine($"Executable: {App.AppExecutable}");
+        if (App.SlicerFile is not null)
+        {
+            message.AppendLine($"Loaded file: {App.SlicerFile.Filename} [Version: {App.SlicerFile.Version}] [Class: {App.SlicerFile.GetType().Name}]");
+        }
+
         return message.ToString();
     }
 
@@ -168,6 +173,11 @@ public class AboutWindow : WindowEx
         message.AppendLine();
         message.AppendLine($"Path:       {App.ApplicationPath}");
         message.AppendLine($"Executable: {App.AppExecutable}");
+        if (SlicerFile is not null)
+        {
+            message.AppendLine($"Loaded file: {SlicerFile.Filename} [Version: {SlicerFile.Version}] [Class: {SlicerFile.GetType().Name}]");
+        }
+
         return message.ToString();
     }
 

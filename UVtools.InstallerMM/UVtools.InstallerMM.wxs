@@ -2,7 +2,7 @@
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
   <?define ComponentRules="OneToOne"?>
   <!-- SourceDir instructs IsWiX the location of the directory that contains files for this merge module -->
-  <?define SourceDir="..\publish\UVtools_win-x64_v3.4.2"?>
+  <?define SourceDir="..\publish\UVtools_win-x64_v3.4.3"?>
   <Module Id="UVtools" Language="1033" Version="1.0.0.0">
     <Package Id="12aaa1cf-ff06-4a02-abd5-2ac01ac4f83b" Manufacturer="PTRTECH" InstallerVersion="200" Keywords="MSLA, DLP" Description="MSLA/DLP, file analysis, repair, conversion and manipulation" InstallScope="perMachine" Platform="x64" />
     <Directory Id="TARGETDIR" Name="SourceDir">
@@ -1556,6 +1556,9 @@
         </Component>
         <Component Id="owc5D9B7363F82B4971A54B614C6E9F5EF1" Guid="5D9B7363-F82B-4971-A54B-614C6E9F5EF1">
           <File Id="owf5D9B7363F82B4971A54B614C6E9F5EF1" Source="$(var.SourceDir)\mscordaccore_amd64_amd64_6.0.522.21309.dll" KeyPath="yes" />
+        </Component>
+        <Component Id="owc3110926C9437495884D1A256F611E7C5" Guid="3110926C-9437-4958-84D1-A256F611E7C5">
+          <File Id="owf3110926C9437495884D1A256F611E7C5" Source="$(var.SourceDir)\Microsoft.Toolkit.HighPerformance.dll" KeyPath="yes" />
         </Component>
       </Directory>
       <Directory Id="ProgramMenuFolder">

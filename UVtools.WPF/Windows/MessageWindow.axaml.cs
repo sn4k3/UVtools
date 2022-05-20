@@ -61,12 +61,6 @@ namespace UVtools.WPF.Windows
             InitializeComponent();
 
             CanResize = Settings.General.WindowsCanResize;
-            if (WindowStartupLocation == WindowStartupLocation.CenterOwner && Owner is null)
-            {
-                WindowStartupLocation = WindowStartupLocation.CenterScreen;
-            }
-
-            AutoConstainsWindowMaxSize();
 
             _buttonsRightPanel = this.FindControl<StackPanel>("ButtonsRightPanel");
             DataContext = this;

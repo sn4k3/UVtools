@@ -1,9 +1,16 @@
 # Changelog
 
+## 21/05/2022 - v3.4.3
+
+- (Add) Information about the loaded file when copying from the about box
+- (Improvement) Tools are now disabled on the menu if not supported by the file format once each file load (#476)
+- (Fix) Tool - Edit tool parameters: Overlap label on "per layer override" mode (#478)
+- (Fix) Corruption of `GZip` and `Deflate` layer compression methods
+
 ## 16/05/2022 - v3.4.2
 
 - **Core:**
-   - (Add) Getter `FileFormat.DisplayPixelCount` Gets the display total number of pixels (ResolutionX * ResolutionY)
+   - (Add) Getter `FileFormat.DisplayPixelCount` Gets the display total number of pixels (`ResolutionX` * `ResolutionY`)
    - (Add) Getter `Layer.NonZeroPixelRatio` Gets the ratio between non zero pixels and display number of pixels
    - (Add) Getter `Layer.NonZeroPixelPercentage` Gets the percentage of non zero pixels relative to the display number of pixels
    - (Add) Getter `Layer.PreviousHeightLayer()` Gets the previous layer with a different height from the current, returns null if no previous layer
