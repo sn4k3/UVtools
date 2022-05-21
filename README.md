@@ -384,5 +384,5 @@ If you're happy to contribute for a better program and for my work i will apprec
 
 # Contributors 
 
-[![Contributors](https://contrib.rocks/image?repo=sn4k3/UVtools)](https://github.com/Tanu-N-Prabhu/Python/graphs/contributors)
+[![Contributors](https://contrib.rocks/image?repo=sn4k3/UVtools)](https://github.com/sn4k3/UVtools/graphs/contributors)
 
