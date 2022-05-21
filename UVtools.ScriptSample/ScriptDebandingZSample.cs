@@ -7,7 +7,6 @@
  */
 
 using System;
-using UVtools.Core;
 using UVtools.Core.Extensions;
 using UVtools.Core.Scripting;
 
@@ -92,9 +91,11 @@ public class ScriptDebandingZSample : ScriptGlobals
     {
         Script.Name = "Debanding Z with wait time";
         Script.Description = "Applies wait time at certain layers to help layer adhesion and debanding the Z axis.\n" +
-                             "Based on the guide: https://bit.ly/3nkXAOa\n";
+                             "Based on the guide: https://bit.ly/3nkXAOa\n\n" +
+                             "NOTE: Do not use this script! it's outdated and replaced by inbuilt UVtools suggestion (Wait time before cure).\n" +
+                             "Check the Shield icon/tab and look for 'Wait time before cure' suggestion, you can also configure it and offers more possibilities.";
         Script.Author = "Tiago Conceição";
-        Script.Version = new Version(0, 2);
+        Script.Version = new Version(0, 3);
         if (SlicerFile.SupportsGCode) CreateEmptyLayerInput.Value = false;
         Script.UserInputs.Add(CreateEmptyLayerInput);
         Script.UserInputs.Add(BottomSafeDebandingHeightInput);
@@ -119,6 +120,9 @@ public class ScriptDebandingZSample : ScriptGlobals
     /// <returns>True if executes successfully to the end, otherwise false.</returns>
     public bool ScriptExecute()
     {
+        throw new NotSupportedException(
+            "Do not use this script! it's outdated and replaced by inbuilt UVtools suggestion (Wait time before cure).\n" +
+            "Check the Shield icon/tab and look for 'Wait time before cure' suggestion, you can also configure it and offers more possibilities.");
         Progress.Reset("Changing layers", Operation.LayerRangeCount); // Sets the progress name and number of items to process
 
         if (SlicerFile.CanUseAnyWaitTime)
