@@ -26,7 +26,7 @@ public class OperationResize : Operation
     #endregion
 
     #region Overrides
-    public override string IconClass => "fas fa-expand-alt";
+    public override string IconClass => "fa-solid fa-expand-alt";
     public override string Title => "Resize";
     public override string Description =>
         "Resize the model by a percentage in the X/Y plane.\n\n" +

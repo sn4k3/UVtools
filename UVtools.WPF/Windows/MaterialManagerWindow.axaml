@@ -87,7 +87,7 @@
                   VerticalContentAlignment="Center"
                   HorizontalContentAlignment="Stretch"
                   VerticalAlignment="Stretch"
-                  Icon="fas fa-plus"
+                  Icon="fa-solid fa-plus"
                   Text="Add new material"
                   Command="{Binding AddNewMaterial}"/>
 
@@ -152,13 +152,13 @@
 
           <controls:ButtonWithIcon VerticalAlignment="Center" 
                   IsEnabled="{Binding #MaterialsTable.SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}"
-                  Icon="fas fa-trash-alt"
+                  Icon="fa-solid fa-trash-alt"
                   Text="Remove selected materials"
                   Command="{Binding RemoveSelectedMaterials}"/>
 
             <controls:ButtonWithIcon VerticalAlignment="Center" 
                     IsEnabled="{Binding Manager.Count}"
-                    Icon="fas fa-times"
+                    Icon="fa-solid fa-xmark"
                     Text="{Binding Manager.Count, StringFormat=Clear {0} materials}"
                     Command="{Binding ClearMaterials}"/>
 

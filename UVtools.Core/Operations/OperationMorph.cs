@@ -64,7 +64,7 @@ public sealed class OperationMorph : Operation
     #endregion
 
     #region Overrides
-    public override string IconClass => "fas fa-dharmachakra";
+    public override string IconClass => "fa-solid fa-dharmachakra";
     public override string Title => "Morph";
     public override string Description =>
         $"Morph Model - " +

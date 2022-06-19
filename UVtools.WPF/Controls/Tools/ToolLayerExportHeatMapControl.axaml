@@ -19,7 +19,7 @@
 		<Button
             VerticalAlignment="Stretch"
             Command="{Binding ChooseFilePath}"
-            i:Attached.Icon="fas fa-folder"/>
+            i:Attached.Icon="fa-solid fa-folder"/>
     </StackPanel>
 
       <Grid RowDefinitions="Auto,10,Auto"

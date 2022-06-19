@@ -37,7 +37,7 @@ public class AMFMeshFile : MeshFile
     public override void BeginWrite()
     {
         /* Create a stream to store the triangles (faces) as they come through */
-        _triangleStream = new FileStream(PathExtensions.GetTempFilePathWithExtension("trig", $"{About.Software}_"), FileMode.Create, FileAccess.ReadWrite, FileShare.None, 81920, FileOptions.DeleteOnClose);
+        _triangleStream = new FileStream(PathExtensions.GetTemporaryFilePathWithExtension("trig", $"{About.Software}_"), FileMode.Create, FileAccess.ReadWrite, FileShare.None, 81920, FileOptions.DeleteOnClose);
             
         MeshStream.WriteLineLF("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
         MeshStream.WriteLineLF("<amf unit=\"millimeter\" version=\"1.1\">");
@@ -122,7 +122,7 @@ public class AMFMeshFile : MeshFile
         MeshStream.WriteLineLF("\t</object>");
         MeshStream.WriteLineLF("</amf>");
 
-        var tmpFile = PathExtensions.GetTempFilePathWithExtension("tmp", $"{About.Software}_");
+        var tmpFile = PathExtensions.GetTemporaryFilePathWithExtension("tmp", $"{About.Software}_");
         if (File.Exists(tmpFile)) File.Delete(tmpFile);
         using (var zip = ZipFile.Open(tmpFile, ZipArchiveMode.Create))
         {

@@ -67,7 +67,7 @@ public sealed class OperationDynamicLifts : Operation
     public override bool CanRunInPartialMode => true;
 
     public override LayerRangeSelection StartLayerRangeSelection => LayerRangeSelection.Normal;
-    public override string IconClass => "fas fa-chart-line";
+    public override string IconClass => "fa-solid fa-chart-line";
     public override string Title => "Dynamic lifts";
 
     public override string Description =>

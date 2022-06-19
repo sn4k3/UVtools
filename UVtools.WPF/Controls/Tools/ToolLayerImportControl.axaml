@@ -87,14 +87,14 @@
                                    Command="{Binding AddFiles}"
                                    Text="Add"
                                    Spacing="5"
-                                   Icon="fas fa-plus"/>
+                                   Icon="fa-solid fa-plus"/>
 
           <controls:ButtonWithIcon Padding="5"
                                    IsEnabled="{Binding #FilesListBox.SelectedItems.Count}"
                                    Command="{Binding RemoveFiles}"
                                    Text="Remove"
                                    Spacing="5"
-                                   Icon="fas fa-minus"/>
+                                   Icon="fa-solid fa-minus"/>
         </StackPanel>
 
         <StackPanel
@@ -105,14 +105,14 @@
                   Command="{Binding Operation.Sort}"
                   Text="Sort by file name"
                   Spacing="5"
-                  Icon="fas fa-sort-alpha-up"/>
+                  Icon="fa-solid fa-sort-alpha-up"/>
 
           <controls:ButtonWithIcon
             IsEnabled="{Binding Operation.Files.Count}"
             Padding="5" Command="{Binding ClearFiles}"
             Text="Clear"
             Spacing="5"
-            Icon="fas fa-times"/>
+            Icon="fa-solid fa-xmark"/>
 
           <TextBlock
             VerticalAlignment="Center"

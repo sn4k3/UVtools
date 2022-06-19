@@ -47,7 +47,7 @@
         Padding="10,5"
         ToolTip.Tip="Fill spacing given the current number of columns, object size and left over space."
         Command="{Binding Operation.FillColumnSpacing}"
-        i:Attached.Icon="fas fa-expand-alt"/>
+        i:Attached.Icon="fa-solid fa-expand-alt"/>
       <TextBlock
         Grid.Column="10"
         Grid.Row="0"
@@ -86,7 +86,7 @@
         Padding="10,5"
         ToolTip.Tip="Fill spacing given the current number of rows, object size and left over space."
         Command="{Binding Operation.FillRowSpacing}"
-        i:Attached.Icon="fas fa-expand-alt"/>
+        i:Attached.Icon="fa-solid fa-expand-alt"/>
       <TextBlock
         Grid.Column="10"
         Grid.Row="2"

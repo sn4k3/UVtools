@@ -21,7 +21,7 @@
                       Spacing="10">
               <i:Icon FontSize="64"
                       FontWeight="Bold"
-                      Value="far fa-frown"
+                      Value="fa-regular fa-frown"
                       Foreground="{StaticResource LogoColor}"
                       HorizontalAlignment="Center"/>
 
@@ -73,14 +73,14 @@
 
                   <uc:ButtonWithIcon Padding="10"
                                      VerticalContentAlignment="Center"
-                                     Icon="fab fa-edge"
+                                     Icon="fa-brands fa-edge"
                                      Text="Open manual"
                                      Command="{Binding OpenBrowser}"
                                      CommandParameter="https://github.com/sn4k3/UVtools#requirements"/>
 
                   <uc:ButtonWithIcon Padding="10"
                                      VerticalContentAlignment="Center"
-                                     Icon="fas fa-question"
+                                     Icon="fa-solid fa-question"
                                      Text="Ask for help"
                                      Command="{Binding OpenBrowser}"
                                      CommandParameter="https://github.com/sn4k3/UVtools/discussions/categories/q-a"/>
@@ -89,7 +89,7 @@
                                      IsCancel="True"
                                      Padding="10"
                                      VerticalContentAlignment="Center"
-                                     Icon="fas fa-sign-out-alt"
+                                     Icon="fa-solid fa-sign-out-alt"
                                      Text="Exit"/>
               </StackPanel>
           </Grid>

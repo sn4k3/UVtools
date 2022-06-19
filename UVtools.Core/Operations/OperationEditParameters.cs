@@ -32,7 +32,7 @@ public class OperationEditParameters : Operation
     public override LayerRangeSelection StartLayerRangeSelection => LayerRangeSelection.None;
 
     public override bool CanROI => false;
-    public override string IconClass => "fas fa-edit";
+    public override string IconClass => "fa-solid fa-edit";
     public override string Title => "Edit print parameters";
 
     public override string Description =>

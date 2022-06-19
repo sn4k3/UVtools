@@ -6,6 +6,7 @@
  *  of this license document, but changing it is not allowed.
  */
 
+using System;
 using System.Drawing;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
@@ -32,9 +33,8 @@ public class PolygonAperture : Aperture
     #endregion
 
 
-    public override void DrawFlashD3(Mat mat, SizeF xyPpmm, Point at, MCvScalar color,
-        LineType lineType = LineType.EightConnected)
+    public override void DrawFlashD3(Mat mat, SizeF xyPpmm, PointF at, MCvScalar color, LineType lineType = LineType.EightConnected)
     {
-        mat.DrawPolygon(Vertices, (int)(Diameter * xyPpmm.Max() / 2), at, color, 0, -1, lineType);
+        mat.DrawPolygon(Vertices, GerberDocument.SizeMmToPx(Diameter / 2, xyPpmm.Max()), GerberDocument.PositionMmToPx(at, xyPpmm), color, 0, -1, lineType);
     }
 }

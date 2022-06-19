@@ -3,29 +3,73 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:i="clr-namespace:Projektanker.Icons.Avalonia;assembly=Projektanker.Icons.Avalonia"
+             xmlns:controls="clr-namespace:UVtools.WPF.Controls"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="UVtools.WPF.Controls.Tools.ToolPCBExposureControl">
 	<Grid ColumnDefinitions="Auto,10,350">
 		<StackPanel Spacing="10">
-			<Grid
-				  RowDefinitions="Auto,10,Auto,10,Auto,10,Auto"
-				  ColumnDefinitions="Auto,10,400">
 
-                <TextBlock Grid.Row="0" Grid.Column="0"
-                           VerticalAlignment="Center"
-                           Text="Gerber file:"/>
+            <Border BorderBrush="Gray" BorderThickness="1" Padding="5">
+                <Grid>
+                    <StackPanel Spacing="5" Orientation="Horizontal">
+                        <controls:ButtonWithIcon Padding="5"
+                                                 Command="{Binding AddFiles}"
+                                                 Text="Add"
+                                                 Spacing="5"
+                                                 Icon="fa-solid fa-plus"/>
 
-                <Grid Grid.Row="0" Grid.Column="2"
-                      ColumnDefinitions="*,Auto">
-                    <TextBox Grid.Column="0"
-                             IsReadOnly="True"
-                             VerticalAlignment="Center"
-                             Text="{Binding Operation.FilePath}"/>
-                    <Button Grid.Column="1"
-                            VerticalAlignment="Stretch"
-                            Command="{Binding SelectFile}"
-                            i:Attached.Icon="fas fa-file-import"/>
+                        <controls:ButtonWithIcon Padding="5"
+                                                 Command="{Binding AddFilesFromZip}"
+                                                 Text="Import zip"
+                                                 Spacing="5"
+                                                 Icon="fa-solid fa-file-zipper"/>
+
+                        <controls:ButtonWithIcon Padding="5"
+                                                 IsEnabled="{Binding #FilesListBox.SelectedItems.Count}"
+                                                 Command="{Binding RemoveFiles}"
+                                                 Text="Remove"
+                                                 Spacing="5"
+                                                 Icon="fa-solid fa-minus"/>
+                    </StackPanel>
+
+                    <StackPanel HorizontalAlignment="Right"
+                                Spacing="5" Orientation="Horizontal">
+						<!--
+						<controls:ButtonWithIcon Padding="5"
+                                                 IsEnabled="{Binding Operation.Files.Count}"
+                                                 Command="{Binding Operation.Sort}"
+                                                 Text="Sort by file name"
+                                                 Spacing="5"
+                                                 Icon="fa-solid fa-sort-alpha-up"/>
+                        -->
+                        <controls:ButtonWithIcon
+                            IsEnabled="{Binding Operation.Files.Count}"
+                            Padding="5" Command="{Binding ClearFiles}"
+                            Text="Clear"
+                            Spacing="5"
+                            Icon="fa-solid fa-xmark"/>
+
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            Text="{Binding Operation.Files.Count, StringFormat=Files: \{0\}}"/>
+                    </StackPanel>
                 </Grid>
+            </Border>
+
+            <ListBox Name="FilesListBox"
+                     SelectionMode="Multiple"
+                     SelectedItem="{Binding SelectedFile}"
+                     MinHeight="50"
+                     MaxHeight="400"
+                     Items="{Binding Operation.Files}" />
+
+            <Grid RowDefinitions="Auto,10,Auto,10,Auto,10,Auto"
+                  ColumnDefinitions="Auto,10,400">
+
+                <ToggleSwitch Grid.Row="0" Grid.Column="2"
+                              IsChecked="{Binding Operation.MergeFiles}"
+                              OnContent="Merge all gerber files into one layer"
+                              OffContent="Create one layer per gerber file"/>
 
                 <TextBlock Grid.Row="2" Grid.Column="0"
                            VerticalAlignment="Center"

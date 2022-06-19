@@ -45,8 +45,7 @@ public class CommentPrimitive : Primitive
     }
 
     
-    public override void DrawFlashD3(Mat mat, SizeF xyPpmm, Point at, MCvScalar color,
-        LineType lineType = LineType.EightConnected)
+    public override void DrawFlashD3(Mat mat, SizeF xyPpmm, PointF at, MCvScalar color, LineType lineType = LineType.EightConnected)
     {
 
     }

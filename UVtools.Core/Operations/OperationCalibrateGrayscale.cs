@@ -55,7 +55,7 @@ public sealed class OperationCalibrateGrayscale : Operation
     public override bool CanCancel => false;
 
     public override LayerRangeSelection StartLayerRangeSelection => LayerRangeSelection.None;
-    public override string IconClass => "fas fa-chart-pie";
+    public override string IconClass => "fa-solid fa-chart-pie";
     public override string Title => "Grayscale";
     public override string Description =>
         "Generates test models with various strategies and increments to verify the LED power against the grayscale levels.\n" +

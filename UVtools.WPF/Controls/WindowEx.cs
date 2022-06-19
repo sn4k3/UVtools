@@ -122,7 +122,7 @@ public class WindowEx : Window, INotifyPropertyChanged, IStyleable
 
     protected override void OnInitialized()
     {
-        AutoConstainsWindowMaxSize();
+        ConstainsWindowMaxSize();
         base.OnInitialized();
     }
 
@@ -133,24 +133,7 @@ public class WindowEx : Window, INotifyPropertyChanged, IStyleable
         AutoConstainsWindowMaxSize();
     }*/
 
-    /*protected override Size MeasureOverride(Size availableSize)
-    {
-        var result = base.MeasureOverride(availableSize);
-        if (SizeToContent == SizeToContent.Manual) return result;
-        
-        if (MaxWidth > 0 && MaxWidth < result.Width)
-        {
-            result = result.WithWidth(MaxWidth);
-        }
-        if (MaxHeight > 0 && MaxHeight < result.Height)
-        {
-            result = result.WithHeight(MaxHeight);
-        }
-
-        return result;
-    }*/
-
-    public void AutoConstainsWindowMaxSize()
+    public void ConstainsWindowMaxSize()
     {
         if (WindowStartupLocation == WindowStartupLocation.CenterOwner && Owner is null)
         {

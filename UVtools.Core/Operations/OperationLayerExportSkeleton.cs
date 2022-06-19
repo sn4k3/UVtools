@@ -27,7 +27,7 @@ public sealed class OperationLayerExportSkeleton : Operation
 
     public override bool CanHaveProfiles => false;
 
-    public override string IconClass => "fas fa-file-image";
+    public override string IconClass => "fa-solid fa-file-image";
     public override string Title => "Export layers to skeleton";
 
     public override string Description =>

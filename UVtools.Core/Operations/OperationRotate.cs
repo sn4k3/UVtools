@@ -22,7 +22,7 @@ public class OperationRotate : Operation
     #endregion
 
     #region Overrides
-    public override string IconClass => "fas fa-sync-alt";
+    public override string IconClass => "fa-solid fa-sync-alt";
     public override string Title => "Rotate";
     public override string Description =>
         "Rotate the layers of the model.\n";

@@ -23,28 +23,28 @@
               ToolTip.Tip="Load script file"
               VerticalAlignment="Center"
               Command="{Binding LoadScript}"
-              i:Attached.Icon="fas fa-file-import"/>
+              i:Attached.Icon="fa-solid fa-file-import"/>
 
           <Button
               IsEnabled="{Binding Operation.HaveFile}"
               ToolTip.Tip="Reloads the script"
               VerticalAlignment="Center"
               Command="{Binding ReloadScript}"
-              i:Attached.Icon="fas fa-sync-alt"/>
+              i:Attached.Icon="fa-solid fa-sync-alt"/>
 
         <Button
               IsEnabled="{Binding Operation.HaveFile}"
               ToolTip.Tip="Open the script folder"
               VerticalAlignment="Center"
               Command="{Binding OpenScriptFolder}"
-              i:Attached.Icon="fas fa-folder"/>
+              i:Attached.Icon="fa-solid fa-folder"/>
 
           <Button
               IsEnabled="{Binding Operation.HaveFile}"
               ToolTip.Tip="Open the script file"
               VerticalAlignment="Center"
               Command="{Binding OpenScriptFile}"
-              i:Attached.Icon="fas fa-file-code"/>
+              i:Attached.Icon="fa-solid fa-file-code"/>
       </StackPanel>
 
     </Grid>

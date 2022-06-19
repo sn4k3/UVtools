@@ -6,7 +6,7 @@
         xmlns:i="clr-namespace:Projektanker.Icons.Avalonia;assembly=Projektanker.Icons.Avalonia"
         mc:Ignorable="d" d:DesignWidth="700" d:DesignHeight="450"
         x:Class="UVtools.WPF.Windows.SettingsWindow"
-        WindowStartupLocation="Manual"
+        WindowStartupLocation="CenterOwner"
         MinWidth="600"
         Width="780"
         SizeToContent="Height"
@@ -261,13 +261,13 @@
                   <Button Grid.Row="2" Grid.Column="3"
                           VerticalAlignment="Stretch"
                           HorizontalAlignment="Stretch"
-                          i:Attached.Icon="fas fa-folder"
+                          i:Attached.Icon="fa-solid fa-folder"
                           Command="{Binding GeneralOpenFolderField}"
                           CommandParameter="DefaultDirectoryOpenFile"/>
                   <Button Grid.Row="2" Grid.Column="4"
                           VerticalAlignment="Stretch"
                           HorizontalAlignment="Stretch"
-                          i:Attached.Icon="fas fa-times"
+                          i:Attached.Icon="fa-solid fa-xmark"
                           Command="{Binding GeneralClearField}"
                           CommandParameter="DefaultDirectoryOpenFile"/>
 
@@ -281,13 +281,13 @@
                   <Button Grid.Row="4" Grid.Column="3"
                           VerticalAlignment="Stretch"
                           HorizontalAlignment="Stretch"
-                          i:Attached.Icon="fas fa-folder"
+                          i:Attached.Icon="fa-solid fa-folder"
                           Command="{Binding GeneralOpenFolderField}"
                           CommandParameter="DefaultDirectorySaveFile"/>
                   <Button Grid.Row="4" Grid.Column="4"
                           VerticalAlignment="Stretch"
                           HorizontalAlignment="Stretch"
-                          i:Attached.Icon="fas fa-times"
+                          i:Attached.Icon="fa-solid fa-xmark"
                           Command="{Binding GeneralClearField}"
                           CommandParameter="DefaultDirectorySaveFile"/>
                   
@@ -302,13 +302,13 @@
                   <Button Grid.Row="6" Grid.Column="3"
                           VerticalAlignment="Stretch"
                           HorizontalAlignment="Stretch"
-                          i:Attached.Icon="fas fa-folder"
+                          i:Attached.Icon="fa-solid fa-folder"
                           Command="{Binding GeneralOpenFolderField}"
                           CommandParameter="DefaultDirectoryExtractFile"/>
                   <Button Grid.Row="6" Grid.Column="4"
                           VerticalAlignment="Stretch"
                           HorizontalAlignment="Stretch"
-                          i:Attached.Icon="fas fa-times"
+                          i:Attached.Icon="fa-solid fa-xmark"
                           Command="{Binding GeneralClearField}"
                           CommandParameter="DefaultDirectoryExtractFile"/>
 
@@ -322,7 +322,7 @@
                   <Button Grid.Row="8" Grid.Column="3"
                           VerticalAlignment="Stretch"
                           HorizontalAlignment="Stretch"
-                          i:Attached.Icon="fas fa-folder"
+                          i:Attached.Icon="fa-solid fa-folder"
                           Command="{Binding GeneralOpenFolderField}"
                           CommandParameter="DefaultDirectoryConvertFile"/>
                   <Button Grid.Row="8" Grid.Column="4"
@@ -330,7 +330,7 @@
                           CommandParameter="DefaultDirectoryConvertFile"
                           VerticalAlignment="Stretch"
                           HorizontalAlignment="Stretch"
-                          i:Attached.Icon="fas fa-times"/>
+                          i:Attached.Icon="fa-solid fa-xmark"/>
 
                   <TextBlock VerticalAlignment="Center"
                              Grid.Row="10" Grid.Column="0"
@@ -342,7 +342,7 @@
                   <Button Grid.Row="10" Grid.Column="3"
                           VerticalAlignment="Stretch"
                           HorizontalAlignment="Stretch"
-                          i:Attached.Icon="fas fa-folder"
+                          i:Attached.Icon="fa-solid fa-folder"
                           Command="{Binding GeneralOpenFolderField}"
                           CommandParameter="DefaultDirectoryScripts"/>
                   <Button Grid.Row="10" Grid.Column="4"
@@ -350,7 +350,7 @@
                           CommandParameter="DefaultDirectoryScripts"
                           VerticalAlignment="Stretch"
                           HorizontalAlignment="Stretch"
-                          i:Attached.Icon="fas fa-times"/>
+                          i:Attached.Icon="fa-solid fa-xmark"/>
 
                 </Grid>
                 <CheckBox IsChecked="{Binding Settings.General.PromptOverwriteFileSave}" Margin="10,0" Content="On file 'Save' prompt for file overwrite for the first time" />
@@ -379,12 +379,12 @@
                     <StackPanel Grid.Row="0" Grid.Column="1"  
                                 HorizontalAlignment="Right" Orientation="Horizontal" Spacing="2">
                         <Button ToolTip.Tip="Add location" VerticalAlignment="Center"
-                                i:Attached.Icon="fas fa-plus"
+                                i:Attached.Icon="fa-solid fa-plus"
                                 Command="{Binding SendToAddCustomLocation}"/>
 
                         <Button ToolTip.Tip="Remove selected locations" VerticalAlignment="Center"
                                 IsEnabled="{Binding #SendToCustomLocationsGrid.SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}"
-                                i:Attached.Icon="fas fa-trash-alt"
+                                i:Attached.Icon="fa-solid fa-trash-alt"
                                 Command="{Binding SendToRemoveCustomLocations}"/>
                     </StackPanel>
 
@@ -448,12 +448,12 @@
 						  <StackPanel Grid.Row="0" Grid.Column="1"
 									  HorizontalAlignment="Right" Orientation="Horizontal" Spacing="2">
 							  <Button ToolTip.Tip="Add location" VerticalAlignment="Center"
-                                      i:Attached.Icon="fas fa-plus"
+                                      i:Attached.Icon="fa-solid fa-plus"
 									  Command="{Binding SendToAddProcess}"/>
 
 							  <Button ToolTip.Tip="Remove selected process(es)" VerticalAlignment="Center"
 									  IsEnabled="{Binding #SendToProcessGrid.SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}"
-                                      i:Attached.Icon="fas fa-trash-alt"
+                                      i:Attached.Icon="fa-solid fa-trash-alt"
 									  Command="{Binding SendToRemoveProcess}"/>
 						  </StackPanel>
 
@@ -1176,17 +1176,24 @@
                 <TextBlock Classes="GroupBoxHeader" Text="Issues list"/>
 
                 <Grid
-                    RowDefinitions="Auto"
-                    ColumnDefinitions="Auto,10,Auto"
+                    RowDefinitions="Auto,10,Auto"
+                    ColumnDefinitions="Auto,10,*"
                     Margin="10">
-                  <TextBlock
-                      Grid.Row="0"
-                      Grid.Column="0"
-                      Text="Group view by:" VerticalAlignment="Center"/>
-                  <StackPanel
-                      Grid.Row="0"
-                      Grid.Column="2"
-                      Orientation="Vertical" Spacing="10">
+                    <TextBlock Grid.Row="0" Grid.Column="0"
+                               ToolTip.Tip="Sets the default order for the issue list"
+                               Text="Order by:" VerticalAlignment="Center"/>
+
+                    <ComboBox Grid.Row="0" Grid.Column="2"
+                              HorizontalAlignment="Stretch"
+                              Items="{Binding Settings.Issues.DataGridOrderBy, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                              SelectedItem="{Binding Settings.Issues.DataGridOrderBy, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
+
+
+					<TextBlock Grid.Row="2" Grid.Column="0"
+                               ToolTip.Tip="Sets how to group issues on the list"
+                               Text="Group by:" VerticalAlignment="Center"/>
+                  <StackPanel Grid.Row="2" Grid.Column="2"
+                              Orientation="Vertical" Spacing="10">
 
                     <StackPanel
                         Orientation="Horizontal" Spacing="10">
@@ -1991,17 +1998,17 @@
                         <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="2">
                             <Button
                                 VerticalAlignment="Stretch"
-                                i:Attached.Icon="fas fa-plus"
+                                i:Attached.Icon="fa-solid fa-plus"
                                 Command="{Binding AddNetworkRemotePrinter}"/>
                           <Button
                               VerticalAlignment="Stretch"
                                 IsEnabled="{Binding #NetworkRemotePrinterComboBox.SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}"
-                                i:Attached.Icon="fas fa-copy"
+                                i:Attached.Icon="fa-solid fa-copy"
                                 Command="{Binding DuplicateSelectedNetworkRemotePrinter}"/>
                           <Button
                               VerticalAlignment="Stretch"
                                 IsEnabled="{Binding #NetworkRemotePrinterComboBox.SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}"
-                                i:Attached.Icon="fas fa-trash-alt"
+                                i:Attached.Icon="fa-solid fa-trash-alt"
                                 Command="{Binding RemoveSelectedNetworkRemotePrinter}"/>
                         </StackPanel>
 
@@ -2118,7 +2125,7 @@
 
               <StackPanel Grid.Column="0" Orientation="Horizontal">
                   <controls:ButtonWithIcon Name="Actions.ResetAllSettings" Padding="10"
-                                           Icon="fas fa-undo-alt"
+                                           Icon="fa-solid fa-undo-alt"
                                            Text="Reset all settings"
                                            Command="{Binding OnClickResetAllDefaults}"/>
               </StackPanel>
@@ -2129,11 +2136,11 @@
                           Orientation="Horizontal">
                   <controls:ButtonWithIcon Name="Actions.Save" Margin="0,0,10,0" Padding="10" IsDefault="True"
                                            Text="Save"
-                                           Icon="fas fa-save"
+                                           Icon="fa-solid fa-floppy-disk"
                                            Command="{Binding OnClickSave}"/>
 
 				  <controls:ButtonWithIcon Name="Actions.Cancel" Padding="10" IsCancel="True"
-                                           Icon="fas fa-sign-out-alt"
+                                           Icon="fa-solid fa-sign-out-alt"
                                            Text="Cancel"
                                            Command="{Binding Close}"/>
               </StackPanel>

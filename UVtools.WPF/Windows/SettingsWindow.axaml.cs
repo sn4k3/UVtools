@@ -3,10 +3,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
-using Avalonia.Threading;
 using MessageBox.Avalonia.Enums;
 using UVtools.Core;
 using UVtools.Core.FileFormats;
@@ -40,7 +38,7 @@ public class SettingsWindow : WindowEx
         {
             if(!RaiseAndSetIfChanged(ref _selectedTabIndex, value)) return;
 
-            var scrollViewer = this.FindControl<ScrollViewer>($"ScrollViewer{_selectedTabIndex}");
+            /*var scrollViewer = this.FindControl<ScrollViewer>($"ScrollViewer{_selectedTabIndex}");
             SizeToContent = SizeToContent.Manual;
             Height = MaxHeight;
 
@@ -52,7 +50,7 @@ public class SettingsWindow : WindowEx
                     SizeToContent = SizeToContent.Height;
                 }
             }, DispatcherPriority.Loaded);
-                
+            */
         }
     }
 
@@ -95,7 +93,16 @@ public class SettingsWindow : WindowEx
         AvaloniaXamlLoader.Load(this);
     }
 
-    protected override void OnOpened(EventArgs e)
+    /*protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        Position = new PixelPoint(
+            Math.Max(0, (int)(Math.Max(0, App.MainWindow.Position.X) + App.MainWindow.Width / 2 - Width / 2)),
+            Math.Max(0, App.MainWindow.Position.Y) + 20
+        );
+    }*/
+
+    /*protected override void OnOpened(EventArgs e)
     {
         base.OnOpened(e);
         //SizeToContent = SizeToContent.Manual;
@@ -105,9 +112,9 @@ public class SettingsWindow : WindowEx
             Math.Max(0, App.MainWindow.Position.Y) + 20
         );
 
-        SelectedTabIndex = 1;
-        Dispatcher.UIThread.Post(() => SelectedTabIndex = 0, DispatcherPriority.Loaded);
-    }
+        //SelectedTabIndex = 1;
+        //Dispatcher.UIThread.Post(() => SelectedTabIndex = 0, DispatcherPriority.Loaded);
+    }*/
 
     protected override void OnClosed(EventArgs e)
     {

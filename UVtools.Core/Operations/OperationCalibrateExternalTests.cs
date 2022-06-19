@@ -22,7 +22,7 @@ public class OperationCalibrateExternalTests : Operation
     public override bool CanROI => false;
     public override bool CanHaveProfiles => false;
     public override string ButtonOkText => null!;
-    public override string IconClass => "fas fa-bookmark";
+    public override string IconClass => "fa-solid fa-bookmark";
     public override string Title => "External tests";
     public override string Description =>
         "A set of useful external tests to run within your slicer.\nClick on a button to open website and instructions.";

@@ -19,7 +19,7 @@
     <Border Classes="FooterActions">
       <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" Spacing="10">
         <controls:ButtonWithIcon HorizontalAlignment="Right" Name="Actions.Save" Padding="10" IsDefault="True"
-                Icon="fas fa-check"
+                Icon="fa-solid fa-check"
                 Text="Select"
                   Command="{Binding OnClickOk}">
           <StackPanel Orientation="Horizontal"/>
@@ -27,7 +27,7 @@
 
         <controls:ButtonWithIcon HorizontalAlignment="Right" 
                 Name="Actions.Cancel" Padding="10" IsCancel="True"
-                Icon="fas fa-sign-out-alt"
+                Icon="fa-solid fa-sign-out-alt"
                 Text="Cancel"
                 Command="{Binding Close}"/>
       </StackPanel>

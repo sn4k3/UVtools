@@ -23,7 +23,7 @@
                         VerticalAlignment="Stretch"
                         ToolTip.Tip="Select the sliced file without supports and raft. (Model B)"
                         Command="{Binding ImportFile}"
-                        i:Attached.Icon="fas fa-file-import"/>
+                        i:Attached.Icon="fa-solid fa-file-import"/>
             </StackPanel>
 
 

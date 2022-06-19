@@ -12,7 +12,6 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
-using Avalonia.Threading;
 using MessageBox.Avalonia.Enums;
 using UVtools.Core;
 using UVtools.Core.Extensions;
@@ -40,7 +39,7 @@ public class ToolWindow : WindowEx
     private KeyModifiers _globalModifiers;
     public ToolControl ToolControl;
     private string _description;
-    private double _descriptionMaxWidth;
+    private double _descriptionMaxWidth = 500;
     private double _profileBoxMaxWidth = double.NaN;
     private bool _layerRangeVisible = true;
     private bool _layerRangeSync;
@@ -679,32 +678,6 @@ public class ToolWindow : WindowEx
         //RaisePropertyChanged(nameof(IsContentVisible));
         //RaisePropertyChanged(nameof(IsROIVisible));
 
-        // Ensure the description don't stretch window
-        /*DispatcherTimer.Run(() =>
-        {
-            if (Bounds.Width == 0) return true;
-            //ScrollViewerMaxHeight = this.GetScreenWorkingArea().Height - Bounds.Height + ToolControl.Bounds.Height - UserSettings.Instance.General.WindowsVerticalMargin;
-            DescriptionMaxWidth = Math.Max(Bounds.Width, ToolControl.Bounds.Width) - 20;
-            ExpanderHeaderMaxWidth = DescriptionMaxWidth - 40;
-            Height = MaxHeight;
-
-            DispatcherTimer.Run(() =>
-            {
-                if (Math.Max((int)_contentScrollViewer.Extent.Height - (int)_contentScrollViewer.Viewport.Height, 0) == 0)
-                {
-                    Height = 10;
-                    SizeToContent = SizeToContent.WidthAndHeight;
-                }
-                Position = new PixelPoint(
-                    (int)(App.MainWindow.Position.X + App.MainWindow.Width / 2 - Width / 2),
-                    App.MainWindow.Position.Y + 20
-                );
-                return false;
-            }, TimeSpan.FromMilliseconds(2));
-
-            return false;
-        }, TimeSpan.FromMilliseconds(1));*/
-
         toolControl.Callback(Callbacks.Init);
         toolControl.DataContext = toolControl;
         DataContext = this;
@@ -718,12 +691,13 @@ public class ToolWindow : WindowEx
     protected override void OnOpened(EventArgs e)
     {
         base.OnOpened(e);
-        var profileTextBox = this.FindControl<TextBox>("ProfileName");
-        DescriptionMaxWidth = Math.Max(Bounds.Width, ToolControl.Bounds.Width) - 20;
-        ProfileBoxMaxWidth = profileTextBox.Bounds.Width;
-        Height = MaxHeight;
 
-        Dispatcher.UIThread.Post(() =>
+        DescriptionMaxWidth = Math.Max(Bounds.Width, ToolControl.Bounds.Width) - 20;
+        var profileTextBox = this.FindControl<TextBox>("ProfileName");
+        ProfileBoxMaxWidth = profileTextBox.Bounds.Width;
+        //Height = MaxHeight;
+
+        /*Dispatcher.UIThread.Post(() =>
         {
             if (Math.Max((int)_contentScrollViewer.Extent.Height - (int)_contentScrollViewer.Viewport.Height, 0) == 0)
             {
@@ -737,10 +711,10 @@ public class ToolWindow : WindowEx
             );
 
             CanResize = Settings.General.WindowsCanResize;
-        }, DispatcherPriority.Loaded);
+        }, DispatcherPriority.Loaded);*/
     }
 
-    public void FitToSize()
+    /*public void FitToSize()
     {
         SizeToContent = SizeToContent.Manual;
         Height = MaxHeight;
@@ -758,7 +732,7 @@ public class ToolWindow : WindowEx
             );
 
         }, DispatcherPriority.Loaded);
-    }
+    }*/
 
     #endregion
 

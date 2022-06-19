@@ -20,8 +20,7 @@ using Avalonia.Threading;
 using Emgu.CV;
 using Emgu.CV.Util;
 using MessageBox.Avalonia.Enums;
-using UVtools.Core;
-using UVtools.Core.EmguCV;
+using UVtools.Core; 
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Layers;
@@ -97,7 +96,7 @@ public partial class MainWindow
         IssueSelectedIndex++;
     }
 
-    public List<IssueOfContours> GetOverlappingIssues(IssueOfContours targetIssue, int indexOffset)
+    /*public List<IssueOfContours> GetOverlappingIssues(IssueOfContours targetIssue, int indexOffset)
     {
         var retValue = new List<IssueOfContours>();
 
@@ -114,7 +113,7 @@ public partial class MainWindow
         }
 
         return retValue;
-    }
+    }*/
 
     public async void OnClickIssueRemove()
     {
@@ -376,9 +375,27 @@ public partial class MainWindow
 
         if (resultIssues is not null && resultIssues.Count > 0) issueList.AddRange(resultIssues);
 
-        issueList = issueList.OrderBy(issue => issue.Type)
-            .ThenBy(issue => issue.StartLayerIndex)
-            .ThenBy(issue => issue.Area).ToList();
+        switch (Settings.Issues.DataGridOrderBy)
+        {
+            case IssuesOrderBy.TypeAscLayerAscAreaDesc:
+                issueList = issueList.OrderBy(issue => issue.Type)
+                    .ThenBy(issue => issue.StartLayerIndex)
+                    .ThenByDescending(issue => issue.Area).ToList();
+                break;
+            case IssuesOrderBy.TypeAscAreaDescLayerAsc:
+                issueList = issueList.OrderBy(issue => issue.Type)
+                    .ThenByDescending(issue => issue.Area)
+                    .ThenBy(issue => issue.StartLayerIndex).ToList();
+                break;
+            case IssuesOrderBy.AreaDescLayerIndexAscTypeAsc:
+                issueList = issueList.OrderByDescending(issue => issue.Area)
+                    .ThenBy(issue => issue.StartLayerIndex)
+                    .ThenBy(issue => issue.Type).ToList();
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(Settings.Issues.DataGridOrderBy));
+        }
+        
             
         SlicerFile.IssueManager.ReplaceCollection(issueList);
     }
@@ -500,6 +517,26 @@ public partial class MainWindow
             {
                 var issues = SlicerFile.IssueManager.DetectIssues(islandConfig, overhangConfig, resinTrapConfig, touchingBoundConfig,
                     printHeightConfig, emptyLayersConfig, Progress);
+
+                switch (Settings.Issues.DataGridOrderBy)
+                {
+                    case IssuesOrderBy.TypeAscLayerAscAreaDesc:
+                        // This order is already made on the detection
+                        break;
+                    case IssuesOrderBy.TypeAscAreaDescLayerAsc:
+                        issues = issues.OrderBy(issue => issue.Type)
+                            .ThenByDescending(issue => issue.Area)
+                            .ThenBy(issue => issue.StartLayerIndex).ToList();
+                        break;
+                    case IssuesOrderBy.AreaDescLayerIndexAscTypeAsc:
+                        issues = issues.OrderByDescending(issue => issue.Area)
+                            .ThenBy(issue => issue.StartLayerIndex)
+                            .ThenBy(issue => issue.Type).ToList();
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(Settings.Issues.DataGridOrderBy));
+                }
+
                 return issues;
             }
             catch (OperationCanceledException)

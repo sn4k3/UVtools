@@ -56,7 +56,7 @@ public class OperationLayerArithmetic : Operation
     #region Overrides
 
     public override LayerRangeSelection StartLayerRangeSelection => LayerRangeSelection.None;
-    public override string IconClass => "fas fa-square-root-alt";
+    public override string IconClass => "fa-solid fa-square-root-alt";
     public override string Title => "Layer arithmetic";
     public override string Description =>
         "Perform arithmetic operations over the layers\n" +

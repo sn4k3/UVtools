@@ -21,7 +21,7 @@ public class OperationCalculator : Operation
 
     public override bool CanRunInPartialMode => true;
 
-    public override string IconClass => "fas fa-calculator";
+    public override string IconClass => "fa-solid fa-calculator";
 
     public override string Title => "Calculator";
     public override string Description => null!;

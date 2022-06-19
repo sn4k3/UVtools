@@ -63,7 +63,7 @@ public class OperationRaftRelief : Operation
     #endregion
 
     #region Overrides
-    public override string IconClass => "fas fa-bowling-ball";
+    public override string IconClass => "fa-solid fa-bowling-ball";
     public override string Title => "Raft relief";
     public override string Description =>
         "Relief raft with a strategy to remove mass, reduce FEP suction, spare resin and easier to remove the prints.";

@@ -580,7 +580,7 @@
                         VerticalAlignment="Stretch"
                         Command="{Binding BrightnessExposureGenAdd}"
                         Text="Add"
-                        Icon="fas fa-plus"/>
+                        Icon="fa-solid fa-plus"/>
 
                     <TextBlock Grid.Row="2" Grid.Column="0"
                                Text="Brightnesses:"
@@ -874,7 +874,7 @@
                         IsEnabled="{Binding Operation.ExposureGenManualLayerHeight}"
                         Command="{Binding ExposureTableAddManual}"
                         Text="Add"
-                        Icon="fas fa-plus"/>
+                        Icon="fa-solid fa-plus"/>
                 </Grid>
 
                 <Grid RowDefinitions="Auto" ColumnDefinitions="Auto,*,Auto"
@@ -889,7 +889,7 @@
                         IsEnabled="{Binding #ExposureTable.SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}"
                         Command="{Binding ExposureTableRemoveSelectedEntries}"
                         Text="Remove selected entries"
-                        Icon="fas fa-trash-alt"/>
+                        Icon="fa-solid fa-trash-alt"/>
 
                     <controls:ButtonWithIcon
                         Grid.Column="2" VerticalContentAlignment="Center"
@@ -899,7 +899,7 @@
                         IsEnabled="{Binding Operation.ExposureTable.Count}"
                         Command="{Binding ExposureTableClearEntries}"
                         Text="{Binding Operation.ExposureTable.Count, StringFormat=Clear {0} entries}"
-                        Icon="fas fa-times"/>
+                        Icon="fa-solid fa-xmark"/>
                 </Grid>
 
               

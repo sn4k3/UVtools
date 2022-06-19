@@ -33,7 +33,7 @@ public class WRLMeshFile : MeshFile
     public override void BeginWrite()
     {
         /* Create a stream to store the triangles (faces) as they come through */
-        _triangleStream = new FileStream(PathExtensions.GetTempFilePathWithExtension("trig", $"{About.Software}_"), FileMode.Create, FileAccess.ReadWrite, FileShare.None, 81920, FileOptions.DeleteOnClose);
+        _triangleStream = new FileStream(PathExtensions.GetTemporaryFilePathWithExtension("trig", $"{About.Software}_"), FileMode.Create, FileAccess.ReadWrite, FileShare.None, 81920, FileOptions.DeleteOnClose);
             
         MeshStream.WriteLineLF("#VRML V2.0 utf8");
         MeshStream.WriteLineLF($"WorldInfo {{ info \"{HeaderComment}\" }}");

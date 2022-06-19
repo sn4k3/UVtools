@@ -9,11 +9,9 @@
              Icon="/Assets/Icons/UVtools.ico"
              WindowStartupLocation="CenterOwner"
              CanResize="False"
-             SizeToContent="Manual"
+             SizeToContent="WidthAndHeight"
 			 MinWidth="300"
 			 MinHeight="200"
-			 Width="800"
-			 Height="600"
 			 WindowConstrainMaxSize="Ratio"
 			 WindowsWidthMaxSizeRatio="0.75"
 			 WindowsHeightMaxSizeRatio="0.75"
@@ -77,7 +75,7 @@
 									   IsCancel="True"
 									   Padding="10"
 									   VerticalContentAlignment="Center"
-									   Icon="fas fa-sign-out-alt"
+									   Icon="fa-solid fa-sign-out-alt"
 									   Text="Close"/>
 				</StackPanel>
 			</Grid>

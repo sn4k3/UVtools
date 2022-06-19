@@ -35,7 +35,7 @@ public class PLYMeshFile : MeshFile
     public override void BeginWrite()
     {
         /* Create a stream to store the triangles (faces) as they come through */
-        _triangleStream = new FileStream(PathExtensions.GetTempFilePathWithExtension("trig", $"{About.Software}_"), FileMode.Create, FileAccess.ReadWrite, FileShare.None, 81920, FileOptions.DeleteOnClose);
+        _triangleStream = new FileStream(PathExtensions.GetTemporaryFilePathWithExtension("trig", $"{About.Software}_"), FileMode.Create, FileAccess.ReadWrite, FileShare.None, 81920, FileOptions.DeleteOnClose);
 
         MeshStream.WriteLineLF("ply");
         MeshStream.WriteLineLF(FileFormat == MeshFileFormat.ASCII

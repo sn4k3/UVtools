@@ -10,7 +10,7 @@
 		<RepositoryUrl>https://github.com/sn4k3/UVtools</RepositoryUrl>
 		<PackageProjectUrl>https://github.com/sn4k3/UVtools</PackageProjectUrl>
 		<Description>MSLA/DLP, file analysis, calibration, repair, conversion and manipulation</Description>
-		<Version>3.4.3</Version>
+		<Version>3.5.0</Version>
 		<Copyright>Copyright © 2020 PTRTECH</Copyright>
 		<PackageIcon>UVtools.png</PackageIcon>
 		<Platforms>AnyCPU;x64</Platforms>
@@ -69,9 +69,9 @@
 		<PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="4.2.0" />
 		<PackageReference Include="Microsoft.Toolkit.HighPerformance" Version="7.1.2" />
 		<PackageReference Include="Portable.BouncyCastle" Version="1.9.0" />
-		<PackageReference Include="System.Memory" Version="4.5.4" />
+		<PackageReference Include="System.Memory" Version="4.5.5" />
 		<PackageReference Include="System.Reflection.TypeExtensions" Version="4.7.0" />
-		<PackageReference Include="System.Text.Json" Version="6.0.4" />
+		<PackageReference Include="System.Text.Json" Version="6.0.5" />
 	</ItemGroup>
 
 	<Target Name="PreparePackageReleaseNotesFromFile" BeforeTargets="GenerateNuspec">

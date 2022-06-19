@@ -27,7 +27,7 @@ public sealed class OperationBlur : Operation
 
     #region Overrides
 
-    public override string IconClass => "fas fa-burn";
+    public override string IconClass => "fa-solid fa-burn";
     public override string Title => "Blur";
     public override string Description =>
         $"Blur layer images by applying a low pass filter.\n\n" +

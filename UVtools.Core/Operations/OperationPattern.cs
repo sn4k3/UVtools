@@ -34,7 +34,7 @@ public class OperationPattern : Operation
 
     #region Overrides
     public override bool CanMask => false;
-    public override string IconClass => "fas fa-th-large";
+    public override string IconClass => "fa-solid fa-th-large";
     public override string Title => "Pattern";
     public override string Description =>
         "Duplicates the model in a rectangular pattern around the build plate.\n" +

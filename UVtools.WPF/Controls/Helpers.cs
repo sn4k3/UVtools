@@ -132,6 +132,18 @@ public static class Helpers
         }
     };
 
+    public static readonly List<FileDialogFilter> ZipFileFilter = new()
+    {
+        new()
+        {
+            Name = "Zip Files",
+            Extensions = new List<string>
+            {
+                "zip",
+            }
+        }
+    };
+
     public static List<FileDialogFilter> ToAvaloniaFileFilter(List<KeyValuePair<string, List<string>>> data)
     {
         var result = new List<FileDialogFilter>(data.Capacity);

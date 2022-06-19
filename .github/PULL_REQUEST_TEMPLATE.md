@@ -18,4 +18,5 @@
 <!--- If the pull request fixes issue(s) list them like this: 
 - Fixes #123
 - Fixes #456
+Otherwise remove this section
 -->

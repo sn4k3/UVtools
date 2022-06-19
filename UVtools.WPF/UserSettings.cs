@@ -12,7 +12,6 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
-using System.Reactive.Disposables;
 using System.Xml.Serialization;
 using Avalonia.Media;
 using JetBrains.Annotations;
@@ -53,7 +52,7 @@ public sealed class UserSettings : BindableBase
         private bool _windowsCanResize;
         private bool _windowsTakeIntoAccountScreenScaling = true;
         private ushort _windowsHorizontalMargin = 100;
-        private ushort _windowsVerticalMargin = 60;
+        private ushort _windowsVerticalMargin = 80;
         private byte _defaultOpenFileExtensionIndex;
         private string _defaultDirectoryOpenFile;
         private string _defaultDirectorySaveFile;
@@ -865,6 +864,7 @@ public sealed class UserSettings : BindableBase
         private byte _touchingBoundMarginBottom = 5;
         private bool _touchingBoundSyncMargins = true;
         private decimal _printHeightOffset;
+        private IssuesOrderBy _dataGridOrderBy = IssuesOrderBy.TypeAscLayerAscAreaDesc;
 
         public bool ComputeIssuesOnLoad
         {
@@ -924,6 +924,12 @@ public sealed class UserSettings : BindableBase
         {
             get => _computeEmptyLayers;
             set => RaiseAndSetIfChanged(ref _computeEmptyLayers, value);
+        }
+
+        public IssuesOrderBy DataGridOrderBy
+        {
+            get => _dataGridOrderBy;
+            set => RaiseAndSetIfChanged(ref _dataGridOrderBy, value);
         }
 
         public bool DataGridGroupByType

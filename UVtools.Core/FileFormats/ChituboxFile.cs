@@ -1391,7 +1391,7 @@ public class ChituboxFile : FileFormat
 
     public override float BottomWaitTimeBeforeCure
     {
-        get => base.BottomWaitTimeBeforeCure > 0 ? base.BottomWaitTimeBeforeCure : FirstLayer?.WaitTimeBeforeCure ?? 0;
+        get => base.BottomWaitTimeBeforeCure > 0 ? base.BottomWaitTimeBeforeCure : this.FirstOrDefault(layer => layer is not null && layer.IsBottomLayer && layer.NonZeroPixelCount > 1)?.WaitTimeBeforeCure ?? 0;
         set
         {
             if (HeaderSettings.Version < 4)
@@ -1439,7 +1439,7 @@ public class ChituboxFile : FileFormat
 
     public override float BottomWaitTimeAfterCure
     {
-        get => HeaderSettings.Version >= 4 ? (base.BottomWaitTimeAfterCure > 0 ? base.BottomWaitTimeAfterCure : FirstLayer?.WaitTimeAfterCure ?? 0) : 0;
+        get => HeaderSettings.Version >= 4 ? (base.BottomWaitTimeAfterCure > 0 ? base.BottomWaitTimeAfterCure : this.FirstOrDefault(layer => layer is not null && layer.IsBottomLayer && layer.NonZeroPixelCount > 1)?.WaitTimeAfterCure ?? 0) : 0;
         set
         {
             if (HeaderSettings.Version < 4) return;
@@ -1560,7 +1560,7 @@ public class ChituboxFile : FileFormat
 
     public override float BottomWaitTimeAfterLift
     {
-        get => HeaderSettings.Version >= 4 ? (base.BottomWaitTimeAfterLift > 0 ? base.BottomWaitTimeAfterLift : FirstLayer?.WaitTimeAfterLift ?? 0) : 0;
+        get => HeaderSettings.Version >= 4 ? (base.BottomWaitTimeAfterLift > 0 ? base.BottomWaitTimeAfterLift : this.FirstOrDefault(layer => layer is not null && layer.IsBottomLayer && layer.NonZeroPixelCount > 1)?.WaitTimeAfterLift ?? 0) : 0;
         set
         {
             if (HeaderSettings.Version < 4) return;

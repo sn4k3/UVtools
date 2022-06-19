@@ -70,7 +70,7 @@ public sealed class OperationLayerExportImage : Operation
 
     public override bool CanHaveProfiles => false;
 
-    public override string IconClass => "fas fa-file-image";
+    public override string IconClass => "fa-solid fa-file-image";
     public override string Title => "Export layers to images";
 
     public override string Description =>

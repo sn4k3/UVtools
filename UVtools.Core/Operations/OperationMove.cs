@@ -21,7 +21,7 @@ public class OperationMove : Operation
     #region Overrides
 
     public override bool CanMask => false;
-    public override string IconClass => "fas fa-arrows-alt";
+    public override string IconClass => "fa-solid fa-arrows-alt";
     public override string Title => "Move";
     public override string Description =>
         "Change or copy the position of the model on the build plate.\n" +

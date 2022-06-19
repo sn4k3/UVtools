@@ -28,7 +28,7 @@ public sealed class OperationLayerClone : Operation
     public override LayerRangeSelection StartLayerRangeSelection => LayerRangeSelection.Current;
     public override bool CanROI => false;
     public override bool PassActualLayerIndex => true;
-    public override string IconClass => "fas fa-clone";
+    public override string IconClass => "fa-solid fa-clone";
     public override string Title => "Clone layers";
     public override string Description =>
         "Clone layers.\n\n" +

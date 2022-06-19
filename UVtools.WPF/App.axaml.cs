@@ -239,7 +239,7 @@ public class App : Application
                 }
 
 
-                var reportButton = MessageWindow.CreateButton("Report", "fas fa-bug");
+                var reportButton = MessageWindow.CreateButton("Report", "fa-solid fa-bug");
                 reportButton.Click += (sender, e) =>
                 {
                     Current?.Clipboard?.SetTextAsync(bugReportMessageMk);
@@ -248,7 +248,7 @@ public class App : Application
                     e.Handled = true;
                 };
 
-                var helpButton = MessageWindow.CreateButton("Help", "fas fa-question");
+                var helpButton = MessageWindow.CreateButton("Help", "fa-solid fa-question");
                 helpButton.Click += (sender, e) =>
                 {
                     Current?.Clipboard?.SetTextAsync(bugReportMessageMk);
@@ -256,14 +256,14 @@ public class App : Application
                     e.Handled = true;
                 };
 
-                var restartButton = MessageWindow.CreateButton("Restart", "fas fa-redo-alt");
+                var restartButton = MessageWindow.CreateButton("Restart", "fa-solid fa-redo-alt");
                 restartButton.Click += (sender, e) =>
                 {
                     SystemAware.StartThisApplication();
                 };
 
                 desktop.MainWindow = new MessageWindow($"{About.SoftwareWithVersion} - Crash report", 
-                    "far fa-frown", 
+                    "fa-regular fa-frown", 
                     $"{About.Software} crashed due an unexpected {category.ToLowerInvariant()} error.\nYou can report this error if you find necessary.\nFind more details below:\n", 
                     message,
                     new[]
@@ -271,7 +271,7 @@ public class App : Application
                         reportButton,
                         helpButton,
                         restartButton,
-                        MessageWindow.CreateCloseButton("fas fa-sign-out-alt")
+                        MessageWindow.CreateCloseButton("fa-solid fa-sign-out-alt")
                     });
             }
             else

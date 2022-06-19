@@ -86,13 +86,13 @@
           <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Right">
               <uc:ButtonWithIcon Padding="10"
                       IsDefault="True"
-                      Icon="fas fa-check"
+                      Icon="fa-solid fa-check"
                       Text="Apply"
                       Command="{Binding Apply}"/>
 
 			  <uc:ButtonWithIcon Padding="10"
                       IsCancel="True"
-                      Icon="fas fa-sign-out-alt"
+                      Icon="fa-solid fa-sign-out-alt"
                       Text="Cancel"
                       Command="{Binding Close}"/>
           </StackPanel>

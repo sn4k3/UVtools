@@ -69,7 +69,7 @@
 					<Button Grid.Column="1" 
                             VerticalAlignment="Stretch"
                             Command="{Binding SelectFile}"
-                            i:Attached.Icon="fas fa-file-import"/>
+                            i:Attached.Icon="fa-solid fa-file-import"/>
 				</Grid>
 
                 <TextBlock Grid.Row="6" Grid.Column="0"

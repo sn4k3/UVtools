@@ -61,7 +61,7 @@ public sealed class OperationCalibrateXYZAccuracy : Operation
     public override bool CanCancel => false;
 
     public override LayerRangeSelection StartLayerRangeSelection => LayerRangeSelection.None;
-    public override string IconClass => "fas fa-cubes";
+    public override string IconClass => "fa-solid fa-cubes";
     public override string Title => "XYZ Accuracy";
     public override string Description =>
         "Generates test models with various strategies and increments to verify the XYZ accuracy.\n" +

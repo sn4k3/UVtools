@@ -124,6 +124,21 @@ public enum RemoveSourceFileAction : byte
     Prompt
 }
 
+/// <summary>
+/// Default order of issues to show on the UI list
+/// </summary>
+public enum IssuesOrderBy : byte
+{
+    [Description("Type (↑ASC) » Layer (↑ASC) » Area (↓DESC)")]
+    TypeAscLayerAscAreaDesc,
+
+    [Description("Type (↑ASC) » Area (↓DESC) » Layer (↑ASC)")]
+    TypeAscAreaDescLayerAsc,
+
+    [Description("Area (↓DESC) » Layer (↑ASC) » Type (↑ASC)")]
+    AreaDescLayerIndexAscTypeAsc
+}
+
 /*
 public static class Enumerations
 {

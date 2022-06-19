@@ -148,6 +148,9 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         Software
     }
 
+    /// <summary>
+    /// File decode type
+    /// </summary>
     public enum FileDecodeType : byte
     {
         /// <summary>
@@ -160,6 +163,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         /// </summary>
         Partial,
     }
+
     #endregion
 
     #region Sub Classes

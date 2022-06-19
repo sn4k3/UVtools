@@ -1,5 +1,17 @@
-- (Add) Information about the loaded file when copying from the about box
-- (Improvement) Tools are now disabled on the menu if not supported by the file format once each file load (#476)
-- (Fix) Tool - Edit tool parameters: Overlap label on "per layer override" mode (#478)
-- (Fix) Corruption of `GZip` and `Deflate` layer compression methods
+- **PCB Exposure:**
+   - (Add) Able to select multiple files and create a layer per file or merge them into one layer
+   - (Add) Able to import files from a zip file
+   - (Improvement) Round pixel coordinates and line thickness
+   - (Improvement) Better position precision for primitives
+   - (Improvement) Disable the ok button if no files were selected
+   - (Change) Do not auto mirror based on printer lcd mirror type
+   - (Fix) Limit line thickness to 1px minimum
+   - (Fix) Allow leading zero omit from XY coordinates (#492)
+   - (Fix) Mirror option was shifting the board position
+- (Add) Calibrate - Blooming effect: Generates test models with various strategies and increments to measure the blooming effect
+- (Add) Setting: Issues - Default order by, changes the default order on the issues list (#482)
+- (Improvement) CTBv4 and encrypted: Fetch `BottomWaitTimes` virtual property from first bottom layer that has at least 2 pixels (#483)
+- (Fix) Linux: Enable desktop integration for AppImages (#490)
+- (Fix) Extracting zip contents inside folders would cause a error and not extract those contents
+- (Upgrade) AvaloniaUI from 0.10.14 to 0.10.15 [Fixes auto-size problems]
 

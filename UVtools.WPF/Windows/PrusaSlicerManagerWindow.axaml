@@ -94,7 +94,7 @@
           Grid.Row="0"
           Grid.Column="0"
           Padding="10"
-		  Icon="fas fa-sync-alt"
+		  Icon="fa-solid fa-sync-alt"
 		  Text="Refresh profiles"
           Command="{Binding RefreshProfiles}"/>
 
@@ -107,13 +107,13 @@
           Spacing="5">
             <controls:ButtonWithIcon Padding="10"
                     IsDefault="True"
-					Icon="fas fa-check"
+					Icon="fa-solid fa-check"
 					Text="Install selected profiles"
                     Command="{Binding InstallProfiles}"/>
 
           <controls:ButtonWithIcon Padding="10" 
                   IsCancel="True"
-				  Icon="fas fa-sign-out-alt"
+				  Icon="fa-solid fa-sign-out-alt"
 				  Text="Close"
                   Command="{Binding Close}"/>
         </StackPanel>
@@ -159,13 +159,13 @@
 							Orientation="Horizontal" Spacing="1">
 							  <controls:ButtonWithIcon Padding="10"
 									  IsEnabled="{Binding PrusaSlicerProfiles[0].Updates}"
-									  Icon="far fa-square"
+									  Icon="fa-regular fa-square"
                                       Text="Unselect all"
 									  Command="{Binding PrusaSlicerProfiles[0].SelectNone}"/>
 
 							  <controls:ButtonWithIcon Padding="10"
                                               IsEnabled="{Binding PrusaSlicerProfiles[0].Updates}"
-											  Icon="far fa-check-square"
+											  Icon="fa-regular fa-check-square"
 											  Text="Select all"
                                               Command="{Binding PrusaSlicerProfiles[0].SelectAll}"/>
 
@@ -202,13 +202,13 @@
 							Orientation="Horizontal" Spacing="1">
                               <controls:ButtonWithIcon Padding="10"
                                                        IsEnabled="{Binding PrusaSlicerProfiles[1].Updates}"
-                                                       Icon="far fa-square"
+                                                       Icon="fa-regular fa-square"
                                                        Text="Unselect all"
                                                        Command="{Binding PrusaSlicerProfiles[1].SelectNone}"/>
 
                               <controls:ButtonWithIcon Padding="10"
                                                        IsEnabled="{Binding PrusaSlicerProfiles[1].Updates}"
-                                                       Icon="far fa-check-square"
+                                                       Icon="fa-regular fa-check-square"
                                                        Text="Select all"
                                                        Command="{Binding PrusaSlicerProfiles[1].SelectAll}"/>
 
@@ -261,13 +261,13 @@
 							Orientation="Horizontal" Spacing="1">
                               <controls:ButtonWithIcon Padding="10"
                                                        IsEnabled="{Binding SuperSlicerProfiles[0].Updates}"
-                                                       Icon="far fa-square"
+                                                       Icon="fa-regular fa-square"
                                                        Text="Unselect all"
                                                        Command="{Binding SuperSlicerProfiles[0].SelectNone}"/>
 
                               <controls:ButtonWithIcon Padding="10"
                                                        IsEnabled="{Binding SuperSlicerProfiles[0].Updates}"
-                                                       Icon="far fa-check-square"
+                                                       Icon="fa-regular fa-check-square"
                                                        Text="Select all"
                                                        Command="{Binding SuperSlicerProfiles[0].SelectAll}"/>
 
@@ -304,13 +304,13 @@
 							Orientation="Horizontal" Spacing="1">
                               <controls:ButtonWithIcon Padding="10"
                                                        IsEnabled="{Binding SuperSlicerProfiles[1].Updates}"
-                                                       Icon="far fa-square"
+                                                       Icon="fa-regular fa-square"
                                                        Text="Unselect all"
                                                        Command="{Binding SuperSlicerProfiles[1].SelectNone}"/>
 
                               <controls:ButtonWithIcon Padding="10"
                                                        IsEnabled="{Binding SuperSlicerProfiles[1].Updates}"
-                                                       Icon="far fa-check-square"
+                                                       Icon="fa-regular fa-check-square"
                                                        Text="Select all"
                                                        Command="{Binding SuperSlicerProfiles[1].SelectAll}"/>
 

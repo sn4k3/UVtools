@@ -27,12 +27,12 @@
         <Border DockPanel.Dock="Bottom" Classes="FooterActions" Margin="-10" Padding="10,15">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="5">
 				<controls:ButtonWithIcon Command="{Binding SelectVersion}" IsDefault="True"
-                                         Icon="fas fa-check"
+                                         Icon="fa-solid fa-check"
                                          Text="{Binding Version, StringFormat=Select v{0}}">
                 </controls:ButtonWithIcon>
                 <Button Content="Use the default" Command="{Binding SelectDefault}"/>
                 <controls:ButtonWithIcon IsCancel="True"
-                                         Icon="fas fa-sign-out-alt"
+                                         Icon="fa-solid fa-sign-out-alt"
                                          Text="Cancel"
                                          Command="{Binding Close}">
                 </controls:ButtonWithIcon>

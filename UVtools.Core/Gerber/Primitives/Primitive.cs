@@ -7,7 +7,6 @@
  */
 
 using System.Drawing;
-using System.Text.RegularExpressions;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
@@ -25,7 +24,7 @@ public abstract class Primitive
 
     protected Primitive() { }
 
-    public abstract void DrawFlashD3(Mat mat, SizeF xyPpmm, Point at, MCvScalar color, LineType lineType = LineType.EightConnected);
+    public abstract void DrawFlashD3(Mat mat, SizeF xyPpmm, PointF at, MCvScalar color, LineType lineType = LineType.EightConnected);
 
     public abstract void ParseExpressions(params string[] args);
 }

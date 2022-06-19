@@ -51,7 +51,7 @@ public class OperationTimelapse : Operation
     #region Overrides
 
     public override LayerRangeSelection StartLayerRangeSelection => LayerRangeSelection.Normal;
-    public override string IconClass => "fas fa-camera";
+    public override string IconClass => "fa-solid fa-camera";
     public override string Title => "Timelapse";
     public override string Description =>
         "Raise the build platform to a set position every odd-even height to be able to take a photo and create a time-lapse video of the print.\n" +

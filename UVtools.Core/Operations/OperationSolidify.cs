@@ -34,7 +34,7 @@ public sealed class OperationSolidify : Operation
 
     #region Overrides
 
-    public override string IconClass => "fas fa-circle";
+    public override string IconClass => "fa-solid fa-circle";
     public override string Title => "Solidify";
 
     public override string Description =>

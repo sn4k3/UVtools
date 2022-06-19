@@ -16,7 +16,8 @@ namespace UVtools.Core.Gerber.Apertures;
 public class MacroAperture : Aperture
 {
     #region Properties
-    public Macro Macro { get; set; }
+    public Macro Macro { get; set; } = null!;
+
     #endregion
 
     #region Constructor
@@ -28,7 +29,7 @@ public class MacroAperture : Aperture
     }
     #endregion
 
-    public override void DrawFlashD3(Mat mat, SizeF xyPpmm, Point at, MCvScalar color, LineType lineType = LineType.EightConnected)
+    public override void DrawFlashD3(Mat mat, SizeF xyPpmm, PointF at, MCvScalar color, LineType lineType = LineType.EightConnected)
     {
         foreach (var macro in Macro)
         {

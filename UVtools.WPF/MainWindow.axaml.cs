@@ -97,6 +97,7 @@ public partial class MainWindow : WindowEx
         new() { Tag = new OperationCalibrateElephantFoot()},
         new() { Tag = new OperationCalibrateXYZAccuracy()},
         new() { Tag = new OperationCalibrateLiftHeight()},
+        new() { Tag = new OperationCalibrateBloomingEffect()},
         new() { Tag = new OperationCalibrateTolerance()},
         new() { Tag = new OperationCalibrateGrayscale()},
         new() { Tag = new OperationCalibrateStressTower()},
@@ -350,7 +351,7 @@ public partial class MainWindow : WindowEx
                     {
                         Header = header,
                         Tag = drive,
-                        Icon = new Projektanker.Icons.Avalonia.Icon{ Value = "fab fa-usb" }
+                        Icon = new Projektanker.Icons.Avalonia.Icon{ Value = "fa-brands fa-usb" }
                     };
                     menuItem.Click += FileSendToItemClick;
 
@@ -381,7 +382,7 @@ public partial class MainWindow : WindowEx
                     {
                         Header = location.ToString(),
                         Tag = location,
-                        Icon = new Projektanker.Icons.Avalonia.Icon { Value = "fas fa-folder" }
+                        Icon = new Projektanker.Icons.Avalonia.Icon { Value = "fa-solid fa-folder" }
                     };
                     menuItem.Click += FileSendToItemClick;
 
@@ -412,7 +413,7 @@ public partial class MainWindow : WindowEx
                     {
                         Header = remotePrinter.ToString(),
                         Tag = remotePrinter,
-                        Icon = new Projektanker.Icons.Avalonia.Icon { Value = "fas fa-network-wired" }
+                        Icon = new Projektanker.Icons.Avalonia.Icon { Value = "fa-solid fa-network-wired" }
                     };
                     menuItem.Click += FileSendToItemClick;
 
@@ -443,7 +444,7 @@ public partial class MainWindow : WindowEx
                     {
                         Header = application.Name,
                         Tag = application,
-                        Icon = new Projektanker.Icons.Avalonia.Icon { Value = "fas fa-cog" }
+                        Icon = new Projektanker.Icons.Avalonia.Icon { Value = "fa-solid fa-cog" }
                     };
                     menuItem.Click += FileSendToItemClick;
 

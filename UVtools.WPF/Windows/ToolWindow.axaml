@@ -7,7 +7,7 @@
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="UVtools.WPF.Windows.ToolWindow"
         CanResize="False"
-        SizeToContent="Width"
+        SizeToContent="WidthAndHeight"
         WindowStartupLocation="CenterOwner"
         Title="Tool"
         Icon="/Assets/Icons/UVtools.ico">
@@ -21,15 +21,15 @@
       IsVisible="{Binding Description, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
         <Expander 
             IsExpanded="{Binding Settings.Tools.ExpandDescriptions}"
+            HorizontalContentAlignment="Stretch"
             Header="Description (Click to toggle)">
-        <TextBox Classes="TransparentReadOnly"
-                 HorizontalAlignment="Left"
-                 Width="Infinity"
-                 MaxWidth="{Binding DescriptionMaxWidth}"
-                 FontSize="16"
-                 Watermark="Description:"
-                 Padding="5"
-                 Text="{Binding Description}"/>
+            <TextBox Classes="TransparentReadOnly"
+                     MaxWidth="{Binding DescriptionMaxWidth}"
+                     FontSize="16"
+                     Margin="-10"
+                     Watermark="Description:"
+                     Padding="5"
+                     Text="{Binding Description}"/>
         </Expander>
     </Border>
 
@@ -252,7 +252,7 @@
                     ToolTip.Tip="Clear all profiles"
                     IsEnabled="{Binding Profiles.Count}"
                     Command="{Binding ClearProfiles}"
-                    i:Attached.Icon="fas fa-times">
+                    i:Attached.Icon="fa-solid fa-xmark">
             </Button>
 
 
@@ -281,7 +281,7 @@
               IsEnabled="{Binding SelectedProfileItem, Converter={x:Static ObjectConverters.IsNotNull}}"
               IsVisible="{Binding Profiles.Count}"
               Command="{Binding DeselectProfile}"
-              i:Attached.Icon="far fa-square"/>
+              i:Attached.Icon="fa-regular fa-square"/>
 
           <Button
               Grid.Row="0"
@@ -305,7 +305,7 @@
               IsEnabled="{Binding SelectedProfileItem, Converter={x:Static ObjectConverters.IsNotNull}}"
               IsVisible="{Binding Profiles.Count}"
               Command="{Binding RemoveSelectedProfile}"
-            i:Attached.Icon="fas fa-trash-alt"/>
+            i:Attached.Icon="fa-solid fa-trash-alt"/>
            
 
           <TextBox
@@ -322,7 +322,7 @@
                     ToolTip.Tip="Add a new profile with the current set values"
                     IsEnabled="{Binding ButtonOkEnabled}"
                     Command="{Binding AddProfile}"
-                    i:Attached.Icon="fas fa-plus"/>
+                    i:Attached.Icon="fa-solid fa-plus"/>
           
         </Grid>
         
@@ -360,26 +360,26 @@
                         <MenuItem IsVisible="{Binding CanROI}"
                                   Command="{Binding SelectVolumeBoundingRectangle}"
                                   Header="Select print volume ROI"
-                                  i:MenuItem.Icon="fas fa-expand"/>
+                                  i:MenuItem.Icon="fa-solid fa-expand"/>
 
                         <Separator IsVisible="{Binding CanROI}"/>
 
                       <MenuItem IsVisible="{Binding CanHaveProfiles}"
                                 Command="{Binding ImportSettings}"
                                 Header="Import settings"
-                                i:MenuItem.Icon="fas fa-file-import"/>
+                                i:MenuItem.Icon="fa-solid fa-file-import"/>
 
 
                         <MenuItem 
                                   Command="{Binding ExportSettings}"
                                   Header="Export settings"
-                                  i:MenuItem.Icon="fas fa-file-export"/>
+                                  i:MenuItem.Icon="fa-solid fa-file-export"/>
 
                         <Separator IsVisible="{Binding CanHaveProfiles}"/>
 
 						<MenuItem Command="{Binding ResetToDefaults}"
                                   Header="Reset to defaults"
-                                  i:MenuItem.Icon="fas fa-undo-alt"/>
+                                  i:MenuItem.Icon="fa-solid fa-undo-alt"/>
                     </ContextMenu>
                 </Button.ContextMenu>
             </Button>
@@ -387,7 +387,7 @@
 			<controls:ButtonWithIcon Padding="10"
                                      IsDefault="True"
                                      IsVisible="{Binding IsButton1Visible}"
-                                     Icon="fas fa-undo-alt"
+                                     Icon="fa-solid fa-undo-alt"
                                      Text="{Binding Button1Text}"
                                      Command="{Binding OnButton1Click}">
           </controls:ButtonWithIcon>
@@ -407,14 +407,14 @@
                                      IsDefault="True"
                                      IsVisible="{Binding ButtonOkVisible}"
                                      IsEnabled="{Binding ButtonOkEnabled}"
-                                     Icon="fas fa-check"
+                                     Icon="fa-solid fa-check"
                                      Text="{Binding ButtonOkText}"
                                      Command="{Binding Process}">
 			</controls:ButtonWithIcon>
 
 			<controls:ButtonWithIcon Padding="10"
                     IsCancel="True"
-                    Icon="fas fa-sign-out-alt" 
+                    Icon="fa-solid fa-sign-out-alt" 
                     Text="Cancel"
                     Command="{Binding Close}"/>
         </StackPanel>

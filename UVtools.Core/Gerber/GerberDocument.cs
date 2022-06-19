@@ -13,211 +13,216 @@ using System.IO;
 using System.Text.RegularExpressions;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
-using Emgu.CV.Structure;
 using Emgu.CV.Util;
 using UVtools.Core.Extensions;
 using UVtools.Core.Gerber.Apertures;
 
-namespace UVtools.Core.Gerber
+namespace UVtools.Core.Gerber;
+
+public class GerberDocument
 {
-    public class GerberDocument
+    #region Properties
+
+    public GerberPositionType PositionType { get; set; } = GerberPositionType.Absolute;
+    public GerberUnitType UnitType { get; set; } = GerberUnitType.Millimeter;
+    public GerberPolarityType Polarity { get; set; } = GerberPolarityType.Dark;
+    public GerberMoveType MoveType { get; set; } = GerberMoveType.Linear;
+
+    public bool LeadingZeroOmitted { get; set; } = true;
+
+    public byte CoordinateXIntegers { get; set; } = 3;
+    public byte CoordinateXFractionalDigits { get; set; } = 6;
+
+    public byte CoordinateYIntegers { get; set; } = 3;
+    public byte CoordinateYFractionalDigits { get; set; } = 6;
+
+    public Dictionary<int, Aperture> Apertures { get; } = new();
+    public Dictionary<string, Macro> Macros { get; } = new();
+
+    #endregion
+
+
+    public GerberDocument()
     {
-        #region Properties
+    }
 
-        public GerberPositionType PositionType { get; set; } = GerberPositionType.Absolute;
-        public GerberUnitType UnitType { get; set; } = GerberUnitType.Millimeter;
-        public GerberPolarityType Polarity { get; set; } = GerberPolarityType.Dark;
-        public GerberMoveType MoveType { get; set; } = GerberMoveType.Linear;
+    public GerberDocument(string filePath)
+    {
+    }
 
-        public bool LeadingZeroOmitted { get; set; } = true;
+    public static GerberDocument ParseAndDraw(string filePath, Mat mat, SizeF xyPpmm, bool enableAntialiasing = false)
+    {
+        using var file = new StreamReader(filePath);
+        var document = new GerberDocument();
 
-        public byte CoordinateXIntegers { get; set; } = 3;
-        public byte CoordinateXFractionalDigits { get; set; } = 6;
+        int FSlength = "%FSLAX46Y46*%".Length;
+        int MOlength = "%MOMM*%".Length;
+        int LPlength = "%LPD*%".Length;
 
-        public byte CoordinateYIntegers { get; set; } = 3;
-        public byte CoordinateYFractionalDigits { get; set; } = 6;
-
-        public Dictionary<int, Aperture> Apertures { get; } = new();
-        public Dictionary<string, Macro> Macros { get; } = new();
-
-        #endregion
-
-
-        public GerberDocument()
+        double currentX = 0;
+        double currentY = 0;
+        Aperture? currentAperture = null;
+        Macro? currentMacro = null;
+        var regionPoints = new List<Point>();
+        bool insideRegion = false;
+        string? line;
+        while ((line = file.ReadLine()) is not null)
         {
-        }
+            line = line.Trim();
+            if(line == string.Empty) continue;
+            if (line.StartsWith("M02")) break;
 
-        public GerberDocument(string filePath)
-        {
-        }
-
-        public static GerberDocument ParseAndDraw(string filePath, Mat mat, SizeF xyPpmm, bool enableAntialiasing = false)
-        {
-            using var file = new StreamReader(filePath);
-            var document = new GerberDocument();
-
-            int FSlength = "%FSLAX46Y46*%".Length;
-            int MOlength = "%MOMM*%".Length;
-            int LPlength = "%LPD*%".Length;
-
-            double currentX = 0;
-            double currentY = 0;
-            Aperture? currentAperture = null;
-            Macro? currentMacro = null;
-            var regionPoints = new List<Point>();
-            bool insideRegion = false;
-            string? line;
-            while ((line = file.ReadLine()) is not null)
+            var accumulatedLine = line;
+            while (!accumulatedLine.Contains('*') && (line = file.ReadLine()) is not null)
             {
                 line = line.Trim();
-                if(line == string.Empty) continue;
-                if (line.StartsWith("M02")) break;
+                if (line == string.Empty) continue;
+                accumulatedLine += line;
+            }
 
-                var accumulatedLine = line;
-                while (!accumulatedLine.Contains('*') && (line = file.ReadLine()) is not null)
+            line = accumulatedLine;
+
+            if(currentMacro is not null)
+            {
+                currentMacro.ParsePrimitive(line);
+                if (line[^1] == '%') currentMacro = null;
+                continue;
+            }
+
+            if (line.StartsWith("%MO") && line.Length >= MOlength)
+            {
+                if(line[3] == 'M' && line[4] == 'M') document.UnitType = GerberUnitType.Millimeter;
+                else if(line[3] == 'I' && line[4] == 'N') document.UnitType = GerberUnitType.Inch;
+                continue;
+            }
+
+            if (line.StartsWith("%FS") && line.Length >= FSlength) 
+            {
+                // %FSLAX34Y34*%
+                // 0123456789
+                document.LeadingZeroOmitted = line[3] switch
                 {
-                    line = line.Trim();
-                    if (line == string.Empty) continue;
-                    accumulatedLine += line;
+                    'L' => true,
+                    'T' => false,
+                    _ => document.LeadingZeroOmitted
+                };
+                document.PositionType = line[4] switch
+                {
+                    'A' => GerberPositionType.Absolute,
+                    'I' => GerberPositionType.Relative,
+                    _ => document.PositionType
+                };
+                if (line[5] != 'X') continue;
+                if (byte.TryParse(line[6].ToString(), out var x1)) document.CoordinateXIntegers = x1;
+                if (byte.TryParse(line[7].ToString(), out var x2)) document.CoordinateXFractionalDigits = x2;
+                if (line[8] != 'Y') continue;
+                if (byte.TryParse(line[9].ToString(), out var y1)) document.CoordinateYIntegers = y1;
+                if (byte.TryParse(line[10].ToString(), out var y2)) document.CoordinateYFractionalDigits = y2;
+                continue;
+            }
+
+            if (line.StartsWith("%LP") && line.Length >= LPlength)
+            {
+                document.Polarity = line[3] switch
+                {
+                    'D' => GerberPolarityType.Dark,
+                    'C' => GerberPolarityType.Clear,
+                    _ => document.Polarity
+                };
+
+                continue;
+            }
+
+            if (line.StartsWith("G01"))
+            {
+                document.MoveType = GerberMoveType.Linear;
+                continue;
+            }
+
+            if (line.StartsWith("G02"))
+            {
+                document.MoveType = GerberMoveType.Arc;
+                continue;
+            }
+
+            if (line.StartsWith("G03"))
+            {
+                document.MoveType = GerberMoveType.ArcCounterClockwise;
+                continue;
+            }
+
+            if (line.StartsWith("G36"))
+            {
+                insideRegion = true;
+                regionPoints.Clear();
+                continue;
+            }
+
+            if (line.StartsWith("G37"))
+            {
+                insideRegion = false;
+                if (regionPoints.Count > 0)
+                {
+                    using var vec = new VectorOfPoint(regionPoints.ToArray());
+                    CvInvoke.FillPoly(mat, vec, document.Polarity == GerberPolarityType.Dark ? EmguExtensions.WhiteColor : EmguExtensions.BlackColor, enableAntialiasing ? LineType.AntiAlias : LineType.EightConnected);
                 }
+                regionPoints.Clear();
+                continue;
+            }
 
-                line = accumulatedLine;
+            if (line.StartsWith("%AM"))
+            {
+                currentMacro = Macro.Parse(line);
+                if (currentMacro is null) continue;
+                document.Macros.Add(currentMacro.Name, currentMacro);
+                //document.Apertures.Add(aperture.Index, aperture);
+                continue;
+            }
 
-                if(currentMacro is not null)
+            if (line.StartsWith("%ADD"))
+            {
+                var aperture = Aperture.Parse(line, document);
+                if (aperture is null) continue;
+                currentAperture = aperture;
+                document.Apertures.Add(aperture.Index, aperture);
+                continue;
+            }
+
+            if (line[0] == 'D')
+            {
+                var matchD = Regex.Match(line, @"D(\d+)");
+                if (!matchD.Success || matchD.Groups.Count < 2) continue;
+
+                if (!int.TryParse(matchD.Groups[1].Value, out var d)) continue;
+
+                if (!document.Apertures.TryGetValue(d, out currentAperture)) continue;
+
+                continue;
+            }
+
+            if (line[0] == 'X' || line[0] == 'Y')
+            {
+                var matchX = Regex.Match(line, @"X-?(\d+)");
+                var matchY = Regex.Match(line, @"Y-?(\d+)");
+                var matchD = Regex.Match(line, @"D(\d+)");
+
+                double nowX = 0;
+                double nowY = 0;
+
+                if (!matchD.Success || matchD.Groups.Count < 2) continue;
+                if (!int.TryParse(matchD.Groups[1].Value, out var d)) continue;
+
+                if (matchX.Success && matchX.Groups.Count >= 2)
                 {
-                    currentMacro.ParsePrimitive(line);
-                    if (line[^1] == '%') currentMacro = null;
-                    continue;
-                }
-
-                if (line.StartsWith("%MO") && line.Length >= MOlength)
-                {
-                    if(line[3] == 'M' && line[4] == 'M') document.UnitType = GerberUnitType.Millimeter;
-                    else if(line[3] == 'I' && line[4] == 'N') document.UnitType = GerberUnitType.Inch;
-                    continue;
-                }
-
-                if (line.StartsWith("%FS") && line.Length >= FSlength) 
-                {
-                    // %FSLAX34Y34*%
-                    // 0123456789
-                    document.LeadingZeroOmitted = line[3] switch
+                    if (double.TryParse(matchX.Groups[1].Value, out nowX))
                     {
-                        'L' => true,
-                        'T' => false,
-                        _ => document.LeadingZeroOmitted
-                    };
-                    document.PositionType = line[4] switch
-                    {
-                        'A' => GerberPositionType.Absolute,
-                        'I' => GerberPositionType.Relative,
-                        _ => document.PositionType
-                    };
-                    if (line[5] != 'X') continue;
-                    if (byte.TryParse(line[6].ToString(), out var x1)) document.CoordinateXIntegers = x1;
-                    if (byte.TryParse(line[7].ToString(), out var x2)) document.CoordinateXFractionalDigits = x2;
-                    if (line[8] != 'Y') continue;
-                    if (byte.TryParse(line[9].ToString(), out var y1)) document.CoordinateYIntegers = y1;
-                    if (byte.TryParse(line[10].ToString(), out var y2)) document.CoordinateYFractionalDigits = y2;
-                    continue;
-                }
-
-                if (line.StartsWith("%LP") && line.Length >= LPlength)
-                {
-                    document.Polarity = line[3] switch
-                    {
-                        'D' => GerberPolarityType.Dark,
-                        'C' => GerberPolarityType.Clear,
-                        _ => document.Polarity
-                    };
-
-                    continue;
-                }
-
-                if (line.StartsWith("G01"))
-                {
-                    document.MoveType = GerberMoveType.Linear;
-                    continue;
-                }
-
-                if (line.StartsWith("G02"))
-                {
-                    document.MoveType = GerberMoveType.Arc;
-                    continue;
-                }
-
-                if (line.StartsWith("G03"))
-                {
-                    document.MoveType = GerberMoveType.ArcCounterClockwise;
-                    continue;
-                }
-
-                if (line.StartsWith("G36"))
-                {
-                    insideRegion = true;
-                    regionPoints.Clear();
-                    continue;
-                }
-
-                if (line.StartsWith("G37"))
-                {
-                    insideRegion = false;
-                    if (regionPoints.Count > 0)
-                    {
-                        using var vec = new VectorOfPoint(regionPoints.ToArray());
-                        CvInvoke.FillPoly(mat, vec, document.Polarity == GerberPolarityType.Dark ? EmguExtensions.WhiteColor : EmguExtensions.BlackColor, enableAntialiasing ? LineType.AntiAlias : LineType.EightConnected);
-                    }
-                    regionPoints.Clear();
-                    continue;
-                }
-
-                if (line.StartsWith("%AM"))
-                {
-                    currentMacro = Macro.Parse(line);
-                    if (currentMacro is null) continue;
-                    document.Macros.Add(currentMacro.Name, currentMacro);
-                    //document.Apertures.Add(aperture.Index, aperture);
-                    continue;
-                }
-
-                if (line.StartsWith("%ADD"))
-                {
-                    var aperture = Aperture.Parse(line, document);
-                    if (aperture is null) continue;
-                    currentAperture = aperture;
-                    document.Apertures.Add(aperture.Index, aperture);
-                    continue;
-                }
-
-                if (line[0] == 'D')
-                {
-                    var matchD = Regex.Match(line, @"D(\d+)");
-                    if (!matchD.Success || matchD.Groups.Count < 2) continue;
-
-                    if (!int.TryParse(matchD.Groups[1].Value, out var d)) continue;
-
-                    if (!document.Apertures.TryGetValue(d, out currentAperture)) continue;
-
-                    continue;
-                }
-
-                if (line[0] == 'X' || line[0] == 'Y')
-                {
-                    var matchX = Regex.Match(line, @"X-?(\d+)");
-                    var matchY = Regex.Match(line, @"Y-?(\d+)");
-                    var matchD = Regex.Match(line, @"D(\d+)");
-
-                    double nowX = 0;
-                    double nowY = 0;
-
-                    if (!matchD.Success || matchD.Groups.Count < 2) continue;
-                    if (!int.TryParse(matchD.Groups[1].Value, out var d)) continue;
-
-                    if (matchX.Success && matchX.Groups.Count >= 2)
-                    {
-                        if (double.TryParse(matchX.Groups[1].Value, out nowX))
+                        if (nowX != 0)
                         {
-                            if (nowX != 0)
+                            if (document.CoordinateXFractionalDigits > matchX.Groups[1].Value.Length) // Leading zero omitted
+                            {
+                                double.TryParse($"0.{matchX.Groups[1].Value}", out nowX);
+                            }
+                            else
                             {
                                 var integers = matchX.Groups[1].Value[..^document.CoordinateXFractionalDigits];
                                 var fraction = matchX.Groups[1].Value.Substring(matchX.Groups[1].Value.Length - document.CoordinateXFractionalDigits, document.CoordinateXFractionalDigits);
@@ -225,12 +230,19 @@ namespace UVtools.Core.Gerber
                             }
                         }
                     }
+                }
 
-                    if (matchY.Success && matchY.Groups.Count >= 2)
+                if (matchY.Success && matchY.Groups.Count >= 2)
+                {
+                    if (double.TryParse(matchY.Groups[1].Value, out nowY))
                     {
-                        if (double.TryParse(matchY.Groups[1].Value, out nowY))
+                        if (nowY != 0) 
                         {
-                            if (nowY != 0) 
+                            if (document.CoordinateYFractionalDigits > matchY.Groups[1].Value.Length)  // Leading zero omitted
+                            {
+                                double.TryParse($"0.{matchY.Groups[1].Value}", out nowY);
+                            }
+                            else
                             {
                                 var integers = matchY.Groups[1].Value[..^document.CoordinateYFractionalDigits];
                                 var fraction = matchY.Groups[1].Value.Substring(matchY.Groups[1].Value.Length - document.CoordinateYFractionalDigits, document.CoordinateYFractionalDigits);
@@ -238,106 +250,149 @@ namespace UVtools.Core.Gerber
                             }
                         }
                     }
+                }
 
-                    if (insideRegion)
+                if (insideRegion)
+                {
+                    if (d == 2)
                     {
-                        if (d == 2)
+                        if (regionPoints.Count > 0)
                         {
-                            if (regionPoints.Count > 0)
-                            {
-                                using var vec = new VectorOfPoint(regionPoints.ToArray());
-                                CvInvoke.FillPoly(mat, vec, document.Polarity == GerberPolarityType.Dark ? EmguExtensions.WhiteColor : EmguExtensions.BlackColor, enableAntialiasing ? LineType.AntiAlias : LineType.EightConnected);
-                            }
-                            regionPoints.Clear();
+                            using var vec = new VectorOfPoint(regionPoints.ToArray());
+                            CvInvoke.FillPoly(mat, vec, document.Polarity == GerberPolarityType.Dark ? EmguExtensions.WhiteColor : EmguExtensions.BlackColor, enableAntialiasing ? LineType.AntiAlias : LineType.EightConnected);
                         }
-
-                        var pt = new Point((int) (nowX * xyPpmm.Width), (int) (nowY * xyPpmm.Height));
-                        if (regionPoints.Count == 0 || (regionPoints.Count > 0 && regionPoints[^1] != pt)) regionPoints.Add(pt);
+                        regionPoints.Clear();
                     }
-                    else if(currentAperture is not null)
+
+                    var pt = PositionMmToPx(nowX, nowY, xyPpmm);
+                    if (regionPoints.Count == 0 || (regionPoints.Count > 0 && regionPoints[^1] != pt)) regionPoints.Add(pt);
+                }
+                else if(currentAperture is not null)
+                {
+                    if (d == 1)
                     {
-                        if (d == 1)
+                        if (currentAperture is CircleAperture circleAperture)
                         {
-                            if (currentAperture is CircleAperture circleAperture)
+                            if (document.MoveType is GerberMoveType.Arc or GerberMoveType.ArcCounterClockwise)
                             {
-                                if (document.MoveType is GerberMoveType.Arc or GerberMoveType.ArcCounterClockwise)
+                                var matchI = Regex.Match(line, @"I(-?\d+)");
+                                var matchJ = Regex.Match(line, @"J(-?\d+)");
+                                if(!matchI.Success || !matchJ.Success || matchI.Groups.Count < 2 || matchJ.Groups.Count < 2) continue;
+
+
+                                if (double.TryParse(matchI.Groups[1].Value, out var xOffset))
                                 {
-                                    var matchI = Regex.Match(line, @"I(-?\d+)");
-                                    var matchJ = Regex.Match(line, @"J(-?\d+)");
-                                    if(!matchI.Success || !matchJ.Success || matchI.Groups.Count < 2 || matchJ.Groups.Count < 2) continue;
-
-
-                                    if (double.TryParse(matchI.Groups[1].Value, out var xOffset))
+                                    if (xOffset != 0)
                                     {
-                                        if (xOffset != 0)
+                                        if (document.CoordinateXFractionalDigits > matchI.Groups[1].Value.Length) // Leading zero omitted
+                                        {
+                                            double.TryParse($"0.{matchI.Groups[1].Value}", out xOffset);
+                                        }
+                                        else
                                         {
                                             var integers = matchI.Groups[1].Value[..^document.CoordinateXFractionalDigits];
                                             var fraction = matchI.Groups[1].Value.Substring(matchI.Groups[1].Value.Length - document.CoordinateXFractionalDigits, document.CoordinateXFractionalDigits);
                                             double.TryParse($"{integers}.{fraction}", out xOffset);
                                         }
+                                                
                                     }
+                                }
 
-                                    if (double.TryParse(matchJ.Groups[1].Value, out var yOffset))
+                                if (double.TryParse(matchJ.Groups[1].Value, out var yOffset))
+                                {
+                                    if(yOffset != 0)
                                     {
-                                        if(yOffset != 0)
+                                        if (document.CoordinateYFractionalDigits > matchJ.Groups[1].Value.Length) // Leading zero omitted
+                                        {
+                                            double.TryParse($"0.{matchJ.Groups[1].Value}", out yOffset);
+                                        }
+                                        else
                                         {
                                             var integers = matchJ.Groups[1].Value[..^document.CoordinateYFractionalDigits];
                                             var fraction = matchJ.Groups[1].Value.Substring(matchJ.Groups[1].Value.Length - document.CoordinateYFractionalDigits, document.CoordinateYFractionalDigits);
                                             double.TryParse($"{integers}.{fraction}", out yOffset);
                                         }
                                     }
+                                }
 
-                                    if (currentX == nowX && currentY == nowY) // Closed circle
-                                    {
-                                        CvInvoke.Ellipse(mat, new Point((int)((nowX + xOffset) * xyPpmm.Width), (int)((nowY + yOffset) * xyPpmm.Height)),
-                                            new Size((int)(Math.Abs(xOffset) * xyPpmm.Width), (int)(Math.Abs(xOffset) * xyPpmm.Width)),
-                                            0, 0, 360.0, document.Polarity == GerberPolarityType.Dark ? EmguExtensions.WhiteColor : EmguExtensions.BlackColor,
-                                            (int)(circleAperture.Diameter * xyPpmm.Max()),
-                                            enableAntialiasing ? LineType.AntiAlias : LineType.EightConnected
-                                        );
-                                    }
-                                    else
-                                    {
-                                        // TODO: Fix this
-                                        throw new NotImplementedException("Partial arcs are not yet implemented (G03)\nTo be fixed in the future...");
-                                        /*CvInvoke.Ellipse(mat, new Point((int)((nowX + xOffset) * xyPpmm.Width), (int)((currentY) * xyPpmm.Height)),
-                                            new Size((int)(Math.Abs(xOffset) * xyPpmm.Width), (int)(Math.Abs(yOffset) * xyPpmm.Width)),
-                                            0, Math.Abs(currentY - nowY), 360.0 / Math.Abs(currentX - nowX), document.Polarity == GerberPolarityType.Dark ? EmguExtensions.WhiteColor : EmguExtensions.BlackColor,
-                                            (int)(circleAperture.Diameter * xyPpmm.Max()),
-                                            enableAntialiasing ? LineType.AntiAlias : LineType.EightConnected
-                                        );*/
-                                    }
-                                    
+                                if (currentX == nowX && currentY == nowY) // Closed circle
+                                {
+                                    CvInvoke.Ellipse(mat,
+                                        PositionMmToPx(nowX + xOffset, nowY + yOffset, xyPpmm),
+                                        SizeMmToPx(Math.Abs(xOffset), Math.Abs(xOffset), xyPpmm),
+                                        0, 0, 360.0, document.Polarity == GerberPolarityType.Dark ? EmguExtensions.WhiteColor : EmguExtensions.BlackColor,
+                                        SizeMmToPx(circleAperture.Diameter, xyPpmm.Max()),
+                                        enableAntialiasing ? LineType.AntiAlias : LineType.EightConnected
+                                    );
                                 }
                                 else
                                 {
-                                    CvInvoke.Line(mat,
-                                        new Point((int)(currentX * xyPpmm.Width), (int)(currentY * xyPpmm.Height)),
-                                        new Point((int)(nowX * xyPpmm.Width), (int)(nowY * xyPpmm.Height)),
-                                        document.Polarity == GerberPolarityType.Dark ? EmguExtensions.WhiteColor : EmguExtensions.BlackColor,
+                                    // TODO: Fix this
+                                    throw new NotImplementedException("Partial arcs are not yet implemented (G03)\nTo be fixed in the future...");
+                                    /*CvInvoke.Ellipse(mat, new Point((int)((nowX + xOffset) * xyPpmm.Width), (int)((currentY) * xyPpmm.Height)),
+                                        new Size((int)(Math.Abs(xOffset) * xyPpmm.Width), (int)(Math.Abs(yOffset) * xyPpmm.Width)),
+                                        0, Math.Abs(currentY - nowY), 360.0 / Math.Abs(currentX - nowX), document.Polarity == GerberPolarityType.Dark ? EmguExtensions.WhiteColor : EmguExtensions.BlackColor,
                                         (int)(circleAperture.Diameter * xyPpmm.Max()),
-                                        enableAntialiasing ? LineType.AntiAlias : LineType.EightConnected);
+                                        enableAntialiasing ? LineType.AntiAlias : LineType.EightConnected
+                                    );*/
                                 }
-                                
+                                    
                             }
-                        }
-                        else if (d == 3)
-                        {
-                            currentAperture.DrawFlashD3(mat, xyPpmm, new Point((int)(nowX * xyPpmm.Width), (int)(nowY * xyPpmm.Height)), document.Polarity == GerberPolarityType.Dark ? EmguExtensions.WhiteColor : EmguExtensions.BlackColor, enableAntialiasing ? LineType.AntiAlias : LineType.EightConnected);
+                            else
+                            {
+                                CvInvoke.Line(mat,
+                                    PositionMmToPx(currentX, currentY, xyPpmm),
+                                    PositionMmToPx(nowX, nowY, xyPpmm),
+                                    document.Polarity == GerberPolarityType.Dark ? EmguExtensions.WhiteColor : EmguExtensions.BlackColor,
+                                    SizeMmToPx(circleAperture.Diameter, xyPpmm.Max()),
+                                    enableAntialiasing ? LineType.AntiAlias : LineType.EightConnected);
+                            }
+                                
                         }
                     }
-
-                    currentX = nowX;
-                    currentY = nowY;
-                    continue;
+                    else if (d == 3)
+                    {
+                        currentAperture.DrawFlashD3(mat, xyPpmm, new PointF((float) nowX, (float) nowY), 
+                            document.Polarity == GerberPolarityType.Dark ? EmguExtensions.WhiteColor : EmguExtensions.BlackColor, enableAntialiasing ? LineType.AntiAlias : LineType.EightConnected);
+                    }
                 }
+
+                currentX = nowX;
+                currentY = nowY;
+                continue;
             }
-
-            return document;
         }
-    }
-}
 
+        return document;
+    }
+
+    public static Point PositionMmToPx(PointF atMm, SizeF xyPpmm)
+        => new((int)Math.Round(atMm.X * xyPpmm.Width, MidpointRounding.AwayFromZero), (int)Math.Round(atMm.Y * xyPpmm.Height, MidpointRounding.AwayFromZero));
+
+    public static Point PositionMmToPx(double atXmm, double atYmm, SizeF xyPpmm)
+        => new((int)Math.Round(atXmm * xyPpmm.Width, MidpointRounding.AwayFromZero), (int)Math.Round(atYmm * xyPpmm.Height, MidpointRounding.AwayFromZero));
+
+    public static Point PositionMmToPx(float atXmm, float atYmm, SizeF xyPpmm)
+        => new((int)Math.Round(atXmm * xyPpmm.Width, MidpointRounding.AwayFromZero), (int)Math.Round(atYmm * xyPpmm.Height, MidpointRounding.AwayFromZero));
+
+    public static Size SizeMmToPx(SizeF sizeMm, SizeF xyPpmm)
+        => new((int)Math.Max(1, Math.Round(sizeMm.Width * xyPpmm.Width, MidpointRounding.AwayFromZero)),
+            (int)Math.Max(1, Math.Round(sizeMm.Height * xyPpmm.Height, MidpointRounding.AwayFromZero)));
+
+    public static Size SizeMmToPx(double sizeXmm, double sizeYmm, SizeF xyPpmm)
+        => new((int)Math.Max(1, Math.Round(sizeXmm * xyPpmm.Width, MidpointRounding.AwayFromZero)),
+            (int)Math.Max(1, Math.Round(sizeYmm * xyPpmm.Height, MidpointRounding.AwayFromZero)));
+
+    public static Size SizeMmToPx(float sizeXmm, float sizeYmm, SizeF xyPpmm)
+        => new((int)Math.Max(1, Math.Round(sizeXmm * xyPpmm.Width, MidpointRounding.AwayFromZero)),
+            (int)Math.Max(1, Math.Round(sizeYmm * xyPpmm.Height, MidpointRounding.AwayFromZero)));
+
+    public static int SizeMmToPx(float sizeMm, float ppmm)
+        => (int) Math.Max(1, Math.Round(sizeMm * ppmm, MidpointRounding.AwayFromZero));
+
+    public static int SizeMmToPx(double sizeMm, float ppmm)
+        => (int)Math.Max(1, Math.Round(sizeMm * ppmm, MidpointRounding.AwayFromZero));
+}
 
 
 /* KIDCAD

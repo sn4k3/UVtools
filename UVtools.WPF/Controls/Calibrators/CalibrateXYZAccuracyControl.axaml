@@ -436,7 +436,7 @@
             <Button Grid.Column="6" VerticalAlignment="Center"
                     IsEnabled="{Binding IsProfileAddEnabled}"
                     Command="{Binding AddProfile}"
-                    i:Attached.Icon="fas fa-plus"/>
+                    i:Attached.Icon="fa-solid fa-plus"/>
         </Grid>
       </Expander>
         

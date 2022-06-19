@@ -19,7 +19,7 @@ namespace UVtools.Core.Operations;
 public class OperationMask : Operation
 {
     #region Overrides
-    public override string IconClass => "fas fa-mask";
+    public override string IconClass => "fa-solid fa-mask";
     public override string Title => "Mask";
     public override string Description =>
         "Mask the intensity of the LCD output using a greyscale input image.\n\n" +

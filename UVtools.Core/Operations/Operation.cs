@@ -805,7 +805,7 @@ public abstract class Operation : BindableBase, IDisposable
         return result;
     }
 
-    public virtual void Dispose() { GC.SuppressFinalize(this); }
+    public virtual void Dispose() { /*GC.SuppressFinalize(this);*/ }
     #endregion
 
     #region Static Methods

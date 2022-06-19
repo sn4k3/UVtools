@@ -34,7 +34,7 @@ public class OperationIPrintedThisFile : Operation
     public override bool CanROI => false;
     public override bool CanHaveProfiles => false;
     public override string ButtonOkText => "Consume";
-    public override string IconClass => "fas fa-flask";
+    public override string IconClass => "fa-solid fa-flask";
     public override string Title => "I printed this file";
     public override string Description => "Select a material and consume resin from stock and print time.";
 

@@ -6,6 +6,7 @@
  *  of this license document, but changing it is not allowed.
  */
 
+using System;
 using System.Drawing;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
@@ -29,9 +30,10 @@ public class CircleAperture : Aperture
     }
     #endregion
 
-    public override void DrawFlashD3(Mat mat, SizeF xyPpmm, Point at, MCvScalar color,
-        LineType lineType = LineType.EightConnected)
+    public override void DrawFlashD3(Mat mat, SizeF xyPpmm, PointF at, MCvScalar color, LineType lineType = LineType.EightConnected)
     {
-        CvInvoke.Circle(mat, at, (int)(Diameter * xyPpmm.Max() / 2), color, -1, lineType);
+        CvInvoke.Circle(mat, 
+            GerberDocument.PositionMmToPx(at, xyPpmm),
+            GerberDocument.SizeMmToPx(Diameter / 2, xyPpmm.Max()), color, -1, lineType);
     }
 }

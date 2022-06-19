@@ -50,7 +50,7 @@ public sealed class OperationCalibrateStressTower : Operation
     public override bool CanCancel => false;
 
     public override LayerRangeSelection StartLayerRangeSelection => LayerRangeSelection.None;
-    public override string IconClass => "fas fa-chess-rook";
+    public override string IconClass => "fa-solid fa-chess-rook";
     public override string Title => "Stress tower";
     public override string Description =>
         "Generates a stress tower to test the printer capabilities.\n" +

@@ -29,7 +29,7 @@ public class OperationFadeExposureTime : Operation
     public override bool CanRunInPartialMode => true;
     public override LayerRangeSelection StartLayerRangeSelection => LayerRangeSelection.Normal;
     public override bool LayerIndexEndEnabled => false;
-    public override string IconClass => "fas fa-history";
+    public override string IconClass => "fa-solid fa-history";
     public override string Title => "Fade exposure time";
 
     public override string Description =>

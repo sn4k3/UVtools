@@ -29,7 +29,7 @@ public class OperationRaiseOnPrintFinish : Operation
     #region Overrides
 
     public override LayerRangeSelection StartLayerRangeSelection => LayerRangeSelection.None;
-    public override string IconClass => "fas fa-level-up-alt";
+    public override string IconClass => "fa-solid fa-level-up-alt";
     public override string Title => "Raise platform on print finish";
     public override string Description =>
         "Raise the build platform to a set position after finish the print.\n\n" +

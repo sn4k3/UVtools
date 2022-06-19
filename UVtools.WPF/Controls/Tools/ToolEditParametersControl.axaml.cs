@@ -93,7 +93,7 @@ public class ToolEditParametersControl : ToolControl
                 VerticalAlignment = VerticalAlignment.Center,
                 Tag = this,
                 Padding = new Thickness(5),
-                Content = new Projektanker.Icons.Avalonia.Icon{Value = "fas fa-undo-alt"},
+                Content = new Projektanker.Icons.Avalonia.Icon{Value = "fa-solid fa-undo-alt"},
                 HorizontalAlignment = HorizontalAlignment.Stretch
             };
             ResetButton.Click += ResetButtonOnClick;

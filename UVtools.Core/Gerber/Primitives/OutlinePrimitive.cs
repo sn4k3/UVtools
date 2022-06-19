@@ -75,7 +75,7 @@ public class OutlinePrimitive : Primitive
     }
 
 
-    public override void DrawFlashD3(Mat mat, SizeF xyPpmm, Point at, MCvScalar color, LineType lineType = LineType.EightConnected)
+    public override void DrawFlashD3(Mat mat, SizeF xyPpmm, PointF at, MCvScalar color, LineType lineType = LineType.EightConnected)
     {
         if (Coordinates.Length < 3) return;
 
@@ -85,11 +85,7 @@ public class OutlinePrimitive : Primitive
         var points = new List<Point>();
         for (int i = 0; i < Coordinates.Length-1; i++)
         {
-            var pt = new Point(
-                at.X + (int)(Coordinates[i].X * xyPpmm.Width),
-                at.Y + (int)(Coordinates[i].Y * xyPpmm.Height)
-            );
-
+            var pt = GerberDocument.PositionMmToPx(at.X + Coordinates[i].X, at.Y + Coordinates[i].Y, xyPpmm);
             if(i > 0 && points[i-1] == pt) continue; // Prevent duplicates
             points.Add(pt);
         }

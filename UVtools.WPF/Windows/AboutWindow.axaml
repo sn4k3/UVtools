@@ -23,7 +23,7 @@
                     Padding="10"
                     VerticalContentAlignment="Center"
                     HorizontalAlignment="Right"
-                    Icon="far fa-clipboard"
+                    Icon="fa-regular fa-clipboard"
                     Text="Copy information ⮝">
                     <Button.ContextMenu>
                         <ContextMenu PlacementAnchor="Top" PlacementMode="Top">
@@ -41,7 +41,7 @@
                         Padding="10"
                         VerticalContentAlignment="Center"
                         HorizontalAlignment="Right"
-                        Icon="fas fa-sign-out-alt"
+                        Icon="fa-solid fa-sign-out-alt"
                         Text="Close"/>
             </Grid>
 		</Border>
@@ -155,7 +155,7 @@
             <controls:ButtonWithIcon Grid.Row="8" VerticalAlignment="Center"
                     Command="{Binding OpenLicense}"
                     Text="{Binding Source={x:Static core:About.License}}"
-					Icon="fas fa-balance-scale"/>
+					Icon="fa-solid fa-balance-scale"/>
 
             <TabControl Grid.Row="10">
                 <TabItem Header="Description">

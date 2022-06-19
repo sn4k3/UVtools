@@ -57,6 +57,7 @@ public class OperationProfiles //: IList<Operation>
     [XmlElement(typeof(OperationCalibrateElephantFoot))]
     [XmlElement(typeof(OperationCalibrateXYZAccuracy))]
     [XmlElement(typeof(OperationCalibrateLiftHeight))]
+    [XmlElement(typeof(OperationCalibrateBloomingEffect))]
     [XmlElement(typeof(OperationCalibrateTolerance))]
     [XmlElement(typeof(OperationCalibrateGrayscale))]
     [XmlElement(typeof(OperationCalibrateStressTower))]

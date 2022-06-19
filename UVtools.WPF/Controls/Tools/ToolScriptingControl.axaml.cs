@@ -43,10 +43,7 @@ public class ToolScriptingControl : ToolControl
             case ToolWindow.Callbacks.Loaded:
                 if(ParentWindow is not null) ParentWindow.ButtonOkEnabled = Operation.CanExecute;
                 ReloadGUI();
-                Dispatcher.UIThread.Post(() =>
-                {
-                    ReloadScript();
-                }, DispatcherPriority.Loaded);
+                Dispatcher.UIThread.Post(ReloadScript, DispatcherPriority.Loaded);
                 Operation.PropertyChanged += (sender, e) =>
                 {
                     if (e.PropertyName == nameof(Operation.CanExecute))
@@ -705,6 +702,6 @@ public class ToolScriptingControl : ToolControl
             }
         }
 
-        ParentWindow?.FitToSize();
+        //ParentWindow?.FitToSize();
     }
 }

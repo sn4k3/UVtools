@@ -34,7 +34,7 @@ public sealed class OperationScripting : Operation
     public override bool CanRunInPartialMode => true;
 
     //public override bool CanHaveProfiles => false;
-    public override string IconClass => "fas fa-code";
+    public override string IconClass => "fa-solid fa-code";
     public override string Title => "Scripting";
 
     public override string Description =>

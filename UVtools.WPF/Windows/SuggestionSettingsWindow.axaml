@@ -64,7 +64,7 @@
                                       OffContent="{Binding ActiveSuggestion.Title}"
                                       OnContent="{Binding ActiveSuggestion.Title}"/>
 
-                        <uc:ButtonWithIcon Icon="fab fa-edge"
+                        <uc:ButtonWithIcon Icon="fa-brands fa-edge"
                                            ToolTip.Tip="More information"
                                            IsVisible="{Binding ActiveSuggestion.InformationUrl, Converter={x:Static ObjectConverters.IsNotNull}}"
                                            Command="{Binding OpenWebsite}"
@@ -80,20 +80,20 @@
                     <StackPanel Orientation="Horizontal" Spacing="5">
                         <uc:ButtonWithIcon Text="Save"
                                            Spacing="5"
-                                           Icon="fas fa-check"
+                                           Icon="fa-solid fa-check"
                                            IsEnabled="{Binding PendingChanges}"
                                            Command="{Binding SaveSuggestionClicked}"/>
 
                         <uc:ButtonWithIcon Text="Discard"
                                            Spacing="5"
-                                           Icon="fas fa-undo-alt"
+                                           Icon="fa-solid fa-undo-alt"
                                            Margin="20,0,0,0"
                                            IsEnabled="{Binding PendingChanges}"
                                            Command="{Binding DiscardSuggestionClicked}"/>
 
                         <uc:ButtonWithIcon Text="Reset to default"
                                            Spacing="5"
-                                           Icon="fas fa-times"
+                                           Icon="fa-solid fa-xmark"
                                            Command="{Binding ResetSuggestionClicked}"/>
                     </StackPanel>
 

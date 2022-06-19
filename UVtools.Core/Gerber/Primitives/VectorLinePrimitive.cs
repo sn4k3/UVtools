@@ -6,6 +6,7 @@
  *  of this license document, but changing it is not allowed.
  */
 
+using System;
 using System.Data;
 using System.Drawing;
 using System.Text.RegularExpressions;
@@ -96,7 +97,8 @@ public class VectorLinePrimitive : Primitive
         RotationExpression = rotationExpression;
     }
 
-    public override void DrawFlashD3(Mat mat, SizeF xyPpmm, Point at, MCvScalar color, LineType lineType = LineType.EightConnected)
+    public override void DrawFlashD3(Mat mat, SizeF xyPpmm, PointF at, MCvScalar color,
+        LineType lineType = LineType.EightConnected)
     {
         if (!IsParsed) return;
         if (LineWidth <= 0) return;
@@ -104,9 +106,9 @@ public class VectorLinePrimitive : Primitive
         if (Exposure == 0) color = EmguExtensions.BlackColor;
         else if (color.V0 == 0) color = EmguExtensions.WhiteColor;
 
-        var pt1 = new Point(at.X + (int) (StartX * xyPpmm.Width), at.Y + (int) (StartY * xyPpmm.Height));
-        var pt2 = new Point(at.X + (int) (EndX * xyPpmm.Height), at.Y + (int) (EndY * xyPpmm.Height));
-        CvInvoke.Line(mat, pt1, pt2, color, (int)(LineWidth * xyPpmm.Height), lineType);
+        var pt1 = GerberDocument.PositionMmToPx(at.X + StartX, at.Y + StartY, xyPpmm);
+        var pt2 = GerberDocument.PositionMmToPx(at.X + EndX, at.Y + EndY, xyPpmm);
+        CvInvoke.Line(mat, pt1, pt2, color, GerberDocument.SizeMmToPx(LineWidth, xyPpmm.Height), lineType);
         //CvInvoke.Rectangle(mat, rectangle, color, -1, lineType);
     }
 

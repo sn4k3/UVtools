@@ -42,7 +42,7 @@ public class OperationDoubleExposure : Operation
 
     #region Overrides
     public override LayerRangeSelection StartLayerRangeSelection => LayerRangeSelection.Bottom;
-    public override string IconClass => "fas fa-grip-lines";
+    public override string IconClass => "fa-solid fa-grip-lines";
     public override string Title => "Double exposure";
     public override string Description =>
         "The double exposure method clones the selected layer range and print the same layer twice with different exposure times and strategies.\n" +

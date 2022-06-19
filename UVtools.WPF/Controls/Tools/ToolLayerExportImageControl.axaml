@@ -18,7 +18,7 @@
             <Button Grid.Row="0" Grid.Column="4"
                     VerticalAlignment="Stretch"
                     Command="{Binding ChooseFolder}"
-                    i:Attached.Icon="fas fa-folder"/>
+                    i:Attached.Icon="fa-solid fa-folder"/>
 
             <TextBlock Grid.Row="2" Grid.Column="0"
                        VerticalAlignment="Center"

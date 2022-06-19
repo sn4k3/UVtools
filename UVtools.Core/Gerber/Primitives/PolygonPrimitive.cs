@@ -6,6 +6,7 @@
  *  of this license document, but changing it is not allowed.
  */
 
+using System;
 using System.Data;
 using System.Drawing;
 using System.Text.RegularExpressions;
@@ -84,7 +85,8 @@ public class PolygonPrimitive : Primitive
         RotationExpression = rotationExpression;
     }
 
-    public override void DrawFlashD3(Mat mat, SizeF xyPpmm, Point at, MCvScalar color, LineType lineType = LineType.EightConnected)
+    public override void DrawFlashD3(Mat mat, SizeF xyPpmm, PointF at, MCvScalar color,
+        LineType lineType = LineType.EightConnected)
     {
         if (!IsParsed) return;
         if (Diameter <= 0) return;
@@ -92,12 +94,11 @@ public class PolygonPrimitive : Primitive
         if (Exposure == 0) color = EmguExtensions.BlackColor;
         else if (color.V0 == 0) color = EmguExtensions.WhiteColor;
 
-        var position = new Point(
-            (int) (at.X + CenterX * xyPpmm.Width),
-            (int) (at.Y + CenterY * xyPpmm.Height)
-        );
 
-        mat.DrawPolygon(VerticesCount, (int)(Diameter * xyPpmm.Max() / 2), position, color, 0, -1, lineType);
+        mat.DrawPolygon(VerticesCount, 
+            GerberDocument.SizeMmToPx(Diameter / 2, xyPpmm.Max()), 
+            GerberDocument.PositionMmToPx(at.X + CenterX, at.Y + CenterY, xyPpmm),
+            color, 0, -1, lineType);
     }
 
     public override void ParseExpressions(params string[] args)
