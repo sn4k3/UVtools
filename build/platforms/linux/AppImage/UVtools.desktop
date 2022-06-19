@@ -1,5 +1,6 @@
 # Desktop Entry Specification: https://standards.freedesktop.org/desktop-entry-spec/desktop-entry-spec-latest.html
 # https://github.com/AppImage/AppImageKit/wiki/Bundling-.NET-Core-apps
+#
 [Desktop Entry]
 Type=Application
 Name=UVtools
