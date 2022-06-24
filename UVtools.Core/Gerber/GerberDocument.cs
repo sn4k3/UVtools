@@ -13,6 +13,7 @@ using System.IO;
 using System.Text.RegularExpressions;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
+using Emgu.CV.Structure;
 using Emgu.CV.Util;
 using UVtools.Core.Extensions;
 using UVtools.Core.Gerber.Apertures;
@@ -166,6 +167,8 @@ public class GerberDocument
                     using var vec = new VectorOfPoint(regionPoints.ToArray());
                     CvInvoke.FillPoly(mat, vec, document.Polarity == GerberPolarityType.Dark ? EmguExtensions.WhiteColor : EmguExtensions.BlackColor, enableAntialiasing ? LineType.AntiAlias : LineType.EightConnected);
                 }
+                //CvInvoke.Imshow("G37", mat);
+                //CvInvoke.WaitKey();
                 regionPoints.Clear();
                 continue;
             }
@@ -228,8 +231,14 @@ public class GerberDocument
                                 var fraction = matchX.Groups[1].Value.Substring(matchX.Groups[1].Value.Length - document.CoordinateXFractionalDigits, document.CoordinateXFractionalDigits);
                                 double.TryParse($"{integers}.{fraction}", out nowX);
                             }
+
+                            nowX = document.GetMillimeters(nowX);
                         }
                     }
+                }
+                else
+                {
+                    nowX = currentX;
                 }
 
                 if (matchY.Success && matchY.Groups.Count >= 2)
@@ -248,8 +257,13 @@ public class GerberDocument
                                 var fraction = matchY.Groups[1].Value.Substring(matchY.Groups[1].Value.Length - document.CoordinateYFractionalDigits, document.CoordinateYFractionalDigits);
                                 double.TryParse($"{integers}.{fraction}", out nowY);
                             }
+                            nowY = document.GetMillimeters(nowY);
                         }
                     }
+                }
+                else
+                {
+                    nowY = currentY;
                 }
 
                 if (insideRegion)
@@ -294,7 +308,7 @@ public class GerberDocument
                                             var fraction = matchI.Groups[1].Value.Substring(matchI.Groups[1].Value.Length - document.CoordinateXFractionalDigits, document.CoordinateXFractionalDigits);
                                             double.TryParse($"{integers}.{fraction}", out xOffset);
                                         }
-                                                
+                                        xOffset = document.GetMillimeters(xOffset);
                                     }
                                 }
 
@@ -312,6 +326,7 @@ public class GerberDocument
                                             var fraction = matchJ.Groups[1].Value.Substring(matchJ.Groups[1].Value.Length - document.CoordinateYFractionalDigits, document.CoordinateYFractionalDigits);
                                             double.TryParse($"{integers}.{fraction}", out yOffset);
                                         }
+                                        yOffset = document.GetMillimeters(yOffset);
                                     }
                                 }
 
@@ -354,6 +369,8 @@ public class GerberDocument
                     {
                         currentAperture.DrawFlashD3(mat, xyPpmm, new PointF((float) nowX, (float) nowY), 
                             document.Polarity == GerberPolarityType.Dark ? EmguExtensions.WhiteColor : EmguExtensions.BlackColor, enableAntialiasing ? LineType.AntiAlias : LineType.EightConnected);
+                        //CvInvoke.Imshow("G37", mat);
+                        //CvInvoke.WaitKey();
                     }
                 }
 
@@ -364,6 +381,30 @@ public class GerberDocument
         }
 
         return document;
+    }
+
+    public float GetMillimeters(float size)
+    {
+        if (UnitType == GerberUnitType.Millimeter) return size;
+        return size * 25.4f;
+    }
+
+    public double GetMillimeters(double size)
+    {
+        if (UnitType == GerberUnitType.Millimeter) return size;
+        return size * 25.4;
+    }
+
+    public SizeF GetMillimeters(SizeF size)
+    {
+        if (UnitType == GerberUnitType.Millimeter) return size;
+        return new SizeF(size.Width * 25.4f, size.Height * 25.4f);
+    }
+
+    public PointF GetMillimeters(PointF point)
+    {
+        if (UnitType == GerberUnitType.Millimeter) return point;
+        return new PointF(point.X * 25.4f, point.Y * 25.4f);
     }
 
     public static Point PositionMmToPx(PointF atMm, SizeF xyPpmm)

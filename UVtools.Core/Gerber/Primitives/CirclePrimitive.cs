@@ -92,7 +92,7 @@ public class CirclePrimitive : Primitive
             GerberDocument.SizeMmToPx(Diameter / 2, xyPpmm.Max()), color, -1, lineType);
     }
 
-    public override void ParseExpressions(params string[] args)
+    public override void ParseExpressions(GerberDocument document, params string[] args)
     {
         string csharpExp, result;
         float num;
@@ -114,6 +114,7 @@ public class CirclePrimitive : Primitive
             result = exp.Compute(csharpExp, null).ToString()!;
             if (float.TryParse(result, out num)) Diameter = num;
         }
+        Diameter = document.GetMillimeters(Diameter);
 
         if (float.TryParse(CenterXExpression, out num)) CenterX = num;
         else
@@ -123,6 +124,7 @@ public class CirclePrimitive : Primitive
             result = exp.Compute(csharpExp, null).ToString()!;
             if (float.TryParse(result, out num)) CenterX = num;
         }
+        CenterX = document.GetMillimeters(CenterX);
 
         if (float.TryParse(CenterYExpression, out num)) CenterY = num;
         else
@@ -132,6 +134,7 @@ public class CirclePrimitive : Primitive
             result = exp.Compute(csharpExp, null).ToString()!;
             if (float.TryParse(result, out num)) CenterY = num;
         }
+        CenterY = document.GetMillimeters(CenterY);
 
 
         if (float.TryParse(RotationExpression, out num)) Rotation = (short)num;

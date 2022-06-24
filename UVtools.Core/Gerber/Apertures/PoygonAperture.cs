@@ -23,11 +23,11 @@ public class PolygonAperture : Aperture
     #endregion
 
     #region Constructor
-    public PolygonAperture() : base("Polygon") { }
+    public PolygonAperture(GerberDocument document) : base(document, "Polygon") { }
 
-    public PolygonAperture(int index, double diameter, ushort vertices) : base(index, "Polygon")
+    public PolygonAperture(GerberDocument document, int index, double diameter, ushort vertices) : base(document, index, "Polygon")
     {
-        Diameter = diameter;
+        Diameter = document.GetMillimeters(diameter);
         Vertices = vertices;
     }
     #endregion

@@ -115,20 +115,65 @@ public partial class MainWindow
         return retValue;
     }*/
 
-    public async void OnClickIssueRemove()
+    public async void RemoveRepairIssues(IEnumerable<MainIssue> issues, bool promptConfirmation = true, bool suctionCupDrill = true)
     {
-        if (IssuesGrid.SelectedItems.Count == 0) return;
+        if (!issues.Any()) return;
 
-        if (await this.MessageBoxQuestion($"Are you sure you want to remove all selected {IssuesGrid.SelectedItems.Count} issues?\n\n" +
-                                          "Warning: Removing an island can cause other issues to appear if there is material present in the layers above it.\n" +
-                                          "Always check previous and next layers before performing an island removal.", $"Remove {IssuesGrid.SelectedItems.Count} Issues?") != ButtonResult.Yes) return;
+        uint emptyLayers = 0;
+        uint islands = 0;
+        uint resinTraps = 0;
+        uint suctionCups = 0;
+        foreach (MainIssue mainIssue in issues)
+        {
+            switch (mainIssue.Type)
+            {
+                case MainIssue.IssueType.Island:
+                    islands++;
+                    break;
+                case MainIssue.IssueType.Overhang:
+                    // No action
+                    break;
+                case MainIssue.IssueType.ResinTrap:
+                    resinTraps++;
+                    break;
+                case MainIssue.IssueType.SuctionCup:
+                    suctionCups++;
+                    break;
+                case MainIssue.IssueType.TouchingBound:
+                    // No action
+                    break;
+                case MainIssue.IssueType.PrintHeight:
+                    // No action
+                    break;
+                case MainIssue.IssueType.EmptyLayer:
+                    emptyLayers++;
+                    break;
+                case MainIssue.IssueType.Debug:
+                    // No action
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+
+        if (emptyLayers == 0 && islands == 0 && resinTraps == 0 && suctionCups == 0) return;
+
+        if (promptConfirmation && await this.MessageBoxQuestion(
+                $"Are you sure you want to remove and/or repair all selected {issues.Count()} issues?\n\n" +
+                "If any, this option will:\n" +
+                (emptyLayers > 0 ? $"- Remove {emptyLayers} empty layer(s)\n" : string.Empty) +
+                (islands > 0 ? $"- Remove {emptyLayers} island(s)\n" : string.Empty) +
+                (resinTraps > 0 ? $"- Fill/solidify {resinTraps} resin trap(s)\n" : string.Empty) +
+                (suctionCups > 0 ? $"- Drill {suctionCups} suction cup(s) at it's center\n" : string.Empty) +
+                "\nWarning: Removing an island can cause other issues to appear if there is material present in the layers above it.\n" +
+                "Always check previous and next layers before performing an island removal.", $"Remove {issues.Count()} Issues?") != ButtonResult.Yes) return;
 
         var processParallelIssues = new Dictionary<uint, List<Issue>>();
         var processSuctionCups = new List<MainIssue>();
         var layersToRemove = new List<uint>();
 
 
-        foreach (MainIssue mainIssue in IssuesGrid.SelectedItems)
+        foreach (MainIssue mainIssue in issues)
         {
             switch (mainIssue.Type)
             {
@@ -148,6 +193,22 @@ public partial class MainWindow
                     }
                     continue;
                 case MainIssue.IssueType.SuctionCup:
+                    if (!suctionCupDrill)
+                    {
+                        foreach (var issue in mainIssue)
+                        {
+                            // Islands and resin traps
+                            if (!processParallelIssues.TryGetValue(issue.LayerIndex, out var issueList))
+                            {
+                                issueList = new List<Issue>();
+                                processParallelIssues.Add(issue.LayerIndex, issueList);
+                            }
+
+                            issueList.Add(issue);
+
+                        }
+                        continue;
+                    }
                     if(mainIssue.StartLayerIndex == 0) continue;
                     processSuctionCups.Add(mainIssue);
                     continue;
@@ -192,7 +253,7 @@ public partial class MainWindow
 
                                 edited = true;
                             }
-                            else if (issue.Type == MainIssue.IssueType.ResinTrap)
+                            else if (issue.Type == MainIssue.IssueType.ResinTrap || (issue.Type == MainIssue.IssueType.SuctionCup && !suctionCupDrill))
                             {
                                 var issueOfContours = (IssueOfContours)issue;
                                 using var contours = new VectorOfVectorOfPoint(issueOfContours.Contours);
@@ -219,13 +280,13 @@ public partial class MainWindow
                     OperationLayerRemove.RemoveLayers(SlicerFile, layersToRemove);
                 }
 
-                issueRemoveList.AddRange(SlicerFile.IssueManager.DrillSuctionCupsForIssues(processSuctionCups, UserSettings.Instance.LayerRepair.SuctionCupsVentHole, Progress));
+                if(suctionCupDrill) issueRemoveList.AddRange(SlicerFile.IssueManager.DrillSuctionCupsForIssues(processSuctionCups, UserSettings.Instance.LayerRepair.SuctionCupsVentHole, Progress));
 
             }
             catch (Exception ex)
             {
                 Dispatcher.UIThread.InvokeAsync(async () =>
-                    await this.MessageBoxError(ex.ToString(), "Removal failed"));
+                    await this.MessageBoxError(ex.ToString(), "Removal/repair failed"));
 
                 return false;
             }
@@ -245,8 +306,14 @@ public partial class MainWindow
 
         // Update GUI
             
-        foreach (MainIssue issue in IssuesGrid.SelectedItems)
+        foreach (MainIssue issue in issues)
         {
+            if (issue.IsSuctionCup && !suctionCupDrill)
+            {
+                issueRemoveList.Add(issue);
+                continue;
+            }
+
             if (issue.Type 
                 is not MainIssue.IssueType.Island
                 and not MainIssue.IssueType.ResinTrap
@@ -256,7 +323,7 @@ public partial class MainWindow
             issueRemoveList.Add(issue);
 
 
-            if (issue.Type == MainIssue.IssueType.Island)
+            if (issue.IsIsland)
             {
                 var nextLayer = issue.StartLayerIndex + 1;
                 if (nextLayer >= SlicerFile.LayerCount) continue;
@@ -287,6 +354,41 @@ public partial class MainWindow
 
         ShowLayer(); // It will call latter so its a extra call
         CanSave = true;
+    }
+
+    public void OnClickIssueRemove()
+    {
+        RemoveRepairIssues(IssuesGrid.SelectedItems.OfType<MainIssue>(), true);
+    }
+
+    public void SelectedIssuesIslandRemove()
+    {
+        if (IssuesGrid.SelectedItem is null) return;
+        RemoveRepairIssues(IssuesGrid.SelectedItems.OfType<MainIssue>().Where(mainIssue => mainIssue.IsIsland), false);
+    }
+
+    public void SelectedIssuesResinTrapSolidify()
+    {
+        if (IssuesGrid.SelectedItem is null) return;
+        RemoveRepairIssues(IssuesGrid.SelectedItems.OfType<MainIssue>().Where(mainIssue => mainIssue.IsResinTrap), false);
+    }
+
+    public void SelectedIssuesSuctionCupDrill()
+    {
+        if (IssuesGrid.SelectedItem is null) return;
+        RemoveRepairIssues(IssuesGrid.SelectedItems.OfType<MainIssue>().Where(mainIssue => mainIssue.IsSuctionCup), false);
+    }
+
+    public void SelectedIssuesSuctionCupSolidify()
+    {
+        if (IssuesGrid.SelectedItem is null) return;
+        RemoveRepairIssues(IssuesGrid.SelectedItems.OfType<MainIssue>().Where(mainIssue => mainIssue.IsSuctionCup), false, false);
+    }
+
+    public void SelectedIssuesEmptyLayerRemove()
+    {
+        if (IssuesGrid.SelectedItem is null) return;
+        RemoveRepairIssues(IssuesGrid.SelectedItems.OfType<MainIssue>().Where(mainIssue => mainIssue.IsEmptyLayer), false);
     }
 
     public async void OnClickIssueIgnore()

@@ -77,7 +77,7 @@ namespace UVtools.WPF.Controls.Tools
                     };
                     _timer.Stop();
                     _timer.Start();
-                    ParentWindow.ButtonOkEnabled = Operation.FileCount > 0;
+                    if(ParentWindow is not null) ParentWindow.ButtonOkEnabled = Operation.FileCount > 0;
                     Operation.Files.CollectionChanged += (sender, e) => ParentWindow.ButtonOkEnabled = Operation.FileCount > 0;
                     break;
             }

@@ -6,7 +6,6 @@
  *  of this license document, but changing it is not allowed.
  */
 
-using System;
 using System.Data;
 using System.Drawing;
 using System.Text.RegularExpressions;
@@ -112,7 +111,7 @@ public class VectorLinePrimitive : Primitive
         //CvInvoke.Rectangle(mat, rectangle, color, -1, lineType);
     }
 
-    public override void ParseExpressions(params string[] args)
+    public override void ParseExpressions(GerberDocument document, params string[] args)
     {
         string csharpExp, result;
         float num;
@@ -134,6 +133,7 @@ public class VectorLinePrimitive : Primitive
             result = exp.Compute(csharpExp, null).ToString()!;
             if (float.TryParse(result, out var val)) LineWidth = val;
         }
+        LineWidth = document.GetMillimeters(LineWidth);
 
         if (float.TryParse(StartXExpression, out num)) StartX = num;
         else
@@ -143,6 +143,7 @@ public class VectorLinePrimitive : Primitive
             result = exp.Compute(csharpExp, null).ToString()!;
             if (float.TryParse(result, out num)) StartX = num;
         }
+        StartX = document.GetMillimeters(StartX);
 
         if (float.TryParse(EndXExpression, out num)) EndX = num;
         else
@@ -152,6 +153,7 @@ public class VectorLinePrimitive : Primitive
             result = exp.Compute(csharpExp, null).ToString()!;
             if (float.TryParse(result, out num)) EndX = num;
         }
+        EndX = document.GetMillimeters(EndX);
 
         if (float.TryParse(StartYExpression, out num)) StartY = num;
         else
@@ -161,6 +163,7 @@ public class VectorLinePrimitive : Primitive
             result = exp.Compute(csharpExp, null).ToString()!;
             if (float.TryParse(result, out num)) StartY = num;
         }
+        StartY = document.GetMillimeters(StartY);
 
         if (float.TryParse(EndYExpression, out num)) EndY = num;
         else
@@ -170,7 +173,7 @@ public class VectorLinePrimitive : Primitive
             result = exp.Compute(csharpExp, null).ToString()!;
             if (float.TryParse(result, out num)) EndY = num;
         }
-
+        EndY = document.GetMillimeters(EndY);
 
         if (float.TryParse(RotationExpression, out num)) Rotation = (short)num;
         else

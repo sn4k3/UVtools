@@ -21,16 +21,14 @@ public class RectangleAperture : Aperture
     #endregion
 
     #region Constructor
-    public RectangleAperture() : base("Rectangle") { }
+    public RectangleAperture(GerberDocument document) : base(document, "Rectangle") { }
 
-    public RectangleAperture(int index, float width, float height) : base(index, "Rectangle")
-    {
-        Size = new SizeF(width, height);
-    }
+    public RectangleAperture(GerberDocument document, int index, float width, float height) : this(document, index, new SizeF(width, height))
+    { }
 
-    public RectangleAperture(int index, SizeF size) : base(index, "Rectangle")
+    public RectangleAperture(GerberDocument document, int index, SizeF size) : base(document, index, "Rectangle")
     {
-        Size = size;
+        Size = document.GetMillimeters(size);
     }
     #endregion
 

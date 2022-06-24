@@ -50,7 +50,7 @@ public class CommentPrimitive : Primitive
 
     }
 
-    public override void ParseExpressions(params string[] args)
+    public override void ParseExpressions(GerberDocument document, params string[] args)
     {
     }
 }

@@ -20,16 +20,16 @@ public class EllipseAperture : Aperture
     #endregion
 
     #region Constructor
-    public EllipseAperture() : base("Ellipse") { }
+    public EllipseAperture(GerberDocument document) : base(document, "Ellipse") { }
 
-    public EllipseAperture(int index, float width, float height) : base(index, "Ellipse")
+    public EllipseAperture(GerberDocument document, int index, float width, float height) : this(document, index, new SizeF(width, height))
     {
-        Axes = new SizeF(width, height);
+
     }
 
-    public EllipseAperture(int index, SizeF axes) : base(index, "Ellipse")
+    public EllipseAperture(GerberDocument document, int index, SizeF axes) : base(document, index, "Ellipse")
     {
-        Axes = axes;
+        Axes = document.GetMillimeters(axes);
     }
     #endregion
 

@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Drawing;
+using System.Linq;
 using System.Text.RegularExpressions;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
@@ -94,7 +95,7 @@ public class OutlinePrimitive : Primitive
         CvInvoke.FillPoly(mat, vec, color, lineType);
     }
 
-    public override void ParseExpressions(params string[] args)
+    public override void ParseExpressions(GerberDocument document, params string[] args)
     {
         string csharpExp, result;
         float num;
@@ -125,7 +126,7 @@ public class OutlinePrimitive : Primitive
             }
             else
             {
-                coordinates.Add(new PointF(x.Value, num));
+                coordinates.Add(document.GetMillimeters(new PointF(x.Value, num)));
                 x = null;
             }
         }
@@ -142,5 +143,13 @@ public class OutlinePrimitive : Primitive
         }
 
         IsParsed = true;
+    }
+
+    public override Primitive Clone()
+    {
+        var primitive = MemberwiseClone() as OutlinePrimitive;
+        primitive!.CoordinatesExpression = primitive.CoordinatesExpression.ToArray();
+        primitive.Coordinates = primitive.Coordinates.ToArray();
+        return primitive;
     }
 }

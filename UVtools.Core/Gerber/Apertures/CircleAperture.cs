@@ -6,7 +6,6 @@
  *  of this license document, but changing it is not allowed.
  */
 
-using System;
 using System.Drawing;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
@@ -22,11 +21,11 @@ public class CircleAperture : Aperture
     #endregion
 
     #region Constructor
-    public CircleAperture() : base("Circle") { }
+    public CircleAperture(GerberDocument document) : base(document, "Circle") { }
 
-    public CircleAperture(int index, double diameter) : base(index, "Circle")
+    public CircleAperture(GerberDocument document, int index, double diameter) : base(document, index, "Circle")
     {
-        Diameter = diameter;
+        Diameter = document.GetMillimeters(diameter);
     }
     #endregion
 

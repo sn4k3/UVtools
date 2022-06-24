@@ -30,6 +30,15 @@ public class MainIssue : IReadOnlyList<Issue>
         //HoleSandwich,
     }
 
+    public bool IsIsland => Type == IssueType.Island;
+    public bool IsOverhang => Type == IssueType.Overhang;
+    public bool IsResinTrap => Type == IssueType.ResinTrap;
+    public bool IsSuctionCup => Type == IssueType.SuctionCup;
+    public bool IsTouchingBound => Type == IssueType.TouchingBound;
+    public bool IsPrintHeight => Type == IssueType.PrintHeight;
+    public bool IsEmptyLayer => Type == IssueType.EmptyLayer;
+    public bool IsDebug => Type == IssueType.Debug;
+
     /// <summary>
     /// Gets the issue type associated
     /// </summary>

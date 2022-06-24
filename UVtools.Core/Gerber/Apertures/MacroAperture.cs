@@ -21,9 +21,9 @@ public class MacroAperture : Aperture
     #endregion
 
     #region Constructor
-    public MacroAperture() : base("Macro") { }
+    public MacroAperture(GerberDocument document) : base(document, "Macro") { }
 
-    public MacroAperture(int index, Macro macro) : base(index, "Macro")
+    public MacroAperture(GerberDocument document, int index, Macro macro) : base(document, index, "Macro")
     {
         Macro = macro;
     }
@@ -31,9 +31,10 @@ public class MacroAperture : Aperture
 
     public override void DrawFlashD3(Mat mat, SizeF xyPpmm, PointF at, MCvScalar color, LineType lineType = LineType.EightConnected)
     {
-        foreach (var macro in Macro)
+        foreach (var primitive in Macro)
         {
-            macro.DrawFlashD3(mat, xyPpmm, at, color, lineType);
+            //if(primitive.Name == "Comment") continue;
+            primitive.DrawFlashD3(mat, xyPpmm, at, color, lineType);
         }
     }
 }

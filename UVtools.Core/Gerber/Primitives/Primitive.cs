@@ -6,6 +6,7 @@
  *  of this license document, but changing it is not allowed.
  */
 
+using System;
 using System.Drawing;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
@@ -26,5 +27,7 @@ public abstract class Primitive
 
     public abstract void DrawFlashD3(Mat mat, SizeF xyPpmm, PointF at, MCvScalar color, LineType lineType = LineType.EightConnected);
 
-    public abstract void ParseExpressions(params string[] args);
+    public abstract void ParseExpressions(GerberDocument document, params string[] args);
+
+    public virtual Primitive Clone() => (Primitive)MemberwiseClone();
 }

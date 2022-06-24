@@ -6,7 +6,6 @@
  *  of this license document, but changing it is not allowed.
  */
 
-using System;
 using System.Data;
 using System.Drawing;
 using System.Text.RegularExpressions;
@@ -104,7 +103,7 @@ public class CenterLinePrimitive : Primitive
         //CvInvoke.Rectangle(mat, rectangle, color, -1, lineType);
     }
 
-    public override void ParseExpressions(params string[] args)
+    public override void ParseExpressions(GerberDocument document, params string[] args)
     {
         string csharpExp, result;
         float num;
@@ -126,6 +125,7 @@ public class CenterLinePrimitive : Primitive
             result = exp.Compute(csharpExp, null).ToString()!;
             if (float.TryParse(result, out var val)) Width = val;
         }
+        Width = document.GetMillimeters(Width);
 
         if (float.TryParse(HeightExpression, out num)) Height = num;
         else
@@ -135,6 +135,7 @@ public class CenterLinePrimitive : Primitive
             result = exp.Compute(csharpExp, null).ToString()!;
             if (float.TryParse(result, out var val)) Height = val;
         }
+        Height = document.GetMillimeters(Height);
 
         if (float.TryParse(CenterXExpression, out num)) CenterX = num;
         else
@@ -144,6 +145,7 @@ public class CenterLinePrimitive : Primitive
             result = exp.Compute(csharpExp, null).ToString()!;
             if (float.TryParse(result, out num)) CenterX = num;
         }
+        CenterX = document.GetMillimeters(CenterX);
 
         if (float.TryParse(CenterYExpression, out num)) CenterY = num;
         else
@@ -153,6 +155,7 @@ public class CenterLinePrimitive : Primitive
             result = exp.Compute(csharpExp, null).ToString()!;
             if (float.TryParse(result, out num)) CenterY = num;
         }
+        CenterY = document.GetMillimeters(CenterY);
 
         if (float.TryParse(RotationExpression, out num)) Rotation = (short)num;
         else

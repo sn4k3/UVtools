@@ -313,6 +313,12 @@ public class OperationPCBExposure : Operation
         if (mergeMat is not null)
         {
             using var croppedMat = mergeMat.CropByBounds(20);
+            /*if (_mirror)
+            {
+                var flip = SlicerFile.DisplayMirror;
+                if (flip == FlipDirection.None) flip = FlipDirection.Horizontally;
+                CvInvoke.Flip(croppedMat, croppedMat, (FlipType)flip);
+            }*/
             using var bgrMat = new Mat();
             CvInvoke.CvtColor(croppedMat, bgrMat, ColorConversion.Gray2Bgr);
             SlicerFile.SetThumbnails(bgrMat);

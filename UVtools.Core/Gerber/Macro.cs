@@ -89,6 +89,17 @@ public class Macro : IReadOnlyList<Primitive>
         }
     }
 
+    public Macro Clone()
+    {
+        var macro = new Macro(Name);
+        foreach (var primitive in Primitives)
+        {
+            macro.Primitives.Add(primitive.Clone());
+        }
+
+        return macro;
+    }
+
 
     public static Macro? Parse(string line)
     {

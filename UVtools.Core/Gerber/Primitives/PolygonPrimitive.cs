@@ -6,7 +6,6 @@
  *  of this license document, but changing it is not allowed.
  */
 
-using System;
 using System.Data;
 using System.Drawing;
 using System.Text.RegularExpressions;
@@ -101,7 +100,7 @@ public class PolygonPrimitive : Primitive
             color, 0, -1, lineType);
     }
 
-    public override void ParseExpressions(params string[] args)
+    public override void ParseExpressions(GerberDocument document, params string[] args)
     {
         string csharpExp, result;
         float num;
@@ -132,6 +131,7 @@ public class PolygonPrimitive : Primitive
             result = exp.Compute(csharpExp, null).ToString()!;
             if (float.TryParse(result, out num)) CenterX = num;
         }
+        CenterX = document.GetMillimeters(CenterX);
 
         if (float.TryParse(CenterYExpression, out num)) CenterY = num;
         else
@@ -141,6 +141,7 @@ public class PolygonPrimitive : Primitive
             result = exp.Compute(csharpExp, null).ToString()!;
             if (float.TryParse(result, out num)) CenterY = num;
         }
+        CenterY = document.GetMillimeters(CenterY);
 
         if (float.TryParse(DiameterExpression, out num)) Diameter = num;
         else
@@ -150,7 +151,7 @@ public class PolygonPrimitive : Primitive
             result = exp.Compute(csharpExp, null).ToString()!;
             if (float.TryParse(result, out num)) Diameter = num;
         }
-
+        Diameter = document.GetMillimeters(Diameter);
 
         if (float.TryParse(RotationExpression, out num)) Rotation = (short)num;
         else

@@ -13,6 +13,7 @@ using System.Text.RegularExpressions;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
+using UVtools.Core.Extensions;
 
 namespace UVtools.Core.Gerber.Apertures;
 
@@ -29,13 +30,24 @@ public abstract class Aperture
     /// </summary>
     public string Name { get; set; } = string.Empty;
 
+    public GerberDocument Document { get; set; } = null!;
+
     #endregion
 
     protected Aperture() { }
 
-    protected Aperture(int index) { Index = index; }
-    protected Aperture(string name) { Name = name; }
-    protected Aperture(int index, string name) : this(index) { Name = name; }
+    protected Aperture(GerberDocument document, int index)
+    {
+        Document = document;
+        Index = index;
+    }
+
+    protected Aperture(GerberDocument document, string name)
+    {
+        Document = document;
+        Name = name;
+    }
+    protected Aperture(GerberDocument document, int index, string name) : this(document, index) { Name = name; }
 
     public abstract void DrawFlashD3(Mat mat, SizeF xyPpmm, PointF at, MCvScalar color, LineType lineType = LineType.EightConnected);
 
@@ -47,13 +59,12 @@ public abstract class Aperture
         if (!int.TryParse(match.Groups[1].Value, out var index)) return null;
         //if (!char.TryParse(match.Groups[2].Value, out var type)) return null;
 
-
         switch (match.Groups[2].Value)
         {
             case "C":
             {
                 if (!double.TryParse(match.Groups[3].Value, out var diameter)) return null;
-                return new CircleAperture(index, diameter);
+                return new CircleAperture(document, index, diameter);
             }
             case "O":
             {
@@ -62,7 +73,7 @@ public abstract class Aperture
                 if (!float.TryParse(split[0], out var width)) return null;
                 if (!float.TryParse(split[1], out var height)) return null;
 
-                return new EllipseAperture(index, width, height);
+                return new EllipseAperture(document, index, width, height);
             }
             case "R":
             {
@@ -71,7 +82,7 @@ public abstract class Aperture
                 if (!float.TryParse(split[0], out var width)) return null;
                 if (!float.TryParse(split[1], out var height)) return null;
 
-                return new RectangleAperture(index, width, height);
+                return new RectangleAperture(document, index, width, height);
                 }
             case "P":
             {
@@ -80,11 +91,12 @@ public abstract class Aperture
                 if (!double.TryParse(split[0], out var diameter)) return null;
                 if (!ushort.TryParse(split[1], out var vertices)) return null;
 
-                return new PolygonAperture(index, diameter, vertices);
+                return new PolygonAperture(document, index, diameter, vertices);
             }
             default: // macro
             {
                 if (!document.Macros.TryGetValue(match.Groups[2].Value, out var macro)) return null;
+                macro = macro.Clone();
                 var parseLine = line.TrimEnd('%', '*');
                 var commaIndex = parseLine.IndexOf(',')+1;
                 if (commaIndex == 0) return null;
@@ -92,10 +104,10 @@ public abstract class Aperture
                 var args = new[] {"0"}.Concat(parseLine.Split('X', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)).ToArray();
                 foreach (var primitive in macro)
                 {
-                    primitive.ParseExpressions(args);
+                    primitive.ParseExpressions(document, args);
                 }
 
-                return new MacroAperture(index, macro);
+                return new MacroAperture(document, index, macro);
             }
         }
     }

@@ -236,7 +236,7 @@
 				<WrapPanel
 				  Orientation="Horizontal"
 				  VerticalAlignment="Center">
-					<TextBlock Text="{Binding SlicerFile.LayerHeight, StringFormat=Layer height: \{0\}mm}"/>
+					<TextBlock Text="{Binding SlicerFile.LayerHeight, StringFormat=Layer height: {0}mm}"/>
 
 					<TextBlock IsVisible="{Binding SlicerFile.CanUseBottomLayerCount}" Text="  |  "/>
 					<TextBlock IsVisible="{Binding SlicerFile.CanUseBottomLayerCount}"
@@ -266,28 +266,28 @@
 
 					<TextBlock IsVisible="{Binding SlicerFile.PrintTimeHours}" Text="  |  "/>
 					<TextBlock IsVisible="{Binding SlicerFile.PrintTimeHours}"
-					  Text="{Binding SlicerFile.PrintTimeString, StringFormat=Print time: \{0\}}"/>
+					  Text="{Binding SlicerFile.PrintTimeString, StringFormat=Print time: {0}}"/>
 
 
 					<TextBlock IsVisible="{Binding SlicerFile.MaterialMilliliters}" Text="  |  "/>
 					<TextBlock IsVisible="{Binding SlicerFile.MaterialMilliliters}"
-								Text="{Binding SlicerFile.MaterialMilliliters, StringFormat=Used material: \{0\}ml}"/>
+								Text="{Binding SlicerFile.MaterialMilliliters, StringFormat=Used material: {0}ml}"/>
 
 
 					<TextBlock IsVisible="{Binding SlicerFile.MaterialCost}" Text="  |  "/>
-					<TextBlock IsVisible="{Binding SlicerFile.MaterialCost}" Text="{Binding SlicerFile.MaterialCost, StringFormat=Material cost: \{0\}€}"/>
+					<TextBlock IsVisible="{Binding SlicerFile.MaterialCost}" Text="{Binding SlicerFile.MaterialCost, StringFormat=Material cost: {0}€}"/>
 
 
 					<TextBlock IsVisible="{Binding SlicerFile.MaterialName, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
 							   Text="  |  "/>
 					<TextBlock IsVisible="{Binding SlicerFile.MaterialName, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
-							   Text="{Binding SlicerFile.MaterialName, StringFormat=Material: \{0\}}"/>
+							   Text="{Binding SlicerFile.MaterialName, StringFormat=Material: {0}}"/>
 
 
 					<TextBlock IsVisible="{Binding SlicerFile.MachineName, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
 							   Text="  |  "/>
 					<TextBlock IsVisible="{Binding SlicerFile.MachineName, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
-							   Text="{Binding SlicerFile.MachineName, StringFormat=Machine: \{0\}}"/>
+							   Text="{Binding SlicerFile.MachineName, StringFormat=Machine: {0}}"/>
 				</WrapPanel>
 			</Border>
 
@@ -385,13 +385,13 @@
 
 							<TextBlock
 							  VerticalAlignment="Center"
-							  Text="{Binding SlicerProperties.Count, StringFormat=Properties: \{0\}}"/>
+							  Text="{Binding SlicerProperties.Count, StringFormat=Properties: {0}}"/>
 
 							<TextBlock VerticalAlignment="Center" Text="|"/>
 
 							<TextBlock
 							  VerticalAlignment="Center"
-							  Text="{Binding SlicerFile.Configs.Length, StringFormat=Groups: \{0\}}"/>
+							  Text="{Binding SlicerFile.Configs.Length, StringFormat=Groups: {0}}"/>
 
 						</StackPanel>
 
@@ -510,12 +510,12 @@
 					<Grid RowDefinitions="Auto,*">
 						<StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="5">
 							<TextBlock
-							  Text="{Binding GCodeLines, StringFormat=Lines: \{0\}}"
+							  Text="{Binding GCodeLines, StringFormat=Lines: {0}}"
 							  VerticalAlignment="Center"/>
 
 							<TextBlock Text="|" VerticalAlignment="Center"/>
 
-							<TextBlock Text="{Binding #GCodeText.Text.Length, StringFormat=Chars: \{0\}}"
+							<TextBlock Text="{Binding #GCodeText.Text.Length, StringFormat=Chars: {0}}"
 									   VerticalAlignment="Center"/>
 						</StackPanel>
 
@@ -640,19 +640,17 @@
 
 						</StackPanel>
 
-						<StackPanel
-						  Grid.Row="0"
-						  Orientation="Horizontal"
-						  Spacing="2"
-						  HorizontalAlignment="Right"
-						  VerticalAlignment="Center">
+						<StackPanel Grid.Row="0"
+                                    Orientation="Horizontal"
+                                    Spacing="2"
+                                    HorizontalAlignment="Right"
+                                    VerticalAlignment="Center">
 
-							<Button
-							  IsEnabled="{Binding IsFileLoaded}"
-							  ToolTip.Tip="Attempt to repair issues"
-							  VerticalAlignment="Stretch"
-							  i:Attached.Icon="fa-solid fa-toolbox"
-							  Command="{Binding OnClickRepairIssues}"/>
+							<Button IsEnabled="{Binding IsFileLoaded}"
+                                    ToolTip.Tip="Attempt to repair issues"
+                                    VerticalAlignment="Stretch"
+                                    i:Attached.Icon="fa-solid fa-toolbox"
+                                    Command="{Binding OnClickRepairIssues}"/>
 
 							<uc:ButtonWithIcon VerticalAlignment="Stretch"
 											   ToolTip.Tip="Compute Issues.
@@ -736,7 +734,18 @@
 								  IsReadOnly="True"
 								  ClipboardCopyMode="None"
 								  Items="{Binding IssuesGridItems}">
-							<DataGrid.Columns>
+                            <DataGrid.ContextMenu>
+                                <ContextMenu IsVisible="{Binding #IssuesGrid.SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}">
+									<MenuItem i:MenuItem.Icon="fa-solid fa-eye-slash" Command="{Binding OnClickIssueIgnore}" Header="Ignore issue(s)"/>
+                                    <Separator/>
+                                    <MenuItem i:MenuItem.Icon="fa-solid fa-trash-can" Command="{Binding SelectedIssuesIslandRemove}" IsVisible="{Binding #IssuesGrid.SelectedItem.IsIsland}" Header="Remove island(s)"/>
+                                    <MenuItem i:MenuItem.Icon="fa-solid fa-diamond" Command="{Binding SelectedIssuesResinTrapSolidify}" IsVisible="{Binding #IssuesGrid.SelectedItem.IsResinTrap}" Header="Fill/solidify resin trap(s)"/>
+                                    <MenuItem i:MenuItem.Icon="fa-solid fa-circle-dot" Command="{Binding SelectedIssuesSuctionCupDrill}" IsVisible="{Binding #IssuesGrid.SelectedItem.IsSuctionCup}" Header="Drill suction cup(s)"/>
+                                    <MenuItem i:MenuItem.Icon="fa-solid fa-diamond" Command="{Binding SelectedIssuesSuctionCupSolidify}" IsVisible="{Binding #IssuesGrid.SelectedItem.IsSuctionCup}" Header="Fill/solidify suction cup(s)"/>
+                                    <MenuItem i:MenuItem.Icon="fa-solid fa-trash-can" Command="{Binding SelectedIssuesEmptyLayerRemove}" IsVisible="{Binding #IssuesGrid.SelectedItem.IsEmptyLayer}" Header="Remove empty layer(s)"/>
+                                </ContextMenu>
+                            </DataGrid.ContextMenu>
+                            <DataGrid.Columns>
 
 								<DataGridTextColumn  Header="Type"
 													 Binding="{Binding Type}"
@@ -1003,7 +1012,7 @@
 											Grid.Row="10"
 											Grid.Column="4"
 											VerticalAlignment="Center"
-											Text="{Binding DrawingPixelDrawing.RemovePixelBrightnessPercent, StringFormat=\{0:0\}%}" />
+											Text="{Binding DrawingPixelDrawing.RemovePixelBrightnessPercent, StringFormat={}{0:0}%}" />
 
 										<TextBlock
 											Grid.Row="12"
@@ -1022,7 +1031,7 @@
 											Grid.Row="12"
 											Grid.Column="4"
 											VerticalAlignment="Center"
-											Text="{Binding DrawingPixelDrawing.PixelBrightnessPercent, StringFormat=\{0:0\}%}" />
+											Text="{Binding DrawingPixelDrawing.PixelBrightnessPercent, StringFormat={}{0:0}%}" />
 
 										<TextBlock
 										  Grid.Row="14"
@@ -1187,7 +1196,7 @@
 											Grid.Row="16"
 											Grid.Column="4"
 											VerticalAlignment="Center"
-											Text="{Binding DrawingPixelText.RemovePixelBrightnessPercent, StringFormat=\{0:0\}%}" />
+											Text="{Binding DrawingPixelText.RemovePixelBrightnessPercent, StringFormat={}{0:0}%}" />
 
 										<TextBlock
 											Grid.Row="18"
@@ -1205,7 +1214,7 @@
 											Grid.Row="18"
 											Grid.Column="4"
 											VerticalAlignment="Center"
-											Text="{Binding DrawingPixelText.PixelBrightnessPercent, StringFormat=\{0:0\}%}" />
+											Text="{Binding DrawingPixelText.PixelBrightnessPercent, StringFormat={}{0:0}%}" />
 
 
 										<TextBlock
@@ -1269,7 +1278,7 @@
 											Grid.Row="0"
 											Grid.Column="4"
 											VerticalAlignment="Center"
-											Text="{Binding DrawingPixelEraser.PixelBrightnessPercent, StringFormat=\{0:0\}%}" />
+											Text="{Binding DrawingPixelEraser.PixelBrightnessPercent, StringFormat={}{0:0}%}" />
 
 										<TextBlock
 											Grid.Row="2"
@@ -1365,7 +1374,7 @@
 											Grid.Row="6"
 											Grid.Column="4"
 											VerticalAlignment="Center"
-											Text="{Binding DrawingPixelSupport.PixelBrightnessPercent, StringFormat=\{0:0\}%}" />
+											Text="{Binding DrawingPixelSupport.PixelBrightnessPercent, StringFormat={}{0:0}%}" />
 
 									</Grid>
 								</StackPanel>
@@ -1434,7 +1443,7 @@
 							<uc:ButtonWithIcon IsEnabled="{Binding Drawings.Count}"
 											   Icon="fa-solid fa-check"
 											   Spacing="5"
-											   Text="{Binding Drawings.Count, StringFormat=Apply \{0\} operations}"
+											   Text="{Binding Drawings.Count, StringFormat=Apply {0} operations}"
 											   Command="{Binding DrawModifications}"
 											   CommandParameter="false"/>
 						</StackPanel>
@@ -2072,7 +2081,7 @@
 						<TextBlock
 						  ToolTip.Tip="Layer preview computation time."
 						  Margin="5,0,0,0"
-						  VerticalAlignment="Center" Text="{Binding ShowLayerRenderMs, StringFormat=\{0\}ms}"/>
+						  VerticalAlignment="Center" Text="{Binding ShowLayerRenderMs, StringFormat={}{0}ms}"/>
 					</WrapPanel>
 				</Grid>
 			</Grid>
@@ -2095,7 +2104,7 @@
                         Margin="10" Text="{Binding Progress.Title}"/>
 					<TextBlock
                         Grid.Row="1"
-                        Margin="10,0,10,10" Text="{Binding Progress.ElapsedTimeStr, StringFormat=Elapsed Time: \{0\}}"/>
+                        Margin="10,0,10,10" Text="{Binding Progress.ElapsedTimeStr, StringFormat=Elapsed Time: {0}}"/>
 					<TextBlock
                         Grid.Row="2"
                         Margin="10,0,10,10" Text="{Binding Progress.Description}" HorizontalAlignment="Center"/>
