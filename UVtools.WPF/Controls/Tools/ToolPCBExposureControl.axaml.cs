@@ -92,7 +92,8 @@ namespace UVtools.WPF.Controls.Tools
                 {
                     return;
                 }
-                if (!_selectedFile.ValueAsString.EndsWith(".gbr", StringComparison.OrdinalIgnoreCase) || !File.Exists(_selectedFile.ValueAsString)) return;
+                
+                if (!OperationPCBExposure.ValidExtensions.Any(extension => _selectedFile.ValueAsString.EndsWith($".{extension}", StringComparison.InvariantCultureIgnoreCase)) || !File.Exists(_selectedFile.ValueAsString)) return;
                 using var mat = Operation.GetMat(_selectedFile.ValueAsString);
                 using var matCropped = mat.CropByBounds(20);
                 _previewImage?.Dispose();
@@ -115,7 +116,7 @@ namespace UVtools.WPF.Controls.Tools
                     new()
                     {
                         Name = "Gerber files",
-                        Extensions = new List<string>{ "gbr" }
+                        Extensions = new List<string>(OperationPCBExposure.ValidExtensions)
                     },
                 },
             };

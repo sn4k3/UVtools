@@ -13,29 +13,34 @@ using System.IO;
 using System.Text.RegularExpressions;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
-using Emgu.CV.Structure;
 using Emgu.CV.Util;
 using UVtools.Core.Extensions;
 using UVtools.Core.Gerber.Apertures;
 
 namespace UVtools.Core.Gerber;
 
+/// <summary>
+/// https://www.ucamco.com/files/downloads/file_en/456/gerber-layer-format-specification-revision-2022-02_en.pdf?ac97011bf6bce9aaf0b1aac43d84b05f
+/// </summary>
 public class GerberDocument
 {
     #region Properties
 
+    public GerberZerosSuppressionType ZerosSuppressionType { get; set; } = GerberZerosSuppressionType.NoSuppression;
     public GerberPositionType PositionType { get; set; } = GerberPositionType.Absolute;
     public GerberUnitType UnitType { get; set; } = GerberUnitType.Millimeter;
     public GerberPolarityType Polarity { get; set; } = GerberPolarityType.Dark;
     public GerberMoveType MoveType { get; set; } = GerberMoveType.Linear;
 
-    public bool LeadingZeroOmitted { get; set; } = true;
-
     public byte CoordinateXIntegers { get; set; } = 3;
     public byte CoordinateXFractionalDigits { get; set; } = 6;
 
+    public byte CoordinateXLength => (byte)(CoordinateXIntegers + CoordinateXFractionalDigits);
+
     public byte CoordinateYIntegers { get; set; } = 3;
     public byte CoordinateYFractionalDigits { get; set; } = 6;
+
+    public byte CoordinateYLength => (byte)(CoordinateYIntegers + CoordinateYFractionalDigits);
 
     public Dictionary<int, Aperture> Apertures { get; } = new();
     public Dictionary<string, Macro> Macros { get; } = new();
@@ -101,11 +106,11 @@ public class GerberDocument
             {
                 // %FSLAX34Y34*%
                 // 0123456789
-                document.LeadingZeroOmitted = line[3] switch
+                document.ZerosSuppressionType = line[3] switch
                 {
-                    'L' => true,
-                    'T' => false,
-                    _ => document.LeadingZeroOmitted
+                    'L' => GerberZerosSuppressionType.Leading,
+                    'T' => GerberZerosSuppressionType.Trail,
+                    _ => document.ZerosSuppressionType
                 };
                 document.PositionType = line[4] switch
                 {
@@ -113,6 +118,7 @@ public class GerberDocument
                     'I' => GerberPositionType.Relative,
                     _ => document.PositionType
                 };
+                if (document.PositionType == GerberPositionType.Relative) throw new NotImplementedException("Relative positions are not implemented yet.\nPlease use Absolute position for now.");
                 if (line[5] != 'X') continue;
                 if (byte.TryParse(line[6].ToString(), out var x1)) document.CoordinateXIntegers = x1;
                 if (byte.TryParse(line[7].ToString(), out var x2)) document.CoordinateXFractionalDigits = x2;
@@ -191,6 +197,7 @@ public class GerberDocument
                 continue;
             }
 
+            // Aperture selector
             if (line[0] == 'D')
             {
                 var matchD = Regex.Match(line, @"D(\d+)");
@@ -198,15 +205,17 @@ public class GerberDocument
 
                 if (!int.TryParse(matchD.Groups[1].Value, out var d)) continue;
 
+                if(d < 10) continue;
                 if (!document.Apertures.TryGetValue(d, out currentAperture)) continue;
 
                 continue;
             }
 
+
             if (line[0] == 'X' || line[0] == 'Y')
             {
-                var matchX = Regex.Match(line, @"X-?(\d+)");
-                var matchY = Regex.Match(line, @"Y-?(\d+)");
+                var matchX = Regex.Match(line, @"X-?(\d+)?");
+                var matchY = Regex.Match(line, @"Y-?(\d+)?");
                 var matchD = Regex.Match(line, @"D(\d+)");
 
                 double nowX = 0;
@@ -215,25 +224,20 @@ public class GerberDocument
                 if (!matchD.Success || matchD.Groups.Count < 2) continue;
                 if (!int.TryParse(matchD.Groups[1].Value, out var d)) continue;
 
-                if (matchX.Success && matchX.Groups.Count >= 2)
+                if (matchX.Success)
                 {
-                    if (double.TryParse(matchX.Groups[1].Value, out nowX))
+                    if (matchX.Groups.Count >= 2)
                     {
-                        if (nowX != 0)
+                        var valueStr = document.ZerosSuppressionType switch
                         {
-                            if (document.CoordinateXFractionalDigits > matchX.Groups[1].Value.Length) // Leading zero omitted
-                            {
-                                double.TryParse($"0.{matchX.Groups[1].Value}", out nowX);
-                            }
-                            else
-                            {
-                                var integers = matchX.Groups[1].Value[..^document.CoordinateXFractionalDigits];
-                                var fraction = matchX.Groups[1].Value.Substring(matchX.Groups[1].Value.Length - document.CoordinateXFractionalDigits, document.CoordinateXFractionalDigits);
-                                double.TryParse($"{integers}.{fraction}", out nowX);
-                            }
+                            GerberZerosSuppressionType.Trail => matchX.Groups[1].Value.PadRight(document.CoordinateXLength, '0'),
+                            _ => matchX.Groups[1].Value.PadLeft(document.CoordinateXLength, '0'),
+                        };
 
-                            nowX = document.GetMillimeters(nowX);
-                        }
+                        var integers = valueStr[..document.CoordinateXIntegers];
+                        var fraction = valueStr[document.CoordinateXIntegers..];
+                        double.TryParse($"{integers}.{fraction}", out nowX);
+                        nowX = document.GetMillimeters(nowX);
                     }
                 }
                 else
@@ -241,24 +245,21 @@ public class GerberDocument
                     nowX = currentX;
                 }
 
-                if (matchY.Success && matchY.Groups.Count >= 2)
+                if (matchY.Success)
                 {
-                    if (double.TryParse(matchY.Groups[1].Value, out nowY))
+                    if (matchY.Groups.Count >= 2)
                     {
-                        if (nowY != 0) 
+                        var valueStr = document.ZerosSuppressionType switch
                         {
-                            if (document.CoordinateYFractionalDigits > matchY.Groups[1].Value.Length)  // Leading zero omitted
-                            {
-                                double.TryParse($"0.{matchY.Groups[1].Value}", out nowY);
-                            }
-                            else
-                            {
-                                var integers = matchY.Groups[1].Value[..^document.CoordinateYFractionalDigits];
-                                var fraction = matchY.Groups[1].Value.Substring(matchY.Groups[1].Value.Length - document.CoordinateYFractionalDigits, document.CoordinateYFractionalDigits);
-                                double.TryParse($"{integers}.{fraction}", out nowY);
-                            }
-                            nowY = document.GetMillimeters(nowY);
-                        }
+                            GerberZerosSuppressionType.Trail => matchY.Groups[1].Value.PadRight(document.CoordinateYLength, '0'),
+                            _ => matchY.Groups[1].Value.PadLeft(document.CoordinateYLength, '0'),
+                        };
+
+                        var integers = valueStr[..document.CoordinateYIntegers];
+                        var fraction = valueStr[document.CoordinateYIntegers..];
+                        double.TryParse($"{integers}.{fraction}", out nowY);
+                        nowY = document.GetMillimeters(nowY);
+
                     }
                 }
                 else
@@ -289,46 +290,38 @@ public class GerberDocument
                         {
                             if (document.MoveType is GerberMoveType.Arc or GerberMoveType.ArcCounterClockwise)
                             {
+                                double xOffset = 0;
+                                double yOffset = 0;
                                 var matchI = Regex.Match(line, @"I(-?\d+)");
                                 var matchJ = Regex.Match(line, @"J(-?\d+)");
                                 if(!matchI.Success || !matchJ.Success || matchI.Groups.Count < 2 || matchJ.Groups.Count < 2) continue;
 
 
-                                if (double.TryParse(matchI.Groups[1].Value, out var xOffset))
+                                var valueStr = document.ZerosSuppressionType switch
                                 {
-                                    if (xOffset != 0)
-                                    {
-                                        if (document.CoordinateXFractionalDigits > matchI.Groups[1].Value.Length) // Leading zero omitted
-                                        {
-                                            double.TryParse($"0.{matchI.Groups[1].Value}", out xOffset);
-                                        }
-                                        else
-                                        {
-                                            var integers = matchI.Groups[1].Value[..^document.CoordinateXFractionalDigits];
-                                            var fraction = matchI.Groups[1].Value.Substring(matchI.Groups[1].Value.Length - document.CoordinateXFractionalDigits, document.CoordinateXFractionalDigits);
-                                            double.TryParse($"{integers}.{fraction}", out xOffset);
-                                        }
-                                        xOffset = document.GetMillimeters(xOffset);
-                                    }
-                                }
+                                    GerberZerosSuppressionType.Trail => matchI.Groups[1].Value.PadRight(document.CoordinateXLength, '0'),
+                                    _ => matchI.Groups[1].Value.PadLeft(document.CoordinateXLength, '0'),
+                                };
 
-                                if (double.TryParse(matchJ.Groups[1].Value, out var yOffset))
+
+                                var integers = valueStr[..document.CoordinateXIntegers];
+                                var fraction = valueStr[document.CoordinateXIntegers..];
+                                double.TryParse($"{integers}.{fraction}", out xOffset);
+                                xOffset = document.GetMillimeters(xOffset);
+
+
+                                valueStr = document.ZerosSuppressionType switch
                                 {
-                                    if(yOffset != 0)
-                                    {
-                                        if (document.CoordinateYFractionalDigits > matchJ.Groups[1].Value.Length) // Leading zero omitted
-                                        {
-                                            double.TryParse($"0.{matchJ.Groups[1].Value}", out yOffset);
-                                        }
-                                        else
-                                        {
-                                            var integers = matchJ.Groups[1].Value[..^document.CoordinateYFractionalDigits];
-                                            var fraction = matchJ.Groups[1].Value.Substring(matchJ.Groups[1].Value.Length - document.CoordinateYFractionalDigits, document.CoordinateYFractionalDigits);
-                                            double.TryParse($"{integers}.{fraction}", out yOffset);
-                                        }
-                                        yOffset = document.GetMillimeters(yOffset);
-                                    }
-                                }
+                                    GerberZerosSuppressionType.Trail => matchJ.Groups[1].Value.PadRight(document.CoordinateYLength, '0'),
+                                    _ => matchJ.Groups[1].Value.PadLeft(document.CoordinateYLength, '0'),
+                                };
+
+
+                                integers = valueStr[..document.CoordinateYIntegers];
+                                fraction = valueStr[document.CoordinateYIntegers..];
+                                double.TryParse($"{integers}.{fraction}", out yOffset);
+                                yOffset = document.GetMillimeters(yOffset);
+
 
                                 if (currentX == nowX && currentY == nowY) // Closed circle
                                 {

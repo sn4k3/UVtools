@@ -7,6 +7,22 @@
  */
 namespace UVtools.Core.Gerber;
 
+public enum GerberZerosSuppressionType : byte
+{
+    /// <summary>
+    /// Do not omit zeros
+    /// </summary>
+    NoSuppression,
+    /// <summary>
+    /// Omit left zeros
+    /// </summary>
+    Leading,
+    /// <summary>
+    /// Omit right zeros
+    /// </summary>
+    Trail
+}
+
 public enum GerberPositionType : byte
 {
     Absolute,

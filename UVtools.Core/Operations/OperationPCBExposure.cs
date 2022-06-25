@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 using System.Text;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
@@ -25,6 +26,22 @@ namespace UVtools.Core.Operations;
 [Serializable]
 public class OperationPCBExposure : Operation
 {
+    #region
+
+    public static string[] ValidExtensions => new[]
+    {
+        "gbr", // Gerber
+        "gko", // Board outline layer
+        "gtl", // Top layer
+        "gto", // Top silkscreen layer
+        "gts", // Top solder mask layer
+        "gbl", // Bottom layer
+        "gbo", // Bottom silkscreen layer
+        "gbs", // Bottom solder mask layer
+        "gml", // Mechanical layer
+    };
+    #endregion
+
     #region Members
     private RangeObservableCollection<ValueDescription> _files = new();
 
@@ -189,7 +206,8 @@ public class OperationPCBExposure : Operation
         var tmpPath = PathExtensions.GetTemporaryDirectory($"{About.Software}.");
         foreach (var entry in zip.Entries)
         {
-            if(!entry.Name.EndsWith(".gbr")) continue;
+            if(!ValidExtensions.Any(extension => entry.Name.EndsWith($".{extension}", StringComparison.InvariantCultureIgnoreCase))) continue;
+
             var filePath = entry.ImprovedExtractToFile(tmpPath, false);
             if (!string.IsNullOrEmpty(filePath))
             {
