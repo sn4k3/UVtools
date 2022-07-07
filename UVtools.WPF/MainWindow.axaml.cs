@@ -111,6 +111,7 @@ public partial class MainWindow : WindowEx
         new() { Tag = new OperationLayerRemove()},
         new() { Tag = new OperationLayerExportImage()},
         new() { Tag = new OperationLayerExportGif()},
+        new() { Tag = new OperationLayerExportHtml()},
         new() { Tag = new OperationLayerExportSkeleton()},
         new() { Tag = new OperationLayerExportHeatMap()},
         new() { Tag = new OperationLayerExportMesh()},

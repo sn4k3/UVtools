@@ -35,6 +35,7 @@ public class CXDLPFile : FileFormat
     #region Constants
     private const byte HEADER_SIZE = 9; // CXSW3DV2
     private const string HEADER_VALUE = "CXSW3DV2";
+    private const string HEADER_VALUE_GENERIC = "CXSW3D";
     #endregion
 
     #region Sub Classes
@@ -128,9 +129,14 @@ public class CXDLPFile : FileFormat
 
         public void Validate()
         {
-            if (HeaderSize != HEADER_SIZE || HeaderValue != HEADER_VALUE)
+            /*if (HeaderSize != HEADER_SIZE || HeaderValue != HEADER_VALUE)
             {
                 throw new FileLoadException("Not a valid CXDLP file!");
+            }*/
+
+            if (HeaderSize - 1 != HeaderValue.Length || !HeaderValue.StartsWith(HEADER_VALUE_GENERIC))
+            {
+                throw new FileLoadException($"Invalid header data for CXDLP file.");
             }
         }
 
@@ -386,10 +392,20 @@ public class CXDLPFile : FileFormat
 
         public void Validate()
         {
-            if (FooterSize != HEADER_SIZE || FooterValue != HEADER_VALUE)
+            /*if (FooterSize != HEADER_SIZE || FooterValue != HEADER_VALUE)
             {
-                throw new FileLoadException("Not a valid CXDLP file!");
+                throw new FileLoadException($"Not a valid CXDLP file! Incorrect footer data.\n{ToString()}");
+            }*/
+
+            if (FooterSize-1 != FooterValue.Length || !FooterValue.StartsWith(HEADER_VALUE_GENERIC))
+            {
+                throw new FileLoadException($"Invalid footer data for CXDLP file.\n{ToString()}");
             }
+        }
+
+        public override string ToString()
+        {
+            return $"{nameof(FooterSize)}: {FooterSize}, {nameof(FooterValue)}: {FooterValue}";
         }
     }
     #endregion

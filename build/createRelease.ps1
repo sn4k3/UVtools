@@ -9,6 +9,11 @@
 #
 # https://gist.github.com/lantrix/738ebfa616d5222a8b1db947793bc3fc
 #
+if($PSVersionTable.PSVersion.Major -lt 7){
+    Write-Error("Powershell version $($PSVersionTable.PSVersion) is not compatible with this build script.`n
+You need at least the version 7.")
+    return;
+}
 
 ####################################
 ###        Fix Zip slash         ###

@@ -52,6 +52,7 @@ public class OperationProfiles //: IList<Operation>
     [XmlElement(typeof(OperationScripting))]
         
     [XmlElement(typeof(OperationLayerExportGif))]
+    [XmlElement(typeof(OperationLayerExportHtml))]
 
     [XmlElement(typeof(OperationCalibrateExposureFinder))]
     [XmlElement(typeof(OperationCalibrateElephantFoot))]

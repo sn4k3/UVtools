@@ -1,5 +1,11 @@
 # Changelog
 
+## 07/07/2022 - v3.5.3
+
+- (Add) Layer action - Export layers to HTML: Export file information and layers to an html file
+- (Change) CXDLP: Validate header and footer value must start with "CXSW3D" instead of force equal to "CXSW3DV2" (#501)
+- (Upgrade) .NET from 6.0.5 to 6.0.6
+
 ## 25/06/2022 - v3.5.2
 
 - **PCB Exposure:**
