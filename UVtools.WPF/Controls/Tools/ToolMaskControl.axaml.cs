@@ -53,7 +53,7 @@ public class ToolMaskControl : ToolControl
     }
 
     public string InfoPrinterResolutionStr => $"Printer resolution: {App.SlicerFile.Resolution}";
-    public string InfoMaskResolutionStr => $"Mask resolution: "+ (Operation.HaveMask ? Operation.Mask.Size.ToString() : "(Unloaded)");
+    public string InfoMaskResolutionStr => $"Mask resolution: "+ (Operation.HaveInputMask ? Operation.Mask.Size.ToString() : "(Unloaded)");
 
     public Bitmap MaskImage
     {
@@ -106,28 +106,7 @@ public class ToolMaskControl : ToolControl
 
         try
         {
-            Operation.Mask = CvInvoke.Imread(result[0], ImreadModes.Grayscale);
-            var roi = App.MainWindow.ROI;
-            if (roi.IsEmpty)
-            {
-                if (Operation.Mask.Size != App.SlicerFile.Resolution)
-                {
-                    CvInvoke.Resize(Operation.Mask, Operation.Mask, App.SlicerFile.Resolution);
-                }
-            }
-            else
-            {
-                if (Operation.Mask.Size != roi.Size)
-                {
-                    CvInvoke.Resize(Operation.Mask, Operation.Mask, roi.Size);
-                }
-            }
-
-            if (_isMaskInverted)
-            {
-                Operation.InvertMask();
-            }
-
+            Operation.LoadFromFile(result[0], _isMaskInverted, App.MainWindow.ROI.Size.IsEmpty ? SlicerFile.Resolution : App.MainWindow.ROI.Size);
             MaskImage = Operation.Mask.ToBitmap();
         }
         catch (Exception e)
@@ -164,8 +143,7 @@ public class ToolMaskControl : ToolControl
             CvInvoke.Circle(Operation.Mask, center, (int)i, new MCvScalar(color), 2);
         }
 
-        if (_isMaskInverted)
-            Operation.InvertMask();
+        if (_isMaskInverted) Operation.InvertMask();
         MaskImage = Operation.Mask.ToBitmap();
     }
 }

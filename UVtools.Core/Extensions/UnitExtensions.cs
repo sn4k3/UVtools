@@ -11,7 +11,12 @@ namespace UVtools.Core.Extensions;
 public static class UnitExtensions
 {
     /// <summary>
+    /// 1 inch to 1 mm
+    /// </summary>
+    public const double InchToMillimeter = 25.4;
+
+    /// <summary>
     /// 1 mm to 1 inch
     /// </summary>
-    public const double MillimeterInInch = 0.0393700787;
+    public const double MillimeterToInch = 0.0393700787;
 }

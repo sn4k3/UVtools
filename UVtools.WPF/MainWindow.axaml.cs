@@ -1069,6 +1069,12 @@ public partial class MainWindow : WindowEx
         ResetDataContext();
     }
 
+    public void OnMenuFileFreeUnusedRAM()
+    {
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+    }
+
     public void OnMenuFileFullscreen()
     {
         WindowState = WindowState == WindowState.FullScreen ? WindowState.Maximized : WindowState.FullScreen;
@@ -1233,7 +1239,7 @@ public partial class MainWindow : WindowEx
         
         if (IsFileLoaded)
         {
-            title += $"File: {SlicerFile.Filename} ({Math.Round(LastStopWatch.ElapsedMilliseconds / 1000m, 2)}s)   ";
+            title += $"File: {SlicerFile.Filename} ({LastStopWatch.Elapsed.Minutes}m {LastStopWatch.Elapsed.Seconds}s)   ";
         }
 
         title += $"Version: {About.VersionStr}   RAM: {SizeExtensions.SizeSuffix(Environment.WorkingSet)}";

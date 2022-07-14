@@ -8,9 +8,12 @@
 
 using Emgu.CV;
 using System;
+using System.Drawing;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
+using Emgu.CV.CvEnum;
+using Emgu.CV.DepthAI;
 using UVtools.Core.FileFormats;
 
 namespace UVtools.Core.Operations;
@@ -65,6 +68,26 @@ public class OperationMask : Operation
     #endregion
 
     #region Methods
+
+    /// <summary>
+    /// Loads mask from a image file
+    /// </summary>
+    /// <param name="filePath"></param>
+    /// <param name="invertMask"></param>
+    /// <param name="maskSize"></param>
+    public void LoadFromFile(string filePath, bool invertMask = false, Size maskSize = default)
+    {
+        Mask = CvInvoke.Imread(filePath, ImreadModes.Grayscale);
+        if (maskSize.Width > 0 && maskSize.Height > 0 && Mask.Size != maskSize)
+        {
+            CvInvoke.Resize(Mask, Mask, maskSize);
+        }
+
+        if (invertMask)
+        {
+            InvertMask();
+        }
+    }
 
     public void InvertMask()
     {

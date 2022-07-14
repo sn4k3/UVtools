@@ -102,6 +102,32 @@ public class GerberDocument
                 continue;
             }
 
+            if (line.StartsWith("G70"))
+            {
+                document.UnitType = GerberUnitType.Inch;
+                continue;
+            }
+
+
+            if (line.StartsWith("G71"))
+            {
+                document.UnitType = GerberUnitType.Millimeter;
+                continue;
+            }
+
+            if (line.StartsWith("G90"))
+            {
+                document.PositionType = GerberPositionType.Absolute;
+                continue;
+            }
+
+
+            if (line.StartsWith("G91"))
+            {
+                document.PositionType = GerberPositionType.Relative;
+                continue;
+            }
+
             if (line.StartsWith("%FS") && line.Length >= FSlength) 
             {
                 // %FSLAX34Y34*%
@@ -379,25 +405,25 @@ public class GerberDocument
     public float GetMillimeters(float size)
     {
         if (UnitType == GerberUnitType.Millimeter) return size;
-        return size * 25.4f;
+        return size * (float)UnitExtensions.InchToMillimeter;
     }
 
     public double GetMillimeters(double size)
     {
         if (UnitType == GerberUnitType.Millimeter) return size;
-        return size * 25.4;
+        return size * UnitExtensions.InchToMillimeter;
     }
 
     public SizeF GetMillimeters(SizeF size)
     {
         if (UnitType == GerberUnitType.Millimeter) return size;
-        return new SizeF(size.Width * 25.4f, size.Height * 25.4f);
+        return new SizeF(size.Width * (float)UnitExtensions.InchToMillimeter, size.Height * (float)UnitExtensions.InchToMillimeter);
     }
 
     public PointF GetMillimeters(PointF point)
     {
         if (UnitType == GerberUnitType.Millimeter) return point;
-        return new PointF(point.X * 25.4f, point.Y * 25.4f);
+        return new PointF(point.X * (float)UnitExtensions.InchToMillimeter, point.Y * (float)UnitExtensions.InchToMillimeter);
     }
 
     public static Point PositionMmToPx(PointF atMm, SizeF xyPpmm)

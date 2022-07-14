@@ -11,7 +11,6 @@ using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
 using System;
 using System.Collections;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -1470,7 +1469,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     }
 
     /// <summary>
-    /// Gets the image width resolution
+    /// Gets the image width and height resolution
     /// </summary>
     public Size Resolution
     {
@@ -1533,7 +1532,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <summary>
     /// Gets the display diagonal in inch's
     /// </summary>
-    public float DisplayDiagonalInches => (float)Math.Round(Math.Sqrt(Math.Pow(DisplayWidth, 2) + Math.Pow(DisplayHeight, 2)) * UnitExtensions.MillimeterInInch, 2);
+    public float DisplayDiagonalInches => (float)Math.Round(Math.Sqrt(Math.Pow(DisplayWidth, 2) + Math.Pow(DisplayHeight, 2)) * UnitExtensions.MillimeterToInch, 2);
 
     /// <summary>
     /// Gets the display ratio
@@ -5534,6 +5533,178 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         progress ??= new OperationProgress();
         progress.Reset("Drawings", (uint)drawings.Count);
 
+        var group1 = drawings
+            .Where(operation => operation.OperationType
+                is PixelOperation.PixelOperationType.Drawing
+                or PixelOperation.PixelOperationType.Text
+                or PixelOperation.PixelOperationType.Eraser)
+            .GroupBy(operation => operation.LayerIndex);
+
+        Parallel.ForEach(group1, CoreSettings.GetParallelOptions(progress), layerOperationGroup =>
+        {
+            var layer = this[layerOperationGroup.Key];
+            using var mat = layer.LayerMat;
+
+            foreach (var operation in layerOperationGroup)
+            {
+                if (operation.OperationType == PixelOperation.PixelOperationType.Drawing)
+                {
+                    var operationDrawing = (PixelDrawing)operation;
+
+                    if (operationDrawing.BrushSize == 1)
+                    {
+                        mat.SetByte(operation.Location.X, operation.Location.Y, operationDrawing.Brightness);
+                        continue;
+                    }
+
+                    mat.DrawPolygon((byte)operationDrawing.BrushShape, operationDrawing.BrushSize / 2, operationDrawing.Location,
+                        new MCvScalar(operationDrawing.Brightness), operationDrawing.RotationAngle, operationDrawing.Thickness, operationDrawing.LineType);
+                    /*switch (operationDrawing.BrushShape)
+                    {
+                        case PixelDrawing.BrushShapeType.Square:
+                            CvInvoke.Rectangle(mat, operationDrawing.Rectangle, new MCvScalar(operationDrawing.Brightness), operationDrawing.Thickness, operationDrawing.LineType);
+                            break;
+                        case PixelDrawing.BrushShapeType.Circle:
+                            CvInvoke.Circle(mat, operation.Location, operationDrawing.BrushSize / 2,
+                                new MCvScalar(operationDrawing.Brightness), operationDrawing.Thickness, operationDrawing.LineType);
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException();
+                    }*/
+                }
+                else if (operation.OperationType == PixelOperation.PixelOperationType.Text)
+                {
+                    var operationText = (PixelText)operation;
+                    mat.PutTextRotated(operationText.Text, operationText.Location, operationText.Font, operationText.FontScale, new MCvScalar(operationText.Brightness), operationText.Thickness, operationText.LineType, operationText.Mirror, operationText.LineAlignment, operationText.Angle);
+                }
+                else if (operation.OperationType == PixelOperation.PixelOperationType.Eraser)
+                {
+                    using var layerContours = mat.FindContours(out var hierarchy, RetrType.Tree);
+
+                    if (mat.GetByte(operation.Location) >= 10)
+                    {
+                        using var vec = EmguContours.GetContoursInside(layerContours, hierarchy, operation.Location);
+
+                        if (vec.Size > 0)
+                        {
+                            CvInvoke.DrawContours(mat, vec, -1, new MCvScalar(operation.PixelBrightness), -1);
+                        }
+                    }
+                }
+            }
+
+            layer.LayerMat = mat;
+            progress.LockAndIncrement();
+        });
+
+        var group2 = drawings
+            .Where(operation => operation.OperationType
+                is PixelOperation.PixelOperationType.Supports
+                or PixelOperation.PixelOperationType.DrainHole)
+            .GroupBy(operation => operation.LayerIndex)
+            .OrderByDescending(group => group.Key);
+
+        if (group2.Any())
+        {
+            using var matCache = new MatCacheManager(this, 0, group2.First().Key)
+            {
+                AutoDispose = true,
+                Direction = false
+            };
+            foreach (var layerOperationGroup in group2)
+            {
+                var toProcess = layerOperationGroup.ToList();
+                var drawnSupportLayers = 0;
+                var drawnDrainHoleLayers = 0;
+                for (int operationLayer = (int)layerOperationGroup.Key - 1; operationLayer >= 0 && toProcess.Count > 0; operationLayer--)
+                {
+                    progress.ThrowIfCancellationRequested();
+                    var layer = this[operationLayer];
+                    var mat = matCache.Get1((uint) operationLayer);
+                    var isMatModified = false;
+
+                    for (var i = toProcess.Count-1; i >= 0; i--)
+                    {
+                        var operation = toProcess[i];
+                        if (operation.OperationType == PixelOperation.PixelOperationType.Supports)
+                        {
+                            var operationSupport = (PixelSupport) operation;
+
+                            int radius = (operationLayer > 10
+                                ? Math.Min(operationSupport.TipDiameter + drawnSupportLayers, operationSupport.PillarDiameter)
+                                : operationSupport.BaseDiameter) / 2;
+                            uint whitePixels;
+
+                            int yStart = Math.Max(0, operation.Location.Y - operationSupport.TipDiameter / 2);
+                            int xStart = Math.Max(0, operation.Location.X - operationSupport.TipDiameter / 2);
+
+                            using (var matCircleRoi = new Mat(mat, new Rectangle(xStart, yStart, operationSupport.TipDiameter, operationSupport.TipDiameter)))
+                            {
+                                using var matCircleMask = matCircleRoi.NewBlank();
+                                CvInvoke.Circle(matCircleMask,
+                                    new Point(operationSupport.TipDiameter / 2, operationSupport.TipDiameter / 2),
+                                    operationSupport.TipDiameter / 2, new MCvScalar(operation.PixelBrightness), -1);
+                                CvInvoke.BitwiseAnd(matCircleRoi, matCircleMask, matCircleMask);
+                                whitePixels = (uint) CvInvoke.CountNonZero(matCircleMask);
+                            }
+
+                            if (whitePixels >= Math.Pow(operationSupport.TipDiameter, 2) / 3)
+                            {
+                                //CvInvoke.Circle(mat, operation.Location, radius, new MCvScalar(255), -1);
+                                if (drawnSupportLayers == 0) continue; // Supports nonexistent, keep digging
+                                toProcess.RemoveAt(i);
+                                continue; // White area end supporting
+                            }
+
+                            CvInvoke.Circle(mat, operation.Location, radius, new MCvScalar(operation.PixelBrightness), -1, operationSupport.LineType);
+                            isMatModified = true;
+                            drawnSupportLayers++;
+                        }
+                        else if (operation.OperationType == PixelOperation.PixelOperationType.DrainHole)
+                        {
+                            var operationDrainHole = (PixelDrainHole) operation;
+
+                            int radius = operationDrainHole.Diameter / 2;
+                            uint blackPixels;
+
+                            int yStart = Math.Max(0, operation.Location.Y - radius);
+                            int xStart = Math.Max(0, operation.Location.X - radius);
+
+                            using (var matCircleRoi = new Mat(mat, new Rectangle(xStart, yStart, operationDrainHole.Diameter, operationDrainHole.Diameter)))
+                            {
+                                using var matCircleRoiInv = new Mat();
+                                CvInvoke.Threshold(matCircleRoi, matCircleRoiInv, 100, 255, ThresholdType.BinaryInv);
+                                using var matCircleMask = matCircleRoi.NewBlank();
+                                CvInvoke.Circle(matCircleMask, new Point(radius, radius), radius, EmguExtensions.WhiteColor, -1);
+                                CvInvoke.BitwiseAnd(matCircleRoiInv, matCircleMask, matCircleMask);
+                                blackPixels = (uint) CvInvoke.CountNonZero(matCircleMask);
+                            }
+
+                            if (blackPixels >= Math.Pow(operationDrainHole.Diameter, 2) / 3) // Enough area to drain?
+                            {
+                                if (drawnDrainHoleLayers == 0) continue; // Drill not found a target yet, keep digging
+                                toProcess.RemoveAt(i);
+                                continue; // Stop drill drain found!
+                            }
+
+                            CvInvoke.Circle(mat, operation.Location, radius, EmguExtensions.BlackColor, -1, operationDrainHole.LineType);
+                            isMatModified = true;
+                            drawnDrainHoleLayers++;
+                        }
+                    }
+
+                    if (isMatModified)
+                    {
+                        layer.LayerMat = mat;
+                    }
+                }
+
+                progress += (uint)layerOperationGroup.Count();
+            }
+        }
+
+        /*
+         // Old and memory hunger code
         ConcurrentDictionary<uint, Mat> modifiedLayers = new();
         for (var i = 0; i < drawings.Count; i++)
         {
@@ -5552,18 +5723,18 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
 
                 mat.DrawPolygon((byte)operationDrawing.BrushShape, operationDrawing.BrushSize / 2, operationDrawing.Location,
                     new MCvScalar(operationDrawing.Brightness), operationDrawing.RotationAngle, operationDrawing.Thickness, operationDrawing.LineType);
-                /*switch (operationDrawing.BrushShape)
-                {
-                    case PixelDrawing.BrushShapeType.Square:
-                        CvInvoke.Rectangle(mat, operationDrawing.Rectangle, new MCvScalar(operationDrawing.Brightness), operationDrawing.Thickness, operationDrawing.LineType);
-                        break;
-                    case PixelDrawing.BrushShapeType.Circle:
-                        CvInvoke.Circle(mat, operation.Location, operationDrawing.BrushSize / 2,
-                            new MCvScalar(operationDrawing.Brightness), operationDrawing.Thickness, operationDrawing.LineType);
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }*/
+                //switch (operationDrawing.BrushShape)
+                //{
+                //    case PixelDrawing.BrushShapeType.Square:
+                //        CvInvoke.Rectangle(mat, operationDrawing.Rectangle, new MCvScalar(operationDrawing.Brightness), operationDrawing.Thickness, operationDrawing.LineType);
+                //        break;
+                //    case PixelDrawing.BrushShapeType.Circle:
+                //        CvInvoke.Circle(mat, operation.Location, operationDrawing.BrushSize / 2,
+                //            new MCvScalar(operationDrawing.Brightness), operationDrawing.Thickness, operationDrawing.LineType);
+                //        break;
+                //    default:
+                //        throw new ArgumentOutOfRangeException();
+                //}
             }
             else if (operation.OperationType == PixelOperation.PixelOperationType.Text)
             {
@@ -5666,7 +5837,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
 
             progress.LockAndIncrement();
         });
-
+        */
     }
     #endregion
 }

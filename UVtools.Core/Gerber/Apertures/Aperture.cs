@@ -53,8 +53,8 @@ public abstract class Aperture
 
     public static Aperture? Parse(string line, GerberDocument document)
     {
-        var match = Regex.Match(line, @"\%ADD(\d+)(\S+),(\S+)\*\%");
-        if (!match.Success || match.Groups.Count < 4) return null;
+        var match = Regex.Match(line, @"\%ADD(\d+)(\w+),?(\S+)?\*\%");
+        if (!match.Success || match.Groups.Count < 3) return null;
 
         if (!int.TryParse(match.Groups[1].Value, out var index)) return null;
         //if (!char.TryParse(match.Groups[2].Value, out var type)) return null;
@@ -63,11 +63,13 @@ public abstract class Aperture
         {
             case "C":
             {
+                if (match.Groups.Count < 4) return null;
                 if (!double.TryParse(match.Groups[3].Value, out var diameter)) return null;
                 return new CircleAperture(document, index, diameter);
             }
             case "O":
             {
+                if (match.Groups.Count < 4) return null;
                 var split = match.Groups[3].Value.Split('X', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
                 if (split.Length < 2) return null;
                 if (!float.TryParse(split[0], out var width)) return null;
@@ -77,6 +79,7 @@ public abstract class Aperture
             }
             case "R":
             {
+                if (match.Groups.Count < 4) return null;
                 var split = match.Groups[3].Value.Split('X', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
                 if (split.Length < 2) return null;
                 if (!float.TryParse(split[0], out var width)) return null;
@@ -86,6 +89,7 @@ public abstract class Aperture
                 }
             case "P":
             {
+                if (match.Groups.Count < 4) return null;
                 var split = match.Groups[3].Value.Split('X', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
                 if (split.Length < 2) return null;
                 if (!double.TryParse(split[0], out var diameter)) return null;
@@ -97,11 +101,15 @@ public abstract class Aperture
             {
                 if (!document.Macros.TryGetValue(match.Groups[2].Value, out var macro)) return null;
                 macro = macro.Clone();
-                var parseLine = line.TrimEnd('%', '*');
-                var commaIndex = parseLine.IndexOf(',')+1;
-                if (commaIndex == 0) return null;
-                parseLine = parseLine[commaIndex..];
-                var args = new[] {"0"}.Concat(parseLine.Split('X', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)).ToArray();
+                //var parseLine = line.TrimEnd('%', '*');
+                //var commaIndex = parseLine.IndexOf(',')+1;
+                //parseLine = parseLine[commaIndex..];
+                string[] args = { "0" };
+                if (match.Groups.Count >= 4)
+                {
+                    args = args.Concat(match.Groups[3].Value.Split('X', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)).ToArray();
+                }
+                
                 foreach (var primitive in macro)
                 {
                     primitive.ParseExpressions(document, args);

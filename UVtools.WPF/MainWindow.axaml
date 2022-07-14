@@ -115,13 +115,21 @@
 							  Items="{Binding MenuFileConvertItems}"
 							  i:MenuItem.Icon="fa-solid fa-exchange-alt"/>
 
+                    <MenuItem Name="MainMenu.File.FreeUnusedRAM"
+                              Header="Free unused RAM"
+                              ToolTip.Tip="Force the garbage collection of all unused objects within the program to free unused memory (RAM).
+&#x0a;It's never required for the end user run this. The program will automatically take care of it when required.
+&#x0a;This function is for debug purposes."
+                              Command="{Binding OnMenuFileFreeUnusedRAM}"
+                              i:MenuItem.Icon="fa-solid fa-memory"/>
+
 					<Separator/>
 
-					<MenuItem Name="MainMenu.File.Fullscreen"
-							  Header="_Fullscreen"
-							  InputGesture="F11" HotKey="F11"
-							  Command="{Binding OnMenuFileFullscreen}"
-							  i:MenuItem.Icon="fa-solid fa-window-maximize"/>
+                    <MenuItem Name="MainMenu.File.Fullscreen"
+                              Header="_Fullscreen"
+                              InputGesture="F11" HotKey="F11"
+                              Command="{Binding OnMenuFileFullscreen}"
+                              i:MenuItem.Icon="fa-solid fa-window-maximize"/>
 
 					<MenuItem Name="MainMenu.File.Settings"
 							  Header="_Settings"
