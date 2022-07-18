@@ -293,6 +293,14 @@ public class CWSFile : FileFormat
 
     public override FileFormatType FileType => FileFormatType.Archive;
 
+    public override FileImageType LayerImageType =>
+        Printer switch
+        {
+            PrinterType.BeneMono => FileImageType.Png24BgrAA,
+            PrinterType.Wanhao => FileImageType.Png32,
+            _ => FileImageType.Png8
+        };
+
     public enum PrinterType : byte
     {
         Unknown,
@@ -658,49 +666,7 @@ public class CWSFile : FileFormat
             }
         }
 
-        if (Printer == PrinterType.BeneMono)
-        {
-            EncodeLayersInZip(outputFile, filename, LayerDigits, IndexStartNumber.Zero, progress, matGenFunc:
-                (_, mat) =>
-                {
-                    var bgrMat = new Mat(mat.Height, mat.GetRealStep() / 3, DepthType.Cv8U, 3);
-                    var bgrMatSpan = bgrMat.GetDataByteSpan();
-                    var greySpan = mat.GetDataByteSpan();
-                    for (int i = 0; i < greySpan.Length; i++)
-                    {
-                        bgrMatSpan[i] = greySpan[i];
-                    }
-
-                    return bgrMat;
-                });
-            /*Parallel.For(0, LayerCount, CoreSettings.GetParallelOptions(progress),
-                //new ParallelOptions { MaxDegreeOfParallelism = Printer == PrinterType.BeneMono ? 1 : 1 },
-                layerIndex =>
-                {
-                    var layer = this[layerIndex];
-                    var layerImagePath = layer.FormatFileNameWithLayerDigits(filename);
-
-                    using var mat = layer.LayerMat;
-                    using var matEncode = new Mat(mat.Height, mat.GetRealStep() / 3, DepthType.Cv8U, 3);
-                    var span = mat.GetDataByteSpan();
-                    var spanEncode = matEncode.GetDataByteSpan();
-                    for (int i = 0; i < span.Length; i++)
-                    {
-                        spanEncode[i] = span[i];
-                    }
-
-                    var bytes = matEncode.GetPngByes();
-                    lock (progress.Mutex)
-                    {
-                        outputFile.PutFileContent(layerImagePath, bytes, ZipArchiveMode.Create);
-                        progress++;
-                    }
-                });*/
-        }
-        else
-        {
-            EncodeLayersInZip(outputFile, filename, LayerDigits, IndexStartNumber.Zero, progress);
-        }
+        EncodeLayersInZip(outputFile, filename, LayerDigits, IndexStartNumber.Zero, progress);
 
         RebuildGCode();
         outputFile.PutFileContent($"{filename}.gcode", GCodeStr, ZipArchiveMode.Create);
@@ -861,31 +827,9 @@ public class CWSFile : FileFormat
             }
         }
 
-        if (Printer == PrinterType.BeneMono)
-        {
-            DecodeLayersFromZipRegex(inputFile, @"(\d+).png", IndexStartNumber.Zero, progress,
-                (layerIndex, pngBytes) =>
-                {
-                    using Mat bgrMat = new();
-                    CvInvoke.Imdecode(pngBytes, ImreadModes.AnyColor, bgrMat);
-                    var greyMat = new Mat(bgrMat.Height, bgrMat.GetRealStep(), DepthType.Cv8U, 1);
-                    var bgrSpan = bgrMat.GetDataByteSpan();
-                    var greySpan = greyMat.GetDataByteSpan();
-                    for (int i = 0; i < bgrSpan.Length; i++)
-                    {
-                        greySpan[i] = bgrSpan[i];
-                    }
-
-                    return greyMat;
-                });
-        }
-        else
-        {
-            DecodeLayersFromZipRegex(inputFile, @"(\d+).png", IndexStartNumber.Zero, progress);
-        }
-
-        GCode.ParseLayersFromGCode(this);
+        DecodeLayersFromZipRegex(inputFile, @"(\d+).png", IndexStartNumber.Zero, progress);
         
+        GCode.ParseLayersFromGCode(this);
     }
 
     public override void RebuildGCode()

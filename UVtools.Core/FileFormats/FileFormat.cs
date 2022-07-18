@@ -163,6 +163,26 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         Partial,
     }
 
+    /// <summary>
+    /// Image data type
+    /// </summary>
+    public enum FileImageType : byte
+    {
+        Custom,
+        Png8,
+        Png24,
+        Png32,
+        /// <summary>
+        /// eg: Nova Bene4
+        /// </summary>
+        Png24BgrAA,
+        /// <summary>
+        /// eg: Uniformation GKone
+        /// </summary>
+        Png24RgbAA,
+
+    }
+
     #endregion
 
     #region Sub Classes
@@ -1021,6 +1041,11 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// Gets the file format type
     /// </summary>
     public abstract FileFormatType FileType { get; }
+
+    /// <summary>
+    /// Gets the layer image data type used on this file format
+    /// </summary>
+    public virtual FileImageType LayerImageType => FileType == FileFormatType.Archive ? FileImageType.Png8 : FileImageType.Custom;
 
     /// <summary>
     /// Gets the valid file extensions for this <see cref="FileFormat"/>
@@ -3416,13 +3441,54 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         progress.Reset(OperationProgress.StatusEncodeLayers, LayerCount);
         var batches = BatchLayersIndexes();
         var pngLayerBytes = new byte[LayerCount][];
+
+        var layerImageType = LayerImageType;
+
         foreach (var batch in batches)
         {
             Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), layerIndex =>
             {
                 if (matGenFunc is null)
                 {
-                    pngLayerBytes[layerIndex] = this[layerIndex].CompressedPngBytes!;
+                    switch (layerImageType)
+                    {
+                        case FileImageType.Png24:
+                        {
+                            using var mat = this[layerIndex].LayerMat;
+                            CvInvoke.CvtColor(mat, mat, ColorConversion.Gray2Bgr);
+                            pngLayerBytes[layerIndex] = mat.GetPngByes();
+
+                            break;
+                        }
+                        case FileImageType.Png32:
+                        {
+                            using var mat = this[layerIndex].LayerMat;
+                            CvInvoke.CvtColor(mat, mat, ColorConversion.Gray2Bgra);
+                            pngLayerBytes[layerIndex] = mat.GetPngByes();
+
+                            break;
+                        }
+                        case FileImageType.Png24BgrAA:
+                        {
+                            using var mat = this[layerIndex].LayerMat;
+                            using var outputMat = mat.Reshape(3);
+                            pngLayerBytes[layerIndex] = outputMat.GetPngByes();
+
+                            break;
+                        }
+                        case FileImageType.Png24RgbAA:
+                        {
+                            using var mat = this[layerIndex].LayerMat;
+                            using var outputMat = mat.Reshape(3);
+                            CvInvoke.CvtColor(outputMat, outputMat, ColorConversion.Bgr2Rgb);
+                            pngLayerBytes[layerIndex] = outputMat.GetPngByes();
+
+                            break;
+                        }
+                        default:
+                            pngLayerBytes[layerIndex] = this[layerIndex].CompressedPngBytes!;
+                            break;
+                    }
                 }
                 else
                 {
@@ -3461,6 +3527,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         progress ??= new OperationProgress();
         progress.Reset(OperationProgress.StatusDecodeLayers, LayerCount);
 
+        var layerImageType = LayerImageType;
+
         Parallel.For(0, LayerCount, CoreSettings.GetParallelOptions(progress), layerIndex =>
         {
             byte[] pngBytes;
@@ -3472,7 +3540,33 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
 
             if (matGenFunc is null)
             {
-                _layers[layerIndex] = new Layer((uint)layerIndex, pngBytes, this);
+                switch (layerImageType)
+                {
+                    case FileImageType.Png24BgrAA:
+                    {
+                        using var bgrMat = new Mat();
+                        CvInvoke.Imdecode(pngBytes, ImreadModes.Color, bgrMat);
+                        using var greyMat = bgrMat.Reshape(1);
+
+                        _layers[layerIndex] = new Layer((uint) layerIndex, greyMat, this);
+
+                        break;
+                    }
+                    case FileImageType.Png24RgbAA:
+                    {
+                        using Mat rgbMat = new();
+                        CvInvoke.Imdecode(pngBytes, ImreadModes.Color, rgbMat);
+                        CvInvoke.CvtColor(rgbMat, rgbMat, ColorConversion.Bgr2Rgb);
+                        using var greyMat = rgbMat.Reshape(1);
+
+                        _layers[layerIndex] = new Layer((uint)layerIndex, greyMat, this);
+
+                        break;
+                    }
+                    default:
+                        _layers[layerIndex] = new Layer((uint)layerIndex, pngBytes, this);
+                        break;
+                }
             }
             else
             {

@@ -85,6 +85,8 @@ public class JXSFile : FileFormat
 
     public override FileFormatType FileType => FileFormatType.Archive;
 
+    public override FileImageType LayerImageType => FileImageType.Png24RgbAA;
+
     public override FileExtension[] FileExtensions { get; } = {
         new(typeof(JXSFile), "jxs", "Uniformation GKone (JXS)")
     };
@@ -510,27 +512,8 @@ public class JXSFile : FileFormat
         }
 
         Init(ConfigFile.LayerCount, DecodeType == FileDecodeType.Partial);
-        sbyte[] bgrToRgbTable = {
-            2,
-            0,
-            -2
-        };
-        DecodeLayersFromZip(inputFile, IndexStartNumber.Zero, progress,
-            (layerIndex, pngBytes) =>
-            {
-                using Mat rgbMat = new();
-                CvInvoke.Imdecode(pngBytes, ImreadModes.AnyColor, rgbMat);
-                var greyMat = new Mat(rgbMat.Height, rgbMat.GetRealStep(), DepthType.Cv8U, 1);
-                var rgbSpan = rgbMat.GetDataByteSpan();
-                var greySpan = greyMat.GetDataByteSpan();
 
-                for (var i = 0; i < rgbSpan.Length; i++)
-                {
-                    greySpan[i] = rgbSpan[i + bgrToRgbTable[i%3]];
-                }
-
-                return greyMat;
-            });
+        DecodeLayersFromZip(inputFile, IndexStartNumber.Zero, progress);
 
         GCode!.Clear();
 
@@ -587,25 +570,7 @@ public class JXSFile : FileFormat
     {
         using var outputFile = ZipFile.Open(TemporaryOutputFileFullPath, ZipArchiveMode.Create);
 
-        sbyte[] bgrToRgbTable = {
-            2,
-            0,
-            -2
-        };
-        EncodeLayersInZip(outputFile, 5, IndexStartNumber.Zero, progress, matGenFunc:
-            (_, mat) =>
-            {
-                var rgbMat = new Mat(mat.Height, mat.GetRealStep() / 3, DepthType.Cv8U, 3);
-                var rgbMatSpan = rgbMat.GetDataByteSpan();
-                var greySpan = mat.GetDataByteSpan();
-                for (int i = 0; i < greySpan.Length; i++)
-                {
-                    rgbMatSpan[i + bgrToRgbTable[i % 3]] = greySpan[i];
-                }
-
-                return rgbMat;
-            });
-
+        EncodeLayersInZip(outputFile, 5, IndexStartNumber.Zero, progress);
 
         RebuildFileProperties();
 

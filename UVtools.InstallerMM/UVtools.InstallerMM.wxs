@@ -2,7 +2,7 @@
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
   <?define ComponentRules="OneToOne"?>
   <!-- SourceDir instructs IsWiX the location of the directory that contains files for this merge module -->
-  <?define SourceDir="..\publish\UVtools_win-x64_v3.5.4"?>
+  <?define SourceDir="..\publish\UVtools_win-x64_v3.5.5"?>
   <Module Id="UVtools" Language="1033" Version="1.0.0.0">
     <Package Id="12aaa1cf-ff06-4a02-abd5-2ac01ac4f83b" Manufacturer="PTRTECH" InstallerVersion="200" Keywords="MSLA, DLP" Description="MSLA/DLP, file analysis, repair, conversion and manipulation" InstallScope="perMachine" Platform="x64" />
     <Directory Id="TARGETDIR" Name="SourceDir">
