@@ -55,7 +55,7 @@ then
     osVariant="debian"
     if [ "$installDependencies" == true ]; then
         sudo apt-get update
-        sudo apt-get -y install git build-essential libgtk-3-dev libgstreamer1.0-dev libavcodec-dev libswscale-dev libavformat-dev libdc1394-22-dev libv4l-dev cmake-curses-gui ocl-icd-dev freeglut3-dev libgeotiff-dev libusb-1.0-0-dev
+        sudo apt-get -y install git build-essential libgtk-3-dev libgstreamer1.0-dev libavcodec-dev libswscale-dev libavformat-dev libdc1394-dev libv4l-dev cmake-curses-gui ocl-icd-dev freeglut3-dev libgeotiff-dev libusb-1.0-0-dev
         sudo apt-get install -y apt-transport-https
         sudo apt-get update
         sudo apt-get install -y dotnet-sdk-6.0
@@ -107,13 +107,13 @@ echo "- Bulding"
 if [ osVariant == "macOS" ]; then
     cd platforms/macos
     if [ "${arch_name}" = "x86_64" ]; then
-        ./configure_x86_64
+        ./configure x86_64 mini
     elif [ "${arch_name}" = "arm64" ]; then
-        ./configure_arm64
+        ./configure arm64 mini
     fi
 else
-    cd platforms/ubuntu/20.04
-    ./cmake_configure
+    cd platforms/ubuntu/22.04
+    ./cmake_configure mini
 fi
 
 echo "Completed - Check for errors but also for libcvextern presence on $directory/libs"
