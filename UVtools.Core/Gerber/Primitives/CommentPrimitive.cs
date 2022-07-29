@@ -33,19 +33,19 @@ public class CommentPrimitive : Primitive
     public string Comment { get; set; } = string.Empty;
     #endregion
 
-    public CommentPrimitive()
+    public CommentPrimitive(GerberDocument document) : base(document)
     {
         IsParsed = true;
     }
 
-    public CommentPrimitive(string comment)
+    public CommentPrimitive(GerberDocument document, string comment) : base(document)
     {
         Comment = comment;
         IsParsed = true;
     }
 
     
-    public override void DrawFlashD3(Mat mat, SizeF xyPpmm, PointF at, MCvScalar color, LineType lineType = LineType.EightConnected)
+    public override void DrawFlashD3(Mat mat, PointF at, MCvScalar color, LineType lineType = LineType.EightConnected)
     {
 
     }

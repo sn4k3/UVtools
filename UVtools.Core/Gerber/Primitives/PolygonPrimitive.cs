@@ -72,9 +72,9 @@ public class PolygonPrimitive : Primitive
     public float Rotation { get; set; } = 0;
     #endregion
 
-    protected PolygonPrimitive() { }
+    protected PolygonPrimitive(GerberDocument document) : base(document) { }
 
-    public PolygonPrimitive(string exposureExpression, string verticesCountExpression, string centerXExpression = "0", string centerYExpression = "0", string diameterExpression = "0", string rotationExpression = "0")
+    public PolygonPrimitive(GerberDocument document, string exposureExpression, string verticesCountExpression, string centerXExpression = "0", string centerYExpression = "0", string diameterExpression = "0", string rotationExpression = "0") : base(document)
     {
         ExposureExpression = exposureExpression;
         VerticesCountExpression = verticesCountExpression;
@@ -84,7 +84,7 @@ public class PolygonPrimitive : Primitive
         RotationExpression = rotationExpression;
     }
 
-    public override void DrawFlashD3(Mat mat, SizeF xyPpmm, PointF at, MCvScalar color,
+    public override void DrawFlashD3(Mat mat, PointF at, MCvScalar color,
         LineType lineType = LineType.EightConnected)
     {
         if (!IsParsed) return;
@@ -94,9 +94,9 @@ public class PolygonPrimitive : Primitive
         else if (color.V0 == 0) color = EmguExtensions.WhiteColor;
 
 
-        mat.DrawPolygon(VerticesCount, 
-            GerberDocument.SizeMmToPx(Diameter / 2, xyPpmm.Max()), 
-            GerberDocument.PositionMmToPx(at.X + CenterX, at.Y + CenterY, xyPpmm),
+        mat.DrawPolygon(VerticesCount,
+            Document.SizeMmToPx(Diameter / 2),
+            Document.PositionMmToPx(at.X + CenterX, at.Y + CenterY),
             color, 0, -1, lineType);
     }
 

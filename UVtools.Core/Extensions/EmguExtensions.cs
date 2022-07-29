@@ -997,6 +997,49 @@ public static class EmguExtensions
     #region Draw Methods
 
     /// <summary>
+    /// Correct openCV thickness which always results larger than specified
+    /// </summary>
+    /// <param name="thickness">Thickness to correct</param>
+    /// <returns></returns>
+    public static int CorrectThickness(int thickness)
+    {
+        if (thickness < 3) return thickness;
+        return thickness - 1;
+    }
+
+    public static void DrawLineAccurate(this Mat src, Point pt1, Point pt2, MCvScalar color, int thickness, LineType lineType = LineType.EightConnected)
+    {
+        /*var deltaX = pt2.X - pt1.X;
+        var deltaY = pt2.Y - pt1.Y;
+        var deg = Math.Atan2(deltaY, deltaX) * (180 / Math.PI); 
+        src.DrawRotatedRectangle(
+            new Size(Math.Abs(deltaX), thickness), 
+            new Point(pt1.X + deltaX / 2, pt1.Y + deltaY / 2), 
+            color, (int)deg, -1, lineType);*/
+
+        if (thickness >= 3)
+        {
+            thickness--;
+            /*var lastNumber = thickness % 10;
+            switch (lastNumber)
+            {
+                case 1:
+                case 3:
+                case 4:
+                case 5:
+                case 6:
+                case 7:
+                case 8:
+                case 9:
+                    thickness--;
+                    break;
+            }*/
+        }
+
+        CvInvoke.Line(src, pt1, pt2, color, thickness, lineType);
+    }
+
+    /// <summary>
     /// Draw a rotated square around a center point
     /// </summary>
     /// <param name="src"></param>

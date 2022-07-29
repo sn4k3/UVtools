@@ -29,12 +29,12 @@ public class MacroAperture : Aperture
     }
     #endregion
 
-    public override void DrawFlashD3(Mat mat, SizeF xyPpmm, PointF at, MCvScalar color, LineType lineType = LineType.EightConnected)
+    public override void DrawFlashD3(Mat mat, PointF at, MCvScalar color, LineType lineType = LineType.EightConnected)
     {
         foreach (var primitive in Macro)
         {
             //if(primitive.Name == "Comment") continue;
-            primitive.DrawFlashD3(mat, xyPpmm, at, color, lineType);
+            primitive.DrawFlashD3(mat, at, color, lineType);
         }
     }
 }

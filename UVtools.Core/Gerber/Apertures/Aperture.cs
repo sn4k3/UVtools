@@ -49,7 +49,7 @@ public abstract class Aperture
     }
     protected Aperture(GerberDocument document, int index, string name) : this(document, index) { Name = name; }
 
-    public abstract void DrawFlashD3(Mat mat, SizeF xyPpmm, PointF at, MCvScalar color, LineType lineType = LineType.EightConnected);
+    public abstract void DrawFlashD3(Mat mat, PointF at, MCvScalar color, LineType lineType = LineType.EightConnected);
 
     public static Aperture? Parse(string line, GerberDocument document)
     {

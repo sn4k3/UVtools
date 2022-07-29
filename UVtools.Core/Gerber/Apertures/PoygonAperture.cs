@@ -33,8 +33,8 @@ public class PolygonAperture : Aperture
     #endregion
 
 
-    public override void DrawFlashD3(Mat mat, SizeF xyPpmm, PointF at, MCvScalar color, LineType lineType = LineType.EightConnected)
+    public override void DrawFlashD3(Mat mat, PointF at, MCvScalar color, LineType lineType = LineType.EightConnected)
     {
-        mat.DrawPolygon(Vertices, GerberDocument.SizeMmToPx(Diameter / 2, xyPpmm.Max()), GerberDocument.PositionMmToPx(at, xyPpmm), color, 0, -1, lineType);
+        mat.DrawPolygon(Vertices, Document.SizeMmToPx(Diameter / 2), Document.PositionMmToPx(at), color, 0, -1, lineType);
     }
 }

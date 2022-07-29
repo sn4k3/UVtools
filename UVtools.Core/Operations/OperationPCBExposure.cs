@@ -26,7 +26,7 @@ namespace UVtools.Core.Operations;
 [Serializable]
 public class OperationPCBExposure : Operation
 {
-    #region
+    #region Static
 
     public static string[] ValidExtensions => new[]
     {
@@ -48,6 +48,7 @@ public class OperationPCBExposure : Operation
     private bool _mergeFiles;
     private decimal _layerHeight;
     private decimal _exposureTime;
+    private GerberMidpointRounding _sizeMidpointRounding = GerberMidpointRounding.AwayFromZero;
     private bool _mirror;
     private bool _invertColor;
     private bool _enableAntiAliasing;
@@ -101,7 +102,7 @@ public class OperationPCBExposure : Operation
 
     public override string ToString()
     {
-        var result = $"{string.Join(" / ", _files)} [Exposure: {_exposureTime}s] [Mirror: {_mirror}] [Invert: {_invertColor}]";
+        var result = $"{string.Join(" / ", _files)} [Exposure: {_exposureTime}s] [Rounding: {_sizeMidpointRounding}] [Mirror: {_mirror}] [Invert: {_invertColor}]";
         if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
         return result;
     }
@@ -135,13 +136,6 @@ public class OperationPCBExposure : Operation
         set => RaiseAndSetIfChanged(ref _mergeFiles, value);
     }
 
-    /*public string? FilePath
-    {
-        get => _filePath;
-        set => RaiseAndSetIfChanged(ref _filePath, value);
-    }
-    public bool FileExists => !string.IsNullOrWhiteSpace(_filePath) && File.Exists(_filePath);*/
-
     public decimal LayerHeight
     {
         get => _layerHeight;
@@ -153,7 +147,13 @@ public class OperationPCBExposure : Operation
         get => _exposureTime;
         set => RaiseAndSetIfChanged(ref _exposureTime, Math.Round(value, 2));
     }
-    
+
+    public GerberMidpointRounding SizeMidpointRounding
+    {
+        get => _sizeMidpointRounding;
+        set => RaiseAndSetIfChanged(ref _sizeMidpointRounding, value);
+    }
+
     public bool Mirror
     {
         get => _mirror;
@@ -178,7 +178,7 @@ public class OperationPCBExposure : Operation
 
     protected bool Equals(OperationPCBExposure other)
     {
-        return _files.Equals(other._files) && _mergeFiles == other._mergeFiles && _layerHeight == other._layerHeight && _exposureTime == other._exposureTime && _mirror == other._mirror && _invertColor == other._invertColor && _enableAntiAliasing == other._enableAntiAliasing;
+        return _files.Equals(other._files) && _mergeFiles == other._mergeFiles && _layerHeight == other._layerHeight && _exposureTime == other._exposureTime && _sizeMidpointRounding == other._sizeMidpointRounding && _mirror == other._mirror && _invertColor == other._invertColor && _enableAntiAliasing == other._enableAntiAliasing;
     }
 
     public override bool Equals(object? obj)
@@ -191,7 +191,7 @@ public class OperationPCBExposure : Operation
 
     public override int GetHashCode()
     {
-        return HashCode.Combine(_files, _mergeFiles, _layerHeight, _exposureTime, _mirror, _invertColor, _enableAntiAliasing);
+        return HashCode.Combine(_files, _mergeFiles, _layerHeight, _exposureTime, (int) _sizeMidpointRounding, _mirror, _invertColor, _enableAntiAliasing);
     }
 
     #endregion
@@ -242,7 +242,7 @@ public class OperationPCBExposure : Operation
     {
         var mat = SlicerFile.CreateMat();
         if (!File.Exists(file)) return mat;
-        GerberDocument.ParseAndDraw(file, mat, SlicerFile.Ppmm, _enableAntiAliasing);
+        GerberDocument.ParseAndDraw(file, mat, SlicerFile.Ppmm, _sizeMidpointRounding, _enableAntiAliasing);
 
         //var boundingRectangle = CvInvoke.BoundingRectangle(mat);
         //var cropped = mat.Roi(new Size(boundingRectangle.Right, boundingRectangle.Bottom));

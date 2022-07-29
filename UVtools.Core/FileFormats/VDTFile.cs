@@ -14,7 +14,6 @@ using System.IO;
 using System.IO.Compression;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Xml;
 using UVtools.Core.Extensions;
 using UVtools.Core.Layers;
 using UVtools.Core.Operations;
@@ -100,7 +99,8 @@ public class VDTFile : FileFormat
     public sealed class VDTPrint
     {
         [JsonPropertyName("layer_thickness")] public float LayerHeight { get; set; }
-        [JsonPropertyName("bottom_layers")] public ushort BottomLayers { get; set; } = DefaultBottomLayerCount;
+        [JsonPropertyName("bottom_layers")] public ushort BottomLayerCount { get; set; } = DefaultBottomLayerCount;
+        [JsonPropertyName("transition_layer")] public ushort TransitionLayerCount { get; set; } = DefaultTransitionLayerCount;
         [JsonPropertyName("bottom_light_off_delay")] public float BottomLightOffDelay { get; set; }
         [JsonPropertyName("light_off_delay")] public float LightOffDelay { get; set; }
         [JsonPropertyName("bottom_wait_time_before_cure")] public float BottomWaitTimeBeforeCure { get; set; }
@@ -203,6 +203,7 @@ public class VDTFile : FileFormat
 
     public override PrintParameterModifier[]? PrintParameterModifiers { get; } = {
         PrintParameterModifier.BottomLayerCount,
+        PrintParameterModifier.TransitionLayerCount,
 
         PrintParameterModifier.BottomLightOffDelay,
         PrintParameterModifier.LightOffDelay,
@@ -378,8 +379,16 @@ public class VDTFile : FileFormat
 
     public override ushort BottomLayerCount
     {
-        get => ManifestFile.Print.BottomLayers;
-        set => base.BottomLayerCount = ManifestFile.Print.BottomLayers = value;
+        get => ManifestFile.Print.BottomLayerCount;
+        set => base.BottomLayerCount = ManifestFile.Print.BottomLayerCount = value;
+    }
+
+    public override TransitionLayerTypes TransitionLayerType => TransitionLayerTypes.Software;
+
+    public override ushort TransitionLayerCount
+    {
+        get => ManifestFile.Print.TransitionLayerCount;
+        set => base.TransitionLayerCount = ManifestFile.Print.TransitionLayerCount = (ushort)Math.Min(value, MaximumPossibleTransitionLayerCount);
     }
 
     public override float BottomLightOffDelay

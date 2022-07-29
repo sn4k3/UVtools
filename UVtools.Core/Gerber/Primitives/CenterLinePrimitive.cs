@@ -74,9 +74,9 @@ public class CenterLinePrimitive : Primitive
     public float Rotation { get; set; } = 0;
     #endregion
 
-    protected CenterLinePrimitive() { }
+    protected CenterLinePrimitive(GerberDocument document) : base(document) { }
 
-    public CenterLinePrimitive(string exposureExpression, string widthExpression = "0", string heightExpression = "0", string centerXExpression = "0", string centerYExpression = "0", string rotationExpression = "0")
+    public CenterLinePrimitive(GerberDocument document, string exposureExpression, string widthExpression = "0", string heightExpression = "0", string centerXExpression = "0", string centerYExpression = "0", string rotationExpression = "0") : base(document)
     {
         ExposureExpression = exposureExpression;
         WidthExpression = widthExpression;
@@ -87,8 +87,7 @@ public class CenterLinePrimitive : Primitive
     }
 
 
-    public override void DrawFlashD3(Mat mat, SizeF xyPpmm, PointF at, MCvScalar color,
-        LineType lineType = LineType.EightConnected)
+    public override void DrawFlashD3(Mat mat, PointF at, MCvScalar color, LineType lineType = LineType.EightConnected)
     {
         if (!IsParsed) return;
         if (Width <= 0 || Height <= 0) return;
@@ -97,9 +96,9 @@ public class CenterLinePrimitive : Primitive
         else if(color.V0 == 0) color = EmguExtensions.WhiteColor;
 
         var halfWidth = Width / 2;
-        var pt1 = GerberDocument.PositionMmToPx(at.X + CenterX - halfWidth, at.Y + CenterY, xyPpmm);
-        var pt2 = GerberDocument.PositionMmToPx(at.X + CenterX + halfWidth, at.Y + CenterY, xyPpmm);
-        CvInvoke.Line(mat, pt1, pt2, color, GerberDocument.SizeMmToPx(Height, xyPpmm.Height), lineType);
+        var pt1 = Document.PositionMmToPx(at.X + CenterX - halfWidth, at.Y + CenterY);
+        var pt2 = Document.PositionMmToPx(at.X + CenterX + halfWidth, at.Y + CenterY);
+        CvInvoke.Line(mat, pt1, pt2, color, EmguExtensions.CorrectThickness(Document.SizeMmToPxOverride(Height, Document.XYppmm.Height)), lineType);
         //CvInvoke.Rectangle(mat, rectangle, color, -1, lineType);
     }
 

@@ -581,6 +581,7 @@ public class CWSFile : FileFormat
         };
         GCode.CommandShowImageM6054.Set(";<Slice>", "{0}");
         GCode.CommandWaitG4.Set(";<Delay>", "{0}");
+        GCode.CommandSyncMovements.Enabled = true;
     }
     #endregion
 

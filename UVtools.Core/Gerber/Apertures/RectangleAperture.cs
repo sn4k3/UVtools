@@ -32,10 +32,9 @@ public class RectangleAperture : Aperture
     }
     #endregion
 
-    public override void DrawFlashD3(Mat mat, SizeF xyPpmm, PointF at, MCvScalar color,
-        LineType lineType = LineType.EightConnected)
+    public override void DrawFlashD3(Mat mat, PointF at, MCvScalar color, LineType lineType = LineType.EightConnected)
     {
         at = new PointF(Math.Max(0, at.X - Size.Width / 2), Math.Max(0, at.Y - Size.Height / 2));
-        CvInvoke.Rectangle(mat, new Rectangle(GerberDocument.PositionMmToPx(at, xyPpmm), GerberDocument.SizeMmToPx(Size, xyPpmm)), color, -1, lineType);
+        CvInvoke.Rectangle(mat, new Rectangle(Document.PositionMmToPx(at), Document.SizeMmToPx(Size)), color, -1, lineType);
     }
 }

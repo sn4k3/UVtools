@@ -6,7 +6,6 @@
  *  of this license document, but changing it is not allowed.
  */
 
-using System;
 using System.Drawing;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
@@ -21,11 +20,18 @@ public abstract class Primitive
 
     public bool IsParsed { get; protected set; } = false;
 
+    public GerberDocument Document { get; init; }
+
     #endregion
 
-    protected Primitive() { }
+    //protected Primitive() { }
 
-    public abstract void DrawFlashD3(Mat mat, SizeF xyPpmm, PointF at, MCvScalar color, LineType lineType = LineType.EightConnected);
+    protected Primitive(GerberDocument document)
+    {
+        Document = document;
+    }
+
+    public abstract void DrawFlashD3(Mat mat, PointF at, MCvScalar color, LineType lineType = LineType.EightConnected);
 
     public abstract void ParseExpressions(GerberDocument document, params string[] args);
 

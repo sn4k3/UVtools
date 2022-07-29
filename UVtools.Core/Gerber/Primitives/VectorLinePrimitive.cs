@@ -83,9 +83,9 @@ public class VectorLinePrimitive : Primitive
     public float Rotation { get; set; } = 0;
     #endregion
 
-    protected VectorLinePrimitive() { }
+    protected VectorLinePrimitive(GerberDocument document) : base(document) { }
 
-    public VectorLinePrimitive(string exposureExpression, string lineWidthExpression, string startXExpression, string startYExpression, string endXExpression, string endYExpression, string rotationExpression = "0")
+    public VectorLinePrimitive(GerberDocument document, string exposureExpression, string lineWidthExpression, string startXExpression, string startYExpression, string endXExpression, string endYExpression, string rotationExpression = "0") : base(document)
     {
         ExposureExpression = exposureExpression;
         LineWidthExpression = lineWidthExpression;
@@ -96,7 +96,7 @@ public class VectorLinePrimitive : Primitive
         RotationExpression = rotationExpression;
     }
 
-    public override void DrawFlashD3(Mat mat, SizeF xyPpmm, PointF at, MCvScalar color,
+    public override void DrawFlashD3(Mat mat, PointF at, MCvScalar color,
         LineType lineType = LineType.EightConnected)
     {
         if (!IsParsed) return;
@@ -105,9 +105,9 @@ public class VectorLinePrimitive : Primitive
         if (Exposure == 0) color = EmguExtensions.BlackColor;
         else if (color.V0 == 0) color = EmguExtensions.WhiteColor;
 
-        var pt1 = GerberDocument.PositionMmToPx(at.X + StartX, at.Y + StartY, xyPpmm);
-        var pt2 = GerberDocument.PositionMmToPx(at.X + EndX, at.Y + EndY, xyPpmm);
-        CvInvoke.Line(mat, pt1, pt2, color, GerberDocument.SizeMmToPx(LineWidth, xyPpmm.Height), lineType);
+        var pt1 = Document.PositionMmToPx(at.X + StartX, at.Y + StartY);
+        var pt2 = Document.PositionMmToPx(at.X + EndX, at.Y + EndY);
+        CvInvoke.Line(mat, pt1, pt2, color, EmguExtensions.CorrectThickness(Document.SizeMmToPxOverride(LineWidth, Document.XYppmm.Height)), lineType);
         //CvInvoke.Rectangle(mat, rectangle, color, -1, lineType);
     }
 

@@ -66,9 +66,9 @@ public class OutlinePrimitive : Primitive
     public float Rotation { get; set; } = 0;
     #endregion
 
-    protected OutlinePrimitive() { }
+    protected OutlinePrimitive(GerberDocument document) : base(document) { }
 
-    public OutlinePrimitive(string exposureExpression, string[] coordinatesExpression, string rotationExpression)
+    public OutlinePrimitive(GerberDocument document, string exposureExpression, string[] coordinatesExpression, string rotationExpression) : base(document)
     {
         ExposureExpression = exposureExpression;
         CoordinatesExpression = coordinatesExpression;
@@ -76,7 +76,7 @@ public class OutlinePrimitive : Primitive
     }
 
 
-    public override void DrawFlashD3(Mat mat, SizeF xyPpmm, PointF at, MCvScalar color, LineType lineType = LineType.EightConnected)
+    public override void DrawFlashD3(Mat mat, PointF at, MCvScalar color, LineType lineType = LineType.EightConnected)
     {
         if (Coordinates.Length < 3) return;
 
@@ -86,7 +86,7 @@ public class OutlinePrimitive : Primitive
         var points = new List<Point>();
         for (int i = 0; i < Coordinates.Length-1; i++)
         {
-            var pt = GerberDocument.PositionMmToPx(at.X + Coordinates[i].X, at.Y + Coordinates[i].Y, xyPpmm);
+            var pt = Document.PositionMmToPx(at.X + Coordinates[i].X, at.Y + Coordinates[i].Y);
             if(i > 0 && points[i-1] == pt) continue; // Prevent duplicates
             points.Add(pt);
         }

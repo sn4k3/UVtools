@@ -10,7 +10,6 @@ using System.Drawing;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
-using UVtools.Core.Extensions;
 
 namespace UVtools.Core.Gerber.Apertures;
 
@@ -29,10 +28,10 @@ public class CircleAperture : Aperture
     }
     #endregion
 
-    public override void DrawFlashD3(Mat mat, SizeF xyPpmm, PointF at, MCvScalar color, LineType lineType = LineType.EightConnected)
+    public override void DrawFlashD3(Mat mat, PointF at, MCvScalar color, LineType lineType = LineType.EightConnected)
     {
-        CvInvoke.Circle(mat, 
-            GerberDocument.PositionMmToPx(at, xyPpmm),
-            GerberDocument.SizeMmToPx(Diameter / 2, xyPpmm.Max()), color, -1, lineType);
+        CvInvoke.Circle(mat,
+            Document.PositionMmToPx(at),
+            Document.SizeMmToPx(Diameter / 2), color, -1, lineType);
     }
 }

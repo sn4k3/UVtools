@@ -63,7 +63,7 @@
                      MaxHeight="400"
                      Items="{Binding Operation.Files}" />
 
-            <Grid RowDefinitions="Auto,10,Auto,10,Auto,10,Auto"
+            <Grid RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto"
                   ColumnDefinitions="Auto,10,400">
 
                 <ToggleSwitch Grid.Row="0" Grid.Column="2"
@@ -93,8 +93,18 @@
 							   Maximum="200"
 							   FormatString="F2"
 							   Value="{Binding Operation.ExposureTime}"/>
-				
-				<StackPanel Grid.Row="6" Grid.Column="2"
+
+                <TextBlock Grid.Row="6" Grid.Column="0"
+                           VerticalAlignment="Center"
+                           Text="Size rounding:"/>
+
+                <ComboBox Grid.Row="6" Grid.Column="2"
+                    HorizontalAlignment="Stretch"
+                    Items="{Binding Operation.SizeMidpointRounding, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                    SelectedItem="{Binding Operation.SizeMidpointRounding, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
+
+
+				<StackPanel Grid.Row="8" Grid.Column="2"
                             Orientation="Horizontal" Spacing="20">
 					<CheckBox VerticalAlignment="Center"
                               IsChecked="{Binding Operation.Mirror}"

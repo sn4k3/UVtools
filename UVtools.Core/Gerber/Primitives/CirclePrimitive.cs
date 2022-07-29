@@ -67,9 +67,9 @@ public class CirclePrimitive : Primitive
     public float Rotation { get; set; } = 0;
     #endregion
 
-    protected CirclePrimitive() { }
+    protected CirclePrimitive(GerberDocument document) : base(document) { }
 
-    public CirclePrimitive(string exposureExpression = "1", string diameterExpression = "0", string centerXExpression = "0", string centerYExpression = "0", string rotationExpression = "0")
+    public CirclePrimitive(GerberDocument document, string exposureExpression = "1", string diameterExpression = "0", string centerXExpression = "0", string centerYExpression = "0", string rotationExpression = "0") : base(document)
     {
         ExposureExpression = exposureExpression;
         DiameterExpression = diameterExpression;
@@ -78,7 +78,7 @@ public class CirclePrimitive : Primitive
         RotationExpression = rotationExpression;
     }
 
-    public override void DrawFlashD3(Mat mat, SizeF xyPpmm, PointF at, MCvScalar color,
+    public override void DrawFlashD3(Mat mat, PointF at, MCvScalar color,
         LineType lineType = LineType.EightConnected)
     {
         if (!IsParsed) return;
@@ -88,8 +88,8 @@ public class CirclePrimitive : Primitive
         else if (color.V0 == 0) color = EmguExtensions.WhiteColor;
 
         CvInvoke.Circle(mat, 
-            GerberDocument.PositionMmToPx(at.X + CenterX, at.Y + CenterY, xyPpmm),
-            GerberDocument.SizeMmToPx(Diameter / 2, xyPpmm.Max()), color, -1, lineType);
+            Document.PositionMmToPx(at.X + CenterX, at.Y + CenterY),
+            Document.SizeMmToPx(Diameter / 2), color, -1, lineType);
     }
 
     public override void ParseExpressions(GerberDocument document, params string[] args)

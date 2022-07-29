@@ -7,6 +7,7 @@
  */
 using System;
 using System.CommandLine;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using UVtools.Core.Extensions;
@@ -21,7 +22,7 @@ internal static class ConvertCommand
         var command = new Command("convert", "Convert input file into a output file format by a known type or extension")
         {
             GlobalArguments.InputFileArgument,
-            new Argument<string>("target-type/ext", "Target format type or extension"),
+            new Argument<string>("target-type/ext", "Target format type or extension. Use 'auto' for SL1 files with specified FILEFORMAT_xxx"),
             GlobalArguments.OutputFileArgument,
 
             new Option<ushort>(new[] {"-v", "--version"}, "Sets the file format version"),
@@ -30,6 +31,42 @@ internal static class ConvertCommand
 
         command.SetHandler((FileInfo inputFile, string targetTypeExt, FileInfo? outputFile, ushort version, bool noOverwrite) =>
             {
+                if (string.Equals(targetTypeExt, "auto", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    using var testFile = Program.OpenInputFile(inputFile, FileFormat.FileDecodeType.Partial);
+                    string? convertFileExtension;
+                    switch (testFile)
+                    {
+                        case SL1File sl1File:
+                            convertFileExtension = sl1File.LookupCustomValue<string>(SL1File.Keyword_FileFormat, null);
+                            break;
+                        case VDTFile vdtFile:
+                            if (string.IsNullOrWhiteSpace(vdtFile.ManifestFile.Machine.UVToolsConvertTo) || vdtFile.ManifestFile.Machine.UVToolsConvertTo == "None")
+                                convertFileExtension = vdtFile.LookupCustomValue<string>(SL1File.Keyword_FileFormat, null);
+                            else
+                                convertFileExtension = vdtFile.ManifestFile.Machine.UVToolsConvertTo;
+                            break;
+                        default:
+                            Program.WriteLineError($"The file '{testFile.Filename}' is not a valid candidate for auto conversion. Please specify the target format instead.");
+                            return;
+                    }
+
+                    if (string.IsNullOrWhiteSpace(convertFileExtension))
+                    {
+                        Program.WriteLineError($"The file '{testFile.Filename}' does not specify a target format, unable to guess. Please specify the target format instead.");
+                        return;
+                    }
+
+                    convertFileExtension = convertFileExtension.ToLower(CultureInfo.InvariantCulture);
+                    var fileExtension = FileFormat.FindExtension(convertFileExtension);
+                    if (fileExtension is null)
+                    {
+                        Program.WriteLineError($"Unable to find a valid target type from '{convertFileExtension}' extension.");
+                    }
+                    targetTypeExt = fileExtension!.GetFileFormat()!.GetType().Name;
+                    outputFile = new FileInfo(Path.Combine(testFile.DirectoryPath!, $"{testFile.FilenameNoExt}.{convertFileExtension}"));
+                }
+
                 var targetType = FileFormat.FindByType(targetTypeExt);
                 if (targetType is null)
                 {

@@ -40,7 +40,10 @@ public class GCodeBuilder : BindableBase
     public GCodeCommand CommandMoveG0 { get; } = new("G0", "Z{0} F{1}", "Move Z");
     public GCodeCommand CommandMoveG1 { get; } = new("G1", "Z{0} F{1}", "Move Z");
 
+    public GCodeCommand CommandSyncMovements { get; } = new("G4", "P0", "Sync movements", false);
+
     public GCodeCommand CommandWaitG4 { get; } = new("G4", "P{0}", "Delay");
+    
     public GCodeCommand CommandShowImageM6054 = new("M6054", "\"{0}\"", "Show image");
     public GCodeCommand CommandClearImage = new(";<Slice> Blank"); // Clear image
     public GCodeCommand CommandTurnLEDM106 { get; } = new("M106", "S{0}", "Turn LED");
@@ -321,6 +324,7 @@ public class GCodeBuilder : BindableBase
         AppendLightOffM106();
         AppendClearImage();
         AppendHomeZG28();
+        AppendSyncMovements();
         AppendLineIfCanComment(EndStartGCodeComments);
         AppendLine();
     }
@@ -376,6 +380,8 @@ public class GCodeBuilder : BindableBase
                         var time = ConvertFromSeconds(seconds);
                         if (seconds > 0) AppendWaitG4($"0{time}", "Sync movement");
                     }
+
+                    AppendSyncMovements();
                 }
             }
         }
@@ -403,6 +409,7 @@ public class GCodeBuilder : BindableBase
             }
         }
 
+        AppendSyncMovements();
         AppendMotorsOff();
         AppendLineIfCanComment(EndEndGCodeComments);
     }
@@ -450,6 +457,11 @@ public class GCodeBuilder : BindableBase
         AppendLine(CommandHomeG28);
     }
 
+    public void AppendSyncMovements()
+    {
+        AppendLine(CommandSyncMovements);
+    }
+
     public void AppendMoveGx(float z, float feedRate)
     {
         if(_layerMoveCommand == GCodeMoveCommands.G0)
@@ -490,6 +502,8 @@ public class GCodeBuilder : BindableBase
             AppendWaitG4($"0{time}", "Sync movement");
         }
 
+        AppendSyncMovements();
+
         if (waitAfterLift > 0)
         {
             AppendWaitG4(waitAfterLift, "Wait after lift");
@@ -509,6 +523,8 @@ public class GCodeBuilder : BindableBase
                 var time = ConvertFromSeconds(seconds);
                 AppendWaitG4($"0{time}", "Sync movement");
             }
+
+            AppendSyncMovements();
 
             if (waitAfterRetract > 0)
             {
@@ -547,6 +563,8 @@ public class GCodeBuilder : BindableBase
             AppendWaitG4($"0{time}", "Sync movement");
         }
 
+        AppendSyncMovements();
+
         if (waitAfterLift > 0)
         {
             AppendWaitG4(waitAfterLift, "Wait after lift");
@@ -566,6 +584,8 @@ public class GCodeBuilder : BindableBase
                 var time = ConvertFromSeconds(seconds);
                 AppendWaitG4($"0{time}", "Sync movement");
             }
+
+            AppendSyncMovements();
 
             if (waitAfterRetract > 0)
             {

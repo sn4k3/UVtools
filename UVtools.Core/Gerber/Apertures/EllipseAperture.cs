@@ -33,11 +33,11 @@ public class EllipseAperture : Aperture
     }
     #endregion
 
-    public override void DrawFlashD3(Mat mat, SizeF xyPpmm, PointF at, MCvScalar color, LineType lineType = LineType.EightConnected)
+    public override void DrawFlashD3(Mat mat, PointF at, MCvScalar color, LineType lineType = LineType.EightConnected)
     {
-        CvInvoke.Ellipse(mat, 
-            GerberDocument.PositionMmToPx(at, xyPpmm), 
-            GerberDocument.SizeMmToPx(Axes.Width / 2, Axes.Height / 2, xyPpmm),
+        CvInvoke.Ellipse(mat,
+            Document.PositionMmToPx(at),
+            Document.SizeMmToPx(Axes.Width / 2, Axes.Height / 2),
             0, 0, 360, color, -1, lineType);
     }
 }

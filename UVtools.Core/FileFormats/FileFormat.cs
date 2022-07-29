@@ -384,6 +384,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         //new CXDLPv1File(),   // Creality Box v1
         new CXDLPFile(),   // Creality Box
         new LGSFile(),   // LGS, LGS30
+        //new OSFFile(),   // OSF
         new FlashForgeSVGXFile(), // SVGX
         new GenericZIPFile(),   // Generic zip files
         new VDAFile(),   // VDA
@@ -2792,11 +2793,11 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get => _materialMilliliters;
         set
         {
-            if (value <= 0)
+            if (value <= 0) // Recalculate
             {
                 value = (float)Math.Round(this.Where(layer => layer is not null).Sum(layer => layer.MaterialMilliliters), 3);
             }
-            else
+            else // Set from value
             {
                 value = (float)Math.Round(value, 3);
             }

@@ -1,5 +1,18 @@
 # Changelog
 
+## 29/07/2022 - v3.5.6
+
+- **Tools**
+   - **PCB Exposure:** 
+      - (Add) Able to choose the size midpoint rounding method (#520)
+      - (Fix) Allow to flash alone D03 commands (#520)
+      - (Fix) Correct line thickness to have at least 1px error (#523) 
+   - (Improvement) Layer arithmetic: Use ; to split and start a new arithmetic operation
+- (Add) Cmd: Convert command now allow to pass 'auto' as target type to auto convert specific files, valid for SL1 files configured with FILEFORMAT_xxx (#522)
+- (Add) GCode: Command to sync and wait for movement completion [Only enabled for cws format] (#514)
+- (Add) VDT: Transition layer count
+- (Upgrade) AvaloniaUI from 0.10.16 to 0.10.17
+
 ## 18/07/2022 - v3.5.5
 
 - **File formats:**
