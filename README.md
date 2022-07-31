@@ -259,7 +259,7 @@ wget -qO - https://raw.githubusercontent.com/sn4k3/UVtools/master/Scripts/libdl-
 
 ```bash
 sudo pacman -Syu
-sudo pacman -S openjpeg2 libjpeg-turbo libpng libgeotiff libdc1394 libdc1394 ffmpeg openexr tbb libgdiplus wget
+sudo pacman -S openjpeg2 libjpeg-turbo libpng libgeotiff libdc1394 ffmpeg openexr tbb libgdiplus wget
 wget -qO - https://raw.githubusercontent.com/sn4k3/UVtools/master/Scripts/libdl-solver.sh | sudo bash
 ```
 
