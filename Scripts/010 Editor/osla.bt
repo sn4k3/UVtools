@@ -25,8 +25,8 @@ struct HEADER {
     float MachineZ <fgcolor=cBlack, bgcolor=cRed>;
     float DisplayWidth <fgcolor=cBlack, bgcolor=cRed>;
     float DisplayHeight <fgcolor=cBlack, bgcolor=cRed>;
-    ubyte DisplayMirror <fgcolor=cBlack, bgcolor=cRed>;
-    
+    enum <ubyte> { None, Horizontally, Vertically, Both } DisplayMirror <fgcolor=cBlack, bgcolor=cRed>;
+        
     char PreviewDataType[16] <fgcolor=cBlack, bgcolor=cRed>;
     char LayerDataType[16] <fgcolor=cBlack, bgcolor=cRed>;
     

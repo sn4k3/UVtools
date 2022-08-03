@@ -181,13 +181,13 @@ ExampleOfCustomField=1001 (uint)
 ResolutionX=400 (ushort)
 ResolutionY=400 (ushort)
 PreviewDataSize=sizeof(DATA) (uint)
-RLE/RGB16/PNG/JPG/BMP
+RLE/RGB565/PNG/JPG/BMP
 
 [Preview 2]
 ResolutionX=400 (ushort)
 ResolutionY=800 (ushort)
 PreviewDataSize=sizeof(DATA) (uint)
-RLE/RGB16/PNG/JPG/BMP
+RLE/RGB565/PNG/JPG/BMP
 
 [LayerDefinitions]
 [Layer 1]
@@ -206,7 +206,7 @@ ExposureTime=2.8            (float) Time in seconds while curing the layer
 WaitTimeAfterCure=1         (float) Time to wait in seconds after cure the layer / turn off LED
 LightPWM=255                (byte)  PWM value of the light source
 BoundingRectangleX=300      (uint)  Start X position where first pixels are [Optional, can be 0]
-BoundingRectangleX=500      (uint)  Start Y position where first pixels are [Optional, can be 0]
+BoundingRectangleY=500      (uint)  Start Y position where first pixels are [Optional, can be 0]
 BoundingRectangleWidth=500  (uint)  Rectangle width [Optional, can be 0]
 BoundingRectangleHeight=500 (uint)  Rectangle height [Optional, can be 0]
 [Layer 2]
