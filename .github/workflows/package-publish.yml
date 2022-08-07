@@ -57,8 +57,8 @@ jobs:
           git branch --remote --contains | grep origin/master
       - name: Set VERSION variable from tag
         run: | 
-          VERSION=${{ github.event.release.tag_name }}
-          echo "VERSION=${VERSION:1}" >> $GITHUB_ENV
+          TAG=${{ github.event.release.tag_name }}
+          echo "VERSION=${TAG#v}" >> $GITHUB_ENV
       - name: Build
         run: dotnet build --configuration Release
       - name: Pack
