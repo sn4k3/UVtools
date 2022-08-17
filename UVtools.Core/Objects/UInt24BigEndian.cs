@@ -56,4 +56,13 @@ public sealed class UInt24BigEndian
     {
         return (int)Value;
     }
+
+
+    public static uint operator +(UInt24BigEndian a, UInt24BigEndian b) => a.Value + b.Value;
+
+    public static uint operator -(UInt24BigEndian a, UInt24BigEndian b) => a.Value - b.Value;
+
+    public static uint operator *(UInt24BigEndian a, UInt24BigEndian b) => a.Value * b.Value;
+
+    public static uint operator /(UInt24BigEndian a, UInt24BigEndian b) => a.Value / b.Value;
 }

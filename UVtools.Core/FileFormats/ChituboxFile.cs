@@ -29,7 +29,7 @@ public class ChituboxFile : FileFormat
 {
 
     #region Constants
-    public const byte USED_VERSION = 3; // 318570521
+    public const byte USED_VERSION = 3;
 
     public const uint MAGIC_CBDDLP = 0x12FD0019; // 318570521
     public const uint MAGIC_CTB = 0x12FD0086; // 318570630

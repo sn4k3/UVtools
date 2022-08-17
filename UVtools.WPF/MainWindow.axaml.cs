@@ -1178,55 +1178,48 @@ public partial class MainWindow : WindowEx
 
     public async void MenuNewVersionClicked()
     {
-        var result =
-            await this.MessageBoxWithHeaderQuestion(
+        if (string.IsNullOrWhiteSpace(VersionChecker.DownloadLink))
+        {
+            var result = await this.MessageBoxWithHeaderQuestion(
+                $"Do you like to manually download and update {About.Software} v{About.VersionStr} to v{VersionChecker.Version}?",
+                "## Changelog:  \n\n" +
+                $"{VersionChecker.Changelog}",
+                $"Update UVtools to v{VersionChecker.Version}?",
+
+                ButtonEnum.YesNoCancel, true);
+
+            if (result == ButtonResult.Yes)
+            {
+                SystemAware.OpenBrowser(VersionChecker.UrlLatestRelease);
+            }
+        }
+        else
+        {
+            var result = await this.MessageBoxWithHeaderQuestion(
                 $"Do you like to auto-update {About.Software} v{About.VersionStr} to v{VersionChecker.Version}?",
                 "Yes: Auto update  \n" +
-                "No:  Manual update  \n" +
+                "No:  Manual download and update  \n" +
                 "Cancel: No action  \n\n" +
-                "Changelog:  \n\n" +
-                $"{VersionChecker.Changelog}", 
+                "## Changelog:  \n\n" +
+                $"{VersionChecker.Changelog}",
                 $"Update UVtools to v{VersionChecker.Version}?",
-                
+
                 ButtonEnum.YesNoCancel, true);
 
 
-        if (result == ButtonResult.No)
-        {
-            SystemAware.OpenBrowser(VersionChecker.UrlLatestRelease);
-            return;
-        }
-        if (result == ButtonResult.Yes)
-        {
-            IsGUIEnabled = false;
-            ShowProgressWindow($"Downloading: {VersionChecker.Filename}");
-
-            await VersionChecker.AutoUpgrade(Progress);
-
-            /*var task = await Task.Factory.StartNew( () =>
+            switch (result)
             {
-                try
-                {
-                    VersionChecker.AutoUpgrade(Progress);
-                    return true;
-                }
-                catch (OperationCanceledException)
-                {
-                }
-                catch (Exception exception)
-                {
-                    Dispatcher.UIThread.InvokeAsync(async () =>
-                        await this.MessageBoxError(exception.ToString(), "Error opening the file"));
-                }
-
-                return false;
-            });
-            */
-            IsGUIEnabled = true;
-                
-            return;
+                case ButtonResult.No:
+                    SystemAware.OpenBrowser(VersionChecker.UrlLatestRelease);
+                    break;
+                case ButtonResult.Yes:
+                    IsGUIEnabled = false;
+                    ShowProgressWindow($"Downloading: {VersionChecker.Filename}");
+                    await VersionChecker.AutoUpgrade(Progress);
+                    IsGUIEnabled = true;
+                    break;
+            }
         }
-            
     } 
 
     #endregion

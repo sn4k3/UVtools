@@ -2,7 +2,7 @@
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
   <?define ComponentRules="OneToOne"?>
   <!-- SourceDir instructs IsWiX the location of the directory that contains files for this merge module -->
-  <?define SourceDir="..\publish\UVtools_win-x64_v3.5.6"?>
+  <?define SourceDir="..\publish\UVtools_win-x64_v3.6.0"?>
   <Module Id="UVtools" Language="1033" Version="1.0.0.0">
     <Package Id="12aaa1cf-ff06-4a02-abd5-2ac01ac4f83b" Manufacturer="PTRTECH" InstallerVersion="200" Keywords="MSLA, DLP" Description="MSLA/DLP, file analysis, repair, conversion and manipulation" InstallScope="perMachine" Platform="x64" />
     <Directory Id="TARGETDIR" Name="SourceDir">
@@ -1554,11 +1554,11 @@
         <Component Id="owcD2245B900E5C448485AD96FE57629D9D" Guid="D2245B90-0E5C-4484-85AD-96FE57629D9D">
           <File Id="owfD2245B900E5C448485AD96FE57629D9D" Source="$(var.SourceDir)\UVtoolsCmd.runtimeconfig.json" KeyPath="yes" />
         </Component>
-        <Component Id="owc3110926C9437495884D1A256F611E7C5" Guid="3110926C-9437-4958-84D1-A256F611E7C5">
-          <File Id="owf3110926C9437495884D1A256F611E7C5" Source="$(var.SourceDir)\Microsoft.Toolkit.HighPerformance.dll" KeyPath="yes" />
+        <Component Id="owc1AE8795C4CF24718B9BFE67B19A54931" Guid="1AE8795C-4CF2-4718-B9BF-E67B19A54931">
+          <File Id="owf1AE8795C4CF24718B9BFE67B19A54931" Source="$(var.SourceDir)\CommunityToolkit.HighPerformance.dll" KeyPath="yes" />
         </Component>
-        <Component Id="owc6FEB071413A045D9BB5F9C092F36EA8A" Guid="6FEB0714-13A0-45D9-BB5F-9C092F36EA8A">
-          <File Id="owf6FEB071413A045D9BB5F9C092F36EA8A" Source="$(var.SourceDir)\mscordaccore_amd64_amd64_6.0.722.32202.dll" KeyPath="yes" />
+        <Component Id="owcFD966BCC9E7C4739A03A214ED65F3A9F" Guid="FD966BCC-9E7C-4739-A03A-214ED65F3A9F">
+          <File Id="owfFD966BCC9E7C4739A03A214ED65F3A9F" Source="$(var.SourceDir)\mscordaccore_amd64_amd64_6.0.822.36306.dll" KeyPath="yes" />
         </Component>
       </Directory>
       <Directory Id="ProgramMenuFolder">

@@ -1,13 +1,14 @@
 # UVtools
 
-[![License](https://img.shields.io/github/license/sn4k3/UVtools?style=flat-square)](https://github.com/sn4k3/UVtools/blob/master/LICENSE)
-[![GitHub repo size](https://img.shields.io/github/repo-size/sn4k3/UVtools?style=flat-square)](#)
-[![Code size](https://img.shields.io/github/languages/code-size/sn4k3/UVtools?style=flat-square)](#)
-[![Total code](https://img.shields.io/tokei/lines/github/sn4k3/UVtools?style=flat-square)](#)
-[![Nuget](https://img.shields.io/nuget/v/UVtools.Core?style=flat-square)](https://www.nuget.org/packages/UVtools.Core)
-[![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/sn4k3/UVtools?include_prereleases&style=flat-square)](https://github.com/sn4k3/UVtools/releases)
-[![Downloads](https://img.shields.io/github/downloads/sn4k3/UVtools/total?style=flat-square)](https://github.com/sn4k3/UVtools/releases)
-[![Chocolatey](https://img.shields.io/chocolatey/dt/uvtools?color=brown&label=Chocolatey&style=flat-square)](https://community.chocolatey.org/packages/uvtools)
+[![License](https://img.shields.io/github/license/sn4k3/UVtools?style=for-the-badge)](https://github.com/sn4k3/UVtools/blob/master/LICENSE)
+[![GitHub repo size](https://img.shields.io/github/repo-size/sn4k3/UVtools?style=for-the-badge)](#)
+[![Code size](https://img.shields.io/github/languages/code-size/sn4k3/UVtools?style=for-the-badge)](#)
+[![Total code](https://img.shields.io/tokei/lines/github/sn4k3/UVtools?style=for-the-badge)](#)
+[![Nuget](https://img.shields.io/nuget/v/UVtools.Core?style=for-the-badge)](https://www.nuget.org/packages/UVtools.Core)
+[![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/sn4k3/UVtools?include_prereleases&style=for-the-badge)](https://github.com/sn4k3/UVtools/releases)
+[![Downloads](https://img.shields.io/github/downloads/sn4k3/UVtools/total?style=for-the-badge)](https://github.com/sn4k3/UVtools/releases)
+[![Chocolatey](https://img.shields.io/chocolatey/dt/uvtools?color=brown&label=Chocolatey&style=for-the-badge)](https://community.chocolatey.org/packages/uvtools)
+[![GitHub Sponsors](https://img.shields.io/github/sponsors/sn4k3?color=red&style=for-the-badge)](https://github.com/sponsors/sn4k3)
 
 ## Download the latest version at:
 https://github.com/sn4k3/UVtools/releases/latest  
@@ -106,6 +107,7 @@ But also, i need victims for test subject. Proceed at your own risk!
 - ZIP (Generic / Phrozen Zip)
 - VDA.ZIP (Voxeldance Additive)
 - VDT (Voxeldance Tango)
+- OSF (Vlare Open File Format)
 - UVJ (Zip file format for manual manipulation)
 - Image files (png, jpg, jpeg, jp2, tif, bmp, pbm, pgm, ras, sr)
 
@@ -339,7 +341,7 @@ Easy to use calls that allow you work with the formats. For more information nav
 
 Nuget package: https://www.nuget.org/packages/UVtools.Core
 
-[![Nuget](https://img.shields.io/nuget/v/UVtools.Core?style=flat-square)](https://www.nuget.org/packages/UVtools.Core)
+[![Nuget](https://img.shields.io/nuget/v/UVtools.Core?style=for-the-badge)](https://www.nuget.org/packages/UVtools.Core)
 
 ```powershell
 dotnet add package UVtools.Core
@@ -376,13 +378,12 @@ The fastest way to compile the project is by run the `build/compile.bat`, howeve
 # Support my work / Donate
 
 All my work here is given for free (OpenSource), it took some hours to build, test and polish the program.
-If you're happy to contribute for a better program and for my work i will appreciate the tip.
+If you're happy to contribute for a better program and for my work i will appreciate the tip.  
+Use one of the following methods:
 
-- Sponsor: https://github.com/sponsors/sn4k3
-- PayPal: https://paypal.me/SkillTournament
-
+[![GitHub Sponsors](https://img.shields.io/badge/Donate-Sponsor-red?style=for-the-badge)](https://github.com/sponsors/sn4k3)
+[![Donate PayPal](https://img.shields.io/badge/Donate-PayPal-blue?style=for-the-badge)](https://paypal.me/SkillTournament)
 
 # Contributors 
-
+[![GitHub contributors](https://img.shields.io/github/contributors/sn4k3/UVtools?style=for-the-badge)](https://github.com/sn4k3/UVtools/graphs/contributors)  
 [![Contributors](https://contrib.rocks/image?repo=sn4k3/UVtools)](https://github.com/sn4k3/UVtools/graphs/contributors)
-

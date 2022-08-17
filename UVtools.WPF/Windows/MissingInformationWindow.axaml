@@ -36,6 +36,7 @@
                             Minimum="0"
                             Maximum="0.200"
                             Increment="0.01"
+                            FormatString="F3"
                             Value="{Binding LayerHeight}"/>
 
             <TextBlock Grid.Row="0" Grid.Column="4"

@@ -98,7 +98,11 @@ struct HEADER {
     ushort RetractSpeedEnd <fgcolor=cBlack, bgcolor=cRed>; // 7
     ubyte RetractDecelerationChange <fgcolor=cBlack, bgcolor=cRed>; // 5
 
-    ubyte Unknown[8] <fgcolor=cWhite, bgcolor=cBlack>;
+    ushort BottomWaitTimeAfterCureMagnified100Times <fgcolor=cBlack, bgcolor=cRed>; // s * 100
+    ushort BottomWaitTimeAfterLiftMagnified100Times <fgcolor=cBlack, bgcolor=cRed>; // s * 100
+    ushort BottomWaitTimeBeforeCureMagnified100Times <fgcolor=cBlack, bgcolor=cRed>; // s * 100
+
+    ushort Reserved <fgcolor=cWhite, bgcolor=cBlack>;
 
     ubyte ProtocolType <fgcolor=cBlack, bgcolor=cRed>; // 0
 } header;

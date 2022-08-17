@@ -570,23 +570,33 @@ public class CWSFile : FileFormat
     {
         GCode = new GCodeBuilder
         {
-            SyncMovementsWithDelay = true,
             UseComments = true,
             GCodePositioningType = GCodeBuilder.GCodePositioningTypes.Relative,
             GCodeSpeedUnit = GCodeBuilder.GCodeSpeedUnits.MillimetersPerMinute,
             GCodeTimeUnit = GCodeBuilder.GCodeTimeUnits.Milliseconds,
             GCodeShowImageType = GCodeBuilder.GCodeShowImageTypes.LayerIndex0Started,
+            GCodeShowImagePosition = GCodeBuilder.GCodeShowImagePositions.WhenRequired,
             LayerMoveCommand = GCodeBuilder.GCodeMoveCommands.G1,
-            EndGCodeMoveCommand = GCodeBuilder.GCodeMoveCommands.G1
+            EndGCodeMoveCommand = GCodeBuilder.GCodeMoveCommands.G1,
+            CommandSyncMovements =
+            {
+                Enabled = true
+            },
+            CommandWaitSyncDelay =
+            {
+                Enabled = true,
+            }
         };
+
         GCode.CommandShowImageM6054.Set(";<Slice>", "{0}");
+        GCode.CommandWaitSyncDelay.Set(";<Delay>", "0{0}");
         GCode.CommandWaitG4.Set(";<Delay>", "{0}");
-        GCode.CommandSyncMovements.Enabled = true;
+
     }
     #endregion
 
     #region Methods
-
+    
     protected override void EncodeInternally(OperationProgress progress)
     {
         //var filename = fileFullPath.EndsWith(TemporaryFileAppend) ? Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(fileFullPath)) : Path.GetFileNameWithoutExtension(fileFullPath);
@@ -799,7 +809,7 @@ public class CWSFile : FileFormat
         // Must discover png depth grayscale or color
         if (DecodeType == FileDecodeType.Full && Printer == PrinterType.Unknown)
         {
-            var inputFilename = Path.GetFileNameWithoutExtension(FileFullPath)!;
+            //var inputFilename = Path.GetFileNameWithoutExtension(FileFullPath)!;
             foreach (var pngEntry in inputFile.Entries)
             {
                 if (!pngEntry.Name.EndsWith(".png")) continue;
@@ -836,6 +846,17 @@ public class CWSFile : FileFormat
     public override void RebuildGCode()
     {
         if (!SupportsGCode || SuppressRebuildGCode) return;
+
+        switch (Printer)
+        {
+            case PrinterType.Wanhao:
+                GCode!.CommandWaitSyncDelay.Command = ";<Takes>";
+                break;
+            default:
+                GCode!.CommandWaitSyncDelay.Command = ";<Delay>";
+                break;
+        }
+
         //string arch = Environment.Is64BitOperatingSystem ? "64-bits" : "32-bits";
         //GCode.Clear();
         //GCode.AppendLine($"; {About.Website} {About.Software} {Assembly.GetExecutingAssembly().GetName().Version} {arch} {DateTime.UtcNow}");
@@ -980,6 +1001,8 @@ public class CWSFile : FileFormat
 
         //Decode(FileFullPath, progress);
     }
+
+
 
     #endregion
 }

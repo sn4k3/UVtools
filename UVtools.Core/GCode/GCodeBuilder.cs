@@ -26,6 +26,20 @@ namespace UVtools.Core.GCode;
 
 public class GCodeBuilder : BindableBase
 {
+    #region Events
+    public event EventHandler? BeforeRebuildGCode;
+    protected virtual void OnBeforeRebuildGCode()
+    {
+        BeforeRebuildGCode?.Invoke(this, EventArgs.Empty);
+    }
+
+    public event EventHandler? AfterRebuildGCode;
+    protected virtual void OnAfterRebuildGCode()
+    {
+        AfterRebuildGCode?.Invoke(this, EventArgs.Empty);
+    }
+    #endregion
+
     #region Commands
 
     public GCodeCommand CommandUnitsMillimetersG21 { get; } = new("G21", null, "Set units to be mm");
@@ -42,6 +56,7 @@ public class GCodeBuilder : BindableBase
 
     public GCodeCommand CommandSyncMovements { get; } = new("G4", "P0", "Sync movements", false);
 
+    public GCodeCommand CommandWaitSyncDelay { get; } = new("G4", "P0{0}", "Sync movement", false);
     public GCodeCommand CommandWaitG4 { get; } = new("G4", "P{0}", "Delay");
     
     public GCodeCommand CommandShowImageM6054 = new("M6054", "\"{0}\"", "Show image");
@@ -98,6 +113,20 @@ public class GCodeBuilder : BindableBase
         LayerIndex0Started,
         LayerIndex1Started,
     }
+
+    public enum GCodeShowImagePositions : byte
+    {
+        /// <summary>
+        /// Show image at start of each layer block commands
+        /// </summary>
+        FirstLine,
+
+        /// <summary>
+        /// Show image just before exposing / turning LED ON
+        /// </summary>
+        WhenRequired
+    }
+
     #endregion
 
     #region Members
@@ -108,13 +137,13 @@ public class GCodeBuilder : BindableBase
     private GCodeTimeUnits _gCodeTimeUnit = GCodeTimeUnits.Milliseconds;
     private GCodeSpeedUnits _gCodeSpeedUnit = GCodeSpeedUnits.MillimetersPerMinute;
     private GCodeShowImageTypes _gCodeShowImageType = GCodeShowImageTypes.FilenamePng1Started;
-    private bool _syncMovementsWithDelay;
     private bool _useTailComma = true;
     private bool _useComments = true;
     private ushort _maxLedPower = byte.MaxValue;
     private uint _lineCount;
     private GCodeMoveCommands _layerMoveCommand;
     private GCodeMoveCommands _endGCodeMoveCommand;
+    private GCodeShowImagePositions _gCodeShowImagePosition = GCodeShowImagePositions.FirstLine;
 
     #endregion
 
@@ -144,6 +173,12 @@ public class GCodeBuilder : BindableBase
         set => RaiseAndSetIfChanged(ref _gCodeShowImageType, value);
     }
 
+    public GCodeShowImagePositions GCodeShowImagePosition
+    {
+        get => _gCodeShowImagePosition;
+        set => RaiseAndSetIfChanged(ref _gCodeShowImagePosition, value);
+    }
+
     public GCodeMoveCommands LayerMoveCommand
     {
         get => _layerMoveCommand;
@@ -154,12 +189,6 @@ public class GCodeBuilder : BindableBase
     {
         get => _endGCodeMoveCommand;
         set => RaiseAndSetIfChanged(ref _endGCodeMoveCommand, value);
-    }
-
-    public bool SyncMovementsWithDelay
-    {
-        get => _syncMovementsWithDelay;
-        set => RaiseAndSetIfChanged(ref _syncMovementsWithDelay, value);
     }
 
     public bool UseTailComma
@@ -183,14 +212,12 @@ public class GCodeBuilder : BindableBase
     public string BeginStartGCodeComments { get; set; } = ";START_GCODE_BEGIN";
     public string EndStartGCodeComments { get; set; } = ";END_GCODE_BEGIN";
 
-    public string BeginLayerComments { get; set; } = ";LAYER_START:{0}" + Environment.NewLine +
-                                                     ";PositionZ:{1}mm";
+    public string BeginLayerComments { get; set; } = $";LAYER_START:{{0}}{Environment.NewLine};PositionZ:{{1}}mm";
 
     public string EndLayerComments { get; set; } = ";LAYER_END";
 
     public string BeginEndGCodeComments { get; set; } = ";START_GCODE_END";
-    public string EndEndGCodeComments { get; set; } = ";END_GCODE_END" + Environment.NewLine +
-                                                      ";<Completed>";
+    public string EndEndGCodeComments { get; set; } = $";END_GCODE_END{Environment.NewLine};<Completed>";
 
     public uint LineCount
     {
@@ -373,12 +400,12 @@ public class GCodeBuilder : BindableBase
                     else
                         AppendMoveG1(finalRaiseZPosition, ConvertFromMillimetersPerMinute(slicerFile.MaximumSpeed));
 
-                    if (_syncMovementsWithDelay)
+                    if (CommandWaitSyncDelay.Enabled)
                     {
                         var seconds = OperationCalculator.LightOffDelayC.CalculateSecondsLiftOnly(
                             finalRaiseZPositionRelative + lastLiftHeight, slicerFile.MaximumSpeed, 0.75f);
                         var time = ConvertFromSeconds(seconds);
-                        if (seconds > 0) AppendWaitG4($"0{time}", "Sync movement");
+                        if (seconds > 0) AppendWaitSyncDelay(time);
                     }
 
                     AppendSyncMovements();
@@ -401,11 +428,11 @@ public class GCodeBuilder : BindableBase
             else
                 AppendMoveG1(raiseZ, feedRate);
 
-            if (_syncMovementsWithDelay)
+            if (CommandWaitSyncDelay.Enabled)
             {
                 var seconds = OperationCalculator.LightOffDelayC.CalculateSecondsLiftOnly(absRaiseZ, rawSpeed, 0.75f);
                 var time = ConvertFromSeconds(seconds);
-                AppendWaitG4($"0{time}", "Sync movement");
+                AppendWaitSyncDelay(time);
             }
         }
 
@@ -495,11 +522,11 @@ public class GCodeBuilder : BindableBase
             AppendLineOverrideComment(CommandMoveG0, $"Z Lift ({i+1})", lifts[i].z, lifts[i].feedrate); // Z Lift
         }
 
-        if (_syncMovementsWithDelay && layer is not null)
+        if (CommandWaitSyncDelay.Enabled && layer is not null)
         {
             var seconds = OperationCalculator.LightOffDelayC.CalculateSecondsLiftOnly(layer, 0.75f);
             var time = ConvertFromSeconds(seconds);
-            AppendWaitG4($"0{time}", "Sync movement");
+            AppendWaitSyncDelay(time);
         }
 
         AppendSyncMovements();
@@ -517,11 +544,11 @@ public class GCodeBuilder : BindableBase
                 AppendLineOverrideComment(CommandMoveG0, $"Retract ({i+1})", retracts[i].z, retracts[i].feedrate);
             }
 
-            if (_syncMovementsWithDelay && layer is not null)
+            if (CommandWaitSyncDelay.Enabled && layer is not null)
             {
                 var seconds = OperationCalculator.LightOffDelayC.CalculateSecondsLiftOnly(layer.RetractHeight, layer.RetractSpeed, layer.RetractHeight2, layer.RetractSpeed2, 0.75f);
                 var time = ConvertFromSeconds(seconds);
-                AppendWaitG4($"0{time}", "Sync movement");
+                AppendWaitSyncDelay(time);
             }
 
             AppendSyncMovements();
@@ -556,11 +583,11 @@ public class GCodeBuilder : BindableBase
             AppendLineOverrideComment(CommandMoveG1, $"Z Lift ({i+1})", lifts[i].z, lifts[i].feedrate); // Z Lift
         }
 
-        if (_syncMovementsWithDelay && layer is not null)
+        if (CommandWaitSyncDelay.Enabled && layer is not null)
         {
             var seconds = OperationCalculator.LightOffDelayC.CalculateSecondsLiftOnly(layer, 0.75f);
             var time = ConvertFromSeconds(seconds);
-            AppendWaitG4($"0{time}", "Sync movement");
+            AppendWaitSyncDelay(time);
         }
 
         AppendSyncMovements();
@@ -578,11 +605,11 @@ public class GCodeBuilder : BindableBase
                 AppendLineOverrideComment(CommandMoveG1, $"Retract ({i+1})", retracts[i].z, retracts[i].feedrate);
             }
 
-            if (_syncMovementsWithDelay && layer is not null)
+            if (CommandWaitSyncDelay.Enabled && layer is not null)
             {
                 var seconds = OperationCalculator.LightOffDelayC.CalculateSecondsLiftOnly(layer.RetractHeight, layer.RetractSpeed, layer.RetractHeight2, layer.RetractSpeed2, 0.75f);
                 var time = ConvertFromSeconds(seconds);
-                AppendWaitG4($"0{time}", "Sync movement");
+                AppendWaitSyncDelay(time);
             }
 
             AppendSyncMovements();
@@ -600,6 +627,19 @@ public class GCodeBuilder : BindableBase
             new List<(float, float)> { new(upZ, upFeedrate) },
             new List<(float, float)> { new(downZ, downFeedrate) },
             waitAfterLift, waitAfterRetract, layer);
+
+    public void AppendWaitSyncDelay(float time, string? comment = null)
+    {
+        if (time < 0) return;
+        AppendLineOverrideComment(CommandWaitSyncDelay, comment, time);
+    }
+
+    public void AppendWaitSyncDelay(string timeStr, string? comment = null)
+    {
+        if (!float.TryParse(timeStr, out var time)) return;
+        if (time < 0) return;
+        AppendLineOverrideComment(CommandWaitSyncDelay, comment, timeStr);
+    }
 
     public void AppendWaitG4(float time, string? comment = null)
     {
@@ -668,6 +708,8 @@ public class GCodeBuilder : BindableBase
     public void RebuildGCode(FileFormat slicerFile, StringBuilder? header) => RebuildGCode(slicerFile, header?.ToString());
     public void RebuildGCode(FileFormat slicerFile, string? header = null)
     {
+        OnBeforeRebuildGCode();
+
         Clear();
         AppendUVtools();
 
@@ -752,7 +794,10 @@ public class GCodeBuilder : BindableBase
 
             //if (layer.CanExpose)
             //{ Dont check this for compability
-            AppendShowImageM6054(GetShowImageString(layerIndex));
+            if (_gCodeShowImagePosition == GCodeShowImagePositions.FirstLine)
+            {
+                AppendShowImageM6054(GetShowImageString(layerIndex));
+            }
             //}
 
             if (liftHeightTotal > 0 && Layer.RoundHeight(liftHeightTotal + layer.PositionZ) > layer.PositionZ)
@@ -774,6 +819,10 @@ public class GCodeBuilder : BindableBase
             }
 
             AppendWaitG4(waitBeforeCure, "Wait before cure"); // Safer to parse if present
+            if (_gCodeShowImagePosition == GCodeShowImagePositions.WhenRequired && layer.CanExpose)
+            { 
+                AppendShowImageM6054(GetShowImageString(layerIndex));
+            }
             AppendExposure(exposureTime, pwmValue);
             if(waitAfterCure > 0) AppendWaitG4(waitAfterCure, "Wait after cure");
 
@@ -784,6 +833,7 @@ public class GCodeBuilder : BindableBase
         }
 
         AppendEndGCode(slicerFile);
+        OnAfterRebuildGCode();
     }
 
     public void RebuildGCode(FileFormat slicerFile, object[]? configs, string separator = ":")
@@ -879,6 +929,23 @@ public class GCodeBuilder : BindableBase
 
             Match match;
 
+            if (line[0] == ';')
+            {
+                match = Regex.Match(line, @"^;.*(layer\s+|layer:\s*|LAYER_START:\s*)(\d+)", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+                if (match.Success && match.Groups.Count > 2 && uint.TryParse(match.Groups[2].Value, out var layerIndex))
+                {
+                    if (layerIndex > slicerFile.LayerCount)
+                    {
+                        throw new FileLoadException(
+                            $"GCode parser detected the layer {layerIndex}, but the file was sliced to {slicerFile.LayerCount} layers.",
+                            slicerFile.FileFullPath);
+                    }
+                    layerBlock.SetLayer(true);
+                    layerBlock.LayerIndex = layerIndex;
+                    continue;
+                }
+            }
+
             // Display image
             if (line.StartsWith(CommandShowImageM6054.Command))
             {
@@ -888,8 +955,7 @@ public class GCodeBuilder : BindableBase
                 if (match.Success && match.Groups.Count >= 2) // Begin new layer
                 {
                     var layerIndex = uint.Parse(match.Groups[1].Value);
-                    if (_gCodeShowImageType is GCodeShowImageTypes.FilenamePng1Started or GCodeShowImageTypes
-                            .LayerIndex1Started) layerIndex--;
+                    if (_gCodeShowImageType is GCodeShowImageTypes.FilenamePng1Started or GCodeShowImageTypes.LayerIndex1Started) layerIndex--;
                     if (layerIndex > slicerFile.LayerCount)
                     {
                         throw new FileLoadException(
@@ -898,7 +964,11 @@ public class GCodeBuilder : BindableBase
                     }
 
                     // Propagate values before switch to the new layer
-                    layerBlock.SetLayer(true);
+                    if (_gCodeShowImagePosition == GCodeShowImagePositions.FirstLine && layerBlock.LayerIndex != layerIndex)
+                    {
+                        layerBlock.SetLayer(true);
+                    }
+
                     layerBlock.LayerIndex = layerIndex;
 
                     continue;
@@ -970,12 +1040,12 @@ public class GCodeBuilder : BindableBase
                     RegexOptions.IgnoreCase);
                 if (match.Success && match.Groups.Count >= 2)
                 {
-                    if (_syncMovementsWithDelay && match.Groups[1].Value.StartsWith('0')) continue; // Sync movement delay, skip
+                    if (/*CommandWaitSyncDelay.Enabled && */match.Groups[1].Value.StartsWith('0')) continue; // Sync movement delay, skip
 
                     var waitTime = float.Parse(match.Groups[1].Value);
 
                     if (layerBlock.PositionZ.HasValue &&
-                        layerBlock.LiftHeight.HasValue &&
+                        //layerBlock.LiftHeight.HasValue &&
                         !layerBlock.RetractSpeed.HasValue) // Must be wait time after lift, if not, don't blame me!
                     {
                         layerBlock.WaitTimeAfterLift ??= 0;

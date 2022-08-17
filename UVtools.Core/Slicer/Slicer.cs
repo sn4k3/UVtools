@@ -202,7 +202,7 @@ public class Slicer
 
     public static uint MillimetersToLayers(float millimeters, float layerHeight) => (uint)(millimeters / layerHeight);
     public static uint MillimetersToLayers(double millimeters, double layerHeight) => (uint)(millimeters / layerHeight);
-    public static uint MillimetersToLayers(decimal millimeters, decimal layerHeight) => (uint)(millimeters / layerHeight);
+    public static uint MillimetersToLayers(decimal millimeters, decimal layerHeight) => layerHeight > 0 ? (uint)(millimeters / layerHeight) : 0;
 
     public static uint LayersToMillimeters(uint layers, float layerHeight) => (uint)(layers * layerHeight);
     public static uint LayersToMillimeters(uint layers, double layerHeight) => (uint)(layers * layerHeight);

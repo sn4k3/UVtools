@@ -248,7 +248,7 @@ public class OSLAFile : FileFormat
     public override FileFormatType FileType => FileFormatType.Binary;
 
     public override FileExtension[] FileExtensions { get; } = {
-        new (typeof(OSLAFile), "osla", "Open SLA universal binary file"),
+        new (typeof(OSLAFile), "osla", "Open SLA universal binary file (OSLA)"),
         //new ("omsla", "Open mSLA universal binary file"),
         //new ("odlp", "Open DLP universal binary file"),
     };

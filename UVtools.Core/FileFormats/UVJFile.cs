@@ -177,7 +177,7 @@ public class UVJFile : FileFormat
     public override FileFormatType FileType => FileFormatType.Archive;
 
     public override FileExtension[] FileExtensions { get; } = {
-        new(typeof(UVJFile), "uvj", "UVJ")
+        new(typeof(UVJFile), "uvj", "Vendor-neutral format (UVJ)")
     };
 
     public override PrintParameterModifier[]? PrintParameterModifiers { get; } = {

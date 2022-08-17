@@ -327,7 +327,10 @@ public class JXSFile : FileFormat
             GCodeShowImageType = GCodeBuilder.GCodeShowImageTypes.FilenamePng0Started,
             LayerMoveCommand = GCodeBuilder.GCodeMoveCommands.G0,
             EndGCodeMoveCommand = GCodeBuilder.GCodeMoveCommands.G0,
-            SyncMovementsWithDelay = true
+            CommandWaitSyncDelay =
+            {
+                Enabled = true
+            }
         };
     }
     #endregion
@@ -528,7 +531,7 @@ public class JXSFile : FileFormat
             {
                 case "gcode":
                     lastCommand = value;
-                    if (value.StartsWith("M106 S") && value.StartsWith("M106 S0")) GCode.AppendWaitG4(0);
+                    if (value.StartsWith("M106 S0")) GCode.AppendWaitG4(0);
                     GCode.AppendLine(value);
                     break;
                 case "slice":
@@ -545,7 +548,7 @@ public class JXSFile : FileFormat
                     if (lastCommand.StartsWith("G0") || lastCommand.StartsWith("G1"))
                     {
                         lastCommand = $"G4 0{value}";
-                        GCode.AppendWaitG4($"0{value}");
+                        GCode.AppendWaitSyncDelay(value);
                         break;
                     }
                     GCode.AppendWaitG4(value);

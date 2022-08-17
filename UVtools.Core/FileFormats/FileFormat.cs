@@ -384,11 +384,11 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         //new CXDLPv1File(),   // Creality Box v1
         new CXDLPFile(),   // Creality Box
         new LGSFile(),   // LGS, LGS30
-        //new OSFFile(),   // OSF
         new FlashForgeSVGXFile(), // SVGX
         new GenericZIPFile(),   // Generic zip files
         new VDAFile(),   // VDA
         new VDTFile(),   // VDT
+        new OSFFile(),   // OSF
         new UVJFile(),   // UVJ
         new ImageFile(),   // images
     };
@@ -1505,9 +1505,21 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             ResolutionX = (uint) value.Width;
             ResolutionY = (uint) value.Height;
             RaisePropertyChanged();
+            RaisePropertyChanged(nameof(DisplayAspectRatio));
+            RaisePropertyChanged(nameof(DisplayAspectRatioStr));
             RaisePropertyChanged(nameof(Xppmm));
             RaisePropertyChanged(nameof(Yppmm));
             RaisePropertyChanged(nameof(Ppmm));
+            RaisePropertyChanged(nameof(PpmmMax));
+            RaisePropertyChanged(nameof(PixelSizeMicrons));
+            RaisePropertyChanged(nameof(PixelArea));
+            RaisePropertyChanged(nameof(PixelAreaMicrons));
+            RaisePropertyChanged(nameof(PixelHeight));
+            RaisePropertyChanged(nameof(PixelHeightMicrons));
+            RaisePropertyChanged(nameof(PixelSize));
+            RaisePropertyChanged(nameof(PixelSizeMax));
+            RaisePropertyChanged(nameof(PixelWidth));
+            RaisePropertyChanged(nameof(PixelWidthMicrons));
         }
     }
 
@@ -1534,9 +1546,25 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get => new(DisplayWidth, DisplayHeight);
         set
         {
-            DisplayWidth = value.Width;
-            DisplayHeight = value.Height;
+            DisplayWidth = (float)Math.Round(value.Width, 4);
+            DisplayHeight = (float)Math.Round(value.Height, 4);
             RaisePropertyChanged();
+            RaisePropertyChanged(nameof(DisplayAspectRatio));
+            RaisePropertyChanged(nameof(DisplayAspectRatioStr));
+            RaisePropertyChanged(nameof(DisplayDiagonal));
+            RaisePropertyChanged(nameof(DisplayDiagonalInches));
+            RaisePropertyChanged(nameof(Xppmm));
+            RaisePropertyChanged(nameof(Yppmm));
+            RaisePropertyChanged(nameof(Ppmm));
+            RaisePropertyChanged(nameof(PpmmMax));
+            RaisePropertyChanged(nameof(PixelSizeMicrons));
+            RaisePropertyChanged(nameof(PixelArea));
+            RaisePropertyChanged(nameof(PixelAreaMicrons));
+            RaisePropertyChanged(nameof(PixelHeight));
+            RaisePropertyChanged(nameof(PixelHeightMicrons));
+            RaisePropertyChanged(nameof(PixelSize));
+            RaisePropertyChanged(nameof(PixelSizeMax));
+            RaisePropertyChanged(nameof(PixelWidth));
         }
     }
 
@@ -5266,7 +5294,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
 
         if (differenceLayerCount > 0 && initBlack)
         {
-            using var blackMat = EmguExtensions.InitMat(Resolution);
+            using var blackMat = CreateMat(false);
             var pngBytes = blackMat.GetPngByes();
             for (var layerIndex = oldLayerCount; layerIndex < newLayerCount; layerIndex++)
             {

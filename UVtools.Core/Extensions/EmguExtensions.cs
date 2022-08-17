@@ -15,7 +15,7 @@ using System;
 using System.Drawing;
 using System.IO;
 using System.Runtime.InteropServices;
-using Microsoft.Toolkit.HighPerformance;
+using CommunityToolkit.HighPerformance;
 using UVtools.Core.EmguCV;
 using UVtools.Core.Objects;
 

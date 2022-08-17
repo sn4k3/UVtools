@@ -304,7 +304,7 @@ public class GCodeLayer
         layer.RetractSpeed2 = RetractSpeed2 ?? SlicerFile.GetBottomOrNormalValue(layer, SlicerFile.BottomRetractSpeed2, SlicerFile.RetractSpeed2);
         layer.LightPWM = LightPWM ?? 0;//SlicerFile.GetInitialLayerValueOrNormal(layerIndex, SlicerFile.BottomLightPWM, SlicerFile.LightPWM);
 
-        if (SlicerFile.GCode!.SyncMovementsWithDelay) // Dirty fix of the value
+        if (SlicerFile.GCode!.CommandWaitSyncDelay.Enabled) // Dirty fix of the value
         {
             var syncTime = OperationCalculator.LightOffDelayC.CalculateSeconds(layer, 1.5f);
             if (syncTime < layer.WaitTimeBeforeCure)

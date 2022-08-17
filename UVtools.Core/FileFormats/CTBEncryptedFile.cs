@@ -955,7 +955,7 @@ public class CTBEncryptedFile : FileFormat
         get => Settings.BottomRetractHeight2;
         set
         {
-            value = Math.Clamp((float)Math.Round(value, 2), 0, RetractHeightTotal);
+            value = Math.Clamp((float)Math.Round(value, 2), 0, BottomRetractHeightTotal);
             base.BottomRetractHeight2 = Settings.BottomRetractHeight2 = value;
         }
     }

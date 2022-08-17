@@ -756,12 +756,12 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
                     CvInvoke.Imdecode(_compressedBytes, ImreadModes.Grayscale, mat);
                     break;
                 case LayerCompressionCodec.Lz4:
-                    mat = new Mat(SlicerFile.Resolution, DepthType.Cv8U, 1);
+                    mat = SlicerFile.CreateMat(false);
                     LZ4Codec.Decode(_compressedBytes.AsSpan(), mat.GetDataByteSpan());
                     break;
                 case LayerCompressionCodec.GZip:
                 {
-                    mat = new(SlicerFile.Resolution, DepthType.Cv8U, 1);
+                    mat = SlicerFile.CreateMat(false);
                     unsafe
                     {
                         fixed (byte* pBuffer = _compressedBytes)
@@ -777,7 +777,7 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
                 }
                 case LayerCompressionCodec.Deflate:
                 {
-                    mat = new(SlicerFile.Resolution, DepthType.Cv8U, 1);
+                    mat = SlicerFile.CreateMat(false);
                     unsafe
                     {
                         fixed (byte* pBuffer = _compressedBytes)
@@ -1619,7 +1619,8 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
                 var span = mat.GetDataByteSpan();
                 var target = new byte[LZ4Codec.MaximumOutputSize(span.Length)];
                 var encodedLength = LZ4Codec.Encode(span, target.AsSpan());
-                return target[..encodedLength];
+                Array.Resize(ref target, encodedLength);
+                return target;
             }
             case LayerCompressionCodec.GZip:
             {

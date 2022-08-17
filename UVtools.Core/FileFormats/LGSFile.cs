@@ -263,10 +263,10 @@ public class LGSFile : FileFormat
     public override FileFormatType FileType => FileFormatType.Binary;
 
     public override FileExtension[] FileExtensions { get; } = {
-        new (typeof(LGSFile), "lgs", "Longer Orange 10"),
-        new (typeof(LGSFile), "lgs30", "Longer Orange 30"),
-        new (typeof(LGSFile), "lgs120", "Longer Orange 120"),
-        new (typeof(LGSFile), "lgs4k", "Longer Orange 4k"),
+        new (typeof(LGSFile), "lgs", "Longer Orange 10 (LGS)"),
+        new (typeof(LGSFile), "lgs30", "Longer Orange 30 (LGS30)"),
+        new (typeof(LGSFile), "lgs120", "Longer Orange 120 (LGS120)"),
+        new (typeof(LGSFile), "lgs4k", "Longer Orange 4k (LGS4K)"),
     };
 
     public override PrintParameterModifier[]? PrintParameterModifiers { get; } =

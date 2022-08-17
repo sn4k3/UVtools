@@ -16,6 +16,7 @@ using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using Avalonia.Threading;
 using UVtools.Core;
 using UVtools.Core.Extensions;
@@ -42,15 +43,12 @@ public class AppVersionChecker : BindableBase
             {
                 try
                 {
-                    var package = File.ReadAllText(file);
+                    var package = File.ReadAllText(file).Trim();
                     if (!string.IsNullOrWhiteSpace(package) && (package.EndsWith("-x64") || package.EndsWith("-arm64")))
                     {
-                        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                            return $"{About.Software}_{package}_v{_version}.msi";
-
-                        return SystemAware.IsRunningLinuxAppImage()
-                            ? $"{About.Software}_{package}_v{_version}.AppImage"
-                            : $"{About.Software}_{package}_v{_version}.zip";
+                        if (OperatingSystem.IsWindows()) return $"{About.Software}_{package}_v{_version}.msi";
+                        if (SystemAware.IsRunningLinuxAppImage()) return $"{About.Software}_{package}_v{_version}.AppImage";
+                        return $"{About.Software}_{package}_v{_version}.zip";
                     }
                 }
                 catch (Exception e)
@@ -59,17 +57,17 @@ public class AppVersionChecker : BindableBase
                 }
             }
 
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (OperatingSystem.IsWindows())
             {
                 return $"{About.Software}_win-x64_v{_version}.msi";
             }
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            if (OperatingSystem.IsLinux())
             {
                 return SystemAware.IsRunningLinuxAppImage() 
                         ? $"{About.Software}_linux-x64_v{_version}.AppImage"
                         : $"{About.Software}_linux-x64_v{_version}.zip";
             }
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            if (OperatingSystem.IsMacOS())
             {
                 return RuntimeInformation.ProcessArchitecture is Architecture.Arm or Architecture.Arm64 
                     ? $"{About.Software}_osx-arm64_v{_version}.zip" 
@@ -122,7 +120,7 @@ public class AppVersionChecker : BindableBase
 
     public string UrlLatestRelease = $"{About.Website}/releases/latest";
 
-    public string DownloadLink => string.IsNullOrEmpty(Filename) ? null : $"{About.Website}/releases/download/v{_version}/{Filename}";
+    public string DownloadLink { get; private set; }
 
     public bool HaveNewVersion => !string.IsNullOrEmpty(Version);
 
@@ -132,6 +130,8 @@ public class AppVersionChecker : BindableBase
     {
         try
         {
+            _version = null;
+            DownloadLink = null;
             var request = new HttpRequestMessage
             {
                 RequestUri = new Uri(GitHubReleaseApi),
@@ -149,31 +149,23 @@ public class AppVersionChecker : BindableBase
             Debug.WriteLine($"Version checker: v{About.VersionStr} <=> v{tag_name}");
             Version checkVersion = new(tag_name);
             Changelog = json["body"]?.ToString();
-            //if (string.Compare(tag_name, App.VersionStr, StringComparison.OrdinalIgnoreCase) > 0)
             if (About.Version.CompareTo(checkVersion) < 0)
             {
-                Debug.WriteLine($"New version detected: {DownloadLink}\n" +
-                                $"{_changelog}");
-                Dispatcher.UIThread.InvokeAsync(() =>
+                var assets = json["assets"].AsArray();
+                
+                Version = tag_name;
+                var fileName = Filename;
+                foreach (var asset in assets)
                 {
-                    Version = tag_name;
-                });
+                    if (asset["name"]!.ToString() != fileName) continue;
+                    DownloadLink = asset["browser_download_url"]!.ToString();
+                    break;
+                }
+
+                Debug.WriteLine($"New version detected: {DownloadLink}\n{_changelog}");
+
                 return true;
             }
-            /*string htmlCode = client.DownloadString($"{About.Website}/releases");
-                const string searchFor = "/releases/tag/";
-                var startIndex = htmlCode.IndexOf(searchFor, StringComparison.InvariantCultureIgnoreCase) +
-                                 searchFor.Length;
-                var endIndex = htmlCode.IndexOf("\"", startIndex, StringComparison.InvariantCultureIgnoreCase);
-                var version = htmlCode.Substring(startIndex, endIndex - startIndex);
-                if (string.Compare(version, $"v{AppSettings.VersionStr}", StringComparison.OrdinalIgnoreCase) > 0)
-                {
-                    Dispatcher.UIThread.InvokeAsync(() =>
-                    {
-                        Version = version;;
-                    });
-                    return true;
-                }*/
         }
         catch (Exception e)
         {
@@ -185,7 +177,7 @@ public class AppVersionChecker : BindableBase
 
     public async Task<bool> AutoUpgrade(OperationProgress progress)
     {
-        if (!HaveNewVersion) return false;
+        if (!HaveNewVersion || string.IsNullOrWhiteSpace(DownloadLink)) return false;
         progress.ItemName = "Megabytes";
         try
         {
@@ -228,7 +220,7 @@ public class AppVersionChecker : BindableBase
                     Thread.Sleep(500);
                     SystemAware.StartProcess(newFullPath);
                 }
-                else // others
+                else // MacOS and generic linux (no AppImage)
                 {
                     var upgradeFolder = "UPDATED_VERSION";
                     var targetDir = Path.Combine(App.ApplicationPath, upgradeFolder);
@@ -249,16 +241,17 @@ public class AppVersionChecker : BindableBase
                         await stream.WriteLineAsync($"echo {About.Software} v{About.Version} updater script");
                         await stream.WriteLineAsync($"cd '{App.ApplicationPath}'");
                         await stream.WriteLineAsync($"killall {About.Software}");
-                        await stream.WriteLineAsync("sleep 0.5");
+                        await stream.WriteLineAsync("sleep 1");
 
 
                         //stream.WriteLine($"[ -f {About.Software} ] && {App.AppExecutableQuoted} & || dotnet {About.Software}.dll &");
                         if (SystemAware.IsRunningMacOSApp)
                         {
+                            await stream.WriteLineAsync($"find {upgradeFolder} -print0 | xargs -0 xattr -d com.apple.quarantine");
                             await stream.WriteLineAsync($"cp -fR {upgradeFolder}/* ../../../");
                             await stream.WriteLineAsync($"open ../../../{About.Software}.app");
                         }
-                        else
+                        else // Linux generic
                         {
                             await stream.WriteLineAsync($"cp -fR {upgradeFolder}/* .");
                             await stream.WriteLineAsync($"if [ -f '{About.Software}' ]; then");
