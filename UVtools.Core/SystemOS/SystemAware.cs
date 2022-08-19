@@ -309,7 +309,7 @@ public static class SystemAware
     /// <summary>
     /// Gets if is running under MacOS and under app format
     /// </summary>
-    public static bool IsRunningMacOSApp => OperatingSystem.IsMacOS() && AppContext.BaseDirectory.EndsWith(".app/Contents/MacOS");
+    public static bool IsRunningMacOSApp => OperatingSystem.IsMacOS() && AppContext.BaseDirectory.EndsWith(Path.Combine(".app", "Contents", $"MacOS{Path.DirectorySeparatorChar}"));
 
     /// <summary>
     /// Gets the main name of the operative system

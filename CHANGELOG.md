@@ -1,5 +1,10 @@
 # Changelog
 
+## 19/08/2022 - v3.6.1
+
+- (Fix) GCode: Improve the regex for parsing layer index from comments, also fixes chitubox zip format layer parsing
+- (Fix) MacOS: Auto updater was not copying the files to the right location, leading to not upgrade the program. However this version still need to update manually
+
 ## 17/08/2022 - v3.6.0
 
 - **File formats:**

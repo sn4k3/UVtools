@@ -1,12 +1,3 @@
-- **File formats:**
-   - (Add) OSF (Vlare Open File Format)
-   - (Fix) CTB Encrypted: Bottom Retract Height for TSMC was constraining incorrectly with the normal total retract height
-   - (Fix) CWS: Only issue `;<Slice>` command when the exposure is about to happen (#514)
-- **GCode:**
-   - (Add) Command `CommandWaitSyncDelay` for movement wait sync delay instead of depending on G4 wait command
-   - (Fix) Wrong parsing and set of wait times when using a wait after lift / wait before retract
-- (Improvement) Auto update: Make sure the download url exists before attempt the download, if not, instead it will prompt for manual download and update
-- (Improvement) MacOS: Remove `com.apple.quarantine` flag from the auto downloaded files
-- (Upgrade) .NET from 6.0.7 to 6.0.8
-- (Upgrade) AvaloniaUI from 0.10.17 to 0.10.18
+- (Fix) GCode: Improve the regex for parsing layer index from comments, also fixes chitubox zip format layer parsing
+- (Fix) MacOS: Auto updater was not copying the files to the right location, leading to not upgrade the program. However this version still need to update manually
 

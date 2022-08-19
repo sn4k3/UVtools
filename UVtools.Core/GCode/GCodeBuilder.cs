@@ -931,7 +931,8 @@ public class GCodeBuilder : BindableBase
 
             if (line[0] == ';')
             {
-                match = Regex.Match(line, @"^;.*(layer\s+|layer:\s*|LAYER_START:\s*)(\d+)", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+                // Can be dangerous!
+                match = Regex.Match(line, @"^;\W*(layer\W*|LAYER_START:\s*)(\d+)", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
                 if (match.Success && match.Groups.Count > 2 && uint.TryParse(match.Groups[2].Value, out var layerIndex))
                 {
                     if (layerIndex > slicerFile.LayerCount)

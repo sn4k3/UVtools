@@ -29,11 +29,6 @@ public class GCodeLayer
     private float? _retractHeight2;
     private float? _retractSpeed2;
 
-    public enum GCodeLastParsedLine : byte
-    {
-        LayerIndex,
-    }
-
     public bool IsValid => LayerIndex.HasValue;
 
     public FileFormat SlicerFile { get; }
