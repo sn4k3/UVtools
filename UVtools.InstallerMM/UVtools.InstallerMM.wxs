@@ -2,7 +2,7 @@
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
   <?define ComponentRules="OneToOne"?>
   <!-- SourceDir instructs IsWiX the location of the directory that contains files for this merge module -->
-  <?define SourceDir="..\publish\UVtools_win-x64_v3.6.1"?>
+  <?define SourceDir="..\publish\UVtools_win-x64_v3.6.2"?>
   <Module Id="UVtools" Language="1033" Version="1.0.0.0">
     <Package Id="12aaa1cf-ff06-4a02-abd5-2ac01ac4f83b" Manufacturer="PTRTECH" InstallerVersion="200" Keywords="MSLA, DLP" Description="MSLA/DLP, file analysis, repair, conversion and manipulation" InstallScope="perMachine" Platform="x64" />
     <Directory Id="TARGETDIR" Name="SourceDir">
@@ -1286,9 +1286,6 @@
           <Component Id="owc8370BED3D17A58E88E193350B14A5450" Guid="cc521992-26e9-bf12-e777-68f8e2102405">
             <File Id="owf8370BED3D17A58E88E193350B14A5450" Source="$(var.SourceDir)\cs\Microsoft.CodeAnalysis.Scripting.resources.dll" KeyPath="yes" />
           </Component>
-          <Component Id="owcCB98727B387246ECB61E92C565A1472C" Guid="CB98727B-3872-46EC-B61E-92C565A1472C">
-            <File Id="owfCB98727B387246ECB61E92C565A1472C" Source="$(var.SourceDir)\cs\System.CommandLine.resources.dll" KeyPath="yes" />
-          </Component>
         </Directory>
         <Directory Id="owd17C6A2D314297F8FF3C608803909F7BE" Name="de">
           <Component Id="owc6A8D7823467C066EA1EC2F740C66084D" Guid="82c152c6-97bf-f75d-44fc-294474d9a7cb">
@@ -1302,9 +1299,6 @@
           </Component>
           <Component Id="owcF790A17350C2437C0E1E354B9D980161" Guid="627f2dc4-5b88-d3f7-3acf-7630111e30e8">
             <File Id="owfF790A17350C2437C0E1E354B9D980161" Source="$(var.SourceDir)\de\Microsoft.CodeAnalysis.Scripting.resources.dll" KeyPath="yes" />
-          </Component>
-          <Component Id="owc433CD233B1E34988900522E9DFA584DE" Guid="433CD233-B1E3-4988-9005-22E9DFA584DE">
-            <File Id="owf433CD233B1E34988900522E9DFA584DE" Source="$(var.SourceDir)\de\System.CommandLine.resources.dll" KeyPath="yes" />
           </Component>
         </Directory>
         <Directory Id="owdF542F1E9B1CF46F5EC5BF0998941ED93" Name="es">
@@ -1320,9 +1314,6 @@
           <Component Id="owcB59CB618361B113CFA57D75E883608EA" Guid="ddc56db3-e6a2-c7aa-dc21-3b247964758c">
             <File Id="owfB59CB618361B113CFA57D75E883608EA" Source="$(var.SourceDir)\es\Microsoft.CodeAnalysis.Scripting.resources.dll" KeyPath="yes" />
           </Component>
-          <Component Id="owc6BF60AD9179E41168945B6C42CFF2D8B" Guid="6BF60AD9-179E-4116-8945-B6C42CFF2D8B">
-            <File Id="owf6BF60AD9179E41168945B6C42CFF2D8B" Source="$(var.SourceDir)\es\System.CommandLine.resources.dll" KeyPath="yes" />
-          </Component>
         </Directory>
         <Directory Id="owdA426C3729D5D59516430C8F667ED8DE8" Name="fr">
           <Component Id="owcFECC4FDE99CBE3816D982D1FF8E5E196" Guid="703ebe68-adaa-3f9c-606b-b42fec5159e8">
@@ -1336,9 +1327,6 @@
           </Component>
           <Component Id="owcE8E57F27B5A0C2D7A27A164639AA95F9" Guid="caac4561-da90-4c7b-02cd-bdfca5be1694">
             <File Id="owfE8E57F27B5A0C2D7A27A164639AA95F9" Source="$(var.SourceDir)\fr\Microsoft.CodeAnalysis.Scripting.resources.dll" KeyPath="yes" />
-          </Component>
-          <Component Id="owcBC3C3AAC6D3840F88E5C8D6C7B754E1E" Guid="BC3C3AAC-6D38-40F8-8E5C-8D6C7B754E1E">
-            <File Id="owfBC3C3AAC6D3840F88E5C8D6C7B754E1E" Source="$(var.SourceDir)\fr\System.CommandLine.resources.dll" KeyPath="yes" />
           </Component>
         </Directory>
         <Directory Id="owd74DAE01CDA8C981B3918AC92ED360AA1" Name="it">
@@ -1354,9 +1342,6 @@
           <Component Id="owc8B74032559230C1C0C2B5082475A5CD4" Guid="39eabb54-8dd8-65e8-fe00-359ad09cae2a">
             <File Id="owf8B74032559230C1C0C2B5082475A5CD4" Source="$(var.SourceDir)\it\Microsoft.CodeAnalysis.Scripting.resources.dll" KeyPath="yes" />
           </Component>
-          <Component Id="owcC5BDCB6F102D450F8A077E8772BA5337" Guid="C5BDCB6F-102D-450F-8A07-7E8772BA5337">
-            <File Id="owfC5BDCB6F102D450F8A077E8772BA5337" Source="$(var.SourceDir)\it\System.CommandLine.resources.dll" KeyPath="yes" />
-          </Component>
         </Directory>
         <Directory Id="owd939A7C952EF97FFE1E5F44BC8281E343" Name="ja">
           <Component Id="owc51FE3ECF820BD499CDE7DBB22A69167D" Guid="3201321c-b8c7-5cbb-2ad8-f8bf5b451b3d">
@@ -1370,9 +1355,6 @@
           </Component>
           <Component Id="owc0A9733AEBD37AD14413D6F786BB5FA8A" Guid="f57405c2-169e-0504-01db-e115d156226b">
             <File Id="owf0A9733AEBD37AD14413D6F786BB5FA8A" Source="$(var.SourceDir)\ja\Microsoft.CodeAnalysis.Scripting.resources.dll" KeyPath="yes" />
-          </Component>
-          <Component Id="owc336210A1AB1A4F1D9E15297121711688" Guid="336210A1-AB1A-4F1D-9E15-297121711688">
-            <File Id="owf336210A1AB1A4F1D9E15297121711688" Source="$(var.SourceDir)\ja\System.CommandLine.resources.dll" KeyPath="yes" />
           </Component>
         </Directory>
         <Directory Id="owd26824DD7BA688994CEC324C96033C66B" Name="ko">
@@ -1388,9 +1370,6 @@
           <Component Id="owc49136EC48B42F29310D5FAB96EB39C77" Guid="7d59fb12-e36d-3b98-1b54-8182dc102913">
             <File Id="owf49136EC48B42F29310D5FAB96EB39C77" Source="$(var.SourceDir)\ko\Microsoft.CodeAnalysis.Scripting.resources.dll" KeyPath="yes" />
           </Component>
-          <Component Id="owcF366C6A34BC246A4BCAAC960B9CE4D51" Guid="F366C6A3-4BC2-46A4-BCAA-C960B9CE4D51">
-            <File Id="owfF366C6A34BC246A4BCAAC960B9CE4D51" Source="$(var.SourceDir)\ko\System.CommandLine.resources.dll" KeyPath="yes" />
-          </Component>
         </Directory>
         <Directory Id="owdC3B37D0EB36BEDA1B06A324A062DC94D" Name="pl">
           <Component Id="owc4D2D720AD4B25046F5C3A8337C58558F" Guid="f9f595eb-39b5-e326-d983-3aca9a6bb500">
@@ -1404,9 +1383,6 @@
           </Component>
           <Component Id="owc01C7CE26E845E06F3A50D520FB278BCF" Guid="d1ddafed-c698-3973-d2a4-4c4d00620030">
             <File Id="owf01C7CE26E845E06F3A50D520FB278BCF" Source="$(var.SourceDir)\pl\Microsoft.CodeAnalysis.Scripting.resources.dll" KeyPath="yes" />
-          </Component>
-          <Component Id="owc201ED0FBC5634A63B276744A6A4568C4" Guid="201ED0FB-C563-4A63-B276-744A6A4568C4">
-            <File Id="owf201ED0FBC5634A63B276744A6A4568C4" Source="$(var.SourceDir)\pl\System.CommandLine.resources.dll" KeyPath="yes" />
           </Component>
         </Directory>
         <Directory Id="owdE3101CE52C8B10FCC8A2CC81C4C96F39" Name="pt-BR">
@@ -1422,9 +1398,6 @@
           <Component Id="owc233F59943A3FA33488E78259D09163C6" Guid="e99cb644-a268-a6af-face-e2e7834333cb">
             <File Id="owf233F59943A3FA33488E78259D09163C6" Source="$(var.SourceDir)\pt-BR\Microsoft.CodeAnalysis.Scripting.resources.dll" KeyPath="yes" />
           </Component>
-          <Component Id="owc0AE0796E0CC041FBA07B4073EC80B7B9" Guid="0AE0796E-0CC0-41FB-A07B-4073EC80B7B9">
-            <File Id="owf0AE0796E0CC041FBA07B4073EC80B7B9" Source="$(var.SourceDir)\pt-BR\System.CommandLine.resources.dll" KeyPath="yes" />
-          </Component>
         </Directory>
         <Directory Id="owdEAE4E7B6D44EEB507A9E5B7539B1C34A" Name="ru">
           <Component Id="owcB065F45686216D7224FE9E57071535B1" Guid="e96c2dc1-7b2a-91cf-dfb2-add81e62ac2b">
@@ -1438,9 +1411,6 @@
           </Component>
           <Component Id="owc53575A00E0697BB0E07983D26C103FEA" Guid="64e7fa95-8227-2c96-6a82-e914b6ce047c">
             <File Id="owf53575A00E0697BB0E07983D26C103FEA" Source="$(var.SourceDir)\ru\Microsoft.CodeAnalysis.Scripting.resources.dll" KeyPath="yes" />
-          </Component>
-          <Component Id="owc843CF10750AE4D3482AFE6C0EF22BAB1" Guid="843CF107-50AE-4D34-82AF-E6C0EF22BAB1">
-            <File Id="owf843CF10750AE4D3482AFE6C0EF22BAB1" Source="$(var.SourceDir)\ru\System.CommandLine.resources.dll" KeyPath="yes" />
           </Component>
         </Directory>
         <Directory Id="owdFCC3FD9F99A4D5BEDEAC61F3322D2D93" Name="tr">
@@ -1456,9 +1426,6 @@
           <Component Id="owc91567B2B4E8154089395D1A78358BE89" Guid="1c327c0f-a510-b334-7130-5c9e6609dc7b">
             <File Id="owf91567B2B4E8154089395D1A78358BE89" Source="$(var.SourceDir)\tr\Microsoft.CodeAnalysis.Scripting.resources.dll" KeyPath="yes" />
           </Component>
-          <Component Id="owcA539F189A0C84A9F8E802FEE9FDEBEDD" Guid="A539F189-A0C8-4A9F-8E80-2FEE9FDEBEDD">
-            <File Id="owfA539F189A0C84A9F8E802FEE9FDEBEDD" Source="$(var.SourceDir)\tr\System.CommandLine.resources.dll" KeyPath="yes" />
-          </Component>
         </Directory>
         <Directory Id="owd7142663FADDFFB05CCE01DC370DE4995" Name="zh-Hans">
           <Component Id="owc28B8853BEB28067D4AB79B73216A3AC8" Guid="f6b6af15-bb3a-3eda-972d-47cb28af6c03">
@@ -1473,9 +1440,6 @@
           <Component Id="owc5371E4C6A9B06D411E8EAC3E5A48E7EA" Guid="a7649dfb-52b9-08d3-6f03-f7aed4d2cce3">
             <File Id="owf5371E4C6A9B06D411E8EAC3E5A48E7EA" Source="$(var.SourceDir)\zh-Hans\Microsoft.CodeAnalysis.Scripting.resources.dll" KeyPath="yes" />
           </Component>
-          <Component Id="owcC563AB6969004ECC97A8859CCEE8A25A" Guid="C563AB69-6900-4ECC-97A8-859CCEE8A25A">
-            <File Id="owfC563AB6969004ECC97A8859CCEE8A25A" Source="$(var.SourceDir)\zh-Hans\System.CommandLine.resources.dll" KeyPath="yes" />
-          </Component>
         </Directory>
         <Directory Id="owdA86DB5E08AB73906A10F69BC4AA81DE2" Name="zh-Hant">
           <Component Id="owc18EA70FFACC7303C11A678723F8E1919" Guid="71c1ee6c-af04-89be-a2f7-20205b5f371e">
@@ -1489,9 +1453,6 @@
           </Component>
           <Component Id="owc505D5854210A555AEF782935C164E813" Guid="778f403b-5deb-df93-7dc7-44b5fa099c25">
             <File Id="owf505D5854210A555AEF782935C164E813" Source="$(var.SourceDir)\zh-Hant\Microsoft.CodeAnalysis.Scripting.resources.dll" KeyPath="yes" />
-          </Component>
-          <Component Id="owcC2225AC993F14DADA08B59442159798E" Guid="C2225AC9-93F1-4DAD-A08B-59442159798E">
-            <File Id="owfC2225AC993F14DADA08B59442159798E" Source="$(var.SourceDir)\zh-Hant\System.CommandLine.resources.dll" KeyPath="yes" />
           </Component>
         </Directory>
         <Component Id="owc2B1C136C44C740F48CDFE91A80F48B4B" Guid="2B1C136C-44C7-40F4-8CDF-E91A80F48B4B">
@@ -1535,24 +1496,6 @@
         </Component>
         <Component Id="owc2DE24885E97D4FD3AB633AA53F125FED" Guid="2DE24885-E97D-4FD3-AB63-3AA53F125FED">
           <File Id="owf2DE24885E97D4FD3AB633AA53F125FED" Source="$(var.SourceDir)\UVtools.sh" KeyPath="yes" />
-        </Component>
-        <Component Id="owcEF2C9ED70B264423B1145D94F760DF42" Guid="EF2C9ED7-0B26-4423-B114-5D94F760DF42">
-          <File Id="owfEF2C9ED70B264423B1145D94F760DF42" Source="$(var.SourceDir)\System.CommandLine.dll" KeyPath="yes" />
-        </Component>
-        <Component Id="owcED313361637349C1B3515192A64FDE80" Guid="ED313361-6373-49C1-B351-5192A64FDE80">
-          <File Id="owfED313361637349C1B3515192A64FDE80" Source="$(var.SourceDir)\UVtoolsCmd.deps.json" KeyPath="yes" />
-        </Component>
-        <Component Id="owcE8F653F9E34A4D0FA5A5A0D3B7C353F3" Guid="E8F653F9-E34A-4D0F-A5A5-A0D3B7C353F3">
-          <File Id="owfE8F653F9E34A4D0FA5A5A0D3B7C353F3" Source="$(var.SourceDir)\UVtoolsCmd.dll" KeyPath="yes" />
-        </Component>
-        <Component Id="owc524AFA435EB94D5B84D9A52E96983FF5" Guid="524AFA43-5EB9-4D5B-84D9-A52E96983FF5">
-          <File Id="owf524AFA435EB94D5B84D9A52E96983FF5" Source="$(var.SourceDir)\UVtoolsCmd.exe" KeyPath="yes" />
-        </Component>
-        <Component Id="owc7739FB911743477F89DF57A0A2503357" Guid="7739FB91-1743-477F-89DF-57A0A2503357">
-          <File Id="owf7739FB911743477F89DF57A0A2503357" Source="$(var.SourceDir)\UVtoolsCmd.pdb" KeyPath="yes" />
-        </Component>
-        <Component Id="owcD2245B900E5C448485AD96FE57629D9D" Guid="D2245B90-0E5C-4484-85AD-96FE57629D9D">
-          <File Id="owfD2245B900E5C448485AD96FE57629D9D" Source="$(var.SourceDir)\UVtoolsCmd.runtimeconfig.json" KeyPath="yes" />
         </Component>
         <Component Id="owc1AE8795C4CF24718B9BFE67B19A54931" Guid="1AE8795C-4CF2-4718-B9BF-E67B19A54931">
           <File Id="owf1AE8795C4CF24718B9BFE67B19A54931" Source="$(var.SourceDir)\CommunityToolkit.HighPerformance.dll" KeyPath="yes" />

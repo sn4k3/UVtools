@@ -1,3 +1,6 @@
-- (Fix) GCode: Improve the regex for parsing layer index from comments, also fixes chitubox zip format layer parsing
-- (Fix) MacOS: Auto updater was not copying the files to the right location, leading to not upgrade the program. However this version still need to update manually
+- (Add) Debug sub menu to test some behaviours (Only when compiled in debug mode, not visible on public release)
+- (Add) Utility method `LayerExists` to the file formats to know if specific layer index exists in the collection
+- (Improvement) Add loaded file information to the crash dialog message
+- (Fix) Message dialog height do not expand with text (#537)
+- (Fix) Crash when all layers get removed and UI attempt to show a layer (#538)
 

@@ -12,7 +12,7 @@
           Background="{DynamicResource LightBackground}"
           BorderBrush="Black" BorderThickness="1">
           <TextBox VerticalAlignment="Center"
-                     Classes="TransparentReadOnly"
+                     Classes="TransparentReadOnlyMultiLineNoBorder"
                      Padding="10">
             <TextBox.Text>
               <MultiBinding StringFormat="\{0\}&#x0a;&#x0a;Formula: \{1\}">
@@ -174,7 +174,7 @@
             Background="{DynamicResource LightBackground}"
           BorderBrush="Black" BorderThickness="1">
           <TextBox VerticalAlignment="Center"
-                   Classes="TransparentReadOnly"
+                   Classes="TransparentReadOnlyMultiLineNoBorder"
                    Padding="10">
             <TextBox.Text>
               <MultiBinding StringFormat="\{0\}&#x0a;&#x0a;Formula: \{1\}">
@@ -403,7 +403,7 @@
         <Border
             Background="{DynamicResource LightBackground}"
           BorderBrush="Black" BorderThickness="1">
-          <TextBox VerticalAlignment="Center" Classes="TransparentReadOnly" Padding="10">
+          <TextBox VerticalAlignment="Center" Classes="TransparentReadOnlyMultiLineNoBorder" Padding="10">
             <TextBox.Text>
               <MultiBinding StringFormat="\{0\}&#x0a;&#x0a;Formula: \{1\}">
                 <Binding Path="Operation.CalcOptimalModelTilt.Description"/>

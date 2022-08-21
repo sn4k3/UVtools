@@ -23,7 +23,7 @@
             IsExpanded="{Binding Settings.Tools.ExpandDescriptions}"
             HorizontalContentAlignment="Stretch"
             Header="Description (Click to toggle)">
-            <TextBox Classes="TransparentReadOnly"
+            <TextBox Classes="TransparentReadOnlyMultiLineNoBorder"
                      MaxWidth="{Binding DescriptionMaxWidth}"
                      FontSize="16"
                      Margin="-10"

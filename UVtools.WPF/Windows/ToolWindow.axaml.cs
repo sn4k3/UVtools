@@ -139,7 +139,7 @@ public class ToolWindow : WindowEx
         }
     }
 
-    public float LayerStartMM => SlicerFile[_layerIndexStart].PositionZ;
+    public float LayerStartMM => SlicerFile.LayerExists(_layerIndexStart) ? SlicerFile[_layerIndexStart].PositionZ : 0;
 
     public uint LayerIndexEnd
     {
@@ -162,7 +162,7 @@ public class ToolWindow : WindowEx
         }
     }
 
-    public float LayerEndMM => SlicerFile[_layerIndexEnd].PositionZ;
+    public float LayerEndMM => SlicerFile.LayerExists(_layerIndexEnd) ? SlicerFile[_layerIndexEnd].PositionZ : 0;
 
     public bool LayerIndexEndEnabled
     {

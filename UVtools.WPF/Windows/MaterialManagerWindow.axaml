@@ -21,39 +21,39 @@
                   <WrapPanel Orientation="Horizontal">
                     <StackPanel Orientation="Horizontal">
                       <TextBlock Text="Bottles in stock:" VerticalAlignment="Center" FontWeight="Bold"/>
-                      <TextBox Classes="TransparentReadOnly"
+                      <TextBox Classes="TransparentReadOnlyMultiLineNoBorder"
                                  Text="{Binding Manager.BottlesInStock, StringFormat=\{0:N0\}}"/>
                     </StackPanel>
 
                     <StackPanel Margin="10,0,0,0" Orientation="Horizontal">
                       <TextBlock Text="Owned bottles:" VerticalAlignment="Center" FontWeight="Bold"/>
-                      <TextBox Classes="TransparentReadOnly"
+                      <TextBox Classes="TransparentReadOnlyMultiLineNoBorder"
                                Text="{Binding Manager.OwnedBottles, StringFormat=\{0:N0\}}"/>
                     </StackPanel>
 
                     <StackPanel Margin="10,0,0,0" Orientation="Horizontal">
                       <TextBlock Text="Consumed volume:" VerticalAlignment="Center" FontWeight="Bold"/>
-                      <TextBox Classes="TransparentReadOnly"
+                      <TextBox Classes="TransparentReadOnlyMultiLineNoBorder"
                            Text="{Binding Manager.ConsumedVolumeLiters, StringFormat=\{0:N4\}}"/>
                       <TextBlock Text="liters" VerticalAlignment="Center"/>
                     </StackPanel>
 
                     <StackPanel Margin="10,0,0,0" Orientation="Horizontal">
                       <TextBlock Text="Volume in stock:" VerticalAlignment="Center" FontWeight="Bold"/>
-                      <TextBox Classes="TransparentReadOnly"
+                      <TextBox Classes="TransparentReadOnlyMultiLineNoBorder"
                            Text="{Binding Manager.VolumeInStockLiters, StringFormat=\{0:N4\}}"/>
                       <TextBlock Text="liters" VerticalAlignment="Center"/>
                     </StackPanel>
 
                     <StackPanel Margin="10,0,0,0" Orientation="Horizontal">
                       <TextBlock Text="Spent:" VerticalAlignment="Center" FontWeight="Bold"/>
-                      <TextBox Classes="TransparentReadOnly"
+                      <TextBox Classes="TransparentReadOnlyMultiLineNoBorder"
                            Text="{Binding Manager.TotalCost, StringFormat=\{0:N2\}}"/>
                     </StackPanel>
 
                     <StackPanel Margin="10,0,0,0" Orientation="Horizontal">
                       <TextBlock Text="Print time:" VerticalAlignment="Center" FontWeight="Bold"/>
-                      <TextBox Classes="TransparentReadOnly"
+                      <TextBox Classes="TransparentReadOnlyMultiLineNoBorder"
                            Text="{Binding Manager.PrintTimeSpan.TotalDays, StringFormat=\{0:N4\}}"/>
                       <TextBlock Text="days" VerticalAlignment="Center"/>
                     </StackPanel>

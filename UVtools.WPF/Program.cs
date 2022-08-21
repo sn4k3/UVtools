@@ -86,7 +86,12 @@ public static class Program
         {
             try
             {
-                SystemAware.StartThisApplication($"--crash-report \"{category}\" \"{ex}\"");
+                string? file = null;
+                if (App.SlicerFile is not null)
+                {
+                    file = $"{App.SlicerFile.Filename}  [Version: {App.SlicerFile.Version}] [Class: {App.SlicerFile.GetType().Name}]";
+                }
+                SystemAware.StartThisApplication($"--crash-report \"{category}\" \"{ex}\" \"{file}\"");
                 //var errorMsg = $"An application error occurred. Please contact the administrator with the following information:\n\n{ex}";
                 //await App.MainWindow.MessageBoxError(errorMsg, "Fatal Non-UI Error");
             }

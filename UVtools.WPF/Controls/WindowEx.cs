@@ -104,6 +104,8 @@ public class WindowEx : Window, INotifyPropertyChanged, IStyleable
     public double WindowsWidthMaxSizeRatio { get; set; } = 1;
     public double WindowsHeightMaxSizeRatio { get; set; } = 1;
 
+    public bool IsDebug => App.IsDebug;
+
     public UserSettings Settings => UserSettings.Instance;
 
     public virtual FileFormat SlicerFile

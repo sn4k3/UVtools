@@ -23,7 +23,7 @@
     Padding="10"
     BorderBrush="Black"
     BorderThickness="1">
-    <TextBox Classes="TransparentReadOnly" Text="{Binding Description}"/>
+    <TextBox Classes="TransparentReadOnlyMultiLineNoBorder" Text="{Binding Description}"/>
     
   </Border>
 

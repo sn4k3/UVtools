@@ -465,9 +465,9 @@ public partial class MainWindow
 
     public string MinimumLayerString => SlicerFile is null ? "???" : $"{SlicerFile.LayerHeight}mm\n0";
     public string MaximumLayerString => SlicerFile is null ? "???" : $"{SlicerFile.PrintHeight}mm\n{SlicerFile.LastLayerIndex}";
-    public string ActualLayerTooltip => SlicerFile is null ? "???" : $"{Layer.ShowHeight(SlicerFile[_actualLayer]?.PositionZ ?? 0)}mm\n" +
-                                                                     $"{ActualLayer}\n" +
-                                                                     $"{(ActualLayer + 1) * 100 / SlicerFile.LayerCount}%";
+    public string ActualLayerTooltip => SlicerFile is null || !SlicerFile.LayerExists(_actualLayer) ? "???" : $"{Layer.ShowHeight(SlicerFile[_actualLayer]?.PositionZ ?? 0)}mm\n" +
+                                                                     $"{_actualLayer}\n" +
+                                                                     $"{(_actualLayer + 1) * 100 / SlicerFile.LayerCount}%";
 
     public uint SliderMaximumValue => SlicerFile?.LastLayerIndex ?? 0;
 
@@ -843,6 +843,14 @@ public partial class MainWindow
         {
             _actualLayer = sanitizedLayerIndex;
             InvalidateLayerNavigation();
+        }
+
+        if (_actualLayer >= SlicerFile.LayerCount) // No valid layer
+        {
+            CurrentLayerProperties.Clear();
+            LayerImageBox.Image = null;
+            LayerCache.Clear();
+            return;
         }
 
         var watch = Stopwatch.StartNew();

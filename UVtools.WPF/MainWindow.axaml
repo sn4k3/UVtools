@@ -230,7 +230,24 @@
 							  CommandParameter="https://github.com/sn4k3/UVtools/discussions/categories/ideas"
 							  i:MenuItem.Icon="fa-solid fa-lightbulb"/>
 
-				</MenuItem>
+                    <Separator IsVisible="{Binding IsDebug}"/>
+
+					<MenuItem Header="_Debug tools"
+                              i:MenuItem.Icon="fa-solid fa-bug-slash">
+
+                        <MenuItem Header="Throw exception"
+                                  IsVisible="{Binding IsDebug}"
+                                  Command="{Binding MenuHelpDebugThrowExceptionClicked}"
+                                  i:MenuItem.Icon="fa-solid fa-explosion"/>
+
+                        <MenuItem Header="Show long message box"
+                                  IsVisible="{Binding IsDebug}"
+                                  Command="{Binding MenuHelpDebugLongMessageBoxClicked}"
+                                  i:MenuItem.Icon="fa-solid fa-message"/>
+						
+                    </MenuItem>
+
+                    </MenuItem>
 
 				<MenuItem Background="LimeGreen"
 						  IsVisible="{Binding VersionChecker.HaveNewVersion}"

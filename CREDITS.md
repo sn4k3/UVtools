@@ -73,3 +73,4 @@
 - Marcin Chomiczuk
 - Patrick Hofmann
 - Ajilus
+- James F Hammond

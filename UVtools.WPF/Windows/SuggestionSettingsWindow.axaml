@@ -71,7 +71,7 @@
                                            CommandParameter="{Binding ActiveSuggestion.InformationUrl}"/>
 					</StackPanel>
 					
-                    <TextBox Classes="TransparentReadOnly" 
+                    <TextBox Classes="TransparentReadOnlyMultiLineNoBorder" 
                              Margin="-10,0,0,5"
                              Text="{Binding ActiveSuggestion.Description}" 
                              TextWrapping="Wrap"

@@ -32,7 +32,7 @@
                         HorizontalAlignment="Center"/>
 
                 <TextBox Grid.Column="2"
-                         Classes="TransparentReadOnly"
+                         Classes="TransparentReadOnlyMultiLineNoBorder"
                          FontWeight="Bold"
                          IsVisible="{Binding HeaderTitle, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
                          Text="{Binding HeaderTitle}"/>
@@ -41,7 +41,7 @@
 
 
 		<TextBox Grid.Row="1"
-				 Classes="TransparentReadOnly"
+				 Classes="TransparentReadOnlyMultiLineNoBorder"
 				 Padding="20"
 				 ScrollViewer.HorizontalScrollBarVisibility="Auto"
 				 ScrollViewer.VerticalScrollBarVisibility="Auto"

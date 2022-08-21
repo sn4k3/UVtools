@@ -48,6 +48,19 @@ public class App : Application
         [Description("Default dark")]
         DefaultDark
     }
+
+    public static bool IsDebug
+    {
+        get
+        {
+#if DEBUG
+            return true;
+#else
+            return false;
+#endif
+        }
+    }
+
     //public static ThemeSelector ThemeSelector { get; set; }
     public static MainWindow MainWindow = null!;
     public static FileFormat? SlicerFile = null;
@@ -207,10 +220,15 @@ public class App : Application
             if (Program.IsCrashReport)
             {
                 //Program.Args = new[] {"--crash-report", "Debug", "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum." };
+                if (Program.Args.Length < 3) return;
                 if (string.IsNullOrWhiteSpace(Program.Args[1])) return;
-                if(string.IsNullOrWhiteSpace(Program.Args[2])) return;
+                if (string.IsNullOrWhiteSpace(Program.Args[2])) return;
                 var category = Program.Args[1];
                 var message = $"{Program.Args[2]}\nCategory: {category}";
+                if (Program.Args.Length >= 4 && !string.IsNullOrWhiteSpace(Program.Args[3]))
+                {
+                    message += $"\nFile: {Program.Args[3]}";
+                }
 
                 var bugReportMessageMk = $"# Report\n```\n{message}\n```";
 
@@ -227,7 +245,7 @@ public class App : Application
 
                 var append2 = $"\n\nMachine date time: {DateTime.Now}\n    UTC date time: {DateTime.UtcNow}";
                 message += append2;
-                bugReportMessageMk += $"{append2}\n\n# Additional information and Workflow\nComplete with additional information and the workflow that caused this crash.";
+                bugReportMessageMk += $"{append2}\n\n# Additional information and Workflow\nComplete with additional information and the workflow that caused this crash with the file as well.";
 
                 try
                 {
@@ -237,40 +255,18 @@ public class App : Application
                 {
                     // ignored
                 }
+                
 
-
-                var reportButton = MessageWindow.CreateButton("Report", "fa-solid fa-bug");
-                reportButton.Click += (sender, e) =>
-                {
-                    Current?.Clipboard?.SetTextAsync(bugReportMessageMk);
-                    using var reader = new StringReader(message);
-                    SystemAware.OpenBrowser($"https://github.com/sn4k3/UVtools/issues/new?assignees=sn4k3&labels=&template=bug_report.md&title={HttpUtility.UrlEncode($"[Crash] {reader.ReadLine()}")}&body={HttpUtility.UrlEncode("<!--\n# Instructions:\n1. Click on this box;\n2. Select all it text (Ctrl + A);\n3. Paste the report content (Ctrl + V);\n4. Review the content;\n5. Submit the issue.\n!-->")}");
-                    e.Handled = true;
-                };
-
-                var helpButton = MessageWindow.CreateButton("Help", "fa-solid fa-question");
-                helpButton.Click += (sender, e) =>
-                {
-                    Current?.Clipboard?.SetTextAsync(bugReportMessageMk);
-                    SystemAware.OpenBrowser("https://github.com/sn4k3/UVtools/discussions/categories/q-a");
-                    e.Handled = true;
-                };
-
-                var restartButton = MessageWindow.CreateButton("Restart", "fa-solid fa-redo-alt");
-                restartButton.Click += (sender, e) =>
-                {
-                    SystemAware.StartThisApplication();
-                };
-
+                using var reader = new StringReader(message);
                 desktop.MainWindow = new MessageWindow($"{About.SoftwareWithVersion} - Crash report", 
                     "fa-regular fa-frown", 
                     $"{About.Software} crashed due an unexpected {category.ToLowerInvariant()} error.\nYou can report this error if you find necessary.\nFind more details below:\n", 
                     message,
                     new[]
                     {
-                        reportButton,
-                        helpButton,
-                        restartButton,
+                        MessageWindow.CreateLinkButtonAction("Report", "fa-solid fa-bug", $"https://github.com/sn4k3/UVtools/issues/new?assignees=sn4k3&labels=&template=bug_report.md&title={HttpUtility.UrlEncode($"[Crash] {reader.ReadLine()}")}&body={HttpUtility.UrlEncode("<!--\n# Instructions:\n1. Click on this box;\n2. Select all it text (Ctrl + A);\n3. Paste the report content (Ctrl + V);\n4. Review the content;\n5. Submit the issue.\n!-->")}", () => Current?.Clipboard?.SetTextAsync(bugReportMessageMk)),
+                        MessageWindow.CreateLinkButtonAction("Help", "fa-solid fa-question", "https://github.com/sn4k3/UVtools/discussions/categories/q-a", () => Current?.Clipboard?.SetTextAsync(bugReportMessageMk)),
+                        MessageWindow.CreateButtonAction("Restart", "fa-solid fa-redo-alt", () => SystemAware.StartThisApplication()),
                         MessageWindow.CreateCloseButton("fa-solid fa-sign-out-alt")
                     });
             }
@@ -280,12 +276,38 @@ public class App : Application
                 {
                     if (!CvInvoke.Init())
                     {
-                        desktop.MainWindow = new CantRunWindow();
+                        desktop.MainWindow = new MessageWindow($"{About.SoftwareWithVersion} is unable to run",
+                            "fa-regular fa-frown",
+                            $"{About.SoftwareWithVersionArch} [{SystemAware.OperatingSystemName}]\nUnable to run due one or more missing dependencies.\nTriggered by: libcvextern  (OpenCV)",
+                            "Your system doesn't have the required dependencies in order to run.\n" +
+                            "Those dependencies are required at libcvextern/OpenCV library.\n" +
+                            "UVtools is built on top of the OpenCV and therefore cannot run.\n\n" +
+                            "Please install or build the dependencies in order to run the software.\n" +
+                            "Check the manual page at 'Requirements' section for help.",
+                            new[]
+                            {
+                                MessageWindow.CreateLinkButton("Open manual", "fa-brands fa-edge", "https://github.com/sn4k3/UVtools#requirements"),
+                                MessageWindow.CreateLinkButton("Ask for help", "fa-solid fa-question", "https://github.com/sn4k3/UVtools/discussions/categories/q-a"),
+                                MessageWindow.CreateCloseButton("fa-solid fa-sign-out-alt")
+                            });
                     }
                 }
                 catch (Exception e)
                 {
-                    desktop.MainWindow = new CantRunWindow();
+                    desktop.MainWindow = new MessageWindow($"{About.SoftwareWithVersion} is unable to run",
+                        "fa-regular fa-frown",
+                        $"{About.SoftwareWithVersionArch} [{SystemAware.OperatingSystemName}]\nUnable to run due one or more missing dependencies.\nTriggered by: libcvextern  (OpenCV)",
+                        "Your system doesn't have the required dependencies in order to run.\n" +
+                        "Those dependencies are required at libcvextern/OpenCV library.\n" +
+                        "UVtools is built on top of the OpenCV and therefore cannot run.\n\n" +
+                        "Please install or build the dependencies in order to run the software.\n" +
+                        "Check the manual page at 'Requirements' section for help.",
+                        new[]
+                        {
+                            MessageWindow.CreateLinkButton("Open manual", "fa-brands fa-edge", "https://github.com/sn4k3/UVtools#requirements"),
+                            MessageWindow.CreateLinkButton("Ask for help", "fa-solid fa-question", "https://github.com/sn4k3/UVtools/discussions/categories/q-a"),
+                            MessageWindow.CreateCloseButton("fa-solid fa-sign-out-alt")
+                        });
                     Console.WriteLine(e.ToString());
                 }
 
@@ -321,7 +343,7 @@ public class App : Application
         base.OnFrameworkInitializationCompleted();
     }
 
-    #region Utilities
+#region Utilities
     public static string ApplicationPath => AppContext.BaseDirectory;
     public static readonly string AppExecutable = Environment.ProcessPath!;
     public static readonly string AppExecutableQuoted = $"\"{AppExecutable}\"";
@@ -403,9 +425,9 @@ public class App : Application
         return null;
     }
 
-    #endregion
+#endregion
 
-    #region Assembly properties
+#region Assembly properties
     public static Assembly WpfAssembly => Assembly.GetExecutingAssembly();
 
     public static string AssemblyVersion => WpfAssembly.GetName().Version?.ToString()!;
@@ -471,5 +493,5 @@ public class App : Application
             return attributes.Length == 0 ? string.Empty : ((AssemblyCompanyAttribute)attributes[0]).Company;
         }
     }
-    #endregion
+#endregion
 }

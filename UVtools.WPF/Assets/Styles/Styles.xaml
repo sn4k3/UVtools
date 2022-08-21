@@ -42,13 +42,47 @@
   </Style>
 
     <Style Selector="TextBox.TransparentReadOnly">
+        <Setter Property="IsReadOnly" Value="True" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="CaretBrush" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+    </Style>
+
+    <Style Selector="TextBox.TransparentReadOnlyMultiLine">
         <Setter Property="TextWrapping" Value="Wrap" />
         <Setter Property="IsReadOnly" Value="True" />
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="CaretBrush" Value="Transparent" />
         <Setter Property="BorderBrush" Value="Transparent" />
         <Setter Property="AcceptsReturn" Value="True" />
-        <Setter Property="AcceptsTab" Value="True" />
+        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+    </Style>
+
+    <Style Selector="TextBox.TransparentReadOnlyMultiLineNoBorder">
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+        <Setter Property="IsReadOnly" Value="True" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="CaretBrush" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="AcceptsReturn" Value="True" />
+        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+    </Style>
+
+    <Style Selector="TextBox.TransparentReadOnlyMultiLineNoBorder:pointerover /template/ Border#border">
+        <Setter Property="Background" Value="Transparent" />
+    </Style>
+    <Style Selector="TextBox.TransparentReadOnlyMultiLineNoBorder:pointerover /template/ Border#PART_BorderElement">
+        <Setter Property="Background" Value="Transparent" />
+    </Style>
+    <Style Selector="TextBox.TransparentReadOnlyMultiLineNoBorder:focus /template/ Border#border">
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Background" Value="Transparent" />
+    </Style>
+    <Style Selector="TextBox.TransparentReadOnlyMultiLineNoBorder:focus /template/ Border#PART_BorderElement">
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Background" Value="Transparent" />
     </Style>
 
     <Style Selector="NumericUpDown.ReadOnly">

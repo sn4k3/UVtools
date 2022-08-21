@@ -1294,7 +1294,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <summary>
     /// Gets the last layer index
     /// </summary>
-    public uint LastLayerIndex => LayerCount - 1;
+    public uint LastLayerIndex => LayerCount > 0 ? LayerCount - 1 : 0;
 
     /// <summary>
     /// Gets the first layer
@@ -5415,7 +5415,25 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         return layers;
     }
 
+    /// <summary>
+    /// Checks if a layer index exists in the collection
+    /// </summary>
+    /// <param name="layerIndex">Layer index to check</param>
+    /// <returns></returns>
+    public bool LayerExists(int layerIndex)
+    {
+        return layerIndex >= 0 && layerIndex < LayerCount;
+    }
 
+    /// <summary>
+    /// Checks if a layer index exists in the collection
+    /// </summary>
+    /// <param name="layerIndex">Layer index to check</param>
+    /// <returns></returns>
+    public bool LayerExists(uint layerIndex)
+    {
+        return layerIndex < LayerCount;
+    }
     #endregion
 
     #region Layer methods
