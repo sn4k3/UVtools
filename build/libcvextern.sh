@@ -92,16 +92,14 @@ fi
 if [ ! -d "$directory" ]; then
     if [ -z "$lastArg" ]; then
         echo "Cloning master"
-        git clone https://github.com/emgucv/emgucv "$directory"
+        git clone --recurse-submodules --depth 1 https://github.com/emgucv/emgucv "$directory"
     else
         echo "Cloning $lastArg"
-        git clone --depth 1 --branch "$lastArg" https://github.com/emgucv/emgucv "$directory"
+        git clone --recurse-submodules --depth 1 --branch "$lastArg" https://github.com/emgucv/emgucv "$directory"
     fi
-    cd "$directory"
-    git submodule update --init --recursive
-else
-    cd "$directory"
 fi
+
+cd "$directory"
 
 echo "- Bulding"
 if [ osVariant == "macOS" ]; then
