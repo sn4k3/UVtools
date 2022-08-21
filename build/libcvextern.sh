@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # Script to build the libcvextern.so
-# Can be run outside UVtools and as standard alone script
+# Can be run outside UVtools and as standalone script
 # Then run this script
 # usage 1: ./libcvextern.sh clean
 # usage 2: ./libcvextern.sh -i
