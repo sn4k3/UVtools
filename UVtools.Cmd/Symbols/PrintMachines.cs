@@ -20,13 +20,16 @@ internal static class PrintMachinesCommand
 {
     internal static Command CreateCommand()
     {
+        var jsonOption = new Option<bool>("--json", "Print in json format");
+        var xmlOption = new Option<bool>("--xml", "Print in xml format");
+
         var command = new Command("print-machines", "Prints machine settings")
         {
-            new Option<bool>("--json", "Print in json format"),
-            new Option<bool>("--xml", "Print in xml format")
+            jsonOption,
+            xmlOption
         };
 
-        command.SetHandler((bool jsonFormat, bool xmlFormat) =>
+        command.SetHandler((jsonFormat, xmlFormat) =>
             {
                 if (jsonFormat)
                 {
@@ -46,7 +49,7 @@ internal static class PrintMachinesCommand
                 }
 
 
-            }, command.Options[0], command.Options[1]);
+            }, jsonOption, xmlOption);
 
         return command;
     }

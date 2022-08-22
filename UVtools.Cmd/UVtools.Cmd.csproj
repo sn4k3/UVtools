@@ -5,7 +5,7 @@
     <TargetFramework>net6.0</TargetFramework>
     <AssemblyName>UVtoolsCmd</AssemblyName>
     <ApplicationIcon>UVtools.ico</ApplicationIcon>
-    <Version>1.0.2</Version>
+    <Version>1.0.3</Version>
     <Authors>Tiago Conceição, sn4k3</Authors>
     <Company>PTRTECH</Company>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>

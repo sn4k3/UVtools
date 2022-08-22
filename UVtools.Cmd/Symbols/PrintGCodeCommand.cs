@@ -22,7 +22,7 @@ internal static class PrintGCodeCommand
             GlobalArguments.InputFileArgument,
         };
 
-        command.SetHandler((FileInfo inputFile) =>
+        command.SetHandler((inputFile) =>
             {
                 var slicerFile = Program.OpenInputFile(inputFile, FileFormat.FileDecodeType.Partial);
                 if (slicerFile.SupportsGCode)
@@ -35,7 +35,7 @@ internal static class PrintGCodeCommand
                 }
                 
 
-            }, command.Arguments[0]);
+            }, GlobalArguments.InputFileArgument);
 
         return command;
     }

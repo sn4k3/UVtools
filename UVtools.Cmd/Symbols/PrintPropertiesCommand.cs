@@ -21,16 +21,18 @@ internal static class PrintPropertiesCommand
 {
     internal static Command CreateCommand()
     {
+        var matchNamesOption = new Option<string[]>(new[] {"-n", "--names"}, "Prints only the name matching properties");
+        var showPropertiesOnlyOption = new Option<bool>(new[] { "-b", "--base" }, "Prints only the base properties of the file");
+
         var command = new Command("print-properties", "Prints available properties")
         {
             GlobalArguments.InputFileArgument,
-
-            new Option<string[]>(new []{ "-n", "--names"}, "Prints only the name matching properties"),
-            new Option<bool>(new []{ "-b", "--base"}, "Prints only the base properties of the file"),
+            matchNamesOption,
+            showPropertiesOnlyOption,
             GlobalOptions.OpenInPartialMode
         };
 
-        command.SetHandler((FileInfo inputFile, string[] matchNames, bool baseOnly, bool partialMode) =>
+        command.SetHandler((inputFile, matchNames, baseOnly, partialMode) =>
             {
                 var slicerFile = Program.OpenInputFile(inputFile, partialMode ? FileFormat.FileDecodeType.Partial : FileFormat.FileDecodeType.Full);
                 uint count = 0;
@@ -94,7 +96,7 @@ internal static class PrintPropertiesCommand
                 Console.WriteLine("----------------------");
                 Console.WriteLine($"Total properties: {count}");
 
-            }, command.Arguments[0], command.Options[0], command.Options[1], command.Options[2]);
+            }, GlobalArguments.InputFileArgument, matchNamesOption, showPropertiesOnlyOption, GlobalOptions.OpenInPartialMode);
 
         return command;
     }

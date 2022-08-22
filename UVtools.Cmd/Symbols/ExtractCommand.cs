@@ -15,14 +15,16 @@ internal static class ExtractCommand
 {
     internal static Command CreateCommand()
     {
+        var noOverwriteOption = new Option<bool>("--no-overwrite", "If the output folder exists do not overwrite");
+
         var command = new Command("extract", "Extract file contents to a folder")
         {
             GlobalArguments.InputFileArgument,
             GlobalArguments.OutputDirectoryArgument,
-            new Option<bool>("--no-overwrite", "If the output folder exists do not overwrite"),
+            noOverwriteOption,
         };
 
-        command.SetHandler((FileInfo inputFile, DirectoryInfo? outputDirectory, bool noOverwrite) =>
+        command.SetHandler((inputFile, outputDirectory, noOverwrite) =>
             {
                 var path = outputDirectory is null
                     ? Path.Combine(inputFile.DirectoryName!, Path.GetFileNameWithoutExtension(inputFile.Name))
@@ -42,8 +44,7 @@ internal static class ExtractCommand
                         slicerFile.Extract(path);
                     });
 
-            }, command.Arguments[0], command.Arguments[1],
-            command.Options[0]);
+            }, GlobalArguments.InputFileArgument, GlobalArguments.OutputDirectoryArgument, noOverwriteOption);
 
         return command;
     }

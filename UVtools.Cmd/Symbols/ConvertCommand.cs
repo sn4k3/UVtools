@@ -19,21 +19,26 @@ internal static class ConvertCommand
 {
     internal static Command CreateCommand()
     {
+        var targetTypeArgument = new Argument<string>("target-type/ext", "Target format type or extension. Use 'auto' for SL1 files with specified FILEFORMAT_xxx");
+        var versionOption = new Option<ushort>(new[] {"-v", "--version"}, "Sets the file format version");
+        var noOverwriteOption = new Option<bool>("--no-overwrite", "If the output file exists do not overwrite");
+
         var command = new Command("convert", "Convert input file into a output file format by a known type or extension")
         {
             GlobalArguments.InputFileArgument,
-            new Argument<string>("target-type/ext", "Target format type or extension. Use 'auto' for SL1 files with specified FILEFORMAT_xxx"),
+            targetTypeArgument,
             GlobalArguments.OutputFileArgument,
 
-            new Option<ushort>(new[] {"-v", "--version"}, "Sets the file format version"),
-            new Option<bool>("--no-overwrite", "If the output file exists do not overwrite"),
+            versionOption,
+            noOverwriteOption,
         };
 
-        command.SetHandler((FileInfo inputFile, string targetTypeExt, FileInfo? outputFile, ushort version, bool noOverwrite) =>
+        command.SetHandler((inputFile, targetTypeExt, outputFile, version, noOverwrite) =>
             {
+
                 if (string.Equals(targetTypeExt, "auto", StringComparison.InvariantCultureIgnoreCase))
                 {
-                    using var testFile = Program.OpenInputFile(inputFile, FileFormat.FileDecodeType.Partial);
+                    using var testFile = Program.OpenInputFile(inputFile!, FileFormat.FileDecodeType.Partial);
                     string? convertFileExtension;
                     switch (testFile)
                     {
@@ -181,9 +186,7 @@ internal static class ConvertCommand
                             throw;
                         }
                     });
-
-            }, command.Arguments[0], command.Arguments[1], command.Arguments[2],
-            command.Options[0], command.Options[1]);
+            }, GlobalArguments.InputFileArgument, targetTypeArgument, GlobalArguments.OutputFileArgument, versionOption, noOverwriteOption);
 
         return command;
     }

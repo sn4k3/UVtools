@@ -50,7 +50,7 @@ internal class Program
 
             GlobalOptions.QuietOption,
             GlobalOptions.NoProgressOption,
-            new Option("--core-version", "Show core version information"),
+            new Option<bool>("--core-version", "Show core version information"),
         };
 
         //rootCommand.SetHandler(() => { });

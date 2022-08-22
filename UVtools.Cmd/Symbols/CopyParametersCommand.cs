@@ -5,6 +5,7 @@
  *  Everyone is permitted to copy and distribute verbatim copies
  *  of this license document, but changing it is not allowed.
  */
+
 using System.CommandLine;
 using System.IO;
 using System.Linq;
@@ -16,37 +17,39 @@ internal static class CopyParametersCommand
 {
     internal static Command CreateCommand()
     {
+        var targetFilesArgument = new Argument<FileInfo[]>("target-files", "Target file(s) to set the parameters").ExistingOnly();
         var command = new Command("copy-parameters", "Copy print parameters from one file to another")
         {
             GlobalArguments.InputFileArgument,
-            new Argument<FileInfo[]>("target-files", "Target file(s) to set the parameters").ExistingOnly()
+            targetFilesArgument
         };
 
-        command.SetHandler((FileInfo inputFile, FileInfo[] targetFiles) =>
+        command.SetHandler((inputFile, targetFiles) =>
+        {
+            var slicerFile1 = Program.OpenInputFile(inputFile, FileFormat.FileDecodeType.Partial);
+
+            var distinctFiles = targetFiles.DistinctBy(fi => fi.FullName);
+
+            foreach (var file in distinctFiles)
             {
-                var slicerFile1 = Program.OpenInputFile(inputFile, FileFormat.FileDecodeType.Partial);
-
-                var distinctFiles = targetFiles.DistinctBy(fi => fi.FullName);
-
-                foreach (var file in distinctFiles)
+                if (inputFile.FullName == file.FullName)
                 {
-                    if (inputFile.FullName == file.FullName)
-                    {
-                        Program.WriteWarning($"Skipping: {inputFile.Name}, same as input file");
-                        continue;
-                    }
-                    var slicerFileTarget = Program.OpenInputFile(file, FileFormat.FileDecodeType.Partial);
-
-                    var count = FileFormat.CopyParameters(slicerFile1, slicerFileTarget);
-                    if (count > 0)
-                    {
-                        slicerFileTarget.Save(Program.Progress);
-                    }
-
-                    Program.WriteLine($"{count} properties changed");
+                    Program.WriteWarning($"Skipping: {inputFile.Name}, same as input file");
+                    continue;
                 }
-                
-            }, command.Arguments[0], command.Arguments[1]);
+                var slicerFileTarget = Program.OpenInputFile(file, FileFormat.FileDecodeType.Partial);
+
+                var count = FileFormat.CopyParameters(slicerFile1, slicerFileTarget);
+                if (count > 0)
+                {
+                    slicerFileTarget.Save(Program.Progress);
+                }
+
+                Program.WriteLine($"{count} properties changed");
+            }
+
+            
+        }, GlobalArguments.InputFileArgument, targetFilesArgument);
 
         return command;
     }

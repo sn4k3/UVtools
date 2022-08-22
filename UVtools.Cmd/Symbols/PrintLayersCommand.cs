@@ -9,7 +9,6 @@
 using System;
 using System.Collections.Generic;
 using System.CommandLine;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.Json.Serialization;
@@ -23,17 +22,20 @@ internal static class PrintLayersCommand
 {
     internal static Command CreateCommand()
     {
+        var rangeOption = new Option<string>(new[] { "-r", "--range" }, "Prints only the matching layer index(es) in a range");
+        var indexesOption = new Option<ushort[]>(new[] {"-i", "--indexes"}, "Prints only the matching layer index(es)");
+        var matchNamesOption = new Option<string[]>(new[] { "-n", "--names" }, "Prints only the name matching properties");
+
         var command = new Command("print-layers", "Prints layer(s) properties")
         {
             GlobalArguments.InputFileArgument,
-
-            new Option<string>(new []{ "-r", "--range"}, "Prints only the matching layer index(es) in a range"),
-            new Option<ushort[]>(new []{ "-i", "--indexes"}, "Prints only the matching layer index(es)"),
-            new Option<string[]>(new []{ "-n", "--names"}, "Prints only the name matching properties"),
+            rangeOption,
+            indexesOption,
+            matchNamesOption,
             GlobalOptions.OpenInPartialMode
         };
 
-        command.SetHandler((FileInfo inputFile, string layerRange, ushort[] layerIndexes, string[] matchNames, bool partialMode) =>
+        command.SetHandler((inputFile, layerRange, layerIndexes, matchNames, partialMode) =>
             {
                 var slicerFile = Program.OpenInputFile(inputFile, partialMode ? FileFormat.FileDecodeType.Partial : FileFormat.FileDecodeType.Full);
 
@@ -99,7 +101,7 @@ internal static class PrintLayersCommand
                     }
                 }
 
-            }, command.Arguments[0], command.Options[0], command.Options[1], command.Options[2], command.Options[3]);
+            }, GlobalArguments.InputFileArgument, rangeOption, indexesOption, matchNamesOption, GlobalOptions.OpenInPartialMode);
 
         return command;
     }

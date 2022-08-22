@@ -18,16 +18,18 @@ internal static class RunCommand
 {
     internal static Command CreateCommand()
     {
+        var filesArgument = new Argument<FileInfo[]>("files", "Operation and script files to run (.uvtop, .cs, .csx)").ExistingOnly();
+
         var command = new Command("run", "Run operations and/or scripts")
         {
             GlobalArguments.InputFileArgument,
-            new Argument<FileInfo[]>("files", "Operation and script files to run (.uvtop, .cs, .csx)").ExistingOnly(),
+            filesArgument,
 
             GlobalOptions.OutputFile,
             GlobalOptions.OpenInPartialMode
         };
 
-        command.SetHandler((FileInfo inputFile, FileInfo[] files, FileInfo? outputFile, bool partialMode) =>
+        command.SetHandler((inputFile, files, outputFile, partialMode) =>
             {
                 if (files.Length == 0)
                 {
@@ -88,7 +90,7 @@ internal static class RunCommand
                 }
 
                 if(sucessfullRuns > 0) Program.SaveFile(slicerFile, outputFile);
-            }, command.Arguments[0], command.Arguments[1], command.Options[0], command.Options[1]);
+            }, GlobalArguments.InputFileArgument, filesArgument, GlobalOptions.OutputFile, GlobalOptions.OpenInPartialMode);
 
         return command;
     }
