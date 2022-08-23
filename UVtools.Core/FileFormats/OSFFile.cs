@@ -817,18 +817,33 @@ public class OSFFile : FileFormat
                 foreach (var layerIndex in batch)
                 {
                     progress.ThrowIfCancellationRequested();
+                    
+                    //Debug.WriteLine($"{layerIndex}: {inputFile.Position}");
                     layerDef[layerIndex] = Helpers.Deserialize<OSFLayerDef>(inputFile);
+
                     while ((buffer = inputFile.ReadByte()) > -1)
                     {
-                        if (buffer == 0x0D)
+                        if (buffer != 0x0D) // Not what we want, add and continue
                         {
-                            if ((buffer = inputFile.ReadByte()) >= -1 && buffer is 0x0A or 0x0B)
-                            {
-                                inputFile.Seek(-2, SeekOrigin.Current);
-                                break;
-                            }
+                            rle.Add((byte)buffer);
+                            continue;
+                        }
 
-                            rle.Add(0x0D);
+                        // Check next byte for 0x0A or 0x0B
+                        buffer = inputFile.ReadByte();
+                        if (buffer is 0x0A or 0x0B)
+                        {
+                            inputFile.Seek(-2, SeekOrigin.Current);
+                            break;
+                        }
+
+                        rle.Add(0x0D); // Add previous byte
+
+                        if (buffer == -1) break; // End of file
+                        if (buffer == 0x0D) // 0x0D pair, rewind 1 and recheck
+                        {
+                            inputFile.Seek(-1, SeekOrigin.Current);
+                            continue;
                         }
 
                         rle.Add((byte)buffer);
