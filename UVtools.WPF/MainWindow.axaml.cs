@@ -11,6 +11,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
+using CommunityToolkit.Mvvm.Input;
 using MessageBox.Avalonia.Enums;
 using System;
 using System.Collections.Generic;
@@ -320,7 +321,17 @@ public partial class MainWindow : WindowEx
 
         UpdateTitle();
 
-        
+        ClipboardUndoCommand = new RelayCommand(ClipboardUndo, () => Clipboard.CanUndo);
+
+        // Command will be enabled / disabled acc. to CanUndo. So we need to listen to it. 
+        Clipboard.PropertyChanged += (s, e) =>
+        {
+            if (e.PropertyName == nameof(Clipboard.CanUndo))
+            {
+                ClipboardUndoCommand.NotifyCanExecuteChanged();
+            }
+        };
+
         DataContext = this;
 
         _menuFileSendTo = this.FindControl<MenuItem>("MainMenu.File.SendTo");

@@ -1526,8 +1526,7 @@
 						</Grid.RowDefinitions>
 						<StackPanel Orientation="Horizontal" Spacing="2">
 
-							<Button IsEnabled="{Binding Clipboard.CanUndo}"
-									Command="{Binding ClipboardUndo}"
+							<Button Command="{Binding ClipboardUndoCommand}"
 									HotKey="Ctrl + Z"
 									ToolTip.Tip="Undo [Ctrl + Z]
 &#x0a;Shift + Click to Undo and edit last operation [Ctrl + Shift + Z]"

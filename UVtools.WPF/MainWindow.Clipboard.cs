@@ -9,9 +9,11 @@
 
 using System;
 using System.ComponentModel;
+using System.Windows.Input;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Threading;
+using CommunityToolkit.Mvvm.Input;
 using MessageBox.Avalonia.Enums;
 using UVtools.WPF.Extensions;
 
@@ -19,6 +21,7 @@ namespace UVtools.WPF;
 
 public partial class MainWindow
 {
+
     public ListBox ClipboardList;
 
     public void InitClipboardLayers()
@@ -49,7 +52,9 @@ public partial class MainWindow
         }
     }
 
-    public void ClipboardUndo()
+    public RelayCommand ClipboardUndoCommand { get; }
+
+    private void ClipboardUndo()
     {
         CanSave = true;
         if ((_globalModifiers & KeyModifiers.Shift) != 0)

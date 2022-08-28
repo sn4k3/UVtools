@@ -169,6 +169,7 @@ public sealed class ClipboardManager : BindableBase, IList<ClipboardItem>
             RaisePropertyChanged(nameof(CurrentIndexCountStr));
             RaisePropertyChanged(nameof(CanUndo));
             RaisePropertyChanged(nameof(CanRedo));
+
             return;
         }
     }
