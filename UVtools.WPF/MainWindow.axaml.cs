@@ -907,7 +907,7 @@ public partial class MainWindow : WindowEx
             e.Key == Key.Z)
         {
             e.Handled = true;
-            ClipboardUndo(true);
+            ClipboardUndoAndRerun(true);
             return;
         }
 

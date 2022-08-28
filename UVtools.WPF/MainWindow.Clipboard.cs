@@ -54,13 +54,13 @@ public partial class MainWindow
         CanSave = true;
         if ((_globalModifiers & KeyModifiers.Shift) != 0)
         {
-            ClipboardUndo(true);
+            ClipboardUndoAndRerun(true);
             return;
         }
         Clipboard.Undo();
     } 
 
-    public async void ClipboardUndo(bool rerun)
+    public async void ClipboardUndoAndRerun(bool rerun)
     {
         CanSave = true;
         var clip = Clipboard.CurrentClip;
