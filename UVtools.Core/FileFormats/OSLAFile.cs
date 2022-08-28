@@ -460,12 +460,12 @@ public class OSLAFile : FileFormat
     {
         using var outputFile = new FileStream(TemporaryOutputFileFullPath, FileMode.Create, FileAccess.Write);
         FileSettings.Update();
-        var fileDefSize = Helpers.SerializeWriteFileStream(outputFile, FileSettings);
+        var fileDefSize = outputFile.WriteSerialize(FileSettings);
         HeaderSettings.TableSize = (uint)Helpers.Serializer.SizeOf(HeaderSettings);
 
         outputFile.Seek((int)HeaderSettings.TableSize, SeekOrigin.Current);
 
-        Helpers.SerializeWriteFileStream(outputFile, CustomTableSettings); // Custom table
+        outputFile.WriteSerialize(CustomTableSettings); // Custom table
 
         // Previews
         progress.Reset(OperationProgress.StatusEncodePreviews, ThumbnailsCount);
@@ -494,7 +494,7 @@ public class OSLAFile : FileFormat
 
             HeaderSettings.PreviewCount++;
 
-            Helpers.SerializeWriteFileStream(outputFile, preview);
+            outputFile.WriteSerialize(preview);
             // Need to fill what we don't know
             if (HeaderSettings.PreviewTableSize > sizeofPreview)
             {
@@ -561,7 +561,7 @@ public class OSLAFile : FileFormat
             var layerdef = new LayerDef(layer);
                 
             outputFile.WriteUIntLittleEndian(layerDataAddresses[layerIndex]);
-            Helpers.SerializeWriteFileStream(outputFile, layerdef);
+            outputFile.WriteSerialize(layerdef);
             if (layerTableSize == 0)
             {
                 layerTableSize = 4 + (uint)Helpers.Serializer.SizeOf(layerdef);
@@ -577,10 +577,10 @@ public class OSLAFile : FileFormat
         RebuildGCode();
         var gcodeSettings = new GCodeDef { GCodeText = GCodeStr };
         gcodeSettings.GCodeSize = (uint)(gcodeSettings.GCodeText?.Length ?? 0);
-        Helpers.SerializeWriteFileStream(outputFile, gcodeSettings);
+        outputFile.WriteSerialize(gcodeSettings);
 
         outputFile.Seek(fileDefSize, SeekOrigin.Begin);
-        Helpers.SerializeWriteFileStream(outputFile, HeaderSettings);
+        outputFile.WriteSerialize(HeaderSettings);
 
         Debug.WriteLine("Encode Results:");
         Debug.WriteLine(FileSettings);
@@ -706,14 +706,14 @@ public class OSLAFile : FileFormat
         using var outputFile = new FileStream(TemporaryOutputFileFullPath, FileMode.Open, FileAccess.Write);
         outputFile.Seek(0, SeekOrigin.Begin);
         FileSettings.Update();
-        Helpers.SerializeWriteFileStream(outputFile, FileSettings);
-        Helpers.SerializeWriteFileStream(outputFile, HeaderSettings);
+        outputFile.WriteSerialize(FileSettings);
+        outputFile.WriteSerialize(HeaderSettings);
 
         outputFile.Seek(HeaderSettings.LayerDefinitionsAddress, SeekOrigin.Begin);
         foreach (var layer in this)
         {
             outputFile.Seek(4, SeekOrigin.Current); // skip address
-            Helpers.SerializeWriteFileStream(outputFile, new LayerDef(layer)); // Update layer values
+            outputFile.WriteSerialize(new LayerDef(layer)); // Update layer values
         }
 
         if (HeaderSettings.GCodeAddress > 0)
@@ -724,7 +724,7 @@ public class OSLAFile : FileFormat
             RebuildGCode();
             var gcodeSettings = new GCodeDef { GCodeText = GCodeStr };
             gcodeSettings.GCodeSize = (uint)(gcodeSettings.GCodeText?.Length ?? 0);
-            Helpers.SerializeWriteFileStream(outputFile, gcodeSettings);
+            outputFile.WriteSerialize(gcodeSettings);
         }
     }
     #endregion

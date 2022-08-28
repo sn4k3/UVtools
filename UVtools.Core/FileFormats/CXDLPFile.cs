@@ -698,7 +698,7 @@ public class CXDLPFile : FileFormat
 
         var pageBreak = PageBreak.Bytes;
 
-        Helpers.SerializeWriteFileStream(outputFile, HeaderSettings);
+        outputFile.WriteSerialize(HeaderSettings);
 
         var previews = new byte[ThumbnailsOriginalSize!.Length][];
 
@@ -722,11 +722,11 @@ public class CXDLPFile : FileFormat
 
         for (int i = 0; i < ThumbnailsOriginalSize.Length; i++)
         {
-            Helpers.SerializeWriteFileStream(outputFile, previews[i]);
+            outputFile.WriteSerialize(previews[i]);
             outputFile.WriteBytes(pageBreak);
             previews[i] = null!;
         }
-        Helpers.SerializeWriteFileStream(outputFile, SlicerInfoSettings);
+        outputFile.WriteSerialize(SlicerInfoSettings);
 
         progress.Reset(OperationProgress.StatusEncodeLayers, LayerCount);
         //var preLayers = new PreLayer[LayerCount];
@@ -740,7 +740,7 @@ public class CXDLPFile : FileFormat
 
         if (HeaderSettings.Version >= 3)
         {
-            Helpers.SerializeWriteFileStream(outputFile, SlicerInfoV3Settings);
+            outputFile.WriteSerialize(SlicerInfoV3Settings);
         }
 
         var layerLargestContourArea = new uint[LayerCount];
@@ -817,7 +817,7 @@ public class CXDLPFile : FileFormat
         }
 
         outputFile.Seek(0, SeekOrigin.End);
-        Helpers.SerializeWriteFileStream(outputFile, FooterSettings);
+        outputFile.WriteSerialize(FooterSettings);
 
         progress.Reset("Calculating checksum");
         uint checkSum = CalculateCheckSum(outputFile, false);
@@ -963,12 +963,12 @@ public class CXDLPFile : FileFormat
             
         using var outputFile = new FileStream(TemporaryOutputFileFullPath, FileMode.Open, FileAccess.ReadWrite);
         outputFile.Seek(offset, SeekOrigin.Begin);
-        Helpers.SerializeWriteFileStream(outputFile, SlicerInfoSettings);
+        outputFile.WriteSerialize(SlicerInfoSettings);
 
         if (HeaderSettings.Version >= 3)
         {
             outputFile.Seek(LayerCount * 4 + 2, SeekOrigin.Current); // Skip pre layers
-            Helpers.SerializeWriteFileStream(outputFile, SlicerInfoV3Settings);
+            outputFile.WriteSerialize(SlicerInfoV3Settings);
         }
 
         uint checkSum = CalculateCheckSum(outputFile, false, -4);

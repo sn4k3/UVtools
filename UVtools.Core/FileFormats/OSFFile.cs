@@ -871,7 +871,7 @@ public class OSFFile : FileFormat
     {
         using var outputFile = new FileStream(TemporaryOutputFileFullPath, FileMode.Open, FileAccess.Write);
         outputFile.Seek(Header.HeaderLength - Helpers.Serializer.SizeOf(Settings), SeekOrigin.Begin);
-        Helpers.SerializeWriteFileStream(outputFile, Settings);
+        outputFile.WriteSerialize(Settings);
     }
         
     #endregion

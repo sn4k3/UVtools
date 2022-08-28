@@ -1331,7 +1331,7 @@ public class CTBEncryptedFile : FileFormat
 
             preview.ImageOffset = (uint)(outputFile.Position + Helpers.Serializer.SizeOf(preview));
 
-            Helpers.SerializeWriteFileStream(outputFile, preview);
+            outputFile.WriteSerialize(preview);
             outputFile.WriteBytes(previewBytes);
             progress++;
         }
@@ -1377,7 +1377,7 @@ public class CTBEncryptedFile : FileFormat
             LayersPointer[layerIndex] = new LayerPointer((uint)outputFile.Position);
 
             layerDef.LayerDefOffset = LayersPointer[layerIndex].LayerOffset + LayerDef.TABLE_SIZE;
-            Helpers.SerializeWriteFileStream(outputFile, layerDef);
+            outputFile.WriteSerialize(layerDef);
             outputFile.WriteBytes(layerDef.RLEData!);
             progress++;
         }
@@ -1395,7 +1395,7 @@ public class CTBEncryptedFile : FileFormat
         outputFile.Seek(Settings.LayerPointersOffset, SeekOrigin.Begin);
         for (uint layerIndex = 0; layerIndex < LayersPointer.Length; layerIndex++)
         {
-            Helpers.SerializeWriteFileStream(outputFile, LayersPointer[layerIndex]);
+            outputFile.WriteSerialize(LayersPointer[layerIndex]);
         }
 
         // Settings
@@ -1406,7 +1406,7 @@ public class CTBEncryptedFile : FileFormat
 
         // Header
         outputFile.Seek(0, SeekOrigin.Begin);
-        Helpers.SerializeWriteFileStream(outputFile, Header);
+        outputFile.WriteSerialize(Header);
     }
 
     protected override void PartialSaveInternally(OperationProgress progress)
@@ -1424,7 +1424,7 @@ public class CTBEncryptedFile : FileFormat
         {
             LayersDefinition![layerIndex].SetFrom(this[layerIndex]);
             outputFile.Seek(LayersPointer[layerIndex].LayerOffset, SeekOrigin.Begin);
-            Helpers.SerializeWriteFileStream(outputFile, LayersDefinition[layerIndex]);
+            outputFile.WriteSerialize(LayersDefinition[layerIndex]);
         }
     }
     #endregion

@@ -318,7 +318,7 @@ public class MDLPFile : FileFormat
         using var outputFile = new FileStream(TemporaryOutputFileFullPath, FileMode.Create, FileAccess.Write);
         var pageBreak = PageBreak.Bytes;
 
-        Helpers.SerializeWriteFileStream(outputFile, HeaderSettings);
+        outputFile.WriteSerialize(HeaderSettings);
 
         var previews = new byte[ThumbnailsOriginalSize!.Length][];
 
@@ -342,11 +342,11 @@ public class MDLPFile : FileFormat
 
         for (int i = 0; i < ThumbnailsOriginalSize.Length; i++)
         {
-            Helpers.SerializeWriteFileStream(outputFile, previews[i]);
+            outputFile.WriteSerialize(previews[i]);
             outputFile.WriteBytes(pageBreak);
             previews[i] = null!;
         }
-        Helpers.SerializeWriteFileStream(outputFile, SlicerInfoSettings);
+        outputFile.WriteSerialize(SlicerInfoSettings);
             
         progress.Reset(OperationProgress.StatusEncodeLayers, LayerCount);
         var range = Enumerable.Range(0, (int)LayerCount);
@@ -408,7 +408,7 @@ public class MDLPFile : FileFormat
             }
         }
 
-        Helpers.SerializeWriteFileStream(outputFile, HeaderSettings);
+        outputFile.WriteSerialize(HeaderSettings);
 
         Debug.WriteLine("Encode Results:");
         Debug.WriteLine(HeaderSettings);
@@ -497,7 +497,7 @@ public class MDLPFile : FileFormat
     {
         using var outputFile = new FileStream(TemporaryOutputFileFullPath, FileMode.Open, FileAccess.Write);
         outputFile.Seek(SlicerInfoAddress, SeekOrigin.Begin);
-        Helpers.SerializeWriteFileStream(outputFile, SlicerInfoSettings);
+        outputFile.WriteSerialize(SlicerInfoSettings);
     }
 
     #endregion

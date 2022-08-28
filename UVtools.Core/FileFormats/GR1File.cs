@@ -359,7 +359,7 @@ public class GR1File : FileFormat
         using var outputFile = new FileStream(TemporaryOutputFileFullPath, FileMode.Create, FileAccess.Write);
         var pageBreak = PageBreak.Bytes;
 
-        Helpers.SerializeWriteFileStream(outputFile, HeaderSettings);
+        outputFile.WriteSerialize(HeaderSettings);
 
         var previews = new byte[ThumbnailsOriginalSize!.Length][];
 
@@ -383,12 +383,12 @@ public class GR1File : FileFormat
 
         for (int i = 0; i < ThumbnailsOriginalSize.Length; i++)
         {
-            Helpers.SerializeWriteFileStream(outputFile, previews[i]);
+            outputFile.WriteSerialize(previews[i]);
             outputFile.WriteBytes(pageBreak);
-            //Helpers.SerializeWriteFileStream(outputFile, pageBreak);
+            //outputFile.WriteSerialize(pageBreak);
             previews[i] = null!;
         }
-        Helpers.SerializeWriteFileStream(outputFile, SlicerInfoSettings);
+        outputFile.WriteSerialize(SlicerInfoSettings);
             
         progress.Reset(OperationProgress.StatusEncodeLayers, LayerCount);
             
@@ -450,7 +450,7 @@ public class GR1File : FileFormat
         }
 
 
-        Helpers.SerializeWriteFileStream(outputFile, HeaderSettings);
+        outputFile.WriteSerialize(HeaderSettings);
 
         Debug.WriteLine("Encode Results:");
         Debug.WriteLine(HeaderSettings);
@@ -542,7 +542,7 @@ public class GR1File : FileFormat
     {
         using var outputFile = new FileStream(TemporaryOutputFileFullPath, FileMode.Open, FileAccess.Write);
         outputFile.Seek(SlicerInfoAddress, SeekOrigin.Begin);
-        Helpers.SerializeWriteFileStream(outputFile, SlicerInfoSettings);
+        outputFile.WriteSerialize(SlicerInfoSettings);
     }
 
     #endregion

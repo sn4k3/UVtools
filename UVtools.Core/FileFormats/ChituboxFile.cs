@@ -1869,7 +1869,7 @@ public class ChituboxFile : FileFormat
 
             preview.ImageOffset = (uint)(outputFile.Position + Helpers.Serializer.SizeOf(preview));
 
-            Helpers.SerializeWriteFileStream(outputFile, preview);
+            outputFile.WriteSerialize(preview);
             outputFile.WriteBytes(previewBytes);
         }
 
@@ -1878,7 +1878,7 @@ public class ChituboxFile : FileFormat
         {
             HeaderSettings.PrintParametersOffsetAddress = (uint)outputFile.Position;
 
-            Helpers.SerializeWriteFileStream(outputFile, PrintParametersSettings);
+            outputFile.WriteSerialize(PrintParametersSettings);
 
             HeaderSettings.SlicerOffset = (uint)outputFile.Position;
             HeaderSettings.SlicerSize = (uint) Helpers.Serializer.SizeOf(SlicerInfoSettings) - SlicerInfoSettings.MachineNameSize;
@@ -1893,14 +1893,14 @@ public class ChituboxFile : FileFormat
             }
 
 
-            Helpers.SerializeWriteFileStream(outputFile, SlicerInfoSettings);
+            outputFile.WriteSerialize(SlicerInfoSettings);
 
             if (HeaderSettings.Version >= 4)
             {
                 PrintParametersV4Settings.DisclaimerAddress = (uint)outputFile.Position;
                 PrintParametersV4Settings.DisclaimerLength = (uint)CTBv4_DISCLAIMER.Length;
                 outputFile.WriteBytes(Encoding.UTF8.GetBytes(CTBv4_DISCLAIMER));
-                Helpers.SerializeWriteFileStream(outputFile, PrintParametersV4Settings);
+                outputFile.WriteSerialize(PrintParametersV4Settings);
             }
         }
 
@@ -1962,7 +1962,7 @@ public class ChituboxFile : FileFormat
                             var layerDataEx = new LayerDefEx(layerDef, this[layerIndex]);
                             layerDataCurrentOffset += (uint)Helpers.Serializer.SizeOf(layerDataEx);
                             layerDef.DataAddress = layerDataCurrentOffset;
-                            Helpers.SerializeWriteFileStream(outputFile, layerDataEx);
+                            outputFile.WriteSerialize(layerDataEx);
                         }
 
                         layerDataCurrentOffset += outputFile.WriteBytes(layerDef.EncodedRle!);
@@ -1972,7 +1972,7 @@ public class ChituboxFile : FileFormat
                                     aaIndex * LayerCount * layerDefSize +
                                     layerDefSize * layerIndex
                         , SeekOrigin.Begin);
-                    Helpers.SerializeWriteFileStream(outputFile, layerDef);
+                    outputFile.WriteSerialize(layerDef);
 
                     layerDef.EncodedRle = null; // Free this
                 }
@@ -1981,7 +1981,7 @@ public class ChituboxFile : FileFormat
             
 
         outputFile.Seek(0, SeekOrigin.Begin);
-        Helpers.SerializeWriteFileStream(outputFile, HeaderSettings);
+        outputFile.WriteSerialize(HeaderSettings);
 
         Debug.WriteLine("Encode Results:");
         Debug.WriteLine(HeaderSettings);
@@ -2171,13 +2171,13 @@ public class ChituboxFile : FileFormat
         SanitizeProperties();
         using var outputFile = new FileStream(TemporaryOutputFileFullPath, FileMode.Open, FileAccess.Write);
         outputFile.Seek(0, SeekOrigin.Begin);
-        Helpers.SerializeWriteFileStream(outputFile, HeaderSettings);
+        outputFile.WriteSerialize(HeaderSettings);
 
         if (HeaderSettings.Version >= 2 && HeaderSettings.PrintParametersOffsetAddress > 0)
         {
             outputFile.Seek(HeaderSettings.PrintParametersOffsetAddress, SeekOrigin.Begin);
-            Helpers.SerializeWriteFileStream(outputFile, PrintParametersSettings);
-            Helpers.SerializeWriteFileStream(outputFile, SlicerInfoSettings);
+            outputFile.WriteSerialize(PrintParametersSettings);
+            outputFile.WriteSerialize(SlicerInfoSettings);
         }
 
         uint layerOffset = HeaderSettings.LayersDefinitionOffsetAddress;
@@ -2189,7 +2189,7 @@ public class ChituboxFile : FileFormat
                 LayerDefinitions![aaIndex, layerIndex].SetFrom(layer);
 
                 outputFile.Seek(layerOffset, SeekOrigin.Begin);
-                layerOffset += Helpers.SerializeWriteFileStream(outputFile, LayerDefinitions[aaIndex, layerIndex]);
+                layerOffset += outputFile.WriteSerialize(LayerDefinitions[aaIndex, layerIndex]);
             }
         }
 
@@ -2198,14 +2198,14 @@ public class ChituboxFile : FileFormat
             for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
             {
                 outputFile.Seek(LayerDefinitions![0, layerIndex].DataAddress - 84, SeekOrigin.Begin);
-                Helpers.SerializeWriteFileStream(outputFile, new LayerDefEx(LayerDefinitions[0, layerIndex], this[layerIndex]));
+                outputFile.WriteSerialize(new LayerDefEx(LayerDefinitions[0, layerIndex], this[layerIndex]));
             }
         }
 
         if (HeaderSettings.Version >= 4)
         {
             outputFile.Seek(SlicerInfoSettings.PrintParametersV4Address, SeekOrigin.Begin);
-            Helpers.SerializeWriteFileStream(outputFile, PrintParametersV4Settings);
+            outputFile.WriteSerialize(PrintParametersV4Settings);
         }
     }
 

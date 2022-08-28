@@ -955,7 +955,7 @@ public class FDGFile : FileFormat
 
             preview.ImageOffset = (uint)(outputFile.Position + Helpers.Serializer.SizeOf(preview));
 
-            Helpers.SerializeWriteFileStream(outputFile, preview);
+            outputFile.WriteSerialize(preview);
 
             outputFile.WriteBytes(bytes);
         }
@@ -1017,7 +1017,7 @@ public class FDGFile : FileFormat
 
 
                 outputFile.Seek(layerDefCurrentOffset, SeekOrigin.Begin);
-                layerDefCurrentOffset += Helpers.SerializeWriteFileStream(outputFile, layerDef);
+                layerDefCurrentOffset += outputFile.WriteSerialize(layerDef);
 
                 layerDef.EncodedRle = null; // Free
             }
@@ -1025,7 +1025,7 @@ public class FDGFile : FileFormat
 
         HeaderSettings.ModifiedTimestampMinutes = (uint)DateTimeExtensions.TimestampMinutes;
         outputFile.Seek(0, SeekOrigin.Begin);
-        Helpers.SerializeWriteFileStream(outputFile, HeaderSettings);
+        outputFile.WriteSerialize(HeaderSettings);
 
         Debug.WriteLine("Encode Results:");
         Debug.WriteLine(HeaderSettings);
@@ -1130,7 +1130,7 @@ public class FDGFile : FileFormat
         HeaderSettings.ModifiedTimestampMinutes = (uint)DateTimeExtensions.TimestampMinutes;
         using var outputFile = new FileStream(TemporaryOutputFileFullPath, FileMode.Open, FileAccess.Write);
         outputFile.Seek(0, SeekOrigin.Begin);
-        Helpers.SerializeWriteFileStream(outputFile, HeaderSettings);
+        outputFile.WriteSerialize(HeaderSettings);
 
         /*if (HeaderSettings.MachineNameAddress > 0 && HeaderSettings.MachineNameSize > 0)
             {
@@ -1144,7 +1144,7 @@ public class FDGFile : FileFormat
         {
             LayersDefinitions[layerIndex].SetFrom(this[layerIndex]);
             outputFile.Seek(layerOffset, SeekOrigin.Begin);
-            Helpers.SerializeWriteFileStream(outputFile, LayersDefinitions[layerIndex]);
+            outputFile.WriteSerialize(LayersDefinitions[layerIndex]);
             layerOffset += (uint)Helpers.Serializer.SizeOf(LayersDefinitions[layerIndex]);
         }
     }
