@@ -1747,35 +1747,6 @@ public class ChituboxFile : FileFormat
         return false;
     }
 
-    private void SanitizeProperties()
-    {
-        if (IsCtbFile)
-        {
-            if (SlicerInfoSettings.AntiAliasLevel <= 1)
-            {
-                SlicerInfoSettings.AntiAliasLevel = HeaderSettings.AntiAliasLevel;
-            }
-
-            HeaderSettings.AntiAliasLevel = 1;
-
-            if (HeaderSettings.Version <= 2)
-            {
-                SlicerInfoSettings.PerLayerSettings = PERLAYER_SETTINGS_CTBv2;
-                PrintParametersSettings.Padding4 = 0x1234; // 4660
-            }
-            else if (HeaderSettings.Version == 3)
-            {
-                SlicerInfoSettings.PerLayerSettings = AllLayersAreUsingGlobalParameters ? PERLAYER_SETTINGS_DISALLOW : PERLAYER_SETTINGS_CTBv3;
-            }
-            else if (HeaderSettings.Version >= 4)
-            {
-                SlicerInfoSettings.PerLayerSettings = AllLayersAreUsingGlobalParameters ? PERLAYER_SETTINGS_DISALLOW : PERLAYER_SETTINGS_CTBv4;
-            }
-        }
-
-        SlicerInfoSettings.ModifiedTimestampMinutes = (uint)DateTimeExtensions.TimestampMinutes;
-    }
-
     private void SanitizeMagicVersion()
     {
         if (FileEndsWith(".ctb"))
@@ -1814,10 +1785,38 @@ public class ChituboxFile : FileFormat
         return true;
     }
 
+    protected override void OnBeforeEncode(bool isPartialEncode)
+    {
+        if (IsCtbFile)
+        {
+            if (SlicerInfoSettings.AntiAliasLevel <= 1)
+            {
+                SlicerInfoSettings.AntiAliasLevel = HeaderSettings.AntiAliasLevel;
+            }
+
+            HeaderSettings.AntiAliasLevel = 1;
+
+            if (HeaderSettings.Version <= 2)
+            {
+                SlicerInfoSettings.PerLayerSettings = PERLAYER_SETTINGS_CTBv2;
+                PrintParametersSettings.Padding4 = 0x1234; // 4660
+            }
+            else if (HeaderSettings.Version == 3)
+            {
+                SlicerInfoSettings.PerLayerSettings = AllLayersAreUsingGlobalParameters ? PERLAYER_SETTINGS_DISALLOW : PERLAYER_SETTINGS_CTBv3;
+            }
+            else if (HeaderSettings.Version >= 4)
+            {
+                SlicerInfoSettings.PerLayerSettings = AllLayersAreUsingGlobalParameters ? PERLAYER_SETTINGS_DISALLOW : PERLAYER_SETTINGS_CTBv4;
+            }
+        }
+
+        SlicerInfoSettings.ModifiedTimestampMinutes = (uint)DateTimeExtensions.TimestampMinutes;
+    }
+
     protected override void EncodeInternally(OperationProgress progress)
     {
         SanitizeMagicVersion();
-        SanitizeProperties();
 
         HeaderSettings.PrintParametersSize = (uint)Helpers.Serializer.SizeOf(PrintParametersSettings);
             
@@ -2168,7 +2167,6 @@ public class ChituboxFile : FileFormat
 
     protected override void PartialSaveInternally(OperationProgress progress)
     {
-        SanitizeProperties();
         using var outputFile = new FileStream(TemporaryOutputFileFullPath, FileMode.Open, FileAccess.Write);
         outputFile.Seek(0, SeekOrigin.Begin);
         outputFile.WriteSerialize(HeaderSettings);

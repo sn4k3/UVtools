@@ -1429,7 +1429,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <summary>
     /// True if the file global property is using TSMC, otherwise false when not using
     /// </summary>
-    public bool IsUsingTSMC => (CanUseAnyLiftHeight2 || CanUseAnyRetractHeight2) && (LiftHeight2 > 0 || RetractHeight2 > 0);
+    public bool IsUsingTSMC => (CanUseAnyLiftHeight2 || CanUseAnyRetractHeight2) && (BottomLiftHeight2 > 0 || BottomRetractHeight2 > 0 || LiftHeight2 > 0 || RetractHeight2 > 0);
 
 
     /// <summary>
@@ -3311,6 +3311,16 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     }
 
     /// <summary>
+    /// Triggers before attempt to save/encode the file
+    /// </summary>
+    protected virtual void OnBeforeEncode(bool isPartialEncode){}
+
+    /// <summary>
+    /// Triggers after save/encode the file
+    /// </summary>
+    protected virtual void OnAfterEncode(bool isPartialEncode) { }
+
+    /// <summary>
     /// Encode to an output file
     /// </summary>
     /// <param name="progress"></param>
@@ -3325,13 +3335,13 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     {
         fileFullPath ??= FileFullPath ?? throw new ArgumentNullException(nameof(fileFullPath));
 
-        if (DecodeType == FileDecodeType.Partial)
-            throw new InvalidOperationException("File was partial decoded, a full encode is not possible.");
+        if (DecodeType == FileDecodeType.Partial) throw new InvalidOperationException("File was partial decoded, a full encode is not possible.");
 
         progress ??= new OperationProgress();
         progress.Reset(OperationProgress.StatusEncodeLayers, LayerCount);
 
         Sanitize();
+        OnBeforeEncode(false);
 
         for (var i = 0; i < Thumbnails.Length; i++)
         {
@@ -3355,6 +3365,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
 
             // Move temporary output file in place
             File.Move(tempFile, fileFullPath, true);
+            OnAfterEncode(false);
         }
         catch (Exception)
         {
@@ -4578,13 +4589,12 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
 
         if (string.IsNullOrWhiteSpace(FileFullPath))
         {
-            if (!string.IsNullOrWhiteSpace(filePath))
-            {
-                Encode(filePath, progress);
-                return;
-            }
-            throw new ArgumentNullException(nameof(FileFullPath), "Not encoded yet and both source and output files are null");
+            if (string.IsNullOrWhiteSpace(filePath)) throw new ArgumentNullException(nameof(FileFullPath), "Not encoded yet and both source and output files are null");
+            Encode(filePath, progress);
+            return;
         }
+
+        OnBeforeEncode(true);
 
 
         // Backup old file name and prepare the temporary file to be written next
@@ -4600,6 +4610,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
 
             // Move temporary output file in place
             File.Move(tempFile, FileFullPath, true);
+            OnAfterEncode(true);
         }
         catch (Exception)
         {
