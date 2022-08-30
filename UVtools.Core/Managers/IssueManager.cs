@@ -23,6 +23,8 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
 
     public List<MainIssue> IgnoredIssues { get; } = new();
 
+    public bool HaveIssues => Count > 0;
+
     public IssueManager(FileFormat slicerFile)
     {
         SlicerFile = slicerFile;

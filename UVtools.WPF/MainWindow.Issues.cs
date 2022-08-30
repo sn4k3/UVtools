@@ -8,6 +8,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Collections;
@@ -24,6 +26,7 @@ using UVtools.Core;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Layers;
+using UVtools.Core.Objects;
 using UVtools.Core.Operations;
 using UVtools.WPF.Extensions;
 using Brushes = Avalonia.Media.Brushes;
@@ -580,6 +583,43 @@ public partial class MainWindow
     public async void OnClickRepairIssues()
     {
         await ShowRunOperation(typeof(OperationRepairLayers));
+    }
+
+    public async void OnClickExportIssues()
+    {
+        if (!SlicerFile.IssueManager.HaveIssues) return;
+        var dialog = new SaveFileDialog
+        {
+            DefaultExtension = ".uvtissues",
+            Filters = new List<FileDialogFilter>
+            {
+                new()
+                {
+                    Name = "UVtools issues files",
+                    Extensions = new List<string> {"uvtissues"}
+                }
+            },
+            InitialFileName = SlicerFile.FilenameNoExt,
+            Directory = SlicerFile.DirectoryPath
+        };
+
+        var path = await dialog.ShowAsync(this);
+        if (string.IsNullOrWhiteSpace(path)) return;
+        
+        IsGUIEnabled = false;
+        try
+        {
+            var exportIssues = new SerializableIssuesDocument(SlicerFile);
+            exportIssues.SerializeAsync(path);
+        }
+        catch (Exception e)
+        {
+            await this.MessageBoxError(e.ToString());
+            Debug.WriteLine(e);
+            if(File.Exists(path)) File.Delete(path);
+        }
+
+        IsGUIEnabled = true;
     }
 
     public async Task OnClickDetectIssues()

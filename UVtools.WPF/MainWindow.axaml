@@ -675,7 +675,22 @@
                                     ToolTip.Tip="Attempt to repair issues"
                                     VerticalAlignment="Stretch"
                                     i:Attached.Icon="fa-solid fa-toolbox"
-                                    Command="{Binding OnClickRepairIssues}"/>
+                                    Command="{Binding OnClickRepairIssues}">
+								<!--
+                                <Button.ContextMenu>
+                                    <ContextMenu PlacementMode="Bottom">
+                                        <MenuItem i:MenuItem.Icon="fa-solid fa-file-import" 
+                                                  Header="Import issues"
+												  IsVisible="False"
+                                                  Command="{Binding OnClickImportIssues}"/>
+                                        <MenuItem i:MenuItem.Icon="fa-solid fa-file-export" 
+                                                  Header="Export issues"
+                                                  IsEnabled="{Binding SlicerFile.IssueManager.Count}"
+                                                  Command="{Binding OnClickExportIssues}"/>
+                                    </ContextMenu>
+                                </Button.ContextMenu>
+								!-->
+                            </Button>
 
 							<uc:ButtonWithIcon VerticalAlignment="Stretch"
 											   ToolTip.Tip="Compute Issues.

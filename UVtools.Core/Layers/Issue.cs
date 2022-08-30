@@ -8,15 +8,20 @@
 
 using System;
 using System.Drawing;
+using System.Text.Json.Serialization;
 using UVtools.Core.Extensions;
 
 namespace UVtools.Core.Layers;
 
+//[JsonDerivedType(typeof(Issue))]
+//[JsonDerivedType(typeof(IssueOfPoints))]
+//[JsonDerivedType(typeof(IssueOfContours))]
 public class Issue
 {
     /// <summary>
     /// Gets the issue type associated
     /// </summary>
+    [JsonIgnore]
     public MainIssue? Parent { get; internal set; }
 
     public MainIssue.IssueType? Type => Parent?.Type;
@@ -24,6 +29,7 @@ public class Issue
     /// <summary>
     /// Gets the layer where this issue is present
     /// </summary>
+    [JsonIgnore]
     public Layer Layer { get; init; }
 
     /// <summary>

@@ -11,6 +11,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Text.Json.Serialization;
 using UVtools.Core.Extensions;
 
 namespace UVtools.Core.Layers;
@@ -47,11 +48,13 @@ public class MainIssue : IReadOnlyList<Issue>
     /// <summary>
     /// Gets the layer where issue is present and starts
     /// </summary>
+    [JsonIgnore]
     public Layer StartLayer => Childs[0].Layer;
 
     /// <summary>
     /// Gets the layer where issue ends
     /// </summary>
+    [JsonIgnore]
     public Layer EndLayer => Childs[^1].Layer;
 
     /// <summary>
