@@ -7,6 +7,6 @@
       - (Fix) Only attempt to activate the advanced mode (TSMC) when the BottomLiftHeight2 or LiftHeight2 gets changed
    - (Add) Methods: `OnBeforeEncode` and `OnAfterEncode`
    - (Improvement) `IsUsingTSMC` now also checks for BottomLiftHeight2 and BottomRetractHeight2
-- (Fix) OSF: Can't decode some files
+   - (Fix) OSF: Can't decode some files
 - (Fix) Undo cause application to crash (#543)
 
