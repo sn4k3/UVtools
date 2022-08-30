@@ -7,24 +7,31 @@
 
 LittleEndian();
 
+enum <ubyte> BOOL { False, True };
+
 struct FILEMARK {
     char Mark[12] <fgcolor=cBlack, bgcolor=cRed>;
     uint Version <fgcolor=cBlack, bgcolor=cRed>; // 1 or 515 or 516
-    uint AreaNum <fgcolor=cBlack, bgcolor=cRed>;
+    uint NumberOfTables <fgcolor=cBlack, bgcolor=cRed>;
     uint HeaderAddress <fgcolor=cBlack, bgcolor=cRed>;
-    uint Unknown <fgcolor=cBlack, bgcolor=cRed>; // 6357060 for 516
+    uint SoftwareAddress <fgcolor=cBlack, bgcolor=cRed>; // 6357060 for 516
     uint PreviewAddress <fgcolor=cBlack, bgcolor=cRed>;
-    uint PreviewEndAddress <fgcolor=cBlack, bgcolor=cRed>; // Version 515 only
+    uint LayerImageColorAddress <fgcolor=cBlack, bgcolor=cRed>; // Version 515 only
     uint LayerDefinitionAddress <fgcolor=cBlack, bgcolor=cRed>;
     uint ExtraAddress <fgcolor=cBlack, bgcolor=cRed>;
     
-    if(Version < 516)
+    if(Version <= 515)
     {
         uint LayerImageAddress <fgcolor=cBlack, bgcolor=cRed>;
     }
-    else{
+    else{ // >= 516
         uint MachineAddress <fgcolor=cBlack, bgcolor=cRed>;
         uint LayerImageAddress <fgcolor=cBlack, bgcolor=cRed>;
+    }
+
+    if(Version >= 517)
+    {
+        uint ModelAddress <fgcolor=cBlack, bgcolor=cRed>;
     }
 } fileMark;
 
@@ -56,11 +63,18 @@ struct HEADER {
     uint PerLayerOverride <fgcolor=cBlack, bgcolor=cRed>;
     uint PrintTime <fgcolor=cBlack, bgcolor=cRed>;
     uint TransitionLayerCount <fgcolor=cBlack, bgcolor=cRed>;
-    uint Padding <fgcolor=cBlack, bgcolor=cRed>;
+    uint TransitionLayerType <fgcolor=cBlack, bgcolor=cRed>;
 
     if(fileMark.Version >= 516){
         // 0 = Basic mode | 1 = Advanced mode which allows TSMC
         uint AdvancedMode <fgcolor=cBlack, bgcolor=cRed>;
+    }
+
+    if(fileMark.Version >= 517){
+        
+        ushort Gray <fgcolor=cBlack, bgcolor=cRed>;
+        ushort BlurLevel <fgcolor=cBlack, bgcolor=cRed>;
+        uint ResinCode <fgcolor=cBlack, bgcolor=cRed>; // 1579548560, somekind of hash?
     }
 };
 
@@ -73,25 +87,31 @@ if(fileMark.HeaderAddress > 0){
 struct PREVIEW {
     SECTION section;
     uint ResolutionX <fgcolor=cBlack, bgcolor=cRed>;
-    uint DpiResolution <fgcolor=cBlack, bgcolor=cRed>;
+    wstring Mark <fgcolor=cBlack, bgcolor=cRed>; // x or *
     uint ResolutionY <fgcolor=cBlack, bgcolor=cRed>;
     
     ubyte Data[ResolutionX*ResolutionY*2] <fgcolor=cBlack, bgcolor=cGreen>;
-
-    /*uint Unknown1 <fgcolor=cBlack, bgcolor=cRed>;
-    uint Unknown2 <fgcolor=cBlack, bgcolor=cRed>;
-    uint Unknown3 <fgcolor=cBlack, bgcolor=cRed>;
-    uint Unknown4 <fgcolor=cBlack, bgcolor=cRed>;*/
 };
 
 if(fileMark.PreviewAddress > 0){
     FSeek(fileMark.PreviewAddress);
     PREVIEW preview;
+}
 
-    if(fileMark.Version >= 515)
-    {
-        uint Reserved[7] <fgcolor=cWhite, bgcolor=cBlack>;
-    }
+if(fileMark.Version >= 515 && fileMark.LayerImageColorAddress > 0)
+{
+    FSeek(fileMark.LayerImageColorAddress);
+    struct LAYER_IMAGE_COLOR {
+        uint UseFullGreyscale <fgcolor=cWhite, bgcolor=cBlack>;
+        uint GreyMaxCount <fgcolor=cWhite, bgcolor=cBlack>;
+        local uint i;
+        
+        for(i = 0; i < GreyMaxCount; i++ ){
+            ubyte Grey <fgcolor=cWhite, bgcolor=cBlack>;
+        }
+
+        uint Unknown <fgcolor=cWhite, bgcolor=cBlack>;
+    } layerImageColor;
 }
 
 
@@ -112,7 +132,7 @@ struct LAYER_DEF {
     float ExposureTime <fgcolor=cWhite, bgcolor=cBlue>;
     float LayerHeight <fgcolor=cWhite, bgcolor=cBlue>;
     uint NonZeroPixelCount <fgcolor=cWhite, bgcolor=cBlue>;
-    uint Padding1 <fgcolor=cWhite, bgcolor=cBlue>;
+    uint ZeroPixelCount <fgcolor=cWhite, bgcolor=cBlue>;
 
     local uint currentPos = FTell();   
     FSeek(DataAddress);
@@ -125,14 +145,14 @@ if(fileMark.Version >= 516 && fileMark.ExtraAddress > 0){
     FSeek(fileMark.ExtraAddress);
     struct EXTRA {
         SECTION section;
-        uint Unknown <fgcolor=cBlack, bgcolor=cRed>; // 2
+        uint BottomStateNumber <fgcolor=cBlack, bgcolor=cRed>; // 2
         float BottomLiftHeight0 <fgcolor=cBlack, bgcolor=cGreen>;
         float BottomLiftSpeed0 <fgcolor=cBlack, bgcolor=cGreen>;
         float BottomRetractSpeed0 <fgcolor=cBlack, bgcolor=cGreen>;
         float BottomLiftHeight1 <fgcolor=cBlack, bgcolor=cGreen>;
         float BottomLiftSpeed1 <fgcolor=cBlack, bgcolor=cGreen>;
         float BottomRetractSpeed1 <fgcolor=cBlack, bgcolor=cGreen>;
-        uint Unknown <fgcolor=cBlack, bgcolor=cGreen>; // 2
+        uint StateNumber <fgcolor=cBlack, bgcolor=cGreen>; // 2
         float LiftHeight0 <fgcolor=cBlack, bgcolor=cGreen>;
         float LiftSpeed0 <fgcolor=cBlack, bgcolor=cGreen>;
         float RetractSpeed0 <fgcolor=cBlack, bgcolor=cGreen>;
@@ -143,17 +163,47 @@ if(fileMark.Version >= 516 && fileMark.ExtraAddress > 0){
 }
 
 if(fileMark.Version >= 516 && fileMark.MachineAddress > 0){
+    FSeek(fileMark.MachineAddress);
     struct MACHINE {
         SECTION section;
         char MachineName[96] <fgcolor=cBlack, bgcolor=cRed>;
-        char ImageFormat[24] <fgcolor=cWhite, bgcolor=cRed>;
+        char ImageFormat[16] <fgcolor=cWhite, bgcolor=cRed>;
+        uint MaxAntialiasingLevel <fgcolor=cWhite, bgcolor=cRed>; // Machine maximum antialiasing level, 16
+        uint PropertyFields <fgcolor=cWhite, bgcolor=cRed>; // Machine property fields
         float DisplayWidth <fgcolor=cBlack, bgcolor=cRed>;
         float DisplayHeight <fgcolor=cBlack, bgcolor=cRed>;
         float MachineZ <fgcolor=cBlack, bgcolor=cRed>;
-        uint Version <fgcolor=cBlack, bgcolor=cRed>; // Version again? 516
-        uint Unknown <fgcolor=cBlack, bgcolor=cRed>; // 6506241
+        uint MaxFileVersion <fgcolor=cBlack, bgcolor=cRed>; // Highest file version supported, 516?
+        char BackgroundColor[4] <fgcolor=cBlack, bgcolor=cRed>; // Machine background color
     } machine;
 }
+
+if(fileMark.Version >= 517 && fileMark.SoftwareAddress > 0){
+    FSeek(fileMark.SoftwareAddress);
+    struct SOFTWARE {
+        char Name[32] <fgcolor=cWhite, bgcolor=cBlue>; // ANYCUBIC-PC
+        uint TableLength <fgcolor=cWhite, bgcolor=cBlue>; // 164
+        char Version[32] <fgcolor=cWhite, bgcolor=cBlue>; // 2.2.16
+        char OperativeSystem[64] <fgcolor=cWhite, bgcolor=cBlue>; // win-x64
+        char OpenGLVersion[32] <fgcolor=cWhite, bgcolor=cBlue>; // 3.3-CoreProfile
+    } software;
+}
+
+if(fileMark.Version >= 517 && fileMark.ModelAddress > 0){
+    FSeek(fileMark.ModelAddress);
+    struct MODEL {
+        SECTION section <fgcolor=cWhite, bgcolor=cRed>; // MODEL
+        float MinX <fgcolor=cWhite, bgcolor=cRed>;
+        float MinY <fgcolor=cWhite, bgcolor=cRed>;
+        float MinZ <fgcolor=cWhite, bgcolor=cRed>;
+        float MaxX <fgcolor=cWhite, bgcolor=cRed>;
+        float MaxY <fgcolor=cWhite, bgcolor=cRed>;
+        float MaxZ <fgcolor=cWhite, bgcolor=cRed>;
+        uint SupportsEnabled <fgcolor=cWhite, bgcolor=cRed>;
+        float SupportsDensity <fgcolor=cWhite, bgcolor=cRed>;
+    } model;
+}
+
 
 if(fileMark.LayerDefinitionAddress > 0){
     FSeek(fileMark.LayerDefinitionAddress);
