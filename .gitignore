@@ -356,7 +356,7 @@ MigrationBackup/
 #UVtools.Platforms/linux-x64/libcvextern.so
 #UVtools.Platforms/arch-x64/libcvextern.so
 
-documentation/confidential
+documentation/confidential/
 build/secret/
 manifests/
 .idea/
