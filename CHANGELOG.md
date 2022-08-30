@@ -1,5 +1,19 @@
 # Changelog
 
+## 30/08/2022 - v3.6.3
+
+- **File formats:**
+   - **Anycubic file format:**
+      - (Add) Compatibility with the next version 517 of the format
+      - (Improvement) Discovered and implemented more unknown fields
+      - (Improvement) Dispose layer RLE bytes after encoding
+      - (Fix) When creating or converting to anycubic file, it don't set the extra table mark name
+      - (Fix) Only attempt to activate the advanced mode (TSMC) when the BottomLiftHeight2 or LiftHeight2 gets changed
+   - (Add) Methods: `OnBeforeEncode` and `OnAfterEncode`
+   - (Improvement) `IsUsingTSMC` now also checks for BottomLiftHeight2 and BottomRetractHeight2
+- (Fix) OSF: Can't decode some files
+- (Fix) Undo cause application to crash (#543)
+
 ## 21/08/2022 - v3.6.2
 
 - (Add) Debug sub menu to test some behaviours (Only when compiled in debug mode, not visible on public release)
