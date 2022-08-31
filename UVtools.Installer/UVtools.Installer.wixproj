@@ -7,6 +7,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <OutputName>UVtools</OutputName>
     <OutputType>Package</OutputType>
+	<DefineSolutionProperties>false</DefineSolutionProperties>
     <WixTargetsPath Condition=" '$(WixTargetsPath)' == '' AND '$(MSBuildExtensionsPath32)' != '' ">$(MSBuildExtensionsPath32)\Microsoft\WiX\v3.x\Wix.targets</WixTargetsPath>
     <WixTargetsPath Condition=" '$(WixTargetsPath)' == '' ">$(MSBuildExtensionsPath)\Microsoft\WiX\v3.x\Wix.targets</WixTargetsPath>
     <!-- If MSIProductVersion not passed in, try to get it from TFBuild Environments (XAML Builds)-->
@@ -28,23 +29,23 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
     <OutputPath>bin\$(Configuration)\</OutputPath>
     <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
-    <DefineConstants>Debug;MSIProductVersion=$(MSIProductVersion)</DefineConstants>
+    <DefineConstants>Debug;MSIProductVersion=$(MSIProductVersion);HarvestPath=$(HarvestPath)</DefineConstants>
     <WixVariables>WixUIBannerBmp=Resources\Banner.jpg;WixUIDialogBmp=Resources\Dialog.jpg;WixUILicenseRtf=Resources\EULA.rtf</WixVariables>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <OutputPath>bin\$(Configuration)\</OutputPath>
     <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
-    <DefineConstants>MSIProductVersion=$(MSIProductVersion)</DefineConstants>
+    <DefineConstants>MSIProductVersion=$(MSIProductVersion);HarvestPath=$(HarvestPath)</DefineConstants>
     <WixVariables>WixUIBannerBmp=Resources\Banner.jpg;WixUIDialogBmp=Resources\Dialog.jpg;WixUILicenseRtf=Resources\EULA.rtf</WixVariables>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
-    <DefineConstants>Debug;MSIProductVersion=$(MSIProductVersion)</DefineConstants>
+    <DefineConstants>Debug;MSIProductVersion=$(MSIProductVersion);HarvestPath=$(HarvestPath)</DefineConstants>
     <WixVariables>WixUIBannerBmp=Resources\Banner.jpg;WixUIDialogBmp=Resources\Dialog.jpg;WixUILicenseRtf=Resources\EULA.rtf</WixVariables>
     <OutputPath>bin\$(Platform)\$(Configuration)\</OutputPath>
     <IntermediateOutputPath>obj\$(Platform)\$(Configuration)\</IntermediateOutputPath>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
-    <DefineConstants>MSIProductVersion=$(MSIProductVersion)</DefineConstants>
+    <DefineConstants>MSIProductVersion=$(MSIProductVersion);HarvestPath=$(HarvestPath)</DefineConstants>
     <WixVariables>WixUIBannerBmp=Resources\Banner.jpg;WixUIDialogBmp=Resources\Dialog.jpg;WixUILicenseRtf=Resources\EULA.rtf</WixVariables>
     <OutputPath>bin\$(Platform)\$(Configuration)\</OutputPath>
     <IntermediateOutputPath>obj\$(Platform)\$(Configuration)\</IntermediateOutputPath>
@@ -53,13 +54,17 @@
     <Folder Include="Code" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Code\HeatGeneratedFileList.wxs" />
     <Compile Include="Code\Product.wxs" />
-    <Compile Include="Code\Features.wxs" />
-    <Compile Include="Code\IISMeta.wxs" />
     <Compile Include="Code\UI.wxs" />
-    <Compile Include="Code\UI-CustomDialog.wxs" />
+    <Compile Include="Code\UI_CustomFeatureTree.wxs" />
+    <Compile Include="Code\UI_CustomVerifyReadyDlg.wxs" />
   </ItemGroup>
   <ItemGroup>
+    <WixExtension Include="WixUtilExtension">
+      <HintPath>$(WixExtDir)\WixUtilExtension.dll</HintPath>
+      <Name>WixUtilExtension</Name>
+    </WixExtension>
     <WixExtension Include="WixIIsExtension">
       <HintPath>$(WixExtDir)\WixIIsExtension.dll</HintPath>
       <Name>WixIIsExtension</Name>
@@ -81,23 +86,14 @@
     <Content Include="Resources\Dialog.jpg" />
     <Content Include="Resources\EULA.rtf" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\UVtools.InstallerMM\UVtools.InstallerMM.wixproj">
-      <Name>UVtools.InstallerMM</Name>
-      <Project>{e53baa5d-29a8-4287-b3aa-1aff5a4bdc6c}</Project>
-      <Private>True</Private>
-      <DoNotHarvest>True</DoNotHarvest>
-      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
-      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
-    </ProjectReference>
-  </ItemGroup>
   <Import Project="$(WixTargetsPath)" />
   <!--
 	To modify your build process, add your task inside one of the targets below and uncomment it.
 	Other similar extension points exist, see Wix.targets.
-	<Target Name="BeforeBuild">
-	</Target>
-	<Target Name="AfterBuild">
-	</Target>
 	-->
+  <Target Name="BeforeBuild">
+    <HeatDirectory Directory="$(HarvestPath)" PreprocessorVariable="var.HarvestPath" OutputFile="Code\HeatGeneratedFileList.wxs" ComponentGroupName="HeatGeneratedFileList" DirectoryRefId="INSTALLFOLDER" AutogenerateGuids="true" KeepEmptyDirectories="false" ToolPath="$(WixToolPath)" SuppressCom="true" SuppressFragments="true" SuppressRegistry="true" SuppressRootDirectory="true" />
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
 </Project>

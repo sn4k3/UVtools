@@ -4,7 +4,12 @@
     <UI Id="UI">
       
       <!-- See http://wix.sourceforge.net/manual-wix3/WixUI_index.htm for more information-->
-      <UIRef Id="WixUI_FeatureTree"/>
+      <UIRef Id="UI_CustomFeatureTree"/>
+
+      <Publish Dialog="ExitDialog" 
+               Control="Finish" 
+               Event="DoAction" 
+               Value="LaunchApplication">WIXUI_EXITDIALOGOPTIONALCHECKBOX = 1 and NOT Installed</Publish>
       
       <!--Uncomment to inject a custom dialog into the install wizard loop -->
       <!--<UIRef Id="CustomDlg"/>-->

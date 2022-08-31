@@ -3,11 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.1.32228.430
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "UVtools.InstallerMM", "UVtools.InstallerMM\UVtools.InstallerMM.wixproj", "{E53BAA5D-29A8-4287-B3AA-1AFF5A4BDC6C}"
-	ProjectSection(ProjectDependencies) = postProject
-		{B1B40A7B-D30B-4056-AE6F-C4F0519FD8D4} = {B1B40A7B-D30B-4056-AE6F-C4F0519FD8D4}
-	EndProjectSection
-EndProject
 Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "UVtools.Installer", "UVtools.Installer\UVtools.Installer.wixproj", "{41224896-08E9-4F22-9E56-5F9D46DEC7D2}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UVtools.Core", "UVtools.Core\UVtools.Core.csproj", "{7C9927F8-132E-4A37-B894-440E0FD5AA3D}"
@@ -37,14 +32,6 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{E53BAA5D-29A8-4287-B3AA-1AFF5A4BDC6C}.Debug|Any CPU.ActiveCfg = Debug|x86
-		{E53BAA5D-29A8-4287-B3AA-1AFF5A4BDC6C}.Debug|x64.ActiveCfg = Debug|x64
-		{E53BAA5D-29A8-4287-B3AA-1AFF5A4BDC6C}.Debug|x86.ActiveCfg = Debug|x86
-		{E53BAA5D-29A8-4287-B3AA-1AFF5A4BDC6C}.Debug|x86.Build.0 = Debug|x86
-		{E53BAA5D-29A8-4287-B3AA-1AFF5A4BDC6C}.Release|Any CPU.ActiveCfg = Release|x86
-		{E53BAA5D-29A8-4287-B3AA-1AFF5A4BDC6C}.Release|x64.ActiveCfg = Release|x86
-		{E53BAA5D-29A8-4287-B3AA-1AFF5A4BDC6C}.Release|x86.ActiveCfg = Release|x86
-		{E53BAA5D-29A8-4287-B3AA-1AFF5A4BDC6C}.Release|x86.Build.0 = Release|x86
 		{41224896-08E9-4F22-9E56-5F9D46DEC7D2}.Debug|Any CPU.ActiveCfg = Debug|x86
 		{41224896-08E9-4F22-9E56-5F9D46DEC7D2}.Debug|x64.ActiveCfg = Debug|x64
 		{41224896-08E9-4F22-9E56-5F9D46DEC7D2}.Debug|x86.ActiveCfg = Debug|x86

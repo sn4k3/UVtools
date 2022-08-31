@@ -31,6 +31,7 @@ class FixedEncoder : System.Text.UTF8Encoding {
     }
 }
 
+<#
 function wixCleanUpElement([System.Xml.XmlElement]$element, [string]$rootPath)
 {
     $files = Get-ChildItem -Path $rootPath -File -Force -ErrorAction SilentlyContinue
@@ -147,7 +148,7 @@ function wixCleanUpElement([System.Xml.XmlElement]$element, [string]$rootPath)
         }
     }
 }
-
+#>
 
 <#
 $msiComponentsXml = [Xml] (Get-Content $msiComponentsFile)
@@ -162,7 +163,7 @@ foreach($element in $msiComponentsXml.Wix.Module.Directory.Directory)
         break
     }
 }
-#>
+
 
 function WriteXmlToScreen([xml]$xml)
 {
@@ -174,6 +175,7 @@ function WriteXmlToScreen([xml]$xml)
     $StringWriter.Flush();
     Write-Output $StringWriter.ToString();
 }
+#>
 
 # Script working directory
 Set-Location $PSScriptRoot\..
@@ -217,12 +219,11 @@ if([string]::IsNullOrWhiteSpace($version)){
 }
 
 # MSI Variables
-$installers = @("UVtools.InstallerMM", "UVtools.Installer")
+$installer = "UVtools.Installer"
 $msiOutputFile = "$rootFolder\UVtools.Installer\bin\x64\Release\UVtools.msi"
-$msiComponentsFile = "$rootFolder\UVtools.InstallerMM\UVtools.InstallerMM.wxs"
 $msiProductFile = "$rootFolder\UVtools.Installer\Code\Product.wxs"
 $msiSourceFiles = "$rootFolder\$publishFolder\${software}_win-x64_v$version"
-$msbuild = "`"${env:ProgramFiles}\Microsoft Visual Studio\2022\Enterprise\MSBuild\Current\Bin\MSBuild.exe`" /t:Build /p:Configuration=$buildWith /p:MSIProductVersion=$version"
+$msbuild = "`"${env:ProgramFiles}\Microsoft Visual Studio\2022\Enterprise\MSBuild\Current\Bin\MSBuild.exe`" /t:Build /p:Configuration=`"$buildWith`" /p:MSIProductVersion=`"$version`" /p:HarvestPath=`"$msiSourceFiles`""
 
 Write-Output "
 ####################################
@@ -391,8 +392,7 @@ foreach ($obj in $runtimes.GetEnumerator()) {
     
     $deployStopWatch.Stop()
     Write-Output "Took: $($deployStopWatch.Elapsed)
-################################
-"
+################################"
 }
 
 <#
@@ -446,6 +446,8 @@ if($null -ne $enableMSI -and $enableMSI)
         Write-Output "Clean and build MSI components manifest file"
 
         Remove-Item "$msiTargetFile" -ErrorAction Ignore
+
+        <#
         (Get-Content "$msiComponentsFile") -replace 'SourceDir="\.\.\\publish\\.+"', "SourceDir=`"..\publish\$publishName`"" | Out-File "$msiComponentsFile"
         
         $msiComponentsXml = [Xml] (Get-Content "$msiComponentsFile")
@@ -458,6 +460,7 @@ if($null -ne $enableMSI -and $enableMSI)
                 break
             }
         }
+        #>
 
         if(Test-Path "$publishFolder\$publishName\UVtools.Core.dll" -PathType Leaf){
             Add-Type -Path "$publishFolder\$publishName\UVtools.Core.dll"
@@ -480,18 +483,16 @@ if($null -ne $enableMSI -and $enableMSI)
         if($extensionList.Count -gt 0)
         {
             $regValue = [String]::Join(' OR ', $extensionList)
-            (Get-Content "$msiProductFile") -replace '(?<A><RegistryValue Root="HKCR".+Name="AppliesTo".+Value=").+(?<B>" Type=.+)', "`${A}$regValue`${B}" | Out-File "$msiProductFile"
+            (Get-Content "$msiProductFile") -replace '(?<A><RegistryValue Name="AppliesTo" Value=").+(?<B>" Type=.+)', "`${A}$regValue`${B}" | Out-File "$msiProductFile"
         }
 
         Write-Output "Building: $runtime MSI Installer"
 
-        foreach($installer in $installers)
-        {
-            # Clean and build MSI
-            Remove-Item "$installer\obj" -Recurse -ErrorAction Ignore
-            Remove-Item "$installer\bin" -Recurse -ErrorAction Ignore
-            Invoke-Expression "& $msbuild $installer\$installer.wixproj"
-        }
+
+        # Clean and build MSI
+        Remove-Item "$installer\obj" -Recurse -ErrorAction Ignore
+        Remove-Item "$installer\bin" -Recurse -ErrorAction Ignore
+        Invoke-Expression "& $msbuild $installer\$installer.wixproj"
 
         Write-Output "Copying $runtime MSI to: $msiTargetFile"
         Copy-Item $msiOutputFile $msiTargetFile
