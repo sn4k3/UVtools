@@ -12,7 +12,7 @@
 	<Product Id="*" Name="UVtools" Language="1033" Version="$(var.MSIProductVersion)" Manufacturer="PTRTECH" UpgradeCode="1ea6d212-15c0-425e-b2ec-4b6c60817552">
 		<Package InstallerVersion="301" Compressed="yes" Keywords="MSLA, DLP" Description="MSLA/DLP, file analysis, repair, conversion and manipulation" InstallScope="perMachine" Platform="x64" />
 		<MediaTemplate EmbedCab="yes" />
-		<Property Id="DISABLEADVTSHORTCUTS" Value="1" />
+
 		<!-- Major Upgrade Rule to disallow downgrades -->
 		<MajorUpgrade AllowDowngrades="no"
 		              AllowSameVersionUpgrades="yes"
@@ -31,6 +31,8 @@
 		<Property Id="ARPCONTACT" Value="Tiago Conceição" />
 		<Property Id="ARPHELPLINK" Value="https://github.com/sn4k3/UVtools" />
 		<Property Id="ARPURLINFOABOUT" Value="https://github.com/sn4k3/UVtools" />
+		<Property Id="DISABLEADVTSHORTCUTS" Value="1" />
+		<Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER" />
 
 		<Directory Id="TARGETDIR" Name="SourceDir">
 			<Directory Id="ProgramFiles64Folder">
@@ -59,83 +61,83 @@
 		<DirectoryRef Id="TARGETDIR">
 			<Directory Id="DesktopFolder">
 				<Component Id="CMP_DesktopShortcuts" Guid="B5B54770-8764-4EF5-B649-F612C3F5B04D">
-					<Condition>CREATEDESKTOPSHORTCUT="1"</Condition>
-					<Shortcut Id="desktopUVtoolsSC" 
-					          Name="UVtools" 
-					          Description="MSLA/DLP, file analysis, calibration, repair, conversion and manipulation" 
-					          Target="[INSTALLFOLDER]UVtools.exe" 
+					<Condition>CREATEDESKTOPSHORTCUT = 1</Condition>
+					<Shortcut Id="desktopUVtoolsSC"
+					          Name="UVtools"
+					          Description="MSLA/DLP, file analysis, calibration, repair, conversion and manipulation"
+					          Target="[INSTALLFOLDER]UVtools.exe"
 					          WorkingDirectory="INSTALLFOLDER" />
 
 					<RegistryKey Root="HKCU" Key="Software\[ProductName]" ForceCreateOnInstall="yes" ForceDeleteOnUninstall="yes">
 						<RegistryValue Name="Uninstall" Value="[ProductCode]" Type="string" />
-					</RegistryKey> 
+					</RegistryKey>
 				</Component>
 			</Directory>
-		  <Directory Id="ProgramMenuFolder">
-			  <Directory Id="ProgramMenuUVtoolsFolder" Name="UVtools">
-				  <Component Id="CMP_StartMenuShortcuts" Guid="857FE93D-3F67-4298-A20D-439F7421724F">
-					  <Shortcut Id="startMenuUVtoolsSC" 
-					            Name="UVtools" 
-					            Description="MSLA/DLP, file analysis, calibration, repair, conversion and manipulation" 
-					            Target="[INSTALLFOLDER]UVtools.exe" 
-					            WorkingDirectory="INSTALLFOLDER" />
+			<Directory Id="ProgramMenuFolder">
+				<Directory Id="ProgramMenuUVtoolsFolder" Name="UVtools">
+					<Component Id="CMP_StartMenuShortcuts" Guid="857FE93D-3F67-4298-A20D-439F7421724F">
+						<Shortcut Id="startMenuUVtoolsSC"
+								  Name="UVtools"
+								  Description="MSLA/DLP, file analysis, calibration, repair, conversion and manipulation"
+								  Target="[INSTALLFOLDER]UVtools.exe"
+								  WorkingDirectory="INSTALLFOLDER" />
 
-					  <Shortcut Id="startMenuUVtoolsCmdSC" 
-					            Name="UVtoolsCmd" 
-					            Description="MSLA/DLP, file analysis, calibration, repair, conversion and manipulation" 
-					            Target="[System64Folder]cmd.exe" 
-					            Arguments="/k UVtoolsCmd.exe" 
-					            WorkingDirectory="INSTALLFOLDER" />
+						<Shortcut Id="startMenuUVtoolsCmdSC"
+								  Name="UVtoolsCmd"
+								  Description="MSLA/DLP, file analysis, calibration, repair, conversion and manipulation"
+								  Target="[System64Folder]cmd.exe"
+								  Arguments="/k UVtoolsCmd.exe"
+								  WorkingDirectory="INSTALLFOLDER" />
 
-					  <Shortcut Id="startMenuUninstallSC" 
-					            Name="Uninstall UVtools" 
-					            Description="Uninstalls UVtools and all of its components"
-					            Target="[System64Folder]msiexec.exe" 
-					            Arguments="/i [ProductCode]" />
+						<Shortcut Id="startMenuUninstallSC"
+								  Name="Uninstall UVtools"
+								  Description="Uninstalls UVtools and all of its components"
+								  Target="[System64Folder]msiexec.exe"
+								  Arguments="/i [ProductCode]" />
 
-					  <RemoveFolder Id="ProgramMenuUVtoolsFolder" On="uninstall" />
+						<RemoveFolder Id="ProgramMenuUVtoolsFolder" On="uninstall" />
 
-					  <RegistryKey Root="HKCU" Key="Software\[ProductName]" ForceCreateOnInstall="yes" ForceDeleteOnUninstall="yes">
-						  <RegistryValue Name="Uninstall" Value="[ProductCode]" Type="string" />
-					  </RegistryKey> 
-				  </Component>
-			  </Directory>
-		  </Directory>
+						<RegistryKey Root="HKCU" Key="Software\[ProductName]" ForceCreateOnInstall="yes" ForceDeleteOnUninstall="yes">
+							<RegistryValue Name="Uninstall" Value="[ProductCode]" Type="string" />
+						</RegistryKey>
+					</Component>
+				</Directory>
+			</Directory>
 
-		  <Component Id="RegInstallInfo" Guid="C3603223-A8C1-4393-8C06-36B48DED2652">
-			  <!-- Install directory -->
-			  <RegistryKey Root="HKCU" Key="Software\[ProductName]" ForceCreateOnInstall="yes" ForceDeleteOnUninstall="yes">
-				  <RegistryValue Name="InstallDir" Value="[INSTALLFOLDER]" Type="string" />
-				  <RegistryValue Name="CreateDesktopShortcut" Value="[CREATEDESKTOPSHORTCUT]" Type="integer" />
-				  <RegistryValue Name="CreateFileAssociations" Value="[CREATEFILEASSOCIATIONS]" Type="integer" />
-			  </RegistryKey>
-		  </Component>
+			<Component Id="RegInstallInfo" Guid="C3603223-A8C1-4393-8C06-36B48DED2652">
+				<!-- Install directory -->
+				<RegistryKey Root="HKCU" Key="Software\[ProductName]" ForceCreateOnInstall="yes" ForceDeleteOnUninstall="yes">
+					<RegistryValue Name="InstallDir" Value="[INSTALLFOLDER]" Type="string" />
+					<RegistryValue Name="CreateDesktopShortcut" Value="[CREATEDESKTOPSHORTCUT]" Type="integer" />
+					<RegistryValue Name="CreateFileAssociations" Value="[CREATEFILEASSOCIATIONS]" Type="integer" />
+				</RegistryKey>
+			</Component>
 
-		  <Component Id="RegFilesAssociations" Guid="A39174DD-7B4A-4020-A57A-0DC01242D7EC">
-			  <!-- Open file with UVtools -->
-			  <Condition>CREATEFILEASSOCIATIONS="1"</Condition>
-			  <RegistryKey Root="HKCR" Key="*\shell\[ProductName]" ForceCreateOnInstall="yes" ForceDeleteOnUninstall="yes">
-				  <RegistryValue Value="Open with [ProductName]" Type="string" />
-				  <RegistryValue Name="Icon" Value="[INSTALLFOLDER][ProductName].exe" Type="string" />
-				  <RegistryValue Name="Position"  Value="Top" Type="string" />
-				  <RegistryValue Name="AppliesTo" Value="System.FileName:&quot;*.sl1&quot; OR System.FileName:&quot;*.sl1s&quot; OR System.FileName:&quot;*.zip&quot; OR System.FileName:&quot;*.photon&quot; OR System.FileName:&quot;*.cbddlp&quot; OR System.FileName:&quot;*.ctb&quot; OR System.FileName:&quot;*.photons&quot; OR System.FileName:&quot;*.phz&quot; OR System.FileName:&quot;*.fdg&quot; OR System.FileName:&quot;*.pws&quot; OR System.FileName:&quot;*.pw0&quot; OR System.FileName:&quot;*.pwx&quot; OR System.FileName:&quot;*.dlp&quot; OR System.FileName:&quot;*.pwmx&quot; OR System.FileName:&quot;*.pwmb&quot; OR System.FileName:&quot;*.pwmo&quot; OR System.FileName:&quot;*.pwms&quot; OR System.FileName:&quot;*.pwma&quot; OR System.FileName:&quot;*.pmsq&quot; OR System.FileName:&quot;*.pm3&quot; OR System.FileName:&quot;*.pm3m&quot; OR System.FileName:&quot;*.cws&quot; OR System.FileName:&quot;*.osla&quot; OR System.FileName:&quot;*.jxs&quot; OR System.FileName:&quot;*.zcode&quot; OR System.FileName:&quot;*.zcodex&quot; OR System.FileName:&quot;*.mdlp&quot; OR System.FileName:&quot;*.gr1&quot; OR System.FileName:&quot;*.cxdlp&quot; OR System.FileName:&quot;*.lgs&quot; OR System.FileName:&quot;*.lgs30&quot; OR System.FileName:&quot;*.lgs120&quot; OR System.FileName:&quot;*.lgs4k&quot; OR System.FileName:&quot;*.svgx&quot; OR System.FileName:&quot;*.vdt&quot; OR System.FileName:&quot;*.osf&quot; OR System.FileName:&quot;*.uvj&quot; OR System.FileName:&quot;*.png&quot; OR System.FileName:&quot;*.jpg&quot; OR System.FileName:&quot;*.jpeg&quot; OR System.FileName:&quot;*.jp2&quot; OR System.FileName:&quot;*.tif&quot; OR System.FileName:&quot;*.tiff&quot; OR System.FileName:&quot;*.bmp&quot; OR System.FileName:&quot;*.pbm&quot; OR System.FileName:&quot;*.pgm&quot; OR System.FileName:&quot;*.sr&quot; OR System.FileName:&quot;*.ras&quot;" Type="string" />
+			<Component Id="RegFilesAssociations" Guid="A39174DD-7B4A-4020-A57A-0DC01242D7EC">
+				<!-- Open file with UVtools -->
+				<Condition>CREATEFILEASSOCIATIONS = 1</Condition>
+				<RegistryKey Root="HKCR" Key="*\shell\[ProductName]" ForceCreateOnInstall="yes" ForceDeleteOnUninstall="yes">
+					<RegistryValue Value="Open with [ProductName]" Type="string" />
+					<RegistryValue Name="Icon" Value="[INSTALLFOLDER][ProductName].exe" Type="string" />
+					<RegistryValue Name="Position"  Value="Top" Type="string" />
+					<RegistryValue Name="AppliesTo" Value="System.FileName:&quot;*.sl1&quot; OR System.FileName:&quot;*.sl1s&quot; OR System.FileName:&quot;*.zip&quot; OR System.FileName:&quot;*.photon&quot; OR System.FileName:&quot;*.cbddlp&quot; OR System.FileName:&quot;*.ctb&quot; OR System.FileName:&quot;*.photons&quot; OR System.FileName:&quot;*.phz&quot; OR System.FileName:&quot;*.fdg&quot; OR System.FileName:&quot;*.pws&quot; OR System.FileName:&quot;*.pw0&quot; OR System.FileName:&quot;*.pwx&quot; OR System.FileName:&quot;*.dlp&quot; OR System.FileName:&quot;*.pwmx&quot; OR System.FileName:&quot;*.pwmb&quot; OR System.FileName:&quot;*.pwmo&quot; OR System.FileName:&quot;*.pwms&quot; OR System.FileName:&quot;*.pwma&quot; OR System.FileName:&quot;*.pmsq&quot; OR System.FileName:&quot;*.pm3&quot; OR System.FileName:&quot;*.pm3m&quot; OR System.FileName:&quot;*.cws&quot; OR System.FileName:&quot;*.osla&quot; OR System.FileName:&quot;*.jxs&quot; OR System.FileName:&quot;*.zcode&quot; OR System.FileName:&quot;*.zcodex&quot; OR System.FileName:&quot;*.mdlp&quot; OR System.FileName:&quot;*.gr1&quot; OR System.FileName:&quot;*.cxdlp&quot; OR System.FileName:&quot;*.lgs&quot; OR System.FileName:&quot;*.lgs30&quot; OR System.FileName:&quot;*.lgs120&quot; OR System.FileName:&quot;*.lgs4k&quot; OR System.FileName:&quot;*.svgx&quot; OR System.FileName:&quot;*.vdt&quot; OR System.FileName:&quot;*.osf&quot; OR System.FileName:&quot;*.uvj&quot; OR System.FileName:&quot;*.png&quot; OR System.FileName:&quot;*.jpg&quot; OR System.FileName:&quot;*.jpeg&quot; OR System.FileName:&quot;*.jp2&quot; OR System.FileName:&quot;*.tif&quot; OR System.FileName:&quot;*.tiff&quot; OR System.FileName:&quot;*.bmp&quot; OR System.FileName:&quot;*.pbm&quot; OR System.FileName:&quot;*.pgm&quot; OR System.FileName:&quot;*.sr&quot; OR System.FileName:&quot;*.ras&quot;" Type="string" />
 
-				  <RegistryKey Key="command" ForceCreateOnInstall="yes" ForceDeleteOnUninstall="yes">
-					  <RegistryValue Value="&quot;[INSTALLFOLDER][ProductName].exe&quot; &quot;%1&quot;" Type="string" />
-				  </RegistryKey>
-			  </RegistryKey>
-			  
-		  </Component>
-	  </DirectoryRef>
+					<RegistryKey Key="command" ForceCreateOnInstall="yes" ForceDeleteOnUninstall="yes">
+						<RegistryValue Value="&quot;[INSTALLFOLDER][ProductName].exe&quot; &quot;%1&quot;" Type="string" />
+					</RegistryKey>
+				</RegistryKey>
 
-	  <Feature Id="UVtools" Title="UVtools" Description="Installs all the files needed for [ProductName]" Level="1" AllowAdvertise="no" ConfigurableDirectory="INSTALLFOLDER">
-		<ComponentRef Id="RegInstallInfo" />
-		<ComponentRef Id="RegFilesAssociations" />
-		<ComponentGroupRef Id="HeatGeneratedFileList" />
-		<ComponentRef Id="CMP_DesktopShortcuts" />
-		<ComponentRef Id="CMP_StartMenuShortcuts" />
-    </Feature>
-		
+			</Component>
+		</DirectoryRef>
+
+		<Feature Id="UVtools" Title="UVtools" Description="Installs all the files needed for [ProductName]" Level="1" AllowAdvertise="no" ConfigurableDirectory="INSTALLFOLDER">
+			<ComponentRef Id="RegInstallInfo" />
+			<ComponentRef Id="RegFilesAssociations" />
+			<ComponentGroupRef Id="HeatGeneratedFileList" />
+			<ComponentRef Id="CMP_DesktopShortcuts" />
+			<ComponentRef Id="CMP_StartMenuShortcuts" />
+		</Feature>
+
 		<Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOXTEXT" Value="Launch UVtools" />
 		<Property Id="WixShellExecTarget" Value="[INSTALLFOLDER]UVtools.exe" />
 		<CustomAction Id="LaunchApplication" BinaryKey="WixCA" DllEntry="WixShellExec" Impersonate="yes" />

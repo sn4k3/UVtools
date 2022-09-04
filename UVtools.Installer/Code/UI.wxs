@@ -4,8 +4,9 @@
     <UI Id="UI">
       
       <!-- See http://wix.sourceforge.net/manual-wix3/WixUI_index.htm for more information-->
-      <UIRef Id="UI_CustomFeatureTree"/>
-
+      <!--<UIRef Id="UI_CustomFeatureTree"/>!-->
+      <UIRef Id="UI_CustomInstallDir"/>
+      
       <Publish Dialog="ExitDialog" 
                Control="Finish" 
                Event="DoAction" 

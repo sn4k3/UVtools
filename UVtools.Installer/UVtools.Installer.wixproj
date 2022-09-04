@@ -7,7 +7,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <OutputName>UVtools</OutputName>
     <OutputType>Package</OutputType>
-	<DefineSolutionProperties>false</DefineSolutionProperties>
+    <DefineSolutionProperties>false</DefineSolutionProperties>
     <WixTargetsPath Condition=" '$(WixTargetsPath)' == '' AND '$(MSBuildExtensionsPath32)' != '' ">$(MSBuildExtensionsPath32)\Microsoft\WiX\v3.x\Wix.targets</WixTargetsPath>
     <WixTargetsPath Condition=" '$(WixTargetsPath)' == '' ">$(MSBuildExtensionsPath)\Microsoft\WiX\v3.x\Wix.targets</WixTargetsPath>
     <!-- If MSIProductVersion not passed in, try to get it from TFBuild Environments (XAML Builds)-->
@@ -54,11 +54,11 @@
     <Folder Include="Code" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Code\UI_CustomInstallDirDlg.wxs" />
+    <Compile Include="Code\UI_CustomInstallDir.wxs" />
     <Compile Include="Code\HeatGeneratedFileList.wxs" />
     <Compile Include="Code\Product.wxs" />
     <Compile Include="Code\UI.wxs" />
-    <Compile Include="Code\UI_CustomFeatureTree.wxs" />
-    <Compile Include="Code\UI_CustomVerifyReadyDlg.wxs" />
   </ItemGroup>
   <ItemGroup>
     <WixExtension Include="WixUtilExtension">
