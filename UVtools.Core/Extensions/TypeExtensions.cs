@@ -19,6 +19,7 @@ public static class TypeExtensions
     /// Creates a new instance of this type
     /// </summary>
     /// <param name="type"></param>
+    /// <param name="paramArray"></param>
     public static object? CreateInstance(this Type type, params object[]? paramArray)
     {
         return Activator.CreateInstance(type, paramArray);
@@ -30,7 +31,7 @@ public static class TypeExtensions
     /// <typeparam name="T">Target type</typeparam>
     /// <param name="type"></param>
     /// <param name="paramArray"></param>
-    /// <returns>New instance of <see cref="T"/></returns>
+    /// <returns>New instance of {T}</returns>
     public static T? CreateInstance<T>(this Type type, params object[]? paramArray)
     {
         var instance = Activator.CreateInstance(type, paramArray);

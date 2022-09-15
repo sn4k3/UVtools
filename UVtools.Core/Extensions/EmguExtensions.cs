@@ -284,10 +284,10 @@ public static class EmguExtensions
     /// Fill a mat span with a color
     /// </summary>
     /// <param name="mat">Mat to fill</param>
-    /// <param name="startPosition">Start position, this reference will increment by the <see cref="length"/></param>
+    /// <param name="startPosition">Start position, this reference will increment by the <paramref name="length"/></param>
     /// <param name="length">Length to fill</param>
     /// <param name="color">Color to fill with</param>
-    /// <param name="colorFillMinThreshold">Ignore and sum <see cref="startPosition"/> to <see cref="length"/> if <see cref="color"/> is less than the threshold value</param>
+    /// <param name="colorFillMinThreshold">Ignore and fill to <paramref name="length"/> if <paramref name="color"/> is less than the threshold value</param>
     public static void FillSpan(this Mat mat, ref int startPosition, int length, byte color, byte colorFillMinThreshold = 1)
     {
         if (length <= 0) return;
@@ -309,7 +309,7 @@ public static class EmguExtensions
     /// <param name="y"></param>
     /// <param name="length">Length to fill</param>
     /// <param name="color">Color to fill with</param>
-    /// <param name="colorFillMinThreshold">Ignore and sum <see cref="startPosition"/> to <see cref="length"/> if <see cref="color"/> is less than the threshold value</param>
+    /// <param name="colorFillMinThreshold">Ignore and set to <paramref name="length"/> if <paramref name="color"/> is less than the threshold value</param>
     public static void FillSpan(this Mat mat, int x, int y, int length, byte color, byte colorFillMinThreshold = 1)
     {
         if (length <= 0 || color < colorFillMinThreshold) return; // Ignore threshold (mostly if blacks), spare cycles
@@ -323,7 +323,7 @@ public static class EmguExtensions
     /// <param name="position"></param>
     /// <param name="length">Length to fill</param>
     /// <param name="color">Color to fill with</param>
-    /// <param name="colorFillMinThreshold">Ignore and sum <see cref="startPosition"/> to <see cref="length"/> if <see cref="color"/> is less than the threshold value</param>
+    /// <param name="colorFillMinThreshold">Ignore and fill to <paramref name="length"/> if <paramref name="color"/> is less than the threshold value</param>
     public static void FillSpan(this Mat mat, Point position, int length, byte color, byte colorFillMinThreshold = 1)
         => mat.FillSpan(position.X, position.Y, length, color, colorFillMinThreshold);
     #endregion
@@ -544,7 +544,7 @@ public static class EmguExtensions
     /// </summary>
     /// <param name="src">Source <see cref="Mat"/> to be copied to</param>
     /// <param name="size">Size of the center offset</param>
-    /// <param name="dst">Target <see cref="Mat"/> to paste the <param name="src"></param></param>
+    /// <param name="dst">Target <see cref="Mat"/> to paste the <paramref name="src"/></param>
     public static void CopyCenterToCenter(this Mat src, Size size, Mat dst)
     {
         var srcRoi = src.RoiFromCenter(size);
@@ -556,7 +556,7 @@ public static class EmguExtensions
     /// </summary>
     /// <param name="src">Source <see cref="Mat"/> to be copied to</param>
     /// <param name="region">Region to copy</param>
-    /// <param name="dst">Target <see cref="Mat"/> to paste the <param name="src"></param></param>
+    /// <param name="dst">Target <see cref="Mat"/> to paste the <paramref name="src"/></param>
     public static void CopyRegionToCenter(this Mat src, Rectangle region, Mat dst)
     {
         var srcRoi = src.Roi(region);
@@ -567,7 +567,7 @@ public static class EmguExtensions
     /// Copy a <see cref="Mat"/> to center of other <see cref="Mat"/>
     /// </summary>
     /// <param name="src">Source <see cref="Mat"/> to be copied to</param>
-    /// <param name="dst">Target <see cref="Mat"/> to paste the <param name="src"></param></param>
+    /// <param name="dst">Target <see cref="Mat"/> to paste the <paramref name="src"/></param>
     public static void CopyToCenter(this Mat src, Mat dst)
     {
         var srcStep = src.GetRealStep();
@@ -773,7 +773,7 @@ public static class EmguExtensions
     }
 
     /// <summary>
-    /// Finds the first pixel that is <see cref="value"/>
+    /// Finds the first pixel that is <paramref name="value"/>
     /// </summary>
     /// <param name="mat"></param>
     /// <param name="value"></param>
@@ -793,7 +793,7 @@ public static class EmguExtensions
     }
 
     /// <summary>
-    /// Finds the first pixel that is at less than <see cref="value"/>
+    /// Finds the first pixel that is at less than <paramref name="value"/>
     /// </summary>
     /// <param name="mat"></param>
     /// <param name="value"></param>
@@ -813,7 +813,7 @@ public static class EmguExtensions
     }
 
     /// <summary>
-    /// Finds the first pixel that is at less or equal than <see cref="value"/>
+    /// Finds the first pixel that is at less or equal than <paramref name="value"/>
     /// </summary>
     /// <param name="mat"></param>
     /// <param name="value"></param>
@@ -833,7 +833,7 @@ public static class EmguExtensions
     }
 
     /// <summary>
-    /// Finds the first pixel that is at greater than <see cref="value"/>
+    /// Finds the first pixel that is at greater than <paramref name="value"/>
     /// </summary>
     /// <param name="mat"></param>
     /// <param name="value"></param>
@@ -853,7 +853,7 @@ public static class EmguExtensions
     }
 
     /// <summary>
-    /// Finds the first pixel that is at equal or greater than <see cref="value"/>
+    /// Finds the first pixel that is at equal or greater than <paramref name="value"/>
     /// </summary>
     /// <param name="mat"></param>
     /// <param name="value"></param>
@@ -902,6 +902,7 @@ public static class EmguExtensions
     /// <param name="src"></param>
     /// <param name="dst"></param>
     /// <param name="angle"></param>
+    /// <param name="newSize"></param>
     /// <param name="scale"></param>
     public static void Rotate(this Mat src, Mat dst, double angle, Size newSize = default, double scale = 1.0)
     {

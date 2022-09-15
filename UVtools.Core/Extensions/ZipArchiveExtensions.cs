@@ -99,7 +99,7 @@ public static class ZipArchiveExtensions
     /// <param name="destinationPath">
     /// The root of where the file is going
     /// </param>
-    /// <param name="preserveFullName">True to preserve full name and create all directories up to the file, otherwise false to extract the file just to <see cref="destinationPath"/></param>
+    /// <param name="preserveFullName">True to preserve full name and create all directories up to the file, otherwise false to extract the file just to <paramref name="destinationPath"/></param>
     /// <param name="overwriteMethod">
     /// Specifies how we are going to handle an existing file.
     /// The default is Overwrite.IfNewer.
@@ -162,6 +162,7 @@ public static class ZipArchiveExtensions
     /// <param name="action">
     /// Specifies how we are going to handle an existing archive
     /// </param>
+    /// <param name="fileOverwrite"></param>
     /// <param name="compression">
     /// Specifies what type of compression to use - defaults to Optimal
     /// </param>

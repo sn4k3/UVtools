@@ -140,7 +140,7 @@ public class RangeObservableCollection<T> : ObservableCollection<T>
     /// Inserts the elements of a collection into the <see cref="ObservableCollection{T}"/> at the specified index.
     /// </summary>
     /// <param name="index">The zero-based index at which the new elements should be inserted.</param>
-    /// <param name="collection">The collection whose elements should be inserted into the List<T>.
+    /// <param name="collection">The collection whose elements should be inserted into the List{T}.
     /// The collection itself cannot be null, but it can contain elements that are null, if type T is a reference type.</param>                
     /// <exception cref="ArgumentNullException"><paramref name="collection"/> is null.</exception>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="index"/> is not in the collection range.</exception>
@@ -390,7 +390,6 @@ public class RangeObservableCollection<T> : ObservableCollection<T>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="index"/> is out of range.</exception>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="count"/> is out of range.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="collection"/> is null.</exception>
-    /// <exception cref="ArgumentNullException"><paramref name="comparer"/> is null.</exception>
     public void ReplaceRange(int index, int count, IEnumerable<T> collection)
     {
         if (index < 0)
@@ -589,7 +588,6 @@ public class RangeObservableCollection<T> : ObservableCollection<T>
     /// </summary>
     /// <remarks>
     /// When overriding this method, either call its base implementation
-    /// or call <see cref="BlockReentrancy"/> to guard against reentrant collection changes.
     /// </remarks>
     protected override void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
     {

@@ -158,7 +158,6 @@ public static class FileStreamExtensions
     /// <param name="fs"></param>
     /// <param name="action"></param>
     /// <param name="offset"></param>
-    /// <param name="seekOrigin"></param>
     public static void SeekDoWorkAndRewind(this FileStream fs, long offset, Action action)
         => fs.SeekDoWorkAndRewind(offset, SeekOrigin.Begin, action);
 

@@ -266,6 +266,7 @@ namespace UVtools.Core.Printer
                 new(PrinterBrand.Peopoly, "Peopoly Phenom Noir", "Phenom Noir", 3840, 2160, 293.76f, 165.24f, 400f, FlipDirection.Horizontally),
                 new(PrinterBrand.Peopoly, "Peopoly Phenom XXL", "Phenom XXL", 3840, 2160, 527.04f, 296.46f, 550f, FlipDirection.Horizontally),
                 new(PrinterBrand.Peopoly, "Peopoly Phenom", "Phenom", 3840, 2160, 276.48f, 155.52f, 400f, FlipDirection.Horizontally),
+                new(PrinterBrand.Peopoly, "Peopoly Phenom Forge", "Phenom Forge", 5760, 3240, 288f, 162f, 350f, FlipDirection.Horizontally),
 
                 new(PrinterBrand.Phrozen, "Phrozen Shuffle 16", "Shuffle 16", 3840, 2160, 337.92f, 190.08f, 400f, FlipDirection.Horizontally),
                 new(PrinterBrand.Phrozen, "Phrozen Shuffle 4K", "Shuffle 4K", 2160, 3840, 68.04f, 120.96f, 170f, FlipDirection.None),

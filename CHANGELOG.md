@@ -1,5 +1,20 @@
 # Changelog
 
+## 15/09/2022 - v3.6.4
+
+- **Windows MSI installer:**
+   - (Add) UVtools folder to start menu with:
+      - UVtools
+      - UVtoolsCmd
+      - Uninstall UVtools
+   - (Add) Prompt for add open in UVtools when right-click on supported files
+   - (Add) Prompt for create desktop shortcut 
+   - (Add) Prompt for launch UVtools after the installation 
+   - (Improvement) Cleanup and simplify the install project
+- (Add) PrusaSlicer printer: Peopoly Phenom Forge
+- (Upgrade) .NET from 6.0.8 to 6.0.9
+- (Fix) Corruption in file after attempt to save to a locked file (#551)
+
 ## 30/08/2022 - v3.6.3
 
 - **File formats:**
@@ -16,7 +31,7 @@
 
 ## 21/08/2022 - v3.6.2
 
-- (Add) Debug sub menu to test some behaviours (Only when compiled in debug mode, not visible on public release)
+- (Add) Debug sub menu to test some behaviors (Only when compiled in debug mode, not visible on public release)
 - (Add) Utility method `LayerExists` to the file formats to know if specific layer index exists in the collection
 - (Improvement) Add loaded file information to the crash dialog message
 - (Fix) Message dialog height do not expand with text (#537)
@@ -190,7 +205,7 @@
 - (Add) File formats: Property `IsUsingTSMC` - Indicates whatever file globals are using TSMC or not
 - (Change) Lithophane: Noise removal and gap closing iterations defaults to 0
 - (Fix) Anycubic files: Printers are unable to use TSMC values after save (#457)
-- (Fix) Pixel Editor button is hidden when using screens with scalling > 100% [dirty-fix] (#458)
+- (Fix) Pixel Editor button is hidden when using screens with scaling > 100% [dirty-fix] (#458)
 - (Upgrade) .NET from 6.0.3 to 6.0.4
 
 ## 11/04/2022 - v3.3.1
@@ -243,7 +258,7 @@
    - (Fix) Remove anti-aliased edges from Tabs
 - (Improvement) Core: Minor clean-up
 - (Fix) Issue repair error when 'Auto repair layers and issues on file load' is enabled (#446)
-- (Fix) UI: Selecting a object with ROI when flip is verically, will cause 1px up-shift on the preview
+- (Fix) UI: Selecting a object with ROI when flip is vertically, will cause 1px up-shift on the preview
 - (Fix) macOS permission error due loss of attributes on the build script, WSL have bug with mv, using ln&rm instead
 
 ## 02/04/2022 - v3.2.1
@@ -256,7 +271,7 @@
    - (Add) Concentric infill type
    - (Add) Gyroid infill type (#443)
    - (Change) Increase the default spacing from 200px to 300px
-   - (Improvement) Fastter infill processing by use the model bounds
+   - (Improvement) Faster infill processing by use the model bounds
 - (Add) `FormatSpeedUnit` property to file formats to get the speed unit which the file use internally
 - (Fix) UI: ROI rectangle can overlap scroll bars while selecting
 
@@ -280,7 +295,7 @@
    - (Improvement) When saving files the .tmp extension is no longer shown on `FileFullPath`, which now `TemporaryOutputFileFullPath` is who holds the file.tmp
    - (Fix) After load files they was flagged as requiring a full encode, preventing fast save a fresh file 
 - **UVtoolsCmd:**
-   - Bring back the commandline project
+   - Bring back the command line project
    - Consult README to see the available commands and syntax
    - Old terminal commands on UVtools still works for now, but consider switch to UVtoolsCmd or redirect the command using `UVtools --cmd "commands"`
 - **Tools:**
@@ -353,7 +368,7 @@
 
 - **(Add) Suggestions:**
    - A new module that detect bad or parameters out of a defined range and suggest a change on the file, those can be auto applied if configured to do so
-   - **Avaliable suggestions:**
+   - **Available suggestions:**
       - **Bottom layer count:** Bottom layers should be kept to a minimum, usually from 2 to 3, it function is to provide a good adhesion to the first layer on the build plate, using a high count have disadvantages.  
       - **Wait time before cure:** Rest some time before cure the layer is crucial to let the resin settle after the lift sequence and allow some time for the arm settle at the correct Z position as the resin will offer some resistance and push the structure.  
                                    This lead to better quality with more successful prints, less lamination problems, better first layers with more success of stick to the build plate and less elephant foot effect.
@@ -392,19 +407,19 @@
 - **Tools:**
    - (Add) Layer re-height: Offset mode, change layers position by a defined offset (#423)
    - (Improvement) Rotate: Unable to use an angle of 0
-   - (Improvement) Remove layers: Will not recalcualte and reset properties of layers anymore, allowing removing layers on dynamic layer height models and others
-   - (Improvement) Clone layers: Will not recalcualte and reset properties of layers anymore, allowing cloning layers on dynamic layer height models and others
+   - (Improvement) Remove layers: Will not recalculate and reset properties of layers anymore, allowing removing layers on dynamic layer height models and others
+   - (Improvement) Clone layers: Will not recalculate and reset properties of layers anymore, allowing cloning layers on dynamic layer height models and others
    - (Fix) Exposure time finder: Very small printers may not print the stock object as it is configured, lead to a unknown error while generating the test. It will now show a better error message and advice a solution (#426)
 - **Terminal:**
    - (Add) More default namespaces
-   - (Improvement) Set a MinHeight for the rows to prevent spliter from eat the elements
+   - (Improvement) Set a MinHeight for the rows to prevent splitter from eat the elements
    - (Change) Set working space to the MainWindow instead of TerminalWindow
 - **(Upgrade) .NET from 5.0.14 to 6.0.3**
    - This brings big performance improvements, better JIT, faster I/O operations and others
    - Read more: https://devblogs.microsoft.com/dotnet/performance-improvements-in-net-6
    - Due this macOS requirement starts at 10.15 (Catalina)
    - Read more: https://github.com/dotnet/core/blob/main/release-notes/6.0/supported-os.md
-- (Add) Native support for MacOS ARM64 architecture (Mac M1 and upcomming Mac's) (#187)
+- (Add) Native support for MacOS ARM64 architecture (Mac M1 and upcoming Mac's) (#187)
 - (Exchange) Dependency Newtonsoft Json by System.Text.Json to parse the json documents
 - (Remove) Dependency: MoreLinq
 - (Remove) "Automations - Light-off delay" in favor of new suggestion "wait time before cure" module
@@ -433,7 +448,7 @@
       - (Improvement) Optimize lift for virtual layer mode, allowing set a slow and fast lift / retract by using another virtual layer to emulate a lift
       - (Improvement) Allow to define slow and fast speed for virtual layer mode even if TSMC isn't supported
    - (Add) Fade exposure time: Setting 'Disable firmware transition layers' - Attempt to disable firmware strict transition layers in favor of this tool
-   - (Add) Calibration tests: Attempt to auto disable the firmware transifiton layers
+   - (Add) Calibration tests: Attempt to auto disable the firmware transition layers
    - (Change) Edit print parameters: Allow set `BottomLiftHeight` and `LiftHeight` to 0mm
 - **UI:**
    - (Improvement) Disallow drop files into UI when is processing data / disabled and prevent crashing from that action
@@ -477,7 +492,7 @@
    - **Raise on print finish:**
       - (Add) Reapply check and prevent run the tool in that case
       - (Fix) It was incorrectly marked to be able to run in partial mode
-      - (Fix) The dummy pixel was beeing set to a wrong location
+      - (Fix) The dummy pixel was being set to a wrong location
 - **Layers:**:
    - (Change) When set Wait times to a negative value, it will set the global wait time value accordingly
    - (Change) Allow ExposureTime to be 0
@@ -488,9 +503,9 @@
 - **UI:**
    - (Add) When open a file with missing crucial information, prompt the user to fill in that information (Optional)
    - (Add) Warn user about misfunction when open a file with invalid layer height of 0mm
-   - (Improvement) Layer information: Only show the "Exposure time" when its availiable on the file format
+   - (Improvement) Layer information: Only show the "Exposure time" when its available on the file format
    - (Improvement) When a file is about to get auto-converted once loaded and the output file already exists, prompt user for overwrite action
-- (Improvement) Set default culture info at top most of the program to avoid strange problems with commandline arguments
+- (Improvement) Set default culture info at top most of the program to avoid strange problems with command line arguments
 - (Upgrade) .NET from 5.0.13 to 5.0.14
 - (Downgrade) OpenCV from 4.5.5 to 4.5.4 due the crash while detecting islands (Linux and MacOS) (#411, #415, #416)
 
@@ -519,8 +534,8 @@
 ## 05/01/2022 - v2.27.5
 
 - **Pixel Arithmetic:**
-  - (Add) Corode: Noise pixel area, defaulting to 3px²
-  - (Change) Corode: Cryptonumeric random to normal random to speed up calculation
+  - (Add) Corrode: Noise pixel area, defaulting to 3px²
+  - (Change) Corrode: Cryptonumeric random to normal random to speed up calculation
   - (Change) Fuzzy skin preset: Set a ignore threshold area of 5000px2
   - (Improvement) Masking performance and auto crop the layer to speed up the processing when using an "Apply to" other than "All"
   - (Fix) Some "Apply to" methods was creating a wrong mask with some operators
@@ -554,7 +569,7 @@
   - (Add) Property: IsLastLayer - Gets if is the last layer
   - (Rename) Property: RelativeLayerHeight to RelativePositionZ
 - **VDT:**
-   - (Add) Keyword 'FILEFORMAT_xxx' to allow set the file format to auto convertion on machine notes
+   - (Add) Keyword 'FILEFORMAT_xxx' to allow set the file format to auto conversion on machine notes
    - (Add) Keyword 'FILEVERSION_n' to allow set the file format version/revision on machine notes
 
 ## 22/12/2021 - v2.27.1
@@ -566,7 +581,7 @@
    - (Fix) Encoding or converting a new file with version 516 was setting wrong length for the new tables
    - (Fix) Setting bottom lift height or speed was not working and keep the same value
 - (Add) FileFormats: Abstract `Version` property to set or get the version on file formats
-- (Add) CXDLP: Compability with new file v2 revsion (#376)
+- (Add) CXDLP: Compatibility with new file v2 revision (#376)
 - (Upgrade) AvaloniaUI from 0.10.8 to 0.10.11
 - 
 ## 18/12/2021 - v2.27.0
@@ -627,7 +642,7 @@
    - (Add) Processor name
    - (Add) Memory RAM (Used / Total GB)
    - (Add) OpenCV and Assemblies tab
-   - (Add) "Copy information" button to copy the whole dialog information, usefull for bug reports
+   - (Add) "Copy information" button to copy the whole dialog information, useful for bug reports
    - (Improvement) Enumerate the loaded assemblies
    - (Improvement) Rearrange the elements and put them inside scroll viewers to not strech the window
    - (Improvement) Allow to resize and maximize the window
@@ -712,7 +727,7 @@
 ## 12/10/2021 - v2.23.6
 
 - **(Improvement) SL1:** (#314)
-   - Complete the SL1 file format with some defaults for convertions
+   - Complete the SL1 file format with some defaults for conversions
    - Change some data types from bool to byte as in recent prusaslicer changes
 - (Upgrade) .NET from 5.0.10 to 5.0.11
 - (Upgrade) AvaloniaUI from 0.10.7 to 0.10.8
@@ -731,7 +746,7 @@
 - **Pixel arithmetic**
    - (Add) Apply to - Model surface: Apply only to model surface/visible pixels
    - (Add) Apply to - Model surface & inset: Apply only to model surface/visible pixels and within a inset from walls
-   - (Add) Preset: Fuzy skin
+   - (Add) Preset: Fuzzy skin
    - (Improvement) Speed up the Corrode method
    - (Change) Heal anti-aliasing threshold from 169 to 119
 - **Calibration - Grayscale:**
@@ -804,7 +819,7 @@
    - (Fix) Outline - Hollow areas: Not outlining the second closing contour for contours with child
    - (Fix) Pixel editor - Eraser: It was selecting the whole blob even if have inner parents
    - (Fix) Setting window: When open it will change tabs quickly to fix the windows height/scroll problem
-   - (Fix) Minor problems with autosizes on some input boxes
+   - (Fix) Minor problems with auto-sizes on some input boxes
 - **Tools:**
    - **Import layers:**
       - (Add) 'MergeMax' to import type (#289)
@@ -823,7 +838,7 @@
    - (Improvement) New and improved algorithm for resin trap detection
 - **Settings:**
    - (Add) Option: Loads the last recent file on startup if no file was specified
-   - (Change) Resin trap hightlight default color
+   - (Change) Resin trap highlight default color
    - (Fix) Unable to set resin trap threshold to 0 (disabled)
 - (Improvement) Better random generation for benchmark
 - (Improvement) Allow to cancel the new version download
@@ -836,11 +851,11 @@
 
 - **(Add) Layer outline:**
    - Blob outline: Outline all separate blobs
-   - Centroids: Draw a dot at the gemoetric center of a blob
+   - Centroids: Draw a dot at the geometric center of a blob
 - (Add) Adjust layer height: Allow to change exposure time on the dialog and inform that different layer thickness require different exposure times
 - (Add) Resin trap detection: Allow to choose the starting layer index for resin trap detection which will also be considered a drain layer.  
         Use this setting to bypass complicated rafts by selected the model first real layer (#221)
-- (Improvement) Disable mirroed preview when loading a file that is not mirroed
+- (Improvement) Disable mirrored preview when loading a file that is not mirrored
 
 ## 03/09/2021 - v2.21.0
 
@@ -861,7 +876,7 @@
    - **Dynamic Lifts:**
       - (Improvement) Select normal layers by default
       - (Improvement) Hide light-off delay fields when the file format don't support them
-      - (Fix) Light-off delay fields was not hidding when set a mode that dont require the extra time fields
+      - (Fix) Light-off delay fields was not hiding when set a mode that don't require the extra time fields
    - **Exposure time finder:**
       - (Fix) Fix the 'light-off delay' field not being show on files that support wait time before cure
       - (Change) Field name 'Light-off delay' to 'Wait time before cure'
@@ -907,7 +922,7 @@
    - Prevent 'Wait time' properties from having negative values
    - The `RetractSpeed` and `RetractSpeed2` property wasn't setting the bottom speed for bottom layers, instead the normal retract speed was always used
    - Setting the `RetractHeight2` and `RetractSpeed2` property was not notifying the timer to update the print time
-   - Propagate the whole global settings to layers now identfies the bottom layers per height instead of the layer index
+   - Propagate the whole global settings to layers now identifies the bottom layers per height instead of the layer index
 - (Add) UVJ: Support TSMC for the file format
 - (Fix) UVJ: Soft save was not updating the layer settings
 - (Fix) CTB: TSMC not working properly due incorrect layer `LiftHeight` value calculation
@@ -916,7 +931,7 @@
 
 - **UI:**
    - (Add) Pixel position on lcd millimeters to the pixel picker information
-   - (Add) Pixel size information when availiable below zoom on status bar
+   - (Add) Pixel size information when available below zoom on status bar
    - (Add) Click on Zoom button will zoom to 100% and shift click will set to the user defined value
 - **CTB:**
    - (Add) Allow to change wait time for bottoms and normal layers separately
@@ -939,13 +954,6 @@
    - AnyCubic Photon Mono SQ
    - AnyCubic Photon Ultra
 - (Add) Pixel arithmetic: Preset "Elephant foot compensation"
-<!--
-- **FileFormat PhotonWorkshop:**
-   - (Add) Compability with version 515
-   - (Add) Support for Photon Mono SQ (PMSQ)
-   - (Add) Support for Photon Ultra (DLP)
-   
-!-->
 
 ## 22/08/2021 - v2.19.5
 
@@ -954,7 +962,7 @@
    - Force version 3 when on version 4 and converting to photon or cbddlp
 - **(Improvement) Export to SVG image:**
    - Group \<g\> all layer objects
-   - Intersect all childs on same \<path\>
+   - Intersect all child's on same \<path\>
 - **PrusaSlicer:**
    - (Rename) Printer keywords notes:
       - BottomWaitBeforeCure -> BottomWaitTimeBeforeCure
@@ -1010,7 +1018,7 @@
 
 - **File formats:** 
    - Add and remove some image types that can be open
-   - (Add) `CanProcess` method to know if a file can be read under a format and to allow diferent formats with same extension
+   - (Add) `CanProcess` method to know if a file can be read under a format and to allow different formats with same extension
    - (Fix) `LiftHeightTotal` and `RetractHeight` was rounding to no decimals and returning wrong values
    - (Improvement) Round all float setters on `Layer` class
    - (Improvement) Decode/encode RAM usage and performance by processing in batch groups
@@ -1028,7 +1036,7 @@
 - **CTBv4:**
   - (Fix) More Unknown fields discovered and implemented
   - (Fix) Reserved table is 384 bytes instead of 420
-  - (Fix) When full encoding it was forcing to change to version 3. This also affected convertions. (#263)
+  - (Fix) When full encoding it was forcing to change to version 3. This also affected conversions. (#263)
   - (Fix) `BottomRetractHeight2` was being set to `BottomRetractSpeed2`
   - (Fix) `RetractHeight2` was being set to `RetracSpeed2`
   - (Fix) The PrintParametersV4 table address
@@ -1065,13 +1073,13 @@
    - (Add) Implement TSMC (Two Stage Motor Control) for the supported formats
    - (Add) Implement 'Bottom retract speed' for the supported formats
    - (Add) LGS: Support for lgs120 and lg4k (#218)
-   - (Add) CTB: Special/virtual file extensions .v2.ctb, .v3.ctb, .v4.ctb to force a convertion to the set version (2 to 4). The .ctb is Version 3 by default when creating/converting files
+   - (Add) CTB: Special/virtual file extensions .v2.ctb, .v3.ctb, .v4.ctb to force a conversion to the set version (2 to 4). The .ctb is Version 3 by default when creating/converting files
    - (Improvement) Better performance for file formats that decode images in sequential pixels groups
 - **GCode:**
   - (Improvement) Better parsing of the movements / lifts
   - (Improvement) Better handling of lifts performed after cure the layer
   - (Improvement) More fail-safe checks and sanitize of gcode while parsing
-- (Improvement) CTBv3: Enable per layer settings if disabled when fast save without reencode
+- (Improvement) CTBv3: Enable per layer settings if disabled when fast save without re-encode
 - (Upgrade) .NET from 5.0.8 to 5.0.9
 - (Fix) PrusaSlicer printer: Longer Orange 4k with correct resolution and display size
 - (Fix) Odd error when changing properties too fast in multi-thread
@@ -1083,7 +1091,7 @@
    - (Improvement) Mark program and all files as x64
    - (Improvement) Add UVtools logo to side panel and top banner
    - (Improvement) Add open-source logo to side panel
-   - (Improvement) License text aligment and bold title
+   - (Improvement) License text alignment and bold title
 - (Add) File format: OSLA / ODLP / OMSLA - Universal binary file format
 - (Add) Calibration - Lift height: Generates test models with various strategies and increments to measure the optimal lift height or peel forces for layers given the printed area
 - (Add) Layer Actions - Export layers to images (PNG, JPG/JPEG, JP2, TIF/TIFF, BMP, PBM, PGM, SR/RAS and SVG)
@@ -1111,7 +1119,7 @@
 - **(Fix) macOS:**
    - Version auto-upgrade (Will only work on future releases and if running v2.16.0 or greater)
    - Demo file not loading
-   - Auto disable windows scaling factor when on Monjave or greater on new instalations
+   - Auto disable windows scaling factor when on Monjave or greater on new installations
 - (Add) Tool: Raise platform on print finish (#247)
 - (Add) CXDLP: Support for Halot MAX CL-133
 - (Improvement) Tools: Better handling/validation of tools that are unable to run with abstraction
@@ -1180,7 +1188,7 @@
   - (Fix) macOS: Include libusb-1.0.0.dylib
   - Note: `brew install libusb` still required
 - **UI:**
-  - (Add) Shorcuts: Arrow up and down to navigate layers while layer image is on focus
+  - (Add) Shortcuts: Arrow up and down to navigate layers while layer image is on focus
   - (Fix) Refresh gcode does not update text on UI for ZIP, CWS, ZCODEX files
   - (Fix) Operations: Import a .uvtop file by drag and drop into the UI would not load the layer range
   - (Change) When convert a file, the result dialog will have Yes, No and Cancel actions, where No will open the converted file on current window, while Cancel will not perform any action (The old No behaviour)
@@ -1203,7 +1211,7 @@
    - (Fix) Error with 'Pattern loaded model' fails when generating more models than build plate can afford (#239)
 - **GCode:**
    - (Fix) When the last layer have no lifts and a move to top command is set on end, that value were being set incorrectly as last layer position
-   - (Fix) Layer parsing from mm/s to mm/m bad convertion
+   - (Fix) Layer parsing from mm/s to mm/m bad conversion
 - (Add) File formats: Setter `SuppressRebuildGCode` to disable or enable the gcode auto rebuild when needed, set this to false to manually write your own gcode
 - (Add) UVtools version to error logs
 - (Fix) ZCode: Some test files come with layer height of 0mm on a property, in that case lookup layer height on the second property as fallback
@@ -1313,13 +1321,13 @@
    - (Improvement) Add a check to layer `LightPWM` if 0 it will force to 255
 - (Add) Allow to save the selected region (ROI) to a image file
 - (Update) .NET 5.0.5 to 5.0.6
-- (Fix) Getting the transposed rectangle in fliped images are offseting the position by -1
+- (Fix) Getting the transposed rectangle in flipped images are offsetting the position by -1
 - (Fix) Tools: Hide ROI Region text when empty/not selected
 
 ## 13/05/2021 - v2.11.2
 
-- (Improvement) Applied some refactorings on code
-- (Fix) MDLP, GR1 and CXDLP: Bad enconde of display width, display height and layer height properties
+- (Improvement) Applied some refactoring on code
+- (Fix) MDLP, GR1 and CXDLP: Bad encode of display width, display height and layer height properties
 
 ## 11/05/2021 - v2.11.1
 
@@ -1356,7 +1364,7 @@
    - (Improvement) Calculator - LightOff delay: Hide the bottom properties or the tab if the file format don't support them (#193)
    - (Change) 'Arithmetic' to 'Layer arithmetic'   
    - (Remove) 'Threshold pixels'
-   - (Fix) Solidfy was unable to save profiles
+   - (Fix) Solidify was unable to save profiles
    - (Fix) A redo operation (Ctrl + Shift + Z) wasn't restoring the settings when a default profile is set
 - **Operations:**
    - (Fix) Passing a roi mat to `ApplyMask` would cause unwanted results
@@ -1404,7 +1412,7 @@
    - Fix a error when generating tests with multiple exposures
    - Fix some typos
 - **XYZ accuracy test:**
-   - Change 'Wall thickess' default from 2.5mm to 3.0mm
+   - Change 'Wall thickness' default from 2.5mm to 3.0mm
 - (Improvement) Allow compute print time without a lift sequence
 
 ## 30/04/2021 - v2.9.2
@@ -1413,16 +1421,16 @@
 - (Remove) Unused assemblies
 - **Issues:**
    - Improve the performance when loading big lists of issues into the DataGrid
-   - Auto refresh issues on the vertical highlight tracker once cath a modification on the Issues list
+   - Auto refresh issues on the vertical highlight tracker once catch a modification on the Issues list
 - **Layer preview - Difference:**
    - Layer difference will now only check the pixels inside the union of previous, current and next layer bounding rectangle, increasing the performance and speed
    - Previous and next layer pixels if both exists was not showing with the configured color and using the next layer color instead
    - Respect Anti-Aliasing pixels and fade colors accordingly
-   - Unlock the possiblity of using the layer difference on first and last layer
+   - Unlock the possibility of using the layer difference on first and last layer
    - Add a option to show similar pixels instead of the difference
-   - Change previous default color from (255, 0, 255) to (81, 131, 82) for better depth preception
-   - Change next default color from (0, 255, 255) to (81, 249, 252) for better depth preception
-   - Change previous & next default color from (255, 0, 0) to (246, 240, 216) for better depth preception
+   - Change previous default color from (255, 0, 255) to (81, 131, 82) for better depth perception
+   - Change next default color from (0, 255, 255) to (81, 249, 252) for better depth perception
+   - Change previous & next default color from (255, 0, 0) to (246, 240, 216) for better depth perception
 - **(Fix) Pixel editor:**
    - Modification was append instead of prepend on the list 
    - Modification was not updating the index number on the list
@@ -1452,13 +1460,13 @@
    * When decoding a file and have a empty resolution (Width: 0 or Height: 0) it will auto fix it by get and set the first layer image resolution to the file
    * Fix when decoding a file it was already set to require a full encode, preventing fast saves on print parameters edits
 * **GUI:**
-   * When file resolution dismatch from layer resolution, it is now possible to auto fix it by set the layer resolution to the file
+   * When file resolution mismatch from layer resolution, it is now possible to auto fix it by set the layer resolution to the file
    * When loading a file with auto scan for issues disabled it will force auto scan for issues types that are instant to check (print height and empty layers), if any exists it will auto select issues tab
 * **(Add) PrusaSlicer printers:**
    * Creality HALOT-SKY CL-89
    * Creality HALOT-SKY CL-60
 * (Improvement) Tool - Adjust layer height: Improve the performance when multiplying layers / go with higher layer height
-* (Fix) PrusaSlicer Printer - Wanhao D7: Change the auto convertion format from .zip to .xml.cws
+* (Fix) PrusaSlicer Printer - Wanhao D7: Change the auto conversion format from .zip to .xml.cws
 
 ## 08/04/2021 - v2.8.4
 
@@ -1509,10 +1517,10 @@
    * For more information see the script sample: https://github.com/sn4k3/UVtools/tree/master/UVtools.ScriptSample
    * To run scripts go to: Tools - Scripting
 * **File formats:**
-   * Add a check and warning when opening an file that have a diferent layer and file resolution
+   * Add a check and warning when opening an file that have a different layer and file resolution
 * **Issues:**
    * Add "Print height" as new type of issue detection, all layers that goes beyond maximum printer Z height will be flagged as PrintHeight issue
-   * Print height issues will not be automatical fixed, however user can fix it by remove some layers to counter the problem, still is recommended to resize object on slicer
+   * Print height issues will not be automatically fixed, however user can fix it by remove some layers to counter the problem, still is recommended to resize object on slicer
    * Fix unable to compute issues when only islands or overhangs are selected to be detected alone (#177)
 * **Settings:**
    * Add default directory for scripts on "General - File dialogs"
@@ -1530,8 +1538,8 @@
 
 * **Core:**
    * Fix some improper locks for progress counter and change to Interlocked instead
-   * Fix a bug when chaging layer count by remove or add layers it will malform the file after save and crash the program with some tools and/or clipboard
-   * Fix when a operation fails by other reason different from cancelation it was not restoring the backup
+   * Fix a bug when changing layer count by remove or add layers it will malform the file after save and crash the program with some tools and/or clipboard
+   * Fix when a operation fails by other reason different from cancellation it was not restoring the backup
    * When manually delete/fix issues it will also backup the layers
 * **LayerManager:** 
    * LayerManager is now readonly and no longer used to transpose layers, each FileFormat have now a unique `LayerManager` instance which is set on the generic constructor
@@ -1539,7 +1547,7 @@
    * Changing the `Layers` instance will now recompute some properties, call the properties rebuild and forced sanitize of the structure
    * Better reallocation methods
 * **Clipboard Manager:**
-   * Add the hability to do full backups, they will be marked with an asterisk (*) at clipboard items list
+   * Add the ability to do full backups, they will be marked with an asterisk (*) at clipboard items list
    * When a partial backup is made and it backups all the layers it will be converted to full backup
    * Clipboard can now restore a snapshot directly with `RestoreSnapshot`
    * Prevent restore the initial backup upon file load and when clearing the clipboard
@@ -1552,13 +1560,13 @@
 
 * **File formats:**
    * Add a layer height check on file load to prevent load files with more decimal digits than supported to avoid precision errors and bugs
-   * Fix a wrong cast causing seconds to miliseconds convertion to be caped to the wrong value
-   * Internally if a layer colection was replaced, all new layers will be marked as modified to avoid forgeting and ease the code
+   * Fix a wrong cast causing seconds to milliseconds conversion to be caped to the wrong value
+   * Internally if a layer collection was replaced, all new layers will be marked as modified to avoid forgetting and ease the code
 * **Tools:**
    * Pixel dimming: Better render quality, it now respects AA better and produce better walls (#172)
    * Elephant foot: It now respects AA better and produce better walls for wall dimming 
-   * Layer Import: Cancelling the operation while importing layers was permanent supresseing layer properties update when changing a base property
-* (Change) PrusaSlicer print profiles: Improved raft height and bottom layer count for better print success, less delamination, shorter time and reduce wear of FEP
+   * Layer Import: Canceling the operation while importing layers was permanent suppressing layer properties update when changing a base property
+* (Change) PrusaSlicer print profiles: Improved raft height and bottom layer count for better print success, less lamination, shorter time and reduce wear of FEP
 * (Scripts): Add operation "Validate" pattern to docs and examples (#172)
 
 ## 19/03/2021 - v2.7.0
@@ -1583,24 +1591,24 @@
    * Change drawings brush diameter limit from 255 to 4000 maximum
    * When using layers below go lower than layer 0 it no longer apply the modifications
 * **File formats:**
-   * Add an internal GCodeBuilder to generate identical gcode within formats with auto convertion, managing features and parsing information 
+   * Add an internal GCodeBuilder to generate identical gcode within formats with auto conversion, managing features and parsing information 
    * Internally rearrange formats properties and pass values to the base class
    * Fix "Save As" filename when using formats with dual extensions
    * CBDDLP and CTB: "LightPWM" was setting "BottomLightPWM" instead
    * CWS: Fix problem with filenames with dots (.) and ending with numbers (#171)
-   * CWS: Improved the enconding and decoding performance
-   * CWS: Implement all available print paramenters and per layer, missing values are got from gcode interpretation
+   * CWS: Improved the encoding and decoding performance
+   * CWS: Implement all available print parameters and per layer, missing values are got from gcode interpretation
    * CWS: Use set "light off delay" layer value instead of calculating it 
    * CWS: Get light off delay per layer parsed from gcode
-   * CWS - RGB flavour (Bene4 Mono): Warn about wrong resolution if width not multiples of 3 (#171)
-   * ZCode: Allow to set Bottom and Light intensity (LightPWM) on paramters and per layer
+   * CWS - RGB flavor (Bene4 Mono): Warn about wrong resolution if width not multiples of 3 (#171)
+   * ZCode: Allow to set Bottom and Light intensity (LightPWM) on parameters and per layer
    * ZCode: Allow to change bottom light pwm independent from normal light pwm
    * LGS: Light off and bottom light off was setting the value on the wrong units
    * UVJ: Unable to set per layer parameters
 * **Issues:**
-   * When computing islands and resin traps together, they will not compute in parallel anymore to prevent CPU and tasks exaustion, it will calculate islands first and then resin traps, this should also speed up the process on weaker machines
+   * When computing islands and resin traps together, they will not compute in parallel anymore to prevent CPU and tasks exhaustion, it will calculate islands first and then resin traps, this should also speed up the process on weaker machines
    * Gather resin trap areas together when computing for other issues to spare a decoding cycle latter
-   * When using a threshold for islands detection it was also appling it to the overhangs
+   * When using a threshold for islands detection it was also applying it to the overhangs
    * Fix the spare decoding conditional cycle for partial scans
    * Change resin trap search from parallel to sync to prevent fake detections and missing joints at cost of speed (#13)
 * **Tools:**
@@ -1611,13 +1619,13 @@
 
 ## 05/03/2021 - v2.6.2
 
-* (Add) Edit print paramenters: Option to enable or disable the 'Propagate modifications to layers' when working with global parameters
+* (Add) Edit print parameters: Option to enable or disable the 'Propagate modifications to layers' when working with global parameters
 * (Change) PrusaSlicer printer: Auto convert format from ctb to photon for Anycubic Photon
 * **(Fix) Change resolution:**
    * It was placing the object on random layers on the wrong position, shifting the object
-   * Add informaton on the tool description to warn about diferent pixel pitch for target printer
+   * Add information on the tool description to warn about different pixel pitch for target printer
    * Add current pixel pitch in microns if available
-* (Fix) Exposure time finder: Multiple exposures was getting bottom and normal time from base file instead of commum properties fields
+* (Fix) Exposure time finder: Multiple exposures was getting bottom and normal time from base file instead of common properties fields
 
 ## 03/03/2021 - v2.6.1
 
@@ -1629,10 +1637,10 @@
    * Prevent layer 0 to be used as a mask, if so it will quit
    * If the ignored layer number are set and equal or larger than mask layer index it will quit
    * Fix progress count when using ignored layers
-   * Change supports dilate kernel from Elipse to Rectangle for a better coverage of the pad
+   * Change supports dilate kernel from Ellipse to Rectangle for a better coverage of the pad
    * Change the default values for a more conservative values
 * (Fix) When both ComputeIssuesOnLoad and ComputeIssuesOnClickTab are enabled, clicking the issues tab will rescan for issues
-* (Fix) Tools: Set a default profile insn't working
+* (Fix) Tools: Set a default profile isn't working
 * (Fix) Redoing the last operation was not recovering the custom ROI on the operation
 
 ## 02/03/2021 - v2.6.0
@@ -1642,7 +1650,7 @@
 * (Add) Extract: Output an "Layer.ini" file containing per layer data and include the Configuration.ini for Zip file formats
 * (Improvement) Zip: Increase the GCode parsing performance
 * (Fix) File formats: Wasn't set bottom / light off delay per individual layer on generic formats, defaulting every layer to 0
-* (Fix) Edit print parameters: When changing bottom layer count, layers didnt update thier properties
+* (Fix) Edit print parameters: When changing bottom layer count, layers didn't update their properties
 
 ## 25/02/2021 - v2.5.1
 
@@ -1721,7 +1729,7 @@
    * ROI calculation error leading to not process images that can potential fit inside the volumes
    * Out-of-bounds calculation for Stack type
    * Replace type was calculating out-of-bounds calculation like Stack type when is not required to and can lead to skip images
-   * Better image ROI colection for Insert and Replace types instead of capture the center most 
+   * Better image ROI collection for Insert and Replace types instead of capture the center most 
 * (Fix) Settings window: Force a redraw on open to fix auto sizes
 
 ## 12/02/2021 - v2.4.5
@@ -1733,7 +1741,7 @@
 * (Change) Setting: Windows vertical margin to 60px
 * (Fix) Export file was getting a "Parameter count mismatch" on some file formats (#140)
 * (Fix) photon and cbddlp file formats with version 3 to never hash images
-* (Fix) Windows was not geting the screen bounds from the active monitor
+* (Fix) Windows was not getting the screen bounds from the active monitor
 * (Fix) Tool windows height, vertical margin and position
 * **(Fix) Exposure time finder:**
   * Text label
@@ -1803,11 +1811,11 @@
 * (Fix) Auto converted files from SL1 where clipping filename at first dot (.), now it only strips known extensions
 * (Fix) SL1 encoded files wasn't generating the right information and lead to printer crash
 * (Fix) PrusaSlicer printer "Anycubic Photon S" LiftSpeed was missing and contains a typo (#135)
-* (Fix) PrusaSlicer profile manager wasnt marking missing profiles to be installed (#135)
+* (Fix) PrusaSlicer profile manager wasn't marking missing profiles to be installed (#135)
 * (Fix) PrusaSlicer folder search on linux to also look at %HOME%/.config/PrusaSlicer (#135, #136)
 * (Fix) Operations were revised and some bug fixed, most about can't cancel the progress
 * (Fix) Some typos on tooltips
-* (Fix) Prevent PhotonS from enconding, it will trigger error now as this format is read-only
+* (Fix) Prevent PhotonS from encoding, it will trigger error now as this format is read-only
 * **(Fix) Ctrl + Shift + Z to redo the last operation:**
   * The layer range is reseted instead of pull the used values
   * Tool - Arithmetic always disabled
@@ -1825,7 +1833,7 @@
 * (Add) PrusaSlicer printer: UVtools Prusa SL1, for SL1 owners must use this profile to be UVtools compatible when using advanced tools
 * (Fix) Tool - Calculator - Optimal model tilt: Layer height wasn't get pulled from loaded file and fixed to 0.05mm
 * **(Fix) FileFormats:**
-  * When change a global print paramenter, it will only set this same parameter on every layer, keeping other parameters intact, it was reseting every parameter per layer to globals
+  * When change a global print parameter, it will only set this same parameter on every layer, keeping other parameters intact, it was reseting every parameter per layer to globals
   * SL1: Verify if files are malformed and if there's missing configuration files (#126)
   * CTBv3: Set EncryptionMode to 0x2000000F, this allow the use of per layer settings
 
@@ -1835,7 +1843,7 @@
    * **In this release is recommended to discard your printer and refresh it with uvtools updated printer or replace notes over**
    * (Add) FILEFORMAT_XXX variable to auto-convert to that file format once open in UVtools
    * (Update) Print profiles fields with new PrusaSlicer version
-   * (Remove) LayerOffDelay from printer notes and use only the LightOffDelay variable instead, both were being used, to avoid redundacy LayerOffDelay was dropped. Please update your printer accordingly!
+   * (Remove) LayerOffDelay from printer notes and use only the LightOffDelay variable instead, both were being used, to avoid redundancy LayerOffDelay was dropped. Please update your printer accordingly!
    * (Remove) FLIP_XY compability from printers
    * (Remove) AntiAlias variable from printers
 * **(Add) Settings - Automations:**
@@ -1852,7 +1860,7 @@
     * (Fix) Files with upper case extensions doesn't load in
 * (Add) Calculator - Optimal model tilt: Calculates the optimal model tilt angle for printing and to minimize the visual layer effect
 * (Add) Bottom layer count to the status bar
-* (Add) ZCodex: Print paramenter light-off delay"
+* (Add) ZCodex: Print parameter light-off delay"
 * (Change) Island Repair: "Remove Islands Below Equal Pixels" limit from 255 to 65535 (#124)
 * **(Fix) SL1:**
     * Prevent error when bottle volume is 0
@@ -1885,7 +1893,7 @@
 * (Fix) Tool - Morph: Set a rectangular 3x3 kernel by default
 * (Fix) Tool - Blur: Set a rectangular 3x3 kernel by default
 * (Fix) Calibration - Elephant Foot: Include part scale on profile text
-* (Fix) MSI dont store instalation path (#121)
+* (Fix) MSI don't store installation path (#121)
 
 ## 03/01/2021 - v2.1.2
 
@@ -1898,7 +1906,7 @@
 
 * (Add) About box: Primary screen identifier and open on screen identifier
 * (Add) Calibrator - External tests
-* (Change) Rewrite 'Action - Import Layer(s)' to support file formats and add the followig importation types:
+* (Change) Rewrite 'Action - Import Layer(s)' to support file formats and add the following importation types:
   * **Insert:** Insert layers. (Requires images with bounds equal or less than file resolution)
   * **Replace:** Replace layers. (Requires images with bounds equal or less than file resolution)
   * **Stack:** Stack layers content. (Requires images with bounds equal or less than file resolution)
@@ -1914,8 +1922,8 @@
 
 * (Add) Tool - Redraw model/supports: Redraw the model or supports with a set brightness. This requires an extra sliced file from same object but without any supports and raft, straight to the build plate.
 * (Add) Tool - Raft Relief:
-    * Allow ignore a number of layer(s) to start only after that number, detault is 0
-    * Allow set a pixel brightness for the operation, detault is 0
+    * Allow ignore a number of layer(s) to start only after that number, default is 0
+    * Allow set a pixel brightness for the operation, default is 0
     * New "dimming" type, works like relief but instead of drill raft it set to a brightness level
 * (Add) Arch-x64 package (#104)
 * (Fix) A OS dependent startup crash when there's no primary screen set (#115)
@@ -1960,7 +1968,7 @@ This release bump the major version due the introduction of .NET 5.0, the discon
 * (Fix) When unable to save the file it will change extension and not delete the temporary file
 * (Fix) Pixel dimming wasn't saving all the fields on profiles
 * (Fix) Prevent a rare startup crash when using demo file
-* (Fix) Tool - Solifiy: Increase AA clean up threshold range, previous value wasn't solidifing when model has darker tones
+* (Fix) Tool - Solidify: Increase AA clean up threshold range, previous value wasn't solidifying when model has darker tones
 * (Fix) Sanitize per layer settings, due some slicers are setting 0 at some properties that can cause problems with UVtools calculations, those values are now sanitized and set to the general value if 0
 * (Fix) Update partial islands:
     * Was leaving visible issues when the result returns an empty list of new issues
@@ -2007,7 +2015,7 @@ This release bump the major version due the introduction of .NET 5.0, the discon
 * (Add) Tools: Warn where layer preview is critical for use the tool, must disable layer rotation first (#100)
 * (Add) CWS: Bottom lift speed property
 * (Add) CWS: Support Wanhao Workshop CWX and Wanhao Creation Workshop file types (#98)
-* (Add) CWS: Split format into virtual extensions (.cws, .rgb.cws, .xml.cws) to support diferent file formats and diferent printers under same main .cws extensions. That will affect file converts only to let UVtools know what type of encoding to use. Load and save a xxx.cws file will always auto decode/encode the file for the correct target format no matter the extension.
+* (Add) CWS: Split format into virtual extensions (.cws, .rgb.cws, .xml.cws) to support different file formats and different printers under same main .cws extensions. That will affect file converts only to let UVtools know what type of encoding to use. Load and save a xxx.cws file will always auto decode/encode the file for the correct target format no matter the extension.
 * (Improvement) CWS: It no longer search for a specific filename in the zip file, instead it look for extension to get the files to ensure it always found them no matter the file name system
 * (Fix) CWS: When "Save as" the file were generating sub files with .cws extension, eg: filename0001.cws.png
 * (Change) Allow read empty layers without error from Anycubic files (PWS, PW0, PWxx) due a bug on slicer software under macOS
@@ -2032,7 +2040,7 @@ This release bump the major version due the introduction of .NET 5.0, the discon
 * (Add) Pixel area as "px²" to the layer bounds and ROI at layer bottom information bar
 * (Add) Pixel dimming: Alternate pattern every x layers
 * (Add) Pixel dimming: Lattice infill
-* (Add) Solidify: Required minimum/maximum area to solidify found areas (Default values will produce the old behaviour)
+* (Add) Solidify: Required minimum/maximum area to solidify found areas (Default values will produce the old behavior)
 * (Add) Issues: Allow to hide and ignore selected issues
 * (Add) Issue - Touch boundary: Allow to configure Left, Top, Right, Bottom margins in pixels, defaults to 5px (#94)
 * (Add) UVJ: Allow convert to another formats (#96)
@@ -2045,10 +2053,10 @@ This release bump the major version due the introduction of .NET 5.0, the discon
 * (Fix) Issues: Detect button has a incorrect "save" icon
 * (Fix) SL1: Increase NumSlow property limit
 * (Fix) UVJ: not decoding nor showing preview images
-* (Fix) "Convert to" menu shows same options than previous loaded file when current file dont support convertions (#96)
+* (Fix) "Convert to" menu shows same options than previous loaded file when current file don't support conversions (#96)
 * (Fix) Hides "Convert to" menu when unable to convert to another format (#96)
 * (Fix) Program crash when demo file is disabled and tries to load a file in
-* (Fix) Rare crash on startup when mouse dont move in startup period and user types a key in meanwhile
+* (Fix) Rare crash on startup when mouse don't move in startup period and user types a key in meanwhile
 * (Fix) On a slow startup on progress window it will show "Decoded layers" as default text, changed to "Initializing"
 
 ## 08/11/2020 - v1.2.1
@@ -2066,7 +2074,7 @@ This release bump the major version due the introduction of .NET 5.0, the discon
 * (Add) Clipboard manager: Undo (Ctrl + Z) and Redo (Ctrl + Y) modifications (Memory optimized)
 * (Add) Current layer properties on information tab
 * (Fix) Long windows with system zoom bigger than 100% were being hidden and overflow (#90)
-* (Fix) Do not recompute issues nor properties nor reshow layer if operation is cancelled or failed
+* (Fix) Do not recompute issues nor properties nor reshow layer if operation is canceled or failed
 
 ## 05/11/2020 - v1.1.3
 
@@ -2099,7 +2107,7 @@ On Windows the user must close all instances and continue with the shown MSI ins
 * (Change) Deploy UVtools self-contained per platform specific: (#89)
   * Platform optimized 
   * Reduced the package size
-  * Includes .NET Core assemblies and dont require the installation of .NET Core
+  * Includes .NET Core assemblies and don't require the installation of .NET Core
   * Can execute UVtools by double click on "UVtools" file or via "./UVtools" on terminal
   * **Naming:** UVtools_[os]-[architecture]_v[version].zip
   * **"universal"** zip file that includes the portable version, os and architecture independent but requires dotnet to run, these build were used in all previous versions
@@ -2127,7 +2135,7 @@ On Windows the user must close all instances and continue with the shown MSI ins
 * (Change) When converting to photon or cbddlp, version 2 of the file will be used
 * (Change) New logo, thanks to (Vinicius Silva @photonsters)
 * (Fix) MSI installer was creating multiple entries/uninstallers on windows Apps and Features (#79)
-* (Fix) Release builder script (CreateRelease.WPF.ps1): Replace backslash with shash for zip releases (#82)
+* (Fix) Release builder script (CreateRelease.WPF.ps1): Replace backslash with slash for zip releases (#82)
 * (Fix) CWS file reader when come from Chitubox (#84)
 * (Fix) CWS was introducing a big delay after each layer, LiftHeight was being used 2 times instead of LiftSpeed (#85)
 * (Fix) CWS fix Build Direction property name, was lacking a whitespace
@@ -2161,7 +2169,7 @@ On Windows the user must close all instances and continue with the shown MSI ins
 * (Add) Fullscreen support (F11)
 * (Change) GUI was rewritten from Windows Forms to WPF Avalonia, C#
 * (Improvement) GUI is now scalable
-* (Fix) Some bug found and fixed during convertion
+* (Fix) Some bug found and fixed during conversion
 
 ## 14/10/2020 - v0.8.6.0
 
@@ -2182,7 +2190,7 @@ On Windows the user must close all instances and continue with the shown MSI ins
 ## 13/10/2020 - v0.8.4.3
 
 * (Add) Tool - Layer repair: Allow remove islands recursively (#74)
-* (Fix) Pixel Editor: Cursor dimentions when using brushes with thickness > 1 (#73)
+* (Fix) Pixel Editor: Cursor dimensions when using brushes with thickness > 1 (#73)
 
 ## 10/10/2020 - v0.8.4.2
 
@@ -2226,7 +2234,7 @@ On Windows the user must close all instances and continue with the shown MSI ins
 * (Fix) PrusaSlicer Printer: Phrozen Shuffle Lite - display width/height
 * (Fix) All PrusaSlicer Printers were reviewed and some bugs were fixed
 * (Fix) Chitubox 3D preview when use files converted with UVtools (#68)
-* (Fix) Overhangs: False-positives when previous or current layer has draker pixels, it now threshold pixels before proceed (#64)
+* (Fix) Overhangs: False-positives when previous or current layer has darker pixels, it now threshold pixels before proceed (#64)
 * (Change) Tools: Placed "Threshold" menu item after "Morph"
 
 ## 30/09/2020 - v0.8.3.0
@@ -2269,8 +2277,8 @@ On Windows the user must close all instances and continue with the shown MSI ins
 * (Improvement) When unable to convert a format from SL1 to other, advice users to check used printer on PrusaSlicer (#60)
 * (Improvement) Information on "Install profiles on PrusaSlicer" (#60)
 * (Fix) LGS: Change resolution tool was defining wrong Y
-* (Fix) ctb and pws: Renders a bad file after save, this was introduced with cancelled saves feature
-* (Fix) When cancel a file convertion, it now deletes the target file
+* (Fix) ctb and pws: Renders a bad file after save, this was introduced with canceled saves feature
+* (Fix) When cancel a file conversion, it now deletes the target file
 
 ## 13/09/2020 - v0.8.2.0
 
@@ -2285,9 +2293,9 @@ On Windows the user must close all instances and continue with the shown MSI ins
 * (Change) Customized cursor for Pixel Edit mode (#51)
 * (Change) Layer overlay tooltip is now semi-transparent
 * (Change) File - Save As is always available (#56)
-* (Fix) File - Save when cancelled no longer keep a invalid file, old restored (#54)
-* (Fix) File - Save As when cancelled no longer keep a invalid file, that will be deleted (#54, #55)
-* (Fix) When a operation is cancelled affected layers will revert to the original form (#57)
+* (Fix) File - Save when canceled no longer keep a invalid file, old restored (#54)
+* (Fix) File - Save As when canceled no longer keep a invalid file, that will be deleted (#54, #55)
+* (Fix) When a operation is canceled affected layers will revert to the original form (#57)
 * (Fix) Misc. text cleanup (#52, #53, #58)
 
 ## 12/09/2020 - v0.8.1.0
@@ -2316,7 +2324,7 @@ On Windows the user must close all instances and continue with the shown MSI ins
 * (Add) Layer issue Z map paired with layer navigation tracker bar
 * (Add) Setting: Pixel editor can be configured to exit after each apply operation (#45)
 * (Add) More abstraction on GUI and operations
-* (Add) Verbose log - More a developer feature to cath bugs
+* (Add) Verbose log - More a developer feature to catch bugs
 * (Improvement) Redesign tools and mutator windows
 * (Improvement) Erode, dilate, gap closing and noise removal converted into one window (Morph model)
 * (Improvement) Convert add edit parameters into one tool window, edit all at once now
@@ -2332,7 +2340,7 @@ Less frequently used settings for gap and noise removal iterations have been mov
 * (Change) Tool - Rotate - icon
 * (Upgrade) OpenCV from 4.2 to 4.3
 * (Upgrade) BinarySerializer from 8.5.2 to 8.5.3
-* (Remove) Menu - Tools - Layer Removal and Layer clone for redudancy they now home at layer preview toolbar under "Actions" dropdown button
+* (Remove) Menu - Tools - Layer Removal and Layer clone for redundancy they now home at layer preview toolbar under "Actions" dropdown button
 * (Fix) CWS: Add missing Platform X,Y,Z size when converting from SL1
 * (Fix) CWS: Invert XY resolution when converting from SL1
 * (Fix) Layer Preview: When selecting issues using SHIFT in the layer preview, the selected issue doesn't update in the issue list until after shift is released and slow operation
@@ -2390,7 +2398,7 @@ Less frequently used settings for gap and noise removal iterations have been mov
      * Shift-Left-Click will perform an add operations (add pixel, text, etc).
      * Shift-Right-Click will perform a remove operation (remove pixel, etc).
 * (Change) Mouse coordinates on status bar now only change when SHIFT key is press, this allow to lock a position for debug
-* (Remove) Confirmation for detect issues as they can now be cancelled
+* (Remove) Confirmation for detect issues as they can now be canceled
 * (Fix) When next layer or previous layer button got disabled while pressing it get stuck
 * (Fix) Partial island detection wasn't checking next layer as it should
 * (Fix) chitubox: Keep some original values when read from chitubox sliced files
@@ -2417,7 +2425,7 @@ Less frequently used settings for gap and noise removal iterations have been mov
 * (Add) Elapsed time to the Log list
 * (Add) Setting - Issues - Islands: Allow diagonal bonds with default to false (#22, #23)
 * (Change) Tool - Repair Layers: Allow set both iterations to 0 to skip closing and opening operations and allow remove islands independently
-* (Change) Title - file open time from miliseconds to seconds
+* (Change) Title - file open time from milliseconds to seconds
 * (Improvement) Tool - Repair Layers: Layer image will only read/save if required and if current layer got modified
 * (Fix) Setting - Issues - Islands: "Pixels below this value will turn black, otherwise white" (Threshold) was not using the set value and was forcing 1
 * (Fix) Remove duplicated log for repair layers and issues
@@ -2487,7 +2495,7 @@ Less frequently used settings for gap and noise removal iterations have been mov
 * (Add) Tool: Layer Repair - Allow remove islands below or equal to a pixel count (Suggested by: Nicholas Taylor)
 * (Add) Issues: Allow sort columns by click them (Suggested by: Nicholas Taylor)
 * (Improvement) Tool: Pattern - Prevent open this tool when unable to pattern due lack of space
-* (Fix) Tool: Layer Repair - When issues are not caculated before, they are computed but user settings are ignored
+* (Fix) Tool: Layer Repair - When issues are not calculated before, they are computed but user settings are ignored
 
 ## 24/07/2020 - v0.6.3.2
 
@@ -2510,7 +2518,7 @@ Less frequently used settings for gap and noise removal iterations have been mov
 * (Add) Pixel Editor: Double click items will track and position over the draw
 * (Fix) Pixel Editor: Label "Operations" was not reset to 0 after apply the modifications
 * (Fix) Pixel Editor: Button "Remove" tooltip
-* (Fix) Pixel Editor: Drawing - Bursh Area - px to px²
+* (Fix) Pixel Editor: Drawing - Brush Area - px to px²
 
 ## 19/07/2020 - v0.6.3.0
 
@@ -2527,11 +2535,11 @@ Less frequently used settings for gap and noise removal iterations have been mov
 * (Add) Toolbar and pushed layer information to bottom
 * (Add) Information: Cure pixel count per layer and percentage against total lcd pixels
 * (Add) Information: Bounds per layer
-* (Add) Zip: Compability with Formware zip files
+* (Add) Zip: Compatibility with Formware zip files
 
 ## 14/07/2020 - v0.6.2.2
 
-* (Add) cbddlp, photon and ctb version 3 compability (Chitubox >= 1.6.5)
+* (Add) cbddlp, photon and ctb version 3 compatibility (Chitubox >= 1.6.5)
 
 ## 14/07/2020 - v0.6.2.1
 
@@ -2543,9 +2551,9 @@ Less frequently used settings for gap and noise removal iterations have been mov
 * (Add) PrusaSlicer Printer: Creality LD-002H
 * (Add) PrusaSlicer Printer: Voxelab Polaris
 * (Add) File Format: UVJ (#8)
-* (Add) Mutataor: Pixel Dimming
+* (Add) Mutator: Pixel Dimming
 * (Add) Pixel Editor tab with new drawing functions
-* (Add) Pixel Editor: Bursh area and shape
+* (Add) Pixel Editor: Brush area and shape
 * (Add) Pixel Editor: Supports
 * (Add) Pixel Editor: Drain holes
 * (Add) Settings for pixel editor
@@ -2554,7 +2562,7 @@ Less frequently used settings for gap and noise removal iterations have been mov
 * (Add) Setting: File extract default directory
 * (Add) Setting: File convert default directory
 * (Add) Setting: File save prompt for overwrite (#10)
-* (Add) Setting: File save preffix and suffix name
+* (Add) Setting: File save prefix and suffix name
 * (Add) Setting: UVtools version to the title bar
 * (Improvement) Force same directory as input file on dialogs
 * (Improvement) Pattern: Better positioning when not using an anchor, now it's more center friendly
@@ -2614,7 +2622,7 @@ Less frequently used settings for gap and noise removal iterations have been mov
 * (Add) Outline - Layer bounds
 * (Add) Outline - Hollow areas
 * (Add) Double click layer picture to Zoom To Fit
-* (Improvement) Huge performance boost in layer reparing and in every mutator
+* (Improvement) Huge performance boost in layer repairing and in every mutator
 * (Improvement) Layer preview is now faster
 * (Improvement) Islands detection is now better and don't skip any pixel, more islands will show or the region will be bigger
 * (Improvement) Islands search are now faster, it will jump from island to island instead of search in every pixel by pixel
@@ -2628,7 +2636,7 @@ Less frequently used settings for gap and noise removal iterations have been mov
 * (Removed) ImageSharp dependency
 * (Removed) UVtools.Parser project
 * (Fix) Nova3D Elfin printer values changed to Display Width : 131mm / Height : 73mm & Screen X: 2531 / Y: 1410 (#5)
-* (Fix) Fade resizes make image offset a pixel from layer to layer because of integer placement, now it matain the correct position
+* (Fix) Fade resizes make image offset a pixel from layer to layer because of integer placement, now it maintain the correct position
 * (Fix) sl1: AbsoluteCorrection, GammaCorrection, MinExposureTime, MaxExposureTime, FastTiltTime, SlowTiltTime and AreaFill was byte and float values prevents the file from open (#4)
 * (Fix) zcodex: XCorrection and YCorrection was byte and float values prevents the file from open (#4)
 * (Fix) cws: XCorrection and YCorrection was byte and float values prevents the file from open (#4)
@@ -2659,10 +2667,10 @@ Less frequently used settings for gap and noise removal iterations have been mov
 
 * (Add) Button save layer image to Clipboard 
 * (Change) Go to issue now zoom at bounding area instead of first pixels
-* (Change) Layer navigation panel width increased in 20 pixels, in some cases it was overlaping the slider
+* (Change) Layer navigation panel width increased in 20 pixels, in some cases it was overlapping the slider
 * (Change) Actual layer information now have a depth border
 * (Change) Increased main GUI size to X: 1800 and Y: 850 pixels
-* (Change) If the GUI window is bigger than current screen resolution, it will start maximized istead
+* (Change) If the GUI window is bigger than current screen resolution, it will start maximized instead
 * (Fix) cbddlp: AntiAlias is number of _greys_, not number of significant bits (ezrec/uv3dp#75)
 * (Fix) Outline not working as before, due a forget to remove test code
 
@@ -2671,7 +2679,7 @@ Less frequently used settings for gap and noise removal iterations have been mov
 * (Add) Able to install only the desired profiles and not the whole lot (Suggested by: Ingo Strohmenger)
 * (Add) Update manager for PrusaSlicer profiles
 * (Add) If PrusaSlicer not installed on system it prompt for installation (By open the official website)
-* (Fix) Prevent profiles instalation when PrusaSlicer is not installed on system
+* (Fix) Prevent profiles installation when PrusaSlicer is not installed on system
 * (Fix) The "Issues" computation sometimes fails triggering an error due the use of non concurrent dictionary
 * (Fix) Print profiles won't install into PrusaSlicer
 
@@ -2721,7 +2729,7 @@ Less frequently used settings for gap and noise removal iterations have been mov
 * (Add) Show current layer and height near tracker position
 * (Add) Auto compute issues when click "Issues" tab for the first time for the open file
 * (Add) "AntiAliasing_x" note under PrusaSlicer printer to enable AntiAliasing on supported formats, printers lacking this note are not supported
-* (Add) AntiAliasing capable convertions
+* (Add) AntiAliasing capable conversions
 * (Add) Touching Bounds detection under issues
 * (Change) Scroll bar to track bar
 * (Change) Keyword "LiftingSpeed" to "LiftSpeed" under PrusaSlicer notes (Please update printers notes or import them again)
@@ -2734,7 +2742,7 @@ Less frequently used settings for gap and noise removal iterations have been mov
 * (Improvement) Smooth mutators descriptions
 * (Improvement) Disallow invalid iteration numbers for smooth mutators
 * (Improvement) File reload now reshow current layer after reload
-* (Improvement) Some dependecies were updated and ZedGraph removed
+* (Improvement) Some dependencies were updated and ZedGraph removed
 * (Fix) AntiAlias decodes for photon and cbddlp
 * (Fix) AntiAlias encodes and decodes for cbt
 * (Fix) Save the preview thumbnail image trigger an error
@@ -2774,11 +2782,11 @@ Less frequently used settings for gap and noise removal iterations have been mov
 * (Add) "Detect" text to compute layers button
 * (Add) "Repair" islands button on Islands tab
 * (Add) "Highlight islands" button on layer toolbar
-* (Add) Possible error cath on island computation
+* (Add) Possible error catch on island computation
 * (Add) After load new file layer is rotated or not based on it width, landscape will not rotate while portrait will
 * (Improvement) Highlighted islands now also show AA pixels as a darker yellow
 * (Improvement) Island detection now need a certain number of touching pixels to consider a island or not, ie: it can't lay on only one pixel
-* (Fix) Island detection now don't consider dark fadded AA pixels as safe land
+* (Fix) Island detection now don't consider dark faded AA pixels as safe land
 * (Fix) Epax X1 printer properties
 
 ## 03/06/2020 - v0.4.2 - Beta
@@ -2794,9 +2802,9 @@ Less frequently used settings for gap and noise removal iterations have been mov
 ## 01/06/2020 - v0.4.1 - Beta
 
 * (Add) Opening, Closing and Gradient Mutators
-* (Add) Choose layer range when appling a mutator #1
-* (Add) Choose iterations range/fading when appling a mutator (Thanks to Renos Makrosellis)
-* (Add) Global and unhandled exceptions are now logged to be easier to report a bug
+* (Add) Choose layer range when applying a mutator #1
+* (Add) Choose iterations range/fading when applying a mutator (Thanks to Renos Makrosellis)
+* (Add) Global and unhanded exceptions are now logged to be easier to report a bug
 * (Change) Current layer and layer count text was reduced by 1 to match indexes on mutators
 * (Improvement) Better mutator dialogs and explanation
 * (Improvement) Compressed GUI images size
@@ -2822,12 +2830,12 @@ Less frequently used settings for gap and noise removal iterations have been mov
 * (Fix) SL1 files not accepting float numbers for exposures
 * (Fix) SL1 files was calculating the wrong layer count when using slow layer settings
 * (Fix) Modifiers can't accept float values
-* (Fix) Sonic Mini prints mirroed
+* (Fix) Sonic Mini prints mirrored
 * (Fix) Layer resolution shows wrong values
 
 ## 21/05/2020 - v0.3.3.1 - Beta
 
-* (Fix) Unable to convert Chitubox or PHZ files when enconter repeated layer images
+* (Fix) Unable to convert Chitubox or PHZ files when encounter repeated layer images
 
 ## 19/05/2020 - v0.3.3 - Beta
 
@@ -2835,15 +2843,15 @@ Less frequently used settings for gap and noise removal iterations have been mov
 * (Add) "Phrozen Sonic Mini" printer
 * (Add) Convert Chitubox files to PHZ files and otherwise
 * (Add) Convert Chitubox and PHZ files to ZCodex
-* (Add) Elapsed seconds to convertion and extract dialog
+* (Add) Elapsed seconds to conversion and extract dialog
 * (Improvement) "Convert To" menu now only show available formats to convert to, if none menu is disabled
 * (Fix) Enforce cbt encryption
-* (Fix) Not implemented convertions stay processing forever
+* (Fix) Not implemented conversions stay processing forever
 
 
 ## 11/05/2020 - v0.3.2 - Beta
 
-* (Add) Show layer differences where daker pixels were also present on previous layer and the white pixels the difference between previous and current layer.
+* (Add) Show layer differences where darker pixels were also present on previous layer and the white pixels the difference between previous and current layer.
 * (Add) Layer preview process time in milliseconds
 * (Add) Long operations no longer freeze the GUI and a progress message will shown on those cases
 * (Improvement) Cache layers were possible for faster operation
@@ -2851,7 +2859,7 @@ Less frequently used settings for gap and noise removal iterations have been mov
 * (Improvement) Speed up extraction with parallelism
 * (Improvement) Extract output folder dialog now open by default on from same folder as input file
 * (Improvement) Extract now create a folder with same file name to dump the content
-* (Fix) Extract to folder was wiping the target folder, this is now disabled to prevent acidental data lost, target files will be overwritten
+* (Fix) Extract to folder was wiping the target folder, this is now disabled to prevent accidental data lost, target files will be overwritten
 
 ## 30/04/2020 - v0.3.1 - Beta
 
@@ -2864,9 +2872,9 @@ Less frequently used settings for gap and noise removal iterations have been mov
 * (Improvement) Optimized layer read from cbddlp file
 * (Improvement) Add layer hash code to encoded Chitubox layers in order to optimize file size in case of repeated layer images
 * (Improvement) GUI thumbnail preview now auto scale splitter height to a max of 400px when change thumbnail
-* (Improvement) After convertion program prompt for open the result file in a new window
+* (Improvement) After conversion program prompt for open the result file in a new window
 * (Change) Move layer rotate from view menu to layer menu
-* (Change) Cbbdlp convertion name to Chitubox
+* (Change) Cbbdlp conversion name to Chitubox
 * (Change) On convert, thumbnails are now resized to match exactly the target thumbnail size
 * (Change) GUI will now show thumbnails from smaller to larger
 * (Fix) RetractFeedrate was incorrectly used instead of LiftFeedrate on Zcodex gcode
@@ -2876,10 +2884,10 @@ Less frequently used settings for gap and noise removal iterations have been mov
 * (Add) zcodex file format
 * (Add) Zortrax Inkspire Printer
 * (Add) Properties menu -- Shows total keys and allow save information to a file
-* (Add) "GCode" viewer Tab -- Only for formats that incldue gcode into file (ie: zcodex)
+* (Add) "GCode" viewer Tab -- Only for formats that include gcode into file (ie: zcodex)
 * (Add) Save gcode to a text file
 * (Add) Allow to vertical arrange height between thumbnails and properties
-* (Improvement) Thumbnail section is now hidden if no thumbnails avaliable
+* (Improvement) Thumbnail section is now hidden if no thumbnails available
 * (Improvement) Thumbnail section now vertical auto scales to the image height on file load
 * (Improvement) On "modify properties" window, ENTER key can now be used to accept and submit the form
 * (Fixed) Current model height doesn't calculate when viewing cbddlp files
@@ -2893,7 +2901,7 @@ Less frequently used settings for gap and noise removal iterations have been mov
 * (Add) File -> Reload
 * (Add) File -> Save
 * (Add) File -> Save As
-* (Add) Can now ajust some print properties
+* (Add) Can now adjust some print properties
 * (Add) 'Initial Layer Count' to status bar
 * (Add) Allow cbbdlp format to extract 'File -> Extract'
 * (Add) Thumbnail resolution label
@@ -2910,7 +2918,7 @@ Less frequently used settings for gap and noise removal iterations have been mov
 * (Add) Rotate layer image
 * (Add) Close file
 * (Change) more abstraction
-* (Change) from PNG to BMP compression to speed up bitmap coversion
+* (Change) from PNG to BMP compression to speed up bitmap conversion
 * (Change) Faster layer preview
 
 ## 12/04/2020 - v0.2 - Beta

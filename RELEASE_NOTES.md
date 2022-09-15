@@ -1,12 +1,13 @@
-- **File formats:**
-   - **Anycubic file format:**
-      - (Add) Compatibility with the next version 517 of the format
-      - (Improvement) Discovered and implemented more unknown fields
-      - (Improvement) Dispose layer RLE bytes after encoding
-      - (Fix) When creating or converting to anycubic file, it don't set the extra table mark name
-      - (Fix) Only attempt to activate the advanced mode (TSMC) when the BottomLiftHeight2 or LiftHeight2 gets changed
-   - (Add) Methods: `OnBeforeEncode` and `OnAfterEncode`
-   - (Improvement) `IsUsingTSMC` now also checks for BottomLiftHeight2 and BottomRetractHeight2
-   - (Fix) OSF: Can't decode some files
-- (Fix) Undo cause application to crash (#543)
+- **Windows MSI installer:**
+   - (Add) UVtools folder to start menu with:
+      - UVtools
+      - UVtoolsCmd
+      - Uninstall UVtools
+   - (Add) Prompt for add open in UVtools when right-click on supported files
+   - (Add) Prompt for create desktop shortcut
+   - (Add) Prompt for launch UVtools after the installation
+   - (Improvement) Cleanup and simplify the install project
+- (Add) PrusaSlicer printer: Peopoly Phenom Forge
+- (Upgrade) .NET from 6.0.8 to 6.0.9
+- (Fix) Corruption in file after attempt to save to a locked file (#551)
 

@@ -3168,7 +3168,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// Checks if a extension is valid under the <see cref="FileFormat"/>
     /// </summary>
     /// <param name="extension">Extension to check without the dot (.)</param>
-    /// <param name="isFilePath">True if <see cref="extension"/> is a full file path, otherwise false for extension only</param>
+    /// <param name="isFilePath">True if <paramref name="extension"/> is a full file path, otherwise false for extension only</param>
     /// <returns>True if valid, otherwise false</returns>
     public bool IsExtensionValid(string extension, bool isFilePath = false)
     {
@@ -3360,11 +3360,12 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         {
             EncodeInternally(progress);
 
+            // Move temporary output file in place
+            File.Move(tempFile, fileFullPath, true);
+
             IsModified = false;
             RequireFullEncode = false;
 
-            // Move temporary output file in place
-            File.Move(tempFile, fileFullPath, true);
             OnAfterEncode(false);
         }
         catch (Exception)
@@ -4201,11 +4202,11 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     }
 
     /// <summary>
-    /// Sets a property value attributed to <see cref="modifier"/>
+    /// Sets a property value attributed to <paramref name="modifier"/>
     /// </summary>
     /// <param name="modifier">Modifier to use</param>
     /// <param name="value">Value to set</param>
-    /// <returns>True if set, otherwise false = <see cref="modifier"/> not found</returns>
+    /// <returns>True if set, otherwise false <paramref name="modifier"/> not found</returns>
     public bool SetValueFromPrintParameterModifier(PrintParameterModifier modifier, decimal value)
     {
         if (ReferenceEquals(modifier, PrintParameterModifier.BottomLayerCount))
@@ -4496,8 +4497,9 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     }
 
     /// <summary>
-    /// Attempt to set wait time before cure if supported, otherwise fallback to light-off delay
+    /// Attempt to set wait time before cure if supported, otherwise fall-back to light-off delay
     /// </summary>
+    /// <param name="isBottomLayer">True to set to bottom properties, otherwise false</param>
     /// <param name="time">The time to set</param>
     /// <param name="zeroLightOffDelayCalculateBase">When true and time is zero, it will calculate light-off delay without extra time, otherwise false to set light-off delay to 0 when time is 0</param>
     public void SetWaitTimeBeforeCureOrLightOffDelay(bool isBottomLayer, float time = 0, bool zeroLightOffDelayCalculateBase = false)
@@ -4601,10 +4603,11 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         var oldFilePath = FileFullPath!;
         if(!string.IsNullOrWhiteSpace(filePath)) FileFullPath = filePath;
         var tempFile = TemporaryOutputFileFullPath;
-        File.Copy(oldFilePath, tempFile, true);
         
         try
         {
+            File.Copy(oldFilePath, tempFile, true);
+
             progress ??= new OperationProgress();
             PartialSaveInternally(progress);
 
@@ -5401,6 +5404,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// Allocate layers from a Mat array
     /// </summary>
     /// <param name="mats"></param>
+    /// <param name="progress"></param>
     /// <returns>The new Layer array</returns>
     public Layer[] AllocateFromMat(Mat[] mats, OperationProgress? progress = null)
     {
@@ -5418,6 +5422,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// Allocate layers from a Mat array and set them to the current file
     /// </summary>
     /// <param name="mats"></param>
+    /// <param name="progress"></param>
     /// /// <returns>The new Layer array</returns>
     public Layer[] AllocateAndSetFromMat(Mat[] mats, OperationProgress? progress = null)
     {

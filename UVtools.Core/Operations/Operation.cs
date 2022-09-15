@@ -550,21 +550,21 @@ public abstract class Operation : BindableBase, IDisposable
     public Size GetRoiSizeOrDefault() => GetRoiSizeOrDefault(SlicerFile.Resolution);
 
     /// <summary>
-    /// Gets the <see cref="ROI"/> size, but if empty returns <see cref="src"/> size instead
+    /// Gets the <see cref="ROI"/> size, but if empty returns <paramref name="src"/> size instead
     /// </summary>
     /// <param name="src"></param>
     /// <returns></returns>
     public Size GetRoiSizeOrDefault(Mat? src) => src is null ? GetRoiSizeOrDefault() : GetRoiSizeOrDefault(src.Size);
 
     /// <summary>
-    /// Gets the <see cref="ROI"/> size, but if empty returns the size from <see cref="fallbackRectangle"/> instead
+    /// Gets the <see cref="ROI"/> size, but if empty returns the size from <paramref name="fallbackRectangle"/> instead
     /// </summary>
     /// <param name="fallbackRectangle"></param>
     /// <returns></returns>
     public Size GetRoiSizeOrDefault(Rectangle fallbackRectangle) => GetRoiSizeOrDefault(fallbackRectangle.Size);
 
     /// <summary>
-    /// Gets the <see cref="ROI"/> size, but if empty returns the <see cref="fallbackSize"/> instead
+    /// Gets the <see cref="ROI"/> size, but if empty returns the <paramref name="fallbackSize"/> instead
     /// </summary>
     /// <param name="fallbackSize"></param>
     /// <returns></returns>
@@ -580,7 +580,7 @@ public abstract class Operation : BindableBase, IDisposable
     public Size GetRoiSizeOrVolumeSize() => GetRoiSizeOrVolumeSize(_originalBoundingRectangle.Size);
 
     /// <summary>
-    /// Gets the <see cref="ROI"/> size, but if empty returns the <see cref="fallbackSize"/> instead
+    /// Gets the <see cref="ROI"/> size, but if empty returns the <paramref name="fallbackSize"/> instead
     /// </summary>
     /// <param name="fallbackSize"></param>
     /// <returns></returns>
@@ -590,7 +590,7 @@ public abstract class Operation : BindableBase, IDisposable
     }
 
     /// <summary>
-    /// Gets a cropped shared <see cref="Mat"/> from <see cref="src"/> by the <see cref="ROI"/>, but if empty return the <see cref="src"/> instead
+    /// Gets a cropped shared <see cref="Mat"/> from <paramref name="src"/> by the <see cref="ROI"/>, but if empty return the <paramref name="src"/> instead
     /// </summary>
     /// <param name="src"></param>
     /// <returns></returns>
@@ -600,7 +600,7 @@ public abstract class Operation : BindableBase, IDisposable
     }
 
     /// <summary>
-    /// Gets a cropped shared <see cref="Mat"/> from <see cref="src"/> by the <see cref="ROI"/>, but if empty crop by <see cref="fallbackRoi"/>
+    /// Gets a cropped shared <see cref="Mat"/> from <paramref name="src"/> by the <see cref="ROI"/>, but if empty crop by <paramref name="fallbackRoi"/>
     /// </summary>
     /// <param name="src"></param>
     /// <param name="fallbackRoi"></param>
@@ -613,7 +613,7 @@ public abstract class Operation : BindableBase, IDisposable
     }
 
     /// <summary>
-    /// Gets a cropped shared <see cref="Mat"/> from <see cref="src"/> by the <see cref="ROI"/>, but if empty crop by <see cref="OriginalBoundingRectangle"/>
+    /// Gets a cropped shared <see cref="Mat"/> by the <see cref="ROI"/>, but if empty crop by <see cref="OriginalBoundingRectangle"/>
     /// </summary>
     /// <param name="defaultMat"></param>
     /// <returns></returns>
@@ -662,7 +662,7 @@ public abstract class Operation : BindableBase, IDisposable
     }
 
     /// <summary>
-    /// Apply a mask to a mat <see cref="result"/>
+    /// Apply a mask to a mat <paramref name="result"/>
     /// </summary>
     /// <param name="original">Original untouched mat</param>
     /// <param name="result">Mat to modify and apply the mask</param>

@@ -323,8 +323,8 @@
             <Component Id="cmpE35DDB3C925C83E74C7DAAE6FEA6C156" Guid="*">
                 <File Id="filEAEAE1CB9E8AC1FF00B05453ABEE2ADF" KeyPath="yes" Source="$(var.HarvestPath)\mscordaccore.dll" />
             </Component>
-            <Component Id="cmp5DD57F8D8C67EF0DCE92B8C15E2B7E9C" Guid="*">
-                <File Id="fil02F22B1868368ABD8A770D99B7002E15" KeyPath="yes" Source="$(var.HarvestPath)\mscordaccore_amd64_amd64_6.0.822.36306.dll" />
+            <Component Id="cmpDF0539C05F3B669297316A4721F7F597" Guid="*">
+                <File Id="fil801BA39FE5EF9977D6A6F557603017B8" KeyPath="yes" Source="$(var.HarvestPath)\mscordaccore_amd64_amd64_6.0.922.41905.dll" />
             </Component>
             <Component Id="cmpA5ABEAD31F33B1E5825EC6F159ABFB0F" Guid="*">
                 <File Id="fil1A6B0EBD5A5BF8DD0582A2665D3492F1" KeyPath="yes" Source="$(var.HarvestPath)\mscordbi.dll" />
@@ -878,6 +878,9 @@
             <Component Id="cmp83E45273762A7A93634EBE91551A4FA5" Guid="*">
                 <File Id="fil13AB21C442190C7273AE9F058EC7B07D" KeyPath="yes" Source="$(var.HarvestPath)\UVtools.Core.pdb" />
             </Component>
+            <Component Id="cmpEE46107CFBC91854F4AF8D9B7227EF68" Guid="*">
+                <File Id="fil768C40D446F1D5DA04C4145A6509E66F" KeyPath="yes" Source="$(var.HarvestPath)\UVtools.Core.xml" />
+            </Component>
             <Component Id="cmp464D38F282C23D25F051F3F844B02AA2" Guid="*">
                 <File Id="filDDE9F5B59E8395C6FC232806AECB4DBF" KeyPath="yes" Source="$(var.HarvestPath)\UVtools.deps.json" />
             </Component>
@@ -1138,6 +1141,9 @@
                         </Component>
                         <Component Id="cmpA7D8D77725CFC4CD0D232CF2B7893808" Guid="*">
                             <File Id="filB6807C46EEB8600F42A7FE170EAF7FED" KeyPath="yes" Source="$(var.HarvestPath)\Assets\PrusaSlicer\printer\Nova3D Whale2.ini" />
+                        </Component>
+                        <Component Id="cmp485BD2BED7E5E10D4C55D78433B00FD5" Guid="*">
+                            <File Id="filB4071F4EC7AD3960060AF39B0CFDD155" KeyPath="yes" Source="$(var.HarvestPath)\Assets\PrusaSlicer\printer\Peopoly Phenom Forge.ini" />
                         </Component>
                         <Component Id="cmp34F3A0B8AF8C7B72D078224E10CE220C" Guid="*">
                             <File Id="filD3749547564F5DE1F55024825F287BC1" KeyPath="yes" Source="$(var.HarvestPath)\Assets\PrusaSlicer\printer\Peopoly Phenom L.ini" />
@@ -1661,7 +1667,7 @@
             <ComponentRef Id="cmp3E4F3E4686A9B425B5812E5171CCDEEF" />
             <ComponentRef Id="cmp16861E24C897764CA922EC062BA74EC9" />
             <ComponentRef Id="cmpE35DDB3C925C83E74C7DAAE6FEA6C156" />
-            <ComponentRef Id="cmp5DD57F8D8C67EF0DCE92B8C15E2B7E9C" />
+            <ComponentRef Id="cmpDF0539C05F3B669297316A4721F7F597" />
             <ComponentRef Id="cmpA5ABEAD31F33B1E5825EC6F159ABFB0F" />
             <ComponentRef Id="cmp5D6845991403E371A015DF7EBDF71F13" />
             <ComponentRef Id="cmp57B8361D25AD503DC733F4039E5A38B0" />
@@ -1846,6 +1852,7 @@
             <ComponentRef Id="cmpE03D8B3DF65D174191DAB33C1BD16E41" />
             <ComponentRef Id="cmpBD1DB1738454F41358539855C0E669EA" />
             <ComponentRef Id="cmp83E45273762A7A93634EBE91551A4FA5" />
+            <ComponentRef Id="cmpEE46107CFBC91854F4AF8D9B7227EF68" />
             <ComponentRef Id="cmp464D38F282C23D25F051F3F844B02AA2" />
             <ComponentRef Id="cmpCCBA0C7C3EBE22BCB7636FB758C297CD" />
             <ComponentRef Id="cmp365721530759887AD50BF2F4D542A374" />
@@ -1932,6 +1939,7 @@
             <ComponentRef Id="cmpB98CEE9A048421D2EB463A32274D4EA9" />
             <ComponentRef Id="cmp757BD9F9BB8D5F637DECF5025C80F946" />
             <ComponentRef Id="cmpA7D8D77725CFC4CD0D232CF2B7893808" />
+            <ComponentRef Id="cmp485BD2BED7E5E10D4C55D78433B00FD5" />
             <ComponentRef Id="cmp34F3A0B8AF8C7B72D078224E10CE220C" />
             <ComponentRef Id="cmpD8729DA2ED13E7BB47C049FE62A3FAA8" />
             <ComponentRef Id="cmpAFE04B94A54B17A59E4D8F7107F732DB" />

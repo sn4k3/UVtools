@@ -44,31 +44,7 @@ public class OSFFile : FileFormat
         [FieldEndianness(Endianness.Big)]
         public byte ImageLog { get; set; } = 2;
 
-        /// <summary>
-        /// 148 * 80 * 2
-        /// </summary>
-        //[FieldOrder(3)] public UInt24BigEndian Preview1Length { get; set; } = new(23680);
-        //[FieldOrder(3)] [FieldCount(nameof(UInt24BigEndian.Value), )] public UInt24BigEndian Preview1sssLength { get; set; } = new(23680);
-        /*[FieldOrder(3)]
-        [FieldEndianness(Endianness.Big)]
-        [FieldBitLength(24)]
-        public uint Preview1Length { get; set; } = 23680;
-        */
-        /// <summary>
-        /// RGB565
-        /// </summary>
-        //[FieldOrder(4)] [FieldLength(nameof(Preview1Length.Value))] public byte[] Preview1Data { get; set; }
-
-        /*/// <summary>
-        /// 300 * 140 * 2
-        /// </summary>
-        [FieldOrder(5)][FieldBitLength(24)] public uint Preview2Length { get; set; } = 84000;*/
-
-        /*/// <summary>
-        /// RGB565
-        /// </summary>
-        [FieldOrder(6)] [FieldLength(nameof(Preview2Length))] public byte[] Preview2Data { get; set; }*/
-
+        
         public override string ToString()
         {
             return $"{nameof(HeaderLength)}: {HeaderLength}, {nameof(Version)}: {Version}, {nameof(ImageLog)}: {ImageLog}";

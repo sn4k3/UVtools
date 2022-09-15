@@ -345,8 +345,8 @@ public class App : Application
 
 #region Utilities
     public static string ApplicationPath => AppContext.BaseDirectory;
-    public static readonly string AppExecutable = Environment.ProcessPath!;
-    public static readonly string AppExecutableQuoted = $"\"{AppExecutable}\"";
+    public static string AppExecutable => Environment.ProcessPath!;
+    public static string AppExecutableQuoted => $"\"{AppExecutable}\"";
     public static void NewInstance(string filePath)
     {
         try

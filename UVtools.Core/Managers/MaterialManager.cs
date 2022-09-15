@@ -30,7 +30,7 @@ public class MaterialManager : BindableBase, IList<Material>
         new(() => new MaterialManager());
 
     /// <summary>
-    /// Instance of <see cref="UserSettings"/> (singleton)
+    /// Instance of <see cref="MaterialManager"/> (singleton)
     /// </summary>
     public static MaterialManager Instance => _instanceHolder.Value;
 

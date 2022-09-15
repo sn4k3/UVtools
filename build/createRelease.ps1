@@ -223,7 +223,18 @@ $installer = "UVtools.Installer"
 $msiOutputFile = "$rootFolder\UVtools.Installer\bin\x64\Release\UVtools.msi"
 $msiProductFile = "$rootFolder\UVtools.Installer\Code\Product.wxs"
 $msiSourceFiles = "$rootFolder\$publishFolder\${software}_win-x64_v$version"
-$msbuild = "`"${env:ProgramFiles}\Microsoft Visual Studio\2022\Enterprise\MSBuild\Current\Bin\MSBuild.exe`" /t:Build /p:Configuration=`"$buildWith`" /p:MSIProductVersion=`"$version`" /p:HarvestPath=`"$msiSourceFiles`""
+
+$msbuildPaths = "${env:ProgramFiles}\Microsoft Visual Studio\2022\Enterprise\MSBuild\Current\Bin\MSBuild.exe",
+                "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\MSBuild.exe",
+                "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\Community\MSBuild\Current\Bin\MSBuild.exe"
+$msbuild = $null
+foreach($path in $msbuildPaths) {
+    if (Test-Path -Path $path -PathType Leaf)
+    {
+        $msbuild = "`"$path`" /t:Build /p:Configuration=`"$buildWith`" /p:MSIProductVersion=`"$version`" /p:HarvestPath=`"$msiSourceFiles`""
+        break;
+    }
+}
 
 Write-Output "
 ####################################
@@ -329,7 +340,7 @@ if($null -ne $enableNugetPublish -and $enableNugetPublish)
     }
 }
 
-foreach ($obj in $runtimes.GetEnumerator()) {
+foreach ($obj in $runtimes.GetEnumerator()) { 
     if(![string]::IsNullOrWhiteSpace($buildOnly) -and !$buildOnly.Equals($obj.Name)) {continue}
     # Configuration
     $deployStopWatch.Restart()
@@ -381,13 +392,13 @@ foreach ($obj in $runtimes.GetEnumerator()) {
     }
     else
     {
-        $args = '-b' # Bundle
+        $buildArgs = '-b' # Bundle
         if($null -ne $zipPackages -and $zipPackages)
         {
-            $args += ' -z' # Zip
+            $buildArgs += ' -z' # Zip
         }
-        bash -c "'build/createRelease.sh' $args $runtime"
-        #Start-Job { bash -c "'build/createRelease.sh' $using:args $using:runtime" }
+        bash -c "'build/createRelease.sh' $buildArgs $runtime"
+        #Start-Job { bash -c "'build/createRelease.sh' $using:buildArgs$buildArgs $using:runtime" }
     }
     
     $deployStopWatch.Stop()
@@ -441,65 +452,71 @@ if($null -ne $enableMSI -and $enableMSI)
     $publishName = "${software}_${runtime}_v$version";
     
     if ((Test-Path -Path $msiSourceFiles) -and ((Get-ChildItem "$msiSourceFiles" | Measure-Object).Count) -gt 0) {
-        $msiTargetFile = "$publishFolder\$publishName.msi"
-        Write-Output "################################"
-        Write-Output "Clean and build MSI components manifest file"
-
-        Remove-Item "$msiTargetFile" -ErrorAction Ignore
-
-        <#
-        (Get-Content "$msiComponentsFile") -replace 'SourceDir="\.\.\\publish\\.+"', "SourceDir=`"..\publish\$publishName`"" | Out-File "$msiComponentsFile"
-        
-        $msiComponentsXml = [Xml] (Get-Content "$msiComponentsFile")
-        foreach($element in $msiComponentsXml.Wix.Module.Directory.Directory)
+        if ($null -ne $msbuild)
         {
-            if($element.Id -eq 'MergeRedirectFolder')
+            $msiTargetFile = "$publishFolder\$publishName.msi"
+            Write-Output "################################"
+            Write-Output "Clean and build MSI components manifest file"
+
+            Remove-Item "$msiTargetFile" -ErrorAction Ignore
+
+            <#
+            (Get-Content "$msiComponentsFile") -replace 'SourceDir="\.\.\\publish\\.+"', "SourceDir=`"..\publish\$publishName`"" | Out-File "$msiComponentsFile"
+            
+            $msiComponentsXml = [Xml] (Get-Content "$msiComponentsFile")
+            foreach($element in $msiComponentsXml.Wix.Module.Directory.Directory)
             {
-                wixCleanUpElement $element $msiSourceFiles
-                $msiComponentsXml.Save($msiComponentsFile)
-                break
+                if($element.Id -eq 'MergeRedirectFolder')
+                {
+                    wixCleanUpElement $element $msiSourceFiles
+                    $msiComponentsXml.Save($msiComponentsFile)
+                    break
+                }
             }
+            #>
+
+            if(Test-Path "$publishFolder\$publishName\UVtools.Core.dll" -PathType Leaf){
+                Add-Type -Path "$publishFolder\$publishName\UVtools.Core.dll"
+            } else {
+                Write-Error "Unable to find UVtools.Core.dll"
+                return
+            }
+
+            # Add edit with UVtools possible extensions
+            $extensions = [UVtools.Core.FileFormats.FileFormat]::AllFileExtensions;
+            $extensionList = New-Object Collections.Generic.List[String]
+            foreach($ext in $extensions)
+            {
+                if($ext.Extension.Contains('.')) { continue; } # Virtual extension
+
+                $extKey = "System.FileName:&quot;*.$($ext.Extension.ToLowerInvariant())&quot;";
+                if($extensionList.Contains($extKey)) { continue; } # Already here
+                $extensionList.Add($extKey);
+            }
+            if($extensionList.Count -gt 0)
+            {
+                $regValue = [String]::Join(' OR ', $extensionList)
+                (Get-Content "$msiProductFile") -replace '(?<A><RegistryValue Name="AppliesTo" Value=").+(?<B>" Type=.+)', "`${A}$regValue`${B}" | Out-File "$msiProductFile"
+            }
+
+            Write-Output "Building: $runtime MSI Installer"
+
+
+            # Clean and build MSI
+            Remove-Item "$installer\obj" -Recurse -ErrorAction Ignore
+            Remove-Item "$installer\bin" -Recurse -ErrorAction Ignore
+            Invoke-Expression "& $msbuild $installer\$installer.wixproj"
+
+            Write-Output "Copying $runtime MSI to: $msiTargetFile"
+            Copy-Item $msiOutputFile $msiTargetFile
+
+            Write-Output "Took: $($deployStopWatch.Elapsed)
+            ################################
+            "
         }
-        #>
-
-        if(Test-Path "$publishFolder\$publishName\UVtools.Core.dll" -PathType Leaf){
-            Add-Type -Path "$publishFolder\$publishName\UVtools.Core.dll"
-        } else {
-            Write-Error "Unable to find UVtools.Core.dll"
-            return
+        else {
+            Write-Error "MSI build is enabled but can't run due the msbuild.exe path was not found."
         }
-
-        # Add edit with UVtools possible extensions
-        $extensions = [UVtools.Core.FileFormats.FileFormat]::AllFileExtensions;
-        $extensionList = New-Object Collections.Generic.List[String]
-        foreach($ext in $extensions)
-        {
-            if($ext.Extension.Contains('.')) { continue; } # Virtual extension
-
-            $extKey = "System.FileName:&quot;*.$($ext.Extension.ToLowerInvariant())&quot;";
-            if($extensionList.Contains($extKey)) { continue; } # Already here
-            $extensionList.Add($extKey);
-        }
-        if($extensionList.Count -gt 0)
-        {
-            $regValue = [String]::Join(' OR ', $extensionList)
-            (Get-Content "$msiProductFile") -replace '(?<A><RegistryValue Name="AppliesTo" Value=").+(?<B>" Type=.+)', "`${A}$regValue`${B}" | Out-File "$msiProductFile"
-        }
-
-        Write-Output "Building: $runtime MSI Installer"
-
-
-        # Clean and build MSI
-        Remove-Item "$installer\obj" -Recurse -ErrorAction Ignore
-        Remove-Item "$installer\bin" -Recurse -ErrorAction Ignore
-        Invoke-Expression "& $msbuild $installer\$installer.wixproj"
-
-        Write-Output "Copying $runtime MSI to: $msiTargetFile"
-        Copy-Item $msiOutputFile $msiTargetFile
-
-        Write-Output "Took: $($deployStopWatch.Elapsed)
-        ################################
-        "
     }
     #else {
     #    Write-Error "MSI build is enabled but the runtime '$runtime' is not found."

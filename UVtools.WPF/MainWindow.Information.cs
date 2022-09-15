@@ -16,7 +16,6 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using MessageBox.Avalonia.Enums;
-using UVtools.Core;
 using UVtools.Core.Layers;
 using UVtools.Core.Objects;
 using UVtools.Core.SystemOS;
@@ -239,11 +238,11 @@ public partial class MainWindow
 
         try
         {
-            using TextWriter tw = new StreamWriter(file);
+            await using TextWriter tw = new StreamWriter(file);
             foreach (var config in SlicerFile.Configs)
             {
                 var type = config.GetType();
-                tw.WriteLine($"[{type.Name}]");
+                await tw.WriteLineAsync($"[{type.Name}]");
                 foreach (var property in type.GetProperties(BindingFlags.Public | BindingFlags.Instance))
                 {
                     if (property.Name.Equals("Item")) continue;
@@ -253,14 +252,14 @@ public partial class MainWindow
                         case null:
                             continue;
                         case IList list:
-                            tw.WriteLine($"{property.Name} = {list.Count}");
+                            await tw.WriteLineAsync($"{property.Name} = {list.Count}");
                             break;
                         default:
-                            tw.WriteLine($"{property.Name} = {value}");
+                            await tw.WriteLineAsync($"{property.Name} = {value}");
                             break;
                     }
                 }
-                tw.WriteLine();
+                await tw.WriteLineAsync();
             }
             tw.Close();
         }
@@ -312,7 +311,6 @@ public partial class MainWindow
     public void RefreshProperties()
     {
         SlicerProperties.Clear();
-        if (SlicerFile.Configs is null) return;
         foreach (var config in SlicerFile.Configs)
         {
             var type = config.GetType();
