@@ -82,6 +82,7 @@ But also, i need victims for test subject. Proceed at your own risk!
 - PW0 (Photon Workshop)
 - PWX (Photon Workshop)
 - DLP (Photon Workshop)
+- DL2P (Photon Workshop)
 - PWMO (Photon Workshop)
 - PWMA (Photon Workshop)
 - PWMS (Photon Workshop)

@@ -233,6 +233,7 @@
                     <Separator IsVisible="{Binding IsDebug}"/>
 
 					<MenuItem Header="_Debug tools"
+                              IsVisible="{Binding IsDebug}"
                               i:MenuItem.Icon="fa-solid fa-bug-slash">
 
                         <MenuItem Header="Throw exception"

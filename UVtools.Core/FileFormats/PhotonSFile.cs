@@ -254,6 +254,8 @@ public class PhotonSFile : FileFormat
     public LayerHeader LayerSettings { get; protected internal set; } = new();
     public override FileFormatType FileType => FileFormatType.Binary;
 
+    public override string ConvertMenuGroup => "Chitubox";
+
     public override FileExtension[] FileExtensions { get; } = {
         new(typeof(PhotonSFile), "photons", "Chitubox PhotonS"),
     };

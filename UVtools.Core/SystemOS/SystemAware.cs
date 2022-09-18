@@ -165,6 +165,11 @@ public static class SystemAware
                 return key?.GetValue("ProcessorNameString")?.ToString();
             }
 
+            if (OperatingSystem.IsMacOS())
+            {
+                return GetProcessOutput("sysctl", "-n machdep.cpu.brand_string")?.TrimEnd('\r', '\n');
+            }
+
             if (OperatingSystem.IsLinux())
             {
                 if (!File.Exists("/proc/cpuinfo")) return null;
@@ -177,11 +182,6 @@ public static class SystemAware
                 }
 
                 return match.Groups[1].ToString();
-            }
-
-            if (OperatingSystem.IsMacOS())
-            {
-                return GetProcessOutput("sysctl", "-n machdep.cpu.brand_string")?.TrimEnd('\r', '\n');
             }
         }
         catch (Exception e)

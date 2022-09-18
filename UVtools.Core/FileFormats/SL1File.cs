@@ -339,6 +339,8 @@ public class SL1File : FileFormat
 
     public override FileFormatType FileType => FileFormatType.Archive;
 
+    public override string ConvertMenuGroup => "Prusa";
+
     public override FileExtension[] FileExtensions { get; } = {
         new(typeof(SL1File), "sl1", "PrusaSlicer SL1"),
         new(typeof(SL1File), "sl1s", "PrusaSlicer SL1S Speed")

@@ -311,6 +311,8 @@ public class CWSFile : FileFormat
 
     public PrinterType Printer { get; set; } = PrinterType.Unknown;
 
+    public override string ConvertMenuGroup => "CWS";
+
     public override FileExtension[] FileExtensions { get; } = {
         new (typeof(CWSFile), "cws", "NovaMaker CWS"),
         new (typeof(CWSFile), "rgb.cws", "NovaMaker Bene4 Mono / Elfin2 Mono SE (CWS)"),

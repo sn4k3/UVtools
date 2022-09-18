@@ -262,6 +262,8 @@ public class LGSFile : FileFormat
     public Header HeaderSettings { get; protected internal set; } = new();
     public override FileFormatType FileType => FileFormatType.Binary;
 
+    public override string ConvertMenuGroup => "Longer3D";
+
     public override FileExtension[] FileExtensions { get; } = {
         new (typeof(LGSFile), "lgs", "Longer Orange 10 (LGS)"),
         new (typeof(LGSFile), "lgs30", "Longer Orange 30 (LGS30)"),

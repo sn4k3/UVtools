@@ -73,9 +73,11 @@ public class ChituboxZipFile : FileFormat
     #endregion
 
     #region Properties
-    public Header HeaderSettings { get; } = new Header();
+    public Header HeaderSettings { get; } = new();
         
     public override FileFormatType FileType => FileFormatType.Archive;
+
+    public override string ConvertMenuGroup => "Chitubox";
 
     public override FileExtension[] FileExtensions { get; } = {
         new(typeof(ChituboxZipFile), "zip", "Chitubox Zip")

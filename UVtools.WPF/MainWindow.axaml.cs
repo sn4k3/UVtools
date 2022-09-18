@@ -128,9 +128,9 @@ public partial class MainWindow : WindowEx
     private uint _savesCount;
     private bool _canSave;
     private readonly MenuItem _menuFileSendTo;
-    private MenuItem[] _menuFileOpenRecentItems;
-    private MenuItem[] _menuFileSendToItems;
-    private MenuItem[] _menuFileConvertItems;
+    private IEnumerable<MenuItem> _menuFileOpenRecentItems;
+    private IEnumerable<MenuItem> _menuFileSendToItems;
+    private IEnumerable<MenuItem> _menuFileConvertItems;
 
     private PointerEventArgs _globalPointerEventArgs;
     private PointerPoint _globalPointerPoint;
@@ -229,19 +229,19 @@ public partial class MainWindow : WindowEx
         set => RaiseAndSetIfChanged(ref _canSave, value);
     }
 
-    public MenuItem[] MenuFileOpenRecentItems
+    public IEnumerable<MenuItem> MenuFileOpenRecentItems
     {
         get => _menuFileOpenRecentItems;
         set => RaiseAndSetIfChanged(ref _menuFileOpenRecentItems, value);
     }
 
-    public MenuItem[] MenuFileSendToItems
+    public IEnumerable<MenuItem> MenuFileSendToItems
     {
         get => _menuFileSendToItems;
         set => RaiseAndSetIfChanged(ref _menuFileSendToItems, value);
     }       
         
-    public MenuItem[] MenuFileConvertItems
+    public IEnumerable<MenuItem> MenuFileConvertItems
     {
         get => _menuFileConvertItems;
         set => RaiseAndSetIfChanged(ref _menuFileConvertItems, value);
@@ -454,7 +454,7 @@ public partial class MainWindow : WindowEx
             }
 
 
-            MenuFileSendToItems = menuItems.ToArray();
+            MenuFileSendToItems = menuItems;
             _menuFileSendTo.IsVisible = _menuFileSendTo.IsEnabled = menuItems.Count > 0;
         };
     }
@@ -1061,9 +1061,9 @@ public partial class MainWindow : WindowEx
         ClearROIAndMask();
 
         if(!Settings.Tools.LastUsedSettingsKeepOnCloseFile) OperationSessionManager.Instance.Clear();
-        if(_menuFileOpenRecentItems.Length > 0)
+        if(_menuFileOpenRecentItems.Any())
         {
-            _menuFileOpenRecentItems[0].IsEnabled = true; // Re-enable last file
+            _menuFileOpenRecentItems.First().IsEnabled = true; // Re-enable last file
         }
 
         ResetDataContext();
@@ -1560,9 +1560,36 @@ public partial class MainWindow : WindowEx
         if (SlicerFile is not ImageFile && SlicerFile.DecodeType == FileFormat.FileDecodeType.Full)
         {
             List<MenuItem> menuItems = new();
+
+            var convertMenu = new Dictionary<string, List<MenuItem>>();
+
             foreach (var fileFormat in FileFormat.AvailableFormats)
             {
                 if(fileFormat is ImageFile) continue;
+
+                List<MenuItem> parentMenu;
+                if (string.IsNullOrWhiteSpace(fileFormat.ConvertMenuGroup))
+                {
+                    parentMenu = menuItems;
+                }
+                else
+                {
+                    if (!convertMenu.TryGetValue(fileFormat.ConvertMenuGroup, out parentMenu))
+                    {
+                        parentMenu = new List<MenuItem>();
+
+                        var subMenuItem = new MenuItem
+                        {
+                            Header = fileFormat.ConvertMenuGroup,
+                            Tag = fileFormat.ConvertMenuGroup,
+                        };
+                        menuItems.Add(subMenuItem);
+
+                        convertMenu.TryAdd(fileFormat.ConvertMenuGroup, parentMenu);
+                    }
+                }
+
+                
                 foreach (var fileExtension in fileFormat.FileExtensions)
                 {
                     if(!fileExtension.IsVisibleOnConvertMenu) continue;
@@ -1575,24 +1602,17 @@ public partial class MainWindow : WindowEx
 
                     menuItem.Tapped += ConvertToOnTapped;
 
-                    menuItems.Add(menuItem);
+                    parentMenu.Add(menuItem);
                 }
-                /*string extensions = fileFormat.FileExtensions.Length > 0
-                    ? $" ({fileFormat.GetFileExtensions()})"
-                    : string.Empty;
-
-                var menuItem = new MenuItem
-                {
-                    Header = fileFormat.GetType().Name.Replace("File", extensions),
-                    Tag = fileFormat
-                };
-
-                menuItem.Tapped += ConvertToOnTapped;
-
-                menuItems.Add(menuItem);*/
             }
 
-            MenuFileConvertItems = menuItems.ToArray();
+            foreach (var menuItem in menuItems)
+            {
+                if (menuItem.Tag is not string group) continue;
+                menuItem.Items = convertMenu[group];
+            }
+
+            MenuFileConvertItems = menuItems;
         }
 
         foreach (var menuItem in new[] { MenuTools, MenuCalibration, LayerActionsMenu })
@@ -2215,7 +2235,7 @@ public partial class MainWindow : WindowEx
             item.Click += MenuFileOpenRecentItemOnClick;
         }
 
-        MenuFileOpenRecentItems = items.ToArray();
+        MenuFileOpenRecentItems = items;
     }
 
     private void RemoveRecentFile(string file)

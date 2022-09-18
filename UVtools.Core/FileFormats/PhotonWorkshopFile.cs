@@ -86,6 +86,7 @@ public class PhotonWorkshopFile : FileFormat
         AnyCubicPhotonZero,
         AnyCubicPhotonX,
         AnyCubicPhotonUltra,
+        AnyCubicPhotonD2,
         AnyCubicPhotonMono,
         AnyCubicPhotonMonoSE,
         AnyCubicPhotonMono4K,
@@ -1091,12 +1092,15 @@ public class PhotonWorkshopFile : FileFormat
 
     public override FileFormatType FileType => FileFormatType.Binary;
 
+    public override string ConvertMenuGroup => "Anycubic Photon Workshop";
+
     public override FileExtension[] FileExtensions { get; } = {
 
         new(typeof(PhotonWorkshopFile), "pws", "Photon / Photon S (PWS)"),
         new(typeof(PhotonWorkshopFile), "pw0", "Photon Zero (PW0)"),
         new(typeof(PhotonWorkshopFile), "pwx", "Photon X (PWX)"),
         new(typeof(PhotonWorkshopFile), "dlp", "Photon Ultra (DLP)"),
+        new(typeof(PhotonWorkshopFile), "dl2p", "Photon Photon D2 (DL2P)"),
         new(typeof(PhotonWorkshopFile), "pwmx", "Photon Mono X (PWMX)"),
         new(typeof(PhotonWorkshopFile), "pwmb", "Photon Mono X 6K / Photon M3 Plus (PWMB)"),
         new(typeof(PhotonWorkshopFile), "pwmo", "Photon Mono (PWMO)"),
@@ -1217,6 +1221,7 @@ public class PhotonWorkshopFile : FileFormat
                 AnyCubicMachine.AnyCubicPhotonZero => 55.44f,
                 AnyCubicMachine.AnyCubicPhotonX => 192,
                 AnyCubicMachine.AnyCubicPhotonUltra => 102.40f,
+                AnyCubicMachine.AnyCubicPhotonD2 => 130.56f,
                 AnyCubicMachine.AnyCubicPhotonMono => 82.62f,
                 AnyCubicMachine.AnyCubicPhotonMonoSE => 82.62f,
                 AnyCubicMachine.AnyCubicPhotonMono4K => 134.40f,
@@ -1245,6 +1250,7 @@ public class PhotonWorkshopFile : FileFormat
                 AnyCubicMachine.AnyCubicPhotonZero => 98.637f,
                 AnyCubicMachine.AnyCubicPhotonX => 120,
                 AnyCubicMachine.AnyCubicPhotonUltra => 57.60f,
+                AnyCubicMachine.AnyCubicPhotonD2 => 73.44f,
                 AnyCubicMachine.AnyCubicPhotonMono => 130.56f,
                 AnyCubicMachine.AnyCubicPhotonMonoSE => 130.56f,
                 AnyCubicMachine.AnyCubicPhotonMono4K => 84,
@@ -1274,6 +1280,7 @@ public class PhotonWorkshopFile : FileFormat
                 AnyCubicMachine.AnyCubicPhotonZero => 150,
                 AnyCubicMachine.AnyCubicPhotonX => 245,
                 AnyCubicMachine.AnyCubicPhotonUltra => 165,
+                AnyCubicMachine.AnyCubicPhotonD2 => 165,
                 AnyCubicMachine.AnyCubicPhotonMono => 165,
                 AnyCubicMachine.AnyCubicPhotonMonoSE => 160,
                 AnyCubicMachine.AnyCubicPhotonMono4K => 165,
@@ -1570,6 +1577,7 @@ public class PhotonWorkshopFile : FileFormat
                 AnyCubicMachine.AnyCubicPhotonZero    => "Photon Zero",
                 AnyCubicMachine.AnyCubicPhotonX       => "Photon X",
                 AnyCubicMachine.AnyCubicPhotonUltra   => "Photon Ultra",
+                AnyCubicMachine.AnyCubicPhotonD2      => "Photon D2",
                 AnyCubicMachine.AnyCubicPhotonMono    => "Photon Mono",
                 AnyCubicMachine.AnyCubicPhotonMonoSE  => "Photon Mono SE",
                 AnyCubicMachine.AnyCubicPhotonMono4K  => "Photon Mono 4K",
@@ -1614,6 +1622,11 @@ public class PhotonWorkshopFile : FileFormat
             if (FileEndsWith(".dlp"))
             {
                 return AnyCubicMachine.AnyCubicPhotonUltra;
+            }
+
+            if (FileEndsWith(".dl2p"))
+            {
+                return AnyCubicMachine.AnyCubicPhotonD2;
             }
 
             if (FileEndsWith(".pwmo"))
@@ -2058,6 +2071,7 @@ public class PhotonWorkshopFile : FileFormat
             AnyCubicMachine.AnyCubicPhotonZero => VERSION_1,
             AnyCubicMachine.AnyCubicPhotonX => VERSION_1,
             AnyCubicMachine.AnyCubicPhotonUltra => VERSION_515,
+            AnyCubicMachine.AnyCubicPhotonD2 => VERSION_516,
             AnyCubicMachine.AnyCubicPhotonMono => VERSION_515,
             AnyCubicMachine.AnyCubicPhotonMonoSE => VERSION_515,
             AnyCubicMachine.AnyCubicPhotonMono4K => VERSION_516,

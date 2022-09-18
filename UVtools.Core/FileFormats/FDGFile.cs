@@ -628,6 +628,8 @@ public class FDGFile : FileFormat
 
     public override FileFormatType FileType => FileFormatType.Binary;
 
+    public override string ConvertMenuGroup => "Chitubox";
+
     public override FileExtension[] FileExtensions { get; } = {
         new(typeof(FDGFile), "fdg", "Voxelab FDG"),
     };

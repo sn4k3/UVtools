@@ -2147,6 +2147,11 @@
             Gets the layer image data type used on this file format
             </summary>
         </member>
+        <member name="P:UVtools.Core.FileFormats.FileFormat.ConvertMenuGroup">
+            <summary>
+            Gets the group name under convert menu to group all extensions, set to null to not group items
+            </summary>
+        </member>
         <member name="P:UVtools.Core.FileFormats.FileFormat.FileExtensions">
             <summary>
             Gets the valid file extensions for this <see cref="T:UVtools.Core.FileFormats.FileFormat"/>

@@ -197,6 +197,8 @@ public class VDTFile : FileFormat
 
     public override FileFormatType FileType => FileFormatType.Archive;
 
+    public override string ConvertMenuGroup => "Voxeldance";
+
     public override FileExtension[] FileExtensions { get; } = {
         new(typeof(VDTFile), "vdt", "Voxeldance Tango (VDT)")
     };

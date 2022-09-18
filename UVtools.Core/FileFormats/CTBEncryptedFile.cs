@@ -580,6 +580,8 @@ public class CTBEncryptedFile : FileFormat
     #region Properties
     public override FileFormatType FileType => FileFormatType.Binary;
 
+    public override string ConvertMenuGroup => "Chitubox";
+
     public override FileExtension[] FileExtensions { get; } = {
         new(typeof(CTBEncryptedFile), "ctb",           "Chitubox CTB (Encrypted)"),
         new(typeof(CTBEncryptedFile), "encrypted.ctb", "Chitubox CTB (Encrypted)", false, false),

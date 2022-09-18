@@ -1067,6 +1067,8 @@ public class ChituboxFile : FileFormat
 
     public override FileFormatType FileType => FileFormatType.Binary;
 
+    public override string ConvertMenuGroup => "Chitubox";
+
     public override FileExtension[] FileExtensions { get; } = {
         new(typeof(ChituboxFile), "photon", "Chitubox Photon"),
         new(typeof(ChituboxFile), "cbddlp", "Chitubox CBDDLP"),

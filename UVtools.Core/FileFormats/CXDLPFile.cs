@@ -492,7 +492,7 @@ public class CXDLPFile : FileFormat
         get => float.Parse(Encoding.ASCII.GetString(SlicerInfoSettings.DisplayWidthBytes.Where(b => b != 0).ToArray()));
         set
         {
-            string str = Math.Round(value, 2).ToString(CultureInfo.InvariantCulture);
+            var str = Math.Round(value, 2).ToString(CultureInfo.InvariantCulture);
             //string str = Math.Round(value, 2).ToString("0.000000");
             SlicerInfoSettings.DisplayWidthDataSize = (uint)(str.Length * 2);
             var data = new byte[SlicerInfoSettings.DisplayWidthDataSize];
@@ -675,12 +675,12 @@ public class CXDLPFile : FileFormat
     {
         using var outputFile = new FileStream(TemporaryOutputFileFullPath, FileMode.Create, FileAccess.ReadWrite);
 
-       if (string.IsNullOrWhiteSpace(MachineName) || (!MachineName.StartsWith("CL-") && !MachineName.StartsWith("CT")))
+       if (string.IsNullOrWhiteSpace(MachineName) || (!MachineName.StartsWith("CL") && !MachineName.StartsWith("CT")))
         {
             bool found = false;
             foreach (var machine in Machine.Machines
                          .Where(machine => machine.Brand == PrinterBrand.Creality
-                                           && (machine.Model.StartsWith("CL-") || machine.Model.StartsWith("CT"))
+                                           && (machine.Model.StartsWith("CL") || machine.Model.StartsWith("CT"))
                                            ))
             {
                 if (ResolutionX == machine.ResolutionX && ResolutionY == machine.ResolutionY)

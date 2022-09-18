@@ -67,7 +67,7 @@ public class GenericZIPFile : FileFormat
     public override FileFormatType FileType => FileFormatType.Archive;
 
     public override FileExtension[] FileExtensions { get; } = {
-        new(typeof(GenericZIPFile), "zip", "Generic / Phrozen Zip")
+        new(typeof(GenericZIPFile), "zip", "Generic Zip / Phrozen Zip")
     };
 
     public override uint ResolutionX

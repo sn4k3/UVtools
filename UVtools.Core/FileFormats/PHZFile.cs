@@ -642,6 +642,8 @@ public class PHZFile : FileFormat
 
     public override FileFormatType FileType => FileFormatType.Binary;
 
+    public override string ConvertMenuGroup => "Chitubox";
+
     public override FileExtension[] FileExtensions { get; } = {
         new (typeof(PHZFile), "phz", "Chitubox PHZ"),
     };

@@ -194,6 +194,7 @@ namespace UVtools.Core.Printer
                 new(PrinterBrand.AnyCubic, "AnyCubic Photon Mono", "Photon Mono", 1620, 2560, 82.62f, 130.56f, 165f, FlipDirection.Horizontally),
                 new(PrinterBrand.AnyCubic, "AnyCubic Photon S", "Photon S", 1440, 2560, 68.04f, 120.96f, 165f, FlipDirection.Horizontally),
                 new(PrinterBrand.AnyCubic, "AnyCubic Photon Ultra", "Photon Ultra", 1280, 720, 102.4f, 57.6f, 165f, FlipDirection.Horizontally),
+                new(PrinterBrand.AnyCubic, "AnyCubic Photon D2", "Photon D2", 2560, 1440, 130.56f, 73.44f, 165f, FlipDirection.Horizontally),
                 new(PrinterBrand.AnyCubic, "AnyCubic Photon X", "Photon X", 2560, 1600, 192f, 120f, 245f, FlipDirection.Horizontally),
                 new(PrinterBrand.AnyCubic, "AnyCubic Photon Zero", "Photon Zero", 480, 854, 55.4f, 98.63f, 150f, FlipDirection.Horizontally),
                 new(PrinterBrand.AnyCubic, "AnyCubic Photon", "Photon", 1440, 2560, 68.04f, 120.96f, 155f, FlipDirection.Horizontally),
@@ -205,8 +206,9 @@ namespace UVtools.Core.Printer
                 new(PrinterBrand.Creality, "Creality Halot One CL-60", "CL-60", 1620, 2560, 81f, 128f, 160f, FlipDirection.None),
                 new(PrinterBrand.Creality, "Creality Halot One Plus CL-79", "CL-79", 4320, 2560, 172.8f, 102.4f, 160f, FlipDirection.None),
                 new(PrinterBrand.Creality, "Creality Halot One Pro CL-70", "CL-70", 2560, 2400, 130.56f, 122.4f, 160f, FlipDirection.None),
-                new(PrinterBrand.Creality, "Creality Halot Sky CL-89", "", 3840, 2400, 192f, 120f, 200f, FlipDirection.None),
+                new(PrinterBrand.Creality, "Creality Halot Sky CL-89", "CL-89", 3840, 2400, 192f, 120f, 200f, FlipDirection.None),
                 new(PrinterBrand.Creality, "Creality Halot Sky Plus CL-92", "CL-92", 5760, 3600, 198.14f, 123.84f, 210f, FlipDirection.None),
+                new(PrinterBrand.Creality, "Creality Halot Ray CL925", "CL925", 5760, 3600, 198.14f, 123.84f, 210f, FlipDirection.None),
                 new(PrinterBrand.Creality, "Creality LD-002H", "LD-002H", 1620, 2560, 82.62f, 130.56f, 160f, FlipDirection.Horizontally),
                 new(PrinterBrand.Creality, "Creality LD-002R", "LD-002R", 1440, 2560, 68.04f, 120.96f, 160f, FlipDirection.Horizontally),
                 new(PrinterBrand.Creality, "Creality LD-006", "LD-006", 3840, 2400, 192f, 120f, 245f, FlipDirection.Horizontally),
@@ -218,6 +220,7 @@ namespace UVtools.Core.Printer
                 new(PrinterBrand.Elegoo, "Elegoo Mars C", "Mars C", 1440, 2560, 68.04f, 120.96f, 150f, FlipDirection.Horizontally),
                 new(PrinterBrand.Elegoo, "Elegoo Mars", "Mars", 1440, 2560, 68.04f, 120.96f, 150f, FlipDirection.Horizontally),
                 new(PrinterBrand.Elegoo, "Elegoo Saturn", "Saturn", 3840, 2400, 192f, 120f, 200f, FlipDirection.Horizontally),
+                new(PrinterBrand.Elegoo, "Elegoo Saturn 8K", "Saturn 8K", 7680, 4320, 218.88f, 123.12f, 210f, FlipDirection.Horizontally),
 
                 new(PrinterBrand.EPAX, "EPAX DX1 PRO", "DX1 PRO", 4098, 2560, 143.43f, 89.6f, 155f, FlipDirection.Horizontally),
                 new(PrinterBrand.EPAX, "EPAX DX10 Pro 5K", "DX10 Pro 5K", 4920, 2880, 221.4f, 129.6f, 120f, FlipDirection.Horizontally),
@@ -261,6 +264,7 @@ namespace UVtools.Core.Printer
                 new(PrinterBrand.Nova3D, "Nova3D Elfin3 Mini", "Elfin3 Mini", 1079, 1904, 68f, 120f, 150f, FlipDirection.Vertically),
                 new(PrinterBrand.Nova3D, "Nova3D Whale", "Whale", 3840, 2400, 192f, 120f, 250f, FlipDirection.Vertically),
                 new(PrinterBrand.Nova3D, "Nova3D Whale2", "Whale2", 3840, 2400, 192f, 120f, 250f, FlipDirection.Vertically),
+                new(PrinterBrand.Nova3D, "Nova3D Whale3 Pro", "Whale3 Pro", 7680, 4320, 228.096f, 128.304f, 260f, FlipDirection.Vertically),
 
                 new(PrinterBrand.Peopoly, "Peopoly Phenom L", "Phenom L", 3840, 2160, 345.6f, 194.4f, 400f, FlipDirection.Horizontally),
                 new(PrinterBrand.Peopoly, "Peopoly Phenom Noir", "Phenom Noir", 3840, 2160, 293.76f, 165.24f, 400f, FlipDirection.Horizontally),
@@ -277,6 +281,7 @@ namespace UVtools.Core.Printer
                 new(PrinterBrand.Phrozen, "Phrozen Sonic 4K", "Sonic 4K", 3840, 2160, 134.4f, 75.6f, 200f, FlipDirection.Horizontally),
                 new(PrinterBrand.Phrozen, "Phrozen Sonic Mega 8K", "Sonic Mega 8K", 7680, 4320, 330.24f, 185.76f, 400f, FlipDirection.Horizontally),
                 new(PrinterBrand.Phrozen, "Phrozen Sonic Mighty 4K", "Sonic Mighty 4K", 3840, 2400, 199.68f, 124.8f, 220f, FlipDirection.Horizontally),
+                new(PrinterBrand.Phrozen, "Phrozen Sonic Mighty 8K", "Sonic Mighty 8K", 7680, 4320, 218.88f, 123.12f, 235f, FlipDirection.Horizontally),
                 new(PrinterBrand.Phrozen, "Phrozen Sonic Mini 4K", "Sonic Mini 4K", 3840, 2160, 134.4f, 75.6f, 130f, FlipDirection.Horizontally),
                 new(PrinterBrand.Phrozen, "Phrozen Sonic Mini 8K", "Sonic Mini 8K", 7500, 3240, 165f, 71.28f, 180f, FlipDirection.Horizontally),
                 new(PrinterBrand.Phrozen, "Phrozen Sonic Mini", "Sonic Mini", 1080, 1920, 68.04f, 120.96f, 130f, FlipDirection.None),
@@ -289,6 +294,7 @@ namespace UVtools.Core.Printer
                 new(PrinterBrand.QIDI, "QIDI Shadow6.0 Pro", "Shadow6.0 Pro", 1440, 2560, 74.52f, 132.48f, 150f, FlipDirection.Horizontally),
 
                 new(PrinterBrand.Uniformation, "Uniformation GKone", "GKone", 4920, 2880, 221.4f, 129.6f, 245f, FlipDirection.Vertically),
+                new(PrinterBrand.Uniformation, "Uniformation GKtwo", "GKtwo", 7680, 4320, 228.089f, 128.3f, 200f, FlipDirection.Vertically),
 
                 new(PrinterBrand.Uniz, "Uniz IBEE", "IBEE", 3840, 2400, 192f, 120f, 220f, FlipDirection.Vertically),
 

@@ -1,13 +1,14 @@
-- **Windows MSI installer:**
-   - (Add) UVtools folder to start menu with:
-      - UVtools
-      - UVtoolsCmd
-      - Uninstall UVtools
-   - (Add) Prompt for add open in UVtools when right-click on supported files
-   - (Add) Prompt for create desktop shortcut
-   - (Add) Prompt for launch UVtools after the installation
-   - (Improvement) Cleanup and simplify the install project
-- (Add) PrusaSlicer printer: Peopoly Phenom Forge
-- (Upgrade) .NET from 6.0.8 to 6.0.9
-- (Fix) Corruption in file after attempt to save to a locked file (#551)
+- **UI:**
+  - (Add) Groups to convert menu
+  - (Improvement) Re-arrange convert menu order
+  - (Fix) Settings: Open file dialog filter dropdown width
+- **PrusaSlicer:**
+   - (Add) AnyCubic Photon D2
+   - (Add) Creality Halot Ray CL925
+   - (Add) Elegoo Saturn 8K
+   - (Add) Uniformation GKtwo
+   - (Add) Nova3D Whale3 Pro
+   - (Add) Phrozen Sonic Mighty 8K
+- (Add) AnyCubic Photon D2 (.dl2p) compatibility to AnyCubic file format
+- (Fix) Hide "Debug tools" from "Help" menu
 

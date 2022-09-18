@@ -372,24 +372,24 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         new CTBEncryptedFile(), // encrypted ctb
         new PhotonSFile(), // photons
         new PHZFile(), // phz
-        new FDGFile(), // fdg
         new PhotonWorkshopFile(),   // PSW
         new CWSFile(),   // CWS
-        new OSLAFile(),  // OSLA
-        new JXSFile(),      // jxs
+        new LGSFile(),   // LGS, LGS30
+        new VDAFile(),   // VDA
+        new VDTFile(),   // VDT
+        //new CXDLPv1File(),   // Creality Box v1
+        new CXDLPFile(),   // Creality Box
+        new FDGFile(), // fdg
         new ZCodeFile(),   // zcode
+        new JXSFile(),      // jxs
         new ZCodexFile(),   // zcodex
         new MDLPFile(),   // MKS v1
         new GR1File(),   // GR1 Workshop
-        //new CXDLPv1File(),   // Creality Box v1
-        new CXDLPFile(),   // Creality Box
-        new LGSFile(),   // LGS, LGS30
         new FlashForgeSVGXFile(), // SVGX
-        new GenericZIPFile(),   // Generic zip files
-        new VDAFile(),   // VDA
-        new VDTFile(),   // VDT
+        new OSLAFile(),  // OSLA
         new OSFFile(),   // OSF
         new UVJFile(),   // UVJ
+        new GenericZIPFile(),   // Generic zip files
         new ImageFile(),   // images
     };
 
@@ -1047,6 +1047,11 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// Gets the layer image data type used on this file format
     /// </summary>
     public virtual FileImageType LayerImageType => FileType == FileFormatType.Archive ? FileImageType.Png8 : FileImageType.Custom;
+
+    /// <summary>
+    /// Gets the group name under convert menu to group all extensions, set to null to not group items
+    /// </summary>
+    public virtual string? ConvertMenuGroup => null;
 
     /// <summary>
     /// Gets the valid file extensions for this <see cref="FileFormat"/>

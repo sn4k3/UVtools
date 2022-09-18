@@ -67,7 +67,7 @@ public class SettingsWindow : WindowEx
 
         var fileFormats = new List<string>
         {
-            FileFormat.AllSlicerFiles.Replace("*", string.Empty)
+            "All slicer files"
         };
         fileFormats.AddRange(from format in FileFormat.AvailableFormats from extension in format.FileExtensions where extension.IsVisibleOnFileFilters select $"{extension.Description} (.{extension.Extension})");
         FileOpenDialogFilters = fileFormats.ToArray();
