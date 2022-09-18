@@ -6,6 +6,7 @@
   - (Add) Groups to convert menu
   - (Improvement) Re-arrange convert menu order
   - (Fix) Settings: Open file dialog filter dropdown width
+  - (Fix) Hide "Debug tools" from "Help" menu
 - **PrusaSlicer:**
    - (Add) AnyCubic Photon D2
    - (Add) Creality Halot Ray CL925
@@ -14,7 +15,6 @@
    - (Add) Nova3D Whale3 Pro
    - (Add) Phrozen Sonic Mighty 8K
 - (Add) AnyCubic Photon D2 (.dl2p) compatibility to AnyCubic file format
-- (Fix) Hide "Debug tools" from "Help" menu
 
 ## 15/09/2022 - v3.6.4
 
