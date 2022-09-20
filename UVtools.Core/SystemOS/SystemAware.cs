@@ -165,11 +165,6 @@ public static class SystemAware
                 return key?.GetValue("ProcessorNameString")?.ToString();
             }
 
-            if (OperatingSystem.IsMacOS())
-            {
-                return GetProcessOutput("sysctl", "-n machdep.cpu.brand_string")?.TrimEnd('\r', '\n');
-            }
-
             if (OperatingSystem.IsLinux())
             {
                 if (!File.Exists("/proc/cpuinfo")) return null;
@@ -182,6 +177,11 @@ public static class SystemAware
                 }
 
                 return match.Groups[1].ToString();
+            }
+
+            if (OperatingSystem.IsMacOS())
+            {
+                return GetProcessOutput("sysctl", "-n machdep.cpu.brand_string")?.TrimEnd('\r', '\n');
             }
         }
         catch (Exception e)
@@ -270,22 +270,93 @@ public static class SystemAware
         return OperatingSystem.IsWindows() ? $"{executable}.exe" : executable;
     }
 
-    public static string? GetProcessOutput(string filename, string? arguments = null)
+    public static (string standardOutput, string errorOutput) GetProcessOutputWithErrors(string filename, string? arguments = null, string? workingDirectory = null, int timeout = Timeout.Infinite)
     {
-        using var proc = Process.Start(new ProcessStartInfo
-        {
-            FileName = filename,
-            Arguments = arguments,
-            RedirectStandardOutput = true,
-            UseShellExecute = false,
-        });
-        if (proc is null) return null;
-        var stringBuilder = new StringBuilder();
-        while (!proc.HasExited)
-        {
-            stringBuilder.Append(proc.StandardOutput.ReadToEnd());
-        }
+        using var process = new Process();
+        process.StartInfo.WorkingDirectory = workingDirectory;
+        process.StartInfo.FileName = filename;
+        process.StartInfo.Arguments = arguments;
+        process.StartInfo.CreateNoWindow = true;
+        process.StartInfo.RedirectStandardOutput = true;
+        process.StartInfo.RedirectStandardError = true;
+        process.StartInfo.UseShellExecute = false;
 
+        var standardOutput = new StringBuilder();
+        var errorOutput = new StringBuilder();
+
+
+        using var outputWaitHandle = new AutoResetEvent(false);
+        using var errorWaitHandle = new AutoResetEvent(false);
+
+        process.OutputDataReceived += (sender, e) =>
+        {
+            if (e.Data is null)
+            {
+                outputWaitHandle.Set();
+            }
+            else
+            {
+                standardOutput.AppendLine(e.Data);
+            }
+        };
+
+        process.ErrorDataReceived += (sender, e) =>
+        {
+            if (e.Data is null)
+            {
+                errorWaitHandle.Set();
+            }
+            else
+            {
+                errorOutput.AppendLine(e.Data);
+            }
+        };
+
+        process.Start();
+
+        process.BeginErrorReadLine();
+        process.BeginOutputReadLine();
+
+        process.WaitForExit(timeout);
+        outputWaitHandle.WaitOne(timeout);
+        errorWaitHandle.WaitOne(timeout);
+
+        return (standardOutput.ToString(), errorOutput.ToString());
+    }
+
+    public static string GetProcessOutput(string filename, string? arguments = null, string? workingDirectory = null, int timeout = Timeout.Infinite)
+    {
+        using var process = new Process();
+        process.StartInfo.WorkingDirectory = workingDirectory;
+        process.StartInfo.FileName = filename;
+        process.StartInfo.Arguments = arguments;
+        process.StartInfo.CreateNoWindow = true;
+        process.StartInfo.RedirectStandardOutput = true;
+        process.StartInfo.UseShellExecute = false;
+
+        var stringBuilder = new StringBuilder();
+
+        using var outputWaitHandle = new AutoResetEvent(false);
+
+        process.OutputDataReceived += (sender, e) =>
+        {
+            if (e.Data is null)
+            {
+                outputWaitHandle.Set();
+            }
+            else
+            {
+                stringBuilder.AppendLine(e.Data);
+            }
+        };
+
+        process.Start();
+
+        process.BeginOutputReadLine();
+
+        process.WaitForExit(timeout);
+        outputWaitHandle.WaitOne(timeout);
+        
         return stringBuilder.ToString();
     }
 

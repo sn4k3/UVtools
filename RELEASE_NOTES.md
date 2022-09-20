@@ -1,14 +1,9 @@
 - **UI:**
-  - (Add) Groups to convert menu
-  - (Improvement) Re-arrange convert menu order
-  - (Fix) Settings: Open file dialog filter dropdown width
-- **PrusaSlicer:**
-   - (Add) AnyCubic Photon D2
-   - (Add) Creality Halot Ray CL925
-   - (Add) Elegoo Saturn 8K
-   - (Add) Uniformation GKtwo
-   - (Add) Nova3D Whale3 Pro
-   - (Add) Phrozen Sonic Mighty 8K
-- (Add) AnyCubic Photon D2 (.dl2p) compatibility to AnyCubic file format
-- (Fix) Hide "Debug tools" from "Help" menu
+   - (Improvement) Auto show a horizontal scroll bar on wider than screen contents on the tool windows
+   - (Improvement) Move normal windows to zero position if negative and auto constrain height if necessary
+   - (Improvement) Set a minimum width and minimum height for tool windows
+   - (Fix) Setting - "Allow resize the tool windows" had been lost and no effect when checked
+- (Add) Windows MSI - Option: Add installation directory to system PATH environment variable
+- (Improvement) Better fetch of UVtools.Core.dll on PowerShell scripts under Windows
+- (Improvement) Better handling in get the process output, this fixes processor name not being shown on macOS
 

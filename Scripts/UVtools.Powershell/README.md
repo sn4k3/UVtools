@@ -8,9 +8,9 @@ You will get same performance as native calling, plus you can stack all your act
 
 ## Requirements
 
-* UVtools
-* [PowerShell >= 7.1](https://github.com/PowerShell/PowerShell/releases)
-* [Visual Studio Code](https://code.visualstudio.com/) (Optional but easier to run and edit scripts)
+- UVtools
+- [PowerShell >= 7.1](https://github.com/PowerShell/PowerShell/releases)
+- [Visual Studio Code](https://code.visualstudio.com/) (Optional but easier to run and edit scripts)
 
 ## How to run scripts
 
@@ -18,21 +18,21 @@ You will get same performance as native calling, plus you can stack all your act
 Never run scripts from untrusted sources! Always inspect the script content before run something new from others. 
 Always try to run scripts with non-adminstration privileges.
 
-1. First you need to register the UVtools install directory under a environment variable. This will
+1. First and if not on Windows you need to register the UVtools install directory under a environment variable. This will
 allow you to run scripts without have to modify each script to put the UVtools path in order to run them.
-   * Open a PowerShell instance as admin
-   * Enter: `[System.Environment]::SetEnvironmentVariable('UVTOOLS_PATH','FOLDER/PATH/TO/UVTOOLS', [System.EnvironmentVariableTarget]::User)`
-   * Replace 'FOLDER/PATH/TO/UVTOOLS' with your UVtools instalation folder
-   * Run command
-   * Run: `$Env:UVTOOLS_PATH` to confirm if path is registed
-   * Quit terminal
-   * Note: You need to repeat this step if you change install directory
-   * If your system is unable to register a environment you need to manuall set the path on each script
+   - Open a PowerShell instance as admin
+   - Enter: `[System.Environment]::SetEnvironmentVariable('UVTOOLS_PATH','FOLDER/PATH/TO/UVTOOLS', [System.EnvironmentVariableTarget]::User)`
+   - Replace 'FOLDER/PATH/TO/UVTOOLS' with your UVtools instalation folder
+   - Run command
+   - Run: `$Env:UVTOOLS_PATH` to confirm if path is registed
+   - Quit terminal
+   - Note: You need to repeat this step if you change install directory
+   - If your system is unable to register a environment you need to manuall set the path on each script
 2. Download and open a script with Visual Studio Code
-   * After open a .ps1 file for the first time, visual code will ask if you want to install the PowerShell extension, say 'yes' and wait for instalation
+   - After open a .ps1 file for the first time, visual code will ask if you want to install the PowerShell extension, say 'yes' and wait for instalation
 3. Click on the play arrow (Run) or F5
 4. Script will run and prompt for inputs
-   * The easier way to input a file is drag and drop the file on the terminal
+   - The easier way to input a file is drag and drop the file on the terminal
 
 ## Documentation
 
@@ -45,9 +45,9 @@ eg: `$slicerFile.`, if the list don't show up, press CTRL+Space, that should for
 Take **[Erode-Bottom.ps1](https://github.com/sn4k3/UVtools/blob/master/UVtools.Scripts/Erode-Bottom.ps1)** as bootstrap and minimal script, read each line and start exploring!
 
 
-* [Core - Source code](https://github.com/sn4k3/UVtools/tree/master/UVtools.Core)
-* [FileFormat.cs - File format functions & variables](https://github.com/sn4k3/UVtools/blob/master/UVtools.Core/FileFormats/FileFormat.cs)
-  * How to load file: 
+- [Core - Source code](https://github.com/sn4k3/UVtools/tree/master/UVtools.Core)
+- [FileFormat.cs - File format functions & variables](https://github.com/sn4k3/UVtools/blob/master/UVtools.Core/FileFormats/FileFormat.cs)
+  - How to load file: 
     ```Powershell
     # Find a file format given a file path, $true = is file path, $true = Create a new instance
     # Returns null if file is invalid
@@ -55,12 +55,12 @@ Take **[Erode-Bottom.ps1](https://github.com/sn4k3/UVtools/blob/master/UVtools.S
     if(!$slicerFile){ return } # Invalid file, exit
     $slicerFile.Decode($inputFile)
     ```
-* [Layer.cs - Layer representation and hold it's own data](https://github.com/sn4k3/UVtools/blob/master/UVtools.Core/Layer/Layer.cs)
-  * How to access:
-      *  `$slicerFile[layerIndex]`
-      *  `$slicerFile.LayerManager[layerIndex]` (Alternative)
-      *  `$slicerFile.LayerManager.Layers[layerIndex]` (Alternative)
-  * Example:
+- [Layer.cs - Layer representation and hold it's own data](https://github.com/sn4k3/UVtools/blob/master/UVtools.Core/Layer/Layer.cs)
+  - How to access:
+      -  `$slicerFile[layerIndex]`
+      -  `$slicerFile.LayerManager[layerIndex]` (Alternative)
+      -  `$slicerFile.LayerManager.Layers[layerIndex]` (Alternative)
+  - Example:
     ```Powershell
     Write-Output $slicerFile[layerIndex].PositionZ
     Write-Output $slicerFile[layerIndex].ExposureTime
@@ -73,10 +73,10 @@ Take **[Erode-Bottom.ps1](https://github.com/sn4k3/UVtools/blob/master/UVtools.S
     Write-Output $slicerFile[layerIndex].NonZeroPixelCount
     Write-Output $slicerFile[layerIndex].IsModified
     ```
-* [LayerManager.cs - The layer manager that keeps all layers within the file](https://github.com/sn4k3/UVtools/blob/master/UVtools.Core/Layer/LayerManager.cs)
-  * How to access: `$slicerFile.LayerManager`
-* [Operations - Applies operation over layers, the tools menu on the GUI](https://github.com/sn4k3/UVtools/tree/master/UVtools.Core/Operations)
-  * Example:
+- [LayerManager.cs - The layer manager that keeps all layers within the file](https://github.com/sn4k3/UVtools/blob/master/UVtools.Core/Layer/LayerManager.cs)
+  - How to access: `$slicerFile.LayerManager`
+- [Operations - Applies operation over layers, the tools menu on the GUI](https://github.com/sn4k3/UVtools/tree/master/UVtools.Core/Operations)
+  - Example:
     ```Powershell
     # Erode bottom layers
     $morph = [UVtools.Core.Operations.OperationMorph]::new($slicerFile)

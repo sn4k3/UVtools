@@ -42,17 +42,38 @@ Write-Output "Version: $_VERSION"
 Write-Output "###############################################"
 
 try{
-if(Test-Path "$Env:UVTOOLS_PATH${dirSeparator}${coreDll}" -PathType Leaf){
-    Add-Type -Path "$Env:UVTOOLS_PATH${dirSeparator}${coreDll}"
+$coreDllFullPath = $null
+if(Test-Path "${coreDll}" -PathType Leaf){
+    $coreDllFullPath = "${coreDll}"
+}
+elseif(Test-Path "$Env:UVTOOLS_PATH${dirSeparator}${coreDll}" -PathType Leaf){
+    $coreDllFullPath = "$Env:UVTOOLS_PATH${dirSeparator}${coreDll}"
 }
 elseif(Test-Path "${_CORE_PATH}${dirSeparator}${coreDll}" -PathType Leaf) {
-    Add-Type -Path "${_CORE_PATH}${dirSeparator}${coreDll}"
+    $coreDllFullPath = "${_CORE_PATH}${dirSeparator}${coreDll}"
 } else {
+    if($IsWindows) {
+        $UVtoolsInstallDirReg = Get-ItemProperty -Path HKCU:\Software\UVtools -Name InstallDir -ErrorAction SilentlyContinue
+        if($UVtoolsInstallDirReg -and $UVtoolsInstallDirReg.InstallDir -and (Test-Path "$($UVtoolsInstallDirReg.InstallDir)${coreDll}" -PathType Leaf)) {
+            $coreDllFullPath = "$($UVtoolsInstallDirReg.InstallDir)${coreDll}"
+        }else{
+            foreach ($path in $Env:Path.Split(';')){
+                if (!$path.EndsWith('UVtools\') -and !(Test-Path "${path}${coreDll}" -PathType Leaf)) {continue}
+                $coreDllFullPath = "${path}${coreDll}"
+            }
+        }
+    }
+}
+
+if($coreDllFullPath){
+    Add-Type -Path "${coreDllFullPath}"
+}
+else {
     Write-Error "Unable to find $coreDll, solutions are:
-1) Open powershell with admin and run: [System.Environment]::SetEnvironmentVariable('UVTOOLS_PATH','FOLDER/PATH/TO/UVTOOLS', [System.EnvironmentVariableTarget]::User)
-2) Edit the script and set the _CORE_PATH variable with the FOLDER/PATH/TO/UVTOOLS
-Path example: 'C:\Program Files (x86)\UVtools'
-Exiting now!"
+    1) Open powershell with admin and run: [System.Environment]::SetEnvironmentVariable('UVTOOLS_PATH','FOLDER/PATH/TO/UVTOOLS', [System.EnvironmentVariableTarget]::User)
+    2) Edit the script and set the _CORE_PATH variable with the FOLDER/PATH/TO/UVTOOLS
+    Path example: 'C:\Program Files (x86)\UVtools'
+    Exiting now!"
     return
 }
 

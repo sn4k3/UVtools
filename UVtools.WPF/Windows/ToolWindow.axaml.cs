@@ -575,7 +575,10 @@ public class ToolWindow : WindowEx
     #region Constructors
     public ToolWindow() 
     {
+        CanResize = Settings.General.WindowsCanResize;
+
         InitializeComponent();
+
         _contentScrollViewer = this.FindControl<ScrollViewer>("ContentScrollViewer");
         SelectAllLayers();
 
@@ -602,8 +605,8 @@ public class ToolWindow : WindowEx
         ToolControl = toolControl;
         toolControl.ParentWindow = this;
         toolControl.Margin = new Thickness(15);
-        ToolControl.BaseOperation.ROI = ROI;
-        ToolControl.BaseOperation.MaskPoints = Masks;
+        toolControl.BaseOperation.ROI = ROI;
+        toolControl.BaseOperation.MaskPoints = Masks;
 
         Title = toolControl.BaseOperation.Title;
         //LayerRangeVisible = toolControl.BaseOperation.StartLayerRangeSelection != LayerRangeSelection.None;
@@ -654,10 +657,10 @@ public class ToolWindow : WindowEx
         }
 
             
-        if (ToolControl.BaseOperation.CanHaveProfiles)
+        if (toolControl.BaseOperation.CanHaveProfiles)
         {
             _isProfilesVisible = true;
-            var profiles = OperationProfiles.GetOperations(ToolControl.BaseOperation.GetType());
+            var profiles = OperationProfiles.GetOperations(toolControl.BaseOperation.GetType());
             _profiles.AddRange(profiles);
 
             if (toolControl.BaseOperation.ImportedFrom == Operation.OperationImportFrom.None ||

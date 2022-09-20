@@ -70,9 +70,9 @@ namespace UVtools.WPF.Windows
         #region Constructor
         public MessageWindow()
         {
-            InitializeComponent();
-
             CanResize = Settings.General.WindowsCanResize;
+
+            InitializeComponent();
 
             _buttonsRightPanel = this.FindControl<StackPanel>("ButtonsRightPanel");
             DataContext = this;

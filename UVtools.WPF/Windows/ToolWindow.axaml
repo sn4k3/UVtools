@@ -6,8 +6,9 @@
         xmlns:i="clr-namespace:Projektanker.Icons.Avalonia;assembly=Projektanker.Icons.Avalonia"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="UVtools.WPF.Windows.ToolWindow"
-        CanResize="False"
         SizeToContent="WidthAndHeight"
+        MinWidth="500"
+        MinHeight="400"
         WindowStartupLocation="CenterOwner"
         Title="Tool"
         Icon="/Assets/Icons/UVtools.ico">
@@ -23,6 +24,7 @@
             IsExpanded="{Binding Settings.Tools.ExpandDescriptions}"
             HorizontalContentAlignment="Stretch"
             Header="Description (Click to toggle)">
+
             <TextBox Classes="TransparentReadOnlyMultiLineNoBorder"
                      MaxWidth="{Binding DescriptionMaxWidth}"
                      FontSize="16"
@@ -30,6 +32,7 @@
                      Watermark="Description:"
                      Padding="5"
                      Text="{Binding Description}"/>
+            
         </Expander>
     </Border>
 
@@ -66,16 +69,14 @@
             Grid.Column="0"
             VerticalAlignment="Center"
             Text="From:"
-            Margin="0,0,10,0"
-            />
+            Margin="0,0,10,0"/>
 
           <NumericUpDown Grid.Row="0" Grid.Column="1"
                          Classes="ValueLabel ValueLabel_layers"
                          VerticalAlignment="Center"
                          Minimum="0"
                          Maximum="{Binding MaximumLayerIndex}"
-                         Value="{Binding LayerIndexStart}"
-          />
+                         Value="{Binding LayerIndexStart}"/>
 
           <TextBlock
             Grid.Row="0"
@@ -83,8 +84,7 @@
             VerticalAlignment="Center"
             Text="To:"
             IsEnabled="{Binding !LayerRangeSync}"
-            Margin="20,0,10,0"
-            />
+            Margin="20,0,10,0"/>
 
           <NumericUpDown Grid.Row="0" Grid.Column="3"
                          Classes="ValueLabel ValueLabel_layers"
@@ -109,8 +109,7 @@
             Padding="10,0,10,0"
             Content="Select ⮟"
             Command="{Binding OpenContextMenu}"
-            CommandParameter="LayerSelectPreset"
-            >
+            CommandParameter="LayerSelectPreset">
             <Button.ContextMenu>
               <ContextMenu Name="LayerSelectPresetContextMenu" PlacementMode="Bottom">
                 <MenuItem
@@ -152,14 +151,12 @@
                 <MenuItem
                   Header="_First layer"
                   HotKey="Ctrl + Shift + F" InputGesture="Ctrl + Shift + F"
-                  Command="{Binding SelectFirstLayer}"
-                  />
+                  Command="{Binding SelectFirstLayer}"/>
 
                 <MenuItem
                   Header="_Last layer"
                   HotKey="Ctrl + Shift + L" InputGesture="Ctrl + Shift + L"
-                  Command="{Binding SelectLastLayer}"
-                  />
+                  Command="{Binding SelectLastLayer}"/>
 
               </ContextMenu>
             </Button.ContextMenu>
@@ -342,6 +339,8 @@
 
             <ScrollViewer Grid.Row="1"
                           Name="ContentScrollViewer"
+                          VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Auto"
                 Content="{Binding ContentControl}"/>
         </Grid>
     </Border>
@@ -351,8 +350,7 @@
       <Grid RowDefinitions="Auto"
           ColumnDefinitions="*">
         <StackPanel Spacing="10" Orientation="Horizontal">
-            <Button
-                Command="{Binding #OptionsContextMenu.Open}"
+            <Button Command="{Binding #OptionsContextMenu.Open}"
                 Padding="10"
                 Content="☰">
                 <Button.ContextMenu>

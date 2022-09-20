@@ -48,12 +48,17 @@
 		<Property Id="CREATEDESKTOPSHORTCUT" Value="1">
 			<!--<RegistrySearch Id="CREATEDESKTOPSHORTCUT_REG" Type="raw" Root="HKCU" Key="Software\[ProductName]" Name="CreateDesktopShortcut" />!-->
 		</Property>
-		<SetProperty Id="CREATEDESKTOPSHORTCUT" Value="0" Before="WriteRegistryValues" Sequence="execute">NOT (CREATEDESKTOPSHORTCUT="1")</SetProperty>
+		<SetProperty Id="CREATEDESKTOPSHORTCUT" Value="0" Before="WriteRegistryValues" Sequence="execute">NOT (CREATEDESKTOPSHORTCUT=1)</SetProperty>
 
 		<Property Id="CREATEFILEASSOCIATIONS" Value="1">
 			<!--<RegistrySearch Id="CREATEFILEASSOCIATIONS_REG" Type="raw" Root="HKCU" Key="Software\[ProductName]" Name="CreateFileAssociations" />!-->
 		</Property>
-		<SetProperty Id="CREATEFILEASSOCIATIONS" Value="0" Before="WriteRegistryValues" Sequence="execute">NOT (CREATEFILEASSOCIATIONS="1")</SetProperty>
+		<SetProperty Id="CREATEFILEASSOCIATIONS" Value="0" Before="WriteRegistryValues" Sequence="execute">NOT (CREATEFILEASSOCIATIONS=1)</SetProperty>
+
+		<Property Id="SETPATHENVIRONMENTVAR" Value="1">
+			<!--<RegistrySearch Id="SETPATHENVIRONMENTVAR_REG" Type="raw" Root="HKCU" Key="Software\[ProductName]" Name="SetPathEnvironmentVar" />!-->
+		</Property>
+		<SetProperty Id="SETPATHENVIRONMENTVAR" Value="0" Before="WriteRegistryValues" Sequence="execute">NOT (SETPATHENVIRONMENTVAR=1)</SetProperty>
 
 		<UIRef Id="UI" />
 
@@ -104,12 +109,20 @@
 				</Directory>
 			</Directory>
 
+			<!-- Environment vars -->
+			<Component Id="CMP_SetPathEnvironmentVar" Guid="974A9C67-F75E-44BB-BDCD-59680100504E">
+				<Condition>SETPATHENVIRONMENTVAR = 1</Condition>
+				<Environment Id="PathEnvironmentVar" Name="PATH" Value="[INSTALLFOLDER]" Permanent="no" Part="last" Action="set" System="yes" />
+			</Component>
+
+			<!-- Start Registry -->
 			<Component Id="RegInstallInfo" Guid="C3603223-A8C1-4393-8C06-36B48DED2652">
 				<!-- Install directory -->
 				<RegistryKey Root="HKCU" Key="Software\[ProductName]" ForceCreateOnInstall="yes" ForceDeleteOnUninstall="yes">
 					<RegistryValue Name="InstallDir" Value="[INSTALLFOLDER]" Type="string" />
 					<RegistryValue Name="CreateDesktopShortcut" Value="[CREATEDESKTOPSHORTCUT]" Type="integer" />
 					<RegistryValue Name="CreateFileAssociations" Value="[CREATEFILEASSOCIATIONS]" Type="integer" />
+					<RegistryValue Name="SetPathEnvironmentVar" Value="[SETPATHENVIRONMENTVAR]" Type="integer" />
 				</RegistryKey>
 			</Component>
 
@@ -128,15 +141,19 @@
 				</RegistryKey>
 
 			</Component>
+			<!-- End Registry -->
 		</DirectoryRef>
 
+		<!-- Start Features -->
 		<Feature Id="UVtools" Title="UVtools" Description="Installs all the files needed for [ProductName]" Level="1" AllowAdvertise="no" ConfigurableDirectory="INSTALLFOLDER">
 			<ComponentRef Id="RegInstallInfo" />
 			<ComponentRef Id="RegFilesAssociations" />
 			<ComponentGroupRef Id="HeatGeneratedFileList" />
 			<ComponentRef Id="CMP_DesktopShortcuts" />
 			<ComponentRef Id="CMP_StartMenuShortcuts" />
+			<ComponentRef Id="CMP_SetPathEnvironmentVar" />
 		</Feature>
+		<!-- End Features -->
 
 		<Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOXTEXT" Value="Launch UVtools" />
 		<Property Id="WixShellExecTarget" Value="[INSTALLFOLDER]UVtools.exe" />

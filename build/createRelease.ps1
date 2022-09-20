@@ -317,7 +317,7 @@ foreach($line in $changelog) {
 Write-Host $sb.ToString()
 Set-Content -Path "$rootFolder/RELEASE_NOTES.md" -Value $sb.ToString()
 
-
+<#
 if($null -ne $enableNugetPublish -and $enableNugetPublish)
 {
     $nugetApiKeyFile = 'build/secret/nuget_api.key'
@@ -339,6 +339,7 @@ if($null -ne $enableNugetPublish -and $enableNugetPublish)
         }
     }
 }
+#>
 
 foreach ($obj in $runtimes.GetEnumerator()) { 
     if(![string]::IsNullOrWhiteSpace($buildOnly) -and !$buildOnly.Equals($obj.Name)) {continue}

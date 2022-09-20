@@ -128,19 +128,34 @@ public class WindowEx : Window, INotifyPropertyChanged, IStyleable
         base.OnInitialized();
     }
 
-    /*protected override void OnOpened(EventArgs e)
+    protected override void OnOpened(EventArgs e)
     {
+        // Fix positions and sizes
+        if (WindowState == WindowState.Normal)
+        {
+            if (Position.X < 0) Position = Position.WithX(0);
+            if (Position.Y < 0) Position = Position.WithY(0);
+
+            if ((SizeToContent & SizeToContent.Height) == 0)
+            {
+                var workingArea = this.GetScreenWorkingArea();
+                if (Bounds.Bottom > workingArea.Height)
+                {
+                    Height = workingArea.Height - Position.Y;
+                }
+            }
+        }
+
+        //Debug.WriteLine("OnOpened");
         base.OnOpened(e);
-        Debug.WriteLine("OnOpened");
-        AutoConstainsWindowMaxSize();
-    }*/
+    }
 
     public void ConstainsWindowMaxSize()
     {
-        if (WindowStartupLocation == WindowStartupLocation.CenterOwner && Owner is null)
+        /*if (WindowStartupLocation == WindowStartupLocation.CenterOwner && Owner is null)
         {
             WindowStartupLocation = WindowStartupLocation.CenterScreen;
-        }
+        }*/
 
         if (!CanResize && WindowState == WindowState.Normal && WindowConstrainMaxSize != WindowConstrainsMaxSizeType.None)
         {
