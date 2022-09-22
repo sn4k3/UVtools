@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<_010editor_project version="1.0">
+ <include_workspace>false</include_workspace>
+ <relative_paths>true</relative_paths>
+ <auto_save>true</auto_save>
+ <file>ctb.bt</file>
+ <file>ctb_decrypted.bt</file>
+ <file>ctb_encrypted.bt</file>
+ <file>cxdlp.bt</file>
+ <file>cxdlp_v1.bt</file>
+ <file>fdg.bt</file>
+ <file>gr1.bt</file>
+ <file>lgs.bt</file>
+ <file>mdlp.bt</file>
+ <file>osf.bt</file>
+ <file>osla.bt</file>
+ <file>photons.bt</file>
+ <file>PhotonWorkshop.bt</file>
+ <file>phz.bt</file>
+ <file>svgx.bt</file>
+</_010editor_project>
