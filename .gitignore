@@ -405,6 +405,9 @@ FodyWeavers.xsd
 **/OldVersions/
 .lockfile
 
+# 010 Editor
+*.1wk
+
 # PyCharm
 .idea/
 
