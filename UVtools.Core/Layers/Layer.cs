@@ -18,6 +18,7 @@ using System.Linq;
 using System.Text.Json.Serialization;
 using System.Xml.Serialization;
 using K4os.Compression.LZ4;
+using UVtools.Core.EmguCV;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Objects;
@@ -814,7 +815,22 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
         }
     }
 
-    //public Mat LayerMatBoundingRectangle => new(LayerMat, BoundingRectangle);
+    /// <summary>
+    /// Gets the layer mat with roi of it bounding rectangle
+    /// </summary>
+    public MatRoi LayerMatBoundingRectangle => new(LayerMat, BoundingRectangle);
+
+    /// <summary>
+    /// Gets the layer mat with roi of model bounding rectangle
+    /// </summary>
+    public MatRoi LayerMatModelBoundingRectangle => new(LayerMat, SlicerFile.BoundingRectangle);
+
+    /// <summary>
+    /// Gets the layer mat with a specified roi
+    /// </summary>
+    /// <param name="roi">Region of interest</param>
+    /// <returns></returns>
+    public MatRoi GetLayerMat(Rectangle roi) => new(LayerMat, roi);
 
     /// <summary>
     /// Gets a new Brg image instance
@@ -1215,8 +1231,19 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
             needDispose = true;
         }
 
-        NonZeroPixelCount = (uint)CvInvoke.CountNonZero(mat);
-        BoundingRectangle = _nonZeroPixelCount > 0 ? CvInvoke.BoundingRectangle(mat) : Rectangle.Empty;
+
+        //NonZeroPixelCount = (uint)CvInvoke.CountNonZero(mat);
+        //BoundingRectangle = _nonZeroPixelCount > 0 ? CvInvoke.BoundingRectangle(mat) : Rectangle.Empty;
+        BoundingRectangle = CvInvoke.BoundingRectangle(mat);
+        if (_boundingRectangle.IsEmpty)
+        {
+            NonZeroPixelCount = 0;
+        }
+        else
+        {
+            using var roiMat = mat.Roi(_boundingRectangle);
+            NonZeroPixelCount = (uint)CvInvoke.CountNonZero(roiMat);
+        }
 
 
         if (needDispose) mat!.Dispose();
@@ -1589,6 +1616,23 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
     #endregion
 
     #region Static Methods
+
+    /// <summary>
+    /// Gets the bounding rectangle that is the union of a collection of layers
+    /// </summary>
+    /// <param name="layers">Layer collection</param>
+    /// <returns></returns>
+    public static Rectangle GetBoundingRectangleUnion(params Layer[] layers)
+    {
+        var rect = Rectangle.Empty;
+        foreach (var layer in layers)
+        {
+            if(layer.BoundingRectangle.IsEmpty) continue;
+            rect = rect.IsEmpty ? layer.BoundingRectangle : Rectangle.Union(rect, layer.BoundingRectangle);
+        }
+
+        return rect;
+    }
 
     public static float RoundHeight(float height) => (float) Math.Round(height, HeightPrecision);
     public static double RoundHeight(double height) => Math.Round(height, HeightPrecision);

@@ -44,6 +44,12 @@ public static class CoreSettings
     public static ParallelOptions ParallelOptions => new() {MaxDegreeOfParallelism = _maxDegreeOfParallelism};
 
     /// <summary>
+    /// Gets the ParallelOptions with <see cref="MaxDegreeOfParallelism"/> set to 1 for debug purposes
+    /// </summary>
+    public static ParallelOptions ParallelDebugOptions => new() { MaxDegreeOfParallelism = 1 };
+
+
+    /// <summary>
     /// Gets the ParallelOptions with <see cref="MaxDegreeOfParallelism"/> and the <see cref="CancellationToken"/> set
     /// </summary>
     public static ParallelOptions GetParallelOptions(CancellationToken token = default)

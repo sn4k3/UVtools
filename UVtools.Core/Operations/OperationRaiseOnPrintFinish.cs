@@ -22,8 +22,9 @@ public class OperationRaiseOnPrintFinish : Operation
 
     #region Members
     private decimal _positionZ;
-
+    private decimal _waitTime = 1200; // 20m
     private bool _outputDummyPixel = true;
+
     #endregion
 
     #region Overrides
@@ -89,7 +90,7 @@ public class OperationRaiseOnPrintFinish : Operation
 
     public override string ToString()
     {
-        var result = $"[Z={_positionZ}mm] [Dummy pixel: {_outputDummyPixel}]";
+        var result = $"[Z={_positionZ}mm] [Wait: {_waitTime}s] [Dummy pixel: {_outputDummyPixel}]";
         if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
         return result;
     }
@@ -98,14 +99,27 @@ public class OperationRaiseOnPrintFinish : Operation
     #region Properties
 
     public float MinimumPositionZ => Layer.RoundHeight(SlicerFile.PrintHeight + SlicerFile.LayerHeight);
+    public float MediumPositionZ => Layer.RoundHeight(MinimumPositionZ + (MaximumPositionZ - MinimumPositionZ) / 2);
+    public float MaximumPositionZ => Math.Max(MinimumPositionZ, Layer.RoundHeight(SlicerFile.MachineZ));
 
     /// <summary>
-    /// Sets or gets the Z position to raise to
+    /// Gets or sets the Z position to raise to
     /// </summary>
     public decimal PositionZ
     {
         get => _positionZ;
         set => RaiseAndSetIfChanged(ref _positionZ, Layer.RoundHeight(value));
+    }
+
+    /// <summary>
+    /// <para>Gets or sets the ensured wait time to stay still on the desired position.</para>
+    /// <para>This is useful if the printer firmware always move to top and you want to stay still on the set position for at least the desired time.</para>
+    /// <para>Note: The print time calculation will take this wait into consideration and display a longer print time.</para>
+    /// </summary>
+    public decimal WaitTime
+    {
+        get => _waitTime;
+        set => RaiseAndSetIfChanged(ref _waitTime, Math.Round(Math.Max(0, value), 2));
     }
 
     /// <summary>
@@ -125,7 +139,10 @@ public class OperationRaiseOnPrintFinish : Operation
         //_outputDummyPixel = !SlicerFile.SupportsGCode;
     }
 
-    public OperationRaiseOnPrintFinish(FileFormat slicerFile) : base(slicerFile) 
+    public OperationRaiseOnPrintFinish(FileFormat slicerFile) : base(slicerFile)
+    { }
+
+    public override void InitWithSlicerFile()
     {
         if (_positionZ <= 0) _positionZ = (decimal)SlicerFile.MachineZ;
     }
@@ -136,7 +153,7 @@ public class OperationRaiseOnPrintFinish : Operation
 
     protected bool Equals(OperationRaiseOnPrintFinish other)
     {
-        return _positionZ == other._positionZ && _outputDummyPixel == other._outputDummyPixel;
+        return _positionZ == other._positionZ && _outputDummyPixel == other._outputDummyPixel && _waitTime == other._waitTime;
     }
 
     public override bool Equals(object? obj)
@@ -149,12 +166,18 @@ public class OperationRaiseOnPrintFinish : Operation
 
     public override int GetHashCode()
     {
-        return HashCode.Combine(_positionZ, _outputDummyPixel);
+        return HashCode.Combine(_positionZ, _outputDummyPixel, _waitTime);
     }
 
     #endregion
 
     #region Methods
+
+    public void SetToMinimumPosition() => PositionZ = (decimal)MinimumPositionZ;
+    public void SetToMediumPosition() => PositionZ = (decimal)MediumPositionZ;
+    public void SetToMaximumPosition() => PositionZ = (decimal)MaximumPositionZ;
+
+    public void SetWaitTime(decimal time) => WaitTime = time;
 
     protected override bool ExecuteInternally(OperationProgress progress)
     {
@@ -168,6 +191,8 @@ public class OperationRaiseOnPrintFinish : Operation
             : SlicerFile.CreateMat();
                
         layer.LayerMat = newMat;
+
+        if(_waitTime > 0) layer.SetWaitTimeBeforeCureOrLightOffDelay((float)_waitTime);
 
         SlicerFile.SuppressRebuildPropertiesWork(() =>
         {

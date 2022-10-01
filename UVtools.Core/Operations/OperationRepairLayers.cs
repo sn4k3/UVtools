@@ -250,12 +250,12 @@ public class OperationRepairLayers : Operation
                 {
                     var layer = SlicerFile[group.Key];
                     var image = layer.LayerMat;
-                    var bytes = image.GetDataByteSpan();
+                    var span = image.GetDataByteSpan();
                     foreach (IssueOfPoints issue in group)
                     {
                         foreach (var issuePixel in issue.Points)
                         {
-                            bytes[image.GetPixelPos(issuePixel)] = 0;
+                            span[image.GetPixelPos(issuePixel)] = 0;
                         }
 
                         progress.LockAndIncrement();
@@ -435,17 +435,16 @@ public class OperationRepairLayers : Operation
                 if (_repairIslands && (_gapClosingIterations > 0 || _noiseRemovalIterations > 0))
                 {
                     InitImage();
-                    using var kernel = CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(3, 3),
-                        new Point(-1, -1));
+
                     if (_gapClosingIterations > 0)
                     {
-                        CvInvoke.MorphologyEx(image, image, MorphOp.Close, kernel, new Point(-1, -1),
+                        CvInvoke.MorphologyEx(image, image, MorphOp.Close, EmguExtensions.Kernel3x3Rectangle, EmguExtensions.AnchorCenter,
                             (int)_gapClosingIterations, BorderType.Default, default);
                     }
 
                     if (_noiseRemovalIterations > 0)
                     {
-                        CvInvoke.MorphologyEx(image, image, MorphOp.Open, kernel, new Point(-1, -1),
+                        CvInvoke.MorphologyEx(image, image, MorphOp.Open, EmguExtensions.Kernel3x3Rectangle, EmguExtensions.AnchorCenter,
                             (int)_noiseRemovalIterations, BorderType.Default, default);
                     }
                 }

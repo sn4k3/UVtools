@@ -535,7 +535,6 @@ public class OperationPixelArithmetic : Operation
         Mat? patternAlternateMat = null;
         Mat patternMatMask = null!;
         Mat patternAlternateMatMask = null!;
-        var anchor = new Point(-1, -1);
 
         if (_usePattern && IsUsePatternVisible)
         {
@@ -639,7 +638,7 @@ public class OperationPixelArithmetic : Operation
                             using var erode = new Mat();
                             int iterations = 1;
                             var kernel = Kernel.GetKernel(ref iterations);
-                            CvInvoke.Erode(target, erode, kernel, anchor, iterations, BorderType.Reflect101, default);
+                            CvInvoke.Erode(target, erode, kernel, EmguExtensions.AnchorCenter, iterations, BorderType.Reflect101, default);
                             CvInvoke.Subtract(target, erode, erode);
                             CvInvoke.Add(applyMask, erode, applyMask);
                                 
@@ -649,7 +648,7 @@ public class OperationPixelArithmetic : Operation
                             {
                                 iterations = wallThickness - 1;
                                 kernel = Kernel.GetKernel(ref iterations);
-                                CvInvoke.Dilate(applyMask, erode, kernel, anchor, iterations, BorderType.Reflect101, default);
+                                CvInvoke.Dilate(applyMask, erode, kernel, EmguExtensions.AnchorCenter, iterations, BorderType.Reflect101, default);
                                 erode.CopyTo(applyMask, target);
                             }
                         }
@@ -666,7 +665,7 @@ public class OperationPixelArithmetic : Operation
                         applyMask = new Mat();
                         int iterations = wallThickness;
                         var kernel = Kernel.GetKernel(ref iterations); 
-                        CvInvoke.Erode(target, applyMask, kernel, anchor, iterations, BorderType.Reflect101, default);
+                        CvInvoke.Erode(target, applyMask, kernel, EmguExtensions.AnchorCenter, iterations, BorderType.Reflect101, default);
                         break;
                     }
                     case PixelArithmeticApplyMethod.ModelWalls:
@@ -681,7 +680,7 @@ public class OperationPixelArithmetic : Operation
                         applyMask = target.Clone();
                         int iterations = wallThickness;
                         var kernel = Kernel.GetKernel(ref iterations);
-                        CvInvoke.Erode(target, erode, kernel, anchor, iterations, BorderType.Reflect101, default);
+                        CvInvoke.Erode(target, erode, kernel, EmguExtensions.AnchorCenter, iterations, BorderType.Reflect101, default);
                         applyMask.SetTo(EmguExtensions.BlackColor, erode);
                         break;
                     }

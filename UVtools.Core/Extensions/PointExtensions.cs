@@ -62,6 +62,10 @@ public static class PointExtensions
         }
     }
 
+    public static Point Invert(this Point point) => new(-point.X, -point.Y);
+
+    public static PointF Invert(this PointF point) => new(-point.X, -point.Y);
+
     public static Point OffsetBy(this Point point, int value)=> new(point.X + value, point.Y + value);
     public static Point OffsetBy(this Point point, int x, int y) => new(point.X + x, point.Y + y);
     public static Point OffsetBy(this Point point, Point other) => new(point.X + other.X, point.Y + other.Y);

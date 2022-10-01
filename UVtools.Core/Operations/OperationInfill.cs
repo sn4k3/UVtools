@@ -182,7 +182,7 @@ public sealed class OperationInfill : Operation
     public override bool Execute(Mat mat, params object[]? arguments)
     {
         if (arguments is null || arguments.Length < 1) return false;
-        var anchor = new Point(-1, -1);
+
         var kernel = EmguExtensions.Kernel3x3Rectangle;
         uint index = Convert.ToUInt32(arguments[0]);
         uint layerIndex = index - LayerIndexStart;
@@ -465,7 +465,7 @@ public sealed class OperationInfill : Operation
 
 
         //patternMask.Save("D:\\pattern.png");
-        CvInvoke.Erode(target, erode, kernel, anchor, WallThickness, BorderType.Reflect101,
+        CvInvoke.Erode(target, erode, kernel, EmguExtensions.AnchorCenter, WallThickness, BorderType.Reflect101,
             default);
         CvInvoke.Subtract(target, erode, diff);
 

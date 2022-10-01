@@ -436,7 +436,6 @@ public sealed class OperationCalibrateElephantFoot : Operation
     public Mat[] GetLayers()
     {
         var layers = new Mat[3];
-        var anchor = new Point(-1, -1);
             
         layers[0] = EmguExtensions.InitMat(SlicerFile.Resolution);
         layers[2] = layers[0].Clone();
@@ -655,7 +654,7 @@ public sealed class OperationCalibrateElephantFoot : Operation
                     mask.SetTo(new MCvScalar(byte.MaxValue-brightness));
                     int tempIterations = DimmingWallThickness;
                     var kernel = DimmingKernel.GetKernel(ref tempIterations);
-                    CvInvoke.Erode(shape, erode, kernel, anchor, tempIterations, BorderType.Reflect101, default);
+                    CvInvoke.Erode(shape, erode, kernel, EmguExtensions.AnchorCenter, tempIterations, BorderType.Reflect101, default);
                     //CvInvoke.Subtract(shape, erode, diff);
                     //CvInvoke.BitwiseAnd(diff, mask, target);
                     //CvInvoke.Add(erode, target, target);

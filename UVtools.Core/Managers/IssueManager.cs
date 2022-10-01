@@ -8,6 +8,7 @@ using System.Collections.ObjectModel;
 using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
+using CommunityToolkit.HighPerformance;
 using UVtools.Core.EmguCV;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
@@ -216,36 +217,34 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
                     return;
                 }
 
-                using (var image = layer.LayerMat)
+                using (var image = layer.GetLayerMat(layerIndex == 0 ? SlicerFile.BoundingRectangle : Layer.GetBoundingRectangleUnion(SlicerFile[layerIndex - 1], layer)))
                 {
-                    var step = image.GetRealStep();
-                    var span = image.GetDataByteSpan();
+                    var sourceSpan = image.SourceMat.GetDataByteSpan2D();
+                    var roiSpan = image.RoiMat.GetDataByteSpan2D();
 
                     if (touchBoundConfig.Enabled)
                     {
                         // TouchingBounds Checker
                         List<Point> pixels = new();
                         bool touchTop = layer.BoundingRectangle.Top <= touchBoundConfig.MarginTop;
-                        bool touchBottom = layer.BoundingRectangle.Bottom >= image.Height - touchBoundConfig.MarginBottom;
+                        bool touchBottom = layer.BoundingRectangle.Bottom >= image.SourceMat.Height - touchBoundConfig.MarginBottom;
                         bool touchLeft = layer.BoundingRectangle.Left <= touchBoundConfig.MarginLeft;
-                        bool touchRight = layer.BoundingRectangle.Right >=
-                                          image.Width - touchBoundConfig.MarginRight;
+                        bool touchRight = layer.BoundingRectangle.Right >= image.SourceMat.Width - touchBoundConfig.MarginRight;
 
                         int minx = int.MaxValue;
                         int miny = int.MaxValue;
                         int maxx = 0;
                         int maxy = 0;
-
+                        
                         if (touchTop || touchBottom)
                         {
-                            for (int x = 0; x < image.Width; x++) // Check Top and Bottom bounds
+                            for (int x = layer.BoundingRectangle.X; x < layer.BoundingRectangle.Right; x++) // Check Top and Bottom bounds
                             {
                                 if (touchTop)
                                 {
-                                    for (int y = 0; y < touchBoundConfig.MarginTop; y++) // Top
+                                    for (int y = layer.BoundingRectangle.Y; y < touchBoundConfig.MarginTop; y++) // Top
                                     {
-                                        if (span[image.GetPixelPos(x, y)] >=
-                                            touchBoundConfig.MinimumPixelBrightness)
+                                        if (sourceSpan.DangerousGetReferenceAt(y, x) >= touchBoundConfig.MinimumPixelBrightness)
                                         {
                                             pixels.Add(new Point(x, y));
                                             minx = Math.Min(minx, x);
@@ -258,12 +257,11 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
 
                                 if (touchBottom)
                                 {
-                                    for (int y = image.Height - touchBoundConfig.MarginBottom;
-                                         y < image.Height;
+                                    for (int y = image.SourceMat.Height - touchBoundConfig.MarginBottom;
+                                         y < layer.BoundingRectangle.Bottom;
                                          y++) // Bottom
                                     {
-                                        if (span[image.GetPixelPos(x, y)] >=
-                                            touchBoundConfig.MinimumPixelBrightness)
+                                        if (sourceSpan.DangerousGetReferenceAt(y, x) >= touchBoundConfig.MinimumPixelBrightness)
                                         {
                                             pixels.Add(new Point(x, y));
                                             minx = Math.Min(minx, x);
@@ -273,22 +271,20 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
                                         }
                                     }
                                 }
-
                             }
                         }
 
                         if (touchLeft || touchRight)
                         {
-                            for (int y = touchBoundConfig.MarginTop;
-                                 y < image.Height - touchBoundConfig.MarginBottom;
+                            for (int y = layer.BoundingRectangle.Y + touchBoundConfig.MarginTop;
+                                 y < layer.BoundingRectangle.Bottom - touchBoundConfig.MarginBottom;
                                  y++) // Check Left and Right bounds
                             {
                                 if (touchLeft)
                                 {
-                                    for (int x = 0; x < touchBoundConfig.MarginLeft; x++) // Left
+                                    for (int x = layer.BoundingRectangle.X; x < touchBoundConfig.MarginLeft; x++) // Left
                                     {
-                                        if (span[image.GetPixelPos(x, y)] >=
-                                            touchBoundConfig.MinimumPixelBrightness)
+                                        if (sourceSpan.DangerousGetReferenceAt(y, x) >= touchBoundConfig.MinimumPixelBrightness)
                                         {
                                             pixels.Add(new Point(x, y));
                                             minx = Math.Min(minx, x);
@@ -301,12 +297,11 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
 
                                 if (touchRight)
                                 {
-                                    for (int x = image.Width - touchBoundConfig.MarginRight;
-                                         x < image.Width;
+                                    for (int x = layer.BoundingRectangle.Right - touchBoundConfig.MarginRight;
+                                         x < layer.BoundingRectangle.Right;
                                          x++) // Right
                                     {
-                                        if (span[image.GetPixelPos(x, y)] >=
-                                            touchBoundConfig.MinimumPixelBrightness)
+                                        if (sourceSpan.DangerousGetReferenceAt(y, x) >= touchBoundConfig.MinimumPixelBrightness)
                                         {
                                             pixels.Add(new Point(x, y));
                                             minx = Math.Min(minx, x);
@@ -328,8 +323,59 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
 
                     if (layerIndex > 0 && layer.PositionZ > firstLayer!.PositionZ) // No islands nor overhangs for layer 0 or on plate
                     {
-                        Mat? previousImage = null;
-                        Span<byte> previousSpan = null;
+                        MatRoi? previousImage = null;
+                        Span2D<byte> previousSpan = null;
+                        Mat? overhangImage = null;
+                        var previousLayer = SlicerFile[layerIndex - 1];
+
+
+                        // Overhangs
+                        var overhangCount = 0;
+                        //if (!islandConfig.Enabled && overhangConfig.Enabled ||
+                        //    (islandConfig.Enabled && overhangConfig.Enabled && overhangConfig.IndependentFromIslands))
+                        if (overhangConfig.Enabled)
+                        {
+                            bool canProcessCheck = true;
+                            if (overhangConfig.WhiteListLayers is not null) // Check white list
+                            {
+                                if (!overhangConfig.WhiteListLayers.Contains(layerIndex))
+                                {
+                                    canProcessCheck = false;
+                                }
+                            }
+
+                            if (canProcessCheck)
+                            {
+                                previousImage ??= previousLayer.GetLayerMat(Layer.GetBoundingRectangleUnion(previousLayer, layer));
+
+                                overhangImage = new Mat();
+                                using var vecPoints = new VectorOfPoint();
+
+                                CvInvoke.Subtract(image.RoiMat, previousImage.RoiMat, overhangImage);
+                                CvInvoke.Threshold(overhangImage, overhangImage, 127, 255, ThresholdType.Binary);
+
+                                CvInvoke.Erode(overhangImage, overhangImage, EmguExtensions.Kernel3x3Rectangle,
+                                    EmguExtensions.AnchorCenter, overhangConfig.ErodeIterations, BorderType.Default, default);
+
+                                //CvInvoke.MorphologyEx(subtractedImage, subtractedImage, MorphOp.Open, EmguExtensions.Kernel3x3Rectangle,
+                                //    EmguExtensions.AnchorCenter, 2, BorderType.Reflect101, default);
+
+                                using var contours = overhangImage.FindContours(out var hierarchy, RetrType.Tree, ChainApproxMethod.ChainApproxSimple, image.RoiLocation);
+                                var contoursInGroups = EmguContours.GetPositiveContoursInGroups(contours, hierarchy);
+
+                                foreach (var contourGroup in contoursInGroups)
+                                {
+                                    if (contourGroup[0].Size < 3) continue; // Single contour, single line, ignore
+                                    overhangCount++;
+                                    var area = EmguContours.GetContourArea(contourGroup);
+                                    if (area >= overhangConfig.RequiredPixelsToConsider)
+                                    {
+                                        var rect = CvInvoke.BoundingRectangle(contourGroup[0]);
+                                        AddIssue(new MainIssue(MainIssue.IssueType.Overhang, new IssueOfContours(layer, contourGroup.ToArrayOfArray(), rect, area)));
+                                    }
+                                }
+                            }
+                        }
 
                         if (islandConfig.Enabled)
                         {
@@ -350,12 +396,11 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
                                 {
                                     needDispose = true;
                                     islandImage = new();
-                                    CvInvoke.Threshold(image, islandImage, islandConfig.BinaryThreshold, byte.MaxValue,
-                                        ThresholdType.Binary);
+                                    CvInvoke.Threshold(image.RoiMat, islandImage, islandConfig.BinaryThreshold, byte.MaxValue, ThresholdType.Binary);
                                 }
                                 else
                                 {
-                                    islandImage = image;
+                                    islandImage = image.RoiMat;
                                 }
 
                                 using Mat labels = new();
@@ -373,48 +418,53 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
                                 }
 
                                 // Get array that contains details of each connected component
-                                var ccStats = stats.GetData();
+                                //var ccStats = stats.GetData();
                                 //stats[i][0]: Left Edge of Connected Component
                                 //stats[i][1]: Top Edge of Connected Component 
                                 //stats[i][2]: Width of Connected Component
                                 //stats[i][3]: Height of Connected Component
                                 //stats[i][4]: Total Area (in pixels) in Connected Component
-
-                                var labelSpan = labels.GetDataSpan<int>();
+                                var ccStats = stats.GetDataSpan<int>();
+                                var labelSpan = labels.GetDataSpan2D<int>();
 
                                 for (int i = 1; i < numLabels; i++)
                                 {
+                                    int pos = i * stats.Cols;
                                     Rectangle rect = new(
-                                        (int)ccStats.GetValue(i, (int)ConnectedComponentsTypes.Left)!,
+                                        ccStats[pos + (int)ConnectedComponentsTypes.Left],
+                                        ccStats[pos + (int)ConnectedComponentsTypes.Top],
+                                        ccStats[pos + (int)ConnectedComponentsTypes.Width],
+                                        ccStats[pos + (int)ConnectedComponentsTypes.Height]
+                                        /*(int)ccStats.GetValue(i, (int)ConnectedComponentsTypes.Left)!,
                                         (int)ccStats.GetValue(i, (int)ConnectedComponentsTypes.Top)!,
                                         (int)ccStats.GetValue(i, (int)ConnectedComponentsTypes.Width)!,
-                                        (int)ccStats.GetValue(i, (int)ConnectedComponentsTypes.Height)!);
+                                        (int)ccStats.GetValue(i, (int)ConnectedComponentsTypes.Height)!*/
+                                        );
 
-                                    if (rect.Area() < islandConfig.RequiredAreaToProcessCheck)
+                                    if (ccStats[pos + (int)ConnectedComponentsTypes.Area] < islandConfig.RequiredAreaToProcessCheck)
                                         continue;
 
-                                    if (previousImage is null)
+                                    previousImage ??= previousLayer.GetLayerMat(Layer.GetBoundingRectangleUnion(previousLayer, layer));
+
+                                    if (previousSpan == null)
                                     {
-                                        previousImage = SlicerFile[layerIndex - 1].LayerMat;
-                                        previousSpan = previousImage.GetDataByteSpan();
+                                        previousSpan = previousImage.RoiMat.GetDataByteSpan2D();
                                     }
 
                                     List<Point> points = new();
                                     uint pixelsSupportingIsland = 0;
-
+                                    
                                     for (int y = rect.Y; y < rect.Bottom; y++)
                                     for (int x = rect.X; x < rect.Right; x++)
                                     {
-                                        int pixel = step * y + x;
-                                        if (
-                                            labelSpan[pixel] !=
-                                            i || // Background pixel or a pixel from another component within the bounding rectangle
-                                            span[pixel] < islandConfig.RequiredPixelBrightnessToProcessCheck // Low brightness, ignore
+                                        if (labelSpan.DangerousGetReferenceAt(y, x) != i || // Background pixel or a pixel from another component within the bounding rectangle
+                                            roiSpan.DangerousGetReferenceAt(y, x) < islandConfig.RequiredPixelBrightnessToProcessCheck // Low brightness, ignore
                                         ) continue;
 
-                                        points.Add(new Point(x, y));
+                                        points.Add(new Point(image.Roi.X + x, image.Roi.Y + y));
 
-                                        if (previousSpan[pixel] >= islandConfig.RequiredPixelBrightnessToSupport)
+                                        //int pixel = roiStep * y + x;
+                                        if (previousSpan.DangerousGetReferenceAt(y, x) >= islandConfig.RequiredPixelBrightnessToSupport)
                                         {
                                             pixelsSupportingIsland++;
                                         }
@@ -434,101 +484,58 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
                                     IssueOfPoints? island = null;
                                     if (pixelsSupportingIsland < requiredSupportingPixels)
                                     {
-                                        island = new IssueOfPoints(layer, points.ToArray(), rect);
+                                        island = new IssueOfPoints(layer, points.ToArray(), new Rectangle(rect.Location.OffsetBy(image.RoiLocation), rect.Size));
                                     }
 
-                                    // Check for overhangs
-                                    if (overhangConfig.Enabled && !overhangConfig.IndependentFromIslands &&
-                                        island is null
-                                        || island is not null && islandConfig.EnhancedDetection &&
-                                        pixelsSupportingIsland >= 10
-                                       )
+                                    // Check for overhangs in islands
+                                    if (island is not null && islandConfig.EnhancedDetection && pixelsSupportingIsland >= 10 &&
+                                        (!overhangConfig.Enabled || (overhangConfig.Enabled && overhangCount > 0)))
                                     {
-                                        points.Clear();
-                                        using var imageRoi = image.Roi(rect);
-                                        using var previousImageRoi = previousImage.Roi(rect);
-                                        using var subtractedImage = new Mat();
-                                        var anchor = new Point(-1, -1);
-                                        CvInvoke.Subtract(imageRoi, previousImageRoi, subtractedImage);
-                                        CvInvoke.Threshold(subtractedImage, subtractedImage, 127, 255,
-                                            ThresholdType.Binary);
+                                        using var islandRoi = image.RoiMat.Roi(rect);
+                                        using var previousIslandRoi = previousImage.RoiMat.Roi(rect);
 
-                                        CvInvoke.Erode(subtractedImage, subtractedImage, EmguExtensions.Kernel3x3Rectangle,
-                                            anchor, overhangConfig.ErodeIterations, BorderType.Default, default);
+                                        if (overhangImage is null)
+                                        {
+                                            overhangImage = new Mat();
+                                            CvInvoke.Subtract(islandRoi, previousIslandRoi, overhangImage);
+                                            CvInvoke.Threshold(overhangImage, overhangImage, 127, 255, ThresholdType.Binary);
 
-                                        var subtractedSpan = subtractedImage.GetDataByteSpan();
+                                            CvInvoke.Erode(overhangImage, overhangImage, EmguExtensions.Kernel3x3Rectangle,
+                                                EmguExtensions.AnchorCenter, overhangConfig.ErodeIterations, BorderType.Default, default);
+                                        }
+
+                                        using var subtractedImage = overhangImage.Roi(rect);
+
+                                        var subtractedSpan = subtractedImage.GetDataByteSpan2D();
                                         var subtractedStep = subtractedImage.GetRealStep();
 
-                                        for (int y = 0; y < subtractedImage.Height; y++)
-                                        for (int x = 0; x < subtractedStep; x++)
+                                        int overhangPixels = 0;
+
+                                        for (int y = 0; y < subtractedImage.Height && overhangPixels < overhangConfig.RequiredPixelsToConsider; y++)
+                                        for (int x = 0; x < subtractedStep && overhangPixels < overhangConfig.RequiredPixelsToConsider; x++)
                                         {
                                             int labelX = rect.X + x;
                                             int labelY = rect.Y + y;
-                                            int pixel = subtractedImage.GetPixelPos(x, y);
-                                            int pixelLabel = labelY * step + labelX;
-                                            if (labelSpan[pixelLabel] != i || subtractedSpan[pixel] == 0)
+                                            if (labelSpan[labelY, labelX] != i || subtractedSpan.DangerousGetReferenceAt(y, x) == 0)
                                                 continue;
 
-                                            points.Add(new Point(labelX, labelY));
+                                            overhangPixels++;
                                         }
 
-                                        if (points.Count >= overhangConfig.RequiredPixelsToConsider
-                                           ) // Overhang
-                                        {
-                                            AddIssue(new MainIssue(MainIssue.IssueType.Overhang, new IssueOfPoints(layer, points, rect)));
-                                        }
-                                        else if (islandConfig.EnhancedDetection) // No overhang
+                                        if (overhangPixels < overhangConfig.RequiredPixelsToConsider) // No overhang = no island
                                         {
                                             island = null;
                                         }
+
                                     }
 
-                                    if (island is not null)
-                                        AddIssue(new MainIssue(MainIssue.IssueType.Island, island));
-                                }
-                            }
-                        }
-
-                        // Overhangs
-                        if (!islandConfig.Enabled && overhangConfig.Enabled ||
-                            (islandConfig.Enabled && overhangConfig.Enabled &&
-                             overhangConfig.IndependentFromIslands) )
-                        {
-                            bool canProcessCheck = true;
-                            if (overhangConfig.WhiteListLayers is not null) // Check white list
-                            {
-                                if (!overhangConfig.WhiteListLayers.Contains(layerIndex))
-                                {
-                                    canProcessCheck = false;
-                                }
-                            }
-
-                            if (canProcessCheck)
-                            {
-                                previousImage ??= SlicerFile[layerIndex - 1].LayerMat;
-
-                                using var subtractedImage = new Mat();
-                                using var vecPoints = new VectorOfPoint();
-                                var anchor = new Point(-1, -1);
-
-
-                                CvInvoke.Subtract(image, previousImage, subtractedImage);
-                                CvInvoke.Threshold(subtractedImage, subtractedImage, 127, 255,
-                                    ThresholdType.Binary);
-
-                                CvInvoke.Erode(subtractedImage, subtractedImage, EmguExtensions.Kernel3x3Rectangle,
-                                    anchor, overhangConfig.ErodeIterations, BorderType.Default, default);
-
-                                CvInvoke.FindNonZero(subtractedImage, vecPoints);
-                                if (vecPoints.Size >= overhangConfig.RequiredPixelsToConsider)
-                                {
-                                    AddIssue(new MainIssue(MainIssue.IssueType.Overhang, new IssueOfPoints(layer, vecPoints.ToArray(), layer.BoundingRectangle)
-                                    ));
+                                    if (island is not null) AddIssue(new MainIssue(MainIssue.IssueType.Island, island));
                                 }
                             }
                         }
 
                         previousImage?.Dispose();
+                        overhangImage?.Dispose();
                     }
 
                     if (resinTrapConfig.Enabled)
@@ -541,12 +548,12 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
                         if (resinTrapConfig.BinaryThreshold > 0)
                         {
                             resinTrapImage = new Mat();
-                            CvInvoke.Threshold(image, resinTrapImage, resinTrapConfig.BinaryThreshold, byte.MaxValue, ThresholdType.Binary);
+                            CvInvoke.Threshold(image.SourceMat, resinTrapImage, resinTrapConfig.BinaryThreshold, byte.MaxValue, ThresholdType.Binary);
                         }
                         else
                         {
                             needDispose = true;
-                            resinTrapImage = image;
+                            resinTrapImage = image.SourceMat;
                         }
                         var contourLayer = resinTrapImage.Roi(SlicerFile.BoundingRectangle);
 

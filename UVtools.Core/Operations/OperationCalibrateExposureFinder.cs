@@ -1766,8 +1766,7 @@ public sealed class OperationCalibrateExposureFinder : Operation
 
             CvInvoke.BitwiseAnd(layers[0], mat, layers[1], matMask);
 
-            Point anchor = new Point(-1, -1);
-            //CvInvoke.MorphologyEx(layers[1], layers[1], MorphOp.Open, CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(3,3), anchor), anchor, 1, BorderType.Reflect101, default);
+            //CvInvoke.MorphologyEx(layers[1], layers[1], MorphOp.Open, CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(3,3), EmguExtensions.AnchorCenter), EmguExtensions.AnchorCenter, 1, BorderType.Reflect101, default);
             
             mat.Dispose();
             matMask.Dispose();
@@ -1845,7 +1844,6 @@ public sealed class OperationCalibrateExposureFinder : Operation
         int partMarginXPx = (int)(_partMargin * Xppmm);
         int partMarginYPx = (int)(_partMargin * Yppmm);
 
-        var anchor = new Point(-1, -1);
         var kernel = EmguExtensions.Kernel3x3Rectangle;
 
         if (_patternModel)
@@ -1921,14 +1919,14 @@ public sealed class OperationCalibrateExposureFinder : Operation
 
                         if (layerCountOnHeight < _chamferLayers)
                         {
-                            CvInvoke.Erode(newMatRoi, newMatRoi, kernel, anchor, _chamferLayers - layerCountOnHeight, BorderType.Reflect101, default);
+                            CvInvoke.Erode(newMatRoi, newMatRoi, kernel, EmguExtensions.AnchorCenter, _chamferLayers - layerCountOnHeight, BorderType.Reflect101, default);
                         }
 
                         if (layer.IsBottomLayer)
                         {
                             if (_erodeBottomIterations > 0)
                             {
-                                CvInvoke.Erode(newMatRoi, newMatRoi, kernel, anchor, _erodeBottomIterations, BorderType.Reflect101, default);
+                                CvInvoke.Erode(newMatRoi, newMatRoi, kernel, EmguExtensions.AnchorCenter, _erodeBottomIterations, BorderType.Reflect101, default);
                             }
 
                             if(_patternModelTextEnabled)
@@ -2114,12 +2112,12 @@ public sealed class OperationCalibrateExposureFinder : Operation
 
                     if (isBottomLayer && _erodeBottomIterations > 0)
                     {
-                        CvInvoke.Erode(matRoi, matRoi, kernel, anchor, _erodeBottomIterations, BorderType.Reflect101, default);
+                        CvInvoke.Erode(matRoi, matRoi, kernel, EmguExtensions.AnchorCenter, _erodeBottomIterations, BorderType.Reflect101, default);
                     }
 
                     if (layerCountOnHeight < _chamferLayers)
                     {
-                        CvInvoke.Erode(matRoi, matRoi, kernel, anchor, _chamferLayers - layerCountOnHeight, BorderType.Reflect101, default);
+                        CvInvoke.Erode(matRoi, matRoi, kernel, EmguExtensions.AnchorCenter, _chamferLayers - layerCountOnHeight, BorderType.Reflect101, default);
                     }
 
                     if (_multipleBrightness && brightness < 255)

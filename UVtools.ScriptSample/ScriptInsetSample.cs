@@ -14,6 +14,7 @@ using UVtools.Core.Scripting;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using UVtools.Core;
+using UVtools.Core.Extensions;
 
 namespace UVtools.ScriptSample;
 
@@ -86,9 +87,8 @@ public class ScriptInsetSample : ScriptGlobals
     /// <returns>True if executes successfully to the end, otherwise false.</returns>
     public bool ScriptExecute()
     {
-        var anchor = new Point(-1, -1); // Kernel anchor, -1, -1 = center
         var kernel =
-            CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(3, 3), anchor); // Rectangle 3x3 kernel
+            CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(3, 3), EmguExtensions.AnchorCenter); // Rectangle 3x3 kernel
         Progress.Reset("Inset layers", Operation.LayerRangeCount); // Sets the progress name and number of items to process
 
             
@@ -104,10 +104,10 @@ public class ScriptInsetSample : ScriptGlobals
             var target = Operation.GetRoiOrDefault(mat); // Get ROI from mat if user selected an region
 
             // Erode original image by InsetMarginFromEdge pixels, so we get the offset margin from image and put new image on erodeMat
-            CvInvoke.Erode(target, erodeMat, kernel, anchor, InsetMarginFromEdge.Value, BorderType.Reflect101, default);
+            CvInvoke.Erode(target, erodeMat, kernel, EmguExtensions.AnchorCenter, InsetMarginFromEdge.Value, BorderType.Reflect101, default);
 
             // Now erode the eroded image with InsetThickness pixels, so we get the original-margin-thickness image and put the new image on wallMat
-            CvInvoke.Erode(erodeMat, wallMat, kernel, anchor, InsetThickness.Value, BorderType.Reflect101, default);
+            CvInvoke.Erode(erodeMat, wallMat, kernel, EmguExtensions.AnchorCenter, InsetThickness.Value, BorderType.Reflect101, default);
 
             // Subtract walls image from eroded image, so we get only the inset line pixels in white and put back into wallMat
             CvInvoke.Subtract(erodeMat, wallMat, wallMat);

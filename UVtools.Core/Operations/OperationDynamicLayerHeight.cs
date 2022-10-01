@@ -566,7 +566,6 @@ public sealed class OperationDynamicLayerHeight : Operation
             OldPrintTime = SlicerFile.PrintTime
         };
 
-        var anchor = new Point(-1, -1);
         var kernel = EmguExtensions.Kernel3x3Rectangle;
 
         var matCache = new MatCacheManager(this, (ushort)CacheObjectCount, ObjectsPerCache)
@@ -729,7 +728,7 @@ public sealed class OperationDynamicLayerHeight : Operation
                             break;
                         }*/
                         //Debug.WriteLine($"{layerIndex} - {erodeCount}");
-                        CvInvoke.Erode(matXorSum, matXor, kernel, anchor, 1, BorderType.Reflect101, default);
+                        CvInvoke.Erode(matXorSum, matXor, kernel, EmguExtensions.AnchorCenter, 1, BorderType.Reflect101, default);
                         //CvInvoke.Imshow("Render", erodeMatXor.Roi(SlicerFile.BoundingRectangle));
                         //CvInvoke.WaitKey();
                         if (CvInvoke.CountNonZero(matXor) == 0)

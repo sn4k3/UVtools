@@ -224,9 +224,9 @@ public class EmguContour : IReadOnlyCollection<Point>, IDisposable, IComparable<
     #region Static methods
     public static Point GetCentroid(VectorOfPoint points)
     {
-        if (points is null || points.Length == 0) return new Point(-1, -1);
+        if (points is null || points.Length == 0) return EmguExtensions.AnchorCenter;
         using var moments = CvInvoke.Moments(points);
-        return moments.M00 == 0 ? new Point(-1, -1) :
+        return moments.M00 == 0 ? EmguExtensions.AnchorCenter :
             new Point(
                 (int)Math.Round(moments.M10 / moments.M00),
                 (int)Math.Round(moments.M01 / moments.M00));

@@ -82,20 +82,20 @@ public class PhotonWorkshopFile : FileFormat
         
     public enum AnyCubicMachine : byte
     {
-        AnyCubicPhotonS,
-        AnyCubicPhotonZero,
-        AnyCubicPhotonX,
-        AnyCubicPhotonUltra,
-        AnyCubicPhotonD2,
-        AnyCubicPhotonMono,
-        AnyCubicPhotonMonoSE,
-        AnyCubicPhotonMono4K,
-        AnyCubicPhotonMonoX,
-        AnyCubicPhotonMonoX6KM3Plus,
-        AnyCubicPhotonMonoSQ,
-        AnyCubicPhotonM3,
-        AnyCubicPhotonM3Max,
-        AnyCubicCustom,
+        PhotonS,
+        PhotonZero,
+        PhotonX,
+        PhotonUltra,
+        PhotonD2,
+        PhotonMono,
+        PhotonMonoSE,
+        PhotonMono4K,
+        PhotonMonoX,
+        PhotonMonoX6KM3Plus,
+        PhotonMonoSQ,
+        PhotonM3,
+        PhotonM3Max,
+        Custom,
     }
     #endregion
 
@@ -1109,6 +1109,7 @@ public class PhotonWorkshopFile : FileFormat
         new(typeof(PhotonWorkshopFile), "pmsq", "Photon Mono SQ (PMSQ)"),
         new(typeof(PhotonWorkshopFile), "pm3", "Photon M3 (PM3)"),
         new(typeof(PhotonWorkshopFile), "pm3m", "Photon M3 Max (PM3M)"),
+        new(typeof(PhotonWorkshopFile), "pwc", "Anycubic Custom Machine (PWC)"),
         //new(typeof(PhotonWorkshopFile), "pwmb", "Photon M3 Plus (PWMB)"),
     };
 
@@ -1217,19 +1218,19 @@ public class PhotonWorkshopFile : FileFormat
             if (MachineSettings.DisplayWidth > 0) return MachineSettings.DisplayWidth;
             return PrinterModel switch
             {
-                AnyCubicMachine.AnyCubicPhotonS => 68.04f,
-                AnyCubicMachine.AnyCubicPhotonZero => 55.44f,
-                AnyCubicMachine.AnyCubicPhotonX => 192,
-                AnyCubicMachine.AnyCubicPhotonUltra => 102.40f,
-                AnyCubicMachine.AnyCubicPhotonD2 => 130.56f,
-                AnyCubicMachine.AnyCubicPhotonMono => 82.62f,
-                AnyCubicMachine.AnyCubicPhotonMonoSE => 82.62f,
-                AnyCubicMachine.AnyCubicPhotonMono4K => 134.40f,
-                AnyCubicMachine.AnyCubicPhotonMonoX => 192,
-                AnyCubicMachine.AnyCubicPhotonMonoX6KM3Plus => 198.15f,
-                AnyCubicMachine.AnyCubicPhotonMonoSQ => 120,
-                AnyCubicMachine.AnyCubicPhotonM3 => 163.84f,
-                AnyCubicMachine.AnyCubicPhotonM3Max => 298.08f,
+                AnyCubicMachine.PhotonS => 68.04f,
+                AnyCubicMachine.PhotonZero => 55.44f,
+                AnyCubicMachine.PhotonX => 192,
+                AnyCubicMachine.PhotonUltra => 102.40f,
+                AnyCubicMachine.PhotonD2 => 130.56f,
+                AnyCubicMachine.PhotonMono => 82.62f,
+                AnyCubicMachine.PhotonMonoSE => 82.62f,
+                AnyCubicMachine.PhotonMono4K => 134.40f,
+                AnyCubicMachine.PhotonMonoX => 192,
+                AnyCubicMachine.PhotonMonoX6KM3Plus => 198.15f,
+                AnyCubicMachine.PhotonMonoSQ => 120,
+                AnyCubicMachine.PhotonM3 => 163.84f,
+                AnyCubicMachine.PhotonM3Max => 298.08f,
                 _ => 0
             };
         }
@@ -1246,19 +1247,19 @@ public class PhotonWorkshopFile : FileFormat
             if (MachineSettings.DisplayHeight > 0) return MachineSettings.DisplayHeight;
             return PrinterModel switch
             {
-                AnyCubicMachine.AnyCubicPhotonS => 120.96f,
-                AnyCubicMachine.AnyCubicPhotonZero => 98.637f,
-                AnyCubicMachine.AnyCubicPhotonX => 120,
-                AnyCubicMachine.AnyCubicPhotonUltra => 57.60f,
-                AnyCubicMachine.AnyCubicPhotonD2 => 73.44f,
-                AnyCubicMachine.AnyCubicPhotonMono => 130.56f,
-                AnyCubicMachine.AnyCubicPhotonMonoSE => 130.56f,
-                AnyCubicMachine.AnyCubicPhotonMono4K => 84,
-                AnyCubicMachine.AnyCubicPhotonMonoX => 120,
-                AnyCubicMachine.AnyCubicPhotonMonoX6KM3Plus => 123.84f,
-                AnyCubicMachine.AnyCubicPhotonMonoSQ => 128,
-                AnyCubicMachine.AnyCubicPhotonM3 => 102.40f,
-                AnyCubicMachine.AnyCubicPhotonM3Max => 165.60f,
+                AnyCubicMachine.PhotonS => 120.96f,
+                AnyCubicMachine.PhotonZero => 98.637f,
+                AnyCubicMachine.PhotonX => 120,
+                AnyCubicMachine.PhotonUltra => 57.60f,
+                AnyCubicMachine.PhotonD2 => 73.44f,
+                AnyCubicMachine.PhotonMono => 130.56f,
+                AnyCubicMachine.PhotonMonoSE => 130.56f,
+                AnyCubicMachine.PhotonMono4K => 84,
+                AnyCubicMachine.PhotonMonoX => 120,
+                AnyCubicMachine.PhotonMonoX6KM3Plus => 123.84f,
+                AnyCubicMachine.PhotonMonoSQ => 128,
+                AnyCubicMachine.PhotonM3 => 102.40f,
+                AnyCubicMachine.PhotonM3Max => 165.60f,
                 _ => 0
             };
         }
@@ -1276,19 +1277,19 @@ public class PhotonWorkshopFile : FileFormat
             if (MachineSettings.MachineZ > 0) return MachineSettings.MachineZ;
             return PrinterModel switch
             {
-                AnyCubicMachine.AnyCubicPhotonS => 165,
-                AnyCubicMachine.AnyCubicPhotonZero => 150,
-                AnyCubicMachine.AnyCubicPhotonX => 245,
-                AnyCubicMachine.AnyCubicPhotonUltra => 165,
-                AnyCubicMachine.AnyCubicPhotonD2 => 165,
-                AnyCubicMachine.AnyCubicPhotonMono => 165,
-                AnyCubicMachine.AnyCubicPhotonMonoSE => 160,
-                AnyCubicMachine.AnyCubicPhotonMono4K => 165,
-                AnyCubicMachine.AnyCubicPhotonMonoX => 245,
-                AnyCubicMachine.AnyCubicPhotonMonoX6KM3Plus => 245,
-                AnyCubicMachine.AnyCubicPhotonMonoSQ => 200,
-                AnyCubicMachine.AnyCubicPhotonM3 => 180f,
-                AnyCubicMachine.AnyCubicPhotonM3Max => 300f,
+                AnyCubicMachine.PhotonS => 165,
+                AnyCubicMachine.PhotonZero => 150,
+                AnyCubicMachine.PhotonX => 245,
+                AnyCubicMachine.PhotonUltra => 165,
+                AnyCubicMachine.PhotonD2 => 165,
+                AnyCubicMachine.PhotonMono => 165,
+                AnyCubicMachine.PhotonMonoSE => 160,
+                AnyCubicMachine.PhotonMono4K => 165,
+                AnyCubicMachine.PhotonMonoX => 245,
+                AnyCubicMachine.PhotonMonoX6KM3Plus => 245,
+                AnyCubicMachine.PhotonMonoSQ => 200,
+                AnyCubicMachine.PhotonM3 => 180f,
+                AnyCubicMachine.PhotonM3Max => 300f,
                 _ => 0
             };
         }
@@ -1573,20 +1574,20 @@ public class PhotonWorkshopFile : FileFormat
             if (string.IsNullOrWhiteSpace(MachineSettings.MachineName)) return MachineSettings.MachineName;
             return PrinterModel switch
             {
-                AnyCubicMachine.AnyCubicPhotonS       => "Photon S",
-                AnyCubicMachine.AnyCubicPhotonZero    => "Photon Zero",
-                AnyCubicMachine.AnyCubicPhotonX       => "Photon X",
-                AnyCubicMachine.AnyCubicPhotonUltra   => "Photon Ultra",
-                AnyCubicMachine.AnyCubicPhotonD2      => "Photon D2",
-                AnyCubicMachine.AnyCubicPhotonMono    => "Photon Mono",
-                AnyCubicMachine.AnyCubicPhotonMonoSE  => "Photon Mono SE",
-                AnyCubicMachine.AnyCubicPhotonMono4K  => "Photon Mono 4K",
-                AnyCubicMachine.AnyCubicPhotonMonoX   => "Photon Mono X",
-                AnyCubicMachine.AnyCubicPhotonMonoX6KM3Plus => "Photon Mono X 6K / M3 Plus",
-                AnyCubicMachine.AnyCubicPhotonMonoSQ  => "Photon Mono SQ",
-                AnyCubicMachine.AnyCubicPhotonM3  => "Photon M3",
-                AnyCubicMachine.AnyCubicPhotonM3Max  => "Photon M3 Max",
-                AnyCubicMachine.AnyCubicCustom  => "Custom",
+                AnyCubicMachine.PhotonS       => "Photon S",
+                AnyCubicMachine.PhotonZero    => "Photon Zero",
+                AnyCubicMachine.PhotonX       => "Photon X",
+                AnyCubicMachine.PhotonUltra   => "Photon Ultra",
+                AnyCubicMachine.PhotonD2      => "Photon D2",
+                AnyCubicMachine.PhotonMono    => "Photon Mono",
+                AnyCubicMachine.PhotonMonoSE  => "Photon Mono SE",
+                AnyCubicMachine.PhotonMono4K  => "Photon Mono 4K",
+                AnyCubicMachine.PhotonMonoX   => "Photon Mono X",
+                AnyCubicMachine.PhotonMonoX6KM3Plus => "Photon Mono X 6K / M3 Plus",
+                AnyCubicMachine.PhotonMonoSQ  => "Photon Mono SQ",
+                AnyCubicMachine.PhotonM3  => "Photon M3",
+                AnyCubicMachine.PhotonM3Max  => "Photon M3 Max",
+                AnyCubicMachine.Custom  => "Custom",
                 _ => base.MachineName
             };
         }
@@ -1606,70 +1607,75 @@ public class PhotonWorkshopFile : FileFormat
         {
             if (FileEndsWith(".pws"))
             {
-                return AnyCubicMachine.AnyCubicPhotonS;
+                return AnyCubicMachine.PhotonS;
             }
 
             if (FileEndsWith(".pw0"))
             {
-                return AnyCubicMachine.AnyCubicPhotonZero;
+                return AnyCubicMachine.PhotonZero;
             }
 
             if (FileEndsWith(".pwx"))
             {
-                return AnyCubicMachine.AnyCubicPhotonX;
+                return AnyCubicMachine.PhotonX;
             }
 
             if (FileEndsWith(".dlp"))
             {
-                return AnyCubicMachine.AnyCubicPhotonUltra;
+                return AnyCubicMachine.PhotonUltra;
             }
 
             if (FileEndsWith(".dl2p"))
             {
-                return AnyCubicMachine.AnyCubicPhotonD2;
+                return AnyCubicMachine.PhotonD2;
             }
 
             if (FileEndsWith(".pwmo"))
             {
-                return AnyCubicMachine.AnyCubicPhotonMono;
+                return AnyCubicMachine.PhotonMono;
             }
 
             if (FileEndsWith(".pwms"))
             {
-                return AnyCubicMachine.AnyCubicPhotonMonoSE;
+                return AnyCubicMachine.PhotonMonoSE;
             }
 
             if (FileEndsWith(".pwma"))
             {
-                return AnyCubicMachine.AnyCubicPhotonMono4K;
+                return AnyCubicMachine.PhotonMono4K;
             }
 
             if (FileEndsWith(".pwmx"))
             {
-                return AnyCubicMachine.AnyCubicPhotonMonoX;
+                return AnyCubicMachine.PhotonMonoX;
             }
 
             if (FileEndsWith(".pwmb"))
             {
-                return AnyCubicMachine.AnyCubicPhotonMonoX6KM3Plus;
+                return AnyCubicMachine.PhotonMonoX6KM3Plus;
             }
 
             if (FileEndsWith(".pmsq"))
             {
-                return AnyCubicMachine.AnyCubicPhotonMonoSQ;
+                return AnyCubicMachine.PhotonMonoSQ;
             }
 
             if (FileEndsWith(".pm3"))
             {
-                return AnyCubicMachine.AnyCubicPhotonM3;
+                return AnyCubicMachine.PhotonM3;
             }
 
             if (FileEndsWith(".pm3m"))
             {
-                return AnyCubicMachine.AnyCubicPhotonM3Max;
+                return AnyCubicMachine.PhotonM3Max;
             }
 
-            return AnyCubicMachine.AnyCubicPhotonS;
+            if (FileEndsWith(".pwc"))
+            {
+                return AnyCubicMachine.Custom;
+            }
+
+            return AnyCubicMachine.PhotonS;
         }
     } 
     #endregion
@@ -2067,20 +2073,20 @@ public class PhotonWorkshopFile : FileFormat
         HeaderSettings.PerLayerOverride = System.Convert.ToUInt32(AllLayersAreUsingGlobalParameters);
         MachineSettings.MaxFileVersion = PrinterModel switch
         {
-            AnyCubicMachine.AnyCubicPhotonS => VERSION_1,
-            AnyCubicMachine.AnyCubicPhotonZero => VERSION_1,
-            AnyCubicMachine.AnyCubicPhotonX => VERSION_1,
-            AnyCubicMachine.AnyCubicPhotonUltra => VERSION_515,
-            AnyCubicMachine.AnyCubicPhotonD2 => VERSION_516,
-            AnyCubicMachine.AnyCubicPhotonMono => VERSION_515,
-            AnyCubicMachine.AnyCubicPhotonMonoSE => VERSION_515,
-            AnyCubicMachine.AnyCubicPhotonMono4K => VERSION_516,
-            AnyCubicMachine.AnyCubicPhotonMonoX => VERSION_516,
-            AnyCubicMachine.AnyCubicPhotonMonoX6KM3Plus => VERSION_517,
-            AnyCubicMachine.AnyCubicPhotonMonoSQ => VERSION_515,
-            AnyCubicMachine.AnyCubicPhotonM3 => VERSION_516,
-            AnyCubicMachine.AnyCubicPhotonM3Max => VERSION_516,
-            AnyCubicMachine.AnyCubicCustom => VERSION_516,
+            AnyCubicMachine.PhotonS => VERSION_1,
+            AnyCubicMachine.PhotonZero => VERSION_1,
+            AnyCubicMachine.PhotonX => VERSION_1,
+            AnyCubicMachine.PhotonUltra => VERSION_515,
+            AnyCubicMachine.PhotonD2 => VERSION_516,
+            AnyCubicMachine.PhotonMono => VERSION_515,
+            AnyCubicMachine.PhotonMonoSE => VERSION_515,
+            AnyCubicMachine.PhotonMono4K => VERSION_516,
+            AnyCubicMachine.PhotonMonoX => VERSION_516,
+            AnyCubicMachine.PhotonMonoX6KM3Plus => VERSION_517,
+            AnyCubicMachine.PhotonMonoSQ => VERSION_515,
+            AnyCubicMachine.PhotonM3 => VERSION_516,
+            AnyCubicMachine.PhotonM3Max => VERSION_516,
+            AnyCubicMachine.Custom => VERSION_517,
             _ => VERSION_517
         };
     }

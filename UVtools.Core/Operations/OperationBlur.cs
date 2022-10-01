@@ -12,6 +12,7 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Text;
 using System.Threading.Tasks;
+using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Objects;
 
@@ -147,9 +148,9 @@ public sealed class OperationBlur : Operation
     {
         Size size = new((int)Size, (int)Size);
         Point anchor = Kernel.Anchor;
-        if (anchor.IsEmpty) anchor = new Point(-1, -1);
+        if (anchor.IsEmpty) anchor = EmguExtensions.AnchorCenter;
         //if (size.IsEmpty) size = new Size(3, 3);
-        //if (anchor.IsEmpty) anchor = new Point(-1, -1);
+        //if (anchor.IsEmpty) anchor = EmguExtensions.AnchorCenter;
         var target = GetRoiOrDefault(mat);
         using var original = mat.Clone();
         switch (BlurOperation)

@@ -113,6 +113,7 @@ public class MainIssue : IReadOnlyList<Issue>
         Childs = new[] { issue };
         issue.Parent = this;
         PixelCount = issue.PixelsCount;
+        if (issue is IssueOfPoints) Area = issue.PixelsCount;
     }
 
     public MainIssue(IssueType type, IEnumerable<Issue> issues) : this(type)

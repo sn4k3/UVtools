@@ -71,6 +71,11 @@
             Gets the ParallelOptions with <see cref="P:UVtools.Core.CoreSettings.MaxDegreeOfParallelism"/> set
             </summary>
         </member>
+        <member name="P:UVtools.Core.CoreSettings.ParallelDebugOptions">
+            <summary>
+            Gets the ParallelOptions with <see cref="P:UVtools.Core.CoreSettings.MaxDegreeOfParallelism"/> set to 1 for debug purposes
+            </summary>
+        </member>
         <member name="M:UVtools.Core.CoreSettings.GetParallelOptions(System.Threading.CancellationToken)">
             <summary>
             Gets the ParallelOptions with <see cref="P:UVtools.Core.CoreSettings.MaxDegreeOfParallelism"/> and the <see cref="T:System.Threading.CancellationToken"/> set
@@ -241,6 +246,14 @@
             <param name="useParallel">True to run in parallel</param>
             <returns>Array with same size with contours area</returns>
         </member>
+        <member name="M:UVtools.Core.EmguCV.EmguContours.ContoursIntersectingPixels(Emgu.CV.Util.VectorOfVectorOfPoint,Emgu.CV.Util.VectorOfVectorOfPoint)">
+            <summary>
+            Checks if two contours intersects and return the intersecting pixel count
+            </summary>
+            <param name="contour1">Contour 1</param>
+            <param name="contour2">Contour 2</param>
+            <returns>Intersecting pixel count</returns>
+        </member>
         <member name="M:UVtools.Core.EmguCV.EmguContours.ContoursIntersect(Emgu.CV.Util.VectorOfVectorOfPoint,Emgu.CV.Util.VectorOfVectorOfPoint)">
             <summary>
             Checks if two contours intersects
@@ -248,6 +261,11 @@
             <param name="contour1">Contour 1</param>
             <param name="contour2">Contour 2</param>
             <returns></returns>
+        </member>
+        <member name="T:UVtools.Core.EmguCV.MatRoi">
+            <summary>
+            A disposable Mat with associated ROI Mat
+            </summary>
         </member>
         <member name="T:UVtools.Core.IndexStartNumber">
             <summary>
@@ -476,6 +494,12 @@
         <member name="M:UVtools.Core.Extensions.EmguExtensions.GetDataByteSpan(Emgu.CV.Mat,System.Int32,System.Int32)">
             <summary>
             Gets the whole data span to manipulate or read pixels
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:UVtools.Core.Extensions.EmguExtensions.GetDataSpan2D``1(Emgu.CV.Mat)">
+            <summary>
+            Gets the whole data span to manipulate or read pixels, use this when possibly using ROI
             </summary>
             <returns></returns>
         </member>
@@ -4674,6 +4698,23 @@
             Gets or sets a new image instance
             </summary>
         </member>
+        <member name="P:UVtools.Core.Layers.Layer.LayerMatBoundingRectangle">
+            <summary>
+            Gets the layer mat with roi of it bounding rectangle
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Layers.Layer.LayerMatModelBoundingRectangle">
+            <summary>
+            Gets the layer mat with roi of model bounding rectangle
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.Layers.Layer.GetLayerMat(System.Drawing.Rectangle)">
+            <summary>
+            Gets the layer mat with a specified roi
+            </summary>
+            <param name="roi">Region of interest</param>
+            <returns></returns>
+        </member>
         <member name="P:UVtools.Core.Layers.Layer.BrgMat">
             <summary>
             Gets a new Brg image instance
@@ -4776,6 +4817,13 @@
             </summary>
             <param name="layer"></param>
         </member>
+        <member name="M:UVtools.Core.Layers.Layer.GetBoundingRectangleUnion(UVtools.Core.Layers.Layer[])">
+            <summary>
+            Gets the bounding rectangle that is the union of a collection of layers
+            </summary>
+            <param name="layers">Layer collection</param>
+            <returns></returns>
+        </member>
         <member name="P:UVtools.Core.Layers.IslandDetectionConfiguration.Enabled">
             <summary>
             Gets or sets if the detection is enabled
@@ -4791,7 +4839,7 @@
             <summary>
             Combines the island and overhang detections for a better more realistic detection and to discard false-positives. (Slower)
             If enabled, and when a island is found, it will check for overhangs on that same island, if no overhang found then the island will be discarded and considered safe, otherwise it will flag as an island issue.
-            Note: Overhangs settings will be used to configure the detection.Enabling Overhangs is not required for this procedure to work.
+            Note: Overhangs settings will be used to configure the detection. Enabling Overhangs is not required for this procedure to work.
             </summary>
         </member>
         <member name="P:UVtools.Core.Layers.IslandDetectionConfiguration.AllowDiagonalBonds">
@@ -4810,7 +4858,7 @@
         </member>
         <member name="P:UVtools.Core.Layers.IslandDetectionConfiguration.RequiredAreaToProcessCheck">
             <summary>
-            Gets the required area size (x*y) to consider process a island (0-65535)
+            Gets the required pixel area to consider process a island (0-65535)
             </summary>
         </member>
         <member name="P:UVtools.Core.Layers.IslandDetectionConfiguration.RequiredPixelBrightnessToProcessCheck">
@@ -6157,7 +6205,14 @@
         </member>
         <member name="P:UVtools.Core.Operations.OperationRaiseOnPrintFinish.PositionZ">
             <summary>
-            Sets or gets the Z position to raise to
+            Gets or sets the Z position to raise to
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Operations.OperationRaiseOnPrintFinish.WaitTime">
+            <summary>
+            <para>Gets or sets the ensured wait time to stay still on the desired position.</para>
+            <para>This is useful if the printer firmware always move to top and you want to stay still on the set position for at least the desired time.</para>
+            <para>Note: The print time calculation will take this wait into consideration and display a longer print time.</para>
             </summary>
         </member>
         <member name="P:UVtools.Core.Operations.OperationRaiseOnPrintFinish.OutputDummyPixel">

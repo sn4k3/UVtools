@@ -12,7 +12,7 @@
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <RepositoryUrl>https://github.com/sn4k3/UVtools</RepositoryUrl>
     <RepositoryType>Git</RepositoryType>
-    <Version>3.6.6</Version>
+    <Version>3.6.7</Version>
     <Platforms>AnyCPU;x64</Platforms>
     <PackageIcon>UVtools.png</PackageIcon>
     <PackageReadmeFile>README.md</PackageReadmeFile>
@@ -95,10 +95,5 @@
     </AvaloniaResource>
     <AvaloniaResource Include="Assets\Icons\*" />
     <AvaloniaResource Include="Assets\benchmark.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Update="Windows\SuggestionSettingsWindow.axaml.cs">
-      <DependentUpon>SuggestionSettingsWindow.axaml</DependentUpon>
-    </Compile>
   </ItemGroup>
 </Project>

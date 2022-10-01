@@ -273,7 +273,7 @@ public class OperationRaftRelief : Operation
         const uint maxLayerCount = 1000;
 
         Mat? supportsMat = null;
-        var anchor = new Point(-1, -1);
+
         var kernel = EmguExtensions.Kernel3x3Rectangle;
 
         uint firstSupportLayerIndex = _maskLayerIndex;
@@ -305,9 +305,8 @@ public class OperationRaftRelief : Operation
 
         if (_dilateIterations > 0)
         {
-            CvInvoke.Dilate(supportsMat, supportsMat,
-                CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(3, 3), new Point(-1, -1)),
-                new Point(-1, -1), _dilateIterations, BorderType.Reflect101, new MCvScalar());
+            CvInvoke.Dilate(supportsMat, supportsMat, EmguExtensions.Kernel3x3Rectangle,
+                EmguExtensions.AnchorCenter, _dilateIterations, BorderType.Reflect101, new MCvScalar());
         }
 
         var color = new MCvScalar(255 - _lowBrightness);
@@ -386,7 +385,7 @@ public class OperationRaftRelief : Operation
                 }
 
                 // Close minor holes, round imperfections, stronger joints
-                CvInvoke.MorphologyEx(supportsMat, supportsMat, MorphOp.Close, EmguExtensions.Kernel3x3Rectangle, new Point(-1, -1), 1, BorderType.Reflect101, default);
+                CvInvoke.MorphologyEx(supportsMat, supportsMat, MorphOp.Close, EmguExtensions.Kernel3x3Rectangle, EmguExtensions.AnchorCenter, 1, BorderType.Reflect101, default);
 
                 break;
             }
@@ -412,7 +411,7 @@ public class OperationRaftRelief : Operation
                             CvInvoke.Erode(mask, mask, kernel, anchor, operation.WallMargin, BorderType.Reflect101, new MCvScalar());
                             CvInvoke.Subtract(target, patternMat, target, mask);*/
 
-                        CvInvoke.Erode(target, mask, kernel, anchor, WallMargin, BorderType.Reflect101, default);
+                        CvInvoke.Erode(target, mask, kernel, EmguExtensions.AnchorCenter, WallMargin, BorderType.Reflect101, default);
                         CvInvoke.Subtract(mask, supportsMat, mask);
                         CvInvoke.Subtract(target, patternMat, target, mask);
                     }

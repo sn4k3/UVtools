@@ -35,7 +35,8 @@ public static class EmguExtensions
     public static readonly MCvScalar BlackColor = new(0, 0, 0, 255);
     //public static readonly MCvScalar TransparentColor = new();
 
-    public static readonly Mat Kernel3x3Rectangle = CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(3, 3), new Point(-1, -1));
+    public static readonly Point AnchorCenter = new (-1, -1);
+    public static readonly Mat Kernel3x3Rectangle = CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(3, 3), AnchorCenter);
     #endregion
 
     #region Initializers methods
@@ -209,13 +210,19 @@ public static class EmguExtensions
     /// Gets the whole data span to manipulate or read pixels, use this when possibly using ROI
     /// </summary>
     /// <returns></returns>
-    public static unsafe Span2D<byte> GetDataByteSpan2D(this Mat mat)
+    public static unsafe Span2D<T> GetDataSpan2D<T>(this Mat mat)
     {
-        if (!mat.IsSubmatrix) return new(mat.GetBytePointer(), mat.Height, mat.Step, 0);
         var step = mat.GetRealStep();
-        return new(mat.GetBytePointer(), mat.Height, step, mat.Step - step);
+        if (!mat.IsSubmatrix) return new(mat.DataPointer.ToPointer(), mat.Height, step, 0);
+        return new(mat.DataPointer.ToPointer(), mat.Height, step, mat.Step / mat.ElementSize - step);
     }
-       
+
+    /// <summary>
+    /// Gets the whole data span to manipulate or read pixels, use this when possibly using ROI
+    /// </summary>
+    /// <returns></returns>
+    public static Span2D<byte> GetDataByteSpan2D(this Mat mat) => mat.GetDataSpan2D<byte>();
+
 
     /// <summary>
     /// Gets the data span to manipulate or read pixels given a length and offset
@@ -1381,8 +1388,11 @@ public static class EmguExtensions
     {
         var contours = new VectorOfVectorOfPoint();
         using var hierarchyMat = new Mat();
+        
         CvInvoke.FindContours(mat, contours, hierarchyMat, mode, method, offset);
+        
         hierarchy = new int[hierarchyMat.Cols, 4];
+        if (contours.Size == 0) return contours;
         var gcHandle = GCHandle.Alloc(hierarchy, GCHandleType.Pinned);
         using (var mat2 = new Mat(hierarchyMat.Rows, hierarchyMat.Cols, hierarchyMat.Depth, 4, gcHandle.AddrOfPinnedObject(), hierarchyMat.Step))
             hierarchyMat.CopyTo(mat2);
@@ -1403,7 +1413,6 @@ public static class EmguExtensions
     public static Mat Skeletonize(this Mat src, out int iterations, Size ksize = default, ElementShape elementShape = ElementShape.Rectangle)
     {
         if (ksize.IsEmpty) ksize = new Size(3, 3);
-        Point anchor = new(-1, -1);
         var skeleton = src.NewBlank();
         var kernel = Kernel3x3Rectangle;
 
@@ -1416,8 +1425,8 @@ public static class EmguExtensions
 
             // erode and dilate the image using the structuring element
             using var eroded = new Mat();
-            CvInvoke.Erode(image, eroded, kernel, anchor, 1, BorderType.Reflect101, default);
-            CvInvoke.Dilate(eroded, temp, kernel, anchor, 1, BorderType.Reflect101, default);
+            CvInvoke.Erode(image, eroded, kernel, AnchorCenter, 1, BorderType.Reflect101, default);
+            CvInvoke.Dilate(eroded, temp, kernel, AnchorCenter, 1, BorderType.Reflect101, default);
 
             // subtract the temporary image from the original, eroded
             // image, then take the bitwise 'or' between the skeleton
@@ -1458,7 +1467,7 @@ public static class EmguExtensions
     {
         var size = Math.Max(iterations, 1) * 2 + 1;
         iterations = 1;
-        return CvInvoke.GetStructuringElement(elementShape, new Size(size, size), new Point(-1, -1));
+        return CvInvoke.GetStructuringElement(elementShape, new Size(size, size), AnchorCenter);
     }
     #endregion
 

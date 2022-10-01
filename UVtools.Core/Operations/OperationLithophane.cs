@@ -371,8 +371,8 @@ public class OperationLithophane : Operation
             CvInvoke.GaussianBlur(mat, mat, new Size(ksize, ksize), 0);
         }
 
-        if (_removeNoiseIterations > 0) CvInvoke.MorphologyEx(mat, mat, MorphOp.Open, EmguExtensions.Kernel3x3Rectangle, new Point(-1, -1), _removeNoiseIterations, BorderType.Reflect101, default);
-        if (_gapClosingIterations > 0) CvInvoke.MorphologyEx(mat, mat, MorphOp.Close, EmguExtensions.Kernel3x3Rectangle, new Point(-1, -1), _gapClosingIterations, BorderType.Reflect101, default);
+        if (_removeNoiseIterations > 0) CvInvoke.MorphologyEx(mat, mat, MorphOp.Open, EmguExtensions.Kernel3x3Rectangle, EmguExtensions.AnchorCenter, _removeNoiseIterations, BorderType.Reflect101, default);
+        if (_gapClosingIterations > 0) CvInvoke.MorphologyEx(mat, mat, MorphOp.Close, EmguExtensions.Kernel3x3Rectangle, EmguExtensions.AnchorCenter, _gapClosingIterations, BorderType.Reflect101, default);
         
         if (_rotate != RotateDirection.None) CvInvoke.Rotate(mat, mat, (RotateFlags) _rotate);
         if (_mirror)
@@ -496,7 +496,7 @@ public class OperationLithophane : Operation
                 {
                     using var dilatedMat = new Mat();
                     CvInvoke.Threshold(mat, dilatedMat, 1, byte.MaxValue, ThresholdType.Binary);
-                    CvInvoke.Dilate(dilatedMat, dilatedMat, EmguExtensions.Kernel3x3Rectangle, new Point(-1, -1), _baseMargin, BorderType.Reflect101, default);
+                    CvInvoke.Dilate(dilatedMat, dilatedMat, EmguExtensions.Kernel3x3Rectangle, EmguExtensions.AnchorCenter, _baseMargin, BorderType.Reflect101, default);
                     dilatedMat.CopyToCenter(baseMat);
                     break;
                 }

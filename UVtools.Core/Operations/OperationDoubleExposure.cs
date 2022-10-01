@@ -12,6 +12,7 @@ using System;
 using System.Drawing;
 using System.Text;
 using System.Threading.Tasks;
+using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Layers;
 using UVtools.Core.Objects;
@@ -273,8 +274,6 @@ public class OperationDoubleExposure : Operation
 
     protected override bool ExecuteInternally(OperationProgress progress)
     {
-        var anchor = new Point(-1, -1);
-            
         var layers = new Layer[SlicerFile.LayerCount+LayerRangeCount];
 
         // Untouched
@@ -308,7 +307,7 @@ public class OperationDoubleExposure : Operation
                 {
                     int tempIterations = firstErodeIterations;
                     var kernel = Kernel.GetKernel(ref tempIterations);
-                    CvInvoke.Erode(mat, mat, kernel, anchor, tempIterations, BorderType.Reflect101, default);
+                    CvInvoke.Erode(mat, mat, kernel, EmguExtensions.AnchorCenter, tempIterations, BorderType.Reflect101, default);
                     firstLayer.LayerMat = mat;
                     firstLayer.CopyImageTo(secondLayer);
 
@@ -317,7 +316,7 @@ public class OperationDoubleExposure : Operation
                         tempIterations = _secondLayerDifferenceOverlapErodeIterations;
                         kernel = Kernel.GetKernel(ref tempIterations);
                         using var matErode = new Mat();
-                        CvInvoke.Erode(mat, matErode, kernel, anchor, tempIterations, BorderType.Reflect101, default);
+                        CvInvoke.Erode(mat, matErode, kernel, EmguExtensions.AnchorCenter, tempIterations, BorderType.Reflect101, default);
                         //CvInvoke.Threshold(matErode, matErode, 127, 255, ThresholdType.Binary);
                         CvInvoke.Subtract(mat, matErode, mat);
                         secondLayer.LayerMat = mat;
@@ -336,7 +335,7 @@ public class OperationDoubleExposure : Operation
                         int tempIterations = firstErodeIterations;
                         var kernel = Kernel.GetKernel(ref tempIterations);
                         firstMat = new Mat();
-                        CvInvoke.Erode(mat, firstMat, kernel, anchor, tempIterations, BorderType.Reflect101, default);
+                        CvInvoke.Erode(mat, firstMat, kernel, EmguExtensions.AnchorCenter, tempIterations, BorderType.Reflect101, default);
                         firstLayer.LayerMat = firstMat;
                     }
 
@@ -345,7 +344,7 @@ public class OperationDoubleExposure : Operation
                         int tempIterations = secondErodeIterations;
                         var kernel = Kernel.GetKernel(ref tempIterations);
                         secondMat = new Mat();
-                        CvInvoke.Erode(mat, secondMat, kernel, anchor, tempIterations, BorderType.Reflect101, default);
+                        CvInvoke.Erode(mat, secondMat, kernel, EmguExtensions.AnchorCenter, tempIterations, BorderType.Reflect101, default);
                     }
 
                     if(firstMat is not null && _secondLayerDifference)
@@ -357,7 +356,7 @@ public class OperationDoubleExposure : Operation
                             {
                                 int tempIterations = _secondLayerDifferenceOverlapErodeIterations;
                                 var kernel = Kernel.GetKernel(ref tempIterations);
-                                CvInvoke.Erode(firstMat, firstMat, kernel, anchor, tempIterations, BorderType.Reflect101, default);
+                                CvInvoke.Erode(firstMat, firstMat, kernel, EmguExtensions.AnchorCenter, tempIterations, BorderType.Reflect101, default);
                                 //CvInvoke.Threshold(firstMat, firstMat, 127, 255, ThresholdType.Binary);
                             }
 

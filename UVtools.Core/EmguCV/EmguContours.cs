@@ -322,6 +322,33 @@ public class EmguContours : IReadOnlyList<EmguContour>, IDisposable
     }
 
     /// <summary>
+    /// Checks if two contours intersects and return the intersecting pixel count
+    /// </summary>
+    /// <param name="contour1">Contour 1</param>
+    /// <param name="contour2">Contour 2</param>
+    /// <returns>Intersecting pixel count</returns>
+    public static int ContoursIntersectingPixels(VectorOfVectorOfPoint contour1, VectorOfVectorOfPoint contour2)
+    {
+        var contour1Rect = CvInvoke.BoundingRectangle(contour1[0]);
+        var contour2Rect = CvInvoke.BoundingRectangle(contour2[0]);
+
+        /* early exit if the bounding rectangles don't intersect */
+        if (!contour1Rect.IntersectsWith(contour2Rect)) return 0;
+        var totalRect = Rectangle.Union(contour1Rect, contour2Rect);
+
+        using var contour1Mat = EmguExtensions.InitMat(totalRect.Size);
+        using var contour2Mat = EmguExtensions.InitMat(totalRect.Size);
+
+        var inverseOffset = new Point(-totalRect.X, -totalRect.Y);
+        CvInvoke.DrawContours(contour1Mat, contour1, -1, EmguExtensions.WhiteColor, -1, LineType.EightConnected, null, int.MaxValue, inverseOffset);
+        CvInvoke.DrawContours(contour2Mat, contour2, -1, EmguExtensions.WhiteColor, -1, LineType.EightConnected, null, int.MaxValue, inverseOffset);
+
+        CvInvoke.BitwiseAnd(contour1Mat, contour2Mat, contour1Mat);
+
+        return CvInvoke.CountNonZero(contour1Mat);
+    }
+
+    /// <summary>
     /// Checks if two contours intersects
     /// </summary>
     /// <param name="contour1">Contour 1</param>
@@ -329,23 +356,6 @@ public class EmguContours : IReadOnlyList<EmguContour>, IDisposable
     /// <returns></returns>
     public static bool ContoursIntersect(VectorOfVectorOfPoint contour1, VectorOfVectorOfPoint contour2)
     {
-        var contour1Rect = CvInvoke.BoundingRectangle(contour1[0]);
-        var contour2Rect = CvInvoke.BoundingRectangle(contour2[0]);
-
-        /* early exit if the bounding rectangles don't intersect */
-        if (!contour1Rect.IntersectsWith(contour2Rect)) return false;
-        var totalRect = Rectangle.Union(contour1Rect, contour2Rect);
-
-        using var contour1Mat = EmguExtensions.InitMat(totalRect.Size);
-        using var contour2Mat = EmguExtensions.InitMat(totalRect.Size);
-            
-        var inverseOffset = new Point(-totalRect.X, -totalRect.Y);
-        CvInvoke.DrawContours(contour1Mat, contour1, -1, EmguExtensions.WhiteColor, -1, LineType.EightConnected, null, int.MaxValue, inverseOffset);
-        CvInvoke.DrawContours(contour2Mat, contour2, -1, EmguExtensions.WhiteColor, -1, LineType.EightConnected, null, int.MaxValue, inverseOffset);
-
-        CvInvoke.BitwiseAnd(contour1Mat, contour2Mat, contour1Mat);
-
-        //return !contour1Mat.IsZeroed();
-        return CvInvoke.CountNonZero(contour1Mat) > 0;
+        return ContoursIntersectingPixels(contour1, contour2) > 0;
     }
 }

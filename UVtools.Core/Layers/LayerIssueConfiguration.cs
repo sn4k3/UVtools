@@ -53,7 +53,7 @@ public sealed class IslandDetectionConfiguration
     /// <summary>
     /// Combines the island and overhang detections for a better more realistic detection and to discard false-positives. (Slower)
     /// If enabled, and when a island is found, it will check for overhangs on that same island, if no overhang found then the island will be discarded and considered safe, otherwise it will flag as an island issue.
-    /// Note: Overhangs settings will be used to configure the detection.Enabling Overhangs is not required for this procedure to work.
+    /// Note: Overhangs settings will be used to configure the detection. Enabling Overhangs is not required for this procedure to work.
     /// </summary>
     public bool EnhancedDetection { get; set; } = true;
 
@@ -72,7 +72,7 @@ public sealed class IslandDetectionConfiguration
     public byte BinaryThreshold { get; set; } = 1;
 
     /// <summary>
-    /// Gets the required area size (x*y) to consider process a island (0-65535)
+    /// Gets the required pixel area to consider process a island (0-65535)
     /// </summary>
     public ushort RequiredAreaToProcessCheck { get; set; } = 1;
 

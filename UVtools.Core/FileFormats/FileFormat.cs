@@ -2423,6 +2423,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     public bool CanUseLayerRetractHeight2 => HaveLayerParameterModifier(PrintParameterModifier.RetractHeight2);
     public bool CanUseLayerRetractSpeed2 => HaveLayerParameterModifier(PrintParameterModifier.RetractSpeed2);
     public bool CanUseLayerLightOffDelay => HaveLayerParameterModifier(PrintParameterModifier.LightOffDelay);
+    public bool CanUseLayerAnyWaitTimeBeforeCure => CanUseLayerWaitTimeBeforeCure || CanUseLayerLightOffDelay;
     public bool CanUseLayerLightPWM => HaveLayerParameterModifier(PrintParameterModifier.LightPWM);
 
     public string ExposureRepresentation

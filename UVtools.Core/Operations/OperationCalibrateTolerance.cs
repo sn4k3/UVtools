@@ -510,7 +510,6 @@ public sealed class OperationCalibrateTolerance : Operation
         const byte fontThickness = 2;
         LineType lineType = _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected;
 
-        var anchor = new Point(-1, -1);
         var kernel = EmguExtensions.Kernel3x3Rectangle;
 
         var pointTextList = new List<KeyValuePair<Point, string>>();
@@ -647,7 +646,7 @@ public sealed class OperationCalibrateTolerance : Operation
         {
             Parallel.For(0, _bottomLayers, CoreSettings.ParallelOptions, layerIndex => 
             { 
-                CvInvoke.Erode(layers[layerIndex], layers[layerIndex], kernel, anchor, _erodeBottomIterations, BorderType.Reflect101, default);
+                CvInvoke.Erode(layers[layerIndex], layers[layerIndex], kernel, EmguExtensions.AnchorCenter, _erodeBottomIterations, BorderType.Reflect101, default);
             });
         }
 
@@ -656,10 +655,10 @@ public sealed class OperationCalibrateTolerance : Operation
             Parallel.For(0, _chamferLayers, CoreSettings.ParallelOptions, layerIndexOffset =>
             {
                 var iteration = _chamferLayers - layerIndexOffset;
-                CvInvoke.Erode(layers[layerIndexOffset], layers[layerIndexOffset], kernel, anchor, iteration, BorderType.Reflect101, default);
+                CvInvoke.Erode(layers[layerIndexOffset], layers[layerIndexOffset], kernel, EmguExtensions.AnchorCenter, iteration, BorderType.Reflect101, default);
 
                 var layerIndex = layers.Length - 1 - layerIndexOffset;
-                CvInvoke.Erode(layers[layerIndex], layers[layerIndex], kernel, anchor, iteration, BorderType.Reflect101, default);
+                CvInvoke.Erode(layers[layerIndex], layers[layerIndex], kernel, EmguExtensions.AnchorCenter, iteration, BorderType.Reflect101, default);
             });
             /*byte iterations = _chamferLayers;
             var layerIndex = 0;

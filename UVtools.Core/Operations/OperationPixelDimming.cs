@@ -665,7 +665,7 @@ public class OperationPixelDimming : Operation
     public override bool Execute(Mat mat, params object[]? arguments)
     {
         if (arguments is null || arguments.Length < 2) return false;
-        var anchor = new Point(-1, -1);
+
         var kernel = EmguExtensions.Kernel3x3Rectangle;
 
         uint layerIndex = Convert.ToUInt32(arguments[0]);
@@ -690,7 +690,7 @@ public class OperationPixelDimming : Operation
         using var mask = GetMask(mat);
 
 
-        CvInvoke.Erode(target, erode, kernel, anchor, wallThickness, BorderType.Reflect101, default);
+        CvInvoke.Erode(target, erode, kernel, EmguExtensions.AnchorCenter, wallThickness, BorderType.Reflect101, default);
            
         if (_lighteningPixels)
         {

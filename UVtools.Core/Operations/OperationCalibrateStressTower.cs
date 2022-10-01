@@ -331,8 +331,7 @@ public sealed class OperationCalibrateStressTower : Operation
         const byte fontThickness = 2;
         LineType lineType = _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected;
 
-        var anchor = new Point(-1, -1);
-        var kernel = CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(3, 3), anchor);*/
+        var kernel = CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(3, 3), EmguExtensions.AnchorCenter);*/
         Parallel.For(0, LayerCount, CoreSettings.ParallelOptions, layerIndex =>
         {
             layers[layerIndex] = EmguExtensions.InitMat(SlicerFile.Resolution);

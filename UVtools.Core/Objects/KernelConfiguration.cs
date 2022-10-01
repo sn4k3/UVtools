@@ -217,8 +217,8 @@ public sealed class KernelConfiguration : BindableBase, IDisposable
         KernelMat = CvInvoke.GetStructuringElement(shape, size, anchor);
     }
 
-    public void SetKernel(ElementShape shape, Size size) => SetKernel(shape, size, new Point(-1, -1));
-    public void SetKernel(ElementShape shape) => SetKernel(shape, new Size(3, 3), new Point(-1, -1));
+    public void SetKernel(ElementShape shape, Size size) => SetKernel(shape, size, EmguExtensions.AnchorCenter);
+    public void SetKernel(ElementShape shape) => SetKernel(shape, new Size(3, 3), EmguExtensions.AnchorCenter);
 
     public Mat? GetKernel()
     {
