@@ -494,17 +494,18 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
                                         using var islandRoi = image.RoiMat.Roi(rect);
                                         using var previousIslandRoi = previousImage.RoiMat.Roi(rect);
 
-                                        if (overhangImage is null)
+                                        var islandOverhangMat = overhangImage;
+                                        if (islandOverhangMat is null)
                                         {
-                                            overhangImage = new Mat();
-                                            CvInvoke.Subtract(islandRoi, previousIslandRoi, overhangImage);
-                                            CvInvoke.Threshold(overhangImage, overhangImage, 127, 255, ThresholdType.Binary);
+                                            islandOverhangMat = new Mat();
+                                            CvInvoke.Subtract(islandRoi, previousIslandRoi, islandOverhangMat);
+                                            CvInvoke.Threshold(islandOverhangMat, islandOverhangMat, 127, 255, ThresholdType.Binary);
 
-                                            CvInvoke.Erode(overhangImage, overhangImage, EmguExtensions.Kernel3x3Rectangle,
+                                            CvInvoke.Erode(islandOverhangMat, islandOverhangMat, EmguExtensions.Kernel3x3Rectangle,
                                                 EmguExtensions.AnchorCenter, overhangConfig.ErodeIterations, BorderType.Default, default);
                                         }
 
-                                        using var subtractedImage = overhangImage.Roi(rect);
+                                        using var subtractedImage = islandOverhangMat.Roi(rect);
 
                                         var subtractedSpan = subtractedImage.GetDataByteSpan2D();
                                         var subtractedStep = subtractedImage.GetRealStep();
@@ -521,6 +522,8 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
 
                                             overhangPixels++;
                                         }
+
+                                        if(!ReferenceEquals(overhangImage, islandOverhangMat)) islandOverhangMat.Dispose();
 
                                         if (overhangPixels < overhangConfig.RequiredPixelsToConsider) // No overhang = no island
                                         {

@@ -1,5 +1,9 @@
 # Changelog
 
+## 04/10/2022 - v3.6.8
+
+- (Fix) Occasional crash when detecting islands and/or repair issues (#568, #569)
+
 ## 01/10/2022 - v3.6.7
 
 - **Layer:**
