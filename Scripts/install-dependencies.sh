@@ -13,6 +13,9 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 
+arch_name="$(uname -m)"
+osVariant=""
+
 if [[ "$arch_name" != "x86_64" && "$arch_name" != "arm64" ]]; then
     echo "Error: Unsupported host arch: $arch_name"
     exit -1
@@ -46,4 +49,10 @@ then
     yum install -y libjpeg-devel libjpeg-turbo-devel libpng-devel libgeotiff-devel libdc1394-devel ffmpeg-devel tbb-devel mesa-libGL wget
 fi
 
-echo "Completed - You can now run UVtools"
+if [ "$osVariant" == "" ]; then
+    echo "Error: Base operative system / package manager not identified, nothing was installed"
+else
+    echo "Completed: You can now run UVtools"
+fi
+
+
