@@ -252,10 +252,21 @@ The following commands are the old way and commands under the UI executable, the
 1. 1920 x 1080 @ 100% scale as minimum resolution
 
 ### Ubuntu/Mint/Debian/Similars
+*Install Dependencies*
 
+- Ubuntu 20.04
 ```bash
 sudo apt-get update
 sudo apt-get install -y libjpeg-dev libpng-dev libgeotiff-dev libgeotiff5 libdc1394-22 libavcodec-dev libavformat-dev libswscale-dev libopenexr24 libtbb-dev libgl1-mesa-dev libgdiplus wget
+```
+- Ubuntu 22.04 (brings `libdc1394-25` instead of `-22` and `libopenexr25` instead of `libopenexr24`
+```bash
+sudo apt update
+sudo apt install -y libjpeg-dev libpng-dev libgeotiff-dev libgeotiff5 libdc1394-25 libavcodec-dev libavformat-dev libswscale-dev libopenexr25 libtbb-dev libgl1-mesa-dev libgdiplus wget
+```
+
+- Fix libdl symlink
+```
 wget -qO - https://raw.githubusercontent.com/sn4k3/UVtools/master/Scripts/libdl-solver.sh | sudo bash
 ```
 
