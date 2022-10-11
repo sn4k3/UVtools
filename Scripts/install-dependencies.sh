@@ -33,8 +33,8 @@ then
     osVariant="debian"
     apt-get update
     apt-get install -y libdc1394-22 libopenexr24
-	apt-get install -y libdc1394-25 libopenexr25
-	apt-get install -y libjpeg-dev libpng-dev libgeotiff-dev libgeotiff5 libavcodec-dev libavformat-dev libswscale-dev libtbb-dev libgl1-mesa-dev libgdiplus wget
+    apt-get install -y libdc1394-25 libopenexr25
+    apt-get install -y libjpeg-dev libpng-dev libgeotiff-dev libgeotiff5 libavcodec-dev libavformat-dev libswscale-dev libtbb-dev libgl1-mesa-dev libgdiplus wget
 elif command -v pacman &> /dev/null
 then
     osVariant="arch"
@@ -54,5 +54,3 @@ if [ "$osVariant" == "" ]; then
 else
     echo "Completed: You can now run UVtools"
 fi
-
-
