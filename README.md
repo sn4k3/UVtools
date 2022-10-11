@@ -258,9 +258,9 @@ The following commands are the old way and commands under the UI executable, the
 
 
 ```bash
-[[ $(command -v apt-get) ]] && sudo apt-get install -y wget 
-[[ $(command -v pacman) ]] && sudo pacman -S wget
-[[ $(command -v yum) ]] && sudo yum install -y wget
+[[ "$(command -v apt-get)" ]] && sudo apt-get install -y wget 
+[[ "$(command -v pacman)" ]] && sudo pacman -S wget
+[[ "$(command -v yum)" ]] && sudo yum install -y wget
 wget -qO - https://raw.githubusercontent.com/sn4k3/UVtools/master/Scripts/install-dependencies.sh | sudo bash
 wget -qO - https://raw.githubusercontent.com/sn4k3/UVtools/master/Scripts/libdl-solver.sh | sudo bash
 ```
