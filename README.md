@@ -243,41 +243,27 @@ The following commands are the old way and commands under the UI executable, the
       - Check the "Media Extensions" and click Ok
 <!-- 1. [.NET 6.0](https://dotnet.microsoft.com/download/dotnet/6.0) installed (Comes pre-installed on Windows 10 with last updates)!-->
 1. 4GB RAM or higher
-1. 1920 x 1080 @ 100% scale as minimum resolution
+2. 64 bit System
+3. 1920 x 1080 @ 100% scale as minimum resolution
 
 ## Linux
 
 1. 4GB RAM or higher
 2. 64 bit System
-1. 1920 x 1080 @ 100% scale as minimum resolution
+3. 1920 x 1080 @ 100% scale as minimum resolution
 
-### Ubuntu/Mint/Debian/Similars
+### Installing the dependencies
 
-```bash
-sudo apt-get update
-sudo apt-get install -y libjpeg-dev libpng-dev libgeotiff-dev libgeotiff5 libdc1394-22 libavcodec-dev libavformat-dev libswscale-dev libopenexr24 libtbb-dev libgl1-mesa-dev libgdiplus wget
-wget -qO - https://raw.githubusercontent.com/sn4k3/UVtools/master/Scripts/libdl-solver.sh | sudo bash
-```
-
-### Arch/Manjaro/Similars
-
-```bash
-sudo pacman -Syu
-sudo pacman -S openjpeg2 libjpeg-turbo libpng libgeotiff libdc1394 ffmpeg openexr tbb libgdiplus wget
-wget -qO - https://raw.githubusercontent.com/sn4k3/UVtools/master/Scripts/libdl-solver.sh | sudo bash
-```
-
-### RHEL/Fedora/CentOS
+**Copy the following script, paste and run on a terminal:**
 
 
 ```bash
-sudo yum update -y
-sudo yum install -y https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm
-sudo yum install -y https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm
-sudo yum install -y libjpeg-devel libjpeg-turbo-devel libpng-devel libgeotiff-devel libdc1394-devel ffmpeg-devel tbb-devel mesa-libGL wget
+[[ $(command -v apt-get) ]] && sudo apt-get install -y wget 
+[[ $(command -v pacman) ]] && sudo pacman -S wget
+[[ $(command -v yum) ]] && sudo yum install -y wget
+wget -qO - https://raw.githubusercontent.com/sn4k3/UVtools/master/Scripts/install-dependencies.sh | sudo bash
 wget -qO - https://raw.githubusercontent.com/sn4k3/UVtools/master/Scripts/libdl-solver.sh | sudo bash
 ```
-
 
 **To run UVtools open it folder on a terminal and call one of:**
 
