@@ -263,7 +263,6 @@ The following commands are the old way and commands under the UI executable, the
 [[ $(command -v yum) ]] && sudo yum install -y wget
 wget -qO - https://raw.githubusercontent.com/sn4k3/UVtools/master/Scripts/install-dependencies.sh | sudo bash
 wget -qO - https://raw.githubusercontent.com/sn4k3/UVtools/master/Scripts/libdl-solver.sh | sudo bash
-
 ```
 
 **To run UVtools open it folder on a terminal and call one of:**
