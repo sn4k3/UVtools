@@ -87,7 +87,7 @@ public class OutlinePrimitive : Primitive
         for (int i = 0; i < Coordinates.Length-1; i++)
         {
             var pt = Document.PositionMmToPx(at.X + Coordinates[i].X, at.Y + Coordinates[i].Y);
-            if(i > 0 && points[i-1] == pt) continue; // Prevent duplicates
+            if(points.Count > 0 && points[^1] == pt) continue; // Prevent series of duplicates
             points.Add(pt);
         }
 
