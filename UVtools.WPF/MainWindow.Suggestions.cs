@@ -6,12 +6,16 @@
  *  of this license document, but changing it is not allowed.
  */
 
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using Avalonia.Controls;
+using Avalonia.Threading;
 using MessageBox.Avalonia.Enums;
+using UVtools.Core.Managers;
 using UVtools.Core.Suggestions;
 using UVtools.WPF.Extensions;
 using UVtools.WPF.Structures;
@@ -82,14 +86,36 @@ public partial class MainWindow
         }
         if (await this.MessageBoxQuestion(sb.ToString(), "Apply suggestions?") != ButtonResult.Yes) return;
 
-        uint executed = 0;
-        foreach (var suggestion in suggestions)
+        IsGUIEnabled = false;
+        ShowProgressWindow($"Applying {suggestions.Length} suggestions", false);
+
+        var executed = await Task.Factory.StartNew(() =>
         {
-            if (suggestion.Execute())
+            uint executed = 0;
+
+            try
             {
-                executed++;
+                foreach (var suggestion in suggestions)
+                {
+                    if (suggestion.Execute(Progress))
+                    {
+                        executed++;
+                    }
+                }
             }
-        }
+            catch (OperationCanceledException)
+            { }
+            catch (Exception ex)
+            {
+                Dispatcher.UIThread.InvokeAsync(async () => await this.MessageBoxError(ex.ToString(), "Error while applying a suggestion"));
+            }
+
+            return executed;
+        });
+
+        IsGUIEnabled = true;
+
+        
 
         if (executed > 0)
         {
@@ -107,12 +133,36 @@ public partial class MainWindow
 
         if (await this.MessageBoxQuestion($"Are you sure you want to apply the following suggestion?:\n\n{suggestion.ConfirmationMessage}", "Apply the suggestion?") != ButtonResult.Yes) return;
 
-        if (suggestion.Execute())
+
+        IsGUIEnabled = false;
+        ShowProgressWindow(suggestion.Title, false);
+
+        var result = await Task.Factory.StartNew(() =>
+        {
+            try
+            {
+                return suggestion.Execute(Progress);
+            }
+            catch (OperationCanceledException)
+            {
+            }
+            catch (Exception ex)
+            {
+                Dispatcher.UIThread.InvokeAsync(async () => await this.MessageBoxError(ex.ToString(), $"{suggestion.Title} Error"));
+            }
+
+            return false;
+        });
+
+        IsGUIEnabled = true;
+
+        if (result)
         {
             CanSave = true;
             ResetDataContext();
             ForceUpdateActualLayer();
         }
+
         PopulateSuggestions(false);
     }
 

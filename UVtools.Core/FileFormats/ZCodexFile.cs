@@ -166,7 +166,8 @@ public class ZCodexFile : FileFormat
 
     public override PrintParameterModifier[]? PrintParameterModifiers { get; } = {
         PrintParameterModifier.BottomLayerCount,
-            
+        PrintParameterModifier.TransitionLayerCount,
+
         PrintParameterModifier.WaitTimeBeforeCure,
 
         PrintParameterModifier.BottomExposureTime,

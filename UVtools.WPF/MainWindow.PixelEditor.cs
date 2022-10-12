@@ -568,6 +568,7 @@ public partial class MainWindow
             }
 
             Clipboard.Clip($"Draw {Drawings.Count} modifications");
+            PopulateSuggestions();
 
             if (Settings.PixelEditor.PartialUpdateIslandsOnEditing)
             {

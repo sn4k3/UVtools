@@ -1826,8 +1826,7 @@ public class ChituboxFile : FileFormat
         {
             if (HeaderSettings.EncryptionKey == 0)
             {
-                var rnd = new Random();
-                HeaderSettings.EncryptionKey = (uint)rnd.Next(byte.MaxValue, int.MaxValue);
+                HeaderSettings.EncryptionKey = (uint)new Random().Next(byte.MaxValue, int.MaxValue);
             }
         }
         else

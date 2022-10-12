@@ -93,6 +93,7 @@ public class JXSFile : FileFormat
 
     public override PrintParameterModifier[]? PrintParameterModifiers { get; } = {
         PrintParameterModifier.BottomLayerCount,
+        PrintParameterModifier.TransitionLayerCount,
 
         PrintParameterModifier.BottomWaitTimeBeforeCure,
         PrintParameterModifier.WaitTimeBeforeCure,

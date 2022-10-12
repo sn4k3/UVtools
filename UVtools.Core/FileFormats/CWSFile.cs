@@ -321,6 +321,7 @@ public class CWSFile : FileFormat
 
     public override PrintParameterModifier[]? PrintParameterModifiers { get; } = {
         PrintParameterModifier.BottomLayerCount,
+        PrintParameterModifier.TransitionLayerCount,
 
         PrintParameterModifier.BottomWaitTimeBeforeCure,
         PrintParameterModifier.WaitTimeBeforeCure,
@@ -840,7 +841,7 @@ public class CWSFile : FileFormat
             }
         }
 
-        DecodeLayersFromZipRegex(inputFile, @"(\d+).png", IndexStartNumber.Zero, progress);
+        DecodeLayersFromZipIgnoreFilename(inputFile, progress);
         
         GCode.ParseLayersFromGCode(this);
     }

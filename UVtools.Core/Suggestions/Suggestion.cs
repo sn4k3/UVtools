@@ -11,6 +11,7 @@ using System.ComponentModel;
 using System.Xml.Serialization;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Objects;
+using UVtools.Core.Operations;
 
 namespace UVtools.Core.Suggestions;
 
@@ -151,9 +152,10 @@ public abstract class Suggestion : BindableBase
     /// <summary>
     /// Executes and applies the suggestion
     /// </summary>
+    /// <param name="progress"></param>
     /// <returns></returns>
     /// <exception cref="NotImplementedException"></exception>
-    protected virtual bool ExecuteInternally()
+    protected virtual bool ExecuteInternally(OperationProgress progress)
     {
         throw new NotImplementedException();
     }
@@ -163,12 +165,15 @@ public abstract class Suggestion : BindableBase
     /// </summary>
     /// <returns></returns>
     /// <exception cref="InvalidOperationException"></exception>
-    public bool Execute()
+    public bool Execute(OperationProgress? progress = null)
     {
         if (_slicerFile is null) throw new InvalidOperationException($"The suggestion '{Title}' can't execute due the lacking of a file parent.");
         if (!Enabled || !IsAvailable || IsApplied || IsInformativeOnly || SlicerFile.LayerCount == 0) return false;
-            
-        var result = ExecuteInternally();
+
+        progress ??= new OperationProgress();
+        progress.Title = $"Applying suggestion: {Title}";
+
+        var result = ExecuteInternally(progress);
 
         RaisePropertyChanged(nameof(IsApplied));
         RefreshNotifyMessage();

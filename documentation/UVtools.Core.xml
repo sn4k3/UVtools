@@ -1055,6 +1055,69 @@
             <param name="action"></param>
             <param name="offset"></param>
         </member>
+        <member name="M:UVtools.Core.Extensions.NumberExtensions.ToByte(System.Boolean)">
+            <summary>
+            Convert bool to byte (0/1)
+            </summary>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:UVtools.Core.Extensions.NumberExtensions.DigitCount(System.SByte)">
+            <summary>
+            Gets the number of digits this number haves
+            </summary>
+            <param name="n"></param>
+            <returns>Digit count</returns>
+        </member>
+        <member name="M:UVtools.Core.Extensions.NumberExtensions.DigitCount(System.Byte)">
+            <summary>
+            Gets the number of digits this number haves
+            </summary>
+            <param name="n"></param>
+            <returns>Digit count</returns>
+        </member>
+        <member name="M:UVtools.Core.Extensions.NumberExtensions.DigitCount(System.Int16)">
+            <summary>
+            Gets the number of digits this number haves
+            </summary>
+            <param name="n"></param>
+            <returns>Digit count</returns>
+        </member>
+        <member name="M:UVtools.Core.Extensions.NumberExtensions.DigitCount(System.UInt16)">
+            <summary>
+            Gets the number of digits this number haves
+            </summary>
+            <param name="n"></param>
+            <returns>Digit count</returns>
+        </member>
+        <member name="M:UVtools.Core.Extensions.NumberExtensions.DigitCount(System.Int32)">
+            <summary>
+            Gets the number of digits this number haves
+            </summary>
+            <param name="n"></param>
+            <returns>Digit count</returns>
+        </member>
+        <member name="M:UVtools.Core.Extensions.NumberExtensions.DigitCount(System.UInt32)">
+            <summary>
+            Gets the number of digits this number haves
+            </summary>
+            <param name="n"></param>
+            <returns>Digit count</returns>
+        </member>
+        <member name="M:UVtools.Core.Extensions.NumberExtensions.DigitCount(System.Int64)">
+            <summary>
+            Gets the number of digits this number haves
+            </summary>
+            <param name="n"></param>
+            <returns>Digit count</returns>
+        </member>
+        <member name="M:UVtools.Core.Extensions.NumberExtensions.DigitCount(System.UInt64)">
+            <summary>
+            Gets the number of digits this number haves
+            </summary>
+            <param name="n"></param>
+            <returns>Digit count</returns>
+        </member>
         <member name="M:UVtools.Core.Extensions.PathExtensions.GetTemporaryDirectory(System.String,System.Boolean)">
             <summary>
             Gets a temporary directory path
@@ -1112,6 +1175,14 @@
             </summary>
             <param name="input">Input string</param>
             <returns>Modified string with fist character upper</returns>
+        </member>
+        <member name="M:UVtools.Core.Extensions.StringExtensions.Repeat(System.String,System.Int32)">
+            <summary>
+            Repeat this string <paramref name="count"/> times
+            </summary>
+            <param name="str">String to repeat</param>
+            <param name="count">Number of times to repeat</param>
+            <returns><paramref name="str"/> repeated <paramref name="count"/> times</returns>
         </member>
         <member name="M:UVtools.Core.Extensions.StringExtensions.Convert``1(System.String)">
             <summary>
@@ -2595,6 +2666,11 @@
             Gets or sets the layer count
             </summary>
         </member>
+        <member name="P:UVtools.Core.FileFormats.FileFormat.LayerDigits">
+            <summary>
+            Return the number of digits on the layer count number, eg: 123 layers = 3 digits
+            </summary>
+        </member>
         <member name="P:UVtools.Core.FileFormats.FileFormat.BottomLayersHeight">
             <summary>
             Gets or sets the total height for the bottom layers in millimeters
@@ -3081,6 +3157,53 @@
             <param name="genericConfigExtract"></param>
             <param name="genericLayersExtract"></param>
             <param name="progress"></param>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.FileFormat.ParseTransitionLayerCountFromLayers">
+            <summary>
+            Gets the transition layer count calculated from layer exposure time configuration
+            </summary>
+            <returns>Transition layer count</returns>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.FileFormat.ParseTransitionStepTimeFromLayers">
+            <summary>
+            Parse the transition step time from layers, value is returned as positive from normal perspective and logic (Longer - shorter)
+            </summary>
+            <returns>Seconds</returns>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.FileFormat.GetTransitionStepTime(System.Single,System.Single,System.UInt16)">
+            <summary>
+            Gets the transition step time from a long and short exposure time, value is returned as positive from normal perspective and logic (Longer - shorter)
+            </summary>
+            <param name="longExposureTime">The long exposure time</param>
+            <param name="shortExposureTime">The small exposure time</param>
+            <param name="transitionLayerCount">Number of transition layers</param>
+            <returns>Seconds</returns>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.FileFormat.GetTransitionStepTime(System.UInt16)">
+            <summary>
+            Gets the transition step time from <see cref="P:UVtools.Core.FileFormats.FileFormat.BottomExposureTime"/> and <see cref="P:UVtools.Core.FileFormats.FileFormat.ExposureTime"/>, value is returned as positive from normal perspective and logic (Longer - shorter)
+            </summary>
+            <param name="transitionLayerCount">Number of transition layers</param>
+            <returns>Seconds</returns>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.FileFormat.GetTransitionLayerCount(System.Single,System.Single,System.Single,System.MidpointRounding)">
+            <summary>
+            Gets the transition layer count based on long and short exposure time
+            </summary>
+            <param name="longExposureTime">The long exposure time</param>
+            <param name="shortExposureTime">The small exposure time</param>
+            <param name="decrementTime">Decrement time</param>
+            <param name="rounding">Midpoint rounding method</param>
+            <returns></returns>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.FileFormat.GetTransitionLayerCount(System.Single,System.Boolean,System.MidpointRounding)">
+            <summary>
+            Gets the transition layer count based on <see cref="P:UVtools.Core.FileFormats.FileFormat.BottomExposureTime"/> and <see cref="P:UVtools.Core.FileFormats.FileFormat.ExposureTime"/>
+            </summary>
+            <param name="stepDecrementTime">Step decrement time in seconds</param>
+            <param name="constrainToLayerCount">True if transition layer count can't be higher than supported by the file, otherwise set to false to not look at possible file layers</param>
+            <param name="rounding">Midpoint rounding method</param>
+            <returns>Transition layer count</returns>
         </member>
         <member name="M:UVtools.Core.FileFormats.FileFormat.ResetCurrentTransitionLayers(System.Boolean)">
             <summary>
@@ -6596,14 +6719,15 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="M:UVtools.Core.Suggestions.Suggestion.ExecuteInternally">
+        <member name="M:UVtools.Core.Suggestions.Suggestion.ExecuteInternally(UVtools.Core.Operations.OperationProgress)">
             <summary>
             Executes and applies the suggestion
             </summary>
+            <param name="progress"></param>
             <returns></returns>
             <exception cref="T:System.NotImplementedException"></exception>
         </member>
-        <member name="M:UVtools.Core.Suggestions.Suggestion.Execute">
+        <member name="M:UVtools.Core.Suggestions.Suggestion.Execute(UVtools.Core.Operations.OperationProgress)">
             <summary>
             Executes and applies the suggestion
             </summary>

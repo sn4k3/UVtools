@@ -10,6 +10,7 @@ using System;
 using System.ComponentModel;
 using System.Text;
 using UVtools.Core.Extensions;
+using UVtools.Core.Operations;
 
 namespace UVtools.Core.Suggestions;
 
@@ -110,7 +111,7 @@ public sealed class SuggestionWaitTimeAfterCure : Suggestion
     public override string ToolTip => (_setType == SuggestionWaitTimeAfterCureSetType.Fixed 
                                           ? $"The recommended wait time must be {_fixedBottomWaitTimeAfterCure}/{_fixedWaitTimeAfterCure}s"
                                           : $"The recommended wait time is a ratio of (wait time){_proportionalWaitTimeAfterCure}s to (exposure time){_proportionalExposureTime}s") +
-                                      $" constrained from [Bottoms={_minimumBottomWaitTimeAfterCure}/{_maximumBottomWaitTimeAfterCure}s] and [Normals={_minimumWaitTimeAfterCure}/{_maximumWaitTimeAfterCure}s].\n" +
+                                      $" constrained from [Bottoms={_minimumBottomWaitTimeAfterCure}s to {_maximumBottomWaitTimeAfterCure}s] and [Normals={_minimumWaitTimeAfterCure}s to {_maximumWaitTimeAfterCure}s].\n" +
                                       $"Explanation: {Description}";
 
     public override string? ConfirmationMessage => $"{Title}: {SlicerFile.BottomWaitTimeAfterCure}/{SlicerFile.WaitTimeAfterCure}s » {CalculateWaitTime(true, (decimal)SlicerFile.BottomWaitTimeAfterCure)}/{CalculateWaitTime(false, (decimal)SlicerFile.WaitTimeAfterCure)}s";
@@ -224,7 +225,7 @@ public sealed class SuggestionWaitTimeAfterCure : Suggestion
 
     #region Methods
 
-    protected override bool ExecuteInternally()
+    protected override bool ExecuteInternally(OperationProgress progress)
     {
         if (SlicerFile.CanUseBottomWaitTimeAfterCure)
         {

@@ -907,6 +907,8 @@ public class GCodeBuilder : BindableBase
 
         var layerBlock = new GCodeLayer(slicerFile);
 
+        bool parseLayerIndexFromComments = false;
+
         using var reader = new StringReader(gcode);
         string? line;
         while ((line = reader.ReadLine()) != null)
@@ -943,6 +945,7 @@ public class GCodeBuilder : BindableBase
                     }
                     layerBlock.SetLayer(true);
                     layerBlock.LayerIndex = layerIndex;
+                    parseLayerIndexFromComments = true;
                     continue;
                 }
             }
@@ -950,9 +953,7 @@ public class GCodeBuilder : BindableBase
             // Display image
             if (line.StartsWith(CommandShowImageM6054.Command))
             {
-                match = Regex.Match(line, 
-                    CommandShowImageM6054.ToStringWithoutComments(GetShowImageString(@"(\d+)")),
-                    RegexOptions.IgnoreCase);
+                match = Regex.Match(line, CommandShowImageM6054.ToStringWithoutComments(GetShowImageString(@"(\d+)")), RegexOptions.IgnoreCase);
                 if (match.Success && match.Groups.Count >= 2) // Begin new layer
                 {
                     var layerIndex = uint.Parse(match.Groups[1].Value);
@@ -965,12 +966,12 @@ public class GCodeBuilder : BindableBase
                     }
 
                     // Propagate values before switch to the new layer
-                    if (_gCodeShowImagePosition == GCodeShowImagePositions.FirstLine && layerBlock.LayerIndex != layerIndex)
+                    if (/*_gCodeShowImagePosition == GCodeShowImagePositions.FirstLine && */layerBlock.LayerIndex != layerIndex)
                     {
                         layerBlock.SetLayer(true);
+                        layerBlock.LayerIndex = layerIndex;
                     }
 
-                    layerBlock.LayerIndex = layerIndex;
 
                     continue;
                 }
@@ -981,18 +982,13 @@ public class GCodeBuilder : BindableBase
             // Check moves
             if (line.StartsWith(CommandMoveG0.Command) || line.StartsWith(CommandMoveG1.Command))
             {
-                var moveG0Regex = Regex.Match(line,
-                    CommandMoveG0.ToStringWithoutComments(@"([+-]?([0-9]*[.])?[0-9]+)", @"(([0-9]*[.])?[0-9]+)"),
-                    RegexOptions.IgnoreCase);
-                var moveG1Regex = Regex.Match(line,
-                    CommandMoveG1.ToStringWithoutComments(@"([+-]?([0-9]*[.])?[0-9]+)", @"(([0-9]*[.])?[0-9]+)"),
-                    RegexOptions.IgnoreCase);
-                match = moveG0Regex.Success && moveG0Regex.Groups.Count >= 2 ? moveG0Regex : moveG1Regex;
-
-                if (match.Success && match.Groups.Count >= 4 && !layerBlock.RetractSpeed2.HasValue && layerBlock.LightOffCount < 2)
+                match = Regex.Match(line, $"{CommandMoveG0.ToStringWithoutComments(@"([+-]?([0-9]*[.])?[0-9]+)", @"(([0-9]*[.])?[0-9]+)")}|{CommandMoveG1.ToStringWithoutComments(@"([+-]?([0-9]*[.])?[0-9]+)", @"(([0-9]*[.])?[0-9]+)")}", RegexOptions.IgnoreCase);
+                
+                if (match.Success && match.Groups.Count >= 9 && !layerBlock.RetractSpeed2.HasValue && layerBlock.LightOffCount < 2)
                 {
-                    float pos = float.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture);
-                    float speed = ConvertToMillimetersPerMinute(float.Parse(match.Groups[3].Value, CultureInfo.InvariantCulture));
+                    var startIndex = match.Groups[1].Value.Length > 0 ? 0 : 4;
+                    float pos = float.Parse(match.Groups[startIndex+1].Value, CultureInfo.InvariantCulture);
+                    float speed = ConvertToMillimetersPerMinute(float.Parse(match.Groups[startIndex+3].Value, CultureInfo.InvariantCulture));
 
 
                     layerBlock.Movements.Add(new(pos, speed));
@@ -1037,12 +1033,14 @@ public class GCodeBuilder : BindableBase
             // Check for waits 
             if (line.StartsWith(CommandWaitG4.Command))
             {
-                match = Regex.Match(line, CommandWaitG4.ToStringWithoutComments(@"(([0-9]*[.])?[0-9]+)"),
-                    RegexOptions.IgnoreCase);
+                match = Regex.Match(line, CommandWaitG4.ToStringWithoutComments(@"(([0-9]*[.])?[0-9]+)"), RegexOptions.IgnoreCase);
                 if (match.Success && match.Groups.Count >= 2)
                 {
-                    if (/*CommandWaitSyncDelay.Enabled && */match.Groups[1].Value.StartsWith('0')) continue; // Sync movement delay, skip
-
+                    if (/*CommandWaitSyncDelay.Enabled && */match.Groups[1].Value.StartsWith('0'))
+                    {
+                        layerBlock.WaitSyncDelayDetected = true;
+                        continue; // Sync movement delay, skip
+                    }
                     var waitTime = float.Parse(match.Groups[1].Value);
 
                     if (layerBlock.PositionZ.HasValue &&
@@ -1091,8 +1089,7 @@ public class GCodeBuilder : BindableBase
             // Check LightPWM
             if (line.StartsWith(CommandTurnLEDM106.Command))
             {
-                match = Regex.Match(line, CommandTurnLEDM106.ToStringWithoutComments(@"(\d+)"),
-                    RegexOptions.IgnoreCase);
+                match = Regex.Match(line, CommandTurnLEDM106.ToStringWithoutComments(@"(\d+)"), RegexOptions.IgnoreCase);
                 if (match.Success && match.Groups.Count >= 2)
                 {
                     byte pwm;

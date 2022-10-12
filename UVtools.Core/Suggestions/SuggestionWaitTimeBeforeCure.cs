@@ -12,6 +12,7 @@ using System.Linq;
 using System.Text;
 using UVtools.Core.Extensions;
 using UVtools.Core.Layers;
+using UVtools.Core.Operations;
 
 namespace UVtools.Core.Suggestions;
 
@@ -147,7 +148,7 @@ public sealed class SuggestionWaitTimeBeforeCure : Suggestion
     public override string ToolTip => (_setType == SuggestionWaitTimeBeforeCureSetType.Fixed 
                                           ? $"The recommended wait time must be {_fixedBottomWaitTimeBeforeCure}/{_fixedWaitTimeBeforeCure}s"
                                           : $"The recommended wait time is a ratio of (wait time){_proportionalWaitTimeBeforeCure}s to (exposure time){_proportionalLayerArea}s") +
-                                      $" constrained from [Bottoms={_minimumBottomWaitTimeBeforeCure}/{_maximumBottomWaitTimeBeforeCure}s] and [Normals={_minimumWaitTimeBeforeCure}/{_maximumWaitTimeBeforeCure}s].\n" +
+                                      $" constrained from [Bottoms={_minimumBottomWaitTimeBeforeCure}s to {_maximumBottomWaitTimeBeforeCure}s] and [Normals={_minimumWaitTimeBeforeCure}s to {_maximumWaitTimeBeforeCure}s].\n" +
                                       $"Explanation: {Description}";
 
     public override string? ConfirmationMessage => $"{Title}: {SlicerFile.BottomWaitTimeAfterCure}/{SlicerFile.WaitTimeAfterCure}s » {CalculateWaitTime(true)}/{CalculateWaitTime(false)}s";
@@ -380,7 +381,7 @@ public sealed class SuggestionWaitTimeBeforeCure : Suggestion
 
     #region Methods
 
-    protected override bool ExecuteInternally()
+    protected override bool ExecuteInternally(OperationProgress progress)
     {
         if (SlicerFile.CanUseBottomWaitTimeAfterCure || SlicerFile.CanUseBottomLightOffDelay)
         {

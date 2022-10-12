@@ -89,7 +89,7 @@ public class MappedProcess : BindableBase
 
     #endregion
 
-    #region Contructors
+    #region Constructors
 
     public MappedProcess() { }
 

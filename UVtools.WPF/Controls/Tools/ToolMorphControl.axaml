@@ -16,47 +16,37 @@
       Text="Iterations:"/>
 
 
-      <StackPanel
-        Grid.Row="0"
-        Grid.Column="2"
-        Orientation="Horizontal" Spacing="10">
+      <StackPanel Grid.Row="0" Grid.Column="2"
+                  Orientation="Horizontal" Spacing="10">
 
-        <NumericUpDown
-            Classes="ValueLabel ValueLabel_px"
-          Minimum="1"
-          Width="180"
-          Value="{Binding Operation.IterationsStart}"/>
+        <NumericUpDown Classes="ValueLabel ValueLabel_px"
+                       Minimum="1"
+                       Width="180"
+                       Value="{Binding Operation.IterationsStart}"/>
 
-        <TextBlock
-          VerticalAlignment="Center"
-          Text="To:"
-          IsEnabled="{Binding Operation.Chamfer}"/>
+        <TextBlock VerticalAlignment="Center"
+                   Text="To:"
+                   IsEnabled="{Binding Operation.Chamfer}"/>
 
-        <NumericUpDown
-            Classes="ValueLabel ValueLabel_px"
-          Minimum="1"
-          Width="180"
-          Value="{Binding Operation.IterationsEnd}"
-          IsEnabled="{Binding Operation.Chamfer}"/>
+        <NumericUpDown Classes="ValueLabel ValueLabel_px"
+                       Minimum="1"
+                       Width="180"
+                       Value="{Binding Operation.IterationsEnd}"
+                       IsEnabled="{Binding Operation.Chamfer}"/>
 
-        <CheckBox
-          ToolTip.Tip="Allow the number of iterations to be gradually varied as the operation progresses from the starting layer to the ending layer."
-          Content="Chamfer"
-          IsChecked="{Binding Operation.Chamfer}"/>
+        <CheckBox Content="Chamfer"
+                  ToolTip.Tip="Allow the number of iterations to be gradually varied as the operation progresses from the starting layer to the ending layer."
+                  IsChecked="{Binding Operation.Chamfer}"/>
       </StackPanel>
 
-      <TextBlock
-          Grid.Row="2"
-          Grid.Column="0"
-          VerticalAlignment="Center"
-          Text="Operation:"/>
+      <TextBlock Grid.Row="2" Grid.Column="0"
+                 VerticalAlignment="Center"
+                 Text="Operation:"/>
 
-      <ComboBox
-        Grid.Row="2"
-        Grid.Column="2"
-        HorizontalAlignment="Stretch"
-        Items="{Binding Operation.MorphOperation, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
-        SelectedItem="{Binding Operation.MorphOperation, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
+      <ComboBox Grid.Row="2" Grid.Column="2"
+                HorizontalAlignment="Stretch"
+                Items="{Binding Operation.MorphOperation, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                SelectedItem="{Binding Operation.MorphOperation, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
 
     </Grid>
 

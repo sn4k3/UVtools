@@ -133,7 +133,7 @@ public class OperationFadeExposureTime : Operation
     }
 
     public decimal IncrementValue => Math.Round(IncrementValueRaw, 2);
-    public decimal IncrementValueRaw => (_toExposureTime - _fromExposureTime) / (LayerRangeCount + 1);
+    public decimal IncrementValueRaw => (decimal)FileFormat.GetTransitionStepTime((float) _toExposureTime, (float)_fromExposureTime, (ushort) LayerRangeCount);
 
     #endregion
 
@@ -182,9 +182,16 @@ public class OperationFadeExposureTime : Operation
     {
         LayerIndexEnd = LayerIndexStart + _layerCount - 1; // Sanitize
 
-        if (_disableFirmwareTransitionLayers)
+        if (SlicerFile.TransitionLayerType == FileFormat.TransitionLayerTypes.Firmware && _disableFirmwareTransitionLayers)
         {
-            SlicerFile.TransitionLayerCount = 0;
+            SlicerFile.TransitionLayerCount = 0; 
+        }
+        else
+        {
+            if (SlicerFile.BottomLayerCount == LayerIndexStart)
+            {
+                SlicerFile.TransitionLayerCount = (ushort) LayerRangeCount;
+            }
         }
 
         var increment = IncrementValueRaw;

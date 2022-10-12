@@ -39,8 +39,6 @@ public static class TypeExtensions
         return (T)instance;
     }
 
-    public static byte ToByte(this bool value) => (byte)(value ? 1 : 0);
-
     public static IEnumerable<Type> GetTypesInNamespace(Assembly assembly, string nameSpace)
     {
         return assembly.GetTypes()

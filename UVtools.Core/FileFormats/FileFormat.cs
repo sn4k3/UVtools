@@ -1796,10 +1796,14 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         set {
             RaisePropertyChanged();
             RaisePropertyChanged(nameof(NormalLayerCount));
+            RaisePropertyChanged(nameof(TransitionLayersRepresentation));
         }
     }
 
-    public byte LayerDigits => (byte)LayerCount.ToString().Length;
+    /// <summary>
+    /// Return the number of digits on the layer count number, eg: 123 layers = 3 digits
+    /// </summary>
+    public byte LayerDigits => (byte)LayerCount.DigitCount();
 
     /// <summary>
     /// Gets or sets the total height for the bottom layers in millimeters
@@ -1822,13 +1826,14 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         {
             RaiseAndSet(ref _bottomLayerCount, value);
             RaisePropertyChanged(nameof(NormalLayerCount));
+            RaisePropertyChanged(nameof(TransitionLayersRepresentation));
         }
     }
 
     /// <summary>
     /// Gets the transition layer type
     /// </summary>
-    public virtual TransitionLayerTypes TransitionLayerType => TransitionLayerTypes.Firmware;
+    public virtual TransitionLayerTypes TransitionLayerType => TransitionLayerTypes.Software;
 
     /// <summary>
     /// Gets or sets the number of transition layers
@@ -1840,6 +1845,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         {
             RaiseAndSet(ref _transitionLayerCount, (ushort)Math.Min(value, MaximumPossibleTransitionLayerCount));
             RaisePropertyChanged(nameof(HaveTransitionLayers));
+            RaisePropertyChanged(nameof(TransitionLayersRepresentation));
         }
     }
 
@@ -1931,6 +1937,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         {
             RaiseAndSet(ref _bottomExposureTime, (float)Math.Round(value, 2));
             RaisePropertyChanged(nameof(ExposureRepresentation));
+            RaisePropertyChanged(nameof(TransitionLayersRepresentation));
         }
     }
 
@@ -1944,6 +1951,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         {
             RaiseAndSet(ref _exposureTime, (float)Math.Round(value, 2));
             RaisePropertyChanged(nameof(ExposureRepresentation));
+            RaisePropertyChanged(nameof(TransitionLayersRepresentation));
         }
     }
 
@@ -2425,6 +2433,30 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     public bool CanUseLayerLightOffDelay => HaveLayerParameterModifier(PrintParameterModifier.LightOffDelay);
     public bool CanUseLayerAnyWaitTimeBeforeCure => CanUseLayerWaitTimeBeforeCure || CanUseLayerLightOffDelay;
     public bool CanUseLayerLightPWM => HaveLayerParameterModifier(PrintParameterModifier.LightPWM);
+
+    public string TransitionLayersRepresentation
+    {
+        get
+        {
+            var str = TransitionLayerCount.ToString(CultureInfo.InvariantCulture);
+
+            if (!CanUseTransitionLayerCount)
+            {
+                return str;
+            }
+
+            if (TransitionLayerCount > 0)
+            {
+                var decrement = ParseTransitionStepTimeFromLayers();
+                if (decrement != 0)
+                {
+                    str += $"/{-decrement}s";
+                }
+            }
+
+            return str;
+        }
+    }
 
     public string ExposureRepresentation
     {
@@ -3420,6 +3452,15 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         progress.Reset(OperationProgress.StatusGatherLayers, LayerCount);
 
         DecodeInternally(progress);
+        progress.ThrowIfCancellationRequested();
+
+        var layerHeightDigits = LayerHeight.DecimalDigits();
+        if (layerHeightDigits > Layer.HeightPrecision)
+        {
+            throw new FileLoadException($"The layer height ({LayerHeight}mm) have more decimal digits than the supported ({Layer.HeightPrecision}) digits.\n" +
+                                        "Lower and fix your layer height on slicer to avoid precision errors.", fileFullPath);
+        }
+
         IsModified = false;
         StartingMaterialMilliliters = MaterialMilliliters;
         StartingMaterialCost = MaterialCost;
@@ -3429,13 +3470,9 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             MaterialCost = StartingMaterialCost;
         }
 
-        progress.ThrowIfCancellationRequested();
-
-        var layerHeightDigits = LayerHeight.DecimalDigits();
-        if (layerHeightDigits > Layer.HeightPrecision)
+        if (CanUseTransitionLayerCount && TransitionLayerType == TransitionLayerTypes.Software)
         {
-            throw new FileLoadException($"The layer height ({LayerHeight}mm) have more decimal digits than the supported ({Layer.HeightPrecision}) digits.\n" +
-                                        "Lower and fix your layer height on slicer to avoid precision errors.", fileFullPath);
+            SuppressRebuildPropertiesWork(() => TransitionLayerCount = ParseTransitionLayerCountFromLayers());
         }
 
         bool reSaveFile = Sanitize();
@@ -3632,14 +3669,11 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         foreach (var entry in zipArchive.Entries)
         {
             var match = Regex.Match(entry.Name, regex);
-            if (!match.Success || match.Groups.Count < 2) continue;
-            if (!uint.TryParse(match.Groups[1].Value, out var layerIndex)) continue;
+            if (!match.Success || match.Groups.Count < 2 || match.Groups[1].Value.Length == 0 || !uint.TryParse(match.Groups[1].Value, out var layerIndex)) continue;
+            
 
             if (layerIndexStartNumber == IndexStartNumber.One && layerIndex > 0) layerIndex--;
-            if (layerIndex >= LayerCount)
-            {
-                continue;
-            }
+            if (layerIndex >= LayerCount) continue;
 
             layerEntries[layerIndex] = entry;
         }
@@ -3656,16 +3690,24 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     }
 
     public void DecodeLayersFromZip(ZipArchive zipArchive, byte padDigits, IndexStartNumber layerIndexStartNumber = IndexStartNumber.Zero, OperationProgress? progress = null, Func<uint, byte[], Mat>? matGenFunc = null)
-        => DecodeLayersFromZipRegex(zipArchive, $@"(\d{{{padDigits}}}).png", layerIndexStartNumber, progress, matGenFunc);
-
-    public void DecodeLayersFromZip(ZipArchive zipArchive, IndexStartNumber layerIndexStartNumber = IndexStartNumber.Zero, OperationProgress? progress = null, Func<uint, byte[], Mat>? matGenFunc = null) 
-        => DecodeLayersFromZipRegex(zipArchive, @"^(\d+).png", layerIndexStartNumber, progress, matGenFunc);
+        => DecodeLayersFromZipRegex(zipArchive, $@"(\d{{{padDigits}}}).png$", layerIndexStartNumber, progress, matGenFunc);
 
     public void DecodeLayersFromZip(ZipArchive zipArchive, string prepend, IndexStartNumber layerIndexStartNumber = IndexStartNumber.Zero, OperationProgress? progress = null, Func<uint, byte[], Mat>? matGenFunc = null)
-        => DecodeLayersFromZipRegex(zipArchive, $@"^{Regex.Escape(prepend)}(\d+).png", layerIndexStartNumber, progress, matGenFunc);
+        => DecodeLayersFromZipRegex(zipArchive, $@"^{Regex.Escape(prepend)}(\d+).png$", layerIndexStartNumber, progress, matGenFunc);
+
+    public void DecodeLayersFromZip(ZipArchive zipArchive, IndexStartNumber layerIndexStartNumber = IndexStartNumber.Zero, OperationProgress? progress = null, Func<uint, byte[], Mat>? matGenFunc = null)
+        => DecodeLayersFromZipRegex(zipArchive, @"^(\d+).png$", layerIndexStartNumber, progress, matGenFunc);
 
     public void DecodeLayersFromZip(ZipArchive zipArchive, OperationProgress progress, Func<uint, byte[], Mat>? matGenFunc = null)
-        => DecodeLayersFromZipRegex(zipArchive, @"^(\d+).png", IndexStartNumber.Zero, progress, matGenFunc);
+        => DecodeLayersFromZipRegex(zipArchive, @"^(\d+).png$", IndexStartNumber.Zero, progress, matGenFunc);
+
+    public void DecodeLayersFromZipIgnoreFilename(ZipArchive zipArchive, IndexStartNumber layerIndexStartNumber = IndexStartNumber.Zero, OperationProgress? progress = null, Func<uint, byte[], Mat>? matGenFunc = null)
+    {
+        DecodeLayersFromZipRegex(zipArchive, @$"({@"\d?".Repeat(LayerDigits - 1)}\d).png$", layerIndexStartNumber, progress, matGenFunc);
+    }
+
+    public void DecodeLayersFromZipIgnoreFilename(ZipArchive zipArchive, OperationProgress progress, Func<uint, byte[], Mat>? matGenFunc = null)
+        => DecodeLayersFromZipIgnoreFilename(zipArchive, IndexStartNumber.Zero, progress, matGenFunc);
 
     /// <summary>
     /// Extract contents to a folder
@@ -3824,6 +3866,84 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     }
 
     /// <summary>
+    /// Gets the transition layer count calculated from layer exposure time configuration
+    /// </summary>
+    /// <returns>Transition layer count</returns>
+    public ushort ParseTransitionLayerCountFromLayers()
+    {
+        ushort count = 0;
+        for (uint layerIndex = BottomLayerCount + 1u; layerIndex < LayerCount; layerIndex++)
+        {
+            if (Math.Abs(this[layerIndex - 1].ExposureTime - this[layerIndex].ExposureTime) < 0.009f) break; // First equal layer, transition ended
+            count++;
+        }
+
+        return count;
+    }
+
+    /// <summary>
+    /// Parse the transition step time from layers, value is returned as positive from normal perspective and logic (Longer - shorter)
+    /// </summary>
+    /// <returns>Seconds</returns>
+    public float ParseTransitionStepTimeFromLayers()
+    {
+        var transitionLayerCount = ParseTransitionLayerCountFromLayers();
+        return transitionLayerCount == 0
+            ? 0
+            : (float)Math.Round(this[BottomLayerCount].ExposureTime - this[BottomLayerCount + 1].ExposureTime, 2);
+    }
+
+    /// <summary>
+    /// Gets the transition step time from a long and short exposure time, value is returned as positive from normal perspective and logic (Longer - shorter)
+    /// </summary>
+    /// <param name="longExposureTime">The long exposure time</param>
+    /// <param name="shortExposureTime">The small exposure time</param>
+    /// <param name="transitionLayerCount">Number of transition layers</param>
+    /// <returns>Seconds</returns>
+    public static float GetTransitionStepTime(float longExposureTime, float shortExposureTime, ushort transitionLayerCount)
+    {
+        return transitionLayerCount == 0 ? 0 : (float)Math.Round((longExposureTime - shortExposureTime) / (transitionLayerCount + 1), 2, MidpointRounding.AwayFromZero);
+    }
+
+    /// <summary>
+    /// Gets the transition step time from <see cref="BottomExposureTime"/> and <see cref="ExposureTime"/>, value is returned as positive from normal perspective and logic (Longer - shorter)
+    /// </summary>
+    /// <param name="transitionLayerCount">Number of transition layers</param>
+    /// <returns>Seconds</returns>
+    public float GetTransitionStepTime(ushort transitionLayerCount)
+    {
+        return GetTransitionStepTime(BottomExposureTime, ExposureTime, transitionLayerCount);
+    }
+
+    /// <summary>
+    /// Gets the transition layer count based on long and short exposure time
+    /// </summary>
+    /// <param name="longExposureTime">The long exposure time</param>
+    /// <param name="shortExposureTime">The small exposure time</param>
+    /// <param name="decrementTime">Decrement time</param>
+    /// <param name="rounding">Midpoint rounding method</param>
+    /// <returns></returns>
+    public static ushort GetTransitionLayerCount(float longExposureTime, float shortExposureTime, float decrementTime, MidpointRounding rounding = MidpointRounding.AwayFromZero)
+    {
+        return decrementTime == 0 ? (ushort)0 : (ushort)Math.Round((longExposureTime - shortExposureTime) / decrementTime - 1, rounding);
+    }
+
+    /// <summary>
+    /// Gets the transition layer count based on <see cref="BottomExposureTime"/> and <see cref="ExposureTime"/>
+    /// </summary>
+    /// <param name="stepDecrementTime">Step decrement time in seconds</param>
+    /// <param name="constrainToLayerCount">True if transition layer count can't be higher than supported by the file, otherwise set to false to not look at possible file layers</param>
+    /// <param name="rounding">Midpoint rounding method</param>
+    /// <returns>Transition layer count</returns>
+    public ushort GetTransitionLayerCount(float stepDecrementTime, bool constrainToLayerCount = true, MidpointRounding rounding = MidpointRounding.AwayFromZero)
+    {
+        var count = GetTransitionLayerCount(BottomExposureTime, ExposureTime, stepDecrementTime, rounding);
+        if (constrainToLayerCount) count = (ushort)Math.Min(count, MaximumPossibleTransitionLayerCount);
+        return count;
+    }
+
+
+    /// <summary>
     /// Re-set exposure time to the transition layers
     /// </summary>
     /// <param name="resetExposureTimes">True to default all the previous transition layers exposure time, otherwise false</param>
@@ -3845,7 +3965,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             for (uint layerIndex = BottomLayerCount; layerIndex < LayerCount; layerIndex++)
             {
                 var layer = this[layerIndex];
-                if (layer.ExposureTime == ExposureTime) break; // First equal layer, transition ended
+                if (Math.Abs(layer.ExposureTime - ExposureTime) < 0.009) break; // First equal layer, transition ended
 
                 layer.ExposureTime = ExposureTime;
             }
@@ -3853,14 +3973,14 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
 
         if (transitionLayerCount == 0) return;
 
-        float increment = Math.Max((BottomExposureTime - ExposureTime) / (transitionLayerCount + 1), 0f);
-        if (increment <= 0) return;
+        float decrement = GetTransitionStepTime(transitionLayerCount);
+        if (decrement <= 0) return;
 
         uint appliedLayers = 0;
         for (uint layerIndex = BottomLayerCount; appliedLayers < transitionLayerCount && layerIndex < LayerCount; layerIndex++)
         {
             appliedLayers++;
-            this[layerIndex].ExposureTime = Math.Clamp(BottomExposureTime - (increment * appliedLayers), ExposureTime, BottomExposureTime);
+            this[layerIndex].ExposureTime = Math.Clamp(BottomExposureTime - (decrement * appliedLayers), ExposureTime, BottomExposureTime);
         }
     }
 

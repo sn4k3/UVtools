@@ -182,6 +182,7 @@ public class UVJFile : FileFormat
 
     public override PrintParameterModifier[]? PrintParameterModifiers { get; } = {
         PrintParameterModifier.BottomLayerCount,
+        PrintParameterModifier.TransitionLayerCount,
 
         PrintParameterModifier.BottomLightOffDelay,
         PrintParameterModifier.LightOffDelay,

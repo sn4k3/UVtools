@@ -26,9 +26,11 @@ public class SuggestionManager
     public static string FilePath => Path.Combine(CoreSettings.DefaultSettingsFolderAndEnsureCreation, "suggestions.xml");
 
     public SuggestionBottomLayerCount BottomLayerCount { get; set; } = new();
+    public SuggestionTransitionLayerCount TransitionLayerCount { get; set; } = new();
     public SuggestionWaitTimeBeforeCure WaitTimeBeforeCure { get; set; } = new();
     public SuggestionWaitTimeAfterCure WaitTimeAfterCure { get; set; } = new();
     public SuggestionLayerHeight LayerHeight { get; set; } = new();
+    public SuggestionModelPosition ModelPosition { get; set; } = new();
 
     /// <summary>
     /// Gets all suggestions
@@ -41,9 +43,11 @@ public class SuggestionManager
             return new Suggestion[]
             {
                 BottomLayerCount,
+                TransitionLayerCount,
                 WaitTimeBeforeCure,
                 WaitTimeAfterCure,
-                LayerHeight
+                LayerHeight,
+                ModelPosition,
             };
         }
         set
@@ -64,6 +68,9 @@ public class SuggestionManager
             case SuggestionBottomLayerCount bottomLayerCount:
                 BottomLayerCount = bottomLayerCount;
                 break;
+            case SuggestionTransitionLayerCount transitionLayerCount:
+                TransitionLayerCount = transitionLayerCount;
+                break;
             case SuggestionWaitTimeBeforeCure waitTimeBeforeCure:
                 WaitTimeBeforeCure = waitTimeBeforeCure;
                 break;
@@ -72,6 +79,9 @@ public class SuggestionManager
                 break;
             case SuggestionLayerHeight layerHeight:
                 LayerHeight = layerHeight;
+                break;
+            case SuggestionModelPosition modelPosition:
+                ModelPosition = modelPosition;
                 break;
             default: throw new ArgumentOutOfRangeException(nameof(suggestion));
         }

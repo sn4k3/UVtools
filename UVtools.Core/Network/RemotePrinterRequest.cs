@@ -97,7 +97,7 @@ public class RemotePrinterRequest : BindableBase
 
     #endregion
 
-    #region Contructors
+    #region Constructors
 
     public RemotePrinterRequest() { }
 

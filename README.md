@@ -256,7 +256,6 @@ The following commands are the old way and commands under the UI executable, the
 
 **Copy the following script, paste and run on a terminal:**
 
-
 ```bash
 [[ "$(command -v apt-get)" ]] && sudo apt-get install -y wget 
 [[ "$(command -v pacman)" ]] && sudo pacman -S wget

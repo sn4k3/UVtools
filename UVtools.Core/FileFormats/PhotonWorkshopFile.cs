@@ -1124,7 +1124,7 @@ public class PhotonWorkshopFile : FileFormat
                 return new[]
                 {
                     PrintParameterModifier.BottomLayerCount,
-                    PrintParameterModifier.TransitionLayerCount, 
+                    PrintParameterModifier.TransitionLayerCount,
 
                     PrintParameterModifier.WaitTimeBeforeCure,
 
@@ -1152,6 +1152,7 @@ public class PhotonWorkshopFile : FileFormat
             return new[]
             {
                 PrintParameterModifier.BottomLayerCount,
+                PrintParameterModifier.TransitionLayerCount,
 
                 PrintParameterModifier.WaitTimeBeforeCure,
 

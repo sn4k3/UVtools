@@ -56,7 +56,7 @@ public sealed class SuggestionLayerHeight : Suggestion
         ? $"{GlobalAppliedMessage}: {SlicerFile.LayerHeight}mm" 
         : $"{GlobalNotAppliedMessage} is out of the recommended {_minimumLayerHeight}mm » {_maximumLayerHeight}mm, up to {_maximumLayerHeightDecimalPlates} decimal digit(s)";
 
-    public override string ToolTip => $"The recommended layer height is between {_minimumLayerHeight}mm and {_maximumLayerHeight}mm up to {_maximumLayerHeightDecimalPlates} digit(s) precision.\n" +
+    public override string ToolTip => $"The recommended layer height is between [{_minimumLayerHeight}mm to {_maximumLayerHeight}mm] up to {_maximumLayerHeightDecimalPlates} digit(s) precision.\n" +
                                       $"Explanation: {Description}";
 
     public override string? ConfirmationMessage => $"{Title}: Re-slice the model with proper layer height";
@@ -95,6 +95,11 @@ public sealed class SuggestionLayerHeight : Suggestion
         if (_minimumLayerHeight <= 0)
         {
             sb.AppendLine("Minimum layer height must be higher than 0mm");
+        }
+
+        if (_maximumLayerHeight <= 0)
+        {
+            sb.AppendLine("Maximum layer height must be higher than 0mm");
         }
 
         if (_minimumLayerHeight > _maximumLayerHeight)

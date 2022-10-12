@@ -1178,7 +1178,7 @@ public partial class MainWindow : WindowEx
 
     public void MenuHelpDebugThrowExceptionClicked()
     {
-        var i = 1 / new Random().Next(0, 0);
+        var i = 1 / new Random().Next(0);
     }
 
     public async void MenuHelpDebugLongMessageBoxClicked()
@@ -1759,7 +1759,13 @@ public partial class MainWindow : WindowEx
 
         if (SlicerFile is CTBEncryptedFile)
         {
-            await this.MessageBoxInfo(CTBEncryptedFile.Preamble, "Information");
+            Settings.General.LockedFilesOpenCounter++;
+            if (Settings.General.LockedFilesOpenCounter >= UserSettings.GeneralUserSettings.LockedFilesMaxOpenCounter)
+            {
+                await this.MessageBoxInfo(CTBEncryptedFile.Preamble, "Information");
+                Settings.General.LockedFilesOpenCounter = 0;
+            }
+            UserSettings.Save();
         }
     }
 

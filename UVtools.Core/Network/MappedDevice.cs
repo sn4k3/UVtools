@@ -62,7 +62,7 @@ public class MappedDevice : BindableBase
 
     #endregion
 
-    #region Contructors
+    #region Constructors
 
     public MappedDevice() { }
 

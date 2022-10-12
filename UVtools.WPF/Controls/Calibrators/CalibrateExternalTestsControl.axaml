@@ -5,37 +5,50 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450" Width="500"
              x:Class="UVtools.WPF.Controls.Calibrators.CalibrateExternalTestsControl">
   <Grid
-      RowDefinitions="Auto,Auto,Auto"
+      RowDefinitions="Auto"
       ColumnDefinitions="*">
 
-      <Button Grid.Row="0"
-              Padding="5"
-              Content="Photonsters Validation Matrix / Exposure finder"
-              Command="{Binding ButtonClicked}"
-              VerticalAlignment="Center"
-              HorizontalAlignment="Stretch"
-              HorizontalContentAlignment="Center"
-              CommandParameter="https://www.thingiverse.com/thing:4707289"/>
+      <StackPanel Orientation="Vertical" Spacing="5">
+		  <Button Padding="5"
+                  Content="The Complete Resin 3D Printing Settings Guide for Beginners"
+                  Command="{Binding ButtonClicked}"
+                  VerticalAlignment="Center"
+                  HorizontalAlignment="Stretch"
+                  HorizontalContentAlignment="Center"
+                  CommandParameter="https://ameralabs.com/blog/the-complete-resin-3d-printing-settings-guide-for-beginners"/>
 
-      <Button Grid.Row="1"
-              Margin="0,5,0,0"
-              Padding="5"
-              Content="Support pull test"
-              Command="{Binding ButtonClicked}"
-              VerticalAlignment="Center"
-              HorizontalAlignment="Stretch"
-              HorizontalContentAlignment="Center"
-              CommandParameter="https://www.thingiverse.com/thing:4308175"/>
+		  <Button Content="Photonsters Validation Matrix / Exposure finder"
+                  Command="{Binding ButtonClicked}"
+                  VerticalAlignment="Center"
+                  HorizontalAlignment="Stretch"
+                  HorizontalContentAlignment="Center"
+                  CommandParameter="https://www.thingiverse.com/thing:4707289"/>
 
-      <Button Grid.Row="2"
-              Margin="0,5,0,0"
-              Padding="5"
-              Content="AmeraLabs town calibration part"
-              Command="{Binding ButtonClicked}"
-              VerticalAlignment="Center"
-              HorizontalAlignment="Stretch"
-              HorizontalContentAlignment="Center"
-              CommandParameter="https://www.thingiverse.com/thing:2810666"/>
+		  <Button Padding="5"
+                  Content="Support pull test"
+                  Command="{Binding ButtonClicked}"
+                  VerticalAlignment="Center"
+                  HorizontalAlignment="Stretch"
+                  HorizontalContentAlignment="Center"
+                  CommandParameter="https://www.thingiverse.com/thing:4308175"/>
 
-    </Grid>
+		  <Button Padding="5"
+                  Content="AmeraLabs town calibration part"
+                  Command="{Binding ButtonClicked}"
+                  VerticalAlignment="Center"
+                  HorizontalAlignment="Stretch"
+                  HorizontalContentAlignment="Center"
+                  CommandParameter="https://www.thingiverse.com/thing:2810666"/>
+
+		  <Button Padding="5"
+                  Content="9 settings for faster printing"
+                  Command="{Binding ButtonClicked}"
+                  VerticalAlignment="Center"
+                  HorizontalAlignment="Stretch"
+                  HorizontalContentAlignment="Center"
+                  CommandParameter="https://ameralabs.com/blog/9-settings-to-change-for-faster-resin-3d-printing"/>
+
+	  </StackPanel>
+
+  </Grid>
 </UserControl>

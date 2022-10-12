@@ -65,6 +65,9 @@ public sealed class UserSettings : BindableBase
         private bool _sendToPromptForRemovableDeviceEject = true;
         private RangeObservableCollection<MappedDevice> _sendToCustomLocations = new();
         private RangeObservableCollection<MappedProcess> _sendToProcess = new();
+        private ushort _lockedFilesOpenCounter;
+
+        public const byte LockedFilesMaxOpenCounter = 10;
 
         public App.ApplicationTheme Theme
         {
@@ -230,6 +233,12 @@ public sealed class UserSettings : BindableBase
         {
             get => _sendToProcess;
             set => RaiseAndSetIfChanged(ref _sendToProcess, value);
+        }
+
+        public ushort LockedFilesOpenCounter
+        {
+            get => _lockedFilesOpenCounter;
+            set => RaiseAndSetIfChanged(ref _lockedFilesOpenCounter, value);
         }
 
         public GeneralUserSettings() { }

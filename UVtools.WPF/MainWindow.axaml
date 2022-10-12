@@ -262,11 +262,30 @@
 				<WrapPanel
 				  Orientation="Horizontal"
 				  VerticalAlignment="Center">
-					<TextBlock Text="{Binding SlicerFile.LayerHeight, StringFormat=Layer height: {0}mm}"/>
+					<TextBlock>
+                        <TextBlock.Text>
+                            <MultiBinding StringFormat="Layers: {0} @ {1}mm">
+                                <Binding Path="SlicerFile.LayerCount"/>
+                                <Binding Path="SlicerFile.LayerHeight"/>
+                            </MultiBinding>
+                        </TextBlock.Text>
+                    </TextBlock>
+
 
 					<TextBlock IsVisible="{Binding SlicerFile.CanUseBottomLayerCount}" Text="  |  "/>
-					<TextBlock IsVisible="{Binding SlicerFile.CanUseBottomLayerCount}"
-							   Text="{Binding SlicerFile.BottomLayerCount, StringFormat=Bottom layers: {0}}"/>
+					<TextBlock IsVisible="{Binding SlicerFile.CanUseBottomLayerCount}">
+                        <TextBlock.Text>
+                            <MultiBinding StringFormat="Bottom layers: {0}/{1}mm">
+                                <Binding Path="SlicerFile.BottomLayerCount"/>
+                                <Binding Path="SlicerFile.BottomLayersHeight"/>
+                            </MultiBinding>
+                        </TextBlock.Text>
+					</TextBlock>
+
+                    <TextBlock IsVisible="{Binding SlicerFile.CanUseTransitionLayerCount}" Text="  |  "/>
+                    <TextBlock IsVisible="{Binding SlicerFile.CanUseTransitionLayerCount}"
+                               Text="{Binding SlicerFile.TransitionLayersRepresentation, StringFormat=Transition layers: {0}}"/>
+
 
 					<TextBlock IsVisible="{Binding SlicerFile.CanUseAnyExposureTime}" Text="  |  "/>
 					<TextBlock IsVisible="{Binding SlicerFile.CanUseAnyExposureTime}"

@@ -34,8 +34,14 @@ public static class StringExtensions
         };
     }
 
-    public static string Repeat(this string s, int n)
-        => n <= 0 ? string.Empty : new StringBuilder(s.Length * n).Insert(0, s, n).ToString();
+    /// <summary>
+    /// Repeat this string <paramref name="count"/> times
+    /// </summary>
+    /// <param name="str">String to repeat</param>
+    /// <param name="count">Number of times to repeat</param>
+    /// <returns><paramref name="str"/> repeated <paramref name="count"/> times</returns>
+    public static string Repeat(this string str, int count)
+        => count <= 0 ? string.Empty : new StringBuilder(str.Length * count).Insert(0, str, count).ToString();
 
     /// <summary>
     /// Converts a string into a target type

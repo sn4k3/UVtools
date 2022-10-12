@@ -26,6 +26,9 @@
     <MsixTimestampUrl Condition=" '$(MsixTimestampUrl)' == '' ">
     </MsixTimestampUrl>
   </PropertyGroup>
+  <PropertyGroup>
+    <SuppressIces>ICE27</SuppressIces>
+  </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
     <OutputPath>bin\$(Configuration)\</OutputPath>
     <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>

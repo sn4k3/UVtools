@@ -9,16 +9,35 @@
   is a seamless uninstall/reinstall.
   Version="$(var.MSIProductVersion)"
   -->
-	<Product Id="*" Name="UVtools" Language="1033" Version="$(var.MSIProductVersion)" Manufacturer="PTRTECH" UpgradeCode="1ea6d212-15c0-425e-b2ec-4b6c60817552">
+
+	<?define UpgradeCode = "1ea6d212-15c0-425e-b2ec-4b6c60817552"?>
+
+	<Product Id="*" Name="UVtools" Language="1033" Version="$(var.MSIProductVersion)" Manufacturer="PTRTECH" UpgradeCode="$(var.UpgradeCode)">
 		<Package InstallerVersion="301" Compressed="yes" Keywords="MSLA, DLP" Description="MSLA/DLP, file analysis, repair, conversion and manipulation" InstallScope="perMachine" Platform="x64" />
 		<MediaTemplate EmbedCab="yes" />
 
-		<!-- Major Upgrade Rule to disallow downgrades -->
+		<!-- Major Upgrade Rule to disallow downgrades 
 		<MajorUpgrade AllowDowngrades="no"
 		              AllowSameVersionUpgrades="yes"
 		              IgnoreRemoveFailure="no"
-		              DowngradeErrorMessage="A newer version of [ProductName] is already installed."
+		              DowngradeErrorMessage="A newer version of [ProductName] is already installed. Setup will now exit."
 		              Schedule="afterInstallInitialize" />
+		-->
+
+		<!-- Product upgrade -->
+		<Upgrade Id="$(var.UpgradeCode)">
+			<UpgradeVersion OnlyDetect="no" Property="WIX_UPGRADE_DETECTED"
+			                Maximum="$(var.MSIProductVersion)" IncludeMaximum="no" IncludeMinimum="no"
+			                MigrateFeatures="yes" />
+			<UpgradeVersion OnlyDetect="yes" Property="WIX_DOWNGRADE_DETECTED"
+			                Minimum="$(var.MSIProductVersion)" IncludeMinimum="no" />
+		</Upgrade>
+		<InstallExecuteSequence>
+			<RemoveExistingProducts Before="CostInitialize" />
+		</InstallExecuteSequence>
+		<Condition Message="A newer version of [ProductName] is already installed. Setup will now exit.">NOT WIX_DOWNGRADE_DETECTED</Condition>
+
+
 		<!--Common Launch Condition-->
 		<!-- Examples at http://wixtoolset.org/documentation/manual/v3/customactions/wixnetfxextension.html -->
 		<!--

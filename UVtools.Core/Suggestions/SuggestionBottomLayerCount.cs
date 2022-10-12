@@ -9,6 +9,7 @@
 using System;
 using System.Text;
 using UVtools.Core.Layers;
+using UVtools.Core.Operations;
 
 namespace UVtools.Core.Suggestions;
 
@@ -48,7 +49,7 @@ public sealed class SuggestionBottomLayerCount : Suggestion
         }
     }
 
-    public override string Title => "Bottom layer count";
+    public override string Title => "Bottom layers";
 
     public override string Description => "Bottom layers should be kept to a minimum, usually from 2 to 3, it function is to provide a good adhesion to the first layer on the build plate, using a high count have disadvantages.";
 
@@ -56,7 +57,7 @@ public sealed class SuggestionBottomLayerCount : Suggestion
         ? $"{GlobalAppliedMessage}: {SlicerFile.BottomLayerCount} / {SlicerFile.BottomLayersHeight}mm" 
         : $"{GlobalNotAppliedMessage} ({SlicerFile.BottomLayerCount}) is out of the recommended {BottomLayerCountValue} layers";
 
-    public override string ToolTip => $"The recommended total height for the bottom layers must be between {_minimumBottomHeight}mm and {_maximumBottomHeight}mm constrained from {_minimumBottomLayerCount} to {_maximumBottomLayerCount} layers.\n" +
+    public override string ToolTip => $"The recommended total height for the bottom layers must be between [{_minimumBottomHeight}mm to {_maximumBottomHeight}mm] constrained from [{_minimumBottomLayerCount} to {_maximumBottomLayerCount}] layers.\n" +
                                       $"Explanation: {Description}";
 
     public override string? InformationUrl => "https://ameralabs.com/blog/default-3d-printing-raft-settings";
@@ -66,19 +67,19 @@ public sealed class SuggestionBottomLayerCount : Suggestion
     public decimal TargetBottomHeight
     {
         get => _targetBottomHeight;
-        set => RaiseAndSetIfChanged(ref _targetBottomHeight, Layer.RoundHeight(value));
+        set => RaiseAndSetIfChanged(ref _targetBottomHeight, Layer.RoundHeight(Math.Max(0, value)));
     }
 
     public decimal MinimumBottomHeight
     {
         get => _minimumBottomHeight;
-        set => RaiseAndSetIfChanged(ref _minimumBottomHeight, Layer.RoundHeight(value));
+        set => RaiseAndSetIfChanged(ref _minimumBottomHeight, Layer.RoundHeight(Math.Max(0, value)));
     }
 
     public decimal MaximumBottomHeight
     {
         get => _maximumBottomHeight;
-        set => RaiseAndSetIfChanged(ref _maximumBottomHeight, Layer.RoundHeight(value));
+        set => RaiseAndSetIfChanged(ref _maximumBottomHeight, Layer.RoundHeight(Math.Max(0, value)));
     }
 
     public byte MinimumBottomLayerCount
@@ -103,6 +104,21 @@ public sealed class SuggestionBottomLayerCount : Suggestion
     {
         var sb = new StringBuilder();
 
+        if (_targetBottomHeight < 0)
+        {
+            sb.AppendLine("Bottom height must be a positive value");
+        }
+
+        if (_minimumBottomHeight < 0)
+        {
+            sb.AppendLine("Minimum limit (mm) must be a positive value");
+        }
+
+        if (_maximumBottomHeight < 0)
+        {
+            sb.AppendLine("maximum limit (mm) must be a positive value");
+        }
+
         if (_minimumBottomHeight > _maximumBottomHeight)
         {
             sb.AppendLine("Minimum limit (mm) can't be higher than maximum limit (mm)");
@@ -118,7 +134,7 @@ public sealed class SuggestionBottomLayerCount : Suggestion
 
     #endregion
 
-    #region Contructor
+    #region Constructor
     public SuggestionBottomLayerCount()
     {
         _applyWhen = SuggestionApplyWhen.OutsideLimits;
@@ -127,7 +143,7 @@ public sealed class SuggestionBottomLayerCount : Suggestion
 
     #region Methods
 
-    protected override bool ExecuteInternally()
+    protected override bool ExecuteInternally(OperationProgress progress)
     {
         SlicerFile.BottomLayerCount = BottomLayerCountValue;
         return true;

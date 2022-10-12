@@ -43,6 +43,8 @@ public class GCodeLayer
 
     public float PreviousPositionZ { get; set; }
 
+    public bool WaitSyncDelayDetected { get; set; }
+
     public float? WaitTimeBeforeCure
     {
         get => _waitTimeBeforeCure;
@@ -118,6 +120,7 @@ public class GCodeLayer
 
     public byte LightOffCount { get; set; }
     public bool IsAfterLightOff => LightOffCount > 0;
+    
 
     public GCodeLayer(FileFormat slicerFile)
     {
@@ -299,7 +302,7 @@ public class GCodeLayer
         layer.RetractSpeed2 = RetractSpeed2 ?? SlicerFile.GetBottomOrNormalValue(layer, SlicerFile.BottomRetractSpeed2, SlicerFile.RetractSpeed2);
         layer.LightPWM = LightPWM ?? 0;//SlicerFile.GetInitialLayerValueOrNormal(layerIndex, SlicerFile.BottomLightPWM, SlicerFile.LightPWM);
 
-        if (SlicerFile.GCode!.CommandWaitSyncDelay.Enabled) // Dirty fix of the value
+        if (SlicerFile.GCode!.CommandWaitSyncDelay.Enabled && !WaitSyncDelayDetected) // Dirty fix of the value
         {
             var syncTime = OperationCalculator.LightOffDelayC.CalculateSeconds(layer, 1.5f);
             if (syncTime < layer.WaitTimeBeforeCure)
