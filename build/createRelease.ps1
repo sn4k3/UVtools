@@ -231,7 +231,7 @@ $msbuild = $null
 foreach($path in $msbuildPaths) {
     if (Test-Path -Path $path -PathType Leaf)
     {
-        $msbuild = "`"$path`" /t:Build /p:Configuration=`"$buildWith`" /p:MSIProductVersion=`"$version`" /p:HarvestPath=`"$msiSourceFiles`""
+        $msbuild = "`"$path`" /t:Build /p:Configuration=`"$buildWith`" /p:ProductVersion=`"$version`" /p:HarvestPath=`"$msiSourceFiles`""
         break;
     }
 }

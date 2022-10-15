@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
 	<!-- 
-  MSIProductVersion is defined in UVtools.Installer.wixproj as 0.0.1 for local desktop builds.  
-  You should pass in the MSBuild Property 'MSIProductVersion' to override it during an automated build.
+  ProductVersion is defined in UVtools.Installer.wixproj as 0.0.1 for local desktop builds.  
+  You should pass in the MSBuild Property 'ProductVersion' to override it during an automated build.
   See http://msdn.microsoft.com/en-us/library/windows/desktop/aa370859%28v=vs.85%29.aspx for information on allowable values.
   
   The Product@Id attribute (ProductCode Property) will be a random GUID for each build.  This is to support "Major Upgrades" where each install 
   is a seamless uninstall/reinstall.
-  Version="$(var.MSIProductVersion)"
+  Version="$(var.ProductVersion)"
   -->
 
 	<?define UpgradeCode = "1ea6d212-15c0-425e-b2ec-4b6c60817552"?>
 
-	<Product Id="*" Name="UVtools" Language="1033" Version="$(var.MSIProductVersion)" Manufacturer="PTRTECH" UpgradeCode="$(var.UpgradeCode)">
+	<Product Id="*" Name="UVtools" Language="1033" Version="$(var.ProductVersion)" Manufacturer="PTRTECH" UpgradeCode="$(var.UpgradeCode)">
 		<Package InstallerVersion="301" Compressed="yes" Keywords="MSLA, DLP" Description="MSLA/DLP, file analysis, repair, conversion and manipulation" InstallScope="perMachine" Platform="x64" />
 		<MediaTemplate EmbedCab="yes" />
 
@@ -25,12 +25,13 @@
 		-->
 
 		<!-- Product upgrade -->
+		<!-- https://stackoverflow.com/questions/4227456/windows-installer-deletes-versioned-file-during-product-upgrade-instead-of-down -->
 		<Upgrade Id="$(var.UpgradeCode)">
 			<UpgradeVersion OnlyDetect="no" Property="WIX_UPGRADE_DETECTED"
-			                Maximum="$(var.MSIProductVersion)" IncludeMaximum="no" IncludeMinimum="no"
+			                Maximum="$(var.ProductVersion)" IncludeMaximum="no" IncludeMinimum="no"
 			                MigrateFeatures="yes" />
 			<UpgradeVersion OnlyDetect="yes" Property="WIX_DOWNGRADE_DETECTED"
-			                Minimum="$(var.MSIProductVersion)" IncludeMinimum="no" />
+			                Minimum="$(var.ProductVersion)" IncludeMinimum="no" />
 		</Upgrade>
 		<InstallExecuteSequence>
 			<RemoveExistingProducts Before="CostInitialize" />

@@ -10,12 +10,12 @@
     <DefineSolutionProperties>false</DefineSolutionProperties>
     <WixTargetsPath Condition=" '$(WixTargetsPath)' == '' AND '$(MSBuildExtensionsPath32)' != '' ">$(MSBuildExtensionsPath32)\Microsoft\WiX\v3.x\Wix.targets</WixTargetsPath>
     <WixTargetsPath Condition=" '$(WixTargetsPath)' == '' ">$(MSBuildExtensionsPath)\Microsoft\WiX\v3.x\Wix.targets</WixTargetsPath>
-    <!-- If MSIProductVersion not passed in, try to get it from TFBuild Environments (XAML Builds)-->
-    <MSIProductVersion Condition=" '$(MSIProductVersion)' == '' ">$([System.Text.RegularExpressions.Regex]::Match($(TF_BUILD_BUILDNUMBER), "\d+.\d+.\d+.\d+"))</MSIProductVersion>
-    <!-- If MSIProductVersion still not known, try to get it from TFBuild Environments (V.Next Builds)-->
-    <MSIProductVersion Condition=" '$(MSIProductVersion)' == '' ">$([System.Text.RegularExpressions.Regex]::Match($(BUILD_BUILDNUMBER), "\d+.\d+.\d+.\d+"))</MSIProductVersion>
-    <!-- If MSIProductVersion still not known, default to lowerbound 0.0.1 for developer builds.-->
-    <MSIProductVersion Condition=" '$(MSIProductVersion)' == '' ">1.1.1</MSIProductVersion>
+    <!-- If ProductVersion not passed in, try to get it from TFBuild Environments (XAML Builds)-->
+    <ProductVersion Condition=" '$(ProductVersion)' == '' ">$([System.Text.RegularExpressions.Regex]::Match($(TF_BUILD_BUILDNUMBER), "\d+.\d+.\d+.\d+"))</ProductVersion>
+    <!-- If ProductVersion still not known, try to get it from TFBuild Environments (V.Next Builds)-->
+    <ProductVersion Condition=" '$(ProductVersion)' == '' ">$([System.Text.RegularExpressions.Regex]::Match($(BUILD_BUILDNUMBER), "\d+.\d+.\d+.\d+"))</ProductVersion>
+    <!-- If ProductVersion still not known, default to lowerbound 0.0.1 for developer builds.-->
+    <ProductVersion Condition=" '$(ProductVersion)' == '' ">1.1.1</ProductVersion>
     <!-- The following allows one cert to be referenced from the certificate store for self-signing in localbuilds and another cert to be passed in during official builds. -->
     <AppxCertificateThumbprint Condition=" '$(AppxCertificateThumbprint)' == '' ">
     </AppxCertificateThumbprint>
@@ -32,23 +32,23 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
     <OutputPath>bin\$(Configuration)\</OutputPath>
     <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
-    <DefineConstants>Debug;MSIProductVersion=$(MSIProductVersion);HarvestPath=$(HarvestPath)</DefineConstants>
+    <DefineConstants>Debug;ProductVersion=$(ProductVersion);HarvestPath=$(HarvestPath)</DefineConstants>
     <WixVariables>WixUIBannerBmp=Resources\Banner.jpg;WixUIDialogBmp=Resources\Dialog.jpg;WixUILicenseRtf=Resources\EULA.rtf</WixVariables>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <OutputPath>bin\$(Configuration)\</OutputPath>
     <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
-    <DefineConstants>MSIProductVersion=$(MSIProductVersion);HarvestPath=$(HarvestPath)</DefineConstants>
+    <DefineConstants>ProductVersion=$(ProductVersion);HarvestPath=$(HarvestPath)</DefineConstants>
     <WixVariables>WixUIBannerBmp=Resources\Banner.jpg;WixUIDialogBmp=Resources\Dialog.jpg;WixUILicenseRtf=Resources\EULA.rtf</WixVariables>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
-    <DefineConstants>Debug;MSIProductVersion=$(MSIProductVersion);HarvestPath=$(HarvestPath)</DefineConstants>
+    <DefineConstants>Debug;ProductVersion=$(ProductVersion);HarvestPath=$(HarvestPath)</DefineConstants>
     <WixVariables>WixUIBannerBmp=Resources\Banner.jpg;WixUIDialogBmp=Resources\Dialog.jpg;WixUILicenseRtf=Resources\EULA.rtf</WixVariables>
     <OutputPath>bin\$(Platform)\$(Configuration)\</OutputPath>
     <IntermediateOutputPath>obj\$(Platform)\$(Configuration)\</IntermediateOutputPath>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
-    <DefineConstants>MSIProductVersion=$(MSIProductVersion);HarvestPath=$(HarvestPath)</DefineConstants>
+    <DefineConstants>ProductVersion=$(ProductVersion);HarvestPath=$(HarvestPath)</DefineConstants>
     <WixVariables>WixUIBannerBmp=Resources\Banner.jpg;WixUIDialogBmp=Resources\Dialog.jpg;WixUILicenseRtf=Resources\EULA.rtf</WixVariables>
     <OutputPath>bin\$(Platform)\$(Configuration)\</OutputPath>
     <IntermediateOutputPath>obj\$(Platform)\$(Configuration)\</IntermediateOutputPath>
