@@ -9,7 +9,7 @@ env:
    WINGET_PACKAGE_ID: PTRTECH.UVtools
    WINGET_TOKEN: ${{ secrets.WINGET_TOKEN }}
    NUGET_TOKEN: ${{ secrets.NUGET_TOKEN }}
-   
+
 jobs:
 
   winget:
@@ -43,7 +43,17 @@ jobs:
           "INSTALLER_URL=${installerUrl}" >> $env:GITHUB_ENV
       - name: Submit package to Windows Package Manager Community Repository
         run: .\wingetcreate.exe update ${env:WINGET_PACKAGE_ID} --version ${env:VERSION} --urls ${env:INSTALLER_URL} --token ${env:WINGET_TOKEN} --submit
-        
+
+  homebrew:
+    name: Homebrew Cask - Pull request
+    runs-on: macos-latest
+    steps:
+      - uses: macauley/action-homebrew-bump-cask@v1
+        with:
+          token: ${WINGET_TOKEN}
+          cask: uvtools
+          livecheck: true
+
   nuget:
     name: Nuget - Publish package
     runs-on: ubuntu-latest
