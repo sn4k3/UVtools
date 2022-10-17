@@ -8,6 +8,7 @@ env:
    WINGET_PACKAGE_NAME: .+win-x64.+\.msi
    WINGET_PACKAGE_ID: PTRTECH.UVtools
    WINGET_TOKEN: ${{ secrets.WINGET_TOKEN }}
+   HOMEBREW_GITHUB_API_TOKEN: ${{ secrets.HOMEBREW_TOKEN }}
    NUGET_TOKEN: ${{ secrets.NUGET_TOKEN }}
 
 jobs:
