@@ -52,7 +52,6 @@ jobs:
         with:
           token: ${WINGET_TOKEN}
           cask: uvtools
-          livecheck: true
 
   nuget:
     name: Nuget - Publish package
