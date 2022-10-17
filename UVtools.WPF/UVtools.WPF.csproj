@@ -1,99 +1,97 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <OutputType>WinExe</OutputType>
-    <TargetFramework>net6.0</TargetFramework>
-    <AssemblyName>UVtools</AssemblyName>
-    <ApplicationIcon>UVtools.ico</ApplicationIcon>
-    <Authors>Tiago Conceição, sn4k3</Authors>
-    <Company>PTRTECH</Company>
-    <Description>MSLA/DLP, file analysis, calibration, repair, conversion and manipulation</Description>
-    <Copyright>Copyright © 2020 PTRTECH</Copyright>
-    <PackageProjectUrl>https://github.com/sn4k3/UVtools</PackageProjectUrl>
-    <PackageLicenseFile>LICENSE</PackageLicenseFile>
-    <RepositoryUrl>https://github.com/sn4k3/UVtools</RepositoryUrl>
-    <RepositoryType>Git</RepositoryType>
-    <Version>3.7.0</Version>
-    <Platforms>AnyCPU;x64</Platforms>
-    <PackageIcon>UVtools.png</PackageIcon>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
-    <PackageTags>msla, dlp, resin, printer, slicer, 3d printing, image processing, layers</PackageTags>
-    <Nullable>disable</Nullable>
-  </PropertyGroup>
-  
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <NoWarn>1701;1702;</NoWarn>
-  </PropertyGroup>
-  
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <NoWarn>1701;1702;</NoWarn>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <NoWarn>1701;1702;</NoWarn>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <NoWarn>1701;1702;</NoWarn>
-  </PropertyGroup>
-  <ItemGroup>
-    <PackageReference Include="Avalonia" Version="0.10.18" />
-    <PackageReference Include="Avalonia.Controls.DataGrid" Version="0.10.18" />
-    <PackageReference Include="Avalonia.Desktop" Version="0.10.18" />
-    <PackageReference Include="Avalonia.Diagnostics" Version="0.10.18" />
-    <PackageReference Include="MessageBox.Avalonia" Version="2.1.0" />
-    <PackageReference Include="Projektanker.Icons.Avalonia" Version="5.5.0" />
-    <PackageReference Include="Projektanker.Icons.Avalonia.FontAwesome" Version="5.5.0" />
-    <PackageReference Include="Projektanker.Icons.Avalonia.MaterialDesign" Version="5.5.0" />
-    <PackageReference Include="ThemeEditor.Controls.ColorPicker" Version="0.10.17" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\UVtools.AvaloniaControls\UVtools.AvaloniaControls.csproj" />
-    <ProjectReference Include="..\UVtools.Core\UVtools.Core.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\PrusaSlicer\**" CopyToOutputDirectory="PreserveNewest" LinkBase="Assets\PrusaSlicer" />
-    <None Update="Assets\Themes\UVtools.themes">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Assets\Themes\UVtoolsDark.xaml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Assets\Themes\UVtoolsLight.xaml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="UVtools.sh">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="..\CHANGELOG.md" Link="CHANGELOG.md" />
-    <None Include="..\CREDITS.md" Link="CREDITS.md" />
-    <None Include="..\LICENSE">
-      <Pack>True</Pack>
-      <PackagePath></PackagePath>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="..\README.md" Link="README.md">
-      <Pack>True</Pack>
-      <PackagePath></PackagePath>
-    </None>
-    <None Include="..\UVtools.CAD\UVtools.png">
-      <Pack>True</Pack>
-      <PackagePath></PackagePath>
-    </None>
-    <None Include="..\UVtools.CAD\UVtools_demo_file.sl1" Link="UVtools_demo_file.sl1">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Update="**\*.xaml.cs">
-      <DependentUpon>%(Filename)</DependentUpon>
-    </Compile>
-    <AvaloniaResource Include="**\*.xaml">
-      <SubType>Designer</SubType>
-    </AvaloniaResource>
-    <AvaloniaResource Include="Assets\Icons\*" />
-    <AvaloniaResource Include="Assets\benchmark.png" />
-  </ItemGroup>
+	<PropertyGroup>
+		<OutputType>WinExe</OutputType>
+		<TargetFramework>net6.0</TargetFramework>
+		<AssemblyName>UVtools</AssemblyName>
+		<ApplicationIcon>UVtools.ico</ApplicationIcon>
+		<Authors>Tiago Conceição, sn4k3</Authors>
+		<Company>PTRTECH</Company>
+		<Description>MSLA/DLP, file analysis, calibration, repair, conversion and manipulation</Description>
+		<Copyright>Copyright © 2020 PTRTECH</Copyright>
+		<PackageProjectUrl>https://github.com/sn4k3/UVtools</PackageProjectUrl>
+		<PackageLicenseFile>LICENSE</PackageLicenseFile>
+		<RepositoryUrl>https://github.com/sn4k3/UVtools</RepositoryUrl>
+		<RepositoryType>Git</RepositoryType>
+		<Version>3.7.1</Version>
+		<Platforms>AnyCPU;x64</Platforms>
+		<PackageIcon>UVtools.png</PackageIcon>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+		<PackageTags>msla, dlp, resin, printer, slicer, 3d printing, image processing, layers</PackageTags>
+		<Nullable>disable</Nullable>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<NoWarn>1701;1702;</NoWarn>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<NoWarn>1701;1702;</NoWarn>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<NoWarn>1701;1702;</NoWarn>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<NoWarn>1701;1702;</NoWarn>
+	</PropertyGroup>
+	<ItemGroup>
+		<PackageReference Include="Avalonia" Version="0.10.18" />
+		<PackageReference Include="Avalonia.Controls.DataGrid" Version="0.10.18" />
+		<PackageReference Include="Avalonia.Desktop" Version="0.10.18" />
+		<PackageReference Include="Avalonia.Diagnostics" Version="0.10.18" />
+		<PackageReference Include="MessageBox.Avalonia" Version="2.1.0" />
+		<PackageReference Include="Projektanker.Icons.Avalonia" Version="5.5.0" />
+		<PackageReference Include="Projektanker.Icons.Avalonia.FontAwesome" Version="5.5.0" />
+		<PackageReference Include="Projektanker.Icons.Avalonia.MaterialDesign" Version="5.5.0" />
+		<PackageReference Include="ThemeEditor.Controls.ColorPicker" Version="0.10.17" />
+	</ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\UVtools.AvaloniaControls\UVtools.AvaloniaControls.csproj" />
+		<ProjectReference Include="..\UVtools.Core\UVtools.Core.csproj" />
+	</ItemGroup>
+	<ItemGroup>
+		<None Include="..\PrusaSlicer\**" CopyToOutputDirectory="PreserveNewest" LinkBase="Assets\PrusaSlicer" />
+		<None Update="Assets\Themes\UVtools.themes">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Update="Assets\Themes\UVtoolsDark.xaml">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Update="Assets\Themes\UVtoolsLight.xaml">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Update="UVtools.sh">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Include="..\LICENSE">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Include="..\README.md">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+		<None Include="..\UVtools.CAD\UVtools.png">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+		<None Include="..\UVtools.CAD\UVtools_demo_file.sl1" Link="UVtools_demo_file.sl1">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
+	<ItemGroup>
+		<Compile Update="**\*.xaml.cs">
+			<DependentUpon>%(Filename)</DependentUpon>
+		</Compile>
+		<AvaloniaResource Include="**\*.xaml">
+			<SubType>Designer</SubType>
+		</AvaloniaResource>
+		<AvaloniaResource Include="Assets\Icons\*" />
+		<AvaloniaResource Include="Assets\benchmark.png" />
+	</ItemGroup>
 </Project>

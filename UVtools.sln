@@ -22,6 +22,28 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UVtools.AvaloniaControls", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UVtools.Cmd", "UVtools.Cmd\UVtools.Cmd.csproj", "{D0733F51-0CB1-483B-8F93-36B815FBFFF3}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{B5BD32D7-3B3E-4254-877C-3353664BC044}"
+	ProjectSection(SolutionItems) = preProject
+		build\compile.bat = build\compile.bat
+		build\compile.sh = build\compile.sh
+		build\createRelease.ps1 = build\createRelease.ps1
+		build\createRelease.sh = build\createRelease.sh
+		build\libcvextern.sh = build\libcvextern.sh
+		build\cvextern.ps1 = build\cvextern.ps1
+		build\README.md = build\README.md
+		build\run.bat = build\run.bat
+		build\run.sh = build\run.sh
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "root", "root", "{E91CEB7A-5EDC-4928-8133-D8F354EF3CE8}"
+	ProjectSection(SolutionItems) = preProject
+		CHANGELOG.md = CHANGELOG.md
+		CREDITS.md = CREDITS.md
+		LICENSE = LICENSE
+		README.md = README.md
+		RELEASE_NOTES.md = RELEASE_NOTES.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

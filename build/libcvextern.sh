@@ -6,7 +6,7 @@
 # usage 1: ./libcvextern.sh clean
 # usage 2: ./libcvextern.sh -i
 # usage 3: ./libcvextern.sh 
-# usage 3: ./libcvextern.sh 4.5.5
+# usage 3: ./libcvextern.sh 4.6.0
 #
 cd "$(dirname "$0")"
 directory="emgucv"
@@ -45,9 +45,8 @@ echo "- Detecting OS"
 if [[ $OSTYPE == 'darwin'* ]]; then
     osVariant="macOS"
     if [ installDependencies == true ]; then
-        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
-        brew analytics off
-        brew install git cmake mono-libgdiplus
+        [[ ! "$(command -v brew)" ]] && /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+        brew install git cmake
         brew install --cask dotnet
     fi
 elif command -v apt-get &> /dev/null

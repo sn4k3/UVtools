@@ -11,59 +11,80 @@
 [![GitHub Sponsors](https://img.shields.io/github/sponsors/sn4k3?color=red&style=for-the-badge)](https://github.com/sponsors/sn4k3)
 
 ## Download the latest version at:
-https://github.com/sn4k3/UVtools/releases/latest  
+
+### https://github.com/sn4k3/UVtools/releases/latest
 
 ## To auto install on Windows via a package manager:
+
 - **Winget:** `winget install -e --id PTRTECH.UVtools`
 - **Chocolatey:** `choco install -y uvtools`
 
-**Note:** Winget is included on Windows 11 by default.
+**Note:** Winget is included on Windows 10 with recent updates and Windows 11 by default.
 
 ## To auto install on MacOS via homebrew:
-`brew install --cask uvtools`
+
+```bash
+[[ ! "$(command -v brew)" ]] && /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+brew install --cask uvtools
+```
 
 # MSLA/DLP, file analysis, calibration, repair, conversion and manipulation
 
-This simple tool can give you insight of supports and find some failures. Did you forget what resin or other settings you used on a project? This can also save you, check every setting that were used with or simply change them!
+This simple tool can give you insight of supports and find key failures.  
+Did you forget what resin or other settings you used on a project? 
+This can also save you, check every setting that were used with or simply change them!
 
 - Facebook group: https://www.facebook.com/groups/uvtools
+- Discussions: https://github.com/sn4k3/UVtools/discussions
 
 ![GUI Screenshot](https://raw.githubusercontent.com/sn4k3/UVtools/master/wiki/UI1.png)
 ![GUI Screenshot Islands](https://raw.githubusercontent.com/sn4k3/UVtools/master/wiki/UI2.png)
 ![Convertion Screenshot](https://raw.githubusercontent.com/sn4k3/UVtools/master/UVtools.GUI/Images/Screenshots/SL1ToCbddlp.png)
 
 # Why this project?
-I don't own a Prusa SL1 or any other resin printer, for now I’m only a FDM user with 
-Prusa MK3 and a Ender3.
-PrusaSlicer is my only choose, why? Because I think it's the best and feature more, 
-at least for me, simple but powerful. 
+
+I don't own a Prusa SL1 or any other resin printer, for now I’m only a FDM user with Prusa MK3 and a Ender3.
+PrusaSlicer is my only choose, why? Because I think it's the best and feature more, at least for me, simple but powerful. 
 
 So why this project? Well in fact I’m looking for a resin printer and i like to study 
 and learn first before buy, get good and don't regret, and while inspecting i found that 
 resin printers firmwares are not as universal as FDM, too many file formats and there 
 before each printer can use their own property file, this of course limit the software selection,
-for example, only PrusaSlicer can slice SL1 files. So with that in mind i'm preparing when I got
-some resin printer in future I can use PrusaSlicer instead of others. 
+for example, only PrusaSlicer can slice SL1 files. So with that in mind I'm preparing when I get
+a resin printer in future I can use PrusaSlicer instead of others. 
 I've explored the other slicers and again, no one give me joy, and i feel them unstable,
-many users slice model on PrusaSlicer just to get those supports and export stl to load in another,
+many users slice model on PrusaSlicer just to get those supports and export STL to load in another,
 that means again PrusaSlicer is on the win side, the problem is they can't slice directly on PrusaSlicer,
 so, in the end, my project aims to do almost that, configure a printer on PrusaSlicer, eg: EPAX X1,
 slice, export file, convert SL1 to native printer file and print.
 
-Please note i don't have any resin printer! All my work is virtual and calculated, 
+Please note I don't own any resin printer! All my work is virtual and calculated, 
 so, use experimental functions with care! Once things got confirmed a list will show. 
-But also, i need victims for test subject. Proceed at your own risk!
+But also, I need victims for test subject. Proceed at your own risk!
 
 # Features
 
-- View image layer by layer
-- View and extract thumbnails
-- View all used settings
-- Edit print properties and save file
-- Mutate and filter layers
-- Check islands, overhangs, resin traps, empty layers and repair/remove them as other issues
+- View, modify and extract layer by layer
+- View, modify and extract thumbnails
 - Export file to a folder
-- Convert format to another format
+- View and edit all used properties/settings
+- Many tools to mutate and filter layers
+- Check for issues and repair/remove them as possible:
+  - Islands
+  - Overhangs
+  - Resin traps
+  - Suction cups
+  - Touching bounds
+  - Print height
+  - Empty layers
+- Suggestions and auto corrections:
+  - Layer height
+  - Bottom layer count
+  - Wait time before cure
+  - Wait time after cure
+  - Transition layer count
+  - Model position
+- [Convert format to another format](https://github.com/sn4k3/UVtools/wiki/Sliced-File-Conversion)
 - Calibration tests
 - Portable (No installation needed)
 
@@ -113,46 +134,35 @@ But also, i need victims for test subject. Proceed at your own risk!
 - UVJ (Zip file format for manual manipulation)
 - Image files (png, jpg, jpeg, jp2, tif, bmp, pbm, pgm, ras, sr)
 
-# Available printers for PrusaSlicer
+# PrusaSlicer
 
-See at: https://github.com/sn4k3/UVtools/tree/master/PrusaSlicer/printer
-
-# Available profiles for PrusaSlicer
-
-* From 0.01mm to 0.20mm
-* Light, Medium and Heavy Supports
-
-# Install and configure profiles under PrusaSlicer
-
-Complete guide: https://github.com/sn4k3/UVtools/wiki/Setup-PrusaSlicer
-
-## Custom "Material Notes" and "Printer Notes" keywords for PrusaSlicer
-
-Note that some variables will only work if the target format supports them, otherwise they will be ignored.
+- **Installation:** https://github.com/sn4k3/UVtools/wiki/Setup-PrusaSlicer
+- **Available printers:** https://github.com/sn4k3/UVtools/tree/master/PrusaSlicer/printer
+- **Available profiles**: 
+  - From 0.01mm to 0.20mm
+  - Light, Medium and Heavy Supports
+- **Custom "Material Notes" and "Printer Notes" keywords:**
+  - **TransitionLayerCount_xxx:** Sets the number of transition layers
+  - **BottomLightOffDelay_xxx:** Sets the bottom light off delay time in seconds
+  - **LightOffDelay_xxx:** Sets the light off delay time in seconds
+  - **BottomWaitTimeBeforeCure_xxx:** Sets the bottom wait time before cure in seconds
+  - **WaitTimeBeforeCure_xxx:** Sets the wait time before cure in seconds
+  - **BottomWaitTimeAfterCure_xxx:** Sets the bottom wait time after cure in seconds
+  - **WaitTimeAfterCure_xxx:** Sets the wait time after cure in seconds
+  - **BottomLiftHeight_xxx:** Sets the bottom lift height in millimeters
+  - **BottomLiftSpeed_xxx:** Sets the bottom lift speed in millimeters/minute
+  - **LiftHeight_xxx:** Sets the lift height in millimeters
+  - **LiftSpeed_xxx:** Sets the lift speed in millimeters/minute
+  - **BottomWaitTimeAfterLift_xxx:** Sets the bottom wait time after lift in seconds
+  - **WaitTimeAfterLift_xxx:** Sets the wait time after lift in seconds
+  - **RetractSpeed_xxx:** Sets the retract speed in millimeters/minute
+  - **BottomLightPWM_xxx:** Sets the bottom LED light power (0-255)
+  - **LightPWM_xxx:** Sets the LED light power (0-255)
+  - **FILEVERSION_n:** Sets the output file format version/revision
+  - **FILEFORMAT_xxx:** Sets the output file format extension to be auto converted once open on UVtools
+   
+Note that some variables will only work if the target format supports them, otherwise they will be ignored.  
 Replace the "xxx" by your desired value in the correct units
-
-- **TransitionLayerCount_xxx:** Sets the number of transition layers
-- **BottomLightOffDelay_xxx:** Sets the bottom light off delay time in seconds
-- **LightOffDelay_xxx:** Sets the light off delay time in seconds
-- **BottomWaitTimeBeforeCure_xxx:** Sets the bottom wait time before cure in seconds
-- **WaitTimeBeforeCure_xxx:** Sets the wait time before cure in seconds
-- **BottomWaitTimeAfterCure_xxx:** Sets the bottom wait time after cure in seconds
-- **WaitTimeAfterCure_xxx:** Sets the wait time after cure in seconds
-- **BottomLiftHeight_xxx:** Sets the bottom lift height in millimeters
-- **BottomLiftSpeed_xxx:** Sets the bottom lift speed in millimeters/minute
-- **LiftHeight_xxx:** Sets the lift height in millimeters
-- **LiftSpeed_xxx:** Sets the lift speed in millimeters/minute
-- **BottomWaitTimeAfterLift_xxx:** Sets the bottom wait time after lift in seconds
-- **WaitTimeAfterLift_xxx:** Sets the wait time after lift in seconds
-- **RetractSpeed_xxx:** Sets the retract speed in millimeters/minute
-- **BottomLightPWM_xxx:** Sets the bottom LED light power (0-255)
-- **LightPWM_xxx:** Sets the LED light power (0-255)
-- **FILEVERSION_n:** Sets the output file format version/revision
-- **FILEFORMAT_xxx:** Sets the output file format extension to be auto converted once open on UVtools
-
-# File Convertion
-
-https://github.com/sn4k3/UVtools/wiki/Sliced-File-Conversion
 
 # Command-line
 
@@ -270,7 +280,7 @@ wget -qO - https://raw.githubusercontent.com/sn4k3/UVtools/master/Scripts/libdl-
 - `./UVtools`
 - `bash UVtools.sh`
 - `dotnet UVtools.dll` [For universal package only, requires dotnet-runtime]
-- As a pratical alternative you can create a shortcut on Desktop
+- As a practical alternative you can create a shortcut on Desktop
 
 If you downloaded the **.AppImage** package variant you must set run permissions to it before attempt to run it:  
 ![AppImage permissions](https://github.com/sn4k3/UVtools/raw/master/wiki/linux_AppImage_permissions.png)
@@ -309,7 +319,7 @@ To run UVtools open it folder on a terminal and call one of:
 - Double-click UVtools file
 - `./UVtools.app/Contents/MacOS/UVtools`
 - `bash UVtools.app/Contents/MacOS/UVtools.sh`
-- As a pratical alternative you can create a shortcut on Desktop
+- As a practical alternative you can create a shortcut on Desktop
 
 # How to use
 
@@ -345,10 +355,10 @@ dotnet add package UVtools.Core
 The fastest way to compile the project is by run the `build/compile.bat`, however if you wish to develop with visual studio follow the following steps:
 
 1. Install Visual Studio and include .NET development support
-1. Install the .NET 6.0 SDK if not included on previous instalation
+1. Install the .NET 6.0 SDK if not included on previous installation
    - https://dotnet.microsoft.com/download/dotnet/6.0
-1. Install the Avalonia for Visual Sutdio:
-   - https://marketplace.visualstudio.com/items?itemName=AvaloniaTeam.AvaloniaforVisualStudio
+1. Install the Avalonia for Visual Studio:
+   - https://marketplace.visualstudio.com/items?itemName=AvaloniaTeam.AvaloniaVS
 1. Install the Wix Toolset: (Required only for MSI build, **optional**)
    1. https://wixtoolset.org/releases
    1. https://marketplace.visualstudio.com/items?itemName=WixToolset.WiXToolset
@@ -359,7 +369,7 @@ The fastest way to compile the project is by run the `build/compile.bat`, howeve
 # TODO
 - More file formats
 - Clean up & performance (always)
-- See features request under Github
+- See features request under GitHub
 
 
 # Support my work / Donate
@@ -372,5 +382,6 @@ Use one of the following methods:
 [![Donate PayPal](https://img.shields.io/badge/Donate-PayPal-blue?style=for-the-badge)](https://paypal.me/SkillTournament)
 
 # Contributors 
+
 [![GitHub contributors](https://img.shields.io/github/contributors/sn4k3/UVtools?style=for-the-badge)](https://github.com/sn4k3/UVtools/graphs/contributors)  
 [![Contributors](https://contrib.rocks/image?repo=sn4k3/UVtools)](https://github.com/sn4k3/UVtools/graphs/contributors)

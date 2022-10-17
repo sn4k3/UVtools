@@ -1,5 +1,10 @@
 # Changelog
 
+## 17/10/2022 - v3.7.1
+
+- (Add) PrusaSlicer printer: Elegoo Saturn 2
+- (Fix) PCB Exposure: Possible error when drawing outline primitive macros that contains duplicate points (#580)
+
 ## 12/10/2022 - v3.7.0
 
 - **File formats:**

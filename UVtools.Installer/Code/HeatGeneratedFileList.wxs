@@ -1031,6 +1031,9 @@
                         <Component Id="cmp1CE96BD7A34ADC76D869FAA33C43C8F9" Guid="*">
                             <File Id="filD0BB879B6F8796B97D3B477215BF400B" KeyPath="yes" Source="$(var.HarvestPath)\Assets\PrusaSlicer\printer\Elegoo Mars.ini" />
                         </Component>
+                        <Component Id="cmp6D57ACCB6758632F336507A7A92D9296" Guid="*">
+                            <File Id="fil8B07B47569CCE9031149F199636F4556" KeyPath="yes" Source="$(var.HarvestPath)\Assets\PrusaSlicer\printer\Elegoo Saturn 2.ini" />
+                        </Component>
                         <Component Id="cmp281D1362804305C566F0105E67045599" Guid="*">
                             <File Id="filCA714ED8F162F059A65F918B95900278" KeyPath="yes" Source="$(var.HarvestPath)\Assets\PrusaSlicer\printer\Elegoo Saturn 8K.ini" />
                         </Component>
@@ -1920,6 +1923,7 @@
             <ComponentRef Id="cmp334FC6F96727E76A445CF33F79C5B924" />
             <ComponentRef Id="cmp6E755F014B53DE8D1393C0EFF3903CEB" />
             <ComponentRef Id="cmp1CE96BD7A34ADC76D869FAA33C43C8F9" />
+            <ComponentRef Id="cmp6D57ACCB6758632F336507A7A92D9296" />
             <ComponentRef Id="cmp281D1362804305C566F0105E67045599" />
             <ComponentRef Id="cmpB744B8818C71233B0217F96C9F4BD247" />
             <ComponentRef Id="cmp3DBFA7C93945FC1D4172C4DFE5EB0F72" />
