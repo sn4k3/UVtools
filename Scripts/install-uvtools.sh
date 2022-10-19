@@ -61,7 +61,11 @@ if [ "${OSTYPE:0:6}" == "darwin" ]; then
             echo "arm64: Always run 'bash run-uvtools.sh' from desktop to run UVtools"
         fi
 
-        [ -f "$appDir/Contents/MacOS/UVtools.sh" ] && bash "$appDir/Contents/MacOS/UVtools.sh" & || open "$appDir"
+        if [ -f "$appDir/Contents/MacOS/UVtools.sh" ]; then
+            bash "$appDir/Contents/MacOS/UVtools.sh" & 
+        else
+            open "$appDir"
+        fi
     fi
 
     exit 1
