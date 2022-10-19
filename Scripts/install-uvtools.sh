@@ -26,7 +26,7 @@ echo "- Detecting OS"
 if [ "${OSTYPE:0:6}" == "darwin" ]; then
     osVariant="osx"
     macOS_version="$(sw_vers -productVersion)"
-    appDir="/Applications/UVtools.app"
+    appPath="/Applications/UVtools.app"
 
     echo "- Detected: $osVariant $arch_name"
 
@@ -49,23 +49,23 @@ if [ "${OSTYPE:0:6}" == "darwin" ]; then
     # Required dotnet-sdk to run arm64 and bypass codesign
     [ "$arch_name" == "arm64" -a -z "$(command -v dotnet)" ] && brew install --cask dotnet-sdk
 
-    if [ -d "$appDir" ]; then
+    if [ -d "$appPath" ]; then
         # Remove quarantine security from files
-        find "$appDir" -print0 | xargs -0 xattr -d com.apple.quarantine &> /dev/null
+        find "$appPath" -print0 | xargs -0 xattr -d com.apple.quarantine &> /dev/null
 
         # arm64: Create script on user desktop to run UVtools
         if [ "$arch_name" == "arm64" ]; then
             run_script="$HOME/Desktop/run-uvtools.sh"
             echo "#!/bin/bash
-bash '$appDir/Contents/MacOS/UVtools.sh' &" > "$run_script"
+bash '$appPath/Contents/MacOS/UVtools.sh' &" > "$run_script"
             chmod a+x "$run_script"
             echo "Note: Always run 'bash run-uvtools.sh' from desktop to run UVtools on your mac arm64!"
         fi
 
-        if [ -f "$appDir/Contents/MacOS/UVtools.sh" ]; then
-            bash "$appDir/Contents/MacOS/UVtools.sh" & 
+        if [ -f "$appPath/Contents/MacOS/UVtools.sh" ]; then
+            bash "$appPath/Contents/MacOS/UVtools.sh" & 
         else
-            open "$appDir"
+            open "$appPath"
         fi
     fi
 
