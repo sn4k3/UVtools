@@ -37,7 +37,7 @@ if [ "${OSTYPE:0:6}" == "darwin" ]; then
     
     if [ -z "$(command -v brew)" ]; then
         bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-        if [ -f "/opt/homebrew/bin/brew" ]; then
+        if [ -f "/opt/homebrew/bin/brew" -a -z "$(command -v brew)" ]; then
             echo '# Set PATH, MANPATH, etc., for Homebrew.' >> "$HOME/.zprofile"
             echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> "$HOME/.zprofile"
             eval "$(/opt/homebrew/bin/brew shellenv)"
@@ -143,4 +143,3 @@ else
 fi
 
 echo "UVtools will now run."
-
