@@ -24,17 +24,16 @@
 ## To auto install on Linux:
 
 ```bash
-[ "$(command -v apt-get)" -a -z "$(command -v wget)" ] && sudo apt-get install -y wget 
-[ "$(command -v pacman)" -a -z "$(command -v wget)" ] && sudo pacman -S wget
-[ "$(command -v yum)" -a -z "$(command -v wget)" ] && sudo yum install -y wget
-wget -qO - https://raw.githubusercontent.com/sn4k3/UVtools/master/Scripts/install-uvtools.sh | bash
+[ "$(command -v apt-get)" -a -z "$(command -v curl)" ] && sudo apt-get install -y curl 
+[ "$(command -v pacman)" -a -z "$(command -v curl)" ] && sudo pacman -S curl
+[ "$(command -v yum)" -a -z "$(command -v curl)" ] && sudo yum install -y curl
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/sn4k3/UVtools/master/Scripts/install-uvtools.sh)"
 ```
 
 ## To auto install on MacOS (homebrew):
 
 ```bash
-[ -z "$(command -v brew)" ] && /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-brew install --cask uvtools
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/sn4k3/UVtools/master/Scripts/install-uvtools.sh)"
 ```
 
 # MSLA/DLP, file analysis, calibration, repair, conversion and manipulation
@@ -276,11 +275,11 @@ The following commands are the old way and commands under the UI executable, the
 **Copy the following script, paste and run on a terminal:**
 
 ```bash
-[ "$(command -v apt-get)" -a -z "$(command -v wget)" ] && sudo apt-get install -y wget 
-[ "$(command -v pacman)" -a -z "$(command -v wget)" ] && sudo pacman -S wget
-[ "$(command -v yum)" -a -z "$(command -v wget)" ] && sudo yum install -y wget
-wget -qO - https://raw.githubusercontent.com/sn4k3/UVtools/master/Scripts/install-dependencies.sh | sudo bash
-wget -qO - https://raw.githubusercontent.com/sn4k3/UVtools/master/Scripts/libdl-solver.sh | sudo bash
+[ "$(command -v apt-get)" -a -z "$(command -v curl)" ] && sudo apt-get install -y curl 
+[ "$(command -v pacman)" -a -z "$(command -v curl)" ] && sudo pacman -S curl
+[ "$(command -v yum)" -a -z "$(command -v curl)" ] && sudo yum install -y curl
+sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/sn4k3/UVtools/master/Scripts/install-dependencies.sh)"
+sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/sn4k3/UVtools/master/Scripts/libdl-solver.sh)"
 ```
 
 **To run UVtools open it folder on a terminal and call one of:**

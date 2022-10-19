@@ -32,7 +32,15 @@ if [ "${OSTYPE:0:6}" == "darwin" ]; then
         exit -1
     fi
     
-    [ -z "$(command -v brew)" ] && /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    if [ -z "$(command -v brew)" ]; then
+        bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+        if [ -f "/opt/homebrew/bin/brew" ]; then
+            echo '# Set PATH, MANPATH, etc., for Homebrew.' >> /Users/$USER/.zprofile
+            echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> /Users/$USER/.zprofile
+            eval "$(/opt/homebrew/bin/brew shellenv)"
+        fi
+    fi
+
     brew install --cask uvtools
     exit 1
 elif command -v apt-get &> /dev/null
@@ -61,7 +69,7 @@ echo "- Detected: $osVariant $arch_name"
 
 if [ ! "$(ldconfig -p | grep libpng)" -o ! "$(ldconfig -p | grep libgdiplus)" -o ! "$(ldconfig -p | grep libavcodec)" ]; then
 	echo "- Missing dependencies found, installing..."
-	wget -qO - $dependencies_url | sudo bash
+    sudo bash -c "$(curl -fsSL $dependencies_url)"
 fi
 
 echo "- Detecting download url"
