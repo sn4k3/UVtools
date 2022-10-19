@@ -12,8 +12,9 @@ cd "$(dirname "$0")"
 directory="emgucv"
 arch_name="$(uname -m)"
 osVariant=""
+$build_package="mini"   # mini, micro, full
 
-if [[ "$arch_name" != "x86_64" && "$arch_name" != "arm64" ]]; then
+if [ "$arch_name" != "x86_64" -a "$arch_name" != "arm64" ]; then
     echo "Error: Unsupported host arch: $arch_name"
     exit -1
 fi
@@ -42,12 +43,19 @@ echo "Script to build libcvextern.so|dylib on $(uname -a) $arch_name"
 
 echo "- Detecting OS"
 [ "$installDependencies" == true ] && echo "- Installing all the dependencies"
-if [[ $OSTYPE == 'darwin'* ]]; then
+if [ "${OSTYPE:0:6}" == "darwin" ]; then
     osVariant="macOS"
     if [ installDependencies == true ]; then
-        [[ ! "$(command -v brew)" ]] && /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-        brew install git cmake
-        brew install --cask dotnet
+        if [ -z "$(command -v brew)" ]; then
+            bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+            if [ -f "/opt/homebrew/bin/brew" -a -z "$(command -v brew)" ]; then
+                echo '# Set PATH, MANPATH, etc., for Homebrew.' >> "$HOME/.zprofile"
+                echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> "$HOME/.zprofile"
+                eval "$(/opt/homebrew/bin/brew shellenv)"
+            fi
+        fi
+        [ -z "$(command -v git)" -o -z "$(command -v cmake)" ] && brew install git cmake
+        [ -z "$(command -v dotnet)" ] && brew install --cask dotnet-sdk
     fi
 elif command -v apt-get &> /dev/null
 then
@@ -77,9 +85,13 @@ then
 fi
 
 echo "- Checks"
-if ! command -v git &> /dev/null
-then
+if [ -z "$(command -v git)" ]; then
     echo "Error: git not installed. Please re-run this script with -i flag."
+    exit -1
+fi
+
+if [ -z "$(command -v cmake)" ]; then
+    echo "Error: cmake not installed. Please re-run this script with -i flag."
     exit -1
 fi
 
@@ -102,15 +114,15 @@ cd "$directory"
 
 echo "- Bulding"
 if [ osVariant == "macOS" ]; then
-    cd platforms/macos
+    cd "platforms/macos"
     if [ "${arch_name}" = "x86_64" ]; then
-        ./configure x86_64 mini
+        ./configure x86_64 $build_package
     elif [ "${arch_name}" = "arm64" ]; then
-        ./configure arm64 mini
+        ./configure arm64 $build_package
     fi
 else
-    cd platforms/ubuntu/22.04
-    ./cmake_configure mini
+    cd "platforms/ubuntu/22.04"
+    ./cmake_configure $build_package
 fi
 
 echo "Completed - Check for errors but also for libcvextern presence on $directory/libs"

@@ -47,10 +47,9 @@ then
     yum install -y https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm
     yum install -y https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm
     yum install -y libjpeg-devel libjpeg-turbo-devel libpng-devel libgeotiff-devel libdc1394-devel ffmpeg-devel tbb-devel mesa-libGL libgdiplus wget
+else
+    echo "Error: Base operative system / package manager not identified, nothing was installed"
+    exit -1
 fi
 
-if [ "$osVariant" == "" ]; then
-    echo "Error: Base operative system / package manager not identified, nothing was installed"
-else
-    echo "Completed: You can now run UVtools"
-fi
+echo "Completed: You can now run UVtools"

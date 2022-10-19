@@ -5,6 +5,7 @@
 # Then run this script
 # usage 1: ./install-uvtools.sh
 #
+
 cd "$(dirname "$0")"
 arch_name="$(uname -m)" # x86_64 or arm64
 osVariant=""            # osx, linux, arch, rhel
@@ -34,7 +35,7 @@ if [ "${OSTYPE:0:6}" == "darwin" ]; then
         echo "Error: Unable to install, UVtools requires at least macOS $macOS_least_version."
         exit -1
     fi
-    
+
     if [ -z "$(command -v brew)" ]; then
         bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
         if [ -f "/opt/homebrew/bin/brew" -a -z "$(command -v brew)" ]; then
@@ -56,15 +57,22 @@ if [ "${OSTYPE:0:6}" == "darwin" ]; then
         # arm64: Create script on user desktop to run UVtools
         if [ "$arch_name" == "arm64" ]; then
             run_script="$HOME/Desktop/run-uvtools.sh"
-            echo "#!/bin/bash
-bash '$appPath/Contents/MacOS/UVtools.sh' &" > "$run_script"
+            echo '#!/bin/bash
+if [ -f "$appPath/Contents/MacOS/UVtools.sh" ]; then
+    bash "$appPath/Contents/MacOS/UVtools.sh" &
+elif [ -f "UVtools.app/Contents/MacOS/UVtools.sh" ]; then
+    bash "UVtools.app/Contents/MacOS/UVtools.sh" &
+else
+    echo "Error: UVtools.app not found on known paths"
+fi
+' > "$run_script"
             chmod a+x "$run_script"
             echo "Note: Always run 'bash run-uvtools.sh' from desktop to run UVtools on your mac arm64!"
         fi
 
         if [ -f "$appPath/Contents/MacOS/UVtools.sh" ]; then
             bash "$appPath/Contents/MacOS/UVtools.sh" & 
-        else
+        elif [ -d "$appPath" ]; then
             open "$appPath"
         fi
     fi
@@ -72,19 +80,19 @@ bash '$appPath/Contents/MacOS/UVtools.sh' &" > "$run_script"
     exit 1
 elif command -v apt-get &> /dev/null
 then
-	osVariant="linux"
+    osVariant="linux"
     [ -z "$(command -v wget)" ] && sudo apt-get install -y wget
-	[ -z "$(command -v curl)" ] && sudo apt-get install -y curl
+    [ -z "$(command -v curl)" ] && sudo apt-get install -y curl
 elif command -v pacman &> /dev/null
 then
-	osVariant="arch"
-	[ -z "$(command -v wget)" ] && sudo pacman -S wget
-	[ -z "$(command -v curl)" ] && sudo pacman -S curl
+    osVariant="arch"
+    [ -z "$(command -v wget)" ] && sudo pacman -S wget
+    [ -z "$(command -v curl)" ] && sudo pacman -S curl
 elif command -v yum &> /dev/null
 then
-	osVariant="rhel"
-	[ -z "$(command -v wget)" ] && sudo yum install -y wget
-	[ -z "$(command -v curl)" ] && sudo yum install -y curl
+    osVariant="rhel"
+    [ -z "$(command -v wget)" ] && sudo yum install -y wget
+    [ -z "$(command -v curl)" ] && sudo yum install -y curl
 fi
 
 if [ -z "$osVariant" ]; then
@@ -95,7 +103,7 @@ fi
 echo "- Detected: $osVariant $arch_name"
 
 if [ -z "$(ldconfig -p | grep libpng)" -o -z "$(ldconfig -p | grep libgdiplus)" -o -z "$(ldconfig -p | grep libavcodec)" ]; then
-	echo "- Missing dependencies found, installing..."
+    echo "- Missing dependencies found, installing..."
     sudo bash -c "$(curl -fsSL $dependencies_url)"
 fi
 
@@ -128,10 +136,10 @@ if [ -d "$HOME/Applications" ]; then
     rm -f "$HOME/Applications/UVtools_*.AppImage"
     
     echo "- Moving $filename to $HOME/Applications"
-	mv -f "$tmpfile" "$HOME/Applications"
+    mv -f "$tmpfile" "$HOME/Applications"
     
-	"$HOME/Applications/$filename" &
-	echo "If prompt for 'Desktop integration', click 'Integrate and run'"
+    "$HOME/Applications/$filename" &
+    echo "If prompt for 'Desktop integration', click 'Integrate and run'"
 else 
     echo "- Removing old versions"
     rm -f UVtools_*.AppImage
