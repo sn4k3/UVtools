@@ -112,26 +112,30 @@ if [ -z "$download_url" ]; then
 fi
 
 filename="$(basename "${download_url}")"
+tmpfile=$(mktemp /tmp/UVtools-download.XXXXXX)
+
+echo "Downloading: $download_url"
+wget $download_url -O "$tmpfile" -q --show-progress
+
+echo "- Setting permissions"
+chmod -fv a+x "$tmpfile"
 
 echo "- Kill instances"
 killall -q UVtools
 
-echo "- Removing old versions"
-rm -f UVtools_*.AppImage
-
-echo "Downloading: $download_url"
-wget $download_url -O $filename -q --show-progress
-
-echo "- Setting permissions"
-chmod -fv a+x "$filename"
-
 if [ -d "$HOME/Applications" ]; then
-    echo "- Moving '$filename' to $HOME/Applications"
+    echo "- Removing old versions"
     rm -f "$HOME/Applications/UVtools_*.AppImage"
-	mv -f "$filename" "$HOME/Applications"
+    
+    echo "- Moving '$filename' to $HOME/Applications"
+	mv -f "$tmpfile" "$HOME/Applications"
+    
 	"$HOME/Applications/$filename" &
 	echo "If prompt for 'Desktop integration', click 'Integrate and run'"
 else 
+    echo "- Removing old versions"
+    rm -f UVtools_*.AppImage
+    mv -f "$tmpfile" .
     ./$filename &
 fi
 
