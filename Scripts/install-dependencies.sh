@@ -8,7 +8,7 @@
 
 echo "Script to install the dependencies in order to run the UVtools"
 
-if [[ $EUID -ne 0 ]]; then
+if [ $EUID -ne 0 ]; then
    echo "This script must be run as root" 
    exit 1
 fi
@@ -16,13 +16,13 @@ fi
 arch_name="$(uname -m)"
 osVariant=""
 
-if [[ "$arch_name" != "x86_64" && "$arch_name" != "arm64" ]]; then
-    echo "Error: Unsupported host arch: $arch_name"
+if [ "$arch_name" != "x86_64" -a "$arch_name" != "arm64" ]; then
+    echo "Error: Unsupported host arch $arch_name"
     exit -1
 fi
 
 #echo "- Detecting OS"
-if [[ $OSTYPE == 'darwin'* ]]; then
+if [ "${OSTYPE:0:6}" == "darwin" ]; then
     osVariant="macOS"
     #/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
     #brew analytics off

@@ -6,43 +6,50 @@
 # usage 1: ./install-uvtools.sh
 #
 cd "$(dirname "$0")"
-arch_name="$(uname -m)"
-osVariant=""
+arch_name="$(uname -m)" # x86_64 or arm64
+osVariant=""            # osx, linux, arch, rhel
 api_url="https://api.github.com/repos/sn4k3/UVtools/releases/latest"
 dependencies_url="https://raw.githubusercontent.com/sn4k3/UVtools/master/Scripts/install-dependencies.sh"
+macOS_least_version=10.15
 
-if [[ "$arch_name" != "x86_64" && "$arch_name" != "arm64" ]]; then
-    echo "Error: Unsupported host arch: $arch_name"
+function version { echo "$@" | awk -F. '{ printf("%d%03d%03d%03d\n", $1,$2,$3,$4); }'; }
+
+if [ "$arch_name" != "x86_64" -a "$arch_name" != "arm64" ]; then
+    echo "Error: Unsupported host arch $arch_name"
     exit -1
 fi
-
 
 echo "Script to download and install UVtools"
 
 echo "- Detecting OS"
 
-if [[ $OSTYPE == 'darwin'* ]]; then
+if [ "${OSTYPE:0:6}" == "darwin" ]; then
     osVariant="osx"
-    if [ installDependencies == true ]; then
-        [[ ! "$(command -v brew)" ]] && /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-        brew install --cask uvtools
-		exit 1
+    macOS_version="$(sw_vers -productVersion)"
+
+    if [ $(version $macOS_version) -lt $(version $macOS_least_version) ]; then
+        echo "Error: Unable to install, UVtools requires at least macOS $macOS_least_version."
+        exit -1
     fi
+    
+    [ -z "$(command -v brew)" ] && /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    brew install --cask uvtools
+    exit 1
 elif command -v apt-get &> /dev/null
 then
 	osVariant="linux"
-    [[ ! "$(command -v wget)" ]] && sudo apt-get install -y wget
-	[[ ! "$(command -v curl)" ]] && sudo apt-get install -y curl
+    [ -z "$(command -v wget)" ] && sudo apt-get install -y wget
+	[ -z "$(command -v curl)" ] && sudo apt-get install -y curl
 elif command -v pacman &> /dev/null
 then
 	osVariant="arch"
-	[[ ! "$(command -v wget)" ]] && sudo pacman -S wget
-	[[ ! "$(command -v curl)" ]] && sudo pacman -S curl
+	[ -z "$(command -v wget)" ] && sudo pacman -S wget
+	[ -z "$(command -v curl)" ] && sudo pacman -S curl
 elif command -v yum &> /dev/null
 then
 	osVariant="rhel"
-	[[ ! "$(command -v wget)" ]] && sudo yum install -y wget
-	[[ ! "$(command -v curl)" ]] && sudo yum install -y curl
+	[ -z "$(command -v wget)" ] && sudo yum install -y wget
+	[ -z "$(command -v curl)" ] && sudo yum install -y curl
 fi
 
 if [ -z "$osVariant" ]; then
@@ -52,7 +59,7 @@ fi
 
 echo "- Detected: $osVariant $arch_name"
 
-if [[ ! "$(ldconfig -p | grep libpng)" || ! "$(ldconfig -p | grep libgdiplus)" || ! "$(ldconfig -p | grep libavcodec)" ]]; then
+if [ ! "$(ldconfig -p | grep libpng)" -o ! "$(ldconfig -p | grep libgdiplus)" -o ! "$(ldconfig -p | grep libavcodec)" ]; then
 	echo "- Missing dependencies found, installing..."
 	wget -qO - $dependencies_url | sudo bash
 fi
