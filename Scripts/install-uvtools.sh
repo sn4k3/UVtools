@@ -57,17 +57,19 @@ if [ "${OSTYPE:0:6}" == "darwin" ]; then
         # arm64: Create script on user desktop to run UVtools
         if [ "$arch_name" == "arm64" ]; then
             run_script="$HOME/Desktop/run-uvtools.sh"
-            echo '#!/bin/bash
-if [ -f "$appPath/Contents/MacOS/UVtools.sh" ]; then
-    bash "$appPath/Contents/MacOS/UVtools.sh" &
-elif [ -f "UVtools.app/Contents/MacOS/UVtools.sh" ]; then
-    bash "UVtools.app/Contents/MacOS/UVtools.sh" &
+
+            echo "#!/bin/bash
+if [ -f \"$appPath/Contents/MacOS/UVtools.sh\" ]; then
+    bash \"$appPath/Contents/MacOS/UVtools.sh\" &
+elif [ -f \"UVtools.app/Contents/MacOS/UVtools.sh\" ]; then
+    bash \"UVtools.app/Contents/MacOS/UVtools.sh\" &
 else
-    echo "Error: UVtools.app not found on known paths"
+    echo \"Error: UVtools.app not found on known paths\"
 fi
-' > "$run_script"
+" > "$run_script"
+
             chmod a+x "$run_script"
-            echo "Note: Always run 'bash run-uvtools.sh' from desktop to run UVtools on your mac arm64!"
+            echo "Note: Always run \"bash run-uvtools.sh\" from desktop to run UVtools on your mac arm64!"
         fi
 
         if [ -f "$appPath/Contents/MacOS/UVtools.sh" ]; then
@@ -139,7 +141,7 @@ if [ -d "$HOME/Applications" ]; then
     mv -f "$tmpfile" "$HOME/Applications"
     
     "$HOME/Applications/$filename" &
-    echo "If prompt for 'Desktop integration', click 'Integrate and run'"
+    echo "If prompt for \"Desktop integration\", click \"Integrate and run\""
 else 
     echo "- Removing old versions"
     rm -f UVtools_*.AppImage
