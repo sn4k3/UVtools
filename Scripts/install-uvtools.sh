@@ -47,7 +47,7 @@ if [ "${OSTYPE:0:6}" == "darwin" ]; then
     brew install --cask uvtools
 
     # Required dotnet-sdk to run arm64 and bypass codesign
-    [ "$arch_name" == "arm64" -a -z "$(command -v dotnet)" ] brew install --cask dotnet-sdk
+    [ "$arch_name" == "arm64" -a -z "$(command -v dotnet)" ] && brew install --cask dotnet-sdk
 
     if [ -d "$appDir" ]; then
         # Remove quarantine security from files
