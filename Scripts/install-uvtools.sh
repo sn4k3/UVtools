@@ -26,6 +26,7 @@ echo "- Detecting OS"
 if [ "${OSTYPE:0:6}" == "darwin" ]; then
     osVariant="osx"
     macOS_version="$(sw_vers -productVersion)"
+    appDir="/Applications/UVtools.app"
 
     if [ $(version $macOS_version) -lt $(version $macOS_least_version) ]; then
         echo "Error: Unable to install, UVtools requires at least macOS $macOS_least_version."
@@ -42,6 +43,12 @@ if [ "${OSTYPE:0:6}" == "darwin" ]; then
     fi
 
     brew install --cask uvtools
+
+    if [ -d "$appDir" ]; then
+        find "$appDir" -print0 | xargs -0 xattr -d com.apple.quarantine
+        open "$appDir" &
+    fi
+
     exit 1
 elif command -v apt-get &> /dev/null
 then
