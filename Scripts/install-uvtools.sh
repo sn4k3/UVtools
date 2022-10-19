@@ -28,6 +28,8 @@ if [ "${OSTYPE:0:6}" == "darwin" ]; then
     macOS_version="$(sw_vers -productVersion)"
     appDir="/Applications/UVtools.app"
 
+    echo "- Detected: $osVariant $arch_name"
+
     if [ $(version $macOS_version) -lt $(version $macOS_least_version) ]; then
         echo "Error: Unable to install, UVtools requires at least macOS $macOS_least_version."
         exit -1
