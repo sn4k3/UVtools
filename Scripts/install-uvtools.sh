@@ -112,7 +112,7 @@ if [ -z "$download_url" ]; then
 fi
 
 filename="$(basename "${download_url}")"
-tmpfile=$(mktemp /tmp/UVtools-download.XXXXXX)
+tmpfile=$(mktemp /tmp/$filename)
 
 echo "Downloading: $download_url"
 wget $download_url -O "$tmpfile" -q --show-progress
@@ -129,7 +129,7 @@ if [ -d "$HOME/Applications" ]; then
     
     echo "- Moving '$filename' to $HOME/Applications"
 	mv -f "$tmpfile" "$HOME/Applications"
-    
+
 	"$HOME/Applications/$filename" &
 	echo "If prompt for 'Desktop integration', click 'Integrate and run'"
 else 
