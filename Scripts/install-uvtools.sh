@@ -127,7 +127,7 @@ if [ -d "$HOME/Applications" ]; then
     echo "- Removing old versions"
     rm -f "$HOME/Applications/UVtools_*.AppImage"
     
-    echo "- Moving '$filename' to $HOME/Applications"
+    echo "- Moving $filename to $HOME/Applications"
 	mv -f "$tmpfile" "$HOME/Applications"
     
 	"$HOME/Applications/$filename" &
@@ -135,7 +135,10 @@ if [ -d "$HOME/Applications" ]; then
 else 
     echo "- Removing old versions"
     rm -f UVtools_*.AppImage
+
+    echo "- Moving $filename to $(pwd)"
     mv -f "$tmpfile" .
+
     ./$filename &
 fi
 
