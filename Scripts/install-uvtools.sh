@@ -38,8 +38,8 @@ if [ "${OSTYPE:0:6}" == "darwin" ]; then
     if [ -z "$(command -v brew)" ]; then
         bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
         if [ -f "/opt/homebrew/bin/brew" ]; then
-            echo '# Set PATH, MANPATH, etc., for Homebrew.' >> /Users/$USER/.zprofile
-            echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> /Users/$USER/.zprofile
+            echo '# Set PATH, MANPATH, etc., for Homebrew.' >> "$HOME/.zprofile"
+            echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> "$HOME/.zprofile"
             eval "$(/opt/homebrew/bin/brew shellenv)"
         fi
     fi
@@ -55,10 +55,10 @@ if [ "${OSTYPE:0:6}" == "darwin" ]; then
 
         # arm64: Create script on user desktop to run UVtools
         if [ "$arch_name" == "arm64" ]; then
-            run_script="~/Desktop/run-uvtools.sh"
+            run_script="$HOME/Desktop/run-uvtools.sh"
             echo "#!/bin/bash
-bash '$appDir/Contents/MacOS/UVtools.sh' &" > $run_script
-            chmod a+x $run_script
+bash '$appDir/Contents/MacOS/UVtools.sh' &" > "$run_script"
+            chmod a+x "$run_script"
             echo "Note: Always run 'bash run-uvtools.sh' from desktop to run UVtools on your mac arm64!"
         fi
 
@@ -125,11 +125,11 @@ wget $download_url -O $filename -q --show-progress
 echo "- Setting permissions"
 chmod -fv a+x "$filename"
 
-if [ -d ~/Applications ]; then
-    echo "- Moving '$filename' to ~/Applications"
-    rm -f ~/Applications/UVtools_*.AppImage
-	mv -f "$filename" ~/Applications
-	~/Applications/$filename &
+if [ -d "$HOME/Applications" ]; then
+    echo "- Moving '$filename' to $HOME/Applications"
+    rm -f "$HOME/Applications/UVtools_*.AppImage"
+	mv -f "$filename" "$HOME/Applications"
+	"$HOME/Applications/$filename" &
 	echo "If prompt for 'Desktop integration', click 'Integrate and run'"
 else 
     ./$filename &
