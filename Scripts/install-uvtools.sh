@@ -56,12 +56,12 @@ if [ "${OSTYPE:0:6}" == "darwin" ]; then
         # arm64: Create script on user desktop to run UVtools
         if [ "$arch_name" == "arm64" ]; then
             run_script="/Users/$USER/Desktop/run-uvtools.sh"
-            echo "bash '$appDir/Contents/MacOS/UVtools.sh'" > "$run_script"
+            echo "#!/bin/bash\nbash '$appDir/Contents/MacOS/UVtools.sh' &" > "$run_script"
             chmod a+x "$run_script"
             echo "arm64: Always run 'bash run-uvtools.sh' from desktop to run UVtools"
         fi
 
-        [ -f "$appDir/Contents/MacOS/UVtools.sh" ] && bash "$appDir/Contents/MacOS/UVtools.sh" || open "$appDir"
+        [ -f "$appDir/Contents/MacOS/UVtools.sh" ] && bash "$appDir/Contents/MacOS/UVtools.sh" & || open "$appDir"
     fi
 
     exit 1
