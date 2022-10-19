@@ -99,7 +99,7 @@ if [ -z "$(ldconfig -p | grep libpng)" -o -z "$(ldconfig -p | grep libgdiplus)" 
     sudo bash -c "$(curl -fsSL $dependencies_url)"
 fi
 
-echo "- Detecting download url"
+echo "- Detecting download"
 download_url="$(curl -s "$api_url" \
 | grep "browser_download_url.*_${osVariant}-x64_.*\.AppImage" \
 | head -1 \
