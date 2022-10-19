@@ -46,9 +46,22 @@ if [ "${OSTYPE:0:6}" == "darwin" ]; then
 
     brew install --cask uvtools
 
+    # Required dotnet-sdk to run arm64 and bypass codesign
+    [ "$arch_name" == "arm64" -a -z "$(command -v dotnet)" ] brew install --cask dotnet-sdk
+
     if [ -d "$appDir" ]; then
+        # Remove quarantine security from files
         find "$appDir" -print0 | xargs -0 xattr -d com.apple.quarantine &> /dev/null
-        open "$appDir" &
+
+        # arm64: Create script on user desktop to run UVtools
+        if [ "$arch_name" == "arm64" ]; then
+            run_script="/Users/$USER/Desktop/run-uvtools.sh"
+            echo "bash '$appDir/Contents/MacOS/UVtools.sh'" > "$run_script"
+            chmod a+x "$run_script"
+            echo "arm64: Always run 'bash run-uvtools.sh' from desktop to run UVtools"
+        fi
+
+        [ -f "$appDir/Contents/MacOS/UVtools.sh" ] && bash "$appDir/Contents/MacOS/UVtools.sh" || open "$appDir"
     fi
 
     exit 1
