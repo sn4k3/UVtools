@@ -47,7 +47,7 @@ if [ "${OSTYPE:0:6}" == "darwin" ]; then
     brew install --cask uvtools
 
     if [ -d "$appDir" ]; then
-        find "$appDir" -print0 | xargs -0 xattr -d com.apple.quarantine
+        find "$appDir" -print0 | xargs -0 xattr -d com.apple.quarantine &> /dev/null
         open "$appDir" &
     fi
 
