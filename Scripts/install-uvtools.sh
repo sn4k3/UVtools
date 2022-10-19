@@ -74,7 +74,7 @@ fi
 
 echo "- Detected: $osVariant $arch_name"
 
-if [ ! "$(ldconfig -p | grep libpng)" -o ! "$(ldconfig -p | grep libgdiplus)" -o ! "$(ldconfig -p | grep libavcodec)" ]; then
+if [ -z "$(ldconfig -p | grep libpng)" -o -z "$(ldconfig -p | grep libgdiplus)" -o -z "$(ldconfig -p | grep libavcodec)" ]; then
 	echo "- Missing dependencies found, installing..."
     sudo bash -c "$(curl -fsSL $dependencies_url)"
 fi
