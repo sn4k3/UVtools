@@ -938,6 +938,9 @@
                         <Component Id="cmp8925749970AA313A0C710071B3BAB333" Guid="*">
                             <File Id="fil0B6C64DF3AA6665777361B87A7197974" KeyPath="yes" Source="$(var.HarvestPath)\Assets\PrusaSlicer\printer\AnyCubic Photon M3 Plus.ini" />
                         </Component>
+                        <Component Id="cmpA5414C55E96F201D7D2EE222BE8625C8" Guid="*">
+                            <File Id="fil2FAC0A7175238A93710692E282440E39" KeyPath="yes" Source="$(var.HarvestPath)\Assets\PrusaSlicer\printer\AnyCubic Photon M3 Premium.ini" />
+                        </Component>
                         <Component Id="cmp2984D4E333B3A49F2364113C5D15A2B3" Guid="*">
                             <File Id="fil82FB5D8F0F3786C6475E3C5A81FD711D" KeyPath="yes" Source="$(var.HarvestPath)\Assets\PrusaSlicer\printer\AnyCubic Photon M3.ini" />
                         </Component>
@@ -955,6 +958,9 @@
                         </Component>
                         <Component Id="cmp4D814EBF5F1C18F6F264ABA3250C26EC" Guid="*">
                             <File Id="fil4B003C0C3E8C8F418B25CC67F7842CEF" KeyPath="yes" Source="$(var.HarvestPath)\Assets\PrusaSlicer\printer\AnyCubic Photon Mono X.ini" />
+                        </Component>
+                        <Component Id="cmpD600B9FB2C1AA71AB55AD0F16AC4DAF8" Guid="*">
+                            <File Id="filC6ADC388924482BF8564666C57E2C7AF" KeyPath="yes" Source="$(var.HarvestPath)\Assets\PrusaSlicer\printer\AnyCubic Photon Mono X2.ini" />
                         </Component>
                         <Component Id="cmpF9124F4FA31E621E35FDD1D997556AAD" Guid="*">
                             <File Id="filAFAABDE836194709E5A2D23A452F42CA" KeyPath="yes" Source="$(var.HarvestPath)\Assets\PrusaSlicer\printer\AnyCubic Photon Mono.ini" />
@@ -1892,12 +1898,14 @@
             <ComponentRef Id="cmp9BB163BD33703B0B5CEA60CACA3729F9" />
             <ComponentRef Id="cmpC17977030FCAFB4FE4F86A5DBEE7A2AE" />
             <ComponentRef Id="cmp8925749970AA313A0C710071B3BAB333" />
+            <ComponentRef Id="cmpA5414C55E96F201D7D2EE222BE8625C8" />
             <ComponentRef Id="cmp2984D4E333B3A49F2364113C5D15A2B3" />
             <ComponentRef Id="cmp96935B9C080CD5F84BB51A8E88116712" />
             <ComponentRef Id="cmpB9D2FCA359E5BEA11885BB42F651E575" />
             <ComponentRef Id="cmpE1641A7B96E00D9206D0C21D97611E61" />
             <ComponentRef Id="cmp783E7D74D00C29F5D52CD1D7C2CAD0BF" />
             <ComponentRef Id="cmp4D814EBF5F1C18F6F264ABA3250C26EC" />
+            <ComponentRef Id="cmpD600B9FB2C1AA71AB55AD0F16AC4DAF8" />
             <ComponentRef Id="cmpF9124F4FA31E621E35FDD1D997556AAD" />
             <ComponentRef Id="cmp574409048B48C67EF0DEF1C9DE82342D" />
             <ComponentRef Id="cmp56B4987922D0E4D0C950A06BD03F6BE8" />

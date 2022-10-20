@@ -28,8 +28,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{B5BD32D7
 		build\compile.sh = build\compile.sh
 		build\createRelease.ps1 = build\createRelease.ps1
 		build\createRelease.sh = build\createRelease.sh
-		build\libcvextern.sh = build\libcvextern.sh
 		build\cvextern.ps1 = build\cvextern.ps1
+		build\libcvextern.sh = build\libcvextern.sh
 		build\README.md = build\README.md
 		build\run.bat = build\run.bat
 		build\run.sh = build\run.sh
@@ -42,6 +42,14 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "root", "root", "{E91CEB7A-5
 		LICENSE = LICENSE
 		README.md = README.md
 		RELEASE_NOTES.md = RELEASE_NOTES.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "scripts", "scripts", "{2BE3B5D1-3E9C-451E-A795-40298AFFDE6B}"
+	ProjectSection(SolutionItems) = preProject
+		Scripts\ImportPrusaSlicerData.ps1 = Scripts\ImportPrusaSlicerData.ps1
+		Scripts\install-dependencies.sh = Scripts\install-dependencies.sh
+		Scripts\install-uvtools.sh = Scripts\install-uvtools.sh
+		Scripts\libdl-solver.sh = Scripts\libdl-solver.sh
 	EndProjectSection
 EndProject
 Global
@@ -125,6 +133,10 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{B5BD32D7-3B3E-4254-877C-3353664BC044} = {E91CEB7A-5EDC-4928-8133-D8F354EF3CE8}
+		{2BE3B5D1-3E9C-451E-A795-40298AFFDE6B} = {E91CEB7A-5EDC-4928-8133-D8F354EF3CE8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {E9BEE8D8-E894-49A9-9435-491BF1E26E46}

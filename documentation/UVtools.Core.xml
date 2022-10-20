@@ -6490,6 +6490,43 @@
             </summary>
             <returns></returns>
         </member>
+        <member name="T:UVtools.Core.Printer.Screen">
+            <summary>
+            Utility methods over a printer screen
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.Printer.Screen.GetPixelSize(System.Int32,System.Single)">
+            <summary>
+            Gets the pixel size in mm
+            </summary>
+            <param name="resolution">Resolution in pixels</param>
+            <param name="displaySize">Display size in mm</param>
+            <returns>Pixel size in mm</returns>
+        </member>
+        <member name="M:UVtools.Core.Printer.Screen.GetPixelSizeMicrons(System.Int32,System.Single)">
+            <summary>
+            Gets the pixel size in microns
+            </summary>
+            <param name="resolution">Resolution in pixels</param>
+            <param name="displaySize">Display size in mm</param>
+            <returns>Pixel size in microns</returns>
+        </member>
+        <member name="M:UVtools.Core.Printer.Screen.GetPixelSize(System.Drawing.Size,System.Drawing.SizeF)">
+            <summary>
+            Gets the pixel size in mm
+            </summary>
+            <param name="resolution">Resolution in pixels</param>
+            <param name="displaySize">Display size in mm</param>
+            <returns>Pixel size in mm</returns>
+        </member>
+        <member name="M:UVtools.Core.Printer.Screen.GetPixelSizeMicrons(System.Drawing.Size,System.Drawing.SizeF)">
+            <summary>
+            Gets the pixel size in microns
+            </summary>
+            <param name="resolution">Resolution in pixels</param>
+            <param name="displaySize">Display size in mm</param>
+            <returns>Pixel size in microns</returns>
+        </member>
         <member name="P:UVtools.Core.Scripting.ScriptBaseInput.Label">
             <summary>
             Gets the input label

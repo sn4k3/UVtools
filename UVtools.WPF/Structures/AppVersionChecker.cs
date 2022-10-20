@@ -209,10 +209,10 @@ public class AppVersionChecker : BindableBase
                 if (downloadFilename.EndsWith(".AppImage") && SystemAware.IsRunningLinuxAppImage(out var appImagePath))
                 {
                     var directory = Path.GetDirectoryName(appImagePath);
-                    var oldFileName = Path.GetFileName(appImagePath);
+                    //var oldFileName = Path.GetFileName(appImagePath);
                     // Try to keep same filename logic if user renamed the file, like UVtools.AppImage would keep same same
-                    var newFilename = Regex.Replace(oldFileName, @"v\d.\d.\d", $"v{_version}");
-                    var newFullPath = Path.Combine(directory, newFilename);
+                    //var newFilename = Regex.Replace(oldFileName, @"v\d+.\d+.\d+", $"v{_version}");
+                    var newFullPath = Path.Combine(directory, downloadFilename);
 
                     if (File.Exists(appImagePath)) File.Delete(appImagePath);
                     File.Move(DownloadedFile, newFullPath, true);
@@ -247,7 +247,7 @@ public class AppVersionChecker : BindableBase
                         //stream.WriteLine($"[ -f {About.Software} ] && {App.AppExecutableQuoted} & || dotnet {About.Software}.dll &");
                         if (SystemAware.IsRunningMacOSApp)
                         {
-                            await stream.WriteLineAsync($"find {upgradeFolder} -print0 | xargs -0 xattr -d com.apple.quarantine");
+                            await stream.WriteLineAsync($"find '{upgradeFolder}' -print0 | xargs -0 xattr -d com.apple.quarantine");
                             await stream.WriteLineAsync($"cp -fR {upgradeFolder}/* ../../../");
                             await stream.WriteLineAsync($"open ../../../{About.Software}.app");
                         }

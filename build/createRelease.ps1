@@ -158,7 +158,7 @@ foreach($element in $msiComponentsXml.Wix.Module.Directory.Directory)
     {
         wixCleanUpElement $element $msiSourceFiles
         #WriteXmlToScreen($msiComponentsXml);
-        #$msiComponentsXml.Save("$rootFolder\$publishFolder\test.xml")
+        #$msiComponentsXml.Save("$rootPath\$publishFolder\test.xml")
         return
         break
     }
@@ -178,7 +178,7 @@ function WriteXmlToScreen([xml]$xml)
 #>
 
 # Script working directory
-Set-Location $PSScriptRoot\..
+#Set-Location $PSScriptRoot\..
 
 ####################################
 ###         Configuration        ###
@@ -198,20 +198,23 @@ $stopWatch.Start()
 
 
 # Variables
-$software = "UVtools"
-$project = "UVtools.WPF"
-$buildWith = "Release"
-$netVersion = "6.0"
-$rootFolder = $(Get-Location)
-$buildFolder = "$rootFolder\build"
-$releaseFolder = "$project\bin\$buildWith\net$netVersion"
-$objFolder = "$project\obj\$buildWith\net$netVersion"
-$publishFolder = "publish"
-$platformsFolder = "$buildFolder\platforms"
-$changelogFile = "$rootFolder\CHANGELOG.md"
+$software       = "UVtools"
+$project        = "UVtools.WPF"
+$buildWith      = "Release"
+$netVersion     = "6.0"
+$publishFolder  = "publish"
 
-#$version = (Get-Command "$releaseFolder\UVtools.dll").FileVersionInfo.ProductVersion
-$projectXml = [Xml] (Get-Content "$project\$project.csproj")
+$rootPath           = Split-Path $PSScriptRoot -Parent
+$buildPath          = "$rootPath\build"
+$platformsPath      = "$buildPath\platforms"
+$publishPath        = "$rootPath\$publishFolder"
+$releasePath        = "$rootPath\$project\bin\$buildWith\net$netVersion"
+$objPath            = "$rootPath\$project\obj\$buildWith\net$netVersion"
+$changelogFile      = "$rootPath\CHANGELOG.md"
+$releaseNotesFile   = "$rootPath\RELEASE_NOTES.md"
+
+#$version = (Get-Command "$releasePath\UVtools.dll").FileVersionInfo.ProductVersion
+$projectXml = [Xml] (Get-Content "$rootPath\$project\$project.csproj")
 $version = "$($projectXml.Project.PropertyGroup.Version)".Trim();
 if([string]::IsNullOrWhiteSpace($version)){
     Write-Error "Can not detect the UVtools version, does $project\$project.csproj exists?"
@@ -219,10 +222,11 @@ if([string]::IsNullOrWhiteSpace($version)){
 }
 
 # MSI Variables
-$installer = "UVtools.Installer"
-$msiOutputFile = "$rootFolder\UVtools.Installer\bin\x64\Release\UVtools.msi"
-$msiProductFile = "$rootFolder\UVtools.Installer\Code\Product.wxs"
-$msiSourceFiles = "$rootFolder\$publishFolder\${software}_win-x64_v$version"
+$installer      = "UVtools.Installer"
+$installerPath  = "$rootPath\$installer"
+$msiOutputFile  = "$installerPath\bin\x64\Release\UVtools.msi"
+$msiProductFile = "$installerPath\Code\Product.wxs"
+$msiSourceFiles = "$publishPath\${software}_win-x64_v$version"
 
 $msbuildPaths = "${env:ProgramFiles}\Microsoft Visual Studio\2022\Enterprise\MSBuild\Current\Bin\MSBuild.exe",
                 "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\MSBuild.exe",
@@ -314,8 +318,9 @@ foreach($line in $changelog) {
         [void]$sb.AppendLine($line)
     }
 }
+
 Write-Host $sb.ToString()
-Set-Content -Path "$rootFolder/RELEASE_NOTES.md" -Value $sb.ToString()
+Set-Content -Path "$releaseNotesFile" -Value $sb.ToString()
 
 <#
 if($null -ne $enableNugetPublish -and $enableNugetPublish)
@@ -348,47 +353,49 @@ foreach ($obj in $runtimes.GetEnumerator()) {
     $runtime = $obj.Name;       # runtime name
     $extraCmd = $obj.extraCmd;  # extra cmd to run with dotnet
     $publishName="${software}_${runtime}_v$version"
+    $publishCurrentPath="$publishPath\$publishName"
 
     #dotnet build "UVtools.Cmd" -c $buildWith
     #dotnet build $project -c $buildWith
 
     if($runtime.StartsWith("win-"))
     {
-        $targetZip = "$publishFolder/${software}_${runtime}_v$version.zip"  # Target zip filename
-        Remove-Item "$publishFolder/$publishName" -Recurse -ErrorAction Ignore
+        $targetZip = "$publishPath/${software}_${runtime}_v$version.zip"  # Target zip filename
+        Remove-Item "$publishCurrentPath" -Recurse -ErrorAction Ignore
         Remove-Item "$targetZip" -ErrorAction Ignore
         
         # Deploy
         Write-Output "################################
     Building: $runtime"
-        dotnet publish "UVtools.Cmd" -o "$publishFolder/$publishName" -c $buildWith -r $runtime -p:PublishReadyToRun=true --self-contained $extraCmd
-        dotnet publish $project -o "$publishFolder/$publishName" -c $buildWith -r $runtime -p:PublishReadyToRun=true --self-contained $extraCmd
+        dotnet publish "$rootPath\UVtools.Cmd" -o "$publishCurrentPath" -c $buildWith -r $runtime -p:PublishReadyToRun=true --self-contained $extraCmd
+        dotnet publish "$rootPath\$project" -o "$publishCurrentPath" -c $buildWith -r $runtime -p:PublishReadyToRun=true --self-contained $extraCmd
 
-        New-Item "$publishFolder/$publishName/runtime_package.dat" -ItemType File -Value $runtime
+        New-Item "$publishCurrentPath\runtime_package.dat" -ItemType File -Value $runtime
         
         # Cleanup
-        Remove-Item "UVtools.Cmd\bin\$buildWith\net$netVersion\$runtime" -Recurse -ErrorAction Ignore
-        Remove-Item "UVtools.Cmd\obj\$buildWith\net$netVersion\$runtime" -Recurse -ErrorAction Ignore
+        Remove-Item "$rootPath\UVtools.Cmd\bin\$buildWith\net$netVersion\$runtime" -Recurse -ErrorAction Ignore
+        Remove-Item "$rootPath\UVtools.Cmd\obj\$buildWith\net$netVersion\$runtime" -Recurse -ErrorAction Ignore
 
-        Remove-Item "$releaseFolder\$runtime" -Recurse -ErrorAction Ignore
-        Remove-Item "$objFolder\$runtime" -Recurse -ErrorAction Ignore
+        Remove-Item "$releasePath\$runtime" -Recurse -ErrorAction Ignore
+        Remove-Item "$objPath\$runtime" -Recurse -ErrorAction Ignore
         
-        Write-Output "$releaseFolder\$runtime"
+        Write-Output "$publishCurrentPath"
         
         foreach ($excludeObj in $obj.Value.exclude) {
             Write-Output "Excluding: $excludeObj"
-            Remove-Item "$publishFolder\$runtime\$excludeObj" -Recurse -ErrorAction Ignore
+            Remove-Item "$publishPath\$runtime\$excludeObj" -Recurse -ErrorAction Ignore
         }
 
         foreach ($includeObj in $obj.Value.include) {
             Write-Output "Including: $includeObj"
-            Copy-Item "$platformsFolder\$runtime\$includeObj" -Destination "$publishFolder\$publishName"  -Recurse -ErrorAction Ignore
+            Copy-Item "$platformsPath\$runtime\$includeObj" -Destination "$publishCurrentPath"  -Recurse -ErrorAction Ignore
+            Copy-Item "$platformsPath\$runtime\$includeObj" -Destination "$publishCurrentPath"  -Recurse -ErrorAction Ignore
         }
 
         if($null -ne $zipPackages -and $zipPackages)
         {
             Write-Output "Compressing $runtime to: $targetZip"
-            wsl cd "$publishFolder/$publishName" `&`& pwd `&`& zip -rq "../../$targetZip" .
+            wsl --cd "$publishCurrentPath" pwd `&`& zip -rq "../../$targetZip" .
         }
     }
     else
@@ -398,7 +405,8 @@ foreach ($obj in $runtimes.GetEnumerator()) {
         {
             $buildArgs += ' -z' # Zip
         }
-        bash -c "'build/createRelease.sh' $buildArgs $runtime"
+        
+        wsl --cd "$buildPath" bash -c "./createRelease.sh $buildArgs $runtime"
         #Start-Job { bash -c "'build/createRelease.sh' $using:buildArgs$buildArgs $using:runtime" }
     }
     
@@ -438,7 +446,7 @@ Building: $runtime"
 dotnet build $project -c $buildWith
 
 Write-Output "Compressing $runtime to: $targetZip"
-[System.IO.Compression.ZipFile]::CreateFromDirectory($releaseFolder, $targetZip, [System.IO.Compression.CompressionLevel]::Optimal, $false, [FixedEncoder]::new())
+[System.IO.Compression.ZipFile]::CreateFromDirectory($releasePath, $targetZip, [System.IO.Compression.CompressionLevel]::Optimal, $false, [FixedEncoder]::new())
 Write-Output "Took: $($deployStopWatch.Elapsed)
 ################################
 "
@@ -451,11 +459,12 @@ if($null -ne $enableMSI -and $enableMSI)
     $deployStopWatch.Restart()
     $runtime = 'win-x64'
     $publishName = "${software}_${runtime}_v$version";
+    $publishCurrentPath="$publishPath\$publishName"
     
     if ((Test-Path -Path $msiSourceFiles) -and ((Get-ChildItem "$msiSourceFiles" | Measure-Object).Count) -gt 0) {
         if ($null -ne $msbuild)
         {
-            $msiTargetFile = "$publishFolder\$publishName.msi"
+            $msiTargetFile = "$publishPath\$publishName.msi"
             Write-Output "################################"
             Write-Output "Clean and build MSI components manifest file"
 
@@ -476,8 +485,8 @@ if($null -ne $enableMSI -and $enableMSI)
             }
             #>
 
-            if(Test-Path "$publishFolder\$publishName\UVtools.Core.dll" -PathType Leaf){
-                Add-Type -Path "$publishFolder\$publishName\UVtools.Core.dll"
+            if(Test-Path "$publishCurrentPath\UVtools.Core.dll" -PathType Leaf){
+                Add-Type -Path "$publishCurrentPath\UVtools.Core.dll"
             } else {
                 Write-Error "Unable to find UVtools.Core.dll"
                 return
@@ -504,9 +513,9 @@ if($null -ne $enableMSI -and $enableMSI)
 
 
             # Clean and build MSI
-            Remove-Item "$installer\obj" -Recurse -ErrorAction Ignore
-            Remove-Item "$installer\bin" -Recurse -ErrorAction Ignore
-            Invoke-Expression "& $msbuild $installer\$installer.wixproj"
+            Remove-Item "$installerPath\obj" -Recurse -ErrorAction Ignore
+            Remove-Item "$installerPath\bin" -Recurse -ErrorAction Ignore
+            Invoke-Expression "& $msbuild '$installerPath\$installer.wixproj'"
 
             Write-Output "Copying $runtime MSI to: $msiTargetFile"
             Copy-Item $msiOutputFile $msiTargetFile

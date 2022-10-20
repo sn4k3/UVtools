@@ -49,8 +49,8 @@ public class LGSFile : FileFormat
         [FieldOrder(11)] public float ExposureTimeMs { get; set; }
         [FieldOrder(12)] public float BottomExposureTimeMs { get; set; }
         [FieldOrder(13)] public float Float_38 { get; set; } = 10; // 0x38: 10
-        [FieldOrder(14)] public float LightOffDelayMs { get; set; } = 2000;
-        [FieldOrder(15)] public float BottomLightOffDelayMs { get; set; }
+        [FieldOrder(14)] public float WaiTimeBeforeCureMs { get; set; } = 1000;
+        [FieldOrder(15)] public float BottomWaiTimeBeforeCureMs { get; set; } = 2000;
         [FieldOrder(16)] public float BottomHeight { get; set; }
         [FieldOrder(17)] public float Float_48 { get; set; } = 0.6f; // 0x48: 0.6
         [FieldOrder(18)] public float BottomLiftHeight { get; set; } = 4;
@@ -275,8 +275,8 @@ public class LGSFile : FileFormat
     {
         PrintParameterModifier.BottomLayerCount,
 
-        PrintParameterModifier.BottomLightOffDelay,
-        PrintParameterModifier.LightOffDelay,
+        PrintParameterModifier.BottomWaitTimeBeforeCure,
+        PrintParameterModifier.WaitTimeBeforeCure,
 
         PrintParameterModifier.BottomExposureTime,
         PrintParameterModifier.ExposureTime,
@@ -380,42 +380,22 @@ public class LGSFile : FileFormat
         }
     }
 
-    public override float BottomLightOffDelay
-    {
-        get => TimeConverter.MillisecondsToSeconds(HeaderSettings.BottomLightOffDelayMs);
-        set
-        {
-            HeaderSettings.BottomLightOffDelayMs = TimeConverter.SecondsToMilliseconds(value);
-            base.BottomLightOffDelay = value;
-        }
-    }
-
-    public override float LightOffDelay
-    {
-        get => TimeConverter.MillisecondsToSeconds(HeaderSettings.LightOffDelayMs);
-        set
-        {
-            HeaderSettings.LightOffDelayMs = TimeConverter.SecondsToMilliseconds(value);
-            base.LightOffDelay = value;
-        }
-    }
-
     public override float BottomWaitTimeBeforeCure
     {
-        get => base.BottomWaitTimeBeforeCure;
+        get => TimeConverter.MillisecondsToSeconds(HeaderSettings.BottomWaiTimeBeforeCureMs);
         set
         {
-            SetBottomLightOffDelay(value);
+            HeaderSettings.BottomWaiTimeBeforeCureMs = TimeConverter.SecondsToMilliseconds(value);
             base.BottomWaitTimeBeforeCure = value;
         }
     }
 
     public override float WaitTimeBeforeCure
     {
-        get => base.WaitTimeBeforeCure;
+        get => TimeConverter.MillisecondsToSeconds(HeaderSettings.WaiTimeBeforeCureMs);
         set
         {
-            SetNormalLightOffDelay(value);
+            HeaderSettings.WaiTimeBeforeCureMs = TimeConverter.SecondsToMilliseconds(value);
             base.WaitTimeBeforeCure = value;
         }
     }

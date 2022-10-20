@@ -1,5 +1,20 @@
 # Changelog
 
+## 20/10/2022 - v3.7.2
+
+- **File formats:**
+  - (Add) AnyCubic PM3R (#587)
+  - (Add) AnyCubic PMX2
+  - (Fix) LGS: `LightOffDelay` is `WaitTimeBeforeCure` in this format
+- **PrusaSlicer printer:**
+  - (Add) AnyCubic Photon M3 Premium
+  - (Add) AnyCubic Photon Mono X2
+- (Fix) Scripting: Unable to use sub-classes (#583)
+- (Fix) Loading an image as file cause application to crash
+- (Fix) "File - Send to" doesn't ignore case on file extension names resulting in ignore files in a uppercase even if extension is correct
+- (Fix) Do not show layer material milliliters when value is 0 or the percentage is NaN
+- (Fix) Auto-upgrade on Linux with AppImage integrated on system causes the file name to grow with hash strings
+
 ## 17/10/2022 - v3.7.1
 
 - (Add) PrusaSlicer printer: Elegoo Saturn 2
@@ -12,9 +27,9 @@
    - (Add) Utility methods for transition layers calculation/parse
    - (Improvement) Calculate and set `TransitionLayerCount` property in file decode based on layer exposure time configuration 
 - **GCode:**
-   - (Improvement) GCode: Able to parse layer image file with appended numbers on the filename (Afecting CWS) (#577)
-   - (Fix) Bad parsing of the file when it comes from Lychee or NovaMaker slicer (Afecting CWS)
-   - (Fix) Incorrect parse of "Wait time before cure" from layers when printer require wait sync moves (Afecting CWS)
+   - (Improvement) GCode: Able to parse layer image file with appended numbers on the filename (Affecting CWS) (#577)
+   - (Fix) Bad parsing of the file when it comes from Lychee or NovaMaker slicer (Affecting CWS)
+   - (Fix) Incorrect parse of "Wait time before cure" from layers when printer require wait sync moves (Affecting CWS)
 - **Tools:**
    - (Add) External tests: The Complete Resin 3D Printing Settings Guide for Beginners
    - (Add) External tests: 9 settings for faster printing

@@ -374,7 +374,7 @@ public partial class MainWindow
                 CurrentLayerProperties.Add(new ValueDescription(layer.LightPWM.ToString(), nameof(layer.LightPWM)));
         }
         var materialMillilitersPercent = layer.MaterialMillilitersPercent;
-        if (!float.IsNaN(materialMillilitersPercent))
+        if (layer.MaterialMilliliters > 0 && !float.IsNaN(materialMillilitersPercent))
         {
             CurrentLayerProperties.Add(new ValueDescription($"{layer.MaterialMilliliters}ml ({materialMillilitersPercent:F2}%)", nameof(layer.MaterialMilliliters)));
         }

@@ -373,7 +373,7 @@ public partial class MainWindow : WindowEx
                         var found = false;
                         foreach (var ext in extensions)
                         {
-                            found = SlicerFile.FileFullPath.EndsWith($".{ext}");
+                            found = SlicerFile.FileEndsWith($".{ext}");
                             if (found) break;
                         }
                         if(!found) continue;
@@ -404,7 +404,7 @@ public partial class MainWindow : WindowEx
                         var found = false;
                         foreach (var ext in extensions)
                         {
-                            found = SlicerFile.FileFullPath.EndsWith($".{ext}");
+                            found = SlicerFile.FileEndsWith($".{ext}");
                             if (found) break;
                         }
                         if (!found) continue;
@@ -435,7 +435,7 @@ public partial class MainWindow : WindowEx
                         var found = false;
                         foreach (var ext in extensions)
                         {
-                            found = SlicerFile.FileFullPath.EndsWith($".{ext}");
+                            found = SlicerFile.FileEndsWith($".{ext}");
                             if (found) break;
                         }
                         if (!found) continue;
@@ -1277,7 +1277,7 @@ public partial class MainWindow : WindowEx
         {
             if (!File.Exists(files[i])) continue;
 
-            if (files[i].EndsWith(".uvtop"))
+            if (files[i].EndsWith(".uvtop", StringComparison.OrdinalIgnoreCase))
             {
                 if(!IsFileLoaded) continue;
                 try
@@ -1295,7 +1295,7 @@ public partial class MainWindow : WindowEx
                 continue;
             }
 
-            if (files[i].EndsWith(".cs") || files[i].EndsWith(".csx"))
+            if (files[i].EndsWith(".cs", StringComparison.OrdinalIgnoreCase) || files[i].EndsWith(".csx", StringComparison.OrdinalIgnoreCase))
             {
                 if (!IsFileLoaded) continue;
                 try
@@ -1759,10 +1759,14 @@ public partial class MainWindow : WindowEx
 
         if (SlicerFile is CTBEncryptedFile)
         {
+            if (Settings.General.LockedFilesOpenCounter == 0)
+            {
+                await this.MessageBoxInfo(CTBEncryptedFile.Preamble, "Information");
+            }
+
             Settings.General.LockedFilesOpenCounter++;
             if (Settings.General.LockedFilesOpenCounter >= UserSettings.GeneralUserSettings.LockedFilesMaxOpenCounter)
             {
-                await this.MessageBoxInfo(CTBEncryptedFile.Preamble, "Information");
                 Settings.General.LockedFilesOpenCounter = 0;
             }
             UserSettings.Save();
@@ -1867,7 +1871,7 @@ public partial class MainWindow : WindowEx
             catch (Exception ex)
             {
                 string extraMessage = string.Empty;
-                if (SlicerFile.FileFullPath!.EndsWith(".sl1"))
+                if (SlicerFile.FileEndsWith(".sl1"))
                 {
                     extraMessage = "Note: When converting from SL1 make sure you have the correct printer selected, you MUST use a UVtools base printer.\n" +
                                    "Go to \"Help\" -> \"Install profiles into PrusaSlicer\" to install printers.\n";

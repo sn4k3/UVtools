@@ -40,8 +40,10 @@ fi
 bundlePublish=false
 keepNetPublish=false
 zipPackage=false
+
+#echo $@
 while getopts 'bzk' flag; do
-  case "${flag}" in
+  case $flag in
     b) bundlePublish=true ;;
     k) keepNetPublish=true ;;
     z) zipPackage=true ;;
@@ -53,6 +55,10 @@ while getopts 'bzk' flag; do
         exit 1 ;;
   esac
 done
+
+#echo "Bundle publish: $bundlePublish"
+#echo "Keep publish: $keepNetPublish"
+#echo "Zip package: $zipPackage"
 
 # Checks
 if ! command -v dotnet &> /dev/null

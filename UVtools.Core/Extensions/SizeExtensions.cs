@@ -56,10 +56,17 @@ public static class SizeExtensions
     public static Size Multiply(this Size size, double dxy) => new((int)(size.Width * dxy), (int)(size.Height * dxy));
     public static Size Multiply(this Size size, double dx, double dy) => new((int)(size.Width * dx), (int)(size.Height * dy));
 
-    public static Size Divide(this Size size, SizeF otherSize) => new((int)(size.Width / otherSize.Width), (int)(size.Height / otherSize.Height));
+    public static Size Divide(this Size size, Size otherSize) => new((int)(otherSize.Width == 0 ? 0 : size.Width / otherSize.Width), (int)(otherSize.Height == 0 ? 0 : size.Height / otherSize.Height));
+    public static Size Divide(this Size size, SizeF otherSize) => new((int)(otherSize.Width == 0 ? 0 : size.Width / otherSize.Width), (int)(otherSize.Height == 0 ? 0 : size.Height / otherSize.Height));
     public static Size Divide(this Size size) => size.Divide(size);
-    public static Size Divide(this Size size, double dxy) => new((int)(size.Width / dxy), (int)(size.Height / dxy));
-    public static Size Divide(this Size size, double dx, double dy) => new((int)(size.Width / dx), (int)(size.Height / dy));
+    public static Size Divide(this Size size, double dxy) => dxy == 0 ? Size.Empty : new((int)(size.Width / dxy), (int)(size.Height / dxy));
+    public static Size Divide(this Size size, double dx, double dy) => new((int)(dx == 0 ? 0 : size.Width / dx), (int)(dy == 0 ? 0 : size.Height / dy));
+
+    public static SizeF Divide(this SizeF size, Size otherSize) => new((int)(otherSize.Width == 0 ? 0 : size.Width / otherSize.Width), (int)(otherSize.Height == 0 ? 0 : size.Height / otherSize.Height));
+    public static SizeF Divide(this SizeF size, SizeF otherSize) => new((int)(otherSize.Width == 0 ? 0 : size.Width / otherSize.Width), (int)(otherSize.Height == 0 ? 0 : size.Height / otherSize.Height));
+    public static SizeF Divide(this SizeF size) => size.Divide(size);
+    public static SizeF Divide(this SizeF size, double dxy) => dxy == 0 ? Size.Empty : new((int)(size.Width / dxy), (int)(size.Height / dxy));
+    public static SizeF Divide(this SizeF size, double dx, double dy) => new((int)(dx == 0 ? 0 : size.Width / dx), (int)(dy == 0 ? 0 : size.Height / dy));
 
     /// <summary>
     /// Gets if this size have a zero value on width or height

@@ -680,7 +680,7 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
     /// <summary>
     /// Gets the computed material milliliters percentage compared to the rest of the model
     /// </summary>
-    public float MaterialMillilitersPercent => _materialMilliliters * 100 / SlicerFile.MaterialMilliliters;
+    public float MaterialMillilitersPercent => SlicerFile.MaterialMilliliters > 0 ? _materialMilliliters * 100 / SlicerFile.MaterialMilliliters : float.NaN;
 
     /// <summary>
     /// Gets or sets the compression method used to cache the image
@@ -1241,8 +1241,9 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
         }
         else
         {
-            using var roiMat = mat.Roi(_boundingRectangle);
+            var roiMat = mat.Roi(_boundingRectangle);
             NonZeroPixelCount = (uint)CvInvoke.CountNonZero(roiMat);
+            roiMat.DisposeIfSubMatrix();
         }
 
 

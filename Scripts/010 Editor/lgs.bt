@@ -15,11 +15,11 @@ typedef struct() {
 
 struct HEADER {
     char Name[8] <fgcolor=cBlack, bgcolor=cWhite>;
-    uint32 Uint_08 <fgcolor=cBlack, bgcolor=cRed>;
-    uint32 Uint_0C <fgcolor=cBlack, bgcolor=cRed>;
-    uint32 PrinterModel <fgcolor=cBlack, bgcolor=cRed>;
-    uint32 Uint_14 <fgcolor=cBlack, bgcolor=cRed>;
-    uint32 MagicKey <fgcolor=cBlack, bgcolor=cRed>;
+    uint Uint_08 <fgcolor=cBlack, bgcolor=cRed>;
+    uint Uint_0C <fgcolor=cBlack, bgcolor=cRed>;
+    uint PrinterModel <fgcolor=cBlack, bgcolor=cRed>;
+    uint Uint_14 <fgcolor=cBlack, bgcolor=cRed>;
+    uint MagicKey <fgcolor=cBlack, bgcolor=cRed>;
     
     float PixelPerMmX <fgcolor=cBlack, bgcolor=cRed>;
     float PixelPerMmY <fgcolor=cBlack, bgcolor=cRed>;
@@ -29,8 +29,8 @@ struct HEADER {
     float ExposureTimeMs <fgcolor=cBlack, bgcolor=cRed>;
     float BottomExposureTimeMs <fgcolor=cBlack, bgcolor=cRed>;
     float Float_38 <fgcolor=cBlack, bgcolor=cRed>;
-    float LightOffDelayMs <fgcolor=cBlack, bgcolor=cRed>;
-    float BottomLightOffDelayMs <fgcolor=cBlack, bgcolor=cRed>;
+    float WaiTimeBeforeCureMs <fgcolor=cBlack, bgcolor=cRed>;
+    float BottomWaiTimeBeforeCureMs <fgcolor=cBlack, bgcolor=cRed>;
     float BottomHeight <fgcolor=cBlack, bgcolor=cRed>;
     float Float_48 <fgcolor=cBlack, bgcolor=cRed>;
     float BottomLiftHeight <fgcolor=cBlack, bgcolor=cRed>;
@@ -52,13 +52,13 @@ struct HEADER {
     float Float_8c <fgcolor=cBlack, bgcolor=cRed>;
     float Float_90 <fgcolor=cBlack, bgcolor=cRed>;
     float MachineZ <fgcolor=cBlack, bgcolor=cRed>;
-    uint32 Uint_98 <fgcolor=cBlack, bgcolor=cRed>;
-    uint32 Uint_9c <fgcolor=cBlack, bgcolor=cRed>;
-    uint32 Uint_a0 <fgcolor=cBlack, bgcolor=cRed>;
-    uint32 LayerCount <fgcolor=cBlack, bgcolor=cRed>;
-    uint32 Uint_a8 <fgcolor=cBlack, bgcolor=cRed>;
-    uint32 PreviewSizeX <fgcolor=cBlack, bgcolor=cRed>;
-    uint32 PreviewSizeY <fgcolor=cBlack, bgcolor=cRed>;
+    uint Uint_98 <fgcolor=cBlack, bgcolor=cRed>;
+    uint Uint_9c <fgcolor=cBlack, bgcolor=cRed>;
+    uint Uint_a0 <fgcolor=cBlack, bgcolor=cRed>;
+    uint LayerCount <fgcolor=cBlack, bgcolor=cRed>;
+    uint Uint_a8 <fgcolor=cBlack, bgcolor=cRed>;
+    uint PreviewSizeX <fgcolor=cBlack, bgcolor=cRed>;
+    uint PreviewSizeY <fgcolor=cBlack, bgcolor=cRed>;
 } header;
 
 
@@ -67,7 +67,7 @@ ubyte preview_data[header.PreviewSizeX*header.PreviewSizeY*2];
 if(header.PrinterModel == 120) // .lgs120
 {
     struct PNG_PREVIEW {
-        uint32 pngLength <fgcolor=cBlack, bgcolor=cRed>;
+        uint pngLength <fgcolor=cBlack, bgcolor=cRed>;
         ubyte png[pngLength] <fgcolor=cBlack, bgcolor=cYellow>;
         ushort padding <fgcolor=cBlack, bgcolor=cRed>;
     } png_preview;

@@ -123,7 +123,7 @@ tmpfile="/tmp/$filename"
 
 echo "Downloading: $download_url"
 #wget $download_url -O "$tmpfile" -q --show-progress
-curl -L --retry 3 $download_url -o "$tmpfile"
+curl -L --retry 4 $download_url -o "$tmpfile"
 
 echo "- Setting permissions"
 chmod -fv a+x "$tmpfile"

@@ -1,3 +1,13 @@
-- (Add) PrusaSlicer printer: Elegoo Saturn 2
-- (Fix) PCB Exposure: Possible error when drawing outline primitive macros that contains duplicate points (#580)
+- **File formats:**
+  - (Add) AnyCubic PM3R (#587)
+  - (Add) AnyCubic PMX2
+  - (Fix) LGS: `LightOffDelay` is `WaitTimeBeforeCure` in this format
+- **PrusaSlicer printer:**
+  - (Add) AnyCubic Photon M3 Premium
+  - (Add) AnyCubic Photon Mono X2
+- (Fix) Scripting: Unable to use sub-classes (#583)
+- (Fix) Loading an image as file cause application to crash
+- (Fix) "File - Send to" doesn't ignore case on file extension names resulting in ignore files in a uppercase even if extension is correct
+- (Fix) Do not show layer material milliliters when value is 0 or the percentage is NaN
+- (Fix) Auto-upgrade on Linux with AppImage integrated on system causes the file name to grow with hash strings
 

@@ -41,12 +41,13 @@ public static class ScriptParser
 
         var textLength = text.Length;
         sbyte bracketsToRemove = 0;
-        text = Regex.Replace(text, @"(namespace\s+.+\n*.*{)", string.Empty);
+        text = Regex.Replace(text, @"(namespace\s+.+\n*\s*{)", string.Empty);
         if (textLength != text.Length) bracketsToRemove++;
-        else text = Regex.Replace(text, @"(namespace\s+.+\n*.*;)", string.Empty); // NET 6.0
+        else text = Regex.Replace(text, @"(namespace\s+.+\n*\s*;)", string.Empty); // NET >= 6.0
 
         textLength = text.Length;
-        text = Regex.Replace(text, @"(.*class\s+.*\n*.*{)", string.Empty);
+        var regex = new Regex(@"(.*class\s+.*\n*.*{)");
+        text = regex.Replace(text, string.Empty, 1);
         if (textLength != text.Length) bracketsToRemove++;
 
         if (bracketsToRemove <= 0) return text;
