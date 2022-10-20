@@ -34,19 +34,19 @@ then
     apt-get update
     apt-get install -y libdc1394-22 libopenexr24
     apt-get install -y libdc1394-25 libopenexr25
-    apt-get install -y libjpeg-dev libpng-dev libgeotiff-dev libgeotiff5 libavcodec-dev libavformat-dev libswscale-dev libtbb-dev libgl1-mesa-dev libgdiplus wget
+    apt-get install -y libjpeg-dev libpng-dev libgeotiff-dev libgeotiff5 libavcodec-dev libavformat-dev libswscale-dev libtbb-dev libgl1-mesa-dev libgdiplus
 elif command -v pacman &> /dev/null
 then
     osVariant="arch"
     pacman -Syu
-    pacman -S openjpeg2 libjpeg-turbo libpng libgeotiff libdc1394 ffmpeg openexr tbb libgdiplus wget
+    pacman -S openjpeg2 libjpeg-turbo libpng libgeotiff libdc1394 ffmpeg openexr tbb libgdiplus
 elif command -v yum &> /dev/null
 then
     osVariant="rhel"
     yum update -y
     yum install -y https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm
     yum install -y https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm
-    yum install -y libjpeg-devel libjpeg-turbo-devel libpng-devel libgeotiff-devel libdc1394-devel ffmpeg-devel tbb-devel mesa-libGL libgdiplus wget
+    yum install -y libjpeg-devel libjpeg-turbo-devel libpng-devel libgeotiff-devel libdc1394-devel ffmpeg-devel tbb-devel mesa-libGL libgdiplus
 else
     echo "Error: Base operative system / package manager not identified, nothing was installed"
     exit -1

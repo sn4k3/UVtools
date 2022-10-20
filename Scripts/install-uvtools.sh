@@ -83,17 +83,14 @@ fi
 elif command -v apt-get &> /dev/null
 then
     osVariant="linux"
-    [ -z "$(command -v wget)" ] && sudo apt-get install -y wget
     [ -z "$(command -v curl)" ] && sudo apt-get install -y curl
 elif command -v pacman &> /dev/null
 then
     osVariant="arch"
-    [ -z "$(command -v wget)" ] && sudo pacman -S wget
     [ -z "$(command -v curl)" ] && sudo pacman -S curl
 elif command -v yum &> /dev/null
 then
     osVariant="rhel"
-    [ -z "$(command -v wget)" ] && sudo yum install -y wget
     [ -z "$(command -v curl)" ] && sudo yum install -y curl
 fi
 
@@ -125,7 +122,8 @@ filename="$(basename "${download_url}")"
 tmpfile="/tmp/$filename"
 
 echo "Downloading: $download_url"
-wget $download_url -O "$tmpfile" -q --show-progress
+#wget $download_url -O "$tmpfile" -q --show-progress
+curl -L --retry 3 $download_url -o "$tmpfile"
 
 echo "- Setting permissions"
 chmod -fv a+x "$tmpfile"
