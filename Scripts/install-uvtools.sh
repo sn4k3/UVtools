@@ -7,7 +7,7 @@
 #
 
 cd "$(dirname "$0")"
-arch_name="$(uname -m)" # x86_64 or arm64
+arch="$(uname -m)" # x86_64 or arm64
 osVariant=""            # osx, linux, arch, rhel
 api_url="https://api.github.com/repos/sn4k3/UVtools/releases/latest"
 dependencies_url="https://raw.githubusercontent.com/sn4k3/UVtools/master/Scripts/install-dependencies.sh"
@@ -16,8 +16,8 @@ macOS_least_version=10.15
 version() { echo "$@" | awk -F. '{ printf("%d%03d%03d%03d\n", $1,$2,$3,$4); }'; }
 testcmd() { command -v "$1" &> /dev/null; }
 
-if [ "$arch_name" != "x86_64" -a "$arch_name" != "arm64" ]; then
-    echo "Error: Unsupported host arch $arch_name"
+if [ "$arch" != "x86_64" -a "$arch" != "arm64" ]; then
+    echo "Error: Unsupported host arch $arch"
     exit -1
 fi
 
@@ -30,7 +30,7 @@ if [ "${OSTYPE:0:6}" == "darwin" ]; then
     macOS_version="$(sw_vers -productVersion)"
     appPath="/Applications/UVtools.app"
 
-    echo "- Detected: $osVariant $arch_name"
+    echo "- Detected: $osVariant $arch"
 
     if [ $(version $macOS_version) -lt $(version $macOS_least_version) ]; then
         echo "Error: Unable to install, UVtools requires at least macOS $macOS_least_version."
@@ -49,36 +49,47 @@ if [ "${OSTYPE:0:6}" == "darwin" ]; then
     brew install --cask uvtools
 
     # Required dotnet-sdk to run arm64 and bypass codesign
-    [ "$arch_name" == "arm64" -a -z "$(command -v dotnet)" ] && brew install --cask dotnet-sdk
+    [ "$arch" == "arm64" -a -z "$(command -v dotnet)" ] && brew install --cask dotnet-sdk
 
     if [ -d "$appPath" ]; then
         # Remove quarantine security from files
         find "$appPath" -print0 | xargs -0 xattr -d com.apple.quarantine &> /dev/null
 
         # arm64: Create script on user desktop to run UVtools
-        if [ "$arch_name" == "arm64" ]; then
+        if [ "$arch" == "arm64" ]; then
             run_script="$HOME/Desktop/run-uvtools"
 
             echo '#!/bin/bash
-cd "$(dirname "$0")"'"
-if [ -f \"$appPath/Contents/MacOS/UVtools.sh\" ]; then
-    bash \"$appPath/Contents/MacOS/UVtools.sh\"
-elif [ -f \"UVtools.app/Contents/MacOS/UVtools.sh\" ]; then
-    bash \"UVtools.app/Contents/MacOS/UVtools.sh\"
-else
-    echo 'Error: UVtools.app not found on known paths'
-    exit -1
-fi
+cd "$(dirname "$0")
 
-echo 'You can now close this terminal window.'
-" > "$run_script"
+lookupPaths=(
+    "/Applications/UVtools.app/Contents/MacOS/UVtools.sh"
+    "UVtools.app/Contents/MacOS/UVtools.sh"
+    "$HOME/Desktop/UVtools.app/Contents/MacOS/UVtools.sh"
+    "$HOME/UVtools.app/Contents/MacOS/UVtools.sh"
+)
+
+for path in "${lookupPaths[@]}"
+do
+	if [ -f "$path" ]; then
+        nohup bash "$path" &> /dev/null &
+        disown
+        echo "UVtools will now run."
+        echo "You can close this terminal window."
+        exit
+    fi
+done
+
+echo "Error: UVtools.app not found on known paths"
+' > "$run_script"
 
             chmod a+x "$run_script"
             echo "Note: Always run \"bash run-uvtools\" from desktop to run UVtools on your mac arm64!"
         fi
 
         if [ -f "$appPath/Contents/MacOS/UVtools.sh" ]; then
-            bash "$appPath/Contents/MacOS/UVtools.sh" & 
+            nohup bash "$appPath/Contents/MacOS/UVtools.sh" &> /dev/null &
+            disown
         elif [ -d "$appPath" ]; then
             open "$appPath"
         fi
@@ -101,7 +112,7 @@ if [ -z "$osVariant" ]; then
     exit -1
 fi
 
-echo "- Detected: $osVariant $arch_name"
+echo "- Detected: $osVariant $arch"
 
 if [ -z "$(ldconfig -p | grep libpng)" -o -z "$(ldconfig -p | grep libgdiplus)" -o -z "$(ldconfig -p | grep libavcodec)" ]; then
     echo "- Missing dependencies found, installing..."

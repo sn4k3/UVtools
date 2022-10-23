@@ -15,11 +15,11 @@ fi
 
 testcmd() { command -v "$1" &> /dev/null; }
 
-arch_name="$(uname -m)"
+arch="$(uname -m)"
 osVariant=""
 
-if [ "$arch_name" != "x86_64" -a "$arch_name" != "arm64" ]; then
-    echo "Error: Unsupported host arch $arch_name"
+if [ "$arch" != "x86_64" -a "$arch" != "arm64" ]; then
+    echo "Error: Unsupported host arch $arch"
     exit -1
 fi
 
