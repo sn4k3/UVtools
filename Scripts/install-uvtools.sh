@@ -62,9 +62,9 @@ if [ "${OSTYPE:0:6}" == "darwin" ]; then
             echo '#!/bin/bash
 cd "$(dirname "$0")"'"
 if [ -f \"$appPath/Contents/MacOS/UVtools.sh\" ]; then
-    bash \"$appPath/Contents/MacOS/UVtools.sh\" &
+    bash \"$appPath/Contents/MacOS/UVtools.sh\"
 elif [ -f \"UVtools.app/Contents/MacOS/UVtools.sh\" ]; then
-    bash \"UVtools.app/Contents/MacOS/UVtools.sh\" &
+    bash \"UVtools.app/Contents/MacOS/UVtools.sh\"
 else
     echo 'Error: UVtools.app not found on known paths'
     exit -1
