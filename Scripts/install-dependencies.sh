@@ -32,10 +32,10 @@ if [ "${OSTYPE:0:6}" == "darwin" ]; then
     #brew install --cask dotnet
 elif testcmd apt-get; then
     osVariant="debian"
-    apt-get update
-    apt-get install -y libdc1394-22 libopenexr24
-    apt-get install -y libdc1394-25 libopenexr25
-    apt-get install -y libjpeg-dev libpng-dev libgeotiff-dev libgeotiff5 libavcodec-dev libavformat-dev libswscale-dev libtbb-dev libgl1-mesa-dev libgdiplus
+    apt update
+    apt install -y libdc1394-22 libopenexr24
+    apt install -y libdc1394-25 libopenexr25
+    apt install -y libjpeg-dev libpng-dev libgeotiff-dev libgeotiff5 libavcodec-dev libavformat-dev libswscale-dev libtbb-dev libgl1-mesa-dev libgdiplus
 elif testcmd pacman; then
     osVariant="arch"
     pacman -Syu
