@@ -907,7 +907,7 @@ public class GCodeBuilder : BindableBase
 
         var layerBlock = new GCodeLayer(slicerFile);
 
-        bool parseLayerIndexFromComments = false;
+        //bool parseLayerIndexFromComments = false;
 
         using var reader = new StringReader(gcode);
         string? line;
@@ -945,7 +945,7 @@ public class GCodeBuilder : BindableBase
                     }
                     layerBlock.SetLayer(true);
                     layerBlock.LayerIndex = layerIndex;
-                    parseLayerIndexFromComments = true;
+                    //parseLayerIndexFromComments = true;
                     continue;
                 }
             }

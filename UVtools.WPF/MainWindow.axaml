@@ -245,6 +245,11 @@
                                   IsVisible="{Binding IsDebug}"
                                   Command="{Binding MenuHelpDebugLongMessageBoxClicked}"
                                   i:MenuItem.Icon="fa-solid fa-message"/>
+
+                        <MenuItem Header="Trigger new update"
+                                  IsVisible="{Binding IsDebug}"
+                                  Command="{Binding MenuHelpDebugTriggerNewUpdateClicked}"
+                                  i:MenuItem.Icon="fa-solid fa-cloud-arrow-up"/>
 						
                     </MenuItem>
 

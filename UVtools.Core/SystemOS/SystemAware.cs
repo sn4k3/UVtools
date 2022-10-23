@@ -363,24 +363,14 @@ public static class SystemAware
     /// <summary>
     /// Gets if is running under Linux and under AppImage format
     /// </summary>
-    public static bool IsRunningLinuxAppImage(out string? path)
-    {
-        path = null;
-        if (!OperatingSystem.IsLinux()) return false;
-        path = Environment.GetEnvironmentVariable("APPIMAGE");
-        return !string.IsNullOrWhiteSpace(path);
-    }
-
-    /// <summary>
-    /// Gets if is running under Linux and under AppImage format
-    /// </summary>
     /// <returns></returns>
-    public static bool IsRunningLinuxAppImage() => IsRunningLinuxAppImage(out _);
+    public static bool IsRunningLinuxAppImage => Linux.IsRunningAppImage;
 
     /// <summary>
-    /// Gets if is running under MacOS and under app format
+    /// Gets if is running under MacOS and under *.app format
     /// </summary>
-    public static bool IsRunningMacOSApp => OperatingSystem.IsMacOS() && AppContext.BaseDirectory.EndsWith(Path.Combine(".app", "Contents", $"MacOS{Path.DirectorySeparatorChar}"));
+    public static bool IsRunningMacOSApp => macOS.IsRunningApp;
+
 
     /// <summary>
     /// Gets the main name of the operative system
