@@ -12,6 +12,8 @@ cd "$(dirname "$0")"
 cd ..
 [ ! -d "UVtools.Core" ] && echo "UVtools.Core not found!" && exit -1
 
+testcmd() { command -v "$1" &> /dev/null; }
+
 #runtime=$1
 for runtime in $@; do :; done # Get last argument
 rootDir="$(pwd)"
@@ -61,8 +63,7 @@ done
 #echo "Zip package: $zipPackage"
 
 # Checks
-if ! command -v dotnet &> /dev/null
-then
+if ! testcmd dotnet; then
     echo "Error: dotnet not installed, please install .NET SDK $netVersion.x, dotnet-sdk or dotnet-sdk-$netVersion"
     exit
 fi

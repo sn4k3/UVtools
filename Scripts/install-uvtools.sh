@@ -13,7 +13,8 @@ api_url="https://api.github.com/repos/sn4k3/UVtools/releases/latest"
 dependencies_url="https://raw.githubusercontent.com/sn4k3/UVtools/master/Scripts/install-dependencies.sh"
 macOS_least_version=10.15
 
-function version { echo "$@" | awk -F. '{ printf("%d%03d%03d%03d\n", $1,$2,$3,$4); }'; }
+version() { echo "$@" | awk -F. '{ printf("%d%03d%03d%03d\n", $1,$2,$3,$4); }'; }
+testcmd() { command -v "$1" &> /dev/null; }
 
 if [ "$arch_name" != "x86_64" -a "$arch_name" != "arm64" ]; then
     echo "Error: Unsupported host arch $arch_name"
@@ -36,7 +37,7 @@ if [ "${OSTYPE:0:6}" == "darwin" ]; then
         exit -1
     fi
 
-    if [ -z "$(command -v brew)" ]; then
+    if ! testcmd brew; then
         bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
         if [ -f "/opt/homebrew/bin/brew" -a -z "$(command -v brew)" ]; then
             echo '# Set PATH, MANPATH, etc., for Homebrew.' >> "$HOME/.zprofile"
@@ -80,16 +81,13 @@ fi
     fi
 
     exit 1
-elif command -v apt-get &> /dev/null
-then
+elif testcmd apt-get; then
     osVariant="linux"
     [ -z "$(command -v curl)" ] && sudo apt-get install -y curl
-elif command -v pacman &> /dev/null
-then
+elif testcmd pacman; then
     osVariant="arch"
     [ -z "$(command -v curl)" ] && sudo pacman -S curl
-elif command -v yum &> /dev/null
-then
+elif testcmd yum; then
     osVariant="rhel"
     [ -z "$(command -v curl)" ] && sudo yum install -y curl
 fi
