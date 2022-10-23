@@ -60,7 +60,7 @@ if [ "${OSTYPE:0:6}" == "darwin" ]; then
             run_script="$HOME/Desktop/run-uvtools"
 
             echo '#!/bin/bash
-cd "$(dirname "$0")
+cd "$(dirname "$0")"
 
 lookupPaths=(
     "/Applications/UVtools.app/Contents/MacOS/UVtools.sh"
@@ -72,9 +72,12 @@ lookupPaths=(
 for path in "${lookupPaths[@]}"
 do
 	if [ -f "$path" ]; then
+        echo "Found: $path"
+        echo "UVtools will now run."
+
         nohup bash "$path" &> /dev/null &
         disown
-        echo "UVtools will now run."
+        
         echo "You can close this terminal window."
         exit
     fi
