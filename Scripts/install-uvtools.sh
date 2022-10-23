@@ -60,7 +60,7 @@ if [ "${OSTYPE:0:6}" == "darwin" ]; then
             run_script="$HOME/Desktop/run-uvtools"
 
             echo "#!/bin/bash
-cd \"$(dirname \"$0\")\"
+cd \"$(dirname \"\$0\")\"
 if [ -f \"$appPath/Contents/MacOS/UVtools.sh\" ]; then
     bash \"$appPath/Contents/MacOS/UVtools.sh\" &
 elif [ -f \"UVtools.app/Contents/MacOS/UVtools.sh\" ]; then
