@@ -66,6 +66,7 @@ lookupPaths=(
     "/Applications/UVtools.app/Contents/MacOS/UVtools.sh"
     "UVtools.app/Contents/MacOS/UVtools.sh"
     "$HOME/Desktop/UVtools.app/Contents/MacOS/UVtools.sh"
+    "$HOME/Downloads/UVtools.app/Contents/MacOS/UVtools.sh"
     "$HOME/UVtools.app/Contents/MacOS/UVtools.sh"
 )
 
