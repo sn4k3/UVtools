@@ -57,20 +57,24 @@ if [ "${OSTYPE:0:6}" == "darwin" ]; then
 
         # arm64: Create script on user desktop to run UVtools
         if [ "$arch_name" == "arm64" ]; then
-            run_script="$HOME/Desktop/run-uvtools.sh"
+            run_script="$HOME/Desktop/run-uvtools"
 
             echo "#!/bin/bash
+cd \"$(dirname \"$0\")\"
 if [ -f \"$appPath/Contents/MacOS/UVtools.sh\" ]; then
     bash \"$appPath/Contents/MacOS/UVtools.sh\" &
 elif [ -f \"UVtools.app/Contents/MacOS/UVtools.sh\" ]; then
     bash \"UVtools.app/Contents/MacOS/UVtools.sh\" &
 else
-    echo \"Error: UVtools.app not found on known paths\"
+    echo Error: UVtools.app not found on known paths
+    exit -1
 fi
+
+echo \"You can now close this terminal window.\"
 " > "$run_script"
 
             chmod a+x "$run_script"
-            echo "Note: Always run \"bash run-uvtools.sh\" from desktop to run UVtools on your mac arm64!"
+            echo "Note: Always run \"bash run-uvtools\" from desktop to run UVtools on your mac arm64!"
         fi
 
         if [ -f "$appPath/Contents/MacOS/UVtools.sh" ]; then
