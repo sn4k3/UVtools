@@ -87,7 +87,7 @@ echo "Error: UVtools.app not found on known paths"
 ' > "$run_script"
 
             chmod a+x "$run_script"
-            echo "Note: Always run \"bash run-uvtools\" from desktop to run UVtools on your mac arm64!"
+            echo "Note: Always run \"bash run-uvtools\" from your Desktop to launch UVtools on this Mac (arm64)!"
         fi
 
         if [ -f "$appPath/Contents/MacOS/UVtools.sh" ]; then
