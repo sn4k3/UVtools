@@ -8,7 +8,7 @@
 
 cd "$(dirname "$0")"
 arch="$(uname -m)" # x86_64 or arm64
-osVariant=""            # osx, linux, arch, rhel
+osVariant=""       # osx, linux, arch, rhel
 api_url="https://api.github.com/repos/sn4k3/UVtools/releases/latest"
 dependencies_url="https://raw.githubusercontent.com/sn4k3/UVtools/master/Scripts/install-dependencies.sh"
 macOS_least_version=10.15
@@ -46,7 +46,7 @@ if [ "${OSTYPE:0:6}" == "darwin" ]; then
         fi
     fi
 
-    brew install --cask uvtools
+    brew install --cask --no-quarantine uvtools
 
     # Required dotnet-sdk to run arm64 and bypass codesign
     [ "$arch" == "arm64" -a -z "$(command -v dotnet)" ] && brew install --cask dotnet-sdk
@@ -60,6 +60,7 @@ if [ "${OSTYPE:0:6}" == "darwin" ]; then
             run_script="$HOME/Desktop/run-uvtools"
 
             echo '#!/bin/bash
+# Run this script to run UVtools on macOS arm64 machines
 cd "$(dirname "$0")"
 
 lookupPaths=(
