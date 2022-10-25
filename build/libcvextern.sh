@@ -12,7 +12,7 @@ cd "$(dirname "$0")"
 directory="emgucv"
 arch_name="$(uname -m)"
 osVariant=""
-$build_package="mini"   # mini, micro, full
+$build_package="mini"   # mini, core, full
 
 if [ "$arch_name" != "x86_64" -a "$arch_name" != "arm64" ]; then
     echo "Error: Unsupported host arch: $arch_name"
