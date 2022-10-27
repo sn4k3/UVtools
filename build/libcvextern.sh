@@ -12,7 +12,7 @@ cd "$(dirname "$0")"
 directory="emgucv"
 arch_name="$(uname -m)"
 osVariant=""
-$build_package="mini"   # mini, core, full
+build_package="mini"   # mini, core, full
 
 if [ "$arch_name" != "x86_64" -a "$arch_name" != "arm64" ]; then
     echo "Error: Unsupported host arch: $arch_name"
@@ -60,7 +60,7 @@ if [ "${OSTYPE:0:6}" == "darwin" ]; then
 elif command -v apt-get &> /dev/null
 then
     osVariant="debian"
-    if [ "$installDependencies" == true ]; then
+    if [ -z "$(ldconfig -p | grep libpng)" -o -z "$(ldconfig -p | grep libgdiplus)" -o -z "$(ldconfig -p | grep libavcodec)" -o -z "$(command -v git)" -o -z "$(command -v cmake)" -o "$installDependencies" == true ]; then
         sudo apt-get update
         sudo apt-get -y install git build-essential libgtk-3-dev libgstreamer1.0-dev libavcodec-dev libswscale-dev libavformat-dev libdc1394-dev libv4l-dev cmake-curses-gui ocl-icd-dev freeglut3-dev libgeotiff-dev libusb-1.0-0-dev
         sudo apt-get install -y apt-transport-https
@@ -70,14 +70,14 @@ then
 elif command -v pacman &> /dev/null
 then
     osVariant="arch"
-    if [ "$installDependencies" == true ]; then
+    if [ -z "$(ldconfig -p | grep libpng)" -o -z "$(ldconfig -p | grep libgdiplus)" -o -z "$(ldconfig -p | grep libavcodec)" -o -z "$(command -v git)" -o -z "$(command -v cmake)" -o "$installDependencies" == true ]; then
         sudo pacman -Syu
         sudo pacman -S git base-devel cmake msbuild gtk3 gstreamer ffmpeg libdc1394 v4l-utils ocl-icd freeglut libgeotiff libusb dotnet-sdk
     fi
 elif command -v yum &> /dev/null
 then
     osVariant="rhel"
-    if [ "$installDependencies" == true ]; then
+    if [ -z "$(ldconfig -p | grep libpng)" -o -z "$(ldconfig -p | grep libgdiplus)" -o -z "$(ldconfig -p | grep libavcodec)" -o -z "$(command -v git)" -o -z "$(command -v cmake)" -o "$installDependencies" == true ]; then
         sudo yum update -y
         sudo yum groupinstall -y "Development Tools" "Development Libraries"
         sudo yum install -y git cmake gcc-c++ gtk3-devel gstreamer1-devel ffmpeg ffmpeg-devel libdc1394 libv4l-devel cmake-gui ocl-icd-devel freeglut libgeotiff libusb dotnet-sdk-6.0
