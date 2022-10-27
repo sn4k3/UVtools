@@ -14,6 +14,8 @@ arch_name="$(uname -m)"
 osVariant=""
 build_package="mini"   # mini, core, full
 
+testcmd() { command -v "$1" &> /dev/null; }
+
 if [ "$arch_name" != "x86_64" -a "$arch_name" != "arm64" ]; then
     echo "Error: Unsupported host arch: $arch_name"
     exit -1
@@ -45,20 +47,17 @@ echo "- Detecting OS"
 [ "$installDependencies" == true ] && echo "- Installing all the dependencies"
 if [ "${OSTYPE:0:6}" == "darwin" ]; then
     osVariant="macOS"
-    if [ installDependencies == true ]; then
-        if [ -z "$(command -v brew)" ]; then
-            bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-            if [ -f "/opt/homebrew/bin/brew" -a -z "$(command -v brew)" ]; then
-                echo '# Set PATH, MANPATH, etc., for Homebrew.' >> "$HOME/.zprofile"
-                echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> "$HOME/.zprofile"
-                eval "$(/opt/homebrew/bin/brew shellenv)"
-            fi
+    if ! testcmd brew; then
+        bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+        if [ -f "/opt/homebrew/bin/brew" -a -z "$(command -v brew)" ]; then
+            echo '# Set PATH, MANPATH, etc., for Homebrew.' >> "$HOME/.zprofile"
+            echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> "$HOME/.zprofile"
+            eval "$(/opt/homebrew/bin/brew shellenv)"
         fi
-        [ -z "$(command -v git)" -o -z "$(command -v cmake)" ] && brew install git cmake
-        [ -z "$(command -v dotnet)" ] && brew install --cask dotnet-sdk
     fi
-elif command -v apt-get &> /dev/null
-then
+    [ -z "$(command -v git)" -o -z "$(command -v cmake)" ] && brew install git cmake
+    [ -z "$(command -v dotnet)" ] && brew install --cask dotnet-sdk
+elif testcmd apt-get; then
     osVariant="debian"
     if [ -z "$(ldconfig -p | grep libpng)" -o -z "$(ldconfig -p | grep libgdiplus)" -o -z "$(ldconfig -p | grep libavcodec)" -o -z "$(command -v git)" -o -z "$(command -v cmake)" -o "$installDependencies" == true ]; then
         sudo apt-get update
@@ -67,15 +66,13 @@ then
         sudo apt-get update
         sudo apt-get install -y dotnet-sdk-6.0
     fi
-elif command -v pacman &> /dev/null
-then
+elif testcmd pacman; then
     osVariant="arch"
     if [ -z "$(ldconfig -p | grep libpng)" -o -z "$(ldconfig -p | grep libgdiplus)" -o -z "$(ldconfig -p | grep libavcodec)" -o -z "$(command -v git)" -o -z "$(command -v cmake)" -o "$installDependencies" == true ]; then
         sudo pacman -Syu
         sudo pacman -S git base-devel cmake msbuild gtk3 gstreamer ffmpeg libdc1394 v4l-utils ocl-icd freeglut libgeotiff libusb dotnet-sdk
     fi
-elif command -v yum &> /dev/null
-then
+elif testcmd yum; then
     osVariant="rhel"
     if [ -z "$(ldconfig -p | grep libpng)" -o -z "$(ldconfig -p | grep libgdiplus)" -o -z "$(ldconfig -p | grep libavcodec)" -o -z "$(command -v git)" -o -z "$(command -v cmake)" -o "$installDependencies" == true ]; then
         sudo yum update -y
@@ -85,12 +82,12 @@ then
 fi
 
 echo "- Checks"
-if [ -z "$(command -v git)" ]; then
+if ! testcmd git; then
     echo "Error: git not installed. Please re-run this script with -i flag."
     exit -1
 fi
 
-if [ -z "$(command -v cmake)" ]; then
+if ! testcmd cmake; then
     echo "Error: cmake not installed. Please re-run this script with -i flag."
     exit -1
 fi

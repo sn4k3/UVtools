@@ -7,7 +7,7 @@
 ## Visual Studio with development tools and sdk
 
 # Script working directory
-Set-Location $PSScriptRoot
+#Set-Location $PSScriptRoot
 
 $libFolder = 'emgucv'
 $buildFile = "platforms\windows\Build_Binary_x86.bat"
