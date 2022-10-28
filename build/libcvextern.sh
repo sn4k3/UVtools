@@ -10,14 +10,14 @@
 #
 cd "$(dirname "$0")"
 directory="emgucv"
-arch_name="$(uname -m)"
+arch="$(uname -m)"
 osVariant=""
 build_package="mini"   # mini, core, full
 
 testcmd() { command -v "$1" &> /dev/null; }
 
-if [ "$arch_name" != "x86_64" -a "$arch_name" != "arm64" ]; then
-    echo "Error: Unsupported host arch: $arch_name"
+if [ "$arch" != "x86_64" -a "$arch" != "arm64" ]; then
+    echo "Error: Unsupported host arch: $arch"
     exit -1
 fi
 
@@ -41,7 +41,7 @@ while getopts 'i' flag; do
   esac
 done
 
-echo "Script to build libcvextern.so|dylib on $(uname -a) $arch_name"
+echo "Script to build libcvextern.so|dylib on $(uname -a) $arch"
 
 echo "- Detecting OS"
 [ "$installDependencies" == true ] && echo "- Installing all the dependencies"
@@ -116,11 +116,7 @@ cd "$directory"
 echo "- Bulding"
 if [ osVariant == "macOS" ]; then
     cd "platforms/macos"
-    if [ "${arch_name}" = "x86_64" ]; then
-        ./configure x86_64 $build_package
-    elif [ "${arch_name}" = "arm64" ]; then
-        ./configure arm64 $build_package
-    fi
+    ./configure $arch $build_package
 else
     cd "platforms/ubuntu/22.04"
     ./cmake_configure $build_package
