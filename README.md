@@ -275,7 +275,7 @@ The following commands are the old way and commands under the UI executable, the
 ### Installing the dependencies
 
 **Copy the following script, paste and run on a terminal:**  
-(Only required if you didn't use the auto installer)
+(Required if you didn't use the [auto installer](https://github.com/sn4k3/UVtools#to-auto-install-on-linux))
 
 ```bash
 [ "$(command -v apt-get)" -a -z "$(command -v curl)" ] && sudo apt-get install -y curl 
@@ -301,8 +301,9 @@ If you downloaded the **.AppImage** package variant you must set run permissions
 1. macOS 10.15 Catalina or higher
 1. 4GB RAM or higher
 3. **For Mac M1/M2 (ARM):**
-   1. Install via the automated script
-   2. To launch UVtools, always run the created `run-uvtools` file on your Desktop
+   1. Install via the [auto installer](https://github.com/sn4k3/UVtools#to-auto-install-on-macos-homebrew)
+   2. To launch the UVtools, always run the created `run-uvtools` file on your Desktop. 
+   (Do not open UVtools app directly as it will not work under the arm64 build)
 
 To run UVtools open it folder on a terminal and call one of:
 
