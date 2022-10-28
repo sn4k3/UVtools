@@ -55,7 +55,9 @@ if [ "${OSTYPE:0:6}" == "darwin" ]; then
             eval "$(/opt/homebrew/bin/brew shellenv)"
         fi
     fi
-    [ -z "$(command -v git)" -o -z "$(command -v cmake)" ] && brew install git cmake
+    [ -z "$(command -v git)" ] && brew install git
+    [ -z "$(command -v cmake)" ] && brew install cmake
+    [ -z "$(command -v mono)" ] && brew install mono
     [ -z "$(command -v dotnet)" ] && brew install --cask dotnet-sdk
 elif testcmd apt-get; then
     osVariant="debian"
@@ -96,6 +98,8 @@ if [ -z "$osVariant" ]; then
     echo "Error: Unable to detect your Operative System."
     exit -1
 fi
+
+[ -n "$lastArg" ] && directory="$directory-$lastArg"
 
 if [ ! -d "$directory" ]; then
     if [ -z "$lastArg" ]; then
