@@ -274,15 +274,16 @@ The following commands are the old way and commands under the UI executable, the
 
 ### Installing the dependencies
 
-**Copy the following script, paste and run on a terminal:**
+**Copy the following script, paste and run on a terminal:**  
+(Only required if you didn't use the auto installer)
 
 ```bash
 [ "$(command -v apt-get)" -a -z "$(command -v curl)" ] && sudo apt-get install -y curl 
 [ "$(command -v pacman)" -a -z "$(command -v curl)" ] && sudo pacman -S curl
 [ "$(command -v yum)" -a -z "$(command -v curl)" ] && sudo yum install -y curl
 sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/sn4k3/UVtools/master/Scripts/install-dependencies.sh)"
-sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/sn4k3/UVtools/master/Scripts/libdl-solver.sh)"
 ```
+<!-- sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/sn4k3/UVtools/master/Scripts/libdl-solver.sh)" !-->
 
 **To run UVtools open it folder on a terminal and call one of:**
 
@@ -299,34 +300,13 @@ If you downloaded the **.AppImage** package variant you must set run permissions
 
 1. macOS 10.15 Catalina or higher
 1. 4GB RAM or higher
-3. **For Mac M1 (ARM):**
-   1. Install homebrew if not already:
-      ```bash
-      /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
-      brew analytics off
-      ```
-   2. Downgrade ffmpeg:
-      ```bash
-      brew install cmake ffmpeg@4
-      brew link ffmpeg@4
-      ```
-    3. Reboot
-
-<!--- 
-* Donwload and install: https://dotnet.microsoft.com/download/dotnet/thank-you/sdk-6.0.101-macos-x64-installer
-brew install libjpeg libpng libgeotiff libdc1394 ffmpeg openexr tbb
-```bash
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
-brew analytics off
-brew cask install dotnet
-brew install --cask dotnet-sdk
-brew install git cmake libjpeg libpng libgeotiff libdc1394 ffmpeg openexr tbb mono mono-libgdiplus libusb
-```
--->
+3. **For Mac M1/M2 (ARM):**
+   1. Install via the automated script
+   2. To launch UVtools, always run the created `run-uvtools` file on your Desktop
 
 To run UVtools open it folder on a terminal and call one of:
 
-- Double-click UVtools file
+- Double-click `UVtools` file
 - `./UVtools.app/Contents/MacOS/UVtools`
 - `bash UVtools.app/Contents/MacOS/UVtools.sh`
 - As a practical alternative you can create a shortcut on Desktop
