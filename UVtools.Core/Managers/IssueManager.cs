@@ -192,6 +192,9 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
 
             var firstLayer = SlicerFile.FirstLayer;
 
+            int overhangsIterations = overhangConfig.ErodeIterations;
+            using var overhangsKernel = EmguExtensions.GetDynamicKernel(ref overhangsIterations, ElementShape.Cross);
+
             // Detect contours
             Parallel.For(0, SlicerFile.LayerCount, CoreSettings.ParallelOptions, layerIndexInt =>
             {
@@ -330,7 +333,8 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
 
 
                         // Overhangs
-                        var overhangCount = 0;
+                        //var overhangCount = 0;
+                        var overhangs = new List<MainIssue>();
                         //if (!islandConfig.Enabled && overhangConfig.Enabled ||
                         //    (islandConfig.Enabled && overhangConfig.Enabled && overhangConfig.IndependentFromIslands))
                         if (overhangConfig.Enabled)
@@ -354,8 +358,8 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
                                 CvInvoke.Subtract(image.RoiMat, previousImage.RoiMat, overhangImage);
                                 CvInvoke.Threshold(overhangImage, overhangImage, 127, 255, ThresholdType.Binary);
 
-                                CvInvoke.Erode(overhangImage, overhangImage, EmguExtensions.Kernel3x3Rectangle,
-                                    EmguExtensions.AnchorCenter, overhangConfig.ErodeIterations, BorderType.Default, default);
+                                CvInvoke.Erode(overhangImage, overhangImage, overhangsKernel,
+                                    EmguExtensions.AnchorCenter, overhangsIterations, BorderType.Default, default);
 
                                 //CvInvoke.MorphologyEx(subtractedImage, subtractedImage, MorphOp.Open, EmguExtensions.Kernel3x3Rectangle,
                                 //    EmguExtensions.AnchorCenter, 2, BorderType.Reflect101, default);
@@ -366,12 +370,13 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
                                 foreach (var contourGroup in contoursInGroups)
                                 {
                                     if (contourGroup[0].Size < 3) continue; // Single contour, single line, ignore
-                                    overhangCount++;
                                     var area = EmguContours.GetContourArea(contourGroup);
                                     if (area >= overhangConfig.RequiredPixelsToConsider)
                                     {
                                         var rect = CvInvoke.BoundingRectangle(contourGroup[0]);
-                                        AddIssue(new MainIssue(MainIssue.IssueType.Overhang, new IssueOfContours(layer, contourGroup.ToArrayOfArray(), rect, area)));
+                                        var overhangIssue = new MainIssue(MainIssue.IssueType.Overhang, new IssueOfContours(layer, contourGroup.ToArrayOfArray(), rect, area));
+                                        overhangs.Add(overhangIssue);
+                                        AddIssue(overhangIssue);
                                     }
                                 }
                             }
@@ -481,16 +486,20 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
                                             pixelsSupportingIsland >= Math.Max(1, points.Count / 2))
                                             isIsland = false; // Not a island, but maybe weak bounding...*/
 
-                                    IssueOfPoints? island = null;
-                                    if (pixelsSupportingIsland < requiredSupportingPixels)
-                                    {
-                                        island = new IssueOfPoints(layer, points.ToArray(), new Rectangle(rect.Location.OffsetBy(image.RoiLocation), rect.Size));
-                                    }
+                                    if (pixelsSupportingIsland >= requiredSupportingPixels) continue;
+
+                                    var islandBoundingRectangle = rect.OffsetBy(image.RoiLocation);
 
                                     // Check for overhangs in islands
-                                    if (island is not null && islandConfig.EnhancedDetection && pixelsSupportingIsland >= 10 &&
-                                        (!overhangConfig.Enabled || (overhangConfig.Enabled && overhangCount > 0)))
+                                    if (islandConfig.EnhancedDetection && pixelsSupportingIsland >= 10 && pixelsSupportingIsland >= requiredSupportingPixels / 4)
+                                        // && (!overhangConfig.Enabled || (overhangConfig.Enabled && overhangCount > 0))
                                     {
+                                        if (overhangConfig.Enabled &&  // No overhangs nor intersecting = discard island
+                                            overhangs.TrueForAll(overhang => !overhang.BoundingRectangle.IntersectsWith(islandBoundingRectangle)))
+                                        {
+                                            continue;
+                                        }
+
                                         using var islandRoi = image.RoiMat.Roi(rect);
                                         using var previousIslandRoi = previousImage.RoiMat.Roi(rect);
 
@@ -501,8 +510,8 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
                                             CvInvoke.Subtract(islandRoi, previousIslandRoi, islandOverhangMat);
                                             CvInvoke.Threshold(islandOverhangMat, islandOverhangMat, 127, 255, ThresholdType.Binary);
 
-                                            CvInvoke.Erode(islandOverhangMat, islandOverhangMat, EmguExtensions.Kernel3x3Rectangle,
-                                                EmguExtensions.AnchorCenter, overhangConfig.ErodeIterations, BorderType.Default, default);
+                                            CvInvoke.Erode(islandOverhangMat, islandOverhangMat, overhangsKernel,
+                                                EmguExtensions.AnchorCenter, overhangsIterations, BorderType.Default, default);
                                         }
 
                                         using var subtractedImage = islandOverhangMat.Roi(rect);
@@ -517,22 +526,20 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
                                         {
                                             int labelX = rect.X + x;
                                             int labelY = rect.Y + y;
-                                            if (labelSpan[labelY, labelX] != i || subtractedSpan.DangerousGetReferenceAt(y, x) == 0)
-                                                continue;
+                                            if (labelSpan[labelY, labelX] != i || subtractedSpan.DangerousGetReferenceAt(y, x) == 0) continue;
 
                                             overhangPixels++;
                                         }
 
-                                        if(!ReferenceEquals(overhangImage, islandOverhangMat)) islandOverhangMat.Dispose();
+                                        if (!ReferenceEquals(overhangImage, islandOverhangMat)) islandOverhangMat.Dispose();
 
                                         if (overhangPixels < overhangConfig.RequiredPixelsToConsider) // No overhang = no island
                                         {
-                                            island = null;
+                                            continue;
                                         }
-
                                     }
-
-                                    if (island is not null) AddIssue(new MainIssue(MainIssue.IssueType.Island, island));
+                                    
+                                    AddIssue(new MainIssue(MainIssue.IssueType.Island, new IssueOfPoints(layer, points, islandBoundingRectangle)));
                                 }
                             }
                         }

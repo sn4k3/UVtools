@@ -145,7 +145,7 @@ public class OperationPCBExposure : Operation
     public decimal ExposureTime
     {
         get => _exposureTime;
-        set => RaiseAndSetIfChanged(ref _exposureTime, Math.Round(value, 2));
+        set => RaiseAndSetIfChanged(ref _exposureTime, Math.Round(Math.Max(0, value), 2));
     }
 
     public GerberMidpointRounding SizeMidpointRounding
@@ -291,10 +291,16 @@ public class OperationPCBExposure : Operation
         SlicerFile.SuppressRebuildPropertiesWork(() =>
         {
             SlicerFile.LayerHeight = (float) _layerHeight;
+            SlicerFile.TransitionLayerCount = 0;
             SlicerFile.BottomLayerCount = 1;
             SlicerFile.BottomExposureTime = (float) _exposureTime;
             SlicerFile.ExposureTime = (float)_exposureTime;
+            SlicerFile.BottomLiftHeightTotal = 0;
             SlicerFile.LiftHeightTotal = 0;
+            /*SlicerFile.BottomLiftSpeed = 300;
+            SlicerFile.BottomLiftSpeed2 = 300;
+            SlicerFile.LiftSpeed = 300;
+            SlicerFile.LiftSpeed2 = 300;*/
             SlicerFile.SetNoDelays();
 
             SlicerFile.Layers = layers.ToArray();

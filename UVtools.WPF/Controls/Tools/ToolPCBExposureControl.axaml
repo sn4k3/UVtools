@@ -89,8 +89,8 @@
 				<NumericUpDown Grid.Row="4" Grid.Column="2"
 							   Classes="ValueLabel ValueLabel_s"
 							   Increment="0.5"
-							   Minimum="0.1"
-							   Maximum="200"
+							   Minimum="0.5"
+							   Maximum="1000"
 							   FormatString="F2"
 							   Value="{Binding Operation.ExposureTime}"/>
 

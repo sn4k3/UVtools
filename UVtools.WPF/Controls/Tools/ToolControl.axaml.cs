@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using UVtools.Core.Objects;
 using UVtools.Core.Operations;
@@ -54,6 +55,7 @@ public class ToolControl : UserControlEx
 
     public bool ValidateSpawn()
     {
+        if (Design.IsDesignMode) return true;
         if(_baseOperation is null)
         {
             App.MainWindow.MessageBoxInfo("The operation does not contain a valid configuration.\n" +

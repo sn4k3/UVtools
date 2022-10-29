@@ -2918,6 +2918,28 @@
             Gets the estimate print time in hours and minutes formatted
             </summary>
         </member>
+        <member name="P:UVtools.Core.FileFormats.FileFormat.DisplayTotalOnTime">
+            <summary>
+            Gets the total time in seconds the display will remain on exposing the layers during the print
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.FileFormat.DisplayTotalOnTimeString">
+            <summary>
+            Gets the total time formatted in hours, minutes and seconds the display will remain on exposing the layers during the print
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.FileFormat.DisplayTotalOffTime">
+            <summary>
+            Gets the total time in seconds the display will remain off during the print.
+            This is the difference between <see cref="P:UVtools.Core.FileFormats.FileFormat.PrintTime"/> and <see cref="P:UVtools.Core.FileFormats.FileFormat.DisplayTotalOnTime"/>
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.FileFormat.DisplayTotalOffTimeString">
+            <summary>
+            Gets the total time formatted in hours, minutes and seconds the display will remain off during the print.
+            This is the difference between <see cref="P:UVtools.Core.FileFormats.FileFormat.PrintTime"/> and <see cref="P:UVtools.Core.FileFormats.FileFormat.DisplayTotalOnTime"/>
+            </summary>
+        </member>
         <member name="P:UVtools.Core.FileFormats.FileFormat.StartingMaterialMilliliters">
             <summary>
             Gets the starting material milliliters when the file was loaded
@@ -3184,6 +3206,12 @@
             Gets the transition step time from <see cref="P:UVtools.Core.FileFormats.FileFormat.BottomExposureTime"/> and <see cref="P:UVtools.Core.FileFormats.FileFormat.ExposureTime"/>, value is returned as positive from normal perspective and logic (Longer - shorter)
             </summary>
             <param name="transitionLayerCount">Number of transition layers</param>
+            <returns>Seconds</returns>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.FileFormat.GetTransitionStepTime">
+            <summary>
+            Gets the transition step time from <see cref="P:UVtools.Core.FileFormats.FileFormat.BottomExposureTime"/> and <see cref="P:UVtools.Core.FileFormats.FileFormat.ExposureTime"/>, value is returned as positive from normal perspective and logic (Longer - shorter)
+            </summary>
             <returns>Seconds</returns>
         </member>
         <member name="M:UVtools.Core.FileFormats.FileFormat.GetTransitionLayerCount(System.Single,System.Single,System.Single,System.MidpointRounding)">
@@ -6777,12 +6805,58 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="M:UVtools.Core.SystemOS.SystemAware.IsRunningLinuxAppImage(System.String@)">
+        <member name="T:UVtools.Core.SystemOS.Linux">
+            <summary>
+            Linux specific methods
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.SystemOS.Linux.IsRunningAppImage">
             <summary>
             Gets if is running under Linux and under AppImage format
             </summary>
         </member>
-        <member name="M:UVtools.Core.SystemOS.SystemAware.IsRunningLinuxAppImage">
+        <member name="M:UVtools.Core.SystemOS.Linux.IsRunningAppImageGetPath(System.String@)">
+            <summary>
+            Gets if is running under Linux and under AppImage format and return the full root path for the running AppImage
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.SystemOS.Linux.RunningAppImageRootPath">
+            <summary>
+            <para>Gets the full root path for the running AppImage. Returns null is not Linux and null/empty if not an AppImage</para>
+            <para>The return path is the source file location and not the execution path location.</para>
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.SystemOS.Linux.RunningAppName">
+            <summary>
+            Gets the name of the running *.app. Returns null or empty if not running an macOS .app. Returns null or empty if not an AppImage
+            </summary>
+        </member>
+        <member name="T:UVtools.Core.SystemOS.macOS">
+            <summary>
+            MacOS specific methods
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.SystemOS.macOS.IsRunningApp">
+            <summary>
+            Gets if is running under MacOS and under .app format
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.SystemOS.macOS.IsRunningAppGetPath(System.String@)">
+            <summary>
+            Gets if is running under macOS and under .app format and return the full root path for the running .app
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.SystemOS.macOS.RunningAppRootPath">
+            <summary>
+            Gets the full root path for the running .app. Returns null or empty if not running an macOS .app
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.SystemOS.macOS.RunningAppName">
+            <summary>
+            Gets the name of the running .app. Returns null or empty if not running an macOS .app
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.SystemOS.SystemAware.IsRunningLinuxAppImage">
             <summary>
             Gets if is running under Linux and under AppImage format
             </summary>
@@ -6790,7 +6864,7 @@
         </member>
         <member name="P:UVtools.Core.SystemOS.SystemAware.IsRunningMacOSApp">
             <summary>
-            Gets if is running under MacOS and under app format
+            Gets if is running under MacOS and under *.app format
             </summary>
         </member>
         <member name="P:UVtools.Core.SystemOS.SystemAware.OperatingSystemName">

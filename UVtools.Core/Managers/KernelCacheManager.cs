@@ -9,6 +9,7 @@
 using Emgu.CV;
 using System;
 using System.Collections.Concurrent;
+using Emgu.CV.CvEnum;
 using UVtools.Core.Extensions;
 
 namespace UVtools.Core.Managers;
@@ -18,6 +19,8 @@ public class KernelCacheManager : IDisposable
     private readonly ConcurrentDictionary<int, Mat> _kernelCache = new();
 
     public bool UseDynamicKernel { get; set; }
+
+    public ElementShape DynamicKernelShape { get; set; } = ElementShape.Ellipse;
 
     private readonly Mat _defaultKernel;
 
@@ -30,7 +33,7 @@ public class KernelCacheManager : IDisposable
     public Mat Get(ref int iterations)
     {
         if (!UseDynamicKernel) return _defaultKernel;
-        var mat = _kernelCache.GetOrAdd(iterations, i => EmguExtensions.GetDynamicKernel(ref i));
+        var mat = _kernelCache.GetOrAdd(iterations, i => EmguExtensions.GetDynamicKernel(ref i, DynamicKernelShape));
         iterations = 1;
         return mat;
     }

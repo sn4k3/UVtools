@@ -1,11 +1,25 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.Globalization;
+using System.IO;
+using System.Numerics;
 using System.Threading.Tasks;
 using Avalonia;
+using AvaloniaEdit.Utils;
+using Emgu.CV;
+using Emgu.CV.CvEnum;
+using Emgu.CV.Features2D;
+using Emgu.CV.Fuzzy;
+using Emgu.CV.PpfMatch3d;
+using Emgu.CV.XFeatures2D;
 using Projektanker.Icons.Avalonia;
 using Projektanker.Icons.Avalonia.FontAwesome;
 using Projektanker.Icons.Avalonia.MaterialDesign;
+using UVtools.Core.EmguCV;
+using UVtools.Core.Extensions;
+using UVtools.Core.MeshFormats;
 using UVtools.Core.SystemOS;
 
 namespace UVtools.WPF;
@@ -39,10 +53,61 @@ public static class Program
             return;
         }
 
-        if (Args.Length > 2 && Args[0] == "--crash-report")
+        if (Args.Length > 2)
         {
-            IsCrashReport = true;
+            switch (Args[0])
+            {
+                case "--crash-report":
+                    IsCrashReport = true;
+                    break;
+                case "--debug":
+                    App.IsDebug = true;
+                    break;
+            }
         }
+
+        /*using var mat = CvInvoke.Imread(@"D:\layer0.png", ImreadModes.Grayscale);
+        var contours = mat.FindContours(out var hierarchy, RetrType.Tree, ChainApproxMethod.ChainApproxTc89Kcos);
+
+
+        using var mesh = new STLMeshFile(@"D:\test.stl", FileMode.Create);
+        mesh.BeginWrite();
+
+        var groups = EmguContours.GetPositiveContoursInGroups(contours, hierarchy);
+
+        foreach (var group in groups)
+        {
+            var z = 0;
+            for (int i = 0; i < group.Size; i++)
+            {
+                var list = new List<PointF>();
+                
+                for (int x = 0; x < contours[i].Size; x++)
+                {
+                    list.Add(contours[i][x]);
+                }
+
+                using var sub = new Subdiv2D(list.ToArray());
+                var triangles = sub.GetDelaunayTriangles();
+
+                foreach (var triangle2Df in triangles)
+                {
+                    mesh.WriteTriangle(
+                        new Vector3(triangle2Df.V0.X, triangle2Df.V0.Y, z),
+                        new Vector3(triangle2Df.V1.X, triangle2Df.V1.Y, z),
+                        new Vector3(triangle2Df.V2.X, triangle2Df.V2.Y, z),
+                        new Vector3(triangle2Df.Centeroid.X, triangle2Df.Centeroid.Y, z)
+                    );
+                }
+
+                z++;
+            }
+
+            break;
+        }
+        
+        mesh.EndWrite();
+        return;*/
 
         /*Slicer slicer = new(Size.Empty, SizeF.Empty, "D:\\Cube100x100x100.stl");
         var slices = slicer.SliceModel(0.05f);

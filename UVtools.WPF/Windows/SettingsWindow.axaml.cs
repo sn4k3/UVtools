@@ -34,24 +34,7 @@ public class SettingsWindow : WindowEx
     public int SelectedTabIndex
     {
         get => _selectedTabIndex;
-        set
-        {
-            if(!RaiseAndSetIfChanged(ref _selectedTabIndex, value)) return;
-
-            /*var scrollViewer = this.FindControl<ScrollViewer>($"ScrollViewer{_selectedTabIndex}");
-            SizeToContent = SizeToContent.Manual;
-            Height = MaxHeight;
-
-            Dispatcher.UIThread.Post(() =>
-            {
-                if (Math.Max((int)scrollViewer.Extent.Height - (int)scrollViewer.Viewport.Height, 0) == 0)
-                {
-                    Height = 10;
-                    SizeToContent = SizeToContent.Height;
-                }
-            }, DispatcherPriority.Loaded);
-            */
-        }
+        set => RaiseAndSetIfChanged(ref _selectedTabIndex, value);
     }
 
     public double ScrollViewerMaxHeight
@@ -92,29 +75,6 @@ public class SettingsWindow : WindowEx
     {
         AvaloniaXamlLoader.Load(this);
     }
-
-    /*protected override void OnInitialized()
-    {
-        base.OnInitialized();
-        Position = new PixelPoint(
-            Math.Max(0, (int)(Math.Max(0, App.MainWindow.Position.X) + App.MainWindow.Width / 2 - Width / 2)),
-            Math.Max(0, App.MainWindow.Position.Y) + 20
-        );
-    }*/
-
-    /*protected override void OnOpened(EventArgs e)
-    {
-        base.OnOpened(e);
-        //SizeToContent = SizeToContent.Manual;
-            
-        Position = new PixelPoint(
-            Math.Max(0, (int)(Math.Max(0, App.MainWindow.Position.X) + App.MainWindow.Width / 2 - Width / 2)),
-            Math.Max(0, App.MainWindow.Position.Y) + 20
-        );
-
-        //SelectedTabIndex = 1;
-        //Dispatcher.UIThread.Post(() => SelectedTabIndex = 0, DispatcherPriority.Loaded);
-    }*/
 
     protected override void OnClosed(EventArgs e)
     {
@@ -163,7 +123,7 @@ public class SettingsWindow : WindowEx
         foreach (var propertyInfo in Settings.General.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
         {
             if (propertyInfo.Name != field) continue;
-            OpenFolderDialog dialog = new();
+            var dialog = new OpenFolderDialog();
             var filename = await dialog.ShowAsync(this);
             if (string.IsNullOrEmpty(filename)) return;
             propertyInfo.SetValue(Settings.General, filename);

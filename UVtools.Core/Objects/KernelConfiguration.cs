@@ -32,6 +32,8 @@ public sealed class KernelConfiguration : BindableBase, IDisposable
     private int _anchorY = -1;
     private Mat? _kernelMat;
     private readonly object _mutex = new();
+    private ElementShape _dynamicKernelShape = ElementShape.Ellipse;
+
     #endregion
 
     #region Properties
@@ -42,6 +44,16 @@ public sealed class KernelConfiguration : BindableBase, IDisposable
         {
             if(!RaiseAndSetIfChanged(ref _useDynamicKernel, value)) return;
             _kernelCache.UseDynamicKernel = value;
+        }
+    }
+
+    public ElementShape DynamicKernelShape
+    {
+        get => _dynamicKernelShape;
+        set
+        {
+            if (!RaiseAndSetIfChanged(ref _dynamicKernelShape, value)) return;
+            _kernelCache.DynamicKernelShape = value;
         }
     }
 
@@ -227,7 +239,7 @@ public sealed class KernelConfiguration : BindableBase, IDisposable
 
     public Mat? GetKernel(ref int iterations)
     {
-        if (!UseDynamicKernel) return KernelMat;
+        if (!_useDynamicKernel) return KernelMat;
         return _kernelCache.Get(ref iterations);
     }
 

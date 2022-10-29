@@ -43,6 +43,8 @@ public class KernelControl : UserControlEx
         }
 
         Kernel.GenerateKernelText();
+        Kernel.KernelMat?.Dispose();
+        Kernel.KernelMat = null;
     }
 
     /*public Kernel GetKernel()

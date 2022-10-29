@@ -1,13 +1,29 @@
 - **File formats:**
-  - (Add) AnyCubic PM3R (#587)
-  - (Add) AnyCubic PMX2
-  - (Fix) LGS: `LightOffDelay` is `WaitTimeBeforeCure` in this format
-- **PrusaSlicer printer:**
-  - (Add) AnyCubic Photon M3 Premium
-  - (Add) AnyCubic Photon Mono X2
-- (Fix) Scripting: Unable to use sub-classes (#583)
-- (Fix) Loading an image as file cause application to crash
-- (Fix) "File - Send to" doesn't ignore case on file extension names resulting in ignore files in a uppercase even if extension is correct
-- (Fix) Do not show layer material milliliters when value is 0 or the percentage is NaN
-- (Fix) Auto-upgrade on Linux with AppImage integrated on system causes the file name to grow with hash strings
+  - (Add) Property: DisplayTotalOnTime
+  - (Add) Property: DisplayTotalOffTime
+  - (Add) SL1File Property: high_viscosity_tilt_time
+- **Tools**
+  - **I printed this file**
+    - (Add) Display on time for the print information
+    - (Improvement) Labels on numeric box
+    - (Improvement) Show print time label formatted as hh:mm:ss
+  - **PCB Exposure:**
+    - (Improvement) Increase "Exposure time" maximum from 200s to 1000s (#592)
+    - (Fix) Set `BottomLightHeight` to 0
+    - (Fix) Set `TransitionLayerCount` to 0
+- **Issues:**
+  - (Improvement) Overhang detection by using a dynamic cross kernel
+  - (Improvement) Bring back the discard logic of "false-positive" islands based on overhang detection but improve the threshold of the detection to be safer (#591, #591)
+- **PrusaSlicer:**
+  - (Change) Elegoo Mars 2 to use file version 4
+  - (Change) Elegoo Mars 2 Pro to use file version 4
+- (Add) Status bar: On and Off time (hh:mm:ss) as tooltip in the Print time label
+- (Improvement) When any of libcvextern dependencies are missing, it try to show the missing libraries in the error message (Linux only)
+- (Improvement) Auto-upgrade procedure for non-Windows systems
+- (Improvement) macOS arm64 (M1/M2) can now run natively if installed via the auto installer script
+- (Fix) Error on Mat cache manager when file have only one layer
+- (Fix) Suggestion "Transition layer count" shows as never applied when using with file formats that use in-firmware transition layers
+- (Upgrade) openCV from 4.5.4 to 4.6.0
+  - Custom library is now built to strip unused dependencies and reduce library size
+- (Remove) arch and rhel packages in favor of a generic linux
 

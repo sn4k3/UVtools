@@ -8,6 +8,7 @@
 
 using System;
 using System.Text;
+using UVtools.Core.FileFormats;
 using UVtools.Core.Operations;
 
 namespace UVtools.Core.Suggestions;
@@ -47,7 +48,9 @@ public sealed class SuggestionTransitionLayerCount : Suggestion
                 || SlicerFile.BottomLayerCount + _minimumTransitionLayerCount > SlicerFile.LayerCount 
                 || SlicerFile.MaximumPossibleTransitionLayerCount < _minimumTransitionLayerCount) return true;
 
-            var actualTransitionLayerCount = SlicerFile.ParseTransitionLayerCountFromLayers();
+            var actualTransitionLayerCount = SlicerFile.TransitionLayerType == FileFormat.TransitionLayerTypes.Firmware 
+                ? SlicerFile.TransitionLayerCount 
+                : SlicerFile.ParseTransitionLayerCountFromLayers();
             var suggestedTransitionLayerCount = TransitionLayerCount;
 
             if (actualTransitionLayerCount == suggestedTransitionLayerCount) return true;
@@ -72,8 +75,12 @@ public sealed class SuggestionTransitionLayerCount : Suggestion
     {
         get
         {
-            var actualTransitionDecrementTime = SlicerFile.ParseTransitionStepTimeFromLayers();
-            var actualTransitionLayerCount = SlicerFile.ParseTransitionLayerCountFromLayers();
+            var actualTransitionDecrementTime = SlicerFile.TransitionLayerType == FileFormat.TransitionLayerTypes.Firmware
+                ? SlicerFile.GetTransitionStepTime()
+                : SlicerFile.ParseTransitionStepTimeFromLayers();
+            var actualTransitionLayerCount = SlicerFile.TransitionLayerType == FileFormat.TransitionLayerTypes.Firmware
+                ? SlicerFile.TransitionLayerCount
+                : SlicerFile.ParseTransitionLayerCountFromLayers();
 
             var suggestedTransitionLayerCount = TransitionLayerCount;
             var suggestedTransitionDecrementTime = SlicerFile.GetTransitionStepTime(suggestedTransitionLayerCount);
@@ -93,8 +100,12 @@ public sealed class SuggestionTransitionLayerCount : Suggestion
     {
         get
         {
-            var actualTransitionDecrementTime = SlicerFile.ParseTransitionStepTimeFromLayers();
-            var actualTransitionLayerCount = SlicerFile.ParseTransitionLayerCountFromLayers();
+            var actualTransitionDecrementTime = SlicerFile.TransitionLayerType == FileFormat.TransitionLayerTypes.Firmware
+                ? SlicerFile.GetTransitionStepTime()
+                : SlicerFile.ParseTransitionStepTimeFromLayers();
+            var actualTransitionLayerCount = SlicerFile.TransitionLayerType == FileFormat.TransitionLayerTypes.Firmware
+                ? SlicerFile.TransitionLayerCount
+                : SlicerFile.ParseTransitionLayerCountFromLayers();
 
             var suggestedTransitionLayerCount = TransitionLayerCount;
             var suggestedTransitionDecrementTime = SlicerFile.GetTransitionStepTime(suggestedTransitionLayerCount);

@@ -6,7 +6,7 @@
 # usage 1: ./install-uvtools.sh
 #
 
-cd "$(dirname "$0")"
+#cd "$(dirname "$0")"
 arch="$(uname -m)" # x86_64 or arm64
 osVariant=""       # osx, linux, arch, rhel
 api_url="https://api.github.com/repos/sn4k3/UVtools/releases/latest"
@@ -107,9 +107,9 @@ elif testcmd apt-get; then
 elif testcmd pacman; then
     osVariant="arch"
     [ -z "$(command -v curl)" ] && sudo pacman -S curl
-elif testcmd yum; then
+elif testcmd dnf; then
     osVariant="rhel"
-    [ -z "$(command -v curl)" ] && sudo yum install -y curl
+    [ -z "$(command -v curl)" ] && sudo dnf install -y curl
 fi
 
 if [ -z "$osVariant" ]; then
@@ -119,17 +119,27 @@ fi
 
 echo "- Detected: $osVariant $arch"
 
-if [ -z "$(ldconfig -p | grep libpng)" -o -z "$(ldconfig -p | grep libgdiplus)" -o -z "$(ldconfig -p | grep libavcodec)" ]; then
+if [ -z "$(ldconfig -p | grep libpng)" -o -z "$(ldconfig -p | grep libgdiplus)" -o -z "$(ldconfig -p | grep libgeotiff)" -o -z "$(ldconfig -p | grep libavcodec)" ]; then
     echo "- Missing dependencies found, installing..."
     sudo bash -c "$(curl -fsSL $dependencies_url)"
 fi
 
 echo "- Detecting download"
-download_url="$(curl -s "$api_url" \
+response="$(curl -s "$api_url")"
+
+download_url="$(echo "$response" \
 | grep "browser_download_url.*_${osVariant}-x64_.*\.AppImage" \
 | head -1 \
 | cut -d : -f 2,3 \
 | tr -d \")"
+
+if [ -z "$download_url" ]; then
+    download_url="$(echo "$response" \
+    | grep "browser_download_url.*_linux-x64_.*\.AppImage" \
+    | head -1 \
+    | cut -d : -f 2,3 \
+    | tr -d \")"
+fi
 
 if [ -z "$download_url" ]; then
     echo "Error: Unable to detect the download url."

@@ -36,16 +36,17 @@ elif testcmd apt-get; then
     apt install -y libdc1394-22 libopenexr24
     apt install -y libdc1394-25 libopenexr25
     apt install -y libjpeg-dev libpng-dev libgeotiff-dev libgeotiff5 libavcodec-dev libavformat-dev libswscale-dev libtbb-dev libgl1-mesa-dev libgdiplus
+    # mini only requires: libgdiplus libgeotiff-dev libgeotiff5 
 elif testcmd pacman; then
     osVariant="arch"
     pacman -Syu
     pacman -S openjpeg2 libjpeg-turbo libpng libgeotiff libdc1394 ffmpeg openexr tbb libgdiplus
-elif testcmd yum; then
+elif testcmd dnf; then
     osVariant="rhel"
-    yum update -y
-    yum install -y https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm
-    yum install -y https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm
-    yum install -y libjpeg-devel libjpeg-turbo-devel libpng-devel libgeotiff-devel libdc1394-devel ffmpeg-devel tbb-devel mesa-libGL libgdiplus
+    dnf update -y
+    dnf install -y https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm
+    dnf install -y https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm
+    dnf install -y libjpeg-devel libjpeg-turbo-devel libpng-devel libgeotiff-devel libdc1394-devel ffmpeg-devel tbb-devel mesa-libGL libgdiplus
 else
     echo "Error: Base operative system / package manager not identified, nothing was installed"
     exit -1

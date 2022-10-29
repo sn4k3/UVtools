@@ -248,8 +248,8 @@
             <Component Id="cmp5DC61834042D8A563B1B0F5CEE7AD1E7" Guid="*">
                 <File Id="filE07135178784FB8052BC2470B2BD2D1F" KeyPath="yes" Source="$(var.HarvestPath)\dbgshim.dll" />
             </Component>
-            <Component Id="cmpC763941A913C63F827F04D11058122FC" Guid="*">
-                <File Id="filB3B65AD5E7248569F652EB145A8579FC" KeyPath="yes" Source="$(var.HarvestPath)\Emgu.CV.Platform.NetStandard.dll" />
+            <Component Id="cmpD7536BFE5500F2890F659513D58FD881" Guid="*">
+                <File Id="fil56ACC74C520CF1BA4B54D2742B6972EA" KeyPath="yes" Source="$(var.HarvestPath)\Emgu.CV.dll" />
             </Component>
             <Component Id="cmp6E52FEFA6BB26E501487BBBFD5B22D83" Guid="*">
                 <File Id="filFEE5BE8A9EEAD45AE17C3B9228038FFA" KeyPath="yes" Source="$(var.HarvestPath)\HarfBuzzSharp.dll" />
@@ -356,8 +356,8 @@
             <Component Id="cmp2D22C362F8F0B3B68D8A335DB9874738" Guid="*">
                 <File Id="fil0C7258C62EED04D203F333E1383578C2" KeyPath="yes" Source="$(var.HarvestPath)\netstandard.dll" />
             </Component>
-            <Component Id="cmpD470EC94920E4A507AC97F4BB50F2380" Guid="*">
-                <File Id="fil63069E93D1AD9C2E138BA97BE1D5FC98" KeyPath="yes" Source="$(var.HarvestPath)\opencv_videoio_ffmpeg454_64.dll" />
+            <Component Id="cmp282A79C0A1CF80C04EDFE5C412296BA4" Guid="*">
+                <File Id="filA45E005DC7508CDD7247BB207F8C119E" KeyPath="yes" Source="$(var.HarvestPath)\opencv_videoio_ffmpeg460_64.dll" />
             </Component>
             <Component Id="cmpE68AF86D33D7316B208FDCC12EFB0374" Guid="*">
                 <File Id="filCFBE49D937B4044AB861FDC26B3C3765" KeyPath="yes" Source="$(var.HarvestPath)\Projektanker.Icons.Avalonia.dll" />
@@ -895,9 +895,6 @@
             </Component>
             <Component Id="cmp4A9972573F3D42E417332BD1AB8B12DF" Guid="*">
                 <File Id="filF806B75BC5149D8FF4F974944A53D069" KeyPath="yes" Source="$(var.HarvestPath)\UVtools.runtimeconfig.json" />
-            </Component>
-            <Component Id="cmp10FE7896CFCD38A6CD8142CE0A08210B" Guid="*">
-                <File Id="filE27A63E22148F18A6C0CC29BC2B31930" KeyPath="yes" Source="$(var.HarvestPath)\UVtools.sh" />
             </Component>
             <Component Id="cmpA5EF28FE13D2F5A6BF7F313B516C07FF" Guid="*">
                 <File Id="fil93951F99F1262E05D49777984D888E67" KeyPath="yes" Source="$(var.HarvestPath)\UVtoolsCmd.deps.json" />
@@ -1669,7 +1666,7 @@
             <ComponentRef Id="cmpCDA382E0F76D6A7D9FE703F14C8A2D62" />
             <ComponentRef Id="cmpC5DF6B7FEAB8E23DBB1117D8BDBACAAA" />
             <ComponentRef Id="cmp5DC61834042D8A563B1B0F5CEE7AD1E7" />
-            <ComponentRef Id="cmpC763941A913C63F827F04D11058122FC" />
+            <ComponentRef Id="cmpD7536BFE5500F2890F659513D58FD881" />
             <ComponentRef Id="cmp6E52FEFA6BB26E501487BBBFD5B22D83" />
             <ComponentRef Id="cmpD51C7DCAA0760E3A269231CFA7A989BF" />
             <ComponentRef Id="cmp2257790539B8870843640B5857727F5B" />
@@ -1705,7 +1702,7 @@
             <ComponentRef Id="cmpDBBE29F8EC9C141F69806318822103CD" />
             <ComponentRef Id="cmp43EC82A8FF56A5D6D9AC54BE83E4DB87" />
             <ComponentRef Id="cmp2D22C362F8F0B3B68D8A335DB9874738" />
-            <ComponentRef Id="cmpD470EC94920E4A507AC97F4BB50F2380" />
+            <ComponentRef Id="cmp282A79C0A1CF80C04EDFE5C412296BA4" />
             <ComponentRef Id="cmpE68AF86D33D7316B208FDCC12EFB0374" />
             <ComponentRef Id="cmp306701CEE48A70BD2AF219DF0B155E18" />
             <ComponentRef Id="cmp6FC33255F5244404058B089C314B348C" />
@@ -1885,7 +1882,6 @@
             <ComponentRef Id="cmp365721530759887AD50BF2F4D542A374" />
             <ComponentRef Id="cmpAB7F561FED8AF0E04BD19C1A49D60088" />
             <ComponentRef Id="cmp4A9972573F3D42E417332BD1AB8B12DF" />
-            <ComponentRef Id="cmp10FE7896CFCD38A6CD8142CE0A08210B" />
             <ComponentRef Id="cmpA5EF28FE13D2F5A6BF7F313B516C07FF" />
             <ComponentRef Id="cmp0689D02B3B151F4009E983276282DEB8" />
             <ComponentRef Id="cmp599EF0BF15905A04DD89A2D533A560CE" />

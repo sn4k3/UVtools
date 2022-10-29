@@ -39,7 +39,7 @@ public class OperationIPrintedThisFile : Operation
     public override string Description => "Select a material and consume resin from stock and print time.";
 
     public override string ConfirmationText =>
-        $"consume {FinalVolume}ml and {FinalPrintTimeHours:F4}h on:\n{_materialItem} ?";
+        $"consume {FinalVolume}ml and {FinalPrintTimeString:F4}h on:\n{_materialItem} ?";
 
     public override string ProgressTitle =>
         $"Consuming";
@@ -68,7 +68,7 @@ public class OperationIPrintedThisFile : Operation
 
     public override string ToString()
     {
-        var result = $"{FinalVolume}ml {FinalPrintTimeHours:F4}h on {_materialItem?.Name}";
+        var result = $"{FinalVolume}ml {FinalPrintTimeString:F4}h on {_materialItem?.Name}";
         if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
         return result;
     }
@@ -87,7 +87,7 @@ public class OperationIPrintedThisFile : Operation
         get => _volume;
         set
         {
-            if(!RaiseAndSetIfChanged(ref _volume, value)) return;
+            if(!RaiseAndSetIfChanged(ref _volume, Math.Max(0, value))) return;
             RaisePropertyChanged(nameof(FinalVolume));
         }
     }
@@ -99,16 +99,16 @@ public class OperationIPrintedThisFile : Operation
         get => _printTime;
         set
         {
-            if(!RaiseAndSetIfChanged(ref _printTime, value)) return;
-            RaisePropertyChanged(nameof(PrintTimeHours));
+            if(!RaiseAndSetIfChanged(ref _printTime, Math.Max(0, value))) return;
+            RaisePropertyChanged(nameof(PrintTimeString));
             RaisePropertyChanged(nameof(FinalPrintTime));
-            RaisePropertyChanged(nameof(FinalPrintTimeHours));
+            RaisePropertyChanged(nameof(FinalPrintTimeString));
         }
     }
 
-    public float PrintTimeHours => _printTime / 60 / 60;
+    public string PrintTimeString => TimeSpan.FromSeconds(_printTime).ToString("hh\\hmm\\mss\\s");
     public float FinalPrintTime => _printTime * (float)_multiplier;
-    public float FinalPrintTimeHours => FinalPrintTime / 60 / 60;
+    public string FinalPrintTimeString => TimeSpan.FromSeconds(FinalPrintTime).ToString("hh\\hmm\\mss\\s");
 
     /// <summary>
     /// Number of times this file has been printed

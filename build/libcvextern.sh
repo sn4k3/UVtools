@@ -8,7 +8,8 @@
 # usage 3: ./libcvextern.sh 
 # usage 3: ./libcvextern.sh 4.6.0
 #
-cd "$(dirname "$0")"
+#cd "$(dirname "$0")"
+echo $PWD
 directory="emgucv"
 arch="$(uname -m)"
 osVariant=""
@@ -26,6 +27,7 @@ for lastArg in $@; do :; done # Get last argument
 if [ $lastArg == "clean" ]; then
     echo "Cleaning $directory directory"
     rm -rf "$directory" 2>/dev/null
+    rm -rf "$directory-"* 2>/dev/null
     exit
 fi
 
@@ -42,6 +44,12 @@ while getopts 'i' flag; do
 done
 
 echo "Script to build libcvextern.so|dylib on $(uname -a) $arch"
+
+if testcmd ldconfig; then
+    if [ -z "$(ldconfig -p | grep libpng)" -o -z "$(ldconfig -p | grep libgdiplus)" -o -z "$(ldconfig -p | grep libavcodec)" -o -z "$(command -v git)" -o -z "$(command -v cmake)" ]; then
+        installDependencies=true
+    fi
+fi
 
 echo "- Detecting OS"
 [ "$installDependencies" == true ] && echo "- Installing all the dependencies"
@@ -61,7 +69,7 @@ if [ "${OSTYPE:0:6}" == "darwin" ]; then
     [ -z "$(command -v dotnet)" ] && brew install --cask dotnet-sdk
 elif testcmd apt-get; then
     osVariant="debian"
-    if [ -z "$(ldconfig -p | grep libpng)" -o -z "$(ldconfig -p | grep libgdiplus)" -o -z "$(ldconfig -p | grep libavcodec)" -o -z "$(command -v git)" -o -z "$(command -v cmake)" -o "$installDependencies" == true ]; then
+    if [ "$installDependencies" == true ]; then
         sudo apt-get update
         sudo apt-get -y install git build-essential libgtk-3-dev libgstreamer1.0-dev libavcodec-dev libswscale-dev libavformat-dev libdc1394-dev libv4l-dev cmake-curses-gui ocl-icd-dev freeglut3-dev libgeotiff-dev libusb-1.0-0-dev
         sudo apt-get install -y apt-transport-https
@@ -70,16 +78,18 @@ elif testcmd apt-get; then
     fi
 elif testcmd pacman; then
     osVariant="arch"
-    if [ -z "$(ldconfig -p | grep libpng)" -o -z "$(ldconfig -p | grep libgdiplus)" -o -z "$(ldconfig -p | grep libavcodec)" -o -z "$(command -v git)" -o -z "$(command -v cmake)" -o "$installDependencies" == true ]; then
+    if [ "$installDependencies" == true ]; then
         sudo pacman -Syu
         sudo pacman -S git base-devel cmake msbuild gtk3 gstreamer ffmpeg libdc1394 v4l-utils ocl-icd freeglut libgeotiff libusb dotnet-sdk
     fi
-elif testcmd yum; then
+elif testcmd dnf; then
     osVariant="rhel"
-    if [ -z "$(ldconfig -p | grep libpng)" -o -z "$(ldconfig -p | grep libgdiplus)" -o -z "$(ldconfig -p | grep libavcodec)" -o -z "$(command -v git)" -o -z "$(command -v cmake)" -o "$installDependencies" == true ]; then
-        sudo yum update -y
-        sudo yum groupinstall -y "Development Tools" "Development Libraries"
-        sudo yum install -y git cmake gcc-c++ gtk3-devel gstreamer1-devel ffmpeg ffmpeg-devel libdc1394 libv4l-devel cmake-gui ocl-icd-devel freeglut libgeotiff libusb dotnet-sdk-6.0
+    if [ "$installDependencies" == true ]; then
+        sudo dnf update -y
+        sudo dnf install -y https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm
+        sudo dnf install -y https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm
+        sudo dnf groupinstall -y "Development Tools" "Development Libraries"
+        sudo dnf install -y git cmake gcc-c++ gtk3-devel gstreamer1-devel ffmpeg ffmpeg-devel libdc1394 libv4l-devel cmake-gui ocl-icd-devel freeglut libgeotiff libusb dotnet-sdk-6.0
     fi
 fi
 
@@ -91,6 +101,11 @@ fi
 
 if ! testcmd cmake; then
     echo "Error: cmake not installed. Please re-run this script with -i flag."
+    exit -1
+fi
+
+if ! testcmd dotnet; then
+    echo "Error: dotnet not installed. Please re-run this script with -i flag."
     exit -1
 fi
 
@@ -111,15 +126,12 @@ if [ ! -d "$directory" ]; then
     fi
 fi
 
-cd "$directory"
 
 echo "- Bulding"
 if [ osVariant == "macOS" ]; then
-    cd "platforms/macos"
-    ./configure $arch $build_package
+    "$directory/platforms/macos/configure" $arch $build_package
 else
-    cd "platforms/ubuntu/22.04"
-    ./cmake_configure $build_package
+    "$directory/platforms/ubuntu/22.04/cmake_configure" $build_package
 fi
 
 echo "Completed - Check for errors but also for libcvextern presence on $directory/libs"

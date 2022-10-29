@@ -12,13 +12,20 @@ using System.Drawing;
 using System.IO;
 using System.Text;
 using UVtools.Core.Extensions;
+using UVtools.Core.Objects;
 
 namespace UVtools.Core.Printer
 {
-    public class Machine
+    public class Machine : BindableBase
     {
+        #region Members
+        private float _totalPrintTime;
+        private float _totalDisplayOnTime;
+        #endregion
+
         #region Properties
-        public PrinterBrand Brand { get; set; }
+
+        public PrinterBrand Brand { get; set; } = PrinterBrand.Generic;
         public string Name { get; set; } = FileFormats.FileFormat.DefaultMachineName;
         public string Model { get; set; } = FileFormats.FileFormat.DefaultMachineName;
 
@@ -35,6 +42,27 @@ namespace UVtools.Core.Printer
         public FlipDirection DisplayMirror { get; set; }
         
         public object? Tag { get; set; }
+
+        public float TotalPrintTime
+        {
+            get => _totalPrintTime;
+            set => RaiseAndSetIfChanged(ref _totalPrintTime, (float)Math.Max(0f, Math.Round(value, 2)));
+        }
+
+        public string TotalPrintTimeString => TimeSpan.FromSeconds(_totalPrintTime).ToString("hh\\hmm\\mss\\s");
+
+        public float TotalDisplayOnTime
+        {
+            get => _totalDisplayOnTime;
+            set => RaiseAndSetIfChanged(ref _totalDisplayOnTime, (float)Math.Max(0f, Math.Round(value, 2)));
+        }
+
+        public string DisplayTotalOnTimeString => TimeSpan.FromSeconds(_totalDisplayOnTime).ToString("hh\\hmm\\mss\\s");
+
+        public float TotalDisplayOffTime => TotalPrintTime - TotalDisplayOnTime;
+
+        public string DisplayTotalOffTimeString => TimeSpan.FromSeconds(TotalDisplayOffTime).ToString("hh\\hmm\\mss\\s");
+
         #endregion
 
         #region Constructor

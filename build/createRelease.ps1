@@ -261,23 +261,23 @@ $runtimes =
     "win-x64" = @{
         "extraCmd" = ""
         "exclude" = @("UVtools.sh")
-        "include" = @()
+        "include" = @("cvextern.dll")
     }
     "linux-x64" = @{
         "extraCmd" = ""
         "exclude" = @()
         "include" = @("libcvextern.so")
     }
-    "arch-x64" = @{
-        "extraCmd" = ""
-        "exclude" = @()
-        "include" = @("libcvextern.so")
-    }
-    "rhel-x64" = @{
-        "extraCmd" = ""
-        "exclude" = @()
-        "include" = @("libcvextern.so")
-    }
+    #"arch-x64" = @{
+    #    "extraCmd" = ""
+    #    "exclude" = @()
+    #    "include" = @("libcvextern.so")
+    #}
+    #"rhel-x64" = @{
+    #    "extraCmd" = ""
+    #    "exclude" = @()
+    #    "include" = @("libcvextern.so")
+    #}
     #"linux-arm64" = @{
     #    "extraCmd" = ""
     #    "exclude" = @()
@@ -360,9 +360,10 @@ foreach ($obj in $runtimes.GetEnumerator()) {
 
     if($runtime.StartsWith("win-"))
     {
-        $targetZip = "$publishPath/${software}_${runtime}_v$version.zip"  # Target zip filename
+        $targetZipName = "${software}_${runtime}_v$version.zip"  # Target zip filename
+        $targetZipPath = "$publishPath/$targetZipName"  # Target zip filename
         Remove-Item "$publishCurrentPath" -Recurse -ErrorAction Ignore
-        Remove-Item "$targetZip" -ErrorAction Ignore
+        Remove-Item "$targetZipPath" -ErrorAction Ignore
         
         # Deploy
         Write-Output "################################
@@ -383,19 +384,19 @@ foreach ($obj in $runtimes.GetEnumerator()) {
         
         foreach ($excludeObj in $obj.Value.exclude) {
             Write-Output "Excluding: $excludeObj"
-            Remove-Item "$publishPath\$runtime\$excludeObj" -Recurse -ErrorAction Ignore
+            Remove-Item "$publishCurrentPath\$excludeObj" -Recurse -ErrorAction Ignore
         }
 
         foreach ($includeObj in $obj.Value.include) {
             Write-Output "Including: $includeObj"
-            Copy-Item "$platformsPath\$runtime\$includeObj" -Destination "$publishCurrentPath"  -Recurse -ErrorAction Ignore
-            Copy-Item "$platformsPath\$runtime\$includeObj" -Destination "$publishCurrentPath"  -Recurse -ErrorAction Ignore
+            Copy-Item "$platformsPath\$runtime\$includeObj" -Destination "$publishCurrentPath" -Recurse -ErrorAction Ignore
+            Copy-Item "$platformsPath\$runtime\$includeObj" -Destination "$publishCurrentPath" -Recurse -ErrorAction Ignore
         }
 
         if($null -ne $zipPackages -and $zipPackages)
         {
-            Write-Output "Compressing $runtime to: $targetZip"
-            wsl --cd "$publishCurrentPath" pwd `&`& zip -rq "../../$targetZip" .
+            Write-Output "Compressing $runtime to: $targetZipName"
+            wsl --cd "$publishCurrentPath" pwd `&`& zip -rq "../$targetZipName" .
         }
     }
     else

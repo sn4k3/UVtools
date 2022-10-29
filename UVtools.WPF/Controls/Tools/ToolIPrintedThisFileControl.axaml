@@ -5,7 +5,7 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="UVtools.WPF.Controls.Tools.ToolIPrintedThisFileControl">
   
-    <Grid RowDefinitions="Auto,10,Auto,10,Auto,10,Auto" 
+    <Grid RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto" 
           ColumnDefinitions="Auto,10,Auto">
         <TextBlock Grid.Row="0" Grid.Column="0"
                    VerticalAlignment="Center"
@@ -21,16 +21,15 @@
                    VerticalAlignment="Center"
                    Text="Volume:"/>
 
-        <StackPanel Grid.Row="2" Grid.Column="2"
-                    Orientation="Horizontal" Spacing="5">
-            <NumericUpDown Minimum="1"
-                           Maximum="1000000"
-                           Increment="1"
-                           MinWidth="200"
-                           Value="{Binding Operation.Volume}"/>
-            <TextBlock VerticalAlignment="Center" Text="ml"/>
-
-        </StackPanel>
+        <NumericUpDown Grid.Row="2" Grid.Column="2" 
+                       Classes="ValueLabel ValueLabel_ml"
+                       HorizontalAlignment="Left"
+                       Minimum="1"
+                       Maximum="1000000"
+                       Increment="1"
+                       FormatString="F3"
+                       Width="250"
+                       Value="{Binding Operation.Volume}"/>
         
 
         <TextBlock Grid.Row="4" Grid.Column="0"
@@ -39,14 +38,16 @@
 
         <StackPanel Grid.Row="4" Grid.Column="2"
                     Orientation="Horizontal" Spacing="5">
-        <NumericUpDown Minimum="1"
-                       Maximum="100000000"
-                       Increment="1"
-                       MinWidth="200"
-                       FormatString="F2"
-                       Value="{Binding Operation.PrintTime}"/>
-        <TextBlock VerticalAlignment="Center"
-                   Text="{Binding Operation.PrintTimeHours, StringFormat=s / {0:N4}h}"/>
+            <NumericUpDown Classes="ValueLabel ValueLabel_s"
+                           HorizontalAlignment="Left"
+                           Minimum="1"
+                           Maximum="100000000"
+                           Increment="1"
+                           Width="250"
+                           FormatString="F2"
+                           Value="{Binding Operation.PrintTime}"/>
+            <TextBlock VerticalAlignment="Center"
+                       Text="{Binding Operation.PrintTimeString}"/>
         </StackPanel>
 
         <TextBlock Grid.Row="6" Grid.Column="0"
@@ -55,16 +56,23 @@
 &#x0a;Half numbers can be used to consume from a failed print. Example: 0.5x if a print canceled at 50% progress."
                    Text="Multiplier:"/>
 
-      <StackPanel Grid.Row="6" Grid.Column="2"
-                    Orientation="Horizontal" Spacing="5">
-            <NumericUpDown Minimum="0.01"
+            <NumericUpDown Grid.Row="6" Grid.Column="2"
+                           Classes="ValueLabel_px ValueLabel_times"
+                           HorizontalAlignment="Left"
+                           Minimum="0.01"
                            Maximum="500"
                            Increment="1"
-                           MinWidth="200"
+                           Width="250"
                            Value="{Binding Operation.Multiplier}"/>
-            <TextBlock VerticalAlignment="Center"
-                       Text="time(s)"/>
-        </StackPanel>
+
+        <TextBlock Grid.Row="8" Grid.Column="0"
+                   VerticalAlignment="Center"
+                   ToolTip.Tip="Total time that the display will light-on during the print"
+                   Text="Display time:"/>
+
+        <TextBlock Grid.Row="8" Grid.Column="2"
+                   VerticalAlignment="Center"
+                   Text="{Binding SlicerFile.DisplayTotalOnTimeString}"/>
     </Grid>
 
 </UserControl>

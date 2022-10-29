@@ -60,8 +60,7 @@ public class OperationCalculator : Operation
             (decimal)SlicerFile.LiftHeight, (decimal)SlicerFile.BottomLiftHeight,
             (decimal)SlicerFile.LiftSpeed, (decimal)SlicerFile.BottomLiftSpeed,
             (decimal)SlicerFile.RetractSpeed, (decimal)SlicerFile.RetractSpeed);
-        CalcOptimalModelTilt = new OptimalModelTilt(SlicerFile.Resolution, SlicerFile.Display,
-            (decimal)SlicerFile.LayerHeight);
+        CalcOptimalModelTilt = new OptimalModelTilt(SlicerFile.Resolution, SlicerFile.Display, (decimal)SlicerFile.LayerHeight);
     }
 
     #endregion

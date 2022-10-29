@@ -311,12 +311,21 @@
 
 					<TextBlock IsVisible="{Binding SlicerFile.CanUseAnyWaitTime}" Text="  |  "/>
 					<TextBlock IsVisible="{Binding SlicerFile.CanUseAnyWaitTime}"
+                               ToolTip.Placement="Top"
 							   ToolTip.Tip="Wait time: Before cure / After cure / After lift"
 							   Text="{Binding SlicerFile.WaitTimeRepresentation, StringFormat=Wait time: {0}}"/>
 
 					<TextBlock IsVisible="{Binding SlicerFile.PrintTimeHours}" Text="  |  "/>
-					<TextBlock IsVisible="{Binding SlicerFile.PrintTimeHours}"
-					  Text="{Binding SlicerFile.PrintTimeString, StringFormat=Print time: {0}}"/>
+					<TextBlock IsVisible="{Binding SlicerFile.PrintTimeHours}" 
+                               ToolTip.Placement="Top"
+                               Text="{Binding SlicerFile.PrintTimeString, StringFormat=Print time: {0}}">
+						<ToolTip.Tip>
+                            <MultiBinding StringFormat="On time: {0}&#x0a;Off time: {1}">
+                                <Binding Path="SlicerFile.DisplayTotalOnTimeString"/>
+                                <Binding Path="SlicerFile.DisplayTotalOffTimeString"/>
+                            </MultiBinding>
+                        </ToolTip.Tip>
+                    </TextBlock>
 
 
 					<TextBlock IsVisible="{Binding SlicerFile.MaterialMilliliters}" Text="  |  "/>

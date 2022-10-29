@@ -16,4 +16,13 @@ public static class RectangleExtensions
         return new Point(src.Left + src.Width / 2, src.Top + src.Height / 2);
     }
 
+    public static Rectangle OffsetBy(this Rectangle src, int x, int y)
+    {
+        var rect = src;
+        rect.Offset(x, y);
+        return rect;
+    }
+
+    public static Rectangle OffsetBy(this Rectangle src, Point position) => src.OffsetBy(position.X, position.Y);
+
 }

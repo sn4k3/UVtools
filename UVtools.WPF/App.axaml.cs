@@ -49,6 +49,8 @@ public class App : Application
         DefaultDark
     }
 
+    private static bool _isDebug;
+
     public static bool IsDebug
     {
         get
@@ -56,9 +58,10 @@ public class App : Application
 #if DEBUG
             return true;
 #else
-            return false;
+            return _isDebug;
 #endif
         }
+        set => _isDebug = value;
     }
 
     //public static ThemeSelector ThemeSelector { get; set; }
@@ -276,38 +279,12 @@ public class App : Application
                 {
                     if (!CvInvoke.Init())
                     {
-                        desktop.MainWindow = new MessageWindow($"{About.SoftwareWithVersion} is unable to run",
-                            "fa-regular fa-frown",
-                            $"{About.SoftwareWithVersionArch} [{SystemAware.OperatingSystemName}]\nUnable to run due one or more missing dependencies.\nTriggered by: libcvextern  (OpenCV)",
-                            "Your system doesn't have the required dependencies in order to run.\n" +
-                            "Those dependencies are required at libcvextern/OpenCV library.\n" +
-                            "UVtools is built on top of the OpenCV and therefore cannot run.\n\n" +
-                            "Please install or build the dependencies in order to run the software.\n" +
-                            "Check the manual page at 'Requirements' section for help.",
-                            new[]
-                            {
-                                MessageWindow.CreateLinkButton("Open manual", "fa-brands fa-edge", "https://github.com/sn4k3/UVtools#requirements"),
-                                MessageWindow.CreateLinkButton("Ask for help", "fa-solid fa-question", "https://github.com/sn4k3/UVtools/discussions/categories/q-a"),
-                                MessageWindow.CreateCloseButton("fa-solid fa-sign-out-alt")
-                            });
+                        desktop.MainWindow = MissingOpenCVDependenciesWindow();
                     }
                 }
                 catch (Exception e)
                 {
-                    desktop.MainWindow = new MessageWindow($"{About.SoftwareWithVersion} is unable to run",
-                        "fa-regular fa-frown",
-                        $"{About.SoftwareWithVersionArch} [{SystemAware.OperatingSystemName}]\nUnable to run due one or more missing dependencies.\nTriggered by: libcvextern  (OpenCV)",
-                        "Your system doesn't have the required dependencies in order to run.\n" +
-                        "Those dependencies are required at libcvextern/OpenCV library.\n" +
-                        "UVtools is built on top of the OpenCV and therefore cannot run.\n\n" +
-                        "Please install or build the dependencies in order to run the software.\n" +
-                        "Check the manual page at 'Requirements' section for help.",
-                        new[]
-                        {
-                            MessageWindow.CreateLinkButton("Open manual", "fa-brands fa-edge", "https://github.com/sn4k3/UVtools#requirements"),
-                            MessageWindow.CreateLinkButton("Ask for help", "fa-solid fa-question", "https://github.com/sn4k3/UVtools/discussions/categories/q-a"),
-                            MessageWindow.CreateCloseButton("fa-solid fa-sign-out-alt")
-                        });
+                    desktop.MainWindow = MissingOpenCVDependenciesWindow();
                     Console.WriteLine(e.ToString());
                 }
 
@@ -343,7 +320,44 @@ public class App : Application
         base.OnFrameworkInitializationCompleted();
     }
 
-#region Utilities
+    private MessageWindow MissingOpenCVDependenciesWindow()
+    {
+        var message = "Your system doesn't have the required dependencies in order to run.\n" +
+                      "Those dependencies are required at libcvextern/OpenCV library.\n" +
+                      "UVtools is built on top of the OpenCV and therefore cannot run.\n\n";
+
+        if (OperatingSystem.IsLinux())
+        {
+            try
+            {
+                var ldd = SystemAware.GetProcessOutput("bash", $"-c \"ldd '{Path.Combine(ApplicationPath, "libcvextern.so")}' | grep not\"");
+                if (!string.IsNullOrWhiteSpace(ldd))
+                {
+                    message += $"Missing dependencies:\n{ldd}\n";
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine(e);
+            }
+        }
+
+        message += "Please install or build the dependencies in order to run the software.\n" +
+                   "Check the manual page at 'Requirements' section for help.";
+
+        return new MessageWindow($"{About.SoftwareWithVersion} is unable to run",
+            "fa-regular fa-frown",
+            $"{About.SoftwareWithVersionArch} [{SystemAware.OperatingSystemName}]\nUnable to run due one or more missing dependencies.\nTriggered by: libcvextern  (OpenCV)",
+            message,
+            new[]
+            {
+                MessageWindow.CreateLinkButton("Open manual", "fa-brands fa-edge", "https://github.com/sn4k3/UVtools#requirements"),
+                MessageWindow.CreateLinkButton("Ask for help", "fa-solid fa-question", "https://github.com/sn4k3/UVtools/discussions/categories/q-a"),
+                MessageWindow.CreateCloseButton("fa-solid fa-sign-out-alt")
+            });
+    }
+
+    #region Utilities
     public static string ApplicationPath => AppContext.BaseDirectory;
     public static string AppExecutable => Environment.ProcessPath!;
     public static string AppExecutableQuoted => $"\"{AppExecutable}\"";

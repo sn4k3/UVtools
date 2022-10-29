@@ -100,6 +100,7 @@ public class SL1File : FileFormat
 
         public float FastTiltTime { get; set; } = 5;
         public float SlowTiltTime { get; set; } = 8;
+        public float HighViscosityTiltTime { get; set; } = 10;
         public float AreaFill { get; set; } = 50;
         #endregion
 
@@ -312,7 +313,7 @@ public class SL1File : FileFormat
         public string PrinterModel { get; set; } = "SL1";
         public string PrinterProfile { get; set; } = About.Software;
         public string PrinterVariant { get; set; } = "default";
-        public string PrusaSlicerVersion { get; set; } = "PrusaSlicer-2.3.3+win64-202107161027";
+        public string PrusaSlicerVersion { get; set; } = "PrusaSlicer-2.5.0+win64-202209060714";
         public float UsedMaterial { get; set; }
 
         public override string ToString()

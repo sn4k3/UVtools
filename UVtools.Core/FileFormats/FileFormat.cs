@@ -2746,6 +2746,10 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             if(!RaiseAndSetIfChanged(ref _printTime, value)) return;
             RaisePropertyChanged(nameof(PrintTimeHours));
             RaisePropertyChanged(nameof(PrintTimeString));
+            RaisePropertyChanged(nameof(DisplayTotalOnTime));
+            RaisePropertyChanged(nameof(DisplayTotalOnTimeString));
+            RaisePropertyChanged(nameof(DisplayTotalOffTime));
+            RaisePropertyChanged(nameof(DisplayTotalOffTimeString));
         }
     }
 
@@ -2843,7 +2847,45 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get
         {
             var printTime = PrintTime;
-            return TimeSpan.FromSeconds(printTime >= float.PositiveInfinity ? 0 : printTime).ToString("hh\\hmm\\m");
+            return TimeSpan.FromSeconds(float.IsPositiveInfinity(printTime) || float.IsNaN(printTime) ? 0 : printTime).ToString("hh\\hmm\\m");
+        }
+    }
+
+    /// <summary>
+    /// Gets the total time in seconds the display will remain on exposing the layers during the print
+    /// </summary>
+    public float DisplayTotalOnTime => (float)Math.Round(this.Sum(layer => layer.ExposureTime), 2);
+
+    /// <summary>
+    /// Gets the total time formatted in hours, minutes and seconds the display will remain on exposing the layers during the print
+    /// </summary>
+    public string DisplayTotalOnTimeString => TimeSpan.FromSeconds(DisplayTotalOnTime).ToString("hh\\hmm\\mss\\s");
+
+    /// <summary>
+    /// Gets the total time in seconds the display will remain off during the print.
+    /// This is the difference between <see cref="PrintTime"/> and <see cref="DisplayTotalOnTime"/>
+    /// </summary>
+    public float DisplayTotalOffTime
+    {
+        get
+        {
+            var printTime = PrintTime;
+            if (float.IsPositiveInfinity(printTime) || float.IsNaN(printTime)) return float.NaN;
+            var value = (float) Math.Round(PrintTime - DisplayTotalOnTime, 2);
+            return value <= 0 ? float.NaN : value;
+        }
+    }
+
+    /// <summary>
+    /// Gets the total time formatted in hours, minutes and seconds the display will remain off during the print.
+    /// This is the difference between <see cref="PrintTime"/> and <see cref="DisplayTotalOnTime"/>
+    /// </summary>
+    public string DisplayTotalOffTimeString
+    {
+        get
+        {
+            var time = DisplayTotalOffTime;
+            return TimeSpan.FromSeconds(float.IsPositiveInfinity(time) || float.IsNaN(time) ? 0 : time).ToString("hh\\hmm\\mss\\s");
         }
     }
 
@@ -3914,6 +3956,12 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     {
         return GetTransitionStepTime(BottomExposureTime, ExposureTime, transitionLayerCount);
     }
+
+    /// <summary>
+    /// Gets the transition step time from <see cref="BottomExposureTime"/> and <see cref="ExposureTime"/>, value is returned as positive from normal perspective and logic (Longer - shorter)
+    /// </summary>
+    /// <returns>Seconds</returns>
+    public float GetTransitionStepTime() => GetTransitionStepTime(TransitionLayerCount);
 
     /// <summary>
     /// Gets the transition layer count based on long and short exposure time

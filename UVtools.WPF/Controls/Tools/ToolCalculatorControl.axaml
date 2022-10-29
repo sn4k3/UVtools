@@ -15,7 +15,7 @@
                      Classes="TransparentReadOnlyMultiLineNoBorder"
                      Padding="10">
             <TextBox.Text>
-              <MultiBinding StringFormat="\{0\}&#x0a;&#x0a;Formula: \{1\}">
+              <MultiBinding StringFormat="{}{0}&#x0a;&#x0a;Formula: {1}">
                 <Binding Path="Operation.CalcMillimetersToPixels.Description"/>
                 <Binding Path="Operation.CalcMillimetersToPixels.Formula"/>
               </MultiBinding>
@@ -84,16 +84,13 @@
 
         </Grid>
 
-        <Grid
-          Grid.Row="4"
-          RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto"
-          ColumnDefinitions="Auto,10,190,5,Auto">
-          <TextBlock
-            Grid.Row="0"
-            Grid.Column="0"
-            VerticalAlignment="Center"
-            HorizontalAlignment="Right"
-            Text="Input millimeters:"/>
+        <Grid Grid.Row="4"
+              RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto"
+              ColumnDefinitions="Auto,10,190,5,Auto">
+          <TextBlock Grid.Row="0" Grid.Column="0"
+                     VerticalAlignment="Center"
+                     HorizontalAlignment="Right"
+                     Text="Input millimeters:"/>
           <NumericUpDown Grid.Row="0" Grid.Column="2"
                          Classes="ValueLabel ValueLabel_mm"
                          VerticalAlignment="Center"
@@ -103,42 +100,29 @@
                          FormatString="F2"
                          Value="{Binding Operation.CalcMillimetersToPixels.Millimeters}"/>
 
+          <TextBlock Grid.Row="2" Grid.Column="0"
+                     VerticalAlignment="Center"
+                     HorizontalAlignment="Right"
+                     Text="X pixels per millimeter:"/>
+          <TextBox Grid.Row="2" Grid.Column="2"
+                   VerticalAlignment="Center"
+                   IsReadOnly="True"
+                   Text="{Binding Operation.CalcMillimetersToPixels.PixelsPerMillimeterX}"/>
+          <TextBlock Grid.Row="2" Grid.Column="4"
+                     VerticalAlignment="Center"
+                     Text="ppmmX"/>
 
-          <TextBlock
-            Grid.Row="2"
-            Grid.Column="0"
-            VerticalAlignment="Center"
-            HorizontalAlignment="Right"
-            Text="X pixels per millimeter:"/>
-          <TextBox
-            Grid.Row="2"
-            Grid.Column="2"
-            VerticalAlignment="Center"
-            IsReadOnly="True"
-            Text="{Binding Operation.CalcMillimetersToPixels.PixelsPerMillimeterX}"/>
-          <TextBlock
-            Grid.Row="2"
-            Grid.Column="4"
-            VerticalAlignment="Center"
-            Text="ppmmX"/>
-
-          <TextBlock
-            Grid.Row="4"
-            Grid.Column="0"
-            VerticalAlignment="Center"
-            HorizontalAlignment="Right"
-            Text="Y pixels per millimeter:"/>
-          <TextBox
-            Grid.Row="4"
-            Grid.Column="2"
-            VerticalAlignment="Center"
-            IsReadOnly="True"
-            Text="{Binding Operation.CalcMillimetersToPixels.PixelsPerMillimeterY}"/>
-          <TextBlock
-            Grid.Row="4"
-            Grid.Column="4"
-            VerticalAlignment="Center"
-            Text="ppmmY"/>
+          <TextBlock Grid.Row="4" Grid.Column="0"
+                     VerticalAlignment="Center"
+                     HorizontalAlignment="Right"
+                     Text="Y pixels per millimeter:"/>
+          <TextBox Grid.Row="4" Grid.Column="2"
+                   VerticalAlignment="Center"
+                   IsReadOnly="True"
+                   Text="{Binding Operation.CalcMillimetersToPixels.PixelsPerMillimeterY}"/>
+          <TextBlock Grid.Row="4" Grid.Column="4"
+                     VerticalAlignment="Center"
+                     Text="ppmmY"/>
 
           <TextBlock Grid.Row="6" Grid.Column="0"
                      Classes="ValueLabel ValueLabel_px"
@@ -177,7 +161,7 @@
                    Classes="TransparentReadOnlyMultiLineNoBorder"
                    Padding="10">
             <TextBox.Text>
-              <MultiBinding StringFormat="\{0\}&#x0a;&#x0a;Formula: \{1\}">
+              <MultiBinding StringFormat="{}{0}&#x0a;&#x0a;Formula: {1}">
                 <Binding Path="Operation.CalcLightOffDelay.Description"/>
                 <Binding Path="Operation.CalcLightOffDelay.Formula"/>
               </MultiBinding>
@@ -186,18 +170,15 @@
         </Border>
 
 
-        <Grid
-          Grid.Row="2"
-          RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto"
-          ColumnDefinitions="Auto,10,220,30,Auto,10,220">
+        <Grid Grid.Row="2"
+              RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto"
+              ColumnDefinitions="Auto,10,220,30,Auto,10,220">
 
           <!-- Normal -->
-          <TextBlock
-            Grid.Row="0"
-            Grid.Column="0"
-            VerticalAlignment="Center"
-            HorizontalAlignment="Right"
-            Text="Lift height:"/>
+          <TextBlock Grid.Row="0" Grid.Column="0"
+                     VerticalAlignment="Center"
+                     HorizontalAlignment="Right"
+                     Text="Lift height:"/>
           <NumericUpDown Grid.Row="0" Grid.Column="2"
                          Classes="ValueLabel ValueLabel_mm"
                          VerticalAlignment="Center"
@@ -207,12 +188,10 @@
                          FormatString="F2"
                          Value="{Binding Operation.CalcLightOffDelay.LiftHeight}"/>
 
-          <TextBlock
-            Grid.Row="2"
-            Grid.Column="0"
-            VerticalAlignment="Center"
-            HorizontalAlignment="Right"
-            Text="Lift speed:"/>
+          <TextBlock Grid.Row="2" Grid.Column="0"
+                     VerticalAlignment="Center"
+                     HorizontalAlignment="Right"
+                     Text="Lift speed:"/>
           <NumericUpDown Grid.Row="2" Grid.Column="2"
                          Classes="ValueLabel ValueLabel_mmmin"
                          VerticalAlignment="Center"
@@ -222,12 +201,10 @@
                          FormatString="F2"
                          Value="{Binding Operation.CalcLightOffDelay.LiftSpeed}"/>
 
-          <TextBlock
-            Grid.Row="4"
-            Grid.Column="0"
-            VerticalAlignment="Center"
-            HorizontalAlignment="Right"
-            Text="Retract speed:"/>
+          <TextBlock Grid.Row="4" Grid.Column="0"
+                     VerticalAlignment="Center"
+                     HorizontalAlignment="Right"
+                     Text="Retract speed:"/>
           <NumericUpDown Grid.Row="4" Grid.Column="2"
                          Classes="ValueLabel ValueLabel_mmmin"
                          VerticalAlignment="Center"
@@ -237,12 +214,10 @@
                          FormatString="F2"
                          Value="{Binding Operation.CalcLightOffDelay.RetractSpeed}"/>
 
-          <TextBlock
-            Grid.Row="6"
-            Grid.Column="0"
-            VerticalAlignment="Center"
-            HorizontalAlignment="Right"
-            Text="Desired wait time:"/>
+          <TextBlock Grid.Row="6" Grid.Column="0"
+                     VerticalAlignment="Center"
+                     HorizontalAlignment="Right"
+                     Text="Desired wait time:"/>
           <NumericUpDown Grid.Row="6" Grid.Column="2"
                          Classes="ValueLabel ValueLabel_s"
                          VerticalAlignment="Center"
@@ -252,64 +227,52 @@
                          FormatString="F2"
                          Value="{Binding Operation.CalcLightOffDelay.WaitTime}"/>
 
-          <TextBlock
-            Grid.Row="8"
-            Grid.Column="0"
-            VerticalAlignment="Center"
-            HorizontalAlignment="Right"
-            FontWeight="Bold"
-            Text="Light-off delay:"/>
+          <TextBlock Grid.Row="8" Grid.Column="0"
+                     VerticalAlignment="Center"
+                     HorizontalAlignment="Right"
+                     FontWeight="Bold"
+                     Text="Light-off delay:"/>
           <NumericUpDown Grid.Row="8" Grid.Column="2"
                    Classes="ValueLabel ValueLabel_s ReadOnly"
                    VerticalAlignment="Center"
                    FontWeight="Bold"
                    Text="{Binding Operation.CalcLightOffDelay.LightOffDelay}"/>
 
-          <Button
-            Grid.Row="10"
-            Grid.Column="0"
-            Grid.ColumnSpan="3"
-            VerticalAlignment="Center"
-            HorizontalAlignment="Right"
-            Padding="10"
-            Content="Set this parameters on file"
-            Command="{Binding LightOffDelaySetParameters}"
-            CommandParameter="1"/>
+          <Button Grid.Row="10" Grid.Column="0"
+                  Grid.ColumnSpan="3"
+                  VerticalAlignment="Center"
+                  HorizontalAlignment="Right"
+                  Padding="10"
+                  Content="Set this parameters on file"
+                  Command="{Binding LightOffDelaySetParameters}"
+                  CommandParameter="1"/>
 
-          <TextBlock
-            Grid.Row="12"
-            Grid.Column="0"
-            Grid.ColumnSpan="5"
-            VerticalAlignment="Center"
-            HorizontalAlignment="Center"
-            Text="{Binding SlicerFile.LightOffDelay, StringFormat=Current value: \{0\}}"/>
+          <TextBlock Grid.Row="12" Grid.Column="0"
+                     Grid.ColumnSpan="5"
+                     VerticalAlignment="Center"
+                     HorizontalAlignment="Center"
+                     Text="{Binding SlicerFile.LightOffDelay, StringFormat=Current value: {0}}"/>
           
-          <TextBlock
-            Grid.Row="14"
-            Grid.Column="0"
-            Grid.ColumnSpan="7"
-            VerticalAlignment="Center"
-            HorizontalAlignment="Center"
-            Text="{Binding SlicerFile.PrintTimeHours, StringFormat=Old print time: \{0\}h}"/>
+          <TextBlock Grid.Row="14" Grid.Column="0"
+                     Grid.ColumnSpan="7"
+                     VerticalAlignment="Center"
+                     HorizontalAlignment="Center"
+                     Text="{Binding SlicerFile.PrintTimeHours, StringFormat=Old print time: {0}h}"/>
 
-          <TextBlock
-            Grid.Row="16"
-            Grid.Column="0"
-            Grid.ColumnSpan="7"
-            VerticalAlignment="Center"
-            HorizontalAlignment="Center"
-            Text="{Binding LightOffDelayPrintTimeHours, StringFormat=New print time: \{0\}h}"/>
+          <TextBlock Grid.Row="16" Grid.Column="0"
+                     Grid.ColumnSpan="7"
+                     VerticalAlignment="Center"
+                     HorizontalAlignment="Center"
+                     Text="{Binding LightOffDelayPrintTimeHours, StringFormat=New print time: {0}h}"/>
 
 
           <!-- Bottom -->
-          <TextBlock
-            Grid.Row="0"
-            Grid.Column="4"
-            IsVisible="{Binding SlicerFile.CanUseBottomLightOffDelay}"
-            IsEnabled="{Binding SlicerFile.CanUseBottomLightOffDelay}"
-            VerticalAlignment="Center"
-            HorizontalAlignment="Right"
-            Text="Bottom lift height:"/>
+          <TextBlock Grid.Row="0" Grid.Column="4"
+                     IsVisible="{Binding SlicerFile.CanUseBottomLightOffDelay}"
+                     IsEnabled="{Binding SlicerFile.CanUseBottomLightOffDelay}"
+                     VerticalAlignment="Center"
+                     HorizontalAlignment="Right"
+                     Text="Bottom lift height:"/>
           <NumericUpDown Grid.Row="0" Grid.Column="6"
                          Classes="ValueLabel ValueLabel_mm"
                          IsVisible="{Binding SlicerFile.CanUseBottomLightOffDelay}"
@@ -321,14 +284,12 @@
                          FormatString="F2"
                          Value="{Binding Operation.CalcLightOffDelay.BottomLiftHeight}"/>
 
-          <TextBlock
-            Grid.Row="2"
-            Grid.Column="4"
-            IsVisible="{Binding SlicerFile.CanUseBottomLightOffDelay}"
-            IsEnabled="{Binding SlicerFile.CanUseBottomLightOffDelay}"
-            VerticalAlignment="Center"
-            HorizontalAlignment="Right"
-            Text="Bottom lift speed:"/>
+          <TextBlock Grid.Row="2" Grid.Column="4"
+                     IsVisible="{Binding SlicerFile.CanUseBottomLightOffDelay}"
+                     IsEnabled="{Binding SlicerFile.CanUseBottomLightOffDelay}"
+                     VerticalAlignment="Center"
+                     HorizontalAlignment="Right"
+                     Text="Bottom lift speed:"/>
           <NumericUpDown Grid.Row="2" Grid.Column="6"
                          Classes="ValueLabel ValueLabel_mmmin"
                          IsVisible="{Binding SlicerFile.CanUseBottomLightOffDelay}"
@@ -390,7 +351,7 @@
                      IsEnabled="{Binding SlicerFile.CanUseBottomLightOffDelay}"
                      VerticalAlignment="Center"
                      HorizontalAlignment="Center"
-                     Text="{Binding SlicerFile.BottomLightOffDelay, StringFormat=Current value: \{0\}}"/>
+                     Text="{Binding SlicerFile.BottomLightOffDelay, StringFormat=Current value: {0}}"/>
 
         </Grid>
 
@@ -405,7 +366,7 @@
           BorderBrush="Black" BorderThickness="1">
           <TextBox VerticalAlignment="Center" Classes="TransparentReadOnlyMultiLineNoBorder" Padding="10">
             <TextBox.Text>
-              <MultiBinding StringFormat="\{0\}&#x0a;&#x0a;Formula: \{1\}">
+              <MultiBinding StringFormat="{}{0}&#x0a;&#x0a;Formula: {1}">
                 <Binding Path="Operation.CalcOptimalModelTilt.Description"/>
                 <Binding Path="Operation.CalcOptimalModelTilt.Formula"/>
               </MultiBinding>
@@ -414,19 +375,15 @@
         </Border>
 
 
-        <Grid
-          Grid.Row="2"
-          RowDefinitions="Auto,10,Auto"
-          ColumnDefinitions="Auto,10,190,30,Auto,10,190"
-        >
+        <Grid Grid.Row="2"
+              RowDefinitions="Auto,10,Auto"
+              ColumnDefinitions="Auto,10,190,30,Auto,10,190">
 
           <!-- Resolution -->
-          <TextBlock
-            Grid.Row="0"
-            Grid.Column="0"
-            VerticalAlignment="Center"
-            HorizontalAlignment="Right"
-            Text="Resolution X:"/>
+          <TextBlock Grid.Row="0" Grid.Column="0"
+                     VerticalAlignment="Center"
+                     HorizontalAlignment="Right"
+                     Text="Resolution X:"/>
           <NumericUpDown Grid.Row="0" Grid.Column="2"
                          Classes="ValueLabel ValueLabel_px"
                          VerticalAlignment="Center"
@@ -434,12 +391,10 @@
                          Maximum="100000"
                          Value="{Binding Operation.CalcOptimalModelTilt.ResolutionX}"/>
 
-          <TextBlock
-            Grid.Row="2"
-            Grid.Column="0"
-            VerticalAlignment="Center"
-            HorizontalAlignment="Right"
-            Text="Resolution Y:"/>
+          <TextBlock Grid.Row="2" Grid.Column="0"
+                     VerticalAlignment="Center"
+                     HorizontalAlignment="Right"
+                     Text="Resolution Y:"/>
           <NumericUpDown Grid.Row="2" Grid.Column="2"
                          Classes="ValueLabel ValueLabel_px"
                          VerticalAlignment="Center"
@@ -448,12 +403,10 @@
                          Value="{Binding Operation.CalcOptimalModelTilt.ResolutionY}"/>
 
           <!-- Display -->
-          <TextBlock
-            Grid.Row="0"
-            Grid.Column="4"
-            VerticalAlignment="Center"
-            HorizontalAlignment="Right"
-            Text="Display width:"/>
+          <TextBlock Grid.Row="0" Grid.Column="4"
+                     VerticalAlignment="Center"
+                     HorizontalAlignment="Right"
+                     Text="Display width:"/>
           <NumericUpDown Grid.Row="0" Grid.Column="6"
                          Classes="ValueLabel ValueLabel_mm"
                          VerticalAlignment="Center"
@@ -463,12 +416,10 @@
                          FormatString="F2"
                          Value="{Binding Operation.CalcOptimalModelTilt.DisplayWidth}"/>
 
-          <TextBlock
-            Grid.Row="2"
-            Grid.Column="4"
-            VerticalAlignment="Center"
-            HorizontalAlignment="Right"
-            Text="Display height:"/>
+          <TextBlock Grid.Row="2" Grid.Column="4"
+                     VerticalAlignment="Center"
+                     HorizontalAlignment="Right"
+                     Text="Display height:"/>
           <NumericUpDown Grid.Row="2" Grid.Column="6"
                          Classes="ValueLabel ValueLabel_mm"
                          VerticalAlignment="Center"
@@ -479,16 +430,13 @@
                          Value="{Binding Operation.CalcOptimalModelTilt.DisplayHeight}"/>
         </Grid>
 
-        <Grid
-          Grid.Row="4"
-          RowDefinitions="Auto,10,Auto,10,Auto"
-          ColumnDefinitions="Auto,10,190">
-          <TextBlock
-            Grid.Row="0"
-            Grid.Column="0"
-            VerticalAlignment="Center"
-            HorizontalAlignment="Right"
-            Text="Layer height:"/>
+        <Grid Grid.Row="4"
+              RowDefinitions="Auto,10,Auto,10,Auto"
+              ColumnDefinitions="Auto,10,190">
+          <TextBlock Grid.Row="0" Grid.Column="0"
+                     VerticalAlignment="Center"
+                     HorizontalAlignment="Right"
+                     Text="Layer height:"/>
           <NumericUpDown Grid.Row="0" Grid.Column="2"
                          Classes="ValueLabel ValueLabel_mm"
                          VerticalAlignment="Center"
@@ -498,28 +446,23 @@
                          FormatString="F3"
                          Value="{Binding Operation.CalcOptimalModelTilt.LayerHeight}"/>
 
-          <TextBlock
-            Grid.Row="2"
-            Grid.Column="0"
-            VerticalAlignment="Center"
-            HorizontalAlignment="Right"
-            Text="XY resolution:"/>
+          <TextBlock Grid.Row="2" Grid.Column="0"
+                     VerticalAlignment="Center"
+                     HorizontalAlignment="Right"
+                     Text="XY resolution:"/>
           <NumericUpDown Grid.Row="2" Grid.Column="2"
                    Classes="ValueLabel ValueLabel_um ReadOnly"
                    VerticalAlignment="Center"
                    Text="{Binding Operation.CalcOptimalModelTilt.XYResolutionUm}"/>
 
-          <TextBlock
-            Grid.Row="4"
-            Grid.Column="0"
-            VerticalAlignment="Center"
-            HorizontalAlignment="Right"
-            FontWeight="Bold"
-            Text="Optimal tilt angle:"/>
+          <TextBlock Grid.Row="4" Grid.Column="0"
+                     VerticalAlignment="Center"
+                     HorizontalAlignment="Right"
+                     FontWeight="Bold"
+                     Text="Optimal tilt angle:"/>
           <NumericUpDown Grid.Row="4" Grid.Column="2"
                    Classes="ValueLabel ValueLabel_deg ReadOnly"
                    VerticalAlignment="Center"
-                   IsReadOnly="True"
                    FontWeight="Bold"
                    Text="{Binding Operation.CalcOptimalModelTilt.TiltAngleDegrees}"/>
         </Grid>

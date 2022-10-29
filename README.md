@@ -26,7 +26,7 @@
 ```bash
 [ "$(command -v apt-get)" -a -z "$(command -v curl)" ] && sudo apt-get install -y curl 
 [ "$(command -v pacman)" -a -z "$(command -v curl)" ] && sudo pacman -S curl
-[ "$(command -v yum)" -a -z "$(command -v curl)" ] && sudo yum install -y curl
+[ "$(command -v dnf)" -a -z "$(command -v curl)" ] && sudo dnf install -y curl
 bash -c "$(curl -fsSL https://raw.githubusercontent.com/sn4k3/UVtools/master/Scripts/install-uvtools.sh)"
 ```
 
@@ -280,14 +280,14 @@ The following commands are the old way and commands under the UI executable, the
 ```bash
 [ "$(command -v apt-get)" -a -z "$(command -v curl)" ] && sudo apt-get install -y curl 
 [ "$(command -v pacman)" -a -z "$(command -v curl)" ] && sudo pacman -S curl
-[ "$(command -v yum)" -a -z "$(command -v curl)" ] && sudo yum install -y curl
+[ "$(command -v dnf)" -a -z "$(command -v curl)" ] && sudo dnf install -y curl
 sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/sn4k3/UVtools/master/Scripts/install-dependencies.sh)"
 ```
 <!-- sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/sn4k3/UVtools/master/Scripts/libdl-solver.sh)" !-->
 
 **To run UVtools open it folder on a terminal and call one of:**
 
-- Double-click UVtools file
+- Double-click `UVtools` file
 - `./UVtools`
 - `bash UVtools.sh`
 - `dotnet UVtools.dll` [For universal package only, requires dotnet-runtime]

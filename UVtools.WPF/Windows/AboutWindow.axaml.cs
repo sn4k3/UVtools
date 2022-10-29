@@ -59,11 +59,12 @@ public class AboutWindow : WindowEx
         {
             try
             {
-                var match = Regex.Match(CvInvoke.BuildInformation, @"(?:Version control:\s*)(\S*)");
+                return typeof(Mat).Assembly.GetName().Version!.ToString(3);
+                /*var match = Regex.Match(CvInvoke.BuildInformation, @"(?:Version control:\s*)(\S*)");
                 if (!match.Success) return "Not found!";
                 var index = match.Groups[1].Value.LastIndexOf('-');
                 if (index < 0) return match.Groups[1].Value;
-                return match.Groups[1].Value[..index];
+                return match.Groups[1].Value[..index];*/
             }
             catch 
             {

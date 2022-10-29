@@ -8,15 +8,14 @@
 # usage 2: ./createRelease.sh -b osx-x64
 # usage 3: ./createRelease.sh -b -z osx-x64
 #
-cd "$(dirname "$0")"
-cd ..
+cd "$(dirname "$0")/.."
 [ ! -d "UVtools.Core" ] && echo "UVtools.Core not found!" && exit -1
 
 testcmd() { command -v "$1" &> /dev/null; }
 
 #runtime=$1
 for runtime in $@; do :; done # Get last argument
-rootDir="$(pwd)"
+rootDir="$PWD"
 buildDir="$rootDir/build"
 coreDir="$rootDir/UVtools.Core"
 #version="$(grep -oP '<Version>\K(\d\.\d\.\d)(?=<\/Version>)' "$coreDir/UVtools.Core.csproj")" # Not supported on recent macos!
@@ -75,19 +74,19 @@ fi
 
 if [ -z "$runtime" ]; then
     echo "Error: No runtime selected, please pick one of the following:"
-    ls "$platformsDir"
+    ls "$platformsDir" | grep -
     exit -1
 fi
 
 if [[ "$runtime" != *-* && $runtime != *-arm && $runtime != *-x64 && $runtime != *-x86 ]]; then
     echo "Error: The runtime '$runtime' is not valid, please pick one of the following:"
-    ls "$platformsDir"
+    ls "$platformsDir" | grep -
     exit -1
 fi
 
 if [ "$runtime" != "win-x64" -a ! -d "$platformsDir/$runtime" ]; then
     echo "Error: The runtime '$runtime' is not valid, please pick one of the following:"
-    ls "$platformsDir"
+    ls "$platformsDir" | grep -
     exit -1
 fi
 

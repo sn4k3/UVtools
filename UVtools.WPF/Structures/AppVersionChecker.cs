@@ -159,7 +159,16 @@ public class AppVersionChecker : BindableBase
                 var fileName = Filename;
                 foreach (var asset in assets)
                 {
-                    if (asset["name"]!.ToString() != fileName) continue;
+                    var name = asset["name"]!.ToString();
+                    if (OperatingSystem.IsLinux() && name.StartsWith($"{About.Software}_linux-") && name.EndsWith(".AppImage"))
+                    {
+                        // Force generic Linux first
+                        if ((Linux.IsRunningAppImage && name.EndsWith(".AppImage")) || (!Linux.IsRunningAppImage && name.EndsWith(".zip")))
+                        {
+                            DownloadLink = asset["browser_download_url"]!.ToString();
+                        }
+                    }
+                    if (name != fileName) continue;
                     DownloadLink = asset["browser_download_url"]!.ToString();
                     break;
                 }
