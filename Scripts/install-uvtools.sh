@@ -39,7 +39,7 @@ downloaduvtools(){
     echo "Downloading: $download_url"
     curl -L --retry 4 $download_url -o "$tmpfile"
 
-    download_size="$(curl -s -L -I $download_url | gawk -v IGNORECASE=1 '/^Content-Length/ { print $2 }' | tail -n1 | tr -d '\r')"
+    download_size="$(curl -sLI $download_url | grep -i Content-Length | tail -n1 | tr -d '\r')"
     if [ -n "$download_size" ]; then
         echo "- Validating file"
         local filesize="$(get_filesize "$tmpfile")"
