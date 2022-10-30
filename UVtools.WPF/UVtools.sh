@@ -1,9 +1,10 @@
 #!/bin/bash
 path="$(dirname "$0")"
 arch="$(uname -m)" # x86_64 or arm64
+args="$@"
 
 run_app_normal(){
-    "$path/UVtools"
+    "$path/UVtools" $args
 }
 
 run_app_dotnet(){ 
@@ -14,7 +15,7 @@ run_app_dotnet(){
     fi
 
     if [ -f "$path/UVtools.dll" ]; then
-        dotnet "$path/UVtools.dll"
+        dotnet "$path/UVtools.dll" $args
     else
         echo "Error: UVtools.dll not found."
         exit -1
@@ -25,7 +26,7 @@ if [ "${OSTYPE:0:6}" == "darwin" ]; then
     if [ "$arch" == "arm64" ]; then
         run_app_dotnet
     elif [ -d "$path/../../../UVtools.app" ]; then
-        open "$path/../../../UVtools.app"
+        open -n "$path/../../../UVtools.app" --args $args
     else
         run_app_normal
     fi
