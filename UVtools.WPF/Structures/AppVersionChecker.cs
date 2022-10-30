@@ -249,7 +249,7 @@ public class AppVersionChecker : BindableBase
                     await stream.WriteLineAsync();
                     //await stream.WriteLineAsync($"cd '{App.ApplicationPath}'");
                     await stream.WriteLineAsync($"killall {About.Software}");
-                    await stream.WriteLineAsync($"ps -ef | grep '.*dotnet.*{About.Software}.dll' | grep -v grep | awk '{{print $2}}' | xargs -r kill");
+                    await stream.WriteLineAsync($"ps -ef | grep '.*dotnet.*{About.Software}.dll' | grep -v grep | awk '{{print $2}}' | xargs kill");
                     await stream.WriteLineAsync("sleep 1");
                     await stream.WriteLineAsync();
 
@@ -265,7 +265,7 @@ public class AppVersionChecker : BindableBase
                         await stream.WriteLineAsync("else");
                         await stream.WriteLineAsync($"  cp -fR '{extractDirectoryPath}/'* '{macOSAppPath}'");
                         await stream.WriteLineAsync("fi");
-                        //await stream.WriteLineAsync($"open '{macOSAppPath}'");
+                        //await stream.WriteLineAsync($"open -n '{macOSAppPath}'");
                     }
                     else // Linux generic and macOS generic
                     {
