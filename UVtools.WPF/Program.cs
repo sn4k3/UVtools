@@ -1,25 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Drawing;
 using System.Globalization;
-using System.IO;
-using System.Numerics;
 using System.Threading.Tasks;
 using Avalonia;
-using AvaloniaEdit.Utils;
-using Emgu.CV;
-using Emgu.CV.CvEnum;
-using Emgu.CV.Features2D;
-using Emgu.CV.Fuzzy;
-using Emgu.CV.PpfMatch3d;
-using Emgu.CV.XFeatures2D;
 using Projektanker.Icons.Avalonia;
 using Projektanker.Icons.Avalonia.FontAwesome;
 using Projektanker.Icons.Avalonia.MaterialDesign;
-using UVtools.Core.EmguCV;
-using UVtools.Core.Extensions;
-using UVtools.Core.MeshFormats;
 using UVtools.Core.SystemOS;
 
 namespace UVtools.WPF;
@@ -53,18 +39,18 @@ public static class Program
             return;
         }
 
-        if (Args.Length > 2)
+        if (Args.Length >= 1)
         {
             switch (Args[0])
             {
-                case "--crash-report":
-                    IsCrashReport = true;
-                    break;
                 case "--debug":
                     App.IsDebug = true;
                     break;
+                case "--crash-report" when Args.Length >= 3:
+                    IsCrashReport = true;
+                    break;
             }
-        }
+        } 
 
         /*using var mat = CvInvoke.Imread(@"D:\layer0.png", ImreadModes.Grayscale);
         var contours = mat.FindContours(out var hierarchy, RetrType.Tree, ChainApproxMethod.ChainApproxTc89Kcos);
