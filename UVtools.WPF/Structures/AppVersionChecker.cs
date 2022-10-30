@@ -249,6 +249,7 @@ public class AppVersionChecker : BindableBase
                     await stream.WriteLineAsync();
                     //await stream.WriteLineAsync($"cd '{App.ApplicationPath}'");
                     await stream.WriteLineAsync($"killall {About.Software}");
+                    await stream.WriteLineAsync($"ps -ef | grep '.*dotnet.*{About.Software}.dll' | grep -v grep | awk '{{print $2}}' | xargs -r kill");
                     await stream.WriteLineAsync("sleep 1");
                     await stream.WriteLineAsync();
 

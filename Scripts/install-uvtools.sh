@@ -140,7 +140,7 @@ echo "Error: UVtools.app not found on known paths"
 
         echo ''
 
-        if [ -f "$appPath/Contents/MacOS/UVtools.sh" ]; then
+        if [ "$arch" == "arm64" -a -f "$appPath/Contents/MacOS/UVtools.sh" ]; then
             nohup bash "$appPath/Contents/MacOS/UVtools.sh" &> /dev/null &
             disown
         elif [ -d "$appPath" ]; then
