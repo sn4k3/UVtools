@@ -16,6 +16,17 @@ macOS_least_version=10.15
 
 version() { echo "$@" | awk -F. '{ printf("%d%03d%03d%03d\n", $1,$2,$3,$4); }'; }
 testcmd() { command -v "$1" &> /dev/null; }
+get_filesize() {
+    (
+      du --apparent-size --block-size=1 "$1" 2>/dev/null ||
+      gdu --apparent-size --block-size=1 "$1" 2>/dev/null ||
+      find "$1" -printf "%s" 2>/dev/null ||
+      gfind "$1" -printf "%s" 2>/dev/null ||
+      stat --printf="%s" "$1" 2>/dev/null ||
+      stat -f%z "$1" 2>/dev/null ||
+      wc -c <"$1" 2>/dev/null
+    ) | awk '{print $1}'
+}
 downloaduvtools(){
     if [ -z "$1" ]; then
         echo "Download url was not specified"
@@ -27,6 +38,16 @@ downloaduvtools(){
 
     echo "Downloading: $download_url"
     curl -L --retry 4 $download_url -o "$tmpfile"
+
+    if [ -n "$2" ]; then
+        echo "- Validating file"
+        size="$(get_filesize "$tmpfile")"
+        if [ "$2" -ne "$size" ]; then
+            echo "Error: File verification failed, expecting $2 bytes but downloaded $size bytes. Please re-run the script."
+            rm -f "$tmpfile"
+            exit -1
+        fi
+    fi
 
     echo "- Kill instances"
     killall UVtools 2> /dev/null
@@ -90,7 +111,7 @@ if [ "${OSTYPE:0:6}" == "darwin" ]; then
     echo "- Removing old versions"
     rm -rf "$appPath"
 
-    echo "- Inflating $tmpfile to $appPath"
+    echo "- Inflating $filename to $appPath"
     unzip -q -o "$tmpfile" -d "/Applications"
     rm -f "$tmpfile"
 
