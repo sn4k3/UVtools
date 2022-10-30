@@ -30,7 +30,7 @@ downloaduvtools(){
 
     echo "- Kill instances"
     killall UVtools 2> /dev/null
-    ps -ef | grep '.*dotnet.*UVtools.dll' | grep -v grep | awk '{print $2}' | xargs -r kill
+    ps -ef | grep '.*dotnet.*UVtools.dll' | grep -v grep | awk '{print $2}' | xargs kill
     sleep 0.5
 }
 
@@ -144,7 +144,7 @@ echo "Error: UVtools.app not found on known paths"
             nohup bash "$appPath/Contents/MacOS/UVtools.sh" &> /dev/null &
             disown
         elif [ -d "$appPath" ]; then
-            open "$appPath"
+            open -n "$appPath"
         fi
     else
         echo "Installation unsuccessful, unable to create '$appPath'."
