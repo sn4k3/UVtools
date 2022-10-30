@@ -39,11 +39,12 @@ downloaduvtools(){
     echo "Downloading: $download_url"
     curl -L --retry 4 $download_url -o "$tmpfile"
 
-    if [ -n "$2" ]; then
+    download_size="$(curl -s -L -I $download_url | gawk -v IGNORECASE=1 '/^Content-Length/ { print $2 }' | tail -n1 | tr -d '\r')"
+    if [ -n "$download_size" ]; then
         echo "- Validating file"
-        size="$(get_filesize "$tmpfile")"
-        if [ "$2" -ne "$size" ]; then
-            echo "Error: File verification failed, expecting $2 bytes but downloaded $size bytes. Please re-run the script."
+        local filesize="$(get_filesize "$tmpfile")"
+        if [ "$download_size" -ne "$filesize" ]; then
+            echo "Error: File verification failed, expecting $download_size bytes but downloaded $filesize bytes. Please re-run the script."
             rm -f "$tmpfile"
             exit -1
         fi
