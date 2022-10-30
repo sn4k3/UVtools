@@ -113,9 +113,9 @@ rm -rf "$projectDir/bin/$buildWith/net$netVersion/$runtime" 2>/dev/null
 rm -rf "$projectDir/obj/$buildWith/net$netVersion/$runtime" 2>/dev/null
 
 echo "5. Setting Permissions"
-chmod -fv a+x "$publishRuntimeDir/UVtools"
-chmod -fv a+x "$publishRuntimeDir/UVtoolsCmd"
-chmod -fv a+x "$publishRuntimeDir/UVtools.sh"
+chmod -fv 775 "$publishRuntimeDir/UVtools"
+chmod -fv 775 "$publishRuntimeDir/UVtoolsCmd"
+chmod -fv 775 "$publishRuntimeDir/UVtools.sh"
 
 if [[ "$runtime" == win-* ]]; then
     echo "6. Windows should be published in a windows machine!"
@@ -170,7 +170,7 @@ else
         tempDir="$(mktemp -d /tmp/uvtoolspublish.XXXXXX)" # Allow parallel publishes
         appImageFile="appimagetool-x86_64"
         wget -O "$tempDir/appimagetool-x86_64.AppImage" "https://github.com/AppImage/AppImageKit/releases/download/continuous/$appImageFile.AppImage"
-        chmod a+x "$tempDir/$appImageFile.AppImage"
+        chmod 775 "$tempDir/$appImageFile.AppImage"
         # Extract AppImage so it can be run in Docker containers and on  machines that don't have FUSE installed
         # Note: Extracting requires libglib2.0-0 to be installed
         cd "$tempDir"
@@ -179,7 +179,7 @@ else
 
         # Create the AppImage
         ARCH=x86_64 "$tempDir/squashfs-root/AppRun" "$linuxAppDir" "$linuxAppImage"
-        chmod a+x "$linuxAppImage"
+        chmod -fv 775 "$linuxAppImage"
 
         # Remove the base publish if able
         #[ "$keepNetPublish" == false ] && rm -rf "$publishRuntimeDir" 2>/dev/null

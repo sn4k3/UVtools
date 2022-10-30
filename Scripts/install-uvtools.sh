@@ -8,6 +8,7 @@
 
 #cd "$(dirname "$0")"
 arch="$(uname -m)" # x86_64 or arm64
+archCode="${arch/86_/}"
 osVariant=""       # osx, linux, arch, rhel
 api_url="https://api.github.com/repos/sn4k3/UVtools/releases/latest"
 dependencies_url="https://raw.githubusercontent.com/sn4k3/UVtools/master/Scripts/install-dependencies.sh"
@@ -88,7 +89,7 @@ done
 echo "Error: UVtools.app not found on known paths"
 ' > "$run_script"
 
-            chmod a+x "$run_script"
+            chmod 775 "$run_script"
             echo "Note: Always run \"bash run-uvtools\" from your Desktop to launch UVtools on this Mac (arm64)!"
         fi
 
@@ -147,35 +148,30 @@ if [ -z "$download_url" ]; then
 fi
 
 filename="$(basename "${download_url}")"
-tmpfile="/tmp/$filename"
+tmpfile=$(mktemp "${TMPDIR:-/tmp}"/UVtoolsUpdate.XXXXXXXX)
 
 echo "Downloading: $download_url"
-#wget $download_url -O "$tmpfile" -q --show-progress
 curl -L --retry 4 $download_url -o "$tmpfile"
-
-echo "- Setting permissions"
-chmod -fv a+x "$tmpfile"
 
 echo "- Kill instances"
 killall -q UVtools
 
-if [ -d "$HOME/Applications" ]; then
-    echo "- Removing old versions"
-    rm -f "$HOME/Applications/UVtools_*.AppImage"
-    
-    echo "- Moving $filename to $HOME/Applications"
-    mv -f "$tmpfile" "$HOME/Applications"
-    
-    "$HOME/Applications/$filename" &
-    echo "If prompt for \"Desktop integration\", click \"Integrate and run\""
-else 
-    echo "- Removing old versions"
-    rm -f UVtools_*.AppImage
+targetDir="$PWD"
+[ -d "$HOME/Applications" ] && targetDir="$HOME/Applications"
+targetFilePath="$targetDir/$filename"
 
-    echo "- Moving $filename to $(pwd)"
-    mv -f "$tmpfile" .
+echo "- Removing old versions"
+rm -f "$targetDir/UVtools_"*".AppImage"
 
-    ./$filename &
-fi
+echo "- Moving $filename to $targetDir"
+mv -f "$tmpfile" "$targetFilePath"
 
-echo "UVtools will now run."
+echo "- Setting permissions"
+chmod -fv 775 "$targetFilePath"
+
+"$targetFilePath" &
+
+echo ''
+echo 'UVtools will now run.'
+echo 'If prompt for "Desktop integration", click "Integrate and run"'
+echo ''

@@ -49,6 +49,7 @@ jobs:
     name: Homebrew Cask - Pull request
     runs-on: macos-latest
     steps:
+      - run: export HOMEBREW_GITHUB_API_TOKEN=${HOMEBREW_GITHUB_API_TOKEN}
       - uses: macauley/action-homebrew-bump-cask@v1
         with:
           token: ${WINGET_TOKEN}

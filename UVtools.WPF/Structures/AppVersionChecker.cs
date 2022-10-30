@@ -223,7 +223,7 @@ public class AppVersionChecker : BindableBase
 
                 if (File.Exists(appImagePath)) File.Delete(appImagePath);
                 File.Move(DownloadedFile, newFullPath, true);
-                SystemAware.StartProcess("chmod", $"a+x \"{newFullPath}\"", true);
+                SystemAware.StartProcess("chmod", $"775 \"{newFullPath}\"", true);
                 Thread.Sleep(500);
                 SystemAware.StartProcess(newFullPath);
             }
