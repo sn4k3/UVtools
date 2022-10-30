@@ -23,7 +23,7 @@ downloaduvtools(){
     fi
 
     filename="$(basename "${download_url}")"
-    tmpfile=$(mktemp "${TMPDIR:-/tmp}"/UVtoolsUpdate.XXXXXXXX)
+    tmpfile="$(mktemp "${TMPDIR:-/tmp}"/UVtoolsUpdate.XXXXXXXX)"
 
     echo "Downloading: $download_url"
     curl -L --retry 4 $download_url -o "$tmpfile"
