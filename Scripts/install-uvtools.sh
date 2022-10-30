@@ -30,7 +30,7 @@ downloaduvtools(){
 
     echo "- Kill instances"
     killall UVtools 2> /dev/null
-    ps -ef | grep '.*dotnet.*UVtools.dll' | grep -v grep | awk '{print $2}' | xargs kill
+    ps -ef | grep '.*dotnet.*UVtools.dll' | grep -v grep | awk '{print $2}' | xargs kill 2> /dev/null
     sleep 0.5
 }
 
