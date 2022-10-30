@@ -16,6 +16,21 @@ macOS_least_version=10.15
 
 version() { echo "$@" | awk -F. '{ printf("%d%03d%03d%03d\n", $1,$2,$3,$4); }'; }
 testcmd() { command -v "$1" &> /dev/null; }
+downloaduvtools(){
+    if [ -z "$1" ]; then
+        echo "Download url was not specified"
+        exit -1
+    fi
+
+    filename="$(basename "${download_url}")"
+    tmpfile=$(mktemp "${TMPDIR:-/tmp}"/UVtoolsUpdate.XXXXXXXX)
+
+    echo "Downloading: $download_url"
+    curl -L --retry 4 $download_url -o "$tmpfile"
+
+    echo "- Kill instances"
+    ps -ef | grep 'UVtools' | grep -v grep | awk '{print $2}' | xargs -r kill -9
+}
 
 if [ "$arch" != "x86_64" -a "$arch" != "arm64" ]; then
     echo "Error: Unsupported host arch $arch"
@@ -27,6 +42,9 @@ echo "Script to download and install UVtools"
 echo "- Detecting OS"
 
 if [ "${OSTYPE:0:6}" == "darwin" ]; then
+    #############
+    #   macOS   #
+    #############
     osVariant="osx"
     macOS_version="$(sw_vers -productVersion)"
     appPath="/Applications/UVtools.app"
@@ -38,23 +56,48 @@ if [ "${OSTYPE:0:6}" == "darwin" ]; then
         exit -1
     fi
 
-    if ! testcmd brew; then
-        bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-        if [ -f "/opt/homebrew/bin/brew" -a -z "$(command -v brew)" ]; then
-            echo '# Set PATH, MANPATH, etc., for Homebrew.' >> "$HOME/.zprofile"
-            echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> "$HOME/.zprofile"
-            eval "$(/opt/homebrew/bin/brew shellenv)"
+    # Required dotnet-sdk to run arm64 and bypass codesign
+    if [ "$arch" == "arm64" -a -z "$(command -v dotnet)" ]; then
+        if ! testcmd brew; then
+            bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+            if [ -f "/opt/homebrew/bin/brew" -a -z "$(command -v brew)" ]; then
+                echo '# Set PATH, MANPATH, etc., for Homebrew.' >> "$HOME/.zprofile"
+                echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> "$HOME/.zprofile"
+                eval "$(/opt/homebrew/bin/brew shellenv)"
+            fi
         fi
+
+        brew install --cask dotnet-sdk
     fi
 
-    brew install --cask --no-quarantine uvtools
+    echo "- Detecting download"
 
-    # Required dotnet-sdk to run arm64 and bypass codesign
-    [ "$arch" == "arm64" -a -z "$(command -v dotnet)" ] && brew install --cask dotnet-sdk
+    download_url="$(curl -s "$api_url" \
+    | grep "browser_download_url.*_${osVariant}-${archCode}_.*\.zip" \
+    | head -1 \
+    | cut -d : -f 2,3 \
+    | tr -d \")"
+
+    if [ -z "$download_url" ]; then
+        echo "Error: Unable to detect the download url."
+        exit -1
+    fi
+
+    downloaduvtools "$download_url"
+
+    echo "- Removing old versions"
+    rm -rf "$appPath"
+
+    echo "- Inflating $tmpfile to $appPath"
+    unzip -q -o "$tmpfile" -d "/Applications"
+    rm -f "$tmpfile"
 
     if [ -d "$appPath" ]; then
         # Remove quarantine security from files
         find "$appPath" -print0 | xargs -0 xattr -d com.apple.quarantine &> /dev/null
+
+        echo ''
+        echo 'Installation was successful. UVtools will now run.'
 
         # arm64: Create script on user desktop to run UVtools
         if [ "$arch" == "arm64" ]; then
@@ -90,8 +133,10 @@ echo "Error: UVtools.app not found on known paths"
 ' > "$run_script"
 
             chmod 775 "$run_script"
-            echo "Note: Always run \"bash run-uvtools\" from your Desktop to launch UVtools on this Mac (arm64)!"
+            echo 'Note: Always run "bash run-uvtools" from your Desktop to launch UVtools on this Mac (arm64)!'
         fi
+
+        echo ''
 
         if [ -f "$appPath/Contents/MacOS/UVtools.sh" ]; then
             nohup bash "$appPath/Contents/MacOS/UVtools.sh" &> /dev/null &
@@ -99,6 +144,9 @@ echo "Error: UVtools.app not found on known paths"
         elif [ -d "$appPath" ]; then
             open "$appPath"
         fi
+    else
+        echo "Installation unsuccessful, unable to create '$appPath'."
+        exit -1
     fi
 
     exit 1
@@ -118,6 +166,9 @@ if [ -z "$osVariant" ]; then
     exit -1
 fi
 
+#############
+#   Linux   #
+#############
 echo "- Detected: $osVariant $arch"
 
 if [ -z "$(ldconfig -p | grep libpng)" -o -z "$(ldconfig -p | grep libgdiplus)" -o -z "$(ldconfig -p | grep libgeotiff)" -o -z "$(ldconfig -p | grep libavcodec)" ]; then
@@ -147,14 +198,7 @@ if [ -z "$download_url" ]; then
     exit -1
 fi
 
-filename="$(basename "${download_url}")"
-tmpfile=$(mktemp "${TMPDIR:-/tmp}"/UVtoolsUpdate.XXXXXXXX)
-
-echo "Downloading: $download_url"
-curl -L --retry 4 $download_url -o "$tmpfile"
-
-echo "- Kill instances"
-killall -q UVtools
+downloaduvtools "$download_url"
 
 targetDir="$PWD"
 [ -d "$HOME/Applications" ] && targetDir="$HOME/Applications"
@@ -165,6 +209,7 @@ rm -f "$targetDir/UVtools_"*".AppImage"
 
 echo "- Moving $filename to $targetDir"
 mv -f "$tmpfile" "$targetFilePath"
+rm -f "$tmpfile"
 
 echo "- Setting permissions"
 chmod -fv 775 "$targetFilePath"
@@ -172,6 +217,6 @@ chmod -fv 775 "$targetFilePath"
 "$targetFilePath" &
 
 echo ''
-echo 'UVtools will now run.'
+echo 'Installation was successful. UVtools will now run.'
 echo 'If prompt for "Desktop integration", click "Integrate and run"'
 echo ''
