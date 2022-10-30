@@ -29,7 +29,8 @@ downloaduvtools(){
     curl -L --retry 4 $download_url -o "$tmpfile"
 
     echo "- Kill instances"
-    ps -ef | grep 'UVtools' | grep -v grep | awk '{print $2}' | xargs -r kill -9
+    killall -9 UVtools 2> /dev/null
+    ps -ef | grep '.*dotnet.+UVtools.dll' | grep -v grep | awk '{print $2}' | xargs -r kill -9
     sleep 0.5
 }
 
