@@ -21,8 +21,14 @@ run_app_dotnet(){
     fi
 }
 
-if [ "${OSTYPE:0:6}" == "darwin" -a "$arch" == "arm64" ]; then
-    run_app_dotnet
+if [ "${OSTYPE:0:6}" == "darwin" ]; then
+    if [ "$arch" == "arm64" ]; then
+        run_app_dotnet
+    elif [ -d "$path/../../../UVtools.app" ]
+        open "$path/../../../UVtools.app"
+    else
+        run_app_normal
+    fi
 elif [ -f "$path/UVtools" ]; then
     run_app_normal
 elif [ -f "$path/UVtools.dll" ]; then
