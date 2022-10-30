@@ -118,7 +118,7 @@ lookupPaths=(
 
 for path in "${lookupPaths[@]}"
 do
-	if [ -f "$path" ]; then
+    if [ -f "$path" ]; then
         echo "Found: $path"
         echo "UVtools will now run."
 
