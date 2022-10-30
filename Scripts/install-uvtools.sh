@@ -30,6 +30,7 @@ downloaduvtools(){
 
     echo "- Kill instances"
     ps -ef | grep 'UVtools' | grep -v grep | awk '{print $2}' | xargs -r kill -9
+    sleep 0.5
 }
 
 if [ "$arch" != "x86_64" -a "$arch" != "arm64" ]; then
