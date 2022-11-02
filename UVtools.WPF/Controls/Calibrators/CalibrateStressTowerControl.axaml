@@ -147,7 +147,7 @@
 
             <TextBlock
                 FontWeight="Bold"
-                Text="{Binding Operation.TotalHeight, StringFormat=\{0:F3\}mm}"/>
+                Text="{Binding Operation.TotalHeight, StringFormat={}{0:F3}mm}"/>
 
 
         </StackPanel>

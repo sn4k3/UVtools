@@ -165,12 +165,12 @@
           <TextBlock
             Grid.Row="2" Grid.Column="1"
             HorizontalAlignment="Center"
-            Text="{Binding LayerStartMM, StringFormat=(\{0:F3\}mm)}" />
+            Text="{Binding LayerStartMM, StringFormat=({0:F3}mm)}" />
 
           <TextBlock
             Grid.Row="2" Grid.Column="3"
             HorizontalAlignment="Center"
-            Text="{Binding LayerEndMM, StringFormat=(\{0:F3\}mm)}" />
+            Text="{Binding LayerEndMM, StringFormat=({0:F3}mm)}" />
 
           <TextBlock
             Grid.Row="2" Grid.Column="4"
@@ -207,7 +207,7 @@
                           Command="{Binding ClearROI}"/>
                       <Button
                           VerticalAlignment="Center"
-                          Content="{Binding Masks.Length, StringFormat=Clear \{0\} mask(s)}"
+                          Content="{Binding Masks.Length, StringFormat=Clear {0} mask(s)}"
                           IsVisible="{Binding IsMasksVisible}"
                           Command="{Binding ClearMasks}"/>
 
@@ -218,7 +218,7 @@
         <StackPanel Margin="15" Spacing="5">
           <TextBlock VerticalAlignment="Center"
                      IsVisible="{Binding IsROIVisible}"
-                     Text="{Binding ROI, StringFormat=Region: \{0\}}" />
+                     Text="{Binding ROI, StringFormat=Region: {0}}" />
 
             <CheckBox
                 Content="Clear ROI and Masks after perform the operation"
@@ -241,7 +241,7 @@
           <TextBlock Grid.Row="0" Grid.Column="0"
                      Padding="10" FontWeight="Bold"
                      VerticalAlignment="Center"
-                     Text="{Binding Profiles.Count, StringFormat=Profiles: \{0\}}" />
+                     Text="{Binding Profiles.Count, StringFormat=Profiles: {0}}" />
 
             <Button Grid.Row="0" Grid.Column="1"
                     VerticalAlignment="Center"

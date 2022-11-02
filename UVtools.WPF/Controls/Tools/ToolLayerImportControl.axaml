@@ -116,7 +116,7 @@
 
           <TextBlock
             VerticalAlignment="Center"
-            Text="{Binding Operation.Files.Count, StringFormat=Files: \{0\}}"/>
+            Text="{Binding Operation.Files.Count, StringFormat=Files: {0}}"/>
         </StackPanel>
       </Grid>
     </Border>

@@ -9,7 +9,8 @@
 	<Grid ColumnDefinitions="Auto,10,350">
 		<StackPanel Spacing="10">
 
-            <Border BorderBrush="Gray" BorderThickness="1" Padding="5">
+            <Border BorderBrush="Gray" BorderThickness="1" Padding="5"
+                    DragDrop.AllowDrop="True">
                 <Grid>
                     <StackPanel Spacing="5" Orientation="Horizontal">
                         <controls:ButtonWithIcon Padding="5"
@@ -25,7 +26,7 @@
                                                  Icon="fa-solid fa-file-zipper"/>
 
                         <controls:ButtonWithIcon Padding="5"
-                                                 IsEnabled="{Binding #FilesListBox.SelectedItems.Count}"
+                                                 IsEnabled="{Binding SelectedFile, Converter={x:Static ObjectConverters.IsNotNull}}"
                                                  Command="{Binding RemoveFiles}"
                                                  Text="Remove"
                                                  Spacing="5"
@@ -34,14 +35,14 @@
 
                     <StackPanel HorizontalAlignment="Right"
                                 Spacing="5" Orientation="Horizontal">
-						<!--
+						
 						<controls:ButtonWithIcon Padding="5"
                                                  IsEnabled="{Binding Operation.Files.Count}"
                                                  Command="{Binding Operation.Sort}"
-                                                 Text="Sort by file name"
+                                                 Text="Sort ASC"
                                                  Spacing="5"
                                                  Icon="fa-solid fa-sort-alpha-up"/>
-                        -->
+                        
                         <controls:ButtonWithIcon
                             IsEnabled="{Binding Operation.Files.Count}"
                             Padding="5" Command="{Binding ClearFiles}"
@@ -51,24 +52,56 @@
 
                         <TextBlock
                             VerticalAlignment="Center"
-                            Text="{Binding Operation.Files.Count, StringFormat=Files: \{0\}}"/>
+                            Text="{Binding Operation.Files.Count, StringFormat=Files: {0}}"/>
                     </StackPanel>
                 </Grid>
             </Border>
 
-            <ListBox Name="FilesListBox"
-                     SelectionMode="Multiple"
-                     SelectedItem="{Binding SelectedFile}"
-                     MinHeight="50"
-                     MaxHeight="400"
-                     Items="{Binding Operation.Files}" />
+            <DataGrid Name="FilesDataGrid"
+                      BorderBrush="Gray" BorderThickness="1"
+                      CanUserReorderColumns="False"
+                      CanUserResizeColumns="False"
+                      CanUserSortColumns="True"
+                      GridLinesVisibility="Horizontal"
+                      SelectionMode="Extended"
+                      ClipboardCopyMode="IncludeHeader"
+                      MinHeight="150"
+                      MaxHeight="400"
+                      Width="508"
+                      Items="{Binding Operation.Files}"
+                      SelectedItem="{Binding SelectedFile}"
+                      DragDrop.AllowDrop="True">
+                <DataGrid.Columns>
+                    <DataGridTextColumn  Header="Filename"
+                                         Binding="{Binding FileName}"
+                                         IsReadOnly="True"
+                                         Width="*" />
+                    <DataGridTemplateColumn  Header="Size scale"
+                                             Width="130">
+                        <DataTemplate>
+                            <NumericUpDown Increment="0.05"
+                                           Minimum="0.01"
+                                           Maximum="100"
+                                           FormatString="F2"
+                                           Value="{Binding SizeScale}">
+                            </NumericUpDown>
+                        </DataTemplate>
+                    </DataGridTemplateColumn>
 
-            <Grid RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto"
+                    <DataGridCheckBoxColumn Header="Invert"
+                                            Binding="{Binding InvertPolarity}"
+                                            Width="Auto" />
+                </DataGrid.Columns>
+
+            </DataGrid>
+
+
+			<Grid RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto"
                   ColumnDefinitions="Auto,10,400">
 
                 <ToggleSwitch Grid.Row="0" Grid.Column="2"
                               IsChecked="{Binding Operation.MergeFiles}"
-                              OnContent="Merge all gerber files into one layer"
+                              OnContent="Draw all gerber files into same layer"
                               OffContent="Create one layer per gerber file"/>
 
                 <TextBlock Grid.Row="2" Grid.Column="0"
@@ -103,6 +136,9 @@
                     Items="{Binding Operation.SizeMidpointRounding, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
                     SelectedItem="{Binding Operation.SizeMidpointRounding, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
 
+                <TextBlock Grid.Row="8" Grid.Column="0"
+                           VerticalAlignment="Center"
+                           Text="Options:"/>
 
 				<StackPanel Grid.Row="8" Grid.Column="2"
                             Orientation="Horizontal" Spacing="20">

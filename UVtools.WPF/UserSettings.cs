@@ -280,6 +280,9 @@ public sealed class UserSettings : BindableBase
         private byte _centroidOutlineDiameter = 8;
         private bool _centroidOutlineHollow = false;
         private bool _centroidOutline = false;
+        private Color _triangulateOutlineColor = new(255, 0, 0, 255);
+        private byte _triangulateOutlineLineThickness = 2;
+        private bool _triangulateOutlineShowCount = true;
         private Color _maskOutlineColor = new(255, 42, 157, 244);
         private sbyte _maskOutlineLineThickness = 10;
         private bool _maskClearRoiAfterSet = true;
@@ -311,6 +314,7 @@ public sealed class UserSettings : BindableBase
         private bool _layerZoomToFitOnLoad = true;
         private bool _showBackgroudGrid;
         private ushort _layerSliderDebounce;
+
 
         public Color TooltipOverlayBackgroundColor
         {
@@ -484,6 +488,35 @@ public sealed class UserSettings : BindableBase
         {
             get => _centroidOutline;
             set => RaiseAndSetIfChanged(ref _centroidOutline, value);
+        }
+
+        public Color TriangulateOutlineColor
+        {
+            get => _triangulateOutlineColor;
+            set
+            {
+                RaiseAndSetIfChanged(ref _triangulateOutlineColor, value);
+                RaisePropertyChanged(nameof(TriangulateOutlineBrush));
+            }
+        }
+
+        [XmlIgnore]
+        public SolidColorBrush TriangulateOutlineBrush
+        {
+            get => new(_triangulateOutlineColor.ToAvalonia());
+            set => TriangulateOutlineColor = new Color(value);
+        }
+
+        public byte TriangulateOutlineLineThickness
+        {
+            get => _triangulateOutlineLineThickness;
+            set => RaiseAndSetIfChanged(ref _triangulateOutlineLineThickness, value);
+        }
+
+        public bool TriangulateOutlineShowCount
+        {
+            get => _triangulateOutlineShowCount;
+            set => RaiseAndSetIfChanged(ref _triangulateOutlineShowCount, value);
         }
 
         public Color MaskOutlineColor
@@ -1779,7 +1812,7 @@ public sealed class UserSettings : BindableBase
                                 continue;
                             }*/
 
-                            if (directory.StartsWith($"{path}\\Chitubox", StringComparison.InvariantCultureIgnoreCase))
+                            if (directory.StartsWith($"{path}\\Chitubox", StringComparison.OrdinalIgnoreCase))
                             {
                                 var executable = $"{directory}\\CHITUBOX.exe";
                                 //var executablePro = $"{directory}\\CHITUBOXPro.exe";
@@ -1800,7 +1833,7 @@ public sealed class UserSettings : BindableBase
                                 continue;
                             }
 
-                            if (directory.StartsWith($"{path}\\Photon_WorkShop", StringComparison.InvariantCultureIgnoreCase))
+                            if (directory.StartsWith($"{path}\\Photon_WorkShop", StringComparison.OrdinalIgnoreCase))
                             {
                                 var directoryName = Path.GetFileName(directory);
                                 var executable = $"{directory}\\{directoryName}.exe";
@@ -1822,7 +1855,7 @@ public sealed class UserSettings : BindableBase
                                 continue;
                             }
 
-                            if (directory.StartsWith($"{path}\\UNIZ", StringComparison.InvariantCultureIgnoreCase))
+                            if (directory.StartsWith($"{path}\\UNIZ", StringComparison.OrdinalIgnoreCase))
                             {
                                 var executable = $"{directory}\\UnizMaker\\UnizMaker.exe";
                                 if (File.Exists(executable))
@@ -1835,7 +1868,7 @@ public sealed class UserSettings : BindableBase
                                 continue;
                             }
 
-                            if (directory.StartsWith($"{path}\\Zortrax", StringComparison.InvariantCultureIgnoreCase))
+                            if (directory.StartsWith($"{path}\\Zortrax", StringComparison.OrdinalIgnoreCase))
                             {
                                 var executable = $"{directory}\\Z-Suite\\Z-SUITE.exe";
                                 if (File.Exists(executable))
@@ -1848,7 +1881,7 @@ public sealed class UserSettings : BindableBase
                                 continue;
                             }
 
-                            if (directory.StartsWith($"{path}\\WinRAR", StringComparison.InvariantCultureIgnoreCase))
+                            if (directory.StartsWith($"{path}\\WinRAR", StringComparison.OrdinalIgnoreCase))
                             {
                                 var executable = $"{directory}\\WinRAR.exe";
                                 if (File.Exists(executable))
@@ -1863,7 +1896,7 @@ public sealed class UserSettings : BindableBase
                                 continue;
                             }
 
-                            if (directory.StartsWith($"{path}\\7-Zip", StringComparison.InvariantCultureIgnoreCase))
+                            if (directory.StartsWith($"{path}\\7-Zip", StringComparison.OrdinalIgnoreCase))
                             {
                                 var executable = $"{directory}\\7zFM.exe";
                                 if (File.Exists(executable))
@@ -1879,7 +1912,7 @@ public sealed class UserSettings : BindableBase
                             }
 
 
-                            if (directory.StartsWith($"{path}\\010 Editor", StringComparison.InvariantCultureIgnoreCase))
+                            if (directory.StartsWith($"{path}\\010 Editor", StringComparison.OrdinalIgnoreCase))
                             {
                                 var executable = $"{directory}\\010Editor.exe";
                                 if (File.Exists(executable))
@@ -1891,7 +1924,7 @@ public sealed class UserSettings : BindableBase
                                 continue;
                             }
 
-                            if (directory.StartsWith($"{path}\\HxD", StringComparison.InvariantCultureIgnoreCase))
+                            if (directory.StartsWith($"{path}\\HxD", StringComparison.OrdinalIgnoreCase))
                             {
                                 var executable = $"{directory}\\HxD.exe";
                                 if (File.Exists(executable))

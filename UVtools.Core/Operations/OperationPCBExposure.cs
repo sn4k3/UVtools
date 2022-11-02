@@ -26,6 +26,40 @@ namespace UVtools.Core.Operations;
 [Serializable]
 public class OperationPCBExposure : Operation
 {
+    #region Sub Classes
+
+    public sealed class PCBExposureFile : GenericFileRepresentation
+    {
+        private bool _invertPolarity;
+        private double _sizeScale = 1;
+
+        /// <summary>
+        /// Gets or sets to invert the polarity when drawing
+        /// </summary>
+        public bool InvertPolarity
+        {
+            get => _invertPolarity;
+            set => RaiseAndSetIfChanged(ref _invertPolarity, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the scale to apply to each shape drawing size.
+        /// Positions and vectors aren't affected by this.
+        /// </summary>
+        public double SizeScale
+        {
+            get => _sizeScale;
+            set => RaiseAndSetIfChanged(ref _sizeScale, Math.Max(0.001, Math.Round(value, 4)));
+        }
+
+        public PCBExposureFile() { }
+
+        public PCBExposureFile(string filePath, bool invertPolarity = false) : base(filePath)
+        {
+            _invertPolarity = invertPolarity;
+        }
+    }
+    #endregion
     #region Static
 
     public static string[] ValidExtensions => new[]
@@ -43,7 +77,7 @@ public class OperationPCBExposure : Operation
     #endregion
 
     #region Members
-    private RangeObservableCollection<ValueDescription> _files = new();
+    private RangeObservableCollection<PCBExposureFile> _files = new();
 
     private bool _mergeFiles;
     private decimal _layerHeight;
@@ -91,9 +125,9 @@ public class OperationPCBExposure : Operation
         }
         else 
         {
-            foreach (var valueDescription in _files)
+            foreach (var file in _files)
             {
-                if(!File.Exists(valueDescription.ValueAsString)) sb.AppendLine($"The file {valueDescription} does not exists");
+                if(!file.Exists) sb.AppendLine($"The file {file} does not exists");
             }
         }
         
@@ -122,7 +156,7 @@ public class OperationPCBExposure : Operation
     #endregion
 
     #region Properties
-    public RangeObservableCollection<ValueDescription> Files
+    public RangeObservableCollection<PCBExposureFile> Files
     {
         get => _files;
         set => RaiseAndSetIfChanged(ref _files, value);
@@ -200,13 +234,13 @@ public class OperationPCBExposure : Operation
 
     public void AddFilesFromZip(string zipFile)
     {
-        if (!File.Exists(zipFile)) return;
+        if (!File.Exists(zipFile) || !zipFile.EndsWith(".zip")) return;
         using var zip = ZipFile.Open(zipFile, ZipArchiveMode.Read);
 
         var tmpPath = PathExtensions.GetTemporaryDirectory($"{About.Software}.");
         foreach (var entry in zip.Entries)
         {
-            if(!ValidExtensions.Any(extension => entry.Name.EndsWith($".{extension}", StringComparison.InvariantCultureIgnoreCase))) continue;
+            if(!ValidExtensions.Any(extension => entry.Name.EndsWith($".{extension}", StringComparison.OrdinalIgnoreCase))) continue;
 
             var filePath = entry.ImprovedExtractToFile(tmpPath, false);
             if (!string.IsNullOrEmpty(filePath))
@@ -217,15 +251,21 @@ public class OperationPCBExposure : Operation
 
     }
 
-    public void AddFile(string file)
+    public void AddFile(string filePath, bool handleZipFiles = true)
     {
-        if (!File.Exists(file)) return;
-        var vd = new ValueDescription(file, Path.GetFileNameWithoutExtension(file));
-        if (_files.Contains(vd)) return;
-        _files.Add(vd);
+        if (!File.Exists(filePath)) return;
+        if (filePath.EndsWith(".zip"))
+        {
+            if(handleZipFiles) AddFilesFromZip(filePath);
+            return;
+        }
+        if(!ValidExtensions.Any(extension => filePath.EndsWith($".{extension}", StringComparison.OrdinalIgnoreCase))) return;
+        var file = new PCBExposureFile(filePath);
+        if (_files.Contains(file)) return;
+        _files.Add(file);
     }
 
-    public void AddFiles(string[] files)
+    public void AddFiles(string[] files, bool handleZipFiles = true)
     {
         foreach (var file in files)
         {
@@ -233,15 +273,19 @@ public class OperationPCBExposure : Operation
         }
     }
 
-    public void Sort()
-    {
-        _files.Sort((file1, file2) => string.Compare(Path.GetFileNameWithoutExtension(file1.ValueAsString), Path.GetFileNameWithoutExtension(file2.ValueAsString), StringComparison.Ordinal));
-    }
+    public void Sort() => _files.Sort();
 
-    public Mat GetMat(string file)
+    public Mat GetMat(PCBExposureFile file)
     {
         var mat = SlicerFile.CreateMat();
-        if (!File.Exists(file)) return mat;
+        DrawMat(file, mat);
+        return mat;
+    }
+
+    public void DrawMat(PCBExposureFile file, Mat mat)
+    {
+        if (!file.Exists) return;
+
         GerberDocument.ParseAndDraw(file, mat, SlicerFile.Ppmm, _sizeMidpointRounding, _enableAntiAliasing);
 
         //var boundingRectangle = CvInvoke.BoundingRectangle(mat);
@@ -256,17 +300,18 @@ public class OperationPCBExposure : Operation
             CvInvoke.Flip(mat, mat, (FlipType)flip);
         }
 
-        return mat;
+        return;
     }
 
     protected override bool ExecuteInternally(OperationProgress progress)
     {
+        if (_files.Count == 0) return false;
         var layers = new List<Layer>();
-        Mat? mergeMat = null;
+        using var mergeMat = SlicerFile.CreateMat();
         progress.ItemCount = FileCount;
-        foreach (var file in _files)
+        for (var i = 0; i < _files.Count; i++)
         {
-            using var mat = GetMat(file.ValueAsString);
+            /*using var mat = GetMat(file);
 
             if (mergeMat is null)
             {
@@ -275,17 +320,39 @@ public class OperationPCBExposure : Operation
             else
             {
                 CvInvoke.Max(mergeMat, mat, mergeMat);
-            }
+            }*/
 
-            if (_mergeFiles) continue;
-            layers.Add(new Layer(mat, SlicerFile));
+            DrawMat(_files[i], mergeMat);
+
+            if (!_mergeFiles)
+            {
+                if (i == 0)
+                {
+                    if (CvInvoke.CountNonZero(mergeMat) > 0)
+                    {
+                        layers.Add(new Layer(mergeMat, SlicerFile));
+                    }
+                }
+                else
+                {
+                    using var mat = SlicerFile.CreateMat();
+                    DrawMat(_files[i], mat);
+                    if (CvInvoke.CountNonZero(mat) > 0)
+                    {
+                        layers.Add(new Layer(mat, SlicerFile));
+                    }
+                }
+            }
 
             progress++;
         }
 
-        if (_mergeFiles && mergeMat is not null)
+        if (_mergeFiles)
         {
-            layers.Add(new Layer(mergeMat, SlicerFile));
+            if (CvInvoke.CountNonZero(mergeMat) > 0)
+            {
+                layers.Add(new Layer(mergeMat, SlicerFile));
+            }
         }
 
         SlicerFile.SuppressRebuildPropertiesWork(() =>
@@ -333,21 +400,16 @@ public class OperationPCBExposure : Operation
             op.Execute(progress);
         }
 
-
-        if (mergeMat is not null)
+        using var croppedMat = mergeMat.CropByBounds(20);
+        /*if (_mirror)
         {
-            using var croppedMat = mergeMat.CropByBounds(20);
-            /*if (_mirror)
-            {
-                var flip = SlicerFile.DisplayMirror;
-                if (flip == FlipDirection.None) flip = FlipDirection.Horizontally;
-                CvInvoke.Flip(croppedMat, croppedMat, (FlipType)flip);
-            }*/
-            using var bgrMat = new Mat();
-            CvInvoke.CvtColor(croppedMat, bgrMat, ColorConversion.Gray2Bgr);
-            SlicerFile.SetThumbnails(bgrMat);
-            mergeMat.Dispose();
-        }
+            var flip = SlicerFile.DisplayMirror;
+            if (flip == FlipDirection.None) flip = FlipDirection.Horizontally;
+            CvInvoke.Flip(croppedMat, croppedMat, (FlipType)flip);
+        }*/
+        using var bgrMat = new Mat();
+        CvInvoke.CvtColor(croppedMat, bgrMat, ColorConversion.Gray2Bgr);
+        SlicerFile.SetThumbnails(bgrMat);
 
         return !progress.Token.IsCancellationRequested;
     }

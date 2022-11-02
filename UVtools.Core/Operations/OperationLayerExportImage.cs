@@ -209,10 +209,8 @@ public sealed class OperationLayerExportImage : Operation
             else
             {
                 // SVG
-                    
-                CvInvoke.Threshold(matRoi, matRoi, 127, byte.MaxValue, ThresholdType.Binary); // Remove AA
 
-                using var contours = matRoi.FindContours(out var hierarchy, RetrType.Tree);
+                var paths = matRoi.GetSvgPath(ChainApproxMethod.ChainApproxTc89Kcos);
                     
                 using TextWriter tw = new StreamWriter(fileFullPath);
                 tw.WriteLine("<!--");
@@ -244,16 +242,13 @@ public sealed class OperationLayerExportImage : Operation
 
                 tw.WriteLine($"\t<g id=\"layer{layerIndex}\">");
                 tw.WriteLine($"\t<rect class=\"background\" width=\"{mat.Width}\" height=\"{mat.Height}\"/>");
-                    
-                //
-                //hierarchy[i][0]: the index of the next contour of the same level
-                //hierarchy[i][1]: the index of the previous contour of the same level
-                //hierarchy[i][2]: the index of the first child
-                //hierarchy[i][3]: the index of the parent
-                //
 
+                foreach (var path in paths)
+                {
+                    tw.WriteLine($"\t<path d=\"{path}\"/>");
+                }
 
-                bool firstTime = true;
+                /*bool firstTime = true;
                 for (int i = 0; i < contours.Size; i++)
                 {
                     if (hierarchy[i, EmguContour.HierarchyParent] == -1) // Top hierarchy
@@ -282,32 +277,8 @@ public sealed class OperationLayerExportImage : Operation
                     tw.Write(" Z");
                 }
 
-                if(!firstTime) tw.WriteLine("\"/>");
+                if(!firstTime) tw.WriteLine("\"/>");*/
 
-                // Old method!
-                /*for (int i = 0; i < contours.Size; i++)
-                {
-                    if (contours[i].Size == 0) continue;
-
-                    var style = "white";
-
-                    int parentIndex = i;
-                    int count = 0;
-                    while ((parentIndex = (int)hierarchyJagged.GetValue(0, parentIndex, 3)) != -1)
-                    {
-                        count++;
-                    } 
-
-                    if (count % 2 != 0)
-                        style = "black";
-
-                    tw.Write($"\t<path class=\"{style}\" d=\"M{contours[i][0].X} {contours[i][0].Y}");
-                    for (int x = 1; x < contours[i].Size; x++)
-                    {
-                        tw.Write($",L{contours[i][x].X} {contours[i][x].Y}");
-                    }
-                    tw.WriteLine("Z\"/>");
-                }*/
 
                 tw.WriteLine("\t</g>");
                 tw.WriteLine("</svg>");

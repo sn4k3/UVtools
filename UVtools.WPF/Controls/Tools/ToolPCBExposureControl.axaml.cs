@@ -1,14 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Timers;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
 using UVtools.Core.Extensions;
-using UVtools.Core.Objects;
 using UVtools.Core.Operations;
 using UVtools.WPF.Extensions;
 using UVtools.WPF.Windows;
@@ -22,10 +21,10 @@ namespace UVtools.WPF.Controls.Tools
         public OperationPCBExposure Operation => BaseOperation as OperationPCBExposure;
 
         private readonly Timer _timer;
-        private ListBox FilesListBox;
+        private DataGrid FilesDataGrid;
 
         private Bitmap _previewImage;
-        private ValueDescription _selectedFile;
+        private OperationPCBExposure.PCBExposureFile _selectedFile;
 
         public Bitmap PreviewImage
         {
@@ -33,7 +32,7 @@ namespace UVtools.WPF.Controls.Tools
             set => RaiseAndSetIfChanged(ref _previewImage, value);
         }
 
-        public ValueDescription SelectedFile
+        public OperationPCBExposure.PCBExposureFile SelectedFile
         {
             get => _selectedFile;
             set
@@ -49,7 +48,12 @@ namespace UVtools.WPF.Controls.Tools
             if (!ValidateSpawn()) return;
             InitializeComponent();
 
-            FilesListBox = this.Find<ListBox>("FilesListBox");
+            FilesDataGrid = this.Find<DataGrid>("FilesDataGrid");
+
+            AddHandler(DragDrop.DropEvent, (sender, args) =>
+            {
+                Operation.AddFiles(args.Data.GetFileNames()?.ToArray() ?? Array.Empty<string>());
+            });
 
             _timer = new Timer(20)
             {
@@ -75,6 +79,21 @@ namespace UVtools.WPF.Controls.Tools
                         _timer.Stop();
                         _timer.Start();
                     };
+                    
+                    Operation.Files.CollectionChanged += (sender, e) =>
+                    {
+                        if (e.NewItems is null) return;
+                        foreach (OperationPCBExposure.PCBExposureFile file in e.NewItems)
+                        {
+                            file.PropertyChanged += (o, args) =>
+                            {
+                                if (!ReferenceEquals(_selectedFile, file)) return;
+                                _timer.Stop();
+                                _timer.Start();
+                            };
+                        }
+                    };
+
                     _timer.Stop();
                     _timer.Start();
                     if(ParentWindow is not null) ParentWindow.ButtonOkEnabled = Operation.FileCount > 0;
@@ -93,8 +112,10 @@ namespace UVtools.WPF.Controls.Tools
                     return;
                 }
                 
-                if (!OperationPCBExposure.ValidExtensions.Any(extension => _selectedFile.ValueAsString.EndsWith($".{extension}", StringComparison.InvariantCultureIgnoreCase)) || !File.Exists(_selectedFile.ValueAsString)) return;
-                using var mat = Operation.GetMat(_selectedFile.ValueAsString);
+                if (!OperationPCBExposure.ValidExtensions.Any(extension => _selectedFile.IsExtension(extension)) || !_selectedFile.Exists) return;
+                var file = (OperationPCBExposure.PCBExposureFile)_selectedFile.Clone();
+                file.InvertPolarity = false;
+                using var mat = Operation.GetMat(file);
                 using var matCropped = mat.CropByBounds(20);
                 _previewImage?.Dispose();
                 PreviewImage = matCropped.ToBitmap();
@@ -143,7 +164,7 @@ namespace UVtools.WPF.Controls.Tools
 
         public void RemoveFiles()
         {
-            Operation.Files.RemoveRange(FilesListBox.SelectedItems.OfType<ValueDescription>());
+            Operation.Files.RemoveRange(FilesDataGrid.SelectedItems.OfType<OperationPCBExposure.PCBExposureFile>());
         }
 
         public void ClearFiles()

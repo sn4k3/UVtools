@@ -1,5 +1,19 @@
 # Changelog
 
+## 02/11/2022 - v3.8.1
+
+- **Tools:**
+  - **PCB Exposure:**
+    - (Add) Allow to scale the drawing sizes per gerber file
+    - (Add) Allow to invert the drawing polarity per gerber file (#592)
+    - (Add) Allow to drag and drop files into "Add files" button and grid header
+    - (Improvement) Do not add empty layers when usable to draw or when draw a all black image
+    - (Improvement) "Merge all gerbers into one layer" will now draw all gerber into one image instead of perform the Max(of all gerbers pixels), allowing to subtract areas as they are on gerbers
+  - **Import layers:** Fix error when trying to insert layers 
+  - **Export layers images:** Better compression of contours for SVG export, resulting in smooth curves, better visuals and lower file size
+- (Add) Outline: Triangulate
+- (Remove) Avalonia.Diagnostics dependency in release mode
+
 ## 30/10/2022 - v3.8.0
 
 - **File formats:** 
@@ -13,7 +27,7 @@
     - (Improvement) Show print time label formatted as hh:mm:ss
   - **PCB Exposure:**
     - (Improvement) Increase "Exposure time" maximum from 200s to 1000s (#592)
-    - (Fix) Set `BottomLightHeight` to 0
+    - (Fix) Set `BottomLiftHeight` to 0
     - (Fix) Set `TransitionLayerCount` to 0
 - **Issues:**
   - (Improvement) Overhang detection by using a dynamic cross kernel

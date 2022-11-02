@@ -12,9 +12,11 @@ using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
 using Emgu.CV.Util;
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Text;
 using CommunityToolkit.HighPerformance;
 using UVtools.Core.EmguCV;
 using UVtools.Core.Objects;
@@ -1329,6 +1331,60 @@ public static class EmguExtensions
         mask.Rotate(angle, src.Size);
 
         rotatedSrc.CopyTo(src, mask);
+    }
+    #endregion
+
+    #region Other Images Types
+
+    /// <summary>
+    /// From <paramref name="src"/> gets the SVG path's. Tags are not included.
+    /// </summary>
+    /// <param name="src"></param>
+    /// <param name="compression">Compression method for the contours</param>
+    /// <param name="threshold">True to binary threshold first</param>
+    /// <returns>Array of path's</returns>
+    public static IEnumerable<string> GetSvgPath(this Mat src, ChainApproxMethod compression = ChainApproxMethod.ChainApproxSimple, bool threshold = true)
+    {
+        var mat = src;
+        if (threshold)
+        {
+            mat = new();
+            CvInvoke.Threshold(src, mat, 127, byte.MaxValue, ThresholdType.Binary);
+        }
+
+        using var contours = mat.FindContours(out var hierarchy, RetrType.Tree, compression);
+
+        var sb = new StringBuilder();
+        for (int i = 0; i < contours.Size; i++)
+        {
+            if (hierarchy[i, EmguContour.HierarchyParent] == -1) // Top hierarchy
+            {
+                if (sb.Length > 0)
+                {
+                    yield return sb.ToString();
+                    sb.Clear();
+                }
+            }
+            else
+            {
+                sb.Append(" ");
+            }
+
+            sb.Append($"M {contours[i][0].X} {contours[i][0].Y} L");
+            for (int x = 1; x < contours[i].Size; x++)
+            {
+                sb.Append($" {contours[i][x].X} {contours[i][x].Y}");
+            }
+            sb.Append(" Z");
+        }
+
+        if (sb.Length > 0)
+        {
+            yield return sb.ToString();
+            sb.Clear();
+        }
+
+        if (!ReferenceEquals(src, mat)) mat.Dispose();
     }
     #endregion
 

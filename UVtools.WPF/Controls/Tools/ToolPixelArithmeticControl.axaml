@@ -384,7 +384,7 @@
 
                     <TextBlock
                         VerticalAlignment="Center"
-                        Text="{Binding Operation.PatternGenBrightnessPercent, StringFormat=(\{0\}%)}"/>
+                        Text="{Binding Operation.PatternGenBrightnessPercent, StringFormat=({0}%)}"/>
                   </StackPanel>
 
                   <StackPanel Orientation="Horizontal" Spacing="10">

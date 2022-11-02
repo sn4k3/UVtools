@@ -41,7 +41,7 @@
 
           <TextBlock
               FontWeight="Bold"
-              Text="{Binding Operation.TotalHeight, StringFormat=\{0:F3\}mm}"/>
+              Text="{Binding Operation.TotalHeight, StringFormat={}{0:F3}mm}"/>
 
 
         </StackPanel>
@@ -57,7 +57,7 @@
                        Value="{Binding Operation.BottomLayers}"/>
         <TextBlock Grid.Row="2" Grid.Column="4"
                    VerticalAlignment="Center"
-                   Text="{Binding Operation.BottomHeight, StringFormat=\{0:F3\}mm}"/>
+                   Text="{Binding Operation.BottomHeight, StringFormat={}{0:F3}mm}"/>
 
         <TextBlock Grid.Row="2" Grid.Column="6"
                    VerticalAlignment="Center"
@@ -71,7 +71,7 @@
                        Value="{Binding Operation.InterfaceLayers}"/>
         <TextBlock Grid.Row="2" Grid.Column="10"
                    VerticalAlignment="Center"
-                   Text="{Binding Operation.InterfaceHeight, StringFormat=\{0:F3\}mm}"/>
+                   Text="{Binding Operation.InterfaceHeight, StringFormat={}{0:F3}mm}"/>
 
         <TextBlock Grid.Row="4" Grid.Column="0"
                    VerticalAlignment="Center"
@@ -84,7 +84,7 @@
                        Value="{Binding Operation.NormalLayers}"/>
         <TextBlock Grid.Row="4" Grid.Column="4"
                    VerticalAlignment="Center"
-                   Text="{Binding Operation.NormalHeight, StringFormat=\{0:F3\}mm}"/>
+                   Text="{Binding Operation.NormalHeight, StringFormat={}{0:F3}mm}"/>
 
         <TextBlock Grid.Row="6" Grid.Column="0"
                    VerticalAlignment="Center"
@@ -196,11 +196,11 @@
             <TextBlock Grid.Row="2" Grid.Column="2"
                        VerticalAlignment="Center"
                        HorizontalAlignment="Center"
-                       Text="{Binding Operation.StartBrightnessPercent, StringFormat=(\{0\}%)}"/>
+                       Text="{Binding Operation.StartBrightnessPercent, StringFormat=({0}%)}"/>
             <TextBlock Grid.Row="2" Grid.Column="6"
                        VerticalAlignment="Center"
                        HorizontalAlignment="Center"
-                       Text="{Binding Operation.EndBrightnessPercent, StringFormat=(\{0\}%)}"/>
+                       Text="{Binding Operation.EndBrightnessPercent, StringFormat=({0}%)}"/>
 
 
             <TextBlock Grid.Row="4" Grid.Column="0"
@@ -269,7 +269,7 @@
                 <TextBlock
                            VerticalAlignment="Center"
                            IsEnabled="{Binding Operation.EnableLineDivisions}"
-                           Text="{Binding Operation.LineDivisionBrightnessPercent, StringFormat=(\{0\}%)}"/>
+                           Text="{Binding Operation.LineDivisionBrightnessPercent, StringFormat=({0}%)}"/>
             </StackPanel>
 
             <TextBlock Grid.Row="10" Grid.Column="0"

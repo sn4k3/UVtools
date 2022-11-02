@@ -39,7 +39,7 @@
                          Value="{Binding Operation.BottomLayers}"/>
           <TextBlock Grid.Row="2" Grid.Column="4"
                      VerticalAlignment="Center"
-                     Text="{Binding Operation.BottomHeight, StringFormat=\{0:F3\}mm}"/>
+                     Text="{Binding Operation.BottomHeight, StringFormat={}{0:F3}mm}"/>
 
 
 
@@ -57,7 +57,7 @@
           <TextBlock Grid.Row="2" Grid.Column="10"
                      IsEnabled="{Binding !Operation.SyncLayers}"
                      VerticalAlignment="Center"
-                     Text="{Binding Operation.NormalHeight, StringFormat=\{0:F3\}mm}"/>
+                     Text="{Binding Operation.NormalHeight, StringFormat={}{0:F3}mm}"/>
 
           <TextBlock Grid.Row="4" Grid.Column="0"
                      VerticalAlignment="Center"
@@ -172,7 +172,7 @@
         </Grid>
 
         <Expander
-            Header="{Binding Operation.ErodeObjects, StringFormat=Morph - Erode    [\{0\} objects]}"
+            Header="{Binding Operation.ErodeObjects, StringFormat=Morph - Erode    [{0} objects]}"
             IsExpanded="True">
 
         <StackPanel>
@@ -240,7 +240,7 @@
 
        
       <Expander
-          Header="{Binding Operation.DimmingObjects, StringFormat=Wall dimming    [\{0\} objects]}"
+          Header="{Binding Operation.DimmingObjects, StringFormat=Wall dimming    [{0} objects]}"
           IsExpanded="True">
 
           <StackPanel Orientation="Vertical"  Spacing="10">
@@ -325,11 +325,11 @@
               <TextBlock Grid.Row="6" Grid.Column="2"
                          VerticalAlignment="Center"
                          HorizontalAlignment="Center"
-                         Text="{Binding Operation.DimmingStartBrightnessPercent, StringFormat=(\{0\}%)}"/>
+                         Text="{Binding Operation.DimmingStartBrightnessPercent, StringFormat=({0}%)}"/>
               <TextBlock Grid.Row="6" Grid.Column="6"
                          VerticalAlignment="Center"
                          HorizontalAlignment="Center"
-                         Text="{Binding Operation.DimmingEndBrightnessPercent, StringFormat=(\{0\}%)}"/>
+                         Text="{Binding Operation.DimmingEndBrightnessPercent, StringFormat=({0}%)}"/>
             </Grid>
 
               <Border Margin="0,10,0,0">

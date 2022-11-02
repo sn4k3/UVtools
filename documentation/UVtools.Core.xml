@@ -982,6 +982,15 @@
             Extended OpenCV PutText to accepting line breaks, line alignment and rotation
             </summary>
         </member>
+        <member name="M:UVtools.Core.Extensions.EmguExtensions.GetSvgPath(Emgu.CV.Mat,Emgu.CV.CvEnum.ChainApproxMethod,System.Boolean)">
+            <summary>
+            From <paramref name="src"/> gets the SVG path's. Tags are not included.
+            </summary>
+            <param name="src"></param>
+            <param name="compression">Compression method for the contours</param>
+            <param name="threshold">True to binary threshold first</param>
+            <returns>Array of path's</returns>
+        </member>
         <member name="M:UVtools.Core.Extensions.EmguExtensions.FindContours(Emgu.CV.IInputOutputArray,Emgu.CV.CvEnum.RetrType,Emgu.CV.CvEnum.ChainApproxMethod,System.Drawing.Point)">
             <summary>
             Retrieves contours from the binary image as a contour tree. The pointer firstContour is filled by the function. It is provided as a convenient way to obtain the hierarchy value as int[,].
@@ -4317,6 +4326,22 @@
             https://www.ucamco.com/files/downloads/file_en/456/gerber-layer-format-specification-revision-2022-02_en.pdf?ac97011bf6bce9aaf0b1aac43d84b05f
             </summary>
         </member>
+        <member name="P:UVtools.Core.Gerber.GerberDocument.PolarityColor">
+            <summary>
+            Gets the current polarity as <see cref="T:Emgu.CV.Structure.MCvScalar"/>. <see cref="P:UVtools.Core.Gerber.GerberDocument.InversePolarity"/> will affect the return value
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Gerber.GerberDocument.InversePolarity">
+            <summary>
+            Gets or sets to inverse the polarity on drawing
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Gerber.GerberDocument.SizeScale">
+            <summary>
+            Gets or sets the scale to apply to each shape drawing size.
+            Positions and vectors aren't affected by this.
+            </summary>
+        </member>
         <member name="P:UVtools.Core.Gerber.Macro.Name">
             <summary>
             Gets the macro name
@@ -5616,6 +5641,43 @@
             Gets or sets the brightness level
             </summary>
         </member>
+        <member name="P:UVtools.Core.Objects.GenericFileRepresentation.FilePath">
+            <summary>
+            Gets or sets the file path
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Objects.GenericFileRepresentation.FileName">
+            <summary>
+            Gets the file name with extension
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Objects.GenericFileRepresentation.FileNameWithoutExtension">
+            <summary>
+            Gets the file name without extension
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Objects.GenericFileRepresentation.FileExtension">
+            <summary>
+            Gets the file extension. The returned value includes the period (".")
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Objects.GenericFileRepresentation.Exists">
+            <summary>
+            Gets if the file exists
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Objects.GenericFileRepresentation.FileInfo">
+            <summary>
+            Gets an <see cref="P:UVtools.Core.Objects.GenericFileRepresentation.FileInfo"/> instance on the <see cref="P:UVtools.Core.Objects.GenericFileRepresentation.FilePath"/>
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.Objects.GenericFileRepresentation.IsExtension(System.String)">
+            <summary>
+            Checks if the <see cref="P:UVtools.Core.Objects.GenericFileRepresentation.FilePath"/> ends with <paramref name="extension"/>
+            </summary>
+            <param name="extension">Extension name</param>
+            <returns>True if found, otherwise false</returns>
+        </member>
         <member name="P:UVtools.Core.Objects.MappedProcess.IsEnabled">
             <summary>
             Gets or sets if this device is enabled
@@ -6307,6 +6369,17 @@
         <member name="M:UVtools.Core.Operations.OperationPattern.Fill">
             <summary>
             Fills the plate with maximum cols and rows
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Operations.OperationPCBExposure.PCBExposureFile.InvertPolarity">
+            <summary>
+            Gets or sets to invert the polarity when drawing
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Operations.OperationPCBExposure.PCBExposureFile.SizeScale">
+            <summary>
+            Gets or sets the scale to apply to each shape drawing size.
+            Positions and vectors aren't affected by this.
             </summary>
         </member>
         <member name="P:UVtools.Core.Operations.OperationPixelDimming.AlternatePatternPerLayers">

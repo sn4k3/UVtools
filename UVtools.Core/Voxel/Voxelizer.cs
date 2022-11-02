@@ -108,12 +108,12 @@ public class Voxelizer
         return foundFaces;
     }
 
-    public static Mat BuildVoxelLayerImage(Mat curLayer, Mat? layerAbove = null, Mat? layerBelow = null)
+    public static Mat BuildVoxelLayerImage(Mat curLayer, Mat? layerAbove = null, Mat? layerBelow = null, ChainApproxMethod contourCompressionMethod = ChainApproxMethod.ChainApproxSimple)
     {
         /* The goal of the VoxelLayerImage is to reduce as much as possible, the number of pixels we need to do 6 direction neighbor checking on */
 
         /* the outer contours of the current layer should always be checked, they by definition should have an exposed face */
-        using var contours = curLayer.FindContours(RetrType.Tree);
+        using var contours = curLayer.FindContours(RetrType.Tree, contourCompressionMethod);
         var onlyContours = curLayer.NewBlank();
         CvInvoke.DrawContours(onlyContours, contours, -1, EmguExtensions.WhiteColor, 1);
 

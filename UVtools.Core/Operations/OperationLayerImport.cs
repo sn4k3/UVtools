@@ -12,7 +12,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Drawing;
-using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UVtools.Core.Extensions;
@@ -57,7 +57,7 @@ public sealed class OperationLayerImport : Operation
     private bool _extendBeyondLayerCount = true;
     private bool _discardUnmodifiedLayers;
     private ushort _stackMargin = 50;
-    private RangeObservableCollection<ValueDescription> _files = new();
+    private RangeObservableCollection<GenericFileRepresentation> _files = new();
     #endregion
 
     #region Overrides
@@ -127,9 +127,9 @@ public sealed class OperationLayerImport : Operation
         {
             foreach (var keyValue in _files)
             {
-                if (!File.Exists(keyValue.ValueAsString))
+                if (!keyValue.Exists)
                 {
-                    sb.AppendLine($"The file '{keyValue.ValueAsString}' does not exists.");
+                    sb.AppendLine($"The file '{keyValue.FilePath}' does not exists.");
                 }
             }
         }
@@ -139,6 +139,15 @@ public sealed class OperationLayerImport : Operation
     #endregion
 
     #region Properties
+
+    public static string[] ValidImageExtensions => new[]
+    {
+        "png",
+        "bmp",
+        "jpeg",
+        "jpg",
+        "gif",
+    };
 
     public ImportTypes ImportType
     {
@@ -182,7 +191,7 @@ public sealed class OperationLayerImport : Operation
         set => RaiseAndSetIfChanged(ref _stackMargin, value);
     }
 
-    public RangeObservableCollection<ValueDescription> Files
+    public RangeObservableCollection<GenericFileRepresentation> Files
     {
         get => _files;
         set => RaiseAndSetIfChanged(ref _files, value);
@@ -204,12 +213,12 @@ public sealed class OperationLayerImport : Operation
 
     public void AddFile(string file)
     {
-        _files.Add(new ValueDescription(file, Path.GetFileNameWithoutExtension(file)));
+        _files.Add(new GenericFileRepresentation(file));
     }
 
     public void Sort()
     {
-        _files.Sort((file1, file2) => string.Compare(Path.GetFileNameWithoutExtension(file1.ValueAsString), Path.GetFileNameWithoutExtension(file2.ValueAsString), StringComparison.Ordinal));
+        _files.Sort();
     }
         
 
@@ -246,12 +255,8 @@ public sealed class OperationLayerImport : Operation
             // Order raw images
             for (int i = 0; i < Count; i++)
             {
-                if (!_files[i].ValueAsString.EndsWith(".png", StringComparison.OrdinalIgnoreCase) &&
-                    !_files[i].ValueAsString.EndsWith(".bmp", StringComparison.OrdinalIgnoreCase) &&
-                    !_files[i].ValueAsString.EndsWith(".jpeg", StringComparison.OrdinalIgnoreCase) &&
-                    !_files[i].ValueAsString.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase) &&
-                    !_files[i].ValueAsString.EndsWith(".gif", StringComparison.OrdinalIgnoreCase)) continue;
-                keyImage.Add(new KeyValuePair<uint, string>((uint)keyImage.Count, _files[i].ValueAsString));
+                if(!ValidImageExtensions.Any(extension => _files[i].IsExtension(extension))) continue;
+                keyImage.Add(new KeyValuePair<uint, string>((uint)keyImage.Count, _files[i].FilePath));
             }
 
             // Create virtual file format with images
@@ -273,18 +278,14 @@ public sealed class OperationLayerImport : Operation
                 fileFormats.Add(format);
             }
 
-            // Order remaining possible file formats
+            // Order remaining possible file formats that are not images
             for (int i = 0; i < Count; i++)
             {
-                if (_files[i].ValueAsString.EndsWith(".png", StringComparison.OrdinalIgnoreCase) ||
-                    _files[i].ValueAsString.EndsWith(".bmp", StringComparison.OrdinalIgnoreCase) ||
-                    _files[i].ValueAsString.EndsWith(".jpeg", StringComparison.OrdinalIgnoreCase) ||
-                    _files[i].ValueAsString.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase) ||
-                    _files[i].ValueAsString.EndsWith(".gif", StringComparison.OrdinalIgnoreCase)) continue;
+                if (ValidImageExtensions.Any(extension => _files[i].IsExtension(extension))) continue;
 
-                var fileFormat = FileFormat.FindByExtensionOrFilePath(_files[i].ValueAsString, true);
+                var fileFormat = FileFormat.FindByExtensionOrFilePath(_files[i].FilePath, true);
                 if (fileFormat is null) continue;
-                fileFormat.FileFullPath = _files[i].ValueAsString;
+                fileFormat.FileFullPath = _files[i].FilePath;
                 fileFormats.Add(fileFormat);
             }
 

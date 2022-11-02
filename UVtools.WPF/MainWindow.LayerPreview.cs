@@ -83,6 +83,7 @@ public partial class MainWindow
     private bool _showLayerOutlineContourBoundary;
     private bool _showLayerOutlineHollowAreas;
     private bool _showLayerOutlineCentroids;
+    private bool _showLayerOutlineTriangulate;
     private bool _showLayerOutlineEdgeDetection;
     private bool _showLayerOutlineDistanceDetection;
     private bool _showLayerOutlineSkeletonize;
@@ -412,6 +413,16 @@ public partial class MainWindow
         set
         {
             if (!RaiseAndSetIfChanged(ref _showLayerOutlineCentroids, value)) return;
+            ShowLayer();
+        }
+    }
+
+    public bool ShowLayerOutlineTriangulate
+    {
+        get => _showLayerOutlineTriangulate;
+        set
+        {
+            if(!RaiseAndSetIfChanged(ref _showLayerOutlineTriangulate, value)) return;
             ShowLayer();
         }
     }
@@ -1219,7 +1230,8 @@ public partial class MainWindow
             {
                 int lastParent = -1;
                 uint reps = 0;
-                for (int i = 0; i < LayerCache.LayerContours.Size; i++)
+                var size = LayerCache.LayerContours.Size;
+                for (int i = 0; i < size; i++)
                 {
                     var parent = LayerCache.LayerContourHierarchy[i, EmguContour.HierarchyParent];
                     if (parent == -1)
@@ -1251,6 +1263,61 @@ public partial class MainWindow
 
                     lastParent = parent;
                 }
+            }
+
+            if (_showLayerOutlineTriangulate)
+            {
+                var groups = EmguContours.GetPositiveContoursInGroups(LayerCache.LayerContours, LayerCache.LayerContourHierarchy);
+                var lineColor = new MCvScalar(
+                    Settings.LayerPreview.TriangulateOutlineColor.B,
+                    Settings.LayerPreview.TriangulateOutlineColor.G,
+                    Settings.LayerPreview.TriangulateOutlineColor.R);
+                var dotColor = new MCvScalar(
+                    byte.MaxValue - Settings.LayerPreview.TriangulateOutlineColor.B,
+                    byte.MaxValue - Settings.LayerPreview.TriangulateOutlineColor.G,
+                    byte.MaxValue - Settings.LayerPreview.TriangulateOutlineColor.R);
+
+                uint triangleCount = 0;
+
+                foreach (var group in groups)
+                {
+                    var size = group.Size;
+                    var pointFs = new List<PointF>();
+                    for (int i = 0; i < size; i++)
+                    {
+                        var subSize = group[i].Size;
+                        for (int x = 0; x < subSize; x++)
+                        {
+                            pointFs.Add(group[i][x]);
+                        }
+                    }
+
+                    using var sub = new Subdiv2D(pointFs.ToArray());
+                    var triangles = sub.GetDelaunayTriangles();
+                    foreach (var triangle in triangles)
+                    {
+                        var points = new[]
+                        {
+                            triangle.V0.ToPoint(),
+                            triangle.V1.ToPoint(),
+                            triangle.V2.ToPoint()
+                        };
+
+                        CvInvoke.Polylines(LayerCache.ImageBgr, points, true, lineColor, Settings.LayerPreview.TriangulateOutlineLineThickness);
+
+                        CvInvoke.Circle(LayerCache.ImageBgr, points[0], 2, dotColor, -1);
+                        CvInvoke.Circle(LayerCache.ImageBgr, points[1], 2, dotColor, -1);
+                        CvInvoke.Circle(LayerCache.ImageBgr, points[2], 2, dotColor, -1);
+                    }
+
+                    triangleCount += (uint)triangles.Length;
+                }
+
+                if (triangleCount > 0 && Settings.LayerPreview.TriangulateOutlineShowCount)
+                {
+                    CvInvoke.PutText(LayerCache.ImageBgr, $"Triangles: {triangleCount:N0}", new Point(10, 80), FontFace.HersheyDuplex, 3, dotColor, 3);
+                }
+                
             }
 
             if (_maskPoints is not null && _maskPoints.Count > 0)

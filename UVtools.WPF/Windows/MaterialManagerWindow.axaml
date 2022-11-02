@@ -22,39 +22,39 @@
                     <StackPanel Orientation="Horizontal">
                       <TextBlock Text="Bottles in stock:" VerticalAlignment="Center" FontWeight="Bold"/>
                       <TextBox Classes="TransparentReadOnlyMultiLineNoBorder"
-                                 Text="{Binding Manager.BottlesInStock, StringFormat=\{0:N0\}}"/>
+                                 Text="{Binding Manager.BottlesInStock, StringFormat={}{0:N0}}"/>
                     </StackPanel>
 
                     <StackPanel Margin="10,0,0,0" Orientation="Horizontal">
                       <TextBlock Text="Owned bottles:" VerticalAlignment="Center" FontWeight="Bold"/>
                       <TextBox Classes="TransparentReadOnlyMultiLineNoBorder"
-                               Text="{Binding Manager.OwnedBottles, StringFormat=\{0:N0\}}"/>
+                               Text="{Binding Manager.OwnedBottles, StringFormat={}{0:N0}}"/>
                     </StackPanel>
 
                     <StackPanel Margin="10,0,0,0" Orientation="Horizontal">
                       <TextBlock Text="Consumed volume:" VerticalAlignment="Center" FontWeight="Bold"/>
                       <TextBox Classes="TransparentReadOnlyMultiLineNoBorder"
-                           Text="{Binding Manager.ConsumedVolumeLiters, StringFormat=\{0:N4\}}"/>
+                           Text="{Binding Manager.ConsumedVolumeLiters, StringFormat={}{0:N4}}"/>
                       <TextBlock Text="liters" VerticalAlignment="Center"/>
                     </StackPanel>
 
                     <StackPanel Margin="10,0,0,0" Orientation="Horizontal">
                       <TextBlock Text="Volume in stock:" VerticalAlignment="Center" FontWeight="Bold"/>
                       <TextBox Classes="TransparentReadOnlyMultiLineNoBorder"
-                           Text="{Binding Manager.VolumeInStockLiters, StringFormat=\{0:N4\}}"/>
+                           Text="{Binding Manager.VolumeInStockLiters, StringFormat={}{0:N4}}"/>
                       <TextBlock Text="liters" VerticalAlignment="Center"/>
                     </StackPanel>
 
                     <StackPanel Margin="10,0,0,0" Orientation="Horizontal">
                       <TextBlock Text="Spent:" VerticalAlignment="Center" FontWeight="Bold"/>
                       <TextBox Classes="TransparentReadOnlyMultiLineNoBorder"
-                           Text="{Binding Manager.TotalCost, StringFormat=\{0:N2\}}"/>
+                           Text="{Binding Manager.TotalCost, StringFormat={}{0:N2}}"/>
                     </StackPanel>
 
                     <StackPanel Margin="10,0,0,0" Orientation="Horizontal">
                       <TextBlock Text="Print time:" VerticalAlignment="Center" FontWeight="Bold"/>
                       <TextBox Classes="TransparentReadOnlyMultiLineNoBorder"
-                           Text="{Binding Manager.PrintTimeSpan.TotalDays, StringFormat=\{0:N4\}}"/>
+                           Text="{Binding Manager.PrintTimeSpan.TotalDays, StringFormat={}{0:N4}}"/>
                       <TextBlock Text="days" VerticalAlignment="Center"/>
                     </StackPanel>
                   </WrapPanel>
@@ -192,22 +192,22 @@
                               Width="Auto" />
           <DataGridTextColumn Header="Consumed bottles"
                               IsReadOnly="True"
-                              Binding="{Binding ConsumedBottles, StringFormat=\{0:N0\}}"
+                              Binding="{Binding ConsumedBottles, StringFormat={}{0:N0}}"
                               Width="Auto" />
           <DataGridTextColumn Header="Spent"
                               IsReadOnly="True"
-                              Binding="{Binding TotalCost, StringFormat=\{0:N2\}}"
+                              Binding="{Binding TotalCost, StringFormat={}{0:N2}}"
                               Width="Auto" />
           <DataGridTextColumn Header="Remaining volume (ml)"
                               Binding="{Binding BottleRemainingVolume}"
                               Width="Auto" />
           <DataGridTextColumn Header="Consumed volume (l)"
                               IsReadOnly="True"
-                              Binding="{Binding ConsumedVolumeLiters, StringFormat=\{0:N3\}}"
+                              Binding="{Binding ConsumedVolumeLiters, StringFormat={}{0:N3}}"
                               Width="Auto" />
           <DataGridTextColumn Header="Print time (days)"
                               IsReadOnly="True"
-                              Binding="{Binding PrintTimeSpan.TotalDays, StringFormat=\{0:N4\}}"
+                              Binding="{Binding PrintTimeSpan.TotalDays, StringFormat={}{0:N4}}"
                               Width="Auto" />
         </DataGrid.Columns>
 

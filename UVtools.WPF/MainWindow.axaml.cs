@@ -153,10 +153,8 @@ public partial class MainWindow : WindowEx
                 //ProgressWindow = new ProgressWindow();
                 return;
             }
-            else
-            {
-                DragDrop.SetAllowDrop(this, true);
-            }
+
+            DragDrop.SetAllowDrop(this, true);
 
             LastStopWatch = Progress.StopWatch;
             ProgressFinish();

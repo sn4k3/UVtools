@@ -54,11 +54,11 @@ public static class Helpers
                 return true;
             case "boolean":
                 if(char.IsDigit(value[0])) attribute.SetValue(obj, !value.Equals("0"));
-                else attribute.SetValue(obj, value.Equals("True", StringComparison.InvariantCultureIgnoreCase));
+                else attribute.SetValue(obj, value.Equals("True", StringComparison.OrdinalIgnoreCase));
                 return true;
             case "byte":
-                if (value.Equals("true", StringComparison.InvariantCultureIgnoreCase)) attribute.SetValue(obj, (byte)1);
-                else if (value.Equals("false", StringComparison.InvariantCultureIgnoreCase)) attribute.SetValue(obj, byte.MinValue);
+                if (value.Equals("true", StringComparison.OrdinalIgnoreCase)) attribute.SetValue(obj, (byte)1);
+                else if (value.Equals("false", StringComparison.OrdinalIgnoreCase)) attribute.SetValue(obj, byte.MinValue);
                 else attribute.SetValue(obj, value.Convert<byte>());
                 return true;
             case "sbyte":

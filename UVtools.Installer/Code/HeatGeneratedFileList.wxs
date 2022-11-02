@@ -152,9 +152,6 @@
             <Component Id="cmp24EC37127AAA575AAD606EA913282F5A" Guid="*">
                 <File Id="filEFC8009F9BC797FA42370209DCEA0584" KeyPath="yes" Source="$(var.HarvestPath)\Avalonia.DesktopRuntime.dll" />
             </Component>
-            <Component Id="cmp27A31D9C3C1AA272F0D0D90DEE7CF252" Guid="*">
-                <File Id="fil9F4E461681E037FB6442FBDE1321EB4C" KeyPath="yes" Source="$(var.HarvestPath)\Avalonia.Diagnostics.dll" />
-            </Component>
             <Component Id="cmp753A550BCADD7E2DE4FB25F55CBFA512" Guid="*">
                 <File Id="filD453DD71599C82513C77A8EACD721801" KeyPath="yes" Source="$(var.HarvestPath)\Avalonia.Dialogs.dll" />
             </Component>
@@ -1634,7 +1631,6 @@
             <ComponentRef Id="cmp93743B50FD3FC8AB2EA47897093C2467" />
             <ComponentRef Id="cmp46C92BABDACBE495A5CED58407D280D8" />
             <ComponentRef Id="cmp24EC37127AAA575AAD606EA913282F5A" />
-            <ComponentRef Id="cmp27A31D9C3C1AA272F0D0D90DEE7CF252" />
             <ComponentRef Id="cmp753A550BCADD7E2DE4FB25F55CBFA512" />
             <ComponentRef Id="cmp1F6A512565E2FBF645A3230C236BE532" />
             <ComponentRef Id="cmpDF229E3F98CA2E37326E841BEB412F73" />

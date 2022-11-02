@@ -522,7 +522,14 @@ public class RangeObservableCollection<T> : ObservableCollection<T>
         }
 
         var list = this.ToList();
-        list.Sort(comparison!);
+        if (comparison is null)
+        {
+            list.Sort();
+        }
+        else
+        {
+            list.Sort(comparison);
+        }
         ReplaceCollection(list);
     }
 

@@ -113,7 +113,7 @@
 
                 <TextBlock
                     FontWeight="Bold"
-                    Text="{Binding Operation.RealZSize, StringFormat=\{0:F3\}mm}"/>
+                    Text="{Binding Operation.RealZSize, StringFormat={}{0:F3}mm}"/>
 
 
             </StackPanel>
@@ -242,13 +242,13 @@
                        VerticalAlignment="Center"/>
 
             <TextBlock Grid.Row="2" Grid.Column="2"
-                       Text="{Binding Operation.FemaleDiameterRealXSize, StringFormat=\{0:F2\}mm}"
+                       Text="{Binding Operation.FemaleDiameterRealXSize, StringFormat={}{0:F2}mm}"
                        FontWeight="Bold"
                        HorizontalAlignment="Center"
                        VerticalAlignment="Center"/>
 
             <TextBlock Grid.Row="2" Grid.Column="8"
-                       Text="{Binding Operation.FemaleHoleDiameterRealXSize, StringFormat=\{0:F2\}mm}"
+                       Text="{Binding Operation.FemaleHoleDiameterRealXSize, StringFormat={}{0:F2}mm}"
                        FontWeight="Bold"
                        HorizontalAlignment="Center"
                        VerticalAlignment="Center"/>

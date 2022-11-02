@@ -48,7 +48,7 @@
                        Value="{Binding Operation.BottomLayers}"/>
         <TextBlock Grid.Row="2" Grid.Column="4"
                    VerticalAlignment="Center"
-                   Text="{Binding Operation.BottomHeight, StringFormat=\{0:F3\}mm}"/>
+                   Text="{Binding Operation.BottomHeight, StringFormat={}{0:F3}mm}"/>
 
 
 
@@ -63,7 +63,7 @@
                        Value="{Binding Operation.NormalLayers}"/>
         <TextBlock Grid.Row="2" Grid.Column="10"
                    VerticalAlignment="Center"
-                   Text="{Binding Operation.NormalHeight, StringFormat=\{0:F3\}mm}"/>
+                   Text="{Binding Operation.NormalHeight, StringFormat={}{0:F3}mm}"/>
 
         <TextBlock Grid.Row="4" Grid.Column="0"
                    VerticalAlignment="Center"

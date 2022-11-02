@@ -55,9 +55,25 @@ public static class Program
         /*using var mat = CvInvoke.Imread(@"D:\layer0.png", ImreadModes.Grayscale);
         var contours = mat.FindContours(out var hierarchy, RetrType.Tree, ChainApproxMethod.ChainApproxTc89Kcos);
 
+        var triangulator = new Incremental();
 
-        using var mesh = new STLMeshFile(@"D:\test.stl", FileMode.Create);
-        mesh.BeginWrite();
+        var poly = new Polygon();
+
+        // Generate mesh.
+        var points = new List<Vertex>();
+
+        for (int i = 0; i < contours.Size; i++)
+        for (int x = 0; x < contours[i].Size; x++)
+        {
+            points.Add(new Vertex(contours[i][x].X, contours[i][x].Y));
+        }
+        
+        //var mesh = triangulator.Triangulate(points, new Configuration());
+        //var triangles = mesh.Triangles.ToArray();
+
+
+        using var stl = new STLMeshFile(@"D:\test.stl", FileMode.Create);
+        stl.BeginWrite();
 
         var groups = EmguContours.GetPositiveContoursInGroups(contours, hierarchy);
 
@@ -66,33 +82,55 @@ public static class Program
             var z = 0;
             for (int i = 0; i < group.Size; i++)
             {
-                var list = new List<PointF>();
+                var list = new List<Vertex>();
+
                 
                 for (int x = 0; x < contours[i].Size; x++)
                 {
-                    list.Add(contours[i][x]);
+                    //list.Add(contours[i][x]);
+                    list.Add(new Vertex(contours[i][x].X, contours[i][x].Y));
                 }
 
-                using var sub = new Subdiv2D(list.ToArray());
+                poly.Add(new Contour(list), i > 0);
+
+                /*using var sub = new Subdiv2D(list.ToArray());
                 var triangles = sub.GetDelaunayTriangles();
 
                 foreach (var triangle2Df in triangles)
                 {
-                    mesh.WriteTriangle(
+                    stl.WriteTriangle(
                         new Vector3(triangle2Df.V0.X, triangle2Df.V0.Y, z),
                         new Vector3(triangle2Df.V1.X, triangle2Df.V1.Y, z),
                         new Vector3(triangle2Df.V2.X, triangle2Df.V2.Y, z),
                         new Vector3(triangle2Df.Centeroid.X, triangle2Df.Centeroid.Y, z)
                     );
-                }
+                }*/
 
-                z++;
+
+
+                //z++;
+           /* }
+
+            
+            //break;
+        }
+
+        var mesh = poly.Triangulate(new ConstraintOptions());
+        for (int i = 0; i < 50; i++)
+        {
+            foreach (var meshTriangle in mesh.Triangles)
+            {
+                stl.WriteTriangle(
+                    new Vector3((float)meshTriangle.GetVertex(0).X, (float)meshTriangle.GetVertex(0).Y, i),
+                    new Vector3((float)meshTriangle.GetVertex(1).X, (float)meshTriangle.GetVertex(1).Y, i),
+                    new Vector3((float)meshTriangle.GetVertex(2).X, (float)meshTriangle.GetVertex(2).Y, i),
+                    new Vector3(1f, 1f, i)
+                );
             }
-
-            break;
         }
         
-        mesh.EndWrite();
+
+        stl.EndWrite();
         return;*/
 
         /*Slicer slicer = new(Size.Empty, SizeF.Empty, "D:\\Cube100x100x100.stl");

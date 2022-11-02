@@ -28,7 +28,7 @@
         Margin="10" Text="{Binding Progress.Title}"/>
       <TextBlock
         Grid.Row="1"
-        Margin="10,0,10,10" Text="{Binding Progress.ElapsedTimeStr, StringFormat=Elapsed Time: \{0\}}"/>
+        Margin="10,0,10,10" Text="{Binding Progress.ElapsedTimeStr, StringFormat=Elapsed Time: {0}}"/>
       <TextBlock
         Grid.Row="2"
         Margin="10,0,10,10" Text="{Binding Progress.Description}" HorizontalAlignment="Center"/>

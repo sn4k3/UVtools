@@ -146,7 +146,7 @@
 						  <TextBlock Grid.Row="0" HorizontalAlignment="Right"
 									 Padding="10">
 							  <TextBlock.Text>
-								  <MultiBinding StringFormat="\{0\} Update(s) | {1} Installed | {2} Profiles">
+								  <MultiBinding StringFormat="{}{0} Update(s) | {1} Installed | {2} Profiles">
 									  <Binding Path="PrusaSlicerProfiles[0].Updates"/>
 									  <Binding Path="PrusaSlicerProfiles[0].Installed"/>
 									  <Binding Path="PrusaSlicerProfiles[0].Items.Count"/>
@@ -189,7 +189,7 @@
 						  <TextBlock Grid.Row="0" HorizontalAlignment="Right"
 									 Padding="10">
 							  <TextBlock.Text>
-								  <MultiBinding StringFormat="\{0\} Update(s) | {1} Installed | {2} Profiles">
+								  <MultiBinding StringFormat="{}{0} Update(s) | {1} Installed | {2} Profiles">
 									  <Binding Path="PrusaSlicerProfiles[1].Updates"/>
 									  <Binding Path="PrusaSlicerProfiles[1].Installed"/>
 									  <Binding Path="PrusaSlicerProfiles[1].Items.Count"/>
@@ -248,7 +248,7 @@
 						  <TextBlock Grid.Row="0" HorizontalAlignment="Right"
 									 Padding="10">
 							  <TextBlock.Text>
-								  <MultiBinding StringFormat="\{0\} Update(s) | {1} Installed | {2} Profiles">
+								  <MultiBinding StringFormat="{}{0} Update(s) | {1} Installed | {2} Profiles">
 									  <Binding Path="SuperSlicerProfiles[0].Updates"/>
 									  <Binding Path="SuperSlicerProfiles[0].Installed"/>
 									  <Binding Path="SuperSlicerProfiles[0].Items.Count"/>
@@ -291,7 +291,7 @@
 						  <TextBlock Grid.Row="0" HorizontalAlignment="Right"
 									 Padding="10">
 							  <TextBlock.Text>
-								  <MultiBinding StringFormat="\{0\} Update(s) | {1} Installed | {2} Profiles">
+								  <MultiBinding StringFormat="{}{0} Update(s) | {1} Installed | {2} Profiles">
 									  <Binding Path="SuperSlicerProfiles[1].Updates"/>
 									  <Binding Path="SuperSlicerProfiles[1].Installed"/>
 									  <Binding Path="SuperSlicerProfiles[1].Items.Count"/>

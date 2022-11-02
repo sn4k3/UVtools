@@ -17,6 +17,7 @@ using Emgu.CV.Structure;
 using Emgu.CV.Util;
 using UVtools.Core.Extensions;
 using UVtools.Core.Gerber.Apertures;
+using UVtools.Core.Operations;
 
 namespace UVtools.Core.Gerber;
 
@@ -49,7 +50,28 @@ public class GerberDocument
 
     public SizeF XYppmm { get; init; }
 
-    public MCvScalar PolarityColor => Polarity == GerberPolarityType.Dark ? EmguExtensions.WhiteColor : EmguExtensions.BlackColor;
+    /// <summary>
+    /// Gets the current polarity as <see cref="MCvScalar"/>. <see cref="InversePolarity"/> will affect the return value
+    /// </summary>
+    public MCvScalar PolarityColor =>
+        Polarity == GerberPolarityType.Dark
+            ? !InversePolarity
+                ? EmguExtensions.WhiteColor
+                : EmguExtensions.BlackColor
+            : !InversePolarity
+                ? EmguExtensions.BlackColor
+                : EmguExtensions.WhiteColor;
+
+    /// <summary>
+    /// Gets or sets to inverse the polarity on drawing
+    /// </summary>
+    public bool InversePolarity { get; set; }
+
+    /// <summary>
+    /// Gets or sets the scale to apply to each shape drawing size.
+    /// Positions and vectors aren't affected by this.
+    /// </summary>
+    public double SizeScale { get; set; } = 1;
 
     #endregion
 
@@ -62,14 +84,9 @@ public class GerberDocument
     {
     }
 
-    public static GerberDocument ParseAndDraw(string filePath, Mat mat, SizeF xyPpmm, GerberMidpointRounding sizeMidpointRounding = GerberMidpointRounding.AwayFromZero, bool enableAntialiasing = false)
+    public static void ParseAndDraw(GerberDocument document, string filePath, Mat mat, bool enableAntiAliasing = false)
     {
         using var file = new StreamReader(filePath);
-        var document = new GerberDocument
-        {
-            SizeMidpointRounding = sizeMidpointRounding,
-            XYppmm = xyPpmm
-        };
 
         int FSlength = "%FSLAX46Y46*%".Length;
         int MOlength = "%MOMM*%".Length;
@@ -85,7 +102,7 @@ public class GerberDocument
         while ((line = file.ReadLine()) is not null)
         {
             line = line.Trim();
-            if(line == string.Empty) continue;
+            if (line == string.Empty) continue;
             if (line.StartsWith("M02")) break;
 
             var accumulatedLine = line;
@@ -98,7 +115,7 @@ public class GerberDocument
 
             line = accumulatedLine;
 
-            if(currentMacro is not null)
+            if (currentMacro is not null)
             {
                 currentMacro.ParsePrimitive(line);
                 if (line[^1] == '%') currentMacro = null;
@@ -107,8 +124,8 @@ public class GerberDocument
 
             if (line.StartsWith("%MO") && line.Length >= MOlength)
             {
-                if(line[3] == 'M' && line[4] == 'M') document.UnitType = GerberUnitType.Millimeter;
-                else if(line[3] == 'I' && line[4] == 'N') document.UnitType = GerberUnitType.Inch;
+                if (line[3] == 'M' && line[4] == 'M') document.UnitType = GerberUnitType.Millimeter;
+                else if (line[3] == 'I' && line[4] == 'N') document.UnitType = GerberUnitType.Inch;
                 continue;
             }
 
@@ -138,7 +155,7 @@ public class GerberDocument
                 continue;
             }
 
-            if (line.StartsWith("%FS") && line.Length >= FSlength) 
+            if (line.StartsWith("%FS") && line.Length >= FSlength)
             {
                 // %FSLAX34Y34*%
                 // 0123456789
@@ -207,7 +224,7 @@ public class GerberDocument
                 if (regionPoints.Count > 0)
                 {
                     using var vec = new VectorOfPoint(regionPoints.ToArray());
-                    CvInvoke.FillPoly(mat, vec, document.PolarityColor, enableAntialiasing ? LineType.AntiAlias : LineType.EightConnected);
+                    CvInvoke.FillPoly(mat, vec, document.PolarityColor, enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
                 }
                 //CvInvoke.Imshow("G37", mat);
                 //CvInvoke.WaitKey();
@@ -311,7 +328,7 @@ public class GerberDocument
                         if (regionPoints.Count > 0)
                         {
                             using var vec = new VectorOfPoint(regionPoints.ToArray());
-                            CvInvoke.FillPoly(mat, vec, document.PolarityColor, enableAntialiasing ? LineType.AntiAlias : LineType.EightConnected);
+                            CvInvoke.FillPoly(mat, vec, document.PolarityColor, enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
                         }
                         regionPoints.Clear();
                     }
@@ -319,7 +336,7 @@ public class GerberDocument
                     var pt = document.PositionMmToPx(nowX, nowY);
                     if (regionPoints.Count == 0 || (regionPoints.Count > 0 && regionPoints[^1] != pt)) regionPoints.Add(pt);
                 }
-                else if(currentAperture is not null)
+                else if (currentAperture is not null)
                 {
                     if (d == 1)
                     {
@@ -331,7 +348,7 @@ public class GerberDocument
                                 double yOffset = 0;
                                 var matchI = Regex.Match(line, @"I(-?\d+)");
                                 var matchJ = Regex.Match(line, @"J(-?\d+)");
-                                if(!matchI.Success || !matchJ.Success || matchI.Groups.Count < 2 || matchJ.Groups.Count < 2) continue;
+                                if (!matchI.Success || !matchJ.Success || matchI.Groups.Count < 2 || matchJ.Groups.Count < 2) continue;
 
 
                                 var valueStr = document.ZerosSuppressionType switch
@@ -367,7 +384,7 @@ public class GerberDocument
                                         document.SizeMmToPx(Math.Abs(xOffset), Math.Abs(xOffset)),
                                         0, 0, 360.0, document.PolarityColor,
                                         document.SizeMmToPx(circleAperture.Diameter),
-                                        enableAntialiasing ? LineType.AntiAlias : LineType.EightConnected
+                                        enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected
                                     );
                                 }
                                 else
@@ -381,7 +398,7 @@ public class GerberDocument
                                         enableAntialiasing ? LineType.AntiAlias : LineType.EightConnected
                                     );*/
                                 }
-                                    
+
                             }
                             else
                             {
@@ -390,7 +407,7 @@ public class GerberDocument
                                     document.PositionMmToPx(nowX, nowY),
                                     document.PolarityColor,
                                     EmguExtensions.CorrectThickness(document.SizeMmToPx(circleAperture.Diameter)),
-                                    enableAntialiasing ? LineType.AntiAlias : LineType.EightConnected);
+                                    enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
                                 /*mat.DrawLineAccurate(PositionMmToPx(currentX, currentY, xyPpmm),
                                     PositionMmToPx(nowX, nowY, xyPpmm),
                                     document.PolarityColor
@@ -408,13 +425,13 @@ public class GerberDocument
                                 //CvInvoke.Imshow("Line", mat);
                                 //CvInvoke.WaitKey();
                             }
-                                
+
                         }
                     }
                     else if (d == 3)
                     {
-                        currentAperture.DrawFlashD3(mat, new PointF((float) nowX, (float) nowY), 
-                            document.PolarityColor, enableAntialiasing ? LineType.AntiAlias : LineType.EightConnected);
+                        currentAperture.DrawFlashD3(mat, new PointF((float)nowX, (float)nowY),
+                            document.PolarityColor, enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
                         //CvInvoke.Imshow("G37", mat);
                         //CvInvoke.WaitKey();
                     }
@@ -425,6 +442,32 @@ public class GerberDocument
                 continue;
             }
         }
+    }
+
+    public static GerberDocument ParseAndDraw(OperationPCBExposure.PCBExposureFile file, Mat mat, SizeF xyPpmm, GerberMidpointRounding sizeMidpointRounding = GerberMidpointRounding.AwayFromZero, bool enableAntiAliasing = false)
+    {
+        var document = new GerberDocument
+        {
+            SizeMidpointRounding = sizeMidpointRounding,
+            XYppmm = xyPpmm,
+            InversePolarity = file.InvertPolarity,
+            SizeScale = file.SizeScale
+        };
+
+        ParseAndDraw(document, file.FilePath, mat, enableAntiAliasing);
+
+        return document;
+    }
+
+    public static GerberDocument ParseAndDraw(string filePath, Mat mat, SizeF xyPpmm, GerberMidpointRounding sizeMidpointRounding = GerberMidpointRounding.AwayFromZero, bool enableAntiAliasing = false)
+    {
+        var document = new GerberDocument
+        {
+            SizeMidpointRounding = sizeMidpointRounding,
+            XYppmm = xyPpmm
+        };
+
+        ParseAndDraw(document, filePath, mat, enableAntiAliasing);
 
         return document;
     }
@@ -463,28 +506,28 @@ public class GerberDocument
         => new((int)Math.Round(atXmm * XYppmm.Width, MidpointRounding.AwayFromZero), (int)Math.Round(atYmm * XYppmm.Height, MidpointRounding.AwayFromZero));
 
     public Size SizeMmToPx(SizeF sizeMm)
-        => new((int)Math.Max(1, Math.Round(sizeMm.Width * XYppmm.Width, (MidpointRounding)SizeMidpointRounding)),
-            (int)Math.Max(1, Math.Round(sizeMm.Height * XYppmm.Height, (MidpointRounding)SizeMidpointRounding)));
+        => new((int)Math.Max(1, Math.Round(sizeMm.Width * XYppmm.Width * SizeScale, (MidpointRounding)SizeMidpointRounding)),
+            (int)Math.Max(1, Math.Round(sizeMm.Height * XYppmm.Height * SizeScale, (MidpointRounding)SizeMidpointRounding)));
 
     public Size SizeMmToPx(double sizeXmm, double sizeYmm)
-        => new((int)Math.Max(1, Math.Round(sizeXmm * XYppmm.Width, (MidpointRounding)SizeMidpointRounding)),
-            (int)Math.Max(1, Math.Round(sizeYmm * XYppmm.Height, (MidpointRounding)SizeMidpointRounding)));
+        => new((int)Math.Max(1, Math.Round(sizeXmm * XYppmm.Width * SizeScale, (MidpointRounding)SizeMidpointRounding)),
+            (int)Math.Max(1, Math.Round(sizeYmm * XYppmm.Height * SizeScale, (MidpointRounding)SizeMidpointRounding)));
 
     public Size SizeMmToPx(float sizeXmm, float sizeYmm)
-        => new((int)Math.Max(1, Math.Round(sizeXmm * XYppmm.Width, (MidpointRounding)SizeMidpointRounding)),
-            (int)Math.Max(1, Math.Round(sizeYmm * XYppmm.Height, (MidpointRounding)SizeMidpointRounding)));
+        => new((int)Math.Max(1, Math.Round(sizeXmm * XYppmm.Width * SizeScale, (MidpointRounding)SizeMidpointRounding)),
+            (int)Math.Max(1, Math.Round(sizeYmm * XYppmm.Height * SizeScale, (MidpointRounding)SizeMidpointRounding)));
 
     public int SizeMmToPx(float sizeMm)
-        => (int) Math.Max(1, Math.Round(sizeMm * XYppmm.Max(), (MidpointRounding)SizeMidpointRounding));
+        => (int) Math.Max(1, Math.Round(sizeMm * XYppmm.Max() * SizeScale, (MidpointRounding)SizeMidpointRounding));
 
     public int SizeMmToPx(double sizeMm)
-        => (int)Math.Max(1, Math.Round(sizeMm * XYppmm.Max(), (MidpointRounding)SizeMidpointRounding));
+        => (int)Math.Max(1, Math.Round(sizeMm * XYppmm.Max() * SizeScale, (MidpointRounding)SizeMidpointRounding));
 
     public int SizeMmToPxOverride(float sizeMm, float ppmm)
-        => (int)Math.Max(1, Math.Round(sizeMm * ppmm, (MidpointRounding)SizeMidpointRounding));
+        => (int)Math.Max(1, Math.Round(sizeMm * ppmm * SizeScale, (MidpointRounding)SizeMidpointRounding));
 
     public int SizeMmToPxOverride(double sizeMm, float ppmm)
-        => (int)Math.Max(1, Math.Round(sizeMm * ppmm, (MidpointRounding)SizeMidpointRounding));
+        => (int)Math.Max(1, Math.Round(sizeMm * ppmm * SizeScale, (MidpointRounding)SizeMidpointRounding));
 }
 
 

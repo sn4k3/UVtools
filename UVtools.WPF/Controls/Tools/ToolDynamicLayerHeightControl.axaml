@@ -35,7 +35,7 @@
 
           <TextBlock Grid.Row="0" Grid.Column="6"
                      VerticalAlignment="Center"
-                     Text="{Binding Operation.CacheObjectCount, StringFormat=±\{0\}}"/>
+                     Text="{Binding Operation.CacheObjectCount, StringFormat=±{0}}"/>
 
           <TextBlock Grid.Row="2" Grid.Column="0"
                      VerticalAlignment="Center"

@@ -532,7 +532,7 @@ M106 S0
                     if (line.StartsWith(GCodeKeywordDelaySupportFull) || line.StartsWith(GCodeKeywordDelayModel))
                     {
                         var startStr = $"{GCodeKeywordSlice} {layerIndex}";
-                        var stripGcode = gcode[(gcode.IndexOf(startStr, StringComparison.InvariantCultureIgnoreCase) + startStr.Length)..].Trim(' ', '\n', '\r', '\t');
+                        var stripGcode = gcode[(gcode.IndexOf(startStr, StringComparison.OrdinalIgnoreCase) + startStr.Length)..].Trim(' ', '\n', '\r', '\t');
 
                         float liftHeight = 0;
                         float liftSpeed = GetBottomOrNormalValue((uint)layerIndex, BottomLiftSpeed, LiftSpeed);

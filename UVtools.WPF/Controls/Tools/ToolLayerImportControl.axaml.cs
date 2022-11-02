@@ -16,7 +16,7 @@ namespace UVtools.WPF.Controls.Tools;
 public class ToolLayerImportControl : ToolControl
 {
     private bool _isAutoSortLayersByFileNameChecked;
-    private ValueDescription _selectedFile;
+    private GenericFileRepresentation _selectedFile;
     private Bitmap _previewImage;
 
     private ListBox FilesListBox;
@@ -56,7 +56,7 @@ public class ToolLayerImportControl : ToolControl
             
     }
 
-    public ValueDescription SelectedFile
+    public GenericFileRepresentation SelectedFile
     {
         get => _selectedFile;
         set
@@ -67,12 +67,8 @@ public class ToolLayerImportControl : ToolControl
                 PreviewImage = null;
                 return;
             }
-            if (!_selectedFile.ValueAsString.EndsWith(".png", StringComparison.OrdinalIgnoreCase) &&
-                !_selectedFile.ValueAsString.EndsWith(".bmp", StringComparison.OrdinalIgnoreCase) &&
-                !_selectedFile.ValueAsString.EndsWith(".jpeg", StringComparison.OrdinalIgnoreCase) &&
-                !_selectedFile.ValueAsString.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase) &&
-                !_selectedFile.ValueAsString.EndsWith(".gif", StringComparison.OrdinalIgnoreCase)) return;
-            PreviewImage = new Bitmap(_selectedFile.ValueAsString);
+            if (!OperationLayerImport.ValidImageExtensions.Any(extension => _selectedFile.IsExtension(extension))) return;
+            PreviewImage = new Bitmap(_selectedFile.FilePath);
         }
     }
 
@@ -92,8 +88,8 @@ public class ToolLayerImportControl : ToolControl
         FilesListBox = this.Find<ListBox>("FilesListBox");
         FilesListBox.DoubleTapped += (sender, args) =>
         {
-            if (FilesListBox.SelectedItem is not ValueDescription file) return;
-            SystemAware.StartProcess(file.ValueAsString);
+            if (FilesListBox.SelectedItem is not GenericFileRepresentation file) return;
+            SystemAware.StartProcess(file.FilePath);
         };
         FilesListBox.KeyUp += (sender, e) =>
         {
@@ -195,7 +191,7 @@ public class ToolLayerImportControl : ToolControl
 
     public void RemoveFiles()
     {
-        Operation.Files.RemoveRange(FilesListBox.SelectedItems.OfType<ValueDescription>());
+        Operation.Files.RemoveRange(FilesListBox.SelectedItems.OfType<GenericFileRepresentation>());
     }
 
     public void ClearFiles()

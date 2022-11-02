@@ -1942,6 +1942,9 @@
 									<CheckBox
 										IsChecked="{Binding ShowLayerOutlineCentroids}"
 										Content="Centroids"/>
+                                    <CheckBox
+                                        IsChecked="{Binding ShowLayerOutlineTriangulate}"
+                                        Content="Triangulate"/>
 									<CheckBox
 									  IsChecked="{Binding ShowLayerOutlineEdgeDetection}"
 									  Content="Edge detection">

@@ -137,7 +137,7 @@
 
               <TextBlock
                   FontWeight="Bold"
-                  Text="{Binding Operation.RealZSize, StringFormat=\{0:F3\}mm}"/>
+                  Text="{Binding Operation.RealZSize, StringFormat={}{0:F3}mm}"/>
 
 
           </StackPanel>
@@ -370,7 +370,7 @@
             <TextBlock Grid.Row="0" Grid.Column="2" FontWeight="Bold"
                        ToolTip.Tip="The calculated expected size for the part based on your input">
                 <TextBlock.Text>
-                    <MultiBinding StringFormat="\{0\}mm x \{1\}mm x \{2\}mm">
+                    <MultiBinding StringFormat="{}{0}mm x {1}mm x {2}mm">
                         <Binding Path="Operation.RealXSize"/>
                         <Binding Path="Operation.RealYSize"/>
                         <Binding Path="Operation.RealZSize"/>
@@ -389,7 +389,7 @@
                        IsVisible="{Binding Operation.HollowModel}"
                        ToolTip.Tip="The calculated expected wall thickness size for the part based on your input">
                 <TextBlock.Text>
-                    <MultiBinding StringFormat="\{0\}mm x \{1\}mm">
+                    <MultiBinding StringFormat="{}{0}mm x {1}mm">
                         <Binding Path="Operation.WallThicknessRealXSize"/>
                         <Binding Path="Operation.WallThicknessRealYSize"/>
                     </MultiBinding>
@@ -405,7 +405,7 @@
             <TextBlock Grid.Row="4" Grid.Column="2" FontWeight="Bold"
                        ToolTip.Tip="The resultant scale factor you should resize your model with">
                 <TextBlock.Text>
-                    <MultiBinding StringFormat="\{0\}% x \{1\}% x \{2\}%">
+                    <MultiBinding StringFormat="{}{0}% x {1}% x {2}%">
                         <Binding Path="Operation.ScaleXFactor"/>
                         <Binding Path="Operation.ScaleYFactor"/>
                         <Binding Path="Operation.ScaleZFactor"/>

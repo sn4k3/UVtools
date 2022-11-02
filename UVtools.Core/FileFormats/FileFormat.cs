@@ -2854,7 +2854,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <summary>
     /// Gets the total time in seconds the display will remain on exposing the layers during the print
     /// </summary>
-    public float DisplayTotalOnTime => (float)Math.Round(this.Sum(layer => layer.ExposureTime), 2);
+    public float DisplayTotalOnTime => (float)Math.Round(this.Where(layer => layer is not null).Sum(layer => layer.ExposureTime), 2);
 
     /// <summary>
     /// Gets the total time formatted in hours, minutes and seconds the display will remain on exposing the layers during the print
