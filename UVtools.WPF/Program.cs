@@ -14,7 +14,23 @@ namespace UVtools.WPF;
 
 public static class Program
 {
+    private static bool _isDebug;
+
     public static string[] Args = Array.Empty<string>();
+    
+    public static bool IsDebug
+    {
+        get
+        {
+#if DEBUG
+            return true;
+#else
+            return _isDebug;
+#endif
+        }
+        set => _isDebug = value;
+    }
+
     public static bool IsCrashReport;
 
     public static Stopwatch ProgramStartupTime = null!;
@@ -38,13 +54,13 @@ public static class Program
             Console.WriteLine(e);
             return;
         }
-
+        
         if (Args.Length >= 1)
         {
             switch (Args[0])
             {
                 case "--debug":
-                    App.IsDebug = true;
+                    IsDebug = true;
                     break;
                 case "--crash-report" when Args.Length >= 3:
                     IsCrashReport = true;

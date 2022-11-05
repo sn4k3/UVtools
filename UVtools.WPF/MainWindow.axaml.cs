@@ -201,7 +201,7 @@ public partial class MainWindow : WindowEx
                 _firstTimeOnIssues = false;
                 if (ReferenceEquals(_selectedTabItem, TabIssues) && Settings.Issues.ComputeIssuesOnClickTab)
                 {
-                    OnClickDetectIssues().ConfigureAwait(false);
+                    Dispatcher.UIThread.InvokeAsync(async () => await OnClickDetectIssues());
                 }
             }
         }
@@ -1173,6 +1173,11 @@ public partial class MainWindow : WindowEx
         }
         await new PrusaSlicerManagerWindow().ShowDialog(this);
     }
+    
+    public void MenuHelpDebugOpenExecutableDirectoryClicked()
+    {
+        SystemAware.StartProcess(App.ApplicationPath);
+    }
 
     public void MenuHelpDebugThrowExceptionClicked()
     {
@@ -1726,6 +1731,8 @@ public partial class MainWindow : WindowEx
             UpdateLayerTrackerHighlightIssues();
         };
 
+        TabGCode.IsVisible = HaveGCode;
+        
         if (SlicerFile.DecodeType == FileFormat.FileDecodeType.Full)
         {
             if (Settings.Issues.ComputeIssuesOnLoad)
@@ -1753,8 +1760,6 @@ public partial class MainWindow : WindowEx
                 }
             }
         }
-
-        TabGCode.IsVisible = HaveGCode;
 
         SlicerFile.PropertyChanged += SlicerFileOnPropertyChanged;
 

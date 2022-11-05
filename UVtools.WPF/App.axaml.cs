@@ -49,21 +49,6 @@ public class App : Application
         DefaultDark
     }
 
-    private static bool _isDebug;
-
-    public static bool IsDebug
-    {
-        get
-        {
-#if DEBUG
-            return true;
-#else
-            return _isDebug;
-#endif
-        }
-        set => _isDebug = value;
-    }
-
     //public static ThemeSelector ThemeSelector { get; set; }
     public static MainWindow MainWindow = null!;
     public static FileFormat? SlicerFile = null;
@@ -507,5 +492,6 @@ public class App : Application
             return attributes.Length == 0 ? string.Empty : ((AssemblyCompanyAttribute)attributes[0]).Company;
         }
     }
-#endregion
+
+    #endregion
 }

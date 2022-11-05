@@ -13,6 +13,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Runtime.InteropServices;
 using System.Text.Json.Nodes;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using UVtools.Core;
@@ -216,10 +217,11 @@ public class AppVersionChecker : BindableBase
             else if (downloadFilename.EndsWith(".AppImage") && Linux.IsRunningAppImageGetPath(out var appImagePath)) // Linux AppImage
             {
                 var directory = Path.GetDirectoryName(appImagePath);
+                const string newFilename = $"{About.Software}.AppImage";
                 //var oldFileName = Path.GetFileName(appImagePath);
                 // Try to keep same filename logic if user renamed the file, like UVtools.AppImage would keep same same
                 //var newFilename = Regex.Replace(oldFileName, @"v\d+.\d+.\d+", $"v{_version}");
-                var newFullPath = Path.Combine(directory, downloadFilename);
+                var newFullPath = Path.Combine(directory, newFilename);
 
                 if (File.Exists(appImagePath)) File.Delete(appImagePath);
                 File.Move(DownloadedFile, newFullPath, true);
@@ -237,6 +239,7 @@ public class AppVersionChecker : BindableBase
 
                 var upgradeScriptFileName = "upgrade.sh";
                 var upgradeScriptFilePath = Path.Combine(tmpDirectory, upgradeScriptFileName);
+                var applicationPath = App.ApplicationPath;
                 await using (var stream = File.CreateText(upgradeScriptFilePath))
                 {
                     stream.NewLine = "\n";
@@ -245,9 +248,13 @@ public class AppVersionChecker : BindableBase
                     await stream.WriteLineAsync("testcmd() { command -v \"$1\" &> /dev/null; }");
                     await stream.WriteLineAsync();
                     await stream.WriteLineAsync("cd \"$(dirname \"$0\")\"");
-                    await stream.WriteLineAsync($"echo '{About.Software} v{About.VersionStr} updater script'");
+                    await stream.WriteLineAsync($"echo '{About.Software} v{About.VersionStr} -> {_version} updater script'");
+                    await stream.WriteLineAsync();
+                    await stream.WriteLineAsync($"oldversion='{About.VersionStr}'");
+                    await stream.WriteLineAsync($"newversion='{_version}'");
                     await stream.WriteLineAsync();
                     //await stream.WriteLineAsync($"cd '{App.ApplicationPath}'");
+                    await stream.WriteLineAsync("echo '- Killing processes'");
                     await stream.WriteLineAsync($"killall {About.Software}");
                     await stream.WriteLineAsync($"ps -ef | grep '.*dotnet.*{About.Software}.dll' | grep -v grep | awk '{{print $2}}' | xargs kill");
                     await stream.WriteLineAsync("sleep 1");
@@ -255,9 +262,11 @@ public class AppVersionChecker : BindableBase
 
                     if (OperatingSystem.IsMacOS())
                     {
+                        await stream.WriteLineAsync("echo '- Removing com.apple.quarantine flag'");
                         await stream.WriteLineAsync($"find '{extractDirectoryPath}' -print0 | xargs -0 xattr -d com.apple.quarantine &> /dev/null");
                     }
 
+                    await stream.WriteLineAsync("echo '- Sync/copying files over'");
                     if (macOS.IsRunningAppGetPath(out var macOSAppPath) && Directory.Exists(Path.Combine(extractDirectoryPath, "UVtools.app")))
                     {
                         await stream.WriteLineAsync("if testcmd rsync; then");
@@ -265,7 +274,6 @@ public class AppVersionChecker : BindableBase
                         await stream.WriteLineAsync("else");
                         await stream.WriteLineAsync($"  cp -fR '{extractDirectoryPath}/'* '{macOSAppPath}'");
                         await stream.WriteLineAsync("fi");
-                        //await stream.WriteLineAsync($"open -n '{macOSAppPath}'");
                     }
                     else // Linux generic and macOS generic
                     {
@@ -274,19 +282,67 @@ public class AppVersionChecker : BindableBase
                         await stream.WriteLineAsync("else");
                         await stream.WriteLineAsync($"  cp -fR '{extractDirectoryPath}/'* '{App.ApplicationPath}'");
                         await stream.WriteLineAsync("fi");
+
+                        if (About.VersionStr != _version)
+                        {
+                            var di = new DirectoryInfo(App.ApplicationPath);
+                            var newDirectoryName = Regex.Replace(di.Name, $@"({About.Software}.*)(v\d+.\d+.\d+)", $@"$1v{_version}", RegexOptions.IgnoreCase);
+                            if (di.Name != newDirectoryName)
+                            {
+                                await stream.WriteLineAsync("echo '- Directory is able to rename version name'");
+                                applicationPath = Path.Combine(di.Parent?.FullName!, newDirectoryName);
+                            }
+                        }
                     }
 
                     await stream.WriteLineAsync();
-                    await stream.WriteLineAsync($"nohup bash '{Path.Combine(App.ApplicationPath, "UVtools.sh")}' &> /dev/null &");
+                    await stream.WriteLineAsync("sleep 0.5");
+
+                    if (App.ApplicationPath == applicationPath)
+                    {
+                        await stream.WriteLineAsync($"cd '{applicationPath}'");
+                    }
+                    else // Can move
+                    {
+                        await stream.WriteLineAsync("echo '- Attempt to rename directory to the new version name'");
+                        await stream.WriteLineAsync($"if [ -d '{applicationPath}' ]; then");
+                        await stream.WriteLineAsync($"  cd '{App.ApplicationPath}'");
+                        await stream.WriteLineAsync("else");
+                        await stream.WriteLineAsync($"  mv -f '{App.ApplicationPath}' '{applicationPath}'");
+                        await stream.WriteLineAsync($"  cd '{applicationPath}'");
+                        await stream.WriteLineAsync("fi");
+                    }
+
+                    await stream.WriteLineAsync("echo '- UVtools will now launch'");
+                    if (App.SlicerFile is not null && App.SlicerFile.FileFullPath != Path.Combine(App.ApplicationPath, About.DemoFile))
+                    {
+                        // Reload last file
+                        await stream.WriteLineAsync($"nohup bash 'UVtools.sh' '{App.SlicerFile.FileFullPath}' &> /dev/null &");
+                    }
+                    else
+                    {
+                        await stream.WriteLineAsync("nohup bash 'UVtools.sh' &> /dev/null &");
+                    }
                     await stream.WriteLineAsync("disown");
                     await stream.WriteLineAsync();
+                    await stream.WriteLineAsync($"echo '- Removing: {tmpDirectory}'");
                     await stream.WriteLineAsync($"rm -fr '{tmpDirectory}'");
+                    await stream.WriteLineAsync("echo '- Completed'");
                     //await stream.WriteLineAsync("sleep 0.5");
                     //await stream.WriteLineAsync($"rm -f {upgradeScriptFileName}");
                     //await stream.WriteLine("exit");
                 }
 
-                SystemAware.StartProcess("bash", $"\"{upgradeScriptFilePath}\"");
+                if (Program.IsDebug)
+                {
+                    Console.WriteLine("In debug mode, will not auto-upgrade, please run:");
+                    Console.WriteLine($"bash \"{upgradeScriptFilePath}\"");
+                }
+                else
+                {
+                    SystemAware.StartProcess("bash", $"\"{upgradeScriptFilePath}\"");
+                }
+
                 //App.NewInstance(App.MainWindow.SlicerFile?.FileFullPath);
             }
             

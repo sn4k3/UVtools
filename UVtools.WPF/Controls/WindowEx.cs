@@ -104,7 +104,11 @@ public class WindowEx : Window, INotifyPropertyChanged, IStyleable
     public double WindowsWidthMaxSizeRatio { get; set; } = 1;
     public double WindowsHeightMaxSizeRatio { get; set; } = 1;
 
-    public bool IsDebug => App.IsDebug;
+    public bool IsDebug
+    {
+        get => Program.IsDebug;
+        set => Program.IsDebug = value;
+    }
 
     public UserSettings Settings => UserSettings.Instance;
 

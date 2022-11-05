@@ -1,5 +1,29 @@
 # Changelog
 
+## 05/11/2022 - v3.8.2
+
+- **Import thumbnails:**
+  - (Add) Import from file
+  - (Add) Import from file (Replace all)
+  - (Add) Import from current layer 
+  - (Add) Import from current layer (Replace all)
+  - (Add) Import from random layer 
+  - (Add) Import from random layer (Replace all)
+  - (Add) Import from heatmap 
+  - (Add) Import from heatmap (Replace all)
+  - (Fix) Import from file could load in any image color type, resulting in wrong encoding on file save
+- **Auto-upgrade script:** (Will only take effect on the next release)
+  - (Improvement) Add some marker/debug messages
+  - (Improvement) On generic Linux and macOS try to rename the folder if contain the version on it name to the upgraded version name
+  - (Improvement) Linux AppImage upgrades now renames to UVtools.AppImage
+  - (Improvement) Re-open the program with the current loaded file
+- (Add) UVtoolsCmd: `set-preview, set-thumbnail <input-file> <file path|layer index|:random-layer|:heatmap>  Sets and replace thumbnail(s) in the file [default: :heatmap]`. (#599)  
+        Use `UVtoolsCmd set-preview -?` to view the full documentation
+- (Improvement) Export layers to mesh: Write the file to a temporary location and move it to the target location when complete with success
+- (Fix) Error when opening a file with light calculated issues that cause a complete issue detection and when there are auto applied suggestions that modify the layer count (#598)
+- (Fix) Auto applying suggestions was not triggering a UI properties refresh, causing some values to show outdated
+- (Fix) PCB exposure: Bad parsing of macros when the ending `%` is alone in a new line (#600)
+
 ## 02/11/2022 - v3.8.1
 
 - **Tools:**

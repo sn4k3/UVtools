@@ -197,6 +197,53 @@ public sealed class OperationLayerExportMesh : Operation
             StripAntiAliasing = _stripAntiAliasing
         };
 
+        /*const float threshold = 0.5f;
+
+        int x_res = SlicerFile.BoundingRectangle.Width;
+        int y_res = SlicerFile.BoundingRectangle.Height;
+        int z_res = (int)LayerRangeCount;
+        float x_grid_min = -(x_res / 2.0f);
+        float x_grid_max = x_res / 2.0f;
+        float y_grid_min = -(y_res / 2.0f);
+        float y_grid_max = y_res / 2.0f;
+        float z_grid_min = -(z_res / 2.0f);
+        float z_grid_max = z_res / 2.0f;
+
+        var triangles = new List<Vector3>();
+        float[] xyplane0 = new float[x_res * y_res];
+        float[] xyplane1 = new float[x_res * y_res];
+
+
+        for (uint layerIndex = LayerIndexStart; layerIndex <= LayerIndexEnd; layerIndex++)
+        {
+            using var matRoi = SlicerFile[layerIndex].LayerMatModelBoundingRectangle;
+            using var mat = new Mat();
+            matRoi.RoiMat.ConvertTo(mat, DepthType.Cv32F, 1.0 / 255);
+
+            if (layerIndex == LayerIndexStart)
+            {
+                xyplane0 = mat.GetDataSpan<float>().ToArray();
+                continue;
+            }
+            
+            xyplane1 = mat.GetDataSpan<float>().ToArray();
+
+            // Calculate triangles for the xy-planes corresponding to z - 1 and z by marching cubes.
+            MarchingCubes.TesselateAdjacentXyPlanePair(
+                xyplane0, xyplane1,
+                (int)(layerIndex - LayerIndexStart - 1),
+                triangles,
+                threshold, // Use threshold as isovalue.
+                x_grid_min, x_grid_max, x_res,
+                y_grid_min, y_grid_max, y_res,
+                z_grid_min, z_grid_max, z_res);
+
+            (xyplane0, xyplane1) = (xyplane1, xyplane0);
+
+            progress++;
+        }
+
+        return true;*/
 
         /* For the 1st stage, we maintain up to 3 mats, the current layer, the one below us, and the one above us 
          * (below will be null when current layer is 0, above will be null when currentlayer is layercount-1) */
@@ -227,7 +274,26 @@ public sealed class OperationLayerExportMesh : Operation
         var rootFaces = new Voxelizer.UVFace?[distinctLayers.Length];
         var layerFaceCounts = new uint[distinctLayers.Length];
         var layerTrees = new KdTree<float, Voxelizer.UVFace>[distinctLayers.Length];
-            
+
+        void ExitCleanup()
+        {
+            /* dispose of everything */
+            for (var x = 0; x < layerTrees.Length; x++)
+            {
+                layerTrees[x] = null!;
+            }
+
+            layerTrees = null;
+
+            for (var x = 0; x < rootFaces.Length; x++)
+            {
+                if (rootFaces[x] is not null) rootFaces[x]!.FlatListNext = null;
+                rootFaces[x] = null!;
+            }
+            rootFaces = null;
+            GC.Collect();
+        }
+
         progress.Reset("layers", (uint)distinctLayers.Length);
         progress.Title = "Stage 1: Generating faces from layers";
         //progress.ItemCount = LayerRangeCount;
@@ -467,7 +533,7 @@ public sealed class OperationLayerExportMesh : Operation
 
             if (progress.Token.IsCancellationRequested)
             {
-                Cleanup();
+                ExitCleanup();
                 return false;
             }
 
@@ -497,7 +563,7 @@ public sealed class OperationLayerExportMesh : Operation
 
         if (progress.Token.IsCancellationRequested)
         {
-            Cleanup();
+            ExitCleanup();
             return false;
         }
 
@@ -509,13 +575,8 @@ public sealed class OperationLayerExportMesh : Operation
          * Since we don't modify the lists/objects and only connect them via doubly linked list
          * we can process each layer independant of the others.
          */
-        Parallel.For(0, distinctLayers.Length, i =>
+        Parallel.For(0, distinctLayers.Length, CoreSettings.GetParallelOptions(progress), i =>
         {
-            if (progress.Token.IsCancellationRequested)
-            {
-                return;
-            }
-
             /* if no faces on this layer... skip.... needed for empty layers */
             if (layerTrees[i] is null) return;
 
@@ -569,63 +630,49 @@ public sealed class OperationLayerExportMesh : Operation
 
         if (progress.Token.IsCancellationRequested)
         {
-            Cleanup();
+            ExitCleanup();
             return false;
         }
 
         progress.Title = "Stage 4: Writing the file";
         progress.ProcessedItems = 0;
 
-
-        using var mesh = fileExtension.FileFormatType.CreateInstance<MeshFile>(_filePath, FileMode.Create, _meshFileFormat, SlicerFile);
-        mesh!.BeginWrite();
-
-        /* Begin Stage 4, generating triangles and saving to file */
-        for (var treeIndex = 0; treeIndex < layerTrees.Length; treeIndex++) {
-            var tree = layerTrees[treeIndex];
-            if (tree is null) continue;
-
-            /* only process UVFaces that do not have a parent, these are the "root" faces that couldn't be combined with something above them */
-            foreach (var p in tree.Where(p => p.Value.Parent is null))
-            {
-                /* generate the triangles */
-                foreach (var f in Voxelizer.MakeFacetsForUVFace(p.Value, xWidth, yWidth,distinctLayers[treeIndex].PositionZ))
-                {
-                    /* write to file */
-                    mesh.WriteTriangle(f.p1, f.p2, f.p3, f.normal);
-                }
-            }
-
-            /* check for cancellation at every layer, and if so, close the file properly */
-            if (progress.Token.IsCancellationRequested)
-            {
-                Cleanup();
-                return false;
-            }
-
-            progress++;
-        }
-
-        void Cleanup()
+        var tmpFile = PathExtensions.GetTemporaryFilePathWithExtension("stl", $"UVtools{Id}-");
+        using (var mesh = fileExtension.FileFormatType.CreateInstance<MeshFile>(tmpFile, FileMode.Create, _meshFileFormat, SlicerFile))
         {
-            /* dispose of everything */
-            for (var x = 0; x < layerTrees.Length; x++)
-            {
-                layerTrees[x] = null!;
-            }
+            mesh!.BeginWrite();
 
-            layerTrees = null;
-
-            for (var x = 0; x < rootFaces.Length; x++)
+            /* Begin Stage 4, generating triangles and saving to file */
+            for (var treeIndex = 0; treeIndex < layerTrees.Length; treeIndex++)
             {
-                if (rootFaces[x] is not null) rootFaces[x]!.FlatListNext = null;
-                rootFaces[x] = null!;
+                var tree = layerTrees[treeIndex];
+                if (tree is null) continue;
+
+                /* only process UVFaces that do not have a parent, these are the "root" faces that couldn't be combined with something above them */
+                foreach (var p in tree.Where(p => p.Value.Parent is null))
+                {
+                    /* generate the triangles */
+                    foreach (var f in Voxelizer.MakeFacetsForUVFace(p.Value, xWidth, yWidth,
+                                 distinctLayers[treeIndex].PositionZ))
+                    {
+                        /* write to file */
+                        mesh.WriteTriangle(f.p1, f.p2, f.p3, f.normal);
+                    }
+                }
+
+                /* check for cancellation at every layer, and if so, close the file properly */
+                if (progress.Token.IsCancellationRequested)
+                {
+                    ExitCleanup();
+                    return false;
+                }
+
+                progress++;
             }
-            rootFaces = null;
-            GC.Collect();
+            mesh.EndWrite();
         }
 
-        mesh.EndWrite();
+        if (!progress.Token.IsCancellationRequested && File.Exists(tmpFile)) File.Move(tmpFile, _filePath, true);
 
         return !progress.Token.IsCancellationRequested;
     }

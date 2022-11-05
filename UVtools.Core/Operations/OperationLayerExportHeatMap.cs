@@ -125,72 +125,54 @@ public sealed class OperationLayerExportHeatMap : Operation
 
     protected override bool ExecuteInternally(OperationProgress progress)
     {
-        using var sumMat32 = EmguExtensions.InitMat(SlicerFile.Resolution, 1, DepthType.Cv32S);
-        var sumMat32Roi = GetRoiOrDefault(sumMat32);
-        using var mask = GetMask(sumMat32);
+        using var resultMat = EmguExtensions.InitMat(SlicerFile.Resolution, 1, DepthType.Cv32S);
+        using var resultMatRoi = GetRoiOrDefault(resultMat);
+        using var mask = GetMask(resultMat, HaveROI ? ROI.Location.Invert() : default);
 
         var layerRange = _mergeSamePositionedLayers 
-            ? SlicerFile.GetDistinctLayersByPositionZ(LayerIndexStart, LayerIndexEnd) .ToArray()
+            ? SlicerFile.GetDistinctLayersByPositionZ(LayerIndexStart, LayerIndexEnd).ToArray()
             : GetSelectedLayerRange().ToArray();
 
         progress.ItemCount = (uint)layerRange.Length;
 
 
-        /*Parallel.For(LayerIndexStart, LayerIndexEnd+1, CoreSettings.ParallelOptions, layerIndex =>
-        {
-            if (progress.Token.IsCancellationRequested) return;
-
-            using var mat = SlicerFile[layerIndex].LayerMat;
-            using var mat32 = new Mat();
-            mat.ConvertTo(mat32, DepthType.Cv32S);
-            var mat32Roi = GetRoiOrDefault(mat32);
-
-            lock (progress.Mutex)
-            {
-                CvInvoke.Add(sumMat32Roi, mat32Roi, sumMat32Roi, mask);
-                progress++;
-            }
-        });*/
-
-        Parallel.ForEach(layerRange, CoreSettings.GetParallelOptions(progress), layer =>
+       Parallel.ForEach(layerRange, CoreSettings.GetParallelOptions(progress), layer =>
         {
             using var mat = _mergeSamePositionedLayers 
                 ? SlicerFile.GetMergedMatForSequentialPositionedLayers(layer.Index)
                 : layer.LayerMat;
+            using var matRoi = GetRoiOrDefault(mat);
 
-            using var mat32 = new Mat();
-            mat.ConvertTo(mat32, DepthType.Cv32S);
-            var mat32Roi = GetRoiOrDefault(mat32);
+            matRoi.ConvertTo(matRoi, DepthType.Cv32S);
 
             lock (progress.Mutex)
             {
-                CvInvoke.Add(sumMat32Roi, mat32Roi, sumMat32Roi, mask);
+                CvInvoke.Add(resultMatRoi, matRoi, resultMatRoi, mask);
                 progress++;
             }
         });
 
 
-        using var sumMat = EmguExtensions.InitMat(sumMat32.Size);
-        sumMat32.ConvertTo(sumMat, DepthType.Cv8U, 1.0 / layerRange.Length);
+        resultMat.ConvertTo(resultMat, DepthType.Cv8U, 1.0 / layerRange.Length);
 
         if (_flipDirection != FlipDirection.None)
         {
-            CvInvoke.Flip(sumMat, sumMat, (FlipType)_flipDirection);
+            CvInvoke.Flip(resultMat, resultMat, (FlipType)_flipDirection);
         }
 
         if (_rotateDirection != RotateDirection.None)
         {
-            CvInvoke.Rotate(sumMat, sumMat, (RotateFlags)_rotateDirection);
+            CvInvoke.Rotate(resultMat, resultMat, (RotateFlags)_rotateDirection);
         }
 
         if (_cropByRoi && HaveROI)
         {
-            var sumMatRoi = GetRoiOrDefault(sumMat);
+            var sumMatRoi = GetRoiOrDefault(resultMat);
             sumMatRoi.Save(_filePath);
         }
         else
         {
-            sumMat.Save(_filePath);
+            resultMat.Save(_filePath);
         }
 
 

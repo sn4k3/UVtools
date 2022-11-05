@@ -41,7 +41,7 @@ internal static class ExtractCommand
                 Program.ProgressBarWork($"Extracting to {Path.GetFileName(path)}",
                     () =>
                     {
-                        slicerFile.Extract(path);
+                        slicerFile.Extract(path, progress:Program.Progress);
                     });
 
             }, GlobalArguments.InputFileArgument, GlobalArguments.OutputDirectoryArgument, noOverwriteOption);

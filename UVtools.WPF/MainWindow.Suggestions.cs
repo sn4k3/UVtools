@@ -15,7 +15,6 @@ using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Threading;
 using MessageBox.Avalonia.Enums;
-using UVtools.Core.Managers;
 using UVtools.Core.Suggestions;
 using UVtools.WPF.Extensions;
 using UVtools.WPF.Structures;
@@ -53,16 +52,14 @@ public partial class MainWindow
     {
         var suggestionsAvailable = new List<Suggestion>();
         var suggestionsApplied = new List<Suggestion>();
+        byte autoApplied = 0;
         foreach (var suggestion in Suggestions)
         {
             suggestion.SlicerFile = SlicerFile;
             if(!suggestion.Enabled || !suggestion.IsAvailable) continue;
-            if (tryToAutoApply)
+            if (tryToAutoApply && suggestion.ExecuteIfAutoApply())
             {
-                if (suggestion.ExecuteIfAutoApply())
-                {
-                    CanSave = true;
-                }
+                autoApplied++;
             }
 
             if(suggestion.IsApplied) suggestionsApplied.Add(suggestion);
@@ -71,6 +68,13 @@ public partial class MainWindow
 
         SuggestionsAvailable.ReplaceCollection(suggestionsAvailable);
         SuggestionsApplied.ReplaceCollection(suggestionsApplied);
+
+        if (autoApplied > 0)
+        {
+            CanSave = true;
+            ResetDataContext();
+            ForceUpdateActualLayer();
+        }
     }
 
     public async void ApplySuggestionsClicked()

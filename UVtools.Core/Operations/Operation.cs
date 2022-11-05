@@ -650,14 +650,15 @@ public abstract class Operation : BindableBase, IDisposable
     /// Returns a mask given <see cref="MaskPoints"/>
     /// </summary>
     /// <param name="mat"></param>
+    /// <param name="offset"></param>
     /// <returns></returns>
-    public Mat? GetMask(Mat mat) => GetMask(_maskPoints, mat);
+    public Mat? GetMask(Mat mat, Point offset = default) => GetMask(_maskPoints, mat, offset);
 
-    public Mat? GetMask(Point[][]? points, Mat mat)
+    public Mat? GetMask(Point[][]? points, Mat mat, Point offset = default)
     {
         if (!HaveMask) return null;
 
-        var mask = mat.CreateMask(points!);
+        var mask = mat.CreateMask(points!, offset);
         return GetRoiOrDefault(mask);
     }
 

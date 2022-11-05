@@ -15,12 +15,17 @@ using System.Text;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Threading;
+using Emgu.CV;
+using Emgu.CV.CvEnum;
 using MessageBox.Avalonia.Enums;
+using UVtools.Core.FileFormats;
 using UVtools.Core.Layers;
 using UVtools.Core.Objects;
 using UVtools.Core.SystemOS;
 using UVtools.WPF.Extensions;
 using UVtools.WPF.Structures;
+using static Org.BouncyCastle.Bcpg.Attr.ImageAttrib;
 using Bitmap = Avalonia.Media.Imaging.Bitmap;
 using Helpers = UVtools.WPF.Controls.Helpers;
 
@@ -183,13 +188,21 @@ public partial class MainWindow
         }
     }
 
-    public async void OnClickThumbnailImport()
+    public async void OnClickThumbnailImportFile(bool replaceAll = false)
     {
-        if (_visibleThumbnailIndex <= 0) return;
-        if (SlicerFile.Thumbnails[_visibleThumbnailIndex - 1] is null)
+        if (replaceAll)
         {
-            return; // This should never happen!
+            if (SlicerFile.ThumbnailsCount == 0) return;
         }
+        else
+        {
+            if (_visibleThumbnailIndex <= 0) return;
+            if (SlicerFile.Thumbnails[_visibleThumbnailIndex - 1] is null)
+            {
+                return; // This should never happen!
+            }
+        }
+        
 
         var dialog = new OpenFileDialog
         {
@@ -200,11 +213,144 @@ public partial class MainWindow
         var filepath = await dialog.ShowAsync(this);
 
         if (filepath is null || filepath.Length <= 0) return;
-        uint i = _visibleThumbnailIndex - 1;
-        SlicerFile.SetThumbnail((int)i, filepath[0]);
-        //VisibleThumbnailImage = SlicerFile.Thumbnails[i].ToBitmap();
-        SlicerFile.RequireFullEncode = true;
-        CanSave = true;
+
+        bool result;
+
+        if (replaceAll)
+        {
+            result = SlicerFile.SetThumbnails(filepath[0]) > 0;
+        }
+        else
+        {
+            uint i = _visibleThumbnailIndex - 1;
+            result = SlicerFile.SetThumbnail((int)i, filepath[0]);
+        }
+
+        if (result) CanSave = true;
+    }
+
+    public void OnClickThumbnailImportCurrentLayer(bool replaceAll = false)
+    {
+        if (!LayerCache.IsCached || SlicerFile.DecodeType == FileFormat.FileDecodeType.Partial) return;
+        if (replaceAll)
+        {
+            if (SlicerFile.ThumbnailsCount == 0) return;
+        }
+        else
+        {
+            if (_visibleThumbnailIndex <= 0) return;
+            if (SlicerFile.Thumbnails[_visibleThumbnailIndex - 1] is null)
+            {
+                return; // This should never happen!
+            }
+        }
+
+        using var matRoi = new Mat(LayerCache.Image, LayerCache.Layer.GetBoundingRectangle(50, 100));
+        using var thumbnailMat = new Mat();
+        CvInvoke.CvtColor(matRoi, thumbnailMat, ColorConversion.Gray2Bgr);
+
+        bool result;
+
+        if (replaceAll)
+        {
+            result = SlicerFile.SetThumbnails(thumbnailMat) > 0;
+        }
+        else
+        {
+            uint i = _visibleThumbnailIndex - 1;
+            result = SlicerFile.SetThumbnail((int)i, thumbnailMat);
+        }
+
+        if (result) CanSave = true;
+    }
+
+    public void OnClickThumbnailImportRandomLayer(bool replaceAll = false)
+    {
+        if (SlicerFile.LayerCount == 0 || SlicerFile.DecodeType == FileFormat.FileDecodeType.Partial) return;
+        if (replaceAll)
+        {
+            if (SlicerFile.ThumbnailsCount == 0) return;
+        }
+        else
+        {
+            if (_visibleThumbnailIndex <= 0) return;
+            if (SlicerFile.Thumbnails[_visibleThumbnailIndex - 1] is null)
+            {
+                return; // This should never happen!
+            }
+        }
+
+        var layer = SlicerFile[Random.Shared.Next((int) SlicerFile.LayerCount)];
+        using var matRoi = layer.GetLayerMatBoundingRectangle(50, 100);
+        CvInvoke.CvtColor(matRoi.RoiMat, matRoi.RoiMat, ColorConversion.Gray2Bgr);
+
+        bool result;
+
+        if (replaceAll)
+        {
+            result = SlicerFile.SetThumbnails(matRoi.RoiMat) > 0;
+        }
+        else
+        {
+            uint i = _visibleThumbnailIndex - 1;
+            result = SlicerFile.SetThumbnail((int)i, matRoi.RoiMat);
+        }
+
+        if (result) CanSave = true;
+    }
+
+    public async void OnClickThumbnailImportHeatmap(bool replaceAll = false)
+    {
+        if (SlicerFile.DecodeType == FileFormat.FileDecodeType.Partial) return;
+        if (replaceAll)
+        {
+            if (SlicerFile.ThumbnailsCount == 0) return;
+        }
+        else
+        {
+            if (_visibleThumbnailIndex <= 0) return;
+            if (SlicerFile.Thumbnails[_visibleThumbnailIndex - 1] is null)
+            {
+                return; // This should never happen!
+            }
+        }
+
+        IsGUIEnabled = false;
+        ShowProgressWindow("Generating heatmap");
+
+        Mat? mat = null;
+
+        try
+        {
+            mat = await SlicerFile.GenerateHeatmapAsync(SlicerFile.GetBoundingRectangle(100, 50, Progress), Progress);
+            CvInvoke.CvtColor(mat, mat, ColorConversion.Gray2Bgr);
+        }
+        catch (OperationCanceledException)
+        { }
+        catch (Exception exception)
+        {
+            await this.MessageBoxError(exception.ToString(), "Error while generating the heatmap");
+        }
+
+        IsGUIEnabled = true;
+
+        if (mat is null) return;
+
+        bool result;
+
+        if (replaceAll)
+        {
+            result = SlicerFile.SetThumbnails(mat) > 0;
+        }
+        else
+        {
+            uint i = _visibleThumbnailIndex - 1;
+            result = SlicerFile.SetThumbnail((int) i, mat);
+        }
+
+        mat?.Dispose();;
+
+        if(result) CanSave = true;
     }
 
     public void RefreshThumbnail()

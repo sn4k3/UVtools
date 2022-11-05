@@ -190,15 +190,15 @@ Options:
   -?, -h, --help  Show help and usage information
 
 Commands:
-  run <input-file> <files>                              Run operations and/or scripts
-  convert <input-file> <target-type/ext> <output-file>  Convert input file into a output file format by a known type or
-                                                        extension []
-  extract <input-file> <output-folder>                  Extract file contents to a folder []
-  copy-parameters <input-file> <target-files>           Copy print parameters from one file to another
-  print-properties <input-file>                         Prints available properties
-  print-layers <input-file>                             Prints layer(s) properties
-  print-gcode <input-file>                              Prints the gcode of the file if available
-  print-machines                                        Prints machine settings
+  run <input-file> <files>                                                                Run operations and/or scripts
+  convert <input-file> <target-type/ext> <output-file>                                    Convert input file into a output file format by a known type or extension []
+  extract <input-file> <output-folder>                                                    Extract file contents to a folder []
+  copy-parameters <input-file> <target-files>                                             Copy print parameters from one file to another
+  set-preview, set-thumbnail <input-file> <file path|layer index|:random-layer|:heatmap>  Sets and replace thumbnail(s) in the file [default: :heatmap]
+  print-properties <input-file>                                                           Prints available properties
+  print-layers <input-file>                                                               Prints layer(s) properties
+  print-gcode <input-file>                                                                Prints the gcode of the file if available
+  print-machines                                                                          Prints machine settings
 ```
 
 Note: On each command you can use -? to see specific command help and extra options

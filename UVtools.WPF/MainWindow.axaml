@@ -236,6 +236,11 @@
                               IsVisible="{Binding IsDebug}"
                               i:MenuItem.Icon="fa-solid fa-bug-slash">
 
+                        <MenuItem Header="Open executable directory"
+                                  IsVisible="{Binding IsDebug}"
+                                  Command="{Binding MenuHelpDebugOpenExecutableDirectoryClicked}"
+                                  i:MenuItem.Icon="fa-solid fa-folder-open"/>
+
                         <MenuItem Header="Throw exception"
                                   IsVisible="{Binding IsDebug}"
                                   Command="{Binding MenuHelpDebugThrowExceptionClicked}"
@@ -414,12 +419,73 @@
 							<TextBlock VerticalAlignment="Center"
 									   Text="{Binding VisibleThumbnailResolution}"/>
 
-							<Button IsEnabled="{Binding VisibleThumbnailIndex}"
+							<uc:ButtonWithIcon IsEnabled="{Binding VisibleThumbnailIndex}"
 									ToolTip.Tip="Replace the current preview image"
-									i:Attached.Icon="fa-solid fa-file-image"
-									Command="{Binding OnClickThumbnailImport}"/>
+									Spacing="1"
+									Text="⮟"
+									Icon="fa-solid fa-file-image"
+									Command="{Binding OnClickThumbnailImportFile}"
+                                    CommandParameter="False">
+								<uc:ButtonWithIcon.ContextMenu>
+                                    <ContextMenu Name="ThumbnailImportContextMenu" PlacementMode="Bottom">
+                                        <MenuItem
+                                            Command="{Binding OnClickThumbnailImportFile}"
+											CommandParameter="False"
+                                            Header="From file"
+                                            i:MenuItem.Icon="fa-solid fa-file-image"/>
+
+                                        <MenuItem
+                                            Command="{Binding OnClickThumbnailImportFile}"
+											CommandParameter="True"
+                                            Header="From file (Replace all)"
+                                            i:MenuItem.Icon="fa-solid fa-file-image"/>
+
+										<Separator/>
+
+                                        <MenuItem
+                                            Command="{Binding OnClickThumbnailImportCurrentLayer}"
+                                            CommandParameter="False"
+                                            Header="From current layer"
+                                            i:MenuItem.Icon="fa-solid fa-layer-group"/>
+
+                                        <MenuItem
+                                            Command="{Binding OnClickThumbnailImportCurrentLayer}"
+                                            CommandParameter="True"
+                                            Header="From current layer (Replace all)"
+                                            i:MenuItem.Icon="fa-solid fa-layer-group"/>
+
+                                        <MenuItem
+                                            Command="{Binding OnClickThumbnailImportRandomLayer}"
+                                            CommandParameter="False"
+                                            Header="From random layer"
+                                            i:MenuItem.Icon="fa-solid fa-layer-group"/>
+
+                                        <MenuItem
+                                            Command="{Binding OnClickThumbnailImportRandomLayer}"
+                                            CommandParameter="True"
+                                            Header="From random layer (Replace all)"
+                                            i:MenuItem.Icon="fa-solid fa-layer-group"/>
+
+                                        <Separator/>
+
+										<MenuItem
+                                            Command="{Binding OnClickThumbnailImportHeatmap}"
+                                            CommandParameter="False"
+                                            Header="From heatmap"
+                                            i:MenuItem.Icon="fa-solid fa-file-image"/>
+
+                                        <MenuItem
+                                            Command="{Binding OnClickThumbnailImportHeatmap}"
+                                            CommandParameter="True"
+                                            Header="From heatmap (Replace all)"
+                                            i:MenuItem.Icon="fa-solid fa-file-image"/>
+
+                                    </ContextMenu>
+                                </uc:ButtonWithIcon.ContextMenu>
+                            </uc:ButtonWithIcon>
 
 							<Button IsEnabled="{Binding VisibleThumbnailIndex}"
+									VerticalAlignment="Stretch"
 									ToolTip.Tip="Save thumbnail image to a file"
 									i:Attached.Icon="fa-solid fa-floppy-disk"
 									Command="{Binding OnClickThumbnailSave}"/>

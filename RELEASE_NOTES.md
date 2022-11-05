@@ -1,11 +1,22 @@
-- **Tools:**
-  - **PCB Exposure:**
-    - (Add) Allow to scale the drawing sizes per gerber file
-    - (Add) Allow to invert the drawing polarity per gerber file (#592)
-    - (Add) Allow to drag and drop files into "Add files" button and grid header
-    - (Improvement) Do not add empty layers when usable to draw or when draw a all black image
-    - (Improvement) "Merge all gerbers into one layer" will now draw all gerber into one image instead of perform the Max(of all gerbers pixels), allowing to subtract areas as they are on gerbers
-  - **Import layers:** Fix error when trying to insert layers
-  - **Export layers images:** Better compression of contours for SVG export, resulting in smooth curves, better visuals and lower file size
-- (Add) Outline: Triangulate
-- (Remove) Avalonia.Diagnostics dependency in release mode
+- **Import thumbnails:**
+  - (Add) Import from file
+  - (Add) Import from file (Replace all)
+  - (Add) Import from current layer
+  - (Add) Import from current layer (Replace all)
+  - (Add) Import from random layer
+  - (Add) Import from random layer (Replace all)
+  - (Add) Import from heatmap
+  - (Add) Import from heatmap (Replace all)
+  - (Fix) Import from file could load in any image color type, resulting in wrong encoding on file save
+- **Auto-upgrade script:** (Will only take effect on the next release)
+  - (Improvement) Add some marker/debug messages
+  - (Improvement) On generic Linux and macOS try to rename the folder if contain the version on it name to the upgraded version name
+  - (Improvement) Linux AppImage upgrades now renames to UVtools.AppImage
+  - (Improvement) Re-open the program with the current loaded file
+- (Add) UVtoolsCmd: `set-preview, set-thumbnail <input-file> <file path|layer index|:random-layer|:heatmap>  Sets and replace thumbnail(s) in the file [default: :heatmap]`. (#599)
+        Use `UVtoolsCmd set-preview -?` to view the full documentation
+- (Improvement) Export layers to mesh: Write the file to a temporary location and move it to the target location when complete with success
+- (Fix) Error when opening a file with light calculated issues that cause a complete issue detection and when there are auto applied suggestions that modify the layer count (#598)
+- (Fix) Auto applying suggestions was not triggering a UI properties refresh, causing some values to show outdated
+- (Fix) PCB exposure: Bad parsing of macros when the ending `%` is alone in a new line (#600)
+

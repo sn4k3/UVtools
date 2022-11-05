@@ -105,6 +105,12 @@ public class GerberDocument
             if (line == string.Empty) continue;
             if (line.StartsWith("M02")) break;
 
+            if (currentMacro is not null && line[0] == '%')
+            {
+                currentMacro = null;
+                continue;
+            }
+
             var accumulatedLine = line;
             while (!accumulatedLine.Contains('*') && (line = file.ReadLine()) is not null)
             {
@@ -430,8 +436,7 @@ public class GerberDocument
                     }
                     else if (d == 3)
                     {
-                        currentAperture.DrawFlashD3(mat, new PointF((float)nowX, (float)nowY),
-                            document.PolarityColor, enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
+                        currentAperture.DrawFlashD3(mat, new PointF((float)nowX, (float)nowY), document.PolarityColor, enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
                         //CvInvoke.Imshow("G37", mat);
                         //CvInvoke.WaitKey();
                     }

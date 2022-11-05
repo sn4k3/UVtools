@@ -849,10 +849,9 @@ public partial class MainWindow
     {
         if (!IsFileLoaded) return;
 
-        var sanitizedLayerIndex = Math.Min(_actualLayer, SlicerFile.LastLayerIndex);
-        if (sanitizedLayerIndex != _actualLayer)
+        
+        if (SlicerFile.SanitizeLayerIndex(ref _actualLayer))
         {
-            _actualLayer = sanitizedLayerIndex;
             InvalidateLayerNavigation();
         }
 

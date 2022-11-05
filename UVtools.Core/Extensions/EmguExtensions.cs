@@ -490,17 +490,17 @@ public static class EmguExtensions
 
     #region Create methods
 
-    public static Mat CreateMask(this Mat src, VectorOfVectorOfPoint contours)
+    public static Mat CreateMask(this Mat src, VectorOfVectorOfPoint contours, Point offset = default)
     {
         var mask = src.NewBlank();
-        CvInvoke.DrawContours(mask, contours, -1, WhiteColor, -1);
+        CvInvoke.DrawContours(mask, contours, -1, WhiteColor, -1, LineType.EightConnected, null, int.MaxValue, offset);
         return mask;
     }
 
-    public static Mat CreateMask(this Mat src, Point[][] contours)
+    public static Mat CreateMask(this Mat src, Point[][] contours, Point offset = default)
     {
         using var vec = new VectorOfVectorOfPoint(contours);
-        return src.CreateMask(vec);
+        return src.CreateMask(vec, offset);
     }
 
     public static Mat CropByBounds(this Mat src, bool cloneInsteadRoi = false)

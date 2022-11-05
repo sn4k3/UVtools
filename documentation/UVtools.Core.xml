@@ -2505,6 +2505,11 @@
             Gets the image height resolution
             </summary>
         </member>
+        <member name="P:UVtools.Core.FileFormats.FileFormat.ResolutionRectangle">
+            <summary>
+            Gets an rectangle that starts at 0,0 and goes up to <see cref="P:UVtools.Core.FileFormats.FileFormat.Resolution"/>
+            </summary>
+        </member>
         <member name="P:UVtools.Core.FileFormats.FileFormat.DisplayPixelCount">
             <summary>
             Gets the display total number of pixels (<see cref="P:UVtools.Core.FileFormats.FileFormat.ResolutionX"/> * <see cref="P:UVtools.Core.FileFormats.FileFormat.ResolutionY"/>)
@@ -3103,6 +3108,19 @@
             </summary>
             <param name="image">Image to set</param>
         </member>
+        <member name="M:UVtools.Core.FileFormats.FileFormat.SetThumbnails(System.String)">
+            <summary>
+            Sets all thumbnails from a disk file
+            </summary>
+            <param name="filePath"></param>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.FileFormat.SetThumbnail(System.Int32,Emgu.CV.Mat)">
+            <summary>
+            Sets a thumbnail from mat
+            </summary>
+            <param name="index">Thumbnail index</param>
+            <param name="image"></param>
+        </member>
         <member name="M:UVtools.Core.FileFormats.FileFormat.SetThumbnail(System.Int32,System.String)">
             <summary>
             Sets a thumbnail from a disk file
@@ -3618,6 +3636,13 @@
             <param name="layerIndex">Layer index to check</param>
             <returns></returns>
         </member>
+        <member name="M:UVtools.Core.FileFormats.FileFormat.SanitizeLayerIndex(System.UInt32@)">
+            <summary>
+            Constrains a layer index to be inside the range between 0 and <see cref="P:UVtools.Core.FileFormats.FileFormat.LastLayerIndex"/>
+            </summary>
+            <param name="layerIndex">Layer index to sanitize</param>
+            <returns>True if sanitized, otherwise false</returns>
+        </member>
         <member name="M:UVtools.Core.FileFormats.FileFormat.SanitizeLayers">
             <summary>
             Re-assign layer indexes and parent <see cref="T:UVtools.Core.FileFormats.FileFormat"/>
@@ -3639,6 +3664,24 @@
             Set LiftHeight to 0 if previous and current have same PositionZ
             <param name="zeroLightOffDelay">If true also set light off to 0, otherwise current value will be kept.</param>
             </summary>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.FileFormat.GenerateHeatmap(System.UInt32,System.UInt32,System.Drawing.Rectangle,UVtools.Core.Operations.OperationProgress)">
+            <summary>
+            Generates a heatmap based on a stack of layers
+            </summary>
+            <param name="layerIndexStart">Layer index to start from</param>
+            <param name="layerIndexEnd">Layer index to end on</param>
+            <param name="roi">Region of interest</param>
+            <param name="progress"></param>
+            <returns>Heatmap grayscale Mat</returns>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.FileFormat.GenerateHeatmap(System.Drawing.Rectangle,UVtools.Core.Operations.OperationProgress)">
+            <summary>
+            Generates a heatmap based on a stack of layers
+            </summary>
+            <param name="roi">Region of interest</param>
+            <param name="progress"></param>
+            <returns>Heatmap grayscale Mat</returns>
         </member>
         <member name="T:UVtools.Core.FileFormats.FlashForgeSVGXFile.Preview">
             <summary>
@@ -4889,6 +4932,28 @@
             Gets the layer mat with a specified roi
             </summary>
             <param name="roi">Region of interest</param>
+            <returns></returns>
+        </member>
+        <member name="M:UVtools.Core.Layers.Layer.GetLayerMatBoundingRectangle(System.Int32)">
+            <summary>
+            Gets the layer mat with bounding rectangle mat
+            </summary>
+            <param name="margin">Margin from bounding rectangle</param>
+            <returns></returns>
+        </member>
+        <member name="M:UVtools.Core.Layers.Layer.GetLayerMatBoundingRectangle(System.Int32,System.Int32)">
+            <summary>
+            Gets the layer mat with bounding rectangle mat
+            </summary>
+            <param name="marginX">X margin from bounding rectangle</param>
+            <param name="marginY">Y margin from bounding rectangle</param>
+            <returns></returns>
+        </member>
+        <member name="M:UVtools.Core.Layers.Layer.GetLayerMatBoundingRectangle(System.Drawing.Size)">
+            <summary>
+            Gets the layer mat with bounding rectangle mat
+            </summary>
+            <param name="margin">Margin from bounding rectangle</param>
             <returns></returns>
         </member>
         <member name="P:UVtools.Core.Layers.Layer.BrgMat">
@@ -6177,11 +6242,12 @@
             </summary>
             <param name="points"></param>
         </member>
-        <member name="M:UVtools.Core.Operations.Operation.GetMask(Emgu.CV.Mat)">
+        <member name="M:UVtools.Core.Operations.Operation.GetMask(Emgu.CV.Mat,System.Drawing.Point)">
             <summary>
             Returns a mask given <see cref="P:UVtools.Core.Operations.Operation.MaskPoints"/>
             </summary>
             <param name="mat"></param>
+            <param name="offset"></param>
             <returns></returns>
         </member>
         <member name="M:UVtools.Core.Operations.Operation.ApplyMask(Emgu.CV.Mat,Emgu.CV.Mat,Emgu.CV.Mat)">

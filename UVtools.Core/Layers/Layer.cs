@@ -833,6 +833,28 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
     public MatRoi GetLayerMat(Rectangle roi) => new(LayerMat, roi);
 
     /// <summary>
+    /// Gets the layer mat with bounding rectangle mat
+    /// </summary>
+    /// <param name="margin">Margin from bounding rectangle</param>
+    /// <returns></returns>
+    public MatRoi GetLayerMatBoundingRectangle(int margin) => new(LayerMat, GetBoundingRectangle(margin));
+
+    /// <summary>
+    /// Gets the layer mat with bounding rectangle mat
+    /// </summary>
+    /// <param name="marginX">X margin from bounding rectangle</param>
+    /// <param name="marginY">Y margin from bounding rectangle</param>
+    /// <returns></returns>
+    public MatRoi GetLayerMatBoundingRectangle(int marginX, int marginY) => new(LayerMat, GetBoundingRectangle(marginX, marginY));
+
+    /// <summary>
+    /// Gets the layer mat with bounding rectangle mat
+    /// </summary>
+    /// <param name="margin">Margin from bounding rectangle</param>
+    /// <returns></returns>
+    public MatRoi GetLayerMatBoundingRectangle(Size margin) => new(LayerMat, GetBoundingRectangle(margin));
+
+    /// <summary>
     /// Gets a new Brg image instance
     /// </summary>
     [XmlIgnore]
@@ -1211,7 +1233,7 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
     
     public string FormatFileNameWithLayerDigits(string prepend = "", IndexStartNumber layerIndexStartNumber = default, string appendExt = ".png")
         => FormatFileName(prepend, SlicerFile.LayerDigits, layerIndexStartNumber, appendExt);
-    
+
 
     public Rectangle GetBoundingRectangle(Mat? mat = null, bool reCalculate = false)
     {
@@ -1251,6 +1273,18 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
 
         return BoundingRectangle;
     }
+
+    public Rectangle GetBoundingRectangle(int marginX, int marginY)
+    {
+        var rect = BoundingRectangle;
+        if (marginX == 0 && marginY == 0) return rect;
+        rect.Inflate(marginX / 2, marginY / 2);
+        SlicerFile.SanitizeBoundingRectangle(ref rect);
+        return rect;
+    }
+
+    public Rectangle GetBoundingRectangle(int margin) => GetBoundingRectangle(margin, margin);
+    public Rectangle GetBoundingRectangle(Size margin) => GetBoundingRectangle(margin.Width, margin.Height);
 
     public bool SetValueFromPrintParameterModifier(FileFormat.PrintParameterModifier modifier, decimal value)
     {

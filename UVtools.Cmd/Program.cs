@@ -42,6 +42,7 @@ internal class Program
             ConvertCommand.CreateCommand(),
             ExtractCommand.CreateCommand(),
             CopyParametersCommand.CreateCommand(),
+            SetThumbnailCommand.CreateCommand(),
 
             PrintPropertiesCommand.CreateCommand(),
             PrintLayersCommand.CreateCommand(),

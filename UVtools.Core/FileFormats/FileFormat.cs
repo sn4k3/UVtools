@@ -1510,6 +1510,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             ResolutionX = (uint) value.Width;
             ResolutionY = (uint) value.Height;
             RaisePropertyChanged();
+            RaisePropertyChanged(nameof(ResolutionRectangle));
             RaisePropertyChanged(nameof(DisplayAspectRatio));
             RaisePropertyChanged(nameof(DisplayAspectRatioStr));
             RaisePropertyChanged(nameof(Xppmm));
@@ -1537,6 +1538,11 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// Gets the image height resolution
     /// </summary>
     public abstract uint ResolutionY { get; set; }
+
+    /// <summary>
+    /// Gets an rectangle that starts at 0,0 and goes up to <see cref="Resolution"/>
+    /// </summary>
+    public Rectangle ResolutionRectangle => new(Point.Empty, Resolution);
 
     /// <summary>
     /// Gets the display total number of pixels (<see cref="ResolutionX"/> * <see cref="ResolutionY"/>)
@@ -3331,10 +3337,11 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// Sets thumbnails from a list of thumbnails and clone them
     /// </summary>
     /// <param name="images"></param>
-    public void SetThumbnails(Mat?[] images)
+    public byte SetThumbnails(Mat?[] images)
     {
-        if (images.Length == 0) return;
+        if (images.Length == 0) return 0;
         byte imageIndex = 0;
+        byte changed = 0;
         for (int i = 0; i < ThumbnailsCount; i++)
         {
             var image = images[Math.Min(imageIndex++, images.Length - 1)];
@@ -3350,44 +3357,74 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             {
                 CvInvoke.Resize(Thumbnails[i], Thumbnails[i], ThumbnailsOriginalSize[i]);
             }
+
+            changed++;
         }
 
+        if (changed <= 0) return 0;
+
         RaisePropertyChanged(nameof(Thumbnails));
+        RequireFullEncode = true;
+        return changed;
+
     }
 
     /// <summary>
     /// Sets all thumbnails the same image
     /// </summary>
     /// <param name="image">Image to set</param>
-    public void SetThumbnails(Mat image)
+    public byte SetThumbnails(Mat image)
     {
-        if (image.IsEmpty) return;
-        for (var i = 0; i < ThumbnailsCount; i++)
+        return SetThumbnails(new[] {image});
+    }
+
+    /// <summary>
+    /// Sets all thumbnails from a disk file
+    /// </summary>
+    /// <param name="filePath"></param>
+    public byte SetThumbnails(string filePath)
+    {
+        if (!File.Exists(filePath)) return 0;
+        using var image = CvInvoke.Imread(filePath, ImreadModes.Color);
+        return SetThumbnails(image);
+    }
+
+    /// <summary>
+    /// Sets a thumbnail from mat
+    /// </summary>
+    /// <param name="index">Thumbnail index</param>
+    /// <param name="image"></param>
+    public bool SetThumbnail(int index, Mat image)
+    {
+        if (index >= Thumbnails.Length) return false;
+        Thumbnails[index] = image.Clone();
+        if (Thumbnails[index]!.Size != ThumbnailsOriginalSize![index])
         {
-            Thumbnails[i] = image.Clone();
-            if (ThumbnailsOriginalSize is null || i >= ThumbnailsOriginalSize.Length) continue;
-            if (Thumbnails[i]!.Size != ThumbnailsOriginalSize[i])
-            {
-                CvInvoke.Resize(Thumbnails[i], Thumbnails[i], ThumbnailsOriginalSize[i]);
-            }
+            CvInvoke.Resize(Thumbnails[index], Thumbnails[index], ThumbnailsOriginalSize[index]);
         }
         RaisePropertyChanged(nameof(Thumbnails));
+        RequireFullEncode = true;
+        return true;
     }
+    
 
     /// <summary>
     /// Sets a thumbnail from a disk file
     /// </summary>
     /// <param name="index">Thumbnail index</param>
     /// <param name="filePath"></param>
-    public void SetThumbnail(int index, string filePath)
+    public bool SetThumbnail(int index, string filePath)
     {
-        if (index >= Thumbnails.Length) return;
-        Thumbnails[index] = CvInvoke.Imread(filePath, ImreadModes.AnyColor);
+        if (!File.Exists(filePath)) return false;
+        if (index >= Thumbnails.Length) return false;
+        Thumbnails[index] = CvInvoke.Imread(filePath, ImreadModes.Color);
         if (Thumbnails[index]!.Size != ThumbnailsOriginalSize![index])
         {
             CvInvoke.Resize(Thumbnails[index], Thumbnails[index], ThumbnailsOriginalSize[index]);
         }
         RaisePropertyChanged(nameof(Thumbnails));
+        RequireFullEncode = true;
+        return true;
     }
 
     /// <summary>
@@ -5200,6 +5237,12 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     public Point DisplayToPixelPosition(float x, float y) => new(DisplayToPixelPositionX(x), DisplayToPixelPositionY(y));
     public Point DisplayToPixelPosition(PointF point) => new(DisplayToPixelPositionX(point.X), DisplayToPixelPositionY(point.Y));
 
+    public bool SanitizeBoundingRectangle(ref Rectangle rectangle)
+    {
+        var oldRectangle = rectangle;
+        rectangle = Rectangle.Intersect(rectangle, ResolutionRectangle);
+        return oldRectangle != rectangle;
+    }
 
     public Rectangle GetBoundingRectangle(OperationProgress? progress = null)
     {
@@ -5249,6 +5292,18 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         RaisePropertyChanged(nameof(BoundingRectangle));
         return _boundingRectangle;
     }
+
+    public Rectangle GetBoundingRectangle(int marginX, int marginY, OperationProgress? progress = null)
+    {
+        var rect = GetBoundingRectangle(progress);
+        if (marginX == 0 && marginY == 0) return rect;
+        rect.Inflate(marginX / 2, marginY / 2);
+        SanitizeBoundingRectangle(ref rect);
+        return rect;
+    }
+
+    public Rectangle GetBoundingRectangle(int margin, OperationProgress? progress = null) => GetBoundingRectangle(margin, margin, progress);
+    public Rectangle GetBoundingRectangle(Size margin, OperationProgress? progress = null) => GetBoundingRectangle(margin.Width, margin.Height, progress);
 
 
     /// <summary>
@@ -5627,6 +5682,18 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     #endregion
 
     #region Layer methods
+
+    /// <summary>
+    /// Constrains a layer index to be inside the range between 0 and <see cref="LastLayerIndex"/>
+    /// </summary>
+    /// <param name="layerIndex">Layer index to sanitize</param>
+    /// <returns>True if sanitized, otherwise false</returns>
+    public bool SanitizeLayerIndex(ref uint layerIndex)
+    {
+        var originalValue = layerIndex;
+        layerIndex = Math.Min(layerIndex, LastLayerIndex);
+        return originalValue != layerIndex;
+    }
 
     /// <summary>
     /// Re-assign layer indexes and parent <see cref="FileFormat"/>
@@ -6170,5 +6237,66 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         });
         */
     }
+    #endregion
+
+    #region Generators methods
+
+    /// <summary>
+    /// Generates a heatmap based on a stack of layers
+    /// </summary>
+    /// <param name="layerIndexStart">Layer index to start from</param>
+    /// <param name="layerIndexEnd">Layer index to end on</param>
+    /// <param name="roi">Region of interest</param>
+    /// <param name="progress"></param>
+    /// <returns>Heatmap grayscale Mat</returns>
+    public Mat GenerateHeatmap(uint layerIndexStart = 0, uint layerIndexEnd = uint.MaxValue, Rectangle roi = default, OperationProgress? progress = null)
+    {
+        SanitizeLayerIndex(ref layerIndexEnd);
+
+        progress ??= new OperationProgress();
+        progress.Title = $"Generating a heatmap from layers {layerIndexStart} through {layerIndexEnd}";
+        progress.ItemName = "layers";
+
+        if (roi.IsEmpty) roi = ResolutionRectangle;
+        
+        var resultMat = EmguExtensions.InitMat(roi.Size, 1, DepthType.Cv32S);
+        var layerRange = GetDistinctLayersByPositionZ(layerIndexStart, layerIndexEnd).ToArray();
+
+        progress.ItemCount = (uint)layerRange.Length;
+        
+        Parallel.ForEach(layerRange, CoreSettings.GetParallelOptions(progress), layer =>
+        {
+            using var mat = GetMergedMatForSequentialPositionedLayers(layer.Index);
+            using var mat32Roi = mat.Roi(roi);
+
+            mat32Roi.ConvertTo(mat32Roi, DepthType.Cv32S);
+            
+            lock (progress.Mutex)
+            {
+                CvInvoke.Add(resultMat, mat32Roi, resultMat);
+                progress++;
+            }
+        });
+
+
+        resultMat.ConvertTo(resultMat, DepthType.Cv8U, 1.0 / layerRange.Length);
+
+        return resultMat;
+    }
+
+    /// <summary>
+    /// Generates a heatmap based on a stack of layers
+    /// </summary>
+    /// <param name="roi">Region of interest</param>
+    /// <param name="progress"></param>
+    /// <returns>Heatmap grayscale Mat</returns>
+    public Mat GenerateHeatmap(Rectangle roi, OperationProgress? progress = null) => GenerateHeatmap(0, uint.MaxValue, roi, progress);
+
+    public Task<Mat> GenerateHeatmapAsync(uint layerIndexStart = 0, uint layerIndexEnd = uint.MaxValue, Rectangle roi = default, OperationProgress? progress = null) 
+        => Task.Run(() => GenerateHeatmap(layerIndexStart, layerIndexEnd, roi, progress));
+
+    public Task<Mat> GenerateHeatmapAsync(Rectangle roi, OperationProgress? progress = null) 
+        => Task.Run(() => GenerateHeatmap(0, uint.MaxValue, roi, progress));
+
     #endregion
 }
