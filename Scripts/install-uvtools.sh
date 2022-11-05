@@ -226,7 +226,7 @@ downloaduvtools "$download_url"
 
 targetDir="$PWD"
 [ -d "$HOME/Applications" ] && targetDir="$HOME/Applications"
-targetFilePath="$targetDir/$filename"
+targetFilePath="$targetDir/UVtools.AppImage"
 
 echo "- Removing old versions"
 rm -f "$targetDir/UVtools_"*".AppImage"
