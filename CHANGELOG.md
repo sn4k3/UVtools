@@ -1,5 +1,26 @@
 # Changelog
 
+## 10/11/2022 - v3.8.3
+
+- **UVtoolsCmd:**
+  - **print-properties:**
+    - (Change) `-b`, `--base` option to `-a`, `-all` to indicate all properties and sub-properties, now defaults to only show base properties
+    - (Add) `-r`, `--range` option to prints only the matching layer(s) index(es) in a range
+    - (Add) `-i`, `--indexes` option to prints only the matching layer(s) index(es)
+  - (Add) Command: `set-properties <input-file> <property=value> Set properties in a file or to it layers with new values`
+  - (Add) Command: `print-issues <input-file> Detect and print issues in a file`
+  - (Add) New option to the `run` command: `-p, --property <property=value>  Set a property with a new value (Compatible with operations only)`
+  - (Remove) Command: `print-layers` as it has been moved to `print-properties`, use `-r :` to obtain same result as default on `print-layers`
+- **Issues:**
+  - (Fix) Issues groups with only one issue was displaying the wrong area value
+  - (Fix) Volume incorrectly calculated, resulting in a high value for group of issues
+  - (Fix) Incorrect calculation of the bounding rectangle for a group of issues
+- **Repair layers:**
+  - (Add) Switch to opt between "Re-detect the selected issues before repair" and "Use and repair the previous detected issues" (Default)
+  - (Improvement) Do not allow to run the tool if there are no detected issues when the option "Use and repair the previous detected issues" is selected
+- (Improvement) Linux: Recompile libcvextern.so on a older system to be able to run on both older and newest system (#603)
+- (Upgrade) .NET from 6.0.10 to 6.0.11
+
 ## 05/11/2022 - v3.8.2
 
 - **Import thumbnails:**

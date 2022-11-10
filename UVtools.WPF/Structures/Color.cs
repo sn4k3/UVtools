@@ -11,7 +11,7 @@ using Avalonia.Media;
 
 namespace UVtools.WPF.Structures;
 
-[Serializable]
+
 public class Color
 {
     public byte A;

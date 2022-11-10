@@ -19,6 +19,8 @@ public sealed class IssueOfPoints : Issue
     /// </summary>
     public Point[] Points { get; init; }
 
+    public IssueOfPoints() { }
+
     public IssueOfPoints(Layer layer, IEnumerable<Point> points, Rectangle boundingRectangle = default) : base(layer, boundingRectangle, points.Count())
     {
         Points = points.ToArray();

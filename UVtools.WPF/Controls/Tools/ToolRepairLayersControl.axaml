@@ -7,8 +7,12 @@
              x:Class="UVtools.WPF.Controls.Tools.ToolRepairLayersControl">
 
   <StackPanel Orientation="Vertical" Spacing="10">
-    <StackPanel Orientation="Horizontal" Spacing="20">
-      <!-- Repair islands -->
+    <ToggleSwitch IsChecked="{Binding Operation.DetectIssues}"
+        OnContent="Re-detect the selected issues before repair"
+        OffContent="Uses and repair the previous detected issues"/>
+
+      <StackPanel Orientation="Horizontal" Spacing="20">
+        <!-- Repair islands -->
       <CheckBox
         IsChecked="{Binding Operation.RepairIslands}"
         ToolTip.Tip="If enabled, repair will first attempt to eliminate islands smaller than the pixel area removal threshold, and then runs the “gap closure” technique."

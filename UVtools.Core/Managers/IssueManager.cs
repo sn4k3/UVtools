@@ -117,22 +117,20 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
         return GetIssuesBy(this, layerIndex);
     }
 
-    public List<MainIssue> DetectIssues(
-        IslandDetectionConfiguration? islandConfig = null,
-        OverhangDetectionConfiguration? overhangConfig = null,
-        ResinTrapDetectionConfiguration? resinTrapConfig = null,
-        TouchingBoundDetectionConfiguration? touchBoundConfig = null,
-        PrintHeightDetectionConfiguration? printHeightConfig = null,
-        bool emptyLayersConfig = true,
-        OperationProgress? progress = null)
+    public List<MainIssue> DetectIssues(IssuesDetectionConfiguration? config = null, OperationProgress? progress = null)
     {
         if (SlicerFile.DecodeType == FileFormat.FileDecodeType.Partial) return new List<MainIssue>();
 
-        islandConfig ??= new IslandDetectionConfiguration();
-        overhangConfig ??= new OverhangDetectionConfiguration();
-        resinTrapConfig ??= new ResinTrapDetectionConfiguration();
-        touchBoundConfig ??= new TouchingBoundDetectionConfiguration();
-        printHeightConfig ??= new PrintHeightDetectionConfiguration();
+        config ??= new IssuesDetectionConfiguration();
+        var (
+            islandConfig, 
+            overhangConfig, 
+            resinTrapConfig, 
+            touchBoundConfig, 
+            printHeightConfig, 
+            emptyLayerConfig
+            ) = config;
+
         progress ??= new OperationProgress();
 
         var result = new ConcurrentBag<MainIssue>();
@@ -175,11 +173,52 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
             }
         }
 
-        if (emptyLayersConfig)
+        if (emptyLayerConfig.Enabled)
         {
-            foreach (var layer in SlicerFile)
+            for (var layerIndex = 0; layerIndex < SlicerFile.Count; layerIndex++)
             {
-                if (layer.IsEmpty)
+                var layer = SlicerFile[layerIndex];
+                if (!layer.IsEmpty) continue;
+                
+                if (!emptyLayerConfig.IgnoreStartingEmptyLayers 
+                    && !emptyLayerConfig.IgnoreLooseEmptyLayers 
+                    && !emptyLayerConfig.IgnoreEndingEmptyLayers)
+                {
+                    AddIssue(new MainIssue(MainIssue.IssueType.EmptyLayer, new Issue(layer)));
+                    continue;
+                }
+
+                // 1 = Starting
+                // 2 = Loose
+                // 3 = Ending
+                byte emptyLayerPosType = 0;
+                int i;
+
+                for (i = 0; i < layerIndex && SlicerFile[i].IsEmpty; layerIndex++) { }
+
+                if (i == layerIndex)
+                {
+                    emptyLayerPosType = 1;
+                }
+                else
+                {
+                    for (i = (int) SlicerFile.LastLayerIndex; i > layerIndex && SlicerFile[i].IsEmpty; layerIndex--) { }
+                    emptyLayerPosType = i == layerIndex ? (byte) 3 : (byte) 2;
+                }
+
+                if (emptyLayerPosType == 1)
+                {
+                    if(!emptyLayerConfig.IgnoreStartingEmptyLayers) AddIssue(new MainIssue(MainIssue.IssueType.EmptyLayer, new Issue(layer)));
+                }
+                else if (emptyLayerPosType == 2)
+                {
+                    if (!emptyLayerConfig.IgnoreLooseEmptyLayers) AddIssue(new MainIssue(MainIssue.IssueType.EmptyLayer, new Issue(layer)));
+                }
+                else if (emptyLayerPosType == 3)
+                {
+                    if (!emptyLayerConfig.IgnoreEndingEmptyLayers) AddIssue(new MainIssue(MainIssue.IssueType.EmptyLayer, new Issue(layer)));
+                }
+                else
                 {
                     AddIssue(new MainIssue(MainIssue.IssueType.EmptyLayer, new Issue(layer)));
                 }

@@ -12,7 +12,6 @@ using System.CommandLine;
 using System.Linq;
 using System.Reflection;
 using System.Text.Json.Serialization;
-using System.Text.RegularExpressions;
 using System.Xml.Serialization;
 using UVtools.Core.FileFormats;
 
@@ -22,9 +21,18 @@ internal static class PrintLayersCommand
 {
     internal static Command CreateCommand()
     {
-        var rangeOption = new Option<string>(new[] { "-r", "--range" }, "Prints only the matching layer index(es) in a range");
-        var indexesOption = new Option<ushort[]>(new[] {"-i", "--indexes"}, "Prints only the matching layer index(es)");
-        var matchNamesOption = new Option<string[]>(new[] { "-n", "--names" }, "Prints only the name matching properties");
+        var rangeOption = new Option<string>(new[] { "-r", "--range" },  "Prints only the matching layer(s) index(es) in a range")
+        {
+            ArgumentHelpName = "startindex:endindex"
+        };
+        var indexesOption = new Option<uint[]>(new[] {"-i", "--indexes"}, "Prints only the matching layer(s) index(es)")
+        {
+            AllowMultipleArgumentsPerToken = true
+        };
+        var matchNamesOption = new Option<string[]>(new[] { "-n", "--names" }, "Prints only the name matching properties")
+        {
+            AllowMultipleArgumentsPerToken = true
+        };
 
         var command = new Command("print-layers", "Prints layer(s) properties")
         {
@@ -38,30 +46,20 @@ internal static class PrintLayersCommand
         command.SetHandler((inputFile, layerRange, layerIndexes, matchNames, partialMode) =>
             {
                 var slicerFile = Program.OpenInputFile(inputFile, partialMode ? FileFormat.FileDecodeType.Partial : FileFormat.FileDecodeType.Full);
-
                 var layerIndexesList = new List<uint>();
 
                 if (!string.IsNullOrWhiteSpace(layerRange))
                 {
-                    var match = Regex.Match(layerRange, @"(\d+)(:|\||-)(\d+)");
-                    if (match.Success && match.Groups.Count >= 4)
+                    if (slicerFile.TryParseLayerIndexRange(layerRange, out var layerIndexStart, out var layerIndexEnd))
                     {
-                        var startNumberStr = match.Groups[1].Value;
-                        var endNumberStr = match.Groups[3].Value;
-
-                        if (uint.TryParse(startNumberStr, out var startLayerIndex) &&
-                            uint.TryParse(endNumberStr, out var endLayerIndex))
+                        for (var layerIndex = layerIndexStart; layerIndex <= layerIndexEnd; layerIndex++)
                         {
-                            if (startLayerIndex > endLayerIndex)
-                            {
-                                (startLayerIndex, endLayerIndex) = (endLayerIndex, startLayerIndex);
-                            }
-
-                            for (var layerIndex = startLayerIndex; layerIndex <= endLayerIndex; layerIndex++)
-                            {
-                                layerIndexesList.Add(layerIndex);
-                            }
+                            layerIndexesList.Add(layerIndex);
                         }
+                    }
+                    else
+                    {
+                        Program.WriteLineError($"The specified layer range '{layerRange}' is malformed, use startindex:endindex with positive numbers");
                     }
                 }
 
@@ -69,12 +67,12 @@ internal static class PrintLayersCommand
                 {
                     for (uint i = 0; i < slicerFile.LayerCount; i++)
                     {
-                        layerIndexesList.Add(i);
+                        layerIndexesList.Add(slicerFile.SanitizeLayerIndex(i));
                     }
                 }
                 else
                 {
-                    layerIndexesList.AddRange(layerIndexes.Select(layerIndex => (uint) layerIndex));
+                    layerIndexesList.AddRange(layerIndexes.Select(layerIndex => slicerFile.SanitizeLayerIndex(layerIndex)));
                 }
 
                 layerIndexesList = layerIndexesList.Distinct().OrderBy(layerIndex => layerIndex).ToList();
@@ -82,8 +80,7 @@ internal static class PrintLayersCommand
                 foreach (var layerIndex in layerIndexesList)
                 {
                     Console.WriteLine($"Layer: {layerIndex}");
-                    foreach (var propertyInfo in slicerFile[layerIndex].GetType()
-                                 .GetProperties(BindingFlags.Public | BindingFlags.Instance))
+                    foreach (var propertyInfo in slicerFile[layerIndex].GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
                     {
                         if (propertyInfo.Name.Equals("Item")) continue;
                         if (matchNames is not null && matchNames.Length > 0)

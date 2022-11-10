@@ -6,6 +6,7 @@
  *  of this license document, but changing it is not allowed.
  */
 
+using System;
 using System.Collections.Generic;
 
 namespace UVtools.Core.Layers;
@@ -14,19 +15,32 @@ namespace UVtools.Core.Layers;
 
 public sealed class IssuesDetectionConfiguration
 {
-    public IslandDetectionConfiguration IslandConfig { get; }
-    public OverhangDetectionConfiguration OverhangConfig { get; }
-    public ResinTrapDetectionConfiguration ResinTrapConfig { get; }
-    public TouchingBoundDetectionConfiguration TouchingBoundConfig { get; }
-    public PrintHeightDetectionConfiguration PrintHeightConfig { get; }
-    public bool EmptyLayerConfig { get; }
+    public IslandDetectionConfiguration IslandConfig { get; set; } = new();
+    public OverhangDetectionConfiguration OverhangConfig { get; set; } = new();
+    public ResinTrapDetectionConfiguration ResinTrapConfig { get; set; } = new();
+    public TouchingBoundDetectionConfiguration TouchingBoundConfig { get; set; } = new();
+    public PrintHeightDetectionConfiguration PrintHeightConfig { get; set; } = new();
+    public EmptyLayerDetectionConfiguration EmptyLayerConfig { get; set; } = new();
 
-    public IssuesDetectionConfiguration(IslandDetectionConfiguration islandConfig,
+    public DetectionConfiguration[] Configurations => new DetectionConfiguration[]
+    {
+        IslandConfig,
+        OverhangConfig,
+        ResinTrapConfig,
+        TouchingBoundConfig,
+        PrintHeightConfig,
+        EmptyLayerConfig
+    };
+
+    public IssuesDetectionConfiguration() { }
+
+    public IssuesDetectionConfiguration(
+        IslandDetectionConfiguration islandConfig,
         OverhangDetectionConfiguration overhangConfig, 
         ResinTrapDetectionConfiguration resinTrapConfig, 
         TouchingBoundDetectionConfiguration touchingBoundConfig,
-        PrintHeightDetectionConfiguration printHeightConfig, 
-        bool emptyLayerConfig)
+        PrintHeightDetectionConfiguration printHeightConfig,
+        EmptyLayerDetectionConfiguration emptyLayerConfig)
     {
         IslandConfig = islandConfig;
         OverhangConfig = overhangConfig;
@@ -35,15 +49,73 @@ public sealed class IssuesDetectionConfiguration
         PrintHeightConfig = printHeightConfig;
         EmptyLayerConfig = emptyLayerConfig;
     }
+
+    public void Deconstruct(out IslandDetectionConfiguration islandConfig, out OverhangDetectionConfiguration overhangConfig, out ResinTrapDetectionConfiguration resinTrapConfig, out TouchingBoundDetectionConfiguration touchingBoundConfig, out PrintHeightDetectionConfiguration printHeightConfig, out EmptyLayerDetectionConfiguration emptyLayerConfig)
+    {
+        islandConfig = IslandConfig;
+        overhangConfig = OverhangConfig;
+        resinTrapConfig = ResinTrapConfig;
+        touchingBoundConfig = TouchingBoundConfig;
+        printHeightConfig = PrintHeightConfig;
+        emptyLayerConfig = EmptyLayerConfig;
+    }
+
+
+    public void EnableAll()
+    {
+        foreach (var config in Configurations)
+        {
+            config.Enabled = true;
+        }
+    }
+
+    public void DisableAll()
+    {
+        foreach (var config in Configurations)
+        {
+            config.Enabled = false;
+        }
+    }
+
+    public IssuesDetectionConfiguration Clone()
+    {
+        var config = new IssuesDetectionConfiguration(
+            (IslandDetectionConfiguration) IslandConfig.Clone(),
+            (OverhangDetectionConfiguration) OverhangConfig.Clone(),
+            (ResinTrapDetectionConfiguration) ResinTrapConfig.Clone(),
+            (TouchingBoundDetectionConfiguration) TouchingBoundConfig.Clone(),
+            (PrintHeightDetectionConfiguration) PrintHeightConfig.Clone(),
+            (EmptyLayerDetectionConfiguration) EmptyLayerConfig.Clone()
+            );
+        return config;
+    }
 }
 
-public sealed class IslandDetectionConfiguration
+public class DetectionConfiguration : ICloneable
 {
     /// <summary>
     /// Gets or sets if the detection is enabled
     /// </summary>
     public bool Enabled { get; set; } = true;
 
+    public DetectionConfiguration() { }
+
+    public DetectionConfiguration(bool enabled)
+    {
+        Enabled = enabled;
+    }
+
+    public void Enable() => Enabled = true;
+    public void Disable() => Enabled = false;
+
+    public object Clone()
+    {
+        return MemberwiseClone();
+    }
+}
+
+public sealed class IslandDetectionConfiguration : DetectionConfiguration
+{
     /// <summary>
     /// Gets or sets a list of layers to check for islands, absent layers will not be checked.
     /// Set to null to check every layer
@@ -96,27 +168,18 @@ public sealed class IslandDetectionConfiguration
     /// </summary>
     public byte RequiredPixelBrightnessToSupport { get; set; } = 150;
 
-    public IslandDetectionConfiguration(bool enabled = true)
-    {
-        Enabled = enabled;
-    }
+    public IslandDetectionConfiguration()
+    { }
 
-    public IslandDetectionConfiguration Clone()
-    {
-        return (MemberwiseClone() as IslandDetectionConfiguration)!;
-    }
+    public IslandDetectionConfiguration(bool enabled) : base(enabled)
+    { }
 }
 
 /// <summary>
 /// Overhang configuration
 /// </summary>
-public sealed class OverhangDetectionConfiguration
+public sealed class OverhangDetectionConfiguration : DetectionConfiguration
 {
-    /// <summary>
-    /// Gets or sets if the detection is enabled
-    /// </summary>
-    public bool Enabled { get; set; } = true;
-
     /// <summary>
     /// Gets or sets a list of layers to check for overhangs, absent layers will not be checked.
     /// Set to null to check every layer
@@ -139,19 +202,15 @@ public sealed class OverhangDetectionConfiguration
     /// </summary>
     public byte ErodeIterations { get; set; } = 40;
 
-    public OverhangDetectionConfiguration(bool enabled = true)
-    {
-        Enabled = enabled;
-    }
+    public OverhangDetectionConfiguration()
+    { }
+
+    public OverhangDetectionConfiguration(bool enabled) : base(enabled)
+    { }
 }
 
-public sealed class ResinTrapDetectionConfiguration
+public sealed class ResinTrapDetectionConfiguration : DetectionConfiguration
 {
-    /// <summary>
-    /// Gets or sets if the detection is enabled
-    /// </summary>
-    public bool Enabled { get; set; } = true;
-
     /// <summary>
     /// Gets or sets the starting layer index for the detection which will also be considered a drain layer.
     /// Use this setting to bypass complicated rafts by selected the model first real layer.
@@ -167,7 +226,7 @@ public sealed class ResinTrapDetectionConfiguration
     /// <summary>
     /// Gets the required area size (x*y) to consider process a hollow area (0-255)
     /// </summary>
-    public byte RequiredAreaToProcessCheck { get; set; } = 1;
+    public byte RequiredAreaToProcessCheck { get; set; } = 4;
 
     /// <summary>
     /// Gets the number of black pixels required to consider a drain
@@ -195,20 +254,16 @@ public sealed class ResinTrapDetectionConfiguration
     public decimal RequiredHeightToConsiderSuctionCup { get; set; } = 0.5m;
 
 
-    public ResinTrapDetectionConfiguration(bool enabled = true)
-    {
-        Enabled = enabled;
-    }
+    public ResinTrapDetectionConfiguration()
+    { }
+
+    public ResinTrapDetectionConfiguration(bool enabled) : base(enabled)
+    { }
 }
 
 
-public sealed class TouchingBoundDetectionConfiguration
+public sealed class TouchingBoundDetectionConfiguration : DetectionConfiguration
 {
-    /// <summary>
-    /// Gets if the detection is enabled
-    /// </summary>
-    public bool Enabled { get; set; } = true;
-
     /// <summary>
     /// Gets the minimum pixel brightness to be a touching bound
     /// </summary>
@@ -235,28 +290,52 @@ public sealed class TouchingBoundDetectionConfiguration
     public byte MarginBottom { get; set; } = 5;
 
 
-    public TouchingBoundDetectionConfiguration(bool enabled = true)
-    {
-        Enabled = enabled;
-    }
+    public TouchingBoundDetectionConfiguration()
+    { }
+
+    public TouchingBoundDetectionConfiguration(bool enabled) : base(enabled)
+    { }
 }
 
-public sealed class PrintHeightDetectionConfiguration
+public sealed class PrintHeightDetectionConfiguration : DetectionConfiguration
 {
-    /// <summary>
-    /// Gets if the detection is enabled
-    /// </summary>
-    public bool Enabled { get; set; } = true;
-
     /// <summary>
     /// Get the offset from top to sum to printer max Z height
     /// </summary>
     public float Offset { get; set; }
 
-    public PrintHeightDetectionConfiguration(bool enabled = true)
-    {
-        Enabled = enabled;
-    }
+    public PrintHeightDetectionConfiguration()
+    { }
+
+    public PrintHeightDetectionConfiguration(bool enabled) : base(enabled)
+    { }
+}
+
+public sealed class EmptyLayerDetectionConfiguration : DetectionConfiguration
+{
+    /// <summary>
+    /// <para>Gets or sets to ignore the starting empty layers.</para>
+    /// <para>True to ignore starting empty layers, otherwise false.</para>
+    /// </summary>
+    public bool IgnoreStartingEmptyLayers { get; set; }
+
+    /// <summary>
+    /// <para>Gets or sets to ignore the loose empty layers that are not on start nor in end.</para>
+    /// <para>True to ignore loose empty layers, otherwise false.</para>
+    /// </summary>
+    public bool IgnoreLooseEmptyLayers { get; set; }
+
+    /// <summary>
+    /// <para>Gets or sets to ignore the ending empty layers.</para>
+    /// <para>True to ignore ending empty layers, otherwise false.</para>
+    /// </summary>
+    public bool IgnoreEndingEmptyLayers { get; set; }
+
+    public EmptyLayerDetectionConfiguration()
+    { }
+
+    public EmptyLayerDetectionConfiguration(bool enabled) : base(enabled)
+    { }
 }
 
 #endregion

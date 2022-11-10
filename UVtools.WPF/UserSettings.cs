@@ -25,7 +25,7 @@ using Color=UVtools.WPF.Structures.Color;
 
 namespace UVtools.WPF;
 
-[Serializable]
+
 public sealed class UserSettings : BindableBase
 {
     #region Constants
@@ -35,7 +35,7 @@ public sealed class UserSettings : BindableBase
     #region Sub classes
 
     #region General
-    [Serializable]
+    
     public sealed class GeneralUserSettings : BindableBase
     {
         private App.ApplicationTheme _theme = App.ApplicationTheme.FluentLight;
@@ -259,7 +259,7 @@ public sealed class UserSettings : BindableBase
     #endregion
 
     #region Layer Preview
-    [Serializable]
+    
     public sealed class LayerPreviewUserSettings : BindableBase
     {
         private Color _tooltipOverlayBackgroundColor = new(210, 226, 223, 215);
@@ -868,7 +868,7 @@ public sealed class UserSettings : BindableBase
     #endregion
 
     #region Issues
-    [Serializable]
+    
     public sealed class IssuesUserSettings : BindableBase
     {
         private bool _computeIssuesOnLoad;
@@ -1161,7 +1161,7 @@ public sealed class UserSettings : BindableBase
     #endregion
 
     #region Pixel Editor
-    [Serializable]
+    
     public sealed class PixelEditorUserSettings : BindableBase
     {
         private Color _addPixelColor = new(255, 144, 238, 144);
@@ -1349,7 +1349,7 @@ public sealed class UserSettings : BindableBase
     #endregion
 
     #region Layer Repair
-    [Serializable]
+    
     public sealed class LayerRepairUserSettings : BindableBase
     {
         private bool _repairIslands = true;
@@ -1439,7 +1439,7 @@ public sealed class UserSettings : BindableBase
 
     #region Tools
 
-    [Serializable]
+    
     public sealed class ToolsUserSettings : BindableBase
     {
         private bool _expandDescriptions = true;
@@ -1483,7 +1483,7 @@ public sealed class UserSettings : BindableBase
 
     #region Automations
 
-    [Serializable]
+    
     public sealed class AutomationsUserSettings : BindableBase
     {
         private bool _saveFileAfterModifications = true;
@@ -1525,7 +1525,7 @@ public sealed class UserSettings : BindableBase
 
     #region Network
 
-    [Serializable]
+    
     public sealed class NetworkUserSettings : BindableBase
     {
         private RangeObservableCollection<RemotePrinter> _remotePrinters = new();

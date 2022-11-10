@@ -20,14 +20,14 @@ using UVtools.Core.Operations;
 namespace UVtools.Core.FileFormats;
 
 #region Sub Classes
-[Serializable]
+
 [XmlRoot(ElementName = "root")]
 public class VDARoot
 {
-    [Serializable]
+    
     public class VDAFileInfo
     {
-        [Serializable]
+        
         public class VDAVersion
         {
             public ushort Major { get; set; } = 1;
@@ -35,10 +35,10 @@ public class VDARoot
 
         }
 
-        [Serializable]
+        
         public class VDAWritten
         {
-            [Serializable]
+            
             [XmlRoot(ElementName = "By")]
             public class VDABy
             {
@@ -77,7 +77,7 @@ public class VDARoot
         public VDAWritten Written { get; set; } = new();
     }
 
-    [Serializable]
+    
     public class VDASlices
     {
         public ushort Count { get; set; } = 1;
@@ -95,7 +95,7 @@ public class VDARoot
         public uint LayerCount { get; set; }
     }
 
-    [Serializable]
+    
     public class VDAMachines
     {
         public string FileType { get; set; } = "ZIP File";

@@ -20,7 +20,7 @@ using UVtools.Core.FileFormats;
 
 namespace UVtools.Core.Operations;
 
-[Serializable]
+
 public sealed class OperationInfill : Operation
 {
     #region Members

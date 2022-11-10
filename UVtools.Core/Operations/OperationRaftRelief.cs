@@ -21,7 +21,7 @@ using UVtools.Core.FileFormats;
 
 namespace UVtools.Core.Operations;
 
-[Serializable]
+
 public class OperationRaftRelief : Operation
 {
     #region Enums

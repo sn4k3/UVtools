@@ -3456,27 +3456,27 @@
             <param name="recalculateZPos">True to recalculate z position of each layer (requires <paramref name="callRebuildOnEnd"/> = true), otherwise false</param>
             <param name="property">Property name to change for each layer, use null to update all properties (requires <paramref name="callRebuildOnEnd"/> = true)</param>
         </member>
-        <member name="M:UVtools.Core.FileFormats.FileFormat.MillimetersXToPixels(System.UInt16,System.UInt32)">
+        <member name="M:UVtools.Core.FileFormats.FileFormat.MillimetersXToPixels(System.Single,System.UInt32)">
             <summary>
             Converts millimeters to pixels given the current resolution and display size
             </summary>
-            <param name="mm">Millimeters to convert</param>
+            <param name="millimeters">Millimeters to convert</param>
             <param name="fallbackToPixels">Fallback to this value in pixels if no ratio is available to make the convertion</param>
             <returns>Pixels</returns>
         </member>
-        <member name="M:UVtools.Core.FileFormats.FileFormat.MillimetersYToPixels(System.UInt16,System.UInt32)">
+        <member name="M:UVtools.Core.FileFormats.FileFormat.MillimetersYToPixels(System.Single,System.UInt32)">
             <summary>
             Converts millimeters to pixels given the current resolution and display size
             </summary>
-            <param name="mm">Millimeters to convert</param>
+            <param name="millimeters">Millimeters to convert</param>
             <param name="fallbackToPixels">Fallback to this value in pixels if no ratio is available to make the convertion</param>
             <returns>Pixels</returns>
         </member>
-        <member name="M:UVtools.Core.FileFormats.FileFormat.MillimetersToPixels(System.UInt16,System.UInt32)">
+        <member name="M:UVtools.Core.FileFormats.FileFormat.MillimetersToPixels(System.Single,System.UInt32)">
             <summary>
             Converts millimeters to pixels given the current resolution and display size
             </summary>
-            <param name="mm">Millimeters to convert</param>
+            <param name="millimeters">Millimeters to convert</param>
             <param name="fallbackToPixels">Fallback to this value in pixels if no ratio is available to make the convertion</param>
             <returns>Pixels</returns>
         </member>
@@ -3634,6 +3634,15 @@
             Checks if a layer index exists in the collection
             </summary>
             <param name="layerIndex">Layer index to check</param>
+            <returns></returns>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.FileFormat.TryParseLayerIndexRange(System.String,System.UInt32@,System.UInt32@)">
+            <summary>
+            Try to parse starting and ending layer index from a string
+            </summary>
+            <param name="value">String value to parse, in start:end format</param>
+            <param name="layerIndexStart">Parsed starting layer index</param>
+            <param name="layerIndexEnd">Parsed ending layer index</param>
             <returns></returns>
         </member>
         <member name="M:UVtools.Core.FileFormats.FileFormat.SanitizeLayerIndex(System.UInt32@)">
@@ -5065,7 +5074,7 @@
             <param name="layers">Layer collection</param>
             <returns></returns>
         </member>
-        <member name="P:UVtools.Core.Layers.IslandDetectionConfiguration.Enabled">
+        <member name="P:UVtools.Core.Layers.DetectionConfiguration.Enabled">
             <summary>
             Gets or sets if the detection is enabled
             </summary>
@@ -5127,11 +5136,6 @@
             Overhang configuration
             </summary>
         </member>
-        <member name="P:UVtools.Core.Layers.OverhangDetectionConfiguration.Enabled">
-            <summary>
-            Gets or sets if the detection is enabled
-            </summary>
-        </member>
         <member name="P:UVtools.Core.Layers.OverhangDetectionConfiguration.WhiteListLayers">
             <summary>
             Gets or sets a list of layers to check for overhangs, absent layers will not be checked.
@@ -5152,11 +5156,6 @@
             <summary>
             Previous layer will be subtracted from current layer, after will erode by this value.
             The survived pixels are potential overhangs.
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.Layers.ResinTrapDetectionConfiguration.Enabled">
-            <summary>
-            Gets or sets if the detection is enabled
             </summary>
         </member>
         <member name="P:UVtools.Core.Layers.ResinTrapDetectionConfiguration.StartLayerIndex">
@@ -5201,11 +5200,6 @@
             Required minimum height (in mm) to be considered a suction cup
             </summary>
         </member>
-        <member name="P:UVtools.Core.Layers.TouchingBoundDetectionConfiguration.Enabled">
-            <summary>
-            Gets if the detection is enabled
-            </summary>
-        </member>
         <member name="P:UVtools.Core.Layers.TouchingBoundDetectionConfiguration.MinimumPixelBrightness">
             <summary>
             Gets the minimum pixel brightness to be a touching bound
@@ -5231,14 +5225,27 @@
             Gets or sets the margin in pixels from bottom edge to check for touching white pixels
             </summary>
         </member>
-        <member name="P:UVtools.Core.Layers.PrintHeightDetectionConfiguration.Enabled">
-            <summary>
-            Gets if the detection is enabled
-            </summary>
-        </member>
         <member name="P:UVtools.Core.Layers.PrintHeightDetectionConfiguration.Offset">
             <summary>
             Get the offset from top to sum to printer max Z height
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Layers.EmptyLayerDetectionConfiguration.IgnoreStartingEmptyLayers">
+            <summary>
+            <para>Gets or sets to ignore the starting empty layers.</para>
+            <para>True to ignore starting empty layers, otherwise false.</para>
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Layers.EmptyLayerDetectionConfiguration.IgnoreLooseEmptyLayers">
+            <summary>
+            <para>Gets or sets to ignore the loose empty layers that are not on start nor in end.</para>
+            <para>True to ignore loose empty layers, otherwise false.</para>
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Layers.EmptyLayerDetectionConfiguration.IgnoreEndingEmptyLayers">
+            <summary>
+            <para>Gets or sets to ignore the ending empty layers.</para>
+            <para>True to ignore ending empty layers, otherwise false.</para>
             </summary>
         </member>
         <member name="P:UVtools.Core.Layers.MainIssue.Type">
@@ -5289,6 +5296,11 @@
         <member name="P:UVtools.Core.Layers.MainIssue.Area">
             <summary>
             Gets the area of the issue
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Layers.MainIssue.AreaChar">
+            <summary>
+            Gets the area character, either ² or ³
             </summary>
         </member>
         <member name="P:UVtools.Core.Layers.MainIssue.Childs">
@@ -6508,6 +6520,11 @@
         <member name="P:UVtools.Core.Operations.OperationRaiseOnPrintFinish.OutputDummyPixel">
             <summary>
             True to output a dummy pixel on bounding rectangle position to avoid empty layer and blank image, otherwise set to false
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Operations.OperationRepairLayers.DetectIssues">
+            <summary>
+            IF true it will re-detect the selected issues before repair, otherwise uses and repair the previous detected issues
             </summary>
         </member>
         <member name="P:UVtools.Core.Operations.OperationSolidify.MinimumArea">

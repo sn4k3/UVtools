@@ -5152,40 +5152,40 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <summary>
     /// Converts millimeters to pixels given the current resolution and display size
     /// </summary>
-    /// <param name="mm">Millimeters to convert</param>
+    /// <param name="millimeters">Millimeters to convert</param>
     /// <param name="fallbackToPixels">Fallback to this value in pixels if no ratio is available to make the convertion</param>
     /// <returns>Pixels</returns>
-    public uint MillimetersXToPixels(ushort mm, uint fallbackToPixels = 0)
+    public uint MillimetersXToPixels(float millimeters, uint fallbackToPixels = 0)
     {
         var ppmm = Xppmm;
         if (ppmm <= 0) return fallbackToPixels;
-        return (uint)(ppmm * mm);
+        return (uint)(ppmm * millimeters);
     }
 
     /// <summary>
     /// Converts millimeters to pixels given the current resolution and display size
     /// </summary>
-    /// <param name="mm">Millimeters to convert</param>
+    /// <param name="millimeters">Millimeters to convert</param>
     /// <param name="fallbackToPixels">Fallback to this value in pixels if no ratio is available to make the convertion</param>
     /// <returns>Pixels</returns>
-    public uint MillimetersYToPixels(ushort mm, uint fallbackToPixels = 0)
+    public uint MillimetersYToPixels(float millimeters, uint fallbackToPixels = 0)
     {
         var ppmm = Yppmm;
         if (ppmm <= 0) return fallbackToPixels;
-        return (uint)(ppmm * mm);
+        return (uint)(ppmm * millimeters);
     }
 
     /// <summary>
     /// Converts millimeters to pixels given the current resolution and display size
     /// </summary>
-    /// <param name="mm">Millimeters to convert</param>
+    /// <param name="millimeters">Millimeters to convert</param>
     /// <param name="fallbackToPixels">Fallback to this value in pixels if no ratio is available to make the convertion</param>
     /// <returns>Pixels</returns>
-    public uint MillimetersToPixels(ushort mm, uint fallbackToPixels = 0)
+    public uint MillimetersToPixels(float millimeters, uint fallbackToPixels = 0)
     {
         var ppmm = PpmmMax;
         if (ppmm <= 0) return fallbackToPixels;
-        return (uint)(ppmm * mm);
+        return (uint)(ppmm * millimeters);
     }
 
     /// <summary>
@@ -5684,6 +5684,51 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     #region Layer methods
 
     /// <summary>
+    /// Try to parse starting and ending layer index from a string
+    /// </summary>
+    /// <param name="value">String value to parse, in start:end format</param>
+    /// <param name="layerIndexStart">Parsed starting layer index</param>
+    /// <param name="layerIndexEnd">Parsed ending layer index</param>
+    /// <returns></returns>
+    public bool TryParseLayerIndexRange(string value, out uint layerIndexStart, out uint layerIndexEnd)
+    {
+        layerIndexStart = 0;
+        layerIndexEnd = LastLayerIndex;
+
+        if (string.IsNullOrWhiteSpace(value)) return false;
+
+        var split = value.Split(new[]{':', '|', '-'}, StringSplitOptions.TrimEntries);
+
+        if (split[0] != string.Empty)
+        {
+            if(split[0].Equals("FIRST", StringComparison.OrdinalIgnoreCase)) layerIndexStart = 0;
+            else if(split[0].Equals("LB", StringComparison.OrdinalIgnoreCase)) layerIndexStart = LastBottomLayer?.Index ?? 0;
+            else if(split[0].Equals("FN", StringComparison.OrdinalIgnoreCase)) layerIndexStart = FirstNormalLayer?.Index ?? 0;
+            else if(split[0].Equals("LAST", StringComparison.OrdinalIgnoreCase)) layerIndexStart = LastLayerIndex;
+            else if(!uint.TryParse(split[0], out layerIndexStart)) return false;
+            SanitizeLayerIndex(ref layerIndexStart);
+        }
+
+        if (split.Length == 1)
+        {
+            layerIndexEnd = layerIndexStart;
+            return true;
+        }
+
+        if (split[1] != string.Empty)
+        {
+            if (split[1].Equals("FIRST", StringComparison.OrdinalIgnoreCase)) layerIndexEnd = 0;
+            else if (split[1].Equals("LB", StringComparison.OrdinalIgnoreCase)) layerIndexEnd = LastBottomLayer?.Index ?? 0;
+            else if (split[1].Equals("FN", StringComparison.OrdinalIgnoreCase)) layerIndexEnd = FirstNormalLayer?.Index ?? 0;
+            else if (split[1].Equals("LAST", StringComparison.OrdinalIgnoreCase)) layerIndexEnd = LastLayerIndex;
+            else if (!uint.TryParse(split[1], out layerIndexEnd)) return false;
+            SanitizeLayerIndex(ref layerIndexEnd);
+        }
+
+        return layerIndexStart <= layerIndexEnd;
+    }
+
+    /// <summary>
     /// Constrains a layer index to be inside the range between 0 and <see cref="LastLayerIndex"/>
     /// </summary>
     /// <param name="layerIndex">Layer index to sanitize</param>
@@ -5693,6 +5738,11 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         var originalValue = layerIndex;
         layerIndex = Math.Min(layerIndex, LastLayerIndex);
         return originalValue != layerIndex;
+    }
+
+    public uint SanitizeLayerIndex(uint layerIndex)
+    {
+        return Math.Min(layerIndex, LastLayerIndex);
     }
 
     /// <summary>

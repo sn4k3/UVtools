@@ -16,7 +16,7 @@ using UVtools.Core.Suggestions;
 
 namespace UVtools.WPF.Structures;
 
-[Serializable]
+
 public class SuggestionManager
 {
     #region Properties

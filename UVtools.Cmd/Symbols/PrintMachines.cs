@@ -8,10 +8,8 @@
 
 using System;
 using System.CommandLine;
-using System.IO;
 using System.Text.Json;
 using UVtools.Core.Extensions;
-using UVtools.Core.FileFormats;
 using UVtools.Core.Printer;
 
 namespace UVtools.Cmd.Symbols;

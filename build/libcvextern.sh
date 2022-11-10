@@ -46,7 +46,7 @@ done
 echo "Script to build libcvextern.so|dylib on $(uname -a) $arch"
 
 if testcmd ldconfig; then
-    if [ -z "$(ldconfig -p | grep libpng)" -o -z "$(ldconfig -p | grep libgdiplus)" -o -z "$(ldconfig -p | grep libavcodec)" -o -z "$(command -v git)" -o -z "$(command -v cmake)" ]; then
+    if [ -z "$(ldconfig -p | grep libpng)" -o -z "$(ldconfig -p | grep libgdiplus)" -o -z "$(ldconfig -p | grep libavcodec)" -o -z "$(command -v git)" -o -z "$(command -v cmake)" -o -z "$(command -v dotnet)" ]; then
         installDependencies=true
     fi
 fi
@@ -67,14 +67,14 @@ if [ "${OSTYPE:0:6}" == "darwin" ]; then
     [ -z "$(command -v cmake)" ] && brew install cmake
     [ -z "$(command -v mono)" ] && brew install mono
     [ -z "$(command -v dotnet)" ] && brew install --cask dotnet-sdk
-elif testcmd apt-get; then
+elif testcmd apt; then
     osVariant="debian"
     if [ "$installDependencies" == true ]; then
-        sudo apt-get update
-        sudo apt-get -y install git build-essential libgtk-3-dev libgstreamer1.0-dev libavcodec-dev libswscale-dev libavformat-dev libdc1394-dev libv4l-dev cmake-curses-gui ocl-icd-dev freeglut3-dev libgeotiff-dev libusb-1.0-0-dev
-        sudo apt-get install -y apt-transport-https
-        sudo apt-get update
-        sudo apt-get install -y dotnet-sdk-6.0
+        sudo apt update
+        sudo apt -y install git build-essential libgtk-3-dev libgstreamer1.0-dev libavcodec-dev libswscale-dev libavformat-dev libdc1394-dev libv4l-dev cmake-curses-gui ocl-icd-dev freeglut3-dev libgeotiff-dev libusb-1.0-0-dev
+        sudo apt install -y apt-transport-https
+        sudo apt update
+        sudo apt install -y dotnet-sdk-6.0
     fi
 elif testcmd pacman; then
     osVariant="arch"

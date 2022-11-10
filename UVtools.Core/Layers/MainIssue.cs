@@ -12,10 +12,13 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Text.Json.Serialization;
+using System.Xml.Serialization;
 using UVtools.Core.Extensions;
 
 namespace UVtools.Core.Layers;
 
+[XmlInclude(typeof(IssueOfContours))]
+[XmlInclude(typeof(IssueOfPoints))]
 public class MainIssue : IReadOnlyList<Issue>
 {
     public enum IssueType : byte
@@ -97,9 +100,16 @@ public class MainIssue : IReadOnlyList<Issue>
     public double Area { get; init; }
 
     /// <summary>
+    /// Gets the area character, either ² or ³
+    /// </summary>
+    public char AreaChar => LayerRangeCount > 1 ? '³' : '²';
+
+    /// <summary>
     /// Gets all issues inside this main issue
     /// </summary>
-    public Issue[] Childs { get; init; } = null!;
+    public Issue[] Childs { get; init; } = Array.Empty<Issue>();
+
+    public MainIssue() { }
 
     public MainIssue(IssueType type, Rectangle boundingRectangle = default)
     {
@@ -118,31 +128,38 @@ public class MainIssue : IReadOnlyList<Issue>
 
     public MainIssue(IssueType type, IEnumerable<Issue> issues) : this(type)
     {
-        var boundingRectangle = Rectangle.Empty;
-        double area = 0;
         foreach (var issue in issues)
         {
             issue.Parent = this;
-            area += issue.Area / issue.Layer.LayerHeight;
+            var layerHeightInPixels = issue.Layer.SlicerFile.MillimetersToPixels(issue.Layer.LayerHeight, 20);
+            Area += issue.Area * layerHeightInPixels;
             PixelCount += issue.PixelsCount;
             if (issue.BoundingRectangle.IsEmpty) continue;
-            if (boundingRectangle.IsEmpty)
+            if (BoundingRectangle.IsEmpty)
             {
-                boundingRectangle = issue.BoundingRectangle;
+                BoundingRectangle = issue.BoundingRectangle;
                 continue;
             }
 
-            boundingRectangle.Intersect(issue.BoundingRectangle);
+            BoundingRectangle = Rectangle.Union(BoundingRectangle, issue.BoundingRectangle);
         }
 
-        BoundingRectangle = boundingRectangle;
-        Area = area;
-        Childs = issues.OrderBy(issue => issue.LayerIndex).ToArray();
-        Sort();
+        if (Childs.Length == 1)
+        {
+            Area = Childs[0].Area;
+            Childs = issues.ToArray();
+        }
+        else
+        {
+            Childs = issues.OrderBy(issue => issue.LayerIndex).ToArray();
+        }
+
+        Area = Math.Floor(Area);
     }
 
     private void Sort()
     {
+        if (Childs.Length < 1) return;
         Array.Sort(Childs, (issue, issue1) => issue.LayerIndex.CompareTo(issue1.LayerIndex));
     }
 

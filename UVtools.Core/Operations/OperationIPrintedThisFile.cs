@@ -14,7 +14,7 @@ using UVtools.Core.Objects;
 
 namespace UVtools.Core.Operations;
 
-[Serializable]
+
 public class OperationIPrintedThisFile : Operation
 {
     #region Members

@@ -16,7 +16,7 @@ using UVtools.Core.FileFormats;
 
 namespace UVtools.Core.Operations;
 
-[Serializable]
+
 public sealed class OperationSolidify : Operation
 {
     #region Enums

@@ -23,7 +23,7 @@ using UVtools.Core.Operations;
 namespace UVtools.Core.FileFormats;
 
 #region Sub Classes
-[Serializable]
+
 [XmlRoot(ElementName = "Manifest")]
 public class GenericZipManifest
 {

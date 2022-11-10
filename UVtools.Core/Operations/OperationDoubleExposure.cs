@@ -19,7 +19,7 @@ using UVtools.Core.Objects;
 
 namespace UVtools.Core.Operations;
 
-[Serializable]
+
 public class OperationDoubleExposure : Operation
 {
     #region Members

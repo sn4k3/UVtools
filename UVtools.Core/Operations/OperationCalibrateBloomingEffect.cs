@@ -19,7 +19,7 @@ using UVtools.Core.Layers;
 
 namespace UVtools.Core.Operations;
 
-[Serializable]
+
 public sealed class OperationCalibrateBloomingEffect : Operation
 {
     #region Members

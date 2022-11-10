@@ -23,7 +23,7 @@ using UVtools.Core.Objects;
 
 namespace UVtools.Core.Operations;
 
-[Serializable]
+
 public sealed class OperationDynamicLayerHeight : Operation
 {
     #region Sub Classes

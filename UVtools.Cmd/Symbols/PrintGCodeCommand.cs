@@ -8,7 +8,6 @@
 
 using System;
 using System.CommandLine;
-using System.IO;
 using UVtools.Core.FileFormats;
 
 namespace UVtools.Cmd.Symbols;

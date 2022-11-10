@@ -9,6 +9,7 @@
 using System;
 using System.Drawing;
 using System.Text.Json.Serialization;
+using System.Xml.Serialization;
 using UVtools.Core.Extensions;
 
 namespace UVtools.Core.Layers;
@@ -22,6 +23,7 @@ public class Issue
     /// Gets the issue type associated
     /// </summary>
     [JsonIgnore]
+    [XmlIgnore]
     public MainIssue? Parent { get; internal set; }
 
     public MainIssue.IssueType? Type => Parent?.Type;
@@ -30,6 +32,7 @@ public class Issue
     /// Gets the layer where this issue is present
     /// </summary>
     [JsonIgnore]
+    [XmlIgnore]
     public Layer Layer { get; init; }
 
     /// <summary>
@@ -53,6 +56,8 @@ public class Issue
     public double Area { get; init; }
 
     public Point FirstPoint { get; init; } = new(-1,-1);
+
+    public Issue() { }
 
     public Issue(Layer layer, Rectangle boundingRectangle, double area)
     {

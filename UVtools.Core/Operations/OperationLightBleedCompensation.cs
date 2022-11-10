@@ -19,7 +19,7 @@ using UVtools.Core.FileFormats;
 
 namespace UVtools.Core.Operations;
 
-[Serializable]
+
 public class OperationLightBleedCompensation : Operation
 {
     #region Enums

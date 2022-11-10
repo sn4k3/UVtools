@@ -655,7 +655,7 @@ public class SL1File : FileFormat
                     var attribute = obj.GetType().GetProperty(fieldName);
                     if (attribute is null || !attribute.CanWrite) continue;
                     //Debug.WriteLine(attribute.Name);
-                    Helpers.SetPropertyValue(attribute, obj, keyValue[1]);
+                    attribute.SetValueFromString(obj, keyValue[1]);
 
                     Statistics.ImplementedKeys.Add(keyValue[0]);
                     foundMember = true;

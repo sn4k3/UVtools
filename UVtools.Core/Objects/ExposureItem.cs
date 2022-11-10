@@ -10,7 +10,7 @@ using UVtools.Core.Layers;
 
 namespace UVtools.Core.Objects;
 
-[Serializable]
+
 public sealed class ExposureItem : BindableBase, IComparable<ExposureItem>
 {
     private decimal _layerHeight;

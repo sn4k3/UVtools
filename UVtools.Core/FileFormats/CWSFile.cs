@@ -29,7 +29,7 @@ namespace UVtools.Core.FileFormats;
 
 #region Wanhao
 
-[Serializable]
+
 [XmlRoot(ElementName = "manifest")]
 public sealed class CWSManifest
 {
@@ -70,7 +70,7 @@ public sealed class CWSManifest
     public Slice GCode { get; set; } = new();
 }
 
-[Serializable]
+
 [XmlRoot(ElementName = "SliceBuildConfig")]
 public sealed class CWSSliceBuildConfig
 {
@@ -755,7 +755,7 @@ public class CWSFile : FileFormat
                     var displayNameAttribute = propertyInfo.GetCustomAttributes(false).OfType<DisplayNameAttribute>().FirstOrDefault();
                     if (displayNameAttribute is null) continue;
                     if (!splitLine[0].Trim().Equals(displayNameAttribute.DisplayName)) continue;
-                    Helpers.SetPropertyValue(propertyInfo, SliceSettings, splitLine[1].Trim());
+                    propertyInfo.SetValueFromString(SliceSettings, splitLine[1].Trim());
                 }
             }
             tr.Close();
@@ -792,7 +792,7 @@ public class CWSFile : FileFormat
                     if (!splitLine[0].Trim(' ', ';', '(').Equals(displayNameAttribute.DisplayName)) continue;
                     try
                     {
-                        Helpers.SetPropertyValue(propertyInfo, OutputSettings, splitLine[1].Trim(' ', ')', 'p', 'x', 'm', 'n', 's', '/'));
+                        propertyInfo.SetValueFromString(OutputSettings, splitLine[1].Trim(' ', ')', 'p', 'x', 'm', 'n', 's', '/'));
                     }
                     catch
                     {

@@ -18,7 +18,7 @@ using UVtools.Core.Layers;
 
 namespace UVtools.Core.Operations;
 
-[Serializable]
+
 public sealed class OperationCalibrateLiftHeight : Operation
 {
     #region Members

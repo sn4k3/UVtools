@@ -16,7 +16,7 @@ using UVtools.Core.Layers;
 
 namespace UVtools.Core.Operations;
 
-[Serializable]
+
 public class OperationTimelapse : Operation
 {
     #region Enums

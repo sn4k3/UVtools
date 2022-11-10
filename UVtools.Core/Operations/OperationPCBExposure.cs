@@ -23,7 +23,7 @@ using UVtools.Core.Objects;
 
 namespace UVtools.Core.Operations;
 
-[Serializable]
+
 public class OperationPCBExposure : Operation
 {
     #region Sub Classes

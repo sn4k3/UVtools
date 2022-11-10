@@ -18,7 +18,7 @@ using UVtools.Core.Managers;
 
 namespace UVtools.Core.Objects;
 
-[Serializable]
+
 public sealed class KernelConfiguration : BindableBase, IDisposable
 {
     #region Members

@@ -26,7 +26,6 @@ using UVtools.AvaloniaControls;
 using UVtools.Core;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
-using UVtools.Core.Layers;
 using UVtools.Core.Managers;
 using UVtools.Core.Network;
 using UVtools.Core.Objects;
@@ -1747,13 +1746,10 @@ public partial class MainWindow : WindowEx
             }
             else
             {
-                await ComputeIssues(
-                    GetIslandDetectionConfiguration(false),
-                    GetOverhangDetectionConfiguration(false),
-                    GetResinTrapDetectionConfiguration(false),
-                    GetTouchingBoundsDetectionConfiguration(false),
-                    GetPrintHeightDetectionConfiguration(true),
-                    true);
+                var config = GetIssuesDetectionConfiguration(false);
+                config.PrintHeightConfig.Enable();
+                config.EmptyLayerConfig.Enable();
+                await ComputeIssues(config);
                 if (SlicerFile.IssueManager.Count > 0)
                 {
                     SelectedTabItem = TabIssues;
@@ -2144,17 +2140,13 @@ public partial class MainWindow : WindowEx
             case OperationRepairLayers operation:
                 if (SlicerFile.IssueManager.Count == 0)
                 {
-                    var islandConfig = GetIslandDetectionConfiguration();
-                    islandConfig.Enabled = operation.RepairIslands && operation.RemoveIslandsBelowEqualPixelCount > 0;
-                    var overhangConfig = new OverhangDetectionConfiguration(false);
-                    var resinTrapConfig = GetResinTrapDetectionConfiguration();
-                    resinTrapConfig.Enabled = operation.RepairResinTraps;
-                    var touchingBoundConfig = new TouchingBoundDetectionConfiguration(false);
-                    var printHeightConfig = new PrintHeightDetectionConfiguration(false);
+                    var config = GetIssuesDetectionConfiguration(false);
+                    config.IslandConfig.Enabled = operation.RepairIslands && operation.RemoveIslandsBelowEqualPixelCount > 0;
+                    config.ResinTrapConfig.Enabled = operation.RepairResinTraps;
 
-                    if (islandConfig.Enabled || resinTrapConfig.Enabled)
+                    if (config.IslandConfig.Enabled || config.ResinTrapConfig.Enabled)
                     {
-                        await ComputeIssues(islandConfig, overhangConfig, resinTrapConfig, touchingBoundConfig, printHeightConfig, Settings.Issues.ComputeEmptyLayers);
+                        await ComputeIssues(config);
                     }
                 }
 

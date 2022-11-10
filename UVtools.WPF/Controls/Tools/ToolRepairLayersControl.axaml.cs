@@ -33,7 +33,7 @@ public class ToolRepairLayersControl : ToolControl
         SuctionCupsVentHole = UserSettings.Instance.LayerRepair.SuctionCupsVentHole,
         GapClosingIterations = UserSettings.Instance.LayerRepair.ClosingIterations,
         NoiseRemovalIterations = UserSettings.Instance.LayerRepair.OpeningIterations,
-        IslandDetectionConfig = App.MainWindow.GetIslandDetectionConfiguration()
+        IssuesDetectionConfig = App.MainWindow.GetIssuesDetectionConfiguration()
     };
 
     public void SetFromUserSettings()
@@ -60,10 +60,10 @@ public class ToolRepairLayersControl : ToolControl
                 ParentWindow.IsCheckBox1Visible = true;
 
                 SetFromUserSettings();
-                Operation.IslandDetectionConfig = App.MainWindow.GetIslandDetectionConfiguration();
+                Operation.IssuesDetectionConfig = App.MainWindow.GetIssuesDetectionConfiguration();
                 break;
             case ToolWindow.Callbacks.Loaded:
-                Operation.IslandDetectionConfig = App.MainWindow.GetIslandDetectionConfiguration();
+                Operation.IssuesDetectionConfig = App.MainWindow.GetIssuesDetectionConfiguration();
                 break;
             case ToolWindow.Callbacks.Checkbox1:
                 ParentWindow.LayerRangeVisible = ParentWindow.IsCheckBox1Checked;

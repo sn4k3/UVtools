@@ -22,7 +22,7 @@ using UVtools.Core.Layers;
 
 namespace UVtools.Core.Operations;
 
-[Serializable]
+
 public class OperationLithophane : Operation
 {
     #region Enum

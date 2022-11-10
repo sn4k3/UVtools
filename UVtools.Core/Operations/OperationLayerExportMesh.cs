@@ -25,7 +25,7 @@ using UVtools.Core.Voxel;
 
 namespace UVtools.Core.Operations;
 
-[Serializable]
+
 public sealed class OperationLayerExportMesh : Operation
 {
     #region Enums

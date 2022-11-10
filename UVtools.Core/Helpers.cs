@@ -44,63 +44,6 @@ public static class Helpers
         return fs.WriteStream(stream, offset);
     }
 
-    public static bool SetPropertyValue(PropertyInfo attribute, object obj, string value)
-    {
-        var name = attribute.PropertyType.Name.ToLower();
-        switch (name)
-        {
-            case "string":
-                attribute.SetValue(obj, value.Convert<string>());
-                return true;
-            case "boolean":
-                if(char.IsDigit(value[0])) attribute.SetValue(obj, !value.Equals("0"));
-                else attribute.SetValue(obj, value.Equals("True", StringComparison.OrdinalIgnoreCase));
-                return true;
-            case "byte":
-                if (value.Equals("true", StringComparison.OrdinalIgnoreCase)) attribute.SetValue(obj, (byte)1);
-                else if (value.Equals("false", StringComparison.OrdinalIgnoreCase)) attribute.SetValue(obj, byte.MinValue);
-                else attribute.SetValue(obj, value.Convert<byte>());
-                return true;
-            case "sbyte":
-                attribute.SetValue(obj, value.Convert<sbyte>());
-                return true;
-            case "uint16":
-                attribute.SetValue(obj, value.Convert<ushort>());
-                return true;
-            case "int16":
-                attribute.SetValue(obj, value.Convert<short>());
-                return true;
-            case "uint32":
-                attribute.SetValue(obj, value.Convert<uint>());
-                return true;
-            case "int32":
-                attribute.SetValue(obj, value.Convert<int>());
-                return true;
-            case "uint64":
-                attribute.SetValue(obj, value.Convert<ulong>());
-                return true;
-            case "int64":
-                attribute.SetValue(obj, value.Convert<long>());
-                return true;
-            case "single":
-                attribute.SetValue(obj, (float)Math.Round(float.Parse(value, CultureInfo.InvariantCulture.NumberFormat), 3));
-                return true;
-            case "double":
-                attribute.SetValue(obj, Math.Round(double.Parse(value, CultureInfo.InvariantCulture.NumberFormat), 3));
-                return true;
-            case "decimal":
-                attribute.SetValue(obj, Math.Round(decimal.Parse(value, CultureInfo.InvariantCulture.NumberFormat), 3));
-                return true;
-            default:
-                throw new Exception($"Data type '{name}' not recognized, contact developer.");
-        }
-    }
-
-    public static int GetPixelPosition(int width, int x, int y)
-    {
-        return width * y + x;
-    }
-
     public static void SwapVariables<T>(ref T var1, ref T var2)
     {
         (var1, var2) = (var2, var1);

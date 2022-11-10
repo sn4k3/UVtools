@@ -17,7 +17,7 @@ using UVtools.Core.Scripting;
 
 namespace UVtools.Core.Operations;
 
-[Serializable]
+
 public sealed class OperationScripting : Operation
 {
     #region Members

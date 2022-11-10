@@ -461,7 +461,7 @@ public class ChituboxZipFile : FileFormat
                     var displayNameAttribute = propertyInfo.GetCustomAttributes(false).OfType<DisplayNameAttribute>().FirstOrDefault();
                     if (displayNameAttribute is null) continue;
                     if (!splitLine[0].Trim(' ', ';').Equals(displayNameAttribute.DisplayName)) continue;
-                    Helpers.SetPropertyValue(propertyInfo, HeaderSettings, splitLine[1].Trim());
+                    propertyInfo.SetValueFromString(HeaderSettings, splitLine[1].Trim());
                 }
             }
             tr.Close();

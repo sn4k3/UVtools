@@ -289,6 +289,7 @@ public class AppVersionChecker : BindableBase
                             var newDirectoryName = Regex.Replace(di.Name, $@"({About.Software}.*)(v\d+.\d+.\d+)", $@"$1v{_version}", RegexOptions.IgnoreCase);
                             if (di.Name != newDirectoryName)
                             {
+                                await stream.WriteLineAsync();
                                 await stream.WriteLineAsync("echo '- Directory is able to rename version name'");
                                 applicationPath = Path.Combine(di.Parent?.FullName!, newDirectoryName);
                             }

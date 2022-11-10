@@ -1,22 +1,19 @@
-- **Import thumbnails:**
-  - (Add) Import from file
-  - (Add) Import from file (Replace all)
-  - (Add) Import from current layer
-  - (Add) Import from current layer (Replace all)
-  - (Add) Import from random layer
-  - (Add) Import from random layer (Replace all)
-  - (Add) Import from heatmap
-  - (Add) Import from heatmap (Replace all)
-  - (Fix) Import from file could load in any image color type, resulting in wrong encoding on file save
-- **Auto-upgrade script:** (Will only take effect on the next release)
-  - (Improvement) Add some marker/debug messages
-  - (Improvement) On generic Linux and macOS try to rename the folder if contain the version on it name to the upgraded version name
-  - (Improvement) Linux AppImage upgrades now renames to UVtools.AppImage
-  - (Improvement) Re-open the program with the current loaded file
-- (Add) UVtoolsCmd: `set-preview, set-thumbnail <input-file> <file path|layer index|:random-layer|:heatmap>  Sets and replace thumbnail(s) in the file [default: :heatmap]`. (#599)
-        Use `UVtoolsCmd set-preview -?` to view the full documentation
-- (Improvement) Export layers to mesh: Write the file to a temporary location and move it to the target location when complete with success
-- (Fix) Error when opening a file with light calculated issues that cause a complete issue detection and when there are auto applied suggestions that modify the layer count (#598)
-- (Fix) Auto applying suggestions was not triggering a UI properties refresh, causing some values to show outdated
-- (Fix) PCB exposure: Bad parsing of macros when the ending `%` is alone in a new line (#600)
+- **UVtoolsCmd:**
+  - **print-properties:**
+    - (Change) `-b`, `--base` option to `-a`, `-all` to indicate all properties and sub-properties, now defaults to only show base properties
+    - (Add) `-r`, `--range` option to prints only the matching layer(s) index(es) in a range
+    - (Add) `-i`, `--indexes` option to prints only the matching layer(s) index(es)
+  - (Add) Command: `set-properties <input-file> <property=value> Set properties in a file or to it layers with new values`
+  - (Add) Command: `print-issues <input-file> Detect and print issues in a file`
+  - (Add) New option to the `run` command: `-p, --property <property=value>  Set a property with a new value (Compatible with operations only)`
+  - (Remove) Command: `print-layers` as it has been moved to `print-properties`, use `-r :` to obtain same result as default on `print-layers`
+- **Issues:**
+  - (Fix) Issues groups with only one issue was displaying the wrong area value
+  - (Fix) Volume incorrectly calculated, resulting in a high value for group of issues
+  - (Fix) Incorrect calculation of the bounding rectangle for a group of issues
+- **Repair layers:**
+  - (Add) Switch to opt between "Re-detect the selected issues before repair" and "Use and repair the previous detected issues" (Default)
+  - (Improvement) Do not allow to run the tool if there are no detected issues when the option "Use and repair the previous detected issues" is selected
+- (Improvement) Linux: Recompile libcvextern.so on a older system to be able to run on both older and newest system (#603)
+- (Upgrade) .NET from 6.0.10 to 6.0.11
 

@@ -7,8 +7,8 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.CommandLine;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.Json.Serialization;
@@ -21,39 +21,128 @@ internal static class PrintPropertiesCommand
 {
     internal static Command CreateCommand()
     {
-        var matchNamesOption = new Option<string[]>(new[] {"-n", "--names"}, "Prints only the name matching properties");
-        var showPropertiesOnlyOption = new Option<bool>(new[] { "-b", "--base" }, "Prints only the base properties of the file");
+        var matchNamesOption = new Option<string[]>(new[] {"-n", "--names"}, "Prints only the name matching properties")
+        {
+            AllowMultipleArgumentsPerToken = true
+        };
+        var allPropertiesOption = new Option<bool>(new[] { "-a", "--all" }, "Also prints the sub properties of the file (No effect on layers)");
+        var layerRangeOption = new Option<string>(new[] { "-r", "--range" }, "Prints only the matching layer(s) index(es) in a range")
+        {
+            ArgumentHelpName = "startindex:endindex"
+        };
+        var layerIndexesOption = new Option<uint[]>(new[] { "-i", "--indexes" }, "Prints only the matching layer(s) index(es)")
+        {
+            AllowMultipleArgumentsPerToken = true
+        };
 
         var command = new Command("print-properties", "Prints available properties")
         {
             GlobalArguments.InputFileArgument,
             matchNamesOption,
-            showPropertiesOnlyOption,
+            allPropertiesOption,
+            layerRangeOption,
+            layerIndexesOption,
             GlobalOptions.OpenInPartialMode
         };
 
-        command.SetHandler((inputFile, matchNames, baseOnly, partialMode) =>
+        command.SetHandler((inputFile, matchNames, allProperties, layerRange, layerIndexes, partialMode) =>
             {
                 var slicerFile = Program.OpenInputFile(inputFile, partialMode ? FileFormat.FileDecodeType.Partial : FileFormat.FileDecodeType.Full);
                 uint count = 0;
 
-                Console.WriteLine("Listing properties:");
-                Console.WriteLine("----------------------");
-                if (!baseOnly)
+                var layerIndexesList = new List<uint>();
+
+                if (!string.IsNullOrWhiteSpace(layerRange))
                 {
-                    foreach (var config in slicerFile.Configs)
+                    if (slicerFile.TryParseLayerIndexRange(layerRange, out var layerIndexStart, out var layerIndexEnd))
                     {
-                        //Program.WriteLine("******************************");
-                        //Program.WriteLine($"\t{config.GetType().Name}");
-                        //Program.WriteLine("******************************");
-                        foreach (var propertyInfo in config.GetType()
+                        for (var layerIndex = layerIndexStart; layerIndex <= layerIndexEnd; layerIndex++)
+                        {
+                            layerIndexesList.Add(layerIndex);
+                        }
+                    }
+                    else
+                    {
+                        Program.WriteLineError($"The specified layer range '{layerRange}' is malformed, use startindex:endindex with positive numbers");
+                    }
+                }
+
+                if (layerIndexes.Length > 0)
+                {
+                    layerIndexesList.AddRange(layerIndexes.Select(layerIndex => slicerFile.SanitizeLayerIndex(layerIndex)));
+                }
+
+                layerIndexesList = layerIndexesList.Distinct().OrderBy(layerIndex => layerIndex).ToList();
+                Console.WriteLine("-------------------------");
+
+                if (layerIndexesList.Count == 0)
+                {
+                    if (allProperties)
+                    {
+                        foreach (var config in slicerFile.Configs)
+                        {
+                            //Program.WriteLine("******************************");
+                            //Program.WriteLine($"\t{config.GetType().Name}");
+                            //Program.WriteLine("******************************");
+                            foreach (var propertyInfo in config.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
+                            {
+                                if (propertyInfo.Name.Equals("Item")) continue;
+                                if (matchNames.Length > 0)
+                                {
+                                    if(matchNames.All(s => s != propertyInfo.Name)) continue;
+                                }
+                                if (propertyInfo.GetCustomAttributes().Any(attribute =>
+                                    {
+                                        var type = attribute.GetType();
+                                        if (type == typeof(XmlIgnoreAttribute)) return true;
+                                        if (type == typeof(JsonIgnoreAttribute)) return true;
+                                        return false;
+                                    })) continue;
+                                count++;
+                                Console.WriteLine($"{propertyInfo.Name}: {propertyInfo.GetValue(config)}");
+                            }
+                        }
+                    }
+
+                    //Program.WriteLine("******************************");
+                    //Program.WriteLine("\tBase");
+                    //Program.WriteLine("******************************");
+
+
+                    foreach (var propertyInfo in slicerFile.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
+                    {
+                        if (propertyInfo.Name.Equals("Item")) continue;
+                        if (matchNames is not null && matchNames.Length > 0)
+                        {
+                            if (matchNames.All(s => s != propertyInfo.Name)) continue;
+                        }
+                        if (propertyInfo.GetCustomAttributes().Any(attribute =>
+                            {
+                                var type = attribute.GetType();
+                                if (type == typeof(XmlIgnoreAttribute)) return true;
+                                if (type == typeof(JsonIgnoreAttribute)) return true;
+                                return false;
+                            })) continue;
+                        count++;
+                        Console.WriteLine($"{propertyInfo.Name}: {propertyInfo.GetValue(slicerFile)}");
+                    }
+                }
+                else
+                {
+                    for (var i = 0; i < layerIndexesList.Count; i++)
+                    {
+                        var layerIndex = layerIndexesList[i];
+                        if(i > 0) Console.WriteLine("-------------------------");
+                        Console.WriteLine($"# Layer: {layerIndex}");
+                        foreach (var propertyInfo in slicerFile[layerIndex].GetType()
                                      .GetProperties(BindingFlags.Public | BindingFlags.Instance))
                         {
                             if (propertyInfo.Name.Equals("Item")) continue;
-                            if (matchNames.Length > 0)
+                            if (matchNames is not null && matchNames.Length > 0)
                             {
-                                if(matchNames.All(s => s != propertyInfo.Name)) continue;
+                                if (matchNames.All(s => s != propertyInfo.Name)) continue;
                             }
+
                             if (propertyInfo.GetCustomAttributes().Any(attribute =>
                                 {
                                     var type = attribute.GetType();
@@ -61,42 +150,16 @@ internal static class PrintPropertiesCommand
                                     if (type == typeof(JsonIgnoreAttribute)) return true;
                                     return false;
                                 })) continue;
+                            Console.WriteLine($"{propertyInfo.Name}: {propertyInfo.GetValue(slicerFile[layerIndex])}");
                             count++;
-                            Console.WriteLine($"{propertyInfo.Name}: {propertyInfo.GetValue(config)}");
                         }
                     }
                 }
 
-                //Program.WriteLine("******************************");
-                //Program.WriteLine("\tBase");
-                //Program.WriteLine("******************************");
-
-                var fileFormat = slicerFile as FileFormat;
-
-                foreach (var propertyInfo in fileFormat.GetType()
-                             .GetProperties(BindingFlags.Public | BindingFlags.Instance))
-                {
-                    if (propertyInfo.Name.Equals("Item")) continue;
-                    if (matchNames is not null && matchNames.Length > 0)
-                    {
-                        if (matchNames.All(s => s != propertyInfo.Name)) continue;
-                    }
-                    if (propertyInfo.GetCustomAttributes().Any(attribute =>
-                        {
-                            var type = attribute.GetType();
-                            if (type == typeof(XmlIgnoreAttribute)) return true;
-                            if (type == typeof(JsonIgnoreAttribute)) return true;
-                            return false;
-                        })) continue;
-                    count++;
-                    Console.WriteLine($"{propertyInfo.Name}: {propertyInfo.GetValue(fileFormat)}");
-                }
-
-
-                Console.WriteLine("----------------------");
+                Console.WriteLine("-------------------------");
                 Console.WriteLine($"Total properties: {count}");
 
-            }, GlobalArguments.InputFileArgument, matchNamesOption, showPropertiesOnlyOption, GlobalOptions.OpenInPartialMode);
+            }, GlobalArguments.InputFileArgument, matchNamesOption, allPropertiesOption, layerRangeOption, layerIndexesOption, GlobalOptions.OpenInPartialMode);
 
         return command;
     }

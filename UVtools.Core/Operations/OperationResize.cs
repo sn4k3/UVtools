@@ -15,7 +15,7 @@ using UVtools.Core.FileFormats;
 
 namespace UVtools.Core.Operations;
 
-[Serializable]
+
 public class OperationResize : Operation
 {
     #region Members

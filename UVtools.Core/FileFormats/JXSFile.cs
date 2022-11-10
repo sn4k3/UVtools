@@ -481,7 +481,7 @@ public class JXSFile : FileFormat
                     if(property != keyValue[0]) continue;
 
                     //Debug.WriteLine(attribute.Name);
-                    Helpers.SetPropertyValue(propertyInfo, ConfigFile, keyValue[1]);
+                    propertyInfo.SetValueFromString(ConfigFile, keyValue[1]);
                 }
             }
 

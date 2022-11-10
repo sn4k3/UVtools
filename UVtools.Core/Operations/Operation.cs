@@ -21,7 +21,7 @@ using UVtools.Core.Objects;
 
 namespace UVtools.Core.Operations;
 
-[Serializable]
+
 public abstract class Operation : BindableBase, IDisposable
 {
     #region Constants

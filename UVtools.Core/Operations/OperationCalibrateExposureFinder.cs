@@ -26,7 +26,7 @@ using UVtools.Core.Objects;
 
 namespace UVtools.Core.Operations;
 
-[Serializable]
+
 public sealed class OperationCalibrateExposureFinder : Operation
 {
     #region Enums

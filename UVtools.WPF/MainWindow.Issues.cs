@@ -426,15 +426,11 @@ public partial class MainWindow
     private async Task UpdateIslandsOverhangs(List<uint> whiteListLayers)
     {
         if (whiteListLayers.Count == 0) return;
-        var islandConfig = GetIslandDetectionConfiguration();
-        var overhangConfig = GetOverhangDetectionConfiguration();
-        var resinTrapConfig = new ResinTrapDetectionConfiguration(false);
-        var touchingBoundConfig = new TouchingBoundDetectionConfiguration(false);
-        var printHeightConfig = new PrintHeightDetectionConfiguration(false);
-        islandConfig.Enabled = true;
-        islandConfig.WhiteListLayers = whiteListLayers;
-        overhangConfig.Enabled = true;
-        overhangConfig.WhiteListLayers = whiteListLayers;
+        var config = GetIssuesDetectionConfiguration(false);
+        config.IslandConfig.Enable();
+        config.IslandConfig.WhiteListLayers = whiteListLayers;
+        config.OverhangConfig.Enable();
+        config.OverhangConfig.WhiteListLayers = whiteListLayers;
 
 
         IsGUIEnabled = false;
@@ -443,7 +439,7 @@ public partial class MainWindow
 
         var issueList = SlicerFile.IssueManager.ToList();
         issueList.RemoveAll(issue =>
-            islandConfig.WhiteListLayers.Contains(issue.StartLayerIndex) && issue.Type is MainIssue.IssueType.Island or MainIssue.IssueType.Overhang);
+            config.IslandConfig.WhiteListLayers.Contains(issue.StartLayerIndex) && issue.Type is MainIssue.IssueType.Island or MainIssue.IssueType.Overhang);
         /*foreach (var layerIndex in islandConfig.WhiteListLayers)
         {
             issueList.RemoveAll(issue =>
@@ -456,8 +452,7 @@ public partial class MainWindow
         {
             try
             {
-                var issues = SlicerFile.IssueManager.DetectIssues(islandConfig, overhangConfig, resinTrapConfig,
-                    touchingBoundConfig, printHeightConfig, false, Progress);
+                var issues = SlicerFile.IssueManager.DetectIssues(config, Progress);
 
                 issues.RemoveAll(issue => issue.Type is not MainIssue.IssueType.Island and not MainIssue.IssueType.Overhang); // Remove all non islands and overhangs
                 return issues;
@@ -632,23 +627,11 @@ public partial class MainWindow
             return;
 
         }
-        await ComputeIssues(
-            GetIslandDetectionConfiguration(),
-            GetOverhangDetectionConfiguration(),
-            GetResinTrapDetectionConfiguration(),
-            GetTouchingBoundsDetectionConfiguration(),
-            GetPrintHeightDetectionConfiguration(),
-            Settings.Issues.ComputeEmptyLayers);
+        await ComputeIssues(GetIssuesDetectionConfiguration());
     }
 
-    private async Task ComputeIssues(IslandDetectionConfiguration islandConfig = null,
-        OverhangDetectionConfiguration overhangConfig = null,
-        ResinTrapDetectionConfiguration resinTrapConfig = null,
-        TouchingBoundDetectionConfiguration touchingBoundConfig = null,
-        PrintHeightDetectionConfiguration printHeightConfig = null,
-        bool emptyLayersConfig = true)
+    private async Task ComputeIssues(IssuesDetectionConfiguration config)
     {
-
         SlicerFile.IssueManager.Clear();
         IsGUIEnabled = false;
         ShowProgressWindow("Computing Issues");
@@ -657,8 +640,7 @@ public partial class MainWindow
         {
             try
             {
-                var issues = SlicerFile.IssueManager.DetectIssues(islandConfig, overhangConfig, resinTrapConfig, touchingBoundConfig,
-                    printHeightConfig, emptyLayersConfig, Progress);
+                var issues = SlicerFile.IssueManager.DetectIssues(config, Progress);
 
                 switch (Settings.Issues.DataGridOrderBy)
                 {
@@ -843,6 +825,18 @@ public partial class MainWindow
         }
     }
 
+    public IssuesDetectionConfiguration GetIssuesDetectionConfiguration(bool enable = true)
+    {
+        return new IssuesDetectionConfiguration(
+            GetIslandDetectionConfiguration(enable),
+            GetOverhangDetectionConfiguration(enable),
+            GetResinTrapDetectionConfiguration(enable),
+            GetTouchingBoundsDetectionConfiguration(enable),
+            GetPrintHeightDetectionConfiguration(enable),
+            GetEmptyLayerDetectionConfiguration(enable)
+        );
+    }
+
 
 
     public IslandDetectionConfiguration GetIslandDetectionConfiguration(bool enable)
@@ -915,6 +909,15 @@ public partial class MainWindow
         };
     }
     public PrintHeightDetectionConfiguration GetPrintHeightDetectionConfiguration() => GetPrintHeightDetectionConfiguration(Settings.Issues.ComputePrintHeight);
+
+    public EmptyLayerDetectionConfiguration GetEmptyLayerDetectionConfiguration(bool enable)
+    {
+        return new()
+        {
+            Enabled = enable,
+        };
+    }
+    public EmptyLayerDetectionConfiguration GetEmptyLayerDetectionConfiguration() => GetEmptyLayerDetectionConfiguration(Settings.Issues.ComputeEmptyLayers);
 
 
     #endregion

@@ -22,7 +22,7 @@ using UVtools.Core.Objects;
 
 namespace UVtools.Core.Operations;
 
-[Serializable]
+
 public sealed class OperationLayerImport : Operation
 {
     #region Enums

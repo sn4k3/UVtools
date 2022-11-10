@@ -33,19 +33,21 @@ internal class Program
 
     public static async Task<int> Main(params string[] args)
     {
-        Thread.CurrentThread.CurrentCulture = CultureInfo.CreateSpecificCulture("en-GB");
+        Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
         Args = args;
         
         var rootCommand = new RootCommand("MSLA/DLP, file analysis, repair, conversion and manipulation")
         {
+            SetPropertiesCommand.CreateCommand(),
             RunCommand.CreateCommand(),
             ConvertCommand.CreateCommand(),
             ExtractCommand.CreateCommand(),
             CopyParametersCommand.CreateCommand(),
             SetThumbnailCommand.CreateCommand(),
 
+            PrintIssuesCommand.CreateCommand(),
             PrintPropertiesCommand.CreateCommand(),
-            PrintLayersCommand.CreateCommand(),
+            //PrintLayersCommand.CreateCommand(),
             PrintGCodeCommand.CreateCommand(),
             PrintMachinesCommand.CreateCommand(),
 

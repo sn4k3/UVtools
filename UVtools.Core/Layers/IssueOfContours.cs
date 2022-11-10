@@ -20,6 +20,8 @@ public sealed class IssueOfContours : Issue
     /// </summary>
     public Point[][] Contours { get; init; }
 
+    public IssueOfContours() { }
+
     public IssueOfContours(Layer layer, IEnumerable<Point[]> contours, Rectangle boundingRectangle, double area) : base(layer, boundingRectangle, area)
     {
         Contours = contours.ToArray();

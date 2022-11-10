@@ -16,7 +16,7 @@ using UVtools.Core.Operations;
 
 namespace UVtools.WPF.Structures;
 
-[Serializable]
+
 public class OperationProfiles //: IList<Operation>
 {
     #region Properties

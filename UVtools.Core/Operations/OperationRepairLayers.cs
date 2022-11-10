@@ -12,13 +12,10 @@ using Emgu.CV.Util;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xml.Serialization;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Layers;
@@ -26,10 +23,11 @@ using UVtools.Core.Managers;
 
 namespace UVtools.Core.Operations;
 
-[Serializable]
+
 public class OperationRepairLayers : Operation
 {
     #region Members
+    private bool _detectIssues;
     private bool _repairIslands = true;
     private bool _repairResinTraps = true;
     private bool _repairSuctionCups;
@@ -50,10 +48,10 @@ public class OperationRepairLayers : Operation
     public override string Title => "Repair layers and issues";
     public override string Description => string.Empty;
 
-    public override string ConfirmationText => "attempt  this repair?";
+    public override string ConfirmationText => "attempt this repair?";
 
     public override string ProgressTitle =>
-        $"Reparing layers {LayerIndexStart} through {LayerIndexEnd}";
+        $"Repairing layers {LayerIndexStart} through {LayerIndexEnd}";
 
     public override string ProgressAction => "Repaired layers";
 
@@ -66,6 +64,12 @@ public class OperationRepairLayers : Operation
             sb.AppendLine("You must select at least one repair operation.");
         }
 
+        if (!_detectIssues && SlicerFile.IssueManager.Count == 0)
+        {
+            sb.AppendLine("There are no present issues on the current session to repair.");
+            sb.AppendLine("Please detect issues before run this tool or check the option: \"Re-detect the selected issues before repair\" to force a detect and repair.");
+        }
+
         return sb.ToString();
     }
 
@@ -76,7 +80,7 @@ public class OperationRepairLayers : Operation
         if(_repairResinTraps) repair.Add("Resin traps");
         if(_repairSuctionCups) repair.Add("Suction cups");
         if(_removeEmptyLayers) repair.Add("Empty layers");
-        var result = $"[Repair: {string.Join('/', repair)}] " +
+        var result = $"[Repair: {string.Join('/', repair)}] [Detect: {_detectIssues}]" +
                      $"[Gap closing: {_gapClosingIterations}px] " +
                      $"[Noise removal: {_noiseRemovalIterations}px]" + LayerRangeString;
         if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
@@ -93,6 +97,16 @@ public class OperationRepairLayers : Operation
     #endregion
 
     #region Properties
+
+    /// <summary>
+    /// IF true it will re-detect the selected issues before repair, otherwise uses and repair the previous detected issues
+    /// </summary>
+    public bool DetectIssues
+    {
+        get => _detectIssues;
+        set => RaiseAndSetIfChanged(ref _detectIssues, value);
+    }
+
     public bool RepairIslands
     {
         get => _repairIslands;
@@ -159,7 +173,7 @@ public class OperationRepairLayers : Operation
         set => RaiseAndSetIfChanged(ref _noiseRemovalIterations, value);
     }
 
-    [XmlIgnore] public IslandDetectionConfiguration IslandDetectionConfig { get; set; } = new();
+    public IssuesDetectionConfiguration IssuesDetectionConfig { get; set; } = new();
 
     #endregion
 
@@ -167,7 +181,7 @@ public class OperationRepairLayers : Operation
 
     protected bool Equals(OperationRepairLayers other)
     {
-        return _repairIslands == other._repairIslands && _repairResinTraps == other._repairResinTraps && _removeEmptyLayers == other._removeEmptyLayers && _repairSuctionCups == other._repairSuctionCups && _removeIslandsBelowEqualPixelCount == other._removeIslandsBelowEqualPixelCount && _removeIslandsRecursiveIterations == other._removeIslandsRecursiveIterations && _attachIslandsBelowLayers == other._attachIslandsBelowLayers && _resinTrapsOverlapBy == other._resinTrapsOverlapBy && _suctionCupsVentHole == other._suctionCupsVentHole && _gapClosingIterations == other._gapClosingIterations && _noiseRemovalIterations == other._noiseRemovalIterations;
+        return _detectIssues == other._detectIssues && _repairIslands == other._repairIslands && _repairResinTraps == other._repairResinTraps && _repairSuctionCups == other._repairSuctionCups && _removeEmptyLayers == other._removeEmptyLayers && _removeIslandsBelowEqualPixelCount == other._removeIslandsBelowEqualPixelCount && _removeIslandsRecursiveIterations == other._removeIslandsRecursiveIterations && _attachIslandsBelowLayers == other._attachIslandsBelowLayers && _resinTrapsOverlapBy == other._resinTrapsOverlapBy && _suctionCupsVentHole == other._suctionCupsVentHole && _gapClosingIterations == other._gapClosingIterations && _noiseRemovalIterations == other._noiseRemovalIterations;
     }
 
     public override bool Equals(object? obj)
@@ -175,16 +189,17 @@ public class OperationRepairLayers : Operation
         if (ReferenceEquals(null, obj)) return false;
         if (ReferenceEquals(this, obj)) return true;
         if (obj.GetType() != this.GetType()) return false;
-        return Equals((OperationRepairLayers)obj);
+        return Equals((OperationRepairLayers) obj);
     }
 
     public override int GetHashCode()
     {
         var hashCode = new HashCode();
+        hashCode.Add(_detectIssues);
         hashCode.Add(_repairIslands);
         hashCode.Add(_repairResinTraps);
-        hashCode.Add(_removeEmptyLayers);
         hashCode.Add(_repairSuctionCups);
+        hashCode.Add(_removeEmptyLayers);
         hashCode.Add(_removeIslandsBelowEqualPixelCount);
         hashCode.Add(_removeIslandsRecursiveIterations);
         hashCode.Add(_attachIslandsBelowLayers);
@@ -201,7 +216,29 @@ public class OperationRepairLayers : Operation
 
     protected override bool ExecuteInternally(OperationProgress progress)
     {
-        var issues = SlicerFile.IssueManager.GetVisible().ToList();
+        List<MainIssue> issues;
+
+        if (_detectIssues)
+        {
+            var config = IssuesDetectionConfig.Clone();
+            config.DisableAll();
+            config.IslandConfig.Enabled =
+                (_repairIslands && _removeIslandsBelowEqualPixelCount > 0 && _removeIslandsRecursiveIterations != 1) ||
+                _repairIslands && _attachIslandsBelowLayers > 0;
+            config.ResinTrapConfig.Enabled = _repairResinTraps;
+            config.ResinTrapConfig.DetectSuctionCups = _repairSuctionCups;
+            config.EmptyLayerConfig.Enabled = _removeEmptyLayers;
+
+            issues = SlicerFile.IssueManager.DetectIssues(config, progress).ToList();
+            issues.RemoveAll(mainIssue => SlicerFile.IssueManager.IgnoredIssues.Contains(mainIssue));
+        }
+        else
+        {
+            issues = SlicerFile.IssueManager.GetVisible().ToList();
+        }
+
+        if (issues.Count == 0) return true;
+
         // Remove islands
         if (//Issues is not null
             //IslandDetectionConfig is not null
@@ -216,14 +253,9 @@ public class OperationRepairLayers : Operation
 
             var recursiveIssues = issues;
             var islandsToRecompute = new ConcurrentBag<uint>();
-            var islandConfig = IslandDetectionConfig.Clone();
-            var overhangConfig = new OverhangDetectionConfiguration(false);
-            var touchingBoundsConfig = new TouchingBoundDetectionConfiguration(false);
-            var printHeightConfig = new PrintHeightDetectionConfiguration(false);
-            var resinTrapsConfig = new ResinTrapDetectionConfiguration(false);
-            var emptyLayersConfig = false;
-
-            islandConfig.Enabled = true;
+            var config = IssuesDetectionConfig.Clone();
+            config.DisableAll();
+            config.IslandConfig.Enable();
             //islandConfig.RequiredAreaToProcessCheck = (ushort)(_removeIslandsBelowEqualPixelCount / 2);
 
             for (uint i = 0; i < limit; i++)
@@ -233,8 +265,8 @@ public class OperationRepairLayers : Operation
                     /*var whiteList = islandsToRecompute.GroupBy(u => u)
                         .Select(grp => grp.First())
                         .ToList();*/
-                    islandConfig.WhiteListLayers = islandsToRecompute.ToList();
-                    recursiveIssues = SlicerFile.IssueManager.DetectIssues(islandConfig, overhangConfig, resinTrapsConfig, touchingBoundsConfig, printHeightConfig, emptyLayersConfig);
+                    config.IslandConfig.WhiteListLayers = islandsToRecompute.ToList();
+                    recursiveIssues = SlicerFile.IssueManager.DetectIssues(config);
                     //Debug.WriteLine(i);
                 }
 
@@ -279,20 +311,15 @@ public class OperationRepairLayers : Operation
         {
             var islandsToProcess = issues;
 
-            if (islandsToProcess.Count == 0)
+            /*if (islandsToProcess.Count == 0)
             {
-                var islandConfig = IslandDetectionConfig.Clone();
-                var overhangConfig = new OverhangDetectionConfiguration(false);
-                var touchingBoundsConfig = new TouchingBoundDetectionConfiguration(false);
-                var printHeightConfig = new PrintHeightDetectionConfiguration(false);
-                var resinTrapsConfig = new ResinTrapDetectionConfiguration(false);
-                var emptyLayersConfig = false;
+                var config = IssuesDetectionConfig.Clone();
+                config.DisableAll();
+                config.IslandConfig.Enable();
 
-                islandConfig.Enabled = true;
-
-                islandsToProcess = SlicerFile.IssueManager.DetectIssues(islandConfig, overhangConfig, resinTrapsConfig, touchingBoundsConfig, printHeightConfig, emptyLayersConfig, progress);
+                islandsToProcess = SlicerFile.IssueManager.DetectIssues(config, progress);
                 islandsToProcess.RemoveAll(mainIssue => SlicerFile.IssueManager.IgnoredIssues.Contains(mainIssue));
-            }
+            }*/
 
             var issuesGroup = IssueManager.GetIssuesBy(islandsToProcess, MainIssue.IssueType.Island).GroupBy(issue => issue.LayerIndex);
 
@@ -318,7 +345,7 @@ public class OperationRepairLayers : Operation
                 foreach (IssueOfPoints issue in group)
                 {
                     int foundAt = startLayer == 0 ? 0 : - 1;
-                    var requiredSupportingPixels = Math.Max(1, issue.PixelsCount * IslandDetectionConfig.RequiredPixelsToSupportMultiplier);
+                    var requiredSupportingPixels = Math.Max(1, issue.PixelsCount * IssuesDetectionConfig.IslandConfig.RequiredPixelsToSupportMultiplier);
 
                     for (var layerIndex = startLayer; layerIndex >= lowestPossibleLayer && foundAt < 0; layerIndex--)
                     {
@@ -330,7 +357,7 @@ public class OperationRepairLayers : Operation
 
                             foreach (var point in issue.Points)
                             {
-                                if (span[mat.GetPixelPos(point)] < IslandDetectionConfig.RequiredPixelBrightnessToSupport)
+                                if (span[mat.GetPixelPos(point)] < IssuesDetectionConfig.IslandConfig.RequiredPixelBrightnessToSupport)
                                     continue;
 
                                 pixelsSupportingIsland++;

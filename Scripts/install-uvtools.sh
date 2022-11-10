@@ -195,7 +195,7 @@ fi
 #############
 echo "- Detected: $osVariant $arch"
 
-requiredlddversion="2.32"
+requiredlddversion="2.31"
 lddversion="$(ldd --version | awk '/ldd/{print $NF}')"
 
 
@@ -205,16 +205,19 @@ if [ $(version $lddversion) -lt $(version $requiredlddversion) ]; then
     echo "Error: Unable to auto install the latest version."    
     echo "ldd version: $lddversion detected, but requires at least version $requiredlddversion."
     echo "Solutions:"
-    echo "- Manually download and run older version: https://github.com/sn4k3/UVtools/releases/tag/v3.7.2"
     echo "- Upgrade your system to the most recent version"
     echo "- Try to upgrade glibc to at least $requiredlddversion (Search about this as it can break your system)"
     echo "##########################################################"
     exit -1
 fi
 
-if [ -z "$(ldconfig -p | grep libpng)" -o -z "$(ldconfig -p | grep libgdiplus)" -o -z "$(ldconfig -p | grep libgeotiff)" -o -z "$(ldconfig -p | grep libavcodec)" ]; then
-    echo "- Missing dependencies found, installing..."
-    sudo bash -c "$(curl -fsSL $dependencies_url)"
+if testcmd ldconfig; then
+    if [ -z "$(ldconfig -p | grep libpng)" -o -z "$(ldconfig -p | grep libgdiplus)" -o -z "$(ldconfig -p | grep libgeotiff)" ]; then
+        echo "- Missing dependencies found, installing..."
+        sudo bash -c "$(curl -fsSL $dependencies_url)"
+    fi
+else
+    echo "Unable to detect for missing dependencies, ldconfig not found, however installation will continue."
 fi
 
 echo "- Detecting download"

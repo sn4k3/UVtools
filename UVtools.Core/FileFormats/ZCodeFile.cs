@@ -27,11 +27,11 @@ using UVtools.Core.Operations;
 
 namespace UVtools.Core.FileFormats;
 
-[Serializable]
+
 [XmlRoot(ElementName = "Print")]
 public class ZCodePrint
 {
-    [Serializable]
+    
     [XmlRoot(ElementName = "Device")]
     public class ZcodePrintDevice
     {
@@ -52,14 +52,14 @@ public class ZCodePrint
 
     }
 
-    [Serializable]
+    
     [XmlRoot(ElementName = "Profile")]
     public class ZcodePrintProfile
     {
         [XmlAttribute("name")]
         public string Name { get; set; } = "UVtools";
 
-        [Serializable]
+        
         [XmlRoot(ElementName = "Slice")]
         public class ZcodePrintProfileSlice
         {
@@ -106,7 +106,7 @@ public class ZCodePrint
         public ZcodePrintProfileSlice Slice { get; set; } = new();
     }
 
-    [Serializable]
+    
     [XmlRoot(ElementName = "Job")]
     public class ZcodePrintJob
     {

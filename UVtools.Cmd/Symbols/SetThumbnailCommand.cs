@@ -8,10 +8,8 @@
 
 using Emgu.CV;
 using System;
-using System.Collections.Generic;
 using System.CommandLine;
 using System.IO;
-using System.Linq;
 using Emgu.CV.CvEnum;
 
 namespace UVtools.Cmd.Symbols;
@@ -23,7 +21,10 @@ internal static class SetThumbnailCommand
     internal static Command CreateCommand()
     {
         var sourceArgument = new Argument<string>($"file path|layer index|{RandomLayerArg}|{HeatmapArg}", () => HeatmapArg, "Choose from a file, layer index, random layer or generate a heatmap");
-        var thumbnailIndexesOption = new Option<IEnumerable<byte>>("-i", "Select the thumbnail index(es) to set");
+        var thumbnailIndexesOption = new Option<byte[]>(new []{"-i", "--indexes" }, "Prints only the matching thumbnail(s) index(es)")
+        {
+            AllowMultipleArgumentsPerToken = true
+        };
 
         var command = new Command("set-thumbnail", "Sets and replace thumbnail(s) in the file")
         {
@@ -52,7 +53,7 @@ internal static class SetThumbnailCommand
                     CvInvoke.CvtColor(mat, mat, ColorConversion.Gray2Bgr);
                     
 
-                    if (thumbnailIndexes.Any())
+                    if (thumbnailIndexes.Length > 0)
                     {
                         foreach (var thumbnailIndex in thumbnailIndexes)
                         {
@@ -77,7 +78,7 @@ internal static class SetThumbnailCommand
                     using var matRoi = slicerFile[Random.Shared.Next((int) slicerFile.LayerCount)].GetLayerMatBoundingRectangle(50, 100);
                     CvInvoke.CvtColor(matRoi.RoiMat, matRoi.RoiMat, ColorConversion.Gray2Bgr);
 
-                    if (thumbnailIndexes.Any())
+                    if (thumbnailIndexes.Length > 0)
                     {
                         foreach (var thumbnailIndex in thumbnailIndexes)
                         {
@@ -102,7 +103,7 @@ internal static class SetThumbnailCommand
                     using var matRoi = slicerFile[layerIndex].GetLayerMatBoundingRectangle(50, 100);
                     CvInvoke.CvtColor(matRoi.RoiMat, matRoi.RoiMat, ColorConversion.Gray2Bgr);
 
-                    if (thumbnailIndexes.Any())
+                    if (thumbnailIndexes.Length > 0)
                     {
                         foreach (var thumbnailIndex in thumbnailIndexes)
                         {
@@ -122,7 +123,7 @@ internal static class SetThumbnailCommand
                 {
                     var slicerFile = Program.OpenInputFile(inputFile);
 
-                    if (thumbnailIndexes.Any())
+                    if (thumbnailIndexes.Length > 0)
                     {
                         foreach (var thumbnailIndex in thumbnailIndexes)
                         {

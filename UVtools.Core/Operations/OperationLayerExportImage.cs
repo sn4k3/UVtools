@@ -18,7 +18,7 @@ using UVtools.Core.FileFormats;
 
 namespace UVtools.Core.Operations;
 
-[Serializable]
+
 public sealed class OperationLayerExportImage : Operation
 {
     #region Enums

@@ -10,7 +10,7 @@ using System.IO;
 
 namespace UVtools.Core.Objects;
 
-[Serializable]
+
 public class GenericFileRepresentation : BindableBase, ICloneable, 
     IComparable<GenericFileRepresentation>, IEquatable<GenericFileRepresentation>,
     IComparable<string>, IEquatable<string>

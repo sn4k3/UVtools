@@ -14,7 +14,7 @@ using UVtools.Core.FileFormats;
 
 namespace UVtools.Core.Operations;
 
-[Serializable]
+
 public sealed class OperationLayerExportSkeleton : Operation
 {
     #region Members
