@@ -278,12 +278,13 @@ The following commands are the old way and commands under the UI executable, the
 ### Installing the dependencies
 
 **Copy the following script, paste and run on a terminal:**  
-(Required if you didn't use the [auto installer](https://github.com/sn4k3/UVtools#to-auto-install-on-linux))
+(Required if you didn't use the [auto installer](https://github.com/sn4k3/UVtools#to-auto-install-on-linux) or if it failed to detect and install dependencies)
 
 ```bash
 [ "$(command -v apt-get)" -a -z "$(command -v curl)" ] && sudo apt-get install -y curl 
 [ "$(command -v pacman)" -a -z "$(command -v curl)" ] && sudo pacman -S curl
 [ "$(command -v dnf)" -a -z "$(command -v curl)" ] && sudo dnf install -y curl
+[ "$(command -v zypper)" -a -z "$(command -v curl)" ] && sudo zypper install -y curl
 sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/sn4k3/UVtools/master/Scripts/install-dependencies.sh)"
 ```
 <!-- sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/sn4k3/UVtools/master/Scripts/libdl-solver.sh)" !-->
