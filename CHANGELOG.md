@@ -9,7 +9,7 @@
     - (Add) `-i`, `--indexes` option to prints only the matching layer(s) index(es)
   - (Add) Command: `set-properties <input-file> <property=value> Set properties in a file or to it layers with new values`
   - (Add) Command: `print-issues <input-file> Detect and print issues in a file`
-  - (Add) New option to the `run` command: `-p, --property <property=value>  Set a property with a new value (Compatible with operations only)`
+  - (Add) New option to the `run` command: `-p, --property <property=value> Set a property with a new value (Compatible with operations only)`
   - (Remove) Command: `print-layers` as it has been moved to `print-properties`, use `-r :` to obtain same result as default on `print-layers`
 - **Issues:**
   - (Fix) Issues groups with only one issue was displaying the wrong area value
