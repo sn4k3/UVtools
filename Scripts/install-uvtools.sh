@@ -183,6 +183,9 @@ elif testcmd pacman; then
 elif testcmd dnf; then
     osVariant="rhel"
     [ -z "$(command -v curl)" ] && sudo dnf install -y curl
+elif testcmd zypper; then
+    osVariant="suse"
+    [ -z "$(command -v curl)" ] && sudo zypper install -y curl
 fi
 
 if [ -z "$osVariant" ]; then
@@ -211,8 +214,16 @@ if [ $(version $lddversion) -lt $(version $requiredlddversion) ]; then
     exit -1
 fi
 
+
+LDCONFIG=''
 if testcmd ldconfig; then
-    if [ -z "$(ldconfig -p | grep libpng)" -o -z "$(ldconfig -p | grep libgdiplus)" -o -z "$(ldconfig -p | grep libgeotiff)" ]; then
+    LDCONFIG='ldconfig'
+else
+    LDCONFIG="$(whereis ldconfig | awk '{ print $2 }')"
+fi
+
+if [ -n "$LDCONFIG" ]; then
+    if [ -z "$($LDCONFIG -p | grep libgeotiff)" -o -z "$($LDCONFIG -p | grep libgdiplus)" ]; then
         echo "- Missing dependencies found, installing..."
         sudo bash -c "$(curl -fsSL $dependencies_url)"
     fi
