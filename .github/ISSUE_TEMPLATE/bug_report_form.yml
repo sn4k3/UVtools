@@ -10,7 +10,6 @@ body:
     id: system
     attributes:
       label: System
-      description: System information
       placeholder: |
         1. Go to "UVtools -> Help -> About"
         2. Click on "Copy information"
@@ -22,7 +21,7 @@ body:
     id: machine
     attributes:
       label: Printer and Slicer
-      description: Write down your printer machine name and the slicer you use (If applicable)
+      description: Write down your printer machine name and the slicer you use (If applicable).
       placeholder: |
         - Printer: 
         - Slicer: 
@@ -59,7 +58,7 @@ body:
     id: files
     attributes:
       label: Files
-      description: All related files. Zip all files and paste or drop them here. If they are too large please use a file host service and paste the link(s) here
+      description: All related files. Zip all files and paste or drop them here. If they are too large please use a file host service and paste the link(s) here.
       placeholder: |
         - File(s)
         - Links to file(s)
