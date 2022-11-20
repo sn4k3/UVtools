@@ -1,0 +1,6 @@
+contact_links:
+  - name: Discussions and support
+    url: https://github.com/sn4k3/UVtools/discussions
+    about: Questions, suggestions, ideas, scripts, tutorials, show and tell and general talk
+    
+blank_issues_enabled: false
