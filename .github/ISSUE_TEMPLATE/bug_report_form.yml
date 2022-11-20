@@ -21,7 +21,7 @@ body:
     id: machine
     attributes:
       label: Printer and Slicer
-      description: Write down your printer machine name and the slicer you use (If applicable).
+      description: Write down your printer model and the slicer you use (If applicable).
       placeholder: |
         - Printer: 
         - Slicer: 
@@ -49,8 +49,8 @@ body:
       placeholder: |
         Steps to reproduce the behavior:
         1. Go to '...'
-        2. Click on '....'
-        3. Scroll down to '....'
+        2. Click on '...'
+        3. Scroll down to '...'
         4. See error
     validations:
       required: true
@@ -77,4 +77,4 @@ body:
         # Overview before submit
         1. Use descriptive and complete title! 
         2. Review all information and make sure it's clear and complete.
-        3. Note that the information and files posted here will be public
+        3. Note that the information and files posted here will be public.
