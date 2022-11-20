@@ -27,7 +27,7 @@ Before continue, please look/search on closed topics if your case was already be
 ## Describe the bug
 A clear and concise description of what the bug is.
 
-## To Reproduce
+## How to reproduce
 Steps to reproduce the behavior:
 1. Go to '...'
 2. Click on '....'
