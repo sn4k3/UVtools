@@ -58,7 +58,7 @@ body:
     id: files
     attributes:
       label: Files
-      description: "All related files. Zip all files and paste or drop them here. If they are too large please use a file host service and paste the link(s) here, eg: [wetransfer.com](https://wetransfer.com)"
+      description: "Zip all related files and paste or drop them here. If they are too large please use a file host service and paste the link(s) here, eg: [wetransfer.com](https://wetransfer.com)"
       placeholder: |
         - You paste or drop file(s) here
         - You paste or drop link(s) here
