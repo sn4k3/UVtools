@@ -1,0 +1,84 @@
+name: Bug report (Guided Form)
+description: Create a guided bug report to help us improve
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before filing, please check if the issue already exists (either open or closed) by using the search bar on the issues page. If it does, comment there. Even if it's closed, we can reopen it based on your comment.
+  - type: textarea
+    id: system
+    attributes:
+      label: System
+      description: Your system information
+      placeholder: |
+        - OS: [e.g. Windows 11 x64 v22H2]
+        - Slicer: 
+        - Printer: 
+        - UVtools version: 
+      value: |
+        - OS: [e.g. Windows 11 x64 v22H2]
+        - Slicer: 
+        - Printer: 
+        - UVtools version: 
+    validations:
+      required: true
+  - type: textarea
+    id: uvtools-system
+    attributes:
+      label: UVtools System
+      description: UVtools system information
+      placeholder: |
+        1. Go to "UVtools -> Help -> About"
+        2. Click on "Copy information"
+        3. Paste that infomation here
+      render: Text
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: Description of the bug
+      description: A clear and concise description of what the bug is. Please, enclose a screenshot whenever possible (even when you think the description is clear). What did you expect to happen?
+      placeholder: |
+        What is the problem?
+        What did you expect?
+        You paste or drop screenshots here 
+    validations:
+      required: true
+  - type: textarea
+    id: to_reproduce
+    attributes:
+      label: How to reproduce
+      description: Steps to reproduce the behavior
+      placeholder: |
+        Steps to reproduce the behavior:
+        1. Go to '...'
+        2. Click on '....'
+        3. Scroll down to '....'
+        4. See error
+    validations:
+      required: true
+  - type: textarea
+    id: files
+    attributes:
+      label: Files
+      description: All related files. Zip all files and paste or drop them here. If they are too large please use a file host service and paste the link(s) here
+      placeholder: |
+        - File(s)
+        - Links to file(s)
+    validations:
+      required: false
+  - type: textarea
+    id: additional_context
+    attributes:
+      label: Additional context
+      description: Add any other context about the problem or present a solution here.
+    validations:
+      required: false
+  - type: markdown
+    attributes:
+      value: |
+        # Overview before submit
+        1. Use descriptive and complete title! 
+        2. Review all information and make sure it's clear and complete.
+        3. Note that the information and files posted here will be public
