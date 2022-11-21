@@ -1,59 +1,35 @@
-name: Bug report
-description: Create a bug report to help us improve this project
-title: "[Bug] "
+name: Feature request
+description: Suggest an idea for this project
+title: "[FEATURE REQUEST] "
+labels: ["enhancement"]
 assignees:
   - sn4k3
 body:
   - type: markdown
     attributes:
       value: |
-        Before filing, please check if the issue already exists (either open or closed) by using the search bar on the issues page. If it does, comment there. Even if it's closed, we can reopen it based on your comment.
+        Before filing, please check if the feature request already exists (either open or closed) by using the search bar on the issues page. If it does, comment there. Even if it's closed, we can reopen it based on your comment.
+        Also look at: https://github.com/sn4k3/UVtools/discussions/categories/ideas
   - type: textarea
-    id: system
+    id: problem
     attributes:
-      label: System
+      label: Is your feature request related to a problem?
+      description: A clear and concise description of what the problem is. Please, enclose a screenshot whenever possible (even when you think the description is clear).
       placeholder: |
-        1. Go to "UVtools -> Help -> About"
-        2. Click on "Copy information"
-        3. Paste that infomation here
-      render: Text
-    validations:
-      required: true
-  - type: textarea
-    id: machine
-    attributes:
-      label: Printer and Slicer
-      description: Write down your printer model and the slicer you use (If applicable).
-      placeholder: |
-        - Printer: 
-        - Slicer: 
-      value: |
-        - Printer: 
-        - Slicer: 
+        What is the problem? (If related to a issue or pull request paste the link here)
+        What did you expect to happen?
+        You paste or drop screenshots here
     validations:
       required: false
   - type: textarea
-    id: bug_description
+    id: solution
     attributes:
-      label: Description of the bug
-      description: A clear and concise description of what the bug is. Please, enclose a screenshot whenever possible (even when you think the description is clear). What did you expect to happen?
+      label: Describe the solution you'd like
+      description: A clear and concise description of what you want to happen. Please, enclose a screenshot whenever possible (even when you think the description is clear).
       placeholder: |
-        What is the problem?
-        What did you expect?
+        What you want to happen?
+        Alternatives you've considered?
         You paste or drop screenshots here
-    validations:
-      required: true
-  - type: textarea
-    id: to_reproduce
-    attributes:
-      label: How to reproduce
-      description: Steps to reproduce the behavior
-      placeholder: |
-        Steps to reproduce the behavior:
-        1. Go to '...'
-        2. Click on '...'
-        3. Scroll down to '...'
-        4. See error
     validations:
       required: true
   - type: textarea
