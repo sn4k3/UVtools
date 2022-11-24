@@ -120,57 +120,56 @@ if [ "${OSTYPE:0:6}" == "darwin" ]; then
         # Remove quarantine security from files
         find "$appPath" -print0 | xargs -0 xattr -d com.apple.quarantine &> /dev/null
 
-        # Force codesign 
+        # Force codesign to allow the app to run directly
         codesign --force --deep -s - "$appPath"
 
         echo ''
         echo 'Installation was successful. UVtools will now run.'
-
-        # arm64: Create script on user desktop to run UVtools
-        if [ "$arch" == "arm64" ]; then
-            run_script="$HOME/Desktop/run-uvtools"
-
-            echo '#!/bin/bash
-# Run this script to run UVtools on macOS arm64 machines
-cd "$(dirname "$0")"
-
-lookupPaths=(
-    "/Applications/UVtools.app/Contents/MacOS/UVtools.sh"
-    "UVtools.app/Contents/MacOS/UVtools.sh"
-    "$HOME/Desktop/UVtools.app/Contents/MacOS/UVtools.sh"
-    "$HOME/Downloads/UVtools.app/Contents/MacOS/UVtools.sh"
-    "$HOME/UVtools.app/Contents/MacOS/UVtools.sh"
-)
-
-for path in "${lookupPaths[@]}"
-do
-    if [ -f "$path" ]; then
-        echo "Found: $path"
-        echo "UVtools will now run."
-
-        nohup bash "$path" &> /dev/null &
-        disown
-        
-        echo "You can close this terminal window."
-        exit
-    fi
-done
-
-echo "Error: UVtools.app not found on known paths"
-' > "$run_script"
-
-            chmod 775 "$run_script"
-            echo 'Note: Always run "bash run-uvtools" from your Desktop to launch UVtools on this Mac (arm64)!'
-        fi
-
         echo ''
 
-        if [ "$arch" == "arm64" -a -f "$appPath/Contents/MacOS/UVtools.sh" ]; then
-            nohup bash "$appPath/Contents/MacOS/UVtools.sh" &> /dev/null &
-            disown
-        elif [ -d "$appPath" ]; then
-            open -n "$appPath"
-        fi
+        # arm64: Create script on user desktop to run UVtools
+#        if [ "$arch" == "arm64" ]; then
+#            run_script="$HOME/Desktop/run-uvtools"
+#
+#            echo '#!/bin/bash
+## Run this script to run UVtools on macOS arm64 machines
+#cd "$(dirname "$0")"
+#
+#lookupPaths=(
+#    "/Applications/UVtools.app/Contents/MacOS/UVtools.sh"
+#    "UVtools.app/Contents/MacOS/UVtools.sh"
+#    "$HOME/Desktop/UVtools.app/Contents/MacOS/UVtools.sh"
+#    "$HOME/Downloads/UVtools.app/Contents/MacOS/UVtools.sh"
+#    "$HOME/UVtools.app/Contents/MacOS/UVtools.sh"
+#)
+#
+#for path in "${lookupPaths[@]}"
+#do
+#    if [ -f "$path" ]; then
+#        echo "Found: $path"
+#        echo "UVtools will now run."
+#
+#        nohup bash "$path" &> /dev/null &
+#        disown
+#        
+#        echo "You can close this terminal window."
+#        exit
+#    fi
+#done
+#
+#echo "Error: UVtools.app not found on known paths"
+#' > "$run_script"
+#
+#            chmod 775 "$run_script"
+#            echo 'Note: Always run "bash run-uvtools" from your Desktop to launch UVtools on this Mac (arm64)!'
+#        fi
+#
+
+        #if [ "$arch" == "arm64" -a -f "$appPath/Contents/MacOS/UVtools.sh" ]; then
+        #    nohup bash "$appPath/Contents/MacOS/UVtools.sh" &> /dev/null &
+        #    disown
+        #else
+        open -n "$appPath"
     else
         echo "Installation unsuccessful, unable to create '$appPath'."
         exit -1
