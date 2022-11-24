@@ -120,6 +120,9 @@ if [ "${OSTYPE:0:6}" == "darwin" ]; then
         # Remove quarantine security from files
         find "$appPath" -print0 | xargs -0 xattr -d com.apple.quarantine &> /dev/null
 
+        # Force codesign 
+        codesign --force --deep -s - "$appPath"
+
         echo ''
         echo 'Installation was successful. UVtools will now run.'
 
