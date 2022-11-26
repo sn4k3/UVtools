@@ -80,19 +80,28 @@ if [ "${OSTYPE:0:6}" == "darwin" ]; then
         exit -1
     fi
 
-    # Required dotnet-sdk to run arm64 and bypass codesign
-    if [ "$arch" == "arm64" -a -z "$(command -v dotnet)" ]; then
-        if ! testcmd brew; then
-            bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-            if [ -f "/opt/homebrew/bin/brew" -a -z "$(command -v brew)" ]; then
-                echo '# Set PATH, MANPATH, etc., for Homebrew.' >> "$HOME/.zprofile"
-                echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> "$HOME/.zprofile"
-                eval "$(/opt/homebrew/bin/brew shellenv)"
-            fi
+    if ! testcmd codesign && ! testcmd brew; then
+        bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+        if [ -f "/opt/homebrew/bin/brew" -a -z "$(command -v brew)" ]; then
+            echo '# Set PATH, MANPATH, etc., for Homebrew.' >> "$HOME/.zprofile"
+            echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> "$HOME/.zprofile"
+            eval "$(/opt/homebrew/bin/brew shellenv)"
         fi
-
-        brew install --cask dotnet-sdk
     fi
+
+    # Required dotnet-sdk to run arm64 and bypass codesign
+    #if [ "$arch" == "arm64" -a -z "$(command -v dotnet)" ]; then
+    #    if ! testcmd brew; then
+    #        bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    #        if [ -f "/opt/homebrew/bin/brew" -a -z "$(command -v brew)" ]; then
+    #            echo '# Set PATH, MANPATH, etc., for Homebrew.' >> "$HOME/.zprofile"
+    #            echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> "$HOME/.zprofile"
+    #            eval "$(/opt/homebrew/bin/brew shellenv)"
+    #        fi
+    #    fi
+    #
+    #    brew install --cask dotnet-sdk
+    #fi
 
     echo "- Detecting download"
 
@@ -121,54 +130,12 @@ if [ "${OSTYPE:0:6}" == "darwin" ]; then
         find "$appPath" -print0 | xargs -0 xattr -d com.apple.quarantine &> /dev/null
 
         # Force codesign to allow the app to run directly
-        codesign --force --deep -s - "$appPath"
+        codesign --force --deep --sign - "$appPath"
 
         echo ''
         echo 'Installation was successful. UVtools will now run.'
         echo ''
 
-        # arm64: Create script on user desktop to run UVtools
-#        if [ "$arch" == "arm64" ]; then
-#            run_script="$HOME/Desktop/run-uvtools"
-#
-#            echo '#!/bin/bash
-## Run this script to run UVtools on macOS arm64 machines
-#cd "$(dirname "$0")"
-#
-#lookupPaths=(
-#    "/Applications/UVtools.app/Contents/MacOS/UVtools.sh"
-#    "UVtools.app/Contents/MacOS/UVtools.sh"
-#    "$HOME/Desktop/UVtools.app/Contents/MacOS/UVtools.sh"
-#    "$HOME/Downloads/UVtools.app/Contents/MacOS/UVtools.sh"
-#    "$HOME/UVtools.app/Contents/MacOS/UVtools.sh"
-#)
-#
-#for path in "${lookupPaths[@]}"
-#do
-#    if [ -f "$path" ]; then
-#        echo "Found: $path"
-#        echo "UVtools will now run."
-#
-#        nohup bash "$path" &> /dev/null &
-#        disown
-#        
-#        echo "You can close this terminal window."
-#        exit
-#    fi
-#done
-#
-#echo "Error: UVtools.app not found on known paths"
-#' > "$run_script"
-#
-#            chmod 775 "$run_script"
-#            echo 'Note: Always run "bash run-uvtools" from your Desktop to launch UVtools on this Mac (arm64)!'
-#        fi
-#
-
-        #if [ "$arch" == "arm64" -a -f "$appPath/Contents/MacOS/UVtools.sh" ]; then
-        #    nohup bash "$appPath/Contents/MacOS/UVtools.sh" &> /dev/null &
-        #    disown
-        #else
         open -n "$appPath"
     else
         echo "Installation unsuccessful, unable to create '$appPath'."
@@ -178,16 +145,16 @@ if [ "${OSTYPE:0:6}" == "darwin" ]; then
     exit 1
 elif testcmd apt-get; then
     osVariant="linux"
-    [ -z "$(command -v curl)" ] && sudo apt-get install -y curl
+    ! testcmd curl && sudo apt-get install -y curl
 elif testcmd pacman; then
     osVariant="arch"
-    [ -z "$(command -v curl)" ] && sudo pacman -S curl
+    ! testcmd curl && sudo pacman -S curl
 elif testcmd dnf; then
     osVariant="rhel"
-    [ -z "$(command -v curl)" ] && sudo dnf install -y curl
+    ! testcmd curl && sudo dnf install -y curl
 elif testcmd zypper; then
     osVariant="suse"
-    [ -z "$(command -v curl)" ] && sudo zypper install -y curl
+    ! testcmd curl && sudo zypper install -y curl
 fi
 
 if [ -z "$osVariant" ]; then
