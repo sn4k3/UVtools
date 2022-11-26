@@ -67,8 +67,8 @@ echo ' | | | |\ \ / /| __/ _ \ / _ \| / __|'
 echo ' | |_| | \ V / | || (_) | (_) | \__ \'
 echo '  \___/   \_/   \__\___/ \___/|_|___/'
 echo '  Auto download and installer script '
-
-echo "- Detecting OS"
+echo ''
+echo '- Detecting OS'
 
 if [ "${OSTYPE:0:6}" == "darwin" ]; then
     osVariant="osx"
