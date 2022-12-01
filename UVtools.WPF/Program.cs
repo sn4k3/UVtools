@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Globalization;
+using System.Text;
 using System.Threading.Tasks;
 using Avalonia;
 using Projektanker.Icons.Avalonia;
 using Projektanker.Icons.Avalonia.FontAwesome;
 using Projektanker.Icons.Avalonia.MaterialDesign;
+using UVtools.Core;
 using UVtools.Core.SystemOS;
 
 namespace UVtools.WPF;
@@ -40,9 +42,8 @@ public static class Program
     [STAThread]
     public static void Main(string[] args)
     {
-        CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
-        CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
-
+        CultureInfo.DefaultThreadCurrentUICulture =
+        CultureInfo.DefaultThreadCurrentCulture = CoreSettings.OptimalCultureInfo;
         ProgramStartupTime = Stopwatch.StartNew();
         Args = args;
         try
@@ -66,7 +67,8 @@ public static class Program
                     IsCrashReport = true;
                     break;
             }
-        } 
+        }
+
 
         /*using var mat = CvInvoke.Imread(@"D:\layer0.png", ImreadModes.Grayscale);
         var contours = mat.FindContours(out var hierarchy, RetrType.Tree, ChainApproxMethod.ChainApproxTc89Kcos);

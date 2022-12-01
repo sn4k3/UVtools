@@ -1074,6 +1074,12 @@ public static class EmguExtensions
     /// <param name="lineType"></param>
     public static void DrawRotatedRectangle(this Mat src, Size size, Point center, MCvScalar color, int angle = 0, int thickness = -1, LineType lineType = LineType.EightConnected)
     {
+        if (angle == 0)
+        {
+            src.DrawCenteredRectangle(size, center, color, thickness, lineType);
+            return;
+        }
+
         var rect = new RotatedRect(center, size, angle);
         var vertices = rect.GetVertices();
         var points = new Point[vertices.Length];
@@ -1098,6 +1104,32 @@ public static class EmguExtensions
     }
 
     /// <summary>
+    /// Draw a square around a center point
+    /// </summary>
+    /// <param name="src"></param>
+    /// <param name="size"></param>
+    /// <param name="center"></param>
+    /// <param name="color"></param>
+    /// <param name="thickness"></param>
+    /// <param name="lineType"></param>
+    public static void DrawCenteredSquare(this Mat src, int size, Point center, MCvScalar color, int thickness = -1, LineType lineType = LineType.EightConnected)
+        => src.DrawCenteredRectangle(new Size(size, size), center, color, thickness, lineType);
+
+    /// <summary>
+    /// Draw a rectangle around a center point
+    /// </summary>
+    /// <param name="src"></param>
+    /// <param name="size"></param>
+    /// <param name="center"></param>
+    /// <param name="color"></param>
+    /// <param name="thickness"></param>
+    /// <param name="lineType"></param>
+    public static void DrawCenteredRectangle(this Mat src, Size size, Point center, MCvScalar color, int thickness = -1, LineType lineType = LineType.EightConnected)
+    {
+        CvInvoke.Rectangle(src, new Rectangle(center.OffsetBy(size.Width / -2, size.Height / -2), size), color, thickness, lineType);
+    }
+
+    /// <summary>
     /// Draw a polygon given number of sides and length
     /// </summary>
     /// <param name="src"></param>
@@ -1113,8 +1145,8 @@ public static class EmguExtensions
     {
         if (sides == 1)
         {
-            var point1 = new Point(center.X - radius, center.Y);
-            var point2 = new Point(center.X + radius, center.Y);
+            var point1 = center with {X = center.X - radius};
+            var point2 = center with {X = center.X + radius};
             point1 = point1.Rotate(startingAngle, center);
             point2 = point2.Rotate(startingAngle, center);
 

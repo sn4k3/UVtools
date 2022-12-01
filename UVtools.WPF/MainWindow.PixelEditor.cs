@@ -9,7 +9,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
@@ -22,7 +21,6 @@ using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
 using MessageBox.Avalonia.Enums;
 using SkiaSharp;
-using UVtools.Core;
 using UVtools.Core.Extensions;
 using UVtools.Core.Layers;
 using UVtools.Core.PixelEditor;

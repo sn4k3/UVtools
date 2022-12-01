@@ -9,7 +9,6 @@
 using System.Drawing;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
-using Emgu.CV.Structure;
 
 namespace UVtools.Core.Gerber.Primitives;
 
@@ -31,9 +30,9 @@ public abstract class Primitive
         Document = document;
     }
 
-    public abstract void DrawFlashD3(Mat mat, PointF at, MCvScalar color, LineType lineType = LineType.EightConnected);
+    public abstract void DrawFlashD3(Mat mat, PointF at, LineType lineType = LineType.EightConnected);
 
-    public abstract void ParseExpressions(GerberDocument document, params string[] args);
+    public abstract void ParseExpressions(params string[] args);
 
     public virtual Primitive Clone() => (Primitive)MemberwiseClone();
 }

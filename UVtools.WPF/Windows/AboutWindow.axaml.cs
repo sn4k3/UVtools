@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Text.RegularExpressions;
 using Avalonia;
 using Avalonia.Markup.Xaml;
 using Emgu.CV;
 using UVtools.Core;
+using UVtools.Core.Extensions;
 using UVtools.Core.SystemOS;
 using UVtools.WPF.Controls;
 
@@ -36,10 +36,11 @@ public class AboutWindow : WindowEx
         {
             var sb = new StringBuilder();
             var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+            var assembliesLengthPad = assemblies.Length.DigitCount();
             for (var i = 0; i < assemblies.Length; i++)
             {
                 var assembly = assemblies[i].GetName();
-                sb.AppendLine($"{(i + 1).ToString().PadLeft(assemblies.Length.ToString().Length, '0')}: {assembly.Name}, Version={assembly.Version}");
+                sb.AppendLine($"{(i + 1).ToString().PadLeft(assembliesLengthPad, '0')}: {assembly.Name}, Version={assembly.Version}");
             }
 
             return sb.ToString();
@@ -60,11 +61,6 @@ public class AboutWindow : WindowEx
             try
             {
                 return typeof(Mat).Assembly.GetName().Version!.ToString(3);
-                /*var match = Regex.Match(CvInvoke.BuildInformation, @"(?:Version control:\s*)(\S*)");
-                if (!match.Success) return "Not found!";
-                var index = match.Groups[1].Value.LastIndexOf('-');
-                if (index < 0) return match.Groups[1].Value;
-                return match.Groups[1].Value[..index];*/
             }
             catch 
             {
@@ -109,13 +105,13 @@ public class AboutWindow : WindowEx
                 // ReSharper disable once ConditionIsAlwaysTrueOrFalse
                 var onScreen = Screens.ScreenFromVisual(App.MainWindow is not null ? App.MainWindow : this);
                 var screen = Screens.All[i];
-                result.AppendLine($"{i+1}: {screen.Bounds.Width} x {screen.Bounds.Height} @ {screen.PixelDensity * 100}%" + 
-                                  (screen.Primary ? " (Primary)" : string.Empty) +
-                                  (onScreen == screen ? " (On this)" : string.Empty)                        
+                result.AppendLine($"{i+1}: {screen.Bounds.Width} x {screen.Bounds.Height} @ {Math.Round(screen.PixelDensity * 100, 2)}%" + 
+                                  (screen.Primary ? " (Primary)" : null) +
+                                  (onScreen == screen ? " (On this)" : null)
                 );
                 result.AppendLine($"    WA: {screen.WorkingArea.Width} x {screen.WorkingArea.Height}    UA: {Math.Round(screen.WorkingArea.Width / screen.PixelDensity)} x {Math.Round(screen.WorkingArea.Height / screen.PixelDensity)}");
             }
-            return result.ToString().TrimEnd();
+            return result.ToString();
         }
     }
 
@@ -130,8 +126,6 @@ public class AboutWindow : WindowEx
     {
         AvaloniaXamlLoader.Load(this);
     }
-
-    public void OpenLicense() => SystemAware.OpenBrowser(About.LicenseUrl);
 
     public static string GetEssentialInformationStatic()
     {

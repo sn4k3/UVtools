@@ -216,9 +216,8 @@
 					<Separator/>
 
 					<MenuItem Header="_Report a issue"
-							  Command="{Binding OpenWebsite}"
-							  CommandParameter="https://github.com/sn4k3/UVtools/issues/new?assignees=sn4k3&amp;labels=&amp;template=bug_report.md&amp;title=%5BBUG%5D+"
-							  i:MenuItem.Icon="fa-solid fa-bug"/>
+							  Command="{Binding MenuHelpReportIssueClicked}"
+                              i:MenuItem.Icon="fa-solid fa-bug"/>
 
 					<MenuItem Header="Ask a _question"
 							  Command="{Binding OpenWebsite}"
@@ -339,7 +338,7 @@
 
 
 					<TextBlock IsVisible="{Binding SlicerFile.MaterialCost}" Text="  |  "/>
-					<TextBlock IsVisible="{Binding SlicerFile.MaterialCost}" Text="{Binding SlicerFile.MaterialCost, StringFormat=Material cost: {0}€}"/>
+					<TextBlock IsVisible="{Binding SlicerFile.MaterialCost}" Text="{Binding SlicerFile.MaterialCost, StringFormat=Material cost: {0:C}}"/>
 
 
 					<TextBlock IsVisible="{Binding SlicerFile.MaterialName, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
@@ -862,18 +861,17 @@
 
 						</StackPanel>
 
-						<DataGrid
-								  Name="IssuesGrid"
-								  Grid.Row="1"
-								  CanUserReorderColumns="True"
-								  CanUserResizeColumns="True"
-								  CanUserSortColumns="True"
-								  GridLinesVisibility="Horizontal"
-								  SelectionMode="Extended"
-								  SelectedIndex="{Binding IssueSelectedIndex, Mode=TwoWay}"
-								  IsReadOnly="True"
-								  ClipboardCopyMode="None"
-								  Items="{Binding IssuesGridItems}">
+						<DataGrid Name="IssuesGrid"
+                                  Grid.Row="1"
+                                  CanUserReorderColumns="True"
+                                  CanUserResizeColumns="True"
+                                  CanUserSortColumns="True"
+                                  GridLinesVisibility="Horizontal"
+                                  SelectionMode="Extended"
+                                  SelectedIndex="{Binding IssueSelectedIndex, Mode=TwoWay}"
+                                  IsReadOnly="True"
+                                  ClipboardCopyMode="None"
+                                  Items="{Binding IssuesGridItems}">
                             <DataGrid.ContextMenu>
                                 <ContextMenu IsVisible="{Binding #IssuesGrid.SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}">
 									<MenuItem i:MenuItem.Icon="fa-solid fa-eye-slash" Command="{Binding OnClickIssueIgnore}" Header="Ignore issue(s)"/>
@@ -892,6 +890,7 @@
 													 Width="Auto" />
 								<DataGridTextColumn Header="Layer(s)"
 												  Binding="{Binding LayerInfoStr}"
+												  SortMemberPath="StartLayerIndex"
 												  Width="Auto" />
 								<DataGridTextColumn Header="Area"
 												  Binding="{Binding Area, StringFormat={}{0:N0}}"
@@ -1107,8 +1106,8 @@
 										  Grid.Column="2"
 										  Grid.ColumnSpan="3"
 										  Width="180"
-										  Items="{Binding DrawingPixelDrawing.BrushShapeTypes}"
-										  SelectedItem="{Binding DrawingPixelDrawing.BrushShape}"/>
+                                          Items="{Binding DrawingPixelDrawing.BrushShape, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                                          SelectedItem="{Binding DrawingPixelDrawing.BrushShape, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
 
 										<TextBlock Grid.Row="4" Grid.Column="0"
 												   VerticalAlignment="Center"

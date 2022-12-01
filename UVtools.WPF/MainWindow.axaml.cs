@@ -20,8 +20,8 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
-using System.Threading;
 using System.Threading.Tasks;
+using System.Web;
 using UVtools.AvaloniaControls;
 using UVtools.Core;
 using UVtools.Core.Extensions;
@@ -392,7 +392,7 @@ public partial class MainWindow : WindowEx
             {
                 foreach (var remotePrinter in Settings.Network.RemotePrinters)
                 {
-                    if(!remotePrinter.IsEnabled || !remotePrinter.IsValid) continue;
+                    if(!remotePrinter.IsEnabled || !remotePrinter.IsValid || (!remotePrinter.RequestUploadFile.IsValid && !remotePrinter.RequestPrintFile.IsValid)) continue;
 
                     if (!string.IsNullOrWhiteSpace(remotePrinter.CompatibleExtensions))
                     {
@@ -508,67 +508,59 @@ public partial class MainWindow : WindowEx
             }
         }
 
-        ShowProgressWindow($"Sending: {SlicerFile.Filename} to {path}");
-        Progress.ItemName = "Sending";
-
-
         if (menuItem.Tag is RemotePrinter remotePrinter)
         {
             var startPrint = (_globalModifiers & KeyModifiers.Shift) != 0 && remotePrinter.RequestPrintFile is not null && remotePrinter.RequestPrintFile.IsValid;
+            if (!startPrint && !remotePrinter.RequestUploadFile.IsValid) return;
             if (startPrint)
             {
-                if (await this.MessageBoxQuestion(
-                        "If supported, you are about to send the file and start the print with it.\n" +
-                        "Keep in mind there is no guarantee that the file will start to print.\n" +
-                        "Are you sure you want to continue?\n\n" +
-                        "Yes: Send file and print it.\n" +
-                        "No: Cancel file sending and print.", "Send and print the file?") != ButtonResult.Yes) return;
+                if (!remotePrinter.RequestUploadFile.IsValid)
+                {
+                    if (await this.MessageBoxQuestion(
+                            $"If supported, you are about to start the print with the filename: {SlicerFile.Filename}\n" +
+                            "This file will not upload, so, it will print the file already present in printer disk.\n" +
+                            "Keep in mind there is no guarantee that the file will start to print.\n" +
+                            "Are you sure you want to continue?\n\n" +
+                            "Yes: Print this file name.\n" +
+                            "No: Cancel file print.", "Print the filename?") != ButtonResult.Yes) return;
+                }
+                else
+                {
+                    if (await this.MessageBoxQuestion(
+                            "If supported, you are about to send the file and start the print with it.\n" +
+                            "Keep in mind there is no guarantee that the file will start to print.\n" +
+                            "Are you sure you want to continue?\n\n" +
+                            "Yes: Send file and print it.\n" +
+                            "No: Cancel file sending and print.", "Send and print the file?") != ButtonResult.Yes) return;
+                }
+                
             }
+
+            ShowProgressWindow($"Sending: {SlicerFile.Filename} to {path}");
+            Progress.ItemName = "Sending";
 
             HttpResponseMessage response = null;
-            try
+            if(remotePrinter.RequestUploadFile.IsValid)
             {
-                await using var stream = File.OpenRead(SlicerFile.FileFullPath);
-                using var httpContent = new StreamContent(stream);
-
-
-                Progress.ItemCount = (uint)(stream.Length / 1000000);
-                bool isCopying = true;
                 try
                 {
-                    var task = new Task(() =>
+                    response = await remotePrinter.RequestUploadFile.SendRequest(remotePrinter, Progress, SlicerFile.Filename, SlicerFile.FileFullPath);
+                    if (!response.IsSuccessStatusCode)
                     {
-                        while (isCopying)
-                        {
-                            Progress.ProcessedItems = (uint)(stream.Position / 1000000);
-                            Thread.Sleep(200);
-                        }
-                    });
+                        await this.MessageBoxError(response.ToString(), "Send to printer");
+                    }
                 }
-                catch (Exception)
+                catch (OperationCanceledException) { }
+                catch (Exception ex)
                 {
-                    // ignored
+                    await this.MessageBoxError(ex.Message, "Send to printer");
                 }
-
-                response = await remotePrinter.RequestUploadFile.SendRequest(remotePrinter, Progress, SlicerFile.Filename, httpContent);
-                isCopying = false;
-                if (!response.IsSuccessStatusCode)
-                {
-                    await this.MessageBoxError(response.ToString(), "Send to printer");
-                }
-            }
-            catch (OperationCanceledException) { }
-            catch (Exception ex)
-            {
-                await this.MessageBoxError(ex.Message, "Send to printer");
             }
                 
 
-            if (
-                response is not null && response.IsSuccessStatusCode && 
-                startPrint)
+            if (startPrint && (!remotePrinter.RequestUploadFile.IsValid || (response is not null && response.IsSuccessStatusCode)))
             {
-                response.Dispose();
+                response?.Dispose();
                 Progress.Title = "Waiting 2 seconds...";
                 await Task.Delay(2000);
                 try
@@ -578,6 +570,7 @@ public partial class MainWindow : WindowEx
                     {
                         await this.MessageBoxError(response.ToString(), "Unable to send the print command");
                     }
+                    response.Dispose();
                     /*else
                     {
                         await this.MessageBoxInfo(response.ToString(), "Print send command report");
@@ -592,6 +585,7 @@ public partial class MainWindow : WindowEx
         }
         else if (menuItem.Tag is MappedProcess process)
         {
+            ShowProgressWindow($"Sending: {SlicerFile.Filename} to {path}");
             Progress.ItemName = "Waiting for completion";
             try
             {
@@ -606,51 +600,8 @@ public partial class MainWindow : WindowEx
         }
         else
         {
-            /*var copyResult = await Task.Factory.StartNew(() =>
-            {
-                try
-                {
-                    var fileDest = Path.Combine(path, SlicerFile.Filename);
-                    //File.Copy(SlicerFile.FileFullPath, $"{Path.Combine(path, SlicerFile.Filename)}", true);
-                    var buffer = new byte[1024 * 1024]; // 1MB buffer
-
-                    using var source = File.OpenRead(SlicerFile.FileFullPath);
-                    using var dest = new FileStream(fileDest, FileMode.Create, FileAccess.Write);
-                    //long totalBytes = 0;
-                    //int currentBlockSize;
-
-                    Progress.Reset("Megabyte(s)", (uint)(source.Length / 1000000));
-                    var copyProgress = new Progress<long>(copiedBytes => Progress.ProcessedItems = (uint)(copiedBytes / 1000000));
-                    source.CopyToAsync(dest, 0, copyProgress, Progress.Token).ConfigureAwait(false);
-
-                    /*while ((currentBlockSize = source.Read(buffer)) > 0)
-                    {
-                        totalBytes += currentBlockSize;
-
-                        dest.Write(buffer, 0, currentBlockSize);
-
-                        if (Progress.Token.IsCancellationRequested)
-                        {
-                            // Delete dest file here
-                            dest.Dispose();
-                            File.Delete(fileDest);
-                            return false;
-                        }
-
-                        Progress.ProcessedItems = (uint)(totalBytes / 1000000);
-                    }*/
-
-            /*    return true;
-            }
-            catch (OperationCanceledException) { }
-            catch (Exception exception)
-            {
-                Dispatcher.UIThread.InvokeAsync(async () =>
-                    await this.MessageBoxError(exception.ToString(), "Unable to copy the file"));
-            }
-
-            return false;
-        });*/
+            ShowProgressWindow($"Sending: {SlicerFile.Filename} to {path}");
+            Progress.ItemName = "Sending";
 
             bool copyResult = false;
             var fileDest = Path.Combine(path, SlicerFile.Filename);
@@ -659,8 +610,8 @@ public partial class MainWindow : WindowEx
                 await using var source = File.OpenRead(SlicerFile.FileFullPath);
                 await using var dest = new FileStream(fileDest, FileMode.Create, FileAccess.Write);
 
-                Progress.Reset("Megabyte(s)", (uint)(source.Length / 1000000));
-                var copyProgress = new Progress<long>(copiedBytes => Progress.ProcessedItems = (uint)(copiedBytes / 1000000));
+                Progress.Reset("Megabyte(s)", (uint)(source.Length / 1048576));
+                var copyProgress = new Progress<long>(copiedBytes => Progress.ProcessedItems = (uint)(copiedBytes / 1048576));
                 await source.CopyToAsync(dest, copyProgress, Progress.Token);
 
                 copyResult = true;
@@ -688,6 +639,7 @@ public partial class MainWindow : WindowEx
                         $"File '{SlicerFile.Filename}' has copied successfully into {removableDrive.Name}\n" +
                         $"Do you want to eject the {removableDrive.Name} drive now?", "Copied ok, eject the drive?") == ButtonResult.Yes)
                 {
+
                     Progress.ResetAll($"Ejecting {removableDrive.Name}");
                     var ejectResult = await Task.Factory.StartNew(() =>
                     {
@@ -1147,7 +1099,23 @@ public partial class MainWindow : WindowEx
         SystemAware.StartProcess(UserSettings.SettingsFolder);
     }
 
-    private async void MenuHelpMaterialManagerClicked()
+    public void MenuHelpReportIssueClicked()
+    {
+        var system = string.Empty;
+
+        try
+        {
+            system = AboutWindow.GetEssentialInformationStatic();
+        }
+        catch
+        {
+            // ignored
+        }
+
+        SystemAware.OpenBrowser($"https://github.com/sn4k3/UVtools/issues/new?template=bug_report_form.yml&title=%5BBug%5D+&system={HttpUtility.UrlEncode(system)}");
+    }
+    
+    public async void MenuHelpMaterialManagerClicked()
     {
         await new MaterialManagerWindow().ShowDialog(this);
     }

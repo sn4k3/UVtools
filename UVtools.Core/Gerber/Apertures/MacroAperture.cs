@@ -34,7 +34,7 @@ public class MacroAperture : Aperture
         foreach (var primitive in Macro)
         {
             //if(primitive.Name == "Comment") continue;
-            primitive.DrawFlashD3(mat, at, color, lineType);
+            primitive.DrawFlashD3(mat, at, lineType);
         }
     }
 }

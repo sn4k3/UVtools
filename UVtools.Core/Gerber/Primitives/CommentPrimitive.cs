@@ -9,7 +9,6 @@
 using System.Drawing;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
-using Emgu.CV.Structure;
 
 namespace UVtools.Core.Gerber.Primitives;
 
@@ -23,6 +22,7 @@ public class CommentPrimitive : Primitive
     #region Constants
     public const byte Code = 0;
     #endregion
+
     #region Properties
     public override string Name => "Comment";
 
@@ -45,12 +45,12 @@ public class CommentPrimitive : Primitive
     }
 
     
-    public override void DrawFlashD3(Mat mat, PointF at, MCvScalar color, LineType lineType = LineType.EightConnected)
+    public override void DrawFlashD3(Mat mat, PointF at, LineType lineType = LineType.EightConnected)
     {
 
     }
 
-    public override void ParseExpressions(GerberDocument document, params string[] args)
+    public override void ParseExpressions(params string[] args)
     {
     }
 }

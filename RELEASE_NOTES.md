@@ -1,19 +1,33 @@
-- **UVtoolsCmd:**
-  - **print-properties:**
-    - (Change) `-b`, `--base` option to `-a`, `-all` to indicate all properties and sub-properties, now defaults to only show base properties
-    - (Add) `-r`, `--range` option to prints only the matching layer(s) index(es) in a range
-    - (Add) `-i`, `--indexes` option to prints only the matching layer(s) index(es)
-  - (Add) Command: `set-properties <input-file> <property=value> Set properties in a file or to it layers with new values`
-  - (Add) Command: `print-issues <input-file> Detect and print issues in a file`
-  - (Add) New option to the `run` command: `-p, --property <property=value>  Set a property with a new value (Compatible with operations only)`
-  - (Remove) Command: `print-layers` as it has been moved to `print-properties`, use `-r :` to obtain same result as default on `print-layers`
-- **Issues:**
-  - (Fix) Issues groups with only one issue was displaying the wrong area value
-  - (Fix) Volume incorrectly calculated, resulting in a high value for group of issues
-  - (Fix) Incorrect calculation of the bounding rectangle for a group of issues
-- **Repair layers:**
-  - (Add) Switch to opt between "Re-detect the selected issues before repair" and "Use and repair the previous detected issues" (Default)
-  - (Improvement) Do not allow to run the tool if there are no detected issues when the option "Use and repair the previous detected issues" is selected
-- (Improvement) Linux: Recompile libcvextern.so on a older system to be able to run on both older and newest system (#603)
-- (Upgrade) .NET from 6.0.10 to 6.0.11
+- **File formats:**
+  - (Add) File extension: .gktwo.ctb to `ChituboxFile` to be able to convert files for UniFormation GKtwo under special CTB format
+  - (Add) UniFormation GKtwo compatibility under CTB format, if exporting JXS rename to CTB before open
+  - (Fix) CTB, CBDDLP, PHOTON, FDG, PHZ: Read and write files larger then 4GB (#608)
+- **PCB Exposure:**
+  - (Add) Offset X/Y to offset the PCB from it origin
+  - (Add) Allow to toggle between "Show preview image cropped by it bounds" and "Show full preview image (The final result)"
+  - (Improvement) Use rectangle instead of line for center line primitive (#607)
+  - (Fix) Implement rotation to polygon and center line primitives (#607)
+  - (Fix) Macros in a single line was not being parsed (#607)
+  - (Fix) Invert color per file was not affecting primitives
+- **Network printers:**
+  - (Add) Socket requests with TCP and UDP
+  - (Add) AnyCubic printer preset (However it can't upload a file)
+  - (Add) Scripts in request path to allow a first request to fetch data to the final request:
+    -  A script starts with **<\?** and ends with **?>**
+    -  First parameter is the first request to get response content from
+    -  Second parameter is the regex pattern to match content with
+    -  Third parameter is the final request that supports a parameter from regex matching group, eg: **{#1}** is match Group[1] value
+    -  **Example:** <\? getfiles > {0}\/(\d+\.[\da-zA-Z]+), > printfile,{#1} ?>
+  - (Change) Allow to print a filename without send it when upload request path is empty
+  - (Fix) Do not show printers with empty requests
+- (Change) Default layer compression to Lz4 instead of Png
+- (Improvement) Application is now culture aware but set part of `NumberFormat` to the `InvariantCulture.NumberFormat`
+- (Improvement) Material cost now show with the current culture currency symbol due previous change
+- (Improvement) Better submit of bug reports using sections and forms
+- (Improvement) Linux: AppImage now have a help manual with possible arguments and parameters
+- (Improvement) macOS: Codesign app on auto-installer and auto-upgrade to bypass arm64 run restriction (#431)
+- (Improvement) macOS: Rebuilt arm64 libcvextern.dylib to run with less dependencies (#431)
+- (Improvement) macOS: Try to show missing dependencies from openCV (if any) on the error message
+- (Fix) UI: layers sorted lexicographically instead of numerically in the issues list view (#611)
+- (Fix) PrusaSlicer printer parameters: UniFormation GKtwo
 

@@ -933,6 +933,28 @@
             <param name="thickness"></param>
             <param name="lineType"></param>
         </member>
+        <member name="M:UVtools.Core.Extensions.EmguExtensions.DrawCenteredSquare(Emgu.CV.Mat,System.Int32,System.Drawing.Point,Emgu.CV.Structure.MCvScalar,System.Int32,Emgu.CV.CvEnum.LineType)">
+            <summary>
+            Draw a square around a center point
+            </summary>
+            <param name="src"></param>
+            <param name="size"></param>
+            <param name="center"></param>
+            <param name="color"></param>
+            <param name="thickness"></param>
+            <param name="lineType"></param>
+        </member>
+        <member name="M:UVtools.Core.Extensions.EmguExtensions.DrawCenteredRectangle(Emgu.CV.Mat,System.Drawing.Size,System.Drawing.Point,Emgu.CV.Structure.MCvScalar,System.Int32,Emgu.CV.CvEnum.LineType)">
+            <summary>
+            Draw a rectangle around a center point
+            </summary>
+            <param name="src"></param>
+            <param name="size"></param>
+            <param name="center"></param>
+            <param name="color"></param>
+            <param name="thickness"></param>
+            <param name="lineType"></param>
+        </member>
         <member name="M:UVtools.Core.Extensions.EmguExtensions.DrawPolygon(Emgu.CV.Mat,System.Int32,System.Int32,System.Drawing.Point,Emgu.CV.Structure.MCvScalar,System.Double,System.Int32,Emgu.CV.CvEnum.LineType,System.Nullable{Emgu.CV.CvEnum.FlipType})">
             <summary>
             Draw a polygon given number of sides and length
@@ -4376,6 +4398,16 @@
         <member name="T:UVtools.Core.Gerber.GerberDocument">
             <summary>
             https://www.ucamco.com/files/downloads/file_en/456/gerber-layer-format-specification-revision-2022-02_en.pdf?ac97011bf6bce9aaf0b1aac43d84b05f
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Gerber.GerberDocument.OffsetX">
+            <summary>
+            Gets or sets the X offset for drawings in millimeters
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Gerber.GerberDocument.OffsetY">
+            <summary>
+            Gets or sets the Y offset for drawings in millimeters
             </summary>
         </member>
         <member name="P:UVtools.Core.Gerber.GerberDocument.PolarityColor">

@@ -6,12 +6,13 @@
  *  of this license document, but changing it is not allowed.
  */
 
+using System;
 using System.Data;
 using System.Drawing;
+using System.Globalization;
 using System.Text.RegularExpressions;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
-using Emgu.CV.Structure;
 using UVtools.Core.Extensions;
 
 namespace UVtools.Core.Gerber.Primitives;
@@ -84,25 +85,20 @@ public class PolygonPrimitive : Primitive
         RotationExpression = rotationExpression;
     }
 
-    public override void DrawFlashD3(Mat mat, PointF at, MCvScalar color,
-        LineType lineType = LineType.EightConnected)
+    public override void DrawFlashD3(Mat mat, PointF at, LineType lineType = LineType.EightConnected)
     {
         if (!IsParsed) return;
         if (Diameter <= 0) return;
 
-        if (Exposure == 0) color = EmguExtensions.BlackColor;
-        else if (color.V0 == 0) color = EmguExtensions.WhiteColor;
-
-
         mat.DrawPolygon(VerticesCount,
             Document.SizeMmToPx(Diameter / 2),
             Document.PositionMmToPx(at.X + CenterX, at.Y + CenterY),
-            color, 0, -1, lineType);
+            Document.GetPolarityColor(Exposure), Rotation, -1, lineType);
     }
 
-    public override void ParseExpressions(GerberDocument document, params string[] args)
+    public override void ParseExpressions(params string[] args)
     {
-        string csharpExp, result;
+        string csharpExp;
         float num;
         var exp = new DataTable();
 
@@ -110,8 +106,8 @@ public class PolygonPrimitive : Primitive
         else
         {
             csharpExp = string.Format(Regex.Replace(ExposureExpression, @"\$(\d+)", "{$1}"), args);
-            result = exp.Compute(csharpExp, null).ToString()!;
-            if (byte.TryParse(result, out var val)) Exposure = val;
+            var temp = exp.Compute(csharpExp, null);
+            if (temp is not DBNull) Exposure = Convert.ToByte(temp);
         }
 
         if (byte.TryParse(DiameterExpression, out var vertices)) VerticesCount = vertices;
@@ -119,47 +115,47 @@ public class PolygonPrimitive : Primitive
         {
             csharpExp = Regex.Replace(DiameterExpression, @"\$(\d+)", "{$1}");
             csharpExp = string.Format(csharpExp, args);
-            result = exp.Compute(csharpExp, null).ToString()!;
-            if (byte.TryParse(result, out var vertices1)) VerticesCount = vertices1;
+            var temp = exp.Compute(csharpExp, null);
+            if (temp is not DBNull) VerticesCount = Convert.ToByte(temp);
         }
 
-        if (float.TryParse(CenterXExpression, out num)) CenterX = num;
+        if (float.TryParse(CenterXExpression, NumberStyles.Float, CultureInfo.InvariantCulture, out num)) CenterX = num;
         else
         {
             csharpExp = Regex.Replace(CenterXExpression, @"\$(\d+)", "{$1}");
             csharpExp = string.Format(csharpExp, args);
-            result = exp.Compute(csharpExp, null).ToString()!;
-            if (float.TryParse(result, out num)) CenterX = num;
+            var temp = exp.Compute(csharpExp, null);
+            if (temp is not DBNull) CenterX = Convert.ToSingle(temp);
         }
-        CenterX = document.GetMillimeters(CenterX);
+        CenterX = Document.GetMillimeters(CenterX);
 
-        if (float.TryParse(CenterYExpression, out num)) CenterY = num;
+        if (float.TryParse(CenterYExpression, NumberStyles.Float, CultureInfo.InvariantCulture, out num)) CenterY = num;
         else
         {
             csharpExp = Regex.Replace(CenterYExpression, @"\$(\d+)", "{$1}");
             csharpExp = string.Format(csharpExp, args);
-            result = exp.Compute(csharpExp, null).ToString()!;
-            if (float.TryParse(result, out num)) CenterY = num;
+            var temp = exp.Compute(csharpExp, null);
+            if (temp is not DBNull) CenterY = Convert.ToSingle(temp);
         }
-        CenterY = document.GetMillimeters(CenterY);
+        CenterY = Document.GetMillimeters(CenterY);
 
-        if (float.TryParse(DiameterExpression, out num)) Diameter = num;
+        if (float.TryParse(DiameterExpression, NumberStyles.Float, CultureInfo.InvariantCulture, out num)) Diameter = num;
         else
         {
             csharpExp = Regex.Replace(DiameterExpression, @"\$(\d+)", "{$1}");
             csharpExp = string.Format(csharpExp, args);
-            result = exp.Compute(csharpExp, null).ToString()!;
-            if (float.TryParse(result, out num)) Diameter = num;
+            var temp = exp.Compute(csharpExp, null);
+            if (temp is not DBNull) Diameter = Convert.ToSingle(temp);
         }
-        Diameter = document.GetMillimeters(Diameter);
+        Diameter = Document.GetMillimeters(Diameter);
 
-        if (float.TryParse(RotationExpression, out num)) Rotation = (short)num;
+        if (float.TryParse(RotationExpression, NumberStyles.Float, CultureInfo.InvariantCulture, out num)) Rotation = (short)num;
         else
         {
             csharpExp = Regex.Replace(RotationExpression, @"\$(\d+)", "{$1}");
             csharpExp = string.Format(csharpExp, args);
-            result = exp.Compute(csharpExp, null).ToString()!;
-            if (float.TryParse(result, out num)) Rotation = num;
+            var temp = exp.Compute(csharpExp, null);
+            if (temp is not DBNull) Rotation = Convert.ToSingle(temp);
         }
 
         IsParsed = true;

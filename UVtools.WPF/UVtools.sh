@@ -1,21 +1,22 @@
 #!/bin/bash
 path="$(dirname "$0")"
 arch="$(uname -m)" # x86_64 or arm64
-args="$@"
+
+testcmd() { command -v "$1" &> /dev/null; }
 
 run_app_normal(){
-    "$path/UVtools" $args
+    exec "$path/UVtools" $@
 }
 
 run_app_dotnet(){ 
-    if [ -z "$(command -v dotnet)" ]; then
+    if ! testcmd dotnet; then
         echo "$(uname) $arch requires dotnet in order to run."
         echo 'Please use the auto installer script to install all the dependencies.'
         exit -1
     fi
 
     if [ -f "$path/UVtools.dll" ]; then
-        dotnet "$path/UVtools.dll" $args
+        exec dotnet "$path/UVtools.dll" $@
     else
         echo "Error: UVtools.dll not found."
         exit -1
@@ -23,10 +24,8 @@ run_app_dotnet(){
 }
 
 if [ "${OSTYPE:0:6}" == "darwin" ]; then
-    if [ "$arch" == "arm64" ]; then
-        run_app_dotnet
-    elif [ -d "$path/../../../UVtools.app" ]; then
-        open -n "$path/../../../UVtools.app" --args $args
+    if [ -d "$path/../../../UVtools.app" ]; then
+        open -n "$path/../../../UVtools.app" --args $@
     else
         run_app_normal
     fi

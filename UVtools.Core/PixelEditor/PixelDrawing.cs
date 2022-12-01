@@ -39,8 +39,6 @@ public class PixelDrawing : PixelOperation
 
     public override PixelOperationType OperationType => PixelOperationType.Drawing;
 
-    public static BrushShapeType[] BrushShapeTypes => (BrushShapeType[])Enum.GetValues(typeof(BrushShapeType));
-
     public BrushShapeType BrushShape
     {
         get => _brushShape;
@@ -84,7 +82,7 @@ public class PixelDrawing : PixelOperation
 
     public decimal RemovePixelBrightnessPercent => Math.Round(_removePixelBrightness * 100M / 255M, 2);
 
-    public bool IsAdd { get;  }
+    public bool IsAdd { get; }
 
     public byte Brightness => IsAdd ? _pixelBrightness : _removePixelBrightness;
 

@@ -14,6 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -695,8 +696,8 @@ public class FlashForgeSVGXFile : FileFormat
                         if (i + 1 >= spaceSplit.Length) break; // No more to see
 
 
-                        if (!float.TryParse(spaceSplit[i], out var mmX)) continue;
-                        if (!float.TryParse(spaceSplit[++i], out var mmY)) continue;
+                        if (!float.TryParse(spaceSplit[i], NumberStyles.Float, CultureInfo.InvariantCulture, out var mmX)) continue;
+                        if (!float.TryParse(spaceSplit[++i], NumberStyles.Float, CultureInfo.InvariantCulture, out var mmY)) continue;
 
 
                         var mmAbsX = Math.Clamp(halfDisplay.Width + mmX, 0, DisplayWidth);

@@ -9,6 +9,7 @@
 using Emgu.CV.Cuda;
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -25,6 +26,21 @@ public static class CoreSettings
     #endregion
 
     #region Properties
+
+    public static CultureInfo OptimalCultureInfo
+    {
+        get
+        {
+            var cultureInfo = (CultureInfo)CultureInfo.CurrentCulture.Clone();
+            cultureInfo.NumberFormat.CurrencyDecimalSeparator = CultureInfo.InvariantCulture.NumberFormat.CurrencyDecimalSeparator;
+            cultureInfo.NumberFormat.CurrencyGroupSeparator = CultureInfo.InvariantCulture.NumberFormat.CurrencyGroupSeparator;
+            cultureInfo.NumberFormat.NumberDecimalSeparator = CultureInfo.InvariantCulture.NumberFormat.NumberDecimalSeparator;
+            cultureInfo.NumberFormat.NumberGroupSeparator = CultureInfo.InvariantCulture.NumberFormat.NumberGroupSeparator;
+            cultureInfo.NumberFormat.PercentDecimalSeparator = CultureInfo.InvariantCulture.NumberFormat.PercentDecimalSeparator;
+            cultureInfo.NumberFormat.PercentGroupSeparator = CultureInfo.InvariantCulture.NumberFormat.PercentGroupSeparator;
+            return cultureInfo;
+        }
+    }
 
     /// <summary>
     /// Gets or sets the maximum number of concurrent tasks enabled by this ParallelOptions instance.
@@ -77,7 +93,7 @@ public static class CoreSettings
     /// <summary>
     /// Gets or sets the default compression type for layers
     /// </summary>
-    public static LayerCompressionCodec DefaultLayerCompressionCodec { get; set; } = LayerCompressionCodec.Png;
+    public static LayerCompressionCodec DefaultLayerCompressionCodec { get; set; } = LayerCompressionCodec.Lz4;
 
     /// <summary>
     /// <para>The average resin 1000ml bottle cost, to use when bottle cost is not available.</para>

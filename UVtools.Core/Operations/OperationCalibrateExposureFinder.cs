@@ -16,6 +16,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Drawing;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -577,7 +578,7 @@ public sealed class OperationCalibrateExposureFinder : Operation
                 foreach (var mmStr in split)
                 {
                     if (string.IsNullOrWhiteSpace(mmStr)) continue;
-                    if (!decimal.TryParse(mmStr, out var mm)) continue;
+                    if (!decimal.TryParse(mmStr, NumberStyles.Float, CultureInfo.InvariantCulture, out var mm)) continue;
                     var mmPx = (int)(mm * Ppmm);
                     if (mmPx is <= 0 or > 500) continue;
                     if(holes.Contains(mmPx)) continue;
@@ -675,7 +676,7 @@ public sealed class OperationCalibrateExposureFinder : Operation
                 foreach (var mmStr in split)
                 {
                     if (string.IsNullOrWhiteSpace(mmStr)) continue;
-                    if (!decimal.TryParse(mmStr, out var mm)) continue;
+                    if (!decimal.TryParse(mmStr, NumberStyles.Float, CultureInfo.InvariantCulture, out var mm)) continue;
                     var mmPx = (int)(mm * Yppmm);
                     if (mmPx is <= 0 or > 500) continue;
                     if (bars.Contains(mmPx)) continue;
@@ -1058,8 +1059,8 @@ public sealed class OperationCalibrateExposureFinder : Operation
 
                     if (string.IsNullOrWhiteSpace(splitDiameterThickness[0]) ||
                         string.IsNullOrWhiteSpace(splitDiameterThickness[1])) continue;
-                    if (!decimal.TryParse(splitDiameterThickness[0], out var diameterMm)) continue;
-                    if (!decimal.TryParse(splitDiameterThickness[1], out var thicknessMm)) continue;
+                    if (!decimal.TryParse(splitDiameterThickness[0], NumberStyles.Float, CultureInfo.InvariantCulture, out var diameterMm)) continue;
+                    if (!decimal.TryParse(splitDiameterThickness[1], NumberStyles.Float, CultureInfo.InvariantCulture, out var thicknessMm)) continue;
                     var diameter = (int)(diameterMm * Ppmm);
                     if (diameterMm is <= 0 or > 500) continue;
                     var thickness = (int)(thicknessMm * Ppmm);

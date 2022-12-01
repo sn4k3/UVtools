@@ -9,6 +9,7 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.Text;
 using UVtools.Core.Extensions;
@@ -390,19 +391,19 @@ namespace UVtools.Core.Printer
 
                     if (key.StartsWith("display_width"))
                     {
-                        if (!float.TryParse(value, out var displayWidth)) continue;
+                        if (!float.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var displayWidth)) continue;
                         machine.DisplayWidth = displayWidth;
                     }
 
                     if (key.StartsWith("display_height"))
                     {
-                        if (!float.TryParse(value, out var displayHeight)) continue;
+                        if (!float.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var displayHeight)) continue;
                         machine.DisplayHeight = displayHeight;
                     }
 
                     if (key.StartsWith("max_print_height"))
                     {
-                        if (!float.TryParse(value, out var machineZ)) continue;
+                        if (!float.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var machineZ)) continue;
                         machine.MachineZ = machineZ;
                     }
 

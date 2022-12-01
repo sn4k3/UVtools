@@ -212,32 +212,26 @@ public class App : Application
                 if (string.IsNullOrWhiteSpace(Program.Args[1])) return;
                 if (string.IsNullOrWhiteSpace(Program.Args[2])) return;
                 var category = Program.Args[1];
-                var message = $"{Program.Args[2]}\nCategory: {category}";
+                var bugDescription = $"{Program.Args[2]}\nCategory: {category}";
+                var system = string.Empty;
                 if (Program.Args.Length >= 4 && !string.IsNullOrWhiteSpace(Program.Args[3]))
                 {
-                    message += $"\nFile: {Program.Args[3]}";
+                    bugDescription += $"\nFile: {Program.Args[3]}";
                 }
-
-                var bugReportMessageMk = $"# Report\n```\n{message}\n```";
+                bugDescription += $"\n\nMachine date time: {DateTime.Now}\n    UTC date time: {DateTime.UtcNow}";
 
                 try
                 {
-                    var append = $"\n\n# System\n{AboutWindow.GetEssentialInformationStatic()}";
-                    message += append;
-                    bugReportMessageMk += append;
+                    system = AboutWindow.GetEssentialInformationStatic();
                 }
                 catch
                 {
                     // ignored
                 }
-
-                var append2 = $"\n\nMachine date time: {DateTime.Now}\n    UTC date time: {DateTime.UtcNow}";
-                message += append2;
-                bugReportMessageMk += $"{append2}\n\n# Additional information and Workflow\nComplete with additional information and the workflow that caused this crash with the file as well.";
-
+                
                 try
                 {
-                    Current?.Clipboard?.SetTextAsync(bugReportMessageMk);
+                    Current?.Clipboard?.SetTextAsync(bugDescription);
                 }
                 catch
                 {
@@ -245,15 +239,15 @@ public class App : Application
                 }
                 
 
-                using var reader = new StringReader(message);
+                using var reader = new StringReader(bugDescription);
                 desktop.MainWindow = new MessageWindow($"{About.SoftwareWithVersion} - Crash report", 
                     "fa-regular fa-frown", 
-                    $"{About.Software} crashed due an unexpected {category.ToLowerInvariant()} error.\nYou can report this error if you find necessary.\nFind more details below:\n", 
-                    message,
+                    $"{About.Software} crashed due an unexpected {category.ToLowerInvariant()} error.\nYou can report this error if you find necessary.\nFind more details below:\n",
+                    bugDescription,
                     new[]
                     {
-                        MessageWindow.CreateLinkButtonAction("Report", "fa-solid fa-bug", $"https://github.com/sn4k3/UVtools/issues/new?assignees=sn4k3&labels=&template=bug_report.md&title={HttpUtility.UrlEncode($"[Crash] {reader.ReadLine()}")}&body={HttpUtility.UrlEncode("<!--\n# Instructions:\n1. Click on this box;\n2. Select all it text (Ctrl + A);\n3. Paste the report content (Ctrl + V);\n4. Review the content;\n5. Submit the issue.\n!-->")}", () => Current?.Clipboard?.SetTextAsync(bugReportMessageMk)),
-                        MessageWindow.CreateLinkButtonAction("Help", "fa-solid fa-question", "https://github.com/sn4k3/UVtools/discussions/categories/q-a", () => Current?.Clipboard?.SetTextAsync(bugReportMessageMk)),
+                        MessageWindow.CreateLinkButtonAction("Report", "fa-solid fa-bug", $"https://github.com/sn4k3/UVtools/issues/new?template=bug_report_form.yml&title={HttpUtility.UrlEncode($"[Crash] {reader.ReadLine()}")}&system={HttpUtility.UrlEncode(system)}&bug_description={HttpUtility.UrlEncode($"```\n{bugDescription}\n```")}", () => Current?.Clipboard?.SetTextAsync($"```\n{bugDescription}\n```")),
+                        MessageWindow.CreateLinkButtonAction("Help", "fa-solid fa-question", "https://github.com/sn4k3/UVtools/discussions/categories/q-a", () => Current?.Clipboard?.SetTextAsync($"```\n{bugDescription}\n```")),
                         MessageWindow.CreateButtonAction("Restart", "fa-solid fa-redo-alt", () => SystemAware.StartThisApplication()),
                         MessageWindow.CreateCloseButton("fa-solid fa-sign-out-alt")
                     });
@@ -315,10 +309,25 @@ public class App : Application
         {
             try
             {
-                var ldd = SystemAware.GetProcessOutput("bash", $"-c \"ldd '{Path.Combine(ApplicationPath, "libcvextern.so")}' | grep not\"");
-                if (!string.IsNullOrWhiteSpace(ldd))
+                var result = SystemAware.GetProcessOutput("bash", $"-c \"ldd '{Path.Combine(ApplicationPath, "libcvextern.so")}' | grep not\"");
+                if (!string.IsNullOrWhiteSpace(result))
                 {
-                    message += $"Missing dependencies:\n{ldd}\n";
+                    message += $"Missing dependencies:\n{result}\n";
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine(e);
+            }
+        }
+        else if (OperatingSystem.IsMacOS())
+        {
+            try
+            {
+                var result = SystemAware.GetProcessOutput("otool", $"-L '{Path.Combine(ApplicationPath, "libcvextern.dylib")}'");
+                if (!string.IsNullOrWhiteSpace(result))
+                {
+                    message += $"Dependencies:\n{result}\n";
                 }
             }
             catch (Exception e)

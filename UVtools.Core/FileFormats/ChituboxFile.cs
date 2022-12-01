@@ -34,6 +34,7 @@ public class ChituboxFile : FileFormat
     public const uint MAGIC_CBDDLP = 0x12FD0019; // 318570521
     public const uint MAGIC_CTB = 0x12FD0086; // 318570630
     public const uint MAGIC_CTBv4 = 0x12FD0106; // 318570758
+    public const uint MAGIC_CTBv4_GKtwo = 0xFF220810; // 4280420368
     public const ushort REPEATRGB15MASK = 0x20;
 
     public const byte RLE8EncodingLimit = 0x7d; // 125;
@@ -49,6 +50,8 @@ public class ChituboxFile : FileFormat
     private const string CTBv4_DISCLAIMER = "Layout and record format for the ctb and cbddlp file types are the copyrighted programs or codes of CBD Technology (China) Inc..The Customer or User shall not in any manner reproduce, distribute, modify, decompile, disassemble, decrypt, extract, reverse engineer, lease, assign, or sublicense the said programs or codes.";
     private const ushort CTBv4_DISCLAIMER_SIZE = 320;
     private const ushort CTBv4_RESERVED_SIZE = 384;
+
+    public const long PageSize = 4_294_967_296L; // Page-size for layers, limited to 4GB
 
     #endregion
 
@@ -612,7 +615,7 @@ public class ChituboxFile : FileFormat
         /// Gets the layer image length in bytes.
         /// </summary>
         [FieldOrder(4)] public uint DataSize         { get; set; }
-        [FieldOrder(5)] public uint Unknown1         { get; set; }
+        [FieldOrder(5)] public uint PageNumber       { get; set; }
         [FieldOrder(6)] public uint TableSize        { get; set; } = TABLE_SIZE;
         [FieldOrder(7)] public uint Unknown3         { get; set; }
         [FieldOrder(8)] public uint Unknown4         { get; set; }
@@ -956,7 +959,7 @@ public class ChituboxFile : FileFormat
 
         public override string ToString()
         {
-            return $"{nameof(PositionZ)}: {PositionZ}, {nameof(ExposureTime)}: {ExposureTime}, {nameof(LightOffSeconds)}: {LightOffSeconds}, {nameof(DataAddress)}: {DataAddress}, {nameof(DataSize)}: {DataSize}, {nameof(Unknown1)}: {Unknown1}, {nameof(TableSize)}: {TableSize}, {nameof(Unknown3)}: {Unknown3}, {nameof(Unknown4)}: {Unknown4}";
+            return $"{nameof(PositionZ)}: {PositionZ}, {nameof(ExposureTime)}: {ExposureTime}, {nameof(LightOffSeconds)}: {LightOffSeconds}, {nameof(DataAddress)}: {DataAddress}, {nameof(DataSize)}: {DataSize}, {nameof(PageNumber)}: {PageNumber}, {nameof(TableSize)}: {TableSize}, {nameof(Unknown3)}: {Unknown3}, {nameof(Unknown4)}: {Unknown4}";
         }
     }
 
@@ -1073,10 +1076,10 @@ public class ChituboxFile : FileFormat
         new(typeof(ChituboxFile), "photon", "Chitubox Photon"),
         new(typeof(ChituboxFile), "cbddlp", "Chitubox CBDDLP"),
         new(typeof(ChituboxFile), "ctb", "Chitubox CTB"),
+        new(typeof(ChituboxFile), "gktwo.ctb", "Chitubox CTB for UniFormation GKtwo", false),
         //new(typeof(ChituboxFile), "v2.ctb", "Chitubox CTBv2"),
         //new(typeof(ChituboxFile), "v3.ctb", "Chitubox CTBv3"),
         //new(typeof(ChituboxFile), "v4.ctb", "Chitubox CTBv4", false, false),
-        //new(typeof(ChituboxFile), "encrypted.ctb", "Chitubox encrypted CTB"),
     };
 
     public override PrintParameterModifier[]? PrintParameterModifiers
@@ -1706,7 +1709,11 @@ public class ChituboxFile : FileFormat
     }
 
     public bool IsCbddlpFile => HeaderSettings.Magic == MAGIC_CBDDLP;
-    public bool IsCtbFile => HeaderSettings.Magic is MAGIC_CTB or MAGIC_CTBv4;
+    public bool IsCtbFile => HeaderSettings.Magic is MAGIC_CTB or MAGIC_CTBv4 or MAGIC_CTBv4_GKtwo;
+
+    public bool IsMagicValid => IsValidKnownMagic(HeaderSettings.Magic);
+
+    public static bool IsValidKnownMagic(uint magic) => magic is MAGIC_CBDDLP or MAGIC_CTB or MAGIC_CTBv4 or MAGIC_CTBv4_GKtwo;
 
     public bool CanHash => IsCbddlpFile && HeaderSettings.Version <= 2;
     #endregion
@@ -1739,7 +1746,7 @@ public class ChituboxFile : FileFormat
         {
             using var fs = new BinaryReader(new FileStream(fileFullPath!, FileMode.Open, FileAccess.Read));
             var magic = fs.ReadUInt32();
-            return magic is MAGIC_CBDDLP or MAGIC_CTB or MAGIC_CTBv4;
+            return IsValidKnownMagic(magic);
         }
         catch (Exception e)
         {
@@ -1753,7 +1760,7 @@ public class ChituboxFile : FileFormat
     {
         if (FileEndsWith(".ctb"))
         {
-            if (HeaderSettings.Magic is not MAGIC_CTB and not MAGIC_CTBv4)
+            if (!IsCtbFile)
             {
                 HeaderSettings.Magic = MAGIC_CTB;
             }
@@ -1771,6 +1778,11 @@ public class ChituboxFile : FileFormat
             else if (FileEndsWith(".v4.ctb"))
             {
                 HeaderSettings.Magic = MAGIC_CTBv4;
+                HeaderSettings.Version = 4;
+            }
+            else if (FileEndsWith(".gktwo.ctb"))
+            {
+                HeaderSettings.Magic = MAGIC_CTBv4_GKtwo;
                 HeaderSettings.Version = 4;
             }
         }
@@ -1905,9 +1917,8 @@ public class ChituboxFile : FileFormat
         }
 
         HeaderSettings.LayersDefinitionOffsetAddress = (uint)outputFile.Position;
-        uint layerDefSize = (uint)Helpers.Serializer.SizeOf(new LayerDef());
-        //uint layerDefCurrentOffset = HeaderSettings.LayersDefinitionOffsetAddress;
-        uint layerDataCurrentOffset = HeaderSettings.LayersDefinitionOffsetAddress + layerDefSize * LayerCount * HeaderSettings.AntiAliasLevel;
+        long layerDefSize = Helpers.Serializer.SizeOf(new LayerDef());
+        long layerDataCurrentOffset = HeaderSettings.LayersDefinitionOffsetAddress + layerDefSize * LayerCount * HeaderSettings.AntiAliasLevel;
 
         var layersHash = new Dictionary<string, LayerDef>();
         progress.Reset(OperationProgress.StatusEncodeLayers, LayerCount);
@@ -1930,7 +1941,7 @@ public class ChituboxFile : FileFormat
 
             foreach (var layerIndex in batch)
             {
-                if (layerIndex == 0) layerDefSize = (uint)Helpers.Serializer.SizeOf(LayerDefinitions[0, layerIndex]);
+                if (layerIndex == 0) layerDefSize = Helpers.Serializer.SizeOf(LayerDefinitions[0, layerIndex]);
                 for (byte aaIndex = 0; aaIndex < HeaderSettings.AntiAliasLevel; aaIndex++)
                 {
                     progress.ThrowIfCancellationRequested();
@@ -1954,14 +1965,16 @@ public class ChituboxFile : FileFormat
 
                     if (layerDefHash is null)
                     {
-                        layerDef.DataAddress = layerDataCurrentOffset;
+                        layerDef.PageNumber = (uint)(layerDataCurrentOffset / PageSize);
+                        layerDef.DataAddress = (uint)(layerDataCurrentOffset - PageSize * layerDef.PageNumber);
                         outputFile.Seek(layerDataCurrentOffset, SeekOrigin.Begin);
 
                         if (HeaderSettings.Version >= 3)
                         {
                             var layerDataEx = new LayerDefEx(layerDef, this[layerIndex]);
-                            layerDataCurrentOffset += (uint)Helpers.Serializer.SizeOf(layerDataEx);
-                            layerDef.DataAddress = layerDataCurrentOffset;
+                            layerDataCurrentOffset += Helpers.Serializer.SizeOf(layerDataEx);
+                            layerDef.PageNumber = (uint)(layerDataCurrentOffset / PageSize);
+                            layerDef.DataAddress = (uint)(layerDataCurrentOffset - PageSize * layerDef.PageNumber);
                             outputFile.WriteSerialize(layerDataEx);
                         }
 
@@ -2001,7 +2014,7 @@ public class ChituboxFile : FileFormat
         //HeaderSettings = Helpers.Serializer.Deserialize<Header>(InputFile.ReadBytes(Helpers.Serializer.SizeOf(typeof(Header))));
         HeaderSettings = Helpers.Deserialize<Header>(inputFile);
 
-        if (HeaderSettings.Magic is not MAGIC_CBDDLP and not MAGIC_CTB and not MAGIC_CTBv4)
+        if (!IsMagicValid)
         {
             throw new FileLoadException($"Not a valid PHOTON nor CBDDLP nor CTB file! Magic Value: {HeaderSettings.Magic}", FileFullPath);
         }
@@ -2112,7 +2125,7 @@ public class ChituboxFile : FileFormat
                         
                 if (HeaderSettings.Version >= 3)
                 {
-                    inputFile.SeekDoWorkAndRewind(layerDef.DataAddress - 84, () =>
+                    inputFile.SeekDoWorkAndRewind(layerDef.PageNumber * PageSize + layerDef.DataAddress - 84, () =>
                     {
                         layerDefinitionsEx![layerIndex] = Helpers.Deserialize<LayerDefEx>(inputFile);
                         layerDefinitionsEx[layerIndex].LayerDef.Parent = this;
@@ -2137,7 +2150,7 @@ public class ChituboxFile : FileFormat
                     {
                         progress.ThrowIfCancellationRequested();
 
-                        inputFile.Seek(LayerDefinitions[aaIndex, layerIndex].DataAddress, SeekOrigin.Begin);
+                        inputFile.Seek(LayerDefinitions[aaIndex, layerIndex].PageNumber * PageSize + LayerDefinitions[aaIndex, layerIndex].DataAddress, SeekOrigin.Begin);
                         LayerDefinitions[aaIndex, layerIndex].EncodedRle = inputFile.ReadBytes(LayerDefinitions[aaIndex, layerIndex].DataSize);
                     }
                 }
@@ -2179,16 +2192,13 @@ public class ChituboxFile : FileFormat
             outputFile.WriteSerialize(SlicerInfoSettings);
         }
 
-        uint layerOffset = HeaderSettings.LayersDefinitionOffsetAddress;
+        outputFile.Seek(HeaderSettings.LayersDefinitionOffsetAddress, SeekOrigin.Begin);
         for (byte aaIndex = 0; aaIndex < HeaderSettings.AntiAliasLevel; aaIndex++)
         {
             for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
             {
-                var layer = this[layerIndex];
-                LayerDefinitions![aaIndex, layerIndex].SetFrom(layer);
-
-                outputFile.Seek(layerOffset, SeekOrigin.Begin);
-                layerOffset += outputFile.WriteSerialize(LayerDefinitions[aaIndex, layerIndex]);
+                LayerDefinitions![aaIndex, layerIndex].SetFrom(this[layerIndex]);
+                outputFile.WriteSerialize(LayerDefinitions[aaIndex, layerIndex]);
             }
         }
 
@@ -2196,7 +2206,7 @@ public class ChituboxFile : FileFormat
         {
             for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
             {
-                outputFile.Seek(LayerDefinitions![0, layerIndex].DataAddress - 84, SeekOrigin.Begin);
+                outputFile.Seek(LayerDefinitions![0, layerIndex].PageNumber * PageSize + LayerDefinitions![0, layerIndex].DataAddress - 84, SeekOrigin.Begin);
                 outputFile.WriteSerialize(new LayerDefEx(LayerDefinitions[0, layerIndex], this[layerIndex]));
             }
         }

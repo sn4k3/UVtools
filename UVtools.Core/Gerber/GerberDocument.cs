@@ -9,6 +9,7 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.Text.RegularExpressions;
 using Emgu.CV;
@@ -51,16 +52,19 @@ public class GerberDocument
     public SizeF XYppmm { get; init; }
 
     /// <summary>
+    /// Gets or sets the X offset for drawings in millimeters
+    /// </summary>
+    public float OffsetX { get; set; }
+
+    /// <summary>
+    /// Gets or sets the Y offset for drawings in millimeters
+    /// </summary>
+    public float OffsetY { get; set; }
+
+    /// <summary>
     /// Gets the current polarity as <see cref="MCvScalar"/>. <see cref="InversePolarity"/> will affect the return value
     /// </summary>
-    public MCvScalar PolarityColor =>
-        Polarity == GerberPolarityType.Dark
-            ? !InversePolarity
-                ? EmguExtensions.WhiteColor
-                : EmguExtensions.BlackColor
-            : !InversePolarity
-                ? EmguExtensions.BlackColor
-                : EmguExtensions.WhiteColor;
+    public MCvScalar PolarityColor => GetPolarityColor(Polarity);
 
     /// <summary>
     /// Gets or sets to inverse the polarity on drawing
@@ -95,7 +99,6 @@ public class GerberDocument
         double currentX = 0;
         double currentY = 0;
         Aperture? currentAperture = null;
-        Macro? currentMacro = null;
         var regionPoints = new List<Point>();
         bool insideRegion = false;
         string? line;
@@ -104,12 +107,6 @@ public class GerberDocument
             line = line.Trim();
             if (line == string.Empty) continue;
             if (line.StartsWith("M02")) break;
-
-            if (currentMacro is not null && line[0] == '%')
-            {
-                currentMacro = null;
-                continue;
-            }
 
             var accumulatedLine = line;
             while (!accumulatedLine.Contains('*') && (line = file.ReadLine()) is not null)
@@ -120,13 +117,6 @@ public class GerberDocument
             }
 
             line = accumulatedLine;
-
-            if (currentMacro is not null)
-            {
-                currentMacro.ParsePrimitive(line);
-                if (line[^1] == '%') currentMacro = null;
-                continue;
-            }
 
             if (line.StartsWith("%MO") && line.Length >= MOlength)
             {
@@ -240,10 +230,26 @@ public class GerberDocument
 
             if (line.StartsWith("%AM"))
             {
-                currentMacro = Macro.Parse(document, line);
-                if (currentMacro is null) continue;
-                document.Macros.Add(currentMacro.Name, currentMacro);
-                //document.Apertures.Add(aperture.Index, aperture);
+                accumulatedLine = line.Remove(0, 1);
+                while (!accumulatedLine.Contains('%') && (line = file.ReadLine()) is not null)
+                {
+                    line = line.Trim();
+                    if (line == string.Empty) continue;
+                    accumulatedLine += line;
+                }
+                line = accumulatedLine[..^2];
+
+                var split = line.Split(new[]{'*', '%'}, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                
+                var macro = Macro.Parse(document, split[0]);
+                if (macro is null) continue;
+                document.Macros.Add(macro.Name, macro);
+
+                for (int i = 1; i < split.Length; i++)
+                {
+                    macro.ParsePrimitive(split[i]);
+                }
+
                 continue;
             }
 
@@ -296,7 +302,7 @@ public class GerberDocument
 
                         var integers = valueStr[..document.CoordinateXIntegers];
                         var fraction = valueStr[document.CoordinateXIntegers..];
-                        double.TryParse($"{integers}.{fraction}", out nowX);
+                        double.TryParse($"{integers}.{fraction}", NumberStyles.Float, CultureInfo.InvariantCulture, out nowX);
                         nowX = document.GetMillimeters(nowX);
                     }
                 }
@@ -317,7 +323,7 @@ public class GerberDocument
 
                         var integers = valueStr[..document.CoordinateYIntegers];
                         var fraction = valueStr[document.CoordinateYIntegers..];
-                        double.TryParse($"{integers}.{fraction}", out nowY);
+                        double.TryParse($"{integers}.{fraction}", NumberStyles.Float, CultureInfo.InvariantCulture, out nowY);
                         nowY = document.GetMillimeters(nowY);
 
                     }
@@ -366,7 +372,7 @@ public class GerberDocument
 
                                 var integers = valueStr[..document.CoordinateXIntegers];
                                 var fraction = valueStr[document.CoordinateXIntegers..];
-                                double.TryParse($"{integers}.{fraction}", out xOffset);
+                                double.TryParse($"{integers}.{fraction}", NumberStyles.Float, CultureInfo.InvariantCulture, out xOffset);
                                 xOffset = document.GetMillimeters(xOffset);
 
 
@@ -379,7 +385,7 @@ public class GerberDocument
 
                                 integers = valueStr[..document.CoordinateYIntegers];
                                 fraction = valueStr[document.CoordinateYIntegers..];
-                                double.TryParse($"{integers}.{fraction}", out yOffset);
+                                double.TryParse($"{integers}.{fraction}", NumberStyles.Float, CultureInfo.InvariantCulture, out yOffset);
                                 yOffset = document.GetMillimeters(yOffset);
 
 
@@ -449,12 +455,14 @@ public class GerberDocument
         }
     }
 
-    public static GerberDocument ParseAndDraw(OperationPCBExposure.PCBExposureFile file, Mat mat, SizeF xyPpmm, GerberMidpointRounding sizeMidpointRounding = GerberMidpointRounding.AwayFromZero, bool enableAntiAliasing = false)
+    public static GerberDocument ParseAndDraw(OperationPCBExposure.PCBExposureFile file, Mat mat, SizeF xyPpmm, GerberMidpointRounding sizeMidpointRounding = GerberMidpointRounding.AwayFromZero, SizeF offset = default, bool enableAntiAliasing = false)
     {
         var document = new GerberDocument
         {
             SizeMidpointRounding = sizeMidpointRounding,
             XYppmm = xyPpmm,
+            OffsetX = offset.Width,
+            OffsetY = offset.Height,
             InversePolarity = file.InvertPolarity,
             SizeScale = file.SizeScale
         };
@@ -464,18 +472,32 @@ public class GerberDocument
         return document;
     }
 
-    public static GerberDocument ParseAndDraw(string filePath, Mat mat, SizeF xyPpmm, GerberMidpointRounding sizeMidpointRounding = GerberMidpointRounding.AwayFromZero, bool enableAntiAliasing = false)
+    public static GerberDocument ParseAndDraw(string filePath, Mat mat, SizeF xyPpmm, GerberMidpointRounding sizeMidpointRounding = GerberMidpointRounding.AwayFromZero, SizeF offset = default, bool enableAntiAliasing = false)
     {
         var document = new GerberDocument
         {
             SizeMidpointRounding = sizeMidpointRounding,
-            XYppmm = xyPpmm
+            XYppmm = xyPpmm,
+            OffsetX = offset.Width,
+            OffsetY = offset.Height
         };
 
         ParseAndDraw(document, filePath, mat, enableAntiAliasing);
 
         return document;
     }
+
+    public MCvScalar GetPolarityColor(GerberPolarityType polarity) => polarity == GerberPolarityType.Dark
+        ? !InversePolarity ? EmguExtensions.WhiteColor : EmguExtensions.BlackColor
+        : !InversePolarity ? EmguExtensions.BlackColor : EmguExtensions.WhiteColor;
+
+    public MCvScalar GetPolarityColor(bool polarity) => polarity
+        ? !InversePolarity ? EmguExtensions.WhiteColor : EmguExtensions.BlackColor
+        : !InversePolarity ? EmguExtensions.BlackColor : EmguExtensions.WhiteColor;
+
+    public MCvScalar GetPolarityColor(int polarity) => polarity > 0
+        ? !InversePolarity ? EmguExtensions.WhiteColor : EmguExtensions.BlackColor
+        : !InversePolarity ? EmguExtensions.BlackColor : EmguExtensions.WhiteColor;
 
     public float GetMillimeters(float size)
     {
@@ -502,13 +524,13 @@ public class GerberDocument
     }
 
     public Point PositionMmToPx(PointF atMm)
-        => new((int)Math.Round(atMm.X * XYppmm.Width, MidpointRounding.AwayFromZero), (int)Math.Round(atMm.Y * XYppmm.Height, MidpointRounding.AwayFromZero));
+        => new((int)Math.Round((atMm.X + OffsetX) * XYppmm.Width, MidpointRounding.AwayFromZero), (int)Math.Round((atMm.Y + OffsetY) * XYppmm.Height, MidpointRounding.AwayFromZero));
 
     public Point PositionMmToPx(double atXmm, double atYmm)
-        => new((int)Math.Round(atXmm * XYppmm.Width, MidpointRounding.AwayFromZero), (int)Math.Round(atYmm * XYppmm.Height, MidpointRounding.AwayFromZero));
+        => new((int)Math.Round((atXmm + OffsetX) * XYppmm.Width, MidpointRounding.AwayFromZero), (int)Math.Round((atYmm + OffsetY) * XYppmm.Height, MidpointRounding.AwayFromZero));
 
     public Point PositionMmToPx(float atXmm, float atYmm)
-        => new((int)Math.Round(atXmm * XYppmm.Width, MidpointRounding.AwayFromZero), (int)Math.Round(atYmm * XYppmm.Height, MidpointRounding.AwayFromZero));
+        => new((int)Math.Round((atXmm + OffsetX) * XYppmm.Width, MidpointRounding.AwayFromZero), (int)Math.Round((atYmm + OffsetY) * XYppmm.Height, MidpointRounding.AwayFromZero));
 
     public Size SizeMmToPx(SizeF sizeMm)
         => new((int)Math.Max(1, Math.Round(sizeMm.Width * XYppmm.Width * SizeScale, (MidpointRounding)SizeMidpointRounding)),
@@ -557,7 +579,7 @@ public class GerberDocument
             {
                 parseLine = parseLine.Substring(4, parseLine.Length-5);
                 var split = parseLine.Split(' ');
-                location = new PointF(float.Parse(split[0]), float.Parse(split[1]));
+                location = new PointF(float.Parse(split[0], CultureInfo.InvariantCulture), float.Parse(split[1], CultureInfo.InvariantCulture));
                 continue;
             }
             if (parseLine.StartsWith("(segment ") || parseLine.StartsWith("(gr_line "))
@@ -575,8 +597,8 @@ public class GerberDocument
                 if (!widthMatch.Success || widthMatch.Groups.Count < 2) continue;
 
                 var startXf = new PointF(float.Parse(startMatch.Groups[1].Value), float.Parse(startMatch.Groups[2].Value));
-                var endXf = new PointF(float.Parse(endMatch.Groups[1].Value), float.Parse(endMatch.Groups[2].Value));
-                var widthf = float.Parse(widthMatch.Groups[1].Value);
+                var endXf = new PointF(float.Parse(endMatch.Groups[1].Value, CultureInfo.InvariantCulture), float.Parse(endMatch.Groups[2].Value, CultureInfo.InvariantCulture));
+                var widthf = float.Parse(widthMatch.Groups[1].Value, CultureInfo.InvariantCulture);
 
                 var startX = new System.Drawing.Point((int)(startXf.X * pixelsPerMm), (int)(startXf.Y * pixelsPerMm));
                 var endX = new System.Drawing.Point((int)(endXf.X * pixelsPerMm), (int)(endXf.Y * pixelsPerMm));
@@ -598,12 +620,12 @@ public class GerberDocument
                 var drillMatch = Regex.Match(parseLine, @"\(drill\s+(\S+)\)");
 
 
-                var atf = new PointF(float.Parse(atMatch.Groups[1].Value), float.Parse(atMatch.Groups[2].Value));
-                //var sizef = new SizeF(float.Parse(sizeMatch.Groups[1].Value), float.Parse(sizeMatch.Groups[2].Value));
+                var atf = new PointF(float.Parse(atMatch.Groups[1].Value, CultureInfo.InvariantCulture), float.Parse(atMatch.Groups[2].Value, CultureInfo.InvariantCulture));
+                //var sizef = new SizeF(float.Parse(sizeMatch.Groups[1].Value, CultureInfo.InvariantCulture), float.Parse(sizeMatch.Groups[2].Value, CultureInfo.InvariantCulture));
 
                 var at = new System.Drawing.Point((int)(atf.X * pixelsPerMm), (int)(atf.Y * pixelsPerMm));
                 if (!drillMatch.Success || drillMatch.Groups.Count < 2) continue;
-                var drillf = float.Parse(drillMatch.Groups[1].Value);
+                var drillf = float.Parse(drillMatch.Groups[1].Value, CultureInfo.InvariantCulture);
                 var drill = (int) (drillf * pixelsPerMm / 2);
 
                 CvInvoke.Circle(mat, at, drill, EmguExtensions.WhiteColor, -1);
@@ -626,11 +648,11 @@ public class GerberDocument
                 var widthMatch = Regex.Match(parseLine, @"\(width\s+(\S+)\)");
                 if (!widthMatch.Success || widthMatch.Groups.Count < 2) continue;
 
-                var atf = new PointF(float.Parse(atMatch.Groups[1].Value), float.Parse(atMatch.Groups[2].Value));
+                var atf = new PointF(float.Parse(atMatch.Groups[1].Value, CultureInfo.InvariantCulture), float.Parse(atMatch.Groups[2].Value, CultureInfo.InvariantCulture));
                 var at = new System.Drawing.Point((int)(atf.X * pixelsPerMm), (int)(atf.Y * pixelsPerMm));
-                var endf = new PointF(float.Parse(endMatch.Groups[1].Value), float.Parse(endMatch.Groups[2].Value));
+                var endf = new PointF(float.Parse(endMatch.Groups[1].Value, CultureInfo.InvariantCulture), float.Parse(endMatch.Groups[2].Value, CultureInfo.InvariantCulture));
                 var radius = (int)(Math.Max(Math.Abs(atf.X - endf.X), Math.Abs(atf.Y - endf.Y)) * pixelsPerMm);
-                var widthf = float.Parse(widthMatch.Groups[1].Value);
+                var widthf = float.Parse(widthMatch.Groups[1].Value, CultureInfo.InvariantCulture);
                 var width = (int)(widthf * pixelsPerMm);
 
                 CvInvoke.Circle(mat, at, radius, EmguExtensions.WhiteColor, width);
@@ -656,9 +678,9 @@ public class GerberDocument
                 var widthMatch = Regex.Match(parseLine, @"\(width\s+(\S+)\)");
                 if (!widthMatch.Success || widthMatch.Groups.Count < 2) continue;
 
-                var startf = new PointF(float.Parse(startMatch.Groups[1].Value), float.Parse(startMatch.Groups[2].Value));
-                var endf = new PointF(float.Parse(endMatch.Groups[1].Value), float.Parse(endMatch.Groups[2].Value));
-                var widthf = float.Parse(widthMatch.Groups[1].Value);
+                var startf = new PointF(float.Parse(startMatch.Groups[1].Value, CultureInfo.InvariantCulture), float.Parse(startMatch.Groups[2].Value, CultureInfo.InvariantCulture));
+                var endf = new PointF(float.Parse(endMatch.Groups[1].Value, CultureInfo.InvariantCulture), float.Parse(endMatch.Groups[2].Value, CultureInfo.InvariantCulture));
+                var widthf = float.Parse(widthMatch.Groups[1].Value, CultureInfo.InvariantCulture);
 
                 var start = new System.Drawing.Point((int)(startf.X * pixelsPerMm), (int)(startf.Y * pixelsPerMm));
                 var end = new System.Drawing.Point((int)(endf.X * pixelsPerMm), (int)(endf.Y * pixelsPerMm));
@@ -689,8 +711,8 @@ public class GerberDocument
                 var drillMatch = Regex.Match(parseLine, @"\(drill\s+(\S+)\)");
 
 
-                var atf = new PointF(float.Parse(atMatch.Groups[1].Value), float.Parse(atMatch.Groups[2].Value));
-                var sizef = new SizeF(float.Parse(sizeMatch.Groups[1].Value), float.Parse(sizeMatch.Groups[2].Value));
+                var atf = new PointF(float.Parse(atMatch.Groups[1].Value, CultureInfo.InvariantCulture), float.Parse(atMatch.Groups[2].Value, CultureInfo.InvariantCulture));
+                var sizef = new SizeF(float.Parse(sizeMatch.Groups[1].Value, CultureInfo.InvariantCulture), float.Parse(sizeMatch.Groups[2].Value, CultureInfo.InvariantCulture));
 
                 var at = new System.Drawing.Point((int)(location.X * pixelsPerMm + atf.X * pixelsPerMm), (int)(location.Y * pixelsPerMm + atf.Y * pixelsPerMm));
 
@@ -709,7 +731,7 @@ public class GerberDocument
                 
                 if (drillMatch.Success && drillMatch.Groups.Count >= 2)
                 {
-                    var drillf = float.Parse(drillMatch.Groups[1].Value);
+                    var drillf = float.Parse(drillMatch.Groups[1].Value, CultureInfo.InvariantCulture);
                     var drill = (int)(drillf * pixelsPerMm / 2);
 
                     drillPoints.Add(new KeyValuePair<Point, int>(at, drill));

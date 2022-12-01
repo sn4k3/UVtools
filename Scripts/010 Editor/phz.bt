@@ -101,7 +101,7 @@ struct LAYER_DATA {
     float LightOffSeconds <fgcolor=cBlack, bgcolor=cRed>;
     uint DataAddress <fgcolor=cBlack, bgcolor=cRed>;
     uint DataSize <fgcolor=cBlack, bgcolor=cRed>;
-    uint Unknown <fgcolor=cBlack, bgcolor=cRed>;
+    uint PageNumber <fgcolor=cBlack, bgcolor=cRed>;
     uint Unknown <fgcolor=cBlack, bgcolor=cRed>;
     uint Unknown <fgcolor=cBlack, bgcolor=cRed>;
     uint Unknown <fgcolor=cBlack, bgcolor=cRed>;
@@ -119,7 +119,7 @@ struct LAYERS {
 	for( i = 0; i < header.LayerCount; i++ ){
 		LAYER_DATA layerData <fgcolor=cBlack, bgcolor=cYellow>;
         currentPos = FTell();
-		FSeek(layerData.DataAddress);
+		FSeek(layerData.PageNumber * 4294967296 + layerData.DataAddress);
 		LAYER_RLE layerRLE(layerData.DataSize);
         FSeek(currentPos);
 	}

@@ -33,7 +33,8 @@ internal class Program
 
     public static async Task<int> Main(params string[] args)
     {
-        Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
+        
+        Thread.CurrentThread.CurrentCulture = CoreSettings.OptimalCultureInfo;
         Args = args;
         
         var rootCommand = new RootCommand("MSLA/DLP, file analysis, repair, conversion and manipulation")

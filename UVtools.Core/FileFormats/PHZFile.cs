@@ -449,7 +449,7 @@ public class PHZFile : FileFormat
         /// Gets the layer image length in bytes.
         /// </summary>
         [FieldOrder(4)] public uint DataSize             { get; set; }
-        [FieldOrder(5)] public uint Unknown1             { get; set; }
+        [FieldOrder(5)] public uint PageNumber           { get; set; }
         [FieldOrder(6)] public uint Unknown2             { get; set; }
         [FieldOrder(7)] public uint Unknown3             { get; set; }
         [FieldOrder(8)] public uint Unknown4             { get; set; }
@@ -625,7 +625,7 @@ public class PHZFile : FileFormat
 
         public override string ToString()
         {
-            return $"{nameof(PositionZ)}: {PositionZ}, {nameof(ExposureTime)}: {ExposureTime}, {nameof(LightOffDelay)}: {LightOffDelay}, {nameof(DataAddress)}: {DataAddress}, {nameof(DataSize)}: {DataSize}, {nameof(Unknown1)}: {Unknown1}, {nameof(Unknown2)}: {Unknown2}, {nameof(Unknown3)}: {Unknown3}, {nameof(Unknown4)}: {Unknown4}";
+            return $"{nameof(PositionZ)}: {PositionZ}, {nameof(ExposureTime)}: {ExposureTime}, {nameof(LightOffDelay)}: {LightOffDelay}, {nameof(DataAddress)}: {DataAddress}, {nameof(DataSize)}: {DataSize}, {nameof(PageNumber)}: {PageNumber}, {nameof(Unknown2)}: {Unknown2}, {nameof(Unknown3)}: {Unknown3}, {nameof(Unknown4)}: {Unknown4}";
         }
     }
     #endregion
@@ -999,8 +999,8 @@ public class PHZFile : FileFormat
         var layersHash = new Dictionary<string, LayerDef>();
         LayersDefinitions = new LayerDef[HeaderSettings.LayerCount];
         HeaderSettings.LayersDefinitionOffsetAddress = (uint)outputFile.Position;
-        uint layerDefCurrentOffset = HeaderSettings.LayersDefinitionOffsetAddress;
-        uint layerDataCurrentOffset = HeaderSettings.LayersDefinitionOffsetAddress + (uint)Helpers.Serializer.SizeOf(new LayerDef()) * LayerCount;
+        long layerDefCurrentOffset = HeaderSettings.LayersDefinitionOffsetAddress;
+        long layerDataCurrentOffset = HeaderSettings.LayersDefinitionOffsetAddress + Helpers.Serializer.SizeOf(new LayerDef()) * LayerCount;
 
         foreach (var batch in BatchLayersIndexes())
         {
@@ -1037,7 +1037,8 @@ public class PHZFile : FileFormat
 
                 if (layerDefHash is null)
                 {
-                    layerDef.DataAddress = layerDataCurrentOffset;
+                    layerDef.PageNumber = (uint)(layerDataCurrentOffset / ChituboxFile.PageSize);
+                    layerDef.DataAddress = (uint) (layerDataCurrentOffset - ChituboxFile.PageSize * layerDef.PageNumber);
 
                     outputFile.Seek(layerDataCurrentOffset, SeekOrigin.Begin);
                     layerDataCurrentOffset += outputFile.WriteBytes(layerDef.EncodedRle);
@@ -1128,7 +1129,7 @@ public class PHZFile : FileFormat
 
                 if (DecodeType == FileDecodeType.Full)
                 {
-                    inputFile.SeekDoWorkAndRewind(layerDef.DataAddress,
+                    inputFile.SeekDoWorkAndRewind(layerDef.PageNumber * ChituboxFile.PageSize + layerDef.DataAddress,
                         () => { layerDef.EncodedRle = inputFile.ReadBytes(layerDef.DataSize); });
                 }
             }
@@ -1164,13 +1165,11 @@ public class PHZFile : FileFormat
                 outputFile.Write(Encoding.ASCII.GetBytes(HeaderSettings.MachineName), 0, (int)HeaderSettings.MachineNameSize);
             }*/
 
-        uint layerOffset = HeaderSettings.LayersDefinitionOffsetAddress;
+        outputFile.Seek(HeaderSettings.LayersDefinitionOffsetAddress, SeekOrigin.Begin);
         for (uint layerIndex = 0; layerIndex < HeaderSettings.LayerCount; layerIndex++)
         {
             LayersDefinitions[layerIndex].SetFrom(this[layerIndex]);
-            outputFile.Seek(layerOffset, SeekOrigin.Begin);
             outputFile.WriteSerialize(LayersDefinitions[layerIndex]);
-            layerOffset += (uint)Helpers.Serializer.SizeOf(LayersDefinitions[layerIndex]);
         }
     }
 

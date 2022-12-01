@@ -636,7 +636,7 @@ public class GCodeBuilder : BindableBase
 
     public void AppendWaitSyncDelay(string timeStr, string? comment = null)
     {
-        if (!float.TryParse(timeStr, out var time)) return;
+        if (!float.TryParse(timeStr, NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out var time)) return;
         if (time < 0) return;
         AppendLineOverrideComment(CommandWaitSyncDelay, comment, timeStr);
     }
@@ -649,7 +649,7 @@ public class GCodeBuilder : BindableBase
 
     public void AppendWaitG4(string timeStr, string? comment = null)
     {
-        if (!float.TryParse(timeStr, out var time)) return;
+        if (!float.TryParse(timeStr, NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out var time)) return;
         if (time < 0) return;
         AppendLineOverrideComment(CommandWaitG4, comment, timeStr);
     }
@@ -1041,7 +1041,7 @@ public class GCodeBuilder : BindableBase
                         layerBlock.WaitSyncDelayDetected = true;
                         continue; // Sync movement delay, skip
                     }
-                    var waitTime = float.Parse(match.Groups[1].Value);
+                    var waitTime = float.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture);
 
                     if (layerBlock.PositionZ.HasValue &&
                         //layerBlock.LiftHeight.HasValue &&
@@ -1119,107 +1119,6 @@ public class GCodeBuilder : BindableBase
 
         // Propagate values of left over layer
         layerBlock.SetLayer();
-
-
-        /*for (uint layerIndex = 0; layerIndex < slicerFile.LayerCount; layerIndex++)
-        {
-            var layer = slicerFile[layerIndex]; 
-            if(layer is null) continue;
-            var startStr = CommandShowImageM6054.ToStringWithoutComments(GetShowImageString(layerIndex));
-            var endStr = CommandShowImageM6054.ToStringWithoutComments(GetShowImageString(layerIndex+1));
-            gcode = gcode.Substring(gcode.IndexOf(startStr, StringComparison.InvariantCultureIgnoreCase) + startStr.Length + 1);
-            var endStrIndex = gcode.IndexOf(endStr, StringComparison.Ordinal);
-            var stripGcode = endStrIndex > 0 ? gcode[..endStrIndex] : gcode;//.Trim(' ', '\n', '\r', '\t');
-
-            float liftHeight = 0;// this allow read back no lifts slicerFile.GetInitialLayerValueOrNormal(layerIndex, slicerFile.BottomLiftHeight, slicerFile.LiftHeight);
-            float liftSpeed = slicerFile.GetInitialLayerValueOrNormal(layerIndex, slicerFile.BottomLiftSpeed, slicerFile.LiftSpeed);
-            float retractSpeed = slicerFile.RetractSpeed;
-            float lightOffDelay = 0;
-            byte pwm = slicerFile.GetInitialLayerValueOrNormal(layerIndex, slicerFile.BottomLightPWM, slicerFile.LightPWM);
-            float exposureTime = slicerFile.GetInitialLayerValueOrNormal(layerIndex, slicerFile.BottomExposureTime, slicerFile.ExposureTime);
-            var moveG0Regex = Regex.Matches(stripGcode, CommandMoveG0.ToStringWithoutComments(@"([+-]?([0-9]*[.])?[0-9]+)", @"(\d+)"), RegexOptions.IgnoreCase);
-            var moveG1Regex = Regex.Matches(stripGcode, CommandMoveG1.ToStringWithoutComments(@"([+-]?([0-9]*[.])?[0-9]+)", @"(\d+)"), RegexOptions.IgnoreCase);
-            var waitG4Regex = Regex.Matches(stripGcode, CommandWaitG4.ToStringWithoutComments(@"(\d+)"), RegexOptions.IgnoreCase);
-            var pwmM106Regex = Regex.Match(stripGcode, CommandTurnLEDM106.ToStringWithoutComments(@"(\d+)"), RegexOptions.IgnoreCase);
-            var moveRegex = moveG0Regex.Count > 0 ? moveG0Regex : moveG1Regex;
-
-            if (moveRegex.Count >= 1 && moveRegex[0].Success)
-            {
-                float liftPosTemp = float.Parse(moveRegex[0].Groups[1].Value, CultureInfo.InvariantCulture);
-                float liftSpeedTemp = ConvertToMillimetersPerMinute(float.Parse(moveRegex[0].Groups[3].Value, CultureInfo.InvariantCulture));
-
-                if (moveRegex.Count >= 2 && moveRegex[1].Success)
-                {
-                    float retractPos = float.Parse(moveRegex[1].Groups[1].Value, CultureInfo.InvariantCulture);
-                    retractSpeed = ConvertToMillimetersPerMinute(float.Parse(moveRegex[1].Groups[3].Value, CultureInfo.InvariantCulture));
-                    liftSpeed = liftSpeedTemp;
-
-                    switch (positionType)
-                    {
-                        case GCodePositioningTypes.Absolute:
-                            liftHeight = Layer.RoundHeight(liftPosTemp - retractPos);
-                            positionZ = retractPos;
-                            break;
-                        case GCodePositioningTypes.Partial:
-                            liftHeight = liftPosTemp;
-                            positionZ = Layer.RoundHeight(positionZ + liftPosTemp + retractPos);
-                            break;
-                    }
-                }
-                else
-                {
-                    if (liftPosTemp - positionZ <= FileFormat.MaximumLayerHeight)
-                    {
-                        switch (positionType)
-                        {
-                            case GCodePositioningTypes.Absolute:
-                                positionZ = liftPosTemp;
-                                break;
-                            case GCodePositioningTypes.Partial:
-                                positionZ = Layer.RoundHeight(positionZ + liftPosTemp);
-                                break;
-                        }
-                    }
-                }
-            }
-
-            if (pwmM106Regex.Success)
-            {
-                if (_maxLedPower == byte.MaxValue)
-                {
-                    pwm = byte.Parse(pwmM106Regex.Groups[1].Value);
-                }
-                else
-                {
-                    ushort pwmValue = ushort.Parse(pwmM106Regex.Groups[1].Value);
-                    pwm = (byte)(pwmValue * byte.MaxValue / _maxLedPower);
-                }
-            }
-
-            if (waitG4Regex.Count >= 1 && waitG4Regex[0].Success)
-            {
-                lightOffDelay = ConvertToSeconds(float.Parse(waitG4Regex[0].Groups[1].Value, CultureInfo.InvariantCulture));
-                
-                if (waitG4Regex.Count >= 2 && waitG4Regex[1].Success)
-                {
-                    exposureTime = ConvertToSeconds(float.Parse(waitG4Regex[1].Groups[1].Value, CultureInfo.InvariantCulture));
-                }
-                else // Only one match, meaning light off delay is not present and the only time is the cure time
-                {
-                    exposureTime = lightOffDelay;
-                    lightOffDelay = slicerFile.GetInitialLayerValueOrNormal(layerIndex, slicerFile.BottomLightOffDelay, slicerFile.LightOffDelay);
-                }
-            }
-
-            layer.PositionZ = positionZ;
-            layer.ExposureTime = exposureTime;
-            layer.LiftHeight = liftHeight;
-            layer.LiftSpeed = liftSpeed;
-            layer.RetractSpeed = retractSpeed;
-            layer.LightOffDelay = lightOffDelay;
-            layer.LightPWM = pwm;
-        }
-        */
 
         if (rebuildGlobalTable)
         {

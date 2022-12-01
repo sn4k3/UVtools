@@ -31,8 +31,7 @@ public class PolygonAperture : Aperture
         Vertices = vertices;
     }
     #endregion
-
-
+    
     public override void DrawFlashD3(Mat mat, PointF at, MCvScalar color, LineType lineType = LineType.EightConnected)
     {
         mat.DrawPolygon(Vertices, Document.SizeMmToPx(Diameter / 2), Document.PositionMmToPx(at), color, 0, -1, lineType);

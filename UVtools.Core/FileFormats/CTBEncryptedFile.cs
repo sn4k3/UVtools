@@ -6,6 +6,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.Drawing.Printing;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -176,22 +177,23 @@ public class CTBEncryptedFile : FileFormat
     public class LayerPointer
     {
         [FieldOrder(0)] public uint LayerOffset { get; set; }
-        [FieldOrder(1)] public uint Padding1 { get; set; } // 0
+        [FieldOrder(1)] public uint PageNumber { get; set; }
         [FieldOrder(2)] public uint LayerTableSize { get; set; } = LayerDef.TABLE_SIZE; // always 0x58
         [FieldOrder(3)] public uint Padding2 { get; set; } // 0
 
         public override string ToString()
         {
-            return $"{nameof(LayerOffset)}: {LayerOffset}, {nameof(Padding1)}: {Padding1}, {nameof(LayerTableSize)}: {LayerTableSize}, {nameof(Padding2)}: {Padding2}";
+            return $"{nameof(LayerOffset)}: {LayerOffset}, {nameof(PageNumber)}: {PageNumber}, {nameof(LayerTableSize)}: {LayerTableSize}, {nameof(Padding2)}: {Padding2}";
         }
 
         public LayerPointer()
         {
         }
 
-        public LayerPointer(uint layerOffset)
+        public LayerPointer(long layerOffset)
         {
-            LayerOffset = layerOffset;
+            PageNumber = (uint)(layerOffset / ChituboxFile.PageSize);
+            LayerOffset = (uint)(layerOffset - ChituboxFile.PageSize * PageNumber);
         }
     }
 
@@ -203,8 +205,8 @@ public class CTBEncryptedFile : FileFormat
         [FieldOrder(1)] public float PositionZ { get; set; }
         [FieldOrder(2)] public float ExposureTime { get; set; }
         [FieldOrder(3)] public float LightOffDelay { get; set; }
-        [FieldOrder(4)] public uint LayerDefOffset { get; set; }
-        [FieldOrder(5)] public uint Unknown2 { get; set; }
+        [FieldOrder(4)] public uint LayerDataOffset { get; set; }
+        [FieldOrder(5)] public uint PageNumber { get; set; }
         [FieldOrder(6)] public uint DataLength { get; set; }
         [FieldOrder(7)] public uint Unknown3 { get; set; }
         [FieldOrder(8)] public uint EncryptedDataOffset { get; set; }
@@ -440,7 +442,7 @@ public class CTBEncryptedFile : FileFormat
 
         public override string ToString()
         {
-            return $"{nameof(TableSize)}: {TableSize}, {nameof(PositionZ)}: {PositionZ}, {nameof(ExposureTime)}: {ExposureTime}, {nameof(LightOffDelay)}: {LightOffDelay}, {nameof(LayerDefOffset)}: {LayerDefOffset}, {nameof(Unknown2)}: {Unknown2}, {nameof(DataLength)}: {DataLength}, {nameof(Unknown3)}: {Unknown3}, {nameof(EncryptedDataOffset)}: {EncryptedDataOffset}, {nameof(EncryptedDataLength)}: {EncryptedDataLength}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(LiftHeight2)}: {LiftHeight2}, {nameof(LiftSpeed2)}: {LiftSpeed2}, {nameof(RetractSpeed)}: {RetractSpeed}, {nameof(RetractHeight2)}: {RetractHeight2}, {nameof(RetractSpeed2)}: {RetractSpeed2}, {nameof(RestTimeBeforeLift)}: {RestTimeBeforeLift}, {nameof(RestTimeAfterLift)}: {RestTimeAfterLift}, {nameof(RestTimeAfterRetract)}: {RestTimeAfterRetract}, {nameof(LightPWM)}: {LightPWM}, {nameof(Unknown6)}: {Unknown6}, {nameof(RLEData)}: {RLEData?.Length}";
+            return $"{nameof(TableSize)}: {TableSize}, {nameof(PositionZ)}: {PositionZ}, {nameof(ExposureTime)}: {ExposureTime}, {nameof(LightOffDelay)}: {LightOffDelay}, {nameof(LayerDataOffset)}: {LayerDataOffset}, {nameof(PageNumber)}: {PageNumber}, {nameof(DataLength)}: {DataLength}, {nameof(Unknown3)}: {Unknown3}, {nameof(EncryptedDataOffset)}: {EncryptedDataOffset}, {nameof(EncryptedDataLength)}: {EncryptedDataLength}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(LiftHeight2)}: {LiftHeight2}, {nameof(LiftSpeed2)}: {LiftSpeed2}, {nameof(RetractSpeed)}: {RetractSpeed}, {nameof(RetractHeight2)}: {RetractHeight2}, {nameof(RetractSpeed2)}: {RetractSpeed2}, {nameof(RestTimeBeforeLift)}: {RestTimeBeforeLift}, {nameof(RestTimeAfterLift)}: {RestTimeAfterLift}, {nameof(RestTimeAfterRetract)}: {RestTimeAfterRetract}, {nameof(LightPWM)}: {LightPWM}, {nameof(Unknown6)}: {Unknown6}, {nameof(RLEData)}: {RLEData?.Length}";
         }
     }
 
@@ -1188,7 +1190,7 @@ public class CTBEncryptedFile : FileFormat
             {
                 progress.ThrowIfCancellationRequested();
 
-                inputFile.Seek(LayersPointer[layerIndex].LayerOffset, SeekOrigin.Begin);
+                inputFile.Seek(LayersPointer[layerIndex].PageNumber * ChituboxFile.PageSize + LayersPointer[layerIndex].LayerOffset, SeekOrigin.Begin);
                 LayersDefinition[layerIndex] = Helpers.Deserialize<LayerDef>(inputFile);
                 LayersDefinition[layerIndex].Parent = this;
                 if (DecodeType == FileDecodeType.Full) LayersDefinition[layerIndex].RLEData = inputFile.ReadBytes(LayersDefinition[layerIndex].DataLength);
@@ -1207,13 +1209,10 @@ public class CTBEncryptedFile : FileFormat
                         /* Decrypt RLE data here */
 
                         var byteBuffer = new byte[layerDef.EncryptedDataLength];
-                        Array.Copy(layerDef.RLEData!, (int)layerDef.EncryptedDataOffset, byteBuffer, 0,
-                            (int)layerDef.EncryptedDataLength);
+                        Array.Copy(layerDef.RLEData!, (int)layerDef.EncryptedDataOffset, byteBuffer, 0, (int)layerDef.EncryptedDataLength);
 
-                        byteBuffer = CryptExtensions.AesCryptBytes(byteBuffer, Bigfoot, CipherMode.CBC,
-                            PaddingMode.None, false, CookieMonster);
-                        Array.Copy(byteBuffer, 0, layerDef.RLEData!, layerDef.EncryptedDataOffset,
-                            layerDef.EncryptedDataLength);
+                        byteBuffer = CryptExtensions.AesCryptBytes(byteBuffer, Bigfoot, CipherMode.CBC, PaddingMode.None, false, CookieMonster);
+                        Array.Copy(byteBuffer, 0, layerDef.RLEData!, layerDef.EncryptedDataOffset, layerDef.EncryptedDataLength);
                     }
 
                     bool isBugged = false;
@@ -1243,7 +1242,7 @@ public class CTBEncryptedFile : FileFormat
         if (buggyLayers.Count == LayerCount)
         {
             throw new FileLoadException("Unable to load this file due to Chitubox bug affecting every layer." +
-                                        "Please increase the portion of the plate in use and reslice the file.");
+                                        "Please increase the portion of the plate in use and re-slice the file.");
         }
 
         for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
@@ -1376,9 +1375,11 @@ public class CTBEncryptedFile : FileFormat
         {
             progress.ThrowIfCancellationRequested();
             var layerDef = LayersDefinition[layerIndex];
-            LayersPointer[layerIndex] = new LayerPointer((uint)outputFile.Position);
+            LayersPointer[layerIndex] = new LayerPointer(outputFile.Position);
 
-            layerDef.LayerDefOffset = LayersPointer[layerIndex].LayerOffset + LayerDef.TABLE_SIZE;
+            long layerDataOffset = outputFile.Position + LayerDef.TABLE_SIZE;
+            layerDef.PageNumber = (uint)(layerDataOffset / ChituboxFile.PageSize);
+            layerDef.LayerDataOffset = (uint)(layerDataOffset - ChituboxFile.PageSize * layerDef.PageNumber);
             outputFile.WriteSerialize(layerDef);
             outputFile.WriteBytes(layerDef.RLEData!);
             progress++;
@@ -1425,7 +1426,7 @@ public class CTBEncryptedFile : FileFormat
         for (uint layerIndex = 0; layerIndex < LayersPointer!.Length; layerIndex++)
         {
             LayersDefinition![layerIndex].SetFrom(this[layerIndex]);
-            outputFile.Seek(LayersPointer[layerIndex].LayerOffset, SeekOrigin.Begin);
+            outputFile.Seek(LayersPointer[layerIndex].PageNumber * ChituboxFile.PageSize + LayersPointer[layerIndex].LayerOffset, SeekOrigin.Begin);
             outputFile.WriteSerialize(LayersDefinition[layerIndex]);
         }
     }

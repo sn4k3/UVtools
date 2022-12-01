@@ -163,7 +163,7 @@ struct LAYER_DATA {
     float LightOffSeconds <fgcolor=cBlack, bgcolor=cRed>;
     uint DataAddress <fgcolor=cBlack, bgcolor=cRed>;
     uint DataSize <fgcolor=cBlack, bgcolor=cRed>;
-    uint Unknown1 <fgcolor=cBlack, bgcolor=cRed>;
+    uint PageNumber <fgcolor=cBlack, bgcolor=cRed>;
     uint TableSize <fgcolor=cBlack, bgcolor=cRed>;
     uint Unknown3 <fgcolor=cBlack, bgcolor=cRed>;
     uint Unknown4 <fgcolor=cBlack, bgcolor=cRed>;
@@ -205,11 +205,11 @@ struct LAYERS {
 
             if(header.Version >= 3)
             {
-                FSeek(layerData.DataAddress - 84);
+                FSeek(layerData.PageNumber * 4294967296 + layerData.DataAddress - 84);
                 LAYER_DATAEX layerDataEx;
             }
             
-            FSeek(layerData.DataAddress);
+            FSeek(layerData.PageNumber * 4294967296 + layerData.DataAddress);
             LAYER_RLE layerRLE(layerData.DataSize);
             FSeek(currentPos);
         }

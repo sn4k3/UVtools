@@ -135,7 +135,8 @@
             <TextBlock Grid.Row="6" Text="{Binding Source={x:Static core:About.Author}}"/>
 			<!--<TextBlock Grid.Row="8" Text="{Binding AgeStr, StringFormat=Age: {0}}"/>-->
             <controls:ButtonWithIcon Grid.Row="8" VerticalAlignment="Center"
-                    Command="{Binding OpenLicense}"
+                    Command="{Binding OpenWebsite}"
+                    CommandParameter="{Binding Source={x:Static core:About.LicenseUrl}}"
                     Text="{Binding Source={x:Static core:About.License}}"
 					Icon="fa-solid fa-balance-scale"/>
 

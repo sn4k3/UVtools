@@ -6,12 +6,13 @@
  *  of this license document, but changing it is not allowed.
  */
 
+using System;
 using System.Data;
 using System.Drawing;
+using System.Globalization;
 using System.Text.RegularExpressions;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
-using Emgu.CV.Structure;
 using UVtools.Core.Extensions;
 
 namespace UVtools.Core.Gerber.Primitives;
@@ -96,24 +97,25 @@ public class VectorLinePrimitive : Primitive
         RotationExpression = rotationExpression;
     }
 
-    public override void DrawFlashD3(Mat mat, PointF at, MCvScalar color,
-        LineType lineType = LineType.EightConnected)
+    public override void DrawFlashD3(Mat mat, PointF at, LineType lineType = LineType.EightConnected)
     {
         if (!IsParsed) return;
         if (LineWidth <= 0) return;
 
-        if (Exposure == 0) color = EmguExtensions.BlackColor;
-        else if (color.V0 == 0) color = EmguExtensions.WhiteColor;
+        if (Rotation != 0)
+        {
+            throw new NotImplementedException($"{Name} primitive with code {Code} have a rotation value of {Rotation} which is not implemented. Open a issue regarding this problem and provide a sample file to be able to implement rotation correctly on this primitive.");
+        }
 
         var pt1 = Document.PositionMmToPx(at.X + StartX, at.Y + StartY);
         var pt2 = Document.PositionMmToPx(at.X + EndX, at.Y + EndY);
-        CvInvoke.Line(mat, pt1, pt2, color, EmguExtensions.CorrectThickness(Document.SizeMmToPxOverride(LineWidth, Document.XYppmm.Height)), lineType);
+        CvInvoke.Line(mat, pt1, pt2, Document.GetPolarityColor(Exposure), EmguExtensions.CorrectThickness(Document.SizeMmToPxOverride(LineWidth, Document.XYppmm.Height)), lineType);
         //CvInvoke.Rectangle(mat, rectangle, color, -1, lineType);
     }
 
-    public override void ParseExpressions(GerberDocument document, params string[] args)
+    public override void ParseExpressions(params string[] args)
     {
-        string csharpExp, result;
+        string csharpExp;
         float num;
         var exp = new DataTable();
 
@@ -121,67 +123,67 @@ public class VectorLinePrimitive : Primitive
         else
         {
             csharpExp = string.Format(Regex.Replace(ExposureExpression, @"\$(\d+)", "{$1}"), args);
-            result = exp.Compute(csharpExp, null).ToString()!;
-            if (byte.TryParse(result, out var val)) Exposure = val;
+            var temp = exp.Compute(csharpExp, null);
+            if (temp is not DBNull) Exposure = Convert.ToByte(temp);
         }
 
-        if (float.TryParse(LineWidthExpression, out num)) LineWidth = num;
+        if (float.TryParse(LineWidthExpression, NumberStyles.Float, CultureInfo.InvariantCulture, out num)) LineWidth = num;
         else
         {
             csharpExp = Regex.Replace(LineWidthExpression, @"\$(\d+)", "{$1}");
             csharpExp = string.Format(csharpExp, args);
-            result = exp.Compute(csharpExp, null).ToString()!;
-            if (float.TryParse(result, out var val)) LineWidth = val;
+            var temp = exp.Compute(csharpExp, null);
+            if (temp is not DBNull) LineWidth = Convert.ToSingle(temp);
         }
-        LineWidth = document.GetMillimeters(LineWidth);
+        LineWidth = Document.GetMillimeters(LineWidth);
 
-        if (float.TryParse(StartXExpression, out num)) StartX = num;
+        if (float.TryParse(StartXExpression, NumberStyles.Float, CultureInfo.InvariantCulture, out num)) StartX = num;
         else
         {
             csharpExp = Regex.Replace(StartXExpression, @"\$(\d+)", "{$1}");
             csharpExp = string.Format(csharpExp, args);
-            result = exp.Compute(csharpExp, null).ToString()!;
-            if (float.TryParse(result, out num)) StartX = num;
+            var temp = exp.Compute(csharpExp, null);
+            if (temp is not DBNull) StartX = Convert.ToSingle(temp);
         }
-        StartX = document.GetMillimeters(StartX);
+        StartX = Document.GetMillimeters(StartX);
 
-        if (float.TryParse(EndXExpression, out num)) EndX = num;
+        if (float.TryParse(EndXExpression, NumberStyles.Float, CultureInfo.InvariantCulture, out num)) EndX = num;
         else
         {
             csharpExp = Regex.Replace(EndXExpression, @"\$(\d+)", "{$1}");
             csharpExp = string.Format(csharpExp, args);
-            result = exp.Compute(csharpExp, null).ToString()!;
-            if (float.TryParse(result, out num)) EndX = num;
+            var temp = exp.Compute(csharpExp, null);
+            if (temp is not DBNull) EndX = Convert.ToSingle(temp);
         }
-        EndX = document.GetMillimeters(EndX);
+        EndX = Document.GetMillimeters(EndX);
 
-        if (float.TryParse(StartYExpression, out num)) StartY = num;
+        if (float.TryParse(StartYExpression, NumberStyles.Float, CultureInfo.InvariantCulture, out num)) StartY = num;
         else
         {
             csharpExp = Regex.Replace(StartYExpression, @"\$(\d+)", "{$1}");
             csharpExp = string.Format(csharpExp, args);
-            result = exp.Compute(csharpExp, null).ToString()!;
-            if (float.TryParse(result, out num)) StartY = num;
+            var temp = exp.Compute(csharpExp, null);
+            if (temp is not DBNull) StartY = Convert.ToSingle(temp);
         }
-        StartY = document.GetMillimeters(StartY);
+        StartY = Document.GetMillimeters(StartY);
 
-        if (float.TryParse(EndYExpression, out num)) EndY = num;
+        if (float.TryParse(EndYExpression, NumberStyles.Float, CultureInfo.InvariantCulture, out num)) EndY = num;
         else
         {
             csharpExp = Regex.Replace(EndYExpression, @"\$(\d+)", "{$1}");
             csharpExp = string.Format(csharpExp, args);
-            result = exp.Compute(csharpExp, null).ToString()!;
-            if (float.TryParse(result, out num)) EndY = num;
+            var temp = exp.Compute(csharpExp, null);
+            if (temp is not DBNull) EndY = Convert.ToSingle(temp);
         }
-        EndY = document.GetMillimeters(EndY);
+        EndY = Document.GetMillimeters(EndY);
 
-        if (float.TryParse(RotationExpression, out num)) Rotation = (short)num;
+        if (float.TryParse(RotationExpression, NumberStyles.Float, CultureInfo.InvariantCulture, out num)) Rotation = (short)num;
         else
         {
             csharpExp = Regex.Replace(RotationExpression, @"\$(\d+)", "{$1}");
             csharpExp = string.Format(csharpExp, args);
-            result = exp.Compute(csharpExp, null).ToString()!;
-            if (float.TryParse(result, out num)) Rotation = num;
+            var temp = exp.Compute(csharpExp, null);
+            if (temp is not DBNull) Rotation = Convert.ToSingle(temp);
         }
 
         IsParsed = true;

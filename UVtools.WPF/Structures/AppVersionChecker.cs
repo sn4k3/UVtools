@@ -274,6 +274,10 @@ public class AppVersionChecker : BindableBase
                         await stream.WriteLineAsync("else");
                         await stream.WriteLineAsync($"  cp -fR '{extractDirectoryPath}/'* '{macOSAppPath}'");
                         await stream.WriteLineAsync("fi");
+
+                        await stream.WriteLineAsync();
+                        await stream.WriteLineAsync("echo '- Force codesign to allow the app to run directly'");
+                        await stream.WriteLineAsync($"codesign --force --deep --sign - '{macOSAppPath}'");
                     }
                     else // Linux generic and macOS generic
                     {
@@ -305,10 +309,11 @@ public class AppVersionChecker : BindableBase
                     }
                     else // Can move
                     {
-                        await stream.WriteLineAsync("echo '- Attempt to rename directory to the new version name'");
                         await stream.WriteLineAsync($"if [ -d '{applicationPath}' ]; then");
+                        await stream.WriteLineAsync("echo '- Could not rename directory to the new version name, a directory with same name already exists'");
                         await stream.WriteLineAsync($"  cd '{App.ApplicationPath}'");
                         await stream.WriteLineAsync("else");
+                        await stream.WriteLineAsync($"echo '- Attempt to rename directory {new DirectoryInfo(App.ApplicationPath).Name} to {new DirectoryInfo(applicationPath)}'");
                         await stream.WriteLineAsync($"  mv -f '{App.ApplicationPath}' '{applicationPath}'");
                         await stream.WriteLineAsync($"  cd '{applicationPath}'");
                         await stream.WriteLineAsync("fi");
@@ -318,11 +323,11 @@ public class AppVersionChecker : BindableBase
                     if (App.SlicerFile is not null && App.SlicerFile.FileFullPath != Path.Combine(App.ApplicationPath, About.DemoFile))
                     {
                         // Reload last file
-                        await stream.WriteLineAsync($"nohup bash 'UVtools.sh' '{App.SlicerFile.FileFullPath}' &> /dev/null &");
+                        await stream.WriteLineAsync($"nohup ./UVtools.sh '{App.SlicerFile.FileFullPath}' &> /dev/null &");
                     }
                     else
                     {
-                        await stream.WriteLineAsync("nohup bash 'UVtools.sh' &> /dev/null &");
+                        await stream.WriteLineAsync("nohup ./UVtools.sh &> /dev/null &");
                     }
                     await stream.WriteLineAsync("disown");
                     await stream.WriteLineAsync();
@@ -334,10 +339,12 @@ public class AppVersionChecker : BindableBase
                     //await stream.WriteLine("exit");
                 }
 
+                //SystemAware.StartProcess("chmod", $"775 \"{upgradeScriptFilePath}\"", true);
+
                 if (Program.IsDebug)
                 {
                     Console.WriteLine("In debug mode, will not auto-upgrade, please run:");
-                    Console.WriteLine($"bash \"{upgradeScriptFilePath}\"");
+                    Console.WriteLine($"bash '{upgradeScriptFilePath}'");
                 }
                 else
                 {

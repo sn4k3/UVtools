@@ -1,5 +1,62 @@
-#!/bin/sh
+#!/bin/bash
+
+# The purpose of this custom AppRun script is to enablesymlinking the AppImage and invoking the corresponding
+# binary depending on which symlink name was used to invoke the AppImage.
+#
+# It also provides some additional help parameters in order to allow faster familiarization with functionality
+# embedded in this AppImage.
+
 HERE="$(dirname "$(readlink -f "${0}")")"
 export PATH="${HERE}"/usr/bin/:"${PATH}"
-EXEC=$(grep -e '^Exec=.*' "${HERE}"/*.desktop | head -n 1 | cut -d "=" -f 2 | cut -d " " -f 1)
-exec "${EXEC}" $@
+
+function help() {
+echo '  _   ___     ___              _     '
+echo ' | | | \ \   / / |_ ___   ___ | |___ '
+echo ' | | | |\ \ / /| __/ _ \ / _ \| / __|'
+echo ' | |_| | \ V / | || (_) | (_) | \__ \'
+echo '  \___/   \_/   \__\___/ \___/|_|___/'
+echo "
+ --------------------------------------------------------------------------
+    All the great UVtools functionality inside an AppImage package.
+ --------------------------------------------------------------------------
+ (This package uses the AppImage software packaging technology for Linux
+  ['One App == One File'] for easy availability of the newest UVtools
+  releases across all major Linux distributions.)
+ Usage:  --help, -h
+ ------     # This message
+         <path/to/file1> [path/to/file2] [path/to/file3] [...]
+            # Opens and loads specific file(s) with UVtools
+         --cmd-help
+            # Display UVtoolsCmd help message
+         --cmd, -c <argument(s)> [option(s)]
+            # Redirect a command to UVtoolsCmd
+         --appimage-extract
+            # Unpack this AppImage into a local sub-directory [currently named 'squashfs-root']
+         --appimage-help
+            # Show available AppImage options
+"
+}
+
+if [ "$1" == "--help" -o "$1" == "-h" ]; then
+    help
+    exit $?
+fi
+
+if [ "$1" == "--cmd-help" ]; then
+    exec 'UVtoolsCmd' --help
+    exit $?
+fi
+
+if [ "$1" == "--cmd" -o "$1" == "-c" ]; then
+	if [ "$#" -lt 2 ]; then
+		echo 'UVtoolsCmd requires at least one parameter'
+		exec 'UVtoolsCmd' --help
+		exit $?
+	fi
+
+    shift
+	exec 'UVtoolsCmd' $@
+    exit $?
+fi
+
+exec 'UVtools' $@

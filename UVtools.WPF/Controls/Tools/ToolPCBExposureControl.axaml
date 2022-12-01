@@ -96,7 +96,7 @@
             </DataGrid>
 
 
-			<Grid RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto"
+			<Grid RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto"
                   ColumnDefinitions="Auto,10,400">
 
                 <ToggleSwitch Grid.Row="0" Grid.Column="2"
@@ -136,11 +136,37 @@
                     Items="{Binding Operation.SizeMidpointRounding, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
                     SelectedItem="{Binding Operation.SizeMidpointRounding, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
 
+
                 <TextBlock Grid.Row="8" Grid.Column="0"
+                           VerticalAlignment="Center"
+                           ToolTip.Tip="Offset the PCB origin.
+&#x0a;Use the 'Show full preview image (The final result)' option to preview the resulting position."
+                           Text="Offset X/Y:"/>
+
+                <StackPanel Grid.Row="8" Grid.Column="2"
+                            Orientation="Horizontal" Spacing="20">
+                    <NumericUpDown Classes="ValueLabel ValueLabel_mm"
+                                   Increment="0.05"
+                                   Minimum="-10000"
+                                   Maximum="10000"
+                                   FormatString="F2"
+                                   Width="187"
+                                   Value="{Binding Operation.OffsetX}"/>
+
+                    <NumericUpDown Classes="ValueLabel ValueLabel_mm"
+                                   Increment="0.05"
+                                   Minimum="-10000"
+                                   Maximum="10000"
+                                   FormatString="F2"
+                                   Width="187"
+                                   Value="{Binding Operation.OffsetY}"/>
+                </StackPanel>
+
+                <TextBlock Grid.Row="10" Grid.Column="0"
                            VerticalAlignment="Center"
                            Text="Options:"/>
 
-				<StackPanel Grid.Row="8" Grid.Column="2"
+				<StackPanel Grid.Row="10" Grid.Column="2"
                             Orientation="Horizontal" Spacing="20">
 					<CheckBox VerticalAlignment="Center"
                               IsChecked="{Binding Operation.Mirror}"
@@ -154,14 +180,17 @@
                               IsChecked="{Binding Operation.EnableAntiAliasing}"
                               Content="Enable Anti-Aliasing"/>
 				</StackPanel>
-
-				
 			</Grid>
 
 		</StackPanel>
 
 		<StackPanel Grid.Column="2" Orientation="Vertical" Spacing="10">
-			<Image Stretch="Uniform"
+            <ToggleSwitch IsChecked="{Binding CropPreview}"
+                 OnContent="Show preview image cropped by it bounds"
+                OffContent="Show full preview image (The final result)"/>
+
+            <Image Stretch="Uniform"
+                   MaxHeight="700"
                    Source="{Binding PreviewImage}"/>
 
 			<TextBlock Text="{Binding PreviewImage.Size, StringFormat=Size: {0}}" HorizontalAlignment="Center"/>

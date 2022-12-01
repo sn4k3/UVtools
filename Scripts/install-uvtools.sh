@@ -14,6 +14,11 @@ api_url="https://api.github.com/repos/sn4k3/UVtools/releases/latest"
 dependencies_url="https://raw.githubusercontent.com/sn4k3/UVtools/master/Scripts/install-dependencies.sh"
 macOS_least_version='10.15'
 
+if [ "$arch" != "x86_64" -a "$arch" != "arm64" ]; then
+    echo "Error: Unsupported host arch $arch"
+    exit -1
+fi
+
 version() { echo "$@" | awk -F. '{ printf("%d%03d%03d%03d\n", $1,$2,$3,$4); }'; }
 testcmd() { command -v "$1" &> /dev/null; }
 get_filesize() {
@@ -29,19 +34,19 @@ get_filesize() {
 }
 downloaduvtools(){
     if [ -z "$1" ]; then
-        echo "Download url was not specified"
+        echo 'Error: Download url was not specified!'
         exit -1
     fi
 
     filename="$(basename "${download_url}")"
     tmpfile="$(mktemp "${TMPDIR:-/tmp}"/UVtoolsUpdate.XXXXXXXX)"
 
-    echo "Downloading: $download_url"
+    echo "- Downloading: $download_url"
     curl -L --retry 4 $download_url -o "$tmpfile"
 
     download_size="$(curl -sLI $download_url | grep -i Content-Length | awk 'END{print $2}' | tr -d '\r')"
     if [ -n "$download_size" ]; then
-        echo "- Validating file"
+        echo '- Validating file'
         local filesize="$(get_filesize "$tmpfile")"
         if [ "$download_size" -ne "$filesize" ]; then
             echo "Error: File verification failed, expecting $download_size bytes but downloaded $filesize bytes. Please re-run the script."
@@ -50,16 +55,11 @@ downloaduvtools(){
         fi
     fi
 
-    echo "- Kill instances"
+    echo '- Kill instances'
     killall UVtools 2> /dev/null
     ps -ef | grep '.*dotnet.*UVtools.dll' | grep -v grep | awk '{print $2}' | xargs kill 2> /dev/null
     sleep 0.5
 }
-
-if [ "$arch" != "x86_64" -a "$arch" != "arm64" ]; then
-    echo "Error: Unsupported host arch $arch"
-    exit -1
-fi
 
 echo '  _   ___     ___              _     '
 echo ' | | | \ \   / / |_ ___   ___ | |___ '
@@ -91,7 +91,7 @@ if [ -z "$osVariant" ]; then
     exit -1
 fi
 
-echo "- Detected: $osVariant $arch"
+echo "- $osVariant $arch"
 
 if [ "$osVariant" == "osx" ]; then
     #############

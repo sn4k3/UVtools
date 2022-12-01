@@ -8,6 +8,7 @@
 
 using System;
 using System.Drawing;
+using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Emgu.CV;
@@ -64,7 +65,7 @@ public abstract class Aperture
             case "C":
             {
                 if (match.Groups.Count < 4) return null;
-                if (!double.TryParse(match.Groups[3].Value, out var diameter)) return null;
+                if (!double.TryParse(match.Groups[3].Value, NumberStyles.Float, CultureInfo.InvariantCulture, out var diameter)) return null;
                 return new CircleAperture(document, index, diameter);
             }
             case "O":
@@ -72,8 +73,8 @@ public abstract class Aperture
                 if (match.Groups.Count < 4) return null;
                 var split = match.Groups[3].Value.Split('X', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
                 if (split.Length < 2) return null;
-                if (!float.TryParse(split[0], out var width)) return null;
-                if (!float.TryParse(split[1], out var height)) return null;
+                if (!float.TryParse(split[0], NumberStyles.Float, CultureInfo.InvariantCulture, out var width)) return null;
+                if (!float.TryParse(split[1], NumberStyles.Float, CultureInfo.InvariantCulture, out var height)) return null;
 
                 return new EllipseAperture(document, index, width, height);
             }
@@ -82,8 +83,8 @@ public abstract class Aperture
                 if (match.Groups.Count < 4) return null;
                 var split = match.Groups[3].Value.Split('X', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
                 if (split.Length < 2) return null;
-                if (!float.TryParse(split[0], out var width)) return null;
-                if (!float.TryParse(split[1], out var height)) return null;
+                if (!float.TryParse(split[0], NumberStyles.Float, CultureInfo.InvariantCulture, out var width)) return null;
+                if (!float.TryParse(split[1], NumberStyles.Float, CultureInfo.InvariantCulture, out var height)) return null;
 
                 return new RectangleAperture(document, index, width, height);
                 }
@@ -92,8 +93,8 @@ public abstract class Aperture
                 if (match.Groups.Count < 4) return null;
                 var split = match.Groups[3].Value.Split('X', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
                 if (split.Length < 2) return null;
-                if (!double.TryParse(split[0], out var diameter)) return null;
-                if (!ushort.TryParse(split[1], out var vertices)) return null;
+                if (!double.TryParse(split[0], NumberStyles.Float, CultureInfo.InvariantCulture, out var diameter)) return null;
+                if (!ushort.TryParse(split[1], NumberStyles.Float, CultureInfo.InvariantCulture, out var vertices)) return null;
 
                 return new PolygonAperture(document, index, diameter, vertices);
             }
@@ -112,7 +113,7 @@ public abstract class Aperture
                 
                 foreach (var primitive in macro)
                 {
-                    primitive.ParseExpressions(document, args);
+                    primitive.ParseExpressions(args);
                 }
 
                 return new MacroAperture(document, index, macro);

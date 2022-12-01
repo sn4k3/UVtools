@@ -1760,6 +1760,28 @@ public sealed class UserSettings : BindableBase
                             RequestPrintStatus = new (RemotePrinterRequest.RequestType.PrintStatus, RemotePrinterRequest.RequestMethod.GET, "job/list"),
                             RequestPrinterInfo = new (RemotePrinterRequest.RequestType.PrinterInfo, RemotePrinterRequest.RequestMethod.GET, "setting/printerInfo"),
                         },
+                        new RemotePrinter("0.0.0.0", 6000, "AnyCubic") 
+                        {
+                            // https://github.com/rudetrooper/Octoprint-Chituboard/issues/4#issuecomment-961264287
+                            // https://github.com/adamoutler/anycubic-python
+                            // https://github.com/adamoutler/Pi-Zero-W-Smart-USB-Flash-Drive/tree/main/src/home/pi/usb_share/scripts
+                            CompatibleExtensions = "pws;pw0;pwx;dlp;dl2p;pwmo;pwma;pwms;pwmx;pmx2;pwmb;pwsq;pm3;pm3m;pm3r;pwc",
+                            RequestUploadFile  = new (RemotePrinterRequest.RequestType.UploadFile,  RemotePrinterRequest.RequestMethod.TCP),
+                            RequestPrintFile   = new (RemotePrinterRequest.RequestType.PrintFile,   RemotePrinterRequest.RequestMethod.TCP, @"<$getfile>{0}\/(\d+\.[\da-zA-Z]+),>goprint,{#1}$>"),
+                            RequestDeleteFile  = new (RemotePrinterRequest.RequestType.DeleteFile,  RemotePrinterRequest.RequestMethod.TCP, @"<$getfile>{0}\/(\d+\.[\da-zA-Z]+),>delfile,{#1}$>"),
+                            RequestPausePrint  = new (RemotePrinterRequest.RequestType.PausePrint,  RemotePrinterRequest.RequestMethod.TCP, "gopause"),
+                            RequestResumePrint = new (RemotePrinterRequest.RequestType.ResumePrint, RemotePrinterRequest.RequestMethod.TCP, "goresume"),
+                            RequestStopPrint   = new (RemotePrinterRequest.RequestType.StopPrint,   RemotePrinterRequest.RequestMethod.TCP, "gostop"),
+                            RequestGetFiles    = new (RemotePrinterRequest.RequestType.GetFiles,    RemotePrinterRequest.RequestMethod.TCP, "getfile"),
+                            RequestPrintStatus = new (RemotePrinterRequest.RequestType.PrintStatus, RemotePrinterRequest.RequestMethod.TCP, "getstatus"),
+                            RequestPrinterInfo = new (RemotePrinterRequest.RequestType.PrinterInfo, RemotePrinterRequest.RequestMethod.TCP, "sysinfo"),
+                            // getmode
+                            // getwifi - displays the current wifi network name. 
+                            // gethistory - gets the history and print settings of previous prints.
+                            // delhistory - deletes printing history.
+                            // getPreview1 - returns a list of dimensions used for the print.
+                            // getPreview2 - returns a binary preview image of the print.
+                        },
                         /*new RemotePrinter("0.0.0.0", 40454, "Creality Halot")
                         {
                             CompatibleExtensions = "cxdlp",

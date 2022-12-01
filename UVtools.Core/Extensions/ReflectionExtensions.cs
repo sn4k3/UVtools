@@ -28,7 +28,7 @@ public static class ReflectionExtensions
         {
             if (Enum.TryParse(attribute.PropertyType, value, true, out var enumValue))
             {
-                attribute.SetValue(obj, Enum.Parse(attribute.PropertyType, enumValue?.ToString() ?? string.Empty));
+                attribute.SetValue(obj, enumValue);
                 return true;
             }
 
@@ -95,25 +95,25 @@ public static class ReflectionExtensions
 
         if (attribute.PropertyType == typeof(Half))
         {
-            attribute.SetValue(obj, Half.Parse(value, CultureInfo.InvariantCulture.NumberFormat));
+            attribute.SetValue(obj, Half.Parse(value, CultureInfo.InvariantCulture));
             return true;
         }
 
         if (attribute.PropertyType == typeof(float))
         {
-            attribute.SetValue(obj, float.Parse(value, CultureInfo.InvariantCulture.NumberFormat));
+            attribute.SetValue(obj, float.Parse(value, CultureInfo.InvariantCulture));
             return true;
         }
 
         if (attribute.PropertyType == typeof(double))
         {
-            attribute.SetValue(obj, double.Parse(value, CultureInfo.InvariantCulture.NumberFormat));
+            attribute.SetValue(obj, double.Parse(value, CultureInfo.InvariantCulture));
             return true;
         }
 
         if (attribute.PropertyType == typeof(decimal))
         {
-            attribute.SetValue(obj, decimal.Parse(value, CultureInfo.InvariantCulture.NumberFormat));
+            attribute.SetValue(obj, decimal.Parse(value, CultureInfo.InvariantCulture));
             return true;
         }
 

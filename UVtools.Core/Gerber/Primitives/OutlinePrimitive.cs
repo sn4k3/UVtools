@@ -10,13 +10,12 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Drawing;
+using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
-using Emgu.CV.Structure;
 using Emgu.CV.Util;
-using UVtools.Core.Extensions;
 
 namespace UVtools.Core.Gerber.Primitives;
 
@@ -76,12 +75,14 @@ public class OutlinePrimitive : Primitive
     }
 
 
-    public override void DrawFlashD3(Mat mat, PointF at, MCvScalar color, LineType lineType = LineType.EightConnected)
+    public override void DrawFlashD3(Mat mat, PointF at, LineType lineType = LineType.EightConnected)
     {
         if (Coordinates.Length < 3) return;
 
-        if (Exposure == 0) color = EmguExtensions.BlackColor;
-        else if (color.V0 == 0) color = EmguExtensions.WhiteColor;
+        if (Rotation != 0)
+        {
+            throw new NotImplementedException($"{Name} primitive with code {Code} have a rotation value of {Rotation} which is not implemented. Open a issue regarding this problem and provide a sample file to be able to implement rotation correctly on this primitive.");
+        }
 
         var points = new List<Point>();
         for (int i = 0; i < Coordinates.Length-1; i++)
@@ -92,12 +93,12 @@ public class OutlinePrimitive : Primitive
         }
 
         using var vec = new VectorOfPoint(points.ToArray());
-        CvInvoke.FillPoly(mat, vec, color, lineType);
+        CvInvoke.FillPoly(mat, vec, Document.GetPolarityColor(Exposure), lineType);
     }
 
-    public override void ParseExpressions(GerberDocument document, params string[] args)
+    public override void ParseExpressions(params string[] args)
     {
-        string csharpExp, result;
+        string csharpExp;
         float num;
         var exp = new DataTable();
 
@@ -105,19 +106,19 @@ public class OutlinePrimitive : Primitive
         else
         {
             csharpExp = string.Format(Regex.Replace(ExposureExpression, @"\$(\d+)", "{$1}"), args);
-            result = exp.Compute(csharpExp, null).ToString()!;
-            if (byte.TryParse(result, out var val)) Exposure = val;
+            var temp = exp.Compute(csharpExp, null);
+            if (temp is not DBNull) Exposure = Convert.ToByte(temp);
         }
 
         float? x = null;
         var coordinates = new List<PointF>();
         foreach (var coordinate in CoordinatesExpression)
         {
-            if (!float.TryParse(coordinate, out num))
+            if (!float.TryParse(coordinate, NumberStyles.Float, CultureInfo.InvariantCulture, out num))
             {
                 csharpExp = string.Format(Regex.Replace(coordinate, @"\$(\d+)", "{$1}"), args);
-                result = exp.Compute(csharpExp, null).ToString()!;
-                float.TryParse(result, out num);
+                var temp = exp.Compute(csharpExp, null);
+                if (temp is not DBNull) num = Convert.ToSingle(temp);
             }
 
             if (x is null)
@@ -126,20 +127,20 @@ public class OutlinePrimitive : Primitive
             }
             else
             {
-                coordinates.Add(document.GetMillimeters(new PointF(x.Value, num)));
+                coordinates.Add(Document.GetMillimeters(new PointF(x.Value, num)));
                 x = null;
             }
         }
 
         Coordinates = coordinates.ToArray();
 
-        if (float.TryParse(RotationExpression, out num)) Rotation = (short)num;
+        if (float.TryParse(RotationExpression, NumberStyles.Float, CultureInfo.InvariantCulture, out num)) Rotation = (short)num;
         else
         {
             csharpExp = Regex.Replace(RotationExpression, @"\$(\d+)", "{$1}");
             csharpExp = string.Format(csharpExp, args);
-            result = exp.Compute(csharpExp, null).ToString()!;
-            if (float.TryParse(result, out num)) Rotation = num;
+            var temp = exp.Compute(csharpExp, null);
+            if (temp is not DBNull) Rotation = Convert.ToSingle(temp);
         }
 
         IsParsed = true;

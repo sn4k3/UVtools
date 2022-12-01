@@ -199,7 +199,7 @@ public class MDLPFile : FileFormat
 
     public override float DisplayWidth
     {
-        get => float.Parse(Encoding.ASCII.GetString(SlicerInfoSettings.DisplayWidthBytes.Where(b => b != 0).ToArray()));
+        get => float.Parse(Encoding.ASCII.GetString(SlicerInfoSettings.DisplayWidthBytes.Where(b => b != 0).ToArray()), CultureInfo.InvariantCulture);
         set
         {
             string str = Math.Round(value, 2).ToString(CultureInfo.InvariantCulture);
@@ -217,7 +217,7 @@ public class MDLPFile : FileFormat
 
     public override float DisplayHeight
     {
-        get => float.Parse(Encoding.ASCII.GetString(SlicerInfoSettings.DisplayHeightBytes.Where(b => b != 0).ToArray()));
+        get => float.Parse(Encoding.ASCII.GetString(SlicerInfoSettings.DisplayHeightBytes.Where(b => b != 0).ToArray()), CultureInfo.InvariantCulture);
         set
         {
             string str = Math.Round(value, 2).ToString(CultureInfo.InvariantCulture);
@@ -236,7 +236,7 @@ public class MDLPFile : FileFormat
     public override FlipDirection DisplayMirror { get; set; }
     public override float LayerHeight
     {
-        get => float.Parse(Encoding.ASCII.GetString(SlicerInfoSettings.LayerHeightBytes.Where(b => b != 0).ToArray()));
+        get => float.Parse(Encoding.ASCII.GetString(SlicerInfoSettings.LayerHeightBytes.Where(b => b != 0).ToArray()), CultureInfo.InvariantCulture);
         set
         {
             string str = Layer.RoundHeight(value).ToString(CultureInfo.InvariantCulture);

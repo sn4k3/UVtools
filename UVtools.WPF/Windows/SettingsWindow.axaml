@@ -2115,7 +2115,7 @@
                                                Width="Auto" />
                           <DataGridTemplateColumn  Header="Method"
                                                IsReadOnly="False"
-                                               Width="100">
+                                               Width="130">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <ComboBox 

@@ -25,6 +25,7 @@ namespace UVtools.WPF.Controls.Tools
 
         private Bitmap _previewImage;
         private OperationPCBExposure.PCBExposureFile _selectedFile;
+        private bool _cropPreview  = true;
 
         public Bitmap PreviewImage
         {
@@ -42,6 +43,16 @@ namespace UVtools.WPF.Controls.Tools
             }
         }
 
+        public bool CropPreview
+        {
+            get => _cropPreview;
+            set
+            {
+                if(!RaiseAndSetIfChanged(ref _cropPreview, value)) return;
+                UpdatePreview();
+            }
+        }
+
         public ToolPCBExposureControl()
         {
             BaseOperation = new OperationPCBExposure(SlicerFile);
@@ -55,7 +66,7 @@ namespace UVtools.WPF.Controls.Tools
                 Operation.AddFiles(args.Data.GetFileNames()?.ToArray() ?? Array.Empty<string>());
             });
 
-            _timer = new Timer(20)
+            _timer = new Timer(50)
             {
                 AutoReset = false
             };
@@ -115,10 +126,18 @@ namespace UVtools.WPF.Controls.Tools
                 if (!OperationPCBExposure.ValidExtensions.Any(extension => _selectedFile.IsExtension(extension)) || !_selectedFile.Exists) return;
                 var file = (OperationPCBExposure.PCBExposureFile)_selectedFile.Clone();
                 file.InvertPolarity = false;
-                using var mat = Operation.GetMat(file);
-                using var matCropped = mat.CropByBounds(20);
                 _previewImage?.Dispose();
-                PreviewImage = matCropped.ToBitmap();
+                using var mat = Operation.GetMat(file);
+
+                if (_cropPreview)
+                {
+                    using var matCropped = mat.CropByBounds(20);
+                    PreviewImage = matCropped.ToBitmap();
+                }
+                else
+                {
+                    PreviewImage = mat.ToBitmap();
+                }
             }
             catch (Exception e)
             {

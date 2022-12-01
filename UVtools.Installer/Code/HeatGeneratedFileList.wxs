@@ -1229,11 +1229,11 @@
                         <Component Id="cmp7778D227374EB7F600A97332D1D6A45B" Guid="*">
                             <File Id="filBBF13BCAC7D6B106C113F7CFA14A7840" KeyPath="yes" Source="$(var.HarvestPath)\Assets\PrusaSlicer\printer\QIDI Shadow6.0 Pro.ini" />
                         </Component>
-                        <Component Id="cmp611309E8DB084F22DABEC724A1D09579" Guid="*">
-                            <File Id="fil3EB35616F56D9D096F49556019B2A109" KeyPath="yes" Source="$(var.HarvestPath)\Assets\PrusaSlicer\printer\Uniformation GKone.ini" />
+                        <Component Id="cmp7E817A36B682DF55D0E86D145E27394E" Guid="*">
+                            <File Id="fil4627AA2319ACB8D222BCE61C11BA0B53" KeyPath="yes" Source="$(var.HarvestPath)\Assets\PrusaSlicer\printer\UniFormation GKone.ini" />
                         </Component>
-                        <Component Id="cmp349785BA16BE1BC96FC0531A753E8896" Guid="*">
-                            <File Id="fil527DACB7C01D8842E81DE8453192A8ED" KeyPath="yes" Source="$(var.HarvestPath)\Assets\PrusaSlicer\printer\Uniformation GKtwo.ini" />
+                        <Component Id="cmp4E19DB4221A31764E993B0CCD95D7642" Guid="*">
+                            <File Id="fil0AC1D01236214C81A892BE4C0F3760D4" KeyPath="yes" Source="$(var.HarvestPath)\Assets\PrusaSlicer\printer\UniFormation GKtwo.ini" />
                         </Component>
                         <Component Id="cmp9F6872E41F10EFB360C028C3E540E02F" Guid="*">
                             <File Id="fil1B5EBFEF6E7FB1A3AA3FE683B0D343AE" KeyPath="yes" Source="$(var.HarvestPath)\Assets\PrusaSlicer\printer\Uniz IBEE.ini" />
@@ -1989,8 +1989,8 @@
             <ComponentRef Id="cmp40B90D04961D1E3743872E5411202E92" />
             <ComponentRef Id="cmp5E7F87B7AC98D09CB9045D5993BB28D3" />
             <ComponentRef Id="cmp7778D227374EB7F600A97332D1D6A45B" />
-            <ComponentRef Id="cmp611309E8DB084F22DABEC724A1D09579" />
-            <ComponentRef Id="cmp349785BA16BE1BC96FC0531A753E8896" />
+            <ComponentRef Id="cmp7E817A36B682DF55D0E86D145E27394E" />
+            <ComponentRef Id="cmp4E19DB4221A31764E993B0CCD95D7642" />
             <ComponentRef Id="cmp9F6872E41F10EFB360C028C3E540E02F" />
             <ComponentRef Id="cmp6ABBC7705A2469FF9059CF75A7EC20B7" />
             <ComponentRef Id="cmp4E6FE2176F0460D349008DACFB98DA6A" />

@@ -42,6 +42,8 @@ public class Macro : IReadOnlyList<Primitive>
     {
         line = line.TrimEnd('%', '*');
 
+        if(line.Length == 0) return;
+
         // 0 Comment: A comment string
         if (line[0] == '0')
         {
@@ -108,7 +110,7 @@ public class Macro : IReadOnlyList<Primitive>
 
     public static Macro? Parse(GerberDocument document, string line)
     {
-        var match = Regex.Match(line, @"\%AM(\S+)\*");
+        var match = Regex.Match(line, @"%?AM([a-zA-Z\d]+)\*?");
         if (!match.Success || match.Groups.Count < 2) return null;
 
         return new Macro(document, match.Groups[1].Value);

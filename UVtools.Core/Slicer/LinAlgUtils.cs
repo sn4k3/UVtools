@@ -90,6 +90,6 @@ public static class LinAlgUtils
         // I'm sure there's a better way than converting it to a string and then back to a float,
         // but that's what I've got right now, so that's what I'm doing.
         //var strVal = rawVal.ToString($"0.{precision}");
-        //return float.Parse(strVal, CultureInfo.InvariantCulture.NumberFormat);
+        //return float.Parse(strVal, CultureInfo.InvariantCulture);
     }*/
 }

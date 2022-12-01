@@ -70,15 +70,7 @@ public class RemotePrinter : BindableBase
         set => RaiseAndSetIfChanged(ref _port, value);
     }
 
-    public string HostUrl
-    {
-        get
-        {
-            var result = $"http://{_host}";
-            if (_port > 0) result += $":{_port}";
-            return result;
-        }
-    }
+    public string HostUrl => _port > 0 ? $"{_host}:{_port}" :_host ;
 
     /// <summary>
     /// Gets or sets the compatible extensions with this device.
@@ -206,6 +198,4 @@ public class RemotePrinter : BindableBase
     }
 
     #endregion
-
-
 }

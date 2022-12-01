@@ -126,7 +126,7 @@ FSeek(decryptedHeader.LayerTableOffset);
 
 struct LAYER_POINTER {
     uint Offset;
-    uint Padding1;
+    uint PageNumber;
     uint LayerTableSize;
     uint Padding2;
 } layerPointers[decryptedHeader.LayerCount];
@@ -137,7 +137,7 @@ struct LAYER_HEADER{
     float ExposureTime;
     float LightOffDelay;
     uint LayerDataOffset;
-    uint unknown2;
+    uint PageNumber;
     uint LayerDataLength;
     uint unknown3;
     uint EncryptedDataOffset;
@@ -158,7 +158,7 @@ struct LAYER_HEADER{
 
 struct LAYER {
     LAYER_HEADER layerHeader;
-    FSeek(layerHeader.LayerDataOffset);
+    FSeek(layerHeader.PageNumber * 4294967296 + layerHeader.LayerDataOffset);
 
     /* do we have encrypted data? */
     if (layerHeader.EncryptedDataLength > 0) {
@@ -180,7 +180,7 @@ struct LAYER {
 struct LAYERS {
 	local uint x;
 	for(x = 0; x < decryptedHeader.LayerCount; x++) {
-		FSeek(layerPointers[x].Offset);
+		FSeek(layerPointers[x].PageNumber * 4294967296 + layerPointers[x].Offset);
 		LAYER layer;
 	}
 } layers;

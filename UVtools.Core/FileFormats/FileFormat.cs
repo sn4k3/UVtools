@@ -624,12 +624,13 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         {
             if (!targetPrintModifier.Contains(sourceModifier)) continue;
 
-            var fromValueStr = from.GetValueFromPrintParameterModifier(sourceModifier)?.ToString();
-            var toValueStr = to.GetValueFromPrintParameterModifier(sourceModifier)?.ToString();
+            var fromValueObj = from.GetValueFromPrintParameterModifier(sourceModifier);
+            var toValueObj = to.GetValueFromPrintParameterModifier(sourceModifier);
 
-            if (fromValueStr is null || toValueStr is null) continue;
-
-            if (decimal.TryParse(fromValueStr, out var fromValue) && decimal.TryParse(toValueStr, out var toValue) && fromValue != toValue)
+            if (fromValueObj is null || toValueObj is null) continue;
+            var fromValue = System.Convert.ToDecimal(fromValueObj);
+            var toValue = System.Convert.ToDecimal(toValueObj);
+            if (fromValue != toValue)
             {
                 to.SetValueFromPrintParameterModifier(sourceModifier, fromValue);
                 count++;
