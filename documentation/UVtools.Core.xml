@@ -3667,12 +3667,31 @@
             <param name="layerIndexEnd">Parsed ending layer index</param>
             <returns></returns>
         </member>
+        <member name="M:UVtools.Core.FileFormats.FileFormat.SanitizeLayerIndex(System.Int32@)">
+            <summary>
+            Constrains a layer index to be inside the range between 0 and <see cref="P:UVtools.Core.FileFormats.FileFormat.LastLayerIndex"/>
+            </summary>
+            <param name="layerIndex">Layer index to sanitize</param>
+            <returns>True if sanitized, otherwise false</returns>
+        </member>
         <member name="M:UVtools.Core.FileFormats.FileFormat.SanitizeLayerIndex(System.UInt32@)">
             <summary>
             Constrains a layer index to be inside the range between 0 and <see cref="P:UVtools.Core.FileFormats.FileFormat.LastLayerIndex"/>
             </summary>
             <param name="layerIndex">Layer index to sanitize</param>
             <returns>True if sanitized, otherwise false</returns>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.FileFormat.SanitizeLayerIndex(System.Int32)">
+            <summary>
+            Constrains a layer index to be inside the range between 0 and <see cref="P:UVtools.Core.FileFormats.FileFormat.LastLayerIndex"/>
+            </summary>
+            <param name="layerIndex">Layer index to sanitize</param>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.FileFormat.SanitizeLayerIndex(System.UInt32)">
+            <summary>
+            Constrains a layer index to be inside the range between 0 and <see cref="P:UVtools.Core.FileFormats.FileFormat.LastLayerIndex"/>
+            </summary>
+            <param name="layerIndex">Layer index to sanitize</param>
         </member>
         <member name="M:UVtools.Core.FileFormats.FileFormat.SanitizeLayers">
             <summary>

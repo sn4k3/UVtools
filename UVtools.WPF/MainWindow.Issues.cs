@@ -232,7 +232,7 @@ public partial class MainWindow
 
         Clipboard.Snapshot();
 
-        var task = await Task.Factory.StartNew(() =>
+        var task = await Task.Run(() =>
         {
             Progress.Reset("Removing selected issues", (uint)processParallelIssues.Count);
             try
@@ -448,7 +448,7 @@ public partial class MainWindow
             
         }*/
 
-        var resultIssues = await Task.Factory.StartNew(() =>
+        var resultIssues = await Task.Run(() =>
         {
             try
             {
@@ -636,7 +636,7 @@ public partial class MainWindow
         IsGUIEnabled = false;
         ShowProgressWindow("Computing Issues");
 
-        var resultIssues = await Task.Factory.StartNew(() =>
+        var resultIssues = await Task.Run(() =>
         {
             try
             {
@@ -825,7 +825,19 @@ public partial class MainWindow
         }
     }
 
-    public IssuesDetectionConfiguration GetIssuesDetectionConfiguration(bool enable = true)
+    public IssuesDetectionConfiguration GetIssuesDetectionConfiguration()
+    {
+        return new IssuesDetectionConfiguration(
+            GetIslandDetectionConfiguration(),
+            GetOverhangDetectionConfiguration(),
+            GetResinTrapDetectionConfiguration(),
+            GetTouchingBoundsDetectionConfiguration(),
+            GetPrintHeightDetectionConfiguration(),
+            GetEmptyLayerDetectionConfiguration()
+        );
+    }
+
+    public IssuesDetectionConfiguration GetIssuesDetectionConfiguration(bool enable)
     {
         return new IssuesDetectionConfiguration(
             GetIslandDetectionConfiguration(enable),

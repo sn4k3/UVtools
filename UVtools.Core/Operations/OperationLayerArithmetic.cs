@@ -163,7 +163,7 @@ public class OperationLayerArithmetic : Operation
                     {
                         uint.TryParse(rangeSplit[0], out var startLayer);
                         if (!uint.TryParse(rangeSplit[1], out var endLayer)) endLayer = SlicerFile.LastLayerIndex;
-                        endLayer = Math.Min(endLayer, SlicerFile.LastLayerIndex);
+                        SlicerFile.SanitizeLayerIndex(ref endLayer);
                         for (var index = startLayer; index <= endLayer; index++)
                         {
                             if (group.SetLayers.Contains(index)) continue;

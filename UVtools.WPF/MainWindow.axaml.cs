@@ -201,6 +201,7 @@ public partial class MainWindow : WindowEx
                 if (ReferenceEquals(_selectedTabItem, TabIssues) && Settings.Issues.ComputeIssuesOnClickTab)
                 {
                     Dispatcher.UIThread.InvokeAsync(async () => await OnClickDetectIssues());
+
                 }
             }
         }
@@ -641,7 +642,7 @@ public partial class MainWindow : WindowEx
                 {
 
                     Progress.ResetAll($"Ejecting {removableDrive.Name}");
-                    var ejectResult = await Task.Factory.StartNew(() =>
+                    var ejectResult = await Task.Run(() =>
                     {
                         try
                         {
@@ -704,7 +705,7 @@ public partial class MainWindow : WindowEx
 
         if (Settings.General.CheckForUpdatesOnStartup)
         {
-            Task.Factory.StartNew(() => VersionChecker.Check());
+            Task.Run(() => VersionChecker.Check());
         }
 
         ProcessFiles(Program.Args);
@@ -1047,7 +1048,7 @@ public partial class MainWindow : WindowEx
                 IsGUIEnabled = false;
                 ShowProgressWindow($"Changing layers compression codec from {oldLayerCompressionCodec.ToString().ToUpper()} to {Settings.General.LayerCompressionCodec.ToString().ToUpper()}");
 
-                await Task.Factory.StartNew(() =>
+                await Task.Run(() =>
                 {
                     try
                     {
@@ -1335,7 +1336,7 @@ public partial class MainWindow : WindowEx
             await this.MessageBoxError(exception.ToString(), "Error opening the file");
         }*/
 
-        var task = await Task.Factory.StartNew( () =>
+        var task = await Task.Run( () =>
         {
             try
             {
@@ -1461,7 +1462,7 @@ public partial class MainWindow : WindowEx
                         ShowProgressWindow(
                             $"Converting {Path.GetFileName(SlicerFile.FileFullPath)} to {convertFileExtension}");
 
-                        task = await Task.Factory.StartNew(() =>
+                        task = await Task.Run(() =>
                         {
                             try
                             {
@@ -1831,7 +1832,7 @@ public partial class MainWindow : WindowEx
         var oldFile = SlicerFile.FileFullPath!;
         ShowProgressWindow($"Converting {oldFileName} to {Path.GetExtension(newFilePath)}");
 
-        var task = await Task.Factory.StartNew(() =>
+        var task = await Task.Run(() =>
         {
             try
             {
@@ -1926,7 +1927,7 @@ public partial class MainWindow : WindowEx
 
         var oldFile = SlicerFile.FileFullPath;
 
-        var task = await Task.Factory.StartNew( () =>
+        var task = await Task.Run( () =>
         {
             try
             {
@@ -2114,7 +2115,7 @@ public partial class MainWindow : WindowEx
 
                     if (config.IslandConfig.Enabled || config.ResinTrapConfig.Enabled)
                     {
-                        await ComputeIssues(config);
+                        ComputeIssues(config);
                     }
                 }
 
@@ -2127,7 +2128,7 @@ public partial class MainWindow : WindowEx
 
         Clipboard.Snapshot();
 
-        var result = await Task.Factory.StartNew(() =>
+        var result = await Task.Run(() =>
         {
             try
             {

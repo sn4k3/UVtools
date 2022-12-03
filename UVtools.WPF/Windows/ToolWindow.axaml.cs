@@ -118,7 +118,7 @@ public class ToolWindow : WindowEx
         get => _layerIndexStart;
         set
         {
-            value = Math.Min(value, SlicerFile.LastLayerIndex);
+            SlicerFile.SanitizeLayerIndex(ref value);
 
             if (ToolControl?.BaseOperation is not null)
             {
@@ -146,7 +146,7 @@ public class ToolWindow : WindowEx
         get => _layerIndexEnd;
         set
         {
-            value = Math.Min(value, SlicerFile.LastLayerIndex);
+            SlicerFile.SanitizeLayerIndex(ref value);
 
             if (ToolControl?.BaseOperation is not null)
             {

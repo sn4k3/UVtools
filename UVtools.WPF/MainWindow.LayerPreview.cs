@@ -813,13 +813,13 @@ public partial class MainWindow
     public void GoUpLayers(uint layers)
     {
         if (!IsFileLoaded) return;
-        ActualLayer = Math.Min(SlicerFile.LastLayerIndex, ActualLayer + layers);
+        ActualLayer = SlicerFile.SanitizeLayerIndex(ActualLayer + layers);
     }
 
     public void GoDownLayers(uint layers)
     {
         if (!IsFileLoaded) return;
-        ActualLayer = (uint)Math.Max(0, (int)ActualLayer - layers);
+        ActualLayer = SlicerFile.SanitizeLayerIndex((int)ActualLayer - (int)layers);
     }
 
     public void GoMassLayer(string which)

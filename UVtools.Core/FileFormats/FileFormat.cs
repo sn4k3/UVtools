@@ -5734,6 +5734,18 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// </summary>
     /// <param name="layerIndex">Layer index to sanitize</param>
     /// <returns>True if sanitized, otherwise false</returns>
+    public bool SanitizeLayerIndex(ref int layerIndex)
+    {
+        var originalValue = layerIndex;
+        layerIndex = Math.Clamp(layerIndex, 0, (int)LastLayerIndex);
+        return originalValue != layerIndex;
+    }
+
+    /// <summary>
+    /// Constrains a layer index to be inside the range between 0 and <see cref="LastLayerIndex"/>
+    /// </summary>
+    /// <param name="layerIndex">Layer index to sanitize</param>
+    /// <returns>True if sanitized, otherwise false</returns>
     public bool SanitizeLayerIndex(ref uint layerIndex)
     {
         var originalValue = layerIndex;
@@ -5741,10 +5753,24 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         return originalValue != layerIndex;
     }
 
+    /// <summary>
+    /// Constrains a layer index to be inside the range between 0 and <see cref="LastLayerIndex"/>
+    /// </summary>
+    /// <param name="layerIndex">Layer index to sanitize</param>
+    public uint SanitizeLayerIndex(int layerIndex)
+    {
+        return (uint)Math.Clamp(layerIndex, 0, LastLayerIndex);
+    }
+
+    /// <summary>
+    /// Constrains a layer index to be inside the range between 0 and <see cref="LastLayerIndex"/>
+    /// </summary>
+    /// <param name="layerIndex">Layer index to sanitize</param>
     public uint SanitizeLayerIndex(uint layerIndex)
     {
         return Math.Min(layerIndex, LastLayerIndex);
     }
+
 
     /// <summary>
     /// Re-assign layer indexes and parent <see cref="FileFormat"/>

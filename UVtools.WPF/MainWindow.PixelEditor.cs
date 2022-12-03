@@ -174,19 +174,21 @@ public partial class MainWindow
         WriteableBitmap bitmap = (WriteableBitmap)LayerImageBox.Image;
         //var context = CreateRenderTarget().CreateDrawingContext(bitmap);
 
-
+        
         //Bitmap bmp = pbLayer.Image as Bitmap;
         if (SelectedPixelOperationTabIndex == (byte)PixelOperation.PixelOperationType.Drawing)
         {
-            uint minLayer = (uint) Math.Max(0, (int)_actualLayer - DrawingPixelDrawing.LayersBelow);
-            uint maxLayer = Math.Min(SlicerFile.LastLayerIndex, _actualLayer + DrawingPixelDrawing.LayersAbove);
+            var drawings = new List<PixelOperation>();
+            uint minLayer = SlicerFile.SanitizeLayerIndex((int)ActualLayer - (int)DrawingPixelDrawing.LayersBelow);
+            uint maxLayer = SlicerFile.SanitizeLayerIndex(ActualLayer + DrawingPixelDrawing.LayersAbove);
             for (uint layerIndex = minLayer; layerIndex <= maxLayer; layerIndex++)
             {
                 var operationDrawing = new PixelDrawing(layerIndex, realLocation, DrawingPixelDrawing.LineType,
                     DrawingPixelDrawing.BrushShape, DrawingPixelDrawing.RotationAngle, DrawingPixelDrawing.BrushSize, DrawingPixelDrawing.Thickness, DrawingPixelDrawing.RemovePixelBrightness, DrawingPixelDrawing.PixelBrightness, isAdd);
 
                 //if (PixelHistory.Contains(operation)) continue;
-                AddDrawing(operationDrawing);
+                //AddDrawing(operationDrawing);
+                drawings.Add(operationDrawing);
 
                 if (layerIndex == _actualLayer)
                 {
@@ -386,13 +388,18 @@ public partial class MainWindow
                     //RefreshLayerImage();
                 }
             }
+
+            AddDrawings(drawings);
+            return;
         }
         else if (SelectedPixelOperationTabIndex == (byte)PixelOperation.PixelOperationType.Text)
         {
             if (string.IsNullOrEmpty(DrawingPixelText.Text) || DrawingPixelText.FontScale < 0.2) return;
 
-            uint minLayer = (uint) Math.Max(0, (int)ActualLayer - DrawingPixelText.LayersBelow);
-            uint maxLayer = Math.Min(SlicerFile.LastLayerIndex, ActualLayer + DrawingPixelText.LayersAbove);
+            var drawings = new List<PixelOperation>();
+            uint minLayer = SlicerFile.SanitizeLayerIndex((int)ActualLayer - (int)DrawingPixelText.LayersBelow);
+            uint maxLayer = SlicerFile.SanitizeLayerIndex(ActualLayer + DrawingPixelText.LayersAbove);
+            
             for (uint layerIndex = minLayer; layerIndex <= maxLayer; layerIndex++)
             {
                 var operationText = new PixelText(layerIndex, realLocation, DrawingPixelText.LineType,
@@ -401,8 +408,9 @@ public partial class MainWindow
 
                 //if (PixelHistory.Contains(operation)) continue;
                 //PixelHistory.Add(operation);
-                AddDrawing(operationText);
-                    
+                //AddDrawing(operationText);
+                drawings.Add(operationText);
+
                 /*var color = isAdd
                     ? Settings.PixelEditor.AddPixelColor : Settings.PixelEditor.RemovePixelColor;
 
@@ -415,20 +423,24 @@ public partial class MainWindow
                 }*/
             }
 
+            AddDrawings(drawings);
             ShowLayer();
             return;
         }
         else if (SelectedPixelOperationTabIndex == (byte)PixelOperation.PixelOperationType.Eraser)
         {
             if (LayerCache.Image.GetByte(realLocation) < 10) return;
-            uint minLayer = (uint) Math.Max(0, (int)ActualLayer - DrawingPixelEraser.LayersBelow);
-            uint maxLayer = Math.Min(SlicerFile.LastLayerIndex, ActualLayer + DrawingPixelEraser.LayersAbove);
+
+            var drawings = new List<PixelOperation>();
+            uint minLayer = SlicerFile.SanitizeLayerIndex((int)ActualLayer - (int)DrawingPixelEraser.LayersBelow);
+            uint maxLayer = SlicerFile.SanitizeLayerIndex(ActualLayer + DrawingPixelEraser.LayersAbove);
             for (uint layerIndex = minLayer; layerIndex <= maxLayer; layerIndex++)
             {
                 var operationEraser = new PixelEraser(layerIndex, realLocation, DrawingPixelEraser.PixelBrightness);
 
                 //if (PixelHistory.Contains(operation)) continue;
-                AddDrawing(operationEraser);
+                //AddDrawing(operationEraser);
+                drawings.Add(operationEraser);
 
                 /*if (layerIndex == _actualLayer)
                 {
@@ -445,6 +457,7 @@ public partial class MainWindow
                 }*/
             }
 
+            AddDrawings(drawings);
             ShowLayer();
             return;
         }
@@ -461,6 +474,7 @@ public partial class MainWindow
             CvInvoke.Circle(LayerCache.ImageBgr, location, operationSupport.TipDiameter / 2,
                 new MCvScalar(Settings.PixelEditor.SupportsColor.B, Settings.PixelEditor.SupportsColor.G, Settings.PixelEditor.SupportsColor.R), -1);
             RefreshLayerImage();
+            return;
         }
         else if (SelectedPixelOperationTabIndex == (byte)PixelOperation.PixelOperationType.DrainHole)
         {
@@ -473,6 +487,7 @@ public partial class MainWindow
             CvInvoke.Circle(LayerCache.ImageBgr, location, operationDrainHole.Diameter / 2,
                 new MCvScalar(Settings.PixelEditor.DrainHoleColor.B, Settings.PixelEditor.DrainHoleColor.G, Settings.PixelEditor.DrainHoleColor.R), -1);
             RefreshLayerImage();
+            return;
         }
         else
         {
@@ -482,11 +497,18 @@ public partial class MainWindow
 
     public void AddDrawing(PixelOperation operation)
     {
+        operation.Index = (uint)Drawings.Count;
         Drawings.Insert(0, operation);
-        for (int i = 0; i < Drawings.Count; i++)
+    }
+
+    public void AddDrawings(IEnumerable<PixelOperation> operations)
+    {
+        uint count = (uint)Drawings.Count;
+        foreach (var operation in operations)
         {
-            Drawings[i].Index = (uint) (Drawings.Count - i);
+            operation.Index = count++;
         }
+        Drawings.InsertRange(0, operations);
     }
 
     public async void DrawModifications(bool exitEditor)
@@ -534,12 +556,12 @@ public partial class MainWindow
             ShowProgressWindow("Drawing pixels");
             Clipboard.Snapshot();
 
-            var task = await Task.Factory.StartNew(async () =>
+            var task = await Task.Run(() =>
             {
                 try
                 {
                     SlicerFile.DrawModifications(Drawings, Progress);
-                    return true;
+                    return Task.FromResult(true);
                 }
                 catch (OperationCanceledException)
                 {
@@ -547,18 +569,18 @@ public partial class MainWindow
                 }
                 catch (Exception ex)
                 {
-                    await Dispatcher.UIThread.InvokeAsync(async () =>
+                    Dispatcher.UIThread.InvokeAsync(async () =>
                     {
                         await this.MessageBoxError(ex.ToString(), "Drawing operation failed!");
                     });
                 }
 
-                return false;
+                return Task.FromResult(false);
             });
 
             IsGUIEnabled = true;
 
-            if (!task.Result)
+            if (!task)
             {
                 Clipboard.RestoreSnapshot();
                 ShowLayer();

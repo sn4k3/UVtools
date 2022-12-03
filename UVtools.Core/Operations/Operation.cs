@@ -217,7 +217,7 @@ public abstract class Operation : BindableBase, IDisposable
         {
             if (SlicerFile is not null)
             {
-                value = Math.Min(value, SlicerFile.LastLayerIndex);
+                SlicerFile.SanitizeLayerIndex(ref value);
             }
             if (!RaiseAndSetIfChanged(ref _layerIndexStart, value)) return;
             RaisePropertyChanged(nameof(LayerRangeCount));
@@ -235,7 +235,7 @@ public abstract class Operation : BindableBase, IDisposable
         {
             if (SlicerFile is not null)
             {
-                value = Math.Min(value, SlicerFile.LastLayerIndex);
+                SlicerFile.SanitizeLayerIndex(ref value);
             }
             if(!RaiseAndSetIfChanged(ref _layerIndexEnd, value)) return;
             RaisePropertyChanged(nameof(LayerRangeCount));
@@ -463,7 +463,7 @@ public abstract class Operation : BindableBase, IDisposable
     public void SelectFirstToCurrentLayer(uint currentLayerIndex)
     {
         LayerIndexStart = 0;
-        LayerIndexEnd = Math.Min(currentLayerIndex, SlicerFile.LastLayerIndex);
+        LayerIndexEnd = SlicerFile.SanitizeLayerIndex(currentLayerIndex);
     }
 
     /// <summary>
@@ -472,7 +472,7 @@ public abstract class Operation : BindableBase, IDisposable
     /// <param name="currentLayerIndex">From layer index to select</param>
     public void SelectCurrentToLastLayer(uint currentLayerIndex)
     {
-        LayerIndexStart = Math.Min(currentLayerIndex, SlicerFile.LastLayerIndex);
+        LayerIndexStart = SlicerFile.SanitizeLayerIndex(currentLayerIndex);
         LayerIndexEnd = SlicerFile.LastLayerIndex;
     }
 

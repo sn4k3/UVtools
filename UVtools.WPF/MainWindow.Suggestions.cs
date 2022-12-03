@@ -93,7 +93,7 @@ public partial class MainWindow
         IsGUIEnabled = false;
         ShowProgressWindow($"Applying {suggestions.Length} suggestions", false);
 
-        var executed = await Task.Factory.StartNew(() =>
+        var executed = await Task.Run(() =>
         {
             uint executed = 0;
 
@@ -141,7 +141,7 @@ public partial class MainWindow
         IsGUIEnabled = false;
         ShowProgressWindow(suggestion.Title, false);
 
-        var result = await Task.Factory.StartNew(() =>
+        var result = await Task.Run(() =>
         {
             try
             {

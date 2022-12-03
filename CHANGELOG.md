@@ -1,5 +1,10 @@
 # Changelog
 
+## 03/12/2022 - v3.9.1
+
+- (Improvement) Performance on pixel editor when using high count of layers below and/or above
+- (Fix) Unable to disable specific issues detection
+
 ## 01/12/2022 - v3.9.0
 
 - **File formats:**
