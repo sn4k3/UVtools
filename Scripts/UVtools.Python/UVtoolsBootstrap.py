@@ -33,8 +33,8 @@ if UVTOOLS_PATH is None or not os.path.exists(UVTOOLS_PATH):
 # Don't touch
 # Set runtime
 sys.path.append(UVTOOLS_PATH)
-rt = get_coreclr(r"UVtools.runtimeconfig.json")
-set_runtime(rt)
+import pythonnet
+pythonnet.load("coreclr")
 import clr
 
 clr.AddReference(r"UVtools.Core")

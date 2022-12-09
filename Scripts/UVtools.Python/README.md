@@ -8,8 +8,7 @@
 ## Requirements
 
 - [Python 3.x](https://www.python.org/downloads)
-- [Pythonnet 3.x](https://github.com/pythonnet/pythonnet)
-  - `pip install git+https://github.com/pythonnet/pythonnet`
+- [Pythonnet 3.x](https://github.com/pythonnet/pythonnet): `pip install pythonnet`
 - [.NET 6.0 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/6.0)
 - [UVtools](https://github.com/sn4k3/UVtools/releases/latest):
   - Windows: Must install MSI
@@ -17,8 +16,9 @@
 - Near your .py script:
   - [UVtoolsBootstrap.py](https://github.com/sn4k3/UVtools/blob/master/Scripts/UVtools.Python/UVtoolsBootstrap.py)
   `wget https://github.com/sn4k3/UVtools/blob/master/Scripts/UVtools.Python/UVtoolsBootstrap.py`
-  - [UVtools.runtimeconfig.json](https://github.com/sn4k3/UVtools/blob/master/Scripts/UVtools.Python/UVtools.runtimeconfig.json)
+<!--  - [UVtools.runtimeconfig.json](https://github.com/sn4k3/UVtools/blob/master/Scripts/UVtools.Python/UVtools.runtimeconfig.json)
   `wget https://github.com/sn4k3/UVtools/blob/master/Scripts/UVtools.Python/UVtools.runtimeconfig.json`
+!-->
 
 ## Bootstrap
 
