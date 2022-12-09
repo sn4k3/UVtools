@@ -14,10 +14,10 @@
   - Windows: Must install MSI
   - Linux and macOS: Need to register `UVTOOLS_PATH` (Environment Variable)
 - Near your .py script:
-  - [UVtoolsBootstrap.py](https://github.com/sn4k3/UVtools/blob/master/Scripts/UVtools.Python/UVtoolsBootstrap.py)
-  `wget https://github.com/sn4k3/UVtools/blob/master/Scripts/UVtools.Python/UVtoolsBootstrap.py`
-<!--  - [UVtools.runtimeconfig.json](https://github.com/sn4k3/UVtools/blob/master/Scripts/UVtools.Python/UVtools.runtimeconfig.json)
-  `wget https://github.com/sn4k3/UVtools/blob/master/Scripts/UVtools.Python/UVtools.runtimeconfig.json`
+  - [UVtoolsBootstrap.py](https://raw.githubusercontent.com/sn4k3/UVtools/master/Scripts/UVtools.Python/UVtoolsBootstrap.py)
+  `wget https://raw.githubusercontent.com/sn4k3/UVtools/master/Scripts/UVtools.Python/UVtoolsBootstrap.py`
+<!--  - [UVtools.runtimeconfig.json](https://raw.githubusercontent.com/sn4k3/UVtools/master/Scripts/UVtools.Python/UVtools.runtimeconfig.json)
+  `wget https://raw.githubusercontent.com/sn4k3/UVtools/master/Scripts/UVtools.Python/UVtools.runtimeconfig.json`
 !-->
 
 ## Bootstrap
