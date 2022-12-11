@@ -175,7 +175,9 @@ public sealed class OperationScripting : Operation
 
         ScriptGlobals = new ScriptGlobals { SlicerFile = SlicerFile, Operation = this };
         _scriptState = CSharpScript.RunAsync(_scriptText,
-            ScriptOptions.Default.AddReferences(typeof(About).Assembly).WithAllowUnsafe(true),
+            ScriptOptions.Default
+                .AddReferences(typeof(About).Assembly)
+                .WithAllowUnsafe(true),
             ScriptGlobals).Result;
         
         var result = _scriptState.ContinueWithAsync("ScriptInit();").Result;

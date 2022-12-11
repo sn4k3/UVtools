@@ -6,7 +6,7 @@
              x:Class="UVtools.WPF.Controls.Tools.ToolDynamicLiftsControl">
   <StackPanel Spacing="10">
 
-      <Grid RowDefinitions="Auto,20,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,5,Auto"
+      <Grid RowDefinitions="Auto,20,Auto,10,Auto,10,Auto,10,Auto,10,Auto"
             ColumnDefinitions="Auto,10,180,Auto,210,10,Auto">
           <TextBlock Grid.Row="0" Grid.Column="0"
                      VerticalAlignment="Center"
@@ -206,105 +206,6 @@
                 CommandParameter="False"
                 ToolTip.Tip="View the largest normal layer for the selected layer range"
                 Content="Largest"/>
-
-          <TextBlock Grid.Row="12" Grid.Column="0"
-                     IsVisible="{Binding SlicerFile.CanUseLayerLightOffDelay}"
-                     VerticalAlignment="Center"
-                     Text="Light-off mode:"/>
-
-          <ComboBox Grid.Row="12" Grid.Column="2" Grid.ColumnSpan="3"
-                    IsVisible="{Binding SlicerFile.CanUseLayerLightOffDelay}"
-                    HorizontalAlignment="Stretch"
-                    Items="{Binding Operation.LightOffDelaySetMode, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
-                    SelectedItem="{Binding Operation.LightOffDelaySetMode, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
-
-          <TextBlock Grid.Row="14" Grid.Column="2"
-                     IsEnabled="{Binding !Operation.LightOffDelaySetMode}"
-                     VerticalAlignment="Center"
-                     HorizontalAlignment="Center"
-                     FontWeight="Bold"
-                     Text="Bottom extra time">
-              <TextBlock.IsVisible>
-                  <MultiBinding Converter="{x:Static BoolConverters.And}">
-                      <Binding Path="SlicerFile.CanUseLayerLightOffDelay"/>
-                      <Binding Path="!Operation.LightOffDelaySetMode"/>
-                  </MultiBinding>
-              </TextBlock.IsVisible>
-          </TextBlock>
-
-          <TextBlock Grid.Row="14" Grid.Column="4"
-                     IsEnabled="{Binding !Operation.LightOffDelaySetMode}"
-                     VerticalAlignment="Center"
-                     HorizontalAlignment="Center"
-                     FontWeight="Bold"
-                     Text="Normal extra time">
-              <TextBlock.IsVisible>
-                  <MultiBinding Converter="{x:Static BoolConverters.And}">
-                      <Binding Path="SlicerFile.CanUseLayerLightOffDelay"/>
-                      <Binding Path="!Operation.LightOffDelaySetMode"/>
-                  </MultiBinding>
-              </TextBlock.IsVisible>
-          </TextBlock>
-
-        <TextBlock Grid.Row="16" Grid.Column="0"
-                           IsEnabled="{Binding !Operation.LightOffDelaySetMode}"
-                           VerticalAlignment="Center"
-                           Text="Light-off delay:">
-          <TextBlock.IsVisible>
-            <MultiBinding Converter="{x:Static BoolConverters.And}">
-              <Binding Path="SlicerFile.CanUseLayerLightOffDelay"/>
-              <Binding Path="!Operation.LightOffDelaySetMode"/>
-            </MultiBinding>
-          </TextBlock.IsVisible>
-        </TextBlock>
-
-        <NumericUpDown Grid.Row="16" Grid.Column="2"
-                       Classes="ValueLabel ValueLabel_s"
-                       IsEnabled="{Binding !Operation.LightOffDelaySetMode}"
-                       VerticalAlignment="Center"
-                       Minimum="0"
-                       Maximum="100"
-                       Increment="1"
-                       FormatString="F2"
-                       Value="{Binding Operation.LightOffDelayBottomExtraTime}">
-          <NumericUpDown.IsVisible>
-            <MultiBinding Converter="{x:Static BoolConverters.And}">
-              <Binding Path="SlicerFile.CanUseLayerLightOffDelay"/>
-              <Binding Path="!Operation.LightOffDelaySetMode"/>
-            </MultiBinding>
-          </NumericUpDown.IsVisible>
-        </NumericUpDown>
-
-        <TextBlock Grid.Row="16" Grid.Column="3"
-                   IsEnabled="{Binding !Operation.LightOffDelaySetMode}"
-                   VerticalAlignment="Center"
-                   HorizontalAlignment="Center"
-                   FontWeight="Bold"
-                   Text="/">
-          <TextBlock.IsVisible>
-            <MultiBinding Converter="{x:Static BoolConverters.And}">
-              <Binding Path="SlicerFile.CanUseLayerLightOffDelay"/>
-              <Binding Path="!Operation.LightOffDelaySetMode"/>
-            </MultiBinding>
-          </TextBlock.IsVisible>
-        </TextBlock>
-
-        <NumericUpDown Grid.Row="16" Grid.Column="4"
-                       Classes="ValueLabel ValueLabel_s"
-                       IsEnabled="{Binding !Operation.LightOffDelaySetMode}"
-                       VerticalAlignment="Center"
-                       Minimum="0"
-                       Maximum="100"
-                       Increment="1"
-                       FormatString="F2"
-                       Value="{Binding Operation.LightOffDelayExtraTime}">
-          <NumericUpDown.IsVisible>
-            <MultiBinding Converter="{x:Static BoolConverters.And}">
-              <Binding Path="SlicerFile.CanUseLayerLightOffDelay"/>
-              <Binding Path="!Operation.LightOffDelaySetMode"/>
-            </MultiBinding>
-          </NumericUpDown.IsVisible>
-        </NumericUpDown>
         </Grid>
 
   </StackPanel>

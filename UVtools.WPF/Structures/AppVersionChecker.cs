@@ -212,7 +212,7 @@ public class AppVersionChecker : BindableBase
 
             if (OperatingSystem.IsWindows())
             {
-                SystemAware.StartProcess(DownloadedFile);
+                SystemAware.StartProcess(DownloadedFile, "/qb");
             }
             else if (downloadFilename.EndsWith(".AppImage") && Linux.IsRunningAppImageGetPath(out var appImagePath)) // Linux AppImage
             {

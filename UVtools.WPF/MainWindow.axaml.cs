@@ -1699,8 +1699,6 @@ public partial class MainWindow : WindowEx
             UpdateLayerTrackerHighlightIssues();
         };
 
-        TabGCode.IsVisible = HaveGCode;
-        
         if (SlicerFile.DecodeType == FileFormat.FileDecodeType.Full)
         {
             if (Settings.Issues.ComputeIssuesOnLoad)
@@ -1744,6 +1742,8 @@ public partial class MainWindow : WindowEx
             }
             UserSettings.Save();
         }
+
+        TabGCode.IsVisible = HaveGCode;
     }
 
     private void SlicerFileOnPropertyChanged(object? sender, PropertyChangedEventArgs e)

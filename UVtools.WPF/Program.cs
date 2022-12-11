@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Globalization;
-using System.Text;
 using System.Threading.Tasks;
 using Avalonia;
 using Projektanker.Icons.Avalonia;
@@ -55,6 +54,13 @@ public static class Program
             Console.WriteLine(e);
             return;
         }
+
+        /*foreach (var s in FileFormat.AllFileExtensions.Where(extension => !extension.Extension.Contains('.')).DistinctBy(extension => extension.Extension))
+        {
+            Debug.WriteLine($"- {s.Extension}");
+        }
+        Debug.WriteLine(FileFormat.AllFileExtensions.Where(extension => !extension.Extension.Contains('.')).DistinctBy(extension => extension.Extension).Count());
+        return;*/
         
         if (Args.Length >= 1)
         {

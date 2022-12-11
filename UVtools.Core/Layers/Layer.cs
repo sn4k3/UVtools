@@ -180,6 +180,26 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
     }
 
     /// <summary>
+    /// Gets the first pixel index on this layer
+    /// </summary>
+    public uint FirstPixelIndex => (uint)(BoundingRectangle.Y * SlicerFile.ResolutionX + BoundingRectangle.X);
+
+    /// <summary>
+    /// Gets the last pixel index on this layer
+    /// </summary>
+    public uint LastPixelIndex => (uint)(BoundingRectangle.Bottom * SlicerFile.ResolutionX + BoundingRectangle.Right);
+
+    /// <summary>
+    /// Gets the first pixel <see cref="Point"/> on this layer
+    /// </summary>
+    public Point FirstPixelPosition => BoundingRectangle.Location;
+
+    /// <summary>
+    /// Gets the last pixel <see cref="Point"/> on this layer
+    /// </summary>
+    public Point LastPixelPosition => new (BoundingRectangle.Right, BoundingRectangle.Bottom);
+
+    /// <summary>
     /// Gets if is the first layer
     /// </summary>
     public bool IsFirstLayer => _index == 0;
@@ -246,6 +266,18 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
     }
 
     /// <summary>
+    /// Gets the previous layer if available, otherwise return the calling layer itself
+    /// </summary>
+    public Layer PreviousLayerOrThis
+    {
+        get
+        {
+            if (IsFirstLayer || _index > SlicerFile.Count) return this;
+            return SlicerFile[_index - 1];
+        }
+    }
+
+    /// <summary>
     /// Gets the previous layer with a different height from the current, returns null if no previous layer
     /// </summary>
     public Layer? PreviousHeightLayer
@@ -284,6 +316,18 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
         get
         {
             if (_index >= SlicerFile.LastLayerIndex) return null;
+            return SlicerFile[_index + 1];
+        }
+    }
+
+    /// <summary>
+    /// Gets the next layer if available, otherwise return the calling layer itself
+    /// </summary>
+    public Layer NextLayerOrThis
+    {
+        get
+        {
+            if (_index >= SlicerFile.LastLayerIndex) return this;
             return SlicerFile[_index + 1];
         }
     }

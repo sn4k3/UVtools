@@ -6,7 +6,12 @@ Set-Location $PSScriptRoot
 ####################################
 # Variables
 $projectAPIUrl = "https://api.github.com/repos/sn4k3/UVtools/releases/latest"
-$outputFolder = "manifests"
+$projectPackageUrl = "https://github.com/sn4k3/UVtools/releases/tag/v"
+$rootPath      = $PSScriptRoot
+$outputFolder  = "$rootPath/manifests"
+$localeYaml    = "PTRTECH.UVtools.locale.en-US.yaml"
+$installerYaml = "PTRTECH.UVtools.installer.yaml"
+$releaseDate   = Get-Date -Format "yyyy-MM-dd"
 $msiUrl = $null
 
 Write-Output "
@@ -37,6 +42,12 @@ if($version.Length -lt 5){
     return
 }
 
+$projectPackageUrl = "$projectPackageUrl$version"
+
+$manifestsPath     = "$outputFolder/p/PTRTECH/UVtools/$version"
+$localeYamlFile    = "$manifestsPath/$localeYaml"
+$installerYamlFile = "$manifestsPath/$installerYaml"
+
 # Parse the MSI url
 foreach ($asset in $lastRelease.assets)
 {
@@ -61,10 +72,21 @@ Url: $msiUrl
 $actionInput = Read-Host -Prompt "Do you want to update the manifest with the current release v$($version)? (Y/Yes or N/No)"
 if($actionInput -eq "y" -or $actionInput -eq "yes")
 {
-    Remove-Item $outputFolder -Recurse -ErrorAction Ignore # Clean
+    # Clean
+    Remove-Item $outputFolder -Recurse -ErrorAction Ignore 
+
     #wingetcreate.exe update PTRTECH.UVtools --interactive
-    wingetcreate.exe update PTRTECH.UVtools --urls "$msiUrl|x64" --version $version --token $wingetTokenKeyFile --submit
-    Remove-Item $outputFolder -Recurse -ErrorAction Ignore # Clean
+    wingetcreate.exe update PTRTECH.UVtools --urls "$msiUrl|x64" --version $version --token $wingetTokenKeyFile
+    
+    # Update dynamic content
+    #(Get-Content "$localeYamlFile")    -replace 'ReleaseNotesUrl:.*', "ReleaseNotesUrl: $projectPackageUrl" | Out-File "$localeYamlFile"
+    #(Get-Content "$installerYamlFile") -replace 'ReleaseDate:.*', "ReleaseDate: $releaseDate" | Out-File "$installerYamlFile"
+
+    # Submit PR
+    wingetcreate.exe submit --token $wingetTokenKeyFile $outputFolder
+
+    # Clean
+    Remove-Item $outputFolder -Recurse -ErrorAction Ignore 
 }
 
 Write-Output "

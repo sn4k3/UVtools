@@ -20,7 +20,6 @@ namespace UVtools.Core.Operations;
 public sealed class OperationDynamicLifts : Operation
 {
     #region Enums
-
     public enum DynamicLiftsSetMethod : byte
     {
         // Reduces maximal lift height with the number of pixels in layer divided by maximal number of pixels in any layer. Increases the minimal speed with the same ratio.
@@ -29,18 +28,6 @@ public sealed class OperationDynamicLifts : Operation
         //Squeezes lift height and lift speed within full range of min/max values. E.g. the layer with the least pixels gets minimal lift height and maximal lift speed. The layer with the most pixels gets maximal lift height and minimal lift speed.
         [Description("Full Range: Squeezes lift height and lift speed within full range of smallest/largest values")]
         FullRange
-    }
-
-    public enum DynamicLiftsLightOffDelaySetMode : byte
-    {
-        [Description("Set the light-off with an extra delay")]
-        UpdateWithExtraDelay,
-
-        [Description("Set the light-off without an extra delay")]
-        UpdateWithoutExtraDelay,
-
-        [Description("Set the light-off to zero")]
-        SetToZero,
     }
     #endregion
 
@@ -55,10 +42,6 @@ public sealed class OperationDynamicLifts : Operation
     private float _fastestBottomLiftSpeed;
     private float _slowestLiftSpeed;
     private float _fastestLiftSpeed;
-
-    private float _lightOffDelayBottomExtraTime = 3;
-    private float _lightOffDelayExtraTime = 2.5f;
-    private DynamicLiftsLightOffDelaySetMode _lightOffDelaySetMode = DynamicLiftsLightOffDelaySetMode.UpdateWithExtraDelay;
 
     #endregion
 
@@ -135,7 +118,6 @@ public sealed class OperationDynamicLifts : Operation
             $" [Bottom speed: {_slowestBottomLiftSpeed}/{_fastestBottomLiftSpeed}mm/min]" +
             $" [Height: {_smallestLiftHeight}/{_largestLiftHeight}mm]" +
             $" [Speed: {_slowestLiftSpeed}/{_fastestLiftSpeed}mm/min]" +
-            $" [Light-off: {_lightOffDelaySetMode} {_lightOffDelayBottomExtraTime}/{_lightOffDelayExtraTime}s]" +
             LayerRangeString;
         if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
         return result;
@@ -199,24 +181,6 @@ public sealed class OperationDynamicLifts : Operation
         set => RaiseAndSetIfChanged(ref _fastestLiftSpeed, (float)Math.Round(value, 2));
     }
 
-    public DynamicLiftsLightOffDelaySetMode LightOffDelaySetMode
-    {
-        get => _lightOffDelaySetMode;
-        set => RaiseAndSetIfChanged(ref _lightOffDelaySetMode, value);
-    }
-
-    public float LightOffDelayBottomExtraTime
-    {
-        get => _lightOffDelayBottomExtraTime;
-        set => RaiseAndSetIfChanged(ref _lightOffDelayBottomExtraTime, (float)Math.Round(value, 2));
-    }
-
-    public float LightOffDelayExtraTime
-    {
-        get => _lightOffDelayExtraTime;
-        set => RaiseAndSetIfChanged(ref _lightOffDelayExtraTime, (float)Math.Round(value, 2));
-    }
-
     //public uint MinBottomLayerPixels => SlicerFile.Where(layer => layer.IsBottomLayer && !layer.IsEmpty && layer.Index >= LayerIndexStart && layer.Index <= LayerIndexEnd).Max(layer => layer.NonZeroPixelCount);
     public uint MinBottomLayerPixels => (from layer in SlicerFile
         where layer.IsBottomLayer
@@ -271,7 +235,7 @@ public sealed class OperationDynamicLifts : Operation
         if (_slowestBottomLiftSpeed <= 0) _slowestBottomLiftSpeed = SlicerFile.BottomLiftSpeed;
         if (_fastestBottomLiftSpeed <= 0 || _fastestBottomLiftSpeed < _slowestBottomLiftSpeed) _fastestBottomLiftSpeed = _slowestBottomLiftSpeed;
 
-        if(_slowestLiftSpeed <= 0) _slowestLiftSpeed = SlicerFile.LiftSpeed;
+        if (_slowestLiftSpeed <= 0) _slowestLiftSpeed = SlicerFile.LiftSpeed;
         if (_fastestLiftSpeed <= 0 || _fastestLiftSpeed < _slowestLiftSpeed) _fastestLiftSpeed = _slowestLiftSpeed;
     }
 
@@ -326,8 +290,10 @@ public sealed class OperationDynamicLifts : Operation
         for (uint layerIndex = LayerIndexStart; layerIndex <= LayerIndexEnd; layerIndex++)
         {
             progress.ThrowIfCancellationRequested();
-            var layer = SlicerFile[layerIndex];
-                
+            var calculateLayer = SlicerFile[layerIndex == 0 ? 0 : layerIndex - 1];
+            var setLayer = SlicerFile[layerIndex];
+
+
             // Height
             // min - largestpixelcount
             //  x  - pixelcount
@@ -335,20 +301,21 @@ public sealed class OperationDynamicLifts : Operation
             // Speed
             // max - minpixelCount
             //  x  - pixelcount
-
-            if (layer.IsBottomLayer)
+            if (setLayer.IsBottomLayer)
             {
                 switch (_setMethod)
                 {
                     case DynamicLiftsSetMethod.Traditional:
-                        liftHeight = (_largestBottomLiftHeight * layer.NonZeroPixelCount / maxBottomPixels).Clamp(_smallestBottomLiftHeight, _largestBottomLiftHeight);
-                        liftSpeed = (_fastestBottomLiftSpeed - (_fastestBottomLiftSpeed * layer.NonZeroPixelCount / maxBottomPixels)).Clamp(_slowestBottomLiftSpeed, _fastestBottomLiftSpeed);
+                        liftHeight = (_largestBottomLiftHeight * calculateLayer.NonZeroPixelCount / maxBottomPixels).Clamp(_smallestBottomLiftHeight, _largestBottomLiftHeight);
+                        liftSpeed = (_fastestBottomLiftSpeed - (_fastestBottomLiftSpeed * calculateLayer.NonZeroPixelCount / maxBottomPixels)).Clamp(_slowestBottomLiftSpeed, _fastestBottomLiftSpeed);
                         break;
                     case DynamicLiftsSetMethod.FullRange:
-                        var pixelRatio = (layer.NonZeroPixelCount - minBottomPixels) / (float)(maxBottomPixels - minBottomPixels); // pixel_ratio is between 0 and 1
+                        var pixelRatio = (calculateLayer.NonZeroPixelCount - minBottomPixels) / (float)(maxBottomPixels - minBottomPixels); // pixel_ratio is between 0 and 1
                         liftHeight = (_smallestBottomLiftHeight + ((_largestBottomLiftHeight - _smallestBottomLiftHeight) * pixelRatio)).Clamp(_smallestBottomLiftHeight, _largestBottomLiftHeight);
                         liftSpeed = (_fastestBottomLiftSpeed - ((_fastestBottomLiftSpeed - _slowestBottomLiftSpeed) * pixelRatio)).Clamp(_slowestBottomLiftSpeed, _fastestBottomLiftSpeed);
                         break;
+                    default:
+                        throw new NotImplementedException(nameof(SetMethod));
                 }
                     
             }
@@ -357,36 +324,26 @@ public sealed class OperationDynamicLifts : Operation
                 switch (_setMethod)
                 {
                     case DynamicLiftsSetMethod.Traditional:
-                        liftHeight = (_largestLiftHeight * layer.NonZeroPixelCount / maxNormalPixels).Clamp(_smallestLiftHeight, _largestLiftHeight);
-                        liftSpeed = (_fastestLiftSpeed - (_fastestLiftSpeed * layer.NonZeroPixelCount / maxNormalPixels)).Clamp(_slowestLiftSpeed, _fastestLiftSpeed);
+                        liftHeight = (_largestLiftHeight * calculateLayer.NonZeroPixelCount / maxNormalPixels).Clamp(_smallestLiftHeight, _largestLiftHeight);
+                        liftSpeed = (_fastestLiftSpeed - (_fastestLiftSpeed * calculateLayer.NonZeroPixelCount / maxNormalPixels)).Clamp(_slowestLiftSpeed, _fastestLiftSpeed);
                         break;
                     case DynamicLiftsSetMethod.FullRange:
-                        var pixelRatio = (layer.NonZeroPixelCount - minNormalPixels) / (float)(maxNormalPixels - minNormalPixels); // pixel_ratio is between 0 and 1
+                        var pixelRatio = (calculateLayer.NonZeroPixelCount - minNormalPixels) / (float)(maxNormalPixels - minNormalPixels); // pixel_ratio is between 0 and 1
                         liftHeight = (_smallestLiftHeight + ((_largestLiftHeight - _smallestLiftHeight) * pixelRatio)).Clamp(_smallestLiftHeight, _largestLiftHeight);
                         liftSpeed = (_fastestLiftSpeed - ((_fastestLiftSpeed - _slowestLiftSpeed) * pixelRatio)).Clamp(_slowestLiftSpeed, _fastestLiftSpeed);
                         break;
+                    default:
+                        throw new NotImplementedException(nameof(SetMethod));
                 }
             }
 
-            layer.RetractHeight2 = 0;
-            layer.LiftHeightTotal = (float) Math.Round(liftHeight, 1);
-            layer.LiftSpeed = (float) Math.Round(liftSpeed, 1);
-
-            switch (_lightOffDelaySetMode)
+            if (!float.IsNaN(liftHeight))
             {
-                case DynamicLiftsLightOffDelaySetMode.UpdateWithExtraDelay:
-                    layer.SetLightOffDelay(layer.IsBottomLayer ? _lightOffDelayBottomExtraTime : _lightOffDelayExtraTime);
-                    break;
-                case DynamicLiftsLightOffDelaySetMode.UpdateWithoutExtraDelay:
-                    layer.SetLightOffDelay();
-                    break;
-                case DynamicLiftsLightOffDelaySetMode.SetToZero:
-                    layer.LightOffDelay = 0;
-                    break;
-                default:
-                    throw new NotImplementedException();
+                setLayer.RetractHeight2 = 0;
+                setLayer.LiftHeightTotal = (float) Math.Round(liftHeight, 1);
+                if (!float.IsNaN(liftSpeed)) setLayer.LiftSpeed = (float)Math.Round(liftSpeed, 1);
             }
-                
+            
 
             progress++;
         }
@@ -411,7 +368,7 @@ public sealed class OperationDynamicLifts : Operation
 
     private bool Equals(OperationDynamicLifts other)
     {
-        return _setMethod == other._setMethod && _smallestBottomLiftHeight.Equals(other._smallestBottomLiftHeight) && _largestBottomLiftHeight.Equals(other._largestBottomLiftHeight) && _smallestLiftHeight.Equals(other._smallestLiftHeight) && _largestLiftHeight.Equals(other._largestLiftHeight) && _slowestBottomLiftSpeed.Equals(other._slowestBottomLiftSpeed) && _fastestBottomLiftSpeed.Equals(other._fastestBottomLiftSpeed) && _slowestLiftSpeed.Equals(other._slowestLiftSpeed) && _fastestLiftSpeed.Equals(other._fastestLiftSpeed) && _lightOffDelayBottomExtraTime.Equals(other._lightOffDelayBottomExtraTime) && _lightOffDelayExtraTime.Equals(other._lightOffDelayExtraTime) && _lightOffDelaySetMode == other._lightOffDelaySetMode;
+        return _setMethod == other._setMethod && _smallestBottomLiftHeight.Equals(other._smallestBottomLiftHeight) && _largestBottomLiftHeight.Equals(other._largestBottomLiftHeight) && _smallestLiftHeight.Equals(other._smallestLiftHeight) && _largestLiftHeight.Equals(other._largestLiftHeight) && _slowestBottomLiftSpeed.Equals(other._slowestBottomLiftSpeed) && _fastestBottomLiftSpeed.Equals(other._fastestBottomLiftSpeed) && _slowestLiftSpeed.Equals(other._slowestLiftSpeed) && _fastestLiftSpeed.Equals(other._fastestLiftSpeed);
     }
 
     public override bool Equals(object? obj)
@@ -431,9 +388,6 @@ public sealed class OperationDynamicLifts : Operation
         hashCode.Add(_fastestBottomLiftSpeed);
         hashCode.Add(_slowestLiftSpeed);
         hashCode.Add(_fastestLiftSpeed);
-        hashCode.Add(_lightOffDelayBottomExtraTime);
-        hashCode.Add(_lightOffDelayExtraTime);
-        hashCode.Add((int)_lightOffDelaySetMode);
         return hashCode.ToHashCode();
     }
 

@@ -355,6 +355,7 @@
 			</Border>
 
 			<TabControl
+				Name="MainTabControl"
 			  DockPanel.Dock="Left"
 			  Width="400"
 			  SelectedItem="{Binding SelectedTabItem}">

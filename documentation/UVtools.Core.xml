@@ -4766,6 +4766,26 @@
             Gets the bounding rectangle for the image area in millimeters
             </summary>
         </member>
+        <member name="P:UVtools.Core.Layers.Layer.FirstPixelIndex">
+            <summary>
+            Gets the first pixel index on this layer
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Layers.Layer.LastPixelIndex">
+            <summary>
+            Gets the last pixel index on this layer
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Layers.Layer.FirstPixelPosition">
+            <summary>
+            Gets the first pixel <see cref="T:System.Drawing.Point"/> on this layer
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Layers.Layer.LastPixelPosition">
+            <summary>
+            Gets the last pixel <see cref="T:System.Drawing.Point"/> on this layer
+            </summary>
+        </member>
         <member name="P:UVtools.Core.Layers.Layer.IsFirstLayer">
             <summary>
             Gets if is the first layer
@@ -4801,6 +4821,11 @@
             Gets the previous layer, returns null if no previous layer
             </summary>
         </member>
+        <member name="P:UVtools.Core.Layers.Layer.PreviousLayerOrThis">
+            <summary>
+            Gets the previous layer if available, otherwise return the calling layer itself
+            </summary>
+        </member>
         <member name="P:UVtools.Core.Layers.Layer.PreviousHeightLayer">
             <summary>
             Gets the previous layer with a different height from the current, returns null if no previous layer
@@ -4814,6 +4839,11 @@
         <member name="P:UVtools.Core.Layers.Layer.NextLayer">
             <summary>
             Gets the next layer, returns null if no next layer
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Layers.Layer.NextLayerOrThis">
+            <summary>
+            Gets the next layer if available, otherwise return the calling layer itself
             </summary>
         </member>
         <member name="P:UVtools.Core.Layers.Layer.NextHeightLayer">
