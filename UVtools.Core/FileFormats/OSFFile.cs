@@ -7,13 +7,13 @@
  */
 
 using BinarySerialization;
-using Emgu.CV;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Threading.Tasks;
+using Emgu.CV;
 using UVtools.Core.Extensions;
 using UVtools.Core.Layers;
 using UVtools.Core.Objects;
@@ -250,6 +250,7 @@ public class OSFFile : FileFormat
         internal Mat DecodeImage(OSFFile parent)
         {
             var mat = parent.CreateMat();
+            if (NumberOfPixels == 0) return mat;
 
             int pixel = (int)(StartY * parent.ResolutionX);
             for (var n = 0; n < EncodedRle.Length; n++)
@@ -260,9 +261,7 @@ public class OSFFile : FileFormat
                 if ((code & 0x01) == 0x01) // It's a run
                 {
                     code &= 0xfe; // Get the grey value
-                    n++;
-
-                    var slen = EncodedRle[n];
+                    var slen = EncodedRle[++n];
 
                     if ((slen & 0x80) == 0)
                     {
@@ -785,9 +784,9 @@ public class OSFFile : FileFormat
         {
             inputFile.Seek(Header.HeaderLength, SeekOrigin.Begin);
             var layerDef = new OSFLayerDef[LayerCount];
-            int buffer;
             var rle = new List<byte>();
             progress.Reset(OperationProgress.StatusDecodeLayers, LayerCount);
+            
             foreach (var batch in BatchLayersIndexes())
             {
                 foreach (var layerIndex in batch)
@@ -796,33 +795,48 @@ public class OSFFile : FileFormat
                     
                     //Debug.WriteLine($"{layerIndex}: {inputFile.Position}");
                     layerDef[layerIndex] = Helpers.Deserialize<OSFLayerDef>(inputFile);
+                    if (layerDef[layerIndex].NumberOfPixels == 0) continue;
 
+                    int buffer;
+                    int slen;
                     while ((buffer = inputFile.ReadByte()) > -1)
                     {
-                        if (buffer != 0x0D) // Not what we want, add and continue
+                        if ((buffer & 0x01) == 0x01) // It's a run
+                        {
+                            slen = inputFile.ReadByte();
+                            if (buffer == 0x0D && slen is 0x0A or 0x0B)
+                            {
+                                inputFile.Seek(-2, SeekOrigin.Current);
+                                break;
+                            }
+                            
+                            rle.Add((byte)buffer);
+                            rle.Add((byte)slen);
+
+                            if ((slen & 0x80) == 0)
+                            {
+                            }
+                            else if ((slen & 0xc0) == 0x80)
+                            {
+                                rle.Add((byte)inputFile.ReadByte());
+                            }
+                            else if ((slen & 0xe0) == 0xc0)
+                            {
+                                rle.AddRange(inputFile.ReadBytes(2));
+                            }
+                            else if ((slen & 0xf0) == 0xe0)
+                            {
+                                rle.AddRange(inputFile.ReadBytes(3));
+                            }
+                            else
+                            {
+                                throw new FileLoadException("Corrupted RLE data");
+                            }
+                        }
+                        else
                         {
                             rle.Add((byte)buffer);
-                            continue;
                         }
-
-                        // Check next byte for 0x0A or 0x0B
-                        buffer = inputFile.ReadByte();
-                        if (buffer is 0x0A or 0x0B)
-                        {
-                            inputFile.Seek(-2, SeekOrigin.Current);
-                            break;
-                        }
-
-                        rle.Add(0x0D); // Add previous byte
-
-                        if (buffer == -1) break; // End of file
-                        if (buffer == 0x0D) // 0x0D pair, rewind 1 and recheck
-                        {
-                            inputFile.Seek(-1, SeekOrigin.Current);
-                            continue;
-                        }
-
-                        rle.Add((byte)buffer);
                     }
 
                     layerDef[layerIndex].EncodedRle = rle.ToArray();

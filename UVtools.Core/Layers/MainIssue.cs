@@ -123,7 +123,12 @@ public class MainIssue : IReadOnlyList<Issue>
         Childs = new[] { issue };
         issue.Parent = this;
         PixelCount = issue.PixelsCount;
-        if (issue is IssueOfPoints) Area = issue.PixelsCount;
+        Area = issue switch
+        {
+            IssueOfPoints => issue.PixelsCount,
+            IssueOfContours => issue.Area,
+            _ => issue.Area
+        };
     }
 
     public MainIssue(IssueType type, IEnumerable<Issue> issues) : this(type)
@@ -131,7 +136,7 @@ public class MainIssue : IReadOnlyList<Issue>
         foreach (var issue in issues)
         {
             issue.Parent = this;
-            var layerHeightInPixels = issue.Layer.SlicerFile.MillimetersToPixels(issue.Layer.LayerHeight, 20);
+            var layerHeightInPixels = issue.Layer.SlicerFile.MillimetersToPixelsF(issue.Layer.LayerHeight, 20);
             Area += issue.Area * layerHeightInPixels;
             PixelCount += issue.PixelsCount;
             if (issue.BoundingRectangle.IsEmpty) continue;
@@ -154,7 +159,7 @@ public class MainIssue : IReadOnlyList<Issue>
             Childs = issues.OrderBy(issue => issue.LayerIndex).ToArray();
         }
 
-        Area = Math.Floor(Area);
+        Area = Math.Round(Area, 3);
     }
 
     private void Sort()

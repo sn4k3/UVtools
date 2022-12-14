@@ -129,17 +129,51 @@ struct LAYER_DEF {
     local long currentPos = FTell();
     local long rleSize = 0;
 
-    while(!FEof())
+    if (NumberOfPixels > 0)
     {
-        if(ReadByte() == 0x0D && (ReadByte(FTell()+1) == 0x0A || ReadByte(FTell()+1) == 0x0B))
+        local byte buffer;
+        local byte slen;
+        while(!FEof())
         {
-            break;
+            buffer = ReadByte();
+            if ((buffer & 0x01) == 0x01) // It's a run
+            {
+                FSkip(1);
+                slen = ReadByte();
+                if (buffer == 0x0D && (slen == 0x0A || slen == 0x0B))
+                {
+                    break;
+                }
+
+                FSkip(1);
+                rleSize += 2;
+
+                if ((slen & 0x80) == 0) {}
+                else if ((slen & 0xc0) == 0x80)
+                {
+                    rleSize++;
+                    FSkip(1);
+                }
+                else if ((slen & 0xe0) == 0xc0)
+                {
+                    rleSize += 2;
+                    FSkip(2);
+                }
+                else if ((slen & 0xf0) == 0xe0)
+                {
+                    rleSize += 3;
+                    FSkip(3);
+                }
+            }
+            else
+            {
+                rleSize++;
+                FSkip(1);
+            }
         }
-        rleSize++;
-        FSkip(1);
+        FSeek(currentPos);
+        ubyte RLE[rleSize] <fgcolor=cBlack, bgcolor=cWhite>;
     }
-    FSeek(currentPos);
-    ubyte RLE[rleSize] <fgcolor=cBlack, bgcolor=cWhite>;
 };
 
 

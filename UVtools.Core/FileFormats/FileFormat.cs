@@ -5190,6 +5190,19 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     }
 
     /// <summary>
+    /// Converts millimeters to pixels given the current resolution and display size
+    /// </summary>
+    /// <param name="millimeters">Millimeters to convert</param>
+    /// <param name="fallbackToPixels">Fallback to this value in pixels if no ratio is available to make the convertion</param>
+    /// <returns>Pixels</returns>
+    public float MillimetersToPixelsF(float millimeters, uint fallbackToPixels = 0)
+    {
+        var ppmm = PpmmMax;
+        if (ppmm <= 0) return fallbackToPixels;
+        return ppmm * millimeters;
+    }
+
+    /// <summary>
     /// From a pixel position get the equivalent position on the display
     /// </summary>
     /// <param name="x">X position in pixels</param>

@@ -3502,6 +3502,14 @@
             <param name="fallbackToPixels">Fallback to this value in pixels if no ratio is available to make the convertion</param>
             <returns>Pixels</returns>
         </member>
+        <member name="M:UVtools.Core.FileFormats.FileFormat.MillimetersToPixelsF(System.Single,System.UInt32)">
+            <summary>
+            Converts millimeters to pixels given the current resolution and display size
+            </summary>
+            <param name="millimeters">Millimeters to convert</param>
+            <param name="fallbackToPixels">Fallback to this value in pixels if no ratio is available to make the convertion</param>
+            <returns>Pixels</returns>
+        </member>
         <member name="M:UVtools.Core.FileFormats.FileFormat.PixelToDisplayPositionX(System.Int32,System.Byte)">
             <summary>
             From a pixel position get the equivalent position on the display
