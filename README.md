@@ -306,8 +306,6 @@ If you downloaded the **.AppImage** package variant you must set run permissions
 1. 4GB RAM or higher
 3. **For Mac M1/M2 (ARM):**
    1. Install via the [auto installer](https://github.com/sn4k3/UVtools#to-auto-install-on-macos-homebrew)
-   2. To launch the UVtools, always run the created `run-uvtools` file on your Desktop. 
-   (Do not open UVtools app directly as it will not work under the arm64 build)
 
 To run UVtools open it folder on a terminal and call one of:
 
