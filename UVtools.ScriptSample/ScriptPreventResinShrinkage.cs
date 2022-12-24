@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using System.Threading.Tasks;
 using UVtools.Core;
 using UVtools.Core.Extensions;
@@ -41,7 +41,7 @@ public class ScriptPreventResinShrinkage : ScriptGlobals
         Script.Name = "Preventing the effects of resin shrinkage";
         Script.Description = "Cures a layer in multiple exposures to mitigate resin shrinkage effects";
         Script.Author = "Jan Mrázek";
-        Script.Version = new Version(0, 2);
+        Script.Version = new Version(0, 3);
         Script.UserInputs.Add(GrainSize);
         Script.UserInputs.Add(Spacing);
     }
@@ -113,7 +113,8 @@ public class ScriptPreventResinShrinkage : ScriptGlobals
     {
         Progress.Reset("Changing layers", Operation.LayerRangeCount); // Sets the progress name and number of items to process
 
-        var newLayers = new List<Layer>((int)SlicerFile.LayerCount * 3);
+        var newLayers = new Layer[(int) SlicerFile.LayerCount * 3];
+
         var dotPattern = GenerateDotPattern();
         var linePattern = GenerateLinePattern();
 
@@ -133,7 +134,7 @@ public class ScriptPreventResinShrinkage : ScriptGlobals
             var fullLayer = SlicerFile[layerIndex];
             if (fullLayer.IsEmpty) 
             {
-                newLayers.Add(fullLayer);
+                newLayers[layerIndex * 3] = fullLayer;
                 return; // Do not apply to empty layers
             }
 
@@ -159,15 +160,18 @@ public class ScriptPreventResinShrinkage : ScriptGlobals
             // Try to disable lifts for last two subsequent layers
             fullLayer.LiftHeightTotal = coresLayer2.LiftHeightTotal = SlicerFile.SupportsGCode ? 0f : 0.1f;
 
-            newLayers.Add(coresLayer1);
-            newLayers.Add(coresLayer2);
-            newLayers.Add(fullLayer);
+            newLayers[layerIndex * 3] = coresLayer1;
+            newLayers[layerIndex * 3 + 1] = coresLayer2;
+            newLayers[layerIndex * 3 + 2] = fullLayer;
 
             Progress.LockAndIncrement();
         });
 
+        // Remove null layers (Empty layers not replicated)
+        newLayers = newLayers.Where(layer => layer is not null).ToArray();
+
         SlicerFile.SuppressRebuildPropertiesWork(() => {
-            SlicerFile.Layers = newLayers.ToArray();
+            SlicerFile.Layers = newLayers;
         });
         // return true if not cancelled by user
         return !Progress.Token.IsCancellationRequested;
