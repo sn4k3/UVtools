@@ -6,7 +6,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
-using System.Drawing.Printing;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -27,24 +26,23 @@ public class CTBEncryptedFile : FileFormat
     public const ushort RLE16EncodingLimit = 0xFFF;
     public const ushort RLEEncryptedMinimumLength = 512;
 
-    public const uint PERLAYER_SETTINGS_DISALLOW_NO_AA = 7; // 7 (This disallow per layer settings and follow global table only) No AA
-    public const uint PERLAYER_SETTINGS_DISALLOW       = 15; // 15 (This disallow per layer settings and follow global table only) with AA
-    public const uint PERLAYER_SETTINGS_ALLOW          = 0x5000000F; // 1342177295 (This allow per layer settings)
+    private const byte PERLAYER_SETTINGS_DISALLOW       = 0;
+    private const byte PERLAYER_SETTINGS_ALLOW          = 0x40;
 
     private const string CTB_DISCLAIMER = "Layout and record format for the ctb and cbddlp file types are the copyrighted programs or codes of CBD Technology (China) Inc..The Customer or User shall not in any manner reproduce, distribute, modify, decompile, disassemble, decrypt, extract, reverse engineer, lease, assign, or sublicense the said programs or codes.";
     private const ushort CTB_DISCLAIMER_SIZE = 320;
 
-    public const byte HASH_LENGTH = 32;
-    public const uint LAYER_XOR_KEY = 0xEFBEADDE;
+    private const byte HASH_LENGTH = 32;
+    private const uint LAYER_XOR_KEY = 0xEFBEADDE;
 
-    public const string Secret0 = "HDgSAB0BEiE/AgpPAhwhM1QAAUwHPT8HTywEGiEjVAoBDwEsJgAKC0wVPDoRTwkDATg3AE9HQhAhNF1VZWYkMHYVHQpMEjI3HQEcGFM7OQBPHwkBOD8AGwoIUyAlER1PCBIhN1QKAQ8BLCYABgACX3U6GwwEH191NRsBHBgBND8aHENMATAlAB0GDwc8ORocQ0weOjgbHwAAGi83AAYAAlM0OBBPAQMdeCURARwJUyU5GAYMBRYmdgAHDhhTJSQRGQoCByZ2GxsHCQEmdhIdAAFTNiQRDhsJUzQ4EE8DCRIxexIAHRsSJzJUHAAABiE/GwEcTBInOQEBC0wHMDUcAQAAHDIvWmU8GQMlOQYbBgIUdSIcBhxMFTw6EU8JAwE4NwBPBh9TNHYHGwocXjc3FwRPChwndkcrTxgWNj4aAAMDFCx2FQELTBU6JFQbBwlTNjkZAhoCGiEvVAAZCQE0OhhBTz8HPDoYQ08NHTF2HQFPDhY9NxgJTwMVdSMHCh0fUyIzVA4DABwidgAATx4WNDJYTxwNBTB2FQELTB40OB0fGgASITNUGwcJUzM/GApPChwndgYKGQUWInpUHQoPHCMzBk8LDQc0dhUBC0wXMCIRDBtMAyc5FgMKAQB1IhtPAg0YMHYNABpMEDogER0KCFMzJBsCTwEaJiIVBAofUzQ4EE8KHgE6JAdBZTwfMDcHCkNMHjQ9EU8WAwYndgcHBgoHdTAGAAJMBz0/B08fHhwxIxcbHEwSOzJUBwoAA3UiHApPXzd1IhEMBwIcOTkTFk8LHHUwGx0YDQExdhUBC0wcJTMaTk8/BiUmGx0bTBwlMxpCHAMGJzURTxwDHyAiHQABH191IhwOG0wENC9UGApMEDQ4VAwdCRIhM1QNChgHMCRUHx0DFyA1ABxPChwndgAHCkwQOjgHGgIJASZ4";
-    public const string Secret1 = "hQ36XB6yTk+zO02ysyiowt8yC1buK+nbLWyfY40EXoU=";
-    public const string Secret2 = "Wld+ampndVJecmVjYH5cWQ==";
+    private const string Secret0 = "HDgSAB0BEiE/AgpPAhwhM1QAAUwHPT8HTywEGiEjVAoBDwEsJgAKC0wVPDoRTwkDATg3AE9HQhAhNF1VZWYkMHYVHQpMEjI3HQEcGFM7OQBPHwkBOD8AGwoIUyAlER1PCBIhN1QKAQ8BLCYABgACX3U6GwwEH191NRsBHBgBND8aHENMATAlAB0GDwc8ORocQ0weOjgbHwAAGi83AAYAAlM0OBBPAQMdeCURARwJUyU5GAYMBRYmdgAHDhhTJSQRGQoCByZ2GxsHCQEmdhIdAAFTNiQRDhsJUzQ4EE8DCRIxexIAHRsSJzJUHAAABiE/GwEcTBInOQEBC0wHMDUcAQAAHDIvWmU8GQMlOQYbBgIUdSIcBhxMFTw6EU8JAwE4NwBPBh9TNHYHGwocXjc3FwRPChwndkcrTxgWNj4aAAMDFCx2FQELTBU6JFQbBwlTNjkZAhoCGiEvVAAZCQE0OhhBTz8HPDoYQ08NHTF2HQFPDhY9NxgJTwMVdSMHCh0fUyIzVA4DABwidgAATx4WNDJYTxwNBTB2FQELTB40OB0fGgASITNUGwcJUzM/GApPChwndgYKGQUWInpUHQoPHCMzBk8LDQc0dhUBC0wXMCIRDBtMAyc5FgMKAQB1IhtPAg0YMHYNABpMEDogER0KCFMzJBsCTwEaJiIVBAofUzQ4EE8KHgE6JAdBZTwfMDcHCkNMHjQ9EU8WAwYndgcHBgoHdTAGAAJMBz0/B08fHhwxIxcbHEwSOzJUBwoAA3UiHApPXzd1IhEMBwIcOTkTFk8LHHUwGx0YDQExdhUBC0wcJTMaTk8/BiUmGx0bTBwlMxpCHAMGJzURTxwDHyAiHQABH191IhwOG0wENC9UGApMEDQ4VAwdCRIhM1QNChgHMCRUHx0DFyA1ABxPChwndgAHCkwQOjgHGgIJASZ4";
+    private const string Secret1 = "hQ36XB6yTk+zO02ysyiowt8yC1buK+nbLWyfY40EXoU=";
+    private const string Secret2 = "Wld+ampndVJecmVjYH5cWQ==";
         
 
     public static readonly string Preamble = CryptExtensions.XORCipherString(System.Convert.FromBase64String(Secret0), About.Software);
-    public static byte[] Bigfoot       = CryptExtensions.XORCipher(System.Convert.FromBase64String(Secret1), About.Software);
-    public static byte[] CookieMonster = CryptExtensions.XORCipher(System.Convert.FromBase64String(Secret2), About.Software);
+    private static byte[] Bigfoot       = CryptExtensions.XORCipher(System.Convert.FromBase64String(Secret1), About.Software);
+    private static byte[] CookieMonster = CryptExtensions.XORCipher(System.Convert.FromBase64String(Secret2), About.Software);
 
     #endregion
 
@@ -125,36 +123,47 @@ public class CTBEncryptedFile : FileFormat
         [FieldOrder(39)] public float RestTimeAfterLift { get; set; }
         [FieldOrder(40)] public uint MachineNameOffset { get; set; }
         [FieldOrder(41)] public uint MachineNameSize { get; set; } = (uint)(string.IsNullOrEmpty(DefaultMachineName) ? 0 : DefaultMachineName.Length);
-        [FieldOrder(42)] public uint PerLayerSettings { get; set; } = PERLAYER_SETTINGS_DISALLOW;
-        [FieldOrder(43)] public uint Unknown4 { get; set; }
-        [FieldOrder(44)] public uint Unknown5 { get; set; } = 8; // Also 1
-        [FieldOrder(45)] public float RestTimeAfterRetract { get; set; }
-        [FieldOrder(46)] public float RestTimeAfterLift2 { get; set; }
-        [FieldOrder(47)] public uint TransitionLayerCount { get; set; }
-        [FieldOrder(48)] public float BottomRetractSpeed { get; set; }
-        [FieldOrder(49)] public float BottomRetractSpeed2 { get; set; }
-        [FieldOrder(50)] public uint Padding1 { get; set; }
-        [FieldOrder(51)] public float Four1 { get; set; } = 4; // Same as CTBv4.PrintParametersV4.Four1)
-        [FieldOrder(52)] public uint Padding2 { get; set; } 
-        [FieldOrder(53)] public float Four2 { get; set; } = 4; // Same as CTBv4.PrintParametersV4.Four2)
-        [FieldOrder(54)] public float RestTimeAfterRetract2 { get; set; }
-        [FieldOrder(55)] public float RestTimeAfterLift3 { get; set; }
-        [FieldOrder(56)] public float RestTimeBeforeLift { get; set; }
-        [FieldOrder(57)] public float BottomRetractHeight2 { get; set; }
-        [FieldOrder(58)] public uint Unknown6 { get; set; } // Same as CTBv4.PrintParametersV4.Unknown1)
-        [FieldOrder(59)] public uint Unknown7 { get; set; } //  Same as  CTBv4.PrintParametersV4.Unknown2)
-        [FieldOrder(60)] public uint Unknown8 { get; set; } = 4; // Same as CTBv4.PrintParametersV4.Unknown3)
-        [FieldOrder(61)] public uint LastLayerIndex { get; set; }
-        [FieldOrder(62)] public uint Padding3 { get; set; }
-        [FieldOrder(63)] public uint Padding4 { get; set; }
-        [FieldOrder(64)] public uint Padding5 { get; set; }
-        [FieldOrder(65)] public uint Padding6 { get; set; }
-        [FieldOrder(66)] public uint DisclaimerOffset { get; set; }
-        [FieldOrder(67)] public uint DisclaimerSize { get; set; }
-        [FieldOrder(68)] public uint Padding7 { get; set; }
-        [FieldOrder(69)] public uint Padding8 { get; set; }
-        [FieldOrder(70)] public uint Padding9 { get; set; }
-        [FieldOrder(71)] public uint Padding10 { get; set; }
+        
+        /// <summary>
+        /// 7(0x7) [No AA] / 15(0x0F) [AA]
+        /// </summary>
+        [FieldOrder(42)] public byte AntiAliasFlag { get; set; } = 0x0F;
+
+        [FieldOrder(43)] public ushort Padding { get; set; }
+
+        /// <summary>
+        /// Not totally understood. 0 to not support, 0x40 to 0x50 to allow per layer parameters
+        /// </summary>
+        [FieldOrder(44)] public byte PerLayerSettings { get; set; }
+        [FieldOrder(45)] public uint Unknown4 { get; set; }
+        [FieldOrder(46)] public uint Unknown5 { get; set; } = 8; // Also 1
+        [FieldOrder(47)] public float RestTimeAfterRetract { get; set; }
+        [FieldOrder(48)] public float RestTimeAfterLift2 { get; set; }
+        [FieldOrder(49)] public uint TransitionLayerCount { get; set; }
+        [FieldOrder(50)] public float BottomRetractSpeed { get; set; }
+        [FieldOrder(51)] public float BottomRetractSpeed2 { get; set; }
+        [FieldOrder(52)] public uint Padding1 { get; set; }
+        [FieldOrder(53)] public float Four1 { get; set; } = 4; // Same as CTBv4.PrintParametersV4.Four1)
+        [FieldOrder(54)] public uint Padding2 { get; set; } 
+        [FieldOrder(55)] public float Four2 { get; set; } = 4; // Same as CTBv4.PrintParametersV4.Four2)
+        [FieldOrder(56)] public float RestTimeAfterRetract2 { get; set; }
+        [FieldOrder(57)] public float RestTimeAfterLift3 { get; set; }
+        [FieldOrder(58)] public float RestTimeBeforeLift { get; set; }
+        [FieldOrder(59)] public float BottomRetractHeight2 { get; set; }
+        [FieldOrder(60)] public uint Unknown6 { get; set; } // Same as CTBv4.PrintParametersV4.Unknown1)
+        [FieldOrder(61)] public uint Unknown7 { get; set; } //  Same as  CTBv4.PrintParametersV4.Unknown2)
+        [FieldOrder(62)] public uint Unknown8 { get; set; } = 4; // Same as CTBv4.PrintParametersV4.Unknown3)
+        [FieldOrder(63)] public uint LastLayerIndex { get; set; }
+        [FieldOrder(64)] public uint Padding3 { get; set; }
+        [FieldOrder(65)] public uint Padding4 { get; set; }
+        [FieldOrder(66)] public uint Padding5 { get; set; }
+        [FieldOrder(67)] public uint Padding6 { get; set; }
+        [FieldOrder(68)] public uint DisclaimerOffset { get; set; }
+        [FieldOrder(69)] public uint DisclaimerSize { get; set; }
+        [FieldOrder(70)] public uint Padding7 { get; set; }
+        [FieldOrder(71)] public uint Padding8 { get; set; }
+        [FieldOrder(72)] public uint Padding9 { get; set; }
+        [FieldOrder(73)] public uint Padding10 { get; set; }
 
         [Ignore]
         public string MachineName
@@ -170,7 +179,7 @@ public class CTBEncryptedFile : FileFormat
 
         public override string ToString()
         {
-            return $"{nameof(ChecksumValue)}: {ChecksumValue}, {nameof(LayerPointersOffset)}: {LayerPointersOffset}, {nameof(DisplayWidth)}: {DisplayWidth}, {nameof(DisplayHeight)}: {DisplayHeight}, {nameof(MachineZ)}: {MachineZ}, {nameof(Unknown1)}: {Unknown1}, {nameof(Unknown2)}: {Unknown2}, {nameof(TotalHeightMillimeter)}: {TotalHeightMillimeter}, {nameof(LayerHeight)}: {LayerHeight}, {nameof(ExposureTime)}: {ExposureTime}, {nameof(BottomExposureTime)}: {BottomExposureTime}, {nameof(LightOffDelay)}: {LightOffDelay}, {nameof(BottomLayerCount)}: {BottomLayerCount}, {nameof(ResolutionX)}: {ResolutionX}, {nameof(ResolutionY)}: {ResolutionY}, {nameof(LayerCount)}: {LayerCount}, {nameof(LargePreviewOffset)}: {LargePreviewOffset}, {nameof(SmallPreviewOffset)}: {SmallPreviewOffset}, {nameof(PrintTime)}: {PrintTime}, {nameof(ProjectorType)}: {ProjectorType}, {nameof(BottomLiftHeight)}: {BottomLiftHeight}, {nameof(BottomLiftSpeed)}: {BottomLiftSpeed}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(RetractSpeed)}: {RetractSpeed}, {nameof(MaterialMilliliters)}: {MaterialMilliliters}, {nameof(MaterialGrams)}: {MaterialGrams}, {nameof(MaterialCost)}: {MaterialCost}, {nameof(BottomLightOffDelay)}: {BottomLightOffDelay}, {nameof(Unknown3)}: {Unknown3}, {nameof(LightPWM)}: {LightPWM}, {nameof(BottomLightPWM)}: {BottomLightPWM}, {nameof(LayerXorKey)}: {LayerXorKey}, {nameof(BottomLiftHeight2)}: {BottomLiftHeight2}, {nameof(BottomLiftSpeed2)}: {BottomLiftSpeed2}, {nameof(LiftHeight2)}: {LiftHeight2}, {nameof(LiftSpeed2)}: {LiftSpeed2}, {nameof(RetractHeight2)}: {RetractHeight2}, {nameof(RetractSpeed2)}: {RetractSpeed2}, {nameof(RestTimeAfterLift)}: {RestTimeAfterLift}, {nameof(MachineNameOffset)}: {MachineNameOffset}, {nameof(MachineNameSize)}: {MachineNameSize}, {nameof(PerLayerSettings)}: {PerLayerSettings}, {nameof(Unknown4)}: {Unknown4}, {nameof(Unknown5)}: {Unknown5}, {nameof(RestTimeAfterRetract)}: {RestTimeAfterRetract}, {nameof(RestTimeAfterLift2)}: {RestTimeAfterLift2}, {nameof(TransitionLayerCount)}: {TransitionLayerCount}, {nameof(BottomRetractSpeed)}: {BottomRetractSpeed}, {nameof(BottomRetractSpeed2)}: {BottomRetractSpeed2}, {nameof(Padding1)}: {Padding1}, {nameof(Four1)}: {Four1}, {nameof(Padding2)}: {Padding2}, {nameof(Four2)}: {Four2}, {nameof(RestTimeAfterRetract2)}: {RestTimeAfterRetract2}, {nameof(RestTimeAfterLift3)}: {RestTimeAfterLift3}, {nameof(RestTimeBeforeLift)}: {RestTimeBeforeLift}, {nameof(BottomRetractHeight2)}: {BottomRetractHeight2}, {nameof(Unknown6)}: {Unknown6}, {nameof(Unknown7)}: {Unknown7}, {nameof(Unknown8)}: {Unknown8}, {nameof(LastLayerIndex)}: {LastLayerIndex}, {nameof(Padding3)}: {Padding3}, {nameof(Padding4)}: {Padding4}, {nameof(Padding5)}: {Padding5}, {nameof(Padding6)}: {Padding6}, {nameof(DisclaimerOffset)}: {DisclaimerOffset}, {nameof(DisclaimerSize)}: {DisclaimerSize}, {nameof(Padding7)}: {Padding7}, {nameof(Padding8)}: {Padding8}, {nameof(Padding9)}: {Padding9}, {nameof(Padding10)}: {Padding10}, {nameof(MachineName)}: {MachineName}";
+            return $"{nameof(ChecksumValue)}: {ChecksumValue}, {nameof(LayerPointersOffset)}: {LayerPointersOffset}, {nameof(DisplayWidth)}: {DisplayWidth}, {nameof(DisplayHeight)}: {DisplayHeight}, {nameof(MachineZ)}: {MachineZ}, {nameof(Unknown1)}: {Unknown1}, {nameof(Unknown2)}: {Unknown2}, {nameof(TotalHeightMillimeter)}: {TotalHeightMillimeter}, {nameof(LayerHeight)}: {LayerHeight}, {nameof(ExposureTime)}: {ExposureTime}, {nameof(BottomExposureTime)}: {BottomExposureTime}, {nameof(LightOffDelay)}: {LightOffDelay}, {nameof(BottomLayerCount)}: {BottomLayerCount}, {nameof(ResolutionX)}: {ResolutionX}, {nameof(ResolutionY)}: {ResolutionY}, {nameof(LayerCount)}: {LayerCount}, {nameof(LargePreviewOffset)}: {LargePreviewOffset}, {nameof(SmallPreviewOffset)}: {SmallPreviewOffset}, {nameof(PrintTime)}: {PrintTime}, {nameof(ProjectorType)}: {ProjectorType}, {nameof(BottomLiftHeight)}: {BottomLiftHeight}, {nameof(BottomLiftSpeed)}: {BottomLiftSpeed}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(RetractSpeed)}: {RetractSpeed}, {nameof(MaterialMilliliters)}: {MaterialMilliliters}, {nameof(MaterialGrams)}: {MaterialGrams}, {nameof(MaterialCost)}: {MaterialCost}, {nameof(BottomLightOffDelay)}: {BottomLightOffDelay}, {nameof(Unknown3)}: {Unknown3}, {nameof(LightPWM)}: {LightPWM}, {nameof(BottomLightPWM)}: {BottomLightPWM}, {nameof(LayerXorKey)}: {LayerXorKey}, {nameof(BottomLiftHeight2)}: {BottomLiftHeight2}, {nameof(BottomLiftSpeed2)}: {BottomLiftSpeed2}, {nameof(LiftHeight2)}: {LiftHeight2}, {nameof(LiftSpeed2)}: {LiftSpeed2}, {nameof(RetractHeight2)}: {RetractHeight2}, {nameof(RetractSpeed2)}: {RetractSpeed2}, {nameof(RestTimeAfterLift)}: {RestTimeAfterLift}, {nameof(MachineNameOffset)}: {MachineNameOffset}, {nameof(MachineNameSize)}: {MachineNameSize}, {nameof(AntiAliasFlag)}: {AntiAliasFlag}, {nameof(Padding)}: {Padding}, {nameof(PerLayerSettings)}: {PerLayerSettings}, {nameof(Unknown4)}: {Unknown4}, {nameof(Unknown5)}: {Unknown5}, {nameof(RestTimeAfterRetract)}: {RestTimeAfterRetract}, {nameof(RestTimeAfterLift2)}: {RestTimeAfterLift2}, {nameof(TransitionLayerCount)}: {TransitionLayerCount}, {nameof(BottomRetractSpeed)}: {BottomRetractSpeed}, {nameof(BottomRetractSpeed2)}: {BottomRetractSpeed2}, {nameof(Padding1)}: {Padding1}, {nameof(Four1)}: {Four1}, {nameof(Padding2)}: {Padding2}, {nameof(Four2)}: {Four2}, {nameof(RestTimeAfterRetract2)}: {RestTimeAfterRetract2}, {nameof(RestTimeAfterLift3)}: {RestTimeAfterLift3}, {nameof(RestTimeBeforeLift)}: {RestTimeBeforeLift}, {nameof(BottomRetractHeight2)}: {BottomRetractHeight2}, {nameof(Unknown6)}: {Unknown6}, {nameof(Unknown7)}: {Unknown7}, {nameof(Unknown8)}: {Unknown8}, {nameof(LastLayerIndex)}: {LastLayerIndex}, {nameof(Padding3)}: {Padding3}, {nameof(Padding4)}: {Padding4}, {nameof(Padding5)}: {Padding5}, {nameof(Padding6)}: {Padding6}, {nameof(DisclaimerOffset)}: {DisclaimerOffset}, {nameof(DisclaimerSize)}: {DisclaimerSize}, {nameof(Padding7)}: {Padding7}, {nameof(Padding8)}: {Padding8}, {nameof(Padding9)}: {Padding9}, {nameof(Padding10)}: {Padding10}, {nameof(MachineName)}: {MachineName}";
         }
     }
 
@@ -1040,7 +1049,7 @@ public class CTBEncryptedFile : FileFormat
     {
         get
         {
-            return new object[] { Settings };
+            return new object[] { Header, Settings };
         }
     }
 
@@ -1091,14 +1100,6 @@ public class CTBEncryptedFile : FileFormat
 
         return false;
     }
-
-    private void SanitizeProperties()
-    {
-        Settings.PerLayerSettings = AllLayersAreUsingGlobalParameters
-            ? PERLAYER_SETTINGS_DISALLOW
-            : PERLAYER_SETTINGS_ALLOW;
-    }
-
 
     protected override void DecodeInternally(OperationProgress progress)
     {
@@ -1285,6 +1286,13 @@ public class CTBEncryptedFile : FileFormat
         //inputFile.ReadBytes(HashLength);
     }
 
+    protected override void OnBeforeEncode(bool isPartialEncode)
+    {
+        Settings.PerLayerSettings = AllLayersAreUsingGlobalParameters
+            ? PERLAYER_SETTINGS_DISALLOW
+            : PERLAYER_SETTINGS_ALLOW;
+    }
+
     protected override void EncodeInternally(OperationProgress progress)
     {
         using var outputFile = new FileStream(TemporaryOutputFileFullPath, FileMode.Create, FileAccess.Write);
@@ -1293,8 +1301,6 @@ public class CTBEncryptedFile : FileFormat
          * this will be the last thing written to file */
         Header.SettingsSize = (uint)Helpers.Serializer.SizeOf(Settings);
         Header.SettingsOffset = (uint)Helpers.Serializer.SizeOf(Header);
-
-        SanitizeProperties();
 
         if (Settings.LayerXorKey == 0)
         {
@@ -1353,7 +1359,7 @@ public class CTBEncryptedFile : FileFormat
         LayersPointer = new LayerPointer[LayerCount];
         LayersDefinition = new LayerDef[LayerCount];
 
-        uint layerTableSize = (uint)Helpers.Serializer.SizeOf(new LayerPointer()) * LayerCount;
+        var layerTableSize = Helpers.Serializer.SizeOf(new LayerPointer()) * LayerCount;
 
         outputFile.Seek(outputFile.Position + layerTableSize, SeekOrigin.Begin);
 
@@ -1377,7 +1383,7 @@ public class CTBEncryptedFile : FileFormat
             var layerDef = LayersDefinition[layerIndex];
             LayersPointer[layerIndex] = new LayerPointer(outputFile.Position);
 
-            long layerDataOffset = outputFile.Position + LayerDef.TABLE_SIZE;
+            var layerDataOffset = outputFile.Position + LayerDef.TABLE_SIZE;
             layerDef.PageNumber = (uint)(layerDataOffset / ChituboxFile.PageSize);
             layerDef.LayerDataOffset = (uint)(layerDataOffset - ChituboxFile.PageSize * layerDef.PageNumber);
             outputFile.WriteSerialize(layerDef);
@@ -1414,8 +1420,6 @@ public class CTBEncryptedFile : FileFormat
 
     protected override void PartialSaveInternally(OperationProgress progress)
     {
-        SanitizeProperties();
-
         using var outputFile = new FileStream(TemporaryOutputFileFullPath, FileMode.Open, FileAccess.Write);
             
         outputFile.Seek(Header.SettingsOffset, SeekOrigin.Begin);

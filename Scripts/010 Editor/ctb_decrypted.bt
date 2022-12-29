@@ -68,9 +68,11 @@ struct DECRYPTED_HEADER {
     float RestTimeAfterLift;
     uint PrinterNameOffset;
     uint PrinterNameSize;
-    uint Unknown4;
+    ubyte AntiAliasFlag <fgcolor=cBlack, bgcolor=cRed>; // 7(0x7) [No AA] / 15(0x0F) [AA]
+    ushort Padding <fgcolor=cBlack, bgcolor=cRed>; 
+    ubyte PerLayerSettings <fgcolor=cBlack, bgcolor=cRed, format=hex>; // 0 to not support, 0x40 or 0x50, 16 * version?
+    uint unknown4;
     uint unknown5;
-    uint unknown6;
     float RestTimeAfterRetract;
     float RestTimeAfterLift;
     uint TransitionLayerCount;
@@ -84,9 +86,9 @@ struct DECRYPTED_HEADER {
     float RestTimeAfterLift;
     float RestTimeBeforeLift;
     float BottomRetractHeight;
-    float unknown7;
+    float unknown6;
+    uint unknown7;
     uint unknown8;
-    uint unknown9;
     uint LastLayerIndex;
     uint Padding3;
     uint Padding4;

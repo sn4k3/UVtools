@@ -40,12 +40,11 @@ public class ChituboxFile : FileFormat
     public const byte RLE8EncodingLimit = 0x7d; // 125;
     public const ushort RLE16EncodingLimit = 0xFFF;
 
-    public const uint PERLAYER_SETTINGS_CBDDLP =    8;  // 0 or 8 (This disallow per layer settings)
-    public const uint PERLAYER_SETTINGS_DISALLOW_NO_AA =  7; // 7 (This disallow per layer settings) no AA
-    public const uint PERLAYER_SETTINGS_DISALLOW =  15; // 15 (This disallow per layer settings) with AA
-    public const uint PERLAYER_SETTINGS_CTBv2 =     15; // 15 for ctb v2 files and others (This disallow per layer settings)
-    public const uint PERLAYER_SETTINGS_CTBv3 =     0x2000000F; // 536870927 for ctb v3 files (This allow per layer settings, while 15 don't)
-    public const uint PERLAYER_SETTINGS_CTBv4 =     0x4000000F; // 1073741839 for ctb v4 files (This allow per layer settings, while 15 don't)
+    private const byte PERLAYER_SETTINGS_DISALLOW =     0; 
+    private const byte PERLAYER_SETTINGS_CBDDLP =    0x10; 
+    private const byte PERLAYER_SETTINGS_CTBv2 =     0x20; // 15 for ctb v2 files and others (This disallow per layer settings)
+    private const byte PERLAYER_SETTINGS_CTBv3 =     0x30; // 536870927 for ctb v3 files (This allow per layer settings, while 15 don't)
+    private const byte PERLAYER_SETTINGS_CTBv4 =     0x40; // 1073741839 for ctb v4 files (This allow per layer settings, while 15 don't)
             
     private const string CTBv4_DISCLAIMER = "Layout and record format for the ctb and cbddlp file types are the copyrighted programs or codes of CBD Technology (China) Inc..The Customer or User shall not in any manner reproduce, distribute, modify, decompile, disassemble, decrypt, extract, reverse engineer, lease, assign, or sublicense the said programs or codes.";
     private const ushort CTBv4_DISCLAIMER_SIZE = 320;
@@ -288,12 +287,12 @@ public class ChituboxFile : FileFormat
     {
         private string _machineName = DefaultMachineName;
         [FieldOrder(0)] public float BottomLiftHeight2 { get; set; }
-        [FieldOrder(1)] public float BottomLiftSpeed2    { get; set; }
-        [FieldOrder(2)] public float LiftHeight2         { get; set; }
-        [FieldOrder(3)] public float LiftSpeed2          { get; set; }
-        [FieldOrder(4)] public float RetractHeight2      { get; set; }
-        [FieldOrder(5)] public float RetractSpeed2       { get; set; }
-        [FieldOrder(6)] public float RestTimeAfterLift    { get; set; }
+        [FieldOrder(1)] public float BottomLiftSpeed2  { get; set; }
+        [FieldOrder(2)] public float LiftHeight2       { get; set; }
+        [FieldOrder(3)] public float LiftSpeed2        { get; set; }
+        [FieldOrder(4)] public float RetractHeight2    { get; set; }
+        [FieldOrder(5)] public float RetractSpeed2     { get; set; }
+        [FieldOrder(6)] public float RestTimeAfterLift { get; set; }
 
         /// <summary>
         /// Gets the machine name offset to a string naming the machine type, and its length in bytes.
@@ -306,42 +305,48 @@ public class ChituboxFile : FileFormat
         [FieldOrder(8)] public uint MachineNameSize { get; set; } = (uint)(string.IsNullOrEmpty(DefaultMachineName) ? 0 : DefaultMachineName.Length);
 
         /// <summary>
-        /// Gets the parameter used to control encryption.
-        /// Not totally understood. 0/8 for cbddlp files, 0xF (15) for ctb files, 0x2000000F (536870927) for v3 ctb and 1073741839 for v4 ctb files to allow per layer parameters
+        /// CBDDLP: 0 [No AA] / 8 [AA] for cbddlp files.    CTB: 7(0x7) [No AA] / 15(0x0F) [AA]
         /// </summary>
-        [FieldOrder(9)] public uint PerLayerSettings     { get; set; } = PERLAYER_SETTINGS_DISALLOW;
+        [FieldOrder(9)] public byte AntiAliasFlag { get; set; } = 0x0F;
+
+        [FieldOrder(10)] public ushort Padding { get; set; }
+
+        /// <summary>
+        /// Not totally understood. 0 to not support, 0x20 for v2, 0x30 for v3 and 0x40 to 0x50 for v4 ctb files to allow per layer parameters
+        /// </summary>
+        [FieldOrder(11)] public byte PerLayerSettings { get; set; }
 
         /// <summary>
         /// Gets the minutes since Jan 1, 1970 UTC
         /// </summary>
-        [FieldOrder(10)] public uint ModifiedTimestampMinutes { get; set; } = (uint)DateTimeExtensions.Timestamp.TotalMinutes;
+        [FieldOrder(12)] public uint ModifiedTimestampMinutes { get; set; } = (uint)DateTimeExtensions.Timestamp.TotalMinutes;
 
         [Ignore] public string ModifiedDate => DateTimeExtensions.GetDateTimeFromTimestampMinutes(ModifiedTimestampMinutes).ToString("dd/MM/yyyy HH:mm");
 
         /// <summary>
         /// Gets the user-selected antialiasing level. For cbddlp files this will match the level_set_count. For ctb files, this number is essentially arbitrary.
         /// </summary>
-        [FieldOrder(11)] public uint AntiAliasLevel { get; set; } = 1;
+        [FieldOrder(13)] public uint AntiAliasLevel { get; set; } = 1;
 
         /// <summary>
         /// Gets a version of software that generated this file, encoded with major, minor, and patch release in bytes starting from the MSB down.
         /// (No provision is made to name the software being used, so this assumes that only one software package can generate the files.
         /// Probably best to hardcode it at 0x01060300.)
         /// </summary>17170480
-        [FieldOrder(12)] public uint SoftwareVersion { get; set; } = 0x1090000; // ctb v3 = 0x1060300 (1.6.3) | ctb v4 = 0x1090000 (1.9.0)
-        [FieldOrder(13)] public float RestTimeAfterRetract { get; set; }
-        [FieldOrder(14)] public float RestTimeAfterLift2   { get; set; }
-        [FieldOrder(15)] public uint TransitionLayerCount { get; set; } // CTB not all printers
-        [FieldOrder(16)] public uint PrintParametersV4Address { get; set; } // V4 Only
-        [FieldOrder(17)] public uint Padding2         { get; set; }
-        [FieldOrder(18)] public uint Padding3         { get; set; }
+        [FieldOrder(14)] public uint SoftwareVersion { get; set; } = 0x1090000; // ctb v3 = 0x1060300 (1.6.3) | ctb v4 = 0x1090000 (1.9.0)
+        [FieldOrder(15)] public float RestTimeAfterRetract { get; set; }
+        [FieldOrder(16)] public float RestTimeAfterLift2   { get; set; }
+        [FieldOrder(17)] public uint TransitionLayerCount { get; set; } // CTB not all printers
+        [FieldOrder(18)] public uint PrintParametersV4Address { get; set; } // V4 Only
+        [FieldOrder(19)] public uint Padding2         { get; set; }
+        [FieldOrder(20)] public uint Padding3         { get; set; }
 
         /// <summary>
         /// Gets the machine name. string is not nul-terminated.
         /// The character encoding is currently unknown — all observed files in the wild use 7-bit ASCII characters only.
         /// Note that the machine type here is set in the software profile, and is not the name the user assigned to the machine.
         /// </summary>
-        [FieldOrder(19)]
+        [FieldOrder(21)]
         [FieldLength(nameof(MachineNameSize))]
         public string MachineName
         {
@@ -352,12 +357,11 @@ public class ChituboxFile : FileFormat
                 _machineName = value;
                 MachineNameSize = string.IsNullOrEmpty(_machineName) ? 0 : (uint)_machineName.Length;
             }
-                
         }
 
         public override string ToString()
         {
-            return $"{nameof(BottomLiftHeight2)}: {BottomLiftHeight2}, {nameof(BottomLiftSpeed2)}: {BottomLiftSpeed2}, {nameof(LiftHeight2)}: {LiftHeight2}, {nameof(LiftSpeed2)}: {LiftSpeed2}, {nameof(RetractHeight2)}: {RetractHeight2}, {nameof(RetractSpeed2)}: {RetractSpeed2}, {nameof(RestTimeAfterLift)}: {RestTimeAfterLift}, {nameof(MachineNameAddress)}: {MachineNameAddress}, {nameof(MachineNameSize)}: {MachineNameSize}, {nameof(PerLayerSettings)}: {PerLayerSettings}, {nameof(ModifiedTimestampMinutes)}: {ModifiedTimestampMinutes}, {nameof(ModifiedDate)}: {ModifiedDate}, {nameof(AntiAliasLevel)}: {AntiAliasLevel}, {nameof(SoftwareVersion)}: {SoftwareVersion}, {nameof(RestTimeAfterRetract)}: {RestTimeAfterRetract}, {nameof(RestTimeAfterLift2)}: {RestTimeAfterLift2}, {nameof(TransitionLayerCount)}: {TransitionLayerCount}, {nameof(PrintParametersV4Address)}: {PrintParametersV4Address}, {nameof(Padding2)}: {Padding2}, {nameof(Padding3)}: {Padding3}, {nameof(MachineName)}: {MachineName}";
+            return $"{nameof(BottomLiftHeight2)}: {BottomLiftHeight2}, {nameof(BottomLiftSpeed2)}: {BottomLiftSpeed2}, {nameof(LiftHeight2)}: {LiftHeight2}, {nameof(LiftSpeed2)}: {LiftSpeed2}, {nameof(RetractHeight2)}: {RetractHeight2}, {nameof(RetractSpeed2)}: {RetractSpeed2}, {nameof(RestTimeAfterLift)}: {RestTimeAfterLift}, {nameof(MachineNameAddress)}: {MachineNameAddress}, {nameof(MachineNameSize)}: {MachineNameSize}, {nameof(AntiAliasFlag)}: {AntiAliasFlag}, {nameof(Padding)}: {Padding}, {nameof(PerLayerSettings)}: {PerLayerSettings}, {nameof(ModifiedTimestampMinutes)}: {ModifiedTimestampMinutes}, {nameof(ModifiedDate)}: {ModifiedDate}, {nameof(AntiAliasLevel)}: {AntiAliasLevel}, {nameof(SoftwareVersion)}: {SoftwareVersion}, {nameof(RestTimeAfterRetract)}: {RestTimeAfterRetract}, {nameof(RestTimeAfterLift2)}: {RestTimeAfterLift2}, {nameof(TransitionLayerCount)}: {TransitionLayerCount}, {nameof(PrintParametersV4Address)}: {PrintParametersV4Address}, {nameof(Padding2)}: {Padding2}, {nameof(Padding3)}: {Padding3}, {nameof(MachineName)}: {MachineName}";
         }
     }
 
@@ -1812,18 +1816,13 @@ public class ChituboxFile : FileFormat
 
             if (HeaderSettings.Version <= 2)
             {
-                SlicerInfoSettings.PerLayerSettings = PERLAYER_SETTINGS_CTBv2;
                 PrintParametersSettings.Padding4 = 0x1234; // 4660
             }
-            else if (HeaderSettings.Version == 3)
-            {
-                SlicerInfoSettings.PerLayerSettings = AllLayersAreUsingGlobalParameters ? PERLAYER_SETTINGS_DISALLOW : PERLAYER_SETTINGS_CTBv3;
-            }
-            else if (HeaderSettings.Version >= 4)
-            {
-                SlicerInfoSettings.PerLayerSettings = AllLayersAreUsingGlobalParameters ? PERLAYER_SETTINGS_DISALLOW : PERLAYER_SETTINGS_CTBv4;
-            }
         }
+
+        SlicerInfoSettings.PerLayerSettings = AllLayersAreUsingGlobalParameters
+            ? PERLAYER_SETTINGS_DISALLOW
+            : (byte)(Version * 16); // 0x10, 0x20, 0x30, 0x40, 0x50, ...
 
         SlicerInfoSettings.ModifiedTimestampMinutes = (uint)DateTimeExtensions.TimestampMinutes;
     }
@@ -1845,7 +1844,6 @@ public class ChituboxFile : FileFormat
         {
             //HeaderSettings.Version = 2;
             HeaderSettings.EncryptionKey = 0; // Force disable encryption
-            SlicerInfoSettings.PerLayerSettings = PERLAYER_SETTINGS_CBDDLP;
         }
 
         //uint currentOffset = (uint)Helpers.Serializer.SizeOf(HeaderSettings);

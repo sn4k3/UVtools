@@ -1,6 +1,12 @@
 # Changelog
 
-## /12/2022 - v3.9.3
+## 29/12/2022 - v3.9.4
+
+- **CTB:**
+   - (Improvement) Split `uint PerLayerSettings` into `byte AntiAliasFlag`, `ushort Padding` and `byte PerLayerSettings`
+   - (Improvement) Change the way and value set to `PerLayerSettings`, this may fix some recent problems where printer doesn't respect per layer settings?
+
+## 14/12/2022 - v3.9.3
 
 - **Issues:**
   - (Fix) Resin traps and suction cups area sum, was losing precision due uint cast (#621)

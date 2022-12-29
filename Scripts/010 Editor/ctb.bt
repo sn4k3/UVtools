@@ -85,7 +85,10 @@ struct SLICER_INFO {
 
     uint MachineNameAddress <fgcolor=cBlack, bgcolor=cRed>;
     uint MachineNameSize <fgcolor=cBlack, bgcolor=cRed>;
-    uint PerLayerSettings <fgcolor=cBlack, bgcolor=cRed, format=hex>; // 0/8 for cbddlp files, 0xF (15) for ctb files, 0x2000000F (536870927) for v3 ctb and 1073741839 for v4 ctb files to allow per layer parameters
+    //uint PerLayerSettings <fgcolor=cBlack, bgcolor=cRed, format=hex>; // 0 to not support, 0x20 (32) for v3 ctb and 1073741839 for v4 ctb files to allow per layer parameters
+    ubyte AntiAliasFlag <fgcolor=cBlack, bgcolor=cRed>; // 0 [No AA] / 8 [AA] for cbddlp files, 7(0x7) [No AA] / 15(0x0F) [AA] for ctb files
+    ushort Padding <fgcolor=cBlack, bgcolor=cRed>; 
+    ubyte PerLayerSettings <fgcolor=cBlack, bgcolor=cRed, format=hex>; // 0 to not support, 0x20 for v3 ctb and 0x40 to 0x50 for v4 ctb files to allow per layer parameters, 16 * version?
     uint TimestampMinutes <fgcolor=cBlack, bgcolor=cRed>; 
     uint AntiAliasLevel <fgcolor=cBlack, bgcolor=cRed>;
     uint SoftwareVersion <fgcolor=cBlack, bgcolor=cRed, format=hex>; // ctb v3 = 17171200 | ctb v4 pro = 16777216

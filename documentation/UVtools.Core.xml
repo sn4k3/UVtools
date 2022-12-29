@@ -1579,10 +1579,14 @@
             Gets the machine size in bytes
             </summary>
         </member>
+        <member name="P:UVtools.Core.FileFormats.ChituboxFile.SlicerInfo.AntiAliasFlag">
+            <summary>
+            CBDDLP: 0 [No AA] / 8 [AA] for cbddlp files.    CTB: 7(0x7) [No AA] / 15(0x0F) [AA]
+            </summary>
+        </member>
         <member name="P:UVtools.Core.FileFormats.ChituboxFile.SlicerInfo.PerLayerSettings">
             <summary>
-            Gets the parameter used to control encryption.
-            Not totally understood. 0/8 for cbddlp files, 0xF (15) for ctb files, 0x2000000F (536870927) for v3 ctb and 1073741839 for v4 ctb files to allow per layer parameters
+            Not totally understood. 0 to not support, 0x20 for v2, 0x30 for v3 and 0x40 to 0x50 for v4 ctb files to allow per layer parameters
             </summary>
         </member>
         <member name="P:UVtools.Core.FileFormats.ChituboxFile.SlicerInfo.ModifiedTimestampMinutes">
@@ -1673,6 +1677,16 @@
         <member name="P:UVtools.Core.FileFormats.CTBEncryptedFile.SlicerSettings.ChecksumValue">
             <summary>
             Checksum of unix timestamp
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.CTBEncryptedFile.SlicerSettings.AntiAliasFlag">
+            <summary>
+            7(0x7) [No AA] / 15(0x0F) [AA]
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.CTBEncryptedFile.SlicerSettings.PerLayerSettings">
+            <summary>
+            Not totally understood. 0 to not support, 0x40 to 0x50 to allow per layer parameters
             </summary>
         </member>
         <member name="T:UVtools.Core.FileFormats.CTBEncryptedFile.Preview">
