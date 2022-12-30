@@ -1371,6 +1371,13 @@
             <param name="mode"></param>
             <returns>Created <see cref="T:System.IO.Compression.ZipArchiveEntry"/></returns>
         </member>
+        <member name="T:UVtools.Core.FileFormats.AnetN4File">
+            <summary>
+            This file format is based on B9Creator job file (.b9j) with defined version = 3
+            and added several new fields (as example, preview image).
+            Some of the format features are not recommended to use (BaseLayersCount and FilledBaseLayersCount).
+            </summary>
+        </member>
         <member name="P:UVtools.Core.FileFormats.ChituboxFile.Header.Magic">
             <summary>
             Gets a magic number identifying the file type.
