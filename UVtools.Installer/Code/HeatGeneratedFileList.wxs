@@ -923,6 +923,9 @@
             <Directory Id="dirA23B699A6BC60FD64219767AB7139367" Name="Assets">
                 <Directory Id="dir43DDBAA35643E7765C3B672B61DE6533" Name="PrusaSlicer">
                     <Directory Id="dirF64D7531D7D6E37F3FB175E2D0EC59B6" Name="printer">
+                        <Component Id="cmp717FE166C2DFE61409732DE7A8C93FB7" Guid="*">
+                            <File Id="fil714DF2ADD8B27EEE393DB45F5AE81DFD" KeyPath="yes" Source="$(var.HarvestPath)\Assets\PrusaSlicer\printer\Anet N4.ini" />
+                        </Component>
                         <Component Id="cmp9BB163BD33703B0B5CEA60CACA3729F9" Guid="*">
                             <File Id="fil1F358DEA4B7CBE3806ECFC6323BB54D1" KeyPath="yes" Source="$(var.HarvestPath)\Assets\PrusaSlicer\printer\AnyCubic Photon D2.ini" />
                         </Component>
@@ -1887,6 +1890,7 @@
             <ComponentRef Id="cmpF4BDAE8A068B7352141D703E6D5E677B" />
             <ComponentRef Id="cmpC45B25996E14AF1484591C266BD5D670" />
             <ComponentRef Id="cmpDAA3391D8641EF11234B08CC2E598C87" />
+            <ComponentRef Id="cmp717FE166C2DFE61409732DE7A8C93FB7" />
             <ComponentRef Id="cmp9BB163BD33703B0B5CEA60CACA3729F9" />
             <ComponentRef Id="cmpC17977030FCAFB4FE4F86A5DBEE7A2AE" />
             <ComponentRef Id="cmp8925749970AA313A0C710071B3BAB333" />

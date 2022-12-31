@@ -1,5 +1,10 @@
 # Changelog
 
+## 31/12/2022 - v3.9.5
+
+- (Add) File format: Anet N4 (#632)
+- (Add) PrusaSlicer Printer: Anet N4 (#632)
+
 ## 29/12/2022 - v3.9.4
 
 - **CTB:**

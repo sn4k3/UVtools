@@ -1,32 +1,31 @@
 # Credits
 
-### Tiago Conceição (sn4k3)
+### Tiago Conceição ([sn4k3](https://github.com/sn4k3))
 - Main developer
-- https://github.com/sn4k3
 
-### Bryce Yancey (byancey)
-- First code contributor with pull requests
-- https://github.com/byancey
-
-### Timothy Slater (tslater2006)
-- Code contributor
-- https://github.com/tslater2006
-
-### Photonsters (Photon Owners Group)
+### Photonsters ([Photon Owners Group](https://github.com/Photonsters))
 - For information about cbddlp file format
-- https://github.com/Photonsters
 
-### Cliff L. Biffle
-- Catibo: read/write/analyze CTB, CBDDLP, and PHZ files
+### Cliff L. Biffle ([cbiffle](https://github.com/cbiffle))
+- [Catibo](https://github.com/cbiffle/catibo): read/write/analyze CTB, CBDDLP, and PHZ files
 - For information about cbddlp and cbt file format
-- https://github.com/cbiffle/catibo
 
-### Jason S. McMullan (ezrec)
-- For ideas, file formats and permission to use his project (uv3dp)
-- https://github.com/ezrec/uv3dp
+### Jason S. McMullan ([ezrec](https://github.com/ezrec))
+- For ideas, file formats and permission to use his project ([uv3dp](https://github.com/ezrec/uv3dp))
+
+### Bryce Yancey ([byancey](https://github.com/byancey))
+- [First code contributor](https://github.com/sn4k3/UVtools/pulls?q=is%3Apr+author%3Abyancey)
+
+### Timothy Slater ([tslater2006](https://github.com/tslater2006))
+- [Code contributor](https://github.com/sn4k3/UVtools/pulls?q=is%3Apr+author%3Atslater2006)
+
+### Alexey Kirillov ([aspadm](https://github.com/aspadm))
+- [Code contributor](https://github.com/sn4k3/UVtools/pulls?q=is%3Apr+author%3Aaspadm)
 
 ### Khalil Nurullah
 - For beta testing new features
+
+### [Other contributors](https://github.com/sn4k3/UVtools/graphs/contributors)
 
 # Supporters / Contributors
 - https://github.com/sponsors/sn4k3
