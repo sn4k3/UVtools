@@ -8,11 +8,11 @@
 BigEndian();
 
 typedef struct() {
-    uint32 WhitePixelsCount <fgcolor=cBlack, bgcolor=cWhite>; // 44944
-    uint32 XMin <fgcolor=cBlack, bgcolor=cWhite>;
-    uint32 YMin <fgcolor=cBlack, bgcolor=cWhite>;
-    uint32 XMax <fgcolor=cBlack, bgcolor=cWhite>;
-    uint32 YMax <fgcolor=cBlack, bgcolor=cWhite>;
+    uint32 WhitePixelsCount <fgcolor=cBlack, bgcolor=cWhite>; // White pixels region (border including corner pixels)
+    uint32 XMin <fgcolor=cBlack, bgcolor=cWhite>;  // Bounding rectangle X
+    uint32 YMin <fgcolor=cBlack, bgcolor=cWhite>;  // Bounding rectangle Y
+    uint32 XMax <fgcolor=cBlack, bgcolor=cWhite>;  // Bounding rectangle Right
+    uint32 YMax <fgcolor=cBlack, bgcolor=cWhite>;  // Bounding rectangle Bottom
     uint32 BitsCount <fgcolor=cBlack, bgcolor=cWhite>;
     ubyte LayerRLE[(BitsCount + 7) >> 3] <fgcolor=cBlack, bgcolor=cRed>;
 } layerData;
