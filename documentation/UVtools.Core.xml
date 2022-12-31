@@ -1378,6 +1378,16 @@
             Some of the format features are not recommended to use (BaseLayersCount and FilledBaseLayersCount).
             </summary>
         </member>
+        <member name="F:UVtools.Core.FileFormats.AnetN4File.BmpHeader">
+            <summary>
+            Printer uses incorrect BMP header for preview image so we need to use it as-is instead of generating.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.AnetN4File.LayerDef.WhitePixelsCount">
+            <summary>
+            White pixels region (border including corner pixels)
+            </summary>
+        </member>
         <member name="P:UVtools.Core.FileFormats.ChituboxFile.Header.Magic">
             <summary>
             Gets a magic number identifying the file type.
