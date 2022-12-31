@@ -138,6 +138,7 @@ But also, I need victims for test subject. Proceed at your own risk!
 - LGS120 (Longer Orange 120)
 - LGS4K (Longer Orange 4K & mono)
 - Flashforge SVGX
+- Anet N4
 - ZIP (Generic / Phrozen Zip)
 - VDA.ZIP (Voxeldance Additive)
 - VDT (Voxeldance Tango)

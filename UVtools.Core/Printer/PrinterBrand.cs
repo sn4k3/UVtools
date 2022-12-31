@@ -10,6 +10,7 @@ namespace UVtools.Core.Printer
     public enum PrinterBrand : byte
     {
         Generic,
+        Anet,
         AnyCubic,
         Creality,
         Elegoo,

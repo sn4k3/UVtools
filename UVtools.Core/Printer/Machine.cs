@@ -212,6 +212,8 @@ namespace UVtools.Core.Printer
                 new(PrinterBrand.Creality, "CT133 Pro",      "CT133PRO", 3840, 2160, 293.76f, 165.24f, 300),
                 new(PrinterBrand.Creality, "CT-005 Pro",     "CT-005",   3840, 2400, 192,     120,     250),*/
 
+                new(PrinterBrand.Anet, "Anet N4", "N4", 1440, 2560, 68.04f, 120.96f, 135f, FlipDirection.Horizontally),
+
                 new(PrinterBrand.AnyCubic, "AnyCubic Photon M3", "Photon M3", 4096, 2560, 163.84f, 102.40f, 180f, FlipDirection.Horizontally),
                 new(PrinterBrand.AnyCubic, "AnyCubic Photon M3 Max", "Photon M3 Max", 6480, 3600, 298.08f, 165.60f, 300f, FlipDirection.Horizontally),
                 new(PrinterBrand.AnyCubic, "AnyCubic Photon M3 Plus", "Photon M3 Plus", 5760, 3600, 198.15f, 123.84f, 245f, FlipDirection.Horizontally),
