@@ -424,15 +424,12 @@ public sealed class AnetN4File : FileFormat
 
     #region Methods
 
-    protected override void OnBeforeEncode(bool isPartialEncode)
-    {
-        HeaderSettings.Name = FilenameNoExt!;
-        HeaderSettings.Description = $"{About.SoftwareWithVersion} @ {DateTime.Now}";
-    }
-
     protected override void EncodeInternally(OperationProgress progress)
     {
         using var outputFile = new FileStream(TemporaryOutputFileFullPath, FileMode.Create, FileAccess.Write);
+
+        HeaderSettings.Name = FilenameNoExt!;
+        HeaderSettings.Description = $"{About.SoftwareWithVersion} @ {DateTime.Now}";
 
         var previewBuffer = new byte[72866]; // 72866
         BmpHeader.CopyTo(previewBuffer, 0);
