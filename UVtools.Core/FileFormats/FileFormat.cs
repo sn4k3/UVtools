@@ -377,7 +377,6 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         new LGSFile(),   // LGS, LGS30
         new VDAFile(),   // VDA
         new VDTFile(),   // VDT
-        new AnetN4File(), // N4
         //new CXDLPv1File(),   // Creality Box v1
         new CXDLPFile(),   // Creality Box
         new FDGFile(), // fdg
@@ -387,6 +386,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         new MDLPFile(),   // MKS v1
         new GR1File(),   // GR1 Workshop
         new FlashForgeSVGXFile(), // SVGX
+        new AnetN4File(), // N4
         new OSLAFile(),  // OSLA
         new OSFFile(),   // OSF
         new UVJFile(),   // UVJ
