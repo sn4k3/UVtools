@@ -93,35 +93,38 @@ public class CXDLPv1File : FileFormat
     {
         [FieldOrder(0)]
         [FieldEndianness(Endianness.Big)]
-        public uint DisplayWidthDataSize { get; set; } = 20;
+        public uint DisplayWidthLength { get; set; }
 
         [FieldOrder(1)]
-        [FieldLength(nameof(DisplayWidthDataSize))]
-        public byte[] DisplayWidthBytes { get; set; } = null!;
+        [FieldEncoding("UTF-16BE")]
+        [FieldLength(nameof(DisplayWidthLength))]
+        public string DisplayWidth { get; set; } = string.Empty;
 
         [FieldOrder(2)]
         [FieldEndianness(Endianness.Big)]
-        public uint DisplayHeightDataSize { get; set; } = 20;
+        public uint DisplayHeightLength { get; set; }
 
         [FieldOrder(3)]
-        [FieldLength(nameof(DisplayHeightDataSize))]
-        public byte[] DisplayHeightBytes { get; set; } = null!;
+        [FieldEncoding("UTF-16BE")]
+        [FieldLength(nameof(DisplayHeightLength))]
+        public string DisplayHeight { get; set; } = string.Empty;
 
         [FieldOrder(4)]
         [FieldEndianness(Endianness.Big)]
-        public uint LayerHeightDataSize { get; set; } = 16;
+        public uint LayerHeightLength { get; set; } = 8;
 
         [FieldOrder(5)]
-        [FieldLength(nameof(LayerHeightDataSize))]
-        public byte[] LayerHeightBytes { get; set; } = null!;
+        [FieldEncoding("UTF-16BE")]
+        [FieldLength(nameof(LayerHeightLength))]
+        public string LayerHeight { get; set; } = DefaultLayerHeight.ToString(CultureInfo.InvariantCulture);
 
         [FieldOrder(6)]
         [FieldEndianness(Endianness.Big)]
-        public ushort WaitTimeBeforeCure { get; set; }
+        public ushort ExposureTime { get; set; }
 
         [FieldOrder(7)]
         [FieldEndianness(Endianness.Big)]
-        public ushort ExposureTime { get; set; }
+        public ushort WaitTimeBeforeCure { get; set; } = 1; // 1 as minimum or it wont print!
 
         [FieldOrder(8)]
         [FieldEndianness(Endianness.Big)]
@@ -161,7 +164,7 @@ public class CXDLPv1File : FileFormat
 
         public override string ToString()
         {
-            return $"{nameof(DisplayWidthDataSize)}: {DisplayWidthDataSize}, {nameof(DisplayWidthBytes)}: {DisplayWidthBytes}, {nameof(DisplayHeightDataSize)}: {DisplayHeightDataSize}, {nameof(DisplayHeightBytes)}: {DisplayHeightBytes}, {nameof(LayerHeightDataSize)}: {LayerHeightDataSize}, {nameof(LayerHeightBytes)}: {LayerHeightBytes}, {nameof(ExposureTime)}: {ExposureTime}, {nameof(WaitTimeBeforeCure)}: {WaitTimeBeforeCure}, {nameof(BottomExposureTime)}: {BottomExposureTime}, {nameof(BottomLayersCount)}: {BottomLayersCount}, {nameof(BottomLiftHeight)}: {BottomLiftHeight}, {nameof(BottomLiftSpeed)}: {BottomLiftSpeed}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(RetractSpeed)}: {RetractSpeed}, {nameof(BottomLightPWM)}: {BottomLightPWM}, {nameof(LightPWM)}: {LightPWM}";
+            return $"{nameof(DisplayWidthLength)}: {DisplayWidthLength}, {nameof(DisplayWidth)}: {DisplayWidth}, {nameof(DisplayHeightLength)}: {DisplayHeightLength}, {nameof(DisplayHeight)}: {DisplayHeight}, {nameof(LayerHeightLength)}: {LayerHeightLength}, {nameof(LayerHeight)}: {LayerHeight}, {nameof(ExposureTime)}: {ExposureTime}, {nameof(WaitTimeBeforeCure)}: {WaitTimeBeforeCure}, {nameof(BottomExposureTime)}: {BottomExposureTime}, {nameof(BottomLayersCount)}: {BottomLayersCount}, {nameof(BottomLiftHeight)}: {BottomLiftHeight}, {nameof(BottomLiftSpeed)}: {BottomLiftSpeed}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(RetractSpeed)}: {RetractSpeed}, {nameof(BottomLightPWM)}: {BottomLightPWM}, {nameof(LightPWM)}: {LightPWM}";
         }
     }
     #endregion
@@ -362,54 +365,30 @@ public class CXDLPv1File : FileFormat
 
     public override float DisplayWidth
     {
-        get => float.Parse(Encoding.ASCII.GetString(SlicerInfoSettings.DisplayWidthBytes.Where(b => b != 0).ToArray()), CultureInfo.InvariantCulture);
+        get => (float)Math.Round(float.Parse(SlicerInfoSettings.DisplayWidth, CultureInfo.InvariantCulture), 3);
         set
         {
-            string str = Math.Round(value, 2).ToString(CultureInfo.InvariantCulture);
-            SlicerInfoSettings.DisplayWidthDataSize = (uint)(str.Length * 2);
-            var data = new byte[SlicerInfoSettings.DisplayWidthDataSize];
-            for (var i = 0; i < str.Length; i++)
-            {
-                data[i * 2 + 1] = System.Convert.ToByte(str[i]);
-            }
-
-            SlicerInfoSettings.DisplayWidthBytes = data;
+            SlicerInfoSettings.DisplayWidth = Math.Round(value, 3).ToString(CultureInfo.InvariantCulture);
             RaisePropertyChanged();
         }
     }
 
     public override float DisplayHeight
     {
-        get => float.Parse(Encoding.ASCII.GetString(SlicerInfoSettings.DisplayHeightBytes.Where(b => b != 0).ToArray()), CultureInfo.InvariantCulture);
+        get => (float)Math.Round(float.Parse(SlicerInfoSettings.DisplayHeight, CultureInfo.InvariantCulture), 3);
         set
         {
-            string str = Math.Round(value, 2).ToString(CultureInfo.InvariantCulture);
-            SlicerInfoSettings.DisplayHeightDataSize = (uint)(str.Length * 2);
-            var data = new byte[SlicerInfoSettings.DisplayHeightDataSize];
-            for (var i = 0; i < str.Length; i++)
-            {
-                data[i * 2 + 1] = System.Convert.ToByte(str[i]);
-            }
-
-            SlicerInfoSettings.DisplayHeightBytes = data;
+            SlicerInfoSettings.DisplayHeight = Math.Round(value, 3).ToString(CultureInfo.InvariantCulture);
             RaisePropertyChanged();
         }
     }
 
     public override float LayerHeight
     {
-        get => float.Parse(Encoding.ASCII.GetString(SlicerInfoSettings.LayerHeightBytes.Where(b => b != 0).ToArray()), CultureInfo.InvariantCulture);
+        get => Layer.RoundHeight(float.Parse(SlicerInfoSettings.LayerHeight, CultureInfo.InvariantCulture));
         set
         {
-            string str = Layer.RoundHeight(value).ToString(CultureInfo.InvariantCulture);
-            SlicerInfoSettings.LayerHeightDataSize = (uint)(str.Length * 2);
-            var data = new byte[SlicerInfoSettings.LayerHeightDataSize];
-            for (var i = 0; i < str.Length; i++)
-            {
-                data[i * 2 + 1] = System.Convert.ToByte(str[i]);
-            }
-
-            SlicerInfoSettings.LayerHeightBytes = data;
+            SlicerInfoSettings.LayerHeight = Layer.RoundHeight(value).ToString(CultureInfo.InvariantCulture);
             RaisePropertyChanged();
         }
     }

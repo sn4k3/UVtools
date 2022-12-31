@@ -63,13 +63,12 @@ public class GR1File : FileFormat
         [FieldOrder(0)] [FieldEndianness(Endianness.Big)] public ushort LayerCount { get; set; }
         [FieldOrder(1)] [FieldEndianness(Endianness.Big)] public ushort ResolutionX { get; set; }
         [FieldOrder(2)] [FieldEndianness(Endianness.Big)] public ushort ResolutionY { get; set; }
-        [FieldOrder(3)] [FieldEndianness(Endianness.Big)] public uint DisplayWidthDataSize { get; set; } = 6;
-        [FieldOrder(4)] [FieldLength(nameof(DisplayWidthDataSize))] public byte[] DisplayWidthBytes { get; set; } = null!;
-        [FieldOrder(5)] [FieldEndianness(Endianness.Big)] public uint DisplayHeightDataSize { get; set; } = 6;
-        [FieldOrder(6)] [FieldLength(nameof(DisplayHeightDataSize))] public byte[] DisplayHeightBytes { get; set; } = null!;
-
-        [FieldOrder(7)] [FieldEndianness(Endianness.Big)] public uint LayerHeightDataSize { get; set; } = 6;
-        [FieldOrder(8)] [FieldLength(nameof(LayerHeightDataSize))] public byte[] LayerHeightBytes { get; set; } = null!;
+        [FieldOrder(3)][FieldEndianness(Endianness.Big)] public uint DisplayWidthLength { get; set; }
+        [FieldOrder(4)][FieldEncoding("UTF-16BE")][FieldLength(nameof(DisplayWidthLength))] public string DisplayWidth { get; set; } = string.Empty;
+        [FieldOrder(5)][FieldEndianness(Endianness.Big)] public uint DisplayHeightLength { get; set; }
+        [FieldOrder(6)][FieldEncoding("UTF-16BE")][FieldLength(nameof(DisplayHeightLength))] public string DisplayHeight { get; set; } = string.Empty;
+        [FieldOrder(7)][FieldEndianness(Endianness.Big)] public uint LayerHeightLength { get; set; } = 8;
+        [FieldOrder(8)][FieldEncoding("UTF-16BE")][FieldLength(nameof(LayerHeightLength))] public string LayerHeight { get; set; } = DefaultLayerHeight.ToString(CultureInfo.InvariantCulture);
         [FieldOrder(9)] [FieldEndianness(Endianness.Big)] public ushort ExposureTime { get; set; }
         [FieldOrder(10)] [FieldEndianness(Endianness.Big)] public ushort LightOffDelay { get; set; }
         [FieldOrder(11)] [FieldEndianness(Endianness.Big)] public ushort BottomExposureTime { get; set; }
@@ -81,6 +80,11 @@ public class GR1File : FileFormat
         [FieldOrder(17)] [FieldEndianness(Endianness.Big)] public ushort RetractSpeed { get; set; }
         [FieldOrder(18)] [FieldEndianness(Endianness.Big)] public ushort BottomLightPWM { get; set; }
         [FieldOrder(19)] [FieldEndianness(Endianness.Big)] public ushort LightPWM { get; set; }
+
+        public override string ToString()
+        {
+            return $"{nameof(LayerCount)}: {LayerCount}, {nameof(ResolutionX)}: {ResolutionX}, {nameof(ResolutionY)}: {ResolutionY}, {nameof(DisplayWidthLength)}: {DisplayWidthLength}, {nameof(DisplayWidth)}: {DisplayWidth}, {nameof(DisplayHeightLength)}: {DisplayHeightLength}, {nameof(DisplayHeight)}: {DisplayHeight}, {nameof(LayerHeightLength)}: {LayerHeightLength}, {nameof(LayerHeight)}: {LayerHeight}, {nameof(ExposureTime)}: {ExposureTime}, {nameof(LightOffDelay)}: {LightOffDelay}, {nameof(BottomExposureTime)}: {BottomExposureTime}, {nameof(BottomLayers)}: {BottomLayers}, {nameof(BottomLiftHeight)}: {BottomLiftHeight}, {nameof(BottomLiftSpeed)}: {BottomLiftSpeed}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(RetractSpeed)}: {RetractSpeed}, {nameof(BottomLightPWM)}: {BottomLightPWM}, {nameof(LightPWM)}: {LightPWM}";
+        }
     }
     #endregion
 
@@ -195,59 +199,35 @@ public class GR1File : FileFormat
 
     public override float DisplayWidth
     {
-        get => float.Parse(Encoding.ASCII.GetString(SlicerInfoSettings.DisplayWidthBytes.Where(b => b != 0).ToArray()), CultureInfo.InvariantCulture);
+        get => (float)Math.Round(float.Parse(SlicerInfoSettings.DisplayWidth, CultureInfo.InvariantCulture), 3);
         set
         {
-            string str = Math.Round(value, 2).ToString(CultureInfo.InvariantCulture);
-            SlicerInfoSettings.DisplayWidthDataSize = (uint) (str.Length * 2);
-            var data = new byte[SlicerInfoSettings.DisplayWidthDataSize];
-            for (var i = 0; i < str.Length; i++)
-            {
-                data[i * 2 + 1] = System.Convert.ToByte(str[i]);
-            }
-
-            SlicerInfoSettings.DisplayWidthBytes = data;
+            SlicerInfoSettings.DisplayWidth = Math.Round(value, 3).ToString(CultureInfo.InvariantCulture);
             RaisePropertyChanged();
         }
     }
 
     public override float DisplayHeight
     {
-        get => float.Parse(Encoding.ASCII.GetString(SlicerInfoSettings.DisplayHeightBytes.Where(b => b != 0).ToArray()), CultureInfo.InvariantCulture);
+        get => (float)Math.Round(float.Parse(SlicerInfoSettings.DisplayHeight, CultureInfo.InvariantCulture), 3);
         set
         {
-            string str = Math.Round(value, 2).ToString(CultureInfo.InvariantCulture);
-            SlicerInfoSettings.DisplayHeightDataSize = (uint)(str.Length * 2);
-            var data = new byte[SlicerInfoSettings.DisplayHeightDataSize];
-            for (var i = 0; i < str.Length; i++)
-            {
-                data[i * 2 + 1] = System.Convert.ToByte(str[i]);
-            }
+            SlicerInfoSettings.DisplayHeight = Math.Round(value, 3).ToString(CultureInfo.InvariantCulture);
+            RaisePropertyChanged();
+        }
+    }
 
-            SlicerInfoSettings.DisplayHeightBytes = data;
+    public override float LayerHeight
+    {
+        get => Layer.RoundHeight(float.Parse(SlicerInfoSettings.LayerHeight, CultureInfo.InvariantCulture));
+        set
+        {
+            SlicerInfoSettings.LayerHeight = Layer.RoundHeight(value).ToString(CultureInfo.InvariantCulture);
             RaisePropertyChanged();
         }
     }
 
     public override FlipDirection DisplayMirror { get; set; }
-
-    public override float LayerHeight
-    {
-        get => float.Parse(Encoding.ASCII.GetString(SlicerInfoSettings.LayerHeightBytes.Where(b => b != 0).ToArray()), CultureInfo.InvariantCulture);
-        set
-        {
-            string str = Layer.RoundHeight(value).ToString(CultureInfo.InvariantCulture);
-            SlicerInfoSettings.LayerHeightDataSize = (uint)(str.Length * 2);
-            var data = new byte[SlicerInfoSettings.LayerHeightDataSize];
-            for (var i = 0; i < str.Length; i++)
-            {
-                data[i * 2 + 1] = System.Convert.ToByte(str[i]);
-            }
-
-            SlicerInfoSettings.LayerHeightBytes = data;
-            RaisePropertyChanged();
-        }
-    }
 
     public override uint LayerCount
     {
