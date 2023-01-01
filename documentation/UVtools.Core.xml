@@ -1371,19 +1371,19 @@
             <param name="mode"></param>
             <returns>Created <see cref="T:System.IO.Compression.ZipArchiveEntry"/></returns>
         </member>
-        <member name="T:UVtools.Core.FileFormats.AnetN4File">
+        <member name="T:UVtools.Core.FileFormats.AnetFile">
             <summary>
             This file format is based on B9Creator job file (.b9j) with defined version = 3
             and added several new fields (as example, preview image).
             Some of the format features are not recommended to use (BaseLayersCount and FilledBaseLayersCount).
             </summary>
         </member>
-        <member name="F:UVtools.Core.FileFormats.AnetN4File.BmpHeader">
+        <member name="F:UVtools.Core.FileFormats.AnetFile.BmpHeader">
             <summary>
             Printer uses incorrect BMP header for preview image so we need to use it as-is instead of generating.
             </summary>
         </member>
-        <member name="P:UVtools.Core.FileFormats.AnetN4File.LayerDef.WhitePixelsCount">
+        <member name="P:UVtools.Core.FileFormats.AnetFile.LayerDef.WhitePixelsCount">
             <summary>
             White pixels region (border including corner pixels)
             </summary>
@@ -2373,6 +2373,14 @@
             Gets the input file path loaded into this <see cref="T:UVtools.Core.FileFormats.FileFormat"/>
             </summary>
         </member>
+        <member name="P:UVtools.Core.FileFormats.FileFormat.FileExtension">
+            <summary>
+            Returns the file extension. The returned value includes the period (".") character of the
+            extension except when you have a terminal period when you get string.Empty, such as ".exe" or ".cpp".
+            The returned value is null if the given path is null or empty if the given path does not include an
+            extension.
+            </summary>
+        </member>
         <member name="P:UVtools.Core.FileFormats.FileFormat.AvailableVersions">
             <summary>
             Gets the available versions to set in this file format
@@ -3103,6 +3111,11 @@
             </summary>
             <param name="index">Layer index</param>
             <returns></returns>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.FileFormat.NotifyAspectChange">
+            <summary>
+            Raise notification for aspect changes, like <see cref="P:UVtools.Core.FileFormats.FileFormat.Resolution"/>, <see cref="P:UVtools.Core.FileFormats.FileFormat.Display"/> and relatives
+            </summary>
         </member>
         <member name="M:UVtools.Core.FileFormats.FileFormat.Clear">
             <summary>
@@ -4761,6 +4774,21 @@
         <member name="P:UVtools.Core.Layers.Layer.SlicerFile">
             <summary>
             Gets or sets the parent SlicerFile
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Layers.Layer.ResolutionX">
+            <summary>
+            Image resolution X
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Layers.Layer.ResolutionY">
+            <summary>
+            Image resolution Y
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Layers.Layer.Resolution">
+            <summary>
+            Image resolution
             </summary>
         </member>
         <member name="P:UVtools.Core.Layers.Layer.NonZeroPixelCount">

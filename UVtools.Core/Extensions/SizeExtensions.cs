@@ -73,7 +73,7 @@ public static class SizeExtensions
     /// </summary>
     /// <param name="size"></param>
     /// <returns></returns>
-    public static bool HaveZero(this Size size) => size.Width <= 0 && size.Height <= 0;
+    public static bool HaveZero(this Size size) => size.Width <= 0 || size.Height <= 0;
 
     /// <summary>
     /// Exchange width with height
@@ -96,7 +96,7 @@ public static class SizeExtensions
     /// </summary>
     /// <param name="size"></param>
     /// <returns></returns>
-    public static bool HaveZero(this SizeF size) => size.Width <= 0 && size.Height <= 0;
+    public static bool HaveZero(this SizeF size) => size.Width <= 0 || size.Height <= 0;
 
     public static float Area(this SizeF size, int round = -1) => round >= 0 ? (float)Math.Round(size.Width * size.Height, round) : size.Width * size.Height;
 

@@ -65,6 +65,8 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
     private Rectangle _boundingRectangle = Rectangle.Empty;
     private bool _isModified;
     private uint _index;
+    private uint _resolutionX;
+    private uint _resolutionY;
     private float _positionZ;
     private float _lightOffDelay;
     private float _waitTimeBeforeCure;
@@ -89,6 +91,38 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
     /// Gets or sets the parent SlicerFile
     /// </summary>
     public FileFormat SlicerFile { get; set; }
+
+    /// <summary>
+    /// Image resolution X
+    /// </summary>
+    public uint ResolutionX
+    {
+        get => _resolutionX;
+        set => RaiseAndSetIfChanged(ref _resolutionX, value);
+    }
+
+    /// <summary>
+    /// Image resolution Y
+    /// </summary>
+    public uint ResolutionY
+    {
+        get => _resolutionY;
+        set => RaiseAndSetIfChanged(ref _resolutionY, value);
+    }
+
+    /// <summary>
+    /// Image resolution
+    /// </summary>
+    public Size Resolution
+    {
+        get => new((int)ResolutionX, (int)ResolutionY);
+        set
+        {
+            ResolutionX = (uint)value.Width;
+            ResolutionY = (uint)value.Height;
+            RaisePropertyChanged();
+        }
+    }
 
     /// <summary>
     /// Gets the number of non zero pixels on this layer image
@@ -182,12 +216,12 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
     /// <summary>
     /// Gets the first pixel index on this layer
     /// </summary>
-    public uint FirstPixelIndex => (uint)(BoundingRectangle.Y * SlicerFile.ResolutionX + BoundingRectangle.X);
+    public uint FirstPixelIndex => (uint)(BoundingRectangle.Y * ResolutionX + BoundingRectangle.X);
 
     /// <summary>
     /// Gets the last pixel index on this layer
     /// </summary>
-    public uint LastPixelIndex => (uint)(BoundingRectangle.Bottom * SlicerFile.ResolutionX + BoundingRectangle.Right);
+    public uint LastPixelIndex => (uint)(BoundingRectangle.Bottom * ResolutionX + BoundingRectangle.Right);
 
     /// <summary>
     /// Gets the first pixel <see cref="Point"/> on this layer
@@ -801,12 +835,12 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
                     CvInvoke.Imdecode(_compressedBytes, ImreadModes.Grayscale, mat);
                     break;
                 case LayerCompressionCodec.Lz4:
-                    mat = SlicerFile.CreateMat(false);
+                    mat = new Mat(Resolution, DepthType.Cv8U, 1);
                     LZ4Codec.Decode(_compressedBytes.AsSpan(), mat.GetDataByteSpan());
                     break;
                 case LayerCompressionCodec.GZip:
                 {
-                    mat = SlicerFile.CreateMat(false);
+                    mat = new Mat(Resolution, DepthType.Cv8U, 1);
                     unsafe
                     {
                         fixed (byte* pBuffer = _compressedBytes)
@@ -822,7 +856,7 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
                 }
                 case LayerCompressionCodec.Deflate:
                 {
-                    mat = SlicerFile.CreateMat(false);
+                    mat = new Mat(Resolution, DepthType.Cv8U, 1);
                     unsafe
                     {
                         fixed (byte* pBuffer = _compressedBytes)
@@ -837,7 +871,7 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
                     break;
                 }
                 /*case LayerCompressionMethod.None:
-                    mat = new(SlicerFile.Resolution, DepthType.Cv8U, 1);
+                    mat = new Mat(Resolution, DepthType.Cv8U, 1);
                     //mat.SetBytes(_compressedBytes!);
                     _compressedBytes.CopyTo(mat.GetDataByteSpan());
                     break;*/
@@ -852,8 +886,15 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
             if (value is not null)
             {
                 CompressedBytes = CompressMat(value, _compressionCodec);
+                _resolutionX = (uint)value.Width;
+                _resolutionY = (uint)value.Height;
             }
-
+            else
+            {
+                _resolutionX = 0;
+                _resolutionY = 0;
+            }
+            
             GetBoundingRectangle(value, true);
             RaisePropertyChanged();
         }
@@ -997,6 +1038,9 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
 
         SlicerFile = slicerFile;
         _index = index;
+
+        _resolutionX = slicerFile.ResolutionX;
+        _resolutionY = slicerFile.ResolutionY;
         
         //if (slicerFile is null) return;
         _positionZ = SlicerFile.GetHeightFromLayer(index);
@@ -1647,6 +1691,8 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
     public void CopyImageTo(Layer layer)
     {
         if (!HaveImage) return;
+        layer.ResolutionX = _resolutionX;
+        layer.ResolutionY = _resolutionY;
         layer.CompressedBytes = _compressedBytes?.ToArray();
         layer.BoundingRectangle = _boundingRectangle;
         layer.NonZeroPixelCount = _nonZeroPixelCount;

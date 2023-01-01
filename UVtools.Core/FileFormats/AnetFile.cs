@@ -13,11 +13,13 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using UVtools.Core.Converters;
 using UVtools.Core.Extensions;
 using UVtools.Core.Layers;
 using UVtools.Core.Operations;
+using UVtools.Core.Printer;
 
 namespace UVtools.Core.FileFormats;
 
@@ -26,16 +28,23 @@ namespace UVtools.Core.FileFormats;
 /// and added several new fields (as example, preview image).
 /// Some of the format features are not recommended to use (BaseLayersCount and FilledBaseLayersCount).
 /// </summary>
-public sealed class AnetN4File : FileFormat
+public sealed class AnetFile : FileFormat
 {
     #region Constants
 
-    public const ushort RESOLUTION_X = 1440;
-    public const ushort RESOLUTION_Y = 2560;
+    public const ushort RESOLUTION_N4_X = 1440;
+    public const ushort RESOLUTION_N4_Y = 2560;
 
-    public const float DISPLAY_WIDTH = 68.04f;
-    public const float DISPLAY_HEIGHT = 120.96f;
-    public const float MACHINE_Z = 135f;
+    public const float DISPLAY_N4_WIDTH = 68.04f;
+    public const float DISPLAY_N4_HEIGHT = 120.96f;
+    public const float MACHINE_N4_Z = 135f;
+
+    public const ushort RESOLUTION_N7_X = 2560;
+    public const ushort RESOLUTION_N7_Y = 1600;
+
+    public const float DISPLAY_N7_WIDTH = 192f;
+    public const float DISPLAY_N7_HEIGHT = 120f;
+    public const float MACHINE_N7_Z = 300f;
 
     /// <summary>
     /// Printer uses incorrect BMP header for preview image so we need to use it as-is instead of generating.
@@ -44,13 +53,13 @@ public sealed class AnetN4File : FileFormat
 
     #endregion
 
-    #region Members
+    #region Enums
 
-    private uint _resolutionX = RESOLUTION_X;
-    private uint _resolutionY = RESOLUTION_Y;
-
-    private float _displayWidth = DISPLAY_WIDTH;
-    private float _displayHeight = DISPLAY_HEIGHT;
+    public enum AnetPrinter : byte
+    {
+        N4,
+        N7
+    }
 
     #endregion
 
@@ -58,7 +67,7 @@ public sealed class AnetN4File : FileFormat
 
     #region Header
 
-    public class Header
+    public class AnetHeader
     {
         [FieldOrder(0)][FieldEndianness(Endianness.Big)] public int VersionLength { get; set; } = 2;
         [FieldOrder(1)][FieldEncoding("UTF-16BE")][FieldLength(nameof(VersionLength))] public string Version { get; set; } = "3";
@@ -155,10 +164,11 @@ public sealed class AnetN4File : FileFormat
                 }
             }
 
-            if (mat.Width != RESOLUTION_X || mat.Height != RESOLUTION_Y)
+            // Format does not have a global resolution field but supports multiple resolutions
+            /*if (mat.Width != RESOLUTION_X || mat.Height != RESOLUTION_Y)
             {
                 throw new ArgumentException($"Anet N4 support only {RESOLUTION_X}x{RESOLUTION_Y} image, got {mat.Width}x{mat.Height}");
-            }
+            }*/
 
             WhitePixelsCount = 0;
             uint singleColorLength = 0;
@@ -205,7 +215,7 @@ public sealed class AnetN4File : FileFormat
             return EncodedRle;
         }
 
-        public Mat Decode(bool consumeRle = true)
+        public Mat Decode(out uint resolutionX, out uint resolutionY, bool consumeRle = true)
         {
             uint GetBits(uint pos, uint count = 1)
             {
@@ -231,10 +241,10 @@ public sealed class AnetN4File : FileFormat
                 throw new IndexOutOfRangeException($"Incorrect RLE data size {EncodedRle.Length * 8}, except {BitsCount} bits.");
             }
 
-            uint rleWidth = GetBits(0, 16);
-            uint rleHeight = GetBits(16, 16);
+            resolutionX = GetBits(0, 16);
+            resolutionY = GetBits(16, 16);
 
-            var mat = EmguExtensions.InitMat(new Size((int)rleWidth, (int)rleHeight));
+            var mat = EmguExtensions.InitMat(new Size((int)resolutionX, (int)resolutionY));
             var imageLength = mat.GetLength();
 
             byte brightness = (byte)((GetBits(32) == 1) ? 0xff : 0x0);
@@ -261,11 +271,15 @@ public sealed class AnetN4File : FileFormat
 
     #region Properties
 
-    public Header HeaderSettings { get; private set; } = new();
+    public AnetHeader HeaderSettings { get; private set; } = new();
+
     public override FileFormatType FileType => FileFormatType.Binary;
 
+    public override string ConvertMenuGroup => "Anet";
+
     public override FileExtension[] FileExtensions { get; } = {
-        new(typeof(AnetN4File), "n4", "Anet N4"),
+        new(typeof(AnetFile), "n4", "Anet N4"),
+        new(typeof(AnetFile), "n7", "Anet N7"),
     };
 
     public override SpeedUnit FormatSpeedUnit => SpeedUnit.MillimetersPerSecond;
@@ -282,48 +296,6 @@ public sealed class AnetN4File : FileFormat
     };
 
     public override Size[]? ThumbnailsOriginalSize { get; } = { new(260, 140) };
-
-    public override uint ResolutionX
-    {
-        get => _resolutionX;
-        set
-        {
-            if (!RaiseAndSetIfChanged(ref _resolutionX, value)) return;
-            if(value != RESOLUTION_X) throw new ArgumentException($"Anet N4 support only {RESOLUTION_X}x{RESOLUTION_Y} image, got {ResolutionX}x{ResolutionY}");
-            HeaderSettings.XYPixelSize = PixelSizeMax;
-        }
-    }
-
-    public override uint ResolutionY
-    {
-        get => _resolutionY;
-        set
-        {
-            if (!RaiseAndSetIfChanged(ref _resolutionY, value)) return;
-            if (value != RESOLUTION_Y) throw new ArgumentException($"Anet N4 support only {RESOLUTION_X}x{RESOLUTION_Y} image, got {ResolutionX}x{ResolutionY}");
-            HeaderSettings.XYPixelSize = PixelSizeMax;
-        }
-    }
-
-    public override float DisplayWidth
-    {
-        get => _displayWidth;
-        set
-        {
-            if (!RaiseAndSetIfChanged(ref _displayWidth, value)) return;
-            HeaderSettings.XYPixelSize = PixelSizeMax;
-        }
-    }
-
-    public override float DisplayHeight
-    {
-        get => _displayHeight;
-        set
-        {
-            if (!RaiseAndSetIfChanged(ref _displayHeight, value)) return;
-            HeaderSettings.XYPixelSize = PixelSizeMax;
-        }
-    }
 
     public override FlipDirection DisplayMirror
     {
@@ -409,20 +381,52 @@ public sealed class AnetN4File : FileFormat
         }
     }
 
-    public override string MachineName => "Anet N4";
-
     public override object[] Configs => new object[] { HeaderSettings };
+
+    public AnetPrinter PrinterModel
+    {
+        get
+        {
+            if (FileEndsWith(".n4"))
+            {
+                return AnetPrinter.N4;
+            }
+
+            if (FileEndsWith(".n7"))
+            {
+                return AnetPrinter.N7;
+            }
+
+            return AnetPrinter.N4;
+        }
+    }
 
     #endregion
 
     #region Constructors
-    public AnetN4File()
-    {
-        MachineZ = MACHINE_Z;
-    }
+
+    public AnetFile() { }
     #endregion
 
     #region Methods
+
+    protected override void OnBeforeEncode(bool isPartialEncode)
+    {
+        switch (PrinterModel)
+        {
+            case AnetPrinter.N4:
+                if (ResolutionX != RESOLUTION_N4_X || ResolutionY != RESOLUTION_N4_Y)
+                    throw new ArgumentException($"Anet N4 support only {RESOLUTION_N4_X}x{RESOLUTION_N4_Y} image, got {ResolutionX}x{ResolutionY}");
+                break;
+            case AnetPrinter.N7:
+                if (ResolutionX != RESOLUTION_N7_X || ResolutionY != RESOLUTION_N7_Y)
+                    throw new ArgumentException($"Anet N7 support only {RESOLUTION_N7_X}x{RESOLUTION_N7_Y} image, got {ResolutionX}x{ResolutionY}");
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(PrinterModel), FileExtension);
+        }
+        HeaderSettings.XYPixelSize = PixelSizeMax;
+    }
 
     protected override void EncodeInternally(OperationProgress progress)
     {
@@ -479,7 +483,7 @@ public sealed class AnetN4File : FileFormat
     protected override void DecodeInternally(OperationProgress progress)
     {
         using var inputFile = new FileStream(FileFullPath!, FileMode.Open, FileAccess.Read);
-        HeaderSettings = Helpers.Deserialize<Header>(inputFile);
+        HeaderSettings = Helpers.Deserialize<AnetHeader>(inputFile);
         if (HeaderSettings.Version is not "3")
         {
             throw new FileLoadException($"Not a valid N4 file: Version doesn't match, got {HeaderSettings.Version} instead of 3)", FileFullPath);
@@ -524,7 +528,24 @@ public sealed class AnetN4File : FileFormat
             {
                 Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), layerIndex =>
                 {
-                    using var mat = layersDefinitions[layerIndex].Decode();
+                    using var mat = layersDefinitions[layerIndex].Decode(out var resolutionX, out var resolutionY);
+                    if (layerIndex == 0) // Set file resolution from first layer RLE. Figure out other properties after that
+                    {
+                        ResolutionX = resolutionX;
+                        ResolutionY = resolutionY;
+
+                        var machine = Machine.Machines.FirstOrDefault(machine =>
+                            machine.Brand == PrinterBrand.Anet && machine.ResolutionX == resolutionX &&
+                            machine.ResolutionY == resolutionY);
+
+                        if (machine is not null)
+                        {
+                            DisplayWidth = machine.DisplayWidth;
+                            DisplayHeight = machine.DisplayHeight;
+                            MachineZ = machine.MachineZ;
+                            MachineName = machine.Name;
+                        }
+                    }
                     _layers[layerIndex] = new Layer((uint)layerIndex, mat, this);
                     progress.LockAndIncrement();
                 });
