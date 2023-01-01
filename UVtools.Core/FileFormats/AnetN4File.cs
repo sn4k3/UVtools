@@ -102,8 +102,8 @@ public sealed class AnetN4File : FileFormat
         [FieldOrder(0)][FieldEndianness(Endianness.Big)] public uint WhitePixelsCount { get; set; }
         [FieldOrder(1)][FieldEndianness(Endianness.Big)] public int XMin { get; set; }
         [FieldOrder(2)][FieldEndianness(Endianness.Big)] public int YMin { get; set; }
-        [FieldOrder(3)][FieldEndianness(Endianness.Big)] public int XMax { get; set; } = RESOLUTION_X - 1;
-        [FieldOrder(4)][FieldEndianness(Endianness.Big)] public int YMax { get; set; } = RESOLUTION_Y - 1;
+        [FieldOrder(3)][FieldEndianness(Endianness.Big)] public int XMax { get; set; }
+        [FieldOrder(4)][FieldEndianness(Endianness.Big)] public int YMax { get; set; }
         [FieldOrder(5)][FieldEndianness(Endianness.Big)] public uint BitsCount { get; set; }
         [Ignore]
         public uint RleBytesCount
@@ -123,8 +123,8 @@ public sealed class AnetN4File : FileFormat
             WhitePixelsCount = layer.NonZeroPixelCount; // To be re-set latter while encoding
             XMin = layer.BoundingRectangle.X;
             YMin = layer.BoundingRectangle.Y;
-            XMax = layer.BoundingRectangle.Right - 1;
-            YMax = layer.BoundingRectangle.Bottom - 1;
+            if (layer.BoundingRectangle.Right > 0) XMax = layer.BoundingRectangle.Right - 1;
+            if (layer.BoundingRectangle.Bottom > 0) YMax = layer.BoundingRectangle.Bottom - 1;
         }
 
         public override string ToString()
