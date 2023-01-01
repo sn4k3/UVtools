@@ -1,0 +1,57 @@
+//------------------------------------------------
+//--- 010 Editor v8.0.1 Binary Template
+//
+//      File: Anet N4, N7
+//   Authors: Tiago Conceição
+//------------------------------------------------
+
+BigEndian();
+
+typedef struct() {
+    uint WhitePixelsCount <fgcolor=cBlack, bgcolor=cWhite>; // White pixels region (border including corner pixels)
+    uint XMin <fgcolor=cBlack, bgcolor=cWhite>;  // Bounding rectangle X
+    uint YMin <fgcolor=cBlack, bgcolor=cWhite>;  // Bounding rectangle Y
+    uint XMax <fgcolor=cBlack, bgcolor=cWhite>;  // Bounding rectangle Right
+    uint YMax <fgcolor=cBlack, bgcolor=cWhite>;  // Bounding rectangle Bottom
+    uint BitsCount <fgcolor=cBlack, bgcolor=cWhite>;
+    ubyte LayerRLE[(BitsCount + 7) >> 3] <fgcolor=cBlack, bgcolor=cRed>;
+} layerData;
+
+struct HEADER {
+    uint VersionLen <fgcolor=cBlack, bgcolor=cRed>; // 2
+    wchar_t Version[VersionLen/2] <fgcolor=cBlack, bgcolor=cRed>; // 3
+    int NameLength <fgcolor=cBlack, bgcolor=cRed>; 
+    wchar_t FileName[NameLength/2] <fgcolor=cBlack, bgcolor=cRed>; // File name without extension
+    int DescriptionLength <fgcolor=cBlack, bgcolor=cRed>; 
+    wchar_t Description[DescriptionLength/2] <fgcolor=cBlack, bgcolor=cRed>; // File name without extension
+
+    double XYPixelSize <fgcolor=cBlack, bgcolor=cRed>; // mm
+    double LayerHeight <fgcolor=cBlack, bgcolor=cRed>; // mm; from 0.03 to 0.08
+
+    uint BaseLayersCount <fgcolor=cBlack, bgcolor=cRed>; // Number of extent filled additional first layers; do not use!
+    uint FilledBaseLayersCount <fgcolor=cBlack, bgcolor=cRed>; // Number of fully filled first layers inside BaseLayersCount; do not use!
+
+    uint ExposureTime <fgcolor=cBlack, bgcolor=cRed>; // from 3 to 25
+    uint BottomExposureTime <fgcolor=cBlack, bgcolor=cRed>; // from 60 to 120   
+    uint BottomLayerCount <fgcolor=cBlack, bgcolor=cRed>; // from 2 to 10
+    uint LiftSpeed <fgcolor=cBlack, bgcolor=cRed>;    // mm/s, from 1 to 10
+    uint LiftHeight <fgcolor=cBlack, bgcolor=cRed>;   // mm, from 3 to 10
+    
+    uint PreviewResolutionX <fgcolor=cBlack, bgcolor=cRed>; // 260
+    uint PreviewResolutionY <fgcolor=cBlack, bgcolor=cRed>; // 140
+    uint PreviewSize <fgcolor=cBlack, bgcolor=cRed>;        // 72866
+    ubyte PreviewContent[PreviewSize] <fgcolor=cBlack, bgcolor=0x00FF00>; // BMP image, BGR565
+    double VolumeMicroL <fgcolor=cBlack, bgcolor=cRed>; // µl
+    uint EncodedPrintTime <fgcolor=cBlack, bgcolor=cRed>; // s; for unknown reason always broken in original slicer
+    uint LayerCount <fgcolor=cBlack, bgcolor=cRed>;
+} header;
+
+
+struct LAYERS {
+    local int i;
+    for( i = 0; i < header.LayerCount; i++ ){
+        layerData lD();
+    }
+} layers;
+
+uint SupportsCount <fgcolor=cBlack, bgcolor=cYellow>; // Supports count, always 0
