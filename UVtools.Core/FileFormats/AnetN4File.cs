@@ -60,12 +60,12 @@ public sealed class AnetN4File : FileFormat
 
     public class Header
     {
-        [FieldOrder(0)][FieldEndianness(Endianness.Big)] public uint VersionLength { get; set; } = 2;
+        [FieldOrder(0)][FieldEndianness(Endianness.Big)] public int VersionLength { get; set; } = 2;
         [FieldOrder(1)][FieldEncoding("UTF-16BE")][FieldLength(nameof(VersionLength))] public string Version { get; set; } = "3";
-        [FieldOrder(2)][FieldEndianness(Endianness.Big)] public uint NameLength { get; set; } = (uint)About.SoftwareWithVersion.Length * 2;
+        [FieldOrder(2)][FieldEndianness(Endianness.Big)] public int NameLength { get; set; } = About.SoftwareWithVersion.Length * 2;
         [FieldOrder(3)][FieldEncoding("UTF-16BE")][FieldLength(nameof(NameLength))] public string Name { get; set; } = About.SoftwareWithVersion;
-        [FieldOrder(4)][FieldEndianness(Endianness.Big)] public uint DescriptionLength { get; set; } = (uint)About.SoftwareWithVersion.Length * 2;
-        [FieldOrder(5)][FieldEncoding("UTF-16BE")][FieldLength(nameof(DescriptionLength))] public string Description { get; set; } = About.SoftwareWithVersion;
+        [FieldOrder(4)][FieldEndianness(Endianness.Big)] public int DescriptionLength { get; set; }
+        [FieldOrder(5)][FieldEncoding("UTF-16BE")][FieldLength(nameof(DescriptionLength))] public string Description { get; set; } = string.Empty; // Printer crashes for non-empty description (FW 1.65)
         [FieldOrder(6)][FieldEndianness(Endianness.Big)] public double XYPixelSize { get; set; } = 0.04725; // mm
         [FieldOrder(7)][FieldEndianness(Endianness.Big)] public double LayerHeight { get; set; } // mm; from 0.03 to 0.08
         [FieldOrder(8)][FieldEndianness(Endianness.Big)] public uint BaseLayersCount { get; set; } // Number of extent filled additional first layers; do not use!
@@ -102,8 +102,8 @@ public sealed class AnetN4File : FileFormat
         [FieldOrder(0)][FieldEndianness(Endianness.Big)] public uint WhitePixelsCount { get; set; }
         [FieldOrder(1)][FieldEndianness(Endianness.Big)] public int XMin { get; set; }
         [FieldOrder(2)][FieldEndianness(Endianness.Big)] public int YMin { get; set; }
-        [FieldOrder(3)][FieldEndianness(Endianness.Big)] public int XMax { get; set; } = RESOLUTION_X - 1;
-        [FieldOrder(4)][FieldEndianness(Endianness.Big)] public int YMax { get; set; } = RESOLUTION_Y - 1;
+        [FieldOrder(3)][FieldEndianness(Endianness.Big)] public int XMax { get; set; }
+        [FieldOrder(4)][FieldEndianness(Endianness.Big)] public int YMax { get; set; }
         [FieldOrder(5)][FieldEndianness(Endianness.Big)] public uint BitsCount { get; set; }
         [Ignore]
         public uint RleBytesCount
@@ -123,8 +123,8 @@ public sealed class AnetN4File : FileFormat
             WhitePixelsCount = layer.NonZeroPixelCount; // To be re-set latter while encoding
             XMin = layer.BoundingRectangle.X;
             YMin = layer.BoundingRectangle.Y;
-            XMax = layer.BoundingRectangle.Right;
-            YMax = layer.BoundingRectangle.Bottom;
+            if (layer.BoundingRectangle.Right > 0) XMax = layer.BoundingRectangle.Right - 1;
+            if (layer.BoundingRectangle.Bottom > 0) YMax = layer.BoundingRectangle.Bottom - 1;
         }
 
         public override string ToString()
@@ -429,7 +429,7 @@ public sealed class AnetN4File : FileFormat
         using var outputFile = new FileStream(TemporaryOutputFileFullPath, FileMode.Create, FileAccess.Write);
 
         HeaderSettings.Name = FilenameNoExt!;
-        HeaderSettings.Description = $"{About.SoftwareWithVersion} @ {DateTime.Now}";
+        HeaderSettings.Description = string.Empty; // $"{About.SoftwareWithVersion} @ {DateTime.Now}";
 
         var previewBuffer = new byte[72866]; // 72866
         BmpHeader.CopyTo(previewBuffer, 0);
