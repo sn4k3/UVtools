@@ -385,7 +385,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         new ZCodexFile(),   // zcodex
         new MDLPFile(),   // MKS v1
         new GR1File(),   // GR1 Workshop
-        new AnetN4File(), // N4
+        new AnetFile(), // Anet N4, N7
         new FlashForgeSVGXFile(), // SVGX
         new OSLAFile(),  // OSLA
         new OSFFile(),   // OSF

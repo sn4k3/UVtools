@@ -26,7 +26,7 @@ namespace UVtools.Core.FileFormats;
 /// and added several new fields (as example, preview image).
 /// Some of the format features are not recommended to use (BaseLayersCount and FilledBaseLayersCount).
 /// </summary>
-public sealed class AnetN4File : FileFormat
+public sealed class AnetFile : FileFormat
 {
     #region Constants
 
@@ -265,7 +265,7 @@ public sealed class AnetN4File : FileFormat
     public override FileFormatType FileType => FileFormatType.Binary;
 
     public override FileExtension[] FileExtensions { get; } = {
-        new(typeof(AnetN4File), "n4", "Anet N4"),
+        new(typeof(AnetFile), "n4", "Anet N4"),
     };
 
     public override SpeedUnit FormatSpeedUnit => SpeedUnit.MillimetersPerSecond;
@@ -416,7 +416,7 @@ public sealed class AnetN4File : FileFormat
     #endregion
 
     #region Constructors
-    public AnetN4File()
+    public AnetFile()
     {
         MachineZ = MACHINE_Z;
     }
