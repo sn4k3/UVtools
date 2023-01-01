@@ -374,6 +374,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         new PHZFile(), // phz
         new PhotonWorkshopFile(),   // PSW
         new CWSFile(),   // CWS
+        new AnetFile(), // Anet N4, N7
         new LGSFile(),   // LGS, LGS30
         new VDAFile(),   // VDA
         new VDTFile(),   // VDT
@@ -385,7 +386,6 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         new ZCodexFile(),   // zcodex
         new MDLPFile(),   // MKS v1
         new GR1File(),   // GR1 Workshop
-        new AnetFile(), // Anet N4, N7
         new FlashForgeSVGXFile(), // SVGX
         new OSLAFile(),  // OSLA
         new OSFFile(),   // OSF
@@ -979,6 +979,11 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     private bool _haveModifiedLayers;
     private uint _version;
 
+    private uint _resolutionX;
+    private uint _resolutionY;
+    private float _displayWidth;
+    private float _displayHeight;
+
     private byte _antiAliasing = 1;
 
     private ushort _bottomLayerCount = DefaultBottomLayerCount;
@@ -1157,6 +1162,13 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
 
     public string? DirectoryPath => Path.GetDirectoryName(FileFullPath);
     public string? Filename => Path.GetFileName(FileFullPath);
+
+    /// <summary>
+    /// Returns the file extension. The returned value includes the period (".") character of the
+    /// extension except when you have a terminal period when you get string.Empty, such as ".exe" or ".cpp".
+    /// The returned value is null if the given path is null or empty if the given path does not include an
+    /// extension.
+    /// </summary>
     public string? FileExtension => Path.GetExtension(FileFullPath);
     public string? FilenameNoExt => GetFileNameStripExtensions(FileFullPath);
 
@@ -1512,34 +1524,34 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             ResolutionX = (uint) value.Width;
             ResolutionY = (uint) value.Height;
             RaisePropertyChanged();
-            RaisePropertyChanged(nameof(ResolutionRectangle));
-            RaisePropertyChanged(nameof(DisplayAspectRatio));
-            RaisePropertyChanged(nameof(DisplayAspectRatioStr));
-            RaisePropertyChanged(nameof(Xppmm));
-            RaisePropertyChanged(nameof(Yppmm));
-            RaisePropertyChanged(nameof(Ppmm));
-            RaisePropertyChanged(nameof(PpmmMax));
-            RaisePropertyChanged(nameof(PixelSizeMicrons));
-            RaisePropertyChanged(nameof(PixelArea));
-            RaisePropertyChanged(nameof(PixelAreaMicrons));
-            RaisePropertyChanged(nameof(PixelHeight));
-            RaisePropertyChanged(nameof(PixelHeightMicrons));
-            RaisePropertyChanged(nameof(PixelSize));
-            RaisePropertyChanged(nameof(PixelSizeMax));
-            RaisePropertyChanged(nameof(PixelWidth));
-            RaisePropertyChanged(nameof(PixelWidthMicrons));
         }
     }
 
     /// <summary>
     /// Gets the image width resolution
     /// </summary>
-    public abstract uint ResolutionX { get; set; }
+    public virtual uint ResolutionX
+    {
+        get => _resolutionX;
+        set
+        {
+            if(!RaiseAndSetIfChanged(ref _resolutionX, value)) return;
+            NotifyAspectChange();
+        }
+    }
 
     /// <summary>
     /// Gets the image height resolution
     /// </summary>
-    public abstract uint ResolutionY { get; set; }
+    public virtual uint ResolutionY
+    {
+        get => _resolutionY;
+        set
+        {
+            if(!RaiseAndSetIfChanged(ref _resolutionY, value)) return;
+            NotifyAspectChange();
+        }
+    }
 
     /// <summary>
     /// Gets an rectangle that starts at 0,0 and goes up to <see cref="Resolution"/>
@@ -1562,34 +1574,34 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             DisplayWidth = (float)Math.Round(value.Width, 4);
             DisplayHeight = (float)Math.Round(value.Height, 4);
             RaisePropertyChanged();
-            RaisePropertyChanged(nameof(DisplayAspectRatio));
-            RaisePropertyChanged(nameof(DisplayAspectRatioStr));
-            RaisePropertyChanged(nameof(DisplayDiagonal));
-            RaisePropertyChanged(nameof(DisplayDiagonalInches));
-            RaisePropertyChanged(nameof(Xppmm));
-            RaisePropertyChanged(nameof(Yppmm));
-            RaisePropertyChanged(nameof(Ppmm));
-            RaisePropertyChanged(nameof(PpmmMax));
-            RaisePropertyChanged(nameof(PixelSizeMicrons));
-            RaisePropertyChanged(nameof(PixelArea));
-            RaisePropertyChanged(nameof(PixelAreaMicrons));
-            RaisePropertyChanged(nameof(PixelHeight));
-            RaisePropertyChanged(nameof(PixelHeightMicrons));
-            RaisePropertyChanged(nameof(PixelSize));
-            RaisePropertyChanged(nameof(PixelSizeMax));
-            RaisePropertyChanged(nameof(PixelWidth));
         }
     }
 
     /// <summary>
     /// Gets or sets the display width in millimeters
     /// </summary>
-    public virtual float DisplayWidth { get; set; }
+    public virtual float DisplayWidth
+    {
+        get => _displayWidth;
+        set
+        {
+            if (!RaiseAndSetIfChanged(ref _displayWidth, value)) return;
+            NotifyAspectChange();
+        }
+    }
 
     /// <summary>
     /// Gets or sets the display height in millimeters
     /// </summary>
-    public virtual float DisplayHeight { get; set; }
+    public virtual float DisplayHeight
+    {
+        get => _displayHeight;
+        set
+        {
+            if(!RaiseAndSetIfChanged(ref _displayHeight, value)) return;
+            NotifyAspectChange();
+        }
+    }
 
     /// <summary>
     /// Gets the display diagonal in millimeters
@@ -3205,6 +3217,38 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         Clear();
     }
 
+    #endregion
+
+    #region Notification
+
+    /// <summary>
+    /// Raise notification for aspect changes, like <see cref="Resolution"/>, <see cref="Display"/> and relatives
+    /// </summary>
+    protected void NotifyAspectChange()
+    {
+        RaisePropertyChanged(nameof(ResolutionRectangle));
+        RaisePropertyChanged(nameof(DisplayPixelCount));
+        RaisePropertyChanged(nameof(DisplayDiagonal));
+        RaisePropertyChanged(nameof(DisplayDiagonalInches));
+        RaisePropertyChanged(nameof(DisplayAspectRatio));
+        RaisePropertyChanged(nameof(DisplayAspectRatioStr));
+        RaisePropertyChanged(nameof(IsDisplayPortrait));
+        RaisePropertyChanged(nameof(IsDisplayLandscape));
+        RaisePropertyChanged(nameof(Xppmm));
+        RaisePropertyChanged(nameof(Yppmm));
+        RaisePropertyChanged(nameof(Ppmm));
+        RaisePropertyChanged(nameof(PpmmMax));
+        RaisePropertyChanged(nameof(PixelSizeMicrons));
+        RaisePropertyChanged(nameof(PixelArea));
+        RaisePropertyChanged(nameof(PixelAreaMicrons));
+        RaisePropertyChanged(nameof(PixelSizeMicronsMax));
+        RaisePropertyChanged(nameof(PixelHeight));
+        RaisePropertyChanged(nameof(PixelHeightMicrons));
+        RaisePropertyChanged(nameof(PixelSize));
+        RaisePropertyChanged(nameof(PixelSizeMax));
+        RaisePropertyChanged(nameof(PixelWidth));
+        RaisePropertyChanged(nameof(PixelWidthMicrons));
+    }
     #endregion
 
     #region Methods
