@@ -1954,6 +1954,7 @@ public partial class MainWindow : WindowEx
             CanSave = false;
             UpdateTitle();
             if(oldFile != SlicerFile.FileFullPath) AddRecentFile(SlicerFile.FileFullPath);
+            RefreshProperties(); // Some fields can change after encoding
         }
 
         return task;
