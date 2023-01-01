@@ -887,7 +887,7 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
             {
                 CompressedBytes = CompressMat(value, _compressionCodec);
                 _resolutionX = (uint)value.Width;
-                _resolutionX = (uint)value.Height;
+                _resolutionY = (uint)value.Height;
             }
             else
             {
