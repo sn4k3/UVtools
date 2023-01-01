@@ -1953,8 +1953,8 @@ public partial class MainWindow : WindowEx
             SavesCount++;
             CanSave = false;
             UpdateTitle();
-            if(oldFile != SlicerFile.FileFullPath) AddRecentFile(SlicerFile.FileFullPath);
             RefreshProperties(); // Some fields can change after encoding
+            if (oldFile != SlicerFile.FileFullPath) AddRecentFile(SlicerFile.FileFullPath);
         }
 
         return task;
