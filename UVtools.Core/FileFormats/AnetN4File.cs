@@ -64,8 +64,8 @@ public sealed class AnetN4File : FileFormat
         [FieldOrder(1)][FieldEncoding("UTF-16BE")][FieldLength(nameof(VersionLength))] public string Version { get; set; } = "3";
         [FieldOrder(2)][FieldEndianness(Endianness.Big)] public int NameLength { get; set; } = About.SoftwareWithVersion.Length * 2;
         [FieldOrder(3)][FieldEncoding("UTF-16BE")][FieldLength(nameof(NameLength))] public string Name { get; set; } = About.SoftwareWithVersion;
-        [FieldOrder(4)][FieldEndianness(Endianness.Big)] public int DescriptionLength { get; set; } = About.SoftwareWithVersion.Length * 2;
-        [FieldOrder(5)][FieldEncoding("UTF-16BE")][FieldLength(nameof(DescriptionLength))] public string Description { get; set; } = About.SoftwareWithVersion;
+        [FieldOrder(4)][FieldEndianness(Endianness.Big)] public int DescriptionLength { get; set; } = -1;
+        [FieldOrder(5)][FieldEncoding("UTF-16BE")][FieldLength(nameof(DescriptionLength))] public string Description { get; set; } = ""; // Printer crashes for non-empty description (FW 1.65)
         [FieldOrder(6)][FieldEndianness(Endianness.Big)] public double XYPixelSize { get; set; } = 0.04725; // mm
         [FieldOrder(7)][FieldEndianness(Endianness.Big)] public double LayerHeight { get; set; } // mm; from 0.03 to 0.08
         [FieldOrder(8)][FieldEndianness(Endianness.Big)] public uint BaseLayersCount { get; set; } // Number of extent filled additional first layers; do not use!
@@ -429,7 +429,7 @@ public sealed class AnetN4File : FileFormat
         using var outputFile = new FileStream(TemporaryOutputFileFullPath, FileMode.Create, FileAccess.Write);
 
         HeaderSettings.Name = FilenameNoExt!;
-        HeaderSettings.Description = $"{About.SoftwareWithVersion} @ {DateTime.Now}";
+        HeaderSettings.Description = ""; // $"{About.SoftwareWithVersion} @ {DateTime.Now}";
 
         var previewBuffer = new byte[72866]; // 72866
         BmpHeader.CopyTo(previewBuffer, 0);
