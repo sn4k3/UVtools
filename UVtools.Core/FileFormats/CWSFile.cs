@@ -173,7 +173,7 @@ public sealed class CWSSliceBuildConfig
 
 #endregion
 
-public class CWSFile : FileFormat
+public sealed class CWSFile : FileFormat
 {
     #region Constants
 
@@ -383,7 +383,7 @@ public class CWSFile : FileFormat
             SliceBuildConfig.XResolution = 
                 OutputSettings.XResolution = 
                     SliceSettings.Xres = (ushort) value;
-            RaisePropertyChanged();
+            base.ResolutionX = value;
         }
     }
 
@@ -395,28 +395,20 @@ public class CWSFile : FileFormat
             SliceBuildConfig.YResolution = 
                 OutputSettings.YResolution = 
                     SliceSettings.Yres = (ushort) value;
-            RaisePropertyChanged();
+            base.ResolutionY = value;
         }
     }
 
     public override float DisplayWidth
     {
         get => OutputSettings.PlatformXSize;
-        set
-        {
-            OutputSettings.PlatformXSize = (float)Math.Round(value, 2);
-            RaisePropertyChanged();
-        }
+        set => base.DisplayWidth = OutputSettings.PlatformXSize = (float)Math.Round(value, 2);
     }
 
     public override float DisplayHeight
     {
         get => OutputSettings.PlatformYSize;
-        set
-        {
-            OutputSettings.PlatformYSize = (float)Math.Round(value, 2);
-            RaisePropertyChanged();
-        }
+        set => base.DisplayHeight = OutputSettings.PlatformYSize = (float)Math.Round(value, 2);
     }
 
     public override float MachineZ

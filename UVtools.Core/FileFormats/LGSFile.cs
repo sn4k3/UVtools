@@ -22,7 +22,7 @@ using UVtools.Core.Operations;
 
 namespace UVtools.Core.FileFormats;
 
-public class LGSFile : FileFormat
+public sealed class LGSFile : FileFormat
 {
     #region Sub Classes
         
@@ -296,7 +296,7 @@ public class LGSFile : FileFormat
         set
         {
             HeaderSettings.ResolutionX = value;
-            RaisePropertyChanged();
+            base.ResolutionX = value;
         }
     }
 
@@ -306,27 +306,7 @@ public class LGSFile : FileFormat
         set
         {
             HeaderSettings.ResolutionY = value;
-            RaisePropertyChanged();
-        }
-    }
-
-    public override float Xppmm
-    {
-        get => HeaderSettings.PixelPerMmX > 0 ? HeaderSettings.PixelPerMmX : base.Xppmm;
-        set
-        {
-            HeaderSettings.PixelPerMmX = value;
-            base.Xppmm = value;
-        }
-    }
-
-    public override float Yppmm
-    {
-        get => HeaderSettings.PixelPerMmY > 0 ? HeaderSettings.PixelPerMmY : base.Yppmm;
-        set
-        {
-            HeaderSettings.PixelPerMmY = value;
-            base.Yppmm = value;
+            base.ResolutionY = value;
         }
     }
 
@@ -448,16 +428,6 @@ public class LGSFile : FileFormat
 
     public override float RetractSpeed => LiftSpeed;
 
-    /*public override float PrintTime => 0;
-
-    public override float UsedMaterial => 0;
-
-    public override float MaterialCost => 0;
-
-    public override string MaterialName => "Unknown";
-    public override string MachineName => null;*/
-
-
     public override object[] Configs => new object[] { HeaderSettings };
 
     #endregion
@@ -465,6 +435,20 @@ public class LGSFile : FileFormat
     #region Constructors
     public LGSFile()
     {
+        PropertyChanged += (_, e) =>
+        {
+            switch (e.PropertyName)
+            {
+                case nameof(Xppmm):
+                    HeaderSettings.PixelPerMmX = Xppmm;
+                    RaisePropertyChanged(nameof(DisplayWidth));
+                    break;
+                case nameof(Yppmm):
+                    HeaderSettings.PixelPerMmY = Yppmm;
+                    RaisePropertyChanged(nameof(DisplayHeight));
+                    break;
+            }
+        };
     }
     #endregion
 

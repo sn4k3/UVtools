@@ -32,6 +32,8 @@ public sealed class AnetFile : FileFormat
 {
     #region Constants
 
+    private const uint DEFAULT_VERSION = 3;
+
     public const ushort RESOLUTION_N4_X = 1440;
     public const ushort RESOLUTION_N4_Y = 2560;
 
@@ -67,7 +69,7 @@ public sealed class AnetFile : FileFormat
 
     #region Header
 
-    public class AnetHeader
+    public class Header
     {
         [FieldOrder(0)][FieldEndianness(Endianness.Big)] public int VersionLength { get; set; } = 2;
         [FieldOrder(1)][FieldEncoding("UTF-16BE")][FieldLength(nameof(VersionLength))] public string Version { get; set; } = "3";
@@ -271,7 +273,7 @@ public sealed class AnetFile : FileFormat
 
     #region Properties
 
-    public AnetHeader HeaderSettings { get; private set; } = new();
+    public Header HeaderSettings { get; private set; } = new();
 
     public override FileFormatType FileType => FileFormatType.Binary;
 
@@ -296,6 +298,19 @@ public sealed class AnetFile : FileFormat
     };
 
     public override Size[]? ThumbnailsOriginalSize { get; } = { new(260, 140) };
+    public override uint[] AvailableVersions { get; } = { 3 };
+
+    public override uint DefaultVersion => DEFAULT_VERSION;
+
+    public override uint Version
+    {
+        get => uint.Parse(HeaderSettings.Version);
+        set
+        {
+            base.Version = value;
+            HeaderSettings.Version = base.Version.ToString();
+        }
+    }
 
     public override FlipDirection DisplayMirror
     {
@@ -425,7 +440,7 @@ public sealed class AnetFile : FileFormat
             default:
                 throw new ArgumentOutOfRangeException(nameof(PrinterModel), FileExtension);
         }
-        HeaderSettings.XYPixelSize = PixelSizeMax;
+        HeaderSettings.XYPixelSize = Math.Round(PixelSizeMax, 3);
     }
 
     protected override void EncodeInternally(OperationProgress progress)
@@ -483,7 +498,7 @@ public sealed class AnetFile : FileFormat
     protected override void DecodeInternally(OperationProgress progress)
     {
         using var inputFile = new FileStream(FileFullPath!, FileMode.Open, FileAccess.Read);
-        HeaderSettings = Helpers.Deserialize<AnetHeader>(inputFile);
+        HeaderSettings = Helpers.Deserialize<Header>(inputFile);
         if (HeaderSettings.Version is not "3")
         {
             throw new FileLoadException($"Not a valid N4 file: Version doesn't match, got {HeaderSettings.Version} instead of 3)", FileFullPath);

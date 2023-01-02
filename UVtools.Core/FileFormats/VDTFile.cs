@@ -20,7 +20,7 @@ using UVtools.Core.Operations;
 
 namespace UVtools.Core.FileFormats;
 
-public class VDTFile : FileFormat
+public sealed class VDTFile : FileFormat
 {
     #region Constants
 
@@ -293,51 +293,31 @@ public class VDTFile : FileFormat
     public override uint ResolutionX
     {
         get => ManifestFile.Machine.ResolutionX;
-        set
-        {
-            ManifestFile.Machine.ResolutionX = (ushort) value;
-            RaisePropertyChanged();
-        }
+        set => base.ResolutionX = ManifestFile.Machine.ResolutionX = (ushort) value;
     }
 
     public override uint ResolutionY
     {
         get => ManifestFile.Machine.ResolutionY;
-        set
-        {
-            ManifestFile.Machine.ResolutionY = (ushort) value;
-            RaisePropertyChanged();
-        }
+        set => base.ResolutionY = ManifestFile.Machine.ResolutionY = (ushort) value;
     }
 
     public override float DisplayWidth
     {
         get => ManifestFile.Machine.DisplayWidth;
-        set
-        {
-            ManifestFile.Machine.DisplayWidth = (float) Math.Round(value, 2);
-            RaisePropertyChanged();
-        }
+        set => base.DisplayWidth = ManifestFile.Machine.DisplayWidth = (float) Math.Round(value, 2);
     }
 
     public override float DisplayHeight
     {
         get => ManifestFile.Machine.DisplayHeight;
-        set
-        {
-            ManifestFile.Machine.DisplayHeight = (float)Math.Round(value, 2);
-            RaisePropertyChanged();
-        }
+        set => base.DisplayHeight = ManifestFile.Machine.DisplayHeight = (float)Math.Round(value, 2);
     }
 
     public override float MachineZ
     {
         get => ManifestFile.Machine.ZHeight > 0 ? ManifestFile.Machine.ZHeight : base.MachineZ;
-        set
-        {
-            ManifestFile.Machine.ZHeight = (float)Math.Round(value, 2);
-            RaisePropertyChanged();
-        }
+        set => base.MachineZ = ManifestFile.Machine.ZHeight = (float)Math.Round(value, 2);
     }
 
     public override FlipDirection DisplayMirror

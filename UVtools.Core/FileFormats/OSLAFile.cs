@@ -22,7 +22,7 @@ using UVtools.Core.Operations;
 
 namespace UVtools.Core.FileFormats;
 
-public class OSLAFile : FileFormat
+public sealed class OSLAFile : FileFormat
 {
     #region Constants
 
@@ -316,42 +316,26 @@ public class OSLAFile : FileFormat
     public override uint ResolutionX
     {
         get => HeaderSettings.ResolutionX;
-        set
-        {
-            HeaderSettings.ResolutionX = value;
-            RaisePropertyChanged();
-        }
+        set => base.ResolutionX = HeaderSettings.ResolutionX = value;
     }
 
     public override uint ResolutionY
     {
         get => HeaderSettings.ResolutionY;
-        set
-        {
-            HeaderSettings.ResolutionY = value;
-            RaisePropertyChanged();
-        }
+        set => base.ResolutionY = HeaderSettings.ResolutionY = value;
     }
 
     public override float DisplayWidth
     {
         get => HeaderSettings.DisplayWidth;
-        set
-        {
-            HeaderSettings.DisplayWidth = (float)Math.Round(value, 2);
-            RaisePropertyChanged();
-        }
+        set => base.DisplayWidth = HeaderSettings.DisplayWidth = (float)Math.Round(value, 2);
     }
 
 
     public override float DisplayHeight
     {
         get => HeaderSettings.DisplayHeight;
-        set
-        {
-            HeaderSettings.DisplayHeight = (float)Math.Round(value, 2);
-            RaisePropertyChanged();
-        }
+        set => base.DisplayHeight = HeaderSettings.DisplayHeight = (float)Math.Round(value, 2);
     }
 
     public override float MachineZ

@@ -55,7 +55,7 @@ public class GenericZipManifest
 }
 #endregion
 
-public class GenericZIPFile : FileFormat
+public sealed class GenericZIPFile : FileFormat
 {
     #region Constants
     private const string ManifestFileName = "manifest.uvtools";
@@ -73,41 +73,25 @@ public class GenericZIPFile : FileFormat
     public override uint ResolutionX
     {
         get => ManifestFile.ResolutionX;
-        set
-        {
-            ManifestFile.ResolutionX = (ushort) value;
-            RaisePropertyChanged();
-        }
+        set => base.ResolutionX = ManifestFile.ResolutionX = (ushort) value;
     }
 
     public override uint ResolutionY
     {
         get => ManifestFile.ResolutionY;
-        set
-        {
-            ManifestFile.ResolutionY = (ushort)value;
-            RaisePropertyChanged();
-        }
+        set => base.ResolutionY = ManifestFile.ResolutionY = (ushort)value;
     }
 
     public override float DisplayWidth
     {
         get => ManifestFile.DisplayWidth;
-        set
-        {
-            ManifestFile.DisplayWidth = value;
-            RaisePropertyChanged();
-        }
+        set => base.DisplayWidth = ManifestFile.DisplayWidth = (float)Math.Round(value, 2);
     }
 
     public override float DisplayHeight
     {
         get => ManifestFile.DisplayHeight;
-        set
-        {
-            ManifestFile.DisplayHeight = value;
-            RaisePropertyChanged();
-        }
+        set => base.DisplayHeight = ManifestFile.DisplayHeight = (float)Math.Round(value, 2);
     }
 
     public override float MachineZ

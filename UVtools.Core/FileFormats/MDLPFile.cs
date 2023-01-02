@@ -23,7 +23,7 @@ using UVtools.Core.Operations;
 
 namespace UVtools.Core.FileFormats;
 
-public class MDLPFile : FileFormat
+public sealed class MDLPFile : FileFormat
 {
     #region Constants
 
@@ -184,30 +184,23 @@ public class MDLPFile : FileFormat
     public override uint ResolutionX
     {
         get => SlicerInfoSettings.ResolutionX;
-        set
-        {
-            SlicerInfoSettings.ResolutionX = (ushort) value;
-            RaisePropertyChanged();
-        }
+        set => base.ResolutionX = SlicerInfoSettings.ResolutionX = (ushort) value;
     }
 
     public override uint ResolutionY
     {
         get => SlicerInfoSettings.ResolutionY;
-        set
-        {
-            SlicerInfoSettings.ResolutionY = (ushort) value;
-            RaisePropertyChanged();
-        }
+        set => base.ResolutionY = SlicerInfoSettings.ResolutionY = (ushort) value;
     }
 
     public override float DisplayWidth
     {
-        get => (float)Math.Round(float.Parse(SlicerInfoSettings.DisplayWidth, CultureInfo.InvariantCulture), 3);
+        get => (float)Math.Round(float.Parse(SlicerInfoSettings.DisplayWidth, CultureInfo.InvariantCulture), 2);
         set
         {
-            SlicerInfoSettings.DisplayWidth = Math.Round(value, 3).ToString(CultureInfo.InvariantCulture);
-            RaisePropertyChanged();
+            value = (float)Math.Round(value, 2);
+            SlicerInfoSettings.DisplayWidth = value.ToString(CultureInfo.InvariantCulture);
+            base.DisplayWidth = value;
         }
     }
 
@@ -216,8 +209,9 @@ public class MDLPFile : FileFormat
         get => (float)Math.Round(float.Parse(SlicerInfoSettings.DisplayHeight, CultureInfo.InvariantCulture), 3);
         set
         {
-            SlicerInfoSettings.DisplayHeight = Math.Round(value, 3).ToString(CultureInfo.InvariantCulture);
-            RaisePropertyChanged();
+            value = (float)Math.Round(value, 2);
+            SlicerInfoSettings.DisplayHeight = value.ToString(CultureInfo.InvariantCulture);
+            base.DisplayHeight = value;
         }
     }
 

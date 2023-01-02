@@ -25,7 +25,7 @@ using UVtools.Core.Operations;
 
 namespace UVtools.Core.FileFormats;
 
-public class PHZFile : FileFormat
+public sealed class PHZFile : FileFormat
 {
     #region Constants
     private const uint MAGIC_PHZ = 0x9FDA83AE;
@@ -697,52 +697,32 @@ public class PHZFile : FileFormat
     public override uint ResolutionX
     {
         get => HeaderSettings.ResolutionX;
-        set
-        {
-            HeaderSettings.ResolutionX = value;
-            RaisePropertyChanged();
-        }
+        set => base.ResolutionX = HeaderSettings.ResolutionX = value;
     }
 
     public override uint ResolutionY
     {
         get => HeaderSettings.ResolutionY;
-        set
-        {
-            HeaderSettings.ResolutionY = value;
-            RaisePropertyChanged();
-        }
+        set => base.ResolutionY = HeaderSettings.ResolutionY = value;
     }
 
     public override float DisplayWidth
     {
         get => HeaderSettings.BedSizeX;
-        set
-        {
-            HeaderSettings.BedSizeX = (float)Math.Round(value, 2);
-            RaisePropertyChanged();
-        }
+        set => base.DisplayWidth = HeaderSettings.BedSizeX = (float)Math.Round(value, 2);
     }
 
 
     public override float DisplayHeight
     {
         get => HeaderSettings.BedSizeY;
-        set
-        {
-            HeaderSettings.BedSizeY = (float)Math.Round(value, 2);
-            RaisePropertyChanged();
-        }
+        set => base.DisplayHeight = HeaderSettings.BedSizeY = (float)Math.Round(value, 2);
     }
 
     public override float MachineZ
     {
         get => HeaderSettings.BedSizeZ > 0 ? HeaderSettings.BedSizeZ : base.MachineZ;
-        set
-        {
-            HeaderSettings.BedSizeZ = (float)Math.Round(value, 2);
-            RaisePropertyChanged();
-        }
+        set => base.MachineZ = HeaderSettings.BedSizeZ = (float)Math.Round(value, 2);
     }
 
     public override FlipDirection DisplayMirror

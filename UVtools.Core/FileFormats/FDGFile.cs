@@ -25,7 +25,7 @@ using UVtools.Core.Operations;
 
 namespace UVtools.Core.FileFormats;
 
-public class FDGFile : FileFormat
+public sealed class FDGFile : FileFormat
 {
     #region Constants
     private const uint MAGIC = 0xBD3C7AC8; // 3174857416
@@ -681,42 +681,26 @@ public class FDGFile : FileFormat
     public override uint ResolutionX
     {
         get => HeaderSettings.ResolutionX;
-        set
-        {
-            HeaderSettings.ResolutionX = value;
-            RaisePropertyChanged();
-        }
+        set => base.ResolutionX = HeaderSettings.ResolutionX = value;
     }
 
     public override uint ResolutionY
     {
         get => HeaderSettings.ResolutionY;
-        set
-        {
-            HeaderSettings.ResolutionY = value;
-            RaisePropertyChanged();
-        }
+        set => base.ResolutionY = HeaderSettings.ResolutionY = value;
     }
 
     public override float DisplayWidth
     {
         get => HeaderSettings.BedSizeX;
-        set
-        {
-            HeaderSettings.BedSizeX = (float)Math.Round(value, 2);
-            RaisePropertyChanged();
-        }
+        set => base.DisplayWidth = HeaderSettings.BedSizeX = (float)Math.Round(value, 2);
     }
 
 
     public override float DisplayHeight
     {
         get => HeaderSettings.BedSizeY;
-        set
-        {
-            HeaderSettings.BedSizeY = (float)Math.Round(value, 2);
-            RaisePropertyChanged();
-        }
+        set => base.DisplayHeight = HeaderSettings.BedSizeY = (float)Math.Round(value, 2);
     }
 
     public override float MachineZ

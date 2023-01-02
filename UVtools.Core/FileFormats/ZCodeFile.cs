@@ -142,7 +142,7 @@ public class ZCodePrint
     public ZcodePrintJob Job = new();
 
 }
-public class ZCodeFile : FileFormat
+public sealed class ZCodeFile : FileFormat
 {
     #region Constants
 
@@ -240,21 +240,13 @@ public class ZCodeFile : FileFormat
     public override uint ResolutionX
     {
         get => ManifestFile.Device.ResolutionX;
-        set
-        {
-            ManifestFile.Device.ResolutionX = value;
-            RaisePropertyChanged();
-        }
+        set => base.ResolutionX = ManifestFile.Device.ResolutionX = value;
     }
 
     public override uint ResolutionY
     {
         get => ManifestFile.Device.ResolutionY;
-        set
-        {
-            ManifestFile.Device.ResolutionY = value;
-            RaisePropertyChanged();
-        }
+        set => base.ResolutionY = ManifestFile.Device.ResolutionY = value;
     }
 
     public override float DisplayWidth

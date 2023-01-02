@@ -22,7 +22,7 @@ using UVtools.Core.Operations;
 
 namespace UVtools.Core.FileFormats;
 
-public class SL1File : FileFormat
+public sealed class SL1File : FileFormat
 {
     #region Constants
 
@@ -361,51 +361,31 @@ public class SL1File : FileFormat
     public override uint ResolutionX
     {
         get => PrinterSettings.DisplayPixelsX;
-        set
-        {
-            PrinterSettings.DisplayPixelsX = value;
-            RaisePropertyChanged();
-        }
+        set => base.ResolutionX = PrinterSettings.DisplayPixelsX = value;
     }
 
     public override uint ResolutionY
     {
         get => PrinterSettings.DisplayPixelsY;
-        set
-        {
-            PrinterSettings.DisplayPixelsY = value;
-            RaisePropertyChanged();
-        }
+        set => base.ResolutionY = PrinterSettings.DisplayPixelsY = value;
     }
 
     public override float DisplayWidth
     {
         get => PrinterSettings.DisplayWidth;
-        set
-        {
-            PrinterSettings.DisplayWidth = (float)Math.Round(value, 2);
-            RaisePropertyChanged();
-        }
+        set => base.DisplayWidth = PrinterSettings.DisplayWidth = (float)Math.Round(value, 2);
     }
 
     public override float DisplayHeight
     {
         get => PrinterSettings.DisplayHeight;
-        set
-        {
-            PrinterSettings.DisplayHeight = (float)Math.Round(value, 2);
-            RaisePropertyChanged();
-        }
+        set => base.DisplayHeight = PrinterSettings.DisplayHeight = (float)Math.Round(value, 2);
     }
 
     public override float MachineZ
     {
         get => PrinterSettings.MaxPrintHeight;
-        set
-        {
-            PrinterSettings.MaxPrintHeight = (float)Math.Round(value, 2);
-            RaisePropertyChanged();
-        }
+        set => base.MachineZ = PrinterSettings.MaxPrintHeight = (float)Math.Round(value, 2);
     }
 
     public override FlipDirection DisplayMirror
@@ -427,7 +407,7 @@ public class SL1File : FileFormat
 
     public override byte AntiAliasing
     {
-        get => (byte)(PrinterSettings.GammaCorrection > 0 ? 4 : 1);
+        get => (byte)(PrinterSettings.GammaCorrection > 0 ? 8 : 1);
         set => PrinterSettings.GammaCorrection = value > 0 ? 1 : 0;
     }
 

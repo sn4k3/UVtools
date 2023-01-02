@@ -21,10 +21,10 @@ using UVtools.Core.Operations;
 
 namespace UVtools.Core.FileFormats;
 
-public class OSFFile : FileFormat
+public sealed class OSFFile : FileFormat
 {
     #region Constants
-    public const ushort USED_VERSION = 4;
+    public const ushort DEFAULT_VERSION = 4;
     #endregion
     #region Sub Classes
 
@@ -38,7 +38,7 @@ public class OSFFile : FileFormat
 
         [FieldOrder(1)]
         [FieldEndianness(Endianness.Big)]
-        public ushort Version { get; set; } = USED_VERSION;
+        public ushort Version { get; set; } = DEFAULT_VERSION;
 
         [FieldOrder(2)]
         [FieldEndianness(Endianness.Big)]
@@ -363,7 +363,7 @@ public class OSFFile : FileFormat
 
     public override uint[] AvailableVersions { get; } = { 4 };
 
-    public override uint DefaultVersion => USED_VERSION;
+    public override uint DefaultVersion => DEFAULT_VERSION;
 
     public override uint Version
     {
@@ -378,24 +378,14 @@ public class OSFFile : FileFormat
     public override uint ResolutionX
     {
         get => Settings.ResolutionX;
-        set
-        {
-            Settings.ResolutionX = (ushort) value;
-            RaisePropertyChanged();
-        }
+        set => base.ResolutionX = Settings.ResolutionX = (ushort) value;
     }
 
     public override uint ResolutionY
     {
         get => Settings.ResolutionY;
-        set
-        {
-            Settings.ResolutionY = (ushort)value;
-            RaisePropertyChanged();
-        }
+        set => base.ResolutionY = Settings.ResolutionY = (ushort)value;
     }
-
-
 
     public override FlipDirection DisplayMirror
     {

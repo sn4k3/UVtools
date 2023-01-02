@@ -7,7 +7,7 @@ using Size = System.Drawing.Size;
 
 namespace UVtools.Core.FileFormats;
 
-public class ImageFile : FileFormat
+public sealed class ImageFile : FileFormat
 {
     public override FileFormatType FileType => FileFormatType.Binary;
 
@@ -50,29 +50,16 @@ public class ImageFile : FileFormat
     public override float DisplayWidth
     {
         get => ResolutionX;
-        set
-        {
-            ResolutionX = (uint) value;
-            RaisePropertyChanged();
-        }
+        set => base.DisplayWidth = ResolutionX = (uint) value;
     }
 
     public override float DisplayHeight
     {
         get => ResolutionY;
-        set
-        {
-            ResolutionY = (uint) value;
-            RaisePropertyChanged();
-        }
+        set => base.DisplayHeight = ResolutionY = (uint) value;
     }
 
     public override float LayerHeight { get; set; } = 0.01f;
-    /*public override float PrintTime { get; } = 0;
-    public override float UsedMaterial { get; } = 0;
-    public override float MaterialCost { get; } = 0;
-    public override string MaterialName { get; } = null;
-    public override string MachineName { get; } = null;*/
 
     private Mat ImageMat { get; set; } = null!;
 

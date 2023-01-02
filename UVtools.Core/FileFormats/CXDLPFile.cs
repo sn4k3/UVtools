@@ -30,7 +30,7 @@ using UVtools.Core.Printer;
 
 namespace UVtools.Core.FileFormats;
 
-public class CXDLPFile : FileFormat
+public sealed class CXDLPFile : FileFormat
 {
     #region Constants
     private const byte HEADER_SIZE = 9; // CXSW3DV2
@@ -473,30 +473,23 @@ public class CXDLPFile : FileFormat
     public override uint ResolutionX
     {
         get => HeaderSettings.ResolutionX;
-        set
-        {
-            HeaderSettings.ResolutionX = (ushort) value;
-            RaisePropertyChanged();
-        }
+        set => base.ResolutionX = HeaderSettings.ResolutionX = (ushort) value;
     }
 
     public override uint ResolutionY
     {
         get => HeaderSettings.ResolutionY;
-        set
-        {
-            HeaderSettings.ResolutionY = (ushort) value;
-            RaisePropertyChanged();
-        }
+        set => base.ResolutionY = HeaderSettings.ResolutionY = (ushort)value;
     }
 
     public override float DisplayWidth
     {
-        get => (float)Math.Round(float.Parse(SlicerInfoSettings.DisplayWidth, CultureInfo.InvariantCulture), 3);
+        get => (float)Math.Round(float.Parse(SlicerInfoSettings.DisplayWidth, CultureInfo.InvariantCulture), 2);
         set
         {
-            SlicerInfoSettings.DisplayWidth = Math.Round(value, 3).ToString(CultureInfo.InvariantCulture);
-            RaisePropertyChanged();
+            value = (float)Math.Round(value, 2);
+            SlicerInfoSettings.DisplayWidth = value.ToString(CultureInfo.InvariantCulture);
+            base.DisplayWidth = value;
         }
     }
 
@@ -505,8 +498,9 @@ public class CXDLPFile : FileFormat
         get => (float)Math.Round(float.Parse(SlicerInfoSettings.DisplayHeight, CultureInfo.InvariantCulture), 3);
         set
         {
-            SlicerInfoSettings.DisplayHeight = Math.Round(value, 3).ToString(CultureInfo.InvariantCulture);
-            RaisePropertyChanged();
+            value = (float)Math.Round(value, 2);
+            SlicerInfoSettings.DisplayHeight = value.ToString(CultureInfo.InvariantCulture);
+            base.DisplayHeight = value;
         }
     }
 

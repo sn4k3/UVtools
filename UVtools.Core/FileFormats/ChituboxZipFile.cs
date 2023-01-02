@@ -24,7 +24,7 @@ using UVtools.Core.Operations;
 
 namespace UVtools.Core.FileFormats;
 
-public class ChituboxZipFile : FileFormat
+public sealed class ChituboxZipFile : FileFormat
 {
     #region Constants
 
@@ -146,41 +146,25 @@ public class ChituboxZipFile : FileFormat
     public override uint ResolutionX
     {
         get => HeaderSettings.ResolutionX;
-        set
-        {
-            HeaderSettings.ResolutionX = value;
-            RaisePropertyChanged();
-        }
+        set => base.ResolutionX = HeaderSettings.ResolutionX = value;
     }
 
     public override uint ResolutionY
     {
         get => HeaderSettings.ResolutionY;
-        set
-        {
-            HeaderSettings.ResolutionY = value;
-            RaisePropertyChanged();
-        }
+        set => base.ResolutionY = HeaderSettings.ResolutionY = value;
     }
 
     public override float DisplayWidth
     {
         get => HeaderSettings.MachineX;
-        set
-        {
-            HeaderSettings.MachineX = value;
-            RaisePropertyChanged();
-        }
+        set => base.DisplayWidth = HeaderSettings.MachineX = (float)Math.Round(value, 2);
     }
 
     public override float DisplayHeight
     {
         get => HeaderSettings.MachineY;
-        set
-        {
-            HeaderSettings.MachineY = value;
-            RaisePropertyChanged();
-        }
+        set => base.DisplayHeight = HeaderSettings.MachineY = (float)Math.Round(value, 2); 
     }
 
     public override float MachineZ

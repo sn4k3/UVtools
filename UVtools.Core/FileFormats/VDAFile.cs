@@ -142,7 +142,7 @@ public class VDARoot
 }
 #endregion
 
-public class VDAFile : FileFormat
+public sealed class VDAFile : FileFormat
 {
     #region Constants
 
@@ -163,7 +163,7 @@ public class VDAFile : FileFormat
     {
         get
         {
-            var resolution = ManifestFile.Machines.Resolution.Split('*', StringSplitOptions.TrimEntries);
+            var resolution = ManifestFile.Machines.Resolution.Split('*', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
             if (resolution.Length < 2) return 0;
             uint.TryParse(resolution[0], out var xRes);
             return xRes;
@@ -171,7 +171,7 @@ public class VDAFile : FileFormat
         set
         {
             ManifestFile.Machines.Resolution = $"{value}*{ResolutionY}P";
-            RaisePropertyChanged();
+            base.ResolutionX = value;
         }
     }
 
@@ -179,7 +179,7 @@ public class VDAFile : FileFormat
     {
         get
         {
-            var resolution = ManifestFile.Machines.Resolution.Split('*', StringSplitOptions.TrimEntries);
+            var resolution = ManifestFile.Machines.Resolution.Split('*', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
             if (resolution.Length < 2) return 0;
             resolution[1] = resolution[1].TrimEnd('P');
             uint.TryParse(resolution[1], out var yRes);
@@ -188,7 +188,7 @@ public class VDAFile : FileFormat
         set
         {
             ManifestFile.Machines.Resolution = $"{ResolutionX}*{value}P";
-            RaisePropertyChanged();
+            base.ResolutionY = value;
         }
     }
 
@@ -202,16 +202,15 @@ public class VDAFile : FileFormat
 
             if (ushort.TryParse(umStr, out var um) && um > 0)
             {
-                return (float) Math.Round(ResolutionX * um / 1000f, 2);
+                ManifestFile.Machines.XLength = (float) Math.Round(ResolutionX * um / 1000f, 2);
             }
 
             return ManifestFile.Machines.XLength;
         }
         set
         {
-            ManifestFile.Machines.XLength = (float) Math.Round(value, 2);
-            ManifestFile.Machines.PixelXSize = $"{Math.Round(value / ResolutionX * 1000, 2)}um";
-            RaisePropertyChanged();
+            base.DisplayWidth = ManifestFile.Machines.XLength = (float) Math.Round(value, 2);
+            ManifestFile.Machines.PixelXSize = $"{PixelWidthMicrons}um";
         }
     }
 
@@ -225,16 +224,15 @@ public class VDAFile : FileFormat
 
             if (ushort.TryParse(umStr, out var um) && um > 0)
             {
-                return (float)Math.Round(ResolutionY * um / 1000f, 2);
+                ManifestFile.Machines.YWidth = (float)Math.Round(ResolutionY * um / 1000f, 2);
             }
 
             return ManifestFile.Machines.YWidth;
         }
         set
         {
-            ManifestFile.Machines.YWidth = (float)Math.Round(value, 2);
-            ManifestFile.Machines.PixelYSize = $"{Math.Round(value / ResolutionY * 1000, 2)}um";
-            RaisePropertyChanged();
+            base.DisplayHeight = ManifestFile.Machines.YWidth = (float)Math.Round(value, 2);
+            ManifestFile.Machines.PixelYSize = $"{PixelHeightMicrons}um";
         }
     }
 

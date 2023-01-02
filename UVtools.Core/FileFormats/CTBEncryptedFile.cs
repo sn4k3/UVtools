@@ -17,7 +17,7 @@ using UVtools.Core.Operations;
 
 namespace UVtools.Core.FileFormats;
 
-public class CTBEncryptedFile : FileFormat
+public sealed class CTBEncryptedFile : FileFormat
 {
 
     #region Constants 
@@ -671,21 +671,13 @@ public class CTBEncryptedFile : FileFormat
     public override uint ResolutionX
     {
         get => Settings.ResolutionX;
-        set
-        {
-            Settings.ResolutionX = value;
-            RaisePropertyChanged();
-        }
+        set => base.ResolutionX = Settings.ResolutionX = value;
     }
 
     public override uint ResolutionY
     {
         get => Settings.ResolutionY;
-        set
-        {
-            Settings.ResolutionY = value;
-            RaisePropertyChanged();
-        }
+        set => base.ResolutionY = Settings.ResolutionY = value;
     }
 
     public override float LayerHeight
@@ -698,26 +690,22 @@ public class CTBEncryptedFile : FileFormat
         }
     }
 
-    public override byte AntiAliasing { get => 8; set { } }
+    public override byte AntiAliasing
+    {
+        get => 8; 
+        set { }
+    }
 
     public override float DisplayWidth
     {
         get => Settings.DisplayWidth;
-        set
-        {
-            Settings.DisplayWidth = (float)Math.Round(value, 2);
-            RaisePropertyChanged();
-        }
+        set => base.DisplayWidth = Settings.DisplayWidth = (float)Math.Round(value, 2);
     }
 
     public override float DisplayHeight
     {
         get => Settings.DisplayHeight;
-        set
-        {
-            Settings.DisplayHeight = (float)Math.Round(value, 2);
-            RaisePropertyChanged();
-        }
+        set => base.DisplayHeight = Settings.DisplayHeight = (float)Math.Round(value, 2);
     }
 
     public override float MachineZ

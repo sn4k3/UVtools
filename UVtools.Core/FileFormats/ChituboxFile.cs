@@ -25,11 +25,11 @@ using UVtools.Core.Operations;
 
 namespace UVtools.Core.FileFormats;
 
-public class ChituboxFile : FileFormat
+public sealed class ChituboxFile : FileFormat
 {
 
     #region Constants
-    public const byte USED_VERSION = 3;
+    public const byte DEFAULT_VERSION = 3;
 
     public const uint MAGIC_CBDDLP = 0x12FD0019; // 318570521
     public const uint MAGIC_CTB = 0x12FD0086; // 318570630
@@ -69,7 +69,7 @@ public class ChituboxFile : FileFormat
         /// <summary>
         /// Gets the software version
         /// </summary>
-        [FieldOrder(1)] public uint Version { get; set; } = USED_VERSION;
+        [FieldOrder(1)] public uint Version { get; set; } = DEFAULT_VERSION;
 
         /// <summary>
         /// Gets dimensions of the printer’s X output volume, in millimeters.
@@ -1241,7 +1241,7 @@ public class ChituboxFile : FileFormat
 
     public override uint[] AvailableVersions { get; } = { 1, 2, 3, 4 };
 
-    public override uint DefaultVersion => USED_VERSION;
+    public override uint DefaultVersion => DEFAULT_VERSION;
 
     public override uint Version
     {
@@ -1256,41 +1256,25 @@ public class ChituboxFile : FileFormat
     public override uint ResolutionX
     {
         get => HeaderSettings.ResolutionX;
-        set
-        {
-            HeaderSettings.ResolutionX = value;
-            RaisePropertyChanged();
-        }
+        set => base.ResolutionX = HeaderSettings.ResolutionX = value;
     }
 
     public override uint ResolutionY
     {
         get => HeaderSettings.ResolutionY;
-        set
-        {
-            HeaderSettings.ResolutionY = value;
-            RaisePropertyChanged();
-        }
+        set => base.ResolutionY = HeaderSettings.ResolutionY = value;
     }
 
     public override float DisplayWidth
     {
         get => HeaderSettings.BedSizeX;
-        set
-        {
-            HeaderSettings.BedSizeX = (float) Math.Round(value, 2);
-            RaisePropertyChanged();
-        }
+        set => base.DisplayWidth = HeaderSettings.BedSizeX = (float) Math.Round(value, 2);
     }
 
     public override float DisplayHeight
     {
         get => HeaderSettings.BedSizeY;
-        set
-        {
-            HeaderSettings.BedSizeY = (float)Math.Round(value, 2);
-            RaisePropertyChanged();
-        }
+        set => base.DisplayHeight = HeaderSettings.BedSizeY = (float)Math.Round(value, 2);
     }
 
     public override float MachineZ

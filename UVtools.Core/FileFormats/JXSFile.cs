@@ -6,8 +6,6 @@
  *  of this license document, but changing it is not allowed.
  */
 
-using Emgu.CV;
-using Emgu.CV.CvEnum;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -27,9 +25,12 @@ using UVtools.Core.Operations;
 
 namespace UVtools.Core.FileFormats;
 
-public class JXSFile : FileFormat
+public sealed class JXSFile : FileFormat
 {
     #region Constants
+
+    public const uint RESOLUTION_X = 4920;
+    public const uint RESOLUTION_Y = 2880;
 
     public const string ConfigFileName = "config.ini";
     public const string ControlFilename = "control.json";
@@ -149,40 +150,22 @@ public class JXSFile : FileFormat
 
     public override uint ResolutionX
     {
-        get => 4920;
+        get => base.ResolutionX;
         set
         {
-            if (value != ResolutionX) throw new ArgumentOutOfRangeException(nameof(ResolutionX), $"{nameof(ResolutionX)} can not be different from {ResolutionX}");
-            RaisePropertyChanged();
+            if (value != RESOLUTION_X) throw new ArgumentOutOfRangeException(nameof(ResolutionX), $"{nameof(ResolutionX)} can not be different from {RESOLUTION_X}");
+            base.ResolutionX = value;
         }
     }
 
     public override uint ResolutionY
     {
-        get => 2880;
+        get => base.ResolutionY;
         set
         {
-            if(value != ResolutionY) throw new ArgumentOutOfRangeException(nameof(ResolutionY), $"{nameof(ResolutionY)} can not be different from {ResolutionY}");
-            RaisePropertyChanged();
+            if (value != RESOLUTION_Y) throw new ArgumentOutOfRangeException(nameof(ResolutionY), $"{nameof(ResolutionY)} can not be different from {RESOLUTION_Y}");
+            base.ResolutionY = value;
         }
-    }
-
-    public override float DisplayWidth
-    {
-        get => 221.40f;
-        set => RaisePropertyChanged();
-    }
-
-    public override float DisplayHeight
-    {
-        get => 129.60f;
-        set => RaisePropertyChanged();
-    }
-
-    public override float MachineZ
-    {
-        get => 245;
-        set => RaisePropertyChanged();
     }
 
     public override FlipDirection DisplayMirror => FlipDirection.Vertically;
@@ -305,12 +288,6 @@ public class JXSFile : FileFormat
         }
     }
 
-    public override string MachineName
-    {
-        get => "Uniformation GKone";
-        set {}
-    }
-
     public override object[] Configs => new object[] { ConfigFile };
 
     #endregion
@@ -318,6 +295,12 @@ public class JXSFile : FileFormat
     #region Constructor
     public JXSFile()
     {
+        ResolutionX = RESOLUTION_X;
+        ResolutionY = RESOLUTION_Y;
+        DisplayWidth = 221.40f;
+        DisplayHeight = 129.60f;
+        MachineZ = 245;
+        MachineName = "Uniformation GKone";
         GCode = new GCodeBuilder
         {
             UseTailComma = true,

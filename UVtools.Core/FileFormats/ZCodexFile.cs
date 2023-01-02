@@ -24,7 +24,7 @@ using UVtools.Core.Operations;
 
 namespace UVtools.Core.FileFormats;
 
-public class ZCodexFile : FileFormat
+public sealed class ZCodexFile : FileFormat
 {
     #region Constants
 
@@ -189,29 +189,6 @@ public class ZCodexFile : FileFormat
 
     public override Size[]? ThumbnailsOriginalSize { get; } = {new(320, 180)};
 
-    public override uint ResolutionX
-    {
-        get => 1440;
-        set { }
-    }
-
-    public override uint ResolutionY
-    {
-        get => 2560;
-        set { }
-    }
-
-    public override float DisplayWidth
-    {
-        get => 74.67f;
-        set {}
-    }
-    public override float DisplayHeight
-    {
-        get => 132.88f;
-        set { }
-    }
-
     public override FlipDirection DisplayMirror
     {
         get => FlipDirection.Horizontally;
@@ -242,7 +219,6 @@ public class ZCodexFile : FileFormat
         {
             base.LayerCount = ResinMetadataSettings.TotalLayersCount = base.LayerCount;
             UserSettings.MaxLayer = LastLayerIndex;
-                 
         }
     }
 
@@ -356,6 +332,10 @@ public class ZCodexFile : FileFormat
 
     public ZCodexFile()
     {
+        ResolutionX = 1440;
+        ResolutionY = 2560;
+        DisplayWidth = 74.67f;
+        DisplayHeight = 132.88f;
         GCode = new()
         {
             UseComments = true,

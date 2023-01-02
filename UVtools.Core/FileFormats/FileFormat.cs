@@ -1585,7 +1585,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get => _displayWidth;
         set
         {
-            if (!RaiseAndSetIfChanged(ref _displayWidth, value)) return;
+            if (!RaiseAndSetIfChanged(ref _displayWidth, (float)Math.Round(value, 2))) return;
             NotifyAspectChange();
         }
     }
@@ -1598,7 +1598,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get => _displayHeight;
         set
         {
-            if(!RaiseAndSetIfChanged(ref _displayHeight, value)) return;
+            if(!RaiseAndSetIfChanged(ref _displayHeight, (float)Math.Round(value, 2))) return;
             NotifyAspectChange();
         }
     }
@@ -1661,43 +1661,17 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <summary>
     /// Gets or sets the pixels per mm on X direction
     /// </summary>
-    public virtual float Xppmm
-    {
-        get => DisplayWidth > 0 ? ResolutionX / DisplayWidth : 0;
-        set
-        {
-            RaisePropertyChanged(nameof(Xppmm));
-            RaisePropertyChanged(nameof(Ppmm));
-            RaisePropertyChanged(nameof(PpmmMax));
-        }
-    }
+    public virtual float Xppmm => DisplayWidth > 0 ? ResolutionX / DisplayWidth : 0;
 
     /// <summary>
     /// Gets or sets the pixels per mm on Y direction
     /// </summary>
-    public virtual float Yppmm
-    {
-        get => DisplayHeight > 0 ? ResolutionY / DisplayHeight : 0;
-        set
-        {
-            RaisePropertyChanged(nameof(Yppmm));
-            RaisePropertyChanged(nameof(Ppmm));
-            RaisePropertyChanged(nameof(PpmmMax));
-        }
-    }
+    public virtual float Yppmm => DisplayHeight > 0 ? ResolutionY / DisplayHeight : 0;
 
     /// <summary>
     /// Gets or sets the pixels per mm
     /// </summary>
-    public SizeF Ppmm
-    {
-        get => new(Xppmm, Yppmm);
-        set
-        {
-            Xppmm = value.Width;
-            Yppmm = value.Height;
-        }
-    }
+    public SizeF Ppmm => new(Xppmm, Yppmm);
 
     /// <summary>
     /// Gets the maximum (Width or Height) pixels per mm 
@@ -5033,8 +5007,6 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             slicerFile.MaterialMilliliters = MaterialMilliliters;
             slicerFile.MaterialGrams = MaterialGrams;
             slicerFile.MaterialCost = MaterialCost;
-            slicerFile.Xppmm = Xppmm;
-            slicerFile.Yppmm = Yppmm;
             slicerFile.PrintTime = PrintTime;
             slicerFile.PrintHeight = PrintHeight;
 

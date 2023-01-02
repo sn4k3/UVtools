@@ -176,7 +176,7 @@ public class FlashForgeSVGXSvgPath
 }
 
 
-public class FlashForgeSVGXFile : FileFormat
+public sealed class FlashForgeSVGXFile : FileFormat
 {
     #region Constants
     #endregion
@@ -279,42 +279,26 @@ public class FlashForgeSVGXFile : FileFormat
     public override uint ResolutionX
     {
         get => SVGDocument.PrintParameters.ResolutionX;
-        set
-        {
-            SVGDocument.PrintParameters.ResolutionX = value;
-            RaisePropertyChanged();
-        }
+        set => base.ResolutionX = SVGDocument.PrintParameters.ResolutionX = value;
     }
 
     public override uint ResolutionY
     {
         get => SVGDocument.PrintParameters.ResolutionY;
-        set
-        {
-            SVGDocument.PrintParameters.ResolutionY = value;
-            RaisePropertyChanged();
-        }
+        set => base.ResolutionY = SVGDocument.PrintParameters.ResolutionY = value;
     }
 
     public override float DisplayWidth
     {
         get => SVGDocument.PrintParameters.DisplayWidth;
-        set
-        {
-            SVGDocument.PrintParameters.DisplayWidth = (float)Math.Round(value, 2);
-            RaisePropertyChanged();
-        }
+        set => base.DisplayWidth = SVGDocument.PrintParameters.DisplayWidth = (float)Math.Round(value, 2);
     }
 
 
     public override float DisplayHeight
     {
         get => SVGDocument.PrintParameters.DisplayHeight;
-        set
-        {
-            SVGDocument.PrintParameters.DisplayHeight = (float)Math.Round(value, 2);
-            RaisePropertyChanged();
-        }
+        set => base.DisplayHeight = SVGDocument.PrintParameters.DisplayHeight = (float)Math.Round(value, 2);
     }
         
     public override FlipDirection DisplayMirror

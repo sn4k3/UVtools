@@ -20,7 +20,7 @@ using UVtools.Core.Operations;
 
 namespace UVtools.Core.FileFormats;
 
-public class UVJFile : FileFormat
+public sealed class UVJFile : FileFormat
 {
     #region Constants
 
@@ -242,41 +242,25 @@ public class UVJFile : FileFormat
     public override uint ResolutionX
     {
         get => JsonSettings.Properties.Size.X;
-        set
-        {
-            JsonSettings.Properties.Size.X = (ushort) value;
-            RaisePropertyChanged();
-        }
+        set => base.ResolutionX = JsonSettings.Properties.Size.X = (ushort) value;
     }
 
     public override uint ResolutionY
     {
         get => JsonSettings.Properties.Size.Y;
-        set
-        {
-            JsonSettings.Properties.Size.Y = (ushort) value;
-            RaisePropertyChanged();
-        }
+        set => base.ResolutionY = JsonSettings.Properties.Size.Y = (ushort)value;
     }
 
     public override float DisplayWidth
     {
         get => JsonSettings.Properties.Size.Millimeter.X;
-        set
-        {
-            JsonSettings.Properties.Size.Millimeter.X = (float) Math.Round(value, 2);
-            RaisePropertyChanged();
-        }
+        set => base.DisplayWidth = JsonSettings.Properties.Size.Millimeter.X = (float)Math.Round(value, 2);
     }
 
     public override float DisplayHeight
     {
         get => JsonSettings.Properties.Size.Millimeter.Y;
-        set
-        {
-            JsonSettings.Properties.Size.Millimeter.Y = (float)Math.Round(value, 2);
-            RaisePropertyChanged();
-        }
+        set => base.DisplayHeight = JsonSettings.Properties.Size.Millimeter.Y = (float)Math.Round(value, 2);
     }
 
     public override FlipDirection DisplayMirror { get; set; }

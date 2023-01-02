@@ -23,7 +23,7 @@ using UVtools.Core.Operations;
 
 namespace UVtools.Core.FileFormats;
 
-public class PhotonWorkshopFile : FileFormat
+public sealed class PhotonWorkshopFile : FileFormat
 {
     #region Constants
     public const byte VERSION_1 = 1;       // 0x1
@@ -1199,21 +1199,13 @@ public class PhotonWorkshopFile : FileFormat
     public override uint ResolutionX
     {
         get => HeaderSettings.ResolutionX;
-        set
-        {
-            HeaderSettings.ResolutionX = value;
-            RaisePropertyChanged();
-        }
+        set => base.ResolutionX = HeaderSettings.ResolutionX = value;
     }
 
     public override uint ResolutionY
     {
         get => HeaderSettings.ResolutionY;
-        set
-        {
-            HeaderSettings.ResolutionY = value;
-            RaisePropertyChanged();
-        }
+        set => base.ResolutionY = HeaderSettings.ResolutionY = value;
     }
 
     public override float DisplayWidth
@@ -1241,11 +1233,7 @@ public class PhotonWorkshopFile : FileFormat
                 _ => 0
             };
         }
-        set
-        {
-            MachineSettings.DisplayWidth = (float)Math.Round(value, 2);
-            RaisePropertyChanged();
-        }
+        set => base.DisplayWidth = MachineSettings.DisplayWidth = (float)Math.Round(value, 2);
     }
     public override float DisplayHeight
     {
@@ -1272,11 +1260,7 @@ public class PhotonWorkshopFile : FileFormat
                 _ => 0
             };
         }
-        set 
-        {
-            MachineSettings.DisplayHeight = (float)Math.Round(value, 2);
-            RaisePropertyChanged();
-        }
+        set => base.DisplayHeight = MachineSettings.DisplayHeight = (float)Math.Round(value, 2);
     }
 
     public override float MachineZ
@@ -1304,11 +1288,7 @@ public class PhotonWorkshopFile : FileFormat
                 _ => 0
             };
         }
-        set
-        {
-            MachineSettings.MachineZ = (float)Math.Round(value, 2);
-            RaisePropertyChanged();
-        }
+        set => base.MachineZ = MachineSettings.MachineZ = (float)Math.Round(value, 2);
     }
 
     public override FlipDirection DisplayMirror

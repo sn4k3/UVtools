@@ -20,7 +20,7 @@ using UVtools.Core.Operations;
 
 namespace UVtools.Core.FileFormats;
 
-public class PhotonSFile : FileFormat
+public sealed class PhotonSFile : FileFormat
 {
     #region Constants
     public const byte RLEEncodingLimit = 128;
@@ -31,13 +31,6 @@ public class PhotonSFile : FileFormat
     public const float DISPLAY_WIDTH = 68.04f;
     public const float DISPLAY_HEIGHT = 120.96f;
     public const float MACHINE_Z = 165f;
-
-    #endregion
-
-    #region Members
-
-    private uint _resolutionX = RESOLUTION_X;
-    private uint _resolutionY = RESOLUTION_Y;
 
     #endregion
 
@@ -250,8 +243,8 @@ public class PhotonSFile : FileFormat
 
     #region Properties
 
-    public Header HeaderSettings { get; protected internal set; } = new();
-    public LayerHeader LayerSettings { get; protected internal set; } = new();
+    public Header HeaderSettings { get; private set; } = new();
+    public LayerHeader LayerSettings { get; private set; } = new();
     public override FileFormatType FileType => FileFormatType.Binary;
 
     public override string ConvertMenuGroup => "Chitubox";
@@ -281,38 +274,6 @@ public class PhotonSFile : FileFormat
 
     public override Size[]? ThumbnailsOriginalSize { get; } = {new(224, 168) };
 
-    public override uint ResolutionX
-    {
-        get => _resolutionX;
-        set
-        {
-            if(!RaiseAndSetIfChanged(ref _resolutionX, value)) return;
-            HeaderSettings.XYPixelSize = PixelSizeMax;
-        }
-    }
-
-    public override uint ResolutionY
-    {
-        get => _resolutionY;
-        set
-        {
-            if (!RaiseAndSetIfChanged(ref _resolutionY, value)) return;
-            HeaderSettings.XYPixelSize = PixelSizeMax;
-        }
-    }
-
-    public override float DisplayWidth
-    {
-        get => DISPLAY_WIDTH;
-        set { }
-    }
-
-    public override float DisplayHeight
-    {
-        get => DISPLAY_HEIGHT;
-        set { }
-    }
-
     public override FlipDirection DisplayMirror
     {
         get => FlipDirection.Horizontally;
@@ -327,12 +288,6 @@ public class PhotonSFile : FileFormat
             HeaderSettings.LayerHeight = Layer.RoundHeight(value);
             RaisePropertyChanged();
         }
-    }
-
-    public override float MachineZ
-    {
-        get => MACHINE_Z;
-        set { }
     }
 
     public override uint LayerCount
@@ -422,8 +377,6 @@ public class PhotonSFile : FileFormat
         }
     }
 
-    public override string MachineName => "Anycubic Photon S";
-        
     public override object[] Configs => new object[] { HeaderSettings };
 
     #endregion
@@ -431,11 +384,22 @@ public class PhotonSFile : FileFormat
     #region Constructors
     public PhotonSFile()
     {
+        ResolutionX = RESOLUTION_X;
+        ResolutionY = RESOLUTION_Y;
+        DisplayWidth = DISPLAY_WIDTH;
+        DisplayHeight = DISPLAY_HEIGHT;
+        MachineZ = MACHINE_Z;
+        MachineName = "Anycubic Photon S";
     }
     #endregion
 
     #region Methods
-        
+
+    protected override void OnBeforeEncode(bool isPartialEncode)
+    {
+        HeaderSettings.XYPixelSize = Math.Round(PixelSizeMax, 3);
+    }
+
     protected override void EncodeInternally(OperationProgress progress)
     {
         //throw new NotSupportedException("PhotonS is read-only format, please use pws instead!");

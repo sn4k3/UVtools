@@ -14,8 +14,6 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using UVtools.Core.Extensions;
 using UVtools.Core.Layers;
@@ -23,7 +21,7 @@ using UVtools.Core.Operations;
 
 namespace UVtools.Core.FileFormats;
 
-public class GR1File : FileFormat
+public sealed class GR1File : FileFormat
 {
     #region Constants
 
@@ -180,30 +178,23 @@ public class GR1File : FileFormat
     public override uint ResolutionX
     {
         get => SlicerInfoSettings.ResolutionX;
-        set
-        {
-            SlicerInfoSettings.ResolutionX = (ushort) value;
-            RaisePropertyChanged();
-        }
+        set => base.ResolutionX = SlicerInfoSettings.ResolutionX = (ushort) value;
     }
 
     public override uint ResolutionY
     {
         get => SlicerInfoSettings.ResolutionY;
-        set
-        {
-            SlicerInfoSettings.ResolutionY = (ushort) value;
-            RaisePropertyChanged();
-        }
+        set => base.ResolutionY = SlicerInfoSettings.ResolutionY = (ushort)value;
     }
 
     public override float DisplayWidth
     {
-        get => (float)Math.Round(float.Parse(SlicerInfoSettings.DisplayWidth, CultureInfo.InvariantCulture), 3);
+        get => (float)Math.Round(float.Parse(SlicerInfoSettings.DisplayWidth, CultureInfo.InvariantCulture), 2);
         set
         {
-            SlicerInfoSettings.DisplayWidth = Math.Round(value, 3).ToString(CultureInfo.InvariantCulture);
-            RaisePropertyChanged();
+            value = (float)Math.Round(value, 2);
+            SlicerInfoSettings.DisplayWidth = value.ToString(CultureInfo.InvariantCulture);
+            base.DisplayWidth = value;
         }
     }
 
@@ -212,8 +203,9 @@ public class GR1File : FileFormat
         get => (float)Math.Round(float.Parse(SlicerInfoSettings.DisplayHeight, CultureInfo.InvariantCulture), 3);
         set
         {
-            SlicerInfoSettings.DisplayHeight = Math.Round(value, 3).ToString(CultureInfo.InvariantCulture);
-            RaisePropertyChanged();
+            value = (float)Math.Round(value, 2);
+            SlicerInfoSettings.DisplayHeight = value.ToString(CultureInfo.InvariantCulture);
+            base.DisplayHeight = value;
         }
     }
 
