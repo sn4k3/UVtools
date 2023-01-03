@@ -111,7 +111,6 @@ public sealed class PhotonWorkshopFile : FileFormat
         /// <summary>
         /// Gets the file mark placeholder
         /// Fixed to "ANYCUBIC"
-        /// 00
         /// </summary>
         [FieldOrder(0)]
         [FieldLength(MarkSize)]
@@ -120,51 +119,46 @@ public sealed class PhotonWorkshopFile : FileFormat
 
         /// <summary>
         /// Gets the file format version
-        /// 0C
         /// </summary>
         [FieldOrder(1)] public uint Version { get; set; } = VERSION_1;
 
         /// <summary>
         /// Gets the area num
-        /// 10, 4 for v1, 5 for v515, 8 for v516?
+        /// 4 for v1, 5 for v515, 8 for v516?
         /// </summary>
         [FieldOrder(2)] public uint NumberOfTables { get; set; }
 
         /// <summary>
         /// Gets the header start address
-        /// 14
         /// </summary>
         [FieldOrder(3)]  public uint HeaderAddress { get; set; }
 
         /// <summary>
-        /// 18
         /// </summary>
         [FieldOrder(4)]  public uint SoftwareAddress { get; set; }
 
         /// <summary>
         /// Gets the preview start offset
-        /// 1C
         /// </summary>
         [FieldOrder(5)]  public uint PreviewAddress { get; set; }
 
         /// <summary>
-        /// 20, Spotted on version 515 only
+        /// Spotted on version 515 only
         /// </summary>
         [FieldOrder(6)]  public uint LayerImageColorTableAddress  { get; set; } 
 
         /// <summary>
         /// Gets the layer definition start address
-        /// 24
         /// </summary>
         [FieldOrder(7)]  public uint LayerDefinitionAddress { get; set; }
 
         /// <summary>
-        /// 28, Spotted on version 516 only
+        /// Spotted on version 516 only
         /// </summary>
         [FieldOrder(8)]  public uint ExtraAddress  { get; set; }
 
         /// <summary>
-        /// 2C, Spotted on version 516 only
+        /// Spotted on version 516 only
         /// </summary>
         [SerializeWhen(nameof(Version), VERSION_516, ComparisonOperator.GreaterThanOrEqual)]
         [FieldOrder(9)] public uint MachineAddress { get; set; }
@@ -251,125 +245,67 @@ public sealed class PhotonWorkshopFile : FileFormat
     public class Header
     {
         public const string SectionMark = "HEADER";
-
-        /// <summary>
-        /// 30
-        /// </summary>
+        
         [FieldOrder(0)] public SectionHeader Section { get; set; }
 
-        /// <summary>
-        /// 40
-        /// </summary>
         [FieldOrder(1)] public float PixelSizeUm { get; set; } = 47.25f;
 
         /// <summary>
         /// Layer height in mm
-        /// 44
         /// </summary>
         [FieldOrder(2)] public float LayerHeight { get; set; }
 
-        /// <summary>
-        /// 48
-        /// </summary>
         [FieldOrder(3)] public float ExposureTime { get; set; }
 
-        /// <summary>
-        /// 4C
-        /// </summary>
         [FieldOrder(4)] public float WaitTimeBeforeCure { get; set; } = 1;
 
-        /// <summary>
-        /// 50
-        /// </summary>
         [FieldOrder(5)] public float BottomExposureTime { get; set; } 
 
-        /// <summary>
-        /// 54
-        /// </summary>
         [FieldOrder(6)] public float BottomLayersCount { get; set; }
 
-        /// <summary>
-        /// 58
-        /// </summary>
         [FieldOrder(7)] public float LiftHeight { get; set; } = DefaultLiftHeight;
+        
         /// <summary>
         /// Gets the lift speed in mm/s
-        /// 5C
         /// </summary>
         [FieldOrder(8)] public float LiftSpeed { get; set; } = SpeedConverter.Convert(DefaultLiftSpeed, CoreSpeedUnit, SpeedUnit.MillimetersPerSecond); // mm/s
 
         /// <summary>
         /// Gets the retract speed in mm/s
-        /// 60
         /// </summary>
         [FieldOrder(9)] public float RetractSpeed { get; set; } = SpeedConverter.Convert(DefaultRetractSpeed, CoreSpeedUnit, SpeedUnit.MillimetersPerSecond); // mm/s
 
-        /// <summary>
-        /// 64
-        /// </summary>
         [FieldOrder(10)] public float VolumeMl { get; set; }
 
-        /// <summary>
-        /// 68
-        /// </summary>
         [FieldOrder(11)] public uint AntiAliasing { get; set; } = 1;
 
-        /// <summary>
-        /// 6C
-        /// </summary>
         [FieldOrder(12)] public uint ResolutionX { get; set; }
 
-        /// <summary>
-        /// 70
-        /// </summary>
         [FieldOrder(13)] public uint ResolutionY { get; set; }
 
-        /// <summary>
-        /// 74
-        /// </summary>
         [FieldOrder(14)] public float WeightG { get; set; }
 
-        /// <summary>
-        /// 78
-        /// </summary>
         [FieldOrder(15)] public float Price { get; set; }
 
         /// <summary>
         /// 24 00 00 00 $ or ¥ C2 A5 00 00 or € = E2 82 AC 00
-        /// 7C
         /// </summary>
-        [FieldOrder(16)][FieldLength(4)] [SerializeAs(SerializedType.TerminatedString)] public string PriceCurrencySymbol { get; set; } = "$";
-        /*[Ignore] public char PriceCurrencySymbol
-        {
-            get
-            {
-                return PriceCurrencyDec switch
-                {
-                    0x24 => '$',
-                    0xA5C2 => '¥',
-                    0x000020AC => '€',
-                    _ => '$'
-                };
-            }
-        }*/
+        [FieldOrder(16)] [FieldLength(4)] public char PriceCurrencySymbol { get; set; } = '$';
 
         /// <summary>
         /// 80
         /// </summary>
         [FieldOrder(17)] public uint PerLayerOverride { get; set; } // bool
 
-        /// <summary>
-        /// 84
-        /// </summary>
         [FieldOrder(18)] public uint PrintTime { get; set; }
 
         /// <summary>
-        /// 88, spotted on 516
+        /// spotted on 516
         /// </summary>
         [FieldOrder(19)] public uint TransitionLayerCount { get; set; }
 
         /// <summary>
-        /// 8C, spotted on 516
+        /// spotted on 516
         /// </summary>
         [FieldOrder(20)] public uint TransitionLayerType { get; set; }
 
@@ -426,26 +362,20 @@ public sealed class PhotonWorkshopFile : FileFormat
     {
         public const string SectionMark = "PREVIEW";
 
-        /// <summary>
-        /// 90
-        /// </summary>
         [FieldOrder(0)] public SectionHeader Section { get; set; }
 
         /// <summary>
         /// Gets the image width, in pixels.
-        /// A0
         /// </summary>
         [FieldOrder(1)] public uint ResolutionX { get; set; } = 224;
 
         /// <summary>
         /// Gets the operation mark 'x'
-        /// A4
         /// </summary>
         [FieldOrder(2)] [FieldLength(4)] [SerializeAs(SerializedType.TerminatedString)] public string Mark { get; set; } = "x";
 
         /// <summary>
         /// Gets the image height, in pixels.
-        /// A8
         /// </summary>
         [FieldOrder(3)] public uint ResolutionY { get; set; } = 168;
 
