@@ -1753,7 +1753,7 @@ public partial class MainWindow : WindowEx
             RefreshThumbnail();
             return;
         }
-        if (e.PropertyName == nameof(SlicerFile.Resolution))
+        if (e.PropertyName is nameof(SlicerFile.Resolution) or nameof(SlicerFile.Display))
         {
             RaisePropertyChanged(nameof(LayerResolutionStr));
             return;

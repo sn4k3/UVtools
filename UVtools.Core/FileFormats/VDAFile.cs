@@ -209,7 +209,7 @@ public sealed class VDAFile : FileFormat
         }
         set
         {
-            base.DisplayWidth = ManifestFile.Machines.XLength = (float) Math.Round(value, 2);
+            base.DisplayWidth = ManifestFile.Machines.XLength = RoundDisplaySize(value);
             ManifestFile.Machines.PixelXSize = $"{PixelWidthMicrons}um";
         }
     }
@@ -231,7 +231,7 @@ public sealed class VDAFile : FileFormat
         }
         set
         {
-            base.DisplayHeight = ManifestFile.Machines.YWidth = (float)Math.Round(value, 2);
+            base.DisplayHeight = ManifestFile.Machines.YWidth = RoundDisplaySize(value);
             ManifestFile.Machines.PixelYSize = $"{PixelHeightMicrons}um";
         }
     }

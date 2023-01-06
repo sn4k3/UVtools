@@ -699,13 +699,13 @@ public sealed class CTBEncryptedFile : FileFormat
     public override float DisplayWidth
     {
         get => Settings.DisplayWidth;
-        set => base.DisplayWidth = Settings.DisplayWidth = (float)Math.Round(value, 2);
+        set => base.DisplayWidth = Settings.DisplayWidth = RoundDisplaySize(value);
     }
 
     public override float DisplayHeight
     {
         get => Settings.DisplayHeight;
-        set => base.DisplayHeight = Settings.DisplayHeight = (float)Math.Round(value, 2);
+        set => base.DisplayHeight = Settings.DisplayHeight = RoundDisplaySize(value);
     }
 
     public override float MachineZ

@@ -43,6 +43,11 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
 {
     #region Constants
 
+    /// <summary>
+    /// Gets the decimal precision for display properties
+    /// </summary>
+    public const byte DisplayFloatPrecision = 3;
+
     public const SpeedUnit CoreSpeedUnit = SpeedUnit.MillimetersPerMinute;
     public const string TemporaryFileAppend = ".tmp";
     public const ushort ExtraPrintTime = 300;
@@ -604,6 +609,10 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         => Task.Run(() => Open(fileFullPath, decodeType, progress), progress?.Token ?? default);
 
     public static Task<FileFormat?> OpenAsync(string fileFullPath, OperationProgress? progress = null) => OpenAsync(fileFullPath, FileDecodeType.Full, progress);
+
+    public static float RoundDisplaySize(float value) => (float) Math.Round(value, DisplayFloatPrecision);
+    public static double RoundDisplaySize(double value) => Math.Round(value, DisplayFloatPrecision);
+    public static decimal RoundDisplaySize(decimal value) => (decimal) Math.Round(value, DisplayFloatPrecision);
 
     /// <summary>
     /// Copy parameters from one file to another
@@ -1536,6 +1545,13 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         set
         {
             if(!RaiseAndSetIfChanged(ref _resolutionX, value)) return;
+            RaisePropertyChanged(nameof(Resolution));
+            RaisePropertyChanged(nameof(ResolutionRectangle));
+            RaisePropertyChanged(nameof(DisplayPixelCount));
+            RaisePropertyChanged(nameof(DisplayAspectRatio));
+            RaisePropertyChanged(nameof(DisplayAspectRatioStr));
+            RaisePropertyChanged(nameof(IsDisplayPortrait));
+            RaisePropertyChanged(nameof(IsDisplayLandscape));
             NotifyAspectChange();
         }
     }
@@ -1549,6 +1565,13 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         set
         {
             if(!RaiseAndSetIfChanged(ref _resolutionY, value)) return;
+            RaisePropertyChanged(nameof(Resolution));
+            RaisePropertyChanged(nameof(ResolutionRectangle));
+            RaisePropertyChanged(nameof(DisplayPixelCount));
+            RaisePropertyChanged(nameof(DisplayAspectRatio));
+            RaisePropertyChanged(nameof(DisplayAspectRatioStr));
+            RaisePropertyChanged(nameof(IsDisplayPortrait));
+            RaisePropertyChanged(nameof(IsDisplayLandscape));
             NotifyAspectChange();
         }
     }
@@ -1571,8 +1594,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get => new(DisplayWidth, DisplayHeight);
         set
         {
-            DisplayWidth = (float)Math.Round(value.Width, 4);
-            DisplayHeight = (float)Math.Round(value.Height, 4);
+            DisplayWidth = RoundDisplaySize(value.Width);
+            DisplayHeight = RoundDisplaySize(value.Height);
             RaisePropertyChanged();
         }
     }
@@ -1585,7 +1608,10 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get => _displayWidth;
         set
         {
-            if (!RaiseAndSetIfChanged(ref _displayWidth, (float)Math.Round(value, 2))) return;
+            if (!RaiseAndSetIfChanged(ref _displayWidth, RoundDisplaySize(value))) return;
+            RaisePropertyChanged(nameof(Display));
+            RaisePropertyChanged(nameof(DisplayDiagonal));
+            RaisePropertyChanged(nameof(DisplayDiagonalInches));
             NotifyAspectChange();
         }
     }
@@ -1598,7 +1624,10 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get => _displayHeight;
         set
         {
-            if(!RaiseAndSetIfChanged(ref _displayHeight, (float)Math.Round(value, 2))) return;
+            if(!RaiseAndSetIfChanged(ref _displayHeight, RoundDisplaySize(value))) return;
+            RaisePropertyChanged(nameof(Display));
+            RaisePropertyChanged(nameof(DisplayDiagonal));
+            RaisePropertyChanged(nameof(DisplayDiagonalInches));
             NotifyAspectChange();
         }
     }
@@ -3029,27 +3058,25 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     {
         IssueManager = new(this);
         Thumbnails = new Mat[ThumbnailsCount];
-        PropertyChanged += OnPropertyChanged;
         _queueTimerPrintTime.Elapsed += (sender, e) => UpdatePrintTime();
     }
 
-    private void OnPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    protected override void OnPropertyChanged(PropertyChangedEventArgs e)
     {
         if (SuppressRebuildProperties) return;
-        if (
-            e.PropertyName 
+        if (e.PropertyName
             is nameof(BottomLayerCount)
             or nameof(BottomLightOffDelay)
             or nameof(LightOffDelay)
             or nameof(BottomWaitTimeBeforeCure)
             or nameof(WaitTimeBeforeCure)
-            or nameof(BottomExposureTime) 
+            or nameof(BottomExposureTime)
             or nameof(ExposureTime)
             or nameof(BottomWaitTimeAfterCure)
             or nameof(WaitTimeAfterCure)
-            or nameof(BottomLiftHeight) 
+            or nameof(BottomLiftHeight)
             or nameof(BottomLiftSpeed)
-            or nameof(LiftHeight) 
+            or nameof(LiftHeight)
             or nameof(LiftSpeed)
             or nameof(BottomLiftHeight2)
             or nameof(BottomLiftSpeed2)
@@ -3057,26 +3084,26 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             or nameof(LiftSpeed2)
             or nameof(BottomWaitTimeAfterLift)
             or nameof(WaitTimeAfterLift)
-            or nameof(BottomRetractSpeed) 
+            or nameof(BottomRetractSpeed)
             or nameof(RetractSpeed)
             or nameof(BottomRetractHeight2)
             or nameof(BottomRetractSpeed2)
             or nameof(RetractHeight2)
-            or nameof(RetractSpeed2) 
-            or nameof(BottomLightPWM) 
+            or nameof(RetractSpeed2)
+            or nameof(BottomLightPWM)
             or nameof(LightPWM)
         )
         {
             RebuildLayersProperties(false, e.PropertyName);
-            if(e.PropertyName 
-                   is nameof(BottomLayerCount) 
+            if (e.PropertyName
+                   is nameof(BottomLayerCount)
                    or nameof(BottomExposureTime)
                    or nameof(ExposureTime)
                && TransitionLayerType == TransitionLayerTypes.Software
               ) ResetCurrentTransitionLayers(false);
-                
-            if(e.PropertyName 
-               is not nameof(BottomLightPWM) 
+
+            if (e.PropertyName
+               is not nameof(BottomLightPWM)
                and not nameof(LightPWM)
               ) UpdatePrintTimeQueued();
 
@@ -3200,14 +3227,6 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// </summary>
     protected void NotifyAspectChange()
     {
-        RaisePropertyChanged(nameof(ResolutionRectangle));
-        RaisePropertyChanged(nameof(DisplayPixelCount));
-        RaisePropertyChanged(nameof(DisplayDiagonal));
-        RaisePropertyChanged(nameof(DisplayDiagonalInches));
-        RaisePropertyChanged(nameof(DisplayAspectRatio));
-        RaisePropertyChanged(nameof(DisplayAspectRatioStr));
-        RaisePropertyChanged(nameof(IsDisplayPortrait));
-        RaisePropertyChanged(nameof(IsDisplayLandscape));
         RaisePropertyChanged(nameof(Xppmm));
         RaisePropertyChanged(nameof(Yppmm));
         RaisePropertyChanged(nameof(Ppmm));
@@ -3235,12 +3254,9 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         _layers = Array.Empty<Layer>();
         GCode?.Clear();
 
-        if (Thumbnails is not null)
+        for (int i = 0; i < Thumbnails.Length; i++)
         {
-            for (int i = 0; i < Thumbnails.Length; i++)
-            {
-                Thumbnails[i]?.Dispose();
-            }
+            Thumbnails[i]?.Dispose();
         }
     }
 

@@ -85,13 +85,13 @@ public sealed class GenericZIPFile : FileFormat
     public override float DisplayWidth
     {
         get => ManifestFile.DisplayWidth;
-        set => base.DisplayWidth = ManifestFile.DisplayWidth = (float)Math.Round(value, 2);
+        set => base.DisplayWidth = ManifestFile.DisplayWidth = RoundDisplaySize(value);
     }
 
     public override float DisplayHeight
     {
         get => ManifestFile.DisplayHeight;
-        set => base.DisplayHeight = ManifestFile.DisplayHeight = (float)Math.Round(value, 2);
+        set => base.DisplayHeight = ManifestFile.DisplayHeight = RoundDisplaySize(value);
     }
 
     public override float MachineZ

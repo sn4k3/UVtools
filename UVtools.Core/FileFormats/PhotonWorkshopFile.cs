@@ -782,7 +782,7 @@ public sealed class PhotonWorkshopFile : FileFormat
 
         private Mat DecodePW0()
         {
-            var mat = EmguExtensions.InitMat(Parent.Resolution);
+            var mat = Parent.CreateMat();
             var imageLength = mat.GetLength();
 
             int pixelPos = 0;
@@ -1163,7 +1163,7 @@ public sealed class PhotonWorkshopFile : FileFormat
                 _ => 0
             };
         }
-        set => base.DisplayWidth = MachineSettings.DisplayWidth = (float)Math.Round(value, 2);
+        set => base.DisplayWidth = MachineSettings.DisplayWidth = RoundDisplaySize(value);
     }
     public override float DisplayHeight
     {
@@ -1190,7 +1190,7 @@ public sealed class PhotonWorkshopFile : FileFormat
                 _ => 0
             };
         }
-        set => base.DisplayHeight = MachineSettings.DisplayHeight = (float)Math.Round(value, 2);
+        set => base.DisplayHeight = MachineSettings.DisplayHeight = RoundDisplaySize(value);
     }
 
     public override float MachineZ

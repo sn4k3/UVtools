@@ -13,10 +13,11 @@ namespace UVtools.Core.Extensions;
 
 public static class SpanExtensions
 {
-    public static unsafe void Fill<T>(this Span<T> span, Func<T> provider) where T : struct
+    public static unsafe void Fill<T>(this Span<T> span, Func<T> provider, int cores = -1) where T : struct
     {
+        if (cores <= 0) cores = Environment.ProcessorCount;
+
         int
-            cores = Environment.ProcessorCount,
             batch = span.Length / cores,
             mod = span.Length % cores,
             size = Unsafe.SizeOf<T>();

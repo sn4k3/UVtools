@@ -127,7 +127,7 @@ public sealed class OperationCalibrateTolerance : Operation
         get => _displayWidth;
         set
         {
-            if(!RaiseAndSetIfChanged(ref _displayWidth, Math.Round(value, 2))) return;
+            if(!RaiseAndSetIfChanged(ref _displayWidth, FileFormat.RoundDisplaySize(value))) return;
             RaisePropertyChanged(nameof(Xppmm));
         }
     }
@@ -137,7 +137,7 @@ public sealed class OperationCalibrateTolerance : Operation
         get => _displayHeight;
         set
         {
-            if(!RaiseAndSetIfChanged(ref _displayHeight, Math.Round(value, 2))) return;
+            if(!RaiseAndSetIfChanged(ref _displayHeight, FileFormat.RoundDisplaySize(value))) return;
             RaisePropertyChanged(nameof(Yppmm));
         }
     }

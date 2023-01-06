@@ -305,13 +305,13 @@ public sealed class VDTFile : FileFormat
     public override float DisplayWidth
     {
         get => ManifestFile.Machine.DisplayWidth;
-        set => base.DisplayWidth = ManifestFile.Machine.DisplayWidth = (float) Math.Round(value, 2);
+        set => base.DisplayWidth = ManifestFile.Machine.DisplayWidth = RoundDisplaySize(value);
     }
 
     public override float DisplayHeight
     {
         get => ManifestFile.Machine.DisplayHeight;
-        set => base.DisplayHeight = ManifestFile.Machine.DisplayHeight = (float)Math.Round(value, 2);
+        set => base.DisplayHeight = ManifestFile.Machine.DisplayHeight = RoundDisplaySize(value);
     }
 
     public override float MachineZ

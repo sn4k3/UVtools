@@ -254,13 +254,13 @@ public sealed class UVJFile : FileFormat
     public override float DisplayWidth
     {
         get => JsonSettings.Properties.Size.Millimeter.X;
-        set => base.DisplayWidth = JsonSettings.Properties.Size.Millimeter.X = (float)Math.Round(value, 2);
+        set => base.DisplayWidth = JsonSettings.Properties.Size.Millimeter.X = RoundDisplaySize(value);
     }
 
     public override float DisplayHeight
     {
         get => JsonSettings.Properties.Size.Millimeter.Y;
-        set => base.DisplayHeight = JsonSettings.Properties.Size.Millimeter.Y = (float)Math.Round(value, 2);
+        set => base.DisplayHeight = JsonSettings.Properties.Size.Millimeter.Y = RoundDisplaySize(value);
     }
 
     public override FlipDirection DisplayMirror { get; set; }

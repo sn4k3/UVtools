@@ -11,6 +11,7 @@ using Emgu.CV;
 using Emgu.CV.CvEnum;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
@@ -434,25 +435,26 @@ public sealed class LGSFile : FileFormat
 
     #region Constructors
     public LGSFile()
-    {
-        PropertyChanged += (_, e) =>
-        {
-            switch (e.PropertyName)
-            {
-                case nameof(Xppmm):
-                    HeaderSettings.PixelPerMmX = Xppmm;
-                    RaisePropertyChanged(nameof(DisplayWidth));
-                    break;
-                case nameof(Yppmm):
-                    HeaderSettings.PixelPerMmY = Yppmm;
-                    RaisePropertyChanged(nameof(DisplayHeight));
-                    break;
-            }
-        };
-    }
+    { }
     #endregion
 
     #region Methods
+
+    protected override void OnPropertyChanged(PropertyChangedEventArgs e)
+    {
+        base.OnPropertyChanged(e);
+        switch (e.PropertyName)
+        {
+            case nameof(Xppmm):
+                HeaderSettings.PixelPerMmX = Xppmm;
+                RaisePropertyChanged(nameof(DisplayWidth));
+                break;
+            case nameof(Yppmm):
+                HeaderSettings.PixelPerMmY = Yppmm;
+                RaisePropertyChanged(nameof(DisplayHeight));
+                break;
+        }
+    }
 
     protected override void EncodeInternally(OperationProgress progress)
     {

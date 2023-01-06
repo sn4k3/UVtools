@@ -373,13 +373,13 @@ public sealed class SL1File : FileFormat
     public override float DisplayWidth
     {
         get => PrinterSettings.DisplayWidth;
-        set => base.DisplayWidth = PrinterSettings.DisplayWidth = (float)Math.Round(value, 2);
+        set => base.DisplayWidth = PrinterSettings.DisplayWidth = RoundDisplaySize(value);
     }
 
     public override float DisplayHeight
     {
         get => PrinterSettings.DisplayHeight;
-        set => base.DisplayHeight = PrinterSettings.DisplayHeight = (float)Math.Round(value, 2);
+        set => base.DisplayHeight = PrinterSettings.DisplayHeight = RoundDisplaySize(value);
     }
 
     public override float MachineZ

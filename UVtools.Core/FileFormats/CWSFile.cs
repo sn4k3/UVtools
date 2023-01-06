@@ -402,13 +402,13 @@ public sealed class CWSFile : FileFormat
     public override float DisplayWidth
     {
         get => OutputSettings.PlatformXSize;
-        set => base.DisplayWidth = OutputSettings.PlatformXSize = (float)Math.Round(value, 2);
+        set => base.DisplayWidth = OutputSettings.PlatformXSize = RoundDisplaySize(value);
     }
 
     public override float DisplayHeight
     {
         get => OutputSettings.PlatformYSize;
-        set => base.DisplayHeight = OutputSettings.PlatformYSize = (float)Math.Round(value, 2);
+        set => base.DisplayHeight = OutputSettings.PlatformYSize = RoundDisplaySize(value);
     }
 
     public override float MachineZ
@@ -586,12 +586,17 @@ public sealed class CWSFile : FileFormat
         GCode.CommandShowImageM6054.Set(";<Slice>", "{0}");
         GCode.CommandWaitSyncDelay.Set(";<Delay>", "0{0}");
         GCode.CommandWaitG4.Set(";<Delay>", "{0}");
-
     }
     #endregion
 
     #region Methods
-    
+
+    protected override void OnBeforeEncode(bool isPartialEncode)
+    {
+        SliceSettings.Xppm = Xppmm;
+        SliceSettings.Yppm = Yppmm;
+    }
+
     protected override void EncodeInternally(OperationProgress progress)
     {
         //var filename = fileFullPath.EndsWith(TemporaryFileAppend) ? Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(fileFullPath)) : Path.GetFileNameWithoutExtension(fileFullPath);

@@ -3860,57 +3860,51 @@
             <summary>
             Gets the file mark placeholder
             Fixed to "ANYCUBIC"
-            00
             </summary>
         </member>
         <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.FileMark.Version">
             <summary>
             Gets the file format version
-            0C
             </summary>
         </member>
         <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.FileMark.NumberOfTables">
             <summary>
             Gets the area num
-            10, 4 for v1, 5 for v515, 8 for v516?
+            4 for v1, 5 for v515, 8 for v516?
             </summary>
         </member>
         <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.FileMark.HeaderAddress">
             <summary>
             Gets the header start address
-            14
             </summary>
         </member>
         <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.FileMark.SoftwareAddress">
             <summary>
-            18
             </summary>
         </member>
         <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.FileMark.PreviewAddress">
             <summary>
             Gets the preview start offset
-            1C
             </summary>
         </member>
         <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.FileMark.LayerImageColorTableAddress">
             <summary>
-            20, Spotted on version 515 only
+            Spotted on version 515 only
             </summary>
         </member>
         <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.FileMark.LayerDefinitionAddress">
             <summary>
             Gets the layer definition start address
-            24
             </summary>
         </member>
         <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.FileMark.ExtraAddress">
             <summary>
-            28, Spotted on version 516 only
+            Spotted on version 516 only
             </summary>
         </member>
         <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.FileMark.MachineAddress">
             <summary>
-            2C, Spotted on version 516 only
+            Spotted on version 516 only
             </summary>
         </member>
         <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.FileMark.LayerImageAddress">
@@ -3933,93 +3927,24 @@
             Gets the length of this section
             </summary>
         </member>
-        <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.Header.Section">
-            <summary>
-            30
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.Header.PixelSizeUm">
-            <summary>
-            40
-            </summary>
-        </member>
         <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.Header.LayerHeight">
             <summary>
             Layer height in mm
-            44
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.Header.ExposureTime">
-            <summary>
-            48
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.Header.WaitTimeBeforeCure">
-            <summary>
-            4C
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.Header.BottomExposureTime">
-            <summary>
-            50
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.Header.BottomLayersCount">
-            <summary>
-            54
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.Header.LiftHeight">
-            <summary>
-            58
             </summary>
         </member>
         <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.Header.LiftSpeed">
             <summary>
             Gets the lift speed in mm/s
-            5C
             </summary>
         </member>
         <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.Header.RetractSpeed">
             <summary>
             Gets the retract speed in mm/s
-            60
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.Header.VolumeMl">
-            <summary>
-            64
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.Header.AntiAliasing">
-            <summary>
-            68
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.Header.ResolutionX">
-            <summary>
-            6C
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.Header.ResolutionY">
-            <summary>
-            70
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.Header.WeightG">
-            <summary>
-            74
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.Header.Price">
-            <summary>
-            78
             </summary>
         </member>
         <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.Header.PriceCurrencySymbol">
             <summary>
             24 00 00 00 $ or ¥ C2 A5 00 00 or € = E2 82 AC 00
-            7C
             </summary>
         </member>
         <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.Header.PerLayerOverride">
@@ -4027,19 +3952,14 @@
             80
             </summary>
         </member>
-        <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.Header.PrintTime">
-            <summary>
-            84
-            </summary>
-        </member>
         <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.Header.TransitionLayerCount">
             <summary>
-            88, spotted on 516
+            spotted on 516
             </summary>
         </member>
         <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.Header.TransitionLayerType">
             <summary>
-            8C, spotted on 516
+            spotted on 516
             </summary>
         </member>
         <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.HeaderV516.AdvancedMode">
@@ -4053,27 +3973,19 @@
             These are shown on the printer display when choosing which file to print, sparing the poor printer from needing to render a 3D image from scratch.
             </summary>
         </member>
-        <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.Preview.Section">
-            <summary>
-            90
-            </summary>
-        </member>
         <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.Preview.ResolutionX">
             <summary>
             Gets the image width, in pixels.
-            A0
             </summary>
         </member>
         <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.Preview.Mark">
             <summary>
             Gets the operation mark 'x'
-            A4
             </summary>
         </member>
         <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.Preview.ResolutionY">
             <summary>
             Gets the image height, in pixels.
-            A8
             </summary>
         </member>
         <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.LayerDef.DataAddress">

@@ -291,14 +291,14 @@ public sealed class FlashForgeSVGXFile : FileFormat
     public override float DisplayWidth
     {
         get => SVGDocument.PrintParameters.DisplayWidth;
-        set => base.DisplayWidth = SVGDocument.PrintParameters.DisplayWidth = (float)Math.Round(value, 2);
+        set => base.DisplayWidth = SVGDocument.PrintParameters.DisplayWidth = RoundDisplaySize(value);
     }
 
 
     public override float DisplayHeight
     {
         get => SVGDocument.PrintParameters.DisplayHeight;
-        set => base.DisplayHeight = SVGDocument.PrintParameters.DisplayHeight = (float)Math.Round(value, 2);
+        set => base.DisplayHeight = SVGDocument.PrintParameters.DisplayHeight = RoundDisplaySize(value);
     }
         
     public override FlipDirection DisplayMirror

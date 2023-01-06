@@ -328,14 +328,14 @@ public sealed class OSLAFile : FileFormat
     public override float DisplayWidth
     {
         get => HeaderSettings.DisplayWidth;
-        set => base.DisplayWidth = HeaderSettings.DisplayWidth = (float)Math.Round(value, 2);
+        set => base.DisplayWidth = HeaderSettings.DisplayWidth = RoundDisplaySize(value);
     }
 
 
     public override float DisplayHeight
     {
         get => HeaderSettings.DisplayHeight;
-        set => base.DisplayHeight = HeaderSettings.DisplayHeight = (float)Math.Round(value, 2);
+        set => base.DisplayHeight = HeaderSettings.DisplayHeight = RoundDisplaySize(value);
     }
 
     public override float MachineZ

@@ -158,13 +158,13 @@ public sealed class ChituboxZipFile : FileFormat
     public override float DisplayWidth
     {
         get => HeaderSettings.MachineX;
-        set => base.DisplayWidth = HeaderSettings.MachineX = (float)Math.Round(value, 2);
+        set => base.DisplayWidth = HeaderSettings.MachineX = RoundDisplaySize(value);
     }
 
     public override float DisplayHeight
     {
         get => HeaderSettings.MachineY;
-        set => base.DisplayHeight = HeaderSettings.MachineY = (float)Math.Round(value, 2); 
+        set => base.DisplayHeight = HeaderSettings.MachineY = RoundDisplaySize(value); 
     }
 
     public override float MachineZ

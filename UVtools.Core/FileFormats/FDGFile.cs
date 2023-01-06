@@ -693,14 +693,14 @@ public sealed class FDGFile : FileFormat
     public override float DisplayWidth
     {
         get => HeaderSettings.BedSizeX;
-        set => base.DisplayWidth = HeaderSettings.BedSizeX = (float)Math.Round(value, 2);
+        set => base.DisplayWidth = HeaderSettings.BedSizeX = RoundDisplaySize(value);
     }
 
 
     public override float DisplayHeight
     {
         get => HeaderSettings.BedSizeY;
-        set => base.DisplayHeight = HeaderSettings.BedSizeY = (float)Math.Round(value, 2);
+        set => base.DisplayHeight = HeaderSettings.BedSizeY = RoundDisplaySize(value);
     }
 
     public override float MachineZ
