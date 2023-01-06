@@ -83,6 +83,8 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
     private byte _lightPWM = FileFormat.DefaultLightPWM;
     private float _materialMilliliters;
 
+    private EmguContours? _contours;
+
     #endregion
 
     #region Properties
@@ -794,6 +796,8 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
             _compressedBytes = value;
             IsModified = true;
             SlicerFile.BoundingRectangle = Rectangle.Empty;
+            _contours?.Dispose();
+            _contours = null;
             RaisePropertyChanged();
             RaisePropertyChanged(nameof(HaveImage));
         }
@@ -1026,6 +1030,31 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
     /// True if this layer is using TSMC values, otherwise false
     /// </summary>
     public bool IsUsingTSMC => LiftHeight2 > 0 || RetractHeight2 > 0;
+
+    /// <summary>
+    /// Gets tree contours cache for this layer, however should call <see cref="GetContours"/> instead with <see cref="LayerMat"/> instance
+    /// </summary>
+    public EmguContours Contours
+    {
+        get
+        {
+            if (_contours is null)
+            {
+                using var mat = LayerMat;
+                _contours = new EmguContours(mat);
+            }
+
+            return _contours;
+        }
+    }
+
+    /// <summary>
+    /// Gets tree contours cache for this layer
+    /// </summary>
+    public EmguContours GetContours(IInputOutputArray mat)
+    {
+        return _contours ??= new EmguContours(mat);
+    }
 
     #endregion
 
@@ -1694,6 +1723,7 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
         layer.ResolutionX = _resolutionX;
         layer.ResolutionY = _resolutionY;
         layer.CompressedBytes = _compressedBytes?.ToArray();
+        layer._contours = _contours?.Clone();
         layer.BoundingRectangle = _boundingRectangle;
         layer.NonZeroPixelCount = _nonZeroPixelCount;
     }
@@ -1702,6 +1732,7 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
     {
         var layer = (Layer)MemberwiseClone();
         layer._compressedBytes = _compressedBytes?.ToArray();
+        layer._contours = _contours?.Clone();
         //Debug.WriteLine(ReferenceEquals(_compressedBytes, layer.CompressedBytes));
         return layer;
         /*return new (_index, CompressedBytes?.ToArray()!, SlicerFile)

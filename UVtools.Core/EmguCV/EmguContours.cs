@@ -44,6 +44,21 @@ public class EmguContours : IReadOnlyList<EmguContour>, IDisposable
 
     public EmguContour this[int index] => _contours[index];
 
+    private EmguContours(int count, int[,] hierarchy)
+    {
+        _contours = new EmguContour[count];
+        Hierarchy = hierarchy;
+    }
+
+    public EmguContours(Point[][] points)
+    {
+        _contours = new EmguContour[points.Length];
+        for (int i = 0; i < points.Length; i++)
+        {
+            _contours[i] = new EmguContour(points[i]);
+        }
+    }
+
     public EmguContours(VectorOfVectorOfPoint vectorOfPointsOfPoints)
     {
         _contours = new EmguContour[vectorOfPointsOfPoints.Size];
@@ -51,6 +66,11 @@ public class EmguContours : IReadOnlyList<EmguContour>, IDisposable
         {
             _contours[i] = new EmguContour(vectorOfPointsOfPoints[i]);
         }
+    }
+
+    public EmguContours(Point[][] points, int[,] hierarchy) : this(points)
+    {
+        Hierarchy = hierarchy;
     }
 
     public EmguContours(VectorOfVectorOfPoint vectorOfPointsOfPoints, int[,] hierarchy) : this(vectorOfPointsOfPoints)
@@ -96,6 +116,18 @@ public class EmguContours : IReadOnlyList<EmguContour>, IDisposable
         return items;
     }
 
+    public EmguContours Clone()
+    {
+        var clone = new EmguContours(_contours.Length, Hierarchy);
+
+        for (int i = 0; i < _contours.Length; i++)
+        {
+            clone._contours[i] = this[i].Clone();
+        }
+
+        return clone;
+    }
+
     public void Dispose()
     {
         foreach (var contour in _contours)
@@ -103,6 +135,17 @@ public class EmguContours : IReadOnlyList<EmguContour>, IDisposable
             contour.Dispose();
         }
     }
+
+
+
+
+
+
+
+
+
+
+
 
     /// <summary>
     /// Gets contours inside a point
@@ -331,10 +374,11 @@ public class EmguContours : IReadOnlyList<EmguContour>, IDisposable
     {
         var contour1Rect = CvInvoke.BoundingRectangle(contour1[0]);
         var contour2Rect = CvInvoke.BoundingRectangle(contour2[0]);
-
+        
         /* early exit if the bounding rectangles don't intersect */
         if (!contour1Rect.IntersectsWith(contour2Rect)) return 0;
-        var totalRect = Rectangle.Union(contour1Rect, contour2Rect);
+        //var totalRect = Rectangle.Union(contour1Rect, contour2Rect);
+        var totalRect = RectangleExtensions.SmallestRectangle(contour1Rect, contour2Rect);
 
         using var contour1Mat = EmguExtensions.InitMat(totalRect.Size);
         using var contour2Mat = EmguExtensions.InitMat(totalRect.Size);

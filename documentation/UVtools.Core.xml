@@ -139,7 +139,7 @@
         </member>
         <member name="P:UVtools.Core.EmguCV.EmguContour.Points">
             <summary>
-            Gets or sets the contour <see cref="T:System.Drawing.Point"/>
+            Gets or sets the contour points
             </summary>
         </member>
         <member name="P:UVtools.Core.EmguCV.EmguContour.IsEmpty">
@@ -1172,6 +1172,34 @@
             <param name="prepend">Optional prepend file name</param>
             <returns></returns>
         </member>
+        <member name="M:UVtools.Core.Extensions.RectangleExtensions.SmallestRectangle(System.Drawing.Rectangle[])">
+            <summary>
+            Gets the smallest rectangle among all rectangles
+            </summary>
+            <param name="rectangles"></param>
+            <returns>The smallest rectangle</returns>
+        </member>
+        <member name="M:UVtools.Core.Extensions.RectangleExtensions.SmallestRectangle(System.Drawing.RectangleF[])">
+            <summary>
+            Gets the smallest rectangle among all rectangles
+            </summary>
+            <param name="rectangles"></param>
+            <returns>The smallest rectangle</returns>
+        </member>
+        <member name="M:UVtools.Core.Extensions.RectangleExtensions.LargestRectangle(System.Drawing.Rectangle[])">
+            <summary>
+            Gets the largest rectangle among all rectangles
+            </summary>
+            <param name="rectangles"></param>
+            <returns>The largest rectangle</returns>
+        </member>
+        <member name="M:UVtools.Core.Extensions.RectangleExtensions.LargestRectangle(System.Drawing.RectangleF[])">
+            <summary>
+            Gets the largest rectangle among all rectangles
+            </summary>
+            <param name="rectangles"></param>
+            <returns>The largest rectangle</returns>
+        </member>
         <member name="M:UVtools.Core.Extensions.SizeExtensions.HaveZero(System.Drawing.Size)">
             <summary>
             Gets if this size have a zero value on width or height
@@ -2102,6 +2130,11 @@
         <member name="T:UVtools.Core.FileFormats.FileFormat">
             <summary>
             Slicer <see cref="T:UVtools.Core.FileFormats.FileFormat"/> representation
+            </summary>
+        </member>
+        <member name="F:UVtools.Core.FileFormats.FileFormat.DisplayFloatPrecision">
+            <summary>
+            Gets the decimal precision for display properties
             </summary>
         </member>
         <member name="T:UVtools.Core.FileFormats.FileFormat.FileFormatType">
@@ -5048,6 +5081,16 @@
         <member name="P:UVtools.Core.Layers.Layer.IsUsingTSMC">
             <summary>
             True if this layer is using TSMC values, otherwise false
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Layers.Layer.Contours">
+            <summary>
+            Gets tree contours cache for this layer, however should call <see cref="M:UVtools.Core.Layers.Layer.GetContours(Emgu.CV.IInputOutputArray)"/> instead with <see cref="P:UVtools.Core.Layers.Layer.LayerMat"/> instance
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.Layers.Layer.GetContours(Emgu.CV.IInputOutputArray)">
+            <summary>
+            Gets tree contours cache for this layer
             </summary>
         </member>
         <member name="M:UVtools.Core.Layers.Layer.ResetParameters">

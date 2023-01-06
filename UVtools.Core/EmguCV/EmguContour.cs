@@ -35,7 +35,7 @@ public class EmguContour : IReadOnlyCollection<Point>, IDisposable, IComparable<
 
     #region Members
 
-    private VectorOfPoint _points = null!;
+    private VectorOfPoint _points;
     private Rectangle? _bounds;
     private RotatedRect? _boundsBestFit;
     private CircleF? _minEnclosingCircle;
@@ -106,7 +106,7 @@ public class EmguContour : IReadOnlyCollection<Point>, IDisposable, IComparable<
             (int)Math.Round(Moments.M01 / Moments.M00));
 
     /// <summary>
-    /// Gets or sets the contour <see cref="Point"/>
+    /// Gets or sets the contour points
     /// </summary>
     public VectorOfPoint Points
     {
@@ -224,7 +224,7 @@ public class EmguContour : IReadOnlyCollection<Point>, IDisposable, IComparable<
     #region Static methods
     public static Point GetCentroid(VectorOfPoint points)
     {
-        if (points is null || points.Length == 0) return EmguExtensions.AnchorCenter;
+        if (points.Length == 0) return EmguExtensions.AnchorCenter;
         using var moments = CvInvoke.Moments(points);
         return moments.M00 == 0 ? EmguExtensions.AnchorCenter :
             new Point(
@@ -234,6 +234,13 @@ public class EmguContour : IReadOnlyCollection<Point>, IDisposable, IComparable<
     #endregion
 
     #region Implementations
+
+    public EmguContour Clone()
+    {
+        var clone = (EmguContour)MemberwiseClone();
+        clone._points = new VectorOfPoint(_points.ToArray());
+        return clone;
+    }
 
     public IEnumerator<Point> GetEnumerator()
     {
@@ -254,8 +261,9 @@ public class EmguContour : IReadOnlyCollection<Point>, IDisposable, IComparable<
 
     public void Dispose()
     {
-        _points?.Dispose();
+        _points.Dispose();
         _moments?.Dispose();
+        _moments = null;
     }
     #endregion
 
@@ -295,6 +303,4 @@ public class EmguContour : IReadOnlyCollection<Point>, IDisposable, IComparable<
         return x._area.CompareTo(y._area);
     }
     #endregion
-
-
 }

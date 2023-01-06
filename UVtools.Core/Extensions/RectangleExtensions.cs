@@ -6,6 +6,7 @@
  *  of this license document, but changing it is not allowed.
  */
 using System.Drawing;
+using System.Linq;
 
 namespace UVtools.Core.Extensions;
 
@@ -24,5 +25,33 @@ public static class RectangleExtensions
     }
 
     public static Rectangle OffsetBy(this Rectangle src, Point position) => src.OffsetBy(position.X, position.Y);
+
+    /// <summary>
+    /// Gets the smallest rectangle among all rectangles
+    /// </summary>
+    /// <param name="rectangles"></param>
+    /// <returns>The smallest rectangle</returns>
+    public static Rectangle SmallestRectangle(params Rectangle[] rectangles) => rectangles.MinBy(rectangle => rectangle.Area());
+
+    /// <summary>
+    /// Gets the smallest rectangle among all rectangles
+    /// </summary>
+    /// <param name="rectangles"></param>
+    /// <returns>The smallest rectangle</returns>
+    public static RectangleF SmallestRectangle(params RectangleF[] rectangles) => rectangles.MinBy(rectangle => rectangle.Area());
+
+    /// <summary>
+    /// Gets the largest rectangle among all rectangles
+    /// </summary>
+    /// <param name="rectangles"></param>
+    /// <returns>The largest rectangle</returns>
+    public static Rectangle LargestRectangle(params Rectangle[] rectangles) => rectangles.MaxBy(rectangle => rectangle.Area());
+
+    /// <summary>
+    /// Gets the largest rectangle among all rectangles
+    /// </summary>
+    /// <param name="rectangles"></param>
+    /// <returns>The largest rectangle</returns>
+    public static RectangleF LargestRectangle(params RectangleF[] rectangles) => rectangles.MaxBy(rectangle => rectangle.Area());
 
 }
