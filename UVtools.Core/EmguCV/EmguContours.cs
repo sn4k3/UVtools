@@ -25,48 +25,42 @@ namespace UVtools.Core.EmguCV;
 /// </summary>
 public class EmguContours : IReadOnlyList<EmguContour>, IDisposable
 {
+    #region Members
     private readonly EmguContour[] _contours;
 
-    public IEnumerator<EmguContour> GetEnumerator()
-    {
-        return ((IEnumerable<EmguContour>)_contours).GetEnumerator();
-    }
+    /// <summary>
+    /// Gets the contours inside <see cref="VectorOfVectorOfPoint"/>
+    /// </summary>
+    public readonly VectorOfVectorOfPoint VectorOfContours;
 
-    IEnumerator IEnumerable.GetEnumerator()
-    {
-        return _contours.GetEnumerator();
-    }
+    /// <summary>
+    /// Gets the contours hierarchy
+    /// </summary>
+    public readonly int[,] Hierarchy = new int[0, 0];
 
-    public int Count => _contours.Length;
+    #endregion
 
-    public readonly int[,] Hierarchy = new int[0,0];
+    #region Properties
+    /// <summary>
+    /// Gets if this collection have any contours
+    /// </summary>
+    public bool IsEmpty => Count == 0;
+    #endregion
 
-
-    public EmguContour this[int index] => _contours[index];
-
-    private EmguContours(int count, int[,] hierarchy)
-    {
-        _contours = new EmguContour[count];
-        Hierarchy = hierarchy;
-    }
-
-    public EmguContours(Point[][] points)
-    {
-        _contours = new EmguContour[points.Length];
-        for (int i = 0; i < points.Length; i++)
-        {
-            _contours[i] = new EmguContour(points[i]);
-        }
-    }
+    #region Constructor
 
     public EmguContours(VectorOfVectorOfPoint vectorOfPointsOfPoints)
     {
-        _contours = new EmguContour[vectorOfPointsOfPoints.Size];
-        for (int i = 0; i < _contours.Length; i++)
+        VectorOfContours = vectorOfPointsOfPoints;
+        _contours = new EmguContour[VectorOfContours.Size];
+        for (int i = 0; i < Count; i++)
         {
-            _contours[i] = new EmguContour(vectorOfPointsOfPoints[i]);
+            _contours[i] = new EmguContour(VectorOfContours[i]);
         }
     }
+
+    public EmguContours(Point[][] points) : this(new VectorOfVectorOfPoint(points))
+    { }
 
     public EmguContours(Point[][] points, int[,] hierarchy) : this(points)
     {
@@ -80,13 +74,41 @@ public class EmguContours : IReadOnlyList<EmguContour>, IDisposable
 
     public EmguContours(IInputOutputArray mat, RetrType mode = RetrType.List, ChainApproxMethod method = ChainApproxMethod.ChainApproxSimple, Point offset = default)
     {
-        using var contours = mat.FindContours(out Hierarchy, mode, method, offset);
-        _contours = new EmguContour[contours.Size];
+        VectorOfContours = mat.FindContours(out Hierarchy, mode, method, offset);
+        _contours = new EmguContour[VectorOfContours.Size];
         for (int i = 0; i < _contours.Length; i++)
         {
-            _contours[i] = new EmguContour(contours[i]);
+            _contours[i] = new EmguContour(VectorOfContours[i]);
         }
     }
+    #endregion
+
+    #region Indexers
+
+    public EmguContour this[sbyte index] => _contours[index];
+    public EmguContour this[byte index] => _contours[index];
+    public EmguContour this[short index] => _contours[index];
+    public EmguContour this[ushort index] => _contours[index];
+    public EmguContour this[int index] => _contours[index];
+    public EmguContour this[uint index] => _contours[index];
+    public EmguContour this[ulong index] => _contours[index];
+    public EmguContour this[long index] => _contours[index];
+
+    #endregion
+
+    #region IReadOnlyList Implementation
+    public IEnumerator<EmguContour> GetEnumerator()
+    {
+        return ((IEnumerable<EmguContour>)_contours).GetEnumerator();
+    }
+
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return _contours.GetEnumerator();
+    }
+
+    public int Count => _contours.Length;
+    #endregion
 
     public (int Index, EmguContour Contour, double Distance)[][] CalculateCentroidDistances(bool includeOwn = false, bool sortByDistance = true)
     {
@@ -118,35 +140,19 @@ public class EmguContours : IReadOnlyList<EmguContour>, IDisposable
 
     public EmguContours Clone()
     {
-        var clone = new EmguContours(_contours.Length, Hierarchy);
-
-        for (int i = 0; i < _contours.Length; i++)
-        {
-            clone._contours[i] = this[i].Clone();
-        }
-
-        return clone;
+        return new EmguContours(VectorOfContours.ToArrayOfArray(), Hierarchy);
     }
 
     public void Dispose()
     {
+        VectorOfContours.Dispose();
         foreach (var contour in _contours)
         {
             contour.Dispose();
         }
     }
 
-
-
-
-
-
-
-
-
-
-
-
+    #region Static methods
     /// <summary>
     /// Gets contours inside a point
     /// </summary>
@@ -402,4 +408,6 @@ public class EmguContours : IReadOnlyList<EmguContour>, IDisposable
     {
         return ContoursIntersectingPixels(contour1, contour2) > 0;
     }
+
+    #endregion
 }

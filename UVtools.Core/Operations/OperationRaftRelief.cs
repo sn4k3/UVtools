@@ -336,7 +336,7 @@ public class OperationRaftRelief : Operation
                 break;
             case RaftReliefTypes.LinkedLines:
             {
-                using var contours = new EmguContours(supportsMatOriginal.FindContours());
+                using var contours = new EmguContours(supportsMatOriginal);
                 using var supportsRedraw = _linkedExternalSupports ? supportsMatOriginal.Clone() : null;
                 using var supportsBrightnessCorrection = _highBrightness < byte.MaxValue ? supportsMat.Clone() : null;
 
@@ -423,7 +423,7 @@ public class OperationRaftRelief : Operation
                     break;
                 case RaftReliefTypes.Tabs:
                 {
-                    using var contours = mat.FindContours(RetrType.External);
+                    using var contours = new EmguContours(mat, RetrType.External);
                     var span = mat.GetDataByteSpan();
 
                     var minX = 10;
@@ -443,10 +443,8 @@ public class OperationRaftRelief : Operation
                     };
 
                     var color = new MCvScalar(_highBrightness);
-
-                    for (var i = 0; i < contours.Size; i++)
+                    foreach(var contour in contours)
                     {
-                        using var contour = new EmguContour(contours[i]);
                         if(contour.Centroid.IsAnyNegative() || contour.Area < 10000) continue;
 
                         for (var dir = 0; dir < directions.Length; dir++)
@@ -473,7 +471,7 @@ public class OperationRaftRelief : Operation
                                         continue;
                                     }
 
-                                    if (CvInvoke.PointPolygonTest(contours[i], new PointF(x, y), false) == 0) // Must be on edge
+                                    if (CvInvoke.PointPolygonTest(contour.Contour, new PointF(x, y), false) == 0) // Must be on edge
                                     {
                                         foundPoint = true;
                                         break;

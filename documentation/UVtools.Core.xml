@@ -137,7 +137,7 @@
             Gets the centroid of the contour
             </summary>
         </member>
-        <member name="P:UVtools.Core.EmguCV.EmguContour.Points">
+        <member name="P:UVtools.Core.EmguCV.EmguContour.Contour">
             <summary>
             Gets or sets the contour points
             </summary>
@@ -165,6 +165,21 @@
             <summary>
             Utility methods for contour handling.  
             Use only with Tree type
+            </summary>
+        </member>
+        <member name="F:UVtools.Core.EmguCV.EmguContours.VectorOfContours">
+            <summary>
+            Gets the contours inside <see cref="T:Emgu.CV.Util.VectorOfVectorOfPoint"/>
+            </summary>
+        </member>
+        <member name="F:UVtools.Core.EmguCV.EmguContours.Hierarchy">
+            <summary>
+            Gets the contours hierarchy
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.EmguCV.EmguContours.IsEmpty">
+            <summary>
+            Gets if this collection have any contours
             </summary>
         </member>
         <member name="M:UVtools.Core.EmguCV.EmguContours.GetContoursInside(Emgu.CV.Util.VectorOfVectorOfPoint,System.Int32[0:,0:],System.Drawing.Point,System.Boolean)">

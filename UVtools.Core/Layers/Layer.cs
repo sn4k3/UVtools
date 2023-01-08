@@ -1041,7 +1041,7 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
             if (_contours is null)
             {
                 using var mat = LayerMat;
-                _contours = new EmguContours(mat);
+                _contours = new EmguContours(mat, RetrType.Tree);
             }
 
             return _contours;
@@ -1053,7 +1053,7 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
     /// </summary>
     public EmguContours GetContours(IInputOutputArray mat)
     {
-        return _contours ??= new EmguContours(mat);
+        return _contours ??= new EmguContours(mat, RetrType.Tree);
     }
 
     #endregion
