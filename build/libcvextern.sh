@@ -126,11 +126,12 @@ if [ ! -d "$directory" ]; then
     fi
 fi
 
-
 echo "- Bulding"
 if [ osVariant == "macOS" ]; then
+	sed -i '' "s/-DBUILD_TIFF:BOOL=TRUE/-DBUILD_TIFF:BOOL=FALSE/g" "$directory/platforms/macos/configure" 2>/dev/null
     "$directory/platforms/macos/configure" $arch $build_package
-else
+else # Linux
+	sed -i "s/-DBUILD_TIFF:BOOL=TRUE/-DBUILD_TIFF:BOOL=FALSE/g" "$directory/platforms/ubuntu/22.04/cmake_configure" 2>/dev/null
     "$directory/platforms/ubuntu/22.04/cmake_configure" $build_package
 fi
 

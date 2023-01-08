@@ -43,6 +43,9 @@ Option"
 
 Set-Location "$libFolder"
 
+Write-Output "Configuring"
+(Get-Content -Path "$buildFile") -replace '-DBUILD_opencv_video:BOOL=FALSE', '-DBUILD_opencv_video:BOOL=FALSE -DWITH_TIFF:BOOL=FALSE -DEMGU_CV_WITH_TIFF:BOOL=FALSE' | Set-Content -Path "$buildFile"
+
 Write-Output "Building"
 cmd.exe /c "$buildFile $buildArgs"
 Write-Output "Completed - Check for errors but also for libcvextern presence on $libFolder\libs\runtimes"
