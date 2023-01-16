@@ -1,7 +1,7 @@
-using System.Timers;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
+using System.Timers;
 using UVtools.Core.Operations;
 using UVtools.WPF.Controls.Tools;
 using UVtools.WPF.Extensions;
@@ -64,7 +64,7 @@ namespace UVtools.WPF.Controls.Calibrators
         {
             using var mat = Operation.GetLayerPreview();
             _previewImage?.Dispose();
-            PreviewImage = mat.ToBitmap();
+            PreviewImage = mat.ToBitmapParallel();
         }
     }
 }

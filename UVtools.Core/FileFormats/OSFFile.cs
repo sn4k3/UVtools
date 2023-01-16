@@ -7,13 +7,13 @@
  */
 
 using BinarySerialization;
+using Emgu.CV;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Threading.Tasks;
-using Emgu.CV;
 using UVtools.Core.Extensions;
 using UVtools.Core.Layers;
 using UVtools.Core.Objects;
@@ -307,8 +307,8 @@ public sealed class OSFFile : FileFormat
 
     #region Properties
 
-    public OSFHeader Header { get; protected internal set; } = new();
-    public OSFSettings Settings { get; protected internal set; } = new();
+    public OSFHeader Header { get; private set; } = new();
+    public OSFSettings Settings { get; private set; } = new();
     public override FileFormatType FileType => FileFormatType.Binary;
 
     public override FileExtension[] FileExtensions { get; } = {

@@ -8,7 +8,6 @@
 
 using Emgu.CV;
 using Emgu.CV.CvEnum;
-using System;
 using System.Threading.Tasks;
 using UVtools.Core.FileFormats;
 

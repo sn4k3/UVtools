@@ -29,7 +29,7 @@ public class RecentFiles : IList<string>
 
     #region Singleton
 
-    private static Lazy<RecentFiles> _instanceHolder =
+    private static readonly Lazy<RecentFiles> _instanceHolder =
         new(() => new RecentFiles());
 
     /// <summary>
@@ -74,8 +74,7 @@ public class RecentFiles : IList<string>
         {
             using var tr = new StreamReader(FilePath);
 
-            string path;
-            while ((path = tr.ReadLine()) is not null)
+            while (tr.ReadLine() is { } path)
             {
                 if(string.IsNullOrWhiteSpace(path)) continue;
 

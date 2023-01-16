@@ -6,13 +6,6 @@
  *  of this license document, but changing it is not allowed.
  */
 // Port from: https://github.com/cyotek/Cyotek.Windows.Forms.ImageBox to AvaloniaUI
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Diagnostics;
-using System.Drawing;
-using System.Runtime.CompilerServices;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
@@ -22,6 +15,12 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Drawing;
+using System.Runtime.CompilerServices;
 using Bitmap = Avalonia.Media.Imaging.Bitmap;
 using Color = Avalonia.Media.Color;
 using Pen = Avalonia.Media.Pen;
@@ -326,9 +325,7 @@ public class AdvancedImageBox : UserControl
         /// <returns>An array containing copies of the elements of the <see cref="ZoomLevelCollection"/>.</returns>
         public int[] ToArray()
         {
-            int[] results;
-
-            results = new int[Count];
+            var results = new int[Count];
             CopyTo(results, 0);
 
             return results;
@@ -1142,7 +1139,7 @@ public class AdvancedImageBox : UserControl
 
         var zoomFactor = ZoomFactor;
         
-        if (HaveTrackerImage && _pointerPosition.X >= 0 && _pointerPosition.Y >= 0)
+        if (HaveTrackerImage && _pointerPosition is {X: >= 0, Y: >= 0})
         {
             var destSize = TrackerImageAutoZoom
                 ? new Size(_trackerImage!.Size.Width * zoomFactor, _trackerImage.Size.Height * zoomFactor)
@@ -2291,7 +2288,7 @@ public class AdvancedImageBox : UserControl
     public Rect GetImageViewPort()
     {
         var viewPortSize = ViewPortSize;
-        if (!IsImageLoaded || (viewPortSize.Width == 0 && viewPortSize.Height == 0)) return Rect.Empty;
+        if (!IsImageLoaded || viewPortSize is {Width: 0, Height: 0}) return Rect.Empty;
 
         double xOffset = 0;
         double yOffset = 0;

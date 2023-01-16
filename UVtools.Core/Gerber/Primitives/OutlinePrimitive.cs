@@ -6,6 +6,9 @@
  *  of this license document, but changing it is not allowed.
  */
 
+using Emgu.CV;
+using Emgu.CV.CvEnum;
+using Emgu.CV.Util;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -13,9 +16,7 @@ using System.Drawing;
 using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
-using Emgu.CV;
-using Emgu.CV.CvEnum;
-using Emgu.CV.Util;
+using UVtools.Core.Extensions;
 
 namespace UVtools.Core.Gerber.Primitives;
 
@@ -65,9 +66,9 @@ public class OutlinePrimitive : Primitive
     public float Rotation { get; set; } = 0;
     #endregion
 
-    protected OutlinePrimitive(GerberDocument document) : base(document) { }
+    protected OutlinePrimitive(GerberFormat document) : base(document) { }
 
-    public OutlinePrimitive(GerberDocument document, string exposureExpression, string[] coordinatesExpression, string rotationExpression) : base(document)
+    public OutlinePrimitive(GerberFormat document, string exposureExpression, string[] coordinatesExpression, string rotationExpression) : base(document)
     {
         ExposureExpression = exposureExpression;
         CoordinatesExpression = coordinatesExpression;
@@ -81,13 +82,14 @@ public class OutlinePrimitive : Primitive
 
         if (Rotation != 0)
         {
-            throw new NotImplementedException($"{Name} primitive with code {Code} have a rotation value of {Rotation} which is not implemented. Open a issue regarding this problem and provide a sample file to be able to implement rotation correctly on this primitive.");
+            //throw new NotImplementedException($"{Name} primitive with code {Code} have a rotation value of {Rotation} which is not implemented. Open a issue regarding this problem and provide a sample file to be able to implement rotation correctly on this primitive.");
         }
 
         var points = new List<Point>();
         for (int i = 0; i < Coordinates.Length-1; i++)
         {
-            var pt = Document.PositionMmToPx(at.X + Coordinates[i].X, at.Y + Coordinates[i].Y);
+            var point = new PointF(at.X + Coordinates[i].X, at.Y + Coordinates[i].Y).Rotate(-Rotation, at);
+            var pt = Document.PositionMmToPx(point);
             if(points.Count > 0 && points[^1] == pt) continue; // Prevent series of duplicates
             points.Add(pt);
         }

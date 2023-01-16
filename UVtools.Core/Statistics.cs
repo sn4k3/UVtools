@@ -16,11 +16,11 @@ public class Statistics
 {
     #region Properties
 
-    public List<string> ImplementedKeys { get; } = new List<string>();
-    public List<string> MissingKeys { get; } = new List<string>();
+    public List<string> ImplementedKeys { get; } = new();
+    public List<string> MissingKeys { get; } = new();
     public ushort TotalKeys => (ushort)(ImplementedKeys.Count + MissingKeys.Count);
 
-    public Stopwatch ExecutionTime { get; } = new Stopwatch();
+    public Stopwatch ExecutionTime { get; } = new();
     #endregion
 
     #region Overrides

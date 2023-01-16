@@ -1,5 +1,5 @@
-﻿using System;
-using Avalonia.Markup.Xaml;
+﻿using Avalonia.Markup.Xaml;
+using System;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Operations;
 using UVtools.WPF.Windows;

@@ -12,7 +12,6 @@ using System;
 using System.ComponentModel;
 using System.IO;
 using System.Threading.Tasks;
-using UVtools.Core.EmguCV;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 

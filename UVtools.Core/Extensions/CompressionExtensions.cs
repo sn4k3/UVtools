@@ -6,11 +6,11 @@
  *  of this license document, but changing it is not allowed.
  */
 
+using CommunityToolkit.HighPerformance;
 using System;
 using System.IO;
 using System.IO.Compression;
 using System.Runtime.CompilerServices;
-using CommunityToolkit.HighPerformance;
 
 namespace UVtools.Core.Extensions;
 

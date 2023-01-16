@@ -305,9 +305,9 @@ public sealed class CXDLPv1File : FileFormat
 
     #region Properties
 
-    public Header HeaderSettings { get; protected internal set; } = new();
-    public SlicerInfo SlicerInfoSettings { get; protected internal set; } = new();
-    public Footer FooterSettings { get; protected internal set; } = new();
+    public Header HeaderSettings { get; private set; } = new();
+    public SlicerInfo SlicerInfoSettings { get; private set; } = new();
+    public Footer FooterSettings { get; private set; } = new();
 
     public override FileFormatType FileType => FileFormatType.Binary;
 

@@ -9,7 +9,6 @@
 using System;
 using System.ComponentModel;
 using System.Text;
-using UVtools.Core.Extensions;
 using UVtools.Core.Operations;
 
 namespace UVtools.Core.Suggestions;
@@ -66,9 +65,15 @@ public sealed class SuggestionWaitTimeAfterCure : Suggestion
                     {
                         foreach (var layer in SlicerFile)
                         {
-                            if (layer.NonZeroPixelCount <= 1) continue; // Ignore empty layers
-                            if ((decimal)layer.WaitTimeAfterCure < _minimumWaitTimeAfterCure ||
-                                (decimal)layer.WaitTimeAfterCure > _maximumWaitTimeAfterCure) return false;
+                            if (layer.IsDummy)
+                            {
+                                if (layer.WaitTimeAfterCure > 0.1) return false;
+                            }
+                            else
+                            {
+                                if ((decimal) layer.WaitTimeAfterCure < _minimumWaitTimeAfterCure ||
+                                    (decimal) layer.WaitTimeAfterCure > _maximumWaitTimeAfterCure) return false;
+                            }
                         }
                     }
 
@@ -87,8 +92,14 @@ public sealed class SuggestionWaitTimeAfterCure : Suggestion
                     {
                         foreach (var layer in SlicerFile)
                         {
-                            if(layer.NonZeroPixelCount <= 1) continue; // Ignore empty layers
-                            if (Math.Abs(layer.WaitTimeAfterCure - CalculateWaitTime(layer.IsBottomLayer, (decimal)layer.ExposureTime)) > 0.1) return false;
+                            if (layer.IsDummy)
+                            {
+                                if (layer.WaitTimeAfterCure > 0.1) return false;
+                            }
+                            else
+                            {
+                                if (Math.Abs(layer.WaitTimeAfterCure - CalculateWaitTime(layer.IsBottomLayer, (decimal)layer.ExposureTime)) > 0.1) return false;
+                            }
                         }
                     }
                     break;
@@ -101,7 +112,7 @@ public sealed class SuggestionWaitTimeAfterCure : Suggestion
     }
 
     public override string Title => "Wait time after cure";
-    public override string Description => "Rest some time after cure the layer and before the lift sequence can be important to allow the layer to cooldown a bit and detach better from the FEP.";
+    public override string Description => "Rest some time after curing the layer and before the lift sequence may allow the resin reaction to settle, harden and cool down a bit to detach more easily from the FEP, then yields less tension on the model, better print quality and easier lift's.";
 
     public override string Message => IsApplied 
         ? $"{GlobalAppliedMessage}: {SlicerFile.BottomWaitTimeAfterCure}/{SlicerFile.WaitTimeAfterCure}s" 
@@ -235,13 +246,12 @@ public sealed class SuggestionWaitTimeAfterCure : Suggestion
         {
             SlicerFile.WaitTimeAfterCure = CalculateWaitTime(false, (decimal)SlicerFile.ExposureTime);
         }
-
+    
         if (SlicerFile.CanUseLayerWaitTimeAfterCure)
         {
             foreach (var layer in SlicerFile)
             {
-                if (layer.NonZeroPixelCount <= 1) continue; // Ignore empty layers
-                layer.WaitTimeAfterCure = CalculateWaitTime(layer.IsBottomLayer, (decimal) layer.ExposureTime);
+                layer.WaitTimeAfterCure = layer.IsDummy ? 0 : CalculateWaitTime(layer.IsBottomLayer, (decimal) layer.ExposureTime);
             }
         }
 
@@ -256,10 +266,12 @@ public sealed class SuggestionWaitTimeAfterCure : Suggestion
             SuggestionWaitTimeAfterCureSetType.Fixed => (float) (isBottomLayer
                 ? _fixedBottomWaitTimeAfterCure
                 : _fixedWaitTimeAfterCure),
-            SuggestionWaitTimeAfterCureSetType.ProportionalExposure => (float) Math.Round(
-                (exposureTime * _proportionalWaitTimeAfterCure / _proportionalExposureTime).Clamp(
+            SuggestionWaitTimeAfterCureSetType.ProportionalExposure => 
+                (float)Math.Clamp(
+                    Math.Round(exposureTime * _proportionalWaitTimeAfterCure / _proportionalExposureTime, 2),
                     isBottomLayer ? _minimumBottomWaitTimeAfterCure : _minimumWaitTimeAfterCure,
-                    isBottomLayer ? _maximumBottomWaitTimeAfterCure : _maximumWaitTimeAfterCure), 2),
+                    isBottomLayer ? _maximumBottomWaitTimeAfterCure : _maximumWaitTimeAfterCure
+                ),
             _ => throw new ArgumentOutOfRangeException()
         };
     }

@@ -1,8 +1,7 @@
-﻿using System;
-using System.IO;
-using Avalonia.Controls;
-using Avalonia.Markup.Xaml;
+﻿using Avalonia.Markup.Xaml;
 using MessageBox.Avalonia.Enums;
+using System;
+using System.IO;
 using UVtools.WPF.Controls;
 using UVtools.WPF.Extensions;
 using UVtools.WPF.Structures;

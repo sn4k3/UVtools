@@ -9,7 +9,6 @@
 using System;
 using System.CommandLine;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;

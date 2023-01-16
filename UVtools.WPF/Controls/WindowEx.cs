@@ -6,14 +6,14 @@
  *  of this license document, but changing it is not allowed.
  */
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Styling;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using UVtools.Core.FileFormats;
 using UVtools.Core.SystemOS;
 using UVtools.WPF.Extensions;

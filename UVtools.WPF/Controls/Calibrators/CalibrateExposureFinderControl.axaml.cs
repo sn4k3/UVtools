@@ -1,12 +1,11 @@
-using System;
-using System.Linq;
-using System.Timers;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using MessageBox.Avalonia.Enums;
-using UVtools.Core.Extensions;
+using System;
+using System.Linq;
+using System.Timers;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Objects;
 using UVtools.Core.Operations;
@@ -20,10 +19,10 @@ public class CalibrateExposureFinderControl : ToolControl
 {
     public OperationCalibrateExposureFinder Operation => BaseOperation as OperationCalibrateExposureFinder;
 
-    private Timer _timer;
+    private readonly Timer _timer;
 
     private Bitmap _previewImage;
-    private DataGrid _exposureTable;
+    private readonly DataGrid _exposureTable;
 
     public Bitmap PreviewImage
     {
@@ -78,7 +77,7 @@ public class CalibrateExposureFinderControl : ToolControl
         _previewImage?.Dispose();
         if (layers is not null)
         {
-            PreviewImage = layers[^1].ToBitmap();
+            PreviewImage = layers[^1].ToBitmapParallel();
             foreach (var layer in layers)
             {
                 layer.Dispose();
@@ -91,7 +90,7 @@ public class CalibrateExposureFinderControl : ToolControl
         var values = Operation.MultipleBrightnessValuesArray.ToList();
         // normal exposure - 255
         //     wanted      -  x
-        byte brightness = (byte)Math.Round(Operation.MultipleBrightnessGenExposureTime * byte.MaxValue / Operation.NormalExposure).Clamp(1, byte.MaxValue);
+        byte brightness = (byte) Math.Clamp(Math.Round(Operation.MultipleBrightnessGenExposureTime * byte.MaxValue / Operation.NormalExposure), 1, byte.MaxValue);
         if (values.Contains(brightness)) return;
         values.Add(brightness);
         values.Sort((b, b1) => b1.CompareTo(b));

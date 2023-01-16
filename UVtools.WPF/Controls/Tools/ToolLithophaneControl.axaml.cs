@@ -1,8 +1,8 @@
-using System.Timers;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
+using System.Timers;
 using UVtools.Core.Operations;
 using UVtools.WPF.Extensions;
 using UVtools.WPF.Windows;
@@ -62,7 +62,7 @@ namespace UVtools.WPF.Controls.Tools
         {
             using var mat = Operation.GetTargetMat();
             _previewImage?.Dispose();
-            PreviewImage = mat?.ToBitmap();
+            PreviewImage = mat?.ToBitmapParallel();
         }
 
         public async void SelectFile()

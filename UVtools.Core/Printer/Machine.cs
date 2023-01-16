@@ -365,7 +365,6 @@ namespace UVtools.Core.Printer
                 }
 
                 using var reader = new StreamReader(file);
-                string? line;
 
                 var machine = new Machine
                 {
@@ -373,7 +372,7 @@ namespace UVtools.Core.Printer
                     Model = split[1]
                 };
 
-                while ((line = reader.ReadLine()) is not null)
+                while (reader.ReadLine() is { } line)
                 {
                     var keyValue = line.Split('=', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
                     if(keyValue.Length < 2) continue;

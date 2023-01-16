@@ -6,10 +6,10 @@
  *  of this license document, but changing it is not allowed.
  */
 
-using System;
-using System.Drawing;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
+using System;
+using System.Drawing;
 using UVtools.Core.Extensions;
 using UVtools.Core.Operations;
 using UVtools.Core.Scripting;
@@ -85,13 +85,11 @@ public class ScriptTestPerLayerSettingsSample : ScriptGlobals
         // Exercise for you: Do eyebrows
         var mats = EmguExtensions.InitMats(layerCount, SlicerFile.Resolution); // Allocate x images with file resolution
 
-        int x, y;
         int xCenter = (int) (SlicerFile.ResolutionX / 2);
         //int yCenter = (int) (SlicerFile.ResolutionY / 2);
-
         // Do the left eye
-        x = xCenter - noseThickness/2 - faceSpacing - eyeDiameter/2;
-        y = faceSpacing;
+        var x = xCenter - noseThickness/2 - faceSpacing - eyeDiameter/2;
+        int y = faceSpacing;
         CvInvoke.Circle(mats[0], new Point(x, y), eyeDiameter/2, EmguExtensions.WhiteColor, -1, lineType);
         CvInvoke.Circle(mats[1], new Point(x, y), eyeDiameter/2, EmguExtensions.WhiteColor, -1, lineType);
         Progress++;

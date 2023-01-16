@@ -6,10 +6,10 @@
  *  of this license document, but changing it is not allowed.
  */
 
-using System.Drawing;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
+using System.Drawing;
 
 namespace UVtools.Core.Gerber.Apertures;
 
@@ -20,9 +20,9 @@ public class CircleAperture : Aperture
     #endregion
 
     #region Constructor
-    public CircleAperture(GerberDocument document) : base(document, "Circle") { }
+    public CircleAperture(GerberFormat document) : base(document, "Circle") { }
 
-    public CircleAperture(GerberDocument document, int index, double diameter) : base(document, index, "Circle")
+    public CircleAperture(GerberFormat document, int index, double diameter) : base(document, index, "Circle")
     {
         Diameter = document.GetMillimeters(diameter);
     }

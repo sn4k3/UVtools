@@ -6,8 +6,8 @@
  *  of this license document, but changing it is not allowed.
  */
 
-using System;
 using Avalonia.Data.Converters;
+using System;
 using UVtools.Core.Extensions;
 
 namespace UVtools.WPF.Converters;

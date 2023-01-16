@@ -6,9 +6,9 @@
  *  of this license document, but changing it is not allowed.
  */
 
-using System.Drawing;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
+using System.Drawing;
 
 namespace UVtools.Core.Gerber.Primitives;
 
@@ -33,12 +33,12 @@ public class CommentPrimitive : Primitive
     public string Comment { get; set; } = string.Empty;
     #endregion
 
-    public CommentPrimitive(GerberDocument document) : base(document)
+    public CommentPrimitive(GerberFormat document) : base(document)
     {
         IsParsed = true;
     }
 
-    public CommentPrimitive(GerberDocument document, string comment) : base(document)
+    public CommentPrimitive(GerberFormat document, string comment) : base(document)
     {
         Comment = comment;
         IsParsed = true;

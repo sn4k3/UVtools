@@ -1,11 +1,35 @@
 # Changelog
 
-## 02/01/2022 - v3.10.0
+## 15/01/2023 - v3.11.0
+
+- **UI:**
+  - (Improvement) Layer navigation load time by parallel `Mat` to `Bitmap` conversion
+  - (Improvement) Allow to show exceptions without the stack trace and detailed trigger action by using the `MessageExceiption` (#644)
+  - (Improvement) Allow progress to have and display a detailed log (#644)
+  - (Improvement) Convert format to another with multiple versions will now only show the possible versions for the extension
+- **Suggestion - Wait time before cure:**
+  - (Improvement) Set the first wait time based on first valid layer mass rather than use the fixed limit
+  - (Improvement) Set zero time to empty and dummy layers
+  - (Improvement) When creating the dummy layer also increment the bottom layer count as the created layer count as one
+- **PCB Exposure:**
+  - (Add) Excellon Drill Format (drl) to cut off holes (Implementation may lack some advanced features, please confirm the result) (#646)
+  - (Fix) Arc (G03) with negative offsets (I-/J-) was not drawing the shape correctly
+  - (Fix) Implement the rotation for the outline primitive (#645)
+- **File formats:**
+  - (Improvement) Formats now sanitize the selected version before encode given the file extension, if version is out of range it will force the last known version
+  - (Fix) CBDDLP: Remove a table from the file that might cause layer corruption
+- (Add) Operations - `AfterCompleteReport` property: Gets or sets an report to show to the user after complete the operation with success
+- (Improvement) Suggestion - Wait time after cure: Set zero time to empty and dummy layers
+- (Improvement) Slight improvement on the contour intersection check, yields better performance on resin and suction cup detection
+- (Improvement) Allow to trigger message boxes from operations and scripts (#644)
+- (Upgrade) .NET from 6.0.12 to 6.0.13
+
+## 02/01/2023 - v3.10.0
 
 - (Add) File format: Anet N7 (#635)
 - (Add) PrusaSlicer Printer: Anet N7 (#635)
 - (Improvement) Each layer can now be aware of it own resolution
-- (Improvement) Better set of file resolution from layers when using a compression codec other than png
+- (Improvement) Better set of file resolution from layers when using a compression codec other than PNG
 - (Fix) Anet N4 printer reset on latest firmware (#633)
 - (Fix) PrusaSlicer printers: Change thumbnails resolution to match file preview resolution (Fix stretch images)
 

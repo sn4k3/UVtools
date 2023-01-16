@@ -10,7 +10,6 @@ using System;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
-using UVtools.Core.Extensions;
 using UVtools.Core.Layers;
 using UVtools.Core.Operations;
 
@@ -41,26 +40,26 @@ public sealed class SuggestionWaitTimeBeforeCure : Suggestion
     #endregion
 
     #region Members
-    private SuggestionWaitTimeBeforeCureSetType _setType = SuggestionWaitTimeBeforeCureSetType.Fixed;
+    private SuggestionWaitTimeBeforeCureSetType _setType = SuggestionWaitTimeBeforeCureSetType.ProportionalLayerArea;
     
     private decimal _bottomHeight = 1;
-    private decimal _fixedBottomWaitTimeBeforeCure = 20;
+    private decimal _fixedBottomWaitTimeBeforeCure = 15;
     private decimal _fixedWaitTimeBeforeCure = 2;
     private byte _waitTimeBeforeCureTransitionLayerCount = 8;
-    private decimal _proportionalBottomWaitTimeBeforeCure = 20;
-    private decimal _proportionalWaitTimeBeforeCure = 2;
-    private uint _proportionalBottomLayerPixels = 1000000;
-    private uint _proportionalLayerPixels = 1000000;
-    private uint _proportionalBottomLayerArea = 1000;
-    private uint _proportionalLayerArea = 1000;
+    private decimal _proportionalBottomWaitTimeBeforeCure = 30;
+    private decimal _proportionalWaitTimeBeforeCure = 10;
+    private uint _proportionalBottomLayerPixels = 5000000;
+    private uint _proportionalLayerPixels = 5000000;
+    private uint _proportionalBottomLayerArea = 10000;
+    private uint _proportionalLayerArea = 10000;
     private decimal _proportionalBottomWaitTimeBeforeCureMaximumDifference = 1;
     private decimal _proportionalWaitTimeBeforeCureMaximumDifference = 1;
     private SuggestionWaitTimeBeforeCureProportionalCalculateMassFrom _proportionalCalculateMassFrom = SuggestionWaitTimeBeforeCureProportionalCalculateMassFrom.Previous;
     private decimal _proportionalMassRelativeHeight = 0.2m;
-    private decimal _minimumBottomWaitTimeBeforeCure = 5;
+    private decimal _minimumBottomWaitTimeBeforeCure = 10;
     private decimal _minimumWaitTimeBeforeCure = 1;
-    private decimal _maximumBottomWaitTimeBeforeCure = 120;
-    private decimal _maximumWaitTimeBeforeCure = 12;
+    private decimal _maximumBottomWaitTimeBeforeCure = 30;
+    private decimal _maximumWaitTimeBeforeCure = 4;
     private bool _createEmptyFirstLayer = true;
     
     #endregion
@@ -102,9 +101,15 @@ public sealed class SuggestionWaitTimeBeforeCure : Suggestion
                     {
                         foreach (var layer in SlicerFile)
                         {
-                            if (layer.NonZeroPixelCount <= 1) continue; // Ignore empty layers
-                            var waitTime = (decimal)layer.GetWaitTimeBeforeCure();
-                            if (waitTime < _minimumWaitTimeBeforeCure || waitTime > _maximumWaitTimeBeforeCure) return false;
+                            if (layer.IsDummy)
+                            {
+                                if (layer.GetWaitTimeBeforeCure() > 0.1) return false;
+                            }
+                            else
+                            {
+                                var waitTime = (decimal)layer.GetWaitTimeBeforeCure();
+                                if (waitTime < _minimumWaitTimeBeforeCure || waitTime > _maximumWaitTimeBeforeCure) return false;
+                            }
                         }
                     }
 
@@ -123,8 +128,14 @@ public sealed class SuggestionWaitTimeBeforeCure : Suggestion
                     {
                         foreach (var layer in SlicerFile)
                         {
-                            if (layer.NonZeroPixelCount <= 1) continue; // Ignore empty layers
-                            if (Math.Abs(layer.GetWaitTimeBeforeCure() - CalculateWaitTime(layer)) > 0.1) return false;
+                            if (layer.IsDummy)
+                            {
+                                if (layer.GetWaitTimeBeforeCure() > 0.1) return false;
+                            }
+                            else
+                            {
+                                if (Math.Abs(layer.GetWaitTimeBeforeCure() - CalculateWaitTime(layer)) > 0.1) return false;
+                            }
                         }
                     }
                     break;
@@ -383,28 +394,30 @@ public sealed class SuggestionWaitTimeBeforeCure : Suggestion
 
     protected override bool ExecuteInternally(OperationProgress progress)
     {
-        if (SlicerFile.CanUseBottomWaitTimeAfterCure || SlicerFile.CanUseBottomLightOffDelay)
+        SlicerFile.SuppressRebuildPropertiesWork(() =>
         {
-            SlicerFile.SetBottomWaitTimeBeforeCureOrLightOffDelay(CalculateWaitTime(true));
-        }
-        if (SlicerFile.CanUseWaitTimeAfterCure || SlicerFile.CanUseLightOffDelay)
-        {
-            SlicerFile.SetNormalWaitTimeBeforeCureOrLightOffDelay(CalculateWaitTime(false));
-        }
-
+            if (SlicerFile.CanUseBottomWaitTimeAfterCure || SlicerFile.CanUseBottomLightOffDelay)
+            {
+                SlicerFile.SetBottomWaitTimeBeforeCureOrLightOffDelay(CalculateWaitTime(true));
+            }
+            if (SlicerFile.CanUseWaitTimeAfterCure || SlicerFile.CanUseLightOffDelay)
+            {
+                SlicerFile.SetNormalWaitTimeBeforeCureOrLightOffDelay(CalculateWaitTime(false));
+            }
+        });
+        
         if (SlicerFile.CanUseLayerWaitTimeAfterCure || SlicerFile.CanUseLayerLightOffDelay)
         {
             foreach (var layer in SlicerFile)
             {
-                if (layer.NonZeroPixelCount <= 1) continue; // Ignore empty layers
                 layer.SetWaitTimeBeforeCureOrLightOffDelay(CalculateWaitTime(layer));
             }
         }
 
-        if (_createEmptyFirstLayer && SlicerFile.CanUseLayerPositionZ && !SlicerFile.SupportsGCode)
+        if (_createEmptyFirstLayer && SlicerFile is {CanUseLayerPositionZ: true, SupportsGCode: false})
         {
             var firstLayer = SlicerFile.FirstLayer!;
-            if (firstLayer.NonZeroPixelCount > 1) // First layer is not blank as it seems, lets create one
+            if (!firstLayer.IsDummy) // First layer is not blank as it seems, lets create one
             {
                 firstLayer = firstLayer.Clone();
                 using var mat = SlicerFile.CreateMatWithDummyPixel();
@@ -413,9 +426,16 @@ public sealed class SuggestionWaitTimeBeforeCure : Suggestion
                 //firstLayer.LiftHeightTotal = SlicerFile.SupportsGCode ? 0 : 0.1f;
                 SlicerFile.FirstLayer!.LiftHeightTotal = SlicerFile.SupportsGCode ? 0 : 0.1f; // Already on position, try to not lift
                 firstLayer.SetNoDelays();
-                SlicerFile.SuppressRebuildPropertiesWork(() => { SlicerFile.Prepend(firstLayer); });
+                SlicerFile.SuppressRebuildPropertiesWork(() =>
+                {
+                    if (SlicerFile.BottomLayerCount is > 0 and <= 7)
+                    {
+                        // Increase bottom layer count as dummy layer will count as one but constrain to a maximum
+                        SlicerFile.BottomLayerCount++;
+                    }
+                    SlicerFile.Prepend(firstLayer);
+                });
             }
-
         }
 
         return true;
@@ -455,7 +475,7 @@ public sealed class SuggestionWaitTimeBeforeCure : Suggestion
             return (float)(isBottomLayer ? _fixedBottomWaitTimeBeforeCure : _fixedWaitTimeBeforeCure);
         }
 
-        if (layer.NonZeroPixelCount <= 1) return 0; // Empty layer, don't need wait time
+        if (layer.IsDummy) return 0; // Empty layer or not exposed, don't need wait time
 
         float mass = 0;
         if (layer.Index > 0 && _proportionalCalculateMassFrom != SuggestionWaitTimeBeforeCureProportionalCalculateMassFrom.Previous && _proportionalMassRelativeHeight > 0)
@@ -464,11 +484,11 @@ public sealed class SuggestionWaitTimeBeforeCure : Suggestion
             //if (previousLayer is not null) layer = previousLayer;
             uint count = 0;
 
-            Layer? previousLayer = layer;
+            var previousLayer = layer;
 
             while ((previousLayer = previousLayer!.PreviousLayer) is not null && (layer.PositionZ - previousLayer.PositionZ) <= (float)_proportionalMassRelativeHeight)
             {
-                if(previousLayer.NonZeroPixelCount < 2) continue; // Skip empty layers
+                if(previousLayer.IsDummy) continue; // Skip empty or not exposed layers
 
                 count++;
                 switch (_proportionalCalculateMassFrom)
@@ -496,8 +516,8 @@ public sealed class SuggestionWaitTimeBeforeCure : Suggestion
 
         if (mass <= 0)
         {
-            var previousLayer = layer.GetPreviousLayerWithAtLeastPixelCountOf(2); // Skip all previous empty layer
-            if (previousLayer is null)
+            var previousLayer = layer.GetPreviousLayerWithAtLeastPixelCountOf(2) ?? layer.GetNextLayerWithAtLeastPixelCountOf(2); // Skip all empty layers
+            if (previousLayer is null) // No parent layer to calculate from, set to fixed values
             {
                 return isBottomLayer ? (float)_fixedBottomWaitTimeBeforeCure : (float)_fixedWaitTimeBeforeCure;
             }
@@ -524,7 +544,7 @@ public sealed class SuggestionWaitTimeBeforeCure : Suggestion
                 var previousLayer = layer.GetPreviousLayerWithAtLeastPixelCountOf(2);
                 if(previousLayer is not null)
                 {
-                    value = value.Clamp(
+                    value = Math.Clamp(value,
                         Math.Max(0, previousLayer.WaitTimeBeforeCure - (float)_proportionalBottomWaitTimeBeforeCureMaximumDifference),
                         previousLayer.WaitTimeBeforeCure + (float)_proportionalBottomWaitTimeBeforeCureMaximumDifference);
                 }
@@ -537,19 +557,19 @@ public sealed class SuggestionWaitTimeBeforeCure : Suggestion
                 var previousLayer = layer.GetPreviousLayerWithAtLeastPixelCountOf(2);
                 if (previousLayer is not null)
                 {
-                    value = value.Clamp(
+                    value = Math.Clamp(value,
                         Math.Max(0, previousLayer.WaitTimeBeforeCure - (float)_proportionalWaitTimeBeforeCureMaximumDifference),
                         previousLayer.WaitTimeBeforeCure + (float)_proportionalWaitTimeBeforeCureMaximumDifference);
                 }
             }
         }
 
-        return (float)Math.Round((decimal)value, 2).Clamp(
+        return (float)Math.Clamp(Math.Round((decimal)value, 2),
             isBottomLayer ? _minimumBottomWaitTimeBeforeCure : _minimumWaitTimeBeforeCure,
             isBottomLayer ? _maximumBottomWaitTimeBeforeCure : _maximumWaitTimeBeforeCure);
     }
 
-    public float CalculateWaitTime(Layer layer) => CalculateWaitTime(false, layer);
+    public float CalculateWaitTime(Layer layer) => layer.IsDummy ? 0 : CalculateWaitTime(false, layer);
 
     #endregion
 }

@@ -144,8 +144,8 @@ public sealed class GR1File : FileFormat
 
     #region Properties
 
-    public Header HeaderSettings { get; protected internal set; } = new();
-    public SlicerInfo SlicerInfoSettings { get; protected internal set; } = new();
+    public Header HeaderSettings { get; private set; } = new();
+    public SlicerInfo SlicerInfoSettings { get; private set; } = new();
     public override FileFormatType FileType => FileFormatType.Binary;
 
     public override FileExtension[] FileExtensions { get; } = {

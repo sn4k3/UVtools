@@ -1,8 +1,6 @@
-using System.Collections.Generic;
-using System.IO;
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
+using System.IO;
 using UVtools.Core.Operations;
 
 namespace UVtools.WPF.Controls.Tools;

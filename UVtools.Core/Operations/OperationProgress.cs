@@ -8,7 +8,6 @@
 using System;
 using System.Diagnostics;
 using System.Threading;
-using UVtools.Core.Extensions;
 using UVtools.Core.Objects;
 
 namespace UVtools.Core.Operations;
@@ -45,7 +44,8 @@ public sealed class OperationProgress : BindableBase
     private string _itemName = "Initializing";
     private uint _processedItems;
     private uint _itemCount;
-        
+    private string _log = string.Empty;
+
 
     public OperationProgress()
     {
@@ -72,7 +72,7 @@ public sealed class OperationProgress : BindableBase
         get
         {
             if (!_canCancel) return _canCancel;
-            return !Token.IsCancellationRequested && Token.CanBeCanceled && _canCancel;
+            return Token is {IsCancellationRequested: false, CanBeCanceled: true} && _canCancel;
         }
         set => RaiseAndSetIfChanged(ref _canCancel, value);
     }
@@ -133,6 +133,15 @@ public sealed class OperationProgress : BindableBase
     }
 
     /// <summary>
+    /// Detailed log to show below the progress bar
+    /// </summary>
+    public string Log
+    {
+        get => _log;
+        set => RaiseAndSetIfChanged(ref _log, value);
+    }
+
+    /// <summary>
     /// Gets or sets an tag
     /// </summary>
     public object? Tag { get; set; }
@@ -151,7 +160,7 @@ public sealed class OperationProgress : BindableBase
     /// <summary>
     /// Gets the progress from 0 to 100%
     /// </summary>
-    public double ProgressPercent => _itemCount == 0 ? 0 : Math.Round(_processedItems * 100.0 / _itemCount, 2).Clamp(0, 100);
+    public double ProgressPercent => _itemCount == 0 ? 0 : Math.Clamp(Math.Round(_processedItems * 100.0 / _itemCount, 2), 0, 100);
 
     public static OperationProgress operator +(OperationProgress progress, uint value)
     {
@@ -178,8 +187,9 @@ public sealed class OperationProgress : BindableBase
         ItemName = "Initializing";
         ItemCount = 0;
         ProcessedItems = 0;
+        Log = string.Empty;
 
-        TokenSource = new();
+        TokenSource = new CancellationTokenSource();
         RaisePropertyChanged(nameof(CanCancel));
     }
 

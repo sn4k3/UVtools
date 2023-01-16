@@ -1,4 +1,3 @@
-using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using UVtools.Core.Operations;
 

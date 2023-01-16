@@ -597,14 +597,9 @@ public sealed class FDGFile : FileFormat
             }
 
 
-            if (Parent!.HeaderSettings.EncryptionKey > 0)
-            {
-                EncodedRle = LayerRleCrypt(Parent.HeaderSettings.EncryptionKey, layerIndex, rawData);
-            }
-            else
-            {
-                EncodedRle = rawData.ToArray();
-            }
+            EncodedRle = Parent!.HeaderSettings.EncryptionKey > 0 
+                ? LayerRleCrypt(Parent.HeaderSettings.EncryptionKey, layerIndex, rawData) 
+                : rawData.ToArray();
 
             DataSize = (uint) EncodedRle.Length;
         }
@@ -620,9 +615,9 @@ public sealed class FDGFile : FileFormat
 
     #region Properties
 
-    public Header HeaderSettings { get; protected internal set; } = new Header();
+    public Header HeaderSettings { get; private set; } = new();
 
-    public Preview[] Previews { get; protected internal set; }
+    public Preview[] Previews { get; private set; }
 
     public LayerDef[] LayersDefinitions { get; private set; } = null!;
 
@@ -722,7 +717,7 @@ public sealed class FDGFile : FileFormat
     public override byte AntiAliasing
     {
         get => (byte) HeaderSettings.AntiAliasLevelInfo;
-        set => base.AntiAliasing = (byte)(HeaderSettings.AntiAliasLevelInfo = value.Clamp(1, 16));
+        set => base.AntiAliasing = (byte)(HeaderSettings.AntiAliasLevelInfo = Math.Clamp(value, 1u, 16u));
     }
 
     public override float LayerHeight
@@ -1059,7 +1054,7 @@ public sealed class FDGFile : FileFormat
             progress++;
         }
 
-        if (HeaderSettings.MachineNameAddress > 0 && HeaderSettings.MachineNameSize > 0)
+        if (HeaderSettings is {MachineNameAddress: > 0, MachineNameSize: > 0})
         {
             inputFile.Seek(HeaderSettings.MachineNameAddress, SeekOrigin.Begin);
             var buffer = new byte[HeaderSettings.MachineNameSize];

@@ -324,7 +324,7 @@ public sealed class VDTFile : FileFormat
     {
         get
         {
-            if (ManifestFile.Machine.XMirror && ManifestFile.Machine.YMirror) return FlipDirection.Both;
+            if (ManifestFile.Machine is {XMirror: true, YMirror: true}) return FlipDirection.Both;
             if (ManifestFile.Machine.XMirror) return FlipDirection.Horizontally;
             if (ManifestFile.Machine.YMirror) return FlipDirection.Vertically;
             return FlipDirection.None;
@@ -340,7 +340,7 @@ public sealed class VDTFile : FileFormat
     public override byte AntiAliasing
     {
         get => ManifestFile.AdvancedParameters.AntialasingLevel;
-        set => base.AntiAliasing = ManifestFile.AdvancedParameters.AntialasingLevel = value.Clamp(1, 16);
+        set => base.AntiAliasing = ManifestFile.AdvancedParameters.AntialasingLevel = Math.Clamp(value, (byte)1, (byte)16);
     }
 
     public override float LayerHeight

@@ -1,8 +1,7 @@
-using System.Collections.Generic;
-using System.IO;
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
+using System.Collections.Generic;
+using System.IO;
 using UVtools.Core.MeshFormats;
 using UVtools.Core.Operations;
 

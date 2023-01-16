@@ -6,9 +6,9 @@
  *  of this license document, but changing it is not allowed.
  */
 
+using Avalonia.Threading;
 using System;
 using System.Timers;
-using Avalonia.Threading;
 using UVtools.Core.Operations;
 using UVtools.WPF.Structures;
 

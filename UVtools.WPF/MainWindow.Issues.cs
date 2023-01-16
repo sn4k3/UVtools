@@ -5,13 +5,6 @@
  *  Everyone is permitted to copy and distribute verbatim copies
  *  of this license document, but changing it is not allowed.
  */
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
@@ -22,7 +15,14 @@ using Avalonia.Threading;
 using Emgu.CV;
 using Emgu.CV.Util;
 using MessageBox.Avalonia.Enums;
-using UVtools.Core; 
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+using UVtools.Core;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Layers;

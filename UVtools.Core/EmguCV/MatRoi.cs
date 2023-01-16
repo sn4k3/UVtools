@@ -7,9 +7,9 @@
  */
 
 
+using Emgu.CV;
 using System;
 using System.Drawing;
-using Emgu.CV;
 using UVtools.Core.Extensions;
 
 namespace UVtools.Core.EmguCV;

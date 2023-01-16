@@ -67,7 +67,7 @@ public class OperationTimelapse : Operation
 
     public override string? ValidateSpawn()
     {
-        if(!SlicerFile.CanUseLayerPositionZ && !SlicerFile.CanUseLayerLiftHeight)
+        if(SlicerFile is {CanUseLayerPositionZ: false, CanUseLayerLiftHeight: false})
         {
             return NotSupportedMessage;
         }

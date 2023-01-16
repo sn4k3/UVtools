@@ -1,5 +1,4 @@
-﻿using Avalonia.Controls;
-using Avalonia.Markup.Xaml;
+﻿using Avalonia.Markup.Xaml;
 using UVtools.Core.Operations;
 
 namespace UVtools.WPF.Controls.Tools;

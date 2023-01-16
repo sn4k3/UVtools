@@ -348,8 +348,7 @@ public sealed class OperationLayerImport : Operation
                             if (y + fileFormatBoundingRectangle.Height >= SlicerFile.ResolutionY)
                                 continue;
 
-                            roiRectangle = new Rectangle(x, y, fileFormatBoundingRectangle.Width,
-                                fileFormatBoundingRectangle.Height);
+                            roiRectangle = fileFormatBoundingRectangle with {X = x, Y = y};
                         }
 
                         if (_extendBeyondLayerCount)

@@ -7,13 +7,11 @@
  */
 
 using Emgu.CV;
-using System;
+using Emgu.CV.CvEnum;
 using System.Drawing;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
-using Emgu.CV.CvEnum;
-using Emgu.CV.DepthAI;
 using UVtools.Core.FileFormats;
 
 namespace UVtools.Core.Operations;
@@ -78,7 +76,7 @@ public class OperationMask : Operation
     public void LoadFromFile(string filePath, bool invertMask = false, Size maskSize = default)
     {
         Mask = CvInvoke.Imread(filePath, ImreadModes.Grayscale);
-        if (maskSize.Width > 0 && maskSize.Height > 0 && Mask.Size != maskSize)
+        if (maskSize is {Width: > 0, Height: > 0} && Mask.Size != maskSize)
         {
             CvInvoke.Resize(Mask, Mask, maskSize);
         }

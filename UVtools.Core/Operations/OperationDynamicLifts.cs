@@ -306,13 +306,13 @@ public sealed class OperationDynamicLifts : Operation
                 switch (_setMethod)
                 {
                     case DynamicLiftsSetMethod.Traditional:
-                        liftHeight = (_largestBottomLiftHeight * calculateLayer.NonZeroPixelCount / maxBottomPixels).Clamp(_smallestBottomLiftHeight, _largestBottomLiftHeight);
-                        liftSpeed = (_fastestBottomLiftSpeed - (_fastestBottomLiftSpeed * calculateLayer.NonZeroPixelCount / maxBottomPixels)).Clamp(_slowestBottomLiftSpeed, _fastestBottomLiftSpeed);
+                        liftHeight = Math.Clamp(_largestBottomLiftHeight * calculateLayer.NonZeroPixelCount / maxBottomPixels, _smallestBottomLiftHeight, _largestBottomLiftHeight);
+                        liftSpeed = Math.Clamp(_fastestBottomLiftSpeed - (_fastestBottomLiftSpeed * calculateLayer.NonZeroPixelCount / maxBottomPixels), _slowestBottomLiftSpeed, _fastestBottomLiftSpeed);
                         break;
                     case DynamicLiftsSetMethod.FullRange:
                         var pixelRatio = (calculateLayer.NonZeroPixelCount - minBottomPixels) / (float)(maxBottomPixels - minBottomPixels); // pixel_ratio is between 0 and 1
-                        liftHeight = (_smallestBottomLiftHeight + ((_largestBottomLiftHeight - _smallestBottomLiftHeight) * pixelRatio)).Clamp(_smallestBottomLiftHeight, _largestBottomLiftHeight);
-                        liftSpeed = (_fastestBottomLiftSpeed - ((_fastestBottomLiftSpeed - _slowestBottomLiftSpeed) * pixelRatio)).Clamp(_slowestBottomLiftSpeed, _fastestBottomLiftSpeed);
+                        liftHeight = Math.Clamp(_smallestBottomLiftHeight + (_largestBottomLiftHeight - _smallestBottomLiftHeight) * pixelRatio, _smallestBottomLiftHeight, _largestBottomLiftHeight);
+                        liftSpeed = Math.Clamp(_fastestBottomLiftSpeed - (_fastestBottomLiftSpeed - _slowestBottomLiftSpeed) * pixelRatio, _slowestBottomLiftSpeed, _fastestBottomLiftSpeed);
                         break;
                     default:
                         throw new NotImplementedException(nameof(SetMethod));
@@ -324,13 +324,13 @@ public sealed class OperationDynamicLifts : Operation
                 switch (_setMethod)
                 {
                     case DynamicLiftsSetMethod.Traditional:
-                        liftHeight = (_largestLiftHeight * calculateLayer.NonZeroPixelCount / maxNormalPixels).Clamp(_smallestLiftHeight, _largestLiftHeight);
-                        liftSpeed = (_fastestLiftSpeed - (_fastestLiftSpeed * calculateLayer.NonZeroPixelCount / maxNormalPixels)).Clamp(_slowestLiftSpeed, _fastestLiftSpeed);
+                        liftHeight = Math.Clamp(_largestLiftHeight * calculateLayer.NonZeroPixelCount / maxNormalPixels, _smallestLiftHeight, _largestLiftHeight);
+                        liftSpeed = Math.Clamp(_fastestLiftSpeed - _fastestLiftSpeed * calculateLayer.NonZeroPixelCount / maxNormalPixels, _slowestLiftSpeed, _fastestLiftSpeed);
                         break;
                     case DynamicLiftsSetMethod.FullRange:
                         var pixelRatio = (calculateLayer.NonZeroPixelCount - minNormalPixels) / (float)(maxNormalPixels - minNormalPixels); // pixel_ratio is between 0 and 1
-                        liftHeight = (_smallestLiftHeight + ((_largestLiftHeight - _smallestLiftHeight) * pixelRatio)).Clamp(_smallestLiftHeight, _largestLiftHeight);
-                        liftSpeed = (_fastestLiftSpeed - ((_fastestLiftSpeed - _slowestLiftSpeed) * pixelRatio)).Clamp(_slowestLiftSpeed, _fastestLiftSpeed);
+                        liftHeight = Math.Clamp(_smallestLiftHeight + (_largestLiftHeight - _smallestLiftHeight) * pixelRatio, _smallestLiftHeight, _largestLiftHeight);
+                        liftSpeed =  Math.Clamp(_fastestLiftSpeed - (_fastestLiftSpeed - _slowestLiftSpeed) * pixelRatio, _slowestLiftSpeed, _fastestLiftSpeed);
                         break;
                     default:
                         throw new NotImplementedException(nameof(SetMethod));

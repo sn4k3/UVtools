@@ -252,9 +252,9 @@ public sealed class FlashForgeSVGXFile : FileFormat
 
     #region Properties
 
-    public Header HeaderSettings { get; protected internal set; } = new();
+    public Header HeaderSettings { get; private set; } = new();
 
-    public FlashForgeSVGXSvg SVGDocument { get; protected internal set; } = new();
+    public FlashForgeSVGXSvg SVGDocument { get; private set; } = new();
 
     public override FileFormatType FileType => FileFormatType.Binary;
 

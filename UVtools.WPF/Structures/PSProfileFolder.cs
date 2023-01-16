@@ -1,10 +1,10 @@
-﻿using System;
+﻿using Avalonia.Controls;
+using Avalonia.Media;
+using System;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Text;
-using Avalonia.Controls;
-using Avalonia.Media;
 using UVtools.Core.Objects;
 
 namespace UVtools.WPF.Structures;

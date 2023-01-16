@@ -1,8 +1,8 @@
-﻿using System.Timers;
-using Avalonia.Markup.Xaml;
+﻿using Avalonia.Markup.Xaml;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using MessageBox.Avalonia.Enums;
+using System.Timers;
 using UVtools.Core.Operations;
 using UVtools.WPF.Controls.Tools;
 using UVtools.WPF.Extensions;
@@ -80,7 +80,7 @@ public class CalibrateXYZAccuracyControl : ToolControl
     {
         var layers = Operation.GetLayers();
         _previewImage?.Dispose();
-        PreviewImage = layers[1].ToBitmap();
+        PreviewImage = layers[1].ToBitmapParallel();
         foreach (var layer in layers)
         {
             layer.Dispose();

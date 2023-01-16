@@ -123,7 +123,7 @@ public class OperationLayerArithmetic : Operation
         set => RaiseAndSetIfChanged(ref _sentence, value);
     }
     [XmlIgnore]
-    public List<ArithmeticOperationGroup> Operations { get; private set; } = new();
+    public List<ArithmeticOperationGroup> Operations { get; } = new();
 
     public bool IsValid => Operations.Count > 0;
     #endregion

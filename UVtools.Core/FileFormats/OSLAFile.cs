@@ -67,7 +67,7 @@ public sealed class OSLAFile : FileFormat
         public void Update()
         {
             ModifiedDateTime= DateTime.UtcNow.ToString("u");
-            ModifiedBy = About.SoftwareWithVersion;;
+            ModifiedBy = About.SoftwareWithVersion;
         }
 
         public void Validate()
@@ -242,9 +242,9 @@ public sealed class OSLAFile : FileFormat
 
     #region Properties
 
-    public FileDef FileSettings { get; protected internal set; } = new();
-    public Header HeaderSettings { get; protected internal set; } = new();
-    public CustomTable CustomTableSettings { get; protected internal set; } = new();
+    public FileDef FileSettings { get; private set; } = new();
+    public Header HeaderSettings { get; private set; } = new();
+    public CustomTable CustomTableSettings { get; private set; } = new();
     public override FileFormatType FileType => FileFormatType.Binary;
 
     public override FileExtension[] FileExtensions { get; } = {

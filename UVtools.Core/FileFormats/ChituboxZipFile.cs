@@ -187,7 +187,7 @@ public sealed class ChituboxZipFile : FileFormat
     public override byte AntiAliasing
     {
         get => HeaderSettings.AntiAliasing;
-        set => base.AntiAliasing = HeaderSettings.AntiAliasing = value.Clamp(1, 16);
+        set => base.AntiAliasing = HeaderSettings.AntiAliasing = Math.Clamp(value, (byte)1, (byte)16);
     }
 
     public override float LayerHeight
@@ -425,9 +425,8 @@ public sealed class ChituboxZipFile : FileFormat
             //Clear();
             //throw new FileLoadException("run.gcode not found", fileFullPath);
             using TextReader tr = new StreamReader(entry.Open());
-            string? line;
             GCode!.Clear();
-            while ((line = tr.ReadLine()) != null)
+            while (tr.ReadLine() is { } line)
             {
                 GCode.AppendLine(line);
                 if (string.IsNullOrEmpty(line)) continue;

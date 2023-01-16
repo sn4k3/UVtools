@@ -5,14 +5,14 @@
  *  Everyone is permitted to copy and distribute verbatim copies
  *  of this license document, but changing it is not allowed.
  */
-using System;
-using System.Collections.ObjectModel;
-using System.Drawing;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using MessageBox.Avalonia.Enums;
+using System;
+using System.Collections.ObjectModel;
+using System.Drawing;
 using UVtools.Core;
 using UVtools.Core.Extensions;
 using UVtools.Core.Layers;
@@ -57,7 +57,6 @@ public class ToolWindow : WindowEx
     private string _profileText;
 
     private IControl _contentControl;
-    private readonly ScrollViewer _contentScrollViewer;
 
     private bool _isButton1Visible;
     private string _button1Text = "Reset to defaults";
@@ -507,7 +506,7 @@ public class ToolWindow : WindowEx
         set => RaiseAndSetIfChanged(ref _contentControl, value);
     }
 
-    public ScrollViewer ContentScrollViewer => _contentScrollViewer;
+    public ScrollViewer ContentScrollViewer { get; }
 
     #endregion
 
@@ -579,7 +578,7 @@ public class ToolWindow : WindowEx
 
         InitializeComponent();
 
-        _contentScrollViewer = this.FindControl<ScrollViewer>("ContentScrollViewer");
+        ContentScrollViewer = this.FindControl<ScrollViewer>("ContentScrollViewer");
         SelectAllLayers();
 
         if (ROI != Rectangle.Empty)

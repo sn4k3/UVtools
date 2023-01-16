@@ -6,11 +6,11 @@
  *  of this license document, but changing it is not allowed.
  */
 
-using System;
-using System.Drawing;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
+using System;
+using System.Drawing;
 
 namespace UVtools.Core.Gerber.Apertures;
 
@@ -21,12 +21,12 @@ public class RectangleAperture : Aperture
     #endregion
 
     #region Constructor
-    public RectangleAperture(GerberDocument document) : base(document, "Rectangle") { }
+    public RectangleAperture(GerberFormat document) : base(document, "Rectangle") { }
 
-    public RectangleAperture(GerberDocument document, int index, float width, float height) : this(document, index, new SizeF(width, height))
+    public RectangleAperture(GerberFormat document, int index, float width, float height) : this(document, index, new SizeF(width, height))
     { }
 
-    public RectangleAperture(GerberDocument document, int index, SizeF size) : base(document, index, "Rectangle")
+    public RectangleAperture(GerberFormat document, int index, SizeF size) : base(document, index, "Rectangle")
     {
         Size = document.GetMillimeters(size);
     }

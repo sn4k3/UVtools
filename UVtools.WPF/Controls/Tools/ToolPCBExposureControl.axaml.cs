@@ -1,12 +1,12 @@
+using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Markup.Xaml;
+using Avalonia.Threading;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Timers;
-using Avalonia.Controls;
-using Avalonia.Input;
-using Avalonia.Markup.Xaml;
-using Avalonia.Threading;
 using UVtools.Core.Extensions;
 using UVtools.Core.Operations;
 using UVtools.WPF.Extensions;
@@ -125,18 +125,18 @@ namespace UVtools.WPF.Controls.Tools
                 
                 if (!OperationPCBExposure.ValidExtensions.Any(extension => _selectedFile.IsExtension(extension)) || !_selectedFile.Exists) return;
                 var file = (OperationPCBExposure.PCBExposureFile)_selectedFile.Clone();
-                file.InvertPolarity = false;
+                file.InvertPolarity = file.IsExtension(".drl");
                 _previewImage?.Dispose();
                 using var mat = Operation.GetMat(file);
 
                 if (_cropPreview)
                 {
                     using var matCropped = mat.CropByBounds(20);
-                    PreviewImage = matCropped.ToBitmap();
+                    PreviewImage = matCropped.ToBitmapParallel();
                 }
                 else
                 {
-                    PreviewImage = mat.ToBitmap();
+                    PreviewImage = mat.ToBitmapParallel();
                 }
             }
             catch (Exception e)

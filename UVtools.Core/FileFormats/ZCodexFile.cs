@@ -198,7 +198,7 @@ public sealed class ZCodexFile : FileFormat
     public override byte AntiAliasing
     {
         get => UserSettings.AntiAliasing;
-        set => base.AntiAliasing = UserSettings.AntiAliasing = value.Clamp(1, 16);
+        set => base.AntiAliasing = UserSettings.AntiAliasing = Math.Clamp(value, (byte)1, (byte)16);
     }
 
     public override float LayerHeight
@@ -473,12 +473,11 @@ public sealed class ZCodexFile : FileFormat
             GCode!.Clear();
             using (TextReader tr = new StreamReader(entry.Open()))
             {
-                string? line;
                 int layerIndex = 0;
                 int layerFileIndex = 0;
                 string layerimagePath = null!;
                 float currentHeight = 0;
-                while ((line = tr.ReadLine()) is not null)
+                while (tr.ReadLine() is { } line)
                 {
                     GCode.AppendLine(line);
                     if (line.StartsWith(GCodeKeywordSlice))
@@ -517,7 +516,7 @@ M106 S0
                         float liftHeight = 0;
                         float liftSpeed = GetBottomOrNormalValue((uint)layerIndex, BottomLiftSpeed, LiftSpeed);
                         float retractSpeed = RetractSpeed;
-                        byte pwm = GetBottomOrNormalValue((uint)layerIndex, BottomLightPWM, LightPWM); ;
+                        byte pwm = GetBottomOrNormalValue((uint)layerIndex, BottomLightPWM, LightPWM);
 
                         //var currPos = Regex.Match(stripGcode, "G1 Z([+-]?([0-9]*[.])?[0-9]+)", RegexOptions.IgnoreCase);
                         var moveG1Regex = Regex.Match(stripGcode, @"G1 Z([+-]?([0-9]*[.])?[0-9]+) F(\d+)", RegexOptions.IgnoreCase);

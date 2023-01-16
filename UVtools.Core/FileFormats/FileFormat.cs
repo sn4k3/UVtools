@@ -422,9 +422,9 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
                 new("All slicer files", new List<string>())
             };
                 
-            for (int i = 0; i < AvailableFormats.Length; i++)
+            foreach (var format in AvailableFormats)
             {
-                foreach (var fileExtension in AvailableFormats[i].FileExtensions)
+                foreach (var fileExtension in format.FileExtensions)
                 {
                     if(!fileExtension.IsVisibleOnFileFilters) continue;
                     result[0].Value.Add(fileExtension.Extension);
@@ -1184,12 +1184,26 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <summary>
     /// Gets the available versions to set in this file format
     /// </summary>
-    public virtual uint[]? AvailableVersions => null;
+    public virtual uint[] AvailableVersions => Array.Empty<uint>();
 
     /// <summary>
     /// Gets the amount of available versions in this file format
     /// </summary>
-    public virtual byte AvailableVersionsCount => (byte)(AvailableVersions?.Length ?? 0);
+    public virtual byte AvailableVersionsCount => (byte)AvailableVersions.Length;
+
+    /// <summary>
+    /// Gets the available versions to set in this file format for the given extension
+    /// </summary>
+    /// <param name="extension">Extension name, with or without dot (.)</param>
+    /// <returns></returns>
+    public virtual uint[] GetAvailableVersionsForExtension(string? extension) => AvailableVersions;
+
+    /// <summary>
+    /// Gets the available versions to set in this file format for the given file name
+    /// </summary>
+    /// <param name="fileName"></param>
+    /// <returns></returns>
+    public uint[] GetAvailableVersionsForFileName(string? fileName) => GetAvailableVersionsForExtension(Path.GetExtension(fileName));
 
     /// <summary>
     /// Gets the default version to use in this file when not setting the version
@@ -1204,7 +1218,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get => _version;
         set
         {
-            if (AvailableVersions is not null && !AvailableVersions.Contains(value))
+            if (AvailableVersions.Length > 0 && !AvailableVersions.Contains(value))
             {
                 throw new VersionNotFoundException($"Version {value} not known for this file format");
             }
@@ -1347,22 +1361,22 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <summary>
     /// Gets the smallest bottom layer using the pixel count
     /// </summary>
-    public Layer? SmallestBottomLayer => this.Where(layer => layer.IsBottomLayer && !layer.IsEmpty).MinBy(layer => layer.NonZeroPixelCount);
+    public Layer? SmallestBottomLayer => this.Where(layer => layer is {IsBottomLayer: true, IsEmpty: false}).MinBy(layer => layer.NonZeroPixelCount);
 
     /// <summary>
     /// Gets the largest bottom layer using the pixel count
     /// </summary>
-    public Layer? LargestBottomLayer => this.Where(layer => layer.IsBottomLayer && !layer.IsEmpty).MaxBy(layer => layer.NonZeroPixelCount);
+    public Layer? LargestBottomLayer => this.Where(layer => layer is {IsBottomLayer: true, IsEmpty: false}).MaxBy(layer => layer.NonZeroPixelCount);
 
     /// <summary>
     /// Gets the smallest normal layer using the pixel count
     /// </summary>
-    public Layer? SmallestNormalLayer => this.Where(layer => layer.IsNormalLayer && !layer.IsEmpty).MinBy(layer => layer.NonZeroPixelCount);
+    public Layer? SmallestNormalLayer => this.Where(layer => layer is {IsNormalLayer: true, IsEmpty: false}).MinBy(layer => layer.NonZeroPixelCount);
 
     /// <summary>
     /// Gets the largest layer using the pixel count
     /// </summary>
-    public Layer? LargestNormalLayer => this.Where(layer => layer.IsNormalLayer && !layer.IsEmpty).MaxBy(layer => layer.NonZeroPixelCount);
+    public Layer? LargestNormalLayer => this.Where(layer => layer is {IsNormalLayer: true, IsEmpty: false}).MaxBy(layer => layer.NonZeroPixelCount);
 
     /// <summary>
     /// Gets the smallest normal layer using the pixel count
@@ -3254,9 +3268,9 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         _layers = Array.Empty<Layer>();
         GCode?.Clear();
 
-        for (int i = 0; i < Thumbnails.Length; i++)
+        foreach (var mat in Thumbnails)
         {
-            Thumbnails[i]?.Dispose();
+            mat?.Dispose();
         }
     }
 
@@ -3487,13 +3501,32 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     public void Encode(string? fileFullPath, OperationProgress? progress = null)
     {
         fileFullPath ??= FileFullPath ?? throw new ArgumentNullException(nameof(fileFullPath));
-
         if (DecodeType == FileDecodeType.Partial) throw new InvalidOperationException("File was partial decoded, a full encode is not possible.");
 
         progress ??= new OperationProgress();
         progress.Reset(OperationProgress.StatusEncodeLayers, LayerCount);
 
         Sanitize();
+
+        // Backup old file name and prepare the temporary file to be written next
+        var oldFilePath = FileFullPath;
+        FileFullPath = fileFullPath;
+        var tempFile = TemporaryOutputFileFullPath;
+        if (File.Exists(tempFile)) File.Delete(tempFile);
+
+        // Sanitize Version
+        if (AvailableVersionsCount > 0)
+        {
+            var possibleVersions = GetAvailableVersionsForExtension(FileExtension);
+            if (possibleVersions.Length > 0)
+            {
+                if (!possibleVersions.Contains(Version)) // Version not found on possible versions, set to last
+                {
+                    Version = possibleVersions[^1];
+                }
+            }
+        }
+
         OnBeforeEncode(false);
 
         for (var i = 0; i < Thumbnails.Length; i++)
@@ -3502,12 +3535,6 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             if(Thumbnails[i]!.Size == ThumbnailsOriginalSize![i]) continue;
             CvInvoke.Resize(Thumbnails[i], Thumbnails[i], new Size(ThumbnailsOriginalSize[i].Width, ThumbnailsOriginalSize[i].Height));
         }
-
-        // Backup old file name and prepare the temporary file to be written next
-        var oldFilePath = FileFullPath;
-        FileFullPath = fileFullPath;
-        var tempFile = TemporaryOutputFileFullPath;
-        if (File.Exists(tempFile)) File.Delete(tempFile);
 
         try
         {

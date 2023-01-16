@@ -41,11 +41,31 @@
       <Setter Property="Margin" Value="0,10,0, 0" />
   </Style>
 
+    <Style Selector="TextBox.ReadOnly">
+        <Setter Property="IsReadOnly" Value="True" />
+        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
+        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+    </Style>
+
+    <Style Selector="TextBox.ReadOnlyMultiLine">
+        <Setter Property="IsReadOnly" Value="True" />
+        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
+        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+    </Style>
+
+    <Style Selector="TextBox.ReadOnlyMultiLineWrap">
+        <Setter Property="TextWrapping" Value="Wrap" />
+        <Setter Property="IsReadOnly" Value="True" />
+        <Setter Property="AcceptsReturn" Value="True" />
+        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+    </Style>
+
     <Style Selector="TextBox.TransparentReadOnly">
         <Setter Property="IsReadOnly" Value="True" />
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="CaretBrush" Value="Transparent" />
         <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
         <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
     </Style>
 

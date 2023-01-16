@@ -8,7 +8,6 @@
 
 using System;
 using System.Collections.Generic;
-using Emgu.CV.CvEnum;
 using UVtools.Core.Operations;
 using UVtools.Core.Scripting;
 

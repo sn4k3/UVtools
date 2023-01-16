@@ -7,12 +7,12 @@
  */
 
 
-using System;
-using System.ComponentModel;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Threading;
 using MessageBox.Avalonia.Enums;
+using System;
+using System.ComponentModel;
 using UVtools.WPF.Extensions;
 
 namespace UVtools.WPF;

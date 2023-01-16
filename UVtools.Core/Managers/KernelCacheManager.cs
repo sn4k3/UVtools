@@ -7,9 +7,9 @@
  */
 
 using Emgu.CV;
+using Emgu.CV.CvEnum;
 using System;
 using System.Collections.Concurrent;
-using Emgu.CV.CvEnum;
 using UVtools.Core.Extensions;
 
 namespace UVtools.Core.Managers;

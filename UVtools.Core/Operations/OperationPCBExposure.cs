@@ -6,6 +6,8 @@
  *  of this license document, but changing it is not allowed.
  */
 
+using Emgu.CV;
+using Emgu.CV.CvEnum;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -14,8 +16,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Text;
-using Emgu.CV;
-using Emgu.CV.CvEnum;
+using UVtools.Core.Excellon;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Gerber;
@@ -75,6 +76,7 @@ public class OperationPCBExposure : Operation
         "gbo", // Bottom silkscreen layer
         "gbs", // Bottom solder mask layer
         "gml", // Mechanical layer
+        "drl"  // Drill holes
     };
     #endregion
 
@@ -84,7 +86,7 @@ public class OperationPCBExposure : Operation
     private bool _mergeFiles;
     private decimal _layerHeight;
     private decimal _exposureTime;
-    private GerberMidpointRounding _sizeMidpointRounding = GerberMidpointRounding.AwayFromZero;
+    private MidpointRoundingType _sizeMidpointRounding = MidpointRoundingType.AwayFromZero;
     private decimal _offsetX;
     private decimal _offsetY;
     private bool _mirror;
@@ -187,7 +189,7 @@ public class OperationPCBExposure : Operation
         set => RaiseAndSetIfChanged(ref _exposureTime, Math.Round(Math.Max(0, value), 2));
     }
 
-    public GerberMidpointRounding SizeMidpointRounding
+    public MidpointRoundingType SizeMidpointRounding
     {
         get => _sizeMidpointRounding;
         set => RaiseAndSetIfChanged(ref _sizeMidpointRounding, value);
@@ -291,6 +293,14 @@ public class OperationPCBExposure : Operation
         var file = new PCBExposureFile(filePath);
         if (_files.Contains(file)) return;
         _files.Add(file);
+
+        /*var drlFiles = _files.Where(exposureFile => exposureFile.FileExtension == ".drl");
+        var drlArray = drlFiles.ToArray();
+        if (drlArray.Length > 0)
+        {
+            _files.RemoveRange(drlArray);
+            _files.AddRange(drlArray);
+        }*/
     }
 
     public void AddFiles(string[] files, bool handleZipFiles = true)
@@ -314,8 +324,15 @@ public class OperationPCBExposure : Operation
     {
         if (!file.Exists) return;
 
-        GerberDocument.ParseAndDraw(file, mat, SlicerFile.Ppmm, _sizeMidpointRounding, new SizeF((float)OffsetX, (float)OffsetY), _enableAntiAliasing);
-
+        if (file.IsExtension("drl"))
+        {
+            ExcellonDrillFormat.ParseAndDraw(file, mat, SlicerFile.Ppmm, _sizeMidpointRounding, new SizeF((float)OffsetX, (float)OffsetY), _enableAntiAliasing);
+        }
+        else
+        {
+            GerberFormat.ParseAndDraw(file, mat, SlicerFile.Ppmm, _sizeMidpointRounding, new SizeF((float)OffsetX, (float)OffsetY), _enableAntiAliasing);
+        }
+        
         //var boundingRectangle = CvInvoke.BoundingRectangle(mat);
         //var cropped = mat.Roi(new Size(boundingRectangle.Right, boundingRectangle.Bottom));
         var cropped = mat.CropByBounds();
@@ -337,7 +354,10 @@ public class OperationPCBExposure : Operation
         var layers = new List<Layer>();
         using var mergeMat = SlicerFile.CreateMat();
         progress.ItemCount = FileCount;
-        for (var i = 0; i < _files.Count; i++)
+
+        var orderFiles = _files.OrderBy(file => file.IsExtension(".drl")).ToArray();
+
+        for (var i = 0; i < orderFiles.Length; i++)
         {
             /*using var mat = GetMat(file);
 
@@ -350,7 +370,7 @@ public class OperationPCBExposure : Operation
                 CvInvoke.Max(mergeMat, mat, mergeMat);
             }*/
 
-            DrawMat(_files[i], mergeMat);
+            DrawMat(orderFiles[i], mergeMat);
 
             if (!_mergeFiles)
             {
@@ -364,7 +384,7 @@ public class OperationPCBExposure : Operation
                 else
                 {
                     using var mat = SlicerFile.CreateMat();
-                    DrawMat(_files[i], mat);
+                    DrawMat(orderFiles[i], mat);
                     if (CvInvoke.CountNonZero(mat) > 0)
                     {
                         layers.Add(new Layer(mat, SlicerFile));
@@ -400,7 +420,7 @@ public class OperationPCBExposure : Operation
 
             SlicerFile.Layers = layers.ToArray();
         }, true);
-
+        
         if (_mirror) // Reposition layers
         {
             using var op = new OperationMove(SlicerFile, Anchor.TopLeft)

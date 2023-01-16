@@ -603,7 +603,7 @@ public class OperationPixelDimming : Operation
 
 
             PatternText = p1.Trim('\n', '\r');
-            AlternatePatternText = p2.Trim('\n', '\r'); ;
+            AlternatePatternText = p2.Trim('\n', '\r');
             return;
         }
     }

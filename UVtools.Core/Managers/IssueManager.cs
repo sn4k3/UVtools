@@ -1,4 +1,5 @@
-﻿using Emgu.CV;
+﻿using CommunityToolkit.HighPerformance;
+using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Util;
 using System;
@@ -8,7 +9,6 @@ using System.Collections.ObjectModel;
 using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
-using CommunityToolkit.HighPerformance;
 using UVtools.Core.EmguCV;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
@@ -181,8 +181,7 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
                 if (!layer.IsEmpty) continue;
                 
                 if (!emptyLayerConfig.IgnoreStartingEmptyLayers 
-                    && !emptyLayerConfig.IgnoreLooseEmptyLayers 
-                    && !emptyLayerConfig.IgnoreEndingEmptyLayers)
+                    && emptyLayerConfig is {IgnoreLooseEmptyLayers: false, IgnoreEndingEmptyLayers: false})
                 {
                     AddIssue(new MainIssue(MainIssue.IssueType.EmptyLayer, new Issue(layer)));
                     continue;

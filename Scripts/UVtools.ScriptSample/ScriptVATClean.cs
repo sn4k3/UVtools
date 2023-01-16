@@ -6,11 +6,11 @@
  *  of this license document, but changing it is not allowed.
  */
 
-using System;
-using System.Drawing;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
+using System;
+using System.Drawing;
 using UVtools.Core.Extensions;
 using UVtools.Core.Scripting;
 

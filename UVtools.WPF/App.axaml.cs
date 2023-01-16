@@ -6,13 +6,6 @@
  *  of this license document, but changing it is not allowed.
  */
 
-using System;
-using System.ComponentModel;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Web;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -22,6 +15,13 @@ using Avalonia.Platform;
 using Avalonia.Styling;
 using Avalonia.Themes.Fluent;
 using Emgu.CV;
+using System;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Web;
 using UVtools.Core;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Managers;
@@ -289,6 +289,7 @@ public class App : Application
 
                     MainWindow = new MainWindow();
                     desktop.MainWindow = MainWindow;
+                    MessageBoxManager.Standard = UiMessageBoxStandard.Instance;
                 }
             }
             

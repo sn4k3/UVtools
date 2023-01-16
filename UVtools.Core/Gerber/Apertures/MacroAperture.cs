@@ -6,10 +6,10 @@
  *  of this license document, but changing it is not allowed.
  */
 
-using System.Drawing;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
+using System.Drawing;
 
 namespace UVtools.Core.Gerber.Apertures;
 
@@ -21,9 +21,9 @@ public class MacroAperture : Aperture
     #endregion
 
     #region Constructor
-    public MacroAperture(GerberDocument document) : base(document, "Macro") { }
+    public MacroAperture(GerberFormat document) : base(document, "Macro") { }
 
-    public MacroAperture(GerberDocument document, int index, Macro macro) : base(document, index, "Macro")
+    public MacroAperture(GerberFormat document, int index, Macro macro) : base(document, index, "Macro")
     {
         Macro = macro;
     }

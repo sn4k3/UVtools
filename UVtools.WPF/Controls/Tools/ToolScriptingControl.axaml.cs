@@ -1,9 +1,10 @@
-using System;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Layout;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
+using System;
+using System.Threading.Tasks;
 using UVtools.Core;
 using UVtools.Core.Operations;
 using UVtools.Core.Scripting;
@@ -51,7 +52,7 @@ public class ToolScriptingControl : ToolControl
                         ParentWindow.ButtonOkEnabled = Operation.CanExecute;
                     }
                 };
-                Operation.OnScriptReload += (sender, e) => ReloadGUI();
+                Operation.OnScriptReload += (sender, e) => Dispatcher.UIThread.InvokeAsync(ReloadGUI);
                 break;
         }
     }
@@ -76,16 +77,24 @@ public class ToolScriptingControl : ToolControl
     {
         try
         {
-            Operation.ReloadScriptFromFile();
+            ParentWindow.IsEnabled = false;
+
+            await Task.Run(() => Operation.ReloadScriptFromFile());
+
             if (Operation.ScriptGlobals is not null && About.Version.CompareTo(Operation.ScriptGlobals.Script.MinimumVersionToRun) < 0)
             {
-                await ParentWindow.MessageBoxError($"Unable to run due {About.Software} version {About.VersionStr} is lower than required {Operation.ScriptGlobals.Script.MinimumVersionToRun}\n" +
-                                                   $"Please update {About.Software} in order to run this script.");
+                await ParentWindow.MessageBoxError(
+                    $"Unable to run due {About.Software} version {About.VersionStr} is lower than required {Operation.ScriptGlobals.Script.MinimumVersionToRun}\n" +
+                    $"Please update {About.Software} in order to run this script.");
             }
         }
         catch (Exception e)
         {
             await ParentWindow.MessageBoxError(e.Message);
+        }
+        finally
+        {
+            ParentWindow.IsEnabled = true;
         }
             
     }

@@ -8,6 +8,7 @@
 
 using BinarySerialization;
 using Emgu.CV;
+using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
 using System;
 using System.Collections.Generic;
@@ -19,7 +20,6 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Emgu.CV.CvEnum;
 using UVtools.Core.Converters;
 using UVtools.Core.EmguCV;
 using UVtools.Core.Extensions;
@@ -417,10 +417,10 @@ public sealed class CXDLPFile : FileFormat
 
     #region Properties
 
-    public Header HeaderSettings { get; protected internal set; } = new();
-    public SlicerInfo SlicerInfoSettings { get; protected internal set; } = new();
-    public SlicerInfoV3 SlicerInfoV3Settings { get; protected internal set; } = new();
-    public Footer FooterSettings { get; protected internal set; } = new();
+    public Header HeaderSettings { get; private set; } = new();
+    public SlicerInfo SlicerInfoSettings { get; private set; } = new();
+    public SlicerInfoV3 SlicerInfoV3Settings { get; private set; } = new();
+    public Footer FooterSettings { get; private set; } = new();
 
     public override FileFormatType FileType => FileFormatType.Binary;
 
@@ -612,7 +612,7 @@ public sealed class CXDLPFile : FileFormat
             {
                 // Parse from machine name, if coming from PrusaSlicer this will help
                 var match = Regex.Match(value, @"(CL|CT)-\d+");
-                if (match.Success && match.Groups.Count > 1)
+                if (match is {Success: true, Groups.Count: > 1})
                 {
                     value = match.Value;
                 }

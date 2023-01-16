@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
-using Avalonia.Markup.Xaml;
+﻿using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
+using System.Collections.Generic;
 using UVtools.Core.Operations;
 using UVtools.Core.Printer;
 

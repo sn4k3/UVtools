@@ -421,7 +421,7 @@ public sealed class CWSFile : FileFormat
     {
         get
         {
-            if (OutputSettings.FlipX && OutputSettings.FlipY) return FlipDirection.Both;
+            if (OutputSettings is {FlipX: true, FlipY: true}) return FlipDirection.Both;
             if (OutputSettings.FlipX) return FlipDirection.Horizontally;
             if (OutputSettings.FlipY) return FlipDirection.Vertically;
             return FlipDirection.None;
@@ -439,7 +439,7 @@ public sealed class CWSFile : FileFormat
         get => (byte) OutputSettings.AntiAliasingValue;
         set
         {
-            base.AntiAliasing = (byte)(OutputSettings.AntiAliasingValue = value.Clamp(1, 16));
+            base.AntiAliasing = (byte)(OutputSettings.AntiAliasingValue = Math.Clamp(value, 1u, 16u));
             OutputSettings.AntiAliasing = OutputSettings.AntiAliasingValue > 1;
         }
     }
@@ -737,8 +737,7 @@ public sealed class CWSFile : FileFormat
             }
 
             using TextReader tr = new StreamReader(entry.Open());
-            string? line;
-            while ((line = tr.ReadLine()) != null)
+            while (tr.ReadLine() is { } line)
             {
                 line = line.Replace("# ", string.Empty);
                 if (string.IsNullOrEmpty(line)) continue;
@@ -767,9 +766,8 @@ public sealed class CWSFile : FileFormat
 
         using (TextReader tr = new StreamReader(entry.Open()))
         {
-            string? line;
             GCode!.Clear();
-            while ((line = tr.ReadLine()) != null)
+            while (tr.ReadLine() is { } line)
             {
                 GCode.AppendLine(line);
                 if (string.IsNullOrEmpty(line)) continue;

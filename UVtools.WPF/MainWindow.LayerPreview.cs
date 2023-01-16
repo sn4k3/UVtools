@@ -6,14 +6,6 @@
  *  of this license document, but changing it is not allowed.
  */
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Drawing;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Timers;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
@@ -25,6 +17,14 @@ using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
 using Emgu.CV.Util;
 using MessageBox.Avalonia.Enums;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Drawing;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Timers;
 using UVtools.AvaloniaControls;
 using UVtools.Core;
 using UVtools.Core.EmguCV;
@@ -62,8 +62,8 @@ public partial class MainWindow
     private Canvas _issuesSliderCanvas;
 
 
-    private Timer _layerNavigationTooltipTimer = new(0.1) { AutoReset = false };
-    private Timer _layerNavigationSliderDebounceTimer = new(25) { AutoReset = false };
+    private readonly Timer _layerNavigationTooltipTimer = new(0.1) { AutoReset = false };
+    private readonly Timer _layerNavigationSliderDebounceTimer = new(25) { AutoReset = false };
     private uint _actualLayerSlider;
     private uint _actualLayer;
 
@@ -651,7 +651,7 @@ public partial class MainWindow
             {
                 double trackerPos = LayerSlicerTrack.Thumb.Bounds.Height / 2 + LayerSlicerTrack.Thumb.Bounds.Top;
                 double halfTooltipHeight = LayerNavigationTooltipBorder.Bounds.Height / 2;
-                top = (trackerPos - halfTooltipHeight).Clamp(0,
+                top = Math.Clamp(trackerPos - halfTooltipHeight, 0,
                     LayerSlider.Bounds.Height - LayerNavigationTooltipBorder.Bounds.Height);
 
             }
@@ -839,7 +839,7 @@ public partial class MainWindow
 
     public void RefreshLayerImage()
     {
-        LayerImageBox.Image = LayerCache.ImageBgr.ToBitmap();
+        LayerImageBox.Image = LayerCache.ImageBgr.ToBitmapParallel();
     }
 
     /// <summary>
@@ -1474,7 +1474,7 @@ public partial class MainWindow
                 CvInvoke.Rotate(LayerCache.ImageBgr, LayerCache.ImageBgr, _showLayerImageRotateCcwDirection ? RotateFlags.Rotate90CounterClockwise : RotateFlags.Rotate90Clockwise);
             }
 
-            LayerImageBox.Image = LayerCache.Bitmap = LayerCache.ImageBgr.ToBitmap();
+            LayerImageBox.Image = LayerCache.Bitmap = LayerCache.ImageBgr.ToBitmapParallel();
                 
             RefreshCurrentLayerData();
 
@@ -1506,11 +1506,9 @@ public partial class MainWindow
         var startPoint = new Point(Math.Max(0, rect.X - Settings.LayerPreview.CrosshairMargin - 1),
             rect.Y + rect.Height / 2);
         var endPoint =
-            new Point(
-                Settings.LayerPreview.CrosshairLength == 0
-                    ? 0
-                    : (int)Math.Max(0, startPoint.X - Settings.LayerPreview.CrosshairLength + 1),
-                startPoint.Y);
+            startPoint with {X = Settings.LayerPreview.CrosshairLength == 0
+                ? 0
+                : (int)Math.Max(0, startPoint.X - Settings.LayerPreview.CrosshairLength + 1)};
 
         CvInvoke.Line(LayerCache.ImageBgr,
             startPoint,
@@ -1535,10 +1533,9 @@ public partial class MainWindow
         // TOP
         startPoint = new Point(rect.X + rect.Width / 2,
             Math.Max(0, rect.Y - Settings.LayerPreview.CrosshairMargin - 1));
-        endPoint = new Point(startPoint.X,
-            (int)(Settings.LayerPreview.CrosshairLength == 0
-                ? 0
-                : Math.Max(0, startPoint.Y - Settings.LayerPreview.CrosshairLength + 1)));
+        endPoint = startPoint with {Y = (int)(Settings.LayerPreview.CrosshairLength == 0
+            ? 0
+            : Math.Max(0, startPoint.Y - Settings.LayerPreview.CrosshairLength + 1))};
 
 
         CvInvoke.Line(LayerCache.ImageBgr,
@@ -1569,12 +1566,12 @@ public partial class MainWindow
             if (!_showLayerImageFlipped) return;
             if (_showLayerImageFlippedHorizontally)
             {
-                point = new Point(LayerCache.Image.Width - 1 - point.X, point.Y);
+                point = point with {X = LayerCache.Image.Width - 1 - point.X};
             }
 
             if (_showLayerImageFlippedVertically)
             {
-                point = new Point(point.X, LayerCache.Image.Height - 1 - point.Y);
+                point = point with {Y = LayerCache.Image.Height - 1 - point.Y};
             }
         }
 
@@ -2446,7 +2443,7 @@ public partial class MainWindow
 
                 if (diameter >= _pixelEditorCursorMinDiamater)
                 {
-                    cursor = EmguExtensions.InitMat(new System.Drawing.Size(diameter, diameter), 4);
+                    cursor = EmguExtensions.InitMat(new Size(diameter, diameter), 4);
                     var center = new Point(diameter / 2, diameter / 2);
                     CvInvoke.Circle(cursor,
                         center,
@@ -2467,7 +2464,8 @@ public partial class MainWindow
 
         if (cursor is not null)
         {
-            LayerImageBox.TrackerImage = cursor.ToBitmap();
+            LayerImageBox.TrackerImage = cursor.ToBitmapParallel();
+            //LayerImageBox.Cursor = new Cursor(cursor.ToBitmap(), new PixelPoint(cursor.Width / 2, cursor.Height / 2));
             //cursor.Save("D:\\Cursor.png");
             //LayerImageBox.TrackerImage.Save("D:\\CursorAVA.png");
         }

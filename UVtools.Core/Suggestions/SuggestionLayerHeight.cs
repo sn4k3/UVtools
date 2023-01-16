@@ -6,6 +6,7 @@
  *  of this license document, but changing it is not allowed.
  */
 
+using System;
 using System.Text;
 using UVtools.Core.Extensions;
 using Layer = UVtools.Core.Layers.Layer;
@@ -64,19 +65,19 @@ public sealed class SuggestionLayerHeight : Suggestion
     public decimal MinimumLayerHeight
     {
         get => _minimumLayerHeight;
-        set => RaiseAndSetIfChanged(ref _minimumLayerHeight, Layer.RoundHeight(value.Clamp(Layer.MinimumHeight, Layer.MaximumHeight)));
+        set => RaiseAndSetIfChanged(ref _minimumLayerHeight, Layer.RoundHeight(Math.Clamp(value, Layer.MinimumHeight, Layer.MaximumHeight)));
     }
 
     public decimal MaximumLayerHeight
     {
         get => _maximumLayerHeight;
-        set => RaiseAndSetIfChanged(ref _maximumLayerHeight, Layer.RoundHeight(value.Clamp(Layer.MinimumHeight, Layer.MaximumHeight)));
+        set => RaiseAndSetIfChanged(ref _maximumLayerHeight, Layer.RoundHeight(Math.Clamp(value, Layer.MinimumHeight, Layer.MaximumHeight)));
     }
 
     public byte MaximumLayerHeightDecimalPlates
     {
         get => _maximumLayerHeightDecimalPlates;
-        set => RaiseAndSetIfChanged(ref _maximumLayerHeightDecimalPlates, value.Clamp(2, 4));
+        set => RaiseAndSetIfChanged(ref _maximumLayerHeightDecimalPlates, Math.Clamp(value, (byte)2, (byte)4));
     }
 
     #endregion

@@ -285,7 +285,6 @@ public sealed class ChituboxFile : FileFormat
 
     public class SlicerInfo
     {
-        private string _machineName = DefaultMachineName;
         [FieldOrder(0)] public float BottomLiftHeight2 { get; set; }
         [FieldOrder(1)] public float BottomLiftSpeed2  { get; set; }
         [FieldOrder(2)] public float LiftHeight2       { get; set; }
@@ -302,7 +301,7 @@ public sealed class ChituboxFile : FileFormat
         /// <summary>
         /// Gets the machine size in bytes
         /// </summary>
-        [FieldOrder(8)] public uint MachineNameSize { get; set; } = (uint)(string.IsNullOrEmpty(DefaultMachineName) ? 0 : DefaultMachineName.Length);
+        [FieldOrder(8)] public uint MachineNameSize { get; set; }
 
         /// <summary>
         /// CBDDLP: 0 [No AA] / 8 [AA] for cbddlp files.    CTB: 7(0x7) [No AA] / 15(0x0F) [AA]
@@ -348,16 +347,7 @@ public sealed class ChituboxFile : FileFormat
         /// </summary>
         [FieldOrder(21)]
         [FieldLength(nameof(MachineNameSize))]
-        public string MachineName
-        {
-            get => _machineName;
-            set
-            {
-                if (string.IsNullOrEmpty(value)) value = DefaultMachineName;
-                _machineName = value;
-                MachineNameSize = string.IsNullOrEmpty(_machineName) ? 0 : (uint)_machineName.Length;
-            }
-        }
+        public string MachineName { get; set; } = DefaultMachineName;
 
         public override string ToString()
         {
@@ -947,14 +937,9 @@ public sealed class ChituboxFile : FileFormat
 
             AddRep();
 
-            if (Parent!.HeaderSettings.EncryptionKey > 0)
-            {
-                EncodedRle = LayerRleCrypt(Parent.HeaderSettings.EncryptionKey, layerIndex, rawData);
-            }
-            else
-            {
-                EncodedRle = rawData.ToArray();
-            }
+            EncodedRle = Parent!.HeaderSettings.EncryptionKey > 0 
+                ? LayerRleCrypt(Parent.HeaderSettings.EncryptionKey, layerIndex, rawData) 
+                : rawData.ToArray();
 
             DataSize = (uint)EncodedRle.Length;
 
@@ -1062,13 +1047,13 @@ public sealed class ChituboxFile : FileFormat
 
     #region Properties
 
-    public Header HeaderSettings { get; protected internal set; } = new();
-    public PrintParameters PrintParametersSettings { get; protected internal set; } = new();
+    public Header HeaderSettings { get; private set; } = new();
+    public PrintParameters PrintParametersSettings { get; private set; } = new();
 
-    public SlicerInfo SlicerInfoSettings { get; protected internal set; } = new();
-    public PrintParametersV4 PrintParametersV4Settings { get; protected internal set; } = new();
+    public SlicerInfo SlicerInfoSettings { get; private set; } = new();
+    public PrintParametersV4 PrintParametersV4Settings { get; private set; } = new();
 
-    public Preview[] Previews { get; protected internal set; }
+    public Preview[] Previews { get; }
 
     public LayerDef[,]? LayerDefinitions { get; private set; }
 
@@ -1241,6 +1226,21 @@ public sealed class ChituboxFile : FileFormat
 
     public override uint[] AvailableVersions { get; } = { 1, 2, 3, 4 };
 
+    public override uint[] GetAvailableVersionsForExtension(string? extension)
+    {
+        if (string.IsNullOrWhiteSpace(extension)) return AvailableVersions;
+        if (extension[0] == '.') extension = extension.Remove(0, 1).ToLower();
+
+        switch (extension)
+        {
+            case "cbddlp":
+            case "photon":
+                return new uint[] {1, 2};
+            default:
+                return AvailableVersions;
+        }
+    }
+
     public override uint DefaultVersion => DEFAULT_VERSION;
 
     public override uint Version
@@ -1302,11 +1302,11 @@ public sealed class ChituboxFile : FileFormat
         {
             if (IsCtbFile)
             {
-                base.AntiAliasing = (byte)(SlicerInfoSettings.AntiAliasLevel = value.Clamp(1, 16));
+                base.AntiAliasing = (byte)(SlicerInfoSettings.AntiAliasLevel = Math.Clamp(value, 1u, 16u));
             }
             else if(IsCbddlpFile)
             {
-                base.AntiAliasing = (byte)(SlicerInfoSettings.AntiAliasLevel = HeaderSettings.AntiAliasLevel = value.Clamp(1, 16));
+                base.AntiAliasing = (byte)(SlicerInfoSettings.AntiAliasLevel = HeaderSettings.AntiAliasLevel = Math.Clamp(value, 1u, 16u));
                 ValidateAntiAliasingLevel();
             }
         }
@@ -1384,7 +1384,7 @@ public sealed class ChituboxFile : FileFormat
 
     public override float BottomWaitTimeBeforeCure
     {
-        get => base.BottomWaitTimeBeforeCure > 0 ? base.BottomWaitTimeBeforeCure : this.FirstOrDefault(layer => layer is not null && layer.IsBottomLayer && layer.NonZeroPixelCount > 1)?.WaitTimeBeforeCure ?? 0;
+        get => base.BottomWaitTimeBeforeCure > 0 ? base.BottomWaitTimeBeforeCure : this.FirstOrDefault(layer => layer is {IsBottomLayer: true, IsDummy: false})?.WaitTimeBeforeCure ?? 0;
         set
         {
             if (HeaderSettings.Version < 4)
@@ -1432,7 +1432,7 @@ public sealed class ChituboxFile : FileFormat
 
     public override float BottomWaitTimeAfterCure
     {
-        get => HeaderSettings.Version >= 4 ? (base.BottomWaitTimeAfterCure > 0 ? base.BottomWaitTimeAfterCure : this.FirstOrDefault(layer => layer is not null && layer.IsBottomLayer && layer.NonZeroPixelCount > 1)?.WaitTimeAfterCure ?? 0) : 0;
+        get => HeaderSettings.Version >= 4 ? (base.BottomWaitTimeAfterCure > 0 ? base.BottomWaitTimeAfterCure : this.FirstOrDefault(layer => layer is {IsBottomLayer: true, IsDummy: false})?.WaitTimeAfterCure ?? 0) : 0;
         set
         {
             if (HeaderSettings.Version < 4) return;
@@ -1553,7 +1553,7 @@ public sealed class ChituboxFile : FileFormat
 
     public override float BottomWaitTimeAfterLift
     {
-        get => HeaderSettings.Version >= 4 ? (base.BottomWaitTimeAfterLift > 0 ? base.BottomWaitTimeAfterLift : this.FirstOrDefault(layer => layer is not null && layer.IsBottomLayer && layer.NonZeroPixelCount > 1)?.WaitTimeAfterLift ?? 0) : 0;
+        get => HeaderSettings.Version >= 4 ? (base.BottomWaitTimeAfterLift > 0 ? base.BottomWaitTimeAfterLift : this.FirstOrDefault(layer => layer is { IsBottomLayer: true, IsDummy: false })?.WaitTimeAfterLift ?? 0) : 0;
         set
         {
             if (HeaderSettings.Version < 4) return;
@@ -1688,10 +1688,7 @@ public sealed class ChituboxFile : FileFormat
             {
                 <= 1 => new object[] { HeaderSettings },
                 <= 3 => new object[] { HeaderSettings, PrintParametersSettings, SlicerInfoSettings },
-                _ => new object[] // v4
-                {
-                    HeaderSettings, PrintParametersSettings, SlicerInfoSettings, PrintParametersV4Settings
-                }
+            /*v4*/ _ => new object[] { HeaderSettings, PrintParametersSettings, SlicerInfoSettings, PrintParametersV4Settings }
             };
         }
     }
@@ -1777,7 +1774,7 @@ public sealed class ChituboxFile : FileFormat
         else if (FileEndsWith(".cbddlp") || FileEndsWith(".photon"))
         {
             HeaderSettings.Magic = MAGIC_CBDDLP;
-            if (HeaderSettings.Version > 3) HeaderSettings.Version = 3;
+            if (HeaderSettings.Version > 2) HeaderSettings.Version = 2;
         }
     }
 
@@ -1871,30 +1868,30 @@ public sealed class ChituboxFile : FileFormat
         if (HeaderSettings.Version >= 2)
         {
             HeaderSettings.PrintParametersOffsetAddress = (uint)outputFile.Position;
-
             outputFile.WriteSerialize(PrintParametersSettings);
 
-            HeaderSettings.SlicerOffset = (uint)outputFile.Position;
-            HeaderSettings.SlicerSize = (uint) Helpers.Serializer.SizeOf(SlicerInfoSettings) - SlicerInfoSettings.MachineNameSize;
-
-            SlicerInfoSettings.MachineNameAddress = HeaderSettings.SlicerOffset + HeaderSettings.SlicerSize;
-
-            if (HeaderSettings.Version >= 4)
+            if (IsCtbFile)
             {
-                SlicerInfoSettings.PrintParametersV4Address = (uint)(HeaderSettings.SlicerOffset + 
-                                                                     Helpers.Serializer.SizeOf(SlicerInfoSettings) + 
-                                                                     CTBv4_DISCLAIMER_SIZE);
-            }
+                HeaderSettings.SlicerOffset = (uint) outputFile.Position;
+                HeaderSettings.SlicerSize = (uint) Helpers.Serializer.SizeOf(SlicerInfoSettings) -
+                                            SlicerInfoSettings.MachineNameSize;
 
+                SlicerInfoSettings.MachineNameAddress = HeaderSettings.SlicerOffset + HeaderSettings.SlicerSize;
 
-            outputFile.WriteSerialize(SlicerInfoSettings);
+                if (HeaderSettings.Version >= 4)
+                {
+                    SlicerInfoSettings.PrintParametersV4Address = (uint) (HeaderSettings.SlicerOffset + Helpers.Serializer.SizeOf(SlicerInfoSettings) + CTBv4_DISCLAIMER_SIZE);
+                }
+                
+                outputFile.WriteSerialize(SlicerInfoSettings);
 
-            if (HeaderSettings.Version >= 4)
-            {
-                PrintParametersV4Settings.DisclaimerAddress = (uint)outputFile.Position;
-                PrintParametersV4Settings.DisclaimerLength = (uint)CTBv4_DISCLAIMER.Length;
-                outputFile.WriteBytes(Encoding.UTF8.GetBytes(CTBv4_DISCLAIMER));
-                outputFile.WriteSerialize(PrintParametersV4Settings);
+                if (HeaderSettings.Version >= 4)
+                {
+                    PrintParametersV4Settings.DisclaimerAddress = (uint) outputFile.Position;
+                    PrintParametersV4Settings.DisclaimerLength = (uint) CTBv4_DISCLAIMER.Length;
+                    outputFile.WriteBytes(Encoding.UTF8.GetBytes(CTBv4_DISCLAIMER));
+                    outputFile.WriteSerialize(PrintParametersV4Settings);
+                }
             }
         }
 
@@ -2038,8 +2035,6 @@ public sealed class ChituboxFile : FileFormat
             PrintParametersSettings = Helpers.Deserialize<PrintParameters>(inputFile);
             Debug.Write("Print Parameters -> ");
             Debug.WriteLine(PrintParametersSettings);
-
-
         }
 
         if (HeaderSettings.SlicerOffset > 0)
@@ -2061,7 +2056,7 @@ public sealed class ChituboxFile : FileFormat
             if (SlicerInfoSettings.PrintParametersV4Address == 0)
             {
                 throw new FileLoadException(
-                    $"Malformed file, PrintParametersV4Address is missing",
+                    "Malformed file, PrintParametersV4Address is missing",
                     FileFullPath);
             }
 
@@ -2167,11 +2162,15 @@ public sealed class ChituboxFile : FileFormat
         outputFile.Seek(0, SeekOrigin.Begin);
         outputFile.WriteSerialize(HeaderSettings);
 
-        if (HeaderSettings.Version >= 2 && HeaderSettings.PrintParametersOffsetAddress > 0)
+        if (HeaderSettings is {Version: >= 2, PrintParametersOffsetAddress: > 0})
         {
             outputFile.Seek(HeaderSettings.PrintParametersOffsetAddress, SeekOrigin.Begin);
             outputFile.WriteSerialize(PrintParametersSettings);
-            outputFile.WriteSerialize(SlicerInfoSettings);
+
+            if (IsCtbFile && HeaderSettings.SlicerOffset > 0)
+            {
+                outputFile.WriteSerialize(SlicerInfoSettings);
+            }
         }
 
         outputFile.Seek(HeaderSettings.LayersDefinitionOffsetAddress, SeekOrigin.Begin);

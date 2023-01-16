@@ -13,7 +13,7 @@ namespace UVtools.Core.PixelEditor;
 
 public class PixelHistory : IEnumerable<PixelOperation>
 {
-    public List<PixelOperation> Items { get; } = new List<PixelOperation>();
+    public List<PixelOperation> Items { get; } = new();
 
     public int Count => Items.Count;
 

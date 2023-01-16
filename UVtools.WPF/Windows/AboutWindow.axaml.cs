@@ -1,9 +1,9 @@
-﻿using System;
-using System.Runtime.InteropServices;
-using System.Text;
-using Avalonia;
+﻿using Avalonia;
 using Avalonia.Markup.Xaml;
 using Emgu.CV;
+using System;
+using System.Runtime.InteropServices;
+using System.Text;
 using UVtools.Core;
 using UVtools.Core.Extensions;
 using UVtools.Core.SystemOS;

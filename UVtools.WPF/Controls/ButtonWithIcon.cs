@@ -5,13 +5,13 @@
  *  Everyone is permitted to copy and distribute verbatim copies
  *  of this license document, but changing it is not allowed.
  */
-using System;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Layout;
 using Avalonia.Styling;
 using Avalonia.Threading;
 using JetBrains.Annotations;
+using System;
 
 namespace UVtools.WPF.Controls;
 

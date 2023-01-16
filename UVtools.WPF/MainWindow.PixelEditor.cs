@@ -6,12 +6,6 @@
  *  of this license document, but changing it is not allowed.
  */
 
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Drawing;
-using System.Linq;
-using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media.Imaging;
@@ -21,6 +15,12 @@ using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
 using MessageBox.Avalonia.Enums;
 using SkiaSharp;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Drawing;
+using System.Linq;
+using System.Threading.Tasks;
 using UVtools.Core.Extensions;
 using UVtools.Core.Layers;
 using UVtools.Core.PixelEditor;
@@ -220,8 +220,8 @@ public partial class MainWindow
                     switch (operationDrawing.BrushShape)
                     {
                         case PixelDrawing.BrushShapeType.Line:
-                            Point point1 = new(location.X - halfBrush, location.Y);
-                            Point point2 = new(location.X + halfBrush, location.Y);
+                            Point point1 = location with {X = location.X - halfBrush};
+                            Point point2 = location with {X = location.X + halfBrush};
 
                             if (_showLayerImageRotated)
                             {

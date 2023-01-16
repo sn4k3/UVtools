@@ -1,9 +1,9 @@
-﻿using System;
+﻿using Emgu.CV;
+using Emgu.CV.CvEnum;
+using System;
 using System.Drawing;
 using UVtools.Core.Extensions;
 using UVtools.Core.Scripting;
-using Emgu.CV;
-using Emgu.CV.CvEnum;
 
 namespace UVtools.ScriptSample;
 
@@ -103,7 +103,7 @@ public class ScriptBuildGrid : ScriptGlobals
         Progress.Reset("Changing layers", 2); // Sets the progress name and number of items to process
 
         SlicerFile.Reallocate(2);
-        
+
         using var pattern = GenerateGridPattern();
         SlicerFile[0].LayerMat = pattern;
         Progress++;

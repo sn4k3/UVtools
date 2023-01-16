@@ -1,11 +1,11 @@
-﻿using System;
-using System.Diagnostics;
-using System.Globalization;
-using System.Threading.Tasks;
-using Avalonia;
+﻿using Avalonia;
 using Projektanker.Icons.Avalonia;
 using Projektanker.Icons.Avalonia.FontAwesome;
 using Projektanker.Icons.Avalonia.MaterialDesign;
+using System;
+using System.Diagnostics;
+using System.Globalization;
+using System.Threading.Tasks;
 using UVtools.Core;
 using UVtools.Core.SystemOS;
 

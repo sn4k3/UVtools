@@ -8,6 +8,7 @@
 
 using Emgu.CV;
 using Emgu.CV.CvEnum;
+using K4os.Compression.LZ4;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -17,7 +18,6 @@ using System.IO.Compression;
 using System.Linq;
 using System.Text.Json.Serialization;
 using System.Xml.Serialization;
-using K4os.Compression.LZ4;
 using UVtools.Core.EmguCV;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
@@ -173,6 +173,11 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
     /// Gets if this layer is empty/all black pixels
     /// </summary>
     public bool IsEmpty => _nonZeroPixelCount == 0;
+
+    /// <summary>
+    /// Gets if this layer is a dummy layer to bypass a firmware constrain, that is contain at most one pixel and exposure time no more than 0.01s
+    /// </summary>
+    public bool IsDummy => _nonZeroPixelCount <= 1 || _exposureTime <= 0.01;
 
     /// <summary>
     /// Gets the layer area (XY)  in mm^2
@@ -711,6 +716,11 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
     public bool CanExpose => _exposureTime > 0 && _lightPWM > 0;
 
     /// <summary>
+    /// Gets if this layer should be exposed to UV light, ie: if layer is empty or no exposure time then it useless to expose it
+    /// </summary>
+    public bool ShouldExpose => !IsEmpty && CanExpose;
+
+    /// <summary>
     /// Gets the layer height in millimeters of this layer
     /// </summary>
     public float LayerHeight
@@ -1032,28 +1042,33 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
     public bool IsUsingTSMC => LiftHeight2 > 0 || RetractHeight2 > 0;
 
     /// <summary>
-    /// Gets tree contours cache for this layer, however should call <see cref="GetContours"/> instead with <see cref="LayerMat"/> instance
+    /// Gets tree contours cache for this layer, however should call <see cref="GetContours"/> instead with <see cref="LayerMat"/> instance.  
+    /// If not set it will calculate contours first
     /// </summary>
     public EmguContours Contours
     {
         get
         {
-            if (_contours is null)
-            {
-                using var mat = LayerMat;
-                _contours = new EmguContours(mat, RetrType.Tree);
-            }
-
-            return _contours;
+            if (_contours is not null) return _contours;
+            using var matRoi = LayerMatBoundingRectangle;
+            return GetContours(matRoi);
         }
     }
 
     /// <summary>
-    /// Gets tree contours cache for this layer
+    /// Gets tree contours cache for this layer. If not set it will calculate contours first
     /// </summary>
-    public EmguContours GetContours(IInputOutputArray mat)
+    public EmguContours GetContours(IInputOutputArray mat, Point offset = default)
     {
-        return _contours ??= new EmguContours(mat, RetrType.Tree);
+        return _contours ??= new EmguContours(mat, RetrType.Tree, ChainApproxMethod.ChainApproxSimple, offset);
+    }
+
+    /// <summary>
+    /// Gets tree contours cache for this layer.  If not set it will calculate contours first
+    /// </summary>
+    public EmguContours GetContours(MatRoi matRoi)
+    {
+        return _contours ??= new EmguContours(matRoi.RoiMat, RetrType.Tree, ChainApproxMethod.ChainApproxSimple, matRoi.Roi.Location);
     }
 
     #endregion

@@ -1,10 +1,10 @@
-﻿using System;
-using System.Drawing;
-using Avalonia.Controls;
+﻿using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
+using System;
+using System.Drawing;
 using UVtools.Core.Extensions;
 using UVtools.Core.Operations;
 using UVtools.WPF.Extensions;
@@ -30,7 +30,7 @@ public class ToolMaskControl : ToolControl
             if(!RaiseAndSetIfChanged(ref _isMaskInverted, value)) return;
             if (!Operation.HaveInputMask) return;
             Operation.InvertMask();
-            MaskImage = Operation.Mask.ToBitmap();
+            MaskImage = Operation.Mask.ToBitmapParallel();
         }
     }
 
@@ -107,7 +107,7 @@ public class ToolMaskControl : ToolControl
         try
         {
             Operation.LoadFromFile(result[0], _isMaskInverted, App.MainWindow.ROI.Size.IsEmpty ? SlicerFile.Resolution : App.MainWindow.ROI.Size);
-            MaskImage = Operation.Mask.ToBitmap();
+            MaskImage = Operation.Mask.ToBitmapParallel();
         }
         catch (Exception e)
         {
@@ -127,7 +127,7 @@ public class ToolMaskControl : ToolControl
         }
         else
         {
-            radius = radius.Clamp(2, Math.Min(Operation.Mask.Width, Operation.Mask.Height)) / 2;
+            radius = Math.Clamp(radius, 2, Math.Min(Operation.Mask.Width, Operation.Mask.Height)) / 2;
         }
 
         var maxScalar = new MCvScalar(_genMaximumBrightness);
@@ -144,6 +144,6 @@ public class ToolMaskControl : ToolControl
         }
 
         if (_isMaskInverted) Operation.InvertMask();
-        MaskImage = Operation.Mask.ToBitmap();
+        MaskImage = Operation.Mask.ToBitmapParallel();
     }
 }

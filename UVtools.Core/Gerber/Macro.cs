@@ -18,7 +18,7 @@ public class Macro : IReadOnlyList<Primitive>
 {
     #region Properties
 
-    public GerberDocument Document { get; init; }
+    public GerberFormat Document { get; init; }
 
     /// <summary>
     /// Gets the macro name
@@ -28,12 +28,12 @@ public class Macro : IReadOnlyList<Primitive>
     public List<Primitive> Primitives { get; } = new();
     #endregion
 
-    public Macro(GerberDocument document)
+    public Macro(GerberFormat document)
     {
         Document = document;
     }
 
-    public Macro(GerberDocument document, string name) : this(document)
+    public Macro(GerberFormat document, string name) : this(document)
     {
         Name = name;
     }
@@ -108,7 +108,7 @@ public class Macro : IReadOnlyList<Primitive>
     }
 
 
-    public static Macro? Parse(GerberDocument document, string line)
+    public static Macro? Parse(GerberFormat document, string line)
     {
         var match = Regex.Match(line, @"%?AM([a-zA-Z\d]+)\*?");
         if (!match.Success || match.Groups.Count < 2) return null;

@@ -819,7 +819,7 @@ public class GCodeBuilder : BindableBase
             }
 
             AppendWaitG4(waitBeforeCure, "Wait before cure"); // Safer to parse if present
-            if (_gCodeShowImagePosition == GCodeShowImagePositions.WhenRequired && layer.CanExpose)
+            if (_gCodeShowImagePosition == GCodeShowImagePositions.WhenRequired && layer.ShouldExpose)
             { 
                 AppendShowImageM6054(GetShowImageString(layerIndex));
             }
@@ -868,8 +868,7 @@ public class GCodeBuilder : BindableBase
     public GCodePositioningTypes ParsePositioningTypeFromGCode(string gcode)
     {
         using var reader = new StringReader(gcode);
-        string? line;
-        while ((line = reader.ReadLine()) != null)
+        while (reader.ReadLine() is { } line)
         {
             if (line.StartsWith(CommandPositioningAbsoluteG90.Command)) return GCodePositioningTypes.Absolute;
             if (line.StartsWith(CommandPositioningPartialG91.Command)) return GCodePositioningTypes.Relative;
@@ -878,8 +877,8 @@ public class GCodeBuilder : BindableBase
         return _gCodePositioningType;
     }
 
-    public void ParseLayersFromGCode(FileFormat slicerFile, bool rebuildGlobalTable = true) =>
-        ParseLayersFromGCode(slicerFile, null, rebuildGlobalTable);
+    public void ParseLayersFromGCode(FileFormat slicerFile, bool rebuildGlobalTable = true) 
+        => ParseLayersFromGCode(slicerFile, null, rebuildGlobalTable);
 
     public void ParseLayersFromGCode(FileFormat slicerFile, string? gcode, bool rebuildGlobalTable = true)
     {
@@ -910,11 +909,9 @@ public class GCodeBuilder : BindableBase
         //bool parseLayerIndexFromComments = false;
 
         using var reader = new StringReader(gcode);
-        string? line;
-        while ((line = reader.ReadLine()) != null)
+        while (reader.ReadLine()?.Trim() is { } line)
         {
-            line = line.Trim();
-            if (string.IsNullOrWhiteSpace(line)) continue;
+            if (string.IsNullOrEmpty(line)) continue;
                 
             // Search for and switch position type when needed
             if (line.StartsWith(CommandPositioningAbsoluteG90.Command))
@@ -935,7 +932,7 @@ public class GCodeBuilder : BindableBase
             {
                 // Can be dangerous!
                 match = Regex.Match(line, @"^;\W*(layer\W*|LAYER_START:\s*)(\d+)", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
-                if (match.Success && match.Groups.Count > 2 && uint.TryParse(match.Groups[2].Value, out var layerIndex))
+                if (match is {Success: true, Groups.Count: > 2} && uint.TryParse(match.Groups[2].Value, out var layerIndex))
                 {
                     if (layerIndex > slicerFile.LayerCount)
                     {
@@ -954,7 +951,7 @@ public class GCodeBuilder : BindableBase
             if (line.StartsWith(CommandShowImageM6054.Command))
             {
                 match = Regex.Match(line, CommandShowImageM6054.ToStringWithoutComments(GetShowImageString(@"(\d+)")), RegexOptions.IgnoreCase);
-                if (match.Success && match.Groups.Count >= 2) // Begin new layer
+                if (match is {Success: true, Groups.Count: >= 2}) // Begin new layer
                 {
                     var layerIndex = uint.Parse(match.Groups[1].Value);
                     if (_gCodeShowImageType is GCodeShowImageTypes.FilenamePng1Started or GCodeShowImageTypes.LayerIndex1Started) layerIndex--;
@@ -984,7 +981,7 @@ public class GCodeBuilder : BindableBase
             {
                 match = Regex.Match(line, $"{CommandMoveG0.ToStringWithoutComments(@"([+-]?([0-9]*[.])?[0-9]+)", @"(([0-9]*[.])?[0-9]+)")}|{CommandMoveG1.ToStringWithoutComments(@"([+-]?([0-9]*[.])?[0-9]+)", @"(([0-9]*[.])?[0-9]+)")}", RegexOptions.IgnoreCase);
                 
-                if (match.Success && match.Groups.Count >= 9 && !layerBlock.RetractSpeed2.HasValue && layerBlock.LightOffCount < 2)
+                if (match is {Success: true, Groups.Count: >= 9} && !layerBlock.RetractSpeed2.HasValue && layerBlock.LightOffCount < 2)
                 {
                     var startIndex = match.Groups[1].Value.Length > 0 ? 0 : 4;
                     float pos = float.Parse(match.Groups[startIndex+1].Value, CultureInfo.InvariantCulture);
@@ -1034,7 +1031,7 @@ public class GCodeBuilder : BindableBase
             if (line.StartsWith(CommandWaitG4.Command))
             {
                 match = Regex.Match(line, CommandWaitG4.ToStringWithoutComments(@"(([0-9]*[.])?[0-9]+)"), RegexOptions.IgnoreCase);
-                if (match.Success && match.Groups.Count >= 2)
+                if (match is {Success: true, Groups.Count: >= 2})
                 {
                     if (/*CommandWaitSyncDelay.Enabled && */match.Groups[1].Value.StartsWith('0'))
                     {
@@ -1090,7 +1087,7 @@ public class GCodeBuilder : BindableBase
             if (line.StartsWith(CommandTurnLEDM106.Command))
             {
                 match = Regex.Match(line, CommandTurnLEDM106.ToStringWithoutComments(@"(\d+)"), RegexOptions.IgnoreCase);
-                if (match.Success && match.Groups.Count >= 2)
+                if (match is {Success: true, Groups.Count: >= 2})
                 {
                     byte pwm;
                     if (_maxLedPower == byte.MaxValue)

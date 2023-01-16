@@ -1,11 +1,11 @@
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
 using MessageBox.Avalonia.Enums;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 using UVtools.Core.Extensions;
 using UVtools.Core.Suggestions;
 using UVtools.WPF.Controls;
@@ -17,7 +17,7 @@ namespace UVtools.WPF.Windows;
 
 public partial class SuggestionSettingsWindow : WindowEx
 {
-    private ContentControl _activeSuggestionContentPanel;
+    private readonly ContentControl _activeSuggestionContentPanel;
 
     private Suggestion _activeSuggestion;
     private Suggestion _selectedSuggestion;
@@ -37,10 +37,10 @@ public partial class SuggestionSettingsWindow : WindowEx
                 {
                     switch (await this.MessageBoxQuestion(
                                 $"You have pending changes on '{_activeSuggestion.Title}' and you are about to discard them.\n" +
-                                "Do you want to continue?\n\n" +
-                                "Yes: Discard all changes and continue\n" +
-                                "No: Save changes and continue\n" +
-                                "Cancel: Do not continue",
+                                "Do you want to discard the changes?\n\n" +
+                                "Yes: Discard changes\n" +
+                                "No: Save changes\n" +
+                                "Cancel: Continue editing",
                                 "Pending changes", ButtonEnum.YesNoCancel))
                     {
                         case ButtonResult.Yes:
@@ -86,7 +86,7 @@ public partial class SuggestionSettingsWindow : WindowEx
             _activeSuggestion.PropertyChanged += (sender, e) => PendingChanges = true;
 
             var type = typeof(SuggestionControl);
-            var classname = $"{type.Namespace}.{_activeSuggestion.GetType().Name}Control"; ;
+            var classname = $"{type.Namespace}.{_activeSuggestion.GetType().Name}Control";
             var controlType = Type.GetType(classname);
             SuggestionControl control;
 

@@ -6,12 +6,12 @@
  *  of this license document, but changing it is not allowed.
  */
 
-using System;
-using System.Diagnostics;
-using System.Timers;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
+using System;
+using System.Diagnostics;
+using System.Timers;
 using UVtools.Core.Operations;
 using UVtools.WPF.Controls;
 using UVtools.WPF.Structures;
@@ -23,9 +23,9 @@ public class ProgressWindow : WindowEx, IDisposable
     public Stopwatch StopWatch => Progress.StopWatch;
     public OperationProgress Progress { get; } = new ();
 
-    private LogItem _logItem = new ();
+    private readonly LogItem _logItem = new ();
 
-    private Timer _timer = new (200) { AutoReset = true };
+    private readonly Timer _timer = new (200) { AutoReset = true };
 
     private long _lastTotalSeconds = 0;
 

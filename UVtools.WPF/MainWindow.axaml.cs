@@ -20,10 +20,12 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 using System.Web;
 using UVtools.AvaloniaControls;
 using UVtools.Core;
+using UVtools.Core.Exceptions;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Managers;
@@ -798,6 +800,7 @@ public partial class MainWindow : WindowEx
             || !IsFileLoaded
             || LayerImageBox.IsPanning
             || LayerImageBox.TrackerImage is not null
+            //|| LayerImageBox.Cursor != Cursor.Default
             || LayerImageBox.Cursor == StaticControls.CrossCursor
             || LayerImageBox.Cursor == StaticControls.HandCursor
             || LayerImageBox.SelectionMode == AdvancedImageBox.SelectionModes.Rectangle
@@ -805,7 +808,7 @@ public partial class MainWindow : WindowEx
 
         var imageBoxMousePosition = _globalPointerEventArgs?.GetPosition(LayerImageBox) ?? new Point(-1, -1);
         if (imageBoxMousePosition.X < 0 || imageBoxMousePosition.Y < 0) return;
-
+        
         // Pixel Edit is active, Shift is down, and the cursor is over the image region.
         if (e.KeyModifiers == KeyModifiers.Shift)
         {
@@ -1277,7 +1280,9 @@ public partial class MainWindow : WindowEx
                 try
                 {
                     var operation = new OperationScripting(SlicerFile);
-                    operation.ReloadScriptFromFile(files[i]);
+                    //operation.FilePath = files[i];
+                    await Task.Run(() => operation.ReloadScriptFromFile(files[i]));
+                    
                     if (operation.CanExecute)
                     {
                         if ((_globalModifiers & KeyModifiers.Shift) != 0) await RunOperation(operation);
@@ -1687,7 +1692,7 @@ public partial class MainWindow : WindowEx
         RefreshProperties();
         ResetDataContext();
 
-        ForceUpdateActualLayer(actualLayer.Clamp(actualLayer, SliderMaximumValue));
+        ForceUpdateActualLayer(SlicerFile.SanitizeLayerIndex(actualLayer));
 
         if (Settings.LayerPreview.ZoomToFitPrintVolumeBounds)
         {
@@ -1796,14 +1801,15 @@ public partial class MainWindow : WindowEx
 
     private async void ConvertToOnTapped(object? sender, RoutedEventArgs e)
     {
-        if (sender is not MenuItem item) return;
-        if (item.Tag is not FileExtension fileExtension) return;
+        if (sender is not MenuItem {Tag: FileExtension fileExtension}) return;
 
         var fileFormat = fileExtension.GetFileFormat();
         uint version = fileFormat.DefaultVersion;
-        if (fileFormat.AvailableVersionsCount > 1)
+        var availableVersions = fileFormat.GetAvailableVersionsForExtension(fileExtension.Extension);
+
+        if (availableVersions.Length > 1)
         {
-            var versionSelectorWindow = new VersionSelectorWindow(fileFormat, fileExtension);
+            var versionSelectorWindow = new VersionSelectorWindow(fileFormat, fileExtension, availableVersions);
             await versionSelectorWindow.ShowDialog(this);
             switch (versionSelectorWindow.DialogResult)
             {
@@ -2040,7 +2046,7 @@ public partial class MainWindow : WindowEx
         var calibrateTypeBase = typeof(CalibrateElephantFootControl);
         var classname = type.Name.StartsWith("OperationCalibrate") ?
             $"{calibrateTypeBase.Namespace}.{type.Name.Remove(0, Operation.ClassNameLength)}Control" :
-            $"{toolTypeBase.Namespace}.Tool{type.Name.Remove(0, Operation.ClassNameLength)}Control"; ;
+            $"{toolTypeBase.Namespace}.Tool{type.Name.Remove(0, Operation.ClassNameLength)}Control";
         var controlType = Type.GetType(classname);
         ToolControl control;
 
@@ -2138,10 +2144,52 @@ public partial class MainWindow : WindowEx
             catch (OperationCanceledException)
             {
             }
+            catch (MessageException ex)
+            {
+                Dispatcher.UIThread.InvokeAsync(async ()
+                    => await this.MessageBoxError(ex.Message, $"{baseOperation.Title} Error"));
+            }
+            catch (AggregateException ex)
+            {
+                var sb = new StringBuilder();
+
+                var title = $"{baseOperation.Title} Error";
+
+                if (ex.InnerExceptions.Count > 0)
+                {
+                    if (ex.InnerExceptions.Count == 1)
+                    {
+                        if (ex.InnerExceptions[0] is MessageException messageException)
+                        {
+                            if (messageException.Title is not null) title = messageException.Title;
+                            sb.AppendLine(ex.InnerExceptions[0].Message);
+                        }
+                        else
+                        {
+                            sb.AppendLine(ex.InnerExceptions[0].ToString());
+                        }
+                    }
+                    else
+                    {
+                        for (var i = 0; i < ex.InnerExceptions.Count; i++)
+                        {
+                            if (ex.InnerExceptions[i] is MessageException {Title: { }} messageException)
+                            {
+                                title = messageException.Title;
+                            }
+
+                            if (i > 0) sb.AppendLine("---------------");
+                            sb.AppendLine($"({i + 1}) {(ex.InnerExceptions[i] is MessageException ? ex.InnerExceptions[i].Message : ex.InnerExceptions[i].ToString())}");
+                        }
+                    }
+                }
+
+                Dispatcher.UIThread.InvokeAsync(async () => await this.MessageBoxError(sb.ToString(), title));
+            }
             catch (Exception ex)
             {
-                Dispatcher.UIThread.InvokeAsync(async () =>
-                    await this.MessageBoxError(ex.ToString(), $"{baseOperation.Title} Error"));
+                Dispatcher.UIThread.InvokeAsync(async () 
+                    => await this.MessageBoxError(ex.ToString(), $"{baseOperation.Title} Error"));
             }
 
             return false;
@@ -2173,22 +2221,18 @@ public partial class MainWindow : WindowEx
                     await OnClickDetectIssues();
                     break;
             }
+
+            if (!string.IsNullOrWhiteSpace(baseOperation.AfterCompleteReport))
+            {
+                await this.MessageBoxInfo(baseOperation.AfterCompleteReport, $"{baseOperation.Title} report ({LastStopWatch.Elapsed.Hours}h{LastStopWatch.Elapsed.Minutes}m{LastStopWatch.Elapsed.Seconds}s)");
+            }
         }
         else
         {
             Clipboard.RestoreSnapshot();
         }
 
-        if (baseOperation.Tag is not null)
-        {
-            var message = baseOperation.Tag.ToString();
-            if (!string.IsNullOrWhiteSpace(message))
-            {
-                //message += $"\nExecution time: ";
-                    
-                await this.MessageBoxInfo(message, $"{baseOperation.Title} report ({LastStopWatch.Elapsed.Hours}h{LastStopWatch.Elapsed.Minutes}m{LastStopWatch.Elapsed.Seconds}s)");
-            }
-        }
+        
 
         return result;
     }

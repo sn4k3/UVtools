@@ -6,15 +6,15 @@
  *  of this license document, but changing it is not allowed.
  */
 
+using Emgu.CV;
+using Emgu.CV.CvEnum;
+using Emgu.CV.Util;
 using System;
 using System.Collections;
-using Emgu.CV;
-using Emgu.CV.Util;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
-using Emgu.CV.CvEnum;
 using UVtools.Core.Extensions;
 
 namespace UVtools.Core.EmguCV;

@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using Avalonia.Controls;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using Avalonia.Controls;
 using UVtools.Core.FileFormats;
 
 namespace UVtools.WPF.Controls;

@@ -5,15 +5,15 @@
  *  Everyone is permitted to copy and distribute verbatim copies
  *  of this license document, but changing it is not allowed.
  */
-using System;
-using System.IO;
-using System.Text;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Scripting;
+using System;
+using System.IO;
+using System.Text;
 using UVtools.Core;
 using UVtools.WPF.Controls;
 

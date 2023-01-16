@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Avalonia.Controls;
+﻿using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media.Imaging;
+using System.Collections.Generic;
+using System.Linq;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Objects;
 using UVtools.Core.Operations;

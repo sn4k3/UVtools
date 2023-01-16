@@ -6,6 +6,9 @@
  *  of this license document, but changing it is not allowed.
  */
 
+using Emgu.CV;
+using Emgu.CV.CvEnum;
+using Emgu.CV.Structure;
 using System;
 using System.Collections.Concurrent;
 using System.Drawing;
@@ -13,9 +16,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Emgu.CV;
-using Emgu.CV.CvEnum;
-using Emgu.CV.Structure;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Layers;

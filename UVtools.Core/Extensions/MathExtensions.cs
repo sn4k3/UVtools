@@ -13,7 +13,7 @@ namespace UVtools.Core.Extensions;
 
 public static class MathExtensions
 {
-    public static byte Clamp(this byte value, byte min, byte max)
+    /*public static byte Clamp(this byte value, byte min, byte max)
     {
         return value <= min ? min : value >= max ? max : value;
     }
@@ -76,7 +76,7 @@ public static class MathExtensions
             return max;
 
         return value;
-    }
+    }*/
 
     public static uint DecimalDigits(this float val)
     {

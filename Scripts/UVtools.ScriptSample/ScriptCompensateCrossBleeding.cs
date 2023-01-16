@@ -1,10 +1,10 @@
-﻿using System;
+﻿using Emgu.CV;
+using System;
 using System.Drawing;
 using System.Threading.Tasks;
 using UVtools.Core;
 using UVtools.Core.Extensions;
 using UVtools.Core.Scripting;
-using Emgu.CV;
 
 namespace UVtools.ScriptSample;
 

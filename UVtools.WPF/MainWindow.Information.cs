@@ -5,6 +5,12 @@
  *  Everyone is permitted to copy and distribute verbatim copies
  *  of this license document, but changing it is not allowed.
  */
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Input;
+using Emgu.CV;
+using Emgu.CV.CvEnum;
+using MessageBox.Avalonia.Enums;
 using System;
 using System.Collections;
 using System.Collections.ObjectModel;
@@ -12,20 +18,12 @@ using System.Globalization;
 using System.IO;
 using System.Reflection;
 using System.Text;
-using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Input;
-using Avalonia.Threading;
-using Emgu.CV;
-using Emgu.CV.CvEnum;
-using MessageBox.Avalonia.Enums;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Layers;
 using UVtools.Core.Objects;
 using UVtools.Core.SystemOS;
 using UVtools.WPF.Extensions;
 using UVtools.WPF.Structures;
-using static Org.BouncyCastle.Bcpg.Attr.ImageAttrib;
 using Bitmap = Avalonia.Media.Imaging.Bitmap;
 using Helpers = UVtools.WPF.Controls.Helpers;
 
@@ -133,7 +131,7 @@ public partial class MainWindow
             if (SlicerFile.Thumbnails[index] is null || SlicerFile.Thumbnails[index].IsEmpty) return;
             if (!RaiseAndSetIfChanged(ref _visibleThumbnailIndex, value)) return;
 
-            VisibleThumbnailImage = SlicerFile.Thumbnails[index].ToBitmap();
+            VisibleThumbnailImage = SlicerFile.Thumbnails[index].ToBitmapParallel();
             RaisePropertyChanged(nameof(ThumbnailCanGoPrevious));
             RaisePropertyChanged(nameof(ThumbnailCanGoNext));
         }
@@ -348,7 +346,7 @@ public partial class MainWindow
             result = SlicerFile.SetThumbnail((int) i, mat);
         }
 
-        mat?.Dispose();;
+        mat?.Dispose();
 
         if(result) CanSave = true;
     }
@@ -361,7 +359,7 @@ public partial class MainWindow
         {
             return; 
         }
-        VisibleThumbnailImage = SlicerFile.Thumbnails[i].ToBitmap();
+        VisibleThumbnailImage = SlicerFile.Thumbnails[i].ToBitmapParallel();
     }
     #endregion
 

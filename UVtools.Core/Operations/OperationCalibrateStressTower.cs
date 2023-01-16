@@ -354,7 +354,7 @@ public sealed class OperationCalibrateStressTower : Operation
                 {
                     spiralAngle = -spiralAngle;
                 }
-                Point location = new((int) (center.X - baseRadius + spiralRadius), center.Y);
+                Point location = center with {X = (int) (center.X - baseRadius + spiralRadius)};
                 var locationCW = location.Rotate((double) spiralAngle, center);
                 var locationCCW = location.Rotate((double) -spiralAngle, center);
 

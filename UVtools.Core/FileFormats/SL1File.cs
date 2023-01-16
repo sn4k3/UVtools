@@ -392,7 +392,7 @@ public sealed class SL1File : FileFormat
     {
         get
         {
-            if (PrinterSettings.DisplayMirrorX > 0 && PrinterSettings.DisplayMirrorY > 0) return FlipDirection.Both;
+            if (PrinterSettings is {DisplayMirrorX: > 0, DisplayMirrorY: > 0}) return FlipDirection.Both;
             if (PrinterSettings.DisplayMirrorX > 0) return FlipDirection.Horizontally;
             if (PrinterSettings.DisplayMirrorY > 0) return FlipDirection.Vertically;
             return FlipDirection.None;
@@ -620,8 +620,7 @@ public sealed class SL1File : FileFormat
             if (!entity.Name.EndsWith(".ini")) continue;
             iniFiles.Add(entity.Name);
             using StreamReader streamReader = new(entity.Open());
-            string? line;
-            while ((line = streamReader.ReadLine()) != null)
+            while (streamReader.ReadLine() is { } line)
             {
                 var keyValue = line.Split('=', 2, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
                 if (keyValue.Length < 2) continue;

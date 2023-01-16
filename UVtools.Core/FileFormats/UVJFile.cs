@@ -268,7 +268,7 @@ public sealed class UVJFile : FileFormat
     public override byte AntiAliasing
     {
         get => JsonSettings.Properties.AntiAliasLevel;
-        set => base.AntiAliasing = JsonSettings.Properties.AntiAliasLevel = value.Clamp(1, 16);
+        set => base.AntiAliasing = JsonSettings.Properties.AntiAliasLevel = Math.Clamp(value, (byte)1, (byte)16);
     }
 
     public override float LayerHeight

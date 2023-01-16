@@ -56,7 +56,7 @@ public static class SizeExtensions
     public static Size Multiply(this Size size, double dxy) => new((int)(size.Width * dxy), (int)(size.Height * dxy));
     public static Size Multiply(this Size size, double dx, double dy) => new((int)(size.Width * dx), (int)(size.Height * dy));
 
-    public static Size Divide(this Size size, Size otherSize) => new((int)(otherSize.Width == 0 ? 0 : size.Width / otherSize.Width), (int)(otherSize.Height == 0 ? 0 : size.Height / otherSize.Height));
+    public static Size Divide(this Size size, Size otherSize) => new(otherSize.Width == 0 ? 0 : size.Width / otherSize.Width, (int)(otherSize.Height == 0 ? 0 : size.Height / otherSize.Height));
     public static Size Divide(this Size size, SizeF otherSize) => new((int)(otherSize.Width == 0 ? 0 : size.Width / otherSize.Width), (int)(otherSize.Height == 0 ? 0 : size.Height / otherSize.Height));
     public static Size Divide(this Size size) => size.Divide(size);
     public static Size Divide(this Size size, double dxy) => dxy == 0 ? Size.Empty : new((int)(size.Width / dxy), (int)(size.Height / dxy));
@@ -82,14 +82,10 @@ public static class SizeExtensions
     /// <returns></returns>
     public static Size Exchange(this Size size) => new(size.Height, size.Width);
 
-    public static int Area(this Rectangle rect) => rect.Width * rect.Height;
-
     public static int Area(this Size size) => size.Width * size.Height;
 
     public static int Max(this Size size) => Math.Max(size.Width, size.Height);
 
-
-    public static float Area(this RectangleF rect, int round = -1) => round >= 0 ? (float) Math.Round(rect.Width * rect.Height, round) : rect.Width * rect.Height;
 
     /// <summary>
     /// Gets if this size have a zero value on width or height
@@ -98,7 +94,8 @@ public static class SizeExtensions
     /// <returns></returns>
     public static bool HaveZero(this SizeF size) => size.Width <= 0 || size.Height <= 0;
 
-    public static float Area(this SizeF size, int round = -1) => round >= 0 ? (float)Math.Round(size.Width * size.Height, round) : size.Width * size.Height;
+    public static float Area(this SizeF size) => size.Width * size.Height;
+    public static float Area(this SizeF size, int round) => (float)Math.Round(size.Area(), round) ;
 
     public static float Max(this SizeF size) => Math.Max(size.Width, size.Height);
 

@@ -7,10 +7,10 @@
  */
 
 using Emgu.CV;
+using Emgu.CV.CvEnum;
 using System;
 using System.CommandLine;
 using System.IO;
-using Emgu.CV.CvEnum;
 
 namespace UVtools.Cmd.Symbols;
 

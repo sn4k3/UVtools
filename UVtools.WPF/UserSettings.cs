@@ -6,6 +6,8 @@
  *  of this license document, but changing it is not allowed.
  */
 
+using Avalonia.Media;
+using JetBrains.Annotations;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -13,15 +15,13 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Xml.Serialization;
-using Avalonia.Media;
-using JetBrains.Annotations;
 using UVtools.Core;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Layers;
 using UVtools.Core.Network;
 using UVtools.Core.Objects;
-using Color=UVtools.WPF.Structures.Color;
+using Color = UVtools.WPF.Structures.Color;
 
 namespace UVtools.WPF;
 

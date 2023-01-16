@@ -6,18 +6,17 @@
  *  of this license document, but changing it is not allowed.
  */
 
-using System;
-using System.Collections.Generic;
-using System.Drawing;
-using UVtools.Core.Scripting;
-using System.IO;
-using System.Threading.Tasks;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Util;
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Threading.Tasks;
 using UVtools.Core;
 using UVtools.Core.EmguCV;
 using UVtools.Core.Extensions;
+using UVtools.Core.Scripting;
 
 namespace UVtools.ScriptSample;
 

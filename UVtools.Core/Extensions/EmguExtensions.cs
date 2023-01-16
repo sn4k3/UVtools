@@ -6,6 +6,7 @@
  *  of this license document, but changing it is not allowed.
  */
 
+using CommunityToolkit.HighPerformance;
 using Emgu.CV;
 using Emgu.CV.Cuda;
 using Emgu.CV.CvEnum;
@@ -17,7 +18,6 @@ using System.Drawing;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
-using CommunityToolkit.HighPerformance;
 using UVtools.Core.EmguCV;
 using UVtools.Core.Objects;
 
@@ -915,7 +915,7 @@ public static class EmguExtensions
     /// <param name="scale"></param>
     public static void Rotate(this Mat src, Mat dst, double angle, Size newSize = default, double scale = 1.0)
     {
-        if (angle % 360 == 0 && scale == 1.0) return;
+        if (angle % 360 == 0 && Math.Abs(scale - 1.0) < 0.001) return;
         if (newSize.IsEmpty)
         {
             newSize = src.Size;
@@ -953,7 +953,7 @@ public static class EmguExtensions
     /// <param name="scale"></param>
     public static void RotateAdjustBounds(this Mat src, Mat dst, double angle, double scale = 1.0)
     {
-        if (angle % 360 == 0 && scale == 1.0) return;
+        if (angle % 360 == 0 && Math.Abs(scale - 1.0) < 0.001) return;
         var halfWidth = src.Width / 2.0f;
         var halfHeight = src.Height / 2.0f;
         using var translateTransform = new Matrix<double>(2, 3);
@@ -999,7 +999,7 @@ public static class EmguExtensions
     /// <param name="interpolation"></param>
     public static void Resize(this Mat src, double scale, Inter interpolation = Inter.Linear)
     {
-        if (scale == 1) return;
+        if (Math.Abs(scale - 1) < 0.001) return;
         CvInvoke.Resize(src, src, new Size((int) (src.Width * scale), (int) (src.Height * scale)), 0, 0, interpolation);
     }
     #endregion

@@ -6,15 +6,15 @@
  *  of this license document, but changing it is not allowed.
  */
 
+using Emgu.CV;
+using Emgu.CV.Structure;
 using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
-using UVtools.Core.Scripting;
-using Emgu.CV;
-using Emgu.CV.Structure;
 using UVtools.Core;
 using UVtools.Core.Extensions;
+using UVtools.Core.Scripting;
 
 namespace UVtools.ScriptSample;
 

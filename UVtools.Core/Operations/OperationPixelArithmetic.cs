@@ -1258,7 +1258,7 @@ public class OperationPixelArithmetic : Operation
 
 
             PatternText = p1.Trim('\n', '\r');
-            PatternTextAlternate = p2.Trim('\n', '\r'); ;
+            PatternTextAlternate = p2.Trim('\n', '\r');
             return;
         }
     }

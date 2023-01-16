@@ -1,11 +1,11 @@
-﻿using System.ComponentModel;
-using System.Globalization;
-using Avalonia;
+﻿using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Markup.Xaml;
-using UVtools.Core.Extensions;
+using System;
+using System.ComponentModel;
+using System.Globalization;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Operations;
 using UVtools.WPF.Windows;
@@ -33,7 +33,7 @@ public class ToolEditParametersControl : ToolControl
         {
             Modifier = modifier;
 
-            modifier.NewValue = modifier.OldValue.Clamp(modifier.Minimum, modifier.Maximum);
+            modifier.NewValue = Math.Clamp(modifier.OldValue, modifier.Minimum, modifier.Maximum);
                 
             Name = new TextBlock
             {

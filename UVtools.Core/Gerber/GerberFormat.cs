@@ -6,16 +6,16 @@
  *  of this license document, but changing it is not allowed.
  */
 
+using Emgu.CV;
+using Emgu.CV.CvEnum;
+using Emgu.CV.Structure;
+using Emgu.CV.Util;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Text.RegularExpressions;
-using Emgu.CV;
-using Emgu.CV.CvEnum;
-using Emgu.CV.Structure;
-using Emgu.CV.Util;
 using UVtools.Core.Extensions;
 using UVtools.Core.Gerber.Apertures;
 using UVtools.Core.Operations;
@@ -25,7 +25,7 @@ namespace UVtools.Core.Gerber;
 /// <summary>
 /// https://www.ucamco.com/files/downloads/file_en/456/gerber-layer-format-specification-revision-2022-02_en.pdf?ac97011bf6bce9aaf0b1aac43d84b05f
 /// </summary>
-public class GerberDocument
+public class GerberFormat
 {
     #region Properties
 
@@ -34,7 +34,7 @@ public class GerberDocument
     public GerberUnitType UnitType { get; set; } = GerberUnitType.Millimeter;
     public GerberPolarityType Polarity { get; set; } = GerberPolarityType.Dark;
     public GerberMoveType MoveType { get; set; } = GerberMoveType.Linear;
-    public GerberMidpointRounding SizeMidpointRounding { get; set; } = GerberMidpointRounding.AwayFromZero;
+    public MidpointRoundingType SizeMidpointRounding { get; set; } = MidpointRoundingType.AwayFromZero;
 
     public byte CoordinateXIntegers { get; set; } = 3;
     public byte CoordinateXFractionalDigits { get; set; } = 6;
@@ -80,15 +80,15 @@ public class GerberDocument
     #endregion
 
 
-    public GerberDocument()
+    public GerberFormat()
     {
     }
 
-    public GerberDocument(string filePath)
+    public GerberFormat(string filePath)
     {
     }
 
-    public static void ParseAndDraw(GerberDocument document, string filePath, Mat mat, bool enableAntiAliasing = false)
+    public static void ParseAndDraw(GerberFormat document, string filePath, Mat mat, bool enableAntiAliasing = false)
     {
         using var file = new StreamReader(filePath);
 
@@ -101,11 +101,9 @@ public class GerberDocument
         Aperture? currentAperture = null;
         var regionPoints = new List<Point>();
         bool insideRegion = false;
-        string? line;
-        while ((line = file.ReadLine()) is not null)
+        while (file.ReadLine()?.Trim() is { } line)
         {
-            line = line.Trim();
-            if (line == string.Empty) continue;
+            if (line.Length == 0) continue;
             if (line.StartsWith("M02")) break;
 
             var accumulatedLine = line;
@@ -362,30 +360,38 @@ public class GerberDocument
                                 var matchJ = Regex.Match(line, @"J(-?\d+)");
                                 if (!matchI.Success || !matchJ.Success || matchI.Groups.Count < 2 || matchJ.Groups.Count < 2) continue;
 
+                                // xOffset
+                                var matchValue = matchI.Groups[1].Value[0] == '-'
+                                    ? matchI.Groups[1].Value.Remove(0, 1)
+                                    : matchI.Groups[1].Value;
 
                                 var valueStr = document.ZerosSuppressionType switch
                                 {
-                                    GerberZerosSuppressionType.Trail => matchI.Groups[1].Value.PadRight(document.CoordinateXLength, '0'),
-                                    _ => matchI.Groups[1].Value.PadLeft(document.CoordinateXLength, '0'),
+                                    GerberZerosSuppressionType.Trail => matchValue.PadRight(document.CoordinateXLength, '0'),
+                                    _ => matchValue.PadLeft(document.CoordinateXLength, '0'),
                                 };
 
 
                                 var integers = valueStr[..document.CoordinateXIntegers];
                                 var fraction = valueStr[document.CoordinateXIntegers..];
-                                double.TryParse($"{integers}.{fraction}", NumberStyles.Float, CultureInfo.InvariantCulture, out xOffset);
+                                double.TryParse($"{(matchI.Groups[1].Value[0] == '-' ? "-" : string.Empty)}{integers}.{fraction}", NumberStyles.Float, CultureInfo.InvariantCulture, out xOffset);
                                 xOffset = document.GetMillimeters(xOffset);
 
+                                // yOffset
+                                matchValue = matchJ.Groups[1].Value[0] == '-'
+                                    ? matchJ.Groups[1].Value.Remove(0, 1)
+                                    : matchJ.Groups[1].Value;
 
                                 valueStr = document.ZerosSuppressionType switch
                                 {
-                                    GerberZerosSuppressionType.Trail => matchJ.Groups[1].Value.PadRight(document.CoordinateYLength, '0'),
-                                    _ => matchJ.Groups[1].Value.PadLeft(document.CoordinateYLength, '0'),
+                                    GerberZerosSuppressionType.Trail => matchValue.PadRight(document.CoordinateYLength, '0'),
+                                    _ => matchValue.PadLeft(document.CoordinateYLength, '0'),
                                 };
 
 
                                 integers = valueStr[..document.CoordinateYIntegers];
                                 fraction = valueStr[document.CoordinateYIntegers..];
-                                double.TryParse($"{integers}.{fraction}", NumberStyles.Float, CultureInfo.InvariantCulture, out yOffset);
+                                double.TryParse($"{(matchJ.Groups[1].Value[0] == '-' ? "-" : string.Empty)}{integers}.{fraction}", NumberStyles.Float, CultureInfo.InvariantCulture, out yOffset);
                                 yOffset = document.GetMillimeters(yOffset);
 
 
@@ -455,9 +461,9 @@ public class GerberDocument
         }
     }
 
-    public static GerberDocument ParseAndDraw(OperationPCBExposure.PCBExposureFile file, Mat mat, SizeF xyPpmm, GerberMidpointRounding sizeMidpointRounding = GerberMidpointRounding.AwayFromZero, SizeF offset = default, bool enableAntiAliasing = false)
+    public static GerberFormat ParseAndDraw(OperationPCBExposure.PCBExposureFile file, Mat mat, SizeF xyPpmm, MidpointRoundingType sizeMidpointRounding = MidpointRoundingType.AwayFromZero, SizeF offset = default, bool enableAntiAliasing = false)
     {
-        var document = new GerberDocument
+        var document = new GerberFormat
         {
             SizeMidpointRounding = sizeMidpointRounding,
             XYppmm = xyPpmm,
@@ -472,9 +478,9 @@ public class GerberDocument
         return document;
     }
 
-    public static GerberDocument ParseAndDraw(string filePath, Mat mat, SizeF xyPpmm, GerberMidpointRounding sizeMidpointRounding = GerberMidpointRounding.AwayFromZero, SizeF offset = default, bool enableAntiAliasing = false)
+    public static GerberFormat ParseAndDraw(string filePath, Mat mat, SizeF xyPpmm, MidpointRoundingType sizeMidpointRounding = MidpointRoundingType.AwayFromZero, SizeF offset = default, bool enableAntiAliasing = false)
     {
-        var document = new GerberDocument
+        var document = new GerberFormat
         {
             SizeMidpointRounding = sizeMidpointRounding,
             XYppmm = xyPpmm,

@@ -182,8 +182,8 @@ public class Voxelizer
         {
             var lowerLeft = new Vector3(face.FaceRect.X * xSize, face.FaceRect.Y * ySize, positionZ);
             var lowerRight = new Vector3((face.FaceRect.X + face.FaceRect.Width) * xSize, face.FaceRect.Y * ySize, positionZ);
-            var upperLeft = new Vector3(lowerLeft.X, lowerLeft.Y, lowerLeft.Z + height);
-            var upperRight = new Vector3(lowerRight.X, lowerRight.Y, lowerRight.Z + height);
+            var upperLeft = lowerLeft with {Z = lowerLeft.Z + height};
+            var upperRight = lowerRight with {Z = lowerRight.Z + height};
             yield return (lowerLeft, lowerRight, upperRight, FrontNormal);
             yield return (upperRight, upperLeft, lowerLeft, FrontNormal);
         }
@@ -191,8 +191,8 @@ public class Voxelizer
         {
             var lowerRight = new Vector3(face.FaceRect.X * xSize, face.FaceRect.Y * ySize + ySize, positionZ);
             var lowerLeft = new Vector3((face.FaceRect.X + face.FaceRect.Width) * xSize, face.FaceRect.Y * ySize + ySize, positionZ);
-            var upperLeft = new Vector3(lowerLeft.X, lowerLeft.Y, lowerLeft.Z + height);
-            var upperRight = new Vector3(lowerRight.X, lowerRight.Y, lowerRight.Z + height);
+            var upperLeft = lowerLeft with {Z = lowerLeft.Z + height};
+            var upperRight = lowerRight with {Z = lowerRight.Z + height};
             yield return (lowerLeft, lowerRight, upperRight, BackNormal);
             yield return (upperRight, upperLeft, lowerLeft, BackNormal);
         }
@@ -200,8 +200,8 @@ public class Voxelizer
         {
             var lowerLeft = new Vector3(face.FaceRect.X * xSize, (face.FaceRect.Y + face.FaceRect.Width) * ySize, positionZ);
             var lowerRight = new Vector3(face.FaceRect.X * xSize, (face.FaceRect.Y) * ySize, positionZ);
-            var upperLeft = new Vector3(lowerLeft.X, lowerLeft.Y, lowerLeft.Z + height);
-            var upperRight = new Vector3(lowerRight.X, lowerRight.Y, lowerRight.Z + height);
+            var upperLeft = lowerLeft with {Z = lowerLeft.Z + height};
+            var upperRight = lowerRight with {Z = lowerRight.Z + height};
             yield return (lowerLeft, lowerRight, upperRight, LeftNormal);
             yield return (upperRight, upperLeft, lowerLeft, LeftNormal);
         }
@@ -209,8 +209,8 @@ public class Voxelizer
         {
             var lowerRight = new Vector3(face.FaceRect.X * xSize + xSize, (face.FaceRect.Y + face.FaceRect.Width) * ySize, positionZ);
             var lowerLeft = new Vector3(face.FaceRect.X * xSize + xSize, (face.FaceRect.Y) * ySize, positionZ);
-            var upperLeft = new Vector3(lowerLeft.X, lowerLeft.Y, lowerLeft.Z + height);
-            var upperRight = new Vector3(lowerRight.X, lowerRight.Y, lowerRight.Z + height);
+            var upperLeft = lowerLeft with {Z = lowerLeft.Z + height};
+            var upperRight = lowerRight with {Z = lowerRight.Z + height};
             yield return (lowerLeft, lowerRight, upperRight, RightNormal);
             yield return (upperRight, upperLeft, lowerLeft, RightNormal);
         }

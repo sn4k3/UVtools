@@ -9,7 +9,6 @@
 using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Scripting;
 using System;
-using System.Diagnostics;
 using System.IO;
 using System.Xml.Serialization;
 using UVtools.Core.FileFormats;
@@ -56,9 +55,8 @@ public sealed class OperationScripting : Operation
         {
             if (ScriptGlobals is not null && About.Version.CompareTo(ScriptGlobals.Script.MinimumVersionToRun) >= 0)
             {
-                return
-                    $"Unable to run due {About.Software} version {About.VersionStr} is lower than required {ScriptGlobals.Script.MinimumVersionToRun}\n" +
-                    $"Please update {About.Software} in order to run this script.";
+                return $"Unable to run due {About.Software} version {About.VersionStr} is lower than required {ScriptGlobals.Script.MinimumVersionToRun}\n" +
+                       $"Please update {About.Software} in order to run this script.";
             }
 
             return "Script is not loaded.";
@@ -170,23 +168,20 @@ public sealed class OperationScripting : Operation
         if (!string.IsNullOrWhiteSpace(text)) ScriptText = text;
         if (string.IsNullOrWhiteSpace(_scriptText)) return;
 
-
         ScriptText = ScriptParser.ParseScriptFromText(_scriptText);
 
         ScriptGlobals = new ScriptGlobals { SlicerFile = SlicerFile, Operation = this };
-        _scriptState = CSharpScript.RunAsync(_scriptText,
+
+       _scriptState = CSharpScript.RunAsync(_scriptText,
             ScriptOptions.Default
                 .AddReferences(typeof(About).Assembly)
                 .WithAllowUnsafe(true),
             ScriptGlobals).Result;
-        
         var result = _scriptState.ContinueWithAsync("ScriptInit();").Result;
-
+        
         RaisePropertyChanged(nameof(CanExecute));
         OnScriptReload?.Invoke(this, EventArgs.Empty);
     }
-
-
 
     protected override bool ExecuteInternally(OperationProgress progress)
     {

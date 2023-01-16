@@ -108,7 +108,7 @@ public class GenericFileRepresentation : BindableBase, ICloneable,
 
     public int CompareTo(string? other)
     {
-        return FileName.CompareTo(other);
+        return string.Compare(FileName, other, StringComparison.Ordinal);
     }
 
     public bool Equals(GenericFileRepresentation? other)

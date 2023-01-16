@@ -1,6 +1,6 @@
-﻿using System.Threading.Tasks;
-using Avalonia.Controls;
+﻿using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
+using System.Threading.Tasks;
 using UVtools.Core.Objects;
 using UVtools.Core.Operations;
 using UVtools.WPF.Extensions;

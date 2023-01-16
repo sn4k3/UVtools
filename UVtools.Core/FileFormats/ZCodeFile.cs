@@ -276,7 +276,7 @@ public sealed class ZCodeFile : FileFormat
     public override byte AntiAliasing
     {
         get => ManifestFile.Profile.Slice.AntiAliasing;
-        set => base.AntiAliasing = ManifestFile.Profile.Slice.AntiAliasing = value.Clamp(1, 16);
+        set => base.AntiAliasing = ManifestFile.Profile.Slice.AntiAliasing = Math.Clamp(value, (byte)1, (byte)16);
     }
 
     public override float LayerHeight
@@ -518,9 +518,8 @@ public sealed class ZCodeFile : FileFormat
 
         using (TextReader tr = new StreamReader(entry.Open()))
         {
-            string? line;
             progress.Reset("Decrypting GCode", (uint) (entry.Length / 88));
-            while ((line = tr.ReadLine()) != null)
+            while (tr.ReadLine() is { } line)
             {
                 if (string.IsNullOrEmpty(line)) continue;
                 if (!line.EndsWith("==")) continue;
@@ -581,8 +580,7 @@ public sealed class ZCodeFile : FileFormat
         encryptEngine.Init(true, keyParameter);
 
         using StringReader sr = new(GCodeStr!);
-        string? line;
-        while ((line = sr.ReadLine()) != null)
+        while (sr.ReadLine() is { } line)
         {
             line = line.Trim();
             if (line == string.Empty || line[0] == ';') continue; // No empty lines nor comment start lines

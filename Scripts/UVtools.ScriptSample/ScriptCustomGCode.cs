@@ -8,10 +8,6 @@
 
 using System;
 using UVtools.Core.Scripting;
-using System.IO;
-using UVtools.Core;
-using UVtools.Core.Extensions;
-using UVtools.Core.FileFormats;
 
 namespace UVtools.ScriptSample;
 

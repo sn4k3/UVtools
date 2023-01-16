@@ -1,11 +1,11 @@
-﻿using System;
+﻿using Avalonia.Controls;
+using Avalonia.Markup.Xaml;
+using MessageBox.Avalonia.Enums;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
-using Avalonia.Controls;
-using Avalonia.Markup.Xaml;
-using MessageBox.Avalonia.Enums;
 using UVtools.Core;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Network;
@@ -20,9 +20,9 @@ public class SettingsWindow : WindowEx
 {
     private double _scrollViewerMaxHeight;
     private int _selectedTabIndex;
-    private DataGrid _sendToCustomLocationsGrid;
-    private DataGrid _sendToProcessGrid;
-    private ComboBox _networkRemotePrinterComboBox;
+    private readonly DataGrid _sendToCustomLocationsGrid;
+    private readonly DataGrid _sendToProcessGrid;
+    private readonly ComboBox _networkRemotePrinterComboBox;
 
     public int MaxProcessorCount => Environment.ProcessorCount;
 

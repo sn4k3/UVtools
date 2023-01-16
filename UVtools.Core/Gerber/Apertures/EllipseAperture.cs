@@ -6,10 +6,10 @@
  *  of this license document, but changing it is not allowed.
  */
 
-using System.Drawing;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
+using System.Drawing;
 
 namespace UVtools.Core.Gerber.Apertures;
 
@@ -20,14 +20,14 @@ public class EllipseAperture : Aperture
     #endregion
 
     #region Constructor
-    public EllipseAperture(GerberDocument document) : base(document, "Ellipse") { }
+    public EllipseAperture(GerberFormat document) : base(document, "Ellipse") { }
 
-    public EllipseAperture(GerberDocument document, int index, float width, float height) : this(document, index, new SizeF(width, height))
+    public EllipseAperture(GerberFormat document, int index, float width, float height) : this(document, index, new SizeF(width, height))
     {
 
     }
 
-    public EllipseAperture(GerberDocument document, int index, SizeF axes) : base(document, index, "Ellipse")
+    public EllipseAperture(GerberFormat document, int index, SizeF axes) : base(document, index, "Ellipse")
     {
         Axes = document.GetMillimeters(axes);
     }

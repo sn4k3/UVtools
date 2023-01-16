@@ -435,14 +435,9 @@ public sealed class CTBEncryptedFile : FileFormat
 
             AddRep();
 
-            if (Parent!.Settings.LayerXorKey > 0)
-            {
-                RLEData = ChituboxFile.LayerRleCrypt(Parent.Settings.LayerXorKey, layerIndex, rawData);
-            }
-            else
-            {
-                RLEData = rawData.ToArray();
-            }
+            RLEData = Parent!.Settings.LayerXorKey > 0 
+                ? ChituboxFile.LayerRleCrypt(Parent.Settings.LayerXorKey, layerIndex, rawData) 
+                : rawData.ToArray();
 
             DataLength = (uint)RLEData.Length;
 
@@ -604,13 +599,13 @@ public sealed class CTBEncryptedFile : FileFormat
         new(200, 125)
     };
 
-    public Preview[] Previews { get; protected internal set; }
+    public Preview[] Previews { get; private set; }
 
-    public FileHeader Header { get; protected internal set; } = new();
+    public FileHeader Header { get; private set; } = new();
 
-    public SlicerSettings Settings { get; protected internal set; } = new();
-    public LayerPointer[]? LayersPointer { get; protected internal set; }
-    public LayerDef[]? LayersDefinition { get; protected internal set; }
+    public SlicerSettings Settings { get; private set; } = new();
+    public LayerPointer[]? LayersPointer { get; private set; }
+    public LayerDef[]? LayersDefinition { get; private set; }
 
     public override PrintParameterModifier[]? PrintParameterModifiers { get; } = {
         PrintParameterModifier.BottomLayerCount,
@@ -798,7 +793,7 @@ public sealed class CTBEncryptedFile : FileFormat
 
     public override float BottomWaitTimeBeforeCure
     {
-        get => base.BottomWaitTimeBeforeCure > 0 ? base.BottomWaitTimeBeforeCure : this.FirstOrDefault(layer => layer is not null && layer.IsBottomLayer && layer.NonZeroPixelCount > 1)?.WaitTimeBeforeCure ?? 0;
+        get => base.BottomWaitTimeBeforeCure > 0 ? base.BottomWaitTimeBeforeCure : this.FirstOrDefault(layer => layer is { IsBottomLayer: true, IsDummy: false })?.WaitTimeBeforeCure ?? 0;
         set => base.BottomWaitTimeBeforeCure = value;
     }
 
@@ -825,7 +820,7 @@ public sealed class CTBEncryptedFile : FileFormat
 
     public override float BottomWaitTimeAfterCure
     {
-        get => base.BottomWaitTimeAfterCure > 0 ? base.BottomWaitTimeAfterCure : this.FirstOrDefault(layer => layer is not null && layer.IsBottomLayer && layer.NonZeroPixelCount > 1)?.WaitTimeAfterCure ?? 0;
+        get => base.BottomWaitTimeAfterCure > 0 ? base.BottomWaitTimeAfterCure : this.FirstOrDefault(layer => layer is { IsBottomLayer: true, IsDummy: false })?.WaitTimeAfterCure ?? 0;
         set => base.BottomWaitTimeAfterCure = value;
     }
 
@@ -921,7 +916,7 @@ public sealed class CTBEncryptedFile : FileFormat
 
     public override float BottomWaitTimeAfterLift
     {
-        get => base.BottomWaitTimeAfterLift > 0 ? base.BottomWaitTimeAfterLift : this.FirstOrDefault(layer => layer is not null && layer.IsBottomLayer && layer.NonZeroPixelCount > 1)?.WaitTimeAfterLift ?? 0;
+        get => base.BottomWaitTimeAfterLift > 0 ? base.BottomWaitTimeAfterLift : this.FirstOrDefault(layer => layer is { IsBottomLayer: true, IsDummy: false })?.WaitTimeAfterLift ?? 0;
         set => base.BottomWaitTimeAfterLift = value;
     }
 

@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
-using Avalonia.Controls;
+﻿using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
+using System.Collections.Generic;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Operations;
 using UVtools.WPF.Windows;

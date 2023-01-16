@@ -1007,20 +1007,20 @@ public sealed class PhotonWorkshopFile : FileFormat
 
     #region Properties
 
-    public FileMark FileMarkSettings { get; protected internal set; } = new();
+    public FileMark FileMarkSettings { get; private set; } = new();
 
-    public Header HeaderSettings { get; protected internal set; } = new();
-    public HeaderV516 HeaderV516Settings { get; protected internal set; } = new();
-    public HeaderV517 HeaderV517Settings { get; protected internal set; } = new();
+    public Header HeaderSettings { get; private set; } = new();
+    public HeaderV516 HeaderV516Settings { get; private set; } = new();
+    public HeaderV517 HeaderV517Settings { get; private set; } = new();
 
-    public Preview PreviewSettings { get; protected internal set; } = new();
-    public LayerImageColorTable LayerImageColorSettings { get; protected internal set; } = new();
+    public Preview PreviewSettings { get; private set; } = new();
+    public LayerImageColorTable LayerImageColorSettings { get; private set; } = new();
 
-    public LayerDefinition LayersDefinition { get; protected internal set; } = new();
-    public Extra ExtraSettings { get; protected internal set; } = new();
-    public Machine MachineSettings { get; protected internal set; } = new(true);
-    public Software SoftwareSettings { get; protected internal set; } = new();
-    public Model ModelSettings { get; protected internal set; } = new();
+    public LayerDefinition LayersDefinition { get; private set; } = new();
+    public Extra ExtraSettings { get; private set; } = new();
+    public Machine MachineSettings { get; private set; } = new(true);
+    public Software SoftwareSettings { get; private set; } = new();
+    public Model ModelSettings { get; private set; } = new();
 
     public override FileFormatType FileType => FileFormatType.Binary;
 
@@ -1113,6 +1113,37 @@ public sealed class PhotonWorkshopFile : FileFormat
     public override Size[]? ThumbnailsOriginalSize { get; } = {new(224, 168)};
 
     public override uint[] AvailableVersions { get; } = { VERSION_1, VERSION_515, VERSION_516, VERSION_517 };
+
+    public override uint[] GetAvailableVersionsForExtension(string? extension)
+    {
+        if (string.IsNullOrWhiteSpace(extension)) return AvailableVersions;
+        if (extension[0] == '.') extension = extension.Remove(0, 1).ToLower();
+
+        switch (extension)
+        {
+            case "pws":
+            case "pw0":
+            case "pwx":
+                return new uint[] {VERSION_1};
+            case "pwmo":
+            case "pwms":
+            case "pmsq":
+            case "dlp":
+                return new uint[] { VERSION_1, VERSION_515 };
+            case "pwma":
+            case "pwmx":
+            case "pm3":
+            case "pm3m":
+                return new uint[] { VERSION_515, VERSION_516 };
+            case "pwmb":
+            case "dl2p":
+            case "pmx2":
+            case "pm3r":
+                return new uint[] { VERSION_515, VERSION_516, VERSION_517 };
+            default:
+                return AvailableVersions;
+        }
+    }
 
     public override uint DefaultVersion => VERSION_1;
 
@@ -1234,7 +1265,7 @@ public sealed class PhotonWorkshopFile : FileFormat
         get => (byte) HeaderSettings.AntiAliasing;
         set
         {
-            base.AntiAliasing = (byte)(HeaderSettings.AntiAliasing = value.Clamp(1, 16));
+            base.AntiAliasing = (byte)(HeaderSettings.AntiAliasing = Math.Clamp(value, (byte)1, (byte)16));
             ValidateAntiAliasingLevel();
         }
     }
@@ -1835,7 +1866,7 @@ public sealed class PhotonWorkshopFile : FileFormat
             PreviewSettings.Data = null!;
         }
 
-        if (FileMarkSettings.Version >= VERSION_515 && FileMarkSettings.LayerImageColorTableAddress > 0)
+        if (FileMarkSettings is {Version: >= VERSION_515, LayerImageColorTableAddress: > 0})
         {
             inputFile.Seek(FileMarkSettings.LayerImageColorTableAddress, SeekOrigin.Begin);
             LayerImageColorSettings = Helpers.Deserialize<LayerImageColorTable>(inputFile);
@@ -1843,7 +1874,7 @@ public sealed class PhotonWorkshopFile : FileFormat
             Debug.WriteLine(LayerImageColorSettings);
         }
 
-        if (FileMarkSettings.Version >= VERSION_516 && FileMarkSettings.ExtraAddress > 0)
+        if (FileMarkSettings is {Version: >= VERSION_516, ExtraAddress: > 0})
         {
             inputFile.Seek(FileMarkSettings.ExtraAddress, SeekOrigin.Begin);
             ExtraSettings = Helpers.Deserialize<Extra>(inputFile);
@@ -1852,7 +1883,7 @@ public sealed class PhotonWorkshopFile : FileFormat
             Debug.WriteLine(ExtraSettings);
         }
 
-        if (FileMarkSettings.Version >= VERSION_516 && FileMarkSettings.MachineAddress > 0)
+        if (FileMarkSettings is {Version: >= VERSION_516, MachineAddress: > 0})
         {
             inputFile.Seek(FileMarkSettings.MachineAddress, SeekOrigin.Begin);
             MachineSettings = Helpers.Deserialize<Machine>(inputFile);
@@ -1861,7 +1892,7 @@ public sealed class PhotonWorkshopFile : FileFormat
             Debug.WriteLine(MachineSettings);
         }
 
-        if (FileMarkSettings.Version >= VERSION_517 && FileMarkSettings.SoftwareAddress > 0)
+        if (FileMarkSettings is {Version: >= VERSION_517, SoftwareAddress: > 0})
         {
             inputFile.Seek(FileMarkSettings.SoftwareAddress, SeekOrigin.Begin);
             SoftwareSettings = Helpers.Deserialize<Software>(inputFile);
@@ -1869,7 +1900,7 @@ public sealed class PhotonWorkshopFile : FileFormat
             Debug.WriteLine(SoftwareSettings);
         }
 
-        if (FileMarkSettings.Version >= VERSION_517 && FileMarkSettings.ModelAddress > 0)
+        if (FileMarkSettings is {Version: >= VERSION_517, ModelAddress: > 0})
         {
             inputFile.Seek(FileMarkSettings.ModelAddress, SeekOrigin.Begin);
             ModelSettings = Helpers.Deserialize<Model>(inputFile);

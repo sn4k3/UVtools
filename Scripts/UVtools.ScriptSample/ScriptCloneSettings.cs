@@ -7,12 +7,12 @@
  */
 
 using System;
-using UVtools.Core.Scripting;
-using System.IO;
 using System.Collections.Generic;
-using UVtools.Core.FileFormats;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using UVtools.Core.FileFormats;
+using UVtools.Core.Scripting;
 
 namespace UVtools.ScriptSample;
 
@@ -199,7 +199,7 @@ public class ScriptCloneSettings : ScriptGlobals
 
         // Load the file
         file.Decode(filePath);
-        if (string.Compare(file.MachineName, SlicerFile.MachineName, true) != 0)
+        if (string.Compare(file.MachineName, SlicerFile.MachineName, StringComparison.OrdinalIgnoreCase) != 0)
         {
             var deets = new List<string>
             {

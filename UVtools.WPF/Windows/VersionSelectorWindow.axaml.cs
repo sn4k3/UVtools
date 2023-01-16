@@ -1,4 +1,5 @@
 using Avalonia.Markup.Xaml;
+using System.Linq;
 using UVtools.Core.FileFormats;
 using UVtools.WPF.Controls;
 
@@ -15,7 +16,9 @@ public partial class VersionSelectorWindow : WindowEx
 
     public sealed override FileFormat SlicerFile { get; set; }
 
-    public FileExtension FileExtension { get; set; }
+    public FileExtension FileExtension { get; init; }
+
+    public uint[] AvailableVersions { get; init; }
 
     public uint Version
     {
@@ -29,11 +32,12 @@ public partial class VersionSelectorWindow : WindowEx
         DialogResult = DialogResults.Cancel;
     }
 
-    public VersionSelectorWindow(FileFormat slicerFile, FileExtension fileExtension) : this()
+    public VersionSelectorWindow(FileFormat slicerFile, FileExtension fileExtension, uint[] availableVersions) : this()
     {
         SlicerFile = slicerFile;
         FileExtension = fileExtension;
-        Version = slicerFile.DefaultVersion;
+        Version = availableVersions.Contains(slicerFile.DefaultVersion) ? SlicerFile.DefaultVersion : availableVersions[^1];
+        AvailableVersions = availableVersions;
         Title += $" - {FileExtension.Description}";
         DataContext = this;
     }
@@ -45,13 +49,14 @@ public partial class VersionSelectorWindow : WindowEx
 
     public void SelectVersion()
     {
-        DialogResult = Version == SlicerFile.DefaultVersion ? DialogResults.Unknown : DialogResults.OK;
+        DialogResult = DialogResults.OK;
         Close();
     }
 
     public void SelectDefault()
     {
-        DialogResult = DialogResults.Unknown;
+        Version = AvailableVersions.Contains(SlicerFile.DefaultVersion) ? SlicerFile.DefaultVersion : AvailableVersions[^1];
+        DialogResult = DialogResults.OK;
         Close();
     }
 }

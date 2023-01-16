@@ -331,6 +331,12 @@ public abstract class Operation : BindableBase, IDisposable
     /// </summary>
     [XmlIgnore]
     public bool IsValidated { get; private set; }
+
+    /// <summary>
+    /// Gets or sets an report to show to the user after complete the operation with success
+    /// </summary>
+    [XmlIgnore]
+    public string? AfterCompleteReport { get; set; }
     #endregion
 
     #region Constructor
@@ -720,6 +726,9 @@ public abstract class Operation : BindableBase, IDisposable
     {
         if (_slicerFile is null) throw new InvalidOperationException($"{Title} can't execute due the lacking of a file parent.");
         if (_slicerFile.DecodeType == FileFormat.FileDecodeType.Partial && !CanRunInPartialMode) throw new InvalidOperationException($"The file was open in partial mode and the tool \"{Title}\" is unable to run in this mode.\nPlease reload the file in full mode in order to use this tool.");
+
+        AfterCompleteReport = null;
+
         if (!IsValidated)
         {
             var msg = Validate();

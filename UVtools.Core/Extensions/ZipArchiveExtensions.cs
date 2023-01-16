@@ -201,7 +201,7 @@ public static class ZipArchiveExtensions
                 //Throws an error if the file exists
                 if (archiveExists)
                 {
-                    throw new IOException(string.Format("The zip file {0} already exists.", archiveFullName));
+                    throw new IOException($"The zip file {archiveFullName} already exists.");
                 }
                 break;
             case ArchiveAction.Ignore:

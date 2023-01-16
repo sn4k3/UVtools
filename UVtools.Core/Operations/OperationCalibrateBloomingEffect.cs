@@ -68,7 +68,7 @@ public sealed class OperationCalibrateBloomingEffect : Operation
             return $"{NotSupportedMessage}\nReason: Can't use more than one layer per same position.";
         }
 
-        if (!SlicerFile.CanUseLayerWaitTimeBeforeCure && !SlicerFile.CanUseLayerLightOffDelay)
+        if (SlicerFile is {CanUseLayerWaitTimeBeforeCure: false, CanUseLayerLightOffDelay: false})
         {
             return $"{NotSupportedMessage}\nReason: No per layer wait time before cure capabilities.";
         }

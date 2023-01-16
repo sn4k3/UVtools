@@ -13,7 +13,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UVtools.WPF", "UVtools.WPF\
 		{7C9927F8-132E-4A37-B894-440E0FD5AA3D} = {7C9927F8-132E-4A37-B894-440E0FD5AA3D}
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UVtools.ScriptSample", "UVtools.ScriptSample\UVtools.ScriptSample.csproj", "{6CCAA18A-8810-42DF-B75B-4160B40B9DD5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UVtools.ScriptSample", "Scripts\UVtools.ScriptSample\UVtools.ScriptSample.csproj", "{6CCAA18A-8810-42DF-B75B-4160B40B9DD5}"
 	ProjectSection(ProjectDependencies) = postProject
 		{7C9927F8-132E-4A37-B894-440E0FD5AA3D} = {7C9927F8-132E-4A37-B894-440E0FD5AA3D}
 	EndProjectSection

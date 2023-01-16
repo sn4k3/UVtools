@@ -15,7 +15,6 @@ using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using UVtools.Core.Extensions;
 using UVtools.Core.Layers;
@@ -149,8 +148,8 @@ public sealed class MDLPFile : FileFormat
 
     #region Properties
 
-    public Header HeaderSettings { get; protected internal set; } = new();
-    public SlicerInfo SlicerInfoSettings { get; protected internal set; } = new();
+    public Header HeaderSettings { get; private set; } = new();
+    public SlicerInfo SlicerInfoSettings { get; private set; } = new();
     public override FileFormatType FileType => FileFormatType.Binary;
 
     public override FileExtension[] FileExtensions { get; } = {

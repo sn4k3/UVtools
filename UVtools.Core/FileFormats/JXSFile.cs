@@ -330,11 +330,9 @@ public sealed class JXSFile : FileFormat
         ControlFile.Actions.Clear();
 
         using var tw = new StringReader(GCodeStr!);
-        string? line;
         var lastG0 = "G1 Z100 F150";
-        while ((line = tw.ReadLine()) is not null)
+        while (tw.ReadLine()?.Trim() is { } line)
         {
-            line = line.Trim();
             if (line == string.Empty) continue;
 
             if (line.StartsWith(GCode!.CommandClearImage.Command))
@@ -435,8 +433,7 @@ public sealed class JXSFile : FileFormat
         {
             using var stream = entry.Open();
             using TextReader reader = new StreamReader(stream);
-            string? line;
-            while((line = reader.ReadLine()) is not null)
+            while(reader.ReadLine() is { } line)
             {
                 var keyValue = line.Split('=', 2, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
                 if(keyValue.Length < 2) continue;

@@ -611,14 +611,9 @@ public sealed class PHZFile : FileFormat
             }
 
 
-            if (Parent.HeaderSettings.EncryptionKey > 0)
-            {
-                EncodedRle = LayerRleCrypt(Parent.HeaderSettings.EncryptionKey, layerIndex, rawData);
-            }
-            else
-            {
-                EncodedRle = rawData.ToArray();
-            }
+            EncodedRle = Parent.HeaderSettings.EncryptionKey > 0 
+                ? LayerRleCrypt(Parent.HeaderSettings.EncryptionKey, layerIndex, rawData) 
+                : rawData.ToArray();
 
             DataSize = (uint) EncodedRle.Length;
         }
@@ -634,9 +629,9 @@ public sealed class PHZFile : FileFormat
 
     #region Properties
 
-    public Header HeaderSettings { get; protected internal set; } = new();
+    public Header HeaderSettings { get; private set; } = new();
 
-    public Preview[] Previews { get; protected internal set; }
+    public Preview[] Previews { get; private set; }
 
     public LayerDef[] LayersDefinitions { get; private set; } = null!;
 
@@ -738,7 +733,7 @@ public sealed class PHZFile : FileFormat
     public override byte AntiAliasing
     {
         get => (byte) HeaderSettings.AntiAliasLevelInfo;
-        set => base.AntiAliasing = (byte)(HeaderSettings.AntiAliasLevelInfo = value.Clamp(1, 16));
+        set => base.AntiAliasing = (byte)(HeaderSettings.AntiAliasLevelInfo = Math.Clamp(value, 1u, 16u));
     }
 
     public override float LayerHeight
@@ -1081,7 +1076,7 @@ public sealed class PHZFile : FileFormat
             progress++;
         }
 
-        if (HeaderSettings.MachineNameAddress > 0 && HeaderSettings.MachineNameSize > 0)
+        if (HeaderSettings is {MachineNameAddress: > 0, MachineNameSize: > 0})
         {
             inputFile.Seek(HeaderSettings.MachineNameAddress, SeekOrigin.Begin);
             byte[] buffer = new byte[HeaderSettings.MachineNameSize];

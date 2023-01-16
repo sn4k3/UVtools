@@ -90,7 +90,7 @@ public sealed class OperationCalibrateElephantFoot : Operation
                 sb.AppendLine("Wall dimming start brightness can't be higher than end brightness.");
             }
 
-            if (SlicerFile.IsAntiAliasingEmulated && SlicerFile.AntiAliasing < 2)
+            if (SlicerFile is {IsAntiAliasingEmulated: true, AntiAliasing: < 2})
             {
                 sb.AppendLine($"With a emulated anti-aliasing of {SlicerFile.AntiAliasing}x, is not possible to run the dimming method, use the erode instead.");
                 sb.AppendLine("As alternative, re-slice the file with a AntiAliasing level greater than 1 and run this tool again.");

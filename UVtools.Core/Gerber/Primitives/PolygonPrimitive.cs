@@ -6,13 +6,13 @@
  *  of this license document, but changing it is not allowed.
  */
 
+using Emgu.CV;
+using Emgu.CV.CvEnum;
 using System;
 using System.Data;
 using System.Drawing;
 using System.Globalization;
 using System.Text.RegularExpressions;
-using Emgu.CV;
-using Emgu.CV.CvEnum;
 using UVtools.Core.Extensions;
 
 namespace UVtools.Core.Gerber.Primitives;
@@ -73,9 +73,9 @@ public class PolygonPrimitive : Primitive
     public float Rotation { get; set; } = 0;
     #endregion
 
-    protected PolygonPrimitive(GerberDocument document) : base(document) { }
+    protected PolygonPrimitive(GerberFormat document) : base(document) { }
 
-    public PolygonPrimitive(GerberDocument document, string exposureExpression, string verticesCountExpression, string centerXExpression = "0", string centerYExpression = "0", string diameterExpression = "0", string rotationExpression = "0") : base(document)
+    public PolygonPrimitive(GerberFormat document, string exposureExpression, string verticesCountExpression, string centerXExpression = "0", string centerYExpression = "0", string diameterExpression = "0", string rotationExpression = "0") : base(document)
     {
         ExposureExpression = exposureExpression;
         VerticesCountExpression = verticesCountExpression;

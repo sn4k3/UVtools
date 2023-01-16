@@ -9,12 +9,12 @@
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
+using Emgu.CV.Util;
 using System;
 using System.ComponentModel;
 using System.Drawing;
 using System.Text;
 using System.Threading.Tasks;
-using Emgu.CV.Util;
 using UVtools.Core.EmguCV;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;

@@ -2046,7 +2046,6 @@ public sealed class OperationCalibrateExposureFinder : Operation
                 bool isBottomLayer = layerCountOnHeight <= _bottomLayers;
                 bool isBaseLayer = currentHeight <= _baseHeight;
                 ushort microns = (ushort)(layerHeight * 1000);
-                Point position;
                 bool addSomething = false;
 
                 bool reUseLastLayer =
@@ -2069,6 +2068,7 @@ public sealed class OperationCalibrateExposureFinder : Operation
                     ExposureItem key = new(layerHeight, bottomExposure, normalExposure, brightness);
                     lastExposureItem = key;
 
+                    Point position;
                     if (table.TryGetValue(key, out var pos))
                     {
                         position = pos;

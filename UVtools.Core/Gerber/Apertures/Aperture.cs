@@ -6,14 +6,14 @@
  *  of this license document, but changing it is not allowed.
  */
 
+using Emgu.CV;
+using Emgu.CV.CvEnum;
+using Emgu.CV.Structure;
 using System;
 using System.Drawing;
 using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
-using Emgu.CV;
-using Emgu.CV.CvEnum;
-using Emgu.CV.Structure;
 using UVtools.Core.Extensions;
 
 namespace UVtools.Core.Gerber.Apertures;
@@ -31,28 +31,28 @@ public abstract class Aperture
     /// </summary>
     public string Name { get; set; } = string.Empty;
 
-    public GerberDocument Document { get; set; } = null!;
+    public GerberFormat Document { get; set; } = null!;
 
     #endregion
 
     protected Aperture() { }
 
-    protected Aperture(GerberDocument document, int index)
+    protected Aperture(GerberFormat document, int index)
     {
         Document = document;
         Index = index;
     }
 
-    protected Aperture(GerberDocument document, string name)
+    protected Aperture(GerberFormat document, string name)
     {
         Document = document;
         Name = name;
     }
-    protected Aperture(GerberDocument document, int index, string name) : this(document, index) { Name = name; }
+    protected Aperture(GerberFormat document, int index, string name) : this(document, index) { Name = name; }
 
     public abstract void DrawFlashD3(Mat mat, PointF at, MCvScalar color, LineType lineType = LineType.EightConnected);
 
-    public static Aperture? Parse(string line, GerberDocument document)
+    public static Aperture? Parse(string line, GerberFormat document)
     {
         var match = Regex.Match(line, @"\%ADD(\d+)(\w+),?(\S+)?\*\%");
         if (!match.Success || match.Groups.Count < 3) return null;

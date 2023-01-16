@@ -6,15 +6,15 @@
  *  of this license document, but changing it is not allowed.
  */
 
+using Avalonia.Controls;
+using Avalonia.Threading;
+using MessageBox.Avalonia.Enums;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Avalonia.Controls;
-using Avalonia.Threading;
-using MessageBox.Avalonia.Enums;
 using UVtools.Core.Suggestions;
 using UVtools.WPF.Extensions;
 using UVtools.WPF.Structures;

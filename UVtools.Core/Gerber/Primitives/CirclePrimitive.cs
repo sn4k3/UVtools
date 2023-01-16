@@ -6,13 +6,13 @@
  *  of this license document, but changing it is not allowed.
  */
 
+using Emgu.CV;
+using Emgu.CV.CvEnum;
 using System;
 using System.Data;
 using System.Drawing;
 using System.Globalization;
 using System.Text.RegularExpressions;
-using Emgu.CV;
-using Emgu.CV.CvEnum;
 
 namespace UVtools.Core.Gerber.Primitives;
 
@@ -67,9 +67,9 @@ public class CirclePrimitive : Primitive
     public float Rotation { get; set; } = 0;
     #endregion
 
-    protected CirclePrimitive(GerberDocument document) : base(document) { }
+    protected CirclePrimitive(GerberFormat document) : base(document) { }
 
-    public CirclePrimitive(GerberDocument document, string exposureExpression = "1", string diameterExpression = "0", string centerXExpression = "0", string centerYExpression = "0", string rotationExpression = "0") : base(document)
+    public CirclePrimitive(GerberFormat document, string exposureExpression = "1", string diameterExpression = "0", string centerXExpression = "0", string centerYExpression = "0", string rotationExpression = "0") : base(document)
     {
         ExposureExpression = exposureExpression;
         DiameterExpression = diameterExpression;

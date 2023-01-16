@@ -336,6 +336,79 @@
             Default order of issues to show on the UI list
             </summary>
         </member>
+        <member name="T:UVtools.Core.Excellon.ExcellonDrillFormat">
+            <summary>
+            <para>The Excellon drill format is a subset of RS274D and is used by the drilling and routing machines made by the Excellon corporation.
+            Because of Excellon's long history and dominance of the PCB drilling business for many years their format is a defacto industry standard.</para>
+            <para>Almost every PCB layout software can produce this format.However we have noticed that many PCB layout tools do not take
+            full advantage of the header information which makes reading the drill file more difficult than it should be.</para>
+            <para>https://www.artwork.com/gerber/drl2laser/excellon/index.htm</para>
+            <para>https://gist.github.com/katyo/5692b935abc085b1037e</para>
+            </summary>
+        </member>
+        <member name="T:UVtools.Core.Excellon.ExcellonDrillFormat.Tool">
+            <summary>
+            <para>Defines tool as having a diameter.</para>
+            <para>For each tool used in the data the diameter should be defined here.</para>
+            <para>There are additional parameters but if you are a PCB designer it is not up to you to specify feed rates and such.</para>
+            </summary>
+        </member>
+        <member name="F:UVtools.Core.Excellon.ExcellonDrillFormat.ExcellonDrillZerosIncludeType.None">
+            <summary>
+            Use float system
+            </summary>
+        </member>
+        <member name="F:UVtools.Core.Excellon.ExcellonDrillFormat.ExcellonDrillZerosIncludeType.Leading">
+            <summary>
+            Include left zeros
+            </summary>
+        </member>
+        <member name="F:UVtools.Core.Excellon.ExcellonDrillFormat.ExcellonDrillZerosIncludeType.Trail">
+            <summary>
+            Include right zeros
+            </summary>
+        </member>
+        <member name="F:UVtools.Core.Excellon.ExcellonDrillFormat.CommandM48">
+            <summary>
+            Indicates the start of the header. should always be the first line in the header
+            </summary>
+        </member>
+        <member name="F:UVtools.Core.Excellon.ExcellonDrillFormat.PaddingZeros">
+            <summary>
+            Number of padding zeros on coordinate system
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Excellon.ExcellonDrillFormat.FormatVersion">
+            <summary>
+            Use Format 2 commands; alternative would be FMAT,1
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Excellon.ExcellonDrillFormat.OffsetX">
+            <summary>
+            Gets or sets the X offset for drawings in millimeters
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Excellon.ExcellonDrillFormat.OffsetY">
+            <summary>
+            Gets or sets the Y offset for drawings in millimeters
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Excellon.ExcellonDrillFormat.InversePolarity">
+            <summary>
+            Gets or sets to inverse the polarity on drawing
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Excellon.ExcellonDrillFormat.SizeScale">
+            <summary>
+            Gets or sets the scale to apply to each shape drawing size.
+            Positions and vectors aren't affected by this.
+            </summary>
+        </member>
+        <member name="T:UVtools.Core.Exceptions.MessageException">
+            <summary>
+            Generic exception to show only the message instead of the full stack-trace
+            </summary>
+        </member>
         <member name="P:UVtools.Core.Extensions.DateTimeExtensions.Timestamp">
             <summary>
             Gets the Unix timestamp since Jan 1, 1970 UTC
@@ -2439,6 +2512,20 @@
             Gets the amount of available versions in this file format
             </summary>
         </member>
+        <member name="M:UVtools.Core.FileFormats.FileFormat.GetAvailableVersionsForExtension(System.String)">
+            <summary>
+            Gets the available versions to set in this file format for the given extension
+            </summary>
+            <param name="extension">Extension name, with or without dot (.)</param>
+            <returns></returns>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.FileFormat.GetAvailableVersionsForFileName(System.String)">
+            <summary>
+            Gets the available versions to set in this file format for the given file name
+            </summary>
+            <param name="fileName"></param>
+            <returns></returns>
+        </member>
         <member name="P:UVtools.Core.FileFormats.FileFormat.DefaultVersion">
             <summary>
             Gets the default version to use in this file when not setting the version
@@ -4426,32 +4513,32 @@
             Omit right zeros
             </summary>
         </member>
-        <member name="T:UVtools.Core.Gerber.GerberDocument">
+        <member name="T:UVtools.Core.Gerber.GerberFormat">
             <summary>
             https://www.ucamco.com/files/downloads/file_en/456/gerber-layer-format-specification-revision-2022-02_en.pdf?ac97011bf6bce9aaf0b1aac43d84b05f
             </summary>
         </member>
-        <member name="P:UVtools.Core.Gerber.GerberDocument.OffsetX">
+        <member name="P:UVtools.Core.Gerber.GerberFormat.OffsetX">
             <summary>
             Gets or sets the X offset for drawings in millimeters
             </summary>
         </member>
-        <member name="P:UVtools.Core.Gerber.GerberDocument.OffsetY">
+        <member name="P:UVtools.Core.Gerber.GerberFormat.OffsetY">
             <summary>
             Gets or sets the Y offset for drawings in millimeters
             </summary>
         </member>
-        <member name="P:UVtools.Core.Gerber.GerberDocument.PolarityColor">
+        <member name="P:UVtools.Core.Gerber.GerberFormat.PolarityColor">
             <summary>
-            Gets the current polarity as <see cref="T:Emgu.CV.Structure.MCvScalar"/>. <see cref="P:UVtools.Core.Gerber.GerberDocument.InversePolarity"/> will affect the return value
+            Gets the current polarity as <see cref="T:Emgu.CV.Structure.MCvScalar"/>. <see cref="P:UVtools.Core.Gerber.GerberFormat.InversePolarity"/> will affect the return value
             </summary>
         </member>
-        <member name="P:UVtools.Core.Gerber.GerberDocument.InversePolarity">
+        <member name="P:UVtools.Core.Gerber.GerberFormat.InversePolarity">
             <summary>
             Gets or sets to inverse the polarity on drawing
             </summary>
         </member>
-        <member name="P:UVtools.Core.Gerber.GerberDocument.SizeScale">
+        <member name="P:UVtools.Core.Gerber.GerberFormat.SizeScale">
             <summary>
             Gets or sets the scale to apply to each shape drawing size.
             Positions and vectors aren't affected by this.
@@ -4771,6 +4858,11 @@
             Gets if this layer is empty/all black pixels
             </summary>
         </member>
+        <member name="P:UVtools.Core.Layers.Layer.IsDummy">
+            <summary>
+            Gets if this layer is a dummy layer to bypass a firmware constrain, that is contain at most one pixel and exposure time no more than 0.01s
+            </summary>
+        </member>
         <member name="P:UVtools.Core.Layers.Layer.Area">
             <summary>
             Gets the layer area (XY)  in mm^2
@@ -4999,6 +5091,11 @@
             Gets if this layer can be exposed to UV light
             </summary>
         </member>
+        <member name="P:UVtools.Core.Layers.Layer.ShouldExpose">
+            <summary>
+            Gets if this layer should be exposed to UV light, ie: if layer is empty or no exposure time then it useless to expose it
+            </summary>
+        </member>
         <member name="P:UVtools.Core.Layers.Layer.LayerHeight">
             <summary>
             Gets the layer height in millimeters of this layer
@@ -5100,12 +5197,18 @@
         </member>
         <member name="P:UVtools.Core.Layers.Layer.Contours">
             <summary>
-            Gets tree contours cache for this layer, however should call <see cref="M:UVtools.Core.Layers.Layer.GetContours(Emgu.CV.IInputOutputArray)"/> instead with <see cref="P:UVtools.Core.Layers.Layer.LayerMat"/> instance
+            Gets tree contours cache for this layer, however should call <see cref="M:UVtools.Core.Layers.Layer.GetContours(Emgu.CV.IInputOutputArray,System.Drawing.Point)"/> instead with <see cref="P:UVtools.Core.Layers.Layer.LayerMat"/> instance.  
+            If not set it will calculate contours first
             </summary>
         </member>
-        <member name="M:UVtools.Core.Layers.Layer.GetContours(Emgu.CV.IInputOutputArray)">
+        <member name="M:UVtools.Core.Layers.Layer.GetContours(Emgu.CV.IInputOutputArray,System.Drawing.Point)">
             <summary>
-            Gets tree contours cache for this layer
+            Gets tree contours cache for this layer. If not set it will calculate contours first
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.Layers.Layer.GetContours(UVtools.Core.EmguCV.MatRoi)">
+            <summary>
+            Gets tree contours cache for this layer.  If not set it will calculate contours first
             </summary>
         </member>
         <member name="M:UVtools.Core.Layers.Layer.ResetParameters">
@@ -5668,6 +5771,12 @@
             Save settings to file
             </summary>
         </member>
+        <member name="P:UVtools.Core.Managers.MessageBoxManager.Standard">
+            <summary>
+            <para>Gets the standard message box for this session which will trigger a message with pre-defined buttons.</para>
+            <para>If using console it will prompt there as text, otherwise if in UI will use dialogs.</para>
+            </summary>
+        </member>
         <member name="P:UVtools.Core.MeshFormats.MeshFile.FileFormat">
             <summary>
             Gets the file format for this mesh
@@ -6189,6 +6298,11 @@
             Gets if this operation have validated at least once
             </summary>
         </member>
+        <member name="P:UVtools.Core.Operations.Operation.AfterCompleteReport">
+            <summary>
+            Gets or sets an report to show to the user after complete the operation with success
+            </summary>
+        </member>
         <member name="P:UVtools.Core.Operations.Operation.CanSpawn">
             <summary>
             Gets if the operation can spawn
@@ -6608,6 +6722,11 @@
             Gets or sets the total of item count on this operation
             </summary>
         </member>
+        <member name="P:UVtools.Core.Operations.OperationProgress.Log">
+            <summary>
+            Detailed log to show below the progress bar
+            </summary>
+        </member>
         <member name="P:UVtools.Core.Operations.OperationProgress.Tag">
             <summary>
             Gets or sets an tag
@@ -6851,27 +6970,27 @@
         </member>
         <member name="P:UVtools.Core.Scripting.ScriptConfiguration.Name">
             <summary>
-            Gets the script name
+            Gets or sets the script name
             </summary>
         </member>
         <member name="P:UVtools.Core.Scripting.ScriptConfiguration.Description">
             <summary>
-            Gets the script description of what it does
+            Gets or sets the script description of what it does
             </summary>
         </member>
         <member name="P:UVtools.Core.Scripting.ScriptConfiguration.Author">
             <summary>
-            Gets the script author name
+            Gets or sets the script author name
             </summary>
         </member>
         <member name="P:UVtools.Core.Scripting.ScriptConfiguration.Version">
             <summary>
-            Gets the script version
+            Gets or sets the script version
             </summary>
         </member>
         <member name="P:UVtools.Core.Scripting.ScriptConfiguration.MinimumVersionToRun">
             <summary>
-            Gets the minimum version able to run this script
+            Gets or sets the minimum version able to run this script
             Scripts were introduced on v2.8
             </summary>
         </member>

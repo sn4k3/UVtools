@@ -6,13 +6,13 @@
  *  of this license document, but changing it is not allowed.
  */
 
+using Emgu.CV;
+using Emgu.CV.CvEnum;
 using System;
 using System.Data;
 using System.Drawing;
 using System.Globalization;
 using System.Text.RegularExpressions;
-using Emgu.CV;
-using Emgu.CV.CvEnum;
 using UVtools.Core.Extensions;
 
 namespace UVtools.Core.Gerber.Primitives;
@@ -84,9 +84,9 @@ public class VectorLinePrimitive : Primitive
     public float Rotation { get; set; } = 0;
     #endregion
 
-    protected VectorLinePrimitive(GerberDocument document) : base(document) { }
+    protected VectorLinePrimitive(GerberFormat document) : base(document) { }
 
-    public VectorLinePrimitive(GerberDocument document, string exposureExpression, string lineWidthExpression, string startXExpression, string startYExpression, string endXExpression, string endYExpression, string rotationExpression = "0") : base(document)
+    public VectorLinePrimitive(GerberFormat document, string exposureExpression, string lineWidthExpression, string startXExpression, string startYExpression, string endXExpression, string endYExpression, string rotationExpression = "0") : base(document)
     {
         ExposureExpression = exposureExpression;
         LineWidthExpression = lineWidthExpression;

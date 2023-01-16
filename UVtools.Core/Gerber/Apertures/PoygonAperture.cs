@@ -6,11 +6,10 @@
  *  of this license document, but changing it is not allowed.
  */
 
-using System;
-using System.Drawing;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
+using System.Drawing;
 using UVtools.Core.Extensions;
 
 namespace UVtools.Core.Gerber.Apertures;
@@ -23,9 +22,9 @@ public class PolygonAperture : Aperture
     #endregion
 
     #region Constructor
-    public PolygonAperture(GerberDocument document) : base(document, "Polygon") { }
+    public PolygonAperture(GerberFormat document) : base(document, "Polygon") { }
 
-    public PolygonAperture(GerberDocument document, int index, double diameter, ushort vertices) : base(document, index, "Polygon")
+    public PolygonAperture(GerberFormat document, int index, double diameter, ushort vertices) : base(document, index, "Polygon")
     {
         Diameter = document.GetMillimeters(diameter);
         Vertices = vertices;

@@ -260,7 +260,7 @@ public sealed class LGSFile : FileFormat
 
     #region Properties
 
-    public Header HeaderSettings { get; protected internal set; } = new();
+    public Header HeaderSettings { get; private set; } = new();
     public override FileFormatType FileType => FileFormatType.Binary;
 
     public override string ConvertMenuGroup => "Longer3D";

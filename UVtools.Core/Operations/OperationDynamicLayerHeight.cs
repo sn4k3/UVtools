@@ -29,50 +29,19 @@ public sealed class OperationDynamicLayerHeight : Operation
     #region Sub Classes
     public sealed class Report
     {
-        private uint _oldLayerCount;
-        private uint _newLayerCount;
-        private uint _stackedLayers;
-        private float _maximumLayerHeight1;
-        private float _oldPrintTime;
-        private float _newPrintTime;
+        public uint OldLayerCount { get; set; }
 
-        public uint OldLayerCount
-        {
-            get => _oldLayerCount;
-            set => _oldLayerCount = value;
-        }
+        public uint NewLayerCount { get; set; }
 
-        public uint NewLayerCount
-        {
-            get => _newLayerCount;
-            set => _newLayerCount = value;
-        }
-
-        public uint StackedLayers
-        {
-            get => _stackedLayers;
-            set => _stackedLayers = value;
-        }
+        public uint StackedLayers { get; set; }
 
         public uint ReusedLayers => OldLayerCount - StackedLayers;
 
-        public float MaximumLayerHeight
-        {
-            get => _maximumLayerHeight1;
-            set => _maximumLayerHeight1 = value;
-        }
+        public float MaximumLayerHeight { get; set; }
 
-        public float OldPrintTime
-        {
-            get => _oldPrintTime;
-            set => _oldPrintTime = value;
-        }
+        public float OldPrintTime { get; set; }
 
-        public float NewPrintTime
-        {
-            get => _newPrintTime;
-            set => _newPrintTime = value;
-        }
+        public float NewPrintTime { get; set; }
 
         public double SparedPrintTime => Math.Round(OldPrintTime - NewPrintTime, 2);
 
@@ -827,7 +796,7 @@ public sealed class OperationDynamicLayerHeight : Operation
 
         report.NewLayerCount = SlicerFile.LayerCount;
         report.NewPrintTime = SlicerFile.PrintTime;
-        Tag = report;
+        AfterCompleteReport = report.ToString();
 
         return true;
     }

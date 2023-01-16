@@ -249,7 +249,7 @@ public sealed class VDAFile : FileFormat
     public override byte AntiAliasing
     {
         get => ManifestFile.Machines.AntiAliasing;
-        set => base.AntiAliasing = ManifestFile.Machines.AntiAliasing = value.Clamp(1, 16);
+        set => base.AntiAliasing = ManifestFile.Machines.AntiAliasing = Math.Clamp(value, (byte)1, (byte)16);
     }
 
     public override float LayerHeight

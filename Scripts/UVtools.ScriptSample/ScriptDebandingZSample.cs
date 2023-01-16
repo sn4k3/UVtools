@@ -152,7 +152,7 @@ public class ScriptDebandingZSample : ScriptGlobals
             var firstLayer = SlicerFile.FirstLayer;
             if (firstLayer is not null)
             {
-                if (firstLayer.NonZeroPixelCount > 1) // First layer is not blank as it seems, lets create one
+                if (!firstLayer.IsDummy) // First layer is not blank as it seems, lets create one
                 {
                     firstLayer = firstLayer.Clone();
                     using var mat = EmguExtensions.InitMat(SlicerFile.Resolution);

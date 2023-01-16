@@ -6,9 +6,9 @@
  *  of this license document, but changing it is not allowed.
  */
 
-using System.Drawing;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
+using System.Drawing;
 
 namespace UVtools.Core.Gerber.Primitives;
 
@@ -19,13 +19,13 @@ public abstract class Primitive
 
     public bool IsParsed { get; protected set; } = false;
 
-    public GerberDocument Document { get; init; }
+    public GerberFormat Document { get; init; }
 
     #endregion
 
     //protected Primitive() { }
 
-    protected Primitive(GerberDocument document)
+    protected Primitive(GerberFormat document)
     {
         Document = document;
     }

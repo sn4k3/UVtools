@@ -1,13 +1,13 @@
-﻿using System;
+﻿using Emgu.CV;
+using Emgu.CV.CvEnum;
+using System;
 using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
 using UVtools.Core;
 using UVtools.Core.Extensions;
-using UVtools.Core.Scripting;
 using UVtools.Core.Layers;
-using Emgu.CV;
-using Emgu.CV.CvEnum;
+using UVtools.Core.Scripting;
 
 namespace UVtools.ScriptSample;
 

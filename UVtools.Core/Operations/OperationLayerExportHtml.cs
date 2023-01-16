@@ -6,14 +6,14 @@
  *  of this license document, but changing it is not allowed.
  */
 
+using Emgu.CV;
+using Emgu.CV.CvEnum;
 using System;
 using System.Collections;
 using System.IO;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
-using Emgu.CV;
-using Emgu.CV.CvEnum;
 using UVtools.Core.EmguCV;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
@@ -260,7 +260,7 @@ public sealed class OperationLayerExportHtml : Operation
         html.WriteLine($"                    <td>{SlicerFile.Resolution} px</td>");
         html.WriteLine("                  </tr>");
 
-        if (SlicerFile.DisplayWidth > 0 && SlicerFile.DisplayHeight > 0)
+        if (SlicerFile is {DisplayWidth: > 0, DisplayHeight: > 0})
         {
             html.WriteLine("                  <tr>");
             html.WriteLine($"                    <td scope=\"row\">Display size</td>");

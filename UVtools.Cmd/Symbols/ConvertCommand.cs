@@ -38,7 +38,7 @@ internal static class ConvertCommand
 
                 if (string.Equals(targetTypeExt, "auto", StringComparison.InvariantCultureIgnoreCase))
                 {
-                    using var testFile = Program.OpenInputFile(inputFile!, FileFormat.FileDecodeType.Partial);
+                    using var testFile = Program.OpenInputFile(inputFile, FileFormat.FileDecodeType.Partial);
                     string? convertFileExtension;
                     switch (testFile)
                     {
