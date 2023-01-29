@@ -1,4 +1,9 @@
 ﻿# UVtools Script
+if($PSVersionTable.PSVersion.Major -lt 7){
+    Write-Error("Powershell version $($PSVersionTable.PSVersion) is not compatible with this script.`n
+You need at least the version 7.")
+    return;
+}
 ########################
 # Script Configuration #
 ########################
