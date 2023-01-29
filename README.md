@@ -25,13 +25,13 @@
 
 ```bash
 [ "$(command -v apt)" -a -z "$(command -v curl)" ] && sudo apt-get install -y curl 
-[ "$(command -v pacman)" -a -z "$(command -v curl)" ] && sudo pacman -S curl
 [ "$(command -v dnf)" -a -z "$(command -v curl)" ] && sudo dnf install -y curl
+[ "$(command -v pacman)" -a -z "$(command -v curl)" ] && sudo pacman -S curl
 [ "$(command -v zypper)" -a -z "$(command -v curl)" ] && sudo zypper install -y curl
 bash -c "$(curl -fsSL https://raw.githubusercontent.com/sn4k3/UVtools/master/Scripts/install-uvtools.sh)"
 ```
 
-## To auto install on MacOS (homebrew):
+## To auto install on MacOS:
 
 ```bash
 bash -c "$(curl -fsSL https://raw.githubusercontent.com/sn4k3/UVtools/master/Scripts/install-uvtools.sh)"
