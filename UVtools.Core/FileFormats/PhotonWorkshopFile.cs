@@ -1125,13 +1125,13 @@ public sealed class PhotonWorkshopFile : FileFormat
             case "pw0":
             case "pwx":
                 return new uint[] {VERSION_1};
+            case "pwmx":
             case "pwmo":
             case "pwms":
             case "pmsq":
             case "dlp":
                 return new uint[] { VERSION_1, VERSION_515 };
             case "pwma":
-            case "pwmx":
             case "pm3":
             case "pm3m":
                 return new uint[] { VERSION_515, VERSION_516 };
@@ -1523,7 +1523,7 @@ public sealed class PhotonWorkshopFile : FileFormat
     {
         get
         {
-            if (string.IsNullOrWhiteSpace(MachineSettings.MachineName)) return MachineSettings.MachineName;
+            if (!string.IsNullOrWhiteSpace(MachineSettings.MachineName)) return MachineSettings.MachineName;
             return PrinterModel switch
             {
                 AnyCubicMachine.PhotonS       => "Photon S",

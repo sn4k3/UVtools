@@ -855,7 +855,7 @@ public partial class MainWindow
             InvalidateLayerNavigation();
         }
 
-        if (_actualLayer >= SlicerFile.LayerCount) // No valid layer
+        if (_actualLayer >= SlicerFile.LayerCount) // No valid layer but should never happen
         {
             CurrentLayerProperties.Clear();
             LayerImageBox.Image = null;

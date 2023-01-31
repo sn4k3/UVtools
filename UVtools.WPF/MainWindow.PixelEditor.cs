@@ -576,7 +576,7 @@ public partial class MainWindow
                 }
 
                 return Task.FromResult(false);
-            });
+            }, Progress.Token);
 
             IsGUIEnabled = true;
 

@@ -1566,6 +1566,11 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             RaisePropertyChanged(nameof(DisplayAspectRatioStr));
             RaisePropertyChanged(nameof(IsDisplayPortrait));
             RaisePropertyChanged(nameof(IsDisplayLandscape));
+
+            RaisePropertyChanged(nameof(Xppmm));
+            RaisePropertyChanged(nameof(PixelWidth));
+            RaisePropertyChanged(nameof(PixelWidthMicrons));
+
             NotifyAspectChange();
         }
     }
@@ -1586,6 +1591,11 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             RaisePropertyChanged(nameof(DisplayAspectRatioStr));
             RaisePropertyChanged(nameof(IsDisplayPortrait));
             RaisePropertyChanged(nameof(IsDisplayLandscape));
+
+            RaisePropertyChanged(nameof(Yppmm));
+            RaisePropertyChanged(nameof(PixelHeight));
+            RaisePropertyChanged(nameof(PixelHeightMicrons));
+
             NotifyAspectChange();
         }
     }
@@ -1626,6 +1636,9 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             RaisePropertyChanged(nameof(Display));
             RaisePropertyChanged(nameof(DisplayDiagonal));
             RaisePropertyChanged(nameof(DisplayDiagonalInches));
+            RaisePropertyChanged(nameof(Xppmm));
+            RaisePropertyChanged(nameof(PixelWidth));
+            RaisePropertyChanged(nameof(PixelWidthMicrons));
             NotifyAspectChange();
         }
     }
@@ -1642,6 +1655,9 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             RaisePropertyChanged(nameof(Display));
             RaisePropertyChanged(nameof(DisplayDiagonal));
             RaisePropertyChanged(nameof(DisplayDiagonalInches));
+            RaisePropertyChanged(nameof(Yppmm));
+            RaisePropertyChanged(nameof(PixelHeight));
+            RaisePropertyChanged(nameof(PixelHeightMicrons));
             NotifyAspectChange();
         }
     }
@@ -1704,12 +1720,12 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <summary>
     /// Gets or sets the pixels per mm on X direction
     /// </summary>
-    public virtual float Xppmm => DisplayWidth > 0 ? ResolutionX / DisplayWidth : 0;
+    public virtual float Xppmm => ResolutionX > 0 && DisplayWidth > 0 ? ResolutionX / DisplayWidth : 0;
 
     /// <summary>
     /// Gets or sets the pixels per mm on Y direction
     /// </summary>
-    public virtual float Yppmm => DisplayHeight > 0 ? ResolutionY / DisplayHeight : 0;
+    public virtual float Yppmm => ResolutionY > 0 && DisplayHeight > 0 ? ResolutionY / DisplayHeight : 0;
 
     /// <summary>
     /// Gets or sets the pixels per mm
@@ -1749,12 +1765,12 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <summary>
     /// Gets the pixel width in microns
     /// </summary>
-    public float PixelWidthMicrons => DisplayWidth > 0 ? (float)Math.Round(DisplayWidth / ResolutionX * 1000, 3) : 0;
+    public float PixelWidthMicrons => DisplayWidth > 0 && ResolutionX > 0 ? (float)Math.Round(DisplayWidth / ResolutionX * 1000, 3) : 0;
 
     /// <summary>
     /// Gets the pixel height in microns
     /// </summary>
-    public float PixelHeightMicrons => DisplayHeight > 0 ? (float)Math.Round(DisplayHeight / ResolutionY * 1000, 3) : 0;
+    public float PixelHeightMicrons => DisplayHeight > 0 && ResolutionY > 0 ? (float)Math.Round(DisplayHeight / ResolutionY * 1000, 3) : 0;
 
     /// <summary>
     /// Gets the pixel size in microns
@@ -3241,20 +3257,14 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// </summary>
     protected void NotifyAspectChange()
     {
-        RaisePropertyChanged(nameof(Xppmm));
-        RaisePropertyChanged(nameof(Yppmm));
         RaisePropertyChanged(nameof(Ppmm));
         RaisePropertyChanged(nameof(PpmmMax));
         RaisePropertyChanged(nameof(PixelSizeMicrons));
         RaisePropertyChanged(nameof(PixelArea));
         RaisePropertyChanged(nameof(PixelAreaMicrons));
         RaisePropertyChanged(nameof(PixelSizeMicronsMax));
-        RaisePropertyChanged(nameof(PixelHeight));
-        RaisePropertyChanged(nameof(PixelHeightMicrons));
         RaisePropertyChanged(nameof(PixelSize));
         RaisePropertyChanged(nameof(PixelSizeMax));
-        RaisePropertyChanged(nameof(PixelWidth));
-        RaisePropertyChanged(nameof(PixelWidthMicrons));
     }
     #endregion
 
@@ -6443,10 +6453,10 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     public Mat GenerateHeatmap(Rectangle roi, OperationProgress? progress = null) => GenerateHeatmap(0, uint.MaxValue, roi, progress);
 
     public Task<Mat> GenerateHeatmapAsync(uint layerIndexStart = 0, uint layerIndexEnd = uint.MaxValue, Rectangle roi = default, OperationProgress? progress = null) 
-        => Task.Run(() => GenerateHeatmap(layerIndexStart, layerIndexEnd, roi, progress));
+        => Task.Run(() => GenerateHeatmap(layerIndexStart, layerIndexEnd, roi, progress), progress?.Token ?? default);
 
     public Task<Mat> GenerateHeatmapAsync(Rectangle roi, OperationProgress? progress = null) 
-        => Task.Run(() => GenerateHeatmap(0, uint.MaxValue, roi, progress));
+        => Task.Run(() => GenerateHeatmap(0, uint.MaxValue, roi, progress), progress?.Token ?? default);
 
     #endregion
 }

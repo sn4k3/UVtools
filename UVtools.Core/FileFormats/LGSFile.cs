@@ -11,7 +11,6 @@ using Emgu.CV;
 using Emgu.CV.CvEnum;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
@@ -298,6 +297,7 @@ public sealed class LGSFile : FileFormat
         {
             HeaderSettings.ResolutionX = value;
             base.ResolutionX = value;
+            HeaderSettings.PixelPerMmX = Xppmm;
         }
     }
 
@@ -308,19 +308,28 @@ public sealed class LGSFile : FileFormat
         {
             HeaderSettings.ResolutionY = value;
             base.ResolutionY = value;
+            HeaderSettings.PixelPerMmY = Yppmm;
         }
     }
 
     public override float DisplayWidth
     {
-        get => ResolutionX / HeaderSettings.PixelPerMmX;
-        set { }
+        get => (float) Math.Round(ResolutionX / HeaderSettings.PixelPerMmX, 3);
+        set
+        {
+            base.DisplayWidth = value;
+            HeaderSettings.PixelPerMmX = Xppmm;
+        }
     }
 
     public override float DisplayHeight
     {
-        get => ResolutionY / HeaderSettings.PixelPerMmY;
-        set { }
+        get => (float)Math.Round(ResolutionY / HeaderSettings.PixelPerMmY, 3);
+        set
+        {
+            base.DisplayHeight = value;
+            HeaderSettings.PixelPerMmY = Yppmm;
+        }
     }
 
     public override float MachineZ
@@ -439,23 +448,6 @@ public sealed class LGSFile : FileFormat
     #endregion
 
     #region Methods
-
-    protected override void OnPropertyChanged(PropertyChangedEventArgs e)
-    {
-        base.OnPropertyChanged(e);
-        switch (e.PropertyName)
-        {
-            case nameof(Xppmm):
-                HeaderSettings.PixelPerMmX = Xppmm;
-                RaisePropertyChanged(nameof(DisplayWidth));
-                break;
-            case nameof(Yppmm):
-                HeaderSettings.PixelPerMmY = Yppmm;
-                RaisePropertyChanged(nameof(DisplayHeight));
-                break;
-        }
-    }
-
     protected override void EncodeInternally(OperationProgress progress)
     {
         if (FileEndsWith(".lgs")) // Longer Orange 10
@@ -542,7 +534,7 @@ public sealed class LGSFile : FileFormat
         {
             throw new FileLoadException("Not a valid LGS file!", FileFullPath);
         }
-
+        
         //if (HeaderSettings.PrinterModel is 10 or 30 or 120)
         //{
         // Fix inconsistencies found of different version of plugin and slicers

@@ -658,7 +658,7 @@ public partial class MainWindow : WindowEx
                         }
 
                         return false;
-                    });
+                    }, Progress.Token);
 
                     if (!ejectResult)
                     {
@@ -1356,7 +1356,7 @@ public partial class MainWindow : WindowEx
             }
 
             return false;
-        });
+        }, Progress.Token);
 
         IsGUIEnabled = true;
 
@@ -1485,7 +1485,7 @@ public partial class MainWindow : WindowEx
                             }
 
                             return false;
-                        });
+                        }, Progress.Token);
 
                         IsGUIEnabled = true;
 
@@ -1861,7 +1861,7 @@ public partial class MainWindow : WindowEx
             }
                 
             return false;
-        });
+        }, Progress.Token);
 
         IsGUIEnabled = true;
         
@@ -1950,7 +1950,7 @@ public partial class MainWindow : WindowEx
             }
 
             return false;
-        });
+        }, Progress.Token);
 
         IsGUIEnabled = true;
 
@@ -2193,7 +2193,7 @@ public partial class MainWindow : WindowEx
             }
 
             return false;
-        });
+        }, Progress.Token);
 
         IsGUIEnabled = true;
 

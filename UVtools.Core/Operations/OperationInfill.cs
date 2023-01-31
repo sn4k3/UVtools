@@ -161,6 +161,8 @@ public sealed class OperationInfill : Operation
         if (_infillType == InfillAlgorithm.Honeycomb)
         {
             mask = GetHoneycombMask(GetRoiSizeOrVolumeSize());
+            CvInvoke.Imshow("Honeycomb", mask);
+            CvInvoke.WaitKey();
         }
         else if (_infillType == InfillAlgorithm.Concentric)
         {
@@ -484,20 +486,24 @@ public sealed class OperationInfill : Operation
     {
         var patternMask = EmguExtensions.InitMat(targetSize);
 
-        var halfInfillSpacing = _infillSpacing / 2;
+        var halfInfillSpacingD = _infillSpacing / 2.0;
+        var halfInfillSpacing = (int)Math.Round(halfInfillSpacingD);
         var halfThickenss = _infillThickness / 2;
-        int width = (int)Math.Round(4 * (_infillSpacing / 2.0 / Math.Sqrt(3)));
+        int width = (int)Math.Round(4 * (halfInfillSpacing / Math.Sqrt(3)));
         var infillColor = new MCvScalar(_infillBrightness);
 
-        for (int col = 0; col <= targetSize.Width / _infillSpacing; col++)
+        int cols = (int)Math.Ceiling((float)targetSize.Width / _infillSpacing) + 2;
+        int rows = (int)Math.Ceiling((float)targetSize.Height / _infillSpacing);
+
+        for (int col = 0; col <= cols; col++)
         {
-            for (int row = 0; row <= targetSize.Height / _infillSpacing; row++)
+            for (int row = 0; row <= rows; row++)
             {
                 // Move over for the column number.
-                int x = (int)Math.Round(col * (width * 0.75f));
+                int x = (int)Math.Round(halfThickenss + col * (width * 0.75f));
 
                 // Move down the required number of rows.
-                int y = row * _infillSpacing;
+                int y = halfThickenss + halfInfillSpacing + row * _infillSpacing;
 
                 // If the column is odd, move down half a hex more.
                 if (col % 2 == 1) y += halfInfillSpacing;
@@ -505,11 +511,11 @@ public sealed class OperationInfill : Operation
                 var points = new Point[]
                 {
                     new(x, y),
-                    new((int) Math.Round(x + width * 0.25f), y - _infillSpacing / 2),
-                    new((int) Math.Round(x + width * 0.75f), y - _infillSpacing / 2),
+                    new((int) Math.Round(x + width * 0.25f), y - halfInfillSpacing),
+                    new((int) Math.Round(x + width * 0.75f), y - halfInfillSpacing),
                     new(x + width, y),
-                    new((int) Math.Round(x + width * 0.75f), y + _infillSpacing / 2),
-                    new((int) Math.Round(x + width * 0.25f), y + _infillSpacing / 2),
+                    new((int) Math.Round(x + width * 0.75f), y + halfInfillSpacing),
+                    new((int) Math.Round(x + width * 0.25f), y + halfInfillSpacing),
                 };
 
                 CvInvoke.Polylines(patternMask, points, true, infillColor, _infillThickness);
@@ -525,7 +531,7 @@ public sealed class OperationInfill : Operation
 
         //var halfInfillSpacing = _infillSpacing / 2;
         //var halfThickenss = _infillThickness / 2;
-        int multiplicator = 1;
+        int multiplier = 1;
         byte position = 0;
 
         int x = patternMask.Width / 2;
@@ -550,18 +556,18 @@ public sealed class OperationInfill : Operation
 
         while (hitLimits.Any(hitLimit => !hitLimit))
         {
-            x += directions[position].X * multiplicator;
-            y += directions[position].Y * multiplicator;
+            x += directions[position].X * multiplier;
+            y += directions[position].Y * multiplier;
             if (x < 0 || y < 0 || x >= patternMask.Width || y >= patternMask.Height) hitLimits[position] = true;
             points.Add(new Point(x, y));
             position++;
             if (position == 2)
             {
-                multiplicator++;
+                multiplier++;
             }
             else if (position == 4)
             {
-                multiplicator++;
+                multiplier++;
                 position = 0;
             }
         }

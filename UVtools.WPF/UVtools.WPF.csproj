@@ -12,7 +12,7 @@
 		<PackageLicenseFile>LICENSE</PackageLicenseFile>
 		<RepositoryUrl>https://github.com/sn4k3/UVtools</RepositoryUrl>
 		<RepositoryType>Git</RepositoryType>
-		<Version>3.11.0</Version>
+		<Version>3.11.1</Version>
 		<Platforms>AnyCPU;x64</Platforms>
 		<PackageIcon>UVtools.png</PackageIcon>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
@@ -24,19 +24,23 @@
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<NoWarn>1701;1702;</NoWarn>
+		<DebugType>portable</DebugType>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<NoWarn>1701;1702;</NoWarn>
+		<DebugType>portable</DebugType>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<NoWarn>1701;1702;</NoWarn>
+		<DebugType>portable</DebugType>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<NoWarn>1701;1702;</NoWarn>
+		<DebugType>portable</DebugType>
 	</PropertyGroup>
 	<ItemGroup>
 		<PackageReference Include="Avalonia" Version="0.10.18" />

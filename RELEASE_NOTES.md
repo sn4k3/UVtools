@@ -1,22 +1,6 @@
-- **UI:**
-  - (Improvement) Layer navigation load time by parallel `Mat` to `Bitmap` conversion
-  - (Improvement) Allow to show exceptions without the stack trace and detailed trigger action by using the `MessageExceiption` (#644)
-  - (Improvement) Allow progress to have and display a detailed log (#644)
-  - (Improvement) Convert format to another with multiple versions will now only show the possible versions for the extension
-- **Suggestion - Wait time before cure:**
-  - (Improvement) Set the first wait time based on first valid layer mass rather than use the fixed limit
-  - (Improvement) Set zero time to empty and dummy layers
-  - (Improvement) When creating the dummy layer also increment the bottom layer count as the created layer count as one
-- **PCB Exposure:**
-  - (Add) Excellon Drill Format (drl) to cut off holes (Implementation may lack some advanced features, please confirm the result) (#646)
-  - (Fix) Arc (G03) with negative offsets (I-/J-) was not drawing the shape correctly
-  - (Fix) Implement the rotation for the outline primitive (#645)
-- **File formats:**
-  - (Improvement) Formats now sanitize the selected version before encode given the file extension, if version is out of range it will force the last known version
-  - (Fix) CBDDLP: Remove a table from the file that might cause layer corruption
-- (Add) Operations - `AfterCompleteReport` property: Gets or sets an report to show to the user after complete the operation with success
-- (Improvement) Suggestion - Wait time after cure: Set zero time to empty and dummy layers
-- (Improvement) Slight improvement on the contour intersection check, yields better performance on resin and suction cup detection
-- (Improvement) Allow to trigger message boxes from operations and scripts (#644)
-- (Upgrade) .NET from 6.0.12 to 6.0.13
+- (Improvement) Remove developer machine path in PDB / error messages
+- (Fix) HoneyComb infill not going to the right most edge of the image (#649)
+- (Fix) AnyCubic machine names were not showing in most files
+- (Fix) PWMX: Unable to set version 1
+- (Fix) LGS: Converted files to lgs cause program to crash with `Value was either too large or too small for a Decimal` (#653)
 

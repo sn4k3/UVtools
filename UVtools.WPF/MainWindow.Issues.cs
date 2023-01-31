@@ -295,7 +295,7 @@ public partial class MainWindow
             }
 
             return true;
-        });
+        }, Progress.Token);
 
         IsGUIEnabled = true;
 
@@ -469,7 +469,7 @@ public partial class MainWindow
             }
 
             return null;
-        });
+        }, Progress.Token);
 
         IsGUIEnabled = true;
 
@@ -674,7 +674,7 @@ public partial class MainWindow
             }
 
             return null;
-        });
+        }, Progress.Token);
 
         IsGUIEnabled = true;
             
