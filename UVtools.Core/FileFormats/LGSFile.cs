@@ -365,7 +365,7 @@ public sealed class LGSFile : FileFormat
         get => (ushort) (HeaderSettings.BottomHeight / LayerHeight);
         set
         {
-            HeaderSettings.BottomHeight = value * LayerHeight;
+            if(LayerHeight > 0) HeaderSettings.BottomHeight = value * LayerHeight;
             base.BottomLayerCount = value;
         }
     }
@@ -448,6 +448,7 @@ public sealed class LGSFile : FileFormat
     #endregion
 
     #region Methods
+
     protected override void EncodeInternally(OperationProgress progress)
     {
         if (FileEndsWith(".lgs")) // Longer Orange 10

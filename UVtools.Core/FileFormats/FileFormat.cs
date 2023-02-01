@@ -1827,7 +1827,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// </summary>
     public virtual float PrintHeight
     {
-        get => LayerCount == 0 ? 0 : LastLayer?.PositionZ ?? 0;
+        get => LayerCount == 0 ? 0 : LastLayer?.PositionZ ?? LayerCount * LayerHeight;
         set => RaisePropertyChanged();
     }
 
@@ -4975,10 +4975,10 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         {
             slicerFile.Init(CloneLayers());
             slicerFile.AntiAliasing = ValidateAntiAliasingLevel();
+            slicerFile.LayerHeight = LayerHeight;
             slicerFile.LayerCount = LayerCount;
             slicerFile.BottomLayerCount = BottomLayerCount;
             slicerFile.TransitionLayerCount = TransitionLayerCount;
-            slicerFile.LayerHeight = LayerHeight;
             slicerFile.ResolutionX = ResolutionX;
             slicerFile.ResolutionY = ResolutionY;
             slicerFile.DisplayWidth = DisplayWidth;

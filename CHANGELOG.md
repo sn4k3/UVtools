@@ -1,5 +1,9 @@
 # Changelog
 
+## 01/01/2023 - v3.11.2
+
+- (Fix) Converting to lgs sets Bottom Layer Count to 0 (#655)
+
 ## 30/01/2023 - v3.11.1
 
 - (Improvement) Remove developer machine path in PDB / error messages
