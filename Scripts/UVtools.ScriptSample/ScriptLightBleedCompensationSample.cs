@@ -89,6 +89,7 @@ public class ScriptLightBleedCompensationSample : ScriptGlobals
         // Loop user selected layers in parallel, this will put each core of CPU working here on parallel
         Parallel.For(Operation.LayerIndexStart, Operation.LayerIndexEnd+1, CoreSettings.GetParallelOptions(Progress), layerIndex =>
         {
+            Progress.PauseIfRequested();
             var layer = SlicerFile[layerIndex]; // Unpack and expose layer variable for easier use
             using var mat = layer.LayerMat;     // Gets this layer mat/image
             var original = mat.Clone();     // Keep a original mat copy

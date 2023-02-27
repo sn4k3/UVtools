@@ -97,6 +97,7 @@ public class OperationRotate : Operation
     {
         Parallel.For(LayerIndexStart, LayerIndexEnd + 1, CoreSettings.GetParallelOptions(progress), layerIndex =>
         {
+            progress.PauseIfRequested();
             using var mat = SlicerFile[layerIndex].LayerMat;
             Execute(mat);
             SlicerFile[layerIndex].LayerMat = mat;

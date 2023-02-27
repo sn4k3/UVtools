@@ -107,12 +107,12 @@ struct HEADER {
     ubyte ProtocolType <fgcolor=cBlack, bgcolor=cRed>; // 0
 
     local int leftover = HeaderLength - 350001;
-    if(HeaderLength == 350013) // VLR
+    /*if(HeaderLength == 350013) // VLR
     {
         uint Unknown <fgcolor=cBlack, bgcolor=cRed>; // 350054
         ubyte Unknown1[8] <fgcolor=cBlack, bgcolor=cRed>;
         leftover -= 12;
-    }
+    }*/
 
     
     if(leftover > 0)

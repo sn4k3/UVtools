@@ -1,5 +1,19 @@
 # Changelog
 
+## 27/02/2023 - v3.12.0
+
+- (Add) Allow to pause and resume operations (#654)
+- (Add) `Layer.FirstTransitionLayer`
+- (Add) `Layer.LastTransitionLayer`
+- (Add) File format: Elegoo GOO
+- (Add) PrusaSlicer Printer: Elegoo Mars 4
+- (Improvement) Allocate maximum GPU memory for Skia up to 256 MB
+- (Improvement) Set and sanitize transition layers exposure time from last bottom layer and first normal layer instead of global times (#659)
+- (Change) CXDLP: Default version from 2 to 3
+- (Fix) UI was not rendering with GPU (ANGLE)
+- (Fix) `Layer.IsTransitionLayer` was returning the wrong value
+- (Upgrade) .NET from 6.0.13 to 6.0.14
+
 ## 01/01/2023 - v3.11.2
 
 - (Fix) Converting to lgs sets Bottom Layer Count to 0 (#655)

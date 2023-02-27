@@ -75,7 +75,7 @@ public class ScriptAdvancedDialogSample : ScriptGlobals
 
         for (int i = 0; i < Iterations.Value; i++)
         {
-            Progress.ThrowIfCancellationRequested();
+            Progress.PauseOrCancelIfRequested();
 
             Thread.Sleep(1000);
             Progress.Log = $"Task {i}: Completed!\n{Progress.Log}";

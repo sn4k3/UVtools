@@ -239,6 +239,7 @@ public partial class MainWindow
             {
                 Parallel.ForEach(processParallelIssues, CoreSettings.GetParallelOptions(Progress), layerIssues =>
                 {
+                    Progress.PauseIfRequested();
                     using (var image = SlicerFile[layerIssues.Key].LayerMat)
                     {
                         var bytes = image.GetDataByteSpan();

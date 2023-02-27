@@ -342,6 +342,7 @@ public sealed class OperationLayerExportMesh : Operation
             /* Seems to be faster to parallel on the Y and not the X */
             Parallel.For(0, curLayer!.Height, CoreSettings.GetParallelOptions(progress), y =>
             {
+                progress.PauseIfRequested();
                 /* Collects all the faces found for this thread, will be combined into the main dictionary later */
                 var threadDict = new Dictionary<Voxelizer.FaceOrientation, List<Point>>();
                 for (var x = 0; x < curLayer.Width; x++)
@@ -545,6 +546,7 @@ public sealed class OperationLayerExportMesh : Operation
         /* We build out a 3 dimensional KD tree for each layer, having 1 big KD tree is prohibitive when you get to millions and millions of faces. */
         Parallel.For(0, distinctLayers.Length, CoreSettings.GetParallelOptions(progress), layerIndex =>
         {
+            progress.PauseIfRequested();
             /* Create the KD tree for the layer, in practice there should never be dups, but just in case, set to skip */
             layerTrees[layerIndex] = new KdTree<float, Voxelizer.UVFace>(3, new FloatMath(), AddDuplicateBehavior.Skip);
 
@@ -577,6 +579,7 @@ public sealed class OperationLayerExportMesh : Operation
          */
         Parallel.For(0, distinctLayers.Length, CoreSettings.GetParallelOptions(progress), i =>
         {
+            progress.PauseIfRequested();
             /* if no faces on this layer... skip.... needed for empty layers */
             if (layerTrees[i] is null) return;
 

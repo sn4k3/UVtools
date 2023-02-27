@@ -120,7 +120,7 @@ public class ScriptCloneSettings : ScriptGlobals
         var results = new List<Tuple<ResultStatus, string, List<string>?>>();
         foreach (var filePath in filePaths)
         {
-            Progress.ThrowIfCancellationRequested();
+            Progress.PauseOrCancelIfRequested();
 
             Tuple<ResultStatus, string, List<string>?> result;
             try

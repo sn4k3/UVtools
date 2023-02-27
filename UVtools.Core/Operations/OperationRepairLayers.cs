@@ -280,6 +280,7 @@ public class OperationRepairLayers : Operation
                 islandsToRecompute.Clear();
                 Parallel.ForEach(issuesGroup, CoreSettings.GetParallelOptions(progress), group =>
                 {
+                    progress.PauseIfRequested();
                     var layer = SlicerFile[group.Key];
                     var image = layer.LayerMat;
                     var span = image.GetDataByteSpan();
@@ -327,6 +328,7 @@ public class OperationRepairLayers : Operation
             var sync = new object();
             Parallel.ForEach(issuesGroup, CoreSettings.GetParallelOptions(progress), group =>
             {
+                progress.PauseIfRequested();
                 using var mat = SlicerFile[group.Key].LayerMat;
                 var matSpan = mat.GetDataByteSpan();
                 var matCache = new Dictionary<uint, Mat>();
@@ -417,6 +419,7 @@ public class OperationRepairLayers : Operation
         {
             Parallel.For(LayerIndexStart, LayerIndexEnd, CoreSettings.GetParallelOptions(progress), layerIndex =>
             {
+                progress.PauseIfRequested();
                 var layer = SlicerFile[layerIndex];
                 Mat? image = null;
 

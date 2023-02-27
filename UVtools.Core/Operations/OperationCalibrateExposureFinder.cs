@@ -1893,6 +1893,7 @@ public sealed class OperationCalibrateExposureFinder : Operation
             progress.ItemCount = (uint) (SlicerFile.LayerCount * table.Count); 
             Parallel.For(0, SlicerFile.LayerCount, CoreSettings.GetParallelOptions(progress), layerIndex =>
             {
+                progress.PauseIfRequested();
                 var layer = SlicerFile[layerIndex];
                 using var mat = layer.LayerMat;
                 var matRoi = new Mat(mat, boundingRectangle);
@@ -1970,7 +1971,7 @@ public sealed class OperationCalibrateExposureFinder : Operation
             Layer currentLayer = layers[0];
             for (var layerIndex = 1; layerIndex < layers.Count; layerIndex++)
             {
-                progress.ThrowIfCancellationRequested();
+                progress.PauseOrCancelIfRequested();
                 progress++;
                 var layer = layers[layerIndex];
                 if (currentLayer.PositionZ != layer.PositionZ ||
@@ -2203,7 +2204,7 @@ public sealed class OperationCalibrateExposureFinder : Operation
                 currentHeight = Layer.RoundHeight(currentHeight);
                 for (decimal layerHeight = _layerHeight; layerHeight <= endLayerHeight; layerHeight += _multipleLayerHeightStep)
                 {
-                    progress.ThrowIfCancellationRequested();
+                    progress.PauseOrCancelIfRequested();
                     layerHeight = Layer.RoundHeight(layerHeight);
 
                     if (_multipleExposures)

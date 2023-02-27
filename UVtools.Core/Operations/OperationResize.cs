@@ -159,6 +159,7 @@ public class OperationResize : Operation
 
         Parallel.For(LayerIndexStart, LayerIndexEnd + 1, CoreSettings.GetParallelOptions(progress), layerIndex =>
         {
+            progress.PauseIfRequested();
             var newX = _x;
             var newY = _y;
             if (IsFade)

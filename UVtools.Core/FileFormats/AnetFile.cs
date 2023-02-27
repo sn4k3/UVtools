@@ -469,6 +469,7 @@ public sealed class AnetFile : FileFormat
         {
             Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), layerIndex =>
             {
+                progress.PauseIfRequested();
                 var layer = this[layerIndex];
                 using var mat = layer.LayerMat;
                 layerData[layerIndex] = new LayerDef();
@@ -479,7 +480,7 @@ public sealed class AnetFile : FileFormat
 
             foreach (var layerIndex in batch)
             {
-                progress.ThrowIfCancellationRequested();
+                progress.PauseOrCancelIfRequested();
 
                 outputFile.WriteSerialize(layerData[layerIndex]);
                 outputFile.WriteBytes(layerData[layerIndex].EncodedRle);
@@ -521,7 +522,7 @@ public sealed class AnetFile : FileFormat
         {
             foreach (var layerIndex in batch)
             {
-                progress.ThrowIfCancellationRequested();
+                progress.PauseOrCancelIfRequested();
 
                 var layerDef = Helpers.Deserialize<LayerDef>(inputFile);
                 layersDefinitions[layerIndex] = layerDef;
@@ -543,6 +544,7 @@ public sealed class AnetFile : FileFormat
             {
                 Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), layerIndex =>
                 {
+                    progress.PauseIfRequested();
                     using var mat = layersDefinitions[layerIndex].Decode(out var resolutionX, out var resolutionY);
                     if (layerIndex == 0) // Set file resolution from first layer RLE. Figure out other properties after that
                     {

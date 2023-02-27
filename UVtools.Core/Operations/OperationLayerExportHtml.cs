@@ -582,6 +582,7 @@ public sealed class OperationLayerExportHtml : Operation
             var layerSvgPath = new string[SlicerFile.LayerCount];
             Parallel.For(0, SlicerFile.LayerCount, CoreSettings.ParallelOptions, layerIndex =>
             {
+                progress.PauseIfRequested();
                 using var mat = SlicerFile[layerIndex].LayerMat;
                 CvInvoke.Threshold(mat, mat, 127, byte.MaxValue, ThresholdType.Binary); // Remove AA
 

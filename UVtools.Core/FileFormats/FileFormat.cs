@@ -386,6 +386,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         //new CXDLPv1File(),   // Creality Box v1
         new CXDLPFile(),   // Creality Box
         new FDGFile(), // fdg
+        new GooFile(), // goo
         new ZCodeFile(),   // zcode
         new JXSFile(),      // jxs
         new ZCodexFile(),   // zcodex
@@ -1347,6 +1348,16 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// Gets the last bottom layer
     /// </summary>
     public Layer? LastBottomLayer => this.LastOrDefault(layer => layer.IsBottomLayer);
+
+    /// <summary>
+    /// Gets the first transition layer
+    /// </summary>
+    public Layer? FirstTransitionLayer => TransitionLayerCount == 0 ? null : this[BottomLayerCount];
+
+    /// <summary>
+    /// Gets the last transition layer
+    /// </summary>
+    public Layer? LastTransitionLayer => TransitionLayerCount == 0 ? null : this[BottomLayerCount + TransitionLayerCount - 1];
 
     /// <summary>
     /// Gets the first normal layer
@@ -3604,7 +3615,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         progress.Reset(OperationProgress.StatusGatherLayers, LayerCount);
 
         DecodeInternally(progress);
-        progress.ThrowIfCancellationRequested();
+        progress.PauseOrCancelIfRequested();
 
         var layerHeightDigits = LayerHeight.DecimalDigits();
         if (layerHeightDigits > Layer.HeightPrecision)
@@ -3624,7 +3635,14 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
 
         if (CanUseTransitionLayerCount && TransitionLayerType == TransitionLayerTypes.Software)
         {
-            SuppressRebuildPropertiesWork(() => TransitionLayerCount = ParseTransitionLayerCountFromLayers());
+            SuppressRebuildPropertiesWork(() =>
+            {
+                var transitionLayers = ParseTransitionLayerCountFromLayers();
+                if (transitionLayers > 0)
+                {
+                    TransitionLayerCount = transitionLayers;
+                }
+            });
         }
 
         bool reSaveFile = Sanitize();
@@ -3684,6 +3702,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         {
             Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), layerIndex =>
             {
+                progress.PauseIfRequested();
                 if (matGenFunc is null)
                 {
                     switch (layerImageType)
@@ -3767,6 +3786,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
 
         Parallel.For(0, LayerCount, CoreSettings.GetParallelOptions(progress), layerIndex =>
         {
+            progress.PauseIfRequested();
             byte[] pngBytes;
             lock (Mutex)
             {
@@ -4007,6 +4027,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             {
                 Parallel.ForEach(this, CoreSettings.GetParallelOptions(progress), layer =>
                 {
+                    progress.PauseIfRequested();
                     var byteArr = layer.CompressedPngBytes;
                     if (byteArr is null) return;
                     using var stream = new FileStream(Path.Combine(path, layer.Filename), FileMode.Create, FileAccess.Write);
@@ -4024,13 +4045,13 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     public ushort ParseTransitionLayerCountFromLayers()
     {
         ushort count = 0;
-        for (uint layerIndex = BottomLayerCount + 1u; layerIndex < LayerCount; layerIndex++)
+        for (uint layerIndex = BottomLayerCount; layerIndex < LastLayerIndex; layerIndex++)
         {
-            if (Math.Abs(this[layerIndex - 1].ExposureTime - this[layerIndex].ExposureTime) < 0.009f) break; // First equal layer, transition ended
+            if (Math.Abs(this[layerIndex].ExposureTime - this[layerIndex + 1].ExposureTime) < 0.009f) break; // First equal layer, transition ended
             count++;
         }
 
-        return count;
+        return count > 0 ? count : TransitionLayerCount;
     }
 
     /// <summary>
@@ -4042,7 +4063,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         var transitionLayerCount = ParseTransitionLayerCountFromLayers();
         return transitionLayerCount == 0
             ? 0
-            : (float)Math.Round(this[BottomLayerCount].ExposureTime - this[BottomLayerCount + 1].ExposureTime, 2);
+            : (float)Math.Round(this[BottomLayerCount].ExposureTime - this[BottomLayerCount + 1].ExposureTime, 2, MidpointRounding.AwayFromZero);
     }
 
     /// <summary>
@@ -4054,7 +4075,9 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <returns>Seconds</returns>
     public static float GetTransitionStepTime(float longExposureTime, float shortExposureTime, ushort transitionLayerCount)
     {
-        return transitionLayerCount == 0 ? 0 : (float)Math.Round((longExposureTime - shortExposureTime) / (transitionLayerCount + 1), 2, MidpointRounding.AwayFromZero);
+        return transitionLayerCount == 0 
+            ? 0 
+            : (float)Math.Round((longExposureTime - shortExposureTime) / (transitionLayerCount + 1), 2, MidpointRounding.AwayFromZero);
     }
 
     /// <summary>
@@ -4065,6 +4088,21 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     public float GetTransitionStepTime(ushort transitionLayerCount)
     {
         return GetTransitionStepTime(BottomExposureTime, ExposureTime, transitionLayerCount);
+    }
+
+    /// <summary>
+    /// Gets the transition step time from <see cref="LastBottomLayer"/> and first normal layer after the last transition layer, value is returned as positive from normal perspective and logic (Longer - shorter)
+    /// </summary>
+    /// <param name="transitionLayerCount">Number of transition layers</param>
+    /// <returns>Seconds</returns>
+    public float GetTransitionStepTimeFromLayers(ushort transitionLayerCount)
+    {
+        var bottomExposureTime = LastBottomLayer?.ExposureTime ?? BottomExposureTime;
+        var exposureTime = TransitionLayerCount > 0
+            ? this[BottomLayerCount + TransitionLayerCount - 1].ExposureTime
+            : this[BottomLayerCount].ExposureTime;
+
+        return GetTransitionStepTime(bottomExposureTime, exposureTime, transitionLayerCount);
     }
 
     /// <summary>
@@ -4100,6 +4138,25 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         return count;
     }
 
+    /// <summary>
+    /// Gets the transition layer count based on <see cref="LastBottomLayer"/> and first normal layer after the last transition layer
+    /// </summary>
+    /// <param name="stepDecrementTime">Step decrement time in seconds</param>
+    /// <param name="constrainToLayerCount">True if transition layer count can't be higher than supported by the file, otherwise set to false to not look at possible file layers</param>
+    /// <param name="rounding">Midpoint rounding method</param>
+    /// <returns>Transition layer count</returns>
+    public ushort GetTransitionLayerCountFromLayers(float stepDecrementTime, bool constrainToLayerCount = true, MidpointRounding rounding = MidpointRounding.AwayFromZero)
+    {
+        var bottomExposureTime = LastBottomLayer?.ExposureTime ?? BottomExposureTime;
+        var exposureTime = TransitionLayerCount > 0
+            ? this[BottomLayerCount + TransitionLayerCount - 1].ExposureTime
+            : this[BottomLayerCount].ExposureTime;
+
+        var count = GetTransitionLayerCount(bottomExposureTime, exposureTime, stepDecrementTime, rounding);
+        if (constrainToLayerCount) count = (ushort)Math.Min(count, MaximumPossibleTransitionLayerCount);
+        return count;
+    }
+
 
     /// <summary>
     /// Re-set exposure time to the transition layers
@@ -4118,27 +4175,37 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <param name="resetExposureTimes">True to default all the previous transition layers exposure time, otherwise false</param>
     public void SetTransitionLayers(ushort transitionLayerCount, bool resetExposureTimes = true)
     {
+        var bottomExposureTime = LastBottomLayer?.ExposureTime ?? BottomExposureTime;
+        var exposureTime = ExposureTime;
+        var layersToReset = new List<Layer>();
+        for (uint layerIndex = BottomLayerCount; layerIndex < LastLayerIndex; layerIndex++)
+        {
+            if (Math.Abs(this[layerIndex].ExposureTime - this[layerIndex + 1].ExposureTime) < 0.009)
+            {
+                exposureTime = this[layerIndex].ExposureTime;
+                break; // First equal layer, transition ended
+            }
+            layersToReset.Add(this[layerIndex]);
+        }
+
         if (resetExposureTimes)
         {
-            for (uint layerIndex = BottomLayerCount; layerIndex < LayerCount; layerIndex++)
+            foreach (var layer in layersToReset)
             {
-                var layer = this[layerIndex];
-                if (Math.Abs(layer.ExposureTime - ExposureTime) < 0.009) break; // First equal layer, transition ended
-
-                layer.ExposureTime = ExposureTime;
+                layer.ExposureTime = exposureTime;
             }
         }
 
         if (transitionLayerCount == 0) return;
 
-        float decrement = GetTransitionStepTime(transitionLayerCount);
+        float decrement = GetTransitionStepTime(bottomExposureTime, exposureTime, transitionLayerCount);
         if (decrement <= 0) return;
 
         uint appliedLayers = 0;
         for (uint layerIndex = BottomLayerCount; appliedLayers < transitionLayerCount && layerIndex < LayerCount; layerIndex++)
         {
             appliedLayers++;
-            this[layerIndex].ExposureTime = Math.Clamp(BottomExposureTime - (decrement * appliedLayers), ExposureTime, BottomExposureTime);
+            this[layerIndex].ExposureTime = Math.Clamp(bottomExposureTime - (decrement * appliedLayers), exposureTime, bottomExposureTime);
         }
     }
 
@@ -5097,6 +5164,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
 
         Parallel.ForEach(this, CoreSettings.GetParallelOptions(progress), layer =>
         {
+            progress.PauseIfRequested();
             layer.CompressionCodec = newCodec;
             progress.LockAndIncrement();
         });
@@ -5355,6 +5423,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             progress.Reset(OperationProgress.StatusOptimizingBounds, LayerCount - 1);
             Parallel.For(0, LayerCount, CoreSettings.GetParallelOptions(progress), layerIndex =>
             {
+                progress.PauseIfRequested();
                 this[layerIndex].GetBoundingRectangle();
                 progress.LockAndIncrement();
             });
@@ -5725,6 +5794,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         var layers = new Layer[mats.Length];
         Parallel.For(0, mats.Length, CoreSettings.GetParallelOptions(progress), i =>
         {
+            progress.PauseIfRequested();
             layers[i] = new Layer((uint)i, mats[i], this);
         });
 
@@ -6100,6 +6170,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
 
         Parallel.ForEach(group1, CoreSettings.GetParallelOptions(progress), layerOperationGroup =>
         {
+            progress.PauseIfRequested();
             var layer = this[layerOperationGroup.Key];
             using var mat = layer.LayerMat;
 
@@ -6176,7 +6247,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
                 var drawnDrainHoleLayers = 0;
                 for (int operationLayer = (int)layerOperationGroup.Key - 1; operationLayer >= 0 && toProcess.Count > 0; operationLayer--)
                 {
-                    progress.ThrowIfCancellationRequested();
+                    progress.PauseOrCancelIfRequested();
                     var layer = this[operationLayer];
                     var mat = matCache.Get1((uint) operationLayer);
                     var isMatModified = false;
@@ -6426,6 +6497,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         
         Parallel.ForEach(layerRange, CoreSettings.GetParallelOptions(progress), layer =>
         {
+            progress.PauseIfRequested();
             using var mat = GetMergedMatForSequentialPositionedLayers(layer.Index);
             using var mat32Roi = mat.Roi(roi);
 

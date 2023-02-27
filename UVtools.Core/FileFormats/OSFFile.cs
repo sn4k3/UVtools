@@ -714,6 +714,7 @@ public sealed class OSFFile : FileFormat
         {
             Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), layerIndex =>
             {
+                progress.PauseIfRequested();
                 var layer = this[layerIndex];
                 
                 using (var mat = layer.LayerMat)
@@ -730,7 +731,7 @@ public sealed class OSFFile : FileFormat
 
             foreach (var layerIndex in batch)
             {
-                progress.ThrowIfCancellationRequested();
+                progress.PauseOrCancelIfRequested();
                 outputFile.WriteSerialize(layerDef[layerIndex]);
                 outputFile.WriteBytes(layerDef[layerIndex].EncodedRle);
                 layerDef[layerIndex].EncodedRle = null!; // Free this
@@ -781,7 +782,7 @@ public sealed class OSFFile : FileFormat
             {
                 foreach (var layerIndex in batch)
                 {
-                    progress.ThrowIfCancellationRequested();
+                    progress.PauseOrCancelIfRequested();
                     
                     //Debug.WriteLine($"{layerIndex}: {inputFile.Position}");
                     layerDef[layerIndex] = Helpers.Deserialize<OSFLayerDef>(inputFile);
@@ -835,6 +836,7 @@ public sealed class OSFFile : FileFormat
 
                 Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), layerIndex =>
                 {
+                    progress.PauseIfRequested();
                     using var mat = layerDef[layerIndex].DecodeImage(this);
                     _layers[layerIndex] = new Layer((uint)layerIndex, mat, this);
                     layerDef[layerIndex].EncodedRle = null!;

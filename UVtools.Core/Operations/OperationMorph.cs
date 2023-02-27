@@ -178,6 +178,7 @@ public sealed class OperationMorph : Operation
 
         Parallel.For(LayerIndexStart, LayerIndexEnd + 1, CoreSettings.GetParallelOptions(progress), layerIndex =>
         {
+            progress.PauseIfRequested();
             int iterations = FileFormat.MutateGetIterationVar(isFade, (int)IterationsStart, (int)IterationsEnd, iterationSteps, maxIteration, LayerIndexStart, (uint)layerIndex);
 
             using var mat = SlicerFile[layerIndex].LayerMat;

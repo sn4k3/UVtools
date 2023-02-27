@@ -650,11 +650,9 @@ public partial class MainWindow : WindowEx
                         {
                             return Core.SystemOS.Windows.USB.USBEject(removableDrive.Name);
                         }
-                        catch (OperationCanceledException) { }
-                        catch (Exception exception)
+                        catch (Exception ex)
                         {
-                            Dispatcher.UIThread.InvokeAsync(async () =>
-                                await this.MessageBoxError(exception.Message, $"Unable to eject the drive {removableDrive.Name}"));
+                            HandleException(ex, $"Unable to eject the drive { removableDrive.Name}");
                         }
 
                         return false;
@@ -1058,13 +1056,9 @@ public partial class MainWindow : WindowEx
                         SlicerFile.ChangeLayersCompressionMethod(Settings.General.LayerCompressionCodec, Progress);
                         return true;
                     }
-                    catch (OperationCanceledException)
+                    catch (Exception ex)
                     {
-                    }
-                    catch (Exception exception)
-                    {
-                        Dispatcher.UIThread.InvokeAsync(async () =>
-                            await this.MessageBoxError(exception.ToString(), "Error while converting layers"));
+                        HandleException(ex, "Error while converting layers");
                     }
 
                     return false;
@@ -1348,12 +1342,11 @@ public partial class MainWindow : WindowEx
                 SlicerFile.Decode(fileName, fileDecodeType, Progress);
                 return true;
             }
-            catch (OperationCanceledException) {}
-            catch (Exception exception) 
+            catch (Exception ex)
             {
-                Dispatcher.UIThread.InvokeAsync(async () =>
-                    await this.MessageBoxError(exception.ToString(), "Error opening the file"));
+                HandleException(ex, "Error opening the file");
             }
+
 
             return false;
         }, Progress.Token);
@@ -1474,14 +1467,9 @@ public partial class MainWindow : WindowEx
                                 convertedFile = SlicerFile.Convert(convertToFormat, outputFile, 0, Progress);
                                 return true;
                             }
-                            catch (OperationCanceledException)
+                            catch (Exception ex)
                             {
-                            }
-                            catch (Exception exception)
-                            {
-                                Dispatcher.UIThread.InvokeAsync(async () =>
-                                    await this.MessageBoxError(exception.ToString(),
-                                        "Error while converting the file"));
+                                HandleException(ex, "Error while converting the file");
                             }
 
                             return false;
@@ -1857,7 +1845,7 @@ public partial class MainWindow : WindowEx
                 }
 
                 Dispatcher.UIThread.InvokeAsync(async () =>
-                    await this.MessageBoxError($"{extraMessage}{ex}", "Convertion unsuccessful"));
+                    await this.MessageBoxError($"{extraMessage}{ex}", "Conversion unsuccessful"));
             }
                 
             return false;
@@ -1940,13 +1928,9 @@ public partial class MainWindow : WindowEx
                 SlicerFile.SaveAs(filepath, Progress);
                 return true;
             }
-            catch (OperationCanceledException)
-            {
-            }
             catch (Exception ex)
             {
-                Dispatcher.UIThread.InvokeAsync(async () =>
-                    await this.MessageBoxError(ex.ToString(), "Error while saving the file"));
+                HandleException(ex, "Error while saving the file");
             }
 
             return false;
@@ -1998,14 +1982,9 @@ public partial class MainWindow : WindowEx
             {
                 SlicerFile.Extract(finalPath, true, true, Progress);
             }
-            catch (OperationCanceledException)
-            {
-
-            }
             catch (Exception ex)
             {
-                Dispatcher.UIThread.InvokeAsync(async () =>
-                    await this.MessageBoxError(ex.ToString(), "Error while try extracting the file"));
+                HandleException(ex, "Error while try extracting the file");
             }
         });
  
@@ -2141,55 +2120,9 @@ public partial class MainWindow : WindowEx
             {
                 return baseOperation.Execute(Progress);
             }
-            catch (OperationCanceledException)
-            {
-            }
-            catch (MessageException ex)
-            {
-                Dispatcher.UIThread.InvokeAsync(async ()
-                    => await this.MessageBoxError(ex.Message, $"{baseOperation.Title} Error"));
-            }
-            catch (AggregateException ex)
-            {
-                var sb = new StringBuilder();
-
-                var title = $"{baseOperation.Title} Error";
-
-                if (ex.InnerExceptions.Count > 0)
-                {
-                    if (ex.InnerExceptions.Count == 1)
-                    {
-                        if (ex.InnerExceptions[0] is MessageException messageException)
-                        {
-                            if (messageException.Title is not null) title = messageException.Title;
-                            sb.AppendLine(ex.InnerExceptions[0].Message);
-                        }
-                        else
-                        {
-                            sb.AppendLine(ex.InnerExceptions[0].ToString());
-                        }
-                    }
-                    else
-                    {
-                        for (var i = 0; i < ex.InnerExceptions.Count; i++)
-                        {
-                            if (ex.InnerExceptions[i] is MessageException {Title: { }} messageException)
-                            {
-                                title = messageException.Title;
-                            }
-
-                            if (i > 0) sb.AppendLine("---------------");
-                            sb.AppendLine($"({i + 1}) {(ex.InnerExceptions[i] is MessageException ? ex.InnerExceptions[i].Message : ex.InnerExceptions[i].ToString())}");
-                        }
-                    }
-                }
-
-                Dispatcher.UIThread.InvokeAsync(async () => await this.MessageBoxError(sb.ToString(), title));
-            }
             catch (Exception ex)
             {
-                Dispatcher.UIThread.InvokeAsync(async () 
-                    => await this.MessageBoxError(ex.ToString(), $"{baseOperation.Title} Error"));
+                HandleException(ex, $"{baseOperation.Title} Error");
             }
 
             return false;
@@ -2346,7 +2279,58 @@ public partial class MainWindow : WindowEx
 
     #endregion
 
-            
+    #region Error Handling
+    public void HandleException(Exception ex, string? title = null)
+    {
+        switch (ex)
+        {
+            case OperationCanceledException:
+                return;
+            case MessageException msgEx:
+                Dispatcher.UIThread.InvokeAsync(async () => await this.MessageBoxError(msgEx.Message, title));
+                return;
+            case AggregateException aggEx:
+                {
+                    var sb = new StringBuilder();
+
+                    if (aggEx.InnerExceptions.Count > 0)
+                    {
+                        if (aggEx.InnerExceptions.Count == 1)
+                        {
+                            if (aggEx.InnerExceptions[0] is MessageException messageException)
+                            {
+                                if (messageException.Title is not null) title = messageException.Title;
+                                sb.AppendLine(aggEx.InnerExceptions[0].Message);
+                            }
+                            else
+                            {
+                                sb.AppendLine(aggEx.InnerExceptions[0].ToString());
+                            }
+                        }
+                        else
+                        {
+                            for (var i = 0; i < aggEx.InnerExceptions.Count; i++)
+                            {
+                                if (aggEx.InnerExceptions[i] is MessageException { Title: { } } messageException)
+                                {
+                                    title = messageException.Title;
+                                }
+
+                                if (i > 0) sb.AppendLine("---------------");
+                                sb.AppendLine($"({i + 1}) {(aggEx.InnerExceptions[i] is MessageException ? aggEx.InnerExceptions[i].Message : aggEx.InnerExceptions[i].ToString())}");
+                            }
+                        }
+                    }
+
+                    Dispatcher.UIThread.InvokeAsync(async () => await this.MessageBoxError(sb.ToString(), title));
+                    return;
+                }
+            default:
+                Dispatcher.UIThread.InvokeAsync(async () => await this.MessageBoxError(ex.ToString(), title));
+                return;
+        }
+    }
+    #endregion
 
     #endregion
 }

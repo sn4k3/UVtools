@@ -959,6 +959,7 @@ public sealed class FDGFile : FileFormat
         {
             Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), layerIndex =>
             {
+                progress.PauseIfRequested();
                 using (var mat = this[layerIndex].LayerMat)
                 {
                     LayersDefinitions[layerIndex] = new LayerDef(this, this[layerIndex]);
@@ -969,7 +970,7 @@ public sealed class FDGFile : FileFormat
 
             foreach (var layerIndex in batch)
             {
-                progress.ThrowIfCancellationRequested();
+                progress.PauseOrCancelIfRequested();
 
                 var layerDef = LayersDefinitions[layerIndex];
                 LayerDef? layerDefHash = null;
@@ -1070,7 +1071,7 @@ public sealed class FDGFile : FileFormat
         {
             foreach (var layerIndex in batch)
             {
-                progress.ThrowIfCancellationRequested();
+                progress.PauseOrCancelIfRequested();
 
                 var layerDef = Helpers.Deserialize<LayerDef>(inputFile);
                 layerDef.Parent = this;
@@ -1090,6 +1091,7 @@ public sealed class FDGFile : FileFormat
             {
                 Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), layerIndex =>
                 {
+                    progress.PauseIfRequested();
                     if (DecodeType == FileDecodeType.Full)
                     {
                         using var mat = LayersDefinitions[layerIndex].Decode((uint)layerIndex);

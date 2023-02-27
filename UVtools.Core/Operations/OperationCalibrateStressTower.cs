@@ -419,6 +419,7 @@ public sealed class OperationCalibrateStressTower : Operation
 
         Parallel.For(0, LayerCount, CoreSettings.GetParallelOptions(progress), layerIndex =>
         {
+            progress.PauseIfRequested();
             newLayers[layerIndex] = new Layer((uint)layerIndex, layers[layerIndex], SlicerFile) {IsModified = true};
             layers[layerIndex].Dispose();
             progress.LockAndIncrement();

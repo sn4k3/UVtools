@@ -494,6 +494,7 @@ public sealed class LGSFile : FileFormat
             {
                 Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), layerIndex =>
                 {
+                    progress.PauseIfRequested();
                     using (var mat = this[layerIndex].LayerMat)
                     {
                         layerData[layerIndex] = new LayerDef(this);
@@ -504,7 +505,7 @@ public sealed class LGSFile : FileFormat
 
                 foreach (var layerIndex in batch)
                 {
-                    progress.ThrowIfCancellationRequested();
+                    progress.PauseOrCancelIfRequested();
                     outputFile.WriteSerialize(layerData[layerIndex]);
                     layerData[layerIndex].EncodedRle = null!; // Free this
                 }
@@ -516,7 +517,7 @@ public sealed class LGSFile : FileFormat
 
             for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
             {
-                progress.ThrowIfCancellationRequested();
+                progress.PauseOrCancelIfRequested();
                 outputFile.WriteSerialize(layerData[layerIndex]);
                 progress++;
             }
@@ -565,7 +566,7 @@ public sealed class LGSFile : FileFormat
             {
                 foreach (var layerIndex in batch)
                 {
-                    progress.ThrowIfCancellationRequested();
+                    progress.PauseOrCancelIfRequested();
 
                     layerData[layerIndex] = Helpers.Deserialize<LayerDef>(inputFile);
                     layerData[layerIndex].Parent = this;
@@ -573,6 +574,7 @@ public sealed class LGSFile : FileFormat
 
                 Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), layerIndex =>
                 {
+                    progress.PauseIfRequested();
                     using var mat = layerData[layerIndex].Decode();
                     _layers[layerIndex] = new Layer((uint)layerIndex, mat, this);
 

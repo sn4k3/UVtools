@@ -59,7 +59,7 @@ struct HEADER {
     uint ResolutionY <fgcolor=cBlack, bgcolor=cRed>;
     float WeightG <fgcolor=cBlack, bgcolor=cRed>;
     float Price <fgcolor=cBlack, bgcolor=cRed>;
-    wstring PriceCurrencyDec <fgcolor=cBlack, bgcolor=cRed>;
+    wstring PriceCurrency <fgcolor=cBlack, bgcolor=cRed>;
     uint PerLayerOverride <fgcolor=cBlack, bgcolor=cRed>;
     uint PrintTime <fgcolor=cBlack, bgcolor=cRed>;
     uint TransitionLayerCount <fgcolor=cBlack, bgcolor=cRed>;

@@ -1,0 +1,123 @@
+//------------------------------------------------
+//--- 010 Editor v8.0.1 Binary Template
+//
+//      File: goo
+//   Authors: Tiago Conceição
+//------------------------------------------------
+
+BigEndian();
+
+enum <ubyte> BOOL { False, True };
+
+struct HEADER {
+    char Version[4] <fgcolor=cBlack, bgcolor=cRed>; // format version: V3.0
+    char Magic[8] <fgcolor=cBlack, bgcolor=cRed>; // Fix contant:0x07 0x00 0x00 0x00 0x44 0x4C 0x50 0x00
+    char SoftwareName[32] <fgcolor=cBlack, bgcolor=cRed>;
+    char SoftwareVersion[24] <fgcolor=cBlack, bgcolor=cRed>;
+    char FileCreateTime[24] <fgcolor=cBlack, bgcolor=cRed>; // yyyy-mm-dd hh:mm:ss
+    char MachineName[32] <fgcolor=cBlack, bgcolor=cRed>;
+    char MachineType[32] <fgcolor=cBlack, bgcolor=cRed>;
+    char ProfileName[32] <fgcolor=cBlack, bgcolor=cRed>;
+    ushort AntiAliasingLevel <fgcolor=cBlack, bgcolor=cRed>;
+    ushort GreyLevel <fgcolor=cBlack, bgcolor=cRed>;
+    ushort BlurLevel <fgcolor=cBlack, bgcolor=cRed>;
+    ubyte SmallPreview[116*116*2] <fgcolor=cBlack, bgcolor=cYellow>; // RGB_565 16Bit
+    ubyte SmallPreviewDelimiter[2] <fgcolor=cBlack, bgcolor=cPurple>; // \n 0x0D 0x0A
+    ubyte BigPreview[290*290*2] <fgcolor=cBlack, bgcolor=cYellow>; // RGB_565 16Bit
+    ubyte BigPreviewDelimiter[2] <fgcolor=cBlack, bgcolor=cPurple>; // \n 0x0D 0x0A
+
+    uint LayerCount <fgcolor=cBlack, bgcolor=cRed>;
+    ushort ResolutionX <fgcolor=cBlack, bgcolor=cRed>;
+    ushort ResolutionY <fgcolor=cBlack, bgcolor=cRed>;
+    BOOL MirrorX <fgcolor=cBlack, bgcolor=cRed>;
+    BOOL MirrorY <fgcolor=cBlack, bgcolor=cRed>;
+    float DisplayWidth <fgcolor=cBlack, bgcolor=cRed>;
+    float DisplayHeight <fgcolor=cBlack, bgcolor=cRed>;
+    float MachineZ <fgcolor=cBlack, bgcolor=cRed>;
+    float LayerHeight <fgcolor=cBlack, bgcolor=cRed>;
+    float ExposureTime <fgcolor=cBlack, bgcolor=cRed>;
+    enum <ubyte> { WaitTime, LightOffDelay }  DelayMode <fgcolor=cBlack, bgcolor=cRed>; // 1： wait time mode , 0:  light off delay mode
+    float LightOffDelay <fgcolor=cBlack, bgcolor=cRed>;
+    float BottomWaitTimeAfterCure <fgcolor=cBlack, bgcolor=cRed>;
+    float BottomWaitTimeAfterLift <fgcolor=cBlack, bgcolor=cRed>;
+    float BottomWaitTimeBeforeCure <fgcolor=cBlack, bgcolor=cRed>;
+    float WaitTimeAfterCure <fgcolor=cBlack, bgcolor=cRed>;
+    float WaitTimeAfterLift <fgcolor=cBlack, bgcolor=cRed>;
+    float WaitTimeBeforeCure <fgcolor=cBlack, bgcolor=cRed>;
+    float BottomExposureTime <fgcolor=cBlack, bgcolor=cRed>;
+    uint BottomLayerCount <fgcolor=cBlack, bgcolor=cRed>;
+    float BottomLiftHeight <fgcolor=cBlack, bgcolor=cRed>;
+    float BottomLiftSpeed <fgcolor=cBlack, bgcolor=cRed>; // mm/min
+    float LiftHeight <fgcolor=cBlack, bgcolor=cRed>;
+    float LiftSpeed <fgcolor=cBlack, bgcolor=cRed>; // mm/min
+    float BottomRetractHeight <fgcolor=cBlack, bgcolor=cRed>;
+    float BottomRetractSpeed <fgcolor=cBlack, bgcolor=cRed>; // mm/min
+    float RetractHeight <fgcolor=cBlack, bgcolor=cRed>;
+    float RetractSpeed <fgcolor=cBlack, bgcolor=cRed>; // mm/min
+
+    float BottomLiftHeight2 <fgcolor=cBlack, bgcolor=cRed>;
+    float BottomLiftSpeed2 <fgcolor=cBlack, bgcolor=cRed>; // mm/min
+    float LiftHeight2 <fgcolor=cBlack, bgcolor=cRed>;
+    float LiftSpeed2 <fgcolor=cBlack, bgcolor=cRed>; // mm/min
+    float BottomRetractHeight2 <fgcolor=cBlack, bgcolor=cRed>;
+    float BottomRetractSpeed2 <fgcolor=cBlack, bgcolor=cRed>; // mm/min
+    float RetractHeight2 <fgcolor=cBlack, bgcolor=cRed>;
+    float RetractSpeed2 <fgcolor=cBlack, bgcolor=cRed>; // mm/min
+
+    ushort BottomLightPWM <fgcolor=cBlack, bgcolor=cRed>;
+    ushort LightPWM <fgcolor=cBlack, bgcolor=cRed>;
+
+    BOOL PerLayerSettings <fgcolor=cBlack, bgcolor=cRed>; // 0: normal mode; 1:advance mode, printing use the value of "Layer Definition Content"
+
+    uint PrintTime <fgcolor=cBlack, bgcolor=cRed>; // seconds
+    float Volume <fgcolor=cBlack, bgcolor=cRed>; // The volume of all parts. unit:mm3
+    float MaterialGrams <fgcolor=cBlack, bgcolor=cRed>; // The weight of all parts. unit:g
+    float MaterialCost <fgcolor=cBlack, bgcolor=cRed>;
+    char PriceCurrency[8] <fgcolor=cBlack, bgcolor=cRed>; // $, €
+
+    uint LayerDefAddress <fgcolor=cBlack, bgcolor=cRed>;
+    ubyte GrayScaleLevel <fgcolor=cBlack, bgcolor=cRed>; // 0： The range of pixel's gray value is from 0x0 ~ 0xf; 1：The range of pixel's gray value is from 0x0 ~ 0xff;
+    ushort TransitionLayerCount <fgcolor=cBlack, bgcolor=cRed>;
+} header;
+
+struct LAYER_DEF {
+    // 0: reserve; 1: current layer pause printing
+    ushort Pause <fgcolor=cWhite, bgcolor=cBlue>;
+    // The lift distance of Z axis when "Pause flag" equal 1. unit:mm
+    float PausePositionZ <fgcolor=cWhite, bgcolor=cBlue>;
+    float PositionZ <fgcolor=cWhite, bgcolor=cBlue>;
+    float ExposureTime <fgcolor=cWhite, bgcolor=cBlue>;
+    float LightOffDelay <fgcolor=cWhite, bgcolor=cBlue>;
+    float WaitTimeAfterCure <fgcolor=cWhite, bgcolor=cBlue>;
+    float WaitTimeAfterLift <fgcolor=cWhite, bgcolor=cBlue>;
+    float WaitTimeBeforeCure <fgcolor=cWhite, bgcolor=cBlue>;
+    float LiftHeight <fgcolor=cWhite, bgcolor=cBlue>;
+    float LiftSpeed <fgcolor=cWhite, bgcolor=cBlue>; // mm/min
+    float LiftHeight2 <fgcolor=cWhite, bgcolor=cBlue>;
+    float LiftSpeed2 <fgcolor=cWhite, bgcolor=cBlue>; // mm/min
+    float RetractHeight <fgcolor=cWhite, bgcolor=cBlue>;
+    float RetractSpeed <fgcolor=cWhite, bgcolor=cBlue>; // mm/min
+    float RetractHeight2 <fgcolor=cWhite, bgcolor=cBlue>;
+    float RetractSpeed2 <fgcolor=cWhite, bgcolor=cBlue>; // mm/min
+    ushort LightPWM <fgcolor=cWhite, bgcolor=cBlue>;
+    ubyte DelimiterData[2] <fgcolor=cWhite, bgcolor=cBlue>; // \n 0x0D 0x0A
+    uint DataSize <fgcolor=cWhite, bgcolor=cBlue>;
+    // First RLE byte is Magic (0x55)
+    ubyte RLE[DataSize] <fgcolor=cWhite, bgcolor=cBlack>;
+    // Last RLE byte is Checksum XOR
+    ubyte DelimiterRLE[2] <fgcolor=cWhite, bgcolor=cBlack>;  // \n 0x0D 0x0A
+};
+
+struct LAYERS{
+    local uint i;        
+    for(i = 0; i < header.LayerCount; i++){
+        LAYER_DEF layerDef;
+   }
+} layers;
+
+
+struct FOOTER {
+    ubyte Padding[3] <fgcolor=cBlack, bgcolor=cRed>; // format version
+    char Magic[8] <fgcolor=cBlack, bgcolor=cRed>; // Fix contant:0x07 0x00 0x00 0x00 0x44 0x4C 0x50 0x00
+    
+} footer;

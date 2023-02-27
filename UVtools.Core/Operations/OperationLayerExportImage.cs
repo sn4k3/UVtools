@@ -181,6 +181,7 @@ public sealed class OperationLayerExportImage : Operation
 
         Parallel.For(LayerIndexStart, LayerIndexEnd+1, CoreSettings.GetParallelOptions(progress), layerIndex =>
         {
+            progress.PauseIfRequested();
             using var mat = SlicerFile[layerIndex].LayerMat;
             var matRoi = mat;
             if (_cropByRoi && HaveROI)

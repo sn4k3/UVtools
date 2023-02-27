@@ -1760,6 +1760,7 @@ public sealed class PhotonWorkshopFile : FileFormat
         {
             Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), layerIndex =>
             {
+                progress.PauseIfRequested();
                 using (var mat = this[layerIndex].LayerMat)
                 {
                     LayersDefinition.Layers[layerIndex] = new LayerDef(this, this[layerIndex]);
@@ -1770,7 +1771,7 @@ public sealed class PhotonWorkshopFile : FileFormat
 
             foreach (var layerIndex in batch)
             {
-                progress.ThrowIfCancellationRequested();
+                progress.PauseOrCancelIfRequested();
 
                 var layerDef = LayersDefinition.Layers[layerIndex];
 
@@ -1924,7 +1925,7 @@ public sealed class PhotonWorkshopFile : FileFormat
         {
             foreach (var layerIndex in batch)
             {
-                progress.ThrowIfCancellationRequested();
+                progress.PauseOrCancelIfRequested();
 
                 LayersDefinition[layerIndex] = Helpers.Deserialize<LayerDef>(inputFile);
                 LayersDefinition[layerIndex].Parent = this;
@@ -1944,6 +1945,7 @@ public sealed class PhotonWorkshopFile : FileFormat
             {
                 Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), layerIndex =>
                 {
+                    progress.PauseIfRequested();
                     using var mat = LayersDefinition[layerIndex].Decode();
                     _layers[layerIndex] = new Layer((uint)layerIndex, mat, this)
                     {

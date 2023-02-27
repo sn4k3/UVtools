@@ -247,7 +247,7 @@ public class OperationLayerArithmetic : Operation
         {
             if(!operation.IsValid) continue;
 
-            progress.ThrowIfCancellationRequested();
+            progress.PauseOrCancelIfRequested();
             using var result = SlicerFile[operation.Operations[0].LayerIndex].LayerMat;
             using var resultRoi = GetRoiOrDefault(result);
             using var imageMask = GetMask(resultRoi);
@@ -255,7 +255,7 @@ public class OperationLayerArithmetic : Operation
             progress.ItemCount = (uint)operation.Operations.Count;
             for (int i = 1; i < operation.Operations.Count; i++)
             {
-                progress.ThrowIfCancellationRequested();
+                progress.PauseOrCancelIfRequested();
                 using var image = SlicerFile[operation.Operations[i].LayerIndex].LayerMat;
                 var imageRoi = GetRoiOrDefault(image);
 
@@ -293,6 +293,7 @@ public class OperationLayerArithmetic : Operation
             progress.Reset("Applied layers", (uint)operation.SetLayers.Count);
             Parallel.ForEach(operation.SetLayers, CoreSettings.GetParallelOptions(progress), layerIndex =>
             {
+                progress.PauseIfRequested();
                 progress.LockAndIncrement();
                 if (operation.Operations.Count == 1 || HaveROIorMask)
                 {

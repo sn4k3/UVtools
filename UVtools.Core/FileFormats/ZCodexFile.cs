@@ -390,7 +390,7 @@ public sealed class ZCodexFile : FileFormat
         float lastZPosition = 0;
         for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
         {
-            progress.ThrowIfCancellationRequested();
+            progress.PauseOrCancelIfRequested();
 
             var layer = this[layerIndex];
             GCode.AppendLine($"{GCodeKeywordSlice} {layerIndex}");

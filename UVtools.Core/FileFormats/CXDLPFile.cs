@@ -33,9 +33,12 @@ namespace UVtools.Core.FileFormats;
 public sealed class CXDLPFile : FileFormat
 {
     #region Constants
+
     private const byte HEADER_SIZE = 9; // CXSW3DV2
     private const string HEADER_VALUE = "CXSW3DV2";
     private const string HEADER_VALUE_GENERIC = "CXSW3D";
+    private const byte DEFAULT_VERSION = 3;
+
     #endregion
 
     #region Sub Classes
@@ -62,7 +65,7 @@ public sealed class CXDLPFile : FileFormat
 
         [FieldOrder(2)]
         [FieldEndianness(Endianness.Big)]
-        public ushort Version { get; set; } = 2;
+        public ushort Version { get; set; } = DEFAULT_VERSION;
 
         /// <summary>
         /// Gets the size of the printer model
@@ -458,7 +461,7 @@ public sealed class CXDLPFile : FileFormat
 
     public override uint[] AvailableVersions { get; } = { 2, 3 };
 
-    public override uint DefaultVersion => 2;
+    public override uint DefaultVersion => DEFAULT_VERSION;
 
     public override uint Version
     {
@@ -675,6 +678,7 @@ public sealed class CXDLPFile : FileFormat
         // Previews
         Parallel.For(0, previews.Length, CoreSettings.GetParallelOptions(progress), previewIndex =>
         {
+            progress.PauseIfRequested();
             var encodeLength = ThumbnailsOriginalSize[previewIndex].Area() * 2;
             if (Thumbnails[previewIndex] is null)
             {
@@ -720,6 +724,7 @@ public sealed class CXDLPFile : FileFormat
         {
             Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), layerIndex =>
             {
+                progress.PauseIfRequested();
                 var layer = this[layerIndex];
                 using (var mat = layer.LayerMat)
                 {
@@ -841,6 +846,7 @@ public sealed class CXDLPFile : FileFormat
 
         Parallel.For(0, previews.Length, CoreSettings.GetParallelOptions(progress), previewIndex =>
         {
+            progress.PauseIfRequested();
             Thumbnails[previewIndex] = DecodeImage(DATATYPE_RGB565_BE, previews[previewIndex], ThumbnailsOriginalSize[previewIndex]);
             previews[previewIndex] = null!;
         });
@@ -868,7 +874,7 @@ public sealed class CXDLPFile : FileFormat
             {
                 foreach (var layerIndex in batch)
                 {
-                    progress.ThrowIfCancellationRequested();
+                    progress.PauseOrCancelIfRequested();
 
                     inputFile.Seek(4, SeekOrigin.Current);
                     var lineCount = BitExtensions.ToUIntBigEndian(inputFile.ReadBytes(4));
@@ -880,6 +886,7 @@ public sealed class CXDLPFile : FileFormat
 
                 Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), layerIndex =>
                 {
+                    progress.PauseIfRequested();
                     using (var mat = EmguExtensions.InitMat(Resolution))
                     {
 

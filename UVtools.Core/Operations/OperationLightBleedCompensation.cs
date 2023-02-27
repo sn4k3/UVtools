@@ -205,6 +205,7 @@ public class OperationLightBleedCompensation : Operation
         if (dimMats.Length == 0) return false;
         Parallel.For(LayerIndexStart, LayerIndexEnd + 1, CoreSettings.GetParallelOptions(progress), layerIndex =>
         {
+            progress.PauseIfRequested();
             var layer = SlicerFile[layerIndex];
             using var mat = layer.LayerMat;    
             using var original = mat.Clone();    

@@ -227,6 +227,9 @@
             <Component Id="cmpE22C61C446390C15573D173185F304B6" Guid="*">
                 <File Id="filCB9CBCE8C8D971DEA7E84929CEF441D2" KeyPath="yes" Source="$(var.HarvestPath)\ColorTextBlock.Avalonia.dll" />
             </Component>
+            <Component Id="cmp977B47F4267442AAB9CA90B23B602CF0" Guid="*">
+                <File Id="fil15679F615427E50A298EE69649732F88" KeyPath="yes" Source="$(var.HarvestPath)\CommunityToolkit.Diagnostics.dll" />
+            </Component>
             <Component Id="cmp3F97D91FBCE0FF2C07E528BD2E8A309D" Guid="*">
                 <File Id="fil7E37C5A358A7676AE72978D71AF1705E" KeyPath="yes" Source="$(var.HarvestPath)\CommunityToolkit.HighPerformance.dll" />
             </Component>
@@ -320,8 +323,8 @@
             <Component Id="cmpE35DDB3C925C83E74C7DAAE6FEA6C156" Guid="*">
                 <File Id="filEAEAE1CB9E8AC1FF00B05453ABEE2ADF" KeyPath="yes" Source="$(var.HarvestPath)\mscordaccore.dll" />
             </Component>
-            <Component Id="cmp88DB243F92018F1B962C2F47929D8153" Guid="*">
-                <File Id="filAE2D2F01C0F3C3BA7C948640A7DF4621" KeyPath="yes" Source="$(var.HarvestPath)\mscordaccore_amd64_amd64_6.0.1322.58009.dll" />
+            <Component Id="cmp7F40D10D653BD27A9F8720C0FEDD1899" Guid="*">
+                <File Id="filB816040612FB7214C9AF36224BEC56AE" KeyPath="yes" Source="$(var.HarvestPath)\mscordaccore_amd64_amd64_6.0.1423.7309.dll" />
             </Component>
             <Component Id="cmpA5ABEAD31F33B1E5825EC6F159ABFB0F" Guid="*">
                 <File Id="fil1A6B0EBD5A5BF8DD0582A2665D3492F1" KeyPath="yes" Source="$(var.HarvestPath)\mscordbi.dll" />
@@ -1031,6 +1034,9 @@
                         <Component Id="cmp334FC6F96727E76A445CF33F79C5B924" Guid="*">
                             <File Id="filB57353880973BFE74AFA86BC5A544800" KeyPath="yes" Source="$(var.HarvestPath)\Assets\PrusaSlicer\printer\Elegoo Mars 3.ini" />
                         </Component>
+                        <Component Id="cmp36D8C0CA3C222D52713D161551B4C0B1" Guid="*">
+                            <File Id="filE251CBC8A02CBDE7E3CECF1D2E970A42" KeyPath="yes" Source="$(var.HarvestPath)\Assets\PrusaSlicer\printer\Elegoo Mars 4.ini" />
+                        </Component>
                         <Component Id="cmp6E755F014B53DE8D1393C0EFF3903CEB" Guid="*">
                             <File Id="filF1B8ADB4914F2912262AE5CB3B628AFF" KeyPath="yes" Source="$(var.HarvestPath)\Assets\PrusaSlicer\printer\Elegoo Mars C.ini" />
                         </Component>
@@ -1662,6 +1668,7 @@
             <ComponentRef Id="cmp4FD0997C338542D825893A7B99BCB1EF" />
             <ComponentRef Id="cmp170DFF239B610B0ACA2229119DEA678E" />
             <ComponentRef Id="cmpE22C61C446390C15573D173185F304B6" />
+            <ComponentRef Id="cmp977B47F4267442AAB9CA90B23B602CF0" />
             <ComponentRef Id="cmp3F97D91FBCE0FF2C07E528BD2E8A309D" />
             <ComponentRef Id="cmpE4363908C50AA4558F6AA7673DE8CD3F" />
             <ComponentRef Id="cmp1FAC008E6AA14459AD5390EB28F23EFE" />
@@ -1693,7 +1700,7 @@
             <ComponentRef Id="cmp3E4F3E4686A9B425B5812E5171CCDEEF" />
             <ComponentRef Id="cmp16861E24C897764CA922EC062BA74EC9" />
             <ComponentRef Id="cmpE35DDB3C925C83E74C7DAAE6FEA6C156" />
-            <ComponentRef Id="cmp88DB243F92018F1B962C2F47929D8153" />
+            <ComponentRef Id="cmp7F40D10D653BD27A9F8720C0FEDD1899" />
             <ComponentRef Id="cmpA5ABEAD31F33B1E5825EC6F159ABFB0F" />
             <ComponentRef Id="cmp5D6845991403E371A015DF7EBDF71F13" />
             <ComponentRef Id="cmp57B8361D25AD503DC733F4039E5A38B0" />
@@ -1929,6 +1936,7 @@
             <ComponentRef Id="cmp4DBA96B44EF66C3389340B188A6CCE19" />
             <ComponentRef Id="cmp05785D793A1F5424FD91A788F742A565" />
             <ComponentRef Id="cmp334FC6F96727E76A445CF33F79C5B924" />
+            <ComponentRef Id="cmp36D8C0CA3C222D52713D161551B4C0B1" />
             <ComponentRef Id="cmp6E755F014B53DE8D1393C0EFF3903CEB" />
             <ComponentRef Id="cmp1CE96BD7A34ADC76D869FAA33C43C8F9" />
             <ComponentRef Id="cmp6D57ACCB6758632F336507A7A92D9296" />

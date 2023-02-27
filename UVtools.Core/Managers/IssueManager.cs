@@ -236,6 +236,7 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
             // Detect contours
             Parallel.For(0, SlicerFile.LayerCount, CoreSettings.ParallelOptions, layerIndexInt =>
             {
+                progress.PauseIfRequested();
                 if (progress.Token.IsCancellationRequested) return;
                 uint layerIndex = (uint)layerIndexInt;
                 var layer = SlicerFile[layerIndex];
@@ -706,6 +707,7 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
                     airContours[layerIndex] = new();
                     Parallel.For(0, hollows[layerIndex].Count, CoreSettings.ParallelOptions, i =>
                     {
+                        progress.PauseIfRequested();
                         //for (var i = 0; i < hollows[layerIndex].Count; i++)
                         //{
                         if (progress.Token.IsCancellationRequested) return;
@@ -793,7 +795,10 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
                 if (airContours[layerIndex] is not null)
                 {
                     Parallel.ForEach(airContours[layerIndex], CoreSettings.ParallelOptions, vec =>
-                        CvInvoke.DrawContours(layerAirMap, vec, -1, EmguExtensions.WhiteColor, -1)
+                        {
+                            progress.PauseIfRequested();
+                            CvInvoke.DrawContours(layerAirMap, vec, -1, EmguExtensions.WhiteColor, -1);
+                        }
                     );
                 }
 
@@ -810,6 +815,7 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
                     /* all we care about is contours the first pass thought were resin traps, since there was no access to air from the bottom */
                     Parallel.For(0, resinTraps[layerIndex].Count, CoreSettings.ParallelOptions, x =>
                     {
+                        progress.PauseIfRequested();
                         if (progress.Token.IsCancellationRequested) return;
 
                         /* check if each contour overlaps known air */
@@ -949,6 +955,7 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
             {
                 Parallel.ForEach(listOfLayers.Where(list => list is not null), contoursGroups =>
                 {
+                    progress.PauseIfRequested();
                     for (var groupIndex = 0; groupIndex < contoursGroups.Count; groupIndex++)
                     {
                         var contours = contoursGroups[groupIndex];
@@ -985,6 +992,7 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
                         /* select new LayerIssue(this[layerIndex], LayerIssue.IssueType.ResinTrap, area.Contour, area.BoundingRectangle)) */
                         foreach (var trap in resinTraps[layerIndex])
                         {
+                            progress.PauseIfRequested();
                             if (progress.Token.IsCancellationRequested) return;
 
                             var area = EmguContours.GetContourArea(trap);
@@ -1053,6 +1061,7 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
 
                             foreach (var trap in suctionCups[layerIndex])
                             {
+                                progress.PauseIfRequested();
                                 if (progress.Token.IsCancellationRequested) return;
 
                                 var area = EmguContours.GetContourArea(trap);

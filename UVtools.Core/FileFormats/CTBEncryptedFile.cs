@@ -1157,7 +1157,7 @@ public sealed class CTBEncryptedFile : FileFormat
         LayersPointer = new LayerPointer[Settings.LayerCount];
         for (uint layerIndex = 0; layerIndex < Settings.LayerCount; layerIndex++)
         {
-            progress.ThrowIfCancellationRequested();
+            progress.PauseOrCancelIfRequested();
             LayersPointer[layerIndex] = Helpers.Deserialize<LayerPointer>(inputFile);
             Debug.WriteLine($"pointer[{layerIndex}]: {LayersPointer[layerIndex]}");
             progress++;
@@ -1172,7 +1172,7 @@ public sealed class CTBEncryptedFile : FileFormat
         {
             foreach (var layerIndex in batch)
             {
-                progress.ThrowIfCancellationRequested();
+                progress.PauseOrCancelIfRequested();
 
                 inputFile.Seek(LayersPointer[layerIndex].PageNumber * ChituboxFile.PageSize + LayersPointer[layerIndex].LayerOffset, SeekOrigin.Begin);
                 LayersDefinition[layerIndex] = Helpers.Deserialize<LayerDef>(inputFile);
@@ -1185,6 +1185,7 @@ public sealed class CTBEncryptedFile : FileFormat
             {
                 Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), layerIndex =>
                 {
+                    progress.PauseIfRequested();
                     var layerDef = LayersDefinition[layerIndex];
 
 
@@ -1349,6 +1350,7 @@ public sealed class CTBEncryptedFile : FileFormat
         progress.Reset(OperationProgress.StatusEncodeLayers, LayerCount);
         Parallel.For(0, LayerCount, CoreSettings.GetParallelOptions(progress), layerIndex =>
         {
+            progress.PauseIfRequested();
             var layerDef = new LayerDef(this, this[layerIndex]);
             using (var mat = this[layerIndex].LayerMat)
             {
@@ -1362,7 +1364,7 @@ public sealed class CTBEncryptedFile : FileFormat
         progress.Reset(OperationProgress.StatusWritingFile, LayerCount);
         for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
         {
-            progress.ThrowIfCancellationRequested();
+            progress.PauseOrCancelIfRequested();
             var layerDef = LayersDefinition[layerIndex];
             LayersPointer[layerIndex] = new LayerPointer(outputFile.Position);
 

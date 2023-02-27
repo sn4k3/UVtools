@@ -131,6 +131,7 @@ public class ScriptPreventResinShrinkage : ScriptGlobals
             CoreSettings.GetParallelOptions(Progress),
             layerIndex =>
         {
+            Progress.PauseIfRequested();
             var fullLayer = SlicerFile[layerIndex];
             if (fullLayer.IsEmpty) 
             {

@@ -394,6 +394,7 @@ public class OperationLithophane : Operation
         progress.Reset("Threshold levels", byte.MaxValue);
         Parallel.For(_startThresholdRange, _endThresholdRange, CoreSettings.GetParallelOptions(progress), threshold =>
         {
+            progress.PauseIfRequested();
             using var thresholdMat = new Mat();
             CvInvoke.Threshold(mat, thresholdMat, threshold, byte.MaxValue, ThresholdType.Binary);
             if (CvInvoke.CountNonZero(thresholdMat) == 0) return;
@@ -436,6 +437,7 @@ public class OperationLithophane : Operation
                 progress.ResetNameAndProcessed("Packed layers");
                 Parallel.ForEach(indexes, CoreSettings.GetParallelOptions(progress), i =>
                 {
+                    progress.PauseIfRequested();
                     progress.LockAndIncrement();
                     using var mat = thresholdLayers[i].LayerMat;
                     for (int index = i+1; index < i + layerIncrement && index < thresholdLayers.Length; index++)

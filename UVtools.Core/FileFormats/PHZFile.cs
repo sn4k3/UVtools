@@ -981,6 +981,7 @@ public sealed class PHZFile : FileFormat
         {
             Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), layerIndex =>
             {
+                progress.PauseIfRequested();
                 using (var mat = this[layerIndex].LayerMat)
                 {
                     LayersDefinitions[layerIndex] = new LayerDef(this, this[layerIndex]);
@@ -991,7 +992,7 @@ public sealed class PHZFile : FileFormat
 
             foreach (var layerIndex in batch)
             {
-                progress.ThrowIfCancellationRequested();
+                progress.PauseOrCancelIfRequested();
 
                 var layerDef = LayersDefinitions[layerIndex];
                 LayerDef? layerDefHash = null;
@@ -1093,7 +1094,7 @@ public sealed class PHZFile : FileFormat
         {
             foreach (var layerIndex in batch)
             {
-                progress.ThrowIfCancellationRequested();
+                progress.PauseOrCancelIfRequested();
 
                 var layerDef = Helpers.Deserialize<LayerDef>(inputFile);
                 layerDef.Parent = this;
@@ -1113,6 +1114,7 @@ public sealed class PHZFile : FileFormat
             {
                 Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), layerIndex =>
                 {
+                    progress.PauseIfRequested();
                     using var mat = LayersDefinitions[layerIndex].Decode((uint)layerIndex);
                     _layers[layerIndex] = new Layer((uint)layerIndex, mat, this);
                     progress.LockAndIncrement();

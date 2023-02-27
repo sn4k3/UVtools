@@ -292,7 +292,8 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
     /// <summary>
     /// Gets if this layer is also an transition layer
     /// </summary>
-    public bool IsTransitionLayer => SlicerFile.TransitionLayerCount <= Number;
+    public bool IsTransitionLayer => SlicerFile.TransitionLayerCount > 0 && 
+                                     Index >= SlicerFile.BottomLayerCount && Index < SlicerFile.BottomLayerCount + SlicerFile.TransitionLayerCount;
 
     /// <summary>
     /// Gets the previous layer, returns null if no previous layer

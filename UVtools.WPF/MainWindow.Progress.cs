@@ -52,12 +52,21 @@ public partial class MainWindow
         };
     }
 
+    public void ProgressOnClickPauseResume()
+    {
+        if (!Progress.CanCancel) return;
+        DialogResult = DialogResults.Cancel;
+        Progress.CanCancel = false;
+        Progress.TokenSource.Cancel();
+    }
+
     public void ProgressOnClickCancel()
     {
         if (!Progress.CanCancel) return;
         DialogResult = DialogResults.Cancel;
         Progress.CanCancel = false;
         Progress.TokenSource.Cancel();
+        Progress.IsPaused = false;
     }
 
     public void ProgressShow(string title, bool canCancel = true)

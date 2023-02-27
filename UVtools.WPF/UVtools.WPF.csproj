@@ -12,7 +12,7 @@
 		<PackageLicenseFile>LICENSE</PackageLicenseFile>
 		<RepositoryUrl>https://github.com/sn4k3/UVtools</RepositoryUrl>
 		<RepositoryType>Git</RepositoryType>
-		<Version>3.11.2</Version>
+		<Version>3.12.0</Version>
 		<Platforms>AnyCPU;x64</Platforms>
 		<PackageIcon>UVtools.png</PackageIcon>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
@@ -48,9 +48,9 @@
 		<PackageReference Include="Avalonia.Desktop" Version="0.10.18" />
 		<PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="0.10.18" />
 		<PackageReference Include="MessageBox.Avalonia" Version="2.1.0" />
-		<PackageReference Include="Projektanker.Icons.Avalonia" Version="5.8.0" />
-		<PackageReference Include="Projektanker.Icons.Avalonia.FontAwesome" Version="5.8.0" />
-		<PackageReference Include="Projektanker.Icons.Avalonia.MaterialDesign" Version="5.8.0" />
+		<PackageReference Include="Projektanker.Icons.Avalonia" Version="5.9.0" />
+		<PackageReference Include="Projektanker.Icons.Avalonia.FontAwesome" Version="5.9.0" />
+		<PackageReference Include="Projektanker.Icons.Avalonia.MaterialDesign" Version="5.9.0" />
 		<PackageReference Include="ThemeEditor.Controls.ColorPicker" Version="0.10.17" />
 	</ItemGroup>
 	<ItemGroup>

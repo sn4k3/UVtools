@@ -415,6 +415,7 @@ public sealed class PhotonSFile : FileFormat
         {
             Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), layerIndex =>
             {
+                progress.PauseIfRequested();
                 using (var mat = this[layerIndex].LayerMat)
                 {
                     layerData[layerIndex] = new LayerDef(mat);
@@ -425,7 +426,7 @@ public sealed class PhotonSFile : FileFormat
 
             foreach (var layerIndex in batch)
             {
-                progress.ThrowIfCancellationRequested();
+                progress.PauseOrCancelIfRequested();
 
                 outputFile.WriteSerialize(layerData[layerIndex]);
                 outputFile.WriteBytes(layerData[layerIndex].EncodedRle);
@@ -468,7 +469,7 @@ public sealed class PhotonSFile : FileFormat
         {
             foreach (var layerIndex in batch)
             {
-                progress.ThrowIfCancellationRequested();
+                progress.PauseOrCancelIfRequested();
 
                 var layerDef = Helpers.Deserialize<LayerDef>(inputFile);
                 layersDefinitions[layerIndex] = layerDef;
@@ -491,6 +492,7 @@ public sealed class PhotonSFile : FileFormat
             {
                 Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), layerIndex =>
                 {
+                    progress.PauseIfRequested();
                     using var mat = layersDefinitions[layerIndex].Decode();
                     _layers[layerIndex] = new Layer((uint)layerIndex, mat, this);
                     progress.LockAndIncrement();

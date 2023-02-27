@@ -283,7 +283,7 @@ public class OperationRaftRelief : Operation
             progress.Reset("Tracing raft", layerCount, firstSupportLayerIndex);
             for (; firstSupportLayerIndex < layerCount; firstSupportLayerIndex++)
             {
-                progress.ThrowIfCancellationRequested();
+                progress.PauseOrCancelIfRequested();
                 supportsMat = GetRoiOrDefault(SlicerFile[firstSupportLayerIndex].LayerMat);
                 //var circles = CvInvoke.HoughCircles(supportsMat, HoughModes.Gradient, 1, 5, 80, 35, 5, 255); // OLD
                 var circles = CvInvoke.HoughCircles(supportsMat, HoughModes.GradientAlt, 1.5, 25, 300, 0.80, 5, 255);
@@ -397,6 +397,7 @@ public class OperationRaftRelief : Operation
         progress.Reset(ProgressAction, firstSupportLayerIndex - _ignoreFirstLayers);
         Parallel.For(_ignoreFirstLayers, firstSupportLayerIndex, CoreSettings.GetParallelOptions(progress), layerIndex =>
         {
+            progress.PauseIfRequested();
             using var mat = SlicerFile[layerIndex].LayerMat;
             using var original = mat.Clone();
             var target = GetRoiOrDefault(mat);

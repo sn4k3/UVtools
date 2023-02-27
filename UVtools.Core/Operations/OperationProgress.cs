@@ -12,7 +12,7 @@ using UVtools.Core.Objects;
 
 namespace UVtools.Core.Operations;
 
-public sealed class OperationProgress : BindableBase
+public sealed class OperationProgress : BindableBase, IDisposable
 {
     public const string StatusDecodePreviews = "Decoded Previews";
     public const string StatusGatherLayers = "Gathered Layers";
@@ -39,7 +39,25 @@ public sealed class OperationProgress : BindableBase
     public CancellationToken Token => TokenSource.Token;
     public void ThrowIfCancellationRequested() => TokenSource.Token.ThrowIfCancellationRequested();
 
+    public ManualResetEvent ManualReset { get; } = new (true);
+
+    /// <summary>
+    /// Blocks the current thread until the current WaitHandle receives a signal.
+    /// </summary>
+    /// <returns>true if the current instance receives a signal. If the current instance is never signaled, WaitOne() never returns.</returns>
+    public bool PauseIfRequested() => ManualReset.WaitOne();
+
+    /// <summary>
+    /// Blocks or cancels the current thread until the current WaitHandle receives a signal.
+    /// </summary>
+    public void PauseOrCancelIfRequested()
+    {
+        ManualReset.WaitOne();
+        TokenSource.Token.ThrowIfCancellationRequested();
+    }
+
     private bool _canCancel = true;
+    private bool _isPaused;
     private string _title = "Operation";
     private string _itemName = "Initializing";
     private uint _processedItems;
@@ -75,6 +93,25 @@ public sealed class OperationProgress : BindableBase
             return Token is {IsCancellationRequested: false, CanBeCanceled: true} && _canCancel;
         }
         set => RaiseAndSetIfChanged(ref _canCancel, value);
+    }
+
+    public bool IsPaused
+    {
+        get => _isPaused;
+        set
+        {
+            if(!RaiseAndSetIfChanged(ref _isPaused, value)) return;
+            if (value)
+            {
+                ManualReset.Reset(); // pause
+                StopWatch.Stop();
+            }
+            else
+            {
+                ManualReset.Set(); // resume
+                StopWatch.Start();
+            }
+        }
     }
 
     /// <summary>
@@ -183,6 +220,7 @@ public sealed class OperationProgress : BindableBase
     public void Init(bool canCancel = true)
     {
         CanCancel = canCancel;
+        IsPaused = false;
         Title = "Operation";
         ItemName = "Initializing";
         ItemCount = 0;
@@ -249,5 +287,11 @@ $"{_processedItems.ToString().PadLeft(_itemCount.ToString().Length, '0')}/{_item
         RaisePropertyChanged(nameof(ProcessedItems));
         RaisePropertyChanged(nameof(ProgressPercent));
         RaisePropertyChanged(nameof(Description));
+    }
+
+    public void Dispose()
+    {
+        TokenSource.Dispose();
+        ManualReset.Dispose();
     }
 }

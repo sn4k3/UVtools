@@ -2581,6 +2581,16 @@
             Gets the last bottom layer
             </summary>
         </member>
+        <member name="P:UVtools.Core.FileFormats.FileFormat.FirstTransitionLayer">
+            <summary>
+            Gets the first transition layer
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.FileFormat.LastTransitionLayer">
+            <summary>
+            Gets the last transition layer
+            </summary>
+        </member>
         <member name="P:UVtools.Core.FileFormats.FileFormat.FirstNormalLayer">
             <summary>
             Gets the first normal layer
@@ -3436,6 +3446,13 @@
             <param name="transitionLayerCount">Number of transition layers</param>
             <returns>Seconds</returns>
         </member>
+        <member name="M:UVtools.Core.FileFormats.FileFormat.GetTransitionStepTimeFromLayers(System.UInt16)">
+            <summary>
+            Gets the transition step time from <see cref="P:UVtools.Core.FileFormats.FileFormat.LastBottomLayer"/> and first normal layer after the last transition layer, value is returned as positive from normal perspective and logic (Longer - shorter)
+            </summary>
+            <param name="transitionLayerCount">Number of transition layers</param>
+            <returns>Seconds</returns>
+        </member>
         <member name="M:UVtools.Core.FileFormats.FileFormat.GetTransitionStepTime">
             <summary>
             Gets the transition step time from <see cref="P:UVtools.Core.FileFormats.FileFormat.BottomExposureTime"/> and <see cref="P:UVtools.Core.FileFormats.FileFormat.ExposureTime"/>, value is returned as positive from normal perspective and logic (Longer - shorter)
@@ -3455,6 +3472,15 @@
         <member name="M:UVtools.Core.FileFormats.FileFormat.GetTransitionLayerCount(System.Single,System.Boolean,System.MidpointRounding)">
             <summary>
             Gets the transition layer count based on <see cref="P:UVtools.Core.FileFormats.FileFormat.BottomExposureTime"/> and <see cref="P:UVtools.Core.FileFormats.FileFormat.ExposureTime"/>
+            </summary>
+            <param name="stepDecrementTime">Step decrement time in seconds</param>
+            <param name="constrainToLayerCount">True if transition layer count can't be higher than supported by the file, otherwise set to false to not look at possible file layers</param>
+            <param name="rounding">Midpoint rounding method</param>
+            <returns>Transition layer count</returns>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.FileFormat.GetTransitionLayerCountFromLayers(System.Single,System.Boolean,System.MidpointRounding)">
+            <summary>
+            Gets the transition layer count based on <see cref="P:UVtools.Core.FileFormats.FileFormat.LastBottomLayer"/> and first normal layer after the last transition layer
             </summary>
             <param name="stepDecrementTime">Step decrement time in seconds</param>
             <param name="constrainToLayerCount">True if transition layer count can't be higher than supported by the file, otherwise set to false to not look at possible file layers</param>
@@ -3939,6 +3965,39 @@
         <member name="P:UVtools.Core.FileFormats.FlashForgeSVGXFile.Preview.ResolutionY">
             <summary>
             Gets the Y dimension of the preview image, in pixels. 
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.GooFile.FileHeader.DelayMode">
+            <summary>
+             0: Light off delay mode | 1：Wait time mode
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.GooFile.FileHeader.PerLayerSettings">
+            <summary>
+            <para>0: Normal mode</para>
+            <para>1: Advance mode, printing use the value of "Layer Definition Content"</para>
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.GooFile.FileHeader.Volume">
+            <summary>
+            // The volume of all parts. unit: mm3
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.GooFile.FileHeader.MaterialGrams">
+            <summary>
+            The weight of all parts. unit: g
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.GooFile.FileHeader.GrayScaleLevel">
+            <summary>
+            <para>0：The range of pixel's gray value is from 0x0 ~ 0xf</para>
+            <para>1：The range of pixel's gray value is from 0x0 ~ 0xff</para>
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.GooFile.LayerDef.Pause">
+            <summary>
+            0: reserve
+            1: current layer pause printing
             </summary>
         </member>
         <member name="P:UVtools.Core.FileFormats.GR1File.Header.HeaderValue">
@@ -6695,6 +6754,17 @@
         <member name="P:UVtools.Core.Operations.OperationPixelDimming.AlternatePatternPerLayers">
             <summary>
             Use the alternate pattern every <see cref="P:UVtools.Core.Operations.OperationPixelDimming.AlternatePatternPerLayers"/> layers
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.Operations.OperationProgress.PauseIfRequested">
+            <summary>
+            Blocks the current thread until the current WaitHandle receives a signal.
+            </summary>
+            <returns>true if the current instance receives a signal. If the current instance is never signaled, WaitOne() never returns.</returns>
+        </member>
+        <member name="M:UVtools.Core.Operations.OperationProgress.PauseOrCancelIfRequested">
+            <summary>
+            Blocks or cancels the current thread until the current WaitHandle receives a signal.
             </summary>
         </member>
         <member name="P:UVtools.Core.Operations.OperationProgress.CanCancel">

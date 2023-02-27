@@ -1906,6 +1906,7 @@ public sealed class ChituboxFile : FileFormat
         {
             Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), layerIndex =>
             {
+                progress.PauseIfRequested();
                 using (var mat = this[layerIndex].LayerMat)
                 {
                     for (byte aaIndex = 0; aaIndex < HeaderSettings.AntiAliasLevel; aaIndex++)
@@ -1923,7 +1924,7 @@ public sealed class ChituboxFile : FileFormat
                 if (layerIndex == 0) layerDefSize = Helpers.Serializer.SizeOf(LayerDefinitions[0, layerIndex]);
                 for (byte aaIndex = 0; aaIndex < HeaderSettings.AntiAliasLevel; aaIndex++)
                 {
-                    progress.ThrowIfCancellationRequested();
+                    progress.PauseOrCancelIfRequested();
 
                     var layerDef = LayerDefinitions[aaIndex, layerIndex];
                     LayerDef? layerDefHash = null;
@@ -2087,7 +2088,7 @@ public sealed class ChituboxFile : FileFormat
             Debug.WriteLine($"-Image GROUP {aaIndex}-");
             for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
             {
-                progress.ThrowIfCancellationRequested();
+                progress.PauseOrCancelIfRequested();
                 inputFile.Seek(layerOffset, SeekOrigin.Begin);
                 var layerDef = Helpers.Deserialize<LayerDef>(inputFile);
                 layerDef.Parent = this;
@@ -2125,7 +2126,7 @@ public sealed class ChituboxFile : FileFormat
                 {
                     for (byte aaIndex = 0; aaIndex < HeaderSettings.AntiAliasLevel; aaIndex++)
                     {
-                        progress.ThrowIfCancellationRequested();
+                        progress.PauseOrCancelIfRequested();
 
                         inputFile.Seek(LayerDefinitions[aaIndex, layerIndex].PageNumber * PageSize + LayerDefinitions[aaIndex, layerIndex].DataAddress, SeekOrigin.Begin);
                         LayerDefinitions[aaIndex, layerIndex].EncodedRle = inputFile.ReadBytes(LayerDefinitions[aaIndex, layerIndex].DataSize);
@@ -2134,6 +2135,7 @@ public sealed class ChituboxFile : FileFormat
 
                 Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), layerIndex =>
                 {
+                    progress.PauseIfRequested();
                     using var mat = LayerDefinitions[0, layerIndex].Decode((uint)layerIndex);
                     _layers[layerIndex] = new Layer((uint)layerIndex, mat, this);
 

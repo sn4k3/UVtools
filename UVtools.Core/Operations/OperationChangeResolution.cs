@@ -254,6 +254,7 @@ public sealed class OperationChangeResolution : Operation
 
         Parallel.For(0, SlicerFile.LayerCount, CoreSettings.GetParallelOptions(progress), layerIndex =>
         {
+            progress.PauseIfRequested();
             using var mat = SlicerFile[layerIndex].LayerMat;
 
             if (mat.Size != newSize)

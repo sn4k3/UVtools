@@ -289,7 +289,7 @@ public sealed class OperationDynamicLifts : Operation
 
         for (uint layerIndex = LayerIndexStart; layerIndex <= LayerIndexEnd; layerIndex++)
         {
-            progress.ThrowIfCancellationRequested();
+            progress.PauseOrCancelIfRequested();
             var calculateLayer = SlicerFile[layerIndex == 0 ? 0 : layerIndex - 1];
             var setLayer = SlicerFile[layerIndex];
 

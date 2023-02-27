@@ -490,6 +490,7 @@ public sealed class FlashForgeSVGXFile : FileFormat
 
         Parallel.For(0, LayerCount, CoreSettings.GetParallelOptions(progress), layerIndex =>
         {
+            progress.PauseIfRequested();
             groups[layerIndex] = new FlashForgeSVGXSvgGroup($"layer-{layerIndex}");
 
             using var mat = this[layerIndex].LayerMat;
@@ -636,6 +637,7 @@ public sealed class FlashForgeSVGXFile : FileFormat
         progress.Reset(OperationProgress.StatusDecodeLayers, LayerCount);
         Parallel.For(0, LayerCount, CoreSettings.GetParallelOptions(progress), layerIndex =>
         {
+            progress.PauseIfRequested();
             var mat = EmguExtensions.InitMat(Resolution);
 
             var group = SVGDocument.Groups.FirstOrDefault(g => g.Id == $"layer-{layerIndex}");
@@ -646,7 +648,7 @@ public sealed class FlashForgeSVGXFile : FileFormat
                 var points = new List<Point>();
                 foreach (var path in @group.Paths)
                 {
-                    progress.ThrowIfCancellationRequested();
+                    progress.PauseOrCancelIfRequested();
                     var spaceSplit = path.Value.Split(' ',
                         StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
 

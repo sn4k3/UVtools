@@ -138,6 +138,7 @@ public sealed class OperationLayerExportHeatMap : Operation
 
        Parallel.ForEach(layerRange, CoreSettings.GetParallelOptions(progress), layer =>
         {
+            progress.PauseIfRequested();
             using var mat = _mergeSamePositionedLayers 
                 ? SlicerFile.GetMergedMatForSequentialPositionedLayers(layer.Index)
                 : layer.LayerMat;

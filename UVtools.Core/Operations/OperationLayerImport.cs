@@ -268,6 +268,7 @@ public sealed class OperationLayerImport : Operation
 
                 Parallel.ForEach(keyImage, CoreSettings.GetParallelOptions(progress), pair =>
                 {
+                    progress.PauseIfRequested();
                     using var mat = CvInvoke.Imread(pair.Value, ImreadModes.Grayscale);
                     if (pair.Key == 0) format.Resolution = mat.Size;
                     format[pair.Key] = new Layer(pair.Key, mat, format);
@@ -289,7 +290,7 @@ public sealed class OperationLayerImport : Operation
                 fileFormats.Add(fileFormat);
             }
 
-            progress.ThrowIfCancellationRequested();
+            progress.PauseOrCancelIfRequested();
 
             if (fileFormats.Count == 0) return false;
 
@@ -385,6 +386,7 @@ public sealed class OperationLayerImport : Operation
                 progress.Reset(ProgressAction, fileFormat.LayerCount);
                 Parallel.For(0, fileFormat.LayerCount, CoreSettings.GetParallelOptions(progress), i =>
                 {
+                    progress.PauseIfRequested();
                     uint layerIndex = (uint)(_startLayerIndex + i);
 
                     switch (_importType)

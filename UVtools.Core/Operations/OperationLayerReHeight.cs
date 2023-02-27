@@ -296,7 +296,7 @@ public sealed class OperationLayerReHeight : Operation
                 uint newLayerIndex = 0;
                 for (uint layerIndex = 0; layerIndex < SlicerFile.LayerCount; layerIndex++)
                 {
-                    progress.ThrowIfCancellationRequested();
+                    progress.PauseOrCancelIfRequested();
 
                     var oldLayer = SlicerFile[layerIndex];
                     for (byte i = 0; i < _selectedItem.Modifier; i++)
@@ -320,6 +320,7 @@ public sealed class OperationLayerReHeight : Operation
 
                 Parallel.ForEach(layerIndexes, CoreSettings.GetParallelOptions(progress), layerIndex =>
                 {
+                    progress.PauseIfRequested();
                     var oldLayer = SlicerFile[layerIndex];
                     using var matSum = oldLayer.LayerMat;
                     Mat? matXorSum = null;

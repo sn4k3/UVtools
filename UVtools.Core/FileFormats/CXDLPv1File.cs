@@ -492,6 +492,7 @@ public sealed class CXDLPv1File : FileFormat
         // Previews
         Parallel.For(0, previews.Length, CoreSettings.GetParallelOptions(progress), previewIndex =>
         {
+            progress.PauseIfRequested();
             var encodeLength = ThumbnailsOriginalSize[previewIndex].Area() * 2;
             if (Thumbnails[previewIndex] is null)
             {
@@ -529,6 +530,7 @@ public sealed class CXDLPv1File : FileFormat
         {
             Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), layerIndex =>
             {
+                progress.PauseIfRequested();
                 var layer = this[layerIndex];
                 using (var mat = layer.LayerMat)
                 {
@@ -611,6 +613,7 @@ public sealed class CXDLPv1File : FileFormat
 
         Parallel.For(0, previews.Length, CoreSettings.GetParallelOptions(progress), previewIndex =>
         {
+            progress.PauseIfRequested();
             Thumbnails[previewIndex] = DecodeImage(DATATYPE_RGB565_BE, previews[previewIndex], ThumbnailsOriginalSize[previewIndex]);
             previews[previewIndex] = null!;
         });
@@ -631,7 +634,7 @@ public sealed class CXDLPv1File : FileFormat
             {
                 foreach (var layerIndex in batch)
                 {
-                    progress.ThrowIfCancellationRequested();
+                    progress.PauseOrCancelIfRequested();
 
                     inputFile.Seek(4, SeekOrigin.Current);
                     var lineCount = BitExtensions.ToUIntBigEndian(inputFile.ReadBytes(4));
@@ -644,6 +647,7 @@ public sealed class CXDLPv1File : FileFormat
 
                 Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), layerIndex =>
                 {
+                    progress.PauseIfRequested();
                     using (var mat = EmguExtensions.InitMat(Resolution))
                     {
                         for (int i = 0; i < linesBytes[layerIndex].Length; i++)

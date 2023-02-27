@@ -1,5 +1,6 @@
 ﻿using Emgu.CV;
 using System;
+using System.Diagnostics;
 using System.Drawing;
 using System.Threading.Tasks;
 using UVtools.Core;
@@ -45,6 +46,7 @@ public class ScriptCompensateCrossBleeding : ScriptGlobals
             CoreSettings.GetParallelOptions(Progress),
             layerIndex =>
             {
+                Progress.PauseIfRequested();
                 var layersBelowCount = layerIndex > LayerBleed.Value ? LayerBleed.Value : layerIndex;
 
                 using var sourceMat = originalLayers[layerIndex].LayerMat;

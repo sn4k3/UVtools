@@ -461,7 +461,7 @@ public sealed class OSLAFile : FileFormat
             var image = Thumbnails[i];
             if(image is null) continue;
 
-            progress.ThrowIfCancellationRequested();
+            progress.PauseOrCancelIfRequested();
 
             var bytes = EncodeImage(HeaderSettings.PreviewDataType, image);
             if (bytes.Length == 0) continue;
@@ -504,6 +504,7 @@ public sealed class OSLAFile : FileFormat
 
             Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), layerIndex =>
             {
+                progress.PauseIfRequested();
                 using (var mat = this[layerIndex].LayerMat)
                 {
                     layerBytes[layerIndex] = EncodeImage(HeaderSettings.LayerDataType, mat);
@@ -514,7 +515,7 @@ public sealed class OSLAFile : FileFormat
 
             foreach (var layerIndex in batch)
             {
-                progress.ThrowIfCancellationRequested();
+                progress.PauseOrCancelIfRequested();
 
                 // Try to reuse layers
                 var hash = CryptExtensions.ComputeSHA1Hash(layerBytes[layerIndex]);
@@ -540,7 +541,7 @@ public sealed class OSLAFile : FileFormat
         outputFile.Seek(HeaderSettings.LayerDefinitionsAddress, SeekOrigin.Begin);
         for (int layerIndex = 0; layerIndex < layerDataAddresses.Length; layerIndex++)
         {
-            progress.ThrowIfCancellationRequested();
+            progress.PauseOrCancelIfRequested();
 
             var layer = this[layerIndex];
             var layerdef = new LayerDef(layer);
@@ -599,7 +600,7 @@ public sealed class OSLAFile : FileFormat
 
         for (byte i = 0; i < HeaderSettings.PreviewCount; i++)
         {
-            progress.ThrowIfCancellationRequested();
+            progress.PauseOrCancelIfRequested();
             var preview = Helpers.Deserialize<Preview>(inputFile);
 
             Debug.Write($"Preview {i} -> ");
@@ -628,7 +629,7 @@ public sealed class OSLAFile : FileFormat
         uint layerTableSize = 0;
         for (uint layerIndex = 0; layerIndex < HeaderSettings.LayerCount; layerIndex++)
         {
-            progress.ThrowIfCancellationRequested();
+            progress.PauseOrCancelIfRequested();
             layerDataAddresses[layerIndex] = inputFile.ReadUIntLittleEndian();
 
             layerDef[layerIndex] = Helpers.Deserialize<LayerDef>(inputFile);
@@ -654,7 +655,7 @@ public sealed class OSLAFile : FileFormat
 
                 foreach (var layerIndex in batch)
                 {
-                    progress.ThrowIfCancellationRequested();
+                    progress.PauseOrCancelIfRequested();
 
                     inputFile.Seek(layerDataAddresses[layerIndex], SeekOrigin.Begin);
                     layerBytes[layerIndex] = inputFile.ReadBytes(inputFile.ReadUIntLittleEndian());
@@ -662,6 +663,7 @@ public sealed class OSLAFile : FileFormat
 
                 Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), layerIndex =>
                 {
+                    progress.PauseIfRequested();
                     using var mat = DecodeImage(HeaderSettings.LayerDataType, layerBytes[layerIndex], Resolution);
                     layerBytes[layerIndex] = null!; // Clean
 

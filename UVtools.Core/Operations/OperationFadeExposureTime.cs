@@ -198,7 +198,7 @@ public class OperationFadeExposureTime : Operation
         var exposure = _fromExposureTime;
         for (uint layerIndex = LayerIndexStart; layerIndex <= LayerIndexEnd; layerIndex++)
         {
-            progress.ThrowIfCancellationRequested();
+            progress.PauseOrCancelIfRequested();
             exposure += increment;
             SlicerFile[layerIndex].ExposureTime = (float)exposure;
         }

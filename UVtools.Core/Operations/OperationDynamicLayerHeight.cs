@@ -637,7 +637,7 @@ public sealed class OperationDynamicLayerHeight : Operation
 
             while (true) // In a stack
             {
-                progress.ThrowIfCancellationRequested();
+                progress.PauseOrCancelIfRequested();
                 progress.ProcessedItems = layerIndex - LayerIndexStart;
 
                 if (currentLayerHeight >= (float)_maximumLayerHeight || layerIndex == LayerIndexEnd)

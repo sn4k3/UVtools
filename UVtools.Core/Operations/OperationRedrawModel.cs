@@ -172,6 +172,7 @@ public class OperationRedrawModel : Operation
         if (startLayerIndex < 0) return false;
         Parallel.For(0, otherFile.LayerCount, CoreSettings.GetParallelOptions(progress), layerIndex =>
         {
+            progress.PauseIfRequested();
             var fullMatLayerIndex = startLayerIndex + layerIndex;
             using var fullMat = SlicerFile[fullMatLayerIndex].LayerMat;
             using var original = fullMat.Clone();
