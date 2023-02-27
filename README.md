@@ -133,6 +133,7 @@ But also, I need victims for test subject. Proceed at your own risk!
 - MDLP (Makerbase MKS-DLP v1)
 - GR1 (GR1 Workshop)
 - CXDLP (Creality Box)
+- GOO (Elegoo)
 - LGS (Longer Orange 10)
 - LGS30 (Longer Orange 30)
 - LGS120 (Longer Orange 120)
