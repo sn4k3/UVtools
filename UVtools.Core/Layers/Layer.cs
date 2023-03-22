@@ -1018,7 +1018,8 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
                     _positionZ != RoundHeight(SlicerFile.LayerHeight * Number) ||
                     _lightOffDelay != SlicerFile.LightOffDelay ||
                     _waitTimeBeforeCure != SlicerFile.WaitTimeBeforeCure ||
-                    _exposureTime != SlicerFile.ExposureTime ||
+                    (!IsTransitionLayer && _exposureTime != SlicerFile.ExposureTime) || // Fix for can't edit settings on menu https://github.com/sn4k3/UVtools/issues/507
+                    //_exposureTime != SlicerFile.ExposureTime ||
                     _waitTimeAfterCure != SlicerFile.WaitTimeAfterCure ||
                     _liftHeight != SlicerFile.LiftHeight ||
                     _liftSpeed != SlicerFile.LiftSpeed ||

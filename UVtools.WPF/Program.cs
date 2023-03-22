@@ -54,13 +54,6 @@ public static class Program
             Console.WriteLine(e);
             return;
         }
-
-        /*foreach (var s in FileFormat.AllFileExtensions.Where(extension => !extension.Extension.Contains('.')).DistinctBy(extension => extension.Extension))
-        {
-            Debug.WriteLine($"- {s.Extension}");
-        }
-        Debug.WriteLine(FileFormat.AllFileExtensions.Where(extension => !extension.Extension.Contains('.')).DistinctBy(extension => extension.Extension).Count());
-        return;*/
         
         if (Args.Length >= 1)
         {
@@ -74,7 +67,6 @@ public static class Program
                     break;
             }
         }
-
 
         /*using var mat = CvInvoke.Imread(@"D:\layer0.png", ImreadModes.Grayscale);
         var contours = mat.FindContours(out var hierarchy, RetrType.Tree, ChainApproxMethod.ChainApproxTc89Kcos);

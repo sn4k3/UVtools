@@ -12,47 +12,76 @@
             <Border BorderBrush="Gray" BorderThickness="1" Padding="5"
                     DragDrop.AllowDrop="True">
                 <Grid>
-                    <StackPanel Spacing="5" Orientation="Horizontal">
-                        <controls:ButtonWithIcon Padding="5"
-                                                 Command="{Binding AddFiles}"
-                                                 Text="Add"
-                                                 Spacing="5"
-                                                 Icon="fa-solid fa-plus"/>
+                    <StackPanel Spacing="5" Orientation="Vertical">
+                        <StackPanel Spacing="5" Orientation="Horizontal">
+                            <controls:ButtonWithIcon Padding="5"
+                                                     Command="{Binding AddFiles}"
+                                                     Text="Add"
+                                                     Spacing="5"
+                                                     Icon="fa-solid fa-plus"/>
 
-                        <controls:ButtonWithIcon Padding="5"
-                                                 Command="{Binding AddFilesFromZip}"
-                                                 Text="Import zip"
-                                                 Spacing="5"
-                                                 Icon="fa-solid fa-file-zipper"/>
+                            <controls:ButtonWithIcon Padding="5"
+                                                     Command="{Binding AddFilesFromZip}"
+                                                     Text="Import zip"
+                                                     Spacing="5"
+                                                     Icon="fa-solid fa-file-zipper"/>
 
-                        <controls:ButtonWithIcon Padding="5"
-                                                 IsEnabled="{Binding SelectedFile, Converter={x:Static ObjectConverters.IsNotNull}}"
-                                                 Command="{Binding RemoveFiles}"
-                                                 Text="Remove"
-                                                 Spacing="5"
-                                                 Icon="fa-solid fa-minus"/>
+                            <controls:ButtonWithIcon Padding="5"
+                                                     IsEnabled="{Binding SelectedFile, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                                     Command="{Binding RemoveFiles}"
+                                                     Text="Remove"
+                                                     Spacing="5"
+                                                     Icon="fa-solid fa-minus"/>
+                        </StackPanel>
+
+                        <StackPanel Spacing="2" Orientation="Horizontal">
+                            <controls:ButtonWithIcon Padding="5"
+                                                     IsEnabled="{Binding SelectedFile, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                                     Command="{Binding MoveFileTop}"
+                                                     ToolTip.Tip="Move gerber to top"
+                                                     Spacing="5"
+                                                     Icon="fa-solid fa-angles-up"/>
+
+                            <controls:ButtonWithIcon Padding="5"
+                                                     IsEnabled="{Binding SelectedFile, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                                     Command="{Binding MoveFileUp}"
+                                                     ToolTip.Tip="Move gerber up"
+                                                     Spacing="5"
+                                                     Icon="fa-solid fa-sort-up"/>
+
+                            <controls:ButtonWithIcon Padding="5"
+                                                     IsEnabled="{Binding SelectedFile, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                                     Command="{Binding MoveFileDown}"
+                                                     ToolTip.Tip="Move gerber down"
+                                                     Spacing="5"
+                                                     Icon="fa-solid fa-sort-down"/>
+
+                            <controls:ButtonWithIcon Padding="5"
+                                                     IsEnabled="{Binding SelectedFile, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                                     Command="{Binding MoveFileBottom}"
+                                                     ToolTip.Tip="Move gerber to bottom"
+                                                     Spacing="5"
+                                                     Icon="fa-solid fa-angles-down"/>
+                        </StackPanel>
                     </StackPanel>
 
-                    <StackPanel HorizontalAlignment="Right"
-                                Spacing="5" Orientation="Horizontal">
-						
-						<controls:ButtonWithIcon Padding="5"
-                                                 IsEnabled="{Binding Operation.Files.Count}"
-                                                 Command="{Binding Operation.Sort}"
-                                                 Text="Sort ASC"
-                                                 Spacing="5"
-                                                 Icon="fa-solid fa-sort-alpha-up"/>
-                        
-                        <controls:ButtonWithIcon
-                            IsEnabled="{Binding Operation.Files.Count}"
-                            Padding="5" Command="{Binding ClearFiles}"
-                            Text="Clear"
-                            Spacing="5"
-                            Icon="fa-solid fa-xmark"/>
-
-                        <TextBlock
-                            VerticalAlignment="Center"
-                            Text="{Binding Operation.Files.Count, StringFormat=Files: {0}}"/>
+                    <StackPanel HorizontalAlignment="Right" Spacing="5" Orientation="Vertical">
+                        <StackPanel HorizontalAlignment="Right" Spacing="5" Orientation="Horizontal">
+                            <controls:ButtonWithIcon
+                                IsEnabled="{Binding Operation.Files.Count}"
+                                Padding="5" Command="{Binding ClearFiles}"
+                                Text="{Binding Operation.Files.Count, StringFormat=Clear {0} files}"
+                                Spacing="5"
+                                Icon="fa-solid fa-xmark"/>
+                        </StackPanel>
+                        <StackPanel HorizontalAlignment="Right" Spacing="5" Orientation="Horizontal">
+                            <controls:ButtonWithIcon Padding="5"
+                                                     IsEnabled="{Binding Operation.Files.Count}"
+                                                     Command="{Binding Operation.Sort}"
+                                                     Text="Sort ASC"
+                                                     Spacing="5"
+                                                     Icon="fa-solid fa-sort-alpha-up"/>
+                        </StackPanel>
                     </StackPanel>
                 </Grid>
             </Border>

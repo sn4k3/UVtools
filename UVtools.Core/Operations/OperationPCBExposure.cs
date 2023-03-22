@@ -32,8 +32,8 @@ public class OperationPCBExposure : Operation
 
     public sealed class PCBExposureFile : GenericFileRepresentation
     {
-        private bool _invertPolarity;
-        private double _sizeScale = 1;
+        public bool _invertPolarity;
+        public double _sizeScale = 1;
 
         /// <summary>
         /// Gets or sets to invert the polarity when drawing
@@ -76,7 +76,8 @@ public class OperationPCBExposure : Operation
         "gbo", // Bottom silkscreen layer
         "gbs", // Bottom solder mask layer
         "gml", // Mechanical layer
-        "drl"  // Drill holes
+        "drl", // Drill holes
+        "xln"  // Eagle drill holes
     };
     #endregion
 
@@ -293,14 +294,6 @@ public class OperationPCBExposure : Operation
         var file = new PCBExposureFile(filePath);
         if (_files.Contains(file)) return;
         _files.Add(file);
-
-        /*var drlFiles = _files.Where(exposureFile => exposureFile.FileExtension == ".drl");
-        var drlArray = drlFiles.ToArray();
-        if (drlArray.Length > 0)
-        {
-            _files.RemoveRange(drlArray);
-            _files.AddRange(drlArray);
-        }*/
     }
 
     public void AddFiles(string[] files, bool handleZipFiles = true)
@@ -324,7 +317,8 @@ public class OperationPCBExposure : Operation
     {
         if (!file.Exists) return;
 
-        if (file.IsExtension("drl"))
+        
+        if (ExcellonDrillFormat.Extensions.Any(file.IsExtension))
         {
             ExcellonDrillFormat.ParseAndDraw(file, mat, SlicerFile.Ppmm, _sizeMidpointRounding, new SizeF((float)OffsetX, (float)OffsetY), _enableAntiAliasing);
         }
@@ -355,7 +349,8 @@ public class OperationPCBExposure : Operation
         using var mergeMat = SlicerFile.CreateMat();
         progress.ItemCount = FileCount;
 
-        var orderFiles = _files.OrderBy(file => file.IsExtension(".drl")).ToArray();
+        //var orderFiles = _files.OrderBy(file => file.IsExtension(".drl") || file.IsExtension(".xln")).ToArray();
+        var orderFiles = _files.OrderBy(file => ExcellonDrillFormat.Extensions.Any(file.IsExtension)).ToArray();
 
         for (var i = 0; i < orderFiles.Length; i++)
         {

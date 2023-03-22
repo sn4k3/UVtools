@@ -102,7 +102,8 @@ public class ExcellonDrillFormat
     #endregion
 
     #region Constants
-    public const string Extension = "drl";
+
+    public static readonly string[] Extensions = {"drl", "xln"};
 
     /// <summary>
     /// Indicates the start of the header. should always be the first line in the header
@@ -183,7 +184,7 @@ public class ExcellonDrillFormat
         Drills.Clear();
 
         bool endOfHeader = false;
-        bool drillMode = false;
+        bool drillMode = true;
         uint selectedToolIndex = 0;
 
         float x = 0, y = 0;
@@ -192,11 +193,12 @@ public class ExcellonDrillFormat
         {
             if (line.Length == 0) continue;
 
+            if (line is "M30") break; // End
+
             if (line.StartsWith("FMAT,"))
             {
                 var split = line.Split(',', StringSplitOptions.TrimEntries);
                 FormatVersion = uint.Parse(split[1]);
-
                 continue;
             }
 
@@ -222,7 +224,7 @@ public class ExcellonDrillFormat
                 continue;
             }
 
-            if (line == "ICI")
+            if (line is "ICI" or "ICI,ON")
             {
                 throw new NotImplementedException("ICI (Incremental input of program coordinates) is not yet implemented, please use absolute coordinate system.");
             }
@@ -233,7 +235,7 @@ public class ExcellonDrillFormat
                 continue;
             }
 
-            if (line == "G05")
+            if (line is "G81" or "G05")
             {
                 drillMode = true;
                 continue;

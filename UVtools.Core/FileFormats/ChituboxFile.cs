@@ -48,6 +48,10 @@ public sealed class ChituboxFile : FileFormat
             
     private const string CTBv4_DISCLAIMER = "Layout and record format for the ctb and cbddlp file types are the copyrighted programs or codes of CBD Technology (China) Inc..The Customer or User shall not in any manner reproduce, distribute, modify, decompile, disassemble, decrypt, extract, reverse engineer, lease, assign, or sublicense the said programs or codes.";
     private const ushort CTBv4_DISCLAIMER_SIZE = 320;
+
+    private const string CTBv4_GKtwo_DISCLAIMER = "Layout and record format for the jxs,ctb and cbddlp file types are the copyrighted programs or codes of CBD Technology (China) Inc.The Customer or User shall not in any manner reproduce, distribute, modify, decompile, disassemble, decrypt, extract, reverse engineer, lease, assign, or sublicense the said programs or codes.";
+    private const ushort CTBv4_GKtwo_DISCLAIMER_SIZE = 323;
+
     private const ushort CTBv4_RESERVED_SIZE = 384;
 
     public const long PageSize = 4_294_967_296L; // Page-size for layers, limited to 4GB
@@ -1695,6 +1699,7 @@ public sealed class ChituboxFile : FileFormat
 
     public bool IsCbddlpFile => HeaderSettings.Magic == MAGIC_CBDDLP;
     public bool IsCtbFile => HeaderSettings.Magic is MAGIC_CTB or MAGIC_CTBv4 or MAGIC_CTBv4_GKtwo;
+    public bool IsGkTwoFile => HeaderSettings.Magic is MAGIC_CTBv4_GKtwo;
 
     public bool IsMagicValid => IsValidKnownMagic(HeaderSettings.Magic);
 
@@ -1803,7 +1808,7 @@ public sealed class ChituboxFile : FileFormat
 
         SlicerInfoSettings.PerLayerSettings = AllLayersAreUsingGlobalParameters
             ? PERLAYER_SETTINGS_DISALLOW
-            : (byte)(Version * 16); // 0x10, 0x20, 0x30, 0x40, 0x50, ...
+            : (byte)(Version * 0x10); // 0x10, 0x20, 0x30, 0x40, 0x50, ...
 
         SlicerInfoSettings.ModifiedTimestampMinutes = (uint)DateTimeExtensions.TimestampMinutes;
     }
@@ -1813,7 +1818,7 @@ public sealed class ChituboxFile : FileFormat
         SanitizeMagicVersion();
 
         HeaderSettings.PrintParametersSize = (uint)Helpers.Serializer.SizeOf(PrintParametersSettings);
-            
+
         if (IsCtbFile)
         {
             if (HeaderSettings.EncryptionKey == 0)
@@ -1821,10 +1826,12 @@ public sealed class ChituboxFile : FileFormat
                 HeaderSettings.EncryptionKey = (uint)new Random().Next(byte.MaxValue, int.MaxValue);
             }
         }
-        else
+        else // IsCbddlp
         {
             //HeaderSettings.Version = 2;
             HeaderSettings.EncryptionKey = 0; // Force disable encryption
+            HeaderSettings.SlicerOffset = 0;  // Force remove SlicerInfo for cbddlp
+            HeaderSettings.SlicerSize = 0;
         }
 
         //uint currentOffset = (uint)Helpers.Serializer.SizeOf(HeaderSettings);
@@ -1880,16 +1887,26 @@ public sealed class ChituboxFile : FileFormat
 
                 if (HeaderSettings.Version >= 4)
                 {
-                    SlicerInfoSettings.PrintParametersV4Address = (uint) (HeaderSettings.SlicerOffset + Helpers.Serializer.SizeOf(SlicerInfoSettings) + CTBv4_DISCLAIMER_SIZE);
+                    SlicerInfoSettings.PrintParametersV4Address = (uint) (HeaderSettings.SlicerOffset 
+                                                                          + Helpers.Serializer.SizeOf(SlicerInfoSettings) 
+                                                                          + (IsGkTwoFile ? CTBv4_GKtwo_DISCLAIMER_SIZE : CTBv4_DISCLAIMER_SIZE));
                 }
                 
                 outputFile.WriteSerialize(SlicerInfoSettings);
 
                 if (HeaderSettings.Version >= 4)
                 {
-                    PrintParametersV4Settings.DisclaimerAddress = (uint) outputFile.Position;
-                    PrintParametersV4Settings.DisclaimerLength = (uint) CTBv4_DISCLAIMER.Length;
-                    outputFile.WriteBytes(Encoding.UTF8.GetBytes(CTBv4_DISCLAIMER));
+                    PrintParametersV4Settings.DisclaimerAddress = (uint)outputFile.Position;
+                    
+                    if (IsGkTwoFile)
+                    {
+                        PrintParametersV4Settings.DisclaimerLength = outputFile.WriteBytes(Encoding.UTF8.GetBytes(CTBv4_GKtwo_DISCLAIMER));
+                    }
+                    else
+                    {
+                        PrintParametersV4Settings.DisclaimerLength = outputFile.WriteBytes(Encoding.UTF8.GetBytes(CTBv4_DISCLAIMER));
+                    }
+                    
                     outputFile.WriteSerialize(PrintParametersV4Settings);
                 }
             }

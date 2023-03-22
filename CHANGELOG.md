@@ -1,5 +1,19 @@
 # Changelog
 
+## 22/03/2023 - v3.12.1
+
+- **File formats:**
+  - (Improvement) Does not set `PerLayerSettings` flag when found different exposure times on transition layers, this fixes the issue where users can't edit settings on printer menu when having transition layers (#507)
+  - (Fix) CTB for UniFormation GKtwo: Unable to show nor print files (#673)
+  - (Fix) CBDDLP corruption when downgrade version (#675)
+- **PCB exposure:**
+  - (Add) EagleCAD XLN drill format (#676)
+  - (Add) Allow to re-order gerbers up and down on the grid
+  - (Change) Drill files do not require G05 to do the holes (#676)
+  - (Fix) Infinite loop on refresh preview when selecting drl files
+  - (Fix) Unable to individual invert drl files
+- (Upgrade) .NET from 6.0.14 to 6.0.15
+
 ## 27/02/2023 - v3.12.0
 
 - (Add) Allow to pause and resume operations (#654)

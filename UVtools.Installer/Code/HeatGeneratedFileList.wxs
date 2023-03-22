@@ -323,8 +323,8 @@
             <Component Id="cmpE35DDB3C925C83E74C7DAAE6FEA6C156" Guid="*">
                 <File Id="filEAEAE1CB9E8AC1FF00B05453ABEE2ADF" KeyPath="yes" Source="$(var.HarvestPath)\mscordaccore.dll" />
             </Component>
-            <Component Id="cmp7F40D10D653BD27A9F8720C0FEDD1899" Guid="*">
-                <File Id="filB816040612FB7214C9AF36224BEC56AE" KeyPath="yes" Source="$(var.HarvestPath)\mscordaccore_amd64_amd64_6.0.1423.7309.dll" />
+            <Component Id="cmp63A44A8BC9D62002060FCD40658ABC18" Guid="*">
+                <File Id="fil55164DBA7C7DFB1F4BC9DF8BD2F3FE21" KeyPath="yes" Source="$(var.HarvestPath)\mscordaccore_amd64_amd64_6.0.1523.11507.dll" />
             </Component>
             <Component Id="cmpA5ABEAD31F33B1E5825EC6F159ABFB0F" Guid="*">
                 <File Id="fil1A6B0EBD5A5BF8DD0582A2665D3492F1" KeyPath="yes" Source="$(var.HarvestPath)\mscordbi.dll" />
@@ -1700,7 +1700,7 @@
             <ComponentRef Id="cmp3E4F3E4686A9B425B5812E5171CCDEEF" />
             <ComponentRef Id="cmp16861E24C897764CA922EC062BA74EC9" />
             <ComponentRef Id="cmpE35DDB3C925C83E74C7DAAE6FEA6C156" />
-            <ComponentRef Id="cmp7F40D10D653BD27A9F8720C0FEDD1899" />
+            <ComponentRef Id="cmp63A44A8BC9D62002060FCD40658ABC18" />
             <ComponentRef Id="cmpA5ABEAD31F33B1E5825EC6F159ABFB0F" />
             <ComponentRef Id="cmp5D6845991403E371A015DF7EBDF71F13" />
             <ComponentRef Id="cmp57B8361D25AD503DC733F4039E5A38B0" />

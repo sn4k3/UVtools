@@ -1,12 +1,12 @@
-- (Add) Allow to pause and resume operations (#654)
-- (Add) `Layer.FirstTransitionLayer`
-- (Add) `Layer.LastTransitionLayer`
-- (Add) File format: Elegoo GOO
-- (Add) PrusaSlicer Printer: Elegoo Mars 4
-- (Improvement) Allocate maximum GPU memory for Skia up to 256 MB
-- (Improvement) Set and sanitize transition layers exposure time from last bottom layer and first normal layer instead of global times (#659)
-- (Change) CXDLP: Default version from 2 to 3
-- (Fix) UI was not rendering with GPU (ANGLE)
-- (Fix) `Layer.IsTransitionLayer` was returning the wrong value
-- (Upgrade) .NET from 6.0.13 to 6.0.14
+- **File formats:**
+  - (Improvement) Does not set `PerLayerSettings` flag when found different exposure times on transition layers, this fix the issue where users can't edit settings on printer menu when having transition layers (#507)
+  - (Fix) CTB for UniFormation GKtwo: Unable to show nor print files (#673)
+  - (Fix) CBDDLP corruption when downgrade version (#675)
+- **PCB exposure:**
+  - (Add) EagleCAD XLN drill format (#676)
+  - (Add) Allow to re-order gerbers up and down on the grid
+  - (Change) Drill files does not require G05 to do the holes (#676)
+  - (Fix) Infinite loop on refresh preview when selecting drl files
+  - (Fix) Unable to individual invert drl files
+- (Upgrade) .NET from 6.0.14 to 6.0.15
 

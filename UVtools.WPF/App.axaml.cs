@@ -400,9 +400,10 @@ public class App : Application
     public static Bitmap GetBitmapFromAsset(string url) => new(GetAsset(url));
 
         
-    public static string? GetPrusaSlicerDirectory(bool isSuperSlicer = false)
+    public static string? GetPrusaSlicerDirectory(bool isSuperSlicer = false, bool isAlpha = false)
     {
         var slicerFolder = isSuperSlicer ? "SuperSlicer" : "PrusaSlicer";
+        if (isAlpha) slicerFolder += "-alpha";
         if (OperatingSystem.IsWindows())
         {
             return Path.Combine(

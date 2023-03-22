@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Timers;
+using UVtools.Core.Excellon;
 using UVtools.Core.Extensions;
 using UVtools.Core.Operations;
 using UVtools.WPF.Extensions;
@@ -70,7 +71,10 @@ namespace UVtools.WPF.Controls.Tools
             {
                 AutoReset = false
             };
-            _timer.Elapsed += (sender, e) => Dispatcher.UIThread.InvokeAsync(UpdatePreview);
+            _timer.Elapsed += (sender, e) =>
+            {
+                Dispatcher.UIThread.InvokeAsync(UpdatePreview);
+            };
         }
 
         private void InitializeComponent()
@@ -125,7 +129,7 @@ namespace UVtools.WPF.Controls.Tools
                 
                 if (!OperationPCBExposure.ValidExtensions.Any(extension => _selectedFile.IsExtension(extension)) || !_selectedFile.Exists) return;
                 var file = (OperationPCBExposure.PCBExposureFile)_selectedFile.Clone();
-                file.InvertPolarity = file.IsExtension(".drl");
+                file._invertPolarity = ExcellonDrillFormat.Extensions.Any(extension => file.IsExtension(extension));
                 _previewImage?.Dispose();
                 using var mat = Operation.GetMat(file);
 
@@ -184,6 +188,49 @@ namespace UVtools.WPF.Controls.Tools
         public void RemoveFiles()
         {
             Operation.Files.RemoveRange(FilesDataGrid.SelectedItems.OfType<OperationPCBExposure.PCBExposureFile>());
+        }
+
+        public void MoveFileTop()
+        {
+            if (FilesDataGrid.SelectedIndex <= 0) return;
+            var selectedFile = SelectedFile;
+            Operation.Files.RemoveAt(FilesDataGrid.SelectedIndex);
+            Operation.Files.Insert(0, selectedFile);
+            FilesDataGrid.SelectedIndex = 0;
+            FilesDataGrid.ScrollIntoView(selectedFile, FilesDataGrid.Columns[0]);
+        }
+
+        public void MoveFileUp()
+        {
+            if (FilesDataGrid.SelectedIndex <= 0) return;
+            var selectedFile = SelectedFile;
+            var newIndex = FilesDataGrid.SelectedIndex - 1;
+            Operation.Files.RemoveAt(FilesDataGrid.SelectedIndex);
+            Operation.Files.Insert(newIndex, selectedFile);
+            FilesDataGrid.SelectedIndex = newIndex;
+            FilesDataGrid.ScrollIntoView(selectedFile, FilesDataGrid.Columns[0]);
+        }
+
+        public void MoveFileDown()
+        {
+            if (FilesDataGrid.SelectedIndex == -1 || FilesDataGrid.SelectedIndex == Operation.FileCount - 1) return;
+            var selectedFile = SelectedFile;
+            var newIndex = FilesDataGrid.SelectedIndex + 1;
+            Operation.Files.RemoveAt(FilesDataGrid.SelectedIndex);
+            Operation.Files.Insert(newIndex, selectedFile);
+            FilesDataGrid.SelectedIndex = newIndex;
+            FilesDataGrid.ScrollIntoView(selectedFile, FilesDataGrid.Columns[0]);
+        }
+
+        public void MoveFileBottom()
+        {
+            var lastIndex = Operation.Files.Count - 1;
+            if (FilesDataGrid.SelectedIndex == -1 || FilesDataGrid.SelectedIndex == lastIndex) return;
+            var selectedFile = SelectedFile;
+            Operation.Files.RemoveAt(FilesDataGrid.SelectedIndex);
+            Operation.Files.Insert(lastIndex, selectedFile);
+            FilesDataGrid.SelectedIndex = lastIndex;
+            FilesDataGrid.ScrollIntoView(selectedFile, FilesDataGrid.Columns[0]);
         }
 
         public void ClearFiles()
