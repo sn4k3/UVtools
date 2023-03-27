@@ -156,7 +156,7 @@ public sealed class OSFFile : FileFormat
         /// </summary>
         [FieldOrder(0)] [FieldEndianness(Endianness.Big)] public ushort Mark { get; set; } = 0x0D_0A;
 
-        [FieldOrder(1)] [FieldEndianness(Endianness.Big)] public uint NumberOfPixels { get; set; }
+        [FieldOrder(1)] [FieldEndianness(Endianness.Big)] public uint NumberOfLines { get; set; }
         [FieldOrder(2)] [FieldEndianness(Endianness.Big)] public ushort StartY { get; set; }
         [Ignore] public byte[] EncodedRle { get; set; } = Array.Empty<byte>();
 
@@ -164,16 +164,18 @@ public sealed class OSFFile : FileFormat
 
         public override string ToString()
         {
-            return $"{nameof(Mark)}: {Mark}, {nameof(NumberOfPixels)}: {NumberOfPixels}, {nameof(StartY)}: {StartY}";
+            return $"{nameof(Mark)}: {Mark}, {nameof(NumberOfLines)}: {NumberOfLines}, {nameof(StartY)}: {StartY}";
         }
 
-        internal unsafe void EncodeImage(Mat mat)
+        internal unsafe void EncodeImage(Mat mat, Layer layer)
         {
             List<byte> rawData = new();
-            byte color = byte.MaxValue >> 1;
+            byte color = 0;
             uint stride = 0;
             var span = mat.GetBytePointer();
             var imageLength = mat.GetLength();
+            var step = mat.GetRealStep();
+            uint lines = 0;
 
             void AddRep()
             {
@@ -189,6 +191,7 @@ public sealed class OSFFile : FileFormat
                         break;
                 }
 
+                lines++;
                 rawData.Add(color);
 
                 if (stride <= 1)
@@ -227,8 +230,7 @@ public sealed class OSFFile : FileFormat
                 }
             }
 
-
-            for (int pixel = StartY * mat.GetRealStep(); pixel < imageLength; pixel++)
+            for (var pixel = StartY * step; pixel <= layer.LastPixelIndex; pixel++)
             {
                 var grey = span[pixel];
 
@@ -244,13 +246,21 @@ public sealed class OSFFile : FileFormat
                 }
             }
 
+            // Left-over
+            if(color != 0) AddRep();
+            stride = (uint) ((imageLength - layer.LastPixelIndex - 1) % step);
+            color = 0;
+            AddRep();
+            
+            NumberOfLines = lines;
+
             EncodedRle = rawData.ToArray();
         }
 
         internal Mat DecodeImage(OSFFile parent)
         {
             var mat = parent.CreateMat();
-            if (NumberOfPixels == 0) return mat;
+            if (NumberOfLines == 0) return mat;
 
             int pixel = (int)(StartY * parent.ResolutionX);
             for (var n = 0; n < EncodedRle.Length; n++)
@@ -721,10 +731,9 @@ public sealed class OSFFile : FileFormat
                 {
                     layerDef[layerIndex] = new OSFLayerDef
                     {
-                        NumberOfPixels = layer.NonZeroPixelCount,
                         StartY = (ushort)layer.BoundingRectangle.Y,
                     };
-                    layerDef[layerIndex].EncodeImage(mat);
+                    layerDef[layerIndex].EncodeImage(mat, layer);
                 }
                 progress.LockAndIncrement();
             });
@@ -786,7 +795,7 @@ public sealed class OSFFile : FileFormat
                     
                     //Debug.WriteLine($"{layerIndex}: {inputFile.Position}");
                     layerDef[layerIndex] = Helpers.Deserialize<OSFLayerDef>(inputFile);
-                    if (layerDef[layerIndex].NumberOfPixels == 0) continue;
+                    if (layerDef[layerIndex].NumberOfLines == 0) continue;
 
                     int buffer;
                     int slen;

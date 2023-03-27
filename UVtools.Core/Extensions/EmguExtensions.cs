@@ -194,21 +194,6 @@ public static class EmguExtensions
         => (byte*)mat.DataPointer.ToPointer();
 
     /// <summary>
-    /// Gets the whole data span to manipulate or read pixels
-    /// </summary>
-    /// <param name="mat"></param>
-    /// <returns></returns>
-    public static unsafe Span<byte> GetDataByteSpan(this Mat mat) 
-        => new(mat.DataPointer.ToPointer(), mat.GetLength());
-
-    /// <summary>
-    /// Gets the whole data span to manipulate or read pixels
-    /// </summary>
-    /// <returns></returns>
-    public static Span<byte> GetDataByteSpan(this Mat mat, int length, int offset = 0)
-        => GetDataSpan<byte>(mat, length, offset);
-
-    /// <summary>
     /// Gets the whole data span to manipulate or read pixels, use this when possibly using ROI
     /// </summary>
     /// <returns></returns>
@@ -225,6 +210,19 @@ public static class EmguExtensions
     /// <returns></returns>
     public static Span2D<byte> GetDataByteSpan2D(this Mat mat) => mat.GetDataSpan2D<byte>();
 
+    /// <summary>
+    /// Gets the whole data span to manipulate or read pixels
+    /// </summary>
+    /// <param name="mat"></param>
+    /// <returns></returns>
+    public static Span<byte> GetDataByteSpan(this Mat mat) => mat.GetDataSpan<byte>();
+
+    /// <summary>
+    /// Gets the whole data span to manipulate or read pixels
+    /// </summary>
+    /// <returns></returns>
+    public static Span<byte> GetDataByteSpan(this Mat mat, int length, int offset = 0) => GetDataSpan<byte>(mat, length, offset);
+
 
     /// <summary>
     /// Gets the data span to manipulate or read pixels given a length and offset
@@ -234,8 +232,21 @@ public static class EmguExtensions
     /// <param name="length"></param>
     /// <param name="offset"></param>
     /// <returns></returns>
-    public static unsafe Span<T> GetDataSpan<T>(this Mat mat, int length = 0, int offset = 0) 
-        => new(IntPtr.Add(mat.DataPointer, offset).ToPointer(), length <= 0 ? mat.GetLength() : length);
+    public static unsafe Span<T> GetDataSpan<T>(this Mat mat, int length = 0, int offset = 0)
+    {
+        if (length <= 0)
+        {
+            if (mat.IsSubmatrix)
+            {
+                length = mat.Step * (mat.Height - 1) + mat.GetRealStep();
+            }
+            else
+            {
+                length = mat.GetLength();
+            }
+        }
+        return new(IntPtr.Add(mat.DataPointer, offset).ToPointer(), length);
+    }
 
     /// <summary>
     /// Gets a single pixel span to manipulate or read pixels
@@ -267,8 +278,22 @@ public static class EmguExtensions
     /// <param name="length"></param>
     /// <param name="offset"></param>
     /// <returns></returns>
-    public static unsafe Span<T> GetRowSpan<T>(this Mat mat, int y, int length = 0, int offset = 0) 
-        => new(IntPtr.Add(mat.DataPointer, y * mat.GetRealStep() + offset).ToPointer(), length <= 0 ? mat.GetRealStep() : length);
+    public static unsafe Span<T> GetRowSpan<T>(this Mat mat, int y, int length = 0, int offset = 0)
+    {
+        var originalStep = mat.Step;
+        if(length <= 0) length = mat.GetRealStep();
+        return new(IntPtr.Add(mat.DataPointer, y * originalStep + offset).ToPointer(), length);
+    }
+
+    /// <summary>
+    /// Gets a row span to manipulate or read pixels
+    /// </summary>
+    /// <param name="mat"></param>
+    /// <param name="y"></param>
+    /// <param name="length"></param>
+    /// <param name="offset"></param>
+    /// <returns></returns>
+    public static Span<byte> GetRowByteSpan(this Mat mat, int y, int length = 0, int offset = 0) => mat.GetRowSpan<byte>(y, length, offset);
 
     /// <summary>
     /// Gets a col span to manipulate or read pixels
@@ -340,7 +365,7 @@ public static class EmguExtensions
     #region Get/Set methods
 
     /// <summary>
-    /// .Step return the original Mat step, if ROI step still from original matrix which lead to errors.
+    /// Step return the original Mat step, if ROI step still from original matrix which lead to errors.
     /// Use this to get the real step size
     /// </summary>
     /// <param name="mat"></param>
@@ -441,8 +466,7 @@ public static class EmguExtensions
     /// <param name="mat"></param>
     /// <param name="pixel"></param>
     /// <param name="value"></param>
-    public static void SetByte(this Mat mat, int pixel, byte[] value) =>
-        Marshal.Copy(value, 0, mat.DataPointer + pixel, value.Length);
+    public static void SetByte(this Mat mat, int pixel, byte[] value) => Marshal.Copy(value, 0, mat.DataPointer + pixel, value.Length);
 
     /// <summary>
     /// Sets a byte pixel at a position
@@ -451,8 +475,15 @@ public static class EmguExtensions
     /// <param name="x"></param>
     /// <param name="y"></param>
     /// <param name="value"></param>
-    public static void SetByte(this Mat mat, int x, int y, byte value) =>
-        SetByte(mat, x, y, new[] { value });
+    public static void SetByte(this Mat mat, int x, int y, byte value) => SetByte(mat, x, y, new[] { value });
+
+    /// <summary>
+    /// Sets a byte pixel at a position
+    /// </summary>
+    /// <param name="mat"></param>
+    /// <param name="pos"></param>
+    /// <param name="value"></param>
+    public static void SetByte(this Mat mat, Point pos, byte value) => SetByte(mat, pos.X, pos.Y, new[] { value });
 
     /// <summary>
     /// Sets a byte pixel at a position
@@ -461,8 +492,7 @@ public static class EmguExtensions
     /// <param name="x"></param>
     /// <param name="y"></param>
     /// <param name="value"></param>
-    public static void SetByte(this Mat mat, int x, int y, byte[] value) =>
-        SetByte(mat, y * mat.GetRealStep() + x * mat.NumberOfChannels, value);
+    public static void SetByte(this Mat mat, int x, int y, byte[] value) => SetByte(mat, y * mat.GetRealStep() + x * mat.NumberOfChannels, value);
 
     /// <summary>
     /// Sets bytes

@@ -572,6 +572,18 @@
             <param name="mat"></param>
             <returns></returns>
         </member>
+        <member name="M:UVtools.Core.Extensions.EmguExtensions.GetDataSpan2D``1(Emgu.CV.Mat)">
+            <summary>
+            Gets the whole data span to manipulate or read pixels, use this when possibly using ROI
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:UVtools.Core.Extensions.EmguExtensions.GetDataByteSpan2D(Emgu.CV.Mat)">
+            <summary>
+            Gets the whole data span to manipulate or read pixels, use this when possibly using ROI
+            </summary>
+            <returns></returns>
+        </member>
         <member name="M:UVtools.Core.Extensions.EmguExtensions.GetDataByteSpan(Emgu.CV.Mat)">
             <summary>
             Gets the whole data span to manipulate or read pixels
@@ -582,18 +594,6 @@
         <member name="M:UVtools.Core.Extensions.EmguExtensions.GetDataByteSpan(Emgu.CV.Mat,System.Int32,System.Int32)">
             <summary>
             Gets the whole data span to manipulate or read pixels
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:UVtools.Core.Extensions.EmguExtensions.GetDataSpan2D``1(Emgu.CV.Mat)">
-            <summary>
-            Gets the whole data span to manipulate or read pixels, use this when possibly using ROI
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:UVtools.Core.Extensions.EmguExtensions.GetDataByteSpan2D(Emgu.CV.Mat)">
-            <summary>
-            Gets the whole data span to manipulate or read pixels, use this when possibly using ROI
             </summary>
             <returns></returns>
         </member>
@@ -631,6 +631,16 @@
             Gets a row span to manipulate or read pixels
             </summary>
             <typeparam name="T"></typeparam>
+            <param name="mat"></param>
+            <param name="y"></param>
+            <param name="length"></param>
+            <param name="offset"></param>
+            <returns></returns>
+        </member>
+        <member name="M:UVtools.Core.Extensions.EmguExtensions.GetRowByteSpan(Emgu.CV.Mat,System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Gets a row span to manipulate or read pixels
+            </summary>
             <param name="mat"></param>
             <param name="y"></param>
             <param name="length"></param>
@@ -681,7 +691,7 @@
         </member>
         <member name="M:UVtools.Core.Extensions.EmguExtensions.GetRealStep(Emgu.CV.Mat)">
             <summary>
-            .Step return the original Mat step, if ROI step still from original matrix which lead to errors.
+            Step return the original Mat step, if ROI step still from original matrix which lead to errors.
             Use this to get the real step size
             </summary>
             <param name="mat"></param>
@@ -766,6 +776,14 @@
             <param name="mat"></param>
             <param name="x"></param>
             <param name="y"></param>
+            <param name="value"></param>
+        </member>
+        <member name="M:UVtools.Core.Extensions.EmguExtensions.SetByte(Emgu.CV.Mat,System.Drawing.Point,System.Byte)">
+            <summary>
+            Sets a byte pixel at a position
+            </summary>
+            <param name="mat"></param>
+            <param name="pos"></param>
             <param name="value"></param>
         </member>
         <member name="M:UVtools.Core.Extensions.EmguExtensions.SetByte(Emgu.CV.Mat,System.Int32,System.Int32,System.Byte[])">
@@ -4942,6 +4960,26 @@
         <member name="P:UVtools.Core.Layers.Layer.BoundingRectangleMillimeters">
             <summary>
             Gets the bounding rectangle for the image area in millimeters
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Layers.Layer.BoundingRectangleFirstPixelIndex">
+            <summary>
+            Gets the first pixel index on the <see cref="P:UVtools.Core.Layers.Layer.BoundingRectangle"/>
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Layers.Layer.BoundingRectangleLastPixelIndex">
+            <summary>
+            Gets the last pixel index on the <see cref="P:UVtools.Core.Layers.Layer.BoundingRectangle"/>
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Layers.Layer.BoundingRectangleFirstPixelPosition">
+            <summary>
+            Gets the first pixel <see cref="T:System.Drawing.Point"/> on the <see cref="P:UVtools.Core.Layers.Layer.BoundingRectangle"/>
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Layers.Layer.BoundingRectangleLastPixelPosition">
+            <summary>
+            Gets the last pixel <see cref="T:System.Drawing.Point"/> on the <see cref="P:UVtools.Core.Layers.Layer.BoundingRectangle"/>
             </summary>
         </member>
         <member name="P:UVtools.Core.Layers.Layer.FirstPixelIndex">

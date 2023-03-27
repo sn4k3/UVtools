@@ -442,7 +442,7 @@ public sealed class OperationInfill : Operation
 
             for (int y = 0; y < patternMask.Height; y++)
             {
-                var span = patternMask.GetRowSpan<byte>(y);
+                var span = patternMask.GetRowByteSpan(y);
                 var yy = y * scaleY; // y position of pixel
                 for (int x = 0; x < patternMask.Width; x++)
                 {

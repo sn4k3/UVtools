@@ -579,7 +579,7 @@ public sealed class PHZFile : FileFormat
             //int pixel = 0;
             for (int y = 0; y < image.Height; y++)
             {
-                var span = image.GetRowSpan<byte>(y);
+                var span = image.GetRowByteSpan(y);
                 for (int x = 0; x < span.Length; x++)
                 {
                         

@@ -123,13 +123,13 @@ struct HEADER {
 
 struct LAYER_DEF {
     ushort Mark <fgcolor=cBlack, bgcolor=cYellow>; // (OD OA begins, indicating that the model + support is included; the beginning of 0D 0B, indicating that the layer only has support data)
-    uint NumberOfPixels <fgcolor=cBlack, bgcolor=cYellow>;
+    uint NumberOfLines <fgcolor=cBlack, bgcolor=cYellow>;
     ushort StartY <fgcolor=cBlack, bgcolor=cYellow>;
 
     local long currentPos = FTell();
     local long rleSize = 0;
 
-    if (NumberOfPixels > 0)
+    if (NumberOfLines > 0)
     {
         local byte buffer;
         local byte slen;

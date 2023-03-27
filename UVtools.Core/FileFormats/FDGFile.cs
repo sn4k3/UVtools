@@ -565,7 +565,7 @@ public sealed class FDGFile : FileFormat
             //int pixel = 0;
             for (int y = 0; y < mat.Height; y++)
             {
-                var span = mat.GetRowSpan<byte>(y);
+                var span = mat.GetRowByteSpan(y);
                 for (int x = 0; x < span.Length; x++)
                 {
                         

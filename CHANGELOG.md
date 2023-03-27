@@ -1,5 +1,11 @@
 # Changelog
 
+## 27/03/2023 - v3.12.2
+
+- (Improvement) CXDLP: Better parse of machine model from PrusaSlicer profile (#351)
+- (Fix) OSF: Printer freezes at first layer (#657)
+- (Upgrade) AvaloniaUI from 0.10.18 to 0.10.19
+
 ## 22/03/2023 - v3.12.1
 
 - **File formats:**

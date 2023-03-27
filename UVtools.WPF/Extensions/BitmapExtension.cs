@@ -223,7 +223,7 @@ public static class BitmapExtension
                     Parallel.For(0, height, y =>
                     {
                         var spanBitmap = lockBuffer.GetPixelRowSpan(y);
-                        var spanMat = mat.GetRowSpan<byte>(y);
+                        var spanMat = mat.GetRowByteSpan(y);
                         for (var x = 0; x < width; x++)
                         {
                             var color = spanMat[x];
@@ -237,7 +237,7 @@ public static class BitmapExtension
                     Parallel.For(0, height, y =>
                     {
                         var spanBitmap = lockBuffer.GetPixelRowSpan(y);
-                        var spanMat = mat.GetRowSpan<byte>(y);
+                        var spanMat = mat.GetRowByteSpan(y);
                         int pixel = 0;
                         for (var x = 0; x < width; x++)
                         {
@@ -252,7 +252,7 @@ public static class BitmapExtension
                         Parallel.For(0, height, y =>
                         {
                             var spanBitmap = lockBuffer.GetPixelRowSpan(y);
-                            var spanMat = mat.GetRowSpan<byte>(y);
+                            var spanMat = mat.GetRowByteSpan(y);
                             int pixel = 0;
                             for (var x = 0; x < width; x++)
                             {

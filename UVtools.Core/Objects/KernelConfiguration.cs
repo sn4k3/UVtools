@@ -158,7 +158,7 @@ public sealed class KernelConfiguration : BindableBase, IDisposable
         string text = string.Empty;
         for (int y = 0; y < kernel.Height; y++)
         {
-            var span = kernel.GetRowSpan<byte>(y);
+            var span = kernel.GetRowByteSpan(y);
             var line = string.Empty;
             for (int x = 0; x < span.Length; x++)
             {

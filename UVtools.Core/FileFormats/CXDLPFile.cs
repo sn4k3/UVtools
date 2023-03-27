@@ -614,7 +614,7 @@ public sealed class CXDLPFile : FileFormat
             if (!string.IsNullOrWhiteSpace(value) && !value.StartsWith("CL-") && !value.StartsWith("CT-"))
             {
                 // Parse from machine name, if coming from PrusaSlicer this will help
-                var match = Regex.Match(value, @"(CL|CT)-\d+");
+                var match = Regex.Match(value, @"(CL|CT)-?\d+[a-zA-Z]?");
                 if (match is {Success: true, Groups.Count: > 1})
                 {
                     value = match.Value;

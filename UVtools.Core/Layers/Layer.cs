@@ -63,6 +63,10 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
     private byte[]? _compressedBytes;
     private uint _nonZeroPixelCount;
     private Rectangle _boundingRectangle = Rectangle.Empty;
+    private uint _firstPixelIndex;
+    private uint _lastPixelIndex;
+    private Point _firstPixelPosition;
+    private Point _lastPixelPosition;
     private bool _isModified;
     private uint _index;
     private uint _resolutionX;
@@ -221,24 +225,61 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
     }
 
     /// <summary>
+    /// Gets the first pixel index on the <see cref="BoundingRectangle"/>
+    /// </summary>
+    public uint BoundingRectangleFirstPixelIndex => (uint)(BoundingRectangle.Y * ResolutionX + BoundingRectangle.X);
+
+    /// <summary>
+    /// Gets the last pixel index on the <see cref="BoundingRectangle"/>
+    /// </summary>
+    public uint BoundingRectangleLastPixelIndex => (uint)(BoundingRectangle.Bottom * ResolutionX + BoundingRectangle.Right);
+
+    /// <summary>
+    /// Gets the first pixel <see cref="Point"/> on the <see cref="BoundingRectangle"/>
+    /// </summary>
+    public Point BoundingRectangleFirstPixelPosition => BoundingRectangle.Location;
+
+    /// <summary>
+    /// Gets the last pixel <see cref="Point"/> on the <see cref="BoundingRectangle"/>
+    /// </summary>
+    public Point BoundingRectangleLastPixelPosition => new (BoundingRectangle.Right, BoundingRectangle.Bottom);
+
+    /// <summary>
     /// Gets the first pixel index on this layer
     /// </summary>
-    public uint FirstPixelIndex => (uint)(BoundingRectangle.Y * ResolutionX + BoundingRectangle.X);
+    public uint FirstPixelIndex
+    {
+        get => _firstPixelIndex;
+        private set => RaiseAndSetIfChanged(ref _firstPixelIndex, value);
+    }
 
     /// <summary>
     /// Gets the last pixel index on this layer
     /// </summary>
-    public uint LastPixelIndex => (uint)(BoundingRectangle.Bottom * ResolutionX + BoundingRectangle.Right);
+    public uint LastPixelIndex
+    {
+        get => _lastPixelIndex;
+        private set => RaiseAndSetIfChanged(ref _lastPixelIndex, value);
+    }
 
     /// <summary>
     /// Gets the first pixel <see cref="Point"/> on this layer
     /// </summary>
-    public Point FirstPixelPosition => BoundingRectangle.Location;
+    public Point FirstPixelPosition
+    {
+        get => _firstPixelPosition;
+        private set => RaiseAndSetIfChanged(ref _firstPixelPosition, value);
+    }
 
     /// <summary>
     /// Gets the last pixel <see cref="Point"/> on this layer
     /// </summary>
-    public Point LastPixelPosition => new (BoundingRectangle.Right, BoundingRectangle.Bottom);
+    public Point LastPixelPosition
+    {
+        get => _lastPixelPosition;
+        private set => RaiseAndSetIfChanged(ref _lastPixelPosition, value);
+    }
+
 
     /// <summary>
     /// Gets if is the first layer
@@ -1213,6 +1254,8 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
                $"{nameof(Filename)}: {Filename}, " +
                $"{nameof(NonZeroPixelCount)}: {NonZeroPixelCount}, " +
                $"{nameof(BoundingRectangle)}: {BoundingRectangle}, " +
+               $"{nameof(FirstPixelPosition)}: {FirstPixelPosition}, " +
+               $"{nameof(LastPixelPosition)}: {LastPixelPosition}, " +
                $"{nameof(IsBottomLayer)}: {IsBottomLayer}, " +
                $"{nameof(IsNormalLayer)}: {IsNormalLayer}, " +
                $"{nameof(LayerHeight)}: {LayerHeight}mm, " +
@@ -1399,11 +1442,38 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
         {
             var roiMat = mat.Roi(_boundingRectangle);
             NonZeroPixelCount = (uint)CvInvoke.CountNonZero(roiMat);
+
+            // Compute first and last pixel
+            var span = roiMat.GetDataByteSpan();
+            var yOffset = mat.GetRealStep() * BoundingRectangle.Y;
+            for (var i = 0; i < span.Length; i++)
+            {
+                if (span[i] == 0) continue;
+                var xOffset = BoundingRectangle.X + i;
+                FirstPixelIndex = (uint) (yOffset + xOffset);
+                FirstPixelPosition = new Point(xOffset, BoundingRectangle.Y);
+                break;
+            }
+            for (var i = span.Length - 1; i >= 0; i--)
+            {
+                if (span[i] == 0) continue;
+                LastPixelIndex = (uint) (yOffset + BoundingRectangle.X + i);
+                LastPixelPosition = new Point(BoundingRectangle.Right - (span.Length - i), BoundingRectangle.Bottom - 1);
+                break;
+            }
+
             roiMat.DisposeIfSubMatrix();
         }
 
+        /* // Test
+        mat.SetByte((int)FirstPixelIndex, 255);
+        mat.SetByte(FirstPixelPosition, 255);
+        mat.SetByte((int)LastPixelIndex, 255);
+        mat.SetByte(LastPixelPosition, 255);
+        mat.Save("D:\\test.png");
+        */
 
-        if (needDispose) mat!.Dispose();
+        if (needDispose) mat.Dispose();
 
         return BoundingRectangle;
     }
@@ -1743,6 +1813,10 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
         layer._contours = _contours?.Clone();
         layer.BoundingRectangle = _boundingRectangle;
         layer.NonZeroPixelCount = _nonZeroPixelCount;
+        layer.FirstPixelIndex = _firstPixelIndex;
+        layer.FirstPixelPosition = _firstPixelPosition;
+        layer.LastPixelIndex = _lastPixelIndex;
+        layer.LastPixelPosition = _lastPixelPosition;
     }
 
     public Layer Clone()
