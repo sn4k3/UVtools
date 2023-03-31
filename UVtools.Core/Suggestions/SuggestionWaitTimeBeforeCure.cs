@@ -71,7 +71,7 @@ public sealed class SuggestionWaitTimeBeforeCure : Suggestion
         get
         {
             if (SlicerFile is null) return false;
-            return SlicerFile.CanUseAnyWaitTimeBeforeCure || SlicerFile.CanUseAnyLightOffDelay;
+            return SlicerFile.CanUseAnyWaitTimeBeforeCure || SlicerFile.CanUseAnyLightOffDelay || SlicerFile.CanUseLayerAnyWaitTimeBeforeCure;
         }
     }
 
@@ -84,20 +84,20 @@ public sealed class SuggestionWaitTimeBeforeCure : Suggestion
             switch (_applyWhen)
             {
                 case SuggestionApplyWhen.OutsideLimits:
-                    if (SlicerFile.CanUseBottomWaitTimeAfterCure || SlicerFile.CanUseBottomLightOffDelay)
+                    if (SlicerFile.CanUseBottomWaitTimeBeforeCure || SlicerFile.CanUseBottomLightOffDelay)
                     {
                         var waitTime = (decimal)SlicerFile.GetBottomWaitTimeBeforeCure();
                         if (waitTime < _minimumWaitTimeBeforeCure ||
                             waitTime > _maximumWaitTimeBeforeCure) return false;
                     }
-                    if (SlicerFile.CanUseWaitTimeAfterCure || SlicerFile.CanUseLightOffDelay)
+                    if (SlicerFile.CanUseWaitTimeBeforeCure || SlicerFile.CanUseLightOffDelay)
                     {
                         var waitTime = (decimal)SlicerFile.GetNormalWaitTimeBeforeCure();
                         if (waitTime < _minimumWaitTimeBeforeCure ||
                             waitTime > _maximumWaitTimeBeforeCure) return false;
                     }
 
-                    if (SlicerFile.CanUseLayerWaitTimeAfterCure || SlicerFile.CanUseLayerLightOffDelay)
+                    if (SlicerFile.CanUseLayerWaitTimeBeforeCure || SlicerFile.CanUseLayerLightOffDelay)
                     {
                         foreach (var layer in SlicerFile)
                         {
@@ -115,16 +115,16 @@ public sealed class SuggestionWaitTimeBeforeCure : Suggestion
 
                     break;
                 case SuggestionApplyWhen.Different:
-                    if (SlicerFile.CanUseBottomWaitTimeAfterCure || SlicerFile.CanUseBottomLightOffDelay)
+                    if (SlicerFile.CanUseBottomWaitTimeBeforeCure || SlicerFile.CanUseBottomLightOffDelay)
                     {
                         if (Math.Abs(SlicerFile.GetBottomWaitTimeBeforeCure() - CalculateWaitTime(true)) > 0.1) return false;
                     }
-                    if (SlicerFile.CanUseWaitTimeAfterCure || SlicerFile.CanUseLightOffDelay)
+                    if (SlicerFile.CanUseWaitTimeBeforeCure || SlicerFile.CanUseLightOffDelay)
                     {
                         if (Math.Abs(SlicerFile.GetNormalWaitTimeBeforeCure() - CalculateWaitTime(false)) > 0.1) return false;
                     }
 
-                    if (SlicerFile.CanUseLayerWaitTimeAfterCure || SlicerFile.CanUseLayerLightOffDelay)
+                    if (SlicerFile.CanUseLayerWaitTimeBeforeCure || SlicerFile.CanUseLayerLightOffDelay)
                     {
                         foreach (var layer in SlicerFile)
                         {
@@ -151,18 +151,71 @@ public sealed class SuggestionWaitTimeBeforeCure : Suggestion
     public override string Description => "Rest some time before cure the layer is crucial to let the resin settle after the lift sequence and allow some time for the arm settle at the correct Z position as the resin will offer some resistance and push the structure.\n" +
                                           "This lead to better quality with more successful prints, less lamination problems, better first layers with more success of stick to the build plate and less elephant foot effect.";
 
-    public override string Message => IsApplied 
-        ? $"{GlobalAppliedMessage}: {SlicerFile.GetBottomWaitTimeBeforeCure()}/{SlicerFile.GetNormalWaitTimeBeforeCure()}s" 
-        : $"{GlobalNotAppliedMessage} of {SlicerFile.GetBottomWaitTimeBeforeCure()}/{SlicerFile.GetNormalWaitTimeBeforeCure()}s " +
-          $"is out of the recommended {CalculateWaitTime(true)}/{CalculateWaitTime(false)}s";
+    public override string Message
+    {
+        get
+        {
+            if(SlicerFile.CanUseLayerAnyWaitTimeBeforeCure 
+               || SlicerFile 
+                   is {CanUseBottomWaitTimeBeforeCure: true, CanUseWaitTimeBeforeCure: true} 
+                   or {CanUseBottomLightOffDelay: true, CanUseLightOffDelay: true})
+            {
+                return IsApplied
+                    ? $"{GlobalAppliedMessage}: {SlicerFile.GetBottomWaitTimeBeforeCure()}/{SlicerFile.GetNormalWaitTimeBeforeCure()}s"
+                    : $"{GlobalNotAppliedMessage} of {SlicerFile.GetBottomWaitTimeBeforeCure()}/{SlicerFile.GetNormalWaitTimeBeforeCure()}s " +
+                      $"is out of the recommended {CalculateWaitTime(true)}/{CalculateWaitTime(false)}s";
+            }
 
-    public override string ToolTip => (_setType == SuggestionWaitTimeBeforeCureSetType.Fixed 
-                                          ? $"The recommended wait time must be {_fixedBottomWaitTimeBeforeCure}/{_fixedWaitTimeBeforeCure}s"
-                                          : $"The recommended wait time is a ratio of (wait time){_proportionalWaitTimeBeforeCure}s to (exposure time){_proportionalLayerArea}s") +
-                                      $" constrained from [Bottoms={_minimumBottomWaitTimeBeforeCure}s to {_maximumBottomWaitTimeBeforeCure}s] and [Normals={_minimumWaitTimeBeforeCure}s to {_maximumWaitTimeBeforeCure}s].\n" +
-                                      $"Explanation: {Description}";
+            // Single property
+            return IsApplied
+                ? $"{GlobalAppliedMessage}: {SlicerFile.GetNormalWaitTimeBeforeCure()}s"
+                : $"{GlobalNotAppliedMessage} of {SlicerFile.GetNormalWaitTimeBeforeCure()}s " +
+                  $"is out of the recommended {CalculateWaitTime(false)}s";
+        }
+    }
 
-    public override string? ConfirmationMessage => $"{Title}: {SlicerFile.BottomWaitTimeAfterCure}/{SlicerFile.WaitTimeAfterCure}s » {CalculateWaitTime(true)}/{CalculateWaitTime(false)}s";
+    public override string ToolTip
+    {
+        get
+        {
+            if (SlicerFile.CanUseLayerAnyWaitTimeBeforeCure
+                || SlicerFile
+                    is {CanUseBottomWaitTimeBeforeCure: true, CanUseWaitTimeBeforeCure: true}
+                    or {CanUseBottomLightOffDelay: true, CanUseLightOffDelay: true})
+            {
+                return (_setType == SuggestionWaitTimeBeforeCureSetType.Fixed
+                           ? $"The recommended wait time must be {_fixedBottomWaitTimeBeforeCure}/{_fixedWaitTimeBeforeCure}s"
+                           : $"The recommended wait time is a ratio of (wait time){_proportionalWaitTimeBeforeCure}s to (exposure time){_proportionalLayerArea}s") +
+                       $" constrained from [Bottoms={_minimumBottomWaitTimeBeforeCure}s to {_maximumBottomWaitTimeBeforeCure}s] and [Normals={_minimumWaitTimeBeforeCure}s to {_maximumWaitTimeBeforeCure}s].\n" +
+                       $"Explanation: {Description}";
+            }
+
+            // Single property
+            return (_setType == SuggestionWaitTimeBeforeCureSetType.Fixed
+                       ? $"The recommended wait time must be {_fixedWaitTimeBeforeCure}s"
+                       : $"The recommended wait time is a ratio of (wait time){_proportionalWaitTimeBeforeCure}s to (exposure time){_proportionalLayerArea}s") +
+                   $" constrained from {_minimumWaitTimeBeforeCure}s to {_maximumWaitTimeBeforeCure}s.\n" +
+                   $"Explanation: {Description}";
+        }
+    }
+
+    public override string? ConfirmationMessage
+    {
+        get
+        {
+            if (SlicerFile.CanUseLayerAnyWaitTimeBeforeCure
+                || SlicerFile
+                    is {CanUseBottomWaitTimeBeforeCure: true, CanUseWaitTimeBeforeCure: true}
+                    or {CanUseBottomLightOffDelay: true, CanUseLightOffDelay: true})
+            {
+                return $"{Title}: {SlicerFile.BottomWaitTimeBeforeCure}/{SlicerFile.WaitTimeBeforeCure}s » {CalculateWaitTime(true)}/{CalculateWaitTime(false)}s";
+            }
+
+            // Single property
+            return $"{Title}: {SlicerFile.WaitTimeBeforeCure}s » {CalculateWaitTime(false)}s";
+
+        }
+    }
 
     public override string? InformationUrl => "https://blog.honzamrazek.cz/2022/01/prints-not-sticking-to-the-build-plate-layer-separation-rough-surface-on-a-resin-printer-resin-viscosity-the-common-denominator";
 
@@ -396,17 +449,17 @@ public sealed class SuggestionWaitTimeBeforeCure : Suggestion
     {
         SlicerFile.SuppressRebuildPropertiesWork(() =>
         {
-            if (SlicerFile.CanUseBottomWaitTimeAfterCure || SlicerFile.CanUseBottomLightOffDelay)
+            if (SlicerFile.CanUseBottomWaitTimeBeforeCure || SlicerFile.CanUseBottomLightOffDelay)
             {
                 SlicerFile.SetBottomWaitTimeBeforeCureOrLightOffDelay(CalculateWaitTime(true));
             }
-            if (SlicerFile.CanUseWaitTimeAfterCure || SlicerFile.CanUseLightOffDelay)
+            if (SlicerFile.CanUseWaitTimeBeforeCure || SlicerFile.CanUseLightOffDelay)
             {
                 SlicerFile.SetNormalWaitTimeBeforeCureOrLightOffDelay(CalculateWaitTime(false));
             }
         });
         
-        if (SlicerFile.CanUseLayerWaitTimeAfterCure || SlicerFile.CanUseLayerLightOffDelay)
+        if (SlicerFile.CanUseLayerWaitTimeBeforeCure || SlicerFile.CanUseLayerLightOffDelay)
         {
             foreach (var layer in SlicerFile)
             {

@@ -1751,12 +1751,12 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <summary>
     /// Gets the pixel width in millimeters
     /// </summary>
-    public float PixelWidth => DisplayWidth > 0 && ResolutionX > 0 ? (float) Math.Round(DisplayWidth / ResolutionX, 3) : 0;
+    public float PixelWidth => DisplayWidth > 0 && ResolutionX > 0 ? (float) Math.Round(DisplayWidth / ResolutionX, 4) : 0;
 
     /// <summary>
     /// Gets the pixel height in millimeters
     /// </summary>
-    public float PixelHeight => DisplayHeight > 0 && ResolutionY > 0 ? (float) Math.Round(DisplayHeight / ResolutionY, 3) : 0;
+    public float PixelHeight => DisplayHeight > 0 && ResolutionY > 0 ? (float) Math.Round(DisplayHeight / ResolutionY, 4) : 0;
 
     /// <summary>
     /// Gets the pixel size in millimeters

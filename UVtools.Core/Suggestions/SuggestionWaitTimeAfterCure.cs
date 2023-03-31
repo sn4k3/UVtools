@@ -39,7 +39,14 @@ public sealed class SuggestionWaitTimeAfterCure : Suggestion
 
     #region Properties
 
-    public override bool IsAvailable => SlicerFile?.CanUseAnyWaitTimeAfterCure ?? false;
+    public override bool IsAvailable
+    {
+        get
+        {
+            if (SlicerFile is null) return false;
+            return SlicerFile.CanUseAnyWaitTimeAfterCure || SlicerFile.CanUseLayerWaitTimeAfterCure;
+        }
+    }
 
     public override bool IsApplied
     {
@@ -114,18 +121,60 @@ public sealed class SuggestionWaitTimeAfterCure : Suggestion
     public override string Title => "Wait time after cure";
     public override string Description => "Rest some time after curing the layer and before the lift sequence may allow the resin reaction to settle, harden and cool down a bit to detach more easily from the FEP, then yields less tension on the model, better print quality and easier lift's.";
 
-    public override string Message => IsApplied 
-        ? $"{GlobalAppliedMessage}: {SlicerFile.BottomWaitTimeAfterCure}/{SlicerFile.WaitTimeAfterCure}s" 
-        : $"{GlobalNotAppliedMessage} of {SlicerFile.BottomWaitTimeAfterCure}/{SlicerFile.WaitTimeAfterCure}s " +
-          $"is out of the recommended {CalculateWaitTime(true, (decimal) SlicerFile.BottomExposureTime)}/{CalculateWaitTime(false, (decimal)SlicerFile.ExposureTime)}s";
+    public override string Message
+    {
+        get
+        {
+            if (SlicerFile.CanUseLayerWaitTimeAfterCure || SlicerFile is {CanUseBottomWaitTimeAfterCure: true, CanUseWaitTimeAfterCure: true})
+            {
+                return IsApplied
+                    ? $"{GlobalAppliedMessage}: {SlicerFile.BottomWaitTimeAfterCure}/{SlicerFile.WaitTimeAfterCure}s"
+                    : $"{GlobalNotAppliedMessage} of {SlicerFile.BottomWaitTimeAfterCure}/{SlicerFile.WaitTimeAfterCure}s " +
+                      $"is out of the recommended {CalculateWaitTime(true, (decimal) SlicerFile.BottomExposureTime)}/{CalculateWaitTime(false, (decimal) SlicerFile.ExposureTime)}s";
+            }
 
-    public override string ToolTip => (_setType == SuggestionWaitTimeAfterCureSetType.Fixed 
-                                          ? $"The recommended wait time must be {_fixedBottomWaitTimeAfterCure}/{_fixedWaitTimeAfterCure}s"
-                                          : $"The recommended wait time is a ratio of (wait time){_proportionalWaitTimeAfterCure}s to (exposure time){_proportionalExposureTime}s") +
-                                      $" constrained from [Bottoms={_minimumBottomWaitTimeAfterCure}s to {_maximumBottomWaitTimeAfterCure}s] and [Normals={_minimumWaitTimeAfterCure}s to {_maximumWaitTimeAfterCure}s].\n" +
-                                      $"Explanation: {Description}";
+            // Single property
+            return IsApplied
+                ? $"{GlobalAppliedMessage}: {SlicerFile.WaitTimeAfterCure}s"
+                : $"{GlobalNotAppliedMessage} of {SlicerFile.WaitTimeAfterCure}s " +
+                  $"is out of the recommended {CalculateWaitTime(false, (decimal)SlicerFile.ExposureTime)}s";
+        }
+    }
 
-    public override string? ConfirmationMessage => $"{Title}: {SlicerFile.BottomWaitTimeAfterCure}/{SlicerFile.WaitTimeAfterCure}s » {CalculateWaitTime(true, (decimal)SlicerFile.BottomWaitTimeAfterCure)}/{CalculateWaitTime(false, (decimal)SlicerFile.WaitTimeAfterCure)}s";
+    public override string ToolTip
+    {
+        get
+        {
+            if (SlicerFile.CanUseLayerWaitTimeAfterCure || SlicerFile is {CanUseBottomWaitTimeAfterCure: true, CanUseWaitTimeAfterCure: true})
+            {
+                return (_setType == SuggestionWaitTimeAfterCureSetType.Fixed
+                           ? $"The recommended wait time must be {_fixedBottomWaitTimeAfterCure}/{_fixedWaitTimeAfterCure}s"
+                           : $"The recommended wait time is a ratio of (wait time){_proportionalWaitTimeAfterCure}s to (exposure time){_proportionalExposureTime}s") +
+                       $" constrained from [Bottoms={_minimumBottomWaitTimeAfterCure}s to {_maximumBottomWaitTimeAfterCure}s] and [Normals={_minimumWaitTimeAfterCure}s to {_maximumWaitTimeAfterCure}s].\n" +
+                       $"Explanation: {Description}";
+            }
+
+            return (_setType == SuggestionWaitTimeAfterCureSetType.Fixed
+                       ? $"The recommended wait time must be {_fixedWaitTimeAfterCure}s"
+                       : $"The recommended wait time is a ratio of (wait time){_proportionalWaitTimeAfterCure}s to (exposure time){_proportionalExposureTime}s") +
+                   $" constrained from {_minimumWaitTimeAfterCure}s to {_maximumWaitTimeAfterCure}s.\n" +
+                   $"Explanation: {Description}";
+        }
+    }
+
+    public override string? ConfirmationMessage
+    {
+        get
+        {
+            if (SlicerFile.CanUseLayerWaitTimeAfterCure || SlicerFile is {CanUseBottomWaitTimeAfterCure: true, CanUseWaitTimeAfterCure: true})
+            {
+                return $"{Title}: {SlicerFile.BottomWaitTimeAfterCure}/{SlicerFile.WaitTimeAfterCure}s » {CalculateWaitTime(true, (decimal) SlicerFile.BottomWaitTimeAfterCure)}/{CalculateWaitTime(false, (decimal) SlicerFile.WaitTimeAfterCure)}s";
+            }
+
+            // Single property
+            return $"{Title}: {SlicerFile.WaitTimeAfterCure}s » {CalculateWaitTime(false, (decimal)SlicerFile.WaitTimeAfterCure)}s";
+        }
+    }
 
     public SuggestionWaitTimeAfterCureSetType SetType
     {
