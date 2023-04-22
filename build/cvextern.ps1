@@ -12,6 +12,7 @@
 $libFolder = 'emgucv'
 $buildFile = "platforms\windows\Build_Binary_x86.bat"
 $buildArgs = '64 mini commercial no-openni no-doc no-package build'
+$customBuild = '-DWITH_FFMPEG:BOOL=FALSE -DWITH_MSMF:BOOL=FALSE -DWITH_DSHOW:BOOL=FALSE'
 
 if ($args.Count -gt 0){
     if($args[0] -eq 'clean'){
@@ -44,7 +45,11 @@ Option"
 Set-Location "$libFolder"
 
 Write-Output "Configuring"
-(Get-Content -Path "$buildFile") -replace '-DBUILD_opencv_video:BOOL=FALSE', '-DBUILD_opencv_video:BOOL=FALSE -DWITH_TIFF:BOOL=FALSE -DEMGU_CV_WITH_TIFF:BOOL=FALSE' | Set-Content -Path "$buildFile"
+$search = (Get-Content -Path "$buildFile" | Select-String -Pattern "$customBuild").Matches.Success
+if(-not $search){
+    $searchKeyword = '%CMAKE% %EMGU_CV_CMAKE_CONFIG_FLAGS%'
+    (Get-Content -Path "$buildFile") -replace "$searchKeyword", "$searchKeyword $customBuild" | Set-Content -Path "$buildFile"
+}
 
 Write-Output "Building"
 cmd.exe /c "$buildFile $buildArgs"
