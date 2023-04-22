@@ -175,21 +175,22 @@ else
     fi
 
 
-    LDCONFIG=''
-    if testcmd ldconfig; then
-        LDCONFIG='ldconfig'
-    else
-        LDCONFIG="$(whereis ldconfig | awk '{ print $2 }')"
-    fi
+    # Not required for mini
+    #LDCONFIG=''
+    #if testcmd ldconfig; then
+    #    LDCONFIG='ldconfig'
+    #else
+    #    LDCONFIG="$(whereis ldconfig | awk '{ print $2 }')"
+    #fi
 
-    if [ -n "$LDCONFIG" ]; then
-        if [ -z "$($LDCONFIG -p | grep libgeotiff)" -o -z "$($LDCONFIG -p | grep libgdiplus)" ]; then
-            echo "- Missing dependencies found, installing..."
-            sudo bash -c "$(curl -fsSL $dependencies_url)"
-        fi
-    else
-        echo "Unable to detect for missing dependencies, ldconfig not found, however installation will continue."
-    fi
+    #if [ -n "$LDCONFIG" ]; then
+    #    if [ -z "$($LDCONFIG -p | grep libgeotiff)" -o -z "$($LDCONFIG -p | grep libgdiplus)" ]; then
+    #        echo "- Missing dependencies found, installing..."
+    #        sudo bash -c "$(curl -fsSL $dependencies_url)"
+    #    fi
+    #else
+    #    echo "Unable to detect for missing dependencies, ldconfig not found, however installation will continue."
+    #fi
 
     echo '- Detecting download'
     response="$(curl -s "$api_url")"

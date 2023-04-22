@@ -24,9 +24,9 @@ if ($args.Count -gt 0){
 
 if (-not (Test-Path -Path "$libFolder/$buildFile" -PathType Leaf)) {
     $confirmation = Read-Host "$libFolder directory does not exists, do you want to download it?
-y/yes = Download master branch
-4.6.0 = Download specific tag
-n/no = Cancel
+y/yes: Download master branch
+4.7.0: Download specific tag
+n/no: Cancel
 Option"
 
     if ($confirmation -eq 'y' -or $confirmation -eq 'yes') {

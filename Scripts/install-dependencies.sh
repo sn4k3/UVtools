@@ -36,24 +36,24 @@ elif testcmd apt; then
     #apt install -y libdc1394-22 libopenexr24
     #apt install -y libdc1394-25 libopenexr25
     #apt install -y libjpeg-dev libpng-dev libgeotiff-dev libgeotiff5 libavcodec-dev libavformat-dev libswscale-dev libtbb-dev libgl1-mesa-dev libgdiplus
-    apt install -y libgeotiff5 libgdiplus
+    #apt install -y libgeotiff5 libgdiplus
     # mini only requires: libgdiplus libgeotiff-dev libgeotiff5 
 elif testcmd pacman; then
     osVariant="arch"
     pacman -Syu
     #pacman -S openjpeg2 libjpeg-turbo libpng libgeotiff libdc1394 ffmpeg openexr tbb libgdiplus
-    pacman -S libgeotiff libgdiplus
+    #pacman -S libgeotiff libgdiplus
 elif testcmd dnf; then
     osVariant="rhel"
     dnf update -y
     #dnf install -y https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm
     #dnf install -y https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm
     #dnf install -y libjpeg-devel libjpeg-turbo-devel libpng-devel libgeotiff-devel libdc1394-devel ffmpeg-devel tbb-devel mesa-libGL libgdiplus
-    dnf install -y libgeotiff libgdiplus
+    #dnf install -y libgeotiff libgdiplus
 elif testcmd zypper; then
     osVariant="suse"
     zypper refresh
-    zypper install -y libgeotiff5 libgdiplus0
+    #zypper install -y libgeotiff5 libgdiplus0
 else
     echo "Error: Base operative system / package manager not identified, nothing was installed"
     exit -1

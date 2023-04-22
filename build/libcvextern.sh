@@ -6,7 +6,7 @@
 # usage 1: ./libcvextern.sh clean
 # usage 2: ./libcvextern.sh -i
 # usage 3: ./libcvextern.sh 
-# usage 3: ./libcvextern.sh 4.6.0
+# usage 3: ./libcvextern.sh 4.7.0
 #
 #cd "$(dirname "$0")"
 echo $PWD
@@ -31,6 +31,30 @@ if [ $lastArg == "clean" ]; then
     exit
 fi
 
+
+if [ -z "$lastArg" ]; then
+    read -p "You are about to clone the master branch which are not recommended, you should choose a stable tag instead.
+Are you sure you want to continue with the master branch?
+
+y/yes/blank: Continue with master
+4.7.0: Continue with specified tag
+n/no:  Cancel
+
+Anwser: " confirmation 
+    
+    if [ -z "$confirmation" -o "$confirmation" == "y" -o "$confirmation" == "yes" ]; then
+        echo "Continuing with master..."
+    elif [ "$confirmation" == "n" -o "$confirmation" == "no" -o "$confirmation" == "cancel" ]; then
+        exit 1
+    elif [[ "$confirmation" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+        echo "Changing from master to $confirmation branch"
+        lastArg="$confirmation"
+    else
+        echo "Unable to recognize your input, continuing with master branch..."
+        sleep 2
+    fi
+fi
+
 installDependencies=false
 while getopts 'i' flag; do
   case "${flag}" in
@@ -46,7 +70,8 @@ done
 echo "Script to build libcvextern.so|dylib on $(uname -a) $arch"
 
 if testcmd ldconfig; then
-    if [ -z "$(ldconfig -p | grep libpng)" -o -z "$(ldconfig -p | grep libgdiplus)" -o -z "$(ldconfig -p | grep libavcodec)" -o -z "$(command -v git)" -o -z "$(command -v cmake)" -o -z "$(command -v dotnet)" ]; then
+    #if [ -z "$(ldconfig -p | grep libpng)" -o -z "$(ldconfig -p | grep libgdiplus)" -o -z "$(ldconfig -p | grep libavcodec)" -o -z "$(command -v git)" -o -z "$(command -v cmake)" -o -z "$(command -v dotnet)" ]; then
+    if [ -z "$(ldconfig -p | grep libpng)" -o -z "$(command -v git)" -o -z "$(command -v cmake)" -o -z "$(command -v dotnet)" ]; then
         installDependencies=true
     fi
 fi
@@ -71,16 +96,25 @@ elif testcmd apt; then
     osVariant="debian"
     if [ "$installDependencies" == true ]; then
         sudo apt update
-        sudo apt -y install git build-essential libgtk-3-dev libgstreamer1.0-dev libavcodec-dev libswscale-dev libavformat-dev libdc1394-dev libv4l-dev cmake-curses-gui ocl-icd-dev freeglut3-dev libgeotiff-dev libusb-1.0-0-dev
+        #FULL: sudo apt -y install git build-essential libgtk-3-dev libgstreamer1.0-dev libavcodec-dev libswscale-dev libavformat-dev libdc1394-dev libv4l-dev cmake-curses-gui ocl-icd-dev freeglut3-dev libgeotiff-dev libusb-1.0-0-dev
+        sudo apt -y install git build-essential cmake-curses-gui
         sudo apt install -y apt-transport-https
         sudo apt update
         sudo apt install -y dotnet-sdk-6.0
+        if ! testcmd dotnet; then
+            wget https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
+            sudo dpkg -i packages-microsoft-prod.deb
+            rm packages-microsoft-prod.deb
+            sudo apt update
+            sudo apt install -y dotnet-sdk-6.0
+        fi
     fi
 elif testcmd pacman; then
     osVariant="arch"
     if [ "$installDependencies" == true ]; then
         sudo pacman -Syu
-        sudo pacman -S git base-devel cmake msbuild gtk3 gstreamer ffmpeg libdc1394 v4l-utils ocl-icd freeglut libgeotiff libusb dotnet-sdk
+        #FULL: sudo pacman -S git base-devel cmake msbuild gtk3 gstreamer ffmpeg libdc1394 v4l-utils ocl-icd freeglut libgeotiff libusb dotnet-sdk
+        sudo pacman -S git base-devel cmake msbuild dotnet-sdk
     fi
 elif testcmd dnf; then
     osVariant="rhel"
@@ -89,11 +123,17 @@ elif testcmd dnf; then
         sudo dnf install -y https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm
         sudo dnf install -y https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm
         sudo dnf groupinstall -y "Development Tools" "Development Libraries"
-        sudo dnf install -y git cmake gcc-c++ gtk3-devel gstreamer1-devel ffmpeg ffmpeg-devel libdc1394 libv4l-devel cmake-gui ocl-icd-devel freeglut libgeotiff libusb dotnet-sdk-6.0
+        #FULL: sudo dnf install -y git cmake gcc-c++ gtk3-devel gstreamer1-devel ffmpeg ffmpeg-devel libdc1394 libv4l-devel cmake-gui ocl-icd-devel freeglut libgeotiff libusb dotnet-sdk-6.0
+        sudo dnf install -y git cmake gcc-c++ dotnet-sdk-6.0
     fi
 fi
 
 echo "- Checks"
+if [ -z "$osVariant" ]; then
+    echo "Error: Unable to detect your Operative System."
+    exit -1
+fi
+
 if ! testcmd git; then
     echo "Error: git not installed. Please re-run this script with -i flag."
     exit -1
@@ -109,10 +149,6 @@ if ! testcmd dotnet; then
     exit -1
 fi
 
-if [ -z "$osVariant" ]; then
-    echo "Error: Unable to detect your Operative System."
-    exit -1
-fi
 
 [ -n "$lastArg" ] && directory="$directory-$lastArg"
 
