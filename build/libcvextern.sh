@@ -163,7 +163,7 @@ if [ ! -d "$directory" ]; then
 fi
 
 echo "- Bulding"
-if [ osVariant == "macOS" ]; then
+if [ "$osVariant" == "macOS" ]; then
 	sed -i '' "s/-DBUILD_TIFF:BOOL=TRUE/-DBUILD_TIFF:BOOL=FALSE/g" "$directory/platforms/macos/configure" 2>/dev/null
     if [ "$build_package" == "mini" ]; then
         sed -i '' "s/\$FREETYPE_OPTION/\$FREETYPE_OPTION -DWITH_AVFOUNDATION:BOOL=FALSE -DWITH_FFMPEG:BOOL=FALSE -DWITH_GSTREAMER:BOOL=FALSE/g" "$directory/platforms/ubuntu/22.04/cmake_configure" 2>/dev/null
