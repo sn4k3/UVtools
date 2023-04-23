@@ -163,16 +163,35 @@ if [ ! -d "$directory" ]; then
 fi
 
 echo "- Bulding"
+# https://docs.opencv.org/4.x/db/d05/tutorial_config_reference.html
+
 if [ "$osVariant" == "macOS" ]; then
 	#sed -i '' "s/-DBUILD_TIFF:BOOL=TRUE/-DBUILD_TIFF:BOOL=FALSE/g" "$directory/platforms/macos/configure" 2>/dev/null
     if [ "$build_package" == "mini" ]; then
-        sed -i '' "s/\$FREETYPE_OPTION/\$FREETYPE_OPTION -DWITH_AVFOUNDATION:BOOL=FALSE -DWITH_FFMPEG:BOOL=FALSE -DWITH_GSTREAMER:BOOL=FALSE/g" "$directory/platforms/macos/configure" 2>/dev/null
+        searchFor='$FREETYPE_OPTION'
+        sed -i '' "s/$searchFor/$searchFor \\\\\\
+       -DWITH_AVFOUNDATION:BOOL=FALSE \\\\\\
+       -DWITH_EIGEN:BOOL=FALSE \\\\\\
+       -DWITH_FFMPEG:BOOL=FALSE \\\\\\
+       -DWITH_GSTREAMER:BOOL=FALSE \\\\\\
+       -DWITH_1394:BOOL=FALSE \\\\\\
+       -DVIDEOIO_ENABLE_PLUGINS:BOOL=FALSE \\\\\\
+       -DWITH_PROTOBUF:BOOL=FALSE \\\\\\
+       -DBUILD_PROTOBUF:BOOL=FALSE/g" "$directory/platforms/macos/configure" 2>/dev/null
     fi
     "$directory/platforms/macos/configure" $arch $build_package
 else # Linux
 	sed -i "s/-DBUILD_TIFF:BOOL=TRUE/-DBUILD_TIFF:BOOL=FALSE/g" "$directory/platforms/ubuntu/22.04/cmake_configure" 2>/dev/null
     if [ "$build_package" == "mini" ]; then
-	    sed -i "s/-DWITH_EIGEN:BOOL=TRUE/-DWITH_EIGEN:BOOL=TRUE -DWITH_V4L:BOOL=FALSE -DWITH_FFMPEG:BOOL=FALSE -DWITH_GSTREAMER:BOOL=FALSE/g" "$directory/platforms/ubuntu/22.04/cmake_configure" 2>/dev/null
+        searchFor='-DWITH_EIGEN:BOOL=TRUE'
+	    sed -i "s/$searchFor/-DWITH_EIGEN:BOOL=FALSE \\\\\\
+       -DWITH_V4L:BOOL=FALSE \\\\\\
+       -DWITH_FFMPEG:BOOL=FALSE \\\\\\
+       -DWITH_GSTREAMER:BOOL=FALSE \\\\\\
+       -DWITH_1394:BOOL=FALSE \\\\\\
+       -DVIDEOIO_ENABLE_PLUGINS:BOOL=FALSE \\\\\\
+       -DWITH_PROTOBUF:BOOL=FALSE \\\\\\
+       -DBUILD_PROTOBUF:BOOL=FALSE/g" "$directory/platforms/ubuntu/22.04/cmake_configure" 2>/dev/null
     fi
     "$directory/platforms/ubuntu/22.04/cmake_configure" $build_package
 fi
