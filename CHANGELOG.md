@@ -1,5 +1,19 @@
 # Changelog
 
+## 23/04/2023 - v3.13.0
+
+- **Benchmark tool:**
+  - (Add) Reference machine Intel® Core™ i9-13900K @ 5.5 GHz
+  - (Improvement) Layout and arrangement
+- **Windows MSI:**
+  - (Improvement) Move registry keys from HKCU to HKLM
+  - (Improvement) Sign MSI package
+  - (Upgrade) Windows MSI: Wix 3 to 4
+- (Fix) SL1: Change `SupportPillarWideningFactor` from ushort to float
+- (Fix) PCB exposure: Implement G02 and G03 arcs (#692)
+- (Upgrade) .NET from 6.0.15 to 6.0.16
+- (Upgrade) openCV from 4.6.0 to 4.7.0
+
 ## 31/03/2023 - v3.12.3
 
 - (Improvement) Increase `PixelSize`, `PixelWdith` and `PixelHeight` precision from 3 to 4 decimals (#684)

@@ -67,8 +67,18 @@ if ! testcmd dotnet; then
     exit
 fi
 
+if [ "$zipPackage" == true -a -z "$(command -v zip)" ]; then
+    echo "Error: zip is not installed, please install zip in order to zip packages."
+    exit -1
+fi
+
+if [ "$bundlePublish" == true -a -z "$(command -v file)" ]; then
+    echo "Error: file is not installed, please install file in order to bundle packages."
+    exit -1
+fi
+
 if [ -z "$version" ]; then
-    echo "Error: UVtools version not found, please check path and script"
+    echo "Error: UVtools version not found, please check path and script."
     exit -1
 fi
 
@@ -90,7 +100,6 @@ if [ "$runtime" != "win-x64" -a ! -d "$platformsDir/$runtime" ]; then
     exit -1
 fi
 
-
 echo "1. Preparing the environment"
 rm -rf "$publishRuntimeDir" 2>/dev/null
 [ "$zipPackage" == true ] && rm -f "$publishDir/$publishName.zip" 2>/dev/null
@@ -104,7 +113,13 @@ echo "3. Copying dependencies"
 echo $runtime > "$publishRuntimeDir/runtime_package.dat"
 #find "$runtimePlatformDir" -type f | grep -i lib | xargs -i cp -fv {} "$publishRuntimeDir/"
 #cp -afv "$runtimePlatformDir/." "$publishRuntimeDir/"
-[ -f "$runtimePlatformDir/libcvextern.zip" ] && unzip "$runtimePlatformDir/libcvextern.zip" -d "$publishRuntimeDir"
+if [ -f "$runtimePlatformDir/libcvextern.so" ]; then
+    cp -afv "$runtimePlatformDir/libcvextern.so" "$publishRuntimeDir"
+elif [ -f "$runtimePlatformDir/libcvextern.dylib" ]; then
+    cp -afv "$runtimePlatformDir/libcvextern.dylib" "$publishRuntimeDir"
+elif [ -f "$runtimePlatformDir/libcvextern.zip" ]; then
+    unzip "$runtimePlatformDir/libcvextern.zip" -d "$publishRuntimeDir"
+fi
 
 echo "4. Cleaning up"
 rm -rf "$cmdProjectDir/bin/$buildWith/net$netVersion/$runtime" 2>/dev/null
@@ -120,7 +135,7 @@ chmod -fv 775 "$publishRuntimeDir/UVtools.sh"
 if [[ "$runtime" == win-* ]]; then
     echo "6. Windows should be published in a windows machine!"
 elif [[ "$runtime" == osx-* ]]; then
-    if [ $bundlePublish == true ]; then
+    if [ "$bundlePublish" == true ]; then
         echo "6. macOS: Creating app bundle"
         osxApp="$publishDir/$publishName.app"
         rm -rf "$osxApp" 2>/dev/null
@@ -154,7 +169,7 @@ elif [[ "$runtime" == osx-* ]]; then
         fi
     fi
 else
-    if [ $bundlePublish == true ]; then
+    if [ "$bundlePublish" == true ]; then
         echo "6. Linux: Creating AppImage bundle"
         linuxAppDir="$publishDir/$publishName.AppDir"
         linuxAppImage="$publishDir/$publishName.AppImage"

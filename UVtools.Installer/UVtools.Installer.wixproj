@@ -1,102 +1,91 @@
-﻿<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">x64</Platform>
-    <ProductVersion>3.7</ProductVersion>
-    <ProjectGuid>{41224896-08e9-4f22-9e56-5f9d46dec7d2}</ProjectGuid>
-    <SchemaVersion>2.0</SchemaVersion>
-    <OutputName>UVtools</OutputName>
-    <OutputType>Package</OutputType>
-    <DefineSolutionProperties>false</DefineSolutionProperties>
-    <WixTargetsPath Condition=" '$(WixTargetsPath)' == '' AND '$(MSBuildExtensionsPath32)' != '' ">$(MSBuildExtensionsPath32)\Microsoft\WiX\v3.x\Wix.targets</WixTargetsPath>
-    <WixTargetsPath Condition=" '$(WixTargetsPath)' == '' ">$(MSBuildExtensionsPath)\Microsoft\WiX\v3.x\Wix.targets</WixTargetsPath>
-    <!-- If ProductVersion not passed in, try to get it from TFBuild Environments (XAML Builds)-->
-    <ProductVersion Condition=" '$(ProductVersion)' == '' ">$([System.Text.RegularExpressions.Regex]::Match($(TF_BUILD_BUILDNUMBER), "\d+.\d+.\d+.\d+"))</ProductVersion>
-    <!-- If ProductVersion still not known, try to get it from TFBuild Environments (V.Next Builds)-->
-    <ProductVersion Condition=" '$(ProductVersion)' == '' ">$([System.Text.RegularExpressions.Regex]::Match($(BUILD_BUILDNUMBER), "\d+.\d+.\d+.\d+"))</ProductVersion>
-    <!-- If ProductVersion still not known, default to lowerbound 0.0.1 for developer builds.-->
-    <ProductVersion Condition=" '$(ProductVersion)' == '' ">1.1.1</ProductVersion>
-    <!-- The following allows one cert to be referenced from the certificate store for self-signing in localbuilds and another cert to be passed in during official builds. -->
-    <AppxCertificateThumbprint Condition=" '$(AppxCertificateThumbprint)' == '' ">
-    </AppxCertificateThumbprint>
-    <AppxTimestampUrl Condition=" '$(AppxTimestampUrl)' == '' ">
-    </AppxTimestampUrl>
-    <MsixCertificateThumbprint Condition=" '$(MsixCertificateThumbprint)' == '' ">
-    </MsixCertificateThumbprint>
-    <MsixTimestampUrl Condition=" '$(MsixTimestampUrl)' == '' ">
-    </MsixTimestampUrl>
-  </PropertyGroup>
-  <PropertyGroup>
-    <SuppressIces>ICE27</SuppressIces>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
-    <OutputPath>bin\$(Configuration)\</OutputPath>
-    <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
-    <DefineConstants>Debug;ProductVersion=$(ProductVersion);HarvestPath=$(HarvestPath)</DefineConstants>
-    <WixVariables>WixUIBannerBmp=Resources\Banner.jpg;WixUIDialogBmp=Resources\Dialog.jpg;WixUILicenseRtf=Resources\EULA.rtf</WixVariables>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
-    <OutputPath>bin\$(Configuration)\</OutputPath>
-    <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
-    <DefineConstants>ProductVersion=$(ProductVersion);HarvestPath=$(HarvestPath)</DefineConstants>
-    <WixVariables>WixUIBannerBmp=Resources\Banner.jpg;WixUIDialogBmp=Resources\Dialog.jpg;WixUILicenseRtf=Resources\EULA.rtf</WixVariables>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
-    <DefineConstants>Debug;ProductVersion=$(ProductVersion);HarvestPath=$(HarvestPath)</DefineConstants>
-    <WixVariables>WixUIBannerBmp=Resources\Banner.jpg;WixUIDialogBmp=Resources\Dialog.jpg;WixUILicenseRtf=Resources\EULA.rtf</WixVariables>
-    <OutputPath>bin\$(Platform)\$(Configuration)\</OutputPath>
-    <IntermediateOutputPath>obj\$(Platform)\$(Configuration)\</IntermediateOutputPath>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
-    <DefineConstants>ProductVersion=$(ProductVersion);HarvestPath=$(HarvestPath)</DefineConstants>
-    <WixVariables>WixUIBannerBmp=Resources\Banner.jpg;WixUIDialogBmp=Resources\Dialog.jpg;WixUILicenseRtf=Resources\EULA.rtf</WixVariables>
-    <OutputPath>bin\$(Platform)\$(Configuration)\</OutputPath>
-    <IntermediateOutputPath>obj\$(Platform)\$(Configuration)\</IntermediateOutputPath>
-  </PropertyGroup>
-  <ItemGroup>
-    <Folder Include="Code" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Code\UI_CustomInstallDirDlg.wxs" />
-    <Compile Include="Code\UI_CustomInstallDir.wxs" />
-    <Compile Include="Code\HeatGeneratedFileList.wxs" />
-    <Compile Include="Code\Product.wxs" />
-    <Compile Include="Code\UI.wxs" />
-  </ItemGroup>
-  <ItemGroup>
-    <WixExtension Include="WixUtilExtension">
-      <HintPath>$(WixExtDir)\WixUtilExtension.dll</HintPath>
-      <Name>WixUtilExtension</Name>
-    </WixExtension>
-    <WixExtension Include="WixIIsExtension">
-      <HintPath>$(WixExtDir)\WixIIsExtension.dll</HintPath>
-      <Name>WixIIsExtension</Name>
-    </WixExtension>
-    <WixExtension Include="WixUIExtension">
-      <HintPath>$(WixExtDir)\WixUIExtension.dll</HintPath>
-      <Name>WixUIExtension</Name>
-    </WixExtension>
-    <WixExtension Include="WixNetFxExtension">
-      <HintPath>$(WixExtDir)\WixNetFxExtension.dll</HintPath>
-      <Name>WixNetFxExtension</Name>
-    </WixExtension>
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Resources" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Resources\Banner.jpg" />
-    <Content Include="Resources\Dialog.jpg" />
-    <Content Include="Resources\EULA.rtf" />
-  </ItemGroup>
-  <Import Project="$(WixTargetsPath)" />
-  <!--
-	To modify your build process, add your task inside one of the targets below and uncomment it.
-	Other similar extension points exist, see Wix.targets.
-	-->
-  <Target Name="BeforeBuild">
-    <HeatDirectory Directory="$(HarvestPath)" PreprocessorVariable="var.HarvestPath" OutputFile="Code\HeatGeneratedFileList.wxs" ComponentGroupName="HeatGeneratedFileList" DirectoryRefId="INSTALLFOLDER" AutogenerateGuids="true" KeepEmptyDirectories="false" ToolPath="$(WixToolPath)" SuppressCom="true" SuppressFragments="true" SuppressRegistry="true" SuppressRootDirectory="true" />
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
+﻿<Project Sdk="WixToolset.Sdk/4.0.0">
+	<PropertyGroup>
+		<Platform Condition="'$(Platform)' == ''">x64</Platform>
+		<ProductVersion>3.7</ProductVersion>
+		<OutputName>UVtools</OutputName>
+		<!-- If ProductVersion not passed in, try to get it from TFBuild Environments (XAML Builds)-->
+		<ProductVersion Condition="'$(ProductVersion)' == ''">$([System.Text.RegularExpressions.Regex]::Match($(TF_BUILD_BUILDNUMBER), "\d+.\d+.\d+.\d+"))</ProductVersion>
+		<!-- If ProductVersion still not known, try to get it from TFBuild Environments (V.Next Builds)-->
+		<ProductVersion Condition="'$(ProductVersion)' == ''">$([System.Text.RegularExpressions.Regex]::Match($(BUILD_BUILDNUMBER), "\d+.\d+.\d+.\d+"))</ProductVersion>
+		<!-- If ProductVersion still not known, default to lowerbound 0.0.1 for developer builds.-->
+		<ProductVersion Condition="'$(ProductVersion)' == ''">3.0.0</ProductVersion>
+		<!-- The following allows one cert to be referenced from the certificate store for self-signing in localbuilds and another cert to be passed in during official builds. -->
+		<AppxCertificateThumbprint Condition="'$(AppxCertificateThumbprint)' == ''" />
+		<AppxTimestampUrl Condition="'$(AppxTimestampUrl)' == ''" />
+		<MsixCertificateThumbprint Condition="'$(MsixCertificateThumbprint)' == ''" />
+		<MsixTimestampUrl Condition="'$(MsixTimestampUrl)' == ''"/>
+		<SignOutput>true</SignOutput>
+	</PropertyGroup>
+	<PropertyGroup>
+		<SuppressIces>ICE27;ICE38;ICE43;ICE57</SuppressIces>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+		<DefineConstants>Debug;ProductVersion=$(ProductVersion);HarvestPath=$(HarvestPath)</DefineConstants>
+		<WixVariables>WixUIBannerBmp=Resources\Banner.jpg;WixUIDialogBmp=Resources\Dialog.jpg;WixUILicenseRtf=Resources\EULA.rtf</WixVariables>
+		<SuppressIces>ICE27;ICE38;ICE43;ICE57</SuppressIces>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
+		<DefineConstants>ProductVersion=$(ProductVersion);HarvestPath=$(HarvestPath)</DefineConstants>
+		<WixVariables>WixUIBannerBmp=Resources\Banner.jpg;WixUIDialogBmp=Resources\Dialog.jpg;WixUILicenseRtf=Resources\EULA.rtf</WixVariables>
+		<SuppressIces>ICE27;ICE38;ICE43;ICE57</SuppressIces>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+		<DefineConstants>Debug;ProductVersion=$(ProductVersion);HarvestPath=$(HarvestPath)</DefineConstants>
+		<WixVariables>WixUIBannerBmp=Resources\Banner.jpg;WixUIDialogBmp=Resources\Dialog.jpg;WixUILicenseRtf=Resources\EULA.rtf</WixVariables>
+		<OutputPath>bin\$(Platform)\$(Configuration)\</OutputPath>
+		<IntermediateOutputPath>obj\$(Platform)\$(Configuration)\</IntermediateOutputPath>
+		<SuppressIces>ICE27;ICE38;ICE43;ICE57</SuppressIces>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+		<DefineConstants>ProductVersion=$(ProductVersion);HarvestPath=$(HarvestPath)</DefineConstants>
+		<WixVariables>WixUIBannerBmp=Resources\Banner.jpg;WixUIDialogBmp=Resources\Dialog.jpg;WixUILicenseRtf=Resources\EULA.rtf</WixVariables>
+		<OutputPath>bin\$(Platform)\$(Configuration)\</OutputPath>
+		<IntermediateOutputPath>obj\$(Platform)\$(Configuration)\</IntermediateOutputPath>
+		<SuppressIces>ICE27;ICE38;ICE43;ICE57</SuppressIces>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
+		<DefineConstants>Debug;ProductVersion=$(ProductVersion);HarvestPath=$(HarvestPath)</DefineConstants>
+		<WixVariables>WixUIBannerBmp=Resources\Banner.jpg;WixUIDialogBmp=Resources\Dialog.jpg;WixUILicenseRtf=Resources\EULA.rtf</WixVariables>
+		<OutputPath>bin\$(Platform)\$(Configuration)\</OutputPath>
+		<IntermediateOutputPath>obj\$(Platform)\$(Configuration)\</IntermediateOutputPath>
+		<SuppressIces>ICE27;ICE38;ICE43;ICE57</SuppressIces>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
+		<DefineConstants>ProductVersion=$(ProductVersion);HarvestPath=$(HarvestPath)</DefineConstants>
+		<WixVariables>WixUIBannerBmp=Resources\Banner.jpg;WixUIDialogBmp=Resources\Dialog.jpg;WixUILicenseRtf=Resources\EULA.rtf</WixVariables>
+		<OutputPath>bin\$(Platform)\$(Configuration)\</OutputPath>
+		<IntermediateOutputPath>obj\$(Platform)\$(Configuration)\</IntermediateOutputPath>
+		<SuppressIces>ICE27;ICE38;ICE43;ICE57</SuppressIces>
+	</PropertyGroup>
+	<ItemGroup>
+		<Folder Include="Code" />
+	</ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="WixToolset.Util.wixext" Version="4.0.0" />
+		<PackageReference Include="WixToolset.Iis.wixext" Version="4.0.0" />
+		<PackageReference Include="WixToolset.UI.wixext" Version="4.0.0" />
+		<PackageReference Include="WixToolset.NetFx.wixext" Version="4.0.0" />
+		<PackageReference Include="WixToolset.Heat" Version="4.0.0" />
+	</ItemGroup>
+	<ItemGroup>
+		<Folder Include="Resources" />
+	</ItemGroup>
+	<ItemGroup>
+		<Content Include="Resources\Banner.jpg" />
+		<Content Include="Resources\Dialog.jpg" />
+		<Content Include="Resources\EULA.rtf" />
+	</ItemGroup>
+	<ItemGroup>
+		<HarvestDirectory Include="$(HarvestPath)">
+			<ComponentGroupName>HarvestedComponents</ComponentGroupName>
+			<DirectoryRefId>INSTALLPATH</DirectoryRefId>
+			<PreprocessorVariable>var.HarvestPath</PreprocessorVariable>
+			<KeepEmptyDirectories>true</KeepEmptyDirectories>
+			<SuppressCom>true</SuppressCom>
+			<SuppressFragments>true</SuppressFragments>
+			<SuppressRegistry>true</SuppressRegistry>
+			<SuppressRootDirectory>true</SuppressRootDirectory>
+			<HarvestDirectoryAutogenerateGuids>true</HarvestDirectoryAutogenerateGuids>
+		</HarvestDirectory>
+	</ItemGroup>
 </Project>

@@ -1,3 +1,13 @@
+# Master release
+# Creates and assembles relases for all supported operative systems
+# Run under Windows with WSL installed
+
+if($PSVersionTable.PSVersion.Major -lt 7){
+    Write-Error("Powershell version $($PSVersionTable.PSVersion) is not compatible with this build script.`n
+You need at least the Powershell 7: https://github.com/PowerShell/PowerShell/releases/latest")
+    return;
+}
+
 # When using System.IO.Compression.ZipFile.CreateFromDirectory in PowerShell, it still uses backslashes in the zip paths
 # despite this https://docs.microsoft.com/en-us/dotnet/framework/migration-guide/mitigation-ziparchiveentry-fullname-path-separator
 
@@ -9,12 +19,6 @@
 #
 # https://gist.github.com/lantrix/738ebfa616d5222a8b1db947793bc3fc
 #
-if($PSVersionTable.PSVersion.Major -lt 7){
-    Write-Error("Powershell version $($PSVersionTable.PSVersion) is not compatible with this build script.`n
-You need at least the version 7.")
-    return;
-}
-
 ####################################
 ###        Fix Zip slash         ###
 ####################################
@@ -32,139 +36,6 @@ class FixedEncoder : System.Text.UTF8Encoding {
 }
 
 <#
-function wixCleanUpElement([System.Xml.XmlElement]$element, [string]$rootPath)
-{
-    $files = Get-ChildItem -Path $rootPath -File -Force -ErrorAction SilentlyContinue
-    $folders = Get-ChildItem -Path $rootPath -Directory -Force -ErrorAction SilentlyContinue
-    
-    # Removing not existant files
-    foreach($e in $element.Component)
-    {
-        $found = $false
-        foreach($file in $files)
-        {
-            if($e.File.Source.EndsWith("\$($file.Name)")){
-                $found = $true
-                break
-            }
-        }
-
-        if ($found -eq $false){
-            # File not found on this directory, remove element
-            Write-Host("WIX: File '$($e.File.Source)' does not exist anymore, removing...")
-            $e.ParentNode.RemoveChild($e) | Out-Null
-        }
-    }
-
-    # Adding not existant files
-    foreach($file in $files)
-    {
-        $found = $false
-        foreach($e in $element.Component)
-        {
-            if($null -ne $e.File.Source -and $e.File.Source.EndsWith("\$($file.Name)")){
-                $found = $true
-                break
-            }
-        }
-
-        if ($found -eq $false){
-            # File not found on manifest, add element
-            $guid = [guid]::NewGuid().ToString().ToUpper()
-            $guidNoSeparator = $guid.Replace('-', '')
-            $filePath = $file.FullName.Substring($msiSourceFiles.Length)
-            while ($filePath.StartsWith('\'))
-            {
-                $filePath = $filePath.Remove(0, 1)
-            }
-            Write-Host("WIX: File '$filePath' does not exist on manifest, adding with GUID: $guid")
-            $xmlComponent = $element.OwnerDocument.CreateElement("Component", $element.OwnerDocument.DocumentElement.NamespaceURI)
-            $xmlComponent.SetAttribute("Id", "owc$guidNoSeparator")
-            $xmlComponent.SetAttribute("Guid", $guid)
-
-            $xmlFile = $element.OwnerDocument.CreateElement("File", $element.OwnerDocument.DocumentElement.NamespaceURI)
-            $xmlFile.SetAttribute("Id", "owf$guidNoSeparator")
-            $xmlFile.SetAttribute("Source", "`$(var.SourceDir)\$filePath")
-            $xmlFile.SetAttribute("KeyPath", 'yes')
-
-            $xmlComponent.AppendChild($xmlFile) | Out-Null
-            $element.AppendChild($xmlComponent) | Out-Null
-        }
-    }
-    
-    # Removing not existant folters
-    foreach($e in $element.Directory)
-    {
-        $found = $false
-        foreach($folder in $folders)
-        {
-            if($e.Name -eq $folder.Name){
-                $found = $true
-                break
-            }
-        }
-
-        if ($found -eq $false){
-            # Directory not found on this directory, remove element
-            Write-Host("WIX: Directory '$($e.Name)' does not exist anymore, removing...")
-            $e.ParentNode.RemoveChild($e) | Out-Null
-        }
-    }
-    
-    # Adding not existant directories
-    foreach($folder in $folders)
-    {
-        $foundDirectoryElement = $null
-        foreach($e in $element.Directory)
-        {
-            #Write-Host("$($e.Name) == $($folder.Name)")
-            if($null -ne $e.Name -and $e.Name -eq $folder.Name){
-                $foundDirectoryElement = $e
-                break
-            }
-        }
-
-        if ($null -eq $foundDirectoryElement){
-            # Folder not found on manifest, add element
-            $guid = [guid]::NewGuid().ToString().ToUpper()
-            $guidNoSeparator = $guid.Replace('-', '')
-
-            $directoryRelativePath = $folder.FullName.Substring($msiSourceFiles.Length)
-            while ($directoryRelativePath.StartsWith('\'))
-            {
-                $directoryRelativePath = $directoryRelativePath.Remove(0, 1)
-            }
-
-            Write-Host("WIX: Directory '$directoryRelativePath' does not exist on manifest, adding with GUID: $guid")
-            $xmlDirectory = $element.OwnerDocument.CreateElement("Directory", $element.OwnerDocument.DocumentElement.NamespaceURI)
-            $xmlDirectory.SetAttribute("Id", "owd$guidNoSeparator")
-            $xmlDirectory.SetAttribute("Name", $folder.Name)
-            $element.AppendChild($xmlDirectory) | Out-Null
-            
-            wixCleanUpElement $xmlDirectory $folder.FullName
-        }else{
-            # Folder found on manifest, recursive from this folder
-            wixCleanUpElement $foundDirectoryElement $folder.FullName
-        }
-    }
-}
-#>
-
-<#
-$msiComponentsXml = [Xml] (Get-Content $msiComponentsFile)
-foreach($element in $msiComponentsXml.Wix.Module.Directory.Directory)
-{
-    if($element.Id -eq 'MergeRedirectFolder')
-    {
-        wixCleanUpElement $element $msiSourceFiles
-        #WriteXmlToScreen($msiComponentsXml);
-        #$msiComponentsXml.Save("$rootPath\$publishFolder\test.xml")
-        return
-        break
-    }
-}
-
-
 function WriteXmlToScreen([xml]$xml)
 {
     $StringWriter = New-Object System.IO.StringWriter;
@@ -228,6 +99,7 @@ $msiOutputFile  = "$installerPath\bin\x64\Release\UVtools.msi"
 $msiProductFile = "$installerPath\Code\Product.wxs"
 $msiSourceFiles = "$publishPath\${software}_win-x64_v$version"
 
+<#
 $msbuildPaths = "${env:ProgramFiles}\Microsoft Visual Studio\2022\Enterprise\MSBuild\Current\Bin\MSBuild.exe",
                 "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\MSBuild.exe",
                 "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\Community\MSBuild\Current\Bin\MSBuild.exe"
@@ -239,6 +111,7 @@ foreach($path in $msbuildPaths) {
         break;
     }
 }
+#>
 
 Write-Output "
 ####################################
@@ -260,7 +133,7 @@ $runtimes =
 @{
     "win-x64" = @{
         "extraCmd" = ""
-        "exclude" = @("UVtools.sh")
+        "exclude" = @("UVtools.sh", "opencv_videoio_ffmpeg470_64.dll")
         "include" = @("cvextern.dll")
     }
     "linux-x64" = @{
@@ -315,7 +188,7 @@ foreach($line in $changelog) {
         else { break }
     }
     elseif($foundHashTag){
-        [void]$sb.AppendLine($line)
+        $sb.AppendLine($line)
     }
 }
 
@@ -412,29 +285,9 @@ foreach ($obj in $runtimes.GetEnumerator()) {
     }
     
     $deployStopWatch.Stop()
-    Write-Output "Took: $($deployStopWatch.Elapsed)
-################################"
+    Write-Output "Took: $($deployStopWatch.Elapsed)"
+    Write-Output "################################"
 }
-
-<#
-$deployStopWatch.Restart()
-#Wait for all jobs to finish.
-While ($(Get-Job -State Running).count -gt 0){
-    Write-Host -NoNewline "."
-    Start-Sleep 1
-}
-
-Write-Output " Took: $($deployStopWatch.Elapsed)"
-
-#Get information from each job.
-foreach($job in Get-Job){
-    $job
-    #Receive-Job -Id ($job.Id)
-}
-
-#Remove all jobs created.
-Get-Job | Remove-Job
-#>
 
 # Universal package
 <#
@@ -463,76 +316,53 @@ if($null -ne $enableMSI -and $enableMSI)
     $publishCurrentPath="$publishPath\$publishName"
     
     if ((Test-Path -Path $msiSourceFiles) -and ((Get-ChildItem "$msiSourceFiles" | Measure-Object).Count) -gt 0) {
-        if ($null -ne $msbuild)
+
+        $msiTargetFile = "$publishPath\$publishName.msi"
+        Write-Output "################################"
+        Write-Output "Build MSI setup file"
+
+        Remove-Item "$msiTargetFile" -ErrorAction Ignore
+
+        if(Test-Path "$publishCurrentPath\UVtools.Core.dll" -PathType Leaf){
+            Add-Type -Path "$publishCurrentPath\UVtools.Core.dll"
+        } else {
+            Write-Error "Unable to find UVtools.Core.dll"
+            return
+        }
+
+        # Add edit with UVtools possible extensions
+        $extensions = [UVtools.Core.FileFormats.FileFormat]::AllFileExtensions;
+        $extensionList = New-Object Collections.Generic.List[String]
+        foreach($ext in $extensions)
         {
-            $msiTargetFile = "$publishPath\$publishName.msi"
-            Write-Output "################################"
-            Write-Output "Clean and build MSI components manifest file"
+            if($ext.Extension.Contains('.')) { continue; } # Virtual extension, ignore
 
-            Remove-Item "$msiTargetFile" -ErrorAction Ignore
-
-            <#
-            (Get-Content "$msiComponentsFile") -replace 'SourceDir="\.\.\\publish\\.+"', "SourceDir=`"..\publish\$publishName`"" | Out-File "$msiComponentsFile"
-            
-            $msiComponentsXml = [Xml] (Get-Content "$msiComponentsFile")
-            foreach($element in $msiComponentsXml.Wix.Module.Directory.Directory)
-            {
-                if($element.Id -eq 'MergeRedirectFolder')
-                {
-                    wixCleanUpElement $element $msiSourceFiles
-                    $msiComponentsXml.Save($msiComponentsFile)
-                    break
-                }
-            }
-            #>
-
-            if(Test-Path "$publishCurrentPath\UVtools.Core.dll" -PathType Leaf){
-                Add-Type -Path "$publishCurrentPath\UVtools.Core.dll"
-            } else {
-                Write-Error "Unable to find UVtools.Core.dll"
-                return
-            }
-
-            # Add edit with UVtools possible extensions
-            $extensions = [UVtools.Core.FileFormats.FileFormat]::AllFileExtensions;
-            $extensionList = New-Object Collections.Generic.List[String]
-            foreach($ext in $extensions)
-            {
-                if($ext.Extension.Contains('.')) { continue; } # Virtual extension
-
-                $extKey = "System.FileName:&quot;*.$($ext.Extension.ToLowerInvariant())&quot;";
-                if($extensionList.Contains($extKey)) { continue; } # Already here
-                $extensionList.Add($extKey);
-            }
-            if($extensionList.Count -gt 0)
-            {
-                $regValue = [String]::Join(' OR ', $extensionList)
-                (Get-Content "$msiProductFile") -replace '(?<A><RegistryValue Name="AppliesTo" Value=").+(?<B>" Type=.+)', "`${A}$regValue`${B}" | Out-File "$msiProductFile"
-            }
-
-            Write-Output "Building: $runtime MSI Installer"
-
-
-            # Clean and build MSI
-            Remove-Item "$installerPath\obj" -Recurse -ErrorAction Ignore
-            Remove-Item "$installerPath\bin" -Recurse -ErrorAction Ignore
-            Invoke-Expression "& $msbuild '$installerPath\$installer.wixproj'"
-
-            Write-Output "Copying $runtime MSI to: $msiTargetFile"
-            Copy-Item $msiOutputFile $msiTargetFile
-
-            Write-Output "Took: $($deployStopWatch.Elapsed)
-            ################################
-            "
+            $extKey = "System.FileName:&quot;*.$($ext.Extension.ToLowerInvariant())&quot;";
+            if($extensionList.Contains($extKey)) { continue; } # Already here
+            $extensionList.Add($extKey);
         }
-        else {
-            Write-Error "MSI build is enabled but can't run due the msbuild.exe path was not found."
+
+        if($extensionList.Count -gt 0)
+        {
+            $regValue = [String]::Join(' OR ', $extensionList)
+            (Get-Content "$msiProductFile") -replace '(?<A><RegistryValue Name="AppliesTo" Value=").+(?<B>" Type=.+)', "`${A}$regValue`${B}" | Out-File "$msiProductFile"
         }
+
+        Write-Output "Building: $runtime MSI Installer"
+
+        # Clean and build MSI
+        Remove-Item "$installerPath\obj" -Recurse -ErrorAction Ignore
+        Remove-Item "$installerPath\bin" -Recurse -ErrorAction Ignore
+
+        dotnet build "$installerPath" -c $buildWith -p:Platform=x64 -p:ProductVersion="$version" -p:HarvestPath="$msiSourceFiles"
+
+        Write-Output "Copying $runtime MSI to: $msiTargetFile"
+        Copy-Item $msiOutputFile $msiTargetFile
+
+        Write-Output "Took: $($deployStopWatch.Elapsed)"
+        Write-Output "################################"
+        Write-Output ""
     }
-    #else {
-    #    Write-Error "MSI build is enabled but the runtime '$runtime' is not found."
-    #}
-    
 }
 
 

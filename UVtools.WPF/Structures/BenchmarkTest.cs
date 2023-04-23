@@ -6,22 +6,69 @@
  *  of this license document, but changing it is not allowed.
  */
 
+using System.Collections;
+using System.Collections.Generic;
 using UVtools.WPF.Windows;
 
 namespace UVtools.WPF.Structures;
 
+public sealed class BenchmarkMachine: IReadOnlyList<BenchmarkTestResult>
+{
+    public string CPU { get; init; }
+    public string RAM { get; init; }
+
+    public BenchmarkTestResult[] Tests { get; init; }
+
+    public BenchmarkMachine(string cpu, string ram, BenchmarkTestResult[] tests)
+    {
+        CPU = cpu;
+        RAM = ram;
+        Tests = tests;
+    }
+
+    public override string ToString()
+    {
+        return $"{CPU}\n{RAM}";
+    }
+
+    public IEnumerator<BenchmarkTestResult> GetEnumerator()
+    {
+        return (IEnumerator<BenchmarkTestResult>)Tests.GetEnumerator();
+    }
+
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return Tests.GetEnumerator();
+    }
+
+    public int Count => Tests.Length;
+
+    public BenchmarkTestResult this[int index] => Tests[index];
+}
+
+public sealed class BenchmarkTestResult
+{
+    public float SingleThreadResult { get; init; }
+    public float MultiThreadResult { get; init; }
+
+    public BenchmarkTestResult()
+    {
+    }
+
+    public BenchmarkTestResult(float singleThreadResult, float multiThreadResult)
+    {
+        SingleThreadResult = singleThreadResult;
+        MultiThreadResult = multiThreadResult;
+    }
+}
+
 public sealed class BenchmarkTest
 {
-    public const string DEVCPU = "Intel® Core™ i9-9900K @ 3.60 GHz";
-    public const string DEVRAM = "G.SKILL Trident Z 32GB DDR4-3200MHz CL14";
-
-    public BenchmarkTest(string name, string functionName, BenchmarkWindow.BenchmarkResolution resolution, float devSingleThreadResult = 0, float devMultiThreadResult = 0)
+    public BenchmarkTest(string name, string functionName, BenchmarkWindow.BenchmarkResolution resolution)
     {
         Name = name;
         FunctionName = functionName;
         Resolution = resolution;
-        DevSingleThreadResult = devSingleThreadResult;
-        DevMultiThreadResult = devMultiThreadResult;
     }
 
     public string Name { get; }
@@ -29,11 +76,8 @@ public sealed class BenchmarkTest
 
     public BenchmarkWindow.BenchmarkResolution Resolution { get; }
 
-    public float DevSingleThreadResult { get; }
-    public float DevMultiThreadResult { get; }
-
     public override string ToString()
     {
-        return $"{Name}";
+        return Name;
     }
 }

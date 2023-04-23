@@ -302,7 +302,9 @@ public sealed class ClipboardManager : BindableBase, IList<ClipboardItem>
     }
 
     /// <summary>
-    /// Snapshot layers and prepare manager to collect modified layers with <see cref="Clip"/>
+    /// Snapshot layers and prepare manager to collect modified layers with <see>
+    ///     <cref>Clip</cref>
+    /// </see>
     /// </summary>
     public void Snapshot(Layer[]? layers = null)
     {

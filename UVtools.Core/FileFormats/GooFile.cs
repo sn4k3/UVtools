@@ -338,7 +338,7 @@ public sealed class GooFile : FileFormat
                 mat.FillSpan(ref pixel, stride, color);
             }
 
-            if (consumeRle) EncodedRle = null;
+            if (consumeRle) EncodedRle = null!;
 
             return mat;
         }

@@ -154,4 +154,28 @@ public static class MathExtensions
         return a | b;
     }
 
+    /// <summary>
+    /// Returns sqrt(x<sup>2</sup> + y<sup>2</sup>) without intermediate overflow or underflow.
+    /// </summary>
+    /// <param name="x"></param>
+    /// <param name="y"></param>
+    /// <returns></returns>
+    public static float Hypot(float x, float y) => (float)Math.Sqrt(Math.Pow(x, 2) + Math.Pow(y, 2));
+
+    /// <summary>
+    /// Returns sqrt(x<sup>2</sup> + y<sup>2</sup>) without intermediate overflow or underflow.
+    /// </summary>
+    /// <param name="x"></param>
+    /// <param name="y"></param>
+    /// <returns></returns>
+    public static double Hypot(double x, double y) => Math.Sqrt(Math.Pow(x, 2) + Math.Pow(y, 2));
+
+    /// <summary>
+    /// Returns rad to deg
+    /// </summary>
+    /// <param name="value">Rad value</param>
+    /// <returns></returns>
+    public static float Deg(float value) => (float)(value * 180 / Math.PI);
+    public static double Deg(double value) => value * 180 / Math.PI;
+
 }

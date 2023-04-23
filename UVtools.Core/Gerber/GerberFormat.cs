@@ -34,6 +34,7 @@ public class GerberFormat
     public GerberUnitType UnitType { get; set; } = GerberUnitType.Millimeter;
     public GerberPolarityType Polarity { get; set; } = GerberPolarityType.Dark;
     public GerberMoveType MoveType { get; set; } = GerberMoveType.Linear;
+    public GerberQuadrantMode QuadrantMode { get; set; } = GerberQuadrantMode.MultiQuadrant;
     public MidpointRoundingType SizeMidpointRounding { get; set; } = MidpointRoundingType.AwayFromZero;
 
     public byte CoordinateXIntegers { get; set; } = 3;
@@ -101,6 +102,7 @@ public class GerberFormat
         Aperture? currentAperture = null;
         var regionPoints = new List<Point>();
         bool insideRegion = false;
+
         while (file.ReadLine()?.Trim() is { } line)
         {
             if (line.Length == 0) continue;
@@ -223,6 +225,18 @@ public class GerberFormat
                 //CvInvoke.Imshow("G37", mat);
                 //CvInvoke.WaitKey();
                 regionPoints.Clear();
+                continue;
+            }
+
+            if (line.StartsWith("G74"))
+            {
+                document.QuadrantMode = GerberQuadrantMode.SingleQuadrant;
+                throw new NotImplementedException("Single quadrant mode is not yet implemented. Provide samples and open a request to implement this function.");
+            }
+
+            if (line.StartsWith("G75"))
+            {
+                document.QuadrantMode = GerberQuadrantMode.MultiQuadrant;
                 continue;
             }
 
@@ -401,20 +415,66 @@ public class GerberFormat
                                         document.PositionMmToPx(nowX + xOffset, nowY + yOffset),
                                         document.SizeMmToPx(Math.Abs(xOffset), Math.Abs(xOffset)),
                                         0, 0, 360.0, document.PolarityColor,
-                                        document.SizeMmToPx(circleAperture.Diameter),
+                                        EmguExtensions.CorrectThickness(document.SizeMmToPx(circleAperture.Diameter)),
                                         enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected
                                     );
                                 }
                                 else
                                 {
-                                    // TODO: Fix this
-                                    throw new NotImplementedException("Partial arcs are not yet implemented (G03)\nTo be fixed in the future...");
-                                    /*CvInvoke.Ellipse(mat, new Point((int)((nowX + xOffset) * xyPpmm.Width), (int)((currentY) * xyPpmm.Height)),
-                                        new Size((int)(Math.Abs(xOffset) * xyPpmm.Width), (int)(Math.Abs(yOffset) * xyPpmm.Width)),
-                                        0, Math.Abs(currentY - nowY), 360.0 / Math.Abs(currentX - nowX), document.PolarityColor,
-                                        (int)(circleAperture.Diameter * xyPpmm.Max()),
-                                        enableAntialiasing ? LineType.AntiAlias : LineType.EightConnected
-                                    );*/
+                                    
+                                    // Calculate center point and radius
+                                    double realCenterX = currentX + xOffset;
+                                    double realCenterY = currentY - yOffset;
+                                    double gerberCenterY = currentY + yOffset;
+                                    double radius = MathExtensions.Hypot(xOffset, yOffset);
+                                    //double radius = Math.Sqrt(Math.Pow(currentX - realCenterX, 2) + Math.Pow(currentY - currentY + yOffset, 2));
+
+                                    // Calculate the angle between the start and end points and the center point
+                                    // Both I and J need to be negated to represent the vector to the start point FROM the arc center
+                                    // BUT the Y-coord also needs to be negated back again (!) due opposing coordinate systems of Gerber (+y-up) and C# (+y-down)
+                                    double angleStart = Math.Atan2(yOffset, -xOffset) * 180 / Math.PI;
+                                    double angleEnd = Math.Atan2(nowY - currentY + yOffset, nowX - realCenterX) * 180 / Math.PI;
+                                    
+                                    if (document.MoveType == GerberMoveType.Arc)
+                                    {
+                                        // For CW arcs, angleEnd must be greater than angleStart...
+                                        if (angleEnd < angleStart) angleEnd += 360;
+                                    }
+                                    else
+                                    {
+                                        // For CCW arcs, angleEnd must be less than angleStart...
+                                        if (angleEnd > angleStart) angleEnd -= 360;
+                                    }
+
+                                    // Calculate the angle difference between the start and end points
+                                    double angleDiff = angleEnd - angleStart;
+                                    double angleSpan = angleStart + angleDiff;
+                                    if (angleSpan == 0) angleSpan = 360;
+                                    
+                                    CvInvoke.Ellipse(mat, document.PositionMmToPx(realCenterX, realCenterY),
+                                        document.SizeMmToPx(radius, radius), 
+                                        0, document.MoveType == GerberMoveType.ArcCounterClockwise ? angleStart : -angleStart, document.MoveType == GerberMoveType.ArcCounterClockwise ? angleSpan : -angleSpan, document.PolarityColor,
+                                        EmguExtensions.CorrectThickness(document.SizeMmToPx(circleAperture.Diameter)),
+                                        enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected
+                                    );
+
+
+                                    /*CvInvoke.Circle(mat, document.PositionMmToPx(currentX, currentY), 5, new MCvScalar(127), -1);
+                                    CvInvoke.Circle(mat, document.PositionMmToPx(nowX, nowY), 5, new MCvScalar(127), -1);
+                                    CvInvoke.Circle(mat, document.PositionMmToPx(centerX, centerY), 5, new MCvScalar(127), -1);
+
+                                    arcs++;
+                                    CvInvoke.PutText(mat, $"{arcs}", document.PositionMmToPx(centerX, centerY), FontFace.HersheyDuplex, 2, new MCvScalar(190), 2);
+                                    */
+
+                                    //CvInvoke.Imshow("mat", mat);
+                                    //CvInvoke.WaitKey();
+                                    /*Debug.WriteLine($"{arcs}:");
+                                    Debug.WriteLine($"Start:  X:{currentX} Y:{currentY}");
+                                    Debug.WriteLine($"End:    X:{nowX} Y:{nowY}");
+                                    Debug.WriteLine($"Offset: X:{xOffset} Y:{yOffset}");
+                                    Debug.WriteLine(line);
+                                    Debug.WriteLine("---------------------");*/
                                 }
 
                             }

@@ -68,7 +68,6 @@ public class ConsoleMessageBoxStandard : AbstractMessageBoxStandard
             {
                 case MessageButtons.Ok:
                     /*if (line is "ok" or "y" or "yes") */return Task.FromResult(MessageButtonResult.Ok);
-                    break;
                 case MessageButtons.OkCancel:
                     if (string.IsNullOrWhiteSpace(line)) continue;
                     if (line is "ok" or "y" or "yes") return Task.FromResult(MessageButtonResult.Ok);
@@ -102,8 +101,6 @@ public class ConsoleMessageBoxStandard : AbstractMessageBoxStandard
 
             //Console.Write("\b\b -- Invalid option!");
         }
-
-        return Task.FromResult(MessageButtonResult.Cancel);
     }
     #endregion
 }

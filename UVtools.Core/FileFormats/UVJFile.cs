@@ -11,6 +11,7 @@ using Emgu.CV.CvEnum;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Text.Json;
@@ -33,13 +34,13 @@ public sealed class UVJFile : FileFormat
 
     #region Sub Classes
 
-    public class Millimeter
+    public sealed class Millimeter
     {
         public float X { get; set; }
         public float Y { get; set; }
     }
 
-    public class Size
+    public sealed class Size
     {
         public ushort X { get; set; }
         public ushort Y { get; set; }
@@ -55,7 +56,7 @@ public sealed class UVJFile : FileFormat
         }
     }
 
-    public class Exposure
+    public sealed class Exposure
     {
         public float LightOnTime { get; set; }
         public float LightOffTime { get; set; }
@@ -75,7 +76,7 @@ public sealed class UVJFile : FileFormat
         }
     }
 
-    public class Bottom
+    public sealed class Bottom
     {
         public float LightOffTime { get; set; }
         public float LightOnTime { get; set; }
@@ -96,7 +97,19 @@ public sealed class UVJFile : FileFormat
         }
     }
 
-    public class LayerDef
+    public sealed class UVtoolsVendor
+    {
+        public string Version { get; set; } = About.VersionStr;
+        public string FirstModified = DateTime.UtcNow.ToString(CultureInfo.InvariantCulture);
+        public string LastModified = DateTime.UtcNow.ToString(CultureInfo.InvariantCulture);
+
+        public void Update()
+        {
+            LastModified = DateTime.UtcNow.ToString(CultureInfo.InvariantCulture);
+        }
+    }
+
+    public sealed class LayerDef
     {
         public float Z { get; set; }
         public Exposure Exposure { get; set; } = new();
@@ -145,11 +158,16 @@ public sealed class UVJFile : FileFormat
         }
     }
 
-    public class Properties
+    public sealed class Properties
     {
         public Size Size { get; set; } = new ();
         public Exposure Exposure { get; set; } = new ();
         public Bottom Bottom { get; set; } = new ();
+        /*public Dictionary<string, dynamic> Vendor { get; set; } = new()
+        {
+            {About.Software, new UVtoolsVendor()}
+        };*/
+
         public byte AntiAliasLevel { get; set; } = 1;
 
         public override string ToString()
@@ -158,7 +176,7 @@ public sealed class UVJFile : FileFormat
         }
     }
 
-    public class Settings
+    public sealed class Settings
     {
         public Properties Properties { get; set; } = new();
         public List<LayerDef>? Layers { get; set; } = new();
@@ -501,7 +519,6 @@ public sealed class UVJFile : FileFormat
         }
 
         JsonSettings = JsonSerializer.Deserialize<Settings>(entry.Open())!;
-                
         Init(JsonSettings.Properties.Size.Layers, DecodeType == FileDecodeType.Partial);
 
         entry = inputFile.GetEntry(FilePreviewTinyName);

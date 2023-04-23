@@ -1,4 +1,12 @@
-- (Improvement) Increase `PixelSize`, `PixelWdith` and `PixelHeight` precision from 3 to 4 decimals (#684)
-- (Improvement) Suggestion wait time before/after cure: When unable to set time per layer and/or per bottom and normal layers it will show a simpler message with just one time that it can apply
-- (Fix) Unable to apply the wait time before cure suggestion in some formats due incorrectly check for the wait time after cure availability (#686)
+- **Benchmark tool:**
+  - (Add) Reference machine Intel� Core� i9-13900K @ 5.5 GHz
+  - (Improvement) Layout and arrangement
+- **Windows MSI:**
+  - (Improvement) Move registry keys from HKCU to HKLM
+  - (Improvement) Sign MSI package
+  - (Upgrade) Windows MSI: Wix 3 to 4
+- (Fix) SL1: Change `SupportPillarWideningFactor` from ushort to float
+- (Fix) PCB exposure: Implement G02 and G03 arcs (#692)
+- (Upgrade) .NET from 6.0.15 to 6.0.16
+- (Upgrade) openCV from 4.6.0 to 4.7.0
 

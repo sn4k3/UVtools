@@ -13,109 +13,113 @@
 
   <Grid RowDefinitions="Auto,10,
     Auto,10,
-    Auto,10,
-    Auto,20,
-    Auto,10,
     Auto,20,
     Auto">
-  <Border
-      Background="{DynamicResource LightBackground}"
-    Padding="10"
-    BorderBrush="Black"
-    BorderThickness="1">
+  <Border Background="{DynamicResource LightBackground}"
+          Padding="10"
+          BorderBrush="Black"
+          BorderThickness="1">
     <TextBox Classes="TransparentReadOnlyMultiLineNoBorder" Text="{Binding Description}"/>
     
   </Border>
 
-    <Grid
-      ColumnDefinitions="Auto,10,*"
-      Grid.Row="2"
-      Margin="10">
+    <Grid RowDefinitions="Auto,10,Auto,10,Auto" ColumnDefinitions="Auto,10,*"
+          Grid.Row="2"
+          Margin="10">
 
-      <TextBlock
-        VerticalAlignment="Center"
-        Text="Test:"/>
-      <ComboBox
-        Grid.Column="2"
-        HorizontalAlignment="Stretch"
-        SelectedIndex="{Binding TestSelectedIndex}"
-        Items="{Binding Tests}"
-        IsEnabled="{Binding !IsRunning}"/>
+        <TextBlock  Grid.Row="0" Grid.Column="0"
+                    VerticalAlignment="Center"
+                    Text="Your CPU:"/>
+
+        <TextBox Grid.Row="0" Grid.Column="2"
+                 Text="{Binding ProcessorName}"
+                 Classes="ReadOnly"
+                 Watermark="Processor:"
+                 UseFloatingWatermark="True"/>
+
+        <TextBlock Grid.Row="2" Grid.Column="0"
+                   VerticalAlignment="Center"
+                   Text="Reference:"/>
+        <ComboBox Grid.Row="2" Grid.Column="2"
+                  HorizontalAlignment="Stretch"
+                  SelectedIndex="{Binding ReferenceSelectedIndex}"
+                  Items="{Binding BenchmarkMachines}"
+                  IsEnabled="{Binding !IsRunning}"/>
+
+		<TextBlock Grid.Row="4" Grid.Column="0"
+                   VerticalAlignment="Center"
+                   Text="Benchmark:"/>
+      <ComboBox Grid.Row="4" Grid.Column="2"
+                HorizontalAlignment="Stretch"
+                SelectedIndex="{Binding TestSelectedIndex}"
+                Items="{Binding Tests}"
+                IsEnabled="{Binding !IsRunning}"/>
     </Grid>
 
-    <TextBlock
-      Margin="10,0"
-      Grid.Row="4"
-      FontWeight="Bold" Text="Your results:"/>
+	  <Grid Grid.Row="4"
+			RowDefinitions="Auto,10,Auto,10,Auto,20,Auto,10,Auto"
+			ColumnDefinitions="*,5,*"
+			Margin="10,0">
 
-    <Grid
-    Grid.Row="6"  
-    ColumnDefinitions="Auto,5,Auto"
-    RowDefinitions="Auto,5,Auto"
-    Margin="10,0">
-      <TextBlock 
-        HorizontalAlignment="Right"
-        Text="Single Thread:" />
-      <TextBlock
-        Grid.Column="2"
-        Text="{Binding SingleThreadTDPS}"/>
+		  <TextBlock Grid.Row="0"
+                     FontWeight="Bold" Text="Your results:"/>
 
-      <TextBlock
-        Grid.Row="2"
-        HorizontalAlignment="Right"
-        Text="Multi Thread:" />
-      <TextBlock
-        Grid.Row="2"
-        Grid.Column="2"
-        Text="{Binding MultiThreadTDPS}"/>
-    </Grid>
+        <TextBox Grid.Row="2" Grid.Column="0"
+                 Classes="TransparentReadOnly"
+                 UseFloatingWatermark="True"
+                 Watermark="Single thread"
+                 Text="{Binding SingleThreadTDPS}"/>
 
-    <TextBlock
-      Margin="10,0"
-      Grid.Row="8"
-      FontWeight="Bold" Text="Developer results:"/>
+		<TextBox Grid.Row="2" Grid.Column="2"
+                 Classes="TransparentReadOnly"
+                 UseFloatingWatermark="True"
+                 Watermark="Multi thread"
+                 Text="{Binding MultiThreadTDPS}"/>
 
-    <Grid
-    Grid.Row="10"
-    ColumnDefinitions="Auto,5,Auto"
-    RowDefinitions="Auto,5,Auto"
-    Margin="10,0"
-    >
-      <TextBlock
-        HorizontalAlignment="Right"
-        Text="Single Thread:" />
-      <TextBlock
-        Grid.Column="2"
-        Text="{Binding DevSingleThreadTDPS}"/>
+          <ProgressBar Grid.Row="4" Grid.Column="0"
+                       Name="SingleThreadDiffProgressBar"
+                       Value="{Binding SingleThreadDiffValue}"
+                       Maximum="{Binding SingleThreadDiffMaxValue}"
+                       Foreground="{Binding SingleThreadDiffForeground}"
+                       ShowProgressText="True"/>
 
-      <TextBlock
-        Grid.Row="2"
-        HorizontalAlignment="Right"
-        Text="Multi Thread:" />
-      <TextBlock
-        Grid.Row="2"
-        Grid.Column="2"
-        Text="{Binding DevMultiThreadTDPS}"/>
-    </Grid>
+		  <ProgressBar Grid.Row="4" Grid.Column="2"
+                       Name="MultiThreadDiffProgressBar"
+                       Value="{Binding MultiThreadDiffValue}"
+                       Maximum="{Binding MultiThreadDiffMaxValue}"
+                       Foreground="{Binding MultiThreadDiffForeground}"
+                       ShowProgressText="True"/>
 
-    <Grid
-    Grid.Row="12"
-    ColumnDefinitions="*,Auto"
-    >
-      <ProgressBar
-         IsIndeterminate="{Binding IsRunning}"
-         IsEnabled="{Binding IsRunning}"
-         VerticalAlignment="Stretch"/>
+          <TextBlock Grid.Row="6" Grid.Column="0"
+                     FontWeight="Bold" Text="Developer results:"/>
 
-      <Button 
-        Name="StartStopButton"
-        Grid.Column="1"
-        Padding="40,10"
-        IsDefault="True"
-        Content="{Binding StartStopButtonText}"
-        Command="{Binding StartStop}"/>
+          <TextBox Grid.Row="8" Grid.Column="0"
+                   Classes="TransparentReadOnly"
+                   UseFloatingWatermark="True"
+                   Watermark="Single thread"
+                   Text="{Binding DevSingleThreadTDPS}"/>
+
+          <TextBox Grid.Row="8" Grid.Column="2"
+                   Classes="TransparentReadOnly"
+                   UseFloatingWatermark="True"
+                   Watermark="Multi thread"
+                   Text="{Binding DevMultiThreadTDPS}"/>
+	  </Grid>
+
+
+    <Grid Grid.Row="6"
+          ColumnDefinitions="*,Auto">
+      <ProgressBar IsIndeterminate="{Binding IsRunning}"
+                   IsEnabled="{Binding IsRunning}"
+                   VerticalAlignment="Stretch"/>
+
+      <Button Name="StartStopButton"
+              Grid.Column="1"
+              Padding="40,10"
+              IsDefault="True"
+              Content="{Binding StartStopButtonText}"
+              Command="{Binding StartStop}"/>
       
     </Grid>
-
   </Grid>
 </controls:WindowEx>

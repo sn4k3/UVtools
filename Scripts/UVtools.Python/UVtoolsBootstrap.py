@@ -15,7 +15,7 @@ if platform.system() == 'Windows':
     try:
         import winreg
 
-        key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, r'Software\UVtools', 0, winreg.KEY_READ)
+        key = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, r'Software\UVtools', 0, winreg.KEY_READ)
         UVTOOLS_PATH = winreg.QueryValueEx(key, 'InstallDir')[0]
         if key:
             winreg.CloseKey(key)

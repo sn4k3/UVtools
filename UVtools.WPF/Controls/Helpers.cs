@@ -60,7 +60,7 @@ public static class Helpers
                 "bmp",
             }
         },
-        new()
+        /*new()
         {
             Name = "TIF Files",
             Extensions = new List<string>
@@ -68,7 +68,7 @@ public static class Helpers
                 "tif",
                 "tiff",
             }
-        },
+        },*/
     };
 
     public static readonly List<FileDialogFilter> PngFileFilter = new()

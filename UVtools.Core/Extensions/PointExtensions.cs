@@ -13,6 +13,13 @@ namespace UVtools.Core.Extensions;
 public static class PointExtensions
 {
     public static double FindLength(Point start, Point end) => Math.Sqrt(Math.Pow(end.Y - start.Y, 2) + Math.Pow(end.X - start.X, 2));
+    public static double GetAngleRad(Point start, Point end)
+    {
+        var angle = Math.Atan2(start.Y - end.Y, end.X - start.X);
+        return angle < 0 ? Math.PI * 2 + angle : angle;
+    }
+
+    public static double GetAngleDeg(Point start, Point end) => (180 / Math.PI) * GetAngleRad(start, end);
 
     public static bool IsAnyNegative(this Point point) => point.X < 0 || point.Y < 0;
     public static bool IsBothNegative(this Point point) => point is {X: < 0, Y: < 0};

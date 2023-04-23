@@ -1085,7 +1085,10 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
     public bool IsUsingTSMC => LiftHeight2 > 0 || RetractHeight2 > 0;
 
     /// <summary>
-    /// Gets tree contours cache for this layer, however should call <see cref="GetContours"/> instead with <see cref="LayerMat"/> instance.  
+    /// Gets tree contours cache for this layer, however should call <see>
+    ///     <cref>GetContours</cref>
+    /// </see>
+    /// instead with <see cref="LayerMat"/> instance.  
     /// If not set it will calculate contours first
     /// </summary>
     public EmguContours Contours

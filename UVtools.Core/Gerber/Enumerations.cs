@@ -52,3 +52,11 @@ public enum GerberMoveType : byte
     // G03
     ArcCounterClockwise
 }
+
+public enum GerberQuadrantMode : byte
+{
+    // G74
+    SingleQuadrant,
+    // G75
+    MultiQuadrant
+}

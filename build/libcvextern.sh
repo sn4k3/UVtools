@@ -170,8 +170,8 @@ if [ "$osVariant" == "macOS" ]; then
     if [ "$build_package" == "mini" ]; then
         searchFor='$FREETYPE_OPTION'
         sed -i '' "s/$searchFor/$searchFor \\\\\\
-       -DWITH_AVFOUNDATION:BOOL=FALSE \\\\\\
        -DWITH_EIGEN:BOOL=FALSE \\\\\\
+       -DWITH_AVFOUNDATION:BOOL=FALSE \\\\\\
        -DWITH_FFMPEG:BOOL=FALSE \\\\\\
        -DWITH_GSTREAMER:BOOL=FALSE \\\\\\
        -DWITH_1394:BOOL=FALSE \\\\\\
@@ -184,7 +184,7 @@ else # Linux
 	sed -i "s/-DBUILD_TIFF:BOOL=TRUE/-DBUILD_TIFF:BOOL=FALSE/g" "$directory/platforms/ubuntu/22.04/cmake_configure" 2>/dev/null
     if [ "$build_package" == "mini" ]; then
         searchFor='-DWITH_EIGEN:BOOL=TRUE'
-	    sed -i "s/$searchFor/-DWITH_EIGEN:BOOL=FALSE \\\\\\
+        sed -i "s/$searchFor/-DWITH_EIGEN:BOOL=FALSE \\\\\\
        -DWITH_V4L:BOOL=FALSE \\\\\\
        -DWITH_FFMPEG:BOOL=FALSE \\\\\\
        -DWITH_GSTREAMER:BOOL=FALSE \\\\\\

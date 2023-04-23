@@ -351,13 +351,11 @@ dotnet add package UVtools.Core
 The fastest way to compile the project is by run the `build/compile.bat`, however if you wish to develop with visual studio follow the following steps:
 
 1. Install Visual Studio and include .NET development support
-1. Install the .NET 6.0 SDK if not included on previous installation
-   - https://dotnet.microsoft.com/download/dotnet/6.0
-1. Install the Avalonia for Visual Studio:
-   - https://marketplace.visualstudio.com/items?itemName=AvaloniaTeam.AvaloniaVS
+1. Install the [.NET 6.0 SDK](https://dotnet.microsoft.com/download/dotnet/6.0) if not included on previous installation
+1. Install the [Avalonia for Visual Studio](https://marketplace.visualstudio.com/items?itemName=AvaloniaTeam.AvaloniaVS):
 1. Install the Wix Toolset: (Required only for MSI build, **optional**)
-   1. https://wixtoolset.org/releases
-   1. https://marketplace.visualstudio.com/items?itemName=WixToolset.WiXToolset
+   - `dotnet tool install --global wix --version 4.0.0`
+   - [Visual Studio HeatWave extension](https://www.firegiant.com/wix/heatwave)
 1. Open UVtools.sln
 1. Build
 

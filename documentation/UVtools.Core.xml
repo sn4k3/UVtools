@@ -1192,6 +1192,29 @@
             <param name="action"></param>
             <param name="offset"></param>
         </member>
+        <member name="M:UVtools.Core.Extensions.MathExtensions.Hypot(System.Single,System.Single)">
+            <summary>
+            Returns sqrt(x<sup>2</sup> + y<sup>2</sup>) without intermediate overflow or underflow.
+            </summary>
+            <param name="x"></param>
+            <param name="y"></param>
+            <returns></returns>
+        </member>
+        <member name="M:UVtools.Core.Extensions.MathExtensions.Hypot(System.Double,System.Double)">
+            <summary>
+            Returns sqrt(x<sup>2</sup> + y<sup>2</sup>) without intermediate overflow or underflow.
+            </summary>
+            <param name="x"></param>
+            <param name="y"></param>
+            <returns></returns>
+        </member>
+        <member name="M:UVtools.Core.Extensions.MathExtensions.Deg(System.Single)">
+            <summary>
+            Returns rad to deg
+            </summary>
+            <param name="value">Rad value</param>
+            <returns></returns>
+        </member>
         <member name="M:UVtools.Core.Extensions.NumberExtensions.ToByte(System.Boolean)">
             <summary>
             Convert bool to byte (0/1)
@@ -5294,7 +5317,10 @@
         </member>
         <member name="P:UVtools.Core.Layers.Layer.Contours">
             <summary>
-            Gets tree contours cache for this layer, however should call <see cref="M:UVtools.Core.Layers.Layer.GetContours(Emgu.CV.IInputOutputArray,System.Drawing.Point)"/> instead with <see cref="P:UVtools.Core.Layers.Layer.LayerMat"/> instance.  
+            Gets tree contours cache for this layer, however should call <see>
+                <cref>GetContours</cref>
+            </see>
+            instead with <see cref="P:UVtools.Core.Layers.Layer.LayerMat"/> instance.  
             If not set it will calculate contours first
             </summary>
         </member>
@@ -5664,7 +5690,9 @@
         </member>
         <member name="M:UVtools.Core.Managers.ClipboardManager.Snapshot(UVtools.Core.Layers.Layer[])">
             <summary>
-            Snapshot layers and prepare manager to collect modified layers with <see cref="M:UVtools.Core.Managers.ClipboardManager.Clip(System.String,UVtools.Core.Layers.Layer[],System.Boolean)"/>
+            Snapshot layers and prepare manager to collect modified layers with <see>
+                <cref>Clip</cref>
+            </see>
             </summary>
         </member>
         <member name="M:UVtools.Core.Managers.ClipboardManager.Clip(System.String,UVtools.Core.Layers.Layer[],System.Boolean)">

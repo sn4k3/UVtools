@@ -8,21 +8,28 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Threading;
 using System.Threading.Tasks;
+using Avalonia.Media;
 using UVtools.Core.Extensions;
 using UVtools.Core.Layers;
 using UVtools.WPF.Controls;
 using UVtools.WPF.Extensions;
 using UVtools.WPF.Structures;
+using UVtools.Core.SystemOS;
 
 namespace UVtools.WPF.Windows;
 
 public class BenchmarkWindow : WindowEx
 {
+    private int _referenceSelectedIndex;
     private int _testSelectedIndex;
     private string _singleThreadTdps = $"0 {RunsAbbreviation}";
     private string _multiThreadTdps = $"0 {RunsAbbreviation}";
-    private string _devSingleThreadTdps = $"{Tests[0].DevSingleThreadResult} {RunsAbbreviation} ({SingleThreadTests} tests / {Math.Round(SingleThreadTests / Tests[0].DevSingleThreadResult, 2)}s)";
-    private string _devMultiThreadTdps = $"{Tests[0].DevMultiThreadResult} {RunsAbbreviation} ({MultiThreadTests} tests / {Math.Round(MultiThreadTests / Tests[0].DevMultiThreadResult, 2)}s)";
+    private string _devSingleThreadTdps = $"{BenchmarkMachines[0][0].SingleThreadResult} {RunsAbbreviation} ({SingleThreadTests} tests / {Math.Round(SingleThreadTests / BenchmarkMachines[0][0].SingleThreadResult, 2)}s)";
+    private string _devMultiThreadTdps = $"{BenchmarkMachines[0][0].MultiThreadResult} {RunsAbbreviation} ({MultiThreadTests} tests / {Math.Round(MultiThreadTests / BenchmarkMachines[0][0].MultiThreadResult, 2)}s)";
+    private double _singleThreadDiffValue;
+    private double _singleThreadDiffMaxValue = 100;
+    private double _multiThreadDiffValue;
+    private double _multiThreadDiffMaxValue = 100;
     private bool _isRunning;
     private string _startStopButtonText = "Start";
     private const ushort SingleThreadTests = 200;
@@ -36,6 +43,9 @@ public class BenchmarkWindow : WindowEx
     //private readonly RNGCryptoServiceProvider _randomProvider = new();
 
     private CancellationTokenSource _tokenSource;
+    private IBrush _singleThreadDiffForeground;
+    private IBrush _multiThreadDiffForeground;
+
     private CancellationToken _token => _tokenSource.Token;
 
     public enum BenchmarkResolution
@@ -44,47 +54,89 @@ public class BenchmarkWindow : WindowEx
         Resolution8K
     }
 
+    public static BenchmarkMachine[] BenchmarkMachines =>
+        new[]
+        {
+            new BenchmarkMachine("Intel® Core™ i9-13900K @ 5.5 GHz", "G.Skill Trident Z5 32GB DDR5-6400MHz CL32", new []
+            {
+                /*CBBDLP 4K Encode*/    new BenchmarkTestResult(200.0f, 3355.70f),
+                /*CBBDLP 8K Encode*/    new BenchmarkTestResult(49.38f, 847.46f),
+                /*CBT 4K Encode*/       new BenchmarkTestResult(162.60f, 2463.05f),
+                /*CBT 8K Encode*/       new BenchmarkTestResult(39.45f, 617.28f),
+                /*PW0 4K Encode*/       new BenchmarkTestResult(186.92f, 2793.30f),
+                /*PW0 8K Encode*/       new BenchmarkTestResult(45.15f, 678.43f),
+                /*PNG 4K Compress*/     new BenchmarkTestResult(86.96f, 1479.29f),
+                /*PNG 8K Compress*/     new BenchmarkTestResult(22.17f, 369.00f),
+                /*GZip 4K Compress*/    new BenchmarkTestResult(204.08f, 1096.49f),
+                /*GZip 8K Compress*/    new BenchmarkTestResult(45.56f, 264.47f),
+                /*Deflate 4K Compress*/ new BenchmarkTestResult(208.33f, 1084.60f),
+                /*Deflate 8K Compress*/ new BenchmarkTestResult(46.087f, 256.54f),
+                /*LZ4 4K Compress*/     new BenchmarkTestResult(1052.63f, 6666.67f),
+                /*LZ4 8K Compress*/     new BenchmarkTestResult(281.69f, 2155.17f),
+                /*Stress CPU test*/     new BenchmarkTestResult(0f, 0f),
+            }),
+            new BenchmarkMachine("Intel® Core™ i9-9900K @ 5.0 GHz", "G.Skill Trident Z 32GB DDR4-3200MHz CL14", new []
+            {
+                /*CBBDLP 4K Encode*/    new BenchmarkTestResult(108.70f, 912.41f),
+                /*CBBDLP 8K Encode*/    new BenchmarkTestResult(27.47f, 226.76f),
+                /*CBT 4K Encode*/       new BenchmarkTestResult(86.96f, 782.47f),
+                /*CBT 8K Encode*/       new BenchmarkTestResult(21.86f, 196.15f),
+                /*PW0 4K Encode*/       new BenchmarkTestResult(84.03f, 886.53f),
+                /*PW0 8K Encode*/       new BenchmarkTestResult(21.05f, 221.63f),
+                /*PNG 4K Compress*/     new BenchmarkTestResult(55.25f, 501.00f),
+                /*PNG 8K Compress*/     new BenchmarkTestResult(14.28f, 124.10f),
+                /*GZip 4K Compress*/    new BenchmarkTestResult(169.49f, 1506.02f),
+                /*GZip 8K Compress*/    new BenchmarkTestResult(45.77f, 397.47f),
+                /*Deflate 4K Compress*/ new BenchmarkTestResult(170.94f, 1592.36f),
+                /*Deflate 8K Compress*/ new BenchmarkTestResult(46.30f, 406.50f),
+                /*LZ4 4K Compress*/     new BenchmarkTestResult(665.12f, 2762.43f),
+                /*LZ4 8K Compress*/     new BenchmarkTestResult(148.15f, 907.44f),
+                /*Stress CPU test*/     new BenchmarkTestResult(0f, 0f),
+            })
+        };
+
     public static BenchmarkTest[] Tests =>
         new[]
         {
-            new BenchmarkTest("CBBDLP 4K Encode", "TestCBBDLPEncode", BenchmarkResolution.Resolution4K, 108.70f, 912.41f),
-            new BenchmarkTest("CBBDLP 8K Encode", "TestCBBDLPEncode", BenchmarkResolution.Resolution8K, 27.47f, 226.76f),
-            new BenchmarkTest("CBT 4K Encode", "TestCBTEncode", BenchmarkResolution.Resolution4K, 86.96f, 782.47f),
-            new BenchmarkTest("CBT 8K Encode", "TestCBTEncode", BenchmarkResolution.Resolution8K, 21.86f, 196.15f),
-            new BenchmarkTest("PW0 4K Encode", "TestPW0Encode",BenchmarkResolution.Resolution4K,  84.03f, 886.53f),
-            new BenchmarkTest("PW0 8K Encode", "TestPW0Encode", BenchmarkResolution.Resolution8K, 21.05f, 221.63f),
+            new BenchmarkTest("CBBDLP 4K Encode", "TestCBBDLPEncode", BenchmarkResolution.Resolution4K),
+            new BenchmarkTest("CBBDLP 8K Encode", "TestCBBDLPEncode", BenchmarkResolution.Resolution8K),
+            new BenchmarkTest("CBT 4K Encode", "TestCBTEncode", BenchmarkResolution.Resolution4K),
+            new BenchmarkTest("CBT 8K Encode", "TestCBTEncode", BenchmarkResolution.Resolution8K),
+            new BenchmarkTest("PW0 4K Encode", "TestPW0Encode", BenchmarkResolution.Resolution4K),
+            new BenchmarkTest("PW0 8K Encode", "TestPW0Encode", BenchmarkResolution.Resolution8K),
             
-            new BenchmarkTest("PNG 4K Compress", "TestPNGCompress", BenchmarkResolution.Resolution4K, 55.25f, 501.00f),
-            //new BenchmarkTest("PNG 4K Decompress", "TestPNGDecompress", BenchmarkResolution.Resolution4K, 4.07f, 26.65f),
-            new BenchmarkTest("PNG 8K Compress", "TestPNGCompress", BenchmarkResolution.Resolution8K, 14.28f, 124.10f),
-            //new BenchmarkTest("PNG 8K Decompress", "TestPNGDecompress", BenchmarkResolution.Resolution8K, 4.07f, 26.65f),
+            new BenchmarkTest("PNG 4K Compress", "TestPNGCompress", BenchmarkResolution.Resolution4K),
+            new BenchmarkTest("PNG 8K Compress", "TestPNGCompress", BenchmarkResolution.Resolution8K),
 
-            new BenchmarkTest("GZip 4K Compress", "TestGZipCompress", BenchmarkResolution.Resolution4K, 169.49f, 1506.02f),
-            //new BenchmarkTest("GZip 4K Decompress", "TestGZipDecompress", BenchmarkResolution.Resolution4K, 4.07f, 26.65f),
-            new BenchmarkTest("GZip 8K Compress", "TestGZipCompress", BenchmarkResolution.Resolution8K, 45.77f, 397.47f),
-            //new BenchmarkTest("GZip 8K Decompress", "TestGZipDecompress", BenchmarkResolution.Resolution8K, 4.07f, 26.65f),
+            new BenchmarkTest("GZip 4K Compress", "TestGZipCompress", BenchmarkResolution.Resolution4K),
+            new BenchmarkTest("GZip 8K Compress", "TestGZipCompress", BenchmarkResolution.Resolution8K),
 
-            new BenchmarkTest("Deflate 4K Compress", "TestDeflateCompress", BenchmarkResolution.Resolution4K, 170.94f, 1592.36f),
-            //new BenchmarkTest("Deflate 4K Decompress", "TestDeflateDecompress", BenchmarkResolution.Resolution4K, 4.07f, 26.65f),
-            new BenchmarkTest("Deflate 8K Compress", "TestDeflateCompress", BenchmarkResolution.Resolution8K, 46.30f, 406.50f),
-            //new BenchmarkTest("Deflate 8K Decompress", "TestDeflateDecompress", BenchmarkResolution.Resolution8K, 4.07f, 26.65f),
+            new BenchmarkTest("Deflate 4K Compress", "TestDeflateCompress", BenchmarkResolution.Resolution4K),
+            new BenchmarkTest("Deflate 8K Compress", "TestDeflateCompress", BenchmarkResolution.Resolution8K),
 
-            new BenchmarkTest("LZ4 4K Compress", "TestLZ4Compress", BenchmarkResolution.Resolution4K, 665.12f, 2762.43f),
-            //new BenchmarkTest("LZ4 4K Decompress", "TestLZ4Decompress", BenchmarkResolution.Resolution4K, 4.07f, 26.65f),
-            new BenchmarkTest("LZ4 8K Compress", "TestLZ4Compress", BenchmarkResolution.Resolution8K, 148.15f, 907.44f),
-            //new BenchmarkTest("LZ4 8K Decompress", "TestLZ4Decompress", BenchmarkResolution.Resolution8K, 4.07f, 26.65f),
+            new BenchmarkTest("LZ4 4K Compress", "TestLZ4Compress", BenchmarkResolution.Resolution4K),
+            new BenchmarkTest("LZ4 8K Compress", "TestLZ4Compress", BenchmarkResolution.Resolution8K),
 
-            new BenchmarkTest(StressCPUTestName, "TestCBTEncode", BenchmarkResolution.Resolution4K, 0, 0),
+            new BenchmarkTest(StressCPUTestName, "TestCBTEncode", BenchmarkResolution.Resolution4K),
         };
 
-    public string Description  => "Benchmark your machine against pre-defined tests.\n" +
-                                  "This will use all compution power avaliable, CPU will be exhausted.\n" +
-                                  "Run the test while your PC is idle or not in heavy load.\n" +
-                                  "Results are in 'tests done per second' (TDPS)\n" +
-                                  "\n" +
-                                  "To your reference you are competing against developer system:\n"+
-                                  $"CPU: {BenchmarkTest.DEVCPU}\n" +
-                                  $"RAM: {BenchmarkTest.DEVRAM}";
+    public string Description => "Benchmark your machine against pre-defined tests.\n" +
+                                 "This will use all computation power available, CPU will be exhausted.\n" +
+                                 "Run the test while your PC is idle or not in heavy load.\n" +
+                                 "Results are in 'tests done per second' (TDPS)";
+
+    public static string ProcessorName => SystemAware.GetProcessorName();
+
+    public int ReferenceSelectedIndex
+    {
+        get => _referenceSelectedIndex;
+        set
+        {
+            if(!RaiseAndSetIfChanged(ref _referenceSelectedIndex, value)) return;
+            UpdateReferenceResults();
+            ResetDifferenceValues();
+        }
+    }
 
     public int TestSelectedIndex
     {
@@ -92,8 +144,10 @@ public class BenchmarkWindow : WindowEx
         set
         {
             if(!RaiseAndSetIfChanged(ref _testSelectedIndex, value)) return;
-            DevSingleThreadTDPS = $"{Tests[_testSelectedIndex].DevSingleThreadResult} {RunsAbbreviation} ({SingleThreadTests} tests / {Math.Round(SingleThreadTests / Tests[_testSelectedIndex].DevSingleThreadResult, 2)}s)";
-            DevMultiThreadTDPS = $"{Tests[_testSelectedIndex].DevMultiThreadResult} {RunsAbbreviation} ({MultiThreadTests} tests / {Math.Round(MultiThreadTests / Tests[_testSelectedIndex].DevMultiThreadResult, 2)}s)";
+            UpdateReferenceResults();
+            ResetDifferenceValues();
+            SingleThreadTDPS = $"0 {RunsAbbreviation}";
+            MultiThreadTDPS = $"0 {RunsAbbreviation}";
         }
     }
 
@@ -119,6 +173,42 @@ public class BenchmarkWindow : WindowEx
     {
         get => _devMultiThreadTdps;
         set => RaiseAndSetIfChanged(ref _devMultiThreadTdps, value);
+    }
+
+    public double SingleThreadDiffValue
+    {
+        get => _singleThreadDiffValue;
+        set => RaiseAndSetIfChanged(ref _singleThreadDiffValue, value);
+    }
+
+    public double SingleThreadDiffMaxValue
+    {
+        get => _singleThreadDiffMaxValue;
+        set => RaiseAndSetIfChanged(ref _singleThreadDiffMaxValue, value);
+    }
+
+    public double MultiThreadDiffValue
+    {
+        get => _multiThreadDiffValue;
+        set => RaiseAndSetIfChanged(ref _multiThreadDiffValue, value);
+    }
+
+    public double MultiThreadDiffMaxValue
+    {
+        get => _multiThreadDiffMaxValue;
+        set => RaiseAndSetIfChanged(ref _multiThreadDiffMaxValue, value);
+    }
+
+    public IBrush SingleThreadDiffForeground
+    {
+        get => _singleThreadDiffForeground;
+        set => RaiseAndSetIfChanged(ref _singleThreadDiffForeground, value);
+    }
+
+    public IBrush MultiThreadDiffForeground
+    {
+        get => _multiThreadDiffForeground;
+        set => RaiseAndSetIfChanged(ref _multiThreadDiffForeground, value);
     }
 
     public string StartStopButtonText
@@ -169,7 +259,9 @@ public class BenchmarkWindow : WindowEx
             var benchmark = Tests[_testSelectedIndex];
             SingleThreadTDPS = $"Running {SingleThreadTests} tests";
             MultiThreadTDPS = $"Running {MultiThreadTests} tests";
-                
+
+            ResetDifferenceValues();
+
             _tokenSource = new CancellationTokenSource();
             var theMethod = GetType().GetMethod(benchmark.FunctionName);
 
@@ -197,8 +289,8 @@ public class BenchmarkWindow : WindowEx
                     }
 
                     sw.Stop();
-                    var singleMiliseconds = sw.ElapsedMilliseconds;
-                    Dispatcher.UIThread.InvokeAsync(() => UpdateResults(true, singleMiliseconds));
+                    var singleMilliseconds = sw.ElapsedMilliseconds;
+                    Dispatcher.UIThread.InvokeAsync(() => UpdateResults(true, singleMilliseconds));
 
                     if (_token.IsCancellationRequested) _token.ThrowIfCancellationRequested();
 
@@ -210,8 +302,8 @@ public class BenchmarkWindow : WindowEx
 
                     sw.Stop();
 
-                    var multiMiliseconds = sw.ElapsedMilliseconds;
-                    Dispatcher.UIThread.InvokeAsync(() => UpdateResults(false, multiMiliseconds));
+                    var multiMilliseconds = sw.ElapsedMilliseconds;
+                    Dispatcher.UIThread.InvokeAsync(() => UpdateResults(false, multiMilliseconds));
                 }
                 catch (OperationCanceledException)
                 {
@@ -232,15 +324,64 @@ public class BenchmarkWindow : WindowEx
         }
     }
 
+    private void ResetDifferenceValues()
+    {
+        SingleThreadDiffValue = 0;
+        MultiThreadDiffValue = 0;
+        SingleThreadDiffMaxValue = 100;
+        MultiThreadDiffMaxValue = 100;
+        SingleThreadDiffForeground = Avalonia.Media.Brushes.CornflowerBlue;
+        MultiThreadDiffForeground = Avalonia.Media.Brushes.CornflowerBlue;
+    }
+
+    private void UpdateReferenceResults()
+    {
+        if (_referenceSelectedIndex < 0 || _testSelectedIndex < 0) return;
+        DevSingleThreadTDPS = $"{BenchmarkMachines[_referenceSelectedIndex][_testSelectedIndex].SingleThreadResult} {RunsAbbreviation} ({SingleThreadTests} tests / {Math.Round(SingleThreadTests / BenchmarkMachines[_referenceSelectedIndex][_testSelectedIndex].SingleThreadResult, 2)}s)";
+        DevMultiThreadTDPS = $"{BenchmarkMachines[_referenceSelectedIndex][_testSelectedIndex].MultiThreadResult} {RunsAbbreviation} ({MultiThreadTests} tests / {Math.Round(MultiThreadTests / BenchmarkMachines[_referenceSelectedIndex][_testSelectedIndex].MultiThreadResult, 2)}s)";
+    }
+
     private void UpdateResults(bool isSingleThread, long milliseconds)
     {
         decimal seconds = Math.Round(milliseconds / 1000m, 2);
-        //var text = (isSingleThread ? "Single" : "Multi") + $" Thread: {Math.Round(SingleThreadTests / seconds, 2)} OPS ({seconds}s)";
 
         if (isSingleThread)
-            SingleThreadTDPS = $"{Math.Round(SingleThreadTests / seconds, 2)} {RunsAbbreviation} ({SingleThreadTests} tests / {seconds}s)";
+        {
+            var result = (double)Math.Round(SingleThreadTests / seconds, 2);
+            SingleThreadTDPS = $"{result} {RunsAbbreviation} ({SingleThreadTests} tests / {seconds}s)";
+            var diff = BenchmarkMachines[_referenceSelectedIndex][_testSelectedIndex].SingleThreadResult > 0 
+            ? result * 100.0 / BenchmarkMachines[_referenceSelectedIndex][_testSelectedIndex].SingleThreadResult
+            : result;
+
+            SingleThreadDiffForeground = diff switch
+            {
+                < 90 => Avalonia.Media.Brushes.DarkRed,
+                > 110 => Avalonia.Media.Brushes.Green,
+                _ => Avalonia.Media.Brushes.CornflowerBlue
+            };
+
+            SingleThreadDiffMaxValue = Math.Max(100, diff);
+            SingleThreadDiffValue = diff;
+        }
         else
-            MultiThreadTDPS = $"{Math.Round(MultiThreadTests / seconds, 2)} {RunsAbbreviation} ({MultiThreadTests} tests / {seconds}s)";
+        {
+            var result = (double)Math.Round(MultiThreadTests / seconds, 2);
+            MultiThreadTDPS = $"{result} {RunsAbbreviation} ({MultiThreadTests} tests / {seconds}s)";
+
+            var diff = BenchmarkMachines[_referenceSelectedIndex][_testSelectedIndex].MultiThreadResult > 0 
+                ? result * 100.0 / BenchmarkMachines[_referenceSelectedIndex][_testSelectedIndex].MultiThreadResult
+                : result;
+            
+            MultiThreadDiffForeground = diff switch
+            {
+                < 90 => Avalonia.Media.Brushes.DarkRed,
+                > 110 => Avalonia.Media.Brushes.Green,
+                _ => Avalonia.Media.Brushes.CornflowerBlue
+            };
+
+            MultiThreadDiffMaxValue = Math.Max(100, diff);
+            MultiThreadDiffValue = diff;
+        }
     }
 
     #region Tests

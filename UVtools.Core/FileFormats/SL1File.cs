@@ -214,7 +214,7 @@ public sealed class SL1File : FileFormat
         public float SupportHeadPenetration { get; set; }
         public float SupportHeadWidth { get; set; }
 
-        public ushort SupportPillarWideningFactor { set; get; }
+        public float SupportPillarWideningFactor { set; get; }
         public float SupportPillarDiameter { get; set; }
         public string SupportSmallPillarDiameterPercent { get; set; } = string.Empty;
         public float SupportMaxBridgesOnPillar { get; set; }
@@ -715,7 +715,25 @@ public sealed class SL1File : FileFormat
             //thumbnailIndex++;
         }
 
+        /*
+        if (string.Equals(PrinterSettings.DisplayOrientation, "portrait", StringComparison.OrdinalIgnoreCase))
+        {
+            DecodeLayersFromZip(inputFile, 5, IndexStartNumber.Zero, progress, (_, pngBytes) =>
+            {
+                var mat = new Mat();
+                CvInvoke.Imdecode(pngBytes, ImreadModes.Grayscale, mat);
+                CvInvoke.Rotate(mat, mat, RotateFlags.Rotate90CounterClockwise);
+                return mat;
+            });
+        }
+        else
+        {
+            DecodeLayersFromZip(inputFile, 5, IndexStartNumber.Zero, progress);
+        }
+        */
+
         DecodeLayersFromZip(inputFile, 5, IndexStartNumber.Zero, progress);
+
 
         if (TransitionLayerCount > 0)
         {
