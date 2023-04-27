@@ -24,8 +24,23 @@ public abstract class BindableBase : INotifyPropertyChanged
 
     public event PropertyChangedEventHandler? PropertyChanged
     {
-        add => _propertyChanged += value;
+        add
+        {
+            _propertyChanged -= value;
+            _propertyChanged += value;
+        }
         remove => _propertyChanged -= value;
+    }
+
+    public void ClearPropertyChangedListeners()
+    {
+        _propertyChanged = null;
+        /*var invocationList = _propertyChanged?.GetInvocationList();
+        if (invocationList is null) return;
+        foreach (var t in invocationList)
+        {
+            _propertyChanged -= (PropertyChangedEventHandler)t;
+        }*/
     }
 
     protected bool RaiseAndSetIfChanged<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)

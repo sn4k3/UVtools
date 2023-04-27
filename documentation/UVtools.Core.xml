@@ -2706,6 +2706,12 @@
             True if all layers are using same value parameters as global settings, otherwise false
             </summary>
         </member>
+        <member name="P:UVtools.Core.FileFormats.FileFormat.UsingPerLayerSettings">
+            <summary>
+            True if there are one or more layer(s) using different settings than the global settings, otherwise false
+            <remarks>Same as <see cref="P:UVtools.Core.FileFormats.FileFormat.AllLayersAreUsingGlobalParameters"/> negated</remarks>
+            </summary>
+        </member>
         <member name="P:UVtools.Core.FileFormats.FileFormat.AnyLayerIsUsingTSMC">
             <summary>
             True if any layer is using TSMC, otherwise false when none of layers is using TSMC
@@ -4008,6 +4014,16 @@
             Gets the Y dimension of the preview image, in pixels. 
             </summary>
         </member>
+        <member name="F:UVtools.Core.FileFormats.GooFile.DelayModes.LightOff">
+            <summary>
+            Time with motor movement
+            </summary>
+        </member>
+        <member name="F:UVtools.Core.FileFormats.GooFile.DelayModes.WaitTime">
+            <summary>
+            Absolute time to wait
+            </summary>
+        </member>
         <member name="P:UVtools.Core.FileFormats.GooFile.FileHeader.DelayMode">
             <summary>
              0: Light off delay mode | 1：Wait time mode
@@ -5043,6 +5059,11 @@
         <member name="P:UVtools.Core.Layers.Layer.IsBottomLayer">
             <summary>
             Gets if is in the bottom layer group
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Layers.Layer.IsBottomLayerByHeight">
+            <summary>
+            Gets if is in the bottom layer group by count and height
             </summary>
         </member>
         <member name="P:UVtools.Core.Layers.Layer.IsNormalLayer">

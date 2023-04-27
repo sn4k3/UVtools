@@ -85,7 +85,7 @@ public class ToolMaskControl : ToolControl
             case ToolWindow.Callbacks.Init:
                 ParentWindow.ButtonOkEnabled = false;
                 break;
-            case ToolWindow.Callbacks.Loaded:
+            case ToolWindow.Callbacks.AfterLoadProfile:
             case ToolWindow.Callbacks.ClearROI:
                 Operation.Mask = null;
                 MaskImage = null;

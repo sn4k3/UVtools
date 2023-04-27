@@ -58,7 +58,7 @@ public class CalibrateXYZAccuracyControl : ToolControl
         switch (callback)
         {
             case ToolWindow.Callbacks.Init:
-            case ToolWindow.Callbacks.Loaded:
+            case ToolWindow.Callbacks.AfterLoadProfile:
                 Operation.PropertyChanged += (sender, e) =>
                 {
                     _timer.Stop();

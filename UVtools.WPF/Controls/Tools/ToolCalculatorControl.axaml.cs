@@ -34,7 +34,7 @@ public class ToolCalculatorControl : ToolControl
         switch (callback)
         {
             case ToolWindow.Callbacks.Init:
-            case ToolWindow.Callbacks.Loaded:
+            case ToolWindow.Callbacks.AfterLoadProfile:
                 Operation.CalcLightOffDelay.PropertyChanged += (sender, e) =>
                 {
                     if (e.PropertyName != nameof(Operation.CalcLightOffDelay.LightOffDelay) &&

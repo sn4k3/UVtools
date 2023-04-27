@@ -1,4 +1,5 @@
-﻿using Avalonia.Markup.Xaml;
+﻿using System.ComponentModel;
+using Avalonia.Markup.Xaml;
 using UVtools.Core.Layers;
 using UVtools.Core.Operations;
 using UVtools.WPF.Windows;
@@ -15,7 +16,7 @@ public class ToolLayerCloneControl : ToolControl
         get
         {
             uint extraLayers = Operation.ExtraLayers;
-            return $"Layers: {App.SlicerFile.LayerCount} → {SlicerFile.LayerCount + extraLayers} (+ {extraLayers})";
+            return $"Layers: {SlicerFile.LayerCount} → {SlicerFile.LayerCount + extraLayers} (+ {extraLayers})";
         }
     }
 
@@ -24,7 +25,7 @@ public class ToolLayerCloneControl : ToolControl
         get
         {
             float extraHeight = Operation.KeepSamePositionZ ? 0 : Layer.RoundHeight(Operation.ExtraLayers * SlicerFile.LayerHeight);
-            return $"Height: {App.SlicerFile.PrintHeight}mm → {Layer.RoundHeight(SlicerFile.PrintHeight + extraHeight)}mm (+ {extraHeight}mm)";
+            return $"Height: {SlicerFile.PrintHeight}mm → {Layer.RoundHeight(SlicerFile.PrintHeight + extraHeight)}mm (+ {extraHeight}mm)";
         }
     }
 
@@ -45,13 +46,15 @@ public class ToolLayerCloneControl : ToolControl
         switch (callback)
         {
             case ToolWindow.Callbacks.Init:
-            case ToolWindow.Callbacks.Loaded:
-                Operation.PropertyChanged += (sender, args) =>
-                {
-                    RaisePropertyChanged(nameof(InfoLayersStr));
-                    RaisePropertyChanged(nameof(InfoHeightsStr));
-                };
+            case ToolWindow.Callbacks.AfterLoadProfile:
+                Operation.PropertyChanged += OnPropertyChanged;
                 break;
         }
+    }
+
+    private void OnPropertyChanged(object sender, PropertyChangedEventArgs args)
+    {
+        RaisePropertyChanged(nameof(InfoLayersStr));
+        RaisePropertyChanged(nameof(InfoHeightsStr));
     }
 }

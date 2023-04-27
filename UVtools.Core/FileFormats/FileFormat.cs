@@ -1475,6 +1475,12 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     public bool AllLayersAreUsingGlobalParameters => this.All(layer => layer.IsUsingGlobalParameters);
 
     /// <summary>
+    /// True if there are one or more layer(s) using different settings than the global settings, otherwise false
+    /// <remarks>Same as <see cref="AllLayersAreUsingGlobalParameters"/> negated</remarks>
+    /// </summary>
+    public bool UsingPerLayerSettings => !AllLayersAreUsingGlobalParameters;
+
+    /// <summary>
     /// True if any layer is using TSMC, otherwise false when none of layers is using TSMC
     /// </summary>
     public bool AnyLayerIsUsingTSMC => this.Any(layer => layer.IsUsingTSMC);
@@ -1849,7 +1855,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
 
     public bool IsReadOnly => false;
 
-    public int Count => _layers?.Length ?? 0;
+    public int Count => _layers.Length;
 
     /// <summary>
     /// Gets or sets the layer count
@@ -5552,6 +5558,21 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         var list = _layers.ToList();
         list.AddRange(layers);
         Layers = list.ToArray();
+    }
+
+    public bool ContainsLayer(int layerIndex)
+    {
+        return layerIndex >= 0 && layerIndex < Count;
+    }
+
+    public bool ContainsLayer(uint layerIndex)
+    {
+        return layerIndex < LayerCount;
+    }
+
+    public bool ContainsLayer(Layer layer)
+    {
+        return _layers.Contains(layer);
     }
 
     public bool Contains(Layer layer)

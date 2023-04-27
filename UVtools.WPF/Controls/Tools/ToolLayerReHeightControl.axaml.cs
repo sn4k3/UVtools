@@ -28,7 +28,7 @@ public class ToolLayerReHeightControl : ToolControl
         switch (callback)
         {
             case ToolWindow.Callbacks.Init:
-            case ToolWindow.Callbacks.Loaded:
+            case ToolWindow.Callbacks.AfterLoadProfile:
                 if (ParentWindow is not null) ParentWindow.LayerRangeVisible = Operation.Method == OperationLayerReHeight.OperationLayerReHeightMethod.OffsetPositionZ;
                 Operation.PropertyChanged += (sender, e) =>
                 {

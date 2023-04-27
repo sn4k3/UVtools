@@ -32,7 +32,7 @@ public class WindowEx : Window, INotifyPropertyChanged, IStyleable
 
     public new event PropertyChangedEventHandler PropertyChanged
     {
-        add { _propertyChanged += value; events.Add("added"); }
+        add { _propertyChanged -= value; _propertyChanged += value; events.Add("added"); }
         remove { _propertyChanged -= value; events.Add("removed"); }
     }
 

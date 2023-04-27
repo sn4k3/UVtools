@@ -10,6 +10,7 @@ using Emgu.CV;
 using Emgu.CV.CvEnum;
 using System;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
@@ -281,12 +282,19 @@ public class OperationDoubleExposure : Operation
             layers[i] = SlicerFile[i];
         }
 
+        int bottomLayers = SlicerFile.BottomLayerCount;
+
         Parallel.For(LayerIndexStart, LayerIndexEnd + 1, CoreSettings.GetParallelOptions(progress), layerIndex =>
         {
             progress.PauseIfRequested();
             var firstLayer = SlicerFile[layerIndex];
             var secondLayer = firstLayer.Clone();
             var isBottomLayer = firstLayer.IsBottomLayer;
+
+            if (isBottomLayer)
+            {
+                Interlocked.Increment(ref bottomLayers);
+            }
 
             firstLayer.ExposureTime = (float)( isBottomLayer ? _firstBottomExposure : _firstNormalExposure);
             secondLayer.ExposureTime = (float)(isBottomLayer ? _secondBottomExposure : _secondNormalExposure);
@@ -390,6 +398,7 @@ public class OperationDoubleExposure : Operation
 
         SlicerFile.SuppressRebuildPropertiesWork(() =>
         {
+            SlicerFile.BottomLayerCount = (ushort)bottomLayers;
             SlicerFile.Layers = layers;
         });
 

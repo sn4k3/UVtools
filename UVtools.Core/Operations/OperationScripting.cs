@@ -20,8 +20,18 @@ namespace UVtools.Core.Operations;
 public sealed class OperationScripting : Operation
 {
     #region Members
+    private EventHandler? _onScriptReloaded;
+    public event EventHandler? OnScriptReload
+    {
+        add
+        {
+            _onScriptReloaded = null;
+            //_onScriptReloaded -= value;
+            _onScriptReloaded += value;
+        }
+        remove => _onScriptReloaded -= value;
+    }
 
-    public event EventHandler? OnScriptReload;
     private string? _filePath;
     private string? _scriptText;
     private ScriptState? _scriptState;
@@ -72,10 +82,6 @@ public sealed class OperationScripting : Operation
         if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
         return result;
     }
-
-    #endregion
-
-    #region Enums
 
     #endregion
 
@@ -180,7 +186,7 @@ public sealed class OperationScripting : Operation
         var result = _scriptState.ContinueWithAsync("ScriptInit();").Result;
         
         RaisePropertyChanged(nameof(CanExecute));
-        OnScriptReload?.Invoke(this, EventArgs.Empty);
+        _onScriptReloaded?.Invoke(this, EventArgs.Empty);
     }
 
     protected override bool ExecuteInternally(OperationProgress progress)

@@ -49,7 +49,7 @@ public class ToolDynamicLayerHeightControl : ToolControl
         switch (callback)
         {
             case ToolWindow.Callbacks.Init:
-            case ToolWindow.Callbacks.Loaded:
+            case ToolWindow.Callbacks.AfterLoadProfile:
                 /*Operation.PropertyChanged += (sender, e) =>
                 {
                     if (e.PropertyName.Equals(nameof(Operation.CacheObjectCount)))

@@ -26,7 +26,7 @@ public class CalibrateStressTowerControl : ToolControl
         switch (callback)
         {
             case ToolWindow.Callbacks.Init:
-            case ToolWindow.Callbacks.Loaded:
+            case ToolWindow.Callbacks.AfterLoadProfile:
                 break;
         }
     }*/

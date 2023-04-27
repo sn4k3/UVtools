@@ -143,7 +143,7 @@ public class ToolLayerImportControl : ToolControl
         switch (callback)
         {
             case ToolWindow.Callbacks.Init:
-            case ToolWindow.Callbacks.Loaded:
+            case ToolWindow.Callbacks.AfterLoadProfile:
                 RefreshGUI();
                 Operation.Files.CollectionChanged += (sender, args) => RefreshGUI();
                 Operation.PropertyChanged += (sender, args) => RefreshGUI();

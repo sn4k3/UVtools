@@ -25,7 +25,7 @@ public partial class ToolFadeExposureTimeControl : ToolControl
         switch (callback)
         {
             case ToolWindow.Callbacks.Init:
-            case ToolWindow.Callbacks.Loaded:
+            case ToolWindow.Callbacks.AfterLoadProfile:
                 ParentWindow.LayerIndexEnd = Operation.LayerIndexStart + Operation.LayerCount - 1;
                 Operation.PropertyChanged += (sender, e) =>
                 {

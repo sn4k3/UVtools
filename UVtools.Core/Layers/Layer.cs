@@ -299,29 +299,17 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
     /// <summary>
     /// Gets if is in the bottom layer group
     /// </summary>
-    public bool IsBottomLayer
+    public bool IsBottomLayer => _index < SlicerFile.BottomLayerCount;
+
+    /// <summary>
+    /// Gets if is in the bottom layer group by count and height
+    /// </summary>
+    public bool IsBottomLayerByHeight
     {
         get
         {
             var bottomLayers = SlicerFile.BottomLayerCount;
-            if (_index < bottomLayers) return true;
-
-            // For same positioned layers
-            /*uint layerCount = 1;
-            bool nullFallback = false;
-            for (uint layerIndex = 1; layerIndex < _index && layerCount < bottomLayers; layerIndex++)
-            {
-                if (SlicerFile[layerIndex] is null)
-                {
-                    nullFallback = true;
-                    break;
-                }
-                if (SlicerFile[layerIndex].RelativePositionZ != 0) layerCount++;
-            }
-
-            if (nullFallback) return PositionZ / SlicerFile.LayerHeight <= bottomLayers;
-            return layerCount <= bottomLayers;*/
-            return PositionZ / SlicerFile.LayerHeight <= bottomLayers;
+            return _index < bottomLayers || PositionZ / SlicerFile.LayerHeight <= bottomLayers;
         }
     }
 

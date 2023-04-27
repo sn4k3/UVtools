@@ -36,7 +36,7 @@ struct HEADER {
     float MachineZ <fgcolor=cBlack, bgcolor=cRed>;
     float LayerHeight <fgcolor=cBlack, bgcolor=cRed>;
     float ExposureTime <fgcolor=cBlack, bgcolor=cRed>;
-    enum <ubyte> { WaitTime, LightOffDelay }  DelayMode <fgcolor=cBlack, bgcolor=cRed>; // 1： wait time mode , 0:  light off delay mode
+    enum <ubyte> { LightOffDelay, WaitTime }  DelayMode <fgcolor=cBlack, bgcolor=cRed>; // 0:  light off delay mode | 1： wait time mode 
     float LightOffDelay <fgcolor=cBlack, bgcolor=cRed>;
     float BottomWaitTimeAfterCure <fgcolor=cBlack, bgcolor=cRed>;
     float BottomWaitTimeAfterLift <fgcolor=cBlack, bgcolor=cRed>;

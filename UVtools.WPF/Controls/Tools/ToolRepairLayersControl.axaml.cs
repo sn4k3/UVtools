@@ -62,7 +62,7 @@ public class ToolRepairLayersControl : ToolControl
                 SetFromUserSettings();
                 Operation.IssuesDetectionConfig = App.MainWindow.GetIssuesDetectionConfiguration();
                 break;
-            case ToolWindow.Callbacks.Loaded:
+            case ToolWindow.Callbacks.AfterLoadProfile:
                 Operation.IssuesDetectionConfig = App.MainWindow.GetIssuesDetectionConfiguration();
                 break;
             case ToolWindow.Callbacks.Checkbox1:

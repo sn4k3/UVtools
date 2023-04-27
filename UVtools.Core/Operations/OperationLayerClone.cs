@@ -102,11 +102,6 @@ public sealed class OperationLayerClone : Operation
 
     #region Methods
 
-    void Increment()
-    {
-
-    }
-
     protected override bool ExecuteInternally(OperationProgress progress)
     {
         uint totalClones = (LayerIndexEnd - LayerIndexStart + 1) * Clones;

@@ -18,13 +18,20 @@ public class ToolControl : UserControlEx
         set
         {
             bool wasNullBefore = _baseOperation is null;
+
+            if (!wasNullBefore)
+            {
+                _baseOperation.ClearPropertyChangedListeners();
+                Callback(ToolWindow.Callbacks.BeforeLoadProfile);
+            }
+
             _baseOperation = value;
             _baseOperation.SlicerFile = SlicerFile;
             RaisePropertyChanged();
 
             if (!wasNullBefore)
             {
-                Callback(ToolWindow.Callbacks.Loaded);
+                Callback(ToolWindow.Callbacks.AfterLoadProfile);
             }
 
             if (DataContext is null) return;

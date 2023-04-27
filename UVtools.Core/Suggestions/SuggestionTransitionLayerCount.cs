@@ -54,7 +54,7 @@ public sealed class SuggestionTransitionLayerCount : Suggestion
             var suggestedTransitionLayerCount = TransitionLayerCount;
 
             if (actualTransitionLayerCount == suggestedTransitionLayerCount) return true;
-
+            
             return _applyWhen switch
             {
                 SuggestionApplyWhen.OutsideLimits => actualTransitionLayerCount >= _minimumTransitionLayerCount &&
@@ -86,9 +86,16 @@ public sealed class SuggestionTransitionLayerCount : Suggestion
             var suggestedTransitionDecrementTime = SlicerFile.GetTransitionStepTimeFromLayers(suggestedTransitionLayerCount);
 
             var bottomExposureTime = SlicerFile.LastBottomLayer?.ExposureTime ?? SlicerFile.BottomExposureTime;
-            var exposureTime = SlicerFile.TransitionLayerCount > 0 
-                ? SlicerFile[SlicerFile.BottomLayerCount + SlicerFile.TransitionLayerCount - 1].ExposureTime
-                : SlicerFile[SlicerFile.BottomLayerCount].ExposureTime;
+            var exposureTime = SlicerFile.ExposureTime;
+
+            var layerIndex = SlicerFile.TransitionLayerCount > 0
+                ? SlicerFile.BottomLayerCount + SlicerFile.TransitionLayerCount
+                : SlicerFile.BottomLayerCount;
+
+            if (SlicerFile.ContainsLayer(layerIndex))
+            {
+                exposureTime = SlicerFile[layerIndex].ExposureTime;
+            }
 
             return IsApplied
                 ? $"{GlobalAppliedMessage}: {bottomExposureTime}s » {(actualTransitionDecrementTime <= 0 || actualTransitionLayerCount == 0 ? string.Empty : $"[-{actualTransitionDecrementTime}s/{actualTransitionLayerCount} layers] » ")}{exposureTime}s"
@@ -116,12 +123,18 @@ public sealed class SuggestionTransitionLayerCount : Suggestion
             var suggestedTransitionDecrementTime = SlicerFile.GetTransitionStepTimeFromLayers(suggestedTransitionLayerCount);
 
             var bottomExposureTime = SlicerFile.LastBottomLayer?.ExposureTime ?? SlicerFile.BottomExposureTime;
-            var exposureTime = SlicerFile.TransitionLayerCount > 0
-                ? SlicerFile[SlicerFile.BottomLayerCount + SlicerFile.TransitionLayerCount - 1].ExposureTime
-                : SlicerFile[SlicerFile.BottomLayerCount].ExposureTime;
+            var exposureTime = SlicerFile.ExposureTime;
 
-            return
-                $"{Title}: ({bottomExposureTime}s » {(actualTransitionDecrementTime <= 0 || actualTransitionLayerCount == 0 ? string.Empty : $"[-{actualTransitionDecrementTime}s/{actualTransitionLayerCount} layers] » ")}{exposureTime}s) » ({bottomExposureTime}s » {(suggestedTransitionDecrementTime <= 0 || suggestedTransitionLayerCount == 0 ? string.Empty : $"[-{suggestedTransitionDecrementTime}s/{suggestedTransitionLayerCount} layers] » ")}{exposureTime}s)";
+            var layerIndex = SlicerFile.TransitionLayerCount > 0
+                ? SlicerFile.BottomLayerCount + SlicerFile.TransitionLayerCount
+                : SlicerFile.BottomLayerCount;
+
+            if (SlicerFile.ContainsLayer(layerIndex))
+            {
+                exposureTime = SlicerFile[layerIndex].ExposureTime;
+            }
+
+            return $"{Title}: ({bottomExposureTime}s » {(actualTransitionDecrementTime <= 0 || actualTransitionLayerCount == 0 ? string.Empty : $"[-{actualTransitionDecrementTime}s/{actualTransitionLayerCount} layers] » ")}{exposureTime}s) » ({bottomExposureTime}s » {(suggestedTransitionDecrementTime <= 0 || suggestedTransitionLayerCount == 0 ? string.Empty : $"[-{suggestedTransitionDecrementTime}s/{suggestedTransitionLayerCount} layers] » ")}{exposureTime}s)";
         }
     }
 

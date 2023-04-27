@@ -35,11 +35,6 @@ public class OperationSessionManager : IList<Operation>
 
     #endregion
 
-    #region Properties
-
-        
-    #endregion
-
     #region Constructor
     private OperationSessionManager()
     {
@@ -73,6 +68,7 @@ public class OperationSessionManager : IList<Operation>
         if (item is null) return;
         _operations.RemoveAll(operation => operation.GetType() == item.GetType());
         var operation = item.Clone();
+        operation.ClearPropertyChangedListeners();
         operation.ClearROIandMasks();
         operation.ImportedFrom = Operation.OperationImportFrom.Session;
         _operations.Add(operation);
@@ -112,6 +108,8 @@ public class OperationSessionManager : IList<Operation>
         if (item is null) return;
         _operations.RemoveAll(operation => operation.GetType() == item.GetType());
         var operation = item.Clone();
+        operation.ClearPropertyChangedListeners();
+        operation.ClearROIandMasks();
         operation.ImportedFrom = Operation.OperationImportFrom.Session;
         _operations.Insert(index, operation);
     }

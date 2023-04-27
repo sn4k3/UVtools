@@ -1890,6 +1890,7 @@ public sealed class OperationCalibrateExposureFinder : Operation
 
             var tableGrouped = table.GroupBy(pair => new {pair.Key.LayerHeight, pair.Key.BottomExposure, pair.Key.Exposure}).Distinct();
             SlicerFile.BottomLayerCount = _bottomLayers;
+            ushort bottomLayerCount = 0;
             progress.ItemCount = (uint) (SlicerFile.LayerCount * table.Count); 
             Parallel.For(0, SlicerFile.LayerCount, CoreSettings.GetParallelOptions(progress), layerIndex =>
             {
@@ -1898,6 +1899,7 @@ public sealed class OperationCalibrateExposureFinder : Operation
                 using var mat = layer.LayerMat;
                 var matRoi = new Mat(mat, boundingRectangle);
                 int layerCountOnHeight = (int)(layer.PositionZ / SlicerFile.LayerHeight);
+                bool isBottomLayer = layerCountOnHeight <= _bottomLayers;
                 foreach (var group in tableGrouped)
                 {
                     var newLayer = layer.Clone();
@@ -1955,7 +1957,6 @@ public sealed class OperationCalibrateExposureFinder : Operation
                             }
                         }
                     }
-                        
 
                     newLayer.LayerMat = newMat;
                     parallelLayers.Add(newLayer);
@@ -1969,6 +1970,7 @@ public sealed class OperationCalibrateExposureFinder : Operation
             progress.ResetNameAndProcessed("Optimized layers");
 
             Layer currentLayer = layers[0];
+            if (currentLayer.IsBottomLayerByHeight) bottomLayerCount++;
             for (var layerIndex = 1; layerIndex < layers.Count; layerIndex++)
             {
                 progress.PauseOrCancelIfRequested();
@@ -1978,6 +1980,7 @@ public sealed class OperationCalibrateExposureFinder : Operation
                     currentLayer.ExposureTime != layer.ExposureTime) // Different layers, cache and continue
                 {
                     currentLayer = layer;
+                    if (currentLayer.IsBottomLayerByHeight) bottomLayerCount++;
                     continue;
                 }
 
@@ -1995,6 +1998,7 @@ public sealed class OperationCalibrateExposureFinder : Operation
 
             SlicerFile.SuppressRebuildPropertiesWork(() =>
             {
+                SlicerFile.BottomLayerCount = (ushort)bottomLayerCount;
                 SlicerFile.BottomExposureTime = (float)BottomExposure;
                 SlicerFile.ExposureTime = (float)NormalExposure;
                 SlicerFile.Layers = layers.ToArray();
@@ -2032,7 +2036,9 @@ public sealed class OperationCalibrateExposureFinder : Operation
             if (brightnesses.Length == 0 || !_multipleBrightness) brightnesses = new[] { byte.MaxValue };
 
             ExposureItem? lastExposureItem = null;
-            decimal lastcurrentHeight = 0;
+            decimal lastCurrentHeight = 0;
+
+            ushort bottomLayerCount = 0;
 
             void AddLayer(decimal currentHeight, decimal layerHeight, decimal bottomExposure, decimal normalExposure)
             {
@@ -2051,7 +2057,7 @@ public sealed class OperationCalibrateExposureFinder : Operation
 
                 bool reUseLastLayer =
                     lastExposureItem is not null &&
-                    lastcurrentHeight == currentHeight &&
+                    lastCurrentHeight == currentHeight &&
                     lastExposureItem.LayerHeight == layerHeight &&
                     (
                         (isBottomLayer && lastExposureItem.BottomExposure == bottomExposure || !isBottomLayer && lastExposureItem.Exposure == normalExposure) ||
@@ -2060,7 +2066,7 @@ public sealed class OperationCalibrateExposureFinder : Operation
 
                 using var mat = reUseLastLayer ? newLayers[^1].LayerMat : EmguExtensions.InitMat(SlicerFile.Resolution);
 
-                lastcurrentHeight = currentHeight;
+                lastCurrentHeight = currentHeight;
 
                 foreach (var brightness in brightnesses)
                 {
@@ -2193,8 +2199,10 @@ public sealed class OperationCalibrateExposureFinder : Operation
                         IsModified = true
                     };
                     newLayers.Add(layer);
+
+                    if (isBottomLayer) bottomLayerCount++;
                 }
-                    
+
 
                 progress++;
             }
@@ -2229,7 +2237,7 @@ public sealed class OperationCalibrateExposureFinder : Operation
                 SlicerFile.LayerHeight = (float)LayerHeight;
                 SlicerFile.BottomExposureTime = (float)BottomExposure;
                 SlicerFile.ExposureTime = (float)NormalExposure;
-                SlicerFile.BottomLayerCount = BottomLayers;
+                SlicerFile.BottomLayerCount = bottomLayerCount;
                 SlicerFile.TransitionLayerCount = 0;
                 SlicerFile.Layers = newLayers.ToArray();
             });

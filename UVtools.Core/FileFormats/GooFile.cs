@@ -32,6 +32,21 @@ public sealed class GooFile : FileFormat
 
     #endregion
 
+    #region Enums
+    public enum DelayModes : byte
+    {
+        /// <summary>
+        /// Time with motor movement
+        /// </summary>
+        LightOff = 0,
+
+        /// <summary>
+        /// Absolute time to wait
+        /// </summary>
+        WaitTime = 1
+    }
+    #endregion
+
     #region Sub Classes
 
     public class FileHeader
@@ -64,7 +79,7 @@ public sealed class GooFile : FileFormat
         /// <summary>
         ///  0: Light off delay mode | 1：Wait time mode
         /// </summary>
-        [FieldEndianness(Endianness.Big)] [FieldOrder(25)] public byte DelayMode { get; set; } = 1;
+        [FieldEndianness(Endianness.Big)] [FieldOrder(25)] public DelayModes DelayMode { get; set; } = DelayModes.WaitTime;
         [FieldEndianness(Endianness.Big)] [FieldOrder(26)] public float LightOffDelay { get; set; }
         [FieldEndianness(Endianness.Big)] [FieldOrder(27)] public float BottomWaitTimeAfterCure { get; set; }
         [FieldEndianness(Endianness.Big)] [FieldOrder(28)] public float BottomWaitTimeAfterLift { get; set; }
@@ -670,13 +685,24 @@ public sealed class GooFile : FileFormat
     public override float LightOffDelay
     {
         get => Header.LightOffDelay;
-        set => base.LightOffDelay = Header.LightOffDelay = (float)Math.Round(value, 2);
+        set
+        {
+            base.LightOffDelay = Header.LightOffDelay = (float)Math.Round(value, 2);
+            if (value > 0)
+            {
+                Header.DelayMode = DelayModes.LightOff;
+            }
+        }
     }
 
     public override float BottomWaitTimeBeforeCure
     {
         get => base.BottomWaitTimeBeforeCure > 0 ? base.BottomWaitTimeBeforeCure : this.FirstOrDefault(layer => layer is { IsBottomLayer: true, IsDummy: false })?.WaitTimeBeforeCure ?? 0;
-        set => base.BottomWaitTimeBeforeCure = value;
+        set
+        {
+            base.BottomWaitTimeBeforeCure = value;
+            Header.DelayMode = DelayModes.WaitTime;
+        }
     }
 
 
@@ -691,6 +717,7 @@ public sealed class GooFile : FileFormat
                 BottomLightOffDelay = 0;
                 LightOffDelay = 0;
             }
+            Header.DelayMode = DelayModes.WaitTime;
         }
     }
 
@@ -703,7 +730,11 @@ public sealed class GooFile : FileFormat
     public override float BottomWaitTimeAfterCure
     {
         get => base.BottomWaitTimeAfterCure > 0 ? base.BottomWaitTimeAfterCure : this.FirstOrDefault(layer => layer is { IsBottomLayer: true, IsDummy: false })?.WaitTimeAfterCure ?? 0;
-        set => base.BottomWaitTimeAfterCure = value;
+        set
+        {
+            base.BottomWaitTimeAfterCure = value;
+            Header.DelayMode = DelayModes.WaitTime;
+        }
     }
 
     public override float WaitTimeAfterCure
@@ -717,6 +748,7 @@ public sealed class GooFile : FileFormat
                 BottomLightOffDelay = 0;
                 LightOffDelay = 0;
             }
+            Header.DelayMode = DelayModes.WaitTime;
         }
     }
 
@@ -777,7 +809,11 @@ public sealed class GooFile : FileFormat
     public override float BottomWaitTimeAfterLift
     {
         get => base.BottomWaitTimeAfterLift > 0 ? base.BottomWaitTimeAfterLift : this.FirstOrDefault(layer => layer is { IsBottomLayer: true, IsDummy: false })?.WaitTimeAfterLift ?? 0;
-        set => base.BottomWaitTimeAfterLift = value;
+        set
+        {
+            base.BottomWaitTimeAfterLift = value;
+            Header.DelayMode = DelayModes.WaitTime;
+        }
     }
 
     public override float WaitTimeAfterLift
@@ -791,6 +827,7 @@ public sealed class GooFile : FileFormat
                 BottomLightOffDelay = 0;
                 LightOffDelay = 0;
             }
+            Header.DelayMode = DelayModes.WaitTime;
         }
     }
 
@@ -963,7 +1000,7 @@ public sealed class GooFile : FileFormat
 
     protected override void OnBeforeEncode(bool isPartialEncode)
     {
-        Header.PerLayerSettings = AllLayersAreUsingGlobalParameters;
+        Header.PerLayerSettings = UsingPerLayerSettings;
         Header.Volume = Volume;
         Header.MaterialGrams = MaterialMilliliters;
     }

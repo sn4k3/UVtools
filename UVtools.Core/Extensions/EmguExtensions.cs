@@ -415,10 +415,7 @@ public static class EmguExtensions
     /// <returns>Byte array </returns>
     public static byte[] GetBytes(this Mat mat)
     {
-        var data = new byte[mat.GetLength()];
-        //Marshal.Copy(mat.DataPointer, data, 0, data.Length);
-        mat.CopyTo(data);
-        return data;
+        return mat.GetRawData();
     }
 
     /// <summary>

@@ -295,7 +295,7 @@ public sealed class PhotonWorkshopFile : FileFormat
         /// <summary>
         /// 80
         /// </summary>
-        [FieldOrder(17)] public uint PerLayerOverride { get; set; } // bool
+        [FieldOrder(17)] [SerializeAs(SerializedType.UInt4)] public bool PerLayerOverride { get; set; } // bool
 
         [FieldOrder(18)] public uint PrintTime { get; set; }
 
@@ -1292,11 +1292,9 @@ public sealed class PhotonWorkshopFile : FileFormat
         set => base.BottomLayerCount = (ushort) (HeaderSettings.BottomLayersCount = value);
     }
 
-    public override TransitionLayerTypes TransitionLayerType => TransitionLayerTypes.Firmware;
-
     public override ushort TransitionLayerCount
     {
-        get => (ushort)(Version >= VERSION_516 ? HeaderSettings.TransitionLayerCount : 0);
+        get => (ushort)HeaderSettings.TransitionLayerCount;
         set => base.TransitionLayerCount = (ushort)(HeaderSettings.TransitionLayerCount = Math.Min(value, MaximumPossibleTransitionLayerCount));
     }
 
@@ -2036,7 +2034,7 @@ public sealed class PhotonWorkshopFile : FileFormat
 
     protected override void OnBeforeEncode(bool isPartialEncode)
     {
-        HeaderSettings.PerLayerOverride = System.Convert.ToUInt32(AllLayersAreUsingGlobalParameters);
+        HeaderSettings.PerLayerOverride = UsingPerLayerSettings;
         MachineSettings.MaxFileVersion = PrinterModel switch
         {
             AnyCubicMachine.PhotonS => VERSION_1,

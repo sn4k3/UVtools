@@ -32,7 +32,8 @@ public class ToolWindow : WindowEx
     {
         Init,
         ClearROI,
-        Loaded,
+        BeforeLoadProfile,
+        AfterLoadProfile,
         Button1, // Reset to defaults
         Checkbox1, // Show Advanced
     }
@@ -381,6 +382,7 @@ public class ToolWindow : WindowEx
             if (ToolControl is null) return;
             var operation = _selectedProfileItem.Clone();
             operation.ProfileName = null;
+            operation.ClearPropertyChangedListeners();
             operation.ImportedFrom = Operation.OperationImportFrom.Profile;
             ToolControl.BaseOperation = operation;
             switch (operation.LayerRangeSelection)
@@ -394,7 +396,7 @@ public class ToolWindow : WindowEx
                     break;
             }
 
-            //ToolControl.Callback(Callbacks.Loaded);
+            //ToolControl.Callback(Callbacks.AfterLoadProfile);
             //ToolControl.ResetDataContext();
         }
     }
@@ -425,6 +427,7 @@ public class ToolWindow : WindowEx
 
         var toAdd = ToolControl.BaseOperation.Clone();
         toAdd.ProfileName = string.IsNullOrWhiteSpace(_profileText) ? null : _profileText.Trim();
+        toAdd.ClearPropertyChangedListeners();
         OperationProfiles.AddProfile(toAdd);
         Profiles.Insert(0, toAdd);
 

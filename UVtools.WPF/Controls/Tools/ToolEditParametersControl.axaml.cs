@@ -184,7 +184,7 @@ public class ToolEditParametersControl : ToolControl
         switch (callback)
         {
             case ToolWindow.Callbacks.Init:
-            case ToolWindow.Callbacks.Loaded:
+            case ToolWindow.Callbacks.AfterLoadProfile:
                 if (callback is ToolWindow.Callbacks.Init)
                 {
                     ParentWindow.SelectCurrentLayer();
