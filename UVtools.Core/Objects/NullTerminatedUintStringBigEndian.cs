@@ -57,4 +57,6 @@ public sealed class NullTerminatedUintStringBigEndian
     {
         return (SerializedValue != null ? SerializedValue.GetHashCode() : 0);
     }
+
+    public static implicit operator NullTerminatedUintStringBigEndian(string value) => new(value);
 }

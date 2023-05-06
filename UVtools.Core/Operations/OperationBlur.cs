@@ -22,7 +22,7 @@ namespace UVtools.Core.Operations;
 public sealed class OperationBlur : Operation
 {
     #region Members
-    private BlurAlgorithm _blurOperation = BlurAlgorithm.Blur;
+    private BlurAlgorithm _blurOperation;
     private uint _size = 1;
     #endregion
 
@@ -71,8 +71,10 @@ public sealed class OperationBlur : Operation
     #region Enums
     public enum BlurAlgorithm
     {
-        [Description("Blur: Normalized box filter")]
-        Blur,
+        [Description("Stack Blur: Normalized stack blur")]
+        StackBlur,
+        [Description("Box Blur: Normalized box filter")]
+        BoxBlur,
         [Description("Pyramid: Down/up-sampling step of Gaussian pyramid decomposition")]
         Pyramid,
         [Description("Median Blur: Each pixel becomes the median of its surrounding pixels")]
@@ -156,7 +158,10 @@ public sealed class OperationBlur : Operation
         using var original = mat.Clone();
         switch (BlurOperation)
         {
-            case BlurAlgorithm.Blur:
+            case BlurAlgorithm.StackBlur:
+                CvInvoke.StackBlur(target, target, size);
+                break;
+            case BlurAlgorithm.BoxBlur:
                 CvInvoke.Blur(target, target, size, Kernel.Anchor);
                 break;
             case BlurAlgorithm.Pyramid:

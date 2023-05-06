@@ -201,7 +201,7 @@ public static class EmguExtensions
     {
         var step = mat.GetRealStep();
         if (!mat.IsSubmatrix) return new(mat.DataPointer.ToPointer(), mat.Height, step, 0);
-        return new(mat.DataPointer.ToPointer(), mat.Height, step, mat.Step / mat.ElementSize - step);
+        return new(mat.DataPointer.ToPointer(), mat.Height, step, mat.Step / mat.DepthToByteCount() - step);
     }
 
     /// <summary>
@@ -238,7 +238,7 @@ public static class EmguExtensions
         {
             if (mat.IsSubmatrix)
             {
-                length = mat.Step * (mat.Height - 1) + mat.GetRealStep();
+                length = mat.Step / mat.DepthToByteCount() * (mat.Height - 1) + mat.GetRealStep();
             }
             else
             {
@@ -363,6 +363,28 @@ public static class EmguExtensions
     #endregion
 
     #region Get/Set methods
+
+    /// <summary>
+    /// Gets the number of bytes this <see cref="Mat"/> uses per data type (Depth)
+    /// </summary>
+    /// <param name="mat"></param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentOutOfRangeException"></exception>
+    public static byte DepthToByteCount(this Mat mat)
+    {
+        return mat.Depth switch
+        {
+            DepthType.Default => 1,
+            DepthType.Cv8U => 1,
+            DepthType.Cv8S => 1,
+            DepthType.Cv16U => 2,
+            DepthType.Cv16S => 2,
+            DepthType.Cv32S => 4,
+            DepthType.Cv32F => 4,
+            DepthType.Cv64F => 8,
+            _ => throw new ArgumentOutOfRangeException()
+        };
+    }
 
     /// <summary>
     /// Step return the original Mat step, if ROI step still from original matrix which lead to errors.

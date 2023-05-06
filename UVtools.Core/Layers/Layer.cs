@@ -30,16 +30,17 @@ namespace UVtools.Core.Layers;
 
 public enum LayerCompressionCodec : byte
 {
-    [Description("PNG: Compression=High Speed=Slow (Use with low RAM)")]
+    [Description("PNG: Compression=High | Speed=Slow (Use with low RAM)")]
     Png,
-    [Description("GZip: Compression=Medium Speed=Medium (Optimal)")]
+    [Description("GZip: Compression=Medium | Speed=Medium (Optimal)")]
     GZip,
-    [Description("Deflate: Compression=Medium Speed=Medium (Optimal)")]
+    [Description("Deflate: Compression=Medium | Speed=Medium (Optimal)")]
     Deflate,
-    [Description("LZ4: Compression=Low Speed=Fast (Use with high RAM)")]
+    [Description("LZ4: Compression=Low | Speed=Fast (Use with high RAM)")]
     Lz4,
-    //[Description("None: Compression=None Speed=Fastest (Your soul belongs to RAM)")]
+    //[Description("None: Compression=None | Speed=Fastest (Your soul belongs to RAM)")]
     //None
+
 }
 
 #endregion
@@ -803,6 +804,36 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
     public float MaterialMillilitersPercent => SlicerFile.MaterialMilliliters > 0 ? _materialMilliliters * 100 / SlicerFile.MaterialMilliliters : float.NaN;
 
     /// <summary>
+    /// Gets the time estimate in seconds it takes for this layer to be completed
+    /// </summary>
+    public float CompletionTime => (float)Math.Round(CalculateCompletionTime(), 2);
+
+    /// <summary>
+    /// Gets the time estimate in minutes and seconds it takes for this layer to be completed
+    /// </summary>
+    public string CompletionTimeStr => TimeSpan.FromSeconds(CalculateCompletionTime()).ToString(@"mm\m\:ss\s");
+
+    /// <summary>
+    /// Get the start time estimate in seconds when this layer should start at
+    /// </summary>
+    public float StartTime => (float)Math.Round(CalculateStartTime(30), 2);
+
+    /// <summary>
+    /// Get the start time estimate in hours, minutes and seconds when this layer should start at
+    /// </summary>
+    public string StartTimeStr => TimeSpan.FromSeconds(CalculateStartTime(30)).ToString(@"hh\h\:mm\m\:ss\s");
+
+    /// <summary>
+    /// Get the end time estimate in seconds when this layer should end at
+    /// </summary>
+    public float EndTime => (float)Math.Round(CalculateStartTime(30) + CalculateCompletionTime(), 2);
+
+    /// <summary>
+    /// Get the end time estimate in hours, minutes and seconds when this layer should end at
+    /// </summary>
+    public string EndTimeStr => TimeSpan.FromSeconds(CalculateStartTime(30) + CalculateCompletionTime()).ToString(@"hh\h\:mm\m\:ss\s");
+
+    /// <summary>
     /// Gets or sets the compression method used to cache the image
     /// </summary>
     public LayerCompressionCodec CompressionCodec
@@ -1317,6 +1348,51 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
     /// </summary>
     public float GetVolume(byte roundToDigits) => (float)Math.Round(GetArea() * LayerHeight, roundToDigits);
 
+    /// <summary>
+    /// Calculates the time estimate in seconds it takes for this layer to be completed
+    /// </summary>
+    /// <returns></returns>
+    public float CalculateCompletionTime(float extraTime = 0)
+    {
+        float time = extraTime;
+        var motorTime = CalculateMotorMovementTime();
+        time += WaitTimeBeforeCure + ExposureTime + WaitTimeAfterCure + WaitTimeAfterLift;
+        if (SlicerFile.SupportsGCode)
+        {
+            time += motorTime;
+            if (WaitTimeBeforeCure <= 0)
+            {
+                time += LightOffDelay;
+            }
+        }
+        else
+        {
+            time += motorTime > LightOffDelay ? motorTime : LightOffDelay;
+        }
+
+        return time;
+    }
+
+    /// <summary>
+    /// Calculates the start time estimate in seconds when this layer should start at
+    /// </summary>
+    /// <returns></returns>
+    public float CalculateStartTime(float extraTime = 0)
+    {
+        float time = extraTime;
+        for (int i = 0; i < Index; i++)
+        {
+            time += SlicerFile[i].CompletionTime;
+        }
+
+        return time;
+    }
+
+    /// <summary>
+    /// Calculates the time the motor movements take to complete
+    /// </summary>
+    /// <param name="extraTime"></param>
+    /// <returns></returns>
     public float CalculateMotorMovementTime(float extraTime = 0)
     {
         return OperationCalculator.LightOffDelayC.CalculateSeconds(this, extraTime);

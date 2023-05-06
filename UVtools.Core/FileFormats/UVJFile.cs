@@ -56,15 +56,18 @@ public sealed class UVJFile : FileFormat
         }
     }
 
-    public sealed class Exposure
+    public class Exposure
     {
-        public float LightOnTime { get; set; }
+        public float WaitTimeBeforeCure { get; set; }
         public float LightOffTime { get; set; }
+        public float LightOnTime { get; set; }
         public byte LightPWM { get; set; } = DefaultLightPWM;
+        public float WaitTimeAfterCure { get; set; }
         public float LiftHeight { get; set; } = DefaultLiftHeight;
         public float LiftSpeed { get; set; } = DefaultLiftSpeed;
         public float LiftHeight2 { get; set; } = DefaultLiftHeight2;
         public float LiftSpeed2 { get; set; } = DefaultLiftSpeed2;
+        public float WaitTimeAfterLift { get; set; }
         public float RetractHeight { get; set; }
         public float RetractSpeed { get; set; } = DefaultRetractSpeed;
         public float RetractHeight2 { get; set; }
@@ -72,28 +75,17 @@ public sealed class UVJFile : FileFormat
 
         public override string ToString()
         {
-            return $"{nameof(LightOnTime)}: {LightOnTime}, {nameof(LightOffTime)}: {LightOffTime}, {nameof(LightPWM)}: {LightPWM}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(LiftHeight2)}: {LiftHeight2}, {nameof(LiftSpeed2)}: {LiftSpeed2}, {nameof(RetractHeight)}: {RetractHeight}, {nameof(RetractSpeed)}: {RetractSpeed}, {nameof(RetractHeight2)}: {RetractHeight2}, {nameof(RetractSpeed2)}: {RetractSpeed2}";
+            return $"{nameof(WaitTimeBeforeCure)}: {WaitTimeBeforeCure}, {nameof(LightOffTime)}: {LightOffTime}, {nameof(LightOnTime)}: {LightOnTime}, {nameof(LightPWM)}: {LightPWM}, {nameof(WaitTimeAfterCure)}: {WaitTimeAfterCure}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(LiftHeight2)}: {LiftHeight2}, {nameof(LiftSpeed2)}: {LiftSpeed2}, {nameof(WaitTimeAfterLift)}: {WaitTimeAfterLift}, {nameof(RetractHeight)}: {RetractHeight}, {nameof(RetractSpeed)}: {RetractSpeed}, {nameof(RetractHeight2)}: {RetractHeight2}, {nameof(RetractSpeed2)}: {RetractSpeed2}";
         }
     }
 
-    public sealed class Bottom
+    public sealed class Bottom : Exposure
     {
-        public float LightOffTime { get; set; }
-        public float LightOnTime { get; set; }
-        public byte LightPWM { get; set; } = DefaultBottomLightPWM;
-        public float LiftHeight { get; set; } = DefaultBottomLiftHeight;
-        public float LiftSpeed { get; set; } = DefaultBottomLiftSpeed;
-        public float LiftHeight2 { get; set; } = DefaultBottomLiftHeight2;
-        public float LiftSpeed2 { get; set; } = DefaultBottomLiftSpeed2;
-        public float RetractHeight { get; set; }
-        public float RetractSpeed { get; set; } = DefaultBottomRetractSpeed;
-        public float RetractHeight2 { get; set; }
-        public float RetractSpeed2 { get; set; } = DefaultBottomRetractSpeed2;
         public ushort Count { get; set; }
 
         public override string ToString()
         {
-            return $"{nameof(LightOffTime)}: {LightOffTime}, {nameof(LightOnTime)}: {LightOnTime}, {nameof(LightPWM)}: {LightPWM}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(LiftHeight2)}: {LiftHeight2}, {nameof(LiftSpeed2)}: {LiftSpeed2}, {nameof(RetractHeight)}: {RetractHeight}, {nameof(RetractSpeed)}: {RetractSpeed}, {nameof(RetractHeight2)}: {RetractHeight2}, {nameof(RetractSpeed2)}: {RetractSpeed2}, {nameof(Count)}: {Count}";
+            return $"{base.ToString()}, {nameof(Count)}: {Count}";
         }
     }
 
@@ -129,12 +121,15 @@ public sealed class UVJFile : FileFormat
         public void SetFrom(Layer layer)
         {
             Z = layer.PositionZ;
+            Exposure.WaitTimeBeforeCure = layer.WaitTimeBeforeCure;
             Exposure.LightOffTime = layer.LightOffDelay;
             Exposure.LightOnTime = layer.ExposureTime;
+            Exposure.WaitTimeAfterCure = layer.WaitTimeAfterCure;
             Exposure.LiftHeight = layer.LiftHeight;
             Exposure.LiftSpeed = layer.LiftSpeed;
             Exposure.LiftHeight2 = layer.LiftHeight2;
             Exposure.LiftSpeed2 = layer.LiftSpeed2;
+            Exposure.WaitTimeAfterLift = layer.WaitTimeAfterLift;
             Exposure.RetractHeight = layer.RetractHeight;
             Exposure.RetractSpeed = layer.RetractSpeed;
             Exposure.RetractHeight2 = layer.RetractHeight2;
@@ -145,12 +140,15 @@ public sealed class UVJFile : FileFormat
         public void CopyTo(Layer layer)
         {
             layer.PositionZ = Z;
+            layer.WaitTimeBeforeCure = Exposure.WaitTimeBeforeCure;
             layer.LightOffDelay = Exposure.LightOffTime;
             layer.ExposureTime = Exposure.LightOnTime;
+            layer.WaitTimeAfterCure = Exposure.WaitTimeAfterCure;
             layer.LiftHeight = Exposure.LiftHeight;
             layer.LiftSpeed = Exposure.LiftSpeed;
             layer.LiftHeight2 = Exposure.LiftHeight2;
             layer.LiftSpeed2 = Exposure.LiftSpeed2;
+            layer.WaitTimeAfterLift = Exposure.WaitTimeAfterLift;
             layer.RetractSpeed = Exposure.RetractSpeed;
             layer.RetractHeight2 = Exposure.RetractHeight2;
             layer.RetractSpeed2 = Exposure.RetractSpeed2;
@@ -163,10 +161,10 @@ public sealed class UVJFile : FileFormat
         public Size Size { get; set; } = new ();
         public Exposure Exposure { get; set; } = new ();
         public Bottom Bottom { get; set; } = new ();
-        /*public Dictionary<string, dynamic> Vendor { get; set; } = new()
+        public Dictionary<string, dynamic> Vendor { get; set; } = new()
         {
-            {About.Software, new UVtoolsVendor()}
-        };*/
+            //{About.Software, new UVtoolsVendor()}
+        };
 
         public byte AntiAliasLevel { get; set; } = 1;
 
@@ -205,50 +203,53 @@ public sealed class UVJFile : FileFormat
         PrintParameterModifier.BottomLightOffDelay,
         PrintParameterModifier.LightOffDelay,
 
+        PrintParameterModifier.BottomWaitTimeBeforeCure,
+        PrintParameterModifier.WaitTimeBeforeCure,
+
         PrintParameterModifier.BottomExposureTime,
         PrintParameterModifier.ExposureTime,
 
+        PrintParameterModifier.BottomWaitTimeAfterCure,
+        PrintParameterModifier.WaitTimeAfterCure,
+
         PrintParameterModifier.BottomLiftHeight,
         PrintParameterModifier.BottomLiftSpeed,
-
         PrintParameterModifier.LiftHeight,
         PrintParameterModifier.LiftSpeed,
-
         PrintParameterModifier.BottomLiftHeight2,
         PrintParameterModifier.BottomLiftSpeed2,
-
         PrintParameterModifier.LiftHeight2,
         PrintParameterModifier.LiftSpeed2,
 
+        PrintParameterModifier.BottomWaitTimeAfterLift,
+        PrintParameterModifier.WaitTimeAfterLift,
+
         PrintParameterModifier.BottomRetractSpeed,
         PrintParameterModifier.RetractSpeed,
-
         PrintParameterModifier.BottomRetractHeight2,
-        PrintParameterModifier.RetractHeight2,
-
         PrintParameterModifier.BottomRetractSpeed2,
+        PrintParameterModifier.RetractHeight2,
         PrintParameterModifier.RetractSpeed2,
 
         PrintParameterModifier.BottomLightPWM,
-        PrintParameterModifier.LightPWM,
+        PrintParameterModifier.LightPWM
     };
 
     public override PrintParameterModifier[]? PrintParameterPerLayerModifiers { get; } = {
         PrintParameterModifier.PositionZ,
         PrintParameterModifier.LightOffDelay,
+        PrintParameterModifier.WaitTimeBeforeCure,
         PrintParameterModifier.ExposureTime,
-
+        PrintParameterModifier.WaitTimeAfterCure,
         PrintParameterModifier.LiftHeight,
         PrintParameterModifier.LiftSpeed,
         PrintParameterModifier.LiftHeight2,
         PrintParameterModifier.LiftSpeed2,
-
+        PrintParameterModifier.WaitTimeAfterLift,
         PrintParameterModifier.RetractSpeed,
         PrintParameterModifier.RetractHeight2,
         PrintParameterModifier.RetractSpeed2,
-            
-        PrintParameterModifier.BottomLightPWM,
-        PrintParameterModifier.LightPWM,
+        PrintParameterModifier.LightPWM
     };
 
     public override System.Drawing.Size[]? ThumbnailsOriginalSize { get; } =
@@ -314,13 +315,31 @@ public sealed class UVJFile : FileFormat
     public override float BottomLightOffDelay
     {
         get => JsonSettings.Properties.Bottom.LightOffTime;
-        set => base.BottomLightOffDelay = JsonSettings.Properties.Bottom.LightOffTime = (float)Math.Round(value, 2);
+        set
+        {
+            base.BottomLightOffDelay = JsonSettings.Properties.Bottom.LightOffTime = (float)Math.Round(value, 2);
+            if (value > 0)
+            {
+                BottomWaitTimeBeforeCure = 0;
+                BottomWaitTimeAfterCure = 0;
+                BottomWaitTimeAfterLift = 0;
+            }
+        }
     }
 
     public override float LightOffDelay
     {
         get => JsonSettings.Properties.Exposure.LightOffTime;
-        set => base.LightOffDelay = JsonSettings.Properties.Exposure.LightOffTime = (float)Math.Round(value, 2);
+        set
+        {
+            base.LightOffDelay = JsonSettings.Properties.Exposure.LightOffTime = (float)Math.Round(value, 2);
+            if (value > 0)
+            {
+                WaitTimeBeforeCure = 0;
+                WaitTimeAfterCure = 0;
+                WaitTimeAfterLift = 0;
+            }
+        }
     }
 
     public override float BottomWaitTimeBeforeCure
@@ -328,8 +347,12 @@ public sealed class UVJFile : FileFormat
         get => base.BottomWaitTimeBeforeCure;
         set
         {
-            SetBottomLightOffDelay(value);
-            base.BottomWaitTimeBeforeCure = value;
+            base.BottomWaitTimeBeforeCure = JsonSettings.Properties.Bottom.WaitTimeBeforeCure = (float)Math.Round(value, 2);
+            if (value > 0)
+            {
+                BottomLightOffDelay = 0;
+                LightOffDelay = 0;
+            }
         }
     }
 
@@ -338,8 +361,12 @@ public sealed class UVJFile : FileFormat
         get => base.WaitTimeBeforeCure;
         set
         {
-            SetNormalLightOffDelay(value);
-            base.WaitTimeBeforeCure = value;
+            base.WaitTimeBeforeCure = JsonSettings.Properties.Exposure.WaitTimeBeforeCure = (float)Math.Round(value, 2);
+            if (value > 0)
+            {
+                BottomLightOffDelay = 0;
+                LightOffDelay = 0;
+            }
         }
     }
 
@@ -353,6 +380,34 @@ public sealed class UVJFile : FileFormat
     {
         get => JsonSettings.Properties.Exposure.LightOnTime;
         set => base.ExposureTime = JsonSettings.Properties.Exposure.LightOnTime = (float)Math.Round(value, 2);
+    }
+
+    public override float BottomWaitTimeAfterCure
+    {
+        get => base.BottomWaitTimeAfterCure;
+        set
+        {
+            base.BottomWaitTimeAfterCure = JsonSettings.Properties.Bottom.WaitTimeAfterCure = (float)Math.Round(value, 2);
+            if (value > 0)
+            {
+                BottomLightOffDelay = 0;
+                LightOffDelay = 0;
+            }
+        }
+    }
+
+    public override float WaitTimeAfterCure
+    {
+        get => base.WaitTimeAfterCure;
+        set
+        {
+            base.WaitTimeAfterCure = JsonSettings.Properties.Exposure.WaitTimeAfterCure = (float)Math.Round(value, 2);
+            if (value > 0)
+            {
+                BottomLightOffDelay = 0;
+                LightOffDelay = 0;
+            }
+        }
     }
 
     public override float BottomLiftHeight
@@ -389,6 +444,34 @@ public sealed class UVJFile : FileFormat
     {
         get => JsonSettings.Properties.Bottom.LiftSpeed2;
         set => base.BottomLiftSpeed2 = JsonSettings.Properties.Bottom.LiftSpeed2 = (float)Math.Round(value, 2);
+    }
+
+    public override float BottomWaitTimeAfterLift
+    {
+        get => base.BottomWaitTimeAfterLift;
+        set
+        {
+            base.BottomWaitTimeAfterLift = JsonSettings.Properties.Bottom.WaitTimeAfterLift = (float)Math.Round(value, 2);
+            if (value > 0)
+            {
+                BottomLightOffDelay = 0;
+                LightOffDelay = 0;
+            }
+        }
+    }
+
+    public override float WaitTimeAfterLift
+    {
+        get => base.WaitTimeAfterLift;
+        set
+        {
+            base.WaitTimeAfterLift = JsonSettings.Properties.Exposure.WaitTimeAfterLift = (float)Math.Round(value, 2);
+            if (value > 0)
+            {
+                BottomLightOffDelay = 0;
+                LightOffDelay = 0;
+            }
+        }
     }
 
     public override float LiftHeight2

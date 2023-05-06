@@ -68,6 +68,7 @@ public static class Program
             }
         }
 
+
         /*using var mat = CvInvoke.Imread(@"D:\layer0.png", ImreadModes.Grayscale);
         var contours = mat.FindContours(out var hierarchy, RetrType.Tree, ChainApproxMethod.ChainApproxTc89Kcos);
 
@@ -124,30 +125,30 @@ public static class Program
 
 
 
-                //z++;
-           /* }
+        //z++;
+        /* }
 
-            
-            //break;
-        }
 
-        var mesh = poly.Triangulate(new ConstraintOptions());
-        for (int i = 0; i < 50; i++)
-        {
-            foreach (var meshTriangle in mesh.Triangles)
-            {
-                stl.WriteTriangle(
-                    new Vector3((float)meshTriangle.GetVertex(0).X, (float)meshTriangle.GetVertex(0).Y, i),
-                    new Vector3((float)meshTriangle.GetVertex(1).X, (float)meshTriangle.GetVertex(1).Y, i),
-                    new Vector3((float)meshTriangle.GetVertex(2).X, (float)meshTriangle.GetVertex(2).Y, i),
-                    new Vector3(1f, 1f, i)
-                );
-            }
-        }
-        
+         //break;
+     }
 
-        stl.EndWrite();
-        return;*/
+     var mesh = poly.Triangulate(new ConstraintOptions());
+     for (int i = 0; i < 50; i++)
+     {
+         foreach (var meshTriangle in mesh.Triangles)
+         {
+             stl.WriteTriangle(
+                 new Vector3((float)meshTriangle.GetVertex(0).X, (float)meshTriangle.GetVertex(0).Y, i),
+                 new Vector3((float)meshTriangle.GetVertex(1).X, (float)meshTriangle.GetVertex(1).Y, i),
+                 new Vector3((float)meshTriangle.GetVertex(2).X, (float)meshTriangle.GetVertex(2).Y, i),
+                 new Vector3(1f, 1f, i)
+             );
+         }
+     }
+
+
+     stl.EndWrite();
+     return;*/
 
         /*Slicer slicer = new(Size.Empty, SizeF.Empty, "D:\\Cube100x100x100.stl");
         var slices = slicer.SliceModel(0.05f);

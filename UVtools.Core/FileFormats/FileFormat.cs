@@ -2843,24 +2843,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
                         break;
                     }
 
-                    var motorTime = layer.CalculateMotorMovementTime();
-                    time += layer.WaitTimeBeforeCure + layer.ExposureTime + layer.WaitTimeAfterCure + layer.WaitTimeAfterLift;
-                    if (SupportsGCode)
-                    {
-                        time += motorTime;
-                        if (layer.WaitTimeBeforeCure <= 0)
-                        {
-                            time += layer.LightOffDelay;
-                        }
-                    }
-                    else
-                    {
-                        time += motorTime > layer.LightOffDelay ? motorTime : layer.LightOffDelay;
-                    }
-                    /*if (lightOffDelay >= layer.LightOffDelay)
-                        time += lightOffDelay;
-                    else
-                        time += layer.LightOffDelay;*/
+                    time += layer.CalculateCompletionTime();
                 }
             }
 
@@ -4053,6 +4036,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         ushort count = 0;
         for (uint layerIndex = BottomLayerCount; layerIndex < LastLayerIndex; layerIndex++)
         {
+            if (this[layerIndex].ExposureTime < this[layerIndex + 1].ExposureTime) break; // Increasing time related to previous layer, we want decreasing time only
             if (Math.Abs(this[layerIndex].ExposureTime - this[layerIndex + 1].ExposureTime) < 0.009f) break; // First equal layer, transition ended
             count++;
         }

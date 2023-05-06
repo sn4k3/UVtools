@@ -65,4 +65,6 @@ public sealed class UInt24BigEndian
     public static uint operator *(UInt24BigEndian a, UInt24BigEndian b) => a.Value * b.Value;
 
     public static uint operator /(UInt24BigEndian a, UInt24BigEndian b) => a.Value / b.Value;
+
+    public static implicit operator UInt24BigEndian(uint value) => new(value);
 }

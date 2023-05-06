@@ -41,12 +41,10 @@
                                   Content="Start maximized"/>
 
                         <CheckBox IsChecked="{Binding Settings.General.RestoreWindowLastPosition}" 
-                                  IsEnabled="{Binding !Settings.General.StartMaximized}"
                                   ToolTip.Tip="If enabled, it will restore the main window last known client position on startup"
                                   Content="Restore window last position"/>
 
                         <CheckBox IsChecked="{Binding Settings.General.RestoreWindowLastSize}"
-                                  IsEnabled="{Binding !Settings.General.StartMaximized}"
                                   ToolTip.Tip="If enabled, it will restore the main window last known client size on startup"
                                   Content="Restore window last size"/>
 					</StackPanel>

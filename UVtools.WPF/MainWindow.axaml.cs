@@ -252,25 +252,26 @@ public partial class MainWindow : WindowEx
 
     public MainWindow()
     {
+        if (Settings.General.RestoreWindowLastPosition)
+        {
+            Position = new PixelPoint(Settings.General.LastWindowBounds.Location.X, Settings.General.LastWindowBounds.Location.Y);
+        }
+
+        if (Settings.General.RestoreWindowLastSize)
+        {
+            Width = Settings.General.LastWindowBounds.Width;
+            Height = Settings.General.LastWindowBounds.Height;
+        }
+
         if (Settings.General.StartMaximized)
         {
             WindowState = WindowState.Maximized;
         }
-        else 
+        else
         {
-            if (Settings.General.RestoreWindowLastPosition)
-            {
-                Position = new PixelPoint(Settings.General.LastWindowBounds.Location.X, Settings.General.LastWindowBounds.Location.Y);
-            }
-
-            if (Settings.General.RestoreWindowLastSize)
-            {
-                Width = Settings.General.LastWindowBounds.Width;
-                Height = Settings.General.LastWindowBounds.Height;
-            }
-
-            var windowSize = this.GetScreenWorkingArea();
-            if (Width >= windowSize.Width || Height >= windowSize.Height)
+            var screenSize = this.GetScreenWorkingArea();
+            // Use a 20px margin
+            if (Width + 20 >= screenSize.Width || Height + 20 >= screenSize.Height)
             {
                 WindowState = WindowState.Maximized;
             }

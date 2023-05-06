@@ -689,6 +689,14 @@
             <param name="color">Color to fill with</param>
             <param name="colorFillMinThreshold">Ignore and fill to <paramref name="length"/> if <paramref name="color"/> is less than the threshold value</param>
         </member>
+        <member name="M:UVtools.Core.Extensions.EmguExtensions.DepthToByteCount(Emgu.CV.Mat)">
+            <summary>
+            Gets the number of bytes this <see cref="T:Emgu.CV.Mat"/> uses per data type (Depth)
+            </summary>
+            <param name="mat"></param>
+            <returns></returns>
+            <exception cref="T:System.ArgumentOutOfRangeException"></exception>
+        </member>
         <member name="M:UVtools.Core.Extensions.EmguExtensions.GetRealStep(Emgu.CV.Mat)">
             <summary>
             Step return the original Mat step, if ROI step still from original matrix which lead to errors.
@@ -5252,6 +5260,36 @@
             Gets the computed material milliliters percentage compared to the rest of the model
             </summary>
         </member>
+        <member name="P:UVtools.Core.Layers.Layer.CompletionTime">
+            <summary>
+            Gets the time estimate in seconds it takes for this layer to be completed
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Layers.Layer.CompletionTimeStr">
+            <summary>
+            Gets the time estimate in minutes and seconds it takes for this layer to be completed
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Layers.Layer.StartTime">
+            <summary>
+            Get the start time estimate in seconds when this layer should start at
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Layers.Layer.StartTimeStr">
+            <summary>
+            Get the start time estimate in hours, minutes and seconds when this layer should start at
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Layers.Layer.EndTime">
+            <summary>
+            Get the end time estimate in seconds when this layer should end at
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Layers.Layer.EndTimeStr">
+            <summary>
+            Get the end time estimate in hours, minutes and seconds when this layer should end at
+            </summary>
+        </member>
         <member name="P:UVtools.Core.Layers.Layer.CompressionCodec">
             <summary>
             Gets or sets the compression method used to cache the image
@@ -5383,6 +5421,25 @@
             Gets the layer volume (XYZ) in mm^3
             Pixel size * number of pixels * layer height
             </summary>
+        </member>
+        <member name="M:UVtools.Core.Layers.Layer.CalculateCompletionTime(System.Single)">
+            <summary>
+            Calculates the time estimate in seconds it takes for this layer to be completed
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:UVtools.Core.Layers.Layer.CalculateStartTime(System.Single)">
+            <summary>
+            Calculates the start time estimate in seconds when this layer should start at
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:UVtools.Core.Layers.Layer.CalculateMotorMovementTime(System.Single)">
+            <summary>
+            Calculates the time the motor movements take to complete
+            </summary>
+            <param name="extraTime"></param>
+            <returns></returns>
         </member>
         <member name="M:UVtools.Core.Layers.Layer.GetWaitTimeBeforeCure">
             <summary>

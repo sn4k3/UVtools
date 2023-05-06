@@ -79,7 +79,7 @@
                            Classes="ValueLabel ValueLabel_s"
                            HorizontalAlignment="Left"
                            Minimum="0"
-                           Maximum="100"
+                           Maximum="1000"
                            Increment="0.5"
                            Width="100"
                            Value="{Binding Operation.WaitTimeAfterLift}">

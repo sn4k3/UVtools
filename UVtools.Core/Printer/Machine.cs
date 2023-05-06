@@ -243,6 +243,8 @@ namespace UVtools.Core.Printer
                 new(PrinterBrand.Creality, "Creality Halot Sky CL-89", "CL-89", 3840, 2400, 192f, 120f, 200f, FlipDirection.None),
                 new(PrinterBrand.Creality, "Creality Halot Sky Plus CL-92", "CL-92", 5760, 3600, 198.14f, 123.84f, 210f, FlipDirection.None),
                 new(PrinterBrand.Creality, "Creality Halot Ray CL925", "CL925", 5760, 3600, 198.14f, 123.84f, 210f, FlipDirection.None),
+                new(PrinterBrand.Creality, "Creality Halot Mage CL-103L", "CL-103L", 7680, 4320, 228.096f, 128.304f, 230f, FlipDirection.None),
+                new(PrinterBrand.Creality, "Creality Halot Mage Pro CL-103", "CL-103", 7680, 4320, 228.096f, 128.304f, 230f, FlipDirection.None),
                 new(PrinterBrand.Creality, "Creality LD-002H", "LD-002H", 1620, 2560, 82.62f, 130.56f, 160f, FlipDirection.Horizontally),
                 new(PrinterBrand.Creality, "Creality LD-002R", "LD-002R", 1440, 2560, 68.04f, 120.96f, 160f, FlipDirection.Horizontally),
                 new(PrinterBrand.Creality, "Creality LD-006", "LD-006", 3840, 2400, 192f, 120f, 245f, FlipDirection.Horizontally),
