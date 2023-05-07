@@ -8,7 +8,7 @@
 LittleEndian();
 
 struct FILE {
-    char Marker[8] <fgcolor=cBlack, bgcolor=cWhite>;
+    char Marker[8] <fgcolor=cBlack, bgcolor=cPurple>; // OSLATiCo
     ushort Version <fgcolor=cBlack, bgcolor=cWhite>;
     
     char CreatedDateTime[20] <fgcolor=cBlack, bgcolor=cWhite>;
@@ -84,6 +84,7 @@ struct LAYER_DEF {
     float ExposureTime <fgcolor=cBlack, bgcolor=cPurple>;
     float WaitTimeAfterCure <fgcolor=cBlack, bgcolor=cPurple>;
     ubyte LightPWM <fgcolor=cBlack, bgcolor=cPurple>;
+    uint NonZeroPixelCount <fgcolor=cBlack, bgcolor=cPurple>;
     uint BoundingRectangleX <fgcolor=cBlack, bgcolor=cPurple>;
     uint BoundingRectangleY <fgcolor=cBlack, bgcolor=cPurple>;
     uint BoundingRectangleWidth <fgcolor=cBlack, bgcolor=cPurple>;
@@ -137,3 +138,6 @@ if(header.GCodeAddress > 0)
     GCODE gcode;
 }
 
+
+FSeek(FileSize() - 9);
+char EndMarker[9] <fgcolor=cBlack, bgcolor=cPurple>; // ;OSLATiCo

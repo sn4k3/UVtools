@@ -50,6 +50,12 @@ public static class CompressionExtensions
     public static MemoryStream GZipCompress(byte[] inputStream, CompressionLevel compressionLevel) =>
         GZipCompress(new ReadOnlyMemory<byte>(inputStream).AsStream(), compressionLevel);
 
+    public static byte[] GZipCompressToBytes(Stream inputStream, CompressionLevel compressionLevel)
+    {
+        using var ms = GZipCompress(inputStream, compressionLevel);
+        return ms.ToArray();
+    }
+
     public static byte[] GZipCompressToBytes(byte[] inputStream, CompressionLevel compressionLevel)
     {
         using var ms = GZipCompress(new ReadOnlyMemory<byte>(inputStream).AsStream(), compressionLevel);
@@ -98,6 +104,12 @@ public static class CompressionExtensions
 
     public static MemoryStream DeflateCompress(byte[] inputStream, CompressionLevel compressionLevel) =>
         DeflateCompress(new ReadOnlyMemory<byte>(inputStream).AsStream(), compressionLevel);
+
+    public static byte[] DeflateCompressToBytes(Stream inputStream, CompressionLevel compressionLevel)
+    {
+        using var ms = DeflateCompress(inputStream, compressionLevel);
+        return ms.ToArray();
+    }
 
     public static byte[] DeflateCompressToBytes(byte[] inputStream, CompressionLevel compressionLevel)
     {

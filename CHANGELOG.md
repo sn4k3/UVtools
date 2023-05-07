@@ -1,5 +1,12 @@
 # Changelog
 
+## 07/05/2023 - v3.13.3
+
+- (Add) Support for AnyCubic Photon Mono 2 (pm3n)
+- (Add) PrusaSlicer printer: AnyCubic Photon Mono 2
+- (Improvement) Layer compression performance for Deflate and GZip methods
+- (Improvement) OSLA: Adds NonZeroPixelCount for layers and end marker (;OSLATiCo)
+
 ## 06/05/2023 - v3.13.2
 
 - **UVJ:**

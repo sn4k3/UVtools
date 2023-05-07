@@ -88,6 +88,7 @@ public sealed class PhotonWorkshopFile : FileFormat
         PhotonUltra,
         PhotonD2,
         PhotonMono,
+        PhotonMono2,
         PhotonMonoSE,
         PhotonMono4K,
         PhotonMonoX,
@@ -1001,7 +1002,6 @@ public sealed class PhotonWorkshopFile : FileFormat
     }
     #endregion
 
-    
 
     #endregion
 
@@ -1037,6 +1037,7 @@ public sealed class PhotonWorkshopFile : FileFormat
         new(typeof(PhotonWorkshopFile), "pmx2", "Photon Mono X2 (PMX2)"),
         new(typeof(PhotonWorkshopFile), "pwmb", "Photon Mono X 6K / Photon M3 Plus (PWMB)"),
         new(typeof(PhotonWorkshopFile), "pwmo", "Photon Mono (PWMO)"),
+        new(typeof(PhotonWorkshopFile), "pm3n", "Photon Mono 2 (PM3N)"),
         new(typeof(PhotonWorkshopFile), "pwms", "Photon Mono SE (PWMS)"),
         new(typeof(PhotonWorkshopFile), "pwma", "Photon Mono 4K (PWMA)"),
         new(typeof(PhotonWorkshopFile), "pmsq", "Photon Mono SQ (PMSQ)"),
@@ -1046,7 +1047,7 @@ public sealed class PhotonWorkshopFile : FileFormat
         new(typeof(PhotonWorkshopFile), "pwc", "Anycubic Custom Machine (PWC)"),
         //new(typeof(PhotonWorkshopFile), "pwmb", "Photon M3 Plus (PWMB)"),
     };
-
+    
     public override SpeedUnit FormatSpeedUnit => SpeedUnit.MillimetersPerSecond;
 
     public override PrintParameterModifier[]? PrintParameterModifiers
@@ -1140,6 +1141,8 @@ public sealed class PhotonWorkshopFile : FileFormat
             case "pmx2":
             case "pm3r":
                 return new uint[] { VERSION_515, VERSION_516, VERSION_517 };
+            case "pm3n":
+                return new uint[] { VERSION_517 };
             default:
                 return AvailableVersions;
         }
@@ -1182,6 +1185,7 @@ public sealed class PhotonWorkshopFile : FileFormat
                 AnyCubicMachine.PhotonUltra => 102.40f,
                 AnyCubicMachine.PhotonD2 => 130.56f,
                 AnyCubicMachine.PhotonMono => 82.62f,
+                AnyCubicMachine.PhotonMono2 => 143.36f,
                 AnyCubicMachine.PhotonMonoSE => 82.62f,
                 AnyCubicMachine.PhotonMono4K => 134.40f,
                 AnyCubicMachine.PhotonMonoX => 192,
@@ -1209,6 +1213,7 @@ public sealed class PhotonWorkshopFile : FileFormat
                 AnyCubicMachine.PhotonUltra => 57.60f,
                 AnyCubicMachine.PhotonD2 => 73.44f,
                 AnyCubicMachine.PhotonMono => 130.56f,
+                AnyCubicMachine.PhotonMono2 => 89.60f,
                 AnyCubicMachine.PhotonMonoSE => 130.56f,
                 AnyCubicMachine.PhotonMono4K => 84,
                 AnyCubicMachine.PhotonMonoX => 120,
@@ -1237,6 +1242,7 @@ public sealed class PhotonWorkshopFile : FileFormat
                 AnyCubicMachine.PhotonUltra => 165,
                 AnyCubicMachine.PhotonD2 => 165,
                 AnyCubicMachine.PhotonMono => 165,
+                AnyCubicMachine.PhotonMono2 => 165,
                 AnyCubicMachine.PhotonMonoSE => 160,
                 AnyCubicMachine.PhotonMono4K => 165,
                 AnyCubicMachine.PhotonMonoX => 245,
@@ -1530,6 +1536,7 @@ public sealed class PhotonWorkshopFile : FileFormat
                 AnyCubicMachine.PhotonUltra   => "Photon Ultra",
                 AnyCubicMachine.PhotonD2      => "Photon D2",
                 AnyCubicMachine.PhotonMono    => "Photon Mono",
+                AnyCubicMachine.PhotonMono2   => "Photon Mono 2",
                 AnyCubicMachine.PhotonMonoSE  => "Photon Mono SE",
                 AnyCubicMachine.PhotonMono4K  => "Photon Mono 4K",
                 AnyCubicMachine.PhotonMonoX   => "Photon Mono X",
@@ -1585,6 +1592,11 @@ public sealed class PhotonWorkshopFile : FileFormat
             if (FileEndsWith(".pwmo"))
             {
                 return AnyCubicMachine.PhotonMono;
+            }
+
+            if (FileEndsWith(".pm3n"))
+            {
+                return AnyCubicMachine.PhotonMono2;
             }
 
             if (FileEndsWith(".pwms"))
@@ -1673,16 +1685,12 @@ public sealed class PhotonWorkshopFile : FileFormat
         FileMarkSettings.HeaderAddress = (uint) Helpers.Serializer.SizeOf(FileMarkSettings);
         using var outputFile = new FileStream(TemporaryOutputFileFullPath, FileMode.Create, FileAccess.Write);
 
-
-        if (FileMarkSettings.Version >= VERSION_517)
+        HeaderSettings.Section.Length = FileMarkSettings.Version switch
         {
-            HeaderSettings.Section.Length = 92;
-        }
-        else if (FileMarkSettings.Version >= VERSION_516)
-        {
-            HeaderSettings.Section.Length = 84;
-        }
-
+            >= VERSION_517 => 92,
+            >= VERSION_516 => 84,
+            _ => HeaderSettings.Section.Length
+        };
 
         outputFile.Seek((int)FileMarkSettings.HeaderAddress, SeekOrigin.Begin);
         outputFile.WriteSerialize(HeaderSettings);
@@ -2043,6 +2051,7 @@ public sealed class PhotonWorkshopFile : FileFormat
             AnyCubicMachine.PhotonUltra => VERSION_515,
             AnyCubicMachine.PhotonD2 => VERSION_516,
             AnyCubicMachine.PhotonMono => VERSION_515,
+            AnyCubicMachine.PhotonMono2 => VERSION_517,
             AnyCubicMachine.PhotonMonoSE => VERSION_515,
             AnyCubicMachine.PhotonMono4K => VERSION_516,
             AnyCubicMachine.PhotonMonoX => VERSION_516,

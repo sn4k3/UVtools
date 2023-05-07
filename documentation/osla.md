@@ -23,9 +23,10 @@ This file format share and reserve the following file extensions:
 ## Printer - Firmware checks (can print this file?)
 
 1. Marker == "OSLATiCo" - This is a double check if file is really a .osla beside it extension, case sensitive compare.
-1. Compare machine resolution with file resoltuion.
-2. Can use ImageDataType? For example, if processor is unable to process PNG images, trigger an error and dont allow to continue.
-3. Parse gcode/layer def and check for problems, such as, print on a position out of printer Z range.
+2. EndMarker == ";OSLATiCo" - This is a check for file integrity, if not present on the very end of the file, it can mean the file was not all written / aborted / incomplete. The ';' allows GCode compatibility in case firmware reads from the start GCode position to the end of the file, making it a comment, and so, not a command.
+3. Compare machine resolution with file resolution.
+4. Can use ImageDataType? For example, if processor is unable to process PNG images, trigger an error and dont allow to continue.
+5. Parse gcode/layer def and check for problems, such as, print on a position out of printer Z range.
 
 ## Printer - Print sequence
 
@@ -135,6 +136,7 @@ If printer able to gcode, that can be done by issue the gcode equivalent command
    - Layer 0 data (n bytes) 
    - Layer 1 data (n bytes) 
 7. [GCode] (4 bytes + sizeof(gcode text))
+8. [End Marker] ;OSLATiCo (9 bytes)
 
 
 ```ini
@@ -161,7 +163,7 @@ PreviewCount=2 (byte) Number of previews/thumbnails on this file
 LayerHeight=0.05 (float) Layer height in mm
 BottomLayerCount=4 (ushort) Total number of bottom/burn layers
 LayerCount=1000 (uint) Total number of layers
-LayerTableSize=69 (uint), Size of each layer table
+LayerTableSize=73 (uint), Size of each layer table
 LayerDefinitionsAddress=00000 (uint) Address for layer definition start
 GCodeAddress=000000 (uint) Address for gcode definition start
 PrintTime=12345 (uint) Print time in seconds
@@ -205,6 +207,7 @@ WaitTimeBeforeCure=2.5      (float) Time to wait in seconds before cure the laye
 ExposureTime=2.8            (float) Time in seconds while curing the layer
 WaitTimeAfterCure=1         (float) Time to wait in seconds after cure the layer / turn off LED
 LightPWM=255                (byte)  PWM value of the light source
+NonZeroPixelCount=100000    (uint)  Non zero pixel count
 BoundingRectangleX=300      (uint)  Start X position where first pixels are [Optional, can be 0]
 BoundingRectangleY=500      (uint)  Start Y position where first pixels are [Optional, can be 0]
 BoundingRectangleWidth=500  (uint)  Rectangle width [Optional, can be 0]
@@ -251,6 +254,9 @@ G0 Z180 F150;Move Z
 M18;Disable motors
 ;END_GCODE_END
 ;<Completed>
+
+[End Marker]
+;OSLATiCo
 ```
 
 https://github.com/sn4k3/UVtools/blob/master/Scripts/010%20Editor/osla.bt

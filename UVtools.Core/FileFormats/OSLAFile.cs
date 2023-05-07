@@ -10,6 +10,7 @@
 
 using BinarySerialization;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -96,14 +97,14 @@ public sealed class OSLAFile : FileFormat
         [FieldOrder(11)] public float LayerHeight { get; set; } = 0.05f;
         [FieldOrder(12)] public ushort BottomLayersCount { get; set; } = 4;
         [FieldOrder(13)] public uint LayerCount { get; set; }
-        [FieldOrder(14)] public uint LayerTableSize { get; set; } = 69;
+        [FieldOrder(14)] public uint LayerTableSize { get; set; } = (uint)Helpers.Serializer.SizeOf(new LayerDef()) + 4; // 73
         [FieldOrder(15)] public uint LayerDefinitionsAddress { get; set; }
         [FieldOrder(16)] public uint GCodeAddress { get; set; }
         [FieldOrder(17)] public uint PrintTime { get; set; }
         [FieldOrder(18)] public float MaterialMilliliters { get; set; }
         [FieldOrder(19)] public float MaterialCost { get; set; }
         [FieldOrder(20)] [FieldLength(50)] [SerializeAs(SerializedType.TerminatedString)] public string? MaterialName { get; set; } = string.Empty;
-        [FieldOrder(21)] [FieldLength(50)] [SerializeAs(SerializedType.TerminatedString)] public string MachineName { get; set; } = "Unknown";
+        [FieldOrder(21)] [FieldLength(50)] [SerializeAs(SerializedType.TerminatedString)] public string MachineName { get; set; } = DefaultMachineName;
 
 
         public override string ToString()
@@ -175,10 +176,11 @@ public sealed class OSLAFile : FileFormat
         [FieldOrder(11)] public float ExposureTime { get; set; }
         [FieldOrder(12)] public float WaitTimeAfterCure { get; set; }
         [FieldOrder(13)] public byte LightPWM { get; set; }
-        [FieldOrder(14)] public uint BoundingRectangleX { get; set; }
-        [FieldOrder(15)] public uint BoundingRectangleY { get; set; }
-        [FieldOrder(16)] public uint BoundingRectangleWidth { get; set; }
-        [FieldOrder(17)] public uint BoundingRectangleHeight { get; set; }
+        [FieldOrder(14)] public uint NonZeroPixelCount { get; set; }
+        [FieldOrder(15)] public uint BoundingRectangleX { get; set; }
+        [FieldOrder(16)] public uint BoundingRectangleY { get; set; }
+        [FieldOrder(17)] public uint BoundingRectangleWidth { get; set; }
+        [FieldOrder(18)] public uint BoundingRectangleHeight { get; set; }
 
         //[Ignore] public byte[] ImageData { get; set; }
 
@@ -201,6 +203,7 @@ public sealed class OSLAFile : FileFormat
             ExposureTime = layer.ExposureTime;
             WaitTimeAfterCure = layer.WaitTimeAfterCure;
             LightPWM = layer.LightPWM;
+            NonZeroPixelCount = layer.NonZeroPixelCount;
             BoundingRectangleX = (uint)layer.BoundingRectangle.X;
             BoundingRectangleY = (uint)layer.BoundingRectangle.Y;
             BoundingRectangleWidth =  (uint)layer.BoundingRectangle.Width;
@@ -565,6 +568,8 @@ public sealed class OSLAFile : FileFormat
         gcodeSettings.GCodeSize = (uint)(gcodeSettings.GCodeText?.Length ?? 0);
         outputFile.WriteSerialize(gcodeSettings);
 
+        outputFile.WriteString($";{MARKER}");
+
         outputFile.Seek(fileDefSize, SeekOrigin.Begin);
         outputFile.WriteSerialize(HeaderSettings);
 
@@ -577,10 +582,20 @@ public sealed class OSLAFile : FileFormat
     protected override void DecodeInternally(OperationProgress progress)
     {
         using var inputFile = new FileStream(FileFullPath!, FileMode.Open, FileAccess.Read);
+
         FileSettings = Helpers.Deserialize<FileDef>(inputFile);
         Debug.Write("File -> ");
         Debug.WriteLine(FileSettings);
         FileSettings.Validate();
+
+        inputFile.SeekDoWorkAndRewind(-9, SeekOrigin.End, () =>
+        {
+            string result = System.Text.Encoding.ASCII.GetString(inputFile.ReadBytes(9));
+            if (!string.Equals(result, ";OSLATiCo", StringComparison.Ordinal))
+            {
+                throw new FileLoadException($"Invalid end marker: {result}, not a valid OSLA file or it's incomplete.");
+            }
+        });
 
         HeaderSettings = Helpers.Deserialize<Header>(inputFile);
         Debug.Write("Header -> ");
@@ -712,6 +727,7 @@ public sealed class OSLAFile : FileFormat
             var gcodeSettings = new GCodeDef { GCodeText = GCodeStr };
             gcodeSettings.GCodeSize = (uint)(gcodeSettings.GCodeText?.Length ?? 0);
             outputFile.WriteSerialize(gcodeSettings);
+            outputFile.WriteString($";{MARKER}");
         }
     }
     #endregion

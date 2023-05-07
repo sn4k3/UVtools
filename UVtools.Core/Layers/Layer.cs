@@ -1982,20 +1982,11 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
             }
             case LayerCompressionCodec.GZip:
             {
-                return CompressionExtensions.GZipCompressToBytes(mat.GetBytes(), CompressionLevel.Fastest);
-                /*using var compressedStream = new MemoryStream();
-                using var matStream = mat.GetUnmanagedMemoryStream(FileAccess.Read);
-                using var gzipStream = new GZipStream(compressedStream, CompressionLevel.Fastest);
-                matStream.CopyTo(gzipStream);
-                return compressedStream.ToArray();*/
+                return CompressionExtensions.GZipCompressToBytes(mat.GetUnmanagedMemoryStream(FileAccess.Read), CompressionLevel.Fastest);
             }
             case LayerCompressionCodec.Deflate:
             {
-                return CompressionExtensions.DeflateCompressToBytes(mat.GetBytes(), CompressionLevel.Fastest);
-                /*using var compressedStream = new MemoryStream();
-                using var deflateStream = new DeflateStream(compressedStream, CompressionLevel.Fastest);
-                deflateStream.Write(mat.GetDataByteSpan());
-                return compressedStream.ToArray();*/
+                return CompressionExtensions.DeflateCompressToBytes(mat.GetUnmanagedMemoryStream(FileAccess.Read), CompressionLevel.Fastest);
             }
             /*case LayerCompressionMethod.None:
                 return mat.GetBytes();*/

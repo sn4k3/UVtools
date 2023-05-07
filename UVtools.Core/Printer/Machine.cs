@@ -226,6 +226,7 @@ namespace UVtools.Core.Printer
                 new(PrinterBrand.AnyCubic, "AnyCubic Photon Mono X", "Photon Mono X", 3840, 2400, 192f, 120f, 245f, FlipDirection.Horizontally),
                 new(PrinterBrand.AnyCubic, "AnyCubic Photon Mono X2", "Photon Mono X2", 4096, 2560, 196.61f, 122.88f, 260f, FlipDirection.Horizontally),
                 new(PrinterBrand.AnyCubic, "AnyCubic Photon Mono", "Photon Mono", 1620, 2560, 82.62f, 130.56f, 165f, FlipDirection.Horizontally),
+                new(PrinterBrand.AnyCubic, "AnyCubic Photon Mono 2", "Photon Mono 2", 4096, 2560, 143.36f, 89.60f, 165f, FlipDirection.Horizontally),
                 new(PrinterBrand.AnyCubic, "AnyCubic Photon S", "Photon S", 1440, 2560, 68.04f, 120.96f, 165f, FlipDirection.Horizontally),
                 new(PrinterBrand.AnyCubic, "AnyCubic Photon Ultra", "Photon Ultra", 1280, 720, 102.4f, 57.6f, 165f, FlipDirection.Horizontally),
                 new(PrinterBrand.AnyCubic, "AnyCubic Photon D2", "Photon D2", 2560, 1440, 130.56f, 73.44f, 165f, FlipDirection.Horizontally),
