@@ -4,8 +4,8 @@
 
 - **UVtoolsCmd run:**
   - (Add) **--dummy:** Do not save alterations to file
-  - (Add) Allow to run suggestions by it class name (#711)
-  - (Improvement) Allow to run operations by it class name in addition to a file path to a profile
+  - (Add) Allow to run suggestions by its class name (#711)
+  - (Improvement) Allow to run operations by its class name in addition to a file path to a profile
   - (Fix) .uvtop files was not selecting the last selected layer range by name
 - **Suggestions:**
   - (Add) Allow to import and export settings (.uvtsu)
