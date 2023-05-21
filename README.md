@@ -165,11 +165,20 @@ But also, I need victims for test subject. Proceed at your own risk!
   - **WaitTimeAfterCure_xxx:** Sets the wait time after cure in seconds
   - **BottomLiftHeight_xxx:** Sets the bottom lift height in millimeters
   - **BottomLiftSpeed_xxx:** Sets the bottom lift speed in millimeters/minute
+  - **BottomLiftHeight2_xxx:** Sets the second bottom lift height in millimeters
+  - **BottomLiftSpeed2_xxx:** Sets the second bottom lift speed in millimeters/minute
   - **LiftHeight_xxx:** Sets the lift height in millimeters
   - **LiftSpeed_xxx:** Sets the lift speed in millimeters/minute
+  - **LiftHeight2_xxx:** Sets the second lift height in millimeters
+  - **LiftSpeed2_xxx:** Sets the second lift speed in millimeters/minute
   - **BottomWaitTimeAfterLift_xxx:** Sets the bottom wait time after lift in seconds
   - **WaitTimeAfterLift_xxx:** Sets the wait time after lift in seconds
+  - **BottomRetractSpeed_xxx:** Sets the bottom retract speed in millimeters/minute
+  - **BottomRetractHeight2_xxx:** Sets the second bottom retract height in millimeters
+  - **BottomRetractSpeed2_xxx:** Sets the second bottom retract speed in millimeters/minute
   - **RetractSpeed_xxx:** Sets the retract speed in millimeters/minute
+  - **RetractHeight2_xxx:** Sets the second retract height in millimeters
+  - **RetractSpeed2_xxx:** Sets the second retract speed in millimeters/minute
   - **BottomLightPWM_xxx:** Sets the bottom LED light power (0-255)
   - **LightPWM_xxx:** Sets the LED light power (0-255)
   - **FILEVERSION_n:** Sets the output file format version/revision
