@@ -33,7 +33,7 @@ public class OperationRedrawModel : Operation
         
     #region Overrides
 
-    public override LayerRangeSelection StartLayerRangeSelection { get; } = LayerRangeSelection.None;
+    public override LayerRangeSelection StartLayerRangeSelection => LayerRangeSelection.None;
     public override string IconClass => "mdi-puzzle-edit";
     public override string Title => "Redraw model/supports";
 

@@ -5980,6 +5980,37 @@
             <para>If using console it will prompt there as text, otherwise if in UI will use dialogs.</para>
             </summary>
         </member>
+        <member name="P:UVtools.Core.Managers.SuggestionManager.FilePath">
+            <summary>
+            Default filepath for store
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Managers.SuggestionManager.Suggestions">
+            <summary>
+            Gets all suggestions
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Managers.SuggestionManager.Instance">
+            <summary>
+            Instance (singleton)
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.Managers.SuggestionManager.Reset(System.Boolean)">
+            <summary>
+            Reset to defaults
+            </summary>
+            <param name="save">True to save settings on file, otherwise false</param>
+        </member>
+        <member name="M:UVtools.Core.Managers.SuggestionManager.Load">
+            <summary>
+            Load settings from file
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.Managers.SuggestionManager.Save">
+            <summary>
+            Save settings to file
+            </summary>
+        </member>
         <member name="P:UVtools.Core.MeshFormats.MeshFile.FileFormat">
             <summary>
             Gets the file format for this mesh
@@ -6763,27 +6794,39 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="M:UVtools.Core.Operations.Operation.Deserialize(System.String)">
+        <member name="M:UVtools.Core.Operations.Operation.CreateInstance(System.String,System.Boolean,UVtools.Core.FileFormats.FileFormat)">
+            <summary>
+            Create an instance from a class name or file path
+            </summary>
+            <param name="classNamePath">Classname or path to a file</param>
+            <param name="enableXmlProfileFile">If true, it will attempt to deserialize the operation from a file profile.</param>
+            <param name="slicerFile"></param>
+            <returns></returns>
+        </member>
+        <member name="M:UVtools.Core.Operations.Operation.Deserialize(System.String,UVtools.Core.FileFormats.FileFormat)">
             <summary>
             Deserialize <see cref="T:UVtools.Core.Operations.Operation"/> from a XML file
             </summary>
             <param name="path">XML file path</param>
+            <param name="slicerFile"></param>
             <returns></returns>
         </member>
-        <member name="M:UVtools.Core.Operations.Operation.Deserialize(System.String,System.Type)">
+        <member name="M:UVtools.Core.Operations.Operation.Deserialize(System.String,System.Type,UVtools.Core.FileFormats.FileFormat)">
             <summary>
             Deserialize <see cref="T:UVtools.Core.Operations.Operation"/> from a XML file
             </summary>
             <param name="path">XML file path</param>
             <param name="type"></param>
+            <param name="slicerFile"></param>
             <returns></returns>
         </member>
-        <member name="M:UVtools.Core.Operations.Operation.Deserialize(System.String,UVtools.Core.Operations.Operation)">
+        <member name="M:UVtools.Core.Operations.Operation.Deserialize(System.String,UVtools.Core.Operations.Operation,UVtools.Core.FileFormats.FileFormat)">
             <summary>
             Deserialize <see cref="T:UVtools.Core.Operations.Operation"/> from a XML file
             </summary>
             <param name="path">XML file path</param>
             <param name="operation"></param>
+            <param name="slicerFile"></param>
             <returns></returns>
         </member>
         <member name="M:UVtools.Core.Operations.OperationCalibrateBloomingEffect.GetLayerPreview">
@@ -7412,6 +7455,48 @@
             </summary>
             <returns></returns>
         </member>
+        <member name="M:UVtools.Core.Suggestions.Suggestion.Serialize(System.String,System.Boolean)">
+            <summary>
+            Serialize class to XML file
+            </summary>
+            <param name="path"></param>
+            <param name="indent"></param>
+        </member>
+        <member name="M:UVtools.Core.Suggestions.Suggestion.CreateInstance(System.String,System.Boolean,UVtools.Core.FileFormats.FileFormat)">
+            <summary>
+            Create an instance from a class name or file path
+            </summary>
+            <param name="classNamePath">Classname or path to a file</param>
+            <param name="enableXmlProfileFile">If true, it will attempt to deserialize the suggestion from a file profile.</param>
+            <param name="slicerFile"></param>
+            <returns></returns>
+        </member>
+        <member name="M:UVtools.Core.Suggestions.Suggestion.Deserialize(System.String,UVtools.Core.FileFormats.FileFormat)">
+            <summary>
+            Deserialize <see cref="T:UVtools.Core.Suggestions.Suggestion"/> from a XML file
+            </summary>
+            <param name="path">XML file path</param>
+            <param name="slicerFile"></param>
+            <returns></returns>
+        </member>
+        <member name="M:UVtools.Core.Suggestions.Suggestion.Deserialize(System.String,System.Type,UVtools.Core.FileFormats.FileFormat)">
+            <summary>
+            Deserialize <see cref="T:UVtools.Core.Suggestions.Suggestion"/> from a XML file
+            </summary>
+            <param name="path">XML file path</param>
+            <param name="type"></param>
+            <param name="slicerFile"></param>
+            <returns></returns>
+        </member>
+        <member name="M:UVtools.Core.Suggestions.Suggestion.Deserialize(System.String,UVtools.Core.Suggestions.Suggestion,UVtools.Core.FileFormats.FileFormat)">
+            <summary>
+            Deserialize <see cref="T:UVtools.Core.Suggestions.Suggestion"/> from a XML file
+            </summary>
+            <param name="path">XML file path</param>
+            <param name="suggestion"></param>
+            <param name="slicerFile"></param>
+            <returns></returns>
+        </member>
         <member name="T:UVtools.Core.SystemOS.Linux">
             <summary>
             Linux specific methods
@@ -7495,37 +7580,6 @@
             Eject an USB drive
             </summary>
             <param name="driveLetter">This should be the drive letter. Format: F:/, C:/..</param>
-        </member>
-        <member name="P:UVtools.WPF.Structures.SuggestionManager.FilePath">
-            <summary>
-            Default filepath for store
-            </summary>
-        </member>
-        <member name="P:UVtools.WPF.Structures.SuggestionManager.Suggestions">
-            <summary>
-            Gets all suggestions
-            </summary>
-        </member>
-        <member name="P:UVtools.WPF.Structures.SuggestionManager.Instance">
-            <summary>
-            Instance (singleton)
-            </summary>
-        </member>
-        <member name="M:UVtools.WPF.Structures.SuggestionManager.Reset(System.Boolean)">
-            <summary>
-            Reset to defaults
-            </summary>
-            <param name="save">True to save settings on file, otherwise false</param>
-        </member>
-        <member name="M:UVtools.WPF.Structures.SuggestionManager.Load">
-            <summary>
-            Load settings from file
-            </summary>
-        </member>
-        <member name="M:UVtools.WPF.Structures.SuggestionManager.Save">
-            <summary>
-            Save settings to file
-            </summary>
         </member>
         <member name="T:System.Collections.ObjectModel.RangeObservableCollection`1">
             <summary>

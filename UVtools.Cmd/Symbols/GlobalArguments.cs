@@ -14,6 +14,6 @@ namespace UVtools.Cmd.Symbols;
 internal static class GlobalArguments
 {
     internal static Argument<FileInfo> InputFileArgument { get; } = new Argument<FileInfo>("input-file", "Input file to open and read").ExistingOnly();
-    internal static Argument<FileInfo?> OutputFileArgument { get; } = new ("output-file", () => null, "Output file to save");
-    internal static Argument<DirectoryInfo?> OutputDirectoryArgument { get; } = new ("output-folder", () => null, "Output folder");
+    internal static Argument<FileInfo?> OutputFileArgument { get; } = new("output-file", () => null, "Output file to save");
+    internal static Argument<DirectoryInfo?> OutputDirectoryArgument { get; } = new("output-folder", () => null, "Output folder");
 }

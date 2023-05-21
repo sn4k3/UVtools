@@ -230,7 +230,7 @@ public static class ConsoleArguments
                 return true;
             }
 
-            var operation = Operation.Deserialize(args[2]);
+            var operation = Operation.Deserialize(args[2], slicerFile);
 
             if (operation is null)
             {
@@ -242,7 +242,6 @@ public static class ConsoleArguments
             slicerFile.Decode(args[1]);
 
             Console.WriteLine($"Running operation: {operation.Title}");
-            operation.SlicerFile = slicerFile;
             operation.Execute();
             slicerFile.Save();
             Console.WriteLine("Saved");

@@ -189,18 +189,20 @@ Usage:
 Options:
   -q, --quiet     Make output silent but exceptions error will still show
   --no-progress   Show no progress
+  --dummy         Do not save alterations to file
   --core-version  Show core version information
   --version       Show version information
   -?, -h, --help  Show help and usage information
 
 Commands:
   set-properties <input-file> <property=value>               Set properties in a file or to it layers with new values
-  run <input-file> <files>                                   Run operations and/or scripts
-  convert <input-file> <target-type/ext> <output-file>       Convert input file into a output file format by a known type or extension []
+  run <input-file> <classes/files>                           Run operations, suggestions and/or scripts
+  convert <input-file> <target-type/ext> <output-file>       Convert input file into a output file format by a known
+                                                             type or extension []
   extract <input-file> <output-folder>                       Extract file contents to a folder []
   copy-parameters <input-file> <target-files>                Copy print parameters from one file to another
-  set-preview, set-thumbnail <input-file> <file path|layer   Sets and replace thumbnail(s) in the file [default: :heatmap]
-  index|:random-layer|:heatmap>
+  set-preview, set-thumbnail <input-file> <file path|layer   Sets and replace thumbnail(s) in the file [default:
+  index|:random-layer|:heatmap>                              :heatmap]
   print-issues <input-file>                                  Detect and print issues
   print-properties <input-file>                              Prints available properties
   print-gcode <input-file>                                   Prints the gcode of the file if available

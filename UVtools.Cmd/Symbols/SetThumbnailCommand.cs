@@ -21,7 +21,7 @@ internal static class SetThumbnailCommand
     internal static Command CreateCommand()
     {
         var sourceArgument = new Argument<string>($"file path|layer index|{RandomLayerArg}|{HeatmapArg}", () => HeatmapArg, "Choose from a file, layer index, random layer or generate a heatmap");
-        var thumbnailIndexesOption = new Option<byte[]>(new []{"-i", "--indexes" }, "Prints only the matching thumbnail(s) index(es)")
+        var thumbnailIndexesOption = new Option<byte[]>(new[] { "-i", "--indexes" }, "Prints only the matching thumbnail(s) index(es)")
         {
             AllowMultipleArgumentsPerToken = true
         };
@@ -43,7 +43,7 @@ internal static class SetThumbnailCommand
                 }
 
                 bool result = false;
-                
+
                 if (string.Equals(source, HeatmapArg, StringComparison.OrdinalIgnoreCase))
                 {
                     var slicerFile = Program.OpenInputFile(inputFile);
@@ -51,7 +51,7 @@ internal static class SetThumbnailCommand
                         () => slicerFile.GenerateHeatmapAsync(slicerFile.GetBoundingRectangle(50, 100, Program.Progress), Program.Progress));
 
                     CvInvoke.CvtColor(mat, mat, ColorConversion.Gray2Bgr);
-                    
+
 
                     if (thumbnailIndexes.Length > 0)
                     {
@@ -65,17 +65,17 @@ internal static class SetThumbnailCommand
                         result = slicerFile.SetThumbnails(mat) > 0;
                     }
 
-                    if(result) Program.SaveFile(slicerFile);
+                    if (result) Program.SaveFile(slicerFile);
                     return;
                 }
 
                 if (string.Equals(source, RandomLayerArg, StringComparison.OrdinalIgnoreCase))
                 {
                     var slicerFile = Program.OpenInputFile(inputFile);
-                    if(slicerFile.LayerCount == 0) Program.WriteLineError("The file have no valid layers");
+                    if (slicerFile.LayerCount == 0) Program.WriteLineError("The file have no valid layers");
 
 
-                    using var matRoi = slicerFile[Random.Shared.Next((int) slicerFile.LayerCount)].GetLayerMatBoundingRectangle(50, 100);
+                    using var matRoi = slicerFile[Random.Shared.Next((int)slicerFile.LayerCount)].GetLayerMatBoundingRectangle(50, 100);
                     CvInvoke.CvtColor(matRoi.RoiMat, matRoi.RoiMat, ColorConversion.Gray2Bgr);
 
                     if (thumbnailIndexes.Length > 0)
@@ -140,7 +140,7 @@ internal static class SetThumbnailCommand
                 }
 
                 Program.WriteLineError($"'{source}' is not a file nor layer index nor {RandomLayerArg} nor {HeatmapArg}");
-                
+
 
             }, GlobalArguments.InputFileArgument, sourceArgument, thumbnailIndexesOption);
 

@@ -21,7 +21,7 @@ internal static class PrintPropertiesCommand
 {
     internal static Command CreateCommand()
     {
-        var matchNamesOption = new Option<string[]>(new[] {"-n", "--names"}, "Prints only the name matching properties")
+        var matchNamesOption = new Option<string[]>(new[] { "-n", "--names" }, "Prints only the name matching properties")
         {
             AllowMultipleArgumentsPerToken = true
         };
@@ -89,7 +89,7 @@ internal static class PrintPropertiesCommand
                                 if (propertyInfo.Name.Equals("Item")) continue;
                                 if (matchNames.Length > 0)
                                 {
-                                    if(matchNames.All(s => s != propertyInfo.Name)) continue;
+                                    if (matchNames.All(s => s != propertyInfo.Name)) continue;
                                 }
                                 if (propertyInfo.GetCustomAttributes().Any(attribute =>
                                     {
@@ -132,7 +132,7 @@ internal static class PrintPropertiesCommand
                     for (var i = 0; i < layerIndexesList.Count; i++)
                     {
                         var layerIndex = layerIndexesList[i];
-                        if(i > 0) Console.WriteLine("-------------------------");
+                        if (i > 0) Console.WriteLine("-------------------------");
                         Console.WriteLine($"# Layer: {layerIndex}");
                         foreach (var propertyInfo in slicerFile[layerIndex].GetType()
                                      .GetProperties(BindingFlags.Public | BindingFlags.Instance))

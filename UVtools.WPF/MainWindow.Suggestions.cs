@@ -15,9 +15,9 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using UVtools.Core.Managers;
 using UVtools.Core.Suggestions;
 using UVtools.WPF.Extensions;
-using UVtools.WPF.Structures;
 using UVtools.WPF.Windows;
 
 namespace UVtools.WPF;

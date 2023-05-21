@@ -119,6 +119,18 @@ public static class Helpers
         }
     };
 
+    public static readonly List<FileDialogFilter> SuggestionSettingFileFilter = new()
+    {
+        new()
+        {
+            Name = "UVtools suggestion settings",
+            Extensions = new List<string>
+            {
+                "uvtsu",
+            }
+        }
+    };
+
     public static readonly List<FileDialogFilter> ScriptsFileFilter = new()
     {
         new()

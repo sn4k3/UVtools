@@ -32,7 +32,7 @@ internal static class PrintGCodeCommand
                 {
                     Program.WriteLineWarning("File do not support gcode");
                 }
-                
+
 
             }, GlobalArguments.InputFileArgument);
 

@@ -5,16 +5,16 @@
  *  Everyone is permitted to copy and distribute verbatim copies
  *  of this license document, but changing it is not allowed.
  */
+
 using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Xml.Serialization;
-using UVtools.Core;
 using UVtools.Core.Extensions;
 using UVtools.Core.Suggestions;
 
-namespace UVtools.WPF.Structures;
+namespace UVtools.Core.Managers;
 
 
 public class SuggestionManager

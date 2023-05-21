@@ -1,5 +1,19 @@
 # Changelog
 
+## 21/05/2023 - v3.13.4
+
+- **UVtoolsCmd run:**
+  - (Add) **--dummy:** Do not save alterations to file
+  - (Add) Allow to run suggestions by it class name (#711)
+  - (Improvement) Allow to run operations by it class name in addition to a file path to a profile
+  - (Fix) .uvtop files was not selecting the last selected layer range by name
+- **Suggestions:**
+  - (Add) Allow to import and export settings (.uvtsu)
+  - (Fix) When reset to defaults the SlicerFile property was lost
+- (Fix) Anycubic file format: Wrong header size when downgrading file version (#707)
+- (Fix) Operations: When creating a new instance it will now select the predefined starting layer range instead of all layers
+- (Upgrade) AvaloniaUI from 0.10.19 to 0.10.21
+
 ## 07/05/2023 - v3.13.3
 
 - (Add) Support for AnyCubic Photon Mono 2 (pm3n)

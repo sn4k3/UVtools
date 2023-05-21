@@ -95,7 +95,19 @@
                                            Spacing="5"
                                            Icon="fa-solid fa-xmark"
                                            Command="{Binding ResetSuggestionClicked}"/>
-                    </StackPanel>
+
+                        <uc:ButtonWithIcon Text="Import"
+                                           Spacing="5"
+                                           Icon="fa-solid fa-file-import"
+                                           Margin="20,0,0,0"
+                                           Command="{Binding ImportSettingsClicked}"/>
+
+                        <uc:ButtonWithIcon Text="Export"
+                                           Spacing="5"
+                                           Icon="fa-solid fa-file-export"
+                                           Command="{Binding ExportSettingsClicked}"/>
+
+					</StackPanel>
 
 				</StackPanel>
 			</Border>

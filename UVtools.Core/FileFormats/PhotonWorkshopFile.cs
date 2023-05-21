@@ -1131,7 +1131,7 @@ public sealed class PhotonWorkshopFile : FileFormat
             case "pwms":
             case "pmsq":
             case "dlp":
-                return new uint[] { VERSION_1, VERSION_515 };
+                return new uint[] { VERSION_1, VERSION_515, VERSION_516 };
             case "pwma":
             case "pm3":
             case "pm3m":
@@ -1689,7 +1689,7 @@ public sealed class PhotonWorkshopFile : FileFormat
         {
             >= VERSION_517 => 92,
             >= VERSION_516 => 84,
-            _ => HeaderSettings.Section.Length
+            _ => 80
         };
 
         outputFile.Seek((int)FileMarkSettings.HeaderAddress, SeekOrigin.Begin);
@@ -2043,27 +2043,29 @@ public sealed class PhotonWorkshopFile : FileFormat
     protected override void OnBeforeEncode(bool isPartialEncode)
     {
         HeaderSettings.PerLayerOverride = UsingPerLayerSettings;
-        MachineSettings.MaxFileVersion = PrinterModel switch
+        /*MachineSettings.MaxFileVersion = PrinterModel switch
         {
             AnyCubicMachine.PhotonS => VERSION_1,
             AnyCubicMachine.PhotonZero => VERSION_1,
             AnyCubicMachine.PhotonX => VERSION_1,
-            AnyCubicMachine.PhotonUltra => VERSION_515,
+            AnyCubicMachine.PhotonUltra => VERSION_516,
             AnyCubicMachine.PhotonD2 => VERSION_516,
-            AnyCubicMachine.PhotonMono => VERSION_515,
+            AnyCubicMachine.PhotonMono => VERSION_516,
             AnyCubicMachine.PhotonMono2 => VERSION_517,
-            AnyCubicMachine.PhotonMonoSE => VERSION_515,
+            AnyCubicMachine.PhotonMonoSE => VERSION_516,
             AnyCubicMachine.PhotonMono4K => VERSION_516,
             AnyCubicMachine.PhotonMonoX => VERSION_516,
             AnyCubicMachine.PhotonMonoX2 => VERSION_517,
             AnyCubicMachine.PhotonMonoX6KM3Plus => VERSION_517,
-            AnyCubicMachine.PhotonMonoSQ => VERSION_515,
+            AnyCubicMachine.PhotonMonoSQ => VERSION_516,
             AnyCubicMachine.PhotonM3 => VERSION_516,
             AnyCubicMachine.PhotonM3Max => VERSION_516,
             AnyCubicMachine.PhotonM3Premium => VERSION_517,
             AnyCubicMachine.Custom => VERSION_517,
             _ => VERSION_517
-        };
+        };*/
+
+        MachineSettings.MaxFileVersion = GetAvailableVersionsForExtension(FileExtension)[^1];
     }
 
     #endregion

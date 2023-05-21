@@ -8,7 +8,10 @@
 
 using System;
 using System.ComponentModel;
+using System.IO;
+using System.Text.RegularExpressions;
 using System.Xml.Serialization;
+using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Objects;
 using UVtools.Core.Operations;
@@ -38,6 +41,8 @@ public abstract class Suggestion : BindableBase
     #endregion
 
     #region Properties
+
+    public string Id => GetType().Name.Remove(0, "Suggestion".Length);
 
     /// <summary>
     /// Gets or sets the <see cref="FileFormat"/>
@@ -190,11 +195,110 @@ public abstract class Suggestion : BindableBase
         return _autoApply && Execute();
     }
 
+    /// <summary>
+    /// Serialize class to XML file
+    /// </summary>
+    /// <param name="path"></param>
+    /// <param name="indent"></param>
+    public void Serialize(string path, bool indent = false)
+    {
+        if (indent) XmlExtensions.SerializeToFile(this, path, XmlExtensions.SettingsIndent);
+        else XmlExtensions.SerializeToFile(this, path);
+    }
+
     public Suggestion Clone()
     {
         return (MemberwiseClone() as Suggestion)!;
     }
     #endregion
 
+    #region Static Methods
 
+    /// <summary>
+    /// Create an instance from a class name or file path
+    /// </summary>
+    /// <param name="classNamePath">Classname or path to a file</param>
+    /// <param name="enableXmlProfileFile">If true, it will attempt to deserialize the suggestion from a file profile.</param>
+    /// <param name="slicerFile"></param>
+    /// <returns></returns>
+    public static Suggestion? CreateInstance(string classNamePath, bool enableXmlProfileFile = false, FileFormat? slicerFile = null)
+    {
+        if (string.IsNullOrWhiteSpace(classNamePath)) return null;
+        if (enableXmlProfileFile)
+        {
+            var suggestionFile = Deserialize(classNamePath, slicerFile);
+            if (suggestionFile is not null) return suggestionFile;
+        }
+
+        var baseName = "Suggestion";
+        if (classNamePath.StartsWith(baseName)) classNamePath = classNamePath.Remove(0, baseName.Length);
+        if (classNamePath == string.Empty) return null;
+
+        var baseType = typeof(Suggestion).FullName;
+        if (string.IsNullOrWhiteSpace(baseType)) return null;
+        var classname = baseType + classNamePath + ", UVtools.Core";
+        var type = Type.GetType(classname);
+
+        var suggestion = type?.CreateInstance() as Suggestion;
+        if (suggestion is not null && slicerFile is not null)
+        {
+            suggestion.SlicerFile = slicerFile;
+        }
+
+        return suggestion;
+    }
+
+    /// <summary>
+    /// Deserialize <see cref="Suggestion"/> from a XML file
+    /// </summary>
+    /// <param name="path">XML file path</param>
+    /// <param name="slicerFile"></param>
+    /// <returns></returns>
+    public static Suggestion? Deserialize(string path, FileFormat? slicerFile = null)
+    {
+        if (!File.Exists(path)) return null;
+
+        var fileText = File.ReadAllText(path);
+        var match = Regex.Match(fileText, @"(?:<\/\s*Suggestion)([a-zA-Z0-9_]+)(?:\s*>)");
+        if (!match.Success) return null;
+        if (match.Groups.Count < 1) return null;
+        var suggestionName = match.Groups[1].Value;
+        var baseType = typeof(Suggestion).FullName;
+        if (string.IsNullOrWhiteSpace(baseType)) return null;
+        var classname = baseType + suggestionName + ", UVtools.Core";
+        var type = Type.GetType(classname);
+        if (type is null) return null;
+
+        return Deserialize(path, type, slicerFile);
+    }
+
+    /// <summary>
+    /// Deserialize <see cref="Suggestion"/> from a XML file
+    /// </summary>
+    /// <param name="path">XML file path</param>
+    /// <param name="type"></param>
+    /// <param name="slicerFile"></param>
+    /// <returns></returns>
+    public static Suggestion? Deserialize(string path, Type type, FileFormat? slicerFile = null)
+    {
+        var serializer = new XmlSerializer(type);
+        using var stream = File.OpenRead(path);
+        var suggestion = serializer.Deserialize(stream) as Suggestion;
+        if (suggestion is not null && slicerFile is not null)
+        {
+            suggestion.SlicerFile = slicerFile;
+        }
+        return suggestion;
+    }
+
+    /// <summary>
+    /// Deserialize <see cref="Suggestion"/> from a XML file
+    /// </summary>
+    /// <param name="path">XML file path</param>
+    /// <param name="suggestion"></param>
+    /// <param name="slicerFile"></param>
+    /// <returns></returns>
+    public static Suggestion? Deserialize(string path, Suggestion suggestion, FileFormat? slicerFile = null) => Deserialize(path, suggestion.GetType(), slicerFile);
+
+    #endregion
 }

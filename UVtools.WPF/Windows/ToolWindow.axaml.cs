@@ -858,6 +858,11 @@ public class ToolWindow : WindowEx
         try
         {
             var operation = Operation.Deserialize(files[0], ToolControl.BaseOperation);
+            if (operation is null)
+            {
+                await this.MessageBoxError("Unable to import settings, file may be malformed.", "Error while trying to import the settings");
+                return;
+            }
 
             ToolControl.BaseOperation = operation;
             switch (operation.LayerRangeSelection)

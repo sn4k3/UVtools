@@ -10,7 +10,6 @@ using System;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
-using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Layers;
 

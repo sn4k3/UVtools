@@ -6,13 +6,11 @@
  *  of this license document, but changing it is not allowed.
  */
 
-using System;
 using System.Collections.Generic;
 using System.CommandLine;
 using System.Linq;
-using System.Reflection;
-using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
+using UVtools.Core.Objects;
 
 namespace UVtools.Cmd.Symbols;
 
@@ -44,90 +42,65 @@ internal static class SetPropertiesCommand
         };
 
         command.SetHandler((inputFile, properties, layerRange, layerIndexes, outputFile) =>
+        {
+            var parsedProperties = ReflectionPropertyValue.ParseFromString(properties);
+
+            if (parsedProperties.Count == 0)
             {
-                var parsedProperties = new List<ReflectionPropertyValue>(properties.Length);
+                Program.WriteLineError("No properties to set.");
+            }
 
-                foreach (var property in properties)
+            var slicerFile = Program.OpenInputFile(inputFile, FileFormat.FileDecodeType.Partial);
+
+            var layerIndexesList = new List<uint>();
+
+            if (!string.IsNullOrWhiteSpace(layerRange))
+            {
+                if (slicerFile.TryParseLayerIndexRange(layerRange, out var layerIndexStart, out var layerIndexEnd))
                 {
-                    var split = property.Split(new[] { '=', ':' }, 2, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-                    if (split.Length < 2) continue;
-                    parsedProperties.Add(new(split[0], split[1]));
-                }
-
-                if (parsedProperties.Count == 0)
-                {
-                    Program.WriteLineError("No properties to set.");
-                }
-
-                var slicerFile = Program.OpenInputFile(inputFile, FileFormat.FileDecodeType.Partial);
-
-                var layerIndexesList = new List<uint>();
-
-                if (!string.IsNullOrWhiteSpace(layerRange))
-                {
-                    if (slicerFile.TryParseLayerIndexRange(layerRange, out var layerIndexStart, out var layerIndexEnd))
+                    for (var layerIndex = layerIndexStart; layerIndex <= layerIndexEnd; layerIndex++)
                     {
-                        for (var layerIndex = layerIndexStart; layerIndex <= layerIndexEnd; layerIndex++)
-                        {
-                            layerIndexesList.Add(layerIndex);
-                        }
-                    }
-                    else
-                    {
-                        Program.WriteLineError($"The specified layer range '{layerRange}' is malformed, use startindex:endindex with positive numbers");
-                    }
-                }
-
-                if (layerIndexes.Length > 0)
-                {
-                    layerIndexesList.AddRange(layerIndexes.Select(layerIndex => slicerFile.SanitizeLayerIndex(layerIndex)));
-                }
-
-                layerIndexesList = layerIndexesList.Distinct().OrderBy(layerIndex => layerIndex).ToList();
-                uint setProperties = 0;
-
-                if (layerIndexesList.Count == 0)
-                {
-                    foreach (var propertyInfo in slicerFile.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
-                    {
-                        foreach (var property in parsedProperties)
-                        {
-                            if (propertyInfo.Name != property.Name) continue;
-                            propertyInfo.SetValueFromString(slicerFile, property.Value);
-                            property.Found = true;
-                            setProperties++;
-                        }
+                        layerIndexesList.Add(layerIndex);
                     }
                 }
                 else
                 {
-                    foreach (var layerIndex in layerIndexesList)
-                    {
-                        var layer = slicerFile[layerIndex];
-                        foreach (var propertyInfo in layer.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
-                        {
-                            foreach (var property in parsedProperties)
-                            {
-                                if (propertyInfo.Name != property.Name) continue;
-                                propertyInfo.SetValueFromString(layer, property.Value);
-                                property.Found = true;
-                                setProperties++;
-                            }
-                        }
-                    }
+                    Program.WriteLineError($"The specified layer range '{layerRange}' is malformed, use startindex:endindex with positive numbers");
                 }
+            }
 
+            if (layerIndexes.Length > 0)
+            {
+                layerIndexesList.AddRange(layerIndexes.Select(layerIndex => slicerFile.SanitizeLayerIndex(layerIndex)));
+            }
 
-                foreach (var property in parsedProperties)
+            layerIndexesList = layerIndexesList.Distinct().OrderBy(layerIndex => layerIndex).ToList();
+            uint setProperties = 0;
+
+            if (layerIndexesList.Count == 0)
+            {
+                setProperties += ReflectionPropertyValue.SetProperties(slicerFile, parsedProperties);
+            }
+            else
+            {
+                foreach (var layerIndex in layerIndexesList)
                 {
-                    if (property.Found) continue;
-                    Program.WriteLineWarning($"Property {property.Name} was defined but not found nor set.");
+                    var layer = slicerFile[layerIndex];
+                    setProperties += ReflectionPropertyValue.SetProperties(layer, parsedProperties);
                 }
+            }
 
-                if (setProperties <= 0) return;
-                Program.WriteLine($"Properties set: {setProperties}");
-                Program.SaveFile(slicerFile, outputFile);
-            }, GlobalArguments.InputFileArgument, propertiesArgument, layerRangeOption, layerIndexesOption, GlobalOptions.OutputFile);
+
+            foreach (var property in parsedProperties)
+            {
+                if (property.Found) continue;
+                Program.WriteLineWarning($"Property {property.Name} was defined but not found nor set.");
+            }
+
+            if (setProperties <= 0) return;
+            Program.WriteLine($"Properties set: {setProperties}");
+            Program.SaveFile(slicerFile, outputFile);
+        }, GlobalArguments.InputFileArgument, propertiesArgument, layerRangeOption, layerIndexesOption, GlobalOptions.OutputFile);
 
         return command;
     }

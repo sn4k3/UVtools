@@ -54,7 +54,7 @@ public static class Program
             Console.WriteLine(e);
             return;
         }
-        
+
         if (Args.Length >= 1)
         {
             switch (Args[0])

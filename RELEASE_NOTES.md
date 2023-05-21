@@ -1,5 +1,12 @@
-- (Add) Support for AnyCubic Photon Mono 2 (pm3n)
-- (Add) PrusaSlicer printer: AnyCubic Photon Mono 2
-- (Improvement) Layer compression performance for Deflate and GZip methods
-- (Improvement) OSLA: Adds NonZeroPixelCount for layers and end marker (;OSLATiCo)
+- **UVtoolsCmd run:**
+  - (Add) **--dummy:** Do not save alterations to file
+  - (Add) Allow to run suggestions by it class name (#711)
+  - (Improvement) Allow to run operations by it class name in addition to a file path to a profile
+  - (Fix) .uvtop files was not selecting the last selected layer range by name
+- **Suggestions:**
+  - (Add) Allow to import and export settings (.uvtsu)
+  - (Fix) When reset to defaults the SlicerFile property was lost
+- (Fix) Anycubic file format: Wrong header size when downgrading file version (#707)
+- (Fix) Operations: When creating a new instance it will now select the predefined starting layer range instead of all layers
+- (Upgrade) AvaloniaUI from 0.10.19 to 0.10.21
 

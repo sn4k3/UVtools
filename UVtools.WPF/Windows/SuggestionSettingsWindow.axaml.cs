@@ -7,11 +7,12 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using UVtools.Core.Extensions;
+using UVtools.Core.Managers;
 using UVtools.Core.Suggestions;
 using UVtools.WPF.Controls;
 using UVtools.WPF.Controls.Suggestions;
 using UVtools.WPF.Extensions;
-using UVtools.WPF.Structures;
+using Helpers = UVtools.WPF.Controls.Helpers;
 
 namespace UVtools.WPF.Windows;
 
@@ -70,7 +71,7 @@ public partial class SuggestionSettingsWindow : WindowEx
                     return;
                 }
 
-                ActiveSuggestion = value is null ? null : SuggestionManager.GetSuggestion(_selectedSuggestion.GetType()).Clone();
+                ActiveSuggestion = value is null ? null : SuggestionManager.GetSuggestion(_selectedSuggestion.GetType())?.Clone();
             });
 
         }
@@ -148,9 +149,16 @@ public partial class SuggestionSettingsWindow : WindowEx
                 "Reset all settings?") != ButtonResult.Yes) return;
 
         SuggestionManager.Reset();
-        if (_activeSuggestion is null) return;
-            
-        ActiveSuggestion = (Suggestion)Activator.CreateInstance(_activeSuggestion.GetType());
+
+        foreach (var suggestionMngr in SuggestionManager.Instance.Suggestions)
+        {
+            suggestionMngr.SlicerFile = SlicerFile;
+        }
+
+        var suggestion = (Suggestion)_activeSuggestion?.GetType().CreateInstance();
+        if (suggestion == null) return;
+        suggestion.SlicerFile = SlicerFile;
+        ActiveSuggestion = suggestion;
     }
 
 
@@ -187,7 +195,7 @@ public partial class SuggestionSettingsWindow : WindowEx
                 "Are you sure you want to discard all changes and return to the last saved state?",
                 "Discard suggestion changes?") != ButtonResult.Yes) return;
 
-        ActiveSuggestion = SuggestionManager.GetSuggestion(_activeSuggestion.GetType()).Clone();
+        ActiveSuggestion = SuggestionManager.GetSuggestion(_activeSuggestion.GetType())?.Clone();
     }
 
     public async void ResetSuggestionClicked()
@@ -198,7 +206,68 @@ public partial class SuggestionSettingsWindow : WindowEx
                 "Are you sure you want to reset to the default settings?",
                 "Reset suggestion settings?") != ButtonResult.Yes) return;
 
-        ActiveSuggestion = (Suggestion)Activator.CreateInstance(_activeSuggestion.GetType());
-        SuggestionManager.SetSuggestion(_activeSuggestion.Clone(), true);
+        var suggestion = (Suggestion)_activeSuggestion.GetType().CreateInstance();
+        if (suggestion == null) return;
+        suggestion.SlicerFile = SlicerFile;
+        ActiveSuggestion = suggestion;
+        SuggestionManager.SetSuggestion(suggestion.Clone(), true);
+    }
+
+    public async void ImportSettingsClicked()
+    {
+        var dialog = new OpenFileDialog
+        {
+            AllowMultiple = false,
+            Filters = Helpers.SuggestionSettingFileFilter
+        };
+
+        var files = await dialog.ShowAsync(this);
+
+        if (files is null || files.Length == 0) return;
+
+        try
+        {
+            var suggestion = Suggestion.Deserialize(files[0], SlicerFile);
+            if (suggestion is null)
+            {
+                await this.MessageBoxError("Unable to import settings, file may be malformed.", "Error while trying to import the settings");
+                return;
+            }
+            
+            if (_activeSuggestion.GetType() != suggestion.GetType())
+            {
+                await this.MessageBoxError($"Unable to import '{suggestion.GetType().Name}' to '{_activeSuggestion.GetType().Name}', the type does not match the active suggestion.\n" +
+                                           $"Please select the correct profile for the active '{_activeSuggestion.GetType().Name}' suggestion.", "Error while trying to import the settings");
+                return;
+            }
+
+            ReflectionExtensions.CopyPropertiesTo(suggestion, _activeSuggestion, nameof(_activeSuggestion.SlicerFile), nameof(_activeSuggestion.Enabled), nameof(_activeSuggestion.AutoApply));
+        }
+        catch (Exception e)
+        {
+            await this.MessageBoxError(e.ToString(), "Error while trying to import the settings");
+        }
+    }
+
+    public async void ExportSettingsClicked()
+    {
+        var dialog = new SaveFileDialog
+        {
+            Filters = Helpers.SuggestionSettingFileFilter,
+            InitialFileName = _activeSuggestion.Id
+        };
+
+        var file = await dialog.ShowAsync(this);
+
+        if (string.IsNullOrWhiteSpace(file)) return;
+
+        try
+        {
+            _activeSuggestion.Serialize(file, true);
+        }
+        catch (Exception e)
+        {
+            await this.MessageBoxError(e.ToString(), "Error while trying to export the settings");
+        }
     }
 }

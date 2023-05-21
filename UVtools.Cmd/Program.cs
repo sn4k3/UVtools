@@ -27,15 +27,16 @@ internal class Program
     internal static Stopwatch StopWatch { get; } = new();
     internal static bool Quiet { get; private set; }
     internal static bool NoProgress { get; private set; }
+    internal static bool DummyMode { get; private set; }
 
     internal static string[] Args { get; private set; } = null!;
 
     public static async Task<int> Main(params string[] args)
     {
-        
+
         Thread.CurrentThread.CurrentCulture = CoreSettings.OptimalCultureInfo;
         Args = args;
-        
+
         var rootCommand = new RootCommand("MSLA/DLP, file analysis, repair, conversion and manipulation")
         {
             SetPropertiesCommand.CreateCommand(),
@@ -53,6 +54,7 @@ internal class Program
 
             GlobalOptions.QuietOption,
             GlobalOptions.NoProgressOption,
+            GlobalOptions.DummyOption,
             new Option<bool>("--core-version", "Show core version information"),
         };
 
@@ -69,22 +71,23 @@ internal class Program
     {
         foreach (var arg in Args)
         {
-            bool found = false;
             if (GlobalOptions.QuietOption.Aliases.Any(alias => arg == alias))
             {
                 Quiet = true;
-                found = true;
+                continue;
             }
-
-            if(found) continue;
 
             if (GlobalOptions.NoProgressOption.Aliases.Any(alias => arg == alias))
             {
                 NoProgress = true;
-                found = true;
+                continue;
             }
 
-            if (found) continue;
+            if (GlobalOptions.DummyOption.Aliases.Any(alias => arg == alias))
+            {
+                DummyMode = true;
+                continue;
+            }
 
             if (arg == "--core-version")
             {
@@ -112,6 +115,7 @@ internal class Program
 
     internal static void SaveFile(FileFormat slicerFile, string? outputFile = null)
     {
+        if (DummyMode) return;
         var fileName = outputFile is null ? slicerFile.Filename : Path.GetFileName(outputFile);
         ProgressBarWork($"Saving file {fileName}", () =>
         {
@@ -207,7 +211,7 @@ internal class Program
         }
 
         var str = obj?.ToString();
-        if(str is not null && prependError && !str.StartsWith("Error:")) str = $"Error: {str}";
+        if (str is not null && prependError && !str.StartsWith("Error:")) str = $"Error: {str}";
 
         Console.ForegroundColor = ConsoleColor.Red;
         Console.WriteLine(str);

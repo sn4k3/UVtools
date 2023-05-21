@@ -8,6 +8,7 @@
 
 using System;
 using System.Globalization;
+using System.Linq;
 using System.Reflection;
 
 namespace UVtools.Core.Extensions;
@@ -92,7 +93,7 @@ public static class ReflectionExtensions
             attribute.SetValue(obj, value.Convert<long>());
             return true;
         }
-
+        
         if (attribute.PropertyType == typeof(Half))
         {
             attribute.SetValue(obj, Half.Parse(value, CultureInfo.InvariantCulture));
@@ -117,9 +118,36 @@ public static class ReflectionExtensions
             return true;
         }
 
+        if (attribute.PropertyType == typeof(nint))
+        {
+            attribute.SetValue(obj, nint.Parse(value, CultureInfo.InvariantCulture));
+            return true;
+        }
+
+        if (attribute.PropertyType == typeof(nuint))
+        {
+            attribute.SetValue(obj, nuint.Parse(value, CultureInfo.InvariantCulture));
+            return true;
+        }
+
         throw new Exception($"Data type '{attribute.PropertyType.Name}' not recognized nor implemented.");
     }
 
     public static bool SetValueFromString(this PropertyInfo attribute, object obj, object? value) =>
         attribute.SetValueFromString(obj, value?.ToString() ?? string.Empty);
+
+    public static void CopyPropertiesTo(object src, object dest, params string[] ignoredProperties)
+    {
+        var srcProperties = src.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(info => info is { CanRead: true, CanWrite: true, GetMethod: not null } && !ignoredProperties.Contains(info.Name));
+        var destProperties = dest.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(info => info is { CanRead: true, CanWrite: true, SetMethod: not null } && !ignoredProperties.Contains(info.Name));
+        foreach (var srcProperty in srcProperties)
+        {
+            foreach (var destProperty in destProperties)
+            {
+                if (srcProperty.PropertyType != destProperty.PropertyType) continue;
+                if (srcProperty.Name != destProperty.Name) continue;
+                destProperty.SetValue(dest, srcProperty.GetValue(src));
+            }
+        }
+    }
 }

@@ -38,7 +38,7 @@ public class ProgressBar : IDisposable
         // If the console output is redirected to a file, draw nothing.
         // Otherwise, we'll end up with a lot of garbage in the target file.
         if (Program.Quiet || Program.NoProgress) return;
-        if(Console.IsOutputRedirected) Console.WriteLine();
+        if (Console.IsOutputRedirected) Console.WriteLine();
         ResetTimer();
     }
 
@@ -53,7 +53,7 @@ public class ProgressBar : IDisposable
             {
                 _lastProgressPercent = Program.Progress.ProgressPercent;
                 var progressBlockCount = (int)(_lastProgressPercent * BlockCount / 100);
-                
+
                 if (Console.IsOutputRedirected)
                 {
                     var text = string.Format("[{0}{1}] {2:F2}% ({3:F2}s)",

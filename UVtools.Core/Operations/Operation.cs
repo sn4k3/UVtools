@@ -113,7 +113,11 @@ public abstract class Operation : BindableBase, IDisposable
     public LayerRangeSelection LayerRangeSelection
     {
         get => _layerRangeSelection;
-        set => RaiseAndSetIfChanged(ref _layerRangeSelection, value);
+        set
+        {
+            if(!RaiseAndSetIfChanged(ref _layerRangeSelection, value)) return;
+            if(SlicerFile is not null) SelectLayers(_layerRangeSelection);
+        }
     }
 
     /// <summary>
@@ -123,12 +127,12 @@ public abstract class Operation : BindableBase, IDisposable
     {
         get
         {
-            if (LayerRangeSelection == LayerRangeSelection.None)
+            if (_layerRangeSelection == LayerRangeSelection.None)
             {
                 return $" [Layers: {LayerIndexStart}-{LayerIndexEnd}]";
             }
 
-            return $" [Layers: {LayerRangeSelection}]";
+            return $" [Layers: {_layerRangeSelection}]";
         }
     }
 
@@ -340,13 +344,18 @@ public abstract class Operation : BindableBase, IDisposable
     #endregion
 
     #region Constructor
-    protected Operation() { }
+
+    protected Operation()
+    {
+        _layerRangeSelection = StartLayerRangeSelection;
+    }
 
     protected Operation(FileFormat slicerFile) : this()
     {
         _slicerFile = slicerFile;
-        OriginalBoundingRectangle = _slicerFile.BoundingRectangle;
-        SelectAllLayers();
+        _originalBoundingRectangle = slicerFile.BoundingRectangle;
+        _layerIndexEnd = slicerFile.LastLayerIndex;
+        SelectLayers(_layerRangeSelection);
         InitWithSlicerFile();
     }
     #endregion
@@ -821,11 +830,40 @@ public abstract class Operation : BindableBase, IDisposable
     #region Static Methods
 
     /// <summary>
+    /// Create an instance from a class name or file path
+    /// </summary>
+    /// <param name="classNamePath">Classname or path to a file</param>
+    /// <param name="enableXmlProfileFile">If true, it will attempt to deserialize the operation from a file profile.</param>
+    /// <param name="slicerFile"></param>
+    /// <returns></returns>
+    public static Operation? CreateInstance(string classNamePath, bool enableXmlProfileFile = false, FileFormat? slicerFile = null)
+    {
+        if (string.IsNullOrWhiteSpace(classNamePath)) return null;
+        if (enableXmlProfileFile)
+        {
+            var operation = Deserialize(classNamePath, slicerFile);
+            if (operation is not null) return operation;
+        }
+
+        var baseName = "Operation";
+        if (classNamePath.StartsWith(baseName)) classNamePath = classNamePath.Remove(0, baseName.Length);
+        if (classNamePath == string.Empty) return null;
+
+        var baseType = typeof(Operation).FullName;
+        if (string.IsNullOrWhiteSpace(baseType)) return null;
+        var classname = baseType + classNamePath + ", UVtools.Core";
+        var type = Type.GetType(classname);
+
+        return (slicerFile is null ? type?.CreateInstance() : type?.CreateInstance(slicerFile)) as Operation;
+    }
+
+    /// <summary>
     /// Deserialize <see cref="Operation"/> from a XML file
     /// </summary>
     /// <param name="path">XML file path</param>
+    /// <param name="slicerFile"></param>
     /// <returns></returns>
-    public static Operation? Deserialize(string path)
+    public static Operation? Deserialize(string path, FileFormat? slicerFile = null)
     {
         if (!File.Exists(path)) return null;
 
@@ -840,7 +878,7 @@ public abstract class Operation : BindableBase, IDisposable
         var type = Type.GetType(classname);
         if (type is null) return null;
 
-        return Deserialize(path, type);
+        return Deserialize(path, type, slicerFile);
     }
 
     /// <summary>
@@ -848,13 +886,20 @@ public abstract class Operation : BindableBase, IDisposable
     /// </summary>
     /// <param name="path">XML file path</param>
     /// <param name="type"></param>
+    /// <param name="slicerFile"></param>
     /// <returns></returns>
-    public static Operation Deserialize(string path, Type type)
+    public static Operation? Deserialize(string path, Type type, FileFormat? slicerFile = null)
     {
         var serializer = new XmlSerializer(type);
         using var stream = File.OpenRead(path);
-        var operation = serializer.Deserialize(stream) as Operation;
-        operation!.ImportedFrom = OperationImportFrom.Session;
+        if (serializer.Deserialize(stream) is not Operation operation) return null;
+
+        operation.ImportedFrom = OperationImportFrom.Session;
+        if (slicerFile is not null)
+        {
+            operation.SlicerFile = slicerFile;
+            operation.SelectLayers(operation.LayerRangeSelection);
+        }
         return operation;
     }
 
@@ -863,8 +908,9 @@ public abstract class Operation : BindableBase, IDisposable
     /// </summary>
     /// <param name="path">XML file path</param>
     /// <param name="operation"></param>
+    /// <param name="slicerFile"></param>
     /// <returns></returns>
-    public static Operation Deserialize(string path, Operation operation) => Deserialize(path, operation.GetType());
+    public static Operation? Deserialize(string path, Operation operation, FileFormat? slicerFile = null) => Deserialize(path, operation.GetType(), slicerFile);
 
     #endregion
 }

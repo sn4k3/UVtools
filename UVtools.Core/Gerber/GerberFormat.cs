@@ -12,6 +12,7 @@ using Emgu.CV.Structure;
 using Emgu.CV.Util;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
@@ -274,8 +275,13 @@ public class GerberFormat
                 continue;
             }
 
+            if (line.StartsWith("G04")) // Comment
+            {
+                continue;
+            }
+
             // Aperture selector
-            if (line[0] == 'D')
+            if (line[0] == 'D' || line.StartsWith("G54"))
             {
                 var matchD = Regex.Match(line, @"D(\d+)");
                 if (!matchD.Success || matchD.Groups.Count < 2) continue;
@@ -518,6 +524,8 @@ public class GerberFormat
                 currentY = nowY;
                 continue;
             }
+
+            Debug.WriteLine($"Not recognized command: {line}");
         }
     }
 

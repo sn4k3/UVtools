@@ -48,7 +48,7 @@ internal static class CopyParametersCommand
                 Program.WriteLine($"{count} properties changed");
             }
 
-            
+
         }, GlobalArguments.InputFileArgument, targetFilesArgument);
 
         return command;

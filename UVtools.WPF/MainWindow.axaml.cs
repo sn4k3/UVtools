@@ -1256,8 +1256,7 @@ public partial class MainWindow : WindowEx
                 if(!IsFileLoaded) continue;
                 try
                 {
-                    var operation = Operation.Deserialize(files[i]);
-                    operation.SlicerFile = SlicerFile;
+                    var operation = Operation.Deserialize(files[i], SlicerFile);
                     if ((_globalModifiers & KeyModifiers.Shift) != 0) await RunOperation(operation);
                     else await ShowRunOperation(operation);
                 }
