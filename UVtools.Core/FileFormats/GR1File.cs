@@ -152,7 +152,7 @@ public sealed class GR1File : FileFormat
         new (typeof(GR1File), "gr1", "GR1 Workshop")
     };
 
-    public override PrintParameterModifier[]? PrintParameterModifiers { get; } =
+    public override PrintParameterModifier[] PrintParameterModifiers { get; } =
     {
         PrintParameterModifier.BottomLayerCount,
         PrintParameterModifier.LightOffDelay,
@@ -169,7 +169,7 @@ public sealed class GR1File : FileFormat
         PrintParameterModifier.LightPWM,
     };
 
-    public override Size[]? ThumbnailsOriginalSize { get; } =
+    public override Size[] ThumbnailsOriginalSize { get; } =
     {
         new (116, 116),
         new (290, 290)
@@ -333,7 +333,7 @@ public sealed class GR1File : FileFormat
 
         outputFile.WriteSerialize(HeaderSettings);
 
-        var previews = new byte[ThumbnailsOriginalSize!.Length][];
+        var previews = new byte[ThumbnailsOriginalSize.Length][];
 
         // Previews
         Parallel.For(0, previews.Length, CoreSettings.GetParallelOptions(progress), previewIndex =>
@@ -442,7 +442,7 @@ public sealed class GR1File : FileFormat
             throw new FileLoadException("Not a valid Makerbase file!", FileFullPath);
         }
 
-        byte[][] previews = new byte[ThumbnailsOriginalSize!.Length][];
+        byte[][] previews = new byte[ThumbnailsOriginalSize.Length][];
         for (int i = 0; i < ThumbnailsOriginalSize.Length; i++)
         {
             previews[i] = new byte[ThumbnailsOriginalSize[i].Area() * 2];

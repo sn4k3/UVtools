@@ -156,7 +156,7 @@ public sealed class MDLPFile : FileFormat
         new (typeof(MDLPFile), "mdlp", "Makerbase MDLP v1"),
     };
 
-    public override PrintParameterModifier[]? PrintParameterModifiers { get; } =
+    public override PrintParameterModifier[] PrintParameterModifiers { get; } =
     {
         PrintParameterModifier.BottomLayerCount,
         PrintParameterModifier.LightOffDelay,
@@ -174,7 +174,7 @@ public sealed class MDLPFile : FileFormat
         PrintParameterModifier.LightPWM,*/
     };
 
-    public override Size[]? ThumbnailsOriginalSize { get; } =
+    public override Size[] ThumbnailsOriginalSize { get; } =
     {
         new (116, 116),
         new (290, 290)
@@ -294,7 +294,7 @@ public sealed class MDLPFile : FileFormat
 
         outputFile.WriteSerialize(HeaderSettings);
 
-        var previews = new byte[ThumbnailsOriginalSize!.Length][];
+        var previews = new byte[ThumbnailsOriginalSize.Length][];
 
         // Previews
         Parallel.For(0, previews.Length, CoreSettings.GetParallelOptions(progress), previewIndex =>
@@ -401,7 +401,7 @@ public sealed class MDLPFile : FileFormat
         HeaderSettings = Helpers.Deserialize<Header>(inputFile);
         HeaderSettings.Validate();
 
-        byte[][] previews = new byte[ThumbnailsOriginalSize!.Length][];
+        byte[][] previews = new byte[ThumbnailsOriginalSize.Length][];
         for (int i = 0; i < ThumbnailsOriginalSize.Length; i++)
         {
             previews[i] = new byte[ThumbnailsOriginalSize[i].Area() * 2];

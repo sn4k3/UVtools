@@ -288,7 +288,7 @@ public sealed class AnetFile : FileFormat
 
     public override byte AntiAliasing => 1; // Format does not support anti-aliasing
 
-    public override PrintParameterModifier[]? PrintParameterModifiers { get; } =
+    public override PrintParameterModifier[] PrintParameterModifiers { get; } =
     {
         PrintParameterModifier.ExposureTime,
         PrintParameterModifier.BottomExposureTime,
@@ -297,7 +297,7 @@ public sealed class AnetFile : FileFormat
         PrintParameterModifier.LiftHeight,
     };
 
-    public override Size[]? ThumbnailsOriginalSize { get; } = { new(260, 140) };
+    public override Size[] ThumbnailsOriginalSize { get; } = { new(260, 140) };
     public override uint[] AvailableVersions { get; } = { 3 };
 
     public override uint DefaultVersion => DEFAULT_VERSION;
@@ -510,7 +510,7 @@ public sealed class AnetFile : FileFormat
             throw new FileLoadException($"Not a valid N4 file: incorrect preview format ({HeaderSettings.PreviewSize})", FileFullPath);
         }
 
-        Thumbnails[0] = DecodeImage(DATATYPE_BGR565, HeaderSettings.PreviewContent[BmpHeader.Length..], ThumbnailsOriginalSize![0]);
+        Thumbnails[0] = DecodeImage(DATATYPE_BGR565, HeaderSettings.PreviewContent[BmpHeader.Length..], ThumbnailsOriginalSize[0]);
 
         Debug.WriteLine(HeaderSettings);
 

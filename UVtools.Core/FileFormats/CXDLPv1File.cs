@@ -315,7 +315,7 @@ public sealed class CXDLPv1File : FileFormat
         new(typeof(CXDLPv1File), "v1.cxdlp", "Creality CXDLP v1"),
     };
 
-    public override PrintParameterModifier[]? PrintParameterModifiers { get; } =
+    public override PrintParameterModifier[] PrintParameterModifiers { get; } =
     {
         PrintParameterModifier.BottomLayerCount,
 
@@ -334,7 +334,7 @@ public sealed class CXDLPv1File : FileFormat
         PrintParameterModifier.LightPWM,
     };
 
-    public override Size[]? ThumbnailsOriginalSize { get; } =
+    public override Size[] ThumbnailsOriginalSize { get; } =
     {
         new(116, 116),
         new(290, 290),
@@ -487,7 +487,7 @@ public sealed class CXDLPv1File : FileFormat
 
         outputFile.WriteSerialize(HeaderSettings);
 
-        var previews = new byte[ThumbnailsOriginalSize!.Length][];
+        var previews = new byte[ThumbnailsOriginalSize.Length][];
 
         // Previews
         Parallel.For(0, previews.Length, CoreSettings.GetParallelOptions(progress), previewIndex =>
@@ -603,7 +603,7 @@ public sealed class CXDLPv1File : FileFormat
 
         Debug.WriteLine(HeaderSettings);
 
-        byte[][] previews = new byte[ThumbnailsOriginalSize!.Length][];
+        byte[][] previews = new byte[ThumbnailsOriginalSize.Length][];
         for (int i = 0; i < ThumbnailsOriginalSize.Length; i++)
         {
             previews[i] = new byte[ThumbnailsOriginalSize[i].Area() * 2];
@@ -691,7 +691,7 @@ public sealed class CXDLPv1File : FileFormat
     protected override void PartialSaveInternally(OperationProgress progress)
     {
         var offset = Helpers.Serializer.SizeOf(HeaderSettings);
-        foreach (var size in ThumbnailsOriginalSize!)
+        foreach (var size in ThumbnailsOriginalSize)
         {
             offset += size.Area() * 2 + 2; // + page break
         }

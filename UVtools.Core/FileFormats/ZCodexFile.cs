@@ -164,7 +164,7 @@ public sealed class ZCodexFile : FileFormat
         new(typeof(ZCodexFile), "zcodex", "Z-Suite ZCodex")
     };
 
-    public override PrintParameterModifier[]? PrintParameterModifiers { get; } = {
+    public override PrintParameterModifier[] PrintParameterModifiers { get; } = {
         PrintParameterModifier.BottomLayerCount,
         PrintParameterModifier.TransitionLayerCount,
 
@@ -179,7 +179,7 @@ public sealed class ZCodexFile : FileFormat
         PrintParameterModifier.RetractSpeed,
     };
 
-    public override PrintParameterModifier[]? PrintParameterPerLayerModifiers { get; } = {
+    public override PrintParameterModifier[] PrintParameterPerLayerModifiers { get; } = {
         PrintParameterModifier.PositionZ,
         PrintParameterModifier.LiftHeight,
         PrintParameterModifier.LiftSpeed,
@@ -187,7 +187,7 @@ public sealed class ZCodexFile : FileFormat
         PrintParameterModifier.LightPWM,
     };
 
-    public override Size[]? ThumbnailsOriginalSize { get; } = {new(320, 180)};
+    public override Size[] ThumbnailsOriginalSize { get; } = {new(320, 180)};
 
     public override FlipDirection DisplayMirror
     {

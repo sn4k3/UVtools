@@ -346,13 +346,13 @@ public sealed class SL1File : FileFormat
         new(typeof(SL1File), "sl1", "PrusaSlicer SL1"),
         new(typeof(SL1File), "sl1s", "PrusaSlicer SL1S Speed")
     };
-    public override PrintParameterModifier[]? PrintParameterModifiers { get; } = {
+    public override PrintParameterModifier[] PrintParameterModifiers { get; } = {
         PrintParameterModifier.BottomLayerCount,
         PrintParameterModifier.BottomExposureTime,
         PrintParameterModifier.ExposureTime,
     };
 
-    public override Size[]? ThumbnailsOriginalSize { get; } =
+    public override Size[] ThumbnailsOriginalSize { get; } =
     {
         new(400, 400),
         new(800, 480)
@@ -706,7 +706,7 @@ public sealed class SL1File : FileFormat
             Mat image = new();
             CvInvoke.Imdecode(stream.ToArray(), ImreadModes.AnyColor, image);
             byte thumbnailIndex =
-                (byte) (image.Width == ThumbnailsOriginalSize![(int) FileThumbnailSize.Small].Width &&
+                (byte) (image.Width == ThumbnailsOriginalSize[(int) FileThumbnailSize.Small].Width &&
                         image.Height == ThumbnailsOriginalSize[(int) FileThumbnailSize.Small].Height
                     ? FileThumbnailSize.Small
                     : FileThumbnailSize.Large);

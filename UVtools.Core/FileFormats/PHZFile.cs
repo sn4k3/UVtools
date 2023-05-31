@@ -643,7 +643,7 @@ public sealed class PHZFile : FileFormat
         new (typeof(PHZFile), "phz", "Chitubox PHZ"),
     };
 
-    public override PrintParameterModifier[]? PrintParameterModifiers { get; } =
+    public override PrintParameterModifier[] PrintParameterModifiers { get; } =
     {
         PrintParameterModifier.BottomLayerCount,
 
@@ -669,7 +669,7 @@ public sealed class PHZFile : FileFormat
         PrintParameterModifier.LightOffDelay,
     };*/
 
-    public override Size[]? ThumbnailsOriginalSize { get; } =
+    public override Size[] ThumbnailsOriginalSize { get; } =
     {
         new(400, 300), 
         new(200, 125)

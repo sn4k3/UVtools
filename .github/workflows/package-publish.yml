@@ -23,7 +23,7 @@ jobs:
       - name: Set VERSION variable from tag
         run: | 
           $github = Get-Content '${{ github.event_path }}' | ConvertFrom-Json
-          $version = $github.release.tag_name.Replace('v', '')
+          $version = $github.release.tag_name.Trim('v')
           if($version.Length -lt 5)
           { 
              Write-Error "Version $version is too short!"

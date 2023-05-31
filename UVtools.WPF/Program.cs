@@ -170,7 +170,7 @@ public static class Program
         AppDomain.CurrentDomain.UnhandledException += (sender, e) => HandleUnhandledException("Non-UI", (Exception)e.ExceptionObject);
         TaskScheduler.UnobservedTaskException += (sender, e) => HandleUnhandledException("Task", e.Exception);
         //AppDomain.CurrentDomain.FirstChanceException += CurrentDomainOnFirstChanceException;
-        
+
         try
         {
             BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);

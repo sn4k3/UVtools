@@ -1075,7 +1075,7 @@ public sealed class ChituboxFile : FileFormat
         //new(typeof(ChituboxFile), "v4.ctb", "Chitubox CTBv4", false, false),
     };
 
-    public override PrintParameterModifier[]? PrintParameterModifiers
+    public override PrintParameterModifier[] PrintParameterModifiers
     {
         get
         {
@@ -1169,10 +1169,10 @@ public sealed class ChituboxFile : FileFormat
 
 
 
-    public override PrintParameterModifier[]? PrintParameterPerLayerModifiers {
+    public override PrintParameterModifier[] PrintParameterPerLayerModifiers {
         get
         {
-            if (!IsCtbFile) return null; // Only ctb files
+            if (!IsCtbFile) return Array.Empty<PrintParameterModifier>(); // Only ctb files
             /* Disable for v2 beside the fields on format they are not used
              if (HeaderSettings.Version <= 2)
             {
@@ -1218,11 +1218,11 @@ public sealed class ChituboxFile : FileFormat
 
                 
 
-            return null;
+            return Array.Empty<PrintParameterModifier>();
         } 
     }
 
-    public override Size[]? ThumbnailsOriginalSize { get; } =
+    public override Size[] ThumbnailsOriginalSize { get; } =
     {
         new(400, 300),
         new(200, 125)

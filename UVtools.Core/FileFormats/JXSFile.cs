@@ -92,7 +92,7 @@ public sealed class JXSFile : FileFormat
         new(typeof(JXSFile), "jxs", "Uniformation GKone (JXS)")
     };
 
-    public override PrintParameterModifier[]? PrintParameterModifiers { get; } = {
+    public override PrintParameterModifier[] PrintParameterModifiers { get; } = {
         PrintParameterModifier.BottomLayerCount,
         PrintParameterModifier.TransitionLayerCount,
 
@@ -130,7 +130,7 @@ public sealed class JXSFile : FileFormat
         PrintParameterModifier.LightPWM,
     };
 
-    public override PrintParameterModifier[]? PrintParameterPerLayerModifiers { get; } = {
+    public override PrintParameterModifier[] PrintParameterPerLayerModifiers { get; } = {
         PrintParameterModifier.PositionZ,
         PrintParameterModifier.WaitTimeBeforeCure,
         PrintParameterModifier.ExposureTime,

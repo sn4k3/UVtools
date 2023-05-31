@@ -44,7 +44,7 @@ public class OperationEditParameters : Operation
         get
         {
             var sb = new StringBuilder();
-            foreach (var modifier in Modifiers!)
+            foreach (var modifier in Modifiers)
             {
                 if(!modifier.HasChanged) continue;
                 sb.AppendLine($"{modifier.Name}: {modifier.OldValue}{modifier.ValueUnit} » {modifier.NewValue}{modifier.ValueUnit}");
@@ -74,7 +74,7 @@ public class OperationEditParameters : Operation
 
     public override string? ValidateSpawn()
     {
-        if (Modifiers is null || Modifiers.Length == 0)
+        if (Modifiers.Length == 0)
         {
             return "No available properties to edit on this file format.";
         }
@@ -84,7 +84,7 @@ public class OperationEditParameters : Operation
 
     public override string? ValidateInternally()
     {
-        if (Modifiers is null)
+        if (Modifiers.Length == 0)
         {
             return "Modifiers does not exists, can't validate.";
         }
@@ -115,7 +115,7 @@ public class OperationEditParameters : Operation
     #region Propertiers
 
     [XmlIgnore]
-    public FileFormat.PrintParameterModifier[]? Modifiers { get; set; }
+    public FileFormat.PrintParameterModifier[] Modifiers { get; set; } = Array.Empty<FileFormat.PrintParameterModifier>();
 
     public bool PropagateModificationsToLayers
     {
@@ -186,7 +186,7 @@ public class OperationEditParameters : Operation
                 }
             }
 
-            foreach (var modifier in Modifiers!)
+            foreach (var modifier in Modifiers)
             {
                 modifier.OldValue = modifier.NewValue;
             }

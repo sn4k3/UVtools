@@ -120,9 +120,13 @@ But also, I need victims for test subject. Proceed at your own risk!
 - PMX2 (Photon Workshop)
 - PWMB (Photon Workshop)
 - PWSQ (Photon Workshop)
+- PX6S (Photon Workshop)
 - PM3 (Photon Workshop)
+- PM3N (Photon Workshop)
 - PM3M (Photon Workshop)
 - PM3R (Photon Workshop)
+- PM5 (Photon Workshop)
+- PM5S (Photon Workshop)
 - PWC (Photon Workshop)
 - JXS (GKone Slicer)
 - ZCode (UnizMaker)
@@ -143,9 +147,10 @@ But also, I need victims for test subject. Proceed at your own risk!
 - Anet N7
 - ZIP (Generic / Phrozen Zip)
 - VDA.ZIP (Voxeldance Additive)
+- OSLA (Open SLA universal binary file)
 - VDT (Voxeldance Tango)
 - OSF (Vlare Open File Format)
-- UVJ (Zip file format for manual manipulation)
+- UVJ (Vendor-neutral format for manual manipulation)
 - Image files (png, jpg, jpeg, jp2, tif, bmp, pbm, pgm, ras, sr)
 
 # PrusaSlicer

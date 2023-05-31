@@ -172,6 +172,9 @@ $runtimes =
     }
 }
 
+# Sync PrusaSlicer profiles
+& "$rootPath\Scripts\ImportPrusaSlicerData.ps1"
+
 # Set release notes on projects
 $changelog = Get-Content -Path "$changelogFile"
 $foundHashTag = $false

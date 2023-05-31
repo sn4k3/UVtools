@@ -10,6 +10,7 @@ using System;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
+using UVtools.Core.FileFormats;
 using UVtools.Core.Layers;
 using UVtools.Core.Operations;
 
@@ -467,7 +468,7 @@ public sealed class SuggestionWaitTimeBeforeCure : Suggestion
             }
         }
 
-        if (_createEmptyFirstLayer && SlicerFile is {CanUseLayerPositionZ: true, SupportsGCode: false})
+        if (_createEmptyFirstLayer && SlicerFile is (ChituboxFile or CTBEncryptedFile) and { CanUseLayerPositionZ: true, SupportsGCode: false})
         {
             var firstLayer = SlicerFile.FirstLayer!;
             if (!firstLayer.IsDummy) // First layer is not blank as it seems, lets create one

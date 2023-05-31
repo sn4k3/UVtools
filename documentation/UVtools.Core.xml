@@ -2551,6 +2551,11 @@
             extension.
             </summary>
         </member>
+        <member name="P:UVtools.Core.FileFormats.FileFormat.FilenameNoExt">
+            <summary>
+            Returns the file name without the extension
+            </summary>
+        </member>
         <member name="P:UVtools.Core.FileFormats.FileFormat.AvailableVersions">
             <summary>
             Gets the available versions to set in this file format
@@ -2560,6 +2565,12 @@
             <summary>
             Gets the amount of available versions in this file format
             </summary>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.FileFormat.GetAvailableVersionsForExtension">
+            <summary>
+            Gets the available versions to set in this file format given it own extension
+            </summary>
+            <returns></returns>
         </member>
         <member name="M:UVtools.Core.FileFormats.FileFormat.GetAvailableVersionsForExtension(System.String)">
             <summary>
@@ -2585,6 +2596,16 @@
             Gets or sets the version of this file format
             </summary>
         </member>
+        <member name="P:UVtools.Core.FileFormats.FileFormat.ThumbnailsOriginalSize">
+            <summary>
+            Gets the original thumbnail sizes
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.FileFormat.HaveThumbnails">
+            <summary>
+            Gets if this file have any valid thumbnail
+            </summary>
+        </member>
         <member name="P:UVtools.Core.FileFormats.FileFormat.ThumbnailsCount">
             <summary>
             Gets the thumbnails count present in this file format
@@ -2593,11 +2614,6 @@
         <member name="P:UVtools.Core.FileFormats.FileFormat.CreatedThumbnailsCount">
             <summary>
             Gets the number of created thumbnails
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.FileFormat.ThumbnailsOriginalSize">
-            <summary>
-            Gets the original thumbnail sizes
             </summary>
         </member>
         <member name="P:UVtools.Core.FileFormats.FileFormat.Thumbnails">
@@ -2929,6 +2945,11 @@
         <member name="P:UVtools.Core.FileFormats.FileFormat.PrintHeight">
             <summary>
             Gets or sets the print height in mm
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.FileFormat.SupportGlobalPrintParameters">
+            <summary>
+            Check if this file format supports global print parameters
             </summary>
         </member>
         <member name="P:UVtools.Core.FileFormats.FileFormat.SupportPerLayerSettings">
@@ -3348,11 +3369,18 @@
             Gets all valid file extensions in a specified format
             </summary>
         </member>
-        <member name="M:UVtools.Core.FileFormats.FileFormat.GetThumbnail(System.UInt32)">
+        <member name="M:UVtools.Core.FileFormats.FileFormat.GetThumbnailByHeight(System.UInt32)">
             <summary>
             Gets a thumbnail by it height or lower
             </summary>
             <param name="maxHeight">Max height allowed</param>
+            <returns></returns>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.FileFormat.GetThumbnail(System.UInt32)">
+            <summary>
+            Gets a thumbnail by index in a safe manner (No exceptions)
+            </summary>
+            <param name="index">Thumbnail index</param>
             <returns></returns>
         </member>
         <member name="M:UVtools.Core.FileFormats.FileFormat.GetThumbnail(System.Boolean)">
@@ -3362,11 +3390,12 @@
             <param name="largest">True to get the largest, otherwise false</param>
             <returns></returns>
         </member>
-        <member name="M:UVtools.Core.FileFormats.FileFormat.SetThumbnails(Emgu.CV.Mat[])">
+        <member name="M:UVtools.Core.FileFormats.FileFormat.SetThumbnails(Emgu.CV.Mat[],System.Boolean)">
             <summary>
             Sets thumbnails from a list of thumbnails and clone them
             </summary>
             <param name="images"></param>
+            <param name="generateImagesIfEmpty">If true and if <paramref name="images"/> is empty, it will fill the thumbnails with generated images</param>
         </member>
         <member name="M:UVtools.Core.FileFormats.FileFormat.SetThumbnails(Emgu.CV.Mat)">
             <summary>
@@ -3393,6 +3422,11 @@
             </summary>
             <param name="index">Thumbnail index</param>
             <param name="filePath"></param>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.FileFormat.BeforeEncode">
+            <summary>
+            Method that are called before an full or partial encode
+            </summary>
         </member>
         <member name="M:UVtools.Core.FileFormats.FileFormat.OnBeforeEncode(System.Boolean)">
             <summary>
@@ -4176,15 +4210,68 @@
             Spotted on version 517 only
             </summary>
         </member>
-        <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.SectionHeader.Mark">
+        <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.FileMark.SubLayerDefinitionAddress">
             <summary>
-            Gets the section mark placeholder
+            Spotted on version 518 only
             </summary>
         </member>
-        <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.SectionHeader.Length">
+        <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.FileMark.Preview2Address">
+            <summary>
+            Spotted on version 518 only
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.AnycubicNamedTable.IncludeBaseTableLength">
+            <summary>
+            Gets or sets whatever to include the base table length into <see cref="P:UVtools.Core.FileFormats.PhotonWorkshopFile.AnycubicNamedTable.TableLength"/>
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.AnycubicNamedTable.DefaultTableName">
+            <summary>
+            Name of this table
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.AnycubicNamedTable.TableName">
+            <summary>
+            Gets the section name placeholder
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.AnycubicNamedTable.TableLength">
             <summary>
             Gets the length of this section
             </summary>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.PhotonWorkshopFile.AnycubicNamedTable.GetWholeTableLength">
+            <summary>
+            Gets the absolute size of the table including base and derived
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.PhotonWorkshopFile.AnycubicNamedTable.GetDerivedTableLength">
+            <summary>
+            Gets the absolute size of the derived table
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.PhotonWorkshopFile.AnycubicNamedTable.GetFinalTableLength">
+            <summary>
+            Gets the absolute size to set in this table
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.PhotonWorkshopFile.AnycubicNamedTable.Validate(System.Boolean,System.Int32)">
+            <summary>
+            Validates this table
+            </summary>
+            <param name="validateName">True to validate the name, otherwise false</param>
+            <param name="lengthOffset">Offset to length</param>
+            <exception cref="T:System.IO.FileLoadException"></exception>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.PhotonWorkshopFile.AnycubicNamedTable.ValidateExpecting(System.Int32,System.Boolean)">
+            <summary>
+            Validates this table
+            </summary>
+            <param name="length">Length to expect</param>
+            <param name="validateName">True to validate the name, otherwise false</param>
+            <exception cref="T:System.IO.FileLoadException"></exception>
         </member>
         <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.Header.LayerHeight">
             <summary>
@@ -4221,9 +4308,31 @@
             spotted on 516
             </summary>
         </member>
-        <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.HeaderV516.AdvancedMode">
+        <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.Header.AdvancedMode">
             <summary>
             0 = Basic mode | 1 = Advanced mode which allows TSMC
+            v516
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.Header.Grey">
+            <summary>
+            v517
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.Header.BlurLevel">
+            <summary>
+            v517
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.Header.ResinType">
+            <summary>
+            v517
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.Header.IntelligentMode">
+            <summary>
+            When true, normal exposure time will be auto set, use false for traditional way
+            v518
             </summary>
         </member>
         <member name="T:UVtools.Core.FileFormats.PhotonWorkshopFile.Preview">
@@ -4267,9 +4376,14 @@
             Gets the layer height for this layer, measured in millimeters.
             </summary>
         </member>
-        <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.LayerDefinition.Section">
+        <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.SubLayerDef.DataAddress">
             <summary>
-            1269C
+            Gets the layer image offset to encoded layer data, and its length in bytes.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.SubLayerDef.DataLength">
+            <summary>
+            Gets the layer image length in bytes.
             </summary>
         </member>
         <member name="P:UVtools.Core.FileFormats.PHZFile.Header.Magic">

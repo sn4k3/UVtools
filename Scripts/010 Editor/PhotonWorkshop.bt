@@ -1,7 +1,7 @@
 //------------------------------------------------
 //--- 010 Editor v13.0.2 Binary Template
 //
-//      File: pws, pw0, pwm, pwma, pwmo, pwms, pwmx, pwmb, pmsq, dlp
+//      File: pws, pw0, pwm, pwma, pwmo, pwms, pwmx, pwmb, pmsq, dlp, dlp2, pw*, pm*
 //   Authors: Tiago Conceição & Julien Delnatte (Mango3D)
 //------------------------------------------------
 
@@ -209,7 +209,7 @@ if(fileMark.Version >= 516 && fileMark.MachineAddress > 0){
         float DisplayWidth <fgcolor=cBlack, bgcolor=cRed>;
         float DisplayHeight <fgcolor=cBlack, bgcolor=cRed>;
         float MachineZ <fgcolor=cBlack, bgcolor=cRed>;
-        uint MaxFileVersion <fgcolor=cBlack, bgcolor=cRed>; // Highest file version supported, 516?
+        uint MaxFileVersion <fgcolor=cBlack, bgcolor=cRed>; // Highest file version supported, 517?
         char BackgroundColor[4] <fgcolor=cBlack, bgcolor=cRed>; // Machine background color
 
         if(fileMark.Version >= 518){
@@ -266,7 +266,7 @@ if(fileMark.Version >= 518){
     if (fileMark.SubLayerDefinitionAddress > 0){
         FSeek(fileMark.SubLayerDefinitionAddress);
         struct SUBIMAGE{
-            SECTION section;
+            SECTION section <fgcolor=cWhite, bgcolor=cRed>; // SUBIMGS
             uint LayerCount <fgcolor=cBlack, bgcolor=cWhite>;
             uint Index <fgcolor=cBlack, bgcolor=cWhite>;
     

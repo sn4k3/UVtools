@@ -253,7 +253,7 @@ public sealed class PhotonSFile : FileFormat
         new(typeof(PhotonSFile), "photons", "Chitubox PhotonS"),
     };
 
-    public override PrintParameterModifier[]? PrintParameterModifiers { get; } =
+    public override PrintParameterModifier[] PrintParameterModifiers { get; } =
     {
         PrintParameterModifier.BottomLayerCount,
 
@@ -272,7 +272,7 @@ public sealed class PhotonSFile : FileFormat
     };
 
 
-    public override Size[]? ThumbnailsOriginalSize { get; } = {new(224, 168) };
+    public override Size[] ThumbnailsOriginalSize { get; } = {new(224, 168) };
 
     public override FlipDirection DisplayMirror
     {

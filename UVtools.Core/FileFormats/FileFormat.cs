@@ -624,7 +624,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     public static uint CopyParameters(FileFormat from, FileFormat to)
     {
         if (ReferenceEquals(from, to)) return 0;
-        if (from.PrintParameterModifiers is null || to.PrintParameterModifiers is null) return 0;
+        if (!from.SupportGlobalPrintParameters || !to.SupportGlobalPrintParameters) return 0;
 
         uint count = 0;
 
@@ -1083,28 +1083,26 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <summary>
     /// Gets the available <see cref="PrintParameterModifier"/>
     /// </summary>
-    public virtual PrintParameterModifier[]? PrintParameterModifiers => null;
+    public virtual PrintParameterModifier[] PrintParameterModifiers => Array.Empty<PrintParameterModifier>();
 
     /// <summary>
     /// Gets the available <see cref="PrintParameterModifier"/> per layer
     /// </summary>
-    public virtual PrintParameterModifier[]? PrintParameterPerLayerModifiers => null;
+    public virtual PrintParameterModifier[] PrintParameterPerLayerModifiers => Array.Empty<PrintParameterModifier>();
 
     /// <summary>
     /// Checks if a <see cref="PrintParameterModifier"/> exists on print parameters
     /// </summary>
     /// <param name="modifier"></param>
     /// <returns>True if exists, otherwise false</returns>
-    public bool HavePrintParameterModifier(PrintParameterModifier modifier) =>
-        PrintParameterModifiers is not null && PrintParameterModifiers.Contains(modifier);
+    public bool HavePrintParameterModifier(PrintParameterModifier modifier) => PrintParameterModifiers.Contains(modifier);
 
     /// <summary>
     /// Checks if a <see cref="PrintParameterModifier"/> exists on layer parameters
     /// </summary>
     /// <param name="modifier"></param>
     /// <returns>True if exists, otherwise false</returns>
-    public bool HaveLayerParameterModifier(PrintParameterModifier modifier) =>
-        SupportPerLayerSettings && PrintParameterPerLayerModifiers!.Contains(modifier);
+    public bool HaveLayerParameterModifier(PrintParameterModifier modifier) => SupportPerLayerSettings && PrintParameterPerLayerModifiers.Contains(modifier);
 
     /// <summary>
     /// Gets the file filter for open and save dialogs
@@ -1180,6 +1178,10 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// extension.
     /// </summary>
     public string? FileExtension => Path.GetExtension(FileFullPath);
+
+    /// <summary>
+    /// Returns the file name without the extension
+    /// </summary>
     public string? FilenameNoExt => GetFileNameStripExtensions(FileFullPath);
 
     /// <summary>
@@ -1191,6 +1193,12 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// Gets the amount of available versions in this file format
     /// </summary>
     public virtual byte AvailableVersionsCount => (byte)AvailableVersions.Length;
+
+    /// <summary>
+    /// Gets the available versions to set in this file format given it own extension
+    /// </summary>
+    /// <returns></returns>
+    public uint[] GetAvailableVersionsForExtension() => GetAvailableVersionsForExtension(FileExtension);
 
     /// <summary>
     /// Gets the available versions to set in this file format for the given extension
@@ -1230,9 +1238,19 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     }
 
     /// <summary>
+    /// Gets the original thumbnail sizes
+    /// </summary>
+    public virtual Size[] ThumbnailsOriginalSize => Array.Empty<Size>();
+
+    /// <summary>
+    /// Gets if this file have any valid thumbnail
+    /// </summary>
+    public bool HaveThumbnails => Thumbnails.Any(thumbnail => thumbnail is not null);
+
+    /// <summary>
     /// Gets the thumbnails count present in this file format
     /// </summary>
-    public byte ThumbnailsCount => (byte)(ThumbnailsOriginalSize?.Length ?? 0);
+    public byte ThumbnailsCount => (byte)ThumbnailsOriginalSize.Length;
 
     /// <summary>
     /// Gets the number of created thumbnails
@@ -1240,7 +1258,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     public byte CreatedThumbnailsCount {
         get
         {
-            if (Thumbnails is null) return 0;
+            if (Thumbnails.Length == 0) return 0;
             byte count = 0;
 
             foreach (var thumbnail in Thumbnails)
@@ -1252,11 +1270,6 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             return count;
         }
     }
-
-    /// <summary>
-    /// Gets the original thumbnail sizes
-    /// </summary>
-    public virtual Size[]? ThumbnailsOriginalSize => null;
 
     /// <summary>
     /// Gets the thumbnails for this <see cref="FileFormat"/>
@@ -1849,9 +1862,14 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     }
 
     /// <summary>
+    /// Check if this file format supports global print parameters
+    /// </summary>
+    public bool SupportGlobalPrintParameters => PrintParameterModifiers.Length > 0;
+
+    /// <summary>
     /// Checks if this file format supports per layer settings
     /// </summary>
-    public bool SupportPerLayerSettings => PrintParameterPerLayerModifiers is not null && PrintParameterPerLayerModifiers.Length > 0;
+    public bool SupportPerLayerSettings => PrintParameterPerLayerModifiers.Length > 0;
 
     public bool IsReadOnly => false;
 
@@ -3357,15 +3375,25 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// </summary>
     /// <param name="maxHeight">Max height allowed</param>
     /// <returns></returns>
-    public Mat? GetThumbnail(uint maxHeight = 400)
+    public Mat? GetThumbnailByHeight(uint maxHeight = 400)
     {
-        for (int i = 0; i < ThumbnailsCount; i++)
+        for (int i = 0; i < Thumbnails.Length; i++)
         {
             if(Thumbnails[i] is null) continue;
             if (Thumbnails[i]!.Height <= maxHeight) return Thumbnails[i];
         }
 
         return null;
+    }
+
+    /// <summary>
+    /// Gets a thumbnail by index in a safe manner (No exceptions)
+    /// </summary>
+    /// <param name="index">Thumbnail index</param>
+    /// <returns></returns>
+    public Mat? GetThumbnail(uint index)
+    {
+        return Thumbnails.Length <= index ? null : Thumbnails[index];
     }
 
     /// <summary>
@@ -3386,10 +3414,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
                 {
                     return Thumbnails[0]!.Size.Area() >= Thumbnails[1]!.Size.Area() ? Thumbnails[0] : Thumbnails[1];
                 }
-                else
-                {
-                    return Thumbnails[0]!.Size.Area() <= Thumbnails[1]!.Size.Area() ? Thumbnails[0] : Thumbnails[1];
-                }
+
+                return Thumbnails[0]!.Size.Area() <= Thumbnails[1]!.Size.Area() ? Thumbnails[0] : Thumbnails[1];
         }
     }
 
@@ -3397,35 +3423,57 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// Sets thumbnails from a list of thumbnails and clone them
     /// </summary>
     /// <param name="images"></param>
-    public byte SetThumbnails(Mat?[] images)
+    /// <param name="generateImagesIfEmpty">If true and if <paramref name="images"/> is empty, it will fill the thumbnails with generated images</param>
+    public bool SetThumbnails(Mat?[] images, bool generateImagesIfEmpty = false)
     {
-        if (images.Length == 0) return 0;
-        byte imageIndex = 0;
-        byte changed = 0;
-        for (int i = 0; i < ThumbnailsCount; i++)
+        if (Thumbnails.Length == 0) return false;
+
+        images = images.Where(mat => mat is not null && !mat.IsEmpty).ToArray();
+
+        if (images.Length == 0)
         {
-            var image = images[Math.Min(imageIndex++, images.Length - 1)];
-            if (image is null || image.IsEmpty)
+            if (!generateImagesIfEmpty) return false;
+            using var mat = FirstLayer?.BrgMat;
+            if (mat is null || mat.IsEmpty)
             {
-                if (imageIndex >= images.Length) break;
-                i--;
-                continue;
+                using var genMat = EmguExtensions.InitMat(new Size(200, 100), 3);
+                CvInvoke.PutText(genMat, About.Software, new Point(40, 60), FontFace.HersheyDuplex, 1, EmguExtensions.WhiteColor, 2);
+                for (int i = 0; i < Thumbnails.Length; i++)
+                {
+                    Thumbnails[i]?.Dispose();
+                    Thumbnails[i] = new Mat();
+                    CvInvoke.Resize(genMat, Thumbnails[i], ThumbnailsOriginalSize[i]);
+                }
             }
-
-            Thumbnails[i] = image.Clone();
-            if (Thumbnails[i]!.Size != ThumbnailsOriginalSize![i])
+            else
             {
-                CvInvoke.Resize(Thumbnails[i], Thumbnails[i], ThumbnailsOriginalSize[i]);
+                for (int i = 0; i < Thumbnails.Length; i++)
+                {
+                    Thumbnails[i]?.Dispose();
+                    Thumbnails[i] = new Mat(); 
+                    CvInvoke.Resize(mat, Thumbnails[i], ThumbnailsOriginalSize[i]);
+                }
             }
-
-            changed++;
         }
-
-        if (changed <= 0) return 0;
+        else
+        {
+            byte imageIndex = 0;
+            for (int i = 0; i < Thumbnails.Length; i++)
+            {
+                var image = images[Math.Min(imageIndex++, images.Length - 1)]!;
+                if (ReferenceEquals(image, Thumbnails[i])) continue;
+                Thumbnails[i]?.Dispose();
+                Thumbnails[i] = image.Clone();
+                if (Thumbnails[i]!.Size != ThumbnailsOriginalSize[i])
+                {
+                    CvInvoke.Resize(Thumbnails[i], Thumbnails[i], ThumbnailsOriginalSize[i]);
+                }
+            }
+        }
 
         RaisePropertyChanged(nameof(Thumbnails));
         RequireFullEncode = true;
-        return changed;
+        return true;
 
     }
 
@@ -3433,7 +3481,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// Sets all thumbnails the same image
     /// </summary>
     /// <param name="image">Image to set</param>
-    public byte SetThumbnails(Mat image)
+    public bool SetThumbnails(Mat image)
     {
         return SetThumbnails(new[] {image});
     }
@@ -3442,9 +3490,10 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// Sets all thumbnails from a disk file
     /// </summary>
     /// <param name="filePath"></param>
-    public byte SetThumbnails(string filePath)
+    public bool SetThumbnails(string filePath)
     {
-        if (!File.Exists(filePath)) return 0;
+        if (Thumbnails.Length == 0) return false;
+        if (!File.Exists(filePath)) return false;
         using var image = CvInvoke.Imread(filePath, ImreadModes.Color);
         return SetThumbnails(image);
     }
@@ -3458,7 +3507,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     {
         if (index >= Thumbnails.Length) return false;
         Thumbnails[index] = image.Clone();
-        if (Thumbnails[index]!.Size != ThumbnailsOriginalSize![index])
+        if (Thumbnails[index]!.Size != ThumbnailsOriginalSize[index])
         {
             CvInvoke.Resize(Thumbnails[index], Thumbnails[index], ThumbnailsOriginalSize[index]);
         }
@@ -3478,7 +3527,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         if (!File.Exists(filePath)) return false;
         if (index >= Thumbnails.Length) return false;
         Thumbnails[index] = CvInvoke.Imread(filePath, ImreadModes.Color);
-        if (Thumbnails[index]!.Size != ThumbnailsOriginalSize![index])
+        if (Thumbnails[index]!.Size != ThumbnailsOriginalSize[index])
         {
             CvInvoke.Resize(Thumbnails[index], Thumbnails[index], ThumbnailsOriginalSize[index]);
         }
@@ -3488,9 +3537,30 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     }
 
     /// <summary>
+    /// Method that are called before an full or partial encode
+    /// </summary>
+    private void BeforeEncode()
+    {
+        // Convert wait time to light-off delay if first not supported but the second is
+        var bottomWaitTime = BottomWaitTimeAfterCure;
+        var normalWaitTime = WaitTimeAfterCure;
+
+        if (bottomWaitTime > 0 && !CanUseBottomWaitTimeBeforeCure && CanUseBottomLightOffDelay)
+        {
+            SetBottomLightOffDelay(normalWaitTime);
+        }
+
+        if (normalWaitTime > 0 && !CanUseWaitTimeBeforeCure && CanUseLightOffDelay)
+        {
+            SetNormalLightOffDelay(normalWaitTime);
+        }
+    }
+
+    /// <summary>
     /// Triggers before attempt to save/encode the file
     /// </summary>
-    protected virtual void OnBeforeEncode(bool isPartialEncode){}
+    protected virtual void OnBeforeEncode(bool isPartialEncode)
+    { }
 
     /// <summary>
     /// Triggers after save/encode the file
@@ -3538,11 +3608,12 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         }
 
         OnBeforeEncode(false);
+        BeforeEncode();
 
         for (var i = 0; i < Thumbnails.Length; i++)
         {
             if (Thumbnails[i] is null || Thumbnails[i]!.IsEmpty) continue;
-            if(Thumbnails[i]!.Size == ThumbnailsOriginalSize![i]) continue;
+            if(Thumbnails[i]!.Size == ThumbnailsOriginalSize[i]) continue;
             CvInvoke.Resize(Thumbnails[i], Thumbnails[i], new Size(ThumbnailsOriginalSize[i].Width, ThumbnailsOriginalSize[i].Height));
         }
 
@@ -4241,7 +4312,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// </summary>
     public void RefreshPrintParametersModifiersValues()
     {
-        if (PrintParameterModifiers is null) return;
+        if (!SupportGlobalPrintParameters) return;
         if (PrintParameterModifiers.Contains(PrintParameterModifier.BottomLayerCount))
         {
             PrintParameterModifier.BottomLayerCount.Value = BottomLayerCount;
@@ -4388,7 +4459,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// </summary>
     public void RefreshPrintParametersPerLayerModifiersValues(uint layerIndex)
     {
-        if (PrintParameterPerLayerModifiers is null) return;
+        if (!SupportPerLayerSettings) return;
         var layer = this[layerIndex];
 
         if (PrintParameterPerLayerModifiers.Contains(PrintParameterModifier.PositionZ))
@@ -4714,7 +4785,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <returns>Number of affected parameters</returns>
     public byte SetValuesFromPrintParametersModifiers()
     {
-        if (PrintParameterModifiers is null) return 0;
+        if (!SupportGlobalPrintParameters) return 0;
         byte changed = 0;
         foreach (var modifier in PrintParameterModifiers)
         {
@@ -4938,7 +5009,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         }
 
         OnBeforeEncode(true);
-
+        BeforeEncode();
 
         // Backup old file name and prepare the temporary file to be written next
         var oldFilePath = FileFullPath!;
@@ -5120,7 +5191,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             slicerFile.PrintTime = PrintTime;
             slicerFile.PrintHeight = PrintHeight;
 
-            slicerFile.SetThumbnails(Thumbnails);
+            slicerFile.SetThumbnails(Thumbnails, true);
         });
 
         if (!slicerFile.OnAfterConvertFrom(this)) return null;

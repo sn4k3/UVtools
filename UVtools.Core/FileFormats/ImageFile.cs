@@ -27,57 +27,43 @@ public sealed class ImageFile : FileFormat
         new (typeof(ImageFile), "sr", "SR: Sun raster"),
         new (typeof(ImageFile), "ras", "RAS: Sun raster"),
     };
-    public override PrintParameterModifier[]? PrintParameterModifiers => null;
-
-    public override Size[]? ThumbnailsOriginalSize { get; } = {
+    
+    public override Size[] ThumbnailsOriginalSize { get; } = {
         Size.Empty,
         Size.Empty,
         Size.Empty,
         Size.Empty
     };
-    public override uint ResolutionX
-    {
-        get => (uint) ImageMat.Width;
-        set => throw new NotImplementedException();
-    }
-
-    public override uint ResolutionY
-    {
-        get => (uint) ImageMat.Height;
-        set => throw new NotImplementedException();
-    }
 
     public override float DisplayWidth
     {
         get => ResolutionX;
-        set => base.DisplayWidth = ResolutionX = (uint) value;
+        set => base.DisplayWidth = value;
     }
 
     public override float DisplayHeight
     {
         get => ResolutionY;
-        set => base.DisplayHeight = ResolutionY = (uint) value;
+        set => base.DisplayHeight = value;
     }
 
     public override float LayerHeight { get; set; } = 0.01f;
 
-    private Mat ImageMat { get; set; } = null!;
-
     protected override void EncodeInternally(OperationProgress progress)
     {
-        this[0].LayerMat.Save(TemporaryOutputFileFullPath);
+        FirstLayer?.LayerMat.Save(TemporaryOutputFileFullPath);
     }
 
     protected override void DecodeInternally(OperationProgress progress)
     {
-        ImageMat = CvInvoke.Imread(FileFullPath, ImreadModes.Grayscale);
+        using var mat = CvInvoke.Imread(FileFullPath, ImreadModes.Grayscale);
         const byte startDivisor = 2;
         for (int i = 0; i < ThumbnailsCount; i++)
         {
             Thumbnails[i] = new Mat();
             var divisor = (i + 1) * startDivisor;
-            CvInvoke.Resize(ImageMat, Thumbnails[i],
-                new Size(ImageMat.Width / divisor, ImageMat.Height / divisor));
+            CvInvoke.Resize(mat, Thumbnails[i],
+                new Size(mat.Width / divisor, mat.Height / divisor));
         }
 
         /*if (ImageMat.NumberOfChannels > 1)
@@ -85,12 +71,13 @@ public sealed class ImageFile : FileFormat
             CvInvoke.CvtColor(ImageMat, ImageMat, ColorConversion.Bgr2Gray);
         }*/
         Init(1);
-        this[0] = new Layer(0, ImageMat, this);
+        this[0] = new Layer(0, mat, this);
+        Resolution = mat.Size;
     }
 
     protected override void PartialSaveInternally(OperationProgress progress)
     {
-        this[0].LayerMat.Save(TemporaryOutputFileFullPath);
+        EncodeInternally(progress);
     }
 
     public override FileFormat Convert(Type to, string fileFullPath, uint version = 0, OperationProgress? progress = null)

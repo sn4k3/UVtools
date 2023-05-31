@@ -629,7 +629,7 @@ public sealed class FDGFile : FileFormat
         new(typeof(FDGFile), "fdg", "Voxelab FDG"),
     };
 
-    public override PrintParameterModifier[]? PrintParameterModifiers { get; } =
+    public override PrintParameterModifier[] PrintParameterModifiers { get; } =
     {
         PrintParameterModifier.BottomLayerCount,
         PrintParameterModifier.BottomExposureTime,
@@ -648,12 +648,12 @@ public sealed class FDGFile : FileFormat
         PrintParameterModifier.LightPWM,
     };
 
-    public override PrintParameterModifier[]? PrintParameterPerLayerModifiers { get; } = {
+    public override PrintParameterModifier[] PrintParameterPerLayerModifiers { get; } = {
         PrintParameterModifier.LightOffDelay,
         PrintParameterModifier.ExposureTime,
     };
 
-    public override Size[]? ThumbnailsOriginalSize { get; } =
+    public override Size[] ThumbnailsOriginalSize { get; } =
     {
         new(400, 300),
         new(200, 125)

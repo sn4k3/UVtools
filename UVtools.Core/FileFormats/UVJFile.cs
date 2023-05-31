@@ -196,7 +196,7 @@ public sealed class UVJFile : FileFormat
         new(typeof(UVJFile), "uvj", "Vendor-neutral format (UVJ)")
     };
 
-    public override PrintParameterModifier[]? PrintParameterModifiers { get; } = {
+    public override PrintParameterModifier[] PrintParameterModifiers { get; } = {
         PrintParameterModifier.BottomLayerCount,
         PrintParameterModifier.TransitionLayerCount,
 
@@ -235,7 +235,7 @@ public sealed class UVJFile : FileFormat
         PrintParameterModifier.LightPWM
     };
 
-    public override PrintParameterModifier[]? PrintParameterPerLayerModifiers { get; } = {
+    public override PrintParameterModifier[] PrintParameterPerLayerModifiers { get; } = {
         PrintParameterModifier.PositionZ,
         PrintParameterModifier.LightOffDelay,
         PrintParameterModifier.WaitTimeBeforeCure,
@@ -252,7 +252,7 @@ public sealed class UVJFile : FileFormat
         PrintParameterModifier.LightPWM
     };
 
-    public override System.Drawing.Size[]? ThumbnailsOriginalSize { get; } =
+    public override System.Drawing.Size[] ThumbnailsOriginalSize { get; } =
     {
         new(400, 400),
         new(800, 480)

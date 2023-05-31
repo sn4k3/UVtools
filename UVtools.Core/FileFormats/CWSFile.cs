@@ -319,7 +319,7 @@ public sealed class CWSFile : FileFormat
         new (typeof(CWSFile), "xml.cws", "Creation Workshop X (CWS)"),
     };
 
-    public override PrintParameterModifier[]? PrintParameterModifiers { get; } = {
+    public override PrintParameterModifier[] PrintParameterModifiers { get; } = {
         PrintParameterModifier.BottomLayerCount,
         PrintParameterModifier.TransitionLayerCount,
 
@@ -357,7 +357,7 @@ public sealed class CWSFile : FileFormat
         PrintParameterModifier.LightPWM,
     };
 
-    public override PrintParameterModifier[]? PrintParameterPerLayerModifiers { get; } = {
+    public override PrintParameterModifier[] PrintParameterPerLayerModifiers { get; } = {
         PrintParameterModifier.PositionZ,
         PrintParameterModifier.WaitTimeBeforeCure,
         PrintParameterModifier.ExposureTime,
@@ -372,8 +372,6 @@ public sealed class CWSFile : FileFormat
         PrintParameterModifier.RetractSpeed2,
         PrintParameterModifier.LightPWM,
     };
-
-    public override Size[]? ThumbnailsOriginalSize => null;
 
     public override uint ResolutionX
     {

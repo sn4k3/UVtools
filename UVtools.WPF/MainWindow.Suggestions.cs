@@ -15,6 +15,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using UVtools.Core.FileFormats;
 using UVtools.Core.Managers;
 using UVtools.Core.Suggestions;
 using UVtools.WPF.Extensions;
@@ -50,6 +51,8 @@ public partial class MainWindow
 
     public void PopulateSuggestions(bool tryToAutoApply = true)
     {
+        if (SlicerFile is ImageFile) return;
+
         var suggestionsAvailable = new List<Suggestion>();
         var suggestionsApplied = new List<Suggestion>();
         byte autoApplied = 0;

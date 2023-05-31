@@ -19,6 +19,13 @@ public static class StringExtensions
         return input.Remove(input.Length - count);
     }
 
+    public static string ReplaceFirst(this string text, string search, string replace)
+    {
+        var pos = text.IndexOf(search, StringComparison.Ordinal);
+        if (pos < 0) return text;
+        return $"{text[..pos]}{replace}{text[(pos + search.Length)..]}";
+    }
+
     /// <summary>
     /// Upper the first character in a string
     /// </summary>

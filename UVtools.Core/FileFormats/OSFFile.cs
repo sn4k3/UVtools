@@ -325,7 +325,7 @@ public sealed class OSFFile : FileFormat
         new (typeof(OSFFile), "osf", "Vlare Open File Format (OSF)"),
     };
 
-    public override PrintParameterModifier[]? PrintParameterModifiers { get; } =
+    public override PrintParameterModifier[] PrintParameterModifiers { get; } =
     {
         PrintParameterModifier.BottomLayerCount,
         PrintParameterModifier.TransitionLayerCount,
@@ -363,7 +363,7 @@ public sealed class OSFFile : FileFormat
         PrintParameterModifier.LightPWM,
     };
 
-    public override Size[]? ThumbnailsOriginalSize { get; } =
+    public override Size[] ThumbnailsOriginalSize { get; } =
     {
         new(148, 80),
         new(300, 140),
@@ -761,7 +761,7 @@ public sealed class OSFFile : FileFormat
 
         Debug.WriteLine(Header);
 
-        for (byte i = 0; i < ThumbnailsOriginalSize!.Length; i++)
+        for (byte i = 0; i < ThumbnailsOriginalSize.Length; i++)
         {
             var previewSize = Helpers.Deserialize<UInt24BigEndian>(inputFile);
             var previewData = inputFile.ReadBytes(previewSize.Value);

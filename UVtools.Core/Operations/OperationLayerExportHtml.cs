@@ -167,14 +167,14 @@ public sealed class OperationLayerExportHtml : Operation
         html.WriteLine($"                <a class=\"nav-link\" href=\"#Settings\">Settings</a>");
         html.WriteLine($"              </li>");
         
-        if (_exportRawData && SlicerFile.Configs?.Length > 0)
+        if (_exportRawData && SlicerFile.Configs.Length > 0)
         {
             html.WriteLine($"              <li class=\"nav-item\">");
             html.WriteLine($"                <a class=\"nav-link\" href=\"#RawData\">Raw data</a>");
             html.WriteLine($"              </li>");
         }
         
-        if (_exportLayerSettings && SlicerFile.PrintParameterPerLayerModifiers is not null)
+        if (_exportLayerSettings && SlicerFile.SupportPerLayerSettings)
         {
             html.WriteLine($"              <li class=\"nav-item\">");
             html.WriteLine($"                <a class=\"nav-link\" href=\"#Layers\">Layers</a>");
@@ -354,7 +354,7 @@ public sealed class OperationLayerExportHtml : Operation
 
 
 
-        if (SlicerFile.PrintParameterModifiers is not null)
+        if (SlicerFile.SupportGlobalPrintParameters)
         {
             html.WriteLine("        <div class=\"accordion-item\">");
             html.WriteLine("          <h2 class=\"accordion-header\" id=\"accordionStructure-SettingsHeader\">");
@@ -392,7 +392,7 @@ public sealed class OperationLayerExportHtml : Operation
         }
 
 
-        if (_exportRawData && SlicerFile.Configs?.Length > 0)
+        if (_exportRawData && SlicerFile.Configs.Length > 0)
         {
             html.WriteLine("        <div class=\"accordion-item\">");
             html.WriteLine("          <h2 class=\"accordion-header\" id=\"accordionStructure-RawDataHeader\">");
@@ -449,7 +449,7 @@ public sealed class OperationLayerExportHtml : Operation
         }
         
 
-        if (_exportLayerSettings && SlicerFile.PrintParameterPerLayerModifiers is not null)
+        if (_exportLayerSettings && SlicerFile.SupportPerLayerSettings)
         {
             html.WriteLine("        <div class=\"accordion-item\">");
             html.WriteLine("          <h2 class=\"accordion-header\" id=\"accordionStructure-LayersHeader\">");

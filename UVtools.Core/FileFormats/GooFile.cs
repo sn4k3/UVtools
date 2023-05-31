@@ -508,9 +508,10 @@ public sealed class GooFile : FileFormat
 
     public override FileExtension[] FileExtensions { get; } = {
         new(typeof(GooFile), "goo", "Elegoo GOO"),
+        new(typeof(GooFile), "prz", "Phrozen Sonic Mini 8K S (PRZ)"),
     };
 
-    public override Size[]? ThumbnailsOriginalSize { get; } =
+    public override Size[] ThumbnailsOriginalSize { get; } =
     {
         new(116, 116),
         new(290, 290)
@@ -522,7 +523,7 @@ public sealed class GooFile : FileFormat
 
     public FileFooter Footer { get; private set; } = new();
 
-    public override PrintParameterModifier[]? PrintParameterModifiers { get; } = {
+    public override PrintParameterModifier[] PrintParameterModifiers { get; } = {
         PrintParameterModifier.BottomLayerCount,
         PrintParameterModifier.TransitionLayerCount,
 
@@ -561,7 +562,7 @@ public sealed class GooFile : FileFormat
         PrintParameterModifier.LightPWM
     };
         
-    public override PrintParameterModifier[]? PrintParameterPerLayerModifiers { get; } = {
+    public override PrintParameterModifier[] PrintParameterPerLayerModifiers { get; } = {
         PrintParameterModifier.PositionZ,
         PrintParameterModifier.LightOffDelay,
         PrintParameterModifier.WaitTimeBeforeCure,
@@ -942,7 +943,7 @@ public sealed class GooFile : FileFormat
 
         progress.Reset(OperationProgress.StatusDecodePreviews, ThumbnailsCount);
 
-        Thumbnails[0] = DecodeImage(DATATYPE_RGB565_BE, Header.SmallPreview565, ThumbnailsOriginalSize![0]);
+        Thumbnails[0] = DecodeImage(DATATYPE_RGB565_BE, Header.SmallPreview565, ThumbnailsOriginalSize[0]);
         progress++;
         Thumbnails[1] = DecodeImage(DATATYPE_RGB565_BE, Header.BigPreview565, ThumbnailsOriginalSize[1]);
         progress++;

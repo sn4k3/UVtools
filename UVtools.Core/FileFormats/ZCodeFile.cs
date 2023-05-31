@@ -181,7 +181,7 @@ public sealed class ZCodeFile : FileFormat
         new(typeof(ZCodeFile), "zcode", "UnizMaker IBEE (ZCode)")
     };
 
-    public override PrintParameterModifier[]? PrintParameterModifiers { get; } = {
+    public override PrintParameterModifier[] PrintParameterModifiers { get; } = {
         PrintParameterModifier.BottomLayerCount,
         PrintParameterModifier.TransitionLayerCount,
 
@@ -219,7 +219,7 @@ public sealed class ZCodeFile : FileFormat
         PrintParameterModifier.LightPWM,
     };
 
-    public override PrintParameterModifier[]? PrintParameterPerLayerModifiers { get; } = {
+    public override PrintParameterModifier[] PrintParameterPerLayerModifiers { get; } = {
         PrintParameterModifier.PositionZ,
         PrintParameterModifier.WaitTimeBeforeCure,
         PrintParameterModifier.ExposureTime,
@@ -235,7 +235,7 @@ public sealed class ZCodeFile : FileFormat
         PrintParameterModifier.LightPWM,
     };
 
-    public override Size[]? ThumbnailsOriginalSize { get; } = {new(640, 480)};
+    public override Size[] ThumbnailsOriginalSize { get; } = {new(640, 480)};
 
     public override uint ResolutionX
     {

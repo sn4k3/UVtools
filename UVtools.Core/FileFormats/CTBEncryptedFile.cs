@@ -593,7 +593,7 @@ public sealed class CTBEncryptedFile : FileFormat
         new(typeof(CTBEncryptedFile), "encrypted.ctb", "Chitubox CTB (Encrypted)", false, false),
     };
 
-    public override Size[]? ThumbnailsOriginalSize { get; } =
+    public override Size[] ThumbnailsOriginalSize { get; } =
     {
         new(400, 300),
         new(200, 125)
@@ -607,7 +607,7 @@ public sealed class CTBEncryptedFile : FileFormat
     public LayerPointer[]? LayersPointer { get; private set; }
     public LayerDef[]? LayersDefinition { get; private set; }
 
-    public override PrintParameterModifier[]? PrintParameterModifiers { get; } = {
+    public override PrintParameterModifier[] PrintParameterModifiers { get; } = {
         PrintParameterModifier.BottomLayerCount,
         PrintParameterModifier.TransitionLayerCount,
 
@@ -646,7 +646,7 @@ public sealed class CTBEncryptedFile : FileFormat
         PrintParameterModifier.LightPWM
     };
         
-    public override PrintParameterModifier[]? PrintParameterPerLayerModifiers { get; } = {
+    public override PrintParameterModifier[] PrintParameterPerLayerModifiers { get; } = {
         PrintParameterModifier.PositionZ,
         PrintParameterModifier.LightOffDelay,
         PrintParameterModifier.WaitTimeBeforeCure,
@@ -1119,7 +1119,7 @@ public sealed class CTBEncryptedFile : FileFormat
 
         progress.Reset(OperationProgress.StatusDecodePreviews, ThumbnailsCount);
 
-        if (Thumbnails is not null)
+        if (HaveThumbnails)
         {
             for (byte i = 0; i < ThumbnailsCount; i++)
             {

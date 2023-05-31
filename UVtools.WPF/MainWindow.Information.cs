@@ -216,7 +216,7 @@ public partial class MainWindow
 
         if (replaceAll)
         {
-            result = SlicerFile.SetThumbnails(filepath[0]) > 0;
+            result = SlicerFile.SetThumbnails(filepath[0]);
         }
         else
         {
@@ -251,7 +251,7 @@ public partial class MainWindow
 
         if (replaceAll)
         {
-            result = SlicerFile.SetThumbnails(thumbnailMat) > 0;
+            result = SlicerFile.SetThumbnails(thumbnailMat);
         }
         else
         {
@@ -286,7 +286,7 @@ public partial class MainWindow
 
         if (replaceAll)
         {
-            result = SlicerFile.SetThumbnails(matRoi.RoiMat) > 0;
+            result = SlicerFile.SetThumbnails(matRoi.RoiMat);
         }
         else
         {
@@ -338,7 +338,7 @@ public partial class MainWindow
 
         if (replaceAll)
         {
-            result = SlicerFile.SetThumbnails(mat) > 0;
+            result = SlicerFile.SetThumbnails(mat);
         }
         else
         {
@@ -346,7 +346,7 @@ public partial class MainWindow
             result = SlicerFile.SetThumbnail((int) i, mat);
         }
 
-        mat?.Dispose();
+        mat.Dispose();
 
         if(result) CanSave = true;
     }

@@ -30,6 +30,7 @@ public sealed class PhotonWorkshopFile : FileFormat
     public const ushort VERSION_515 = 515; // 0x203
     public const ushort VERSION_516 = 516; // 0x204
     public const ushort VERSION_517 = 517; // 0x205
+    public const ushort VERSION_518 = 518; // 0x206
 
     public const byte MarkSize = 12;
     public const byte RLE1EncodingLimit = 0x7d; // 125;
@@ -94,10 +95,13 @@ public sealed class PhotonWorkshopFile : FileFormat
         PhotonMonoX,
         PhotonMonoX2,
         PhotonMonoX6KM3Plus,
+        PhotonMonoX6Ks,
         PhotonMonoSQ,
         PhotonM3,
         PhotonM3Max,
         PhotonM3Premium,
+        PhotonMonoM5,
+        PhotonMonoM5s,
         Custom,
     }
     #endregion
@@ -175,79 +179,130 @@ public sealed class PhotonWorkshopFile : FileFormat
         [SerializeWhen(nameof(Version), VERSION_517, ComparisonOperator.GreaterThanOrEqual)]
         [FieldOrder(11)] public uint ModelAddress { get; set; }
 
+        /// <summary>
+        /// Spotted on version 518 only
+        /// </summary>
+        [SerializeWhen(nameof(Version), VERSION_518, ComparisonOperator.GreaterThanOrEqual)]
+        [FieldOrder(12)] public uint SubLayerDefinitionAddress { get; set; }
+
+        /// <summary>
+        /// Spotted on version 518 only
+        /// </summary>
+        [SerializeWhen(nameof(Version), VERSION_518, ComparisonOperator.GreaterThanOrEqual)]
+        [FieldOrder(13)] public uint Preview2Address { get; set; }
+
         public override string ToString()
         {
-            return $"{nameof(Mark)}: {Mark}, {nameof(Version)}: {Version}, {nameof(NumberOfTables)}: {NumberOfTables}, {nameof(HeaderAddress)}: {HeaderAddress}, {nameof(SoftwareAddress)}: {SoftwareAddress}, {nameof(PreviewAddress)}: {PreviewAddress}, {nameof(LayerImageColorTableAddress)}: {LayerImageColorTableAddress}, {nameof(LayerDefinitionAddress)}: {LayerDefinitionAddress}, {nameof(ExtraAddress)}: {ExtraAddress}, {nameof(MachineAddress)}: {MachineAddress}, {nameof(LayerImageAddress)}: {LayerImageAddress}, {nameof(ModelAddress)}: {ModelAddress}";
+            return $"{nameof(Mark)}: {Mark}, {nameof(Version)}: {Version}, {nameof(NumberOfTables)}: {NumberOfTables}, {nameof(HeaderAddress)}: {HeaderAddress}, {nameof(SoftwareAddress)}: {SoftwareAddress}, {nameof(PreviewAddress)}: {PreviewAddress}, {nameof(LayerImageColorTableAddress)}: {LayerImageColorTableAddress}, {nameof(LayerDefinitionAddress)}: {LayerDefinitionAddress}, {nameof(ExtraAddress)}: {ExtraAddress}, {nameof(MachineAddress)}: {MachineAddress}, {nameof(LayerImageAddress)}: {LayerImageAddress}, {nameof(ModelAddress)}: {ModelAddress}, {nameof(SubLayerDefinitionAddress)}: {SubLayerDefinitionAddress}, {nameof(Preview2Address)}: {Preview2Address}";
         }
     }
     #endregion
 
     #region Section
 
-    public class SectionHeader
+    public abstract class AnycubicNamedTable
     {
+        public const int TableBaseLength = MarkSize + 4;
+
         /// <summary>
-        /// Gets the section mark placeholder
+        /// Gets or sets whatever to include the base table length into <see cref="TableLength"/>
+        /// </summary>
+        protected virtual bool IncludeBaseTableLength => false;
+
+        /// <summary>
+        /// Name of this table
+        /// </summary>
+        protected abstract string DefaultTableName { get; }
+
+        /*/// <summary>
+        /// Table length offset
+        /// </summary>
+        protected virtual int TableLengthOffset => 0;*/
+
+        /// <summary>
+        /// Gets the section name placeholder
         /// </summary>
         [FieldOrder(0)]
         [FieldLength(MarkSize)]
         [SerializeAs(SerializedType.TerminatedString)]
-        public string Mark { get; set; } = null!;
+        public string TableName { get; set; }
 
         /// <summary>
         /// Gets the length of this section
         /// </summary>
-        [FieldOrder(1)] public uint Length { get; set; }
+        [FieldOrder(1)] public uint TableLength { get; set; }
 
-        public SectionHeader() { }
-
-        public SectionHeader(string mark, object obj, int extraLength = 0) : this(mark)
+        protected AnycubicNamedTable()
         {
-            //Debug.WriteLine(Helpers.Serializer.SizeOf(obj));
-            Length = (uint)(Helpers.Serializer.SizeOf(obj) + extraLength);
+            TableName = DefaultTableName;
+            TableLength = GetFinalTableLength();
         }
 
-        public SectionHeader(string mark, uint length = 0)
+        public override string ToString()
         {
-            Mark = mark;
-            Length = length;
+            return $"{nameof(TableName)}: {TableName}, {nameof(TableLength)}: {TableLength}";
         }
 
+        /// <summary>
+        /// Gets the absolute size of the table including base and derived
+        /// </summary>
+        public uint GetWholeTableLength() => (uint)Helpers.Serializer.SizeOf(this);
 
-        public void Validate(string mark, object? obj = null)
-        {
-            Validate(mark, 0, obj);
-        }
+        /// <summary>
+        /// Gets the absolute size of the derived table
+        /// </summary>
+        /// <returns></returns>
+        public uint GetDerivedTableLength() => GetWholeTableLength() - TableBaseLength;
 
-        public void Validate(string mark, int length, object? obj = null)
+        /// <summary>
+        /// Gets the absolute size to set in this table
+        /// </summary>
+        /// <returns></returns>
+        public uint GetFinalTableLength() => IncludeBaseTableLength ? GetWholeTableLength() : GetDerivedTableLength();
+
+        /// <summary>
+        /// Validates this table
+        /// </summary>
+        /// <param name="validateName">True to validate the name, otherwise false</param>
+        /// <param name="lengthOffset">Offset to length</param>
+        /// <exception cref="FileLoadException"></exception>
+        public void Validate(bool validateName, int lengthOffset = 0) => ValidateExpecting((int)GetFinalTableLength() + lengthOffset, validateName);
+       
+        public void Validate(sbyte lengthOffset) => Validate(true, lengthOffset);
+        public void Validate(byte lengthOffset) => Validate(true, lengthOffset);
+        public void Validate(ushort lengthOffset) => Validate(true, lengthOffset);
+        public void Validate(short lengthOffset) => Validate(true, lengthOffset);
+        public void Validate(int lengthOffset = 0) => Validate(true, lengthOffset);
+        public void Validate(uint lengthOffset) => Validate(true, (int)lengthOffset);
+
+        /// <summary>
+        /// Validates this table
+        /// </summary>
+        /// <param name="length">Length to expect</param>
+        /// <param name="validateName">True to validate the name, otherwise false</param>
+        /// <exception cref="FileLoadException"></exception>
+        public void ValidateExpecting(int length, bool validateName = true)
         {
-            if (!Mark.Equals(mark))
+            if (validateName && !DefaultTableName.Equals(TableName))
             {
-                throw new FileLoadException($"'{Mark}' section expected, but got '{mark}'");
+                throw new FileLoadException($"'{DefaultTableName}' section expected, but got '{TableName}'");
             }
 
-            if (obj is not null)
+            if (TableLength != length)
             {
-                length += (int)Helpers.Serializer.SizeOf(obj);
-            }
-
-            if (length > 0 && Length != length)
-            {
-                throw new FileLoadException($"{Mark} section bytes: expected {Length}, got {length}, difference: {(int)Length - length}");
+                throw new FileLoadException($"{DefaultTableName} section bytes: expected {length}, got {TableLength}, difference: {length - TableLength}");
             }
         }
-
-        public override string ToString() => $"[{nameof(Mark)}: {Mark}, {nameof(Length)}: {Length}]";
     }
 
     #endregion
 
     #region Header
-    public class Header
+    public sealed class Header : AnycubicNamedTable
     {
-        public const string SectionMark = "HEADER";
-        
-        [FieldOrder(0)] public SectionHeader Section { get; set; }
+        protected override string DefaultTableName => "HEADER";
+
+        //[FieldOrder(0)] public SectionHeader Section { get; set; }
 
         [FieldOrder(1)] public float PixelSizeUm { get; set; } = 47.25f;
 
@@ -312,42 +367,33 @@ public sealed class PhotonWorkshopFile : FileFormat
 
         //[SerializeUntil((char)'P')] [FieldOrder(21)] public List<byte> Offset { get; set; } = new();
 
-        public Header()
-        {
-            Section = new SectionHeader(SectionMark, this);
-        }
-
-
-        public override string ToString() => $"{nameof(Section)}: {Section}, {nameof(PixelSizeUm)}: {PixelSizeUm}, {nameof(LayerHeight)}: {LayerHeight}, {nameof(ExposureTime)}: {ExposureTime}, {nameof(WaitTimeBeforeCure)}: {WaitTimeBeforeCure}, {nameof(BottomExposureTime)}: {BottomExposureTime}, {nameof(BottomLayersCount)}: {BottomLayersCount}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(RetractSpeed)}: {RetractSpeed}, {nameof(VolumeMl)}: {VolumeMl}, {nameof(AntiAliasing)}: {AntiAliasing}, {nameof(ResolutionX)}: {ResolutionX}, {nameof(ResolutionY)}: {ResolutionY}, {nameof(WeightG)}: {WeightG}, {nameof(Price)}: {Price}, {nameof(PriceCurrencySymbol)}: {PriceCurrencySymbol}, {nameof(PerLayerOverride)}: {PerLayerOverride}, {nameof(PrintTime)}: {PrintTime}, {nameof(TransitionLayerCount)}: {TransitionLayerCount}, {nameof(TransitionLayerType)}: {TransitionLayerType}";
-
-        public void Validate(int offset = 0)
-        {
-            Section.Validate(SectionMark, (int)-Helpers.Serializer.SizeOf(Section)+offset, this);
-        }
-    }
-
-    public sealed class HeaderV516
-    {
         /// <summary>
         /// 0 = Basic mode | 1 = Advanced mode which allows TSMC
+        /// v516
         /// </summary>
-        [FieldOrder(0)] public uint AdvancedMode { get; set; }
+        [FieldOrder(21)] [SerializeWhen(nameof(TableLength), 84, ComparisonOperator.GreaterThanOrEqual)] public uint AdvancedMode { get; set; }
+
+        /// <summary>
+        /// v517
+        /// </summary>
+        [FieldOrder(22)] [SerializeWhen(nameof(TableLength), 86, ComparisonOperator.GreaterThanOrEqual)] public ushort Grey { get; set; }
+        /// <summary>
+        /// v517
+        /// </summary>
+        [FieldOrder(23)] [SerializeWhen(nameof(TableLength), 88, ComparisonOperator.GreaterThanOrEqual)] public ushort BlurLevel { get; set; }
+        /// <summary>
+        /// v517
+        /// </summary>
+        [FieldOrder(24)] [SerializeWhen(nameof(TableLength), 92, ComparisonOperator.GreaterThanOrEqual)] public uint ResinType { get; set; }
+        /// <summary>
+        /// When true, normal exposure time will be auto set, use false for traditional way
+        /// v518
+        /// </summary>
+        [FieldOrder(25)] [SerializeWhen(nameof(TableLength), 96, ComparisonOperator.GreaterThanOrEqual)] [SerializeAs(SerializedType.UInt4)] public bool IntelligentMode { get; set; }
 
         public override string ToString()
         {
-            return $"{nameof(AdvancedMode)}: {AdvancedMode}";
-        }
-    }
-
-    public sealed class HeaderV517
-    {
-        [FieldOrder(0)] public ushort Grey { get; set; }
-        [FieldOrder(1)] public ushort BlurLevel { get; set; }
-        [FieldOrder(2)] public uint ResinCode { get; set; }
-
-        public override string ToString()
-        {
-            return $"{nameof(Grey)}: {Grey}, {nameof(BlurLevel)}: {BlurLevel}, {nameof(ResinCode)}: {ResinCode}";
+            return $"{base.ToString()}, {nameof(PixelSizeUm)}: {PixelSizeUm}, {nameof(LayerHeight)}: {LayerHeight}, {nameof(ExposureTime)}: {ExposureTime}, {nameof(WaitTimeBeforeCure)}: {WaitTimeBeforeCure}, {nameof(BottomExposureTime)}: {BottomExposureTime}, {nameof(BottomLayersCount)}: {BottomLayersCount}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(RetractSpeed)}: {RetractSpeed}, {nameof(VolumeMl)}: {VolumeMl}, {nameof(AntiAliasing)}: {AntiAliasing}, {nameof(ResolutionX)}: {ResolutionX}, {nameof(ResolutionY)}: {ResolutionY}, {nameof(WeightG)}: {WeightG}, {nameof(Price)}: {Price}, {nameof(PriceCurrencySymbol)}: {PriceCurrencySymbol}, {nameof(PerLayerOverride)}: {PerLayerOverride}, {nameof(PrintTime)}: {PrintTime}, {nameof(TransitionLayerCount)}: {TransitionLayerCount}, {nameof(TransitionLayerType)}: {TransitionLayerType}, {nameof(AdvancedMode)}: {AdvancedMode}, {nameof(Grey)}: {Grey}, {nameof(BlurLevel)}: {BlurLevel}, {nameof(ResinType)}: {ResinType}, {nameof(IntelligentMode)}: {IntelligentMode}";
         }
     }
 
@@ -359,26 +405,24 @@ public sealed class PhotonWorkshopFile : FileFormat
     /// The files contain two preview images.
     /// These are shown on the printer display when choosing which file to print, sparing the poor printer from needing to render a 3D image from scratch.
     /// </summary>
-    public class Preview
+    public class Preview : AnycubicNamedTable
     {
-        public const string SectionMark = "PREVIEW";
-
-        [FieldOrder(0)] public SectionHeader Section { get; set; }
+        protected override string DefaultTableName => "PREVIEW";
 
         /// <summary>
         /// Gets the image width, in pixels.
         /// </summary>
-        [FieldOrder(1)] public uint ResolutionX { get; set; } = 224;
+        [FieldOrder(0)] public uint ResolutionX { get; set; } = 224;
 
         /// <summary>
         /// Gets the operation mark 'x'
         /// </summary>
-        [FieldOrder(2)] [FieldLength(4)] [SerializeAs(SerializedType.TerminatedString)] public string Mark { get; set; } = "x";
+        [FieldOrder(1)] [FieldLength(4)] [SerializeAs(SerializedType.TerminatedString)] public string Mark { get; set; } = "x";
 
         /// <summary>
         /// Gets the image height, in pixels.
         /// </summary>
-        [FieldOrder(3)] public uint ResolutionY { get; set; } = 168;
+        [FieldOrder(2)] public uint ResolutionY { get; set; } = 168;
 
         [Ignore] public uint DataSize => ResolutionX * ResolutionY * 2;
 
@@ -386,25 +430,36 @@ public sealed class PhotonWorkshopFile : FileFormat
 
         public Preview()
         {
-            Section = new SectionHeader(SectionMark, this);
         }
 
         public Preview(uint resolutionX, uint resolutionY) : this()
         {
             ResolutionX = resolutionX;
             ResolutionY = resolutionY;
-            Data = new byte[DataSize];
-            Section.Length += (uint)Data.Length;
+            TableLength += DataSize;
         }
 
         public override string ToString()
         {
-            return $"{nameof(Section)}: {Section}, {nameof(ResolutionX)}: {ResolutionX}, {nameof(Mark)}: {Mark}, {nameof(ResolutionY)}: {ResolutionY}, {nameof(Data)}: {Data?.Length ?? 0}";
+            return $"{base.ToString()}, {nameof(ResolutionX)}: {ResolutionX}, {nameof(Mark)}: {Mark}, {nameof(ResolutionY)}: {ResolutionY}, {nameof(DataSize)}: {DataSize}";
         }
 
-        public void Validate(int size)
+        public void ResetData() => Data = null!;
+    }
+
+    public sealed class Preview2 : Preview
+    {
+        protected override string DefaultTableName => "PREVIEW2";
+        protected override bool IncludeBaseTableLength => true;
+
+        public Preview2()
         {
-            Section.Validate(SectionMark, (int) (size - Helpers.Serializer.SizeOf(Section)), this);
+            ResolutionX = 320;
+            ResolutionY = 190;
+        }
+
+        public Preview2(uint resolutionX, uint resolutionY) : base(resolutionX, resolutionY)
+        {
         }
     }
 
@@ -436,13 +491,10 @@ public sealed class PhotonWorkshopFile : FileFormat
     #endregion
 
     #region Extra
-    public class Extra
+    public class Extra : AnycubicNamedTable
     {
-        public const string SectionMark = "EXTRA";
+        protected override string DefaultTableName => "EXTRA";
 
-        //[FieldOrder(0)] public SectionHeader Section { get; set; }
-        [FieldOrder(0)][FieldLength(MarkSize)][SerializeAs(SerializedType.TerminatedString)] public string Marker { get; set; } = SectionMark;
-        [FieldOrder(1)] public uint Unknown0 { get; set; } = 24;
         [FieldOrder(2)] public uint BottomStateNumber { get; set; } = 2;
         [FieldOrder(3)] public float BottomLiftHeight1 { get; set; }
         [FieldOrder(4)] public float BottomLiftSpeed1 { get; set; } = SpeedConverter.Convert(DefaultBottomLiftSpeed, CoreSpeedUnit, SpeedUnit.MillimetersPerSecond);
@@ -460,62 +512,54 @@ public sealed class PhotonWorkshopFile : FileFormat
 
         public Extra()
         {
-            //Section = new SectionHeader(SectionMark, this);
+            TableLength = 24; // Don't know why...
         }
 
         public override string ToString()
         {
-            return $"{nameof(Marker)}: {Marker}, {nameof(Unknown0)}: {Unknown0}, {nameof(BottomStateNumber)}: {BottomStateNumber}, {nameof(BottomLiftHeight1)}: {BottomLiftHeight1}, {nameof(BottomLiftSpeed1)}: {BottomLiftSpeed1}, {nameof(BottomRetractSpeed1)}: {BottomRetractSpeed1}, {nameof(BottomLiftHeight2)}: {BottomLiftHeight2}, {nameof(BottomLiftSpeed2)}: {BottomLiftSpeed2}, {nameof(BottomRetractSpeed2)}: {BottomRetractSpeed2}, {nameof(StateNumber)}: {StateNumber}, {nameof(LiftHeight1)}: {LiftHeight1}, {nameof(LiftSpeed1)}: {LiftSpeed1}, {nameof(RetractSpeed1)}: {RetractSpeed1}, {nameof(LiftHeight2)}: {LiftHeight2}, {nameof(LiftSpeed2)}: {LiftSpeed2}, {nameof(RetractSpeed2)}: {RetractSpeed2}";
-        }
-
-        public void Validate()
-        {
-            //Section.Validate(SectionMark, (int)-Helpers.Serializer.SizeOf(Section), this);
+            return $"{base.ToString()}, {nameof(BottomStateNumber)}: {BottomStateNumber}, {nameof(BottomLiftHeight1)}: {BottomLiftHeight1}, {nameof(BottomLiftSpeed1)}: {BottomLiftSpeed1}, {nameof(BottomRetractSpeed1)}: {BottomRetractSpeed1}, {nameof(BottomLiftHeight2)}: {BottomLiftHeight2}, {nameof(BottomLiftSpeed2)}: {BottomLiftSpeed2}, {nameof(BottomRetractSpeed2)}: {BottomRetractSpeed2}, {nameof(StateNumber)}: {StateNumber}, {nameof(LiftHeight1)}: {LiftHeight1}, {nameof(LiftSpeed1)}: {LiftSpeed1}, {nameof(RetractSpeed1)}: {RetractSpeed1}, {nameof(LiftHeight2)}: {LiftHeight2}, {nameof(LiftSpeed2)}: {LiftSpeed2}, {nameof(RetractSpeed2)}: {RetractSpeed2}";
         }
     }
     #endregion
 
     #region Machine
-    public class Machine
+    public class Machine : AnycubicNamedTable
     {
-        public const string SectionMark = "MACHINE";
+        protected override string DefaultTableName => "MACHINE";
 
-        [FieldOrder(0)] public SectionHeader Section { get; set; }
-        [FieldOrder(1)][FieldLength(96)][SerializeAs(SerializedType.TerminatedString)] public string MachineName { get; set; } = null!;
-        [FieldOrder(2)][FieldLength(16)][SerializeAs(SerializedType.TerminatedString)] public string LayerImageFormat { get; set; } = "pw0img";
-        [FieldOrder(3)] public uint MaxAntialiasingLevel { get; set; } = 16;
-        [FieldOrder(4)] public uint PropertyFields { get; set; }
-        [FieldOrder(5)] public float DisplayWidth { get; set; }
-        [FieldOrder(6)] public float DisplayHeight { get; set; }
-        [FieldOrder(7)] public float MachineZ { get; set; }
-        [FieldOrder(8)] public uint MaxFileVersion { get; set; } = VERSION_517;
-        [FieldOrder(9)] public uint MachineBackground { get; set; } = 6506241;
+        protected override bool IncludeBaseTableLength => true;
+
+        [FieldOrder(0)][FieldLength(96)][SerializeAs(SerializedType.TerminatedString)] public string MachineName { get; set; } = null!;
+        [FieldOrder(1)][FieldLength(16)][SerializeAs(SerializedType.TerminatedString)] public string LayerImageFormat { get; set; } = "pw0img";
+        [FieldOrder(2)] public uint MaxAntialiasingLevel { get; set; } = 16;
+        [FieldOrder(3)] public uint PropertyFields { get; set; }
+        [FieldOrder(4)] public float DisplayWidth { get; set; }
+        [FieldOrder(5)] public float DisplayHeight { get; set; }
+        [FieldOrder(6)] public float MachineZ { get; set; }
+        [FieldOrder(7)] public uint MaxFileVersion { get; set; } = VERSION_518;
+        [FieldOrder(8)] public uint MachineBackground { get; set; } = 6506241;
+        [FieldOrder(9)] [SerializeWhen(nameof(TableLength), 160, ComparisonOperator.GreaterThanOrEqual)] public float PixelWidthUm { get; set; }
+        [FieldOrder(10)] [SerializeWhen(nameof(TableLength), 164, ComparisonOperator.GreaterThanOrEqual)] public float PixelHeightUm { get; set; }
+        [FieldOrder(11)] [SerializeWhen(nameof(TableLength), 168, ComparisonOperator.GreaterThanOrEqual)] public uint Unknown1 { get; set; }
+        [FieldOrder(12)] [SerializeWhen(nameof(TableLength), 172, ComparisonOperator.GreaterThanOrEqual)] public uint Unknown2 { get; set; }
+        [FieldOrder(13)] [SerializeWhen(nameof(TableLength), 176, ComparisonOperator.GreaterThanOrEqual)] public uint Unknown3 { get; set; }
+        [FieldOrder(14)] [SerializeWhen(nameof(TableLength), 180, ComparisonOperator.GreaterThanOrEqual)] public uint Unknown4 { get; set; }
+        [FieldOrder(15)] [SerializeWhen(nameof(TableLength), 184, ComparisonOperator.GreaterThanOrEqual)] public uint Unknown5 { get; set; }
+        [FieldOrder(16)] [SerializeWhen(nameof(TableLength), 188, ComparisonOperator.GreaterThanOrEqual)] public uint Unknown6 { get; set; }
+        [FieldOrder(17)] [SerializeWhen(nameof(TableLength), 192, ComparisonOperator.GreaterThanOrEqual)] public uint Unknown7 { get; set; }
+        [FieldOrder(18)] [SerializeWhen(nameof(TableLength), 196, ComparisonOperator.GreaterThanOrEqual)] public uint Unknown8 { get; set; }
+        [FieldOrder(19)] [SerializeWhen(nameof(TableLength), 200, ComparisonOperator.GreaterThanOrEqual)] public uint Unknown9 { get; set; } = 1;
+        [FieldOrder(20)] [SerializeWhen(nameof(TableLength), 204, ComparisonOperator.GreaterThanOrEqual)] public uint Unknown10 { get; set; }
+        [FieldOrder(21)] [SerializeWhen(nameof(TableLength), 206, ComparisonOperator.GreaterThanOrEqual)] public ushort ResolutionX { get; set; }
+        [FieldOrder(22)] [SerializeWhen(nameof(TableLength), 208, ComparisonOperator.GreaterThanOrEqual)] public ushort ResolutionY { get; set; }
+        [FieldOrder(23)][SerializeWhen(nameof(TableLength), 212, ComparisonOperator.GreaterThanOrEqual)] public uint Unknown11 { get; set; }
+        [FieldOrder(24)][SerializeWhen(nameof(TableLength), 216, ComparisonOperator.GreaterThanOrEqual)] public uint Unknown12 { get; set; }
+        [FieldOrder(25)][SerializeWhen(nameof(TableLength), 220, ComparisonOperator.GreaterThanOrEqual)] public uint Unknown13 { get; set; }
+        [FieldOrder(26)][SerializeWhen(nameof(TableLength), 224, ComparisonOperator.GreaterThanOrEqual)] public uint Unknown14 { get; set; }
 
         public override string ToString()
         {
-            return $"{nameof(Section)}: {Section}, {nameof(MachineName)}: {MachineName}, {nameof(LayerImageFormat)}: {LayerImageFormat}, {nameof(MaxAntialiasingLevel)}: {MaxAntialiasingLevel}, {nameof(PropertyFields)}: {PropertyFields}, {nameof(DisplayWidth)}: {DisplayWidth}, {nameof(DisplayHeight)}: {DisplayHeight}, {nameof(MachineZ)}: {MachineZ}, {nameof(MaxFileVersion)}: {MaxFileVersion}, {nameof(MachineBackground)}: {MachineBackground}";
-        }
-
-
-        public Machine()
-        {
-            Section = new SectionHeader(SectionMark, this);
-        }
-
-        public Machine(int extraLength)
-        {
-            Section = new SectionHeader(SectionMark, this, extraLength);
-        }
-
-
-        public Machine(bool includeSectionOnLength)
-        {
-            Section = new SectionHeader(SectionMark, this, includeSectionOnLength ? 16 : 0);
-        }
-
-        public void Validate()
-        {
-            Section.Validate(SectionMark, 0, this);
+            return $"{base.ToString()}, {nameof(MachineName)}: {MachineName}, {nameof(LayerImageFormat)}: {LayerImageFormat}, {nameof(MaxAntialiasingLevel)}: {MaxAntialiasingLevel}, {nameof(PropertyFields)}: {PropertyFields}, {nameof(DisplayWidth)}: {DisplayWidth}, {nameof(DisplayHeight)}: {DisplayHeight}, {nameof(MachineZ)}: {MachineZ}, {nameof(MaxFileVersion)}: {MaxFileVersion}, {nameof(MachineBackground)}: {MachineBackground}, {nameof(PixelWidthUm)}: {PixelWidthUm}, {nameof(PixelHeightUm)}: {PixelHeightUm}, {nameof(Unknown1)}: {Unknown1}, {nameof(Unknown2)}: {Unknown2}, {nameof(Unknown3)}: {Unknown3}, {nameof(Unknown4)}: {Unknown4}, {nameof(Unknown5)}: {Unknown5}, {nameof(Unknown6)}: {Unknown6}, {nameof(Unknown7)}: {Unknown7}, {nameof(Unknown8)}: {Unknown8}, {nameof(Unknown9)}: {Unknown9}, {nameof(Unknown10)}: {Unknown10}, {nameof(ResolutionX)}: {ResolutionX}, {nameof(ResolutionY)}: {ResolutionY}, {nameof(Unknown11)}: {Unknown11}, {nameof(Unknown12)}: {Unknown12}, {nameof(Unknown13)}: {Unknown13}, {nameof(Unknown14)}: {Unknown14}";
         }
     }
     #endregion
@@ -524,7 +568,7 @@ public sealed class PhotonWorkshopFile : FileFormat
     public sealed class Software
     {
         public const uint TableSize = 164;
-        [FieldOrder(0)][FieldLength(32)][SerializeAs(SerializedType.TerminatedString)] public string Name { get; set; } = About.Software;
+        [FieldOrder(0)][FieldLength(32)][SerializeAs(SerializedType.TerminatedString)] public string SoftwareName { get; set; } = About.Software;
         [FieldOrder(1)] public uint TableLength { get; set; } = TableSize;
         [FieldOrder(2)][FieldLength(32)][SerializeAs(SerializedType.TerminatedString)] public string Version { get; set; } = About.VersionStr;
         [FieldOrder(3)][FieldLength(64)][SerializeAs(SerializedType.TerminatedString)] public string OperativeSystem { get; set; } = RuntimeInformation.RuntimeIdentifier;
@@ -532,34 +576,30 @@ public sealed class PhotonWorkshopFile : FileFormat
 
         public override string ToString()
         {
-            return $"{nameof(Name)}: {Name}, {nameof(TableLength)}: {TableLength}, {nameof(Version)}: {Version}, {nameof(OperativeSystem)}: {OperativeSystem}, {nameof(OpenGLVersion)}: {OpenGLVersion}";
+            return $"{nameof(SoftwareName)}: {SoftwareName}, {nameof(TableLength)}: {TableLength}, {nameof(Version)}: {Version}, {nameof(OperativeSystem)}: {OperativeSystem}, {nameof(OpenGLVersion)}: {OpenGLVersion}";
         }
     }
     #endregion
 
     #region Model
-    public sealed class Model
+    public sealed class Model : AnycubicNamedTable
     {
-        public const string SectionMark = "MODEL";
+        protected override string DefaultTableName => "MODEL";
 
-        [FieldOrder(0)] public SectionHeader Section { get; set; }
-        [FieldOrder(1)] public float MinX { get; set; }
-        [FieldOrder(2)] public float MinY { get; set; }
-        [FieldOrder(3)] public float MinZ { get; set; }
-        [FieldOrder(4)] public float MaxX { get; set; }
-        [FieldOrder(5)] public float MaxY { get; set; }
-        [FieldOrder(6)] public float MaxZ { get; set; }
-        [FieldOrder(7)] public uint SupportsEnabled { get; set; }
-        [FieldOrder(8)] public float SupportsDensity { get; set; }
+        protected override bool IncludeBaseTableLength => true;
 
-        public Model()
-        {
-            Section = new SectionHeader(SectionMark, this);
-        }
+        [FieldOrder(0)] public float MinX { get; set; }
+        [FieldOrder(1)] public float MinY { get; set; }
+        [FieldOrder(2)] public float MinZ { get; set; }
+        [FieldOrder(3)] public float MaxX { get; set; }
+        [FieldOrder(4)] public float MaxY { get; set; }
+        [FieldOrder(5)] public float MaxZ { get; set; }
+        [FieldOrder(6)] public uint SupportsEnabled { get; set; }
+        [FieldOrder(7)] public float SupportsDensity { get; set; }
 
         public override string ToString()
         {
-            return $"{nameof(Section)}: {Section}, {nameof(MinX)}: {MinX}, {nameof(MinY)}: {MinY}, {nameof(MinZ)}: {MinZ}, {nameof(MaxX)}: {MaxX}, {nameof(MaxY)}: {MaxY}, {nameof(MaxZ)}: {MaxZ}, {nameof(SupportsEnabled)}: {SupportsEnabled}, {nameof(SupportsDensity)}: {SupportsDensity}";
+            return $"{base.ToString()}, {nameof(MinX)}: {MinX}, {nameof(MinY)}: {MinY}, {nameof(MinZ)}: {MinZ}, {nameof(MaxX)}: {MaxX}, {nameof(MaxY)}: {MaxY}, {nameof(MaxZ)}: {MaxZ}, {nameof(SupportsEnabled)}: {SupportsEnabled}, {nameof(SupportsDensity)}: {SupportsDensity}";
         }
 
         public void Parse(FileFormat slicerFile)
@@ -579,7 +619,7 @@ public sealed class PhotonWorkshopFile : FileFormat
 
     #region Layer
 
-    public class LayerDef
+    public sealed class LayerDef
     {
         public const byte ClassSize = 32;
         /// <summary>
@@ -610,15 +650,13 @@ public sealed class PhotonWorkshopFile : FileFormat
         [FieldOrder(7)] public uint Padding1 { get; set; }
 
         [Ignore] public byte[] EncodedRle { get; set; } = null!;
-        [Ignore] public PhotonWorkshopFile Parent { get; set; } = null!;
 
         public LayerDef()
         {
         }
 
-        public LayerDef(PhotonWorkshopFile parent, Layer layer)
+        public LayerDef(Layer layer)
         {
-            Parent = parent;
             SetFrom(layer);
         }
 
@@ -639,29 +677,29 @@ public sealed class PhotonWorkshopFile : FileFormat
             layer.LiftSpeed = SpeedConverter.Convert(LiftSpeed, SpeedUnit.MillimetersPerSecond, CoreSpeedUnit);
         }
 
-        public Mat Decode(bool consumeData = true)
+        public Mat Decode(PhotonWorkshopFile slicerFile, bool consumeData = true)
         {
-            var result = Parent.LayerImageFormat == LayerRleFormat.PWS ? DecodePWS() : DecodePW0();
+            var result = slicerFile.LayerImageFormat == LayerRleFormat.PWS ? DecodePWS(slicerFile) : DecodePW0(slicerFile);
             if (consumeData)
                 EncodedRle = null!;
 
             return result;
         }
 
-        public byte[] Encode(Mat image)
+        public byte[] Encode(PhotonWorkshopFile slicerFile, Mat image)
         {
-            EncodedRle = Parent.LayerImageFormat == LayerRleFormat.PWS ? EncodePWS(image) : EncodePW0(image);
+            EncodedRle = slicerFile.LayerImageFormat == LayerRleFormat.PWS ? EncodePWS(slicerFile, image) : EncodePW0(image);
             return EncodedRle;
         }
 
-        private unsafe Mat DecodePWS()
+        private unsafe Mat DecodePWS(PhotonWorkshopFile slicerFile)
         {
-            var image = EmguExtensions.InitMat(Parent.Resolution);
+            var image = EmguExtensions.InitMat(slicerFile.Resolution);
             var span = image.GetBytePointer();
             var imageLength = image.GetLength();
 
             int index = 0;
-            for (byte bit = 0; bit < Parent.AntiAliasing; bit++)
+            for (byte bit = 0; bit < slicerFile.AntiAliasing; bit++)
             {
                 int pixel = 0;
                 for (; index < EncodedRle.Length; index++)
@@ -697,7 +735,7 @@ public sealed class PhotonWorkshopFile : FileFormat
 
             for (int i = 0; i < imageLength; i++)
             {
-                int newC = span[i] * (256 / Parent.AntiAliasing);
+                int newC = span[i] * (256 / slicerFile.AntiAliasing);
 
                 if (newC > 0)
                 {
@@ -706,11 +744,11 @@ public sealed class PhotonWorkshopFile : FileFormat
 
                 span[i] = (byte)newC;
             }
-
+            
             return image;
         }
 
-        public unsafe byte[] EncodePWS(Mat image)
+        public unsafe byte[] EncodePWS(PhotonWorkshopFile slicerFile, Mat image)
         {
             List<byte> rawData = new();
             var span = image.GetBytePointer();
@@ -734,7 +772,7 @@ public sealed class PhotonWorkshopFile : FileFormat
                 rawData.Add(by);
             }
 
-            for (byte aalevel = 1; aalevel <= Parent.AntiAliasing; aalevel++)
+            for (byte aalevel = 1; aalevel <= slicerFile.AntiAliasing; aalevel++)
             {
                 obit = false;
                 rep = 0;
@@ -745,9 +783,9 @@ public sealed class PhotonWorkshopFile : FileFormat
                 // aa 2:  255 127
                 // aa 4:  255 191 127 63
                 // aa 8:  255 223 191 159 127 95 63 31
-                //byte threshold = (byte)(256 / Parent.AntiAliasing * aalevel - 1);
+                //byte threshold = (byte)(256 / slicerFile.AntiAliasing * aalevel - 1);
                 // threshold := byte(int(255 * (level + 1) / (levels + 1))) + 1
-                byte threshold = (byte) (255 * aalevel / (Parent.AntiAliasing + 1) + 1);
+                byte threshold = (byte) (255 * aalevel / (slicerFile.AntiAliasing + 1) + 1);
 
 
                 for (int pixel = 0; pixel < imageLength; pixel++)
@@ -781,9 +819,9 @@ public sealed class PhotonWorkshopFile : FileFormat
             return rawData.ToArray();
         }
 
-        private Mat DecodePW0()
+        private Mat DecodePW0(PhotonWorkshopFile slicerFile)
         {
-            var mat = Parent.CreateMat();
+            var mat = slicerFile.CreateMat();
             var imageLength = mat.GetLength();
 
             int pixelPos = 0;
@@ -833,7 +871,7 @@ public sealed class PhotonWorkshopFile : FileFormat
                 if (pixelPos + repeat > imageLength)
                 {
                     mat.Dispose();
-                    throw new FileLoadException($"Image ran off the end: {pixelPos}+ {repeat} = {pixelPos + repeat}, expecting: {imageLength}");
+                    throw new FileLoadException($"Image ran off the end: {pixelPos} + {repeat} = {pixelPos + repeat}, expecting: {imageLength}");
                 }
 
                 // We only need to set the non-zero pixels
@@ -951,33 +989,65 @@ public sealed class PhotonWorkshopFile : FileFormat
         }
     }
 
+    public sealed class SubLayerDef
+    {
+        /// <summary>
+        /// Gets the layer image offset to encoded layer data, and its length in bytes.
+        /// </summary>
+        [FieldOrder(0)] public uint DataAddress { get; set; }
+
+        /// <summary>
+        /// Gets the layer image length in bytes.
+        /// </summary>
+        [FieldOrder(1)] public uint DataLength { get; set; }
+
+        [FieldOrder(2)] public uint NonZeroPixelCount { get; set; }
+
+        [FieldOrder(3)] public float Unknown1 { get; set; }
+        [FieldOrder(4)] public float Unknown2 { get; set; }
+        [FieldOrder(5)] public float Unknown3 { get; set; }
+        [FieldOrder(6)] public float Unknown4 { get; set; }
+        [FieldOrder(7)] public float Unknown5 { get; set; }
+        [FieldOrder(8)] public float Unknown6 { get; set; }
+        [FieldOrder(9)] public float Unknown7 { get; set; }
+        [FieldOrder(10)] public float Unknown8 { get; set; }
+
+        public override string ToString()
+        {
+            return $"{nameof(DataAddress)}: {DataAddress}, {nameof(DataLength)}: {DataLength}, {nameof(NonZeroPixelCount)}: {NonZeroPixelCount}, {nameof(Unknown1)}: {Unknown1}, {nameof(Unknown2)}: {Unknown2}, {nameof(Unknown3)}: {Unknown3}, {nameof(Unknown4)}: {Unknown4}, {nameof(Unknown5)}: {Unknown5}, {nameof(Unknown6)}: {Unknown6}, {nameof(Unknown7)}: {Unknown7}, {nameof(Unknown8)}: {Unknown8}";
+        }
+
+        public void SetFrom(LayerDef layerDef)
+        {
+            DataAddress = layerDef.DataAddress;
+            DataLength = layerDef.DataLength;
+            NonZeroPixelCount = layerDef.NonZeroPixelCount;
+        }
+    }
+
     #endregion
 
     #region LayerDefinition
-    public class LayerDefinition
+    public sealed class LayerDefinition : AnycubicNamedTable
     {
-        public const string SectionMark = "LAYERDEF";
+        protected override string DefaultTableName => "LAYERDEF";
 
-        /// <summary>
-        /// 1269C
-        /// </summary>
-        [FieldOrder(0)] public SectionHeader Section { get; set; }
+        [FieldOrder(0)] public uint LayerCount { get; set; }
 
-        [FieldOrder(1)] public uint LayerCount { get; set; }
-
-        [Ignore] public LayerDef[] Layers { get; set; } = null!;
+        [FieldOrder(1)] [FieldCount(nameof(LayerCount))] public LayerDef[] Layers { get; set; } = Array.Empty<LayerDef>();
 
         public LayerDefinition()
-        {
-            Section = new SectionHeader(SectionMark, this);
-        }
+        { }
 
         public LayerDefinition(uint layerCount) : this()
         {
             LayerCount = layerCount;
             Layers = new LayerDef[layerCount];
-            Section.Length += (uint) Helpers.Serializer.SizeOf(new LayerDef()) * LayerCount;
+            TableLength += (uint) Helpers.Serializer.SizeOf(new LayerDef()) * LayerCount;
         }
+
+        public LayerDefinition(FileFormat slicerFile) : this(slicerFile.LayerCount)
+        { }
 
         [Ignore]
         public LayerDef this[uint index]
@@ -993,12 +1063,54 @@ public sealed class PhotonWorkshopFile : FileFormat
             set => Layers[index] = value;
         }
 
-        public void Validate()
+        public override string ToString()
         {
-            Section.Validate(SectionMark, (int) (LayerCount * Helpers.Serializer.SizeOf(new LayerDef()) - Helpers.Serializer.SizeOf(Section)), this);
+            return $"{base.ToString()}, {nameof(LayerCount)}: {LayerCount}";
+        }
+    }
+
+    public sealed class SubLayerDefinition : AnycubicNamedTable
+    {
+        protected override string DefaultTableName => "SUBIMGS";
+
+        protected override bool IncludeBaseTableLength => true;
+
+        [FieldOrder(0)] public uint LayerCount { get; set; }
+        [FieldOrder(1)] public uint Index { get; set; } = 1;
+
+        [FieldOrder(2)] [FieldCount(nameof(LayerCount))] public SubLayerDef[] Layers { get; set; } = Array.Empty<SubLayerDef>();
+
+        public SubLayerDefinition()
+        { }
+
+        public SubLayerDefinition(uint layerCount) : this()
+        {
+            LayerCount = layerCount;
+            Layers = new SubLayerDef[layerCount];
+            TableLength += (uint)Helpers.Serializer.SizeOf(new SubLayerDef()) * LayerCount;
         }
 
-        public override string ToString() => $"{nameof(Section)}: {Section}, {nameof(LayerCount)}: {LayerCount}";
+        public SubLayerDefinition(FileFormat slicerFile) : this(slicerFile.LayerCount)
+        { }
+
+        [Ignore]
+        public SubLayerDef this[uint index]
+        {
+            get => Layers[index];
+            set => Layers[index] = value;
+        }
+
+        [Ignore]
+        public SubLayerDef this[int index]
+        {
+            get => Layers[index];
+            set => Layers[index] = value;
+        }
+
+        public override string ToString()
+        {
+            return $"{base.ToString()}, {nameof(LayerCount)}: {LayerCount}, {nameof(Index)}: {Index}";
+        }
     }
     #endregion
 
@@ -1010,15 +1122,14 @@ public sealed class PhotonWorkshopFile : FileFormat
     public FileMark FileMarkSettings { get; private set; } = new();
 
     public Header HeaderSettings { get; private set; } = new();
-    public HeaderV516 HeaderV516Settings { get; private set; } = new();
-    public HeaderV517 HeaderV517Settings { get; private set; } = new();
-
     public Preview PreviewSettings { get; private set; } = new();
+    public Preview2 Preview2Settings { get; private set; } = new();
     public LayerImageColorTable LayerImageColorSettings { get; private set; } = new();
 
     public LayerDefinition LayersDefinition { get; private set; } = new();
+    public SubLayerDefinition SubLayersDefinition { get; private set; } = new();
     public Extra ExtraSettings { get; private set; } = new();
-    public Machine MachineSettings { get; private set; } = new(true);
+    public Machine MachineSettings { get; private set; } = new();
     public Software SoftwareSettings { get; private set; } = new();
     public Model ModelSettings { get; private set; } = new();
 
@@ -1036,6 +1147,7 @@ public sealed class PhotonWorkshopFile : FileFormat
         new(typeof(PhotonWorkshopFile), "pwmx", "Photon Mono X (PWMX)"),
         new(typeof(PhotonWorkshopFile), "pmx2", "Photon Mono X2 (PMX2)"),
         new(typeof(PhotonWorkshopFile), "pwmb", "Photon Mono X 6K / Photon M3 Plus (PWMB)"),
+        new(typeof(PhotonWorkshopFile), "px6s", "Photon Mono X 6Ks (PX6S)"),
         new(typeof(PhotonWorkshopFile), "pwmo", "Photon Mono (PWMO)"),
         new(typeof(PhotonWorkshopFile), "pm3n", "Photon Mono 2 (PM3N)"),
         new(typeof(PhotonWorkshopFile), "pwms", "Photon Mono SE (PWMS)"),
@@ -1044,13 +1156,15 @@ public sealed class PhotonWorkshopFile : FileFormat
         new(typeof(PhotonWorkshopFile), "pm3", "Photon M3 (PM3)"),
         new(typeof(PhotonWorkshopFile), "pm3m", "Photon M3 Max (PM3M)"),
         new(typeof(PhotonWorkshopFile), "pm3r", "Photon M3 Premium (PM3R)"),
+        new(typeof(PhotonWorkshopFile), "pm5", "Photon Mono M5 (PM5)"),
+        new(typeof(PhotonWorkshopFile), "pm5s", "Photon Mono M5s (PM5s)"),
         new(typeof(PhotonWorkshopFile), "pwc", "Anycubic Custom Machine (PWC)"),
         //new(typeof(PhotonWorkshopFile), "pwmb", "Photon M3 Plus (PWMB)"),
     };
     
     public override SpeedUnit FormatSpeedUnit => SpeedUnit.MillimetersPerSecond;
 
-    public override PrintParameterModifier[]? PrintParameterModifiers
+    public override PrintParameterModifier[] PrintParameterModifiers
     {
         get
         {
@@ -1104,16 +1218,22 @@ public sealed class PhotonWorkshopFile : FileFormat
         }
     }
 
-    public override PrintParameterModifier[]? PrintParameterPerLayerModifiers { get; } = {
+    public override PrintParameterModifier[] PrintParameterPerLayerModifiers { get; } = {
         PrintParameterModifier.PositionZ,
         PrintParameterModifier.ExposureTime,
         PrintParameterModifier.LiftHeight,
         PrintParameterModifier.LiftSpeed,
     };
 
-    public override Size[]? ThumbnailsOriginalSize { get; } = {new(224, 168)};
+    public override Size[] ThumbnailsOriginalSize => new Size[] { new(224, 168), new(330, 190) };
+    /*public override Size[]? ThumbnailsOriginalSize =>
+        Version switch
+        {
+            >= VERSION_518 => new Size[] { new(224, 168), new(330, 190) },
+            _ => new Size[] { new(224, 168) }
+        };*/
 
-    public override uint[] AvailableVersions { get; } = { VERSION_1, VERSION_515, VERSION_516, VERSION_517 };
+    public override uint[] AvailableVersions { get; } = { VERSION_1, VERSION_515, VERSION_516, VERSION_517, VERSION_518 };
 
     public override uint[] GetAvailableVersionsForExtension(string? extension)
     {
@@ -1142,7 +1262,11 @@ public sealed class PhotonWorkshopFile : FileFormat
             case "pm3r":
                 return new uint[] { VERSION_515, VERSION_516, VERSION_517 };
             case "pm3n":
+            case "pm5":
+            case "px6s":
                 return new uint[] { VERSION_517 };
+            case "pm5s":
+                return new uint[] { VERSION_518 };
             default:
                 return AvailableVersions;
         }
@@ -1163,13 +1287,21 @@ public sealed class PhotonWorkshopFile : FileFormat
     public override uint ResolutionX
     {
         get => HeaderSettings.ResolutionX;
-        set => base.ResolutionX = HeaderSettings.ResolutionX = value;
+        set
+        {
+            MachineSettings.ResolutionX = (ushort)value;
+            base.ResolutionX = HeaderSettings.ResolutionX = value;
+        }
     }
 
     public override uint ResolutionY
     {
         get => HeaderSettings.ResolutionY;
-        set => base.ResolutionY = HeaderSettings.ResolutionY = value;
+        set
+        {
+            MachineSettings.ResolutionY = (ushort)value;
+            base.ResolutionY = HeaderSettings.ResolutionY = value;
+        }
     }
 
     public override float DisplayWidth
@@ -1191,10 +1323,13 @@ public sealed class PhotonWorkshopFile : FileFormat
                 AnyCubicMachine.PhotonMonoX => 192,
                 AnyCubicMachine.PhotonMonoX2 => 196.61f,
                 AnyCubicMachine.PhotonMonoX6KM3Plus => 198.15f,
+                AnyCubicMachine.PhotonMonoX6Ks => 195.84f,
                 AnyCubicMachine.PhotonMonoSQ => 120,
                 AnyCubicMachine.PhotonM3 => 163.84f,
                 AnyCubicMachine.PhotonM3Max => 298.08f,
                 AnyCubicMachine.PhotonM3Premium => 218.88f,
+                AnyCubicMachine.PhotonMonoM5 => 218.88f,
+                AnyCubicMachine.PhotonMonoM5s => 218.88f,
                 _ => 0
             };
         }
@@ -1219,10 +1354,13 @@ public sealed class PhotonWorkshopFile : FileFormat
                 AnyCubicMachine.PhotonMonoX => 120,
                 AnyCubicMachine.PhotonMonoX2 => 122.88f,
                 AnyCubicMachine.PhotonMonoX6KM3Plus => 123.84f,
+                AnyCubicMachine.PhotonMonoX6Ks => 122.40f,
                 AnyCubicMachine.PhotonMonoSQ => 128,
                 AnyCubicMachine.PhotonM3 => 102.40f,
                 AnyCubicMachine.PhotonM3Max => 165.60f,
                 AnyCubicMachine.PhotonM3Premium => 123.12f,
+                AnyCubicMachine.PhotonMonoM5 => 122.88f,
+                AnyCubicMachine.PhotonMonoM5s => 122.88f,
                 _ => 0
             };
         }
@@ -1248,10 +1386,13 @@ public sealed class PhotonWorkshopFile : FileFormat
                 AnyCubicMachine.PhotonMonoX => 245,
                 AnyCubicMachine.PhotonMonoX2 => 200,
                 AnyCubicMachine.PhotonMonoX6KM3Plus => 245,
+                AnyCubicMachine.PhotonMonoX6Ks => 200,
                 AnyCubicMachine.PhotonMonoSQ => 200,
                 AnyCubicMachine.PhotonM3 => 180,
                 AnyCubicMachine.PhotonM3Max => 300,
                 AnyCubicMachine.PhotonM3Premium => 250,
+                AnyCubicMachine.PhotonMonoM5 => 200,
+                AnyCubicMachine.PhotonMonoM5s => 200,
                 _ => 0
             };
         }
@@ -1325,7 +1466,11 @@ public sealed class PhotonWorkshopFile : FileFormat
     public override float ExposureTime
     {
         get => HeaderSettings.ExposureTime;
-        set => base.ExposureTime = HeaderSettings.ExposureTime = (float) Math.Round(value, 2);
+        set
+        {
+            HeaderSettings.IntelligentMode = false;
+            base.ExposureTime = HeaderSettings.ExposureTime = (float)Math.Round(value, 2);
+        }
     }
 
     public override float BottomLiftHeight
@@ -1402,7 +1547,7 @@ public sealed class PhotonWorkshopFile : FileFormat
             ExtraSettings.BottomLiftHeight2 = (float)Math.Round(value, 2);
             BottomLiftHeight = bottomLiftHeight;
             base.BottomLiftHeight2 = ExtraSettings.BottomLiftHeight2;
-            HeaderV516Settings.AdvancedMode = System.Convert.ToUInt32(IsUsingTSMC);
+            HeaderSettings.AdvancedMode = System.Convert.ToUInt32(IsUsingTSMC);
         }
     }
 
@@ -1428,7 +1573,7 @@ public sealed class PhotonWorkshopFile : FileFormat
             ExtraSettings.LiftHeight2 = (float)Math.Round(value, 2);
             LiftHeight = liftHeight;
             base.BottomLiftHeight2 = ExtraSettings.LiftHeight2;
-            HeaderV516Settings.AdvancedMode = System.Convert.ToUInt32(IsUsingTSMC);
+            HeaderSettings.AdvancedMode = System.Convert.ToUInt32(IsUsingTSMC);
         }
     }
 
@@ -1542,10 +1687,13 @@ public sealed class PhotonWorkshopFile : FileFormat
                 AnyCubicMachine.PhotonMonoX   => "Photon Mono X",
                 AnyCubicMachine.PhotonMonoX2   => "Photon Mono X2",
                 AnyCubicMachine.PhotonMonoX6KM3Plus => "Photon Mono X 6K / M3 Plus",
+                AnyCubicMachine.PhotonMonoX6Ks => "Photon Mono X 6Ks",
                 AnyCubicMachine.PhotonMonoSQ  => "Photon Mono SQ",
                 AnyCubicMachine.PhotonM3  => "Photon M3",
                 AnyCubicMachine.PhotonM3Max  => "Photon M3 Max",
                 AnyCubicMachine.PhotonM3Premium => "Photon M3 Premium",
+                AnyCubicMachine.PhotonMonoM5 => "Photon Mono M5",
+                AnyCubicMachine.PhotonMonoM5s => "Photon Mono M5s",
                 AnyCubicMachine.Custom  => "Custom",
                 _ => base.MachineName
             };
@@ -1553,7 +1701,40 @@ public sealed class PhotonWorkshopFile : FileFormat
         set => base.MachineName = MachineSettings.MachineName = value;
     }
         
-    public override object[] Configs => new object[] { FileMarkSettings, HeaderSettings, PreviewSettings, ExtraSettings, MachineSettings, SoftwareSettings, ModelSettings, LayerImageColorSettings, LayersDefinition };
+    public override object[] Configs
+    {
+        get
+        {
+            switch (Version)
+            {
+                case VERSION_1:
+                    return new object[] { FileMarkSettings, HeaderSettings, PreviewSettings, LayersDefinition };
+                case VERSION_515:
+                    return new object[]
+                    {
+                        FileMarkSettings, HeaderSettings, PreviewSettings, LayerImageColorSettings, LayersDefinition
+                    };
+                case VERSION_516:
+                    return new object[]
+                    {
+                        FileMarkSettings, HeaderSettings, PreviewSettings, LayerImageColorSettings, LayersDefinition,
+                        ExtraSettings, MachineSettings 
+                    };
+                case VERSION_517:
+                    return new object[]
+                    {
+                        FileMarkSettings, HeaderSettings, PreviewSettings, LayerImageColorSettings, LayersDefinition,
+                        ExtraSettings, MachineSettings, SoftwareSettings, ModelSettings
+                    };
+                default:
+                    return new object[]
+                    {
+                        FileMarkSettings, HeaderSettings, PreviewSettings, LayerImageColorSettings, LayersDefinition,
+                        ExtraSettings, MachineSettings, SoftwareSettings, ModelSettings, SubLayersDefinition, Preview2Settings
+                    };
+            }
+        }
+    }
 
     public LayerRleFormat LayerImageFormat =>
         FileEndsWith(".pws")
@@ -1624,6 +1805,11 @@ public sealed class PhotonWorkshopFile : FileFormat
                 return AnyCubicMachine.PhotonMonoX6KM3Plus;
             }
 
+            if (FileEndsWith(".px6s"))
+            {
+                return AnyCubicMachine.PhotonMonoX6Ks;
+            }
+
             if (FileEndsWith(".pmsq"))
             {
                 return AnyCubicMachine.PhotonMonoSQ;
@@ -1642,6 +1828,16 @@ public sealed class PhotonWorkshopFile : FileFormat
             if (FileEndsWith(".pm3r"))
             {
                 return AnyCubicMachine.PhotonM3Premium;
+            }
+
+            if (FileEndsWith(".pm5"))
+            {
+                return AnyCubicMachine.PhotonMonoM5;
+            }
+
+            if (FileEndsWith(".pm5s"))
+            {
+                return AnyCubicMachine.PhotonMonoM5s;
             }
 
             if (FileEndsWith(".pwc"))
@@ -1664,57 +1860,65 @@ public sealed class PhotonWorkshopFile : FileFormat
     public override void Clear()
     {
         base.Clear();
-
         LayersDefinition = null!;
+    }
+
+    protected override void OnBeforeEncode(bool isPartialEncode)
+    {
+        HeaderSettings.PerLayerOverride = UsingPerLayerSettings;
     }
 
     protected override void EncodeInternally(OperationProgress progress)
     {
-        FileMarkSettings.NumberOfTables = FileMarkSettings.Version switch
+        FileMarkSettings.NumberOfTables = Version switch
         {
             VERSION_1 => 4,
             VERSION_515 => 5,
             VERSION_516 => 8,
             VERSION_517 => 9,
+            VERSION_518 => 11,
             _ => 4
         };
-        
-        HeaderSettings.PixelSizeUm = PixelSizeMicronsMax;
-        MachineSettings.LayerImageFormat = $"{LayerImageFormat.ToString().ToLower()}Img";
 
-        FileMarkSettings.HeaderAddress = (uint) Helpers.Serializer.SizeOf(FileMarkSettings);
-        using var outputFile = new FileStream(TemporaryOutputFileFullPath, FileMode.Create, FileAccess.Write);
-
-        HeaderSettings.Section.Length = FileMarkSettings.Version switch
+        HeaderSettings.TableLength = Version switch
         {
+            >= VERSION_518 => 96,
             >= VERSION_517 => 92,
             >= VERSION_516 => 84,
             _ => 80
         };
 
+        MachineSettings.TableLength = Version switch
+        {
+            >= VERSION_518 => 224,
+            _ => 156
+        };
+
+        HeaderSettings.PixelSizeUm = PixelSizeMicronsMax;
+        MachineSettings.PixelWidthUm = PixelWidthMicrons;
+        MachineSettings.PixelHeightUm = PixelHeightMicrons;
+        MachineSettings.LayerImageFormat = $"{LayerImageFormat.ToString().ToLower()}Img";
+        MachineSettings.MaxFileVersion = GetAvailableVersionsForExtension(FileExtension)[^1];
+
+        FileMarkSettings.HeaderAddress = (uint) Helpers.Serializer.SizeOf(FileMarkSettings);
+        FileMarkSettings.PreviewAddress = 0;
+        FileMarkSettings.Preview2Address = 0;
+
+        using var outputFile = new FileStream(TemporaryOutputFileFullPath, FileMode.Create, FileAccess.Write);
+
         outputFile.Seek((int)FileMarkSettings.HeaderAddress, SeekOrigin.Begin);
         outputFile.WriteSerialize(HeaderSettings);
 
-        if (FileMarkSettings.Version >= VERSION_516)
-        {
-            outputFile.WriteSerialize(HeaderV516Settings);
-        }
-
-        if (FileMarkSettings.Version >= VERSION_517)
-        {
-            outputFile.WriteSerialize(HeaderV517Settings);
-        }
-
-        if (CreatedThumbnailsCount > 0)
+        if (CreatedThumbnailsCount >= 1)
         {
             FileMarkSettings.PreviewAddress = (uint)outputFile.Position;
-            //Preview preview = Preview.Encode(Thumbnails[0]);
             var preview = new Preview((uint)Thumbnails[0]!.Width, (uint)Thumbnails[0]!.Height)
             {
                 Data = EncodeImage(DATATYPE_RGB565, Thumbnails[0]!)
             };
             outputFile.WriteSerialize(preview);
             outputFile.WriteBytes(preview.Data);
+            preview.ResetData();
         }
 
         if (FileMarkSettings.Version >= VERSION_515)
@@ -1724,22 +1928,23 @@ public sealed class PhotonWorkshopFile : FileFormat
         }
 
         progress.Reset(OperationProgress.StatusEncodeLayers, LayerCount);
-        FileMarkSettings.LayerDefinitionAddress = (uint)outputFile.Position;
-        LayersDefinition = new LayerDefinition(LayerCount);
-        outputFile.WriteSerialize(LayersDefinition);
-        uint layerDefOffset = (uint)outputFile.Position;
-        uint layerRleOffset = (uint)(layerDefOffset + Helpers.Serializer.SizeOf(new LayerDef()) * LayerCount);
 
-        if (FileMarkSettings.Version >= VERSION_516)
+        LayersDefinition = new LayerDefinition(LayerCount);
+        SubLayersDefinition = new SubLayerDefinition(LayerCount);
+        FileMarkSettings.LayerDefinitionAddress = (uint)outputFile.Position;
+        FileMarkSettings.LayerImageAddress = FileMarkSettings.LayerDefinitionAddress + LayersDefinition.TableLength + AnycubicNamedTable.TableBaseLength;
+
+        outputFile.Seek(FileMarkSettings.LayerImageAddress, SeekOrigin.Begin);
+        
+        if (Version >= VERSION_516)
         {
-            outputFile.Seek(layerRleOffset, SeekOrigin.Begin);
-            FileMarkSettings.ExtraAddress = layerRleOffset;
+            FileMarkSettings.ExtraAddress = FileMarkSettings.LayerImageAddress;
             outputFile.WriteSerialize(ExtraSettings);
 
             FileMarkSettings.MachineAddress = (uint)outputFile.Position;
             outputFile.WriteSerialize(MachineSettings);
 
-            if (FileMarkSettings.Version >= VERSION_517)
+            if (Version >= VERSION_517)
             {
                 FileMarkSettings.SoftwareAddress = (uint)outputFile.Position;
                 SoftwareSettings = new Software();
@@ -1748,17 +1953,32 @@ public sealed class PhotonWorkshopFile : FileFormat
                 FileMarkSettings.ModelAddress = (uint)outputFile.Position;
                 ModelSettings.Parse(this);
                 outputFile.WriteSerialize(ModelSettings);
+
+                if (Version >= VERSION_518)
+                {
+                    FileMarkSettings.SubLayerDefinitionAddress = (uint)outputFile.Position;
+                    outputFile.Seek(SubLayersDefinition.TableLength, SeekOrigin.Current);
+
+                    if (CreatedThumbnailsCount >= 2)
+                    {
+                        FileMarkSettings.Preview2Address = (uint)outputFile.Position;
+                        var preview = new Preview2((uint)Thumbnails[1]!.Width, (uint)Thumbnails[1]!.Height)
+                        {
+                            Data = EncodeImage(DATATYPE_RGB565, Thumbnails[1]!)
+                        };
+                        outputFile.WriteSerialize(preview);
+                        outputFile.WriteBytes(preview.Data);
+                        preview.ResetData();
+                    }
+                }
             }
 
-            layerRleOffset = (uint)outputFile.Position;
+            FileMarkSettings.LayerImageAddress = (uint)outputFile.Position;
         }
         else if (FileMarkSettings.Version == VERSION_515)
         {
-            FileMarkSettings.ExtraAddress = layerRleOffset;
+            FileMarkSettings.ExtraAddress = FileMarkSettings.LayerImageAddress;
         }
-        
-
-        FileMarkSettings.LayerImageAddress = layerRleOffset;
 
         var layersHash = new Dictionary<string, LayerDef>();
 
@@ -1769,8 +1989,9 @@ public sealed class PhotonWorkshopFile : FileFormat
                 progress.PauseIfRequested();
                 using (var mat = this[layerIndex].LayerMat)
                 {
-                    LayersDefinition.Layers[layerIndex] = new LayerDef(this, this[layerIndex]);
-                    LayersDefinition.Layers[layerIndex].Encode(mat);
+                    LayersDefinition[layerIndex] = new LayerDef(this[layerIndex]);
+                    LayersDefinition[layerIndex].Encode(this, mat);
+                    SubLayersDefinition[layerIndex] = new SubLayerDef();
                 }
                 progress.LockAndIncrement();
             });
@@ -1786,29 +2007,34 @@ public sealed class PhotonWorkshopFile : FileFormat
                 if (layersHash.TryGetValue(hash, out var layerDataHash))
                 {
                     layerDef.DataAddress = layerDataHash.DataAddress;
-                    layerDef.DataLength = (uint)layerDataHash.EncodedRle.Length;
+                    layerDef.DataLength = layerDataHash.DataLength;
                 }
                 else
                 {
+                    layerDef.DataAddress = (uint)outputFile.Position;
+                    SubLayersDefinition[layerIndex].SetFrom(layerDef);
+
+
                     layersHash.Add(hash, layerDef);
-
-                    layerDef.DataAddress = layerRleOffset;
-
-                    outputFile.Seek(layerRleOffset, SeekOrigin.Begin);
-                    layerRleOffset += outputFile.WriteBytes(layerDef.EncodedRle);
+                    
+                    outputFile.WriteBytes(layerDef.EncodedRle);
+                    layerDef.EncodedRle = null!;
                 }
-
-                outputFile.Seek(layerDefOffset, SeekOrigin.Begin);
-                layerDefOffset += outputFile.WriteSerialize(layerDef);
             }
         }
 
-        foreach (var layerDef in LayersDefinition.Layers)
+        // Layers definition
+        outputFile.Seek(FileMarkSettings.LayerDefinitionAddress, SeekOrigin.Begin);
+        outputFile.WriteSerialize(LayersDefinition);
+
+        if (Version >= VERSION_518)
         {
-            layerDef.EncodedRle = null!;
+            // SubLayers definition
+            outputFile.Seek(FileMarkSettings.SubLayerDefinitionAddress, SeekOrigin.Begin);
+            outputFile.WriteSerialize(SubLayersDefinition);
         }
-            
-        // Rewind
+
+        // Header
         outputFile.Seek(0, SeekOrigin.Begin);
         outputFile.WriteSerialize(FileMarkSettings);
     }
@@ -1836,83 +2062,98 @@ public sealed class PhotonWorkshopFile : FileFormat
         Debug.Write("Header -> ");
         Debug.WriteLine(HeaderSettings);
 
-        var extraBytes = 0;
-        if (FileMarkSettings.Version >= VERSION_516)
-        {
-            HeaderV516Settings = Helpers.Deserialize<HeaderV516>(inputFile);
-            Debug.Write("HeaderV516 -> ");
-            Debug.WriteLine(HeaderV516Settings);
-            extraBytes += (int)Helpers.Serializer.SizeOf(HeaderV516Settings);
-        }
-
-        if (FileMarkSettings.Version >= VERSION_517)
-        {
-            HeaderV517Settings = Helpers.Deserialize<HeaderV517>(inputFile);
-            Debug.Write("HeaderV517 -> ");
-            Debug.WriteLine(HeaderV517Settings);
-            extraBytes += (int)Helpers.Serializer.SizeOf(HeaderV517Settings);
-        }
-        
-        HeaderSettings.Validate(extraBytes);
+        HeaderSettings.Validate();
 
         if (FileMarkSettings.PreviewAddress > 0)
         {
             inputFile.Seek(FileMarkSettings.PreviewAddress, SeekOrigin.Begin);
 
             PreviewSettings = Helpers.Deserialize<Preview>(inputFile);
-            Debug.Write("Preview -> ");
+            PreviewSettings.Data = inputFile.ReadBytes(PreviewSettings.DataSize);
+            Debug.Write("Preview 1 -> ");
             Debug.WriteLine(PreviewSettings);
 
-            //PreviewSettings.Validate((int) PreviewSettings.DataSize);
-
-            PreviewSettings.Data = new byte[PreviewSettings.DataSize];
-            inputFile.ReadBytes(PreviewSettings.Data);
-
             Thumbnails[0] = DecodeImage(DATATYPE_RGB565, PreviewSettings.Data, PreviewSettings.ResolutionX, PreviewSettings.ResolutionY);
-            //Thumbnails[0] = PreviewSettings.Decode();
-            PreviewSettings.Data = null!;
+            PreviewSettings.ResetData();
         }
 
-        if (FileMarkSettings is {Version: >= VERSION_515, LayerImageColorTableAddress: > 0})
+        if (Version >= VERSION_515)
         {
-            inputFile.Seek(FileMarkSettings.LayerImageColorTableAddress, SeekOrigin.Begin);
-            LayerImageColorSettings = Helpers.Deserialize<LayerImageColorTable>(inputFile);
-            Debug.Write("LayerImageColorTable -> ");
-            Debug.WriteLine(LayerImageColorSettings);
-        }
+            if (FileMarkSettings.LayerImageColorTableAddress > 0)
+            {
+                inputFile.Seek(FileMarkSettings.LayerImageColorTableAddress, SeekOrigin.Begin);
+                LayerImageColorSettings = Helpers.Deserialize<LayerImageColorTable>(inputFile);
+                Debug.Write("LayerImageColorTable -> ");
+                Debug.WriteLine(LayerImageColorSettings);
+            }
 
-        if (FileMarkSettings is {Version: >= VERSION_516, ExtraAddress: > 0})
-        {
-            inputFile.Seek(FileMarkSettings.ExtraAddress, SeekOrigin.Begin);
-            ExtraSettings = Helpers.Deserialize<Extra>(inputFile);
-            ExtraSettings.Validate();
-            Debug.Write("Extra -> ");
-            Debug.WriteLine(ExtraSettings);
-        }
+            if (Version >= VERSION_516)
+            {
+                if (FileMarkSettings.ExtraAddress > 0)
+                {
+                    inputFile.Seek(FileMarkSettings.ExtraAddress, SeekOrigin.Begin);
+                    ExtraSettings = Helpers.Deserialize<Extra>(inputFile);
+                    Debug.Write("Extra -> ");
+                    Debug.WriteLine(ExtraSettings);
+                    //ExtraSettings.ValidateExpecting(24);
+                }
 
-        if (FileMarkSettings is {Version: >= VERSION_516, MachineAddress: > 0})
-        {
-            inputFile.Seek(FileMarkSettings.MachineAddress, SeekOrigin.Begin);
-            MachineSettings = Helpers.Deserialize<Machine>(inputFile);
-            MachineSettings.Validate();
-            Debug.Write("Machine -> ");
-            Debug.WriteLine(MachineSettings);
-        }
+                if (FileMarkSettings.MachineAddress > 0)
+                {
+                    inputFile.Seek(FileMarkSettings.MachineAddress, SeekOrigin.Begin);
+                    MachineSettings = Helpers.Deserialize<Machine>(inputFile);
+                    MachineSettings.Validate();
+                    Debug.Write("Machine -> ");
+                    Debug.WriteLine(MachineSettings);
+                    MachineSettings.Validate();
+                }
 
-        if (FileMarkSettings is {Version: >= VERSION_517, SoftwareAddress: > 0})
-        {
-            inputFile.Seek(FileMarkSettings.SoftwareAddress, SeekOrigin.Begin);
-            SoftwareSettings = Helpers.Deserialize<Software>(inputFile);
-            Debug.Write("Software -> ");
-            Debug.WriteLine(SoftwareSettings);
-        }
+                if (Version >= VERSION_517)
+                {
+                    if (FileMarkSettings.SoftwareAddress > 0)
+                    {
+                        inputFile.Seek(FileMarkSettings.SoftwareAddress, SeekOrigin.Begin);
+                        SoftwareSettings = Helpers.Deserialize<Software>(inputFile);
+                        Debug.Write("Software -> ");
+                        Debug.WriteLine(SoftwareSettings);
+                    }
 
-        if (FileMarkSettings is {Version: >= VERSION_517, ModelAddress: > 0})
-        {
-            inputFile.Seek(FileMarkSettings.ModelAddress, SeekOrigin.Begin);
-            ModelSettings = Helpers.Deserialize<Model>(inputFile);
-            Debug.Write("Model -> ");
-            Debug.WriteLine(ModelSettings);
+                    if (FileMarkSettings.ModelAddress > 0)
+                    {
+                        inputFile.Seek(FileMarkSettings.ModelAddress, SeekOrigin.Begin);
+                        ModelSettings = Helpers.Deserialize<Model>(inputFile);
+                        Debug.Write("Model -> ");
+                        Debug.WriteLine(ModelSettings);
+                        //ModelSettings.Validate();
+                    }
+
+                    if (Version >= VERSION_518)
+                    {
+                        if (FileMarkSettings.SubLayerDefinitionAddress > 0)
+                        {
+                            inputFile.Seek(FileMarkSettings.SubLayerDefinitionAddress, SeekOrigin.Begin);
+                            SubLayersDefinition = Helpers.Deserialize<SubLayerDefinition>(inputFile);
+                            Debug.Write("SubLayers -> ");
+                            Debug.WriteLine(SubLayersDefinition);
+                            SubLayersDefinition.Validate();
+                        }
+
+                        if (FileMarkSettings.Preview2Address > 0)
+                        {
+                            inputFile.Seek(FileMarkSettings.Preview2Address, SeekOrigin.Begin);
+
+                            Preview2Settings = Helpers.Deserialize<Preview2>(inputFile);
+                            Preview2Settings.Data = inputFile.ReadBytes(Preview2Settings.DataSize);
+                            Debug.Write("Preview 2 -> ");
+                            Debug.WriteLine(Preview2Settings);
+                            Preview2Settings.Validate(Preview2Settings.Data.Length);
+
+                            Thumbnails[1] = DecodeImage(DATATYPE_RGB565, Preview2Settings.Data, Preview2Settings.ResolutionX, Preview2Settings.ResolutionY);
+                            Preview2Settings.ResetData();
+                        }
+                    }
+                }
+            }
         }
 
         inputFile.Seek(FileMarkSettings.LayerDefinitionAddress, SeekOrigin.Begin);
@@ -1920,11 +2161,9 @@ public sealed class PhotonWorkshopFile : FileFormat
         LayersDefinition = Helpers.Deserialize<LayerDefinition>(inputFile);
         Debug.Write("LayersDefinition -> ");
         Debug.WriteLine(LayersDefinition);
-
-        Init(LayersDefinition.LayerCount, DecodeType == FileDecodeType.Partial);
-        LayersDefinition.Layers = new LayerDef[LayerCount];
-            
         LayersDefinition.Validate();
+        
+        Init(LayersDefinition.LayerCount, DecodeType == FileDecodeType.Partial);
             
         progress.Reset(OperationProgress.StatusDecodeLayers, LayerCount);
         foreach (var batch in BatchLayersIndexes())
@@ -1933,17 +2172,12 @@ public sealed class PhotonWorkshopFile : FileFormat
             {
                 progress.PauseOrCancelIfRequested();
 
-                LayersDefinition[layerIndex] = Helpers.Deserialize<LayerDef>(inputFile);
-                LayersDefinition[layerIndex].Parent = this;
                 Debug.WriteLine($"Layer {layerIndex}: {LayersDefinition[layerIndex]}");
 
                 if (DecodeType == FileDecodeType.Full)
                 {
-                    inputFile.SeekDoWorkAndRewind(LayersDefinition[layerIndex].DataAddress,
-                        () =>
-                        {
-                            LayersDefinition[layerIndex].EncodedRle = inputFile.ReadBytes(LayersDefinition[layerIndex].DataLength);
-                        });
+                    inputFile.Seek(LayersDefinition[layerIndex].DataAddress, SeekOrigin.Begin);
+                    LayersDefinition[layerIndex].EncodedRle = inputFile.ReadBytes(LayersDefinition[layerIndex].DataLength);
                 }
             }
 
@@ -1952,22 +2186,19 @@ public sealed class PhotonWorkshopFile : FileFormat
                 Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), layerIndex =>
                 {
                     progress.PauseIfRequested();
-                    using var mat = LayersDefinition[layerIndex].Decode();
-                    _layers[layerIndex] = new Layer((uint)layerIndex, mat, this)
+                    using var mat = LayersDefinition[layerIndex].Decode(this);
+                    this[layerIndex] = new Layer((uint)layerIndex, mat, this)
                     {
                         PositionZ = LayersDefinition.Layers
                             .Where((_, i) => i <= layerIndex)
                             .Sum(def => def.LayerHeight),
                     };
 
+                    LayersDefinition[layerIndex].CopyTo(this[layerIndex]);
+
                     progress.LockAndIncrement();
                 });
             }
-        }
-
-        for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
-        {
-            LayersDefinition[layerIndex].CopyTo(this[layerIndex]);
         }
 
         if (FileMarkSettings.Version < VERSION_516)
@@ -1987,19 +2218,7 @@ public sealed class PhotonWorkshopFile : FileFormat
         outputFile.Seek(FileMarkSettings.HeaderAddress, SeekOrigin.Begin);
         outputFile.WriteSerialize(HeaderSettings);
 
-
-        if (FileMarkSettings.Version >= VERSION_516)
-        {
-            outputFile.WriteSerialize(HeaderV516Settings);
-        }
-
-        if (FileMarkSettings.Version >= VERSION_517)
-        {
-            outputFile.WriteSerialize(HeaderV517Settings);
-        }
-
-
-        if (FileMarkSettings.Version >= VERSION_516)
+        if (Version >= VERSION_516)
         {
             if (FileMarkSettings.ExtraAddress > 0)
             {
@@ -2012,60 +2231,32 @@ public sealed class PhotonWorkshopFile : FileFormat
                 outputFile.Seek(FileMarkSettings.MachineAddress, SeekOrigin.Begin);
                 outputFile.WriteSerialize(MachineSettings);
             }
+
+            if (Version >= VERSION_517)
+            {
+                if (FileMarkSettings.SoftwareAddress > 0)
+                {
+                    outputFile.Seek(FileMarkSettings.SoftwareAddress, SeekOrigin.Begin);
+                    SoftwareSettings = new Software();
+                    outputFile.WriteSerialize(SoftwareSettings);
+                }
+
+                if (FileMarkSettings.ModelAddress > 0)
+                {
+                    outputFile.Seek(FileMarkSettings.ModelAddress, SeekOrigin.Begin);
+                    ModelSettings.Parse(this);
+                    outputFile.WriteSerialize(ModelSettings);
+                }
+            }
         }
 
-        if (FileMarkSettings.Version >= VERSION_517)
-        {
-            if (FileMarkSettings.SoftwareAddress > 0)
-            {
-                outputFile.Seek(FileMarkSettings.SoftwareAddress, SeekOrigin.Begin);
-                SoftwareSettings = new Software();
-                outputFile.WriteSerialize(SoftwareSettings);
-            }
-
-            if (FileMarkSettings.ModelAddress > 0)
-            {
-                outputFile.Seek(FileMarkSettings.ModelAddress, SeekOrigin.Begin);
-                ModelSettings.Parse(this);
-                outputFile.WriteSerialize(ModelSettings);
-            }
-        }
-
-
-        outputFile.Seek(FileMarkSettings.LayerDefinitionAddress + Helpers.Serializer.SizeOf(LayersDefinition), SeekOrigin.Begin);
         for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
         {
             LayersDefinition[layerIndex].SetFrom(this[layerIndex]);
-            outputFile.WriteSerialize(LayersDefinition[layerIndex]);
         }
-    }
 
-    protected override void OnBeforeEncode(bool isPartialEncode)
-    {
-        HeaderSettings.PerLayerOverride = UsingPerLayerSettings;
-        /*MachineSettings.MaxFileVersion = PrinterModel switch
-        {
-            AnyCubicMachine.PhotonS => VERSION_1,
-            AnyCubicMachine.PhotonZero => VERSION_1,
-            AnyCubicMachine.PhotonX => VERSION_1,
-            AnyCubicMachine.PhotonUltra => VERSION_516,
-            AnyCubicMachine.PhotonD2 => VERSION_516,
-            AnyCubicMachine.PhotonMono => VERSION_516,
-            AnyCubicMachine.PhotonMono2 => VERSION_517,
-            AnyCubicMachine.PhotonMonoSE => VERSION_516,
-            AnyCubicMachine.PhotonMono4K => VERSION_516,
-            AnyCubicMachine.PhotonMonoX => VERSION_516,
-            AnyCubicMachine.PhotonMonoX2 => VERSION_517,
-            AnyCubicMachine.PhotonMonoX6KM3Plus => VERSION_517,
-            AnyCubicMachine.PhotonMonoSQ => VERSION_516,
-            AnyCubicMachine.PhotonM3 => VERSION_516,
-            AnyCubicMachine.PhotonM3Max => VERSION_516,
-            AnyCubicMachine.PhotonM3Premium => VERSION_517,
-            AnyCubicMachine.Custom => VERSION_517,
-            _ => VERSION_517
-        };*/
-
-        MachineSettings.MaxFileVersion = GetAvailableVersionsForExtension(FileExtension)[^1];
+        outputFile.Seek(FileMarkSettings.LayerDefinitionAddress, SeekOrigin.Begin);
+        outputFile.WriteSerialize(LayersDefinition);
     }
 
     #endregion

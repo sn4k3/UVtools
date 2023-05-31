@@ -83,7 +83,7 @@ public sealed class ChituboxZipFile : FileFormat
         new(typeof(ChituboxZipFile), "zip", "Chitubox Zip")
     };
 
-    public override PrintParameterModifier[]? PrintParameterModifiers { get; } = {
+    public override PrintParameterModifier[] PrintParameterModifiers { get; } = {
         PrintParameterModifier.BottomLayerCount,
         PrintParameterModifier.TransitionLayerCount,
 
@@ -121,7 +121,7 @@ public sealed class ChituboxZipFile : FileFormat
         PrintParameterModifier.LightPWM,
     };
 
-    public override PrintParameterModifier[]? PrintParameterPerLayerModifiers { get; } = {
+    public override PrintParameterModifier[] PrintParameterPerLayerModifiers { get; } = {
         PrintParameterModifier.PositionZ,
         PrintParameterModifier.WaitTimeBeforeCure,
         PrintParameterModifier.ExposureTime,
@@ -137,7 +137,7 @@ public sealed class ChituboxZipFile : FileFormat
         PrintParameterModifier.LightPWM,
     };
 
-    public override Size[]? ThumbnailsOriginalSize { get; } =
+    public override Size[] ThumbnailsOriginalSize { get; } =
     {
         new(954, 850), 
         new(168, 150)
@@ -392,17 +392,17 @@ public sealed class ChituboxZipFile : FileFormat
     protected override void EncodeInternally(OperationProgress progress)
     {
         using var outputFile = ZipFile.Open(TemporaryOutputFileFullPath, ZipArchiveMode.Create);
-        if (Thumbnails is not null && Thumbnails.Length > 0 && Thumbnails[0] is not null)
+
+        if (Thumbnails.Length > 0 && Thumbnails[0] is not null)
         {
             using var stream = outputFile.CreateEntry("preview.png").Open();
             stream.WriteBytes(Thumbnails[0]!.GetPngByes());
             stream.Close();
         }
 
-        if (Thumbnails is not null  && Thumbnails.Length > 1 && Thumbnails[1] is not null)
+        if (Thumbnails.Length > 1 && Thumbnails[1] is not null)
         {
             using var stream = outputFile.CreateEntry("preview_cropping.png").Open();
-            using var vec = new VectorOfByte();
             stream.WriteBytes(Thumbnails[1]!.GetPngByes());
             stream.Close();
         }

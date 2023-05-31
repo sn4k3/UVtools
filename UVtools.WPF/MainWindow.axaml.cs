@@ -351,7 +351,7 @@ public partial class MainWindow : WindowEx
 
                     var menuItem = new MenuItem
                     {
-                        Header = header,
+                        Header = header.ReplaceFirst("_", "__"),
                         Tag = drive,
                         Icon = new Projektanker.Icons.Avalonia.Icon{ Value = "fa-brands fa-usb" }
                     };
@@ -382,7 +382,7 @@ public partial class MainWindow : WindowEx
 
                     var menuItem = new MenuItem
                     {
-                        Header = location.ToString(),
+                        Header = location.ToString().ReplaceFirst("_", "__"),
                         Tag = location,
                         Icon = new Projektanker.Icons.Avalonia.Icon { Value = "fa-solid fa-folder" }
                     };
@@ -413,7 +413,7 @@ public partial class MainWindow : WindowEx
 
                     var menuItem = new MenuItem
                     {
-                        Header = remotePrinter.ToString(),
+                        Header = remotePrinter.ToString().ReplaceFirst("_", "__"),
                         Tag = remotePrinter,
                         Icon = new Projektanker.Icons.Avalonia.Icon { Value = "fa-solid fa-network-wired" }
                     };
@@ -444,7 +444,7 @@ public partial class MainWindow : WindowEx
 
                     var menuItem = new MenuItem
                     {
-                        Header = application.Name,
+                        Header = application.Name.ReplaceFirst("_", "__"),
                         Tag = application,
                         Icon = new Projektanker.Icons.Avalonia.Icon { Value = "fa-solid fa-cog" }
                     };
@@ -1457,8 +1457,7 @@ public partial class MainWindow : WindowEx
                     if (canConvert)
                     {
                         IsGUIEnabled = false;
-                        ShowProgressWindow(
-                            $"Converting {Path.GetFileName(SlicerFile.FileFullPath)} to {convertFileExtension}");
+                        ShowProgressWindow($"Converting {Path.GetFileName(SlicerFile.FileFullPath)} to {convertFileExtension}");
 
                         task = await Task.Run(() =>
                         {
@@ -1620,31 +1619,27 @@ public partial class MainWindow : WindowEx
                     _showLayerImageFlippedVertically = SlicerFile.DisplayMirror is FlipDirection.Vertically or FlipDirection.Both;
                 }
             }
-        }
 
-        if (mat is not null && mat.Size != SlicerFile.Resolution)
-        {
-            var result = await this.MessageBoxWaring($"Layer image resolution of {mat.Size} mismatch with printer resolution of {SlicerFile.Resolution}.\n" +
-                                                     "1) Printing this file can lead to problems or malformed model, please verify your slicer printer settings;\n" +
-                                                     "2) Processing this file with some of the tools can lead to program crash or misfunction;\n" +
-                                                     "3) If you used PrusaSlicer to slice this file, you must use it with compatible UVtools printer profiles (Help - Install profiles into PrusaSlicer).\n\n" +
-                                                     "Click 'Yes' to auto fix and set the file resolution with the layer resolution, but only use this option if you are sure it's ok to!\n" +
-                                                     "Click 'No' to continue as it is and ignore this warning, you can still repair issues and use some of the tools.",
-                "File and layer resolution mismatch!", ButtonEnum.YesNo);
-            if(result == ButtonResult.Yes)
+            if (mat.Size != SlicerFile.Resolution)
             {
-                SlicerFile.Resolution = mat.Size;
-                RaisePropertyChanged(nameof(LayerResolutionStr));
+                var result = await this.MessageBoxWaring($"Layer image resolution of {mat.Size} mismatch with printer resolution of {SlicerFile.Resolution}.\n" +
+                                                         "1) Printing this file can lead to problems or malformed model, please verify your slicer printer settings;\n" +
+                                                         "2) Processing this file with some of the tools can lead to program crash or dysfunction;\n" +
+                                                         "3) If you used PrusaSlicer to slice this file, you must use it with compatible UVtools printer profiles (Help - Install profiles into PrusaSlicer).\n\n" +
+                                                         "Click 'Yes' to auto fix and set the file resolution with the layer resolution, but only use this option if you are sure it's ok to!\n" +
+                                                         "Click 'No' to continue as it is and ignore this warning, you can still repair issues and use some of the tools.",
+                    "File and layer resolution mismatch!", ButtonEnum.YesNo);
+                if (result == ButtonResult.Yes)
+                {
+                    SlicerFile.Resolution = mat.Size;
+                    RaisePropertyChanged(nameof(LayerResolutionStr));
+                    CanSave = true;
+                }
             }
         }
 
         if (SlicerFile.LayerHeight <= 0)
         {
-            /*await this.MessageBoxWaring(
-                $"This file have a incorrect or not present layer height of {SlicerFile.LayerHeight}mm\n" +
-                $"It may not be required for some printers to work properly, but this information is crucial to {About.Software}.\n",
-                "Incorrect layer height detected");*/
-
             await new MissingInformationWindow().ShowDialog(this);
         }
 
@@ -1654,6 +1649,30 @@ public partial class MainWindow : WindowEx
                 $"This file have a incorrect or not present layer height of {SlicerFile.LayerHeight}mm\n" +
                 $"It may not be required for some printers to work properly, but this information is crucial to {About.Software}.\n",
                 "Incorrect layer height detected");
+        }
+
+        if (SlicerFile.AvailableVersionsCount > 0)
+        {
+            var extensions = SlicerFile.GetAvailableVersionsForExtension();
+            if (extensions.Length > 0)
+            {
+                if (!extensions.Contains(SlicerFile.Version))
+                {
+                    var lastVersion = extensions[^1];
+                    var result = await this.MessageBoxQuestion(
+                        $"Your printer and file format seems only to support the following versions: ({string.Join(", ", extensions)}). However, the file comes with the version {SlicerFile.Version} set, which is outside the supported range.\n" +
+                        $"Keeping that version may or not print on your machine, but can mislead {About.Software} to set and use features that your printer firmware doesn't support or vice versa leading to unexpected behaviors.\n\n" +
+                        $"Do you want to change the version {SlicerFile.Version} to the latest supported version {lastVersion}?\n" +
+                        $"Yes: Change to version {lastVersion}. (Highly recommended!)\n" +
+                        $"No: Keep the version {SlicerFile.Version} while editing, but a latter full encode of the file will force the version {lastVersion}.",
+                        $"File version {SlicerFile.Version} is outside the supported range for your printer");
+                    if (result == ButtonResult.Yes)
+                    {
+                        SlicerFile.Version = lastVersion;
+                        CanSave = true;
+                    }
+                }
+            }
         }
 
         var display = SlicerFile.Display;
@@ -2180,7 +2199,7 @@ public partial class MainWindow : WindowEx
         {
             var item = new MenuItem
             {
-                Header = Path.GetFileName(file),
+                Header = Path.GetFileName(file).ReplaceFirst("_", "__"),
                 Tag = file,
                 IsEnabled = !IsFileLoaded || SlicerFile.FileFullPath != file
             };

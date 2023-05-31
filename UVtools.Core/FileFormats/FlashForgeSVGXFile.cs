@@ -262,7 +262,7 @@ public sealed class FlashForgeSVGXFile : FileFormat
         new (typeof(FlashForgeSVGXFile), "svgx", "Flashforge SVGX"),
     };
 
-    public override PrintParameterModifier[]? PrintParameterModifiers { get; } =
+    public override PrintParameterModifier[] PrintParameterModifiers { get; } =
     {
         PrintParameterModifier.BottomLayerCount,
         PrintParameterModifier.BottomExposureTime,
@@ -270,7 +270,7 @@ public sealed class FlashForgeSVGXFile : FileFormat
         //PrintParameterModifier.LightPWM,
     };
 
-    public override Size[]? ThumbnailsOriginalSize { get; } =
+    public override Size[] ThumbnailsOriginalSize { get; } =
     {
         new(128, 128), 
         new(200, 240)
@@ -447,7 +447,7 @@ public sealed class FlashForgeSVGXFile : FileFormat
         HeaderSettings.Preview1Address = 0;
         HeaderSettings.Preview2Address = 0;
 
-        progress.Reset(OperationProgress.StatusEncodePreviews, (uint)ThumbnailsOriginalSize?.Length!);
+        progress.Reset(OperationProgress.StatusEncodePreviews, (uint)ThumbnailsOriginalSize.Length);
         foreach (var mat in Thumbnails)
         {
             if (HeaderSettings.Preview2Address > 0) break;

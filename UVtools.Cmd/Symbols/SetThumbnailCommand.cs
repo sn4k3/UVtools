@@ -62,7 +62,7 @@ internal static class SetThumbnailCommand
                     }
                     else
                     {
-                        result = slicerFile.SetThumbnails(mat) > 0;
+                        result = slicerFile.SetThumbnails(mat);
                     }
 
                     if (result) Program.SaveFile(slicerFile);
@@ -87,7 +87,7 @@ internal static class SetThumbnailCommand
                     }
                     else
                     {
-                        result = slicerFile.SetThumbnails(matRoi.RoiMat) > 0;
+                        result = slicerFile.SetThumbnails(matRoi.RoiMat);
                     }
 
                     if (result) Program.SaveFile(slicerFile);
@@ -112,7 +112,7 @@ internal static class SetThumbnailCommand
                     }
                     else
                     {
-                        result = slicerFile.SetThumbnails(matRoi.RoiMat) > 0;
+                        result = slicerFile.SetThumbnails(matRoi.RoiMat);
                     }
 
                     if (result) Program.SaveFile(slicerFile);
@@ -132,7 +132,7 @@ internal static class SetThumbnailCommand
                     }
                     else
                     {
-                        result = slicerFile.SetThumbnails(source) > 0;
+                        result = slicerFile.SetThumbnails(source);
                     }
 
                     if (result) Program.SaveFile(slicerFile);

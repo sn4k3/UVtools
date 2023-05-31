@@ -699,12 +699,10 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
     public byte LightPWM
     {
         get => _lightPWM;
-        set
-        {
+        set =>
             //if (value == 0) value = SlicerFile.GetInitialLayerValueOrNormal(Index, SlicerFile.BottomLightPWM, SlicerFile.LightPWM);
             //if (value == 0) value = FileFormat.DefaultLightPWM;
             RaiseAndSetIfChanged(ref _lightPWM, value);
-        }
     }
 
     /// <summary>
@@ -1646,9 +1644,9 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
         return false;
     }
 
-    public byte SetValuesFromPrintParametersModifiers(FileFormat.PrintParameterModifier[]? modifiers)
+    public byte SetValuesFromPrintParametersModifiers(FileFormat.PrintParameterModifier[] modifiers)
     {
-        if (modifiers is null) return 0;
+        if (modifiers.Length == 0) return 0;
         byte changed = 0;
         foreach (var modifier in modifiers)
         {

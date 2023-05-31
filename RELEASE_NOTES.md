@@ -1,12 +1,23 @@
-- **UVtoolsCmd run:**
-  - (Add) **--dummy:** Do not save alterations to file
-  - (Add) Allow to run suggestions by it class name (#711)
-  - (Improvement) Allow to run operations by it class name in addition to a file path to a profile
-  - (Fix) .uvtop files was not selecting the last selected layer range by name
-- **Suggestions:**
-  - (Add) Allow to import and export settings (.uvtsu)
-  - (Fix) When reset to defaults the SlicerFile property was lost
-- (Fix) Anycubic file format: Wrong header size when downgrading file version (#707)
-- (Fix) Operations: When creating a new instance it will now select the predefined starting layer range instead of all layers
-- (Upgrade) AvaloniaUI from 0.10.19 to 0.10.21
+- **File formats:**
+  - **Anycubic:**
+    - (Add) Support for version 518 of the file format
+    - (Add) Support for Photon Mono X 6Ks (.px6s) and corresponding PrusaSlicer printer
+    - (Add) Support for Photon Mono M5 (.pm5) and corresponding PrusaSlicer printer
+    - (Add) Support for Photon Mono M5s (.pm5s) and corresponding PrusaSlicer printer
+    - (Improvement) Better tables validation and data structures
+    - (Improvement) Ensure the correct number of thumbnails are created when converting between files with different thumbnail count
+  - (Add) PRZ file format and corresponding PrusaSlicer printer Phrozen Sonic Mini 8K S (#705)
+  - (Improvement) When encoding a file with wait time before cure set but file does not support it, attempt to set light-off delay with that extra time if supported
+  - (Improvement) Minor code cleanup and improve some types to not nullable
+- **PrusaSlicer printers:**
+  - (Add) Elegoo Mars 4 Max
+  - (Add) Peopoly Phenom XXL V2
+  - (Add) Nova3D Bene6
+- (Improvement) Suggestion - Wait time before cure: Create the empty layer only to file formats that we know who require it
+- (Improvement) Disable suggestions for image file formats
+- (Improvement) After file load, if version is outside the supported range for the printer and format it will prompt to change for the latest supported version
+- (Improvement) Pixel size information on status bar: If pixel width is not equal to pixel height, show both
+- (Fix) Tool - Timelapse: The informative number of additional lifts not respecting the selected layer range and get calculated for whole model height
+- (Fix) Tool - Change resolution: Allow image file types to run this tool without error (#716)
+- (Fix) Menu - Open recent file: Filenames with underscore (_) are not shown correctly
 

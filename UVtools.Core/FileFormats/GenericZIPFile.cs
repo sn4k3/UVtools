@@ -120,7 +120,7 @@ public sealed class GenericZIPFile : FileFormat
         set => base.LayerCount = ManifestFile.Slices.LayerCount = base.LayerCount;
     }*/
 
-    public override Size[]? ThumbnailsOriginalSize { get; } =
+    public override Size[] ThumbnailsOriginalSize { get; } =
     {
         new(854, 480),
         new(472, 240)
@@ -168,9 +168,9 @@ public sealed class GenericZIPFile : FileFormat
     {
         using var outputFile = ZipFile.Open(TemporaryOutputFileFullPath, ZipArchiveMode.Create);
 
-        if (Thumbnails is not null)
+        if (HaveThumbnails)
         {
-            if (Thumbnails.Length > 0 && Thumbnails[0] is not null)
+            if (Thumbnails[0] is not null)
             {
                 using var stream = outputFile.CreateEntry("preview.png").Open();
                 stream.WriteBytes(Thumbnails[0]!.GetPngByes());

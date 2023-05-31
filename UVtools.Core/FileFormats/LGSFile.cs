@@ -271,7 +271,7 @@ public sealed class LGSFile : FileFormat
         new (typeof(LGSFile), "lgs4k", "Longer Orange 4k (LGS4K)"),
     };
 
-    public override PrintParameterModifier[]? PrintParameterModifiers { get; } =
+    public override PrintParameterModifier[] PrintParameterModifiers { get; } =
     {
         PrintParameterModifier.BottomLayerCount,
 
@@ -288,7 +288,7 @@ public sealed class LGSFile : FileFormat
             
     };
 
-    public override Size[]? ThumbnailsOriginalSize { get; } = {new(120, 150)};
+    public override Size[] ThumbnailsOriginalSize { get; } = {new(120, 150)};
 
     public override uint ResolutionX
     {

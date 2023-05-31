@@ -277,11 +277,12 @@ public sealed class OperationChangeResolution : Operation
             progress.LockAndIncrement();
         });
 
+
         SlicerFile.ResolutionX = _newResolutionX;
         SlicerFile.ResolutionY = _newResolutionY;
         if (_newDisplayWidth > 0)
         {
-            SlicerFile.DisplayWidth = (float) _newDisplayWidth;
+            SlicerFile.DisplayWidth = (float)_newDisplayWidth;
         }
 
         if (_newDisplayHeight > 0)
