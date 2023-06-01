@@ -102,6 +102,16 @@ struct PREVIEW {
     ubyte Data[ResolutionX*ResolutionY*2] <fgcolor=cBlack, bgcolor=cGreen>;
 };
 
+struct PREVIEW2 {
+    SECTION section;
+    uint ResolutionX <fgcolor=cBlack, bgcolor=cRed>;
+    ushort BackgroundColor1 <fgcolor=cBlack, bgcolor=cRed>;
+    ushort BackgroundColor2 <fgcolor=cBlack, bgcolor=cRed>;
+    uint ResolutionY <fgcolor=cBlack, bgcolor=cRed>;
+
+    ubyte Data[ResolutionX*ResolutionY*2] <fgcolor=cBlack, bgcolor=cGreen>;
+};
+
 if(fileMark.PreviewAddress > 0){
     FSeek(fileMark.PreviewAddress);
     PREVIEW preview;
@@ -152,14 +162,14 @@ struct SUBLAYER_DEF {
     uint DataAddress <fgcolor=cBlack, bgcolor=cWhite>;
     uint DataLength <fgcolor=cBlack, bgcolor=cWhite>;
     uint NonZeroPixelCount <fgcolor=cBlack, bgcolor=cWhite>;
-    float Unknown <fgcolor=cBlack, bgcolor=cWhite>;
-    float Unknown <fgcolor=cBlack, bgcolor=cWhite>;
-    float Unknown <fgcolor=cBlack, bgcolor=cWhite>;
-    float Unknown <fgcolor=cBlack, bgcolor=cWhite>;
-    float Unknown <fgcolor=cBlack, bgcolor=cWhite>;
-    float Unknown <fgcolor=cBlack, bgcolor=cWhite>;
-    float Unknown <fgcolor=cBlack, bgcolor=cWhite>;
-    float Unknown <fgcolor=cBlack, bgcolor=cWhite>;
+    uint Padding <fgcolor=cBlack, bgcolor=cWhite>;
+    uint Padding <fgcolor=cBlack, bgcolor=cWhite>;
+    uint Padding <fgcolor=cBlack, bgcolor=cWhite>;
+    uint Padding <fgcolor=cBlack, bgcolor=cWhite>;
+    uint Padding <fgcolor=cBlack, bgcolor=cWhite>;
+    uint Padding <fgcolor=cBlack, bgcolor=cWhite>;
+    uint Padding <fgcolor=cBlack, bgcolor=cWhite>;
+    uint Padding <fgcolor=cBlack, bgcolor=cWhite>;
 
 };
 
@@ -209,29 +219,28 @@ if(fileMark.Version >= 516 && fileMark.MachineAddress > 0){
         float DisplayWidth <fgcolor=cBlack, bgcolor=cRed>;
         float DisplayHeight <fgcolor=cBlack, bgcolor=cRed>;
         float MachineZ <fgcolor=cBlack, bgcolor=cRed>;
-        uint MaxFileVersion <fgcolor=cBlack, bgcolor=cRed>; // Highest file version supported, 517?
+        uint MaxFileVersion <fgcolor=cBlack, bgcolor=cRed>; // Highest file version supported, 518?
         char BackgroundColor[4] <fgcolor=cBlack, bgcolor=cRed>; // Machine background color
 
         if(fileMark.Version >= 518){
             float PixelWidthUm <fgcolor=cBlack, bgcolor=cRed>;
             float PixelHeightUm <fgcolor=cBlack, bgcolor=cRed>;
 
-            uint Unknown <fgcolor=cBlack, bgcolor=cWhite>;
-            uint Unknown <fgcolor=cBlack, bgcolor=cWhite>;
-            uint Unknown <fgcolor=cBlack, bgcolor=cWhite>;
-            uint Unknown <fgcolor=cBlack, bgcolor=cWhite>;
-            uint Unknown <fgcolor=cBlack, bgcolor=cWhite>;
-            uint Unknown <fgcolor=cBlack, bgcolor=cWhite>;
-            uint Unknown <fgcolor=cBlack, bgcolor=cWhite>;
-            uint Unknown <fgcolor=cBlack, bgcolor=cWhite>;
-            uint Unknown <fgcolor=cBlack, bgcolor=cWhite>; // 1
-            uint Unknown <fgcolor=cBlack, bgcolor=cWhite>;
-            ushort ResolutionX <fgcolor=cBlack, bgcolor=cWhite>;
-            ushort ResolutionY <fgcolor=cBlack, bgcolor=cWhite>;
-            uint Unknown <fgcolor=cBlack, bgcolor=cWhite>;
-            uint Unknown <fgcolor=cBlack, bgcolor=cWhite>;
-            uint Unknown <fgcolor=cBlack, bgcolor=cWhite>;
-            uint Unknown <fgcolor=cBlack, bgcolor=cWhite>;
+            uint Padding[8] <fgcolor=cBlack, bgcolor=cWhite>;
+
+            uint DisplayCount <fgcolor=cBlack, bgcolor=cWhite>; // 1
+
+            local uint i = 0;
+            for (i = 0; i < DisplayCount; i++)
+            {
+                uint Padding <fgcolor=cBlack, bgcolor=cWhite>;
+                ushort ResolutionX <fgcolor=cBlack, bgcolor=cWhite>;
+                ushort ResolutionY <fgcolor=cBlack, bgcolor=cWhite>;
+                uint Padding <fgcolor=cBlack, bgcolor=cWhite>;
+                uint Padding <fgcolor=cBlack, bgcolor=cWhite>;
+                uint Padding <fgcolor=cBlack, bgcolor=cWhite>;
+                uint Padding <fgcolor=cBlack, bgcolor=cWhite>;
+            }
         }
     } machine;
 }
@@ -277,7 +286,7 @@ if(fileMark.Version >= 518){
 
     if (fileMark.Preview2Address > 0){
         FSeek(fileMark.Preview2Address);
-        PREVIEW preview2;
+        PREVIEW2 preview2;
     }
 }
 
