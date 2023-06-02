@@ -10,13 +10,27 @@
 arch="$(uname -m)" # x86_64 or arm64
 archCode="${arch/86_/}"
 osVariant=''       # osx, linux, arch, rhel
+tag="$1"           # Download specific version, passed as first argument to the script
 api_url="https://api.github.com/repos/sn4k3/UVtools/releases/latest"
 dependencies_url="https://raw.githubusercontent.com/sn4k3/UVtools/master/Scripts/install-dependencies.sh"
 macOS_least_version='10.15'
 
+# Arch validation
 if [ "$arch" != "x86_64" -a "$arch" != "arm64" ]; then
     echo "Error: Unsupported host arch $arch"
     exit -1
+fi
+
+# Tag validation
+if [[ "$tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+    api_url="https://api.github.com/repos/sn4k3/UVtools/releases/tags/$tag"
+elif [[ "$tag" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+    api_url="https://api.github.com/repos/sn4k3/UVtools/releases/tags/v$tag"
+elif [ "$tag" != "latest" -a -n "$tag" ]; then
+    echo "Error: Invalid '$tag' tag/version was provided."
+    exit -1
+else
+    tag='latest'
 fi
 
 version() { echo "$@" | awk -F. '{ printf("%d%03d%03d%03d\n", $1,$2,$3,$4); }'; }
@@ -124,7 +138,7 @@ if [ "$osVariant" == "osx" ]; then
     | tr -d \")"
 
     if [ -z "$download_url" ]; then
-        echo 'Error: Unable to detect the download url.'
+        echo "Error: Unable to detect the download url. Version '$tag' may not exist."
         exit -1
     fi
 
@@ -210,7 +224,7 @@ else
     fi
 
     if [ -z "$download_url" ]; then
-        echo 'Error: Unable to detect the download url.'
+        echo "Error: Unable to detect the download url. Version '$tag' may not exist."
         exit -1
     fi
 
