@@ -2601,14 +2601,14 @@
             Gets the original thumbnail sizes
             </summary>
         </member>
-        <member name="P:UVtools.Core.FileFormats.FileFormat.HaveThumbnails">
-            <summary>
-            Gets if this file have any valid thumbnail
-            </summary>
-        </member>
         <member name="P:UVtools.Core.FileFormats.FileFormat.ThumbnailsCount">
             <summary>
             Gets the thumbnails count present in this file format
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.FileFormat.HaveThumbnails">
+            <summary>
+            Gets if this file have any valid thumbnail
             </summary>
         </member>
         <member name="P:UVtools.Core.FileFormats.FileFormat.CreatedThumbnailsCount">
@@ -4352,6 +4352,21 @@
             </summary>
         </member>
         <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.Preview.ResolutionY">
+            <summary>
+            Gets the image height, in pixels.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.Preview2.ResolutionX">
+            <summary>
+            Gets the image width, in pixels.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.Preview2.BackgroundColor1">
+            <summary>
+            Gets the operation mark 'x'
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.Preview2.ResolutionY">
             <summary>
             Gets the image height, in pixels.
             </summary>

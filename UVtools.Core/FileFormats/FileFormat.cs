@@ -1243,14 +1243,14 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     public virtual Size[] ThumbnailsOriginalSize => Array.Empty<Size>();
 
     /// <summary>
-    /// Gets if this file have any valid thumbnail
-    /// </summary>
-    public bool HaveThumbnails => Thumbnails.Any(thumbnail => thumbnail is not null);
-
-    /// <summary>
     /// Gets the thumbnails count present in this file format
     /// </summary>
     public byte ThumbnailsCount => (byte)ThumbnailsOriginalSize.Length;
+
+    /// <summary>
+    /// Gets if this file have any valid thumbnail
+    /// </summary>
+    public bool HaveThumbnails => Thumbnails.Any(thumbnail => thumbnail is not null && !thumbnail.IsEmpty);
 
     /// <summary>
     /// Gets the number of created thumbnails
@@ -3430,11 +3430,14 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
 
         images = images.Where(mat => mat is not null && !mat.IsEmpty).ToArray();
 
+        int count = 0;
+
         if (images.Length == 0)
         {
             if (!generateImagesIfEmpty) return false;
-            using var mat = FirstLayer?.BrgMat;
-            if (mat is null || mat.IsEmpty)
+            count = Thumbnails.Length;
+            using var matRoi = FirstLayer?.LayerMatModelBoundingRectangle;
+            if (matRoi is null || matRoi.SourceMat.IsEmpty)
             {
                 using var genMat = EmguExtensions.InitMat(new Size(200, 100), 3);
                 CvInvoke.PutText(genMat, About.Software, new Point(40, 60), FontFace.HersheyDuplex, 1, EmguExtensions.WhiteColor, 2);
@@ -3451,7 +3454,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
                 {
                     Thumbnails[i]?.Dispose();
                     Thumbnails[i] = new Mat(); 
-                    CvInvoke.Resize(mat, Thumbnails[i], ThumbnailsOriginalSize[i]);
+                    CvInvoke.CvtColor(matRoi.RoiMat, Thumbnails[i], ColorConversion.Gray2Bgr);
+                    CvInvoke.Resize(Thumbnails[i], Thumbnails[i], ThumbnailsOriginalSize[i]);
                 }
             }
         }
@@ -3468,8 +3472,12 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
                 {
                     CvInvoke.Resize(Thumbnails[i], Thumbnails[i], ThumbnailsOriginalSize[i]);
                 }
+
+                count++;
             }
         }
+
+        if (count == 0) return false;
 
         RaisePropertyChanged(nameof(Thumbnails));
         RequireFullEncode = true;
@@ -3607,16 +3615,21 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             }
         }
 
-        OnBeforeEncode(false);
-        BeforeEncode();
+        // Make sure thumbnails are all set, otherwise clone/create them
+        SetThumbnails(Thumbnails, true);
 
+        // Make sure thumbnails are in right size
         for (var i = 0; i < Thumbnails.Length; i++)
         {
             if (Thumbnails[i] is null || Thumbnails[i]!.IsEmpty) continue;
             if(Thumbnails[i]!.Size == ThumbnailsOriginalSize[i]) continue;
-            CvInvoke.Resize(Thumbnails[i], Thumbnails[i], new Size(ThumbnailsOriginalSize[i].Width, ThumbnailsOriginalSize[i].Height));
+            CvInvoke.Resize(Thumbnails[i], Thumbnails[i], ThumbnailsOriginalSize[i]);
         }
 
+        OnBeforeEncode(false);
+        BeforeEncode();
+
+        bool success;
         try
         {
             EncodeInternally(progress);
@@ -3627,7 +3640,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             IsModified = false;
             RequireFullEncode = false;
 
-            OnAfterEncode(false);
+            success = true;
         }
         catch (Exception)
         {
@@ -3636,6 +3649,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             if (File.Exists(tempFile)) File.Delete(tempFile);
             throw;
         }
+
+        if (success) OnAfterEncode(false);
     }
 
     public void Encode(OperationProgress progress) => Encode(null, progress);

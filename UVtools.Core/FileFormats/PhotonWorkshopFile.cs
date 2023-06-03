@@ -447,19 +447,45 @@ public sealed class PhotonWorkshopFile : FileFormat
         public void ResetData() => Data = null!;
     }
 
-    public sealed class Preview2 : Preview
+    public sealed class Preview2 : AnycubicNamedTable
     {
         protected override string DefaultTableName => "PREVIEW2";
         protected override bool IncludeBaseTableLength => true;
 
+        /// <summary>
+        /// Gets the image width, in pixels.
+        /// </summary>
+        [FieldOrder(0)] public uint ResolutionX { get; set; } = 320;
+
+        /// <summary>
+        /// Gets the operation mark 'x'
+        /// </summary>
+        [FieldOrder(1)] public ushort BackgroundColor1 { get; set; } = 4293;
+        [FieldOrder(2)] public ushort BackgroundColor2 { get; set; }
+
+        /// <summary>
+        /// Gets the image height, in pixels.
+        /// </summary>
+        [FieldOrder(3)] public uint ResolutionY { get; set; } = 190;
+
+        [Ignore] public uint DataSize => ResolutionX * ResolutionY * 2;
+
+        [Ignore] public byte[] Data { get; set; } = null!;
+
         public Preview2()
         {
-            ResolutionX = 320;
-            ResolutionY = 190;
         }
 
-        public Preview2(uint resolutionX, uint resolutionY) : base(resolutionX, resolutionY)
+        public Preview2(uint resolutionX, uint resolutionY)
         {
+            ResolutionX = resolutionX;
+            ResolutionY = resolutionY;
+            TableLength += DataSize;
+        }
+
+        public void ResetData()
+        {
+            Data = null!;
         }
     }
 
@@ -532,7 +558,7 @@ public sealed class PhotonWorkshopFile : FileFormat
         [FieldOrder(0)][FieldLength(96)][SerializeAs(SerializedType.TerminatedString)] public string MachineName { get; set; } = null!;
         [FieldOrder(1)][FieldLength(16)][SerializeAs(SerializedType.TerminatedString)] public string LayerImageFormat { get; set; } = "pw0img";
         [FieldOrder(2)] public uint MaxAntialiasingLevel { get; set; } = 16;
-        [FieldOrder(3)] public uint PropertyFields { get; set; }
+        [FieldOrder(3)] public uint PropertyFields { get; set; } = 7;
         [FieldOrder(4)] public float DisplayWidth { get; set; }
         [FieldOrder(5)] public float DisplayHeight { get; set; }
         [FieldOrder(6)] public float MachineZ { get; set; }
@@ -540,26 +566,26 @@ public sealed class PhotonWorkshopFile : FileFormat
         [FieldOrder(8)] public uint MachineBackground { get; set; } = 6506241;
         [FieldOrder(9)] [SerializeWhen(nameof(TableLength), 160, ComparisonOperator.GreaterThanOrEqual)] public float PixelWidthUm { get; set; }
         [FieldOrder(10)] [SerializeWhen(nameof(TableLength), 164, ComparisonOperator.GreaterThanOrEqual)] public float PixelHeightUm { get; set; }
-        [FieldOrder(11)] [SerializeWhen(nameof(TableLength), 168, ComparisonOperator.GreaterThanOrEqual)] public uint Unknown1 { get; set; }
-        [FieldOrder(12)] [SerializeWhen(nameof(TableLength), 172, ComparisonOperator.GreaterThanOrEqual)] public uint Unknown2 { get; set; }
-        [FieldOrder(13)] [SerializeWhen(nameof(TableLength), 176, ComparisonOperator.GreaterThanOrEqual)] public uint Unknown3 { get; set; }
-        [FieldOrder(14)] [SerializeWhen(nameof(TableLength), 180, ComparisonOperator.GreaterThanOrEqual)] public uint Unknown4 { get; set; }
-        [FieldOrder(15)] [SerializeWhen(nameof(TableLength), 184, ComparisonOperator.GreaterThanOrEqual)] public uint Unknown5 { get; set; }
-        [FieldOrder(16)] [SerializeWhen(nameof(TableLength), 188, ComparisonOperator.GreaterThanOrEqual)] public uint Unknown6 { get; set; }
-        [FieldOrder(17)] [SerializeWhen(nameof(TableLength), 192, ComparisonOperator.GreaterThanOrEqual)] public uint Unknown7 { get; set; }
-        [FieldOrder(18)] [SerializeWhen(nameof(TableLength), 196, ComparisonOperator.GreaterThanOrEqual)] public uint Unknown8 { get; set; }
-        [FieldOrder(19)] [SerializeWhen(nameof(TableLength), 200, ComparisonOperator.GreaterThanOrEqual)] public uint Unknown9 { get; set; } = 1;
-        [FieldOrder(20)] [SerializeWhen(nameof(TableLength), 204, ComparisonOperator.GreaterThanOrEqual)] public uint Unknown10 { get; set; }
+        [FieldOrder(11)] [SerializeWhen(nameof(TableLength), 168, ComparisonOperator.GreaterThanOrEqual)] public uint Padding1 { get; set; }
+        [FieldOrder(12)] [SerializeWhen(nameof(TableLength), 172, ComparisonOperator.GreaterThanOrEqual)] public uint Padding2 { get; set; }
+        [FieldOrder(13)] [SerializeWhen(nameof(TableLength), 176, ComparisonOperator.GreaterThanOrEqual)] public uint Padding3 { get; set; }
+        [FieldOrder(14)] [SerializeWhen(nameof(TableLength), 180, ComparisonOperator.GreaterThanOrEqual)] public uint Padding4 { get; set; }
+        [FieldOrder(15)] [SerializeWhen(nameof(TableLength), 184, ComparisonOperator.GreaterThanOrEqual)] public uint Padding5 { get; set; }
+        [FieldOrder(16)] [SerializeWhen(nameof(TableLength), 188, ComparisonOperator.GreaterThanOrEqual)] public uint Padding6 { get; set; }
+        [FieldOrder(17)] [SerializeWhen(nameof(TableLength), 192, ComparisonOperator.GreaterThanOrEqual)] public uint Padding7 { get; set; }
+        [FieldOrder(18)] [SerializeWhen(nameof(TableLength), 196, ComparisonOperator.GreaterThanOrEqual)] public uint Padding8 { get; set; }
+        [FieldOrder(19)] [SerializeWhen(nameof(TableLength), 200, ComparisonOperator.GreaterThanOrEqual)] public uint DisplayCount { get; set; } = 1;
+        [FieldOrder(20)] [SerializeWhen(nameof(TableLength), 204, ComparisonOperator.GreaterThanOrEqual)] public uint Padding9 { get; set; }
         [FieldOrder(21)] [SerializeWhen(nameof(TableLength), 206, ComparisonOperator.GreaterThanOrEqual)] public ushort ResolutionX { get; set; }
         [FieldOrder(22)] [SerializeWhen(nameof(TableLength), 208, ComparisonOperator.GreaterThanOrEqual)] public ushort ResolutionY { get; set; }
-        [FieldOrder(23)][SerializeWhen(nameof(TableLength), 212, ComparisonOperator.GreaterThanOrEqual)] public uint Unknown11 { get; set; }
-        [FieldOrder(24)][SerializeWhen(nameof(TableLength), 216, ComparisonOperator.GreaterThanOrEqual)] public uint Unknown12 { get; set; }
-        [FieldOrder(25)][SerializeWhen(nameof(TableLength), 220, ComparisonOperator.GreaterThanOrEqual)] public uint Unknown13 { get; set; }
-        [FieldOrder(26)][SerializeWhen(nameof(TableLength), 224, ComparisonOperator.GreaterThanOrEqual)] public uint Unknown14 { get; set; }
+        [FieldOrder(23)] [SerializeWhen(nameof(TableLength), 212, ComparisonOperator.GreaterThanOrEqual)] public uint Padding10 { get; set; }
+        [FieldOrder(24)] [SerializeWhen(nameof(TableLength), 216, ComparisonOperator.GreaterThanOrEqual)] public uint Padding11 { get; set; }
+        [FieldOrder(25)] [SerializeWhen(nameof(TableLength), 220, ComparisonOperator.GreaterThanOrEqual)] public uint Padding12 { get; set; }
+        [FieldOrder(26)] [SerializeWhen(nameof(TableLength), 224, ComparisonOperator.GreaterThanOrEqual)] public uint Padding13 { get; set; }
 
         public override string ToString()
         {
-            return $"{base.ToString()}, {nameof(MachineName)}: {MachineName}, {nameof(LayerImageFormat)}: {LayerImageFormat}, {nameof(MaxAntialiasingLevel)}: {MaxAntialiasingLevel}, {nameof(PropertyFields)}: {PropertyFields}, {nameof(DisplayWidth)}: {DisplayWidth}, {nameof(DisplayHeight)}: {DisplayHeight}, {nameof(MachineZ)}: {MachineZ}, {nameof(MaxFileVersion)}: {MaxFileVersion}, {nameof(MachineBackground)}: {MachineBackground}, {nameof(PixelWidthUm)}: {PixelWidthUm}, {nameof(PixelHeightUm)}: {PixelHeightUm}, {nameof(Unknown1)}: {Unknown1}, {nameof(Unknown2)}: {Unknown2}, {nameof(Unknown3)}: {Unknown3}, {nameof(Unknown4)}: {Unknown4}, {nameof(Unknown5)}: {Unknown5}, {nameof(Unknown6)}: {Unknown6}, {nameof(Unknown7)}: {Unknown7}, {nameof(Unknown8)}: {Unknown8}, {nameof(Unknown9)}: {Unknown9}, {nameof(Unknown10)}: {Unknown10}, {nameof(ResolutionX)}: {ResolutionX}, {nameof(ResolutionY)}: {ResolutionY}, {nameof(Unknown11)}: {Unknown11}, {nameof(Unknown12)}: {Unknown12}, {nameof(Unknown13)}: {Unknown13}, {nameof(Unknown14)}: {Unknown14}";
+            return $"{base.ToString()}, {nameof(MachineName)}: {MachineName}, {nameof(LayerImageFormat)}: {LayerImageFormat}, {nameof(MaxAntialiasingLevel)}: {MaxAntialiasingLevel}, {nameof(PropertyFields)}: {PropertyFields}, {nameof(DisplayWidth)}: {DisplayWidth}, {nameof(DisplayHeight)}: {DisplayHeight}, {nameof(MachineZ)}: {MachineZ}, {nameof(MaxFileVersion)}: {MaxFileVersion}, {nameof(MachineBackground)}: {MachineBackground}, {nameof(PixelWidthUm)}: {PixelWidthUm}, {nameof(PixelHeightUm)}: {PixelHeightUm}, {nameof(Padding1)}: {Padding1}, {nameof(Padding2)}: {Padding2}, {nameof(Padding3)}: {Padding3}, {nameof(Padding4)}: {Padding4}, {nameof(Padding5)}: {Padding5}, {nameof(Padding6)}: {Padding6}, {nameof(Padding7)}: {Padding7}, {nameof(Padding8)}: {Padding8}, {nameof(DisplayCount)}: {DisplayCount}, {nameof(Padding9)}: {Padding9}, {nameof(ResolutionX)}: {ResolutionX}, {nameof(ResolutionY)}: {ResolutionY}, {nameof(Padding10)}: {Padding10}, {nameof(Padding11)}: {Padding11}, {nameof(Padding12)}: {Padding12}, {nameof(Padding13)}: {Padding13}";
         }
     }
     #endregion
@@ -1003,18 +1029,18 @@ public sealed class PhotonWorkshopFile : FileFormat
 
         [FieldOrder(2)] public uint NonZeroPixelCount { get; set; }
 
-        [FieldOrder(3)] public float Unknown1 { get; set; }
-        [FieldOrder(4)] public float Unknown2 { get; set; }
-        [FieldOrder(5)] public float Unknown3 { get; set; }
-        [FieldOrder(6)] public float Unknown4 { get; set; }
-        [FieldOrder(7)] public float Unknown5 { get; set; }
-        [FieldOrder(8)] public float Unknown6 { get; set; }
-        [FieldOrder(9)] public float Unknown7 { get; set; }
-        [FieldOrder(10)] public float Unknown8 { get; set; }
+        [FieldOrder(3)] public float Padding1 { get; set; }
+        [FieldOrder(4)] public float Padding2 { get; set; }
+        [FieldOrder(5)] public float Padding3 { get; set; }
+        [FieldOrder(6)] public float Padding4 { get; set; }
+        [FieldOrder(7)] public float Padding5 { get; set; }
+        [FieldOrder(8)] public float Padding6 { get; set; }
+        [FieldOrder(9)] public float Padding7 { get; set; }
+        [FieldOrder(10)] public float Padding8 { get; set; }
 
         public override string ToString()
         {
-            return $"{nameof(DataAddress)}: {DataAddress}, {nameof(DataLength)}: {DataLength}, {nameof(NonZeroPixelCount)}: {NonZeroPixelCount}, {nameof(Unknown1)}: {Unknown1}, {nameof(Unknown2)}: {Unknown2}, {nameof(Unknown3)}: {Unknown3}, {nameof(Unknown4)}: {Unknown4}, {nameof(Unknown5)}: {Unknown5}, {nameof(Unknown6)}: {Unknown6}, {nameof(Unknown7)}: {Unknown7}, {nameof(Unknown8)}: {Unknown8}";
+            return $"{nameof(DataAddress)}: {DataAddress}, {nameof(DataLength)}: {DataLength}, {nameof(NonZeroPixelCount)}: {NonZeroPixelCount}, {nameof(Padding1)}: {Padding1}, {nameof(Padding2)}: {Padding2}, {nameof(Padding3)}: {Padding3}, {nameof(Padding4)}: {Padding4}, {nameof(Padding5)}: {Padding5}, {nameof(Padding6)}: {Padding6}, {nameof(Padding7)}: {Padding7}, {nameof(Padding8)}: {Padding8}";
         }
 
         public void SetFrom(LayerDef layerDef)
@@ -1892,6 +1918,12 @@ public sealed class PhotonWorkshopFile : FileFormat
         {
             >= VERSION_518 => 224,
             _ => 156
+        };
+
+        MachineSettings.PropertyFields = Version switch
+        {
+            >= VERSION_518 => 15,
+            _ => 7
         };
 
         HeaderSettings.PixelSizeUm = PixelSizeMicronsMax;

@@ -1119,28 +1119,25 @@ public sealed class CTBEncryptedFile : FileFormat
 
         progress.Reset(OperationProgress.StatusDecodePreviews, ThumbnailsCount);
 
-        if (HaveThumbnails)
+        for (byte i = 0; i < ThumbnailsCount; i++)
         {
-            for (byte i = 0; i < ThumbnailsCount; i++)
-            {
-                uint offsetAddress = i == 0
-                    ? Settings.LargePreviewOffset
-                    : Settings.SmallPreviewOffset;
-                if (offsetAddress == 0) continue;
+            uint offsetAddress = i == 0
+                ? Settings.LargePreviewOffset
+                : Settings.SmallPreviewOffset;
+            if (offsetAddress == 0) continue;
 
-                inputFile.Seek(offsetAddress, SeekOrigin.Begin);
-                Previews[i] = Helpers.Deserialize<Preview>(inputFile);
+            inputFile.Seek(offsetAddress, SeekOrigin.Begin);
+            Previews[i] = Helpers.Deserialize<Preview>(inputFile);
 
-                Debug.Write($"Preview {i} -> ");
-                Debug.WriteLine(Previews[i]);
+            Debug.Write($"Preview {i} -> ");
+            Debug.WriteLine(Previews[i]);
 
-                inputFile.Seek(Previews[i].ImageOffset, SeekOrigin.Begin);
-                byte[] rawImageData = new byte[Previews[i].ImageLength];
-                inputFile.Read(rawImageData, 0, (int) Previews[i].ImageLength);
+            inputFile.Seek(Previews[i].ImageOffset, SeekOrigin.Begin);
+            byte[] rawImageData = new byte[Previews[i].ImageLength];
+            inputFile.Read(rawImageData, 0, (int) Previews[i].ImageLength);
 
-                Thumbnails[i] = Previews[i].Decode(rawImageData);
-                progress++;
-            }
+            Thumbnails[i] = Previews[i].Decode(rawImageData);
+            progress++;
         }
 
         /* Read the settings and disclaimer */

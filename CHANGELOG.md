@@ -1,5 +1,10 @@
 # Changelog
 
+## 03/06/2023 - v3.14.1
+
+- (Improvement) File formats: When full encoding make sure thumbnails are all set according to file, otherwise clone/create them
+- (Fix) Encrypted CTB: Files are getting read/write without thumbnails making invalid files
+
 ## 31/05/2023 - v3.14.0
 
 - **File formats:**
@@ -9,9 +14,9 @@
     - (Add) Support for Photon Mono M5 (.pm5) and corresponding PrusaSlicer printer
     - (Add) Support for Photon Mono M5s (.pm5s) and corresponding PrusaSlicer printer
     - (Improvement) Better tables validation and data structures
-    - (Improvement) Ensure the correct number of thumbnails are created when converting between files with different thumbnail count
   - (Add) PRZ file format and corresponding PrusaSlicer printer Phrozen Sonic Mini 8K S (#705)
   - (Improvement) When encoding a file with wait time before cure set but file does not support it, attempt to set light-off delay with that extra time if supported
+  - (Improvement) Ensure the correct number of thumbnails are created when converting between files with different thumbnail count
   - (Improvement) Minor code cleanup and improve some types to not nullable
 - **PrusaSlicer printers:**
   - (Add) Elegoo Mars 4 Max
