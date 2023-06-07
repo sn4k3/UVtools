@@ -521,20 +521,20 @@ public sealed class PhotonWorkshopFile : FileFormat
     {
         protected override string DefaultTableName => "EXTRA";
 
-        [FieldOrder(2)] public uint BottomStateNumber { get; set; } = 2;
-        [FieldOrder(3)] public float BottomLiftHeight1 { get; set; }
-        [FieldOrder(4)] public float BottomLiftSpeed1 { get; set; } = SpeedConverter.Convert(DefaultBottomLiftSpeed, CoreSpeedUnit, SpeedUnit.MillimetersPerSecond);
-        [FieldOrder(5)] public float BottomRetractSpeed1 { get; set; } = SpeedConverter.Convert(DefaultBottomRetractSpeed, CoreSpeedUnit, SpeedUnit.MillimetersPerSecond);
-        [FieldOrder(6)] public float BottomLiftHeight2 { get; set; }
-        [FieldOrder(7)] public float BottomLiftSpeed2 { get; set; } = SpeedConverter.Convert(DefaultBottomLiftSpeed2, CoreSpeedUnit, SpeedUnit.MillimetersPerSecond);
-        [FieldOrder(8)] public float BottomRetractSpeed2 { get; set; } = SpeedConverter.Convert(DefaultBottomRetractSpeed2, CoreSpeedUnit, SpeedUnit.MillimetersPerSecond);
-        [FieldOrder(9)] public uint StateNumber { get; set; } = 2;
-        [FieldOrder(10)] public float LiftHeight1 { get; set; }
-        [FieldOrder(11)] public float LiftSpeed1 { get; set; } = SpeedConverter.Convert(DefaultLiftSpeed, CoreSpeedUnit, SpeedUnit.MillimetersPerSecond);
-        [FieldOrder(12)] public float RetractSpeed1 { get; set; } = SpeedConverter.Convert(DefaultRetractSpeed, CoreSpeedUnit, SpeedUnit.MillimetersPerSecond);
-        [FieldOrder(13)] public float LiftHeight2 { get; set; }
-        [FieldOrder(14)] public float LiftSpeed2 { get; set; } = SpeedConverter.Convert(DefaultLiftSpeed2, CoreSpeedUnit, SpeedUnit.MillimetersPerSecond);
-        [FieldOrder(15)] public float RetractSpeed2 { get; set; } = SpeedConverter.Convert(DefaultRetractSpeed2, CoreSpeedUnit, SpeedUnit.MillimetersPerSecond);
+        [FieldOrder(0)] public uint BottomLiftCount { get; set; } = 2;
+        [FieldOrder(1)] public float BottomLiftHeight1 { get; set; }
+        [FieldOrder(2)] public float BottomLiftSpeed1 { get; set; } = SpeedConverter.Convert(DefaultBottomLiftSpeed, CoreSpeedUnit, SpeedUnit.MillimetersPerSecond);
+        [FieldOrder(3)] public float BottomRetractSpeed2 { get; set; } = SpeedConverter.Convert(DefaultBottomRetractSpeed, CoreSpeedUnit, SpeedUnit.MillimetersPerSecond);
+        [FieldOrder(4)] public float BottomLiftHeight2 { get; set; }
+        [FieldOrder(5)] public float BottomLiftSpeed2 { get; set; } = SpeedConverter.Convert(DefaultBottomLiftSpeed2, CoreSpeedUnit, SpeedUnit.MillimetersPerSecond);
+        [FieldOrder(6)] public float BottomRetractSpeed1 { get; set; } = SpeedConverter.Convert(DefaultBottomRetractSpeed2, CoreSpeedUnit, SpeedUnit.MillimetersPerSecond);
+        [FieldOrder(7)] public uint NormalLiftCount { get; set; } = 2;
+        [FieldOrder(8)] public float LiftHeight1 { get; set; }
+        [FieldOrder(9)] public float LiftSpeed1 { get; set; } = SpeedConverter.Convert(DefaultLiftSpeed, CoreSpeedUnit, SpeedUnit.MillimetersPerSecond);
+        [FieldOrder(10)] public float RetractSpeed2 { get; set; } = SpeedConverter.Convert(DefaultRetractSpeed, CoreSpeedUnit, SpeedUnit.MillimetersPerSecond);
+        [FieldOrder(11)] public float LiftHeight2 { get; set; }
+        [FieldOrder(12)] public float LiftSpeed2 { get; set; } = SpeedConverter.Convert(DefaultLiftSpeed2, CoreSpeedUnit, SpeedUnit.MillimetersPerSecond);
+        [FieldOrder(13)] public float RetractSpeed1 { get; set; } = SpeedConverter.Convert(DefaultRetractSpeed2, CoreSpeedUnit, SpeedUnit.MillimetersPerSecond);
 
         public Extra()
         {
@@ -543,7 +543,7 @@ public sealed class PhotonWorkshopFile : FileFormat
 
         public override string ToString()
         {
-            return $"{base.ToString()}, {nameof(BottomStateNumber)}: {BottomStateNumber}, {nameof(BottomLiftHeight1)}: {BottomLiftHeight1}, {nameof(BottomLiftSpeed1)}: {BottomLiftSpeed1}, {nameof(BottomRetractSpeed1)}: {BottomRetractSpeed1}, {nameof(BottomLiftHeight2)}: {BottomLiftHeight2}, {nameof(BottomLiftSpeed2)}: {BottomLiftSpeed2}, {nameof(BottomRetractSpeed2)}: {BottomRetractSpeed2}, {nameof(StateNumber)}: {StateNumber}, {nameof(LiftHeight1)}: {LiftHeight1}, {nameof(LiftSpeed1)}: {LiftSpeed1}, {nameof(RetractSpeed1)}: {RetractSpeed1}, {nameof(LiftHeight2)}: {LiftHeight2}, {nameof(LiftSpeed2)}: {LiftSpeed2}, {nameof(RetractSpeed2)}: {RetractSpeed2}";
+            return $"{base.ToString()}, {nameof(BottomLiftCount)}: {BottomLiftCount}, {nameof(BottomLiftHeight1)}: {BottomLiftHeight1}, {nameof(BottomLiftSpeed1)}: {BottomLiftSpeed1}, {nameof(BottomRetractSpeed1)}: {BottomRetractSpeed1}, {nameof(BottomLiftHeight2)}: {BottomLiftHeight2}, {nameof(BottomLiftSpeed2)}: {BottomLiftSpeed2}, {nameof(BottomRetractSpeed2)}: {BottomRetractSpeed2}, {nameof(NormalLiftCount)}: {NormalLiftCount}, {nameof(LiftHeight1)}: {LiftHeight1}, {nameof(LiftSpeed1)}: {LiftSpeed1}, {nameof(RetractSpeed1)}: {RetractSpeed1}, {nameof(LiftHeight2)}: {LiftHeight2}, {nameof(LiftSpeed2)}: {LiftSpeed2}, {nameof(RetractSpeed2)}: {RetractSpeed2}";
         }
     }
     #endregion

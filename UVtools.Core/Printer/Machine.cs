@@ -75,6 +75,13 @@ namespace UVtools.Core.Printer
             Brand = brand;
             Name = name;
             Model = model ?? name;
+
+            /*if (model is null && name.Length > 0)
+            {
+                var whiteSpaceIndex = name.IndexOf(' ', StringComparison.Ordinal) + 1;
+                if (whiteSpaceIndex > 0) Model = name[whiteSpaceIndex..];
+            }*/
+
             ResolutionX = resolutionX;
             ResolutionY = resolutionY;
             DisplayWidth = displayWidth;
@@ -85,6 +92,9 @@ namespace UVtools.Core.Printer
 
         public Machine(PrinterBrand brand, string name, string? model, Size resolution, SizeF display, float machineZ, FlipDirection displayMirror = default)
             : this(brand, name, model, (ushort)resolution.Width, (ushort)resolution.Height, display.Width, display.Height, machineZ, displayMirror) { }
+
+        public Machine(PrinterBrand brand, string name, Size resolution, SizeF display, float machineZ, FlipDirection displayMirror = default)
+            : this(brand, name, null, (ushort)resolution.Width, (ushort)resolution.Height, display.Width, display.Height, machineZ, displayMirror) { }
 
         public Machine(ushort resolutionX, ushort resolutionY, float displayWidth, float displayHeight, float machineZ, FlipDirection displayMirror = default, PrinterBrand brand = default, string name = FileFormats.FileFormat.DefaultMachineName, string? model = null)
             : this(brand, name, model, resolutionX, resolutionY, displayWidth, displayHeight, machineZ, displayMirror) {}
@@ -254,14 +264,18 @@ namespace UVtools.Core.Printer
                 new(PrinterBrand.Creality, "Creality LD-006", "LD-006", 3840, 2400, 192f, 120f, 245f, FlipDirection.Horizontally),
 
                 new(PrinterBrand.Elegoo, "Elegoo Jupiter", "Jupiter", 5448, 3064, 277.848f, 156.264f, 300f, FlipDirection.Horizontally),
+                new(PrinterBrand.Elegoo, "Elegoo Mars", "Mars", 1440, 2560, 68.04f, 120.96f, 150f, FlipDirection.Horizontally),
                 new(PrinterBrand.Elegoo, "Elegoo Mars 2 Pro", "Mars 2 Pro", 1620, 2560, 82.62f, 130.56f, 160f, FlipDirection.Horizontally),
                 new(PrinterBrand.Elegoo, "Elegoo Mars 2", "Mars 2", 1620, 2560, 82.62f, 130.56f, 150f, FlipDirection.Horizontally),
                 new(PrinterBrand.Elegoo, "Elegoo Mars 3", "Mars 3", 4098, 2560, 143.43f, 89.6f, 175f, FlipDirection.Horizontally),
                 new(PrinterBrand.Elegoo, "Elegoo Mars 4", "Mars 4", 4098, 2560, 132.8f, 74.7f, 150f, FlipDirection.Horizontally),
                 new(PrinterBrand.Elegoo, "Elegoo Mars 4 Max", "Mars 4 Max", 5760, 3600, 195.84f, 122.4f, 150f, FlipDirection.Horizontally),
+                new(PrinterBrand.Elegoo, "Elegoo Mars 4 Ultra", "Mars 4 Ultra", 8520, 4320, 153.36f, 77.76f, 165f, FlipDirection.Horizontally),
                 new(PrinterBrand.Elegoo, "Elegoo Mars C", "Mars C", 1440, 2560, 68.04f, 120.96f, 150f, FlipDirection.Horizontally),
-                new(PrinterBrand.Elegoo, "Elegoo Mars", "Mars", 1440, 2560, 68.04f, 120.96f, 150f, FlipDirection.Horizontally),
                 new(PrinterBrand.Elegoo, "Elegoo Saturn", "Saturn", 3840, 2400, 192f, 120f, 200f, FlipDirection.Horizontally),
+                new(PrinterBrand.Elegoo, "Elegoo Saturn 2", "Saturn 2", 7680, 4320, 218.88f, 123.12f, 250f, FlipDirection.Horizontally),
+                new(PrinterBrand.Elegoo, "Elegoo Saturn 3", "Saturn 3", 11520, 5120, 218.88f, 122.88f, 249.7f, FlipDirection.Horizontally),
+                new(PrinterBrand.Elegoo, "Elegoo Saturn 3 Ultra", "Saturn 3 Ultra", 11520, 5120, 218.88f, 122.88f, 260f, FlipDirection.Horizontally),
                 new(PrinterBrand.Elegoo, "Elegoo Saturn 8K", "Saturn 8K", 7680, 4320, 218.88f, 123.12f, 210f, FlipDirection.Horizontally),
 
                 new(PrinterBrand.EPAX, "EPAX DX1 PRO", "DX1 PRO", 4098, 2560, 143.43f, 89.6f, 155f, FlipDirection.Horizontally),

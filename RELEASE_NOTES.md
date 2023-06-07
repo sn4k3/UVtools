@@ -1,3 +1,6 @@
-- (Improvement) File formats: When full encoding make sure thumbnails are all set according to file, otherwise clone/create them
-- (Fix) Encrypted CTB: Files are getting read/write without thumbnails making invalid files
+- **PrusaSlicer printers:**
+  - (Add) Elegoo Mars 4 Ultra
+  - (Add) Elegoo Saturn 3
+  - (Add) Elegoo Saturn 3 Ultra
+- (Fix) AnyCubic file format: Retract speed (slow/fast) variables was swapped (#722)
 

@@ -1,5 +1,13 @@
 # Changelog
 
+## 07/06/2023 - v3.14.2
+
+- **PrusaSlicer printers:**
+  - (Add) Elegoo Mars 4 Ultra
+  - (Add) Elegoo Saturn 3
+  - (Add) Elegoo Saturn 3 Ultra
+- (Fix) AnyCubic file format: Retract speed (slow/fast) variables was swapped (#722)
+
 ## 03/06/2023 - v3.14.1
 
 - (Improvement) File formats: When full encoding make sure thumbnails are all set according to file, otherwise clone/create them

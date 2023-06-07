@@ -10,7 +10,8 @@
         <CheckBox Grid.Row="0" Grid.Column="2" Grid.ColumnSpan="5"
                    VerticalAlignment="Center"
                    IsChecked="{Binding Suggestion.CreateEmptyFirstLayer}"
-                   ToolTip.Tip="Some printers will not respect wait time for the first layer, introducing the problem once again. Use this option to by pass that"
+                   ToolTip.Tip="Some printers will not respect wait time for the first layer, introducing the problem once again. Use this option to by pass that.
+&#x0a;(Will only apply if required)"
                    Content="Create a first empty layer to bypass printer limitation"/>
 
         <TextBlock Grid.Row="2" Grid.Column="0"

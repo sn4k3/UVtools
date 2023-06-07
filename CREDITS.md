@@ -77,3 +77,4 @@
 - Piotr Czerkasow
 - Kevin Bullmann
 - Robert Redden
+- Nick Spirov

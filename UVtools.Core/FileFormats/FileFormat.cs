@@ -2670,8 +2670,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         {
             var str = string.Empty;
 
-            var haveBottomRetractHeight = CanUseLiftHeight;
-            var haveRetractHeight = CanUseBottomLiftHeight;
+            var haveBottomRetractHeight = CanUseBottomLiftHeight;
+            var haveRetractHeight = CanUseLiftHeight;
             var haveBottomRetractSpeed = CanUseBottomRetractSpeed;
             var haveRetractSpeed = CanUseRetractSpeed;
             var haveBottomRetractHeight2 = CanUseBottomRetractHeight2;
@@ -2724,34 +2724,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             }
 
             str += "mm/min";
-
-            // Sequence 2
-            /*if (haveBottomRetractHeight2)
-            {
-                str += $"\n2th: {BottomRetractHeight2.ToString(CultureInfo.InvariantCulture)}";
-            }
-            if (haveRetractHeight2)
-            {
-                str += str.EndsWith("mm/min") ? "\n2th: " : '/';
-                str += RetractHeight2.ToString(CultureInfo.InvariantCulture);
-            }
-
-            if (str.EndsWith("mm/min")) return str;
-
-            str += "mm @ ";
-
-            if (haveBottomRetractSpeed2)
-            {
-                str += BottomRetractSpeed2.ToString(CultureInfo.InvariantCulture);
-            }
-            if (haveRetractSpeed2)
-            {
-                if (haveBottomRetractSpeed2) str += '/';
-                str += RetractSpeed2.ToString(CultureInfo.InvariantCulture);
-            }
-
-            str += "mm/min";*/
-
+            
             return str;
         }
     }

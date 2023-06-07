@@ -191,20 +191,20 @@ if(fileMark.Version >= 516 && fileMark.ExtraAddress > 0){
     FSeek(fileMark.ExtraAddress);
     struct EXTRA {
         SECTION section;
-        uint BottomStateNumber <fgcolor=cBlack, bgcolor=cRed>; // 2
-        float BottomLiftHeight0 <fgcolor=cBlack, bgcolor=cGreen>;
-        float BottomLiftSpeed0 <fgcolor=cBlack, bgcolor=cGreen>;
-        float BottomRetractSpeed0 <fgcolor=cBlack, bgcolor=cGreen>;
-        float BottomLiftHeight1 <fgcolor=cBlack, bgcolor=cGreen>;
-        float BottomLiftSpeed1 <fgcolor=cBlack, bgcolor=cGreen>;
-        float BottomRetractSpeed1 <fgcolor=cBlack, bgcolor=cGreen>;
-        uint StateNumber <fgcolor=cBlack, bgcolor=cGreen>; // 2
-        float LiftHeight0 <fgcolor=cBlack, bgcolor=cGreen>;
-        float LiftSpeed0 <fgcolor=cBlack, bgcolor=cGreen>;
-        float RetractSpeed0 <fgcolor=cBlack, bgcolor=cGreen>;
-        float LiftHeight1 <fgcolor=cBlack, bgcolor=cGreen>;
-        float LiftSpeed1 <fgcolor=cBlack, bgcolor=cGreen>;
-        float RetractSpeed1 <fgcolor=cBlack, bgcolor=cGreen>;
+        uint BottomLiftCount <fgcolor=cBlack, bgcolor=cRed>; // 2
+        float BottomLiftHeight0 <fgcolor=cBlack, bgcolor=cGreen>;   // Slow
+        float BottomLiftSpeed0 <fgcolor=cBlack, bgcolor=cGreen>;    // Slow
+        float BottomRetractSpeed0 <fgcolor=cBlack, bgcolor=cGreen>; // Slow
+        float BottomLiftHeight1 <fgcolor=cBlack, bgcolor=cGreen>;   // Fast
+        float BottomLiftSpeed1 <fgcolor=cBlack, bgcolor=cGreen>;    // Fast
+        float BottomRetractSpeed1 <fgcolor=cBlack, bgcolor=cGreen>; // Fast
+        uint NormalLiftCount <fgcolor=cBlack, bgcolor=cGreen>; // 2
+        float LiftHeight0 <fgcolor=cBlack, bgcolor=cGreen>;     // Slow
+        float LiftSpeed0 <fgcolor=cBlack, bgcolor=cGreen>;      // Slow
+        float RetractSpeed0 <fgcolor=cBlack, bgcolor=cGreen>;   // Slow
+        float LiftHeight1 <fgcolor=cBlack, bgcolor=cGreen>;     // Fast
+        float LiftSpeed1 <fgcolor=cBlack, bgcolor=cGreen>;      // Fast
+        float RetractSpeed1 <fgcolor=cBlack, bgcolor=cGreen>;   // Fast
     } extra;
 }
 
