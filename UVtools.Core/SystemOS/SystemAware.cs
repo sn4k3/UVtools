@@ -14,6 +14,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
+using UVtools.Core.Extensions;
 
 namespace UVtools.Core.SystemOS;
 
@@ -67,7 +68,7 @@ public static class SystemAware
                 const ushort factor = 1024;
                 var result = File.ReadAllText("/proc/meminfo");
                 //var result = "MemTotal:        8288440 kB\nMemFree:         5616380 kB\nMemAvailable:    6885408 kB\nBuffers:           63240 kB\nCached:          1390996 kB\nSwapCached:            0 kB\nActive:           272516 kB\nInactive:        1773312 kB\nActive(anon):       1888 kB\nInactive(anon):   596168 kB\nActive(file):     270628 kB\nInactive(file):  1177144 kB\nUnevictable:           0 kB\nMlocked:               0 kB\nSwapTotal:       2097148 kB\nSwapFree:        2097148 kB\nDirty:               172 kB\nWriteback:             0 kB\nAnonPages:        591608 kB\nMapped:           292288 kB\nShmem:              6464 kB\nKReclaimable:      86228 kB\nSlab:             170544 kB\nSReclaimable:      86228 kB\nSUnreclaim:        84316 kB\nKernelStack:       12160 kB\nPageTables:        13992 kB\nNFS_Unstable:          0 kB\nBounce:                0 kB\nWritebackTmp:          0 kB\nCommitLimit:     6241368 kB\nCommitted_AS:    3588500 kB\nVmallocTotal:   34359738367 kB\nVmallocUsed:       61060 kB\nVmallocChunk:          0 kB\nPercpu:            91136 kB\nHardwareCorrupted:     0 kB\nAnonHugePages:         0 kB\nShmemHugePages:        0 kB\nShmemPmdMapped:        0 kB\nFileHugePages:         0 kB\nFilePmdMapped:         0 kB\nHugePages_Total:       0\nHugePages_Free:        0\nHugePages_Rsvd:        0\nHugePages_Surp:        0\nHugepagesize:       2048 kB\nHugetlb:               0 kB\nDirectMap4k:      216464 kB\nDirectMap2M:     4169728 kB\nDirectMap1G:     5242880 kB";
-                var matches = Regex.Matches(result, @"(\S+):\s*(\d+).(\S+)");
+                var matches = Regex.Matches(result, @"(\S+):\s*([0-9]+).(\S+)");
                 foreach (Match match in matches)
                 {
                     if (!match.Success || match.Groups.Count < 2) continue;
@@ -107,12 +108,12 @@ public static class SystemAware
                 if (string.IsNullOrWhiteSpace(result)) return statEX;
 
                 //var result = "Mach Virtual Memory Statistics: (page size of 4096 bytes)\nPages free:                             3044485.\nPages active:                            400375.\nPages inactive:                          235679.\nPages speculative:                       189311.\nPages throttled:                              0.\nPages wired down:                        324269.\nPages purgeable:                          27417.\n\"Translation faults\":                   5500903.\nPages copy-on-write:                     388354.\nPages zero filled:                      2724856.\nPages reactivated:                          410.\nPages purged:                               972.\nFile-backed pages:                       400847.\nAnonymous pages:                         424518.\nPages stored in compressor:                   0.\nPages occupied by compressor:                 0.\nDecompressions:                               0.\nCompressions:                                 0.\nPageins:                                 354428.\nPageouts:                                     0.\nSwapins:                                      0.\nSwapouts:                                     0.";
-                var matchPageSize = Regex.Match(result, @"page size of (\d+) bytes");
+                var matchPageSize = Regex.Match(result, @"page size of ([0-9]+) bytes");
 
                 if (!matchPageSize.Success || matchPageSize.Groups.Count < 2) return statEX;
                 ushort pageSize = ushort.Parse(matchPageSize.Groups[1].Value);
 
-                var matches = Regex.Matches(result, @"(.*):\s*(\d+)");
+                var matches = Regex.Matches(result, @"(.*):\s*([0-9]+)");
                 foreach (Match match in matches)
                 {
                     if (!match.Success || match.Groups.Count < 2) continue;
@@ -182,6 +183,62 @@ public static class SystemAware
             if (OperatingSystem.IsMacOS())
             {
                 return GetProcessOutput("sysctl", "-n machdep.cpu.brand_string")?.TrimEnd('\r', '\n');
+            }
+        }
+        catch (Exception e)
+        {
+            Debug.WriteLine(e);
+        }
+
+        return null;
+    }
+
+    public static string? GetGraphicCardName()
+    {
+        try
+        {
+            if (OperatingSystem.IsWindows())
+            {
+                //HKEY_LOCAL_MACHINE\SYSTEM\ControlSet001\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}\0000
+                //HKEY_LOCAL_MACHINE\SYSTEM\ControlSet001\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}\0000
+                using var key = Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}\0000") ??
+                                Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}\0001") ??
+                                Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}\0002") ??
+                                Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}\0003") ??
+                                Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}\0004") ??
+                                Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}\0005") ??
+                                Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}\0006") ??
+                                Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}\0007") ??
+                                Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}\0008") ??
+                                Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}\0009");
+
+                var gpu = key?.GetValue("DriverDesc")?.ToString();
+                if (gpu is null) return null;
+
+                try
+                {
+                    var gpuMemBytes = key!.GetValue("HardwareInformation.qwMemorySize");
+                    if (gpuMemBytes is not null)
+                    {
+                        gpu += $" {SizeExtensions.SizeSuffix((long)gpuMemBytes, 1, false)}";
+                    }
+                }
+                catch (Exception e)
+                {
+                    Debug.WriteLine(e);
+                }
+
+                return gpu;
+            }
+
+            if (OperatingSystem.IsLinux())
+            {
+                return GetProcessOutput("bash", "-c \"lspci | grep ' VGA ' | cut -d' ' -f 1 | xargs -i lspci -v -s {} | grep 'Subsystem:' | cut -d':' -f 2\"").Trim();
+            }
+
+            if (OperatingSystem.IsMacOS())
+            {
+                return GetProcessOutput("bash", "-c \"system_profiler SPDisplaysDataType | grep ' Chipset Model: ' | cut -d':' -f 2\"").Trim();
             }
         }
         catch (Exception e)

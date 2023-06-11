@@ -15,8 +15,8 @@
         Icon="/Assets/Icons/UVtools.ico">
 
     <DockPanel>
-		<Border DockPanel.Dock="Bottom" Classes="FooterActions">
-			<Grid ColumnDefinitions="Auto,*">
+        <Border DockPanel.Dock="Bottom" Classes="FooterActions">
+            <Grid ColumnDefinitions="Auto,*">
                 <controls:ButtonWithIcon
                     Grid.Column="0"
                     Command="{Binding CopyEssentialInformation}"
@@ -31,8 +31,8 @@
                             <MenuItem Header="Copy OpenCV build information" Command="{Binding CopyOpenCVInformationToClipboard}"/>
                             <MenuItem Header="Copy loaded assemblies" Command="{Binding CopyLoadedAssembliesToClipboard}"/>
                             <MenuItem Header="All information" Command="{Binding CopyInformationToClipboard}"/>
-						</ContextMenu>
-					</Button.ContextMenu>
+                        </ContextMenu>
+                    </Button.ContextMenu>
                 </controls:ButtonWithIcon>
                 
                 <controls:ButtonWithIcon Grid.Column="1"
@@ -44,83 +44,82 @@
                         Icon="fa-solid fa-sign-out-alt"
                         Text="Close"/>
             </Grid>
-		</Border>
+        </Border>
 
-		<ScrollViewer DockPanel.Dock="Left"
+        <ScrollViewer DockPanel.Dock="Left"
                       VerticalScrollBarVisibility="Auto"
                       HorizontalScrollBarVisibility="Auto">
-		    <StackPanel Spacing="5" Margin="20" MaxWidth="380">
-			    <Image Margin="0,0,0,10"
-				       HorizontalAlignment="Center"
-				       Source="/Assets/Icons/UVtools_alt.ico"
-				       Width="256"/>
-			    <TextBox
-			      Text="{Binding OSDescription}"
-			      Classes="TransparentReadOnly"
-			      Watermark="Operative System:"
-			      UseFloatingWatermark="True"/>
+            <StackPanel Spacing="5" Margin="20" MaxWidth="380">
 
-                <TextBox
-                    Text="{Binding ProcessorName}"
+				<Border Background="#660066" Margin="0,0,0,10">
+                    <Image HorizontalAlignment="Center" VerticalAlignment="Center"
+                           Source="/Assets/Icons/UVtools_alt.ico"
+                           Width="178"/>
+                </Border>
+                <TextBox Text="{Binding OSDescription}"
+                         Classes="TransparentReadOnly"
+                         Watermark="Operative System:"
+                         UseFloatingWatermark="True"/>
+
+                <TextBox Text="{Binding GraphicCardName}"
                     Classes="TransparentReadOnly"
-                    Watermark="Processor:"
-                    UseFloatingWatermark="True"/>
+                    Watermark="Graphic Card:"
+                    UseFloatingWatermark="True"
+                    IsVisible="{Binding GraphicCardName, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+
+                <TextBox Text="{Binding ProcessorName}"
+                         Classes="TransparentReadOnly"
+                         Watermark="Processor:"
+                         UseFloatingWatermark="True"/>
 
                 <Grid ColumnDefinitions="*,*">
-                    <TextBox
-                        Grid.Column="0"
-                        Text="{Binding ProcessorCount}"
-                        Classes="TransparentReadOnly"
-                        Watermark="Processor cores:"
-                        UseFloatingWatermark="True"/>
+                    <TextBox Grid.Column="0"
+                             Text="{Binding ProcessorCount}"
+                             Classes="TransparentReadOnly"
+                             Watermark="Processor cores:"
+                             UseFloatingWatermark="True"/>
 
-                    <TextBox
-                        Grid.Column="1"
-                        Text="{Binding MemoryRAMDescription}"
-                        Classes="TransparentReadOnly"
-                        Watermark="Memory RAM:"
-                        UseFloatingWatermark="True"/>
+                    <TextBox Grid.Column="1"
+                             Text="{Binding MemoryRAMDescription}"
+                             Classes="TransparentReadOnly"
+                             Watermark="Memory RAM:"
+                             UseFloatingWatermark="True"/>
                 </Grid>
 
                 <Grid ColumnDefinitions="*,*">
-					<TextBox
-                        Grid.Column="0"
-				        Text="{Binding RuntimeDescription}"
-                        Classes="TransparentReadOnly"
-				        Watermark="Runtime:"
-				        UseFloatingWatermark="True"/>
+                    <TextBox Grid.Column="0"
+                             Text="{Binding RuntimeDescription}"
+                             Classes="TransparentReadOnly"
+                             Watermark="Runtime:"
+                             UseFloatingWatermark="True"/>
 
-					<TextBox
-                        Grid.Column="1"
-                        Text="{Binding OpenCVVersion}"
-                        Classes="TransparentReadOnly"
-                        Watermark="OpenCV:"
-                        UseFloatingWatermark="True"/>
+                    <TextBox Grid.Column="1"
+                             Text="{Binding OpenCVVersion}"
+                             Classes="TransparentReadOnly"
+                             Watermark="OpenCV:"
+                             UseFloatingWatermark="True"/>
                 </Grid>
 
                 <Grid ColumnDefinitions="*,*">
-                    <TextBox
-                        Grid.Column="0"
-                        Text="{Binding FrameworkDescription}"
-                        Classes="TransparentReadOnly"
-                        Watermark="Framework:"
-                        UseFloatingWatermark="True"/>
+                    <TextBox Grid.Column="0"
+                             Text="{Binding FrameworkDescription}"
+                             Classes="TransparentReadOnly"
+                             Watermark="Framework:"
+                             UseFloatingWatermark="True"/>
 
-					<TextBox
-                        Grid.Column="1"
-                        Text="{Binding AvaloniaUIDescription}"
-                        Classes="TransparentReadOnly"
-                        Watermark="AvaloniaUI:"
-                        UseFloatingWatermark="True"/>
+                    <TextBox Grid.Column="1"
+                             Text="{Binding AvaloniaUIDescription}"
+                             Classes="TransparentReadOnly"
+                             Watermark="AvaloniaUI:"
+                             UseFloatingWatermark="True"/>
                 </Grid>
 
-			    <TextBox
-			      Text="{Binding ScreensDescription}"
-                  Classes="TransparentReadOnly"
-			      Watermark="Screens, resolution, working area, usable area:"
-			      UseFloatingWatermark="True"/>
-		    </StackPanel>
-	    </ScrollViewer>
+                <TextBox Text="{Binding ScreensDescription}"
+                         Classes="TransparentReadOnly"
+                         Watermark="Screens, resolution, working area, usable area:"
+                         UseFloatingWatermark="True"/>
+            </StackPanel>
+        </ScrollViewer>
 
     
 
@@ -133,40 +132,37 @@
             <TextBlock Grid.Row="2" Text="{Binding Source={x:Static core:About.VersionArch}, StringFormat=Version: {0}}"/>
             <TextBlock Grid.Row="4" Text="{Binding Source={x:Static core:About.AssemblyCopyright}}"/>
             <TextBlock Grid.Row="6" Text="{Binding Source={x:Static core:About.Author}}"/>
-			<!--<TextBlock Grid.Row="8" Text="{Binding AgeStr, StringFormat=Age: {0}}"/>-->
+            <!--<TextBlock Grid.Row="8" Text="{Binding AgeStr, StringFormat=Age: {0}}"/>-->
             <controls:ButtonWithIcon Grid.Row="8" VerticalAlignment="Center"
                     Command="{Binding OpenWebsite}"
                     CommandParameter="{Binding Source={x:Static core:About.LicenseUrl}}"
                     Text="{Binding Source={x:Static core:About.License}}"
-					Icon="fa-solid fa-balance-scale"/>
+                    Icon="fa-solid fa-balance-scale"/>
 
             <TabControl Grid.Row="10">
                 <TabItem Header="Description">
-                    <TextBox 
-                             IsReadOnly="True"
+                    <TextBox IsReadOnly="True"
                              ScrollViewer.VerticalScrollBarVisibility="Auto"
                              ScrollViewer.HorizontalScrollBarVisibility="Auto"
                              Text="{Binding Source={x:Static core:About.AssemblyDescription}}"/>
-				</TabItem>
+                </TabItem>
 
                 <TabItem Header="OpenCV">
-                    <TextBox
-                        IsReadOnly="True"
-                        ScrollViewer.VerticalScrollBarVisibility="Auto"
-                        ScrollViewer.HorizontalScrollBarVisibility="Auto"
-                        Text="{Binding OpenCVBuildInformation}"/>
+                    <TextBox IsReadOnly="True"
+                             ScrollViewer.VerticalScrollBarVisibility="Auto"
+                             ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                             Text="{Binding OpenCVBuildInformation}"/>
                 </TabItem>
 
                 <TabItem Header="Assemblies">
-                    <TextBox
-                        IsReadOnly="True"
-                        ScrollViewer.VerticalScrollBarVisibility="Auto"
-                        ScrollViewer.HorizontalScrollBarVisibility="Auto"
-                        Text="{Binding LoadedAssemblies}"/>
+                    <TextBox IsReadOnly="True"
+                             ScrollViewer.VerticalScrollBarVisibility="Auto"
+                             ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                             Text="{Binding LoadedAssemblies}"/>
                 </TabItem>
-			</TabControl>
-		</Grid>
-	</Border>
+            </TabControl>
+        </Grid>
+    </Border>
 </DockPanel>
 
 </controls:WindowEx>

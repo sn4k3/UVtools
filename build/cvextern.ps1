@@ -33,7 +33,7 @@ Option"
     if ($confirmation -eq 'y' -or $confirmation -eq 'yes') {
         Write-Output "Clone master"
         git clone --recurse-submodules --depth 1 "https://github.com/emgucv/emgucv" "$libFolder"
-    }elseif($confirmation -match '^\d+\.\d+\.\d+$') {
+    }elseif($confirmation -match '^[0-9]+[.][0-9]+[.][0-9]+$') {
         Write-Output "$confirmation"
         git clone --recurse-submodules --depth 1 --branch "$confirmation" "https://github.com/emgucv/emgucv" "$libFolder"
     }

@@ -1,5 +1,16 @@
 # Changelog
 
+## 11/06/2023 - v3.14.3
+
+- **Settings:**
+  - (Add) After save the file replace on it name with the updated print time and material if possible
+  - (Add) File 'Save as' default name with extended variables (#725)
+  - (Add) File 'Save as' name cleanup regex
+  - (Add) When save as a file and if the file name already exists on that directory it will append a number up to one available
+  - (Remove) File 'Save as' suffix and prefix
+- (Add) About: Graphic card name
+- (Fix) CTB Encrypted: Check the checksum as last step to be compatible with new Chitubox 1.4.5 CTB files (#696, #726)
+
 ## 07/06/2023 - v3.14.2
 
 - **PrusaSlicer printers:**
@@ -232,7 +243,7 @@
     -  First parameter is the first request to get response content from
     -  Second parameter is the regex pattern to match content with
     -  Third parameter is the final request that supports a parameter from regex matching group, eg: **{#1}** is match Group[1] value
-    -  **Example:** <\? getfiles > {0}\/(\d+\.[\da-zA-Z]+), > printfile,{#1} ?>
+    -  **Example:** <\? getfiles > {0}\/([0-9]+[.][0-9a-zA-Z]+), > printfile,{#1} ?>
   - (Change) Allow to print a filename without send it when upload request path is empty
   - (Fix) Do not show printers with empty requests
 - (Change) Default layer compression to Lz4 instead of Png

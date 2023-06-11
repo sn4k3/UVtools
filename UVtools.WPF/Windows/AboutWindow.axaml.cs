@@ -71,6 +71,8 @@ public class AboutWindow : WindowEx
         }
     }
 
+    public static string GraphicCardName => SystemAware.GetGraphicCardName();
+
     public static string ProcessorName => SystemAware.GetProcessorName();
 
     public static int ProcessorCount => Environment.ProcessorCount;
@@ -111,7 +113,7 @@ public class AboutWindow : WindowEx
                 );
                 result.AppendLine($"    WA: {screen.WorkingArea.Width} x {screen.WorkingArea.Height}    UA: {Math.Round(screen.WorkingArea.Width / screen.PixelDensity)} x {Math.Round(screen.WorkingArea.Height / screen.PixelDensity)}");
             }
-            return result.ToString();
+            return result.ToString().TrimEnd();
         }
     }
 
@@ -129,9 +131,11 @@ public class AboutWindow : WindowEx
 
     public static string GetEssentialInformationStatic()
     {
+        var gpu = GraphicCardName;
         var message = new StringBuilder();
         message.AppendLine($"{About.SoftwareWithVersionArch}");
         message.AppendLine($"Operative system: {OSDescription}");
+        if (string.IsNullOrWhiteSpace(gpu)) message.AppendLine($"Graphic card: {gpu}");
         message.AppendLine($"Processor: {ProcessorName}");
         message.AppendLine($"Processor cores: {ProcessorCount}");
         message.AppendLine($"Memory RAM: {MemoryRAMDescription}");
@@ -152,9 +156,11 @@ public class AboutWindow : WindowEx
 
     private string GetEssentialInformation()
     {
+        var gpu = GraphicCardName;
         var message = new StringBuilder();
         message.AppendLine($"{About.SoftwareWithVersionArch}");
         message.AppendLine($"Operative system: {OSDescription}");
+        if(string.IsNullOrWhiteSpace(gpu)) message.AppendLine($"Graphic card: {gpu}");
         message.AppendLine($"Processor: {ProcessorName}");
         message.AppendLine($"Processor cores: {ProcessorCount}");
         message.AppendLine($"Memory RAM: {MemoryRAMDescription}");

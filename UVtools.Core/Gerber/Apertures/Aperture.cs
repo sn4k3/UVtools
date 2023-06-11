@@ -54,7 +54,7 @@ public abstract class Aperture
 
     public static Aperture? Parse(string line, GerberFormat document)
     {
-        var match = Regex.Match(line, @"\%ADD(\d+)(\w+),?(\S+)?\*\%");
+        var match = Regex.Match(line, @"\%ADD([0-9]+)(\w+),?(\S+)?\*\%");
         if (!match.Success || match.Groups.Count < 3) return null;
 
         if (!int.TryParse(match.Groups[1].Value, out var index)) return null;

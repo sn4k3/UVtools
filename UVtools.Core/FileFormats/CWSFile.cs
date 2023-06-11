@@ -809,7 +809,7 @@ public sealed class CWSFile : FileFormat
             foreach (var pngEntry in inputFile.Entries)
             {
                 if (!pngEntry.Name.EndsWith(".png")) continue;
-                var match = Regex.Match(pngEntry.Name, @"(\d+).png");
+                var match = Regex.Match(pngEntry.Name, @"([0-9]+)[.]png$");
                 if (!match.Success || match.Groups.Count < 2) continue;
                 if (!uint.TryParse(match.Groups[1].Value, out var layerIndex)) continue;
                 

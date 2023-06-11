@@ -46,7 +46,7 @@ Anwser: " confirmation
         echo "Continuing with master..."
     elif [ "$confirmation" == "n" -o "$confirmation" == "no" -o "$confirmation" == "cancel" ]; then
         exit 1
-    elif [[ "$confirmation" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+    elif [[ "$confirmation" =~ ^[0-9]+[.][0-9]+[.][0-9]+$ ]]; then
         echo "Changing from master to $confirmation branch"
         lastArg="$confirmation"
     else

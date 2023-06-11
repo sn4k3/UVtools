@@ -283,7 +283,7 @@ public class GerberFormat
             // Aperture selector
             if (line[0] == 'D' || line.StartsWith("G54"))
             {
-                var matchD = Regex.Match(line, @"D(\d+)");
+                var matchD = Regex.Match(line, @"D([0-9]+)");
                 if (!matchD.Success || matchD.Groups.Count < 2) continue;
 
                 if (!int.TryParse(matchD.Groups[1].Value, out var d)) continue;
@@ -298,9 +298,9 @@ public class GerberFormat
 
             if (line[0] == 'X' || line[0] == 'Y' || line[0] == 'D')
             {
-                var matchX = Regex.Match(line, @"X-?(\d+)?");
-                var matchY = Regex.Match(line, @"Y-?(\d+)?");
-                var matchD = Regex.Match(line, @"D(\d+)");
+                var matchX = Regex.Match(line, @"X-?([0-9]+)?");
+                var matchY = Regex.Match(line, @"Y-?([0-9]+)?");
+                var matchD = Regex.Match(line, @"D([0-9]+)");
 
                 double nowX = 0;
                 double nowY = 0;
@@ -376,8 +376,8 @@ public class GerberFormat
                             {
                                 double xOffset = 0;
                                 double yOffset = 0;
-                                var matchI = Regex.Match(line, @"I(-?\d+)");
-                                var matchJ = Regex.Match(line, @"J(-?\d+)");
+                                var matchI = Regex.Match(line, @"I(-?[0-9]+)");
+                                var matchJ = Regex.Match(line, @"J(-?[0-9]+)");
                                 if (!matchI.Success || !matchJ.Success || matchI.Groups.Count < 2 || matchJ.Groups.Count < 2) continue;
 
                                 // xOffset

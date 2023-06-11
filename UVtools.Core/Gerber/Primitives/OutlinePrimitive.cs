@@ -107,7 +107,7 @@ public class OutlinePrimitive : Primitive
         if (byte.TryParse(ExposureExpression, out var exposure)) Exposure = exposure;
         else
         {
-            csharpExp = string.Format(Regex.Replace(ExposureExpression, @"\$(\d+)", "{$1}"), args);
+            csharpExp = string.Format(Regex.Replace(ExposureExpression, @"\$([0-9]+)", "{$1}"), args);
             var temp = exp.Compute(csharpExp, null);
             if (temp is not DBNull) Exposure = Convert.ToByte(temp);
         }
@@ -118,7 +118,7 @@ public class OutlinePrimitive : Primitive
         {
             if (!float.TryParse(coordinate, NumberStyles.Float, CultureInfo.InvariantCulture, out num))
             {
-                csharpExp = string.Format(Regex.Replace(coordinate, @"\$(\d+)", "{$1}"), args);
+                csharpExp = string.Format(Regex.Replace(coordinate, @"\$([0-9]+)", "{$1}"), args);
                 var temp = exp.Compute(csharpExp, null);
                 if (temp is not DBNull) num = Convert.ToSingle(temp);
             }
@@ -139,7 +139,7 @@ public class OutlinePrimitive : Primitive
         if (float.TryParse(RotationExpression, NumberStyles.Float, CultureInfo.InvariantCulture, out num)) Rotation = (short)num;
         else
         {
-            csharpExp = Regex.Replace(RotationExpression, @"\$(\d+)", "{$1}");
+            csharpExp = Regex.Replace(RotationExpression, @"\$([0-9]+)", "{$1}");
             csharpExp = string.Format(csharpExp, args);
             var temp = exp.Compute(csharpExp, null);
             if (temp is not DBNull) Rotation = Convert.ToSingle(temp);

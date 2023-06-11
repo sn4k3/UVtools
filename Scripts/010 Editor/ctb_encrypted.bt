@@ -39,13 +39,15 @@ struct PREVIEW {
 
 PREVIEW SmallPreview;
 
-local ushort machineNameLength = 1;
+local ushort machineNameLength = 0;
 while (ReadString(FTell()+machineNameLength, 17 ) != "Layout and record") {
     machineNameLength++;
     if(machineNameLength > 255) return;
 }
 
-char MachineName[machineNameLength] <fgcolor=cBlack, bgcolor=cYellow>;
+if(machineNameLength > 0){
+    char MachineName[machineNameLength] <fgcolor=cBlack, bgcolor=cYellow>;
+}
 
 char Disclaimer[320] <fgcolor=cBlack, bgcolor=cPurple>;
 

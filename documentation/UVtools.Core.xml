@@ -2543,6 +2543,16 @@
             Gets the input file path loaded into this <see cref="T:UVtools.Core.FileFormats.FileFormat"/>
             </summary>
         </member>
+        <member name="P:UVtools.Core.FileFormats.FileFormat.FilenameNoExt">
+            <summary>
+            Returns the file name without the extension
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.FileFormat.FilenameStripExtensions">
+            <summary>
+            Returns the file name without the extension(s)
+            </summary>
+        </member>
         <member name="P:UVtools.Core.FileFormats.FileFormat.FileExtension">
             <summary>
             Returns the file extension. The returned value includes the period (".") character of the
@@ -2551,9 +2561,12 @@
             extension.
             </summary>
         </member>
-        <member name="P:UVtools.Core.FileFormats.FileFormat.FilenameNoExt">
+        <member name="P:UVtools.Core.FileFormats.FileFormat.FileAbsoluteExtension">
             <summary>
-            Returns the file name without the extension
+            Returns the file extension as safe method where it can include more than one extension. The returned value includes the period (".") character of the
+            extension except when you have a terminal period when you get string.Empty, such as ".exe" or ".cpp".
+            The returned value is null if the given path is null or empty if the given path does not include an
+            extension.
             </summary>
         </member>
         <member name="P:UVtools.Core.FileFormats.FileFormat.AvailableVersions">
@@ -3246,6 +3259,11 @@
             Gets the estimate used material in ml
             </summary>
         </member>
+        <member name="P:UVtools.Core.FileFormats.FileFormat.MaterialMillilitersInteger">
+            <summary>
+            Gets the estimate used material in ml and rounded to next integer
+            </summary>
+        </member>
         <member name="P:UVtools.Core.FileFormats.FileFormat.MaterialGrams">
             <summary>
             Gets the estimate material in grams
@@ -3368,6 +3386,14 @@
             <summary>
             Gets all valid file extensions in a specified format
             </summary>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.FileFormat.RenameFile(System.String,System.Boolean)">
+            <summary>
+            Renames the current file with a new name in the same directory.
+            </summary>
+            <param name="newFileName">New filename without the extension</param>
+            <param name="overwrite">True to overwrite file if exists, otherwise false</param>
+            <returns>True if renamed, otherwise false.</returns>
         </member>
         <member name="M:UVtools.Core.FileFormats.FileFormat.GetThumbnailByHeight(System.UInt32)">
             <summary>
@@ -5521,6 +5547,12 @@
             <summary>
             Gets tree contours cache for this layer.  If not set it will calculate contours first
             </summary>
+        </member>
+        <member name="M:UVtools.Core.Layers.Layer.CreateMat">
+            <summary>
+            Creates an <see cref="T:Emgu.CV.Mat"/> using this layer information
+            </summary>
+            <returns></returns>
         </member>
         <member name="M:UVtools.Core.Layers.Layer.ResetParameters">
             <summary>

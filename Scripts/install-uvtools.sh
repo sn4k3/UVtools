@@ -22,9 +22,9 @@ if [ "$arch" != "x86_64" -a "$arch" != "arm64" ]; then
 fi
 
 # Tag validation
-if [[ "$tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+if [[ "$tag" =~ ^v[0-9]+[.][0-9]+[.][0-9]+$ ]]; then
     api_url="https://api.github.com/repos/sn4k3/UVtools/releases/tags/$tag"
-elif [[ "$tag" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+elif [[ "$tag" =~ ^[0-9]+[.][0-9]+[.][0-9]+$ ]]; then
     api_url="https://api.github.com/repos/sn4k3/UVtools/releases/tags/v$tag"
 elif [ "$tag" != "latest" -a -n "$tag" ]; then
     echo "Error: Invalid '$tag' tag/version was provided."
@@ -132,7 +132,7 @@ if [ "$osVariant" == "osx" ]; then
     echo '- Detecting download'
 
     download_url="$(curl -s "$api_url" \
-    | grep "browser_download_url.*_${osVariant}-${archCode}_.*\.zip" \
+    | grep "browser_download_url.*_${osVariant}-${archCode}_.*[.]zip" \
     | head -1 \
     | cut -d : -f 2,3 \
     | tr -d \")"
@@ -210,14 +210,14 @@ else
     response="$(curl -s "$api_url")"
 
     download_url="$(echo "$response" \
-    | grep "browser_download_url.*_${osVariant}-x64_.*\.AppImage" \
+    | grep "browser_download_url.*_${osVariant}-x64_.*[.]AppImage" \
     | head -1 \
     | cut -d : -f 2,3 \
     | tr -d \")"
 
     if [ -z "$download_url" ]; then
         download_url="$(echo "$response" \
-        | grep "browser_download_url.*_linux-x64_.*\.AppImage" \
+        | grep "browser_download_url.*_linux-x64_.*[.]AppImage" \
         | head -1 \
         | cut -d : -f 2,3 \
         | tr -d \")"

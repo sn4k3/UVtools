@@ -4,9 +4,9 @@
     <ProductVersion>3.7</ProductVersion>
     <OutputName>UVtools</OutputName>
     <!-- If ProductVersion not passed in, try to get it from TFBuild Environments (XAML Builds)-->
-    <ProductVersion Condition="'$(ProductVersion)' == ''">$([System.Text.RegularExpressions.Regex]::Match($(TF_BUILD_BUILDNUMBER), "\d+.\d+.\d+.\d+"))</ProductVersion>
+    <ProductVersion Condition="'$(ProductVersion)' == ''">$([System.Text.RegularExpressions.Regex]::Match($(TF_BUILD_BUILDNUMBER), "[0-9]+[.][0-9]+[.][0-9]+[.][0-9]+"))</ProductVersion>
     <!-- If ProductVersion still not known, try to get it from TFBuild Environments (V.Next Builds)-->
-    <ProductVersion Condition="'$(ProductVersion)' == ''">$([System.Text.RegularExpressions.Regex]::Match($(BUILD_BUILDNUMBER), "\d+.\d+.\d+.\d+"))</ProductVersion>
+    <ProductVersion Condition="'$(ProductVersion)' == ''">$([System.Text.RegularExpressions.Regex]::Match($(BUILD_BUILDNUMBER), "[0-9]+[.][0-9]+[.][0-9]+[.][0-9]+"))</ProductVersion>
     <!-- If ProductVersion still not known, default to lowerbound 0.0.1 for developer builds.-->
     <ProductVersion Condition="'$(ProductVersion)' == ''">3.0.0</ProductVersion>
     <!-- The following allows one cert to be referenced from the certificate store for self-signing in localbuilds and another cert to be passed in during official builds. -->

@@ -15,7 +15,7 @@ public static class SizeExtensions
     public static readonly string[] SizeSuffixes =
         { "bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB" };
 
-    public static string SizeSuffix(long value, byte decimalPlaces = 2)
+    public static string SizeSuffix(long value, byte decimalPlaces = 2, bool suffixSpaced = true)
     {
         //if (decimalPlaces < 0) { throw new ArgumentOutOfRangeException("decimalPlaces"); }
         if (value < 0) { return "-" + SizeSuffix(-value); }
@@ -30,16 +30,16 @@ public static class SizeExtensions
 
         // make adjustment when the value is large enough that
         // it would round up to 1000 or more
-        if (Math.Round(adjustedSize, decimalPlaces) >= 1000)
+        if (Math.Round(adjustedSize, decimalPlaces, MidpointRounding.AwayFromZero) >= 1000)
         {
             mag += 1;
             adjustedSize /= 1024;
         }
 
-        return string.Format("{0:n" + decimalPlaces + "} {1}",
-            adjustedSize,
-            SizeSuffixes[mag]);
+        return string.Format($"{{0:n{decimalPlaces}}}{(suffixSpaced ? ' ' : string.Empty)}{SizeSuffixes[mag]}", adjustedSize);
     }
+
+    public static string SizeSuffix(long value, bool suffixSpaced) => SizeSuffix(value, 2, suffixSpaced);
 
     public static Size Add(this Size size, Size otherSize) => new (size.Width + otherSize.Width, size.Height + otherSize.Height);
     public static Size Add(this Size size) => size.Add(size);

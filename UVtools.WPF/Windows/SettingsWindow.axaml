@@ -351,15 +351,30 @@
                           i:Attached.Icon="fa-solid fa-xmark"/>
 
                 </Grid>
-                <CheckBox IsChecked="{Binding Settings.General.PromptOverwriteFileSave}" Margin="10,0" Content="On file 'Save' prompt for file overwrite for the first time" />
+                
+                  <CheckBox IsChecked="{Binding Settings.General.FileSavePromptOverwrite}"
+                            Margin="10,0,10,10" 
+                            Content="Before save the file for the first time prompt if you want to overwrite the original file" />
+				  <CheckBox IsChecked="{Binding Settings.General.FileSaveUpdateNameWithNewInformation}"
+                            Margin="10,0" 
+                            Content="After save the file replace on it name with the updated print time and material if possible"
+                            ToolTip.Tip="Whatever possible if the current file name have print time and material milliliters information, replace those with the actual values."/>
 
-                <Grid Margin="10" ColumnDefinitions="Auto,*,Auto,*">
-                  <TextBlock VerticalAlignment="Center" Grid.Column="0" Text="File 'Save as' prefix:"/>
-                  <TextBox Text="{Binding Settings.General.FileSaveNamePrefix}"
-                           Grid.Column="1" Margin="10,0,10,0"/>
-                  <TextBlock VerticalAlignment="Center" Grid.Column="2" Text="Suffix:"/>
-                  <TextBox Text="{Binding Settings.General.FileSaveNameSuffix}"
-                           Grid.Column="3" Margin="10,0,0,0"/>
+				  <Grid Margin="10" RowDefinitions="Auto,10,Auto" ColumnDefinitions="Auto,10,*">
+                  <TextBlock VerticalAlignment="Center" Grid.Row="0" Grid.Column="0" 
+                             Text="File 'Save as' default name:"
+                             ToolTip.Tip="File name to show on file save dialog by default.
+&#x0a;{0} = Current file name.
+&#x0a;{VarName} = Fetch variable from FileFormat and replace by it value."/>
+                  <TextBox Grid.Row="0" Grid.Column="2"
+                           Text="{Binding Settings.General.FileSaveAsDefaultName}"/>
+
+                  <TextBlock VerticalAlignment="Center" Grid.Row="2" Grid.Column="0" 
+                             Text="File 'Save as' name cleanup regex:"
+                             ToolTip.Tip="From a regex expression, replaces the found occurrences with an empty string.
+&#x0a;Use this to cleanup the file name from repeated patterns resulted from save a copy of a copy."/>
+                  <TextBox Grid.Row="2" Grid.Column="2"
+                           Text="{Binding Settings.General.FileSaveAsDefaultNameCleanUpRegex}"/>
                 </Grid>
               </StackPanel>
 

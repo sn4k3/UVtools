@@ -220,7 +220,7 @@ public class AppVersionChecker : BindableBase
                 const string newFilename = $"{About.Software}.AppImage";
                 //var oldFileName = Path.GetFileName(appImagePath);
                 // Try to keep same filename logic if user renamed the file, like UVtools.AppImage would keep same same
-                //var newFilename = Regex.Replace(oldFileName, @"v\d+.\d+.\d+", $"v{_version}");
+                //var newFilename = Regex.Replace(oldFileName, @"v[0-9]+.[0-9]+.[0-9]+", $"v{_version}");
                 var newFullPath = Path.Combine(directory, newFilename);
 
                 if (File.Exists(appImagePath)) File.Delete(appImagePath);
@@ -290,7 +290,7 @@ public class AppVersionChecker : BindableBase
                         if (About.VersionStr != _version)
                         {
                             var di = new DirectoryInfo(App.ApplicationPath);
-                            var newDirectoryName = Regex.Replace(di.Name, $@"({About.Software}.*)(v\d+.\d+.\d+)", $@"$1v{_version}", RegexOptions.IgnoreCase);
+                            var newDirectoryName = Regex.Replace(di.Name, $@"({About.Software}.*)(v[0-9]+[.][0-9]+[.][0-9]+)", $@"$1v{_version}", RegexOptions.IgnoreCase);
                             if (di.Name != newDirectoryName)
                             {
                                 await stream.WriteLineAsync();

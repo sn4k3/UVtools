@@ -32,7 +32,6 @@ using UVtools.Core.Managers;
 using UVtools.Core.Objects;
 using UVtools.Core.Operations;
 using UVtools.Core.PixelEditor;
-using Range = System.Range;
 
 namespace UVtools.Core.FileFormats;
 
@@ -984,6 +983,9 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     #region Members
     public object Mutex = new();
 
+    private string? _fileFullPath;
+
+
     protected Layer[] _layers = Array.Empty<Layer>();
 
     private bool _haveModifiedLayers;
@@ -1166,11 +1168,34 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <summary>
     /// Gets the input file path loaded into this <see cref="FileFormat"/>
     /// </summary>
-    public string? FileFullPath { get; set; }
+    public string? FileFullPath
+    {
+        get => _fileFullPath;
+        set
+        {
+            if(!RaiseAndSetIfChanged(ref _fileFullPath, value)) return;
+            RaisePropertyChanged(DirectoryPath);
+            RaisePropertyChanged(Filename);
+            RaisePropertyChanged(FilenameNoExt);
+            RaisePropertyChanged(FilenameStripExtensions);
+            RaisePropertyChanged(FileExtension);
+            RaisePropertyChanged(FileAbsoluteExtension);
+        }
+    }
 
     public string? DirectoryPath => Path.GetDirectoryName(FileFullPath);
     public string? Filename => Path.GetFileName(FileFullPath);
 
+    /// <summary>
+    /// Returns the file name without the extension
+    /// </summary>
+    public string? FilenameNoExt => GetFileNameStripExtensions(FileFullPath);
+
+    /// <summary>
+    /// Returns the file name without the extension(s)
+    /// </summary>
+    public string? FilenameStripExtensions => FileFullPath is null ? null : GetFileNameStripExtensions(FileFullPath, out _);
+    
     /// <summary>
     /// Returns the file extension. The returned value includes the period (".") character of the
     /// extension except when you have a terminal period when you get string.Empty, such as ".exe" or ".cpp".
@@ -1180,9 +1205,20 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     public string? FileExtension => Path.GetExtension(FileFullPath);
 
     /// <summary>
-    /// Returns the file name without the extension
+    /// Returns the file extension as safe method where it can include more than one extension. The returned value includes the period (".") character of the
+    /// extension except when you have a terminal period when you get string.Empty, such as ".exe" or ".cpp".
+    /// The returned value is null if the given path is null or empty if the given path does not include an
+    /// extension.
     /// </summary>
-    public string? FilenameNoExt => GetFileNameStripExtensions(FileFullPath);
+    public string? FileAbsoluteExtension
+    {
+        get
+        {
+            if(FileFullPath is null) return null;
+            GetFileNameStripExtensions(FileFullPath, out var ext);
+            return ext;
+        }
+    }
 
     /// <summary>
     /// Gets the available versions to set in this file format
@@ -1850,7 +1886,6 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// Gets Layer Height in um
     /// </summary>
     public ushort LayerHeightUm => (ushort) (LayerHeight * 1000);
-
 
     /// <summary>
     /// Gets or sets the print height in mm
@@ -2955,6 +2990,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             }
 
             if(!RaiseAndSetIfChanged(ref _materialMilliliters, value)) return;
+            RaisePropertyChanged(nameof(MaterialMillilitersInteger));
 
             if (StartingMaterialMilliliters > 0 && StartingMaterialCost > 0)
             {
@@ -2964,12 +3000,17 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         }
     }
 
+    /// <summary>
+    /// Gets the estimate used material in ml and rounded to next integer
+    /// </summary>
+    public uint MaterialMillilitersInteger => (uint)Math.Ceiling(MaterialMilliliters);
+
     //public float MaterialMillilitersComputed =>
 
 
-    /// <summary>
-    /// Gets the estimate material in grams
-    /// </summary>
+        /// <summary>
+        /// Gets the estimate material in grams
+        /// </summary>
     public virtual float MaterialGrams
     {
         get => _materialGrams;
@@ -3160,7 +3201,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         set => SetLayer((uint)index, value);
     }
 
-    public Layer[] this[Range range] => _layers[range];
+    public Layer[] this[System.Range range] => _layers[range];
 
     /// <summary>
     /// Sets a layer
@@ -3341,6 +3382,28 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         if (extension[0] != '.') extension = $".{extension}";
         return FileFullPath.EndsWith(extension, StringComparison.OrdinalIgnoreCase) ||
                FileFullPath.EndsWith($"{extension}{TemporaryFileAppend}", StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <summary>
+    /// Renames the current file with a new name in the same directory.
+    /// </summary>
+    /// <param name="newFileName">New filename without the extension</param>
+    /// <param name="overwrite">True to overwrite file if exists, otherwise false</param>
+    /// <returns>True if renamed, otherwise false.</returns>
+    public bool RenameFile(string newFileName, bool overwrite = false)
+    {
+        if(string.IsNullOrWhiteSpace(newFileName)) return false;
+        if (!File.Exists(FileFullPath)) return false;
+
+        var filename = GetFileNameStripExtensions(FileFullPath, out var ext);
+
+        if (string.Equals(filename, newFileName, StringComparison.Ordinal)) return false;
+
+        var newFileFullPath = Path.Combine(DirectoryPath!, $"{newFileName}.{ext}");
+        File.Move(FileFullPath, newFileFullPath, overwrite);
+        FileFullPath = newFileFullPath;
+
+        return true;
     }
 
     /// <summary>
@@ -3910,20 +3973,20 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     }
 
     public void DecodeLayersFromZip(ZipArchive zipArchive, byte padDigits, IndexStartNumber layerIndexStartNumber = IndexStartNumber.Zero, OperationProgress? progress = null, Func<uint, byte[], Mat>? matGenFunc = null)
-        => DecodeLayersFromZipRegex(zipArchive, $@"(\d{{{padDigits}}}).png$", layerIndexStartNumber, progress, matGenFunc);
+        => DecodeLayersFromZipRegex(zipArchive, @$"([0-9]{{{padDigits}}})[.]png$", layerIndexStartNumber, progress, matGenFunc);
 
     public void DecodeLayersFromZip(ZipArchive zipArchive, string prepend, IndexStartNumber layerIndexStartNumber = IndexStartNumber.Zero, OperationProgress? progress = null, Func<uint, byte[], Mat>? matGenFunc = null)
-        => DecodeLayersFromZipRegex(zipArchive, $@"^{Regex.Escape(prepend)}(\d+).png$", layerIndexStartNumber, progress, matGenFunc);
+        => DecodeLayersFromZipRegex(zipArchive, @$"^{Regex.Escape(prepend)}([0-9]+)[.]png$", layerIndexStartNumber, progress, matGenFunc);
 
     public void DecodeLayersFromZip(ZipArchive zipArchive, IndexStartNumber layerIndexStartNumber = IndexStartNumber.Zero, OperationProgress? progress = null, Func<uint, byte[], Mat>? matGenFunc = null)
-        => DecodeLayersFromZipRegex(zipArchive, @"^(\d+).png$", layerIndexStartNumber, progress, matGenFunc);
+        => DecodeLayersFromZipRegex(zipArchive, @"^([0-9]+)[.]png$", layerIndexStartNumber, progress, matGenFunc);
 
     public void DecodeLayersFromZip(ZipArchive zipArchive, OperationProgress progress, Func<uint, byte[], Mat>? matGenFunc = null)
-        => DecodeLayersFromZipRegex(zipArchive, @"^(\d+).png$", IndexStartNumber.Zero, progress, matGenFunc);
+        => DecodeLayersFromZipRegex(zipArchive, @"^([0-9]+)[.]png$", IndexStartNumber.Zero, progress, matGenFunc);
 
     public void DecodeLayersFromZipIgnoreFilename(ZipArchive zipArchive, IndexStartNumber layerIndexStartNumber = IndexStartNumber.Zero, OperationProgress? progress = null, Func<uint, byte[], Mat>? matGenFunc = null)
     {
-        DecodeLayersFromZipRegex(zipArchive, @$"({@"\d?".Repeat(LayerDigits - 1)}\d).png$", layerIndexStartNumber, progress, matGenFunc);
+        DecodeLayersFromZipRegex(zipArchive, @$"([0-9]{{1,{LayerDigits}}})[.]png$", layerIndexStartNumber, progress, matGenFunc);
     }
 
     public void DecodeLayersFromZipIgnoreFilename(ZipArchive zipArchive, OperationProgress progress, Func<uint, byte[], Mat>? matGenFunc = null)

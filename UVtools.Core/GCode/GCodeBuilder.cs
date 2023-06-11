@@ -931,7 +931,7 @@ public class GCodeBuilder : BindableBase
             if (line[0] == ';')
             {
                 // Can be dangerous!
-                match = Regex.Match(line, @"^;\W*(layer\W*|LAYER_START:\s*)(\d+)", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+                match = Regex.Match(line, @"^;\W*(layer\W*|LAYER_START:\s*)([0-9]+)", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
                 if (match is {Success: true, Groups.Count: > 2} && uint.TryParse(match.Groups[2].Value, out var layerIndex))
                 {
                     if (layerIndex > slicerFile.LayerCount)
@@ -950,7 +950,7 @@ public class GCodeBuilder : BindableBase
             // Display image
             if (line.StartsWith(CommandShowImageM6054.Command))
             {
-                match = Regex.Match(line, CommandShowImageM6054.ToStringWithoutComments(GetShowImageString(@"(\d+)")), RegexOptions.IgnoreCase);
+                match = Regex.Match(line, CommandShowImageM6054.ToStringWithoutComments(GetShowImageString(@"([0-9]+)")), RegexOptions.IgnoreCase);
                 if (match is {Success: true, Groups.Count: >= 2}) // Begin new layer
                 {
                     var layerIndex = uint.Parse(match.Groups[1].Value);
@@ -1086,7 +1086,7 @@ public class GCodeBuilder : BindableBase
             // Check LightPWM
             if (line.StartsWith(CommandTurnLEDM106.Command))
             {
-                match = Regex.Match(line, CommandTurnLEDM106.ToStringWithoutComments(@"(\d+)"), RegexOptions.IgnoreCase);
+                match = Regex.Match(line, CommandTurnLEDM106.ToStringWithoutComments(@"([0-9]+)"), RegexOptions.IgnoreCase);
                 if (match is {Success: true, Groups.Count: >= 2})
                 {
                     byte pwm;

@@ -246,7 +246,7 @@ public class ExcellonDrillFormat
             {
                 if (!endOfHeader)
                 {
-                    var match = Regex.Match(line, @"^T(\d+)C(([0-9]*[.])?[0-9]+)");
+                    var match = Regex.Match(line, @"^T([0-9]+)C(([0-9]*[.])?[0-9]+)");
                     if (match is
                         {
                             Success: true,

@@ -110,7 +110,7 @@ public class Macro : IReadOnlyList<Primitive>
 
     public static Macro? Parse(GerberFormat document, string line)
     {
-        var match = Regex.Match(line, @"%?AM([a-zA-Z\d]+)\*?");
+        var match = Regex.Match(line, @"%?AM([a-zA-Z0-9]+)\*?");
         if (!match.Success || match.Groups.Count < 2) return null;
 
         return new Macro(document, match.Groups[1].Value);

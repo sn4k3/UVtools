@@ -1110,12 +1110,13 @@ public sealed class CTBEncryptedFile : FileFormat
         var checksumHash = CryptExtensions.ComputeSHA256Hash(checksumBytes);
         var encryptedHash = CryptExtensions.AesCryptBytes(checksumHash, Bigfoot, CipherMode.CBC, PaddingMode.None, true, CookieMonster);
 
-        inputFile.Seek(-HASH_LENGTH, SeekOrigin.End);
+        // Does not work with recent Chitubox 1.4.5
+        /*inputFile.Seek(-HASH_LENGTH, SeekOrigin.End);
         var hash = inputFile.ReadBytes(HASH_LENGTH);
-        if (!hash.SequenceEqual(encryptedHash))
+        if (!hash.SequenceEqual(encryptedHash)) 
         {
             throw new FileLoadException("The file checksum does not match, malformed file.", FileFullPath);
-        }
+        }*/
 
         progress.Reset(OperationProgress.StatusDecodePreviews, ThumbnailsCount);
 
@@ -1264,7 +1265,12 @@ public sealed class CTBEncryptedFile : FileFormat
                     "Please increase the portion of the plate in use and re-slice the file.");
             }
         }
-        //inputFile.ReadBytes(HashLength);
+
+        var hash = inputFile.ReadBytes(HASH_LENGTH);
+        if (!hash.SequenceEqual(encryptedHash))
+        {
+            throw new FileLoadException("The file checksum does not match, malformed file.", FileFullPath);
+        }
     }
 
     protected override void OnBeforeEncode(bool isPartialEncode)

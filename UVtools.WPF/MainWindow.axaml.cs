@@ -20,7 +20,9 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web;
 using UVtools.AvaloniaControls;
@@ -924,6 +926,61 @@ public partial class MainWindow : WindowEx
             await this.MessageBoxError("Unable to find the target extension.", "Invalid extension");
             return;
         }
+
+        var defaultDirectory = string.IsNullOrWhiteSpace(Settings.General.DefaultDirectorySaveFile)
+            ? Path.GetDirectoryName(SlicerFile.FileFullPath)
+            : Settings.General.DefaultDirectorySaveFile;
+        var defaultFilename = $"{filename}_copy";
+
+        try
+        {
+            if (!string.IsNullOrWhiteSpace(Settings.General.FileSaveAsDefaultName))
+            {
+                defaultFilename = Settings.General.FileSaveAsDefaultName;
+                var matches = Regex.Matches(defaultFilename, @"{([a-zA-z]+)}");
+                if (matches.Count > 0)
+                {
+                    foreach (Match match in matches)
+                    {
+                        if (!match.Success) continue;
+                        var property = SlicerFile.GetType().GetProperty(match.Groups[1].Value, BindingFlags.Public | BindingFlags.Instance);
+                        if (property is null || !property.CanRead || property.GetMethod is null)
+                        {
+                            defaultFilename = defaultFilename.Replace(match.Value, null);
+                            continue;
+                        }
+
+                        defaultFilename = defaultFilename.Replace(match.Value, property.GetValue(SlicerFile)?.ToString());
+                    }
+                }
+
+                if (!string.IsNullOrWhiteSpace(Settings.General.FileSaveAsDefaultNameCleanUpRegex))
+                {
+                    filename = Regex.Replace(filename, Settings.General.FileSaveAsDefaultNameCleanUpRegex, string.Empty);
+                }
+
+                defaultFilename = string.Format(defaultFilename, filename);
+            }
+        }
+        catch
+        {
+            defaultFilename = $"{filename}_copy";
+        }
+
+        var i = 0;
+        var searchFile = Path.Combine(defaultDirectory, $"{defaultFilename}.{ext}");
+        while (File.Exists(searchFile))
+        {
+            i++;
+            searchFile = Path.Combine(defaultDirectory, $"{defaultFilename}{i}.{ext}");
+        }
+
+        if (i > 0)
+        {
+            defaultFilename = $"{defaultFilename}{i}";
+        }
+        
+
         SaveFileDialog dialog = new()
         {
             DefaultExtension = extension.Extension,
@@ -938,10 +995,9 @@ public partial class MainWindow : WindowEx
                     }
                 }
             },
-            Directory = string.IsNullOrEmpty(Settings.General.DefaultDirectorySaveFile)
-                ? Path.GetDirectoryName(SlicerFile.FileFullPath)
-                : Settings.General.DefaultDirectorySaveFile,
-            InitialFileName = $"{Settings.General.FileSaveNamePrefix}{filename}{Settings.General.FileSaveNameSuffix}"
+
+            Directory = defaultDirectory,
+            InitialFileName = defaultFilename
         };
         var file = await dialog.ShowAsync(this);
         if (string.IsNullOrEmpty(file)) return;
@@ -1924,9 +1980,9 @@ public partial class MainWindow : WindowEx
 
     public async Task<bool> SaveFile(string filepath = null, bool ignoreOverwriteWarning = false)
     {
-        if (filepath is null)
+        if (filepath is null) // Not save as
         {
-            if (!ignoreOverwriteWarning && SavesCount == 0 && Settings.General.PromptOverwriteFileSave)
+            if (!ignoreOverwriteWarning && SavesCount == 0 && Settings.General.FileSavePromptOverwrite)
             {
                 var result = await this.MessageBoxQuestion(
                     "Original input file will be overwritten.  Do you wish to proceed?", "Overwrite file?");
@@ -1954,17 +2010,34 @@ public partial class MainWindow : WindowEx
 
             return false;
         }, Progress.Token);
-
-        IsGUIEnabled = true;
-
+        
         if (task)
         {
             SavesCount++;
             CanSave = false;
             UpdateTitle();
             RefreshProperties(); // Some fields can change after encoding
+
+            if (Settings.General.FileSaveUpdateNameWithNewInformation && oldFile == SlicerFile.FileFullPath)
+            {
+                try
+                {
+                    var newFilename = SlicerFile.FilenameStripExtensions!;
+                    newFilename = Regex.Replace(newFilename, @"[0-9]+h[0-9]+m([0-9]+s)?", SlicerFile.PrintTimeString);
+                    newFilename = Regex.Replace(newFilename, @"(([0-9]*[.])?[0-9]+)ml", $"{SlicerFile.MaterialMillilitersInteger}ml");
+                    if (SlicerFile.RenameFile(newFilename)) RemoveRecentFile(oldFile);
+                }
+                catch (Exception e)
+                {
+                    Debug.WriteLine(e);
+                }
+                
+            }
+
             if (oldFile != SlicerFile.FileFullPath) AddRecentFile(SlicerFile.FileFullPath);
         }
+
+        IsGUIEnabled = true;
 
         return task;
     }

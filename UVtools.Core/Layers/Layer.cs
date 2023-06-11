@@ -908,12 +908,12 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
                     CvInvoke.Imdecode(_compressedBytes, ImreadModes.Grayscale, mat);
                     break;
                 case LayerCompressionCodec.Lz4:
-                    mat = new Mat(Resolution, DepthType.Cv8U, 1);
+                    mat = CreateMat();
                     LZ4Codec.Decode(_compressedBytes.AsSpan(), mat.GetDataByteSpan());
                     break;
                 case LayerCompressionCodec.GZip:
                 {
-                    mat = new Mat(Resolution, DepthType.Cv8U, 1);
+                    mat = CreateMat();
                     unsafe
                     {
                         fixed (byte* pBuffer = _compressedBytes)
@@ -929,7 +929,7 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
                 }
                 case LayerCompressionCodec.Deflate:
                 {
-                    mat = new Mat(Resolution, DepthType.Cv8U, 1);
+                    mat = CreateMat();
                     unsafe
                     {
                         fixed (byte* pBuffer = _compressedBytes)
@@ -1300,6 +1300,15 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
     #endregion
 
     #region Methods
+
+    /// <summary>
+    /// Creates an <see cref="Mat"/> using this layer information
+    /// </summary>
+    /// <returns></returns>
+    public Mat CreateMat()
+    {
+        return new Mat(Resolution, DepthType.Cv8U, 1);
+    }
 
     /// <summary>
     /// Reset all parameters to the default values from the global parameters

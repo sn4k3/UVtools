@@ -122,7 +122,7 @@ public class VectorLinePrimitive : Primitive
         if (byte.TryParse(ExposureExpression, out var exposure)) Exposure = exposure;
         else
         {
-            csharpExp = string.Format(Regex.Replace(ExposureExpression, @"\$(\d+)", "{$1}"), args);
+            csharpExp = string.Format(Regex.Replace(ExposureExpression, @"\$([0-9]+)", "{$1}"), args);
             var temp = exp.Compute(csharpExp, null);
             if (temp is not DBNull) Exposure = Convert.ToByte(temp);
         }
@@ -130,7 +130,7 @@ public class VectorLinePrimitive : Primitive
         if (float.TryParse(LineWidthExpression, NumberStyles.Float, CultureInfo.InvariantCulture, out num)) LineWidth = num;
         else
         {
-            csharpExp = Regex.Replace(LineWidthExpression, @"\$(\d+)", "{$1}");
+            csharpExp = Regex.Replace(LineWidthExpression, @"\$([0-9]+)", "{$1}");
             csharpExp = string.Format(csharpExp, args);
             var temp = exp.Compute(csharpExp, null);
             if (temp is not DBNull) LineWidth = Convert.ToSingle(temp);
@@ -140,7 +140,7 @@ public class VectorLinePrimitive : Primitive
         if (float.TryParse(StartXExpression, NumberStyles.Float, CultureInfo.InvariantCulture, out num)) StartX = num;
         else
         {
-            csharpExp = Regex.Replace(StartXExpression, @"\$(\d+)", "{$1}");
+            csharpExp = Regex.Replace(StartXExpression, @"\$([0-9]+)", "{$1}");
             csharpExp = string.Format(csharpExp, args);
             var temp = exp.Compute(csharpExp, null);
             if (temp is not DBNull) StartX = Convert.ToSingle(temp);
@@ -150,7 +150,7 @@ public class VectorLinePrimitive : Primitive
         if (float.TryParse(EndXExpression, NumberStyles.Float, CultureInfo.InvariantCulture, out num)) EndX = num;
         else
         {
-            csharpExp = Regex.Replace(EndXExpression, @"\$(\d+)", "{$1}");
+            csharpExp = Regex.Replace(EndXExpression, @"\$([0-9]+)", "{$1}");
             csharpExp = string.Format(csharpExp, args);
             var temp = exp.Compute(csharpExp, null);
             if (temp is not DBNull) EndX = Convert.ToSingle(temp);
@@ -160,7 +160,7 @@ public class VectorLinePrimitive : Primitive
         if (float.TryParse(StartYExpression, NumberStyles.Float, CultureInfo.InvariantCulture, out num)) StartY = num;
         else
         {
-            csharpExp = Regex.Replace(StartYExpression, @"\$(\d+)", "{$1}");
+            csharpExp = Regex.Replace(StartYExpression, @"\$([0-9]+)", "{$1}");
             csharpExp = string.Format(csharpExp, args);
             var temp = exp.Compute(csharpExp, null);
             if (temp is not DBNull) StartY = Convert.ToSingle(temp);
@@ -170,7 +170,7 @@ public class VectorLinePrimitive : Primitive
         if (float.TryParse(EndYExpression, NumberStyles.Float, CultureInfo.InvariantCulture, out num)) EndY = num;
         else
         {
-            csharpExp = Regex.Replace(EndYExpression, @"\$(\d+)", "{$1}");
+            csharpExp = Regex.Replace(EndYExpression, @"\$([0-9]+)", "{$1}");
             csharpExp = string.Format(csharpExp, args);
             var temp = exp.Compute(csharpExp, null);
             if (temp is not DBNull) EndY = Convert.ToSingle(temp);
@@ -180,7 +180,7 @@ public class VectorLinePrimitive : Primitive
         if (float.TryParse(RotationExpression, NumberStyles.Float, CultureInfo.InvariantCulture, out num)) Rotation = (short)num;
         else
         {
-            csharpExp = Regex.Replace(RotationExpression, @"\$(\d+)", "{$1}");
+            csharpExp = Regex.Replace(RotationExpression, @"\$([0-9]+)", "{$1}");
             csharpExp = string.Format(csharpExp, args);
             var temp = exp.Compute(csharpExp, null);
             if (temp is not DBNull) Rotation = Convert.ToSingle(temp);

@@ -59,13 +59,14 @@ public sealed class UserSettings : BindableBase
         private string _defaultDirectoryExtractFile;
         private string _defaultDirectoryConvertFile;
         private string _defaultDirectoryScripts;
-        private bool _promptOverwriteFileSave = true;
-        private string _fileSaveNamePrefix;
-        private string _fileSaveNameSuffix = "_copy";
+        private bool _fileSavePromptOverwrite = true;
+        private string _fileSaveAsDefaultName = "{0}_{PrintTimeString}_{MaterialMillilitersInteger}ml_copy";
+        private string _fileSaveAsDefaultNameCleanUpRegex = @"_?[0-9]+h[0-9]+m([0-9]+s)?|_?(([0-9]*[.])?[0-9]+)ml|_copy([0-9]*)?";
         private bool _sendToPromptForRemovableDeviceEject = true;
         private RangeObservableCollection<MappedDevice> _sendToCustomLocations = new();
         private RangeObservableCollection<MappedProcess> _sendToProcess = new();
         private ushort _lockedFilesOpenCounter;
+        private bool _fileSaveUpdateNameWithNewInformation = true;
 
         public const byte LockedFilesMaxOpenCounter = 10;
 
@@ -199,22 +200,28 @@ public sealed class UserSettings : BindableBase
         }
 
 
-        public bool PromptOverwriteFileSave
+        public bool FileSavePromptOverwrite
         {
-            get => _promptOverwriteFileSave;
-            set => RaiseAndSetIfChanged(ref _promptOverwriteFileSave, value);
+            get => _fileSavePromptOverwrite;
+            set => RaiseAndSetIfChanged(ref _fileSavePromptOverwrite, value);
         }
 
-        public string FileSaveNamePrefix
+        public bool FileSaveUpdateNameWithNewInformation
         {
-            get => _fileSaveNamePrefix;
-            set => RaiseAndSetIfChanged(ref _fileSaveNamePrefix, value);
+            get => _fileSaveUpdateNameWithNewInformation;
+            set => RaiseAndSetIfChanged(ref _fileSaveUpdateNameWithNewInformation, value);
         }
 
-        public string FileSaveNameSuffix
+        public string FileSaveAsDefaultName
         {
-            get => _fileSaveNameSuffix;
-            set => RaiseAndSetIfChanged(ref _fileSaveNameSuffix, value);
+            get => _fileSaveAsDefaultName;
+            set => RaiseAndSetIfChanged(ref _fileSaveAsDefaultName, value);
+        }
+
+        public string FileSaveAsDefaultNameCleanUpRegex
+        {
+            get => _fileSaveAsDefaultNameCleanUpRegex;
+            set => RaiseAndSetIfChanged(ref _fileSaveAsDefaultNameCleanUpRegex, value);
         }
 
         public bool SendToPromptForRemovableDeviceEject
@@ -1767,8 +1774,8 @@ public sealed class UserSettings : BindableBase
                             // https://github.com/adamoutler/Pi-Zero-W-Smart-USB-Flash-Drive/tree/main/src/home/pi/usb_share/scripts
                             CompatibleExtensions = "pws;pw0;pwx;dlp;dl2p;pwmo;pwma;pwms;pwmx;pmx2;pwmb;pwsq;pm3;pm3m;pm3r;pwc",
                             RequestUploadFile  = new (RemotePrinterRequest.RequestType.UploadFile,  RemotePrinterRequest.RequestMethod.TCP),
-                            RequestPrintFile   = new (RemotePrinterRequest.RequestType.PrintFile,   RemotePrinterRequest.RequestMethod.TCP, @"<$getfile>{0}\/(\d+\.[\da-zA-Z]+),>goprint,{#1}$>"),
-                            RequestDeleteFile  = new (RemotePrinterRequest.RequestType.DeleteFile,  RemotePrinterRequest.RequestMethod.TCP, @"<$getfile>{0}\/(\d+\.[\da-zA-Z]+),>delfile,{#1}$>"),
+                            RequestPrintFile   = new (RemotePrinterRequest.RequestType.PrintFile,   RemotePrinterRequest.RequestMethod.TCP, @"<$getfile>{0}\/([0-9]+[.][0-9a-zA-Z]+),>goprint,{#1}$>"),
+                            RequestDeleteFile  = new (RemotePrinterRequest.RequestType.DeleteFile,  RemotePrinterRequest.RequestMethod.TCP, @"<$getfile>{0}\/([0-9]+[.][0-9a-zA-Z]+),>delfile,{#1}$>"),
                             RequestPausePrint  = new (RemotePrinterRequest.RequestType.PausePrint,  RemotePrinterRequest.RequestMethod.TCP, "gopause"),
                             RequestResumePrint = new (RemotePrinterRequest.RequestType.ResumePrint, RemotePrinterRequest.RequestMethod.TCP, "goresume"),
                             RequestStopPrint   = new (RemotePrinterRequest.RequestType.StopPrint,   RemotePrinterRequest.RequestMethod.TCP, "gostop"),

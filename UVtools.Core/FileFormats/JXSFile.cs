@@ -356,7 +356,7 @@ public sealed class JXSFile : FileFormat
 
             if (line.StartsWith(GCode.CommandShowImageM6054.Command))
             {
-                var match = Regex.Match(line, GCode.GetShowImageString(@"(\d+)"));
+                var match = Regex.Match(line, GCode.GetShowImageString(@"([0-9]+)"));
                 
                 if (!match.Success || match.Groups.Count <= 1)
                 {
@@ -383,7 +383,7 @@ public sealed class JXSFile : FileFormat
 
             if (line.StartsWith(GCode.CommandWaitG4.Command))
             {
-                var match = Regex.Match(line, GCode.CommandWaitG4.ToStringWithoutComments(@"(\d+)"));
+                var match = Regex.Match(line, GCode.CommandWaitG4.ToStringWithoutComments(@"([0-9]+)"));
 
                 if (!match.Success || match.Groups.Count <= 1)
                 {

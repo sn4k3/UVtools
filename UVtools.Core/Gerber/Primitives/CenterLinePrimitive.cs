@@ -105,7 +105,7 @@ public class CenterLinePrimitive : Primitive
         if (byte.TryParse(ExposureExpression, out var exposure)) Exposure = exposure;
         else
         {
-            csharpExp = string.Format(Regex.Replace(ExposureExpression, @"\$(\d+)", "{$1}"), args);
+            csharpExp = string.Format(Regex.Replace(ExposureExpression, @"\$([0-9]+)", "{$1}"), args);
             var temp = exp.Compute(csharpExp, null);
             if(temp is not DBNull) Exposure = Convert.ToByte(temp);
         }
@@ -113,7 +113,7 @@ public class CenterLinePrimitive : Primitive
         if (float.TryParse(WidthExpression, NumberStyles.Float, CultureInfo.InvariantCulture, out num)) Width = num;
         else
         {
-            csharpExp = Regex.Replace(WidthExpression, @"\$(\d+)", "{$1}");
+            csharpExp = Regex.Replace(WidthExpression, @"\$([0-9]+)", "{$1}");
             csharpExp = string.Format(csharpExp, args);
             var temp = exp.Compute(csharpExp, null);
             if (temp is not DBNull) Width = Convert.ToSingle(temp);
@@ -123,7 +123,7 @@ public class CenterLinePrimitive : Primitive
         if (float.TryParse(HeightExpression, NumberStyles.Float, CultureInfo.InvariantCulture, out num)) Height = num;
         else
         {
-            csharpExp = Regex.Replace(HeightExpression, @"\$(\d+)", "{$1}");
+            csharpExp = Regex.Replace(HeightExpression, @"\$([0-9]+)", "{$1}");
             csharpExp = string.Format(csharpExp, args);
             var temp = exp.Compute(csharpExp, null);
             if (temp is not DBNull) Height = Convert.ToSingle(temp);
@@ -133,7 +133,7 @@ public class CenterLinePrimitive : Primitive
         if (float.TryParse(CenterXExpression, NumberStyles.Float, CultureInfo.InvariantCulture, out num)) CenterX = num;
         else
         {
-            csharpExp = Regex.Replace(CenterXExpression, @"\$(\d+)", "{$1}");
+            csharpExp = Regex.Replace(CenterXExpression, @"\$([0-9]+)", "{$1}");
             csharpExp = string.Format(csharpExp, args);
             var temp = exp.Compute(csharpExp, null);
             if (temp is not DBNull) CenterX = Convert.ToSingle(temp);
@@ -143,7 +143,7 @@ public class CenterLinePrimitive : Primitive
         if (float.TryParse(CenterYExpression, NumberStyles.Float, CultureInfo.InvariantCulture, out num)) CenterY = num;
         else
         {
-            csharpExp = Regex.Replace(CenterYExpression, @"\$(\d+)", "{$1}");
+            csharpExp = Regex.Replace(CenterYExpression, @"\$([0-9]+)", "{$1}");
             csharpExp = string.Format(csharpExp, args);
             var temp = exp.Compute(csharpExp, null);
             if (temp is not DBNull) CenterY = Convert.ToSingle(temp);
@@ -153,7 +153,7 @@ public class CenterLinePrimitive : Primitive
         if (float.TryParse(RotationExpression, NumberStyles.Float, CultureInfo.InvariantCulture, out num)) Rotation = (short)num;
         else
         {
-            csharpExp = Regex.Replace(RotationExpression, @"\$(\d+)", "{$1}");
+            csharpExp = Regex.Replace(RotationExpression, @"\$([0-9]+)", "{$1}");
             csharpExp = string.Format(csharpExp, args);
             var temp = exp.Compute(csharpExp, null);
             if (temp is not DBNull) Rotation = Convert.ToSingle(temp);

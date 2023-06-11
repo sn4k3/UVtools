@@ -105,7 +105,7 @@ public class PolygonPrimitive : Primitive
         if (byte.TryParse(ExposureExpression, out var exposure)) Exposure = exposure;
         else
         {
-            csharpExp = string.Format(Regex.Replace(ExposureExpression, @"\$(\d+)", "{$1}"), args);
+            csharpExp = string.Format(Regex.Replace(ExposureExpression, @"\$([0-9]+)", "{$1}"), args);
             var temp = exp.Compute(csharpExp, null);
             if (temp is not DBNull) Exposure = Convert.ToByte(temp);
         }
@@ -113,7 +113,7 @@ public class PolygonPrimitive : Primitive
         if (byte.TryParse(DiameterExpression, out var vertices)) VerticesCount = vertices;
         else
         {
-            csharpExp = Regex.Replace(DiameterExpression, @"\$(\d+)", "{$1}");
+            csharpExp = Regex.Replace(DiameterExpression, @"\$([0-9]+)", "{$1}");
             csharpExp = string.Format(csharpExp, args);
             var temp = exp.Compute(csharpExp, null);
             if (temp is not DBNull) VerticesCount = Convert.ToByte(temp);
@@ -122,7 +122,7 @@ public class PolygonPrimitive : Primitive
         if (float.TryParse(CenterXExpression, NumberStyles.Float, CultureInfo.InvariantCulture, out num)) CenterX = num;
         else
         {
-            csharpExp = Regex.Replace(CenterXExpression, @"\$(\d+)", "{$1}");
+            csharpExp = Regex.Replace(CenterXExpression, @"\$([0-9]+)", "{$1}");
             csharpExp = string.Format(csharpExp, args);
             var temp = exp.Compute(csharpExp, null);
             if (temp is not DBNull) CenterX = Convert.ToSingle(temp);
@@ -132,7 +132,7 @@ public class PolygonPrimitive : Primitive
         if (float.TryParse(CenterYExpression, NumberStyles.Float, CultureInfo.InvariantCulture, out num)) CenterY = num;
         else
         {
-            csharpExp = Regex.Replace(CenterYExpression, @"\$(\d+)", "{$1}");
+            csharpExp = Regex.Replace(CenterYExpression, @"\$([0-9]+)", "{$1}");
             csharpExp = string.Format(csharpExp, args);
             var temp = exp.Compute(csharpExp, null);
             if (temp is not DBNull) CenterY = Convert.ToSingle(temp);
@@ -142,7 +142,7 @@ public class PolygonPrimitive : Primitive
         if (float.TryParse(DiameterExpression, NumberStyles.Float, CultureInfo.InvariantCulture, out num)) Diameter = num;
         else
         {
-            csharpExp = Regex.Replace(DiameterExpression, @"\$(\d+)", "{$1}");
+            csharpExp = Regex.Replace(DiameterExpression, @"\$([0-9]+)", "{$1}");
             csharpExp = string.Format(csharpExp, args);
             var temp = exp.Compute(csharpExp, null);
             if (temp is not DBNull) Diameter = Convert.ToSingle(temp);
@@ -152,7 +152,7 @@ public class PolygonPrimitive : Primitive
         if (float.TryParse(RotationExpression, NumberStyles.Float, CultureInfo.InvariantCulture, out num)) Rotation = (short)num;
         else
         {
-            csharpExp = Regex.Replace(RotationExpression, @"\$(\d+)", "{$1}");
+            csharpExp = Regex.Replace(RotationExpression, @"\$([0-9]+)", "{$1}");
             csharpExp = string.Format(csharpExp, args);
             var temp = exp.Compute(csharpExp, null);
             if (temp is not DBNull) Rotation = Convert.ToSingle(temp);

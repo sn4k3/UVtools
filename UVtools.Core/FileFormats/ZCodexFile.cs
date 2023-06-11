@@ -519,8 +519,8 @@ M106 S0
                         byte pwm = GetBottomOrNormalValue((uint)layerIndex, BottomLightPWM, LightPWM);
 
                         //var currPos = Regex.Match(stripGcode, "G1 Z([+-]?([0-9]*[.])?[0-9]+)", RegexOptions.IgnoreCase);
-                        var moveG1Regex = Regex.Match(stripGcode, @"G1 Z([+-]?([0-9]*[.])?[0-9]+) F(\d+)", RegexOptions.IgnoreCase);
-                        var pwmM106Regex = Regex.Match(stripGcode, @"M106 S(\d+)", RegexOptions.IgnoreCase);
+                        var moveG1Regex = Regex.Match(stripGcode, @"G1 Z([+-]?([0-9]*[.])?[0-9]+) F([0-9]+)", RegexOptions.IgnoreCase);
+                        var pwmM106Regex = Regex.Match(stripGcode, @"M106 S([0-9]+)", RegexOptions.IgnoreCase);
 
                         if (moveG1Regex.Success)
                         {
@@ -582,10 +582,10 @@ M106 S0
     public override void RebuildGCode()
     {
         var gcode = GCodeStr!;
-        gcode = Regex.Replace(gcode, @"Z[+]?([0-9]*\.[0-9]+|[0-9]+) F[+]?([0-9]*\.[0-9]+|[0-9]+)",
+        gcode = Regex.Replace(gcode, @"Z[+]?([0-9]*[.][0-9]+|[0-9]+) F[+]?([0-9]*[.][0-9]+|[0-9]+)",
             $"Z{UserSettings.ZLiftDistance} F{UserSettings.ZLiftFeedRate}");
 
-        gcode = Regex.Replace(gcode, @"Z-[-]?([0-9]*\.[0-9]+|[0-9]+) F[+]?([0-9]*\.[0-9]+|[0-9]+)",
+        gcode = Regex.Replace(gcode, @"Z-[-]?([0-9]*[.][0-9]+|[0-9]+) F[+]?([0-9]*[.][0-9]+|[0-9]+)",
             $"Z-{UserSettings.ZLiftDistance - LayerHeight} F{UserSettings.ZLiftRetractRate}");
 
         GCode!.Clear();
