@@ -138,7 +138,7 @@ public sealed class IslandDetectionConfiguration : DetectionConfiguration
     public bool AllowDiagonalBonds { get; set; } = false;
 
     /// <summary>
-    /// Gets or sets the binary threshold, all pixels below this value will turn in black, otherwise white
+    /// Gets or sets the binary threshold, all pixels equal or below this value will turn in black, otherwise white
     /// Set to 0 to disable this operation 
     /// </summary>
     public byte BinaryThreshold { get; set; } = 1;
@@ -218,10 +218,10 @@ public sealed class ResinTrapDetectionConfiguration : DetectionConfiguration
     public uint StartLayerIndex { get; set; }
 
     /// <summary>
-    /// Gets or sets the binary threshold, all pixels below this value will turn in black, otherwise white
+    /// Gets or sets the binary threshold, all pixels equal or below this value will turn in black, otherwise white
     /// Set to 0 to disable this operation
     /// </summary>
-    public byte BinaryThreshold { get; set; } = 127;
+    public byte BinaryThreshold { get; set; } = 100;
 
     /// <summary>
     /// Gets the required area size (x*y) to consider process a hollow area (0-255)

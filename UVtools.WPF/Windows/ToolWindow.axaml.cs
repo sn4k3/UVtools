@@ -13,6 +13,7 @@ using MessageBox.Avalonia.Enums;
 using System;
 using System.Collections.ObjectModel;
 using System.Drawing;
+using JetBrains.Annotations;
 using UVtools.Core;
 using UVtools.Core.Extensions;
 using UVtools.Core.Layers;
@@ -38,7 +39,7 @@ public class ToolWindow : WindowEx
         Checkbox1, // Show Advanced
     }
     private KeyModifiers _globalModifiers;
-    public ToolControl ToolControl;
+    [CanBeNull] public ToolControl ToolControl;
     private string _description;
     private double _descriptionMaxWidth = 500;
     private double _profileBoxMaxWidth = double.NaN;
@@ -57,7 +58,7 @@ public class ToolWindow : WindowEx
     private Operation _selectedProfileItem;
     private string _profileText;
 
-    private IControl _contentControl;
+    private ToolBaseControl _contentControl;
 
     private bool _isButton1Visible;
     private string _button1Text = "Reset to defaults";
@@ -68,7 +69,8 @@ public class ToolWindow : WindowEx
     private bool _buttonOkEnabled = true;
     private string _buttonOkText = "Ok";
     private bool _buttonOkVisible = true;
-        
+    private bool _closeWindowAfterProcess = true;
+
 
     #region Description
 
@@ -272,6 +274,13 @@ public class ToolWindow : WindowEx
                 throw new ArgumentOutOfRangeException();
         }
     }
+
+    public bool CloseWindowAfterProcess
+    {
+        get => _closeWindowAfterProcess;
+        set => RaiseAndSetIfChanged(ref _closeWindowAfterProcess, value);
+    }
+
     #endregion
 
     #region ROI & Masks
@@ -306,7 +315,7 @@ public class ToolWindow : WindowEx
         }
     }
 
-    public bool CanROI => ToolControl.BaseOperation.CanROI;
+    public bool CanROI => ToolControl?.BaseOperation?.CanROI ?? false;
 
     public Rectangle ROI
     {
@@ -314,7 +323,7 @@ public class ToolWindow : WindowEx
         set
         {
             App.MainWindow.ROI = value;
-            ToolControl.BaseOperation.ROI = value;
+            if (ToolControl is not null) ToolControl.BaseOperation.ROI = value;
             IsROIVisible = !value.IsEmpty;
             RaisePropertyChanged();
         }
@@ -346,8 +355,12 @@ public class ToolWindow : WindowEx
                 "Clear the all masks?") != ButtonResult.Yes) return;
         IsMasksVisible = false;
         App.MainWindow.ClearMask();
-        ToolControl.BaseOperation.ClearMasks();
-        ToolControl?.Callback(Callbacks.ClearROI);
+        if (ToolControl is not null)
+        {
+            ToolControl.BaseOperation.ClearMasks();
+            ToolControl.Callback(Callbacks.ClearROI);
+        }
+        
     }
 
     public void SelectVolumeBoundingRectangle()
@@ -359,7 +372,7 @@ public class ToolWindow : WindowEx
 
     #region Profiles
 
-    public bool CanHaveProfiles => ToolControl.BaseOperation.CanHaveProfiles;
+    public bool CanHaveProfiles => ToolControl?.BaseOperation?.CanHaveProfiles ?? false;
 
     public bool IsProfilesVisible
     {
@@ -409,6 +422,7 @@ public class ToolWindow : WindowEx
 
     public async void AddProfile()
     {
+        if (ToolControl is null) return;
         var name = string.IsNullOrWhiteSpace(_profileText) ? null : _profileText.Trim();
         var operation = OperationProfiles.FindByName(ToolControl.BaseOperation, name);
         if (operation is not null)
@@ -503,7 +517,7 @@ public class ToolWindow : WindowEx
 
     public bool IsContentVisible => ContentControl is null || ContentControl.IsVisible;
 
-    public IControl ContentControl
+    public ToolBaseControl ContentControl
     {
         get => _contentControl;
         set => RaiseAndSetIfChanged(ref _contentControl, value);
@@ -595,14 +609,20 @@ public class ToolWindow : WindowEx
         }
     }
 
-    public ToolWindow(string description = null, bool layerRangeVisible = true, bool layerEndIndexEnabled = true) : this()
+    public ToolWindow(string description = null, bool layerRangeVisible = true, bool layerEndIndexEnabled = true, ToolBaseControl contentControl = null) : this()
     {
         _description = description;
         _layerRangeVisible = layerRangeVisible;
         _layerIndexEndEnabled = layerEndIndexEnabled;
+        _contentControl = contentControl;
+        if (_contentControl is not null)
+        {
+            _contentControl.ParentWindow = this;
+            if (_contentControl is not Controls.Tools.ToolControl) DataContext = this;
+        }
     }
 
-    public ToolWindow(ToolControl toolControl) : this(toolControl.BaseOperation.Description, toolControl.BaseOperation.StartLayerRangeSelection != LayerRangeSelection.None, toolControl.BaseOperation.LayerIndexEndEnabled)
+    public ToolWindow(ToolControl toolControl) : this(toolControl.BaseOperation.Description, toolControl.BaseOperation.StartLayerRangeSelection != LayerRangeSelection.None, toolControl.BaseOperation.LayerIndexEndEnabled, toolControl)
     {
         ToolControl = toolControl;
         toolControl.ParentWindow = this;
@@ -613,7 +633,6 @@ public class ToolWindow : WindowEx
         Title = toolControl.BaseOperation.Title;
         //LayerRangeVisible = toolControl.BaseOperation.StartLayerRangeSelection != LayerRangeSelection.None;
         //IsROIVisible = toolControl.BaseOperation.CanROI;
-        _contentControl = toolControl;
         _buttonOkText = toolControl.BaseOperation.ButtonOkText;
         _buttonOkVisible = ButtonOkEnabled = toolControl.BaseOperation.HaveAction;
 
@@ -697,7 +716,7 @@ public class ToolWindow : WindowEx
     {
         base.OnOpened(e);
 
-        DescriptionMaxWidth = Math.Max(Bounds.Width, ToolControl.Bounds.Width) - 20;
+        DescriptionMaxWidth = Math.Max(Bounds.Width, _contentControl.Bounds.Width) - 20;
         var profileTextBox = this.FindControl<TextBox>("ProfileName");
         ProfileBoxMaxWidth = profileTextBox.Bounds.Width;
         //Height = MaxHeight;
@@ -777,6 +796,8 @@ public class ToolWindow : WindowEx
 
     public async void Process()
     {
+        if(!await _contentControl.OnBeforeProcess()) return;
+
         if (LayerIndexStart > LayerIndexEnd)
         {
             await this.MessageBoxError("Layer range start can't be higher than layer end.\nPlease fix and try again.");
@@ -801,14 +822,24 @@ public class ToolWindow : WindowEx
                 if (result != ButtonResult.Yes) return;
             }
         }
+        else if (_contentControl is not null)
+        {
+            if (!await _contentControl.ValidateForm()) return;
+        }
 
         if (_clearRoiAndMaskAfterOperation)
         {
             App.MainWindow.ClearROIAndMask();
         }
 
+        if (!await _contentControl.OnAfterProcess()) return;
+
         DialogResult = DialogResults.OK;
-        Close(DialogResult);
+        if (_closeWindowAfterProcess)
+        {
+            Close(DialogResult);
+        }
+        
     }
 
     public void OpenContextMenu(string name)
@@ -822,7 +853,7 @@ public class ToolWindow : WindowEx
 
     public async void ExportSettings()
     {
-        if (ToolControl.BaseOperation is null) return;
+        if (ToolControl?.BaseOperation is null) return;
         var dialog = new SaveFileDialog
         {
             Filters = Helpers.OperationSettingFileFilter,
@@ -886,6 +917,7 @@ public class ToolWindow : WindowEx
 
     public void ResetToDefaults()
     {
+        if (ToolControl is null) return;
         var operation = ToolControl.BaseOperation.GetType().CreateInstance<Operation>(SlicerFile);
         operation.LayerIndexStart = ToolControl.BaseOperation.LayerIndexStart;
         operation.LayerIndexEnd = ToolControl.BaseOperation.LayerIndexEnd;

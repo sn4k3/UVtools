@@ -46,9 +46,7 @@ public partial class MainWindow
             Debug.WriteLine(_lastTotalSeconds);*/
             _progressLastTotalSeconds = elapsedSeconds;
 
-
             Dispatcher.UIThread.InvokeAsync(() => Progress.TriggerRefresh(), DispatcherPriority.Render);
-
         };
     }
 

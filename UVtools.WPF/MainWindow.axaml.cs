@@ -905,7 +905,37 @@ public partial class MainWindow : WindowEx
     {
         if (!IsFileLoaded) return;
         SystemAware.SelectFileOnExplorer(SlicerFile.FileFullPath);
-    } 
+    }
+
+    public async void MenuFileRenameClicked()
+    {
+        if (!IsFileLoaded) return;
+        var control = new RenameFileControl();
+        var window = new ToolWindow("Rename current file with a new name", false, false, control)
+        {
+            Title = "Rename current file",
+            ButtonOkText = "Rename",
+        };
+
+        var result = await window.ShowDialog<DialogResults>(this);
+
+        if (result != DialogResults.OK) return;
+
+        try
+        {
+            if (SlicerFile.RenameFile(control.NewFileNameNoExt, control.Overwrite))
+            {
+                RemoveRecentFile(control.OldFilePath);
+                AddRecentFile(control.NewFilePath);
+            }
+            
+        }
+        catch (Exception e)
+        {
+            await this.MessageBoxError(e.ToString(), "Error while trying to rename the file");
+        }
+        
+    }
 
     public async void MenuFileSaveClicked()
     {
@@ -1769,17 +1799,21 @@ public partial class MainWindow : WindowEx
 
         if (SlicerFile.DecodeType == FileFormat.FileDecodeType.Full)
         {
-            if (Settings.Issues.ComputeIssuesOnLoad)
+            if (Settings.Issues.ComputeIssuesOnFileLoad == UserSettings.IssuesUserSettings.ComputeIssuesOnFileLoadType.EnabledIssues)
             {
                 _firstTimeOnIssues = false;
                 await OnClickDetectIssues();
                 if (SlicerFile.IssueManager.Count > 0)
                 {
-                    SelectedTabItem = TabIssues;
                     if (Settings.Issues.AutoRepairIssuesOnLoad) await RunOperation(ToolRepairLayersControl.GetOperationRepairLayers());
+
+                    if (SlicerFile.IssueManager.Count > 0)
+                    {
+                        SelectedTabItem = TabIssues;
+                    }
                 }
             }
-            else
+            else if (Settings.Issues.ComputeIssuesOnFileLoad == UserSettings.IssuesUserSettings.ComputeIssuesOnFileLoadType.TimeInexpensiveIssues)
             {
                 var config = GetIssuesDetectionConfiguration(false);
                 config.PrintHeightConfig.Enable();
@@ -1787,7 +1821,15 @@ public partial class MainWindow : WindowEx
                 await ComputeIssues(config);
                 if (SlicerFile.IssueManager.Count > 0)
                 {
-                    SelectedTabItem = TabIssues;
+                    var operation = ToolRepairLayersControl.GetOperationDisabledRepair();
+                    operation.RemoveEmptyLayers = true;
+                    if (Settings.Issues.AutoRepairIssuesOnLoad) await RunOperation(operation);
+
+                    if (SlicerFile.IssueManager.Count > 0)
+                    {
+                        _firstTimeOnIssues = false;
+                        SelectedTabItem = TabIssues;
+                    }
                 }
             }
         }
@@ -2172,7 +2214,7 @@ public partial class MainWindow : WindowEx
         switch (baseOperation)
         {
             case OperationEditParameters operation:
-                operation.Execute();
+                //operation.Execute(); Already applied inside control
                 RefreshProperties();
                 RefreshCurrentLayerData();
                 ResetDataContext();
@@ -2193,7 +2235,7 @@ public partial class MainWindow : WindowEx
 
                     if (config.IslandConfig.Enabled || config.ResinTrapConfig.Enabled)
                     {
-                        ComputeIssues(config);
+                        await ComputeIssues(config);
                     }
                 }
 

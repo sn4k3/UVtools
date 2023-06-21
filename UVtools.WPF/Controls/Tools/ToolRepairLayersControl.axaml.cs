@@ -20,7 +20,23 @@ public class ToolRepairLayersControl : ToolControl
         AvaloniaXamlLoader.Load(this);
     }
 
-    public static OperationRepairLayers GetOperationRepairLayers() => new (App.SlicerFile)
+    public static OperationRepairLayers GetOperationDisabledRepair() => new (App.SlicerFile)
+    {
+        RepairIslands = false,
+        RepairResinTraps = false,
+        RepairSuctionCups = false,
+        RemoveEmptyLayers = false,
+        RemoveIslandsBelowEqualPixelCount = 0,
+        RemoveIslandsRecursiveIterations = 0,
+        AttachIslandsBelowLayers = 0,
+        ResinTrapsOverlapBy = 0,
+        SuctionCupsVentHole = 0,
+        GapClosingIterations = 0,
+        NoiseRemovalIterations = 0,
+        IssuesDetectionConfig = App.MainWindow.GetIssuesDetectionConfiguration()
+    };
+
+    public static OperationRepairLayers GetOperationRepairLayers() => new(App.SlicerFile)
     {
         RepairIslands = UserSettings.Instance.LayerRepair.RepairIslands,
         RepairResinTraps = UserSettings.Instance.LayerRepair.RepairResinTraps,

@@ -6,6 +6,7 @@ using Avalonia.Markup.Xaml;
 using System;
 using System.ComponentModel;
 using System.Globalization;
+using System.Threading.Tasks;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Operations;
 using UVtools.WPF.Windows;
@@ -179,6 +180,25 @@ public class ToolEditParametersControl : ToolControl
         AvaloniaXamlLoader.Load(this);
     }
 
+    protected override void OnInitialized()
+    {
+        ParentWindow.CloseWindowAfterProcess = false;
+    }
+
+    public void RefreshModifiers()
+    {
+        if (Operation.PerLayerOverride)
+        {
+            Operation.Modifiers = SlicerFile.PrintParameterPerLayerModifiers;
+            SlicerFile.RefreshPrintParametersPerLayerModifiersValues(Operation.LayerIndexStart);
+        }
+        else
+        {
+            Operation.Modifiers = SlicerFile.PrintParameterModifiers;
+            SlicerFile.RefreshPrintParametersModifiersValues();
+        }
+    }
+
     public override void Callback(ToolWindow.Callbacks callback)
     {
         switch (callback)
@@ -207,20 +227,18 @@ public class ToolEditParametersControl : ToolControl
         }
         if (e.PropertyName == nameof(Operation.PerLayerOverride))
         {
-            if (Operation.PerLayerOverride)
-            {
-                Operation.Modifiers = SlicerFile.PrintParameterPerLayerModifiers;
-                SlicerFile.RefreshPrintParametersPerLayerModifiersValues(Operation.LayerIndexStart);
-            }
-            else
-            {
-                Operation.Modifiers = SlicerFile.PrintParameterModifiers;
-                SlicerFile.RefreshPrintParametersModifiersValues();
-            }
-
+            RefreshModifiers();
             ParentWindow.LayerRangeVisible = Operation.PerLayerOverride;
             PopulateGrid();
             return;
         }
+    }
+
+    public override Task<bool> OnAfterProcess()
+    {
+        Operation.Execute();
+        RefreshModifiers();
+        PopulateGrid();
+        return Task.FromResult(true);
     }
 }

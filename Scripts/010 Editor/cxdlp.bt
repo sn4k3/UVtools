@@ -35,8 +35,8 @@ typedef struct(int size) {
 } RgbPreviewImageRawData;
 
 struct HEADER {
-    uint32 HeaderSize <fgcolor=cBlack, bgcolor=cWhite>;
-    char Header[HeaderSize] <fgcolor=cBlack, bgcolor=cRed>;
+    uint32 MagicSize <fgcolor=cBlack, bgcolor=cWhite>;
+    char Magic[MagicSize] <fgcolor=cBlack, bgcolor=cRed>;
 
     uint16 Version <fgcolor=cBlack, bgcolor=cWhite>;
 

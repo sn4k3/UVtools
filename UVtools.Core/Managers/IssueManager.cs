@@ -237,7 +237,10 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
             Parallel.For(0, SlicerFile.LayerCount, CoreSettings.ParallelOptions, layerIndexInt =>
             {
                 progress.PauseIfRequested();
-                if (progress.Token.IsCancellationRequested) return;
+                if (progress.Token.IsCancellationRequested)
+                {
+                    return;
+                }
                 uint layerIndex = (uint)layerIndexInt;
                 var layer = SlicerFile[layerIndex];
 
@@ -255,7 +258,6 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
                    )
                 {
                     progress.LockAndIncrement();
-
                     return;
                 }
 
@@ -606,9 +608,9 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
                         }
                         var contourLayer = resinTrapImage.Roi(SlicerFile.BoundingRectangle);
 
-                        using var contours = contourLayer.FindContours(out var heirarchy, RetrType.Tree);
-                        externalContours[layerIndex] = EmguContours.GetExternalContours(contours, heirarchy);
-                        hollows[layerIndex] = EmguContours.GetNegativeContoursInGroups(contours, heirarchy);
+                        using var contours = contourLayer.FindContours(out var hierarchy, RetrType.Tree);
+                        externalContours[layerIndex] = EmguContours.GetExternalContours(contours, hierarchy);
+                        hollows[layerIndex] = EmguContours.GetNegativeContoursInGroups(contours, hierarchy);
                         resinTrapsContoursArea[layerIndex] = EmguContours.GetContoursArea(hollows[layerIndex]);
 
                         if (needDispose)
@@ -646,6 +648,8 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
                 progress.LockAndIncrement();
             }); // Parallel end
         }
+
+        if (progress.Token.IsCancellationRequested) return GetResult();
 
         if (resinTrapConfig.Enabled)
         {

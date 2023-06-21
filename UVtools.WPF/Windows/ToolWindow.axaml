@@ -351,8 +351,9 @@
           ColumnDefinitions="*">
         <StackPanel Spacing="10" Orientation="Horizontal">
             <Button Command="{Binding #OptionsContextMenu.Open}"
-                Padding="10"
-                Content="☰">
+                    IsVisible="{Binding CanHaveProfiles}"
+                    Padding="10"
+                    Content="☰">
                 <Button.ContextMenu>
                     <ContextMenu Name="OptionsContextMenu" PlacementMode="Top">
                         <MenuItem IsVisible="{Binding CanROI}"
@@ -401,7 +402,7 @@
           HorizontalAlignment="Right" 
           Orientation="Horizontal">
 
-			<controls:ButtonWithIcon Padding="10"
+            <controls:ButtonWithIcon Padding="10"
                                      IsDefault="True"
                                      IsVisible="{Binding ButtonOkVisible}"
                                      IsEnabled="{Binding ButtonOkEnabled}"

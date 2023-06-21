@@ -11,6 +11,7 @@ using JetBrains.Annotations;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
@@ -878,7 +879,17 @@ public sealed class UserSettings : BindableBase
     
     public sealed class IssuesUserSettings : BindableBase
     {
-        private bool _computeIssuesOnLoad;
+        public enum ComputeIssuesOnFileLoadType : byte
+        {
+            [Description("Do not compute issues")]
+            None,
+            [Description("Compute time inexpensive issues (Empty layers and print height)")]
+            TimeInexpensiveIssues,
+            [Description("Compute the enabled issues")]
+            EnabledIssues,
+        }
+
+        private ComputeIssuesOnFileLoadType _computeIssuesOnFileLoad = ComputeIssuesOnFileLoadType.TimeInexpensiveIssues;
         private bool _autoRepairIssuesOnLoad;
         private bool _computeIssuesOnClickTab = true;
         private bool _computeIslands = true;
@@ -915,10 +926,10 @@ public sealed class UserSettings : BindableBase
         private decimal _printHeightOffset;
         private IssuesOrderBy _dataGridOrderBy = IssuesOrderBy.TypeAscLayerAscAreaDesc;
 
-        public bool ComputeIssuesOnLoad
+        public ComputeIssuesOnFileLoadType ComputeIssuesOnFileLoad
         {
-            get => _computeIssuesOnLoad;
-            set => RaiseAndSetIfChanged(ref _computeIssuesOnLoad, value);
+            get => _computeIssuesOnFileLoad;
+            set => RaiseAndSetIfChanged(ref _computeIssuesOnFileLoad, value);
         }
 
         public bool AutoRepairIssuesOnLoad

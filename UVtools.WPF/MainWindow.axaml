@@ -53,6 +53,13 @@
 							  Command="{Binding ReloadFile}"
 							  i:MenuItem.Icon="mdi-file-restore"/>
 
+                    <MenuItem Name="MainMenu.File.Rename"
+                              Header="_Rename"
+                              HotKey="Ctrl+F2" InputGesture="Ctrl+F2"
+                              IsEnabled="{Binding IsFileLoaded}"
+                              Command="{Binding MenuFileRenameClicked}"
+                              i:MenuItem.Icon="fa-solid fa-pen-to-square"/>
+
 					<MenuItem Name="MainMenu.File.Save"
 							  Header="_Save"
 							  HotKey="Ctrl+S" InputGesture="Ctrl+S"

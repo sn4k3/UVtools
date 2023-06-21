@@ -258,6 +258,24 @@ public class EmguContours : IReadOnlyList<EmguContour>, IDisposable
     /// <returns></returns>
     public static List<VectorOfVectorOfPoint> GetPositiveContoursInGroups(VectorOfVectorOfPoint contours, int[,] hierarchy)
     {
+        var vectorSize = contours.Size;
+        var result = new List<VectorOfVectorOfPoint>();
+        VectorOfVectorOfPoint? vec = null;
+        for (int i = 0; i < vectorSize; i++)
+        {
+            if (hierarchy[i, EmguContour.HierarchyParent] == -1)
+            {
+                vec = new VectorOfVectorOfPoint(contours[i]);
+                result.Add(vec);
+            }
+            else
+            {
+                vec.Push(contours[i]);
+            }
+        }
+
+        return result;
+        /* Old
         var result = new List<VectorOfVectorOfPoint>();
         var vectorSize = contours.Size;
         var processedContours = new bool[vectorSize];
@@ -275,7 +293,7 @@ public class EmguContours : IReadOnlyList<EmguContour>, IDisposable
             }
         }
 
-        return result;
+        return result;*/
     }
 
     /// <summary>
@@ -286,6 +304,26 @@ public class EmguContours : IReadOnlyList<EmguContour>, IDisposable
     public static List<VectorOfVectorOfPoint> GetNegativeContoursInGroups(VectorOfVectorOfPoint contours, int[,] hierarchy)
     {
         var result = new List<VectorOfVectorOfPoint>();
+        var vectorSize = contours.Size;
+        for (int i = 1; i < vectorSize; i++)
+        {
+            if (hierarchy[i, EmguContour.HierarchyParent] == -1) continue;
+            var vec = new VectorOfVectorOfPoint(contours[i]);
+            result.Add(vec);
+
+            var contourId = i;
+            for (i += 1; i < vectorSize && hierarchy[i, EmguContour.HierarchyParent] >= contourId; i++)
+            {
+                vec.Push(contours[i]);
+            }
+
+            i--;
+        }
+
+        return result;
+
+        // Old code
+        /*var result = new List<VectorOfVectorOfPoint>();
         var vectorSize = contours.Size;
         var processedContours = new bool[vectorSize];
         for (int i = 0; i < vectorSize; i++)
@@ -303,7 +341,7 @@ public class EmguContours : IReadOnlyList<EmguContour>, IDisposable
             }
         }
 
-        return result;
+        return result;*/
     }
 
     /// <summary>

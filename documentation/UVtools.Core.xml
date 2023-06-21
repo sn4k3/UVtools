@@ -5685,7 +5685,7 @@
         </member>
         <member name="P:UVtools.Core.Layers.IslandDetectionConfiguration.BinaryThreshold">
             <summary>
-            Gets or sets the binary threshold, all pixels below this value will turn in black, otherwise white
+            Gets or sets the binary threshold, all pixels equal or below this value will turn in black, otherwise white
             Set to 0 to disable this operation 
             </summary>
         </member>
@@ -5749,7 +5749,7 @@
         </member>
         <member name="P:UVtools.Core.Layers.ResinTrapDetectionConfiguration.BinaryThreshold">
             <summary>
-            Gets or sets the binary threshold, all pixels below this value will turn in black, otherwise white
+            Gets or sets the binary threshold, all pixels equal or below this value will turn in black, otherwise white
             Set to 0 to disable this operation
             </summary>
         </member>

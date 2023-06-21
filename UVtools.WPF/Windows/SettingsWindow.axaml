@@ -1153,32 +1153,32 @@
               <StackPanel Orientation="Vertical">
                 <TextBlock Classes="GroupBoxHeader" Text="Startup"/>
 
+                <Grid RowDefinitions="Auto" ColumnDefinitions="Auto,10,*"
+                      Margin="10">
+                    <TextBlock Grid.Row="0" Grid.Column="0"
+                               Text="On file load:" 
+                               VerticalAlignment="Center"/>
 
-                <StackPanel Orientation="Horizontal" Spacing="20">
-                <CheckBox Margin="10,10" Content="Compute issues on file load"
-                          IsChecked="{Binding Settings.Issues.ComputeIssuesOnLoad}"/>
+                    <ComboBox Grid.Row="0" Grid.Column="2"
+                              HorizontalAlignment="Stretch"
+                              Items="{Binding Settings.Issues.ComputeIssuesOnFileLoad, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                              SelectedItem="{Binding Settings.Issues.ComputeIssuesOnFileLoad, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
 
-                <CheckBox Margin="0,10" Content="Auto repair layers and issues on file load"
-                          IsEnabled="{Binding Settings.Issues.ComputeIssuesOnLoad}"
+				</Grid>
+
+                <CheckBox Margin="10,0,10,10" Content="Auto repair layers and issues on file load"
+                          IsEnabled="{Binding Settings.Issues.ComputeIssuesOnFileLoad}"
                           IsChecked="{Binding Settings.Issues.AutoRepairIssuesOnLoad}"/>
-                </StackPanel>
 
                 <CheckBox Margin="10,0,10,0" Content="Auto compute issues when the Issues tab is opened for the first time"
-                          IsChecked="{Binding Settings.Issues.ComputeIssuesOnClickTab}"
-                          />
+                          IsChecked="{Binding Settings.Issues.ComputeIssuesOnClickTab}"/>
 
-                <Grid 
-                    RowDefinitions="Auto"
-                    ColumnDefinitions="Auto,10,Auto"
-                    Margin="10">
-                    <TextBlock 
-                        Grid.Row="0"
-                        Grid.Column="0"
-                        Text="Compute:" VerticalAlignment="Center"/>
-                    <StackPanel
-                        Grid.Row="0"
-                        Grid.Column="2"
-                        Orientation="Vertical" Spacing="10">
+                <Grid RowDefinitions="Auto" ColumnDefinitions="Auto,10,Auto"
+                      Margin="10">
+                    <TextBlock Grid.Row="0" Grid.Column="0"
+                               Text="Compute:" VerticalAlignment="Center"/>
+                    <StackPanel Grid.Row="0" Grid.Column="2"
+                                Orientation="Vertical" Spacing="10">
 
                         <StackPanel
                             Orientation="Horizontal" Spacing="10">
@@ -1208,17 +1208,13 @@
               </StackPanel>
             </Border>
 
-            <Border
-              Classes="GroupBox"
-              Margin="5">
+            <Border Classes="GroupBox" Margin="5">
 
               <StackPanel Orientation="Vertical">
                 <TextBlock Classes="GroupBoxHeader" Text="Issues list"/>
 
-                <Grid
-                    RowDefinitions="Auto,10,Auto"
-                    ColumnDefinitions="Auto,10,*"
-                    Margin="10">
+                <Grid RowDefinitions="Auto,10,Auto" ColumnDefinitions="Auto,10,*"
+                      Margin="10">
                     <TextBlock Grid.Row="0" Grid.Column="0"
                                ToolTip.Tip="Sets the default order for the issue list"
                                Text="Order by:" VerticalAlignment="Center"/>
