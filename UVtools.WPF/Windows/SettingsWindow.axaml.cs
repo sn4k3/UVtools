@@ -1,12 +1,12 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
-using MessageBox.Avalonia.Enums;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using UVtools.Core;
+using UVtools.Core.Dialogs;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Network;
 using UVtools.Core.Objects;
@@ -168,7 +168,7 @@ public class SettingsWindow : WindowEx
 
         if (await this.MessageBoxQuestion(
                 $"Are you sure you want to remove the {_sendToCustomLocationsGrid.SelectedItems.Count} selected entries?") !=
-            ButtonResult.Yes) return;
+            MessageButtonResult.Yes) return;
 
         Settings.General.SendToCustomLocations.RemoveRange(_sendToCustomLocationsGrid.SelectedItems.Cast<MappedDevice>());
     }
@@ -196,7 +196,7 @@ public class SettingsWindow : WindowEx
 
         if (await this.MessageBoxQuestion(
                 $"Are you sure you want to remove the {_sendToProcessGrid.SelectedItems.Count} selected entries?") !=
-            ButtonResult.Yes) return;
+            MessageButtonResult.Yes) return;
 
         Settings.General.SendToProcess.RemoveRange(_sendToProcessGrid.SelectedItems.Cast<MappedProcess>());
     }
@@ -222,7 +222,7 @@ public class SettingsWindow : WindowEx
     public async void AddNetworkRemotePrinter()
     {
         var result = await this.MessageBoxQuestion("Are you sure you want to add a new remote printer", "Add new remote printer?");
-        if (result != ButtonResult.Yes) return;
+        if (result != MessageButtonResult.Yes) return;
 
         var remotePrinter = new RemotePrinter
         {
@@ -238,7 +238,7 @@ public class SettingsWindow : WindowEx
         if (_networkRemotePrinterComboBox.SelectedItem is not RemotePrinter remotePrinter) return;
         var result = await this.MessageBoxQuestion("Are you sure you want to remove the following remote printer?\n" +
                                                    remotePrinter, "Remove remote printer?");
-        if (result != ButtonResult.Yes) return;
+        if (result != MessageButtonResult.Yes) return;
         Settings.Network.RemotePrinters.Remove(remotePrinter);
     }
 
@@ -247,7 +247,7 @@ public class SettingsWindow : WindowEx
         if (_networkRemotePrinterComboBox.SelectedItem is not RemotePrinter remotePrinter) return;
         var result = await this.MessageBoxQuestion("Are you sure you want to duplicate the following remote printer?\n" +
                                                    remotePrinter, "Duplicate remote printer?");
-        if (result != ButtonResult.Yes) return;
+        if (result != MessageButtonResult.Yes) return;
         var clone = remotePrinter.Clone();
         clone.Name += " Duplicated";
         Settings.Network.RemotePrinters.Add(clone);
@@ -257,7 +257,7 @@ public class SettingsWindow : WindowEx
     public async void OnClickResetAllDefaults()
     {
         var result = await this.MessageBoxQuestion("Are you sure you want to reset all settings to the default values?", "Reset settings?");
-        if (result != ButtonResult.Yes) return;
+        if (result != MessageButtonResult.Yes) return;
         UserSettings.Reset();
         ResetDataContext();
     }

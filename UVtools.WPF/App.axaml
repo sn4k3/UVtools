@@ -11,11 +11,10 @@
 		<FluentTheme Mode="Light"/>
 		-->
       <StyleInclude Source="avares://ThemeEditor.Controls.ColorPicker/ColorPicker.axaml"/>
-        <!--
-      <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml"/>
-	  !-->
-      <StyleInclude Source="/Assets/Styles/Styles.xaml" />
-		<!--<StyleInclude Source="/Assets/Styles/StylesLight.xaml" />!-->
+      <StyleInclude Source="avares://UVtools.AvaloniaControls/Controls.axaml"/>
+      <StyleInclude Source="/Assets/Styles/Styles.axaml"/>
+        <!--<StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml"/> !-->
+      <!--<StyleInclude Source="/Assets/Styles/StylesLight.xaml" />!-->
 	  
     </Application.Styles>
 </Application>

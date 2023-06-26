@@ -2003,24 +2003,20 @@
 									<CheckBox
 									  IsChecked="{Binding ShowLayerOutlinePrintVolumeBoundary}"
 									  Content="Print volume boundary"/>
-									<CheckBox
-									  IsChecked="{Binding ShowLayerOutlineLayerBoundary}"
-									  Content="Layer boundary"/>
-									<CheckBox
-										 IsChecked="{Binding ShowLayerOutlineContourBoundary}"
-										 Content="Blob boundary"/>
-									<CheckBox
-									  IsChecked="{Binding ShowLayerOutlineHollowAreas}"
-									  Content="Hollow areas"/>
-									<CheckBox
-										IsChecked="{Binding ShowLayerOutlineCentroids}"
-										Content="Centroids"/>
-                                    <CheckBox
-                                        IsChecked="{Binding ShowLayerOutlineTriangulate}"
-                                        Content="Triangulate"/>
-									<CheckBox
-									  IsChecked="{Binding ShowLayerOutlineEdgeDetection}"
-									  Content="Edge detection">
+									<CheckBox IsChecked="{Binding ShowLayerOutlineLayerBoundary}"
+                                              Content="Layer boundary"/>
+									<CheckBox IsChecked="{Binding ShowLayerOutlineContourBoundary}"
+                                              Content="Blob boundary"/>
+                                    <CheckBox IsChecked="{Binding ShowLayerOutlineEnclosingCircles}"
+                                              Content="Enclosing circles"/>
+									<CheckBox IsChecked="{Binding ShowLayerOutlineHollowAreas}"
+                                              Content="Hollow areas"/>
+									<CheckBox IsChecked="{Binding ShowLayerOutlineCentroids}"
+                                              Content="Centroids"/>
+                                    <CheckBox IsChecked="{Binding ShowLayerOutlineTriangulate}"
+                                              Content="Triangulate"/>
+									<CheckBox IsChecked="{Binding ShowLayerOutlineEdgeDetection}"
+                                              Content="Edge detection">
 										<CheckBox.IsEnabled>
 											<MultiBinding Converter="{x:Static BoolConverters.And}">
 												<Binding Path="!ShowLayerOutlineDistanceDetection"/>

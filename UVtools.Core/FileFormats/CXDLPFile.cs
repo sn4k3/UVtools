@@ -34,8 +34,8 @@ public sealed class CXDLPFile : FileFormat
 {
     #region Constants
 
-    private const byte HEADER_SIZE = 9; // CXSW3DV2
-    private const string HEADER_VALUE = "CXSW3DV2";
+    private const byte MAGIC_SIZE = 9; // CXSW3DV2
+    private const string MAGIC_VALUE = "CXSW3DV2";
     private const string HEADER_VALUE_GENERIC = "CXSW3D";
     private const byte DEFAULT_VERSION = 3;
 
@@ -46,88 +46,53 @@ public sealed class CXDLPFile : FileFormat
     #region Header
     public sealed class Header
     {
-        //private string _printerModel = "CL-89";
-
         /// <summary>
-        /// Gets the size of the header
+        /// Gets the size of the magic
         /// </summary>
         [FieldOrder(0)] 
         [FieldEndianness(Endianness.Big)] 
-        public uint HeaderSize { get; set; } = HEADER_SIZE;
+        public uint MagicSize { get; set; } = MAGIC_SIZE;
 
         /// <summary>
-        /// Gets the header name
+        /// Gets the magic name
         /// </summary>
         [FieldOrder(1)] 
-        [FieldLength(HEADER_SIZE)] 
+        [FieldLength(MAGIC_SIZE)] 
         [SerializeAs(SerializedType.TerminatedString)] 
-        public string HeaderValue { get; set; } = HEADER_VALUE;
+        public string Magic { get; set; } = MAGIC_VALUE;
 
         [FieldOrder(2)]
         [FieldEndianness(Endianness.Big)]
         public ushort Version { get; set; } = DEFAULT_VERSION;
 
         /// <summary>
-        /// Gets the size of the printer model
-        /// </summary>
-        [FieldOrder(3)]
-        [FieldEndianness(Endianness.Big)]
-        public uint PrinterModelSize { get; set; } = 6;
-
-        /// <summary>
         /// Gets the printer model
         /// </summary>
-        /*[FieldOrder(4)]
-        [FieldLength(nameof(PrinterModelSize), BindingMode = BindingMode.OneWay)]
-        [SerializeAs(SerializedType.TerminatedString)]
-        public string PrinterModel
-        {
-            get => _printerModel;
-            set
-            {
-                _printerModel = value;
-                PrinterModelSize = string.IsNullOrEmpty(value) ? 0 : (uint)value.Length+1;
-            }
-        }*/
-
-        [FieldOrder(4)]
-        [FieldLength(nameof(PrinterModelSize))]
-        public byte[] PrinterModelArray { get; set; } = Array.Empty<byte>(); // CL-89 { 0x43, 0x4C, 0x2D, 0x38, 0x39, 0x0 }
-
-        [Ignore]
-        public string PrinterModel
-        {
-            get => Encoding.ASCII.GetString(PrinterModelArray).TrimEnd(char.MinValue);
-            set
-            {
-                PrinterModelArray = Encoding.ASCII.GetBytes(value + char.MinValue);
-                PrinterModelSize = (uint) PrinterModelArray.Length;
-            }
-        }
+        [FieldOrder(3)]
+        public NullTerminatedUintStringBigEndian PrinterModel { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets the number of records in the layer table
         /// </summary>
-        [FieldOrder(5)] 
+        [FieldOrder(4)] 
         [FieldEndianness(Endianness.Big)] 
         public ushort LayerCount { get; set; }
 
         /// <summary>
         /// Gets the printer resolution along X axis, in pixels. This information is critical to correctly decoding layer images.
         /// </summary>
-        [FieldOrder(6)]
+        [FieldOrder(5)]
         [FieldEndianness(Endianness.Big)] 
         public ushort ResolutionX { get; set; }
 
         /// <summary>
         /// Gets the printer resolution along Y axis, in pixels. This information is critical to correctly decoding layer images.
         /// </summary>
-        [FieldOrder(7)]
+        [FieldOrder(6)]
         [FieldEndianness(Endianness.Big)] 
         public ushort ResolutionY { get; set; }
             
-        [FieldOrder(8)]
-        [FieldLength(64)]
+        [FieldOrder(7)] [FieldLength(64)]
         public byte[] Offset { get; set; } = new byte[64];
 
         public void Validate()
@@ -137,7 +102,7 @@ public sealed class CXDLPFile : FileFormat
                 throw new FileLoadException("Not a valid CXDLP file!");
             }*/
 
-            if (HeaderSize - 1 != HeaderValue.Length || !HeaderValue.StartsWith(HEADER_VALUE_GENERIC))
+            if (MagicSize - 1 != Magic.Length || !Magic.StartsWith(HEADER_VALUE_GENERIC))
             {
                 throw new FileLoadException($"Invalid header data for CXDLP file.");
             }
@@ -145,7 +110,7 @@ public sealed class CXDLPFile : FileFormat
 
         public override string ToString()
         {
-            return $"{nameof(HeaderSize)}: {HeaderSize}, {nameof(HeaderValue)}: {HeaderValue}, {nameof(Version)}: {Version}, {nameof(PrinterModelSize)}: {PrinterModelSize}, {nameof(PrinterModelArray)}: {PrinterModelArray}, {nameof(PrinterModel)}: {PrinterModel}, {nameof(LayerCount)}: {LayerCount}, {nameof(ResolutionX)}: {ResolutionX}, {nameof(ResolutionY)}: {ResolutionY}, {nameof(Offset)}: {Offset}";
+            return $"{nameof(MagicSize)}: {MagicSize}, {nameof(Magic)}: {Magic}, {nameof(Version)}: {Version}, {nameof(PrinterModel)}: {PrinterModel}, {nameof(LayerCount)}: {LayerCount}, {nameof(ResolutionX)}: {ResolutionX}, {nameof(ResolutionY)}: {ResolutionY}, {nameof(Offset)}: {Offset}";
         }
     }
 
@@ -382,15 +347,15 @@ public sealed class CXDLPFile : FileFormat
         /// </summary>
         [FieldOrder(0)]
         [FieldEndianness(Endianness.Big)]
-        public uint FooterSize { get; set; } = HEADER_SIZE;
+        public uint FooterSize { get; set; } = MAGIC_SIZE;
 
         /// <summary>
         /// Gets the header name
         /// </summary>
         [FieldOrder(1)]
-        [FieldLength(HEADER_SIZE)]
+        [FieldLength(MAGIC_SIZE)]
         [SerializeAs(SerializedType.TerminatedString)]
-        public string FooterValue { get; set; } = HEADER_VALUE;
+        public string FooterValue { get; set; } = MAGIC_VALUE;
 
         /*[FieldOrder(2)]
         [FieldEndianness(Endianness.Big)]
@@ -426,6 +391,8 @@ public sealed class CXDLPFile : FileFormat
     public Footer FooterSettings { get; private set; } = new();
 
     public override FileFormatType FileType => FileFormatType.Binary;
+
+    public override string ConvertMenuGroup => "CXDLP";
 
     public override FileExtension[] FileExtensions { get; } = {
         new(typeof(CXDLPFile), "cxdlp", "Creality CXDLP"),
@@ -608,7 +575,7 @@ public sealed class CXDLPFile : FileFormat
 
     public override string MachineName
     {
-        get => HeaderSettings.PrinterModel;
+        get => HeaderSettings.PrinterModel.ValueNotNull;
         set
         {
             if (!string.IsNullOrWhiteSpace(value) && !value.StartsWith("CL-") && !value.StartsWith("CT-"))
@@ -620,7 +587,7 @@ public sealed class CXDLPFile : FileFormat
                     value = match.Value;
                 }
             }
-            base.MachineName = HeaderSettings.PrinterModel = value;
+            base.MachineName = HeaderSettings.PrinterModel.Value = value;
         }
     }
 
@@ -728,7 +695,8 @@ public sealed class CXDLPFile : FileFormat
                 var layer = this[layerIndex];
                 using (var mat = layer.LayerMat)
                 {
-                    using var contours = mat.FindContours(RetrType.External);
+                    using var matRoi = mat.Roi(layer.BoundingRectangle);
+                    using var contours = matRoi.FindContours(RetrType.External);
                     layerLargestContourArea[layerIndex] = (uint)(EmguContours.GetLargestContourArea(contours) * pixelArea * 1000);
                     //Debug.WriteLine($"Area: {contourArea} ({contourArea * PixelArea * 1000})  BR: {max.Bounds.Area()} ({max.Bounds.Area() * PixelArea * 1000})");
 
@@ -797,7 +765,7 @@ public sealed class CXDLPFile : FileFormat
         progress.Reset("Calculating checksum");
         uint checkSum = CalculateCheckSum(outputFile, false);
 
-        outputFile.Write(BitExtensions.ToBytesBigEndian(checkSum));
+        outputFile.WriteUIntBigEndian(checkSum);
 
         Debug.WriteLine("Encode Results:");
         Debug.WriteLine(HeaderSettings);
@@ -948,8 +916,9 @@ public sealed class CXDLPFile : FileFormat
             outputFile.WriteSerialize(SlicerInfoV3Settings);
         }
 
+        progress.Reset("Calculating checksum");
         uint checkSum = CalculateCheckSum(outputFile, false, -4);
-        outputFile.WriteBytes(BitExtensions.ToBytesBigEndian(checkSum));
+        outputFile.WriteUIntBigEndian(checkSum);
     }
 
     private uint CalculateCheckSum(FileStream fs, bool restorePosition = true, int offsetSize = 0)
@@ -1019,8 +988,6 @@ public sealed class CXDLPFile : FileFormat
         if (restorePosition) fs.Seek(position, SeekOrigin.Begin);
 
         return checkSum;
-
-
     }
 
     #endregion

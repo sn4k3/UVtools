@@ -10,7 +10,6 @@ using Avalonia.Media.Imaging;
 using Avalonia.Skia;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
-using Emgu.CV.Util;
 using SkiaSharp;
 using UVtools.Core.Extensions;
 using UVtools.Core.Layers;
@@ -20,8 +19,6 @@ namespace UVtools.WPF;
 public sealed class LayerCache
 {
     private Layer _layer;
-    private VectorOfVectorOfPoint _layerContours;
-    private int[,] _layerContourHierarchy;
     //private SKCanvas _canvas;
     private WriteableBitmap _bitmap;
 
@@ -73,35 +70,7 @@ public sealed class LayerCache
             return SKSurface.Create(info, framebuffer.Address, framebuffer.RowBytes).Canvas;
         }
     }
-
-    public VectorOfVectorOfPoint LayerContours
-    {
-        get
-        {
-            if (_layerContours is null) CacheContours();
-            return _layerContours;
-        }
-        private set => _layerContours = value;
-    }
-
-    public int[,] LayerContourHierarchy
-    {
-        get
-        {
-            if (_layerContourHierarchy is null) CacheContours();
-            return _layerContourHierarchy;
-        }
-        private set => _layerContourHierarchy = value;
-    }
-
-    public void CacheContours(bool refresh = false)
-    {
-        if(refresh) Clear();
-        if (_layerContours is not null) return;
-        _layerContours = Image.FindContours(out _layerContourHierarchy, RetrType.Tree);
-    }
-        
-
+    
     /// <summary>
     /// Clears the cache
     /// </summary>
@@ -110,8 +79,5 @@ public sealed class LayerCache
         _layer = null;
         Image?.Dispose();
         ImageBgr?.Dispose();
-        _layerContours?.Dispose();
-        _layerContours = null;
-        _layerContourHierarchy = null;
     }
 }

@@ -3,7 +3,7 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Markup.Xaml;
-using MessageBox.Avalonia.Enums;
+using UVtools.Core.Dialogs;
 using UVtools.Core.FileFormats;
 using UVtools.WPF.Extensions;
 
@@ -99,7 +99,7 @@ namespace UVtools.WPF.Controls
             if (!File.Exists(NewFilePath)) return true;
             if (await ParentWindow.MessageBoxQuestion(
                     $"The file \"{_newFileNameNoExt}\" already exists, do you want to overwrite?",
-                    "File already exists") == ButtonResult.Yes)
+                    "File already exists") == MessageButtonResult.Yes)
             {
                 Overwrite = true;
                 return true;

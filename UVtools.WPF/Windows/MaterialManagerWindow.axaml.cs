@@ -1,9 +1,9 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
-using MessageBox.Avalonia.Enums;
 using System;
 using System.Linq;
+using UVtools.Core.Dialogs;
 using UVtools.Core.Managers;
 using UVtools.Core.Objects;
 using UVtools.WPF.Controls;
@@ -70,7 +70,7 @@ public class MaterialManagerWindow : WindowEx
         Material.BottleRemainingVolume = Material.BottleVolume;
 
         if (await this.MessageBoxQuestion("Are you sure you want to add the following material:\n" +
-                                          $"{Material}") != ButtonResult.Yes) return;
+                                          $"{Material}") != MessageButtonResult.Yes) return;
 
         Manager.Add(Material);
         Manager.SortByName();
@@ -81,7 +81,7 @@ public class MaterialManagerWindow : WindowEx
     public async void RemoveSelectedMaterials()
     {
         if (_grid.SelectedItems.Count <= 0) return;
-        if (await this.MessageBoxQuestion($"Are you sure you want to remove {_grid.SelectedItems.Count} materials?") != ButtonResult.Yes) return;
+        if (await this.MessageBoxQuestion($"Are you sure you want to remove {_grid.SelectedItems.Count} materials?") != MessageButtonResult.Yes) return;
         Manager.RemoveRange(_grid.SelectedItems.Cast<Material>());
         MaterialManager.Save();
     }
@@ -89,7 +89,7 @@ public class MaterialManagerWindow : WindowEx
     public async void ClearMaterials()
     {
         if (Manager.Count == 0) return;
-        if (await this.MessageBoxQuestion($"Are you sure you want to clear {Manager.Count} materials?") != ButtonResult.Yes) return;
+        if (await this.MessageBoxQuestion($"Are you sure you want to clear {Manager.Count} materials?") != MessageButtonResult.Yes) return;
         Manager.Clear(true);
     }
 }

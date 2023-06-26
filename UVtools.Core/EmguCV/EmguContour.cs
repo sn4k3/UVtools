@@ -48,15 +48,15 @@ public class EmguContour : IReadOnlyList<Point>, IComparable<EmguContour>, IComp
     #endregion
 
     #region Properties
-    public int XMin => Bounds.X;
+    public int XMin => BoundingRectangle.X;
 
-    public int YMin => Bounds.Y;
+    public int YMin => BoundingRectangle.Y;
 
-    public int XMax => Bounds.Right;
+    public int XMax => BoundingRectangle.Right;
 
-    public int YMax => Bounds.Bottom;
+    public int YMax => BoundingRectangle.Bottom;
 
-    public Rectangle Bounds => _bounds ??= CvInvoke.BoundingRectangle(_contour);
+    public Rectangle BoundingRectangle => _bounds ??= CvInvoke.BoundingRectangle(_contour);
 
     public RotatedRect BoundsBestFit => _boundsBestFit ??= CvInvoke.MinAreaRect(_contour);
 
@@ -144,7 +144,7 @@ public class EmguContour : IReadOnlyList<Point>, IComparable<EmguContour>, IComp
     /// </summary>
     /// <param name="point"></param>
     /// <returns></returns>
-    public bool IsInsideBounds(Point point) => Bounds.Contains(point);
+    public bool IsInsideBounds(Point point) => BoundingRectangle.Contains(point);
 
     /// <summary>
     /// Gets if a given <see cref="Point"/> is inside the contour

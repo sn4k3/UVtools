@@ -96,12 +96,12 @@ public sealed class ChituboxFile : FileFormat
         /// <summary>
         /// Gets the height of the model described by this file, in millimeters.
         /// </summary>
-        [FieldOrder(7)]  public float TotalHeightMilimeter { get; set; }
+        [FieldOrder(7)]  public float TotalHeightMillimeter { get; set; }
 
         /// <summary>
         /// Gets the layer height setting used at slicing, in millimeters. Actual height used by the machine is in the layer table.
         /// </summary>
-        [FieldOrder(8)]  public float LayerHeightMilimeter  { get; set; }
+        [FieldOrder(8)]  public float LayerHeightMillimeter  { get; set; }
 
         /// <summary>
         /// Gets the exposure time setting used at slicing, in seconds, for normal (non-bottom) layers, respectively. Actual time used by the machine is in the layer table.
@@ -211,7 +211,7 @@ public sealed class ChituboxFile : FileFormat
 
         public override string ToString()
         {
-            return $"{nameof(Magic)}: {Magic}, {nameof(Version)}: {Version}, {nameof(BedSizeX)}: {BedSizeX}, {nameof(BedSizeY)}: {BedSizeY}, {nameof(BedSizeZ)}: {BedSizeZ}, {nameof(Unknown1)}: {Unknown1}, {nameof(Unknown2)}: {Unknown2}, {nameof(TotalHeightMilimeter)}: {TotalHeightMilimeter}, {nameof(LayerHeightMilimeter)}: {LayerHeightMilimeter}, {nameof(LayerExposureSeconds)}: {LayerExposureSeconds}, {nameof(BottomExposureSeconds)}: {BottomExposureSeconds}, {nameof(LightOffDelay)}: {LightOffDelay}, {nameof(BottomLayersCount)}: {BottomLayersCount}, {nameof(ResolutionX)}: {ResolutionX}, {nameof(ResolutionY)}: {ResolutionY}, {nameof(PreviewLargeOffsetAddress)}: {PreviewLargeOffsetAddress}, {nameof(LayersDefinitionOffsetAddress)}: {LayersDefinitionOffsetAddress}, {nameof(LayerCount)}: {LayerCount}, {nameof(PreviewSmallOffsetAddress)}: {PreviewSmallOffsetAddress}, {nameof(PrintTime)}: {PrintTime}, {nameof(ProjectorType)}: {ProjectorType}, {nameof(PrintParametersOffsetAddress)}: {PrintParametersOffsetAddress}, {nameof(PrintParametersSize)}: {PrintParametersSize}, {nameof(AntiAliasLevel)}: {AntiAliasLevel}, {nameof(LightPWM)}: {LightPWM}, {nameof(BottomLightPWM)}: {BottomLightPWM}, {nameof(EncryptionKey)}: {EncryptionKey}, {nameof(SlicerOffset)}: {SlicerOffset}, {nameof(SlicerSize)}: {SlicerSize}";
+            return $"{nameof(Magic)}: {Magic}, {nameof(Version)}: {Version}, {nameof(BedSizeX)}: {BedSizeX}, {nameof(BedSizeY)}: {BedSizeY}, {nameof(BedSizeZ)}: {BedSizeZ}, {nameof(Unknown1)}: {Unknown1}, {nameof(Unknown2)}: {Unknown2}, {nameof(TotalHeightMillimeter)}: {TotalHeightMillimeter}, {nameof(LayerHeightMillimeter)}: {LayerHeightMillimeter}, {nameof(LayerExposureSeconds)}: {LayerExposureSeconds}, {nameof(BottomExposureSeconds)}: {BottomExposureSeconds}, {nameof(LightOffDelay)}: {LightOffDelay}, {nameof(BottomLayersCount)}: {BottomLayersCount}, {nameof(ResolutionX)}: {ResolutionX}, {nameof(ResolutionY)}: {ResolutionY}, {nameof(PreviewLargeOffsetAddress)}: {PreviewLargeOffsetAddress}, {nameof(LayersDefinitionOffsetAddress)}: {LayersDefinitionOffsetAddress}, {nameof(LayerCount)}: {LayerCount}, {nameof(PreviewSmallOffsetAddress)}: {PreviewSmallOffsetAddress}, {nameof(PrintTime)}: {PrintTime}, {nameof(ProjectorType)}: {ProjectorType}, {nameof(PrintParametersOffsetAddress)}: {PrintParametersOffsetAddress}, {nameof(PrintParametersSize)}: {PrintParametersSize}, {nameof(AntiAliasLevel)}: {AntiAliasLevel}, {nameof(LightPWM)}: {LightPWM}, {nameof(BottomLightPWM)}: {BottomLightPWM}, {nameof(EncryptionKey)}: {EncryptionKey}, {nameof(SlicerOffset)}: {SlicerOffset}, {nameof(SlicerSize)}: {SlicerSize}";
         }
     }
     #endregion
@@ -1318,10 +1318,10 @@ public sealed class ChituboxFile : FileFormat
 
     public override float LayerHeight
     {
-        get => HeaderSettings.LayerHeightMilimeter;
+        get => HeaderSettings.LayerHeightMillimeter;
         set
         {
-            HeaderSettings.LayerHeightMilimeter = Layer.RoundHeight(value);
+            HeaderSettings.LayerHeightMillimeter = Layer.RoundHeight(value);
             RaisePropertyChanged();
         }
     }
@@ -1329,7 +1329,7 @@ public sealed class ChituboxFile : FileFormat
     public override float PrintHeight
     {
         get => base.PrintHeight;
-        set => base.PrintHeight = HeaderSettings.TotalHeightMilimeter = base.PrintHeight;
+        set => base.PrintHeight = HeaderSettings.TotalHeightMillimeter = base.PrintHeight;
     }
 
     public override uint LayerCount

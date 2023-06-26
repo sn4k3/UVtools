@@ -311,8 +311,10 @@ public sealed class CXDLPv1File : FileFormat
 
     public override FileFormatType FileType => FileFormatType.Binary;
 
+    public override string ConvertMenuGroup => "CXDLP";
+
     public override FileExtension[] FileExtensions { get; } = {
-        new(typeof(CXDLPv1File), "v1.cxdlp", "Creality CXDLP v1"),
+        new(typeof(CXDLPv1File), "v1.cxdlp", "Creality CXDLPv1"),
     };
 
     public override PrintParameterModifier[] PrintParameterModifiers { get; } =

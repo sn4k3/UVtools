@@ -197,12 +197,12 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     {
             
         #region Instances
-        public static PrintParameterModifier PositionZ { get; } = new ("Position Z", "Absolute Z position", "mm", 0, 100000, 0.01, Layer.HeightPrecision);
-        public static PrintParameterModifier BottomLayerCount { get; } = new ("Bottom layer count", "Number of bottom/burn-in layers", "layers", 0, ushort.MaxValue, 1, 0);
-        public static PrintParameterModifier TransitionLayerCount { get; } = new ("Transition layer count", "Number of fade/transition layers", "layers",0, ushort.MaxValue, 1, 0);
+        public static PrintParameterModifier PositionZ { get; } = new ("Position Z", "Layer absolute Z position", "mm", 0, 100000, 0.01, Layer.HeightPrecision);
+        public static PrintParameterModifier BottomLayerCount { get; } = new ("Bottom layers", "Number of bottom/burn-in layers", "Ξ", 0, ushort.MaxValue, 1, 0);
+        public static PrintParameterModifier TransitionLayerCount { get; } = new ("Transition layers", "Number of fade/transition layers", "Ξ", 0, ushort.MaxValue, 1, 0);
             
-        public static PrintParameterModifier BottomLightOffDelay { get; } = new("Bottom light-off seconds", "Total motor movement time + rest time to wait before cure a new bottom layer", "s");
-        public static PrintParameterModifier LightOffDelay { get; } = new("Light-off seconds", "Total motor movement time + rest time to wait before cure a new layer", "s");
+        public static PrintParameterModifier BottomLightOffDelay { get; } = new("Bottom light-off delay", "Total motor movement time + rest time to wait before cure a new bottom layer", "s");
+        public static PrintParameterModifier LightOffDelay { get; } = new("Light-off delay", "Total motor movement time + rest time to wait before cure a new layer", "s");
 
         public static PrintParameterModifier BottomWaitTimeBeforeCure { get; } = new ("Bottom wait before cure", "Time to wait/rest before cure a new bottom layer\nChitubox: Rest after retract\nLychee: Wait before print", "s");
         public static PrintParameterModifier WaitTimeBeforeCure { get; } = new ("Wait before cure", "Time to wait/rest before cure a new layer\nChitubox: Rest after retract\nLychee: Wait before print", "s");
@@ -211,24 +211,24 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         public static PrintParameterModifier ExposureTime { get; } = new ("Exposure time", "Normal layers exposure time", "s", 0.1M);
            
         public static PrintParameterModifier BottomWaitTimeAfterCure { get; } = new("Bottom wait after cure", "Time to wait/rest after cure a new bottom layer\nChitubox: Rest before lift\nLychee: Wait after print", "s");
-        public static PrintParameterModifier WaitTimeAfterCure { get; } = new("Wait after cure", "Time to wait/rest after cure a new bottom layer\nChitubox: Rest before lift\nLychee: Wait after print", "s");
+        public static PrintParameterModifier WaitTimeAfterCure { get; } = new("Wait after cure", "Time to wait/rest after cure a new layer\nChitubox: Rest before lift\nLychee: Wait after print", "s");
             
-        public static PrintParameterModifier BottomLiftHeight { get; } = new ("Bottom lift height", "Bottom lift/peel height between layers", "mm");
+        public static PrintParameterModifier BottomLiftHeight { get; } = new ("Bottom lift height", "Lift/peel height between bottom layers", "mm");
         public static PrintParameterModifier LiftHeight { get; } = new ("Lift height", @"Lift/peel height between layers", "mm");
             
         public static PrintParameterModifier BottomLiftSpeed { get; } = new ("Bottom lift speed", "Lift speed of bottom layers", "mm/min", 10, 5000, 5);
         public static PrintParameterModifier LiftSpeed { get; } = new ("Lift speed", "Lift speed of normal layers", "mm/min", 10, 5000, 5);
 
-        public static PrintParameterModifier BottomLiftHeight2 { get; } = new("2) Bottom lift height", "Bottom second lift/peel height between layers", "mm");
+        public static PrintParameterModifier BottomLiftHeight2 { get; } = new("2) Bottom lift height", "Second lift/peel height between bottom layers", "mm");
         public static PrintParameterModifier LiftHeight2 { get; } = new("2) Lift height", @"Second lift/peel height between layers", "mm");
 
         public static PrintParameterModifier BottomLiftSpeed2 { get; } = new("2) Bottom lift speed", "Lift speed of bottom layers for the second lift sequence (TSMC)", "mm/min", 0, 5000, 5);
         public static PrintParameterModifier LiftSpeed2 { get; } = new("2) Lift speed", "Lift speed of normal layers for the second lift sequence (TSMC)", "mm/min", 0, 5000, 5);
 
-        public static PrintParameterModifier BottomWaitTimeAfterLift { get; } = new("Bottom wait after lift", "Time to wait/rest after a lift/peel sequence at bottom layers\nChitubox: Rest after lift\nLychee: Wait after lift", "s");
-        public static PrintParameterModifier WaitTimeAfterLift { get; } = new("Wait after lift", "Time to wait/rest after a lift/peel sequence at layers\nChitubox: Rest after lift\nLychee: Wait after lift", "s");
+        public static PrintParameterModifier BottomWaitTimeAfterLift { get; } = new("Bottom wait after lift", "Time to wait/rest after a lift/peel sequence on bottom layers\nChitubox: Rest after lift\nLychee: Wait after lift", "s");
+        public static PrintParameterModifier WaitTimeAfterLift { get; } = new("Wait after lift", "Time to wait/rest after a lift/peel sequence on layers\nChitubox: Rest after lift\nLychee: Wait after lift", "s");
            
-        public static PrintParameterModifier BottomRetractSpeed { get; } = new ("Bottom retract speed", "Bottom down speed from lift height to next layer cure position", "mm/min", 10, 5000, 5);
+        public static PrintParameterModifier BottomRetractSpeed { get; } = new ("Bottom retract speed", "Down speed from lift height to next bottom layer cure position", "mm/min", 10, 5000, 5);
         public static PrintParameterModifier RetractSpeed { get; } = new ("Retract speed", "Down speed from lift height to next layer cure position", "mm/min", 10, 5000, 5);
 
         public static PrintParameterModifier BottomRetractHeight2 { get; } = new("2) Bottom retract height", "Slow retract height of bottom layers (TSMC)", "mm");
@@ -360,6 +360,11 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         {
             return $"{nameof(Name)}: {Name}, {nameof(Description)}: {Description}, {nameof(ValueUnit)}: {ValueUnit}, {nameof(Minimum)}: {Minimum}, {nameof(Maximum)}: {Maximum}, {nameof(DecimalPlates)}: {DecimalPlates}, {nameof(OldValue)}: {OldValue}, {nameof(NewValue)}: {NewValue}, {nameof(HasChanged)}: {HasChanged}";
         }
+
+        public PrintParameterModifier Clone()
+        {
+            return (PrintParameterModifier)MemberwiseClone();
+        }
         #endregion
     }
     #endregion
@@ -384,6 +389,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         new VDTFile(),   // VDT
         //new CXDLPv1File(),   // Creality Box v1
         new CXDLPFile(),   // Creality Box
+        new CXDLPv4File(),   // Creality Box
         new FDGFile(), // fdg
         new GooFile(), // goo
         new ZCodeFile(),   // zcode
@@ -1786,12 +1792,12 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <summary>
     /// Gets or sets the pixels per mm on X direction
     /// </summary>
-    public virtual float Xppmm => ResolutionX > 0 && DisplayWidth > 0 ? ResolutionX / DisplayWidth : 0;
+    public float Xppmm => ResolutionX > 0 && DisplayWidth > 0 ? ResolutionX / DisplayWidth : 0;
 
     /// <summary>
     /// Gets or sets the pixels per mm on Y direction
     /// </summary>
-    public virtual float Yppmm => ResolutionY > 0 && DisplayHeight > 0 ? ResolutionY / DisplayHeight : 0;
+    public float Yppmm => ResolutionY > 0 && DisplayHeight > 0 ? ResolutionY / DisplayHeight : 0;
 
     /// <summary>
     /// Gets or sets the pixels per mm

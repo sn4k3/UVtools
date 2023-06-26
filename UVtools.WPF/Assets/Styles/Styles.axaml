@@ -1,5 +1,7 @@
 ﻿<Styles xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:i="clr-namespace:Projektanker.Icons.Avalonia;assembly=Projektanker.Icons.Avalonia"
+        xmlns:uac="clr-namespace:UVtools.AvaloniaControls;assembly=UVtools.AvaloniaControls">
 
     <Design.PreviewWith>
         <Border Padding="20"></Border>
@@ -105,11 +107,6 @@
         <Setter Property="Background" Value="Transparent" />
     </Style>
 
-    <Style Selector="NumericUpDown.ReadOnly">
-        <Setter Property="IsReadOnly" Value="True" />
-        <Setter Property="AllowSpin" Value="False" />
-        <Setter Property="ShowButtonSpinner" Value="False" />
-    </Style>
 
   <Style Selector="TextBox.NumericUpDownValueLabel">
     
@@ -320,15 +317,25 @@
     </Style>
     -->
 
-    <Style Selector="NumericUpDown">
+	<Style Selector="NumericUpDown, uac|ExtendedNumericUpDown">
+		<Setter Property="VerticalContentAlignment" Value="Center"/>
         <Setter Property="MinWidth" Value="130"/>
         <Setter Property="ClipValueToMinMax" Value="True"/>
     </Style>
 
-    <Style Selector="NumericUpDown.ReadOnly">
+    <Style Selector="NumericUpDown.ReadOnly, uac|ExtendedNumericUpDown.ReadOnly">
         <Setter Property="IsReadOnly" Value="True"/>
         <Setter Property="AllowSpin" Value="False"/>
         <Setter Property="ShowButtonSpinner" Value="False"/>
+    </Style>
+
+    <Style Selector="uac|ExtendedNumericUpDown.AutoResettable">
+        <Setter Property="ResetAutoVisibility" Value="True"/>
+    </Style>
+
+    <Style Selector="uac|ExtendedNumericUpDown.AutoResettableWithInitialValue">
+        <Setter Property="IsInitialValueVisible" Value="True"/>
+        <Setter Property="ResetAutoVisibility" Value="True"/>
     </Style>
 
     <Style Selector="NumericUpDown.ValueLabel">
@@ -342,6 +349,14 @@
     <Style Selector="Expander /template/ ToggleButton">
         <Setter Property="FontWeight" Value="Bold" />
         <Setter Property="Cursor" Value="Hand" />
+    </Style>
+
+    <Style Selector="i|Icon[IsEnabled=True]">
+        <Setter Property="Opacity" Value="1"/>
+    </Style>
+
+    <Style Selector="i|Icon[IsEnabled=False]">
+        <Setter Property="Opacity" Value="0.3"/>
     </Style>
     
 </Styles>

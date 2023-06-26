@@ -10,7 +10,6 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
-using MessageBox.Avalonia.Enums;
 using System;
 using System.Collections;
 using System.Collections.ObjectModel;
@@ -18,6 +17,7 @@ using System.Globalization;
 using System.IO;
 using System.Reflection;
 using System.Text;
+using UVtools.Core.Dialogs;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Layers;
 using UVtools.Core.Objects;
@@ -416,7 +416,7 @@ public partial class MainWindow
         var result = await this.MessageBoxQuestion(
             "Properties save was successful. Do you want open the file in the default editor?",
             "Properties save complete");
-        if (result != ButtonResult.Yes) return;
+        if (result != MessageButtonResult.Yes) return;
 
         SystemAware.StartProcess(file);
     }

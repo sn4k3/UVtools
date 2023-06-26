@@ -7,7 +7,7 @@
  */
 using Avalonia;
 using Avalonia.Markup.Xaml;
-using MessageBox.Avalonia.Enums;
+using UVtools.Core.Dialogs;
 using UVtools.WPF.Controls;
 using UVtools.WPF.Extensions;
 
@@ -70,7 +70,7 @@ public partial class MissingInformationWindow : WindowEx
 
     public async void Apply()
     {
-        if (await this.MessageBoxQuestion("Are you sure you want to submit and apply the information?", "Submit and apply the information?") != ButtonResult.Yes) return;
+        if (await this.MessageBoxQuestion("Are you sure you want to submit and apply the information?", "Submit and apply the information?") != MessageButtonResult.Yes) return;
 
         if ((decimal)SlicerFile.DisplayWidth != _displayWidth && _displayWidth > 0)
         {

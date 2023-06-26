@@ -2,10 +2,10 @@ using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
-using MessageBox.Avalonia.Enums;
 using System;
 using System.Linq;
 using System.Timers;
+using UVtools.Core.Dialogs;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Objects;
 using UVtools.Core.Operations;
@@ -104,7 +104,7 @@ public class CalibrateExposureFinderControl : ToolControl
             if (await ParentWindow.MessageBoxQuestion(
                     "This automatic exposure table generation will clear the current table data!\n" +
                     "Do you want to continue?"
-                ) != ButtonResult.Yes) return;
+                ) != MessageButtonResult.Yes) return;
         }
 
         Operation.GenerateExposureTable();
@@ -136,7 +136,7 @@ public class CalibrateExposureFinderControl : ToolControl
         if (Operation.ExposureTable.Count <= 0) return;
         if (await ParentWindow.MessageBoxQuestion(
                 $"Are you sure you want to all the {Operation.ExposureTable.Count} entries?"
-            ) != ButtonResult.Yes) return;
+            ) != MessageButtonResult.Yes) return;
 
         Operation.ExposureTable.Clear();
     }
@@ -146,7 +146,7 @@ public class CalibrateExposureFinderControl : ToolControl
         if (_exposureTable.SelectedItems.Count <= 0) return;
         if (await ParentWindow.MessageBoxQuestion(
                 $"Are you sure you want to remove the {_exposureTable.SelectedItems.Count} selected entries?"
-            ) != ButtonResult.Yes) return;
+            ) != MessageButtonResult.Yes) return;
 
         Operation.ExposureTable.RemoveRange(_exposureTable.SelectedItems.Cast<ExposureItem>());
     }

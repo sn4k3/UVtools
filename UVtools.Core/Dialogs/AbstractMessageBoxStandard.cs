@@ -11,29 +11,29 @@ using System.Threading.Tasks;
 
 namespace UVtools.Core.Dialogs;
 
+public enum MessageButtons
+{
+    Ok,
+    YesNo,
+    OkCancel,
+    OkAbort,
+    YesNoCancel,
+    YesNoAbort,
+}
+
+[Flags]
+public enum MessageButtonResult
+{
+    Ok = 0,
+    Yes = 1,
+    No = 2,
+    Abort = 3,
+    Cancel = 4,
+    None = 5,
+}
+
 public abstract class AbstractMessageBoxStandard
 {
-    public enum MessageButtons
-    {
-        Ok,
-        YesNo,
-        OkCancel,
-        OkAbort,
-        YesNoCancel,
-        YesNoAbort,
-    }
-
-    [Flags]
-    public enum MessageButtonResult
-    {
-        Ok = 0,
-        Yes = 1,
-        No = 2,
-        Abort = No | Yes, // 0x00000003
-        Cancel = 4,
-        None = Cancel | Yes, // 0x00000005
-    }
-
     protected AbstractMessageBoxStandard()
     { }
 

@@ -14,7 +14,6 @@ using Avalonia.Media.Immutable;
 using Avalonia.Threading;
 using Emgu.CV;
 using Emgu.CV.Util;
-using MessageBox.Avalonia.Enums;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -23,6 +22,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using UVtools.Core;
+using UVtools.Core.Dialogs;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Layers;
@@ -169,7 +169,7 @@ public partial class MainWindow
                 (resinTraps > 0 ? $"- Fill/solidify {resinTraps} resin trap(s)\n" : string.Empty) +
                 (suctionCups > 0 ? $"- Drill {suctionCups} suction cup(s) at it's center\n" : string.Empty) +
                 "\nWarning: Removing an island can cause other issues to appear if there is material present in the layers above it.\n" +
-                "Always check previous and next layers before performing an island removal.", $"Remove {issues.Count()} Issues?") != ButtonResult.Yes) return;
+                "Always check previous and next layers before performing an island removal.", $"Remove {issues.Count()} Issues?") != MessageButtonResult.Yes) return;
 
         var processParallelIssues = new Dictionary<uint, List<Issue>>();
         var processSuctionCups = new List<MainIssue>();
@@ -403,7 +403,7 @@ public partial class MainWindow
             if (await this.MessageBoxQuestion(
                     $"Are you sure you want to re-enable {SlicerFile.IssueManager.IgnoredIssues.Count} ignored issues?\n" +
                     "A full re-detect will be required to get the ignored issues.\n", $"Re-enable {SlicerFile.IssueManager.IgnoredIssues.Count} Issues?") !=
-                ButtonResult.Yes) return;
+                MessageButtonResult.Yes) return;
 
             SlicerFile.IssueManager.IgnoredIssues.Clear();
 
@@ -415,7 +415,7 @@ public partial class MainWindow
         if (await this.MessageBoxQuestion(
                 $"Are you sure you want to hide and ignore all selected {IssuesGrid.SelectedItems.Count} issues?\n" +
                 "The ignored issues won't be re-detected.\n", $"Ignore {IssuesGrid.SelectedItems.Count} Issues?") !=
-            ButtonResult.Yes) return;
+            MessageButtonResult.Yes) return;
 
         var list = IssuesGrid.SelectedItems.Cast<MainIssue>().ToArray();
         SlicerFile.IssueManager.IgnoredIssues.AddRange(list);

@@ -1,0 +1,3 @@
+﻿<Styles xmlns="https://github.com/avaloniaui">
+    <StyleInclude Source="/Styles/ExtendedNumericUpDown.axaml"/>
+</Styles>

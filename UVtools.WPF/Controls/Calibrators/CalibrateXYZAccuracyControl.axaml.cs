@@ -1,8 +1,8 @@
 ﻿using Avalonia.Markup.Xaml;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
-using MessageBox.Avalonia.Enums;
 using System.Timers;
+using UVtools.Core.Dialogs;
 using UVtools.Core.Operations;
 using UVtools.WPF.Controls.Tools;
 using UVtools.WPF.Extensions;
@@ -99,7 +99,7 @@ public class CalibrateXYZAccuracyControl : ToolControl
         if (find is not null)
         {
             if (await ParentWindow.MessageBoxQuestion(
-                    $"A profile with same name and/or values already exists, do you want to overwrite:\n{find}\nwith:\n{resize}\n?") != ButtonResult.Yes) return;
+                    $"A profile with same name and/or values already exists, do you want to overwrite:\n{find}\nwith:\n{resize}\n?") != MessageButtonResult.Yes) return;
 
             OperationProfiles.RemoveProfile(resize, false);
         }

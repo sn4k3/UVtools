@@ -7,9 +7,9 @@
  */
 using Avalonia;
 using Avalonia.Controls;
-using MessageBox.Avalonia.Enums;
 using System;
 using System.IO;
+using UVtools.Core.Dialogs;
 using UVtools.Core.SystemOS;
 using UVtools.WPF.Extensions;
 using Helpers = UVtools.WPF.Controls.Helpers;
@@ -63,7 +63,7 @@ public partial class MainWindow
         var result = await this.MessageBoxQuestion(
             "GCode save was successful. Do you want open the file in the default editor?",
             "GCode save complete");
-        if (result != ButtonResult.Yes) return;
+        if (result != MessageButtonResult.Yes) return;
 
         SystemAware.StartProcess(file);
     }

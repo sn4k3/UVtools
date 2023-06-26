@@ -49,7 +49,7 @@ public class OperationEditParameters : Operation
                 if(!modifier.HasChanged) continue;
                 sb.AppendLine($"{modifier.Name}: {modifier.OldValue}{modifier.ValueUnit} » {modifier.NewValue}{modifier.ValueUnit}");
             }
-            var text = "commit print parameter changes";
+            var text = "commit the following print parameter changes";
             if (_perLayerOverride)
             {
                 if (LayerRangeCount == 1)
@@ -62,7 +62,7 @@ public class OperationEditParameters : Operation
                 }
             }
 
-            return $"{text}?\n{sb}";
+            return $"{text}?\n\n{sb}";
         }
     }
 

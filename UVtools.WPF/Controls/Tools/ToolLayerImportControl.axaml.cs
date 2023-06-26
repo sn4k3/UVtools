@@ -126,7 +126,7 @@ public class ToolLayerImportControl : ToolControl
 
 
         message.Content += "\nDo you want to remove all invalid files from list?";
-        if (await ParentWindow.MessageBoxQuestion(message.ToString()) == ButtonResult.Yes)
+        if (await ParentWindow.MessageBoxQuestion(message.ToString()) == MessageButtonResult.Yes)
         {
             ConcurrentBag<StringTag> result = (ConcurrentBag<StringTag>)message.Tag;
             foreach (var file in result)

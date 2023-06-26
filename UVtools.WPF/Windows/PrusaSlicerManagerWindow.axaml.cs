@@ -1,7 +1,7 @@
 ﻿using Avalonia.Markup.Xaml;
-using MessageBox.Avalonia.Enums;
 using System;
 using System.IO;
+using UVtools.Core.Dialogs;
 using UVtools.WPF.Controls;
 using UVtools.WPF.Extensions;
 using UVtools.WPF.Structures;
@@ -85,7 +85,7 @@ public class PrusaSlicerManagerWindow : WindowEx
                 "---------------\n" +
                 "Click 'Yes' to continue\n" +
                 "Click 'No' to cancel this operation",
-                $"Install printers into {slicerName}") != ButtonResult.Yes) return;
+                $"Install printers into {slicerName}") != MessageButtonResult.Yes) return;
 
         ushort count = 0;
 

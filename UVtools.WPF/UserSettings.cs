@@ -281,6 +281,9 @@ public sealed class UserSettings : BindableBase
         private Color _contourBoundsOutlineColor = new(255, 50, 100, 50);
         private byte _contourBoundsOutlineThickness = 2;
         private bool _contourBoundsOutline = false;
+        private Color _enclosingCirclesOutlineColor = new(255, 127, 0, 0);
+        private byte  _enclosingCirclesOutlineThickness = 2;
+        private bool  _enclosingCirclesOutline = false;
         private Color _hollowOutlineColor = new(255, 255, 165, 0);
         private sbyte _hollowOutlineLineThickness = 5;
         private bool _hollowOutline = false;
@@ -432,6 +435,35 @@ public sealed class UserSettings : BindableBase
         {
             get => _contourBoundsOutline;
             set => RaiseAndSetIfChanged(ref _contourBoundsOutline, value);
+        }
+
+        public Color EnclosingCirclesOutlineColor
+        {
+            get => _enclosingCirclesOutlineColor;
+            set
+            {
+                RaiseAndSetIfChanged(ref _enclosingCirclesOutlineColor, value);
+                RaisePropertyChanged(nameof(EnclosingCirclesOutlineBrush));
+            }
+        }
+
+        [XmlIgnore]
+        public SolidColorBrush EnclosingCirclesOutlineBrush
+        {
+            get => new(_enclosingCirclesOutlineColor.ToAvalonia());
+            set => EnclosingCirclesOutlineColor = new Color(value);
+        }
+
+        public byte EnclosingCirclesOutlineThickness
+        {
+            get => _enclosingCirclesOutlineThickness;
+            set => RaiseAndSetIfChanged(ref _enclosingCirclesOutlineThickness, value);
+        }
+
+        public bool EnclosingCirclesOutline
+        {
+            get => _enclosingCirclesOutline;
+            set => RaiseAndSetIfChanged(ref _enclosingCirclesOutline, value);
         }
 
         public Color HollowOutlineColor

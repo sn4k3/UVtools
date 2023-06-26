@@ -10,7 +10,6 @@ using Avalonia.Controls;
 using Avalonia.Layout;
 using Avalonia.Styling;
 using Avalonia.Threading;
-using JetBrains.Annotations;
 using System;
 
 namespace UVtools.WPF.Controls;
@@ -48,8 +47,7 @@ public class ButtonWithIcon : Button, IStyleable
     public static readonly StyledProperty<string?> IconProperty =
         AvaloniaProperty.Register<ButtonWithIcon, string?>(nameof(Icon));
 
-    [CanBeNull]
-    public string Icon
+    public string? Icon
     {
         get => GetValue(IconProperty);
         set => SetValue(IconProperty, value);
@@ -81,7 +79,7 @@ public class ButtonWithIcon : Button, IStyleable
         }, DispatcherPriority.Loaded);
     }
 
-    public IControl MakeIcon()
+    public Projektanker.Icons.Avalonia.Icon MakeIcon()
     {
         return new Projektanker.Icons.Avalonia.Icon { Value = Icon };
     }

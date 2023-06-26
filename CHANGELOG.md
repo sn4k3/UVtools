@@ -1,8 +1,23 @@
 # Changelog
 
+## 26/06/2023 - v3.15.0
+
+- **File formats:** 
+  - (Add) CXDLPv4 format
+  - (Improvement) Add missing keys for SL1 format from PrusaSlicer 2.6.0
+- **UI**:
+  - (Add) About - Terms of Use 
+  - (Add) Outline: Enclosing circles
+  - (Improvement) Minor alteration on how current layer preview cache the contours
+  - (Improvement) Revamp tool Edit print parameters
+  - (Improvement) Revamp message boxes
+  - (Remove) Avalonia.MessageBox dependency in favor of use our own message box
+- (Change) PrusaSlicer printers - Creality Halot Mage/Pro: Use CXDLPV4 format instead ENCRYPTED.CTB
+
 ## 21/06/2023 - v3.14.4
 
 - (Add) File - Rename: Allow to rename the current file with a new name (Ctrl + F2)
+- (Improvement) Settings - Issues: Removed the "Compute issues on load" in favor of a new setting which allow to have three types (No not compute issues, Compute time inexpensive issues, Compute the enabled issues). The default option remain unchanged (The second option), if you had the old setting enabled you need to select the last option.
 - (Improvement) Tool - Edit print parameters: It now apply settings without close the window, allowing user to do continuous work. After all editing is done the user must manually close the window (#731)
 - (Improvement) Resin traps and suction cups: Optimization of contour grouping will now make the detection faster if it contains a large number of contours
 - (Change) Lower the default setting for binary threshold for resin traps, from 127 to 100

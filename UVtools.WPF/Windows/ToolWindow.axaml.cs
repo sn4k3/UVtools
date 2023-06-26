@@ -9,12 +9,12 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
-using MessageBox.Avalonia.Enums;
 using System;
 using System.Collections.ObjectModel;
 using System.Drawing;
 using JetBrains.Annotations;
 using UVtools.Core;
+using UVtools.Core.Dialogs;
 using UVtools.Core.Extensions;
 using UVtools.Core.Layers;
 using UVtools.Core.Managers;
@@ -341,7 +341,7 @@ public class ToolWindow : WindowEx
     {
         if (await this.MessageBoxQuestion("Are you sure you want to clear the current ROI?\n" +
                                           "This action can not be reverted, to select another ROI you must quit this window and select it on layer preview.",
-                "Clear the current ROI?") != ButtonResult.Yes) return;
+                "Clear the current ROI?") != MessageButtonResult.Yes) return;
 
         ROI = Rectangle.Empty;
         ToolControl?.Callback(Callbacks.ClearROI);
@@ -352,7 +352,7 @@ public class ToolWindow : WindowEx
         var layer = SlicerFile.LargestNormalLayer;
         if (await this.MessageBoxQuestion("Are you sure you want to clear all masks?\n" +
                                           "This action can not be reverted, to select another mask(s) you must quit this window and select it on layer preview.",
-                "Clear the all masks?") != ButtonResult.Yes) return;
+                "Clear the all masks?") != MessageButtonResult.Yes) return;
         IsMasksVisible = false;
         App.MainWindow.ClearMask();
         if (ToolControl is not null)
@@ -429,7 +429,7 @@ public class ToolWindow : WindowEx
         {
             if (await this.MessageBoxQuestion(
                     $"A profile with same name or settings already exists.\nDo you want to overwrite:\n{operation}",
-                    "Overwrite profile?") != ButtonResult.Yes) return;
+                    "Overwrite profile?") != MessageButtonResult.Yes) return;
             /*var index = OperationProfiles.Instance.IndexOf(operation);
             OperationProfiles.Profiles[index] = ToolControl.BaseOperation;
             index = Profiles.IndexOf(operation);
@@ -454,7 +454,7 @@ public class ToolWindow : WindowEx
             
         if (await this.MessageBoxQuestion(
                 $"Are you sure you want to remove the selected profile?\n{_selectedProfileItem}",
-                "Remove selected profile?") != ButtonResult.Yes) return;
+                "Remove selected profile?") != MessageButtonResult.Yes) return;
 
         OperationProfiles.RemoveProfile(_selectedProfileItem);
         Profiles.Remove(_selectedProfileItem);
@@ -467,7 +467,7 @@ public class ToolWindow : WindowEx
         if (Profiles.Count == 0) return;
         if (await this.MessageBoxQuestion(
                 $"Are you sure you want to clear all the {Profiles.Count} profiles?",
-                "Clear all profiles?") != ButtonResult.Yes) return;
+                "Clear all profiles?") != MessageButtonResult.Yes) return;
 
         OperationProfiles.ClearProfiles(Profiles[0].GetType());
         Profiles.Clear();
@@ -486,7 +486,7 @@ public class ToolWindow : WindowEx
         {
             if (await this.MessageBoxQuestion(
                     $"Are you sure you want to clear the selected profile as default settings for this dialog?",
-                    "Clear the default profile?") != ButtonResult.Yes) return;
+                    "Clear the default profile?") != MessageButtonResult.Yes) return;
 
             foreach (var operation in Profiles)
             {
@@ -497,7 +497,7 @@ public class ToolWindow : WindowEx
         {
             if (await this.MessageBoxQuestion(
                     $"Are you sure you want to set the selected profile as default settings for this dialog?\n{_selectedProfileItem}",
-                    "Set as default profile?") != ButtonResult.Yes) return;
+                    "Set as default profile?") != MessageButtonResult.Yes) return;
 
             foreach (var operation in Profiles)
             {
@@ -819,7 +819,7 @@ public class ToolWindow : WindowEx
             {
                 var result = await this.MessageBoxQuestion(
                         $"Are you sure you want to {ToolControl.BaseOperation.ConfirmationText}");
-                if (result != ButtonResult.Yes) return;
+                if (result != MessageButtonResult.Yes) return;
             }
         }
         else if (_contentControl is not null)

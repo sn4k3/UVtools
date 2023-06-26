@@ -16,7 +16,6 @@ using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
 using Emgu.CV.Util;
-using MessageBox.Avalonia.Enums;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -27,6 +26,7 @@ using System.Threading.Tasks;
 using System.Timers;
 using UVtools.AvaloniaControls;
 using UVtools.Core;
+using UVtools.Core.Dialogs;
 using UVtools.Core.EmguCV;
 using UVtools.Core.Extensions;
 using UVtools.Core.Layers;
@@ -81,6 +81,7 @@ public partial class MainWindow
     private bool _showLayerOutlinePrintVolumeBoundary;
     private bool _showLayerOutlineLayerBoundary;
     private bool _showLayerOutlineContourBoundary;
+    private bool _showLayerOutlineEnclosingCircles;
     private bool _showLayerOutlineHollowAreas;
     private bool _showLayerOutlineCentroids;
     private bool _showLayerOutlineTriangulate;
@@ -116,6 +117,7 @@ public partial class MainWindow
         _showLayerOutlinePrintVolumeBoundary = Settings.LayerPreview.VolumeBoundsOutline;
         _showLayerOutlineLayerBoundary = Settings.LayerPreview.LayerBoundsOutline;
         _showLayerOutlineContourBoundary = Settings.LayerPreview.ContourBoundsOutline;
+        _showLayerOutlineEnclosingCircles = Settings.LayerPreview.EnclosingCirclesOutline;
         _showLayerOutlineHollowAreas = Settings.LayerPreview.HollowOutline;
         _showLayerOutlineCentroids = Settings.LayerPreview.CentroidOutline;
             
@@ -393,6 +395,16 @@ public partial class MainWindow
         set
         {
             if (!RaiseAndSetIfChanged(ref _showLayerOutlineContourBoundary, value)) return;
+            ShowLayer();
+        }
+    }
+
+    public bool ShowLayerOutlineEnclosingCircles
+    {
+        get => _showLayerOutlineEnclosingCircles;
+        set
+        {
+            if (!RaiseAndSetIfChanged(ref _showLayerOutlineEnclosingCircles, value)) return;
             ShowLayer();
         }
     }
@@ -756,13 +768,13 @@ public partial class MainWindow
 
     public void SelectLayerPositiveAreasMask()
     {
-        AddMaskPoints(LayerCache.LayerContours.ToArrayOfArray());
+        AddMaskPoints(LayerCache.Layer.Contours.VectorOfContours.ToArrayOfArray());
         if (_maskPoints.Count > 0 && Settings.LayerPreview.MaskClearROIAfterSet) ClearROI();
     }
 
     public void SelectLayerHollowAreasMask()
     {
-        var contours = EmguContours.GetNegativeContours(LayerCache.LayerContours, LayerCache.LayerContourHierarchy);
+        var contours = EmguContours.GetNegativeContours(LayerCache.Layer.Contours.VectorOfContours, LayerCache.Layer.Contours.Hierarchy);
         AddMaskPoints(contours.ToArrayOfArray());
         if (_maskPoints.Count > 0 && Settings.LayerPreview.MaskClearROIAfterSet) ClearROI();
     }
@@ -1189,9 +1201,9 @@ public partial class MainWindow
             {
                 int lastParent = -1;
                 uint reps = 0;
-                for (int i = 0; i < LayerCache.LayerContours.Size; i++)
+                for (int i = 0; i < LayerCache.Layer.Contours.Count; i++)
                 {
-                    var parent = LayerCache.LayerContourHierarchy[i, EmguContour.HierarchyParent];
+                    var parent = LayerCache.Layer.Contours[i, EmguContour.HierarchyParent];
                     if (parent == -1)
                     {
                         reps = 0;
@@ -1203,7 +1215,7 @@ public partial class MainWindow
                         continue;
                     }
 
-                    CvInvoke.Rectangle(LayerCache.ImageBgr, CvInvoke.BoundingRectangle(LayerCache.LayerContours[i]),
+                    CvInvoke.Rectangle(LayerCache.ImageBgr, LayerCache.Layer.Contours[i].BoundingRectangle,
                         new MCvScalar(
                             Settings.LayerPreview.ContourBoundsOutlineColor.B,
                             Settings.LayerPreview.ContourBoundsOutlineColor.G, 
@@ -1211,6 +1223,18 @@ public partial class MainWindow
                         Settings.LayerPreview.ContourBoundsOutlineThickness);
 
                     lastParent = parent;
+                }
+            }
+
+            if (_showLayerOutlineEnclosingCircles)
+            {
+                for (int i = 0; i < LayerCache.Layer.Contours.Count; i++)
+                {
+                    LayerCache.Layer.Contours[i].FitCircle(LayerCache.ImageBgr, 
+                        new MCvScalar(
+                            Settings.LayerPreview.EnclosingCirclesOutlineColor.B,
+                            Settings.LayerPreview.EnclosingCirclesOutlineColor.G,
+                            Settings.LayerPreview.EnclosingCirclesOutlineColor.R), Settings.LayerPreview.EnclosingCirclesOutlineThickness, LineType.AntiAlias);
                 }
             }
 
@@ -1224,7 +1248,7 @@ public partial class MainWindow
                  * hierarchy[i][2]: the index of the first child
                  * hierarchy[i][3]: the index of the parent
                  */
-                using var vec = EmguContours.GetNegativeContours(LayerCache.LayerContours, LayerCache.LayerContourHierarchy);
+                using var vec = EmguContours.GetNegativeContours(LayerCache.Layer.Contours.VectorOfContours, LayerCache.Layer.Contours.Hierarchy);
                 if (vec.Size > 0)
                 {
                     CvInvoke.DrawContours(LayerCache.ImageBgr, vec, -1,
@@ -1239,10 +1263,9 @@ public partial class MainWindow
             {
                 int lastParent = -1;
                 uint reps = 0;
-                var size = LayerCache.LayerContours.Size;
-                for (int i = 0; i < size; i++)
+                for (int i = 0; i < LayerCache.Layer.Contours.Count; i++)
                 {
-                    var parent = LayerCache.LayerContourHierarchy[i, EmguContour.HierarchyParent];
+                    var parent = LayerCache.Layer.Contours[i, EmguContour.HierarchyParent];
                     if (parent == -1)
                     {
                         reps = 0;
@@ -1252,7 +1275,7 @@ public partial class MainWindow
                     {
                         if (Settings.LayerPreview.CentroidOutlineHollow)
                         {
-                            CvInvoke.Circle(LayerCache.ImageBgr, EmguContour.GetCentroid(LayerCache.LayerContours[i]),
+                            CvInvoke.Circle(LayerCache.ImageBgr, LayerCache.Layer.Contours[i].Centroid,
                                 Settings.LayerPreview.CentroidOutlineDiameter / 2, new MCvScalar(
                                     Settings.LayerPreview.HollowOutlineColor.B,
                                     Settings.LayerPreview.HollowOutlineColor.G,
@@ -1261,7 +1284,7 @@ public partial class MainWindow
                     }
                     else
                     {
-                        CvInvoke.Circle(LayerCache.ImageBgr, EmguContour.GetCentroid(LayerCache.LayerContours[i]),
+                        CvInvoke.Circle(LayerCache.ImageBgr, LayerCache.Layer.Contours[i].Centroid,
                             Settings.LayerPreview.CentroidOutlineDiameter / 2, new MCvScalar(
                                 Settings.LayerPreview.CentroidOutlineColor.B,
                                 Settings.LayerPreview.CentroidOutlineColor.G,
@@ -1276,7 +1299,7 @@ public partial class MainWindow
 
             if (_showLayerOutlineTriangulate)
             {
-                var groups = EmguContours.GetPositiveContoursInGroups(LayerCache.LayerContours, LayerCache.LayerContourHierarchy);
+                var groups = EmguContours.GetPositiveContoursInGroups(LayerCache.Layer.Contours.VectorOfContours, LayerCache.Layer.Contours.Hierarchy);
                 var lineColor = new MCvScalar(
                     Settings.LayerPreview.TriangulateOutlineColor.B,
                     Settings.LayerPreview.TriangulateOutlineColor.G,
@@ -1406,7 +1429,7 @@ public partial class MainWindow
                         ? Settings.PixelEditor.RemovePixelHighlightColor
                         : Settings.PixelEditor.RemovePixelColor;
 
-                    using var vec = EmguContours.GetContoursInside(LayerCache.LayerContours, LayerCache.LayerContourHierarchy, operation.Location);
+                    using var vec = EmguContours.GetContoursInside(LayerCache.Layer.Contours.VectorOfContours, LayerCache.Layer.Contours.Hierarchy, operation.Location);
                     if (vec.Size > 0) CvInvoke.DrawContours(LayerCache.ImageBgr, vec, -1, new MCvScalar(color.B, color.G, color.R), -1);
 
                     /*var hollowGroups = EmguContours.GetPositiveContoursInGroups(LayerCache.LayerContours, LayerCache.LayerContourHierarchy);
@@ -2025,7 +2048,7 @@ public partial class MainWindow
                 if (e.KeyModifiers == KeyModifiers.Control)
                 {
                     if (await this.MessageBoxQuestion($"Are you sure you want to clone the current layer {_actualLayer}?",
-                            "Clone the current layer?") != ButtonResult.Yes) return;
+                            "Clone the current layer?") != MessageButtonResult.Yes) return;
 
                     var operationLayerClone = new OperationLayerClone(SlicerFile);
                     operationLayerClone.SelectCurrentLayer(_actualLayer);
@@ -2056,7 +2079,7 @@ public partial class MainWindow
                 }
 
                 if (await this.MessageBoxQuestion($"Are you sure you want to keep only the selected region/mask(s) {layerRange}?",
-                        "Keep only selected region/mask(s)?") != ButtonResult.Yes) return;
+                        "Keep only selected region/mask(s)?") != MessageButtonResult.Yes) return;
                 await RunOperation(operation);
                 e.Handled = true;
                 return;
@@ -2066,7 +2089,7 @@ public partial class MainWindow
                 if (e.KeyModifiers == KeyModifiers.Control)
                 {
                     if (await this.MessageBoxQuestion($"Are you sure you want to remove the current layer {_actualLayer}?",
-                            "Remove the current layer?") != ButtonResult.Yes) return;
+                            "Remove the current layer?") != MessageButtonResult.Yes) return;
 
                     var operationLayerRemove = new OperationLayerRemove(SlicerFile);
                     operationLayerRemove.SelectCurrentLayer(_actualLayer);
@@ -2097,7 +2120,7 @@ public partial class MainWindow
                 }
 
                 if (await this.MessageBoxQuestion($"Are you sure you want to discard the selected region/mask(s) {layerRange}?",
-                        "Discard selected region/mask(s)?") != ButtonResult.Yes) return;
+                        "Discard selected region/mask(s)?") != MessageButtonResult.Yes) return;
                 await RunOperation(operation);
                 e.Handled = true;
                 return;
@@ -2241,11 +2264,10 @@ public partial class MainWindow
     {
         var point = GetTransposedPoint(location);
 
-        for (int i = LayerCache.LayerContours.Size-1; i >= 0; i--)
+        for (int i = LayerCache.Layer.Contours.Count-1; i >= 0; i--)
         {
-            if (CvInvoke.PointPolygonTest(LayerCache.LayerContours[i], point, false) < 0) continue;
-            var rectangle = CvInvoke.BoundingRectangle(LayerCache.LayerContours[i]);
-            ROI = rectangle;
+            if (!LayerCache.Layer.Contours[i].IsInside(point)) continue;
+            ROI = LayerCache.Layer.Contours[i].BoundingRectangle;
             return true;
         }
 
@@ -2256,15 +2278,14 @@ public partial class MainWindow
     {
         if (roiRectangle.IsEmpty) return 0;
         List<Rectangle> rectangles = new();
-        for (int i = 0; i < LayerCache.LayerContours.Size; i++)
+        for (int i = 0; i < LayerCache.Layer.Contours.Count; i++)
         {
-            var rectangle = CvInvoke.BoundingRectangle(LayerCache.LayerContours[i]);
+            var rectangle = LayerCache.Layer.Contours[i].BoundingRectangle;
             //roi.Intersect(rectangle);
             if (roiRectangle.IntersectsWith(rectangle))
             {
                 rectangles.Add(rectangle);
             }
-
         }
         roiRectangle = rectangles.Count == 0 ? Rectangle.Empty : rectangles[0];
         for (var i = 1; i < rectangles.Count; i++)
@@ -2272,7 +2293,7 @@ public partial class MainWindow
             var rectangle = rectangles[i];
             roiRectangle = Rectangle.Union(roiRectangle, rectangle);
         }
-
+        
         ROI = roiRectangle;
 
         return (uint)rectangles.Count;
@@ -2282,7 +2303,7 @@ public partial class MainWindow
     {
         var point = GetTransposedPoint(location);
 
-        using var vec = EmguContours.GetContoursInside(LayerCache.LayerContours, LayerCache.LayerContourHierarchy, point, (_globalModifiers & KeyModifiers.Control) != 0);
+        using var vec = EmguContours.GetContoursInside(LayerCache.Layer.Contours.VectorOfContours, LayerCache.Layer.Contours.Hierarchy, point, (_globalModifiers & KeyModifiers.Control) != 0);
         AddMaskPoints(vec.ToArrayOfArray(), false);
         return vec.Size > 0;
     }

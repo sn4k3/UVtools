@@ -14,7 +14,7 @@
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <Description>AvaloniaUI Controls
 - AdvancedImageBox: Pan, zoom, cursor, pixel grid and selections image box</Description>
-    <Version>2.0.1</Version>
+    <Version>2.1.0</Version>
     <Nullable>enable</Nullable>
     <PackageProjectUrl>https://github.com/sn4k3/UVtools</PackageProjectUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
@@ -50,6 +50,15 @@
       <Pack>True</Pack>
       <PackagePath></PackagePath>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <AvaloniaXaml Update="Controls.axaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
+    <AvaloniaXaml Update="Styles\ExtendedNumericUpDown.axaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
   </ItemGroup>
 
   <ItemGroup>

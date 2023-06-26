@@ -460,7 +460,7 @@ public class OperationRaftRelief : Operation
 
                             while (!foundPoint 
                                    && x >= minX && x <= maxX && y >= minY && y <= maxY
-                                   && contour.Bounds.Contains(x, y))
+                                   && contour.BoundingRectangle.Contains(x, y))
                             {
                                 var pixel = span[mat.GetPixelPos(x, y)];
 

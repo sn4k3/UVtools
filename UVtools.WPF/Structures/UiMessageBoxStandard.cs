@@ -7,7 +7,6 @@
  */
 
 using Avalonia.Threading;
-using MessageBox.Avalonia.Enums;
 using System;
 using System.Threading.Tasks;
 using UVtools.Core.Dialogs;
@@ -33,8 +32,8 @@ public class UiMessageBoxStandard : AbstractMessageBoxStandard
     {
         return Dispatcher.UIThread.InvokeAsync(async () =>
         {
-            var result = await App.MainWindow.MessageBoxQuestion(message, string.IsNullOrWhiteSpace(title) ? "Question" : title, (ButtonEnum) buttons, false, true);
-            return (MessageButtonResult) result;
+            var result = await App.MainWindow.MessageBoxQuestion(message, string.IsNullOrWhiteSpace(title) ? "Question" : title, buttons, false, true);
+            return result;
         });
     }
     #endregion

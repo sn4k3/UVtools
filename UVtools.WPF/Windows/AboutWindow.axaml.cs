@@ -4,10 +4,12 @@ using Emgu.CV;
 using System;
 using System.Runtime.InteropServices;
 using System.Text;
+using Avalonia.Media;
 using UVtools.Core;
 using UVtools.Core.Extensions;
 using UVtools.Core.SystemOS;
 using UVtools.WPF.Controls;
+using UVtools.WPF.Extensions;
 
 namespace UVtools.WPF.Windows;
 
@@ -127,6 +129,15 @@ public class AboutWindow : WindowEx
     private void InitializeComponent()
     {
         AvaloniaXamlLoader.Load(this);
+    }
+
+    public async void TermsOfUseClicked()
+    {
+        var messageWindow = new MessageWindow(About.TermsOfUseTitle, "fa-solid fa-handshake",
+            About.TermsOfUseHeader,
+            About.TermsOfUse);
+
+        await messageWindow.ShowDialog(this);
     }
 
     public static string GetEssentialInformationStatic()

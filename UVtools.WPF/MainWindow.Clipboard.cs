@@ -10,9 +10,9 @@
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Threading;
-using MessageBox.Avalonia.Enums;
 using System;
 using System.ComponentModel;
+using UVtools.Core.Dialogs;
 using UVtools.WPF.Extensions;
 
 namespace UVtools.WPF;
@@ -98,7 +98,7 @@ public partial class MainWindow
     {
         if (await this.MessageBoxQuestion("Are you sure you want to clear the clipboard?\n" +
                                           "Current layers will be placed as original layers\n" +
-                                          "This action is permanent!", "Clear clipboard?") != ButtonResult.Yes) return;
+                                          "This action is permanent!", "Clear clipboard?") != MessageButtonResult.Yes) return;
         Clipboard.Clear(true);
     }
 }

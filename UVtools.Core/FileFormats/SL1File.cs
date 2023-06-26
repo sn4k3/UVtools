@@ -126,10 +126,17 @@ public sealed class SL1File : FileFormat
 
         #endregion
 
+        #region Output
+
+        public string SlaArchiveFormat { get; set; } = "SL1";
+        public float SlaOutputPrecision { get; set; } = 0.001f;
+
+        #endregion
+
         #region Overrides
         public override string ToString()
         {
-            return $"{nameof(PrinterSettingsId)}: {PrinterSettingsId}, {nameof(PrinterTechnology)}: {PrinterTechnology}, {nameof(PrinterModel)}: {PrinterModel}, {nameof(PrinterVariant)}: {PrinterVariant}, {nameof(PrinterVendor)}: {PrinterVendor}, {nameof(DefaultSlaMaterialProfile)}: {DefaultSlaMaterialProfile}, {nameof(DefaultSlaPrintProfile)}: {DefaultSlaPrintProfile}, {nameof(PrinterNotes)}: {PrinterNotes}, {nameof(Thumbnails)}: {Thumbnails}, {nameof(BedCustomModel)}: {BedCustomModel}, {nameof(BedCustomTexture)}: {BedCustomTexture}, {nameof(BedShape)}: {BedShape}, {nameof(MaxPrintHeight)}: {MaxPrintHeight}, {nameof(DisplayWidth)}: {DisplayWidth}, {nameof(DisplayHeight)}: {DisplayHeight}, {nameof(DisplayPixelsX)}: {DisplayPixelsX}, {nameof(DisplayPixelsY)}: {DisplayPixelsY}, {nameof(DisplayOrientation)}: {DisplayOrientation}, {nameof(DisplayMirrorX)}: {DisplayMirrorX}, {nameof(DisplayMirrorY)}: {DisplayMirrorY}, {nameof(FastTiltTime)}: {FastTiltTime}, {nameof(SlowTiltTime)}: {SlowTiltTime}, {nameof(AreaFill)}: {AreaFill}, {nameof(RelativeCorrection)}: {RelativeCorrection}, {nameof(AbsoluteCorrection)}: {AbsoluteCorrection}, {nameof(ElefantFootCompensation)}: {ElefantFootCompensation}, {nameof(ElefantFootMinWidth)}: {ElefantFootMinWidth}, {nameof(GammaCorrection)}: {GammaCorrection}, {nameof(MinExposureTime)}: {MinExposureTime}, {nameof(MaxExposureTime)}: {MaxExposureTime}, {nameof(MinInitialExposureTime)}: {MinInitialExposureTime}, {nameof(MaxInitialExposureTime)}: {MaxInitialExposureTime}";
+            return $"{nameof(InheritsCummulative)}: {InheritsCummulative}, {nameof(HostType)}: {HostType}, {nameof(PhysicalPrinterSettingsId)}: {PhysicalPrinterSettingsId}, {nameof(PrinterSettingsId)}: {PrinterSettingsId}, {nameof(PrinterTechnology)}: {PrinterTechnology}, {nameof(PrinterModel)}: {PrinterModel}, {nameof(PrinterVariant)}: {PrinterVariant}, {nameof(PrinterVendor)}: {PrinterVendor}, {nameof(DefaultSlaMaterialProfile)}: {DefaultSlaMaterialProfile}, {nameof(DefaultSlaPrintProfile)}: {DefaultSlaPrintProfile}, {nameof(PrinterNotes)}: {PrinterNotes}, {nameof(Thumbnails)}: {Thumbnails}, {nameof(BedCustomModel)}: {BedCustomModel}, {nameof(BedCustomTexture)}: {BedCustomTexture}, {nameof(BedShape)}: {BedShape}, {nameof(MaxPrintHeight)}: {MaxPrintHeight}, {nameof(DisplayWidth)}: {DisplayWidth}, {nameof(DisplayHeight)}: {DisplayHeight}, {nameof(DisplayPixelsX)}: {DisplayPixelsX}, {nameof(DisplayPixelsY)}: {DisplayPixelsY}, {nameof(DisplayOrientation)}: {DisplayOrientation}, {nameof(DisplayMirrorX)}: {DisplayMirrorX}, {nameof(DisplayMirrorY)}: {DisplayMirrorY}, {nameof(FastTiltTime)}: {FastTiltTime}, {nameof(SlowTiltTime)}: {SlowTiltTime}, {nameof(HighViscosityTiltTime)}: {HighViscosityTiltTime}, {nameof(AreaFill)}: {AreaFill}, {nameof(RelativeCorrection)}: {RelativeCorrection}, {nameof(RelativeCorrectionX)}: {RelativeCorrectionX}, {nameof(RelativeCorrectionY)}: {RelativeCorrectionY}, {nameof(RelativeCorrectionZ)}: {RelativeCorrectionZ}, {nameof(AbsoluteCorrection)}: {AbsoluteCorrection}, {nameof(ElefantFootCompensation)}: {ElefantFootCompensation}, {nameof(ElefantFootMinWidth)}: {ElefantFootMinWidth}, {nameof(GammaCorrection)}: {GammaCorrection}, {nameof(MinExposureTime)}: {MinExposureTime}, {nameof(MaxExposureTime)}: {MaxExposureTime}, {nameof(MinInitialExposureTime)}: {MinInitialExposureTime}, {nameof(MaxInitialExposureTime)}: {MaxInitialExposureTime}, {nameof(SlaArchiveFormat)}: {SlaArchiveFormat}, {nameof(SlaOutputPrecision)}: {SlaOutputPrecision}";
         }
         #endregion
     }
@@ -209,27 +216,47 @@ public sealed class SL1File : FileFormat
         #region Supports
 
         public byte SupportsEnable { get; set; }
+        public string SupportTreeType { get; set; } = "default";
+        public bool SupportEnforcersOnly { get; set; }
             
         public float SupportHeadFrontDiameter { get; set; }
+        public float BranchingsupportHeadFrontDiameter { get; set; }
         public float SupportHeadPenetration { get; set; }
+        public float BranchingsupportHeadPenetration { get; set; }
         public float SupportHeadWidth { get; set; }
+        public float BranchingsupportHeadWidth { get; set; }
 
         public float SupportPillarWideningFactor { set; get; }
+        public float BranchingsupportPillarWideningFactor { set; get; }
+        public float SupportMaxWeightOnModel { set; get; }
+        public float BranchingsupportMaxWeightOnModel { set; get; }
         public float SupportPillarDiameter { get; set; }
+        public float BranchingsupportPillarDiameter { get; set; }
         public string SupportSmallPillarDiameterPercent { get; set; } = string.Empty;
+        public string BranchingsupportSmallPillarDiameterPercent { get; set; } = string.Empty;
         public float SupportMaxBridgesOnPillar { get; set; }
-        public string SupportPillarConnectionMode { get; set; } = string.Empty;
+        public float BranchingsupportMaxBridgesOnPillar { get; set; }
+        public string SupportPillarConnectionMode { get; set; } = "zigzag";
+        public string BranchingsupportPillarConnectionMode { get; set; } = "dynamic";
         public byte SupportBuildplateOnly { get; set; }
+        public byte BranchingsupportBuildplateOnly { get; set; }
         public float SupportBaseDiameter { get; set; }
+        public float BranchingsupportBaseDiameter { get; set; }
         public float SupportBaseHeight { get; set; }
+        public float BranchingsupportBaseHeight { get; set; }
         public float SupportBaseSafetyDistance { get; set; }
+        public float BranchingsupportBaseSafetyDistance { get; set; }
         public byte PadAroundObject { get; set; }
         public float SupportObjectElevation { get; set; }
+        public float BranchingsupportObjectElevation { get; set; }
 
 
         public ushort SupportCriticalAngle { get; set; }
+        public ushort BranchingsupportCriticalAngle { get; set; }
         public float SupportMaxBridgeLength { get; set; }
+        public float BranchingsupportMaxBridgeLength { get; set; }
         public float SupportMaxPillarLinkDistance { get; set; }
+        public float BranchingsupportMaxPillarLinkDistance { get; set; }
 
 
         public ushort SupportPointsDensityRelative { get; set; }
@@ -276,7 +303,7 @@ public sealed class SL1File : FileFormat
         #region Overrides
         public override string ToString()
         {
-            return $"{nameof(SlaPrintSettingsId)}: {SlaPrintSettingsId}, {nameof(LayerHeight)}: {LayerHeight}, {nameof(FadedLayers)}: {FadedLayers}, {nameof(SupportsEnable)}: {SupportsEnable}, {nameof(SupportHeadFrontDiameter)}: {SupportHeadFrontDiameter}, {nameof(SupportHeadPenetration)}: {SupportHeadPenetration}, {nameof(SupportHeadWidth)}: {SupportHeadWidth}, {nameof(SupportPillarWideningFactor)}: {SupportPillarWideningFactor}, {nameof(SupportPillarDiameter)}: {SupportPillarDiameter}, {nameof(SupportSmallPillarDiameterPercent)}: {SupportSmallPillarDiameterPercent}, {nameof(SupportMaxBridgesOnPillar)}: {SupportMaxBridgesOnPillar}, {nameof(SupportPillarConnectionMode)}: {SupportPillarConnectionMode}, {nameof(SupportBuildplateOnly)}: {SupportBuildplateOnly}, {nameof(SupportBaseDiameter)}: {SupportBaseDiameter}, {nameof(SupportBaseHeight)}: {SupportBaseHeight}, {nameof(SupportBaseSafetyDistance)}: {SupportBaseSafetyDistance}, {nameof(PadAroundObject)}: {PadAroundObject}, {nameof(SupportObjectElevation)}: {SupportObjectElevation}, {nameof(SupportCriticalAngle)}: {SupportCriticalAngle}, {nameof(SupportMaxBridgeLength)}: {SupportMaxBridgeLength}, {nameof(SupportMaxPillarLinkDistance)}: {SupportMaxPillarLinkDistance}, {nameof(SupportPointsDensityRelative)}: {SupportPointsDensityRelative}, {nameof(SupportPointsMinimalDistance)}: {SupportPointsMinimalDistance}, {nameof(PadEnable)}: {PadEnable}, {nameof(PadWallThickness)}: {PadWallThickness}, {nameof(PadWallHeight)}: {PadWallHeight}, {nameof(PadBrimSize)}: {PadBrimSize}, {nameof(PadMaxMergeDistance)}: {PadMaxMergeDistance}, {nameof(PadWallSlope)}: {PadWallSlope}, {nameof(PadAroundObjectEverywhere)}: {PadAroundObjectEverywhere}, {nameof(PadObjectGap)}: {PadObjectGap}, {nameof(PadObjectConnectorStride)}: {PadObjectConnectorStride}, {nameof(PadObjectConnectorWidth)}: {PadObjectConnectorWidth}, {nameof(PadObjectConnectorPenetration)}: {PadObjectConnectorPenetration}, {nameof(HollowingEnable)}: {HollowingEnable}, {nameof(HollowingMinThickness)}: {HollowingMinThickness}, {nameof(HollowingQuality)}: {HollowingQuality}, {nameof(HollowingClosingDistance)}: {HollowingClosingDistance}, {nameof(SliceClosingRadius)}: {SliceClosingRadius}, {nameof(OutputFilenameFormat)}: {OutputFilenameFormat}, {nameof(CompatiblePrintsCondition)}: {CompatiblePrintsCondition}";
+            return $"{nameof(SlaPrintSettingsId)}: {SlaPrintSettingsId}, {nameof(LayerHeight)}: {LayerHeight}, {nameof(FadedLayers)}: {FadedLayers}, {nameof(SupportsEnable)}: {SupportsEnable}, {nameof(SupportTreeType)}: {SupportTreeType}, {nameof(SupportEnforcersOnly)}: {SupportEnforcersOnly}, {nameof(SupportHeadFrontDiameter)}: {SupportHeadFrontDiameter}, {nameof(BranchingsupportHeadFrontDiameter)}: {BranchingsupportHeadFrontDiameter}, {nameof(SupportHeadPenetration)}: {SupportHeadPenetration}, {nameof(BranchingsupportHeadPenetration)}: {BranchingsupportHeadPenetration}, {nameof(SupportHeadWidth)}: {SupportHeadWidth}, {nameof(BranchingsupportHeadWidth)}: {BranchingsupportHeadWidth}, {nameof(SupportPillarWideningFactor)}: {SupportPillarWideningFactor}, {nameof(BranchingsupportPillarWideningFactor)}: {BranchingsupportPillarWideningFactor}, {nameof(SupportMaxWeightOnModel)}: {SupportMaxWeightOnModel}, {nameof(BranchingsupportMaxWeightOnModel)}: {BranchingsupportMaxWeightOnModel}, {nameof(SupportPillarDiameter)}: {SupportPillarDiameter}, {nameof(BranchingsupportPillarDiameter)}: {BranchingsupportPillarDiameter}, {nameof(SupportSmallPillarDiameterPercent)}: {SupportSmallPillarDiameterPercent}, {nameof(BranchingsupportSmallPillarDiameterPercent)}: {BranchingsupportSmallPillarDiameterPercent}, {nameof(SupportMaxBridgesOnPillar)}: {SupportMaxBridgesOnPillar}, {nameof(BranchingsupportMaxBridgesOnPillar)}: {BranchingsupportMaxBridgesOnPillar}, {nameof(SupportPillarConnectionMode)}: {SupportPillarConnectionMode}, {nameof(BranchingsupportPillarConnectionMode)}: {BranchingsupportPillarConnectionMode}, {nameof(SupportBuildplateOnly)}: {SupportBuildplateOnly}, {nameof(BranchingsupportBuildplateOnly)}: {BranchingsupportBuildplateOnly}, {nameof(SupportBaseDiameter)}: {SupportBaseDiameter}, {nameof(BranchingsupportBaseDiameter)}: {BranchingsupportBaseDiameter}, {nameof(SupportBaseHeight)}: {SupportBaseHeight}, {nameof(BranchingsupportBaseHeight)}: {BranchingsupportBaseHeight}, {nameof(SupportBaseSafetyDistance)}: {SupportBaseSafetyDistance}, {nameof(BranchingsupportBaseSafetyDistance)}: {BranchingsupportBaseSafetyDistance}, {nameof(PadAroundObject)}: {PadAroundObject}, {nameof(SupportObjectElevation)}: {SupportObjectElevation}, {nameof(BranchingsupportObjectElevation)}: {BranchingsupportObjectElevation}, {nameof(SupportCriticalAngle)}: {SupportCriticalAngle}, {nameof(BranchingsupportCriticalAngle)}: {BranchingsupportCriticalAngle}, {nameof(SupportMaxBridgeLength)}: {SupportMaxBridgeLength}, {nameof(BranchingsupportMaxBridgeLength)}: {BranchingsupportMaxBridgeLength}, {nameof(SupportMaxPillarLinkDistance)}: {SupportMaxPillarLinkDistance}, {nameof(BranchingsupportMaxPillarLinkDistance)}: {BranchingsupportMaxPillarLinkDistance}, {nameof(SupportPointsDensityRelative)}: {SupportPointsDensityRelative}, {nameof(SupportPointsMinimalDistance)}: {SupportPointsMinimalDistance}, {nameof(PadEnable)}: {PadEnable}, {nameof(PadWallThickness)}: {PadWallThickness}, {nameof(PadWallHeight)}: {PadWallHeight}, {nameof(PadBrimSize)}: {PadBrimSize}, {nameof(PadMaxMergeDistance)}: {PadMaxMergeDistance}, {nameof(PadWallSlope)}: {PadWallSlope}, {nameof(PadAroundObjectEverywhere)}: {PadAroundObjectEverywhere}, {nameof(PadObjectGap)}: {PadObjectGap}, {nameof(PadObjectConnectorStride)}: {PadObjectConnectorStride}, {nameof(PadObjectConnectorWidth)}: {PadObjectConnectorWidth}, {nameof(PadObjectConnectorPenetration)}: {PadObjectConnectorPenetration}, {nameof(HollowingEnable)}: {HollowingEnable}, {nameof(HollowingMinThickness)}: {HollowingMinThickness}, {nameof(HollowingQuality)}: {HollowingQuality}, {nameof(HollowingClosingDistance)}: {HollowingClosingDistance}, {nameof(SliceClosingRadius)}: {SliceClosingRadius}, {nameof(SlicingMode)}: {SlicingMode}, {nameof(OutputFilenameFormat)}: {OutputFilenameFormat}, {nameof(CompatiblePrintsCondition)}: {CompatiblePrintsCondition}";
         }
         #endregion
     }

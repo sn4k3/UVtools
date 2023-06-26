@@ -41,7 +41,7 @@
                         Padding="10"
                         VerticalContentAlignment="Center"
                         HorizontalAlignment="Right"
-                        Icon="fa-solid fa-sign-out-alt"
+                        Icon="fa-solid fa-right-from-bracket"
                         Text="Close"/>
             </Grid>
         </Border>
@@ -133,13 +133,21 @@
             <TextBlock Grid.Row="4" Text="{Binding Source={x:Static core:About.AssemblyCopyright}}"/>
             <TextBlock Grid.Row="6" Text="{Binding Source={x:Static core:About.Author}}"/>
             <!--<TextBlock Grid.Row="8" Text="{Binding AgeStr, StringFormat=Age: {0}}"/>-->
-            <controls:ButtonWithIcon Grid.Row="8" VerticalAlignment="Center"
-                    Command="{Binding OpenWebsite}"
-                    CommandParameter="{Binding Source={x:Static core:About.LicenseUrl}}"
-                    Text="{Binding Source={x:Static core:About.License}}"
-                    Icon="fa-solid fa-balance-scale"/>
+            <StackPanel Grid.Row="8" Orientation="Horizontal" Spacing="5">
+                <controls:ButtonWithIcon VerticalAlignment="Center"
+                                         Command="{Binding TermsOfUseClicked}"
+                                         Text="Terms of Use"
+                                         Icon="fa-solid fa-handshake"/>
 
-            <TabControl Grid.Row="10">
+                <controls:ButtonWithIcon VerticalAlignment="Center"
+                                         Command="{Binding OpenWebsite}"
+                                         CommandParameter="{Binding Source={x:Static core:About.LicenseUrl}}"
+                                         Text="{Binding Source={x:Static core:About.License}}"
+                                         Icon="fa-solid fa-balance-scale"/>
+			</StackPanel>
+
+
+			<TabControl Grid.Row="10">
                 <TabItem Header="Description">
                     <TextBox IsReadOnly="True"
                              ScrollViewer.VerticalScrollBarVisibility="Auto"

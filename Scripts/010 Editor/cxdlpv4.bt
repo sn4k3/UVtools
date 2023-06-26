@@ -7,6 +7,8 @@
 
 LittleEndian();
 
+enum <uint> BOOL { False, True };
+
 struct HEADER {
     BigEndian();
     uint32 MagicSize <fgcolor=cBlack, bgcolor=cWhite>;
@@ -24,8 +26,8 @@ struct HEADER {
     float BedSizeY <fgcolor=cBlack, bgcolor=cRed>;
     float BedSizeZ <fgcolor=cBlack, bgcolor=cRed>;
     
-    float TotalHeightMilimeter <fgcolor=cBlack, bgcolor=cRed>;
-    float LayerHeightMilimeter <fgcolor=cBlack, bgcolor=cRed>;
+    float PrintHeight <fgcolor=cBlack, bgcolor=cRed>;
+    float LayerHeight <fgcolor=cBlack, bgcolor=cRed>;
     uint BottomLayersCount <fgcolor=cBlack, bgcolor=cRed>;
 
     uint PreviewSmallOffsetAddress <fgcolor=cBlack, bgcolor=cRed>;
@@ -45,14 +47,14 @@ struct HEADER {
 } header;
 
 struct PREVIEW {
-    uint ResolutionX <fgcolor=cBlack, bgcolor=cRed>;
-    uint ResolutionY <fgcolor=cBlack, bgcolor=cRed>;
-    uint ImageOffset <fgcolor=cBlack, bgcolor=cRed>;
-    uint ImageLength <fgcolor=cBlack, bgcolor=cRed>;
-    uint Unknown1 <fgcolor=cBlack, bgcolor=cRed>;
-    uint Unknown2 <fgcolor=cBlack, bgcolor=cRed>;
-    uint Unknown3 <fgcolor=cBlack, bgcolor=cRed>;
-    uint Unknown4 <fgcolor=cBlack, bgcolor=cRed>;
+    uint ResolutionX <fgcolor=cBlack, bgcolor=cGreen>;
+    uint ResolutionY <fgcolor=cBlack, bgcolor=cGreen>;
+    uint ImageOffset <fgcolor=cBlack, bgcolor=cGreen>;
+    uint ImageLength <fgcolor=cBlack, bgcolor=cGreen>;
+    uint Unknown1 <fgcolor=cBlack, bgcolor=cGreen>;
+    uint Unknown2 <fgcolor=cBlack, bgcolor=cGreen>;
+    uint Unknown3 <fgcolor=cBlack, bgcolor=cGreen>;
+    uint Unknown4 <fgcolor=cBlack, bgcolor=cGreen>;
 
     ubyte Data[ImageLength] <fgcolor=cBlack, bgcolor=cYellow>;
 };
@@ -79,26 +81,26 @@ struct PRINT_PARAMETERS {
 };
 
 struct SLICER_INFO {
-    float BottomLiftHeight2 <fgcolor=cBlack, bgcolor=cRed>;
-    float BottomLiftSpeed2 <fgcolor=cBlack, bgcolor=cRed>;
-    float LiftHeight2 <fgcolor=cBlack, bgcolor=cRed>;
-    float LiftSpeed2 <fgcolor=cBlack, bgcolor=cRed>;
-    float RetractHeight2 <fgcolor=cBlack, bgcolor=cRed>;
-    float RetractSpeed2 <fgcolor=cBlack, bgcolor=cRed>;
-    float RestTimeAfterLift <fgcolor=cBlack, bgcolor=cRed>;
+    float BottomLiftHeight2 <fgcolor=cBlack, bgcolor=cGreen>;
+    float BottomLiftSpeed2 <fgcolor=cBlack, bgcolor=cGreen>;
+    float LiftHeight2 <fgcolor=cBlack, bgcolor=cGreen>;
+    float LiftSpeed2 <fgcolor=cBlack, bgcolor=cGreen>;
+    float RetractHeight2 <fgcolor=cBlack, bgcolor=cGreen>;
+    float RetractSpeed2 <fgcolor=cBlack, bgcolor=cGreen>;
+    float RestTimeAfterLift <fgcolor=cBlack, bgcolor=cGreen>;
 
-    uint PerLayerSettings <fgcolor=cBlack, bgcolor=cRed, format=hex>; // 0 to not support, 1 to support
-    uint TimestampMinutes <fgcolor=cBlack, bgcolor=cRed>; 
-    uint AntiAliasLevel <fgcolor=cBlack, bgcolor=cRed>;
-    uint SoftwareVersion <fgcolor=cBlack, bgcolor=cRed, format=hex>; // 0
-    float RestTimeAfterRetract <fgcolor=cBlack, bgcolor=cRed>;
-    float RestTimeBeforeLift <fgcolor=cBlack, bgcolor=cRed>;
-    float BottomExposureTime <fgcolor=cBlack, bgcolor=cRed>;
-    float ExposureTime <fgcolor=cBlack, bgcolor=cRed>;
-    float RestTimeAfterLift <fgcolor=cBlack, bgcolor=cRed>;
-    uint TransitionLayerCount <fgcolor=cBlack, bgcolor=cRed>;
-    uint Padding <fgcolor=cBlack, bgcolor=cRed>;
-    uint Padding <fgcolor=cBlack, bgcolor=cRed>;
+    BOOL PerLayerSettings <fgcolor=cBlack, bgcolor=cGreen>; // 0 to not support, 1 to support
+    uint TimestampMinutes <fgcolor=cBlack, bgcolor=cGreen>; 
+    uint AntiAliasLevel <fgcolor=cBlack, bgcolor=cGreen>;
+    uint SoftwareVersion <fgcolor=cBlack, bgcolor=cGreen, format=hex>; // 0
+    float RestTimeAfterRetract <fgcolor=cBlack, bgcolor=cGreen>;
+    float RestTimeBeforeLift <fgcolor=cBlack, bgcolor=cGreen>;
+    float BottomExposureTime <fgcolor=cBlack, bgcolor=cGreen>;
+    float ExposureTime <fgcolor=cBlack, bgcolor=cGreen>;
+    float RestTimeAfterLift <fgcolor=cBlack, bgcolor=cGreen>;
+    uint TransitionLayerCount <fgcolor=cBlack, bgcolor=cGreen>;
+    uint Padding <fgcolor=cBlack, bgcolor=cGreen>;
+    uint Padding <fgcolor=cBlack, bgcolor=cGreen>;
 };
 
 if(header.PreviewSmallOffsetAddress > 0)
@@ -123,31 +125,31 @@ if(header.SlicerOffset > 0){
     SLICER_INFO SlicerInfo <fgcolor=cBlack, bgcolor=cYellow>;
 }
 
-struct LAYER_DATA {
-    float LayerPositionZ <fgcolor=cBlack, bgcolor=cRed>;
-    float LayerExposure <fgcolor=cBlack, bgcolor=cRed>;
+struct LAYER_DEF {
+    float PositionZ <fgcolor=cBlack, bgcolor=cRed>;
+    float ExposureTime <fgcolor=cBlack, bgcolor=cRed>;
     float LightOffSeconds <fgcolor=cBlack, bgcolor=cRed>;
     uint DataAddress <fgcolor=cBlack, bgcolor=cRed>;
     uint DataSize <fgcolor=cBlack, bgcolor=cRed>;
-    uint DataType <fgcolor=cBlack, bgcolor=cRed>;
+    uint DataType <fgcolor=cBlack, bgcolor=cRed>; // pixel=0，line=1, segment=2
     uint CentroidDistance <fgcolor=cBlack, bgcolor=cRed>;
-    uint TotalArea <fgcolor=cBlack, bgcolor=cRed>;
+    uint LargestArea <fgcolor=cBlack, bgcolor=cRed>;
     uint Unknown <fgcolor=cBlack, bgcolor=cRed>;
     uint Unknown <fgcolor=cBlack, bgcolor=cRed>;
 };
 
-struct LAYER_DATAEX {
-    float LiftHeight <fgcolor=cBlack, bgcolor=cRed>;
-    float LiftSpeed <fgcolor=cBlack, bgcolor=cRed>;
-    float LiftHeight2 <fgcolor=cBlack, bgcolor=cRed>;
-    float LiftSpeed2 <fgcolor=cBlack, bgcolor=cRed>;
-    float RetractSpeed <fgcolor=cBlack, bgcolor=cRed>;
-    float RetractHeight2 <fgcolor=cBlack, bgcolor=cRed>;
-    float RetractSpeed2 <fgcolor=cBlack, bgcolor=cRed>;
-    float RestTimeBeforeLift <fgcolor=cBlack, bgcolor=cRed>;
-    float RestTimeAfterLift <fgcolor=cBlack, bgcolor=cRed>;
-    float RestTimeAfterRetract <fgcolor=cBlack, bgcolor=cRed>;
-    float LightPWM <fgcolor=cBlack, bgcolor=cRed>;
+struct LAYER_DEFEX {
+    float LiftHeight <fgcolor=cBlack, bgcolor=cGreen>;
+    float LiftSpeed <fgcolor=cBlack, bgcolor=cGreen>;
+    float LiftHeight2 <fgcolor=cBlack, bgcolor=cGreen>;
+    float LiftSpeed2 <fgcolor=cBlack, bgcolor=cGreen>;
+    float RetractSpeed <fgcolor=cBlack, bgcolor=cGreen>;
+    float RetractHeight2 <fgcolor=cBlack, bgcolor=cGreen>;
+    float RetractSpeed2 <fgcolor=cBlack, bgcolor=cGreen>;
+    float RestTimeBeforeLift <fgcolor=cBlack, bgcolor=cGreen>;
+    float RestTimeAfterLift <fgcolor=cBlack, bgcolor=cGreen>;
+    float RestTimeAfterRetract <fgcolor=cBlack, bgcolor=cGreen>;
+    float LightPWM <fgcolor=cBlack, bgcolor=cGreen>;
 };
 
 
@@ -159,7 +161,7 @@ FSeek(header.LayersDefinitionOffsetAddress);
 struct LAYERS {
     local uint i;
     for( i = 0; i < header.LayerCount; i++ ){
-        LAYER_DATA layerData <fgcolor=cBlack, bgcolor=cYellow>;
+        LAYER_DEF layerData <fgcolor=cBlack, bgcolor=cYellow>;
     }
 } layers;
 
@@ -167,7 +169,7 @@ struct LAYERSEX {
     local uint i;
 
     for( i = 0; i < header.LayerCount; i++ ){
-        LAYER_DATAEX layerDataEx;
+        LAYER_DEFEX layerDataEx;
         LAYER_RLE lD(layers.layerData[i].DataSize - 44);
     }
 
@@ -175,5 +177,6 @@ struct LAYERSEX {
 
 
 BigEndian();
+FSeek(FileSize()-4);
 uint CheckSum <fgcolor=cBlack, bgcolor=cWhite>;
 LittleEndian();

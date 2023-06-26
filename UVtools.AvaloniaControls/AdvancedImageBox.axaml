@@ -12,23 +12,21 @@
                       Name="ViewPort"
                       Background="Transparent"/>
 
-    <ScrollBar
-      Name="VerticalScrollBar"
-      Grid.Row="0" Grid.Column="1"
-      Orientation="Vertical"
-      ViewportSize="{Binding #ViewPort.Bounds.Height}"
-      Minimum="0"
-      Maximum="0"
-      Visibility="Auto"/>
+    <ScrollBar Name="VerticalScrollBar"
+               Grid.Row="0" Grid.Column="1"
+               Orientation="Vertical"
+               ViewportSize="{Binding #ViewPort.Bounds.Height}"
+               Minimum="0"
+               Maximum="0"
+               Visibility="Auto"/>
       
-    <ScrollBar
-      Name="HorizontalScrollBar"
-      Grid.Row="1" Grid.Column="0"
-      Orientation="Horizontal"
-      ViewportSize="{Binding #ViewPort.Bounds.Width}"
-      Minimum="0"
-      Maximum="0"
-      Visibility="Auto"/>
+    <ScrollBar Name="HorizontalScrollBar"
+               Grid.Row="1" Grid.Column="0"
+               Orientation="Horizontal"
+               ViewportSize="{Binding #ViewPort.Bounds.Width}"
+               Minimum="0"
+               Maximum="0"
+               Visibility="Auto"/>
 
 	  <!--
     <Border

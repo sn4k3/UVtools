@@ -11,7 +11,6 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
-using MessageBox.Avalonia.Enums;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -27,6 +26,7 @@ using System.Threading.Tasks;
 using System.Web;
 using UVtools.AvaloniaControls;
 using UVtools.Core;
+using UVtools.Core.Dialogs;
 using UVtools.Core.Exceptions;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
@@ -502,12 +502,12 @@ public partial class MainWindow : WindowEx
             switch (await this.MessageBoxQuestion("There are unsaved changes. Do you want to save the current file before copy it over?\n\n" +
                                                   "Yes: Save the current file and copy it over.\n" +
                                                   "No: Copy the file without current modifications.\n" +
-                                                  "Cancel: Abort the operation.", "Send to - Unsaved changes", ButtonEnum.YesNoCancel))
+                                                  "Cancel: Abort the operation.", "Send to - Unsaved changes", MessageButtons.YesNoCancel))
             {
-                case ButtonResult.Yes:
+                case MessageButtonResult.Yes:
                     await SaveFile(true);
                     break;
-                case ButtonResult.No:
+                case MessageButtonResult.No:
                     break;
                 default:
                     return;
@@ -528,7 +528,7 @@ public partial class MainWindow : WindowEx
                             "Keep in mind there is no guarantee that the file will start to print.\n" +
                             "Are you sure you want to continue?\n\n" +
                             "Yes: Print this file name.\n" +
-                            "No: Cancel file print.", "Print the filename?") != ButtonResult.Yes) return;
+                            "No: Cancel file print.", "Print the filename?") != MessageButtonResult.Yes) return;
                 }
                 else
                 {
@@ -537,7 +537,7 @@ public partial class MainWindow : WindowEx
                             "Keep in mind there is no guarantee that the file will start to print.\n" +
                             "Are you sure you want to continue?\n\n" +
                             "Yes: Send file and print it.\n" +
-                            "No: Cancel file sending and print.", "Send and print the file?") != ButtonResult.Yes) return;
+                            "No: Cancel file sending and print.", "Send and print the file?") != MessageButtonResult.Yes) return;
                 }
                 
             }
@@ -643,7 +643,7 @@ public partial class MainWindow : WindowEx
             {
                 if (await this.MessageBoxQuestion(
                         $"File '{SlicerFile.Filename}' has copied successfully into {removableDrive.Name}\n" +
-                        $"Do you want to eject the {removableDrive.Name} drive now?", "Copied ok, eject the drive?") == ButtonResult.Yes)
+                        $"Do you want to eject the {removableDrive.Name} drive now?", "Copied ok, eject the drive?") == MessageButtonResult.Yes)
                 {
 
                     Progress.ResetAll($"Ejecting {removableDrive.Name}");
@@ -1057,7 +1057,7 @@ public partial class MainWindow : WindowEx
     public async void OnMenuFileCloseFile()
     {
         if (CanSave && await this.MessageBoxQuestion("There are unsaved changes. Do you want close this file without saving?") !=
-            ButtonResult.Yes)
+            MessageButtonResult.Yes)
         {
             return;
         }
@@ -1218,7 +1218,7 @@ public partial class MainWindow : WindowEx
                         $"Was looking on: {PSFolder} and {SSFolder}\n\n" +
                         "Click 'Yes' to open the PrusaSlicer webpage for download\n" +
                         "Click 'No' to dismiss",
-                        "Unable to detect PrusaSlicer") == ButtonResult.Yes) 
+                        "Unable to detect PrusaSlicer") == MessageButtonResult.Yes) 
                     SystemAware.OpenBrowser("https://www.prusa3d.com/prusaslicer/");
                 return;
             }
@@ -1248,47 +1248,40 @@ public partial class MainWindow : WindowEx
 
     public async void MenuNewVersionClicked()
     {
-        if (string.IsNullOrWhiteSpace(VersionChecker.DownloadLink))
+        var autoUpdateButton = MessageWindow.CreateButton("Auto update", MessageWindow.IconButtonDownload);
+        var manualUpdateButton = MessageWindow.CreateButton("Manual update", MessageWindow.IconButtonOpenBrowser);
+
+        var messageBox = new MessageWindow($"Update UVtools to v{VersionChecker.Version}?",
+            MessageWindow.IconHeaderQuestion,
+            $"Do you like to update {About.Software} from v{About.VersionStr} to v{VersionChecker.Version}?",
+            "## Changelog:\n\n" +
+            $"{VersionChecker.Changelog}",
+            string.IsNullOrWhiteSpace(VersionChecker.DownloadLink) ?
+                new[]
+                {
+                    manualUpdateButton,
+                    MessageWindow.CreateCancelButton()
+                }
+                : new[]
+                {
+                    autoUpdateButton,
+                    manualUpdateButton,
+                    MessageWindow.CreateCancelButton()
+                },
+            true);
+
+        var result = await messageBox.ShowDialog<ButtonWithIcon>(this);
+
+        if (ReferenceEquals(result, autoUpdateButton))
         {
-            var result = await this.MessageBoxWithHeaderQuestion(
-                $"Do you like to manually download and update {About.Software} v{About.VersionStr} to v{VersionChecker.Version}?",
-                "## Changelog:  \n\n" +
-                $"{VersionChecker.Changelog}",
-                $"Update UVtools to v{VersionChecker.Version}?",
-
-                ButtonEnum.YesNoCancel, true);
-
-            if (result == ButtonResult.Yes)
-            {
-                SystemAware.OpenBrowser(VersionChecker.UrlLatestRelease);
-            }
+            IsGUIEnabled = false;
+            ShowProgressWindow($"Downloading: {VersionChecker.Filename}");
+            await VersionChecker.AutoUpgrade(Progress);
+            IsGUIEnabled = true;
         }
-        else
+        else if (ReferenceEquals(result, manualUpdateButton))
         {
-            var result = await this.MessageBoxWithHeaderQuestion(
-                $"Do you like to auto-update {About.Software} v{About.VersionStr} to v{VersionChecker.Version}?",
-                "Yes: Auto update  \n" +
-                "No:  Manual download and update  \n" +
-                "Cancel: No action  \n\n" +
-                "## Changelog:  \n\n" +
-                $"{VersionChecker.Changelog}",
-                $"Update UVtools to v{VersionChecker.Version}?",
-
-                ButtonEnum.YesNoCancel, true);
-
-
-            switch (result)
-            {
-                case ButtonResult.No:
-                    SystemAware.OpenBrowser(VersionChecker.UrlLatestRelease);
-                    break;
-                case ButtonResult.Yes:
-                    IsGUIEnabled = false;
-                    ShowProgressWindow($"Downloading: {VersionChecker.Filename}");
-                    await VersionChecker.AutoUpgrade(Progress);
-                    IsGUIEnabled = true;
-                    break;
-            }
+            SystemAware.OpenBrowser(VersionChecker.UrlLatestRelease);
         }
     } 
 
@@ -1505,13 +1498,13 @@ public partial class MainWindow : WindowEx
                             "Cancel: Do not auto-convert the file.",
 
                             $"File '{SlicerFile.Filename}' already exists",
-                            ButtonEnum.YesNoCancel);
+                             MessageButtons.YesNoCancel);
 
-                        if (result is ButtonResult.Cancel or ButtonResult.Abort)
+                        if (result is MessageButtonResult.Cancel or MessageButtonResult.Abort)
                         {
                             canConvert = false;
                         }
-                        else if (result == ButtonResult.No)
+                        else if (result == MessageButtonResult.No)
                         {
                             var dialog = new SaveFileDialog
                             {
@@ -1575,7 +1568,7 @@ public partial class MainWindow : WindowEx
                                     break;
                                 case RemoveSourceFileAction.Prompt:
                                     if (await this.MessageBoxQuestion($"File was successfully converted to: {targetFilename}\n" +
-                                                                      $"Do you want to remove the source file: {oldFileName}", $"Remove source file: {oldFileName}") == ButtonResult.Yes) removeSourceFile = true;
+                                                                      $"Do you want to remove the source file: {oldFileName}", $"Remove source file: {oldFileName}") == MessageButtonResult.Yes) removeSourceFile = true;
                                     break;
                             }
 
@@ -1714,8 +1707,8 @@ public partial class MainWindow : WindowEx
                                                          "3) If you used PrusaSlicer to slice this file, you must use it with compatible UVtools printer profiles (Help - Install profiles into PrusaSlicer).\n\n" +
                                                          "Click 'Yes' to auto fix and set the file resolution with the layer resolution, but only use this option if you are sure it's ok to!\n" +
                                                          "Click 'No' to continue as it is and ignore this warning, you can still repair issues and use some of the tools.",
-                    "File and layer resolution mismatch!", ButtonEnum.YesNo);
-                if (result == ButtonResult.Yes)
+                    "File and layer resolution mismatch!", MessageButtons.YesNo);
+                if (result == MessageButtonResult.Yes)
                 {
                     SlicerFile.Resolution = mat.Size;
                     RaisePropertyChanged(nameof(LayerResolutionStr));
@@ -1752,7 +1745,7 @@ public partial class MainWindow : WindowEx
                         $"Yes: Change to version {lastVersion}. (Highly recommended!)\n" +
                         $"No: Keep the version {SlicerFile.Version} while editing, but a latter full encode of the file will force the version {lastVersion}.",
                         $"File version {SlicerFile.Version} is outside the supported range for your printer");
-                    if (result == ButtonResult.Yes)
+                    if (result == MessageButtonResult.Yes)
                     {
                         SlicerFile.Version = lastVersion;
                         CanSave = true;
@@ -1978,14 +1971,14 @@ public partial class MainWindow : WindowEx
                 "Yes: Open in a new window.\n" +
                 "No: Open in this window.\n" +
                 "Cancel: Do not perform any action.\n",
-                "Conversion complete", ButtonEnum.YesNoCancel);
+                "Conversion complete",  MessageButtons.YesNoCancel);
 
             switch (question)
             {
-                case ButtonResult.No:
+                case MessageButtonResult.No:
                     ProcessFile(newFilePath, _actualLayer);
                     break;
-                case ButtonResult.Yes:
+                case MessageButtonResult.Yes:
                     App.NewInstance(newFilePath);
                     break;
             }
@@ -1998,7 +1991,7 @@ public partial class MainWindow : WindowEx
                     break;
                 case RemoveSourceFileAction.Prompt:
                     if (await this.MessageBoxQuestion($"File was successfully converted to: {Path.GetFileName(newFilePath)}\n" +
-                                                      $"Do you want to remove the source file: {oldFileName}", $"Remove source file: {oldFileName}") == ButtonResult.Yes) removeSourceFile = true;
+                                                      $"Do you want to remove the source file: {oldFileName}", $"Remove source file: {oldFileName}") == MessageButtonResult.Yes) removeSourceFile = true;
                     break;
             }
 
@@ -2029,7 +2022,7 @@ public partial class MainWindow : WindowEx
                 var result = await this.MessageBoxQuestion(
                     "Original input file will be overwritten.  Do you wish to proceed?", "Overwrite file?");
 
-                if(result != ButtonResult.Yes) return false;
+                if(result != MessageButtonResult.Yes) return false;
             }
         }
 
@@ -2129,7 +2122,7 @@ public partial class MainWindow : WindowEx
         if (await this.MessageBoxQuestion(
                 $"Extraction to {finalPath} completed in ({LastStopWatch.ElapsedMilliseconds / 1000}s)\n\n" +
                 "'Yes' to open target folder, 'No' to continue.",
-                "Extraction complete") == ButtonResult.Yes)
+                "Extraction complete") == MessageButtonResult.Yes)
         {
             SystemAware.StartProcess(finalPath);
         }
@@ -2365,7 +2358,7 @@ public partial class MainWindow : WindowEx
         if (_globalModifiers == KeyModifiers.Control)
         {
             if (await this.MessageBoxQuestion("Are you sure you want to purge the non-existing files from the recent list?",
-                    "Purge the non-existing files?") == ButtonResult.Yes)
+                    "Purge the non-existing files?") == MessageButtonResult.Yes)
             {
                 /*if (_globalModifiers == KeyModifiers.Shift)
                 {
@@ -2383,7 +2376,7 @@ public partial class MainWindow : WindowEx
             (_globalModifiers & KeyModifiers.Shift) != 0)
         {
             if (await this.MessageBoxQuestion($"Are you sure you want to remove the selected file from the recent list?\n{file}",
-                    "Remove the file from recent list?") == ButtonResult.Yes)
+                    "Remove the file from recent list?") == MessageButtonResult.Yes)
             {
                 RemoveRecentFile(file);
             }
@@ -2395,7 +2388,7 @@ public partial class MainWindow : WindowEx
         {
             if (await this.MessageBoxQuestion($"The file: {file} does not exists anymore.\n" +
                                               "Do you want to remove this file from recent list?",
-                    "The file does not exists") == ButtonResult.Yes)
+                    "The file does not exists") == MessageButtonResult.Yes)
             {
                 RecentFiles.Load();
                 RecentFiles.Instance.Remove(file);

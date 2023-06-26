@@ -64,10 +64,10 @@ public class ScriptAdvancedDialogSample : ScriptGlobals
         // Trigger an message box to user, will also show in console runs but in text form
         var result = MessageBoxManager.Standard.ShowDialog("This is my script",
             "Script is about to start, are you sure you want to continue?\n" +
-            "This will destroy your file!", AbstractMessageBoxStandard.MessageButtons.YesNo).Result;
+            "This will destroy your file!", MessageButtons.YesNo).Result;
 
         // throw error without stack trace
-        if (result != AbstractMessageBoxStandard.MessageButtonResult.Yes) throw new MessageException("User wanted to abort the script :(");
+        if (result != MessageButtonResult.Yes) throw new MessageException("User wanted to abort the script :(");
 
         // Write some text to show after the operation has completed with success
         Operation.AfterCompleteReport = "My operation has performed the following changes:\n";

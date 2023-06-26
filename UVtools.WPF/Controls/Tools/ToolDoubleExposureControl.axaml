@@ -25,7 +25,7 @@
                        VerticalAlignment="Center"
                        Text="1º exposure:"/>
 
-            <NumericUpDown Grid.Row="2" Grid.Column="2"
+			<NumericUpDown Grid.Row="2" Grid.Column="2"
                            Classes="ValueLabel ValueLabel_s"
                            IsEnabled="{Binding Operation.LayerRangeHaveBottoms}"
                            VerticalAlignment="Center"

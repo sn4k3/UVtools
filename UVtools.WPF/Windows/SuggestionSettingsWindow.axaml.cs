@@ -2,10 +2,10 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
-using MessageBox.Avalonia.Enums;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using UVtools.Core.Dialogs;
 using UVtools.Core.Extensions;
 using UVtools.Core.Managers;
 using UVtools.Core.Suggestions;
@@ -42,11 +42,11 @@ public partial class SuggestionSettingsWindow : WindowEx
                                 "Yes: Discard changes\n" +
                                 "No: Save changes\n" +
                                 "Cancel: Continue editing",
-                                "Pending changes", ButtonEnum.YesNoCancel))
+                                "Pending changes", MessageButtons.YesNoCancel))
                     {
-                        case ButtonResult.Yes:
+                        case MessageButtonResult.Yes:
                             break;
-                        case ButtonResult.No:
+                        case MessageButtonResult.No:
                             if (!await SaveSuggestion(false))
                             {
                                 recoverSuggestion = true;
@@ -54,9 +54,9 @@ public partial class SuggestionSettingsWindow : WindowEx
                             }
                             SuggestionManager.SetSuggestion(_activeSuggestion.Clone(), true);
                             break;
-                        case ButtonResult.Cancel:
-                        case ButtonResult.Abort:
-                        case ButtonResult.None:
+                        case MessageButtonResult.Cancel:
+                        case MessageButtonResult.Abort:
+                        case MessageButtonResult.None:
                             recoverSuggestion = true;
                             break;
                     }
@@ -146,7 +146,7 @@ public partial class SuggestionSettingsWindow : WindowEx
     {
         if (await this.MessageBoxQuestion(
                 "Are you sure you want to reset all suggestions to the default settings?",
-                "Reset all settings?") != ButtonResult.Yes) return;
+                "Reset all settings?") != MessageButtonResult.Yes) return;
 
         SuggestionManager.Reset();
 
@@ -170,12 +170,12 @@ public partial class SuggestionSettingsWindow : WindowEx
         if (!string.IsNullOrWhiteSpace(result))
         {
             if (await this.MessageBoxError(result,
-                    $"{_activeSuggestion.Title} - Error") != ButtonResult.Yes) return false;
+                    $"{_activeSuggestion.Title} - Error") != MessageButtonResult.Yes) return false;
         }
 
         if (promptBeforeSave && await this.MessageBoxQuestion(
                 "Are you sure you want to save and overwrite previous settings?",
-                "Save suggestion changes?") != ButtonResult.Yes) return false;
+                "Save suggestion changes?") != MessageButtonResult.Yes) return false;
 
         SuggestionManager.SetSuggestion(_activeSuggestion.Clone(), true);
         PendingChanges = false;
@@ -193,7 +193,7 @@ public partial class SuggestionSettingsWindow : WindowEx
 
         if (await this.MessageBoxQuestion(
                 "Are you sure you want to discard all changes and return to the last saved state?",
-                "Discard suggestion changes?") != ButtonResult.Yes) return;
+                "Discard suggestion changes?") != MessageButtonResult.Yes) return;
 
         ActiveSuggestion = SuggestionManager.GetSuggestion(_activeSuggestion.GetType())?.Clone();
     }
@@ -204,7 +204,7 @@ public partial class SuggestionSettingsWindow : WindowEx
 
         if (await this.MessageBoxQuestion(
                 "Are you sure you want to reset to the default settings?",
-                "Reset suggestion settings?") != ButtonResult.Yes) return;
+                "Reset suggestion settings?") != MessageButtonResult.Yes) return;
 
         var suggestion = (Suggestion)_activeSuggestion.GetType().CreateInstance();
         if (suggestion == null) return;

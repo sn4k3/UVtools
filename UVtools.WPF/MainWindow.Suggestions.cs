@@ -8,13 +8,13 @@
 
 using Avalonia.Controls;
 using Avalonia.Threading;
-using MessageBox.Avalonia.Enums;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using UVtools.Core.Dialogs;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Managers;
 using UVtools.Core.Suggestions;
@@ -91,7 +91,7 @@ public partial class MainWindow
         {
             sb.AppendLine(suggestion.ConfirmationMessage);
         }
-        if (await this.MessageBoxQuestion(sb.ToString(), "Apply suggestions?") != ButtonResult.Yes) return;
+        if (await this.MessageBoxQuestion(sb.ToString(), "Apply suggestions?") != MessageButtonResult.Yes) return;
 
         IsGUIEnabled = false;
         ShowProgressWindow($"Applying {suggestions.Length} suggestions", false);
@@ -138,7 +138,7 @@ public partial class MainWindow
     {
         if (!IsFileLoaded || suggestion is null || suggestion.IsInformativeOnly) return;
 
-        if (await this.MessageBoxQuestion($"Are you sure you want to apply the following suggestion?:\n\n{suggestion.ConfirmationMessage}", "Apply the suggestion?") != ButtonResult.Yes) return;
+        if (await this.MessageBoxQuestion($"Are you sure you want to apply the following suggestion?:\n\n{suggestion.ConfirmationMessage}", "Apply the suggestion?") != MessageButtonResult.Yes) return;
 
 
         IsGUIEnabled = false;

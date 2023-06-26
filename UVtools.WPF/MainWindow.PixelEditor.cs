@@ -13,7 +13,6 @@ using Avalonia.Threading;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
-using MessageBox.Avalonia.Enums;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
@@ -21,6 +20,7 @@ using System.Collections.ObjectModel;
 using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
+using UVtools.Core.Dialogs;
 using UVtools.Core.Extensions;
 using UVtools.Core.Layers;
 using UVtools.Core.PixelEditor;
@@ -131,7 +131,7 @@ public partial class MainWindow
     {
         if (Drawings.Count == 0) return;
         if (await this.MessageBoxQuestion($"Are you sure you want to clear {Drawings.Count} operations?",
-                "Clear pixel editor operations?") != ButtonResult.Yes) return;
+                "Clear pixel editor operations?") != MessageButtonResult.Yes) return;
         Drawings.Clear();
         ShowLayer();
     }
@@ -523,14 +523,14 @@ public partial class MainWindow
             return;
         }
 
-        ButtonResult result;
+        MessageButtonResult result;
 
         if (exitEditor)
         {
             result = await this.MessageBoxQuestion(
                 "There are edit operations that have not been applied.  " +
                 "Would you like to apply all operations before closing the editor?",
-                "Closing image editor?", ButtonEnum.YesNoCancel);
+                "Closing image editor?", MessageButtons.YesNoCancel);
         }
         else
         {
@@ -541,16 +541,16 @@ public partial class MainWindow
 
             // For the "apply" case, We aren't exiting the editor, so map "No" to "Cancel" here
             // in order to prevent pixel history from being cleared.
-            result = result == ButtonResult.No ? ButtonResult.Cancel : ButtonResult.Yes;
+            result = result == MessageButtonResult.No ? MessageButtonResult.Cancel : MessageButtonResult.Yes;
         }
 
-        if (result == ButtonResult.Cancel)
+        if (result == MessageButtonResult.Cancel)
         {
             IsPixelEditorActive = true;
             return;
         }
 
-        if (result == ButtonResult.Yes)
+        if (result == MessageButtonResult.Yes)
         {
             IsGUIEnabled = false;
             ShowProgressWindow("Drawing pixels");
@@ -617,7 +617,7 @@ public partial class MainWindow
         Drawings.Clear();
         ShowLayer();
 
-        if (exitEditor || (Settings.PixelEditor.CloseEditorOnApply && result == ButtonResult.Yes))
+        if (exitEditor || (Settings.PixelEditor.CloseEditorOnApply && result == MessageButtonResult.Yes))
         {
             IsPixelEditorActive = false;
             if (!ReferenceEquals(LastSelectedTabItem, TabPixelEditor))

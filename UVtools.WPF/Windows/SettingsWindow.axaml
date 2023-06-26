@@ -533,7 +533,7 @@
                 <TextBlock Classes="GroupBoxHeader" Text="Layer colors"/>
 
                 <Grid Margin="10" 
-                      RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto"
+                      RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto"
                       ColumnDefinitions="Auto,Auto,Auto,Auto,*">
 
                   <!--Tooltip overlay-->
@@ -650,11 +650,41 @@
                             IsChecked="{Binding Settings.LayerPreview.ContourBoundsOutline}"/>
 
 
-                  <!--Hollow area boundary-->
+                  <!--Enclosing Circles-->
                   <TextBlock Grid.Row="8" Grid.Column="0"
                              VerticalAlignment="Center"
-                             Text="Hollow area outline:"/>
+                             Text="Enclosing circles:"/>
                   <Button Grid.Row="8" Grid.Column="1"
+                          Margin="10,0,0,0"
+                          Padding="10"
+                          BorderBrush="Black"
+                          BorderThickness="2"
+                          VerticalAlignment="Center"
+                          Background="{Binding Settings.LayerPreview.EnclosingCirclesOutlineBrush}"
+                          Command="{Binding SelectColor}"
+                          CommandParameter="EnclosingCirclesOutlineColor"/>
+                  <NumericUpDown Grid.Row="8" Grid.Column="2"
+                                 Margin="10,0,0,0"
+                                 VerticalAlignment="Center"
+                                 Minimum="1"
+                                 Maximum="50"
+                                 Value="{Binding Settings.LayerPreview.EnclosingCirclesOutlineThickness}"/>
+                  <TextBlock Grid.Row="8" Grid.Column="3"
+                             Margin="5,0,0,0"
+                             VerticalAlignment="Center"
+                             Text="Line thickness"/>
+                  <CheckBox Grid.Row="8" Grid.Column="4"
+                            Margin="10,0,0,0"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center"
+                            Content="Show by default"
+                            IsChecked="{Binding Settings.LayerPreview.EnclosingCirclesOutline}"/>
+
+                  <!--Hollow area boundary-->
+                  <TextBlock Grid.Row="10" Grid.Column="0"
+                             VerticalAlignment="Center"
+                             Text="Hollow area outline:"/>
+                  <Button Grid.Row="10" Grid.Column="1"
                           Margin="10,0,0,0"
                           Padding="10"
                           BorderBrush="Black"
@@ -663,18 +693,18 @@
                           Background="{Binding Settings.LayerPreview.HollowOutlineBrush}"
                           Command="{Binding SelectColor}"
                           CommandParameter="HollowOutlineColor"/>
-                  <NumericUpDown Grid.Row="8" Grid.Column="2"
+                  <NumericUpDown Grid.Row="10" Grid.Column="2"
                                  Margin="10,0,0,0"
                                  VerticalAlignment="Center"
                                  Minimum="-1"
                                  Maximum="127"
                                  Value="{Binding Settings.LayerPreview.HollowOutlineLineThickness}"/>
-                  <TextBlock Grid.Row="8" Grid.Column="3"
+                  <TextBlock Grid.Row="10" Grid.Column="3"
                              Margin="5,0,0,0"
                              VerticalAlignment="Center"
                              ToolTip.Tip="Set -1 to fill the area"
                              Text="Line thickness"/>
-                  <CheckBox Grid.Row="8" Grid.Column="4"
+                  <CheckBox Grid.Row="10" Grid.Column="4"
                             Margin="10,0,0,0"
                             HorizontalAlignment="Right"
                             VerticalAlignment="Center"
@@ -682,10 +712,10 @@
                             IsChecked="{Binding Settings.LayerPreview.HollowOutline}"/>
 
                   <!--Centroids boundary-->
-                  <TextBlock Grid.Row="10" Grid.Column="0"
+                  <TextBlock Grid.Row="12" Grid.Column="0"
                              VerticalAlignment="Center"
                              Text="Centroids:"/>
-                  <Button Grid.Row="10" Grid.Column="1"
+                  <Button Grid.Row="12" Grid.Column="1"
                           Margin="10,0,0,0"
                           Padding="10"
                           BorderBrush="Black"
@@ -694,21 +724,21 @@
                           Background="{Binding Settings.LayerPreview.CentroidOutlineBrush}"
                           Command="{Binding SelectColor}"
                           CommandParameter="LayerBoundsOutlineColor"/>
-                  <NumericUpDown Grid.Row="10" Grid.Column="2"
+                  <NumericUpDown Grid.Row="12" Grid.Column="2"
                                  Margin="10,0,0,0"
                                  VerticalAlignment="Center"
                                  Minimum="1"
                                  Maximum="50"
                                  Value="{Binding Settings.LayerPreview.CentroidOutlineDiameter}"/>
-                  <TextBlock Grid.Row="10" Grid.Column="3"
+                  <TextBlock Grid.Row="12" Grid.Column="3"
                              Margin="5,0,0,0"
                              VerticalAlignment="Center"
                              Text="Diameter"/>
 
-                  <StackPanel 
-                      HorizontalAlignment="Right"
-                      VerticalAlignment="Center"
-                      Grid.Row="10" Grid.Column="3" Grid.ColumnSpan="2" Orientation="Horizontal" Spacing="10">
+                  <StackPanel Grid.Row="12" Grid.Column="3" Grid.ColumnSpan="2"
+                              HorizontalAlignment="Right"
+                              VerticalAlignment="Center"
+                              Orientation="Horizontal" Spacing="10">
                       <CheckBox Content="Hollow centroids"
                                 IsChecked="{Binding Settings.LayerPreview.CentroidOutlineHollow}"/>
 
@@ -717,10 +747,10 @@
                   </StackPanel>
 
                   <!-- Triangulate -->
-                  <TextBlock Grid.Row="12" Grid.Column="0"
+                  <TextBlock Grid.Row="14" Grid.Column="0"
                              VerticalAlignment="Center"
                              Text="Triangulate:"/>
-                  <Button Grid.Row="12" Grid.Column="1"
+                  <Button Grid.Row="14" Grid.Column="1"
                           Margin="10,0,0,0"
                           Padding="10"
                           BorderBrush="Black"
@@ -729,30 +759,30 @@
                           Background="{Binding Settings.LayerPreview.TriangulateOutlineBrush}"
                           Command="{Binding SelectColor}"
                           CommandParameter="TriangulateOutlineColor"/>
-                  <NumericUpDown Grid.Row="12" Grid.Column="2"
+                  <NumericUpDown Grid.Row="14" Grid.Column="2"
                                  Margin="10,0,0,0"
                                  VerticalAlignment="Center"
                                  Minimum="1"
                                  Maximum="50"
                                  Value="{Binding Settings.LayerPreview.TriangulateOutlineLineThickness}"/>
-                  <TextBlock Grid.Row="12" Grid.Column="3"
+                  <TextBlock Grid.Row="14" Grid.Column="3"
                              Margin="5,0,0,0"
                              VerticalAlignment="Center"
                              Text="Line thickness"/>
 
-                  <StackPanel
-                      HorizontalAlignment="Right"
-                      VerticalAlignment="Center"
-                      Grid.Row="12" Grid.Column="3" Grid.ColumnSpan="2" Orientation="Horizontal" Spacing="10">
+                  <StackPanel Grid.Row="14" Grid.Column="3" Grid.ColumnSpan="2"
+                              HorizontalAlignment="Right"
+                              VerticalAlignment="Center"
+                              Orientation="Horizontal" Spacing="10">
                       <CheckBox Content="Show triangle count"
                                 IsChecked="{Binding Settings.LayerPreview.TriangulateOutlineShowCount}"/>
                   </StackPanel>
 
                   <!--Masks-->
-                  <TextBlock Grid.Row="14" Grid.Column="0"
+                  <TextBlock Grid.Row="16" Grid.Column="0"
                              VerticalAlignment="Center"
                              Text="Mask area outline:"/>
-                  <Button Grid.Row="14" Grid.Column="1"
+                  <Button Grid.Row="16" Grid.Column="1"
                           Margin="10,0,0,0"
                           Padding="10"
                           BorderBrush="Black"
@@ -761,18 +791,18 @@
                           Background="{Binding Settings.LayerPreview.MaskOutlineBrush}"
                           Command="{Binding SelectColor}"
                           CommandParameter="MaskOutlineColor"/>
-                  <NumericUpDown Grid.Row="14" Grid.Column="2"
+                  <NumericUpDown Grid.Row="16" Grid.Column="2"
                                  Margin="10,0,0,0"
                                  VerticalAlignment="Center"
                                  Minimum="-1"
                                  Maximum="127"
                                  Value="{Binding Settings.LayerPreview.MaskOutlineLineThickness}"/>
-                  <TextBlock Grid.Row="14" Grid.Column="3"
+                  <TextBlock Grid.Row="16" Grid.Column="3"
                              Margin="5,0,0,0"
                              VerticalAlignment="Center"
                              ToolTip.Tip="Set -1 to fill the area"
                              Text="Line thickness"/>
-                  <CheckBox Grid.Row="14" Grid.Column="4"
+                  <CheckBox Grid.Row="16" Grid.Column="4"
                             Margin="10,0,0,0"
                             HorizontalAlignment="Right"
                             VerticalAlignment="Center"

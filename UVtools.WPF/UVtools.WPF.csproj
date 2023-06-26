@@ -12,7 +12,7 @@
 		<PackageLicenseFile>LICENSE</PackageLicenseFile>
 		<RepositoryUrl>https://github.com/sn4k3/UVtools</RepositoryUrl>
 		<RepositoryType>Git</RepositoryType>
-		<Version>3.14.4</Version>
+		<Version>3.15.0</Version>
 		<Platforms>AnyCPU;x64</Platforms>
 		<PackageIcon>UVtools.png</PackageIcon>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
@@ -47,7 +47,7 @@
 		<PackageReference Include="Avalonia.Controls.DataGrid" Version="0.10.21" />
 		<PackageReference Include="Avalonia.Desktop" Version="0.10.21" />
 		<PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="0.10.21" />
-		<PackageReference Include="MessageBox.Avalonia" Version="2.1.0" />
+		<PackageReference Include="Markdown.Avalonia" Version="0.10.14" />
 		<PackageReference Include="Projektanker.Icons.Avalonia" Version="5.13.0" />
 		<PackageReference Include="Projektanker.Icons.Avalonia.FontAwesome" Version="5.13.0" />
 		<PackageReference Include="Projektanker.Icons.Avalonia.MaterialDesign" Version="5.13.0" />

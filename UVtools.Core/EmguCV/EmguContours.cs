@@ -94,6 +94,15 @@ public class EmguContours : IReadOnlyList<EmguContour>, IDisposable
     public EmguContour this[ulong index] => _contours[index];
     public EmguContour this[long index] => _contours[index];
 
+    public int this[sbyte index, int hierarchyIndex] => Hierarchy[index, hierarchyIndex];
+    public int this[byte index, int hierarchyIndex] => Hierarchy[index, hierarchyIndex];
+    public int this[short index, int hierarchyIndex] => Hierarchy[index, hierarchyIndex];
+    public int this[ushort index, int hierarchyIndex] => Hierarchy[index, hierarchyIndex];
+    public int this[int index, int hierarchyIndex] => Hierarchy[index, hierarchyIndex];
+    public int this[uint index, int hierarchyIndex] => Hierarchy[index, hierarchyIndex];
+    public int this[ulong index, int hierarchyIndex] => Hierarchy[index, hierarchyIndex];
+    public int this[long index, int hierarchyIndex] => Hierarchy[index, hierarchyIndex];
+
     #endregion
 
     #region IReadOnlyList Implementation
@@ -270,7 +279,7 @@ public class EmguContours : IReadOnlyList<EmguContour>, IDisposable
             }
             else
             {
-                vec.Push(contours[i]);
+                vec!.Push(contours[i]);
             }
         }
 
@@ -375,6 +384,26 @@ public class EmguContours : IReadOnlyList<EmguContour>, IDisposable
         double result = 0;
         for (var i = 0; i < vectorSize; i++)
         {
+            result = Math.Max(result, CvInvoke.ContourArea(contours[i]));
+        }
+        return result;
+    }
+
+    /// <summary>
+    /// Gets the largest contour area from a contour list
+    /// </summary>
+    /// <param name="contours">Contour list</param>
+    /// <param name="hierarchy">Hierarchy, valid only if comp or tree mode</param>
+    /// <returns></returns>
+    public static double GetLargestContourArea(VectorOfVectorOfPoint contours, int[,] hierarchy)
+    {
+        var vectorSize = contours.Size;
+        if (vectorSize == 0) return 0;
+
+        double result = CvInvoke.ContourArea(contours[0]);
+        for (var i = 1; i < vectorSize; i++)
+        {
+            if (hierarchy[i, EmguContour.HierarchyParent] != -1) continue; // External contours are the biggest 
             result = Math.Max(result, CvInvoke.ContourArea(contours[i]));
         }
         return result;
