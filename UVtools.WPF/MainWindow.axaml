@@ -89,10 +89,21 @@
 
 					<Separator/>
 
-					<MenuItem Header="I _printed this file" HotKey="Ctrl+P" InputGesture="Ctrl+P"
-							  IsEnabled="{Binding IsFileLoaded}"
-							  Command="{Binding IPrintedThisFile}"
-							  i:MenuItem.Icon="fa-solid fa-flask"/>
+                    <MenuItem Header="Reset layers properties"
+                              Command="{Binding ResetLayersProperties}"
+                              i:MenuItem.Icon="fa-solid fa-hammer">
+						<MenuItem.IsEnabled>
+							<MultiBinding Converter="{x:Static BoolConverters.And}">
+								<Binding Path="IsFileLoaded"/>
+								<Binding Path="SlicerFile.SupportPerLayerSettings"/>
+                            </MultiBinding>
+                        </MenuItem.IsEnabled>
+                    </MenuItem>
+
+                        <MenuItem Header="I _printed this file" HotKey="Ctrl+P" InputGesture="Ctrl+P"
+                                  IsEnabled="{Binding IsFileLoaded}"
+                                  Command="{Binding IPrintedThisFile}"
+                                  i:MenuItem.Icon="fa-solid fa-flask"/>
 
 					<MenuItem Name="MainMenu.File.OpenContainingFileFolder"
 							  Header="Open containing fo_lder"

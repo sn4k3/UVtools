@@ -1,12 +1,6 @@
 - **File formats:**
-  - (Add) CXDLPv4 format
-  - (Improvement) Add missing keys for SL1 format from PrusaSlicer 2.6.0
-- **UI**:
-  - (Add) About - Terms of Use
-  - (Add) Outline: Enclosing circles
-  - (Improvement) Minor alteration on how current layer preview cache the contours
-  - (Improvement) Revamp tool Edit print parameters
-  - (Improvement) Revamp message boxes
-  - (Remove) Avalonia.MessageBox dependency in favor of use our own message box
-- (Change) PrusaSlicer printers - Creality Halot Mage/Pro: Use CXDLPV4 format instead ENCRYPTED.CTB
+  - (Fix) CTB, CXDLPv4 and GOO: Unable to set some of the virtual bottom properties to 0
+  - (Fix) Anycubic and GOO: When open file in partial mode, the layer data was not set from the layer table
+  - (Fix) CXDLP: "Invalid printer model" error
+- (Add) File - Reset layers properties: Reset layers properties with the global properties of the file
 

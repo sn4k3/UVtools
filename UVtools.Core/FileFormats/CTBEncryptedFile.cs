@@ -790,14 +790,7 @@ public sealed class CTBEncryptedFile : FileFormat
             }
         }
     }
-
-    public override float BottomWaitTimeBeforeCure
-    {
-        get => base.BottomWaitTimeBeforeCure > 0 ? base.BottomWaitTimeBeforeCure : this.FirstOrDefault(layer => layer is { IsBottomLayer: true, IsDummy: false })?.WaitTimeBeforeCure ?? 0;
-        set => base.BottomWaitTimeBeforeCure = value;
-    }
-
-
+    
     public override float WaitTimeBeforeCure
     {
         get => Settings.RestTimeAfterRetract;
@@ -816,12 +809,6 @@ public sealed class CTBEncryptedFile : FileFormat
     {
         get => Settings.BottomExposureTime;
         set => base.BottomExposureTime = Settings.BottomExposureTime = (float)Math.Round(value, 2);
-    }
-
-    public override float BottomWaitTimeAfterCure
-    {
-        get => base.BottomWaitTimeAfterCure > 0 ? base.BottomWaitTimeAfterCure : this.FirstOrDefault(layer => layer is { IsBottomLayer: true, IsDummy: false })?.WaitTimeAfterCure ?? 0;
-        set => base.BottomWaitTimeAfterCure = value;
     }
 
     public override float WaitTimeAfterCure
@@ -912,12 +899,6 @@ public sealed class CTBEncryptedFile : FileFormat
     {
         get => Settings.LiftSpeed2;
         set => base.LiftSpeed2 = Settings.LiftSpeed2 = (float)Math.Round(value, 2);
-    }
-
-    public override float BottomWaitTimeAfterLift
-    {
-        get => base.BottomWaitTimeAfterLift > 0 ? base.BottomWaitTimeAfterLift : this.FirstOrDefault(layer => layer is { IsBottomLayer: true, IsDummy: false })?.WaitTimeAfterLift ?? 0;
-        set => base.BottomWaitTimeAfterLift = value;
     }
 
     public override float WaitTimeAfterLift
@@ -1146,7 +1127,7 @@ public sealed class CTBEncryptedFile : FileFormat
         var machineNameBytes = inputFile.ReadBytes(Settings.MachineNameSize);
         Settings.MachineName = Encoding.UTF8.GetString(machineNameBytes);
 
-        /* TODO: read the disclaimer here? we can really just ignore it though...*/
+        /* Read the disclaimer here? we can really just ignore it though...*/
 
         /* start gathering up the layers */
         progress.Reset(OperationProgress.StatusGatherLayers, Settings.LayerCount);
@@ -1228,10 +1209,24 @@ public sealed class CTBEncryptedFile : FileFormat
                                         "Please increase the portion of the plate in use and re-slice the file.");
         }
 
+        var hash = inputFile.ReadBytes(HASH_LENGTH);
+        if (!hash.SequenceEqual(encryptedHash))
+        {
+            throw new FileLoadException("The file checksum does not match, malformed file.", FileFullPath);
+        }
+
         for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
         {
             LayersDefinition[layerIndex].CopyTo(this[layerIndex]);
         }
+
+        // Fixes virtual bottom properties
+        SuppressRebuildPropertiesWork(() =>
+        {
+            BottomWaitTimeBeforeCure = this.FirstOrDefault(layer => layer is { IsBottomLayer: true, IsDummy: false })?.WaitTimeBeforeCure ?? 0;
+            BottomWaitTimeAfterCure = this.FirstOrDefault(layer => layer is { IsBottomLayer: true, IsDummy: false })?.WaitTimeAfterCure ?? 0;
+            BottomWaitTimeAfterLift = this.FirstOrDefault(layer => layer is { IsBottomLayer: true, IsDummy: false })?.WaitTimeAfterLift ?? 0;
+        });
 
         if (!buggyLayers.IsEmpty)
         {
@@ -1264,12 +1259,6 @@ public sealed class CTBEncryptedFile : FileFormat
                     "Unable to load this file due to an Chitubox bug and the impossibility to auto correct some of these layers.\n" +
                     "Please increase the portion of the plate in use and re-slice the file.");
             }
-        }
-
-        var hash = inputFile.ReadBytes(HASH_LENGTH);
-        if (!hash.SequenceEqual(encryptedHash))
-        {
-            throw new FileLoadException("The file checksum does not match, malformed file.", FileFullPath);
         }
     }
 

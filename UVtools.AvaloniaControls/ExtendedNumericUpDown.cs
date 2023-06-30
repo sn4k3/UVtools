@@ -1,10 +1,11 @@
 ﻿/*
- *                     GNU AFFERO GENERAL PUBLIC LICENSE
- *                       Version 3, 19 November 2007
- *  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
- *  Everyone is permitted to copy and distribute verbatim copies
- *  of this license document, but changing it is not allowed.
- */
+*                               The MIT License (MIT)
+* Permission is hereby granted, free of charge, to any person obtaining a copy of
+* this software and associated documentation files (the "Software"), to deal in
+* the Software without restriction, including without limitation the rights to
+* use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+* the Software, and to permit persons to whom the Software is furnished to do so.
+*/
 
 using Avalonia;
 using Avalonia.Controls;
@@ -17,11 +18,34 @@ namespace UVtools.AvaloniaControls;
 /// </summary>
 public class ExtendedNumericUpDown : NumericUpDown
 {
+    #region Enums
+
+    public enum ResetVisibilityType
+    {
+        /// <summary>
+        /// Hidden
+        /// </summary>
+        Hidden,
+
+        /// <summary>
+        /// Always visible
+        /// </summary>
+        Visible,
+
+        /// <summary>
+        /// Visible if it's possible to reset the value, otherwise hidden
+        /// </summary>
+        Auto
+    }
+
+    #endregion
+
     #region Members
     private bool _firstTime = true;
     private double _initialValue;
     private string? _initialText;
     private bool _isResetEnabled;
+    private bool _isResetVisible;
     #endregion
 
     #region Avalonia Properties
@@ -30,7 +54,6 @@ public class ExtendedNumericUpDown : NumericUpDown
     /// </summary>
     public static readonly StyledProperty<bool> IsInitialValueVisibleProperty =
         AvaloniaProperty.Register<ExtendedNumericUpDown, bool>(nameof(IsInitialValueVisible));
-
 
     /// <summary>
     /// Defines the <see cref="InitialText"/> property.
@@ -55,14 +78,15 @@ public class ExtendedNumericUpDown : NumericUpDown
     /// <summary>
     /// Defines the <see cref="IsResetVisible"/> property.
     /// </summary>
-    public static readonly StyledProperty<bool> IsResetVisibleProperty =
-        AvaloniaProperty.Register<ExtendedNumericUpDown, bool>(nameof(IsResetVisible));
+    public static readonly DirectProperty<ExtendedNumericUpDown, bool> IsResetVisibleProperty =
+        AvaloniaProperty.RegisterDirect<ExtendedNumericUpDown, bool>(nameof(IsResetVisible), updown => updown.IsResetVisible,
+            (updown, v) => updown.IsResetVisible = v);
 
     /// <summary>
-    /// Defines the <see cref="ResetAutoVisibility"/> property.
+    /// Defines the <see cref="ResetVisibility"/> property.
     /// </summary>
-    public static readonly StyledProperty<bool> ResetAutoVisibilityProperty =
-        AvaloniaProperty.Register<ExtendedNumericUpDown, bool>(nameof(ResetAutoVisibility));
+    public static readonly StyledProperty<ResetVisibilityType> ResetVisibilityProperty =
+        AvaloniaProperty.Register<ExtendedNumericUpDown, ResetVisibilityType>(nameof(ResetVisibility));
 
     /// <summary>
     /// Defines the <see cref="IsResetEnabled"/> property.
@@ -110,22 +134,26 @@ public class ExtendedNumericUpDown : NumericUpDown
     }
 
     /// <summary>
-    /// Gets or sets if the reset button should be visible
+    /// Gets if the reset button is visible
     /// </summary>
     public bool IsResetVisible
     {
-        get => GetValue(IsResetVisibleProperty);
-        set => SetValue(IsResetVisibleProperty, value);
+        get => _isResetVisible;
+        private set => SetAndRaise(IsResetVisibleProperty, ref _isResetVisible, value);
     }
 
     /// <summary>
     /// <para>Gets or sets if the reset button should auto show (When Value is different from <see cref="InitialValue"/>) and auto hide (When Value is equal to <see cref="InitialValue"/>).</para>
     /// <para>The <see cref="IsResetVisible"/> property will auto change.</para>
     /// </summary>
-    public bool ResetAutoVisibility
+    public ResetVisibilityType ResetVisibility
     {
-        get => GetValue(ResetAutoVisibilityProperty);
-        set => SetValue(ResetAutoVisibilityProperty, value);
+        get => GetValue(ResetVisibilityProperty);
+        set
+        {
+            SetValue(ResetVisibilityProperty, value);
+            SetResetVisibility();
+        }
     }
 
     /// <summary>
@@ -136,8 +164,8 @@ public class ExtendedNumericUpDown : NumericUpDown
         get => _isResetEnabled;
         private set
         {
-            SetAndRaise(IsResetEnabledProperty, ref _isResetEnabled, value);
-            if (ResetAutoVisibility)
+            if(!SetAndRaise(IsResetEnabledProperty, ref _isResetEnabled, value)) return;
+            if (ResetVisibility == ResetVisibilityType.Auto)
             {
                 IsResetVisible = _isResetEnabled;
             }
@@ -191,6 +219,18 @@ public class ExtendedNumericUpDown : NumericUpDown
     {
         Value = _initialValue;
         IsResetEnabled = false;
+    }
+
+
+    private void SetResetVisibility()
+    {
+        IsResetVisible = ResetVisibility switch
+        {
+            ResetVisibilityType.Hidden => false,
+            ResetVisibilityType.Visible => true,
+            ResetVisibilityType.Auto => IsResetEnabled,
+            _ => throw new ArgumentOutOfRangeException(nameof(ResetVisibility), ResetVisibility, "Value not processed."),
+        };
     }
     #endregion
 }

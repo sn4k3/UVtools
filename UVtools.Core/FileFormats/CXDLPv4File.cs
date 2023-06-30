@@ -968,12 +968,6 @@ public sealed class CXDLPv4File : FileFormat
         }
     }
 
-    public override float BottomWaitTimeBeforeCure
-    {
-        get => base.BottomWaitTimeBeforeCure > 0 ? base.BottomWaitTimeBeforeCure : this.FirstOrDefault(layer => layer is {IsBottomLayer: true, IsDummy: false})?.WaitTimeBeforeCure ?? 0;
-        set => base.BottomWaitTimeBeforeCure = value;
-    }
-
     public override float WaitTimeBeforeCure
     {
         get => SlicerInfoSettings.RestTimeAfterRetract;
@@ -992,12 +986,6 @@ public sealed class CXDLPv4File : FileFormat
     {
         get => PrintParametersSettings.BottomExposureTime;
         set => base.BottomExposureTime = PrintParametersSettings.BottomExposureTime = SlicerInfoSettings.BottomExposureTime = (float) Math.Round(value, 2);
-    }
-
-    public override float BottomWaitTimeAfterCure
-    {
-        get => (base.BottomWaitTimeAfterCure > 0 ? base.BottomWaitTimeAfterCure : this.FirstOrDefault(layer => layer is {IsBottomLayer: true, IsDummy: false})?.WaitTimeAfterCure ?? 0);
-        set => base.BottomWaitTimeAfterCure = value;
     }
 
     public override float WaitTimeAfterCure
@@ -1090,12 +1078,6 @@ public sealed class CXDLPv4File : FileFormat
         set => base.LiftSpeed2 = SlicerInfoSettings.LiftSpeed2 = (float)Math.Round(value, 2);
     }
 
-    public override float BottomWaitTimeAfterLift
-    {
-        get => (base.BottomWaitTimeAfterLift > 0 ? base.BottomWaitTimeAfterLift : this.FirstOrDefault(layer => layer is { IsBottomLayer: true, IsDummy: false })?.WaitTimeAfterLift ?? 0);
-        set => base.BottomWaitTimeAfterLift = value;
-    }
-
     public override float WaitTimeAfterLift
     {
         get => SlicerInfoSettings.RestTimeAfterLift;
@@ -1110,28 +1092,10 @@ public sealed class CXDLPv4File : FileFormat
         }
     }
 
-    public override float BottomRetractSpeed
-    {
-        get => (base.BottomRetractSpeed > 0 ? base.BottomRetractSpeed : this.FirstOrDefault(layer => layer is { IsBottomLayer: true, IsDummy: false })?.RetractSpeed ?? 0);
-        set => base.BottomRetractSpeed = value;
-    }
-
     public override float RetractSpeed
     {
         get => PrintParametersSettings.RetractSpeed;
         set => base.RetractSpeed = PrintParametersSettings.RetractSpeed = (float)Math.Round(value, 2);
-    }
-
-    public override float BottomRetractHeight2
-    {
-        get => (base.BottomRetractHeight2 > 0 ? base.BottomRetractHeight2 : this.FirstOrDefault(layer => layer is { IsBottomLayer: true, IsDummy: false })?.RetractHeight2 ?? 0);
-        set => base.BottomRetractHeight2 = value;
-    }
-
-    public override float BottomRetractSpeed2
-    {
-        get => (base.BottomRetractSpeed2 > 0 ? base.BottomRetractSpeed2 : this.FirstOrDefault(layer => layer is { IsBottomLayer: true, IsDummy: false })?.RetractSpeed2 ?? 0);
-        set => base.BottomRetractSpeed2 = value;
     }
 
     public override float RetractHeight2
@@ -1475,6 +1439,17 @@ public sealed class CXDLPv4File : FileFormat
             LayerDefinitions[layerIndex].CopyTo(this[layerIndex]);
             LayerDefinitionsEx[layerIndex].CopyTo(this[layerIndex]);
         }
+
+        // Fixes virtual bottom properties
+        SuppressRebuildPropertiesWork(() =>
+        {
+            BottomWaitTimeBeforeCure = this.FirstOrDefault(layer => layer is { IsBottomLayer: true, IsDummy: false })?.WaitTimeBeforeCure ?? 0;
+            BottomWaitTimeAfterCure = this.FirstOrDefault(layer => layer is { IsBottomLayer: true, IsDummy: false })?.WaitTimeAfterCure ?? 0;
+            BottomWaitTimeAfterLift = this.FirstOrDefault(layer => layer is { IsBottomLayer: true, IsDummy: false })?.WaitTimeAfterLift ?? 0;
+            BottomRetractSpeed = this.FirstOrDefault(layer => layer is { IsBottomLayer: true, IsDummy: false })?.RetractSpeed ?? 0;
+            BottomRetractHeight2 = this.FirstOrDefault(layer => layer is { IsBottomLayer: true, IsDummy: false })?.RetractHeight2 ?? 0;
+            BottomRetractSpeed2 = this.FirstOrDefault(layer => layer is { IsBottomLayer: true, IsDummy: false })?.RetractSpeed2 ?? 0;
+        });
     }
 
     protected override void PartialSaveInternally(OperationProgress progress)

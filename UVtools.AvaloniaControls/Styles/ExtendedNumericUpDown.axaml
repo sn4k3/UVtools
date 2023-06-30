@@ -36,7 +36,7 @@
                                          FormatString="F2"
                                          ValueUnit="mm"
                                          IsInitialValueVisible="True"
-                                         IsResetVisible="True"
+                                         ResetVisibility="Visible"
                                          Watermark="Enter text"
                                          Height="60"/>
 
@@ -48,7 +48,7 @@
                                          FormatString="F2"
                                          ValueUnit="mm"
                                          IsInitialValueVisible="True"
-                                         ResetAutoVisibility="True"
+                                         ResetVisibility="Auto"
                                          Watermark="Enter text"/>
 
                 <c:ExtendedNumericUpDown Minimum="0"
@@ -57,6 +57,7 @@
                                          Width="300"
                                          Value="80"
                                          FormatString="F2"
+                                         IsResetVisible="True"
                                          ValueUnit="mm"
                                          Watermark="Enter text"/>
 
@@ -68,7 +69,7 @@
                                          FormatString="F2"
                                          ValueUnit="mm"
                                          IsInitialValueVisible="True"
-                                         IsResetVisible="True"
+                                         ResetVisibility="Visible"
                                          IsReadOnly="True"
                                          Watermark="Enter text" />
 
@@ -80,7 +81,7 @@
                                          FormatString="F2"
                                          ValueUnit="mm"
                                          IsInitialValueVisible="True"
-                                         IsResetVisible="True"
+                                         ResetVisibility="Visible"
                                          IsEnabled="False"
                                          Watermark="Enter text" />
 
@@ -91,8 +92,7 @@
                                          VerticalContentAlignment="Center"
                                          HorizontalContentAlignment="Center"
                                          ButtonSpinnerLocation="Left"
-                                         Watermark="Enter text"
-                                         IsResetVisible="False"/>
+                                         Watermark="Enter text"/>
             </StackPanel>
         </Border>
     </Design.PreviewWith>

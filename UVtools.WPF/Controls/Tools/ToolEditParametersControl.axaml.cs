@@ -106,7 +106,7 @@ public class ToolEditParametersControl : ToolControl
                 Value = (double)modifier.NewValue,
                 ValueUnit = modifier.ValueUnit,
                 IsInitialValueVisible = true,
-                ResetAutoVisibility = true,
+                ResetVisibility = ExtendedNumericUpDown.ResetVisibilityType.Auto,
                 Tag = this,
                 //Width = 100,
                 MinWidth = 320,

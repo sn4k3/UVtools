@@ -2077,8 +2077,23 @@ public partial class MainWindow : WindowEx
         return task;
     }
 
+    public async void ResetLayersProperties()
+    {
+        if (!IsFileLoaded || !SlicerFile.SupportPerLayerSettings) return;
+        if (await this.MessageBoxQuestion(
+                "Are you sure you want to reset layers properties with the global properties of the file?\n" +
+                "1. The bottom layers will set with the global bottom properties.\n" +
+                "2. The normal layers will set with the global normal properties.\n\n" +
+                $"This action will undo any modification you or {About.Software} made to layers (properties), reverting its information to the original state.",
+                "Reset layers properties with the global properties of the file?") != MessageButtonResult.Yes) return;
+
+        SlicerFile.RebuildLayersProperties(false);
+        RefreshCurrentLayerData();
+    }
+
     public async void IPrintedThisFile()
     {
+        if (!IsFileLoaded) return;
         await ShowRunOperation(typeof(OperationIPrintedThisFile));
     }
 

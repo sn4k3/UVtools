@@ -698,7 +698,7 @@ public sealed class GooFile : FileFormat
 
     public override float BottomWaitTimeBeforeCure
     {
-        get => base.BottomWaitTimeBeforeCure > 0 ? base.BottomWaitTimeBeforeCure : this.FirstOrDefault(layer => layer is { IsBottomLayer: true, IsDummy: false })?.WaitTimeBeforeCure ?? 0;
+        get => base.BottomWaitTimeBeforeCure;
         set
         {
             base.BottomWaitTimeBeforeCure = value;
@@ -730,7 +730,7 @@ public sealed class GooFile : FileFormat
 
     public override float BottomWaitTimeAfterCure
     {
-        get => base.BottomWaitTimeAfterCure > 0 ? base.BottomWaitTimeAfterCure : this.FirstOrDefault(layer => layer is { IsBottomLayer: true, IsDummy: false })?.WaitTimeAfterCure ?? 0;
+        get => base.BottomWaitTimeAfterCure;
         set
         {
             base.BottomWaitTimeAfterCure = value;
@@ -809,7 +809,7 @@ public sealed class GooFile : FileFormat
 
     public override float BottomWaitTimeAfterLift
     {
-        get => base.BottomWaitTimeAfterLift > 0 ? base.BottomWaitTimeAfterLift : this.FirstOrDefault(layer => layer is { IsBottomLayer: true, IsDummy: false })?.WaitTimeAfterLift ?? 0;
+        get => base.BottomWaitTimeAfterLift;
         set
         {
             base.BottomWaitTimeAfterLift = value;
@@ -980,16 +980,11 @@ public sealed class GooFile : FileFormat
                 Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), layerIndex =>
                 {
                     progress.PauseIfRequested();
-                    var layerDef = LayersDefinition[layerIndex];
-
-                    _layers[layerIndex] = new Layer((uint) layerIndex, layerDef.DecodeImage((uint) layerIndex), this);
-                    layerDef.CopyTo(_layers[layerIndex]);
-                    
+                    _layers[layerIndex] = new Layer((uint) layerIndex, LayersDefinition[layerIndex].DecodeImage((uint) layerIndex), this);
                     progress.LockAndIncrement();
                 });
             }
         }
-
 
         Footer = Helpers.Deserialize<FileFooter>(inputFile);
         Debug.WriteLine($"Footer: {Footer}");
@@ -997,6 +992,19 @@ public sealed class GooFile : FileFormat
         {
             throw new FileLoadException("Not a valid GOO file! Footer magic value mismatch", FileFullPath);
         }
+
+        for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
+        {
+            LayersDefinition[layerIndex].CopyTo(this[layerIndex]);
+        }
+
+        // Fixes virtual bottom properties
+        SuppressRebuildPropertiesWork(() =>
+        {
+            base.BottomWaitTimeBeforeCure = this.FirstOrDefault(layer => layer is { IsBottomLayer: true, IsDummy: false })?.WaitTimeBeforeCure ?? 0;
+            base.BottomWaitTimeAfterCure = this.FirstOrDefault(layer => layer is { IsBottomLayer: true, IsDummy: false })?.WaitTimeAfterCure ?? 0;
+            base.BottomWaitTimeAfterLift = this.FirstOrDefault(layer => layer is { IsBottomLayer: true, IsDummy: false })?.WaitTimeAfterLift ?? 0;
+        });
     }
 
     protected override void OnBeforeEncode(bool isPartialEncode)

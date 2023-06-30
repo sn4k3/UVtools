@@ -1388,7 +1388,7 @@ public sealed class ChituboxFile : FileFormat
 
     public override float BottomWaitTimeBeforeCure
     {
-        get => base.BottomWaitTimeBeforeCure > 0 ? base.BottomWaitTimeBeforeCure : this.FirstOrDefault(layer => layer is {IsBottomLayer: true, IsDummy: false})?.WaitTimeBeforeCure ?? 0;
+        get => base.BottomWaitTimeBeforeCure;
         set
         {
             if (HeaderSettings.Version < 4)
@@ -1436,7 +1436,7 @@ public sealed class ChituboxFile : FileFormat
 
     public override float BottomWaitTimeAfterCure
     {
-        get => HeaderSettings.Version >= 4 ? (base.BottomWaitTimeAfterCure > 0 ? base.BottomWaitTimeAfterCure : this.FirstOrDefault(layer => layer is {IsBottomLayer: true, IsDummy: false})?.WaitTimeAfterCure ?? 0) : 0;
+        get => HeaderSettings.Version >= 4 ? base.BottomWaitTimeAfterCure : 0;
         set
         {
             if (HeaderSettings.Version < 4) return;
@@ -1557,7 +1557,7 @@ public sealed class ChituboxFile : FileFormat
 
     public override float BottomWaitTimeAfterLift
     {
-        get => HeaderSettings.Version >= 4 ? (base.BottomWaitTimeAfterLift > 0 ? base.BottomWaitTimeAfterLift : this.FirstOrDefault(layer => layer is { IsBottomLayer: true, IsDummy: false })?.WaitTimeAfterLift ?? 0) : 0;
+        get => HeaderSettings.Version >= 4 ? base.BottomWaitTimeAfterLift : 0;
         set
         {
             if (HeaderSettings.Version < 4) return;
@@ -2173,6 +2173,16 @@ public sealed class ChituboxFile : FileFormat
             }
         }
 
+        if (Version >= 4)
+        {
+            // Fixes virtual bottom properties
+            SuppressRebuildPropertiesWork(() =>
+            {
+                base.BottomWaitTimeBeforeCure = this.FirstOrDefault(layer => layer is { IsBottomLayer: true, IsDummy: false })?.WaitTimeBeforeCure ?? 0;
+                base.BottomWaitTimeAfterCure = this.FirstOrDefault(layer => layer is { IsBottomLayer: true, IsDummy: false })?.WaitTimeAfterCure ?? 0;
+                base.BottomWaitTimeAfterLift = this.FirstOrDefault(layer => layer is { IsBottomLayer: true, IsDummy: false })?.WaitTimeAfterLift ?? 0;
+            });
+        }
     }
 
     protected override void PartialSaveInternally(OperationProgress progress)

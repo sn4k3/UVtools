@@ -19,7 +19,7 @@ public sealed class NullTerminatedUintStringBigEndian
     [FieldOrder(0)] [FieldEndianness(Endianness.Big)]
     public uint SerializedLength { get; set; }
 
-    [FieldOrder(1)] [FieldLength(nameof(SerializedLength))] [SerializeAs(SerializedType.TerminatedString)]
+    [FieldOrder(1)] [FieldLength(nameof(SerializedLength))]
     public string? SerializedValue { get; set; }
 
     [Ignore]
@@ -33,7 +33,7 @@ public sealed class NullTerminatedUintStringBigEndian
     public string ValueNotNull
     {
         get => SerializedValue?.TrimEnd(char.MinValue) ?? string.Empty;
-        set => SerializedValue = value is null ? null : $"{value}{char.MinValue}";
+        set => SerializedValue = $"{value}{char.MinValue}";
     }
 
     public NullTerminatedUintStringBigEndian() { }

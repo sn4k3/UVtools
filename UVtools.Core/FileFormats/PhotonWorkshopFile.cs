@@ -2226,11 +2226,14 @@ public sealed class PhotonWorkshopFile : FileFormat
                             .Sum(def => def.LayerHeight),
                     };
 
-                    LayersDefinition[layerIndex].CopyTo(this[layerIndex]);
-
                     progress.LockAndIncrement();
                 });
             }
+        }
+
+        for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
+        {
+            LayersDefinition[layerIndex].CopyTo(this[layerIndex]);
         }
 
         if (FileMarkSettings.Version < VERSION_516)

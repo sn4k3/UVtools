@@ -330,12 +330,12 @@
     </Style>
 
     <Style Selector="uac|ExtendedNumericUpDown.AutoResettable">
-        <Setter Property="ResetAutoVisibility" Value="True"/>
+        <Setter Property="ResetVisibility" Value="Auto"/>
     </Style>
 
     <Style Selector="uac|ExtendedNumericUpDown.AutoResettableWithInitialValue">
         <Setter Property="IsInitialValueVisible" Value="True"/>
-        <Setter Property="ResetAutoVisibility" Value="True"/>
+        <Setter Property="ResetVisibility" Value="Auto"/>
     </Style>
 
     <Style Selector="NumericUpDown.ValueLabel">

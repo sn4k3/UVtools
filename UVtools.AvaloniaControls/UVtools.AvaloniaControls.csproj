@@ -10,14 +10,16 @@
     <PackageIconUrl />
     <RepositoryUrl>https://github.com/sn4k3/UVtools/tree/master/UVtools.AvaloniaControls</RepositoryUrl>
     <RepositoryType>Git</RepositoryType>
-    <PackageTags>Advanced image box; Avalonia</PackageTags>
+    <PackageTags>Advanced image box; Extended numericupdown; Avalonia</PackageTags>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <Description>AvaloniaUI Controls
-- AdvancedImageBox: Pan, zoom, cursor, pixel grid and selections image box</Description>
-    <Version>2.1.0</Version>
+- AdvancedImageBox: Pan, zoom, cursor, pixel grid and selections image box
+- ExtendedNumericUpDown: Initial value with a reset button and value unit label</Description>
+    <Version>2.1.1</Version>
     <Nullable>enable</Nullable>
     <PackageProjectUrl>https://github.com/sn4k3/UVtools</PackageProjectUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
+    <Title>UVtools Avalonia Controls</Title>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
@@ -42,7 +44,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="..\LICENSE">
+    <None Include="LICENSE">
       <Pack>True</Pack>
       <PackagePath></PackagePath>
     </None>
@@ -50,15 +52,6 @@
       <Pack>True</Pack>
       <PackagePath></PackagePath>
     </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <AvaloniaXaml Update="Controls.axaml">
-      <Generator>MSBuild:Compile</Generator>
-    </AvaloniaXaml>
-    <AvaloniaXaml Update="Styles\ExtendedNumericUpDown.axaml">
-      <Generator>MSBuild:Compile</Generator>
-    </AvaloniaXaml>
   </ItemGroup>
 
   <ItemGroup>
