@@ -2,7 +2,7 @@ name: Winget and Nuget package publish
 
 on:
   release:
-    types: [published]
+    types: [released]
 
 env:
    WINGET_PACKAGE_NAME: .+win-x64.+\.msi
@@ -16,34 +16,43 @@ jobs:
   winget:
     name: Winget - Pull request
     runs-on: windows-latest
-    timeout-minutes: 10
     steps:
-      - name: Download WingetCreate.exe
-        run: iwr -Uri https://aka.ms/wingetcreate/latest -OutFile wingetcreate.exe
-      - name: Set VERSION variable from tag
-        run: | 
-          $github = Get-Content '${{ github.event_path }}' | ConvertFrom-Json
-          $version = $github.release.tag_name.Trim('v')
-          if($version.Length -lt 5)
-          { 
-             Write-Error "Version $version is too short!"
-             exit -1 
-          }
-          Write-Output "Version: ${version}"
-          "VERSION=${version}" >> $env:GITHUB_ENV
-      - name: Set INSTALLER_URL variable from release asset
-        run: | 
-          $github = Get-Content '${{ github.event_path }}' | ConvertFrom-Json
-          $installerUrl = $github.release.assets | Where-Object -Property name -match "${env:WINGET_PACKAGE_NAME}" | Select -ExpandProperty browser_download_url -First 1
-          if($null -eq $installerUrl)
-          { 
-             Write-Error "Installer URL not found on ${github.release.assets}"
-             exit -1 
-          }
-          Write-Output "Installer url: ${installerUrl}"
-          "INSTALLER_URL=${installerUrl}" >> $env:GITHUB_ENV
-      - name: Submit package to Windows Package Manager Community Repository
-        run: .\wingetcreate.exe update ${env:WINGET_PACKAGE_ID} --version ${env:VERSION} --urls ${env:INSTALLER_URL} --token ${env:WINGET_TOKEN} --submit
+      - uses: vedantmgoyal2009/winget-releaser@v2
+        with:
+          identifier: ${env:WINGET_PACKAGE_ID}
+          token: ${env:WINGET_TOKEN}
+
+  #winget:
+  #  name: Winget - Pull request
+  #  runs-on: windows-latest
+  #  timeout-minutes: 10
+  #  steps:
+  #    - name: Download WingetCreate.exe
+  #      run: iwr -Uri https://aka.ms/wingetcreate/latest -OutFile wingetcreate.exe
+  #    - name: Set VERSION variable from tag
+  #      run: | 
+  #        $github = Get-Content '${{ github.event_path }}' | ConvertFrom-Json
+  #        $version = $github.release.tag_name.Trim('v')
+  #        if($version.Length -lt 5)
+  #        { 
+  #           Write-Error "Version $version is too short!"
+  #           exit -1 
+  #        }
+  #        Write-Output "Version: ${version}"
+  #        "VERSION=${version}" >> $env:GITHUB_ENV
+  #    - name: Set INSTALLER_URL variable from release asset
+  #      run: | 
+  #        $github = Get-Content '${{ github.event_path }}' | ConvertFrom-Json
+  #        $installerUrl = $github.release.assets | Where-Object -Property name -match "${env:WINGET_PACKAGE_NAME}" | Select -ExpandProperty browser_download_url -First 1
+  #        if($null -eq $installerUrl)
+  #        { 
+  #           Write-Error "Installer URL not found on ${github.release.assets}"
+  #           exit -1 
+  #        }
+  #        Write-Output "Installer url: ${installerUrl}"
+  #        "INSTALLER_URL=${installerUrl}" >> $env:GITHUB_ENV
+  #    - name: Submit package to Windows Package Manager Community Repository
+  #      run: .\wingetcreate.exe update ${env:WINGET_PACKAGE_ID} --version ${env:VERSION} --urls ${env:INSTALLER_URL} --token ${env:WINGET_TOKEN} --submit
 
   # NOT WORKING
   #homebrew:
