@@ -1,0 +1,18 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="200"
+             x:Class="UVtools.UI.Controls.Tools.ToolFlipControl">
+  <StackPanel Orientation="Horizontal" Spacing="10">
+    <TextBlock VerticalAlignment="Center" Text="Flip direction:"/>
+    <ComboBox
+      MinWidth="150"
+      ItemsSource="{Binding Operation.FlipDirection, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+      SelectedItem="{Binding Operation.FlipDirection, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
+    <CheckBox
+      ToolTip.Tip="If checked, rather than simply flipping the layer, a copy of each layer will be flipped and blended with the layer."
+      IsChecked="{Binding Operation.MakeCopy}" 
+      Content="Blend layers" />
+  </StackPanel>
+</UserControl>

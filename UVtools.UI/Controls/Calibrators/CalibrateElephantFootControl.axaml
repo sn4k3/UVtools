@@ -1,0 +1,356 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:controls="clr-namespace:UVtools.UI.Controls"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="800"
+             x:Class="UVtools.UI.Controls.Calibrators.CalibrateElephantFootControl">
+
+    <Grid ColumnDefinitions="Auto,10,350">
+      <StackPanel Spacing="10">
+        <Grid
+              RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto"
+              ColumnDefinitions="Auto,10,190,5,Auto,20,Auto,10,190,5,Auto">
+
+          <TextBlock Grid.Row="0" Grid.Column="0"
+                     VerticalAlignment="Center"
+                     Text="Layer height:"/>
+          <NumericUpDown Grid.Row="0" Grid.Column="2"
+                         Classes="ValueLabel ValueLabel_mm"
+                         Increment="0.01"
+                         Minimum="0.01"
+                         Maximum="0.30"
+                         FormatString="F3"
+                         Value="{Binding Operation.LayerHeight}"/>
+
+          <CheckBox Grid.Row="0" Grid.Column="8"
+                    Content="Sync layers"
+                    ToolTip.Tip="Set bottom and normal layers equally"
+                    IsChecked="{Binding Operation.SyncLayers}" />
+
+          <TextBlock Grid.Row="2" Grid.Column="0"
+                     VerticalAlignment="Center"
+                     Text="Bottom layers:"/>
+          <NumericUpDown Grid.Row="2" Grid.Column="2"
+                         Classes="ValueLabel ValueLabel_layers"
+                         Increment="1"
+                         Minimum="1"
+                         Maximum="1000"
+                         Value="{Binding Operation.BottomLayers}"/>
+          <TextBlock Grid.Row="2" Grid.Column="4"
+                     VerticalAlignment="Center"
+                     Text="{Binding Operation.BottomHeight, StringFormat={}{0:F3}mm}"/>
+
+
+
+          <TextBlock Grid.Row="2" Grid.Column="6"
+                     VerticalAlignment="Center"
+                     IsEnabled="{Binding !Operation.SyncLayers}"
+                     Text="Normal layers:"/>
+          <NumericUpDown Grid.Row="2" Grid.Column="8"
+                         Classes="ValueLabel ValueLabel_layers"
+                         IsEnabled="{Binding !Operation.SyncLayers}"
+                         Increment="1"
+                         Minimum="1"
+                         Maximum="1000"
+                         Value="{Binding Operation.NormalLayers}"/>
+          <TextBlock Grid.Row="2" Grid.Column="10"
+                     IsEnabled="{Binding !Operation.SyncLayers}"
+                     VerticalAlignment="Center"
+                     Text="{Binding Operation.NormalHeight, StringFormat={}{0:F3}mm}"/>
+
+          <TextBlock Grid.Row="4" Grid.Column="0"
+                     VerticalAlignment="Center"
+                     Text="Bottom exposure:"/>
+          <NumericUpDown Grid.Row="4" Grid.Column="2"
+                         Classes="ValueLabel ValueLabel_s"
+                         Increment="0.5"
+                         Minimum="0.1"
+                         Maximum="200"
+                         Value="{Binding Operation.BottomExposure}"/>
+
+
+          <TextBlock Grid.Row="4" Grid.Column="6"
+                     VerticalAlignment="Center"
+                     Text="Normal exposure:"/>
+          <NumericUpDown Grid.Row="4" Grid.Column="8"
+                         Classes="ValueLabel ValueLabel_s"
+                         Increment="0.5"
+                         Minimum="0.1"
+                         Maximum="200"
+                         Value="{Binding Operation.NormalExposure}"/>
+
+          <TextBlock Grid.Row="6" Grid.Column="0"
+                     VerticalAlignment="Center"
+                     Text="Part scale:"/>
+          <NumericUpDown Grid.Row="6" Grid.Column="2"
+                         Classes="ValueLabel ValueLabel_times"
+                         Increment="0.1"
+                         Minimum="1"
+                         Maximum="10"
+                         Value="{Binding Operation.PartScale}"/>
+
+          <TextBlock Grid.Row="6" Grid.Column="6"
+                     VerticalAlignment="Center"
+                     Text="Margin:"/>
+          <NumericUpDown Grid.Row="6" Grid.Column="8"
+                         Classes="ValueLabel ValueLabel_px"
+                         Increment="1"
+                         Minimum="0"
+                         Maximum="255"
+                         Value="{Binding Operation.Margin}"/>
+
+          <TextBlock Grid.Row="8" Grid.Column="0"
+                     VerticalAlignment="Center"
+                     Text="Markings:"/>
+
+          <ToggleSwitch Grid.Row="8" Grid.Column="2"
+                        Grid.ColumnSpan="2"
+                        OffContent="Intrude text" OnContent="Extrude text"
+                        IsChecked="{Binding Operation.ExtrudeText}"/>
+
+          <TextBlock Grid.Row="8" Grid.Column="6"
+                     VerticalAlignment="Center"
+                     IsEnabled="{Binding Operation.ExtrudeText}"
+                     Text="Text height:"/>
+
+          <NumericUpDown Grid.Row="8" Grid.Column="8"
+                         Classes="ValueLabel ValueLabel_mm"
+                         Increment="0.5"
+                         Minimum="0.5"
+                         Maximum="10"
+                         FormatString="F2"
+                         IsEnabled="{Binding Operation.ExtrudeText}"
+                         Value="{Binding Operation.TextHeight}"/>
+          
+          <StackPanel Grid.Row="10" Grid.Column="0" 
+                      VerticalAlignment="Center"
+                      Spacing="0">
+              <TextBlock
+                  FontWeight="Bold"
+                  Text="Total layers:"/>
+
+              <TextBlock
+                  FontWeight="Bold"
+                  Text="Total objects:"/>
+
+          </StackPanel>
+
+          <StackPanel Grid.Row="10" Grid.Column="2" Grid.ColumnSpan="9"
+                      VerticalAlignment="Center"
+                      Spacing="0">
+            <TextBlock FontWeight="Bold">
+                <TextBlock.Text>
+                    <MultiBinding StringFormat="{}{0} / {1:F3}mm">
+                        <Binding Path="Operation.LayerCount"/>
+                        <Binding Path="Operation.TotalHeight"/>
+                    </MultiBinding>
+                </TextBlock.Text>
+            </TextBlock>
+
+            <TextBlock
+                FontWeight="Bold"
+                Text="{Binding Operation.ObjectCount}"/>
+          </StackPanel>
+
+          <CheckBox Grid.Row="10" Grid.Column="6"
+                    Grid.ColumnSpan="5"
+                    IsChecked="{Binding Operation.EnableAntiAliasing}"
+                    Content="Enable Anti-Aliasing" />
+
+          <CheckBox Grid.Row="12" Grid.Column="0"
+                    Grid.ColumnSpan="6"
+                    IsChecked="{Binding Operation.OutputOriginalPart}"
+                    Content="Output an unmodified part (The original)" />
+
+          <CheckBox Grid.Row="12" Grid.Column="6"
+                    Grid.ColumnSpan="5"
+                    ToolTip.Tip="Most of the printers requires a mirror output to print with the correct orientation"
+                    IsChecked="{Binding Operation.MirrorOutput}"
+                    Content="Mirror output" />
+          
+        </Grid>
+
+        <Expander Header="{Binding Operation.ErodeObjects, StringFormat=Morph - Erode    [{0} objects]}"
+                  HorizontalAlignment="Stretch"
+                  IsExpanded="True">
+
+        <StackPanel>
+          <Grid
+              
+              RowDefinitions="Auto,10,Auto"
+              ColumnDefinitions="Auto,10,180,5,Auto,5,180,30,Auto,10,180">
+
+            <CheckBox Grid.Row="0" Grid.Column="2"
+                       VerticalAlignment="Center"
+                       IsChecked="{Binding Operation.IsErodeEnabled}"
+                       Content="Enable"/>
+
+            <TextBlock Grid.Row="2" Grid.Column="0"
+                         VerticalAlignment="Center"
+                         Text="Iterations range:"/>
+
+            <NumericUpDown Grid.Row="2" Grid.Column="2"
+                           Classes="ValueLabel ValueLabel_px"
+                           IsEnabled="{Binding Operation.IsErodeEnabled}"
+                           Increment="1"
+                           Minimum="1"
+                           Maximum="30"
+                           Value="{Binding Operation.ErodeStartIteration}"/>
+
+
+            <TextBlock Grid.Row="2" Grid.Column="4"
+                       VerticalAlignment="Center"
+                       Text="-"/>
+
+            <NumericUpDown Grid.Row="2" Grid.Column="6"
+                           Classes="ValueLabel ValueLabel_px"
+                           IsEnabled="{Binding Operation.IsErodeEnabled}"
+                           Increment="1"
+                           Minimum="1"
+                           Maximum="30"
+                           Value="{Binding Operation.ErodeEndIteration}"/>
+
+
+            <TextBlock Grid.Row="2" Grid.Column="8"
+                       VerticalAlignment="Center"
+                       Text="Step increment(s):"/>
+
+            <NumericUpDown Grid.Row="2" Grid.Column="10"
+                           Classes="ValueLabel ValueLabel_px"
+                           IsEnabled="{Binding Operation.IsErodeEnabled}"
+                           Increment="1"
+                           Minimum="1"
+                           Maximum="20"
+                           Value="{Binding Operation.ErodeIterationSteps}"/>
+
+          </Grid>
+
+          <Border Margin="0,10,0,0">
+            <Expander Header="Kernel - Advanced options (Click to expand)" HorizontalAlignment="Stretch">
+              <controls:KernelControl Name="ErodeKernelCtrl"
+                                      Kernel="{Binding $parent[UserControl].DataContext.Operation.ErodeKernel}"
+                                      Margin="0,10,0,0"/>
+            </Expander>
+          </Border>
+
+        </StackPanel>
+
+      </Expander>
+
+       
+      <Expander Header="{Binding Operation.DimmingObjects, StringFormat=Wall dimming    [{0} objects]}"
+                HorizontalAlignment="Stretch"
+                IsExpanded="True">
+
+          <StackPanel Orientation="Vertical"  Spacing="10">
+              <TextBlock
+                  IsVisible="{Binding SlicerFile.IsAntiAliasingEmulated}"
+                  TextWrapping="Wrap"
+                  FontWeight="Bold"
+                  Text="Note: This file format uses time fractions to emulate AntiAliasing, which may be problematic.
+&#x0a;Meaning, it will have a limited grey space up to the used AntiAliasing level, and files must be sliced with same level.
+&#x0a;Using different AntiAliasing levels per model invalidate this test, as a AA=4 will have different grey space compared to AA=8.
+&#x0a;You need to run this test per different AntiAliasing level, in order to have the correct dimming value per each level.
+&#x0a;Due this, running this method is not recommend! Either you know what are you doing, or else, use the Erode method instead.
+&#x0a;As another alternative for elephant foot compensation, look at the 'Tool - Double exposure'."/>
+
+              <TextBlock
+                  IsVisible="{Binding SlicerFile.IsAntiAliasingEmulated}"
+                  TextWrapping="Wrap"
+                  FontWeight="Bold"
+                  Text="{Binding SlicerFile.AntiAliasing, StringFormat=Current AntiAliasing level: {0}x}"/>
+
+
+              <Grid
+                RowDefinitions="Auto,10,Auto,10,Auto,5,Auto"
+                ColumnDefinitions="Auto,10,180,5,Auto,5,180,20,Auto,10,180">
+
+              <CheckBox Grid.Row="0" Grid.Column="2"
+                        Grid.ColumnSpan="9"
+                         VerticalAlignment="Center"
+                         IsChecked="{Binding Operation.IsDimmingEnabled}"
+                         Content="Enable - Requires a compatible anti-aliased file format and printer"/>
+
+              <TextBlock Grid.Row="2" Grid.Column="0"
+                         VerticalAlignment="Center"
+                         Text="Wall thickness:"/>
+
+              <NumericUpDown Grid.Row="2" Grid.Column="2"
+                             Classes="ValueLabel ValueLabel_px"
+                             IsEnabled="{Binding Operation.IsDimmingEnabled}"
+                             Increment="1"
+                             Minimum="1"
+                             Maximum="255"
+                             Value="{Binding Operation.DimmingWallThickness}"/>
+
+              <TextBlock Grid.Row="4" Grid.Column="0"
+                           VerticalAlignment="Center"
+                           Text="Brightness range:"/>
+
+              <NumericUpDown Grid.Row="4" Grid.Column="2"
+                             Classes="ValueLabel ValueLabel_sun"
+                             IsEnabled="{Binding Operation.IsDimmingEnabled}"
+                             Increment="1"
+                             Minimum="1"
+                             Maximum="254"
+                             Value="{Binding Operation.DimmingStartBrightness}"/>
+
+
+              <TextBlock Grid.Row="4" Grid.Column="4"
+                         VerticalAlignment="Center"
+                         HorizontalAlignment="Center"
+                         Text="-"/>
+
+              <NumericUpDown Grid.Row="4" Grid.Column="6"
+                             Classes="ValueLabel ValueLabel_sun"
+                             IsEnabled="{Binding Operation.IsDimmingEnabled}"
+                             Increment="1"
+                             Minimum="2"
+                             Maximum="254"
+                             Value="{Binding Operation.DimmingEndBrightness}"/>
+
+              <TextBlock Grid.Row="4" Grid.Column="8"
+                         VerticalAlignment="Center"
+                         Text="Step increment(s):"/>
+
+              <NumericUpDown Grid.Row="4" Grid.Column="10"
+                             Classes="ValueLabel ValueLabel_sun"
+                             IsEnabled="{Binding Operation.IsDimmingEnabled}"
+                             Increment="1"
+                             Minimum="2"
+                             Maximum="254"
+                             Value="{Binding Operation.DimmingBrightnessSteps}"/>
+
+              <TextBlock Grid.Row="6" Grid.Column="2"
+                         VerticalAlignment="Center"
+                         HorizontalAlignment="Center"
+                         Text="{Binding Operation.DimmingStartBrightnessPercent, StringFormat=({0}%)}"/>
+              <TextBlock Grid.Row="6" Grid.Column="6"
+                         VerticalAlignment="Center"
+                         HorizontalAlignment="Center"
+                         Text="{Binding Operation.DimmingEndBrightnessPercent, StringFormat=({0}%)}"/>
+            </Grid>
+
+              <Border Margin="0,10,0,0">
+                  <Expander Header="Kernel - Advanced options (Click to expand)" HorizontalAlignment="Stretch">
+                      <controls:KernelControl Name="DimmingKernelCtrl"
+                                              Kernel="{Binding $parent[UserControl].DataContext.Operation.DimmingKernel}"
+                                              Margin="0,10,0,0"/>
+                  </Expander>
+              </Border>
+
+
+
+		  </StackPanel>
+
+      </Expander>
+
+      </StackPanel>
+
+        <Image Grid.Column="2" 
+               Stretch="Uniform"
+               Source="{Binding PreviewImage}"/>
+    </Grid>
+  
+</UserControl>

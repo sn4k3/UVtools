@@ -1,0 +1,73 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:i="clr-namespace:Projektanker.Icons.Avalonia;assembly=Projektanker.Icons.Avalonia"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="UVtools.UI.Controls.Tools.ToolRedrawModelControl">
+    <Grid RowDefinitions="Auto,10,Auto,10,Auto,10,Auto"
+              ColumnDefinitions="Auto,10,Auto">
+            <TextBlock Grid.Row="0" Grid.Column="0"
+                       ToolTip.Tip="Select the sliced file without supports and raft. (Model B)"
+                       VerticalAlignment="Center"
+                       Text="Body file:"/>
+            <StackPanel Grid.Row="0" Grid.Column="2" Orientation="Horizontal" Spacing="1">
+                <TextBox
+                          ToolTip.Tip="Select the sliced file without supports and raft. (Model B)"
+                          IsReadOnly="True"
+                          Watermark="Select the sliced file without supports and raft. (Model B)"
+                          HorizontalAlignment="Stretch"
+                          Width="505"
+                          Text="{Binding Operation.FilePath}"/>
+                <Button
+                        VerticalAlignment="Stretch"
+                        ToolTip.Tip="Select the sliced file without supports and raft. (Model B)"
+                        Command="{Binding ImportFile}"
+                        i:Attached.Icon="fa-solid fa-file-import"/>
+            </StackPanel>
+
+
+            <TextBlock Grid.Row="2" Grid.Column="0"
+                       VerticalAlignment="Center"
+                       Text="Redraw:"/>
+
+            <StackPanel Grid.Row="2" Grid.Column="2" Orientation="Horizontal" Spacing="10">
+                <ComboBox
+                      SelectedItem="{Binding Operation.RedrawType}"
+                      ItemsSource="{Binding Operation.RedrawTypesItems}"
+                      Width="120"/>
+
+                <CheckBox
+                    VerticalAlignment="Center"
+                    IsVisible="{Binding !Operation.RedrawType}"
+                    IsChecked="{Binding Operation.ContactPointsOnly}"
+                    ToolTip.Tip="If enabled, it will only redraw the supports with physical contact points within the model. (Slower)"
+                    Content="Only the contact supports"/>
+
+                <CheckBox
+                    VerticalAlignment="Center"
+                    IsVisible="{Binding Operation.ContactPointsOnly}"
+                    IsChecked="{Binding Operation.IgnoreContactLessPixels}"
+                    ToolTip.Tip="If enabled, all supports pixels with no physical contact with the model will be ignored and maintain the same original brightness."
+                    Content="Ignore contact-less pixels"/>
+            </StackPanel>
+
+          <TextBlock Grid.Row="4" Grid.Column="0"
+                     VerticalAlignment="Center"
+                     Text="Brightness:"/>
+
+            <StackPanel Grid.Row="4" Grid.Column="2" Orientation="Horizontal" Spacing="5">
+              <NumericUpDown 
+                            Classes="ValueLabel ValueLabel_sun"
+                            Width="180"
+                             Minimum="0"
+                             Maximum="255"
+                             Increment="1"
+                             Value="{Binding Operation.Brightness}"/>
+              <TextBlock
+                         VerticalAlignment="Center"
+                         Text="{Binding Operation.BrightnessPercent, StringFormat={}{0:F2}%}"/>
+            </StackPanel>
+           
+      </Grid>
+</UserControl>

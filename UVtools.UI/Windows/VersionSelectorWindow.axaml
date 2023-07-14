@@ -1,0 +1,44 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:controls="clr-namespace:UVtools.UI.Controls"
+        mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="450"
+        x:Class="UVtools.UI.Windows.VersionSelectorWindow"
+        CanResize="False"
+        Title="Version selector"
+        SizeToContent="Height"
+        Width="400"
+        Padding="10"
+        WindowStartupLocation="CenterOwner"
+        Icon="/Assets/Icons/UVtools.ico">
+    <StackPanel Spacing="20">
+        <TextBlock TextWrapping="Wrap" Text="{Binding DescriptionText}"/>
+        <Grid RowDefinitions="Auto" ColumnDefinitions="Auto,10,*">
+            <TextBlock Grid.Row="0" Grid.Column="0" 
+                       VerticalAlignment="Center"
+                       Text="Version:"/>
+            <ComboBox Grid.Row="0" Grid.Column="2"
+                HorizontalAlignment="Stretch"
+                ItemsSource="{Binding AvailableVersions}"
+                SelectedItem="{Binding Version}"/>
+        </Grid>
+
+        <Border DockPanel.Dock="Bottom" Classes="FooterActions" Margin="-10" Padding="10,15">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="5">
+				<controls:ButtonWithIcon Command="{Binding SelectVersion}" IsDefault="True"
+                                         Icon="fa-solid fa-check"
+                                         Text="{Binding Version, StringFormat=Select v{0}}">
+                </controls:ButtonWithIcon>
+                <Button Content="Use the default" Command="{Binding SelectDefault}"/>
+                <controls:ButtonWithIcon IsCancel="True"
+                                         Icon="fa-solid fa-sign-out-alt"
+                                         Text="Cancel"
+                                         Command="{Binding Close}">
+                </controls:ButtonWithIcon>
+            </StackPanel>
+        </Border>
+
+    </StackPanel>
+    
+</Window>

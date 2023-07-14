@@ -1,0 +1,89 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="300"
+             x:Class="UVtools.UI.Controls.KernelControl">
+
+
+	<StackPanel Orientation="Vertical" Spacing="10">
+
+        <CheckBox IsChecked="{Binding Kernel.UseDynamicKernel}"
+                  Content="Use dynamic kernel to enhancement the quality of the borders"/>
+
+        <Grid RowDefinitions="Auto" ColumnDefinitions="*,10,Auto" IsEnabled="{Binding !Kernel.UseDynamicKernel}">
+          <TextBox Grid.Row="0" Grid.Column="0"
+                    ToolTip.Tip="The kernel or structuring element used to probe the input image.
+    &#x0a;A structuring element is a matrix that identifies the pixel in the image being processed and defines the neighborhood used in the processing of each pixel."
+                    VerticalAlignment="Stretch"
+                    MaxHeight="300"
+                    MaxWidth="700"
+                    AcceptsReturn="True"
+                    Watermark="Kernel matrix"
+                    UseFloatingWatermark="True"
+                    ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                    ScrollViewer.VerticalScrollBarVisibility="Auto"
+                    TextWrapping="NoWrap"
+                    Text="{Binding Kernel.MatrixText}"/>
+            
+          <Grid 
+            Grid.Column="2"
+            RowDefinitions="Auto,10,Auto,10,Auto,20,Auto"
+            ColumnDefinitions="Auto,10,Auto,10,Auto,10,Auto">
+
+            <TextBlock HorizontalAlignment="Right" VerticalAlignment="Center" Text="Shape:"/>
+            <ComboBox Grid.Row="0" Grid.ColumnSpan="5" Grid.Column="2"
+                      SelectedItem="{Binding Kernel.KernelShape}"
+                      ItemsSource="{Binding Kernel.KernelShapes}"
+                      Width="160"/>
+
+            <TextBlock Grid.Column="0" Grid.Row="2"
+                       HorizontalAlignment="Right"
+                       VerticalAlignment="Center"
+                       Text="Size:"/>
+            <NumericUpDown Grid.Column="2" Grid.Row="2"
+                           VerticalAlignment="Center"
+                           Minimum="2"
+                           Value="{Binding Kernel.MatrixWidth}"/>
+            <TextBlock Grid.Column="4" Grid.Row="2"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       Text="x"/>
+            <NumericUpDown Grid.Column="6" Grid.Row="2"
+                           VerticalAlignment="Center"
+                           Minimum="2"
+                           Value="{Binding Kernel.MatrixHeight}"/>
+
+            <TextBlock Grid.Column="0" Grid.Row="4"
+                       HorizontalAlignment="Right"
+                       VerticalAlignment="Center"
+                       Text="Anchor X:"/>
+            <NumericUpDown Grid.Column="2" Grid.Row="4"
+                           VerticalAlignment="Center"
+                           Minimum="-1"
+                           ToolTip.Tip="X coordinate of the kenel origin, -1 for auto-center."
+                           Value="{Binding Kernel.AnchorX}"/>
+            <TextBlock Grid.Column="4" Grid.Row="4"
+                       HorizontalAlignment="Right"
+                       VerticalAlignment="Center"
+                       Text="Y:"/>
+            <NumericUpDown Grid.Column="6" Grid.Row="4"
+                           VerticalAlignment="Center"
+                           Minimum="-1"
+                           ToolTip.Tip="Y coordinate of the kernel origin, -1 for auto-center."
+                           Value="{Binding Kernel.AnchorY}"/>
+
+            <Button Grid.Column="0" Grid.Row="6" Grid.ColumnSpan="3"
+                    Padding="10"
+                    Content="Generate"
+                    Command="{Binding GenerateKernel}"/>
+
+            <Button Grid.Column="4" Grid.Row="6" Grid.ColumnSpan="3"
+                    Padding="10"
+                    Content="Reset"
+                    Command="{Binding Kernel.ResetKernel}"/>
+      </Grid>
+        
+    </Grid>
+    </StackPanel>
+</UserControl>

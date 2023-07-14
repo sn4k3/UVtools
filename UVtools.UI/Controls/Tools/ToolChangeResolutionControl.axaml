@@ -1,0 +1,105 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="850" d:DesignHeight="300"
+             x:Class="UVtools.UI.Controls.Tools.ToolChangeResolutionControl">
+  <StackPanel Orientation="Vertical" Spacing="10">
+    <TextBlock Text="{Binding SlicerFile.Resolution, StringFormat=Current resolution (X/Y): {0}}"/>
+    <TextBlock Text="{Binding SlicerFile.PixelSizeMicrons, StringFormat=Current pixel pitch (X/Y): {0}µm}"/>
+    <TextBlock Text="{Binding SlicerFile.BoundingRectangle.Size, StringFormat=Object volume (X/Y): {0}}"/>
+    <TextBlock FontWeight="Bold" Text="{Binding Operation.NewPixelSizeMicrons, StringFormat=New pixel pitch (X/Y): {0}µm}"/>
+    
+    <Grid RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto"
+          ColumnDefinitions="Auto,10,200,5,Auto,5,200,10,Auto">
+
+        <TextBlock Grid.Row="0" Grid.Column="2"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center" 
+                   FontWeight="Bold"
+                   Text="X / Width"/>
+
+        <TextBlock Grid.Row="0" Grid.Column="6"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   FontWeight="Bold"
+                   Text="Y / Height"/>
+
+		<TextBlock Grid.Row="2" Grid.Column="0"
+                 VerticalAlignment="Center" Text="New resolution:"/>
+
+      <NumericUpDown Grid.Row="2" Grid.Column="2"
+                     Classes="ValueLabel ValueLabel_px"
+                     Minimum="1"
+                     Maximum="50000"
+                     Value="{Binding Operation.NewResolutionX}"/>
+
+      <TextBlock Grid.Row="2" Grid.Column="4" VerticalAlignment="Center" Text="x"/>
+
+      <NumericUpDown Grid.Row="2" Grid.Column="6"
+                     Classes="ValueLabel ValueLabel_px"
+                     Minimum="1"
+                     Maximum="50000"
+                     Value="{Binding Operation.NewResolutionY}"/>
+
+      <ComboBox Grid.Row="2" Grid.Column="8"
+                MinWidth="250"
+                SelectedItem="{Binding SelectedPresetItem}"
+                ItemsSource="{Binding Operation.Presets}"
+                PlaceholderText="Resolution presets"/>
+
+      <TextBlock Grid.Row="4" Grid.Column="0"
+                 VerticalAlignment="Center" Text="New display:"/>
+
+        <NumericUpDown Grid.Row="4" Grid.Column="2"
+                       Classes="ValueLabel ValueLabel_mm"
+                       Minimum="0"
+                       Maximum="50000"
+                       FormatString="F3"
+                       Value="{Binding Operation.NewDisplayWidth}"/>
+
+        <TextBlock Grid.Row="4" Grid.Column="4" VerticalAlignment="Center" Text="x"/>
+
+        <NumericUpDown Grid.Row="4" Grid.Column="6"
+                       Classes="ValueLabel ValueLabel_mm"
+                       Minimum="0"
+                       Maximum="50000"
+                       FormatString="F3"
+                       Value="{Binding Operation.NewDisplayHeight}"/>
+
+      <TextBlock Grid.Row="6" Grid.Column="0"
+                 VerticalAlignment="Center" Text="Fix pixel ratio:"/>
+
+      <NumericUpDown Grid.Row="6" Grid.Column="2"
+                     Classes="ValueLabel ValueLabel_times ReadOnly"
+                     FormatString="F3"
+                     IsEnabled="{Binding Operation.FixRatio}"
+                     Value="{Binding Operation.NewFixedRatioX}"/>
+
+      <TextBlock Grid.Row="6" Grid.Column="4" VerticalAlignment="Center" Text="x"/>
+
+      <NumericUpDown Grid.Row="6" Grid.Column="6"
+                     Classes="ValueLabel ValueLabel_times ReadOnly"
+                     FormatString="F3"
+                     IsEnabled="{Binding Operation.FixRatio}"
+                     Value="{Binding Operation.NewFixedRatioY}"/>
+
+      <CheckBox Grid.Row="6" Grid.Column="8"
+                Content="Resize layers with proposed ratio"
+                IsChecked="{Binding Operation.FixRatio}"
+                ToolTip.Tip="Fix the pixel ratio by resize the layers images with the proposed ratio to match the new resolution.
+&#x0a;Only use this option when both source and target display have the same dimensions / build volume. 
+Otherwise, the new display size must be taken into account and you need to manually resize after this."/>
+		<ComboBox Grid.Row="8" Grid.Column="2" Grid.ColumnSpan="7"
+                  HorizontalAlignment="Stretch"
+                  SelectedItem="{Binding SelectedMachinePresetItem}"
+                  ItemsSource="{Binding MachinePresets}"
+                  PlaceholderText="Machine presets"/>
+
+    </Grid>
+
+    
+    
+    
+  </StackPanel>
+</UserControl>

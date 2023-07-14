@@ -1,0 +1,60 @@
+﻿<controls:WindowEx xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:controls="clr-namespace:UVtools.UI.Controls"
+        mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="400"
+        x:Class="UVtools.UI.Windows.ProgressWindow"
+        Title="ProgressWindow"
+        CanResize="False"
+        ShowInTaskbar="False"
+        WindowStartupLocation="CenterOwner"
+        MinWidth="450"
+        SizeToContent="WidthAndHeight"
+        SystemDecorations="BorderOnly"
+        Icon="/Assets/Icons/UVtools.ico"
+        >
+
+  <Border
+    BorderBrush="WhiteSmoke"
+    BorderThickness="5"
+    CornerRadius="5"
+    >
+    <Grid RowDefinitions="Auto,Auto,Auto,Auto"
+          ColumnDefinitions="*"
+          >
+      <TextBlock
+        Grid.Row="0"
+        Margin="10" Text="{Binding Progress.Title}"/>
+      <TextBlock
+        Grid.Row="1"
+        Margin="10,0,10,10" Text="{Binding Progress.ElapsedTimeStr, StringFormat=Elapsed Time: {0}}"/>
+      <TextBlock
+        Grid.Row="2"
+        Margin="10,0,10,10" Text="{Binding Progress.Description}" HorizontalAlignment="Center"/>
+
+      <Grid
+        Grid.Row="3"
+        RowDefinitions="30" ColumnDefinitions="*,100">
+        <ProgressBar
+          Grid.Column="0"
+          Minimum="0"
+          Maximum="100"
+          VerticalAlignment="Stretch"
+          IsIndeterminate="{Binding Progress.IsIndeterminate}"
+          Value="{Binding Progress.ProgressPercent}"  ShowProgressText="True"/>
+        <Button
+          IsEnabled="{Binding CanCancel}"
+          Command="{Binding OnClickCancel}"
+          Grid.Column="1"
+          IsCancel="True"
+          VerticalAlignment="Stretch"
+          HorizontalAlignment="Stretch"
+          VerticalContentAlignment="Center"
+          HorizontalContentAlignment="Center"
+          Content="Cancel"
+          />
+      </Grid>
+    </Grid>
+  </Border>
+</controls:WindowEx>

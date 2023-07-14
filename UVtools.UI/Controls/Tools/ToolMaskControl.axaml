@@ -1,0 +1,104 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="800"
+             x:Class="UVtools.UI.Controls.Tools.ToolMaskControl">
+  <StackPanel Spacing="10">
+    <StackPanel Orientation="Horizontal" Spacing="10">
+      <Button 
+        Padding="10"
+        Content="Import grayscale mask image from file"
+        Command="{Binding ImportImageMask}"/>
+
+      <CheckBox 
+        VerticalAlignment="Center"
+        IsChecked="{Binding IsMaskInverted}"
+        Content="Invert Mask"/>
+    </StackPanel>
+
+
+    <Border
+      BorderBrush="LightGray"
+      BorderThickness="1"
+      Margin="0,5"
+      Padding="5">
+
+      <StackPanel>
+        <TextBlock FontWeight="Bold" Text="Mask generator (Round from center):"/>
+
+        <Grid
+          RowDefinitions="Auto,10,Auto"
+          ColumnDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto"
+          Margin="0,10,0,0">
+
+          <TextBlock 
+            VerticalAlignment="Center"
+            Text="Minimum brightness:"/>
+          <NumericUpDown Grid.Row="0" Grid.Column="2"
+                         Classes="ValueLabel ValueLabel_sun"
+                         Minimum="0"
+                         Maximum="255"
+                         Width="180"
+                         Value="{Binding GenMinimumBrightness}"/>
+          <TextBlock Grid.Row="0" Grid.Column="4"
+                     VerticalAlignment="Center"
+                     HorizontalAlignment="Center"
+                     Text="(0-255)"/>
+          <TextBlock Grid.Row="0" Grid.Column="6"
+                     VerticalAlignment="Center"
+                     Text="Maximum brightness:"/>
+          <NumericUpDown Grid.Row="0" Grid.Column="8"
+                         Classes="ValueLabel ValueLabel_sun"
+                         Minimum="0"
+                         Maximum="255"
+                         Width="180"
+                         Value="{Binding GenMaximumBrightness}"/>
+
+          <TextBlock Grid.Row="2" Grid.Column="0"
+                     VerticalAlignment="Center"
+                     Text="Diameter in pixels:"/>
+          <NumericUpDown Grid.Row="2" Grid.Column="2"
+                         Classes="ValueLabel ValueLabel_px"
+                         Minimum="0"
+                         Maximum="10000"
+                         Width="180"
+                         Value="{Binding GenDiameter}"/>
+          <Button
+            Grid.Row="2"
+            Grid.Column="4"
+            Grid.ColumnSpan="5"
+            Content="Generate"
+            Padding="5"
+            VerticalAlignment="Stretch"
+            Command="{Binding GenerateMask}"
+            />
+          
+        </Grid>
+
+     </StackPanel>
+      
+    </Border>
+
+    <TextBlock Text="{Binding InfoPrinterResolutionStr}"/>
+    <TextBlock Text="{Binding InfoMaskResolutionStr}"/>
+
+    <Border
+  BorderBrush="LightGray"
+  BorderThickness="1"
+  Margin="0,5"
+  Padding="5"
+      >
+
+      <StackPanel Height="400">
+        <TextBlock FontWeight="Bold" Text="Mask image:"/>
+        <Image
+          Height="300"
+          Width="450"
+          Stretch="UniformToFill"
+          Source="{Binding MaskImage}"/>  
+      </StackPanel>
+    </Border>
+    
+  </StackPanel>
+</UserControl>

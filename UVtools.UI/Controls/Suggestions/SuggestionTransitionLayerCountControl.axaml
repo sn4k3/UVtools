@@ -1,0 +1,63 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="UVtools.UI.Controls.Suggestions.SuggestionTransitionLayerCountControl">
+	<Grid RowDefinitions="Auto,10,Auto,2,Auto"
+			ColumnDefinitions="Auto,10,180,5,Auto,5,180">
+
+		<TextBlock Grid.Row="0" Grid.Column="0"
+                   VerticalAlignment="Center"
+                   ToolTip.Tip="Desired transition step time from bottom exposure to normal exposure time. Each layer will sequential subtract this amount of exposure time down to the normal exposure.
+&#x0a;However this step time is not always guaranteed to be exact. It will be constrained over a minimum/maximum layer count and sanitized as required."
+                   Text="Transition step:"/>
+
+		<NumericUpDown Grid.Row="0" Grid.Column="2"
+                       VerticalAlignment="Center"
+                       Classes="ValueLabel ValueLabel_s"
+                       Minimum="0"
+                       Maximum="100"
+                       FormatString="F2"
+                       Increment="0.5"
+                       Value="{Binding Suggestion.TransitionStepTime}"/>
+
+		<TextBlock Grid.Row="2" Grid.Column="2"
+                   VerticalAlignment="Center"
+                   HorizontalAlignment="Center"
+                   FontWeight="Bold"
+                   Text="Minimum:"/>
+
+		<TextBlock Grid.Row="2" Grid.Column="6"
+                   VerticalAlignment="Center"
+                   HorizontalAlignment="Center"
+                   FontWeight="Bold"
+                   Text="Maximum:"/>
+
+		<TextBlock Grid.Row="4" Grid.Column="0"
+                   VerticalAlignment="Center"
+                   ToolTip.Tip="Sets the limits in layer count for the trigger detection and
+constrains the set value of the applied value to this limit (Min-Max)"
+                   Text="Limits (layers):"/>
+
+		<NumericUpDown Grid.Row="4" Grid.Column="2"
+                       VerticalAlignment="Center"
+                       Classes="ValueLabel ValueLabel_layers"
+                       Minimum="0"
+                       Maximum="1000"
+                       Increment="1"
+                       Value="{Binding Suggestion.MinimumTransitionLayerCount}"/>
+
+		<TextBlock Grid.Row="4" Grid.Column="4"
+                   VerticalAlignment="Center"
+                   Text="-"/>
+
+		<NumericUpDown Grid.Row="4" Grid.Column="6"
+                       VerticalAlignment="Center"
+                       Classes="ValueLabel ValueLabel_layers"
+                       Minimum="0"
+                       Maximum="1000"
+                       Increment="1"
+                       Value="{Binding Suggestion.MaximumTransitionLayerCount}"/>
+	</Grid>
+</UserControl>

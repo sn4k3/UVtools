@@ -1,0 +1,2281 @@
+﻿<uc:WindowEx xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:uc="clr-namespace:UVtools.UI.Controls"
+        xmlns:uvtava="clr-namespace:UVtools.AvaloniaControls;assembly=UVtools.AvaloniaControls"
+        xmlns:i="clr-namespace:Projektanker.Icons.Avalonia;assembly=Projektanker.Icons.Avalonia"
+        mc:Ignorable="d" d:DesignWidth="1024" d:DesignHeight="600"
+        x:Class="UVtools.UI.MainWindow"
+        Title="UVtools"
+        Icon="/Assets/Icons/UVtools.ico"
+        MinWidth="1024"
+        MinHeight="600"
+        DragDrop.AllowDrop="True">
+
+	<Grid RowDefinitions="*" ColumnDefinitions="*">
+		<DockPanel Grid.Row="0" Grid.Column="0" IsEnabled="{Binding IsGUIEnabled}">
+			<Menu DockPanel.Dock="Top">
+				<MenuItem Name="MainMenuFile" Header="_File">
+					<MenuItem Name="MainMenuFileOpen"
+							  Header="_Open"
+							  HotKey="Ctrl+O" InputGesture="Ctrl+O"
+							  Command="{Binding MenuFileOpenClicked}"
+							  i:MenuItem.Icon="fa-solid fa-file-import"/>
+
+					<MenuItem Name="MainMenuFileOpenNewWindow"
+							  Header="Open in _new window"
+							  HotKey="Ctrl+Shift+O" InputGesture="Ctrl+Shift+O"
+							  Command="{Binding MenuFileOpenNewWindowClicked}"
+							  i:MenuItem.Icon="fa-solid fa-file-import"/>
+
+					<MenuItem Name="MainMenuFileOpenRecent"
+							  Header="Open recent"
+							  ToolTip.ShowDelay="2000"
+							  ToolTip.Tip="On a file:
+&#x0a;Shift + Click: Open file in a new window
+&#x0a;Shift + Ctrl + Click: Remove file from list
+&#x0a;Ctrl + Click: Purge non-existing files"
+							  ItemsSource="{Binding MenuFileOpenRecentItems}"
+							  i:MenuItem.Icon="fa-solid fa-file-import"/>
+
+					<MenuItem Name="MainMenuFileOpenInPartialMode"
+							  Header="Open in partial mode"
+							  Command="{Binding MenuFileOpenInPartialModeClicked}"
+							  ToolTip.Tip="Open a file only to see and/or edit properties.
+&#x0a;Layer images won't be loaded and most tools won't run in this mode."
+							  i:MenuItem.Icon="fa-solid fa-file-import"/>
+
+					<MenuItem Name="MainMenuFileReload"
+							  Header="_Reload"
+                              HotKey="Ctrl+F5" InputGesture="Ctrl+F5"
+							  IsEnabled="{Binding IsFileLoaded}"
+							  Command="{Binding ReloadFile}"
+							  i:MenuItem.Icon="mdi-file-restore"/>
+
+                    <MenuItem Name="MainMenuFileRename"
+                              Header="_Rename"
+                              HotKey="Ctrl+F2" InputGesture="Ctrl+F2"
+                              IsEnabled="{Binding IsFileLoaded}"
+                              Command="{Binding MenuFileRenameClicked}"
+                              i:MenuItem.Icon="fa-solid fa-pen-to-square"/>
+
+					<MenuItem Name="MainMenuFileSave"
+							  Header="_Save"
+							  HotKey="Ctrl+S" InputGesture="Ctrl+S"
+							  IsEnabled="{Binding CanSave}"
+							  Command="{Binding MenuFileSaveClicked}"
+							  i:MenuItem.Icon="fa-solid fa-floppy-disk"/>
+
+					<MenuItem Name="MainMenuFileSaveAs"
+							  Header="Save _as"
+							  HotKey="Ctrl+Shift+S" InputGesture="Ctrl+Shift+S"
+							  IsEnabled="{Binding IsFileLoaded}"
+							  Command="{Binding MenuFileSaveAsClicked}"
+							  i:MenuItem.Icon="fa-solid fa-floppy-disk"/>
+
+					<MenuItem Name="MainMenuFileSendTo"
+							  Header="Send to"
+							  IsEnabled="{Binding IsFileLoaded}"
+							  ItemsSource="{Binding MenuFileSendToItems}"
+							  i:MenuItem.Icon="fa-solid fa-share-square"/>
+
+					<MenuItem Name="MainMenuFileClose"
+							  Header="_Close"
+							  HotKey="Ctrl+W" InputGesture="Ctrl+W"
+							  IsEnabled="{Binding IsFileLoaded}"
+							  Command="{Binding OnMenuFileCloseFile}"
+							  i:MenuItem.Icon="fa-solid fa-sign-out-alt"/>
+
+					<Separator/>
+
+                    <MenuItem Header="Reset layers properties"
+                              Command="{Binding ResetLayersProperties}"
+                              i:MenuItem.Icon="fa-solid fa-hammer">
+						<MenuItem.IsEnabled>
+							<MultiBinding Converter="{x:Static BoolConverters.And}">
+								<Binding Path="IsFileLoaded"/>
+								<Binding Path="SlicerFile.SupportPerLayerSettings"/>
+                            </MultiBinding>
+                        </MenuItem.IsEnabled>
+                    </MenuItem>
+
+                        <MenuItem Header="I _printed this file" HotKey="Ctrl+P" InputGesture="Ctrl+P"
+                                  IsEnabled="{Binding IsFileLoaded}"
+                                  Command="{Binding IPrintedThisFile}"
+                                  i:MenuItem.Icon="fa-solid fa-flask"/>
+
+					<MenuItem Name="MainMenuFileOpenContainingFileFolder"
+							  Header="Open containing fo_lder"
+							  HotKey="Ctrl+Shift+L" InputGesture="Ctrl+Shift+L"
+							  IsEnabled="{Binding IsFileLoaded}"
+							  Command="{Binding MenuFileOpenContainingFolderClicked}"
+							  i:MenuItem.Icon="fa-solid fa-folder-open"/>
+
+					<MenuItem Name="MainMenuFileExtract"
+							  Header="_Extract file contents" HotKey="Ctrl+E" InputGesture="Ctrl+E"
+							  IsEnabled="{Binding IsFileLoaded}"
+							  Command="{Binding ExtractFile}"
+							  i:MenuItem.Icon="fa-solid fa-box-open"/>
+
+					<MenuItem Name="MainMenuFileTerminal"
+							  HotKey="Ctrl+Shift+T" InputGesture="Ctrl+Shift+T"
+							  Header="_Terminal"
+							  Command="{Binding OpenTerminal}"
+							  IsEnabled="{Binding IsFileLoaded}"
+							  i:MenuItem.Icon="fa-solid fa-terminal"/>
+
+
+					<MenuItem Name="MainMenuFileConvert"
+							  Header="_Convert to"
+							  IsEnabled="{Binding IsFileLoaded}"
+							  IsVisible="{Binding MenuFileConvertItems, Converter={x:Static ObjectConverters.IsNotNull}}"
+							  ItemsSource="{Binding MenuFileConvertItems}"
+							  i:MenuItem.Icon="fa-solid fa-exchange-alt"/>
+
+                    <MenuItem Name="MainMenuFileFreeUnusedRAM"
+                              Header="Free unused RAM"
+                              ToolTip.Tip="Force the garbage collection of all unused objects within the program to free unused memory (RAM).
+&#x0a;It's never required for the end user run this. The program will automatically take care of it when required.
+&#x0a;This function is for debug purposes."
+                              Command="{Binding OnMenuFileFreeUnusedRAM}"
+                              i:MenuItem.Icon="fa-solid fa-memory"/>
+
+					<Separator/>
+
+                    <MenuItem Name="MainMenuFileFullscreen"
+                              Header="_Fullscreen"
+                              InputGesture="F11" HotKey="F11"
+                              Command="{Binding OnMenuFileFullscreen}"
+                              i:MenuItem.Icon="fa-solid fa-window-maximize"/>
+
+					<MenuItem Name="MainMenuFileSettings"
+							  Header="_Settings"
+							  InputGesture="F12" HotKey="F12"
+							  Command="{Binding MenuFileSettingsClicked}"
+							  i:MenuItem.Icon="fa-solid fa-cog"/>
+
+					<Separator/>
+
+					<MenuItem Name="MainMenuFileExit"
+							  Header="_Exit"
+							  InputGesture="Alt+F4"
+							  Command="{Binding Close}"
+							  i:MenuItem.Icon="fa-solid fa-door-open"/>
+				</MenuItem>
+
+				<MenuItem Header="_Tools"
+						  IsVisible="{Binding IsFileLoaded}"
+						  IsEnabled="{Binding IsFileLoaded}"
+						  ItemsSource="{Binding MenuTools}">
+				</MenuItem>
+
+				<MenuItem Header="_Calibration"
+						  IsVisible="{Binding IsFileLoaded}"
+						  IsEnabled="{Binding IsFileLoaded}"
+						  ItemsSource="{Binding MenuCalibration}">
+				</MenuItem>
+
+
+				<MenuItem Header="_Help">
+					<MenuItem Header="_About"
+							  InputGesture="F1" HotKey="F1"
+							  Command="{Binding MenuHelpAboutClicked}"
+							  i:MenuItem.Icon="fa-solid fa-info-circle"/>
+
+					<MenuItem Header="_Website"
+							  InputGesture="Ctrl + F1" HotKey="Ctrl + F1"
+							  Command="{Binding OpenHomePage}"
+							  i:MenuItem.Icon="fa-brands fa-edge"/>
+
+					<MenuItem Header="Wi_ki &amp; tutorials"
+							  Command="{Binding OpenWebsite}"
+							  CommandParameter="https://github.com/sn4k3/UVtools/wiki"
+							  i:MenuItem.Icon="fa-brands fa-wikipedia-w"/>
+
+					<MenuItem Header="_Facebook group"
+							  Command="{Binding OpenWebsite}"
+							  CommandParameter="https://www.facebook.com/groups/uvtools"
+							  i:MenuItem.Icon="fa-brands fa-facebook"/>
+
+					<MenuItem Header="_Donate"
+							  Command="{Binding OpenDonateWebsite}"
+							  i:MenuItem.Icon="fa-solid fa-donate"/>
+
+					<MenuItem Header="_Sponsor"
+							  Command="{Binding OpenWebsite}"
+							  CommandParameter="https://github.com/sponsors/sn4k3"
+							  i:MenuItem.Icon="fa-solid fa-heart"/>
+
+					<Separator/>
+
+					<MenuItem Header="_Material manager"
+							  HotKey="F10"
+							  InputGesture="F10"
+							  Command="{Binding MenuHelpMaterialManagerClicked}"
+							  i:MenuItem.Icon="fa-solid fa-flask"/>
+
+					<MenuItem Header="_Install profiles into PrusaSlicer"
+							  Command="{Binding MenuHelpInstallProfilesClicked}"
+							  i:MenuItem.Icon="fa-solid fa-list"/>
+
+					<Separator/>
+
+					<MenuItem Header="_Benchmark"
+							  Command="{Binding MenuHelpBenchmarkClicked}"
+							  i:MenuItem.Icon="fa-solid fa-microchip"/>
+
+					<Separator/>
+
+					<MenuItem Header="_Open settings folder"
+							  Command="{Binding MenuHelpOpenSettingsFolderClicked}"
+							  i:MenuItem.Icon="fa-solid fa-folder-open"/>
+
+					<Separator/>
+
+					<MenuItem Header="_Report a issue"
+							  Command="{Binding MenuHelpReportIssueClicked}"
+                              i:MenuItem.Icon="fa-solid fa-bug"/>
+
+					<MenuItem Header="Ask a _question"
+							  Command="{Binding OpenWebsite}"
+							  CommandParameter="https://github.com/sn4k3/UVtools/discussions/categories/q-a"
+							  i:MenuItem.Icon="fa-solid fa-question"/>
+
+					<MenuItem Header="Suggest an improvement or new features"
+							  Command="{Binding OpenWebsite}"
+							  CommandParameter="https://github.com/sn4k3/UVtools/discussions/categories/ideas"
+							  i:MenuItem.Icon="fa-solid fa-lightbulb"/>
+
+                    <Separator IsVisible="{Binding IsDebug}"/>
+
+					<MenuItem Header="_Debug tools"
+                              IsVisible="{Binding IsDebug}"
+                              i:MenuItem.Icon="fa-solid fa-bug-slash">
+
+                        <MenuItem Header="Open executable directory"
+                                  IsVisible="{Binding IsDebug}"
+                                  Command="{Binding MenuHelpDebugOpenExecutableDirectoryClicked}"
+                                  i:MenuItem.Icon="fa-solid fa-folder-open"/>
+
+                        <MenuItem Header="Throw exception"
+                                  IsVisible="{Binding IsDebug}"
+                                  Command="{Binding MenuHelpDebugThrowExceptionClicked}"
+                                  i:MenuItem.Icon="fa-solid fa-explosion"/>
+
+                        <MenuItem Header="Show long message box"
+                                  IsVisible="{Binding IsDebug}"
+                                  Command="{Binding MenuHelpDebugLongMessageBoxClicked}"
+                                  i:MenuItem.Icon="fa-solid fa-message"/>
+
+                        <MenuItem Header="Trigger new update"
+                                  IsVisible="{Binding IsDebug}"
+                                  Command="{Binding MenuHelpDebugTriggerNewUpdateClicked}"
+                                  i:MenuItem.Icon="fa-solid fa-cloud-arrow-up"/>
+						
+                    </MenuItem>
+
+                    </MenuItem>
+
+				<MenuItem Background="LimeGreen"
+						  IsVisible="{Binding VersionChecker.HaveNewVersion}"
+						  Header="{Binding VersionChecker.VersionAnnouncementText}"
+						  Command="{Binding MenuNewVersionClicked}">
+				</MenuItem>
+
+			</Menu>
+
+			<Border Padding="5" DockPanel.Dock="Bottom" IsVisible="{Binding IsFileLoaded}">
+				<WrapPanel
+				  Orientation="Horizontal"
+				  VerticalAlignment="Center">
+					<TextBlock>
+                        <TextBlock.Text>
+                            <MultiBinding StringFormat="Layers: {0} @ {1}mm">
+                                <Binding Path="SlicerFile.LayerCount"/>
+                                <Binding Path="SlicerFile.LayerHeight"/>
+                            </MultiBinding>
+                        </TextBlock.Text>
+                    </TextBlock>
+
+
+					<TextBlock IsVisible="{Binding SlicerFile.CanUseBottomLayerCount}" Text="  |  "/>
+					<TextBlock IsVisible="{Binding SlicerFile.CanUseBottomLayerCount}">
+                        <TextBlock.Text>
+                            <MultiBinding StringFormat="Bottom layers: {0}/{1}mm">
+                                <Binding Path="SlicerFile.BottomLayerCount"/>
+                                <Binding Path="SlicerFile.BottomLayersHeight"/>
+                            </MultiBinding>
+                        </TextBlock.Text>
+					</TextBlock>
+
+                    <TextBlock IsVisible="{Binding SlicerFile.CanUseTransitionLayerCount}" Text="  |  "/>
+                    <TextBlock IsVisible="{Binding SlicerFile.CanUseTransitionLayerCount}"
+                               Text="{Binding SlicerFile.TransitionLayersRepresentation, StringFormat=Transition layers: {0}}"/>
+
+
+					<TextBlock IsVisible="{Binding SlicerFile.CanUseAnyExposureTime}" Text="  |  "/>
+					<TextBlock IsVisible="{Binding SlicerFile.CanUseAnyExposureTime}"
+							   Text="{Binding SlicerFile.ExposureRepresentation, StringFormat=Exposure: {0}}"/>
+
+					<TextBlock IsVisible="{Binding SlicerFile.CanUseAnyLiftHeight}" Text="  |  "/>
+					<TextBlock IsVisible="{Binding SlicerFile.CanUseAnyLiftHeight}"
+							   Text="{Binding SlicerFile.LiftRepresentation, StringFormat=Lift: {0}}"/>
+
+
+					<TextBlock IsVisible="{Binding SlicerFile.CanUseRetractSpeed}" Text="  |  "/>
+					<TextBlock IsVisible="{Binding SlicerFile.CanUseRetractSpeed}"
+							   Text="{Binding SlicerFile.RetractRepresentation, StringFormat=Retract: {0}}"/>
+
+					<TextBlock IsVisible="{Binding SlicerFile.CanUseAnyLightOffDelay}" Text="  |  "/>
+					<TextBlock IsVisible="{Binding SlicerFile.CanUseAnyLightOffDelay}"
+							   Text="{Binding SlicerFile.LightOffDelayRepresentation, StringFormat=Light-off: {0}}"/>
+
+					<TextBlock IsVisible="{Binding SlicerFile.CanUseAnyWaitTime}" Text="  |  "/>
+					<TextBlock IsVisible="{Binding SlicerFile.CanUseAnyWaitTime}"
+                               ToolTip.Placement="Top"
+							   ToolTip.Tip="Wait time: Before cure / After cure / After lift"
+							   Text="{Binding SlicerFile.WaitTimeRepresentation, StringFormat=Wait time: {0}}"/>
+
+					<TextBlock IsVisible="{Binding SlicerFile.PrintTimeHours}" Text="  |  "/>
+					<TextBlock IsVisible="{Binding SlicerFile.PrintTimeHours}" 
+                               ToolTip.Placement="Top"
+                               Text="{Binding SlicerFile.PrintTimeString, StringFormat=Print time: {0}}">
+						<ToolTip.Tip>
+                            <MultiBinding StringFormat="On time: {0}&#x0a;Off time: {1}">
+                                <Binding Path="SlicerFile.DisplayTotalOnTimeString"/>
+                                <Binding Path="SlicerFile.DisplayTotalOffTimeString"/>
+                            </MultiBinding>
+                        </ToolTip.Tip>
+                    </TextBlock>
+
+
+					<TextBlock IsVisible="{Binding SlicerFile.MaterialMilliliters}" Text="  |  "/>
+					<TextBlock IsVisible="{Binding SlicerFile.MaterialMilliliters}"
+								Text="{Binding SlicerFile.MaterialMilliliters, StringFormat=Used material: {0}ml}"/>
+
+
+					<TextBlock IsVisible="{Binding SlicerFile.MaterialCost}" Text="  |  "/>
+					<TextBlock IsVisible="{Binding SlicerFile.MaterialCost}" Text="{Binding SlicerFile.MaterialCost, StringFormat=Material cost: {0:C}}"/>
+
+
+					<TextBlock IsVisible="{Binding SlicerFile.MaterialName, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+							   Text="  |  "/>
+					<TextBlock IsVisible="{Binding SlicerFile.MaterialName, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+							   Text="{Binding SlicerFile.MaterialName, StringFormat=Material: {0}}"/>
+
+
+					<TextBlock IsVisible="{Binding SlicerFile.MachineName, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+							   Text="  |  "/>
+					<TextBlock IsVisible="{Binding SlicerFile.MachineName, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+							   Text="{Binding SlicerFile.MachineName, StringFormat=Machine: {0}}"/>
+				</WrapPanel>
+			</Border>
+
+			<TabControl
+				Name="MainTabControl"
+			  DockPanel.Dock="Left"
+			  Width="400"
+			  SelectedItem="{Binding SelectedTabItem}">
+				<TabControl.Styles>
+					<Style Selector="TabItem">
+						<Setter Property="FontSize" Value="32"/>
+					</Style>
+				</TabControl.Styles>
+				<TabItem
+				Name="TabInformation"
+				ToolTip.Tip="Information"
+				IsEnabled="{Binding IsFileLoaded}">
+					<TabItem.Header>
+						<StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+							<i:Icon Value="fa-solid fa-info-circle"/>
+							<!--<TextBlock Margin="5,0,0,0">Information</TextBlock>!-->
+						</StackPanel>
+					</TabItem.Header>
+
+					<Grid ColumnDefinitions="*" IsVisible="{Binding IsFileLoaded}">
+						<Grid.RowDefinitions>
+							<RowDefinition Height="Auto"/>
+							<RowDefinition Height="Auto" MaxHeight="400"/>
+							<RowDefinition Height="Auto"/>
+							<RowDefinition Height="Auto"/>
+							<RowDefinition Height="*" MinHeight="200"/>
+							<RowDefinition Height="Auto"/>
+							<RowDefinition Height="Auto" MinHeight="220"/>
+						</Grid.RowDefinitions>
+						<!-- Thumbnails -->
+						<uvtava:IndexSelector Grid.Row="0"
+											  Name="ThumbnailIndexSelector"
+                                              IsVisible="{Binding SlicerFile.CreatedThumbnailsCount}"
+											  SelectedIndex="{Binding VisibleThumbnailIndex}"
+											  BorderThickness="0"
+                                              Count="{Binding SlicerFile.CreatedThumbnailsCount}"/>
+						
+						<StackPanel Grid.Row="0"
+									IsVisible="{Binding SlicerFile.CreatedThumbnailsCount}"
+									IsEnabled="{Binding #ThumbnailIndexSelector.SelectedNumber}"
+									Orientation="Horizontal"
+									Spacing="2"
+									HorizontalAlignment="Right"
+									VerticalAlignment="Center">
+							<SelectableTextBlock VerticalAlignment="Center"
+            									   Text="{Binding VisibleThumbnailResolution}"/>
+
+							<uc:ButtonWithIcon ToolTip.Tip="Replace the current preview image"
+                                               Spacing="1"
+                                               Text="⮟"
+                                               Icon="fa-solid fa-file-image"
+                                               Command="{Binding OnClickThumbnailImportFile}"
+                                               CommandParameter="False">
+								<uc:ButtonWithIcon.ContextMenu>
+                                    <ContextMenu Name="ThumbnailImportContextMenu" Placement="Bottom">
+                                        <MenuItem
+                                            Command="{Binding OnClickThumbnailImportFile}"
+											CommandParameter="False"
+                                            Header="From file"
+                                            i:MenuItem.Icon="fa-solid fa-file-image"/>
+
+                                        <MenuItem
+                                            Command="{Binding OnClickThumbnailImportFile}"
+											CommandParameter="True"
+                                            Header="From file (Replace all)"
+                                            i:MenuItem.Icon="fa-solid fa-file-image"/>
+
+										<Separator/>
+
+                                        <MenuItem
+                                            Command="{Binding OnClickThumbnailImportCurrentLayer}"
+                                            CommandParameter="False"
+                                            Header="From current layer"
+                                            i:MenuItem.Icon="fa-solid fa-layer-group"/>
+
+                                        <MenuItem
+                                            Command="{Binding OnClickThumbnailImportCurrentLayer}"
+                                            CommandParameter="True"
+                                            Header="From current layer (Replace all)"
+                                            i:MenuItem.Icon="fa-solid fa-layer-group"/>
+
+                                        <MenuItem
+                                            Command="{Binding OnClickThumbnailImportRandomLayer}"
+                                            CommandParameter="False"
+                                            Header="From random layer"
+                                            i:MenuItem.Icon="fa-solid fa-layer-group"/>
+
+                                        <MenuItem
+                                            Command="{Binding OnClickThumbnailImportRandomLayer}"
+                                            CommandParameter="True"
+                                            Header="From random layer (Replace all)"
+                                            i:MenuItem.Icon="fa-solid fa-layer-group"/>
+
+                                        <Separator/>
+
+										<MenuItem
+                                            Command="{Binding OnClickThumbnailImportHeatmap}"
+                                            CommandParameter="False"
+                                            Header="From heatmap"
+                                            i:MenuItem.Icon="fa-solid fa-file-image"/>
+
+                                        <MenuItem
+                                            Command="{Binding OnClickThumbnailImportHeatmap}"
+                                            CommandParameter="True"
+                                            Header="From heatmap (Replace all)"
+                                            i:MenuItem.Icon="fa-solid fa-file-image"/>
+
+                                    </ContextMenu>
+                                </uc:ButtonWithIcon.ContextMenu>
+                            </uc:ButtonWithIcon>
+
+							<Button VerticalAlignment="Stretch"
+                                    ToolTip.Tip="Save thumbnail image to a file"
+                                    i:Attached.Icon="fa-solid fa-floppy-disk"
+                                    Command="{Binding OnClickThumbnailSave}"/>
+
+						</StackPanel>
+
+						<!-- Preview image -->
+						<Image Grid.Row="1"
+							   IsVisible="{Binding SlicerFile.CreatedThumbnailsCount}"
+							   Stretch="Uniform"
+							   Source="{Binding VisibleThumbnailImage}"/>
+
+						<GridSplitter Grid.Row="2" ResizeDirection="Rows" ResizeBehavior="PreviousAndNext" Height="5"/>
+
+						<!-- Properties -->
+						<StackPanel
+						  IsVisible="{Binding SlicerProperties.Count}"
+						  Grid.Row="3"
+						  Orientation="Horizontal"
+						  Spacing="5"
+						  VerticalAlignment="Center">
+
+							<TextBlock
+							  VerticalAlignment="Center"
+							  Text="{Binding SlicerProperties.Count, StringFormat=Properties: {0}}"/>
+
+							<TextBlock VerticalAlignment="Center" Text="|"/>
+
+							<TextBlock
+							  VerticalAlignment="Center"
+							  Text="{Binding SlicerFile.Configs.Length, StringFormat=Groups: {0}}"/>
+
+						</StackPanel>
+
+						<StackPanel
+						  IsVisible="{Binding SlicerProperties.Count}"
+						  Grid.Row="3"
+						  Orientation="Horizontal"
+						  Spacing="2"
+						  HorizontalAlignment="Right"
+						  VerticalAlignment="Center">
+
+							<uc:ButtonWithIcon
+								Name="PropertiesSaveButton"
+								IsEnabled="{Binding SlicerFile.Configs.Length}"
+								ToolTip.Tip="Save properties to a file or clipboard"
+								Icon="fa-solid fa-floppy-disk"
+								Spacing="3"
+								Text="⮟"
+								Command="{Binding OpenContextMenu}"
+								CommandParameter="PropertiesSave">
+								<uc:ButtonWithIcon.ContextMenu>
+									<ContextMenu Name="PropertiesSaveContextMenu" Placement="Bottom">
+										<MenuItem
+										  Command="{Binding OnClickPropertiesSaveFile}"
+										  Header="To File"
+										  i:MenuItem.Icon="fa-regular fa-floppy-disk"/>
+
+										<MenuItem
+										  Command="{Binding OnClickPropertiesSaveClipboard}"
+										  Header="To Clipboard"
+										  i:MenuItem.Icon="fa-regular fa-clipboard"/>
+
+									</ContextMenu>
+								</uc:ButtonWithIcon.ContextMenu>
+							</uc:ButtonWithIcon>
+
+						</StackPanel>
+		
+                        <DataGrid IsVisible="{Binding SlicerProperties.Count}"
+                                  Name="PropertiesGrid"
+                                  Grid.Row="4"
+                                  CanUserReorderColumns="True"
+                                  CanUserResizeColumns="True"
+                                  CanUserSortColumns="True"
+                                  GridLinesVisibility="Horizontal"
+                                  IsReadOnly="True"
+                                  SelectionMode="Extended"
+                                  ClipboardCopyMode="IncludeHeader"
+                                  ItemsSource="{Binding SlicerProperties}">
+							<DataGrid.Columns>
+								<DataGridTextColumn  Header="Name"
+													  Binding="{Binding Name}"
+													  Width="Auto" />
+								<DataGridTextColumn Header="Value"
+													Binding="{Binding Value}"
+													Width="Auto" />
+								<DataGridTextColumn Header="Group"
+													Binding="{Binding Group}"
+													Width="Auto" />
+							</DataGrid.Columns>
+
+						</DataGrid>
+
+						<GridSplitter Grid.Row="5" ResizeDirection="Rows" ResizeBehavior="PreviousAndNext"/>
+
+						<TextBlock Grid.Row="5"
+								   Text="Layer data"
+								   ToolTip.Tip="Shows the properties for the current selected layer"
+								   FontWeight="Bold"
+								   TextAlignment="Center"/>
+
+						<!-- Layer data -->
+
+						<DataGrid Grid.Row="6"
+								  IsVisible="{Binding IsFileLoaded}"
+								  Name="CurrentLayerGrid"
+								  CanUserReorderColumns="False"
+								  CanUserResizeColumns="False"
+								  CanUserSortColumns="False"
+								  GridLinesVisibility="Horizontal"
+								  IsReadOnly="True"
+								  ClipboardCopyMode="IncludeHeader"
+								  ItemsSource="{Binding CurrentLayerProperties}">
+							<DataGrid.Columns>
+								<DataGridTextColumn  Header="Name"
+													 Binding="{Binding Description}"
+													 Width="Auto" />
+								<DataGridTextColumn Header="Value"
+													Binding="{Binding Value}"
+													Width="Auto" />
+							</DataGrid.Columns>
+
+						</DataGrid>
+
+
+
+					</Grid>
+
+				</TabItem>
+
+				<TabItem
+				  Name="TabGCode"
+				  ToolTip.Tip="GCode"
+				  IsVisible="{Binding HaveGCode}"
+				  IsEnabled="{Binding HaveGCode}">
+					<TabItem.Header>
+						<StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+							<i:Icon Value="fa-solid fa-code"/>
+							<!--<TextBlock 
+              IsVisible="{Binding $parent[TabItem].IsSelected}"
+              VerticalAlignment="Center"
+              Margin="5,0,0,0">Gcode</TextBlock>!-->
+						</StackPanel>
+					</TabItem.Header>
+
+					<Grid RowDefinitions="Auto,*">
+						<StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="5">
+							<TextBlock
+							  Text="{Binding GCodeLines, StringFormat=Lines: {0}}"
+							  VerticalAlignment="Center"/>
+
+							<TextBlock Text="|" VerticalAlignment="Center"/>
+
+							<TextBlock Text="{Binding #GCodeText.Text.Length, StringFormat=Chars: {0}}"
+									   VerticalAlignment="Center"/>
+						</StackPanel>
+
+						<StackPanel Grid.Row="0"
+									Orientation="Horizontal"
+									Spacing="2"
+									HorizontalAlignment="Right"
+									VerticalAlignment="Center">
+
+							<ToggleButton
+								IsChecked="{Binding SlicerFile.SuppressRebuildGCode}"
+								ToolTip.Tip="Enable this to directly edit and use custom gcode.
+&#x0a;While this is active, UVtools won't update/generate the gcode, meaning any future change won't be replicated to gcode, unless you press the 'Refresh' button.
+&#x0a;To save the file with your custom gcode this setting must remain active while saving the file or else it will be re-generated.
+&#x0a;Use with caution and only if you know what you are doing!"
+								i:Attached.Icon="fa-regular fa-edit"/>
+
+							<Button
+						   ToolTip.Tip="Rebuild GCode with current settings"
+						   i:Attached.Icon="fa-solid fa-sync-alt"
+						   Command="{Binding OnClickRebuildGcode}"/>
+
+							<uc:ButtonWithIcon Name="GcodeSaveButton"
+							  ToolTip.Tip="Save gcode to a file or clipboard"
+							  Icon="fa-solid fa-floppy-disk"
+							  Spacing="3"
+							  Text="⮟"
+							  Command="{Binding OpenContextMenu}"
+							  CommandParameter="GcodeSave">
+								<uc:ButtonWithIcon.ContextMenu>
+									<ContextMenu Name="GcodeSaveContextMenu" Placement="Bottom">
+										<MenuItem
+										  Command="{Binding OnClickGCodeSaveFile}"
+										  Header="To File"
+										  i:MenuItem.Icon="fa-regular fa-floppy-disk"/>
+
+										<MenuItem
+										  Command="{Binding OnClickGCodeSaveClipboard}"
+										  Header="To Clipboard"
+										  i:MenuItem.Icon="fa-regular fa-clipboard"/>
+
+									</ContextMenu>
+								</uc:ButtonWithIcon.ContextMenu>
+							</uc:ButtonWithIcon>
+
+						</StackPanel>
+
+						<!--
+                        <avaloniaEdit:TextEditor Name="GCodeText2"
+                                                 Grid.Row="1"
+                                                 IsReadOnly="{Binding !SlicerFile.SuppressRebuildGCode}"
+                                                 ShowLineNumbers="True"/>
+                        !-->
+						<TextBox
+						  Name="GCodeText"
+						  Grid.Row="1"
+						  IsReadOnly="{Binding !SlicerFile.SuppressRebuildGCode}"
+						  AcceptsReturn="True"
+						  Text="{Binding SlicerFile.GCodeStr}" />
+
+					</Grid>
+
+				</TabItem>
+
+				<!-- 
+       Issues Tab
+      -->
+				<TabItem
+				  Name="TabIssues"
+				  ToolTip.Tip="Issues"
+				  IsEnabled="{Binding IsFileLoaded}" >
+					<TabItem.Header>
+						<StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+							<i:Icon Value="fa-solid fa-radiation-alt"/>
+							<!--<TextBlock Margin="5,0,0,0">Issues</TextBlock>!-->
+						</StackPanel>
+					</TabItem.Header>
+
+					<Grid RowDefinitions="Auto,*">
+						<StackPanel
+						  IsEnabled="{Binding IsFileLoaded}"
+						  Grid.Row="0"
+						  Orientation="Horizontal"
+						  Spacing="2"
+						  VerticalAlignment="Center">
+							<uvtava:IndexSelector BorderThickness="0"
+                                AllowSelectNone="True"
+                                ZeroLeading="True"
+                                SelectedIndex="{Binding IssueSelectedIndex}"
+								Count="{Binding SlicerFile.IssueManager.Count}">
+								<uvtava:IndexSelector.Styles>
+                                    <Style Selector="RepeatButton#PART_PreviousButton">
+                                        <Setter Property="HotKey" Value="Ctrl + Shift + Down"/>
+                                        <Setter Property="ToolTip.Tip" Value="Go to the previous issue [Ctrl + Shift + Down]"/>
+                                    </Style>
+									<Style Selector="RepeatButton#PART_NextButton">
+										<Setter Property="HotKey" Value="Ctrl + Shift + Up"/>
+										<Setter Property="ToolTip.Tip" Value="Go to the next issue [Ctrl + Shift + Up]"/>
+                                    </Style>
+                                </uvtava:IndexSelector.Styles>
+                            </uvtava:IndexSelector>
+
+							<Button VerticalAlignment="Stretch"
+									ToolTip.Tip="Hides and ignores the selected issues, they won't be re-detected.
+&#x0a;ALT + Click to re-enable the ignored issues."
+									IsEnabled="{Binding #IssuesGrid.SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}"
+									i:Attached.Icon="fa-solid fa-eye-slash"
+									Command="{Binding OnClickIssueIgnore}"/>
+
+							<Button VerticalAlignment="Stretch"
+									ToolTip.Tip="Remove the selected issue(s) when possible.
+&#x0a;Islands: All pixels are removed (turn black).
+&#x0a;ResinTrap: All areas are filled with white pixels.
+&#x0a;SuctionCup: Drills a vertical vent hole.
+&#x0a;EmptyLayers: Layers are removed."
+									IsEnabled="{Binding #IssuesGrid.SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}"
+									i:Attached.Icon="fa-solid fa-trash-alt"
+									Command="{Binding OnClickIssueRemove}"/>
+
+						</StackPanel>
+
+						<StackPanel Grid.Row="0"
+                                    Orientation="Horizontal"
+                                    Spacing="2"
+                                    HorizontalAlignment="Right"
+                                    VerticalAlignment="Center">
+
+							<Button IsEnabled="{Binding IsFileLoaded}"
+                                    ToolTip.Tip="Attempt to repair issues"
+                                    VerticalAlignment="Stretch"
+                                    i:Attached.Icon="fa-solid fa-toolbox"
+                                    Command="{Binding OnClickRepairIssues}">
+                            </Button>
+
+							<uc:ButtonWithIcon VerticalAlignment="Stretch"
+											   ToolTip.Tip="Compute Issues.
+&#x0a;Right click to access settings."
+											   Icon="fa-solid fa-sync-alt"
+											   Spacing="5"
+											   Text="Detect ⮟"
+											   Command="{Binding OnClickDetectIssues}">
+
+								<uc:ButtonWithIcon.ContextMenu>
+									<ContextMenu Placement="Bottom">
+										<CheckBox
+										  IsChecked="{Binding Settings.Issues.ComputeIslands}"
+										  Content="Islands"/>
+										<CheckBox
+										  IsChecked="{Binding Settings.Issues.ComputeOverhangs}"
+										  Content="Overhangs"/>
+										<StackPanel Orientation="Horizontal">
+											<CheckBox
+												VerticalAlignment="Center"
+												IsChecked="{Binding Settings.Issues.ComputeResinTraps}"
+												Content="Resin traps"/>
+
+											<NumericUpDown
+												VerticalAlignment="Center"
+												Margin="10,0,0,0"
+												ToolTip.Tip="Starting layer index for resin trap detection which will also be considered a drain layer.
+&#x0a;Use this setting to bypass complicated rafts by select the model first real layer."
+												Minimum="0"
+												Maximum="{Binding SlicerFile.LastLayerIndex}"
+												Increment="1"
+												Width="110"
+												Value="{Binding ResinTrapDetectionStartLayer}"/>
+
+											<Button
+												VerticalAlignment="Center"
+												Margin="2,0,0,0"
+												ToolTip.Tip="Set to the first normal layer"
+												Content="N"
+												Command="{Binding SetResinTrapDetectionStartLayer}"
+												CommandParameter="N"/>
+											<Button
+												VerticalAlignment="Center"
+												Margin="2,0,0,0"
+												ToolTip.Tip="Set to the current layer"
+												Content="C"
+												Command="{Binding SetResinTrapDetectionStartLayer}"
+												CommandParameter="C"/>
+										</StackPanel>
+
+										<CheckBox
+											VerticalAlignment="Center"
+											IsEnabled="{Binding Settings.Issues.ComputeResinTraps}"
+											IsChecked="{Binding Settings.Issues.ComputeSuctionCups}"
+											Content="Suction cups"/>
+
+										<CheckBox
+										  IsChecked="{Binding Settings.Issues.ComputeTouchingBounds}"
+										  Content="Touching bounds"/>
+										<CheckBox
+											IsChecked="{Binding Settings.Issues.ComputePrintHeight}"
+											Content="Print height"/>
+										<CheckBox
+										  IsChecked="{Binding Settings.Issues.ComputeEmptyLayers}"
+										  Content="Empty layers"/>
+									</ContextMenu>
+								</uc:ButtonWithIcon.ContextMenu>
+							</uc:ButtonWithIcon>
+
+						</StackPanel>
+
+						<DataGrid Name="IssuesGrid"
+                                  Grid.Row="1"
+                                  CanUserReorderColumns="True"
+                                  CanUserResizeColumns="True"
+                                  CanUserSortColumns="True"
+                                  GridLinesVisibility="Horizontal"
+                                  SelectionMode="Extended"
+                                  SelectedIndex="{Binding IssueSelectedIndex}"
+                                  IsReadOnly="True"
+                                  ClipboardCopyMode="None"
+                                  ItemsSource="{Binding IssuesGridItems}">
+                            <DataGrid.ContextMenu>
+                                <ContextMenu IsVisible="{Binding #IssuesGrid.SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}">
+									<MenuItem i:MenuItem.Icon="fa-solid fa-eye-slash" Command="{Binding OnClickIssueIgnore}" Header="Ignore issue(s)"/>
+                                    <Separator/>
+                                    <MenuItem i:MenuItem.Icon="fa-solid fa-trash-can" Command="{Binding SelectedIssuesIslandRemove}" IsVisible="{Binding #IssuesGrid.SelectedItem.IsIsland}" Header="Remove island(s)"/>
+                                    <MenuItem i:MenuItem.Icon="fa-solid fa-diamond" Command="{Binding SelectedIssuesResinTrapSolidify}" IsVisible="{Binding #IssuesGrid.SelectedItem.IsResinTrap}" Header="Fill/solidify resin trap(s)"/>
+                                    <MenuItem i:MenuItem.Icon="fa-solid fa-circle-dot" Command="{Binding SelectedIssuesSuctionCupDrill}" IsVisible="{Binding #IssuesGrid.SelectedItem.IsSuctionCup}" Header="Drill suction cup(s)"/>
+                                    <MenuItem i:MenuItem.Icon="fa-solid fa-diamond" Command="{Binding SelectedIssuesSuctionCupSolidify}" IsVisible="{Binding #IssuesGrid.SelectedItem.IsSuctionCup}" Header="Fill/solidify suction cup(s)"/>
+                                    <MenuItem i:MenuItem.Icon="fa-solid fa-trash-can" Command="{Binding SelectedIssuesEmptyLayerRemove}" IsVisible="{Binding #IssuesGrid.SelectedItem.IsEmptyLayer}" Header="Remove empty layer(s)"/>
+                                </ContextMenu>
+                            </DataGrid.ContextMenu>
+                            <DataGrid.Columns>
+
+								<DataGridTextColumn  Header="Type"
+													 Binding="{Binding Type}"
+													 Width="Auto" />
+								<DataGridTextColumn Header="Layer(s)"
+												  Binding="{Binding LayerInfoStr}"
+												  SortMemberPath="StartLayerIndex"
+												  Width="Auto" />
+								<DataGridTextColumn Header="Area"
+												  Binding="{Binding Area, StringFormat={}{0:N0}}"
+												  Width="Auto" />
+							</DataGrid.Columns>
+
+						</DataGrid>
+
+
+					</Grid>
+
+
+				</TabItem>
+
+				<!-- 
+       Suggestions Tab
+      -->
+				<TabItem
+					Name="TabSuggestions"
+					ToolTip.Tip="Suggestions, automations and analyzer"
+					IsVisible="{Binding Suggestions.Length}"
+					IsEnabled="{Binding IsFileLoaded}" >
+					<TabItem.Header>
+						<StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+							<i:Icon Value="fa-solid fa-shield-virus"/>
+							<!--<TextBlock Margin="5,0,0,0">Suggestions</TextBlock>!-->
+						</StackPanel>
+					</TabItem.Header>
+
+					<Grid ColumnDefinitions="*">
+						<Grid.RowDefinitions>
+							<RowDefinition Height="Auto" />
+							<RowDefinition Height="2*" MinHeight="200" />
+							<RowDefinition Height="Auto" />
+							<RowDefinition Height="*" MinHeight="200" />
+						</Grid.RowDefinitions>
+
+						<Grid Grid.Row="0" RowDefinitions="Auto" ColumnDefinitions="Auto,2,Auto,*">
+							<uc:ButtonWithIcon Grid.Column="0"
+											   Text="Unselect all"
+											   Spacing="5"
+											   Icon="fa-regular fa-square"
+											   Command="{Binding #SuggestionsAvailableListBox.UnselectAll}"/>
+
+							<uc:ButtonWithIcon Grid.Column="2"
+											   Text="Select all"
+											   Spacing="5"
+											   Icon="fa-regular fa-check-square"
+											   Command="{Binding #SuggestionsAvailableListBox.SelectAll}"/>
+
+							<StackPanel Grid.Column="3" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="2">
+								<uc:ButtonWithIcon IsEnabled="{Binding #SuggestionsAvailableListBox.SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}"
+												   Icon="fa-solid fa-check"
+												   Spacing="5"
+												   Text="Apply"
+												   Command="{Binding ApplySuggestionsClicked}"/>
+
+								<Button VerticalAlignment="Stretch"
+										ToolTip.Tip="Configure suggestions"
+										Command="{Binding ConfigureSuggestionsClicked}"
+										i:Attached.Icon="fa-solid fa-cog"/>
+							</StackPanel>
+
+						</Grid>
+
+						<ListBox
+							Grid.Row="1"
+							Name="SuggestionsAvailableListBox"
+							SelectionMode="Multiple,Toggle"
+							ItemsSource="{Binding SuggestionsAvailable}">
+							<ListBox.ItemTemplate>
+								<DataTemplate>
+									<TextBlock Text="{Binding Message}"
+											   TextWrapping="Wrap"
+											   ToolTip.Tip="{Binding ToolTip}">
+										<!--<TextBlock.IsVisible>
+									  <MultiBinding Converter="{x:Static BoolConverters.And}">
+										  <Binding Path="Enabled"/>
+										  <Binding Path="!IsApplied"/>
+									  </MultiBinding>
+								  </TextBlock.IsVisible>
+								  !-->
+										<TextBlock.ContextMenu>
+											<ContextMenu>
+												<MenuItem
+													Command="{Binding $parent[uc:WindowEx].DataContext.ApplySuggestionClicked}"
+													CommandParameter="{Binding .}"
+													Header="Apply"
+													IsVisible="{Binding !IsInformativeOnly}"
+													i:MenuItem.Icon="fa-solid fa-check"/>
+												<MenuItem
+													Command="{Binding $parent[uc:WindowEx].DataContext.OpenWebsite}"
+													CommandParameter="{Binding InformationUrl}"
+													Header="More information (Web)"
+													IsVisible="{Binding InformationUrl, Converter={x:Static ObjectConverters.IsNotNull}}"
+													i:MenuItem.Icon="fa-solid fa-info-circle"/>
+												<MenuItem
+													Command="{Binding $parent[uc:WindowEx].DataContext.ConfigureSuggestionClicked}"
+													CommandParameter="{Binding .}"
+													Header="Configure"
+													i:MenuItem.Icon="fa-solid fa-cog"/>
+											</ContextMenu>
+										</TextBlock.ContextMenu>
+									</TextBlock>
+								</DataTemplate>
+							</ListBox.ItemTemplate>
+						</ListBox>
+
+						<GridSplitter Grid.Row="2" ResizeBehavior="PreviousAndNext" ResizeDirection="Rows"/>
+
+						<TextBlock Grid.Row="2" Text="Applied suggestions:" HorizontalAlignment="Center" FontWeight="Bold"/>
+
+						<ListBox
+							Grid.Row="3"
+							SelectionMode="AlwaysSelected"
+							ItemsSource="{Binding SuggestionsApplied}">
+							<ListBox.ItemTemplate>
+								<DataTemplate>
+									<TextBlock Text="{Binding Message}"
+											   TextWrapping="Wrap"
+											   ToolTip.Tip="{Binding ToolTip}">
+										<!--<TextBlock.IsVisible>
+                                  <MultiBinding Converter="{x:Static BoolConverters.And}">
+                                      <Binding Path="Enabled"/>
+                                      <Binding Path="IsApplied"/>
+                                  </MultiBinding>
+                              </TextBlock.IsVisible>
+							  !-->
+										<TextBlock.ContextMenu>
+											<ContextMenu>
+												<MenuItem
+													Command="{Binding $parent[uc:WindowEx].DataContext.OpenWebsite}"
+													CommandParameter="{Binding InformationUrl}"
+													Header="More information (Web)"
+													IsVisible="{Binding InformationUrl, Converter={x:Static ObjectConverters.IsNotNull}}"
+													i:MenuItem.Icon="fa-solid fa-info-circle"/>
+												<MenuItem
+													Command="{Binding $parent[uc:WindowEx].DataContext.ConfigureSuggestionClicked}"
+													CommandParameter="{Binding .}"
+													Header="Configure"
+													i:MenuItem.Icon="fa-solid fa-cog"/>
+											</ContextMenu>
+										</TextBlock.ContextMenu>
+									</TextBlock>
+								</DataTemplate>
+							</ListBox.ItemTemplate>
+						</ListBox>
+					</Grid>
+
+				</TabItem>
+
+				<!-- Pixel Editor !-->
+				<TabItem
+				  Name="TabPixelEditor"
+				  ToolTip.Tip="Pixel editor"
+				  IsVisible="{Binding IsPixelEditorActive}"
+				  IsEnabled="{Binding IsPixelEditorActive}">
+					<TabItem.Header>
+						<StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+							<i:Icon Value="fa-solid fa-drafting-compass"/>
+							<!--<TextBlock Margin="5,0,0,0">Pixel editor</TextBlock>!-->
+						</StackPanel>
+					</TabItem.Header>
+
+					<Grid RowDefinitions="Auto,20,Auto,*">
+						<TabControl
+							Padding="10,0"
+							SelectedIndex="{Binding SelectedPixelOperationTabIndex}">
+							<!-- Drawing !-->
+							<TabControl.Styles>
+								<Style Selector="TabItem">
+									<Setter Property="FontSize" Value="24"/>
+								</Style>
+							</TabControl.Styles>
+							<TabItem ToolTip.Tip="Drawing">
+								<TabItem.Header>
+									<StackPanel VerticalAlignment="Center" Orientation="Horizontal" Spacing="5">
+										<i:Icon Value="fa-solid fa-paintbrush"/>
+										<TextBlock IsVisible="{Binding $parent[TabItem].IsSelected}" Text="Drawing" />
+									</StackPanel>
+								</TabItem.Header>
+
+								<StackPanel Spacing="10">
+									<Border Background="{DynamicResource LightBackground}" BorderThickness="1" BorderBrush="Black">
+										<TextBlock Padding="10" Text="Shift+Left click to add white pixels
+&#x0a;Shift+Right click to remove pixels"/>
+									</Border>
+
+									<Grid
+										RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto"
+										ColumnDefinitions="Auto,10,130,5,40">
+
+										<TextBlock
+										  Grid.Row="0"
+										  Grid.Column="0"
+										  VerticalAlignment="Center"
+										  Text="Line type:" />
+										<ComboBox
+										  Grid.Row="0"
+										  Grid.Column="2"
+										  Grid.ColumnSpan="3"
+										  Width="180"
+										  ItemsSource="{Binding DrawingPixelDrawing.LineTypes}"
+										  SelectedItem="{Binding DrawingPixelDrawing.LineType}"/>
+
+										<TextBlock
+										  Grid.Row="2"
+										  Grid.Column="0"
+										  VerticalAlignment="Center"
+										  Text="Brush shape:" />
+										<ComboBox
+										  Grid.Row="2"
+										  Grid.Column="2"
+										  Grid.ColumnSpan="3"
+										  Width="180"
+                                          ItemsSource="{Binding DrawingPixelDrawing.BrushShape, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                                          SelectedItem="{Binding DrawingPixelDrawing.BrushShape, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
+
+										<TextBlock Grid.Row="4" Grid.Column="0"
+												   VerticalAlignment="Center"
+												   Text="Rotation angle:" />
+										<NumericUpDown Grid.Row="4" Grid.Column="2" Grid.ColumnSpan="3"
+													   Classes="ValueLabel ValueLabel_deg"
+													   FormatString="F2"
+													   Minimum="-360"
+													   Maximum="360"
+													   Value="{Binding DrawingPixelDrawing.RotationAngle}"/>
+
+										<TextBlock Grid.Row="6" Grid.Column="0"
+												   VerticalAlignment="Center"
+												   Text="Brush diameter:" />
+										<NumericUpDown Grid.Row="6" Grid.Column="2" Grid.ColumnSpan="3"
+													   Classes="ValueLabel ValueLabel_px"
+													   Minimum="1"
+													   Maximum="4000"
+													   HorizontalAlignment="Stretch"
+													   Value="{Binding DrawingPixelDrawing.BrushSize}"/>
+
+										<TextBlock Grid.Row="8" Grid.Column="0"
+												   VerticalAlignment="Center"
+												   Text="Thickness:" />
+										<NumericUpDown Grid.Row="8" Grid.Column="2" Grid.ColumnSpan="3"
+													   Classes="ValueLabel ValueLabel_px"
+													   Minimum="-1"
+													   Maximum="255"
+													   HorizontalAlignment="Stretch"
+													   Value="{Binding DrawingPixelDrawing.Thickness}"/>
+
+										<TextBlock Grid.Row="10" Grid.Column="0"
+												   VerticalAlignment="Center"
+												   Text="Remove pixel brightness:" />
+										<NumericUpDown Grid.Row="10" Grid.Column="2"
+													   Minimum="0"
+													   Maximum="255"
+													   HorizontalAlignment="Stretch"
+													   Value="{Binding DrawingPixelDrawing.RemovePixelBrightness}"/>
+										<TextBlock
+											Grid.Row="10"
+											Grid.Column="4"
+											VerticalAlignment="Center"
+											Text="{Binding DrawingPixelDrawing.RemovePixelBrightnessPercent, StringFormat={}{0:0}%}" />
+
+										<TextBlock
+											Grid.Row="12"
+											Grid.Column="0"
+											VerticalAlignment="Center"
+											Text="Add pixel brightness:" />
+										<NumericUpDown
+											Grid.Row="12"
+											Grid.Column="2"
+											Minimum="1"
+											Maximum="255"
+                      
+											HorizontalAlignment="Stretch"
+											Value="{Binding DrawingPixelDrawing.PixelBrightness}"/>
+										<TextBlock
+											Grid.Row="12"
+											Grid.Column="4"
+											VerticalAlignment="Center"
+											Text="{Binding DrawingPixelDrawing.PixelBrightnessPercent, StringFormat={}{0:0}%}" />
+
+										<TextBlock
+										  Grid.Row="14"
+										  Grid.Column="0"
+										  VerticalAlignment="Center"
+										  Text="Layers depth below:" />
+										<NumericUpDown Grid.Row="14" Grid.Column="2" Grid.ColumnSpan="3"
+													   Classes="ValueLabel ValueLabel_layers"
+													   Minimum="0"
+													   HorizontalAlignment="Stretch"
+													   Value="{Binding DrawingPixelDrawing.LayersBelow}"/>
+
+
+										<TextBlock
+											Grid.Row="16"
+											Grid.Column="0"
+											VerticalAlignment="Center"
+											Text="Layers depth above:" />
+										<NumericUpDown Grid.Row="16" Grid.Column="2" Grid.ColumnSpan="3"
+													   Classes="ValueLabel ValueLabel_layers"
+													   Minimum="0"
+													   HorizontalAlignment="Stretch"
+													   Value="{Binding DrawingPixelDrawing.LayersAbove}"/>
+
+									</Grid>
+
+								</StackPanel>
+
+							</TabItem>
+
+							<!-- Text !-->
+							<TabItem ToolTip.Tip="Text">
+								<TabItem.Header>
+									<StackPanel VerticalAlignment="Center" Orientation="Horizontal" Spacing="5">
+										<i:Icon Value="fa-solid fa-font"/>
+										<TextBlock IsVisible="{Binding $parent[TabItem].IsSelected}" Text="Text" />
+									</StackPanel>
+								</TabItem.Header>
+
+								<StackPanel Spacing="10">
+									<Border Background="{DynamicResource LightBackground}" BorderThickness="1" BorderBrush="Black">
+										<TextBlock Padding="10" Text="Shift+Left click to add text
+&#x0a;Shift+Right click to remove text"/>
+									</Border>
+
+									<Grid
+						  RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto"
+						  ColumnDefinitions="Auto,10,130,5,40">
+
+										<TextBlock
+										  Grid.Row="0"
+										  Grid.Column="0"
+										  VerticalAlignment="Center"
+										  Text="Line type:" />
+										<ComboBox
+										  Grid.Row="0"
+										  Grid.Column="2"
+										  Grid.ColumnSpan="3"
+										  Width="180"
+										  ItemsSource="{Binding DrawingPixelText.LineTypes}"
+										  SelectedItem="{Binding DrawingPixelText.LineType}"/>
+
+										<TextBlock
+										  Grid.Row="2"
+										  Grid.Column="0"
+										  VerticalAlignment="Center"
+										  Text="Font face:" />
+										<ComboBox
+										  Grid.Row="2"
+										  Grid.Column="2"
+										  Grid.ColumnSpan="3"
+										  Width="180"
+										  ItemsSource="{Binding DrawingPixelText.FontFaces}"
+										  SelectedItem="{Binding DrawingPixelText.Font}"/>
+
+										<TextBlock
+										  Grid.Row="4"
+										  Grid.Column="0"
+										  VerticalAlignment="Center"
+										  Text="Font scale:" />
+										<NumericUpDown
+										  Grid.Row="4"
+										  Grid.Column="2"
+										  Grid.ColumnSpan="3"
+										  Minimum="0.1"
+										  Maximum="255"
+										  Increment="0.1"
+                    
+										  Value="{Binding DrawingPixelText.FontScale}"/>
+
+
+										<TextBlock
+										  Grid.Row="6"
+										  Grid.Column="0"
+										  VerticalAlignment="Center"
+										  Text="Thickness:" />
+										<NumericUpDown Grid.Row="6" Grid.Column="2"
+													   Classes="ValueLabel ValueLabel_px"
+													   Grid.ColumnSpan="3"
+													   Minimum="1"
+													   Maximum="255"
+													   Value="{Binding DrawingPixelText.Thickness}"/>
+
+										<TextBlock
+										  Grid.Row="8"
+										  Grid.Column="0"
+										  VerticalAlignment="Center"
+										  Text="Text:" />
+										<TextBox
+										  Grid.Row="8"
+										  Grid.Column="2"
+										  Grid.ColumnSpan="3"
+										  AcceptsReturn="True"
+										  Height="90"
+										  Text="{Binding DrawingPixelText.Text}"/>
+
+										<TextBlock
+											Grid.Row="10"
+											Grid.Column="0"
+											VerticalAlignment="Center"
+											Text="Line alignment:" />
+										<ComboBox
+											Grid.Row="10"
+											Grid.Column="2"
+											Grid.ColumnSpan="3"
+											Width="180"
+											ItemsSource="{Binding DrawingPixelText.LineAlignment, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+											SelectedItem="{Binding DrawingPixelText.LineAlignment, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
+
+										<CheckBox
+										Grid.Row="12"
+										Grid.Column="2"
+										Grid.ColumnSpan="3"
+										Content="Flip text Vertically"
+										IsChecked="{Binding DrawingPixelText.Mirror}"/>
+
+										<TextBlock
+											Grid.Row="14"
+											Grid.Column="0"
+											VerticalAlignment="Center"
+											Text="Rotation angle:" />
+										<NumericUpDown Grid.Row="14" Grid.Column="2" Grid.ColumnSpan="3"
+													   Classes="ValueLabel ValueLabel_deg"
+													   FormatString="F2"
+													   Minimum="-360"
+													   Maximum="360"
+													   Value="{Binding DrawingPixelText.Angle}"/>
+
+										<TextBlock
+											Grid.Row="16"
+											Grid.Column="0"
+											VerticalAlignment="Center"
+											Text="Remove pixel brightness:" />
+										<NumericUpDown
+											Grid.Row="16"
+											Grid.Column="2"
+											Minimum="0"
+											Maximum="255"
+                      
+											Value="{Binding DrawingPixelText.RemovePixelBrightness}"/>
+										<TextBlock
+											Grid.Row="16"
+											Grid.Column="4"
+											VerticalAlignment="Center"
+											Text="{Binding DrawingPixelText.RemovePixelBrightnessPercent, StringFormat={}{0:0}%}" />
+
+										<TextBlock
+											Grid.Row="18"
+											Grid.Column="0"
+											VerticalAlignment="Center"
+											Text="Add pixel brightness:" />
+										<NumericUpDown
+											Grid.Row="18"
+											Grid.Column="2"
+											Minimum="1"
+											Maximum="255"
+                      
+											Value="{Binding DrawingPixelText.PixelBrightness}"/>
+										<TextBlock
+											Grid.Row="18"
+											Grid.Column="4"
+											VerticalAlignment="Center"
+											Text="{Binding DrawingPixelText.PixelBrightnessPercent, StringFormat={}{0:0}%}" />
+
+
+										<TextBlock
+										  Grid.Row="20"
+										  Grid.Column="0"
+										  VerticalAlignment="Center"
+										  Text="Layers depth below:" />
+										<NumericUpDown Grid.Row="20" Grid.Column="2" Grid.ColumnSpan="3"
+													   Classes="ValueLabel ValueLabel_layers"
+													   Minimum="0"
+													  Value="{Binding DrawingPixelText.LayersBelow}"/>
+
+
+										<TextBlock
+											Grid.Row="22"
+											Grid.Column="0"
+											VerticalAlignment="Center"
+											Text="Layers depth above:" />
+										<NumericUpDown Grid.Row="22" Grid.Column="2" Grid.ColumnSpan="3"
+													   Classes="ValueLabel ValueLabel_layers"
+													   Minimum="0"
+													   Value="{Binding DrawingPixelText.LayersAbove}"/>
+
+									</Grid>
+
+								</StackPanel>
+
+							</TabItem>
+
+							<!-- Eraser !-->
+							<TabItem ToolTip.Tip="Eraser">
+								<TabItem.Header>
+									<StackPanel VerticalAlignment="Center" Orientation="Horizontal" Spacing="5">
+										<i:Icon Value="fa-solid fa-eraser"/>
+										<TextBlock IsVisible="{Binding $parent[TabItem].IsSelected}" Text="Eraser" />
+									</StackPanel>
+								</TabItem.Header>
+
+								<StackPanel Spacing="10">
+									<Border Background="{DynamicResource LightBackground}" BorderThickness="1" BorderBrush="Black">
+										<TextBlock Padding="10" Text="Shift+click over a white pixel to remove the linked area.
+&#x0a;(Fill linked area with black)"/>
+									</Border>
+
+									<Grid
+						  RowDefinitions="Auto,10,Auto,10,Auto"
+						  ColumnDefinitions="Auto,10,*,10,40">
+
+										<TextBlock
+											Grid.Row="0"
+											Grid.Column="0"
+											VerticalAlignment="Center"
+											Text="Pixel brightness:" />
+										<NumericUpDown Grid.Row="0" Grid.Column="2"
+													   Classes="ValueLabel ValueLabel_sun"
+													   Minimum="0"
+													   Maximum="255"
+                        
+													   Value="{Binding DrawingPixelEraser.PixelBrightness}"/>
+										<TextBlock
+											Grid.Row="0"
+											Grid.Column="4"
+											VerticalAlignment="Center"
+											Text="{Binding DrawingPixelEraser.PixelBrightnessPercent, StringFormat={}{0:0}%}" />
+
+										<TextBlock
+											Grid.Row="2"
+											Grid.Column="0"
+											VerticalAlignment="Center"
+											Text="Layers depth below:" />
+										<NumericUpDown Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="3"
+													   Classes="ValueLabel ValueLabel_layers"
+													   Minimum="0"
+													   Value="{Binding DrawingPixelEraser.LayersBelow}"/>
+
+										<TextBlock
+											Grid.Row="4"
+											Grid.Column="0"
+											VerticalAlignment="Center"
+											Text="Layers depth above:" />
+										<NumericUpDown Grid.Row="4" Grid.Column="2" Grid.ColumnSpan="3"
+													   Classes="ValueLabel ValueLabel_layers"
+													   Minimum="0"
+													   Value="{Binding DrawingPixelEraser.LayersAbove}"/>
+
+
+									</Grid>
+
+								</StackPanel>
+
+							</TabItem>
+
+							<!-- Supports !-->
+							<TabItem
+							  ToolTip.Tip="Supports"
+              >
+								<TabItem.Header>
+									<StackPanel VerticalAlignment="Center" Orientation="Horizontal" Spacing="5">
+										<i:Icon Value="fa-solid fa-code-branch"/>
+										<TextBlock IsVisible="{Binding $parent[TabItem].IsSelected}" Text="Supports" />
+									</StackPanel>
+								</TabItem.Header>
+
+								<StackPanel Spacing="10" >
+									<Border Background="{DynamicResource LightBackground}" BorderThickness="1" BorderBrush="Black">
+										<TextBlock Padding="10" Text="Shift+click under a island to add primitive support.
+&#x0a;Note: this operation can't be previewed."/>
+									</Border>
+									<Grid
+									  RowDefinitions="Auto,10,Auto,10,Auto,10,Auto"
+									  ColumnDefinitions="Auto,10,*,5,35">
+										<TextBlock
+										  Grid.Row="0"
+										  Grid.Column="0"
+										  VerticalAlignment="Center"
+										  Text="Tip diameter:" />
+										<NumericUpDown Grid.Row="0" Grid.Column="2" Grid.ColumnSpan="3"
+													   Classes="ValueLabel ValueLabel_px"
+													   Minimum="1"
+													   Maximum="255"
+													   Value="{Binding DrawingPixelSupport.TipDiameter}"/>
+
+										<TextBlock
+										  Grid.Row="2"
+										  Grid.Column="0"
+										  VerticalAlignment="Center"
+										  Text="Pillar diameter:" />
+										<NumericUpDown Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="3"
+													   Classes="ValueLabel ValueLabel_px"
+													   Minimum="1"
+													   Maximum="255"
+													   Value="{Binding DrawingPixelSupport.PillarDiameter}"/>
+
+										<TextBlock
+										  Grid.Row="4"
+										  Grid.Column="0"
+										  VerticalAlignment="Center"
+										  Text="Base diameter:" />
+										<NumericUpDown Grid.Row="4" Grid.Column="2" Grid.ColumnSpan="3"
+													   Classes="ValueLabel ValueLabel_px"
+													   Minimum="1"
+													   Maximum="255"
+													   Value="{Binding DrawingPixelSupport.BaseDiameter}"/>
+
+										<TextBlock
+											Grid.Row="6"
+											Grid.Column="0"
+											VerticalAlignment="Center"
+											Text="Pixel brightness:" />
+										<NumericUpDown Grid.Row="6" Grid.Column="2"
+													   Classes="ValueLabel ValueLabel_sun"
+													   Minimum="0"
+													   Maximum="255"
+                      
+													   Value="{Binding DrawingPixelSupport.PixelBrightness}"/>
+										<TextBlock
+											Grid.Row="6"
+											Grid.Column="4"
+											VerticalAlignment="Center"
+											Text="{Binding DrawingPixelSupport.PixelBrightnessPercent, StringFormat={}{0:0}%}" />
+
+									</Grid>
+								</StackPanel>
+
+							</TabItem>
+
+							<!-- Drain holes !-->
+							<TabItem
+							  ToolTip.Tip="Drain holes"
+              >
+								<TabItem.Header>
+									<StackPanel VerticalAlignment="Center" Orientation="Horizontal" Spacing="5">
+										<i:Icon Value="fa-solid fa-ring"/>
+										<TextBlock IsVisible="{Binding $parent[TabItem].IsSelected}" Text="Drain holes" />
+									</StackPanel>
+								</TabItem.Header>
+
+								<StackPanel Spacing="10">
+									<Border Background="{DynamicResource LightBackground}" BorderThickness="1" BorderBrush="Black">
+										<TextBlock Padding="10" Text="Shift+click to add a vertical drain hole.
+&#x0a;Note: this operation can't be previewed."/>
+									</Border>
+									<Grid
+									  RowDefinitions="Auto"
+									  ColumnDefinitions="Auto,10,*">
+										<TextBlock
+										  Grid.Row="0"
+										  Grid.Column="0"
+										  VerticalAlignment="Center"
+										  Text="Hole diameter:" />
+										<NumericUpDown Grid.Row="0" Grid.Column="2"
+													   Classes="ValueLabel ValueLabel_px"
+													   Minimum="20"
+													   Maximum="255"
+													   Value="{Binding DrawingPixelDrainHole.Diameter}"/>
+									</Grid>
+								</StackPanel>
+
+							</TabItem>
+
+						</TabControl>
+
+						<!-- Toolbar !-->
+						<StackPanel
+						  Grid.Row="2"
+						  Orientation="Horizontal" Spacing="1">
+							<uc:ButtonWithIcon IsEnabled="{Binding #DrawingsGrid.SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}"
+											   Icon="fa-solid fa-trash-alt"
+											   Spacing="5"
+											   Text="Remove"
+											   Command="{Binding OnClickDrawingRemove}"/>
+
+							<uc:ButtonWithIcon IsEnabled="{Binding Drawings.Count}"
+											   Icon="fa-solid fa-xmark"
+											   Spacing="5"
+											   Text="Clear"
+											   Command="{Binding OnClickDrawingClear}"/>
+						</StackPanel>
+
+						<StackPanel
+						  Grid.Row="2"
+						  HorizontalAlignment="Right"
+						  Orientation="Horizontal"
+						  Spacing="10" >
+
+							<uc:ButtonWithIcon IsEnabled="{Binding Drawings.Count}"
+											   Icon="fa-solid fa-check"
+											   Spacing="5"
+											   Text="{Binding Drawings.Count, StringFormat=Apply {0} operations}"
+											   Command="{Binding DrawModificationsCommand}"/>
+						</StackPanel>
+
+						<DataGrid
+								Name="DrawingsGrid"
+								Grid.Row="3"
+								CanUserReorderColumns="True"
+								CanUserResizeColumns="True"
+								CanUserSortColumns="True"
+								GridLinesVisibility="Horizontal"
+								SelectionMode="Extended"
+								IsReadOnly="True"
+								ClipboardCopyMode="IncludeHeader"
+								ItemsSource="{Binding Drawings}">
+							<DataGrid.Columns>
+								<DataGridTextColumn  Header="#"
+													 Binding="{Binding Index}"
+													 Width="Auto" />
+								<DataGridTextColumn Header="Operation"
+													Binding="{Binding OperationType}"
+													Width="Auto" />
+								<DataGridTextColumn Header="Layer"
+													Binding="{Binding LayerIndex}"
+													Width="Auto" />
+								<DataGridTextColumn Header="Position (X, Y)"
+													Binding="{Binding Location}"
+													Width="Auto" />
+							</DataGrid.Columns>
+
+						</DataGrid>
+
+					</Grid>
+
+				</TabItem>
+
+
+				<TabItem
+					Name="TabClipboard"
+					IsEnabled="{Binding IsFileLoaded}"
+					ToolTip.Tip="Clipboard">
+					<TabItem.Header>
+						<StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+							<i:Icon Value="fa-solid fa-clipboard-list"/>
+							<!--<TextBlock Margin="5,0,0,0">Clipboard</TextBlock>!-->
+						</StackPanel>
+					</TabItem.Header>
+
+					<Grid>
+						<Grid.RowDefinitions>
+							<RowDefinition Height="Auto"/>
+							<RowDefinition Height="*" MinHeight="140"/>
+							<RowDefinition Height="Auto"/>
+							<RowDefinition Height="*" MinHeight="180"/>
+						</Grid.RowDefinitions>
+						<StackPanel Orientation="Horizontal" Spacing="2">
+
+							<Button IsEnabled="{Binding ClipboardManager.CanUndo}"
+									Command="{Binding ClipboardUndo}"
+									HotKey="Ctrl + Z"
+									ToolTip.Tip="Undo [Ctrl + Z]
+&#x0a;Shift + Click to Undo and edit last operation [Ctrl + Shift + Z]"
+									i:Attached.Icon="fa-solid fa-undo-alt"/>
+
+							<TextBlock VerticalAlignment="Center">
+								<TextBlock.Text>
+									<MultiBinding StringFormat="{}{0}/{1}">
+										<Binding Path="ClipboardManager.CurrentIndexCountStr"/>
+										<Binding Path="ClipboardManager.Items.Count"/>
+									</MultiBinding>
+								</TextBlock.Text>
+							</TextBlock>
+							
+							<Button
+							  IsEnabled="{Binding ClipboardManager.CanRedo}"
+							  Command="{Binding ClipboardRedo}"
+							  HotKey="Ctrl + Y"
+							  ToolTip.Tip="Redo [Ctrl + Y]"
+							  i:Attached.Icon="fa-solid fa-redo-alt"/>
+
+						</StackPanel>
+
+						<StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="2" HorizontalAlignment="Right">
+							<Button
+							  IsEnabled="{Binding ClipboardManager.Items.Count}"
+							  Command="{Binding ClipboardClear}"
+							  ToolTip.Tip="Clear all clips"
+							  i:Attached.Icon="fa-solid fa-xmark"/>
+						</StackPanel>
+
+						<ListBox
+						  Grid.Row="1"
+						  Name="ClipboardList"
+						  SelectionMode="Single"
+						  AutoScrollToSelectedItem="True"
+						  SelectedIndex="{Binding ClipboardManager.CurrentIndex}"
+						  ItemsSource="{Binding ClipboardManager.Items}" />
+
+						<GridSplitter Grid.Row="2" ResizeBehavior="PreviousAndNext" ResizeDirection="Rows"/>
+
+						<Grid Grid.Row="3" RowDefinitions="Auto,*" ColumnDefinitions="*">
+							<Grid Grid.Row="0"
+								  RowDefinitions="Auto"
+								  ColumnDefinitions="Auto,*,Auto">
+								<TextBlock Grid.Row="0" Grid.Column="0"
+										   VerticalAlignment="Center"
+										   Text="{Binding Logs.Count, StringFormat=Operations: {0}}"/>
+
+								<TextBlock  Grid.Row="0" Grid.Column="1"
+											HorizontalAlignment="Center"
+											VerticalAlignment="Center"
+											FontWeight="Bold" Text="Logs"/>
+
+								<StackPanel Grid.Row="0" Grid.Column="2" Orientation="Horizontal"
+											Spacing="5"
+											HorizontalAlignment="Right">
+									<CheckBox VerticalAlignment="Center"
+											  ToolTip.Tip="Shows extra information useful to debug problems."
+											  IsChecked="{Binding IsVerbose}"
+											  Content="Verbose"/>
+
+									<Button VerticalAlignment="Center"
+											Command="{Binding Logs.Clear}"
+											ToolTip.Tip="Clear all logs"
+											i:Attached.Icon="fa-solid fa-xmark"/>
+								</StackPanel>
+
+							</Grid>
+
+							<DataGrid Grid.Row="1" ItemsSource="{Binding Logs}"
+									  VerticalAlignment="Stretch"
+									  CanUserReorderColumns="True"
+									  CanUserResizeColumns="True"
+									  CanUserSortColumns="True"
+									  GridLinesVisibility="All"
+									  IsReadOnly="True"
+									  ClipboardCopyMode="IncludeHeader"
+									  SelectionMode="Extended">
+								<DataGrid.Columns>
+									<DataGridTextColumn  Header="#"
+														 Binding="{Binding Index}"
+														 Width="Auto" />
+									<DataGridTextColumn Header="Started"
+														Binding="{Binding StartTime}"
+														Width="Auto" />
+									<DataGridTextColumn Header="Time(s)"
+														Binding="{Binding ElapsedTime}"
+														Width="Auto" />
+									<DataGridTextColumn Header="Description"
+														Binding="{Binding Description}"
+														Width="Auto" />
+								</DataGrid.Columns>
+							</DataGrid>
+						</Grid>
+
+					</Grid>
+
+
+				</TabItem>
+
+			</TabControl>
+
+			<Grid
+			  IsEnabled="{Binding IsFileLoaded}"
+			  DockPanel.Dock="Right"
+			  ColumnDefinitions="160"
+			  RowDefinitions="Auto,Auto,*,Auto,Auto,Auto,Auto,Auto"  Margin="5">
+				<TextBlock
+				  Text="{Binding MaximumLayerString}"
+				  Margin="0,0,0,10"
+				  HorizontalAlignment="Center"
+				  TextAlignment="Center"
+				  Grid.Row="0"/>
+				<RepeatButton
+				  Grid.Row="1"
+				  ToolTip.Tip="Navigate to up layer [Ctrl + Up]"
+				  HotKey="Ctrl + Up"
+				  Interval="100"
+				  HorizontalAlignment="Stretch"
+				  IsEnabled="{Binding CanGoUp}"
+				  Command="{Binding GoNextLayer}"
+				  i:Attached.Icon="fa-solid fa-angle-up"/>
+
+				<Grid
+				  Name="LayerNavigationSliderGrid"
+				  Grid.Row="2" ColumnDefinitions="*,20,40">
+					<Panel
+					  Grid.Column="0"
+					  Name="LayerNavigationTooltipPanel"
+					  Margin="{Binding LayerNavigationTooltipMargin}"
+					  HorizontalAlignment="Stretch">
+						<Border
+						   Name="LayerNavigationTooltipBorder"
+								Classes="LayerNavigationToolTip"
+								VerticalAlignment="Top">
+							<TextBlock Padding="2" Text="{Binding ActualLayerTooltip}"/>
+						</Border>
+					</Panel>
+
+					<Canvas
+					  Grid.Column="1"
+					  Margin="0,15"
+					  Classes="IssuesTrackerCanvas"
+					  Name="LayerNavigationIssuesCanvas" Width="20"/>
+
+					<Slider
+					  Grid.Column="2"
+					  Name="LayerSlider"
+					  Minimum="0"
+					  Maximum="{Binding SliderMaximumValue}"
+					  Value="{Binding ActualLayerSlider}"
+					  TickFrequency="1"
+					  TickPlacement="Outside"
+					  SmallChange="1"
+					  LargeChange="10"
+					  IsSnapToTickEnabled="True"
+					  Margin="0,5"
+					  HorizontalAlignment="Right"
+					  Orientation="Vertical"/>
+				</Grid>
+
+				<RepeatButton
+				  Grid.Row="3"
+				  ToolTip.Tip="Navigate to down layer [Ctrl + Down]"
+				  HotKey="Ctrl + Down"
+				  Interval="100"
+				  HorizontalAlignment="Stretch"
+				  IsEnabled="{Binding CanGoDown}"
+				  Command="{Binding GoPreviousLayer}"
+				  i:Attached.Icon="fa-solid fa-angle-down"/>
+
+				<NumericUpDown Grid.Row="4"
+							   Margin="0,5"
+							   Minimum="0"
+							   Maximum="{Binding SliderMaximumValue}"
+							   Value="{Binding ActualLayer}" />
+
+				<Grid Grid.Row="5" RowDefinitions="*" ColumnDefinitions="30,*,30">
+					<Button Grid.Column="0"
+							ToolTip.Tip="Navigate to first layer [Ctrl + Left]"
+							HotKey="Ctrl + Left"
+							IsEnabled="{Binding CanGoDown}"
+							Command="{Binding GoFirstLayer}"
+							i:Attached.Icon="fa-solid fa-angle-double-down"/>
+
+					<TextBlock
+					Grid.Column="1"
+					Text="{Binding MinimumLayerString}"
+					VerticalAlignment="Center"
+					HorizontalAlignment="Center"
+					TextAlignment="Center"/>
+
+					<Button
+					  Grid.Column="2"
+					  ToolTip.Tip="Navigate to last layer [Ctrl + Right]"
+					  HotKey="Ctrl + Right"
+					  IsEnabled="{Binding CanGoUp}"
+					  Command="{Binding GoLastLayer}"
+					  i:Attached.Icon="fa-solid fa-angle-double-up"/>
+				</Grid>
+
+				<StackPanel Grid.Row="6"
+							Margin="0,1,0,0"
+							HorizontalAlignment="Center"
+							VerticalAlignment="Center"
+							Orientation="Horizontal" Spacing="1">
+					<Button
+						ToolTip.Tip="Navigate to the smallest bottom layer in mass"
+						Command="{Binding GoMassLayer}"
+						CommandParameter="SB"
+						Content="SB"/>
+
+					<Button
+						ToolTip.Tip="Navigate to the largest bottom layer in mass"
+						Command="{Binding GoMassLayer}"
+						CommandParameter="LB"
+						Content="LB"/>
+
+					<Button
+						ToolTip.Tip="Navigate to the smallest normal layer in mass"
+						Command="{Binding GoMassLayer}"
+						CommandParameter="SN"
+						Content="SN"/>
+
+					<Button
+						ToolTip.Tip="Navigate to the largest normal layer in mass"
+						Command="{Binding GoMassLayer}"
+						CommandParameter="LN"
+						Content="LN"/>
+				</StackPanel>
+
+			</Grid>
+
+
+			<!--<StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
+      <Button Name="zoomtofit">Zoom to fit</Button>
+      <Button Name="center">Center image</Button>
+    </StackPanel>-->
+
+			<Grid IsEnabled="{Binding IsFileLoaded}"
+				  ColumnDefinitions="*" RowDefinitions="Auto,*,Auto" Margin="5">
+				<Grid Grid.Row="0" Grid.Column="0"
+					  IsEnabled="{Binding IsFileLoaded}"
+					  ColumnDefinitions="*,Auto" RowDefinitions="Auto" Margin="0,5,0,5">
+					<WrapPanel Grid.Row="0" Grid.Column="0" HorizontalAlignment="Left" Orientation="Horizontal">
+						<uc:ToggleButtonWithIcon
+						  IsChecked="{Binding ShowLayerImageRotated}"
+						  HotKey="Ctrl + R"
+						  VerticalAlignment="Stretch"
+						  ToolTip.Tip="Auto rotate layer preview image at 90º (This can slow down the layer preview) [CTRL+R]"
+						  Margin="0,0,1,0"
+						  Text="Rotate ⮟"
+						  Spacing="5"
+						  Icon="fa-solid fa-sync-alt">
+							<uc:ToggleButtonWithIcon.ContextMenu>
+								<ContextMenu Placement="Bottom">
+									<RadioButton
+										GroupName="ShowLayerImageRotateDirection"
+										IsChecked="{Binding ShowLayerImageRotateCWDirection}"
+										Content="90º Clockwise (CW)"/>
+									<RadioButton
+									  GroupName="ShowLayerImageRotateDirection"
+										IsChecked="{Binding ShowLayerImageRotateCCWDirection}"
+										Content="90º Counter-clockwise (CCW)"/>
+								</ContextMenu>
+							</uc:ToggleButtonWithIcon.ContextMenu>
+						</uc:ToggleButtonWithIcon>
+
+
+						<uc:ToggleButtonWithIcon
+							IsChecked="{Binding ShowLayerImageFlipped}"
+							HotKey="Ctrl + F"
+							VerticalAlignment="Stretch"
+							ToolTip.Tip="Auto flip layer preview image (This can slow down the layer preview) [CTRL+F]"
+							Margin="0,0,1,0"
+							Text="Flip ⮟"
+							Spacing="5"
+							Icon="mdi-flip-horizontal">
+							<uc:ToggleButtonWithIcon.ContextMenu>
+								<ContextMenu Placement="Bottom">
+									<CheckBox
+										IsChecked="{Binding ShowLayerImageFlippedHorizontally}"
+										Content="Horizontally"/>
+									<CheckBox
+										IsChecked="{Binding ShowLayerImageFlippedVertically}"
+										Content="Vertically"/>
+								</ContextMenu>
+							</uc:ToggleButtonWithIcon.ContextMenu>
+						</uc:ToggleButtonWithIcon>
+
+
+						<uc:ToggleButtonWithIcon
+						  IsChecked="{Binding ShowLayerImageDifference}"
+						  ToolTip.Tip="Show layer differences where darker pixels were also present on previous layer and the white pixels the difference between previous and current layer."
+						  VerticalAlignment="Stretch"
+						  Margin="0,0,1,0"
+						  Text="Difference ⮟"
+						  Spacing="5"
+						  Icon="fa-solid fa-layer-group">
+							<uc:ToggleButtonWithIcon.ContextMenu>
+								<ContextMenu Placement="Bottom">
+									<CheckBox
+										Content="Show layer similarity instead of difference"
+										ToolTip.Tip="If enabled, it will recolor the current layer pixels in common with the previous and next layer"
+										IsChecked="{Binding Settings.LayerPreview.LayerDifferenceHighlightSimilarityInstead}"/>
+								</ContextMenu>
+							</uc:ToggleButtonWithIcon.ContextMenu>
+						</uc:ToggleButtonWithIcon>
+
+						<uc:ToggleButtonWithIcon
+						  IsChecked="{Binding ShowLayerImageIssues}"
+						  ToolTip.Tip="Highlight Issues on current layer. Valid only if Issues are calculated."
+						  VerticalAlignment="Stretch"
+						  Margin="0,0,1,0"
+						  Text="Issues ⮟"
+						  Spacing="5"
+						  Icon="fa-solid fa-radiation-alt">
+							<Button.ContextMenu>
+								<ContextMenu Placement="Bottom">
+									<CheckBox
+										ToolTip.Tip="Show crosshairs for selected issues on the current layer"
+										IsChecked="{Binding ShowLayerImageCrosshairs}">
+										<StackPanel Orientation="Horizontal">
+											<i:Icon Value="fa-solid fa-crosshairs"/>
+											<TextBlock Margin="5,0,5,0" Text="Crosshairs"/>
+										</StackPanel>
+									</CheckBox>
+
+								</ContextMenu>
+							</Button.ContextMenu>
+						</uc:ToggleButtonWithIcon>
+
+
+						<uc:DropDownButtonWithIcon Name="LayerPreviewOutlineButton"
+						  ToolTip.Tip="Click to access the various outlines."
+						  VerticalAlignment="Stretch"
+						  Margin="1,0,2,0"
+						  Text="Outline"
+						  Spacing="5"
+						  Icon="fa-solid fa-vector-square">
+							<uc:DropDownButtonWithIcon.Flyout>
+								<MenuFlyout Placement="Bottom">
+									<CheckBox HorizontalAlignment="Stretch"
+									  IsChecked="{Binding ShowLayerOutlinePrintVolumeBoundary}"
+									  Content="Print volume boundary"/>
+									<CheckBox IsChecked="{Binding ShowLayerOutlineLayerBoundary}"
+                                              Content="Layer boundary"/>
+									<CheckBox IsChecked="{Binding ShowLayerOutlineContourBoundary}"
+                                              Content="Blob boundary"/>
+									<CheckBox IsChecked="{Binding ShowLayerOutlineEnclosingCircles}"
+                                              Content="Enclosing circles"/>
+									<CheckBox IsChecked="{Binding ShowLayerOutlineHollowAreas}"
+                                              Content="Hollow areas"/>
+									<CheckBox IsChecked="{Binding ShowLayerOutlineCentroids}"
+                                              Content="Centroids"/>
+									<CheckBox IsChecked="{Binding ShowLayerOutlineTriangulate}"
+                                              Content="Triangulate"/>
+									<CheckBox IsChecked="{Binding ShowLayerOutlineEdgeDetection}"
+                                              Content="Edge detection">
+										<CheckBox.IsEnabled>
+											<MultiBinding Converter="{x:Static BoolConverters.And}">
+												<Binding Path="!ShowLayerOutlineDistanceDetection"/>
+												<Binding Path="!ShowLayerOutlineSkeletonize"/>
+											</MultiBinding>
+										</CheckBox.IsEnabled>
+									</CheckBox>
+									<CheckBox
+										IsChecked="{Binding ShowLayerOutlineDistanceDetection}"
+										ToolTip.Tip="Calculates the distance to the closest zero pixel for each pixel"
+										Content="Distance detection">
+										<CheckBox.IsEnabled>
+											<MultiBinding Converter="{x:Static BoolConverters.And}">
+												<Binding Path="!ShowLayerOutlineEdgeDetection"/>
+												<Binding Path="!ShowLayerOutlineSkeletonize"/>
+											</MultiBinding>
+										</CheckBox.IsEnabled>
+									</CheckBox>
+									<CheckBox
+										IsChecked="{Binding ShowLayerOutlineSkeletonize}"
+										Content="Skeletonize">
+										<CheckBox.IsEnabled>
+											<MultiBinding Converter="{x:Static BoolConverters.And}">
+												<Binding Path="!ShowLayerOutlineEdgeDetection"/>
+												<Binding Path="!ShowLayerOutlineDistanceDetection"/>
+											</MultiBinding>
+										</CheckBox.IsEnabled>
+									</CheckBox>
+								</MenuFlyout>
+							</uc:DropDownButtonWithIcon.Flyout>
+						</uc:DropDownButtonWithIcon>
+
+
+						<uc:ToggleButtonWithIcon
+						  IsChecked="{Binding IsPixelEditorActive}"
+						  ToolTip.Tip="Edit layer image: Draw pixels, add supports and/or drain holes."
+						  VerticalAlignment="Stretch"
+						  Margin="-1,0,0,0"
+						  Text="Pixel editor"
+						  Spacing="5"
+						  Icon="fa-solid fa-drafting-compass"/>
+					</WrapPanel>
+
+
+					<StackPanel Grid.Row="0" Grid.Column="1" HorizontalAlignment="Right" Orientation="Horizontal">
+                        <uc:DropDownButtonWithIcon Name="LayerActionsButton"
+                                           VerticalAlignment="Stretch"
+                                           VerticalContentAlignment="Center"
+                                           Text="Actions"
+                                           Spacing="5"
+                                           Icon="mdi-layers-edit">
+							<uc:DropDownButtonWithIcon.Flyout>
+                                <MenuFlyout Placement="Bottom" ItemsSource="{Binding LayerActionsMenu}"/>
+							</uc:DropDownButtonWithIcon.Flyout>
+						</uc:DropDownButtonWithIcon>
+
+						<Button
+						  Command="{Binding ShowLayer}"
+						  HotKey="F5"
+						  ToolTip.Tip="Refresh current layer [F5]"
+						  VerticalAlignment="Stretch"
+						  Margin="1,0,0,0"
+						  i:Attached.Icon="fa-solid fa-sync-alt"/>
+
+						
+						<uc:ButtonWithIcon
+						  Command="{Binding SaveCurrentLayerImage}"
+						  ToolTip.Tip="Save layer image to a file"
+						  VerticalAlignment="Stretch"
+						  VerticalContentAlignment="Center"
+						  Margin="1,0,0,0"
+						  Text="⮟"
+						  Spacing="3"
+						  Icon="fa-solid fa-floppy-disk">
+							<uc:ButtonWithIcon.ContextMenu>
+								<ContextMenu Placement="Bottom">
+									<MenuItem Command="{Binding SaveCurrentROIImage}"
+										Header="Save the selected region (ROI)"
+										i:MenuItem.Icon="fa-regular fa-object-group"/>
+								</ContextMenu>
+							</uc:ButtonWithIcon.ContextMenu>
+						</uc:ButtonWithIcon>
+
+
+					</StackPanel>
+				</Grid>
+
+				<Border
+				  Grid.Row="1"
+				  BorderBrush="{DynamicResource LightBackground}"
+				  BorderThickness="5">
+					<uvtava:AdvancedImageBox
+						ShowGrid="{Binding Settings.LayerPreview.ShowBackgroudGrid}"
+						GridCellSize="15"
+						GridColor="{DynamicResource AdvancedImageBoxGridColor}"
+						GridColorAlternate="{DynamicResource AdvancedImageBoxGridAlternateColor}"
+						Name="LayerImageBox"/>
+				</Border>
+
+
+				<Canvas Grid.Row="1" Margin="20"
+						IsVisible="{Binding IsTooltipOverlayVisible}">
+					<Border BorderThickness="1"
+							BorderBrush="Black"
+							Padding="10"
+							CornerRadius="5">
+                            <Border.Background>
+								<SolidColorBrush Color="{Binding Settings.LayerPreview.TooltipOverlayBackgroundBrush}"/>
+                            </Border.Background>
+                        <TextBlock Text="{Binding TooltipOverlayText}" Foreground="Black" />
+					</Border>
+				</Canvas>
+
+
+
+				<Grid
+				  IsEnabled="{Binding IsFileLoaded}"
+				  Grid.Row="2"
+				  ColumnDefinitions="4*,2*" RowDefinitions="Auto" Margin="5">
+					<WrapPanel Orientation="Horizontal">
+						<StackPanel
+						  ToolTip.Tip="Number of pixels to cure on this layer image and the percentage of them against total lcd pixels and the total cured millimeters."
+						  VerticalAlignment="Center" Orientation="Horizontal" Spacing="5">
+							<i:Icon Value="mdi-google-downasaur"/>
+							<TextBlock Text="{Binding LayerPixelCountStr}"/>
+						</StackPanel>
+
+						<uc:ButtonWithIcon
+						  ToolTip.Tip="Object volume bounds for current layer, position and size in pixels and millimeters.
+&#x0a;Click: go to region"
+						  Command="{Binding ZoomToFitPrintVolume}"
+						  Margin="5,0,0,0"
+						  Text="{Binding LayerBoundsStr}"
+						  Spacing="5"
+						  Icon="fa-solid fa-expand"/>
+
+						<uc:ButtonWithIcon
+						  IsEnabled="{Binding IsFileLoaded}"
+						  Margin="2,0,0,0"
+						  Command="{Binding OnROIClick}"
+						  ToolTip.Tip="Region of interest selection over layer.
+&#x0a;(NS): Not selected
+&#x0a;Click: go to region
+&#x0a;ESC: Clear ROI &amp; Masks | ESC + Shift: Clear ROI"
+						  Text="{Binding LayerROIStr}"
+						  Spacing="5"
+						  Icon="fa-regular fa-object-group">
+							<uc:ButtonWithIcon.ContextMenu>
+								<ContextMenu Name="ROIContextMenu" Placement="Top">
+									<MenuItem
+										Command="{Binding SelectLayerPositiveAreasMask}"
+										Header="Mask: Select layer positive areas"/>
+									<MenuItem
+										Command="{Binding SelectLayerHollowAreasMask}"
+										Header="Mask: Select layer hollow areas"/>
+									<Separator/>
+									<MenuItem
+										Command="{Binding SelectModelVolumeRoi}"
+										Header="ROI: Select model volume"/>
+									<MenuItem
+										Command="{Binding SelectLayerVolumeRoi}"
+										Header="ROI: Select layer volume"/>
+									<Separator/>
+									<MenuItem
+										Command="{Binding ClearMask}"
+										Header="Clear Mask"/>
+									<MenuItem
+										Command="{Binding ClearROI}"
+										Header="Clear ROI"/>
+								</ContextMenu>
+							</uc:ButtonWithIcon.ContextMenu>
+						</uc:ButtonWithIcon>
+
+					</WrapPanel>
+
+					<WrapPanel Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Right" Orientation="Horizontal">
+						<uc:ButtonWithIcon
+						  IsEnabled="{Binding LayerPixelPicker.IsSet}"
+						  Command="{Binding OnLayerPixelPickerClicked}"
+						  ToolTip.Tip="Pixel picker:
+&#x0a;Use CONTROL and over a pixel to get his position and brightness.
+&#x0a;Click: Center at position"
+						  Text="{Binding LayerPixelPicker}"
+						  Spacing="5"
+						  Icon="fa-solid fa-map-marker-alt"/>
+
+						<uc:ButtonWithIcon
+						  ToolTip.Tip="Layer image zoom level, use mouse scroll to zoom in/out into image.
+&#x0a;Click to set zoom to 100%
+&#x0a;Shift+Click to set zoom to defined value
+&#x0a;Ctrl + 0 OR double right click to scale to fit"
+						Margin="2,0,0,0"
+						Command="{Binding ZoomToNormal}"
+						  Text="{Binding LayerZoomStr}"
+						  Spacing="5"
+						  Icon="fa-solid fa-search-plus"/>
+
+						<uc:ButtonWithIcon
+						  ToolTip.Tip="Layer Resolution and display size.
+&#x0a;Click: Zoom to fit"
+						Command="{Binding ZoomToFitSimple}"
+						Margin="2,0,0,0"
+						  Text="{Binding LayerResolutionStr}"
+						  Spacing="5"
+						  Icon="fa-solid fa-expand"/>
+
+
+						<TextBlock
+						  ToolTip.Tip="Layer preview computation time."
+						  Margin="5,0,0,0"
+						  VerticalAlignment="Center" Text="{Binding ShowLayerRenderMs, StringFormat={}{0}ms}"/>
+					</WrapPanel>
+				</Grid>
+			</Grid>
+
+
+		</DockPanel>
+		<Grid Grid.Row="0" Grid.Column="0"
+              RowDefinitions="*,Auto,*" ColumnDefinitions="*,Auto,*"
+              IsEnabled="{Binding IsProgressVisible}"
+              IsVisible="{Binding IsProgressVisible}">
+			<Border Grid.Row="1" Grid.Column="1" 
+                    MinWidth="450"
+					Name="ProgressBorder"
+                    Classes="ProgressLoading"
+                
+                BorderThickness="5"
+                CornerRadius="5">
+				<Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto"
+                      ColumnDefinitions="*"
+                      Name="ProgressGrid">
+
+                    <TextBlock Grid.Row="0"
+                               Margin="10"
+                               Text="{Binding Progress.Title}"/>
+
+                    <StackPanel Grid.Row="1"
+                                Orientation="Horizontal"
+                                Margin="10,0,10,10"
+                                Spacing="10">
+						<TextBlock Text="{Binding Progress.ElapsedTimeStr, StringFormat=Elapsed Time: {0}}"/>
+                        <TextBlock Text="[PAUSED]"
+                                   IsVisible="{Binding Progress.IsPaused}"/>
+                    </StackPanel>
+					
+					<TextBlock Grid.Row="2"
+                               Margin="10,0,10,10" 
+                               Text="{Binding Progress.Description}" HorizontalAlignment="Center"/>
+
+					<Grid Grid.Row="3"
+                          RowDefinitions="30" ColumnDefinitions="*,40,100">
+						<ProgressBar
+                            Grid.Column="0"
+                            Minimum="0"
+                            Maximum="100"
+                            VerticalAlignment="Stretch"
+                            IsIndeterminate="{Binding Progress.IsIndeterminate}"
+                            Value="{Binding Progress.ProgressPercent}"  ShowProgressText="True"/>
+                        <uc:ToggleButtonWithIcon
+                            IsEnabled="{Binding Progress.CanCancel}"
+                            IsChecked="{Binding Progress.IsPaused}"
+                            Grid.Column="1"
+							IsDefault="True"
+							Icon="mdi-play-pause"
+                            VerticalAlignment="Stretch"
+                            HorizontalAlignment="Stretch"
+                            VerticalContentAlignment="Center"
+                            HorizontalContentAlignment="Center"/>
+                        <uc:ButtonWithIcon
+                            IsEnabled="{Binding Progress.CanCancel}"
+                            Command="{Binding ProgressOnClickCancel}"
+                            Grid.Column="2"
+                            IsCancel="True"
+                            VerticalAlignment="Stretch"
+                            HorizontalAlignment="Stretch"
+                            VerticalContentAlignment="Center"
+                            HorizontalContentAlignment="Center"
+                            Text="Cancel"
+                            Icon="fa-regular fa-circle-stop"/>
+					</Grid>
+
+                    <TextBox Grid.Row="4"
+							   Classes="ReadOnlyMultiLineWrap"
+							   IsVisible="{Binding Progress.Log, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                               Padding="10"
+                               MaxWidth="{Binding #ProgressGrid.Bounds.Width}"
+							   MaxHeight="400"
+                               Text="{Binding Progress.Log}" />
+
+				</Grid>
+			</Border>
+		</Grid>
+	</Grid>
+</uc:WindowEx>

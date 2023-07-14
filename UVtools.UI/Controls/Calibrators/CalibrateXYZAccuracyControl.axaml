@@ -1,0 +1,452 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:i="clr-namespace:Projektanker.Icons.Avalonia;assembly=Projektanker.Icons.Avalonia"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="800"
+             x:Class="UVtools.UI.Controls.Calibrators.CalibrateXYZAccuracyControl">
+  <Grid ColumnDefinitions="Auto,10,380">
+    <StackPanel Spacing="10">
+
+        <Expander Header="Step 1: Generate and print test model"
+                  HorizontalAlignment="Stretch"
+                  IsExpanded="True">
+       
+        <Grid
+            RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto"
+            ColumnDefinitions="Auto,10,190,20,Auto,10,190">
+
+          <TextBlock
+                    Grid.Row="0" Grid.Column="0"
+                     VerticalAlignment="Center"
+                    ToolTip.Tip="The printer display width. Required to calculate the pixels per mm."
+                     Text="Display width:"/>
+          <NumericUpDown Grid.Row="0" Grid.Column="2"
+                         Classes="ValueLabel ValueLabel_mm"
+                         Increment="0.1"
+                         Minimum="0"
+                         Maximum="10000"
+                         FormatString="F2"
+                         Value="{Binding Operation.DisplayWidth}"/>
+
+          <TextBlock Grid.Row="0" Grid.Column="4"
+                     VerticalAlignment="Center"
+                     ToolTip.Tip="The printer display height. Required to calculate the pixels per mm."
+                     Text="Display height:"/>
+          <NumericUpDown Grid.Row="0" Grid.Column="6"
+                         Classes="ValueLabel ValueLabel_mm"
+                         Increment="0.1"
+                         Minimum="0"
+                         Maximum="10000"
+                         FormatString="F2"
+                         Value="{Binding Operation.DisplayHeight}"/>
+
+          <TextBlock Grid.Row="2" Grid.Column="0"
+                     VerticalAlignment="Center"
+                     Text="Layer height:"/>
+        <NumericUpDown Grid.Row="2" Grid.Column="2"
+                       Classes="ValueLabel ValueLabel_mm"
+                       Increment="0.01"
+                       Minimum="0.01"
+                       Maximum="0.30"
+                       FormatString="F3"
+                       Value="{Binding Operation.LayerHeight}"/>
+
+        <TextBlock Grid.Row="2" Grid.Column="4"
+                   VerticalAlignment="Center"
+                   Text="Bottom layers:"/>
+        <NumericUpDown Grid.Row="2" Grid.Column="6"
+                        Classes="ValueLabel ValueLabel_layers"
+                       Increment="1"
+                       Minimum="1"
+                       Maximum="1000"
+                       Value="{Binding Operation.BottomLayers}"/>
+
+        <TextBlock Grid.Row="4" Grid.Column="0"
+                   VerticalAlignment="Center"
+                   Text="Bottom exposure:"/>
+        <NumericUpDown Grid.Row="4" Grid.Column="2"
+                       Classes="ValueLabel ValueLabel_s"
+                       Increment="0.5"
+                       Minimum="0.1"
+                       Maximum="200"
+                       FormatString="F2"
+                       Value="{Binding Operation.BottomExposure}"/>
+
+        <TextBlock Grid.Row="4" Grid.Column="4"
+                   VerticalAlignment="Center"
+                   Text="Normal exposure:"/>
+        <NumericUpDown Grid.Row="4" Grid.Column="6"
+                       Classes="ValueLabel ValueLabel_s"
+                       Increment="0.5"
+                       Minimum="0.1"
+                       Maximum="200"
+                       FormatString="F2"
+                       Value="{Binding Operation.NormalExposure}"/>
+
+          <TextBlock Grid.Row="6" Grid.Column="0"
+                     VerticalAlignment="Center"
+                     Text="X length:"/>
+          <NumericUpDown Grid.Row="6" Grid.Column="2"
+                         Classes="ValueLabel ValueLabel_mm"
+                         Increment="1"
+                         Minimum="5"
+                         Maximum="100"
+                         FormatString="F2"
+                         Value="{Binding Operation.XSize}"/>
+
+          <TextBlock Grid.Row="6" Grid.Column="4"
+                     VerticalAlignment="Center"
+                     Text="Y length:"/>
+          <NumericUpDown Grid.Row="6" Grid.Column="6"
+                         Classes="ValueLabel ValueLabel_mm"
+                         Increment="1"
+                         Minimum="5"
+                         Maximum="100"
+                         FormatString="F2"
+                         Value="{Binding Operation.YSize}"/>
+
+          <TextBlock Grid.Row="8" Grid.Column="0"
+                     VerticalAlignment="Center"
+                     Text="Z height:"/>
+          <NumericUpDown Grid.Row="8" Grid.Column="2"
+                         Classes="ValueLabel ValueLabel_mm"
+                         Increment="1"
+                         Minimum="5"
+                         Maximum="100"
+                         FormatString="F2"
+                         Value="{Binding Operation.ZSize}"/>
+
+          <StackPanel Grid.Row="8" Grid.Column="4"
+                      VerticalAlignment="Center"
+                      Spacing="0">
+              <TextBlock
+                  FontWeight="Bold"
+                  Text="Total layers:"/>
+              <TextBlock
+                  FontWeight="Bold"
+                  Text="Total height:"/>
+          </StackPanel>
+
+          <StackPanel Grid.Row="8" Grid.Column="6"
+                      VerticalAlignment="Center"
+                      Spacing="0">
+              <TextBlock
+                  FontWeight="Bold"
+                  Text="{Binding Operation.LayerCount}"/>
+
+              <TextBlock
+                  FontWeight="Bold"
+                  Text="{Binding Operation.RealZSize, StringFormat={}{0:F3}mm}"/>
+
+
+          </StackPanel>
+
+        <TextBlock Grid.Row="10" Grid.Column="0"
+                   VerticalAlignment="Center"
+                   Text="Top/bottom margin:"/>
+        <NumericUpDown Grid.Row="10" Grid.Column="2"
+                       Classes="ValueLabel ValueLabel_px"
+                       Increment="1"
+                       Minimum="0"
+                       Maximum="10000"
+                       Value="{Binding Operation.TopBottomMargin}"/>
+
+          <TextBlock Grid.Row="10" Grid.Column="4"
+                     VerticalAlignment="Center"
+                     Text="Left/right margin:"/>
+          <NumericUpDown Grid.Row="10" Grid.Column="6"
+                         Classes="ValueLabel ValueLabel_mm"
+                         Increment="1"
+                         Minimum="0"
+                         Maximum="10000"
+                         Value="{Binding Operation.LeftRightMargin}"/>
+
+          <TextBlock Grid.Row="12" Grid.Column="0"
+                     VerticalAlignment="Center"
+                     Text="Drain hole diameter:">
+              <TextBlock.IsEnabled>
+                  <MultiBinding Converter="{x:Static BoolConverters.Or}">
+                      <Binding Path="Operation.HollowModel"/>
+                      <Binding Path="Operation.CenterHoleRelief"/>
+                  </MultiBinding>
+              </TextBlock.IsEnabled>
+          </TextBlock>
+          <NumericUpDown Grid.Row="12" Grid.Column="2"
+                         Classes="ValueLabel ValueLabel_mm3"
+                         Increment="0.5"
+                         Minimum="0"
+                         Maximum="100"
+                         FormatString="F2"
+                         Value="{Binding Operation.DrainHoleArea}">
+            <NumericUpDown.IsEnabled>
+              <MultiBinding Converter="{x:Static BoolConverters.Or}">
+                <Binding Path="Operation.HollowModel"/>
+                <Binding Path="Operation.CenterHoleRelief"/>
+              </MultiBinding>
+            </NumericUpDown.IsEnabled>
+          </NumericUpDown>
+          
+          <TextBlock Grid.Row="12" Grid.Column="4"
+                    Text="Wall thickness:"
+                    VerticalAlignment="Center"
+                    IsEnabled="{Binding Operation.HollowModel}"/>
+          <NumericUpDown Grid.Row="12" Grid.Column="6"
+                         Classes="ValueLabel ValueLabel_mm"
+                         Increment="0.5"
+                         Minimum="0"
+                         Maximum="100"
+                         FormatString="F2"
+                         IsEnabled="{Binding Operation.HollowModel}"
+                         Value="{Binding Operation.WallThickness}"/>
+
+          <StackPanel Grid.Row="14" Grid.Column="0" Grid.ColumnSpan="7" Orientation="Horizontal" Spacing="20">
+              <CheckBox 
+                        ToolTip.Tip="Most of the printers requires a mirror output to print with the correct orientation"
+                        IsChecked="{Binding Operation.MirrorOutput}"
+                        Content="Mirror output" />
+
+              <CheckBox 
+                        VerticalAlignment="Center"
+                        IsChecked="{Binding Operation.CenterHoleRelief}"
+                        Content="Relief base with a center hole"/>
+
+
+              <CheckBox 
+                        Content="Hollow model"
+                        IsChecked="{Binding Operation.HollowModel}"/>
+          </StackPanel>
+
+
+          <TextBlock Grid.Row="16" Grid.Column="0"
+                     VerticalAlignment="Center"
+                     Text="Objects to output:"/>
+
+          <Grid Grid.Row="16" Grid.Column="2"
+                RowDefinitions="Auto,Auto,Auto"
+                ColumnDefinitions="Auto,Auto,Auto">
+
+            <CheckBox
+              Grid.Row="0" Grid.Column="0"
+              ToolTip.Tip="Top Left"
+              VerticalAlignment="Center"
+              HorizontalAlignment="Center"
+              IsChecked="{Binding Operation.OutputTLObject}"/>
+            <CheckBox
+              Grid.Row="0" Grid.Column="1"
+              ToolTip.Tip="Top Center"
+              VerticalAlignment="Center"
+              HorizontalAlignment="Center"
+              IsChecked="{Binding Operation.OutputTCObject}"/>
+            <CheckBox
+              Grid.Row="0" Grid.Column="2"
+              ToolTip.Tip="Top Right"
+              VerticalAlignment="Center"
+              HorizontalAlignment="Center"
+              IsChecked="{Binding Operation.OutputTRObject}"/>
+
+            <CheckBox
+              Grid.Row="1" Grid.Column="0"
+              ToolTip.Tip="Middle Left"
+              VerticalAlignment="Center"
+              HorizontalAlignment="Center"
+              IsChecked="{Binding Operation.OutputMLObject}"/>
+            <CheckBox
+              Grid.Row="1" Grid.Column="1"
+              ToolTip.Tip="Middle Center"
+              VerticalAlignment="Center"
+              HorizontalAlignment="Center"
+              IsChecked="{Binding Operation.OutputMCObject}"/>
+            <CheckBox
+              Grid.Row="1" Grid.Column="2"
+              ToolTip.Tip="Middle Right"
+              VerticalAlignment="Center"
+              HorizontalAlignment="Center"
+              IsChecked="{Binding Operation.OutputMRObject}"/>
+
+            <CheckBox
+              Grid.Row="2" Grid.Column="0"
+              ToolTip.Tip="Bottom Left"
+              VerticalAlignment="Center"
+              HorizontalAlignment="Center"
+              IsChecked="{Binding Operation.OutputBLObject}"/>
+            <CheckBox
+              Grid.Row="2" Grid.Column="1"
+              ToolTip.Tip="Bottom Center"
+              VerticalAlignment="Center"
+              HorizontalAlignment="Center"
+              IsChecked="{Binding Operation.OutputBCObject}"/>
+            <CheckBox
+              Grid.Row="2" Grid.Column="2"
+              ToolTip.Tip="Bottom Right"
+              VerticalAlignment="Center"
+              HorizontalAlignment="Center"
+              IsChecked="{Binding Operation.OutputBRObject}"/>
+
+
+          </Grid>
+
+          <StackPanel Grid.Row="16" Grid.Column="4"
+                      VerticalAlignment="Center"
+                      Spacing="5">
+            <Button 
+                  Command="{Binding Operation.SelectNoneObjects}"
+                  HorizontalAlignment="Stretch"
+                  HorizontalContentAlignment="Center"
+                  Content="Select none"/>
+            <Button
+                Command="{Binding Operation.SelectAllObjects}"
+                HorizontalAlignment="Stretch"
+                HorizontalContentAlignment="Center"
+                Content="Select all"/>
+          </StackPanel>
+
+          <StackPanel Grid.Row="16" Grid.Column="6"
+                      VerticalAlignment="Center"
+                      Spacing="5">
+              <Button
+                  Command="{Binding Operation.SelectCrossedObjects}"
+                  HorizontalAlignment="Stretch"
+                  HorizontalContentAlignment="Center"
+                  Content="Select crossed"/>
+              <Button
+                  Command="{Binding Operation.SelectCenterObject}"
+                  HorizontalAlignment="Stretch"
+                  HorizontalContentAlignment="Center"
+                  Content="Select center"/>
+          </StackPanel>
+
+        </Grid>
+        </Expander>
+
+        <Expander Header="Step 2: Validate the printed model with your measures"
+                  HorizontalAlignment="Stretch"
+                  IsExpanded="True">
+
+                <StackPanel Spacing="10">
+
+        <StackPanel Orientation="Horizontal" Spacing="5">
+            <TextBlock VerticalAlignment="Center" Text="X:"/>
+            <NumericUpDown 
+                           Classes="ValueLabel ValueLabel_mm"
+                           Increment="1"
+                           Minimum="0"
+                           Maximum="100"
+                           Width="190"
+                           FormatString="F2"
+                           Value="{Binding Operation.ObservedXSize}"/>
+
+            <TextBlock VerticalAlignment="Center" Text="Y:"
+                       Margin="20,0,0,0"/>
+            <NumericUpDown
+                Classes="ValueLabel ValueLabel_mm"
+                Increment="1"
+                Minimum="0"
+                Maximum="100"
+                Width="190"
+                FormatString="F2"
+                Value="{Binding Operation.ObservedYSize}"/>
+
+          <TextBlock VerticalAlignment="Center" Text="Z:"
+                     Margin="20,0,0,0"/>
+          <NumericUpDown
+              Classes="ValueLabel ValueLabel_mm"
+                Increment="1"
+                Minimum="0"
+                Maximum="100"
+                Width="190"
+                FormatString="F2"
+                Value="{Binding Operation.ObservedZSize}"/>
+        </StackPanel>
+
+        <Grid RowDefinitions="Auto,10,Auto,10,Auto"
+            ColumnDefinitions="Auto,10,Auto">
+            <TextBlock Grid.Row="0" Grid.Column="0"
+                       VerticalAlignment="Center"
+                       FontWeight="Bold"
+                       ToolTip.Tip="The calculated expected size for the part based on your input"
+                       Text="Expected size:"/>
+
+            <TextBlock Grid.Row="0" Grid.Column="2" FontWeight="Bold"
+                       ToolTip.Tip="The calculated expected size for the part based on your input">
+                <TextBlock.Text>
+                    <MultiBinding StringFormat="{}{0}mm x {1}mm x {2}mm">
+                        <Binding Path="Operation.RealXSize"/>
+                        <Binding Path="Operation.RealYSize"/>
+                        <Binding Path="Operation.RealZSize"/>
+                    </MultiBinding>
+                </TextBlock.Text>
+            </TextBlock>
+
+            <TextBlock Grid.Row="2" Grid.Column="0"
+                       VerticalAlignment="Center"
+                       IsVisible="{Binding Operation.HollowModel}"
+                       FontWeight="Bold"
+                       ToolTip.Tip="The calculated expected wall thickness size for the part based on your input"
+                       Text="Expected wall size:"/>
+
+            <TextBlock Grid.Row="2" Grid.Column="2" FontWeight="Bold"
+                       IsVisible="{Binding Operation.HollowModel}"
+                       ToolTip.Tip="The calculated expected wall thickness size for the part based on your input">
+                <TextBlock.Text>
+                    <MultiBinding StringFormat="{}{0}mm x {1}mm">
+                        <Binding Path="Operation.WallThicknessRealXSize"/>
+                        <Binding Path="Operation.WallThicknessRealYSize"/>
+                    </MultiBinding>
+                </TextBlock.Text>
+            </TextBlock>
+
+            <TextBlock Grid.Row="4" Grid.Column="0"
+                       VerticalAlignment="Center"
+                       FontWeight="Bold"
+                       ToolTip.Tip="The resultant scale factor you should resize your model with"
+                       Text="Resultant scale factor:"/>
+
+            <TextBlock Grid.Row="4" Grid.Column="2" FontWeight="Bold"
+                       ToolTip.Tip="The resultant scale factor you should resize your model with">
+                <TextBlock.Text>
+                    <MultiBinding StringFormat="{}{0}% x {1}% x {2}%">
+                        <Binding Path="Operation.ScaleXFactor"/>
+                        <Binding Path="Operation.ScaleYFactor"/>
+                        <Binding Path="Operation.ScaleZFactor"/>
+                    </MultiBinding>
+                </TextBlock.Text>
+            </TextBlock>
+        </Grid>
+        </StackPanel>
+
+        </Expander>
+
+        <Expander Header="Step 3: Save a resize profile with the results"
+                  HorizontalAlignment="Stretch"
+                  IsExpanded="True">
+
+        <Grid ColumnDefinitions="Auto,10,440,5,Auto,5,Auto">
+            <TextBlock VerticalAlignment="Center"
+                       Text="Profile name:"/>
+            <TextBox Grid.Column="2" VerticalAlignment="Center"
+                     IsEnabled="{Binding IsProfileAddEnabled}"
+                       Text="{Binding ProfileName}"/>
+            <Button Grid.Column="4" VerticalAlignment="Center"
+                    IsEnabled="{Binding IsProfileAddEnabled}"
+                    Command="{Binding AutoNameProfile}"
+                    ToolTip.Tip="Auto name the profile with the input values.
+&#x0a;Rename MyPrinterX to your printer name and MyResinX to your resin name."
+                    Content="Auto name"/>
+            <Button Grid.Column="6" VerticalAlignment="Center"
+                    IsEnabled="{Binding IsProfileAddEnabled}"
+                    Command="{Binding AddProfile}"
+                    i:Attached.Icon="fa-solid fa-plus"/>
+        </Grid>
+      </Expander>
+        
+
+    </StackPanel>
+
+    <Image Grid.Column="2"
+           HorizontalAlignment="Center"
+           VerticalAlignment="Center"
+           Stretch="Uniform"
+           Source="{Binding PreviewImage}"/>
+  </Grid>
+</UserControl>

@@ -1,0 +1,67 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:i="clr-namespace:Projektanker.Icons.Avalonia;assembly=Projektanker.Icons.Avalonia"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="UVtools.UI.Controls.Tools.ToolLayerExportImageControl">
+    <StackPanel Orientation="Vertical" Spacing="10">
+        <Grid RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto"
+              ColumnDefinitions="Auto,10,500,5,Auto">
+            <TextBlock Grid.Row="0" Grid.Column="0"
+                       VerticalAlignment="Center"
+                       Text="Output folder:"/>
+            <TextBox Grid.Row="0" Grid.Column="2"
+                   VerticalAlignment="Center"
+                   IsReadOnly="True"
+                   Text="{Binding Operation.OutputFolder}"/>
+            <Button Grid.Row="0" Grid.Column="4"
+                    VerticalAlignment="Stretch"
+                    Command="{Binding ChooseFolder}"
+                    i:Attached.Icon="fa-solid fa-folder"/>
+
+            <TextBlock Grid.Row="2" Grid.Column="0"
+                       VerticalAlignment="Center"
+                       Text="Prepend filename:"/>
+            <TextBox Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="3"
+                     VerticalAlignment="Center"
+                     Text="{Binding Operation.Filename}"/>
+
+            <TextBlock Grid.Row="4" Grid.Column="0"
+                       VerticalAlignment="Center"
+                       Text="Image type:"/>
+            <ComboBox Grid.Row="4" Grid.Column="2" Grid.ColumnSpan="3"
+                      HorizontalAlignment="Stretch"
+                      ItemsSource="{Binding Operation.ImageType, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                      SelectedItem="{Binding Operation.ImageType, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
+
+          <TextBlock Grid.Row="6" Grid.Column="0"
+                     VerticalAlignment="Center"
+                     Text="Rotate direction:"/>
+            <ComboBox Grid.Row="6" Grid.Column="2" Grid.ColumnSpan="3"
+                      HorizontalAlignment="Stretch"
+                      ItemsSource="{Binding Operation.RotateDirection, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                      SelectedItem="{Binding Operation.RotateDirection, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
+            
+            <TextBlock Grid.Row="8" Grid.Column="0"
+                       VerticalAlignment="Center"
+                       Text="Flip direction:"/>
+            <ComboBox Grid.Row="8" Grid.Column="2" Grid.ColumnSpan="3"
+                      HorizontalAlignment="Stretch"
+                      ItemsSource="{Binding Operation.FlipDirection, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                      SelectedItem="{Binding Operation.FlipDirection, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
+
+            <CheckBox Grid.Row="10" Grid.Column="2"
+                    ToolTip.Tip="Example:&#x0a;
+Enabled:  layer0010&#x0a;
+Disabled: layer10"
+                    Content="Pad layer index filename with left zeros"
+                    IsChecked="{Binding Operation.PadLayerIndex}"/>
+
+            <CheckBox Grid.Row="12" Grid.Column="2"
+                      Content="Crop image by selected ROI"
+                      IsVisible="{Binding ParentWindow.IsROIVisible}"
+                      IsChecked="{Binding Operation.CropByROI}"/>
+      </Grid>
+    </StackPanel>
+</UserControl>

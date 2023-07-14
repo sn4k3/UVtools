@@ -1,0 +1,111 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="UVtools.UI.Controls.Suggestions.SuggestionModelPositionControl">
+	<Grid RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,2,Auto,10,Auto"
+			  ColumnDefinitions="Auto,10,180,5,Auto,5,180">
+
+        <TextBlock Grid.Row="0" Grid.Column="0"
+                   VerticalAlignment="Center"
+                   ToolTip.Tip="Desired model placement on the screen regarding an anchor position.
+&#x0a;Random is recommended as it will use a random placement per apply, resulting in using the screen pixels more evenly than print on a same position."
+                   Text="Placement anchor:"/>
+
+        <ComboBox Grid.Row="0" Grid.Column="2"
+                   VerticalAlignment="Center"
+                   HorizontalAlignment="Stretch"
+                   ItemsSource="{Binding Suggestion.AnchorType, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                   SelectedItem="{Binding Suggestion.AnchorType, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
+
+
+		<TextBlock Grid.Row="2" Grid.Column="0"
+                   VerticalAlignment="Center"
+                   ToolTip.Tip="Desired margin from top/bottom to place the model"
+                   Text="Top/bottom margin:"/>
+
+		<NumericUpDown Grid.Row="2" Grid.Column="2"
+                       Classes="ValueLabel ValueLabel_px"
+                       VerticalAlignment="Center"
+                       Minimum="0"
+                       Maximum="1000"
+                       Increment="10"
+                       Value="{Binding Suggestion.TargetTopBottomMargin}"/>
+
+        <TextBlock Grid.Row="4" Grid.Column="0"
+                   VerticalAlignment="Center"
+                   ToolTip.Tip="Desired margin from left/right to place the model"
+                   Text="Left/right margin:"/>
+
+        <NumericUpDown Grid.Row="4" Grid.Column="2"
+                       Classes="ValueLabel ValueLabel_px"
+                       VerticalAlignment="Center"
+                       Minimum="0"
+                       Maximum="1000"
+                       Increment="10"
+                       Value="{Binding Suggestion.TargetLeftRightMargin}"/>
+
+		<TextBlock Grid.Row="6" Grid.Column="2"
+                   VerticalAlignment="Center"
+                   HorizontalAlignment="Center"
+                   FontWeight="Bold"
+                   Text="Minimum:"/>
+
+		<TextBlock Grid.Row="6" Grid.Column="6"
+                   VerticalAlignment="Center"
+                   HorizontalAlignment="Center"
+                   FontWeight="Bold"
+                   Text="Maximum:"/>
+
+		<TextBlock Grid.Row="8" Grid.Column="0"
+                   VerticalAlignment="Center"
+                   ToolTip.Tip="Sets the limits for top/bottom margin in pixels for the trigger detection (Min-Max)"
+                   Text="Top/bottom limits:"/>
+
+		<NumericUpDown Grid.Row="8" Grid.Column="2"
+                       VerticalAlignment="Center"
+                       Classes="ValueLabel ValueLabel_px"
+                       Minimum="0"
+                       Maximum="1000"
+                       Increment="10"
+                       Value="{Binding Suggestion.MinimumTopBottomMargin}"/>
+
+		<TextBlock Grid.Row="10" Grid.Column="4"
+                   VerticalAlignment="Center"
+                   Text="-"/>
+
+		<NumericUpDown Grid.Row="8" Grid.Column="6"
+                       VerticalAlignment="Center"
+                       Classes="ValueLabel ValueLabel_px"
+                       Minimum="0"
+                       Maximum="1000"
+                       Increment="10"
+                       Value="{Binding Suggestion.MaximumTopBottomMargin}"/>
+
+        <TextBlock Grid.Row="10" Grid.Column="0"
+                   VerticalAlignment="Center"
+                   ToolTip.Tip="Sets the limits for left/right margin in pixels for the trigger detection (Min-Max)"
+                   Text="Left/right limits:"/>
+
+        <NumericUpDown Grid.Row="10" Grid.Column="2"
+                       VerticalAlignment="Center"
+                       Classes="ValueLabel ValueLabel_px"
+                       Minimum="0"
+                       Maximum="1000"
+                       Increment="10"
+                       Value="{Binding Suggestion.MinimumLeftRightMargin}"/>
+
+        <TextBlock Grid.Row="10" Grid.Column="4"
+                   VerticalAlignment="Center"
+                   Text="-"/>
+
+        <NumericUpDown Grid.Row="10" Grid.Column="6"
+                       VerticalAlignment="Center"
+                       Classes="ValueLabel ValueLabel_px"
+                       Minimum="0"
+                       Maximum="1000"
+                       Increment="10"
+                       Value="{Binding Suggestion.MaximumLeftRightMargin}"/>
+	</Grid>
+</UserControl>

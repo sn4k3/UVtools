@@ -1,0 +1,66 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="UVtools.UI.Controls.Tools.ToolFadeExposureTimeControl">
+  <Grid RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto"
+        ColumnDefinitions="Auto,10,180,5,Auto,5,180">
+
+    <TextBlock Grid.Row="0" Grid.Column="0"
+               VerticalAlignment="Center"
+               Text="Layer count:"/>
+    <NumericUpDown Grid.Row="0" Grid.Column="2"
+                   Classes="ValueLabel ValueLabel_layers"
+                   Minimum="1"
+                   Maximum="{Binding Operation.MaximumLayerCount}"
+                   Increment="1"
+                   Value="{Binding Operation.LayerCount}"/>
+
+    <TextBlock Grid.Row="2" Grid.Column="0"
+               VerticalAlignment="Center"
+               Text="Exposure time:"/>
+    <NumericUpDown Grid.Row="2" Grid.Column="2"
+                   Classes="ValueLabel ValueLabel_s"
+                   Minimum="0.1"
+                   Maximum="1000"
+                   Increment="0.5"
+                   Value="{Binding Operation.FromExposureTime}"/>
+    <TextBlock Grid.Row="2" Grid.Column="4"
+               VerticalAlignment="Center"
+               Text="->"/>
+    <NumericUpDown Grid.Row="2" Grid.Column="6"
+                   Classes="ValueLabel ValueLabel_s"
+                   Minimum="0.1"
+                   Maximum="1000"
+                   Increment="0.5"
+                   Value="{Binding Operation.ToExposureTime}"/>
+
+
+    <TextBlock Grid.Row="4" Grid.Column="0"
+               VerticalAlignment="Center"
+               Text="Time increment:"/>
+    <NumericUpDown Grid.Row="4" Grid.Column="2"
+                   Classes="ValueLabel ValueLabel_s"
+                   IsReadOnly="True"
+                   ShowButtonSpinner="False"
+                   AllowSpin="False"
+                   Value="{Binding Operation.IncrementValue}"/>
+    <TextBlock Grid.Row="4" Grid.Column="4" Grid.ColumnSpan="3"
+               VerticalAlignment="Center"
+               Text="/ per layer"/>
+
+    <CheckBox Grid.Row="6" Grid.Column="2" Grid.ColumnSpan="5"
+              IsChecked="{Binding Operation.DisableFirmwareTransitionLayers}"
+              ToolTip.Tip="Attempt to disable firmware strict transition layers in favor of this tool"
+              Content="Disable firmware transition layers">
+        <CheckBox.IsVisible>
+			<MultiBinding Converter="{x:Static BoolConverters.And}">
+				<Binding Path="SlicerFile.CanUseTransitionLayerCount"/>
+				<Binding Path="SlicerFile.HaveTransitionLayers"/>
+            </MultiBinding>
+        </CheckBox.IsVisible>
+    </CheckBox>
+
+  </Grid>
+</UserControl>

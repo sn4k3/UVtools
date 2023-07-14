@@ -1,0 +1,34 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="UVtools.UI.Controls.Tools.ToolLayerRemoveControl">
+  <StackPanel Spacing="10">
+    <TextBlock
+        VerticalAlignment="Center"
+        Text="{Binding InfoLayersStr}"/>
+
+    <TextBlock
+        VerticalAlignment="Center"
+        Text="{Binding InfoHeightsStr}"/>
+
+    <Grid RowDefinitions="Auto" ColumnDefinitions="Auto,10,200">
+        <CheckBox Grid.Row="0" Grid.Column="0"
+                  VerticalAlignment="Center"
+                  ToolTip.Tip="If enabled, use a pixel threshold, where all layers with less or equal amount of pixels will be removed.
+&#x0a;Note: You still need to input a layer range, select all layers for a better effect with this mode."
+                  Content="Pixel threshold:"
+                  IsChecked="{Binding Operation.UseThreshold}"/>
+
+        <NumericUpDown Grid.Row="0" Grid.Column="2"
+                       Classes="ValueLabel ValueLabel_px"
+                       VerticalAlignment="Center"
+                       Minimum="0"
+                       Increment="1"
+                       IsEnabled="{Binding Operation.UseThreshold}"
+                       Value="{Binding Operation.PixelThreshold}"/>
+    </Grid>
+    
+  </StackPanel>
+</UserControl>

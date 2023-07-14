@@ -1,0 +1,157 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="550" d:DesignHeight="300"
+             x:Class="UVtools.UI.Controls.Suggestions.SuggestionWaitTimeAfterCureControl">
+	<Grid RowDefinitions="Auto,10,Auto,2,Auto,10,Auto,2,Auto,10,Auto"
+			ColumnDefinitions="Auto,10,190,5,Auto,5,190">
+
+		<TextBlock Grid.Row="0" Grid.Column="0"
+                   VerticalAlignment="Center"
+                   ToolTip.Tip="Set the way the wait time is calculated / set"
+                   Text="Set type:"/>
+
+        <ComboBox Grid.Row="0" Grid.Column="2" Grid.ColumnSpan="5"
+                  HorizontalAlignment="Stretch"
+                  ItemsSource="{Binding Suggestion.SetType, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                  SelectedItem="{Binding Suggestion.SetType, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
+
+        <TextBlock Grid.Row="2" Grid.Column="2"
+                   VerticalAlignment="Center"
+                   HorizontalAlignment="Center"
+                   FontWeight="Bold"
+                   Text="Bottom:"/>
+
+        <TextBlock Grid.Row="2" Grid.Column="6"
+                   VerticalAlignment="Center"
+                   HorizontalAlignment="Center"
+                   FontWeight="Bold"
+                   Text="Normal:"/>
+
+        <TextBlock Grid.Row="4" Grid.Column="0"
+                   VerticalAlignment="Center"
+                   ToolTip.Tip="Sets the wait time for (Bottom-Normal) layers"
+                   IsVisible="{Binding Suggestion.IsSetTypeFixed}"
+                   Text="Wait time:"/>
+
+        <TextBlock Grid.Row="4" Grid.Column="0"
+                   VerticalAlignment="Center"
+                   ToolTip.Tip="Sets the wait time according an (wait time - exposure time) ratio"
+                   IsVisible="{Binding Suggestion.IsSetTypeProportionalExposure}"
+                   Text="Time - Exposure:"/>
+
+        <NumericUpDown Grid.Row="4" Grid.Column="2"
+                       VerticalAlignment="Center"
+                       Classes="ValueLabel ValueLabel_s"
+                       Minimum="0"
+                       Maximum="1000"
+                       FormatString="F2"
+                       Increment="0.50"
+                       IsVisible="{Binding Suggestion.IsSetTypeFixed}"
+                       Value="{Binding Suggestion.FixedBottomWaitTimeAfterCure}"/>
+
+        <TextBlock Grid.Row="4" Grid.Column="4"
+                   VerticalAlignment="Center"
+                   Text="-"/>
+
+        <NumericUpDown Grid.Row="4" Grid.Column="6"
+                       VerticalAlignment="Center"
+                       Classes="ValueLabel ValueLabel_s"
+                       Minimum="0"
+                       Maximum="1000"
+                       FormatString="F2"
+                       Increment="0.50"
+                       IsVisible="{Binding Suggestion.IsSetTypeFixed}"
+                       Value="{Binding Suggestion.FixedWaitTimeAfterCure}"/>
+
+        <NumericUpDown Grid.Row="4" Grid.Column="2"
+                       VerticalAlignment="Center"
+                       Classes="ValueLabel ValueLabel_s"
+                       Minimum="0"
+                       Maximum="1000"
+                       FormatString="F2"
+                       Increment="0.50"
+                       IsVisible="{Binding Suggestion.IsSetTypeProportionalExposure}"
+                       Value="{Binding Suggestion.ProportionalWaitTimeAfterCure}"/>
+
+        <NumericUpDown Grid.Row="4" Grid.Column="6"
+                       VerticalAlignment="Center"
+                       Classes="ValueLabel ValueLabel_s"
+                       Minimum="0"
+                       Maximum="1000"
+                       FormatString="F2"
+                       Increment="0.50"
+                       IsVisible="{Binding Suggestion.IsSetTypeProportionalExposure}"
+                       Value="{Binding Suggestion.ProportionalExposureTime}"/>
+
+
+        <TextBlock Grid.Row="6" Grid.Column="2"
+                   VerticalAlignment="Center"
+                   HorizontalAlignment="Center"
+                   FontWeight="Bold"
+                   Text="Minimum:"/>
+
+        <TextBlock Grid.Row="6" Grid.Column="6"
+                   VerticalAlignment="Center"
+                   HorizontalAlignment="Center"
+                   FontWeight="Bold"
+                   Text="Maximum:"/>
+
+		<TextBlock Grid.Row="8" Grid.Column="0"
+                   VerticalAlignment="Center"
+                   ToolTip.Tip="Sets the limits for the bottom layers (Min-Max)"
+                   Text="Limits (bottom):"/>
+
+		<NumericUpDown Grid.Row="8" Grid.Column="2"
+                       VerticalAlignment="Center"
+                       Classes="ValueLabel ValueLabel_s"
+                       Minimum="0"
+                       Maximum="1000"
+                       FormatString="F2"
+                       Increment="{Binding SlicerFile.LayerHeight}"
+                       Value="{Binding Suggestion.MinimumBottomWaitTimeAfterCure}"/>
+
+		<TextBlock Grid.Row="8" Grid.Column="4"
+                   VerticalAlignment="Center"
+                   Text="-"/>
+
+		<NumericUpDown Grid.Row="8" Grid.Column="6"
+                       VerticalAlignment="Center"
+                       Classes="ValueLabel ValueLabel_s"
+                       Minimum="0"
+                       Maximum="1000"
+                       FormatString="F2"
+                       Increment="0.50"
+                       Value="{Binding Suggestion.MaximumBottomWaitTimeAfterCure}"/>
+
+        <TextBlock Grid.Row="10" Grid.Column="0"
+                   VerticalAlignment="Center"
+                   ToolTip.Tip="Sets the limits for the normal layers (Min-Max)"
+                   Text="Limits (normal):"/>
+
+        <NumericUpDown Grid.Row="10" Grid.Column="2"
+                       VerticalAlignment="Center"
+                       Classes="ValueLabel ValueLabel_s"
+                       Minimum="0"
+                       Maximum="1000"
+                       FormatString="F2"
+                       Increment="0.50"
+                       Value="{Binding Suggestion.MinimumWaitTimeAfterCure}"/>
+
+        <TextBlock Grid.Row="10" Grid.Column="4"
+                   VerticalAlignment="Center"
+                   Text="-"/>
+
+        <NumericUpDown Grid.Row="10" Grid.Column="6"
+                       VerticalAlignment="Center"
+                       Classes="ValueLabel ValueLabel_s"
+                       Minimum="0"
+                       Maximum="1000"
+                       FormatString="F2"
+                       Increment="0.50"
+                       Value="{Binding Suggestion.MaximumWaitTimeAfterCure}"/>
+
+		
+	</Grid>
+</UserControl>

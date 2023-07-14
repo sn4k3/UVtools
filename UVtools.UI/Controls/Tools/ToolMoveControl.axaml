@@ -1,0 +1,190 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="550" d:DesignHeight="250"
+             x:Class="UVtools.UI.Controls.Tools.ToolMoveControl">
+  
+  <Grid RowDefinitions="Auto" ColumnDefinitions="Auto,10,Auto">
+    <StackPanel Grid.Row="0" Grid.Column="0" 
+                VerticalAlignment="Center"
+                Orientation="Vertical"
+                Spacing="5">
+      <TextBlock Text="{Binding Operation.LocationXStr}"/>
+      <TextBlock Text="{Binding Operation.LocationYStr}"/>
+
+      <TextBlock Text="{Binding Operation.LocationWidthStr}"/>
+      <TextBlock Text="{Binding Operation.LocationHeightStr}"/>
+
+      <TextBlock Margin="0,10,0,0" Text="{Binding Operation.IsWithinBoundaryStr}"/>
+
+      <CheckBox 
+        Margin="0,5,0,0"
+        Content="Do a cut move" 
+        ToolTip.Tip="When selected, the object will be cutted and pasted on the new location.
+&#x0a;Otherwise a copy will be performed to the new location."
+        IsChecked="{Binding Operation.IsCutMove}" />
+
+    </StackPanel>
+
+      <Grid Grid.Row="0" Grid.Column="2"
+            RowDefinitions="Auto,Auto,Auto"
+            ColumnDefinitions="Auto,Auto,Auto"
+            VerticalAlignment="Center"
+            HorizontalAlignment="Center">
+
+          <StackPanel Grid.Row="1" Grid.Column="0"
+                      VerticalAlignment="Center"
+                      Orientation="Horizontal"
+                      Spacing="5">
+              <TextBlock
+                  VerticalAlignment="Center"
+                  FontWeight="Bold"
+                  Text="Left"/>
+              <NumericUpDown
+                  Classes="ValueLabel ValueLabel_px"
+                  VerticalAlignment="Center"
+                  ButtonSpinnerLocation="Left"
+                  Width="150"
+                  Minimum="-100000"
+                  Maximum="100000"
+                  Value="{Binding Operation.MarginLeft}"/>
+          </StackPanel>
+
+          <StackPanel Grid.Row="0" Grid.Column="1">
+              <TextBlock
+                  VerticalAlignment="Center"
+                  HorizontalAlignment="Center"
+                  FontWeight="Bold"
+                  Margin="0,0,0,5"
+                  Text="Top"/>
+            <NumericUpDown
+                Classes="ValueLabel ValueLabel_px"
+                  VerticalAlignment="Center"
+                  Width="150"
+                  Minimum="-100000"
+                  Maximum="100000"
+                  Value="{Binding Operation.MarginTop}"/>
+          </StackPanel>
+
+          <StackPanel Grid.Row="1" Grid.Column="2" 
+                      Orientation="Horizontal" 
+                      VerticalAlignment="Center"
+                      Spacing="5">
+            <NumericUpDown
+                Classes="ValueLabel ValueLabel_px"
+                VerticalAlignment="Center"
+                  Width="150"
+                    Minimum="-100000"
+                    Maximum="100000"
+                  Value="{Binding Operation.MarginRight}"/>
+              <TextBlock
+                  VerticalAlignment="Center"
+                  FontWeight="Bold"
+                  Text="Right"/>
+          </StackPanel>
+
+          <StackPanel Grid.Row="2" Grid.Column="1">
+            <NumericUpDown
+                Classes="ValueLabel ValueLabel_px"
+                  VerticalAlignment="Center"
+                  Width="150"
+                  Minimum="-100000"
+                  Maximum="100000"
+                  Value="{Binding Operation.MarginBottom}"/>
+              <TextBlock
+                  VerticalAlignment="Center"
+                  HorizontalAlignment="Center"
+                  FontWeight="Bold"
+                  Margin="0,5,0,0"
+                  Text="Bottom"/>
+          </StackPanel>
+
+          <Grid Grid.Row="1" Grid.Column="1"
+                RowDefinitions="30,30,30"
+                ColumnDefinitions="30,30,30"
+                Width="90"
+                Height="90"
+                Margin="10">
+
+            <RadioButton
+                Grid.Row="0" Grid.Column="0"
+                ToolTip.Tip="Top Left"
+                VerticalAlignment="Center"
+                HorizontalAlignment="Center"
+                GroupName="Anchor"
+                Command="{Binding Operation.SetAnchor}"
+                CommandParameter="0"/>
+            <RadioButton
+              Grid.Row="0" Grid.Column="1"
+              ToolTip.Tip="Top Center"
+              VerticalAlignment="Center"
+              HorizontalAlignment="Center"
+              GroupName="Anchor"
+              Command="{Binding Operation.SetAnchor}"
+              CommandParameter="1"/>
+            <RadioButton
+              Grid.Row="0" Grid.Column="2"
+              ToolTip.Tip="Top Right"
+              VerticalAlignment="Center"
+              HorizontalAlignment="Center"
+              GroupName="Anchor"
+              Command="{Binding Operation.SetAnchor}"
+              CommandParameter="2"/>
+
+            <RadioButton
+              Grid.Row="1" Grid.Column="0"
+              ToolTip.Tip="Middle Left"
+              VerticalAlignment="Center"
+              HorizontalAlignment="Center"
+              GroupName="Anchor"
+              Command="{Binding Operation.SetAnchor}"
+              CommandParameter="3"/>
+            <RadioButton
+              Grid.Row="1" Grid.Column="1"
+              ToolTip.Tip="Middle Center"
+              VerticalAlignment="Center"
+              HorizontalAlignment="Center"
+              IsChecked="{Binding IsMiddleCenterChecked}"
+              GroupName="Anchor"
+              Command="{Binding Operation.SetAnchor}"
+              CommandParameter="4"/>
+            <RadioButton
+              Grid.Row="1" Grid.Column="2"
+              ToolTip.Tip="Middle Right"
+              VerticalAlignment="Center"
+              HorizontalAlignment="Center"
+              GroupName="Anchor"
+              Command="{Binding Operation.SetAnchor}"
+              CommandParameter="5"/>
+
+            <RadioButton
+              Grid.Row="2" Grid.Column="0"
+              ToolTip.Tip="Bottom Left"
+              VerticalAlignment="Center"
+              HorizontalAlignment="Center"
+              GroupName="Anchor"
+              Command="{Binding Operation.SetAnchor}"
+              CommandParameter="6"/>
+            <RadioButton
+              Grid.Row="2" Grid.Column="1"
+              ToolTip.Tip="Bottom Center"
+              VerticalAlignment="Center"
+              HorizontalAlignment="Center"
+              GroupName="Anchor"
+              Command="{Binding Operation.SetAnchor}"
+              CommandParameter="7"/>
+            <RadioButton
+              Grid.Row="2" Grid.Column="2"
+              ToolTip.Tip="Bottom Right"
+              VerticalAlignment="Center"
+              HorizontalAlignment="Center"
+              GroupName="Anchor"
+              Command="{Binding Operation.SetAnchor}"
+              CommandParameter="8"/>
+
+          </Grid>
+
+      </Grid>
+  </Grid>
+</UserControl>

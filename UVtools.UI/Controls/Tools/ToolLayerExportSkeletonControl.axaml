@@ -1,0 +1,30 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:i="clr-namespace:Projektanker.Icons.Avalonia;assembly=Projektanker.Icons.Avalonia"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="UVtools.UI.Controls.Tools.ToolLayerExportSkeletonControl">
+    <StackPanel Spacing="10">
+
+        <StackPanel Orientation="Horizontal" Spacing="5">
+            <TextBox
+                Watermark="Output filepath"
+                UseFloatingWatermark="True"
+                VerticalAlignment="Center"
+                IsReadOnly="True"
+                Width="600"
+                Text="{Binding Operation.FilePath}"/>
+            <Button
+                VerticalAlignment="Stretch"
+                Command="{Binding ChooseFilePath}"
+                i:Attached.Icon="fa-solid fa-folder"/>
+        </StackPanel>
+
+        <CheckBox
+            Content="Crop image by selected ROI"
+            IsVisible="{Binding ParentWindow.IsROIVisible}"
+            IsChecked="{Binding Operation.CropByROI}"/>
+
+    </StackPanel>
+</UserControl>

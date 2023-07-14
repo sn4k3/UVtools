@@ -1,0 +1,88 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="UVtools.UI.Controls.Tools.ToolLayerReHeightControl">
+
+
+    <StackPanel Orientation="Vertical" Spacing="10">
+    <TextBlock VerticalAlignment="Center" 
+               IsVisible="{Binding !Operation.Method}"
+               Text="{Binding CurrentLayers}"/>
+
+    <Grid RowDefinitions="Auto,10,Auto,10,Auto,10,Auto"
+          ColumnDefinitions="Auto,10,Auto,20,Auto,10,Auto">
+
+        <TextBlock Grid.Row="0" Grid.Column="0"  VerticalAlignment="Center" Text="Method:"/>
+        <ComboBox Grid.Row="0" Grid.Column="2" Grid.ColumnSpan="5"
+                  Width="505"
+                  ItemsSource="{Binding Operation.Method, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                  SelectedItem="{Binding Operation.Method, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
+
+        <TextBlock Grid.Row="2" Grid.Column="0"
+                   IsVisible="{Binding Operation.IsOffsetPositionZMethod}"
+                   VerticalAlignment="Center"
+                   Text="Position offset:"/>
+        <NumericUpDown Grid.Row="2" Grid.Column="2"
+                       Classes="ValueLabel ValueLabel_mm"
+                       IsVisible="{Binding Operation.IsOffsetPositionZMethod}"
+                       VerticalAlignment="Center"
+                       Minimum="-1000"
+                       Maximum="1000"
+                       Increment="0.01"
+                       FormatString="F3"
+                       Value="{Binding Operation.PositionZOffset}"/>
+
+		<TextBlock Grid.Row="2" Grid.Column="0" 
+                   VerticalAlignment="Center"
+                   IsVisible="{Binding Operation.IsReHeightMethod}"
+                   Text="Modifier:"/>
+        <ComboBox
+            Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="5"
+            Width="505"
+            IsVisible="{Binding Operation.IsReHeightMethod}"
+            SelectedItem="{Binding Operation.SelectedItem}"
+            ItemsSource="{Binding Operation.Presets}"/>
+
+        <TextBlock Grid.Row="4" Grid.Column="0"
+                   VerticalAlignment="Center" 
+                   IsVisible="{Binding Operation.IsReHeightMethod}"
+                   Text="Anti-Aliasing:"/>
+        <ComboBox Grid.Row="4" Grid.Column="2" Grid.ColumnSpan="5"
+                  Width="505"
+                  IsVisible="{Binding Operation.IsReHeightMethod}"
+                  IsEnabled="{Binding Operation.CanAntiAliasing}"
+                  ItemsSource="{Binding Operation.AntiAliasingType, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                  SelectedItem="{Binding Operation.AntiAliasingType, Converter={StaticResource FromValueDescriptionToEnumConverter}}">
+        </ComboBox>
+
+        <TextBlock Grid.Row="6" Grid.Column="0" 
+                   IsVisible="{Binding Operation.IsReHeightMethod}"
+                   VerticalAlignment="Center" 
+                   Text="Bottom exposure:"/>
+        <NumericUpDown Grid.Row="6" Grid.Column="2"
+                       Classes="ValueLabel ValueLabel_s"
+                       IsVisible="{Binding Operation.IsReHeightMethod}"
+                       VerticalAlignment="Center"
+                       Minimum="0.01"
+                       Maximum="1000"
+                       Increment="0.5"
+                       Value="{Binding Operation.BottomExposure}"/>
+
+        <TextBlock Grid.Row="6" Grid.Column="4" 
+                   IsVisible="{Binding Operation.IsReHeightMethod}"
+                   VerticalAlignment="Center" 
+                   Text="Normal exposure:"/>
+        <NumericUpDown Grid.Row="6" Grid.Column="6"
+                       Classes="ValueLabel ValueLabel_s"
+                       IsVisible="{Binding Operation.IsReHeightMethod}"
+                       VerticalAlignment="Center"
+                       Minimum="0.01"
+                       Maximum="1000"
+                       Increment="0.5"
+                       Value="{Binding Operation.NormalExposure}"/>
+    </Grid>
+
+    </StackPanel>
+</UserControl>

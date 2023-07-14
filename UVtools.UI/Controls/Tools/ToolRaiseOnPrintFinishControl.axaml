@@ -1,0 +1,114 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             MinWidth="600"
+             x:Class="UVtools.UI.Controls.Tools.ToolRaiseOnPrintFinishControl">
+
+  <Grid RowDefinitions="Auto,10,Auto,10,Auto"
+        ColumnDefinitions="Auto,10,200,2,Auto">
+    <TextBlock Grid.Row="0" Grid.Column="0"
+               VerticalAlignment="Center"
+               Text="Raise to:"/>
+
+    <NumericUpDown Grid.Row="0" Grid.Column="2"
+                   Classes="ValueLabel ValueLabel_mm"
+                   VerticalAlignment="Center"
+                   VerticalContentAlignment="Center"
+                   Increment="1"
+                   Minimum="{Binding Operation.MinimumPositionZ}"
+                   Maximum="1000"
+                   FormatString="F2"
+                   Value="{Binding Operation.PositionZ}"/>
+
+	  <StackPanel Grid.Row="0" Grid.Column="4"
+                  Orientation="Horizontal" Spacing="2">
+          <Button VerticalAlignment="Stretch"
+                  VerticalContentAlignment="Center"
+                  Content="Minimum"
+                  ToolTip.Tip="Sets to the minimum position"
+                  Command="{Binding Operation.SetToMinimumPosition}"/>
+
+          <Button VerticalAlignment="Stretch"
+                  VerticalContentAlignment="Center"
+                  Content="Medium"
+                  ToolTip.Tip="Sets to half-way between minimum and maximum position"
+                  Command="{Binding Operation.SetToMediumPosition}"/>
+
+          <Button VerticalAlignment="Stretch"
+                  VerticalContentAlignment="Center"
+                  Content="Maximum"
+                  ToolTip.Tip="Sets to the maximum position"
+                  Command="{Binding Operation.SetToMaximumPosition}"/>
+      </StackPanel>
+	  
+
+	  <TextBlock Grid.Row="2" Grid.Column="0"
+				 VerticalAlignment="Center"
+                 IsEnabled="{Binding SlicerFile.CanUseLayerAnyWaitTimeBeforeCure}"
+				 ToolTip.Tip="Sets the ensured wait time to stay still on the desired position.
+&#x0a;This is useful if the printer firmware always move to top and you want to stay still on the set position for at least the desired time.
+&#x0a;Note: The print time calculation will take this wait into consideration and display a longer print time."
+				 Text="Wait time:"/>
+
+    <NumericUpDown Grid.Row="2" Grid.Column="2"
+                   Classes="ValueLabel ValueLabel_s"
+                   IsEnabled="{Binding SlicerFile.CanUseLayerAnyWaitTimeBeforeCure}"
+                   VerticalAlignment="Center"
+                   VerticalContentAlignment="Center"
+                   Increment="60"
+                   Minimum="0"
+                   Maximum="2629744"
+                   Value="{Binding Operation.WaitTime}"/>
+
+    <StackPanel Grid.Row="2" Grid.Column="4"
+                Orientation="Horizontal" Spacing="2"
+                IsEnabled="{Binding SlicerFile.CanUseLayerAnyWaitTimeBeforeCure}">
+        <Button VerticalAlignment="Stretch"
+                VerticalContentAlignment="Center"
+                Content="10m"
+                Command="{Binding Operation.SetWaitTime}"
+                CommandParameter="600"/>
+
+        <Button VerticalAlignment="Stretch"
+                VerticalContentAlignment="Center"
+                Content="20m"
+                Command="{Binding Operation.SetWaitTime}"
+                CommandParameter="1200"/>
+
+        <Button VerticalAlignment="Stretch"
+                VerticalContentAlignment="Center"
+                Content="30m"
+                Command="{Binding Operation.SetWaitTime}"
+                CommandParameter="1800"/>
+
+        <Button VerticalAlignment="Stretch"
+                VerticalContentAlignment="Center"
+                Content="40m"
+                Command="{Binding Operation.SetWaitTime}"
+                CommandParameter="2400"/>
+
+        <Button VerticalAlignment="Stretch"
+                VerticalContentAlignment="Center"
+                Content="50m"
+                Command="{Binding Operation.SetWaitTime}"
+                CommandParameter="3000"/>
+
+        <Button VerticalAlignment="Stretch"
+                VerticalContentAlignment="Center"
+                Content="60m"
+                Command="{Binding Operation.SetWaitTime}"
+                CommandParameter="3600"/>
+
+    </StackPanel>
+
+
+    <CheckBox Grid.Row="4" Grid.Column="2" 
+               VerticalAlignment="Center"
+               ToolTip.Tip="If enabled, output a dummy pixel inside the layer bound to prevent a empty image and to ensure the correct handle by the firmware. This will also prevent layer being removed by auto-fix issues (Empty Layers)."
+               Content="Output a dummy pixel"
+              IsChecked="{Binding Operation.OutputDummyPixel}"/>
+  </Grid>
+  
+</UserControl>

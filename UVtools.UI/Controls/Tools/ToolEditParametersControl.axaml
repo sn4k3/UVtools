@@ -1,0 +1,66 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="UVtools.UI.Controls.Tools.ToolEditParametersControl">
+
+    <StackPanel Spacing="10">
+
+      <CheckBox IsChecked="{Binding Operation.PropagateModificationsToLayers}"
+                IsVisible="{Binding !Operation.PerLayerOverride}"
+                ToolTip.Tip="If enabled it will propagate and update all layers based on the new values.
+&#x0a;If disabled it will only set the modifications to the global settings / file header."
+                Content="Propagate modifications to layers"/>
+
+    <CheckBox IsChecked="{Binding Operation.PerLayerOverride}"
+              IsVisible="{Binding SlicerFile.SupportPerLayerSettings}"
+              Content="Change settings per a layer range"/>
+
+    <StackPanel Orientation="Horizontal" Spacing="5" IsVisible="{Binding Operation.PerLayerOverride}">
+        <TextBlock VerticalAlignment="Center"
+                   Text="Sequentially set each"/>
+
+        <NumericUpDown VerticalAlignment="Center"
+                       Minimum="1"
+                       Maximum="100000"
+                       Increment="1"
+                       Value="{Binding Operation.SetNumberOfLayer}"/>
+
+        <TextBlock VerticalAlignment="Center"
+                   Text="layers, and skip the next"/>
+
+        <NumericUpDown VerticalAlignment="Center"
+                       Minimum="0"
+                       Maximum="100000"
+                       Increment="1"
+                       Value="{Binding Operation.SkipNumberOfLayer}"/>
+
+        <TextBlock VerticalAlignment="Center"
+                   Text="layers"/>
+    </StackPanel>
+
+      <Grid Name="GlobalGrid"
+            RowDefinitions="Auto" ColumnDefinitions="Auto,*,40,Auto,*"
+            IsVisible="{Binding !Operation.PerLayerOverride}">
+          <TextBlock Grid.Column="0" Grid.ColumnSpan="2"
+                     Margin="0,0,0,5"
+                     Text="Bottom layers:" 
+                     FontWeight="Bold"/>
+
+          <TextBlock Grid.Column="3" Grid.ColumnSpan="2"
+                     Margin="0,0,0,5"
+                     Text="Normal layers:"
+                     FontWeight="Bold"/>
+      </Grid>
+
+      <Grid Name="PerLayerGrid"
+            RowDefinitions="Auto" ColumnDefinitions="Auto,*"
+            IsVisible="{Binding Operation.PerLayerOverride}">
+          <TextBlock Grid.Column="0" Grid.ColumnSpan="2"
+                     Margin="0,0,0,5"
+                     Text="Properties:"
+                     FontWeight="Bold"/>
+      </Grid>
+    </StackPanel>
+</UserControl>

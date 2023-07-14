@@ -1,0 +1,211 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="UVtools.UI.Controls.Tools.ToolDynamicLiftsControl">
+  <StackPanel Spacing="10">
+
+      <Grid RowDefinitions="Auto,20,Auto,10,Auto,10,Auto,10,Auto,10,Auto"
+            ColumnDefinitions="Auto,10,180,Auto,210,10,Auto">
+          <TextBlock Grid.Row="0" Grid.Column="0"
+                     VerticalAlignment="Center"
+                     Text="Set method:"/>
+
+          <ComboBox Grid.Row="0" Grid.Column="2" Grid.ColumnSpan="5"
+                    HorizontalAlignment="Stretch"
+                    Width="500"
+                    ItemsSource="{Binding Operation.SetMethod, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                    SelectedItem="{Binding Operation.SetMethod, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
+
+
+          <TextBlock Grid.Row="2" Grid.Column="0"
+                     VerticalAlignment="Center"
+                     HorizontalAlignment="Center"
+                     FontWeight="Bold"
+                     Text="Property"/>
+
+        <TextBlock Grid.Row="2" Grid.Column="2"
+                   VerticalAlignment="Center"
+                   HorizontalAlignment="Center"
+                   FontWeight="Bold"
+                   Text="Height"/>
+
+        <TextBlock Grid.Row="2" Grid.Column="4"
+                   VerticalAlignment="Center"
+                   HorizontalAlignment="Center"
+                   FontWeight="Bold"
+                   Text="Speed"/>
+
+        <TextBlock Grid.Row="2" Grid.Column="6"
+                   VerticalAlignment="Center"
+                   HorizontalAlignment="Center"
+                   FontWeight="Bold"
+                   Text="View"/>
+
+        <TextBlock Grid.Row="4" Grid.Column="0"
+                   IsEnabled="{Binding Operation.LayerRangeHaveBottoms}"
+                   VerticalAlignment="Center"
+                   Text="Smallest bottom lift:"/>
+
+        <NumericUpDown Grid.Row="4" Grid.Column="2"
+                       Classes="ValueLabel ValueLabel_mm"
+                       IsEnabled="{Binding Operation.LayerRangeHaveBottoms}"
+                       VerticalAlignment="Center"
+                       Minimum="1"
+                       Maximum="100"
+                       Increment="0.5"
+                       FormatString="F2"
+                       Value="{Binding Operation.SmallestBottomLiftHeight}"/>
+
+        <TextBlock Grid.Row="4" Grid.Column="3"
+                   Margin="5,0"
+                   IsEnabled="{Binding Operation.LayerRangeHaveBottoms}"
+                   VerticalAlignment="Center"
+                   Text="@"/>
+
+        <NumericUpDown Grid.Row="4" Grid.Column="4"
+                       Classes="ValueLabel ValueLabel_mmmin"
+                       IsEnabled="{Binding Operation.LayerRangeHaveBottoms}"
+                       VerticalAlignment="Center"
+                       Minimum="5"
+                       Maximum="1000"
+                       Increment="1"
+                       FormatString="F2"
+                       Value="{Binding Operation.FastestBottomLiftSpeed}"/>
+
+        <Button Grid.Row="4" Grid.Column="6"
+                IsEnabled="{Binding Operation.LayerRangeHaveBottoms}"
+                VerticalAlignment="Stretch"
+                HorizontalAlignment="Stretch"
+                HorizontalContentAlignment="Center"
+                ToolTip.Tip="View the smallest bottom layer for the selected layer range"
+                Command="{Binding ViewSmallestBottomLayer}"
+                Content="Smallest"/>
+
+        <TextBlock Grid.Row="6" Grid.Column="0"
+                   IsEnabled="{Binding Operation.LayerRangeHaveBottoms}"
+                   VerticalAlignment="Center"
+                   Text="Largest bottom lift:"/>
+
+        <NumericUpDown Grid.Row="6" Grid.Column="2"
+                       Classes="ValueLabel ValueLabel_mm"
+                       IsEnabled="{Binding Operation.LayerRangeHaveBottoms}"
+                       VerticalAlignment="Center"
+                       Minimum="1"
+                       Maximum="100"
+                       Increment="0.5"
+                       FormatString="F2"
+                       Value="{Binding Operation.LargestBottomLiftHeight}"/>
+
+        <TextBlock Grid.Row="6" Grid.Column="3"
+                   Margin="5,0"
+                   IsEnabled="{Binding Operation.LayerRangeHaveBottoms}"
+                   VerticalAlignment="Center"
+                   Text="@"/>
+
+        <NumericUpDown Grid.Row="6" Grid.Column="4"
+                       Classes="ValueLabel ValueLabel_mmmin"
+                       IsEnabled="{Binding Operation.LayerRangeHaveBottoms}"
+                       VerticalAlignment="Center"
+                       Minimum="5"
+                       Maximum="1000"
+                       Increment="1"
+                       FormatString="F2"
+                       Value="{Binding Operation.SlowestBottomLiftSpeed}"/>
+
+        <Button Grid.Row="6" Grid.Column="6"
+                IsEnabled="{Binding Operation.LayerRangeHaveBottoms}"
+                VerticalAlignment="Stretch"
+                HorizontalAlignment="Stretch"
+                HorizontalContentAlignment="Center"
+                Command="{Binding ViewLargestBottomLayer}"
+                CommandParameter="True"
+                ToolTip.Tip="View the largest bottom layer for the selected layer range"
+                Content="Largest"/>
+
+        <TextBlock Grid.Row="8" Grid.Column="0"
+                   IsEnabled="{Binding Operation.LayerRangeHaveNormals}"
+                   VerticalAlignment="Center"
+                   Text="Smallest lift:"/>
+
+        <NumericUpDown Grid.Row="8" Grid.Column="2"
+                       Classes="ValueLabel ValueLabel_mm"
+                       IsEnabled="{Binding Operation.LayerRangeHaveNormals}"
+                       VerticalAlignment="Center"
+                       Minimum="1"
+                       Maximum="100"
+                       Increment="0.5"
+                       FormatString="F2"
+                       Value="{Binding Operation.SmallestLiftHeight}"/>
+
+        <TextBlock Grid.Row="8" Grid.Column="3"
+                   Margin="5,0"
+                   IsEnabled="{Binding Operation.LayerRangeHaveBottoms}"
+                   VerticalAlignment="Center"
+                   Text="@"/>
+
+        <NumericUpDown Grid.Row="8" Grid.Column="4"
+                       Classes="ValueLabel ValueLabel_mmmin"
+                       IsEnabled="{Binding Operation.LayerRangeHaveNormals}"
+                       VerticalAlignment="Center"
+                       Minimum="5"
+                       Maximum="1000"
+                       Increment="1"
+                       FormatString="F2"
+                       Value="{Binding Operation.FastestLiftSpeed}"/>
+
+        <Button Grid.Row="8" Grid.Column="6"
+                IsEnabled="{Binding Operation.LayerRangeHaveNormals}"
+                VerticalAlignment="Stretch"
+                HorizontalAlignment="Stretch"
+                HorizontalContentAlignment="Center"
+                Command="{Binding ViewSmallestNormalLayer}"
+                CommandParameter="False"
+                ToolTip.Tip="View the smallest normal layer for the selected layer range"
+                Content="Smallest"/>
+
+        <TextBlock Grid.Row="10" Grid.Column="0"
+                   IsEnabled="{Binding Operation.LayerRangeHaveNormals}"
+                   VerticalAlignment="Center"
+                   Text="Largest lift:"/>
+
+        <NumericUpDown Grid.Row="10" Grid.Column="2"
+                       Classes="ValueLabel ValueLabel_mm"
+                       IsEnabled="{Binding Operation.LayerRangeHaveNormals}"
+                       VerticalAlignment="Center"
+                       Minimum="1"
+                       Maximum="100"
+                       Increment="0.5"
+                       FormatString="F2"
+                       Value="{Binding Operation.LargestLiftHeight}"/>
+
+        <TextBlock Grid.Row="10" Grid.Column="3"
+                   Margin="5,0"
+                   IsEnabled="{Binding Operation.LayerRangeHaveBottoms}"
+                   VerticalAlignment="Center"
+                   Text="@"/>
+
+        <NumericUpDown Grid.Row="10" Grid.Column="4"
+                       Classes="ValueLabel ValueLabel_mmmin"
+                       IsEnabled="{Binding Operation.LayerRangeHaveNormals}"
+                       VerticalAlignment="Center"
+                       Minimum="5"
+                       Maximum="1000"
+                       Increment="1"
+                       FormatString="F2"
+                       Value="{Binding Operation.SlowestLiftSpeed}"/>
+
+        <Button Grid.Row="10" Grid.Column="6"
+                IsEnabled="{Binding Operation.LayerRangeHaveNormals}"
+                VerticalAlignment="Stretch"
+                HorizontalAlignment="Stretch"
+                HorizontalContentAlignment="Center"
+                Command="{Binding ViewLargestNormalLayer}"
+                CommandParameter="False"
+                ToolTip.Tip="View the largest normal layer for the selected layer range"
+                Content="Largest"/>
+        </Grid>
+
+  </StackPanel>
+</UserControl>

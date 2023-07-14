@@ -1,0 +1,541 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:controls="clr-namespace:UVtools.UI.Controls"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="UVtools.UI.Controls.Tools.ToolPixelArithmeticControl">
+
+  <StackPanel Orientation="Vertical" Spacing="10">
+    <Grid RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto"
+          ColumnDefinitions="Auto,10,Auto,20,Auto,10,Auto,20,Auto,10,Auto">
+        
+        <TextBlock Grid.Row="0" Grid.Column="0"
+                   VerticalAlignment="Center"
+                   Text="Operator:"/>
+
+        <ComboBox Grid.Row="0" Grid.Column="2"
+                  Grid.ColumnSpan="9"
+                  Width="610"
+                  ItemsSource="{Binding Operation.Operator, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                  SelectedItem="{Binding Operation.Operator, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
+
+        <TextBlock Grid.Row="2" Grid.Column="0"
+                   VerticalAlignment="Center"
+                   IsEnabled="{Binding Operation.IsApplyMethodEnabled}"
+                   Text="Apply to:"/>
+
+        <ComboBox Grid.Row="2" Grid.Column="2"
+                  Grid.ColumnSpan="9"
+                  Width="610"
+                  IsEnabled="{Binding Operation.IsApplyMethodEnabled}"
+                  ItemsSource="{Binding Operation.ApplyMethod, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                  SelectedItem="{Binding Operation.ApplyMethod, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
+
+      <TextBlock Grid.Row="4" Grid.Column="0"
+                 VerticalAlignment="Center"
+                 IsVisible="{Binding Operation.IsWallSettingVisible}"
+                 Text="Wall thickness:"/>
+
+      
+    <StackPanel Grid.Row="4" Grid.Column="2" Grid.ColumnSpan="9" 
+                IsVisible="{Binding Operation.IsWallSettingVisible}"
+                Spacing="10" Orientation="Horizontal">
+          <NumericUpDown 
+                         Minimum="0"
+                         Maximum="1000"
+                         Width="80"
+                         Value="{Binding Operation.WallThicknessStart}"/>
+
+          <TextBlock
+                     VerticalAlignment="Center"
+                     Text="To:"
+                     IsEnabled="{Binding Operation.WallChamfer}"/>
+
+          <NumericUpDown
+                         Minimum="0"
+                         Maximum="1000"
+                         Width="80"
+                         Value="{Binding Operation.WallThicknessEnd}"
+                         IsEnabled="{Binding Operation.WallChamfer}"/>
+
+          <TextBlock 
+                     VerticalAlignment="Center"
+                     Text="px"
+                     IsEnabled="{Binding Operation.WallChamfer}"/>
+
+          <CheckBox
+                    Margin="10,0,0,0"
+                    Content="Chamfer walls"
+                    ToolTip.Tip="Allow the number of walls pixels to be gradually varied as the operation progresses from the starting layer to the ending layer."
+                    IsChecked="{Binding Operation.WallChamfer}"/>
+
+      </StackPanel>
+
+        <TextBlock Grid.Row="6" Grid.Column="0"
+                   VerticalAlignment="Center"
+                   Text="Ignore areas:"/>
+
+        <StackPanel Grid.Row="6" Grid.Column="2" Grid.ColumnSpan="9"
+                    Spacing="5" Orientation="Horizontal">
+
+          <ComboBox
+              Width="150"
+              ItemsSource="{Binding Operation.IgnoreAreaOperator, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+              SelectedItem="{Binding Operation.IgnoreAreaOperator, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
+
+            <NumericUpDown
+                Classes="ValueLabel ValueLabel_px2"
+                Minimum="0"
+                Maximum="4294967295"
+                Width="150"
+                Value="{Binding Operation.IgnoreAreaThreshold}"
+                ToolTip.Tip="Ignore all areas smaller or larger than this threshold.
+&#x0a;0 = Disabled"/>
+        </StackPanel>
+
+
+      <TextBlock Grid.Row="8" Grid.Column="0"
+           VerticalAlignment="Center"
+           IsVisible="{Binding Operation.IsCorrodeVisible}"
+           Text="Diffusion:"/>
+
+      <StackPanel Grid.Row="8" Grid.Column="2" Grid.ColumnSpan="9"
+            IsVisible="{Binding Operation.IsCorrodeVisible}"
+            Spacing="10" Orientation="Vertical">
+
+          <StackPanel Spacing="10" Orientation="Horizontal">
+
+            <TextBlock
+               VerticalAlignment="Center"
+               Text="Noise range:"/>
+            
+            <TextBlock
+               VerticalAlignment="Center"
+               Text="Min:"/>
+
+            <NumericUpDown
+                   Minimum="-1000"
+                   Maximum="1000"
+                   Width="80"
+                   Value="{Binding Operation.NoiseMinOffset}"
+                   ToolTip.Tip="Minimum value of random noise offset"/>
+
+            <TextBlock
+                   VerticalAlignment="Center"
+                   Text="Max:"/>
+
+            <NumericUpDown
+                Minimum="-1000"
+                Maximum="1000"
+                   Width="80"
+                   Value="{Binding Operation.NoiseMaxOffset}"
+                   ToolTip.Tip="Maximum value of random noise offset"/>
+
+            <TextBlock
+                VerticalAlignment="Center"
+                Text="Threshold:"/>
+
+            <NumericUpDown
+                Classes="ValueLabel ValueLabel_sun"
+                Minimum="0"
+                Maximum="255"
+                Width="80"
+                Value="{Binding Operation.NoiseThreshold}"
+                ToolTip.Tip="Only the pixels with brightness above this threshold are processed"/>
+          </StackPanel>
+
+          <StackPanel Spacing="10" Orientation="Horizontal">
+              <TextBlock
+                  VerticalAlignment="Center"
+                  Text="Noise pixel area:   "/>
+
+              <NumericUpDown
+                  Classes="ValueLabel ValueLabel_px2"
+                  Minimum="1"
+                  Maximum="65535"
+                  Width="80"
+                  Value="{Binding Operation.NoisePixelArea}"/>
+
+              <TextBlock
+                  VerticalAlignment="Center"
+                  Text="Number of passes:"/>
+
+              <NumericUpDown
+                  Classes="ValueLabel ValueLabel_times"
+                  Minimum="1"
+                  Maximum="255"
+                  Width="80"
+                  Value="{Binding Operation.NoisePasses}"/>
+          </StackPanel>
+
+        </StackPanel>
+
+        <TextBlock Grid.Row="8" Grid.Column="0"
+                   VerticalAlignment="Center"
+                   IsVisible="{Binding Operation.ValueEnabled}"
+                   IsEnabled="{Binding Operation.ValueEnabled}"
+                   Text="Brightness:"/>
+
+        <StackPanel Grid.Row="8" Grid.Column="2"
+                    VerticalAlignment="Center"
+                    Orientation="Horizontal" Spacing="5"
+                    IsVisible="{Binding Operation.ValueEnabled}"
+                    IsEnabled="{Binding Operation.ValueEnabled}">
+
+          <NumericUpDown
+              Classes="ValueLabel ValueLabel_sun"
+                Minimum="0"
+                Maximum="255"
+                IsEnabled="{Binding !Operation.UsePattern}"
+                Value="{Binding Operation.Value}"/>
+
+            <TextBlock VerticalAlignment="Center"
+                       IsEnabled="{Binding !Operation.UsePattern}"
+                       Text="{Binding Operation.ValuePercent, StringFormat={}{0}%}"/>
+
+            <CheckBox
+                Margin="20,0,0,0"
+                IsVisible="{Binding Operation.IsUsePatternVisible}"
+                IsChecked="{Binding Operation.UsePattern}"
+                Content="Use a pattern instead of fixed brightness"/>
+
+        </StackPanel>
+
+        <TextBlock Grid.Row="8" Grid.Column="4"
+                   VerticalAlignment="Center"
+                   HorizontalAlignment="Right"
+                   IsVisible="{Binding Operation.IsThresholdVisible}"
+                   IsEnabled="{Binding Operation.IsThresholdVisible}"
+                   Text="Max.:"/>
+
+        <NumericUpDown Grid.Row="8" Grid.Column="6"
+                       Minimum="0"
+                       Maximum="255"
+                       IsVisible="{Binding Operation.IsThresholdVisible}"
+                       IsEnabled="{Binding Operation.IsThresholdVisible}"
+                       Value="{Binding Operation.ThresholdMaxValue}"/>
+
+        <TextBlock Grid.Row="8" Grid.Column="8"
+                   VerticalAlignment="Center"
+                   HorizontalAlignment="Right"
+                   IsVisible="{Binding Operation.IsThresholdVisible}"
+                   IsEnabled="{Binding Operation.IsThresholdVisible}"
+                   Text="Threshold:"/>
+
+        <ComboBox Grid.Row="8" Grid.Column="10"
+                  Width="130"
+                  IsVisible="{Binding Operation.IsThresholdVisible}"
+                  IsEnabled="{Binding Operation.IsThresholdVisible}"
+                  ItemsSource="{Binding Operation.ThresholdType, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                  SelectedItem="{Binding Operation.ThresholdType, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
+
+
+        <TextBlock Grid.Row="10" Grid.Column="0"
+                   VerticalAlignment="Center"
+                   Text="Presets:"/>
+
+      <StackPanel Grid.Row="10" Grid.Column="2" Grid.ColumnSpan="9"
+                  VerticalAlignment="Center"
+                  Orientation="Vertical" Spacing="5">
+
+        <StackPanel VerticalAlignment="Center"
+                    Orientation="Horizontal" Spacing="5">
+            
+            <Button
+                Command="{Binding PresetElephantFootCompensation}"
+                ToolTip.Tip="This preset will dim/darken wall pixels at a given thickness and brightness.
+&#x0a;After pick the best looking model from the calibration test, fill the value/brightness with (B) and wall thickness with (W) found on the model."
+                Content="Elephant foot compensation"/>
+            
+            <Button
+                Command="{Binding Operation.PresetPixelDimming}"
+                ToolTip.Tip="This preset will dim/darken pixels with a pattern, on the pattern put the brightness values you want to subtract to each pixel"
+                Content="Pixel dimming"/>
+
+            <Button
+                Command="{Binding Operation.PresetPixelLightening}"
+                ToolTip.Tip="This preset will lightening pixels with a pattern, on the pattern put the brightness values you want to add to each pixel"
+                Content="Pixel lightening"/>
+            
+            <Button
+                IsVisible="{Binding Operation.ValueEnabled}"
+                Command="{Binding Operation.PresetHalfBrightness}"
+                Content="Half brightness"/>
+        </StackPanel>
+
+          <StackPanel VerticalAlignment="Center" Orientation="Horizontal" Spacing="5">
+
+              <Button Command="{Binding Operation.PresetFuzzySkin}"
+                      Content="Fuzzy skin"
+                      ToolTip.Tip="Corrode surface to apply bumps on the surface"/>
+
+              <Button Command="{Binding Operation.PresetStripAntiAliasing}"
+                      Content="Strip anti-aliasing"
+                      ToolTip.Tip="Binary the image where gray pixels below or equal than 127 will be zeroed and above will turn in whites"/>
+
+            <Button Command="{Binding Operation.PresetHealAntiAliasing}"
+                      Content="Heal anti-aliasing"
+                      ToolTip.Tip="Discard uncured faded pixels and turn them into solid black (0)"/>
+
+          </StackPanel>
+      </StackPanel>
+
+      </Grid>
+
+      <Expander Header="Pattern" IsExpanded="True" HorizontalAlignment="Stretch">
+        <!--
+        <Border.IsVisible>
+              <MultiBinding Converter="{x:Static BoolConverters.And}">
+                  <Binding Path="Operation.IsUsePatternVisible" />
+                  <Binding Path="Operation.UsePattern"/>
+              </MultiBinding>
+          </Border.IsVisible>
+-->
+
+        <StackPanel Spacing="10" IsEnabled="{Binding Operation.UsePattern}">
+
+          <!-- <TextBlock Text="Pattern:" FontWeight="Bold"/> -->
+
+              <StackPanel Orientation="Horizontal" Spacing="10">
+                  <TextBlock
+                      VerticalAlignment="Center"
+                      Text="Alternate the pattern every:"/>
+                  <NumericUpDown
+                      Minimum="1"
+                      Maximum="65535"
+                      Width="150"
+                      Value="{Binding Operation.PatternAlternatePerLayersNumber}"/>
+                  <TextBlock
+                      VerticalAlignment="Center"
+                      Text="layers"/>
+
+                  <CheckBox
+                      Margin="20,0,0,0"
+                      IsChecked="{Binding Operation.PatternInvert}"
+                      ToolTip.Tip="If enabled, it will invert the pattern before apply, that is: 255 - {value}"
+                      Content="Invert the pattern when processing the pixels"/>
+              </StackPanel>
+
+
+            <Grid
+        RowDefinitions="Auto,200,10,Auto"
+        ColumnDefinitions="450,10,450">
+
+              <Button  Grid.Row="0" Grid.Column="0"
+                       Content="Load pattern from image"
+                       HorizontalContentAlignment="Center"
+                       VerticalAlignment="Stretch"
+                       HorizontalAlignment="Stretch"
+                       Command="{Binding LoadNormalPatternFromImage}"/>
+
+              <TextBox
+                Grid.Row="1" Grid.Column="0"
+                AcceptsReturn="True"
+                Watermark="Pattern"
+                UseFloatingWatermark="True"
+                 TextWrapping="NoWrap"
+                Text="{Binding Operation.PatternText}"/>
+
+              <Button  Grid.Row="0" Grid.Column="2"
+                       Content="Load alternate pattern from image"
+                       HorizontalContentAlignment="Center"
+                       VerticalAlignment="Stretch"
+                       HorizontalAlignment="Stretch"
+                       Command="{Binding LoadAlternatePatternFromImage}"/>
+              <TextBox
+                  Grid.Row="1" Grid.Column="2"
+                  AcceptsReturn="True"
+                  Watermark="Alternate pattern (Optional)"
+                  UseFloatingWatermark="True"
+                   TextWrapping="NoWrap"
+                Text="{Binding Operation.PatternTextAlternate}"/>
+
+              <Border
+                Grid.Row="3" Grid.Column="0"
+                BorderBrush="LightGray"
+              BorderThickness="1"
+              Padding="5">
+
+                <StackPanel Spacing="10">
+                  <TextBlock FontWeight="Bold" Text="Pattern generator"/>
+
+                  <StackPanel Orientation="Horizontal" Spacing="10">
+                    <TextBlock
+                      VerticalAlignment="Center"
+                      Text="Brightness:"/>
+
+                    <NumericUpDown
+                        Minimum="0"
+                        Maximum="255"
+                        Value="{Binding Operation.PatternGenMinBrightness}"/>
+
+                    <TextBlock
+                        VerticalAlignment="Center"
+                        Text="-"/>
+
+                    <NumericUpDown
+                      Minimum="0"
+                      Maximum="255"
+                      Value="{Binding Operation.PatternGenBrightness}"/>
+
+                    <TextBlock
+                        VerticalAlignment="Center"
+                        Text="{Binding Operation.PatternGenBrightnessPercent, StringFormat=({0}%)}"/>
+                  </StackPanel>
+
+                  <StackPanel Orientation="Horizontal" Spacing="10">
+                    <Button
+                      Padding="10"
+                      Content="Chessboard"
+                      Width="100"
+                      Command="{Binding Operation.GeneratePattern}"
+                      CommandParameter="Chessboard"/>
+                    <Button
+                      Padding="10"
+                      Content="Sparse"
+                      Width="100"
+                      Command="{Binding Operation.GeneratePattern}"
+                      CommandParameter="Sparse"/>
+                    <Button
+                      Padding="10"
+                      Content="Crosses"
+                      Width="100"
+                      Command="{Binding Operation.GeneratePattern}"
+                      CommandParameter="Crosses"/>
+                    <Button
+                      Padding="10"
+                      Content="Strips"
+                      Width="100"
+                      Command="{Binding Operation.GeneratePattern}"
+                      CommandParameter="Strips"/>
+                  </StackPanel>
+
+                  <StackPanel Orientation="Horizontal" Spacing="10">
+                    <Button
+                      Padding="10"
+                      Content="Pyramid"
+                      Width="100"
+                      Command="{Binding Operation.GeneratePattern}"
+                      CommandParameter="Pyramid"/>
+
+                    <Button
+                      Padding="10"
+                      Content="Rhombus"
+                      Width="100"
+                      Command="{Binding Operation.GeneratePattern}"
+                      CommandParameter="Rhombus"/>
+                    <Button
+                      Padding="10"
+                      Content="Waves"
+                      Width="100"
+                      Command="{Binding Operation.GeneratePattern}"
+                      CommandParameter="Waves"/>
+                    <Button
+                      Padding="10"
+                      Content="Slashes"
+                      Width="100"
+                      Command="{Binding Operation.GeneratePattern}"
+                      CommandParameter="Slashes"/>
+                  </StackPanel>
+
+                  <StackPanel Orientation="Horizontal" Spacing="10">
+                    <Button
+                      Padding="10"
+                      Content="Hearts"
+                      Width="100"
+                      Command="{Binding Operation.GeneratePattern}"
+                      CommandParameter="Hearts"/>
+                    <Button
+                      Padding="10"
+                      Content="Solid"
+                      Width="100"
+                      Command="{Binding Operation.GeneratePattern}"
+                      CommandParameter="Solid"/>
+                  </StackPanel>
+
+                </StackPanel>
+              </Border>
+
+              <Border
+                Grid.Row="3"
+                Grid.Column="2"
+              BorderBrush="LightGray"
+              BorderThickness="1"
+              Padding="5">
+
+                <StackPanel Spacing="10">
+                  <TextBlock FontWeight="Bold" Text="Infill generator"/>
+
+                  <TextBlock
+                    TextWrapping="Wrap"
+                    Text="Warning: This function can generate a large number of resin traps. (Use with caution)"/>
+
+                  <Grid RowDefinitions="Auto,10,Auto"
+                        ColumnDefinitions="Auto,10,180">
+                    <TextBlock
+                        VerticalAlignment="Center"
+                        Text="Thickness:"/>
+                    <NumericUpDown Grid.Row="0" Grid.Column="2"
+                        Classes="ValueLabel ValueLabel_px"
+                        Minimum="5"
+                        Maximum="10000"
+                        Value="{Binding Operation.PatternGenInfillThickness}"/>
+
+                    <TextBlock Grid.Row="2" Grid.Column="0"
+                               VerticalAlignment="Center"
+                               Text="Spacing:"/>
+                    <NumericUpDown Grid.Row="2" Grid.Column="2"
+                                   Classes="ValueLabel ValueLabel_px"
+                                   Minimum="5"
+                                   Maximum="10000"
+                                   Value="{Binding Operation.PatternGenInfillSpacing}"/>
+                  </Grid>
+
+                  <StackPanel Orientation="Horizontal" Spacing="10">
+                    <Button
+                      Padding="10"
+                      Content="Rectilinear"
+                      Width="100"
+                      Command="{Binding Operation.GenerateInfill}"
+                      CommandParameter="Rectilinear"/>
+                    <Button
+                      Padding="10"
+                      Content="Square grid"
+                      Width="100"
+                      Command="{Binding Operation.GenerateInfill}"
+                      CommandParameter="Square grid"/>
+                    <Button
+                      Padding="10"
+                      Content="Waves"
+                      Width="100"
+                      Command="{Binding Operation.GenerateInfill}"
+                      CommandParameter="Waves"/>
+                    <Button
+                      Padding="10"
+                      Content="Lattice"
+                      Width="100"
+                      Command="{Binding Operation.GenerateInfill}"
+                      CommandParameter="Lattice"/>
+                  </StackPanel>
+                </StackPanel>
+              </Border>
+
+            </Grid>
+
+          </StackPanel>
+        </Expander>
+
+      <Expander Header="Kernel - Advanced options (Click to expand)" 
+                HorizontalAlignment="Stretch"
+                Margin="0,10,0,0"
+                IsVisible="{Binding Operation.IsWallSettingVisible}">
+          <controls:KernelControl
+              Name="KernelCtrl"
+              Kernel="{Binding $parent[UserControl].DataContext.Operation.Kernel}"
+              Margin="0,10,0,0"/>
+      </Expander>
+
+  </StackPanel>
+
+</UserControl>

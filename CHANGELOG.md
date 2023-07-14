@@ -9,6 +9,7 @@
     - (Change) Themes: Rename "Default" to "Simple"
     - (Remove) Simple theme
   - (Fix) Save properties to disk/clipboard was disabled when file has no thumbnails
+Rename project "UVtools.WPF" to "UVtools.UI"
 - (Upgrade) AvaloniaUI from 0.10.21 to 11.0
 
 ## 30/06/2023 - v3.15.1
@@ -2665,7 +2666,7 @@ On Windows the user must close all instances and continue with the shown MSI ins
 * (Add) Multi-OS with Linux and MacOS support
 * (Add) Themes support
 * (Add) Fullscreen support (F11)
-* (Change) GUI was rewritten from Windows Forms to WPF Avalonia, C#
+* (Change) GUI was rewritten from Windows Forms to Avalonia, C#
 * (Improvement) GUI is now scalable
 * (Fix) Some bug found and fixed during conversion
 

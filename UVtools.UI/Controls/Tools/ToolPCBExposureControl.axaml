@@ -1,0 +1,228 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:i="clr-namespace:Projektanker.Icons.Avalonia;assembly=Projektanker.Icons.Avalonia"
+             xmlns:controls="clr-namespace:UVtools.UI.Controls"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="UVtools.UI.Controls.Tools.ToolPCBExposureControl">
+	<Grid ColumnDefinitions="Auto,10,350">
+		<StackPanel Spacing="10">
+
+            <Border BorderBrush="Gray" BorderThickness="1" Padding="5"
+                    DragDrop.AllowDrop="True">
+                <Grid>
+                    <StackPanel Spacing="5" Orientation="Vertical">
+                        <StackPanel Spacing="5" Orientation="Horizontal">
+                            <controls:ButtonWithIcon Padding="5"
+                                                     Command="{Binding AddFiles}"
+                                                     Text="Add"
+                                                     Spacing="5"
+                                                     Icon="fa-solid fa-plus"/>
+
+                            <controls:ButtonWithIcon Padding="5"
+                                                     Command="{Binding AddFilesFromZip}"
+                                                     Text="Import zip"
+                                                     Spacing="5"
+                                                     Icon="fa-solid fa-file-zipper"/>
+
+                            <controls:ButtonWithIcon Padding="5"
+                                                     IsEnabled="{Binding SelectedFile, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                                     Command="{Binding RemoveFiles}"
+                                                     Text="Remove"
+                                                     Spacing="5"
+                                                     Icon="fa-solid fa-minus"/>
+                        </StackPanel>
+
+                        <StackPanel Spacing="2" Orientation="Horizontal">
+                            <controls:ButtonWithIcon Padding="5"
+                                                     IsEnabled="{Binding SelectedFile, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                                     Command="{Binding MoveFileTop}"
+                                                     ToolTip.Tip="Move gerber to top"
+                                                     Spacing="5"
+                                                     Icon="fa-solid fa-angles-up"/>
+
+                            <controls:ButtonWithIcon Padding="5"
+                                                     IsEnabled="{Binding SelectedFile, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                                     Command="{Binding MoveFileUp}"
+                                                     ToolTip.Tip="Move gerber up"
+                                                     Spacing="5"
+                                                     Icon="fa-solid fa-sort-up"/>
+
+                            <controls:ButtonWithIcon Padding="5"
+                                                     IsEnabled="{Binding SelectedFile, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                                     Command="{Binding MoveFileDown}"
+                                                     ToolTip.Tip="Move gerber down"
+                                                     Spacing="5"
+                                                     Icon="fa-solid fa-sort-down"/>
+
+                            <controls:ButtonWithIcon Padding="5"
+                                                     IsEnabled="{Binding SelectedFile, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                                     Command="{Binding MoveFileBottom}"
+                                                     ToolTip.Tip="Move gerber to bottom"
+                                                     Spacing="5"
+                                                     Icon="fa-solid fa-angles-down"/>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <StackPanel HorizontalAlignment="Right" Spacing="5" Orientation="Vertical">
+                        <StackPanel HorizontalAlignment="Right" Spacing="5" Orientation="Horizontal">
+                            <controls:ButtonWithIcon
+                                IsEnabled="{Binding Operation.Files.Count}"
+                                Padding="5" Command="{Binding ClearFiles}"
+                                Text="{Binding Operation.Files.Count, StringFormat=Clear {0} files}"
+                                Spacing="5"
+                                Icon="fa-solid fa-xmark"/>
+                        </StackPanel>
+                        <StackPanel HorizontalAlignment="Right" Spacing="5" Orientation="Horizontal">
+                            <controls:ButtonWithIcon Padding="5"
+                                                     IsEnabled="{Binding Operation.Files.Count}"
+                                                     Command="{Binding Operation.Sort}"
+                                                     Text="Sort ASC"
+                                                     Spacing="5"
+                                                     Icon="fa-solid fa-sort-alpha-up"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <DataGrid Name="FilesDataGrid"
+                      BorderBrush="Gray" BorderThickness="1"
+                      CanUserReorderColumns="False"
+                      CanUserResizeColumns="False"
+                      CanUserSortColumns="True"
+                      GridLinesVisibility="Horizontal"
+                      SelectionMode="Extended"
+                      ClipboardCopyMode="IncludeHeader"
+                      MinHeight="150"
+                      MaxHeight="400"
+                      Width="508"
+                      ItemsSource="{Binding Operation.Files}"
+                      SelectedItem="{Binding SelectedFile}"
+                      DragDrop.AllowDrop="True">
+                <DataGrid.Columns>
+                    <DataGridTextColumn  Header="Filename"
+                                         Binding="{Binding FileName}"
+                                         IsReadOnly="True"
+                                         Width="*" />
+                    <DataGridTemplateColumn  Header="Size scale"
+                                             Width="130">
+                        <DataTemplate>
+                            <NumericUpDown Increment="0.05"
+                                           Minimum="0.01"
+                                           Maximum="100"
+                                           FormatString="F2"
+                                           Value="{Binding SizeScale}">
+                            </NumericUpDown>
+                        </DataTemplate>
+                    </DataGridTemplateColumn>
+
+                    <DataGridCheckBoxColumn Header="Invert"
+                                            Binding="{Binding InvertPolarity}"
+                                            Width="Auto" />
+                </DataGrid.Columns>
+
+            </DataGrid>
+
+
+			<Grid RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto"
+                  ColumnDefinitions="Auto,10,400">
+
+                <ToggleSwitch Grid.Row="0" Grid.Column="2"
+                              IsChecked="{Binding Operation.MergeFiles}"
+                              OnContent="Draw all gerber files into same layer"
+                              OffContent="Create one layer per gerber file"/>
+
+                <TextBlock Grid.Row="2" Grid.Column="0"
+                           VerticalAlignment="Center"
+                           Text="Layer height:"/>
+				<NumericUpDown Grid.Row="2" Grid.Column="2"
+							   Classes="ValueLabel ValueLabel_mm"
+							   Increment="0.01"
+							   Minimum="0.01"
+							   Maximum="500"
+							   FormatString="F3"
+							   Value="{Binding Operation.LayerHeight}"/>
+
+				
+				<TextBlock Grid.Row="4" Grid.Column="0"
+						   VerticalAlignment="Center"
+						   Text="Exposure time:"/>
+				<NumericUpDown Grid.Row="4" Grid.Column="2"
+							   Classes="ValueLabel ValueLabel_s"
+							   Increment="0.5"
+							   Minimum="0.5"
+							   Maximum="1000"
+							   FormatString="F2"
+							   Value="{Binding Operation.ExposureTime}"/>
+
+                <TextBlock Grid.Row="6" Grid.Column="0"
+                           VerticalAlignment="Center"
+                           Text="Size rounding:"/>
+
+                <ComboBox Grid.Row="6" Grid.Column="2"
+                    HorizontalAlignment="Stretch"
+                    ItemsSource="{Binding Operation.SizeMidpointRounding, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                    SelectedItem="{Binding Operation.SizeMidpointRounding, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
+
+
+                <TextBlock Grid.Row="8" Grid.Column="0"
+                           VerticalAlignment="Center"
+                           ToolTip.Tip="Offset the PCB origin.
+&#x0a;Use the 'Show full preview image (The final result)' option to preview the resulting position."
+                           Text="Offset X/Y:"/>
+
+                <StackPanel Grid.Row="8" Grid.Column="2"
+                            Orientation="Horizontal" Spacing="20">
+                    <NumericUpDown Classes="ValueLabel ValueLabel_mm"
+                                   Increment="0.05"
+                                   Minimum="-10000"
+                                   Maximum="10000"
+                                   FormatString="F2"
+                                   Width="187"
+                                   Value="{Binding Operation.OffsetX}"/>
+
+                    <NumericUpDown Classes="ValueLabel ValueLabel_mm"
+                                   Increment="0.05"
+                                   Minimum="-10000"
+                                   Maximum="10000"
+                                   FormatString="F2"
+                                   Width="187"
+                                   Value="{Binding Operation.OffsetY}"/>
+                </StackPanel>
+
+                <TextBlock Grid.Row="10" Grid.Column="0"
+                           VerticalAlignment="Center"
+                           Text="Options:"/>
+
+				<StackPanel Grid.Row="10" Grid.Column="2"
+                            Orientation="Horizontal" Spacing="20">
+					<CheckBox VerticalAlignment="Center"
+                              IsChecked="{Binding Operation.Mirror}"
+                              Content="Mirror"/>
+
+					<CheckBox VerticalAlignment="Center"
+                              IsChecked="{Binding Operation.InvertColor}"
+                              Content="Invert color"/>
+
+                    <CheckBox VerticalAlignment="Center"
+                              IsChecked="{Binding Operation.EnableAntiAliasing}"
+                              Content="Enable Anti-Aliasing"/>
+				</StackPanel>
+			</Grid>
+
+		</StackPanel>
+
+		<StackPanel Grid.Column="2" Orientation="Vertical" Spacing="10">
+            <ToggleSwitch IsChecked="{Binding CropPreview}"
+                 OnContent="Show preview image cropped by it bounds"
+                OffContent="Show full preview image (The final result)"/>
+
+            <Image Stretch="Uniform"
+                   MaxHeight="700"
+                   Source="{Binding PreviewImage}"/>
+
+			<TextBlock Text="{Binding PreviewImage.Size, StringFormat=Size: {0}}" HorizontalAlignment="Center"/>
+		</StackPanel>
+	</Grid>
+</UserControl>

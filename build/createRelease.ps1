@@ -70,7 +70,7 @@ $stopWatch.Start()
 
 # Variables
 $software       = "UVtools"
-$project        = "UVtools.WPF"
+$project        = "UVtools.UI"
 $buildWith      = "Release"
 $netVersion     = "6.0"
 $publishFolder  = "publish"
