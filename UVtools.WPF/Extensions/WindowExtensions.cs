@@ -175,8 +175,8 @@ public static class WindowExtensions
         var screen = window.GetCurrentScreen();
             
         return new System.Drawing.Size(
-            UserSettings.Instance.General.WindowsTakeIntoAccountScreenScaling ? (int)(screen.WorkingArea.Width / screen.PixelDensity) : screen.WorkingArea.Width,
-            UserSettings.Instance.General.WindowsTakeIntoAccountScreenScaling ? (int)(screen.WorkingArea.Height / screen.PixelDensity) : screen.WorkingArea.Height);
+            UserSettings.Instance.General.WindowsTakeIntoAccountScreenScaling ? (int)(screen.WorkingArea.Width / screen.Scaling) : screen.WorkingArea.Width,
+            UserSettings.Instance.General.WindowsTakeIntoAccountScreenScaling ? (int)(screen.WorkingArea.Height / screen.Scaling) : screen.WorkingArea.Height);
     } 
        
 }

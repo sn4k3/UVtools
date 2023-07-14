@@ -10,7 +10,7 @@
       VerticalAlignment="Center" />
 
     <ComboBox
-      Items="{Binding Operation.AreaCheckTypeItems}"
+      ItemsSource="{Binding Operation.AreaCheckTypeItems}"
       SelectedItem="{Binding Operation.AreaCheckType}"
       Width="100"
       VerticalAlignment="Center" />

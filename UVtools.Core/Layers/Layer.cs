@@ -1476,7 +1476,7 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
         {
             index++;
         }
-        return $"{prepend}{index.ToString().PadLeft(padDigits, '0')}{appendExt}";
+        return string.Format($"{{0}}{{1:D{padDigits}}}{{2}}", prepend, index, appendExt);
     }
 
     public string FormatFileName(byte padDigits, IndexStartNumber layerIndexStartNumber = default, string appendExt = ".png")

@@ -1,10 +1,9 @@
-﻿using Avalonia.Markup.Xaml;
-using UVtools.Core.Operations;
+﻿using UVtools.Core.Operations;
 using UVtools.WPF.Windows;
 
 namespace UVtools.WPF.Controls.Tools;
 
-public class ToolLayerReHeightControl : ToolControl
+public partial class ToolLayerReHeightControl : ToolControl
 {
     public OperationLayerReHeight Operation => BaseOperation as OperationLayerReHeight;
 
@@ -16,11 +15,6 @@ public class ToolLayerReHeightControl : ToolControl
         if (!ValidateSpawn()) return;
 
         InitializeComponent();
-    }
-
-    private void InitializeComponent()
-    {
-        AvaloniaXamlLoader.Load(this);
     }
 
     public override void Callback(ToolWindow.Callbacks callback)

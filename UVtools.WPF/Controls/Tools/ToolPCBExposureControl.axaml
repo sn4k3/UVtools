@@ -97,7 +97,7 @@
                       MinHeight="150"
                       MaxHeight="400"
                       Width="508"
-                      Items="{Binding Operation.Files}"
+                      ItemsSource="{Binding Operation.Files}"
                       SelectedItem="{Binding SelectedFile}"
                       DragDrop.AllowDrop="True">
                 <DataGrid.Columns>
@@ -162,7 +162,7 @@
 
                 <ComboBox Grid.Row="6" Grid.Column="2"
                     HorizontalAlignment="Stretch"
-                    Items="{Binding Operation.SizeMidpointRounding, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                    ItemsSource="{Binding Operation.SizeMidpointRounding, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
                     SelectedItem="{Binding Operation.SizeMidpointRounding, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
 
 

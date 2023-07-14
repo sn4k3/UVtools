@@ -1,10 +1,9 @@
-﻿using Avalonia.Markup.Xaml;
-using UVtools.Core.Operations;
+﻿using UVtools.Core.Operations;
 using UVtools.WPF.Windows;
 
 namespace UVtools.WPF.Controls.Tools;
 
-public class ToolLayerArithmeticControl : ToolControl
+public partial class ToolLayerArithmeticControl : ToolControl
 {
     public OperationLayerArithmetic Operation => BaseOperation as OperationLayerArithmetic;
 
@@ -13,11 +12,6 @@ public class ToolLayerArithmeticControl : ToolControl
         BaseOperation = new OperationLayerArithmetic(SlicerFile);
         if (!ValidateSpawn()) return;
         InitializeComponent();
-    }
-
-    private void InitializeComponent()
-    {
-        AvaloniaXamlLoader.Load(this);
     }
 
     public override void Callback(ToolWindow.Callbacks callback)

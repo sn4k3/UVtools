@@ -1,10 +1,9 @@
-﻿using Avalonia.Markup.Xaml;
-using Emgu.CV.CvEnum;
+﻿using Emgu.CV.CvEnum;
 using UVtools.Core.Operations;
 
 namespace UVtools.WPF.Controls.Tools;
 
-public class ToolThresholdControl : ToolControl
+public partial class ToolThresholdControl : ToolControl
 {
     private int _selectedPresetIndex;
     private bool _isThresholdEnabled = true;
@@ -76,10 +75,5 @@ public class ToolThresholdControl : ToolControl
         BaseOperation = new OperationThreshold(SlicerFile);
         if (!ValidateSpawn()) return; 
         InitializeComponent();
-    }
-
-    private void InitializeComponent()
-    {
-        AvaloniaXamlLoader.Load(this);
     }
 }

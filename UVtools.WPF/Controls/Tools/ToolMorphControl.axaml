@@ -45,13 +45,13 @@
 
       <ComboBox Grid.Row="2" Grid.Column="2"
                 HorizontalAlignment="Stretch"
-                Items="{Binding Operation.MorphOperation, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                ItemsSource="{Binding Operation.MorphOperation, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
                 SelectedItem="{Binding Operation.MorphOperation, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
 
     </Grid>
 
       
-  <Expander Header="Kernel - Advanced options (Click to expand)" Margin="0,10,0,0">
+  <Expander Header="Kernel - Advanced options (Click to expand)" Margin="0,10,0,0" HorizontalAlignment="Stretch">
     <uc:KernelControl
       Name="KernelCtrl"
       Kernel="{Binding $parent[UserControl].DataContext.Operation.Kernel}"

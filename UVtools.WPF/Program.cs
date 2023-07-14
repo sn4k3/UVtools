@@ -213,16 +213,19 @@ public static class Program
 
     // Avalonia configuration, don't remove; also used by visual designer.
     public static AppBuilder BuildAvaloniaApp()
-        => AppBuilder.Configure<App>()
+    {
+        IconProvider.Current
+            .Register<FontAwesomeIconProvider>()
+            .Register<MaterialDesignIconProvider>();
+
+        return AppBuilder.Configure<App>()
             .UsePlatformDetect()
-            .With(new SkiaOptions {MaxGpuResourceSizeBytes = 256_000_000 })
-            .With(new Win32PlatformOptions { AllowEglInitialization = true/*, UseWgl = true*/})
-            .With(new X11PlatformOptions { UseGpu = true/*, UseEGL = true*/ })
+            .With(new SkiaOptions { MaxGpuResourceSizeBytes = 256_000_000 })
+            .With(new Win32PlatformOptions())
+            .With(new X11PlatformOptions())
             .With(new MacOSPlatformOptions { ShowInDock = true })
-            .With(new AvaloniaNativePlatformOptions { UseGpu = true })
-            .WithIcons(container => container
-                .Register<FontAwesomeIconProvider>()
-                .Register<MaterialDesignIconProvider>())
+            .With(new AvaloniaNativePlatformOptions())
             //.UseSkia()
             .LogToTrace();
+    }
 }

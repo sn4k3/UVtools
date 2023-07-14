@@ -32,7 +32,6 @@ namespace UVtools.WPF;
 public partial class MainWindow
 {
     public RangeObservableCollection<PixelOperation> Drawings { get; } = new ();
-    public DataGrid DrawingsGrid;
     private int _selectedPixelOperationTabIndex;
 
     public PixelDrawing DrawingPixelDrawing { get; } = new();
@@ -49,7 +48,6 @@ public partial class MainWindow
 
     public void InitPixelEditor()
     {
-        DrawingsGrid = this.FindControl<DataGrid>("DrawingsGrid");
         DrawingsGrid.KeyUp += DrawingsGridOnKeyUp;
         DrawingsGrid.SelectionChanged += DrawingsGridOnSelectionChanged;
         DrawingsGrid.CellPointerPressed += DrawingsGridOnCellPointerPressed;
@@ -511,6 +509,11 @@ public partial class MainWindow
         Drawings.InsertRange(0, operations);
     }
 
+    public void DrawModificationsCommand()
+    {
+        DrawModifications(false);
+    }
+
     public async void DrawModifications(bool exitEditor)
     {
         if (Drawings.Count == 0)
@@ -554,7 +557,7 @@ public partial class MainWindow
         {
             IsGUIEnabled = false;
             ShowProgressWindow("Drawing pixels");
-            Clipboard.Snapshot();
+            ClipboardManager.Snapshot();
 
             var task = await Task.Run(() =>
             {
@@ -582,12 +585,12 @@ public partial class MainWindow
 
             if (!task)
             {
-                Clipboard.RestoreSnapshot();
+                ClipboardManager.RestoreSnapshot();
                 ShowLayer();
                 return;
             }
 
-            Clipboard.Clip($"Draw {Drawings.Count} modifications");
+            ClipboardManager.Clip($"Draw {Drawings.Count} modifications");
             PopulateSuggestions();
 
             if (Settings.PixelEditor.PartialUpdateIslandsOnEditing)

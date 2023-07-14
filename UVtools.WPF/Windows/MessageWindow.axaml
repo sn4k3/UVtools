@@ -17,7 +17,6 @@
              Title="UVtools Message">
 	<Grid RowDefinitions="Auto,*,Auto">
         <Border Grid.Row="0"
-                Padding="20"
                 IsVisible="{Binding HeaderIsVisible}"
                 Classes="Header">
 
@@ -32,15 +31,13 @@
                         Margin="0,0,20,0"
                         IsVisible="{Binding HeaderIcon, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
 
-				<TextBox Grid.Column="1"
+				<SelectableTextBlock Grid.Column="1"
                          Name="HeaderTextBox"
-                         Classes="TransparentReadOnlyMultiLineNoBorder"
                          FontSize="16"
                          FontWeight="Bold"
                          Padding="0"
                          TextWrapping="{Binding TextWrap}"
                          VerticalAlignment="Center"
-                         VerticalContentAlignment="Center"
                          ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                          ScrollViewer.VerticalScrollBarVisibility="Auto"
                          IsVisible="{Binding HeaderText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
@@ -65,13 +62,12 @@
 				</i:Icon.IsVisible>
 			</i:Icon>
 
-			<TextBox Grid.Row="0" Grid.Column="1"
+			<SelectableTextBlock Grid.Row="0" Grid.Column="1"
                      Name="MessageTextBox"
-                     Classes="TransparentReadOnlyMultiLineNoBorder"
                      ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                      ScrollViewer.VerticalScrollBarVisibility="Auto"
                      Padding="0"
-                     VerticalContentAlignment="Center"
+                     VerticalAlignment="Center"
                      TextWrapping="{Binding TextWrap}"
                      Text="{Binding MessageText}"
                      IsVisible="{Binding !RenderMarkdown}"/>

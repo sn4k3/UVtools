@@ -1,4 +1,3 @@
-using Avalonia.Markup.Xaml;
 using UVtools.Core.Operations;
 using UVtools.WPF.Windows;
 
@@ -13,11 +12,6 @@ public partial class ToolTimelapseControl : ToolControl
         BaseOperation = new OperationTimelapse(SlicerFile);
         if (!ValidateSpawn()) return;
         InitializeComponent();
-    }
-
-    private void InitializeComponent()
-    {
-        AvaloniaXamlLoader.Load(this);
     }
 
     public override void Callback(ToolWindow.Callbacks callback)

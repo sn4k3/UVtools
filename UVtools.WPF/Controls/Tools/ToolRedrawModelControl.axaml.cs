@@ -1,5 +1,5 @@
 ﻿using Avalonia.Controls;
-using Avalonia.Markup.Xaml;
+using Avalonia.Platform.Storage;
 using System.Collections.Generic;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Operations;
@@ -7,7 +7,7 @@ using UVtools.WPF.Windows;
 
 namespace UVtools.WPF.Controls.Tools;
 
-public class ToolRedrawModelControl : ToolControl
+public partial class ToolRedrawModelControl : ToolControl
 {
     public OperationRedrawModel Operation => BaseOperation as OperationRedrawModel;
     public ToolRedrawModelControl()
@@ -15,11 +15,6 @@ public class ToolRedrawModelControl : ToolControl
         BaseOperation = new OperationRedrawModel(SlicerFile);
         if (!ValidateSpawn()) return;
         InitializeComponent();
-    }
-
-    private void InitializeComponent()
-    {
-        AvaloniaXamlLoader.Load(this);
     }
 
     public override void Callback(ToolWindow.Callbacks callback)
@@ -42,23 +37,17 @@ public class ToolRedrawModelControl : ToolControl
 
     public async void ImportFile()
     {
-        var filters = Helpers.ToAvaloniaFileFilter(FileFormat.AllFileFiltersAvalonia);
-        var orderedFilters = new List<FileDialogFilter> { filters[UserSettings.Instance.General.DefaultOpenFileExtensionIndex] };
+        var filters = AvaloniaStatic.ToAvaloniaFileFilter(FileFormat.AllFileFiltersAvalonia);
+        var orderedFilters = new List<FilePickerFileType> { filters[UserSettings.Instance.General.DefaultOpenFileExtensionIndex] };
         for (int i = 0; i < filters.Count; i++)
         {
             if (i == UserSettings.Instance.General.DefaultOpenFileExtensionIndex) continue;
             orderedFilters.Add(filters[i]);
         }
 
-        var dialog = new OpenFileDialog
-        {
-            AllowMultiple = false,
-            Filters = orderedFilters,
-            Directory = UserSettings.Instance.General.DefaultDirectoryOpenFile
-        };
-        var files = await dialog.ShowAsync(ParentWindow);
-        if (files is null || files.Length <= 0) return;
-        if (FileFormat.FindByExtensionOrFilePath(files[0]) is null) return;
-        Operation.FilePath = files[0];
+        var files = await App.MainWindow.OpenFilePickerAsync(UserSettings.Instance.General.DefaultDirectoryOpenFile, orderedFilters);
+        if (files.Count == 0 || files[0].TryGetLocalPath() is not { } filePath) return;
+        if (FileFormat.FindByExtensionOrFilePath(filePath) is null) return;
+        Operation.FilePath = filePath;
     }
 }

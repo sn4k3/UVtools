@@ -171,9 +171,9 @@
           
         </Grid>
 
-        <Expander
-            Header="{Binding Operation.ErodeObjects, StringFormat=Morph - Erode    [{0} objects]}"
-            IsExpanded="True">
+        <Expander Header="{Binding Operation.ErodeObjects, StringFormat=Morph - Erode    [{0} objects]}"
+                  HorizontalAlignment="Stretch"
+                  IsExpanded="True">
 
         <StackPanel>
           <Grid
@@ -227,7 +227,7 @@
           </Grid>
 
           <Border Margin="0,10,0,0">
-            <Expander Header="Kernel - Advanced options (Click to expand)">
+            <Expander Header="Kernel - Advanced options (Click to expand)" HorizontalAlignment="Stretch">
               <controls:KernelControl Name="ErodeKernelCtrl"
                                       Kernel="{Binding $parent[UserControl].DataContext.Operation.ErodeKernel}"
                                       Margin="0,10,0,0"/>
@@ -239,9 +239,9 @@
       </Expander>
 
        
-      <Expander
-          Header="{Binding Operation.DimmingObjects, StringFormat=Wall dimming    [{0} objects]}"
-          IsExpanded="True">
+      <Expander Header="{Binding Operation.DimmingObjects, StringFormat=Wall dimming    [{0} objects]}"
+                HorizontalAlignment="Stretch"
+                IsExpanded="True">
 
           <StackPanel Orientation="Vertical"  Spacing="10">
               <TextBlock
@@ -333,7 +333,7 @@
             </Grid>
 
               <Border Margin="0,10,0,0">
-                  <Expander Header="Kernel - Advanced options (Click to expand)">
+                  <Expander Header="Kernel - Advanced options (Click to expand)" HorizontalAlignment="Stretch">
                       <controls:KernelControl Name="DimmingKernelCtrl"
                                               Kernel="{Binding $parent[UserControl].DataContext.Operation.DimmingKernel}"
                                               Margin="0,10,0,0"/>

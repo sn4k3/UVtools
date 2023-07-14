@@ -1,11 +1,10 @@
-﻿using Avalonia.Markup.Xaml;
-using UVtools.Core.Operations;
+﻿using UVtools.Core.Operations;
 using UVtools.Core.SystemOS;
 using UVtools.WPF.Controls.Tools;
 
 namespace UVtools.WPF.Controls.Calibrators;
 
-public class CalibrateExternalTestsControl : ToolControl
+public partial class CalibrateExternalTestsControl : ToolControl
 {
     public OperationCalibrateExternalTests Operation => BaseOperation as OperationCalibrateExternalTests;
     public CalibrateExternalTestsControl()
@@ -16,13 +15,8 @@ public class CalibrateExternalTestsControl : ToolControl
             
     }
 
-    private void InitializeComponent()
+    public void ButtonClicked(object url)
     {
-        AvaloniaXamlLoader.Load(this);
-    }
-
-    public void ButtonClicked(string url)
-    {
-        SystemAware.OpenBrowser(url);
+        SystemAware.OpenBrowser((string)url);
     }
 }

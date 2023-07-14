@@ -12,6 +12,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
+using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Layers;
 using UVtools.Core.Objects;
@@ -108,8 +109,7 @@ public sealed class ClipboardManager : BindableBase, IList<ClipboardItem>
         set
         {
             if (_currentIndex == value) return;
-            if (value < -1) value = -1;
-            if (value >= Count) value = Count-1;
+            value = Math.Clamp(value, -1, Count - 1);
             var oldIndex = _currentIndex;
             _currentIndex = value;
             //if (!RaiseAndSetIfChanged(ref _currentIndex, value)) return;
@@ -173,7 +173,7 @@ public sealed class ClipboardManager : BindableBase, IList<ClipboardItem>
         }
     }
 
-    public string CurrentIndexCountStr => (CurrentIndex + 1).ToString().PadLeft(Count.ToString().Length, '0');
+    public string CurrentIndexCountStr => string.Format($"{{0:D{Count.DigitCount()}}}", CurrentIndex + 1);
 
     public bool SuppressRestore
     {

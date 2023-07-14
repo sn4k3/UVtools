@@ -19,7 +19,8 @@
           Padding="10"
           BorderBrush="Black"
           BorderThickness="1">
-    <TextBox Classes="TransparentReadOnlyMultiLineNoBorder" Text="{Binding Description}"/>
+
+      <SelectableTextBlock Text="{Binding Description}"/>
     
   </Border>
 
@@ -43,7 +44,7 @@
         <ComboBox Grid.Row="2" Grid.Column="2"
                   HorizontalAlignment="Stretch"
                   SelectedIndex="{Binding ReferenceSelectedIndex}"
-                  Items="{Binding BenchmarkMachines}"
+                  ItemsSource="{Binding BenchmarkMachines}"
                   IsEnabled="{Binding !IsRunning}"/>
 
 		<TextBlock Grid.Row="4" Grid.Column="0"
@@ -52,7 +53,7 @@
       <ComboBox Grid.Row="4" Grid.Column="2"
                 HorizontalAlignment="Stretch"
                 SelectedIndex="{Binding TestSelectedIndex}"
-                Items="{Binding Tests}"
+                ItemsSource="{Binding Tests}"
                 IsEnabled="{Binding !IsRunning}"/>
     </Grid>
 

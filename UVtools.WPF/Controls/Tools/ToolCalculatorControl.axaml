@@ -11,16 +11,16 @@
         <Border 
           Background="{DynamicResource LightBackground}"
           BorderBrush="Black" BorderThickness="1">
-          <TextBox VerticalAlignment="Center"
-                     Classes="TransparentReadOnlyMultiLineNoBorder"
-                     Padding="10">
-            <TextBox.Text>
+          <SelectableTextBlock VerticalAlignment="Center" 
+                               TextWrapping="Wrap"
+                               Padding="10">
+            <SelectableTextBlock.Text>
               <MultiBinding StringFormat="{}{0}&#x0a;&#x0a;Formula: {1}">
                 <Binding Path="Operation.CalcMillimetersToPixels.Description"/>
                 <Binding Path="Operation.CalcMillimetersToPixels.Formula"/>
               </MultiBinding>
-            </TextBox.Text>
-          </TextBox>
+            </SelectableTextBlock.Text>
+          </SelectableTextBlock>
         </Border>
 
 
@@ -157,16 +157,16 @@
         <Border
             Background="{DynamicResource LightBackground}"
           BorderBrush="Black" BorderThickness="1">
-          <TextBox VerticalAlignment="Center"
-                   Classes="TransparentReadOnlyMultiLineNoBorder"
-                   Padding="10">
-            <TextBox.Text>
+          <SelectableTextBlock VerticalAlignment="Center"
+                               TextWrapping="Wrap"
+                                Padding="10">
+            <SelectableTextBlock.Text>
               <MultiBinding StringFormat="{}{0}&#x0a;&#x0a;Formula: {1}">
                 <Binding Path="Operation.CalcLightOffDelay.Description"/>
                 <Binding Path="Operation.CalcLightOffDelay.Formula"/>
               </MultiBinding>
-            </TextBox.Text>
-          </TextBox>
+            </SelectableTextBlock.Text>
+          </SelectableTextBlock>
         </Border>
 
 
@@ -364,14 +364,16 @@
         <Border
             Background="{DynamicResource LightBackground}"
           BorderBrush="Black" BorderThickness="1">
-          <TextBox VerticalAlignment="Center" Classes="TransparentReadOnlyMultiLineNoBorder" Padding="10">
+          <SelectableTextBlock VerticalAlignment="Center"
+                   Padding="10"
+                   TextWrapping="Wrap">
             <TextBox.Text>
               <MultiBinding StringFormat="{}{0}&#x0a;&#x0a;Formula: {1}">
                 <Binding Path="Operation.CalcOptimalModelTilt.Description"/>
                 <Binding Path="Operation.CalcOptimalModelTilt.Formula"/>
               </MultiBinding>
             </TextBox.Text>
-          </TextBox>
+          </SelectableTextBlock>
         </Border>
 
 

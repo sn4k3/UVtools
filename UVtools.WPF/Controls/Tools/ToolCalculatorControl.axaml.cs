@@ -1,12 +1,11 @@
-﻿using Avalonia.Markup.Xaml;
-using System;
+﻿using System;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Operations;
 using UVtools.WPF.Windows;
 
 namespace UVtools.WPF.Controls.Tools;
 
-public class ToolCalculatorControl : ToolControl
+public partial class ToolCalculatorControl : ToolControl
 {
     private decimal _lightOffDelayPrintTimeHours;
     public OperationCalculator Operation => BaseOperation as OperationCalculator;
@@ -22,11 +21,6 @@ public class ToolCalculatorControl : ToolControl
         BaseOperation = new OperationCalculator(SlicerFile);
         if (!ValidateSpawn()) return; 
         InitializeComponent();
-    }
-
-    private void InitializeComponent()
-    {
-        AvaloniaXamlLoader.Load(this);
     }
 
     public override void Callback(ToolWindow.Callbacks callback)
@@ -51,9 +45,9 @@ public class ToolCalculatorControl : ToolControl
         }
     }
 
-    public void LightOffDelaySetParameters(byte side)
+    public void LightOffDelaySetParameters(object side)
     {
-        if (side == 0) // Bottom layers
+        if (Convert.ToInt32(side) == 0) // Bottom layers
         {
             SlicerFile.BottomLiftHeight = (float)Operation.CalcLightOffDelay.BottomLiftHeight;
             SlicerFile.BottomLiftSpeed = (float)Operation.CalcLightOffDelay.BottomLiftSpeed;

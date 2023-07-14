@@ -32,7 +32,7 @@
                        Text="Image type:"/>
             <ComboBox Grid.Row="4" Grid.Column="2" Grid.ColumnSpan="3"
                       HorizontalAlignment="Stretch"
-                      Items="{Binding Operation.ImageType, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                      ItemsSource="{Binding Operation.ImageType, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
                       SelectedItem="{Binding Operation.ImageType, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
 
           <TextBlock Grid.Row="6" Grid.Column="0"
@@ -40,7 +40,7 @@
                      Text="Rotate direction:"/>
             <ComboBox Grid.Row="6" Grid.Column="2" Grid.ColumnSpan="3"
                       HorizontalAlignment="Stretch"
-                      Items="{Binding Operation.RotateDirection, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                      ItemsSource="{Binding Operation.RotateDirection, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
                       SelectedItem="{Binding Operation.RotateDirection, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
             
             <TextBlock Grid.Row="8" Grid.Column="0"
@@ -48,7 +48,7 @@
                        Text="Flip direction:"/>
             <ComboBox Grid.Row="8" Grid.Column="2" Grid.ColumnSpan="3"
                       HorizontalAlignment="Stretch"
-                      Items="{Binding Operation.FlipDirection, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                      ItemsSource="{Binding Operation.FlipDirection, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
                       SelectedItem="{Binding Operation.FlipDirection, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
 
             <CheckBox Grid.Row="10" Grid.Column="2"

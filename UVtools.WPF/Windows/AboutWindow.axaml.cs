@@ -1,19 +1,16 @@
 ﻿using Avalonia;
-using Avalonia.Markup.Xaml;
 using Emgu.CV;
 using System;
 using System.Runtime.InteropServices;
 using System.Text;
-using Avalonia.Media;
 using UVtools.Core;
 using UVtools.Core.Extensions;
 using UVtools.Core.SystemOS;
 using UVtools.WPF.Controls;
-using UVtools.WPF.Extensions;
 
 namespace UVtools.WPF.Windows;
 
-public class AboutWindow : WindowEx
+public partial class AboutWindow : WindowEx
 {
     public static string OpenCVBuildInformation
     {
@@ -42,10 +39,10 @@ public class AboutWindow : WindowEx
             for (var i = 0; i < assemblies.Length; i++)
             {
                 var assembly = assemblies[i].GetName();
-                sb.AppendLine($"{(i + 1).ToString().PadLeft(assembliesLengthPad, '0')}: {assembly.Name}, Version={assembly.Version}");
+                sb.AppendLine(string.Format($"{{0:D{assembliesLengthPad}}}: {{1}}, Version={{2}}", i+1, assembly.Name, assembly.Version));
             }
 
-            return sb.ToString();
+            return sb.ToString().TrimEnd();
         }
     }
 
@@ -109,11 +106,11 @@ public class AboutWindow : WindowEx
                 // ReSharper disable once ConditionIsAlwaysTrueOrFalse
                 var onScreen = Screens.ScreenFromVisual(App.MainWindow is not null ? App.MainWindow : this);
                 var screen = Screens.All[i];
-                result.AppendLine($"{i+1}: {screen.Bounds.Width} x {screen.Bounds.Height} @ {Math.Round(screen.PixelDensity * 100, 2)}%" + 
-                                  (screen.Primary ? " (Primary)" : null) +
+                result.AppendLine($"{i+1}: {screen.Bounds.Width} x {screen.Bounds.Height} @ {Math.Round(screen.Scaling * 100, 2)}%" + 
+                                  (screen.IsPrimary ? " (Primary)" : null) +
                                   (onScreen == screen ? " (On this)" : null)
                 );
-                result.AppendLine($"    WA: {screen.WorkingArea.Width} x {screen.WorkingArea.Height}    UA: {Math.Round(screen.WorkingArea.Width / screen.PixelDensity)} x {Math.Round(screen.WorkingArea.Height / screen.PixelDensity)}");
+                result.AppendLine($"    WA: {screen.WorkingArea.Width} x {screen.WorkingArea.Height}    UA: {Math.Round(screen.WorkingArea.Width / screen.Scaling)} x {Math.Round(screen.WorkingArea.Height / screen.Scaling)}");
             }
             return result.ToString().TrimEnd();
         }
@@ -124,11 +121,6 @@ public class AboutWindow : WindowEx
         InitializeComponent();
         DataContext = this;
         Title = $"About {About.SoftwareWithVersion}";
-    }
-
-    private void InitializeComponent()
-    {
-        AvaloniaXamlLoader.Load(this);
     }
 
     public async void TermsOfUseClicked()
@@ -195,18 +187,18 @@ public class AboutWindow : WindowEx
 
     public void CopyEssentialInformation()
     {
-        Application.Current?.Clipboard?.SetTextAsync(GetEssentialInformation());
+        Clipboard?.SetTextAsync(GetEssentialInformation());
     }
         
 
     public void CopyOpenCVInformationToClipboard()
     {
-        Application.Current?.Clipboard?.SetTextAsync(CvInvoke.BuildInformation);
+        Clipboard?.SetTextAsync(CvInvoke.BuildInformation);
     }
 
     public void CopyLoadedAssembliesToClipboard()
     {
-        Application.Current?.Clipboard?.SetTextAsync(LoadedAssemblies);
+        Clipboard?.SetTextAsync(LoadedAssemblies);
     }
 
     public async void CopyInformationToClipboard()
@@ -216,6 +208,6 @@ public class AboutWindow : WindowEx
         message.AppendLine(CvInvoke.BuildInformation);
         message.AppendLine("Loaded Assemblies:");
         message.AppendLine(LoadedAssemblies);
-        await Application.Current?.Clipboard?.SetTextAsync(message.ToString())!;
+        await Clipboard?.SetTextAsync(message.ToString())!;
     }
 }

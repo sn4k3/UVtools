@@ -22,11 +22,11 @@
       </Grid.ColumnDefinitions>
 
       <Grid Grid.Row="0" Grid.Column="0"
-            RowDefinitions="*, Auto" ColumnDefinitions="*">
+            RowDefinitions="*,Auto" ColumnDefinitions="*">
           
 		  <ListBox Grid.Row="0" Grid.Column="0"
                    Name="SuggestionsListBox"
-                   Items="{Binding Suggestions}" 
+                   ItemsSource="{Binding Suggestions}" 
                    SelectionMode="AlwaysSelected"
                    SelectedItem="{Binding SelectedSuggestion}">
               <ListBox.ItemTemplate>
@@ -71,11 +71,9 @@
                                            CommandParameter="{Binding ActiveSuggestion.InformationUrl}"/>
 					</StackPanel>
 					
-                    <TextBox Classes="TransparentReadOnlyMultiLineNoBorder" 
-                             Margin="-10,0,0,5"
-                             Text="{Binding ActiveSuggestion.Description}" 
-                             TextWrapping="Wrap"
-                             IsVisible="{Binding ActiveSuggestion.ToolTip, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                    <SelectableTextBlock Text="{Binding ActiveSuggestion.Description}" 
+                                         TextWrapping="Wrap"
+                                         IsVisible="{Binding ActiveSuggestion.ToolTip, Converter={x:Static ObjectConverters.IsNotNull}}"/>
 
                     <StackPanel Orientation="Horizontal" Spacing="5">
                         <uc:ButtonWithIcon Text="Save"
@@ -113,10 +111,9 @@
 			</Border>
 
           <ScrollViewer Name="ActiveSuggestionContent" Grid.Row="1" 
-                        Padding="20"
                         VerticalScrollBarVisibility="Auto"
                         HorizontalScrollBarVisibility="Auto">
-              <StackPanel Orientation="Vertical" Spacing="10">
+              <StackPanel Orientation="Vertical" Spacing="10" Margin="20">
                   
 				  <Grid RowDefinitions="Auto,10,Auto" ColumnDefinitions="Auto,10,400">
                       <TextBlock Grid.Row="0" Grid.Column="0"
@@ -133,7 +130,7 @@
                                  VerticalAlignment="Center"
                                  Text="Apply when:"/>
 					  <ComboBox Grid.Row="2" Grid.Column="2"
-                                Items="{Binding ActiveSuggestion.ApplyWhen, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                                ItemsSource="{Binding ActiveSuggestion.ApplyWhen, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
                                 SelectedItem="{Binding ActiveSuggestion.ApplyWhen, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
 				  </Grid>
 

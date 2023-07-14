@@ -1,4 +1,3 @@
-using Avalonia.Markup.Xaml;
 using System.Linq;
 using UVtools.Core.FileFormats;
 using UVtools.WPF.Controls;
@@ -40,11 +39,6 @@ public partial class VersionSelectorWindow : WindowEx
         AvailableVersions = availableVersions;
         Title += $" - {FileExtension.Description}";
         DataContext = this;
-    }
-
-    private void InitializeComponent()
-    {
-        AvaloniaXamlLoader.Load(this);
     }
 
     public void SelectVersion()

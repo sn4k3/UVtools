@@ -9,10 +9,11 @@ using Avalonia;
 using Avalonia.Controls;
 using System;
 using System.IO;
+using Avalonia.Platform.Storage;
 using UVtools.Core.Dialogs;
 using UVtools.Core.SystemOS;
 using UVtools.WPF.Extensions;
-using Helpers = UVtools.WPF.Controls.Helpers;
+using AvaloniaStatic = UVtools.WPF.Controls.AvaloniaStatic;
 
 namespace UVtools.WPF;
 
@@ -38,19 +39,12 @@ public partial class MainWindow
     {
         if (!HaveGCode) return;
 
-        var dialog = new SaveFileDialog
-        {
-            Filters = Helpers.IniFileFilter,
-            Directory = Path.GetDirectoryName(SlicerFile.FileFullPath),
-            InitialFileName = $"{Path.GetFileNameWithoutExtension(SlicerFile.FileFullPath)}_gcode.txt"
-        };
-        var file = await dialog.ShowAsync(this);
-
-        if (string.IsNullOrEmpty(file)) return;
+        using var file = await SaveFilePickerAsync(SlicerFile.DirectoryPath, $"{SlicerFile.FilenameNoExt}_gcode.txt", AvaloniaStatic.TxtFileFilter);
+        if (file?.TryGetLocalPath() is not { } filePath) return;
 
         try
         {
-            await using TextWriter tw = new StreamWriter(file);
+            await using TextWriter tw = new StreamWriter(filePath);
             await tw.WriteAsync(SlicerFile.GCodeStr);
             tw.Close();
         }
@@ -65,12 +59,12 @@ public partial class MainWindow
             "GCode save complete");
         if (result != MessageButtonResult.Yes) return;
 
-        SystemAware.StartProcess(file);
+        SystemAware.StartProcess(filePath);
     }
 
     public void OnClickGCodeSaveClipboard()
     {
         if (!HaveGCode) return;
-        Application.Current.Clipboard.SetTextAsync(SlicerFile.GCodeStr);
+        Clipboard?.SetTextAsync(SlicerFile.GCodeStr);
     }
 }

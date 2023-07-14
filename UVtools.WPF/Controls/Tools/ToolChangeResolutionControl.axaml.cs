@@ -1,12 +1,11 @@
-﻿using Avalonia.Markup.Xaml;
-using Avalonia.Threading;
+﻿using Avalonia.Threading;
 using System.Collections.Generic;
 using UVtools.Core.Operations;
 using UVtools.Core.Printer;
 
 namespace UVtools.WPF.Controls.Tools;
 
-public class ToolChangeResolutionControl : ToolControl
+public partial class ToolChangeResolutionControl : ToolControl
 {
     public static IEnumerable<Machine> MachinePresets => Machine.Machines;
 
@@ -47,10 +46,5 @@ public class ToolChangeResolutionControl : ToolControl
         BaseOperation = new OperationChangeResolution(SlicerFile);
         if (!ValidateSpawn()) return;
         InitializeComponent();
-    }
-
-    private void InitializeComponent()
-    {
-        AvaloniaXamlLoader.Load(this);
     }
 }

@@ -29,7 +29,7 @@
                        Text="File format:"/>
             <ComboBox Grid.Row="0" Grid.Column="2"
                       HorizontalAlignment="Stretch"
-                      Items="{Binding Operation.MeshFileFormat, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                      ItemsSource="{Binding Operation.MeshFileFormat, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
                       SelectedItem="{Binding Operation.MeshFileFormat, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
 
             <TextBlock Grid.Row="2" Grid.Column="0"
@@ -37,7 +37,7 @@
                        Text="Mesh quality:"/>
             <ComboBox Grid.Row="2" Grid.Column="2"
                       HorizontalAlignment="Stretch"
-                      Items="{Binding Operation.Quality, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                      ItemsSource="{Binding Operation.Quality, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
                       SelectedItem="{Binding Operation.Quality, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
 
             <TextBlock Grid.Row="4" Grid.Column="0"
@@ -45,7 +45,7 @@
                        Text="Rotate direction:"/>
             <ComboBox Grid.Row="4" Grid.Column="2"
                       HorizontalAlignment="Stretch"
-                      Items="{Binding Operation.RotateDirection, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                      ItemsSource="{Binding Operation.RotateDirection, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
                       SelectedItem="{Binding Operation.RotateDirection, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
 
             <TextBlock Grid.Row="6" Grid.Column="0"
@@ -53,7 +53,7 @@
                        Text="Flip direction:"/>
             <ComboBox Grid.Row="6" Grid.Column="2"
                       HorizontalAlignment="Stretch"
-                      Items="{Binding Operation.FlipDirection, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                      ItemsSource="{Binding Operation.FlipDirection, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
                       SelectedItem="{Binding Operation.FlipDirection, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
         </Grid>
 

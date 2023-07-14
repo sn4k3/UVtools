@@ -2569,7 +2569,7 @@
         </member>
         <member name="F:UVtools.Core.FileFormats.FileFormat.FileImageType.Png24BgrAA">
             <summary>
-            eg: Nova Bene4
+            eg: Nova Bene4, Elfin Mono SE, Whale 1/2
             </summary>
         </member>
         <member name="F:UVtools.Core.FileFormats.FileFormat.FileImageType.Png24RgbAA">

@@ -1,9 +1,8 @@
-using Avalonia.Markup.Xaml;
 using UVtools.Core.Operations;
 
 namespace UVtools.WPF.Controls.Tools;
 
-public class ToolDynamicLiftsControl : ToolControl
+public partial class ToolDynamicLiftsControl : ToolControl
 {
     public OperationDynamicLifts Operation => BaseOperation as OperationDynamicLifts;
     public ToolDynamicLiftsControl()
@@ -14,21 +13,30 @@ public class ToolDynamicLiftsControl : ToolControl
         InitializeComponent();
     }
 
-    private void InitializeComponent()
+    public void ViewSmallestBottomLayer()
     {
-        AvaloniaXamlLoader.Load(this);
-    }
-
-    public void ViewSmallestLayer(bool isBottom)
-    {
-        var layerFound = Operation.GetSmallestLayer(isBottom);
+        var layerFound = Operation.GetSmallestLayer(true);
         if (layerFound is null) return;
         App.MainWindow.ActualLayer = layerFound.Index;
     }
 
-    public void ViewLargestLayer(bool isBottom)
+    public void ViewSmallestNormalLayer()
     {
-        var layerFound = Operation.GetLargestLayer(isBottom);
+        var layerFound = Operation.GetSmallestLayer(false);
+        if (layerFound is null) return;
+        App.MainWindow.ActualLayer = layerFound.Index;
+    }
+
+    public void ViewLargestBottomLayer()
+    {
+        var layerFound = Operation.GetLargestLayer(true);
+        if (layerFound is null) return;
+        App.MainWindow.ActualLayer = layerFound.Index;
+    }
+
+    public void ViewLargestNormalLayer()
+    {
+        var layerFound = Operation.GetLargestLayer(false);
         if (layerFound is null) return;
         App.MainWindow.ActualLayer = layerFound.Index;
     }

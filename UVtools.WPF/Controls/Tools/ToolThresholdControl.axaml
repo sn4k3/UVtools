@@ -14,7 +14,7 @@
       Grid.Column="2"
       SelectedIndex="{Binding SelectedPresetIndex}" 
       MinWidth="200"
-      Items="{Binding Presets}"
+      ItemsSource="{Binding Presets}"
       />
 
     <TextBlock
@@ -53,7 +53,7 @@
       <ComboBox
         MinWidth="150"
         IsEnabled="{Binding IsTypeEnabled}"
-        Items="{Binding Operation.ThresholdTypes}"
+        ItemsSource="{Binding Operation.ThresholdTypes}"
         SelectedItem="{Binding Operation.Type}"/>
       
     </StackPanel>

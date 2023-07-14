@@ -8,9 +8,9 @@
   <Grid ColumnDefinitions="Auto,10,380">
     <StackPanel Spacing="10">
 
-        <Expander
-            Header="Step 1: Generate and print test model"
-            IsExpanded="True">
+        <Expander Header="Step 1: Generate and print test model"
+                  HorizontalAlignment="Stretch"
+                  IsExpanded="True">
        
         <Grid
             RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto"
@@ -319,9 +319,9 @@
         </Grid>
         </Expander>
 
-        <Expander
-            Header="Step 2: Validate the printed model with your measures"
-            IsExpanded="True">
+        <Expander Header="Step 2: Validate the printed model with your measures"
+                  HorizontalAlignment="Stretch"
+                  IsExpanded="True">
 
                 <StackPanel Spacing="10">
 
@@ -417,9 +417,9 @@
 
         </Expander>
 
-        <Expander
-            Header="Step 3: Save a resize profile with the results"
-            IsExpanded="True">
+        <Expander Header="Step 3: Save a resize profile with the results"
+                  HorizontalAlignment="Stretch"
+                  IsExpanded="True">
 
         <Grid ColumnDefinitions="Auto,10,440,5,Auto,5,Auto">
             <TextBlock VerticalAlignment="Center"

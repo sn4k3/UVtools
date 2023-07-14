@@ -1,10 +1,10 @@
 ﻿using Avalonia.Controls;
-using Avalonia.Markup.Xaml;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using Avalonia.Platform.Storage;
 using UVtools.Core;
 using UVtools.Core.Dialogs;
 using UVtools.Core.FileFormats;
@@ -12,17 +12,13 @@ using UVtools.Core.Network;
 using UVtools.Core.Objects;
 using UVtools.WPF.Controls;
 using UVtools.WPF.Extensions;
-using Color = UVtools.WPF.Structures.Color;
 
 namespace UVtools.WPF.Windows;
 
-public class SettingsWindow : WindowEx
+public partial class SettingsWindow : WindowEx
 {
     private double _scrollViewerMaxHeight;
     private int _selectedTabIndex;
-    private readonly DataGrid _sendToCustomLocationsGrid;
-    private readonly DataGrid _sendToProcessGrid;
-    private readonly ComboBox _networkRemotePrinterComboBox;
 
     public int MaxProcessorCount => Environment.ProcessorCount;
 
@@ -65,15 +61,6 @@ public class SettingsWindow : WindowEx
 
         DataContext = this;
         InitializeComponent();
-
-        _sendToCustomLocationsGrid = this.FindControl<DataGrid>("SendToCustomLocationsGrid");
-        _sendToProcessGrid = this.FindControl<DataGrid>("SendToProcessGrid");
-        _networkRemotePrinterComboBox = this.FindControl<ComboBox>("NetworkRemotePrinterComboBox");
-    }
-
-    private void InitializeComponent()
-    {
-        AvaloniaXamlLoader.Load(this);
     }
 
     protected override void OnClosed(EventArgs e)
@@ -90,8 +77,9 @@ public class SettingsWindow : WindowEx
         }
     }
 
-    public void SetMaxDegreeOfParallelism(string to)
+    public void SetMaxDegreeOfParallelism(object toObject)
     {
+        var to = toObject.ToString()!;
         if (to == "*")
         {
             Settings.General.MaxDegreeOfParallelism = MaxProcessorCount;
@@ -118,23 +106,24 @@ public class SettingsWindow : WindowEx
     }
 
 
-    public async void GeneralOpenFolderField(string field)
+    public async void GeneralOpenFolderField(object fieldObj)
     {
+        var field = fieldObj.ToString()!;
         foreach (var propertyInfo in Settings.General.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
         {
             if (propertyInfo.Name != field) continue;
-            var dialog = new OpenFolderDialog();
-            var filename = await dialog.ShowAsync(this);
-            if (string.IsNullOrEmpty(filename)) return;
-            propertyInfo.SetValue(Settings.General, filename);
+            var folders = await OpenFolderPickerAsync();
+            if (folders.Count == 0) return;
+            propertyInfo.SetValue(Settings.General, folders[0].TryGetLocalPath());
             return;
         }
 
     }
 
 
-    public void GeneralClearField(string field)
+    public void GeneralClearField(object fieldObj)
     {
+        var field = fieldObj.ToString()!;
         var properties = Settings.General.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
         foreach (var propertyInfo in properties)
         {
@@ -147,15 +136,14 @@ public class SettingsWindow : WindowEx
 
     public async void SendToAddCustomLocation()
     {
-        var openFolder = new OpenFolderDialog();
-        var result = await openFolder.ShowAsync(this);
+        var folders = await OpenFolderPickerAsync();
+        if (folders.Count == 0) return;
 
-        if (string.IsNullOrWhiteSpace(result)) return;
-        var directory = new MappedDevice(result);
+        var directory = new MappedDevice(folders[0].TryGetLocalPath()!);
         if (Settings.General.SendToCustomLocations.Contains(directory))
         {
             await this.MessageBoxError("The selected location already exists on the list:\n" +
-                                       $"{result}");
+                                       $"{folders[0].TryGetLocalPath()}");
             return;
         }
 
@@ -164,26 +152,24 @@ public class SettingsWindow : WindowEx
 
     public async void SendToRemoveCustomLocations()
     {
-        if (_sendToCustomLocationsGrid.SelectedItems.Count == 0) return;
+        if (SendToCustomLocationsGrid.SelectedItems.Count == 0) return;
 
         if (await this.MessageBoxQuestion(
-                $"Are you sure you want to remove the {_sendToCustomLocationsGrid.SelectedItems.Count} selected entries?") !=
+                $"Are you sure you want to remove the {SendToCustomLocationsGrid.SelectedItems.Count} selected entries?") !=
             MessageButtonResult.Yes) return;
 
-        Settings.General.SendToCustomLocations.RemoveRange(_sendToCustomLocationsGrid.SelectedItems.Cast<MappedDevice>());
+        Settings.General.SendToCustomLocations.RemoveRange(SendToCustomLocationsGrid.SelectedItems.Cast<MappedDevice>());
     }
 
     public async void SendToAddProcess()
     {
-        var openFolder = new OpenFileDialog();
-        var result = await openFolder.ShowAsync(this);
-
-        if (result is null || result.Length == 0) return;
-        var file = new MappedProcess(result[0]);
+        var folders = await OpenFolderPickerAsync();
+        if (folders.Count == 0) return;
+        var file = new MappedProcess(folders[0].TryGetLocalPath()!);
         if (Settings.General.SendToProcess.Contains(file))
         {
             await this.MessageBoxError("The selected process already exists on the list:\n" +
-                                       $"{result}");
+                                       $"{folders[0].TryGetLocalPath()}");
             return;
         }
 
@@ -192,31 +178,13 @@ public class SettingsWindow : WindowEx
 
     public async void SendToRemoveProcess()
     {
-        if (_sendToProcessGrid.SelectedItems.Count == 0) return;
+        if (SendToProcessGrid.SelectedItems.Count == 0) return;
 
         if (await this.MessageBoxQuestion(
-                $"Are you sure you want to remove the {_sendToProcessGrid.SelectedItems.Count} selected entries?") !=
+                $"Are you sure you want to remove the {SendToProcessGrid.SelectedItems.Count} selected entries?") !=
             MessageButtonResult.Yes) return;
 
-        Settings.General.SendToProcess.RemoveRange(_sendToProcessGrid.SelectedItems.Cast<MappedProcess>());
-    }
-
-    public async void SelectColor(string property)
-    {
-        foreach (var packObject in UserSettings.PackObjects)
-        {
-            var properties = packObject.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
-            foreach (var propertyInfo in properties)
-            {
-                if (propertyInfo.Name != property) continue;
-                var color = (Color)propertyInfo.GetValue(packObject, null) ?? new Color(255,255,255,255);
-                var window = new ColorPickerWindow(color.ToAvalonia());
-                var result = await window.ShowDialog<DialogResults>(this);
-                if (result != DialogResults.OK) return;
-                propertyInfo.SetValue(packObject, new Color(window.ResultColor));
-                return;
-            }
-        }
+        Settings.General.SendToProcess.RemoveRange(SendToProcessGrid.SelectedItems.Cast<MappedProcess>());
     }
 
     public async void AddNetworkRemotePrinter()
@@ -230,12 +198,12 @@ public class SettingsWindow : WindowEx
         };
 
         Settings.Network.RemotePrinters.Add(remotePrinter);
-        _networkRemotePrinterComboBox.SelectedItem = remotePrinter;
+        NetworkRemotePrinterComboBox.SelectedItem = remotePrinter;
     }
 
     public async void RemoveSelectedNetworkRemotePrinter()
     {
-        if (_networkRemotePrinterComboBox.SelectedItem is not RemotePrinter remotePrinter) return;
+        if (NetworkRemotePrinterComboBox.SelectedItem is not RemotePrinter remotePrinter) return;
         var result = await this.MessageBoxQuestion("Are you sure you want to remove the following remote printer?\n" +
                                                    remotePrinter, "Remove remote printer?");
         if (result != MessageButtonResult.Yes) return;
@@ -244,14 +212,14 @@ public class SettingsWindow : WindowEx
 
     public async void DuplicateSelectedNetworkRemotePrinter()
     {
-        if (_networkRemotePrinterComboBox.SelectedItem is not RemotePrinter remotePrinter) return;
+        if (NetworkRemotePrinterComboBox.SelectedItem is not RemotePrinter remotePrinter) return;
         var result = await this.MessageBoxQuestion("Are you sure you want to duplicate the following remote printer?\n" +
                                                    remotePrinter, "Duplicate remote printer?");
         if (result != MessageButtonResult.Yes) return;
         var clone = remotePrinter.Clone();
         clone.Name += " Duplicated";
         Settings.Network.RemotePrinters.Add(clone);
-        _networkRemotePrinterComboBox.SelectedItem = clone;
+        NetworkRemotePrinterComboBox.SelectedItem = clone;
     }
 
     public async void OnClickResetAllDefaults()

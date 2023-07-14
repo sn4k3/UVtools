@@ -8,9 +8,9 @@
   <Grid ColumnDefinitions="Auto,10,380">
     <StackPanel Spacing="10">
 
-    <Expander
-        Header="Common properties"
-        IsExpanded="True">
+    <Expander Header="Common properties"
+              HorizontalAlignment="Stretch"
+              IsExpanded="True">
 
       <Grid
           RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto"
@@ -154,9 +154,9 @@
       </Grid>
     </Expander>
 
-    <Expander
-        Header="Object configuration"
-        IsExpanded="True" IsVisible="{Binding !Operation.PatternModel}">
+    <Expander Header="Object configuration"
+              HorizontalAlignment="Stretch"
+              IsExpanded="True" IsVisible="{Binding !Operation.PatternModel}">
 
       <Grid RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto"
             ColumnDefinitions="Auto,10,180,20,Auto,10,180,20,Auto,10,180">
@@ -221,7 +221,7 @@
 
         <ComboBox Grid.Row="2" Grid.Column="6"
                   HorizontalAlignment="Stretch"
-                  Items="{Binding Operation.MeasuresItems}"
+                  ItemsSource="{Binding Operation.MeasuresItems}"
                   SelectedItem="{Binding Operation.UnitOfMeasure}"/>
 
         <CheckBox Grid.Row="4" Grid.Column="0"
@@ -239,7 +239,7 @@
         <ComboBox Grid.Row="6" Grid.Column="2"
                   IsEnabled="{Binding Operation.HolesEnabled}"
                   HorizontalAlignment="Stretch"
-                  Items="{Binding Operation.ShapesItems}"
+                  ItemsSource="{Binding Operation.ShapesItems}"
                   SelectedItem="{Binding Operation.HoleShape}"/>
         
         
@@ -372,7 +372,7 @@
                   IsEnabled="{Binding Operation.TextEnabled}"
                   VerticalAlignment="Center"
                   HorizontalAlignment="Stretch"
-                  Items="{Binding Operation.TextFonts}"
+                  ItemsSource="{Binding Operation.TextFonts}"
                   SelectedItem="{Binding Operation.TextFont}"/>
 
         <TextBlock Grid.Row="20" Grid.Column="4"
@@ -505,7 +505,7 @@
     </Expander>
 
 
-        <Expander IsExpanded="False">
+        <Expander IsExpanded="False" HorizontalAlignment="Stretch">
             <Expander.Header>
                 <StackPanel Orientation="Horizontal">
                 <TextBlock Text="Multiple brightness"
@@ -551,7 +551,7 @@
                     <ComboBox Grid.Row="0" Grid.Column="2"
                               VerticalAlignment="Center"
                               HorizontalAlignment="Stretch"
-                              Items="{Binding Operation.MultipleBrightnessExcludeFromItems}"
+                              ItemsSource="{Binding Operation.MultipleBrightnessExcludeFromItems}"
                               SelectedItem="{Binding Operation.MultipleBrightnessExcludeFrom}"/>
                     <TextBlock Grid.Row="0" Grid.Column="4"
                                Text="layers"
@@ -652,7 +652,7 @@
                     VerticalAlignment="Stretch"
                     Margin="0,-10,0,0"
                     IsEnabled="{Binding Operation.MultipleBrightness}"
-                    Items="{Binding Operation.MultipleBrightnessTable}">
+                    ItemsSource="{Binding Operation.MultipleBrightnessTable}">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="Brightness"
                                             Binding="{Binding Brightness}"
@@ -675,9 +675,9 @@
                 </StackPanel>
             </Expander>
 
-        <Expander
-            Header="Multiple layer height"
-            IsExpanded="False">
+        <Expander Header="Multiple layer height"
+                  HorizontalAlignment="Stretch"
+                  IsExpanded="False">
           <Expander.IsVisible>
             <MultiBinding Converter="{x:Static BoolConverters.And}">
               <Binding Path="CanSupportPerLayerSettings"/>
@@ -735,9 +735,9 @@
 
         </Expander>
 
-        <Expander
-            Header="Multiple exposures"
-            IsExpanded="True">
+        <Expander Header="Multiple exposures"
+                  HorizontalAlignment="Stretch"
+                  IsExpanded="True">
             <Expander.IsVisible>
                 <MultiBinding Converter="{x:Static BoolConverters.And}">
                     <Binding Path="CanSupportPerLayerPositionZ"/>
@@ -771,7 +771,7 @@
                   <ComboBox Grid.Row="0" Grid.Column="2"
                             VerticalAlignment="Center"
                             HorizontalAlignment="Stretch"
-                            Items="{Binding Operation.ExposureGenTypeItems}"
+                            ItemsSource="{Binding Operation.ExposureGenTypeItems}"
                             SelectedItem="{Binding Operation.ExposureGenType}"/>
 
                   <CheckBox Grid.Row="0" Grid.Column="4" Grid.ColumnSpan="5"
@@ -839,7 +839,7 @@
                               VerticalAlignment="Center"
                               HorizontalAlignment="Stretch"
                               MinWidth="100"
-                              Items="{Binding Operation.AvailableLayerHeights}"
+                              ItemsSource="{Binding Operation.AvailableLayerHeights}"
                               SelectedItem="{Binding Operation.ExposureGenManualLayerHeight}"/>
                     <TextBlock Grid.Row="0" Grid.Column="4"
                                Text="mm"
@@ -915,7 +915,7 @@
                     MinHeight="100"
                     Margin="0,-10,0,0"
                     IsEnabled="{Binding Operation.MultipleExposures}"
-                    Items="{Binding Operation.ExposureTable}">
+                    ItemsSource="{Binding Operation.ExposureTable}">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="Layer height (mm)"
                                             Binding="{Binding LayerHeight}"
@@ -941,7 +941,7 @@
                   <ComboBox Grid.Row="0" Grid.Column="2"
                             HorizontalAlignment="Stretch"
                             VerticalAlignment="Center"
-                            Items="{Binding Operation.MultipleExposuresBaseLayersPrintMode, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                            ItemsSource="{Binding Operation.MultipleExposuresBaseLayersPrintMode, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
                             SelectedItem="{Binding Operation.MultipleExposuresBaseLayersPrintMode, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
                 </Grid>
 
@@ -1050,9 +1050,9 @@
 
         </Expander>
 
-        <Expander
-            Header="Pattern loaded model"
-            IsExpanded="False" IsVisible="{Binding Operation.CanPatternModel}">
+        <Expander Header="Pattern loaded model"
+                  HorizontalAlignment="Stretch"
+                  IsExpanded="False" IsVisible="{Binding Operation.CanPatternModel}">
 
           <StackPanel Spacing="10">
 

@@ -1,5 +1,4 @@
-﻿using Avalonia.Markup.Xaml;
-using Avalonia.Threading;
+﻿using Avalonia.Threading;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using System;
@@ -8,6 +7,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Threading;
 using System.Threading.Tasks;
+using Avalonia.Controls;
 using Avalonia.Media;
 using UVtools.Core.Extensions;
 using UVtools.Core.Layers;
@@ -18,7 +18,7 @@ using UVtools.Core.SystemOS;
 
 namespace UVtools.WPF.Windows;
 
-public class BenchmarkWindow : WindowEx
+public partial class BenchmarkWindow : WindowEx
 {
     private int _referenceSelectedIndex;
     private int _testSelectedIndex;
@@ -240,12 +240,11 @@ public class BenchmarkWindow : WindowEx
         }
     }
 
-    private void InitializeComponent()
+    protected override void OnClosing(WindowClosingEventArgs e)
     {
-        AvaloniaXamlLoader.Load(this);
+        e.Cancel = IsRunning;
+        base.OnClosing(e);
     }
-
-    protected override bool HandleClosing() => IsRunning;
 
     public void StartStop()
     {

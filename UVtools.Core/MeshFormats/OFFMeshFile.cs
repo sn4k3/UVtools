@@ -88,9 +88,9 @@ public class OFFMeshFile : MeshFile
         _triangleStream.CopyTo(MeshStream);
         _triangleStream.Dispose();
 
-        MeshStream.Seek(_vertexCountWritePosition + 10 - VertexCount.ToString().Length, SeekOrigin.Begin);
+        MeshStream.Seek(_vertexCountWritePosition + 10 - VertexCount.DigitCount(), SeekOrigin.Begin);
         MeshStream.WriteString(VertexCount.ToString());
-        MeshStream.Seek(11 - TriangleCount.ToString().Length, SeekOrigin.Current);
+        MeshStream.Seek(11 - TriangleCount.DigitCount(), SeekOrigin.Current);
         MeshStream.WriteString(TriangleCount.ToString());
         MeshStream.Seek(0, SeekOrigin.End);
     }

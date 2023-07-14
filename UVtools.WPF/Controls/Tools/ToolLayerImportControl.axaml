@@ -27,7 +27,7 @@
       <ComboBox Grid.Row="0" Grid.Column="2"
                  VerticalAlignment="Center"
                  HorizontalAlignment="Stretch"
-                 Items="{Binding Operation.ImportType, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                 ItemsSource="{Binding Operation.ImportType, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
                  SelectedItem="{Binding Operation.ImportType, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
 
       <TextBlock Grid.Row="0" Grid.Column="4"
@@ -129,7 +129,7 @@
         Name="FilesListBox"
         SelectionMode="Multiple"
         SelectedItem="{Binding SelectedFile}"
-        Items="{Binding Operation.Files}" />
+        ItemsSource="{Binding Operation.Files}" />
 
       <Image 
         Grid.Column="1"

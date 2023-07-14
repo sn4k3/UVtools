@@ -8,12 +8,12 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
-using Avalonia.Markup.Xaml;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Scripting;
 using System;
 using System.IO;
 using System.Text;
+using Avalonia.Platform.Storage;
 using UVtools.Core;
 using UVtools.WPF.Controls;
 
@@ -34,7 +34,6 @@ public partial class TerminalWindow : WindowEx
     private bool _verbose = true;
     private bool _clearCommandAfterSend = true;
         
-    private readonly TextBox _terminalTextBox;
     public ScriptState _scriptState;
 
     #region Properties
@@ -45,7 +44,7 @@ public partial class TerminalWindow : WindowEx
         set
         {
             if(!RaiseAndSetIfChanged(ref _terminalText, value)) return;
-            if(_autoScroll) _terminalTextBox.CaretIndex = _terminalText.Length - 1;
+            if(_autoScroll) TerminalTextBox.CaretIndex = _terminalText.Length - 1;
         }
     }
 
@@ -84,11 +83,7 @@ public partial class TerminalWindow : WindowEx
     public TerminalWindow()
     {
         InitializeComponent();
-#if DEBUG
-        this.AttachDevTools();
-#endif
 
-        _terminalTextBox = this.FindControl<TextBox>("TerminalTextBox");
         AddHandler(DragDrop.DropEvent, (sender, e) =>
         {
             var text = e.Data.GetText();
@@ -98,7 +93,7 @@ public partial class TerminalWindow : WindowEx
                 return;
             }
 
-            var fileNames = e.Data.GetFileNames();
+            var fileNames = e.Data.GetFiles();
             if (fileNames is not null)
             {
                 var sb = new StringBuilder();
@@ -106,8 +101,9 @@ public partial class TerminalWindow : WindowEx
                 {
                     try
                     {
-                        if (!File.Exists(fileName)) continue;
-                        var fi = new FileInfo(fileName);
+                        var filePath = fileName.TryGetLocalPath()!;
+                        if (!File.Exists(filePath)) continue;
+                        var fi = new FileInfo(filePath);
                         if(fi.Length > 5000000) continue; // 5Mb only!
                         sb.AppendLine(File.ReadAllText(fi.FullName));
                     }
@@ -123,11 +119,6 @@ public partial class TerminalWindow : WindowEx
         });
 
         DataContext = this;
-    }
-
-    private void InitializeComponent()
-    {
-        AvaloniaXamlLoader.Load(this);
     }
 
     public void Clear()
@@ -166,13 +157,16 @@ public partial class TerminalWindow : WindowEx
                             "UVtools.Core.Extensions",
                             "UVtools.Core.FileFormats",
                             "UVtools.Core.GCode",
+                            "UVtools.Core.Gerber",
                             "UVtools.Core.Layers",
                             "UVtools.Core.Managers",
                             "UVtools.Core.MeshFormats",
                             "UVtools.Core.Objects",
                             "UVtools.Core.Operations",
                             "UVtools.Core.PixelEditor",
-                            "UVtools.Core.Suggestions"
+                            "UVtools.Core.Printer",
+                            "UVtools.Core.Suggestions",
+                            "UVtools.Core.SystemOS"
                         )
                         .WithAllowUnsafe(true), App.MainWindow).Result;
             }

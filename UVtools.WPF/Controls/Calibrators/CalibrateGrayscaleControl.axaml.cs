@@ -1,5 +1,4 @@
-﻿using Avalonia.Markup.Xaml;
-using Avalonia.Media.Imaging;
+﻿using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using System.Timers;
 using UVtools.Core.Operations;
@@ -9,7 +8,7 @@ using UVtools.WPF.Windows;
 
 namespace UVtools.WPF.Controls.Calibrators;
 
-public class CalibrateGrayscaleControl : ToolControl
+public partial class CalibrateGrayscaleControl : ToolControl
 {
     public OperationCalibrateGrayscale Operation => BaseOperation as OperationCalibrateGrayscale;
 
@@ -35,11 +34,6 @@ public class CalibrateGrayscaleControl : ToolControl
             AutoReset = false
         };
         _timer.Elapsed += (sender, e) => Dispatcher.UIThread.InvokeAsync(UpdatePreview);
-    }
-
-    private void InitializeComponent()
-    {
-        AvaloniaXamlLoader.Load(this);
     }
 
     public override void Callback(ToolWindow.Callbacks callback)

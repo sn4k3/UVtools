@@ -14,7 +14,7 @@
         <ComboBox Grid.Row="0" Grid.Column="2"
                   HorizontalAlignment="Stretch"
                   MinWidth="600"
-                  Items="{Binding Operation.Manager}"
+                  ItemsSource="{Binding Operation.Manager}"
                   SelectedItem="{Binding Operation.MaterialItem}"/>
 
         <TextBlock Grid.Row="2" Grid.Column="0"

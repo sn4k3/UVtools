@@ -1,10 +1,10 @@
-﻿using Avalonia.Controls;
-using Avalonia.Markup.Xaml;
+﻿using System.Threading.Tasks;
+using Avalonia.Platform.Storage;
 using UVtools.Core.Operations;
 
 namespace UVtools.WPF.Controls.Tools;
 
-public class ToolPixelDimmingControl : ToolControl
+public partial class ToolPixelDimmingControl : ToolControl
 {
     public OperationPixelDimming Operation => BaseOperation as OperationPixelDimming;
 
@@ -18,20 +18,14 @@ public class ToolPixelDimmingControl : ToolControl
         Operation.GeneratePixelDimming("Chessboard");
     }
 
-    private void InitializeComponent()
-    {
-        AvaloniaXamlLoader.Load(this);
-    }
+    public async void LoadNormalPatternFromImage() => await LoadPatternFromImage(false);
+    public async void LoadAlternatePatternFromImage() => await LoadPatternFromImage(true);
 
-    public async void LoadPatternFromImage(bool isAlternatePattern = false)
+    public async Task<bool> LoadPatternFromImage(bool isAlternatePattern = false)
     {
-        var dialog = new OpenFileDialog
-        {
-            AllowMultiple = false,
-            Filters = Helpers.ImagesFileFilter,
-        };
-        var files = await dialog.ShowAsync(ParentWindow);
-        if (files is null || files.Length == 0) return;
-        Operation.LoadPatternFromImage(files[0], isAlternatePattern);
+        var files = await App.MainWindow.OpenFilePickerAsync(AvaloniaStatic.ImagesFileFilter);
+        if (files.Count == 0) return false;
+        Operation.LoadPatternFromImage(files[0].TryGetLocalPath()!, isAlternatePattern);
+        return true;
     }
 }

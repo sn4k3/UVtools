@@ -9,10 +9,8 @@
 // Port from: https://github.com/cyotek/Cyotek.Windows.Forms.ImageBox to AvaloniaUI
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
-using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
@@ -30,7 +28,7 @@ using Size = Avalonia.Size;
 
 namespace UVtools.AvaloniaControls;
 
-public class AdvancedImageBox : UserControl
+public partial class AdvancedImageBox : UserControl
 {
     #region Bindable Base
     /// <summary>
@@ -430,9 +428,6 @@ public class AdvancedImageBox : UserControl
     #endregion
 
     #region UI Controls
-    public ScrollBar HorizontalScrollBar { get; }
-    public ScrollBar VerticalScrollBar { get; }
-    public ContentPresenter ViewPort { get; }
 
     public Vector Offset
     {
@@ -1018,7 +1013,7 @@ public class AdvancedImageBox : UserControl
     }
 
     public static readonly StyledProperty<Rect> SelectionRegionProperty =
-        AvaloniaProperty.Register<AdvancedImageBox, Rect>(nameof(SelectionRegion), Rect.Empty);
+        AvaloniaProperty.Register<AdvancedImageBox, Rect>(nameof(SelectionRegion));
 
 
     public Rect SelectionRegion
@@ -1054,35 +1049,37 @@ public class AdvancedImageBox : UserControl
         }
     }
 
-    public bool HaveSelection => !SelectionRegion.IsEmpty;
+    public bool HaveSelection => SelectionRegion != default;
     #endregion
 
     #region Constructor
     public AdvancedImageBox()
     {
+        RenderOptions.SetBitmapInterpolationMode(this, BitmapInterpolationMode.None);
+
         InitializeComponent();
 
-        FocusableProperty.OverrideDefaultValue(typeof(AdvancedImageBox), true);
-        AffectsRender<AdvancedImageBox>(ShowGridProperty);
+        try
+        {
+            FocusableProperty.OverrideDefaultValue(typeof(AdvancedImageBox), true);
+        }
+        catch (Exception e)
+        {
+            // ignored
+        }
 
-        HorizontalScrollBar = this.FindControl<ScrollBar>("HorizontalScrollBar");
-        VerticalScrollBar = this.FindControl<ScrollBar>("VerticalScrollBar");
-        ViewPort = this.FindControl<ContentPresenter>("ViewPort");
+        AffectsRender<AdvancedImageBox>(ShowGridProperty);
 
         SizeModeChanged();
 
         HorizontalScrollBar.Scroll += ScrollBarOnScroll;
         VerticalScrollBar.Scroll += ScrollBarOnScroll;
         ViewPort.PointerPressed += ViewPortOnPointerPressed;
-        ViewPort.PointerLeave += ViewPortOnPointerLeave;
+        ViewPort.PointerExited += ViewPortOnPointerExited;
         ViewPort.PointerMoved += ViewPortOnPointerMoved;
         ViewPort.PointerWheelChanged += ViewPortOnPointerWheelChanged;
     }
 
-    private void InitializeComponent()
-    {
-        AvaloniaXamlLoader.Load(this);
-    }
     #endregion
 
     #region Render methods
@@ -1132,7 +1129,7 @@ public class AdvancedImageBox : UserControl
         var imageViewPort = GetImageViewPort();
 
 
-        // Draw iamge
+        // Draw image
         context.DrawImage(image,
             GetSourceImageRegion(),
             imageViewPort
@@ -1176,13 +1173,13 @@ public class AdvancedImageBox : UserControl
             context.DrawRectangle(pen, imageViewPort);
         }
 
-        if (!SelectionRegion.IsEmpty)
+        if (SelectionRegion != default)
         {
             var rect = GetOffsetRectangle(SelectionRegion);
             var selectionColor = SelectionColor;
             context.FillRectangle(selectionColor, rect);
             var color = Color.FromArgb(255, selectionColor.Color.R, selectionColor.Color.G, selectionColor.Color.B);
-            context.DrawRectangle(new Pen(color.ToUint32()), rect);
+            context.DrawRectangle(new Pen(color.ToUInt32()), rect);
         }
     }
 
@@ -1361,7 +1358,7 @@ public class AdvancedImageBox : UserControl
         IsSelecting = false;
     }
 
-    private void ViewPortOnPointerLeave(object? sender, PointerEventArgs e)
+    private void ViewPortOnPointerExited(object? sender, PointerEventArgs e)
     {
         PointerPosition = new Point(-1, -1);
         TriggerRender(true);
@@ -1960,7 +1957,7 @@ public class AdvancedImageBox : UserControl
     public Rect FitRectangle(Rect rectangle)
     {
         var image = Image;
-        if (image is null) return Rect.Empty;
+        if (image is null) return default;
         var x = rectangle.X;
         var y = rectangle.Y;
         var w = rectangle.Width;
@@ -2249,7 +2246,7 @@ public class AdvancedImageBox : UserControl
     /// </summary>
     public void SelectNone()
     {
-        SelectionRegion = Rect.Empty;
+        SelectionRegion = default;
     }
 
     #endregion
@@ -2262,7 +2259,7 @@ public class AdvancedImageBox : UserControl
     public Rect GetSourceImageRegion()
     {
         var image = Image;
-        if (image is null) return Rect.Empty;
+        if (image is null) return default;
 
         switch (SizeMode)
         {
@@ -2289,7 +2286,7 @@ public class AdvancedImageBox : UserControl
     public Rect GetImageViewPort()
     {
         var viewPortSize = ViewPortSize;
-        if (!IsImageLoaded || viewPortSize is {Width: 0, Height: 0}) return Rect.Empty;
+        if (!IsImageLoaded || viewPortSize is {Width: 0, Height: 0}) return default;
 
         double xOffset = 0;
         double yOffset = 0;

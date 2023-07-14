@@ -177,6 +177,7 @@ public class OperationRaiseOnPrintFinish : Operation
     public void SetToMediumPosition() => PositionZ = (decimal)MediumPositionZ;
     public void SetToMaximumPosition() => PositionZ = (decimal)MaximumPositionZ;
 
+    public void SetWaitTime(object time) => SetWaitTime(Convert.ToDecimal(time));
     public void SetWaitTime(decimal time) => WaitTime = time;
 
     protected override bool ExecuteInternally(OperationProgress progress)

@@ -1,7 +1,6 @@
-﻿using Avalonia.Controls;
-using Avalonia.Input;
-using Avalonia.Markup.Xaml;
+﻿using Avalonia.Input;
 using Avalonia.Media.Imaging;
+using Avalonia.Platform.Storage;
 using System.Collections.Generic;
 using System.Linq;
 using UVtools.Core.FileFormats;
@@ -12,13 +11,11 @@ using UVtools.WPF.Windows;
 
 namespace UVtools.WPF.Controls.Tools;
 
-public class ToolLayerImportControl : ToolControl
+public partial class ToolLayerImportControl : ToolControl
 {
     private bool _isAutoSortLayersByFileNameChecked;
     private GenericFileRepresentation _selectedFile;
     private Bitmap _previewImage;
-
-    private ListBox FilesListBox;
 
     public OperationLayerImport Operation => BaseOperation as OperationLayerImport;
 
@@ -84,7 +81,6 @@ public class ToolLayerImportControl : ToolControl
         if (!ValidateSpawn()) return;
         InitializeComponent();
 
-        FilesListBox = this.Find<ListBox>("FilesListBox");
         FilesListBox.DoubleTapped += (sender, args) =>
         {
             if (FilesListBox.SelectedItem is not GenericFileRepresentation file) return;
@@ -111,11 +107,6 @@ public class ToolLayerImportControl : ToolControl
                     break;
             }
         };
-    }
-
-    private void InitializeComponent()
-    {
-        AvaloniaXamlLoader.Load(this);
     }
 
     /*public override async Task<bool> ValidateForm()
@@ -160,26 +151,20 @@ public class ToolLayerImportControl : ToolControl
 
     public async void AddFiles()
     {
-        var filters = Helpers.ToAvaloniaFileFilter(FileFormat.AllFileFiltersAvalonia);
-        var orderedFilters = new List<FileDialogFilter> { filters[UserSettings.Instance.General.DefaultOpenFileExtensionIndex] };
+        var filters = AvaloniaStatic.ToAvaloniaFileFilter(FileFormat.AllFileFiltersAvalonia);
+        var orderedFilters = new List<FilePickerFileType> { filters[UserSettings.Instance.General.DefaultOpenFileExtensionIndex] };
         for (int i = 0; i < filters.Count; i++)
         {
             if (i == UserSettings.Instance.General.DefaultOpenFileExtensionIndex) continue;
             orderedFilters.Add(filters[i]);
         }
 
-        var dialog = new OpenFileDialog
-        {
-            AllowMultiple = true,
-            Filters = orderedFilters,
-            Directory = UserSettings.Instance.General.DefaultDirectoryOpenFile
-        };
-
-        var files = await dialog.ShowAsync(ParentWindow);
-        if (files is null || files.Length == 0) return;
+        var files = await App.MainWindow.OpenFilePickerAsync(UserSettings.Instance.General.DefaultDirectoryOpenFile, orderedFilters, allowMultiple: true);
+        if (files.Count == 0) return;
+        
         foreach (var filename in files)
         {
-            Operation.AddFile(filename);
+            Operation.AddFile(filename.TryGetLocalPath()!);
         }
 
         if (_isAutoSortLayersByFileNameChecked)

@@ -7,7 +7,8 @@
  */
 
 using Avalonia.Media;
-using JetBrains.Annotations;
+using Avalonia.Media.Immutable;
+using Avalonia.Themes.Fluent;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -40,6 +41,7 @@ public sealed class UserSettings : BindableBase
     public sealed class GeneralUserSettings : BindableBase
     {
         private App.ApplicationTheme _theme = App.ApplicationTheme.FluentLight;
+        private DensityStyle _themeDensity = DensityStyle.Normal;
         internal Rectangle _lastWindowBounds = new(40, 40, 1024, 600);
         private bool _startMaximized = true;
         private bool _restoreWindowLastPosition;
@@ -75,6 +77,12 @@ public sealed class UserSettings : BindableBase
         {
             get => _theme;
             set => RaiseAndSetIfChanged(ref _theme, value);
+        }
+
+        public DensityStyle ThemeDensity
+        {
+            get => _themeDensity;
+            set => RaiseAndSetIfChanged(ref _themeDensity, value);
         }
 
         public Rectangle LastWindowBounds
@@ -338,9 +346,9 @@ public sealed class UserSettings : BindableBase
         }
 
         [XmlIgnore]
-        public SolidColorBrush TooltipOverlayBackgroundBrush
+        public Avalonia.Media.Color TooltipOverlayBackgroundBrush
         {
-            get => new(_tooltipOverlayBackgroundColor.ToAvalonia());
+            get => _tooltipOverlayBackgroundColor.ToAvalonia();
             set => TooltipOverlayBackgroundColor = new Color(value);
         }
 
@@ -361,9 +369,9 @@ public sealed class UserSettings : BindableBase
         }
 
         [XmlIgnore]
-        public SolidColorBrush VolumeBoundsOutlineBrush
+        public Avalonia.Media.Color VolumeBoundsOutlineBrush
         {
-            get => new(_volumeBoundsOutlineColor.ToAvalonia());
+            get => _volumeBoundsOutlineColor.ToAvalonia();
             set => VolumeBoundsOutlineColor = new Color(value);
         }
 
@@ -390,9 +398,9 @@ public sealed class UserSettings : BindableBase
         }
 
         [XmlIgnore]
-        public SolidColorBrush LayerBoundsOutlineBrush
+        public Avalonia.Media.Color LayerBoundsOutlineBrush
         {
-            get => new(_layerBoundsOutlineColor.ToAvalonia());
+            get => _layerBoundsOutlineColor.ToAvalonia();
             set => LayerBoundsOutlineColor = new Color(value);
         }
 
@@ -419,9 +427,9 @@ public sealed class UserSettings : BindableBase
         }
 
         [XmlIgnore]
-        public SolidColorBrush ContourBoundsOutlineBrush
+        public Avalonia.Media.Color ContourBoundsOutlineBrush
         {
-            get => new(_contourBoundsOutlineColor.ToAvalonia());
+            get => _contourBoundsOutlineColor.ToAvalonia();
             set => ContourBoundsOutlineColor = new Color(value);
         }
 
@@ -448,9 +456,9 @@ public sealed class UserSettings : BindableBase
         }
 
         [XmlIgnore]
-        public SolidColorBrush EnclosingCirclesOutlineBrush
+        public Avalonia.Media.Color EnclosingCirclesOutlineBrush
         {
-            get => new(_enclosingCirclesOutlineColor.ToAvalonia());
+            get => _enclosingCirclesOutlineColor.ToAvalonia();
             set => EnclosingCirclesOutlineColor = new Color(value);
         }
 
@@ -477,9 +485,9 @@ public sealed class UserSettings : BindableBase
         }
 
         [XmlIgnore]
-        public SolidColorBrush HollowOutlineBrush
+        public Avalonia.Media.Color HollowOutlineBrush
         {
-            get => new(_hollowOutlineColor.ToAvalonia());
+            get => _hollowOutlineColor.ToAvalonia();
             set => HollowOutlineColor = new Color(value);
         }
 
@@ -506,9 +514,9 @@ public sealed class UserSettings : BindableBase
         }
 
         [XmlIgnore]
-        public SolidColorBrush CentroidOutlineBrush
+        public Avalonia.Media.Color CentroidOutlineBrush
         {
-            get => new(_centroidOutlineColor.ToAvalonia());
+            get => _centroidOutlineColor.ToAvalonia();
             set => CentroidOutlineColor = new Color(value);
         }
 
@@ -541,9 +549,9 @@ public sealed class UserSettings : BindableBase
         }
 
         [XmlIgnore]
-        public SolidColorBrush TriangulateOutlineBrush
+        public Avalonia.Media.Color TriangulateOutlineBrush
         {
-            get => new(_triangulateOutlineColor.ToAvalonia());
+            get => _triangulateOutlineColor.ToAvalonia();
             set => TriangulateOutlineColor = new Color(value);
         }
 
@@ -570,9 +578,9 @@ public sealed class UserSettings : BindableBase
         }
 
         [XmlIgnore]
-        public SolidColorBrush MaskOutlineBrush
+        public Avalonia.Media.Color MaskOutlineBrush
         {
-            get => new(_maskOutlineColor.ToAvalonia());
+            get => _maskOutlineColor.ToAvalonia();
             set => MaskOutlineColor = new Color(value);
         }
 
@@ -599,9 +607,9 @@ public sealed class UserSettings : BindableBase
         }
 
         [XmlIgnore]
-        public SolidColorBrush PreviousLayerDifferenceBrush
+        public Avalonia.Media.Color PreviousLayerDifferenceBrush
         {
-            get => new(_previousLayerDifferenceColor.ToAvalonia());
+            get => _previousLayerDifferenceColor.ToAvalonia();
             set => PreviousLayerDifferenceColor = new Color(value);
         }
 
@@ -616,9 +624,9 @@ public sealed class UserSettings : BindableBase
         }
 
         [XmlIgnore]
-        public SolidColorBrush NextLayerDifferenceBrush
+        public Avalonia.Media.Color NextLayerDifferenceBrush
         {
-            get => new(_nextLayerDifferenceColor.ToAvalonia());
+            get => _nextLayerDifferenceColor.ToAvalonia();
             set => NextLayerDifferenceColor = new Color(value);
         }
 
@@ -633,9 +641,9 @@ public sealed class UserSettings : BindableBase
         }
 
         [XmlIgnore]
-        public SolidColorBrush BothLayerDifferenceBrush
+        public Avalonia.Media.Color BothLayerDifferenceBrush
         {
-            get => new(_bothLayerDifferenceColor.ToAvalonia());
+            get => _bothLayerDifferenceColor.ToAvalonia();
             set => BothLayerDifferenceColor = new Color(value);
         }
 
@@ -668,9 +676,9 @@ public sealed class UserSettings : BindableBase
         }
 
         [XmlIgnore]
-        public SolidColorBrush IslandBrush
+        public Avalonia.Media.Color IslandBrush
         {
-            get => new(_islandColor.ToAvalonia());
+            get => _islandColor.ToAvalonia();
             set => IslandColor = new Color(value);
         }
 
@@ -685,9 +693,9 @@ public sealed class UserSettings : BindableBase
         }
 
         [XmlIgnore]
-        public SolidColorBrush IslandHighlightBrush
+        public Avalonia.Media.Color IslandHighlightBrush
         {
-            get => new(_islandHighlightColor.ToAvalonia());
+            get => _islandHighlightColor.ToAvalonia();
             set => IslandHighlightColor = new Color(value);
         }
 
@@ -702,9 +710,9 @@ public sealed class UserSettings : BindableBase
         }
 
         [XmlIgnore]
-        public SolidColorBrush OverhangBrush
+        public Avalonia.Media.Color OverhangBrush
         {
-            get => new(_overhangColor.ToAvalonia());
+            get => _overhangColor.ToAvalonia();
             set => OverhangColor = new Color(value);
         }
 
@@ -719,9 +727,9 @@ public sealed class UserSettings : BindableBase
         }
 
         [XmlIgnore]
-        public SolidColorBrush OverhangHighlightBrush
+        public Avalonia.Media.Color OverhangHighlightBrush
         {
-            get => new(_overhangHighlightColor.ToAvalonia());
+            get => _overhangHighlightColor.ToAvalonia();
             set => OverhangHighlightColor = new Color(value);
         }
 
@@ -736,9 +744,9 @@ public sealed class UserSettings : BindableBase
         }
 
         [XmlIgnore]
-        public SolidColorBrush ResinTrapBrush
+        public Avalonia.Media.Color ResinTrapBrush
         {
-            get => new(_resinTrapColor.ToAvalonia());
+            get => _resinTrapColor.ToAvalonia();
             set => ResinTrapColor = new Color(value);
         }
 
@@ -753,9 +761,9 @@ public sealed class UserSettings : BindableBase
         }
 
         [XmlIgnore]
-        public SolidColorBrush ResinTrapHighlightBrush
+        public Avalonia.Media.Color ResinTrapHighlightBrush
         {
-            get => new(_resinTrapHighlightColor.ToAvalonia());
+            get => _resinTrapHighlightColor.ToAvalonia();
             set => ResinTrapHighlightColor = new Color(value);
         }
 
@@ -770,9 +778,9 @@ public sealed class UserSettings : BindableBase
         }
 
         [XmlIgnore]
-        public SolidColorBrush SuctionCupBrush
+        public Avalonia.Media.Color SuctionCupBrush
         {
-            get => new(_suctionCupColor.ToAvalonia());
+            get => _suctionCupColor.ToAvalonia();
             set => SuctionCupColor = new Color(value);
         }
 
@@ -787,9 +795,9 @@ public sealed class UserSettings : BindableBase
         }
 
         [XmlIgnore]
-        public SolidColorBrush SuctionCupHighlightBrush
+        public Avalonia.Media.Color SuctionCupHighlightBrush
         {
-            get => new(_suctionCupHighlightColor.ToAvalonia());
+            get => _suctionCupHighlightColor.ToAvalonia();
             set => SuctionCupHighlightColor = new Color(value);
         }
 
@@ -804,9 +812,9 @@ public sealed class UserSettings : BindableBase
         }
 
         [XmlIgnore]
-        public SolidColorBrush TouchingBoundsBrush
+        public Avalonia.Media.Color TouchingBoundsBrush
         {
-            get => new(_touchingBoundsColor.ToAvalonia());
+            get => _touchingBoundsColor.ToAvalonia();
             set => TouchingBoundsColor = new Color(value);
         }
 
@@ -821,9 +829,9 @@ public sealed class UserSettings : BindableBase
         }
 
         [XmlIgnore]
-        public SolidColorBrush CrosshairBrush
+        public Avalonia.Media.Color CrosshairBrush
         {
-            get => new(_crosshairColor.ToAvalonia());
+            get => _crosshairColor.ToAvalonia();
             set => CrosshairColor = new Color(value);
         }
 
@@ -1237,9 +1245,9 @@ public sealed class UserSettings : BindableBase
         }
 
         [XmlIgnore]
-        public SolidColorBrush AddPixelBrush
+        public Avalonia.Media.Color AddPixelBrush
         {
-            get => new(_addPixelColor.ToAvalonia());
+            get => _addPixelColor.ToAvalonia();
             set => AddPixelColor = new Color(value);
         }
 
@@ -1254,9 +1262,9 @@ public sealed class UserSettings : BindableBase
         }
 
         [XmlIgnore]
-        public SolidColorBrush AddPixelHighlightBrush
+        public Avalonia.Media.Color AddPixelHighlightBrush
         {
-            get => new(_addPixelHighlightColor.ToAvalonia());
+            get => _addPixelHighlightColor.ToAvalonia();
             set => AddPixelHighlightColor = new Color(value);
         }
 
@@ -1271,9 +1279,9 @@ public sealed class UserSettings : BindableBase
         }
 
         [XmlIgnore]
-        public SolidColorBrush RemovePixelBrush
+        public Avalonia.Media.Color RemovePixelBrush
         {
-            get => new(_removePixelColor.ToAvalonia());
+            get => _removePixelColor.ToAvalonia();
             set => RemovePixelColor = new Color(value);
         }
 
@@ -1288,9 +1296,9 @@ public sealed class UserSettings : BindableBase
         }
 
         [XmlIgnore]
-        public SolidColorBrush RemovePixelHighlightBrush
+        public Avalonia.Media.Color RemovePixelHighlightBrush
         {
-            get => new(_removePixelHighlightColor.ToAvalonia());
+            get => _removePixelHighlightColor.ToAvalonia();
             set => RemovePixelHighlightColor = new Color(value);
         }
 
@@ -1305,9 +1313,9 @@ public sealed class UserSettings : BindableBase
         }
 
         [XmlIgnore]
-        public SolidColorBrush SupportsBrush
+        public Avalonia.Media.Color SupportsBrush
         {
-            get => new(_supportsColor.ToAvalonia());
+            get => _supportsColor.ToAvalonia();
             set => SupportsColor = new Color(value);
         }
 
@@ -1322,9 +1330,9 @@ public sealed class UserSettings : BindableBase
         }
 
         [XmlIgnore]
-        public SolidColorBrush SupportsHighlightBrush
+        public Avalonia.Media.Color SupportsHighlightBrush
         {
-            get => new(_supportsHighlightColor.ToAvalonia());
+            get => _supportsHighlightColor.ToAvalonia();
             set => SupportsHighlightColor = new Color(value);
         }
 
@@ -1339,9 +1347,9 @@ public sealed class UserSettings : BindableBase
         }
 
         [XmlIgnore]
-        public SolidColorBrush DrainHoleBrush
+        public Avalonia.Media.Color DrainHoleBrush
         {
-            get => new(_drainHoleColor.ToAvalonia());
+            get => _drainHoleColor.ToAvalonia();
             set => DrainHoleColor = new Color(value);
         }
 
@@ -1356,9 +1364,9 @@ public sealed class UserSettings : BindableBase
         }
 
         [XmlIgnore]
-        public SolidColorBrush DrainHoleHighlightBrush
+        public Avalonia.Media.Color DrainHoleHighlightBrush
         {
-            get => new(_drainHoleHighlightColor.ToAvalonia());
+            get => _drainHoleHighlightColor.ToAvalonia();
             set => DrainHoleHighlightColor = new Color(value);
         }
 
@@ -1373,9 +1381,9 @@ public sealed class UserSettings : BindableBase
         }
 
         [XmlIgnore]
-        public SolidColorBrush CursorBrush
+        public Avalonia.Media.Color CursorBrush
         {
-            get => new(_cursorColor.ToAvalonia());
+            get => _cursorColor.ToAvalonia();
             set => CursorColor = new Color(value);
         }
 
@@ -1702,7 +1710,6 @@ public sealed class UserSettings : BindableBase
     /// <summary>
     /// Gets or sets the last running version of UVtools with these settings
     /// </summary>
-    [NotNull]
     public string AppVersion
     {
         get => _appVersion ??= About.VersionStr;

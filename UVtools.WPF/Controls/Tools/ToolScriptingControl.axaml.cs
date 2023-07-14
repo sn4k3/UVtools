@@ -1,13 +1,10 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Layout;
-using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using Avalonia.Platform.Storage;
 using UVtools.Core;
 using UVtools.Core.Operations;
 using UVtools.Core.Scripting;
@@ -17,27 +14,17 @@ using UVtools.WPF.Windows;
 
 namespace UVtools.WPF.Controls.Tools;
 
-public class ToolScriptingControl : ToolControl
+public partial class ToolScriptingControl : ToolControl
 {
     public OperationScripting Operation => BaseOperation as OperationScripting;
-
-    private readonly StackPanel _scriptConfigurationPanel;
-    private readonly Grid _scriptVariablesGrid;
-
 
     public ToolScriptingControl()
     {
         BaseOperation = new OperationScripting(SlicerFile);
         if (!ValidateSpawn()) return;
         InitializeComponent();
-        _scriptConfigurationPanel = this.FindControl<StackPanel>("ScriptConfigurationPanel");
-        _scriptVariablesGrid = this.FindControl<Grid>("ScriptVariablesGrid");
     }
 
-    private void InitializeComponent()
-    {
-        AvaloniaXamlLoader.Load(this);
-    }
 
     public override void Callback(ToolWindow.Callbacks callback)
     {
@@ -72,17 +59,13 @@ public class ToolScriptingControl : ToolControl
 
     public async void LoadScript()
     {
-        var dialog = new OpenFileDialog
-        {
-            AllowMultiple = false,
-            Directory = UserSettings.Instance.General.DefaultDirectoryScripts,
-            Filters = Helpers.ScriptsFileFilter,
-        };
+        var files = await App.MainWindow.OpenFilePickerAsync(
+            await App.MainWindow.StorageProvider.TryGetFolderFromPathAsync(UserSettings.Instance.General.DefaultDirectoryScripts),
+            AvaloniaStatic.ScriptsFileFilter);
 
-        var files = await dialog.ShowAsync(ParentWindow);
-        if (files is null || files.Length == 0) return;
+        if (files.Count == 0 || files[0].TryGetLocalPath() is not { } filePath) return;
 
-        Operation.FilePath = files[0];
+        Operation.FilePath = filePath;
         ReloadScript();
     }
 
@@ -128,9 +111,9 @@ public class ToolScriptingControl : ToolControl
     {
         if (!Operation.CanExecute) return;
 
-        _scriptConfigurationPanel.Children.Clear();
-        _scriptVariablesGrid.Children.Clear();
-        _scriptVariablesGrid.RowDefinitions.Clear();
+        ScriptConfigurationPanel.Children.Clear();
+        ScriptVariablesGrid.Children.Clear();
+        ScriptVariablesGrid.RowDefinitions.Clear();
 
         TextBox tbScriptName = new()
         {
@@ -149,8 +132,8 @@ public class ToolScriptingControl : ToolControl
             Watermark = "Script description"
         };
 
-        _scriptConfigurationPanel.Children.Add(tbScriptName);
-        _scriptConfigurationPanel.Children.Add(tbScriptDescription);
+        ScriptConfigurationPanel.Children.Add(tbScriptName);
+        ScriptConfigurationPanel.Children.Add(tbScriptDescription);
 
         //Operation.ScriptGlobals.Script.UserInputs.Add(new ScriptBoolInput() { Label = "Hellow" });
         //Operation.ScriptGlobals.Script.UserInputs.Add(new ScriptTextBoxInput() { Label = "Hellow", Value = "m,e", MultiLine = true});
@@ -173,7 +156,7 @@ public class ToolScriptingControl : ToolControl
             }
         }
 
-        _scriptVariablesGrid.RowDefinitions = RowDefinitions.Parse(rowDefinitions);
+        ScriptVariablesGrid.RowDefinitions = RowDefinitions.Parse(rowDefinitions);
 
         for (var i = 0; i < Operation.ScriptGlobals.Script.UserInputs.Count; i++)
         {
@@ -192,7 +175,7 @@ public class ToolScriptingControl : ToolControl
                     ToolTip.SetTip(tbLabel, variable.ToolTip);
                 }
 
-                _scriptVariablesGrid.Children.Add(tbLabel);
+                ScriptVariablesGrid.Children.Add(tbLabel);
                 Grid.SetRow(tbLabel, i * 2);
                 Grid.SetColumn(tbLabel, 0);
             }
@@ -205,7 +188,7 @@ public class ToolScriptingControl : ToolControl
                     Text = variable.Unit
                 };
 
-                _scriptVariablesGrid.Children.Add(control);
+                ScriptVariablesGrid.Children.Add(control);
                 Grid.SetRow(control, i * 2);
                 Grid.SetColumn(control, 4);
             }
@@ -230,7 +213,7 @@ public class ToolScriptingControl : ToolControl
                         control.Value = numSBYTE.Value;
                     });
 
-                    _scriptVariablesGrid.Children.Add(control);
+                    ScriptVariablesGrid.Children.Add(control);
                     Grid.SetRow(control, i * 2);
                     Grid.SetColumn(control, 2);
 
@@ -254,7 +237,7 @@ public class ToolScriptingControl : ToolControl
                         control.Value = numBYTE.Value;
                     });
 
-                    _scriptVariablesGrid.Children.Add(control);
+                    ScriptVariablesGrid.Children.Add(control);
                     Grid.SetRow(control, i * 2);
                     Grid.SetColumn(control, 2);
 
@@ -278,7 +261,7 @@ public class ToolScriptingControl : ToolControl
                         control.Value = numSHORT.Value;
                     });
 
-                    _scriptVariablesGrid.Children.Add(control);
+                    ScriptVariablesGrid.Children.Add(control);
                     Grid.SetRow(control, i * 2);
                     Grid.SetColumn(control, 2);
 
@@ -302,7 +285,7 @@ public class ToolScriptingControl : ToolControl
                         control.Value = numUSHORT.Value;
                     });
 
-                    _scriptVariablesGrid.Children.Add(control);
+                    ScriptVariablesGrid.Children.Add(control);
                     Grid.SetRow(control, i * 2);
                     Grid.SetColumn(control, 2);
 
@@ -326,7 +309,7 @@ public class ToolScriptingControl : ToolControl
                         control.Value = numINT.Value;
                     });
 
-                    _scriptVariablesGrid.Children.Add(control);
+                    ScriptVariablesGrid.Children.Add(control);
                     Grid.SetRow(control, i * 2);
                     Grid.SetColumn(control, 2);
 
@@ -350,7 +333,7 @@ public class ToolScriptingControl : ToolControl
                         control.Value = numUINT.Value;
                     });
 
-                    _scriptVariablesGrid.Children.Add(control);
+                    ScriptVariablesGrid.Children.Add(control);
                     Grid.SetRow(control, i * 2);
                     Grid.SetColumn(control, 2);
 
@@ -374,7 +357,7 @@ public class ToolScriptingControl : ToolControl
                         control.Value = numLONG.Value;
                     });
 
-                    _scriptVariablesGrid.Children.Add(control);
+                    ScriptVariablesGrid.Children.Add(control);
                     Grid.SetRow(control, i * 2);
                     Grid.SetColumn(control, 2);
 
@@ -398,7 +381,7 @@ public class ToolScriptingControl : ToolControl
                         control.Value = numULONG.Value;
                     });
 
-                    _scriptVariablesGrid.Children.Add(control);
+                    ScriptVariablesGrid.Children.Add(control);
                     Grid.SetRow(control, i * 2);
                     Grid.SetColumn(control, 2);
 
@@ -408,10 +391,10 @@ public class ToolScriptingControl : ToolControl
                 {
                     NumericUpDown control = new()
                     {
-                        Minimum = numFLOAT.Minimum,
-                        Maximum = numFLOAT.Maximum,
-                        Value = numFLOAT.Value,
-                        Increment = numFLOAT.Increment,
+                        Minimum = (decimal)numFLOAT.Minimum,
+                        Maximum = (decimal)numFLOAT.Maximum,
+                        Value = (decimal)numFLOAT.Value,
+                        Increment = (decimal)numFLOAT.Increment,
                         MinWidth = 150
                     };
 
@@ -423,11 +406,11 @@ public class ToolScriptingControl : ToolControl
                     var valueProperty = control.GetObservable(NumericUpDown.ValueProperty);
                     valueProperty.Subscribe(value =>
                     {
-                        numFLOAT.Value = (float) Math.Round(value, numFLOAT.DecimalPlates);
-                        control.Value = numFLOAT.Value;
+                        numFLOAT.Value = (float) Math.Round((float)value, numFLOAT.DecimalPlates);
+                        control.Value = (decimal)numFLOAT.Value;
                     });
 
-                    _scriptVariablesGrid.Children.Add(control);
+                    ScriptVariablesGrid.Children.Add(control);
                     Grid.SetRow(control, i * 2);
                     Grid.SetColumn(control, 2);
 
@@ -437,10 +420,10 @@ public class ToolScriptingControl : ToolControl
                 {
                     NumericUpDown control = new()
                     {
-                        Minimum = numDOUBLE.Minimum,
-                        Maximum = numDOUBLE.Maximum,
-                        Value = numDOUBLE.Value,
-                        Increment = numDOUBLE.Increment,
+                        Minimum = (decimal)numDOUBLE.Minimum,
+                        Maximum = (decimal)numDOUBLE.Maximum,
+                        Value = (decimal)numDOUBLE.Value,
+                        Increment = (decimal)numDOUBLE.Increment,
                         MinWidth = 150
                     };
 
@@ -452,11 +435,11 @@ public class ToolScriptingControl : ToolControl
                     var valueProperty = control.GetObservable(NumericUpDown.ValueProperty);
                     valueProperty.Subscribe(value =>
                     {
-                        numDOUBLE.Value = Math.Round(value, numDOUBLE.DecimalPlates);
-                        control.Value = numDOUBLE.Value;
+                        numDOUBLE.Value = Math.Round((double)value, numDOUBLE.DecimalPlates);
+                        control.Value = (decimal)numDOUBLE.Value;
                     });
 
-                    _scriptVariablesGrid.Children.Add(control);
+                    ScriptVariablesGrid.Children.Add(control);
                     Grid.SetRow(control, i * 2);
                     Grid.SetColumn(control, 2);
 
@@ -466,10 +449,10 @@ public class ToolScriptingControl : ToolControl
                 {
                     NumericUpDown control = new()
                     {
-                        Minimum = (double)numDECIMAL.Minimum,
-                        Maximum = (double)numDECIMAL.Maximum,
-                        Value = (double)numDECIMAL.Value,
-                        Increment = (double)numDECIMAL.Increment,
+                        Minimum = numDECIMAL.Minimum,
+                        Maximum = numDECIMAL.Maximum,
+                        Value = numDECIMAL.Value,
+                        Increment = numDECIMAL.Increment,
                         MinWidth = 150
                     };
 
@@ -481,11 +464,11 @@ public class ToolScriptingControl : ToolControl
                     var valueProperty = control.GetObservable(NumericUpDown.ValueProperty);
                     valueProperty.Subscribe(value =>
                     {
-                        numDECIMAL.Value = (decimal)Math.Round(value, numDECIMAL.DecimalPlates);
-                        control.Value = (double)numDECIMAL.Value;
+                        numDECIMAL.Value = Math.Round((decimal)value, numDECIMAL.DecimalPlates);
+                        control.Value = numDECIMAL.Value;
                     });
 
-                    _scriptVariablesGrid.Children.Add(control);
+                    ScriptVariablesGrid.Children.Add(control);
                     Grid.SetRow(control, i * 2);
                     Grid.SetColumn(control, 2);
 
@@ -505,7 +488,7 @@ public class ToolScriptingControl : ToolControl
                         if (value != null) inputCheckBox.Value = value.Value;
                     });
 
-                    _scriptVariablesGrid.Children.Add(control);
+                    ScriptVariablesGrid.Children.Add(control);
                     Grid.SetRow(control, i * 2);
                     Grid.SetColumn(control, 2);
 
@@ -531,7 +514,7 @@ public class ToolScriptingControl : ToolControl
                         if (value != null) inputToggleSwitch.Value = value.Value;
                     });
 
-                    _scriptVariablesGrid.Children.Add(control);
+                    ScriptVariablesGrid.Children.Add(control);
                     Grid.SetRow(control, i * 2);
                     Grid.SetColumn(control, 2);
 
@@ -556,7 +539,7 @@ public class ToolScriptingControl : ToolControl
                         inputTextBox.Value = value;
                     });
 
-                    _scriptVariablesGrid.Children.Add(control);
+                    ScriptVariablesGrid.Children.Add(control);
                     Grid.SetRow(control, i * 2);
                     Grid.SetColumn(control, 2);
 
@@ -581,25 +564,19 @@ public class ToolScriptingControl : ToolControl
                         Content = "Select",
                     };
 
-                    button.Click += async (sender, args) => 
+                    button.Click += async (sender, args) =>
                     {
-                        var dialog = new OpenFolderDialog
-                        {
-                            Directory = inputOpenFolder.Value,
-                            Title = inputOpenFolder.Title
-                        };
-                        var result = await dialog.ShowAsync(ParentWindow);
-                        if (!string.IsNullOrWhiteSpace(result))
-                        {
-                            inputOpenFolder.Value = result;
-                            control.Text = result;
-                        }
+                        var folders = await App.MainWindow.OpenFolderPickerAsync(inputOpenFolder.Value, inputOpenFolder.Title);
+
+                        if (folders.Count <= 0 || folders[0].TryGetLocalPath() is not { } folderPath) return;
+                        inputOpenFolder.Value = folderPath;
+                        control.Text = folderPath;
                     };
 
                     panel.Children.Add(control);
                     panel.Children.Add(button);
 
-                    _scriptVariablesGrid.Children.Add(panel);
+                    ScriptVariablesGrid.Children.Add(panel);
                     Grid.SetRow(panel, i * 2);
                     Grid.SetColumn(panel, 2);
 
@@ -657,7 +634,7 @@ public class ToolScriptingControl : ToolControl
                     panel.Children.Add(control);
                     panel.Children.Add(button);
 
-                    _scriptVariablesGrid.Children.Add(panel);
+                    ScriptVariablesGrid.Children.Add(panel);
                     Grid.SetRow(panel, i * 2);
                     Grid.SetColumn(panel, 2);
 
@@ -715,7 +692,7 @@ public class ToolScriptingControl : ToolControl
                     panel.Children.Add(control);
                     panel.Children.Add(button);
 
-                    _scriptVariablesGrid.Children.Add(panel);
+                    ScriptVariablesGrid.Children.Add(panel);
                     Grid.SetRow(panel, i * 2);
                     Grid.SetColumn(panel, 2);
 

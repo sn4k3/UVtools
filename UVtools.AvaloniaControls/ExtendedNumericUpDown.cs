@@ -9,6 +9,7 @@
 
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Metadata;
 using System;
 
 namespace UVtools.AvaloniaControls;
@@ -16,6 +17,9 @@ namespace UVtools.AvaloniaControls;
 /// <summary>
 /// Extends the <see cref="NumericUpDown"/> with initial value, reset and value unit text
 /// </summary>
+[TemplatePart("PART_OldTextBox", typeof(TextBox))]
+[TemplatePart("PART_ValueUnitTextBox", typeof(TextBox))]
+[TemplatePart("PART_ResetButton", typeof(Button))]
 public class ExtendedNumericUpDown : NumericUpDown
 {
     #region Enums
@@ -42,7 +46,7 @@ public class ExtendedNumericUpDown : NumericUpDown
 
     #region Members
     private bool _firstTime = true;
-    private double _initialValue;
+    private decimal _initialValue;
     private string? _initialText;
     private bool _isResetEnabled;
     private bool _isResetVisible;
@@ -65,8 +69,8 @@ public class ExtendedNumericUpDown : NumericUpDown
     /// <summary>
     /// Defines the <see cref="InitialValue"/> property.
     /// </summary>
-    public static readonly DirectProperty<ExtendedNumericUpDown, double> InitialValueProperty =
-        AvaloniaProperty.RegisterDirect<ExtendedNumericUpDown, double>(nameof(InitialValue), updown => updown.InitialValue,
+    public static readonly DirectProperty<ExtendedNumericUpDown, decimal> InitialValueProperty =
+        AvaloniaProperty.RegisterDirect<ExtendedNumericUpDown, decimal>(nameof(InitialValue), updown => updown.InitialValue,
             (updown, v) => updown.InitialValue = v);
 
     /// <summary>
@@ -109,7 +113,7 @@ public class ExtendedNumericUpDown : NumericUpDown
     /// <summary>
     /// Gets or sets the initial value.
     /// </summary>
-    public double InitialValue
+    public decimal InitialValue
     {
         get => _initialValue;
         private set => SetAndRaise(InitialValueProperty, ref _initialValue, value);
@@ -207,7 +211,7 @@ public class ExtendedNumericUpDown : NumericUpDown
     /// </summary>
     public void RedefineOldValue()
     {
-        InitialValue = Value;
+        InitialValue = Value ?? 0;
         InitialText = Text;
         IsResetEnabled = false;
     }

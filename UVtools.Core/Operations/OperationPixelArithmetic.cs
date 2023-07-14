@@ -995,6 +995,7 @@ public class OperationPixelArithmetic : Operation
     }
 
 
+    public void GeneratePattern(object pattern) => GeneratePattern(pattern.ToString()!);
     public void GeneratePattern(string pattern)
     {
         if (pattern == "Chessboard")
@@ -1154,11 +1155,12 @@ public class OperationPixelArithmetic : Operation
         }
     }
 
+    public void GenerateInfill(object pattern) => GenerateInfill(pattern.ToString()!);
     public void GenerateInfill(string pattern)
     {
         if (pattern == "Rectilinear")
         {
-            PatternText = ($"255\n".Repeat(_patternGenInfillSpacing) + $"0\n".Repeat(_patternGenInfillThickness)).Trim('\n', '\r');
+            PatternText = ("255\n".Repeat(_patternGenInfillSpacing) + "0\n".Repeat(_patternGenInfillThickness)).Trim('\n', '\r');
             PatternTextAlternate = null!;
             return;
         }

@@ -1,6 +1,3 @@
-using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Markup.Xaml;
 using System;
 using System.Linq;
 using UVtools.Core.Dialogs;
@@ -11,10 +8,9 @@ using UVtools.WPF.Extensions;
 
 namespace UVtools.WPF.Windows;
 
-public class MaterialManagerWindow : WindowEx
+public partial class MaterialManagerWindow : WindowEx
 {
     private Material _material = new();
-    private readonly DataGrid _grid;
     public MaterialManager Manager => MaterialManager.Instance;
 
     public Material Material
@@ -26,20 +22,11 @@ public class MaterialManagerWindow : WindowEx
     public MaterialManagerWindow()
     {
         InitializeComponent();
-#if DEBUG
-        this.AttachDevTools();
-#endif
 
-        _grid = this.FindControl<DataGrid>("MaterialsTable");
 
         MaterialManager.Load(); // Reload
 
         DataContext = this;
-    }
-
-    private void InitializeComponent()
-    {
-        AvaloniaXamlLoader.Load(this);
     }
 
     protected override void OnClosed(EventArgs e)
@@ -80,9 +67,9 @@ public class MaterialManagerWindow : WindowEx
 
     public async void RemoveSelectedMaterials()
     {
-        if (_grid.SelectedItems.Count <= 0) return;
-        if (await this.MessageBoxQuestion($"Are you sure you want to remove {_grid.SelectedItems.Count} materials?") != MessageButtonResult.Yes) return;
-        Manager.RemoveRange(_grid.SelectedItems.Cast<Material>());
+        if (MaterialsTable.SelectedItems.Count <= 0) return;
+        if (await this.MessageBoxQuestion($"Are you sure you want to remove {MaterialsTable.SelectedItems.Count} materials?") != MessageButtonResult.Yes) return;
+        Manager.RemoveRange(MaterialsTable.SelectedItems.Cast<Material>());
         MaterialManager.Save();
     }
 

@@ -7,7 +7,6 @@
  */
 
 using Avalonia.Input;
-using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
 using System;
 using System.Diagnostics;
@@ -18,7 +17,7 @@ using UVtools.WPF.Structures;
 
 namespace UVtools.WPF.Windows;
 
-public class ProgressWindow : WindowEx, IDisposable
+public partial class ProgressWindow : WindowEx, IDisposable
 {
     public Stopwatch StopWatch => Progress.StopWatch;
     public OperationProgress Progress { get; } = new ();
@@ -65,11 +64,6 @@ public class ProgressWindow : WindowEx, IDisposable
     public ProgressWindow(string title) : this()
     {
         SetTitle(title);
-    }
-
-    private void InitializeComponent()
-    {
-        AvaloniaXamlLoader.Load(this);
     }
 
     protected override void OnClosed(EventArgs e)

@@ -12,7 +12,7 @@
 		<PackageLicenseFile>LICENSE</PackageLicenseFile>
 		<RepositoryUrl>https://github.com/sn4k3/UVtools</RepositoryUrl>
 		<RepositoryType>Git</RepositoryType>
-		<Version>3.15.1</Version>
+		<Version>4.0.0</Version>
 		<Platforms>AnyCPU;x64</Platforms>
 		<PackageIcon>UVtools.png</PackageIcon>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
@@ -43,15 +43,16 @@
 		<DebugType>portable</DebugType>
 	</PropertyGroup>
 	<ItemGroup>
-		<PackageReference Include="Avalonia" Version="0.10.21" />
-		<PackageReference Include="Avalonia.Controls.DataGrid" Version="0.10.21" />
-		<PackageReference Include="Avalonia.Desktop" Version="0.10.21" />
-		<PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="0.10.21" />
-		<PackageReference Include="Markdown.Avalonia" Version="0.10.14" />
-		<PackageReference Include="Projektanker.Icons.Avalonia" Version="5.13.0" />
-		<PackageReference Include="Projektanker.Icons.Avalonia.FontAwesome" Version="5.13.0" />
-		<PackageReference Include="Projektanker.Icons.Avalonia.MaterialDesign" Version="5.13.0" />
-		<PackageReference Include="ThemeEditor.Controls.ColorPicker" Version="0.10.17" />
+		<PackageReference Include="Avalonia" Version="11.0.0" />
+		<PackageReference Include="Avalonia.Controls.ColorPicker" Version="11.0.0" />
+		<PackageReference Include="Avalonia.Controls.DataGrid" Version="11.0.0" />
+		<PackageReference Include="Avalonia.Desktop" Version="11.0.0" />
+		<PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="11.0.0" />
+		<PackageReference Include="Avalonia.Themes.Fluent" Version="11.0.0" />
+		<PackageReference Include="Markdown.Avalonia" Version="11.0.0" />
+		<PackageReference Include="Projektanker.Icons.Avalonia" Version="6.6.0" />
+		<PackageReference Include="Projektanker.Icons.Avalonia.FontAwesome" Version="6.6.0" />
+		<PackageReference Include="Projektanker.Icons.Avalonia.MaterialDesign" Version="6.6.0" />
 	</ItemGroup>
 	<ItemGroup>
 		<ProjectReference Include="..\UVtools.AvaloniaControls\UVtools.AvaloniaControls.csproj" />
@@ -59,15 +60,6 @@
 	</ItemGroup>
 	<ItemGroup>
 		<None Include="..\PrusaSlicer\**" CopyToOutputDirectory="PreserveNewest" LinkBase="Assets\PrusaSlicer" />
-		<None Update="Assets\Themes\UVtools.themes">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</None>
-		<None Update="Assets\Themes\UVtoolsDark.xaml">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</None>
-		<None Update="Assets\Themes\UVtoolsLight.xaml">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</None>
 		<None Update="UVtools.sh">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>

@@ -1,6 +1,6 @@
 using Avalonia.Controls;
-using Avalonia.Markup.Xaml;
 using System.IO;
+using Avalonia.Platform.Storage;
 using UVtools.Core.Operations;
 
 namespace UVtools.WPF.Controls.Tools;
@@ -15,21 +15,13 @@ public partial class ToolLayerExportHeatMapControl : ToolControl
         InitializeComponent();
     }
 
-    private void InitializeComponent()
-    {
-        AvaloniaXamlLoader.Load(this);
-    }
-
     public async void ChooseFilePath()
     {
-        var dialog = new SaveFileDialog
-        {
-            Filters = Helpers.ImagesFullFileFilter,
-            InitialFileName = Path.GetFileName(SlicerFile.FileFullPath) + ".heatmap.png",
-            Directory = Path.GetDirectoryName(SlicerFile.FileFullPath),
-        };
-        var file = await dialog.ShowAsync(ParentWindow);
-        if (string.IsNullOrWhiteSpace(file)) return;
-        Operation.FilePath = file;
+
+        using var file = await App.MainWindow.SaveFilePickerAsync(SlicerFile.DirectoryPath, $"{SlicerFile.FilenameNoExt}_heatmap.png",
+                AvaloniaStatic.ImagesFullFileFilter);
+        if (file?.TryGetLocalPath() is not { } filePath) return;
+
+        Operation.FilePath = filePath;
     }
 }

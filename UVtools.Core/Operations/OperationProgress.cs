@@ -8,6 +8,7 @@
 using System;
 using System.Diagnostics;
 using System.Threading;
+using UVtools.Core.Extensions;
 using UVtools.Core.Objects;
 
 namespace UVtools.Core.Operations;
@@ -263,10 +264,9 @@ public sealed class OperationProgress : BindableBase, IDisposable
             return $"{_processedItems} {_itemName}";
         }
 
-        return $"{_processedItems.ToString().PadLeft(_itemCount.ToString().Length, '0')}/{_itemCount} {_itemName} | {ProgressPercent:F2}%";
-        /*return _itemCount == 0 ?
-$"{_processedItems}/? {_itemName}" :
-$"{_processedItems.ToString().PadLeft(_itemCount.ToString().Length, '0')}/{_itemCount} {_itemName} | {ProgressPercent:F2}%";*/
+        return string.Format($"{{0:D{_itemCount.DigitCount()}}}/{{1}} {{2}} | {{3:F2}}%",
+            _processedItems, _itemCount, _itemName,
+            ProgressPercent);
     }
 
     public void TriggerRefresh()

@@ -1,10 +1,9 @@
-﻿using Avalonia.Markup.Xaml;
-using UVtools.Core.Operations;
+﻿using UVtools.Core.Operations;
 using UVtools.WPF.Windows;
 
 namespace UVtools.WPF.Controls.Tools;
 
-public class ToolRepairLayersControl : ToolControl
+public partial class ToolRepairLayersControl : ToolControl
 {
     public OperationRepairLayers Operation => BaseOperation as OperationRepairLayers;
 
@@ -13,11 +12,6 @@ public class ToolRepairLayersControl : ToolControl
         BaseOperation = new OperationRepairLayers(SlicerFile);
         if (!ValidateSpawn()) return;
         InitializeComponent();
-    }
-
-    private void InitializeComponent()
-    {
-        AvaloniaXamlLoader.Load(this);
     }
 
     public static OperationRepairLayers GetOperationDisabledRepair() => new (App.SlicerFile)

@@ -1,7 +1,5 @@
-using Avalonia.Controls;
-using Avalonia.Markup.Xaml;
 using System.Collections.Generic;
-using System.IO;
+using Avalonia.Platform.Storage;
 using UVtools.Core.MeshFormats;
 using UVtools.Core.Operations;
 
@@ -17,35 +15,20 @@ public partial class ToolLayerExportMeshControl : ToolControl
         InitializeComponent();
     }
 
-    private void InitializeComponent()
-    {
-        AvaloniaXamlLoader.Load(this);
-    }
-
     public async void ChooseFilePath()
     {
-        var dialog = new SaveFileDialog
-        {
-            Directory = Path.GetDirectoryName(SlicerFile.FileFullPath),
-            DefaultExtension = ".stl",
-            InitialFileName = SlicerFile.FilenameNoExt,
-            Filters = GetFilters(),
-        };
-        var filePath = await dialog.ShowAsync(ParentWindow);
-        if (string.IsNullOrWhiteSpace(filePath)) return;
+        using var file = await App.MainWindow.SaveFilePickerAsync(SlicerFile, GetFilters());
+        if (file?.TryGetLocalPath() is not { } filePath) return;
+        
         Operation.FilePath = filePath;
     }
 
-    public List<FileDialogFilter> GetFilters()
+    public List<FilePickerFileType> GetFilters()
     {
-        var list = new List<FileDialogFilter>();
+        var list = new List<FilePickerFileType>();
         foreach (var fileExtension in MeshFile.AvailableMeshFiles)
         {
-            list.Add(new FileDialogFilter
-            {
-                Name = fileExtension.Description,
-                Extensions = new List<string>{fileExtension.Extension}
-            });
+            list.Add(AvaloniaStatic.CreateFilePickerFileType(fileExtension.Description, fileExtension.Extension));
         }
 
         return list;

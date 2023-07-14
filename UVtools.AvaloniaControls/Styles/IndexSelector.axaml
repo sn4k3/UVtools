@@ -1,0 +1,95 @@
+﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:c="clr-namespace:UVtools.AvaloniaControls">
+    <Design.PreviewWith>
+		<Border Padding="20" Width="500">
+			<StackPanel Spacing="20">
+				<c:IndexSelector Count="100"
+                                 ZeroLeading="True"/>
+
+                <c:IndexSelector Name="selectorOne" AllowSelectNone="True" Count="5"/>
+
+                <c:IndexSelector AllowSelectNone="True" Count="{Binding #selectorOne.SelectedNumber}"/>
+
+                <c:IndexSelector Count="5"
+                                 FormatString="{}{0:D4} / {1:D4}"/>
+			</StackPanel>
+		</Border>
+    </Design.PreviewWith>
+
+	<!-- Resources -->
+    <StreamGeometry x:Key="PreviousButtonIcon">M31.8839 8.36612C32.372 8.85427 32.372 9.64573 31.8839 10.1339L18.0178 24L31.8839 37.8661C32.372 38.3543 32.372 39.1457 31.8839 39.6339C31.3957 40.122 30.6043 40.122 30.1161 39.6339L15.3661 24.8839C14.878 24.3957 14.878 23.6043 15.3661 23.1161L30.1161 8.36612C30.6043 7.87796 31.3957 7.87796 31.8839 8.36612Z</StreamGeometry>
+    <StreamGeometry x:Key="NextButtonIcon">M16.1161 39.6339C15.628 39.1457 15.628 38.3543 16.1161 37.8661L29.9822 24L16.1161 10.1339C15.628 9.64573 15.628 8.85427 16.1161 8.36612C16.6043 7.87796 17.3957 7.87796 17.8839 8.36612L32.6339 23.1161C33.122 23.6043 33.122 24.3957 32.6339 24.8839L17.8839 39.6339C17.3957 40.122 16.6043 40.122 16.1161 39.6339Z</StreamGeometry>
+
+
+	<!-- Add Styles Here -->
+    <ControlTheme x:Key="{x:Type c:IndexSelector}" TargetType="c:IndexSelector">
+		<Setter Property="Foreground" Value="{DynamicResource TextControlForeground}" />
+		<Setter Property="Background" Value="{DynamicResource TextControlBackground}" />
+		<Setter Property="BorderThickness" Value="{DynamicResource TextControlBorderThemeThickness}" />
+		<Setter Property="BorderBrush" Value="{DynamicResource TextControlBorderBrush}" />
+		<Setter Property="MinHeight" Value="{DynamicResource TextControlThemeMinHeight}" />
+		<Setter Property="MinWidth" Value="{DynamicResource TextControlThemeMinWidth}"/>
+		<Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
+		<Setter Property="Padding" Value="{DynamicResource TextControlThemePadding}" />
+		<Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
+        
+        <Setter Property="Template">
+		    <ControlTemplate>
+			    <Border 
+                    Background="{TemplateBinding Background}"
+                    BorderBrush="{TemplateBinding BorderBrush}"
+                    BorderThickness="{TemplateBinding BorderThickness}"
+                    CornerRadius="{TemplateBinding CornerRadius}"
+                    MinWidth="{TemplateBinding MinWidth}"
+                    MinHeight="{TemplateBinding MinHeight}"
+                    HorizontalAlignment="Left">
+				    <Grid RowDefinitions="*" ColumnDefinitions="Auto,*,Auto">
+					    <RepeatButton Grid.Row="0" Grid.Column="0"
+                                      Name="PART_PreviousButton"
+                                      BorderBrush="Transparent"
+                                      BorderThickness="0"
+                                      VerticalAlignment="Stretch"
+                                      VerticalContentAlignment="Center"
+                                      HorizontalContentAlignment="Center"
+                                      Padding="{TemplateBinding Padding}"
+                                      Foreground="{TemplateBinding Foreground}"
+                                      FontSize="{TemplateBinding FontSize}"
+                                      Interval="{TemplateBinding Interval}"
+                                      Delay="{TemplateBinding Delay}"
+                                      IsEnabled="False">
+						    <PathIcon Width="12"
+                                      Height="12"
+                                      Data="{StaticResource PreviousButtonIcon}" />
+					    </RepeatButton>
+
+					    <SelectableTextBlock Grid.Row="0" Grid.Column="1"
+                                             Name="PART_Text"
+                                             Text="0/0"
+                                             Margin="10,0,10,0"
+                                             HorizontalAlignment="Center"
+                                             VerticalAlignment="Center"/>
+
+					    <RepeatButton Grid.Row="0" Grid.Column="2"
+                                      Name="PART_NextButton"
+                                      BorderBrush="Transparent"
+                                      BorderThickness="0"
+                                      VerticalAlignment="Stretch"
+                                      VerticalContentAlignment="Center"
+                                      HorizontalContentAlignment="Center"
+                                      Padding="{TemplateBinding Padding}"
+                                      Foreground="{TemplateBinding Foreground}"
+                                      FontSize="{TemplateBinding FontSize}"
+                                      Interval="{TemplateBinding Interval}"
+                                      Delay="{TemplateBinding Delay}"
+                                      IsEnabled="False">
+                            <PathIcon Width="12"
+                                      Height="12"
+                                      Data="{StaticResource NextButtonIcon}" />
+					    </RepeatButton>
+                    </Grid>
+			    </Border>
+		    </ControlTemplate>
+        </Setter>
+    </ControlTheme>
+</ResourceDictionary>

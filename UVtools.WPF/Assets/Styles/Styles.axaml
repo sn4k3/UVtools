@@ -1,6 +1,5 @@
 ﻿<Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:i="clr-namespace:Projektanker.Icons.Avalonia;assembly=Projektanker.Icons.Avalonia"
         xmlns:uac="clr-namespace:UVtools.AvaloniaControls;assembly=UVtools.AvaloniaControls">
 
     <Design.PreviewWith>
@@ -8,13 +7,46 @@
     </Design.PreviewWith>
 
     <Styles.Resources>
-        <SolidColorBrush x:Key="LogoColor" Color="#660066" />
+        <ResourceDictionary>
+            <ResourceDictionary.ThemeDictionaries>
+                <ResourceDictionary x:Key="Light">
+                    <SolidColorBrush x:Key="GroupBoxHeaderBackground" Color="LightBlue" />
+                    <SolidColorBrush x:Key="HeaderFooterBackground" Color="LightGray" />
+                    <SolidColorBrush x:Key="LightBackground" Color="WhiteSmoke" />
+
+                    <SolidColorBrush x:Key="AdvancedImageBoxGridColor" Color="White" />
+                    <SolidColorBrush x:Key="AdvancedImageBoxGridAlternateColor" Color="Gainsboro" />
+                </ResourceDictionary>
+                <ResourceDictionary x:Key="Dark">
+                    <SolidColorBrush x:Key="GroupBoxHeaderBackground" Color="#4f5b62" />
+                    <SolidColorBrush x:Key="HeaderFooterBackground" Color="#1E1E1E" />
+                    <SolidColorBrush x:Key="LightBackground" Color="#1E1E1E" />
+
+                    <SolidColorBrush x:Key="AdvancedImageBoxGridColor" Color="#263238" />
+                    <SolidColorBrush x:Key="AdvancedImageBoxGridAlternateColor" Color="#1E1E1E" />
+                </ResourceDictionary>
+            </ResourceDictionary.ThemeDictionaries>
+        </ResourceDictionary>
+        <SolidColorBrush x:Key="LogoColor" Color="#FF660066" />
     </Styles.Resources>
 
+    <Style Selector="GridSplitter">
+        <Setter Property="Background" Value="{DynamicResource SystemListMediumColor}"/>
+    </Style>
+
+    <Style Selector="Canvas.IssuesTrackerCanvas">
+        <Setter Property="Background" Value="{DynamicResource SystemListLowColor}"/>
+    </Style>
+
+    <Style Selector="Border.ProgressLoading">
+        <Setter Property="Background" Value="{DynamicResource SystemAltHighColor}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource SystemListMediumColor}"/>
+    </Style>
 
     <Style Selector="Border.LayerNavigationToolTip">
         <Setter Property="BorderThickness" Value="5"/>
         <Setter Property="CornerRadius" Value="5"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource SystemListMediumColor}"/>
     </Style>
 
 	<Style Selector="Border.GroupBox">
@@ -22,19 +54,9 @@
         <Setter Property="BorderBrush" Value="{DynamicResource GroupBoxHeaderBackground}" />
     </Style>
 
-    <Style Selector="Grid.GroupBoxHeader">
-        <Setter Property="Background" Value="{DynamicResource GroupBoxHeaderBackground}" />
-    </Style>
-
-    <Style Selector="TextBlock.GroupBoxHeader">
-        <Setter Property="Background" Value="{DynamicResource GroupBoxHeaderBackground}" />
-        <Setter Property="Padding" Value="10" />
-        <Setter Property="FontWeight" Value="Bold" />
-    </Style>
-
     <Style Selector="Border.Header">
         <Setter Property="Background" Value="{DynamicResource HeaderFooterBackground}" />
-        <Setter Property="Padding" Value="10,20" />
+        <Setter Property="Padding" Value="20" />
     </Style>
 
   <Style Selector="Border.FooterActions">
@@ -320,6 +342,7 @@
 	<Style Selector="NumericUpDown, uac|ExtendedNumericUpDown">
 		<Setter Property="VerticalContentAlignment" Value="Center"/>
         <Setter Property="MinWidth" Value="130"/>
+        <Setter Property="Increment" Value="1"/>
         <Setter Property="ClipValueToMinMax" Value="True"/>
     </Style>
 
@@ -350,13 +373,5 @@
         <Setter Property="FontWeight" Value="Bold" />
         <Setter Property="Cursor" Value="Hand" />
     </Style>
-
-    <Style Selector="i|Icon[IsEnabled=True]">
-        <Setter Property="Opacity" Value="1"/>
-    </Style>
-
-    <Style Selector="i|Icon[IsEnabled=False]">
-        <Setter Property="Opacity" Value="0.3"/>
-    </Style>
-    
+   
 </Styles>

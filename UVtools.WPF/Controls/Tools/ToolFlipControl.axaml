@@ -8,7 +8,7 @@
     <TextBlock VerticalAlignment="Center" Text="Flip direction:"/>
     <ComboBox
       MinWidth="150"
-      Items="{Binding Operation.FlipDirection, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+      ItemsSource="{Binding Operation.FlipDirection, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
       SelectedItem="{Binding Operation.FlipDirection, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
     <CheckBox
       ToolTip.Tip="If checked, rather than simply flipping the layer, a copy of each layer will be flipped and blended with the layer."

@@ -13,11 +13,11 @@
              Title="Missing information on the file">
   <StackPanel Orientation="Vertical" Spacing="10">
     <Border Classes="Header">
-        <TextBox Classes="TransparentReadOnlyMultiLineNoBorder" 
-                 Text="There are crucial information missing on this file in order to UVtools work properly and/or provide the correct information.
+        <SelectableTextBlock Text="There are crucial information missing on this file in order to UVtools work properly and/or provide the correct information.
 &#x0a;Fill in the missing information only if you know the correct values, otherwise leave it unchanged if unsure.
 &#x0a;In most cases the missing information is not required by the printer.
-&#x0a;Note: Some fields may rebuild the layers information."/>
+&#x0a;Note: Some fields may rebuild the layers information."
+                             TextWrapping="Wrap"/>
     </Border>
 
 

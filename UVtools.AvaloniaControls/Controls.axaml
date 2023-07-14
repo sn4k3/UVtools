@@ -1,3 +1,18 @@
 ﻿<Styles xmlns="https://github.com/avaloniaui">
-    <StyleInclude Source="/Styles/ExtendedNumericUpDown.axaml"/>
+    <Design.PreviewWith>
+		<Border Padding="20">
+			<TextBlock Text="Styles"></TextBlock>
+        </Border>
+    </Design.PreviewWith>
+    <Styles.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+				<MergeResourceInclude Source="/Styles/IndexSelector.axaml"/>
+				<MergeResourceInclude Source="/Styles/GroupBox.axaml"/>
+				<MergeResourceInclude Source="/Styles/ScrollGroupBox.axaml"/>
+			</ResourceDictionary.MergedDictionaries>
+		</ResourceDictionary>
+	</Styles.Resources>
+
+	<StyleInclude Source="Styles/ExtendedNumericUpDown.axaml"/>
 </Styles>

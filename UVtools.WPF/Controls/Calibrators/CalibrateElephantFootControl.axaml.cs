@@ -1,5 +1,4 @@
-﻿using Avalonia.Markup.Xaml;
-using Avalonia.Media.Imaging;
+﻿using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using System.Timers;
 using UVtools.Core.Operations;
@@ -9,7 +8,7 @@ using UVtools.WPF.Windows;
 
 namespace UVtools.WPF.Controls.Calibrators;
 
-public class CalibrateElephantFootControl : ToolControl
+public partial class CalibrateElephantFootControl : ToolControl
 {
     public OperationCalibrateElephantFoot Operation => BaseOperation as OperationCalibrateElephantFoot;
 
@@ -35,11 +34,6 @@ public class CalibrateElephantFootControl : ToolControl
             AutoReset = false
         };
         _timer.Elapsed += (sender, e) => Dispatcher.UIThread.InvokeAsync(UpdatePreview);
-    }
-
-    private void InitializeComponent()
-    {
-        AvaloniaXamlLoader.Load(this);
     }
 
     public override void Callback(ToolWindow.Callbacks callback)

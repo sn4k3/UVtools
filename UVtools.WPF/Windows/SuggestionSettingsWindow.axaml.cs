@@ -1,10 +1,9 @@
-using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Avalonia.Platform.Storage;
 using UVtools.Core.Dialogs;
 using UVtools.Core.Extensions;
 using UVtools.Core.Managers;
@@ -12,14 +11,12 @@ using UVtools.Core.Suggestions;
 using UVtools.WPF.Controls;
 using UVtools.WPF.Controls.Suggestions;
 using UVtools.WPF.Extensions;
-using Helpers = UVtools.WPF.Controls.Helpers;
+using AvaloniaStatic = UVtools.WPF.Controls.AvaloniaStatic;
 
 namespace UVtools.WPF.Windows;
 
 public partial class SuggestionSettingsWindow : WindowEx
 {
-    private readonly ContentControl _activeSuggestionContentPanel;
-
     private Suggestion _activeSuggestion;
     private Suggestion _selectedSuggestion;
     private bool _pendingChanges;
@@ -101,8 +98,8 @@ public partial class SuggestionSettingsWindow : WindowEx
                 if (control is null) return;
             }
 
-            _activeSuggestionContentPanel.Content = null;
-            _activeSuggestionContentPanel.Content = control;
+            ActiveSuggestionContentPanel.Content = null;
+            ActiveSuggestionContentPanel.Content = control;
         }
     }
 
@@ -124,23 +121,12 @@ public partial class SuggestionSettingsWindow : WindowEx
         DataContext = this;
 
         InitializeComponent();
-#if DEBUG
-        this.AttachDevTools();
-#endif
-
-        _activeSuggestionContentPanel = this.FindControl<ContentControl>("ActiveSuggestionContentPanel");
 
         if (highlightSuggestion is not null)
         {
             SelectedSuggestion = Suggestions.FirstOrDefault(suggestion => suggestion.GetType() == highlightSuggestion.GetType());
         }
     }
-
-    private void InitializeComponent()
-    {
-        AvaloniaXamlLoader.Load(this);
-    }
-
 
     public async void ResetDefaults()
     {
@@ -215,19 +201,12 @@ public partial class SuggestionSettingsWindow : WindowEx
 
     public async void ImportSettingsClicked()
     {
-        var dialog = new OpenFileDialog
-        {
-            AllowMultiple = false,
-            Filters = Helpers.SuggestionSettingFileFilter
-        };
-
-        var files = await dialog.ShowAsync(this);
-
-        if (files is null || files.Length == 0) return;
+        var files = await OpenFilePickerAsync(AvaloniaStatic.SuggestionSettingFileFilter);
+        if (files.Count == 0 || files[0].TryGetLocalPath() is not { } filePath) return;
 
         try
         {
-            var suggestion = Suggestion.Deserialize(files[0], SlicerFile);
+            var suggestion = Suggestion.Deserialize(filePath, SlicerFile);
             if (suggestion is null)
             {
                 await this.MessageBoxError("Unable to import settings, file may be malformed.", "Error while trying to import the settings");
@@ -251,19 +230,12 @@ public partial class SuggestionSettingsWindow : WindowEx
 
     public async void ExportSettingsClicked()
     {
-        var dialog = new SaveFileDialog
-        {
-            Filters = Helpers.SuggestionSettingFileFilter,
-            InitialFileName = _activeSuggestion.Id
-        };
-
-        var file = await dialog.ShowAsync(this);
-
-        if (string.IsNullOrWhiteSpace(file)) return;
+        using var file = await SaveFilePickerAsync(_activeSuggestion.Id, AvaloniaStatic.SuggestionSettingFileFilter);
+        if (file?.TryGetLocalPath() is not { } filePath) return;
 
         try
         {
-            _activeSuggestion.Serialize(file, true);
+            _activeSuggestion.Serialize(filePath, true);
         }
         catch (Exception e)
         {

@@ -25,17 +25,16 @@ using UVtools.Core.SystemOS;
 using UVtools.WPF.Extensions;
 using UVtools.WPF.Structures;
 using Bitmap = Avalonia.Media.Imaging.Bitmap;
-using Helpers = UVtools.WPF.Controls.Helpers;
+using AvaloniaStatic = UVtools.WPF.Controls.AvaloniaStatic;
+using Avalonia.Platform.Storage;
 
 namespace UVtools.WPF;
 
 public partial class MainWindow
 {
     public RangeObservableCollection<SlicerProperty> SlicerProperties { get; } = new();
-    public DataGrid PropertiesGrid;
-    public DataGrid CurrentLayerGrid;
 
-    private uint _visibleThumbnailIndex;
+    private int _visibleThumbnailIndex = -1;
     private Bitmap _visibleThumbnailImage;
     private RangeObservableCollection<ValueDescription> _currentLayerProperties = new();
 
@@ -47,8 +46,6 @@ public partial class MainWindow
 
     public void InitInformation()
     {
-        PropertiesGrid = this.Find<DataGrid>(nameof(PropertiesGrid));
-        CurrentLayerGrid = this.Find<DataGrid>(nameof(CurrentLayerGrid));
         PropertiesGrid.KeyUp += GridOnKeyUp;
         CurrentLayerGrid.KeyUp += GridOnKeyUp;
         /*CurrentLayerGrid.BeginningEdit += (sender, e) =>
@@ -97,7 +94,7 @@ public partial class MainWindow
                     dataGrid.SelectedItems.Clear();
                     break;
                 case Key.Multiply:
-                    foreach (var item in dataGrid.Items)
+                    foreach (var item in dataGrid.ItemsSource)
                     {
                         if (dataGrid.SelectedItems.Contains(item))
                             dataGrid.SelectedItems.Remove(item);
@@ -111,46 +108,27 @@ public partial class MainWindow
     }
 
     #region Thumbnails
-    public uint VisibleThumbnailIndex
+    public int VisibleThumbnailIndex
     {
         get => _visibleThumbnailIndex;
         set
         {
-            if (value == 0)
+            if (value < 0)
             {
                 RaiseAndSetIfChanged(ref _visibleThumbnailIndex, value);
-                RaisePropertyChanged(nameof(ThumbnailCanGoPrevious));
-                RaisePropertyChanged(nameof(ThumbnailCanGoNext));
                 VisibleThumbnailImage = null;
                 return;
             }
 
             if (!IsFileLoaded) return;
-            var index = value - 1;
-            if (index >= SlicerFile.CreatedThumbnailsCount) return;
-            if (SlicerFile.Thumbnails[index] is null || SlicerFile.Thumbnails[index].IsEmpty) return;
             if (!RaiseAndSetIfChanged(ref _visibleThumbnailIndex, value)) return;
-
-            VisibleThumbnailImage = SlicerFile.Thumbnails[index].ToBitmapParallel();
-            RaisePropertyChanged(nameof(ThumbnailCanGoPrevious));
-            RaisePropertyChanged(nameof(ThumbnailCanGoNext));
+            if (value >= SlicerFile.CreatedThumbnailsCount) return;
+            if (SlicerFile.Thumbnails[value] is null || SlicerFile.Thumbnails[value].IsEmpty) return;
+            
+            VisibleThumbnailImage = SlicerFile.Thumbnails[value].ToBitmapParallel();
         }
     }
 
-    public bool ThumbnailCanGoPrevious => SlicerFile is not null && _visibleThumbnailIndex > 1;
-    public bool ThumbnailCanGoNext => SlicerFile is not null && _visibleThumbnailIndex < SlicerFile.CreatedThumbnailsCount;
-
-    public void ThumbnailGoPrevious()
-    {
-        if (!ThumbnailCanGoPrevious) return;
-        VisibleThumbnailIndex--;
-    }
-
-    public void ThumbnailGoNext()
-    {
-        if (!ThumbnailCanGoNext) return;
-        VisibleThumbnailIndex++;
-    }
 
     public Bitmap VisibleThumbnailImage
     {
@@ -166,78 +144,65 @@ public partial class MainWindow
 
     public async void OnClickThumbnailSave()
     {
-        if (SlicerFile is null) return;
-        if (SlicerFile.Thumbnails[_visibleThumbnailIndex - 1] is null)
+        if (!IsFileLoaded) return;
+        if (SlicerFile?.Thumbnails[_visibleThumbnailIndex] is null)
         {
             return; // This should never happen!
         }
-        var dialog = new SaveFileDialog
-        {
-            Filters = Helpers.PngFileFilter,
-            Directory = Path.GetDirectoryName(SlicerFile.FileFullPath),
-            InitialFileName = $"{Path.GetFileNameWithoutExtension(SlicerFile.FileFullPath)}_thumbnail{_visibleThumbnailIndex}.png"
-        };
 
-        var filepath = await dialog.ShowAsync(this);
-
-        if (!string.IsNullOrEmpty(filepath))
-        {
-            SlicerFile.Thumbnails[_visibleThumbnailIndex - 1].Save(filepath);
-        }
+        using var file = await SaveFilePickerAsync(SlicerFile.DirectoryPath, $"{SlicerFile.FilenameNoExt}_thumbnail{_visibleThumbnailIndex+1}.png", AvaloniaStatic.PngFileFilter);
+        if (file?.TryGetLocalPath() is not { } filePath) return;
+        SlicerFile.Thumbnails[_visibleThumbnailIndex].Save(filePath);
     }
 
-    public async void OnClickThumbnailImportFile(bool replaceAll = false)
+    public async void OnClickThumbnailImportFile(object replaceAllObj)
     {
+        if (!IsFileLoaded) return;
+        var replaceAll = Convert.ToBoolean(replaceAllObj);
         if (replaceAll)
         {
             if (SlicerFile.ThumbnailsCount == 0) return;
         }
         else
         {
-            if (_visibleThumbnailIndex <= 0) return;
-            if (SlicerFile.Thumbnails[_visibleThumbnailIndex - 1] is null)
+            if (_visibleThumbnailIndex < 0) return;
+            if (SlicerFile.Thumbnails[_visibleThumbnailIndex] is null)
             {
                 return; // This should never happen!
             }
         }
-        
 
-        var dialog = new OpenFileDialog
-        {
-            Filters = Helpers.ImagesFileFilter,
-            AllowMultiple = false
-        };
 
-        var filepath = await dialog.ShowAsync(this);
-
-        if (filepath is null || filepath.Length <= 0) return;
+        var files = await App.MainWindow.OpenFilePickerAsync(AvaloniaStatic.ImagesFileFilter);
+        if (files.Count == 0 || files[0].TryGetLocalPath() is not { } filePath) return;
 
         bool result;
 
         if (replaceAll)
         {
-            result = SlicerFile.SetThumbnails(filepath[0]);
+            result = SlicerFile.SetThumbnails(filePath);
         }
         else
         {
-            uint i = _visibleThumbnailIndex - 1;
-            result = SlicerFile.SetThumbnail((int)i, filepath[0]);
+            result = SlicerFile.SetThumbnail(_visibleThumbnailIndex, filePath);
         }
 
         if (result) CanSave = true;
     }
 
-    public void OnClickThumbnailImportCurrentLayer(bool replaceAll = false)
+    public void OnClickThumbnailImportCurrentLayer(object replaceAllObj)
     {
+        if (!IsFileLoaded) return;
         if (!LayerCache.IsCached || SlicerFile.DecodeType == FileFormat.FileDecodeType.Partial) return;
+        var replaceAll = Convert.ToBoolean(replaceAllObj);
         if (replaceAll)
         {
             if (SlicerFile.ThumbnailsCount == 0) return;
         }
         else
         {
-            if (_visibleThumbnailIndex <= 0) return;
-            if (SlicerFile.Thumbnails[_visibleThumbnailIndex - 1] is null)
+            if (_visibleThumbnailIndex < 0) return;
+            if (SlicerFile.Thumbnails[_visibleThumbnailIndex] is null)
             {
                 return; // This should never happen!
             }
@@ -255,24 +220,25 @@ public partial class MainWindow
         }
         else
         {
-            uint i = _visibleThumbnailIndex - 1;
-            result = SlicerFile.SetThumbnail((int)i, thumbnailMat);
+            result = SlicerFile.SetThumbnail(_visibleThumbnailIndex, thumbnailMat);
         }
 
         if (result) CanSave = true;
     }
 
-    public void OnClickThumbnailImportRandomLayer(bool replaceAll = false)
+    public void OnClickThumbnailImportRandomLayer(object replaceAllObj)
     {
+        if (!IsFileLoaded) return;
         if (SlicerFile.LayerCount == 0 || SlicerFile.DecodeType == FileFormat.FileDecodeType.Partial) return;
+        var replaceAll = Convert.ToBoolean(replaceAllObj);
         if (replaceAll)
         {
             if (SlicerFile.ThumbnailsCount == 0) return;
         }
         else
         {
-            if (_visibleThumbnailIndex <= 0) return;
-            if (SlicerFile.Thumbnails[_visibleThumbnailIndex - 1] is null)
+            if (_visibleThumbnailIndex < 0) return;
+            if (SlicerFile.Thumbnails[_visibleThumbnailIndex] is null)
             {
                 return; // This should never happen!
             }
@@ -290,24 +256,25 @@ public partial class MainWindow
         }
         else
         {
-            uint i = _visibleThumbnailIndex - 1;
-            result = SlicerFile.SetThumbnail((int)i, matRoi.RoiMat);
+            result = SlicerFile.SetThumbnail(_visibleThumbnailIndex, matRoi.RoiMat);
         }
 
         if (result) CanSave = true;
     }
 
-    public async void OnClickThumbnailImportHeatmap(bool replaceAll = false)
+    public async void OnClickThumbnailImportHeatmap(object replaceAllObj)
     {
+        if (!IsFileLoaded) return;
         if (SlicerFile.DecodeType == FileFormat.FileDecodeType.Partial) return;
+        var replaceAll = Convert.ToBoolean(replaceAllObj);
         if (replaceAll)
         {
             if (SlicerFile.ThumbnailsCount == 0) return;
         }
         else
         {
-            if (_visibleThumbnailIndex <= 0) return;
-            if (SlicerFile.Thumbnails[_visibleThumbnailIndex - 1] is null)
+            if (_visibleThumbnailIndex < 0) return;
+            if (SlicerFile.Thumbnails[_visibleThumbnailIndex] is null)
             {
                 return; // This should never happen!
             }
@@ -342,8 +309,7 @@ public partial class MainWindow
         }
         else
         {
-            uint i = _visibleThumbnailIndex - 1;
-            result = SlicerFile.SetThumbnail((int) i, mat);
+            result = SlicerFile.SetThumbnail(_visibleThumbnailIndex, mat);
         }
 
         mat.Dispose();
@@ -353,13 +319,13 @@ public partial class MainWindow
 
     public void RefreshThumbnail()
     {
-        if (_visibleThumbnailIndex <= 0) return;
-        uint i = _visibleThumbnailIndex - 1;
-        if (SlicerFile.Thumbnails?[i] is null)
+        if (!IsFileLoaded) return;
+        if (_visibleThumbnailIndex < 0) return;
+        if (SlicerFile.Thumbnails[_visibleThumbnailIndex] is null)
         {
             return; 
         }
-        VisibleThumbnailImage = SlicerFile.Thumbnails[i].ToBitmapParallel();
+        VisibleThumbnailImage = SlicerFile.Thumbnails[_visibleThumbnailIndex].ToBitmapParallel();
     }
     #endregion
 
@@ -369,20 +335,14 @@ public partial class MainWindow
     {
         if (SlicerFile?.Configs is null) return;
 
-        var dialog = new SaveFileDialog
-        {
-            Filters = Helpers.IniFileFilter,
-            Directory = Path.GetDirectoryName(SlicerFile.FileFullPath),
-            InitialFileName = $"{Path.GetFileNameWithoutExtension(SlicerFile.FileFullPath)}_properties.ini"
-        };
+        using var file = await SaveFilePickerAsync(SlicerFile.DirectoryPath, $"{SlicerFile.FilenameNoExt}_properties.ini", AvaloniaStatic.IniFileFilter);
 
-        var file = await dialog.ShowAsync(this);
+        if (file?.TryGetLocalPath() is not { } filePath) return;
 
-        if (string.IsNullOrEmpty(file)) return;
-
+        
         try
         {
-            await using TextWriter tw = new StreamWriter(file);
+            await using TextWriter tw = new StreamWriter(filePath);
             foreach (var config in SlicerFile.Configs)
             {
                 var type = config.GetType();
@@ -418,7 +378,7 @@ public partial class MainWindow
             "Properties save complete");
         if (result != MessageButtonResult.Yes) return;
 
-        SystemAware.StartProcess(file);
+        SystemAware.StartProcess(filePath);
     }
 
     public void OnClickPropertiesSaveClipboard()
@@ -449,7 +409,7 @@ public partial class MainWindow
             sb.AppendLine();
         }
 
-        Application.Current.Clipboard.SetTextAsync(sb.ToString());
+        Clipboard?.SetTextAsync(sb.ToString());
     }
 
     public void RefreshProperties()

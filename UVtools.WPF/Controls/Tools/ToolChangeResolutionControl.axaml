@@ -45,7 +45,7 @@
       <ComboBox Grid.Row="2" Grid.Column="8"
                 MinWidth="250"
                 SelectedItem="{Binding SelectedPresetItem}"
-                Items="{Binding Operation.Presets}"
+                ItemsSource="{Binding Operation.Presets}"
                 PlaceholderText="Resolution presets"/>
 
       <TextBlock Grid.Row="4" Grid.Column="0"
@@ -93,7 +93,7 @@ Otherwise, the new display size must be taken into account and you need to manua
 		<ComboBox Grid.Row="8" Grid.Column="2" Grid.ColumnSpan="7"
                   HorizontalAlignment="Stretch"
                   SelectedItem="{Binding SelectedMachinePresetItem}"
-                  Items="{Binding MachinePresets}"
+                  ItemsSource="{Binding MachinePresets}"
                   PlaceholderText="Machine presets"/>
 
     </Grid>

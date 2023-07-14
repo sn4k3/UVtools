@@ -117,7 +117,7 @@ public sealed class OperationLayerExportHtml : Operation
 
     public override void InitWithSlicerFile()
     {
-        _filePath = SlicerFile.FileFullPath + ".html";
+        _filePath = SlicerFile.FileFullPathNoExt + ".html";
     }
 
     #endregion
@@ -140,7 +140,7 @@ public sealed class OperationLayerExportHtml : Operation
         html.WriteLine($"    <link rel=\"UVtools\" href=\"{About.Website}\">");
         html.WriteLine($"    <link rel=\"icon\" type=\"image/png\" sizes=\"32x32\" href=\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAwpJREFUeNrsV01IG0EU/pJILFJxIRCqeFi8BQkMBARPDQqCp20FpbfUgJ5EUfBsDQTEi8ab5pB6LKLGk61iY045RdaTIBo25lAbsKwI2gZCOzNJ1vy4mxTUpdDvseyb2WTeN+9vdywoYhzjXnqbotcbPC2i9AqtYe2QDSxF4+/pLYLnxTIlMW0p7jwGc/DWWnS7WZhjBLwmEiCMgGAiAVhhMv4T0CVwQ0UPuaI0iisqDRNghgciAwimgpC2JUCsfC76REweTfKL6UbIC3m+RvhHmK/JxtVoqp5w+9wY8g0VjIki7tQ77I3uaTtZWFqAIBQKh0QIpHUJ7VQeQs9UDwalQa6zNTNyBiehE2MPOESH7pi5vWS8EVSv1SK01A9Bcj0JVVW18cHywf2CVBLxhDZmOpvTQ2I9UTE+jZ/W/Ia9C35XT94KtwgcBTDbNwuH4qjJEf+2H9fqNTZHN9FKxTAPSB7hozCGu4Zr1nowB7ir1Bak02nklNpMZwZTckrT6yErZwvhU3KNlyHzQFtbG5zE+WB5sth2kS7DUi3BLtr5vZN0NkiAVtZKagWEEO46p+SsSMKJ2ATP6H6pn+tG/aDV24qN1AbXg1+DsBFb/RB4fJ6KTPcv+bFP9rn+i0rv617tGdMXqOiVoUtyaTpbk0gESTlpTOBKqexa58fnWvYyAqxCygkyI9mdLOxUvlF5SYXnBvWki7gqQ6ve1pC0eeD5UD6ROc7AIlrQLrYj9iWGrekt5OQcT6K8ksfZ5RmPJyMSng9jZGoE3e+60Uyasbi7yD2oCipmIjOIrkZx8f0CbuLG7s4u4vNxWH9a65dhqevp1Xgp+dhOme6d82Jsbkx7rigKAn0B2JVCAjLP6IWpSbeLGTSY8vJjenWDYSVcMs6gZ/zRXseqrOJEvu/xiY+Jhv+rG4K/BQtFh7eDJ3H57uuh6bE+LHg+HN7wavjnvohUswlETbQfZQRCJhII2ZJIXtJumC6ekF48o/FRejiN8tcTJSFTEp/KTkmvnsioTK/P7FBaOp7/EWAAocsV0JqWvDkAAAAASUVORK5CYII=\" />");
 
-        html.WriteLine($"    <link href=\"https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css\" rel=\"stylesheet\" integrity=\"sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor\" crossorigin=\"anonymous\">");
+        html.WriteLine($"    <link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css\" integrity=\"sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65\" crossorigin=\"anonymous\">");
         html.WriteLine("    <style>");
         // Start Styles
         html.WriteLine("      main > .container {padding: 30px 0 50px 0;}");

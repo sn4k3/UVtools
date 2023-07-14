@@ -1,9 +1,8 @@
-﻿using Avalonia.Markup.Xaml;
-using UVtools.Core.Operations;
+﻿using UVtools.Core.Operations;
 
 namespace UVtools.WPF.Controls.Tools;
 
-public class ToolBlurControl : ToolControl
+public partial class ToolBlurControl : ToolControl
 {
     public OperationBlur Operation => BaseOperation as OperationBlur;
 
@@ -12,10 +11,5 @@ public class ToolBlurControl : ToolControl
         BaseOperation = new OperationBlur(SlicerFile);
         if (!ValidateSpawn()) return;
         InitializeComponent();
-    }
-
-    private void InitializeComponent()
-    {
-        AvaloniaXamlLoader.Load(this);
     }
 }

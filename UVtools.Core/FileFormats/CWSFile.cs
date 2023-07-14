@@ -11,7 +11,6 @@ using Emgu.CV.CvEnum;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Drawing;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -294,29 +293,29 @@ public sealed class CWSFile : FileFormat
     public override FileFormatType FileType => FileFormatType.Archive;
 
     public override FileImageType LayerImageType =>
-        Printer switch
+        ImageType switch
         {
-            PrinterType.BeneMono => FileImageType.Png24BgrAA,
-            PrinterType.Wanhao => FileImageType.Png32,
+            PrinterImageType.BGRAntiAliasing => FileImageType.Png24BgrAA,
+            PrinterImageType.Wanhao32bit => FileImageType.Png32,
             _ => FileImageType.Png8
         };
 
-    public enum PrinterType : byte
+    public enum PrinterImageType : byte
     {
         Unknown,
-        Elfin,
-        BeneMono,
-        Wanhao,
+        Normal,
+        BGRAntiAliasing,
+        Wanhao32bit,
     }
 
-    public PrinterType Printer { get; set; } = PrinterType.Unknown;
+    public PrinterImageType ImageType { get; set; } = PrinterImageType.Unknown;
 
     public override string ConvertMenuGroup => "CWS";
 
     public override FileExtension[] FileExtensions { get; } = {
         new (typeof(CWSFile), "cws", "NovaMaker CWS"),
-        new (typeof(CWSFile), "rgb.cws", "NovaMaker Bene4 Mono / Elfin2 Mono SE (CWS)"),
-        new (typeof(CWSFile), "xml.cws", "Creation Workshop X (CWS)"),
+        new (typeof(CWSFile), "rgb.cws", "NovaMaker Bene4|5 Mono / Elfin2 Mono SE / Whale1|2 (RGB.CWS)"),
+        new (typeof(CWSFile), "xml.cws", "Creation Workshop X (XML.CWS)"),
     };
 
     public override PrintParameterModifier[] PrintParameterModifiers { get; } = {
@@ -555,7 +554,7 @@ public sealed class CWSFile : FileFormat
     }
 
 
-    public override object[] Configs => Printer == PrinterType.Wanhao ? new object[] { SliceBuildConfig, OutputSettings } : new object[] { SliceSettings, OutputSettings};
+    public override object[] Configs => ImageType == PrinterImageType.Wanhao32bit ? new object[] { SliceBuildConfig, OutputSettings } : new object[] { SliceSettings, OutputSettings};
     #endregion
 
     #region Constructor
@@ -599,17 +598,17 @@ public sealed class CWSFile : FileFormat
     {
         //var filename = fileFullPath.EndsWith(TemporaryFileAppend) ? Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(fileFullPath)) : Path.GetFileNameWithoutExtension(fileFullPath);
 
-        if (Printer == PrinterType.Unknown)
+        if (ImageType == PrinterImageType.Unknown)
         {
-            Printer = PrinterType.Elfin;
+            ImageType = PrinterImageType.Normal;
             for (int i = 0; i < FileExtensions.Length; i++)
             {
                 if (!FileEndsWith(FileExtensions[i].Extension)) continue;
-                Printer = (PrinterType) i+1;
+                ImageType = (PrinterImageType) i+1;
             }
         }
 
-        if (Printer == PrinterType.BeneMono)
+        if (ImageType == PrinterImageType.BGRAntiAliasing)
         {
             if (ResolutionX % 3 != 0)
             {
@@ -631,7 +630,7 @@ public sealed class CWSFile : FileFormat
         }
 
         using var outputFile = ZipFile.Open(TemporaryOutputFileFullPath, ZipArchiveMode.Create);
-        if (Printer == PrinterType.Wanhao)
+        if (ImageType == PrinterImageType.Wanhao32bit)
         {
             var manifest = new CWSManifest
             {
@@ -688,7 +687,7 @@ public sealed class CWSFile : FileFormat
         if (entry is not null) // Wanhao
         {
             //DecodeXML(fileFullPath, inputFile, progress);
-            Printer = PrinterType.Wanhao;
+            ImageType = PrinterImageType.Wanhao32bit;
 
             try
             {
@@ -803,7 +802,7 @@ public sealed class CWSFile : FileFormat
         if (LayerCount <= 0) return;
         
         // Must discover png depth grayscale or color
-        if (DecodeType == FileDecodeType.Full && Printer == PrinterType.Unknown)
+        if (DecodeType == FileDecodeType.Full && ImageType == PrinterImageType.Unknown)
         {
             //var inputFilename = Path.GetFileNameWithoutExtension(FileFullPath)!;
             foreach (var pngEntry in inputFile.Entries)
@@ -813,23 +812,10 @@ public sealed class CWSFile : FileFormat
                 if (!match.Success || match.Groups.Count < 2) continue;
                 if (!uint.TryParse(match.Groups[1].Value, out var layerIndex)) continue;
                 
-                /*var filename = Path.GetFileNameWithoutExtension(pngEntry.Name).Replace(inputFilename, string.Empty, StringComparison.Ordinal);
-
-                var layerIndexStr = string.Empty;
-                var layerStr = filename;
-                for (int i = layerStr.Length - 1; i >= 0; i--)
-                {
-                    if (layerStr[i] < '0' || layerStr[i] > '9') break;
-                    layerIndexStr = $"{layerStr[i]}{layerIndexStr}";
-                }
-
-                if (string.IsNullOrEmpty(layerIndexStr)) continue;
-                if (!uint.TryParse(layerIndexStr, out var layerIndex)) continue;*/
-                
                 using var stream = pngEntry.Open();
                 using var mat = new Mat();
                 CvInvoke.Imdecode(stream.ToArray(), ImreadModes.AnyColor, mat);
-                Printer = mat.NumberOfChannels == 1 ? PrinterType.Elfin : PrinterType.BeneMono;
+                ImageType = mat.NumberOfChannels == 1 ? PrinterImageType.Normal : PrinterImageType.BGRAntiAliasing;
                 break;
             }
         }
@@ -843,9 +829,9 @@ public sealed class CWSFile : FileFormat
     {
         if (!SupportsGCode || SuppressRebuildGCode) return;
 
-        switch (Printer)
+        switch (ImageType)
         {
-            case PrinterType.Wanhao:
+            case PrinterImageType.Wanhao32bit:
                 GCode!.CommandWaitSyncDelay.Command = ";<Takes>";
                 break;
             default:

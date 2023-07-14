@@ -17,7 +17,7 @@
         <TextBlock Grid.Row="0" Grid.Column="0"  VerticalAlignment="Center" Text="Method:"/>
         <ComboBox Grid.Row="0" Grid.Column="2" Grid.ColumnSpan="5"
                   Width="505"
-                  Items="{Binding Operation.Method, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                  ItemsSource="{Binding Operation.Method, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
                   SelectedItem="{Binding Operation.Method, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
 
         <TextBlock Grid.Row="2" Grid.Column="0"
@@ -43,7 +43,7 @@
             Width="505"
             IsVisible="{Binding Operation.IsReHeightMethod}"
             SelectedItem="{Binding Operation.SelectedItem}"
-            Items="{Binding Operation.Presets}"/>
+            ItemsSource="{Binding Operation.Presets}"/>
 
         <TextBlock Grid.Row="4" Grid.Column="0"
                    VerticalAlignment="Center" 
@@ -53,7 +53,7 @@
                   Width="505"
                   IsVisible="{Binding Operation.IsReHeightMethod}"
                   IsEnabled="{Binding Operation.CanAntiAliasing}"
-                  Items="{Binding Operation.AntiAliasingType, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                  ItemsSource="{Binding Operation.AntiAliasingType, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
                   SelectedItem="{Binding Operation.AntiAliasingType, Converter={StaticResource FromValueDescriptionToEnumConverter}}">
         </ComboBox>
 

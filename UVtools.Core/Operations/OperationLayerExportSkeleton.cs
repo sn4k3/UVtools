@@ -77,7 +77,7 @@ public sealed class OperationLayerExportSkeleton : Operation
         
     public override void InitWithSlicerFile()
     {
-        _filePath = SlicerFile.FileFullPath + ".skeleton.png";
+        _filePath = SlicerFile.FileFullPathNoExt + "_skeleton.png";
     }
 
     #endregion

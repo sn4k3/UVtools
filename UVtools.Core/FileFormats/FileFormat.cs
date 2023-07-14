@@ -177,7 +177,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         Png24,
         Png32,
         /// <summary>
-        /// eg: Nova Bene4
+        /// eg: Nova Bene4, Elfin Mono SE, Whale 1/2
         /// </summary>
         Png24BgrAA,
         /// <summary>
@@ -197,7 +197,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     {
             
         #region Instances
-        public static PrintParameterModifier PositionZ { get; } = new ("Position Z", "Layer absolute Z position", "mm", 0, 100000, 0.01, Layer.HeightPrecision);
+        public static PrintParameterModifier PositionZ { get; } = new ("Position Z", "Layer absolute Z position", "mm", 0, 100000, 0.01m, Layer.HeightPrecision);
         public static PrintParameterModifier BottomLayerCount { get; } = new ("Bottom layers", "Number of bottom/burn-in layers", "Ξ", 0, ushort.MaxValue, 1, 0);
         public static PrintParameterModifier TransitionLayerCount { get; } = new ("Transition layers", "Number of fade/transition layers", "Ξ", 0, ushort.MaxValue, 1, 0);
             
@@ -294,7 +294,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         /// <summary>
         /// Gets the incrementing value for the dropdown
         /// </summary>
-        public double Increment { get; set; } = 1;
+        public decimal Increment { get; set; } = 1;
 
         /// <summary>
         /// Gets the number of decimal plates
@@ -324,7 +324,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         #endregion
 
         #region Constructor
-        public PrintParameterModifier(string name, string? description = null, string? valueUnit = null, decimal minimum = 0, decimal maximum = 1000, double increment = 0.5, byte decimalPlates = 2)
+        public PrintParameterModifier(string name, string? description = null, string? valueUnit = null, decimal minimum = 0, decimal maximum = 1000, decimal increment = 0.5m, byte decimalPlates = 2)
         {
             Name = name;
             Description = description ?? $"Modify '{name}'";
@@ -1188,6 +1188,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             RaisePropertyChanged(FileAbsoluteExtension);
         }
     }
+
+    public string? FileFullPathNoExt => Path.Combine(DirectoryPath!, FilenameNoExt!);
 
     public string? DirectoryPath => Path.GetDirectoryName(FileFullPath);
     public string? Filename => Path.GetFileName(FileFullPath);

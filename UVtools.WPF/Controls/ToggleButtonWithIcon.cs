@@ -2,18 +2,19 @@
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Layout;
-using Avalonia.Styling;
-using Avalonia.Threading;
 using System;
+using System.Collections.Generic;
 
 namespace UVtools.WPF.Controls;
 
-public class ToggleButtonWithIcon : ToggleButton, IStyleable
+public class ToggleButtonWithIcon : ToggleButton
 {
-    Type IStyleable.StyleKey => typeof(ToggleButton);
+    protected override Type StyleKeyOverride => typeof(ToggleButton);
+
+    private readonly List<IDisposable> _disposableSubscribes = new();
 
     public static readonly StyledProperty<string> TextProperty =
-        AvaloniaProperty.Register<ButtonWithIcon, string>(nameof(Text));
+        ButtonWithIcon.TextProperty.AddOwner<ToggleButtonWithIcon>();
 
     public string Text
     {
@@ -22,7 +23,7 @@ public class ToggleButtonWithIcon : ToggleButton, IStyleable
     }
 
     public static readonly StyledProperty<ButtonWithIcon.IconPlacementType> IconPlacementProperty =
-        AvaloniaProperty.Register<ButtonWithIcon, ButtonWithIcon.IconPlacementType>(nameof(IconPlacement));
+        ButtonWithIcon.IconPlacementProperty.AddOwner<ToggleButtonWithIcon>();
 
     public ButtonWithIcon.IconPlacementType IconPlacement
     {
@@ -31,7 +32,7 @@ public class ToggleButtonWithIcon : ToggleButton, IStyleable
     }
 
     public static readonly StyledProperty<string> IconProperty =
-        AvaloniaProperty.Register<ButtonWithIcon, string>(nameof(Icon));
+        ButtonWithIcon.IconProperty.AddOwner<ToggleButtonWithIcon>();
 
     public string Icon
     {
@@ -40,7 +41,7 @@ public class ToggleButtonWithIcon : ToggleButton, IStyleable
     }
 
     public static readonly StyledProperty<double> SpacingProperty =
-        AvaloniaProperty.Register<ButtonWithIcon, double>(nameof(Spacing), 10);
+        ButtonWithIcon.SpacingProperty.AddOwner<ToggleButtonWithIcon>();
 
     public double Spacing
     {
@@ -52,20 +53,21 @@ public class ToggleButtonWithIcon : ToggleButton, IStyleable
     {
     }
 
-    protected override void OnInitialized()
+    protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
-        base.OnInitialized();
-
-        Dispatcher.UIThread.Post(() =>
+        foreach (var disposableSubscribe in _disposableSubscribes)
         {
-            TextProperty.Changed.Subscribe(_ => RebuildContent());
-            IconProperty.Changed.Subscribe(_ => RebuildContent());
-            IconPlacementProperty.Changed.Subscribe(_ => RebuildContent());
-            RebuildContent();
-        }, DispatcherPriority.Loaded);
+            disposableSubscribe.Dispose();
+        }
+        _disposableSubscribes.Clear();
+
+        _disposableSubscribes.Add(TextProperty.Changed.Subscribe(_ => RebuildContent()));
+        _disposableSubscribes.Add(IconProperty.Changed.Subscribe(_ => RebuildContent()));
+        _disposableSubscribes.Add(IconPlacementProperty.Changed.Subscribe(_ => RebuildContent()));
+        RebuildContent();
     }
 
-    public IControl MakeIcon()
+    public Projektanker.Icons.Avalonia.Icon MakeIcon()
     {
         return new Projektanker.Icons.Avalonia.Icon { Value = Icon };
     }

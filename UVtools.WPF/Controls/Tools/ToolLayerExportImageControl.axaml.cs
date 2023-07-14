@@ -1,6 +1,4 @@
-using Avalonia.Controls;
-using Avalonia.Markup.Xaml;
-using System.IO;
+using Avalonia.Platform.Storage;
 using UVtools.Core.Operations;
 
 namespace UVtools.WPF.Controls.Tools;
@@ -15,19 +13,10 @@ public partial class ToolLayerExportImageControl : ToolControl
         InitializeComponent();
     }
 
-    private void InitializeComponent()
-    {
-        AvaloniaXamlLoader.Load(this);
-    }
-
     public async void ChooseFolder()
     {
-        var dialog = new OpenFolderDialog
-        {
-            Directory = Path.GetDirectoryName(SlicerFile.FileFullPath),
-        };
-        var folder = await dialog.ShowAsync(ParentWindow);
-        if (string.IsNullOrWhiteSpace(folder)) return;
-        Operation.OutputFolder = folder;
+        var folders = await App.MainWindow.OpenFolderPickerAsync(SlicerFile);
+        if (folders.Count == 0) return;
+        Operation.OutputFolder = folders[0].TryGetLocalPath()!;
     }
 }

@@ -1,9 +1,8 @@
-﻿using Avalonia.Markup.Xaml;
-using UVtools.Core.Operations;
+﻿using UVtools.Core.Operations;
 
 namespace UVtools.WPF.Controls.Tools;
 
-public class ToolRaftReliefControl : ToolControl
+public partial class ToolRaftReliefControl : ToolControl
 {
     public OperationRaftRelief Operation => BaseOperation as OperationRaftRelief;
 
@@ -14,10 +13,6 @@ public class ToolRaftReliefControl : ToolControl
         InitializeComponent();
     }
 
-    private void InitializeComponent()
-    {
-        AvaloniaXamlLoader.Load(this);
-    }
 
     public void UseCurrentLayerAsMask()
     {

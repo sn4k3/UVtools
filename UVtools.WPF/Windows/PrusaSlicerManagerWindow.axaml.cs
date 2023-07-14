@@ -1,5 +1,4 @@
-﻿using Avalonia.Markup.Xaml;
-using System;
+﻿using System;
 using System.IO;
 using UVtools.Core.Dialogs;
 using UVtools.WPF.Controls;
@@ -8,7 +7,7 @@ using UVtools.WPF.Structures;
 
 namespace UVtools.WPF.Windows;
 
-public class PrusaSlicerManagerWindow : WindowEx
+public partial class PrusaSlicerManagerWindow : WindowEx
 {
     public PSProfileFolder[] PrusaSlicerProfiles { get; } = {
         new (PSProfileFolder.FolderType.Print),
@@ -43,11 +42,6 @@ public class PrusaSlicerManagerWindow : WindowEx
     {
         InitializeComponent();
         DataContext = this;
-    }
-
-    private void InitializeComponent()
-    {
-        AvaloniaXamlLoader.Load(this);
     }
 
     public void RefreshProfiles()

@@ -1,9 +1,8 @@
-﻿using Avalonia.Markup.Xaml;
-using UVtools.Core.Operations;
+﻿using UVtools.Core.Operations;
 
 namespace UVtools.WPF.Controls.Tools;
 
-public class ToolRotateControl : ToolControl
+public partial class ToolRotateControl : ToolControl
 {
     public OperationRotate Operation => BaseOperation as OperationRotate;
 
@@ -12,10 +11,5 @@ public class ToolRotateControl : ToolControl
         BaseOperation = new OperationRotate(SlicerFile);
         if (!ValidateSpawn()) return;
         InitializeComponent();
-    }
-
-    private void InitializeComponent()
-    {
-        AvaloniaXamlLoader.Load(this);
     }
 }

@@ -15,7 +15,7 @@
     <Description>AvaloniaUI Controls
 - AdvancedImageBox: Pan, zoom, cursor, pixel grid and selections image box
 - ExtendedNumericUpDown: Initial value with a reset button and value unit label</Description>
-    <Version>2.1.1</Version>
+    <Version>3.0.0</Version>
     <Nullable>enable</Nullable>
     <PackageProjectUrl>https://github.com/sn4k3/UVtools</PackageProjectUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
@@ -40,7 +40,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Avalonia" Version="0.10.21" />
+    <PackageReference Include="Avalonia" Version="11.0.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -59,6 +59,10 @@
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <UpToDateCheckInput Remove="Styles\IndexSelector.axaml" />
   </ItemGroup>
 
 </Project>

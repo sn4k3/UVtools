@@ -1,5 +1,3 @@
-using Avalonia.Controls;
-using Avalonia.Markup.Xaml;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Layers;
 using UVtools.Core.Operations;
@@ -8,15 +6,13 @@ using UVtools.WPF.Windows;
 
 namespace UVtools.WPF.Controls.Tools;
 
-public class ToolDynamicLayerHeightControl : ToolControl
+public partial class ToolDynamicLayerHeightControl : ToolControl
 {
     public OperationDynamicLayerHeight Operation => BaseOperation as OperationDynamicLayerHeight;
 
     public double LayerHeight => SlicerFile.LayerHeight;
     public double MinimumLayerHeight => Layer.RoundHeight(SlicerFile.LayerHeight * 2);
     public double MaximumLayerHeight => FileFormat.MaximumLayerHeight;
-
-    private readonly DataGrid ExposureTable;
 
     public ToolDynamicLayerHeightControl()
     {
@@ -33,15 +29,7 @@ public class ToolDynamicLayerHeightControl : ToolControl
 
 
         InitializeComponent();
-
-        ExposureTable = this.FindControl<DataGrid>("ExposureTable");
     }
-
-    private void InitializeComponent()
-    {
-        AvaloniaXamlLoader.Load(this);
-    }
-
 
     public override void Callback(ToolWindow.Callbacks callback)
     {

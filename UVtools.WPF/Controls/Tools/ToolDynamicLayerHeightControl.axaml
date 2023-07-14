@@ -59,7 +59,6 @@
 
             <NumericUpDown Grid.Row="2" Grid.Column="6"
                            Classes="ValueLabel ValueLabel_mm"
-                           Name="MaximumLayerHeight"
                          VerticalAlignment="Center"
                          HorizontalAlignment="Stretch"
                          Minimum="{Binding MinimumLayerHeight}"
@@ -106,7 +105,7 @@ Manual: User defined exposure per layer height"
             <ComboBox Grid.Row="8" Grid.Column="2"
                       VerticalAlignment="Center"
                       HorizontalAlignment="Stretch"
-                      Items="{Binding Operation.ExposureSetTypeItems}"
+                      ItemsSource="{Binding Operation.ExposureSetTypeItems}"
                       SelectedItem="{Binding Operation.ExposureSetType}"/>
 
           <ToggleSwitch Grid.Row="8" Grid.Column="4" Grid.ColumnSpan="3"
@@ -206,7 +205,7 @@ Manual: User defined exposure per layer height"
           IsReadOnly="False"
           ClipboardCopyMode="IncludeHeader"
           MinHeight="200"
-          Items="{Binding Operation.ExposureTable}">
+          ItemsSource="{Binding Operation.ExposureTable}">
           <DataGrid.Columns>
               <DataGridTextColumn Header="Layer height (mm)"
                                   Binding="{Binding LayerHeight}"

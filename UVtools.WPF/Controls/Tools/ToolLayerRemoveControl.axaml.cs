@@ -1,12 +1,11 @@
-﻿using Avalonia.Markup.Xaml;
-using System;
+﻿using System;
 using UVtools.Core.Layers;
 using UVtools.Core.Operations;
 using UVtools.WPF.Windows;
 
 namespace UVtools.WPF.Controls.Tools;
 
-public class ToolLayerRemoveControl : ToolControl
+public partial class ToolLayerRemoveControl : ToolControl
 {
     public OperationLayerRemove Operation => BaseOperation as OperationLayerRemove;
 
@@ -40,11 +39,6 @@ public class ToolLayerRemoveControl : ToolControl
         BaseOperation = new OperationLayerRemove(SlicerFile);
         if (!ValidateSpawn()) return;
         InitializeComponent();
-    }
-
-    private void InitializeComponent()
-    {
-        AvaloniaXamlLoader.Load(this);
     }
 
     public override void Callback(ToolWindow.Callbacks callback)

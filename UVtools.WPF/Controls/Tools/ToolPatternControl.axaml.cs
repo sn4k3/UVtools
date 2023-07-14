@@ -1,10 +1,9 @@
-﻿using Avalonia.Markup.Xaml;
-using UVtools.Core.Operations;
+﻿using UVtools.Core.Operations;
 using UVtools.WPF.Windows;
 
 namespace UVtools.WPF.Controls.Tools;
 
-public class ToolPatternControl : ToolControl
+public partial class ToolPatternControl : ToolControl
 {
     public OperationPattern Operation => BaseOperation as OperationPattern;
     private bool _isDefaultAnchorChecked = true;
@@ -20,11 +19,6 @@ public class ToolPatternControl : ToolControl
         BaseOperation = new OperationPattern(SlicerFile, App.MainWindow.ROI);
         if (!ValidateSpawn()) return;
         InitializeComponent();
-    }
-
-    private void InitializeComponent()
-    {
-        AvaloniaXamlLoader.Load(this);
     }
 
     public override void Callback(ToolWindow.Callbacks callback)

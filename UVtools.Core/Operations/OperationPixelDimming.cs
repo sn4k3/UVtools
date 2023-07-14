@@ -339,6 +339,7 @@ public class OperationPixelDimming : Operation
     }
 
 
+    public void GeneratePixelDimming(object pattern) => GeneratePixelDimming(pattern.ToString()!);
     public void GeneratePixelDimming(string pattern)
     {
         if (pattern == "Chessboard")
@@ -497,7 +498,7 @@ public class OperationPixelDimming : Operation
             return;
         }
     }
-
+    public void GenerateInfill(object pattern) => GenerateInfill(pattern.ToString()!);
     public void GenerateInfill(string pattern)
     {
         if (pattern == "Rectilinear")

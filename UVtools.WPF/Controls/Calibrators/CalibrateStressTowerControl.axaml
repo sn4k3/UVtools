@@ -7,9 +7,9 @@
 
     <StackPanel Spacing="10">
 
-    <Expander
-        Header="Step 1 - Common properties"
-        IsExpanded="True">
+    <Expander Header="Step 1 - Common properties"
+              HorizontalAlignment="Stretch"
+              IsExpanded="True">
 
       <Grid
           RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto"
@@ -179,10 +179,9 @@
 
       </Grid>
     </Expander>
-
-        <Expander
-            Header="Outer Spirals"
-            IsExpanded="True">
+        <Expander Header="Outer Spirals"
+                  HorizontalAlignment="Stretch"
+                  IsExpanded="True">
 
           <Grid RowDefinitions="Auto,5,Auto"
                 ColumnDefinitions="Auto,10,190,20,Auto,10,190,5,Auto">
@@ -205,7 +204,7 @@
 &#x0a;Both: Each spiral will turn in both directions, clockwise and counter-clockwise."
                        Text="Spiral direction:"/>
             <ComboBox Grid.Row="0" Grid.Column="6"
-                      Items="{Binding Operation.SpiralDirectionsItems}"
+                      ItemsSource="{Binding Operation.SpiralDirectionsItems}"
                       SelectedItem="{Binding Operation.SpiralDirection}"
                       HorizontalAlignment="Stretch"/>
 

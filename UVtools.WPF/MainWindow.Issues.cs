@@ -21,6 +21,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Avalonia.Platform.Storage;
 using UVtools.Core;
 using UVtools.Core.Dialogs;
 using UVtools.Core.Extensions;
@@ -28,6 +29,7 @@ using UVtools.Core.FileFormats;
 using UVtools.Core.Layers;
 using UVtools.Core.Objects;
 using UVtools.Core.Operations;
+using UVtools.WPF.Controls;
 using UVtools.WPF.Extensions;
 using Brushes = Avalonia.Media.Brushes;
 
@@ -37,7 +39,6 @@ public partial class MainWindow
 {
     #region Members
     private bool _firstTimeOnIssues = true;
-    public DataGrid IssuesGrid;
 
     private int _issueSelectedIndex = -1;
 
@@ -64,9 +65,6 @@ public partial class MainWindow
 
     private uint _resinTrapDetectionStartLayer;
 
-    public bool IssueCanGoPrevious => IsFileLoaded && SlicerFile.IssueManager.Count > 0 && _issueSelectedIndex > 0;
-    public bool IssueCanGoNext => IsFileLoaded && SlicerFile.IssueManager.Count > 0 && _issueSelectedIndex < SlicerFile.IssueManager.Count - 1;
-
     public uint ResinTrapDetectionStartLayer
     {
         get => _resinTrapDetectionStartLayer;
@@ -81,22 +79,9 @@ public partial class MainWindow
 
     public void InitIssues()
     {
-        IssuesGrid = this.FindControl<DataGrid>("IssuesGrid");
         IssuesGrid.CellPointerPressed += IssuesGridOnCellPointerPressed;
         IssuesGrid.SelectionChanged += IssuesGridOnSelectionChanged;
         IssuesGrid.KeyUp += IssuesGridOnKeyUp;
-    }
-
-    public void IssueGoPrevious()
-    {
-        if (!IssueCanGoPrevious) return;
-        IssueSelectedIndex--;
-    }
-
-    public void IssueGoNext()
-    {
-        if (!IssueCanGoNext) return;
-        IssueSelectedIndex++;
     }
 
     /*public List<IssueOfContours> GetOverlappingIssues(IssueOfContours targetIssue, int indexOffset)
@@ -230,7 +215,7 @@ public partial class MainWindow
         IsGUIEnabled = false;
         ShowProgressWindow("Removing selected issues", false);
 
-        Clipboard.Snapshot();
+        ClipboardManager.Snapshot();
 
         var task = await Task.Run(() =>
         {
@@ -302,7 +287,7 @@ public partial class MainWindow
 
         if (!task)
         {
-            Clipboard.RestoreSnapshot();
+            ClipboardManager.RestoreSnapshot();
             return;
         }
 
@@ -341,7 +326,7 @@ public partial class MainWindow
 
         if (issueRemoveList.Count == 0) return;
 
-        Clipboard.Clip($"Manually removed {issueRemoveList.Count} issues");
+        ClipboardManager.Clip($"Manually removed {issueRemoveList.Count} issues");
             
         IssuesGrid.SelectedIndex = -1;
         SlicerFile.IssueManager.RemoveRange(issueRemoveList);
@@ -476,28 +461,23 @@ public partial class MainWindow
 
         if (resultIssues is not null && resultIssues.Count > 0) issueList.AddRange(resultIssues);
 
-        switch (Settings.Issues.DataGridOrderBy)
+        issueList = Settings.Issues.DataGridOrderBy switch
         {
-            case IssuesOrderBy.TypeAscLayerAscAreaDesc:
-                issueList = issueList.OrderBy(issue => issue.Type)
-                    .ThenBy(issue => issue.StartLayerIndex)
-                    .ThenByDescending(issue => issue.Area).ToList();
-                break;
-            case IssuesOrderBy.TypeAscAreaDescLayerAsc:
-                issueList = issueList.OrderBy(issue => issue.Type)
-                    .ThenByDescending(issue => issue.Area)
-                    .ThenBy(issue => issue.StartLayerIndex).ToList();
-                break;
-            case IssuesOrderBy.AreaDescLayerIndexAscTypeAsc:
-                issueList = issueList.OrderByDescending(issue => issue.Area)
-                    .ThenBy(issue => issue.StartLayerIndex)
-                    .ThenBy(issue => issue.Type).ToList();
-                break;
-            default:
-                throw new ArgumentOutOfRangeException(nameof(Settings.Issues.DataGridOrderBy));
-        }
-        
-            
+            IssuesOrderBy.TypeAscLayerAscAreaDesc => issueList.OrderBy(issue => issue.Type)
+                .ThenBy(issue => issue.StartLayerIndex)
+                .ThenByDescending(issue => issue.Area)
+                .ToList(),
+            IssuesOrderBy.TypeAscAreaDescLayerAsc => issueList.OrderBy(issue => issue.Type)
+                .ThenByDescending(issue => issue.Area)
+                .ThenBy(issue => issue.StartLayerIndex)
+                .ToList(),
+            IssuesOrderBy.AreaDescLayerIndexAscTypeAsc => issueList.OrderByDescending(issue => issue.Area)
+                .ThenBy(issue => issue.StartLayerIndex)
+                .ThenBy(issue => issue.Type)
+                .ToList(),
+            _ => throw new ArgumentOutOfRangeException(nameof(Settings.Issues.DataGridOrderBy))
+        };
+
         SlicerFile.IssueManager.ReplaceCollection(issueList);
     }
 
@@ -507,16 +487,10 @@ public partial class MainWindow
         set
         {
             if (!RaiseAndSetIfChanged(ref _issueSelectedIndex, value)) return;
-            if(_issueSelectedIndex > 0) IssuesGrid.ScrollIntoView(SlicerFile.IssueManager.FirstOrDefault(issue => ReferenceEquals(issue, IssuesGrid.SelectedItem)), null);
-            RaisePropertyChanged(nameof(IssueSelectedIndexStr));
-            RaisePropertyChanged(nameof(IssueCanGoPrevious));
-            RaisePropertyChanged(nameof(IssueCanGoNext));
+            if(_issueSelectedIndex >= 0) IssuesGrid.ScrollIntoView(SlicerFile.IssueManager.FirstOrDefault(issue => ReferenceEquals(issue, IssuesGrid.SelectedItem)), null);
         }
     }
 
-    public string IssueSelectedIndexStr => IsFileLoaded 
-        ? (_issueSelectedIndex + 1).ToString().PadLeft(SlicerFile.IssueManager.Count.ToString().Length, '0')
-        : "0";
 
     private void IssuesGridOnSelectionChanged(object? sender, SelectionChangedEventArgs e)
     {
@@ -584,35 +558,21 @@ public partial class MainWindow
     public async void OnClickExportIssues()
     {
         if (!SlicerFile.IssueManager.HaveIssues) return;
-        var dialog = new SaveFileDialog
-        {
-            DefaultExtension = ".uvtissues",
-            Filters = new List<FileDialogFilter>
-            {
-                new()
-                {
-                    Name = "UVtools issues files",
-                    Extensions = new List<string> {"uvtissues"}
-                }
-            },
-            InitialFileName = SlicerFile.FilenameNoExt,
-            Directory = SlicerFile.DirectoryPath
-        };
 
-        var path = await dialog.ShowAsync(this);
-        if (string.IsNullOrWhiteSpace(path)) return;
+        using var file = await SaveFilePickerAsync(SlicerFile.DirectoryPath, SlicerFile.FilenameNoExt, AvaloniaStatic.IssuesFileFilter);
+        if (file?.TryGetLocalPath() is not { } filePath) return;
         
         IsGUIEnabled = false;
         try
         {
             var exportIssues = new SerializableIssuesDocument(SlicerFile);
-            exportIssues.SerializeAsync(path);
+            exportIssues.SerializeAsync(filePath);
         }
         catch (Exception e)
         {
             await this.MessageBoxError(e.ToString());
             Debug.WriteLine(e);
-            if(File.Exists(path)) File.Delete(path);
+            if(File.Exists(filePath)) File.Delete(filePath);
         }
 
         IsGUIEnabled = true;
@@ -686,11 +646,6 @@ public partial class MainWindow
         SlicerFile.IssueManager.AddRange(resultIssues);
             
         ShowLayer();
-
-        RaisePropertyChanged(nameof(IssueSelectedIndexStr));
-        RaisePropertyChanged(nameof(IssueCanGoPrevious));
-        RaisePropertyChanged(nameof(IssueCanGoNext));
-
     }
 
     /*public Dictionary<uint, uint> GetIssuesCountPerLayer()
@@ -712,15 +667,15 @@ public partial class MainWindow
         return layerIndexIssueCount;
     }*/
 
-    public Dictionary<MainIssue.IssueType, ISolidColorBrush> GetIssueColors(bool highlightColors = false)
+    public Dictionary<MainIssue.IssueType, IImmutableSolidColorBrush> GetIssueColors(bool highlightColors = false)
     {
-        return new Dictionary<MainIssue.IssueType, ISolidColorBrush>
+        return new Dictionary<MainIssue.IssueType, IImmutableSolidColorBrush>
         {
-            {MainIssue.IssueType.Island,     highlightColors ? Settings.LayerPreview.IslandHighlightBrush : Settings.LayerPreview.IslandBrush},
-            {MainIssue.IssueType.Overhang,   highlightColors ? Settings.LayerPreview.OverhangHighlightBrush : Settings.LayerPreview.OverhangBrush},
-            {MainIssue.IssueType.ResinTrap,  highlightColors ? Settings.LayerPreview.ResinTrapHighlightBrush : Settings.LayerPreview.ResinTrapBrush},
-            {MainIssue.IssueType.SuctionCup, highlightColors ? Settings.LayerPreview.SuctionCupHighlightBrush : Settings.LayerPreview.SuctionCupBrush},
-            {MainIssue.IssueType.TouchingBound, Settings.LayerPreview.TouchingBoundsBrush},
+            {MainIssue.IssueType.Island,     new ImmutableSolidColorBrush(highlightColors ? Settings.LayerPreview.IslandHighlightBrush : Settings.LayerPreview.IslandBrush)},
+            {MainIssue.IssueType.Overhang,   new ImmutableSolidColorBrush(highlightColors ? Settings.LayerPreview.OverhangHighlightBrush : Settings.LayerPreview.OverhangBrush)},
+            {MainIssue.IssueType.ResinTrap,  new ImmutableSolidColorBrush(highlightColors ? Settings.LayerPreview.ResinTrapHighlightBrush : Settings.LayerPreview.ResinTrapBrush)},
+            {MainIssue.IssueType.SuctionCup, new ImmutableSolidColorBrush(highlightColors ? Settings.LayerPreview.SuctionCupHighlightBrush : Settings.LayerPreview.SuctionCupBrush)},
+            {MainIssue.IssueType.TouchingBound, new ImmutableSolidColorBrush(Settings.LayerPreview.TouchingBoundsBrush)},
             {MainIssue.IssueType.EmptyLayer, Brushes.Red},
             {MainIssue.IssueType.PrintHeight, Brushes.Red},
             {MainIssue.IssueType.Debug, new ImmutableSolidColorBrush(new Color(255, 15, 112, 16))},
@@ -729,10 +684,10 @@ public partial class MainWindow
 
     private void UpdateLayerTrackerHighlightIssues()
     {
-        _issuesSliderCanvas.Children.Clear();
+        LayerNavigationIssuesCanvas.Children.Clear();
         if (!IsFileLoaded || SlicerFile.IssueManager.Count == 0) return;
 
-        var tickFrequencySize = _issuesSliderCanvas.Bounds.Height * LayerSlider.TickFrequency / LayerSlider.Maximum;
+        var tickFrequencySize = LayerNavigationIssuesCanvas.Bounds.Height * LayerSlider.TickFrequency / LayerSlider.Maximum;
         var stroke = (int)Math.Ceiling(tickFrequencySize);
 
         var colorDictionary = GetIssueColors(true);
@@ -755,8 +710,8 @@ public partial class MainWindow
             {
                 yPos -= tickFrequencySize / 2;
             }
-            var line = new Line { StrokeThickness = stroke, Stroke = color, EndPoint = new Avalonia.Point(_issuesSliderCanvas.Width, 0) };
-            _issuesSliderCanvas.Children.Add(line);
+            var line = new Line { StrokeThickness = stroke, Stroke = color, EndPoint = new Avalonia.Point(LayerNavigationIssuesCanvas.Width, 0) };
+            LayerNavigationIssuesCanvas.Children.Add(line);
             Canvas.SetBottom(line, yPos);
         }
 
@@ -813,14 +768,14 @@ public partial class MainWindow
         if(clearIgnored) SlicerFile.IssueManager.IgnoredIssues.Clear();
     }
 
-    public void SetResinTrapDetectionStartLayer(char which)
+    public void SetResinTrapDetectionStartLayer(object which)
     {
         switch (which)
         {
-            case 'N':
+            case "N":
                 ResinTrapDetectionStartLayer = SlicerFile.FirstNormalLayer.Index;
                 break;
-            case 'C':
+            case "C":
                 ResinTrapDetectionStartLayer = ActualLayer;
                 break;
         }

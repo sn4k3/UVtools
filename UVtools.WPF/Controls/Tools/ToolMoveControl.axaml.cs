@@ -1,10 +1,9 @@
-﻿using Avalonia.Markup.Xaml;
-using UVtools.Core.Operations;
+﻿using UVtools.Core.Operations;
 using UVtools.WPF.Windows;
 
 namespace UVtools.WPF.Controls.Tools;
 
-public class ToolMoveControl : ToolControl
+public partial class ToolMoveControl : ToolControl
 {
     private bool _isMiddleCenterChecked = true;
     public OperationMove Operation => BaseOperation as OperationMove;
@@ -29,11 +28,6 @@ public class ToolMoveControl : ToolControl
                 ParentWindow.ButtonOkEnabled = Operation.IsWithinBoundary;
             }
         };
-    }
-
-    private void InitializeComponent()
-    {
-        AvaloniaXamlLoader.Load(this);
     }
 
     public override void Callback(ToolWindow.Callbacks callback)

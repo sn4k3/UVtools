@@ -9,7 +9,6 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
-using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
 using System;
 using System.Collections.Generic;
@@ -24,6 +23,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web;
+using Avalonia.Platform.Storage;
 using UVtools.AvaloniaControls;
 using UVtools.Core;
 using UVtools.Core.Dialogs;
@@ -41,7 +41,6 @@ using UVtools.WPF.Controls.Tools;
 using UVtools.WPF.Extensions;
 using UVtools.WPF.Structures;
 using UVtools.WPF.Windows;
-using Helpers = UVtools.WPF.Controls.Helpers;
 using Path = System.IO.Path;
 using Point = Avalonia.Point;
 
@@ -52,7 +51,7 @@ public partial class MainWindow : WindowEx
     #region Redirects
 
     public AppVersionChecker VersionChecker => App.VersionChecker;
-    public static ClipboardManager Clipboard => ClipboardManager.Instance;
+    public static ClipboardManager ClipboardManager => ClipboardManager.Instance;
     #endregion
 
     #region Controls
@@ -130,7 +129,6 @@ public partial class MainWindow : WindowEx
     private bool _isGUIEnabled = true;
     private uint _savesCount;
     private bool _canSave;
-    private readonly MenuItem _menuFileSendTo;
     private IEnumerable<MenuItem> _menuFileOpenRecentItems;
     private IEnumerable<MenuItem> _menuFileSendToItems;
     private IEnumerable<MenuItem> _menuFileConvertItems;
@@ -184,12 +182,6 @@ public partial class MainWindow : WindowEx
         get => SlicerFile is not null;
         set => RaisePropertyChanged();
     }
-
-    public TabItem TabInformation { get; }
-    public TabItem TabGCode { get; }
-    public TabItem TabIssues { get; }
-    public TabItem TabPixelEditor { get; }
-    public TabItem TabLog { get; }
 
     public TabItem SelectedTabItem
     {
@@ -292,13 +284,6 @@ public partial class MainWindow : WindowEx
 
         RefreshRecentFiles(true);
             
-        TabInformation = this.FindControl<TabItem>("TabInformation");
-        TabGCode = this.FindControl<TabItem>("TabGCode");
-        TabIssues = this.FindControl<TabItem>("TabIssues");
-        TabPixelEditor = this.FindControl<TabItem>("TabPixelEditor");
-        TabLog = this.FindControl<TabItem>("TabLog");
-
-
         foreach (var menuItem in new[] { MenuTools, MenuCalibration, LayerActionsMenu })
         {
             foreach (var menuTool in menuItem)
@@ -323,11 +308,9 @@ public partial class MainWindow : WindowEx
 
         UpdateTitle();
 
-        
         DataContext = this;
 
-        _menuFileSendTo = this.FindControl<MenuItem>("MainMenu.File.SendTo");
-        this.FindControl<MenuItem>("MainMenu.File").SubmenuOpened += (sender, e) =>
+        MainMenuFile.SubmenuOpened += (sender, e) =>
         {
             if (!IsFileLoaded) return;
                 
@@ -458,7 +441,7 @@ public partial class MainWindow : WindowEx
 
 
             MenuFileSendToItems = menuItems;
-            _menuFileSendTo.IsVisible = _menuFileSendTo.IsEnabled = menuItems.Count > 0;
+            MainMenuFileSendTo.IsVisible = MainMenuFileSendTo.IsEnabled = menuItems.Count > 0;
         };
     }
 
@@ -701,7 +684,9 @@ public partial class MainWindow : WindowEx
         AddHandler(DragDrop.DropEvent, (sender, args) =>
         {
             if (!_isGUIEnabled) return;
-            ProcessFiles(args.Data.GetFileNames()?.ToArray());
+            var files = args.Data.GetFiles();
+            if (files is null) return;
+            ProcessFiles(files.Select(file => file.TryGetLocalPath()).ToArray());
         });
 
         AddLog($"{About.Software} start", Program.ProgramStartupTime.Elapsed.TotalSeconds);
@@ -763,11 +748,6 @@ public partial class MainWindow : WindowEx
             ShowLayer();
             return;
         }*/
-    }
-
-    private void InitializeComponent()
-    {
-        AvaloniaXamlLoader.Load(this);
     }
     #endregion
 
@@ -882,17 +862,6 @@ public partial class MainWindow : WindowEx
         base.OnKeyUp(e);
     }
         
-    public void OpenContextMenu(string name)
-    {
-        var menu = this.FindControl<ContextMenu>($"{name}ContextMenu");
-        if (menu is null) return;
-        var parent = this.FindControl<Button>($"{name}Button");
-        if (parent is null) return;
-        menu.Open(parent);
-    }
-
-
-
     #endregion
 
     #region Events
@@ -1009,49 +978,31 @@ public partial class MainWindow : WindowEx
         {
             defaultFilename = $"{defaultFilename}{i}";
         }
-        
 
-        SaveFileDialog dialog = new()
-        {
-            DefaultExtension = extension.Extension,
-            Filters = new List<FileDialogFilter>
-            {
-                new()
-                {
-                    Name = extension.Description,
-                    Extensions = new List<string>
-                    {
-                        ext
-                    }
-                }
-            },
+        using var file = await SaveFilePickerAsync(defaultDirectory, defaultFilename,
+                AvaloniaStatic.CreateFilePickerFileTypes(extension.Description, ext));
 
-            Directory = defaultDirectory,
-            InitialFileName = defaultFilename
-        };
-        var file = await dialog.ShowAsync(this);
-        if (string.IsNullOrEmpty(file)) return;
-        await SaveFile(file);
+        if (file?.TryGetLocalPath() is not { } filePath) return;
+
+        await SaveFile(filePath);
     }
 
     public async void OpenFile(bool newWindow = false, FileFormat.FileDecodeType fileDecodeType = FileFormat.FileDecodeType.Full)
     {
-        var filters = Helpers.ToAvaloniaFileFilter(FileFormat.AllFileFiltersAvalonia);
-        var orderedFilters = new List<FileDialogFilter> {filters[Settings.General.DefaultOpenFileExtensionIndex]};
+        var filters = AvaloniaStatic.ToAvaloniaFileFilter(FileFormat.AllFileFiltersAvalonia);
+        var orderedFilters = new List<FilePickerFileType> {filters[Settings.General.DefaultOpenFileExtensionIndex]};
         for (int i = 0; i < filters.Count; i++)
         {
             if(i == Settings.General.DefaultOpenFileExtensionIndex) continue;
             orderedFilters.Add(filters[i]);
         }
 
-        var dialog = new OpenFileDialog
-        {
-            AllowMultiple = true,
-            Filters = orderedFilters,
-            Directory = Settings.General.DefaultDirectoryOpenFile
-        };
-        var files = await dialog.ShowAsync(this);
-        ProcessFiles(files, newWindow, fileDecodeType);
+        var files = await OpenFilePickerAsync(Settings.General.DefaultDirectoryOpenFile,
+            orderedFilters, allowMultiple: true);
+
+        if (files.Count == 0) return;
+
+        ProcessFiles(files.Select(file => file.TryGetLocalPath()!).ToArray(), newWindow, fileDecodeType);
     }
 
     public async void OnMenuFileCloseFile()
@@ -1073,7 +1024,7 @@ public partial class MainWindow : WindowEx
 
         ClipboardManager.Instance.Reset();
 
-        TabGCode.IsVisible = false;
+        //TabGCode.IsVisible = false;
 
         IssuesClear(true);
         SlicerFile?.Dispose();
@@ -1091,7 +1042,7 @@ public partial class MainWindow : WindowEx
         LayerCache.Clear();
         _resinTrapDetectionStartLayer = 0;
 
-        VisibleThumbnailIndex = 0;
+        VisibleThumbnailIndex = -1;
 
         LayerImageBox.Image = null;
         LayerPixelPicker.Reset();
@@ -1130,6 +1081,8 @@ public partial class MainWindow : WindowEx
             {
                 App.ApplyTheme();
             }
+
+            App._fluentTheme.DensityStyle = Settings.General.ThemeDensity;
 
             if (oldLayerCompressionCodec != Settings.General.LayerCompressionCodec && IsFileLoaded)
             {
@@ -1382,9 +1335,9 @@ public partial class MainWindow : WindowEx
         }
     }
 
-    void ReloadFile() => ReloadFile(_actualLayer);
+    public void ReloadFile() => ReloadFile(_actualLayer);
 
-    void ReloadFile(uint actualLayer)
+    public void ReloadFile(uint actualLayer)
     {
         if (!IsFileLoaded) return;
         ProcessFile(SlicerFile.FileFullPath, SlicerFile.DecodeType, _actualLayer);
@@ -1506,29 +1459,16 @@ public partial class MainWindow : WindowEx
                         }
                         else if (result == MessageButtonResult.No)
                         {
-                            var dialog = new SaveFileDialog
-                            {
-                                Directory = directory,
-                                InitialFileName = filenameNoExt,
-                                DefaultExtension = $".{convertFileExtension}",
-                                Filters = new List<FileDialogFilter>
-                                {
-                                    new()
-                                    {
-                                        Name = fileExtension.Description,
-                                        Extensions = new List<string>{ convertFileExtension }
-                                    }
-                                }
-                            };
+                            using var file = await SaveFilePickerAsync(directory, filenameNoExt,
+                                    AvaloniaStatic.CreateFilePickerFileTypes(fileExtension.Description, convertFileExtension));
 
-                            var saveResult = await dialog.ShowAsync(this);
-                            if (string.IsNullOrWhiteSpace(saveResult))
+                            if (file?.TryGetLocalPath() is not { } filePath)
                             {
                                 canConvert = false;
                             }
                             else
                             {
-                                outputFile = saveResult;
+                                outputFile = filePath;
                             }
                         }
                     }
@@ -1602,7 +1542,7 @@ public partial class MainWindow : WindowEx
             }
         }*/
 
-        Clipboard.Init(SlicerFile);
+        ClipboardManager.Init(SlicerFile);
 
         if (SlicerFile is not ImageFile && SlicerFile.DecodeType == FileFormat.FileDecodeType.Full)
         {
@@ -1647,7 +1587,7 @@ public partial class MainWindow : WindowEx
                         Tag = fileExtension
                     };
 
-                    menuItem.Tapped += ConvertToOnTapped;
+                    menuItem.Click += ConvertToOnClick;
 
                     parentMenu.Add(menuItem);
                 }
@@ -1656,7 +1596,7 @@ public partial class MainWindow : WindowEx
             foreach (var menuItem in menuItems)
             {
                 if (menuItem.Tag is not string group) continue;
-                menuItem.Items = convertMenu[group];
+                menuItem.ItemsSource = convertMenu[group];
             }
 
             MenuFileConvertItems = menuItems;
@@ -1674,7 +1614,7 @@ public partial class MainWindow : WindowEx
 
         using var mat = SlicerFile.FirstLayer?.LayerMat;
 
-        VisibleThumbnailIndex = 1;
+        VisibleThumbnailIndex = 0;
 
         UpdateTitle();
 
@@ -1753,7 +1693,7 @@ public partial class MainWindow : WindowEx
                 }
             }
         }
-
+        
         var display = SlicerFile.Display;
         if (!display.HaveZero() &&
             //SlicerFile is not LGSFile &&
@@ -1846,7 +1786,7 @@ public partial class MainWindow : WindowEx
             UserSettings.Save();
         }
 
-        TabGCode.IsVisible = HaveGCode;
+        //TabGCode.IsVisible = HaveGCode;
     }
 
     private void SlicerFileOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -1897,7 +1837,7 @@ public partial class MainWindow : WindowEx
         }
     }
 
-    private async void ConvertToOnTapped(object? sender, RoutedEventArgs e)
+    private async void ConvertToOnClick(object? sender, RoutedEventArgs e)
     {
         if (sender is not MenuItem {Tag: FileExtension fileExtension}) return;
 
@@ -1919,28 +1859,24 @@ public partial class MainWindow : WindowEx
             }
         }
 
-        SaveFileDialog saveDialog = new()
-        {
-            InitialFileName = Path.GetFileNameWithoutExtension(SlicerFile.FileFullPath),
-            Filters = Helpers.ToAvaloniaFilter(fileExtension.Description, fileExtension.Extension),
-            Directory = string.IsNullOrEmpty(Settings.General.DefaultDirectoryConvertFile)
-                ? Path.GetDirectoryName(SlicerFile.FileFullPath)
-                : Settings.General.DefaultDirectoryConvertFile
-        };
+        using var file = await SaveFilePickerAsync(string.IsNullOrEmpty(Settings.General.DefaultDirectoryConvertFile)
+                    ? SlicerFile.DirectoryPath
+                    : Settings.General.DefaultDirectoryConvertFile,
+                SlicerFile.FilenameNoExt,
+                new List<FilePickerFileType>{AvaloniaStatic.CreateFilePickerFileType(fileExtension.Description, fileExtension.Extension)});
 
-        var newFilePath = await saveDialog.ShowAsync(this);
-        if (string.IsNullOrEmpty(newFilePath)) return;
+        if (file?.TryGetLocalPath() is not { } filePath) return;
 
         IsGUIEnabled = false;
         var oldFileName = SlicerFile.Filename!;
         var oldFile = SlicerFile.FileFullPath!;
-        ShowProgressWindow($"Converting {oldFileName} to {Path.GetExtension(newFilePath)}");
+        ShowProgressWindow($"Converting {oldFileName} to {Path.GetExtension(filePath)}");
 
         var task = await Task.Run(() =>
         {
             try
             {
-                return SlicerFile.Convert(fileFormat, newFilePath, version, Progress) is not null;
+                return SlicerFile.Convert(fileFormat, filePath, version, Progress) is not null;
             }
             catch (OperationCanceledException)
             {
@@ -1967,7 +1903,7 @@ public partial class MainWindow : WindowEx
         {
             var question = await this.MessageBoxQuestion(
                 $"Conversion completed in {LastStopWatch.ElapsedMilliseconds / 1000}s\n\n" +
-                $"Do you want to open '{Path.GetFileName(newFilePath)}' in a new window?\n" +
+                $"Do you want to open '{Path.GetFileName(filePath)}' in a new window?\n" +
                 "Yes: Open in a new window.\n" +
                 "No: Open in this window.\n" +
                 "Cancel: Do not perform any action.\n",
@@ -1976,10 +1912,10 @@ public partial class MainWindow : WindowEx
             switch (question)
             {
                 case MessageButtonResult.No:
-                    ProcessFile(newFilePath, _actualLayer);
+                    ProcessFile(filePath, _actualLayer);
                     break;
                 case MessageButtonResult.Yes:
-                    App.NewInstance(newFilePath);
+                    App.NewInstance(filePath);
                     break;
             }
 
@@ -1990,7 +1926,7 @@ public partial class MainWindow : WindowEx
                     removeSourceFile = true;
                     break;
                 case RemoveSourceFileAction.Prompt:
-                    if (await this.MessageBoxQuestion($"File was successfully converted to: {Path.GetFileName(newFilePath)}\n" +
+                    if (await this.MessageBoxQuestion($"File was successfully converted to: {Path.GetFileName(filePath)}\n" +
                                                       $"Do you want to remove the source file: {oldFileName}", $"Remove source file: {oldFileName}") == MessageButtonResult.Yes) removeSourceFile = true;
                     break;
             }
@@ -2100,20 +2036,15 @@ public partial class MainWindow : WindowEx
     public async void ExtractFile()
     {
         if (!IsFileLoaded) return;
-        string fileNameNoExt = Path.GetFileNameWithoutExtension(SlicerFile.FileFullPath);
-        OpenFolderDialog dialog = new()
-        {
-            Directory = string.IsNullOrEmpty(Settings.General.DefaultDirectoryExtractFile)
-                ? Path.GetDirectoryName(SlicerFile.FileFullPath)
-                : Settings.General.DefaultDirectoryExtractFile,
-            Title =
-                $"A \"{fileNameNoExt}\" folder will be created within your selected folder to dump the contents."
-        };
 
-        var result = await dialog.ShowAsync(this);
-        if (string.IsNullOrEmpty(result)) return;
+        var fileNameNoExt = SlicerFile.FilenameNoExt!;
 
-        string finalPath = Path.Combine(result, fileNameNoExt);
+        var folders = await OpenFolderPickerAsync(string.IsNullOrEmpty(Settings.General.DefaultDirectoryExtractFile)
+            ? SlicerFile.DirectoryPath
+            : Settings.General.DefaultDirectoryExtractFile,
+            $"A \"{fileNameNoExt}\" folder will be created within your selected folder to dump the contents.");
+        if (folders.Count == 0) return;
+        string finalPath = Path.Combine(folders[0].TryGetLocalPath()!, fileNameNoExt);
 
         IsGUIEnabled = false;
         ShowProgressWindow($"Extracting {Path.GetFileName(SlicerFile.FileFullPath)}");
@@ -2254,7 +2185,7 @@ public partial class MainWindow : WindowEx
         ShowProgressWindow(baseOperation.ProgressTitle, baseOperation.CanCancel);
         OperationSessionManager.Instance.Add(baseOperation);
 
-        Clipboard.Snapshot();
+        ClipboardManager.Snapshot();
 
         var result = await Task.Run(() =>
         {
@@ -2274,7 +2205,7 @@ public partial class MainWindow : WindowEx
 
         if (result)
         {
-            Clipboard.Clip(baseOperation);
+            ClipboardManager.Clip(baseOperation);
 
             ShowLayer();
             RefreshProperties();
@@ -2304,7 +2235,7 @@ public partial class MainWindow : WindowEx
         }
         else
         {
-            Clipboard.RestoreSnapshot();
+            ClipboardManager.RestoreSnapshot();
         }
 
         

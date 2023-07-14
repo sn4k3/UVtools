@@ -1,5 +1,5 @@
 ﻿using Avalonia.Controls;
-using Avalonia.Markup.Xaml;
+using Avalonia.Platform.Storage;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
@@ -13,7 +13,7 @@ using Bitmap = Avalonia.Media.Imaging.Bitmap;
 
 namespace UVtools.WPF.Controls.Tools;
 
-public class ToolMaskControl : ToolControl
+public partial class ToolMaskControl : ToolControl
 {
     private bool _isMaskInverted;
     private byte _genMinimumBrightness = 200;
@@ -73,10 +73,6 @@ public class ToolMaskControl : ToolControl
         InitializeComponent();
     }
 
-    private void InitializeComponent()
-    {
-        AvaloniaXamlLoader.Load(this);
-    }
 
     public override void Callback(ToolWindow.Callbacks callback)
     {
@@ -95,18 +91,12 @@ public class ToolMaskControl : ToolControl
 
     public async void ImportImageMask()
     {
-        var dialog = new OpenFileDialog
-        {
-            Filters = Helpers.ImagesFileFilter,
-            AllowMultiple = false
-        };
-
-        var result = await dialog.ShowAsync(ParentWindow);
-        if (result is null || result.Length == 0) return;
+        var files = await App.MainWindow.OpenFilePickerAsync(AvaloniaStatic.ImagesFileFilter);
+        if (files.Count == 0 || files[0].TryGetLocalPath() is not { } filePath) return;
 
         try
         {
-            Operation.LoadFromFile(result[0], _isMaskInverted, App.MainWindow.ROI.Size.IsEmpty ? SlicerFile.Resolution : App.MainWindow.ROI.Size);
+            Operation.LoadFromFile(filePath, _isMaskInverted, App.MainWindow.ROI.Size.IsEmpty ? SlicerFile.Resolution : App.MainWindow.ROI.Size);
             MaskImage = Operation.Mask.ToBitmapParallel();
         }
         catch (Exception e)

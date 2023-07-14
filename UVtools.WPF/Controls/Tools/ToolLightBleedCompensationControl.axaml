@@ -11,7 +11,7 @@
 
     <ComboBox Grid.Row="0" Grid.Column="2"
               HorizontalAlignment="Stretch"
-              Items="{Binding Operation.LookupMode, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+              ItemsSource="{Binding Operation.LookupMode, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
               SelectedItem="{Binding Operation.LookupMode, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
 
     <TextBlock Grid.Row="2" Grid.Column="0"

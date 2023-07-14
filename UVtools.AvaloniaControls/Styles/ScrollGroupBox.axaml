@@ -1,0 +1,57 @@
+﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:c="clr-namespace:UVtools.AvaloniaControls">
+    <Design.PreviewWith>
+		<Border Padding="20" Width="400">
+			<StackPanel Spacing="20">
+				<c:ScrollGroupBox Header="Hello World!" Height="200">
+					<StackPanel Spacing="5">
+						<NumericUpDown Value="10"/>
+						<NumericUpDown Value="20"/>
+						<NumericUpDown Value="30"/>
+						<NumericUpDown Value="40"/>
+						<NumericUpDown Value="50"/>
+						<NumericUpDown Value="60"/>
+					</StackPanel>
+				</c:ScrollGroupBox>
+			</StackPanel>
+		</Border>
+    </Design.PreviewWith>
+
+	<!-- Add Styles Here -->
+    <ControlTheme x:Key="{x:Type c:ScrollGroupBox}" TargetType="c:ScrollGroupBox">
+		<Setter Property="Foreground" Value="{DynamicResource TextControlForeground}" />
+		<Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}" />
+		<Setter Property="BorderThickness" Value="{DynamicResource GroupBoxHeaderBorderThickness}" />
+		<Setter Property="BorderBrush" Value="{DynamicResource SystemListMediumColor}" />
+		<Setter Property="MinHeight" Value="{DynamicResource TextControlThemeMinHeight}" />
+		<Setter Property="MinWidth" Value="{DynamicResource TextControlThemeMinWidth}"/>
+		<Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
+		<Setter Property="Padding" Value="0" />
+		<Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
+		
+        <Setter Property="Template">
+		    <ControlTemplate>
+				<c:GroupBox Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="{TemplateBinding CornerRadius}"
+                            Margin="0"
+                            Padding="0"
+                            ContentMargin="0"
+                            MinWidth="{TemplateBinding MinWidth}"
+                            MinHeight="{TemplateBinding MinHeight}"
+                            HorizontalAlignment="Stretch"
+                            Header="{TemplateBinding Header}">
+					<ScrollViewer Name="PART_ContentScrollViewer"
+                                  VerticalScrollBarVisibility="Auto"
+                                  HorizontalScrollBarVisibility="Auto">
+						<ContentPresenter Name="PART_ScrollContentPresenter" 
+										  Margin="{TemplateBinding ContentMargin}"
+                                          Content="{TemplateBinding Content}"/>
+                    </ScrollViewer>
+				</c:GroupBox>
+		    </ControlTemplate>
+        </Setter>
+    </ControlTheme>
+</ResourceDictionary>

@@ -7,9 +7,9 @@
   <Grid ColumnDefinitions="Auto,10,380">
     <StackPanel Spacing="10">
 
-        <Expander
-            Header="Step 1 - Common properties"
-            IsExpanded="True">
+        <Expander Header="Step 1 - Common properties"
+                  HorizontalAlignment="Stretch"
+                  IsExpanded="True">
           <Grid
               RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto"
               ColumnDefinitions="Auto,10,190,20,Auto,10,190">
@@ -167,7 +167,7 @@
                        Text="Shape:"/>
             <ComboBox Grid.Row="12" Grid.Column="2"
                       HorizontalAlignment="Stretch"
-                      Items="{Binding Operation.ShapesItems}"
+                      ItemsSource="{Binding Operation.ShapesItems}"
                       SelectedItem="{Binding Operation.Shape}"/>
 
             <TextBlock Grid.Row="12" Grid.Column="4"
@@ -208,7 +208,7 @@
           </Grid>
         </Expander>
 
-        <Expander Header="Step 2 - Female part" IsExpanded="True">
+        <Expander Header="Step 2 - Female part" IsExpanded="True" HorizontalAlignment="Stretch">
           <Grid RowDefinitions="Auto,5,Auto"
                 ColumnDefinitions="Auto,10,190,5,Auto,20,Auto,10,190,5,Auto">
 
@@ -256,9 +256,9 @@
 
         </Expander>
 
-        <Expander
-            Header="Step 3 - Male parts"
-            IsExpanded="True">
+        <Expander Header="Step 3 - Male parts"
+                  HorizontalAlignment="Stretch"
+                  IsExpanded="True">
             <Grid RowDefinitions="Auto,10,Auto"
                   ColumnDefinitions="Auto,10,150,20,Auto,10,190,20,Auto,10,190">
 

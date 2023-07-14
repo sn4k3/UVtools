@@ -116,7 +116,7 @@ public sealed class OperationLayerExportHeatMap : Operation
 
     public override void InitWithSlicerFile()
     {
-        _filePath = SlicerFile.FileFullPath + ".heatmap.png";
+        _filePath = SlicerFile.FileFullPathNoExt + "_heatmap.png";
     }
 
     #endregion

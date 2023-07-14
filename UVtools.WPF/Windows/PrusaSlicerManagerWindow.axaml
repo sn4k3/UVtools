@@ -3,6 +3,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:controls="clr-namespace:UVtools.WPF.Controls"
+        xmlns:uvtava="clr-namespace:UVtools.AvaloniaControls;assembly=UVtools.AvaloniaControls"
         mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="700"
         x:Class="UVtools.WPF.Windows.PrusaSlicerManagerWindow"
         Title="Install profiles into PrusaSlicer"
@@ -17,12 +18,11 @@
           RowDefinitions="Auto"
           ColumnDefinitions="Auto,*">
 
-      <Border Classes="GroupBox"
-          Margin="5,5,0,5">
+		<uvtava:GroupBox Grid.Column="0"
+                         Margin="5,5,0,5"
+                         Header="Legend">
 
-        <StackPanel Orientation="Vertical">
-          <TextBlock Classes="GroupBoxHeader" Text="Legend"/>
-          <StackPanel Margin="15" Orientation="Vertical" Spacing="10">
+          <StackPanel Spacing="10">
             <StackPanel Orientation="Horizontal" Spacing="5">
               <Border
                 Width="18" Height="18"
@@ -30,9 +30,8 @@
                 BorderThickness="2"
                 Background="LightGray"/>
 
-              <TextBlock
-                VerticalAlignment="Center"
-                Text="Installed Profile - Files match, no need to update"/>
+				<SelectableTextBlock VerticalAlignment="Center"
+                                     Text="Installed Profile - Files match, no need to update"/>
 
             </StackPanel>
 
@@ -43,46 +42,36 @@
                 BorderThickness="2"
                 Background="Red"/>
 
-              <TextBlock
-                VerticalAlignment="Center"
-                Text="Installed Profile - Files mismatch, update available"/>
+				<SelectableTextBlock VerticalAlignment="Center"
+                                     Text="Installed Profile - Files mismatch, update available"/>
 
-            </StackPanel>
+			</StackPanel>
 
-            <StackPanel Orientation="Horizontal" Spacing="5">
-              <Border
-                Width="18" Height="18"
-                BorderBrush="Black"
-                BorderThickness="2"
-                Background="Black"/>
+			<StackPanel Orientation="Horizontal" Spacing="5">
+				<Border
+				  Width="18" Height="18"
+				  BorderBrush="Black"
+				  BorderThickness="2"
+				  Background="Black"/>
 
-              <TextBlock
-                VerticalAlignment="Center"
-                Text="Uninstalled Profile - Not present on PrusaSlicer"/>
+				<SelectableTextBlock VerticalAlignment="Center"
+                                     Text="Uninstalled Profile - Not present on PrusaSlicer"/>
 
             </StackPanel>
 
           </StackPanel>
 
-        </StackPanel>
-      </Border>
+      </uvtava:GroupBox>
 
-      <Border
-        Grid.Column="1"
-        Classes="GroupBox"
-          Margin="5"
-          >
+      <uvtava:GroupBox Grid.Column="1"
+                       Header="Information"
+                       Margin="5">
 
-        <StackPanel Orientation="Vertical">
-          <TextBlock Classes="GroupBoxHeader" Text="Information"/>
-          <TextBlock
-            TextWrapping="Wrap"
-            Margin="15"
-            Text="This will install and overwrite all checked profiles into PrusaSlicer.
+          <SelectableTextBlock TextWrapping="Wrap"
+                               Text="This will install and overwrite all checked profiles into PrusaSlicer.
 &#x0a;On PrusaSlicer access 'Printer' -> 'Notes' to change source parameters.
 &#x0a;NOTE: If you modify a base profile and save under PrusaSlicer, this tool will be mark it as 'update available' since it got modified, in those cases we always recommend to never update base profiles, instead clone it and give different name as your own profile." />
-        </StackPanel>
-      </Border>
+      </uvtava:GroupBox>
 
     </Grid>
 
@@ -131,96 +120,84 @@
                                  Text="PrusaSlicer"/>
                   </StackPanel>
               </TabItem.Header>
-              <Grid
-					  ColumnDefinitions="*,*"
-					  RowDefinitions="*">
+              <Grid ColumnDefinitions="*,*" RowDefinitions="*">
+				  <uvtava:GroupBox Grid.Column="0"
+                                   Margin="5"
+                                   ContentMargin="0">
+                        <uvtava:GroupBox.Header>
+                            <Grid RowDefinitions="Auto">
+                                <TextBlock Grid.Row="0" Text="Print profiles"/>
+                                <TextBlock Grid.Row="0" HorizontalAlignment="Right">
+                                    <TextBlock.Text>
+                                        <MultiBinding StringFormat="{}{0} Update(s) | {1} Installed | {2} Profiles">
+                                            <Binding Path="PrusaSlicerProfiles[0].Updates"/>
+                                            <Binding Path="PrusaSlicerProfiles[0].Installed"/>
+                                            <Binding Path="PrusaSlicerProfiles[0].Items.Count"/>
+                                        </MultiBinding>
+                                    </TextBlock.Text>
+                                </TextBlock>
+                            </Grid>
+                        </uvtava:GroupBox.Header>
+					  <Grid RowDefinitions="Auto,*">
+						  <StackPanel Grid.Row="0"
+                                      Orientation="Horizontal" 
+                                      Spacing="1">
+							  <controls:ButtonWithIcon IsEnabled="{Binding PrusaSlicerProfiles[0].Updates}"
+                                                       Icon="fa-regular fa-square"
+                                                       Text="Unselect all"
+                                                       Command="{Binding PrusaSlicerProfiles[0].SelectNone}"/>
 
-				  <Border
-					  Grid.Column="0"
-					  Classes="GroupBox"
-					  Margin="5">
-
-					  <Grid RowDefinitions="Auto,Auto,*">
-
-						  <TextBlock Grid.Row="0" Classes="GroupBoxHeader" Text="Print profiles"/>
-						  <TextBlock Grid.Row="0" HorizontalAlignment="Right"
-									 Padding="10">
-							  <TextBlock.Text>
-								  <MultiBinding StringFormat="{}{0} Update(s) | {1} Installed | {2} Profiles">
-									  <Binding Path="PrusaSlicerProfiles[0].Updates"/>
-									  <Binding Path="PrusaSlicerProfiles[0].Installed"/>
-									  <Binding Path="PrusaSlicerProfiles[0].Items.Count"/>
-								  </MultiBinding>
-							  </TextBlock.Text>
-						  </TextBlock>
-
-						  <StackPanel
-							Grid.Row="1"
-							Orientation="Horizontal" Spacing="1">
-							  <controls:ButtonWithIcon Padding="10"
-									  IsEnabled="{Binding PrusaSlicerProfiles[0].Updates}"
-									  Icon="fa-regular fa-square"
-                                      Text="Unselect all"
-									  Command="{Binding PrusaSlicerProfiles[0].SelectNone}"/>
-
-							  <controls:ButtonWithIcon Padding="10"
-                                              IsEnabled="{Binding PrusaSlicerProfiles[0].Updates}"
-											  Icon="fa-regular fa-check-square"
-											  Text="Select all"
-                                              Command="{Binding PrusaSlicerProfiles[0].SelectAll}"/>
+							  <controls:ButtonWithIcon IsEnabled="{Binding PrusaSlicerProfiles[0].Updates}"
+                                                       Icon="fa-regular fa-check-square"
+                                                       Text="Select all"
+                                                       Command="{Binding PrusaSlicerProfiles[0].SelectAll}"/>
 
 						  </StackPanel>
 
-						  <ListBox
-							Grid.Row="2"
-							SelectionMode="Toggle"
-							VirtualizationMode="None"
-							Items="{Binding PrusaSlicerProfiles[0].Items}"/>
+						  <ListBox Grid.Row="1"
+                                   SelectionMode="Toggle"
+                                   ItemsSource="{Binding PrusaSlicerProfiles[0].Items}"/>
 					  </Grid>
-				  </Border>
+				  </uvtava:GroupBox>
 
-				  <Border Grid.Column="1"
-					      Classes="GroupBox"
-                          Margin="0,5,5,5">
-
-					  <Grid RowDefinitions="Auto,Auto,*">
-
-						  <TextBlock Grid.Row="0" Classes="GroupBoxHeader" Text="Printer profiles"/>
-						  <TextBlock Grid.Row="0" HorizontalAlignment="Right"
-									 Padding="10">
-							  <TextBlock.Text>
-								  <MultiBinding StringFormat="{}{0} Update(s) | {1} Installed | {2} Profiles">
-									  <Binding Path="PrusaSlicerProfiles[1].Updates"/>
-									  <Binding Path="PrusaSlicerProfiles[1].Installed"/>
-									  <Binding Path="PrusaSlicerProfiles[1].Items.Count"/>
-								  </MultiBinding>
-							  </TextBlock.Text>
-						  </TextBlock>
-
-						  <StackPanel
-							Grid.Row="1"
-							Orientation="Horizontal" Spacing="1">
-                              <controls:ButtonWithIcon Padding="10"
-                                                       IsEnabled="{Binding PrusaSlicerProfiles[1].Updates}"
+				  <uvtava:GroupBox Grid.Column="1"
+                                   Margin="0,5,5,5"
+                                   ContentMargin="0">
+					  <uvtava:GroupBox.Header>
+						  <Grid RowDefinitions="Auto">
+							  <TextBlock Grid.Row="0" Text="Printer profiles"/>
+							  <TextBlock Grid.Row="0" HorizontalAlignment="Right">
+								  <TextBlock.Text>
+									  <MultiBinding StringFormat="{}{0} Update(s) | {1} Installed | {2} Profiles">
+										  <Binding Path="PrusaSlicerProfiles[1].Updates"/>
+										  <Binding Path="PrusaSlicerProfiles[1].Installed"/>
+										  <Binding Path="PrusaSlicerProfiles[1].Items.Count"/>
+									  </MultiBinding>
+								  </TextBlock.Text>
+							  </TextBlock>
+						  </Grid>
+					  </uvtava:GroupBox.Header>
+					  <Grid RowDefinitions="Auto,*">
+						  <StackPanel Grid.Row="0"
+                                      Orientation="Horizontal"
+                                      Spacing="1">
+							  <controls:ButtonWithIcon IsEnabled="{Binding PrusaSlicerProfiles[1].Updates}"
                                                        Icon="fa-regular fa-square"
                                                        Text="Unselect all"
                                                        Command="{Binding PrusaSlicerProfiles[1].SelectNone}"/>
 
-                              <controls:ButtonWithIcon Padding="10"
-                                                       IsEnabled="{Binding PrusaSlicerProfiles[1].Updates}"
+							  <controls:ButtonWithIcon IsEnabled="{Binding PrusaSlicerProfiles[1].Updates}"
                                                        Icon="fa-regular fa-check-square"
                                                        Text="Select all"
                                                        Command="{Binding PrusaSlicerProfiles[1].SelectAll}"/>
 
 						  </StackPanel>
 
-						  <ListBox
-							Grid.Row="2"
-						  SelectionMode="Toggle"
-						  VirtualizationMode="None"
-						  Items="{Binding PrusaSlicerProfiles[1].Items}"/>
+						  <ListBox Grid.Row="1"
+                                   SelectionMode="Toggle"
+                                   ItemsSource="{Binding PrusaSlicerProfiles[1].Items}"/>
 					  </Grid>
-				  </Border>
+				  </uvtava:GroupBox>
 			  </Grid>
           </TabItem>
 
@@ -233,96 +210,84 @@
                                  Text="SuperSlicer"/>
 				  </StackPanel>
 			  </TabItem.Header>
-			  <Grid
-					  ColumnDefinitions="*,*"
-					  RowDefinitions="*">
-
-				  <Border
-					  Grid.Column="0"
-					  Classes="GroupBox"
-					  Margin="5">
-
-					  <Grid RowDefinitions="Auto,Auto,*">
-
-						  <TextBlock Grid.Row="0" Classes="GroupBoxHeader" Text="Print profiles"/>
-						  <TextBlock Grid.Row="0" HorizontalAlignment="Right"
-									 Padding="10">
-							  <TextBlock.Text>
-								  <MultiBinding StringFormat="{}{0} Update(s) | {1} Installed | {2} Profiles">
-									  <Binding Path="SuperSlicerProfiles[0].Updates"/>
-									  <Binding Path="SuperSlicerProfiles[0].Installed"/>
-									  <Binding Path="SuperSlicerProfiles[0].Items.Count"/>
-								  </MultiBinding>
-							  </TextBlock.Text>
-						  </TextBlock>
-
-						  <StackPanel
-							Grid.Row="1"
-							Orientation="Horizontal" Spacing="1">
-                              <controls:ButtonWithIcon Padding="10"
-                                                       IsEnabled="{Binding SuperSlicerProfiles[0].Updates}"
+			  <Grid ColumnDefinitions="*,*" RowDefinitions="*">
+				  <uvtava:GroupBox Grid.Column="0"
+                                   Margin="5"
+                                   ContentMargin="0">
+					  <uvtava:GroupBox.Header>
+						  <Grid RowDefinitions="Auto">
+							  <TextBlock Grid.Row="0" Text="Print profiles"/>
+							  <TextBlock Grid.Row="0" HorizontalAlignment="Right">
+								  <TextBlock.Text>
+									  <MultiBinding StringFormat="{}{0} Update(s) | {1} Installed | {2} Profiles">
+										  <Binding Path="SuperSlicerProfiles[0].Updates"/>
+										  <Binding Path="SuperSlicerProfiles[0].Installed"/>
+										  <Binding Path="SuperSlicerProfiles[0].Items.Count"/>
+									  </MultiBinding>
+								  </TextBlock.Text>
+							  </TextBlock>
+						  </Grid>
+					  </uvtava:GroupBox.Header>
+					  <Grid RowDefinitions="Auto,*">
+						  <StackPanel Grid.Row="0"
+                                      Orientation="Horizontal"
+                                      Spacing="1">
+							  <controls:ButtonWithIcon IsEnabled="{Binding SuperSlicerProfiles[0].Updates}"
                                                        Icon="fa-regular fa-square"
                                                        Text="Unselect all"
                                                        Command="{Binding SuperSlicerProfiles[0].SelectNone}"/>
 
-                              <controls:ButtonWithIcon Padding="10"
-                                                       IsEnabled="{Binding SuperSlicerProfiles[0].Updates}"
+							  <controls:ButtonWithIcon IsEnabled="{Binding SuperSlicerProfiles[0].Updates}"
                                                        Icon="fa-regular fa-check-square"
                                                        Text="Select all"
                                                        Command="{Binding SuperSlicerProfiles[0].SelectAll}"/>
 
 						  </StackPanel>
 
-						  <ListBox
-							Grid.Row="2"
-							SelectionMode="Toggle"
-							VirtualizationMode="None"
-							Items="{Binding SuperSlicerProfiles[0].Items}"/>
+						  <ListBox Grid.Row="1"
+                                   SelectionMode="Toggle"
+                                   ItemsSource="{Binding SuperSlicerProfiles[0].Items}"/>
 					  </Grid>
-				  </Border>
+				  </uvtava:GroupBox>
 
-				  <Border Grid.Column="1"
-					      Classes="GroupBox"
-                          Margin="0,5,5,5">
-
-					  <Grid RowDefinitions="Auto,Auto,*">
-
-						  <TextBlock Grid.Row="0" Classes="GroupBoxHeader" Text="Printer profiles"/>
-						  <TextBlock Grid.Row="0" HorizontalAlignment="Right"
-									 Padding="10">
-							  <TextBlock.Text>
-								  <MultiBinding StringFormat="{}{0} Update(s) | {1} Installed | {2} Profiles">
-									  <Binding Path="SuperSlicerProfiles[1].Updates"/>
-									  <Binding Path="SuperSlicerProfiles[1].Installed"/>
-									  <Binding Path="SuperSlicerProfiles[1].Items.Count"/>
-								  </MultiBinding>
-							  </TextBlock.Text>
-						  </TextBlock>
-
-						  <StackPanel
-							Grid.Row="1"
-							Orientation="Horizontal" Spacing="1">
-                              <controls:ButtonWithIcon Padding="10"
-                                                       IsEnabled="{Binding SuperSlicerProfiles[1].Updates}"
+				  <uvtava:GroupBox Grid.Column="1"
+                                   Margin="0,5,5,5"
+                                   ContentMargin="0">
+					  <uvtava:GroupBox.Header>
+						  <Grid RowDefinitions="Auto">
+							  <TextBlock Grid.Row="0" Text="Printer profiles"/>
+							  <TextBlock Grid.Row="0" HorizontalAlignment="Right">
+								  <TextBlock.Text>
+									  <MultiBinding StringFormat="{}{0} Update(s) | {1} Installed | {2} Profiles">
+										  <Binding Path="SuperSlicerProfiles[1].Updates"/>
+										  <Binding Path="SuperSlicerProfiles[1].Installed"/>
+										  <Binding Path="SuperSlicerProfiles[1].Items.Count"/>
+									  </MultiBinding>
+								  </TextBlock.Text>
+							  </TextBlock>
+						  </Grid>
+					  </uvtava:GroupBox.Header>
+					  <Grid RowDefinitions="Auto,*">
+						  <StackPanel Grid.Row="0"
+                                      Orientation="Horizontal"
+                                      Spacing="1">
+							  <controls:ButtonWithIcon IsEnabled="{Binding SuperSlicerProfiles[1].Updates}"
                                                        Icon="fa-regular fa-square"
                                                        Text="Unselect all"
                                                        Command="{Binding SuperSlicerProfiles[1].SelectNone}"/>
 
-                              <controls:ButtonWithIcon Padding="10"
-                                                       IsEnabled="{Binding SuperSlicerProfiles[1].Updates}"
+							  <controls:ButtonWithIcon IsEnabled="{Binding SuperSlicerProfiles[1].Updates}"
                                                        Icon="fa-regular fa-check-square"
                                                        Text="Select all"
                                                        Command="{Binding SuperSlicerProfiles[1].SelectAll}"/>
 
 						  </StackPanel>
 
-						  <ListBox
-							Grid.Row="2"
-						  SelectionMode="Toggle"
-						  VirtualizationMode="None"
-						  Items="{Binding SuperSlicerProfiles[1].Items}"/>
+						  <ListBox Grid.Row="1"
+                                   SelectionMode="Toggle"
+                                   ItemsSource="{Binding SuperSlicerProfiles[1].Items}"/>
 					  </Grid>
-				  </Border>
+				  </uvtava:GroupBox>
 			  </Grid>
 		  </TabItem>
       </TabControl>

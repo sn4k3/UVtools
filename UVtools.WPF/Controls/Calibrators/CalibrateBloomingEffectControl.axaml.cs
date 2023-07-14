@@ -1,4 +1,3 @@
-using Avalonia.Markup.Xaml;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using System.Timers;
@@ -35,11 +34,6 @@ namespace UVtools.WPF.Controls.Calibrators
                 AutoReset = false
             };
             _timer.Elapsed += (sender, e) => Dispatcher.UIThread.InvokeAsync(UpdatePreview);
-        }
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
         }
 
         public override void Callback(ToolWindow.Callbacks callback)

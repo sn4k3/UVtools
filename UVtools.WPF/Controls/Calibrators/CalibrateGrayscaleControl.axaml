@@ -141,7 +141,7 @@
       </Grid>
 
 
-      <Expander IsExpanded="True">
+      <Expander IsExpanded="True" HorizontalAlignment="Stretch">
         <Expander.Header>
             <TextBlock FontWeight="Bold">
                 <TextBlock.Text>

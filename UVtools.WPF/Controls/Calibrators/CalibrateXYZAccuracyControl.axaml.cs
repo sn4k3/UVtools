@@ -1,5 +1,4 @@
-﻿using Avalonia.Markup.Xaml;
-using Avalonia.Media.Imaging;
+﻿using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using System.Timers;
 using UVtools.Core.Dialogs;
@@ -11,7 +10,7 @@ using UVtools.WPF.Windows;
 
 namespace UVtools.WPF.Controls.Calibrators;
 
-public class CalibrateXYZAccuracyControl : ToolControl
+public partial class CalibrateXYZAccuracyControl : ToolControl
 {
     public OperationCalibrateXYZAccuracy Operation => BaseOperation as OperationCalibrateXYZAccuracy;
 
@@ -45,11 +44,6 @@ public class CalibrateXYZAccuracyControl : ToolControl
             AutoReset = false
         };
         _timer.Elapsed += (sender, e) => Dispatcher.UIThread.InvokeAsync(UpdatePreview);
-    }
-
-    private void InitializeComponent()
-    {
-        AvaloniaXamlLoader.Load(this);
     }
 
     public override void Callback(ToolWindow.Callbacks callback)

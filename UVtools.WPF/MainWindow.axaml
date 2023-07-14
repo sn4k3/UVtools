@@ -16,71 +16,71 @@
 	<Grid RowDefinitions="*" ColumnDefinitions="*">
 		<DockPanel Grid.Row="0" Grid.Column="0" IsEnabled="{Binding IsGUIEnabled}">
 			<Menu DockPanel.Dock="Top">
-				<MenuItem Name="MainMenu.File" Header="_File">
-					<MenuItem Name="MainMenu.File.Open"
+				<MenuItem Name="MainMenuFile" Header="_File">
+					<MenuItem Name="MainMenuFileOpen"
 							  Header="_Open"
 							  HotKey="Ctrl+O" InputGesture="Ctrl+O"
 							  Command="{Binding MenuFileOpenClicked}"
 							  i:MenuItem.Icon="fa-solid fa-file-import"/>
 
-					<MenuItem Name="MainMenu.File.OpenNewWindow"
+					<MenuItem Name="MainMenuFileOpenNewWindow"
 							  Header="Open in _new window"
 							  HotKey="Ctrl+Shift+O" InputGesture="Ctrl+Shift+O"
 							  Command="{Binding MenuFileOpenNewWindowClicked}"
 							  i:MenuItem.Icon="fa-solid fa-file-import"/>
 
-					<MenuItem Name="MainMenu.File.OpenRecent"
+					<MenuItem Name="MainMenuFileOpenRecent"
 							  Header="Open recent"
 							  ToolTip.ShowDelay="2000"
 							  ToolTip.Tip="On a file:
 &#x0a;Shift + Click: Open file in a new window
 &#x0a;Shift + Ctrl + Click: Remove file from list
 &#x0a;Ctrl + Click: Purge non-existing files"
-							  Items="{Binding MenuFileOpenRecentItems}"
+							  ItemsSource="{Binding MenuFileOpenRecentItems}"
 							  i:MenuItem.Icon="fa-solid fa-file-import"/>
 
-					<MenuItem Name="MainMenu.File.OpenInPartialMode"
+					<MenuItem Name="MainMenuFileOpenInPartialMode"
 							  Header="Open in partial mode"
 							  Command="{Binding MenuFileOpenInPartialModeClicked}"
 							  ToolTip.Tip="Open a file only to see and/or edit properties.
 &#x0a;Layer images won't be loaded and most tools won't run in this mode."
 							  i:MenuItem.Icon="fa-solid fa-file-import"/>
 
-					<MenuItem Name="MainMenu.File.Reload"
+					<MenuItem Name="MainMenuFileReload"
 							  Header="_Reload"
-							  HotKey="Ctrl+F5" InputGesture="Ctrl+F5"
+                              HotKey="Ctrl+F5" InputGesture="Ctrl+F5"
 							  IsEnabled="{Binding IsFileLoaded}"
 							  Command="{Binding ReloadFile}"
 							  i:MenuItem.Icon="mdi-file-restore"/>
 
-                    <MenuItem Name="MainMenu.File.Rename"
+                    <MenuItem Name="MainMenuFileRename"
                               Header="_Rename"
                               HotKey="Ctrl+F2" InputGesture="Ctrl+F2"
                               IsEnabled="{Binding IsFileLoaded}"
                               Command="{Binding MenuFileRenameClicked}"
                               i:MenuItem.Icon="fa-solid fa-pen-to-square"/>
 
-					<MenuItem Name="MainMenu.File.Save"
+					<MenuItem Name="MainMenuFileSave"
 							  Header="_Save"
 							  HotKey="Ctrl+S" InputGesture="Ctrl+S"
 							  IsEnabled="{Binding CanSave}"
 							  Command="{Binding MenuFileSaveClicked}"
 							  i:MenuItem.Icon="fa-solid fa-floppy-disk"/>
 
-					<MenuItem Name="MainMenu.File.SaveAs"
+					<MenuItem Name="MainMenuFileSaveAs"
 							  Header="Save _as"
 							  HotKey="Ctrl+Shift+S" InputGesture="Ctrl+Shift+S"
 							  IsEnabled="{Binding IsFileLoaded}"
 							  Command="{Binding MenuFileSaveAsClicked}"
 							  i:MenuItem.Icon="fa-solid fa-floppy-disk"/>
 
-					<MenuItem Name="MainMenu.File.SendTo"
+					<MenuItem Name="MainMenuFileSendTo"
 							  Header="Send to"
 							  IsEnabled="{Binding IsFileLoaded}"
-							  Items="{Binding MenuFileSendToItems}"
+							  ItemsSource="{Binding MenuFileSendToItems}"
 							  i:MenuItem.Icon="fa-solid fa-share-square"/>
 
-					<MenuItem Name="MainMenu.File.Close"
+					<MenuItem Name="MainMenuFileClose"
 							  Header="_Close"
 							  HotKey="Ctrl+W" InputGesture="Ctrl+W"
 							  IsEnabled="{Binding IsFileLoaded}"
@@ -105,20 +105,20 @@
                                   Command="{Binding IPrintedThisFile}"
                                   i:MenuItem.Icon="fa-solid fa-flask"/>
 
-					<MenuItem Name="MainMenu.File.OpenContainingFileFolder"
+					<MenuItem Name="MainMenuFileOpenContainingFileFolder"
 							  Header="Open containing fo_lder"
 							  HotKey="Ctrl+Shift+L" InputGesture="Ctrl+Shift+L"
 							  IsEnabled="{Binding IsFileLoaded}"
 							  Command="{Binding MenuFileOpenContainingFolderClicked}"
 							  i:MenuItem.Icon="fa-solid fa-folder-open"/>
 
-					<MenuItem Name="MainMenu.File.Extract"
+					<MenuItem Name="MainMenuFileExtract"
 							  Header="_Extract file contents" HotKey="Ctrl+E" InputGesture="Ctrl+E"
 							  IsEnabled="{Binding IsFileLoaded}"
 							  Command="{Binding ExtractFile}"
 							  i:MenuItem.Icon="fa-solid fa-box-open"/>
 
-					<MenuItem Name="MainMenu.File.Terminal"
+					<MenuItem Name="MainMenuFileTerminal"
 							  HotKey="Ctrl+Shift+T" InputGesture="Ctrl+Shift+T"
 							  Header="_Terminal"
 							  Command="{Binding OpenTerminal}"
@@ -126,14 +126,14 @@
 							  i:MenuItem.Icon="fa-solid fa-terminal"/>
 
 
-					<MenuItem Name="MainMenu.File.Convert"
+					<MenuItem Name="MainMenuFileConvert"
 							  Header="_Convert to"
 							  IsEnabled="{Binding IsFileLoaded}"
 							  IsVisible="{Binding MenuFileConvertItems, Converter={x:Static ObjectConverters.IsNotNull}}"
-							  Items="{Binding MenuFileConvertItems}"
+							  ItemsSource="{Binding MenuFileConvertItems}"
 							  i:MenuItem.Icon="fa-solid fa-exchange-alt"/>
 
-                    <MenuItem Name="MainMenu.File.FreeUnusedRAM"
+                    <MenuItem Name="MainMenuFileFreeUnusedRAM"
                               Header="Free unused RAM"
                               ToolTip.Tip="Force the garbage collection of all unused objects within the program to free unused memory (RAM).
 &#x0a;It's never required for the end user run this. The program will automatically take care of it when required.
@@ -143,13 +143,13 @@
 
 					<Separator/>
 
-                    <MenuItem Name="MainMenu.File.Fullscreen"
+                    <MenuItem Name="MainMenuFileFullscreen"
                               Header="_Fullscreen"
                               InputGesture="F11" HotKey="F11"
                               Command="{Binding OnMenuFileFullscreen}"
                               i:MenuItem.Icon="fa-solid fa-window-maximize"/>
 
-					<MenuItem Name="MainMenu.File.Settings"
+					<MenuItem Name="MainMenuFileSettings"
 							  Header="_Settings"
 							  InputGesture="F12" HotKey="F12"
 							  Command="{Binding MenuFileSettingsClicked}"
@@ -157,7 +157,7 @@
 
 					<Separator/>
 
-					<MenuItem Name="MainMenu.File.Exit"
+					<MenuItem Name="MainMenuFileExit"
 							  Header="_Exit"
 							  InputGesture="Alt+F4"
 							  Command="{Binding Close}"
@@ -167,13 +167,13 @@
 				<MenuItem Header="_Tools"
 						  IsVisible="{Binding IsFileLoaded}"
 						  IsEnabled="{Binding IsFileLoaded}"
-						  Items="{Binding MenuTools}">
+						  ItemsSource="{Binding MenuTools}">
 				</MenuItem>
 
 				<MenuItem Header="_Calibration"
 						  IsVisible="{Binding IsFileLoaded}"
 						  IsEnabled="{Binding IsFileLoaded}"
-						  Items="{Binding MenuCalibration}">
+						  ItemsSource="{Binding MenuCalibration}">
 				</MenuItem>
 
 
@@ -404,48 +404,31 @@
 							<RowDefinition Height="Auto" MinHeight="220"/>
 						</Grid.RowDefinitions>
 						<!-- Thumbnails -->
+						<uvtava:IndexSelector Grid.Row="0"
+											  Name="ThumbnailIndexSelector"
+                                              IsVisible="{Binding SlicerFile.CreatedThumbnailsCount}"
+											  SelectedIndex="{Binding VisibleThumbnailIndex}"
+											  BorderThickness="0"
+                                              Count="{Binding SlicerFile.CreatedThumbnailsCount}"/>
+						
 						<StackPanel Grid.Row="0"
 									IsVisible="{Binding SlicerFile.CreatedThumbnailsCount}"
-									Orientation="Horizontal"
-									Spacing="5"
-									VerticalAlignment="Center">
-							<Button IsEnabled="{Binding ThumbnailCanGoPrevious}"
-									i:Attached.Icon="fa-solid fa-caret-left"
-									Command="{Binding ThumbnailGoPrevious}"/>
-
-							<TextBlock VerticalAlignment="Center">
-								<TextBlock.Text>
-									<MultiBinding StringFormat="{}{0}/{1}">
-										<Binding Path="VisibleThumbnailIndex"/>
-										<Binding Path="SlicerFile.CreatedThumbnailsCount"/>
-									</MultiBinding>
-								</TextBlock.Text>
-							</TextBlock>
-
-							<Button IsEnabled="{Binding ThumbnailCanGoNext}"
-									i:Attached.Icon="fa-solid fa-caret-right"
-									Command="{Binding ThumbnailGoNext}"/>
-
-						</StackPanel>
-
-						<StackPanel Grid.Row="0"
-									IsVisible="{Binding SlicerFile.CreatedThumbnailsCount}"
+									IsEnabled="{Binding #ThumbnailIndexSelector.SelectedNumber}"
 									Orientation="Horizontal"
 									Spacing="2"
 									HorizontalAlignment="Right"
 									VerticalAlignment="Center">
-							<TextBlock VerticalAlignment="Center"
-									   Text="{Binding VisibleThumbnailResolution}"/>
+							<SelectableTextBlock VerticalAlignment="Center"
+            									   Text="{Binding VisibleThumbnailResolution}"/>
 
-							<uc:ButtonWithIcon IsEnabled="{Binding VisibleThumbnailIndex}"
-									ToolTip.Tip="Replace the current preview image"
-									Spacing="1"
-									Text="⮟"
-									Icon="fa-solid fa-file-image"
-									Command="{Binding OnClickThumbnailImportFile}"
-                                    CommandParameter="False">
+							<uc:ButtonWithIcon ToolTip.Tip="Replace the current preview image"
+                                               Spacing="1"
+                                               Text="⮟"
+                                               Icon="fa-solid fa-file-image"
+                                               Command="{Binding OnClickThumbnailImportFile}"
+                                               CommandParameter="False">
 								<uc:ButtonWithIcon.ContextMenu>
-                                    <ContextMenu Name="ThumbnailImportContextMenu" PlacementMode="Bottom">
+                                    <ContextMenu Name="ThumbnailImportContextMenu" Placement="Bottom">
                                         <MenuItem
                                             Command="{Binding OnClickThumbnailImportFile}"
 											CommandParameter="False"
@@ -502,11 +485,10 @@
                                 </uc:ButtonWithIcon.ContextMenu>
                             </uc:ButtonWithIcon>
 
-							<Button IsEnabled="{Binding VisibleThumbnailIndex}"
-									VerticalAlignment="Stretch"
-									ToolTip.Tip="Save thumbnail image to a file"
-									i:Attached.Icon="fa-solid fa-floppy-disk"
-									Command="{Binding OnClickThumbnailSave}"/>
+							<Button VerticalAlignment="Stretch"
+                                    ToolTip.Tip="Save thumbnail image to a file"
+                                    i:Attached.Icon="fa-solid fa-floppy-disk"
+                                    Command="{Binding OnClickThumbnailSave}"/>
 
 						</StackPanel>
 
@@ -548,7 +530,7 @@
 
 							<uc:ButtonWithIcon
 								Name="PropertiesSaveButton"
-								IsEnabled="{Binding SlicerFile.CreatedThumbnailsCount}"
+								IsEnabled="{Binding SlicerFile.Configs.Length}"
 								ToolTip.Tip="Save properties to a file or clipboard"
 								Icon="fa-solid fa-floppy-disk"
 								Spacing="3"
@@ -556,7 +538,7 @@
 								Command="{Binding OpenContextMenu}"
 								CommandParameter="PropertiesSave">
 								<uc:ButtonWithIcon.ContextMenu>
-									<ContextMenu Name="PropertiesSaveContextMenu" PlacementMode="Bottom">
+									<ContextMenu Name="PropertiesSaveContextMenu" Placement="Bottom">
 										<MenuItem
 										  Command="{Binding OnClickPropertiesSaveFile}"
 										  Header="To File"
@@ -572,18 +554,18 @@
 							</uc:ButtonWithIcon>
 
 						</StackPanel>
-
-						<DataGrid IsVisible="{Binding SlicerProperties.Count}"
-								  Name="PropertiesGrid"
-								  Grid.Row="4"
-								  CanUserReorderColumns="True"
-								  CanUserResizeColumns="True"
-								  CanUserSortColumns="True"
-								  GridLinesVisibility="Horizontal"
-								  IsReadOnly="True"
-								  SelectionMode="Extended"
-								  ClipboardCopyMode="IncludeHeader"
-								  Items="{Binding SlicerProperties}">
+		
+                        <DataGrid IsVisible="{Binding SlicerProperties.Count}"
+                                  Name="PropertiesGrid"
+                                  Grid.Row="4"
+                                  CanUserReorderColumns="True"
+                                  CanUserResizeColumns="True"
+                                  CanUserSortColumns="True"
+                                  GridLinesVisibility="Horizontal"
+                                  IsReadOnly="True"
+                                  SelectionMode="Extended"
+                                  ClipboardCopyMode="IncludeHeader"
+                                  ItemsSource="{Binding SlicerProperties}">
 							<DataGrid.Columns>
 								<DataGridTextColumn  Header="Name"
 													  Binding="{Binding Name}"
@@ -617,7 +599,7 @@
 								  GridLinesVisibility="Horizontal"
 								  IsReadOnly="True"
 								  ClipboardCopyMode="IncludeHeader"
-								  Items="{Binding CurrentLayerProperties}">
+								  ItemsSource="{Binding CurrentLayerProperties}">
 							<DataGrid.Columns>
 								<DataGridTextColumn  Header="Name"
 													 Binding="{Binding Description}"
@@ -638,7 +620,7 @@
 				<TabItem
 				  Name="TabGCode"
 				  ToolTip.Tip="GCode"
-				  IsVisible="False"
+				  IsVisible="{Binding HaveGCode}"
 				  IsEnabled="{Binding HaveGCode}">
 					<TabItem.Header>
 						<StackPanel VerticalAlignment="Center" Orientation="Horizontal">
@@ -689,7 +671,7 @@
 							  Command="{Binding OpenContextMenu}"
 							  CommandParameter="GcodeSave">
 								<uc:ButtonWithIcon.ContextMenu>
-									<ContextMenu Name="GcodeSaveContextMenu" PlacementMode="Bottom">
+									<ContextMenu Name="GcodeSaveContextMenu" Placement="Bottom">
 										<MenuItem
 										  Command="{Binding OnClickGCodeSaveFile}"
 										  Header="To File"
@@ -706,6 +688,12 @@
 
 						</StackPanel>
 
+						<!--
+                        <avaloniaEdit:TextEditor Name="GCodeText2"
+                                                 Grid.Row="1"
+                                                 IsReadOnly="{Binding !SlicerFile.SuppressRebuildGCode}"
+                                                 ShowLineNumbers="True"/>
+                        !-->
 						<TextBox
 						  Name="GCodeText"
 						  Grid.Row="1"
@@ -731,38 +719,29 @@
 						</StackPanel>
 					</TabItem.Header>
 
-					<Grid
-					  RowDefinitions="Auto,*">
+					<Grid RowDefinitions="Auto,*">
 						<StackPanel
 						  IsEnabled="{Binding IsFileLoaded}"
 						  Grid.Row="0"
 						  Orientation="Horizontal"
 						  Spacing="2"
 						  VerticalAlignment="Center">
-							<RepeatButton VerticalAlignment="Stretch"
-										  HotKey="Ctrl + Shift + Down"
-										  ToolTip.Tip="Go to the previous issue [Ctrl + Shift + Down]"
-										  IsEnabled="{Binding IssueCanGoPrevious}"
-										  Command="{Binding IssueGoPrevious}"
-										  Interval="100"
-										  i:Attached.Icon="fa-solid fa-caret-left"/>
-
-							<TextBlock VerticalAlignment="Center">
-								<TextBlock.Text>
-									<MultiBinding StringFormat="{}{0}/{1}">
-										<Binding Path="IssueSelectedIndexStr"/>
-										<Binding Path="SlicerFile.IssueManager.Count"/>
-									</MultiBinding>
-								</TextBlock.Text>
-							</TextBlock>
-
-							<RepeatButton VerticalAlignment="Stretch"
-										  HotKey="Ctrl + Shift + Up"
-										  ToolTip.Tip="Go to the next issue [Ctrl + Shift + Up]"
-										  IsEnabled="{Binding IssueCanGoNext}"
-										  Command="{Binding IssueGoNext}"
-										  Interval="100"
-										  i:Attached.Icon="fa-solid fa-caret-right"/>
+							<uvtava:IndexSelector BorderThickness="0"
+                                AllowSelectNone="True"
+                                ZeroLeading="True"
+                                SelectedIndex="{Binding IssueSelectedIndex}"
+								Count="{Binding SlicerFile.IssueManager.Count}">
+								<uvtava:IndexSelector.Styles>
+                                    <Style Selector="RepeatButton#PART_PreviousButton">
+                                        <Setter Property="HotKey" Value="Ctrl + Shift + Down"/>
+                                        <Setter Property="ToolTip.Tip" Value="Go to the previous issue [Ctrl + Shift + Down]"/>
+                                    </Style>
+									<Style Selector="RepeatButton#PART_NextButton">
+										<Setter Property="HotKey" Value="Ctrl + Shift + Up"/>
+										<Setter Property="ToolTip.Tip" Value="Go to the next issue [Ctrl + Shift + Up]"/>
+                                    </Style>
+                                </uvtava:IndexSelector.Styles>
+                            </uvtava:IndexSelector>
 
 							<Button VerticalAlignment="Stretch"
 									ToolTip.Tip="Hides and ignores the selected issues, they won't be re-detected.
@@ -794,20 +773,6 @@
                                     VerticalAlignment="Stretch"
                                     i:Attached.Icon="fa-solid fa-toolbox"
                                     Command="{Binding OnClickRepairIssues}">
-								<!--
-                                <Button.ContextMenu>
-                                    <ContextMenu PlacementMode="Bottom">
-                                        <MenuItem i:MenuItem.Icon="fa-solid fa-file-import" 
-                                                  Header="Import issues"
-												  IsVisible="False"
-                                                  Command="{Binding OnClickImportIssues}"/>
-                                        <MenuItem i:MenuItem.Icon="fa-solid fa-file-export" 
-                                                  Header="Export issues"
-                                                  IsEnabled="{Binding SlicerFile.IssueManager.Count}"
-                                                  Command="{Binding OnClickExportIssues}"/>
-                                    </ContextMenu>
-                                </Button.ContextMenu>
-								!-->
                             </Button>
 
 							<uc:ButtonWithIcon VerticalAlignment="Stretch"
@@ -819,7 +784,7 @@
 											   Command="{Binding OnClickDetectIssues}">
 
 								<uc:ButtonWithIcon.ContextMenu>
-									<ContextMenu PlacementMode="Bottom">
+									<ContextMenu Placement="Bottom">
 										<CheckBox
 										  IsChecked="{Binding Settings.Issues.ComputeIslands}"
 										  Content="Islands"/>
@@ -887,10 +852,10 @@
                                   CanUserSortColumns="True"
                                   GridLinesVisibility="Horizontal"
                                   SelectionMode="Extended"
-                                  SelectedIndex="{Binding IssueSelectedIndex, Mode=TwoWay}"
+                                  SelectedIndex="{Binding IssueSelectedIndex}"
                                   IsReadOnly="True"
                                   ClipboardCopyMode="None"
-                                  Items="{Binding IssuesGridItems}">
+                                  ItemsSource="{Binding IssuesGridItems}">
                             <DataGrid.ContextMenu>
                                 <ContextMenu IsVisible="{Binding #IssuesGrid.SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}">
 									<MenuItem i:MenuItem.Icon="fa-solid fa-eye-slash" Command="{Binding OnClickIssueIgnore}" Header="Ignore issue(s)"/>
@@ -979,7 +944,7 @@
 							Grid.Row="1"
 							Name="SuggestionsAvailableListBox"
 							SelectionMode="Multiple,Toggle"
-							Items="{Binding SuggestionsAvailable}">
+							ItemsSource="{Binding SuggestionsAvailable}">
 							<ListBox.ItemTemplate>
 								<DataTemplate>
 									<TextBlock Text="{Binding Message}"
@@ -1025,7 +990,7 @@
 						<ListBox
 							Grid.Row="3"
 							SelectionMode="AlwaysSelected"
-							Items="{Binding SuggestionsApplied}">
+							ItemsSource="{Binding SuggestionsApplied}">
 							<ListBox.ItemTemplate>
 								<DataTemplate>
 									<TextBlock Text="{Binding Message}"
@@ -1112,7 +1077,7 @@
 										  Grid.Column="2"
 										  Grid.ColumnSpan="3"
 										  Width="180"
-										  Items="{Binding DrawingPixelDrawing.LineTypes}"
+										  ItemsSource="{Binding DrawingPixelDrawing.LineTypes}"
 										  SelectedItem="{Binding DrawingPixelDrawing.LineType}"/>
 
 										<TextBlock
@@ -1125,7 +1090,7 @@
 										  Grid.Column="2"
 										  Grid.ColumnSpan="3"
 										  Width="180"
-                                          Items="{Binding DrawingPixelDrawing.BrushShape, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                                          ItemsSource="{Binding DrawingPixelDrawing.BrushShape, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
                                           SelectedItem="{Binding DrawingPixelDrawing.BrushShape, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
 
 										<TextBlock Grid.Row="4" Grid.Column="0"
@@ -1249,7 +1214,7 @@
 										  Grid.Column="2"
 										  Grid.ColumnSpan="3"
 										  Width="180"
-										  Items="{Binding DrawingPixelText.LineTypes}"
+										  ItemsSource="{Binding DrawingPixelText.LineTypes}"
 										  SelectedItem="{Binding DrawingPixelText.LineType}"/>
 
 										<TextBlock
@@ -1262,7 +1227,7 @@
 										  Grid.Column="2"
 										  Grid.ColumnSpan="3"
 										  Width="180"
-										  Items="{Binding DrawingPixelText.FontFaces}"
+										  ItemsSource="{Binding DrawingPixelText.FontFaces}"
 										  SelectedItem="{Binding DrawingPixelText.Font}"/>
 
 										<TextBlock
@@ -1316,7 +1281,7 @@
 											Grid.Column="2"
 											Grid.ColumnSpan="3"
 											Width="180"
-											Items="{Binding DrawingPixelText.LineAlignment, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+											ItemsSource="{Binding DrawingPixelText.LineAlignment, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
 											SelectedItem="{Binding DrawingPixelText.LineAlignment, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
 
 										<CheckBox
@@ -1602,8 +1567,7 @@
 											   Icon="fa-solid fa-check"
 											   Spacing="5"
 											   Text="{Binding Drawings.Count, StringFormat=Apply {0} operations}"
-											   Command="{Binding DrawModifications}"
-											   CommandParameter="false"/>
+											   Command="{Binding DrawModificationsCommand}"/>
 						</StackPanel>
 
 						<DataGrid
@@ -1616,7 +1580,7 @@
 								SelectionMode="Extended"
 								IsReadOnly="True"
 								ClipboardCopyMode="IncludeHeader"
-								Items="{Binding Drawings}">
+								ItemsSource="{Binding Drawings}">
 							<DataGrid.Columns>
 								<DataGridTextColumn  Header="#"
 													 Binding="{Binding Index}"
@@ -1659,7 +1623,7 @@
 						</Grid.RowDefinitions>
 						<StackPanel Orientation="Horizontal" Spacing="2">
 
-							<Button IsEnabled="{Binding Clipboard.CanUndo}"
+							<Button IsEnabled="{Binding ClipboardManager.CanUndo}"
 									Command="{Binding ClipboardUndo}"
 									HotKey="Ctrl + Z"
 									ToolTip.Tip="Undo [Ctrl + Z]
@@ -1669,14 +1633,14 @@
 							<TextBlock VerticalAlignment="Center">
 								<TextBlock.Text>
 									<MultiBinding StringFormat="{}{0}/{1}">
-										<Binding Path="Clipboard.CurrentIndexCountStr"/>
-										<Binding Path="Clipboard.Items.Count"/>
+										<Binding Path="ClipboardManager.CurrentIndexCountStr"/>
+										<Binding Path="ClipboardManager.Items.Count"/>
 									</MultiBinding>
 								</TextBlock.Text>
 							</TextBlock>
-
+							
 							<Button
-							  IsEnabled="{Binding Clipboard.CanRedo}"
+							  IsEnabled="{Binding ClipboardManager.CanRedo}"
 							  Command="{Binding ClipboardRedo}"
 							  HotKey="Ctrl + Y"
 							  ToolTip.Tip="Redo [Ctrl + Y]"
@@ -1686,7 +1650,7 @@
 
 						<StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="2" HorizontalAlignment="Right">
 							<Button
-							  IsEnabled="{Binding Clipboard.Items.Count}"
+							  IsEnabled="{Binding ClipboardManager.Items.Count}"
 							  Command="{Binding ClipboardClear}"
 							  ToolTip.Tip="Clear all clips"
 							  i:Attached.Icon="fa-solid fa-xmark"/>
@@ -1697,8 +1661,8 @@
 						  Name="ClipboardList"
 						  SelectionMode="Single"
 						  AutoScrollToSelectedItem="True"
-						  SelectedIndex="{Binding Clipboard.CurrentIndex}"
-						  Items="{Binding Clipboard.Items}" />
+						  SelectedIndex="{Binding ClipboardManager.CurrentIndex}"
+						  ItemsSource="{Binding ClipboardManager.Items}" />
 
 						<GridSplitter Grid.Row="2" ResizeBehavior="PreviousAndNext" ResizeDirection="Rows"/>
 
@@ -1731,7 +1695,7 @@
 
 							</Grid>
 
-							<DataGrid Grid.Row="1" Items="{Binding Logs}"
+							<DataGrid Grid.Row="1" ItemsSource="{Binding Logs}"
 									  VerticalAlignment="Stretch"
 									  CanUserReorderColumns="True"
 									  CanUserResizeColumns="True"
@@ -1771,7 +1735,6 @@
 			  RowDefinitions="Auto,Auto,*,Auto,Auto,Auto,Auto,Auto"  Margin="5">
 				<TextBlock
 				  Text="{Binding MaximumLayerString}"
-				  Name="Layer.Navigation.Up"
 				  Margin="0,0,0,10"
 				  HorizontalAlignment="Center"
 				  TextAlignment="Center"
@@ -1795,26 +1758,22 @@
 					  Margin="{Binding LayerNavigationTooltipMargin}"
 					  HorizontalAlignment="Stretch">
 						<Border
-						   Name="Layer.Navigation.Tooltip.Border"
+						   Name="LayerNavigationTooltipBorder"
 								Classes="LayerNavigationToolTip"
 								VerticalAlignment="Top">
 							<TextBlock Padding="2" Text="{Binding ActualLayerTooltip}"/>
 						</Border>
 					</Panel>
 
-					<!--<Image
-        Grid.Column="1"
-        Name="Layer.Navigation.Issues" Width="16"></Image>!-->
-
 					<Canvas
 					  Grid.Column="1"
 					  Margin="0,15"
 					  Classes="IssuesTrackerCanvas"
-					  Name="Layer.Navigation.IssuesCanvas" Width="20"/>
+					  Name="LayerNavigationIssuesCanvas" Width="20"/>
 
 					<Slider
 					  Grid.Column="2"
-					  Name="Layer.Navigation.Slider"
+					  Name="LayerSlider"
 					  Minimum="0"
 					  Maximum="{Binding SliderMaximumValue}"
 					  Value="{Binding ActualLayerSlider}"
@@ -1922,7 +1881,7 @@
 						  Spacing="5"
 						  Icon="fa-solid fa-sync-alt">
 							<uc:ToggleButtonWithIcon.ContextMenu>
-								<ContextMenu PlacementMode="Bottom">
+								<ContextMenu Placement="Bottom">
 									<RadioButton
 										GroupName="ShowLayerImageRotateDirection"
 										IsChecked="{Binding ShowLayerImageRotateCWDirection}"
@@ -1946,7 +1905,7 @@
 							Spacing="5"
 							Icon="mdi-flip-horizontal">
 							<uc:ToggleButtonWithIcon.ContextMenu>
-								<ContextMenu PlacementMode="Bottom">
+								<ContextMenu Placement="Bottom">
 									<CheckBox
 										IsChecked="{Binding ShowLayerImageFlippedHorizontally}"
 										Content="Horizontally"/>
@@ -1967,7 +1926,7 @@
 						  Spacing="5"
 						  Icon="fa-solid fa-layer-group">
 							<uc:ToggleButtonWithIcon.ContextMenu>
-								<ContextMenu PlacementMode="Bottom">
+								<ContextMenu Placement="Bottom">
 									<CheckBox
 										Content="Show layer similarity instead of difference"
 										ToolTip.Tip="If enabled, it will recolor the current layer pixels in common with the previous and next layer"
@@ -1985,7 +1944,7 @@
 						  Spacing="5"
 						  Icon="fa-solid fa-radiation-alt">
 							<Button.ContextMenu>
-								<ContextMenu PlacementMode="Bottom">
+								<ContextMenu Placement="Bottom">
 									<CheckBox
 										ToolTip.Tip="Show crosshairs for selected issues on the current layer"
 										IsChecked="{Binding ShowLayerImageCrosshairs}">
@@ -2000,31 +1959,29 @@
 						</uc:ToggleButtonWithIcon>
 
 
-						<uc:ButtonWithIcon Name="LayerPreviewOutlineButton"
+						<uc:DropDownButtonWithIcon Name="LayerPreviewOutlineButton"
 						  ToolTip.Tip="Click to access the various outlines."
-						  Command="{Binding OpenContextMenu}"
-						  CommandParameter="LayerPreviewOutline"
 						  VerticalAlignment="Stretch"
 						  Margin="1,0,2,0"
-						  Text="Outline ⮟"
+						  Text="Outline"
 						  Spacing="5"
 						  Icon="fa-solid fa-vector-square">
-							<uc:ButtonWithIcon.ContextMenu>
-								<ContextMenu Name="LayerPreviewOutlineContextMenu" PlacementMode="Bottom">
-									<CheckBox
+							<uc:DropDownButtonWithIcon.Flyout>
+								<MenuFlyout Placement="Bottom">
+									<CheckBox HorizontalAlignment="Stretch"
 									  IsChecked="{Binding ShowLayerOutlinePrintVolumeBoundary}"
 									  Content="Print volume boundary"/>
 									<CheckBox IsChecked="{Binding ShowLayerOutlineLayerBoundary}"
                                               Content="Layer boundary"/>
 									<CheckBox IsChecked="{Binding ShowLayerOutlineContourBoundary}"
                                               Content="Blob boundary"/>
-                                    <CheckBox IsChecked="{Binding ShowLayerOutlineEnclosingCircles}"
+									<CheckBox IsChecked="{Binding ShowLayerOutlineEnclosingCircles}"
                                               Content="Enclosing circles"/>
 									<CheckBox IsChecked="{Binding ShowLayerOutlineHollowAreas}"
                                               Content="Hollow areas"/>
 									<CheckBox IsChecked="{Binding ShowLayerOutlineCentroids}"
                                               Content="Centroids"/>
-                                    <CheckBox IsChecked="{Binding ShowLayerOutlineTriangulate}"
+									<CheckBox IsChecked="{Binding ShowLayerOutlineTriangulate}"
                                               Content="Triangulate"/>
 									<CheckBox IsChecked="{Binding ShowLayerOutlineEdgeDetection}"
                                               Content="Edge detection">
@@ -2056,9 +2013,9 @@
 											</MultiBinding>
 										</CheckBox.IsEnabled>
 									</CheckBox>
-								</ContextMenu>
-							</uc:ButtonWithIcon.ContextMenu>
-						</uc:ButtonWithIcon>
+								</MenuFlyout>
+							</uc:DropDownButtonWithIcon.Flyout>
+						</uc:DropDownButtonWithIcon>
 
 
 						<uc:ToggleButtonWithIcon
@@ -2073,18 +2030,16 @@
 
 
 					<StackPanel Grid.Row="0" Grid.Column="1" HorizontalAlignment="Right" Orientation="Horizontal">
-						<uc:ButtonWithIcon Name="LayerActionsButton"
-							Command="{Binding OpenContextMenu}"
-							VerticalAlignment="Stretch"
-							VerticalContentAlignment="Center"
-							CommandParameter="LayerActions"
-							Text="Actions ⮟"
-							Spacing="5"
-							Icon="mdi-layers-edit">
-							<uc:ButtonWithIcon.ContextMenu>
-								<ContextMenu Name="LayerActionsContextMenu" PlacementMode="Bottom" Items="{Binding LayerActionsMenu}"/>
-							</uc:ButtonWithIcon.ContextMenu>
-						</uc:ButtonWithIcon>
+                        <uc:DropDownButtonWithIcon Name="LayerActionsButton"
+                                           VerticalAlignment="Stretch"
+                                           VerticalContentAlignment="Center"
+                                           Text="Actions"
+                                           Spacing="5"
+                                           Icon="mdi-layers-edit">
+							<uc:DropDownButtonWithIcon.Flyout>
+                                <MenuFlyout Placement="Bottom" ItemsSource="{Binding LayerActionsMenu}"/>
+							</uc:DropDownButtonWithIcon.Flyout>
+						</uc:DropDownButtonWithIcon>
 
 						<Button
 						  Command="{Binding ShowLayer}"
@@ -2094,6 +2049,7 @@
 						  Margin="1,0,0,0"
 						  i:Attached.Icon="fa-solid fa-sync-alt"/>
 
+						
 						<uc:ButtonWithIcon
 						  Command="{Binding SaveCurrentLayerImage}"
 						  ToolTip.Tip="Save layer image to a file"
@@ -2104,9 +2060,8 @@
 						  Spacing="3"
 						  Icon="fa-solid fa-floppy-disk">
 							<uc:ButtonWithIcon.ContextMenu>
-								<ContextMenu PlacementMode="Bottom">
-									<MenuItem
-										Command="{Binding SaveCurrentROIImage}"
+								<ContextMenu Placement="Bottom">
+									<MenuItem Command="{Binding SaveCurrentROIImage}"
 										Header="Save the selected region (ROI)"
 										i:MenuItem.Icon="fa-regular fa-object-group"/>
 								</ContextMenu>
@@ -2126,7 +2081,7 @@
 						GridCellSize="15"
 						GridColor="{DynamicResource AdvancedImageBoxGridColor}"
 						GridColorAlternate="{DynamicResource AdvancedImageBoxGridAlternateColor}"
-						Name="LayerImage"/>
+						Name="LayerImageBox"/>
 				</Border>
 
 
@@ -2134,10 +2089,12 @@
 						IsVisible="{Binding IsTooltipOverlayVisible}">
 					<Border BorderThickness="1"
 							BorderBrush="Black"
-							Background="{Binding Settings.LayerPreview.TooltipOverlayBackgroundBrush}"
 							Padding="10"
 							CornerRadius="5">
-						<TextBlock Text="{Binding TooltipOverlayText}" Foreground="Black" />
+                            <Border.Background>
+								<SolidColorBrush Color="{Binding Settings.LayerPreview.TooltipOverlayBackgroundBrush}"/>
+                            </Border.Background>
+                        <TextBlock Text="{Binding TooltipOverlayText}" Foreground="Black" />
 					</Border>
 				</Canvas>
 
@@ -2176,7 +2133,7 @@
 						  Spacing="5"
 						  Icon="fa-regular fa-object-group">
 							<uc:ButtonWithIcon.ContextMenu>
-								<ContextMenu Name="ROIContextMenu" PlacementMode="Top">
+								<ContextMenu Name="ROIContextMenu" Placement="Top">
 									<MenuItem
 										Command="{Binding SelectLayerPositiveAreasMask}"
 										Header="Mask: Select layer positive areas"/>

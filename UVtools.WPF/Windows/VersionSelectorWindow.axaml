@@ -20,7 +20,7 @@
                        Text="Version:"/>
             <ComboBox Grid.Row="0" Grid.Column="2"
                 HorizontalAlignment="Stretch"
-                Items="{Binding AvailableVersions}"
+                ItemsSource="{Binding AvailableVersions}"
                 SelectedItem="{Binding Version}"/>
         </Grid>
 

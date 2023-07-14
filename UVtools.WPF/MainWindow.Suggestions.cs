@@ -25,12 +25,6 @@ namespace UVtools.WPF;
 
 public partial class MainWindow
 {
-    #region Members
-
-    private ListBox _suggestionsAvailableListBox;
-
-    #endregion
-
     #region Properties
     public Suggestion[] Suggestions
     {
@@ -46,7 +40,7 @@ public partial class MainWindow
     #region Methods
     public void InitSuggestions()
     {
-        _suggestionsAvailableListBox = this.FindControl<ListBox>("SuggestionsAvailableListBox");
+        
     }
 
     public void PopulateSuggestions(bool tryToAutoApply = true)
@@ -82,8 +76,8 @@ public partial class MainWindow
 
     public async void ApplySuggestionsClicked()
     {
-        if (!IsFileLoaded || _suggestionsAvailableListBox.SelectedItems.Count == 0) return;
-        var suggestions = _suggestionsAvailableListBox.SelectedItems.Cast<Suggestion>().Where(suggestion => !suggestion.IsInformativeOnly).ToArray();
+        if (!IsFileLoaded || SuggestionsAvailableListBox.SelectedItems.Count == 0) return;
+        var suggestions = SuggestionsAvailableListBox.SelectedItems.Cast<Suggestion>().Where(suggestion => !suggestion.IsInformativeOnly).ToArray();
         if (suggestions.Length == 0) return;
         var sb = new StringBuilder($"Are you sure you want to apply the following {suggestions.Length} suggestions?:\n\n");
 
@@ -134,9 +128,9 @@ public partial class MainWindow
         PopulateSuggestions(false);
     }
 
-    public async void ApplySuggestionClicked(Suggestion suggestion)
+    public async void ApplySuggestionClicked(object suggestionObject)
     {
-        if (!IsFileLoaded || suggestion is null || suggestion.IsInformativeOnly) return;
+        if (!IsFileLoaded || suggestionObject is not Suggestion suggestion || suggestion.IsInformativeOnly) return;
 
         if (await this.MessageBoxQuestion($"Are you sure you want to apply the following suggestion?:\n\n{suggestion.ConfirmationMessage}", "Apply the suggestion?") != MessageButtonResult.Yes) return;
 
@@ -181,10 +175,10 @@ public partial class MainWindow
         PopulateSuggestions(false);
     }
 
-    public async void ConfigureSuggestionClicked(Suggestion suggestion)
+    public async void ConfigureSuggestionClicked(object suggestion)
     {
         if (!IsFileLoaded || Suggestions.Length == 0) return;
-        var window = new SuggestionSettingsWindow(suggestion);
+        var window = new SuggestionSettingsWindow((Suggestion)suggestion);
         await window.ShowDialog(this);
         PopulateSuggestions(false);
     }

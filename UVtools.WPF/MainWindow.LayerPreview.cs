@@ -24,6 +24,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Timers;
+using Avalonia.Platform.Storage;
 using UVtools.AvaloniaControls;
 using UVtools.Core;
 using UVtools.Core.Dialogs;
@@ -35,7 +36,7 @@ using UVtools.Core.PixelEditor;
 using UVtools.WPF.Extensions;
 using UVtools.WPF.Structures;
 using Color = UVtools.WPF.Structures.Color;
-using Helpers = UVtools.WPF.Controls.Helpers;
+using AvaloniaStatic = UVtools.WPF.Controls.AvaloniaStatic;
 using Point = System.Drawing.Point;
 using Size = System.Drawing.Size;
 
@@ -54,13 +55,7 @@ public partial class MainWindow
     };
     #endregion
 
-    public AdvancedImageBox LayerImageBox { get; private set; }
-    public Slider LayerSlider;
-    public Track LayerSlicerTrack;
-    public Panel LayerNavigationTooltipPanel;
-    public Border LayerNavigationTooltipBorder;
-    private Canvas _issuesSliderCanvas;
-
+    private Track LayerSlicerTrack;
 
     private readonly Timer _layerNavigationTooltipTimer = new(0.1) { AutoReset = false };
     private readonly Timer _layerNavigationSliderDebounceTimer = new(25) { AutoReset = false };
@@ -102,12 +97,6 @@ public partial class MainWindow
 
     public void InitLayerPreview()
     {
-        LayerImageBox = this.FindControl<AdvancedImageBox>("LayerImage");
-        LayerSlider = this.FindControl<Slider>("Layer.Navigation.Slider");
-        LayerNavigationTooltipPanel = this.FindControl<Panel>("Layer.Navigation.Tooltip.Panel");
-        LayerNavigationTooltipBorder = this.FindControl<Border>("Layer.Navigation.Tooltip.Border");
-        _issuesSliderCanvas = this.Find<Canvas>("Layer.Navigation.IssuesCanvas");
-
         LayerSlider.TemplateApplied += (sender, e) =>
         {
             LayerSlicerTrack = e.NameScope.Find<Track>("PART_Track");
@@ -174,9 +163,8 @@ public partial class MainWindow
         LayerImageBox.PointerPressed += LayerImageBoxOnPointerPressed;
         LayerImageBox.DoubleTapped += LayerImageBoxOnDoubleTapped;
 
-        _issuesSliderCanvas.PointerWheelChanged += LayerSliderOnPointerWheelChanged;
+        LayerNavigationIssuesCanvas.PointerWheelChanged += LayerSliderOnPointerWheelChanged;
         LayerSlider.PointerWheelChanged += LayerSliderOnPointerWheelChanged;
-        //this.FindControl<Grid>("LayerNavigationSliderGrid").PointerWheelChanged += LayerSliderOnPointerWheelChanged;
 
         _layerNavigationTooltipTimer.Elapsed += (sender, args) =>
         {
@@ -204,14 +192,14 @@ public partial class MainWindow
         set
         {
             var rect = LayerImageBox.SelectionRegion;
-            if (!rect.IsEmpty)
+            if (rect != default)
             {
                 rect = GetTransposedRectangle(rect.ToDotNet(), true).ToAvalonia();
             }
 
             if (!RaiseAndSetIfChanged(ref _showLayerImageRotated, value) || !IsFileLoaded) return;
                 
-            if (!rect.IsEmpty)
+            if (rect != default)
             {
                 LayerImageBox.SelectionRegion = GetTransposedRectangle(rect.ToDotNet()).ToAvalonia();
             }
@@ -227,7 +215,7 @@ public partial class MainWindow
         set
         {
             var rect = LayerImageBox.SelectionRegion;
-            if (!rect.IsEmpty)
+            if (rect != default)
             {
                 rect = GetTransposedRectangle(rect.ToDotNet(), true).ToAvalonia();
             }
@@ -235,7 +223,7 @@ public partial class MainWindow
             if (!RaiseAndSetIfChanged(ref _showLayerImageRotateCwDirection, value)) return;
             if (!_showLayerImageRotated) return;
 
-            if (!rect.IsEmpty)
+            if (rect != default)
             {
                 LayerImageBox.SelectionRegion = GetTransposedRectangle(rect.ToDotNet()).ToAvalonia();
             }
@@ -251,7 +239,7 @@ public partial class MainWindow
         set
         {
             var rect = LayerImageBox.SelectionRegion;
-            if (!rect.IsEmpty)
+            if (rect != default)
             {
                 rect = GetTransposedRectangle(rect.ToDotNet(), true).ToAvalonia();
             }
@@ -259,7 +247,7 @@ public partial class MainWindow
             if (!RaiseAndSetIfChanged(ref _showLayerImageRotateCcwDirection, value)) return;
             if (!_showLayerImageRotated) return;
 
-            if (!rect.IsEmpty)
+            if (rect != default)
             {
                 LayerImageBox.SelectionRegion = GetTransposedRectangle(rect.ToDotNet()).ToAvalonia();
             }
@@ -275,14 +263,14 @@ public partial class MainWindow
         set
         {
             var rect = LayerImageBox.SelectionRegion;
-            if (!rect.IsEmpty)
+            if (rect != default)
             {
                 rect = GetTransposedRectangle(rect.ToDotNet(), true).ToAvalonia();
             }
 
             if (!RaiseAndSetIfChanged(ref _showLayerImageFlipped, value)) return;
 
-            if (!rect.IsEmpty)
+            if (rect != default)
             {
                 LayerImageBox.SelectionRegion = GetTransposedRectangle(rect.ToDotNet()).ToAvalonia();
             }
@@ -297,7 +285,7 @@ public partial class MainWindow
         set
         {
             var rect = LayerImageBox.SelectionRegion;
-            if (!rect.IsEmpty)
+            if (rect != default)
             {
                 rect = GetTransposedRectangle(rect.ToDotNet(), true).ToAvalonia();
             }
@@ -305,7 +293,7 @@ public partial class MainWindow
             if (!RaiseAndSetIfChanged(ref _showLayerImageFlippedHorizontally, value)) return;
             if (!_showLayerImageFlipped) return;
 
-            if (!rect.IsEmpty)
+            if (rect != default)
             {
                 LayerImageBox.SelectionRegion = GetTransposedRectangle(rect.ToDotNet()).ToAvalonia();
             }
@@ -320,7 +308,7 @@ public partial class MainWindow
         set
         {
             var rect = LayerImageBox.SelectionRegion;
-            if (!rect.IsEmpty)
+            if (rect != default)
             {
                 rect = GetTransposedRectangle(rect.ToDotNet(), true).ToAvalonia();
             }
@@ -328,7 +316,7 @@ public partial class MainWindow
             if (!RaiseAndSetIfChanged(ref _showLayerImageFlippedVertically, value)) return;
             if (!_showLayerImageFlipped) return;
 
-            if (!rect.IsEmpty)
+            if (rect != default)
             {
                 LayerImageBox.SelectionRegion = GetTransposedRectangle(rect.ToDotNet()).ToAvalonia();
             }
@@ -692,7 +680,7 @@ public partial class MainWindow
         get
         {
             var rect = LayerImageBox.SelectionRegion;
-            return rect.IsEmpty ? Rectangle.Empty : GetTransposedRectangle(rect.ToDotNet(), true);
+            return rect == default ? default : GetTransposedRectangle(rect.ToDotNet(), true);
         }
         set => LayerImageBox.SelectionRegion = GetTransposedRectangle(value).ToAvalonia();
     }
@@ -844,10 +832,10 @@ public partial class MainWindow
         ActualLayer = SlicerFile.SanitizeLayerIndex((int)ActualLayer - (int)layers);
     }
 
-    public void GoMassLayer(string which)
+    public void GoMassLayer(object whichObj)
     {
         if (!IsFileLoaded) return;
-        var layer = which switch
+        var layer = whichObj.ToString() switch
         {
             "SB" => SlicerFile.SmallestBottomLayer,
             "LB" => SlicerFile.LargestBottomLayer,
@@ -867,7 +855,7 @@ public partial class MainWindow
     /// <summary>
     /// Shows a layer number
     /// </summary>
-    unsafe void ShowLayer()
+    public unsafe void ShowLayer()
     {
         if (!IsFileLoaded) return;
 
@@ -2317,33 +2305,22 @@ public partial class MainWindow
     public async void SaveCurrentLayerImage()
     {
         if (!IsFileLoaded) return;
-        SaveFileDialog dialog = new()
-        {
-            Filters = Helpers.PngFileFilter,
-            DefaultExtension = ".png",
-            InitialFileName = $"{Path.GetFileNameWithoutExtension(SlicerFile.FileFullPath)}_layer{ActualLayer}.png"
-        };
 
-        var result = await dialog.ShowAsync(this);
-        if (string.IsNullOrEmpty(result)) return;
+        using var file = await SaveFilePickerAsync(SlicerFile.DirectoryPath, $"{SlicerFile.FilenameNoExt}_layer{ActualLayer}.png", AvaloniaStatic.PngFileFilter);
+        if (file?.TryGetLocalPath() is not { } filePath) return;
 
-        LayerCache.ImageBgr.Save(result);
+        LayerCache.ImageBgr.Save(filePath);
     }
 
     public async void SaveCurrentROIImage()
     {
         if (!IsFileLoaded || !LayerImageBox.HaveSelection) return;
-        SaveFileDialog dialog = new()
-        {
-            Filters = Helpers.PngFileFilter,
-            DefaultExtension = ".png",
-            InitialFileName = $"{Path.GetFileNameWithoutExtension(SlicerFile.FileFullPath)}_layer{ActualLayer}_ROI.png"
-        };
 
-        var result = await dialog.ShowAsync(this);
-        if (string.IsNullOrEmpty(result)) return;
+        using var file = await SaveFilePickerAsync(SlicerFile.DirectoryPath, $"{SlicerFile.FilenameNoExt}_layer{ActualLayer}_ROI.png", AvaloniaStatic.PngFileFilter);
 
-        LayerImageBox.GetSelectedBitmap()?.Save(result);
+        if (file?.TryGetLocalPath() is not { } filePath) return;
+
+        LayerImageBox.GetSelectedBitmap()?.Save(filePath);
     }
 
     const byte _pixelEditorCursorMinDiamater = 10;

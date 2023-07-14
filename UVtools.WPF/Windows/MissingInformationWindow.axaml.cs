@@ -5,8 +5,6 @@
  *  Everyone is permitted to copy and distribute verbatim copies
  *  of this license document, but changing it is not allowed.
  */
-using Avalonia;
-using Avalonia.Markup.Xaml;
 using UVtools.Core.Dialogs;
 using UVtools.WPF.Controls;
 using UVtools.WPF.Extensions;
@@ -50,9 +48,7 @@ public partial class MissingInformationWindow : WindowEx
     public MissingInformationWindow()
     {
         InitializeComponent();
-#if DEBUG
-        this.AttachDevTools();
-#endif
+
         if (SlicerFile is not null)
         {
             _layerHeight = (decimal) SlicerFile.LayerHeight;
@@ -61,11 +57,6 @@ public partial class MissingInformationWindow : WindowEx
         }
 
         DataContext = this;
-    }
-
-    private void InitializeComponent()
-    {
-        AvaloniaXamlLoader.Load(this);
     }
 
     public async void Apply()

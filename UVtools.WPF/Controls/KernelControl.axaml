@@ -34,7 +34,7 @@
             <TextBlock HorizontalAlignment="Right" VerticalAlignment="Center" Text="Shape:"/>
             <ComboBox Grid.Row="0" Grid.ColumnSpan="5" Grid.Column="2"
                       SelectedItem="{Binding Kernel.KernelShape}"
-                      Items="{Binding Kernel.KernelShapes}"
+                      ItemsSource="{Binding Kernel.KernelShapes}"
                       Width="160"/>
 
             <TextBlock Grid.Column="0" Grid.Row="2"

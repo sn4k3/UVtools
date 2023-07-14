@@ -21,7 +21,7 @@
 
 		<ComboBox Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="5"
                   HorizontalAlignment="Stretch"
-                  Items="{Binding Suggestion.SetType, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                  ItemsSource="{Binding Suggestion.SetType, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
                   SelectedItem="{Binding Suggestion.SetType, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
 
         <TextBlock Grid.Row="4" Grid.Column="0"
@@ -236,7 +236,7 @@
         <ComboBox Grid.Row="16" Grid.Column="2" Grid.ColumnSpan="5"
                   HorizontalAlignment="Stretch"
                   IsVisible="{Binding !Suggestion.IsSetTypeFixed}"
-                  Items="{Binding Suggestion.ProportionalCalculateMassFrom, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                  ItemsSource="{Binding Suggestion.ProportionalCalculateMassFrom, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
                   SelectedItem="{Binding Suggestion.ProportionalCalculateMassFrom, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
 
 

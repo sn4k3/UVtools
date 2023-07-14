@@ -6,13 +6,11 @@
  *  of this license document, but changing it is not allowed.
  */
 using Avalonia;
-using Avalonia.Controls;
 using Avalonia.Input;
-using Avalonia.Markup.Xaml;
 using System;
 using System.Collections.ObjectModel;
 using System.Drawing;
-using JetBrains.Annotations;
+using Avalonia.Platform.Storage;
 using UVtools.Core;
 using UVtools.Core.Dialogs;
 using UVtools.Core.Extensions;
@@ -23,11 +21,11 @@ using UVtools.WPF.Controls;
 using UVtools.WPF.Controls.Tools;
 using UVtools.WPF.Extensions;
 using UVtools.WPF.Structures;
-using Helpers = UVtools.WPF.Controls.Helpers;
+using AvaloniaStatic = UVtools.WPF.Controls.AvaloniaStatic;
 
 namespace UVtools.WPF.Windows;
 
-public class ToolWindow : WindowEx
+public partial class ToolWindow : WindowEx
 {
     public enum Callbacks : byte
     {
@@ -39,7 +37,7 @@ public class ToolWindow : WindowEx
         Checkbox1, // Show Advanced
     }
     private KeyModifiers _globalModifiers;
-    [CanBeNull] public ToolControl ToolControl;
+    public ToolControl ToolControl;
     private string _description;
     private double _descriptionMaxWidth = 500;
     private double _profileBoxMaxWidth = double.NaN;
@@ -349,7 +347,6 @@ public class ToolWindow : WindowEx
 
     public async void ClearMasks()
     {
-        var layer = SlicerFile.LargestNormalLayer;
         if (await this.MessageBoxQuestion("Are you sure you want to clear all masks?\n" +
                                           "This action can not be reverted, to select another mask(s) you must quit this window and select it on layer preview.",
                 "Clear the all masks?") != MessageButtonResult.Yes) return;
@@ -523,8 +520,6 @@ public class ToolWindow : WindowEx
         set => RaiseAndSetIfChanged(ref _contentControl, value);
     }
 
-    public ScrollViewer ContentScrollViewer { get; }
-
     #endregion
 
     #region Actions
@@ -595,7 +590,6 @@ public class ToolWindow : WindowEx
 
         InitializeComponent();
 
-        ContentScrollViewer = this.FindControl<ScrollViewer>("ContentScrollViewer");
         SelectAllLayers();
 
         if (ROI != Rectangle.Empty)
@@ -626,7 +620,6 @@ public class ToolWindow : WindowEx
     {
         ToolControl = toolControl;
         toolControl.ParentWindow = this;
-        toolControl.Margin = new Thickness(15);
         toolControl.BaseOperation.ROI = ROI;
         toolControl.BaseOperation.MaskPoints = Masks;
 
@@ -707,18 +700,12 @@ public class ToolWindow : WindowEx
         DataContext = this;
     }
 
-    private void InitializeComponent()
-    {
-        AvaloniaXamlLoader.Load(this);
-    }
-
     protected override void OnOpened(EventArgs e)
     {
         base.OnOpened(e);
 
         DescriptionMaxWidth = Math.Max(Bounds.Width, _contentControl.Bounds.Width) - 20;
-        var profileTextBox = this.FindControl<TextBox>("ProfileName");
-        ProfileBoxMaxWidth = profileTextBox.Bounds.Width;
+        ProfileBoxMaxWidth = ProfileNameTextBox.Bounds.Width;
         //Height = MaxHeight;
 
         /*Dispatcher.UIThread.Post(() =>
@@ -842,31 +829,17 @@ public class ToolWindow : WindowEx
         
     }
 
-    public void OpenContextMenu(string name)
-    {
-        var menu = this.FindControl<ContextMenu>($"{name}ContextMenu");
-        if (menu is null) return;
-        var parent = this.FindControl<Button>($"{name}Button");
-        if (parent is null) return;
-        menu.Open(parent);
-    }
-
     public async void ExportSettings()
     {
         if (ToolControl?.BaseOperation is null) return;
-        var dialog = new SaveFileDialog
-        {
-            Filters = Helpers.OperationSettingFileFilter,
-            InitialFileName = ToolControl.BaseOperation.Id
-        };
 
-        var file = await dialog.ShowAsync(this);
+        using var file = await SaveFilePickerAsync(ToolControl.BaseOperation.Id, AvaloniaStatic.OperationSettingFileFilter);
 
-        if (string.IsNullOrWhiteSpace(file)) return;
+        if (file?.TryGetLocalPath() is not { } filePath) return;
 
         try
         {
-            ToolControl.BaseOperation.Serialize(file, true);
+            ToolControl.BaseOperation.Serialize(filePath, true);
         }
         catch (Exception e)
         {
@@ -876,19 +849,13 @@ public class ToolWindow : WindowEx
 
     public async void ImportSettings()
     {
-        var dialog = new OpenFileDialog
-        {
-            AllowMultiple = false,
-            Filters = Helpers.OperationSettingFileFilter
-        };
+        var files = await OpenFilePickerAsync(AvaloniaStatic.OperationSettingFileFilter);
 
-        var files = await dialog.ShowAsync(this);
-
-        if (files is null || files.Length == 0) return;
+        if (files.Count == 0 || files[0].TryGetLocalPath() is not { } filePath) return;
 
         try
         {
-            var operation = Operation.Deserialize(files[0], ToolControl.BaseOperation);
+            var operation = Operation.Deserialize(filePath, ToolControl.BaseOperation);
             if (operation is null)
             {
                 await this.MessageBoxError("Unable to import settings, file may be malformed.", "Error while trying to import the settings");

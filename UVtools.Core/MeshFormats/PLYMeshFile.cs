@@ -138,9 +138,9 @@ public class PLYMeshFile : MeshFile
         _triangleStream.CopyTo(MeshStream);
         _triangleStream.Dispose();
 
-        MeshStream.Seek(_vertexCountWritePosition - VertexCount.ToString().Length, SeekOrigin.Begin);
+        MeshStream.Seek(_vertexCountWritePosition - VertexCount.DigitCount(), SeekOrigin.Begin);
         MeshStream.WriteString(VertexCount.ToString());
-        MeshStream.Seek(_faceCountWritePosition - TriangleCount.ToString().Length, SeekOrigin.Begin);
+        MeshStream.Seek(_faceCountWritePosition - TriangleCount.DigitCount(), SeekOrigin.Begin);
         MeshStream.WriteString(TriangleCount.ToString());
         MeshStream.Seek(0, SeekOrigin.End);
     }

@@ -14,13 +14,12 @@
       <TextBlock 
         VerticalAlignment="Center"
         Text="Algorithm:"/>
-      <ComboBox
-        Grid.Column="2"
-        HorizontalAlignment="Left"
-        Width="450"
-        HorizontalContentAlignment="Stretch"
-        Items="{Binding Operation.BlurOperation, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
-        SelectedItem="{Binding Operation.BlurOperation, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
+      <ComboBox Grid.Row="0" Grid.Column="2"
+                HorizontalAlignment="Left"
+                Width="450"
+                HorizontalContentAlignment="Stretch"
+                ItemsSource="{Binding Operation.BlurOperation, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                SelectedItem="{Binding Operation.BlurOperation, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
 
       <TextBlock 
         VerticalAlignment="Center"

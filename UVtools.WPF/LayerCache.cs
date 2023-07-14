@@ -52,12 +52,9 @@ public sealed class LayerCache
     public WriteableBitmap Bitmap
     {
         get => _bitmap;
-        set
-        {
-            _bitmap = value;
-            //_canvas?.Dispose();
-            //_canvas = null;
-        }
+        set => _bitmap = value;
+        //_canvas?.Dispose();
+        //_canvas = null;
     }
 
     public SKCanvas Canvas

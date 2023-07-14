@@ -1,0 +1,65 @@
+﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:c="clr-namespace:UVtools.AvaloniaControls">
+    <Design.PreviewWith>
+		<Border Padding="20" Width="400">
+			<StackPanel Spacing="20">
+				<c:GroupBox Header="Hello World!" Height="200">
+					<StackPanel Spacing="5">
+						<NumericUpDown Value="10"/>
+						<NumericUpDown Value="20"/>
+						<NumericUpDown Value="30"/>
+						<NumericUpDown Value="40"/>
+						<NumericUpDown Value="50"/>
+						<NumericUpDown Value="60"/>
+					</StackPanel>
+				</c:GroupBox>
+			</StackPanel>
+		</Border>
+    </Design.PreviewWith>
+
+	<Thickness x:Key="GroupBoxHeaderBorderThickness">4</Thickness>
+	<Thickness x:Key="GroupBoxHeaderPadding">10</Thickness>
+
+	<!-- Add Styles Here -->
+    <ControlTheme x:Key="{x:Type c:GroupBox}" TargetType="c:GroupBox">
+		<Setter Property="Foreground" Value="{DynamicResource TextControlForeground}" />
+		<Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}" />
+		<Setter Property="BorderThickness" Value="{DynamicResource GroupBoxHeaderBorderThickness}" />
+		<Setter Property="BorderBrush" Value="{DynamicResource SystemListMediumColor}" />
+		<Setter Property="MinHeight" Value="{DynamicResource TextControlThemeMinHeight}" />
+		<Setter Property="MinWidth" Value="{DynamicResource TextControlThemeMinWidth}"/>
+		<Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
+		<Setter Property="Padding" Value="0" />
+		<Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
+		
+        <Setter Property="Template">
+		    <ControlTemplate>
+			    <Border Name="PART_OuterBorder"
+                    Background="{TemplateBinding Background}"
+                    BorderBrush="{TemplateBinding BorderBrush}"
+                    BorderThickness="{TemplateBinding BorderThickness}"
+                    CornerRadius="{TemplateBinding CornerRadius}"
+                    Margin="0"
+                    Padding="0"
+                    MinWidth="{TemplateBinding MinWidth}"
+                    MinHeight="{TemplateBinding MinHeight}"
+                    HorizontalAlignment="Stretch">
+				    
+                    <Grid RowDefinitions="Auto,*">
+                        <ContentPresenter Name="PART_HeaderContentPresenter"
+                                          Background="{TemplateBinding BorderBrush}"
+                                          Foreground="{TemplateBinding Foreground}"
+                                          Padding="{DynamicResource GroupBoxHeaderPadding}"
+										  VerticalContentAlignment="Center"
+                                          FontWeight="Bold"
+                                          Content="{TemplateBinding Header}"/>
+                        <ContentPresenter Grid.Row="1" Name="PART_ContentPresenter"
+                                          Margin="{TemplateBinding ContentMargin}"
+                                          Content="{TemplateBinding Content}"/>
+					</Grid>
+			    </Border>
+		    </ControlTemplate>
+        </Setter>
+    </ControlTheme>
+</ResourceDictionary>

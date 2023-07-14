@@ -34,7 +34,7 @@
             <StackPanel Grid.Row="2" Grid.Column="2" Orientation="Horizontal" Spacing="10">
                 <ComboBox
                       SelectedItem="{Binding Operation.RedrawType}"
-                      Items="{Binding Operation.RedrawTypesItems}"
+                      ItemsSource="{Binding Operation.RedrawTypesItems}"
                       Width="120"/>
 
                 <CheckBox

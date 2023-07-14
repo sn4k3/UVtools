@@ -201,7 +201,7 @@ public sealed class OperationLayerExportGif : Operation
 
     public override void InitWithSlicerFile()
     {
-        _filePath = SlicerFile.FileFullPath + ".gif";
+        _filePath = SlicerFile.FileFullPathNoExt + ".gif";
     }
 
     #endregion
@@ -251,7 +251,9 @@ public sealed class OperationLayerExportGif : Operation
             if (_renderLayerCount)
             {
                 int baseLine = 0;
-                var text = $"{layerIndex.ToString().PadLeft(SlicerFile.LayerCount.ToString().Length, '0')}/{SlicerFile.LayerCount-1}";
+                var text = string.Format($"{{0:D{SlicerFile.LayerDigits}}}/{{1}}",
+                    layerIndex,
+                    SlicerFile.LayerCount - 1);
                 var fontSize = CvInvoke.GetTextSize(text, fontFace, fontScale, fontThickness, ref baseLine);
 
                 Point point = new(

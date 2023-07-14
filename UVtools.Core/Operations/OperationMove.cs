@@ -252,6 +252,11 @@ public class OperationMove : Operation
         Anchor = (Anchor)value;
     }
 
+    public void SetAnchor(object value)
+    {
+        Anchor = (Anchor)Convert.ToByte(value);
+    }
+
 
     public bool ValidateBounds()
     {

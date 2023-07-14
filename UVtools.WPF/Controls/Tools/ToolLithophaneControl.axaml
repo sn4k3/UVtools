@@ -78,7 +78,7 @@
 
                 <ComboBox Grid.Row="6" Grid.Column="2"
                           HorizontalAlignment="Stretch"
-                          Items="{Binding Operation.Rotate, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                          ItemsSource="{Binding Operation.Rotate, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
                           SelectedItem="{Binding Operation.Rotate, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
 
 				<StackPanel Grid.Row="6" Grid.Column="4" Grid.ColumnSpan="3"
@@ -183,7 +183,7 @@
 
                 <ComboBox Grid.Row="18" Grid.Column="2" Grid.ColumnSpan="5"
                           HorizontalAlignment="Stretch"
-                          Items="{Binding Operation.BaseType, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                          ItemsSource="{Binding Operation.BaseType, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
                           SelectedItem="{Binding Operation.BaseType, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
 
                 <TextBlock Grid.Row="20" Grid.Column="0"

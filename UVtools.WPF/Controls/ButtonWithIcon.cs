@@ -7,14 +7,14 @@
  */
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Layout;
-using Avalonia.Styling;
-using Avalonia.Threading;
 using System;
+using System.Collections.Generic;
 
 namespace UVtools.WPF.Controls;
 
-public class ButtonWithIcon : Button, IStyleable
+public class ButtonWithIcon : Button
 {
     public enum IconPlacementType : byte
     {
@@ -24,7 +24,9 @@ public class ButtonWithIcon : Button, IStyleable
         Bottom
     }
 
-    Type IStyleable.StyleKey => typeof(Button);
+    protected override Type StyleKeyOverride => typeof(Button);
+
+    private readonly List<IDisposable> _disposableSubscribes = new();
 
     public static readonly StyledProperty<string> TextProperty =
         AvaloniaProperty.Register<ButtonWithIcon, string>(nameof(Text));
@@ -66,17 +68,18 @@ public class ButtonWithIcon : Button, IStyleable
     {
     }
 
-    protected override void OnInitialized()
+    protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
-        base.OnInitialized();
-
-        Dispatcher.UIThread.Post(() =>
+        foreach (var disposableSubscribe in _disposableSubscribes)
         {
-            TextProperty.Changed.Subscribe(_ => RebuildContent());
-            IconProperty.Changed.Subscribe(_ => RebuildContent());
-            IconPlacementProperty.Changed.Subscribe(_ => RebuildContent());
-            RebuildContent();
-        }, DispatcherPriority.Loaded);
+            disposableSubscribe.Dispose();
+        }
+        _disposableSubscribes.Clear();
+
+        _disposableSubscribes.Add(TextProperty.Changed.Subscribe(_ => RebuildContent()));
+        _disposableSubscribes.Add(IconProperty.Changed.Subscribe(_ => RebuildContent()));
+        _disposableSubscribes.Add(IconPlacementProperty.Changed.Subscribe(_ => RebuildContent()));
+        RebuildContent();
     }
 
     public Projektanker.Icons.Avalonia.Icon MakeIcon()

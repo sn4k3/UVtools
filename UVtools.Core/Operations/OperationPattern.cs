@@ -7,6 +7,7 @@
  */
 
 using Emgu.CV;
+using System;
 using System.Drawing;
 using System.Text;
 using System.Threading.Tasks;
@@ -227,6 +228,11 @@ public class OperationPattern : Operation
     public void SetAnchor(byte value)
     {
         Anchor = (Anchor)value;
+    }
+
+    public void SetAnchor(object value)
+    {
+        Anchor = (Anchor)Convert.ToByte(value);
     }
 
     public void SetRoi(Rectangle srcRoi)

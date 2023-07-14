@@ -15,7 +15,7 @@
           <ComboBox Grid.Row="0" Grid.Column="2" Grid.ColumnSpan="5"
                     HorizontalAlignment="Stretch"
                     Width="500"
-                    Items="{Binding Operation.SetMethod, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                    ItemsSource="{Binding Operation.SetMethod, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
                     SelectedItem="{Binding Operation.SetMethod, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
 
 
@@ -80,8 +80,7 @@
                 HorizontalAlignment="Stretch"
                 HorizontalContentAlignment="Center"
                 ToolTip.Tip="View the smallest bottom layer for the selected layer range"
-                Command="{Binding ViewSmallestLayer}"
-                CommandParameter="True"
+                Command="{Binding ViewSmallestBottomLayer}"
                 Content="Smallest"/>
 
         <TextBlock Grid.Row="6" Grid.Column="0"
@@ -120,7 +119,7 @@
                 VerticalAlignment="Stretch"
                 HorizontalAlignment="Stretch"
                 HorizontalContentAlignment="Center"
-                Command="{Binding ViewLargestLayer}"
+                Command="{Binding ViewLargestBottomLayer}"
                 CommandParameter="True"
                 ToolTip.Tip="View the largest bottom layer for the selected layer range"
                 Content="Largest"/>
@@ -161,7 +160,7 @@
                 VerticalAlignment="Stretch"
                 HorizontalAlignment="Stretch"
                 HorizontalContentAlignment="Center"
-                Command="{Binding ViewSmallestLayer}"
+                Command="{Binding ViewSmallestNormalLayer}"
                 CommandParameter="False"
                 ToolTip.Tip="View the smallest normal layer for the selected layer range"
                 Content="Smallest"/>
@@ -202,7 +201,7 @@
                 VerticalAlignment="Stretch"
                 HorizontalAlignment="Stretch"
                 HorizontalContentAlignment="Center"
-                Command="{Binding ViewLargestLayer}"
+                Command="{Binding ViewLargestNormalLayer}"
                 CommandParameter="False"
                 ToolTip.Tip="View the largest normal layer for the selected layer range"
                 Content="Largest"/>

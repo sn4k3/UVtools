@@ -1,11 +1,10 @@
 ﻿using Avalonia;
-using Avalonia.Markup.Xaml;
 using UVtools.Core.Objects;
 using UVtools.WPF.Extensions;
 
 namespace UVtools.WPF.Controls;
 
-public class KernelControl : UserControlEx
+public partial class KernelControl : UserControlEx
 {
     private KernelConfiguration _kernel;
 
@@ -27,11 +26,6 @@ public class KernelControl : UserControlEx
     {
         InitializeComponent();
         DataContext = this;
-    }
-
-    private void InitializeComponent()
-    {
-        AvaloniaXamlLoader.Load(this);
     }
 
     public void GenerateKernel()

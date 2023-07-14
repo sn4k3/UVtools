@@ -7,7 +7,6 @@
  */
 
 
-using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Threading;
 using System;
@@ -19,23 +18,21 @@ namespace UVtools.WPF;
 
 public partial class MainWindow
 {
-    public ListBox ClipboardList;
 
     public void InitClipboardLayers()
     {
-        ClipboardList = this.FindControl<ListBox>(nameof(ClipboardList));
-        Clipboard.PropertyChanged += ClipboardOnPropertyChanged;
+        ClipboardManager.PropertyChanged += ClipboardOnPropertyChanged;
     }
 
     private void ClipboardOnPropertyChanged(object sender, PropertyChangedEventArgs e)
     {
-        if (e.PropertyName == nameof(Clipboard.CurrentIndex))
+        if (e.PropertyName == nameof(ClipboardManager.CurrentIndex))
         {
-            if (Clipboard.CurrentIndex < 0 || Clipboard.SuppressRestore) return;
+            if (ClipboardManager.CurrentIndex < 0 || ClipboardManager.SuppressRestore) return;
 
-            AddLogVerbose($"Clipboard change: {Clipboard.CurrentIndex}");
+            AddLogVerbose($"Clipboard change: {ClipboardManager.CurrentIndex}");
 
-            if (Clipboard.ReallocatedLayerCount)
+            if (ClipboardManager.ReallocatedLayerCount)
             {
                 DispatcherTimer.RunOnce(() =>
                 {
@@ -57,14 +54,14 @@ public partial class MainWindow
             ClipboardUndoAndRerun(true);
             return;
         }
-        Clipboard.Undo();
+        ClipboardManager.Undo();
     } 
 
     public async void ClipboardUndoAndRerun(bool rerun)
     {
         CanSave = true;
-        var clip = Clipboard.CurrentClip;
-        Clipboard.Undo();
+        var clip = ClipboardManager.CurrentClip;
+        ClipboardManager.Undo();
         if (!rerun)
         {
             return;
@@ -83,7 +80,7 @@ public partial class MainWindow
         var operation = await ShowRunOperation(clip.Operation.GetType(), clip.Operation);
         if (operation is null)
         {
-            Clipboard.Redo();
+            ClipboardManager.Redo();
             CanSave = false;
         }
     }
@@ -91,7 +88,7 @@ public partial class MainWindow
     public void ClipboardRedo()
     {
         CanSave = true;
-        Clipboard.Redo();
+        ClipboardManager.Redo();
     }
 
     public async void ClipboardClear()
@@ -99,6 +96,6 @@ public partial class MainWindow
         if (await this.MessageBoxQuestion("Are you sure you want to clear the clipboard?\n" +
                                           "Current layers will be placed as original layers\n" +
                                           "This action is permanent!", "Clear clipboard?") != MessageButtonResult.Yes) return;
-        Clipboard.Clear(true);
+        ClipboardManager.Clear(true);
     }
 }

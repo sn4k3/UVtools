@@ -13,9 +13,9 @@
 
     <Grid RowDefinitions="Auto,Auto,Auto,*">
         <Border Grid.Row="0" Padding="5">
-            <Expander
-                Header="Global statistics"
-                IsExpanded="True">
+            <Expander Header="Global statistics"
+                      HorizontalAlignment="Stretch"
+                      IsExpanded="True">
 
                 <StackPanel>
                   <WrapPanel Orientation="Horizontal">
@@ -66,6 +66,7 @@
 
 
         <Expander Grid.Row="1"
+                  HorizontalAlignment="Stretch"
                   Header="Add new material"
                   IsExpanded="True">
 
@@ -172,7 +173,7 @@
       GridLinesVisibility="Horizontal"
       ClipboardCopyMode="IncludeHeader"
       VerticalAlignment="Stretch"
-      Items="{Binding Manager.Materials}">
+      ItemsSource="{Binding Manager.Materials}">
         <DataGrid.Columns>
           <DataGridTextColumn Header="Name"
                               Binding="{Binding Name}"

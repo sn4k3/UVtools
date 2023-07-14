@@ -1,4 +1,3 @@
-using Avalonia.Markup.Xaml;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using System.Timers;
@@ -9,7 +8,7 @@ using UVtools.WPF.Windows;
 
 namespace UVtools.WPF.Controls.Calibrators;
 
-public class CalibrateLiftHeightControl : ToolControl
+public partial class CalibrateLiftHeightControl : ToolControl
 {
     public OperationCalibrateLiftHeight Operation => BaseOperation as OperationCalibrateLiftHeight;
 
@@ -35,11 +34,6 @@ public class CalibrateLiftHeightControl : ToolControl
             AutoReset = false
         };
         _timer.Elapsed += (sender, e) => Dispatcher.UIThread.InvokeAsync(UpdatePreview);
-    }
-
-    private void InitializeComponent()
-    {
-        AvaloniaXamlLoader.Load(this);
     }
 
     public override void Callback(ToolWindow.Callbacks callback)

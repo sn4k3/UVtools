@@ -1,5 +1,3 @@
-using Avalonia.Controls;
-using Avalonia.Markup.Xaml;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using System;
@@ -15,14 +13,13 @@ using UVtools.WPF.Windows;
 
 namespace UVtools.WPF.Controls.Calibrators;
 
-public class CalibrateExposureFinderControl : ToolControl
+public partial class CalibrateExposureFinderControl : ToolControl
 {
     public OperationCalibrateExposureFinder Operation => BaseOperation as OperationCalibrateExposureFinder;
 
     private readonly Timer _timer;
 
     private Bitmap _previewImage;
-    private readonly DataGrid _exposureTable;
 
     public Bitmap PreviewImage
     {
@@ -39,18 +36,11 @@ public class CalibrateExposureFinderControl : ToolControl
 
         InitializeComponent();
             
-        _exposureTable = this.FindControl<DataGrid>("ExposureTable");
-
         _timer = new Timer(100)
         {
             AutoReset = false
         };
         _timer.Elapsed += (sender, e) => Dispatcher.UIThread.InvokeAsync(UpdatePreview);
-    }
-
-    private void InitializeComponent()
-    {
-        AvaloniaXamlLoader.Load(this);
     }
 
     public override void Callback(ToolWindow.Callbacks callback)
@@ -143,11 +133,11 @@ public class CalibrateExposureFinderControl : ToolControl
 
     public async void ExposureTableRemoveSelectedEntries()
     {
-        if (_exposureTable.SelectedItems.Count <= 0) return;
+        if (ExposureTable.SelectedItems.Count <= 0) return;
         if (await ParentWindow.MessageBoxQuestion(
-                $"Are you sure you want to remove the {_exposureTable.SelectedItems.Count} selected entries?"
+                $"Are you sure you want to remove the {ExposureTable.SelectedItems.Count} selected entries?"
             ) != MessageButtonResult.Yes) return;
 
-        Operation.ExposureTable.RemoveRange(_exposureTable.SelectedItems.Cast<ExposureItem>());
+        Operation.ExposureTable.RemoveRange(ExposureTable.SelectedItems.Cast<ExposureItem>());
     }
 }

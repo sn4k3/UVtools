@@ -1,7 +1,6 @@
 ﻿using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Layout;
-using Avalonia.Markup.Xaml;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -16,13 +15,11 @@ using UVtools.WPF.Windows;
 
 namespace UVtools.WPF.Controls.Tools;
 
-public class ToolEditParametersControl : ToolControl
+public partial class ToolEditParametersControl : ToolControl
 {
     public OperationEditParameters Operation => BaseOperation as OperationEditParameters;
 
     public RowControl[] RowControls;
-    private Grid globalGrid;
-    private Grid perLayerGrid;
 
     public sealed class RowControl
     {
@@ -99,11 +96,11 @@ public class ToolEditParametersControl : ToolControl
                 VerticalAlignment = VerticalAlignment.Center,
                 HorizontalAlignment = HorizontalAlignment.Stretch,
                 Margin = new Thickness(0,2,0,0),
-                Minimum = (double) modifier.Minimum,
-                Maximum = (double) modifier.Maximum,
+                Minimum = modifier.Minimum,
+                Maximum = modifier.Maximum,
                 Increment = modifier.Increment,
                 FormatString = modifier.DecimalPlates > 0 ? $"F{modifier.DecimalPlates}" : string.Empty,
-                Value = (double)modifier.NewValue,
+                Value = modifier.NewValue,
                 ValueUnit = modifier.ValueUnit,
                 IsInitialValueVisible = true,
                 ResetVisibility = ExtendedNumericUpDown.ResetVisibilityType.Auto,
@@ -140,14 +137,11 @@ public class ToolEditParametersControl : ToolControl
         BaseOperation = new OperationEditParameters(SlicerFile);
         if (!ValidateSpawn()) return;
         InitializeComponent();
-
-        globalGrid = this.FindControl<Grid>("GlobalGrid");
-        perLayerGrid = this.FindControl<Grid>("PerLayerGrid");
     }
 
     public void PopulateGrid()
     {
-        var grid = Operation.PerLayerOverride ? perLayerGrid : globalGrid;
+        var grid = Operation.PerLayerOverride ? PerLayerGrid : GlobalGrid;
 
         var gridCols = 2 - Convert.ToInt32(Operation.PerLayerOverride);
         if (grid.Children.Count > gridCols)
@@ -247,9 +241,9 @@ public class ToolEditParametersControl : ToolControl
                     {
                         NumericUpDown =
                         {
-                            Value = Operation.PerLayerOverride
+                            Value = (decimal)(Operation.PerLayerOverride
                                 ? SlicerFile[Operation.LayerIndexStart].RetractHeight
-                                : SlicerFile.BottomRetractHeight,
+                                : SlicerFile.BottomRetractHeight),
                             IsReadOnly = true,
                             IsEnabled = false
                         }
@@ -268,9 +262,9 @@ public class ToolEditParametersControl : ToolControl
                 {
                     NumericUpDown =
                     {
-                        Value = Operation.PerLayerOverride
+                        Value = (decimal)(Operation.PerLayerOverride
                             ? SlicerFile[Operation.LayerIndexStart].RetractHeight
-                            : SlicerFile.RetractHeight,
+                            : SlicerFile.RetractHeight),
                         IsReadOnly = true,
                         IsEnabled = false
                     }
@@ -297,11 +291,6 @@ public class ToolEditParametersControl : ToolControl
             }
             rowDict[isBottomLayer]++;
         }
-    }
-
-    private void InitializeComponent()
-    {
-        AvaloniaXamlLoader.Load(this);
     }
 
     protected override void OnInitialized()

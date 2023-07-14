@@ -14,7 +14,7 @@
 
         <ComboBox Grid.Row="0" Grid.Column="2" Grid.ColumnSpan="5"
                   HorizontalAlignment="Stretch"
-                  Items="{Binding Suggestion.SetType, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                  ItemsSource="{Binding Suggestion.SetType, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
                   SelectedItem="{Binding Suggestion.SetType, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
 
         <TextBlock Grid.Row="2" Grid.Column="2"

@@ -10,7 +10,6 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
-using Avalonia.Markup.Xaml.Styling;
 using Avalonia.Platform;
 using Avalonia.Styling;
 using Avalonia.Themes.Fluent;
@@ -30,6 +29,7 @@ using UVtools.Core.SystemOS;
 using UVtools.WPF.Structures;
 using UVtools.WPF.Windows;
 using Bitmap = Avalonia.Media.Imaging.Bitmap;
+using UVtools.WPF.Extensions;
 
 namespace UVtools.WPF;
 
@@ -39,16 +39,32 @@ public class App : Application
 {
     public enum ApplicationTheme
     {
+        [Description("Fluent system")]
+        FluentSystem,
+
         [Description("Fluent light")]
         FluentLight,
         [Description("Fluent dark")]
         FluentDark,
 
-        [Description("Default light")]
-        DefaultLight,
-        [Description("Default dark")]
-        DefaultDark
+        /*[Description("Simple system")]
+        SimpleSystem,
+        [Description("Simple light")]
+        SimpleLight,
+        [Description("Simple dark")]
+        SimpleDark*/
     }
+
+    private static readonly Styles ThemeStylesContainer = new();
+    public static FluentTheme _fluentTheme = null!;
+    //public static SimpleTheme _simpleTheme = null!;
+    private static IStyle _colorPickerFluent, _colorPickerSimple = null!;
+    private static IStyle _dataGridFluent, _dataGridSimple = null!;
+    //private static IStyle _avaloniaEditFluent, _avaloniaEditSimple = null!;
+
+    private static (IStyle Fluent, IStyle Simple)[] SwitchableStyles = null!;
+
+    private static ApplicationTheme? _prevTheme;
 
     //public static ThemeSelector ThemeSelector { get; set; }
     public static MainWindow MainWindow = null!;
@@ -56,123 +72,90 @@ public class App : Application
 
     public static AppVersionChecker VersionChecker { get; } = new();
 
-    public static StyleInclude DataGridFluent => new(CreateAssemblyUri("/Styles"))
-    {
-        Source = new Uri("avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml")
-    };
-
-    public static StyleInclude DataGridDefault => new(CreateAssemblyUri("/Styles"))
-    {
-        Source = new Uri("avares://Avalonia.Controls.DataGrid/Themes/Default.xaml")
-    };
-
-    public static readonly StyleInclude AppStyleLight = new(CreateAssemblyUri("/Assets/Styles"))
-    {
-        Source = CreateAssemblyUri("/Assets/Styles/StylesLight.axaml")
-    };
-
-    public static readonly StyleInclude AppStyleDark = new(CreateAssemblyUri("/Assets/Styles"))
-    {
-        Source = CreateAssemblyUri("/Assets/Styles/StylesDark.axaml")
-    };
-
-    public static FluentTheme Fluent = new(CreateAssemblyUri("/Styles"));
-        
-    public static Styles DefaultLight = new()
-    {
-        new StyleInclude(new Uri($"resm:Styles?assembly={AssemblyName}"))
-        {
-            Source = new Uri("avares://Avalonia.Themes.Fluent/Accents/AccentColors.xaml")
-        },
-        new StyleInclude(new Uri($"resm:Styles?assembly={AssemblyName}"))
-        {
-            Source = new Uri("avares://Avalonia.Themes.Fluent/Accents/Base.xaml")
-        },
-        new StyleInclude(new Uri($"resm:Styles?assembly={AssemblyName}"))
-        {
-            Source = new Uri("avares://Avalonia.Themes.Fluent/Accents/BaseLight.xaml")
-        },
-        new StyleInclude(new Uri($"resm:Styles?assembly={AssemblyName}"))
-        {
-            Source = new Uri("avares://Avalonia.Themes.Default/Accents/BaseLight.xaml")
-        },
-        new StyleInclude(new Uri($"resm:Styles?assembly={AssemblyName}"))
-        {
-            Source = new Uri("avares://Avalonia.Themes.Default/DefaultTheme.xaml")
-        }
-    };
-
-    public static Styles DefaultDark = new()
-    {
-        new StyleInclude(new Uri($"resm:Styles?assembly={AssemblyName}"))
-        {
-            Source = new Uri("avares://Avalonia.Themes.Fluent/Accents/AccentColors.xaml")
-        },
-        new StyleInclude(new Uri($"resm:Styles?assembly={AssemblyName}"))
-        {
-            Source = new Uri("avares://Avalonia.Themes.Fluent/Accents/Base.xaml")
-        },
-        new StyleInclude(new Uri($"resm:Styles?assembly={AssemblyName}"))
-        {
-            Source = new Uri("avares://Avalonia.Themes.Fluent/Accents/BaseDark.xaml")
-        },
-        new StyleInclude(new Uri($"resm:Styles?assembly={AssemblyName}"))
-        {
-            Source = new Uri("avares://Avalonia.Themes.Default/Accents/BaseDark.xaml")
-        },
-        new StyleInclude(new Uri($"resm:Styles?assembly={AssemblyName}"))
-        {
-            Source = new Uri("avares://Avalonia.Themes.Default/DefaultTheme.xaml")
-        }
-    };
-
     public static void ApplyTheme()
     {
-        switch (UserSettings.Instance.General.Theme)
-        {
-            case ApplicationTheme.FluentLight:
-            {
-                if (Fluent.Mode != FluentThemeMode.Light)
-                {
-                    Fluent.Mode = FluentThemeMode.Light;
-                }
-                    
-                Current!.Styles[0] = Fluent;
-                Current.Styles[1] = DataGridFluent;
-                Current.Styles[2] = AppStyleLight;
-                break;
-            }
-            case ApplicationTheme.FluentDark:
-            {
-                if (Fluent.Mode != FluentThemeMode.Dark)
-                {
-                    Fluent.Mode = FluentThemeMode.Dark;
-                }
+        var app = Current!;
+        var theme = UserSettings.Instance.General.Theme;
+        if (theme == _prevTheme) return;
 
-                Current!.Styles[0] = Fluent;
-                Current.Styles[1] = DataGridFluent;
-                Current.Styles[2] = AppStyleDark;
-                break;
+        var prevTheme = _prevTheme;
+        _prevTheme = theme;
+        var shouldReopenWindow = prevTheme is not null && prevTheme.ToString()![0] != theme.ToString()[0];
+
+        if (ThemeStylesContainer.Count == 0)
+        {
+            ThemeStylesContainer.Add(new Style());
+            ThemeStylesContainer.Add(new Style());
+            ThemeStylesContainer.Add(new Style());
+        }
+
+        _fluentTheme.DensityStyle = UserSettings.Instance.General.ThemeDensity;
+
+        bool isFluentTheme = theme is ApplicationTheme.FluentSystem or ApplicationTheme.FluentLight or ApplicationTheme.FluentDark;
+        bool isLightTheme = theme is ApplicationTheme.FluentLight //or ApplicationTheme.SimpleLight 
+                            || (theme == ApplicationTheme.FluentSystem && app.ActualThemeVariant == ThemeVariant.Light);
+                            //|| (theme == ApplicationTheme.SimpleSystem && app.ActualThemeVariant == ThemeVariant.Light);
+
+        var styleCount = 0;
+        if (isFluentTheme)
+        {
+            ThemeStylesContainer[styleCount++] = _fluentTheme;
+            ThemeStylesContainer[styleCount++] = _colorPickerFluent;
+            ThemeStylesContainer[styleCount++] = _dataGridFluent;
+            //ThemeStylesContainer[styleCount++] = _avaloniaEditFluent;
+        }
+        else
+        {
+            //ThemeStylesContainer[styleCount++] = _simpleTheme;
+            ThemeStylesContainer[styleCount++] = _colorPickerSimple;
+            ThemeStylesContainer[styleCount++] = _dataGridSimple;
+            //ThemeStylesContainer[styleCount++] = _avaloniaEditSimple;
+        }
+
+        app.RequestedThemeVariant = theme switch
+        {
+            ApplicationTheme.FluentLight => ThemeVariant.Light,
+            ApplicationTheme.FluentDark => ThemeVariant.Dark,
+            //ApplicationTheme.SimpleLight => ThemeVariant.Light,
+            //ApplicationTheme.SimpleDark => ThemeVariant.Dark,
+            _ => app.RequestedThemeVariant
+        };
+
+        if (shouldReopenWindow)
+        {
+            if (app.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktopLifetime && desktopLifetime.MainWindow is MainWindow mainWindow)
+            {
+                mainWindow.MessageBoxInfo(
+                    "The theme has changed to a different theme type, please save your work and restart program in order to apply the new theme.",
+                    "Theme changing requires restart.");
+                //app.Styles.RemoveAt(0);
+                //app.Styles.Insert(0, _themeStylesContainer);
+                /*var oldWindow = desktopLifetime.MainWindow;
+                var newWindow = new MainWindow();
+                desktopLifetime.MainWindow = newWindow;
+                desktopLifetime.MainWindow = oldWindow;
+                newWindow.Close();*/
             }
-            case ApplicationTheme.DefaultLight:
-                Current!.Styles[0] = DefaultLight;
-                Current.Styles[1] = DataGridDefault;
-                Current.Styles[2] = AppStyleLight;
-                break;
-            case ApplicationTheme.DefaultDark:
-                Current!.Styles[0] = DefaultDark;
-                Current.Styles[1] = DataGridDefault;
-                Current.Styles[2] = AppStyleDark;
-                break;
         }
     }
 
     public override void Initialize()
     {
-        Styles.Insert(0, Fluent);
-        Styles.Insert(1, DataGridFluent);
-        Styles.Insert(2, AppStyleLight);
+        Styles.Add(ThemeStylesContainer);
         AvaloniaXamlLoader.Load(this);
+
+        _fluentTheme = (FluentTheme)Resources["FluentTheme"]!;
+        //_simpleTheme = (SimpleTheme)Resources["SimpleTheme"]!;
+        _colorPickerFluent = (IStyle)Resources["ColorPickerFluent"]!;
+        _colorPickerSimple = (IStyle)Resources["ColorPickerSimple"]!;
+        _dataGridFluent = (IStyle)Resources["DataGridFluent"]!;
+        _dataGridSimple = (IStyle)Resources["DataGridSimple"]!;
+        //_avaloniaEditFluent = (IStyle)Resources["AvaloniaEditFluent"]!;
+        //_avaloniaEditSimple = (IStyle)Resources["AvaloniaEditSimple"]!;
+
+        UserSettings.Load();
+        UserSettings.SetVersion();
+        ApplyTheme();
     }
 
     public override void OnFrameworkInitializationCompleted()
@@ -201,11 +184,6 @@ public class App : Application
                                   "Check manual or page at 'Requirements' section for help");
             }*/
 
-            if (UserSettings.Instance.General.Theme != ApplicationTheme.FluentLight)
-            {
-                ApplyTheme();
-            }
-
             if (Program.IsCrashReport)
             {
                 //Program.Args = new[] {"--crash-report", "Debug", "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum." };
@@ -230,32 +208,34 @@ public class App : Application
                     // ignored
                 }
                 
-                try
-                {
-                    Current?.Clipboard?.SetTextAsync(bugDescription);
-                }
-                catch
-                {
-                    // ignored
-                }
-                
-
                 using var reader = new StringReader(bugDescription);
-                desktop.MainWindow = new MessageWindow($"{About.SoftwareWithVersion} - Crash report", 
-                    "fa-regular fa-frown", 
+                MessageWindow window = null!;
+                window = new MessageWindow($"{About.SoftwareWithVersion} - Crash report",
+                    "fa-regular fa-frown",
                     $"{About.Software} crashed due an unexpected {category.ToLowerInvariant()} error.\nYou can report this error if you find necessary.\nFind more details below:\n",
                     bugDescription,
                     TextWrapping.NoWrap,
                     new[]
                     {
-                        MessageWindow.CreateLinkButtonAction("Report", "fa-solid fa-bug", $"https://github.com/sn4k3/UVtools/issues/new?template=bug_report_form.yml&title={HttpUtility.UrlEncode($"[Crash] {reader.ReadLine()}")}&system={HttpUtility.UrlEncode(system)}&bug_description={HttpUtility.UrlEncode($"```\n{bugDescription}\n```")}", () => Current?.Clipboard?.SetTextAsync($"```\n{bugDescription}\n```")),
-                        MessageWindow.CreateLinkButtonAction("Help", "fa-solid fa-question", "https://github.com/sn4k3/UVtools/discussions/categories/q-a", () => Current?.Clipboard?.SetTextAsync($"```\n{bugDescription}\n```")),
+                        MessageWindow.CreateLinkButtonAction("Report", "fa-solid fa-bug", $"https://github.com/sn4k3/UVtools/issues/new?template=bug_report_form.yml&title={HttpUtility.UrlEncode($"[Crash] {reader.ReadLine()}")}&system={HttpUtility.UrlEncode(system)}&bug_description={HttpUtility.UrlEncode($"```\n{bugDescription}\n```")}", () => window?.Clipboard?.SetTextAsync($"```\n{bugDescription}\n```")),
+                        MessageWindow.CreateLinkButtonAction("Help", "fa-solid fa-question", "https://github.com/sn4k3/UVtools/discussions/categories/q-a", () => window?.Clipboard?.SetTextAsync($"```\n{bugDescription}\n```")),
                         MessageWindow.CreateButtonAction("Restart", "fa-solid fa-redo-alt", () => SystemAware.StartThisApplication()),
                         MessageWindow.CreateCloseButton("fa-solid fa-sign-out-alt")
                     })
                 {
                     AboutButtonIsVisible = true
                 };
+
+                try
+                {
+                    window.Clipboard?.SetTextAsync(bugDescription);
+                }
+                catch
+                {
+                    // ignored
+                }
+
+                desktop.MainWindow = window;
             }
             else
             {
@@ -386,24 +366,18 @@ public class App : Application
 
     public static Uri CreateAssemblyUri(string url)
     {
-        Uri uri;
-
-        // Allow for assembly overrides
-        if (url.StartsWith("avares://"))
-        {
-            uri = new Uri(url);
-        }
-        else
-        {
-            uri = new Uri($"avares://{AssemblyName}{url}");
-        }
+        var uri =
+            // Allow for assembly overrides
+            url.StartsWith("avares://") 
+            ? new Uri(url) 
+            : new Uri($"avares://{AssemblyName}{url}");
 
         return uri;
     }
 
     public static Stream GetAsset(string url)
     {
-        return AvaloniaLocator.Current.GetService<IAssetLoader>()?.Open(CreateAssemblyUri(url))!;
+        return AssetLoader.Open(CreateAssemblyUri(url));
     }
 
     public static Bitmap GetBitmapFromAsset(string url) => new(GetAsset(url));

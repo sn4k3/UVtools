@@ -1,5 +1,16 @@
 # Changelog
 
+## /07/2023 - v4.0.0
+
+- **UI:**
+  - **Settings:**
+    - (Add) Themes: Fluent default, which set light/dark mode depending on system settings
+    - (Add) Theme density which only applies to Fluent theme
+    - (Change) Themes: Rename "Default" to "Simple"
+    - (Remove) Simple theme
+  - (Fix) Save properties to disk/clipboard was disabled when file has no thumbnails
+- (Upgrade) AvaloniaUI from 0.10.21 to 11.0
+
 ## 30/06/2023 - v3.15.1
 
 - **File formats:**
@@ -7,7 +18,6 @@
   - (Fix) Anycubic and GOO: When open file in partial mode, the layer data was not set from the layer table
   - (Fix) CXDLP: "Invalid printer model" error
 - (Add) File - Reset layers properties: Reset layers properties with the global properties of the file
-
 
 ## 26/06/2023 - v3.15.0
 

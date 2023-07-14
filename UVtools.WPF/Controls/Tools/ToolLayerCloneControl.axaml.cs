@@ -1,12 +1,11 @@
 ﻿using System.ComponentModel;
-using Avalonia.Markup.Xaml;
 using UVtools.Core.Layers;
 using UVtools.Core.Operations;
 using UVtools.WPF.Windows;
 
 namespace UVtools.WPF.Controls.Tools;
 
-public class ToolLayerCloneControl : ToolControl
+public partial class ToolLayerCloneControl : ToolControl
 {
     public OperationLayerClone Operation => BaseOperation as OperationLayerClone;
 
@@ -34,11 +33,6 @@ public class ToolLayerCloneControl : ToolControl
         BaseOperation = new OperationLayerClone(SlicerFile);
         if (!ValidateSpawn()) return;
         InitializeComponent();
-    }
-
-    private void InitializeComponent()
-    {
-        AvaloniaXamlLoader.Load(this);
     }
 
     public override void Callback(ToolWindow.Callbacks callback)
