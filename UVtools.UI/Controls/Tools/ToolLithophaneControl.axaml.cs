@@ -11,12 +11,12 @@ namespace UVtools.UI.Controls.Tools;
 
 public partial class ToolLithophaneControl : ToolControl
 {
-    public OperationLithophane Operation => BaseOperation as OperationLithophane;
+    public OperationLithophane Operation => (BaseOperation as OperationLithophane)!;
 
-    private readonly Timer _timer;
+    private readonly Timer _timer = null!;
 
-    private Bitmap _previewImage;
-    public Bitmap PreviewImage
+    private Bitmap? _previewImage;
+    public Bitmap? PreviewImage
     {
         get => _previewImage;
         set => RaiseAndSetIfChanged(ref _previewImage, value);
@@ -24,7 +24,7 @@ public partial class ToolLithophaneControl : ToolControl
 
     public ToolLithophaneControl()
     {
-        BaseOperation = new OperationLithophane(SlicerFile);
+        BaseOperation = new OperationLithophane(SlicerFile!);
         if (!ValidateSpawn()) return;
         InitializeComponent();
 

@@ -34,7 +34,7 @@ public partial class TerminalWindow : WindowEx
     private bool _verbose = true;
     private bool _clearCommandAfterSend = true;
         
-    public ScriptState _scriptState;
+    public ScriptState? _scriptState;
 
     #region Properties
 

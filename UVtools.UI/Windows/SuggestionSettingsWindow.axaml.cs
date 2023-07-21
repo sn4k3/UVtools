@@ -17,13 +17,13 @@ namespace UVtools.UI.Windows;
 
 public partial class SuggestionSettingsWindow : WindowEx
 {
-    private Suggestion _activeSuggestion;
-    private Suggestion _selectedSuggestion;
+    private Suggestion? _activeSuggestion;
+    private Suggestion? _selectedSuggestion;
     private bool _pendingChanges;
 
     public Suggestion[] Suggestions => App.MainWindow.Suggestions;
 
-    public Suggestion SelectedSuggestion
+    public Suggestion? SelectedSuggestion
     {
         get => _selectedSuggestion;
         set
@@ -68,25 +68,25 @@ public partial class SuggestionSettingsWindow : WindowEx
                     return;
                 }
 
-                ActiveSuggestion = value is null ? null : SuggestionManager.GetSuggestion(_selectedSuggestion.GetType())?.Clone();
+                ActiveSuggestion = _selectedSuggestion is null ? null : SuggestionManager.GetSuggestion(_selectedSuggestion.GetType())?.Clone();
             });
 
         }
     }
 
-    public Suggestion ActiveSuggestion
+    public Suggestion? ActiveSuggestion
     {
         get => _activeSuggestion;
         set
         {
             if(!RaiseAndSetIfChanged(ref _activeSuggestion, value) || value is null) return;
             PendingChanges = false;
-            _activeSuggestion.PropertyChanged += (sender, e) => PendingChanges = true;
+            _activeSuggestion!.PropertyChanged += (sender, e) => PendingChanges = true;
 
             var type = typeof(SuggestionControl);
             var classname = $"{type.Namespace}.{_activeSuggestion.GetType().Name}Control";
             var controlType = Type.GetType(classname);
-            SuggestionControl control;
+            SuggestionControl? control;
 
             if (controlType is null)
             {
@@ -109,7 +109,7 @@ public partial class SuggestionSettingsWindow : WindowEx
         set => RaiseAndSetIfChanged(ref _pendingChanges, value);
     }
 
-    public SuggestionSettingsWindow() : this(null) { }
+    public SuggestionSettingsWindow() : this(null!) { }
 
     public SuggestionSettingsWindow(Suggestion highlightSuggestion)
     {
@@ -138,12 +138,12 @@ public partial class SuggestionSettingsWindow : WindowEx
 
         foreach (var suggestionMngr in SuggestionManager.Instance.Suggestions)
         {
-            suggestionMngr.SlicerFile = SlicerFile;
+            suggestionMngr.SlicerFile = SlicerFile!;
         }
 
-        var suggestion = (Suggestion)_activeSuggestion?.GetType().CreateInstance();
+        var suggestion = (Suggestion?)_activeSuggestion?.GetType().CreateInstance();
         if (suggestion == null) return;
-        suggestion.SlicerFile = SlicerFile;
+        suggestion.SlicerFile = SlicerFile!;
         ActiveSuggestion = suggestion;
     }
 
@@ -192,15 +192,16 @@ public partial class SuggestionSettingsWindow : WindowEx
                 "Are you sure you want to reset to the default settings?",
                 "Reset suggestion settings?") != MessageButtonResult.Yes) return;
 
-        var suggestion = (Suggestion)_activeSuggestion.GetType().CreateInstance();
+        var suggestion = (Suggestion?)_activeSuggestion.GetType().CreateInstance();
         if (suggestion == null) return;
-        suggestion.SlicerFile = SlicerFile;
+        suggestion.SlicerFile = SlicerFile!;
         ActiveSuggestion = suggestion;
         SuggestionManager.SetSuggestion(suggestion.Clone(), true);
     }
 
     public async void ImportSettingsClicked()
     {
+        if (_activeSuggestion is null) return;
         var files = await OpenFilePickerAsync(AvaloniaStatic.SuggestionSettingFileFilter);
         if (files.Count == 0 || files[0].TryGetLocalPath() is not { } filePath) return;
 
@@ -230,6 +231,7 @@ public partial class SuggestionSettingsWindow : WindowEx
 
     public async void ExportSettingsClicked()
     {
+        if (_activeSuggestion is null) return;
         using var file = await SaveFilePickerAsync(_activeSuggestion.Id, AvaloniaStatic.SuggestionSettingFileFilter);
         if (file?.TryGetLocalPath() is not { } filePath) return;
 

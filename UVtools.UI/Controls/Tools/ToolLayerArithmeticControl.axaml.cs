@@ -5,11 +5,11 @@ namespace UVtools.UI.Controls.Tools;
 
 public partial class ToolLayerArithmeticControl : ToolControl
 {
-    public OperationLayerArithmetic Operation => BaseOperation as OperationLayerArithmetic;
+    public OperationLayerArithmetic Operation => (BaseOperation as OperationLayerArithmetic)!;
 
     public ToolLayerArithmeticControl()
     {
-        BaseOperation = new OperationLayerArithmetic(SlicerFile);
+        BaseOperation = new OperationLayerArithmetic(SlicerFile!);
         if (!ValidateSpawn()) return;
         InitializeComponent();
     }
@@ -25,7 +25,7 @@ public partial class ToolLayerArithmeticControl : ToolControl
                 {
                     if (e.PropertyName == nameof(Operation.Sentence))
                     {
-                        ParentWindow.ButtonOkEnabled = !string.IsNullOrWhiteSpace(Operation.Sentence);
+                        ParentWindow!.ButtonOkEnabled = !string.IsNullOrWhiteSpace(Operation.Sentence);
                     }
                 };
                 break;

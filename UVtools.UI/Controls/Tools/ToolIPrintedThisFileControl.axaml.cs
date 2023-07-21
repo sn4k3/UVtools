@@ -4,11 +4,11 @@ namespace UVtools.UI.Controls.Tools;
 
 public partial class ToolIPrintedThisFileControl : ToolControl
 {
-    public OperationIPrintedThisFile Operation => BaseOperation as OperationIPrintedThisFile;
+    public OperationIPrintedThisFile Operation => (BaseOperation as OperationIPrintedThisFile)!;
 
     public ToolIPrintedThisFileControl()
     {
-        BaseOperation = new OperationIPrintedThisFile(SlicerFile);
+        BaseOperation = new OperationIPrintedThisFile(SlicerFile!);
         if (!ValidateSpawn()) return;
         InitializeComponent();
     }

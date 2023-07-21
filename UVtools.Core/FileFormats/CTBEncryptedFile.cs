@@ -1024,7 +1024,7 @@ public sealed class CTBEncryptedFile : FileFormat
     #region Constructors
     public CTBEncryptedFile()
     {
-        Previews = new Preview[ThumbnailsCount];
+        Previews = new Preview[ThumbnailCountFileShouldHave];
 
         /*if (Bigfoot is not null && Bigfoot[0] == 0 && File.Exists("MAGIC.ectb"))
         {
@@ -1041,7 +1041,7 @@ public sealed class CTBEncryptedFile : FileFormat
     {
         base.Clear();
 
-        for (byte i = 0; i < ThumbnailsCount; i++)
+        for (byte i = 0; i < ThumbnailCountFileShouldHave; i++)
         {
             Previews[i] = new Preview();
         }
@@ -1099,16 +1099,13 @@ public sealed class CTBEncryptedFile : FileFormat
             throw new FileLoadException("The file checksum does not match, malformed file.", FileFullPath);
         }*/
 
-        progress.Reset(OperationProgress.StatusDecodePreviews, ThumbnailsCount);
-
-        for (byte i = 0; i < ThumbnailsCount; i++)
+        progress.Reset(OperationProgress.StatusDecodePreviews, (uint)ThumbnailCountFileShouldHave);
+        var thumbnailOffsets = new[] { Settings.LargePreviewOffset, Settings.SmallPreviewOffset };
+        for (int i = 0; i < thumbnailOffsets.Length; i++)
         {
-            uint offsetAddress = i == 0
-                ? Settings.LargePreviewOffset
-                : Settings.SmallPreviewOffset;
-            if (offsetAddress == 0) continue;
+            if (thumbnailOffsets[i] == 0) continue;
 
-            inputFile.Seek(offsetAddress, SeekOrigin.Begin);
+            inputFile.Seek(thumbnailOffsets[i], SeekOrigin.Begin);
             Previews[i] = Helpers.Deserialize<Preview>(inputFile);
 
             Debug.Write($"Preview {i} -> ");
@@ -1116,9 +1113,9 @@ public sealed class CTBEncryptedFile : FileFormat
 
             inputFile.Seek(Previews[i].ImageOffset, SeekOrigin.Begin);
             byte[] rawImageData = new byte[Previews[i].ImageLength];
-            inputFile.Read(rawImageData, 0, (int) Previews[i].ImageLength);
+            inputFile.Read(rawImageData, 0, (int)Previews[i].ImageLength);
 
-            Thumbnails[i] = Previews[i].Decode(rawImageData);
+            Thumbnails.Add(Previews[i].Decode(rawImageData));
             progress++;
         }
 
@@ -1287,7 +1284,7 @@ public sealed class CTBEncryptedFile : FileFormat
 
         progress.Reset(OperationProgress.StatusEncodePreviews, 2);
 
-        Mat?[] thumbnails = { GetThumbnail(true), GetThumbnail(false) };
+        Mat?[] thumbnails = { GetLargestThumbnail(), GetSmallestThumbnail() };
         for (byte i = 0; i < thumbnails.Length; i++)
         {
             var image = thumbnails[i];

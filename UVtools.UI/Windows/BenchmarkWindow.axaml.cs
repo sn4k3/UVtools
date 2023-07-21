@@ -42,9 +42,9 @@ public partial class BenchmarkWindow : WindowEx
 
     //private readonly RNGCryptoServiceProvider _randomProvider = new();
 
-    private CancellationTokenSource _tokenSource;
-    private IBrush _singleThreadDiffForeground;
-    private IBrush _multiThreadDiffForeground;
+    private CancellationTokenSource _tokenSource = null!;
+    private IBrush _singleThreadDiffForeground = null!;
+    private IBrush _multiThreadDiffForeground = null!;
 
     private CancellationToken _token => _tokenSource.Token;
 
@@ -125,7 +125,7 @@ public partial class BenchmarkWindow : WindowEx
                                  "Run the test while your PC is idle or not in heavy load.\n" +
                                  "Results are in 'tests done per second' (TDPS)";
 
-    public static string ProcessorName => SystemAware.GetProcessorName();
+    public static string? ProcessorName => SystemAware.GetProcessorName();
 
     public int ReferenceSelectedIndex
     {
@@ -262,7 +262,7 @@ public partial class BenchmarkWindow : WindowEx
             ResetDifferenceValues();
 
             _tokenSource = new CancellationTokenSource();
-            var theMethod = GetType().GetMethod(benchmark.FunctionName);
+            var theMethod = GetType().GetMethod(benchmark.FunctionName)!;
 
             Task.Factory.StartNew(() =>
             {

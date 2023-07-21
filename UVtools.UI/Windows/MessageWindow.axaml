@@ -3,7 +3,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:uc="clr-namespace:UVtools.UI.Controls"
-             xmlns:i="clr-namespace:Projektanker.Icons.Avalonia;assembly=Projektanker.Icons.Avalonia"
+             xmlns:i="https://github.com/projektanker/icons.avalonia"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="UVtools.UI.Windows.MessageWindow"
              Icon="/Assets/Icons/UVtools.ico"
@@ -45,13 +45,13 @@
 			</Grid>
 		</Border>
 
-		<Grid Grid.Row="1" RowDefinitions="*" ColumnDefinitions="Auto,*" Margin="20">
+		<Grid Grid.Row="1" RowDefinitions="*" ColumnDefinitions="Auto,*" Margin="40,20">
 			<i:Icon Grid.Column="0"
                     FontSize="{Binding HeaderIconSize}"
                     FontWeight="Bold"
                     Value="{Binding HeaderIcon}"
                     Foreground="{StaticResource LogoColor}"
-                    Margin="0,0,20,0"
+                    Margin="-20,0,20,0"
                     VerticalAlignment="Top"
                     HorizontalAlignment="Center">
 				<i:Icon.IsVisible>
@@ -72,7 +72,7 @@
                      Text="{Binding MessageText}"
                      IsVisible="{Binding !RenderMarkdown}"/>
 
-			<Border Grid.Row="0" Grid.Column="1"
+			<ContentPresenter Grid.Row="0" Grid.Column="1"
                     Name="MarkdownBorder"
                     IsVisible="{Binding RenderMarkdown}"/>
 

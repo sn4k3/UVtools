@@ -574,20 +574,7 @@ public sealed class UVJFile : FileFormat
         using var outputFile = ZipFile.Open(TemporaryOutputFileFullPath, ZipArchiveMode.Create);
         outputFile.PutFileContent(FileConfigName, JsonSerializer.SerializeToUtf8Bytes(JsonSettings, JsonExtensions.SettingsIndent), ZipArchiveMode.Create);
 
-        if (CreatedThumbnailsCount > 0)
-        {
-            using var stream = outputFile.CreateEntry(FilePreviewTinyName).Open();
-            stream.WriteBytes(Thumbnails[0]!.GetPngByes());
-            stream.Close();
-        }
-
-        if (CreatedThumbnailsCount > 1)
-        {
-            using var stream = outputFile.CreateEntry(FilePreviewHugeName).Open();
-            stream.WriteBytes(Thumbnails[1]!.GetPngByes());
-            stream.Close();
-        }
-
+        EncodeThumbnailsInZip(outputFile, FilePreviewTinyName, FilePreviewHugeName);
         EncodeLayersInZip(outputFile, 8, IndexStartNumber.Zero, progress, FolderImageName);
     }
 
@@ -604,26 +591,7 @@ public sealed class UVJFile : FileFormat
         JsonSettings = JsonSerializer.Deserialize<Settings>(entry.Open())!;
         Init(JsonSettings.Properties.Size.Layers, DecodeType == FileDecodeType.Partial);
 
-        entry = inputFile.GetEntry(FilePreviewTinyName);
-        if (entry is not null)
-        {
-            using var stream = entry.Open();
-            Mat image = new();
-            CvInvoke.Imdecode(stream.ToArray(), ImreadModes.AnyColor, image);
-            Thumbnails[0] = image;
-            stream.Close();
-        }
-
-        entry = inputFile.GetEntry(FilePreviewHugeName);
-        if (entry is not null)
-        {
-            using var stream = entry.Open();
-            Mat image = new();
-            CvInvoke.Imdecode(stream.ToArray(), ImreadModes.AnyColor, image);
-            Thumbnails[1] = image;
-            stream.Close();
-        }
-
+        DecodeThumbnailsFromZip(inputFile, FilePreviewTinyName, FilePreviewHugeName);
         DecodeLayersFromZip(inputFile, progress);
 
         for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)

@@ -4,11 +4,11 @@ namespace UVtools.UI.Controls.Tools;
 
 public partial class ToolRaftReliefControl : ToolControl
 {
-    public OperationRaftRelief Operation => BaseOperation as OperationRaftRelief;
+    public OperationRaftRelief Operation => (BaseOperation as OperationRaftRelief)!;
 
     public ToolRaftReliefControl()
     {
-        BaseOperation = new OperationRaftRelief(SlicerFile);
+        BaseOperation = new OperationRaftRelief(SlicerFile!);
         if (!ValidateSpawn()) return;
         InitializeComponent();
     }

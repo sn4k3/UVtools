@@ -6,6 +6,7 @@
  *  of this license document, but changing it is not allowed.
  */
 
+using CommunityToolkit.Diagnostics;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using K4os.Compression.LZ4;
@@ -61,7 +62,7 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
 
     public object Mutex = new();
     private LayerCompressionCodec _compressionCodec;
-    private byte[]? _compressedBytes;
+    private byte[] _compressedBytes = Array.Empty<byte>();
     private uint _nonZeroPixelCount;
     private Rectangle _boundingRectangle = Rectangle.Empty;
     private uint _firstPixelIndex;
@@ -228,22 +229,22 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
     /// <summary>
     /// Gets the first pixel index on the <see cref="BoundingRectangle"/>
     /// </summary>
-    public uint BoundingRectangleFirstPixelIndex => (uint)(BoundingRectangle.Y * ResolutionX + BoundingRectangle.X);
+    public uint BoundingRectangleFirstPixelIndex => (uint)(_boundingRectangle.Y * ResolutionX + _boundingRectangle.X);
 
     /// <summary>
     /// Gets the last pixel index on the <see cref="BoundingRectangle"/>
     /// </summary>
-    public uint BoundingRectangleLastPixelIndex => (uint)(BoundingRectangle.Bottom * ResolutionX + BoundingRectangle.Right);
+    public uint BoundingRectangleLastPixelIndex => (uint)(_boundingRectangle.Bottom * ResolutionX + _boundingRectangle.Right);
 
     /// <summary>
     /// Gets the first pixel <see cref="Point"/> on the <see cref="BoundingRectangle"/>
     /// </summary>
-    public Point BoundingRectangleFirstPixelPosition => BoundingRectangle.Location;
+    public Point BoundingRectangleFirstPixelPosition => _boundingRectangle.Location;
 
     /// <summary>
     /// Gets the last pixel <see cref="Point"/> on the <see cref="BoundingRectangle"/>
     /// </summary>
-    public Point BoundingRectangleLastPixelPosition => new (BoundingRectangle.Right, BoundingRectangle.Bottom);
+    public Point BoundingRectangleLastPixelPosition => new (_boundingRectangle.Right, _boundingRectangle.Bottom);
 
     /// <summary>
     /// Gets the first pixel index on this layer
@@ -857,37 +858,52 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
     /// <summary>
     /// Gets or sets layer image compressed data
     /// </summary>
-    public byte[]? CompressedBytes
+    public byte[] CompressedBytes
     {
         get => _compressedBytes;
         set
         {
+            Guard.IsNotNull(value, nameof(CompressedBytes));
             _compressedBytes = value;
             IsModified = true;
             SlicerFile.BoundingRectangle = Rectangle.Empty;
             _contours?.Dispose();
             _contours = null;
             RaisePropertyChanged();
+            RaisePropertyChanged(nameof(CompressedPngBytes));
             RaisePropertyChanged(nameof(HaveImage));
         }
     }
 
-    public byte[]? CompressedPngBytes
+    public byte[] CompressedPngBytes
     {
         get
         {
-            if (_compressedBytes is null) return null;
+            if (!HaveImage) return _compressedBytes;
             if (_compressionCodec == LayerCompressionCodec.Png) return _compressedBytes;
 
             using var mat = LayerMat;
             return mat.GetPngByes();
+        }
+        set
+        {
+            if (_compressionCodec == LayerCompressionCodec.Png || value.Length == 0)
+            {
+                CompressedBytes = value;
+            }
+            else
+            {
+                var mat = new Mat();
+                CvInvoke.Imdecode(value, ImreadModes.Grayscale, mat);
+                LayerMat = mat;
+            }
         }
     }
 
     /// <summary>
     /// True if this layer have an valid initialized image, otherwise false
     /// </summary>
-    public bool HaveImage => _compressedBytes is not null && _compressedBytes.Length > 0;
+    public bool HaveImage => _compressedBytes.Length > 0;
         
     /// <summary>
     /// Gets or sets a new image instance
@@ -918,7 +934,7 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
                     {
                         fixed (byte* pBuffer = _compressedBytes)
                         {
-                            using var compressedStream = new UnmanagedMemoryStream(pBuffer, _compressedBytes!.Length);
+                            using var compressedStream = new UnmanagedMemoryStream(pBuffer, _compressedBytes.Length);
                             using var matStream = mat.GetUnmanagedMemoryStream(FileAccess.Write);
                             using var gZipStream = new GZipStream(compressedStream, CompressionMode.Decompress);
                             gZipStream.CopyTo(matStream);
@@ -934,7 +950,7 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
                     {
                         fixed (byte* pBuffer = _compressedBytes)
                         {
-                            using var compressedStream = new UnmanagedMemoryStream(pBuffer, _compressedBytes!.Length);
+                            using var compressedStream = new UnmanagedMemoryStream(pBuffer, _compressedBytes.Length);
                             using var matStream = mat.GetUnmanagedMemoryStream(FileAccess.Write);
                             using var deflateStream = new DeflateStream(compressedStream, CompressionMode.Decompress);
                             deflateStream.CopyTo(matStream);
@@ -1053,41 +1069,41 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
             if (IsBottomLayer)
             {
                 if (
-                    _positionZ != RoundHeight(SlicerFile.LayerHeight * Number) ||
-                    _lightOffDelay != SlicerFile.BottomLightOffDelay ||
-                    _waitTimeBeforeCure != SlicerFile.BottomWaitTimeBeforeCure ||
-                    _exposureTime != SlicerFile.BottomExposureTime ||
-                    _waitTimeAfterCure != SlicerFile.BottomWaitTimeAfterCure ||
-                    _liftHeight != SlicerFile.BottomLiftHeight ||
-                    _liftSpeed != SlicerFile.BottomLiftSpeed ||
-                    _liftHeight2 != SlicerFile.BottomLiftHeight2 ||
-                    _liftSpeed2 != SlicerFile.BottomLiftSpeed2 ||
-                    _waitTimeAfterLift != SlicerFile.BottomWaitTimeAfterLift ||
-                    _retractSpeed != SlicerFile.BottomRetractSpeed ||
-                    _retractHeight2 != SlicerFile.BottomRetractHeight2 ||
-                    _retractSpeed2 != SlicerFile.BottomRetractSpeed2 ||
-                    _lightPWM != SlicerFile.BottomLightPWM 
+                    (SlicerFile.CanUseLayerPositionZ && _positionZ != RoundHeight(SlicerFile.LayerHeight * Number)) ||
+                    (SlicerFile.CanUseLayerLightOffDelay && _lightOffDelay != SlicerFile.BottomLightOffDelay) ||
+                    (SlicerFile.CanUseLayerWaitTimeBeforeCure && _waitTimeBeforeCure != SlicerFile.BottomWaitTimeBeforeCure) ||
+                    (SlicerFile.CanUseLayerExposureTime && _exposureTime != SlicerFile.BottomExposureTime) ||
+                    (SlicerFile.CanUseLayerWaitTimeAfterCure && _waitTimeAfterCure != SlicerFile.BottomWaitTimeAfterCure) ||
+                    (SlicerFile.CanUseLayerLiftHeight && _liftHeight != SlicerFile.BottomLiftHeight) ||
+                    (SlicerFile.CanUseLayerLiftSpeed && _liftSpeed != SlicerFile.BottomLiftSpeed) ||
+                    (SlicerFile.CanUseLayerLiftHeight2 && _liftHeight2 != SlicerFile.BottomLiftHeight2) ||
+                    (SlicerFile.CanUseLayerLiftSpeed2 && _liftSpeed2 != SlicerFile.BottomLiftSpeed2) ||
+                    (SlicerFile.CanUseLayerWaitTimeAfterLift && _waitTimeAfterLift != SlicerFile.BottomWaitTimeAfterLift) ||
+                    (SlicerFile.CanUseLayerRetractSpeed && _retractSpeed != SlicerFile.BottomRetractSpeed) ||
+                    (SlicerFile.CanUseLayerRetractHeight2 && _retractHeight2 != SlicerFile.BottomRetractHeight2) ||
+                    (SlicerFile.CanUseLayerRetractSpeed2 && _retractSpeed2 != SlicerFile.BottomRetractSpeed2) ||
+                    (SlicerFile.CanUseLayerLightPWM && _lightPWM != SlicerFile.BottomLightPWM)
                 ) 
                     return false;
             }
             else
             {
                 if (
-                    _positionZ != RoundHeight(SlicerFile.LayerHeight * Number) ||
-                    _lightOffDelay != SlicerFile.LightOffDelay ||
-                    _waitTimeBeforeCure != SlicerFile.WaitTimeBeforeCure ||
-                    (!IsTransitionLayer && _exposureTime != SlicerFile.ExposureTime) || // Fix for can't edit settings on menu https://github.com/sn4k3/UVtools/issues/507
-                    //_exposureTime != SlicerFile.ExposureTime ||
-                    _waitTimeAfterCure != SlicerFile.WaitTimeAfterCure ||
-                    _liftHeight != SlicerFile.LiftHeight ||
-                    _liftSpeed != SlicerFile.LiftSpeed ||
-                    _liftHeight2 != SlicerFile.LiftHeight2 ||
-                    _liftSpeed2 != SlicerFile.LiftSpeed2 ||
-                    _waitTimeAfterLift != SlicerFile.WaitTimeAfterLift ||
-                    _retractSpeed != SlicerFile.RetractSpeed ||
-                    _retractHeight2 != SlicerFile.RetractHeight2 ||
-                    _retractSpeed2 != SlicerFile.RetractSpeed2 ||
-                    _lightPWM != SlicerFile.LightPWM
+                    (SlicerFile.CanUseLayerPositionZ && _positionZ != RoundHeight(SlicerFile.LayerHeight * Number)) ||
+                    (SlicerFile.CanUseLayerLightOffDelay && _lightOffDelay != SlicerFile.LightOffDelay) ||
+                    (SlicerFile.CanUseLayerWaitTimeBeforeCure && _waitTimeBeforeCure != SlicerFile.WaitTimeBeforeCure) ||
+                    (SlicerFile.CanUseLayerExposureTime && !IsTransitionLayer && _exposureTime != SlicerFile.ExposureTime) || // Fix for can't edit settings on menu https://github.com/sn4k3/UVtools/issues/507
+                    //(SlicerFile.CanUseLayerExposureTime && exposureTime != SlicerFile.ExposureTime) ||
+                    (SlicerFile.CanUseLayerWaitTimeAfterCure && _waitTimeAfterCure != SlicerFile.WaitTimeAfterCure) ||
+                    (SlicerFile.CanUseLayerLiftHeight && _liftHeight != SlicerFile.LiftHeight) ||
+                    (SlicerFile.CanUseLayerLiftSpeed && _liftSpeed != SlicerFile.LiftSpeed) ||
+                    (SlicerFile.CanUseLayerLiftHeight2 && _liftHeight2 != SlicerFile.LiftHeight2) ||
+                    (SlicerFile.CanUseLayerLiftSpeed2 && _liftSpeed2 != SlicerFile.LiftSpeed2) ||
+                    (SlicerFile.CanUseLayerWaitTimeAfterLift && _waitTimeAfterLift != SlicerFile.WaitTimeAfterLift) ||
+                    (SlicerFile.CanUseLayerRetractSpeed && _retractSpeed != SlicerFile.RetractSpeed) ||
+                    (SlicerFile.CanUseLayerRetractHeight2 && _retractHeight2 != SlicerFile.RetractHeight2) ||
+                    (SlicerFile.CanUseLayerRetractSpeed2 && _retractSpeed2 != SlicerFile.RetractSpeed2) ||
+                    (SlicerFile.CanUseLayerLightPWM && _lightPWM != SlicerFile.LightPWM)
                 ) 
                     return false;
             }
@@ -1150,23 +1166,13 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
         _resolutionY = slicerFile.ResolutionY;
         
         //if (slicerFile is null) return;
-        _positionZ = SlicerFile.GetHeightFromLayer(index);
+        _positionZ = SlicerFile.CalculatePositionZ(index);
         ResetParameters();
     }
 
     public Layer(uint index, byte[] pngBytes, FileFormat slicerFile, LayerCompressionCodec? compressionMethod = null) : this(index, slicerFile, compressionMethod)
     {
-        if (_compressionCodec == LayerCompressionCodec.Png)
-        {
-            CompressedBytes = pngBytes;
-        }
-        else
-        {
-            var mat = new Mat();
-            CvInvoke.Imdecode(pngBytes, ImreadModes.Grayscale, mat);
-            LayerMat = mat;
-        }
-
+        CompressedPngBytes = pngBytes;
         _isModified = false;
     }
 
@@ -1234,7 +1240,7 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
         if (other is null) return false;
         if (ReferenceEquals(this, other)) return true;
         if (_index != other._index) return false;
-        if (_compressedBytes?.Length != other._compressedBytes?.Length) return false;
+        if (_compressedBytes.Length != other._compressedBytes.Length) return false;
         return _compressedBytes.AsSpan().SequenceEqual(other._compressedBytes.AsSpan());
         //return Equals(_compressedBytes, other._compressedBytes);
     }
@@ -1249,7 +1255,7 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
 
     public override int GetHashCode()
     {
-        return (_compressedBytes != null ? _compressedBytes.GetHashCode() : 0);
+        return _compressedBytes.GetHashCode();
     }
 
     private sealed class IndexRelationalComparer : IComparer<Layer>
@@ -1495,7 +1501,7 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
         bool needDispose = false;
         if (mat is null)
         {
-            if (_compressedBytes is null || _compressedBytes.Length == 0)
+            if (!HaveImage)
             {
                 NonZeroPixelCount = 0;
                 return Rectangle.Empty;
@@ -1883,7 +1889,7 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
         if (!HaveImage) return;
         layer.ResolutionX = _resolutionX;
         layer.ResolutionY = _resolutionY;
-        layer.CompressedBytes = _compressedBytes?.ToArray();
+        layer.CompressedBytes = _compressedBytes.ToArray();
         layer._contours = _contours?.Clone();
         layer.BoundingRectangle = _boundingRectangle;
         layer.NonZeroPixelCount = _nonZeroPixelCount;
@@ -1896,7 +1902,7 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
     public Layer Clone()
     {
         var layer = (Layer)MemberwiseClone();
-        layer._compressedBytes = _compressedBytes?.ToArray();
+        layer._compressedBytes = _compressedBytes.ToArray();
         layer._contours = _contours?.Clone();
         //Debug.WriteLine(ReferenceEquals(_compressedBytes, layer.CompressedBytes));
         return layer;

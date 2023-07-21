@@ -5,7 +5,6 @@
  *  Everyone is permitted to copy and distribute verbatim copies
  *  of this license document, but changing it is not allowed.
  */
-using Avalonia;
 using Avalonia.Input;
 using System;
 using System.Collections.ObjectModel;
@@ -37,8 +36,8 @@ public partial class ToolWindow : WindowEx
         Checkbox1, // Show Advanced
     }
     private KeyModifiers _globalModifiers;
-    public ToolControl ToolControl;
-    private string _description;
+    public ToolControl? ToolControl;
+    private string? _description;
     private double _descriptionMaxWidth = 500;
     private double _profileBoxMaxWidth = double.NaN;
     private bool _layerRangeVisible = true;
@@ -53,10 +52,10 @@ public partial class ToolWindow : WindowEx
 
     private bool _isProfilesVisible;
     private RangeObservableCollection<Operation> _profiles = new();
-    private Operation _selectedProfileItem;
-    private string _profileText;
+    private Operation? _selectedProfileItem;
+    private string? _profileText;
 
-    private ToolBaseControl _contentControl;
+    private ToolBaseControl _contentControl = null!;
 
     private bool _isButton1Visible;
     private string _button1Text = "Reset to defaults";
@@ -72,7 +71,7 @@ public partial class ToolWindow : WindowEx
 
     #region Description
 
-    public string Description
+    public string? Description
     {
         get => _description;
         set => RaiseAndSetIfChanged(ref _description, value);
@@ -118,7 +117,7 @@ public partial class ToolWindow : WindowEx
         get => _layerIndexStart;
         set
         {
-            SlicerFile.SanitizeLayerIndex(ref value);
+            SlicerFile?.SanitizeLayerIndex(ref value);
 
             if (ToolControl?.BaseOperation is not null)
             {
@@ -139,14 +138,14 @@ public partial class ToolWindow : WindowEx
         }
     }
 
-    public float LayerStartMM => SlicerFile.LayerExists(_layerIndexStart) ? SlicerFile[_layerIndexStart].PositionZ : 0;
+    public float LayerStartMM => SlicerFile!.LayerExists(_layerIndexStart) ? SlicerFile[_layerIndexStart].PositionZ : 0;
 
     public uint LayerIndexEnd
     {
         get => _layerIndexEnd;
         set
         {
-            SlicerFile.SanitizeLayerIndex(ref value);
+            SlicerFile?.SanitizeLayerIndex(ref value);
 
             if (ToolControl?.BaseOperation is not null)
             {
@@ -162,7 +161,7 @@ public partial class ToolWindow : WindowEx
         }
     }
 
-    public float LayerEndMM => SlicerFile.LayerExists(_layerIndexEnd) ? SlicerFile[_layerIndexEnd].PositionZ : 0;
+    public float LayerEndMM => SlicerFile!.LayerExists(_layerIndexEnd) ? SlicerFile[_layerIndexEnd].PositionZ : 0;
 
     public bool LayerIndexEndEnabled
     {
@@ -176,7 +175,9 @@ public partial class ToolWindow : WindowEx
         get
         {
             uint layerCount = (uint) Math.Max(0, (int)LayerIndexEnd - LayerIndexStart + 1);
-            return $"({layerCount} layers / {Layer.ShowHeight(SlicerFile.LayerHeight * layerCount)}mm)";
+            return SlicerFile is null 
+                ? $"({layerCount} layers" 
+                : $"({layerCount} layers / {Layer.ShowHeight(SlicerFile.LayerHeight * layerCount)}mm)";
         }
             
     }
@@ -187,14 +188,14 @@ public partial class ToolWindow : WindowEx
     {
         LayerIndexStart = 0;
         LayerIndexEnd = MaximumLayerIndex;
-        if(ToolControl is not null)
+        if(ToolControl?.BaseOperation is not null)
             ToolControl.BaseOperation.LayerRangeSelection = LayerRangeSelection.All;
     }
 
     public void SelectCurrentLayer()
     {
         LayerIndexStart = LayerIndexEnd = App.MainWindow.ActualLayer;
-        if (ToolControl is not null)
+        if (ToolControl?.BaseOperation is not null)
             ToolControl.BaseOperation.LayerRangeSelection = LayerRangeSelection.Current;
     }
 
@@ -202,45 +203,48 @@ public partial class ToolWindow : WindowEx
     {
         LayerIndexEnd = App.MainWindow.ActualLayer;
         LayerIndexStart = 0;
-        if (ToolControl is not null)
+        if (ToolControl?.BaseOperation is not null)
             ToolControl.BaseOperation.LayerRangeSelection = LayerRangeSelection.None;
     }
 
     public void SelectCurrentToLastLayer()
     {
+        if (SlicerFile is null) return;
         LayerIndexStart = App.MainWindow.ActualLayer;
         LayerIndexEnd = SlicerFile.LastLayerIndex;
-        if (ToolControl is not null)
+        if (ToolControl?.BaseOperation is not null)
             ToolControl.BaseOperation.LayerRangeSelection = LayerRangeSelection.None;
     }
 
     public void SelectBottomLayers()
     {
+        if (SlicerFile is null) return;
         LayerIndexStart = 0;
         LayerIndexEnd = Math.Max(1, SlicerFile.FirstNormalLayer?.Index ?? 1) - 1u;
-        if (ToolControl is not null)
+        if (ToolControl?.BaseOperation is not null)
             ToolControl.BaseOperation.LayerRangeSelection = LayerRangeSelection.Bottom;
     }
 
     public void SelectNormalLayers()
     {
+        if (SlicerFile is null) return;
         LayerIndexStart = SlicerFile.FirstNormalLayer?.Index ?? 0;
         LayerIndexEnd = MaximumLayerIndex;
-        if (ToolControl is not null)
+        if (ToolControl?.BaseOperation is not null)
             ToolControl.BaseOperation.LayerRangeSelection = LayerRangeSelection.Normal;
     }
 
     public void SelectFirstLayer()
     {
         LayerIndexStart = LayerIndexEnd = 0;
-        if (ToolControl is not null)
+        if (ToolControl?.BaseOperation is not null)
             ToolControl.BaseOperation.LayerRangeSelection = LayerRangeSelection.First;
     }
 
     public void SelectLastLayer()
     {
         LayerIndexStart = LayerIndexEnd = MaximumLayerIndex;
-        if (ToolControl is not null)
+        if (ToolControl?.BaseOperation is not null)
             ToolControl.BaseOperation.LayerRangeSelection = LayerRangeSelection.Last;
     }
 
@@ -289,7 +293,7 @@ public partial class ToolWindow : WindowEx
     {
         get
         {
-            if (ToolControl is null) return _isROIVisible;
+            if (ToolControl?.BaseOperation is null) return _isROIVisible;
             return ToolControl.BaseOperation.CanROI && _isROIVisible;
         }
         set
@@ -303,7 +307,7 @@ public partial class ToolWindow : WindowEx
     {
         get
         {
-            if (ToolControl is null) return _isMasksVisible;
+            if (ToolControl?.BaseOperation is null) return _isMasksVisible;
             return ToolControl.BaseOperation.CanMask && _isMasksVisible;
         }
         set
@@ -321,13 +325,13 @@ public partial class ToolWindow : WindowEx
         set
         {
             App.MainWindow.ROI = value;
-            if (ToolControl is not null) ToolControl.BaseOperation.ROI = value;
+            if (ToolControl?.BaseOperation is not null) ToolControl.BaseOperation.ROI = value;
             IsROIVisible = !value.IsEmpty;
             RaisePropertyChanged();
         }
     }
 
-    public System.Drawing.Point[][] Masks => App.MainWindow.MaskPoints?.ToArray();
+    public System.Drawing.Point[][] Masks => App.MainWindow.MaskPoints.ToArray();
 
     public bool ClearROIAndMaskAfterOperation
     {
@@ -352,7 +356,7 @@ public partial class ToolWindow : WindowEx
                 "Clear the all masks?") != MessageButtonResult.Yes) return;
         IsMasksVisible = false;
         App.MainWindow.ClearMask();
-        if (ToolControl is not null)
+        if (ToolControl?.BaseOperation is not null)
         {
             ToolControl.BaseOperation.ClearMasks();
             ToolControl.Callback(Callbacks.ClearROI);
@@ -362,6 +366,7 @@ public partial class ToolWindow : WindowEx
 
     public void SelectVolumeBoundingRectangle()
     {
+        if (SlicerFile is null) return;
         ROI = SlicerFile.BoundingRectangle;
     }
 
@@ -383,14 +388,14 @@ public partial class ToolWindow : WindowEx
         set => RaiseAndSetIfChanged(ref _profiles, value);
     }
 
-    public Operation SelectedProfileItem
+    public Operation? SelectedProfileItem
     {
         get => _selectedProfileItem;
         set
         {
             if(!RaiseAndSetIfChanged(ref _selectedProfileItem, value) || value is null) return;
             if (ToolControl is null) return;
-            var operation = _selectedProfileItem.Clone();
+            var operation = _selectedProfileItem!.Clone();
             operation.ProfileName = null;
             operation.ClearPropertyChangedListeners();
             operation.ImportedFrom = Operation.OperationImportFrom.Profile;
@@ -411,7 +416,7 @@ public partial class ToolWindow : WindowEx
         }
     }
 
-    public string ProfileText
+    public string? ProfileText
     {
         get => _profileText;
         set => RaiseAndSetIfChanged(ref _profileText, value);
@@ -419,7 +424,7 @@ public partial class ToolWindow : WindowEx
 
     public async void AddProfile()
     {
-        if (ToolControl is null) return;
+        if (ToolControl?.BaseOperation is null) return;
         var name = string.IsNullOrWhiteSpace(_profileText) ? null : _profileText.Trim();
         var operation = OperationProfiles.FindByName(ToolControl.BaseOperation, name);
         if (operation is not null)
@@ -603,20 +608,17 @@ public partial class ToolWindow : WindowEx
         }
     }
 
-    public ToolWindow(string description = null, bool layerRangeVisible = true, bool layerEndIndexEnabled = true, ToolBaseControl contentControl = null) : this()
+    public ToolWindow(ToolBaseControl contentControl, string? description = null, bool layerRangeVisible = true, bool layerEndIndexEnabled = true) : this()
     {
         _description = description;
         _layerRangeVisible = layerRangeVisible;
         _layerIndexEndEnabled = layerEndIndexEnabled;
         _contentControl = contentControl;
-        if (_contentControl is not null)
-        {
-            _contentControl.ParentWindow = this;
-            if (_contentControl is not Controls.Tools.ToolControl) DataContext = this;
-        }
+        _contentControl.ParentWindow = this;
+        if (_contentControl is not Controls.Tools.ToolControl) DataContext = this;
     }
 
-    public ToolWindow(ToolControl toolControl) : this(toolControl.BaseOperation.Description, toolControl.BaseOperation.StartLayerRangeSelection != LayerRangeSelection.None, toolControl.BaseOperation.LayerIndexEndEnabled, toolControl)
+    public ToolWindow(ToolControl toolControl) : this(toolControl, toolControl.BaseOperation!.Description, toolControl.BaseOperation.StartLayerRangeSelection != LayerRangeSelection.None, toolControl.BaseOperation.LayerIndexEndEnabled)
     {
         ToolControl = toolControl;
         toolControl.ParentWindow = this;
@@ -652,7 +654,7 @@ public partial class ToolWindow : WindowEx
 
             if (toolControl.BaseOperation.HaveMask)
             {
-                App.MainWindow.AddMaskPoints(toolControl.BaseOperation.MaskPoints);
+                App.MainWindow.AddMaskPoints(toolControl.BaseOperation.MaskPoints!);
             }
 
             if (toolControl.BaseOperation.LayerRangeSelection == LayerRangeSelection.None)
@@ -791,7 +793,7 @@ public partial class ToolWindow : WindowEx
             return;
         }
 
-        if (ToolControl is not null)
+        if (ToolControl?.BaseOperation is not null)
         {
             ToolControl.BaseOperation.LayerIndexStart = LayerIndexStart;
             ToolControl.BaseOperation.LayerIndexEnd = LayerIndexEnd;
@@ -809,7 +811,7 @@ public partial class ToolWindow : WindowEx
                 if (result != MessageButtonResult.Yes) return;
             }
         }
-        else if (_contentControl is not null)
+        else
         {
             if (!await _contentControl.ValidateForm()) return;
         }
@@ -849,6 +851,7 @@ public partial class ToolWindow : WindowEx
 
     public async void ImportSettings()
     {
+        if (ToolControl?.BaseOperation is null) return;
         var files = await OpenFilePickerAsync(AvaloniaStatic.OperationSettingFileFilter);
 
         if (files.Count == 0 || files[0].TryGetLocalPath() is not { } filePath) return;
@@ -884,8 +887,8 @@ public partial class ToolWindow : WindowEx
 
     public void ResetToDefaults()
     {
-        if (ToolControl is null) return;
-        var operation = ToolControl.BaseOperation.GetType().CreateInstance<Operation>(SlicerFile);
+        if (ToolControl?.BaseOperation is null) return;
+        var operation = ToolControl.BaseOperation.GetType().CreateInstance<Operation>(SlicerFile!)!;
         operation.LayerIndexStart = ToolControl.BaseOperation.LayerIndexStart;
         operation.LayerIndexEnd = ToolControl.BaseOperation.LayerIndexEnd;
         operation.LayerRangeSelection = ToolControl.BaseOperation.LayerRangeSelection;

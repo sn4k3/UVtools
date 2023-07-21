@@ -211,12 +211,10 @@ public sealed class OperationLayerExportHtml : Operation
 
         if (_exportThumbnails)
         {
-            var thumbnailCount = 0;
-            foreach (var thumbnail in SlicerFile.Thumbnails)
+            for (var i = 0; i < SlicerFile.ThumbnailsCount; i++)
             {
-                if (thumbnail is null) continue;
-                thumbnailCount++;
-                html.WriteLine($"        <img src=\"data:image/png;base64,{Convert.ToBase64String(thumbnail.GetPngByes())}\" class=\"img-thumbnail\" alt=\"Thumbnail {thumbnailCount}\">");
+                html.WriteLine(
+                    $"        <img src=\"data:image/png;base64,{Convert.ToBase64String(SlicerFile.Thumbnails[i].GetPngByes())}\" class=\"img-thumbnail\" alt=\"Thumbnail {i}\">");
             }
         }
 

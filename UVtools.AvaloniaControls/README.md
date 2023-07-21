@@ -2,6 +2,16 @@
 
 [![Nuget](https://img.shields.io/nuget/v/UVtools.AvaloniaControls?style=flat-square)](https://www.nuget.org/packages/UVtools.AvaloniaControls)
 
+## Usage
+
+In your `app.axaml` add:
+
+```xml
+<Application.Styles>
+    <StyleInclude Source="avares://UVtools.AvaloniaControls/Controls.axaml"/>
+</Application.Styles>
+```
+
 ## AdvancedImageBox
   - Port of: https://github.com/cyotek/Cyotek.Windows.Forms.ImageBox
   - Demo: https://youtu.be/bIr6P4dDlHc

@@ -1711,7 +1711,7 @@ public sealed class ChituboxFile : FileFormat
     #region Constructors
     public ChituboxFile()
     {
-        Previews = new Preview[ThumbnailsCount];
+        Previews = new Preview[ThumbnailCountFileShouldHave];
     }
     #endregion
 
@@ -1720,7 +1720,7 @@ public sealed class ChituboxFile : FileFormat
     {
         base.Clear();
 
-        for (byte i = 0; i < ThumbnailsCount; i++)
+        for (byte i = 0; i < ThumbnailCountFileShouldHave; i++)
         {
             Previews[i] = new Preview();
         }
@@ -1839,7 +1839,7 @@ public sealed class ChituboxFile : FileFormat
         using var outputFile = new FileStream(TemporaryOutputFileFullPath, FileMode.Create, FileAccess.Write);
         outputFile.Seek(Helpers.Serializer.SizeOf(HeaderSettings), SeekOrigin.Begin);
 
-        Mat?[] thumbnails = {GetThumbnail(true), GetThumbnail(false)};
+        Mat?[] thumbnails = { GetLargestThumbnail(), GetSmallestThumbnail() };
         for (byte i = 0; i < thumbnails.Length; i++)
         {
             var image = thumbnails[i];
@@ -2021,19 +2021,16 @@ public sealed class ChituboxFile : FileFormat
             HeaderSettings.AntiAliasLevel = 1;
         }
 
-        progress.Reset(OperationProgress.StatusDecodePreviews, ThumbnailsCount);
-
         Debug.Write("Header -> ");
         Debug.WriteLine(HeaderSettings);
 
-        for (byte i = 0; i < ThumbnailsCount; i++)
+        progress.Reset(OperationProgress.StatusDecodePreviews, (uint)ThumbnailCountFileShouldHave);
+        var thumbnailOffsets = new[] { HeaderSettings.PreviewLargeOffsetAddress, HeaderSettings.PreviewSmallOffsetAddress };
+        for (int i = 0; i < thumbnailOffsets.Length; i++)
         {
-            uint offsetAddress = i == 0
-                ? HeaderSettings.PreviewLargeOffsetAddress
-                : HeaderSettings.PreviewSmallOffsetAddress;
-            if (offsetAddress == 0) continue;
+            if (thumbnailOffsets[i] == 0) continue;
 
-            inputFile.Seek(offsetAddress, SeekOrigin.Begin);
+            inputFile.Seek(thumbnailOffsets[i], SeekOrigin.Begin);
             Previews[i] = Helpers.Deserialize<Preview>(inputFile);
 
             Debug.Write($"Preview {i} -> ");
@@ -2041,9 +2038,9 @@ public sealed class ChituboxFile : FileFormat
 
             inputFile.Seek(Previews[i].ImageOffset, SeekOrigin.Begin);
             byte[] rawImageData = new byte[Previews[i].ImageLength];
-            inputFile.Read(rawImageData, 0, (int) Previews[i].ImageLength);
-                
-            Thumbnails![i] = Previews[i].Decode(rawImageData);
+            inputFile.Read(rawImageData, 0, (int)Previews[i].ImageLength);
+
+            Thumbnails.Add(Previews[i].Decode(rawImageData));
             progress++;
         }
 

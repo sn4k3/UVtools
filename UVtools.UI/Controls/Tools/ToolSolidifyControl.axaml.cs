@@ -4,10 +4,10 @@ namespace UVtools.UI.Controls.Tools;
 
 public partial class ToolSolidifyControl : ToolControl
 {
-    public OperationSolidify Operation => BaseOperation as OperationSolidify;
+    public OperationSolidify Operation => (BaseOperation as OperationSolidify)!;
     public ToolSolidifyControl()
     {
-        BaseOperation = new OperationSolidify(SlicerFile);
+        BaseOperation = new OperationSolidify(SlicerFile!);
         if (!ValidateSpawn()) return;
         InitializeComponent();
     }

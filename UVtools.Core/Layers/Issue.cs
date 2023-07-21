@@ -33,7 +33,7 @@ public class Issue
     /// </summary>
     [JsonIgnore]
     [XmlIgnore]
-    public Layer Layer { get; init; }
+    public Layer Layer { get; init; } = null!;
 
     /// <summary>
     /// Gets the layer index

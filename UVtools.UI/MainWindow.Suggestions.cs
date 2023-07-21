@@ -52,7 +52,7 @@ public partial class MainWindow
         byte autoApplied = 0;
         foreach (var suggestion in Suggestions)
         {
-            suggestion.SlicerFile = SlicerFile;
+            suggestion.SlicerFile = SlicerFile!;
             if(!suggestion.Enabled || !suggestion.IsAvailable) continue;
             if (tryToAutoApply && suggestion.ExecuteIfAutoApply())
             {
@@ -76,7 +76,7 @@ public partial class MainWindow
 
     public async void ApplySuggestionsClicked()
     {
-        if (!IsFileLoaded || SuggestionsAvailableListBox.SelectedItems.Count == 0) return;
+        if (!IsFileLoaded || SuggestionsAvailableListBox!.SelectedItems!.Count == 0) return;
         var suggestions = SuggestionsAvailableListBox.SelectedItems.Cast<Suggestion>().Where(suggestion => !suggestion.IsInformativeOnly).ToArray();
         if (suggestions.Length == 0) return;
         var sb = new StringBuilder($"Are you sure you want to apply the following {suggestions.Length} suggestions?:\n\n");

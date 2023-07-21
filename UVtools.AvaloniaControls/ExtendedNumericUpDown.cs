@@ -189,7 +189,7 @@ public class ExtendedNumericUpDown : NumericUpDown
 
     #region Overrides
 
-    protected override void OnTextChanged(string oldValue, string newValue)
+    protected override void OnTextChanged(string? oldValue, string? newValue)
     {
         base.OnTextChanged(oldValue, newValue);
         if (_firstTime)

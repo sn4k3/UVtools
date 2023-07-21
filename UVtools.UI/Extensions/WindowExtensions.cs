@@ -44,10 +44,10 @@ public static class WindowExtensions
         return await messageBoxStandardWindow.ShowDialog(window);
     }*/
 
-    public static async Task<MessageButtonResult> MessageBoxGeneric(this Window window, string message, string title = null, string header = null,
+    public static async Task<MessageButtonResult> MessageBoxGeneric(this Window window, string message, string? title = null, string? header = null,
         MessageButtons buttons = MessageButtons.Ok, string? headerIcon = null, bool markdown = false, bool topMost = false, WindowStartupLocation location = WindowStartupLocation.CenterOwner)
     {
-        ButtonWithIcon[] msgButtons = null;
+        ButtonWithIcon[]? msgButtons;
 
         switch (buttons)
         {
@@ -98,7 +98,7 @@ public static class WindowExtensions
                 throw new ArgumentOutOfRangeException(nameof(buttons), buttons, null);
         }
 
-        var messageWindow = new MessageWindow(title ?? window.Title, headerIcon, header, message, msgButtons, markdown)
+        var messageWindow = new MessageWindow(title ?? window.Title!, headerIcon, header, message, msgButtons, markdown)
         {
             WindowStartupLocation = location,
             Topmost = topMost
@@ -112,32 +112,32 @@ public static class WindowExtensions
     }
 
 
-    public static async Task<MessageButtonResult> MessageBoxInfo(this Window window, string message, string title = null, MessageButtons buttons = MessageButtons.Ok, bool markdown = false, bool topMost = false)
+    public static async Task<MessageButtonResult> MessageBoxInfo(this Window window, string message, string? title = null, MessageButtons buttons = MessageButtons.Ok, bool markdown = false, bool topMost = false)
         => await window.MessageBoxGeneric(message, title ?? $"{window.Title} - Information", null, buttons, MessageWindow.IconHeaderInformation, markdown, topMost, WindowStartupLocation.CenterOwner);
 
-    public static async Task<MessageButtonResult> MessageBoxError(this Window window, string message, string title = null, MessageButtons buttons = MessageButtons.Ok, bool markdown = false, bool topMost = false)
+    public static async Task<MessageButtonResult> MessageBoxError(this Window window, string message, string? title = null, MessageButtons buttons = MessageButtons.Ok, bool markdown = false, bool topMost = false)
         => await window.MessageBoxGeneric(message, title ?? $"{window.Title} - Error", null, buttons, MessageWindow.IconHeaderError, markdown, topMost, WindowStartupLocation.CenterOwner);
 
-    public static async Task<MessageButtonResult> MessageBoxQuestion(this Window window, string message, string title = null, MessageButtons buttons = MessageButtons.YesNo, bool markdown = false, bool topMost = false)
+    public static async Task<MessageButtonResult> MessageBoxQuestion(this Window window, string message, string? title = null, MessageButtons buttons = MessageButtons.YesNo, bool markdown = false, bool topMost = false)
         => await window.MessageBoxGeneric(message, title ?? $"{window.Title} - Question", null, buttons, MessageWindow.IconHeaderQuestion, markdown, topMost, WindowStartupLocation.CenterOwner);
 
-    public static async Task<MessageButtonResult> MessageBoxWaring(this Window window, string message, string title = null, MessageButtons buttons = MessageButtons.Ok, bool markdown = false, bool topMost = false)
+    public static async Task<MessageButtonResult> MessageBoxWaring(this Window window, string message, string? title = null, MessageButtons buttons = MessageButtons.Ok, bool markdown = false, bool topMost = false)
         => await window.MessageBoxGeneric(message, title ?? $"{window.Title} - Question", null, buttons, MessageWindow.IconHeaderWarning, markdown, topMost, WindowStartupLocation.CenterOwner);
 
-    public static async Task<MessageButtonResult> MessageBoxWithHeaderInfo(this Window window, string header, string message, string title = null, MessageButtons buttons = MessageButtons.Ok, bool markdown = false, bool topMost = false)
+    public static async Task<MessageButtonResult> MessageBoxWithHeaderInfo(this Window window, string header, string message, string? title = null, MessageButtons buttons = MessageButtons.Ok, bool markdown = false, bool topMost = false)
         => await window.MessageBoxGeneric(message, title ?? $"{window.Title} - Information", header, buttons, MessageWindow.IconHeaderInformation, markdown, topMost, WindowStartupLocation.CenterOwner);
 
-    public static async Task<MessageButtonResult> MessageBoxWithHeaderError(this Window window, string header, string message, string title = null, MessageButtons buttons = MessageButtons.Ok, bool markdown = false, bool topMost = false)
+    public static async Task<MessageButtonResult> MessageBoxWithHeaderError(this Window window, string header, string message, string? title = null, MessageButtons buttons = MessageButtons.Ok, bool markdown = false, bool topMost = false)
         => await window.MessageBoxGeneric(message, title ?? $"{window.Title} - Error", header, buttons, MessageWindow.IconHeaderError, markdown, topMost, WindowStartupLocation.CenterOwner);
 
-    public static async Task<MessageButtonResult> MessageBoxWithHeaderQuestion(this Window window, string header, string message, string title = null, MessageButtons buttons = MessageButtons.YesNo, bool markdown = false, bool topMost = false)
+    public static async Task<MessageButtonResult> MessageBoxWithHeaderQuestion(this Window window, string header, string message, string? title = null, MessageButtons buttons = MessageButtons.YesNo, bool markdown = false, bool topMost = false)
         => await window.MessageBoxGeneric(message, title ?? $"{window.Title} - Question", header, buttons, MessageWindow.IconHeaderQuestion, markdown, topMost, WindowStartupLocation.CenterOwner);
 
-    public static async Task<MessageButtonResult> MessageBoxWithHeaderWaring(this Window window, string header, string message, string title = null, MessageButtons buttons = MessageButtons.Ok, bool markdown = false, bool topMost = false)
+    public static async Task<MessageButtonResult> MessageBoxWithHeaderWaring(this Window window, string header, string message, string? title = null, MessageButtons buttons = MessageButtons.Ok, bool markdown = false, bool topMost = false)
         => await window.MessageBoxGeneric(message, title ?? $"{window.Title} - Question", header, buttons, MessageWindow.IconHeaderWarning, markdown, topMost, WindowStartupLocation.CenterOwner);
 
 
-    public static void ShowDialogSync(this Window window, Window parent = null)
+    public static void ShowDialogSync(this Window window, Window? parent = null)
     {
         parent ??= window;
         using var source = new CancellationTokenSource();
@@ -145,7 +145,7 @@ public static class WindowExtensions
         Dispatcher.UIThread.MainLoop(source.Token);
     }
 
-    public static T ShowDialogSync<T>(this Window window, Window parent = null)
+    public static T ShowDialogSync<T>(this Window window, Window? parent = null)
     {
         parent ??= window;
         using var source = new CancellationTokenSource();

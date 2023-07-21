@@ -39,9 +39,9 @@ public partial class MessageWindow : WindowEx
     private TextWrapping _textWrap = TextWrapping.Wrap;
     private string? _headerIcon;
     private ushort _headerIconSize;
-    private string _headerText;
+    private string? _headerText;
     private bool _aboutButtonIsVisible;
-    private string _messageText;
+    private string _messageText = null!;
     private bool _renderMarkdown;
     #endregion
 
@@ -137,12 +137,12 @@ public partial class MessageWindow : WindowEx
         TextWrap = textWrap;
         HeaderIcon = headerIcon;
         HeaderText = headerText?.Trim();
-        MessageText = messageText?.Trim();
+        MessageText = messageText.Trim();
         RenderMarkdown = renderMarkdown;
 
         if (renderMarkdown)
         {
-            MarkdownBorder.Child = new MarkdownScrollViewer
+            MarkdownBorder.Content = new MarkdownScrollViewer
             {
                 Markdown = messageText
             };

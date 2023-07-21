@@ -11,8 +11,6 @@ using UVtools.Core.SystemOS;
 
 namespace UVtools.UI;
 
-#nullable enable
-
 public static class Program
 {
     private static bool _isDebug;

@@ -9,10 +9,10 @@ namespace UVtools.UI.Controls.Tools;
 
 public partial class ToolRedrawModelControl : ToolControl
 {
-    public OperationRedrawModel Operation => BaseOperation as OperationRedrawModel;
+    public OperationRedrawModel Operation => (BaseOperation as OperationRedrawModel)!;
     public ToolRedrawModelControl()
     {
-        BaseOperation = new OperationRedrawModel(SlicerFile);
+        BaseOperation = new OperationRedrawModel(SlicerFile!);
         if (!ValidateSpawn()) return;
         InitializeComponent();
     }
@@ -23,7 +23,7 @@ public partial class ToolRedrawModelControl : ToolControl
         {
             case ToolWindow.Callbacks.Init:
             case ToolWindow.Callbacks.AfterLoadProfile:
-                ParentWindow.ButtonOkEnabled = !string.IsNullOrWhiteSpace(Operation.FilePath);
+                ParentWindow!.ButtonOkEnabled = !string.IsNullOrWhiteSpace(Operation.FilePath);
                 Operation.PropertyChanged += (sender, e) =>
                 {
                     if (e.PropertyName == nameof(Operation.FilePath))

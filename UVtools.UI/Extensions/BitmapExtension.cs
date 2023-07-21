@@ -114,7 +114,6 @@ public static class BitmapExtension
     public static SKImage ToSkImage(this Mat mat)
     {
         var bitmap = mat.ToSkBitmap();
-        if (bitmap is null) return null;
         return SKImage.FromBitmap(bitmap);
     }
 

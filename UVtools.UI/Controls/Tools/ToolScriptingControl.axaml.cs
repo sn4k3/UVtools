@@ -5,6 +5,7 @@ using Avalonia.Threading;
 using System;
 using System.Threading.Tasks;
 using Avalonia.Platform.Storage;
+using Avalonia.Reactive;
 using UVtools.Core;
 using UVtools.Core.Operations;
 using UVtools.Core.Scripting;
@@ -16,11 +17,11 @@ namespace UVtools.UI.Controls.Tools;
 
 public partial class ToolScriptingControl : ToolControl
 {
-    public OperationScripting Operation => BaseOperation as OperationScripting;
+    public OperationScripting Operation => (BaseOperation as OperationScripting)!;
 
     public ToolScriptingControl()
     {
-        BaseOperation = new OperationScripting(SlicerFile);
+        BaseOperation = new OperationScripting(SlicerFile!);
         if (!ValidateSpawn()) return;
         InitializeComponent();
     }
@@ -39,10 +40,10 @@ public partial class ToolScriptingControl : ToolControl
                 {
                     if (e.PropertyName == nameof(Operation.CanExecute))
                     {
-                        ParentWindow.ButtonOkEnabled = Operation.CanExecute;
+                        ParentWindow!.ButtonOkEnabled = Operation.CanExecute;
                     }
                 };
-                Operation.OnScriptReload += OnScriptReload;
+                Operation.OnScriptReload += OnScriptReload!;
                 
                 break;
         }
@@ -60,7 +61,7 @@ public partial class ToolScriptingControl : ToolControl
     public async void LoadScript()
     {
         var files = await App.MainWindow.OpenFilePickerAsync(
-            await App.MainWindow.StorageProvider.TryGetFolderFromPathAsync(UserSettings.Instance.General.DefaultDirectoryScripts),
+            await App.MainWindow.StorageProvider.TryGetFolderFromPathAsync(UserSettings.Instance.General.DefaultDirectoryScripts!),
             AvaloniaStatic.ScriptsFileFilter);
 
         if (files.Count == 0 || files[0].TryGetLocalPath() is not { } filePath) return;
@@ -71,6 +72,7 @@ public partial class ToolScriptingControl : ToolControl
 
     public async void ReloadScript()
     {
+        if (ParentWindow is null) return;
         try
         {
             ParentWindow.IsEnabled = false;
@@ -118,7 +120,7 @@ public partial class ToolScriptingControl : ToolControl
         TextBox tbScriptName = new()
         {
             IsReadOnly = true,
-            Text = $"{Operation.ScriptGlobals.Script.Name} | Version: {Operation.ScriptGlobals.Script.Version} by {Operation.ScriptGlobals.Script.Author}",
+            Text = $"{Operation.ScriptGlobals!.Script.Name} | Version: {Operation.ScriptGlobals.Script.Version} by {Operation.ScriptGlobals.Script.Author}",
             UseFloatingWatermark = true,
             Watermark = "Script name, version and author"
         };
@@ -207,11 +209,12 @@ public partial class ToolScriptingControl : ToolControl
                     };
 
                     var valueProperty = control.GetObservable(NumericUpDown.ValueProperty);
-                    valueProperty.Subscribe(value =>
+                    valueProperty.Subscribe(new AnonymousObserver<decimal?>(value =>
                     {
+                        if (!value.HasValue) return;
                         numSBYTE.Value = (sbyte)value;
                         control.Value = numSBYTE.Value;
-                    });
+                    }));
 
                     ScriptVariablesGrid.Children.Add(control);
                     Grid.SetRow(control, i * 2);
@@ -231,13 +234,14 @@ public partial class ToolScriptingControl : ToolControl
                     };
 
                     var valueProperty = control.GetObservable(NumericUpDown.ValueProperty);
-                    valueProperty.Subscribe(value =>
+                    valueProperty.Subscribe(new AnonymousObserver<decimal?>(value =>
                     {
+                        if (!value.HasValue) return;
                         numBYTE.Value = (byte)value;
                         control.Value = numBYTE.Value;
-                    });
+                    }));
 
-                    ScriptVariablesGrid.Children.Add(control);
+                        ScriptVariablesGrid.Children.Add(control);
                     Grid.SetRow(control, i * 2);
                     Grid.SetColumn(control, 2);
 
@@ -255,13 +259,14 @@ public partial class ToolScriptingControl : ToolControl
                     };
 
                     var valueProperty = control.GetObservable(NumericUpDown.ValueProperty);
-                    valueProperty.Subscribe(value =>
+                    valueProperty.Subscribe(new AnonymousObserver<decimal?>(value =>
                     {
+                        if (!value.HasValue) return;
                         numSHORT.Value = (short)value;
                         control.Value = numSHORT.Value;
-                    });
+                    }));
 
-                    ScriptVariablesGrid.Children.Add(control);
+                        ScriptVariablesGrid.Children.Add(control);
                     Grid.SetRow(control, i * 2);
                     Grid.SetColumn(control, 2);
 
@@ -279,13 +284,14 @@ public partial class ToolScriptingControl : ToolControl
                     };
 
                     var valueProperty = control.GetObservable(NumericUpDown.ValueProperty);
-                    valueProperty.Subscribe(value =>
+                    valueProperty.Subscribe(new AnonymousObserver<decimal?>(value =>
                     {
+                        if (!value.HasValue) return;
                         numUSHORT.Value = (ushort)value;
                         control.Value = numUSHORT.Value;
-                    });
+                    }));
 
-                    ScriptVariablesGrid.Children.Add(control);
+                        ScriptVariablesGrid.Children.Add(control);
                     Grid.SetRow(control, i * 2);
                     Grid.SetColumn(control, 2);
 
@@ -303,13 +309,14 @@ public partial class ToolScriptingControl : ToolControl
                     };
 
                     var valueProperty = control.GetObservable(NumericUpDown.ValueProperty);
-                    valueProperty.Subscribe(value =>
+                    valueProperty.Subscribe(new AnonymousObserver<decimal?>(value =>
                     {
+                        if (!value.HasValue) return;
                         numINT.Value = (int)value;
                         control.Value = numINT.Value;
-                    });
+                    }));
 
-                    ScriptVariablesGrid.Children.Add(control);
+                        ScriptVariablesGrid.Children.Add(control);
                     Grid.SetRow(control, i * 2);
                     Grid.SetColumn(control, 2);
 
@@ -327,13 +334,14 @@ public partial class ToolScriptingControl : ToolControl
                     };
 
                     var valueProperty = control.GetObservable(NumericUpDown.ValueProperty);
-                    valueProperty.Subscribe(value =>
+                    valueProperty.Subscribe(new AnonymousObserver<decimal?>(value =>
                     {
+                        if (!value.HasValue) return;
                         numUINT.Value = (uint)value;
                         control.Value = numUINT.Value;
-                    });
+                    }));
 
-                    ScriptVariablesGrid.Children.Add(control);
+                        ScriptVariablesGrid.Children.Add(control);
                     Grid.SetRow(control, i * 2);
                     Grid.SetColumn(control, 2);
 
@@ -351,13 +359,14 @@ public partial class ToolScriptingControl : ToolControl
                     };
 
                     var valueProperty = control.GetObservable(NumericUpDown.ValueProperty);
-                    valueProperty.Subscribe(value =>
+                    valueProperty.Subscribe(new AnonymousObserver<decimal?>(value =>
                     {
+                        if (!value.HasValue) return;
                         numLONG.Value = (long)value;
                         control.Value = numLONG.Value;
-                    });
+                    }));
 
-                    ScriptVariablesGrid.Children.Add(control);
+                        ScriptVariablesGrid.Children.Add(control);
                     Grid.SetRow(control, i * 2);
                     Grid.SetColumn(control, 2);
 
@@ -375,12 +384,13 @@ public partial class ToolScriptingControl : ToolControl
                     };
 
                     var valueProperty = control.GetObservable(NumericUpDown.ValueProperty);
-                    valueProperty.Subscribe(value =>
+                    valueProperty.Subscribe(new AnonymousObserver<decimal?>(value =>
                     {
+                        if (!value.HasValue) return;
                         numULONG.Value = (ulong)value;
                         control.Value = numULONG.Value;
-                    });
-
+                    }));
+                    
                     ScriptVariablesGrid.Children.Add(control);
                     Grid.SetRow(control, i * 2);
                     Grid.SetColumn(control, 2);
@@ -404,11 +414,12 @@ public partial class ToolScriptingControl : ToolControl
                     }
 
                     var valueProperty = control.GetObservable(NumericUpDown.ValueProperty);
-                    valueProperty.Subscribe(value =>
+                    valueProperty.Subscribe(new AnonymousObserver<decimal?>(value =>
                     {
-                        numFLOAT.Value = (float) Math.Round((float)value, numFLOAT.DecimalPlates);
+                        if(!value.HasValue) return;
+                        numFLOAT.Value = (float)Math.Round((float)value, numFLOAT.DecimalPlates);
                         control.Value = (decimal)numFLOAT.Value;
-                    });
+                    }));
 
                     ScriptVariablesGrid.Children.Add(control);
                     Grid.SetRow(control, i * 2);
@@ -433,13 +444,14 @@ public partial class ToolScriptingControl : ToolControl
                     }
 
                     var valueProperty = control.GetObservable(NumericUpDown.ValueProperty);
-                    valueProperty.Subscribe(value =>
+                    valueProperty.Subscribe(new AnonymousObserver<decimal?>(value =>
                     {
+                        if (!value.HasValue) return;
                         numDOUBLE.Value = Math.Round((double)value, numDOUBLE.DecimalPlates);
                         control.Value = (decimal)numDOUBLE.Value;
-                    });
+                    }));
 
-                    ScriptVariablesGrid.Children.Add(control);
+                        ScriptVariablesGrid.Children.Add(control);
                     Grid.SetRow(control, i * 2);
                     Grid.SetColumn(control, 2);
 
@@ -462,11 +474,12 @@ public partial class ToolScriptingControl : ToolControl
                     }
 
                     var valueProperty = control.GetObservable(NumericUpDown.ValueProperty);
-                    valueProperty.Subscribe(value =>
+                    valueProperty.Subscribe(new AnonymousObserver<decimal?>(value =>
                     {
-                        numDECIMAL.Value = Math.Round((decimal)value, numDECIMAL.DecimalPlates);
+                        if (!value.HasValue) return;
+                        numDECIMAL.Value = Math.Round(value.Value, numDECIMAL.DecimalPlates);
                         control.Value = numDECIMAL.Value;
-                    });
+                    }));
 
                     ScriptVariablesGrid.Children.Add(control);
                     Grid.SetRow(control, i * 2);
@@ -483,10 +496,10 @@ public partial class ToolScriptingControl : ToolControl
                     };
 
                     var valueProperty = control.GetObservable(CheckBox.IsCheckedProperty);
-                    valueProperty.Subscribe(value =>
+                    valueProperty.Subscribe(new AnonymousObserver<bool?>(value =>
                     {
-                        if (value != null) inputCheckBox.Value = value.Value;
-                    });
+                        if (value.HasValue) inputCheckBox.Value = value.Value;
+                    }));
 
                     ScriptVariablesGrid.Children.Add(control);
                     Grid.SetRow(control, i * 2);
@@ -509,10 +522,10 @@ public partial class ToolScriptingControl : ToolControl
                     };
 
                     var valueProperty = control.GetObservable(ToggleSwitch.IsCheckedProperty);
-                    valueProperty.Subscribe(value =>
+                    valueProperty.Subscribe(new AnonymousObserver<bool?>(value =>
                     {
-                        if (value != null) inputToggleSwitch.Value = value.Value;
-                    });
+                        if (value.HasValue) inputToggleSwitch.Value = value.Value;
+                    }));
 
                     ScriptVariablesGrid.Children.Add(control);
                     Grid.SetRow(control, i * 2);
@@ -534,10 +547,7 @@ public partial class ToolScriptingControl : ToolControl
                     };
 
                     var valueProperty = control.GetObservable(TextBox.TextProperty);
-                    valueProperty.Subscribe(value =>
-                    {
-                        inputTextBox.Value = value;
-                    });
+                    valueProperty.Subscribe(new AnonymousObserver<string?>(value => inputTextBox.Value = value));
 
                     ScriptVariablesGrid.Children.Add(control);
                     Grid.SetRow(control, i * 2);
@@ -623,7 +633,7 @@ public partial class ToolScriptingControl : ToolControl
                             }
                         }
 
-                        var result = await dialog.ShowAsync(ParentWindow);
+                        var result = await dialog.ShowAsync(ParentWindow!);
                         if (!string.IsNullOrWhiteSpace(result))
                         {
                             inputSaveFile.Value = result;
@@ -682,7 +692,7 @@ public partial class ToolScriptingControl : ToolControl
                             }
                         }
 
-                        var result = await dialog.ShowAsync(ParentWindow);
+                        var result = await dialog.ShowAsync(ParentWindow!);
                         if (result is null || result.Length == 0) return;
                         inputOpenFile.Value = result[0];
                         inputOpenFile.Files = result;

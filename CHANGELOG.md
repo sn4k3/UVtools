@@ -9,8 +9,22 @@
     - (Change) Themes: Rename "Default" to "Simple"
     - (Remove) Simple theme
   - (Fix) Save properties to disk/clipboard was disabled when file has no thumbnails
-Rename project "UVtools.WPF" to "UVtools.UI"
-- (Upgrade) AvaloniaUI from 0.10.21 to 11.0
+  - (Fix) File - Reset layer properties was no unlocking the File - Save
+- **Layer actions - Import layer(s):**
+  - (Add) Button to set the current layer
+  - (Fix) Layer properties were getting rebuilt (#739)
+- **File formats:**
+  - (Change) Thumbnails logic, it's now a `List` instead of a fixed array, this allow to dynamic add or remove thumbnails without having a fixed number
+  - (Fix) The flag for using per layer settings (`IsUsingGlobalParameters`) now take into account if layer is able to use each property in check before compare (#742)
+  - (Fix) Accessing `BoundingRectangleMillimeters` was not calculating the `BoundingRectangle` if necessary
+  - (Fix) SL1: Files with thumbnails size different from original SL1 would not display under the UI
+  - (Fix) Anycubic: Model information is not set after an auto-conversion from SL1
+- **Project:**
+  - (Change) Rename UVtools.WPF to UVtools.UI
+  - (Change) Make UVtools.UI nullable enabled
+  - (Remove) UVtools.GUI
+  - (Upgrade) .NET from 6.0.18 to 6.0.20
+  - (Upgrade) AvaloniaUI from 0.10.21 to 11.0
 
 ## 30/06/2023 - v3.15.1
 

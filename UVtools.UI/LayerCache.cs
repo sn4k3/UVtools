@@ -18,13 +18,13 @@ namespace UVtools.UI;
 
 public sealed class LayerCache
 {
-    private Layer _layer;
+    private Layer? _layer;
     //private SKCanvas _canvas;
-    private WriteableBitmap _bitmap;
+    private WriteableBitmap? _bitmap;
 
     public bool IsCached => _layer is not null;
 
-    public unsafe Layer Layer
+    public unsafe Layer? Layer
     {
         get => _layer;
         set
@@ -32,9 +32,8 @@ public sealed class LayerCache
             //if (ReferenceEquals(_layer, value)) return;
             Clear();
             _layer = value;
-            Image = _layer.LayerMat;
+            Image = _layer?.LayerMat;
             if (Image is null) return;
-            ImageBgr = new Mat();
             CvInvoke.CvtColor(Image, ImageBgr, ColorConversion.Gray2Bgr);
 
             ImageSpan = Image.GetBytePointer();
@@ -42,14 +41,14 @@ public sealed class LayerCache
         }
     }
 
-    public Mat Image { get; private set; }
+    public Mat? Image { get; private set; }
 
-    public Mat ImageBgr { get; private set; }
+    public Mat ImageBgr { get; } = new();
 
     public unsafe byte *ImageSpan { get; private set; }
     public unsafe byte *ImageBgrSpan { get; private set; }
 
-    public WriteableBitmap Bitmap
+    public WriteableBitmap? Bitmap
     {
         get => _bitmap;
         set => _bitmap = value;
@@ -57,11 +56,12 @@ public sealed class LayerCache
         //_canvas = null;
     }
 
-    public SKCanvas Canvas
+    public SKCanvas? Canvas
     {
         get
         {
-            using var framebuffer = Bitmap.Lock();
+            if (_bitmap is null) return null;
+            using var framebuffer = _bitmap.Lock();
             var info = new SKImageInfo(framebuffer.Size.Width, framebuffer.Size.Height,
                 framebuffer.Format.ToSkColorType(), SKAlphaType.Premul);
             return SKSurface.Create(info, framebuffer.Address, framebuffer.RowBytes).Canvas;
@@ -75,6 +75,5 @@ public sealed class LayerCache
     {
         _layer = null;
         Image?.Dispose();
-        ImageBgr?.Dispose();
     }
 }

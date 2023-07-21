@@ -4,10 +4,10 @@ namespace UVtools.UI.Controls.Tools;
 
 public partial class ToolDynamicLiftsControl : ToolControl
 {
-    public OperationDynamicLifts Operation => BaseOperation as OperationDynamicLifts;
+    public OperationDynamicLifts Operation => (BaseOperation as OperationDynamicLifts)!;
     public ToolDynamicLiftsControl()
     {
-        BaseOperation = new OperationDynamicLifts(SlicerFile);
+        BaseOperation = new OperationDynamicLifts(SlicerFile!);
         if (!ValidateSpawn()) return;
 
         InitializeComponent();

@@ -125,10 +125,10 @@ public sealed class FileExtension : IEquatable<FileExtension>, IEquatable<string
 
     #region Methods
 
-    public FileFormat? GetFileFormat(bool createNewInstance = false) =>
-        FileFormatType is null
-            ? FileFormat.FindByExtensionOrFilePath(Extension, createNewInstance)
-            : FileFormat.FindByType(FileFormatType, createNewInstance);
+    public FileFormat? GetFileFormat(bool createNewInstance = false) => FileFormat.FindByType(FileFormatType, createNewInstance);
+    /*FileFormatType is null
+        ? FileFormat.FindByExtensionOrFilePath(Extension, createNewInstance)
+        : FileFormat.FindByType(FileFormatType, createNewInstance);*/
 
     public static FileExtension? Find(string extension)
     {

@@ -8,9 +8,9 @@ namespace UVtools.UI.Controls.Tools;
 
 public class ToolControl : ToolBaseControl
 {
-    private Operation _baseOperation;
+    private Operation? _baseOperation;
 
-    public Operation BaseOperation
+    public Operation? BaseOperation
     {
         get => _baseOperation;
         set
@@ -19,12 +19,12 @@ public class ToolControl : ToolBaseControl
 
             if (!wasNullBefore)
             {
-                _baseOperation.ClearPropertyChangedListeners();
+                _baseOperation!.ClearPropertyChangedListeners();
                 Callback(ToolWindow.Callbacks.BeforeLoadProfile);
             }
 
             _baseOperation = value;
-            _baseOperation.SlicerFile = SlicerFile;
+            if (_baseOperation is not null) _baseOperation.SlicerFile = SlicerFile!;
             RaisePropertyChanged();
 
             if (!wasNullBefore)
@@ -53,14 +53,14 @@ public class ToolControl : ToolBaseControl
         if (_baseOperation is null)
         {
             App.MainWindow.MessageBoxInfo("The operation does not contain a valid configuration.\n" +
-                                          "Please contact the support/developer.", BaseOperation.NotSupportedTitle).ConfigureAwait(false);
+                                          "Please contact the support/developer.", _baseOperation?.NotSupportedTitle).ConfigureAwait(false);
             CanRun = false;
             return false;
         }
 
         if (!_baseOperation.ValidateSpawn(out var message))
         {
-            App.MainWindow.MessageBoxInfo(message, BaseOperation.NotSupportedTitle).ConfigureAwait(false);
+            App.MainWindow.MessageBoxInfo(message!, _baseOperation!.NotSupportedTitle).ConfigureAwait(false);
             CanRun = false;
             return false;
         }
@@ -73,9 +73,9 @@ public class ToolControl : ToolBaseControl
 
     public virtual bool UpdateOperation() => true;
 
-    public override string Validate()
+    public override string? Validate()
     {
-        return BaseOperation.Validate();
+        return BaseOperation?.Validate();
     }
     
     public override async Task<bool> ValidateForm()

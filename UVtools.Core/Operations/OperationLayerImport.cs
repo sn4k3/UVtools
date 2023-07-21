@@ -263,8 +263,10 @@ public sealed class OperationLayerImport : Operation
             if (keyImage.Count > 0)
             {
                 progress.Reset("Packing images", (uint)keyImage.Count);
-                SL1File format = new();
+                GenericZIPFile format = new();
                 format.Init((uint)keyImage.Count);
+
+                var resolution = Size.Empty;
 
                 Parallel.ForEach(keyImage, CoreSettings.GetParallelOptions(progress), pair =>
                 {
@@ -273,9 +275,15 @@ public sealed class OperationLayerImport : Operation
                     if (pair.Key == 0) format.Resolution = mat.Size;
                     format[pair.Key] = new Layer(pair.Key, mat, format);
 
+                    lock (format.Mutex)
+                    {
+                        SizeExtensions.Max(resolution, mat.Size);
+                    }
+
                     progress.LockAndIncrement();
                 });
 
+                format.Resolution = resolution;
                 fileFormats.Add(format);
             }
 
@@ -301,7 +309,7 @@ public sealed class OperationLayerImport : Operation
 
             foreach (var fileFormat in fileFormats)
             {
-                if (!string.IsNullOrEmpty(fileFormat.FileFullPath))
+                if (fileFormat.CanDecode)
                 {
                     fileFormat.Decode(fileFormat.FileFullPath, progress);
                 }
@@ -317,7 +325,7 @@ public sealed class OperationLayerImport : Operation
                         if (SlicerFile.Resolution != fileFormat.Resolution &&
                             (SlicerFile.Resolution.Width < fileFormatBoundingRectangle.Width ||
                              SlicerFile.Resolution.Height < fileFormatBoundingRectangle.Height)) continue;
-                        SlicerFile.ReallocateInsert(_startLayerIndex, fileFormat.LayerCount);
+                        SlicerFile.ReallocateInsert(_startLayerIndex, fileFormat.LayerCount, fixPositionZ:true);
                         break;
                     case ImportTypes.Replace:
                     case ImportTypes.Stack:
@@ -334,8 +342,7 @@ public sealed class OperationLayerImport : Operation
                             int x = 0;
                             int y = 0;
 
-                            if (boundingRectangle.Right + _stackMargin + fileFormatBoundingRectangle.Width <
-                                SlicerFile.ResolutionX)
+                            if (SlicerFile.IsPixelInsideXBounds(boundingRectangle.Right + _stackMargin + fileFormatBoundingRectangle.Width))
                             {
                                 x = boundingRectangle.Right + _stackMargin;
                             }
@@ -344,9 +351,9 @@ public sealed class OperationLayerImport : Operation
                                 y = boundingRectangle.Bottom + _stackMargin;
                             }
 
-                            if (x + fileFormatBoundingRectangle.Width >= SlicerFile.ResolutionX)
+                            if (!SlicerFile.IsPixelInsideXBounds(x + fileFormatBoundingRectangle.Width))
                                 continue;
-                            if (y + fileFormatBoundingRectangle.Height >= SlicerFile.ResolutionY)
+                            if (!SlicerFile.IsPixelInsideYBounds(y + fileFormatBoundingRectangle.Height))
                                 continue;
 
                             roiRectangle = fileFormatBoundingRectangle with {X = x, Y = y};
@@ -396,13 +403,13 @@ public sealed class OperationLayerImport : Operation
                             if (layerIndex >= SlicerFile.LayerCount) return;
                             if (SlicerFile.Resolution == fileFormat.Resolution)
                             {
-                                SlicerFile[layerIndex] = fileFormat[i];
+                                fileFormat[i].CopyImageTo(SlicerFile[layerIndex]);
                                 break;
                             }
 
-                            using var layer = fileFormat[i].LayerMat;
-                            using var layerRoi = layer.NewMatFromCenterRoi(SlicerFile.Resolution, fileFormatBoundingRectangle);
-                            SlicerFile[layerIndex] = new Layer(layerIndex, layerRoi, SlicerFile);
+                            using var mat = fileFormat[i].LayerMat;
+                            using var matRoi = mat.NewMatFromCenterRoi(SlicerFile.Resolution, fileFormatBoundingRectangle);
+                            SlicerFile[layerIndex].LayerMat = matRoi;
 
                             break;
                         }
@@ -411,13 +418,13 @@ public sealed class OperationLayerImport : Operation
                             if (layerIndex >= SlicerFile.LayerCount) return;
                             if (SlicerFile.Resolution == fileFormat.Resolution)
                             {
-                                SlicerFile[layerIndex] = fileFormat[i];
+                                fileFormat[i].CopyImageTo(SlicerFile[layerIndex]);
                                 break;
                             }
 
-                            using var layer = fileFormat[i].LayerMat;
-                            using var layerRoi = layer.NewMatFromCenterRoi(SlicerFile.Resolution, fileFormatBoundingRectangle);
-                            SlicerFile[layerIndex] = new Layer(layerIndex, layerRoi, SlicerFile);
+                            using var mat = fileFormat[i].LayerMat;
+                            using var matRoi = mat.NewMatFromCenterRoi(SlicerFile.Resolution, fileFormatBoundingRectangle);
+                            SlicerFile[layerIndex].LayerMat = matRoi;
                             break;
                         }
                         case ImportTypes.Stack:
@@ -515,7 +522,7 @@ public sealed class OperationLayerImport : Operation
                 new OperationMove(SlicerFile).Execute(progress);
             }
 
-            if (lastProcessedLayerIndex <= -1) return false;
+            if (lastProcessedLayerIndex < 0) return false;
 
             if (lastProcessedLayerIndex + 1 < SlicerFile.LayerCount && _discardUnmodifiedLayers)
             {
@@ -523,7 +530,7 @@ public sealed class OperationLayerImport : Operation
             }
 
             return true;
-        }, true);
+        });
             
         return !progress.Token.IsCancellationRequested && result;
     }

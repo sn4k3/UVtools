@@ -8,7 +8,7 @@ namespace UVtools.UI.Controls.Tools;
 public partial class ToolCalculatorControl : ToolControl
 {
     private decimal _lightOffDelayPrintTimeHours;
-    public OperationCalculator Operation => BaseOperation as OperationCalculator;
+    public OperationCalculator Operation => (BaseOperation as OperationCalculator)!;
 
     public decimal LightOffDelayPrintTimeHours
     {
@@ -18,7 +18,7 @@ public partial class ToolCalculatorControl : ToolControl
 
     public ToolCalculatorControl()
     {
-        BaseOperation = new OperationCalculator(SlicerFile);
+        BaseOperation = new OperationCalculator(SlicerFile!);
         if (!ValidateSpawn()) return; 
         InitializeComponent();
     }
@@ -35,12 +35,12 @@ public partial class ToolCalculatorControl : ToolControl
                         e.PropertyName != nameof(Operation.CalcLightOffDelay.BottomLightOffDelay)) return;
                     LightOffDelayPrintTimeHours = Math.Round(
                         (FileFormat.ExtraPrintTime +
-                         SlicerFile.BottomLayerCount * (Operation.CalcLightOffDelay.BottomLightOffDelay + (decimal)SlicerFile.BottomExposureTime) +
+                         SlicerFile!.BottomLayerCount * (Operation.CalcLightOffDelay.BottomLightOffDelay + (decimal)SlicerFile.BottomExposureTime) +
                          SlicerFile.NormalLayerCount * (Operation.CalcLightOffDelay.LightOffDelay + (decimal)SlicerFile.ExposureTime))
                         / 3600, 2);
                 };
 
-                _lightOffDelayPrintTimeHours = (decimal)SlicerFile.PrintTimeHours;
+                _lightOffDelayPrintTimeHours = (decimal)SlicerFile!.PrintTimeHours;
                 break;
         }
     }
@@ -49,14 +49,14 @@ public partial class ToolCalculatorControl : ToolControl
     {
         if (Convert.ToInt32(side) == 0) // Bottom layers
         {
-            SlicerFile.BottomLiftHeight = (float)Operation.CalcLightOffDelay.BottomLiftHeight;
+            SlicerFile!.BottomLiftHeight = (float)Operation.CalcLightOffDelay.BottomLiftHeight;
             SlicerFile.BottomLiftSpeed = (float)Operation.CalcLightOffDelay.BottomLiftSpeed;
             SlicerFile.RetractSpeed = (float)Operation.CalcLightOffDelay.RetractSpeed;
             SlicerFile.BottomLightOffDelay = (float)Operation.CalcLightOffDelay.BottomLightOffDelay;
         }
         else // Normal layers
         {
-            SlicerFile.LiftHeight = (float)Operation.CalcLightOffDelay.LiftHeight;
+            SlicerFile!.LiftHeight = (float)Operation.CalcLightOffDelay.LiftHeight;
             SlicerFile.LiftSpeed = (float)Operation.CalcLightOffDelay.LiftSpeed;
             SlicerFile.RetractSpeed = (float)Operation.CalcLightOffDelay.RetractSpeed;
             SlicerFile.LightOffDelay = (float)Operation.CalcLightOffDelay.LightOffDelay;

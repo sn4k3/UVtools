@@ -52,6 +52,10 @@
       <TextBlock Grid.Row="2" Grid.Column="4"
                  VerticalAlignment="Center"
                  Text="{Binding InfoLayerHeightStr}"/>
+      <Button Grid.Row="2" Grid.Column="6"
+                 VerticalAlignment="Center"
+                 Content="Set current layer"
+                 Command="{Binding SetCurrentLayer}"/>
 
       <CheckBox Grid.Row="4" Grid.Column="2" Grid.ColumnSpan="5"
                 IsChecked="{Binding Operation.DiscardUnmodifiedLayers}"

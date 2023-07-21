@@ -17,9 +17,9 @@ namespace UVtools.UI.Controls.Tools;
 
 public partial class ToolEditParametersControl : ToolControl
 {
-    public OperationEditParameters Operation => BaseOperation as OperationEditParameters;
+    public OperationEditParameters Operation => (BaseOperation as OperationEditParameters)!;
 
-    public RowControl[] RowControls;
+    public RowControl[] RowControls = Array.Empty<RowControl>();
 
     public sealed class RowControl
     {
@@ -115,7 +115,7 @@ public partial class ToolEditParametersControl : ToolControl
 
         private void NewValueOnValueChanged(object? sender, NumericUpDownValueChangedEventArgs e)
         {
-            Modifier.NewValue = (decimal) NumericUpDown.Value;
+            Modifier.NewValue = e.NewValue ?? 0;
         }
     }
 
@@ -134,7 +134,7 @@ public partial class ToolEditParametersControl : ToolControl
 
     public ToolEditParametersControl()
     {
-        BaseOperation = new OperationEditParameters(SlicerFile);
+        BaseOperation = new OperationEditParameters(SlicerFile!);
         if (!ValidateSpawn()) return;
         InitializeComponent();
     }
@@ -236,14 +236,14 @@ public partial class ToolEditParametersControl : ToolControl
             
             if (rowControl2 is null && ReferenceEquals(modifier, FileFormat.PrintParameterModifier.BottomRetractHeight2))
             {
-                rowControl1.Name.Text = rowControl1.Name.Text.Replace("2) ", string.Empty).FirstCharToUpper();
+                rowControl1.Name.Text = rowControl1.Name.Text?.Replace("2) ", string.Empty).FirstCharToUpper();
                 var rowControlVirtual = new RowControl(FileFormat.PrintParameterModifier.BottomRetractHeight2.Clone())
                     {
                         NumericUpDown =
                         {
                             Value = (decimal)(Operation.PerLayerOverride
-                                ? SlicerFile[Operation.LayerIndexStart].RetractHeight
-                                : SlicerFile.BottomRetractHeight),
+                                ? SlicerFile![Operation.LayerIndexStart].RetractHeight
+                                : SlicerFile!.BottomRetractHeight),
                             IsReadOnly = true,
                             IsEnabled = false
                         }
@@ -257,14 +257,14 @@ public partial class ToolEditParametersControl : ToolControl
             }
             else if (rowControl2 is null && ReferenceEquals(modifier, FileFormat.PrintParameterModifier.RetractHeight2))
             {
-                rowControl1.Name.Text = rowControl1.Name.Text.Replace("2) ", string.Empty).FirstCharToUpper();
+                rowControl1.Name.Text = rowControl1.Name.Text?.Replace("2) ", string.Empty).FirstCharToUpper();
                 var rowControlVirtual = new RowControl(FileFormat.PrintParameterModifier.RetractHeight2.Clone())
                 {
                     NumericUpDown =
                     {
                         Value = (decimal)(Operation.PerLayerOverride
-                            ? SlicerFile[Operation.LayerIndexStart].RetractHeight
-                            : SlicerFile.RetractHeight),
+                            ? SlicerFile![Operation.LayerIndexStart].RetractHeight
+                            : SlicerFile!.RetractHeight),
                         IsReadOnly = true,
                         IsEnabled = false
                     }
@@ -295,19 +295,19 @@ public partial class ToolEditParametersControl : ToolControl
 
     protected override void OnInitialized()
     {
-        ParentWindow.CloseWindowAfterProcess = false;
+        ParentWindow!.CloseWindowAfterProcess = false;
     }
 
     public void RefreshModifiers()
     {
         if (Operation.PerLayerOverride)
         {
-            Operation.Modifiers = SlicerFile.PrintParameterPerLayerModifiers;
+            Operation.Modifiers = SlicerFile!.PrintParameterPerLayerModifiers;
             SlicerFile.RefreshPrintParametersPerLayerModifiersValues(Operation.LayerIndexStart);
         }
         else
         {
-            Operation.Modifiers = SlicerFile.PrintParameterModifiers;
+            Operation.Modifiers = SlicerFile!.PrintParameterModifiers;
             SlicerFile.RefreshPrintParametersModifiersValues();
         }
     }
@@ -320,7 +320,7 @@ public partial class ToolEditParametersControl : ToolControl
             case ToolWindow.Callbacks.AfterLoadProfile:
                 if (callback is ToolWindow.Callbacks.Init)
                 {
-                    ParentWindow.SelectCurrentLayer();
+                    ParentWindow!.SelectCurrentLayer();
                     ParentWindow.LayerRangeSync = true;
                 }
 
@@ -330,18 +330,18 @@ public partial class ToolEditParametersControl : ToolControl
         }
     }
 
-    private void OperationOnPropertyChanged(object sender, PropertyChangedEventArgs e)
+    private void OperationOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
         if (e.PropertyName == nameof(Operation.LayerIndexStart) && Operation.PerLayerOverride)
         {
-            SlicerFile.RefreshPrintParametersPerLayerModifiersValues(Operation.LayerIndexStart);
+            SlicerFile!.RefreshPrintParametersPerLayerModifiersValues(Operation.LayerIndexStart);
             PopulateGrid();
             return;
         }
         if (e.PropertyName == nameof(Operation.PerLayerOverride))
         {
             RefreshModifiers();
-            ParentWindow.LayerRangeVisible = Operation.PerLayerOverride;
+            ParentWindow!.LayerRangeVisible = Operation.PerLayerOverride;
             PopulateGrid();
             return;
         }

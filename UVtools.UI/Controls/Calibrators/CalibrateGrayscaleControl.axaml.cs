@@ -10,20 +10,20 @@ namespace UVtools.UI.Controls.Calibrators;
 
 public partial class CalibrateGrayscaleControl : ToolControl
 {
-    public OperationCalibrateGrayscale Operation => BaseOperation as OperationCalibrateGrayscale;
+    public OperationCalibrateGrayscale Operation => (BaseOperation as OperationCalibrateGrayscale)!;
 
-    private Bitmap _previewImage;
-    public Bitmap PreviewImage
+    private Bitmap? _previewImage;
+    public Bitmap? PreviewImage
     {
         get => _previewImage;
         set => RaiseAndSetIfChanged(ref _previewImage, value);
     }
 
-    private readonly Timer _timer;
+    private readonly Timer _timer = null!;
         
     public CalibrateGrayscaleControl()
     {
-        BaseOperation = new OperationCalibrateGrayscale(SlicerFile);
+        BaseOperation = new OperationCalibrateGrayscale(SlicerFile!);
         if (!ValidateSpawn()) return;
 
         InitializeComponent();
@@ -49,7 +49,7 @@ public partial class CalibrateGrayscaleControl : ToolControl
                     _timer.Start();
                     if (e.PropertyName == nameof(Operation.Divisions))
                     {
-                        ParentWindow.ButtonOkEnabled = Operation.Divisions > 0;
+                        ParentWindow!.ButtonOkEnabled = Operation.Divisions > 0;
                         return;
                     }
                 };

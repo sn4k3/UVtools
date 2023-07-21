@@ -881,7 +881,7 @@ public sealed class FDGFile : FileFormat
     #region Constructors
     public FDGFile()
     {
-        Previews = new Preview[ThumbnailsCount];
+        Previews = new Preview[ThumbnailCountFileShouldHave];
     }
     #endregion
 
@@ -890,7 +890,7 @@ public sealed class FDGFile : FileFormat
     {
         base.Clear();
 
-        for (byte i = 0; i < ThumbnailsCount; i++)
+        for (byte i = 0; i < ThumbnailCountFileShouldHave; i++)
         {
             Previews[i] = new Preview();
         }
@@ -909,16 +909,17 @@ public sealed class FDGFile : FileFormat
         using var outputFile = new FileStream(TemporaryOutputFileFullPath, FileMode.Create, FileAccess.Write);
         outputFile.Seek(Helpers.Serializer.SizeOf(HeaderSettings), SeekOrigin.Begin);
 
-        for (byte i = 0; i < ThumbnailsCount; i++)
+        Mat?[] thumbnails = { GetSmallestThumbnail(), GetLargestThumbnail() };
+        for (byte i = 0; i < thumbnails.Length; i++)
         {
-            var image = Thumbnails[i];
-            if(image is null) continue;
+            var image = thumbnails[i];
+            if (image is null) continue;
 
             var bytes = Preview.Encode(image);
 
             if (bytes.Length == 0) continue;
 
-            if (i == (byte) FileThumbnailSize.Small)
+            if (i == 0)
             {
                 HeaderSettings.PreviewSmallOffsetAddress = (uint)outputFile.Position;
             }
@@ -926,20 +927,20 @@ public sealed class FDGFile : FileFormat
             {
                 HeaderSettings.PreviewLargeOffsetAddress = (uint)outputFile.Position;
             }
-                    
+
             Preview preview = new()
             {
-                ResolutionX = (uint) image.Width,
-                ResolutionY = (uint) image.Height,
+                ResolutionX = (uint)image.Width,
+                ResolutionY = (uint)image.Height,
                 ImageLength = (uint)bytes.Length,
             };
 
             preview.ImageOffset = (uint)(outputFile.Position + Helpers.Serializer.SizeOf(preview));
 
             outputFile.WriteSerialize(preview);
-
             outputFile.WriteBytes(bytes);
         }
+
 
         if (HeaderSettings.MachineNameSize > 0)
         {
@@ -1030,18 +1031,16 @@ public sealed class FDGFile : FileFormat
 
         HeaderSettings.AntiAliasLevel = 1;
 
-        progress.Reset(OperationProgress.StatusDecodePreviews, ThumbnailsCount);
         Debug.Write("Header -> ");
         Debug.WriteLine(HeaderSettings);
 
-        for (byte i = 0; i < ThumbnailsCount; i++)
+        progress.Reset(OperationProgress.StatusDecodePreviews, (uint)ThumbnailCountFileShouldHave);
+        var thumbnailOffsets = new[] { HeaderSettings.PreviewSmallOffsetAddress, HeaderSettings.PreviewLargeOffsetAddress };
+        for (int i = 0; i < thumbnailOffsets.Length; i++)
         {
-            uint offsetAddress = i == 0
-                ? HeaderSettings.PreviewSmallOffsetAddress
-                : HeaderSettings.PreviewLargeOffsetAddress;
-            if (offsetAddress == 0) continue;
+            if (thumbnailOffsets[i] == 0) continue;
 
-            inputFile.Seek(offsetAddress, SeekOrigin.Begin);
+            inputFile.Seek(thumbnailOffsets[i], SeekOrigin.Begin);
             Previews[i] = Helpers.Deserialize<Preview>(inputFile);
 
             Debug.Write($"Preview {i} -> ");
@@ -1049,9 +1048,9 @@ public sealed class FDGFile : FileFormat
 
             inputFile.Seek(Previews[i].ImageOffset, SeekOrigin.Begin);
             byte[] rawImageData = new byte[Previews[i].ImageLength];
-            inputFile.Read(rawImageData, 0, (int) Previews[i].ImageLength);
+            inputFile.Read(rawImageData, 0, (int)Previews[i].ImageLength);
 
-            Thumbnails[i] = Previews[i].Decode(rawImageData);
+            Thumbnails.Add(Previews[i].Decode(rawImageData));
             progress++;
         }
 

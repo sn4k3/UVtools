@@ -57,14 +57,14 @@ public sealed class UserSettings : BindableBase
         private ushort _windowsHorizontalMargin = 100;
         private ushort _windowsVerticalMargin = 80;
         private byte _defaultOpenFileExtensionIndex;
-        private string _defaultDirectoryOpenFile;
-        private string _defaultDirectorySaveFile;
-        private string _defaultDirectoryExtractFile;
-        private string _defaultDirectoryConvertFile;
-        private string _defaultDirectoryScripts;
+        private string? _defaultDirectoryOpenFile;
+        private string? _defaultDirectorySaveFile;
+        private string? _defaultDirectoryExtractFile;
+        private string? _defaultDirectoryConvertFile;
+        private string? _defaultDirectoryScripts;
         private bool _fileSavePromptOverwrite = true;
-        private string _fileSaveAsDefaultName = "{0}_{PrintTimeString}_{MaterialMillilitersInteger}ml_copy";
-        private string _fileSaveAsDefaultNameCleanUpRegex = @"_?[0-9]+h[0-9]+m([0-9]+s)?|_?(([0-9]*[.])?[0-9]+)ml|_copy([0-9]*)?";
+        private string? _fileSaveAsDefaultName = "{0}_{PrintTimeString}_{MaterialMillilitersInteger}ml_copy";
+        private string? _fileSaveAsDefaultNameCleanUpRegex = @"_?[0-9]+h[0-9]+m([0-9]+s)?|_?(([0-9]*[.])?[0-9]+)ml|_copy([0-9]*)?";
         private bool _sendToPromptForRemovableDeviceEject = true;
         private RangeObservableCollection<MappedDevice> _sendToCustomLocations = new();
         private RangeObservableCollection<MappedProcess> _sendToProcess = new();
@@ -178,31 +178,31 @@ public sealed class UserSettings : BindableBase
             set => RaiseAndSetIfChanged(ref _defaultOpenFileExtensionIndex, value);
         }
 
-        public string DefaultDirectoryOpenFile
+        public string? DefaultDirectoryOpenFile
         {
             get => _defaultDirectoryOpenFile;
             set => RaiseAndSetIfChanged(ref _defaultDirectoryOpenFile, value);
         }
 
-        public string DefaultDirectorySaveFile
+        public string? DefaultDirectorySaveFile
         {
             get => _defaultDirectorySaveFile;
             set => RaiseAndSetIfChanged(ref _defaultDirectorySaveFile, value);
         }
 
-        public string DefaultDirectoryExtractFile
+        public string? DefaultDirectoryExtractFile
         {
             get => _defaultDirectoryExtractFile;
             set => RaiseAndSetIfChanged(ref _defaultDirectoryExtractFile, value);
         }
 
-        public string DefaultDirectoryConvertFile
+        public string? DefaultDirectoryConvertFile
         {
             get => _defaultDirectoryConvertFile;
             set => RaiseAndSetIfChanged(ref _defaultDirectoryConvertFile, value);
         }
 
-        public string DefaultDirectoryScripts
+        public string? DefaultDirectoryScripts
         {
             get => _defaultDirectoryScripts;
             set => RaiseAndSetIfChanged(ref _defaultDirectoryScripts, value);
@@ -221,13 +221,13 @@ public sealed class UserSettings : BindableBase
             set => RaiseAndSetIfChanged(ref _fileSaveUpdateNameWithNewInformation, value);
         }
 
-        public string FileSaveAsDefaultName
+        public string? FileSaveAsDefaultName
         {
             get => _fileSaveAsDefaultName;
             set => RaiseAndSetIfChanged(ref _fileSaveAsDefaultName, value);
         }
 
-        public string FileSaveAsDefaultNameCleanUpRegex
+        public string? FileSaveAsDefaultNameCleanUpRegex
         {
             get => _fileSaveAsDefaultNameCleanUpRegex;
             set => RaiseAndSetIfChanged(ref _fileSaveAsDefaultNameCleanUpRegex, value);
@@ -909,7 +909,7 @@ public sealed class UserSettings : BindableBase
 
         public LayerPreviewUserSettings Clone()
         {
-            return MemberwiseClone() as LayerPreviewUserSettings;
+            return (MemberwiseClone() as LayerPreviewUserSettings)!;
         }
 
     }
@@ -1212,7 +1212,7 @@ public sealed class UserSettings : BindableBase
 
         public IssuesUserSettings Clone()
         {
-            return MemberwiseClone() as IssuesUserSettings;
+            return (MemberwiseClone() as IssuesUserSettings)!;
         }
 
     }
@@ -1401,7 +1401,7 @@ public sealed class UserSettings : BindableBase
 
         public PixelEditorUserSettings Clone()
         {
-            return MemberwiseClone() as PixelEditorUserSettings;
+            return (MemberwiseClone() as PixelEditorUserSettings)!;
         }
     }
     #endregion
@@ -1490,7 +1490,7 @@ public sealed class UserSettings : BindableBase
 
         public LayerRepairUserSettings Clone()
         {
-            return MemberwiseClone() as LayerRepairUserSettings;
+            return (MemberwiseClone() as LayerRepairUserSettings)!;
         }
     }
     #endregion
@@ -1575,7 +1575,7 @@ public sealed class UserSettings : BindableBase
 
         public AutomationsUserSettings Clone()
         {
-            return MemberwiseClone() as AutomationsUserSettings;
+            return (MemberwiseClone() as AutomationsUserSettings)!;
         }
     }
 
@@ -1614,7 +1614,7 @@ public sealed class UserSettings : BindableBase
     private static string FilePath => Path.Combine(SettingsFolder, "usersettings.xml");
 
 
-    private static UserSettings _instance;
+    private static UserSettings? _instance;
     /// <summary>
     /// Instance of <see cref="UserSettings"/> (singleton)
     /// </summary>
@@ -1627,17 +1627,17 @@ public sealed class UserSettings : BindableBase
 
     #region Properties
 
-    private GeneralUserSettings _general;
-    private LayerPreviewUserSettings _layerPreview;
-    private IssuesUserSettings _issues;
-    private PixelEditorUserSettings _pixelEditor;
-    private LayerRepairUserSettings _layerRepair;
-    private ToolsUserSettings _tools;
-    private AutomationsUserSettings _automations;
-    private NetworkUserSettings _network;
+    private GeneralUserSettings? _general;
+    private LayerPreviewUserSettings? _layerPreview;
+    private IssuesUserSettings? _issues;
+    private PixelEditorUserSettings? _pixelEditor;
+    private LayerRepairUserSettings? _layerRepair;
+    private ToolsUserSettings? _tools;
+    private AutomationsUserSettings? _automations;
+    private NetworkUserSettings? _network;
 
     private ushort _settingsVersion = SETTINGS_VERSION;
-    private string _appVersion;
+    private string? _appVersion;
     private uint _savesCount;
     private DateTime _modifiedDateTime;
 
@@ -2040,7 +2040,7 @@ public sealed class UserSettings : BindableBase
     public static void Save()
     {
         Instance.SavesCount++;
-        _instance.ModifiedDateTime = DateTime.Now;
+        _instance!.ModifiedDateTime = DateTime.Now;
         CoreSettings.MaxDegreeOfParallelism = _instance.General.MaxDegreeOfParallelism;
         CoreSettings.DefaultLayerCompressionCodec = _instance.General.LayerCompressionCodec;
         CoreSettings.AverageResin1000MlBottleCost = _instance.General.AverageResin1000MlBottleCost;

@@ -98,7 +98,7 @@ public sealed class LGSFile : FileFormat
 
         [FieldOrder(2)] public ushort Padding { get; set; }
 
-        public void Encode(Mat mat)
+        public void Encode(Mat? mat)
         {
             mat ??= EmguExtensions.InitMat(new Size(ResolutionX, ResolutionY), 3);
 
@@ -473,54 +473,52 @@ public sealed class LGSFile : FileFormat
         }
 
         //uint currentOffset = (uint)Helpers.Serializer.SizeOf(HeaderSettings);
-        using (var outputFile = new FileStream(TemporaryOutputFileFullPath, FileMode.Create, FileAccess.Write))
+        using var outputFile = new FileStream(TemporaryOutputFileFullPath, FileMode.Create, FileAccess.Write);
+        outputFile.WriteSerialize(HeaderSettings);
+        outputFile.WriteBytes(EncodeImage(DATATYPE_RGB565_BE, Thumbnails[0]));
+
+        if (HeaderSettings.PrinterModel == 120)
         {
-            outputFile.WriteSerialize(HeaderSettings);
-            outputFile.WriteBytes(EncodeImage(DATATYPE_RGB565_BE, Thumbnails[0]!));
+            // Insert PNG here
+            var mat = GetLargestThumbnail();
+            var pngPreview = new LGS120PngPreview();
+            pngPreview.Encode(mat!);
+            outputFile.WriteSerialize(pngPreview);
+        }
 
-            if (HeaderSettings.PrinterModel == 120)
+        progress.Reset(OperationProgress.StatusEncodeLayers, LayerCount);
+        var layerData = new LayerDef[LayerCount];
+
+        foreach (var batch in BatchLayersIndexes())
+        {
+            Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), layerIndex =>
             {
-                // Insert PNG here
-                var mat = GetThumbnail(true);
-                var pngPreview = new LGS120PngPreview();
-                pngPreview.Encode(mat!);
-                outputFile.WriteSerialize(pngPreview);
-            }
-
-            progress.Reset(OperationProgress.StatusEncodeLayers, LayerCount);
-            var layerData = new LayerDef[LayerCount];
-
-            foreach (var batch in BatchLayersIndexes())
-            {
-                Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), layerIndex =>
+                progress.PauseIfRequested();
+                using (var mat = this[layerIndex].LayerMat)
                 {
-                    progress.PauseIfRequested();
-                    using (var mat = this[layerIndex].LayerMat)
-                    {
-                        layerData[layerIndex] = new LayerDef(this);
-                        layerData[layerIndex].Encode(mat);
-                    }
-                    progress.LockAndIncrement();
-                });
-
-                foreach (var layerIndex in batch)
-                {
-                    progress.PauseOrCancelIfRequested();
-                    outputFile.WriteSerialize(layerData[layerIndex]);
-                    layerData[layerIndex].EncodedRle = null!; // Free this
+                    layerData[layerIndex] = new LayerDef(this);
+                    layerData[layerIndex].Encode(mat);
                 }
-            }
+                progress.LockAndIncrement();
+            });
 
-
-            progress.ItemName = "Saving layers";
-            progress.ProcessedItems = 0;
-
-            for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
+            foreach (var layerIndex in batch)
             {
                 progress.PauseOrCancelIfRequested();
                 outputFile.WriteSerialize(layerData[layerIndex]);
-                progress++;
+                layerData[layerIndex].EncodedRle = null!; // Free this
             }
+        }
+
+
+        progress.ItemName = "Saving layers";
+        progress.ProcessedItems = 0;
+
+        for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
+        {
+            progress.PauseOrCancelIfRequested();
+            outputFile.WriteSerialize(layerData[layerIndex]);
+            progress++;
         }
 
         Debug.WriteLine("Encode Results:");
@@ -548,11 +546,15 @@ public sealed class LGSFile : FileFormat
 
         var previewSize = HeaderSettings.PreviewSizeX * HeaderSettings.PreviewSizeY * 2;
         var previewData = inputFile.ReadBytes(previewSize);
-        Thumbnails[0] = DecodeImage(DATATYPE_RGB565_BE, previewData, HeaderSettings.PreviewSizeX, HeaderSettings.PreviewSizeY);
+        Thumbnails.Add(DecodeImage(DATATYPE_RGB565_BE, previewData, HeaderSettings.PreviewSizeX, HeaderSettings.PreviewSizeY));
 
         if (HeaderSettings.PrinterModel == 120)
         {
             var pngPreview = Helpers.Deserialize<LGS120PngPreview>(inputFile);
+
+            var mat = new Mat();
+            CvInvoke.Imdecode(pngPreview.PngBytes, ImreadModes.AnyColor, mat);
+            Thumbnails.Add(mat);
         }
 
 

@@ -9,6 +9,7 @@
 // Port from: https://github.com/cyotek/Cyotek.Windows.Forms.ImageBox to AvaloniaUI
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Media;
@@ -20,6 +21,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
 using System.Runtime.CompilerServices;
+using Avalonia.Controls.Presenters;
 using Bitmap = Avalonia.Media.Imaging.Bitmap;
 using Color = Avalonia.Media.Color;
 using Pen = Avalonia.Media.Pen;
@@ -28,27 +30,31 @@ using Size = Avalonia.Size;
 
 namespace UVtools.AvaloniaControls;
 
-public partial class AdvancedImageBox : UserControl
+[TemplatePart("PART_ContentPresenter", typeof(ScrollContentPresenter))]
+[TemplatePart("PART_HorizontalScrollBar", typeof(ScrollBar))]
+[TemplatePart("PART_VerticalScrollBar", typeof(ScrollBar))]
+[TemplatePart("PART_ScrollBarsSeparator", typeof(Panel))]
+public class AdvancedImageBox : TemplatedControl, IScrollable
 {
-    #region Bindable Base
+    #region BindableBase
     /// <summary>
     ///     Multicast event for property change notifications.
     /// </summary>
     private PropertyChangedEventHandler? _propertyChanged;
 
-    public new event PropertyChangedEventHandler PropertyChanged
+    public new event PropertyChangedEventHandler? PropertyChanged
     {
-        add => _propertyChanged += value;
+        add { _propertyChanged -= value; _propertyChanged += value; }
         remove => _propertyChanged -= value;
     }
+
     protected bool RaiseAndSetIfChanged<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
     {
         if (EqualityComparer<T>.Default.Equals(field, value)) return false;
         field = value;
-        RaisePropertyChanged(propertyName);
+        RaisePropertyChanged(propertyName!);
         return true;
     }
-
 
     protected virtual void OnPropertyChanged(PropertyChangedEventArgs e)
     {
@@ -428,7 +434,10 @@ public partial class AdvancedImageBox : UserControl
     #endregion
 
     #region UI Controls
+    /// <inheritdoc />
+    public Size Extent => new(Math.Max(ViewPort.Bounds.Width, ScaledImageWidth), Math.Max(ViewPort.Bounds.Height, ScaledImageHeight));
 
+    /// <inheritdoc />
     public Vector Offset
     {
         get => new(HorizontalScrollBar.Value, VerticalScrollBar.Value);
@@ -441,10 +450,16 @@ public partial class AdvancedImageBox : UserControl
         }
     }
 
-    public Size ViewPortSize => ViewPort.Bounds.Size;
+    /// <inheritdoc />
+    public Size Viewport => ViewPort.Bounds.Size;
     #endregion
 
     #region Private Members
+
+    protected internal ScrollContentPresenter ViewPort = null!;
+    protected internal ScrollBar HorizontalScrollBar = null!;
+    protected internal ScrollBar VerticalScrollBar = null!;
+
     private Point _startMousePosition;
     private Vector _startScrollPosition;
     private bool _isPanning;
@@ -452,6 +467,9 @@ public partial class AdvancedImageBox : UserControl
     private Bitmap? _trackerImage;
     private bool _canRender = true;
     private Point _pointerPosition;
+    ZoomLevelCollection _zoomLevels = ZoomLevelCollection.Default;
+    private int _oldZoom = 100;
+
     #endregion
 
     #region Properties
@@ -518,20 +536,7 @@ public partial class AdvancedImageBox : UserControl
     public Bitmap? Image
     {
         get => GetValue(ImageProperty);
-        set
-        {
-            SetValue(ImageProperty, value);
-
-            if (value is null)
-            {
-                SelectNone();
-            }
-
-            UpdateViewPort();
-            TriggerRender();
-
-            RaisePropertyChanged(nameof(IsImageLoaded));
-        }
+        set => SetValue(ImageProperty, value);
     }
 
     public WriteableBitmap? ImageAsWriteableBitmap
@@ -585,7 +590,7 @@ public partial class AdvancedImageBox : UserControl
         {
             if (Image is null) return false;
             if (SizeMode != SizeModes.Normal) return false;
-            return ScaledImageWidth > ViewPortSize.Width;
+            return ScaledImageWidth > Viewport.Width;
         }
     }
 
@@ -595,7 +600,7 @@ public partial class AdvancedImageBox : UserControl
         {
             if (Image is null) return false;
             if (SizeMode != SizeModes.Normal) return false;
-            return ScaledImageHeight > ViewPortSize.Height;
+            return ScaledImageHeight > Viewport.Height;
         }
     }
 
@@ -762,13 +767,7 @@ public partial class AdvancedImageBox : UserControl
     public SizeModes SizeMode
     {
         get => GetValue(SizeModeProperty);
-        set
-        {
-            SetValue(SizeModeProperty, value);
-            SizeModeChanged();
-            RaisePropertyChanged(nameof(IsHorizontalBarVisible));
-            RaisePropertyChanged(nameof(IsVerticalBarVisible));
-        }
+        set => SetValue(SizeModeProperty, value);
     }
 
     private void SizeModeChanged()
@@ -807,7 +806,6 @@ public partial class AdvancedImageBox : UserControl
             o => o.ZoomLevels,
             (o, v) => o.ZoomLevels = v);
 
-    ZoomLevelCollection _zoomLevels = ZoomLevelCollection.Default;
     /// <summary>
     ///   Gets or sets the zoom levels.
     /// </summary>
@@ -862,8 +860,6 @@ public partial class AdvancedImageBox : UserControl
             nameof(OldZoom),
             o => o.OldZoom);
 
-    private int _oldZoom = 100;
-
     /// <summary>
     /// Gets the previous zoom value
     /// </summary>
@@ -894,12 +890,6 @@ public partial class AdvancedImageBox : UserControl
             if (previousZoom == newZoom) return;
             OldZoom = previousZoom;
             SetValue(ZoomProperty, newZoom);
-
-            UpdateViewPort();
-            TriggerRender();
-
-            RaisePropertyChanged(nameof(IsHorizontalBarVisible));
-            RaisePropertyChanged(nameof(IsVerticalBarVisible));
         }
     }
 
@@ -930,23 +920,23 @@ public partial class AdvancedImageBox : UserControl
 
             if (image.Size.Width > image.Size.Height)
             {
-                aspectRatio = ViewPortSize.Width / image.Size.Width;
+                aspectRatio = Viewport.Width / image.Size.Width;
                 zoom = aspectRatio * 100.0;
 
-                if (ViewPortSize.Height < image.Size.Height * zoom / 100.0)
+                if (Viewport.Height < image.Size.Height * zoom / 100.0)
                 {
-                    aspectRatio = ViewPortSize.Height / image.Size.Height;
+                    aspectRatio = Viewport.Height / image.Size.Height;
                     zoom = aspectRatio * 100.0;
                 }
             }
             else
             {
-                aspectRatio = ViewPortSize.Height / image.Size.Height;
+                aspectRatio = Viewport.Height / image.Size.Height;
                 zoom = aspectRatio * 100.0;
 
-                if (ViewPortSize.Width < image.Size.Width * zoom / 100.0)
+                if (Viewport.Width < image.Size.Width * zoom / 100.0)
                 {
-                    aspectRatio = ViewPortSize.Width / image.Size.Width;
+                    aspectRatio = Viewport.Width / image.Size.Width;
                     zoom = aspectRatio * 100.0;
                 }
             }
@@ -954,6 +944,12 @@ public partial class AdvancedImageBox : UserControl
             return (int) zoom;
         }
     }
+
+    /// <summary>
+    /// Gets the size of the scaled image.
+    /// </summary>
+    /// <value>The size of the scaled image.</value>
+    public Size ScaledImageSize => new(ScaledImageWidth, ScaledImageHeight);
 
     /// <summary>
     /// Gets the width of the scaled image.
@@ -1053,31 +1049,99 @@ public partial class AdvancedImageBox : UserControl
     #endregion
 
     #region Constructor
+
+    static AdvancedImageBox()
+    {
+        FocusableProperty.OverrideDefaultValue(typeof(AdvancedImageBox), true);
+        AffectsRender<AdvancedImageBox>(
+            ShowGridProperty,
+            GridCellSizeProperty,
+            GridColorProperty,
+            GridColorAlternateProperty,
+            PixelGridColorProperty,
+            ImageProperty,
+            SelectionRegionProperty
+            );
+    }
+
     public AdvancedImageBox()
     {
         RenderOptions.SetBitmapInterpolationMode(this, BitmapInterpolationMode.None);
+    }
 
-        InitializeComponent();
+    #endregion
 
-        try
+    #region Overrides
+
+    protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
+    {
+        base.OnApplyTemplate(e);
+
+        // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
+        if (ViewPort is not null)
         {
-            FocusableProperty.OverrideDefaultValue(typeof(AdvancedImageBox), true);
-        }
-        catch (Exception e)
-        {
-            // ignored
+            ViewPort.PointerPressed -= ViewPortOnPointerPressed;
+            ViewPort.PointerExited -= ViewPortOnPointerExited;
+            ViewPort.PointerMoved -= ViewPortOnPointerMoved;
+            ViewPort.PointerWheelChanged -= ViewPortOnPointerWheelChanged;
+            HorizontalScrollBar.Scroll -= ScrollBarOnScroll;
+            VerticalScrollBar.Scroll -= ScrollBarOnScroll;
         }
 
-        AffectsRender<AdvancedImageBox>(ShowGridProperty);
+        ViewPort = e.NameScope.Find<ScrollContentPresenter>("PART_ContentPresenter")!;
+        HorizontalScrollBar = e.NameScope.Find<ScrollBar>("PART_HorizontalScrollBar")!;
+        VerticalScrollBar = e.NameScope.Find<ScrollBar>("PART_VerticalScrollBar")!;
 
         SizeModeChanged();
-
-        HorizontalScrollBar.Scroll += ScrollBarOnScroll;
-        VerticalScrollBar.Scroll += ScrollBarOnScroll;
+        
         ViewPort.PointerPressed += ViewPortOnPointerPressed;
         ViewPort.PointerExited += ViewPortOnPointerExited;
         ViewPort.PointerMoved += ViewPortOnPointerMoved;
         ViewPort.PointerWheelChanged += ViewPortOnPointerWheelChanged;
+        HorizontalScrollBar.Scroll += ScrollBarOnScroll;
+        VerticalScrollBar.Scroll += ScrollBarOnScroll;
+    }
+
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs e)
+    {
+        base.OnPropertyChanged(e);
+
+        if (ReferenceEquals(e.Property, ImageProperty))
+        {
+            if (!IsImageLoaded)
+            {
+                SelectNone();
+            }
+
+            UpdateViewPort();
+            TriggerRender();
+
+            RaisePropertyChanged(nameof(ImageAsWriteableBitmap));
+            RaisePropertyChanged(nameof(IsImageLoaded));
+            RaisePropertyChanged(nameof(ScaledImageWidth));
+            RaisePropertyChanged(nameof(ScaledImageHeight));
+            RaisePropertyChanged(nameof(ScaledImageSize));
+            RaisePropertyChanged(nameof(Extent));
+        }
+        else if (ReferenceEquals(e.Property, SizeModeProperty))
+        {
+            SizeModeChanged();
+            RaisePropertyChanged(nameof(IsHorizontalBarVisible));
+            RaisePropertyChanged(nameof(IsVerticalBarVisible));
+        }
+        else if (ReferenceEquals(e.Property, ZoomProperty))
+        {
+            UpdateViewPort();
+            TriggerRender();
+            RaisePropertyChanged(nameof(IsHorizontalBarVisible));
+            RaisePropertyChanged(nameof(IsVerticalBarVisible));
+            RaisePropertyChanged(nameof(IsActualSize));
+            RaisePropertyChanged(nameof(ZoomFactor));
+            RaisePropertyChanged(nameof(ScaledImageWidth));
+            RaisePropertyChanged(nameof(ScaledImageHeight));
+            RaisePropertyChanged(nameof(ScaledImageSize));
+            RaisePropertyChanged(nameof(Extent));
+        }
     }
 
     #endregion
@@ -1095,7 +1159,7 @@ public partial class AdvancedImageBox : UserControl
         //Debug.WriteLine($"Render: {DateTime.Now.Ticks}");
         base.Render(context);
         
-        var viewPortSize = ViewPortSize;
+        var viewPortSize = Viewport;
         // Draw Grid
         var gridCellSize = GridCellSize;
         if (ShowGrid & gridCellSize > 0 && (!IsHorizontalBarVisible || !IsVerticalBarVisible))
@@ -1147,8 +1211,7 @@ public partial class AdvancedImageBox : UserControl
                 _pointerPosition.X - destSize.Width / 2,
                 _pointerPosition.Y - destSize.Height / 2
             );
-            context.DrawImage(_trackerImage,
-                new Rect(destPos, destSize)
+            context.DrawImage(_trackerImage!, new Rect(destPos, destSize)
             );
         }
 
@@ -1185,7 +1248,7 @@ public partial class AdvancedImageBox : UserControl
 
     private bool UpdateViewPort()
     {
-        if (Image is null)
+        if (!IsImageLoaded)
         {
             HorizontalScrollBar.Maximum = 0;
             VerticalScrollBar.Maximum = 0;
@@ -1301,8 +1364,8 @@ public partial class AdvancedImageBox : UserControl
 
         var location = pointer.Position;
 
-        if (location.X > ViewPortSize.Width) return;
-        if (location.Y > ViewPortSize.Height) return;
+        if (location.X > Viewport.Width) return;
+        if (location.Y > Viewport.Height) return;
         _startMousePosition = location;
     }
 
@@ -1677,8 +1740,8 @@ public partial class AdvancedImageBox : UserControl
     public void ZoomToRegion(Rect rectangle, double margin = 0)
     {
         if (margin > 0) rectangle = rectangle.Inflate(margin);
-        var ratioX = ViewPortSize.Width / rectangle.Width;
-        var ratioY = ViewPortSize.Height / rectangle.Height;
+        var ratioX = Viewport.Width / rectangle.Width;
+        var ratioY = Viewport.Height / rectangle.Height;
         var zoomFactor = Math.Min(ratioX, ratioY);
         var cx = rectangle.X + rectangle.Width / 2;
         var cy = rectangle.Y + rectangle.Height / 2;
@@ -2042,14 +2105,14 @@ public partial class AdvancedImageBox : UserControl
     /// </summary>
     /// <param name="imageLocation">The point of the image to attempt to center.</param>
     public void CenterAt(System.Drawing.Point imageLocation)
-        => ScrollTo(new Point(imageLocation.X, imageLocation.Y), new Point(ViewPortSize.Width / 2, ViewPortSize.Height / 2));
+        => ScrollTo(new Point(imageLocation.X, imageLocation.Y), new Point(Viewport.Width / 2, Viewport.Height / 2));
 
     /// <summary>
     ///   Centers the given point in the image in the center of the control
     /// </summary>
     /// <param name="imageLocation">The point of the image to attempt to center.</param>
     public void CenterAt(Point imageLocation)
-        => ScrollTo(imageLocation, new Point(ViewPortSize.Width / 2, ViewPortSize.Height / 2));
+        => ScrollTo(imageLocation, new Point(Viewport.Width / 2, Viewport.Height / 2));
 
     /// <summary>
     ///   Centers the given point in the image in the center of the control
@@ -2285,7 +2348,7 @@ public partial class AdvancedImageBox : UserControl
     /// <returns></returns>
     public Rect GetImageViewPort()
     {
-        var viewPortSize = ViewPortSize;
+        var viewPortSize = Viewport;
         if (!IsImageLoaded || viewPortSize is {Width: 0, Height: 0}) return default;
 
         double xOffset = 0;

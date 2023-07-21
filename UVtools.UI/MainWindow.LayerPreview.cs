@@ -20,11 +20,11 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Timers;
 using Avalonia.Platform.Storage;
+using Avalonia.Reactive;
 using UVtools.AvaloniaControls;
 using UVtools.Core;
 using UVtools.Core.Dialogs;
@@ -55,7 +55,7 @@ public partial class MainWindow
     };
     #endregion
 
-    private Track LayerSlicerTrack;
+    private Track LayerSlicerTrack = null!;
 
     private readonly Timer _layerNavigationTooltipTimer = new(0.1) { AutoReset = false };
     private readonly Timer _layerNavigationSliderDebounceTimer = new(25) { AutoReset = false };
@@ -86,7 +86,7 @@ public partial class MainWindow
 
 
     private bool _isTooltipOverlayVisible;
-    private string _tooltipOverlayText;
+    private string _tooltipOverlayText = string.Empty;
 
     private long _showLayerRenderMs;
 
@@ -99,7 +99,7 @@ public partial class MainWindow
     {
         LayerSlider.TemplateApplied += (sender, e) =>
         {
-            LayerSlicerTrack = e.NameScope.Find<Track>("PART_Track");
+            LayerSlicerTrack = e.NameScope.Find<Track>("PART_Track")!;
         };
 
         _showLayerImageDifference = Settings.LayerPreview.ShowLayerDifference;
@@ -112,16 +112,16 @@ public partial class MainWindow
             
         LayerImageBox.ZoomLevels = new AdvancedImageBox.ZoomLevelCollection(AppSettings.ZoomLevels);
             
-        LayerImageBox.GetObservable(AdvancedImageBox.ZoomProperty).Subscribe(zoom =>
+        LayerImageBox.GetObservable(AdvancedImageBox.ZoomProperty).Subscribe(new AnonymousObserver<int>(zoom =>
         {
             if (!IsFileLoaded) return;
             var newZoom = zoom;
             var oldZoom = LayerImageBox.OldZoom;
             RaisePropertyChanged(nameof(LayerZoomStr));
             AddLogVerbose($"Zoomed from {oldZoom} to {newZoom}");
-                
+
             if (_showLayerImageCrosshairs &&
-                SlicerFile.IssueManager.Count > 0 &&
+                SlicerFile!.IssueManager.Count > 0 &&
                 (oldZoom < 50 &&
                  newZoom >= 50 // Trigger refresh as crosshair thickness increases at lower zoom levels
                  || oldZoom > 100 && newZoom <= 100
@@ -136,7 +136,7 @@ public partial class MainWindow
                 {
                     if (IssuesGrid.SelectedItems.Count == 0 || !IssuesGrid.SelectedItems.Cast<MainIssue>().Any(
                             mainIssue => // Find a valid candidate to update layer preview, otherwise quit
-                                mainIssue.IsIssueInBetween(_actualLayer) 
+                                mainIssue.IsIssueInBetween(_actualLayer)
                                 && mainIssue.Type is not MainIssue.IssueType.TouchingBound and not MainIssue.IssueType.EmptyLayer)) return;
                 }
                 else
@@ -151,10 +151,9 @@ public partial class MainWindow
                 // that will occur on the transition when the crosshair fades or unfades if ShowLayer is called directly.
                 ShowLayer();
             }
-        });
+        }));
 
-        LayerImageBox.GetObservable(AdvancedImageBox.SelectionRegionProperty)
-            .Subscribe(rect => RaisePropertyChanged(nameof(LayerROIStr)));
+        LayerImageBox.GetObservable(AdvancedImageBox.SelectionRegionProperty).Subscribe(new AnonymousObserver<Rect>(rect => RaisePropertyChanged(nameof(LayerROIStr))));
 
         LayerImageBox.PointerMoved += LayerImageBoxOnPointerMoved;
         LayerImageBox.KeyDown += LayerImageBox_KeyDown;
@@ -502,7 +501,7 @@ public partial class MainWindow
         get
         {
             if (!LayerCache.IsCached) return "Pixels: 0";
-            var text = $"Pixels: {LayerCache.Layer.NonZeroPixelCount} ({LayerCache.Layer.NonZeroPixelPercentage:F2}%)";
+            var text = $"Pixels: {LayerCache.Layer!.NonZeroPixelCount} ({LayerCache.Layer.NonZeroPixelPercentage:F2}%)";
             var volume = LayerCache.Layer.Volume;
             if (volume > 0)
             {
@@ -563,7 +562,7 @@ public partial class MainWindow
             var text = $"Zoom: [ {LayerImageBox.Zoom / 100m}x{(AppSettings.LockedZoomLevel == LayerImageBox.Zoom ? " 🔒 ]" : " ]")}";
             if (pixelSize > 0)
             {
-                if (SlicerFile.PixelWidthMicrons == SlicerFile.PixelHeightMicrons)
+                if (Math.Abs(SlicerFile!.PixelWidthMicrons - SlicerFile.PixelHeightMicrons) < 0.01)
                 {
                     text += $"\nPixel: {SlicerFile.PixelSizeMicronsMax}µm";
                 }
@@ -657,9 +656,9 @@ public partial class MainWindow
         get
         {
             double top = 0;
-            if (LayerSlicerTrack != null)
+            if (LayerSlicerTrack is not null)
             {
-                double trackerPos = LayerSlicerTrack.Thumb.Bounds.Height / 2 + LayerSlicerTrack.Thumb.Bounds.Top;
+                double trackerPos = LayerSlicerTrack.Thumb!.Bounds.Height / 2 + LayerSlicerTrack.Thumb.Bounds.Top;
                 double halfTooltipHeight = LayerNavigationTooltipBorder.Bounds.Height / 2;
                 top = Math.Clamp(trackerPos - halfTooltipHeight, 0,
                     LayerSlider.Bounds.Height - LayerNavigationTooltipBorder.Bounds.Height);
@@ -689,8 +688,9 @@ public partial class MainWindow
     {
         get
         {
+            if (!IsFileLoaded) return RectangleF.Empty;
             var roi = ROI;
-            var pixelSize = SlicerFile.PixelSize;
+            var pixelSize = SlicerFile!.PixelSize;
             if(roi.IsEmpty || pixelSize.IsEmpty) return RectangleF.Empty;
             return new RectangleF(
                 (float)Math.Round(roi.X * pixelSize.Width, 2),
@@ -702,12 +702,14 @@ public partial class MainWindow
 
     public void SelectModelVolumeRoi()
     {
-        ROI = SlicerFile.BoundingRectangle;
+        if (!IsFileLoaded) return;
+        ROI = SlicerFile!.BoundingRectangle;
     }
 
     public void SelectLayerVolumeRoi()
     {
-        ROI = LayerCache.Layer.BoundingRectangle;
+        if (!LayerCache.IsCached) return;
+        ROI = LayerCache.Layer!.BoundingRectangle;
     }
 
        
@@ -756,13 +758,15 @@ public partial class MainWindow
 
     public void SelectLayerPositiveAreasMask()
     {
-        AddMaskPoints(LayerCache.Layer.Contours.VectorOfContours.ToArrayOfArray());
+        if (!LayerCache.IsCached) return;
+        AddMaskPoints(LayerCache.Layer!.Contours.VectorOfContours.ToArrayOfArray());
         if (_maskPoints.Count > 0 && Settings.LayerPreview.MaskClearROIAfterSet) ClearROI();
     }
 
     public void SelectLayerHollowAreasMask()
     {
-        var contours = EmguContours.GetNegativeContours(LayerCache.Layer.Contours.VectorOfContours, LayerCache.Layer.Contours.Hierarchy);
+        if (!LayerCache.IsCached) return;
+        var contours = EmguContours.GetNegativeContours(LayerCache.Layer!.Contours.VectorOfContours, LayerCache.Layer.Contours.Hierarchy);
         AddMaskPoints(contours.ToArrayOfArray());
         if (_maskPoints.Count > 0 && Settings.LayerPreview.MaskClearROIAfterSet) ClearROI();
     }
@@ -823,13 +827,13 @@ public partial class MainWindow
     public void GoUpLayers(uint layers)
     {
         if (!IsFileLoaded) return;
-        ActualLayer = SlicerFile.SanitizeLayerIndex(ActualLayer + layers);
+        ActualLayer = SlicerFile!.SanitizeLayerIndex(ActualLayer + layers);
     }
 
     public void GoDownLayers(uint layers)
     {
         if (!IsFileLoaded) return;
-        ActualLayer = SlicerFile.SanitizeLayerIndex((int)ActualLayer - (int)layers);
+        ActualLayer = SlicerFile!.SanitizeLayerIndex((int)ActualLayer - (int)layers);
     }
 
     public void GoMassLayer(object whichObj)
@@ -837,10 +841,10 @@ public partial class MainWindow
         if (!IsFileLoaded) return;
         var layer = whichObj.ToString() switch
         {
-            "SB" => SlicerFile.SmallestBottomLayer,
-            "LB" => SlicerFile.LargestBottomLayer,
-            "SN" => SlicerFile.SmallestNormalLayer,
-            "LN" => SlicerFile.LargestNormalLayer,
+            "SB" => SlicerFile!.SmallestBottomLayer,
+            "LB" => SlicerFile!.LargestBottomLayer,
+            "SN" => SlicerFile!.SmallestNormalLayer,
+            "LN" => SlicerFile!.LargestNormalLayer,
             _ => null
         };
         if (layer is null) return;
@@ -860,7 +864,7 @@ public partial class MainWindow
         if (!IsFileLoaded) return;
 
         
-        if (SlicerFile.SanitizeLayerIndex(ref _actualLayer))
+        if (SlicerFile!.SanitizeLayerIndex(ref _actualLayer))
         {
             InvalidateLayerNavigation();
         }
@@ -957,8 +961,8 @@ public partial class MainWindow
                 // {
                 var previousLayer = _actualLayer > 0 ? SlicerFile[_actualLayer - 1] : null;
                 var nextLayer = _actualLayer < SlicerFile.LastLayerIndex ? SlicerFile[_actualLayer + 1] : null;
-                Mat previousImage = null;
-                Mat nextImage = null;
+                Mat? previousImage = null;
+                Mat? nextImage = null;
 
                 // Optimize empties for now...
                 var rect = Rectangle.Empty;
@@ -1077,7 +1081,7 @@ public partial class MainWindow
             {
                 //var count = 0;
                 foreach (var issue in SlicerFile.IssueManager.GetIssuesBy(_actualLayer)
-                             .Where(issue => issue.Parent.Type 
+                             .Where(issue => issue.Parent!.Type 
                                  is not MainIssue.IssueType.PrintHeight 
                                  and not MainIssue.IssueType.EmptyLayer))
                 {
@@ -1085,7 +1089,7 @@ public partial class MainWindow
                     var color = Color.Empty;
                     bool drawCrosshair = false;
 
-                    switch (issue.Parent.Type)
+                    switch (issue.Parent!.Type)
                     {
                         case MainIssue.IssueType.Island:
                             color = selectedIssues.Count > 0 && selectedIssues.Contains(issue.Parent)
@@ -1467,7 +1471,7 @@ public partial class MainWindow
                 // Don't render crosshairs for selected issue that are not on the current layer, or for 
                 // issue types that don't have a specific location or bounds.
                 foreach (var issue in SlicerFile.IssueManager.GetIssuesBy(_actualLayer)
-                             .Where(issue => issue.Parent.Type 
+                             .Where(issue => issue.Parent!.Type 
                                  is not MainIssue.IssueType.TouchingBound 
                                  and not MainIssue.IssueType.PrintHeight 
                                  and not MainIssue.IssueType.EmptyLayer))
@@ -1580,19 +1584,19 @@ public partial class MainWindow
 
     public Point GetTransposedPoint(Point point, bool inverse = false)
     {
-        if (point.IsEmpty) return point;
+        if (point.IsEmpty || !LayerCache.IsCached) return point;
 
         void Flip()
         {
             if (!_showLayerImageFlipped) return;
             if (_showLayerImageFlippedHorizontally)
             {
-                point = point with {X = LayerCache.Image.Width - 1 - point.X};
+                point = point with {X = LayerCache.Image!.Width - 1 - point.X};
             }
 
             if (_showLayerImageFlippedVertically)
             {
-                point = point with {Y = LayerCache.Image.Height - 1 - point.Y};
+                point = point with {Y = LayerCache.Image!.Height - 1 - point.Y};
             }
         }
 
@@ -1602,15 +1606,15 @@ public partial class MainWindow
             if (_showLayerImageRotateCcwDirection)
             {
                 point = inverse
-                    ? new Point(point.Y, LayerCache.Image.Width - 1 - point.X) // 90º CCW
-                    : new Point(LayerCache.Image.Width - 1 - point.Y, point.X); // 90º CW
+                    ? new Point(point.Y, LayerCache.Image!.Width - 1 - point.X) // 90º CCW
+                    : new Point(LayerCache.Image!.Width - 1 - point.Y, point.X); // 90º CW
 
             }
             else
             {
                 point = inverse
-                    ? new Point(LayerCache.Image.Height - 1 - point.Y, point.X) // 90º CW
-                    : new Point(point.Y, LayerCache.Image.Height - 1 - point.X); // 90º CCW
+                    ? new Point(LayerCache.Image!.Height - 1 - point.Y, point.X) // 90º CW
+                    : new Point(point.Y, LayerCache.Image!.Height - 1 - point.X); // 90º CCW
             }
         }
 
@@ -1633,19 +1637,19 @@ public partial class MainWindow
 
     public Rectangle GetTransposedRectangle(Rectangle rectangle, bool inverse = false)
     {
-        if (rectangle.IsEmpty) return rectangle;
+        if (rectangle.IsEmpty || !LayerCache.IsCached) return rectangle;
 
         void Flip()
         {
             if (!_showLayerImageFlipped) return;
             if (_showLayerImageFlippedHorizontally)
             {
-                rectangle.Location = new Point(LayerCache.Image.Width - rectangle.Right, rectangle.Y);
+                rectangle.Location = new Point(LayerCache.Image!.Width - rectangle.Right, rectangle.Y);
             }
 
             if (_showLayerImageFlippedVertically)
             {
-                rectangle.Location = new Point(rectangle.X, LayerCache.Image.Height - rectangle.Bottom);
+                rectangle.Location = new Point(rectangle.X, LayerCache.Image!.Height - rectangle.Bottom);
             }
         }
 
@@ -1655,15 +1659,15 @@ public partial class MainWindow
             if (_showLayerImageRotateCcwDirection)
             {
                 rectangle = !inverse
-                    ? new Rectangle(rectangle.Y, LayerCache.Image.Width - rectangle.Right, rectangle.Height, rectangle.Width) // 90º CCW
-                    : new Rectangle(LayerCache.Image.Width - rectangle.Bottom, rectangle.X, rectangle.Height, rectangle.Width); // 90º CW
+                    ? new Rectangle(rectangle.Y, LayerCache.Image!.Width - rectangle.Right, rectangle.Height, rectangle.Width) // 90º CCW
+                    : new Rectangle(LayerCache.Image!.Width - rectangle.Bottom, rectangle.X, rectangle.Height, rectangle.Width); // 90º CW
 
             }
             else
             {
                 rectangle = !inverse
-                    ? new Rectangle(LayerCache.Image.Height - rectangle.Bottom, rectangle.X, rectangle.Height, rectangle.Width) // 90º CW
-                    : new Rectangle(rectangle.Y, LayerCache.Image.Height - rectangle.Right, rectangle.Height, rectangle.Width); // 90º CCW
+                    ? new Rectangle(LayerCache.Image!.Height - rectangle.Bottom, rectangle.X, rectangle.Height, rectangle.Width) // 90º CW
+                    : new Rectangle(rectangle.Y, LayerCache.Image!.Height - rectangle.Right, rectangle.Height, rectangle.Width); // 90º CCW
             }
         }
 
@@ -1697,9 +1701,10 @@ public partial class MainWindow
     /// </summary>
     private Rectangle GetTransposedIssueBounds(Issue issue)
     {
+        if(!LayerCache.IsCached) return issue.BoundingRectangle;
         if (issue.BoundingRectangle.IsEmpty /*|| issue.PixelsCount == 1*/)
         {
-            return GetTransposedRectangle(LayerCache.Layer.BoundingRectangle);
+            return GetTransposedRectangle(LayerCache.Layer!.BoundingRectangle);
         }
         //return new Rectangle(GetTransposedPoint(issue.FirstPoint, true), new Size(1, 1));
 
@@ -1805,7 +1810,7 @@ public partial class MainWindow
     /// </summary>
     private void CenterAtIssue(Issue issue)
     {
-        if (issue.Parent.Type is MainIssue.IssueType.EmptyLayer || issue.BoundingRectangle.IsEmpty)
+        if (issue.Parent!.Type is MainIssue.IssueType.EmptyLayer || issue.BoundingRectangle.IsEmpty)
         {
             ZoomToFit();
         }
@@ -1857,7 +1862,7 @@ public partial class MainWindow
                             SlicerFile.LayerManager.BoundingRectangle.Width, margin
                         );
                     }*/
-                    LayerImageBox.ZoomToRegion(GetTransposedRectangle(SlicerFile.BoundingRectangle), margin);
+                    LayerImageBox.ZoomToRegion(GetTransposedRectangle(SlicerFile!.BoundingRectangle), margin);
                 }
                 else
                 {
@@ -1868,7 +1873,7 @@ public partial class MainWindow
                 LayerImageBox.ZoomToFit();
                 break;
             case ZoomToFitType.Volume:
-                LayerImageBox.ZoomToRegion(GetTransposedRectangle(SlicerFile.BoundingRectangle), margin);
+                LayerImageBox.ZoomToRegion(GetTransposedRectangle(SlicerFile!.BoundingRectangle), margin);
                 break;
             case ZoomToFitType.Selection:
                 LayerImageBox.ZoomToSelectionRegion(margin);
@@ -1887,7 +1892,7 @@ public partial class MainWindow
     {
         //location = GetTransposedPoint(location);
         // If location clicked is within an issue, activate it.
-        var issues = SlicerFile.IssueManager.GetIssuesBy(_actualLayer);
+        var issues = SlicerFile!.IssueManager.GetIssuesBy(_actualLayer);
         for (var i = issues.Length-1; i >= 0; i--)
         {
             if (!GetTransposedIssueBounds(issues[i]).Contains(location)) continue;
@@ -2012,6 +2017,7 @@ public partial class MainWindow
 
     private async void LayerImageBox_KeyUp(object? sender, KeyEventArgs e)
     {
+        if (!IsFileLoaded) return;
         switch (e.Key)
         {
             case Key.Escape:
@@ -2038,7 +2044,7 @@ public partial class MainWindow
                     if (await this.MessageBoxQuestion($"Are you sure you want to clone the current layer {_actualLayer}?",
                             "Clone the current layer?") != MessageButtonResult.Yes) return;
 
-                    var operationLayerClone = new OperationLayerClone(SlicerFile);
+                    var operationLayerClone = new OperationLayerClone(SlicerFile!);
                     operationLayerClone.SelectCurrentLayer(_actualLayer);
                     await RunOperation(operationLayerClone);
 
@@ -2047,7 +2053,7 @@ public partial class MainWindow
                 }
 
                 if (ROI == Rectangle.Empty && _maskPoints.Count == 0) return;
-                var operation = new OperationPixelArithmetic(SlicerFile)
+                var operation = new OperationPixelArithmetic(SlicerFile!)
                 {
                     Operator = OperationPixelArithmetic.PixelArithmeticOperators.KeepRegion,
                     ROI = ROI,
@@ -2058,7 +2064,7 @@ public partial class MainWindow
                 if (e.KeyModifiers == KeyModifiers.Alt)
                 {
                     operation.SelectAllLayers();
-                    layerRange = $"within all {SlicerFile.LayerCount} layers";
+                    layerRange = $"within all {SlicerFile!.LayerCount} layers";
                 }
                 else
                 {
@@ -2079,7 +2085,7 @@ public partial class MainWindow
                     if (await this.MessageBoxQuestion($"Are you sure you want to remove the current layer {_actualLayer}?",
                             "Remove the current layer?") != MessageButtonResult.Yes) return;
 
-                    var operationLayerRemove = new OperationLayerRemove(SlicerFile);
+                    var operationLayerRemove = new OperationLayerRemove(SlicerFile!);
                     operationLayerRemove.SelectCurrentLayer(_actualLayer);
                     await RunOperation(operationLayerRemove);
 
@@ -2088,7 +2094,7 @@ public partial class MainWindow
                 }
 
                 if (ROI == Rectangle.Empty && _maskPoints.Count == 0) return;
-                var operation = new OperationPixelArithmetic(SlicerFile)
+                var operation = new OperationPixelArithmetic(SlicerFile!)
                 {
                     Operator = OperationPixelArithmetic.PixelArithmeticOperators.DiscardRegion,
                     ROI = ROI,
@@ -2099,7 +2105,7 @@ public partial class MainWindow
                 if (e.KeyModifiers == KeyModifiers.Alt)
                 {
                     operation.SelectAllLayers();
-                    layerRange = $"within all {SlicerFile.LayerCount} layers";
+                    layerRange = $"within all {SlicerFile!.LayerCount} layers";
                 }
                 else
                 {
@@ -2204,6 +2210,7 @@ public partial class MainWindow
 
     private void LayerImageBoxOnPointerMoved(object? sender, PointerEventArgs e)
     {
+        if (!LayerCache.IsCached) return;
         var pointer = e.GetCurrentPoint(LayerImageBox);
             
         if (!LayerImageBox.IsPointInImage(pointer.Position)) return;
@@ -2214,8 +2221,8 @@ public partial class MainWindow
             var realLocation = GetTransposedPoint(location);
             unsafe
             {
-                var brightness = LayerCache.ImageSpan[LayerCache.Image.GetPixelPos(realLocation)];
-                LayerPixelPicker.Set(realLocation, brightness, SlicerFile.PixelToDisplayPosition(realLocation, 2));
+                var brightness = LayerCache.ImageSpan[LayerCache.Image!.GetPixelPos(realLocation)];
+                LayerPixelPicker.Set(realLocation, brightness, SlicerFile!.PixelToDisplayPosition(realLocation, 2));
             }
 
             RaisePropertyChanged(nameof(LayerPixelPicker));
@@ -2250,9 +2257,10 @@ public partial class MainWindow
 
     public bool SelectObjectRoi(Point location)
     {
+        if (!LayerCache.IsCached) return false;
         var point = GetTransposedPoint(location);
 
-        for (int i = LayerCache.Layer.Contours.Count-1; i >= 0; i--)
+        for (int i = LayerCache.Layer!.Contours.Count-1; i >= 0; i--)
         {
             if (!LayerCache.Layer.Contours[i].IsInside(point)) continue;
             ROI = LayerCache.Layer.Contours[i].BoundingRectangle;
@@ -2264,9 +2272,9 @@ public partial class MainWindow
 
     public uint SelectObjectRoi(Rectangle roiRectangle)
     {
-        if (roiRectangle.IsEmpty) return 0;
+        if (roiRectangle.IsEmpty || !LayerCache.IsCached) return 0;
         List<Rectangle> rectangles = new();
-        for (int i = 0; i < LayerCache.Layer.Contours.Count; i++)
+        for (int i = 0; i < LayerCache.Layer!.Contours.Count; i++)
         {
             var rectangle = LayerCache.Layer.Contours[i].BoundingRectangle;
             //roi.Intersect(rectangle);
@@ -2289,9 +2297,10 @@ public partial class MainWindow
 
     public bool SelectObjectMask(Point location)
     {
+        if (!LayerCache.IsCached) return false;
         var point = GetTransposedPoint(location);
 
-        using var vec = EmguContours.GetContoursInside(LayerCache.Layer.Contours.VectorOfContours, LayerCache.Layer.Contours.Hierarchy, point, (_globalModifiers & KeyModifiers.Control) != 0);
+        using var vec = EmguContours.GetContoursInside(LayerCache.Layer!.Contours.VectorOfContours, LayerCache.Layer.Contours.Hierarchy, point, (_globalModifiers & KeyModifiers.Control) != 0);
         AddMaskPoints(vec.ToArrayOfArray(), false);
         return vec.Size > 0;
     }
@@ -2306,7 +2315,7 @@ public partial class MainWindow
     {
         if (!IsFileLoaded) return;
 
-        using var file = await SaveFilePickerAsync(SlicerFile.DirectoryPath, $"{SlicerFile.FilenameNoExt}_layer{ActualLayer}.png", AvaloniaStatic.PngFileFilter);
+        using var file = await SaveFilePickerAsync(SlicerFile!.DirectoryPath, $"{SlicerFile.FilenameNoExt}_layer{ActualLayer}.png", AvaloniaStatic.PngFileFilter);
         if (file?.TryGetLocalPath() is not { } filePath) return;
 
         LayerCache.ImageBgr.Save(filePath);
@@ -2316,7 +2325,7 @@ public partial class MainWindow
     {
         if (!IsFileLoaded || !LayerImageBox.HaveSelection) return;
 
-        using var file = await SaveFilePickerAsync(SlicerFile.DirectoryPath, $"{SlicerFile.FilenameNoExt}_layer{ActualLayer}_ROI.png", AvaloniaStatic.PngFileFilter);
+        using var file = await SaveFilePickerAsync(SlicerFile!.DirectoryPath, $"{SlicerFile.FilenameNoExt}_layer{ActualLayer}_ROI.png", AvaloniaStatic.PngFileFilter);
 
         if (file?.TryGetLocalPath() is not { } filePath) return;
 
@@ -2326,7 +2335,7 @@ public partial class MainWindow
     const byte _pixelEditorCursorMinDiamater = 10;
     public void UpdatePixelEditorCursor()
     {
-        Mat cursor = null;
+        Mat? cursor = null;
         var _pixelEditorCursorColor = new MCvScalar(
             Settings.PixelEditor.CursorColor.B, 
             Settings.PixelEditor.CursorColor.G,

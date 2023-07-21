@@ -12,11 +12,13 @@ namespace UVtools.UI.Controls.Calibrators;
 
 public partial class CalibrateXYZAccuracyControl : ToolControl
 {
-    public OperationCalibrateXYZAccuracy Operation => BaseOperation as OperationCalibrateXYZAccuracy;
+    public OperationCalibrateXYZAccuracy Operation => (BaseOperation as OperationCalibrateXYZAccuracy)!;
 
-    private readonly Timer _timer;
+    private readonly Timer _timer = null!;
+    private Bitmap? _previewImage;
+    private string? _profileName;
 
-    public string ProfileName
+    public string? ProfileName
     {
         get => _profileName;
         set => RaiseAndSetIfChanged(ref _profileName, value);
@@ -24,10 +26,9 @@ public partial class CalibrateXYZAccuracyControl : ToolControl
 
     public bool IsProfileAddEnabled => Operation.ScaleXFactor != 100 || Operation.ScaleYFactor != 100;
 
-    private Bitmap _previewImage;
-    private string _profileName;
+    
 
-    public Bitmap PreviewImage
+    public Bitmap? PreviewImage
     {
         get => _previewImage;
         set => RaiseAndSetIfChanged(ref _previewImage, value);
@@ -35,7 +36,7 @@ public partial class CalibrateXYZAccuracyControl : ToolControl
 
     public CalibrateXYZAccuracyControl()
     {
-        BaseOperation = new OperationCalibrateXYZAccuracy(SlicerFile);
+        BaseOperation = new OperationCalibrateXYZAccuracy(SlicerFile!);
         if (!ValidateSpawn()) return;
         InitializeComponent();
             
@@ -92,21 +93,21 @@ public partial class CalibrateXYZAccuracyControl : ToolControl
         var find = OperationProfiles.FindByName(resize, ProfileName);
         if (find is not null)
         {
-            if (await ParentWindow.MessageBoxQuestion(
+            if (await ParentWindow!.MessageBoxQuestion(
                     $"A profile with same name and/or values already exists, do you want to overwrite:\n{find}\nwith:\n{resize}\n?") != MessageButtonResult.Yes) return;
 
             OperationProfiles.RemoveProfile(resize, false);
         }
 
         OperationProfiles.AddProfile(resize);
-        await ParentWindow.MessageBoxInfo($"The resize profile has been added.\nGo to Tools - Resize and select the saved profile to load it in.\n{resize}");
+        await ParentWindow!.MessageBoxInfo($"The resize profile has been added.\nGo to Tools - Resize and select the saved profile to load it in.\n{resize}");
     }
 
     public void AutoNameProfile()
     {
-        var printerName = string.IsNullOrEmpty(App.SlicerFile.MachineName)
+        var printerName = string.IsNullOrEmpty(SlicerFile!.MachineName)
             ? "MyPrinterX"
-            : App.SlicerFile.MachineName;
+            : SlicerFile.MachineName;
         ProfileName = $"{printerName}, MyResinX, {Operation.Microns}µm, {Operation.BottomExposure}s/{Operation.NormalExposure}s";
     }
 }

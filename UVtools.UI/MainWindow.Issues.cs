@@ -42,21 +42,21 @@ public partial class MainWindow
 
     private int _issueSelectedIndex = -1;
 
-    public IEnumerable IssuesGridItems 
+    public IEnumerable? IssuesGridItems 
     {
         get
         {
             if (!IsFileLoaded || DataContext is null) return null;
             if (Settings.Issues.DataGridGroupByType || Settings.Issues.DataGridGroupByLayerIndex)
             {
-                var groupView = new DataGridCollectionView(SlicerFile.IssueManager);
+                var groupView = new DataGridCollectionView(SlicerFile!.IssueManager);
                 if (Settings.Issues.DataGridGroupByType) groupView.GroupDescriptions.Add(new DataGridPathGroupDescription("Type"));
                 if (Settings.Issues.DataGridGroupByLayerIndex) groupView.GroupDescriptions.Add(new DataGridPathGroupDescription("StartLayerIndex"));
 
                 return groupView;
             }
 
-            return SlicerFile.IssueManager;
+            return SlicerFile!.IssueManager;
         }
     }
     #endregion
@@ -225,7 +225,7 @@ public partial class MainWindow
                 Parallel.ForEach(processParallelIssues, CoreSettings.GetParallelOptions(Progress), layerIssues =>
                 {
                     Progress.PauseIfRequested();
-                    using (var image = SlicerFile[layerIssues.Key].LayerMat)
+                    using (var image = SlicerFile![layerIssues.Key].LayerMat)
                     {
                         var bytes = image.GetDataByteSpan();
 
@@ -266,10 +266,10 @@ public partial class MainWindow
 
                 if (layersToRemove.Count > 0)
                 {
-                    OperationLayerRemove.RemoveLayers(SlicerFile, layersToRemove);
+                    OperationLayerRemove.RemoveLayers(SlicerFile!, layersToRemove);
                 }
 
-                if(suctionCupDrill) issueRemoveList.AddRange(SlicerFile.IssueManager.DrillSuctionCupsForIssues(processSuctionCups, UserSettings.Instance.LayerRepair.SuctionCupsVentHole, Progress));
+                if(suctionCupDrill) issueRemoveList.AddRange(SlicerFile!.IssueManager.DrillSuctionCupsForIssues(processSuctionCups, UserSettings.Instance.LayerRepair.SuctionCupsVentHole, Progress));
 
             }
             catch (Exception ex)
@@ -315,7 +315,7 @@ public partial class MainWindow
             if (issue.IsIsland)
             {
                 var nextLayer = issue.StartLayerIndex + 1;
-                if (nextLayer >= SlicerFile.LayerCount) continue;
+                if (nextLayer >= SlicerFile!.LayerCount) continue;
                 if (whiteListLayers.Contains(nextLayer)) continue;
                 whiteListLayers.Add(nextLayer);
             }
@@ -329,7 +329,7 @@ public partial class MainWindow
         ClipboardManager.Clip($"Manually removed {issueRemoveList.Count} issues");
             
         IssuesGrid.SelectedIndex = -1;
-        SlicerFile.IssueManager.RemoveRange(issueRemoveList);
+        SlicerFile!.IssueManager.RemoveRange(issueRemoveList);
 
         if (layersToRemove.Count > 0)
         {
@@ -382,9 +382,10 @@ public partial class MainWindow
 
     public async void OnClickIssueIgnore()
     {
+        if (!IsFileLoaded) return;
         if ((_globalModifiers & KeyModifiers.Alt) != 0)
         {
-            if(SlicerFile.IssueManager.IgnoredIssues.Count == 0) return;
+            if(SlicerFile!.IssueManager.IgnoredIssues.Count == 0) return;
             if (await this.MessageBoxQuestion(
                     $"Are you sure you want to re-enable {SlicerFile.IssueManager.IgnoredIssues.Count} ignored issues?\n" +
                     "A full re-detect will be required to get the ignored issues.\n", $"Re-enable {SlicerFile.IssueManager.IgnoredIssues.Count} Issues?") !=
@@ -403,7 +404,7 @@ public partial class MainWindow
             MessageButtonResult.Yes) return;
 
         var list = IssuesGrid.SelectedItems.Cast<MainIssue>().ToArray();
-        SlicerFile.IssueManager.IgnoredIssues.AddRange(list);
+        SlicerFile!.IssueManager.IgnoredIssues.AddRange(list);
         IssuesGrid.SelectedItems.Clear();
         SlicerFile.IssueManager.RemoveRange(list);
         ShowLayer();
@@ -423,7 +424,7 @@ public partial class MainWindow
         ShowProgressWindow("Updating Issues");
 
 
-        var issueList = SlicerFile.IssueManager.ToList();
+        var issueList = SlicerFile!.IssueManager.ToList();
         issueList.RemoveAll(issue =>
             config.IslandConfig.WhiteListLayers.Contains(issue.StartLayerIndex) && issue.Type is MainIssue.IssueType.Island or MainIssue.IssueType.Overhang);
         /*foreach (var layerIndex in islandConfig.WhiteListLayers)
@@ -487,7 +488,7 @@ public partial class MainWindow
         set
         {
             if (!RaiseAndSetIfChanged(ref _issueSelectedIndex, value)) return;
-            if(_issueSelectedIndex >= 0) IssuesGrid.ScrollIntoView(SlicerFile.IssueManager.FirstOrDefault(issue => ReferenceEquals(issue, IssuesGrid.SelectedItem)), null);
+            if(_issueSelectedIndex >= 0) IssuesGrid.ScrollIntoView(SlicerFile!.IssueManager.FirstOrDefault(issue => ReferenceEquals(issue, IssuesGrid.SelectedItem)), null);
         }
     }
 
@@ -503,6 +504,7 @@ public partial class MainWindow
         }
 
         var issue = mainIssue.FirstOrDefault();
+        if (issue is null) return;
         ZoomToIssue(issue, true);
     }
 
@@ -528,6 +530,7 @@ public partial class MainWindow
 
     private void IssuesGridOnKeyUp(object? sender, KeyEventArgs e)
     {
+        if (!IsFileLoaded) return;
         switch (e.Key)
         {
             case Key.Escape:
@@ -536,7 +539,7 @@ public partial class MainWindow
             case Key.Multiply:
                 var selectedItems = IssuesGrid.SelectedItems.OfType<MainIssue>().ToList();
                 IssuesGrid.SelectedItems.Clear();
-                foreach (var item in SlicerFile.IssueManager)
+                foreach (var item in SlicerFile!.IssueManager)
                 {
                     if (!selectedItems.Contains(item))
                         IssuesGrid.SelectedItems.Add(item);
@@ -557,7 +560,8 @@ public partial class MainWindow
 
     public async void OnClickExportIssues()
     {
-        if (!SlicerFile.IssueManager.HaveIssues) return;
+        if (!IsFileLoaded) return;
+        if (!SlicerFile!.IssueManager.HaveIssues) return;
 
         using var file = await SaveFilePickerAsync(SlicerFile.DirectoryPath, SlicerFile.FilenameNoExt, AvaloniaStatic.IssuesFileFilter);
         if (file?.TryGetLocalPath() is not { } filePath) return;
@@ -581,7 +585,7 @@ public partial class MainWindow
     public async Task OnClickDetectIssues()
     {
         if (!IsFileLoaded) return;
-        if (SlicerFile.DecodeType == FileFormat.FileDecodeType.Partial)
+        if (SlicerFile!.DecodeType == FileFormat.FileDecodeType.Partial)
         {
             await this.MessageBoxError("The file was open in partial mode and the detect issues is unable to run in this mode.\n" +
                                        "Please reload the file in full mode in order to use detect issues.", "Unable to run in partial mode");
@@ -593,7 +597,8 @@ public partial class MainWindow
 
     private async Task ComputeIssues(IssuesDetectionConfiguration config)
     {
-        SlicerFile.IssueManager.Clear();
+        if (!IsFileLoaded) return;
+        SlicerFile!.IssueManager.Clear();
         IsGUIEnabled = false;
         ShowProgressWindow("Computing Issues");
 
@@ -685,7 +690,7 @@ public partial class MainWindow
     private void UpdateLayerTrackerHighlightIssues()
     {
         LayerNavigationIssuesCanvas.Children.Clear();
-        if (!IsFileLoaded || SlicerFile.IssueManager.Count == 0) return;
+        if (!IsFileLoaded || SlicerFile!.IssueManager.Count == 0) return;
 
         var tickFrequencySize = LayerNavigationIssuesCanvas.Bounds.Height * LayerSlider.TickFrequency / LayerSlider.Maximum;
         var stroke = (int)Math.Ceiling(tickFrequencySize);
@@ -693,13 +698,13 @@ public partial class MainWindow
         var colorDictionary = GetIssueColors(true);
 
 
-        var issues = SlicerFile.IssueManager.GetIssues().OrderBy(issue => issue.Parent.Type).DistinctBy(mainIssue => mainIssue.LayerIndex);
+        var issues = SlicerFile.IssueManager.GetIssues().OrderBy(issue => issue.Parent!.Type).DistinctBy(mainIssue => mainIssue.LayerIndex);
 
         foreach (var issue in issues)
         {
             var color = Brushes.Red;
 
-            if (Settings.LayerPreview.UseIssueColorOnTracker) colorDictionary.TryGetValue(issue.Parent.Type, out color);
+            if (Settings.LayerPreview.UseIssueColorOnTracker) colorDictionary.TryGetValue(issue.Parent!.Type, out color);
 
             var yPos = tickFrequencySize * issue.LayerIndex;
             if (issue.LayerIndex == 0 && stroke > 3)
@@ -764,16 +769,17 @@ public partial class MainWindow
     public void IssuesClear(bool clearIgnored = true)
     {
         if (!IsFileLoaded) return;
-        SlicerFile.IssueManager.Clear();
+        SlicerFile!.IssueManager.Clear();
         if(clearIgnored) SlicerFile.IssueManager.IgnoredIssues.Clear();
     }
 
     public void SetResinTrapDetectionStartLayer(object which)
     {
+        if (!IsFileLoaded) return;
         switch (which)
         {
             case "N":
-                ResinTrapDetectionStartLayer = SlicerFile.FirstNormalLayer.Index;
+                ResinTrapDetectionStartLayer = SlicerFile!.FirstNormalLayer?.Index ?? 0;
                 break;
             case "C":
                 ResinTrapDetectionStartLayer = ActualLayer;

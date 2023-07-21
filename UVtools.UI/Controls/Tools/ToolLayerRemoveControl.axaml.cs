@@ -7,14 +7,14 @@ namespace UVtools.UI.Controls.Tools;
 
 public partial class ToolLayerRemoveControl : ToolControl
 {
-    public OperationLayerRemove Operation => BaseOperation as OperationLayerRemove;
+    public OperationLayerRemove Operation => (BaseOperation as OperationLayerRemove)!;
 
     public string InfoLayersStr
     {
         get
         {
             uint extraLayers = Operation.LayerRemoveCount;
-            return $"Layers: {SlicerFile.LayerCount} → {SlicerFile.LayerCount - extraLayers} (- {extraLayers})";
+            return $"Layers: {SlicerFile!.LayerCount} → {SlicerFile.LayerCount - extraLayers} (- {extraLayers})";
         }
     }
 
@@ -25,18 +25,18 @@ public partial class ToolLayerRemoveControl : ToolControl
             float extraHeight = 0;
             for (uint layerIndex = Operation.LayerIndexStart; layerIndex <= Operation.LayerIndexEnd; layerIndex++)
             {
-                if (Operation.UseThreshold && SlicerFile[layerIndex].NonZeroPixelCount > Operation.PixelThreshold) continue;
-                extraHeight += SlicerFile[layerIndex].RelativePositionZ;
+                if (Operation.UseThreshold && SlicerFile![layerIndex].NonZeroPixelCount > Operation.PixelThreshold) continue;
+                extraHeight += SlicerFile![layerIndex].RelativePositionZ;
             }
 
             extraHeight = Layer.RoundHeight(extraHeight);
-            return $"Height: {SlicerFile.PrintHeight}mm → {Math.Max(0, Layer.RoundHeight(SlicerFile.PrintHeight - extraHeight))}mm (- {extraHeight}mm)";
+            return $"Height: {SlicerFile!.PrintHeight}mm → {Math.Max(0, Layer.RoundHeight(SlicerFile.PrintHeight - extraHeight))}mm (- {extraHeight}mm)";
         }
     }
 
     public ToolLayerRemoveControl()
     {
-        BaseOperation = new OperationLayerRemove(SlicerFile);
+        BaseOperation = new OperationLayerRemove(SlicerFile!);
         if (!ValidateSpawn()) return;
         InitializeComponent();
     }

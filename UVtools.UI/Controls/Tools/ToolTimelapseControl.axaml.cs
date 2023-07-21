@@ -5,11 +5,11 @@ namespace UVtools.UI.Controls.Tools;
 
 public partial class ToolTimelapseControl : ToolControl
 {
-    public OperationTimelapse Operation => BaseOperation as OperationTimelapse;
+    public OperationTimelapse Operation => (BaseOperation as OperationTimelapse)!;
 
     public ToolTimelapseControl()
     {
-        BaseOperation = new OperationTimelapse(SlicerFile);
+        BaseOperation = new OperationTimelapse(SlicerFile!);
         if (!ValidateSpawn()) return;
         InitializeComponent();
     }
@@ -24,7 +24,7 @@ public partial class ToolTimelapseControl : ToolControl
                 {
                     if (e.PropertyName == nameof(Operation.NumberOfLifts))
                     {
-                        ParentWindow.ButtonOkEnabled = Operation.NumberOfLifts > 0;
+                        ParentWindow!.ButtonOkEnabled = Operation.NumberOfLifts > 0;
                         return;
                     }
                 };

@@ -15,13 +15,14 @@ namespace UVtools.UI.Converters;
 
 public class FromValueDescriptionToEnumConverter : IValueConverter
 {
-    public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+    public object? Convert(object? value, Type targetType, object? parameter, System.Globalization.CultureInfo culture)
     {
+        if (value == null) return null;
         var list = EnumExtensions.GetAllValuesAndDescriptions(value.GetType());
-        return list.FirstOrDefault(vd => vd.Value.Equals(value));
+        return list.FirstOrDefault(vd => Equals(vd.Value, value));
     }
 
-    public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+    public object? ConvertBack(object? value, Type targetType, object? parameter, System.Globalization.CultureInfo culture)
     {
         if (value is null) return null;
         var list = EnumExtensions.GetAllValuesAndDescriptions(targetType);

@@ -203,12 +203,12 @@ public class IndexSelector : TemplatedControl
     #region Methods
     private void PreviousButtonOnClick(object? sender, RoutedEventArgs e)
     {
-        SelectedIndex--;
+        SelectPrevious();
     }
 
     private void NextButtonOnClick(object? sender, RoutedEventArgs e)
     {
-        SelectedIndex++;
+        SelectNext();
     }
 
 
@@ -222,6 +222,18 @@ public class IndexSelector : TemplatedControl
                 ? string.Format(FormatString, (_selectedIndex + 1).ToString($"D{DigitCount(_count)}"), _count)
                 : string.Format(FormatString, _selectedIndex + 1, _count);
     }
+
+    public void SelectPrevious()
+    {
+        SelectedIndex--;
+    }
+
+    public void SelectNext()
+    {
+        SelectedIndex++;
+    }
+
+
 
     private int DigitCount(int n)
     {

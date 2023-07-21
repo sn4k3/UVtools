@@ -10,9 +10,9 @@ namespace UVtools.UI.Controls.Calibrators;
 
 public partial class CalibrateToleranceControl : ToolControl
 {
-    public OperationCalibrateTolerance Operation => BaseOperation as OperationCalibrateTolerance;
+    public OperationCalibrateTolerance Operation => (BaseOperation as OperationCalibrateTolerance)!;
 
-    private readonly Timer _timer;
+    private readonly Timer _timer = null!;
 
     /*public string ProfileName
     {
@@ -22,21 +22,21 @@ public partial class CalibrateToleranceControl : ToolControl
 
     //public bool IsProfileAddEnabled => Operation.ScaleXFactor != 100 || Operation.ScaleYFactor != 100;
 
-    private Bitmap _previewImage;
+    private Bitmap? _previewImage;
     /*private string _profileName;
     private bool _isProfileNameEnabled;*/
 
-    public Bitmap PreviewImage
+    public Bitmap? PreviewImage
     {
         get => _previewImage;
         set => RaiseAndSetIfChanged(ref _previewImage, value);
     }
 
-    public bool IsDisplaySizeVisible => App.SlicerFile.DisplayWidth <= 0 && App.SlicerFile.DisplayHeight <= 0;
+    public bool IsDisplaySizeVisible => SlicerFile!.DisplayWidth <= 0 && SlicerFile.DisplayHeight <= 0;
 
     public CalibrateToleranceControl()
     {
-        BaseOperation = new OperationCalibrateTolerance(SlicerFile);
+        BaseOperation = new OperationCalibrateTolerance(SlicerFile!);
         if (!ValidateSpawn()) return;
         InitializeComponent();
             

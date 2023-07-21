@@ -169,7 +169,7 @@ public partial class MainWindow
             return;
         }
 
-        WriteableBitmap bitmap = (WriteableBitmap)LayerImageBox.Image;
+        WriteableBitmap bitmap = LayerImageBox.ImageAsWriteableBitmap!;
         //var context = CreateRenderTarget().CreateDrawingContext(bitmap);
 
         
@@ -177,7 +177,7 @@ public partial class MainWindow
         if (SelectedPixelOperationTabIndex == (byte)PixelOperation.PixelOperationType.Drawing)
         {
             var drawings = new List<PixelOperation>();
-            uint minLayer = SlicerFile.SanitizeLayerIndex((int)ActualLayer - (int)DrawingPixelDrawing.LayersBelow);
+            uint minLayer = SlicerFile!.SanitizeLayerIndex((int)ActualLayer - (int)DrawingPixelDrawing.LayersBelow);
             uint maxLayer = SlicerFile.SanitizeLayerIndex(ActualLayer + DrawingPixelDrawing.LayersAbove);
             for (uint layerIndex = minLayer; layerIndex <= maxLayer; layerIndex++)
             {
@@ -196,20 +196,8 @@ public partial class MainWindow
 
                     if (operationDrawing.BrushSize == 1)
                     {
-                        /*unsafe
-                        {
-                            using var framebuffer = bitmap.Lock();
-                            var data = (uint*)framebuffer.Address.ToPointer();
-                            data[bitmap.GetPixelPos(location)] =
-                                color.ToUint32();
-                        }*/
-
-                        LayerCache.Canvas.DrawPoint(location.X, location.Y, new SKColor(color.ToUint32()));
-
-
+                        LayerCache.Canvas?.DrawPoint(location.X, location.Y, new SKColor(color.ToUint32()));
                         LayerImageBox.InvalidateVisual();
-                        // LayerCache.ImageBgr.SetByte(operationDrawing.Location.X, operationDrawing.Location.Y,
-                        //   new[] { color.B, color.G, color.R });
                         continue;
                     }
 
@@ -286,7 +274,7 @@ public partial class MainWindow
 
 
 
-                            LayerCache.Canvas.DrawLine(point1.X, point1.Y, point2.X, point2.Y, new SKPaint
+                            LayerCache.Canvas?.DrawLine(point1.X, point1.Y, point2.X, point2.Y, new SKPaint
                             {
                                 IsAntialias = operationDrawing.LineType == LineType.AntiAlias,
                                 Color = new SKColor(color.ToUint32()),
@@ -311,7 +299,7 @@ public partial class MainWindow
                                 operationDrawing.LineType);*/
                         //break;
                         case PixelDrawing.BrushShapeType.Circle:
-                            LayerCache.Canvas.DrawCircle(location.X, location.Y, operationDrawing.BrushSize / 2f,
+                            LayerCache.Canvas?.DrawCircle(location.X, location.Y, operationDrawing.BrushSize / 2f,
                                 new SKPaint
                                 {
                                     IsAntialias = operationDrawing.LineType == LineType.AntiAlias,
@@ -365,7 +353,7 @@ public partial class MainWindow
                             }
                             path.Close();
 
-                            LayerCache.Canvas.DrawPath(path, new SKPaint
+                            LayerCache.Canvas?.DrawPath(path, new SKPaint
                             {
                                 IsAntialias = operationDrawing.LineType == LineType.AntiAlias,
                                 Color = new SKColor(color.ToUint32()),
@@ -395,8 +383,8 @@ public partial class MainWindow
             if (string.IsNullOrEmpty(DrawingPixelText.Text) || DrawingPixelText.FontScale < 0.2) return;
 
             var drawings = new List<PixelOperation>();
-            uint minLayer = SlicerFile.SanitizeLayerIndex((int)ActualLayer - (int)DrawingPixelText.LayersBelow);
-            uint maxLayer = SlicerFile.SanitizeLayerIndex(ActualLayer + DrawingPixelText.LayersAbove);
+            uint minLayer = SlicerFile!.SanitizeLayerIndex((int)ActualLayer - (int)DrawingPixelText.LayersBelow);
+            uint maxLayer = SlicerFile!.SanitizeLayerIndex(ActualLayer + DrawingPixelText.LayersAbove);
             
             for (uint layerIndex = minLayer; layerIndex <= maxLayer; layerIndex++)
             {
@@ -427,11 +415,11 @@ public partial class MainWindow
         }
         else if (SelectedPixelOperationTabIndex == (byte)PixelOperation.PixelOperationType.Eraser)
         {
-            if (LayerCache.Image.GetByte(realLocation) < 10) return;
+            if (LayerCache.Image!.GetByte(realLocation) < 10) return;
 
             var drawings = new List<PixelOperation>();
-            uint minLayer = SlicerFile.SanitizeLayerIndex((int)ActualLayer - (int)DrawingPixelEraser.LayersBelow);
-            uint maxLayer = SlicerFile.SanitizeLayerIndex(ActualLayer + DrawingPixelEraser.LayersAbove);
+            uint minLayer = SlicerFile!.SanitizeLayerIndex((int)ActualLayer - (int)DrawingPixelEraser.LayersBelow);
+            uint maxLayer = SlicerFile!.SanitizeLayerIndex(ActualLayer + DrawingPixelEraser.LayersAbove);
             for (uint layerIndex = minLayer; layerIndex <= maxLayer; layerIndex++)
             {
                 var operationEraser = new PixelEraser(layerIndex, realLocation, DrawingPixelEraser.PixelBrightness);
@@ -563,7 +551,7 @@ public partial class MainWindow
             {
                 try
                 {
-                    SlicerFile.DrawModifications(Drawings, Progress);
+                    SlicerFile!.DrawModifications(Drawings, Progress);
                     return Task.FromResult(true);
                 }
                 catch (OperationCanceledException)
@@ -606,7 +594,7 @@ public partial class MainWindow
                         whiteListLayers.Add(item.LayerIndex);
 
                     uint nextLayer = item.LayerIndex + 1;
-                    if (nextLayer < SlicerFile.LayerCount &&
+                    if (nextLayer < SlicerFile!.LayerCount &&
                         !whiteListLayers.Contains(nextLayer))
                     {
                         whiteListLayers.Add(nextLayer);

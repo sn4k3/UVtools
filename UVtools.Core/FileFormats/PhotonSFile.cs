@@ -405,7 +405,7 @@ public sealed class PhotonSFile : FileFormat
         //throw new NotSupportedException("PhotonS is read-only format, please use pws instead!");
         using var outputFile = new FileStream(TemporaryOutputFileFullPath, FileMode.Create, FileAccess.Write);
         outputFile.WriteSerialize(HeaderSettings);
-        outputFile.WriteBytes(EncodeImage(DATATYPE_BGR565, Thumbnails[0]!));
+        outputFile.WriteBytes(EncodeImage(DATATYPE_BGR565, Thumbnails[0]));
         outputFile.WriteSerialize(LayerSettings);
 
         progress.Reset(OperationProgress.StatusEncodeLayers, LayerCount);
@@ -453,7 +453,7 @@ public sealed class PhotonSFile : FileFormat
         byte[] previewData = new byte[previewSize];
 
         inputFile.ReadBytes(previewData);
-        Thumbnails[0] = DecodeImage(DATATYPE_BGR565, previewData, HeaderSettings.PreviewResolutionX, HeaderSettings.PreviewResolutionY);
+        Thumbnails.Add(DecodeImage(DATATYPE_BGR565, previewData, HeaderSettings.PreviewResolutionX, HeaderSettings.PreviewResolutionY));
 
         LayerSettings = Helpers.Deserialize<LayerHeader>(inputFile);
             

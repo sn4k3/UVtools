@@ -26,16 +26,15 @@ public class WindowEx : Window, INotifyPropertyChanged
     /// <summary>
     ///     Multicast event for property change notifications.
     /// </summary>
-    private PropertyChangedEventHandler _propertyChanged;
-    private readonly List<string> events = new();
+    private PropertyChangedEventHandler? _propertyChanged;
 
-    public new event PropertyChangedEventHandler PropertyChanged
+    public new event PropertyChangedEventHandler? PropertyChanged
     {
-        add { _propertyChanged -= value; _propertyChanged += value; events.Add("added"); }
-        remove { _propertyChanged -= value; events.Add("removed"); }
+        add { _propertyChanged -= value; _propertyChanged += value; }
+        remove => _propertyChanged -= value;
     }
 
-    protected bool RaiseAndSetIfChanged<T>(ref T field, T value, [CallerMemberName] string propertyName = null)
+    protected bool RaiseAndSetIfChanged<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
     {
         if (EqualityComparer<T>.Default.Equals(field, value)) return false;
         field = value;
@@ -55,7 +54,7 @@ public class WindowEx : Window, INotifyPropertyChanged
     ///     value is optional and can be provided automatically when invoked from compilers
     ///     that support <see cref="CallerMemberNameAttribute" />.
     /// </param>
-    protected void RaisePropertyChanged([CallerMemberName] string propertyName = null)
+    protected void RaisePropertyChanged([CallerMemberName] string? propertyName = null)
     {
         var e = new PropertyChangedEventArgs(propertyName);
         OnPropertyChanged(e);
@@ -110,7 +109,7 @@ public class WindowEx : Window, INotifyPropertyChanged
 
     public UserSettings Settings => UserSettings.Instance;
 
-    public virtual FileFormat SlicerFile
+    public virtual FileFormat? SlicerFile
     {
         get => App.SlicerFile;
         set => App.SlicerFile = value;
@@ -177,7 +176,7 @@ public class WindowEx : Window, INotifyPropertyChanged
         Close(DialogResult);
     }
 
-    public virtual void ResetDataContext(object newObject = null)
+    public virtual void ResetDataContext(object? newObject = null)
     {
         var old = DataContext;
         DataContext = null;
@@ -225,10 +224,10 @@ public class WindowEx : Window, INotifyPropertyChanged
 
     public Task<IStorageFile?> SaveFilePickerAsync(IStorageFolder? directory, string? fileName, IReadOnlyList<FilePickerFileType>? filters, bool showOverwritePrompt = true)
     {
-        string defaultExt = null;
-        if (filters?.Count > 0)
+        string? defaultExt = null;
+        if (filters?.Count > 0 && filters[0].Patterns?.Count > 0)
         {
-            if (filters[0].Patterns?.Count > 0) defaultExt = filters[0].Patterns[0][2..];
+            defaultExt = filters[0].Patterns![0][2..];
         }
         
         return StorageProvider.SaveFilePickerAsync(new()

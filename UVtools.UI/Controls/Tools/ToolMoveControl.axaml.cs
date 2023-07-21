@@ -6,7 +6,7 @@ namespace UVtools.UI.Controls.Tools;
 public partial class ToolMoveControl : ToolControl
 {
     private bool _isMiddleCenterChecked = true;
-    public OperationMove Operation => BaseOperation as OperationMove;
+    public OperationMove Operation => (BaseOperation as OperationMove)!;
 
     public bool IsMiddleCenterChecked
     {
@@ -16,16 +16,16 @@ public partial class ToolMoveControl : ToolControl
 
     public ToolMoveControl()
     {
-        BaseOperation = new OperationMove(SlicerFile);
+        BaseOperation = new OperationMove(SlicerFile!);
         if (!ValidateSpawn()) return;
         InitializeComponent();
             
 
         Operation.PropertyChanged += (sender, e) =>
         {
-            if (e.PropertyName.Equals(nameof(Operation.IsWithinBoundary)))
+            if (e.PropertyName == nameof(Operation.IsWithinBoundary))
             {
-                ParentWindow.ButtonOkEnabled = Operation.IsWithinBoundary;
+                ParentWindow!.ButtonOkEnabled = Operation.IsWithinBoundary;
             }
         };
     }
@@ -36,10 +36,10 @@ public partial class ToolMoveControl : ToolControl
         {
             case ToolWindow.Callbacks.Init:
             case ToolWindow.Callbacks.AfterLoadProfile:
-                Operation.ROI = App.MainWindow.ROI.IsEmpty ? SlicerFile.BoundingRectangle : App.MainWindow.ROI;
+                Operation.ROI = App.MainWindow.ROI.IsEmpty ? SlicerFile!.BoundingRectangle : App.MainWindow.ROI;
                 break;
             case ToolWindow.Callbacks.ClearROI:
-                Operation.ROI = SlicerFile.BoundingRectangle;
+                Operation.ROI = SlicerFile!.BoundingRectangle;
                 Operation.Reset();
                 break;
         }

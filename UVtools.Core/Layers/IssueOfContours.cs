@@ -18,7 +18,7 @@ public sealed class IssueOfContours : Issue
     /// <summary>
     /// Gets the points contours of the issue
     /// </summary>
-    public Point[][] Contours { get; init; }
+    public Point[][] Contours { get; init; } = null!;
 
     public IssueOfContours() { }
 

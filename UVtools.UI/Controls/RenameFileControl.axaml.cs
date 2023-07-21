@@ -27,13 +27,13 @@ public partial class RenameFileControl : ToolBaseControl
             if (!RaiseAndSetIfChanged(ref _newFileNameNoExt, value)) return;
             RaisePropertyChanged(nameof(NewFileName));
             RaisePropertyChanged(nameof(NewFilePath));
-            ParentWindow.ButtonOkEnabled = CanRename;
+            ParentWindow!.ButtonOkEnabled = CanRename;
         }
     }
 
     public string NewFileName => $"{_newFileNameNoExt}.{_fileExtension}";
 
-    public string NewFilePath => Path.Combine(SlicerFile.DirectoryPath, NewFileName);
+    public string NewFilePath => Path.Combine(SlicerFile!.DirectoryPath!, NewFileName);
 
     public bool Overwrite
     {
@@ -45,7 +45,7 @@ public partial class RenameFileControl : ToolBaseControl
 
     public RenameFileControl()
     {
-        OldFilePath = SlicerFile.FileFullPath;
+        OldFilePath = SlicerFile!.FileFullPath!;
         _newFileNameNoExt = OldFileNameNoExt = FileFormat.GetFileNameStripExtensions(OldFilePath, out _fileExtension);
             
         DataContext = this;
@@ -54,7 +54,7 @@ public partial class RenameFileControl : ToolBaseControl
 
     protected override void OnInitialized()
     {
-        ParentWindow.ButtonOkEnabled = false;
+        ParentWindow!.ButtonOkEnabled = false;
     }
 
     public override string Validate()
@@ -91,7 +91,7 @@ public partial class RenameFileControl : ToolBaseControl
         if (_overwrite) return true;
 
         if (!File.Exists(NewFilePath)) return true;
-        if (await ParentWindow.MessageBoxQuestion(
+        if (await ParentWindow!.MessageBoxQuestion(
                 $"The file \"{_newFileNameNoExt}\" already exists, do you want to overwrite?",
                 "File already exists") == MessageButtonResult.Yes)
         {

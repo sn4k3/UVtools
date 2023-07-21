@@ -629,19 +629,7 @@ public sealed class VDTFile : FileFormat
         using var outputFile = ZipFile.Open(TemporaryOutputFileFullPath, ZipArchiveMode.Create);
         outputFile.PutFileContent(FileManifestName, JsonSerializer.SerializeToUtf8Bytes(ManifestFile, JsonExtensions.SettingsIndent), ZipArchiveMode.Create);
 
-        if (CreatedThumbnailsCount > 0)
-        {
-            for (int i = 0; i < FilePreviewNames.Length; i++)
-            {
-                if(Thumbnails.Length <= i) break;
-                if(Thumbnails[i] is null) continue;
-
-                using var stream = outputFile.CreateEntry(FilePreviewNames[i]).Open();
-                stream.WriteBytes(Thumbnails[i]!.GetPngByes());
-                stream.Close();
-            }
-        }
-
+        EncodeThumbnailsInZip(outputFile, FilePreviewNames);
         EncodeLayersInZip(outputFile, progress);
     }
 
@@ -659,19 +647,7 @@ public sealed class VDTFile : FileFormat
                 
         Init((uint) ManifestFile.Layers!.Length, DecodeType == FileDecodeType.Partial);
 
-        for (int i = 0; i < FilePreviewNames.Length; i++)
-        {
-            if (Thumbnails.Length <= i) break;
-
-            entry = inputFile.GetEntry(FilePreviewNames[i]);
-            if (entry is null) continue;
-            using var stream = entry.Open();
-            Mat image = new();
-            CvInvoke.Imdecode(stream.ToArray(), ImreadModes.AnyColor, image);
-            Thumbnails[i] = image;
-            stream.Close();
-        }
-
+        DecodeThumbnailsFromZip(inputFile, FilePreviewNames);
         DecodeLayersFromZip(inputFile, progress);
 
         for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)

@@ -1,9 +1,7 @@
 ﻿using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.Primitives;
 using Avalonia.Layout;
 using System;
-using System.Collections.Generic;
 
 namespace UVtools.UI.Controls;
 
@@ -11,12 +9,11 @@ public class SplitButtonWithIcon : SplitButton
 {
     protected override Type StyleKeyOverride => typeof(SplitButton);
 
-    private readonly List<IDisposable> _disposableSubscribes = new();
 
-    public static readonly StyledProperty<string> TextProperty =
+    public static readonly StyledProperty<string?> TextProperty =
         ButtonWithIcon.TextProperty.AddOwner<SplitButtonWithIcon>();
 
-    public string Text
+    public string? Text
     {
         get => GetValue(TextProperty);
         set => SetValue(TextProperty, value);
@@ -31,10 +28,10 @@ public class SplitButtonWithIcon : SplitButton
         set => SetValue(IconPlacementProperty, value);
     }
 
-    public static readonly StyledProperty<string> IconProperty =
+    public static readonly StyledProperty<string?> IconProperty =
         ButtonWithIcon.IconProperty.AddOwner<SplitButtonWithIcon>();
 
-    public string Icon
+    public string? Icon
     {
         get => GetValue(IconProperty);
         set => SetValue(IconProperty, value);
@@ -53,18 +50,15 @@ public class SplitButtonWithIcon : SplitButton
     {
     }
 
-    protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs e)
     {
-        foreach (var disposableSubscribe in _disposableSubscribes)
+        base.OnPropertyChanged(e);
+        if (ReferenceEquals(e.Property, TextProperty)
+            || ReferenceEquals(e.Property, IconProperty)
+            || ReferenceEquals(e.Property, IconPlacementProperty))
         {
-            disposableSubscribe.Dispose();
+            RebuildContent();
         }
-        _disposableSubscribes.Clear();
-
-        _disposableSubscribes.Add(TextProperty.Changed.Subscribe(_ => RebuildContent()));
-        _disposableSubscribes.Add(IconProperty.Changed.Subscribe(_ => RebuildContent()));
-        _disposableSubscribes.Add(IconPlacementProperty.Changed.Subscribe(_ => RebuildContent()));
-        RebuildContent();
     }
 
     public Projektanker.Icons.Avalonia.Icon MakeIcon()

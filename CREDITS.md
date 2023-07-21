@@ -78,3 +78,4 @@
 - Kevin Bullmann
 - Robert Redden
 - Nick Spirov
+- Sylvain Chartrand

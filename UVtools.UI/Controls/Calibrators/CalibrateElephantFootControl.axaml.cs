@@ -10,12 +10,12 @@ namespace UVtools.UI.Controls.Calibrators;
 
 public partial class CalibrateElephantFootControl : ToolControl
 {
-    public OperationCalibrateElephantFoot Operation => BaseOperation as OperationCalibrateElephantFoot;
+    public OperationCalibrateElephantFoot Operation => (BaseOperation as OperationCalibrateElephantFoot)!;
 
-    private readonly Timer _timer;
+    private readonly Timer _timer = null!;
 
-    private Bitmap _previewImage;
-    public Bitmap PreviewImage
+    private Bitmap? _previewImage;
+    public Bitmap? PreviewImage
     {
         get => _previewImage;
         set => RaiseAndSetIfChanged(ref _previewImage, value);
@@ -24,7 +24,7 @@ public partial class CalibrateElephantFootControl : ToolControl
 
     public CalibrateElephantFootControl()
     {
-        BaseOperation = new OperationCalibrateElephantFoot(SlicerFile);
+        BaseOperation = new OperationCalibrateElephantFoot(SlicerFile!);
         if (!ValidateSpawn()) return;
 
         InitializeComponent();
@@ -49,7 +49,7 @@ public partial class CalibrateElephantFootControl : ToolControl
                     _timer.Start();
                     if (e.PropertyName == nameof(Operation.ObjectCount))
                     {
-                        ParentWindow.ButtonOkEnabled = Operation.ObjectCount > 0;
+                        ParentWindow!.ButtonOkEnabled = Operation.ObjectCount > 0;
                         return;
                     }
                 };

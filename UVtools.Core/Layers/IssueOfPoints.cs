@@ -17,7 +17,7 @@ public sealed class IssueOfPoints : Issue
     /// <summary>
     /// Gets the points containing the coordinates of the issue
     /// </summary>
-    public Point[] Points { get; init; }
+    public Point[] Points { get; init; } = null!;
 
     public IssueOfPoints() { }
 

@@ -7,7 +7,6 @@
  */
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.Primitives;
 using Avalonia.Layout;
 using System;
 using System.Collections.Generic;
@@ -26,12 +25,10 @@ public class ButtonWithIcon : Button
 
     protected override Type StyleKeyOverride => typeof(Button);
 
-    private readonly List<IDisposable> _disposableSubscribes = new();
+    public static readonly StyledProperty<string?> TextProperty =
+        AvaloniaProperty.Register<ButtonWithIcon, string?>(nameof(Text));
 
-    public static readonly StyledProperty<string> TextProperty =
-        AvaloniaProperty.Register<ButtonWithIcon, string>(nameof(Text));
-
-    public string Text
+    public string? Text
     {
         get => GetValue(TextProperty);
         set => SetValue(TextProperty, value);
@@ -67,19 +64,15 @@ public class ButtonWithIcon : Button
     public ButtonWithIcon()
     {
     }
-
-    protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs e)
     {
-        foreach (var disposableSubscribe in _disposableSubscribes)
+        base.OnPropertyChanged(e);
+        if (ReferenceEquals(e.Property, TextProperty)
+            || ReferenceEquals(e.Property, IconProperty)
+            || ReferenceEquals(e.Property, IconPlacementProperty))
         {
-            disposableSubscribe.Dispose();
+            RebuildContent();
         }
-        _disposableSubscribes.Clear();
-
-        _disposableSubscribes.Add(TextProperty.Changed.Subscribe(_ => RebuildContent()));
-        _disposableSubscribes.Add(IconProperty.Changed.Subscribe(_ => RebuildContent()));
-        _disposableSubscribes.Add(IconPlacementProperty.Changed.Subscribe(_ => RebuildContent()));
-        RebuildContent();
     }
 
     public Projektanker.Icons.Avalonia.Icon MakeIcon()

@@ -171,7 +171,7 @@ public static class ConsoleArguments
                 return true;
             }
 
-            var outputFile = Path.Combine(Path.GetDirectoryName(args[1]), $"{Path.GetFileNameWithoutExtension(args[1])}.stl");
+            var outputFile = Path.Combine(Path.GetDirectoryName(args[1])!, $"{Path.GetFileNameWithoutExtension(args[1])}.stl");
 
             if (args.Length >= 3 && !string.IsNullOrWhiteSpace(args[2]))
             {

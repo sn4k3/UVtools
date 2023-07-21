@@ -226,7 +226,7 @@ public class OperationProfiles //: IList<Operation>
         }
     }
 
-    public static Operation FindByName(Operation baseOperation, string profileName)
+    public static Operation? FindByName(Operation baseOperation, string? profileName)
     {
         return Profiles.Find(operation =>
             operation.GetType() == baseOperation.GetType() &&

@@ -11,7 +11,7 @@ using UVtools.UI.Extensions;
 
 namespace UVtools.UI.Windows;
 
-public partial class MissingInformationWindow : WindowEx
+public sealed partial class MissingInformationWindow : WindowEx
 {
     #region Members
     private decimal _layerHeight;
@@ -51,9 +51,9 @@ public partial class MissingInformationWindow : WindowEx
 
         if (SlicerFile is not null)
         {
-            _layerHeight = (decimal) SlicerFile.LayerHeight;
-            _displayWidth = (decimal) SlicerFile.DisplayWidth;
-            _displayHeight = (decimal) SlicerFile.DisplayHeight;
+            _layerHeight = (decimal) SlicerFile!.LayerHeight;
+            _displayWidth = (decimal) SlicerFile!.DisplayWidth;
+            _displayHeight = (decimal) SlicerFile!.DisplayHeight;
         }
 
         DataContext = this;
@@ -63,7 +63,7 @@ public partial class MissingInformationWindow : WindowEx
     {
         if (await this.MessageBoxQuestion("Are you sure you want to submit and apply the information?", "Submit and apply the information?") != MessageButtonResult.Yes) return;
 
-        if ((decimal)SlicerFile.DisplayWidth != _displayWidth && _displayWidth > 0)
+        if ((decimal)SlicerFile!.DisplayWidth != _displayWidth && _displayWidth > 0)
         {
             SlicerFile.DisplayWidth = (float) _displayWidth;
         }

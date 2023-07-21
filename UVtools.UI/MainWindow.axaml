@@ -4,7 +4,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:uc="clr-namespace:UVtools.UI.Controls"
         xmlns:uvtava="clr-namespace:UVtools.AvaloniaControls;assembly=UVtools.AvaloniaControls"
-        xmlns:i="clr-namespace:Projektanker.Icons.Avalonia;assembly=Projektanker.Icons.Avalonia"
+        xmlns:i="https://github.com/projektanker/icons.avalonia"
         mc:Ignorable="d" d:DesignWidth="1024" d:DesignHeight="600"
         x:Class="UVtools.UI.MainWindow"
         Title="UVtools"
@@ -406,13 +406,13 @@
 						<!-- Thumbnails -->
 						<uvtava:IndexSelector Grid.Row="0"
 											  Name="ThumbnailIndexSelector"
-                                              IsVisible="{Binding SlicerFile.CreatedThumbnailsCount}"
+                                              IsVisible="{Binding SlicerFile.HaveThumbnails}"
 											  SelectedIndex="{Binding VisibleThumbnailIndex}"
 											  BorderThickness="0"
-                                              Count="{Binding SlicerFile.CreatedThumbnailsCount}"/>
+                                              Count="{Binding SlicerFile.ThumbnailsCount}"/>
 						
 						<StackPanel Grid.Row="0"
-									IsVisible="{Binding SlicerFile.CreatedThumbnailsCount}"
+									IsVisible="{Binding SlicerFile.HaveThumbnails}"
 									IsEnabled="{Binding #ThumbnailIndexSelector.SelectedNumber}"
 									Orientation="Horizontal"
 									Spacing="2"
@@ -494,11 +494,15 @@
 
 						<!-- Preview image -->
 						<Image Grid.Row="1"
-							   IsVisible="{Binding SlicerFile.CreatedThumbnailsCount}"
+							   IsVisible="{Binding SlicerFile.HaveThumbnails}"
 							   Stretch="Uniform"
 							   Source="{Binding VisibleThumbnailImage}"/>
 
-						<GridSplitter Grid.Row="2" ResizeDirection="Rows" ResizeBehavior="PreviousAndNext" Height="5"/>
+						<GridSplitter Grid.Row="2" 
+                                      ResizeDirection="Rows" 
+                                      ResizeBehavior="PreviousAndNext"
+                                      Height="5"
+                                      IsVisible="{Binding SlicerFile.HaveThumbnails}"/>
 
 						<!-- Properties -->
 						<StackPanel
@@ -2079,8 +2083,6 @@
 					<uvtava:AdvancedImageBox
 						ShowGrid="{Binding Settings.LayerPreview.ShowBackgroudGrid}"
 						GridCellSize="15"
-						GridColor="{DynamicResource AdvancedImageBoxGridColor}"
-						GridColorAlternate="{DynamicResource AdvancedImageBoxGridAlternateColor}"
 						Name="LayerImageBox"/>
 				</Border>
 

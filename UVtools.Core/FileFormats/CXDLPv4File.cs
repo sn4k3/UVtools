@@ -1183,7 +1183,7 @@ public sealed class CXDLPv4File : FileFormat
     #region Constructors
     public CXDLPv4File()
     {
-        Previews = new Preview[ThumbnailsCount];
+        Previews = new Preview[ThumbnailCountFileShouldHave];
     }
     #endregion
 
@@ -1192,7 +1192,7 @@ public sealed class CXDLPv4File : FileFormat
     {
         base.Clear();
 
-        for (byte i = 0; i < ThumbnailsCount; i++)
+        for (byte i = 0; i < ThumbnailCountFileShouldHave; i++)
         {
             Previews[i] = new Preview();
         }
@@ -1215,7 +1215,7 @@ public sealed class CXDLPv4File : FileFormat
         using var outputFile = new FileStream(TemporaryOutputFileFullPath, FileMode.Create, FileAccess.ReadWrite);
         outputFile.Seek(Helpers.Serializer.SizeOf(HeaderSettings), SeekOrigin.Begin);
 
-        Mat?[] thumbnails = {GetThumbnail(false), GetThumbnail(true)};
+        Mat?[] thumbnails = {GetSmallestThumbnail(), GetLargestThumbnail()};
         for (byte i = 0; i < thumbnails.Length; i++)
         {
             var image = thumbnails[i];
@@ -1349,25 +1349,23 @@ public sealed class CXDLPv4File : FileFormat
 
         inputFile.Seek(position, SeekOrigin.Begin);
 
-        progress.Reset(OperationProgress.StatusDecodePreviews, ThumbnailsCount);
-
-        for (byte i = 0; i < ThumbnailsCount; i++)
+        progress.Reset(OperationProgress.StatusDecodePreviews, (uint)ThumbnailCountFileShouldHave);
+        var thumbnailOffsets = new[] { HeaderSettings.PreviewSmallOffsetAddress, HeaderSettings.PreviewLargeOffsetAddress };
+        for (int i = 0; i < thumbnailOffsets.Length; i++)
         {
-            uint offsetAddress = i == 0
-                ? HeaderSettings.PreviewSmallOffsetAddress
-                : HeaderSettings.PreviewLargeOffsetAddress;
-            if (offsetAddress == 0) continue;
+            if (thumbnailOffsets[i] == 0) continue;
 
-            inputFile.Seek(offsetAddress, SeekOrigin.Begin);
+            inputFile.Seek(thumbnailOffsets[i], SeekOrigin.Begin);
             Previews[i] = Helpers.Deserialize<Preview>(inputFile);
 
             Debug.Write($"Preview {i} -> ");
             Debug.WriteLine(Previews[i]);
 
             inputFile.Seek(Previews[i].ImageOffset, SeekOrigin.Begin);
-            var rawImageData = inputFile.ReadBytes(Previews[i].ImageLength);
-                
-            Thumbnails[i] = Previews[i].Decode(rawImageData);
+            byte[] rawImageData = new byte[Previews[i].ImageLength];
+            inputFile.Read(rawImageData, 0, (int)Previews[i].ImageLength);
+
+            Thumbnails.Add(Previews[i].Decode(rawImageData));
             progress++;
         }
 

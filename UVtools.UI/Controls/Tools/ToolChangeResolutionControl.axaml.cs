@@ -9,9 +9,9 @@ public partial class ToolChangeResolutionControl : ToolControl
 {
     public static IEnumerable<Machine> MachinePresets => Machine.Machines;
 
-    public OperationChangeResolution Operation => BaseOperation as OperationChangeResolution;
-    private OperationChangeResolution.Resolution _selectedPresetItem;
-    public OperationChangeResolution.Resolution SelectedPresetItem
+    public OperationChangeResolution Operation => (BaseOperation as OperationChangeResolution)!;
+    private OperationChangeResolution.Resolution? _selectedPresetItem;
+    public OperationChangeResolution.Resolution? SelectedPresetItem
     {
         get => _selectedPresetItem;
         set
@@ -24,8 +24,8 @@ public partial class ToolChangeResolutionControl : ToolControl
         }
     }
 
-    private Machine _selectedMachinePresetItem;
-    public Machine SelectedMachinePresetItem
+    private Machine? _selectedMachinePresetItem;
+    public Machine? SelectedMachinePresetItem
     {
         get => _selectedMachinePresetItem;
         set
@@ -43,7 +43,7 @@ public partial class ToolChangeResolutionControl : ToolControl
 
     public ToolChangeResolutionControl()
     {
-        BaseOperation = new OperationChangeResolution(SlicerFile);
+        BaseOperation = new OperationChangeResolution(SlicerFile!);
         if (!ValidateSpawn()) return;
         InitializeComponent();
     }

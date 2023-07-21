@@ -70,9 +70,9 @@ public partial class AboutWindow : WindowEx
         }
     }
 
-    public static string GraphicCardName => SystemAware.GetGraphicCardName();
+    public static string? GraphicCardName => SystemAware.GetGraphicCardName();
 
-    public static string ProcessorName => SystemAware.GetProcessorName();
+    public static string? ProcessorName => SystemAware.GetProcessorName();
 
     public static int ProcessorCount => Environment.ProcessorCount;
 

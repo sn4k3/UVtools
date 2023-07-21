@@ -29,6 +29,8 @@ public sealed class ChituboxZipFile : FileFormat
     #region Constants
 
     public const string GCodeFilename = "run.gcode";
+
+    public static readonly string[] ThumbnailsEntryNames = { "preview.png", "preview_cropping.png" };
     #endregion
 
     #region Sub Classes
@@ -393,26 +395,13 @@ public sealed class ChituboxZipFile : FileFormat
     {
         using var outputFile = ZipFile.Open(TemporaryOutputFileFullPath, ZipArchiveMode.Create);
 
-        if (Thumbnails.Length > 0 && Thumbnails[0] is not null)
-        {
-            using var stream = outputFile.CreateEntry("preview.png").Open();
-            stream.WriteBytes(Thumbnails[0]!.GetPngByes());
-            stream.Close();
-        }
-
-        if (Thumbnails.Length > 1 && Thumbnails[1] is not null)
-        {
-            using var stream = outputFile.CreateEntry("preview_cropping.png").Open();
-            stream.WriteBytes(Thumbnails[1]!.GetPngByes());
-            stream.Close();
-        }
-
         if (!IsPHZZip)
         {
             RebuildGCode();
             outputFile.PutFileContent(GCodeFilename, GCodeStr, ZipArchiveMode.Create);
         }
 
+        EncodeThumbnailsInZip(outputFile, ThumbnailsEntryNames);
         EncodeLayersInZip(outputFile, IndexStartNumber.One, progress);
     }
 
@@ -466,8 +455,9 @@ public sealed class ChituboxZipFile : FileFormat
             }
         }
 
-        Init(HeaderSettings.LayerCount, DecodeType == FileDecodeType.Partial);
+        DecodeThumbnailsFromZip(inputFile, ThumbnailsEntryNames);
 
+        Init(HeaderSettings.LayerCount, DecodeType == FileDecodeType.Partial);
         DecodeLayersFromZip(inputFile, IndexStartNumber.One, progress);
 
         if (IsPHZZip) // PHZ file
@@ -477,21 +467,6 @@ public sealed class ChituboxZipFile : FileFormat
         else
         {
             GCode?.ParseLayersFromGCode(this);
-        }
-
-        entry = inputFile.GetEntry("preview.png");
-        if (entry is not null)
-        {
-            Thumbnails![0] = new Mat();
-            CvInvoke.Imdecode(entry.Open().ToArray(), ImreadModes.AnyColor, Thumbnails[0]);
-        }
-
-        entry = inputFile.GetEntry("preview_cropping.png");
-        if (entry is not null)
-        {
-            var count = CreatedThumbnailsCount;
-            Thumbnails![count] = new Mat();
-            CvInvoke.Imdecode(entry.Open().ToArray(), ImreadModes.AnyColor, Thumbnails[count]);
         }
     }
 

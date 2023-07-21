@@ -1,9 +1,7 @@
-using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Timers;
@@ -19,21 +17,21 @@ namespace UVtools.UI.Controls.Tools;
 public partial class ToolPCBExposureControl : ToolControl
 {
 
-    public OperationPCBExposure Operation => BaseOperation as OperationPCBExposure;
+    public OperationPCBExposure Operation => (BaseOperation as OperationPCBExposure)!;
 
-    private readonly Timer _timer;
+    private readonly Timer _timer = null!;
 
-    private Bitmap _previewImage;
-    private OperationPCBExposure.PCBExposureFile _selectedFile;
+    private Bitmap? _previewImage;
+    private OperationPCBExposure.PCBExposureFile? _selectedFile;
     private bool _cropPreview  = true;
 
-    public Bitmap PreviewImage
+    public Bitmap? PreviewImage
     {
         get => _previewImage;
         set => RaiseAndSetIfChanged(ref _previewImage, value);
     }
 
-    public OperationPCBExposure.PCBExposureFile SelectedFile
+    public OperationPCBExposure.PCBExposureFile? SelectedFile
     {
         get => _selectedFile;
         set
@@ -55,7 +53,7 @@ public partial class ToolPCBExposureControl : ToolControl
 
     public ToolPCBExposureControl()
     {
-        BaseOperation = new OperationPCBExposure(SlicerFile);
+        BaseOperation = new OperationPCBExposure(SlicerFile!);
         if (!ValidateSpawn()) return;
         InitializeComponent();
 
@@ -63,7 +61,7 @@ public partial class ToolPCBExposureControl : ToolControl
         {
             var files = args.Data.GetFiles();
             if (files is null) return;
-            Operation.AddFiles(files.Select(file => file.TryGetLocalPath()).ToArray());
+            Operation.AddFiles(files.Select(file => file.TryGetLocalPath()).ToArray()!);
         });
 
         _timer = new Timer(50)
@@ -106,7 +104,7 @@ public partial class ToolPCBExposureControl : ToolControl
                 _timer.Stop();
                 _timer.Start();
                 if(ParentWindow is not null) ParentWindow.ButtonOkEnabled = Operation.FileCount > 0;
-                Operation.Files.CollectionChanged += (sender, e) => ParentWindow.ButtonOkEnabled = Operation.FileCount > 0;
+                Operation.Files.CollectionChanged += (sender, e) => ParentWindow!.ButtonOkEnabled = Operation.FileCount > 0;
                 break;
         }
     }
@@ -173,7 +171,7 @@ public partial class ToolPCBExposureControl : ToolControl
         if (FilesDataGrid.SelectedIndex <= 0) return;
         var selectedFile = SelectedFile;
         Operation.Files.RemoveAt(FilesDataGrid.SelectedIndex);
-        Operation.Files.Insert(0, selectedFile);
+        Operation.Files.Insert(0, selectedFile!);
         FilesDataGrid.SelectedIndex = 0;
         FilesDataGrid.ScrollIntoView(selectedFile, FilesDataGrid.Columns[0]);
     }
@@ -184,7 +182,7 @@ public partial class ToolPCBExposureControl : ToolControl
         var selectedFile = SelectedFile;
         var newIndex = FilesDataGrid.SelectedIndex - 1;
         Operation.Files.RemoveAt(FilesDataGrid.SelectedIndex);
-        Operation.Files.Insert(newIndex, selectedFile);
+        Operation.Files.Insert(newIndex, selectedFile!);
         FilesDataGrid.SelectedIndex = newIndex;
         FilesDataGrid.ScrollIntoView(selectedFile, FilesDataGrid.Columns[0]);
     }
@@ -195,7 +193,7 @@ public partial class ToolPCBExposureControl : ToolControl
         var selectedFile = SelectedFile;
         var newIndex = FilesDataGrid.SelectedIndex + 1;
         Operation.Files.RemoveAt(FilesDataGrid.SelectedIndex);
-        Operation.Files.Insert(newIndex, selectedFile);
+        Operation.Files.Insert(newIndex, selectedFile!);
         FilesDataGrid.SelectedIndex = newIndex;
         FilesDataGrid.ScrollIntoView(selectedFile, FilesDataGrid.Columns[0]);
     }
@@ -206,7 +204,7 @@ public partial class ToolPCBExposureControl : ToolControl
         if (FilesDataGrid.SelectedIndex == -1 || FilesDataGrid.SelectedIndex == lastIndex) return;
         var selectedFile = SelectedFile;
         Operation.Files.RemoveAt(FilesDataGrid.SelectedIndex);
-        Operation.Files.Insert(lastIndex, selectedFile);
+        Operation.Files.Insert(lastIndex, selectedFile!);
         FilesDataGrid.SelectedIndex = lastIndex;
         FilesDataGrid.ScrollIntoView(selectedFile, FilesDataGrid.Columns[0]);
     }

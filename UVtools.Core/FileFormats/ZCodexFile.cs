@@ -376,13 +376,7 @@ public sealed class ZCodexFile : FileFormat
         outputFile.PutFileContent("UserSettingsData", JsonSerializer.SerializeToUtf8Bytes(UserSettings, JsonExtensions.SettingsIndent), ZipArchiveMode.Create);
         outputFile.PutFileContent("ZCodeMetadata", JsonSerializer.SerializeToUtf8Bytes(ZCodeMetadataSettings, JsonExtensions.SettingsIndent), ZipArchiveMode.Create);
 
-        if (CreatedThumbnailsCount > 0)
-        {
-            using var stream = outputFile.CreateEntry("Preview.png").Open();
-            stream.WriteBytes(Thumbnails[0]!.GetPngByes());
-            stream.Close();
-        }
-
+        EncodeThumbnailsInZip(outputFile, "Preview.png");
         EncodeLayersInZip(outputFile, FolderImageName, 5, IndexStartNumber.Zero, progress, FolderImages);
 
         GCode!.Clear();
@@ -431,71 +425,70 @@ public sealed class ZCodexFile : FileFormat
 
     protected override void DecodeInternally(OperationProgress progress)
     {
-        using (var inputFile = ZipFile.Open(FileFullPath!, ZipArchiveMode.Read))
+        using var inputFile = ZipFile.Open(FileFullPath!, ZipArchiveMode.Read);
+        var entry = inputFile.GetEntry("ResinMetadata");
+        if (entry is null)
         {
-            var entry = inputFile.GetEntry("ResinMetadata");
-            if (entry is null)
+            Clear();
+            throw new FileLoadException("ResinMetadata not found", FileFullPath);
+        }
+
+        ResinMetadataSettings = JsonSerializer.Deserialize<ResinMetadata>(entry.Open())!;
+
+        entry = inputFile.GetEntry("UserSettingsData");
+        if (entry is null)
+        {
+            Clear();
+            throw new FileLoadException("UserSettingsData not found", FileFullPath);
+        }
+
+        UserSettings = JsonSerializer.Deserialize<UserSettingsdata>(entry.Open())!;
+
+        entry = inputFile.GetEntry("ZCodeMetadata");
+        if (entry is null)
+        {
+            Clear();
+            throw new FileLoadException("ZCodeMetadata not found", FileFullPath);
+        }
+
+        ZCodeMetadataSettings = JsonSerializer.Deserialize<ZCodeMetadata>(entry.Open())!;
+
+        entry = inputFile.GetEntry("ResinGCodeData");
+        if (entry is null)
+        {
+            Clear();
+            throw new FileLoadException("ResinGCodeData not found", FileFullPath);
+        }
+
+        Init(ResinMetadataSettings.TotalLayersCount, DecodeType == FileDecodeType.Partial);
+        DecodeLayersFromZip(inputFile, FolderImageName, IndexStartNumber.Zero, progress);
+
+        GCode!.Clear();
+        using (TextReader tr = new StreamReader(entry.Open()))
+        {
+            int layerIndex = 0;
+            int layerFileIndex = 0;
+            string layerimagePath = null!;
+            float currentHeight = 0;
+            while (tr.ReadLine() is { } line)
             {
-                Clear();
-                throw new FileLoadException("ResinMetadata not found", FileFullPath);
-            }
-
-            ResinMetadataSettings = JsonSerializer.Deserialize<ResinMetadata>(entry.Open())!;
-
-            entry = inputFile.GetEntry("UserSettingsData");
-            if (entry is null)
-            {
-                Clear();
-                throw new FileLoadException("UserSettingsData not found", FileFullPath);
-            }
-
-            UserSettings = JsonSerializer.Deserialize<UserSettingsdata>(entry.Open())!;
-
-            entry = inputFile.GetEntry("ZCodeMetadata");
-            if (entry is null)
-            {
-                Clear();
-                throw new FileLoadException("ZCodeMetadata not found", FileFullPath);
-            }
-
-            ZCodeMetadataSettings = JsonSerializer.Deserialize<ZCodeMetadata>(entry.Open())!;
-
-            entry = inputFile.GetEntry("ResinGCodeData");
-            if (entry is null)
-            {
-                Clear();
-                throw new FileLoadException("ResinGCodeData not found", FileFullPath);
-            }
-
-            Init(ResinMetadataSettings.TotalLayersCount, DecodeType == FileDecodeType.Partial);
-            DecodeLayersFromZip(inputFile, FolderImageName, IndexStartNumber.Zero, progress);
-
-            GCode!.Clear();
-            using (TextReader tr = new StreamReader(entry.Open()))
-            {
-                int layerIndex = 0;
-                int layerFileIndex = 0;
-                string layerimagePath = null!;
-                float currentHeight = 0;
-                while (tr.ReadLine() is { } line)
+                GCode.AppendLine(line);
+                if (line.StartsWith(GCodeKeywordSlice))
                 {
-                    GCode.AppendLine(line);
-                    if (line.StartsWith(GCodeKeywordSlice))
-                    {
-                        layerFileIndex = int.Parse(line[GCodeKeywordSlice.Length..]);
-                        layerimagePath = $"{FolderImages}/{FolderImageName}{layerFileIndex:D5}.png";
-                        if (LayersSettings.Count - 1 < layerIndex) LayersSettings.Add(new LayerData());
-                        continue;
-                    }
+                    layerFileIndex = int.Parse(line[GCodeKeywordSlice.Length..]);
+                    layerimagePath = $"{FolderImages}/{FolderImageName}{layerFileIndex:D5}.png";
+                    if (LayersSettings.Count - 1 < layerIndex) LayersSettings.Add(new LayerData());
+                    continue;
+                }
 
-                    if (line.StartsWith(GCodeKeywordDelaySupportPart))
-                    {
-                        LayersSettings[layerIndex].SupportLayerFileIndex = layerFileIndex;
-                        LayersSettings[layerIndex].SupportLayerEntry = inputFile.GetEntry(layerimagePath);
-                        continue;
-                    }
+                if (line.StartsWith(GCodeKeywordDelaySupportPart))
+                {
+                    LayersSettings[layerIndex].SupportLayerFileIndex = layerFileIndex;
+                    LayersSettings[layerIndex].SupportLayerEntry = inputFile.GetEntry(layerimagePath);
+                    continue;
+                }
 
-                    /*
+                /*
                      *
 <Slice> 0
 G1 Z5.0 F100.0
@@ -506,75 +499,68 @@ M106 S255
 M106 S0
                      */
 
-                    var gcode = GCodeStr!;
+                var gcode = GCodeStr!;
 
-                    if (line.StartsWith(GCodeKeywordDelaySupportFull) || line.StartsWith(GCodeKeywordDelayModel))
+                if (line.StartsWith(GCodeKeywordDelaySupportFull) || line.StartsWith(GCodeKeywordDelayModel))
+                {
+                    var startStr = $"{GCodeKeywordSlice} {layerIndex}";
+                    var stripGcode = gcode[(gcode.IndexOf(startStr, StringComparison.OrdinalIgnoreCase) + startStr.Length)..].Trim(' ', '\n', '\r', '\t');
+
+                    float liftHeight = 0;
+                    float liftSpeed = GetBottomOrNormalValue((uint)layerIndex, BottomLiftSpeed, LiftSpeed);
+                    float retractSpeed = RetractSpeed;
+                    byte pwm = GetBottomOrNormalValue((uint)layerIndex, BottomLightPWM, LightPWM);
+
+                    //var currPos = Regex.Match(stripGcode, "G1 Z([+-]?([0-9]*[.])?[0-9]+)", RegexOptions.IgnoreCase);
+                    var moveG1Regex = Regex.Match(stripGcode, @"G1 Z([+-]?([0-9]*[.])?[0-9]+) F([0-9]+)", RegexOptions.IgnoreCase);
+                    var pwmM106Regex = Regex.Match(stripGcode, @"M106 S([0-9]+)", RegexOptions.IgnoreCase);
+
+                    if (moveG1Regex.Success)
                     {
-                        var startStr = $"{GCodeKeywordSlice} {layerIndex}";
-                        var stripGcode = gcode[(gcode.IndexOf(startStr, StringComparison.OrdinalIgnoreCase) + startStr.Length)..].Trim(' ', '\n', '\r', '\t');
-
-                        float liftHeight = 0;
-                        float liftSpeed = GetBottomOrNormalValue((uint)layerIndex, BottomLiftSpeed, LiftSpeed);
-                        float retractSpeed = RetractSpeed;
-                        byte pwm = GetBottomOrNormalValue((uint)layerIndex, BottomLightPWM, LightPWM);
-
-                        //var currPos = Regex.Match(stripGcode, "G1 Z([+-]?([0-9]*[.])?[0-9]+)", RegexOptions.IgnoreCase);
-                        var moveG1Regex = Regex.Match(stripGcode, @"G1 Z([+-]?([0-9]*[.])?[0-9]+) F([0-9]+)", RegexOptions.IgnoreCase);
-                        var pwmM106Regex = Regex.Match(stripGcode, @"M106 S([0-9]+)", RegexOptions.IgnoreCase);
-
+                        var liftHeightTemp = float.Parse(moveG1Regex.Groups[1].Value, CultureInfo.InvariantCulture);
+                        var liftSpeedTemp = float.Parse(moveG1Regex.Groups[3].Value, CultureInfo.InvariantCulture);
+                        moveG1Regex = moveG1Regex.NextMatch();
                         if (moveG1Regex.Success)
                         {
-                            var liftHeightTemp = float.Parse(moveG1Regex.Groups[1].Value, CultureInfo.InvariantCulture);
-                            var liftSpeedTemp = float.Parse(moveG1Regex.Groups[3].Value, CultureInfo.InvariantCulture);
-                            moveG1Regex = moveG1Regex.NextMatch();
-                            if (moveG1Regex.Success)
-                            {
-                                liftHeight = liftHeightTemp;
-                                liftSpeed = liftSpeedTemp;
-                                var retractHeight = float.Parse(moveG1Regex.Groups[1].Value, CultureInfo.InvariantCulture);
-                                retractSpeed = float.Parse(moveG1Regex.Groups[3].Value, CultureInfo.InvariantCulture);
-                                currentHeight = Layer.RoundHeight(currentHeight + liftHeightTemp + retractHeight);
-                            }
-                            else
-                            {
-                                currentHeight = Layer.RoundHeight(currentHeight + liftHeightTemp);
-                            }
+                            liftHeight = liftHeightTemp;
+                            liftSpeed = liftSpeedTemp;
+                            var retractHeight = float.Parse(moveG1Regex.Groups[1].Value, CultureInfo.InvariantCulture);
+                            retractSpeed = float.Parse(moveG1Regex.Groups[3].Value, CultureInfo.InvariantCulture);
+                            currentHeight = Layer.RoundHeight(currentHeight + liftHeightTemp + retractHeight);
                         }
-
-                        if (pwmM106Regex.Success)
+                        else
                         {
-                            pwm = byte.Parse(pwmM106Regex.Groups[1].Value);
+                            currentHeight = Layer.RoundHeight(currentHeight + liftHeightTemp);
                         }
-                           
-                        LayersSettings[layerIndex].LayerFileIndex = layerFileIndex;
-                        LayersSettings[layerIndex].LayerEntry = inputFile.GetEntry(layerimagePath);
+                    }
 
-                        /*if (DecodeType == FileDecodeType.Full)
+                    if (pwmM106Regex.Success)
+                    {
+                        pwm = byte.Parse(pwmM106Regex.Groups[1].Value);
+                    }
+                           
+                    LayersSettings[layerIndex].LayerFileIndex = layerFileIndex;
+                    LayersSettings[layerIndex].LayerEntry = inputFile.GetEntry(layerimagePath);
+
+                    /*if (DecodeType == FileDecodeType.Full)
                         {
                             using var stream = LayersSettings[layerIndex].LayerEntry!.Open();
                             _layers[layerIndex] = new Layer((uint)layerIndex, stream, this);
                         }*/
 
-                        this[layerIndex].PositionZ = currentHeight;
-                        this[layerIndex].LiftHeight = liftHeight;
-                        this[layerIndex].LiftSpeed = liftSpeed;
-                        this[layerIndex].RetractSpeed = retractSpeed;
-                        this[layerIndex].LightPWM = pwm;
-                        layerIndex++;
-                    }
+                    this[layerIndex].PositionZ = currentHeight;
+                    this[layerIndex].LiftHeight = liftHeight;
+                    this[layerIndex].LiftSpeed = liftSpeed;
+                    this[layerIndex].RetractSpeed = retractSpeed;
+                    this[layerIndex].LightPWM = pwm;
+                    layerIndex++;
                 }
-
-                tr.Close();
             }
 
-            entry = inputFile.GetEntry("Preview.png");
-            if (entry is not null)
-            {
-                using var stream = entry.Open();
-                CvInvoke.Imdecode(stream.ToArray(), ImreadModes.AnyColor, Thumbnails[0]);
-                stream.Close();
-            }
+            tr.Close();
         }
+        
+        DecodeThumbnailsFromZip(inputFile, "Preview.png");
 
         BottomRetractSpeed = RetractSpeed; // Compability
     }

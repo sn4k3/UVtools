@@ -24,7 +24,7 @@ public partial class MainWindow
         ClipboardManager.PropertyChanged += ClipboardOnPropertyChanged;
     }
 
-    private void ClipboardOnPropertyChanged(object sender, PropertyChangedEventArgs e)
+    private void ClipboardOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
         if (e.PropertyName == nameof(ClipboardManager.CurrentIndex))
         {

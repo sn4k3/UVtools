@@ -453,9 +453,9 @@ public sealed class AnetFile : FileFormat
         var previewBuffer = new byte[72866]; // 72866
         BmpHeader.CopyTo(previewBuffer, 0);
 
-        if (CreatedThumbnailsCount > 0)
+        if (ThumbnailsCount > 0)
         {
-            EncodeImage(DATATYPE_BGR565, Thumbnails[0]!).CopyTo(previewBuffer, BmpHeader.Length);
+            EncodeImage(DATATYPE_BGR565, Thumbnails[0]).CopyTo(previewBuffer, BmpHeader.Length);
         }
 
         HeaderSettings.PreviewContent = previewBuffer;
@@ -510,7 +510,7 @@ public sealed class AnetFile : FileFormat
             throw new FileLoadException($"Not a valid N4 file: incorrect preview format ({HeaderSettings.PreviewSize})", FileFullPath);
         }
 
-        Thumbnails[0] = DecodeImage(DATATYPE_BGR565, HeaderSettings.PreviewContent[BmpHeader.Length..], ThumbnailsOriginalSize[0]);
+        Thumbnails.Add(DecodeImage(DATATYPE_BGR565, HeaderSettings.PreviewContent[BmpHeader.Length..], ThumbnailsOriginalSize[0]));
 
         Debug.WriteLine(HeaderSettings);
 

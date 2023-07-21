@@ -29,8 +29,8 @@ public class AppVersionChecker : BindableBase
 {
     public const string GitHubReleaseApi = "https://api.github.com/repos/sn4k3/UVtools/releases/latest";
     public const string RuntimePackageFile = "runtime_package.dat";
-    private string _version;
-    private string _changelog;
+    private string? _version;
+    private string? _changelog;
 
     public string Filename
     {
@@ -97,7 +97,7 @@ public class AppVersionChecker : BindableBase
         }
     }*/
 
-    public string Version
+    public string? Version
     {
         get => _version;
         set
@@ -108,7 +108,7 @@ public class AppVersionChecker : BindableBase
         }
     }
 
-    public string Changelog
+    public string? Changelog
     {
         get => _changelog;
         set => RaiseAndSetIfChanged(ref _changelog, value);
@@ -118,11 +118,11 @@ public class AppVersionChecker : BindableBase
 
     public string UrlLatestRelease = $"{About.Website}/releases/latest";
 
-    public string DownloadLink { get; private set; }
+    public string? DownloadLink { get; private set; }
 
     public bool HaveNewVersion => !string.IsNullOrEmpty(Version);
 
-    public string DownloadedFile { get; private set; }
+    public string? DownloadedFile { get; private set; }
 
     /// <summary>
     /// Check for new version
@@ -145,22 +145,30 @@ public class AppVersionChecker : BindableBase
             var result= NetworkExtensions.HttpClient.Send(request);
 
             var json = JsonNode.Parse(result.Content.ReadAsStream());
+            if (json is null) return false;
             
-            string tag_name = json["tag_name"]?.ToString();
-            if (string.IsNullOrEmpty(tag_name)) return false;
-            tag_name = tag_name.Trim(' ', 'v', 'V');
-            Debug.WriteLine($"Version checker: v{About.VersionStr} <=> v{tag_name}");
-            Version checkVersion = new(tag_name);
+            string? tagName = json["tag_name"]?.ToString();
+            if (string.IsNullOrEmpty(tagName)) return false;
+            tagName = tagName.Trim(' ', 'v', 'V');
+            Debug.WriteLine($"Version checker: v{About.VersionStr} <=> v{tagName}");
+            Version checkVersion = new(tagName);
             Changelog = json["body"]?.ToString();
             if (alwaysTrigger || About.Version.CompareTo(checkVersion) < 0)
             {
-                var assets = json["assets"].AsArray();
+                var assets = json["assets"]?.AsArray();
+
+                if (assets is null) return false;
                 
-                Version = tag_name;
+                Version = tagName;
                 var fileName = Filename;
                 foreach (var asset in assets)
                 {
-                    var name = asset["name"]!.ToString();
+                    if (asset is null)
+                    {
+                        continue;
+                    }
+                    var name = asset["name"]?.ToString();
+                    if (string.IsNullOrWhiteSpace(name)) continue;
                     if (OperatingSystem.IsLinux() && name.StartsWith($"{About.Software}_linux-") && name.EndsWith(".AppImage"))
                     {
                         // Force generic Linux first
@@ -216,7 +224,7 @@ public class AppVersionChecker : BindableBase
             }
             else if (downloadFilename.EndsWith(".AppImage") && Linux.IsRunningAppImageGetPath(out var appImagePath)) // Linux AppImage
             {
-                var directory = Path.GetDirectoryName(appImagePath);
+                var directory = Path.GetDirectoryName(appImagePath)!;
                 const string newFilename = $"{About.Software}.AppImage";
                 //var oldFileName = Path.GetFileName(appImagePath);
                 // Try to keep same filename logic if user renamed the file, like UVtools.AppImage would keep same same

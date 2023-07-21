@@ -33,8 +33,6 @@ using UVtools.UI.Extensions;
 
 namespace UVtools.UI;
 
-#nullable enable
-
 public class App : Application
 {
     public enum ApplicationTheme
@@ -58,17 +56,15 @@ public class App : Application
     private static readonly Styles ThemeStylesContainer = new();
     public static FluentTheme _fluentTheme = null!;
     //public static SimpleTheme _simpleTheme = null!;
-    private static IStyle _colorPickerFluent, _colorPickerSimple = null!;
-    private static IStyle _dataGridFluent, _dataGridSimple = null!;
+    private static IStyle _colorPickerFluent = null!, _colorPickerSimple = null!;
+    private static IStyle _dataGridFluent = null!, _dataGridSimple = null!;
     //private static IStyle _avaloniaEditFluent, _avaloniaEditSimple = null!;
-
-    private static (IStyle Fluent, IStyle Simple)[] SwitchableStyles = null!;
 
     private static ApplicationTheme? _prevTheme;
 
     //public static ThemeSelector ThemeSelector { get; set; }
     public static MainWindow MainWindow = null!;
-    public static FileFormat? SlicerFile = null;
+    public static FileFormat? SlicerFile;
 
     public static AppVersionChecker VersionChecker { get; } = new();
 

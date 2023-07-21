@@ -35,7 +35,7 @@ public partial class MainWindow
     public RangeObservableCollection<SlicerProperty> SlicerProperties { get; } = new();
 
     private int _visibleThumbnailIndex = -1;
-    private Bitmap _visibleThumbnailImage;
+    private Bitmap? _visibleThumbnailImage;
     private RangeObservableCollection<ValueDescription> _currentLayerProperties = new();
 
     public RangeObservableCollection<ValueDescription> CurrentLayerProperties
@@ -122,15 +122,15 @@ public partial class MainWindow
 
             if (!IsFileLoaded) return;
             if (!RaiseAndSetIfChanged(ref _visibleThumbnailIndex, value)) return;
-            if (value >= SlicerFile.CreatedThumbnailsCount) return;
-            if (SlicerFile.Thumbnails[value] is null || SlicerFile.Thumbnails[value].IsEmpty) return;
+            if (value >= SlicerFile!.ThumbnailsCount) return;
+            if (SlicerFile.Thumbnails[value].IsEmpty) return;
             
             VisibleThumbnailImage = SlicerFile.Thumbnails[value].ToBitmapParallel();
         }
     }
 
 
-    public Bitmap VisibleThumbnailImage
+    public Bitmap? VisibleThumbnailImage
     {
         get => _visibleThumbnailImage;
         set
@@ -140,17 +140,13 @@ public partial class MainWindow
         }
     }
 
-    public string VisibleThumbnailResolution => _visibleThumbnailImage is null ? null : $"{{Width: {_visibleThumbnailImage.Size.Width}, Height: {_visibleThumbnailImage.Size.Height}}}";
+    public string VisibleThumbnailResolution => _visibleThumbnailImage is null ? string.Empty : $"{{Width: {_visibleThumbnailImage.Size.Width}, Height: {_visibleThumbnailImage.Size.Height}}}";
 
     public async void OnClickThumbnailSave()
     {
         if (!IsFileLoaded) return;
-        if (SlicerFile?.Thumbnails[_visibleThumbnailIndex] is null)
-        {
-            return; // This should never happen!
-        }
 
-        using var file = await SaveFilePickerAsync(SlicerFile.DirectoryPath, $"{SlicerFile.FilenameNoExt}_thumbnail{_visibleThumbnailIndex+1}.png", AvaloniaStatic.PngFileFilter);
+        using var file = await SaveFilePickerAsync(SlicerFile!.DirectoryPath, $"{SlicerFile.FilenameNoExt}_thumbnail{_visibleThumbnailIndex+1}.png", AvaloniaStatic.PngFileFilter);
         if (file?.TryGetLocalPath() is not { } filePath) return;
         SlicerFile.Thumbnails[_visibleThumbnailIndex].Save(filePath);
     }
@@ -161,15 +157,11 @@ public partial class MainWindow
         var replaceAll = Convert.ToBoolean(replaceAllObj);
         if (replaceAll)
         {
-            if (SlicerFile.ThumbnailsCount == 0) return;
+            if (SlicerFile!.ThumbnailsCount == 0) return;
         }
         else
         {
             if (_visibleThumbnailIndex < 0) return;
-            if (SlicerFile.Thumbnails[_visibleThumbnailIndex] is null)
-            {
-                return; // This should never happen!
-            }
         }
 
 
@@ -180,11 +172,11 @@ public partial class MainWindow
 
         if (replaceAll)
         {
-            result = SlicerFile.SetThumbnails(filePath);
+            result = SlicerFile!.SetThumbnails(filePath);
         }
         else
         {
-            result = SlicerFile.SetThumbnail(_visibleThumbnailIndex, filePath);
+            result = SlicerFile!.SetThumbnail(_visibleThumbnailIndex, filePath);
         }
 
         if (result) CanSave = true;
@@ -193,7 +185,7 @@ public partial class MainWindow
     public void OnClickThumbnailImportCurrentLayer(object replaceAllObj)
     {
         if (!IsFileLoaded) return;
-        if (!LayerCache.IsCached || SlicerFile.DecodeType == FileFormat.FileDecodeType.Partial) return;
+        if (!LayerCache.IsCached || SlicerFile!.DecodeType == FileFormat.FileDecodeType.Partial) return;
         var replaceAll = Convert.ToBoolean(replaceAllObj);
         if (replaceAll)
         {
@@ -202,13 +194,9 @@ public partial class MainWindow
         else
         {
             if (_visibleThumbnailIndex < 0) return;
-            if (SlicerFile.Thumbnails[_visibleThumbnailIndex] is null)
-            {
-                return; // This should never happen!
-            }
         }
 
-        using var matRoi = new Mat(LayerCache.Image, LayerCache.Layer.GetBoundingRectangle(50, 100));
+        using var matRoi = new Mat(LayerCache.Image, LayerCache.Layer!.GetBoundingRectangle(50, 100));
         using var thumbnailMat = new Mat();
         CvInvoke.CvtColor(matRoi, thumbnailMat, ColorConversion.Gray2Bgr);
 
@@ -229,7 +217,7 @@ public partial class MainWindow
     public void OnClickThumbnailImportRandomLayer(object replaceAllObj)
     {
         if (!IsFileLoaded) return;
-        if (SlicerFile.LayerCount == 0 || SlicerFile.DecodeType == FileFormat.FileDecodeType.Partial) return;
+        if (SlicerFile!.LayerCount == 0 || SlicerFile.DecodeType == FileFormat.FileDecodeType.Partial) return;
         var replaceAll = Convert.ToBoolean(replaceAllObj);
         if (replaceAll)
         {
@@ -238,10 +226,6 @@ public partial class MainWindow
         else
         {
             if (_visibleThumbnailIndex < 0) return;
-            if (SlicerFile.Thumbnails[_visibleThumbnailIndex] is null)
-            {
-                return; // This should never happen!
-            }
         }
 
         var layer = SlicerFile[Random.Shared.Next((int) SlicerFile.LayerCount)];
@@ -265,7 +249,7 @@ public partial class MainWindow
     public async void OnClickThumbnailImportHeatmap(object replaceAllObj)
     {
         if (!IsFileLoaded) return;
-        if (SlicerFile.DecodeType == FileFormat.FileDecodeType.Partial) return;
+        if (SlicerFile!.DecodeType == FileFormat.FileDecodeType.Partial) return;
         var replaceAll = Convert.ToBoolean(replaceAllObj);
         if (replaceAll)
         {
@@ -274,10 +258,6 @@ public partial class MainWindow
         else
         {
             if (_visibleThumbnailIndex < 0) return;
-            if (SlicerFile.Thumbnails[_visibleThumbnailIndex] is null)
-            {
-                return; // This should never happen!
-            }
         }
 
         IsGUIEnabled = false;
@@ -320,11 +300,7 @@ public partial class MainWindow
     public void RefreshThumbnail()
     {
         if (!IsFileLoaded) return;
-        if (_visibleThumbnailIndex < 0) return;
-        if (SlicerFile.Thumbnails[_visibleThumbnailIndex] is null)
-        {
-            return; 
-        }
+        if (_visibleThumbnailIndex < 0 || _visibleThumbnailIndex >= SlicerFile!.ThumbnailsCount) return;
         VisibleThumbnailImage = SlicerFile.Thumbnails[_visibleThumbnailIndex].ToBitmapParallel();
     }
     #endregion
@@ -415,7 +391,8 @@ public partial class MainWindow
     public void RefreshProperties()
     {
         SlicerProperties.Clear();
-        foreach (var config in SlicerFile.Configs)
+        if (!IsFileLoaded) return;
+        foreach (var config in SlicerFile!.Configs)
         {
             var type = config.GetType();
             foreach (var property in type.GetProperties(BindingFlags.Public | BindingFlags.Instance))
@@ -444,16 +421,17 @@ public partial class MainWindow
 
     public void RefreshCurrentLayerData()
     {
-            
-        var layer = LayerCache.Layer;
         CurrentLayerProperties.Clear();
+        if (!IsFileLoaded) return;
+        var layer = LayerCache.Layer!;
+
         CurrentLayerProperties.Add(new ValueDescription($"{layer.Index}", nameof(layer.Index)));
         CurrentLayerProperties.Add(new ValueDescription($"{Layer.ShowHeight(layer.LayerHeight)}mm", nameof(layer.LayerHeight)));
         CurrentLayerProperties.Add(new ValueDescription($"{Layer.ShowHeight(layer.PositionZ)}mm", nameof(layer.PositionZ)));
         CurrentLayerProperties.Add(new ValueDescription(layer.IsBottomLayer.ToString(), nameof(layer.IsBottomLayer)));
         CurrentLayerProperties.Add(new ValueDescription(layer.IsModified.ToString(), nameof(layer.IsModified)));
 
-        if (SlicerFile.CanUseExposureTime)
+        if (SlicerFile!.CanUseExposureTime)
             CurrentLayerProperties.Add(new ValueDescription($"{layer.ExposureTime:F2}s", nameof(layer.ExposureTime)));
 
         if (SlicerFile.SupportPerLayerSettings)

@@ -19,8 +19,8 @@ public partial class ToolMaskControl : ToolControl
     private byte _genMinimumBrightness = 200;
     private byte _genMaximumBrightness = byte.MaxValue;
     private uint _genDiameter;
-    private Bitmap _maskImage;
-    public OperationMask Operation => BaseOperation as OperationMask;
+    private Bitmap? _maskImage;
+    public OperationMask Operation => (BaseOperation as OperationMask)!;
 
     public bool IsMaskInverted
     {
@@ -30,7 +30,7 @@ public partial class ToolMaskControl : ToolControl
             if(!RaiseAndSetIfChanged(ref _isMaskInverted, value)) return;
             if (!Operation.HaveInputMask) return;
             Operation.InvertMask();
-            MaskImage = Operation.Mask.ToBitmapParallel();
+            MaskImage = Operation.Mask?.ToBitmapParallel();
         }
     }
 
@@ -52,23 +52,23 @@ public partial class ToolMaskControl : ToolControl
         set => RaiseAndSetIfChanged(ref _genDiameter, value);
     }
 
-    public string InfoPrinterResolutionStr => $"Printer resolution: {App.SlicerFile.Resolution}";
-    public string InfoMaskResolutionStr => $"Mask resolution: "+ (Operation.HaveInputMask ? Operation.Mask.Size.ToString() : "(Unloaded)");
+    public string InfoPrinterResolutionStr => $"Printer resolution: {SlicerFile?.Resolution}";
+    public string InfoMaskResolutionStr => $"Mask resolution: {Operation.Mask?.Size.ToString() ?? "(Unloaded)"}";
 
-    public Bitmap MaskImage
+    public Bitmap? MaskImage
     {
         get => _maskImage;
         set
         {
             if(!RaiseAndSetIfChanged(ref _maskImage, value)) return;
             RaisePropertyChanged(nameof(InfoMaskResolutionStr));
-            ParentWindow.ButtonOkEnabled = Operation.HaveInputMask;
+            ParentWindow!.ButtonOkEnabled = Operation.HaveInputMask;
         }
     }
 
     public ToolMaskControl()
     {
-        BaseOperation = new OperationMask(SlicerFile);
+        BaseOperation = new OperationMask(SlicerFile!);
         if (!ValidateSpawn()) return;
         InitializeComponent();
     }
@@ -79,7 +79,7 @@ public partial class ToolMaskControl : ToolControl
         switch (callback)
         {
             case ToolWindow.Callbacks.Init:
-                ParentWindow.ButtonOkEnabled = false;
+                ParentWindow!.ButtonOkEnabled = false;
                 break;
             case ToolWindow.Callbacks.AfterLoadProfile:
             case ToolWindow.Callbacks.ClearROI:
@@ -96,19 +96,20 @@ public partial class ToolMaskControl : ToolControl
 
         try
         {
-            Operation.LoadFromFile(filePath, _isMaskInverted, App.MainWindow.ROI.Size.IsEmpty ? SlicerFile.Resolution : App.MainWindow.ROI.Size);
-            MaskImage = Operation.Mask.ToBitmapParallel();
+            Operation.LoadFromFile(filePath, _isMaskInverted, App.MainWindow.ROI.Size.IsEmpty ? SlicerFile!.Resolution : App.MainWindow.ROI.Size);
+            MaskImage = Operation.Mask?.ToBitmapParallel();
         }
         catch (Exception e)
         {
-            await ParentWindow.MessageBoxError(e.ToString(), "Error while trying to read the image");
+            await ParentWindow!.MessageBoxError(e.ToString(), "Error while trying to read the image");
         }
     }
 
     public void GenerateMask()
     {
+        if (!App.MainWindow.LayerCache.IsCached) return;
         var roi = App.MainWindow.ROI;
-        Operation.Mask = roi.IsEmpty ? App.MainWindow.LayerCache.Image.NewBlank() : new Mat(roi.Size, DepthType.Cv8U, 1);
+        Operation.Mask = roi.IsEmpty ? App.MainWindow.LayerCache.Image!.NewBlank() : new Mat(roi.Size, DepthType.Cv8U, 1);
 
         int radius = (int)_genDiameter;
         if (radius == 0)

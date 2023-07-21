@@ -464,13 +464,8 @@ public sealed class ZCodeFile : FileFormat
     protected override void EncodeInternally(OperationProgress progress)
     {
         using var outputFile = ZipFile.Open(TemporaryOutputFileFullPath, ZipArchiveMode.Create);
-        if (Thumbnails.Length > 0 && Thumbnails[0] is not null)
-        {
-            using var thumbnailsStream = outputFile.CreateEntry(PreviewFilename).Open();
-            thumbnailsStream.WriteBytes(Thumbnails[0]!.GetPngByes());
-            thumbnailsStream.Close();
-        }
 
+        EncodeThumbnailsInZip(outputFile, PreviewFilename);
         EncodeLayersInZip(outputFile, IndexStartNumber.One, progress);
 
         var entry = outputFile.CreateEntry(ManifestFilename);
@@ -537,16 +532,10 @@ public sealed class ZCodeFile : FileFormat
 
         Init(ManifestFile.Job.LayerCount, DecodeType == FileDecodeType.Partial);
 
+        DecodeThumbnailsFromZip(inputFile, PreviewFilename);
         DecodeLayersFromZip(inputFile, IndexStartNumber.One, progress);
 
         GCode!.ParseLayersFromGCode(this);
-
-        entry = inputFile.GetEntry(PreviewFilename);
-        if (entry is not null)
-        {
-            Thumbnails[0] = new Mat();
-            CvInvoke.Imdecode(entry.Open().ToArray(), ImreadModes.AnyColor, Thumbnails[0]);
-        }
     }
 
     protected override void PartialSaveInternally(OperationProgress progress)

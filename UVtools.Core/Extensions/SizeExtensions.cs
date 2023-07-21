@@ -86,6 +86,23 @@ public static class SizeExtensions
 
     public static int Max(this Size size) => Math.Max(size.Width, size.Height);
 
+    /// <summary>
+    /// Gets a new <see cref="Size"/> with the maximum of all sizes Width and Height
+    /// </summary>
+    /// <param name="sizes"></param>
+    /// <returns></returns>
+    public static Size Max(params Size[] sizes)
+    {
+        var maxSize = new Size();
+        foreach (var size in sizes)
+        {
+            maxSize.Width = Math.Max(maxSize.Width, size.Width);
+            maxSize.Height = Math.Max(maxSize.Height, size.Height);
+        }
+
+        return maxSize;
+    }
+
 
     /// <summary>
     /// Gets if this size have a zero value on width or height
@@ -98,6 +115,23 @@ public static class SizeExtensions
     public static float Area(this SizeF size, int round) => (float)Math.Round(size.Area(), round) ;
 
     public static float Max(this SizeF size) => Math.Max(size.Width, size.Height);
+
+    /// <summary>
+    /// Gets a new <see cref="Size"/> with the maximum of all sizes Width and Height
+    /// </summary>
+    /// <param name="sizes"></param>
+    /// <returns></returns>
+    public static SizeF Max(params SizeF[] sizes)
+    {
+        var maxSize = new SizeF();
+        foreach (var size in sizes)
+        {
+            maxSize.Width = Math.Max(maxSize.Width, size.Width);
+            maxSize.Height = Math.Max(maxSize.Height, size.Height);
+        }
+
+        return maxSize;
+    }
 
     public static Size Half(this Size size) => new(size.Width / 2, size.Height / 2);
 

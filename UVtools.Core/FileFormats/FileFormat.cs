@@ -12,6 +12,7 @@ using Emgu.CV.Structure;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Data;
 using System.Diagnostics;
@@ -24,6 +25,7 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Timers;
+using CommunityToolkit.Diagnostics;
 using UVtools.Core.EmguCV;
 using UVtools.Core.Extensions;
 using UVtools.Core.GCode;
@@ -1287,38 +1289,29 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     public virtual Size[] ThumbnailsOriginalSize => Array.Empty<Size>();
 
     /// <summary>
+    /// Gets the number of thumbnails the file should have
+    /// </summary>
+    public int ThumbnailCountFileShouldHave => ThumbnailsOriginalSize.Length;
+
+    /// <summary>
+    /// Gets the number of thumbnails possible to encode on this file based on current available <see cref="Thumbnails"/> and <see cref="ThumbnailsOriginalSize"/>
+    /// </summary>
+    public int ThumbnailEncodeCount => Math.Min(ThumbnailsOriginalSize.Length, ThumbnailsCount);
+
+    /// <summary>
     /// Gets the thumbnails count present in this file format
     /// </summary>
-    public byte ThumbnailsCount => (byte)ThumbnailsOriginalSize.Length;
+    public int ThumbnailsCount => Thumbnails.Count;
 
     /// <summary>
     /// Gets if this file have any valid thumbnail
     /// </summary>
-    public bool HaveThumbnails => Thumbnails.Any(thumbnail => thumbnail is not null && !thumbnail.IsEmpty);
-
-    /// <summary>
-    /// Gets the number of created thumbnails
-    /// </summary>
-    public byte CreatedThumbnailsCount {
-        get
-        {
-            if (Thumbnails.Length == 0) return 0;
-            byte count = 0;
-
-            foreach (var thumbnail in Thumbnails)
-            {
-                if (thumbnail is null || thumbnail.IsEmpty) continue;
-                count++;
-            }
-
-            return count;
-        }
-    }
+    public bool HaveThumbnails => ThumbnailsCount > 0;
 
     /// <summary>
     /// Gets the thumbnails for this <see cref="FileFormat"/>
     /// </summary>
-    public Mat?[] Thumbnails { get; init; }
+    public List<Mat> Thumbnails { get; } = new();
 
     public IssueManager IssueManager { get; }
 
@@ -1330,10 +1323,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get => _layers;
         set
         {
-            if (value is null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
+            Guard.IsNotNull(value, nameof(Layers));
 
             //if (ReferenceEquals(_layers, value)) return;
 
@@ -1345,12 +1335,10 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
 
             if (LayerCount != oldLayerCount)
             {
-                LayerCount = LayerCount;
+                LayerCount = (uint)_layers.Length;
             }
 
             RequireFullEncode = true;
-            PrintHeight = PrintHeight;
-            UpdatePrintTime();
 
             if (LayerCount > 0)
             {
@@ -1358,14 +1346,23 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
 
                 for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++) // Forced sanitize
                 {
-                    if (_layers[layerIndex] is null) continue;
-                    _layers[layerIndex].Index = layerIndex;
-                    _layers[layerIndex].SlicerFile = this;
-
-                    if (layerIndex >= oldLayerCount || layerIndex < oldLayerCount && !_layers[layerIndex].Equals(oldLayers[layerIndex]))
+                    if (_layers[layerIndex] is null) // Make sure no layer is null
                     {
-                        // Marks as modified only if layer image changed on this index
-                        _layers[layerIndex].IsModified = true;
+                        _layers[layerIndex] = new Layer(layerIndex, this)
+                        {
+                            IsModified = true
+                        };
+                    }
+                    else
+                    {
+                        _layers[layerIndex].Index = layerIndex;
+                        _layers[layerIndex].SlicerFile = this;
+
+                        if (layerIndex >= oldLayerCount || layerIndex < oldLayerCount && !_layers[layerIndex].Equals(oldLayers[layerIndex]))
+                        {
+                            // Marks as modified only if layer image changed on this index
+                            _layers[layerIndex].IsModified = true;
+                        }
                     }
                 }
 
@@ -1375,6 +1372,11 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
                     rebuildProperties = true;
                 }
             }
+
+#pragma warning disable CA2245
+            PrintHeight = PrintHeight;
+#pragma warning restore CA2245
+            UpdatePrintTime();
 
             if (!rebuildProperties)
             {
@@ -1593,11 +1595,12 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get
         {
             var pixelSize = PixelSize;
+            var boundingRectangle = BoundingRectangle;
             return new RectangleF(
-                (float)Math.Round(_boundingRectangle.X * pixelSize.Width, 2),
-                (float)Math.Round(_boundingRectangle.Y * pixelSize.Height, 2),
-                (float)Math.Round(_boundingRectangle.Width * pixelSize.Width, 2),
-                (float)Math.Round(_boundingRectangle.Height * pixelSize.Height, 2));
+                (float)Math.Round(boundingRectangle.X * pixelSize.Width, 2),
+                (float)Math.Round(boundingRectangle.Y * pixelSize.Height, 2),
+                (float)Math.Round(boundingRectangle.Width * pixelSize.Width, 2),
+                (float)Math.Round(boundingRectangle.Height * pixelSize.Height, 2));
         }
     }
 
@@ -3118,16 +3121,21 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     public virtual object[] Configs => Array.Empty<object>();
 
     /// <summary>
-    /// Gets if this file is valid to read
+    /// Gets if this file is valid to decode
     /// </summary>
-    public bool IsValid => FileFullPath is not null;
+    public bool CanDecode => !string.IsNullOrEmpty(FileFullPath) && File.Exists(FileFullPath);
+
+    /// <summary>
+    /// Gets if this file is valid to encode
+    /// </summary>
+    public bool CanEncode => !string.IsNullOrEmpty(FileFullPath);
+
     #endregion
 
     #region Constructor
     protected FileFormat()
     {
         IssueManager = new(this);
-        Thumbnails = new Mat[ThumbnailsCount];
         _queueTimerPrintTime.Elapsed += (sender, e) => UpdatePrintTime();
     }
 
@@ -3317,11 +3325,24 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         FileFullPath = null;
         _layers = Array.Empty<Layer>();
         GCode?.Clear();
+        ClearThumbnails();
+    }
+
+    public void ClearThumbnails()
+    {
+        if (ThumbnailsCount == 0) return;
 
         foreach (var mat in Thumbnails)
         {
-            mat?.Dispose();
+            mat.Dispose();
         }
+
+        Thumbnails.Clear();
+
+        RaisePropertyChanged(nameof(ThumbnailsCount));
+        RaisePropertyChanged(nameof(HaveThumbnails));
+        RaisePropertyChanged(nameof(ThumbnailEncodeCount));
+        RaisePropertyChanged(nameof(Thumbnails));
     }
 
     /// <summary>
@@ -3393,6 +3414,56 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     }
 
     /// <summary>
+    /// Gets if a <see cref="Point"/> coordinate is inside <see cref="Resolution"/> bounds
+    /// </summary>
+    /// <param name="xy">The coordinate</param>
+    /// <returns></returns>
+    public bool IsPointInsideBounds(Point xy)
+    {
+        return IsPixelInsideXBounds(xy.X) && IsPixelInsideYBounds(xy.Y);
+    }
+
+    /// <summary>
+    /// Gets if a pixel coordinate is inside <see cref="ResolutionX"/> bounds
+    /// </summary>
+    /// <param name="x">The X coordinate</param>
+    /// <returns></returns>
+    public bool IsPixelInsideXBounds(int x)
+    {
+        return x >= 0 && x < ResolutionX;
+    }
+
+    /// <summary>
+    /// Gets if a pixel coordinate is inside <see cref="ResolutionY"/> bounds
+    /// </summary>
+    /// <param name="y">The Y coordinate</param>
+    /// <returns></returns>
+    public bool IsPixelInsideYBounds(int y)
+    {
+        return y >= 0 && y < ResolutionY;
+    }
+
+    /// <summary>
+    /// Gets if a pixel coordinate is inside <see cref="ResolutionX"/> bounds
+    /// </summary>
+    /// <param name="x">The coordinate</param>
+    /// <returns></returns>
+    public bool IsPixelInsideXBounds(uint x)
+    {
+        return x < ResolutionX;
+    }
+
+    /// <summary>
+    /// Gets if a pixel coordinate is inside <see cref="ResolutionY"/> bounds
+    /// </summary>
+    /// <param name="y">The Y coordinate</param>
+    /// <returns></returns>
+    public bool IsPixelInsideYBounds(uint y)
+    {
+        return y < ResolutionY;
+    }
+
+    /// <summary>
     /// Renames the current file with a new name in the same directory.
     /// </summary>
     /// <param name="newFileName">New filename without the extension</param>
@@ -3408,26 +3479,50 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         if (string.Equals(filename, newFileName, StringComparison.Ordinal)) return false;
 
         var newFileFullPath = Path.Combine(DirectoryPath!, $"{newFileName}.{ext}");
-        File.Move(FileFullPath, newFileFullPath, overwrite);
-        FileFullPath = newFileFullPath;
+
+        try
+        {
+            File.Move(FileFullPath, newFileFullPath, overwrite);
+            FileFullPath = newFileFullPath;
+        }
+        catch (Exception e)
+        {
+            Debug.WriteLine(e);
+            throw;
+        }
+        
 
         return true;
     }
 
     /// <summary>
-    /// Gets a thumbnail by it height or lower
+    /// Gets a thumbnail by a maximum height or lower
     /// </summary>
     /// <param name="maxHeight">Max height allowed</param>
     /// <returns></returns>
     public Mat? GetThumbnailByHeight(uint maxHeight = 400)
     {
-        for (int i = 0; i < Thumbnails.Length; i++)
-        {
-            if(Thumbnails[i] is null) continue;
-            if (Thumbnails[i]!.Height <= maxHeight) return Thumbnails[i];
-        }
+        return Thumbnails.OrderByDescending(mat => mat.Height).FirstOrDefault(thumbnail => !thumbnail.IsEmpty && thumbnail.Height <= maxHeight);
+    }
 
-        return null;
+    /// <summary>
+    /// Gets a thumbnail by a maximum width or lower
+    /// </summary>
+    /// <param name="maxWidth">Max width allowed</param>
+    /// <returns></returns>
+    public Mat? GetThumbnailByWidth(int maxWidth)
+    {
+        return Thumbnails.OrderByDescending(mat => mat.Width).FirstOrDefault(thumbnail => !thumbnail.IsEmpty && thumbnail.Width <= maxWidth);
+    }
+
+    /// <summary>
+    /// Gets a thumbnail by a maximum height or lower
+    /// </summary>
+    /// <param name="maxHeight">Max height allowed</param>
+    /// <returns></returns>
+    public Mat? GetThumbnailByHeight(int maxHeight)
+    {
+        return Thumbnails.OrderByDescending(mat => mat.Height).FirstOrDefault(thumbnail => !thumbnail.IsEmpty && thumbnail.Height <= maxHeight);
     }
 
     /// <summary>
@@ -3435,96 +3530,196 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// </summary>
     /// <param name="index">Thumbnail index</param>
     /// <returns></returns>
-    public Mat? GetThumbnail(uint index)
+    public Mat? GetThumbnail(int index)
     {
-        return Thumbnails.Length <= index ? null : Thumbnails[index];
+        return index < 0 || ThumbnailsCount <= index ? null : Thumbnails[index];
     }
 
     /// <summary>
-    /// Gets a thumbnail by the largest or smallest
+    /// Gets the thumbnail by it smallest or largest size
     /// </summary>
-    /// <param name="largest">True to get the largest, otherwise false</param>
     /// <returns></returns>
-    public Mat? GetThumbnail(bool largest)
+    public Mat? GetThumbnail(FileThumbnailSize size)
     {
-        switch (CreatedThumbnailsCount)
+        return size switch
         {
-            case 0:
-                return null;
-            case 1:
-                return Thumbnails[0];
-            default:
-                if (largest)
-                {
-                    return Thumbnails[0]!.Size.Area() >= Thumbnails[1]!.Size.Area() ? Thumbnails[0] : Thumbnails[1];
-                }
-
-                return Thumbnails[0]!.Size.Area() <= Thumbnails[1]!.Size.Area() ? Thumbnails[0] : Thumbnails[1];
-        }
+            FileThumbnailSize.Small => GetSmallestThumbnail(),
+            FileThumbnailSize.Large => GetLargestThumbnail(),
+            _ => throw new ArgumentOutOfRangeException(nameof(size), size, null)
+        };
     }
 
     /// <summary>
-    /// Sets thumbnails from a list of thumbnails and clone them
+    /// Gets the largest thumbnail in the collection
     /// </summary>
-    /// <param name="images"></param>
-    /// <param name="generateImagesIfEmpty">If true and if <paramref name="images"/> is empty, it will fill the thumbnails with generated images</param>
-    public bool SetThumbnails(Mat?[] images, bool generateImagesIfEmpty = false)
+    /// <returns></returns>
+    public Mat? GetSmallestThumbnail()
     {
-        if (Thumbnails.Length == 0) return false;
+        if (ThumbnailsCount == 0) return null;
+        return Thumbnails.Where(mat => !mat.IsEmpty).MinBy(mat => mat.Size.Area());
+    }
 
-        images = images.Where(mat => mat is not null && !mat.IsEmpty).ToArray();
+    /// <summary>
+    /// Gets the largest thumbnail in the collection
+    /// </summary>
+    /// <returns></returns>
+    public Mat? GetLargestThumbnail()
+    {
+        if (ThumbnailsCount == 0) return null;
+        return Thumbnails.Where(mat => !mat.IsEmpty).MaxBy(mat => mat.Size.Area());
+    }
 
-        int count = 0;
-
-        if (images.Length == 0)
+    /// <summary>
+    /// Sanitizes the thumbnails to respect the file specification:<br/>
+    /// - Remove empty thumbnails<br/>
+    /// - Remove the excess thumbnails up to spec, if requested<br/>
+    /// - Resize thumbnails to the spec
+    /// - Creates missing thumbnails required by the file spec
+    /// </summary>
+    /// <param name="trimToFileSpec">True to trim the excess thumbnails, otherwise false to not trim</param>
+    /// <returns>True if anything changed, otherwise false</returns>
+    public bool SanitizeThumbnails(bool trimToFileSpec = false)
+    {
+        bool changed = false;
+        // Remove empty thumbnails, however this should never happen
+        for (int i = ThumbnailsCount-1; i >= 0; i--)
         {
-            if (!generateImagesIfEmpty) return false;
-            count = Thumbnails.Length;
-            using var matRoi = FirstLayer?.LayerMatModelBoundingRectangle;
-            if (matRoi is null || matRoi.SourceMat.IsEmpty)
+            if (!Thumbnails[i].IsEmpty) continue;
+            Thumbnails.RemoveAt(i);
+            changed = true;
+        }
+
+        // Remove the excess thumbnails up to spec, if requested
+        if (trimToFileSpec && ThumbnailsCount > ThumbnailsOriginalSize.Length)
+        {
+            var difference = ThumbnailsCount - ThumbnailsOriginalSize.Length;
+            Thumbnails.RemoveRange(ThumbnailsCount - difference, difference);
+            changed = true;
+        }
+
+        // Resize thumbnails to the spec
+        for (var i = 0; i < ThumbnailsCount && i < ThumbnailsOriginalSize.Length; i++)
+        {
+            if (Thumbnails[i].Size != ThumbnailsOriginalSize[i])
             {
-                using var genMat = EmguExtensions.InitMat(new Size(200, 100), 3);
-                CvInvoke.PutText(genMat, About.Software, new Point(40, 60), FontFace.HersheyDuplex, 1, EmguExtensions.WhiteColor, 2);
-                for (int i = 0; i < Thumbnails.Length; i++)
+                CvInvoke.Resize(Thumbnails[i], Thumbnails[i], ThumbnailsOriginalSize[i]);
+                changed = true;
+            }
+        }
+
+        // Creates missing thumbnails required by the file spec
+        while (ThumbnailsCount < ThumbnailsOriginalSize.Length)
+        {
+            changed = true;
+            var requestedSize = ThumbnailsOriginalSize[ThumbnailsCount];
+            var bestThumbnail = GetThumbnailByHeight(requestedSize.Height)?.Clone();
+            if (bestThumbnail is null)
+            {
+                using var matRoi = FirstLayer?.LayerMatModelBoundingRectangle;
+                if (matRoi is null || matRoi.SourceMat.IsEmpty)
                 {
-                    Thumbnails[i]?.Dispose();
-                    Thumbnails[i] = new Mat();
-                    CvInvoke.Resize(genMat, Thumbnails[i], ThumbnailsOriginalSize[i]);
+                    using var genMat = EmguExtensions.InitMat(new Size(200, 100), 3);
+                    CvInvoke.PutText(genMat, About.Software, new Point(40, 60), FontFace.HersheyDuplex, 1, EmguExtensions.WhiteColor, 2);
+                    if (genMat.Size != requestedSize) CvInvoke.Resize(genMat, genMat, requestedSize);
+                    Thumbnails.Add(genMat);
+                }
+                else
+                {
+                    var genMat = new Mat();
+                    CvInvoke.CvtColor(matRoi.RoiMat, genMat, ColorConversion.Gray2Bgr);
+                    if (genMat.Size != requestedSize) CvInvoke.Resize(genMat, genMat, requestedSize);
+                    CvInvoke.Resize(genMat, genMat, requestedSize);
+                    Thumbnails.Add(genMat);
                 }
             }
             else
             {
-                for (int i = 0; i < Thumbnails.Length; i++)
+                if (bestThumbnail.Size != requestedSize)
                 {
-                    Thumbnails[i]?.Dispose();
-                    Thumbnails[i] = new Mat(); 
-                    CvInvoke.CvtColor(matRoi.RoiMat, Thumbnails[i], ColorConversion.Gray2Bgr);
-                    CvInvoke.Resize(Thumbnails[i], Thumbnails[i], ThumbnailsOriginalSize[i]);
+                    CvInvoke.Resize(bestThumbnail, bestThumbnail, requestedSize);
                 }
+                Thumbnails.Add(bestThumbnail);
             }
         }
-        else
+
+        if (changed)
         {
-            byte imageIndex = 0;
-            for (int i = 0; i < Thumbnails.Length; i++)
-            {
-                var image = images[Math.Min(imageIndex++, images.Length - 1)]!;
-                if (ReferenceEquals(image, Thumbnails[i])) continue;
-                Thumbnails[i]?.Dispose();
-                Thumbnails[i] = image.Clone();
-                if (Thumbnails[i]!.Size != ThumbnailsOriginalSize[i])
-                {
-                    CvInvoke.Resize(Thumbnails[i], Thumbnails[i], ThumbnailsOriginalSize[i]);
-                }
+            RaisePropertyChanged(nameof(ThumbnailsCount));
+            RaisePropertyChanged(nameof(HaveThumbnails));
+            RaisePropertyChanged(nameof(ThumbnailEncodeCount));
+            RaisePropertyChanged(nameof(Thumbnails));
+            RequireFullEncode = true;
+        }
 
-                count++;
+        return changed;
+    }
+
+
+    /// <summary>
+    /// Replaces thumbnails from a list of thumbnails and clone them
+    /// </summary>
+    /// <param name="images"></param>
+    /// <param name="generateImagesIfEmpty">If true and if <paramref name="images"/> is empty, it will fill the thumbnails with generated images</param>
+    public bool ReplaceThumbnails(IEnumerable<Mat> images, bool generateImagesIfEmpty = false)
+    {
+        foreach (var thumbnail in Thumbnails)
+        {
+            thumbnail.Dispose();
+        }
+
+        Thumbnails.Clear();
+        var haveImages = images.Any();
+        if (!haveImages && !generateImagesIfEmpty) return false;
+
+        if (haveImages)
+        {
+            Thumbnails.AddRange(images.Where(mat => !mat.IsEmpty).Select(mat => mat.Clone()));
+        }
+
+        if (!SanitizeThumbnails())
+        {
+            RaisePropertyChanged(nameof(ThumbnailsCount));
+            RaisePropertyChanged(nameof(HaveThumbnails));
+            RaisePropertyChanged(nameof(ThumbnailEncodeCount));
+            RaisePropertyChanged(nameof(Thumbnails));
+            RequireFullEncode = true;
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// Sets the current thumbnails from a list of thumbnails and clone them
+    /// </summary>
+    /// <param name="images"></param>
+    /// <param name="generateImagesIfEmpty">If true and if <paramref name="images"/> is empty, it will fill the thumbnails with generated images</param>
+    public bool SetThumbnails(IEnumerable<Mat> images, bool generateImagesIfEmpty = false)
+    {
+        if (ThumbnailsCount == 0) return false;
+
+        var imageList = images.Where(mat => !mat.IsEmpty).ToList();
+        var haveImages = imageList.Count > 0;
+        if (!haveImages && !generateImagesIfEmpty) return false;
+
+        if (haveImages)
+        {
+            var imageIndex = 0;
+            for (int i = 0; i < ThumbnailsCount; i++)
+            {
+                var image = imageList[Math.Min(imageIndex++, imageList.Count - 1)];
+                SetThumbnail(i, image);
             }
         }
 
-        if (count == 0) return false;
+        if (!SanitizeThumbnails())
+        {
+            RaisePropertyChanged(nameof(ThumbnailsCount));
+            RaisePropertyChanged(nameof(HaveThumbnails));
+            RaisePropertyChanged(nameof(ThumbnailEncodeCount));
+            RaisePropertyChanged(nameof(Thumbnails));
+            RequireFullEncode = true;
+        }
 
-        RaisePropertyChanged(nameof(Thumbnails));
-        RequireFullEncode = true;
         return true;
 
     }
@@ -3535,6 +3730,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <param name="image">Image to set</param>
     public bool SetThumbnails(Mat image)
     {
+        Guard.IsNotNull(image);
         return SetThumbnails(new[] {image});
     }
 
@@ -3544,7 +3740,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <param name="filePath"></param>
     public bool SetThumbnails(string filePath)
     {
-        if (Thumbnails.Length == 0) return false;
+        if (ThumbnailsCount == 0) return false;
         if (!File.Exists(filePath)) return false;
         using var image = CvInvoke.Imread(filePath, ImreadModes.Color);
         return SetThumbnails(image);
@@ -3557,9 +3753,12 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <param name="image"></param>
     public bool SetThumbnail(int index, Mat image)
     {
-        if (index >= Thumbnails.Length) return false;
+        Guard.IsNotNull(image);
+        if (index >= ThumbnailsCount) return false;
+        if (ReferenceEquals(Thumbnails[index], image)) return false;
+        Thumbnails[index].Dispose();
         Thumbnails[index] = image.Clone();
-        if (Thumbnails[index]!.Size != ThumbnailsOriginalSize[index])
+        if (ThumbnailsOriginalSize.Length-1 >= index && Thumbnails[index].Size != ThumbnailsOriginalSize[index])
         {
             CvInvoke.Resize(Thumbnails[index], Thumbnails[index], ThumbnailsOriginalSize[index]);
         }
@@ -3576,16 +3775,9 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <param name="filePath"></param>
     public bool SetThumbnail(int index, string filePath)
     {
+        if (index >= ThumbnailsCount) return false;
         if (!File.Exists(filePath)) return false;
-        if (index >= Thumbnails.Length) return false;
-        Thumbnails[index] = CvInvoke.Imread(filePath, ImreadModes.Color);
-        if (Thumbnails[index]!.Size != ThumbnailsOriginalSize[index])
-        {
-            CvInvoke.Resize(Thumbnails[index], Thumbnails[index], ThumbnailsOriginalSize[index]);
-        }
-        RaisePropertyChanged(nameof(Thumbnails));
-        RequireFullEncode = true;
-        return true;
+        return SetThumbnail(index, CvInvoke.Imread(filePath, ImreadModes.Color));
     }
 
     /// <summary>
@@ -3660,15 +3852,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         }
 
         // Make sure thumbnails are all set, otherwise clone/create them
-        SetThumbnails(Thumbnails, true);
-
-        // Make sure thumbnails are in right size
-        for (var i = 0; i < Thumbnails.Length; i++)
-        {
-            if (Thumbnails[i] is null || Thumbnails[i]!.IsEmpty) continue;
-            if(Thumbnails[i]!.Size == ThumbnailsOriginalSize[i]) continue;
-            CvInvoke.Resize(Thumbnails[i], Thumbnails[i], ThumbnailsOriginalSize[i]);
-        }
+        SanitizeThumbnails();
 
         OnBeforeEncode(false);
         BeforeEncode();
@@ -3770,6 +3954,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             Save(progress);
         }
 
+        var thumbnailsSanitized = SanitizeThumbnails();
+
         GetBoundingRectangle(progress);
     }
 
@@ -3805,6 +3991,70 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// </summary>
     /// <param name="progress"></param>
     public Task ReloadAsync(OperationProgress? progress = null) => ReloadAsync(FileDecodeType.Full, progress);
+
+    /// <summary>
+    /// Encodes all <see cref="Thumbnails"/> into <paramref name="zipArchive"/> given an path format
+    /// </summary>
+    /// <param name="zipArchive"></param>
+    /// <param name="pathFormat">
+    /// {0} = Index<br/>
+    /// {1} = Width<br/>
+    /// {2} = Height<br/>
+    /// <para>Example: thumbnail/thumbnail{1}x{2}.png</para>
+    /// </param>
+    public void EncodeAllThumbnailsInZip(ZipArchive zipArchive, string pathFormat = "preview{0}.png")
+    {
+        for (var i = 0; i < ThumbnailsCount; i++)
+        {
+            var thumbnail = Thumbnails[i];
+            using var stream = zipArchive.CreateEntry(string.Format(pathFormat, i, thumbnail.Width, thumbnail.Height)).Open();
+            stream.WriteBytes(thumbnail.GetPngByes());
+            stream.Close();
+        }
+    }
+
+    /// <summary>
+    /// Encodes <see cref="Thumbnails"/> into <paramref name="zipArchive"/> given specific entry path's
+    /// </summary>
+    /// <param name="zipArchive"></param>
+    /// <param name="entryPaths"></param>
+    public void EncodeThumbnailsInZip(ZipArchive zipArchive, params string[] entryPaths)
+    {
+        for (var i = 0; i < ThumbnailsCount && i < entryPaths.Length; i++)
+        {
+            var thumbnail = Thumbnails[i];
+            using var stream = zipArchive.CreateEntry(entryPaths[i]).Open();
+            stream.WriteBytes(thumbnail.GetPngByes());
+            stream.Close();
+        }
+    }
+
+    public void DecodeThumbnailsFromZip(ZipArchive zipArchive, params string[] entryPaths)
+    {
+        foreach (var entryPath in entryPaths)
+        {
+            using var stream = zipArchive.GetEntry(entryPath)?.Open();
+            if (stream is null) continue;
+            var mat = new Mat();
+            CvInvoke.Imdecode(stream.ToArray(), ImreadModes.AnyColor, mat);
+            Thumbnails.Add(mat);
+            stream.Close();
+        }
+    }
+
+    public void DecodeAllThumbnailsFromZip(ZipArchive zipArchive, string entryStartsWith = "preview", string entryEndsWith = ".png")
+    {
+        foreach (var entity in zipArchive.Entries)
+        {
+            if (!string.IsNullOrWhiteSpace(entryEndsWith) && !entity.Name.EndsWith(entryEndsWith)) continue;
+            if (!entity.Name.StartsWith(entryStartsWith)) continue;
+            using var stream = entity.Open();
+            Mat mat = new();
+            CvInvoke.Imdecode(stream.ToArray(), ImreadModes.AnyColor, mat);
+            Thumbnails.Add(mat);
+            stream.Close();
+        }
+    }
 
     public void EncodeLayersInZip(ZipArchive zipArchive, string prepend, byte padDigits, IndexStartNumber layerIndexStartNumber = default, 
         OperationProgress? progress = null, string path = "", Func<uint, Mat, Mat>? matGenFunc = null)
@@ -3860,7 +4110,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
                             break;
                         }
                         default:
-                            pngLayerBytes[layerIndex] = this[layerIndex].CompressedPngBytes!;
+                            pngLayerBytes[layerIndex] = this[layerIndex].CompressedPngBytes;
                             break;
                     }
                 }
@@ -3911,6 +4161,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             {
                 using var stream = layerEntries[layerIndex].Open();
                 pngBytes = stream.ToArray();
+                stream.Close();
             }
 
             if (matGenFunc is null)
@@ -4148,7 +4399,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
                 {
                     progress.PauseIfRequested();
                     var byteArr = layer.CompressedPngBytes;
-                    if (byteArr is null) return;
+                    if (byteArr.Length == 0) return;
                     using var stream = new FileStream(Path.Combine(path, layer.Filename), FileMode.Create, FileAccess.Write);
                     stream.Write(byteArr, 0, byteArr.Length);
                     progress.LockAndIncrement();
@@ -4330,14 +4581,23 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     }
 
     /// <summary>
-    /// Get height in mm from layer height
+    /// Calculate the PositionZ for an layer index in mm
     /// </summary>
     /// <param name="layerIndex"></param>
-    /// <param name="realHeight"></param>
+    /// <param name="usePreviousLayer">Use the previous layer to calculate the PositionZ if possible, otherwise it will multiply the number by the <see cref="LayerHeight"/></param>
     /// <returns>The height in mm</returns>
-    public float GetHeightFromLayer(uint layerIndex, bool realHeight = true)
+    public float CalculatePositionZ(uint layerIndex, bool usePreviousLayer = true)
     {
-        return Layer.RoundHeight((layerIndex + (realHeight ? 1 : 0)) * LayerHeight);
+        if (usePreviousLayer)
+        {
+            int previousLayerIndex = (int)layerIndex - 1;
+            if (LayerExistsAndValid(previousLayerIndex) && this[previousLayerIndex].PositionZ > 0)
+            {
+                return Layer.RoundHeight(this[previousLayerIndex].PositionZ + LayerHeight);
+            }
+        }
+
+        return Layer.RoundHeight((layerIndex+1) * LayerHeight);
     }
 
     /// <summary>
@@ -5141,66 +5401,65 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <returns>The converted file if successful, otherwise null</returns>
     public virtual FileFormat? Convert(Type to, string fileFullPath, uint version = 0, OperationProgress? progress = null)
     {
-        if (!IsValid) return null;
         var found = AvailableFormats.Any(format => to == format.GetType());
         if (!found) return null;
 
         progress ??= new OperationProgress("Converting");
 
-        if (Activator.CreateInstance(to) is not FileFormat slicerFile) return null;
-        slicerFile.FileFullPath = fileFullPath;
+        if (Activator.CreateInstance(to) is not FileFormat convertSlicerFile) return null;
+        convertSlicerFile.FileFullPath = fileFullPath;
 
-        if (!slicerFile.OnBeforeConvertFrom(this)) return null;
-        if (!OnBeforeConvertTo(slicerFile)) return null;
+        if (!convertSlicerFile.OnBeforeConvertFrom(this)) return null;
+        if (!OnBeforeConvertTo(convertSlicerFile)) return null;
 
         if (version > 0 && version != DefaultVersion)
         {
-            slicerFile.Version = version;
+            convertSlicerFile.Version = version;
         }
 
-        slicerFile.SuppressRebuildPropertiesWork(() =>
+        convertSlicerFile.SuppressRebuildPropertiesWork(() =>
         {
-            slicerFile.Init(CloneLayers());
-            slicerFile.AntiAliasing = ValidateAntiAliasingLevel();
-            slicerFile.LayerHeight = LayerHeight;
-            slicerFile.LayerCount = LayerCount;
-            slicerFile.BottomLayerCount = BottomLayerCount;
-            slicerFile.TransitionLayerCount = TransitionLayerCount;
-            slicerFile.ResolutionX = ResolutionX;
-            slicerFile.ResolutionY = ResolutionY;
-            slicerFile.DisplayWidth = DisplayWidth;
-            slicerFile.DisplayHeight = DisplayHeight;
-            slicerFile.MachineZ = MachineZ;
-            slicerFile.DisplayMirror = DisplayMirror;
+            convertSlicerFile.Init(CloneLayers());
+            convertSlicerFile.AntiAliasing = ValidateAntiAliasingLevel();
+            convertSlicerFile.LayerHeight = LayerHeight;
+            convertSlicerFile.LayerCount = LayerCount;
+            convertSlicerFile.BottomLayerCount = BottomLayerCount;
+            convertSlicerFile.TransitionLayerCount = TransitionLayerCount;
+            convertSlicerFile.ResolutionX = ResolutionX;
+            convertSlicerFile.ResolutionY = ResolutionY;
+            convertSlicerFile.DisplayWidth = DisplayWidth;
+            convertSlicerFile.DisplayHeight = DisplayHeight;
+            convertSlicerFile.MachineZ = MachineZ;
+            convertSlicerFile.DisplayMirror = DisplayMirror;
 
             // Exposure
-            slicerFile.BottomExposureTime = BottomExposureTime;
-            slicerFile.ExposureTime = ExposureTime;
+            convertSlicerFile.BottomExposureTime = BottomExposureTime;
+            convertSlicerFile.ExposureTime = ExposureTime;
 
             // Lifts
-            slicerFile.BottomLiftHeight = BottomLiftHeight;
-            slicerFile.BottomLiftSpeed = BottomLiftSpeed;
+            convertSlicerFile.BottomLiftHeight = BottomLiftHeight;
+            convertSlicerFile.BottomLiftSpeed = BottomLiftSpeed;
                 
-            slicerFile.LiftHeight = LiftHeight;
-            slicerFile.LiftSpeed = LiftSpeed;
+            convertSlicerFile.LiftHeight = LiftHeight;
+            convertSlicerFile.LiftSpeed = LiftSpeed;
 
-            slicerFile.BottomLiftSpeed2 = BottomLiftSpeed2;
-            slicerFile.LiftSpeed2 = LiftSpeed2;
+            convertSlicerFile.BottomLiftSpeed2 = BottomLiftSpeed2;
+            convertSlicerFile.LiftSpeed2 = LiftSpeed2;
 
-            slicerFile.BottomRetractSpeed = BottomRetractSpeed;
-            slicerFile.RetractSpeed = RetractSpeed;
+            convertSlicerFile.BottomRetractSpeed = BottomRetractSpeed;
+            convertSlicerFile.RetractSpeed = RetractSpeed;
 
-            slicerFile.BottomRetractSpeed2 = BottomRetractSpeed2;
-            slicerFile.RetractSpeed2 = RetractSpeed2;
+            convertSlicerFile.BottomRetractSpeed2 = BottomRetractSpeed2;
+            convertSlicerFile.RetractSpeed2 = RetractSpeed2;
 
 
-            if (slicerFile.CanUseAnyLiftHeight2 && (CanUseAnyLiftHeight2 || GetType() == typeof(SL1File))) // Both are TSMC compatible
+            if (convertSlicerFile.CanUseAnyLiftHeight2 && (CanUseAnyLiftHeight2 || GetType() == typeof(SL1File))) // Both are TSMC compatible
             {
-                slicerFile.BottomLiftHeight2 = BottomLiftHeight2;
-                slicerFile.LiftHeight2 = LiftHeight2;
+                convertSlicerFile.BottomLiftHeight2 = BottomLiftHeight2;
+                convertSlicerFile.LiftHeight2 = LiftHeight2;
 
-                slicerFile.BottomRetractHeight2 = BottomRetractHeight2;
-                slicerFile.RetractHeight2 = RetractHeight2;
+                convertSlicerFile.BottomRetractHeight2 = BottomRetractHeight2;
+                convertSlicerFile.RetractHeight2 = RetractHeight2;
             }
             /*else if (slicerFile.CanUseAnyLiftHeight2) // Output format is compatible with TSMC, but input isn't
             {
@@ -5209,56 +5468,57 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             }*/
             else if (CanUseAnyLiftHeight2) // Output format isn't compatible with TSMC, but input is
             {
-                slicerFile.BottomLiftHeight = BottomLiftHeightTotal;
-                slicerFile.LiftHeight = LiftHeightTotal;
+                convertSlicerFile.BottomLiftHeight = BottomLiftHeightTotal;
+                convertSlicerFile.LiftHeight = LiftHeightTotal;
 
                 // Set to the slowest retract speed
                 if (BottomRetractSpeed2 > 0 && BottomRetractSpeed > BottomRetractSpeed2)
                 {
-                    slicerFile.BottomRetractSpeed = BottomRetractSpeed2;
+                    convertSlicerFile.BottomRetractSpeed = BottomRetractSpeed2;
                 }
 
                 // Set to the slowest retract speed
                 if (RetractSpeed2 > 0 && RetractSpeed > RetractSpeed2)
                 {
-                    slicerFile.RetractSpeed = RetractSpeed2;
+                    convertSlicerFile.RetractSpeed = RetractSpeed2;
                 }
             }
 
             // Wait times
-            slicerFile.BottomLightOffDelay = BottomLightOffDelay;
-            slicerFile.LightOffDelay = LightOffDelay;
+            convertSlicerFile.BottomLightOffDelay = BottomLightOffDelay;
+            convertSlicerFile.LightOffDelay = LightOffDelay;
 
-            slicerFile.BottomWaitTimeBeforeCure = BottomWaitTimeBeforeCure;
-            slicerFile.WaitTimeBeforeCure = WaitTimeBeforeCure;
+            convertSlicerFile.BottomWaitTimeBeforeCure = BottomWaitTimeBeforeCure;
+            convertSlicerFile.WaitTimeBeforeCure = WaitTimeBeforeCure;
 
-            slicerFile.BottomWaitTimeAfterCure = BottomWaitTimeAfterCure;
-            slicerFile.WaitTimeAfterCure = WaitTimeAfterCure;
+            convertSlicerFile.BottomWaitTimeAfterCure = BottomWaitTimeAfterCure;
+            convertSlicerFile.WaitTimeAfterCure = WaitTimeAfterCure;
 
-            slicerFile.BottomWaitTimeAfterLift = BottomWaitTimeAfterLift;
-            slicerFile.WaitTimeAfterLift = WaitTimeAfterLift;
+            convertSlicerFile.BottomWaitTimeAfterLift = BottomWaitTimeAfterLift;
+            convertSlicerFile.WaitTimeAfterLift = WaitTimeAfterLift;
 
-            slicerFile.BottomLightPWM = BottomLightPWM;
-            slicerFile.LightPWM = LightPWM;
+            convertSlicerFile.BottomLightPWM = BottomLightPWM;
+            convertSlicerFile.LightPWM = LightPWM;
 
+            // Others
+            convertSlicerFile.MachineName = MachineName;
+            convertSlicerFile.MaterialName = MaterialName;
+            convertSlicerFile.MaterialMilliliters = MaterialMilliliters;
+            convertSlicerFile.MaterialGrams = MaterialGrams;
+            convertSlicerFile.MaterialCost = MaterialCost;
+            convertSlicerFile.PrintTime = PrintTime;
+            convertSlicerFile.PrintHeight = PrintHeight;
+            convertSlicerFile.BoundingRectangle = _boundingRectangle;
 
-            slicerFile.MachineName = MachineName;
-            slicerFile.MaterialName = MaterialName;
-            slicerFile.MaterialMilliliters = MaterialMilliliters;
-            slicerFile.MaterialGrams = MaterialGrams;
-            slicerFile.MaterialCost = MaterialCost;
-            slicerFile.PrintTime = PrintTime;
-            slicerFile.PrintHeight = PrintHeight;
-
-            slicerFile.SetThumbnails(Thumbnails, true);
+            convertSlicerFile.ReplaceThumbnails(Thumbnails, true);
         });
 
-        if (!slicerFile.OnAfterConvertFrom(this)) return null;
-        if (!OnAfterConvertTo(slicerFile)) return null;
+        if (!convertSlicerFile.OnAfterConvertFrom(this)) return null;
+        if (!OnAfterConvertTo(convertSlicerFile)) return null;
 
-        slicerFile.Encode(fileFullPath, progress);
+        convertSlicerFile.Encode(fileFullPath, progress);
 
-        return slicerFile;
+        return convertSlicerFile;
     }
 
     /// <summary>
@@ -5814,72 +6074,86 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// </summary>
     /// <param name="newLayerCount">New layer count</param>
     /// <param name="initBlack"></param>
-    public void Reallocate(uint newLayerCount, bool initBlack = false)
+    /// <param name="resetLayerProperties"></param>
+    public void Reallocate(uint newLayerCount, bool initBlack = false, bool resetLayerProperties = false)
     {
         var oldLayerCount = LayerCount;
         int differenceLayerCount = (int)newLayerCount - Count;
         if (differenceLayerCount == 0) return;
-        var newLayers = new Layer[newLayerCount];
 
-        Array.Copy(_layers, 0, newLayers, 0, Math.Min(newLayerCount, newLayers.Length));
-
-        if (differenceLayerCount > 0 && initBlack)
-        {
-            using var blackMat = CreateMat(false);
-            var pngBytes = blackMat.GetPngByes();
-            for (var layerIndex = oldLayerCount; layerIndex < newLayerCount; layerIndex++)
-            {
-                newLayers[layerIndex] = new Layer(layerIndex, pngBytes.ToArray(), this);
-            }
-        }
+        Array.Resize(ref _layers, (int)newLayerCount);
 
         SuppressRebuildPropertiesWork(() =>
         {
-            Layers = newLayers;
-        });
+            Layers = _layers;
+        }, resetLayerProperties, resetLayerProperties);
+
+        if (differenceLayerCount > 0 && initBlack)
+        {
+            using var blackMat = CreateMat();
+            var layer = new Layer(0, blackMat, this);
+
+            for (var layerIndex = oldLayerCount; layerIndex < newLayerCount; layerIndex++)
+            {
+                this[layerIndex].CompressedBytes = layer.CompressedBytes.ToArray();
+            }
+        }
     }
 
     /// <summary>
     /// Reallocate at given index
     /// </summary>
     /// <returns></returns>
-    public void ReallocateInsert(uint insertAtLayerIndex, uint layerCount, bool initBlack = false)
+    public void ReallocateInsert(uint insertAtLayerIndex, uint layerCount, bool initBlack = false, 
+        bool resetLayerProperties = false, bool fixPositionZ = false)
     {
         if (layerCount == 0) return;
         insertAtLayerIndex = Math.Min(insertAtLayerIndex, LayerCount);
-        var newLayers = new Layer[LayerCount + layerCount];
+
+        var newLayerCount = LayerCount + layerCount;
+        var rightDestinationIndex = insertAtLayerIndex + layerCount;
+
+        var newLayers = new Layer[newLayerCount];
 
         // Copy from start to insert index
-        if (insertAtLayerIndex > 0)
-            Array.Copy(_layers, 0, newLayers, 0, insertAtLayerIndex);
-
+        if (insertAtLayerIndex > 0) Array.Copy(_layers, 0, newLayers, 0, insertAtLayerIndex);
+        
         // Rearrange from last insert to end
         if (insertAtLayerIndex < LayerCount)
             Array.Copy(
                 _layers, insertAtLayerIndex,
-                newLayers, insertAtLayerIndex + layerCount,
+                newLayers, rightDestinationIndex,
                 LayerCount - insertAtLayerIndex);
-        /*for (uint layerIndex = insertAtLayerIndex; layerIndex < _layers.Length; layerIndex++)
-        {
-            newLayers[layerCount + layerIndex] = _layers[layerIndex];
-            newLayers[layerCount + layerIndex].Index = layerCount + layerIndex;
-        }*/
 
-        // Allocate new layers in between
-        if (initBlack)
-        {
-            using var blackMat = EmguExtensions.InitMat(Resolution);
-            var pngBytes = blackMat.GetPngByes();
-            for (var layerIndex = insertAtLayerIndex; layerIndex < insertAtLayerIndex + layerCount; layerIndex++)
-            {
-                newLayers[layerIndex] = new Layer(layerIndex, pngBytes.ToArray(), this);
-            }
-        }
 
         SuppressRebuildPropertiesWork(() =>
         {
             Layers = newLayers;
-        });
+        }, resetLayerProperties, resetLayerProperties);
+
+        if (initBlack)
+        {
+            using var blackMat = CreateMat();
+            var layer = new Layer(0, blackMat, this);
+            for (var layerIndex = insertAtLayerIndex; layerIndex < rightDestinationIndex; layerIndex++)
+            {
+                this[layerIndex].CompressedBytes = layer.CompressedBytes.ToArray();
+            }
+        }
+
+        if (!resetLayerProperties && fixPositionZ)
+        {
+            var addedDistance = LayerHeight + this[rightDestinationIndex-1].PositionZ - this[insertAtLayerIndex].PositionZ;
+            for (var layerIndex = rightDestinationIndex; layerIndex < newLayerCount; layerIndex++)
+            {
+                this[layerIndex].PositionZ += addedDistance;
+            }
+
+#pragma warning disable CA2245
+            PrintHeight = PrintHeight;
+#pragma warning restore CA2245
+        }
+        
     }
 
     /// <summary>
@@ -5887,35 +6161,31 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// </summary>
     /// <param name="startLayerIndex"></param>
     /// <param name="endLayerIndex"></param>
-    public void ReallocateKeepRange(uint startLayerIndex, uint endLayerIndex)
+    /// <param name="resetLayerProperties"></param>
+    public void ReallocateKeepRange(uint startLayerIndex, uint endLayerIndex, bool resetLayerProperties = false)
     {
         if ((int)(endLayerIndex - startLayerIndex) < 0) return;
         var newLayers = new Layer[1 + endLayerIndex - startLayerIndex];
 
         Array.Copy(_layers, startLayerIndex, newLayers, 0, newLayers.Length);
-        /*uint currentLayerIndex = 0;
-        for (uint layerIndex = startLayerIndex; layerIndex <= endLayerIndex; layerIndex++)
-        {
-            newLayers[currentLayerIndex++] = _layers[layerIndex];
-        }*/
 
         SuppressRebuildPropertiesWork(() =>
         {
             Layers = newLayers;
-        });
+        }, resetLayerProperties, resetLayerProperties);
     }
 
     /// <summary>
     /// Reallocate at start
     /// </summary>
     /// <returns></returns>
-    public void ReallocateStart(uint layerCount, bool initBlack = false) => ReallocateInsert(0, layerCount, initBlack);
+    public void ReallocateStart(uint layerCount, bool initBlack = false, bool resetLayerProperties = false, bool fixPositionZ = false) => ReallocateInsert(0, layerCount, initBlack, resetLayerProperties, fixPositionZ);
 
     /// <summary>
     /// Reallocate at end
     /// </summary>
     /// <returns></returns>
-    public void ReallocateEnd(uint layerCount, bool initBlack = false) => ReallocateInsert(LayerCount, layerCount, initBlack);
+    public void ReallocateEnd(uint layerCount, bool initBlack = false, bool resetLayerProperties = false) => ReallocateInsert(LayerCount, layerCount, initBlack, resetLayerProperties);
 
     /// <summary>
     /// Allocate layers from a Mat array
@@ -5967,6 +6237,26 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     public bool LayerExists(uint layerIndex)
     {
         return layerIndex < LayerCount;
+    }
+
+    /// <summary>
+    /// Checks if a layer index exists in the collection and if is valid, ie: not null
+    /// </summary>
+    /// <param name="layerIndex">Layer index to check</param>
+    /// <returns></returns>
+    public bool LayerExistsAndValid(int layerIndex)
+    {
+        return LayerExists(layerIndex) && this[layerIndex] is not null;
+    }
+
+    /// <summary>
+    /// Checks if a layer index exists in the collection and if is valid, ie: not null
+    /// </summary>
+    /// <param name="layerIndex">Layer index to check</param>
+    /// <returns></returns>
+    public bool LayerExistsAndValid(uint layerIndex)
+    {
+        return LayerExists(layerIndex) && this[layerIndex] is not null;
     }
     #endregion
 
@@ -6148,7 +6438,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
 
             if (recalculateZPos)
             {
-                layer.PositionZ = GetHeightFromLayer(layerIndex);
+                layer.PositionZ = CalculatePositionZ(layerIndex, false);
             }
 
             if (property != string.Empty)

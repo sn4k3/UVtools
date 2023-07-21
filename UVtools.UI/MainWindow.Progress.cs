@@ -20,7 +20,7 @@ public partial class MainWindow
     public OperationProgress Progress { get; } = new();
     private readonly Timer _progressTimer = new(200) { AutoReset = true };
     private long _progressLastTotalSeconds;
-    private LogItem _progressLogItem;
+    private LogItem _progressLogItem = null!;
     private bool _isProgressVisible;
 
     #endregion

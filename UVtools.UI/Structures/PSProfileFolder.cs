@@ -55,7 +55,7 @@ public class PSProfileFolder : BindableBase
             foreach (var item in Items)
             {
                 if (!item.IsChecked.HasValue || !item.IsChecked.Value) continue;
-                sb.AppendLine(item.Content.ToString());
+                sb.AppendLine(item.Content?.ToString());
             }
 
             return sb.ToString();
@@ -71,11 +71,11 @@ public class PSProfileFolder : BindableBase
         {
             case FolderType.Print:
                 SourcePath = Path.Combine(AssetsPrusaSlicer, "sla_print");
-                TargetPath = Path.Combine(App.GetPrusaSlicerDirectory(isSuperSlicer), "sla_print");
+                TargetPath = Path.Combine(App.GetPrusaSlicerDirectory(isSuperSlicer)!, "sla_print");
                 break;
             case FolderType.Printer:
                 SourcePath = Path.Combine(AssetsPrusaSlicer, "printer");
-                TargetPath = Path.Combine(App.GetPrusaSlicerDirectory(isSuperSlicer), "printer");
+                TargetPath = Path.Combine(App.GetPrusaSlicerDirectory(isSuperSlicer)!, "printer");
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(type), type, null);

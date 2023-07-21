@@ -941,11 +941,11 @@ public sealed class GooFile : FileFormat
             throw new FileLoadException("Not a valid GOO file! Magic value mismatch", FileFullPath);
         }
 
-        progress.Reset(OperationProgress.StatusDecodePreviews, ThumbnailsCount);
+        progress.Reset(OperationProgress.StatusDecodePreviews, (uint)ThumbnailCountFileShouldHave);
 
-        Thumbnails[0] = DecodeImage(DATATYPE_RGB565_BE, Header.SmallPreview565, ThumbnailsOriginalSize[0]);
+        Thumbnails.Add(DecodeImage(DATATYPE_RGB565_BE, Header.SmallPreview565, ThumbnailsOriginalSize[0]));
         progress++;
-        Thumbnails[1] = DecodeImage(DATATYPE_RGB565_BE, Header.BigPreview565, ThumbnailsOriginalSize[1]);
+        Thumbnails.Add(DecodeImage(DATATYPE_RGB565_BE, Header.BigPreview565, ThumbnailsOriginalSize[1]));
         progress++;
 
 
@@ -1020,7 +1020,7 @@ public sealed class GooFile : FileFormat
 
         progress.Reset(OperationProgress.StatusEncodePreviews, 2);
 
-        Mat?[] thumbnails = { GetThumbnail(true), GetThumbnail(false) };
+        Mat?[] thumbnails = { GetLargestThumbnail(), GetSmallestThumbnail() };
         Header.BigPreview565 = EncodeImage(DATATYPE_RGB565_BE, thumbnails[0]!);
         progress++;
         Header.SmallPreview565 = EncodeImage(DATATYPE_RGB565_BE, thumbnails[1]!);

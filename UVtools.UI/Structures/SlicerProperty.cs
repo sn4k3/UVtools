@@ -12,8 +12,8 @@ namespace UVtools.UI.Structures;
 public class SlicerProperty : BindableBase
 {
     private string _name;
-    private string _value;
-    private string _group;
+    private string? _value;
+    private string? _group;
 
     public string Name
     {
@@ -21,19 +21,19 @@ public class SlicerProperty : BindableBase
         set => RaiseAndSetIfChanged(ref _name, value);
     }
 
-    public string Value
+    public string? Value
     {
         get => _value;
         set => RaiseAndSetIfChanged(ref _value, value);
     }
 
-    public string Group
+    public string? Group
     {
         get => _group;
         set => RaiseAndSetIfChanged(ref _group, value);
     }
 
-    public SlicerProperty(string name, string value, string group = null)
+    public SlicerProperty(string name, string? value, string? group = null)
     {
         _name = name;
         _value = value;

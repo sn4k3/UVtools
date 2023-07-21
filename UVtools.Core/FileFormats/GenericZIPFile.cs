@@ -168,24 +168,7 @@ public sealed class GenericZIPFile : FileFormat
     {
         using var outputFile = ZipFile.Open(TemporaryOutputFileFullPath, ZipArchiveMode.Create);
 
-        if (HaveThumbnails)
-        {
-            if (Thumbnails[0] is not null)
-            {
-                using var stream = outputFile.CreateEntry("preview.png").Open();
-                stream.WriteBytes(Thumbnails[0]!.GetPngByes());
-                stream.Close();
-            }
-
-            if (Thumbnails.Length > 1 && Thumbnails[1] is not null)
-            {
-                using var stream = outputFile.CreateEntry("preview_cropping.png").Open();
-                using var vec = new VectorOfByte();
-                stream.WriteBytes(Thumbnails[1]!.GetPngByes());
-                stream.Close();
-            }
-        }
-
+        EncodeThumbnailsInZip(outputFile, ChituboxZipFile.ThumbnailsEntryNames);
         EncodeLayersInZip(outputFile, IndexStartNumber.One, progress);
 
         ManifestFile.Update();
@@ -230,23 +213,10 @@ public sealed class GenericZIPFile : FileFormat
             throw new FileLoadException("Unable to detect layer images in the file", FileFullPath);
         }
 
+        DecodeThumbnailsFromZip(inputFile, ChituboxZipFile.ThumbnailsEntryNames);
+
         Init(layerCount, DecodeType == FileDecodeType.Partial);
         DecodeLayersFromZip(inputFile, IndexStartNumber.One, progress);
-            
-        entry = inputFile.GetEntry("preview.png");
-        if (entry is not null)
-        {
-            Thumbnails[0] = new Mat();
-            CvInvoke.Imdecode(entry.Open().ToArray(), ImreadModes.AnyColor, Thumbnails[0]);
-        }
-
-        entry = inputFile.GetEntry("preview_cropping.png");
-        if (entry is not null)
-        {
-            var count = CreatedThumbnailsCount;
-            Thumbnails[count] = new Mat();
-            CvInvoke.Imdecode(entry.Open().ToArray(), ImreadModes.AnyColor, Thumbnails[count]);
-        }
     }
 
     protected override void PartialSaveInternally(OperationProgress progress)

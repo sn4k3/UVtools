@@ -51,6 +51,7 @@ public abstract class BindableBase : INotifyPropertyChanged
         return true;
     }
 
+    // ReSharper disable once RedundantAssignment
     protected void RaiseAndSet<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
     {
         field = value;

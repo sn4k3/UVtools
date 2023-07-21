@@ -26,7 +26,7 @@ public class MappedProcess : BindableBase
 
     private bool _isEnabled = true;
     private string _applicationPath = null!;
-    private string? _name;
+    private string _name = string.Empty;
     private string _arguments = DefaultArgument;
     private string? _compatibleExtensions;
     private bool _waitForExit;
@@ -56,7 +56,7 @@ public class MappedProcess : BindableBase
     /// <summary>
     /// Gets or sets the path name alias
     /// </summary>
-    public string? Name
+    public string Name
     {
         get => _name;
         set => RaiseAndSetIfChanged(ref _name, value);

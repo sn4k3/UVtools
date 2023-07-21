@@ -455,13 +455,12 @@ public sealed class OSLAFile : FileFormat
         outputFile.WriteSerialize(CustomTableSettings); // Custom table
 
         // Previews
-        progress.Reset(OperationProgress.StatusEncodePreviews, ThumbnailsCount);
+        progress.Reset(OperationProgress.StatusEncodePreviews, (uint)ThumbnailCountFileShouldHave);
         HeaderSettings.PreviewCount = 0;
         uint sizeofPreview = 0;
-        for (byte i = 0; i < ThumbnailsCount; i++)
+        for (var i = 0; i < ThumbnailsCount; i++)
         {
             var image = Thumbnails[i];
-            if(image is null) continue;
 
             progress.PauseOrCancelIfRequested();
 
@@ -610,7 +609,7 @@ public sealed class OSLAFile : FileFormat
         Debug.Write("Custom table -> ");
         Debug.WriteLine(CustomTableSettings);
 
-        progress.Reset(OperationProgress.StatusDecodePreviews, ThumbnailsCount);
+        progress.Reset(OperationProgress.StatusDecodePreviews, (uint)ThumbnailCountFileShouldHave);
 
         for (byte i = 0; i < HeaderSettings.PreviewCount; i++)
         {
@@ -628,7 +627,7 @@ public sealed class OSLAFile : FileFormat
 
             var bytes = inputFile.ReadBytes((int)preview.ImageLength);
 
-            Thumbnails[i] = DecodeImage(HeaderSettings.PreviewDataType, bytes, preview.ResolutionX, preview.ResolutionY);
+            Thumbnails.Add(DecodeImage(HeaderSettings.PreviewDataType, bytes, preview.ResolutionX, preview.ResolutionY));
             progress++;
         }
 

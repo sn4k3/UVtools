@@ -50,7 +50,7 @@ public sealed class LogItem : BindableBase
         _startTime = DateTime.Now.ToString("HH:mm:ss");
     }
 
-    public LogItem(string description = null, uint elapsedTime = 0) : this(0, description, elapsedTime)
+    public LogItem(string description = "", uint elapsedTime = 0) : this(0, description, elapsedTime)
     { }
 
     public override string ToString()

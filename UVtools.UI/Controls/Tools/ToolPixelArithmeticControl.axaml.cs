@@ -6,10 +6,10 @@ namespace UVtools.UI.Controls.Tools;
 
 public partial class ToolPixelArithmeticControl : ToolControl
 {
-    public OperationPixelArithmetic Operation => BaseOperation as OperationPixelArithmetic;
+    public OperationPixelArithmetic Operation => (BaseOperation as OperationPixelArithmetic)!;
     public ToolPixelArithmeticControl()
     {
-        BaseOperation = new OperationPixelArithmetic(SlicerFile);
+        BaseOperation = new OperationPixelArithmetic(SlicerFile!);
         if (!ValidateSpawn()) return;
         InitializeComponent();
 
@@ -18,7 +18,7 @@ public partial class ToolPixelArithmeticControl : ToolControl
 
     public void PresetElephantFootCompensation()
     {
-        ParentWindow.SelectBottomLayers();
+        ParentWindow!.SelectBottomLayers();
         Operation.PresetElephantFootCompensation();
     }
 

@@ -9,7 +9,7 @@ public partial class ToolThresholdControl : ToolControl
     private bool _isThresholdEnabled = true;
     private bool _isMaximumEnabled = true;
     private bool _isTypeEnabled = true;
-    public OperationThreshold Operation => BaseOperation as OperationThreshold;
+    public OperationThreshold Operation => (BaseOperation as OperationThreshold)!;
 
     public string[] Presets => new[]
     {
@@ -72,7 +72,7 @@ public partial class ToolThresholdControl : ToolControl
 
     public ToolThresholdControl()
     {
-        BaseOperation = new OperationThreshold(SlicerFile);
+        BaseOperation = new OperationThreshold(SlicerFile!);
         if (!ValidateSpawn()) return; 
         InitializeComponent();
     }

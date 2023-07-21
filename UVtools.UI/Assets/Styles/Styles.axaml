@@ -13,17 +13,11 @@
                     <SolidColorBrush x:Key="GroupBoxHeaderBackground" Color="LightBlue" />
                     <SolidColorBrush x:Key="HeaderFooterBackground" Color="LightGray" />
                     <SolidColorBrush x:Key="LightBackground" Color="WhiteSmoke" />
-
-                    <SolidColorBrush x:Key="AdvancedImageBoxGridColor" Color="White" />
-                    <SolidColorBrush x:Key="AdvancedImageBoxGridAlternateColor" Color="Gainsboro" />
                 </ResourceDictionary>
                 <ResourceDictionary x:Key="Dark">
                     <SolidColorBrush x:Key="GroupBoxHeaderBackground" Color="#4f5b62" />
                     <SolidColorBrush x:Key="HeaderFooterBackground" Color="#1E1E1E" />
                     <SolidColorBrush x:Key="LightBackground" Color="#1E1E1E" />
-
-                    <SolidColorBrush x:Key="AdvancedImageBoxGridColor" Color="#263238" />
-                    <SolidColorBrush x:Key="AdvancedImageBoxGridAlternateColor" Color="#1E1E1E" />
                 </ResourceDictionary>
             </ResourceDictionary.ThemeDictionaries>
         </ResourceDictionary>

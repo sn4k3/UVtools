@@ -6,12 +6,12 @@ namespace UVtools.UI.Controls.Tools;
 
 public partial class ToolPixelDimmingControl : ToolControl
 {
-    public OperationPixelDimming Operation => BaseOperation as OperationPixelDimming;
+    public OperationPixelDimming Operation => (BaseOperation as OperationPixelDimming)!;
 
        
     public ToolPixelDimmingControl()
     {
-        BaseOperation = new OperationPixelDimming(SlicerFile);
+        BaseOperation = new OperationPixelDimming(SlicerFile!);
         if (!ValidateSpawn()) return;
         InitializeComponent();
             

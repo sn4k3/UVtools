@@ -24,6 +24,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web;
 using Avalonia.Platform.Storage;
+using Avalonia.Reactive;
 using UVtools.AvaloniaControls;
 using UVtools.Core;
 using UVtools.Core.Dialogs;
@@ -129,15 +130,15 @@ public partial class MainWindow : WindowEx
     private bool _isGUIEnabled = true;
     private uint _savesCount;
     private bool _canSave;
-    private IEnumerable<MenuItem> _menuFileOpenRecentItems;
-    private IEnumerable<MenuItem> _menuFileSendToItems;
-    private IEnumerable<MenuItem> _menuFileConvertItems;
+    private IEnumerable<MenuItem> _menuFileOpenRecentItems = Array.Empty<MenuItem>();
+    private IEnumerable<MenuItem> _menuFileSendToItems = Array.Empty<MenuItem>();
+    private IEnumerable<MenuItem> _menuFileConvertItems = Array.Empty<MenuItem>();
 
-    private PointerEventArgs _globalPointerEventArgs;
+    private PointerEventArgs? _globalPointerEventArgs;
     private PointerPoint _globalPointerPoint;
     private KeyModifiers _globalModifiers = KeyModifiers.None;
-    private TabItem _selectedTabItem;
-    private TabItem _lastSelectedTabItem;
+    private TabItem _selectedTabItem = null!;
+    private TabItem _lastSelectedTabItem = null!;
 
     #endregion
 
@@ -323,7 +324,7 @@ public partial class MainWindow : WindowEx
                 foreach (var drive in drives)
                 {
                     if (drive.DriveType != DriveType.Removable || !drive.IsReady) continue; // Not our target, skip
-                    if (SlicerFile.FileFullPath.StartsWith(drive.Name))
+                    if (SlicerFile!.FileFullPath!.StartsWith(drive.Name))
                         continue; // File already on this device, skip
 
                     var header = drive.Name;
@@ -346,7 +347,7 @@ public partial class MainWindow : WindowEx
                 }
             }
 
-            if (Settings.General.SendToCustomLocations is not null && Settings.General.SendToCustomLocations.Count > 0)
+            if (Settings.General.SendToCustomLocations.Count > 0)
             {
                 foreach (var location in Settings.General.SendToCustomLocations)
                 {
@@ -359,7 +360,7 @@ public partial class MainWindow : WindowEx
                         var found = false;
                         foreach (var ext in extensions)
                         {
-                            found = SlicerFile.FileEndsWith($".{ext}");
+                            found = SlicerFile!.FileEndsWith($".{ext}");
                             if (found) break;
                         }
                         if(!found) continue;
@@ -377,7 +378,7 @@ public partial class MainWindow : WindowEx
                 }
             }
 
-            if (Settings.Network.RemotePrinters is not null && Settings.Network.RemotePrinters.Count > 0)
+            if (Settings.Network.RemotePrinters.Count > 0)
             {
                 foreach (var remotePrinter in Settings.Network.RemotePrinters)
                 {
@@ -390,7 +391,7 @@ public partial class MainWindow : WindowEx
                         var found = false;
                         foreach (var ext in extensions)
                         {
-                            found = SlicerFile.FileEndsWith($".{ext}");
+                            found = SlicerFile!.FileEndsWith($".{ext}");
                             if (found) break;
                         }
                         if (!found) continue;
@@ -408,7 +409,7 @@ public partial class MainWindow : WindowEx
                 }
             }
 
-            if (Settings.General.SendToProcess is not null && Settings.General.SendToProcess.Count > 0)
+            if (Settings.General.SendToProcess.Count > 0)
             {
                 foreach (var application in Settings.General.SendToProcess)
                 {
@@ -421,7 +422,7 @@ public partial class MainWindow : WindowEx
                         var found = false;
                         foreach (var ext in extensions)
                         {
-                            found = SlicerFile.FileEndsWith($".{ext}");
+                            found = SlicerFile!.FileEndsWith($".{ext}");
                             if (found) break;
                         }
                         if (!found) continue;
@@ -499,14 +500,14 @@ public partial class MainWindow : WindowEx
 
         if (menuItem.Tag is RemotePrinter remotePrinter)
         {
-            var startPrint = (_globalModifiers & KeyModifiers.Shift) != 0 && remotePrinter.RequestPrintFile is not null && remotePrinter.RequestPrintFile.IsValid;
+            var startPrint = (_globalModifiers & KeyModifiers.Shift) != 0 && remotePrinter.RequestPrintFile.IsValid;
             if (!startPrint && !remotePrinter.RequestUploadFile.IsValid) return;
             if (startPrint)
             {
                 if (!remotePrinter.RequestUploadFile.IsValid)
                 {
                     if (await this.MessageBoxQuestion(
-                            $"If supported, you are about to start the print with the filename: {SlicerFile.Filename}\n" +
+                            $"If supported, you are about to start the print with the filename: {SlicerFile!.Filename}\n" +
                             "This file will not upload, so, it will print the file already present in printer disk.\n" +
                             "Keep in mind there is no guarantee that the file will start to print.\n" +
                             "Are you sure you want to continue?\n\n" +
@@ -525,10 +526,10 @@ public partial class MainWindow : WindowEx
                 
             }
 
-            ShowProgressWindow($"Sending: {SlicerFile.Filename} to {path}");
+            ShowProgressWindow($"Sending: {SlicerFile!.Filename} to {path}");
             Progress.ItemName = "Sending";
 
-            HttpResponseMessage response = null;
+            HttpResponseMessage? response = null;
             if(remotePrinter.RequestUploadFile.IsValid)
             {
                 try
@@ -574,7 +575,7 @@ public partial class MainWindow : WindowEx
         }
         else if (menuItem.Tag is MappedProcess process)
         {
-            ShowProgressWindow($"Sending: {SlicerFile.Filename} to {path}");
+            ShowProgressWindow($"Sending: {SlicerFile!.Filename} to {path}");
             Progress.ItemName = "Waiting for completion";
             try
             {
@@ -589,14 +590,14 @@ public partial class MainWindow : WindowEx
         }
         else
         {
-            ShowProgressWindow($"Sending: {SlicerFile.Filename} to {path}");
+            ShowProgressWindow($"Sending: {SlicerFile!.Filename} to {path}");
             Progress.ItemName = "Sending";
 
             bool copyResult = false;
-            var fileDest = Path.Combine(path, SlicerFile.Filename);
+            var fileDest = Path.Combine(path, SlicerFile!.Filename!);
             try
             {
-                await using var source = File.OpenRead(SlicerFile.FileFullPath);
+                await using var source = File.OpenRead(SlicerFile!.FileFullPath!);
                 await using var dest = new FileStream(fileDest, FileMode.Create, FileAccess.Write);
 
                 Progress.Reset("Megabyte(s)", (uint)(source.Length / 1048576));
@@ -667,14 +668,14 @@ public partial class MainWindow : WindowEx
         base.OnOpened(e);
 
         var clientSizeObs = this.GetObservable(ClientSizeProperty);
-        clientSizeObs.Subscribe(size =>
+        clientSizeObs.Subscribe(new AnonymousObserver<Size>(size =>
         {
             Settings.General._lastWindowBounds.Width = (int)size.Width;
             Settings.General._lastWindowBounds.Height = (int)size.Height;
             UpdateLayerTrackerHighlightIssues();
-        });
+        }));
         var windowStateObs = this.GetObservable(WindowStateProperty);
-        windowStateObs.Subscribe(windowsState => UpdateLayerTrackerHighlightIssues());
+        windowStateObs.Subscribe(new AnonymousObserver<WindowState>(state => UpdateLayerTrackerHighlightIssues()));
         PositionChanged += (sender, args) =>
         {
             Settings.General._lastWindowBounds.X = Math.Max(0, Position.X);
@@ -686,7 +687,7 @@ public partial class MainWindow : WindowEx
             if (!_isGUIEnabled) return;
             var files = args.Data.GetFiles();
             if (files is null) return;
-            ProcessFiles(files.Select(file => file.TryGetLocalPath()).ToArray());
+            ProcessFiles(files.Select(file => file.TryGetLocalPath()).ToArray()!);
         });
 
         AddLog($"{About.Software} start", Program.ProgramStartupTime.Elapsed.TotalSeconds);
@@ -873,14 +874,14 @@ public partial class MainWindow : WindowEx
     public void MenuFileOpenContainingFolderClicked()
     {
         if (!IsFileLoaded) return;
-        SystemAware.SelectFileOnExplorer(SlicerFile.FileFullPath);
+        SystemAware.SelectFileOnExplorer(SlicerFile!.FileFullPath!);
     }
 
     public async void MenuFileRenameClicked()
     {
         if (!IsFileLoaded) return;
         var control = new RenameFileControl();
-        var window = new ToolWindow("Rename current file with a new name", false, false, control)
+        var window = new ToolWindow(control, "Rename current file with a new name", false, false)
         {
             Title = "Rename current file",
             ButtonOkText = "Rename",
@@ -892,7 +893,7 @@ public partial class MainWindow : WindowEx
 
         try
         {
-            if (SlicerFile.RenameFile(control.NewFileNameNoExt, control.Overwrite))
+            if (SlicerFile!.RenameFile(control.NewFileNameNoExt, control.Overwrite))
             {
                 RemoveRecentFile(control.OldFilePath);
                 AddRecentFile(control.NewFilePath);
@@ -916,7 +917,7 @@ public partial class MainWindow : WindowEx
     {
         //await this.MessageBoxInfo(Path.Combine(App.ApplicationPath, "Assets", "Themes"));
         if (!IsFileLoaded) return;
-        var filename = FileFormat.GetFileNameStripExtensions(SlicerFile.FileFullPath, out var ext);
+        var filename = FileFormat.GetFileNameStripExtensions(SlicerFile!.FileFullPath!, out var ext);
         //var ext = Path.GetExtension(SlicerFile.FileFullPath);
         //var extNoDot = ext.Remove(0, 1);
         var extension = FileExtension.Find(ext);
@@ -967,11 +968,11 @@ public partial class MainWindow : WindowEx
         }
 
         var i = 0;
-        var searchFile = Path.Combine(defaultDirectory, $"{defaultFilename}.{ext}");
+        var searchFile = Path.Combine(defaultDirectory!, $"{defaultFilename}.{ext}");
         while (File.Exists(searchFile))
         {
             i++;
-            searchFile = Path.Combine(defaultDirectory, $"{defaultFilename}{i}.{ext}");
+            searchFile = Path.Combine(defaultDirectory!, $"{defaultFilename}{i}.{ext}");
         }
 
         if (i > 0)
@@ -1018,9 +1019,9 @@ public partial class MainWindow : WindowEx
 
     public void CloseFile()
     {
-        if (SlicerFile is null) return;
+        if (!IsFileLoaded) return;
 
-        MenuFileConvertItems = null;
+        MenuFileConvertItems = Array.Empty<MenuItem>();
 
         ClipboardManager.Instance.Reset();
 
@@ -1093,7 +1094,7 @@ public partial class MainWindow : WindowEx
                 {
                     try
                     {
-                        SlicerFile.ChangeLayersCompressionMethod(Settings.General.LayerCompressionCodec, Progress);
+                        SlicerFile!.ChangeLayersCompressionMethod(Settings.General.LayerCompressionCodec, Progress);
                         return true;
                     }
                     catch (Exception ex)
@@ -1248,7 +1249,7 @@ public partial class MainWindow : WindowEx
         
         if (IsFileLoaded)
         {
-            title += $"File: {SlicerFile.Filename} ({LastStopWatch.Elapsed.Minutes}m {LastStopWatch.Elapsed.Seconds}s)   ";
+            title += $"File: {SlicerFile!.Filename} ({LastStopWatch.Elapsed.Minutes}m {LastStopWatch.Elapsed.Seconds}s)   ";
         }
 
         title += $"Version: {About.VersionStr}   RAM: {SizeExtensions.SizeSuffix(Environment.WorkingSet)}";
@@ -1260,7 +1261,7 @@ public partial class MainWindow : WindowEx
                 title += "   [UNSAVED]";
             }
 
-            if (SlicerFile.DecodeType == FileFormat.FileDecodeType.Partial)
+            if (SlicerFile!.DecodeType == FileFormat.FileDecodeType.Partial)
             {
                 title += "   [PARTIAL MODE]";
             }
@@ -1277,7 +1278,7 @@ public partial class MainWindow : WindowEx
 
     public async void ProcessFiles(string[] files, bool openNewWindow = false, FileFormat.FileDecodeType fileDecodeType = FileFormat.FileDecodeType.Full)
     {
-        if (files is null || files.Length == 0) return;
+        if (files.Length == 0) return;
 
         for (int i = 0; i < files.Length; i++)
         {
@@ -1289,6 +1290,7 @@ public partial class MainWindow : WindowEx
                 try
                 {
                     var operation = Operation.Deserialize(files[i], SlicerFile);
+                    if (operation is null) continue;
                     if ((_globalModifiers & KeyModifiers.Shift) != 0) await RunOperation(operation);
                     else await ShowRunOperation(operation);
                 }
@@ -1305,7 +1307,7 @@ public partial class MainWindow : WindowEx
                 if (!IsFileLoaded) continue;
                 try
                 {
-                    var operation = new OperationScripting(SlicerFile);
+                    var operation = new OperationScripting(SlicerFile!);
                     //operation.FilePath = files[i];
                     await Task.Run(() => operation.ReloadScriptFromFile(files[i]));
                     
@@ -1340,7 +1342,7 @@ public partial class MainWindow : WindowEx
     public void ReloadFile(uint actualLayer)
     {
         if (!IsFileLoaded) return;
-        ProcessFile(SlicerFile.FileFullPath, SlicerFile.DecodeType, _actualLayer);
+        ProcessFile(SlicerFile!.FileFullPath!, SlicerFile.DecodeType, _actualLayer);
     }
 
     void ProcessFile(string fileName, uint actualLayer = 0) => ProcessFile(fileName, FileFormat.FileDecodeType.Full, actualLayer);
@@ -1409,7 +1411,7 @@ public partial class MainWindow : WindowEx
 
         if (Settings.Automations.AutoConvertFiles && SlicerFile.DecodeType == FileFormat.FileDecodeType.Full)
         {
-            string convertFileExtension = null;
+            string? convertFileExtension = null;
             switch (SlicerFile)
             {
                 case SL1File sl1File:
@@ -1431,13 +1433,13 @@ public partial class MainWindow : WindowEx
                 var convertToFormat = fileExtension?.GetFileFormat();
                 if (fileExtension is not null && convertToFormat is not null)
                 {
-                    var directory = SlicerFile.DirectoryPath;
+                    var directory = SlicerFile.DirectoryPath!;
                     var oldFile = SlicerFile.FileFullPath;
                     var oldFileName = SlicerFile.Filename;
                     var filenameNoExt = SlicerFile.FilenameNoExt;
                     var targetFilename = $"{filenameNoExt}.{convertFileExtension}";
                     var outputFile = Path.Combine(directory, targetFilename);
-                    FileFormat convertedFile = null;
+                    FileFormat? convertedFile = null;
 
                     bool canConvert = true;
                     if (File.Exists(outputFile))
@@ -1498,7 +1500,7 @@ public partial class MainWindow : WindowEx
                         if (task && convertedFile is not null)
                         {
                             SlicerFile = convertedFile;
-                            AddRecentFile(SlicerFile.FileFullPath);
+                            AddRecentFile(SlicerFile!.FileFullPath!);
 
                             bool removeSourceFile = false;
                             switch (Settings.Automations.RemoveSourceFileAfterAutoConversion)
@@ -1517,7 +1519,7 @@ public partial class MainWindow : WindowEx
                                 try
                                 {
                                     File.Delete(oldFile!);
-                                    RemoveRecentFile(oldFile);
+                                    RemoveRecentFile(oldFile!);
                                 }
                                 catch (Exception e)
                                 {
@@ -1554,7 +1556,7 @@ public partial class MainWindow : WindowEx
             {
                 if(fileFormat is ImageFile) continue;
 
-                List<MenuItem> parentMenu;
+                List<MenuItem>? parentMenu;
                 if (string.IsNullOrWhiteSpace(fileFormat.ConvertMenuGroup))
                 {
                     parentMenu = menuItems;
@@ -1842,6 +1844,7 @@ public partial class MainWindow : WindowEx
         if (sender is not MenuItem {Tag: FileExtension fileExtension}) return;
 
         var fileFormat = fileExtension.GetFileFormat();
+        if (fileFormat is null) return;
         uint version = fileFormat.DefaultVersion;
         var availableVersions = fileFormat.GetAvailableVersionsForExtension(fileExtension.Extension);
 
@@ -1860,9 +1863,9 @@ public partial class MainWindow : WindowEx
         }
 
         using var file = await SaveFilePickerAsync(string.IsNullOrEmpty(Settings.General.DefaultDirectoryConvertFile)
-                    ? SlicerFile.DirectoryPath
+                    ? SlicerFile!.DirectoryPath
                     : Settings.General.DefaultDirectoryConvertFile,
-                SlicerFile.FilenameNoExt,
+                SlicerFile!.FilenameNoExt,
                 new List<FilePickerFileType>{AvaloniaStatic.CreateFilePickerFileType(fileExtension.Description, fileExtension.Extension)});
 
         if (file?.TryGetLocalPath() is not { } filePath) return;
@@ -1949,7 +1952,7 @@ public partial class MainWindow : WindowEx
 
     public async Task<bool> SaveFile(bool ignoreOverwriteWarning) => await SaveFile(null, ignoreOverwriteWarning);
 
-    public async Task<bool> SaveFile(string filepath = null, bool ignoreOverwriteWarning = false)
+    public async Task<bool> SaveFile(string? filepath = null, bool ignoreOverwriteWarning = false)
     {
         if (filepath is null) // Not save as
         {
@@ -1965,7 +1968,7 @@ public partial class MainWindow : WindowEx
         IsGUIEnabled = false;
         ShowProgressWindow($"Saving {Path.GetFileName(filepath)}");
 
-        var oldFile = SlicerFile.FileFullPath;
+        var oldFile = SlicerFile!.FileFullPath;
 
         var task = await Task.Run( () =>
         {
@@ -1996,7 +1999,7 @@ public partial class MainWindow : WindowEx
                     var newFilename = SlicerFile.FilenameStripExtensions!;
                     newFilename = Regex.Replace(newFilename, @"[0-9]+h[0-9]+m([0-9]+s)?", SlicerFile.PrintTimeString);
                     newFilename = Regex.Replace(newFilename, @"(([0-9]*[.])?[0-9]+)ml", $"{SlicerFile.MaterialMillilitersInteger}ml");
-                    if (SlicerFile.RenameFile(newFilename)) RemoveRecentFile(oldFile);
+                    if (SlicerFile.RenameFile(newFilename)) RemoveRecentFile(oldFile!);
                 }
                 catch (Exception e)
                 {
@@ -2005,7 +2008,7 @@ public partial class MainWindow : WindowEx
                 
             }
 
-            if (oldFile != SlicerFile.FileFullPath) AddRecentFile(SlicerFile.FileFullPath);
+            if (oldFile != SlicerFile.FileFullPath) AddRecentFile(SlicerFile!.FileFullPath!);
         }
 
         IsGUIEnabled = true;
@@ -2015,7 +2018,7 @@ public partial class MainWindow : WindowEx
 
     public async void ResetLayersProperties()
     {
-        if (!IsFileLoaded || !SlicerFile.SupportPerLayerSettings) return;
+        if (!IsFileLoaded || !SlicerFile!.SupportPerLayerSettings) return;
         if (await this.MessageBoxQuestion(
                 "Are you sure you want to reset layers properties with the global properties of the file?\n" +
                 "1. The bottom layers will set with the global bottom properties.\n" +
@@ -2025,6 +2028,7 @@ public partial class MainWindow : WindowEx
 
         SlicerFile.RebuildLayersProperties(false);
         RefreshCurrentLayerData();
+        CanSave = true;
     }
 
     public async void IPrintedThisFile()
@@ -2037,7 +2041,7 @@ public partial class MainWindow : WindowEx
     {
         if (!IsFileLoaded) return;
 
-        var fileNameNoExt = SlicerFile.FilenameNoExt!;
+        var fileNameNoExt = SlicerFile!.FilenameNoExt!;
 
         var folders = await OpenFolderPickerAsync(string.IsNullOrEmpty(Settings.General.DefaultDirectoryExtractFile)
             ? SlicerFile.DirectoryPath
@@ -2082,17 +2086,17 @@ public partial class MainWindow : WindowEx
 
     #region Operations
 
-    public async Task<Operation> ShowRunOperation(Operation loadOperation) =>
+    public async Task<Operation?> ShowRunOperation(Operation loadOperation) =>
         await ShowRunOperation(loadOperation.GetType(), loadOperation);
 
-    public async Task<Operation> ShowRunOperation(Type type, Operation loadOperation = null)
+    public async Task<Operation?> ShowRunOperation(Type type, Operation? loadOperation = null)
     {
         var operation = await ShowOperation(type, loadOperation);
         await RunOperation(operation);
         return operation;
     }
 
-    public async Task<Operation> ShowOperation(Type type, Operation loadOperation = null)
+    public async Task<Operation?> ShowOperation(Type type, Operation? loadOperation = null)
     {
         var toolTypeBase = typeof(ToolControl);
         var calibrateTypeBase = typeof(CalibrateElephantFootControl);
@@ -2100,14 +2104,14 @@ public partial class MainWindow : WindowEx
             $"{calibrateTypeBase.Namespace}.{type.Name.Remove(0, Operation.ClassNameLength)}Control" :
             $"{toolTypeBase.Namespace}.Tool{type.Name.Remove(0, Operation.ClassNameLength)}Control";
         var controlType = Type.GetType(classname);
-        ToolControl control;
+        ToolControl? control;
 
         bool removeContent = false;
         if (controlType is null)
         {
             //controlType = toolTypeBase;
             removeContent = true;
-            control = new ToolControl(type.CreateInstance<Operation>(SlicerFile));
+            control = new ToolControl(type.CreateInstance<Operation>(SlicerFile!)!);
         }
         else
         {
@@ -2120,7 +2124,7 @@ public partial class MainWindow : WindowEx
             return null;
         }
 
-        if (SlicerFile.DecodeType == FileFormat.FileDecodeType.Partial && !control.BaseOperation.CanRunInPartialMode)
+        if (SlicerFile!.DecodeType == FileFormat.FileDecodeType.Partial && !control.BaseOperation!.CanRunInPartialMode)
         {
             await this.MessageBoxError($"The file was open in partial mode and the tool \"{control.BaseOperation.Title}\" is unable to run in this mode.\n" +
                                        "Please reload the file in full mode in order to use this tool.", "Unable to run in partial mode");
@@ -2144,11 +2148,11 @@ public partial class MainWindow : WindowEx
         return operation;
     }
 
-    public async Task<bool> RunOperation(Operation baseOperation)
+    public async Task<bool> RunOperation(Operation? baseOperation)
     {
         if (baseOperation is null) return false;
-        // ReSharper disable once ConditionIsAlwaysTrueOrFalse
-        baseOperation.SlicerFile ??= SlicerFile;
+        // ReSharper disable once NullCoalescingConditionIsAlwaysNotNullAccordingToAPIContract
+        baseOperation.SlicerFile ??= SlicerFile!;
 
         switch (baseOperation)
         {
@@ -2166,7 +2170,7 @@ public partial class MainWindow : WindowEx
                 operation.Execute();
                 return true;
             case OperationRepairLayers operation:
-                if (SlicerFile.IssueManager.Count == 0)
+                if (SlicerFile!.IssueManager.Count == 0)
                 {
                     var config = GetIssuesDetectionConfiguration(false);
                     config.IslandConfig.Enabled = operation.RepairIslands && operation.RemoveIslandsBelowEqualPixelCount > 0;
@@ -2255,7 +2259,7 @@ public partial class MainWindow : WindowEx
             {
                 Header = Path.GetFileName(file).ReplaceFirst("_", "__"),
                 Tag = file,
-                IsEnabled = !IsFileLoaded || SlicerFile.FileFullPath != file
+                IsEnabled = !IsFileLoaded || SlicerFile!.FileFullPath != file
             };
             ToolTip.SetTip(item, file);
             ToolTip.SetPlacement(item, PlacementMode.Right);
@@ -2270,6 +2274,7 @@ public partial class MainWindow : WindowEx
 
     private void RemoveRecentFile(string file)
     {
+        if (string.IsNullOrWhiteSpace(file)) return;
         RecentFiles.Load();
         RecentFiles.Instance.Remove(file);
         RecentFiles.Save();
@@ -2289,6 +2294,7 @@ public partial class MainWindow : WindowEx
 
     private void AddRecentFile(string file)
     {
+        if (string.IsNullOrWhiteSpace(file)) return;
         if (file == Path.Combine(App.ApplicationPath, About.DemoFile)) return;
         RecentFiles.Load();
         RecentFiles.Instance.Insert(0, file);
@@ -2299,7 +2305,7 @@ public partial class MainWindow : WindowEx
     private async void MenuFileOpenRecentItemOnClick(object? sender, RoutedEventArgs e)
     {
         if (sender is not MenuItem { Tag: string file }) return;
-        if (IsFileLoaded && SlicerFile.FileFullPath == file) return;
+        if (IsFileLoaded && SlicerFile!.FileFullPath == file) return;
 
         if (_globalModifiers == KeyModifiers.Control)
         {

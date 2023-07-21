@@ -7,10 +7,10 @@ namespace UVtools.UI.Controls.Tools;
 
 public partial class ToolLayerExportHeatMapControl : ToolControl
 {
-    public OperationLayerExportHeatMap Operation => BaseOperation as OperationLayerExportHeatMap;
+    public OperationLayerExportHeatMap Operation => (BaseOperation as OperationLayerExportHeatMap)!;
     public ToolLayerExportHeatMapControl()
     {
-        BaseOperation = new OperationLayerExportHeatMap(SlicerFile);
+        BaseOperation = new OperationLayerExportHeatMap(SlicerFile!);
         if (!ValidateSpawn()) return;
         InitializeComponent();
     }
@@ -18,7 +18,7 @@ public partial class ToolLayerExportHeatMapControl : ToolControl
     public async void ChooseFilePath()
     {
 
-        using var file = await App.MainWindow.SaveFilePickerAsync(SlicerFile.DirectoryPath, $"{SlicerFile.FilenameNoExt}_heatmap.png",
+        using var file = await App.MainWindow.SaveFilePickerAsync(SlicerFile!.DirectoryPath, $"{SlicerFile.FilenameNoExt}_heatmap.png",
                 AvaloniaStatic.ImagesFullFileFilter);
         if (file?.TryGetLocalPath() is not { } filePath) return;
 

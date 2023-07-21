@@ -5,16 +5,16 @@ namespace UVtools.UI.Controls.Tools;
 
 public partial class ToolRepairLayersControl : ToolControl
 {
-    public OperationRepairLayers Operation => BaseOperation as OperationRepairLayers;
+    public OperationRepairLayers Operation => (BaseOperation as OperationRepairLayers)!;
 
     public ToolRepairLayersControl()
     {
-        BaseOperation = new OperationRepairLayers(SlicerFile);
+        BaseOperation = new OperationRepairLayers(SlicerFile!);
         if (!ValidateSpawn()) return;
         InitializeComponent();
     }
 
-    public static OperationRepairLayers GetOperationDisabledRepair() => new (App.SlicerFile)
+    public static OperationRepairLayers GetOperationDisabledRepair() => new (App.SlicerFile!)
     {
         RepairIslands = false,
         RepairResinTraps = false,
@@ -30,7 +30,7 @@ public partial class ToolRepairLayersControl : ToolControl
         IssuesDetectionConfig = App.MainWindow.GetIssuesDetectionConfiguration()
     };
 
-    public static OperationRepairLayers GetOperationRepairLayers() => new(App.SlicerFile)
+    public static OperationRepairLayers GetOperationRepairLayers() => new(App.SlicerFile!)
     {
         RepairIslands = UserSettings.Instance.LayerRepair.RepairIslands,
         RepairResinTraps = UserSettings.Instance.LayerRepair.RepairResinTraps,
@@ -66,7 +66,7 @@ public partial class ToolRepairLayersControl : ToolControl
         switch (callback)
         {
             case ToolWindow.Callbacks.Init:
-                ParentWindow.LayerRangeVisible = false;
+                ParentWindow!.LayerRangeVisible = false;
                 ParentWindow.IsCheckBox1Visible = true;
 
                 SetFromUserSettings();
@@ -76,7 +76,7 @@ public partial class ToolRepairLayersControl : ToolControl
                 Operation.IssuesDetectionConfig = App.MainWindow.GetIssuesDetectionConfiguration();
                 break;
             case ToolWindow.Callbacks.Checkbox1:
-                ParentWindow.LayerRangeVisible = ParentWindow.IsCheckBox1Checked;
+                ParentWindow!.LayerRangeVisible = ParentWindow.IsCheckBox1Checked;
                 if (!ParentWindow.IsCheckBox1Checked)
                 {
                     ParentWindow.SelectAllLayers();

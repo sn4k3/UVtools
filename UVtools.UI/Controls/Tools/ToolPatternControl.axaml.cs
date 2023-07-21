@@ -5,7 +5,7 @@ namespace UVtools.UI.Controls.Tools;
 
 public partial class ToolPatternControl : ToolControl
 {
-    public OperationPattern Operation => BaseOperation as OperationPattern;
+    public OperationPattern Operation => (BaseOperation as OperationPattern)!;
     private bool _isDefaultAnchorChecked = true;
 
     public bool IsDefaultAnchorChecked
@@ -16,7 +16,7 @@ public partial class ToolPatternControl : ToolControl
 
     public ToolPatternControl()
     {
-        BaseOperation = new OperationPattern(SlicerFile, App.MainWindow.ROI);
+        BaseOperation = new OperationPattern(SlicerFile!, App.MainWindow.ROI);
         if (!ValidateSpawn()) return;
         InitializeComponent();
     }
@@ -27,17 +27,17 @@ public partial class ToolPatternControl : ToolControl
         {
             case ToolWindow.Callbacks.Init:
             case ToolWindow.Callbacks.AfterLoadProfile:
-                Operation.ROI = App.MainWindow.ROI.IsEmpty ? SlicerFile.BoundingRectangle : App.MainWindow.ROI;
+                Operation.ROI = App.MainWindow.ROI.IsEmpty ? SlicerFile!.BoundingRectangle : App.MainWindow.ROI;
                 Operation.PropertyChanged += (sender, e) =>
                 {
-                    if (e.PropertyName.Equals(nameof(Operation.IsWithinBoundary)))
+                    if (e.PropertyName == nameof(Operation.IsWithinBoundary))
                     {
-                        ParentWindow.ButtonOkEnabled = Operation.IsWithinBoundary;
+                        ParentWindow!.ButtonOkEnabled = Operation.IsWithinBoundary;
                     }
                 };
                 break;
             case ToolWindow.Callbacks.ClearROI:
-                Operation.SetRoi(SlicerFile.BoundingRectangle);
+                Operation.SetRoi(SlicerFile!.BoundingRectangle);
                 break;
         }
     }

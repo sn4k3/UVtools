@@ -13,11 +13,13 @@ public partial class VersionSelectorWindow : WindowEx
         "Select the version you wish to use on the output file.\n" +
         $"If unsure, use the default version {SlicerFile.DefaultVersion}.";
 
-    public sealed override FileFormat SlicerFile { get; set; }
+#pragma warning disable CS8765
+    public sealed override FileFormat SlicerFile { get; set; } = null!;
+#pragma warning restore CS8765
 
-    public FileExtension FileExtension { get; init; }
+    public FileExtension FileExtension { get; init; } = null!;
 
-    public uint[] AvailableVersions { get; init; }
+    public uint[] AvailableVersions { get; init; } = null!;
 
     public uint Version
     {

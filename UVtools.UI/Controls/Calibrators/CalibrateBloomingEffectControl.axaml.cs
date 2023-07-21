@@ -10,12 +10,12 @@ namespace UVtools.UI.Controls.Calibrators
 {
     public partial class CalibrateBloomingEffectControl : ToolControl
     {
-        public OperationCalibrateBloomingEffect Operation => BaseOperation as OperationCalibrateBloomingEffect;
+        public OperationCalibrateBloomingEffect Operation => (BaseOperation as OperationCalibrateBloomingEffect)!;
 
-        private readonly Timer _timer;
+        private readonly Timer _timer = null!;
 
-        private Bitmap _previewImage;
-        public Bitmap PreviewImage
+        private Bitmap? _previewImage;
+        public Bitmap? PreviewImage
         {
             get => _previewImage;
             set => RaiseAndSetIfChanged(ref _previewImage, value);
@@ -23,7 +23,7 @@ namespace UVtools.UI.Controls.Calibrators
 
         public CalibrateBloomingEffectControl()
         {
-            BaseOperation = new OperationCalibrateBloomingEffect(SlicerFile);
+            BaseOperation = new OperationCalibrateBloomingEffect(SlicerFile!);
             if (!ValidateSpawn()) return;
 
             InitializeComponent();

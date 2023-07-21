@@ -7,7 +7,7 @@ namespace UVtools.UI.Controls.Tools;
 
 public partial class ToolLayerCloneControl : ToolControl
 {
-    public OperationLayerClone Operation => BaseOperation as OperationLayerClone;
+    public OperationLayerClone Operation => (BaseOperation as OperationLayerClone)!;
 
         
     public string InfoLayersStr
@@ -15,7 +15,7 @@ public partial class ToolLayerCloneControl : ToolControl
         get
         {
             uint extraLayers = Operation.ExtraLayers;
-            return $"Layers: {SlicerFile.LayerCount} → {SlicerFile.LayerCount + extraLayers} (+ {extraLayers})";
+            return $"Layers: {SlicerFile!.LayerCount} → {SlicerFile.LayerCount + extraLayers} (+ {extraLayers})";
         }
     }
 
@@ -23,14 +23,14 @@ public partial class ToolLayerCloneControl : ToolControl
     {
         get
         {
-            float extraHeight = Operation.KeepSamePositionZ ? 0 : Layer.RoundHeight(Operation.ExtraLayers * SlicerFile.LayerHeight);
-            return $"Height: {SlicerFile.PrintHeight}mm → {Layer.RoundHeight(SlicerFile.PrintHeight + extraHeight)}mm (+ {extraHeight}mm)";
+            float extraHeight = Operation.KeepSamePositionZ ? 0 : Layer.RoundHeight(Operation.ExtraLayers * SlicerFile!.LayerHeight);
+            return $"Height: {SlicerFile!.PrintHeight}mm → {Layer.RoundHeight(SlicerFile.PrintHeight + extraHeight)}mm (+ {extraHeight}mm)";
         }
     }
 
     public ToolLayerCloneControl()
     {
-        BaseOperation = new OperationLayerClone(SlicerFile);
+        BaseOperation = new OperationLayerClone(SlicerFile!);
         if (!ValidateSpawn()) return;
         InitializeComponent();
     }
@@ -46,7 +46,7 @@ public partial class ToolLayerCloneControl : ToolControl
         }
     }
 
-    private void OnPropertyChanged(object sender, PropertyChangedEventArgs args)
+    private void OnPropertyChanged(object? sender, PropertyChangedEventArgs args)
     {
         RaisePropertyChanged(nameof(InfoLayersStr));
         RaisePropertyChanged(nameof(InfoHeightsStr));

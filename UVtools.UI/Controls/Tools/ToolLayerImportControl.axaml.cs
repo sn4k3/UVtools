@@ -14,14 +14,14 @@ namespace UVtools.UI.Controls.Tools;
 public partial class ToolLayerImportControl : ToolControl
 {
     private bool _isAutoSortLayersByFileNameChecked;
-    private GenericFileRepresentation _selectedFile;
-    private Bitmap _previewImage;
+    private GenericFileRepresentation? _selectedFile;
+    private Bitmap? _previewImage;
 
-    public OperationLayerImport Operation => BaseOperation as OperationLayerImport;
+    public OperationLayerImport Operation => (BaseOperation as OperationLayerImport)!;
 
-    public uint MaximumLayer => App.SlicerFile.LastLayerIndex;
+    public uint MaximumLayer => SlicerFile!.LastLayerIndex;
 
-    public string InfoLayerHeightStr => $"({App.SlicerFile.GetHeightFromLayer(Operation.StartLayerIndex)}mm)";
+    public string InfoLayerHeightStr => $"({SlicerFile?[Operation.StartLayerIndex].PositionZ}mm)";
 
     public bool IsAutoSortLayersByFileNameChecked
     {
@@ -29,7 +29,7 @@ public partial class ToolLayerImportControl : ToolControl
         set => RaiseAndSetIfChanged(ref _isAutoSortLayersByFileNameChecked, value);
     }
 
-    public string InfoImportResult 
+    public string? InfoImportResult 
     {
         get
         {
@@ -52,7 +52,7 @@ public partial class ToolLayerImportControl : ToolControl
             
     }
 
-    public GenericFileRepresentation SelectedFile
+    public GenericFileRepresentation? SelectedFile
     {
         get => _selectedFile;
         set
@@ -68,7 +68,7 @@ public partial class ToolLayerImportControl : ToolControl
         }
     }
 
-    public Bitmap PreviewImage
+    public Bitmap? PreviewImage
     {
         get => _previewImage;
         set => RaiseAndSetIfChanged(ref _previewImage, value);
@@ -77,7 +77,7 @@ public partial class ToolLayerImportControl : ToolControl
 
     public ToolLayerImportControl()
     {
-        BaseOperation = new OperationLayerImport(SlicerFile);
+        BaseOperation = new OperationLayerImport(SlicerFile!);
         if (!ValidateSpawn()) return;
         InitializeComponent();
 
@@ -91,7 +91,7 @@ public partial class ToolLayerImportControl : ToolControl
             switch (e.Key)
             {
                 case Key.Escape:
-                    FilesListBox.SelectedItems.Clear();
+                    FilesListBox.SelectedItems!.Clear();
                     e.Handled = true;
                     break;
                 case Key.Delete:
@@ -149,6 +149,11 @@ public partial class ToolLayerImportControl : ToolControl
         if(ParentWindow is not null) ParentWindow.ButtonOkEnabled = Operation.Files.Count > 0;
     }
 
+    public void SetCurrentLayer()
+    {
+        Operation.StartLayerIndex = App.MainWindow.ActualLayer;
+    }
+
     public async void AddFiles()
     {
         var filters = AvaloniaStatic.ToAvaloniaFileFilter(FileFormat.AllFileFiltersAvalonia);
@@ -175,6 +180,7 @@ public partial class ToolLayerImportControl : ToolControl
 
     public void RemoveFiles()
     {
+        if (FilesListBox.SelectedItems!.Count == 0) return;
         Operation.Files.RemoveRange(FilesListBox.SelectedItems.OfType<GenericFileRepresentation>());
     }
 

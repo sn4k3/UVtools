@@ -7,17 +7,17 @@ namespace UVtools.UI.Controls.Tools;
 
 public partial class ToolLayerExportMeshControl : ToolControl
 {
-    public OperationLayerExportMesh Operation => BaseOperation as OperationLayerExportMesh;
+    public OperationLayerExportMesh Operation => (BaseOperation as OperationLayerExportMesh)!;
     public ToolLayerExportMeshControl()
     {
-        BaseOperation = new OperationLayerExportMesh(SlicerFile);
+        BaseOperation = new OperationLayerExportMesh(SlicerFile!);
         if (!ValidateSpawn()) return;
         InitializeComponent();
     }
 
     public async void ChooseFilePath()
     {
-        using var file = await App.MainWindow.SaveFilePickerAsync(SlicerFile, GetFilters());
+        using var file = await App.MainWindow.SaveFilePickerAsync(SlicerFile!, GetFilters());
         if (file?.TryGetLocalPath() is not { } filePath) return;
         
         Operation.FilePath = filePath;

@@ -619,14 +619,7 @@ public sealed class SL1File : FileFormat
             tw.Close();
         }
 
-        foreach (var thumbnail in Thumbnails)
-        {
-            if (thumbnail is null) continue;
-            using var stream = outputFile.CreateEntry($"thumbnail/thumbnail{thumbnail.Width}x{thumbnail.Height}.png").Open();
-            stream.WriteBytes(thumbnail.GetPngByes());
-            stream.Close();
-        }
-
+        EncodeAllThumbnailsInZip(outputFile, "thumbnail/thumbnail{1}x{2}.png");
         EncodeLayersInZip(outputFile, filename, 5, IndexStartNumber.Zero, progress);
     }
 
@@ -725,22 +718,6 @@ public sealed class SL1File : FileFormat
 
         progress.ItemCount = LayerCount;
 
-        foreach (var entity in inputFile.Entries)
-        {
-            if (!entity.Name.EndsWith(".png")) continue;
-            if (!entity.Name.StartsWith("thumbnail")) continue;
-            using var stream = entity.Open();
-            Mat image = new();
-            CvInvoke.Imdecode(stream.ToArray(), ImreadModes.AnyColor, image);
-            byte thumbnailIndex =
-                (byte) (image.Width == ThumbnailsOriginalSize[(int) FileThumbnailSize.Small].Width &&
-                        image.Height == ThumbnailsOriginalSize[(int) FileThumbnailSize.Small].Height
-                    ? FileThumbnailSize.Small
-                    : FileThumbnailSize.Large);
-            Thumbnails[thumbnailIndex] = image;
-
-            //thumbnailIndex++;
-        }
 
         /*
         if (string.Equals(PrinterSettings.DisplayOrientation, "portrait", StringComparison.OrdinalIgnoreCase))
@@ -759,6 +736,7 @@ public sealed class SL1File : FileFormat
         }
         */
 
+        DecodeAllThumbnailsFromZip(inputFile, "thumbnail");
         DecodeLayersFromZip(inputFile, 5, IndexStartNumber.Zero, progress);
 
 

@@ -699,10 +699,9 @@ public sealed class OSFFile : FileFormat
             Array.Empty<byte>()
         };
 
-        for (var i = 0; i < previews.Length; i++)
+        for (var i = 0; i < ThumbnailEncodeCount; i++)
         {
-            if (Thumbnails[i] is null) continue;
-            previews[i] = EncodeImage(DATATYPE_RGB565, Thumbnails[i]!);
+            previews[i] = EncodeImage(DATATYPE_RGB565, Thumbnails[i]);
             Header.HeaderLength += (uint)previews[i].Length;
         }
 
@@ -761,11 +760,12 @@ public sealed class OSFFile : FileFormat
 
         Debug.WriteLine(Header);
 
-        for (byte i = 0; i < ThumbnailsOriginalSize.Length; i++)
+        for (byte i = 0; i < ThumbnailCountFileShouldHave; i++)
         {
             var previewSize = Helpers.Deserialize<UInt24BigEndian>(inputFile);
+            if (previewSize.Value == 0) continue;
             var previewData = inputFile.ReadBytes(previewSize.Value);
-            Thumbnails[i] = DecodeImage(DATATYPE_RGB565, previewData, ThumbnailsOriginalSize[i]);
+            Thumbnails.Add(DecodeImage(DATATYPE_RGB565, previewData, ThumbnailsOriginalSize[i]));
         }
 
 

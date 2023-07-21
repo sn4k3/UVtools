@@ -10,12 +10,12 @@ namespace UVtools.UI.Controls.Calibrators;
 
 public partial class CalibrateLiftHeightControl : ToolControl
 {
-    public OperationCalibrateLiftHeight Operation => BaseOperation as OperationCalibrateLiftHeight;
+    public OperationCalibrateLiftHeight Operation => (BaseOperation as OperationCalibrateLiftHeight)!;
 
-    private readonly Timer _timer;
+    private readonly Timer _timer = null!;
 
-    private Bitmap _previewImage;
-    public Bitmap PreviewImage
+    private Bitmap? _previewImage;
+    public Bitmap? PreviewImage
     {
         get => _previewImage;
         set => RaiseAndSetIfChanged(ref _previewImage, value);
@@ -23,7 +23,7 @@ public partial class CalibrateLiftHeightControl : ToolControl
 
     public CalibrateLiftHeightControl()
     {
-        BaseOperation = new OperationCalibrateLiftHeight(SlicerFile);
+        BaseOperation = new OperationCalibrateLiftHeight(SlicerFile!);
         if (!ValidateSpawn()) return;
 
         InitializeComponent();

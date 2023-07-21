@@ -107,7 +107,7 @@ public class Consortium3MFMeshFile : MeshFile
 
         var tmpFile = PathExtensions.GetTemporaryFilePathWithExtension("tmp", $"{About.Software}_");
         if (File.Exists(tmpFile)) File.Delete(tmpFile);
-        bool haveThumbnail = SlicerFile is not null && SlicerFile.CreatedThumbnailsCount > 0;
+        bool haveThumbnail = SlicerFile?.HaveThumbnails ?? false;
         using (var zip = ZipFile.Open(tmpFile, ZipArchiveMode.Create))
         {
             zip.PutFileContent("[Content_Types].xml", "<?xml version=\"1.0\" encoding=\"utf-8\"?>" +
@@ -130,7 +130,7 @@ public class Consortium3MFMeshFile : MeshFile
                 
             if (haveThumbnail)
             {
-                var mat = SlicerFile!.GetThumbnail(true);
+                var mat = SlicerFile!.GetLargestThumbnail();
                 zip.PutFileContent("Metadata/thumbnail.png", mat!.GetPngByes(), ZipArchiveMode.Create);
             }
         }

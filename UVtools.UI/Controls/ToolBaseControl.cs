@@ -6,11 +6,11 @@ namespace UVtools.UI.Controls;
 
 public class ToolBaseControl : UserControlEx
 {
-    public ToolWindow ParentWindow { get; set; } = null;
+    public ToolWindow? ParentWindow { get; set; }
 
     public bool CanRun { get; set; } = true;
 
-    public virtual string Validate() => null;
+    public virtual string? Validate() => null;
 
     public virtual bool ValidateSpawn() => true;
 
@@ -28,10 +28,10 @@ public class ToolBaseControl : UserControlEx
     /// </summary>
     /// <param name="text"></param>
     /// <returns></returns>
-    public async Task<bool> ValidateFormFromString(string text)
+    public async Task<bool> ValidateFormFromString(string? text)
     {
         if (string.IsNullOrEmpty(text)) return true;
-        await ParentWindow.MessageBoxError(text);
+        await ParentWindow!.MessageBoxError(text);
         return false;
     }
 

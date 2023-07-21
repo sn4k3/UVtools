@@ -1359,11 +1359,25 @@
             <param name="size"></param>
             <returns></returns>
         </member>
+        <member name="M:UVtools.Core.Extensions.SizeExtensions.Max(System.Drawing.Size[])">
+            <summary>
+            Gets a new <see cref="T:System.Drawing.Size"/> with the maximum of all sizes Width and Height
+            </summary>
+            <param name="sizes"></param>
+            <returns></returns>
+        </member>
         <member name="M:UVtools.Core.Extensions.SizeExtensions.HaveZero(System.Drawing.SizeF)">
             <summary>
             Gets if this size have a zero value on width or height
             </summary>
             <param name="size"></param>
+            <returns></returns>
+        </member>
+        <member name="M:UVtools.Core.Extensions.SizeExtensions.Max(System.Drawing.SizeF[])">
+            <summary>
+            Gets a new <see cref="T:System.Drawing.Size"/> with the maximum of all sizes Width and Height
+            </summary>
+            <param name="sizes"></param>
             <returns></returns>
         </member>
         <member name="M:UVtools.Core.Extensions.StreamExtensions.ToArray(System.IO.Stream)">
@@ -2867,6 +2881,16 @@
             Gets the original thumbnail sizes
             </summary>
         </member>
+        <member name="P:UVtools.Core.FileFormats.FileFormat.ThumbnailCountFileShouldHave">
+            <summary>
+            Gets the number of thumbnails the file should have
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.FileFormat.ThumbnailEncodeCount">
+            <summary>
+            Gets the number of thumbnails possible to encode on this file based on current available <see cref="P:UVtools.Core.FileFormats.FileFormat.Thumbnails"/> and <see cref="P:UVtools.Core.FileFormats.FileFormat.ThumbnailsOriginalSize"/>
+            </summary>
+        </member>
         <member name="P:UVtools.Core.FileFormats.FileFormat.ThumbnailsCount">
             <summary>
             Gets the thumbnails count present in this file format
@@ -2875,11 +2899,6 @@
         <member name="P:UVtools.Core.FileFormats.FileFormat.HaveThumbnails">
             <summary>
             Gets if this file have any valid thumbnail
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.FileFormat.CreatedThumbnailsCount">
-            <summary>
-            Gets the number of created thumbnails
             </summary>
         </member>
         <member name="P:UVtools.Core.FileFormats.FileFormat.Thumbnails">
@@ -3577,9 +3596,14 @@
             Get all configuration objects with properties and values
             </summary>
         </member>
-        <member name="P:UVtools.Core.FileFormats.FileFormat.IsValid">
+        <member name="P:UVtools.Core.FileFormats.FileFormat.CanDecode">
             <summary>
-            Gets if this file is valid to read
+            Gets if this file is valid to decode
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.FileFormat.CanEncode">
+            <summary>
+            Gets if this file is valid to encode
             </summary>
         </member>
         <member name="M:UVtools.Core.FileFormats.FileFormat.SetLayer(System.UInt32,UVtools.Core.Layers.Layer,System.Boolean)">
@@ -3640,6 +3664,41 @@
             Gets all valid file extensions in a specified format
             </summary>
         </member>
+        <member name="M:UVtools.Core.FileFormats.FileFormat.IsPointInsideBounds(System.Drawing.Point)">
+            <summary>
+            Gets if a <see cref="T:System.Drawing.Point"/> coordinate is inside <see cref="P:UVtools.Core.FileFormats.FileFormat.Resolution"/> bounds
+            </summary>
+            <param name="xy">The coordinate</param>
+            <returns></returns>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.FileFormat.IsPixelInsideXBounds(System.Int32)">
+            <summary>
+            Gets if a pixel coordinate is inside <see cref="P:UVtools.Core.FileFormats.FileFormat.ResolutionX"/> bounds
+            </summary>
+            <param name="x">The X coordinate</param>
+            <returns></returns>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.FileFormat.IsPixelInsideYBounds(System.Int32)">
+            <summary>
+            Gets if a pixel coordinate is inside <see cref="P:UVtools.Core.FileFormats.FileFormat.ResolutionY"/> bounds
+            </summary>
+            <param name="y">The Y coordinate</param>
+            <returns></returns>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.FileFormat.IsPixelInsideXBounds(System.UInt32)">
+            <summary>
+            Gets if a pixel coordinate is inside <see cref="P:UVtools.Core.FileFormats.FileFormat.ResolutionX"/> bounds
+            </summary>
+            <param name="x">The coordinate</param>
+            <returns></returns>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.FileFormat.IsPixelInsideYBounds(System.UInt32)">
+            <summary>
+            Gets if a pixel coordinate is inside <see cref="P:UVtools.Core.FileFormats.FileFormat.ResolutionY"/> bounds
+            </summary>
+            <param name="y">The Y coordinate</param>
+            <returns></returns>
+        </member>
         <member name="M:UVtools.Core.FileFormats.FileFormat.RenameFile(System.String,System.Boolean)">
             <summary>
             Renames the current file with a new name in the same directory.
@@ -3650,28 +3709,71 @@
         </member>
         <member name="M:UVtools.Core.FileFormats.FileFormat.GetThumbnailByHeight(System.UInt32)">
             <summary>
-            Gets a thumbnail by it height or lower
+            Gets a thumbnail by a maximum height or lower
             </summary>
             <param name="maxHeight">Max height allowed</param>
             <returns></returns>
         </member>
-        <member name="M:UVtools.Core.FileFormats.FileFormat.GetThumbnail(System.UInt32)">
+        <member name="M:UVtools.Core.FileFormats.FileFormat.GetThumbnailByWidth(System.Int32)">
+            <summary>
+            Gets a thumbnail by a maximum width or lower
+            </summary>
+            <param name="maxWidth">Max width allowed</param>
+            <returns></returns>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.FileFormat.GetThumbnailByHeight(System.Int32)">
+            <summary>
+            Gets a thumbnail by a maximum height or lower
+            </summary>
+            <param name="maxHeight">Max height allowed</param>
+            <returns></returns>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.FileFormat.GetThumbnail(System.Int32)">
             <summary>
             Gets a thumbnail by index in a safe manner (No exceptions)
             </summary>
             <param name="index">Thumbnail index</param>
             <returns></returns>
         </member>
-        <member name="M:UVtools.Core.FileFormats.FileFormat.GetThumbnail(System.Boolean)">
+        <member name="M:UVtools.Core.FileFormats.FileFormat.GetThumbnail(UVtools.Core.FileFormats.FileFormat.FileThumbnailSize)">
             <summary>
-            Gets a thumbnail by the largest or smallest
+            Gets the thumbnail by it smallest or largest size
             </summary>
-            <param name="largest">True to get the largest, otherwise false</param>
             <returns></returns>
         </member>
-        <member name="M:UVtools.Core.FileFormats.FileFormat.SetThumbnails(Emgu.CV.Mat[],System.Boolean)">
+        <member name="M:UVtools.Core.FileFormats.FileFormat.GetSmallestThumbnail">
             <summary>
-            Sets thumbnails from a list of thumbnails and clone them
+            Gets the largest thumbnail in the collection
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.FileFormat.GetLargestThumbnail">
+            <summary>
+            Gets the largest thumbnail in the collection
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.FileFormat.SanitizeThumbnails(System.Boolean)">
+            <summary>
+            Sanitizes the thumbnails to respect the file specification:<br/>
+            - Remove empty thumbnails<br/>
+            - Remove the excess thumbnails up to spec, if requested<br/>
+            - Resize thumbnails to the spec
+            - Creates missing thumbnails required by the file spec
+            </summary>
+            <param name="trimToFileSpec">True to trim the excess thumbnails, otherwise false to not trim</param>
+            <returns>True if anything changed, otherwise false</returns>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.FileFormat.ReplaceThumbnails(System.Collections.Generic.IEnumerable{Emgu.CV.Mat},System.Boolean)">
+            <summary>
+            Replaces thumbnails from a list of thumbnails and clone them
+            </summary>
+            <param name="images"></param>
+            <param name="generateImagesIfEmpty">If true and if <paramref name="images"/> is empty, it will fill the thumbnails with generated images</param>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.FileFormat.SetThumbnails(System.Collections.Generic.IEnumerable{Emgu.CV.Mat},System.Boolean)">
+            <summary>
+            Sets the current thumbnails from a list of thumbnails and clone them
             </summary>
             <param name="images"></param>
             <param name="generateImagesIfEmpty">If true and if <paramref name="images"/> is empty, it will fill the thumbnails with generated images</param>
@@ -3777,6 +3879,25 @@
             </summary>
             <param name="progress"></param>
         </member>
+        <member name="M:UVtools.Core.FileFormats.FileFormat.EncodeAllThumbnailsInZip(System.IO.Compression.ZipArchive,System.String)">
+            <summary>
+            Encodes all <see cref="P:UVtools.Core.FileFormats.FileFormat.Thumbnails"/> into <paramref name="zipArchive"/> given an path format
+            </summary>
+            <param name="zipArchive"></param>
+            <param name="pathFormat">
+            {0} = Index<br/>
+            {1} = Width<br/>
+            {2} = Height<br/>
+            <para>Example: thumbnail/thumbnail{1}x{2}.png</para>
+            </param>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.FileFormat.EncodeThumbnailsInZip(System.IO.Compression.ZipArchive,System.String[])">
+            <summary>
+            Encodes <see cref="P:UVtools.Core.FileFormats.FileFormat.Thumbnails"/> into <paramref name="zipArchive"/> given specific entry path's
+            </summary>
+            <param name="zipArchive"></param>
+            <param name="entryPaths"></param>
+        </member>
         <member name="M:UVtools.Core.FileFormats.FileFormat.Extract(System.String,System.Boolean,System.Boolean,UVtools.Core.Operations.OperationProgress)">
             <summary>
             Extract contents to a folder
@@ -3868,12 +3989,12 @@
             <param name="transitionLayerCount">Number of transition layers to set</param>
             <param name="resetExposureTimes">True to default all the previous transition layers exposure time, otherwise false</param>
         </member>
-        <member name="M:UVtools.Core.FileFormats.FileFormat.GetHeightFromLayer(System.UInt32,System.Boolean)">
+        <member name="M:UVtools.Core.FileFormats.FileFormat.CalculatePositionZ(System.UInt32,System.Boolean)">
             <summary>
-            Get height in mm from layer height
+            Calculate the PositionZ for an layer index in mm
             </summary>
             <param name="layerIndex"></param>
-            <param name="realHeight"></param>
+            <param name="usePreviousLayer">Use the previous layer to calculate the PositionZ if possible, otherwise it will multiply the number by the <see cref="P:UVtools.Core.FileFormats.FileFormat.LayerHeight"/></param>
             <returns>The height in mm</returns>
         </member>
         <member name="M:UVtools.Core.FileFormats.FileFormat.GetBottomOrNormalValue``1(System.UInt32,``0,``0)">
@@ -4177,33 +4298,35 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="M:UVtools.Core.FileFormats.FileFormat.Reallocate(System.UInt32,System.Boolean)">
+        <member name="M:UVtools.Core.FileFormats.FileFormat.Reallocate(System.UInt32,System.Boolean,System.Boolean)">
             <summary>
             Reallocate layer count with a new size
             </summary>
             <param name="newLayerCount">New layer count</param>
             <param name="initBlack"></param>
+            <param name="resetLayerProperties"></param>
         </member>
-        <member name="M:UVtools.Core.FileFormats.FileFormat.ReallocateInsert(System.UInt32,System.UInt32,System.Boolean)">
+        <member name="M:UVtools.Core.FileFormats.FileFormat.ReallocateInsert(System.UInt32,System.UInt32,System.Boolean,System.Boolean,System.Boolean)">
             <summary>
             Reallocate at given index
             </summary>
             <returns></returns>
         </member>
-        <member name="M:UVtools.Core.FileFormats.FileFormat.ReallocateKeepRange(System.UInt32,System.UInt32)">
+        <member name="M:UVtools.Core.FileFormats.FileFormat.ReallocateKeepRange(System.UInt32,System.UInt32,System.Boolean)">
             <summary>
             Reallocate at a kept range
             </summary>
             <param name="startLayerIndex"></param>
             <param name="endLayerIndex"></param>
+            <param name="resetLayerProperties"></param>
         </member>
-        <member name="M:UVtools.Core.FileFormats.FileFormat.ReallocateStart(System.UInt32,System.Boolean)">
+        <member name="M:UVtools.Core.FileFormats.FileFormat.ReallocateStart(System.UInt32,System.Boolean,System.Boolean,System.Boolean)">
             <summary>
             Reallocate at start
             </summary>
             <returns></returns>
         </member>
-        <member name="M:UVtools.Core.FileFormats.FileFormat.ReallocateEnd(System.UInt32,System.Boolean)">
+        <member name="M:UVtools.Core.FileFormats.FileFormat.ReallocateEnd(System.UInt32,System.Boolean,System.Boolean)">
             <summary>
             Reallocate at end
             </summary>
@@ -4235,6 +4358,20 @@
         <member name="M:UVtools.Core.FileFormats.FileFormat.LayerExists(System.UInt32)">
             <summary>
             Checks if a layer index exists in the collection
+            </summary>
+            <param name="layerIndex">Layer index to check</param>
+            <returns></returns>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.FileFormat.LayerExistsAndValid(System.Int32)">
+            <summary>
+            Checks if a layer index exists in the collection and if is valid, ie: not null
+            </summary>
+            <param name="layerIndex">Layer index to check</param>
+            <returns></returns>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.FileFormat.LayerExistsAndValid(System.UInt32)">
+            <summary>
+            Checks if a layer index exists in the collection and if is valid, ie: not null
             </summary>
             <param name="layerIndex">Layer index to check</param>
             <returns></returns>

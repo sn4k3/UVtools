@@ -333,20 +333,15 @@ public sealed class GR1File : FileFormat
 
         outputFile.WriteSerialize(HeaderSettings);
 
-        var previews = new byte[ThumbnailsOriginalSize.Length][];
+        var previews = new byte[ThumbnailCountFileShouldHave][];
 
         // Previews
         Parallel.For(0, previews.Length, CoreSettings.GetParallelOptions(progress), previewIndex =>
         {
             progress.PauseIfRequested();
             var encodeLength = ThumbnailsOriginalSize[previewIndex].Area() * 2;
-            if (Thumbnails[previewIndex] is null)
-            {
-                previews[previewIndex] = new byte[encodeLength];
-                return;
-            }
 
-            previews[previewIndex] = EncodeImage(DATATYPE_RGB565_BE, Thumbnails[previewIndex]!);
+            previews[previewIndex] = EncodeImage(DATATYPE_RGB565_BE, Thumbnails[previewIndex]);
 
             if (encodeLength != previews[previewIndex].Length)
             {
@@ -354,11 +349,10 @@ public sealed class GR1File : FileFormat
             }
         });
 
-        for (int i = 0; i < ThumbnailsOriginalSize.Length; i++)
+        for (int i = 0; i < previews.Length; i++)
         {
             outputFile.WriteSerialize(previews[i]);
             outputFile.WriteBytes(pageBreak);
-            //outputFile.WriteSerialize(pageBreak);
             previews[i] = null!;
         }
         outputFile.WriteSerialize(SlicerInfoSettings);
@@ -442,20 +436,13 @@ public sealed class GR1File : FileFormat
             throw new FileLoadException("Not a valid Makerbase file!", FileFullPath);
         }
 
-        byte[][] previews = new byte[ThumbnailsOriginalSize.Length][];
-        for (int i = 0; i < ThumbnailsOriginalSize.Length; i++)
+        for (int i = 0; i < ThumbnailCountFileShouldHave; i++)
         {
-            previews[i] = new byte[ThumbnailsOriginalSize[i].Area() * 2];
-            inputFile.ReadBytes(previews[i]);
+            progress.PauseOrCancelIfRequested();
+            var bytes = inputFile.ReadBytes(ThumbnailsOriginalSize[i].Area() * 2);
             inputFile.Seek(2, SeekOrigin.Current);
+            Thumbnails.Add(DecodeImage(DATATYPE_RGB565_BE, bytes, ThumbnailsOriginalSize[i]));
         }
-
-        Parallel.For(0, previews.Length, CoreSettings.GetParallelOptions(progress), previewIndex =>
-        {
-            progress.PauseIfRequested();
-            Thumbnails[previewIndex] = DecodeImage(DATATYPE_RGB565_BE, previews[previewIndex], ThumbnailsOriginalSize[previewIndex]);
-            previews[previewIndex] = null!;
-        });
 
 
         SlicerInfoSettings = Helpers.Deserialize<SlicerInfo>(inputFile);

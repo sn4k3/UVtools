@@ -25,7 +25,7 @@ public sealed class OperationScripting : Operation
     {
         add
         {
-            _onScriptReloaded = null;
+            _onScriptReloaded = null!;
             //_onScriptReloaded -= value;
             _onScriptReloaded += value;
         }

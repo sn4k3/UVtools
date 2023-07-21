@@ -439,6 +439,11 @@ public sealed class PhotonWorkshopFile : FileFormat
             TableLength += DataSize;
         }
 
+        public Preview(Mat mat) : this((uint)mat.Width, (uint)mat.Height)
+        {
+            Data = EncodeImage(DATATYPE_RGB565, mat);
+        }
+
         public override string ToString()
         {
             return $"{base.ToString()}, {nameof(ResolutionX)}: {ResolutionX}, {nameof(Mark)}: {Mark}, {nameof(ResolutionY)}: {ResolutionY}, {nameof(DataSize)}: {DataSize}";
@@ -481,6 +486,11 @@ public sealed class PhotonWorkshopFile : FileFormat
             ResolutionX = resolutionX;
             ResolutionY = resolutionY;
             TableLength += DataSize;
+        }
+
+        public Preview2(Mat mat) : this((uint)mat.Width, (uint)mat.Height)
+        {
+            Data = EncodeImage(DATATYPE_RGB565, mat);
         }
 
         public void ResetData()
@@ -1941,13 +1951,10 @@ public sealed class PhotonWorkshopFile : FileFormat
         outputFile.Seek((int)FileMarkSettings.HeaderAddress, SeekOrigin.Begin);
         outputFile.WriteSerialize(HeaderSettings);
 
-        if (CreatedThumbnailsCount >= 1)
+        if (ThumbnailsCount >= 1)
         {
             FileMarkSettings.PreviewAddress = (uint)outputFile.Position;
-            var preview = new Preview((uint)Thumbnails[0]!.Width, (uint)Thumbnails[0]!.Height)
-            {
-                Data = EncodeImage(DATATYPE_RGB565, Thumbnails[0]!)
-            };
+            var preview = new Preview(Thumbnails[0]);
             outputFile.WriteSerialize(preview);
             outputFile.WriteBytes(preview.Data);
             preview.ResetData();
@@ -1991,13 +1998,10 @@ public sealed class PhotonWorkshopFile : FileFormat
                     FileMarkSettings.SubLayerDefinitionAddress = (uint)outputFile.Position;
                     outputFile.Seek(SubLayersDefinition.TableLength, SeekOrigin.Current);
 
-                    if (CreatedThumbnailsCount >= 2)
+                    if (ThumbnailsCount >= 2)
                     {
                         FileMarkSettings.Preview2Address = (uint)outputFile.Position;
-                        var preview = new Preview2((uint)Thumbnails[1]!.Width, (uint)Thumbnails[1]!.Height)
-                        {
-                            Data = EncodeImage(DATATYPE_RGB565, Thumbnails[1]!)
-                        };
+                        var preview = new Preview2(Thumbnails[1]);
                         outputFile.WriteSerialize(preview);
                         outputFile.WriteBytes(preview.Data);
                         preview.ResetData();
@@ -2105,7 +2109,7 @@ public sealed class PhotonWorkshopFile : FileFormat
             Debug.Write("Preview 1 -> ");
             Debug.WriteLine(PreviewSettings);
 
-            Thumbnails[0] = DecodeImage(DATATYPE_RGB565, PreviewSettings.Data, PreviewSettings.ResolutionX, PreviewSettings.ResolutionY);
+            Thumbnails.Add(DecodeImage(DATATYPE_RGB565, PreviewSettings.Data, PreviewSettings.ResolutionX, PreviewSettings.ResolutionY));
             PreviewSettings.ResetData();
         }
 
@@ -2180,7 +2184,7 @@ public sealed class PhotonWorkshopFile : FileFormat
                             Debug.WriteLine(Preview2Settings);
                             Preview2Settings.Validate(Preview2Settings.Data.Length);
 
-                            Thumbnails[1] = DecodeImage(DATATYPE_RGB565, Preview2Settings.Data, Preview2Settings.ResolutionX, Preview2Settings.ResolutionY);
+                            Thumbnails.Add(DecodeImage(DATATYPE_RGB565, Preview2Settings.Data, Preview2Settings.ResolutionX, Preview2Settings.ResolutionY));
                             Preview2Settings.ResetData();
                         }
                     }

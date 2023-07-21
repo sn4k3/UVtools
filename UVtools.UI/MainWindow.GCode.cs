@@ -19,14 +19,14 @@ namespace UVtools.UI;
 
 public partial class MainWindow
 {
-    public bool HaveGCode => IsFileLoaded && SlicerFile.SupportsGCode;
+    public bool HaveGCode => IsFileLoaded && SlicerFile!.SupportsGCode;
 
-    public uint GCodeLines => !HaveGCode ? 0 : SlicerFile.GCode.LineCount;
+    public uint GCodeLines => !HaveGCode ? 0 : SlicerFile!.GCode!.LineCount;
 
     public void OnClickRebuildGcode()
     {
         if (!HaveGCode) return;
-        var temp = SlicerFile.SuppressRebuildGCode;
+        var temp = SlicerFile!.SuppressRebuildGCode;
         SlicerFile.SuppressRebuildGCode = false;
         SlicerFile.RebuildGCode();
         SlicerFile.SuppressRebuildGCode = temp;
@@ -39,7 +39,7 @@ public partial class MainWindow
     {
         if (!HaveGCode) return;
 
-        using var file = await SaveFilePickerAsync(SlicerFile.DirectoryPath, $"{SlicerFile.FilenameNoExt}_gcode.txt", AvaloniaStatic.TxtFileFilter);
+        using var file = await SaveFilePickerAsync(SlicerFile!.DirectoryPath, $"{SlicerFile.FilenameNoExt}_gcode.txt", AvaloniaStatic.TxtFileFilter);
         if (file?.TryGetLocalPath() is not { } filePath) return;
 
         try
@@ -65,6 +65,6 @@ public partial class MainWindow
     public void OnClickGCodeSaveClipboard()
     {
         if (!HaveGCode) return;
-        Clipboard?.SetTextAsync(SlicerFile.GCodeStr);
+        Clipboard?.SetTextAsync(SlicerFile!.GCodeStr);
     }
 }

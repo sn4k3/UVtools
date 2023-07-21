@@ -15,23 +15,23 @@ namespace UVtools.UI.Controls.Calibrators;
 
 public partial class CalibrateExposureFinderControl : ToolControl
 {
-    public OperationCalibrateExposureFinder Operation => BaseOperation as OperationCalibrateExposureFinder;
+    public OperationCalibrateExposureFinder Operation => (BaseOperation as OperationCalibrateExposureFinder)!;
 
-    private readonly Timer _timer;
+    private readonly Timer _timer = null!;
 
-    private Bitmap _previewImage;
+    private Bitmap? _previewImage;
 
-    public Bitmap PreviewImage
+    public Bitmap? PreviewImage
     {
         get => _previewImage;
         set => RaiseAndSetIfChanged(ref _previewImage, value);
     }
 
-    public bool CanSupportPerLayerSettings => SlicerFile.HaveLayerParameterModifier(FileFormat.PrintParameterModifier.ExposureTime);
+    public bool CanSupportPerLayerSettings => SlicerFile!.HaveLayerParameterModifier(FileFormat.PrintParameterModifier.ExposureTime);
 
     public CalibrateExposureFinderControl()
     {
-        BaseOperation = new OperationCalibrateExposureFinder(SlicerFile);
+        BaseOperation = new OperationCalibrateExposureFinder(SlicerFile!);
         if (!ValidateSpawn()) return;
 
         InitializeComponent();
@@ -91,7 +91,7 @@ public partial class CalibrateExposureFinderControl : ToolControl
     {
         if (Operation.ExposureTable.Count > 0)
         {
-            if (await ParentWindow.MessageBoxQuestion(
+            if (await ParentWindow!.MessageBoxQuestion(
                     "This automatic exposure table generation will clear the current table data!\n" +
                     "Do you want to continue?"
                 ) != MessageButtonResult.Yes) return;
@@ -105,14 +105,14 @@ public partial class CalibrateExposureFinderControl : ToolControl
         var exposure = Operation.ExposureManualEntry;
         if (!exposure.IsValid)
         {
-            await ParentWindow.MessageBoxError(
+            await ParentWindow!.MessageBoxError(
                 $"Layer height and exposures must be higher than zero (0).\n{exposure}");
             return;
         }
 
         if (Operation.ExposureTable.Contains(exposure))
         {
-            await ParentWindow.MessageBoxError(
+            await ParentWindow!.MessageBoxError(
                 $"The configured layer height and exposure data already exists on the table.\n{exposure}");
             return;
         }
@@ -124,7 +124,7 @@ public partial class CalibrateExposureFinderControl : ToolControl
     public async void ExposureTableClearEntries()
     {
         if (Operation.ExposureTable.Count <= 0) return;
-        if (await ParentWindow.MessageBoxQuestion(
+        if (await ParentWindow!.MessageBoxQuestion(
                 $"Are you sure you want to all the {Operation.ExposureTable.Count} entries?"
             ) != MessageButtonResult.Yes) return;
 
@@ -134,7 +134,7 @@ public partial class CalibrateExposureFinderControl : ToolControl
     public async void ExposureTableRemoveSelectedEntries()
     {
         if (ExposureTable.SelectedItems.Count <= 0) return;
-        if (await ParentWindow.MessageBoxQuestion(
+        if (await ParentWindow!.MessageBoxQuestion(
                 $"Are you sure you want to remove the {ExposureTable.SelectedItems.Count} selected entries?"
             ) != MessageButtonResult.Yes) return;
 

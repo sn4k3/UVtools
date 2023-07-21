@@ -5,13 +5,13 @@ namespace UVtools.UI.Controls.Tools;
 
 public partial class ToolLayerReHeightControl : ToolControl
 {
-    public OperationLayerReHeight Operation => BaseOperation as OperationLayerReHeight;
+    public OperationLayerReHeight Operation => (BaseOperation as OperationLayerReHeight)!;
 
-    public string CurrentLayers => $"Current layers: {App.SlicerFile.LayerCount} at {App.SlicerFile.LayerHeight}mm";
+    public string CurrentLayers => $"Current layers: {SlicerFile!.LayerCount} at {SlicerFile.LayerHeight}mm";
 
     public ToolLayerReHeightControl()
     {
-        BaseOperation = new OperationLayerReHeight(SlicerFile);
+        BaseOperation = new OperationLayerReHeight(SlicerFile!);
         if (!ValidateSpawn()) return;
 
         InitializeComponent();
@@ -28,7 +28,7 @@ public partial class ToolLayerReHeightControl : ToolControl
                 {
                     if (e.PropertyName == nameof(Operation.Method))
                     {
-                        ParentWindow.LayerRangeVisible = Operation.Method == OperationLayerReHeight.OperationLayerReHeightMethod.OffsetPositionZ;
+                        ParentWindow!.LayerRangeVisible = Operation.Method == OperationLayerReHeight.OperationLayerReHeightMethod.OffsetPositionZ;
                         return;
                     }
                 };

@@ -451,7 +451,6 @@ public sealed class FlashForgeSVGXFile : FileFormat
         foreach (var mat in Thumbnails)
         {
             if (HeaderSettings.Preview2Address > 0) break;
-            if(mat is null) continue;
 
             var preview = new Preview
             {
@@ -584,35 +583,22 @@ public sealed class FlashForgeSVGXFile : FileFormat
             throw new FileLoadException("Not a valid Flashforge SVGX file!", FileFullPath);
         }
 
-        progress.Reset(OperationProgress.StatusDecodePreviews, ThumbnailsCount);
         Debug.Write("Header -> ");
         Debug.WriteLine(HeaderSettings);
 
-        byte thumbnailCount = 0;
-        if (HeaderSettings.Preview1Address > 0)
-        {
-            inputFile.Seek(HeaderSettings.Preview1Address, SeekOrigin.Begin);
-            var preview = Helpers.Deserialize<Preview>(inputFile);
-            Thumbnails[thumbnailCount] = DecodeImage(DATATYPE_BGR888, preview.BGR, preview.ResolutionX, preview.ResolutionY);
-            CvInvoke.Flip(Thumbnails[thumbnailCount], Thumbnails[thumbnailCount], FlipType.Vertical);
-            Debug.Write($"Preview[{thumbnailCount}] -> ");
-            Debug.WriteLine(preview);
-            thumbnailCount++;
+        var previewAddresses = new[] { HeaderSettings.Preview1Address, HeaderSettings.Preview2Address };
+        progress.Reset(OperationProgress.StatusDecodePreviews, (uint)previewAddresses.Length);
 
-        }
-        progress++;
-        if (HeaderSettings.Preview2Address > 0)
+        for (int i = 0; i < previewAddresses.Length; i++)
         {
-            inputFile.Seek(HeaderSettings.Preview2Address, SeekOrigin.Begin);
+            if (previewAddresses[i] == 0) continue;
+            inputFile.Seek(previewAddresses[i], SeekOrigin.Begin);
             var preview = Helpers.Deserialize<Preview>(inputFile);
-            Thumbnails[thumbnailCount] = DecodeImage(DATATYPE_BGR888, preview.BGR, preview.ResolutionX, preview.ResolutionY);
-            CvInvoke.Flip(Thumbnails[thumbnailCount], Thumbnails[thumbnailCount], FlipType.Vertical);
-            Debug.Write($"Preview[{thumbnailCount}] -> ");
-            Debug.WriteLine(preview);
-            thumbnailCount++;
-
+            Thumbnails.Add(DecodeImage(DATATYPE_BGR888, preview.BGR, preview.ResolutionX, preview.ResolutionY));
+            CvInvoke.Flip(Thumbnails[i], Thumbnails[i], FlipType.Vertical);
+            Debug.WriteLine($"Preview[{i}] -> {preview}");
+            progress++;
         }
-        progress++;
 
         inputFile.Seek(HeaderSettings.SVGDocumentAddress, SeekOrigin.Begin);
         string svgDocument = Encoding.UTF8.GetString(inputFile.ReadToEnd());
