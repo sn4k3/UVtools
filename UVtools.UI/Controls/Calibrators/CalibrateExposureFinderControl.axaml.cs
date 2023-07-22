@@ -26,9 +26,7 @@ public partial class CalibrateExposureFinderControl : ToolControl
         get => _previewImage;
         set => RaiseAndSetIfChanged(ref _previewImage, value);
     }
-
-    public bool CanSupportPerLayerSettings => SlicerFile!.HaveLayerParameterModifier(FileFormat.PrintParameterModifier.ExposureTime);
-
+    
     public CalibrateExposureFinderControl()
     {
         BaseOperation = new OperationCalibrateExposureFinder(SlicerFile!);
@@ -40,6 +38,7 @@ public partial class CalibrateExposureFinderControl : ToolControl
         {
             AutoReset = false
         };
+
         _timer.Elapsed += (sender, e) => Dispatcher.UIThread.InvokeAsync(UpdatePreview);
     }
 

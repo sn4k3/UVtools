@@ -3,7 +3,10 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:uc="clr-namespace:UVtools.UI.Controls"
+        xmlns:windows="clr-namespace:UVtools.UI.Windows"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="500"
+        x:Class="UVtools.UI.Windows.TerminalWindow"
+        x:DataType="windows:TerminalWindow"
         MinWidth="500"
         MinHeight="300"
         Width="800"
@@ -12,7 +15,6 @@
         WindowStartupLocation="CenterOwner"
         DragDrop.AllowDrop="True"
         Icon="/Assets/Icons/UVtools.ico"
-        x:Class="UVtools.UI.Windows.TerminalWindow"
         Title="UVtools interactive terminal">
 	<Grid>
       <Grid.RowDefinitions>

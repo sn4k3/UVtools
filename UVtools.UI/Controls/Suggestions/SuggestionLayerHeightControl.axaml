@@ -2,8 +2,10 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:suggestions="clr-namespace:UVtools.UI.Controls.Suggestions"
              mc:Ignorable="d" d:DesignWidth="550" d:DesignHeight="150"
-             x:Class="UVtools.UI.Controls.Suggestions.SuggestionLayerHeightControl">
+             x:Class="UVtools.UI.Controls.Suggestions.SuggestionLayerHeightControl"
+             x:DataType="suggestions:SuggestionLayerHeightControl">
 	<Grid RowDefinitions="Auto,10,Auto,2,Auto"
 			ColumnDefinitions="Auto,10,180,5,Auto,5,180">
 

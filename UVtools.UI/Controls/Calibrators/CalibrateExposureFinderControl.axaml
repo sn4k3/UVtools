@@ -3,8 +3,10 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:controls="clr-namespace:UVtools.UI.Controls"
+             xmlns:calibrators="clr-namespace:UVtools.UI.Controls.Calibrators"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             x:Class="UVtools.UI.Controls.Calibrators.CalibrateExposureFinderControl">
+             x:Class="UVtools.UI.Controls.Calibrators.CalibrateExposureFinderControl"
+             x:DataType="calibrators:CalibrateExposureFinderControl">
   <Grid ColumnDefinitions="Auto,10,380">
     <StackPanel Spacing="10">
 
@@ -125,7 +127,6 @@
                        Increment="1"
                        Minimum="0"
                        Maximum="255"
-                       IsEnabled="{Binding Operation.ChamferModel}"
                        Value="{Binding Operation.ChamferLayers}"/>
 
         <TextBlock Grid.Row="10" Grid.Column="4"
@@ -680,7 +681,7 @@
                   IsExpanded="False">
           <Expander.IsVisible>
             <MultiBinding Converter="{x:Static BoolConverters.And}">
-              <Binding Path="CanSupportPerLayerSettings"/>
+              <Binding Path="SlicerFile.CanUseLayerPositionZ"/>
               <Binding Path="!Operation.PatternModel"/>
             </MultiBinding>
           </Expander.IsVisible>
@@ -740,8 +741,8 @@
                   IsExpanded="True">
             <Expander.IsVisible>
                 <MultiBinding Converter="{x:Static BoolConverters.And}">
-                    <Binding Path="CanSupportPerLayerPositionZ"/>
-                    <Binding Path="CanSupportPerLayerExposureTime"/>
+                    <Binding Path="SlicerFile.CanUseLayerPositionZ"/>
+                    <Binding Path="SlicerFile.CanUseLayerExposureTime"/>
                 </MultiBinding>
             </Expander.IsVisible>
 

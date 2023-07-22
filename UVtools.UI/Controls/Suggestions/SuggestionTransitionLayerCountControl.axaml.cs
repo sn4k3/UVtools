@@ -4,13 +4,11 @@ namespace UVtools.UI.Controls.Suggestions;
 
 public partial class SuggestionTransitionLayerCountControl : SuggestionControl
 {
+    public SuggestionTransitionLayerCount Suggestion => (BaseSuggestion as SuggestionTransitionLayerCount)!;
+
     public SuggestionTransitionLayerCountControl() : this(new SuggestionTransitionLayerCount())
     { }
 
-    public SuggestionTransitionLayerCountControl(Suggestion suggestion)
-    {
-        Suggestion = suggestion;
-        DataContext = this;
-        InitializeComponent();
-    }
+    public SuggestionTransitionLayerCountControl(Suggestion suggestion) : base(suggestion)
+    { }
 }

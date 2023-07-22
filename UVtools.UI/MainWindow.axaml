@@ -5,8 +5,10 @@
         xmlns:uc="clr-namespace:UVtools.UI.Controls"
         xmlns:uvtava="clr-namespace:UVtools.AvaloniaControls;assembly=UVtools.AvaloniaControls"
         xmlns:i="https://github.com/projektanker/icons.avalonia"
+        xmlns:ui="clr-namespace:UVtools.UI"
         mc:Ignorable="d" d:DesignWidth="1024" d:DesignHeight="600"
         x:Class="UVtools.UI.MainWindow"
+		x:DataType="ui:MainWindow"
         Title="UVtools"
         Icon="/Assets/Icons/UVtools.ico"
         MinWidth="1024"
@@ -864,24 +866,24 @@
                                 <ContextMenu IsVisible="{Binding #IssuesGrid.SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}">
 									<MenuItem i:MenuItem.Icon="fa-solid fa-eye-slash" Command="{Binding OnClickIssueIgnore}" Header="Ignore issue(s)"/>
                                     <Separator/>
-                                    <MenuItem i:MenuItem.Icon="fa-solid fa-trash-can" Command="{Binding SelectedIssuesIslandRemove}" IsVisible="{Binding #IssuesGrid.SelectedItem.IsIsland}" Header="Remove island(s)"/>
-                                    <MenuItem i:MenuItem.Icon="fa-solid fa-diamond" Command="{Binding SelectedIssuesResinTrapSolidify}" IsVisible="{Binding #IssuesGrid.SelectedItem.IsResinTrap}" Header="Fill/solidify resin trap(s)"/>
-                                    <MenuItem i:MenuItem.Icon="fa-solid fa-circle-dot" Command="{Binding SelectedIssuesSuctionCupDrill}" IsVisible="{Binding #IssuesGrid.SelectedItem.IsSuctionCup}" Header="Drill suction cup(s)"/>
-                                    <MenuItem i:MenuItem.Icon="fa-solid fa-diamond" Command="{Binding SelectedIssuesSuctionCupSolidify}" IsVisible="{Binding #IssuesGrid.SelectedItem.IsSuctionCup}" Header="Fill/solidify suction cup(s)"/>
-                                    <MenuItem i:MenuItem.Icon="fa-solid fa-trash-can" Command="{Binding SelectedIssuesEmptyLayerRemove}" IsVisible="{Binding #IssuesGrid.SelectedItem.IsEmptyLayer}" Header="Remove empty layer(s)"/>
+                                    <MenuItem i:MenuItem.Icon="fa-solid fa-trash-can" Command="{Binding SelectedIssuesIslandRemove}" IsVisible="{ReflectionBinding #IssuesGrid.SelectedItem.IsIsland}" Header="Remove island(s)"/>
+                                    <MenuItem i:MenuItem.Icon="fa-solid fa-diamond" Command="{Binding SelectedIssuesResinTrapSolidify}" IsVisible="{ReflectionBinding #IssuesGrid.SelectedItem.IsResinTrap}" Header="Fill/solidify resin trap(s)"/>
+                                    <MenuItem i:MenuItem.Icon="fa-solid fa-circle-dot" Command="{Binding SelectedIssuesSuctionCupDrill}" IsVisible="{ReflectionBinding #IssuesGrid.SelectedItem.IsSuctionCup}" Header="Drill suction cup(s)"/>
+                                    <MenuItem i:MenuItem.Icon="fa-solid fa-diamond" Command="{Binding SelectedIssuesSuctionCupSolidify}" IsVisible="{ReflectionBinding #IssuesGrid.SelectedItem.IsSuctionCup}" Header="Fill/solidify suction cup(s)"/>
+                                    <MenuItem i:MenuItem.Icon="fa-solid fa-trash-can" Command="{Binding SelectedIssuesEmptyLayerRemove}" IsVisible="{ReflectionBinding #IssuesGrid.SelectedItem.IsEmptyLayer}" Header="Remove empty layer(s)"/>
                                 </ContextMenu>
                             </DataGrid.ContextMenu>
                             <DataGrid.Columns>
 
 								<DataGridTextColumn  Header="Type"
-													 Binding="{Binding Type}"
+													 Binding="{ReflectionBinding Type}"
 													 Width="Auto" />
 								<DataGridTextColumn Header="Layer(s)"
-												  Binding="{Binding LayerInfoStr}"
+												  Binding="{ReflectionBinding LayerInfoStr}"
 												  SortMemberPath="StartLayerIndex"
 												  Width="Auto" />
 								<DataGridTextColumn Header="Area"
-												  Binding="{Binding Area, StringFormat={}{0:N0}}"
+												  Binding="{ReflectionBinding Area, StringFormat={}{0:N0}}"
 												  Width="Auto" />
 							</DataGrid.Columns>
 
@@ -964,19 +966,19 @@
 										<TextBlock.ContextMenu>
 											<ContextMenu>
 												<MenuItem
-													Command="{Binding $parent[uc:WindowEx].DataContext.ApplySuggestionClicked}"
+													Command="{Binding $parent[uc:WindowEx].((ui:MainWindow)DataContext).ApplySuggestionClicked}"
 													CommandParameter="{Binding .}"
 													Header="Apply"
 													IsVisible="{Binding !IsInformativeOnly}"
 													i:MenuItem.Icon="fa-solid fa-check"/>
 												<MenuItem
-													Command="{Binding $parent[uc:WindowEx].DataContext.OpenWebsite}"
+													Command="{Binding $parent[uc:WindowEx].((ui:MainWindow)DataContext).OpenWebsite}"
 													CommandParameter="{Binding InformationUrl}"
 													Header="More information (Web)"
 													IsVisible="{Binding InformationUrl, Converter={x:Static ObjectConverters.IsNotNull}}"
 													i:MenuItem.Icon="fa-solid fa-info-circle"/>
 												<MenuItem
-													Command="{Binding $parent[uc:WindowEx].DataContext.ConfigureSuggestionClicked}"
+													Command="{Binding $parent[uc:WindowEx].((ui:MainWindow)DataContext).ConfigureSuggestionClicked}"
 													CommandParameter="{Binding .}"
 													Header="Configure"
 													i:MenuItem.Icon="fa-solid fa-cog"/>
@@ -1010,13 +1012,13 @@
 										<TextBlock.ContextMenu>
 											<ContextMenu>
 												<MenuItem
-													Command="{Binding $parent[uc:WindowEx].DataContext.OpenWebsite}"
+													Command="{Binding $parent[uc:WindowEx].((ui:MainWindow)DataContext).OpenWebsite}"
 													CommandParameter="{Binding InformationUrl}"
 													Header="More information (Web)"
 													IsVisible="{Binding InformationUrl, Converter={x:Static ObjectConverters.IsNotNull}}"
 													i:MenuItem.Icon="fa-solid fa-info-circle"/>
 												<MenuItem
-													Command="{Binding $parent[uc:WindowEx].DataContext.ConfigureSuggestionClicked}"
+													Command="{Binding $parent[uc:WindowEx].((ui:MainWindow)DataContext).ConfigureSuggestionClicked}"
 													CommandParameter="{Binding .}"
 													Header="Configure"
 													i:MenuItem.Icon="fa-solid fa-cog"/>

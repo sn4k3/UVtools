@@ -218,6 +218,7 @@ public static class Program
 
         return AppBuilder.Configure<App>()
             .UsePlatformDetect()
+            .WithInterFont()
             .With(new SkiaOptions { MaxGpuResourceSizeBytes = 256_000_000 })
             .With(new Win32PlatformOptions())
             .With(new X11PlatformOptions())

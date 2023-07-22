@@ -3,13 +3,15 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:controls="clr-namespace:UVtools.UI.Controls"
+        xmlns:windows="clr-namespace:UVtools.UI.Windows"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-        x:Class="UVtools.UI.Windows.BenchmarkWindow"
         Title="Benchmark"
         Icon="/Assets/Icons/UVtools.ico"
         SizeToContent="WidthAndHeight"
         WindowStartupLocation="CenterOwner"
-        CanResize="False">
+        CanResize="False"
+        x:Class="UVtools.UI.Windows.BenchmarkWindow"
+        x:DataType="windows:BenchmarkWindow">
 
   <Grid RowDefinitions="Auto,10,
     Auto,10,

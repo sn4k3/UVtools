@@ -2,8 +2,10 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:calibrators="clr-namespace:UVtools.UI.Controls.Calibrators"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="800"
-             x:Class="UVtools.UI.Controls.Calibrators.CalibrateToleranceControl">
+             x:Class="UVtools.UI.Controls.Calibrators.CalibrateToleranceControl"
+             x:DataType="calibrators:CalibrateToleranceControl">
   <Grid ColumnDefinitions="Auto,10,380">
     <StackPanel Spacing="10">
 
@@ -148,7 +150,6 @@
                            Increment="1"
                            Minimum="0"
                            Maximum="255"
-                           IsEnabled="{Binding Operation.ChamferModel}"
                            Value="{Binding Operation.ChamferLayers}"/>
 
             <TextBlock Grid.Row="10" Grid.Column="4"

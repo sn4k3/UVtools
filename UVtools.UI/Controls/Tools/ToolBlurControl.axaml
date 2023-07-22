@@ -3,8 +3,10 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:uc="clr-namespace:UVtools.UI.Controls"
+             xmlns:tools="clr-namespace:UVtools.UI.Controls.Tools"
              mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="450"
-             x:Class="UVtools.UI.Controls.Tools.ToolBlurControl">
+             x:Class="UVtools.UI.Controls.Tools.ToolBlurControl"
+             x:DataType="tools:ToolBlurControl">
 
   <StackPanel Spacing="10">
     <Grid 
@@ -37,8 +39,8 @@
         />
     </Grid>
 
-    <uc:KernelControl Name="KernelCtrl" Kernel="{Binding $parent[UserControl].DataContext.Operation.Kernel}"
-      IsVisible="{Binding $parent[UserControl].DataContext.Operation.IsKernelVisible}"/>
+    <uc:KernelControl Name="KernelCtrl" Kernel="{Binding $parent.((tools:ToolBlurControl)DataContext).Operation.Kernel}"
+      IsVisible="{Binding Operation.IsKernelVisible}"/>
     
   </StackPanel>
 

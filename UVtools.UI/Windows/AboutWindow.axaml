@@ -4,15 +4,17 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:controls="clr-namespace:UVtools.UI.Controls"
         xmlns:core="clr-namespace:UVtools.Core;assembly=UVtools.Core"
+        xmlns:windows="clr-namespace:UVtools.UI.Windows"
         mc:Ignorable="d" d:DesignWidth="960" d:DesignHeight="700"
-        x:Class="UVtools.UI.Windows.AboutWindow"
         Width="960" Height="710"
         MinWidth="600" MinHeight="550"
         WindowStartupLocation="CenterOwner"
         SizeToContent="Manual"
         CanResize="True"
         Title="About UVtools"
-        Icon="/Assets/Icons/UVtools.ico">
+        Icon="/Assets/Icons/UVtools.ico"
+        x:Class="UVtools.UI.Windows.AboutWindow"
+        x:DataType="windows:AboutWindow">
 
     <DockPanel>
         <Border DockPanel.Dock="Bottom" Classes="FooterActions">

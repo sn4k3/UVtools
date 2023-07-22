@@ -2,10 +2,12 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:i="https://github.com/projektanker/icons.avalonia"
         xmlns:uc="clr-namespace:UVtools.UI.Controls"
+        xmlns:windows="clr-namespace:UVtools.UI.Windows"
+        xmlns:suggestions="clr-namespace:UVtools.Core.Suggestions;assembly=UVtools.Core"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="550"
         x:Class="UVtools.UI.Windows.SuggestionSettingsWindow"
+        x:DataType="windows:SuggestionSettingsWindow"
         WindowStartupLocation="CenterOwner"
         SizeToContent="Height"
         MinWidth="600"
@@ -30,7 +32,7 @@
                    SelectionMode="AlwaysSelected"
                    SelectedItem="{Binding SelectedSuggestion}">
               <ListBox.ItemTemplate>
-			      <DataTemplate>
+			      <DataTemplate x:DataType="suggestions:Suggestion">
 				      <TextBlock Text="{Binding Title}"
 							     TextWrapping="Wrap"
 							     ToolTip.Tip="{Binding Description}"/>

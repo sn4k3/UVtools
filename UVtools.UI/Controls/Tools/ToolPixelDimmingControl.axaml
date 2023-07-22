@@ -2,46 +2,42 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:tools="clr-namespace:UVtools.UI.Controls.Tools"
              mc:Ignorable="d" d:DesignWidth="950" d:DesignHeight="600"
-             x:Class="UVtools.UI.Controls.Tools.ToolPixelDimmingControl">
+             x:Class="UVtools.UI.Controls.Tools.ToolPixelDimmingControl"
+             x:DataType="tools:ToolPixelDimmingControl">
   <StackPanel Spacing="10">
     <StackPanel Spacing="10" Orientation="Horizontal">
       <TextBlock
         VerticalAlignment="Center"
-        Text="Wall thickness:"
-        />
+        Text="Wall thickness:"/>
       <NumericUpDown
         Minimum="0"
         Maximum="1000"
         Width="80"
-        Value="{Binding Operation.WallThicknessStart}"
-        />
+        Value="{Binding Operation.WallThicknessStart}"/>
 
 
       <TextBlock
         VerticalAlignment="Center"
         Text="To:"
-        IsEnabled="{Binding Operation.Chamfer}"
-        />
+        IsEnabled="{Binding Operation.Chamfer}"/>
       <NumericUpDown
         Minimum="0"
         Maximum="1000"
         Width="80"
         Value="{Binding Operation.WallThicknessEnd}"
-        IsEnabled="{Binding Operation.Chamfer}"
-        />
+        IsEnabled="{Binding Operation.Chamfer}"/>
       <TextBlock
         VerticalAlignment="Center"
         Text="px"
-        IsEnabled="{Binding Operation.Chamfer}"
-        />
+        IsEnabled="{Binding Operation.Chamfer}"/>
 
       <CheckBox
         Margin="20,0,0,0"
         Content="Chamfer walls"
         ToolTip.Tip="Allow the number of walls pixels to be gradually varied as the operation progresses from the starting layer to the ending layer."
-        IsChecked="{Binding Operation.Chamfer}"
-        />
+        IsChecked="{Binding Operation.Chamfer}"/>
 
       <CheckBox
         Margin="20,0,0,0"
@@ -53,18 +49,15 @@
       <StackPanel Orientation="Horizontal" Spacing="10">
           <TextBlock
               VerticalAlignment="Center"
-              Text="Alternate the pattern every:"
-          />
+              Text="Alternate the pattern every:"/>
           <NumericUpDown
               Minimum="1"
-              Maximum="{Binding ushort.MaxValue}"
+              Maximum="65535"
               Width="150"
-              Value="{Binding Operation.AlternatePatternPerLayers}"
-          />
+              Value="{Binding Operation.AlternatePatternPerLayers}"/>
           <TextBlock
               VerticalAlignment="Center"
-              Text="layers"
-          />
+              Text="layers"/>
       </StackPanel>
     
     <Grid 
@@ -130,29 +123,25 @@
               Content="Chessboard"
               Width="100"
               Command="{Binding Operation.GeneratePixelDimming}"
-              CommandParameter="Chessboard"
-            />
+              CommandParameter="Chessboard"/>
             <Button
               Padding="10"
               Content="Sparse"
               Width="100"
               Command="{Binding Operation.GeneratePixelDimming}"
-              CommandParameter="Sparse"
-            />
+              CommandParameter="Sparse"/>
             <Button
               Padding="10"
               Content="Crosses"
               Width="100"
               Command="{Binding Operation.GeneratePixelDimming}"
-              CommandParameter="Crosses"
-            />
+              CommandParameter="Crosses"/>
             <Button
               Padding="10"
               Content="Strips"
               Width="100"
               Command="{Binding Operation.GeneratePixelDimming}"
-              CommandParameter="Strips"
-            />
+              CommandParameter="Strips"/>
           </StackPanel>
 
           <StackPanel Orientation="Horizontal" Spacing="10">
@@ -161,30 +150,26 @@
               Content="Pyramid"
               Width="100"
               Command="{Binding Operation.GeneratePixelDimming}"
-              CommandParameter="Pyramid"
-            />
+              CommandParameter="Pyramid"/>
             
             <Button
               Padding="10"
               Content="Rhombus"
               Width="100"
               Command="{Binding Operation.GeneratePixelDimming}"
-              CommandParameter="Rhombus"
-            />
+              CommandParameter="Rhombus"/>
             <Button
               Padding="10"
               Content="Waves"
               Width="100"
               Command="{Binding Operation.GeneratePixelDimming}"
-              CommandParameter="Waves"
-            />
+              CommandParameter="Waves"/>
             <Button
               Padding="10"
               Content="Slashes"
               Width="100"
               Command="{Binding Operation.GeneratePixelDimming}"
-              CommandParameter="Slashes"
-            />
+              CommandParameter="Slashes"/>
           </StackPanel>
 
           <StackPanel Orientation="Horizontal" Spacing="10">
@@ -193,15 +178,13 @@
               Content="Hearts"
               Width="100"
               Command="{Binding Operation.GeneratePixelDimming}"
-              CommandParameter="Hearts"
-            />
+              CommandParameter="Hearts"/>
             <Button
               Padding="10"
               Content="Solid"
               Width="100"
               Command="{Binding Operation.GeneratePixelDimming}"
-              CommandParameter="Solid"
-            />
+              CommandParameter="Solid"/>
           </StackPanel>
 
         </StackPanel>
@@ -212,8 +195,7 @@
         Grid.Column="2"
       BorderBrush="LightGray"
       BorderThickness="1"
-      Padding="5"
-      >
+      Padding="5">
 
         <StackPanel Spacing="10">
           <TextBlock FontWeight="Bold" Text="Infill generator"/>
@@ -255,29 +237,25 @@
               Content="Rectilinear"
               Width="100"
               Command="{Binding Operation.GenerateInfill}"
-              CommandParameter="Rectilinear"
-            />
+              CommandParameter="Rectilinear"/>
             <Button
               Padding="10"
               Content="Square grid"
               Width="100"
               Command="{Binding Operation.GenerateInfill}"
-              CommandParameter="Square grid"
-            />
+              CommandParameter="Square grid"/>
             <Button
               Padding="10"
               Content="Waves"
               Width="100"
               Command="{Binding Operation.GenerateInfill}"
-              CommandParameter="Waves"
-            />
+              CommandParameter="Waves"/>
             <Button
               Padding="10"
               Content="Lattice"
               Width="100"
               Command="{Binding Operation.GenerateInfill}"
-              CommandParameter="Lattice"
-            />
+              CommandParameter="Lattice"/>
           </StackPanel>
         </StackPanel>
       </Border>

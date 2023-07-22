@@ -4,8 +4,11 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:controls="clr-namespace:UVtools.UI.Controls"
         xmlns:uvtava="clr-namespace:UVtools.AvaloniaControls;assembly=UVtools.AvaloniaControls"
+        xmlns:windows="clr-namespace:UVtools.UI.Windows"
+        xmlns:structures="clr-namespace:UVtools.UI.Structures"
         mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="700"
         x:Class="UVtools.UI.Windows.PrusaSlicerManagerWindow"
+        x:DataType="windows:PrusaSlicerManagerWindow"
         Title="Install profiles into PrusaSlicer"
         Width="900"
         MinWidth="900"
@@ -130,9 +133,9 @@
                                 <TextBlock Grid.Row="0" HorizontalAlignment="Right">
                                     <TextBlock.Text>
                                         <MultiBinding StringFormat="{}{0} Update(s) | {1} Installed | {2} Profiles">
-                                            <Binding Path="PrusaSlicerProfiles[0].Updates"/>
-                                            <Binding Path="PrusaSlicerProfiles[0].Installed"/>
-                                            <Binding Path="PrusaSlicerProfiles[0].Items.Count"/>
+                                            <Binding Path="((structures:PSProfileFolder)PrusaSlicerProfiles[0]).Updates"/>
+                                            <Binding Path="((structures:PSProfileFolder)PrusaSlicerProfiles[0]).Installed"/>
+                                            <Binding Path="((structures:PSProfileFolder)PrusaSlicerProfiles[0]).Items.Count"/>
                                         </MultiBinding>
                                     </TextBlock.Text>
                                 </TextBlock>
@@ -142,21 +145,21 @@
 						  <StackPanel Grid.Row="0"
                                       Orientation="Horizontal" 
                                       Spacing="1">
-							  <controls:ButtonWithIcon IsEnabled="{Binding PrusaSlicerProfiles[0].Updates}"
+							  <controls:ButtonWithIcon IsEnabled="{Binding ((structures:PSProfileFolder)PrusaSlicerProfiles[0]).Updates}"
                                                        Icon="fa-regular fa-square"
                                                        Text="Unselect all"
-                                                       Command="{Binding PrusaSlicerProfiles[0].SelectNone}"/>
+                                                       Command="{Binding ((structures:PSProfileFolder)PrusaSlicerProfiles[0]).SelectNone}"/>
 
-							  <controls:ButtonWithIcon IsEnabled="{Binding PrusaSlicerProfiles[0].Updates}"
+							  <controls:ButtonWithIcon IsEnabled="{Binding ((structures:PSProfileFolder)PrusaSlicerProfiles[0]).Updates}"
                                                        Icon="fa-regular fa-check-square"
                                                        Text="Select all"
-                                                       Command="{Binding PrusaSlicerProfiles[0].SelectAll}"/>
+                                                       Command="{Binding ((structures:PSProfileFolder)PrusaSlicerProfiles[0]).SelectAll}"/>
 
 						  </StackPanel>
 
 						  <ListBox Grid.Row="1"
                                    SelectionMode="Toggle"
-                                   ItemsSource="{Binding PrusaSlicerProfiles[0].Items}"/>
+                                   ItemsSource="{Binding ((structures:PSProfileFolder)PrusaSlicerProfiles[0]).Items}"/>
 					  </Grid>
 				  </uvtava:GroupBox>
 
@@ -169,9 +172,9 @@
 							  <TextBlock Grid.Row="0" HorizontalAlignment="Right">
 								  <TextBlock.Text>
 									  <MultiBinding StringFormat="{}{0} Update(s) | {1} Installed | {2} Profiles">
-										  <Binding Path="PrusaSlicerProfiles[1].Updates"/>
-										  <Binding Path="PrusaSlicerProfiles[1].Installed"/>
-										  <Binding Path="PrusaSlicerProfiles[1].Items.Count"/>
+										  <Binding Path="((structures:PSProfileFolder)PrusaSlicerProfiles[1]).Updates"/>
+										  <Binding Path="((structures:PSProfileFolder)PrusaSlicerProfiles[1]).Installed"/>
+										  <Binding Path="((structures:PSProfileFolder)PrusaSlicerProfiles[1]).Items.Count"/>
 									  </MultiBinding>
 								  </TextBlock.Text>
 							  </TextBlock>
@@ -181,21 +184,21 @@
 						  <StackPanel Grid.Row="0"
                                       Orientation="Horizontal"
                                       Spacing="1">
-							  <controls:ButtonWithIcon IsEnabled="{Binding PrusaSlicerProfiles[1].Updates}"
+							  <controls:ButtonWithIcon IsEnabled="{Binding ((structures:PSProfileFolder)PrusaSlicerProfiles[1]).Updates}"
                                                        Icon="fa-regular fa-square"
                                                        Text="Unselect all"
-                                                       Command="{Binding PrusaSlicerProfiles[1].SelectNone}"/>
+                                                       Command="{Binding ((structures:PSProfileFolder)PrusaSlicerProfiles[1]).SelectNone}"/>
 
-							  <controls:ButtonWithIcon IsEnabled="{Binding PrusaSlicerProfiles[1].Updates}"
+							  <controls:ButtonWithIcon IsEnabled="{Binding ((structures:PSProfileFolder)PrusaSlicerProfiles[1]).Updates}"
                                                        Icon="fa-regular fa-check-square"
                                                        Text="Select all"
-                                                       Command="{Binding PrusaSlicerProfiles[1].SelectAll}"/>
+                                                       Command="{Binding ((structures:PSProfileFolder)PrusaSlicerProfiles[1]).SelectAll}"/>
 
 						  </StackPanel>
 
 						  <ListBox Grid.Row="1"
                                    SelectionMode="Toggle"
-                                   ItemsSource="{Binding PrusaSlicerProfiles[1].Items}"/>
+                                   ItemsSource="{Binding ((structures:PSProfileFolder)PrusaSlicerProfiles[1]).Items}"/>
 					  </Grid>
 				  </uvtava:GroupBox>
 			  </Grid>
@@ -220,9 +223,9 @@
 							  <TextBlock Grid.Row="0" HorizontalAlignment="Right">
 								  <TextBlock.Text>
 									  <MultiBinding StringFormat="{}{0} Update(s) | {1} Installed | {2} Profiles">
-										  <Binding Path="SuperSlicerProfiles[0].Updates"/>
-										  <Binding Path="SuperSlicerProfiles[0].Installed"/>
-										  <Binding Path="SuperSlicerProfiles[0].Items.Count"/>
+										  <Binding Path="((structures:PSProfileFolder)SuperSlicerProfiles[0]).Updates"/>
+										  <Binding Path="((structures:PSProfileFolder)SuperSlicerProfiles[0]).Installed"/>
+										  <Binding Path="((structures:PSProfileFolder)SuperSlicerProfiles[0]).Items.Count"/>
 									  </MultiBinding>
 								  </TextBlock.Text>
 							  </TextBlock>
@@ -232,21 +235,21 @@
 						  <StackPanel Grid.Row="0"
                                       Orientation="Horizontal"
                                       Spacing="1">
-							  <controls:ButtonWithIcon IsEnabled="{Binding SuperSlicerProfiles[0].Updates}"
+							  <controls:ButtonWithIcon IsEnabled="{Binding ((structures:PSProfileFolder)SuperSlicerProfiles[0]).Updates}"
                                                        Icon="fa-regular fa-square"
                                                        Text="Unselect all"
-                                                       Command="{Binding SuperSlicerProfiles[0].SelectNone}"/>
+                                                       Command="{Binding ((structures:PSProfileFolder)SuperSlicerProfiles[0]).SelectNone}"/>
 
-							  <controls:ButtonWithIcon IsEnabled="{Binding SuperSlicerProfiles[0].Updates}"
+							  <controls:ButtonWithIcon IsEnabled="{Binding ((structures:PSProfileFolder)SuperSlicerProfiles[0]).Updates}"
                                                        Icon="fa-regular fa-check-square"
                                                        Text="Select all"
-                                                       Command="{Binding SuperSlicerProfiles[0].SelectAll}"/>
+                                                       Command="{Binding ((structures:PSProfileFolder)SuperSlicerProfiles[0]).SelectAll}"/>
 
 						  </StackPanel>
 
 						  <ListBox Grid.Row="1"
                                    SelectionMode="Toggle"
-                                   ItemsSource="{Binding SuperSlicerProfiles[0].Items}"/>
+                                   ItemsSource="{Binding ((structures:PSProfileFolder)SuperSlicerProfiles[0]).Items}"/>
 					  </Grid>
 				  </uvtava:GroupBox>
 
@@ -259,9 +262,9 @@
 							  <TextBlock Grid.Row="0" HorizontalAlignment="Right">
 								  <TextBlock.Text>
 									  <MultiBinding StringFormat="{}{0} Update(s) | {1} Installed | {2} Profiles">
-										  <Binding Path="SuperSlicerProfiles[1].Updates"/>
-										  <Binding Path="SuperSlicerProfiles[1].Installed"/>
-										  <Binding Path="SuperSlicerProfiles[1].Items.Count"/>
+										  <Binding Path="((structures:PSProfileFolder)SuperSlicerProfiles[1]).Updates"/>
+										  <Binding Path="((structures:PSProfileFolder)SuperSlicerProfiles[1]).Installed"/>
+										  <Binding Path="((structures:PSProfileFolder)SuperSlicerProfiles[1]).Items.Count"/>
 									  </MultiBinding>
 								  </TextBlock.Text>
 							  </TextBlock>
@@ -271,21 +274,21 @@
 						  <StackPanel Grid.Row="0"
                                       Orientation="Horizontal"
                                       Spacing="1">
-							  <controls:ButtonWithIcon IsEnabled="{Binding SuperSlicerProfiles[1].Updates}"
+							  <controls:ButtonWithIcon IsEnabled="{Binding ((structures:PSProfileFolder)SuperSlicerProfiles[1]).Updates}"
                                                        Icon="fa-regular fa-square"
                                                        Text="Unselect all"
-                                                       Command="{Binding SuperSlicerProfiles[1].SelectNone}"/>
+                                                       Command="{Binding ((structures:PSProfileFolder)SuperSlicerProfiles[1]).SelectNone}"/>
 
-							  <controls:ButtonWithIcon IsEnabled="{Binding SuperSlicerProfiles[1].Updates}"
+							  <controls:ButtonWithIcon IsEnabled="{Binding ((structures:PSProfileFolder)SuperSlicerProfiles[1]).Updates}"
                                                        Icon="fa-regular fa-check-square"
                                                        Text="Select all"
-                                                       Command="{Binding SuperSlicerProfiles[1].SelectAll}"/>
+                                                       Command="{Binding ((structures:PSProfileFolder)SuperSlicerProfiles[1]).SelectAll}"/>
 
 						  </StackPanel>
 
 						  <ListBox Grid.Row="1"
                                    SelectionMode="Toggle"
-                                   ItemsSource="{Binding SuperSlicerProfiles[1].Items}"/>
+                                   ItemsSource="{Binding ((structures:PSProfileFolder)SuperSlicerProfiles[1]).Items}"/>
 					  </Grid>
 				  </uvtava:GroupBox>
 			  </Grid>

@@ -1,70 +1,74 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
-    <Authors>Tiago Conceição, sn4k3</Authors>
-    <Company>PTRTECH</Company>
-    <Copyright>Copyright © 2020 PTRTECH</Copyright>
-    <PackageLicenseFile>LICENSE</PackageLicenseFile>
-    <PackageIcon>UVtools.png</PackageIcon>
-    <PackageIconUrl />
-    <RepositoryUrl>https://github.com/sn4k3/UVtools/tree/master/UVtools.AvaloniaControls</RepositoryUrl>
-    <RepositoryType>Git</RepositoryType>
-    <PackageTags>Advanced image box; Extended numericupdown; Avalonia</PackageTags>
-    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-    <Description>AvaloniaUI Controls
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+		<Authors>Tiago Conceição, sn4k3</Authors>
+		<Company>PTRTECH</Company>
+		<Copyright>Copyright © 2020 PTRTECH</Copyright>
+		<PackageLicenseFile>LICENSE</PackageLicenseFile>
+		<PackageIcon>UVtools.png</PackageIcon>
+		<PackageIconUrl />
+		<RepositoryUrl>https://github.com/sn4k3/UVtools/tree/master/UVtools.AvaloniaControls</RepositoryUrl>
+		<RepositoryType>Git</RepositoryType>
+		<PackageTags>Advanced image box; Extended numericupdown; Avalonia</PackageTags>
+		<PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+		<Description>AvaloniaUI Controls
 - AdvancedImageBox: Pan, zoom, cursor, pixel grid and selections image box
 - ExtendedNumericUpDown: Initial value with a reset button and value unit label
 - IndexSelector: Allow to choose an index from a collection count and display the selected number
 - GroupBox: Similar to GroupBox of WinForms, it contain an Header and Content</Description>
-    <Version>3.0.0</Version>
-    <Nullable>enable</Nullable>
-    <PackageProjectUrl>https://github.com/sn4k3/UVtools</PackageProjectUrl>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
-    <Title>UVtools Avalonia Controls</Title>
-  </PropertyGroup>
+		<Version>3.0.0</Version>
+		<Nullable>enable</Nullable>
+		<PackageProjectUrl>https://github.com/sn4k3/UVtools</PackageProjectUrl>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<Title>UVtools Avalonia Controls</Title>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-  </PropertyGroup>
+	<PropertyGroup>
+		<AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-  </PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <Compile Update="**\*.xaml.cs">
-      <DependentUpon>%(Filename)</DependentUpon>
-    </Compile>
-    <AvaloniaResource Include="**\*.xaml">
-      <SubType>Designer</SubType>
-    </AvaloniaResource>
-  </ItemGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Avalonia" Version="11.0.0" />
-  </ItemGroup>
+	<ItemGroup>
+		<Compile Update="**\*.xaml.cs">
+			<DependentUpon>%(Filename)</DependentUpon>
+		</Compile>
+		<AvaloniaResource Include="**\*.xaml">
+			<SubType>Designer</SubType>
+		</AvaloniaResource>
+	</ItemGroup>
 
-  <ItemGroup>
-    <None Include="LICENSE">
-      <Pack>True</Pack>
-      <PackagePath></PackagePath>
-    </None>
-    <None Include="..\UVtools.CAD\UVtools.png">
-      <Pack>True</Pack>
-      <PackagePath></PackagePath>
-    </None>
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Avalonia" Version="11.0.0" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <None Update="README.md">
-      <Pack>True</Pack>
-      <PackagePath>\</PackagePath>
-    </None>
-  </ItemGroup>
+	<ItemGroup>
+		<None Include="LICENSE">
+			<Pack>True</Pack>
+			<PackagePath></PackagePath>
+		</None>
+		<None Include="..\UVtools.CAD\UVtools.png">
+			<Pack>True</Pack>
+			<PackagePath></PackagePath>
+		</None>
+	</ItemGroup>
 
-  <ItemGroup>
-    <UpToDateCheckInput Remove="Styles\IndexSelector.axaml" />
-  </ItemGroup>
+	<ItemGroup>
+		<None Update="README.md">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+	</ItemGroup>
+
+	<ItemGroup>
+		<UpToDateCheckInput Remove="Styles\IndexSelector.axaml" />
+	</ItemGroup>
 
 </Project>

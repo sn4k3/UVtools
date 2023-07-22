@@ -3,13 +3,15 @@
                    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                    xmlns:controls="clr-namespace:UVtools.UI.Controls"
+                   xmlns:windows="clr-namespace:UVtools.UI.Windows"
                    mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="450"
-                   x:Class="UVtools.UI.Windows.MaterialManagerWindow"
                    Title="Material manager"
                    MinWidth="900"
                    MinHeight="600"
                    WindowStartupLocation="CenterOwner"
-                   Icon="/Assets/Icons/UVtools.ico">
+                   Icon="/Assets/Icons/UVtools.ico"
+                   x:Class="UVtools.UI.Windows.MaterialManagerWindow"
+                   x:DataType="windows:MaterialManagerWindow">
 
     <Grid RowDefinitions="Auto,Auto,Auto,*">
         <Border Grid.Row="0" Padding="5">

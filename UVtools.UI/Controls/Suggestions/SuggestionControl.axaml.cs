@@ -4,13 +4,13 @@ namespace UVtools.UI.Controls.Suggestions;
 
 public partial class SuggestionControl : UserControlEx
 {
-    public Suggestion Suggestion { get; set; }
+    public Suggestion BaseSuggestion { get; set; }
 
     public SuggestionControl() : this(null!) { }
 
     public SuggestionControl(Suggestion suggestion)
     {
-        Suggestion = suggestion;
+        BaseSuggestion = suggestion;
         InitializeComponent();
         DataContext = this;
     }

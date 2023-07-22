@@ -5,8 +5,10 @@
         xmlns:controls="clr-namespace:UVtools.UI.Controls"
         xmlns:i="https://github.com/projektanker/icons.avalonia"
         xmlns:uvtava="clr-namespace:UVtools.AvaloniaControls;assembly=UVtools.AvaloniaControls"
+        xmlns:windows="clr-namespace:UVtools.UI.Windows"
         mc:Ignorable="d" d:DesignWidth="700" d:DesignHeight="450"
         x:Class="UVtools.UI.Windows.SettingsWindow"
+		x:DataType="windows:SettingsWindow"
         WindowStartupLocation="CenterOwner"
         MinWidth="600"
         Width="780"
@@ -1728,7 +1730,7 @@
 													VerticalAlignment="Center"
 													OnContent="Enabled"
 													OffContent="Disabled"
-													IsChecked="{Binding #NetworkRemotePrinterComboBox.SelectedItem.IsEnabled}" />
+													IsChecked="{ReflectionBinding #NetworkRemotePrinterComboBox.SelectedItem.IsEnabled}" />
 
 									<TextBlock Grid.Row="2" Grid.Column="0"
 											   VerticalAlignment="Center"
@@ -1737,7 +1739,7 @@
 									<TextBox Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="5"
 											 HorizontalAlignment="Stretch"
 											 VerticalAlignment="Center"
-											 Text="{Binding #NetworkRemotePrinterComboBox.SelectedItem.Name}"/>
+											 Text="{ReflectionBinding #NetworkRemotePrinterComboBox.SelectedItem.Name}"/>
 
 									<TextBlock Grid.Row="4" Grid.Column="0"
 											   VerticalAlignment="Center"
@@ -1746,7 +1748,7 @@
 									<TextBox Grid.Row="4" Grid.Column="2"
 											 HorizontalAlignment="Stretch"
 											 VerticalAlignment="Center"
-											 Text="{Binding #NetworkRemotePrinterComboBox.SelectedItem.Host}"/>
+											 Text="{ReflectionBinding #NetworkRemotePrinterComboBox.SelectedItem.Host}"/>
 
 									<TextBlock Grid.Row="4" Grid.Column="4"
 											   VerticalAlignment="Center"
@@ -1757,7 +1759,7 @@
 													Minimum="0"
 													Maximum="65535"
 													Increment="1"
-													Value="{Binding #NetworkRemotePrinterComboBox.SelectedItem.Port}"/>
+													Value="{ReflectionBinding #NetworkRemotePrinterComboBox.SelectedItem.Port}"/>
 
 									<TextBlock Grid.Row="6" Grid.Column="0"
 											   VerticalAlignment="Center"
@@ -1769,7 +1771,7 @@
 									<TextBox Grid.Row="6" Grid.Column="2" Grid.ColumnSpan="5"
 											 HorizontalAlignment="Stretch"
 											 VerticalAlignment="Center"
-											 Text="{Binding #NetworkRemotePrinterComboBox.SelectedItem.CompatibleExtensions}"/>
+											 Text="{ReflectionBinding #NetworkRemotePrinterComboBox.SelectedItem.CompatibleExtensions}"/>
 								</Grid>
 
 								<DataGrid
@@ -1781,10 +1783,10 @@
 									IsReadOnly="False"
 									SelectionMode="Extended"
 									ClipboardCopyMode="IncludeHeader"
-									ItemsSource="{Binding #NetworkRemotePrinterComboBox.SelectedItem.Requests}">
+									ItemsSource="{ReflectionBinding #NetworkRemotePrinterComboBox.SelectedItem.Requests}">
 									<DataGrid.Columns>
 										<DataGridTextColumn  Header="Type"
-															 Binding="{Binding Type}"
+															 Binding="{ReflectionBinding Type}"
 															 IsReadOnly="True"
 															 Width="Auto" />
 										<DataGridTemplateColumn  Header="Method"
@@ -1794,13 +1796,13 @@
 												<DataTemplate>
 													<ComboBox
 														HorizontalAlignment="Stretch"
-														ItemsSource="{Binding Method, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
-														SelectedItem="{Binding Method, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
+														ItemsSource="{ReflectionBinding Method, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+														SelectedItem="{ReflectionBinding Method, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
 												</DataTemplate>
 											</DataGridTemplateColumn.CellTemplate>
 										</DataGridTemplateColumn>
 										<DataGridTextColumn Header="Request path"
-															Binding="{Binding Path}"
+															Binding="{ReflectionBinding Path}"
 															IsReadOnly="False"
 															Width="*" />
 									</DataGrid.Columns>

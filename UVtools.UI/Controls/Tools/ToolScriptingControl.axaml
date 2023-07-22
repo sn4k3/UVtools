@@ -3,8 +3,10 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:i="https://github.com/projektanker/icons.avalonia"
+             xmlns:tools="clr-namespace:UVtools.UI.Controls.Tools"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             x:Class="UVtools.UI.Controls.Tools.ToolScriptingControl">
+             x:Class="UVtools.UI.Controls.Tools.ToolScriptingControl"
+             x:DataType="tools:ToolScriptingControl">
   <StackPanel Orientation="Vertical">
     <Grid RowDefinitions="Auto"
           ColumnDefinitions="Auto,10,500,5,Auto">

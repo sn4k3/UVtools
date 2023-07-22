@@ -8,6 +8,10 @@
     - (Add) Theme density which only applies to Fluent theme
     - (Change) Themes: Rename "Default" to "Simple"
     - (Remove) Simple theme
+  - **Exposure time finder:**
+    - (Fix) "Multiple layer height" panel visibility was wrongly check for `ExposureTime` instead of `PositionZ`
+    - (Fix) "Multiple exposures" panel was always visible even if not able
+  - (Fix) Some invalid bindings
   - (Fix) Save properties to disk/clipboard was disabled when file has no thumbnails
   - (Fix) File - Reset layer properties was no unlocking the File - Save
 - **Layer actions - Import layer(s):**
@@ -23,6 +27,7 @@
   - (Change) Rename UVtools.WPF to UVtools.UI
   - (Change) Make UVtools.UI nullable enabled
   - (Remove) UVtools.GUI
+  - (Improvement) Use CompiledBinding instead of ReflectionBinding
   - (Upgrade) .NET from 6.0.18 to 6.0.20
   - (Upgrade) AvaloniaUI from 0.10.21 to 11.0
 
