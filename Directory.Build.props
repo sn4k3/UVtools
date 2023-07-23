@@ -1,5 +1,41 @@
 <Project>
     <PropertyGroup>
-        <PathMap>$(MSBuildProjectDirectory)=$(MSBuildProjectName)</PathMap>
+	    <TargetFramework>net6.0</TargetFramework>
+
+	    <Authors>Tiago Conceição, sn4k3</Authors>
+	    <Company>PTRTECH</Company>
+	    <Copyright>Copyright 2020-$([System.DateTime]::Now.ToString(`yyyy`)) © PTRTECH</Copyright>
+	    <Description>MSLA/DLP, file analysis, calibration, repair, conversion and manipulation</Description>
+
+	    <ApplicationIcon>$(MSBuildThisFileDirectory)UVtools.CAD\UVtools.ico</ApplicationIcon>
+	    <PackageIcon>$(MSBuildThisFileDirectory)UVtools.CAD\UVtools.png</PackageIcon>
+		<PackageLicenseExpression>AGPL-3.0</PackageLicenseExpression>
+		<PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+		<RepositoryUrl>https://github.com/sn4k3/UVtools</RepositoryUrl>
+		<PackageProjectUrl>https://github.com/sn4k3/UVtools</PackageProjectUrl>
+		<PackageReleaseNotes>https://github.com/sn4k3/UVtools/releases</PackageReleaseNotes>
+	    <PackageTags>msla, dlp, resin, printer, slicer, 3d printing, image processing, layers</PackageTags>
+		<RepositoryType>Git</RepositoryType>
+
+	    <Nullable>enable</Nullable>
+
+	    <SignAssembly>True</SignAssembly>
+	    <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)build\UVtools.snk</AssemblyOriginatorKeyFile>
+
+		<PathMap>$(MSBuildProjectDirectory)=$(MSBuildProjectName)</PathMap>
     </PropertyGroup>
+
+	<Choose>
+		<When Condition="Exists('$(MSBuildProjectDirectory)README.md')">
+			<PropertyGroup>
+				<PackageReadmeFile>$(MSBuildProjectDirectory)README.md"</PackageReadmeFile>
+			</PropertyGroup>
+		</When>
+		<When Condition="Exists('$(MSBuildThisFileDirectory)README.md')">
+			<PropertyGroup>
+				<PackageReadmeFile>$(MSBuildThisFileDirectory)README.md"</PackageReadmeFile>
+			</PropertyGroup>
+		</When>
+	</Choose>
+
 </Project>

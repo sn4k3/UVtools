@@ -2,22 +2,10 @@
 
 	<PropertyGroup>
 		<OutputType>Exe</OutputType>
-		<TargetFramework>net6.0</TargetFramework>
-		<AssemblyName>UVtoolsCmd</AssemblyName>
-		<ApplicationIcon>UVtools.ico</ApplicationIcon>
-		<Version>2.0.0</Version>
-		<Authors>Tiago Conceição, sn4k3</Authors>
-		<Company>PTRTECH</Company>
-		<PackageLicenseFile>LICENSE</PackageLicenseFile>
-		<RepositoryUrl>https://github.com/sn4k3/UVtools</RepositoryUrl>
-		<PackageIcon>UVtools.png</PackageIcon>
-		<PackageProjectUrl>https://github.com/sn4k3/UVtools</PackageProjectUrl>
-		<Description>MSLA/DLP, file analysis, repair, conversion and manipulation</Description>
-		<Copyright>Copyright © 2020 PTRTECH</Copyright>
-		<RepositoryType>Git</RepositoryType>
-		<PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
 		<Platforms>AnyCPU;x64</Platforms>
-		<Nullable>enable</Nullable>
+		<AssemblyName>UVtoolsCmd</AssemblyName>
+		<Description>Commandline utility for UVtools</Description>
+		<Version>2.0.0</Version>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -26,13 +14,6 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\UVtools.Core\UVtools.Core.csproj" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<None Include="..\LICENSE">
-			<Pack>True</Pack>
-			<PackagePath></PackagePath>
-		</None>
 	</ItemGroup>
 
 </Project>
