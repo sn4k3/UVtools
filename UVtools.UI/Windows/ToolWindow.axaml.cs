@@ -331,7 +331,7 @@ public partial class ToolWindow : WindowEx
         }
     }
 
-    public System.Drawing.Point[][] Masks => App.MainWindow.MaskPoints.ToArray();
+    public Point[][] Masks => App.MainWindow.MaskPoints.ToArray();
 
     public bool ClearROIAndMaskAfterOperation
     {
@@ -602,7 +602,7 @@ public partial class ToolWindow : WindowEx
             IsROIVisible = true;
         }
 
-        if (Masks?.Length > 0)
+        if (Masks.Length > 0)
         {
             IsMasksVisible = true;
         }

@@ -6,8 +6,6 @@
  *  of this license document, but changing it is not allowed.
  */
 
-using Emgu.CV;
-using Emgu.CV.CvEnum;
 using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Engines;
 using Org.BouncyCastle.OpenSsl;

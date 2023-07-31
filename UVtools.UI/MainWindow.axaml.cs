@@ -724,7 +724,7 @@ public partial class MainWindow : WindowEx
         {
             this.MessageBoxInfo($"Age: {About.AgeStr}\n" +
                                 $"This message will only show today, see you in next year!\n" +
-                                $"Thank you for using {About.Software}.", $"Today it's the {About.Software} birthday!").ConfigureAwait(false);
+                                $"Thank you for using {About.Software}.", $"Today it's the {About.Software} birthday!").ConfigureAwait(true);
         }*/
     }
 
@@ -1188,6 +1188,7 @@ public partial class MainWindow : WindowEx
     public void MenuHelpDebugThrowExceptionClicked()
     {
         var i = 1 / new Random().Next(0);
+        Debug.WriteLine(i);
     }
 
     public async void MenuHelpDebugLongMessageBoxClicked()

@@ -2731,6 +2731,16 @@
             <param name="input">byte array to decompress</param>
             <returns>Decompressed byte array</returns>
         </member>
+        <member name="M:UVtools.Core.FileFormats.FileFormat.Compare(UVtools.Core.FileFormats.FileFormat,UVtools.Core.FileFormats.FileFormat,System.Boolean,System.String[])">
+            <summary>
+            Compares file a with file b
+            </summary>
+            <param name="left">Left file</param>
+            <param name="right">Right file</param>
+            <param name="compareLayers">True if you also want to compare layers</param>
+            <param name="onlyProperties">A list of strict properties to compare</param>
+            <returns></returns>
+        </member>
         <member name="P:UVtools.Core.FileFormats.FileFormat.FileType">
             <summary>
             Gets the file format type

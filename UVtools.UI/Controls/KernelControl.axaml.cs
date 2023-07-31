@@ -28,12 +28,12 @@ public partial class KernelControl : UserControlEx
         DataContext = this;
     }
 
-    public void GenerateKernel()
+    public async void GenerateKernel()
     {
         if (_kernel is null) return;
         if (_kernel.MatrixWidth <= _kernel.AnchorX || _kernel.MatrixHeight <= _kernel.AnchorY)
         {
-            App.MainWindow.MessageBoxError("Anchor position X/Y can't be higher or equal than size X/Y\nPlease fix the values.", "Invalid anchor position").ConfigureAwait(false);
+            await App.MainWindow.MessageBoxError("Anchor position X/Y can't be higher or equal than size X/Y\nPlease fix the values.", "Invalid anchor position");
             return;
         }
 

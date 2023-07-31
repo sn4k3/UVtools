@@ -89,9 +89,9 @@ public class App : Application
         _fluentTheme.DensityStyle = UserSettings.Instance.General.ThemeDensity;
 
         bool isFluentTheme = theme is ApplicationTheme.FluentSystem or ApplicationTheme.FluentLight or ApplicationTheme.FluentDark;
-        bool isLightTheme = theme is ApplicationTheme.FluentLight //or ApplicationTheme.SimpleLight 
-                            || (theme == ApplicationTheme.FluentSystem && app.ActualThemeVariant == ThemeVariant.Light);
-                            //|| (theme == ApplicationTheme.SimpleSystem && app.ActualThemeVariant == ThemeVariant.Light);
+        //bool isLightTheme = theme is ApplicationTheme.FluentLight //or ApplicationTheme.SimpleLight 
+        //                    || (theme == ApplicationTheme.FluentSystem && app.ActualThemeVariant == ThemeVariant.Light);
+        //                    //|| (theme == ApplicationTheme.SimpleSystem && app.ActualThemeVariant == ThemeVariant.Light);
 
         var styleCount = 0;
         if (isFluentTheme)
@@ -124,7 +124,7 @@ public class App : Application
             {
                 mainWindow.MessageBoxInfo(
                     "The theme has changed to a different theme type, please save your work and restart program in order to apply the new theme.",
-                    "Theme changing requires restart.");
+                    "Theme changing requires restart.").ConfigureAwait(true);
                 //app.Styles.RemoveAt(0);
                 //app.Styles.Insert(0, _themeStylesContainer);
                 /*var oldWindow = desktopLifetime.MainWindow;
@@ -165,25 +165,6 @@ public class App : Application
         {
             UserSettings.Load();
             UserSettings.SetVersion();
-
-            /*ThemeSelector = ThemeSelector.Create(Path.Combine(ApplicationPath, "Assets", "Themes"));
-            ThemeSelector.LoadSelectedTheme(Path.Combine(UserSettings.SettingsFolder, "selected.theme"));
-            if (ThemeSelector.SelectedTheme.Name == "UVtoolsDark" || ThemeSelector.SelectedTheme.Name == "Light")
-            {
-                foreach (var theme in ThemeSelector.Themes)
-                {
-                    if (theme.Name != "UVtoolsLight") continue;
-                    theme.ApplyTheme();
-                    break;
-                }
-            }*/
-
-            /*if (!CvInvoke.Init())
-            {
-                Console.WriteLine("UVtools can not init OpenCV library\n" +
-                                  "Please build or install this dependencies in order to run UVtools\n" +
-                                  "Check manual or page at 'Requirements' section for help");
-            }*/
 
             if (Program.IsCrashReport)
             {
@@ -421,7 +402,7 @@ public class App : Application
 
 #endregion
 
-#region Assembly properties
+    #region Assembly properties
     public static Assembly MyAssembly => Assembly.GetExecutingAssembly();
 
     public static string AssemblyVersion => MyAssembly.GetName().Version?.ToString()!;

@@ -103,7 +103,7 @@ public sealed class CXDLPFile : FileFormat
 
             if (MagicSize - 1 != Magic.Length || !Magic.StartsWith(HEADER_VALUE_GENERIC))
             {
-                throw new FileLoadException($"Invalid header data for CXDLP file.");
+                throw new FileLoadException("Invalid header data for CXDLP file.");
             }
         }
 

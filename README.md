@@ -177,18 +177,17 @@ Options:
   -?, -h, --help  Show help and usage information
 
 Commands:
-  set-properties <input-file> <property=value>               Set properties in a file or to it layers with new values
-  run <input-file> <classes/files>                           Run operations, suggestions and/or scripts
-  convert <input-file> <target-type/ext> <output-file>       Convert input file into a output file format by a known
-                                                             type or extension []
-  extract <input-file> <output-folder>                       Extract file contents to a folder []
-  copy-parameters <input-file> <target-files>                Copy print parameters from one file to another
-  set-preview, set-thumbnail <input-file> <file path|layer   Sets and replace thumbnail(s) in the file [default:
-  index|:random-layer|:heatmap>                              :heatmap]
-  print-issues <input-file>                                  Detect and print issues
-  print-properties <input-file>                              Prints available properties
-  print-gcode <input-file>                                   Prints the gcode of the file if available
-  print-machines                                             Prints machine settings
+  set-properties <input-file> <property=value>                                            Set properties in a file or to it layers with new values
+  run <input-file> <classes/files>                                                        Run operations, suggestions and/or scripts
+  convert <input-file> <target-type/ext> <output-file>                                    Convert input file into a output file format by a known type or extension []
+  extract <input-file> <output-folder>                                                    Extract file contents to a folder []
+  copy-parameters <input-file> <target-files>                                             Copy print parameters from one file to another
+  set-preview, set-thumbnail <input-file> <file path|layer index|:random-layer|:heatmap>  Sets and replace thumbnail(s) in the file [default: :heatmap]
+  compare <input-file-a> <input-file-b>                                                   Compare two files and output the differences
+  print-issues <input-file>                                                               Detect and print issues
+  print-properties <input-file>                                                           Prints available properties
+  print-gcode <input-file>                                                                Prints the gcode of the file if available
+  print-machines                                                                          Prints machine settings
 ```
 
 Note: On each command you can use -? to see specific command help and extra options

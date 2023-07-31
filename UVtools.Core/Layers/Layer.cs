@@ -760,7 +760,7 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
             if (IsFirstLayer) return _positionZ;
             var previousLayer = this;
 
-            while ((previousLayer = previousLayer!.PreviousLayer) is not null) // This cycle returns the correct layer height if two or more layers have the same position z
+            while ((previousLayer = previousLayer.PreviousLayer) is not null) // This cycle returns the correct layer height if two or more layers have the same position z
             {
                 var layerHeight = RoundHeight(_positionZ - previousLayer.PositionZ);
                 //Debug.WriteLine($"Layer {_index}-{previousLayer.Index}: {_positionZ} - {previousLayer.PositionZ}: {layerHeight}");

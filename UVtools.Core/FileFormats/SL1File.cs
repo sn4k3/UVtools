@@ -6,8 +6,6 @@
  *  of this license document, but changing it is not allowed.
  */
 
-using Emgu.CV;
-using Emgu.CV.CvEnum;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;

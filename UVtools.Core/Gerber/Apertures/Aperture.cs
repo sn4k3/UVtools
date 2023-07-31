@@ -14,7 +14,6 @@ using System.Drawing;
 using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
-using UVtools.Core.Extensions;
 
 namespace UVtools.Core.Gerber.Apertures;
 

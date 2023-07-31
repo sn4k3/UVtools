@@ -599,7 +599,7 @@ public sealed class CTBEncryptedFile : FileFormat
         new(200, 125)
     };
 
-    public Preview[] Previews { get; private set; }
+    public Preview[] Previews { get; }
 
     public FileHeader Header { get; private set; } = new();
 
@@ -1025,13 +1025,6 @@ public sealed class CTBEncryptedFile : FileFormat
     public CTBEncryptedFile()
     {
         Previews = new Preview[ThumbnailCountFileShouldHave];
-
-        /*if (Bigfoot is not null && Bigfoot[0] == 0 && File.Exists("MAGIC.ectb"))
-        {
-            using var fs = new FileStream("MAGIC.ectb", FileMode.Open);
-            fs.ReadBytes(Bigfoot);
-            fs.ReadBytes(CookieMonster);
-        }*/
     }
     #endregion
 
@@ -1343,7 +1336,7 @@ public sealed class CTBEncryptedFile : FileFormat
             var layerDef = new LayerDef(this, this[layerIndex]);
             using (var mat = this[layerIndex].LayerMat)
             {
-                layerDef.EncodeImage(mat!, (uint)layerIndex);
+                layerDef.EncodeImage(mat, (uint)layerIndex);
                 LayersDefinition[layerIndex] = layerDef;
             }
 

@@ -1929,7 +1929,7 @@ public sealed class ChituboxFile : FileFormat
                     for (byte aaIndex = 0; aaIndex < HeaderSettings.AntiAliasLevel; aaIndex++)
                     {
                         var layerDef = new LayerDef(this, this[layerIndex]);
-                        layerDef.Encode(mat!, aaIndex, (uint)layerIndex);
+                        layerDef.Encode(mat, aaIndex, (uint)layerIndex);
                         LayerDefinitions[aaIndex, layerIndex] = layerDef;
                     }
                 }

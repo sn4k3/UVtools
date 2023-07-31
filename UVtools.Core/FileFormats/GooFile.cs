@@ -222,7 +222,7 @@ public sealed class GooFile : FileFormat
 
             if (DataLength <= 3) return mat;
 
-            if (EncodedRle![0] != LayerMagic) throw new MessageException($"RLE for layer {layerIndex} is corrupted, should start with {LayerMagic} but got {EncodedRle[0]}");
+            if (EncodedRle[0] != LayerMagic) throw new MessageException($"RLE for layer {layerIndex} is corrupted, should start with {LayerMagic} but got {EncodedRle[0]}");
 
             int pixel = 0;
             var lastByteIndex = DataLength - 1;

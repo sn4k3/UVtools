@@ -617,7 +617,7 @@ public sealed class FDGFile : FileFormat
 
     public Header HeaderSettings { get; private set; } = new();
 
-    public Preview[] Previews { get; private set; }
+    public Preview[] Previews { get; }
 
     public LayerDef[] LayersDefinitions { get; private set; } = null!;
 

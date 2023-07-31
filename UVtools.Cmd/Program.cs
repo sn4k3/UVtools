@@ -46,6 +46,8 @@ internal class Program
             CopyParametersCommand.CreateCommand(),
             SetThumbnailCommand.CreateCommand(),
 
+            CompareCommand.CreateCommand(),
+
             PrintIssuesCommand.CreateCommand(),
             PrintPropertiesCommand.CreateCommand(),
             //PrintLayersCommand.CreateCommand(),

@@ -16,7 +16,18 @@
         Title="Tool"
         Icon="/Assets/Icons/UVtools.ico">
 
-   <Grid RowDefinitions="Auto,Auto,Auto,Auto,*,Auto">
+    <controls:WindowEx.KeyBindings>
+        <KeyBinding Gesture="Ctrl+Shift+A" Command="{Binding SelectAllLayers}"/>
+        <KeyBinding Gesture="Ctrl+Shift+C" Command="{Binding SelectCurrentLayer}"/>
+        <KeyBinding Gesture="Ctrl+Alt+F" Command="{Binding SelectFirstToCurrentLayer}"/>
+        <KeyBinding Gesture="Ctrl+Alt+L" Command="{Binding SelectCurrentToLastLayer}"/>
+        <KeyBinding Gesture="Ctrl+Shift+B" Command="{Binding SelectBottomLayers}"/>
+        <KeyBinding Gesture="Ctrl+Shift+N" Command="{Binding SelectNormalLayers}"/>
+        <KeyBinding Gesture="Ctrl+Shift+F" Command="{Binding SelectFirstLayer}"/>
+        <KeyBinding Gesture="Ctrl+Shift+L" Command="{Binding SelectLastLayer}"/>
+    </controls:WindowEx.KeyBindings>
+
+    <Grid RowDefinitions="Auto,Auto,Auto,Auto,*,Auto">
     
     <!-- Description -->
     <Border Grid.Row="0"
@@ -29,6 +40,7 @@
                   Header="Description (Click to toggle)">
 
             <SelectableTextBlock MaxWidth="{Binding DescriptionMaxWidth}"
+                                 HorizontalAlignment="Left"
                                  TextWrapping="Wrap"
                                  FontSize="16"
                                  Text="{Binding Description}"/>
@@ -99,61 +111,58 @@
 			   <DropDownButton.Flyout>
 				   <MenuFlyout Placement="Bottom">
 					   <MenuItem Header="_All layers"
-								 HotKey="Ctrl + Shift + A" InputGesture="Ctrl + Shift + A"
+								 InputGesture="Ctrl + Shift + A"
 								 Command="{Binding SelectAllLayers}"/>
 
 					   <MenuItem Header="_Current layer"
-								 HotKey="Ctrl + Shift + C" InputGesture="Ctrl + Shift + C"
+								 InputGesture="Ctrl + Shift + C"
 								 Command="{Binding SelectCurrentLayer}"/>
 
 					   <Separator />
 
 					   <MenuItem Header="From first to current layer"
-								 HotKey="Ctrl + Alt + F" InputGesture="Ctrl + Alt + F"
+								 InputGesture="Ctrl + Alt + F"
 								 Command="{Binding SelectFirstToCurrentLayer}"/>
 
 					   <MenuItem Header="From current to last layer"
-								 HotKey="Ctrl + Alt + L" InputGesture="Ctrl + Alt + L"
+								 InputGesture="Ctrl + Alt + L"
 								 Command="{Binding SelectCurrentToLastLayer}"/>
 
 					   <Separator />
 
 					   <MenuItem Header="_Bottom layers"
-								 HotKey="Ctrl + Shift + B" InputGesture="Ctrl + Shift + B"
+								 InputGesture="Ctrl + Shift + B"
 								 Command="{Binding SelectBottomLayers}"/>
 
 					   <MenuItem Header="_Normal layers"
-								 HotKey="Ctrl + Shift + N" InputGesture="Ctrl + Shift + N"
+								 InputGesture="Ctrl + Shift + N"
 								 Command="{Binding SelectNormalLayers}"/>
 
 					   <Separator />
 
 					   <MenuItem Header="_First layer"
-								 HotKey="Ctrl + Shift + F" InputGesture="Ctrl + Shift + F"
+								 InputGesture="Ctrl + Shift + F"
 								 Command="{Binding SelectFirstLayer}"/>
 
 					   <MenuItem Header="_Last layer"
-								 HotKey="Ctrl + Shift + L" InputGesture="Ctrl + Shift + L"
+								 InputGesture="Ctrl + Shift + L"
 								 Command="{Binding SelectLastLayer}"/>
 				   </MenuFlyout>
 			   </DropDownButton.Flyout>
 		   </DropDownButton>
 
-		   <TextBlock
-			 Grid.Row="2" Grid.Column="1"
-			 HorizontalAlignment="Center"
-			 Text="{Binding LayerStartMM, StringFormat=({0:F3}mm)}" />
+		   <TextBlock Grid.Row="2" Grid.Column="1"
+                      HorizontalAlignment="Center"
+                      Text="{Binding LayerStartMM, StringFormat=({0:F3}mm)}" />
 
-		   <TextBlock
-			 Grid.Row="2" Grid.Column="3"
-			 HorizontalAlignment="Center"
-			 Text="{Binding LayerEndMM, StringFormat=({0:F3}mm)}" />
+		   <TextBlock Grid.Row="2" Grid.Column="3"
+                      HorizontalAlignment="Center"
+                      Text="{Binding LayerEndMM, StringFormat=({0:F3}mm)}" />
 
-		   <TextBlock
-			 Grid.Row="2" Grid.Column="4"
-			 Margin="10,0,0,0"
-			 HorizontalAlignment="Center"
-			 Text="{Binding LayerRangeCountStr}" />
+		   <TextBlock Grid.Row="2" Grid.Column="4"
+                      Margin="10,0,0,0"
+                      HorizontalAlignment="Center"
+                      Text="{Binding LayerRangeCountStr}" />
 
 	   </Grid>
    </uvtava:ScrollGroupBox>

@@ -56,7 +56,7 @@ public static class SizeExtensions
     public static Size Multiply(this Size size, double dxy) => new((int)(size.Width * dxy), (int)(size.Height * dxy));
     public static Size Multiply(this Size size, double dx, double dy) => new((int)(size.Width * dx), (int)(size.Height * dy));
 
-    public static Size Divide(this Size size, Size otherSize) => new(otherSize.Width == 0 ? 0 : size.Width / otherSize.Width, (int)(otherSize.Height == 0 ? 0 : size.Height / otherSize.Height));
+    public static Size Divide(this Size size, Size otherSize) => new(otherSize.Width == 0 ? 0 : size.Width / otherSize.Width, otherSize.Height == 0 ? 0 : size.Height / otherSize.Height);
     public static Size Divide(this Size size, SizeF otherSize) => new((int)(otherSize.Width == 0 ? 0 : size.Width / otherSize.Width), (int)(otherSize.Height == 0 ? 0 : size.Height / otherSize.Height));
     public static Size Divide(this Size size) => size.Divide(size);
     public static Size Divide(this Size size, double dxy) => dxy == 0 ? Size.Empty : new((int)(size.Width / dxy), (int)(size.Height / dxy));

@@ -11,6 +11,9 @@
   - **Exposure time finder:**
     - (Fix) "Multiple layer height" panel visibility was wrongly check for `ExposureTime` instead of `PositionZ`
     - (Fix) "Multiple exposures" panel was always visible even if not able
+  - **Tool windows:**
+    - (Fix) Align the description to the left to fix the misalignment when resizing the window
+    - (Fix) Make layer selection shortcuts to work
   - (Fix) Some invalid bindings
   - (Fix) Save properties to disk/clipboard was disabled when file has no thumbnails
   - (Fix) File - Reset layer properties was no unlocking the File - Save
@@ -24,13 +27,14 @@
   - (Fix) SL1: Files with thumbnails size different from original SL1 would not display under the UI
   - (Fix) Anycubic: Model information is not set after an auto-conversion from SL1
 - **Project:**
+  - (Add) UVtoolsCmd: compare command to compare two files and output the differences
   - (Change) Rename UVtools.WPF to UVtools.UI
   - (Change) Make UVtools.UI nullable enabled
   - (Remove) UVtools.GUI
   - (Improvement) Use CompiledBinding instead of ReflectionBinding
   - (Improvement) Sign the libraries and project with a strong key
   - (Upgrade) .NET from 6.0.18 to 6.0.20
-  - (Upgrade) AvaloniaUI from 0.10.21 to 11.0
+  - (Upgrade) AvaloniaUI from 0.10.21 to 11.0.1
 
 ## 30/06/2023 - v3.15.1
 

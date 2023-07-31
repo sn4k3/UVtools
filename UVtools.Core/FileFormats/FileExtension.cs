@@ -100,7 +100,7 @@ public sealed class FileExtension : IEquatable<FileExtension>, IEquatable<string
 
     public override int GetHashCode()
     {
-        return (Extension != null ? Extension.GetHashCode() : 0);
+        return (Extension.GetHashCode());
     }
 
     private sealed class ExtensionEqualityComparer : IEqualityComparer<FileExtension>
@@ -116,7 +116,7 @@ public sealed class FileExtension : IEquatable<FileExtension>, IEquatable<string
 
         public int GetHashCode(FileExtension obj)
         {
-            return (obj.Extension != null ? obj.Extension.GetHashCode() : 0);
+            return (obj.Extension.GetHashCode());
         }
     }
 

@@ -58,7 +58,7 @@ public static class StreamExtensions
 
     public static async Task CopyToAsync(this Stream source, Stream destination, IProgress<long>? progress = null, CancellationToken cancellationToken = default)
     {
-        await CopyToAsync(source, destination, DefaultCopyBufferSize, progress, cancellationToken);
+        await CopyToAsync(source, destination, DefaultCopyBufferSize, progress, cancellationToken).ConfigureAwait(false);
     }
 
     public static MemoryStream ToStream(this byte[] arr)

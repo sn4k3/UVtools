@@ -628,11 +628,11 @@ public sealed class FlashForgeSVGXFile : FileFormat
 
             var group = SVGDocument.Groups.FirstOrDefault(g => g.Id == $"layer-{layerIndex}");
 
-            if (@group is not null)
+            if (group is not null)
             {
                 var pointsOfPoints = new List<Point[]>();
                 var points = new List<Point>();
-                foreach (var path in @group.Paths)
+                foreach (var path in group.Paths)
                 {
                     progress.PauseOrCancelIfRequested();
                     var spaceSplit = path.Value.Split(' ',

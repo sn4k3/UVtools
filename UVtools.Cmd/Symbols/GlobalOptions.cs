@@ -19,4 +19,5 @@ internal static class GlobalOptions
     internal static Option<FileInfo> OutputFile { get; } = new(new[] { "-o", "--output" }, "Output file to save");
 
     internal static Option<bool> OpenInPartialMode { get; } = new(new[] { "--partial-mode" }, "Fast load the file in partial mode");
+    internal static Option<bool> OpenInFullMode { get; } = new(new[] { "--full-mode" }, "Load the file in full/complete mode");
 }

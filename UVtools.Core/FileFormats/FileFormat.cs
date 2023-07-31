@@ -12,7 +12,6 @@ using Emgu.CV.Structure;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Data;
 using System.Diagnostics;
@@ -355,7 +354,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
 
         public override int GetHashCode()
         {
-            return (Name != null ? Name.GetHashCode() : 0);
+            return (Name.GetHashCode());
         }
 
         public override string ToString()
@@ -620,7 +619,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
 
     public static float RoundDisplaySize(float value) => (float) Math.Round(value, DisplayFloatPrecision);
     public static double RoundDisplaySize(double value) => Math.Round(value, DisplayFloatPrecision);
-    public static decimal RoundDisplaySize(decimal value) => (decimal) Math.Round(value, DisplayFloatPrecision);
+    public static decimal RoundDisplaySize(decimal value) => Math.Round(value, DisplayFloatPrecision);
 
     /// <summary>
     /// Copy parameters from one file to another
@@ -986,6 +985,80 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             out float iterationSteps, out int maxIteration);
         return MutateGetIterationVar(isFade, iterationsStart, iterationsEnd, iterationSteps, maxIteration, startLayerIndex, layerIndex);
     }
+
+	/// <summary>
+	/// Compares file a with file b
+	/// </summary>
+	/// <param name="left">Left file</param>
+	/// <param name="right">Right file</param>
+	/// <param name="compareLayers">True if you also want to compare layers</param>
+	/// <param name="onlyProperties">A list of strict properties to compare</param>
+	/// <returns></returns>
+	public static FileFormatComparison Compare(FileFormat left, FileFormat right, bool compareLayers = true, params string[] onlyProperties)
+    {
+	    FileFormatComparison comparison = new();
+	    
+        void CheckAddProperties(object a, object b, uint? layerIndex = null)
+	    {
+		    var properties = ReflectionExtensions.GetProperties(a);
+		    foreach (var aProperty in properties)
+		    {
+			    if (aProperty.GetMethod is null || !(aProperty.PropertyType.IsPrimitive ||
+			                                         aProperty.PropertyType == typeof(decimal) ||
+			                                         aProperty.PropertyType == typeof(string) ||
+			                                         aProperty.PropertyType == typeof(Point) ||
+			                                         aProperty.PropertyType == typeof(PointF) ||
+			                                         aProperty.PropertyType == typeof(Size) ||
+			                                         aProperty.PropertyType == typeof(SizeF) ||
+			                                         aProperty.PropertyType == typeof(Rectangle) ||
+			                                         aProperty.PropertyType == typeof(RectangleF) ||
+			                                         aProperty.PropertyType == typeof(DateTime) ||
+			                                         aProperty.PropertyType == typeof(TimeSpan) ||
+			                                         aProperty.PropertyType == typeof(TimeOnly)
+				        )) continue;
+
+			    if (onlyProperties.Length > 0 && !onlyProperties.Contains(aProperty.Name)) continue;
+
+			    var bProperty = b.GetType().GetProperty(aProperty.Name);
+				if (bProperty is null) continue;
+
+				var aValue = aProperty.GetValue(a);
+			    var bValue = bProperty.GetValue(b);
+
+				if (Equals(aValue, bValue)) continue;
+
+			    if (layerIndex is null)
+			    {
+				    comparison.Global.Add(new ComparisonItem(aProperty.Name, aValue, bValue));
+			    }
+			    else
+			    {
+				    if (!comparison.Layers.TryGetValue(layerIndex.Value, out var list))
+				    {
+					    list = new List<ComparisonItem>();
+                        comparison.Layers.Add(layerIndex.Value, list);
+				    }
+					    
+				    list.Add(new ComparisonItem(aProperty.Name, aValue, bValue));
+			    }
+			}
+        }
+
+        CheckAddProperties(left, right);
+
+
+		if (compareLayers)
+	    {
+		    var commonLayers = Math.Min(left.LayerCount, right.LayerCount);
+		    //var diffLayers = Math.Abs(a.Count - b.Count);
+		    for (uint layerIndex = 0; layerIndex < commonLayers; layerIndex++)
+		    {
+                CheckAddProperties(left[layerIndex], right[layerIndex], layerIndex);
+			}
+	    }
+
+	    return comparison;
+    }
     #endregion
 
     #region Members
@@ -1346,6 +1419,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
 
                 for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++) // Forced sanitize
                 {
+                    // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
                     if (_layers[layerIndex] is null) // Make sure no layer is null
                     {
                         _layers[layerIndex] = new Layer(layerIndex, this)
@@ -1568,7 +1642,6 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         {
             for (uint i = 0; i < LayerCount; i++)
             {
-                if (this[i] is null) continue;
                 this[i].IsModified = value;
             }
         }
@@ -1996,7 +2069,6 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get
         {
             if (BottomLayerCount == 0) return 0;
-            if (_layers is null) return uint.MaxValue;
             int layerCount = (int)LayerCount - BottomLayerCount - 1;
             if (layerCount <= 0) return 0;
             return (uint)layerCount;
@@ -2869,7 +2941,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         {
             if (LayerCount == 0) return 0;
             float time = ExtraPrintTime;
-            bool computeGeneral = _layers is null;
+            bool computeGeneral = false;
             if (!computeGeneral)
             {
                 foreach (var layer in this)
@@ -4384,7 +4456,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             uint i = 0;
             foreach (var thumbnail in Thumbnails)
             {
-                if (thumbnail is null)
+                if (thumbnail.IsEmpty)
                 {
                     continue;
                 }

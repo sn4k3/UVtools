@@ -150,4 +150,9 @@ public static class ReflectionExtensions
             }
         }
     }
+
+    public static PropertyInfo[] GetProperties(object obj)
+    {
+	    return obj.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public);
+    }
 }

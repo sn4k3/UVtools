@@ -53,14 +53,14 @@ public class ToolControl : ToolBaseControl
         if (_baseOperation is null)
         {
             App.MainWindow.MessageBoxInfo("The operation does not contain a valid configuration.\n" +
-                                          "Please contact the support/developer.", _baseOperation?.NotSupportedTitle).ConfigureAwait(false);
+                                          "Please contact the support/developer.", _baseOperation?.NotSupportedTitle).ConfigureAwait(true);
             CanRun = false;
             return false;
         }
 
         if (!_baseOperation.ValidateSpawn(out var message))
         {
-            App.MainWindow.MessageBoxInfo(message!, _baseOperation!.NotSupportedTitle).ConfigureAwait(false);
+            App.MainWindow.MessageBoxInfo(message!, _baseOperation!.NotSupportedTitle).ConfigureAwait(true);
             CanRun = false;
             return false;
         }

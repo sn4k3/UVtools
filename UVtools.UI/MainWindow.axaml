@@ -15,7 +15,29 @@
         MinHeight="600"
         DragDrop.AllowDrop="True">
 
-	<Grid RowDefinitions="*" ColumnDefinitions="*">
+	<uc:WindowEx.KeyBindings>
+		<KeyBinding Gesture="Ctrl+O" Command="{Binding MenuFileOpenClicked}"/>
+		<KeyBinding Gesture="Ctrl+Shift+O" Command="{Binding MenuFileOpenNewWindowClicked}"/>
+		<KeyBinding Gesture="Ctrl+F5" Command="{Binding ReloadFile}"/>
+		<KeyBinding Gesture="Ctrl+F2" Command="{Binding MenuFileRenameClicked}"/>
+		<KeyBinding Gesture="Ctrl+S" Command="{Binding MenuFileSaveClicked}"/>
+		<KeyBinding Gesture="Ctrl+Shift+S" Command="{Binding MenuFileSaveAsClicked}"/>
+		<KeyBinding Gesture="Ctrl+W" Command="{Binding OnMenuFileCloseFile}"/>
+		<KeyBinding Gesture="Ctrl+P" Command="{Binding IPrintedThisFile}"/>
+		<KeyBinding Gesture="Ctrl+P" Command="{Binding IPrintedThisFile}"/>
+		<KeyBinding Gesture="Ctrl+Shift+L" Command="{Binding MenuFileOpenContainingFolderClicked}"/>
+		<KeyBinding Gesture="Ctrl+E" Command="{Binding ExtractFile}"/>
+		<KeyBinding Gesture="Ctrl+Shift+T" Command="{Binding OpenTerminal}"/>
+		<KeyBinding Gesture="F11" Command="{Binding OnMenuFileFullscreen}"/>
+		<KeyBinding Gesture="F12" Command="{Binding MenuFileSettingsClicked}"/>
+
+		<KeyBinding Gesture="F1" Command="{Binding MenuHelpAboutClicked}"/>
+		<KeyBinding Gesture="Ctrl+F1" Command="{Binding OpenHomePage}"/>
+		<KeyBinding Gesture="F10" Command="{Binding MenuHelpMaterialManagerClicked}"/>
+		<KeyBinding Gesture="F10" Command="{Binding MenuHelpMaterialManagerClicked}"/>
+    </uc:WindowEx.KeyBindings>
+
+    <Grid RowDefinitions="*" ColumnDefinitions="*">
 		<DockPanel Grid.Row="0" Grid.Column="0" IsEnabled="{Binding IsGUIEnabled}">
 			<Menu DockPanel.Dock="Top">
 				<MenuItem Name="MainMenuFile" Header="_File">
@@ -102,7 +124,8 @@
                         </MenuItem.IsEnabled>
                     </MenuItem>
 
-                        <MenuItem Header="I _printed this file" HotKey="Ctrl+P" InputGesture="Ctrl+P"
+                        <MenuItem Header="I _printed this file" 
+                                  HotKey="Ctrl+P" InputGesture="Ctrl+P"
                                   IsEnabled="{Binding IsFileLoaded}"
                                   Command="{Binding IPrintedThisFile}"
                                   i:MenuItem.Icon="fa-solid fa-flask"/>
@@ -115,7 +138,8 @@
 							  i:MenuItem.Icon="fa-solid fa-folder-open"/>
 
 					<MenuItem Name="MainMenuFileExtract"
-							  Header="_Extract file contents" HotKey="Ctrl+E" InputGesture="Ctrl+E"
+							  Header="_Extract file contents" 
+                              HotKey="Ctrl+E" InputGesture="Ctrl+E"
 							  IsEnabled="{Binding IsFileLoaded}"
 							  Command="{Binding ExtractFile}"
 							  i:MenuItem.Icon="fa-solid fa-box-open"/>
@@ -181,12 +205,12 @@
 
 				<MenuItem Header="_Help">
 					<MenuItem Header="_About"
-							  InputGesture="F1" HotKey="F1"
+                              HotKey="F1" InputGesture="F1"
 							  Command="{Binding MenuHelpAboutClicked}"
 							  i:MenuItem.Icon="fa-solid fa-info-circle"/>
 
 					<MenuItem Header="_Website"
-							  InputGesture="Ctrl + F1" HotKey="Ctrl + F1"
+							  HotKey="Ctrl+F1" InputGesture="Ctrl+F1"
 							  Command="{Binding OpenHomePage}"
 							  i:MenuItem.Icon="fa-brands fa-edge"/>
 
@@ -212,8 +236,7 @@
 					<Separator/>
 
 					<MenuItem Header="_Material manager"
-							  HotKey="F10"
-							  InputGesture="F10"
+							  HotKey="F10" InputGesture="F10"
 							  Command="{Binding MenuHelpMaterialManagerClicked}"
 							  i:MenuItem.Icon="fa-solid fa-flask"/>
 
