@@ -175,7 +175,9 @@ public partial class TerminalWindow : WindowEx
                 _scriptState = await _scriptState.ContinueWithAsync(_commandText);
             }
 
-            if (_scriptState.ReturnValue is not null)
+            App.MainWindow.CanSave = true;
+
+			if (_scriptState.ReturnValue is not null)
             {
                 output.AppendLine(_scriptState.ReturnValue.ToString());
             }

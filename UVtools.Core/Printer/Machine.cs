@@ -277,6 +277,7 @@ namespace UVtools.Core.Printer
                 new(PrinterBrand.Elegoo, "Elegoo Saturn 3", "Saturn 3", 11520, 5120, 218.88f, 122.88f, 249.7f, FlipDirection.Horizontally),
                 new(PrinterBrand.Elegoo, "Elegoo Saturn 3 Ultra", "Saturn 3 Ultra", 11520, 5120, 218.88f, 122.88f, 260f, FlipDirection.Horizontally),
                 new(PrinterBrand.Elegoo, "Elegoo Saturn 8K", "Saturn 8K", 7680, 4320, 218.88f, 123.12f, 210f, FlipDirection.Horizontally),
+                new(PrinterBrand.Elegoo, "Elegoo Saturn S", "Saturn S", 4098, 2560, 196.704f, 122.88f, 210f, FlipDirection.Horizontally),
 
                 new(PrinterBrand.EPAX, "EPAX DX1 PRO", "DX1 PRO", 4098, 2560, 143.43f, 89.6f, 155f, FlipDirection.Horizontally),
                 new(PrinterBrand.EPAX, "EPAX DX10 Pro 5K", "DX10 Pro 5K", 4920, 2880, 221.4f, 129.6f, 120f, FlipDirection.Horizontally),

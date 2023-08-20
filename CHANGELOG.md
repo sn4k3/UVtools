@@ -17,6 +17,7 @@
   - (Fix) Some invalid bindings
   - (Fix) Save properties to disk/clipboard was disabled when file has no thumbnails
   - (Fix) File - Reset layer properties was no unlocking the File - Save
+  - (Improvement) When sending a command under "File - Terminal", it will now unlock the "File - Save" option
 - **Layer actions - Import layer(s):**
   - (Add) Button to set the current layer
   - (Fix) Layer properties were getting rebuilt (#739)
@@ -34,7 +35,8 @@
   - (Improvement) Use CompiledBinding instead of ReflectionBinding
   - (Improvement) Sign the libraries and project with a strong key
   - (Upgrade) .NET from 6.0.18 to 6.0.20
-  - (Upgrade) AvaloniaUI from 0.10.21 to 11.0.1
+  - (Upgrade) AvaloniaUI from 0.10.21 to 11.0.4
+- (Add) PrusaSlicer printer: Elegoo Saturn S
 
 ## 30/06/2023 - v3.15.1
 
