@@ -681,7 +681,7 @@
                   IsExpanded="False">
           <Expander.IsVisible>
             <MultiBinding Converter="{x:Static BoolConverters.And}">
-              <Binding Path="SlicerFile.CanUseLayerPositionZ"/>
+              <Binding Path="SlicerFile.CanUseSameLayerPositionZ"/>
               <Binding Path="!Operation.PatternModel"/>
             </MultiBinding>
           </Expander.IsVisible>
@@ -741,7 +741,7 @@
                   IsExpanded="True">
             <Expander.IsVisible>
                 <MultiBinding Converter="{x:Static BoolConverters.And}">
-                    <Binding Path="SlicerFile.CanUseLayerPositionZ"/>
+                    <Binding Path="SlicerFile.CanUseSameLayerPositionZ"/>
                     <Binding Path="SlicerFile.CanUseLayerExposureTime"/>
                 </MultiBinding>
             </Expander.IsVisible>

@@ -2624,6 +2624,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     public bool CanUseLightPWM => HavePrintParameterModifier(PrintParameterModifier.LightPWM);
     public bool CanUseAnyLightPWM => CanUseBottomLightPWM || CanUseLightPWM;
 
+    public virtual bool CanUseSameLayerPositionZ => CanUseLayerPositionZ;
     public bool CanUseLayerPositionZ => HaveLayerParameterModifier(PrintParameterModifier.PositionZ);
     public bool CanUseLayerWaitTimeBeforeCure => HaveLayerParameterModifier(PrintParameterModifier.WaitTimeBeforeCure);
     public bool CanUseLayerExposureTime => HaveLayerParameterModifier(PrintParameterModifier.ExposureTime);

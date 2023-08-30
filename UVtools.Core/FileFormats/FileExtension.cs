@@ -9,6 +9,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json.Serialization;
+using System.Xml.Serialization;
 
 namespace UVtools.Core.FileFormats;
 
@@ -21,17 +23,19 @@ public sealed class FileExtension : IEquatable<FileExtension>, IEquatable<string
     /// <summary>
     /// Stores a specific <see cref="FileFormat"/> type that should be used to create with this FileExtension instance
     /// </summary>
+    [JsonIgnore]
+    [XmlIgnore]
     public Type FileFormatType { get; }
 
     /// <summary>
     /// Gets the extension name without the dot (.)
     /// </summary>
     public string Extension { get; }
-        
+
     /// <summary>
     /// Gets the extension description
     /// </summary>
-    public string Description { get; }
+    public string Description { get; } 
 
     /// <summary>
     /// Gets if the extension shows up on open file dialog filters
@@ -46,12 +50,14 @@ public sealed class FileExtension : IEquatable<FileExtension>, IEquatable<string
     /// <summary>
     /// Gets a tag object
     /// </summary>
+    [JsonIgnore]
+    [XmlIgnore]
     public object? Tag { get; }
 
     /// <summary>
     /// Gets the file filter for open and save dialogs
     /// </summary>
-    public string Filter => $@"{Description} (*.{Extension})|*.{Extension}";
+    public string Filter => $"{Description} (*.{Extension})|*.{Extension}";
     #endregion
 
     #region Constructor

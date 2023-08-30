@@ -1772,6 +1772,8 @@ public sealed class PhotonWorkshopFile : FileFormat
         }
     }
 
+    public override bool CanUseSameLayerPositionZ => false;
+
     public LayerRleFormat LayerImageFormat =>
         FileEndsWith(".pws")
             ? LayerRleFormat.PWS

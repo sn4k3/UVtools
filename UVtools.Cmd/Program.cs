@@ -53,6 +53,7 @@ internal class Program
             //PrintLayersCommand.CreateCommand(),
             PrintGCodeCommand.CreateCommand(),
             PrintMachinesCommand.CreateCommand(),
+            PrintFormatsCommand.CreateCommand(),
 
             GlobalOptions.QuietOption,
             GlobalOptions.NoProgressOption,

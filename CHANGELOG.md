@@ -11,6 +11,7 @@
   - **Exposure time finder:**
     - (Fix) "Multiple layer height" panel visibility was wrongly check for `ExposureTime` instead of `PositionZ`
     - (Fix) "Multiple exposures" panel was always visible even if not able
+    - (Improvement) Disable "Multiple exposure" and "Multiple heights" for the AnyCubic format
   - **Tool windows:**
     - (Fix) Align the description to the left to fix the misalignment when resizing the window
     - (Fix) Make layer selection shortcuts to work
@@ -27,14 +28,16 @@
   - (Fix) Accessing `BoundingRectangleMillimeters` was not calculating the `BoundingRectangle` if necessary
   - (Fix) SL1: Files with thumbnails size different from original SL1 would not display under the UI
   - (Fix) Anycubic: Model information is not set after an auto-conversion from SL1
+- **UVtoolsCmd:**
+  - (Add) "compare" command to compare two files and output the differences
+  - (Add) "print-formats" command to print the available formats
 - **Project:**
-  - (Add) UVtoolsCmd: compare command to compare two files and output the differences
   - (Change) Rename UVtools.WPF to UVtools.UI
   - (Change) Make UVtools.UI nullable enabled
   - (Remove) UVtools.GUI
   - (Improvement) Use CompiledBinding instead of ReflectionBinding
   - (Improvement) Sign the libraries and project with a strong key
-  - (Upgrade) .NET from 6.0.18 to 6.0.20
+  - (Upgrade) .NET from 6.0.18 to 6.0.21
   - (Upgrade) AvaloniaUI from 0.10.21 to 11.0.4
 - (Add) PrusaSlicer printer: Elegoo Saturn S
 

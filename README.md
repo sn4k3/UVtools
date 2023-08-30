@@ -188,6 +188,7 @@ Commands:
   print-properties <input-file>                                                           Prints available properties
   print-gcode <input-file>                                                                Prints the gcode of the file if available
   print-machines                                                                          Prints machine settings
+  print-formats                                                                           Prints the available formats
 ```
 
 Note: On each command you can use -? to see specific command help and extra options
