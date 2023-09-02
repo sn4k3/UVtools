@@ -30,9 +30,7 @@ public static class CryptExtensions
     {
         if (data.Length % 16 != 0)
         {
-            var temp = new byte[((data.Length / 16) + 1) * 16];
-            Array.Copy(data, 0, temp, 0, data.Length);
-            data = temp;
+            Array.Resize(ref data, ((data.Length / 16) + 1) * 16);
         }
 
         var aes = Aes.Create();
@@ -47,7 +45,7 @@ public static class CryptExtensions
         }
 
         var cryptor = encrypt ? aes.CreateEncryptor() : aes.CreateDecryptor();
-
+        
         using var msDecrypt = new MemoryStream(data);
         using var csDecrypt = new CryptoStream(msDecrypt, cryptor, CryptoStreamMode.Read);
         var outputBuffer = new byte[data.Length];

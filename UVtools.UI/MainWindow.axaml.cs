@@ -2232,18 +2232,16 @@ public partial class MainWindow : WindowEx
                     await OnClickDetectIssues();
                     break;
             }
-
-            if (!string.IsNullOrWhiteSpace(baseOperation.AfterCompleteReport))
-            {
-                await this.MessageBoxInfo(baseOperation.AfterCompleteReport, $"{baseOperation.Title} report ({LastStopWatch.Elapsed.Hours}h{LastStopWatch.Elapsed.Minutes}m{LastStopWatch.Elapsed.Seconds}s)");
-            }
         }
         else
         {
             ClipboardManager.RestoreSnapshot();
         }
 
-        
+        if (!string.IsNullOrWhiteSpace(baseOperation.AfterCompleteReport))
+        {
+            await this.MessageBoxInfo(baseOperation.AfterCompleteReport, $"{baseOperation.Title} report ({LastStopWatch.Elapsed.Hours}h{LastStopWatch.Elapsed.Minutes}m{LastStopWatch.Elapsed.Seconds}s)");
+        }
 
         return result;
     }

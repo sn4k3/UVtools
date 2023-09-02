@@ -307,6 +307,8 @@ public sealed class OperationLayerImport : Operation
                 new OperationMove(SlicerFile, Anchor.TopLeft).Execute(progress);
             }
 
+            int importedFormats = 0;
+
             foreach (var fileFormat in fileFormats)
             {
                 if (fileFormat.CanDecode)
@@ -326,13 +328,13 @@ public sealed class OperationLayerImport : Operation
                             (SlicerFile.Resolution.Width < fileFormatBoundingRectangle.Width ||
                              SlicerFile.Resolution.Height < fileFormatBoundingRectangle.Height)) continue;
                         SlicerFile.ReallocateInsert(_startLayerIndex, fileFormat.LayerCount, fixPositionZ:true);
+                        importedFormats++;
                         break;
                     case ImportTypes.Replace:
                     case ImportTypes.Stack:
                         if (SlicerFile.Resolution != fileFormat.Resolution &&
                             (SlicerFile.Resolution.Width < fileFormatBoundingRectangle.Width ||
                              SlicerFile.Resolution.Height < fileFormatBoundingRectangle.Height)) continue;
-
 
                         //if(fileFormatBoundingRectangle.Width >= SlicerFile.ResolutionX || fileFormatBoundingRectangle.Height >= SlicerFile.ResolutionY) 
                         //    continue;
@@ -368,6 +370,7 @@ public sealed class OperationLayerImport : Operation
                             }
                         }
 
+                        importedFormats++;
                         break;
                     case ImportTypes.MergeSum:
                     case ImportTypes.MergeMax:
@@ -380,6 +383,7 @@ public sealed class OperationLayerImport : Operation
                                 SlicerFile.ReallocateEnd((uint)layerCountDifference, true);
                             }
                         }
+                        importedFormats++;
                         break;
                     case ImportTypes.Subtract:
                     case ImportTypes.AbsDiff:
@@ -387,6 +391,7 @@ public sealed class OperationLayerImport : Operation
                     case ImportTypes.BitwiseOr:
                     case ImportTypes.BitwiseXOr:
                         if (SlicerFile.Resolution != fileFormat.Resolution) continue;
+                        importedFormats++;
                         break;
                 }
 
@@ -517,12 +522,20 @@ public sealed class OperationLayerImport : Operation
                 fileFormat.Dispose();
             }
 
+
+            if (importedFormats != fileFormats.Count)
+            {
+                AfterCompleteReport = $"Could not import and fit {fileFormats.Count - importedFormats} out of {fileFormats.Count} format(s) (Insufficient build space).";
+            }
+
+            if (lastProcessedLayerIndex < 0) return false;
+
             if (_importType == ImportTypes.Stack)
             {
                 new OperationMove(SlicerFile).Execute(progress);
             }
 
-            if (lastProcessedLayerIndex < 0) return false;
+            
 
             if (lastProcessedLayerIndex + 1 < SlicerFile.LayerCount && _discardUnmodifiedLayers)
             {

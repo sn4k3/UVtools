@@ -2002,6 +2002,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get => (uint)Count;
         set {
             RaisePropertyChanged();
+            RaisePropertyChanged(nameof(LastLayerIndex));
             RaisePropertyChanged(nameof(NormalLayerCount));
             RaisePropertyChanged(nameof(TransitionLayersRepresentation));
         }

@@ -1,6 +1,6 @@
 # Changelog
 
-## /07/2023 - v4.0.0
+## /09/2023 - v4.0.0
 
 - **UI:**
   - **Settings:**
@@ -18,9 +18,10 @@
   - (Fix) Some invalid bindings
   - (Fix) Save properties to disk/clipboard was disabled when file has no thumbnails
   - (Fix) File - Reset layer properties was no unlocking the File - Save
-  - (Improvement) When sending a command under "File - Terminal", it will now unlock the "File - Save" option
+  - (Improvement) When sending a command under "File - Terminal", it will now unlock the "File - Save" option and refresh the UI with the new information if changed
 - **Layer actions - Import layer(s):**
   - (Add) Button to set the current layer
+  - (Improvement) If any file isn't imported it will show an message informing why
   - (Fix) Layer properties were getting rebuilt (#739)
 - **File formats:**
   - (Change) Thumbnails logic, it's now a `List` instead of a fixed array, this allow to dynamic add or remove thumbnails without having a fixed number

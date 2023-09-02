@@ -67,12 +67,14 @@ internal static class RunCommand
                     Program.ProgressBarWork($"Operation {++runs}: {operation.ProgressTitle}",
                         () =>
                         {
-                            if (!operation.Execute(Program.Progress)) return;
-                            successfulRuns++;
+                            var success = operation.Execute(Program.Progress);
                             if (!string.IsNullOrWhiteSpace(operation.AfterCompleteReport))
                             {
                                 Program.WriteLine(operation.AfterCompleteReport);
                             }
+
+                            if (!success) return;
+                            successfulRuns++;
                         });
 
                     continue;

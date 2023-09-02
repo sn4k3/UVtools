@@ -175,6 +175,7 @@ public partial class TerminalWindow : WindowEx
                 _scriptState = await _scriptState.ContinueWithAsync(_commandText);
             }
 
+            DialogResult = DialogResults.OK;
             App.MainWindow.CanSave = true;
 
 			if (_scriptState.ReturnValue is not null)
@@ -198,5 +199,15 @@ public partial class TerminalWindow : WindowEx
         TerminalText = output.ToString();
 
         if (_clearCommandAfterSend) CommandText = string.Empty;
+    }
+
+    protected override void OnClosed(EventArgs e)
+    {
+        if (DialogResult == DialogResults.OK)
+        {
+            App.MainWindow.ResetDataContext();
+            App.MainWindow.ShowLayer();
+        }
+        base.OnClosed(e);
     }
 }
