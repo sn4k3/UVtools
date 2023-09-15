@@ -29,6 +29,7 @@
   - (Fix) Accessing `BoundingRectangleMillimeters` was not calculating the `BoundingRectangle` if necessary
   - (Fix) SL1: Files with thumbnails size different from original SL1 would not display under the UI
   - (Fix) Anycubic: Model information is not set after an auto-conversion from SL1
+  - (Fix) Image files: Could not find a writer for the specified extension (#755)
 - **UVtoolsCmd:**
   - (Add) "compare" command to compare two files and output the differences
   - (Add) "print-formats" command to print the available formats
@@ -40,6 +41,7 @@
   - (Improvement) Sign the libraries and project with a strong key
   - (Upgrade) .NET from 6.0.18 to 6.0.21
   - (Upgrade) AvaloniaUI from 0.10.21 to 11.0.4
+  - (Upgrade) OpenCV from 4.7.0 to 4.8.0
 - (Add) PrusaSlicer printer: Elegoo Saturn S
 
 ## 30/06/2023 - v3.15.1

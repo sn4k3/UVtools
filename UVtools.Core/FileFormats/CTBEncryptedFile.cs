@@ -41,8 +41,8 @@ public sealed class CTBEncryptedFile : FileFormat
         
 
     public static readonly string Preamble = CryptExtensions.XORCipherString(System.Convert.FromBase64String(Secret0), About.Software);
-    private static byte[] Bigfoot       = CryptExtensions.XORCipher(System.Convert.FromBase64String(Secret1), About.Software);
-    private static byte[] CookieMonster = CryptExtensions.XORCipher(System.Convert.FromBase64String(Secret2), About.Software);
+    private static readonly byte[] Bigfoot       = CryptExtensions.XORCipher(System.Convert.FromBase64String(Secret1), About.Software);
+    private static readonly byte[] CookieMonster = CryptExtensions.XORCipher(System.Convert.FromBase64String(Secret2), About.Software);
 
     #endregion
 
