@@ -1,6 +1,7 @@
 ﻿using Emgu.CV;
 using Emgu.CV.CvEnum;
 using System;
+using System.Collections.Generic;
 using UVtools.Core.Layers;
 using UVtools.Core.Operations;
 using Size = System.Drawing.Size;
@@ -44,7 +45,7 @@ public sealed class ImageFile : FileFormat
 
     protected override void EncodeInternally(OperationProgress progress)
     {
-        FirstLayer?.LayerMat.Save(TemporaryOutputFileFullPath);
+        FirstLayer?.LayerMat.Save(FileFullPath);
     }
 
     protected override void DecodeInternally(OperationProgress progress)
