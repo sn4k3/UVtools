@@ -3937,7 +3937,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             EncodeInternally(progress);
 
             // Move temporary output file in place
-            File.Move(tempFile, fileFullPath, true);
+            if (File.Exists(tempFile)) File.Move(tempFile, fileFullPath, true);
 
             IsModified = false;
             RequireFullEncode = false;
@@ -4332,8 +4332,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <param name="genericConfigExtract"></param>
     /// <param name="genericLayersExtract"></param>
     /// <param name="progress"></param>
-    public virtual void Extract(string path, bool genericConfigExtract = true, bool genericLayersExtract = true,
-        OperationProgress? progress = null)
+    public virtual void Extract(string path, bool genericConfigExtract = true, bool genericLayersExtract = true, OperationProgress? progress = null)
     {
         progress ??= new OperationProgress();
         progress.ItemName = OperationProgress.StatusExtracting;

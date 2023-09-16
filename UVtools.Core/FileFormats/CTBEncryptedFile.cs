@@ -1199,10 +1199,13 @@ public sealed class CTBEncryptedFile : FileFormat
                                         "Please increase the portion of the plate in use and re-slice the file.");
         }
 
-        var hash = inputFile.ReadBytes(HASH_LENGTH);
-        if (!hash.SequenceEqual(encryptedHash))
+        if (DecodeType == FileDecodeType.Full)
         {
-            throw new FileLoadException("The file checksum does not match, malformed file.", FileFullPath);
+            var hash = inputFile.ReadBytes(HASH_LENGTH);
+            if (!hash.SequenceEqual(encryptedHash))
+            {
+                throw new FileLoadException("The file checksum does not match, malformed file.", FileFullPath);
+            }
         }
 
         for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
