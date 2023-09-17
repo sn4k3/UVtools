@@ -10,7 +10,7 @@
         <ApplicationIcon>$(MSBuildThisFileDirectory)UVtools.CAD\UVtools.ico</ApplicationIcon>
         <PackageIcon>UVtools.png</PackageIcon>
         <PackageReadmeFile>README.md</PackageReadmeFile>
-        <PackageLicenseExpression>AGPL-3.0</PackageLicenseExpression>
+        <PackageLicenseExpression>AGPL-3.0-or-later</PackageLicenseExpression>
         <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
         <RepositoryUrl>https://github.com/sn4k3/UVtools</RepositoryUrl>
         <PackageProjectUrl>https://github.com/sn4k3/UVtools</PackageProjectUrl>
