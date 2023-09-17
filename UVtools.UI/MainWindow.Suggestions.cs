@@ -90,6 +90,8 @@ public partial class MainWindow
         IsGUIEnabled = false;
         ShowProgressWindow($"Applying {suggestions.Length} suggestions", false);
 
+        bool moved = false;
+
         var executed = await Task.Run(() =>
         {
             uint executed = 0;
@@ -101,6 +103,7 @@ public partial class MainWindow
                     if (suggestion.Execute(Progress))
                     {
                         executed++;
+                        if (suggestion is SuggestionModelPosition) moved = true;
                     }
                 }
             }
@@ -116,10 +119,14 @@ public partial class MainWindow
 
         IsGUIEnabled = true;
 
-        
-
         if (executed > 0)
         {
+            // Re-detect issues when move object
+            if (moved && SlicerFile!.IssueManager.HaveIssues)
+            {
+                await OnClickDetectIssues();
+            }
+
             CanSave = true;
             ResetDataContext();
             ForceUpdateActualLayer();
@@ -159,6 +166,12 @@ public partial class MainWindow
 
         if (result)
         {
+            // Re-detect issues when move object
+            if (suggestion is SuggestionModelPosition && SlicerFile!.IssueManager.HaveIssues)
+            {
+                await OnClickDetectIssues();
+            }
+
             CanSave = true;
             ResetDataContext();
             ForceUpdateActualLayer();

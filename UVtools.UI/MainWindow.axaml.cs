@@ -2228,8 +2228,15 @@ public partial class MainWindow : WindowEx
             switch (baseOperation)
             {
                 // Tools
-                case OperationRepairLayers operation:
+                case OperationRepairLayers:
                     await OnClickDetectIssues();
+                    break;
+                case OperationMove moveOp:
+                    if (SlicerFile!.IssueManager.HaveIssues && SlicerFile.BoundingRectangle != moveOp.OriginalBoundingRectangle)
+                    {
+                        // Recalculate issues due changed position
+                        await OnClickDetectIssues();
+                    }
                     break;
             }
         }

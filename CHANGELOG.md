@@ -1,6 +1,6 @@
 # Changelog
 
-## /09/2023 - v4.0.0
+## 17/09/2023 - v4.0.0
 
 - **UI:**
   - **Settings:**
@@ -19,6 +19,7 @@
   - (Fix) Save properties to disk/clipboard was disabled when file has no thumbnails
   - (Fix) File - Reset layer properties was no unlocking the File - Save
   - (Improvement) When sending a command under "File - Terminal", it will now unlock the "File - Save" option and refresh the UI with the new information if changed
+  - (Improvement) When moving model by an operation or suggestion it will redetect the issues to update their positions (#752)
 - **Layer actions - Import layer(s):**
   - (Add) Button to set the current layer
   - (Improvement) If any file isn't imported it will show an message informing why

@@ -6,7 +6,7 @@
 # usage 1: ./libcvextern.sh clean
 # usage 2: ./libcvextern.sh -i
 # usage 3: ./libcvextern.sh 
-# usage 3: ./libcvextern.sh 4.7.0
+# usage 3: ./libcvextern.sh 4.x.0
 #
 #cd "$(dirname "$0")"
 echo $PWD
@@ -37,7 +37,7 @@ if [ -z "$lastArg" ]; then
 Are you sure you want to continue with the master branch?
 
 y/yes/blank: Continue with master
-4.7.0: Continue with specified tag
+4.x.0: Continue with specified tag
 n/no:  Cancel
 
 Anwser: " confirmation 
