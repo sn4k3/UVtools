@@ -1,41 +1,61 @@
 <Project>
     <PropertyGroup>
-	    <TargetFramework>net6.0</TargetFramework>
+        <TargetFramework>net6.0</TargetFramework>
 
-	    <Authors>Tiago Conceição, sn4k3</Authors>
-	    <Company>PTRTECH</Company>
-	    <Copyright>Copyright 2020-$([System.DateTime]::Now.ToString(`yyyy`)) © PTRTECH</Copyright>
-	    <Description>MSLA/DLP, file analysis, calibration, repair, conversion and manipulation</Description>
+        <Authors>Tiago Conceição, sn4k3</Authors>
+        <Company>PTRTECH</Company>
+        <Copyright>Copyright 2020-$([System.DateTime]::Now.ToString(`yyyy`)) © PTRTECH</Copyright>
+        <Description>MSLA/DLP, file analysis, calibration, repair, conversion and manipulation</Description>
 
-	    <ApplicationIcon>$(MSBuildThisFileDirectory)UVtools.CAD\UVtools.ico</ApplicationIcon>
-	    <PackageIcon>$(MSBuildThisFileDirectory)UVtools.CAD\UVtools.png</PackageIcon>
-		<PackageLicenseExpression>AGPL-3.0</PackageLicenseExpression>
-		<PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-		<RepositoryUrl>https://github.com/sn4k3/UVtools</RepositoryUrl>
-		<PackageProjectUrl>https://github.com/sn4k3/UVtools</PackageProjectUrl>
-		<PackageReleaseNotes>https://github.com/sn4k3/UVtools/releases</PackageReleaseNotes>
-	    <PackageTags>msla, dlp, resin, printer, slicer, 3d printing, image processing, layers</PackageTags>
-		<RepositoryType>Git</RepositoryType>
+        <ApplicationIcon>$(MSBuildThisFileDirectory)UVtools.CAD\UVtools.ico</ApplicationIcon>
+        <PackageIcon>UVtools.png</PackageIcon>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PackageLicenseExpression>AGPL-3.0</PackageLicenseExpression>
+        <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+        <RepositoryUrl>https://github.com/sn4k3/UVtools</RepositoryUrl>
+        <PackageProjectUrl>https://github.com/sn4k3/UVtools</PackageProjectUrl>
+        <PackageReleaseNotes>https://github.com/sn4k3/UVtools/releases</PackageReleaseNotes>
+        <PackageTags>msla, dlp, resin, printer, slicer, 3d printing, image processing, layers</PackageTags>
+        <RepositoryType>Git</RepositoryType>
 
-	    <Nullable>enable</Nullable>
+        <Nullable>enable</Nullable>
 
-	    <SignAssembly>True</SignAssembly>
-	    <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)build\UVtools.snk</AssemblyOriginatorKeyFile>
+        <SignAssembly>True</SignAssembly>
+        <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)build\UVtools.snk</AssemblyOriginatorKeyFile>
 
-		<PathMap>$(MSBuildProjectDirectory)=$(MSBuildProjectName)</PathMap>
+        <PathMap>$(MSBuildProjectDirectory)=$(MSBuildProjectName)</PathMap>
     </PropertyGroup>
 
-	<Choose>
-		<When Condition="Exists('$(MSBuildProjectDirectory)README.md')">
-			<PropertyGroup>
-				<PackageReadmeFile>$(MSBuildProjectDirectory)README.md"</PackageReadmeFile>
-			</PropertyGroup>
-		</When>
-		<When Condition="Exists('$(MSBuildThisFileDirectory)README.md')">
-			<PropertyGroup>
-				<PackageReadmeFile>$(MSBuildThisFileDirectory)README.md"</PackageReadmeFile>
-			</PropertyGroup>
-		</When>
-	</Choose>
+    <ItemGroup>
+        <None Include="$(MSBuildThisFileDirectory)UVtools.CAD\UVtools.png" Pack="true" PackagePath="" Visible="false"/>
+    </ItemGroup>
+
+    <Choose>
+        <When Condition="Exists('$(MSBuildProjectDirectory)\README.md')">
+            <ItemGroup>
+                <None Include="$(MSBuildProjectDirectory)\README.md" Pack="true" PackagePath="" Visible="false"/>
+            </ItemGroup>
+        </When>
+        <When Condition="Exists('$(MSBuildThisFileDirectory)README.md')">
+            <ItemGroup>
+                <None Include="$(MSBuildThisFileDirectory)README.md" Pack="true" PackagePath="" Visible="false"/>
+            </ItemGroup>
+        </When>
+    </Choose>
+
+    <!--
+    <Target Name="ShowReservedProperties" AfterTargets="BeforeBuild">
+        <Message Text=" MSBuildThisFileDirectory  = $(MSBuildThisFileDirectory)" Importance="high" />
+        <Message Text=" MSBuildProjectDirectory  = $(MSBuildProjectDirectory)" Importance="high" />
+        <Message Text=" MSBuildProjectFile  = $(MSBuildProjectFile)" Importance="high" />
+        <Message Text=" MSBuildProjectExtension  = $(MSBuildProjectExtension)" Importance="high" />
+        <Message Text=" MSBuildProjectFullPath  = $(MSBuildProjectFullPath)" Importance="high" />
+        <Message Text=" MSBuildProjectName  = $(MSBuildProjectName)" Importance="high" />
+        <Message Text=" MSBuildBinPath  = $(MSBuildBinPath)" Importance="high" />
+        <Message Text=" MSBuildProjectDefaultTargets  = $(MSBuildProjectDefaultTargets)" Importance="high" />
+        <Message Text=" MSBuildExtensionsPath  = $(MSBuildExtensionsPath)" Importance="high" />
+        <Message Text=" MSBuildStartupDirectory  = $(MSBuildStartupDirectory)" Importance="high"/>
+    </Target>
+    -->
 
 </Project>
