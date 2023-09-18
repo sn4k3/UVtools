@@ -9,5 +9,7 @@ public partial class SuggestionWaitTimeBeforeCureControl : SuggestionControl
     { }
 
     public SuggestionWaitTimeBeforeCureControl(Suggestion suggestion) : base(suggestion)
-    { }
+    {
+        InitializeComponent();
+    }
 }

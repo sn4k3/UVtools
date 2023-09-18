@@ -10,5 +10,7 @@ public partial class SuggestionTransitionLayerCountControl : SuggestionControl
     { }
 
     public SuggestionTransitionLayerCountControl(Suggestion suggestion) : base(suggestion)
-    { }
+    {
+        InitializeComponent();
+    }
 }

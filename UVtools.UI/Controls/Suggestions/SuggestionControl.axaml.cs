@@ -6,7 +6,8 @@ public partial class SuggestionControl : UserControlEx
 {
     public Suggestion BaseSuggestion { get; set; }
 
-    public SuggestionControl() : this(null!) { }
+    public SuggestionControl() : this(null!)
+    { }
 
     public SuggestionControl(Suggestion suggestion)
     {

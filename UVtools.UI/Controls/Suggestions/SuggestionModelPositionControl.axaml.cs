@@ -9,5 +9,7 @@ public partial class SuggestionModelPositionControl : SuggestionControl
     { }
 
     public SuggestionModelPositionControl(Suggestion suggestion) : base(suggestion)
-    { }
+    {
+        InitializeComponent();
+    }
 }

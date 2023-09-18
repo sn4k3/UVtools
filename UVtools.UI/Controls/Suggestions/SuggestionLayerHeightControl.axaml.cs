@@ -10,5 +10,7 @@ public partial class SuggestionLayerHeightControl : SuggestionControl
     { }
 
     public SuggestionLayerHeightControl(Suggestion suggestion) : base(suggestion)
-    { }
+    {
+        InitializeComponent();
+    }
 }

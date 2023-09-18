@@ -1,5 +1,9 @@
 # Changelog
 
+## 18/09/2023 - v4.0.1
+
+- (Fix) Suggestions settings were not displaying
+
 ## 17/09/2023 - v4.0.0
 
 - **UI:**
