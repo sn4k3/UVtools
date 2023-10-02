@@ -444,7 +444,7 @@
           <NumericUpDown Grid.Row="0" Grid.Column="2"
                          Classes="ValueLabel ValueLabel_mm"
                          VerticalAlignment="Center"
-                         Minimum="0.01"
+                         Minimum="0.001"
                          Maximum="0.20"
                          Increment="0.01"
                          FormatString="F3"

@@ -88,9 +88,6 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
 
     public const byte MaximumAntiAliasing = 16;
 
-    public const float MinimumLayerHeight = 0.01f;
-    public const float MaximumLayerHeight = 0.20f;
-
     private const ushort QueueTimerPrintTime = 250; // ms
 
     public const string DATATYPE_PNG = "PNG";

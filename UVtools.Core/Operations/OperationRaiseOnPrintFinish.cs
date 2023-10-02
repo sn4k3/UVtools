@@ -56,7 +56,7 @@ public class OperationRaiseOnPrintFinish : Operation
         if (SlicerFile.LayerCount >= 2)
         {
             var layerHeight = SlicerFile.LastLayer!.LayerHeight;
-            var criteria = Math.Max((float) Layer.MaximumHeight, SlicerFile.LayerHeight);
+            var criteria = Math.Max(Layer.MaximumHeightFloat, SlicerFile.LayerHeight);
 
             if (layerHeight > criteria)
             {

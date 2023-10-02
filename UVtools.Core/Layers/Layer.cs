@@ -56,6 +56,9 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
     public const decimal HeightPrecisionIncrement = 0.001M;
     public const decimal MinimumHeight = 0.01M;
     public const decimal MaximumHeight = 0.2M;
+
+    public const float MinimumHeightFloat = (float)MinimumHeight;
+    public const float MaximumHeightFloat = (float)MaximumHeight;
     #endregion
 
     #region Members

@@ -189,6 +189,7 @@ public sealed class GooFile : FileFormat
             LiftHeight2 = layer.LiftHeight2;
             LiftSpeed2 = layer.LiftSpeed2;
             RetractSpeed = layer.RetractSpeed;
+            RetractHeight = layer.RetractHeight;
             RetractHeight2 = layer.RetractHeight2;
             RetractSpeed2 = layer.RetractSpeed2;
             WaitTimeAfterCure = layer.WaitTimeAfterCure;
@@ -851,6 +852,7 @@ public sealed class GooFile : FileFormat
         {
             value = Math.Clamp((float)Math.Round(value, 2), 0, BottomRetractHeightTotal);
             base.BottomRetractHeight2 = Header.BottomRetractHeight2 = value;
+            Header.BottomRetractHeight = BottomRetractHeight;
         }
     }
 
@@ -867,6 +869,7 @@ public sealed class GooFile : FileFormat
         {
             value = Math.Clamp((float)Math.Round(value, 2), 0, RetractHeightTotal);
             base.RetractHeight2 = Header.RetractHeight2 = value;
+            Header.RetractHeight = RetractHeight;
         }
     }
 

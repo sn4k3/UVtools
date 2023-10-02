@@ -18,7 +18,7 @@
         <NumericUpDown Grid.Row="0" Grid.Column="2"
                        Classes="ValueLabel ValueLabel_mm"
                        Increment="0.01"
-                       Minimum="0.01"
+                       Minimum="0.001"
                        Maximum="0.30"
                        FormatString="F3"
                        Value="{Binding Operation.LayerHeight}"/>

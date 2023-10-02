@@ -1,4 +1,3 @@
-using UVtools.Core.FileFormats;
 using UVtools.Core.Layers;
 using UVtools.Core.Operations;
 using UVtools.UI.Extensions;
@@ -12,7 +11,7 @@ public partial class ToolDynamicLayerHeightControl : ToolControl
 
     public double LayerHeight => SlicerFile!.LayerHeight;
     public double MinimumLayerHeight => Layer.RoundHeight(SlicerFile!.LayerHeight * 2);
-    public double MaximumLayerHeight => FileFormat.MaximumLayerHeight;
+    public double MaximumLayerHeight => Layer.MaximumHeightFloat;
 
     public ToolDynamicLayerHeightControl()
     {

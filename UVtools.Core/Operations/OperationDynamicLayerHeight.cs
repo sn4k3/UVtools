@@ -115,7 +115,7 @@ public sealed class OperationDynamicLayerHeight : Operation
             return NotSupportedMessage;
         }
 
-        if (SlicerFile.LayerHeight * 2 > FileFormat.MaximumLayerHeight)
+        if (SlicerFile.LayerHeight * 2 > Layer.MaximumHeightFloat)
         {
             return $"This file already uses the maximum layer height possible ({SlicerFile.LayerHeight}mm).\n" +
                    "Layers can not be stacked, please re-slice your file with the lowest layer height of 0.01mm.";
@@ -428,7 +428,7 @@ public sealed class OperationDynamicLayerHeight : Operation
         }
         if (layerHeight * 2 > _maximumLayerHeight)
         {
-            _maximumLayerHeight = Math.Min((decimal) FileFormat.MaximumLayerHeight, _maximumLayerHeight*2);
+            _maximumLayerHeight = Math.Min(Layer.MaximumHeight, _maximumLayerHeight*2);
         }
         if (_bottomExposureTime <= 0)
             _bottomExposureTime = (decimal)SlicerFile.BottomExposureTime;
@@ -439,9 +439,9 @@ public sealed class OperationDynamicLayerHeight : Operation
 
     public void InitManualTable()
     {
-        for (decimal layerHeight = (decimal)FileFormat.MinimumLayerHeight;
-             layerHeight <= (decimal) FileFormat.MaximumLayerHeight;
-             layerHeight += (decimal)FileFormat.MinimumLayerHeight)
+        for (decimal layerHeight = Layer.MinimumHeight;
+             layerHeight <= Layer.MaximumHeight;
+             layerHeight += Layer.MinimumHeight)
         {
             var item = new ExposureItem(layerHeight, _bottomExposureTime, _exposureTime);
             //item.BottomExposure = _bottomExposureTime;

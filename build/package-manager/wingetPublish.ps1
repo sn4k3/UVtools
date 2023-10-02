@@ -83,7 +83,7 @@ if($actionInput -eq "y" -or $actionInput -eq "yes")
     #(Get-Content "$installerYamlFile") -replace 'ReleaseDate:.*', "ReleaseDate: $releaseDate" | Out-File "$installerYamlFile"
 
     # Submit PR
-    wingetcreate.exe submit --token $wingetTokenKeyFile $outputFolder
+    wingetcreate.exe submit --token $wingetTokenKeyFile $manifestsPath
 
     # Clean
     Remove-Item $outputFolder -Recurse -ErrorAction Ignore 
