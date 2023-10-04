@@ -19,8 +19,8 @@ jobs:
     steps:
       - uses: vedantmgoyal2009/winget-releaser@v2
         with:
-          identifier: ${env:WINGET_PACKAGE_ID}
-          token: ${env:WINGET_TOKEN}
+          identifier: ${{ env.WINGET_PACKAGE_ID }}
+          token: ${{ env.WINGET_TOKEN }}
 
   #winget:
   #  name: Winget - Pull request
