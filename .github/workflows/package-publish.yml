@@ -22,6 +22,7 @@ jobs:
           identifier: ${{ env.WINGET_PACKAGE_ID }}
           token: ${{ env.WINGET_TOKEN }}
 
+  # Manual way
   #winget:
   #  name: Winget - Pull request
   #  runs-on: windows-latest
@@ -54,15 +55,14 @@ jobs:
   #    - name: Submit package to Windows Package Manager Community Repository
   #      run: .\wingetcreate.exe update ${env:WINGET_PACKAGE_ID} --version ${env:VERSION} --urls ${env:INSTALLER_URL} --token ${env:WINGET_TOKEN} --submit
 
-  # NOT WORKING
+  
   #homebrew:
-  #  name: Homebrew Cask - Pull request
+  #  name: 🚀 Homebrew Cask - Pull request
   #  runs-on: macos-latest
   #  steps:
-  #    - run: export HOMEBREW_GITHUB_API_TOKEN=${HOMEBREW_GITHUB_API_TOKEN}
   #    - uses: macauley/action-homebrew-bump-cask@v1
   #      with:
-  #        token: ${WINGET_TOKEN}
+  #        token: ${{ env.WINGET_TOKEN }}
   #        cask: uvtools
 
   nuget:
@@ -72,6 +72,7 @@ jobs:
     steps:
       - name: 🛒 Checkout
         uses: actions/checkout@v3
+
       - name: Verify commit exists in origin/master
         run: |
           git fetch --no-tags --prune --depth=1 origin +refs/heads/*:refs/remotes/origin/*

@@ -1,5 +1,11 @@
 # Changelog
 
+## /10/2023 - v4.0.3
+
+- (Change) macOS: Change from Control to Command key to activate shortcuts from main menu (#766)
+- (Upgrade) .NET from 6.0.22 to 6.0.23
+- (Upgrade) AvaloniaUI from 11.0.4 to 11.0.5
+
 ## 02/10/2023 - v4.0.2
 
 - (Change) UI: Layer height inputs minimum from 0.01mm to 0.001mm (#761)

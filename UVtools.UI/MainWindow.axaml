@@ -16,23 +16,22 @@
         DragDrop.AllowDrop="True">
 
 	<uc:WindowEx.KeyBindings>
-		<KeyBinding Gesture="Ctrl+O" Command="{Binding MenuFileOpenClicked}"/>
-		<KeyBinding Gesture="Ctrl+Shift+O" Command="{Binding MenuFileOpenNewWindowClicked}"/>
-		<KeyBinding Gesture="Ctrl+F5" Command="{Binding ReloadFile}"/>
-		<KeyBinding Gesture="Ctrl+F2" Command="{Binding MenuFileRenameClicked}"/>
-		<KeyBinding Gesture="Ctrl+S" Command="{Binding MenuFileSaveClicked}"/>
-		<KeyBinding Gesture="Ctrl+Shift+S" Command="{Binding MenuFileSaveAsClicked}"/>
-		<KeyBinding Gesture="Ctrl+W" Command="{Binding OnMenuFileCloseFile}"/>
-		<KeyBinding Gesture="Ctrl+P" Command="{Binding IPrintedThisFile}"/>
-		<KeyBinding Gesture="Ctrl+P" Command="{Binding IPrintedThisFile}"/>
-		<KeyBinding Gesture="Ctrl+Shift+L" Command="{Binding MenuFileOpenContainingFolderClicked}"/>
-		<KeyBinding Gesture="Ctrl+E" Command="{Binding ExtractFile}"/>
-		<KeyBinding Gesture="Ctrl+Shift+T" Command="{Binding OpenTerminal}"/>
+		<KeyBinding Gesture="{OnPlatform Ctrl+O, macOS=⌘+O}" Command="{Binding MenuFileOpenClicked}"/>
+		<KeyBinding Gesture="{OnPlatform Ctrl+Shift+O, macOS=⌘+Shift+O}" Command="{Binding MenuFileOpenNewWindowClicked}"/>
+		<KeyBinding Gesture="{OnPlatform Ctrl+F5, macOS=⌘+F5}" Command="{Binding ReloadFile}"/>
+		<KeyBinding Gesture="{OnPlatform Ctrl+F2, macOS=⌘+F2}" Command="{Binding MenuFileRenameClicked}"/>
+		<KeyBinding Gesture="{OnPlatform Ctrl+S, macOS=⌘+S}" Command="{Binding MenuFileSaveClicked}"/>
+		<KeyBinding Gesture="{OnPlatform Ctrl+Shift+S, macOS=⌘+Shift+S}" Command="{Binding MenuFileSaveAsClicked}"/>
+		<KeyBinding Gesture="{OnPlatform Ctrl+W, macOS=⌘+W}" Command="{Binding OnMenuFileCloseFile}"/>
+		<KeyBinding Gesture="{OnPlatform Ctrl+P, macOS=⌘+P}" Command="{Binding IPrintedThisFile}"/>
+		<KeyBinding Gesture="{OnPlatform Ctrl+Shift+L, macOS=⌘+Shift+L}" Command="{Binding MenuFileOpenContainingFolderClicked}"/>
+		<KeyBinding Gesture="{OnPlatform Ctrl+E, macOS=⌘+E}" Command="{Binding ExtractFile}"/>
+		<KeyBinding Gesture="{OnPlatform Ctrl+Shift+T, macOS=⌘+Shift+T}" Command="{Binding OpenTerminal}"/>
 		<KeyBinding Gesture="F11" Command="{Binding OnMenuFileFullscreen}"/>
 		<KeyBinding Gesture="F12" Command="{Binding MenuFileSettingsClicked}"/>
 
 		<KeyBinding Gesture="F1" Command="{Binding MenuHelpAboutClicked}"/>
-		<KeyBinding Gesture="Ctrl+F1" Command="{Binding OpenHomePage}"/>
+		<KeyBinding Gesture="{OnPlatform Ctrl+F1, macOS=⌘+F1}" Command="{Binding OpenHomePage}"/>
 		<KeyBinding Gesture="F10" Command="{Binding MenuHelpMaterialManagerClicked}"/>
 		<KeyBinding Gesture="F10" Command="{Binding MenuHelpMaterialManagerClicked}"/>
     </uc:WindowEx.KeyBindings>
@@ -43,13 +42,13 @@
 				<MenuItem Name="MainMenuFile" Header="_File">
 					<MenuItem Name="MainMenuFileOpen"
 							  Header="_Open"
-							  HotKey="Ctrl+O" InputGesture="Ctrl+O"
+							  HotKey="{OnPlatform Ctrl+O, macOS=⌘+O}" InputGesture="{Binding $self.HotKey}"
 							  Command="{Binding MenuFileOpenClicked}"
 							  i:MenuItem.Icon="fa-solid fa-file-import"/>
 
 					<MenuItem Name="MainMenuFileOpenNewWindow"
 							  Header="Open in _new window"
-							  HotKey="Ctrl+Shift+O" InputGesture="Ctrl+Shift+O"
+							  HotKey="{OnPlatform Ctrl+Shift+O, macOS=⌘+Shift+O}" InputGesture="{Binding $self.HotKey}"
 							  Command="{Binding MenuFileOpenNewWindowClicked}"
 							  i:MenuItem.Icon="fa-solid fa-file-import"/>
 
@@ -72,28 +71,28 @@
 
 					<MenuItem Name="MainMenuFileReload"
 							  Header="_Reload"
-                              HotKey="Ctrl+F5" InputGesture="Ctrl+F5"
+                              HotKey="{OnPlatform Ctrl+F5, macOS=⌘+F5}" InputGesture="{Binding $self.HotKey}"
 							  IsEnabled="{Binding IsFileLoaded}"
 							  Command="{Binding ReloadFile}"
 							  i:MenuItem.Icon="mdi-file-restore"/>
 
                     <MenuItem Name="MainMenuFileRename"
                               Header="_Rename"
-                              HotKey="Ctrl+F2" InputGesture="Ctrl+F2"
+                              HotKey="{OnPlatform Ctrl+F2, macOS=⌘+F2}" InputGesture="{Binding $self.HotKey}"
                               IsEnabled="{Binding IsFileLoaded}"
                               Command="{Binding MenuFileRenameClicked}"
                               i:MenuItem.Icon="fa-solid fa-pen-to-square"/>
 
 					<MenuItem Name="MainMenuFileSave"
 							  Header="_Save"
-							  HotKey="Ctrl+S" InputGesture="Ctrl+S"
+							  HotKey="{OnPlatform Ctrl+S, macOS=⌘+S}" InputGesture="{Binding $self.HotKey}"
 							  IsEnabled="{Binding CanSave}"
 							  Command="{Binding MenuFileSaveClicked}"
 							  i:MenuItem.Icon="fa-solid fa-floppy-disk"/>
 
 					<MenuItem Name="MainMenuFileSaveAs"
 							  Header="Save _as"
-							  HotKey="Ctrl+Shift+S" InputGesture="Ctrl+Shift+S"
+							  HotKey="{OnPlatform Ctrl+Shift+S, macOS=⌘+Shift+S}" InputGesture="{Binding $self.HotKey}"
 							  IsEnabled="{Binding IsFileLoaded}"
 							  Command="{Binding MenuFileSaveAsClicked}"
 							  i:MenuItem.Icon="fa-solid fa-floppy-disk"/>
@@ -106,7 +105,7 @@
 
 					<MenuItem Name="MainMenuFileClose"
 							  Header="_Close"
-							  HotKey="Ctrl+W" InputGesture="Ctrl+W"
+							  HotKey="{OnPlatform Ctrl+W, macOS=⌘+W}" InputGesture="{Binding $self.HotKey}"
 							  IsEnabled="{Binding IsFileLoaded}"
 							  Command="{Binding OnMenuFileCloseFile}"
 							  i:MenuItem.Icon="fa-solid fa-sign-out-alt"/>
@@ -125,27 +124,27 @@
                     </MenuItem>
 
                         <MenuItem Header="I _printed this file" 
-                                  HotKey="Ctrl+P" InputGesture="Ctrl+P"
+                                  HotKey="{OnPlatform Ctrl+P, macOS=⌘+P}" InputGesture="{Binding $self.HotKey}"
                                   IsEnabled="{Binding IsFileLoaded}"
                                   Command="{Binding IPrintedThisFile}"
                                   i:MenuItem.Icon="fa-solid fa-flask"/>
 
 					<MenuItem Name="MainMenuFileOpenContainingFileFolder"
 							  Header="Open containing fo_lder"
-							  HotKey="Ctrl+Shift+L" InputGesture="Ctrl+Shift+L"
+							  HotKey="{OnPlatform Ctrl+Shift+L, macOS=⌘+Shift+L}" InputGesture="{Binding $self.HotKey}"
 							  IsEnabled="{Binding IsFileLoaded}"
 							  Command="{Binding MenuFileOpenContainingFolderClicked}"
 							  i:MenuItem.Icon="fa-solid fa-folder-open"/>
 
 					<MenuItem Name="MainMenuFileExtract"
 							  Header="_Extract file contents" 
-                              HotKey="Ctrl+E" InputGesture="Ctrl+E"
+                              HotKey="{OnPlatform Ctrl+E, macOS=⌘+E}" InputGesture="{Binding $self.HotKey}"
 							  IsEnabled="{Binding IsFileLoaded}"
 							  Command="{Binding ExtractFile}"
 							  i:MenuItem.Icon="fa-solid fa-box-open"/>
 
 					<MenuItem Name="MainMenuFileTerminal"
-							  HotKey="Ctrl+Shift+T" InputGesture="Ctrl+Shift+T"
+							  HotKey="{OnPlatform Ctrl+Shift+T, macOS=⌘+Shift+T}" InputGesture="{Binding $self.HotKey}"
 							  Header="_Terminal"
 							  Command="{Binding OpenTerminal}"
 							  IsEnabled="{Binding IsFileLoaded}"
@@ -171,13 +170,13 @@
 
                     <MenuItem Name="MainMenuFileFullscreen"
                               Header="_Fullscreen"
-                              InputGesture="F11" HotKey="F11"
+                              HotKey="F11" InputGesture="{Binding $self.HotKey}"
                               Command="{Binding OnMenuFileFullscreen}"
                               i:MenuItem.Icon="fa-solid fa-window-maximize"/>
 
 					<MenuItem Name="MainMenuFileSettings"
 							  Header="_Settings"
-							  InputGesture="F12" HotKey="F12"
+							  HotKey="F12" InputGesture="{Binding $self.HotKey}"
 							  Command="{Binding MenuFileSettingsClicked}"
 							  i:MenuItem.Icon="fa-solid fa-cog"/>
 
@@ -205,12 +204,12 @@
 
 				<MenuItem Header="_Help">
 					<MenuItem Header="_About"
-                              HotKey="F1" InputGesture="F1"
+                              HotKey="F1" InputGesture="{Binding $self.HotKey}"
 							  Command="{Binding MenuHelpAboutClicked}"
 							  i:MenuItem.Icon="fa-solid fa-info-circle"/>
 
 					<MenuItem Header="_Website"
-							  HotKey="Ctrl+F1" InputGesture="Ctrl+F1"
+							  HotKey="{OnPlatform Ctrl+F1, macOS=⌘+F1}" InputGesture="{Binding $self.HotKey}"
 							  Command="{Binding OpenHomePage}"
 							  i:MenuItem.Icon="fa-brands fa-edge"/>
 
@@ -236,7 +235,7 @@
 					<Separator/>
 
 					<MenuItem Header="_Material manager"
-							  HotKey="F10" InputGesture="F10"
+							  HotKey="F10" InputGesture="{Binding $self.HotKey}"
 							  Command="{Binding MenuHelpMaterialManagerClicked}"
 							  i:MenuItem.Icon="fa-solid fa-flask"/>
 

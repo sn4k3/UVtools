@@ -20,7 +20,6 @@ public partial class KernelControl : UserControlEx
         set => SetAndRaise(KernelProperty, ref _kernel, value);
     }
 
-        
 
     public KernelControl()
     {
