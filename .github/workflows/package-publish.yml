@@ -71,7 +71,7 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: 🛒 Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Verify commit exists in origin/master
         run: |

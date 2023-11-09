@@ -2,7 +2,7 @@
 
 	<PropertyGroup>
 		<Platforms>AnyCPU;x64</Platforms>
-		<Version>4.0.3</Version>
+		<Version>4.0.4</Version>
 
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
 		<DocumentationFile>..\documentation\$(AssemblyName).xml</DocumentationFile>
@@ -23,8 +23,8 @@
 	<ItemGroup>
 		<PackageReference Include="AnimatedGif" Version="1.0.5" />
 		<PackageReference Include="BinarySerializer" Version="8.6.4.1" />
-		<PackageReference Include="CommunityToolkit.Diagnostics" Version="8.2.1" />
-		<PackageReference Include="CommunityToolkit.HighPerformance" Version="8.2.1" />
+		<PackageReference Include="CommunityToolkit.Diagnostics" Version="8.2.2" />
+		<PackageReference Include="CommunityToolkit.HighPerformance" Version="8.2.2" />
 		<PackageReference Include="Emgu.CV" Version="4.8.0.5324" />
 		<PackageReference Include="Emgu.CV.runtime.mini.macos" Version="4.8.0.5324" />
 		<PackageReference Include="Emgu.CV.runtime.mini.ubuntu-x64" Version="4.8.0.5324" />

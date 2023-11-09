@@ -12,6 +12,7 @@ using System.Drawing;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
+using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 
 namespace UVtools.Core.Operations;
@@ -112,7 +113,8 @@ public class OperationMask : Operation
         var target = GetRoiOrDefault(mat);
         using var mask = GetMask(mat);
         if (Mask!.Size != target.Size) return false;
-        CvInvoke.BitwiseAnd(target, Mask, target, mask);
+        //CvInvoke.BitwiseAnd(target, Mask, target, mask);
+        CvInvoke.Multiply(target, Mask, target, EmguExtensions.ByteScale);
         return true;
     }
 

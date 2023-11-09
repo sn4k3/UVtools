@@ -408,6 +408,7 @@ public sealed class PhotonWorkshopFile : FileFormat
     public class Preview : AnycubicNamedTable
     {
         protected override string DefaultTableName => "PREVIEW";
+        protected override bool IncludeBaseTableLength => true;
 
         /// <summary>
         /// Gets the image width, in pixels.
@@ -568,7 +569,7 @@ public sealed class PhotonWorkshopFile : FileFormat
         [FieldOrder(0)][FieldLength(96)][SerializeAs(SerializedType.TerminatedString)] public string MachineName { get; set; } = null!;
         [FieldOrder(1)][FieldLength(16)][SerializeAs(SerializedType.TerminatedString)] public string LayerImageFormat { get; set; } = "pw0img";
         [FieldOrder(2)] public uint MaxAntialiasingLevel { get; set; } = 16;
-        [FieldOrder(3)] public uint PropertyFields { get; set; } = 7;
+        [FieldOrder(3)] public uint PropertyFields { get; set; } = 1;
         [FieldOrder(4)] public float DisplayWidth { get; set; }
         [FieldOrder(5)] public float DisplayHeight { get; set; }
         [FieldOrder(6)] public float MachineZ { get; set; }
@@ -1935,7 +1936,8 @@ public sealed class PhotonWorkshopFile : FileFormat
         MachineSettings.PropertyFields = Version switch
         {
             >= VERSION_518 => 15,
-            _ => 7
+            >= VERSION_517 => 7,
+            _ => 1
         };
 
         HeaderSettings.PixelSizeUm = PixelSizeMicronsMax;
@@ -2018,7 +2020,7 @@ public sealed class PhotonWorkshopFile : FileFormat
             FileMarkSettings.ExtraAddress = FileMarkSettings.LayerImageAddress;
         }
 
-        var layersHash = new Dictionary<string, LayerDef>();
+        //var layersHash = new Dictionary<string, LayerDef>();
 
         foreach (var batch in BatchLayersIndexes())
         {
@@ -2040,7 +2042,7 @@ public sealed class PhotonWorkshopFile : FileFormat
 
                 var layerDef = LayersDefinition.Layers[layerIndex];
 
-                var hash = CryptExtensions.ComputeSHA1Hash(layerDef.EncodedRle);
+                /*var hash = CryptExtensions.ComputeSHA1Hash(layerDef.EncodedRle);
 
                 if (layersHash.TryGetValue(hash, out var layerDataHash))
                 {
@@ -2048,16 +2050,16 @@ public sealed class PhotonWorkshopFile : FileFormat
                     layerDef.DataLength = layerDataHash.DataLength;
                 }
                 else
-                {
+                {*/
                     layerDef.DataAddress = (uint)outputFile.Position;
                     SubLayersDefinition[layerIndex].SetFrom(layerDef);
 
 
-                    layersHash.Add(hash, layerDef);
+                    //layersHash.Add(hash, layerDef);
                     
                     outputFile.WriteBytes(layerDef.EncodedRle);
                     layerDef.EncodedRle = null!;
-                }
+                //}
             }
         }
 

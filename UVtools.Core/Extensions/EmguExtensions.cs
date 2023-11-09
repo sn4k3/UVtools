@@ -39,6 +39,13 @@ public static class EmguExtensions
 
     public static readonly Point AnchorCenter = new (-1, -1);
     public static readonly Mat Kernel3x3Rectangle = CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(3, 3), AnchorCenter);
+
+    /// <summary>
+    /// Gets the scale relation for 0-255 byte value.<br/>
+    /// Constant for: 1/255.0 = 0.00392156862745098039
+    /// </summary>
+    /// <remarks>Last three digits will drop (...039)</remarks>
+    public const double ByteScale = 1 / 255.0;
     #endregion
 
     #region Initializers methods

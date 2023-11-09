@@ -237,7 +237,7 @@ public class OperationPixelDimming : Operation
         }
     }
         
-    public float BrightnessPercent => (float)Math.Round(_brightness * 100 / 255f, 2);
+    public float BrightnessPercent => (float)Math.Round(_brightness * 100 / 255.0, 2);
 
 
     public ushort InfillGenThickness

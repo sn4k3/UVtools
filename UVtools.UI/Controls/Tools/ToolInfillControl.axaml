@@ -6,7 +6,7 @@
              mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="300"
              x:Class="UVtools.UI.Controls.Tools.ToolInfillControl"
              x:DataType="tools:ToolInfillControl">
-	<Grid RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto"
+	<Grid RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto"
           ColumnDefinitions="Auto,10,300,5,Auto">
 
 		<!--Pattern-->
@@ -19,14 +19,29 @@
 				  SelectedItem="{Binding Operation.InfillType, Converter={StaticResource FromValueDescriptionToEnumConverter}}"
 				  HorizontalAlignment="Stretch"/>
 
+        <!--Floor/Ceil thickness-->
+        <TextBlock
+            Grid.Row="2"
+            Grid.Column="0"
+            VerticalAlignment="Center"
+            Text="Floor/ceil thickness:"/>
+
+        <NumericUpDown Grid.Row="2" Grid.Column="2"
+                       Classes="ValueLabel ValueLabel_mm"
+                       Minimum="0"
+                       Maximum="100"
+                       Increment="0.1"
+					   FormatString="F2"
+                       Value="{Binding Operation.FloorCeilThickness}"/>
+
 		<!--Wall thickness-->
 		<TextBlock
-		  Grid.Row="2"
+		  Grid.Row="4"
 		  Grid.Column="0"
 		  VerticalAlignment="Center"
 		  Text="Wall thickness:"/>
 
-		<NumericUpDown Grid.Row="2" Grid.Column="2"
+		<NumericUpDown Grid.Row="4" Grid.Column="2"
 					   Classes="ValueLabel ValueLabel_px"
 		  Minimum="0"
 		  Maximum="65535"
@@ -34,24 +49,23 @@
 		  Value="{Binding Operation.WallThickness}"/>
 
 		<!--Infill brightness-->
-		<TextBlock Grid.Row="4" Grid.Column="0"
+		<TextBlock Grid.Row="6" Grid.Column="0"
 				   VerticalAlignment="Center"
 				   Text="Infill brightness:"/>
 
-		<NumericUpDown Grid.Row="4" Grid.Column="2"
+		<NumericUpDown Grid.Row="6" Grid.Column="2"
 					   Classes="ValueLabel ValueLabel_sun"
 					   Minimum="0"
 					   Maximum="255"
 					   Increment="1"
-      
 					   Value="{Binding Operation.InfillBrightness}"/>
 
 		<!--Infill thickness-->
-		<TextBlock Grid.Row="6" Grid.Column="0"
+		<TextBlock Grid.Row="8" Grid.Column="0"
 				   VerticalAlignment="Center"
 				   Text="Infill thickness:"/>
 
-		<NumericUpDown Grid.Row="6" Grid.Column="2"
+		<NumericUpDown Grid.Row="8" Grid.Column="2"
 					   Classes="ValueLabel ValueLabel_px"
 					   Name="InfillThickness"
 					   Minimum="0"
@@ -61,18 +75,18 @@
 					   Value="{Binding Operation.InfillThickness}"/>
 
 		<!--Infill spacing-->
-		<TextBlock Grid.Row="8" Grid.Column="0"
+		<TextBlock Grid.Row="10" Grid.Column="0"
 				   VerticalAlignment="Center"
 				   Text="Infill spacing:"/>
 
-		<NumericUpDown Grid.Row="8" Grid.Column="2"
+		<NumericUpDown Grid.Row="10" Grid.Column="2"
 					   Classes="ValueLabel ValueLabel_px"
 					   Minimum="{Binding #InfillThickness.Value}"
 					   Maximum="65535"
 					   Increment="1"
 						Value="{Binding Operation.InfillSpacing}"/>
 
-		<CheckBox Grid.Row="10" Grid.Column="2"
+		<CheckBox Grid.Row="12" Grid.Column="2"
 					   IsChecked="{Binding Operation.ReinforceInfill}"
 					   Content="Reinforce infill if possible"/>
 	</Grid>

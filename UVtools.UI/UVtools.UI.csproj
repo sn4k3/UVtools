@@ -2,7 +2,7 @@
 	<PropertyGroup>
 		<OutputType>WinExe</OutputType>
 		<AssemblyName>UVtools</AssemblyName>
-		<Version>4.0.3</Version>
+		<Version>4.0.4</Version>
 		<Platforms>AnyCPU;x64</Platforms>
 
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>

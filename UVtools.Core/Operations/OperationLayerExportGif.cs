@@ -231,7 +231,7 @@ public sealed class OperationLayerExportGif : Operation
             var layer = SlicerFile[layerIndex];
             using var mat = layer.LayerMat;
             //using var matOriginal = mat.Clone();
-            var matRoi = GetRoiOrDefault(mat);
+            using var matRoi = GetRoiOrDefault(mat);
 
             if (_scale != 100)
             {

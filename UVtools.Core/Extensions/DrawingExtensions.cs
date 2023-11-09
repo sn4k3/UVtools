@@ -6,9 +6,9 @@ namespace UVtools.Core.Extensions;
 public static class DrawingExtensions
 {
     public static Color FactorColor(this Color color, byte pixelColor, byte min = 0, byte max = byte.MaxValue) =>
-        FactorColor(color, pixelColor / 255f, min, max);
+        FactorColor(color, pixelColor / 255.0, min, max);
 
-    public static Color FactorColor(this Color color, float factor, byte min = 0, byte max = byte.MaxValue)
+    public static Color FactorColor(this Color color, double factor, byte min = 0, byte max = byte.MaxValue)
     {
         byte r = (byte)(color.R == 0 ? 0 :
             Math.Min(Math.Max(min, color.R * factor), max));

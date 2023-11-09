@@ -13,6 +13,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
+using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 
 namespace UVtools.Core.Operations;
@@ -257,7 +258,7 @@ public class OperationLayerArithmetic : Operation
             {
                 progress.PauseOrCancelIfRequested();
                 using var image = SlicerFile[operation.Operations[i].LayerIndex].LayerMat;
-                var imageRoi = GetRoiOrDefault(image);
+                using var imageRoi = GetRoiOrDefault(image);
 
                 switch (operation.Operations[i - 1].Operator)
                 {
@@ -268,7 +269,7 @@ public class OperationLayerArithmetic : Operation
                         CvInvoke.Subtract(resultRoi, imageRoi, resultRoi, imageMask);
                         break;
                     case LayerArithmeticOperators.Multiply:
-                        CvInvoke.Multiply(resultRoi, imageRoi, resultRoi);
+                        CvInvoke.Multiply(resultRoi, imageRoi, resultRoi, EmguExtensions.ByteScale);
                         break;
                     case LayerArithmeticOperators.Divide:
                         CvInvoke.Divide(resultRoi, imageRoi, resultRoi);
@@ -298,7 +299,7 @@ public class OperationLayerArithmetic : Operation
                 if (operation.Operations.Count == 1 || HaveROIorMask)
                 {
                     using var mat = SlicerFile[layerIndex].LayerMat;
-                    var matRoi = GetRoiOrDefault(mat);
+                    using var matRoi = GetRoiOrDefault(mat);
                     resultRoi.CopyTo(matRoi, imageMask);
                     SlicerFile[layerIndex].LayerMat = mat;
                     return;

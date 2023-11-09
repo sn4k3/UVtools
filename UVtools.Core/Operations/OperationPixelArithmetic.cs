@@ -588,8 +588,8 @@ public class OperationPixelArithmetic : Operation
             using (var mat = layer.LayerMat)
             {
                 using var original = mat.Clone();
-                var originalRoi = GetMatRoiCropped(original);
-                var target = GetMatRoiCropped(mat);
+                using var originalRoi = GetMatRoiCropped(original);
+                using var target = GetMatRoiCropped(mat);
                 Mat tempMat;
 
                 if (_usePattern && IsUsePatternVisible)
@@ -727,7 +727,7 @@ public class OperationPixelArithmetic : Operation
                         CvInvoke.Subtract(target, tempMat, target, applyMask);
                         break;
                     case PixelArithmeticOperators.Multiply:
-                        CvInvoke.Multiply(target, tempMat, target);
+                        CvInvoke.Multiply(target, tempMat, target, EmguExtensions.ByteScale);
                         if (_applyMethod != PixelArithmeticApplyMethod.All) ApplyMask(originalRoi, target, applyMask);
                         break;
                     case PixelArithmeticOperators.Divide:

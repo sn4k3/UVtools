@@ -118,7 +118,7 @@ if(fileMark.PreviewAddress > 0){
 }
 
 typedef struct(int size) {
-    BYTE layerDataBlock[size] <fgcolor=cBlack, bgcolor=0x00FF00>;
+    ubyte layerDataBlock[size] <fgcolor=cBlack, bgcolor=0x00FF00>;
 } layerRawData;
 
 if(fileMark.Version >= 515 && fileMark.LayerImageColorAddress > 0)
@@ -298,6 +298,7 @@ if(fileMark.LayerDefinitionAddress > 0){
     struct LAYERSDATA{
         local uint i;
         for( i = 0; i < layerDefinition.LayerCount; i++ ){
+            FSeek(layers.layerDef[i].DataAddress);
             layerRawData lD(layers.layerDef[i].DataLength);
         }
     } layersData;

@@ -65,9 +65,9 @@ public class Color
     public static Color Empty => new(0,0,0,0);
 
     public Color FactorColor(byte pixelColor, byte min = 0, byte max = byte.MaxValue) =>
-        FactorColor(pixelColor / 255f, min, max);
+        FactorColor(pixelColor / 255.0, min, max);
 
-    public Color FactorColor(float factor, byte min = 0, byte max = byte.MaxValue)
+    public Color FactorColor(double factor, byte min = 0, byte max = byte.MaxValue)
     {
         byte r = (byte)(R == 0 ? 0 :
             Math.Min(Math.Max(min, R * factor), max));

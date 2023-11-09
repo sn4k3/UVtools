@@ -168,7 +168,7 @@ public sealed class OperationLayerExportHeatMap : Operation
 
         if (_cropByRoi && HaveROI)
         {
-            var sumMatRoi = GetRoiOrDefault(resultMat);
+            using var sumMatRoi = GetRoiOrDefault(resultMat);
             sumMatRoi.Save(_filePath);
         }
         else

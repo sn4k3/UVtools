@@ -17,14 +17,16 @@ using System.Linq;
 using System.Threading.Tasks;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
+using UVtools.Core.Layers;
 
 namespace UVtools.Core.Operations;
 
 
-public sealed class OperationInfill : Operation
+public sealed class OperationInfill : Operation, IEquatable<OperationInfill>
 {
     #region Members
     private InfillAlgorithm _infillType = InfillAlgorithm.CubicCrossAlternating;
+    private decimal _floorCeilThickness = 3.0m;
     private ushort _wallThickness = 64;
     private ushort _infillThickness = 45;
     private ushort _infillSpacing = 300;
@@ -87,6 +89,12 @@ public sealed class OperationInfill : Operation
         set => RaiseAndSetIfChanged(ref _infillType, value);
     }
 
+    public decimal FloorCeilThickness
+    {
+        get => _floorCeilThickness;
+        set => RaiseAndSetIfChanged(ref _floorCeilThickness, value);
+    }
+
     public ushort WallThickness
     {
         get => _wallThickness;
@@ -119,7 +127,7 @@ public sealed class OperationInfill : Operation
 
     public override string ToString()
     {
-        var result = $"[{_infillType}] [Wall: {_wallThickness}px] [B: {_infillBrightness}px] [T: {_infillThickness}px] [S: {_infillSpacing}px] [R: {_reinforceInfill}]" + LayerRangeString;
+        var result = $"[{_infillType}] [Floor/Ceil: {_floorCeilThickness}mm] [Wall: {_wallThickness}px] [B: {_infillBrightness}px] [T: {_infillThickness}px] [S: {_infillSpacing}px] [R: {_reinforceInfill}]" + LayerRangeString;
         if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
         return result;
     }
@@ -136,9 +144,11 @@ public sealed class OperationInfill : Operation
 
     #region Equality
 
-    private bool Equals(OperationInfill other)
+    public bool Equals(OperationInfill? other)
     {
-        return _infillType == other._infillType && _wallThickness == other._wallThickness && _infillThickness == other._infillThickness && _infillSpacing == other._infillSpacing && _infillBrightness == other._infillBrightness && _reinforceInfill == other._reinforceInfill;
+        if (ReferenceEquals(null, other)) return false;
+        if (ReferenceEquals(this, other)) return true;
+        return _infillType == other._infillType && _floorCeilThickness == other._floorCeilThickness && _wallThickness == other._wallThickness && _infillThickness == other._infillThickness && _infillSpacing == other._infillSpacing && _infillBrightness == other._infillBrightness && _reinforceInfill == other._reinforceInfill;
     }
 
     public override bool Equals(object? obj)
@@ -148,7 +158,17 @@ public sealed class OperationInfill : Operation
 
     public override int GetHashCode()
     {
-        return HashCode.Combine((int) _infillType, _wallThickness, _infillThickness, _infillSpacing, _infillBrightness, _reinforceInfill);
+        return HashCode.Combine((int)_infillType, _floorCeilThickness, _wallThickness, _infillThickness, _infillSpacing, _infillBrightness, _reinforceInfill);
+    }
+
+    public static bool operator ==(OperationInfill? left, OperationInfill? right)
+    {
+        return Equals(left, right);
+    }
+
+    public static bool operator !=(OperationInfill? left, OperationInfill? right)
+    {
+        return !Equals(left, right);
     }
 
     #endregion
@@ -161,19 +181,21 @@ public sealed class OperationInfill : Operation
         if (_infillType == InfillAlgorithm.Honeycomb)
         {
             mask = GetHoneycombMask(GetRoiSizeOrVolumeSize());
-            CvInvoke.Imshow("Honeycomb", mask);
-            CvInvoke.WaitKey();
+            //CvInvoke.Imshow("Honeycomb", mask);
+            //CvInvoke.WaitKey();
         }
         else if (_infillType == InfillAlgorithm.Concentric)
         {
             mask = GetConcentricMask(GetRoiSizeOrVolumeSize());
         }
 
+        var clonedLayers = SlicerFile.CloneLayers();
+
         Parallel.For(LayerIndexStart, LayerIndexEnd + 1, CoreSettings.GetParallelOptions(progress), layerIndex =>
         {
             progress.PauseIfRequested();
             using var mat = SlicerFile[layerIndex].LayerMat;
-            Execute(mat, layerIndex, mask!);
+            Execute(mat, layerIndex, mask!, clonedLayers);
             SlicerFile[layerIndex].LayerMat = mat;
 
             progress.LockAndIncrement();
@@ -184,17 +206,18 @@ public sealed class OperationInfill : Operation
 
     public override bool Execute(Mat mat, params object[]? arguments)
     {
-        if (arguments is null || arguments.Length < 1) return false;
+        if (arguments is null || arguments.Length < 3) return false;
 
         var kernel = EmguExtensions.Kernel3x3Rectangle;
+        var infillColor = new MCvScalar(_infillBrightness);
         uint index = Convert.ToUInt32(arguments[0]);
         uint layerIndex = index - LayerIndexStart;
-        var infillColor = new MCvScalar(_infillBrightness);
+        var clonedLayers = (Layer[])arguments[2];
 
         Mat? patternMask = null;
-        using Mat erode = new ();
-        using Mat diff = new ();
-        var target = GetRoiOrVolumeBounds(mat);
+        using var erode = new Mat();
+        using var diff = new Mat();
+        using var target = GetRoiOrVolumeBounds(mat);
         using var mask = GetMask(mat);
         bool disposeTargetMask = true;
              
@@ -331,8 +354,7 @@ public sealed class OperationInfill : Operation
             }
 
 
-            CvInvoke.Repeat(infillPattern, target.Rows / infillPattern.Rows + 1,
-                target.Cols / infillPattern.Cols + 1, matPattern);
+            CvInvoke.Repeat(infillPattern, target.Rows / infillPattern.Rows + 1, target.Cols / infillPattern.Cols + 1, matPattern);
             patternMask = matPattern.Roi(target);
             disposeTargetMask = true;
         }
@@ -466,18 +488,55 @@ public sealed class OperationInfill : Operation
             disposeTargetMask = true;
         }
 
+        using var surfaceMat = target.Clone();
+
+        decimal heightAccumulator = (decimal)SlicerFile[index].LayerHeight;
+        if (_floorCeilThickness > heightAccumulator)
+        {
+            for (int floorLayerIndex = (int)(index - 1); heightAccumulator <= _floorCeilThickness && floorLayerIndex >= 0; floorLayerIndex--)
+            {
+                using var floorMat = clonedLayers[floorLayerIndex].LayerMat;
+                using var floorMatRoi = GetRoiOrVolumeBounds(floorMat);
+
+                CvInvoke.BitwiseAnd(surfaceMat, floorMatRoi, surfaceMat);
+
+                heightAccumulator += (decimal)SlicerFile[floorLayerIndex + 1].PositionZ - (decimal)SlicerFile[floorLayerIndex].PositionZ;
+            }
+
+            if (heightAccumulator <= _floorCeilThickness) return true;
+
+            heightAccumulator = (decimal)SlicerFile[index].LayerHeight;
+            for (var ceilLayerIndex = index + 1; heightAccumulator <= _floorCeilThickness && ceilLayerIndex <= SlicerFile.LastLayerIndex; ceilLayerIndex++)
+            {
+                using var ceilMat = clonedLayers[ceilLayerIndex].LayerMat;
+                using var ceilMatRoi = GetRoiOrVolumeBounds(ceilMat);
+
+                CvInvoke.BitwiseAnd(surfaceMat, ceilMatRoi, surfaceMat);
+
+                heightAccumulator += (decimal)SlicerFile[ceilLayerIndex].PositionZ - (decimal)SlicerFile[ceilLayerIndex - 1].PositionZ;
+            }
+
+            if (heightAccumulator <= _floorCeilThickness) return true;
+        }
+
 
         //patternMask.Save("D:\\pattern.png");
-        CvInvoke.Erode(target, erode, kernel, EmguExtensions.AnchorCenter, WallThickness, BorderType.Reflect101,
-            default);
-        CvInvoke.Subtract(target, erode, diff);
+        CvInvoke.Erode(target, erode, kernel, EmguExtensions.AnchorCenter, WallThickness, BorderType.Reflect101, default);
 
-        CvInvoke.BitwiseAnd(erode, patternMask, target, mask);
-        CvInvoke.Add(target, diff, target, mask);
+        CvInvoke.BitwiseAnd(erode, surfaceMat, erode, mask);
+        patternMask!.CopyTo(target, erode);
+        //target.SetTo(EmguExtensions.BlackColor, erode);
+        //erode.CopyTo(target);
+        //CvInvoke.BitwiseOr(target, patternMask, target, erode);
+
+
+        //CvInvoke.Subtract(target, erode, diff);
+        //CvInvoke.BitwiseAnd(erode, patternMask, target, mask);
+        //CvInvoke.Add(target, diff, target, mask);
 
         if (disposeTargetMask)
         {
-            patternMask!.Dispose();
+            patternMask.Dispose();
         }
 
         return true;

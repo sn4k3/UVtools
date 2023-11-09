@@ -87,7 +87,7 @@ public sealed class OperationLayerExportSkeleton : Operation
     protected override bool ExecuteInternally(OperationProgress progress)
     {
         using var skeletonSum = EmguExtensions.InitMat(SlicerFile.Resolution);
-        var skeletonSumRoi = GetRoiOrDefault(skeletonSum);
+        using var skeletonSumRoi = GetRoiOrDefault(skeletonSum);
         using var mask = GetMask(skeletonSum);
             
 
@@ -95,7 +95,7 @@ public sealed class OperationLayerExportSkeleton : Operation
         {
             progress.PauseIfRequested();
             using var mat = SlicerFile[layerIndex].LayerMat;
-            var matRoi = GetRoiOrDefault(mat);
+            using var matRoi = GetRoiOrDefault(mat);
             using var skeletonRoi = matRoi.Skeletonize();
             lock (progress.Mutex)
             {
