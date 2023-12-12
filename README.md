@@ -252,13 +252,13 @@ The following commands are the old way and commands under the UI executable, the
       - Click on: Turn Windows features on or off
       - Check the "Media Extensions" and click Ok
 <!-- 1. [.NET 6.0](https://dotnet.microsoft.com/download/dotnet/6.0) installed (Comes pre-installed on Windows 10 with last updates)!-->
-1. 4GB RAM or higher
+1. 8GB RAM or higher + 512MB per CPU core
 2. 64 bit System
 3. 1920 x 1080 @ 100% scale as minimum resolution
 
 ## Linux
 
-1. 4GB RAM or higher
+1. 8GB RAM or higher + 512MB per CPU core
 2. 64 bit System
 3. 1920 x 1080 @ 100% scale as minimum resolution
 
@@ -290,7 +290,7 @@ If you downloaded the **.AppImage** package variant you must set run permissions
 ## Mac
 
 1. macOS 10.15 Catalina or higher
-1. 4GB RAM or higher
+1. 8GB RAM or higher + 512MB per CPU core
 3. **For Mac M1/M2 (ARM):**
    1. Install via the [auto installer](https://github.com/sn4k3/UVtools#to-auto-install-on-macos-homebrew)
 

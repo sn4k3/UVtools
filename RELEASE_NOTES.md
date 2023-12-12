@@ -1,13 +1,7 @@
-- **FileFormat Anycubic:**
-  - (Fix) Preview marker size and `PropertyFields` for given file version
-  - (Fix) Do not cache and reuse layer images if equal on file write, as that is causing "file damage" message (#782, #787)
-- **Tools:**
-  - **Mask:**
-    - (Improvement) Apply the mask with Multiply instead of BitwiseAnd (#747)
-  - **Layer and pixel arithmetic**:
-    - (Improvement) Use the byte scale value (1/255) for multiply operations
-  - **Infill:**
-    - (Add) Floor/Ceil thickness (#785)
-    - (Fix) Remove the debug blocking window when selecting the honeycomb pattern
-- (Upgrade) .NET from 6.0.23 to 6.0.24
+- (Add) Tool - Phased Exposure: Replace "Double Exposure" with "Phased Exposure" tool, same effect but allow to define more steps (#778)
+- (Fix) Infill: Honeycomb Infill does not completely infill model (#789)
+- (Improvement) File -> Open recent: Disable all inexistent files (Can no longer be clicked)
+- (Upgrade) .NET from 6.0.24 to 6.0.25
+- (Upgrade) AvaloniaUI from 11.0.5 to 11.0.6
+-
 

@@ -23,12 +23,7 @@ public static class XmlExtensions
     public static void Serialize(object toSerialize, Stream stream, bool noNameSpace = false)
     {
         var xmlSerializer = new XmlSerializer(toSerialize.GetType());
-        XmlSerializerNamespaces? ns = null;
-        if (noNameSpace)
-        {
-            ns = new();
-            ns.Add("", "");
-        }
+        XmlSerializerNamespaces? ns = noNameSpace ? new XmlSerializerNamespaces(new []{XmlQualifiedName.Empty}) : null;
         xmlSerializer.Serialize(stream, toSerialize, ns);
     }
 
@@ -40,16 +35,44 @@ public static class XmlExtensions
         xw.WriteStartDocument(standalone); // that bool parameter is called "standalone"
 
         var s = new XmlSerializer(toSerialize.GetType());
-        XmlSerializerNamespaces? ns = null;
-        if (noNameSpace)
-        {
-            ns = new();
-            ns.Add("", "");
-        }
+        XmlSerializerNamespaces? ns = noNameSpace ? new XmlSerializerNamespaces(new[] { XmlQualifiedName.Empty }) : null;
         s.Serialize(xw, toSerialize, ns);
     }
 
     public static void Serialize(object toSerialize, Stream stream, Encoding encoding, bool indent = true, bool omitXmlDeclaration = false, bool noNameSpace = false, bool standalone = false)
+    {
+        var settings = new XmlWriterSettings
+        {
+            // If set to true XmlWriter would close MemoryStream automatically and using would then do double dispose
+            // Code analysis does not understand that. That's why there is a suppress message.
+            CloseOutput = false,
+            Encoding = encoding,
+            OmitXmlDeclaration = omitXmlDeclaration,
+            Indent = indent,
+        };
+        Serialize(toSerialize, stream, settings, noNameSpace, standalone);
+    }
+
+    public static void Serialize(object toSerialize, TextWriter stream, bool noNameSpace = false)
+    {
+        var xmlSerializer = new XmlSerializer(toSerialize.GetType());
+        XmlSerializerNamespaces? ns = noNameSpace ? new XmlSerializerNamespaces(new[] { XmlQualifiedName.Empty }) : null;
+        xmlSerializer.Serialize(stream, toSerialize, ns);
+    }
+
+    public static void Serialize(object toSerialize, TextWriter stream, XmlWriterSettings settings, bool noNameSpace = false, bool standalone = false)
+    {
+        settings.CloseOutput = false;
+
+        using var xw = XmlWriter.Create(stream, settings);
+        xw.WriteStartDocument(standalone); // that bool parameter is called "standalone"
+
+        var s = new XmlSerializer(toSerialize.GetType());
+        XmlSerializerNamespaces? ns = noNameSpace ? new XmlSerializerNamespaces(new[] { XmlQualifiedName.Empty }) : null;
+        s.Serialize(xw, toSerialize, ns);
+    }
+
+    public static void Serialize(object toSerialize, TextWriter stream, Encoding encoding, bool indent = true, bool omitXmlDeclaration = false, bool noNameSpace = false, bool standalone = false)
     {
         var settings = new XmlWriterSettings
         {
@@ -81,32 +104,25 @@ public static class XmlExtensions
         Serialize(toSerialize, stream, encoding, indent, omitXmlDeclaration, noNameSpace, standalone);
     }
 
-
-    public static string SerializeObject(object toSerialize, bool noNameSpace = false)
+    public static string SerializeToString(object toSerialize, bool noNameSpace = false)
     {
-        using var stream = new MemoryStream();
-        Serialize(toSerialize, stream, noNameSpace);
-        stream.Seek(0, SeekOrigin.Begin);
-        using var reader = new StreamReader(stream);
-        return reader.ReadToEnd();
+        using var stringWriter = new StringWriter();
+        Serialize(toSerialize, stringWriter, noNameSpace);
+        return stringWriter.ToString();
     }
 
-    public static string SerializeObject(object toSerialize, XmlWriterSettings settings, bool noNameSpace = false, bool standalone = false)
+    public static string SerializeToString(object toSerialize, XmlWriterSettings settings, bool noNameSpace = false, bool standalone = false)
     {
-        using var stream = new MemoryStream();
-        Serialize(toSerialize, stream, settings, noNameSpace, standalone);
-        stream.Seek(0, SeekOrigin.Begin);
-        using var reader = new StreamReader(stream);
-        return reader.ReadToEnd();
+        using var stringWriter = new StringWriter();
+        Serialize(toSerialize, stringWriter, settings, noNameSpace, standalone);
+        return stringWriter.ToString();
     }
 
-    public static string SerializeObject(object toSerialize, Encoding encoding, bool indent = true, bool omitXmlDeclaration = false, bool noNameSpace = false, bool standalone = false)
+    public static string SerializeToString(object toSerialize, Encoding encoding, bool indent = true, bool omitXmlDeclaration = false, bool noNameSpace = false, bool standalone = false)
     {
-        using var stream = new MemoryStream();
-        Serialize(toSerialize, stream, encoding, indent, omitXmlDeclaration, noNameSpace, standalone);
-        stream.Seek(0, SeekOrigin.Begin);
-        using var reader = new StreamReader(stream);
-        return reader.ReadToEnd();
+        using var stringWriter = new StringWriter();
+        Serialize(toSerialize, stringWriter, encoding, indent, omitXmlDeclaration, noNameSpace, standalone);
+        return stringWriter.ToString();
     }
 
     public static T DeserializeFromStream<T>(Stream stream)
@@ -121,7 +137,7 @@ public static class XmlExtensions
         return DeserializeFromStream<T>(stream);
     }
 
-    public static T DeserializeFromText<T>(string text)
+    public static T DeserializeFromString<T>(string text)
     {
         var serializer = new XmlSerializer(typeof(T));
         using TextReader reader = new StringReader(text);

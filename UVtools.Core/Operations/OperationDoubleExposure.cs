@@ -51,6 +51,9 @@ public class OperationDoubleExposure : Operation
         "After this, do not apply any modification which reconstruct the z positions of the layers.\n" +
         "Note: To eliminate the elephant foot effect, the use of wall dimming method is recommended.";
 
+    public override bool CanROI => false;
+    public override bool CanMask => false;
+
     public override string ConfirmationText =>
         $"double exposure model layers {LayerIndexStart} through {LayerIndexEnd}";
 

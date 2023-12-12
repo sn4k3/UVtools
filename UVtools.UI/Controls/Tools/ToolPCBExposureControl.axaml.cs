@@ -76,7 +76,7 @@ public partial class ToolPCBExposureControl : ToolControl
 
     public override void Callback(ToolWindow.Callbacks callback)
     {
-        if (App.SlicerFile is null) return;
+        if (SlicerFile is null) return;
         switch (callback)
         {
             case ToolWindow.Callbacks.Init:

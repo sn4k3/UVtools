@@ -71,17 +71,18 @@ public partial class MainWindow : WindowEx
         new() { Tag = new OperationMorph()},
         new() { Tag = new OperationRaftRelief()},
         new() { Tag = new OperationRedrawModel()},
-        /*new() { Tag = new OperationThreshold()},*/
+        //new() { Tag = new OperationThreshold()},
         new() { Tag = new OperationLayerArithmetic()},
         new() { Tag = new OperationPixelArithmetic()},
         new() { Tag = new OperationMask()},
-        /*new() { Tag = new OperationPixelDimming()},*/
+        //new() { Tag = new OperationPixelDimming()},
         new() { Tag = new OperationLightBleedCompensation()},
         new() { Tag = new OperationInfill()},
         new() { Tag = new OperationBlur()},
         new() { Tag = new OperationPattern()},
         new() { Tag = new OperationFadeExposureTime()},
-        new() { Tag = new OperationDoubleExposure()},
+        //new() { Tag = new OperationDoubleExposure()},
+        new() { Tag = new OperationPhasedExposure()},
         new() { Tag = new OperationDynamicLifts()},
         new() { Tag = new OperationDynamicLayerHeight()},
         new() { Tag = new OperationLayerReHeight()},
@@ -2265,7 +2266,7 @@ public partial class MainWindow : WindowEx
             {
                 Header = Path.GetFileName(file).ReplaceFirst("_", "__"),
                 Tag = file,
-                IsEnabled = !IsFileLoaded || SlicerFile!.FileFullPath != file
+                IsEnabled = (!IsFileLoaded || SlicerFile!.FileFullPath != file) && File.Exists(file)
             };
             ToolTip.SetTip(item, file);
             ToolTip.SetPlacement(item, PlacementMode.Right);
@@ -2274,7 +2275,7 @@ public partial class MainWindow : WindowEx
 
             item.Click += MenuFileOpenRecentItemOnClick;
         }
-
+        
         MenuFileOpenRecentItems = items;
     }
 

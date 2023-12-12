@@ -44,4 +44,11 @@ public static class TypeExtensions
         return assembly.GetTypes()
                 .Where(t => string.Equals(t.Namespace, nameSpace, StringComparison.Ordinal));
     }
+
+    public static bool IsPrimitive(this Type type)
+    {
+        if (type == typeof(string) 
+            || type == typeof(decimal)) return true;
+        return type is { IsValueType: true, IsPrimitive: true };
+    }
 }

@@ -40,6 +40,10 @@ public class MatRoi : IDisposable
 
     #endregion
 
+    public MatRoi Clone()
+    {
+        return new MatRoi(SourceMat.Clone(), Roi);
+    }
 
     public void Dispose()
     {

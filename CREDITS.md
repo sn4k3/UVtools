@@ -80,3 +80,5 @@
 - Nick Spirov
 - Sylvain Chartrand
 - Michael Pullen
+- Albeck Károly
+- Mark Johnston

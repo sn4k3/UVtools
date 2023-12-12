@@ -181,13 +181,23 @@ public sealed class OperationInfill : Operation, IEquatable<OperationInfill>
         if (_infillType == InfillAlgorithm.Honeycomb)
         {
             mask = GetHoneycombMask(GetRoiSizeOrVolumeSize());
-            //CvInvoke.Imshow("Honeycomb", mask);
-            //CvInvoke.WaitKey();
+            
         }
         else if (_infillType == InfillAlgorithm.Concentric)
         {
             mask = GetConcentricMask(GetRoiSizeOrVolumeSize());
         }
+
+#if DEBUG
+        /*
+        if (mask is not null)
+        {
+            using var previewMat = new Mat();
+            CvInvoke.Resize(mask, previewMat, new Size(mask.Width / 4, mask.Height / 4));
+            CvInvoke.Imshow("Honeycomb", previewMat);
+            CvInvoke.WaitKey();
+        }*/
+#endif
 
         var clonedLayers = SlicerFile.CloneLayers();
 
@@ -549,10 +559,10 @@ public sealed class OperationInfill : Operation, IEquatable<OperationInfill>
         var halfInfillSpacingD = _infillSpacing / 2.0;
         var halfInfillSpacing = (int)Math.Round(halfInfillSpacingD);
         var halfThickenss = _infillThickness / 2;
-        int width = (int)Math.Round(4 * (halfInfillSpacing / Math.Sqrt(3)));
+        int width = (int)Math.Round(4 * (halfInfillSpacingD / Math.Sqrt(3)));
         var infillColor = new MCvScalar(_infillBrightness);
 
-        int cols = (int)Math.Ceiling((float)targetSize.Width / _infillSpacing) + 2;
+        int cols = (int)Math.Ceiling(targetSize.Width / (width * 0.75f));
         int rows = (int)Math.Ceiling((float)targetSize.Height / _infillSpacing);
 
         for (int col = 0; col <= cols; col++)

@@ -148,6 +148,18 @@ public class OperationPCBExposure : Operation
         if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
         return result;
     }
+
+    public int Count => _files.Count;
+
+    public PCBExposureFile this[int index] => _files[index];
+
+    public override Operation Clone()
+    {
+        var clone = (OperationPCBExposure)base.Clone();
+        clone._files = _files.CloneByXmlSerialization();
+        return clone;
+    }
+
     #endregion
 
     #region Constructor
@@ -459,5 +471,4 @@ public class OperationPCBExposure : Operation
 
 
     #endregion
-
 }

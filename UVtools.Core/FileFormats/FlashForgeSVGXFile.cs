@@ -58,7 +58,7 @@ public class FlashForgeSVGXSvg
             NewLineChars = "\n"
         };
 
-        var svg = XmlExtensions.SerializeObject(this, settings);
+        var svg = XmlExtensions.SerializeToString(this, settings);
         return svg.Replace("  ", string.Empty)
                    .Replace("<g id=\"background\" area=\"0\" perimeter=\"0\" />", "<g id=\"background\">\n</g>")
                + '\n';
@@ -602,7 +602,7 @@ public sealed class FlashForgeSVGXFile : FileFormat
 
         inputFile.Seek(HeaderSettings.SVGDocumentAddress, SeekOrigin.Begin);
         string svgDocument = Encoding.UTF8.GetString(inputFile.ReadToEnd());
-        SVGDocument = XmlExtensions.DeserializeFromText<FlashForgeSVGXSvg>(svgDocument);
+        SVGDocument = XmlExtensions.DeserializeFromString<FlashForgeSVGXSvg>(svgDocument);
 
         Debug.WriteLine(SVGDocument);
 

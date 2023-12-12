@@ -1,0 +1,252 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:tools="clr-namespace:UVtools.UI.Controls.Tools"
+             xmlns:controls="clr-namespace:UVtools.UI.Controls"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="UVtools.UI.Controls.Tools.ToolPhasedExposureControl"
+             x:DataType="tools:ToolPhasedExposureControl">
+    <StackPanel Orientation="Vertical" Spacing="20">
+
+
+        <Border BorderBrush="Gray" BorderThickness="1">
+
+            <Grid ColumnDefinitions="Auto,*" Margin="5">
+                <StackPanel Grid.Column="0" Spacing="5" Orientation="Horizontal">
+                    <controls:ButtonWithIcon Padding="5"
+                                             Command="{Binding AddExposure}"
+                                             Text="Add exposure"
+                                             Spacing="5"
+                                             Icon="fa-solid fa-plus"/>
+
+                    <controls:ButtonWithIcon Padding="5"
+                                             IsEnabled="{Binding #PhasedExposuresGrid.SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                             Command="{Binding RemoveExposure}"
+                                             Text="Remove exposure"
+                                             Spacing="5"
+                                             Icon="fa-solid fa-minus"/>
+
+                    <controls:ButtonWithIcon
+                        IsEnabled="{Binding Operation.PhasedExposures.Count}"
+                        Padding="5" Command="{Binding ResetExposures}"
+                        Text="{Binding Operation.PhasedExposures.Count, StringFormat=Reset {0} exposures}"
+                        Spacing="5"
+                        Icon="fa-solid fa-xmark"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Spacing="2" Orientation="Horizontal" HorizontalAlignment="Right">
+                    <controls:ButtonWithIcon Padding="5"
+                                             IsEnabled="{Binding #PhasedExposuresGrid.SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                             Command="{Binding MoveExposureTop}"
+                                             ToolTip.Tip="Move exposure to top"
+                                             Spacing="5"
+                                             Icon="fa-solid fa-angles-up"/>
+
+                    <controls:ButtonWithIcon Padding="5"
+                                             IsEnabled="{Binding #PhasedExposuresGrid.SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                             Command="{Binding MoveExposureUp}"
+                                             ToolTip.Tip="Move exposure up"
+                                             Spacing="5"
+                                             Icon="fa-solid fa-sort-up"/>
+
+                    <controls:ButtonWithIcon Padding="5"
+                                             IsEnabled="{Binding #PhasedExposuresGrid.SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                             Command="{Binding MoveExposureDown}"
+                                             ToolTip.Tip="Move exposure down"
+                                             Spacing="5"
+                                             Icon="fa-solid fa-sort-down"/>
+
+                    <controls:ButtonWithIcon Padding="5"
+                                             IsEnabled="{Binding #PhasedExposuresGrid.SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                             Command="{Binding MoveExposureBottom}"
+                                             ToolTip.Tip="Move exposure to bottom"
+                                             Spacing="5"
+                                             Icon="fa-solid fa-angles-down"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <DataGrid Name="PhasedExposuresGrid"
+                  Margin="0, -15, 0, 0"
+                  BorderBrush="Gray"
+                  BorderThickness="1"
+                  MinWidth="720"
+                  MinHeight="170"
+                  CanUserReorderColumns="False"
+                  CanUserResizeColumns="False"
+                  CanUserSortColumns="False"
+                  GridLinesVisibility="Horizontal"
+                  IsReadOnly="False"
+                  SelectionMode="Extended"
+                  ClipboardCopyMode="IncludeHeader"
+                  HeadersVisibility="All"
+                  ItemsSource="{Binding Operation.PhasedExposures}"
+                  RowHeaderWidth="40"
+                  LoadingRow="PhasedExposuresGrid_OnLoadingRow">
+            <DataGrid.Columns>
+                <DataGridTextColumn MinWidth="0" Width="0" IsVisible="False"/>
+                <DataGridTemplateColumn Header="Bottom exposure time" MinWidth="180" Width="Auto">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding BottomExposureTime, StringFormat='{}{0:F2}s'}"
+                                       VerticalAlignment="Center" HorizontalAlignment="Center" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                    <DataGridTemplateColumn.CellEditingTemplate>
+                        <DataTemplate>
+                            <NumericUpDown Value="{Binding BottomExposureTime}"
+                                           FormatString="F2"
+                                           Minimum="0"
+                                           Maximum="1000"
+                                           Increment="0.50"
+                                           Classes="ValueLabel ValueLabel_s"
+                                           HorizontalAlignment="Stretch"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellEditingTemplate>
+                </DataGridTemplateColumn>
+
+                <DataGridTemplateColumn Header="Bottom iterations" MinWidth="180" Width="Auto">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding BottomIterations, StringFormat='{}{0}px'}"
+                                       VerticalAlignment="Center" HorizontalAlignment="Center" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                    <DataGridTemplateColumn.CellEditingTemplate>
+                        <DataTemplate>
+                            <NumericUpDown Value="{Binding BottomIterations}"
+                                           Minimum="0"
+                                           Maximum="65535"
+                                           Increment="1"
+                                           Classes="ValueLabel ValueLabel_px"
+                                           HorizontalAlignment="Stretch"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellEditingTemplate>
+                </DataGridTemplateColumn>
+
+                <DataGridTemplateColumn Header="Normal exposure time" MinWidth="180" Width="Auto">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding ExposureTime, StringFormat='{}{0:F2}s'}"
+                                       VerticalAlignment="Center" HorizontalAlignment="Center" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                    <DataGridTemplateColumn.CellEditingTemplate>
+                        <DataTemplate>
+                            <NumericUpDown Value="{Binding ExposureTime}"
+                                           FormatString="F2"
+                                           Minimum="0"
+                                           Maximum="1000"
+                                           Increment="0.50"
+                                           Classes="ValueLabel ValueLabel_s"
+                                           HorizontalAlignment="Stretch"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellEditingTemplate>
+                </DataGridTemplateColumn>
+
+                <DataGridTemplateColumn Header="Normal iterations" MinWidth="180" Width="Auto">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Iterations, StringFormat='{}{0}px'}"
+                                       VerticalAlignment="Center" HorizontalAlignment="Center" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                    <DataGridTemplateColumn.CellEditingTemplate>
+                        <DataTemplate>
+                            <NumericUpDown Value="{Binding Iterations}"
+                                           Minimum="0"
+                                           Maximum="65535"
+                                           Increment="1"
+                                           Classes="ValueLabel ValueLabel_px"
+                                           HorizontalAlignment="Stretch"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellEditingTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <StackPanel Orientation="Horizontal" Spacing="5">
+            <ToggleSwitch
+                OffContent="Exposure the whole image for the sequential layers"
+                OnContent="Exposure the difference between the original and phased layer and overlap by"
+                IsChecked="{Binding Operation.ExposureDifferenceOnly}"/>
+
+            <NumericUpDown Classes="ValueLabel ValueLabel_px"
+                           VerticalAlignment="Center"
+                           IsVisible="{Binding Operation.ExposureDifferenceOnly}"
+                           IsEnabled="{Binding Operation.ExposureDifferenceOnly}"
+                           Minimum="0"
+                           Maximum="65535"
+                           Increment="1"
+                           Value="{Binding Operation.ExposureDifferenceOnlyOverlapIterations}"
+                           ToolTip.Tip="This setting will further erode the layer producing a overlap of n pixel perimeters over the previous layer"/>
+        </StackPanel>
+
+        <CheckBox IsChecked="{Binding Operation.DifferentSettingsForSequentialLayers}"
+                  ToolTip.Tip="Change some defined settings for the sequential layers"
+                  Content="Use different settings for the sequential layers:"/>
+
+        <Grid RowDefinitions="Auto,10,Auto" ColumnDefinitions="Auto,10,Auto"
+              IsEnabled="{Binding Operation.DifferentSettingsForSequentialLayers}">
+            <CheckBox Grid.Row="0" Grid.Column="0"
+                       ToolTip.Tip="Use a low value to speed up layers with same Z position, lift is not really required here.
+&#x0a;Set no lift height (0mm) will not work on most of the printers, so far, only gcode printers are known/able to use no lifts.
+&#x0a;However set 0mm on a not compatible printer will cause no harm, value will be contained inside a min-max inside firmware."
+                       Content="Lift height:"
+                       IsVisible="{Binding SlicerFile.CanUseLayerLiftHeight}"
+                       IsChecked="{Binding Operation.SequentialLiftHeightEnabled}"
+                       VerticalAlignment="Center"/>
+            <NumericUpDown Grid.Row="0" Grid.Column="2"
+                           Classes="ValueLabel ValueLabel_mm"
+                           Increment="0.5"
+                           Minimum="0"
+                           Maximum="1000"
+                           FormatString="F2"
+                           IsVisible="{Binding SlicerFile.CanUseLayerLiftHeight}"
+                           IsEnabled="{Binding Operation.SequentialLiftHeightEnabled}"
+                           Value="{Binding Operation.SequentialLiftHeight}"/>
+
+            <CheckBox Grid.Row="2" Grid.Column="0"
+                      ToolTip.Tip="Use a low value to speed up layers with same Z position, a delay is not really required here.
+&#x0a;Set no delay (0s) is not recommended for gcode printers, as most need some time to render the image before move to the next command, 2s is recommended as a safe-guard."
+                      Content="Wait time before cure:"
+                      IsChecked="{Binding Operation.SequentialWaitTimeBeforeCureEnabled}"
+                      VerticalAlignment="Center">
+                <CheckBox.IsVisible>
+                    <MultiBinding Converter="{x:Static BoolConverters.Or}">
+                        <Binding Path="SlicerFile.CanUseLayerLightOffDelay"/>
+                        <Binding Path="SlicerFile.CanUseLayerWaitTimeBeforeCure"/>
+                    </MultiBinding>
+                </CheckBox.IsVisible>
+            </CheckBox>
+            <NumericUpDown Grid.Row="2" Grid.Column="2"
+                           Classes="ValueLabel ValueLabel_s"
+                           Increment="0.5"
+                           Minimum="0"
+                           Maximum="1000"
+                           FormatString="F2"
+                           IsEnabled="{Binding Operation.SequentialWaitTimeBeforeCureEnabled}"
+                           Value="{Binding Operation.SequentialWaitTimeBeforeCure}">
+                <NumericUpDown.IsVisible>
+                    <MultiBinding Converter="{x:Static BoolConverters.Or}">
+                        <Binding Path="SlicerFile.CanUseLayerLightOffDelay"/>
+                        <Binding Path="SlicerFile.CanUseLayerWaitTimeBeforeCure"/>
+                    </MultiBinding>
+                </NumericUpDown.IsVisible>
+            </NumericUpDown>
+
+        </Grid>
+
+        <Expander Header="Kernel - Advanced options (Click to expand)"
+                  HorizontalAlignment="Stretch"
+                  Margin="0,10,0,0">
+            <controls:KernelControl
+                Name="KernelCtrl"
+                Kernel="{Binding $parent.((tools:ToolPhasedExposureControl)DataContext).Operation.Kernel}"
+                Margin="0,10,0,0"/>
+        </Expander>
+
+    </StackPanel>
+    
+</UserControl>

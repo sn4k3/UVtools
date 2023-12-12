@@ -37,7 +37,7 @@ internal static class PrintMachinesCommand
 
                 if (xmlFormat)
                 {
-                    Console.WriteLine(XmlExtensions.SerializeObject(Machine.Machines, XmlExtensions.SettingsIndent));
+                    Console.WriteLine(XmlExtensions.SerializeToString(Machine.Machines, XmlExtensions.SettingsIndent));
                     return;
                 }
 
