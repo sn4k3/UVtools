@@ -364,6 +364,7 @@ namespace UVtools.Core.Printer
                 new(PrinterBrand.Voxelab, "Voxelab Ceres 8.9", "Ceres 8.9", 3840, 2400, 192f, 120f, 200f, FlipDirection.Horizontally),
                 new(PrinterBrand.Voxelab, "Voxelab Polaris 5.5", "Polaris 5.5", 1440, 2560, 68.04f, 120.96f, 155f, FlipDirection.Horizontally),
                 new(PrinterBrand.Voxelab, "Voxelab Proxima 6", "Proxima 6", 1620, 2560, 82.62f, 130.56f, 155f, FlipDirection.Horizontally),
+                new(PrinterBrand.Voxelab, "Voxelab Proxima 6 SVGX", "Proxima 6 SVGX", 2560, 1620, 130.56f, 82.62f, 155f, FlipDirection.Horizontally),
 
                 new(PrinterBrand.Wanhao, "Wanhao CGR Mini Mono", "CGR Mini Mono", 1620, 2560, 82.62f, 130.56f, 200f, FlipDirection.Horizontally),
                 new(PrinterBrand.Wanhao, "Wanhao CGR Mono", "CGR Mono", 1620, 2560, 192f, 120f, 200f, FlipDirection.Horizontally),
