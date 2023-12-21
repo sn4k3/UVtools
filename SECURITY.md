@@ -7,8 +7,8 @@ We don't support previous nor legacy versions.
 
 | Version | Supported          |
 | ------- | ------------------ |
-| 3       | :white_check_mark: |
-| < 3.0   | :x:                |
+| 4       | :white_check_mark: |
+| < 4.0   | :x:                |
 
 ## Reporting a Vulnerability
 
