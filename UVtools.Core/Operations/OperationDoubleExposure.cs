@@ -64,7 +64,7 @@ public class OperationDoubleExposure : Operation
 
     public override string? ValidateSpawn()
     {
-        if (!SlicerFile.CanUseLayerPositionZ || !SlicerFile.CanUseLayerLiftHeight || !SlicerFile.CanUseLayerExposureTime)
+        if (!SlicerFile.CanUseSameLayerPositionZ || !SlicerFile.CanUseLayerLiftHeight || !SlicerFile.CanUseLayerExposureTime)
         {
             return NotSupportedMessage;
         }

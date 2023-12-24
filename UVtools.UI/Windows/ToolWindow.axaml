@@ -292,6 +292,22 @@
         </Grid>
     </uvtava:ScrollGroupBox>
 
+    <!-- Errors 
+    <uvtava:ScrollGroupBox Grid.Row="4"
+                           Header="Errors"
+                           Margin="5">
+        <uvtava:ScrollGroupBox.IsVisible>
+            <MultiBinding Converter="{x:Static BoolConverters.And}">
+                <Binding Path="IsContentVisible"/>
+                <Binding Path="!ContentControl.IsLastValidationSuccess"/>
+            </MultiBinding>
+        </uvtava:ScrollGroupBox.IsVisible>
+
+        <SelectableTextBlock Text="{Binding ContentControl.LastValidationMessage}"/>
+
+    </uvtava:ScrollGroupBox>
+    -->
+
     <!-- Content -->
     <uvtava:ScrollGroupBox Grid.Row="4"
       IsVisible="{Binding IsContentVisible}"
@@ -346,16 +362,14 @@
                                      Command="{Binding OnButton1Click}">
           </controls:ButtonWithIcon>
 
-          <CheckBox 
-            IsChecked="{Binding IsCheckBox1Checked}"
-            IsVisible="{Binding IsCheckBox1Visible}"
-            Content="{Binding CheckBox1Text}"/>
+          <CheckBox IsChecked="{Binding IsCheckBox1Checked}"
+                    IsVisible="{Binding IsCheckBox1Visible}"
+                    Content="{Binding CheckBox1Text}"/>
         </StackPanel>
 
-        <StackPanel 
-          Spacing="10" 
-          HorizontalAlignment="Right" 
-          Orientation="Horizontal">
+        <StackPanel Spacing="10" 
+                    HorizontalAlignment="Right" 
+                    Orientation="Horizontal">
 
             <controls:ButtonWithIcon Padding="10"
                                      IsDefault="True"

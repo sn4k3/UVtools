@@ -21,6 +21,7 @@ using UVtools.UI.Controls.Tools;
 using UVtools.UI.Extensions;
 using UVtools.UI.Structures;
 using AvaloniaStatic = UVtools.UI.Controls.AvaloniaStatic;
+using Avalonia.Controls;
 
 namespace UVtools.UI.Windows;
 
@@ -287,7 +288,15 @@ public partial class ToolWindow : WindowEx
 
     #region ROI & Masks
 
-    public bool IsROIOrMasksVisible => IsROIVisible || IsMasksVisible;
+    public bool IsROIOrMasksVisible
+    {
+        get => IsROIVisible || IsMasksVisible;
+        set
+        {
+            IsROIVisible = false;
+            IsMasksVisible = false;
+        }
+    }
 
     public bool IsROIVisible
     {
@@ -517,7 +526,7 @@ public partial class ToolWindow : WindowEx
 
     #region Content
 
-    public bool IsContentVisible => ContentControl is null || ContentControl.IsVisible;
+    public bool IsContentVisible => _contentControl.IsVisible;
 
     public ToolBaseControl ContentControl
     {
@@ -584,16 +593,12 @@ public partial class ToolWindow : WindowEx
         set => RaiseAndSetIfChanged(ref _buttonOkText, value);
     }
 
-
-
     #endregion
 
     #region Constructors
     public ToolWindow() 
     {
         CanResize = Settings.General.WindowsCanResize;
-
-        InitializeComponent();
 
         SelectAllLayers();
 
@@ -606,6 +611,12 @@ public partial class ToolWindow : WindowEx
         {
             IsMasksVisible = true;
         }
+
+        if (Design.IsDesignMode)
+        {
+            _contentControl = new ToolBaseControl();
+            InitializeComponent();
+        }
     }
 
     public ToolWindow(ToolBaseControl contentControl, string? description = null, bool layerRangeVisible = true, bool layerEndIndexEnabled = true) : this()
@@ -616,6 +627,8 @@ public partial class ToolWindow : WindowEx
         _contentControl = contentControl;
         _contentControl.ParentWindow = this;
         if (_contentControl is not Controls.Tools.ToolControl) DataContext = this;
+
+        InitializeComponent();
     }
 
     public ToolWindow(ToolControl toolControl) : this(toolControl, toolControl.BaseOperation!.Description, toolControl.BaseOperation.StartLayerRangeSelection != LayerRangeSelection.None, toolControl.BaseOperation.LayerIndexEndEnabled)

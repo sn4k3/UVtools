@@ -11,6 +11,7 @@ using Emgu.CV;
 using Emgu.CV.CvEnum;
 using K4os.Compression.LZ4;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
@@ -1990,20 +1991,27 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
                 return mat.GetPngByes();
             case LayerCompressionCodec.Lz4:
             {
-                var span = mat.GetDataByteSpan();
+                /*var span = mat.GetDataByteSpan();
                 var target = new byte[LZ4Codec.MaximumOutputSize(span.Length)];
                 var encodedLength = LZ4Codec.Encode(span, target.AsSpan());
                 Array.Resize(ref target, encodedLength);
+                return target;*/
+
+                var span = mat.GetDataByteSpan();
+
+                var rent = ArrayPool<byte>.Shared.Rent(LZ4Codec.MaximumOutputSize(span.Length));
+                var rentSpan = rent.AsSpan();
+
+                var encodedLength = LZ4Codec.Encode(span, rentSpan);
+                var target = rentSpan[..encodedLength].ToArray();
+
+                ArrayPool<byte>.Shared.Return(rent);
                 return target;
             }
             case LayerCompressionCodec.GZip:
-            {
                 return CompressionExtensions.GZipCompressToBytes(mat.GetUnmanagedMemoryStream(FileAccess.Read), CompressionLevel.Fastest);
-            }
             case LayerCompressionCodec.Deflate:
-            {
                 return CompressionExtensions.DeflateCompressToBytes(mat.GetUnmanagedMemoryStream(FileAccess.Read), CompressionLevel.Fastest);
-            }
             /*case LayerCompressionMethod.None:
                 return mat.GetBytes();*/
             default:

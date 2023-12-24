@@ -8,11 +8,36 @@ public class ToolBaseControl : UserControlEx
 {
     public ToolWindow? ParentWindow { get; set; }
 
+    private string? _lastValidationMessage;
+
     public bool CanRun { get; set; } = true;
 
-    public virtual string? Validate() => null;
-
     public virtual bool ValidateSpawn() => true;
+    protected virtual string? ValidateInternally() => null;
+
+    public string? LastValidationMessage
+    {
+        get => _lastValidationMessage;
+        private set
+        {
+            if(!RaiseAndSetIfChanged(ref _lastValidationMessage, value)) return;
+            RaisePropertyChanged(nameof(IsLastValidationSuccess));
+        }
+    }
+
+    public bool IsLastValidationSuccess => string.IsNullOrWhiteSpace(_lastValidationMessage);
+
+    protected virtual void OnBeforeValidate(){}
+
+    public string? Validate()
+    {
+        OnBeforeValidate();
+        LastValidationMessage = ValidateInternally();
+        OnAfterValidate();
+        return _lastValidationMessage;
+    }
+
+    protected virtual void OnAfterValidate() { }
 
     /// <summary>
     /// Validates if is safe to continue with operation

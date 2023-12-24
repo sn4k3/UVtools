@@ -2,7 +2,7 @@
 
 	<PropertyGroup>
 		<Platforms>AnyCPU;x64</Platforms>
-		<Version>4.0.5</Version>
+		<Version>4.0.6</Version>
 
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
 		<DocumentationFile>..\documentation\$(AssemblyName).xml</DocumentationFile>

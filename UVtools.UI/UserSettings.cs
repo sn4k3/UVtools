@@ -1545,6 +1545,7 @@ public sealed class UserSettings : BindableBase
     public sealed class AutomationsUserSettings : BindableBase
     {
         private bool _saveFileAfterModifications = true;
+        private bool _fileNameOnlyAsciiCharacters;
         private bool _autoConvertFiles = true;
         private RemoveSourceFileAction _removeSourceFileAfterAutoConversion = RemoveSourceFileAction.No;
         private RemoveSourceFileAction _removeSourceFileAfterManualConversion = RemoveSourceFileAction.No;
@@ -1553,6 +1554,12 @@ public sealed class UserSettings : BindableBase
         {
             get => _saveFileAfterModifications;
             set => RaiseAndSetIfChanged(ref _saveFileAfterModifications, value);
+        }
+
+        public bool FileNameOnlyAsciiCharacters
+        {
+            get => _fileNameOnlyAsciiCharacters;
+            set => RaiseAndSetIfChanged(ref _fileNameOnlyAsciiCharacters, value);
         }
 
         public bool AutoConvertFiles

@@ -26,7 +26,7 @@ public static class CompressionExtensions
     public static int GetGzipUncompressedLength(Stream stream)
     {
         Span<byte> uncompressedLength = stackalloc byte[4];
-        stream.Position = stream.Length - 4;
+        stream.Seek(-4, SeekOrigin.End);
         stream.Read(uncompressedLength);
         stream.Seek(0, SeekOrigin.Begin);
         return BitConverter.ToInt32(uncompressedLength);
@@ -34,7 +34,7 @@ public static class CompressionExtensions
 
     public static MemoryStream GZipCompress(Stream inputStream, CompressionLevel compressionLevel, bool leaveStreamOpen = false)
     {
-        if (inputStream.Position == inputStream.Length) { inputStream.Seek(0, SeekOrigin.Begin); }
+        if (inputStream.Position == inputStream.Length) inputStream.Seek(0, SeekOrigin.Begin);
 
         var compressedStream = new MemoryStream();
         using (var gzipStream = new GZipStream(compressedStream, compressionLevel, true))

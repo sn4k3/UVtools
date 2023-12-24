@@ -1638,6 +1638,10 @@
 
 							<StackPanel Orientation="Vertical" Spacing="10">
 								<CheckBox IsChecked="{Binding Settings.Automations.SaveFileAfterModifications}" Content="Automatically save the file after apply any automation(s)"/>
+                                <ToggleSwitch IsChecked="{Binding Settings.Automations.FileNameOnlyAsciiCharacters}"
+                                              OffContent="Allow all valid characters on the file name"
+                                              OnContent="Restrict the file name to valid ASCII characters"
+                                              ToolTip.Tip="Some printers can only show and print files with all ASCII characters. Enable this is recommended to ensure a proper file name."/>
 							</StackPanel>
 
 						</uvtava:GroupBox>

@@ -41,6 +41,8 @@ public abstract class Operation : BindableBase, IDisposable
     #endregion
 
     #region Members
+
+    public const byte ClassNameLength = 9;
     private FileFormat _slicerFile = null!;
     private Rectangle _originalBoundingRectangle;
     private OperationImportFrom _importedFrom = OperationImportFrom.None;
@@ -51,7 +53,8 @@ public abstract class Operation : BindableBase, IDisposable
     private string? _profileName;
     private bool _profileIsDefault;
     private LayerRangeSelection _layerRangeSelection = LayerRangeSelection.All;
-    public const byte ClassNameLength = 9;
+    private string? _lastValidationMessage;
+
     #endregion
 
     #region Properties
@@ -337,6 +340,26 @@ public abstract class Operation : BindableBase, IDisposable
     public bool IsValidated { get; private set; }
 
     /// <summary>
+    /// Gets the last validation message
+    /// </summary>
+    [XmlIgnore]
+    public string? LastValidationMessage
+    {
+        get => _lastValidationMessage;
+        private set
+        {
+            if(!RaiseAndSetIfChanged(ref _lastValidationMessage, value)) return;
+            RaisePropertyChanged(nameof(IsLastValidationSuccess));
+        }
+    }
+
+    /// <summary>
+    /// Gets if the last validation pass with success
+    /// </summary>
+    [XmlIgnore]
+    public bool IsLastValidationSuccess => string.IsNullOrWhiteSpace(_lastValidationMessage);
+
+    /// <summary>
     /// Gets or sets an report to show to the user after complete the operation with success
     /// </summary>
     [XmlIgnore]
@@ -401,7 +424,8 @@ public abstract class Operation : BindableBase, IDisposable
     public string? Validate()
     {
         IsValidated = true;
-        return ValidateInternally();
+        LastValidationMessage = ValidateInternally();
+        return _lastValidationMessage;
     }
 
     /// <summary>

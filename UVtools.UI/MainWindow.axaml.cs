@@ -880,32 +880,27 @@ public partial class MainWindow : WindowEx
 
     public async void MenuFileRenameClicked()
     {
-        if (!IsFileLoaded) return;
+        await RenameCurrentFile();
+    }
+
+    public async Task<bool> RenameCurrentFile()
+    {
+        if (!IsFileLoaded) return false;
         var control = new RenameFileControl();
-        var window = new ToolWindow(control, "Rename current file with a new name", false, false)
+        var window = new ToolWindow(control, "Rename the current file with a new name", false, false)
         {
-            Title = "Rename current file",
+            Title = $"Rename \"{SlicerFile!.FilenameNoExt}\" file",
             ButtonOkText = "Rename",
         };
 
         var result = await window.ShowDialog<DialogResults>(this);
 
-        if (result != DialogResults.OK) return;
+        if (result != DialogResults.OK) return false;
 
-        try
-        {
-            if (SlicerFile!.RenameFile(control.NewFileNameNoExt, control.Overwrite))
-            {
-                RemoveRecentFile(control.OldFilePath);
-                AddRecentFile(control.NewFilePath);
-            }
-            
-        }
-        catch (Exception e)
-        {
-            await this.MessageBoxError(e.ToString(), "Error while trying to rename the file");
-        }
-        
+        RemoveRecentFile(control.OldFilePath);
+        AddRecentFile(control.NewFilePath);
+
+        return true;
     }
 
     public async void MenuFileSaveClicked()
@@ -1409,6 +1404,25 @@ public partial class MainWindow : WindowEx
             SlicerFile.Dispose();
             SlicerFile = null;
             return;
+        }
+
+        var fileNameNoExt = SlicerFile.FilenameNoExt!;
+        if (!FileFormat.IsFileNameValid(fileNameNoExt, out var message, Settings.Automations.FileNameOnlyAsciiCharacters))
+        {
+            var currentSetting = Settings.Automations.FileNameOnlyAsciiCharacters
+                ? "restrict the file name to valid ASCII characters"
+                : "allow all valid characters on the file name";
+            if (await this.MessageBoxWaring($"{message}\n\n" +
+                                            "Some printers can only show and print files with valid ASCII characters.\n" +
+                                            "Ensure a proper file name is important, and then is recommended to rename the file with sane characters.\n" +
+                                            $"Your current setting is to {currentSetting}. This option can be changed on \"Settings - Automations\".\n\n" +
+                                            "Do you want to rename the file now?",
+                    $"File \"{fileNameNoExt}\" have invalid characters",
+                    MessageButtons.YesNo) ==
+                MessageButtonResult.Yes)
+            {
+                await RenameCurrentFile();
+            }
         }
 
         if (Settings.Automations.AutoConvertFiles && SlicerFile.DecodeType == FileFormat.FileDecodeType.Full)

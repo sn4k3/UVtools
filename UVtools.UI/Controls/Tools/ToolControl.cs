@@ -73,7 +73,7 @@ public class ToolControl : ToolBaseControl
 
     public virtual bool UpdateOperation() => true;
 
-    public override string? Validate()
+    protected override string? ValidateInternally()
     {
         return BaseOperation?.Validate();
     }

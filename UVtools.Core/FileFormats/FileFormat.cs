@@ -1056,6 +1056,50 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
 
 	    return comparison;
     }
+
+    /// <summary>
+    /// Checks if a filename is valid or not
+    /// </summary>
+    /// <param name="filename">The file name only, without path</param>
+    /// <param name="errorMessage">The error message to return</param>
+    /// <param name="onlyAsciiCharacters">If true, the <paramref name="filename"/> must contain only ASCII characters.</param>
+    /// <returns>True if filename is valid, otherwise false.</returns>
+    public static bool IsFileNameValid(string filename, out string errorMessage, bool onlyAsciiCharacters = false)
+    {
+        errorMessage = string.Empty;
+
+        var invalidFileNameChars = Path.GetInvalidFileNameChars();
+        var invalidChars = filename.Where(c => invalidFileNameChars.Contains(c)).Distinct();
+        
+        if (invalidChars.Any())
+        {
+            errorMessage = $"The file \"{filename}\" have invalid characters.\nThe following in-name characters are forbidden: {string.Join(", ", invalidChars)}.";
+            return false;
+        }
+
+        if (onlyAsciiCharacters)
+        {
+            var nonAscii = filename.Where(c => !char.IsAscii(c)).Distinct();
+            if (nonAscii.Any())
+            {
+                errorMessage = $"The file \"{filename}\" have non-ASCII characters.\nThe following in-name characters are not allowed: {string.Join(", ", nonAscii)}.";
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// Checks if a filename is valid or not
+    /// </summary>
+    /// <param name="filename">The file name only, without path</param>
+    /// <param name="onlyAsciiCharacters">If true, the <paramref name="filename"/> must contain only ASCII characters.</param>
+    /// <returns></returns>
+    public static bool IsFileNameValid(string filename, bool onlyAsciiCharacters = false)
+    {
+        return IsFileNameValid(filename, out _, onlyAsciiCharacters);
+    }
     #endregion
 
     #region Members

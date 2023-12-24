@@ -8,25 +8,38 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="UVtools.UI.Controls.RenameFileControl"
              x:DataType="controls:RenameFileControl">
-    <Grid RowDefinitions="Auto,10,Auto,10,Auto" ColumnDefinitions="Auto,10,*">
-        <TextBlock Grid.Row="0" Grid.Column="0"
-                   VerticalAlignment="Center"
-                   Text="Old filename:"/>
 
-        <TextBox Grid.Row="0" Grid.Column="2"
-                 Classes="TransparentReadOnly" 
-                 Text="{Binding OldFileNameNoExt}"/>
+    <StackPanel Orientation="Vertical" Spacing="10">
+        <Grid RowDefinitions="Auto,10,Auto,10,Auto,10,Auto" ColumnDefinitions="Auto,10,*">
+            <TextBlock Grid.Row="0" Grid.Column="0"
+                       VerticalAlignment="Center"
+                       Text="Old filename:"/>
 
-        <TextBlock Grid.Row="2" Grid.Column="0"
-                   VerticalAlignment="Center"
-                   Text="New filename:"/>
+            <TextBox Grid.Row="0" Grid.Column="2"
+                     Classes="TransparentReadOnly" 
+                     Text="{Binding OldFileNameNoExt}"/>
 
-        <TextBox Grid.Row="2" Grid.Column="2"
-                 Text="{Binding NewFileNameNoExt}"/>
+            <TextBlock Grid.Row="2" Grid.Column="0"
+                       VerticalAlignment="Center"
+                       Text="New filename:"/>
 
-        <ToggleSwitch Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3"
-                      IsChecked="{Binding Overwrite}"
-                      OnContent="Overwrite the file if already exists"
-                      OffContent="Prompt to overwrite the file if already exists"/>
-    </Grid>
+            <TextBox Grid.Row="2" Grid.Column="2"
+                     Text="{Binding NewFileNameNoExt}"/>
+
+            <ToggleSwitch Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3"
+                          IsChecked="{Binding OnlyAsciiCharacters}"
+                          OffContent="Allow all valid characters on the file name"
+                          OnContent="Restrict the file name to valid ASCII characters"
+                          ToolTip.Tip="Some printers can only show and print files with valid ASCII characters. Enable this is recommended to ensure a proper file name."/>
+
+            <ToggleSwitch Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="3"
+                          IsChecked="{Binding Overwrite}"
+                          OffContent="Prompt to overwrite the file if already exists"
+                          OnContent="Overwrite the file if already exists"/>
+        </Grid>
+
+        <SelectableTextBlock Foreground="Red"
+                             IsVisible="{Binding !IsLastValidationSuccess}"
+                             Text="{Binding LastValidationMessage, StringFormat='Error: {0}'}"/>
+    </StackPanel>
 </UserControl>

@@ -2748,6 +2748,23 @@
             <param name="onlyProperties">A list of strict properties to compare</param>
             <returns></returns>
         </member>
+        <member name="M:UVtools.Core.FileFormats.FileFormat.IsFileNameValid(System.String,System.String@,System.Boolean)">
+            <summary>
+            Checks if a filename is valid or not
+            </summary>
+            <param name="filename">The file name only, without path</param>
+            <param name="errorMessage">The error message to return</param>
+            <param name="onlyAsciiCharacters">If true, the <paramref name="filename"/> must contain only ASCII characters.</param>
+            <returns>True if filename is valid, otherwise false.</returns>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.FileFormat.IsFileNameValid(System.String,System.Boolean)">
+            <summary>
+            Checks if a filename is valid or not
+            </summary>
+            <param name="filename">The file name only, without path</param>
+            <param name="onlyAsciiCharacters">If true, the <paramref name="filename"/> must contain only ASCII characters.</param>
+            <returns></returns>
+        </member>
         <member name="P:UVtools.Core.FileFormats.FileFormat.FileType">
             <summary>
             Gets the file format type
@@ -7098,6 +7115,16 @@
         <member name="P:UVtools.Core.Operations.Operation.IsValidated">
             <summary>
             Gets if this operation have validated at least once
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Operations.Operation.LastValidationMessage">
+            <summary>
+            Gets the last validation message
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Operations.Operation.IsLastValidationSuccess">
+            <summary>
+            Gets if the last validation pass with success
             </summary>
         </member>
         <member name="P:UVtools.Core.Operations.Operation.AfterCompleteReport">
