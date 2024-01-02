@@ -14,14 +14,14 @@
 *.cshtml        text diff=html
 *.cs            text diff=csharp
 *.csx           text diff=csharp
-*.wxs           text # Wix
+*.wxs           text
 *.xml           text
 *.py            text diff=python
 *.py3           text diff=python
 *.gcode         text
 
 # Declare files that will always have CRLF line endings on checkout.
-*.bat     text eol=crlf # Batch scripts require CRLF
+*.bat     text eol=crlf
 *.sln     text eol=crlf
 *.csproj  text eol=crlf
 *.vbproj  text eol=crlf
@@ -37,7 +37,7 @@
 *.cdxml   text eol=crlf
 
 # Declare files that will always have LF line endings on checkout.
-*.sh     text eol=lf diff=bash # Shell scripts require LF
+*.sh     text eol=lf diff=bash
 
 ###############################################################################
 # Set default behavior for command prompt diff.
