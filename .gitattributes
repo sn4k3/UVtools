@@ -1,0 +1,129 @@
+###############################################################################
+# Set default behavior to automatically normalize line endings.
+###############################################################################
+* text=auto
+
+# Explicitly declare text files we want to always be normalized and converted
+# to native line endings on checkout.
+*.gitattributes text
+*.txt           text
+*.ini           text
+*.md            text diff=markdown
+*.json          text
+*.html          text diff=html
+*.cshtml        text diff=html
+*.cs            text diff=csharp
+*.csx           text diff=csharp
+*.wxs           text # Wix
+*.xml           text
+*.py            text diff=python
+*.py3           text diff=python
+*.gcode         text
+
+# Declare files that will always have CRLF line endings on checkout.
+*.bat     text eol=crlf # Batch scripts require CRLF
+*.sln     text eol=crlf
+*.csproj  text eol=crlf
+*.vbproj  text eol=crlf
+*.fsproj  text eol=crlf
+*.wixproj text eol=crlf
+*.ps1     text eol=crlf
+*.ps1x    text eol=crlf
+*.psm1    text eol=crlf
+*.psd1    text eol=crlf
+*.ps1xml  text eol=crlf
+*.pssc    text eol=crlf
+*.psrc    text eol=crlf
+*.cdxml   text eol=crlf
+
+# Declare files that will always have LF line endings on checkout.
+*.sh     text eol=lf diff=bash # Shell scripts require LF
+
+###############################################################################
+# Set default behavior for command prompt diff.
+#
+# This is need for earlier builds of msysgit that does not have it on by
+# default for csharp files.
+# Note: This is only used by command line
+###############################################################################
+
+
+
+###############################################################################
+# Set the merge driver for project and solution files
+#
+# Merging from the command prompt will add diff markers to the files if there
+# are conflicts (Merging from VS is not affected by the settings below, in VS
+# the diff markers are never inserted). Diff markers may cause the following 
+# file extensions to fail to load in VS. An alternative would be to treat
+# these files as binary and thus will always conflict and require user
+# intervention with every merge. To do so, just uncomment the entries below
+###############################################################################
+#*.sln       merge=binary
+#*.csproj    merge=binary
+#*.vbproj    merge=binary
+#*.vcxproj   merge=binary
+#*.vcproj    merge=binary
+#*.dbproj    merge=binary
+#*.fsproj    merge=binary
+#*.lsproj    merge=binary
+#*.wixproj   merge=binary
+#*.modelproj merge=binary
+#*.sqlproj   merge=binary
+#*.wwaproj   merge=binary
+
+###############################################################################
+# behavior for image files
+#
+# image files are treated as binary by default.
+# Denote all files that are truly binary and should not be modified/mergeable.
+###############################################################################
+*.jpg   binary
+*.png   binary
+*.gif   binary
+*.bmp   binary
+*.tif   binary
+*.tiff  binary
+*.wbmp  binary
+*.webp  binary
+*.ico   binary
+*.icns  binary
+*.ai    binary
+# Compiled Dynamic libraries
+*.so    binary
+*.dylib binary
+*.dll   binary
+# Executables
+*.exe   binary
+# Archives
+*.7z    binary
+*.gz    binary
+*.jar   binary
+*.rar   binary
+*.tar   binary
+*.zip   binary
+*.sl1   binary
+# 3D models
+*.ipt   binary
+*.3mf   binary
+*.stl   binary
+# Others
+*.snk   binary
+
+###############################################################################
+# diff behavior for common document formats
+# 
+# Convert binary document formats to text before diffing them. This feature
+# is only available from the command line. Turn it on by uncommenting the 
+# entries below.
+###############################################################################
+*.doc   diff=astextplain
+*.DOC   diff=astextplain
+*.docx  diff=astextplain
+*.DOCX  diff=astextplain
+*.dot   diff=astextplain
+*.DOT   diff=astextplain
+*.pdf   diff=astextplain
+*.PDF   diff=astextplain
+*.rtf   diff=astextplain
+*.RTF   diff=astextplain
