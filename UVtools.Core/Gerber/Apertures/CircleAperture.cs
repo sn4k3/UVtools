@@ -30,8 +30,7 @@ public class CircleAperture : Aperture
 
     public override void DrawFlashD3(Mat mat, PointF at, MCvScalar color, LineType lineType = LineType.EightConnected)
     {
-        CvInvoke.Circle(mat,
-            Document.PositionMmToPx(at),
-            Document.SizeMmToPx(Diameter / 2), color, -1, lineType);
+        CvInvoke.Ellipse(mat, Document.PositionMmToPx(at), Document.SizeMmToPx(Diameter / 2.0, Diameter / 2.0), 0, 0, 360, color, -1, lineType);
+        //CvInvoke.Circle(mat, Document.PositionMmToPx(at), Document.SizeMmToPx(Diameter / 2), color, -1, lineType);
     }
 }

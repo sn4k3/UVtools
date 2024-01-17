@@ -173,11 +173,7 @@ public sealed class JXSFile : FileFormat
     public override float LayerHeight
     {
         get => ConfigFile.LayerHeight;
-        set
-        {
-            ConfigFile.LayerHeight = Layer.RoundHeight(value);
-            RaisePropertyChanged();
-        }
+        set => base.LayerHeight = ConfigFile.LayerHeight = Layer.RoundHeight(value);
     }
 
     public override uint LayerCount

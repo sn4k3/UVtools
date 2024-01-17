@@ -1319,11 +1319,7 @@ public sealed class ChituboxFile : FileFormat
     public override float LayerHeight
     {
         get => HeaderSettings.LayerHeightMillimeter;
-        set
-        {
-            HeaderSettings.LayerHeightMillimeter = Layer.RoundHeight(value);
-            RaisePropertyChanged();
-        }
+        set => base.LayerHeight = HeaderSettings.LayerHeightMillimeter = Layer.RoundHeight(value);
     }
 
     public override float PrintHeight

@@ -905,7 +905,7 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
     }
 
     /// <summary>
-    /// True if this layer have an valid initialized image, otherwise false
+    /// True if this layer have a valid initialized image, otherwise false
     /// </summary>
     public bool HaveImage => _compressedBytes.Length > 0;
         
@@ -996,26 +996,26 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
     /// <summary>
     /// Gets the layer mat with roi of it bounding rectangle
     /// </summary>
-    public MatRoi LayerMatBoundingRectangle => new(LayerMat, BoundingRectangle);
+    public MatRoi LayerMatBoundingRectangle => new(LayerMat, BoundingRectangle, true);
 
     /// <summary>
     /// Gets the layer mat with roi of model bounding rectangle
     /// </summary>
-    public MatRoi LayerMatModelBoundingRectangle => new(LayerMat, SlicerFile.BoundingRectangle);
+    public MatRoi LayerMatModelBoundingRectangle => new(LayerMat, SlicerFile.BoundingRectangle, true);
 
     /// <summary>
     /// Gets the layer mat with a specified roi
     /// </summary>
     /// <param name="roi">Region of interest</param>
     /// <returns></returns>
-    public MatRoi GetLayerMat(Rectangle roi) => new(LayerMat, roi);
+    public MatRoi GetLayerMat(Rectangle roi) => new(LayerMat, roi, true);
 
     /// <summary>
     /// Gets the layer mat with bounding rectangle mat
     /// </summary>
     /// <param name="margin">Margin from bounding rectangle</param>
     /// <returns></returns>
-    public MatRoi GetLayerMatBoundingRectangle(int margin) => new(LayerMat, GetBoundingRectangle(margin));
+    public MatRoi GetLayerMatBoundingRectangle(int margin) => new(LayerMat, GetBoundingRectangle(margin), true);
 
     /// <summary>
     /// Gets the layer mat with bounding rectangle mat
@@ -1023,14 +1023,14 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
     /// <param name="marginX">X margin from bounding rectangle</param>
     /// <param name="marginY">Y margin from bounding rectangle</param>
     /// <returns></returns>
-    public MatRoi GetLayerMatBoundingRectangle(int marginX, int marginY) => new(LayerMat, GetBoundingRectangle(marginX, marginY));
+    public MatRoi GetLayerMatBoundingRectangle(int marginX, int marginY) => new(LayerMat, GetBoundingRectangle(marginX, marginY), true);
 
     /// <summary>
     /// Gets the layer mat with bounding rectangle mat
     /// </summary>
     /// <param name="margin">Margin from bounding rectangle</param>
     /// <returns></returns>
-    public MatRoi GetLayerMatBoundingRectangle(Size margin) => new(LayerMat, GetBoundingRectangle(margin));
+    public MatRoi GetLayerMatBoundingRectangle(Size margin) => new(LayerMat, GetBoundingRectangle(margin), true);
 
     /// <summary>
     /// Gets a new Brg image instance
@@ -1374,7 +1374,7 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
         float time = extraTime;
         var motorTime = CalculateMotorMovementTime();
         time += WaitTimeBeforeCure + ExposureTime + WaitTimeAfterCure + WaitTimeAfterLift;
-        if (SlicerFile.SupportsGCode)
+        if (SlicerFile.SupportGCode)
         {
             time += motorTime;
             if (WaitTimeBeforeCure <= 0)
@@ -1418,7 +1418,7 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
     public float CalculateLightOffDelay(float extraTime = 0)
     {
         if (SlicerFile is null) return OperationCalculator.LightOffDelayC.CalculateSeconds(this, extraTime);
-        return SlicerFile.SupportsGCode ? extraTime : OperationCalculator.LightOffDelayC.CalculateSeconds(this, extraTime);
+        return SlicerFile.SupportGCode ? extraTime : OperationCalculator.LightOffDelayC.CalculateSeconds(this, extraTime);
     }
 
     public void SetLightOffDelay(float extraTime = 0)

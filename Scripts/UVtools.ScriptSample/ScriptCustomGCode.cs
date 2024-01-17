@@ -33,7 +33,7 @@ public class ScriptCustomGCode : ScriptGlobals
     /// <returns>A error message, empty or null if validation passes.</returns>
     public string? ScriptValidate()
     {
-        return SlicerFile.SupportsGCode ? null : "GCode is not supported on this file";
+        return SlicerFile.SupportGCode ? null : "GCode is not supported on this file";
     }
 
     /// <summary>

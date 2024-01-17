@@ -29,8 +29,10 @@ public static class About
     public const string License = "GNU Affero General Public License v3.0 (AGPL)";
     public const string LicenseUrl = "https://github.com/sn4k3/UVtools/blob/master/LICENSE";
     public const string Website = "https://github.com/sn4k3/UVtools";
-    public const string Donate = "https://paypal.me/SkillTournament";
-    public const string Sponsor = "https://github.com/sponsors/sn4k3";
+
+    public const string DonateGitHubUrl = "https://github.com/sponsors/sn4k3";
+    public const string DonatePayPalUrl = "https://www.paypal.com/donate/?hosted_button_id=3F9DKDNPWEYR6";
+    //public const string DonatePayPalUrl = "https://paypal.me/SkillTournament";
 
     public const string TermsOfUseTitle = $"Terms of Use for {Software}";
 

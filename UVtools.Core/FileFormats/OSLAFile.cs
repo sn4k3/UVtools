@@ -363,11 +363,7 @@ public sealed class OSLAFile : FileFormat
     public override float LayerHeight
     {
         get => HeaderSettings.LayerHeight;
-        set
-        {
-            HeaderSettings.LayerHeight = Layer.RoundHeight(value);
-            RaisePropertyChanged();
-        }
+        set => base.LayerHeight = HeaderSettings.LayerHeight = Layer.RoundHeight(value);
     }
 
     public override uint LayerCount

@@ -15,15 +15,25 @@ using UVtools.Core.Extensions;
 namespace UVtools.Core.EmguCV;
 
 /// <summary>
-/// A disposable Mat with associated ROI Mat
+/// A disposable Mat with the associated ROI Mat
 /// </summary>
-public class MatRoi : IDisposable
+public class MatRoi : IDisposable, IEquatable<MatRoi>
 {
+    #region Members
+    private bool _disposed;
+    #endregion
+
     #region Properties
     public Mat SourceMat { get; }
     public Rectangle Roi { get; }
     public Mat RoiMat { get; }
 
+    /// <summary>
+    /// True to dispose the <see cref="SourceMat"/> on <see cref="Dispose()"/>
+    /// </summary>
+    public bool DisposeSourceMat { get; set; }
+    
+    
     public Point RoiLocation => Roi.Location;
     public Size RoiSize => Roi.Size;
 
@@ -31,23 +41,99 @@ public class MatRoi : IDisposable
 
     #region Constructor
 
-    public MatRoi(Mat sourceMat, Rectangle roi)
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="sourceMat">The source mat to apply the <paramref name="roi"/>.</param>
+    /// <param name="roi">The roi rectangle.</param>
+    /// <param name="disposeSourceMat">True if you want to dispose the <see cref="SourceMat"/> upon the <see cref="Dispose()"/> call.<br/>
+    /// Use true when creating a <see cref="Mat"/> directly on this constructor or not handling the <see cref="SourceMat"/> disposal, otherwise false.</param>
+    public MatRoi(Mat sourceMat, Rectangle roi, bool disposeSourceMat = false)
     {
         SourceMat = sourceMat;
         Roi = roi;
         RoiMat = sourceMat.Roi(roi);
+
+        DisposeSourceMat = disposeSourceMat;
+    }
+
+    public void Deconstruct(out Mat sourceMat, out Mat roiMat, out Rectangle roi)
+    {
+        sourceMat = SourceMat;
+        roiMat = RoiMat;
+        roi = Roi;
+    }
+
+    public void Deconstruct(out Mat sourceMat, out Mat roiMat)
+    {
+        sourceMat = SourceMat;
+        roiMat = RoiMat;
+    }
+
+    public void Deconstruct(out Mat roiMat, out Rectangle roi)
+    {
+        roiMat = RoiMat;
+        roi = Roi;
     }
 
     #endregion
 
+    #region Clone
     public MatRoi Clone()
     {
-        return new MatRoi(SourceMat.Clone(), Roi);
+        return new MatRoi(SourceMat.Clone(), Roi, true);
+    }
+    #endregion
+
+    #region Equality
+    public bool Equals(MatRoi? other)
+    {
+        if (ReferenceEquals(null, other)) return false;
+        if (ReferenceEquals(this, other)) return true;
+        return Roi.Equals(other.Roi) && SourceMat.Equals(other.SourceMat);
+    }
+
+    public override bool Equals(object? obj)
+    {
+        if (ReferenceEquals(null, obj)) return false;
+        if (ReferenceEquals(this, obj)) return true;
+        if (obj.GetType() != this.GetType()) return false;
+        return Equals((MatRoi)obj);
+    }
+
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(SourceMat, Roi);
+    }
+
+    public static bool operator ==(MatRoi? left, MatRoi? right)
+    {
+        return Equals(left, right);
+    }
+
+    public static bool operator !=(MatRoi? left, MatRoi? right)
+    {
+        return !Equals(left, right);
+    }
+    #endregion
+
+    #region Dispose
+    protected virtual void Dispose(bool disposing)
+    {
+        if (_disposed) return;
+        if (disposing)
+        {
+            if (DisposeSourceMat) SourceMat.Dispose();
+            RoiMat.Dispose();
+        }
+
+        _disposed = true;
     }
 
     public void Dispose()
     {
-        SourceMat.Dispose();
-        RoiMat.Dispose();
+        Dispose(true);
+        GC.SuppressFinalize(this);
     }
+    #endregion
 }

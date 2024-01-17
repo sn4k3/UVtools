@@ -254,7 +254,7 @@ public class OperationPhasedExposure : Operation, IEquatable<OperationPhasedExpo
         if (SlicerFile.SupportPerLayerSettings)
         {
             _differentSettingsForSequentialLayers = true;
-            if (SlicerFile.SupportsGCode)
+            if (SlicerFile.SupportGCode)
             {
                 _sequentialLiftHeight = 0;
                 _sequentialWaitTimeBeforeCure = 2;

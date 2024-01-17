@@ -739,11 +739,7 @@ public sealed class PHZFile : FileFormat
     public override float LayerHeight
     {
         get => HeaderSettings.LayerHeightMilimeter;
-        set
-        {
-            HeaderSettings.LayerHeightMilimeter = Layer.RoundHeight(value);
-            RaisePropertyChanged();
-        }
+        set => base.LayerHeight = HeaderSettings.LayerHeightMilimeter = Layer.RoundHeight(value);
     }
 
     public override float PrintHeight

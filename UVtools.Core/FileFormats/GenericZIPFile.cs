@@ -104,11 +104,7 @@ public sealed class GenericZIPFile : FileFormat
     public override float LayerHeight
     {
         get => ManifestFile.LayerHeight;
-        set
-        {
-            ManifestFile.LayerHeight = Layer.RoundHeight(value);
-            RaisePropertyChanged();
-        }
+        set => base.LayerHeight = ManifestFile.LayerHeight = Layer.RoundHeight(value);
     }
 
     /*public override uint LayerCount

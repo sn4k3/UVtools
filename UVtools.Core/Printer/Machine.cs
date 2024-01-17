@@ -123,7 +123,7 @@ namespace UVtools.Core.Printer
 
         public override string ToString()
         {
-            return $"{Name} | Resolution={ResolutionX}x{ResolutionY}(px) Display={DisplayWidth}x{DisplayHeight}(mm) Z={MachineZ}mm";
+            return $"{Name} | Resolution={ResolutionX}x{ResolutionY}(px) Display={DisplayWidth}x{DisplayHeight}(mm) PixelSize={PixelWidthMicrons}x{PixelHeightMicrons}(µm) Z={MachineZ}mm";
         }
         #endregion
 
@@ -268,7 +268,9 @@ namespace UVtools.Core.Printer
                 new(PrinterBrand.Elegoo, "Elegoo Mars 2 Pro", "Mars 2 Pro", 1620, 2560, 82.62f, 130.56f, 160f, FlipDirection.Horizontally),
                 new(PrinterBrand.Elegoo, "Elegoo Mars 2", "Mars 2", 1620, 2560, 82.62f, 130.56f, 150f, FlipDirection.Horizontally),
                 new(PrinterBrand.Elegoo, "Elegoo Mars 3", "Mars 3", 4098, 2560, 143.43f, 89.6f, 175f, FlipDirection.Horizontally),
-                new(PrinterBrand.Elegoo, "Elegoo Mars 4", "Mars 4", 4098, 2560, 132.8f, 74.7f, 150f, FlipDirection.Horizontally),
+                new(PrinterBrand.Elegoo, "Elegoo Mars 3 Pro", "Mars 3 Pro", 4098, 2560, 143.43f, 89.6f, 175f, FlipDirection.Horizontally),
+                new(PrinterBrand.Elegoo, "Elegoo Mars 4", "Mars 4", 8520, 4320, 153.36f, 77.76f, 175f, FlipDirection.Horizontally),
+                new(PrinterBrand.Elegoo, "Elegoo Mars 4 DLP", "Mars 4 DLP", 4098, 2560, 132.8f, 74.7f, 150f, FlipDirection.Horizontally),
                 new(PrinterBrand.Elegoo, "Elegoo Mars 4 Max", "Mars 4 Max", 5760, 3600, 195.84f, 122.4f, 150f, FlipDirection.Horizontally),
                 new(PrinterBrand.Elegoo, "Elegoo Mars 4 Ultra", "Mars 4 Ultra", 8520, 4320, 153.36f, 77.76f, 165f, FlipDirection.Horizontally),
                 new(PrinterBrand.Elegoo, "Elegoo Mars C", "Mars C", 1440, 2560, 68.04f, 120.96f, 150f, FlipDirection.Horizontally),
@@ -304,6 +306,8 @@ namespace UVtools.Core.Printer
                 new(PrinterBrand.FlashForge, "FlashForge Foto 8.9", "Foto 8.9", 3840, 2400, 192f, 120f, 200f, FlipDirection.Vertically),
                 new(PrinterBrand.FlashForge, "FlashForge Foto 8.9S", "Foto 8.9S", 3840, 2400, 192f, 120f, 200f, FlipDirection.Vertically),
                 new(PrinterBrand.FlashForge, "FlashForge Hunter", "Hunter", 1920, 1080, 120f, 67.5f, 150f, FlipDirection.Vertically),
+
+                new(PrinterBrand.Emake3D, "Emake3D Galaxy 1", "Galaxy 1", 8000, 4000, 400f, 200f, 400f, FlipDirection.Horizontally),
 
                 new(PrinterBrand.Kelant, "Kelant S400", "S400", 2560, 1600, 192f, 120f, 200f, FlipDirection.Horizontally),
 
@@ -364,6 +368,7 @@ namespace UVtools.Core.Printer
                 new(PrinterBrand.Voxelab, "Voxelab Ceres 8.9", "Ceres 8.9", 3840, 2400, 192f, 120f, 200f, FlipDirection.Horizontally),
                 new(PrinterBrand.Voxelab, "Voxelab Polaris 5.5", "Polaris 5.5", 1440, 2560, 68.04f, 120.96f, 155f, FlipDirection.Horizontally),
                 new(PrinterBrand.Voxelab, "Voxelab Proxima 6", "Proxima 6", 1620, 2560, 82.62f, 130.56f, 155f, FlipDirection.Horizontally),
+                new(PrinterBrand.Voxelab, "Voxelab Proxima 6 SVGX", "Proxima 6 SVGX", 2560, 1620, 130.56f, 82.62f, 155f, FlipDirection.Horizontally),
 
                 new(PrinterBrand.Wanhao, "Wanhao CGR Mini Mono", "CGR Mini Mono", 1620, 2560, 82.62f, 130.56f, 200f, FlipDirection.Horizontally),
                 new(PrinterBrand.Wanhao, "Wanhao CGR Mono", "CGR Mono", 1620, 2560, 192f, 120f, 200f, FlipDirection.Horizontally),

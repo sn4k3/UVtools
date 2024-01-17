@@ -114,6 +114,11 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     public const string DATATYPE_BGR555_BE = "BGR555-BE";
     public const string DATATYPE_BGR565_BE = "BGR565-BE";
     public const string DATATYPE_BGR888 = "BGR888";
+
+    /// <summary>
+    /// Gets the default batch count to process layers in parallel
+    /// </summary>
+    public static int DefaultParallelBatchCount => Environment.ProcessorCount * 10;
     #endregion 
 
     #region Enums
@@ -124,7 +129,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     public enum FileFormatType : byte
     {
         Archive,
-        Binary
+        Binary,
+        Text
     }
 
     /// <summary>
@@ -396,6 +402,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         new MDLPFile(),   // MKS v1
         new GR1File(),   // GR1 Workshop
         new FlashForgeSVGXFile(), // SVGX
+        new QDTFile(), // QDT
         new OSLAFile(),  // OSLA
         new OSFFile(),   // OSF
         new UVJFile(),   // UVJ
@@ -1120,6 +1127,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
 
     private byte _antiAliasing = 1;
 
+    private float _layerHeight = DefaultLayerHeight;
+
     private ushort _bottomLayerCount = DefaultBottomLayerCount;
     private ushort _transitionLayerCount = DefaultTransitionLayerCount;
 
@@ -1183,6 +1192,11 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// Gets the file format type
     /// </summary>
     public abstract FileFormatType FileType { get; }
+    
+    /// <summary>
+    /// Gets the manufacturing process this file and printer uses
+    /// </summary>
+    public virtual PrinterManufacturingProcess ManufacturingProcess => MachineName.Contains(" DLP", StringComparison.OrdinalIgnoreCase) ? PrinterManufacturingProcess.DLP : PrinterManufacturingProcess.mSLA;
 
     /// <summary>
     /// Gets the layer image data type used on this file format
@@ -1286,6 +1300,11 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// Gets the temporary output file path to use on save and encode
     /// </summary>
     public string TemporaryOutputFileFullPath => $"{FileFullPath}{TemporaryFileAppend}";
+
+    /// <summary>
+    /// Gets an instance of <see cref="FileInfo"/> with the current loaded file
+    /// </summary>
+    public FileInfo? FileInfo => _fileFullPath is not null ? new FileInfo(_fileFullPath) : null;
 
     /// <summary>
     /// Gets the input file path loaded into this <see cref="FileFormat"/>
@@ -1984,9 +2003,9 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     public float Volume => (float)Math.Round(this.Sum(layer => layer.GetVolume()), 3);
 
     /// <summary>
-    /// Checks if this file have AntiAliasing
+    /// Gets if the file supports antialiasing usage (grey pixels)
     /// </summary>
-    public bool HaveAntiAliasing => AntiAliasing > 1;
+    public virtual bool SupportAntiAliasing => true;
 
     /// <summary>
     /// Gets if the AntiAliasing is emulated/fake with fractions of the time or if is real grey levels
@@ -1994,23 +2013,44 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     public virtual bool IsAntiAliasingEmulated => false;
 
     /// <summary>
+    /// Checks if this file is using AntiAliasing per it data information
+    /// </summary>
+    public bool IsUsingAntiAliasing => AntiAliasing > 1;
+
+    /// <summary>
     /// Gets or sets the AntiAliasing level
     /// </summary>
     public virtual byte AntiAliasing
     {
         get => _antiAliasing;
-        set => RaiseAndSet(ref _antiAliasing, value);
+        set
+        {
+            if (!SupportAntiAliasing) return;
+            RaiseAndSet(ref _antiAliasing, value);
+        }
     }
 
     /// <summary>
     /// Gets Layer Height in mm
     /// </summary>
-    public abstract float LayerHeight { get; set; }
+    public virtual float LayerHeight
+    {
+        get => _layerHeight;
+        set
+        {
+            RaiseAndSet(ref _layerHeight, Layer.RoundHeight(value));
+            RaisePropertyChanged(nameof(LayerHeightUm));
+        }
+    }
 
     /// <summary>
     /// Gets Layer Height in um
     /// </summary>
-    public ushort LayerHeightUm => (ushort) (LayerHeight * 1000);
+    public ushort LayerHeightUm
+    {
+        get => (ushort)(LayerHeight * 1000);
+        set => LayerHeight = value / 1000f;
+    }
 
     /// <summary>
     /// Gets or sets the print height in mm
@@ -2934,13 +2974,13 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
 
     public IEnumerable<IEnumerable<int>> BatchLayersIndexes(int batchSize = 0)
     {
-        if (batchSize <= 0) batchSize = Environment.ProcessorCount * 10;
+        if (batchSize <= 0) batchSize = DefaultParallelBatchCount;
         return Enumerable.Range(0, (int) LayerCount).Chunk(batchSize);
     }
 
     public IEnumerable<IEnumerable<Layer>> BatchLayers(int batchSize = 0)
     {
-        if (batchSize <= 0) batchSize = Environment.ProcessorCount * 10;
+        if (batchSize <= 0) batchSize = DefaultParallelBatchCount;
         return this.Chunk(batchSize);
     }
 
@@ -3015,7 +3055,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
                        BottomWaitTimeAfterLift * BottomLayerCount +
                        WaitTimeAfterLift * NormalLayerCount;
 
-                if (SupportsGCode)
+                if (SupportGCode)
                 {
                     time += bottomMotorTime * BottomLayerCount + motorTime * NormalLayerCount;
 
@@ -3214,12 +3254,12 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <summary>
     /// Gets if this file format supports gcode
     /// </summary>
-    public virtual bool SupportsGCode => GCode is not null;
+    public virtual bool SupportGCode => GCode is not null;
 
     /// <summary>
     /// Gets if this file have available gcode to read
     /// </summary>
-    public bool HaveGCode => SupportsGCode && !GCode!.IsEmpty;
+    public bool HaveGCode => SupportGCode && !GCode!.IsEmpty;
 
     /// <summary>
     /// Disable or enable the gcode auto rebuild when needed, set this to false to manually write your own gcode
@@ -3730,10 +3770,10 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             var bestThumbnail = GetThumbnailByHeight(requestedSize.Height)?.Clone();
             if (bestThumbnail is null)
             {
-                using var matRoi = FirstLayer?.LayerMatModelBoundingRectangle;
+                using var matRoi = DecodeType == FileDecodeType.Partial ? null : FirstLayer?.LayerMatModelBoundingRectangle;
                 if (matRoi is null || matRoi.SourceMat.IsEmpty)
                 {
-                    using var genMat = EmguExtensions.InitMat(new Size(200, 100), 3);
+                    var genMat = EmguExtensions.InitMat(new Size(200, 100), 3);
                     CvInvoke.PutText(genMat, About.Software, new Point(40, 60), FontFace.HersheyDuplex, 1, EmguExtensions.WhiteColor, 2);
                     if (genMat.Size != requestedSize) CvInvoke.Resize(genMat, genMat, requestedSize);
                     Thumbnails.Add(genMat);
@@ -5261,7 +5301,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     public float CalculateLightOffDelay(bool isBottomLayer, float extraTime = 0)
     {
         extraTime = (float)Math.Round(extraTime, 2);
-        if (SupportsGCode) return extraTime;
+        if (SupportGCode) return extraTime;
         return CalculateMotorMovementTime(isBottomLayer, extraTime);
     }
 
@@ -5402,7 +5442,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// </summary>
     public virtual void RebuildGCode()
     {
-        if (!SupportsGCode || _suppressRebuildGCode) return;
+        if (!SupportGCode || _suppressRebuildGCode) return;
         GCode!.RebuildGCode(this);
         RaisePropertyChanged(nameof(GCodeStr));
     }
@@ -5786,7 +5826,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// Converts millimeters to pixels given the current resolution and display size
     /// </summary>
     /// <param name="millimeters">Millimeters to convert</param>
-    /// <param name="fallbackToPixels">Fallback to this value in pixels if no ratio is available to make the convertion</param>
+    /// <param name="fallbackToPixels">Fallback to this value in pixels if no ratio is available to make the conversion</param>
     /// <returns>Pixels</returns>
     public uint MillimetersXToPixels(float millimeters, uint fallbackToPixels = 0)
     {
@@ -5799,7 +5839,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// Converts millimeters to pixels given the current resolution and display size
     /// </summary>
     /// <param name="millimeters">Millimeters to convert</param>
-    /// <param name="fallbackToPixels">Fallback to this value in pixels if no ratio is available to make the convertion</param>
+    /// <param name="fallbackToPixels">Fallback to this value in pixels if no ratio is available to make the conversion</param>
     /// <returns>Pixels</returns>
     public uint MillimetersYToPixels(float millimeters, uint fallbackToPixels = 0)
     {
@@ -5812,7 +5852,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// Converts millimeters to pixels given the current resolution and display size
     /// </summary>
     /// <param name="millimeters">Millimeters to convert</param>
-    /// <param name="fallbackToPixels">Fallback to this value in pixels if no ratio is available to make the convertion</param>
+    /// <param name="fallbackToPixels">Fallback to this value in pixels if no ratio is available to make the conversion</param>
     /// <returns>Pixels</returns>
     public uint MillimetersToPixels(float millimeters, uint fallbackToPixels = 0)
     {
@@ -5825,7 +5865,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// Converts millimeters to pixels given the current resolution and display size
     /// </summary>
     /// <param name="millimeters">Millimeters to convert</param>
-    /// <param name="fallbackToPixels">Fallback to this value in pixels if no ratio is available to make the convertion</param>
+    /// <param name="fallbackToPixels">Fallback to this value in pixels if no ratio is available to make the conversion</param>
     /// <returns>Pixels</returns>
     public float MillimetersToPixelsF(float millimeters, uint fallbackToPixels = 0)
     {
@@ -5976,7 +6016,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// </summary>
     /// <param name="dummyPixelLocation">Location to set the dummy pixel, use a negative value (-1,-1) to set to the bounding center</param>
     /// <returns></returns>
-    public Mat CreateMatWithDummyPixel(Point dummyPixelLocation) => CreateMatWithDummyPixel(dummyPixelLocation, SupportsGCode ? (byte) 1 : (byte) 128);
+    public Mat CreateMatWithDummyPixel(Point dummyPixelLocation) => CreateMatWithDummyPixel(dummyPixelLocation, SupportGCode ? (byte) 1 : (byte) 128);
 
     /// <summary>
     /// Creates a empty mat of file <see cref="Resolution"/> size
@@ -5989,7 +6029,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// Creates a empty mat of file <see cref="Resolution"/> size
     /// </summary>
     /// <returns></returns>
-    public Mat CreateMatWithDummyPixel() => CreateMatWithDummyPixel(SupportsGCode ? (byte)1 : (byte)128);
+    public Mat CreateMatWithDummyPixel() => CreateMatWithDummyPixel(SupportGCode ? (byte)1 : (byte)128);
       
     /// <summary>
     /// Creates a empty mat of file <see cref="Resolution"/> size

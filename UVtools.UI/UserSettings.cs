@@ -2021,8 +2021,26 @@ public sealed class UserSettings : BindableBase
 
                                 continue;
                             }
+
+                            if (directory.StartsWith($"{path}\\Notepad++", StringComparison.OrdinalIgnoreCase))
+                            {
+                                var executable = $"{directory}\\notepad++.exe";
+                                if (File.Exists(executable))
+                                {
+                                    _instance.General.SendToProcess.Add(new MappedProcess(executable, "Notepad++")
+                                    {
+                                        CompatibleExtensions = "qdt"
+                                    });
+                                }
+                                continue;
+                            }
                         }
                     }
+
+                    _instance.General.SendToProcess.Add(new MappedProcess("notepad.exe", "Notepad")
+                    {
+                        CompatibleExtensions = "qdt"
+                    });
 
                     if (_instance.General.SendToProcess.Count > 0)
                     {

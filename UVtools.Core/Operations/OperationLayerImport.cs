@@ -248,8 +248,8 @@ public sealed class OperationLayerImport : Operation
     {
         progress.ItemCount = 0;
         var result = SlicerFile.SuppressRebuildPropertiesWork(() => { 
-            List<FileFormat> fileFormats = new();
-            List<KeyValuePair<uint, string>> keyImage = new();
+            var fileFormats = new List<FileFormat>();
+            var keyImage = new List<KeyValuePair<uint, string>>();
             int lastProcessedLayerIndex = -1;
 
             // Order raw images
@@ -272,12 +272,11 @@ public sealed class OperationLayerImport : Operation
                 {
                     progress.PauseIfRequested();
                     using var mat = CvInvoke.Imread(pair.Value, ImreadModes.Grayscale);
-                    if (pair.Key == 0) format.Resolution = mat.Size;
                     format[pair.Key] = new Layer(pair.Key, mat, format);
 
                     lock (format.Mutex)
                     {
-                        SizeExtensions.Max(resolution, mat.Size);
+                        resolution = SizeExtensions.Max(resolution, mat.Size);
                     }
 
                     progress.LockAndIncrement();
@@ -525,7 +524,7 @@ public sealed class OperationLayerImport : Operation
 
             if (importedFormats != fileFormats.Count)
             {
-                AfterCompleteReport = $"Could not import and fit {fileFormats.Count - importedFormats} out of {fileFormats.Count} format(s) (Insufficient build space).";
+                AfterCompleteReport = $"Could not import and fit {fileFormats.Count - importedFormats} out of {fileFormats.Count} format(s) (Insufficient or unequal build space).";
             }
 
             if (lastProcessedLayerIndex < 0) return false;

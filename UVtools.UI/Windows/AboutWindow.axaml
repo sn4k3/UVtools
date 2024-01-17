@@ -126,14 +126,13 @@
     
 
     <Border>
-        <Grid
-            RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,5,*"
-            Margin="20">
+        <Grid RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,5,*"
+              Margin="20">
 
-            <TextBlock Grid.Row="0" Text="{Binding Source={x:Static core:About.Software}}" FontWeight="Bold"/>
-            <TextBlock Grid.Row="2" Text="{Binding Source={x:Static core:About.VersionArch}, StringFormat=Version: {0}}"/>
-            <TextBlock Grid.Row="4" Text="{Binding Source={x:Static core:About.AssemblyCopyright}}"/>
-            <TextBlock Grid.Row="6" Text="{Binding Source={x:Static core:About.Author}}"/>
+            <SelectableTextBlock Grid.Row="0" Text="{Binding Source={x:Static core:About.Software}}" FontWeight="Bold"/>
+            <SelectableTextBlock Grid.Row="2" Text="{Binding Source={x:Static core:About.VersionArch}, StringFormat='Version: {0}'}"/>
+            <SelectableTextBlock Grid.Row="4" Text="{Binding Source={x:Static core:About.AssemblyCopyright}}"/>
+            <SelectableTextBlock Grid.Row="6" Text="{Binding Source={x:Static core:About.Author}}"/>
             <!--<TextBlock Grid.Row="8" Text="{Binding AgeStr, StringFormat=Age: {0}}"/>-->
             <StackPanel Grid.Row="8" Orientation="Horizontal" Spacing="5">
                 <controls:ButtonWithIcon VerticalAlignment="Center"

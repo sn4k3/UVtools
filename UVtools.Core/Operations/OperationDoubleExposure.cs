@@ -211,7 +211,7 @@ public class OperationDoubleExposure : Operation
         if (SlicerFile.SupportPerLayerSettings)
         {
             _differentSettingsForSecondLayer = true;
-            if (SlicerFile.SupportsGCode)
+            if (SlicerFile.SupportGCode)
             {
                 _secondLayerLiftHeight = 0;
                 _secondLayerWaitTimeBeforeCure = 2;

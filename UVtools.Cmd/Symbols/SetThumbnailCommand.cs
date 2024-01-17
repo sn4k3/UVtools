@@ -21,7 +21,7 @@ internal static class SetThumbnailCommand
     internal static Command CreateCommand()
     {
         var sourceArgument = new Argument<string>($"file path|layer index|{RandomLayerArg}|{HeatmapArg}", () => HeatmapArg, "Choose from a file, layer index, random layer or generate a heatmap");
-        var thumbnailIndexesOption = new Option<byte[]>(new[] { "-i", "--indexes" }, "Prints only the matching thumbnail(s) index(es)")
+        var thumbnailIndexesOption = new Option<byte[]>(new[] { "-i", "--indexes" }, "Replaces only the matching thumbnail(s) index(es)")
         {
             AllowMultipleArgumentsPerToken = true
         };

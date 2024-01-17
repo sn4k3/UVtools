@@ -479,7 +479,7 @@ public sealed class CXDLPFile : FileFormat
         set
         {
             SlicerInfoSettings.LayerHeight = Layer.RoundHeight(value).ToString(CultureInfo.InvariantCulture);
-            RaisePropertyChanged();
+            base.LayerHeight = value;
         }
     }
 

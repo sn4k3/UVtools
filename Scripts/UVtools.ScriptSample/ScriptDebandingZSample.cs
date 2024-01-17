@@ -96,7 +96,7 @@ public class ScriptDebandingZSample : ScriptGlobals
                              "Check the Shield icon/tab and look for 'Wait time before cure' suggestion, you can also configure it and offers more possibilities.";
         Script.Author = "Tiago Conceição";
         Script.Version = new Version(0, 3);
-        if (SlicerFile.SupportsGCode) CreateEmptyLayerInput.Value = false;
+        if (SlicerFile.SupportGCode) CreateEmptyLayerInput.Value = false;
         Script.UserInputs.Add(CreateEmptyLayerInput);
         Script.UserInputs.Add(BottomSafeDebandingHeightInput);
         Script.UserInputs.Add(BottomWaitTimeBeforeCureInput);
@@ -160,7 +160,7 @@ public class ScriptDebandingZSample : ScriptGlobals
                     mat.SetByte(pixelPos.X, pixelPos.Y,
                         1); // Print a very fade pixel to ignore empty layer detection
                     firstLayer.LayerMat = mat;
-                    firstLayer.ExposureTime = SlicerFile.SupportsGCode ? 0 : 0.05f;
+                    firstLayer.ExposureTime = SlicerFile.SupportGCode ? 0 : 0.05f;
                     firstLayer.SetNoDelays();
                     SlicerFile.SuppressRebuildPropertiesWork(() => { SlicerFile.Prepend(firstLayer); });
                 }

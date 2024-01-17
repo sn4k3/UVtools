@@ -255,11 +255,7 @@ public sealed class VDAFile : FileFormat
     public override float LayerHeight
     {
         get => ManifestFile.Slices.LayerHeight;
-        set
-        {
-            ManifestFile.Slices.LayerHeight = Layer.RoundHeight(value);
-            RaisePropertyChanged();
-        }
+        set => base.LayerHeight = ManifestFile.Slices.LayerHeight = Layer.RoundHeight(value);
     }
 
     public override uint LayerCount

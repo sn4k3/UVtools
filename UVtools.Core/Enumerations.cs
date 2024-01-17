@@ -13,6 +13,16 @@ using System.ComponentModel;
 namespace UVtools.Core;
 
 /// <summary>
+/// Enumeration of m manufacturing processes
+/// </summary>
+public enum PrinterManufacturingProcess : byte
+{
+    mSLA,
+    DLP,
+    SLA
+}
+
+/// <summary>
 /// Gets index start number, if starts on 0 or 1
 /// </summary>
 public enum IndexStartNumber : byte

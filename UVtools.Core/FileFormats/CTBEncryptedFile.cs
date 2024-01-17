@@ -678,11 +678,7 @@ public sealed class CTBEncryptedFile : FileFormat
     public override float LayerHeight
     {
         get => Settings.LayerHeight;
-        set
-        {
-            Settings.LayerHeight = value;
-            RaisePropertyChanged();
-        }
+        set => base.LayerHeight = Settings.LayerHeight = Layer.RoundHeight(value);
     }
 
     public override byte AntiAliasing

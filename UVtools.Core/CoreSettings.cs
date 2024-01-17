@@ -64,6 +64,21 @@ public static class CoreSettings
     /// </summary>
     public static ParallelOptions ParallelDebugOptions => new() { MaxDegreeOfParallelism = 1 };
 
+    /// <summary>
+    /// Gets the ParallelDebugOptions with the <see cref="CancellationToken"/> set
+    /// </summary>
+    public static ParallelOptions GetParallelDebugOptions(CancellationToken token = default)
+    {
+        var options = ParallelDebugOptions;
+        options.CancellationToken = token;
+        return options;
+    }
+
+    /// <summary>
+    /// Gets the ParallelDebugOptions with the <see cref="CancellationToken"/> set
+    /// </summary>
+    public static ParallelOptions GetParallelDebugOptions(OperationProgress progress) => GetParallelDebugOptions(progress.Token);
+
 
     /// <summary>
     /// Gets the ParallelOptions with <see cref="MaxDegreeOfParallelism"/> and the <see cref="CancellationToken"/> set
@@ -79,6 +94,8 @@ public static class CoreSettings
     /// Gets the ParallelOptions with <see cref="MaxDegreeOfParallelism"/> and the <see cref="CancellationToken"/> set
     /// </summary>
     public static ParallelOptions GetParallelOptions(OperationProgress progress) => GetParallelOptions(progress.Token);
+
+
 
     /// <summary>
     /// Gets or sets if operations run via CUDA when possible

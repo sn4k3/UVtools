@@ -7,7 +7,6 @@
  */
 
 using System;
-using System.Globalization;
 
 namespace UVtools.Core.Extensions;
 
@@ -77,43 +76,6 @@ public static class MathExtensions
 
         return value;
     }*/
-
-    public static uint DecimalDigits(this float val)
-    {
-        var valStr = val.ToString(CultureInfo.InvariantCulture).TrimEnd('0');
-        if (string.IsNullOrEmpty(valStr)) return 0;
-
-        var index = valStr.IndexOf('.');
-        if (index < 0) return 0;
-
-        return (uint) (valStr[index..].Length - 1);
-    }
-
-    public static uint DecimalDigits(this double val)
-    {
-        var valStr = val.ToString(CultureInfo.InvariantCulture).TrimEnd('0');
-        if (string.IsNullOrEmpty(valStr)) return 0;
-
-        var index = valStr.IndexOf('.');
-        if (index < 0) return 0;
-
-        return (uint)(valStr[index..].Length - 1);
-    }
-
-    public static uint DecimalDigits(this decimal val)
-    {
-        var valStr = val.ToString(CultureInfo.InvariantCulture).TrimEnd('0');
-        if (string.IsNullOrEmpty(valStr) || valStr[^1] == '.') return 0;
-
-        var index = valStr.IndexOf('.');
-        if (index < 0) return 0;
-
-        return (uint)(valStr[index..].Length - 1);
-    }
-
-    public static bool IsInteger(this float val, float tolerance = 0.0001f) => Math.Abs(val - Math.Floor(val)) < tolerance;
-    public static bool IsInteger(this double val, double tolerance = 0.0001) => Math.Abs(val - Math.Floor(val)) < tolerance;
-    public static bool IsInteger(this decimal val) => val == Math.Floor(val);
 
     public static int GCD(int a, int b)
     {

@@ -41,7 +41,10 @@ public sealed class ImageFile : FileFormat
         set => base.DisplayHeight = value;
     }
 
-    public override float LayerHeight { get; set; } = 0.01f;
+    public ImageFile()
+    {
+        LayerHeight = 0.01f;
+    }
 
     protected override void EncodeInternally(OperationProgress progress)
     {

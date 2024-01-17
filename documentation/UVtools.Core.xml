@@ -76,6 +76,16 @@
             Gets the ParallelOptions with <see cref="P:UVtools.Core.CoreSettings.MaxDegreeOfParallelism"/> set to 1 for debug purposes
             </summary>
         </member>
+        <member name="M:UVtools.Core.CoreSettings.GetParallelDebugOptions(System.Threading.CancellationToken)">
+            <summary>
+            Gets the ParallelDebugOptions with the <see cref="T:System.Threading.CancellationToken"/> set
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.CoreSettings.GetParallelDebugOptions(UVtools.Core.Operations.OperationProgress)">
+            <summary>
+            Gets the ParallelDebugOptions with the <see cref="T:System.Threading.CancellationToken"/> set
+            </summary>
+        </member>
         <member name="M:UVtools.Core.CoreSettings.GetParallelOptions(System.Threading.CancellationToken)">
             <summary>
             Gets the ParallelOptions with <see cref="P:UVtools.Core.CoreSettings.MaxDegreeOfParallelism"/> and the <see cref="T:System.Threading.CancellationToken"/> set
@@ -287,7 +297,26 @@
         </member>
         <member name="T:UVtools.Core.EmguCV.MatRoi">
             <summary>
-            A disposable Mat with associated ROI Mat
+            A disposable Mat with the associated ROI Mat
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.EmguCV.MatRoi.DisposeSourceMat">
+            <summary>
+            True to dispose the <see cref="P:UVtools.Core.EmguCV.MatRoi.SourceMat"/> on <see cref="M:UVtools.Core.EmguCV.MatRoi.Dispose"/>
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.EmguCV.MatRoi.#ctor(Emgu.CV.Mat,System.Drawing.Rectangle,System.Boolean)">
+            <summary>
+            
+            </summary>
+            <param name="sourceMat">The source mat to apply the <paramref name="roi"/>.</param>
+            <param name="roi">The roi rectangle.</param>
+            <param name="disposeSourceMat">True if you want to dispose the <see cref="P:UVtools.Core.EmguCV.MatRoi.SourceMat"/> upon the <see cref="M:UVtools.Core.EmguCV.MatRoi.Dispose"/> call.<br/>
+            Use true when creating a <see cref="T:Emgu.CV.Mat"/> directly on this constructor or not handling the <see cref="P:UVtools.Core.EmguCV.MatRoi.SourceMat"/> disposal, otherwise false.</param>
+        </member>
+        <member name="T:UVtools.Core.PrinterManufacturingProcess">
+            <summary>
+            Enumeration of m manufacturing processes
             </summary>
         </member>
         <member name="T:UVtools.Core.IndexStartNumber">
@@ -879,6 +908,13 @@
             <param name="fromMat"></param>
             <returns></returns>
         </member>
+        <member name="M:UVtools.Core.Extensions.EmguExtensions.RoiFromAutoBoundingRectangle(Emgu.CV.Mat)">
+            <summary>
+            Calculates the bounding rectangle and return a <see cref="T:UVtools.Core.EmguCV.MatRoi"/> object with it
+            </summary>
+            <param name="mat"></param>
+            <returns></returns>
+        </member>
         <member name="M:UVtools.Core.Extensions.EmguExtensions.RoiFromCenter(Emgu.CV.Mat,System.Drawing.Size)">
             <summary>
             Gets a Roi from center, but return source when have same size as source
@@ -973,6 +1009,51 @@
             <param name="startPos">Start pixel position</param>
             <param name="length">Pixel span length</param>
             <returns>Pixel position in the span, or -1 if not found</returns>
+        </member>
+        <member name="M:UVtools.Core.Extensions.EmguExtensions.ScanStrides(Emgu.CV.Mat,System.UInt32,System.Boolean,System.Boolean,System.Boolean,System.Byte,System.Byte)">
+            <summary>
+            Scan sequential strides of continuous pixels
+            </summary>
+            <param name="mat"></param>
+            <param name="strideLimit">Size limit of a single stride.</param>
+            <param name="breakOnRows">True to break the stride sequence on a new row, otherwise false.</param>
+            <param name="startOnFirstPositivePixel">True to skip the first sequence of black pixels, otherwise false.</param>
+            <param name="excludeBlacks">True to exclude black strides from returning, otherwise false.</param>
+            <param name="thresholdGrey">Value to threshold the grey, below or equal to this value will set to 0, otherwise <paramref name="thresholdMaxGrey"/></param>
+            <param name="thresholdMaxGrey">Grey value to set when the threshold is above the limit.</param>
+            <returns></returns>
+        </member>
+        <member name="M:UVtools.Core.Extensions.EmguExtensions.ScanStrides(Emgu.CV.Mat,System.Func{System.Byte,System.Byte},System.UInt32,System.Boolean,System.Boolean,System.Boolean)">
+            <summary>
+            Scan sequential strides of continuous pixels
+            </summary>
+            <param name="mat"></param>
+            <param name="greyFunc">Function to filter and process the gray value.</param>
+            <param name="strideLimit">Size limit of a single stride.</param>
+            <param name="breakOnRows">True to break the stride sequence on a new row, otherwise false.</param>
+            <param name="startOnFirstPositivePixel">True to skip the first sequence of black pixels, otherwise false.</param>
+            <param name="excludeBlacks">True to exclude black strides from returning, otherwise false.</param>
+            <returns></returns>
+        </member>
+        <member name="M:UVtools.Core.Extensions.EmguExtensions.ScanLines(Emgu.CV.Mat,System.Boolean,System.Byte,System.Drawing.Point)">
+            <summary>
+            Scan sequential lines in X or Y direction
+            </summary>
+            <param name="mat">Mat to scan</param>
+            <param name="vertically">True to scan vertically, otherwise horizontally</param>
+            <param name="thresholdGrey">Value to threshold the grey, less or equal to this value will set to 0, otherwise 255</param>
+            <param name="offset">Value to offset the coordinates with.</param>
+            <returns>List of all lines</returns>
+        </member>
+        <member name="M:UVtools.Core.Extensions.EmguExtensions.ScanLines(Emgu.CV.Mat,System.Func{System.Byte,System.Byte},System.Boolean,System.Drawing.Point)">
+            <summary>
+            Scan sequential lines in X or Y direction
+            </summary>
+            <param name="mat">Mat to scan</param>
+            <param name="greyFunc">Function to filter and process the gray value</param>
+            <param name="vertically">True to scan vertically, otherwise horizontally</param>
+            <param name="offset">Value to offset the coordinates with.</param>
+            <returns>List of all lines</returns>
         </member>
         <member name="M:UVtools.Core.Extensions.EmguExtensions.Rotate(Emgu.CV.Mat,System.Double,System.Drawing.Size,System.Double)">
             <summary>
@@ -2548,6 +2629,11 @@
             Gets the decimal precision for display properties
             </summary>
         </member>
+        <member name="P:UVtools.Core.FileFormats.FileFormat.DefaultParallelBatchCount">
+            <summary>
+            Gets the default batch count to process layers in parallel
+            </summary>
+        </member>
         <member name="T:UVtools.Core.FileFormats.FileFormat.FileFormatType">
             <summary>
             Enumeration of file format types
@@ -2770,6 +2856,11 @@
             Gets the file format type
             </summary>
         </member>
+        <member name="P:UVtools.Core.FileFormats.FileFormat.ManufacturingProcess">
+            <summary>
+            Gets the manufacturing process this file and printer uses
+            </summary>
+        </member>
         <member name="P:UVtools.Core.FileFormats.FileFormat.LayerImageType">
             <summary>
             Gets the layer image data type used on this file format
@@ -2837,6 +2928,11 @@
         <member name="P:UVtools.Core.FileFormats.FileFormat.TemporaryOutputFileFullPath">
             <summary>
             Gets the temporary output file path to use on save and encode
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.FileFormat.FileInfo">
+            <summary>
+            Gets an instance of <see cref="P:UVtools.Core.FileFormats.FileFormat.FileInfo"/> with the current loaded file
             </summary>
         </member>
         <member name="P:UVtools.Core.FileFormats.FileFormat.FileFullPath">
@@ -3236,14 +3332,19 @@
             Gets the file volume (XYZ) in mm^3
             </summary>
         </member>
-        <member name="P:UVtools.Core.FileFormats.FileFormat.HaveAntiAliasing">
+        <member name="P:UVtools.Core.FileFormats.FileFormat.SupportAntiAliasing">
             <summary>
-            Checks if this file have AntiAliasing
+            Gets if the file supports antialiasing usage (grey pixels)
             </summary>
         </member>
         <member name="P:UVtools.Core.FileFormats.FileFormat.IsAntiAliasingEmulated">
             <summary>
             Gets if the AntiAliasing is emulated/fake with fractions of the time or if is real grey levels
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.FileFormat.IsUsingAntiAliasing">
+            <summary>
+            Checks if this file is using AntiAliasing per it data information
             </summary>
         </member>
         <member name="P:UVtools.Core.FileFormats.FileFormat.AntiAliasing">
@@ -3610,7 +3711,7 @@
             Gets the GCode, returns null if not supported
             </summary>
         </member>
-        <member name="P:UVtools.Core.FileFormats.FileFormat.SupportsGCode">
+        <member name="P:UVtools.Core.FileFormats.FileFormat.SupportGCode">
             <summary>
             Gets if this file format supports gcode
             </summary>
@@ -4211,7 +4312,7 @@
             Converts millimeters to pixels given the current resolution and display size
             </summary>
             <param name="millimeters">Millimeters to convert</param>
-            <param name="fallbackToPixels">Fallback to this value in pixels if no ratio is available to make the convertion</param>
+            <param name="fallbackToPixels">Fallback to this value in pixels if no ratio is available to make the conversion</param>
             <returns>Pixels</returns>
         </member>
         <member name="M:UVtools.Core.FileFormats.FileFormat.MillimetersYToPixels(System.Single,System.UInt32)">
@@ -4219,7 +4320,7 @@
             Converts millimeters to pixels given the current resolution and display size
             </summary>
             <param name="millimeters">Millimeters to convert</param>
-            <param name="fallbackToPixels">Fallback to this value in pixels if no ratio is available to make the convertion</param>
+            <param name="fallbackToPixels">Fallback to this value in pixels if no ratio is available to make the conversion</param>
             <returns>Pixels</returns>
         </member>
         <member name="M:UVtools.Core.FileFormats.FileFormat.MillimetersToPixels(System.Single,System.UInt32)">
@@ -4227,7 +4328,7 @@
             Converts millimeters to pixels given the current resolution and display size
             </summary>
             <param name="millimeters">Millimeters to convert</param>
-            <param name="fallbackToPixels">Fallback to this value in pixels if no ratio is available to make the convertion</param>
+            <param name="fallbackToPixels">Fallback to this value in pixels if no ratio is available to make the conversion</param>
             <returns>Pixels</returns>
         </member>
         <member name="M:UVtools.Core.FileFormats.FileFormat.MillimetersToPixelsF(System.Single,System.UInt32)">
@@ -4235,7 +4336,7 @@
             Converts millimeters to pixels given the current resolution and display size
             </summary>
             <param name="millimeters">Millimeters to convert</param>
-            <param name="fallbackToPixels">Fallback to this value in pixels if no ratio is available to make the convertion</param>
+            <param name="fallbackToPixels">Fallback to this value in pixels if no ratio is available to make the conversion</param>
             <returns>Pixels</returns>
         </member>
         <member name="M:UVtools.Core.FileFormats.FileFormat.PixelToDisplayPositionX(System.Int32,System.Byte)">
@@ -5103,6 +5204,49 @@
             Gets the layer image length in bytes.
             </summary>
         </member>
+        <member name="F:UVtools.Core.FileFormats.QDTFile.FileHeader">
+            <summary>
+            The file header<br/>
+            {0} = layer thickness in microns<br/>
+            {1} = ResolutionX<br/>
+            {2} = ResolutionY<br/>
+            </summary>
+        </member>
+        <member name="F:UVtools.Core.FileFormats.QDTFile.QDTFileLineExpect.Header">
+            <summary>
+            JieHe,50,4000,8000,2,019,0,FA
+            </summary>
+        </member>
+        <member name="F:UVtools.Core.FileFormats.QDTFile.QDTFileLineExpect.LayerNumberOrFD">
+            <summary>
+            Layer number 1 started or End of layer definitions
+            </summary>
+        </member>
+        <member name="F:UVtools.Core.FileFormats.QDTFile.QDTFileLineExpect.FB">
+            <summary>
+            Layer lines start
+            </summary>
+        </member>
+        <member name="F:UVtools.Core.FileFormats.QDTFile.QDTFileLineExpect.FC">
+            <summary>
+            Layer lines end
+            </summary>
+        </member>
+        <member name="F:UVtools.Core.FileFormats.QDTFile.QDTFileLineExpect.FD">
+            <summary>
+            End of layer definitions
+            </summary>
+        </member>
+        <member name="F:UVtools.Core.FileFormats.QDTFile.QDTFileLineExpect.LayerCount">
+            <summary>
+            Number of layers in the file
+            </summary>
+        </member>
+        <member name="F:UVtools.Core.FileFormats.QDTFile.QDTFileLineExpect.End">
+            <summary>
+            End of the file completed
+            </summary>
+        </member>
         <member name="F:UVtools.Core.GCode.GCodeBuilder.GCodeTimeUnits.Milliseconds">
             <summary>
             ms
@@ -5474,6 +5618,79 @@
         <member name="P:UVtools.Core.Helpers.Serializer">
             <summary>
             Gets the <see cref="T:BinarySerialization.BinarySerializer"/> instance
+            </summary>
+        </member>
+        <member name="T:UVtools.Core.IO.ReverseLineReader">
+            <summary>
+            Reads a text file in reverse, from bottom up<br/>
+            https://stackoverflow.com/questions/452902/how-to-read-a-text-file-reversely-with-iterator-in-c-sharp
+            </summary>
+        </member>
+        <member name="F:UVtools.Core.IO.ReverseLineReader.DefaultBufferSize">
+            <summary>
+            Buffer size to use by default. Classes with internal access can specify
+            a different buffer size - this is useful for testing.
+            </summary>
+        </member>
+        <member name="F:UVtools.Core.IO.ReverseLineReader._streamSource">
+            <summary>
+            Means of creating a Stream to read from.
+            </summary>
+        </member>
+        <member name="F:UVtools.Core.IO.ReverseLineReader._encoding">
+            <summary>
+            Encoding to use when converting bytes to text
+            </summary>
+        </member>
+        <member name="F:UVtools.Core.IO.ReverseLineReader._bufferSize">
+            <summary>
+            Size of buffer (in bytes) to read each time we read from the
+            stream. This must be at least as big as the maximum number of
+            bytes for a single character.
+            </summary>
+        </member>
+        <member name="F:UVtools.Core.IO.ReverseLineReader._characterStartDetector">
+            <summary>
+            Function which, when given a position within a file and a byte, states whether
+            or not the byte represents the start of a character.
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.IO.ReverseLineReader.#ctor(System.Func{System.IO.Stream})">
+            <summary>
+            Creates a LineReader from a stream source. The delegate is only
+            called when the enumerator is fetched. UTF-8 is used to decode
+            the stream into text.
+            </summary>
+            <param name="streamSource">Data source</param>
+        </member>
+        <member name="M:UVtools.Core.IO.ReverseLineReader.#ctor(System.String)">
+            <summary>
+            Creates a LineReader from a filename. The file is only opened
+            (or even checked for existence) when the enumerator is fetched.
+            UTF8 is used to decode the file into text.
+            </summary>
+            <param name="filename">File to read from</param>
+        </member>
+        <member name="M:UVtools.Core.IO.ReverseLineReader.#ctor(System.String,System.Text.Encoding)">
+            <summary>
+            Creates a LineReader from a filename. The file is only opened
+            (or even checked for existence) when the enumerator is fetched.
+            </summary>
+            <param name="filename">File to read from</param>
+            <param name="encoding">Encoding to use to decode the file into text</param>
+        </member>
+        <member name="M:UVtools.Core.IO.ReverseLineReader.#ctor(System.Func{System.IO.Stream},System.Text.Encoding)">
+            <summary>
+            Creates a LineReader from a stream source. The delegate is only
+            called when the enumerator is fetched.
+            </summary>
+            <param name="streamSource">Data source</param>
+            <param name="encoding">Encoding to use to decode the stream into text</param>
+        </member>
+        <member name="M:UVtools.Core.IO.ReverseLineReader.GetEnumerator">
+            <summary>
+            Returns the enumerator reading strings backwards. If this method discovers that
+            the returned stream is either unreadable or unseekable, a NotSupportedException is thrown.
             </summary>
         </member>
         <member name="P:UVtools.Core.Layers.Issue.Parent">
@@ -5881,7 +6098,7 @@
         </member>
         <member name="P:UVtools.Core.Layers.Layer.HaveImage">
             <summary>
-            True if this layer have an valid initialized image, otherwise false
+            True if this layer have a valid initialized image, otherwise false
             </summary>
         </member>
         <member name="P:UVtools.Core.Layers.Layer.LayerMat">
@@ -6800,6 +7017,46 @@
             </summary>
             <param name="extension">Extension name</param>
             <returns>True if found, otherwise false</returns>
+        </member>
+        <member name="T:UVtools.Core.Objects.GreyLine">
+            <summary>
+            Structure containing start and end point with a grey value
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Objects.GreyStride.StartIndex">
+            <summary>
+            Gets the starting pixel index
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Objects.GreyStride.StartX">
+            <summary>
+            Gets the starting X coordinate
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Objects.GreyStride.StartY">
+            <summary>
+            Gets the starting Y coordinate
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Objects.GreyStride.Length">
+            <summary>
+            Gets the length of the stride
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Objects.GreyStride.Grey">
+            <summary>
+            Gets the grey brightness
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Objects.GreyStride.StartLocation">
+            <summary>
+            Gets the starting pixel location
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.Objects.GreyStride.#ctor(System.Int32,System.Int32,System.Int32,System.UInt32,System.Byte)">
+            <summary>
+            Gets the ending pixel location, use only this with break on rows
+            </summary>
         </member>
         <member name="P:UVtools.Core.Objects.MappedProcess.IsEnabled">
             <summary>

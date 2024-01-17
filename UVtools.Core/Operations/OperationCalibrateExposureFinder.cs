@@ -377,8 +377,8 @@ public sealed class OperationCalibrateExposureFinder : Operation
         }
     }
 
-    public decimal Xppmm => DisplayWidth > 0 ? Math.Round(SlicerFile.Resolution.Width / DisplayWidth, 2) : 0;
-    public decimal Yppmm => DisplayHeight > 0 ? Math.Round(SlicerFile.Resolution.Height / DisplayHeight, 2) : 0;
+    public decimal Xppmm => DisplayWidth > 0 ? Math.Round(SlicerFile.ResolutionX / DisplayWidth, 3) : 0;
+    public decimal Yppmm => DisplayHeight > 0 ? Math.Round(SlicerFile.ResolutionY / DisplayHeight, 3) : 0;
     public decimal Ppmm => Math.Max(Xppmm, Yppmm);
 
     public decimal LayerHeight
@@ -1145,7 +1145,7 @@ public sealed class OperationCalibrateExposureFinder : Operation
         if (SlicerFile.SupportPerLayerSettings)
         {
             _differentSettingsForSamePositionedLayers = true;
-            if (SlicerFile.SupportsGCode)
+            if (SlicerFile.SupportGCode)
             {
                 _samePositionedLayersLiftHeight = 0;
                 _samePositionedLayersWaitTimeBeforeCure = 2;

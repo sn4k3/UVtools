@@ -425,7 +425,7 @@ public sealed class OSFFile : FileFormat
         set
         {
             Settings.LayerHeightUmMagnified100Times.Value = (ushort)(value * 1000_00f);
-            RaisePropertyChanged();
+            base.LayerHeight = value;
         }
     }
 

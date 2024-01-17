@@ -344,11 +344,7 @@ public sealed class VDTFile : FileFormat
     public override float LayerHeight
     {
         get => ManifestFile.Print.LayerHeight;
-        set
-        {
-            ManifestFile.Print.LayerHeight = Layer.RoundHeight(value);
-            RaisePropertyChanged();
-        }
+        set => base.LayerHeight = ManifestFile.Print.LayerHeight = Layer.RoundHeight(value);
     }
 
     /* public override uint LayerCount

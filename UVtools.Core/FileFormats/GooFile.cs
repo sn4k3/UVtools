@@ -359,7 +359,7 @@ public sealed class GooFile : FileFormat
             return mat;
         }
 
-        public byte[] EncodeImage(Mat image, uint layerIndex)
+        public byte[] EncodeImage(Mat image, uint layerIndex, bool useColorDifferenceCompression = true)
         {
             List<byte> rle = new(){ LayerMagic };
             byte previousColor = 0;
@@ -379,23 +379,19 @@ public sealed class GooFile : FileFormat
                 rle.Add(0);
 
                 // Difference mode
-                var differenceColor = (byte) Math.Abs(currentColor - previousColor);
-                if (stride <= byte.MaxValue && differenceColor <= 0xF)
+                var colorDifference = (byte) Math.Abs(currentColor - previousColor);
+                if (useColorDifferenceCompression && colorDifference <= 0xF && stride <= byte.MaxValue && currentColor is > 0 and < byte.MaxValue)
                 {
-                    rle[firstByteIndex] = (byte) (0x2 << 6 | (differenceColor & 0xF));
+                    rle[firstByteIndex] = (byte) (0b10 << 6 | (colorDifference & 0xF));
                     if (stride > 1)
                     {
                         rle[firstByteIndex] |= 0x1 << 4;
+                        rle.Add((byte)stride);
                     }
-
-                    if (previousColor > currentColor)
+                    
+                    if (currentColor < previousColor)
                     {
                         rle[firstByteIndex] |= 0x1 << 5;
-                    }
-
-                    if (stride > 1)
-                    {
-                        rle.Add((byte) stride);
                     }
                 }
                 else
@@ -403,36 +399,37 @@ public sealed class GooFile : FileFormat
                     /*if (currentColor == byte.MinValue)
                     {
                         0 0 This chunk contain all 0x0 pixels
-                        firstByte |= 0x00 << 6;
+                        firstByte |= 0b00 << 6;
                     }*/
                     if (currentColor == byte.MaxValue)
                     {
                         // 1 1 This chunk contain all 0xff pixels
-                        rle[firstByteIndex] |= 0x3 << 6;
+                        rle[firstByteIndex] |= 0b11 << 6;
                     }
                     else if (currentColor > byte.MinValue)
                     {
                         // 0 1 This chunk contain the value of gray between 0x1 to 0xfe. The gray value is after byte0.
-                        rle[firstByteIndex] |= 0x1 << 6;
+                        rle[firstByteIndex] |= 0b01 << 6;
                         rle.Add(currentColor);
                     }
 
                     rle[firstByteIndex] |= (byte) (stride & 0xF);
                     if (stride <= 0xF)
                     {
+                        //rle[firstByteIndex] |= 0b00 << 4;
                         return;
                     }
 
                     if (stride <= 0xFFF)
                     {
-                        rle[firstByteIndex] |= 0x1 << 4;
+                        rle[firstByteIndex] |= 0b01 << 4;
                         rle.Add((byte) (stride >> 4));
                         return;
                     }
 
                     if (stride <= 0xFFFFF)
                     {
-                        rle[firstByteIndex] |= 0x2 << 4;
+                        rle[firstByteIndex] |= 0b10 << 4;
                         rle.Add((byte) (stride >> 12));
                         rle.Add((byte) (stride >> 4));
                         return;
@@ -440,7 +437,7 @@ public sealed class GooFile : FileFormat
 
                     if (stride <= 0xFFFFFFF)
                     {
-                        rle[firstByteIndex] |= 0x3 << 4;
+                        rle[firstByteIndex] |= 0b11 << 4;
                         rle.Add((byte) (stride >> 20));
                         rle.Add((byte) (stride >> 12));
                         rle.Add((byte) (stride >> 4));
@@ -595,11 +592,7 @@ public sealed class GooFile : FileFormat
     public override float LayerHeight
     {
         get => Header.LayerHeight;
-        set
-        {
-            Header.LayerHeight = value;
-            RaisePropertyChanged();
-        }
+        set => base.LayerHeight = Header.LayerHeight = value;
     }
 
     public override float DisplayWidth
@@ -1037,6 +1030,8 @@ public sealed class GooFile : FileFormat
 
         var delimiter = Delimiter;
 
+        var useColorDifferenceCompression = !FileEndsWith(".prz");
+
         foreach (var batch in BatchLayersIndexes())
         {
             Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), layerIndex =>
@@ -1045,7 +1040,7 @@ public sealed class GooFile : FileFormat
                 using (var mat = this[layerIndex].LayerMat)
                 {
                     layerData[layerIndex] = new LayerDef(this, this[layerIndex]);
-                    layerData[layerIndex].EncodeImage(mat, (uint) layerIndex);
+                    layerData[layerIndex].EncodeImage(mat, (uint) layerIndex, useColorDifferenceCompression);
                 }
                 progress.LockAndIncrement();
             });

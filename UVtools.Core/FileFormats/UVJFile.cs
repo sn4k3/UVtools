@@ -291,11 +291,7 @@ public sealed class UVJFile : FileFormat
     public override float LayerHeight
     {
         get => JsonSettings.Properties.Size.LayerHeight;
-        set
-        {
-            JsonSettings.Properties.Size.LayerHeight = Layer.RoundHeight(value);
-            RaisePropertyChanged();
-        }
+        set => base.LayerHeight = JsonSettings.Properties.Size.LayerHeight = Layer.RoundHeight(value);
     }
 
     public override uint LayerCount

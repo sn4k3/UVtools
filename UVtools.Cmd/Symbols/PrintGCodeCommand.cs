@@ -24,7 +24,7 @@ internal static class PrintGCodeCommand
         command.SetHandler((inputFile) =>
             {
                 var slicerFile = Program.OpenInputFile(inputFile, FileFormat.FileDecodeType.Partial);
-                if (slicerFile.SupportsGCode)
+                if (slicerFile.SupportGCode)
                 {
                     Console.WriteLine(slicerFile.GCodeStr);
                 }

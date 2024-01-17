@@ -68,7 +68,7 @@ public class FlashForgeSVGXSvg
 [XmlRoot("printparams")]
 public class FlashForgeSVGXSvgPrintParams
 {
-    [XmlAttribute("machinename")] public string MachineName { get; set; } = "Unknown";
+    [XmlAttribute("machinename")] public string MachineName { get; set; } = FileFormat.DefaultMachineName;
     [XmlAttribute("materialname")] public string? MaterialName { get; set; } = "Unknown";
     [XmlAttribute("layerheight")] public float LayerHeight { get; set; }
     [XmlAttribute("volume")] public float MaterialMilliliters { get; set; }
@@ -276,6 +276,8 @@ public sealed class FlashForgeSVGXFile : FileFormat
         new(200, 240)
     };
 
+    public override bool SupportAntiAliasing => false;
+
     public override uint ResolutionX
     {
         get => SVGDocument.PrintParameters.ResolutionX;
@@ -293,8 +295,7 @@ public sealed class FlashForgeSVGXFile : FileFormat
         get => SVGDocument.PrintParameters.DisplayWidth;
         set => base.DisplayWidth = SVGDocument.PrintParameters.DisplayWidth = RoundDisplaySize(value);
     }
-
-
+    
     public override float DisplayHeight
     {
         get => SVGDocument.PrintParameters.DisplayHeight;
@@ -316,11 +317,7 @@ public sealed class FlashForgeSVGXFile : FileFormat
     public override float LayerHeight
     {
         get => SVGDocument.PrintParameters.LayerHeight;
-        set
-        {
-            SVGDocument.PrintParameters.LayerHeight = Layer.RoundHeight(value);
-            RaisePropertyChanged();
-        }
+        set => base.LayerHeight = SVGDocument.PrintParameters.LayerHeight = Layer.RoundHeight(value);
     }
 
     public override float PrintHeight
@@ -610,7 +607,7 @@ public sealed class FlashForgeSVGXFile : FileFormat
             SVGDocument.PrintParameters.DisplayWidth == 0 || SVGDocument.PrintParameters.DisplayHeight == 0)
         {
             throw new FileLoadException("This file does not contain a resolution and/or display size information needed to generate the layer images.\n" +
-                                        "Note that FlashDLPrint slicer is unable to output files with the required information to load in here.\n" +
+                                        "Note that FlashDLPrint and VoxelPrint slicer is unable to output files with the required information to load in here.\n" +
                                         "Please use other compatible slicer capable of output the correct information to load the file in here.", FileFullPath);
         }
 

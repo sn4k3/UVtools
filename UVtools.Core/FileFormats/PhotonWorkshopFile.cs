@@ -1172,6 +1172,14 @@ public sealed class PhotonWorkshopFile : FileFormat
 
     public override FileFormatType FileType => FileFormatType.Binary;
 
+    public override PrinterManufacturingProcess ManufacturingProcess =>
+        PrinterModel switch
+        {
+            AnyCubicMachine.PhotonUltra => PrinterManufacturingProcess.DLP,
+            AnyCubicMachine.PhotonD2 => PrinterManufacturingProcess.DLP,
+            _ => PrinterManufacturingProcess.mSLA
+        };
+
     public override string ConvertMenuGroup => "Anycubic Photon Workshop";
 
     public override FileExtension[] FileExtensions { get; } = {
@@ -1457,11 +1465,7 @@ public sealed class PhotonWorkshopFile : FileFormat
     public override float LayerHeight
     {
         get => HeaderSettings.LayerHeight;
-        set
-        {
-            HeaderSettings.LayerHeight = Layer.RoundHeight(value);
-            RaisePropertyChanged();
-        }
+        set => base.LayerHeight = HeaderSettings.LayerHeight = Layer.RoundHeight(value);
     }
 
     public override uint LayerCount

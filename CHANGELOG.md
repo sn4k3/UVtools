@@ -1,5 +1,22 @@
 # Changelog
 
+## /12/2023 - v4.1.0
+
+- **File formats:**
+  - (Add) Emake3D Galaxy 1 (QDT) file format and PrusaSlicer printer profile
+  - (Add) `ManufacturingProcess` property to get the manufacturing process used by the file/printer combination
+  - (Add) `SupportAntiAliasing` property to get if the file supports antialiasing usage (grey pixels)
+  - (Improvement) Goo: On encode image do not use gradient compression when going from grey to black or white
+  - (Change) PZR: Disable gradient compression for this file format as it corrupt layer for Phrozen Sonic Mini 8K S (#776, #810, #814)
+  - (Fix) Thumbnail text generation and for partial open files
+- (Add) Title bar: Display the loaded file size and re-arrange the last operation run time to the right
+- (Improvement) Re-arrange some items on `File` and `Help` menu
+- (Fix) Layer actions - Import layer(s): Unable to process image files (#815)
+- (Fix) PCB Exposure: Draw circles using ellipses in order to use non-square pixels (#822)
+- (Fix) PrusaSlicer Printer: "Elegoo Mars 4" is wrongly named, renamed to "Elegoo Mars 4 DLP" and added the corresponding "Elegoo Mars 4"
+- (Upgrade) .NET from 6.0.25 to 6.0.26
+- (Upgrade) AvaloniaUI from 11.0.6 to 11.0.7 (Fixes #803, #812)
+
 ## 24/12/2023 - v4.0.6
 
 - (Add) Setting: Automations - Restrict the file name to valid ASCII characters (Default: Off)
@@ -15,7 +32,7 @@
 - (Improvement) File -> Open recent: Disable all inexistent files (Can no longer be clicked)
 - (Upgrade) .NET from 6.0.24 to 6.0.25
 - (Upgrade) AvaloniaUI from 11.0.5 to 11.0.6
-- 
+
 ## 09/11/2023 - v4.0.4
 
 - **FileFormat Anycubic:** 

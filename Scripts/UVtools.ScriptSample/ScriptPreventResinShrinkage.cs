@@ -159,7 +159,7 @@ public class ScriptPreventResinShrinkage : ScriptGlobals
             coresLayer2.LayerMat = coresMat2;
 
             // Try to disable lifts for last two subsequent layers
-            fullLayer.LiftHeightTotal = coresLayer2.LiftHeightTotal = SlicerFile.SupportsGCode ? 0f : 0.1f;
+            fullLayer.LiftHeightTotal = coresLayer2.LiftHeightTotal = SlicerFile.SupportGCode ? 0f : 0.1f;
 
             newLayers[layerIndex * 3] = coresLayer1;
             newLayers[layerIndex * 3 + 1] = coresLayer2;

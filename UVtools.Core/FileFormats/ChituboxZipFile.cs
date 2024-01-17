@@ -192,11 +192,7 @@ public sealed class ChituboxZipFile : FileFormat
     public override float LayerHeight
     {
         get => HeaderSettings.LayerHeight;
-        set
-        {
-            HeaderSettings.LayerHeight = Layer.RoundHeight(value);
-            RaisePropertyChanged();
-        }
+        set => base.LayerHeight = HeaderSettings.LayerHeight = Layer.RoundHeight(value);
     }
 
     public override uint LayerCount
@@ -347,7 +343,7 @@ public sealed class ChituboxZipFile : FileFormat
 
     public override object[] Configs => new object[] { HeaderSettings };
 
-    public override bool SupportsGCode => base.SupportsGCode && !IsPHZZip;
+    public override bool SupportGCode => base.SupportGCode && !IsPHZZip;
 
     public bool IsPHZZip;
     #endregion
@@ -469,7 +465,7 @@ public sealed class ChituboxZipFile : FileFormat
 
     public override void RebuildGCode()
     {
-        if (!SupportsGCode || SuppressRebuildGCode) return;
+        if (!SupportGCode || SuppressRebuildGCode) return;
         GCode?.RebuildGCode(this, new object[]{ HeaderSettings });
         RaisePropertyChanged(nameof(GCodeStr));
     }

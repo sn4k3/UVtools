@@ -1,4 +1,4 @@
-﻿<Project Sdk="WixToolset.Sdk/4.0.1">
+﻿<Project Sdk="WixToolset.Sdk/4.0.3">
   <PropertyGroup>
     <Platform Condition="'$(Platform)' == ''">x64</Platform>
     <ProductVersion>3.7</ProductVersion>
@@ -15,47 +15,12 @@
     <MsixCertificateThumbprint Condition="'$(MsixCertificateThumbprint)' == ''" />
     <MsixTimestampUrl Condition="'$(MsixTimestampUrl)' == ''" />
     <SignOutput>true</SignOutput>
-  </PropertyGroup>
-  <PropertyGroup>
-    <SuppressIces>ICE27;ICE38;ICE43;ICE57</SuppressIces>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
-    <DefineConstants>Debug;ProductVersion=$(ProductVersion);HarvestPath=$(HarvestPath)</DefineConstants>
     <WixVariables>WixUIBannerBmp=Resources\Banner.jpg;WixUIDialogBmp=Resources\Dialog.jpg;WixUILicenseRtf=Resources\EULA.rtf</WixVariables>
-    <SuppressIces>ICE27;ICE38;ICE43;ICE57</SuppressIces>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
     <DefineConstants>ProductVersion=$(ProductVersion);HarvestPath=$(HarvestPath)</DefineConstants>
-    <WixVariables>WixUIBannerBmp=Resources\Banner.jpg;WixUIDialogBmp=Resources\Dialog.jpg;WixUILicenseRtf=Resources\EULA.rtf</WixVariables>
     <SuppressIces>ICE27;ICE38;ICE43;ICE57</SuppressIces>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
-    <DefineConstants>Debug;ProductVersion=$(ProductVersion);HarvestPath=$(HarvestPath)</DefineConstants>
-    <WixVariables>WixUIBannerBmp=Resources\Banner.jpg;WixUIDialogBmp=Resources\Dialog.jpg;WixUILicenseRtf=Resources\EULA.rtf</WixVariables>
-    <OutputPath>bin\$(Platform)\$(Configuration)\</OutputPath>
-    <IntermediateOutputPath>obj\$(Platform)\$(Configuration)\</IntermediateOutputPath>
-    <SuppressIces>ICE27;ICE38;ICE43;ICE57</SuppressIces>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
-    <DefineConstants>ProductVersion=$(ProductVersion);HarvestPath=$(HarvestPath)</DefineConstants>
-    <WixVariables>WixUIBannerBmp=Resources\Banner.jpg;WixUIDialogBmp=Resources\Dialog.jpg;WixUILicenseRtf=Resources\EULA.rtf</WixVariables>
-    <OutputPath>bin\$(Platform)\$(Configuration)\</OutputPath>
-    <IntermediateOutputPath>obj\$(Platform)\$(Configuration)\</IntermediateOutputPath>
-    <SuppressIces>ICE27;ICE38;ICE43;ICE57</SuppressIces>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
-    <DefineConstants>Debug;ProductVersion=$(ProductVersion);HarvestPath=$(HarvestPath)</DefineConstants>
-    <WixVariables>WixUIBannerBmp=Resources\Banner.jpg;WixUIDialogBmp=Resources\Dialog.jpg;WixUILicenseRtf=Resources\EULA.rtf</WixVariables>
-    <OutputPath>bin\$(Platform)\$(Configuration)\</OutputPath>
-    <IntermediateOutputPath>obj\$(Platform)\$(Configuration)\</IntermediateOutputPath>
-    <SuppressIces>ICE27;ICE38;ICE43;ICE57</SuppressIces>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
-    <DefineConstants>ProductVersion=$(ProductVersion);HarvestPath=$(HarvestPath)</DefineConstants>
-    <WixVariables>WixUIBannerBmp=Resources\Banner.jpg;WixUIDialogBmp=Resources\Dialog.jpg;WixUILicenseRtf=Resources\EULA.rtf</WixVariables>
-    <OutputPath>bin\$(Platform)\$(Configuration)\</OutputPath>
-    <IntermediateOutputPath>obj\$(Platform)\$(Configuration)\</IntermediateOutputPath>
-    <SuppressIces>ICE27;ICE38;ICE43;ICE57</SuppressIces>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <DefineConstants>Debug;$(DefineConstants)</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
     <Folder Include="Code" />

@@ -99,7 +99,7 @@ public class ScriptTimelapseSample : ScriptGlobals
         Script.UserInputs.Add(InputRaiseEveryLayerN);
         Script.UserInputs.Add(InputWaitTime);
 
-        if (!SlicerFile.SupportsGCode)
+        if (!SlicerFile.SupportGCode)
         {
             InputUseVirtualLayer.Value = true;
         }
@@ -142,7 +142,7 @@ public class ScriptTimelapseSample : ScriptGlobals
             var layer = new Layer(SlicerFile.LayerCount, mat, SlicerFile)
             {
                 PositionZ = InputPositionZ.Value,
-                ExposureTime = SlicerFile.SupportsGCode ? 0 : 0.05f,
+                ExposureTime = SlicerFile.SupportGCode ? 0 : 0.05f,
                 LiftSpeed = InputLiftSpeed.Value,
                 RetractSpeed = InputRetractSpeed.Value
             };

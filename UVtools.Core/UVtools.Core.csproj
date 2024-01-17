@@ -1,8 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<Platforms>AnyCPU;x64</Platforms>
-		<Version>4.0.6</Version>
+		<Version>4.1.0</Version>
 
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
 		<DocumentationFile>..\documentation\$(AssemblyName).xml</DocumentationFile>
@@ -36,7 +35,11 @@
 		<PackageReference Include="System.Memory" Version="4.5.5" />
 		<PackageReference Include="System.Net.Http" Version="4.3.4" />
 		<PackageReference Include="System.Reflection.TypeExtensions" Version="4.7.0" />
-		<PackageReference Include="System.Text.Json" Version="8.0.0" />
+		<PackageReference Include="System.Text.Json" Version="8.0.1" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="IO\" />
 	</ItemGroup>
 
 	<Target Name="PreparePackageReleaseNotesFromFile" BeforeTargets="GenerateNuspec" Condition="Exists('..\RELEASE_NOTES.md')">

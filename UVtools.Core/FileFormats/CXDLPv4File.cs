@@ -907,11 +907,7 @@ public sealed class CXDLPv4File : FileFormat
     public override float LayerHeight
     {
         get => HeaderSettings.LayerHeight;
-        set
-        {
-            HeaderSettings.LayerHeight = Layer.RoundHeight(value);
-            RaisePropertyChanged();
-        }
+        set => base.LayerHeight = HeaderSettings.LayerHeight = Layer.RoundHeight(value);
     }
 
     public override float PrintHeight

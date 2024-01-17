@@ -468,7 +468,7 @@ public sealed class SuggestionWaitTimeBeforeCure : Suggestion
             }
         }
 
-        if (_createEmptyFirstLayer && SlicerFile is (ChituboxFile or CTBEncryptedFile) and { CanUseLayerPositionZ: true, SupportsGCode: false})
+        if (_createEmptyFirstLayer && SlicerFile is (ChituboxFile or CTBEncryptedFile) and { CanUseLayerPositionZ: true, SupportGCode: false})
         {
             var firstLayer = SlicerFile.FirstLayer!;
             if (!firstLayer.IsDummy) // First layer is not blank as it seems, lets create one
@@ -476,9 +476,9 @@ public sealed class SuggestionWaitTimeBeforeCure : Suggestion
                 firstLayer = firstLayer.Clone();
                 using var mat = SlicerFile.CreateMatWithDummyPixel();
                 firstLayer.LayerMat = mat;
-                firstLayer.ExposureTime = SlicerFile.SupportsGCode ? 0 : 0.01f;
+                firstLayer.ExposureTime = SlicerFile.SupportGCode ? 0 : 0.01f;
                 //firstLayer.LiftHeightTotal = SlicerFile.SupportsGCode ? 0 : 0.1f;
-                SlicerFile.FirstLayer!.LiftHeightTotal = SlicerFile.SupportsGCode ? 0 : 0.1f; // Already on position, try to not lift
+                SlicerFile.FirstLayer!.LiftHeightTotal = SlicerFile.SupportGCode ? 0 : 0.1f; // Already on position, try to not lift
                 firstLayer.SetNoDelays();
                 SlicerFile.SuppressRebuildPropertiesWork(() =>
                 {

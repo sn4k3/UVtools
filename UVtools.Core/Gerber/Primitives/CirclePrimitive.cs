@@ -83,9 +83,8 @@ public class CirclePrimitive : Primitive
         if (!IsParsed) return;
         if (Diameter <= 0) return;
 
-        CvInvoke.Circle(mat, 
-            Document.PositionMmToPx(at.X + CenterX, at.Y + CenterY),
-            Document.SizeMmToPx(Diameter / 2), Document.GetPolarityColor(Exposure), -1, lineType);
+        //CvInvoke.Circle(mat, Document.PositionMmToPx(at.X + CenterX, at.Y + CenterY), Document.SizeMmToPx(Diameter / 2), Document.GetPolarityColor(Exposure), -1, lineType);
+        CvInvoke.Ellipse(mat, Document.PositionMmToPx(at.X + CenterX, at.Y + CenterY), Document.SizeMmToPx(Diameter / 2.0, Diameter / 2.0), 0, 0, 360, Document.GetPolarityColor(Exposure), -1, lineType);
     }
 
     public override void ParseExpressions(params string[] args)

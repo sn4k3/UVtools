@@ -18,6 +18,7 @@ using System.Drawing;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
+using CommunityToolkit.Diagnostics;
 using UVtools.Core.EmguCV;
 using UVtools.Core.Objects;
 
@@ -749,6 +750,17 @@ public static class EmguExtensions
     public static Mat Roi(this Mat mat, Mat fromMat) => mat.Roi(fromMat.Size);
 
     /// <summary>
+    /// Calculates the bounding rectangle and return a <see cref="MatRoi"/> object with it
+    /// </summary>
+    /// <param name="mat"></param>
+    /// <returns></returns>
+    public static MatRoi RoiFromAutoBoundingRectangle(this Mat mat)
+    {
+        var boundingRectangle = CvInvoke.BoundingRectangle(mat);
+        return new MatRoi(mat, boundingRectangle);
+    }
+
+    /// <summary>
     /// Gets a Roi from center, but return source when have same size as source
     /// </summary>
     /// <param name="mat"></param>
@@ -935,6 +947,474 @@ public static class EmguExtensions
         }
 
         return -1;
+    }
+
+    /// <summary>
+    /// Scan sequential strides of continuous pixels
+    /// </summary>
+    /// <param name="mat"></param>
+    /// <param name="strideLimit">Size limit of a single stride.</param>
+    /// <param name="breakOnRows">True to break the stride sequence on a new row, otherwise false.</param>
+    /// <param name="startOnFirstPositivePixel">True to skip the first sequence of black pixels, otherwise false.</param>
+    /// <param name="excludeBlacks">True to exclude black strides from returning, otherwise false.</param>
+    /// <param name="thresholdGrey">Value to threshold the grey, below or equal to this value will set to 0, otherwise <paramref name="thresholdMaxGrey"/></param>
+    /// <param name="thresholdMaxGrey">Grey value to set when the threshold is above the limit.</param>
+    /// <returns></returns>
+    public static List<GreyStride> ScanStrides(this Mat mat, uint strideLimit = 0, bool breakOnRows = false, bool startOnFirstPositivePixel = false, bool excludeBlacks = false, byte thresholdGrey = 0, byte thresholdMaxGrey = byte.MaxValue)
+    {
+        Guard.IsEqualTo(mat.NumberOfChannels, 1);
+        Guard.IsNotEqualTo(strideLimit, 1);
+        //Guard.IsGreaterThan(strideLimit, 1);
+
+        var result = new List<GreyStride>();
+
+        if (mat.IsEmpty) return result;
+
+        int i = 0;
+        int x = 0;
+        int y = 0;
+
+        int index = 0;
+        Point location = default;
+        uint stride = 0;
+        byte grey = 0;
+
+        var maxWidth = mat.Width;
+
+        var span = mat.GetDataByteSpan();
+
+        if (excludeBlacks || startOnFirstPositivePixel)
+        {
+            for (; i < span.Length; i++)
+            {
+                grey = span[i];
+                if (thresholdGrey is > byte.MinValue and < byte.MaxValue)
+                {
+                    grey = grey <= thresholdGrey ? byte.MinValue : thresholdMaxGrey;
+                }
+                if (grey == 0) continue;
+                index = i;
+                location.X = i % maxWidth;
+                location.Y = y = i / maxWidth;
+                stride = 1;
+                i++;
+
+                x = location.X + 1;
+
+                break;
+            }
+        }
+
+        for (; i < span.Length; i++)
+        {
+            // Check for rows
+            if (x == maxWidth)
+            {
+                y++;
+
+                if (breakOnRows && stride > 0)
+                {
+                    if (!excludeBlacks || (excludeBlacks && grey > 0)) result.Add(new GreyStride(index, location, stride, grey));
+                    index = i;
+                    location.X = 0;
+                    location.Y = y;
+                    stride = 1;
+                    grey = span[i];
+                    if (thresholdGrey is > byte.MinValue and < byte.MaxValue)
+                    {
+                        grey = grey <= thresholdGrey ? byte.MinValue : thresholdMaxGrey;
+                    }
+
+                    x = 1;
+
+                    continue;
+                }
+
+                x = 0;
+            }
+            
+            // Check for sequence
+            var currentGrey = span[i];
+            if (thresholdGrey is > byte.MinValue and < byte.MaxValue)
+            {
+                currentGrey = currentGrey <= thresholdGrey ? byte.MinValue : thresholdMaxGrey;
+            }
+
+            if (currentGrey == grey)
+            {
+                stride++;
+                if (stride == strideLimit)
+                {
+                    if (!excludeBlacks || (excludeBlacks && grey > 0)) result.Add(new GreyStride(index, location, stride, grey));
+                    index = i;
+                    location.X = x;
+                    location.Y = y;
+                    stride = 0;
+                }
+            }
+            else
+            {
+                if (stride > 0)
+                {
+                    if (!excludeBlacks || (excludeBlacks && grey > 0)) result.Add(new GreyStride(index, location, stride, grey));
+                    index = i;
+                    location.X = x;
+                    location.Y = y;
+                }
+
+                stride = 1;
+                grey = currentGrey;
+            }
+            
+            x++;
+        }
+
+        // Return the left over
+        if (stride > 0 && (!excludeBlacks || (excludeBlacks && grey > 0)))
+        {
+            result.Add(new GreyStride(index, location, stride, grey));
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// Scan sequential strides of continuous pixels
+    /// </summary>
+    /// <param name="mat"></param>
+    /// <param name="greyFunc">Function to filter and process the gray value.</param>
+    /// <param name="strideLimit">Size limit of a single stride.</param>
+    /// <param name="breakOnRows">True to break the stride sequence on a new row, otherwise false.</param>
+    /// <param name="startOnFirstPositivePixel">True to skip the first sequence of black pixels, otherwise false.</param>
+    /// <param name="excludeBlacks">True to exclude black strides from returning, otherwise false.</param>
+    /// <returns></returns>
+    public static List<GreyStride> ScanStrides(this Mat mat, Func<byte, byte> greyFunc, uint strideLimit = 0, bool breakOnRows = false, bool startOnFirstPositivePixel = false, bool excludeBlacks = false)
+    {
+        Guard.IsEqualTo(mat.NumberOfChannels, 1);
+        Guard.IsNotEqualTo(strideLimit, 1);
+        //Guard.IsGreaterThan(strideLimit, 1);
+
+        var result = new List<GreyStride>();
+
+        if (mat.IsEmpty) return result;
+
+        int i = 0;
+        int x = 0;
+        int y = 0;
+
+        int index = 0;
+        Point location = default;
+        uint stride = 0;
+        byte grey = 0;
+
+        var maxWidth = mat.Width;
+
+        var span = mat.GetDataByteSpan();
+
+        if (excludeBlacks || startOnFirstPositivePixel)
+        {
+            for (; i < span.Length; i++)
+            {
+                grey = greyFunc(span[i]);
+
+                if (grey == 0) continue;
+                index = i;
+                location.X = i % maxWidth;
+                location.Y = y = i / maxWidth;
+                stride = 1;
+                i++;
+
+                x = location.X + 1;
+
+                break;
+            }
+        }
+
+        for (; i < span.Length; i++)
+        {
+            // Check for rows
+            if (x == maxWidth)
+            {
+                y++;
+
+                if (breakOnRows && stride > 0)
+                {
+                    if (!excludeBlacks || (excludeBlacks && grey > 0)) result.Add(new GreyStride(index, location, stride, grey));
+                    index = i;
+                    location.X = 0;
+                    location.Y = y;
+                    stride = 1;
+                    grey = greyFunc(span[i]);
+
+                    x = 1;
+
+                    continue;
+                }
+
+                x = 0;
+            }
+
+            // Check for sequence
+            var currentGrey = greyFunc(span[i]);
+
+            if (currentGrey == grey)
+            {
+                stride++;
+                if (stride == strideLimit)
+                {
+                    if (!excludeBlacks || (excludeBlacks && grey > 0)) result.Add(new GreyStride(index, location, stride, grey));
+                    index = i;
+                    location.X = x;
+                    location.Y = y;
+                    stride = 0;
+                }
+            }
+            else
+            {
+                if (stride > 0)
+                {
+                    if (!excludeBlacks || (excludeBlacks && grey > 0)) result.Add(new GreyStride(index, location, stride, grey));
+                    index = i;
+                    location.X = x;
+                    location.Y = y;
+                }
+
+                stride = 1;
+                grey = currentGrey;
+            }
+
+            x++;
+        }
+
+        // Return the left over
+        if (stride > 0 && (!excludeBlacks || (excludeBlacks && grey > 0)))
+        {
+            result.Add(new GreyStride(index, location, stride, grey));
+        }
+
+        return result;
+    }
+
+    /*public static List<GreyStride> ScanLines(this Mat mat)
+    {
+        return mat.ScanStrides(0, true, true, true);
+    }*/
+
+    /// <summary>
+    /// Scan sequential lines in X or Y direction
+    /// </summary>
+    /// <param name="mat">Mat to scan</param>
+    /// <param name="vertically">True to scan vertically, otherwise horizontally</param>
+    /// <param name="thresholdGrey">Value to threshold the grey, less or equal to this value will set to 0, otherwise 255</param>
+    /// <param name="offset">Value to offset the coordinates with.</param>
+    /// <returns>List of all lines</returns>
+    public static List<GreyLine> ScanLines(this Mat mat, bool vertically = false, byte thresholdGrey = 0, Point offset = default)
+    {
+        Guard.IsEqualTo(mat.NumberOfChannels, 1);
+
+        var lines = new List<GreyLine>();
+
+        if (mat.IsEmpty) return lines;
+
+        var matSize = mat.Size;
+
+        GreyLine line = default;
+
+        byte grey;
+        int x;
+        int y;
+
+        if (vertically)
+        {
+            var span = mat.GetDataByteSpan2D();
+            for (x = 0; x < matSize.Width; x++)
+            {
+                line.StartX = x + offset.X;
+                line.StartY = 0 + offset.Y;
+                line.EndX = x + offset.X;
+                line.EndY = 0 + offset.Y;
+                line.Grey = 0;
+
+                for (y = 0; y < matSize.Height; y++)
+                {
+                    grey = span[y, x];
+                    if (thresholdGrey is > byte.MinValue and < byte.MaxValue)
+                    {
+                        grey = grey <= thresholdGrey ? byte.MinValue : byte.MaxValue;
+                    }
+
+                    if (line.Grey == 0)
+                    {
+                        if (grey == 0) continue;
+                        line.StartY = y + offset.Y;
+                        line.Grey = grey;
+                        continue;
+                    }
+
+                    if (grey == line.Grey) continue;
+                    line.EndY = y - 1 + offset.Y;
+                    lines.Add(line);
+
+                    line.Grey = 0;
+                    y--;
+                }
+
+                if (line.Grey > 0)
+                {
+                    line.EndY = y - 1 + offset.Y;
+                    lines.Add(line);
+                }
+            }
+        }
+        else // Horizontal
+        {
+            for (y = 0; y < matSize.Height; y++)
+            {
+                var span = mat.GetRowByteSpan(y);
+                line.StartX = 0 + offset.X;
+                line.StartY = y + offset.Y;
+                line.EndX = 0 + offset.X;
+                line.EndY = y + offset.Y;
+                line.Grey = 0;
+
+                for (x = 0; x < matSize.Width; x++)
+                {
+                    grey = span[x];
+                    if (thresholdGrey is > byte.MinValue and < byte.MaxValue)
+                    {
+                        grey = grey <= thresholdGrey ? byte.MinValue : byte.MaxValue;
+                    }
+
+                    if (line.Grey == 0)
+                    {
+                        if (grey == 0) continue;
+                        line.StartX = x + offset.X;
+                        line.Grey = grey;
+                        continue;
+                    }
+                    
+                    if (grey == line.Grey) continue;
+                    line.EndX = x - 1 + offset.X;
+                    lines.Add(line);
+
+                    line.Grey = 0;
+                    x--;
+                }
+
+                if (line.Grey > 0)
+                {
+                    line.EndX = x - 1 + offset.X;
+                    lines.Add(line);
+                }
+            }
+        }
+
+        return lines;
+    }
+
+    /// <summary>
+    /// Scan sequential lines in X or Y direction
+    /// </summary>
+    /// <param name="mat">Mat to scan</param>
+    /// <param name="greyFunc">Function to filter and process the gray value</param>
+    /// <param name="vertically">True to scan vertically, otherwise horizontally</param>
+    /// <param name="offset">Value to offset the coordinates with.</param>
+    /// <returns>List of all lines</returns>
+    public static List<GreyLine> ScanLines(this Mat mat, Func<byte, byte> greyFunc, bool vertically = false, Point offset = default)
+    {
+        Guard.IsEqualTo(mat.NumberOfChannels, 1);
+
+        var lines = new List<GreyLine>();
+
+        if (mat.IsEmpty) return lines;
+
+        var matSize = mat.Size;
+
+        GreyLine line = default;
+
+        byte grey;
+        int x;
+        int y;
+
+        if (vertically)
+        {
+            var span = mat.GetDataByteSpan2D();
+            for (x = 0; x < matSize.Width; x++)
+            {
+                line.StartX = x + offset.X;
+                line.StartY = 0 + offset.Y;
+                line.EndX = x + offset.X;
+                line.EndY = 0 + offset.Y;
+                line.Grey = 0;
+
+                for (y = 0; y < matSize.Height; y++)
+                {
+                    grey = greyFunc(span[y, x]);
+
+                    if (line.Grey == 0)
+                    {
+                        if (grey == 0) continue;
+                        line.StartY = y + offset.Y;
+                        line.Grey = grey;
+                        continue;
+                    }
+
+                    if (grey == line.Grey) continue;
+                    line.EndY = y - 1 + offset.Y;
+                    lines.Add(line);
+
+                    line.Grey = 0;
+                    y--;
+                }
+
+                if (line.Grey > 0)
+                {
+                    line.EndY = y - 1 + offset.Y;
+                    lines.Add(line);
+                }
+            }
+        }
+        else
+        {
+            for (y = 0; y < matSize.Height; y++)
+            {
+                var span = mat.GetRowByteSpan(y);
+                line.StartX = 0 + offset.X;
+                line.StartY = y + offset.Y;
+                line.EndX = 0 + offset.X;
+                line.EndY = y + offset.Y;
+                line.Grey = 0;
+
+
+                for (x = 0; x < matSize.Width; x++)
+                {
+                    grey = greyFunc(span[x]);
+
+                    if (line.Grey == 0)
+                    {
+                        if (grey == 0) continue;
+                        line.StartX = x + offset.X;
+                        line.Grey = grey;
+                        continue;
+                    }
+
+                    if (grey == line.Grey) continue;
+                    line.EndX = x - 1 + offset.X;
+                    lines.Add(line);
+
+                    line.Grey = 0;
+                    x--;
+                }
+
+                if (line.Grey > 0)
+                {
+                    line.EndX = x - 1 + offset.X;
+                    lines.Add(line);
+                }
+            }
+        }
+
+        return lines;
     }
     #endregion
 

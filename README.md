@@ -114,6 +114,7 @@ But also, I need victims for test subject. Proceed at your own risk!
 - LGS (Longer Orange 10), LGS30 (Longer Orange 30), LGS120 (Longer Orange 120), LGS4K (Longer Orange 4K & mono)
 - Flashforge SVGX
 - Anet N4, Anet N7
+- QDT (Emake3D Galaxy 1) 
 - OSLA (Open SLA universal binary file)
 - OSF (Vlare Open File Format)
 - UVJ (Vendor-neutral format for manual manipulation)

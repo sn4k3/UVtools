@@ -347,11 +347,7 @@ public sealed class LGSFile : FileFormat
     public override float LayerHeight
     {
         get => HeaderSettings.LayerHeight;
-        set
-        {
-            HeaderSettings.LayerHeight = Layer.RoundHeight(value);
-            RaisePropertyChanged();
-        }
+        set => HeaderSettings.LayerHeight = Layer.RoundHeight(value);
     }
 
     public override uint LayerCount

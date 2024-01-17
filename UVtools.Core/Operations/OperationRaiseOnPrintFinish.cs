@@ -184,7 +184,7 @@ public class OperationRaiseOnPrintFinish : Operation
     {
         var layer = SlicerFile.LastLayer!.Clone();
         layer.PositionZ = (float)_positionZ;
-        layer.ExposureTime = SlicerFile.SupportsGCode ? 0 : 0.05f; // Very low exposure time
+        layer.ExposureTime = SlicerFile.SupportGCode ? 0 : 0.05f; // Very low exposure time
         layer.LightPWM = 0; // Try to disable light if possible
         layer.SetNoDelays();
         using var newMat = _outputDummyPixel 

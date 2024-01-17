@@ -444,11 +444,7 @@ public sealed class CWSFile : FileFormat
     public override float LayerHeight
     {
         get => SliceSettings.Thickness > 0 ? SliceSettings.Thickness : OutputSettings.LayerThickness;
-        set
-        {
-            OutputSettings.LayerThickness = SliceSettings.Thickness = Layer.RoundHeight(value);
-            RaisePropertyChanged();
-        }
+        set => base.LayerHeight = OutputSettings.LayerThickness = SliceSettings.Thickness = Layer.RoundHeight(value);
     }
 
     public override uint LayerCount
@@ -827,7 +823,7 @@ public sealed class CWSFile : FileFormat
 
     public override void RebuildGCode()
     {
-        if (!SupportsGCode || SuppressRebuildGCode) return;
+        if (!SupportGCode || SuppressRebuildGCode) return;
 
         switch (ImageType)
         {

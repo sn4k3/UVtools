@@ -127,7 +127,7 @@ public class ScriptTestPerLayerSettingsSample : ScriptGlobals
 
         if (InputDoNotUseLift.Value)
         {
-            SlicerFile.SetLiftForSamePositionedLayers(SlicerFile.SupportsGCode ? 0 : 0.1f);
+            SlicerFile.SetLiftForSamePositionedLayers(SlicerFile.SupportGCode ? 0 : 0.1f);
         }
         Progress++;
 

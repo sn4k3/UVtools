@@ -280,11 +280,7 @@ public sealed class ZCodeFile : FileFormat
     public override float LayerHeight
     {
         get => ManifestFile.Job.LayerHeight > 0 ? ManifestFile.Job.LayerHeight : ManifestFile.Profile.Slice.LayerHeight;
-        set
-        {
-            ManifestFile.Job.LayerHeight = ManifestFile.Profile.Slice.LayerHeight = Layer.RoundHeight(value);
-            RaisePropertyChanged();
-        }
+        set => base.LayerHeight = ManifestFile.Job.LayerHeight = ManifestFile.Profile.Slice.LayerHeight = Layer.RoundHeight(value);
     }
 
     public override uint LayerCount

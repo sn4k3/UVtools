@@ -19,7 +19,7 @@ namespace UVtools.UI;
 
 public partial class MainWindow
 {
-    public bool HaveGCode => IsFileLoaded && SlicerFile!.SupportsGCode;
+    public bool HaveGCode => IsFileLoaded && SlicerFile!.SupportGCode;
 
     public uint GCodeLines => !HaveGCode ? 0 : SlicerFile!.GCode!.LineCount;
 

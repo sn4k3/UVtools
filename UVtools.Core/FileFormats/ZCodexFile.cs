@@ -206,7 +206,7 @@ public sealed class ZCodexFile : FileFormat
         {
             ResinMetadataSettings.LayerThickness = Layer.RoundHeight(value);
             UserSettings.LayerThickness = $"{ResinMetadataSettings.LayerThickness} mm";
-            RaisePropertyChanged();
+            base.LayerHeight = value;
         }
     }
 

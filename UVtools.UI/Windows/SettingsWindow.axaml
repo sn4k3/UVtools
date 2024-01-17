@@ -1641,7 +1641,7 @@
                                 <ToggleSwitch IsChecked="{Binding Settings.Automations.FileNameOnlyAsciiCharacters}"
                                               OffContent="Allow all valid characters on the file name"
                                               OnContent="Restrict the file name to valid ASCII characters"
-                                              ToolTip.Tip="Some printers can only show and print files with all ASCII characters. Enable this is recommended to ensure a proper file name."/>
+                                              ToolTip.Tip="Some printers can only show and print files with ASCII characters. Enabling this is recommended to ensure a proper and sane file name."/>
 							</StackPanel>
 
 						</uvtava:GroupBox>

@@ -1,6 +1,7 @@
 <Project>
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
+        <Platforms>AnyCPU;x64;ARM64</Platforms>
 
         <Authors>Tiago Conceição, sn4k3</Authors>
         <Company>PTRTECH</Company>

@@ -439,11 +439,7 @@ public sealed class SL1File : FileFormat
     public override float LayerHeight
     {
         get => OutputConfigSettings.LayerHeight;
-        set
-        {
-            OutputConfigSettings.LayerHeight = Layer.RoundHeight(value);
-            RaisePropertyChanged();
-        }
+        set => base.LayerHeight = OutputConfigSettings.LayerHeight = Layer.RoundHeight(value);
     }
 
     public override uint LayerCount

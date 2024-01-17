@@ -180,6 +180,8 @@ public sealed class MDLPFile : FileFormat
         new (290, 290)
     };
 
+    public override bool SupportAntiAliasing => false;
+
     public override uint ResolutionX
     {
         get => SlicerInfoSettings.ResolutionX;
@@ -220,7 +222,7 @@ public sealed class MDLPFile : FileFormat
         set
         {
             SlicerInfoSettings.LayerHeight = Layer.RoundHeight(value).ToString(CultureInfo.InvariantCulture);
-            RaisePropertyChanged();
+            base.LayerHeight = value;
         }
     }
 

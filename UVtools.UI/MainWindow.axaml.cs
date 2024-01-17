@@ -141,6 +141,11 @@ public partial class MainWindow : WindowEx
     private TabItem _selectedTabItem = null!;
     private TabItem _lastSelectedTabItem = null!;
 
+    private long _loadedFileSize;
+    private string _loadedFileSizeRepresentation = string.Empty;
+
+    private readonly StringBuilder _titleStringBuilder = new();
+
     #endregion
 
     #region  GUI Models
@@ -1002,7 +1007,7 @@ public partial class MainWindow : WindowEx
         ProcessFiles(files.Select(file => file.TryGetLocalPath()!).ToArray(), newWindow, fileDecodeType);
     }
 
-    public async void OnMenuFileCloseFile()
+    public async void MenuFileCloseFileClicked()
     {
         if (CanSave && await this.MessageBoxQuestion("There are unsaved changes. Do you want close this file without saving?") !=
             MessageButtonResult.Yes)
@@ -1052,16 +1057,12 @@ public partial class MainWindow : WindowEx
             _menuFileOpenRecentItems.First().IsEnabled = true; // Re-enable last file
         }
 
+        UpdateLoadedFileSize();
+
         ResetDataContext();
     }
 
-    public void OnMenuFileFreeUnusedRAM()
-    {
-        GC.Collect();
-        GC.WaitForPendingFinalizers();
-    }
-
-    public void OnMenuFileFullscreen()
+    public void MenuFileFullscreenClicked()
     {
         WindowState = WindowState == WindowState.FullScreen ? WindowState.Maximized : WindowState.FullScreen;
     }
@@ -1109,19 +1110,15 @@ public partial class MainWindow : WindowEx
         }
     }
 
-    public void OpenHomePage()
-    {
-        SystemAware.OpenBrowser(About.Website);
-    }
-
-    public void OpenDonateWebsite()
-    {
-        SystemAware.OpenBrowser(About.Donate);
-    }
-
     public async void MenuHelpAboutClicked()
     {
         await new AboutWindow().ShowDialog(this);
+    }
+
+    public void MenuHelpFreeUnusedRAMClicked()
+    {
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
     }
 
     public async void MenuHelpBenchmarkClicked()
@@ -1240,37 +1237,65 @@ public partial class MainWindow : WindowEx
 
     #region Methods
 
+    private void UpdateLoadedFileSize()
+    {
+        if (IsFileLoaded)
+        {
+            _loadedFileSize = SlicerFile!.FileInfo?.Length ?? 0;
+            _loadedFileSizeRepresentation = SizeExtensions.SizeSuffix(_loadedFileSize);
+        }
+        else
+        {
+            _loadedFileSize = 0;
+            _loadedFileSizeRepresentation = "N/A";
+        }
+        
+    }
+
     private void UpdateTitle()
     {
-        var title = $"{About.Software}   ";
+        _titleStringBuilder.Clear();
+        _titleStringBuilder.Append($"{About.Software}   ");
         
         if (IsFileLoaded)
         {
-            title += $"File: {SlicerFile!.Filename} ({LastStopWatch.Elapsed.Minutes}m {LastStopWatch.Elapsed.Seconds}s)   ";
+            _titleStringBuilder.Append($"File: {SlicerFile!.Filename}   Size: {_loadedFileSizeRepresentation}");
         }
 
-        title += $"Version: {About.VersionStr}   RAM: {SizeExtensions.SizeSuffix(Environment.WorkingSet)}";
+        _titleStringBuilder.Append($"   Version: {About.VersionStr}   RAM: {SizeExtensions.SizeSuffix(Environment.WorkingSet)}");
 
         if (IsFileLoaded)
         {
+            switch (LastStopWatch.ElapsedMilliseconds)
+            {
+                case < 1000:
+                    _titleStringBuilder.Append($"   LO: {LastStopWatch.ElapsedMilliseconds}ms");
+                    break;
+                case < 60_000:
+                    _titleStringBuilder.Append($"   LO: {LastStopWatch.Elapsed.Seconds}s");
+                    break;
+                default:
+                    _titleStringBuilder.Append($"   LO: {LastStopWatch.Elapsed.Minutes}m {LastStopWatch.Elapsed.Seconds}s");
+                    break;
+            }
+
             if (CanSave)
             {
-                title += "   [UNSAVED]";
+                _titleStringBuilder.Append("   [UNSAVED]");
             }
 
             if (SlicerFile!.DecodeType == FileFormat.FileDecodeType.Partial)
             {
-                title += "   [PARTIAL MODE]";
+                _titleStringBuilder.Append("   [PARTIAL MODE]");
             }
         }
 
-        //title += $"   [{RuntimeInformation.RuntimeIdentifier}]";
-
+        //_titleStringBuilder.Append($"   [{RuntimeInformation.RuntimeIdentifier}]");
 #if DEBUG
-        title += "   [DEBUG]";
+        _titleStringBuilder.Append("   [DEBUG]");
 #endif
 
-        Title = title;
+        Title = _titleStringBuilder.ToString();
     }
 
     public async void ProcessFiles(string[] files, bool openNewWindow = false, FileFormat.FileDecodeType fileDecodeType = FileFormat.FileDecodeType.Full)
@@ -1405,6 +1430,8 @@ public partial class MainWindow : WindowEx
             SlicerFile = null;
             return;
         }
+
+        UpdateLoadedFileSize();
 
         var fileNameNoExt = SlicerFile.FilenameNoExt!;
         if (!FileFormat.IsFileNameValid(fileNameNoExt, out var message, Settings.Automations.FileNameOnlyAsciiCharacters))
@@ -2005,6 +2032,7 @@ public partial class MainWindow : WindowEx
         {
             SavesCount++;
             CanSave = false;
+            UpdateLoadedFileSize();
             UpdateTitle();
             RefreshProperties(); // Some fields can change after encoding
 

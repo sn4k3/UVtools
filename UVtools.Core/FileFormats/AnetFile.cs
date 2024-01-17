@@ -286,7 +286,7 @@ public sealed class AnetFile : FileFormat
 
     public override SpeedUnit FormatSpeedUnit => SpeedUnit.MillimetersPerSecond;
 
-    public override byte AntiAliasing => 1; // Format does not support anti-aliasing
+    public override bool SupportAntiAliasing => false;
 
     public override PrintParameterModifier[] PrintParameterModifiers { get; } =
     {
@@ -324,7 +324,7 @@ public sealed class AnetFile : FileFormat
         set
         {
             HeaderSettings.LayerHeight = Layer.RoundHeight((double)value);
-            RaisePropertyChanged();
+            base.LayerHeight = value;
         }
     }
 

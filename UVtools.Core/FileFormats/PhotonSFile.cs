@@ -145,7 +145,7 @@ public sealed class PhotonSFile : FileFormat
 
             for (int i = 0; i < imageLength; i++)
             {
-                byte thisColor = spanMat[i] <= 127 ? (byte)0 : (byte)1; // Sanitize no AA
+                byte thisColor = spanMat[i] <= 127 ? byte.MinValue : (byte)1; // Sanitize no AA
                 if (thisColor != color)
                 {
                     AddRep();
@@ -274,6 +274,8 @@ public sealed class PhotonSFile : FileFormat
 
     public override Size[] ThumbnailsOriginalSize { get; } = {new(224, 168) };
 
+    public override bool SupportAntiAliasing => false;
+
     public override FlipDirection DisplayMirror
     {
         get => FlipDirection.Horizontally;
@@ -286,7 +288,7 @@ public sealed class PhotonSFile : FileFormat
         set
         {
             HeaderSettings.LayerHeight = Layer.RoundHeight(value);
-            RaisePropertyChanged();
+            base.LayerHeight = value;
         }
     }
 

@@ -276,7 +276,7 @@ public class OperationTimelapse : Operation
     public OperationTimelapse(FileFormat slicerFile) : base(slicerFile) 
     {
         if (_raisePositionZ <= 0) _raisePositionZ = (decimal)SlicerFile.MachineZ;
-        if(_exposureTime <= 0) _exposureTime = SlicerFile.SupportsGCode ? 0 : 0.05M;
+        if(_exposureTime <= 0) _exposureTime = SlicerFile.SupportGCode ? 0 : 0.05M;
 
         if (_liftSpeed <= 0) _liftSpeed = (decimal) SlicerFile.LiftSpeed;
         if (_liftSpeed2 <= 0) _liftSpeed2 = (decimal) SlicerFile.MaximumSpeed;
@@ -429,8 +429,8 @@ public class OperationTimelapse : Operation
         var virtualSlowLiftLayer = new Layer(SlicerFile.LayerCount, mat, SlicerFile)
         {
             PositionZ = (float)_raisePositionZ,
-            ExposureTime = SlicerFile.SupportsGCode ? 0 : 0.01f,
-            LiftHeightTotal = SlicerFile.SupportsGCode ? 0 : 0.1f, 
+            ExposureTime = SlicerFile.SupportGCode ? 0 : 0.01f,
+            LiftHeightTotal = SlicerFile.SupportGCode ? 0 : 0.1f, 
             LiftSpeed = minLiftSpeed,
             LiftSpeed2 = maxLiftSpeed,
             RetractSpeed = maxRetractSpeed,
