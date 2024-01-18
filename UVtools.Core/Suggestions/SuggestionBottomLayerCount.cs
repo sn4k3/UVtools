@@ -38,11 +38,11 @@ public sealed class SuggestionBottomLayerCount : Suggestion
 
             return _applyWhen switch
             {
-                SuggestionApplyWhen.OutsideLimits => bottomHeight >= _minimumBottomHeight &&
-                                                     bottomHeight <= _maximumBottomHeight &&
-                                                     SlicerFile.BottomLayerCount >= _minimumBottomLayerCount &&
-                                                     SlicerFile.BottomLayerCount <= _maximumBottomLayerCount,
-                SuggestionApplyWhen.Different => bottomHeight == TargetBottomHeight,
+                SuggestionApplyWhen.OutsideLimits => bottomHeight >= Math.Min((decimal)SlicerFile.PrintHeight, _minimumBottomHeight) &&
+                                                      bottomHeight <= _maximumBottomHeight &&
+                                                      SlicerFile.BottomLayerCount >= Math.Min(SlicerFile.LayerCount, _minimumBottomLayerCount) &&
+                                                      SlicerFile.BottomLayerCount <= _maximumBottomLayerCount,
+                SuggestionApplyWhen.Different => bottomHeight == Math.Min((decimal)SlicerFile.PrintHeight, TargetBottomHeight),
                     
                 _ => throw new ArgumentOutOfRangeException()
             };

@@ -41,10 +41,11 @@ public sealed class SuggestionTransitionLayerCount : Suggestion
             if (SlicerFile is null) return false;
 
             // Can't apply
-            if (SlicerFile.BottomLayerCount == 0
+            if (SlicerFile.LayerCount < 3
+                || SlicerFile.BottomLayerCount == 0
                 || SlicerFile.BottomExposureTime <= 0
                 || SlicerFile.ExposureTime <= 0
-                || SlicerFile.BottomExposureTime < SlicerFile.ExposureTime
+                || SlicerFile.BottomExposureTime <= SlicerFile.ExposureTime
                 || SlicerFile.BottomLayerCount + _minimumTransitionLayerCount > SlicerFile.LayerCount 
                 || SlicerFile.MaximumPossibleTransitionLayerCount < _minimumTransitionLayerCount) return true;
 

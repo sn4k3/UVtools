@@ -9,6 +9,7 @@
   - (Improvement) Goo: On encode image do not use gradient compression when going from grey to black or white
   - (Change) PZR: Disable gradient compression for this file format as it corrupt layer for Phrozen Sonic Mini 8K S (#776, #810, #814)
   - (Fix) Thumbnail text generation and for partial open files
+  - (Fix) Parse transition step time and count from layers throw an exception when the file only have one layer
 - **UI:**
   - (Add) Title bar: Display the loaded file size and re-arrange the last operation run time to the right
   - (Improvement) Re-arrange some items on `File` and `Help` menu
@@ -16,6 +17,9 @@
 - **Tools:**
   - (Fix) Layer actions - Import layer(s): Unable to process image files (#815)
   - (Fix) PCB Exposure: Draw circles using ellipses in order to use non-square pixels (#822)
+- **Suggestions:**
+  - (Fix) Bottom layers count: Do not trigger the suggestion when the file layer count are equal or less than the configured minimum bottom layers
+  - (Fix) Transition layers: Do not trigger the suggestion when it can't fade exposure time or when bottom time is equal to normal time
 - (Fix) PrusaSlicer Printer: "Elegoo Mars 4" is wrongly named, renamed to "Elegoo Mars 4 DLP" and added the corresponding "Elegoo Mars 4"
 - (Upgrade) .NET from 6.0.25 to 6.0.26
 - (Upgrade) AvaloniaUI from 11.0.6 to 11.0.7 (Fixes #803, #812)

@@ -4107,7 +4107,7 @@
             Gets the transition layer count based on <see cref="P:UVtools.Core.FileFormats.FileFormat.LastBottomLayer"/> and first normal layer after the last transition layer
             </summary>
             <param name="stepDecrementTime">Step decrement time in seconds</param>
-            <param name="constrainToLayerCount">True if transition layer count can't be higher than supported by the file, otherwise set to false to not look at possible file layers</param>
+            <param name="constrainToLayerCount">True if transition layer count can't be higher than supported by the file, otherwise set false to not look at possible file layers</param>
             <param name="rounding">Midpoint rounding method</param>
             <returns>Transition layer count</returns>
         </member>

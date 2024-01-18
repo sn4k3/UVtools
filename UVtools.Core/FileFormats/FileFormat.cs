@@ -4585,6 +4585,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <returns>Seconds</returns>
     public float ParseTransitionStepTimeFromLayers()
     {
+        if (LayerCount < 3) return 0;
         var transitionLayerCount = ParseTransitionLayerCountFromLayers();
         return transitionLayerCount == 0
             ? 0
@@ -4600,7 +4601,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <returns>Seconds</returns>
     public static float GetTransitionStepTime(float longExposureTime, float shortExposureTime, ushort transitionLayerCount)
     {
-        return transitionLayerCount == 0 
+        return transitionLayerCount == 0 || longExposureTime == shortExposureTime
             ? 0 
             : (float)Math.Round((longExposureTime - shortExposureTime) / (transitionLayerCount + 1), 2, MidpointRounding.AwayFromZero);
     }
@@ -4622,8 +4623,9 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <returns>Seconds</returns>
     public float GetTransitionStepTimeFromLayers(ushort transitionLayerCount)
     {
+        if (LayerCount < 3 || BottomLayerCount > LayerCount) return 0;
         var bottomExposureTime = LastBottomLayer?.ExposureTime ?? BottomExposureTime;
-        var exposureTime = TransitionLayerCount > 0
+        var exposureTime = TransitionLayerCount > 0 && BottomLayerCount + TransitionLayerCount <= LayerCount
             ? this[BottomLayerCount + TransitionLayerCount - 1].ExposureTime
             : this[BottomLayerCount].ExposureTime;
 
@@ -4667,13 +4669,14 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// Gets the transition layer count based on <see cref="LastBottomLayer"/> and first normal layer after the last transition layer
     /// </summary>
     /// <param name="stepDecrementTime">Step decrement time in seconds</param>
-    /// <param name="constrainToLayerCount">True if transition layer count can't be higher than supported by the file, otherwise set to false to not look at possible file layers</param>
+    /// <param name="constrainToLayerCount">True if transition layer count can't be higher than supported by the file, otherwise set false to not look at possible file layers</param>
     /// <param name="rounding">Midpoint rounding method</param>
     /// <returns>Transition layer count</returns>
     public ushort GetTransitionLayerCountFromLayers(float stepDecrementTime, bool constrainToLayerCount = true, MidpointRounding rounding = MidpointRounding.AwayFromZero)
     {
+        if (LayerCount < 3 || BottomLayerCount > LayerCount) return 0;
         var bottomExposureTime = LastBottomLayer?.ExposureTime ?? BottomExposureTime;
-        var exposureTime = TransitionLayerCount > 0
+        var exposureTime = TransitionLayerCount > 0 && BottomLayerCount + TransitionLayerCount <= LayerCount
             ? this[BottomLayerCount + TransitionLayerCount - 1].ExposureTime
             : this[BottomLayerCount].ExposureTime;
 
