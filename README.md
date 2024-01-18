@@ -48,7 +48,6 @@ This can also save you, check every setting that were used with or simply change
 
 ![GUI Screenshot](https://raw.githubusercontent.com/sn4k3/UVtools/master/wiki/UI1.png)
 ![GUI Screenshot Islands](https://raw.githubusercontent.com/sn4k3/UVtools/master/wiki/UI2.png)
-![Convertion Screenshot](https://raw.githubusercontent.com/sn4k3/UVtools/master/UVtools.GUI/Images/Screenshots/SL1ToCbddlp.png)
 
 # Why this project?
 
