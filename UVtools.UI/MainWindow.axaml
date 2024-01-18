@@ -448,69 +448,59 @@
                             <SelectableTextBlock VerticalAlignment="Center"
             									   Text="{Binding VisibleThumbnailResolution}"/>
 
-                            <uc:ButtonWithIcon ToolTip.Tip="Replace the current preview image"
+                            <uc:SplitButtonWithIcon ToolTip.Tip="Replace the current preview image"
                                                Spacing="1"
-                                               Text="⮟"
                                                Icon="fa-solid fa-file-image"
                                                Command="{Binding OnClickThumbnailImportFile}"
                                                CommandParameter="False">
-                                <uc:ButtonWithIcon.ContextMenu>
-                                    <ContextMenu Name="ThumbnailImportContextMenu" Placement="Bottom">
-                                        <MenuItem
-                                            Command="{Binding OnClickThumbnailImportFile}"
-											CommandParameter="False"
-                                            Header="From file"
-                                            i:MenuItem.Icon="fa-solid fa-file-image"/>
+                                <uc:SplitButtonWithIcon.Flyout>
+                                    <MenuFlyout>
+                                        <MenuItem Command="{Binding OnClickThumbnailImportFile}"
+                                                  CommandParameter="False"
+                                                  Header="From file"
+                                                  i:MenuItem.Icon="fa-solid fa-file-image"/>
 
-                                        <MenuItem
-                                            Command="{Binding OnClickThumbnailImportFile}"
-											CommandParameter="True"
-                                            Header="From file (Replace all)"
-                                            i:MenuItem.Icon="fa-solid fa-file-image"/>
+                                        <MenuItem Command="{Binding OnClickThumbnailImportFile}"
+                                                  CommandParameter="True"
+                                                  Header="From file (Replace all)"
+                                                  i:MenuItem.Icon="fa-solid fa-file-image"/>
 
                                         <Separator/>
 
-                                        <MenuItem
-                                            Command="{Binding OnClickThumbnailImportCurrentLayer}"
-                                            CommandParameter="False"
-                                            Header="From current layer"
-                                            i:MenuItem.Icon="fa-solid fa-layer-group"/>
+                                        <MenuItem Command="{Binding OnClickThumbnailImportCurrentLayer}"
+                                                  CommandParameter="False"
+                                                  Header="From current layer"
+                                                  i:MenuItem.Icon="fa-solid fa-layer-group"/>
 
-                                        <MenuItem
-                                            Command="{Binding OnClickThumbnailImportCurrentLayer}"
-                                            CommandParameter="True"
-                                            Header="From current layer (Replace all)"
-                                            i:MenuItem.Icon="fa-solid fa-layer-group"/>
+                                        <MenuItem Command="{Binding OnClickThumbnailImportCurrentLayer}"
+                                                  CommandParameter="True"
+                                                  Header="From current layer (Replace all)"
+                                                  i:MenuItem.Icon="fa-solid fa-layer-group"/>
 
-                                        <MenuItem
-                                            Command="{Binding OnClickThumbnailImportRandomLayer}"
-                                            CommandParameter="False"
-                                            Header="From random layer"
-                                            i:MenuItem.Icon="fa-solid fa-layer-group"/>
+                                        <MenuItem Command="{Binding OnClickThumbnailImportRandomLayer}"
+                                                  CommandParameter="False"
+                                                  Header="From random layer"
+                                                  i:MenuItem.Icon="fa-solid fa-layer-group"/>
 
-                                        <MenuItem
-                                            Command="{Binding OnClickThumbnailImportRandomLayer}"
-                                            CommandParameter="True"
-                                            Header="From random layer (Replace all)"
-                                            i:MenuItem.Icon="fa-solid fa-layer-group"/>
+                                        <MenuItem Command="{Binding OnClickThumbnailImportRandomLayer}"
+                                                  CommandParameter="True"
+                                                  Header="From random layer (Replace all)"
+                                                  i:MenuItem.Icon="fa-solid fa-layer-group"/>
 
                                         <Separator/>
 
-                                        <MenuItem
-                                            Command="{Binding OnClickThumbnailImportHeatmap}"
-                                            CommandParameter="False"
-                                            Header="From heatmap"
-                                            i:MenuItem.Icon="fa-solid fa-file-image"/>
+                                        <MenuItem Command="{Binding OnClickThumbnailImportHeatmap}"
+                                                  CommandParameter="False"
+                                                  Header="From heatmap"
+                                                  i:MenuItem.Icon="fa-solid fa-file-image"/>
 
-                                        <MenuItem
-                                            Command="{Binding OnClickThumbnailImportHeatmap}"
+                                        <MenuItem Command="{Binding OnClickThumbnailImportHeatmap}"
                                             CommandParameter="True"
                                             Header="From heatmap (Replace all)"
                                             i:MenuItem.Icon="fa-solid fa-file-image"/>
-
-                                    </ContextMenu>
-                                </uc:ButtonWithIcon.ContextMenu>
-                            </uc:ButtonWithIcon>
+                                    </MenuFlyout>
+                                </uc:SplitButtonWithIcon.Flyout>
+                            </uc:SplitButtonWithIcon>
 
                             <Button VerticalAlignment="Stretch"
                                     ToolTip.Tip="Save thumbnail image to a file"
@@ -559,30 +549,26 @@
 						  HorizontalAlignment="Right"
 						  VerticalAlignment="Center">
 
-                            <uc:ButtonWithIcon
+                            <uc:SplitButtonWithIcon
 								Name="PropertiesSaveButton"
 								IsEnabled="{Binding SlicerFile.Configs.Length}"
 								ToolTip.Tip="Save properties to a file or clipboard"
 								Icon="fa-solid fa-floppy-disk"
 								Spacing="3"
-								Text="⮟"
-								Command="{Binding OpenContextMenu}"
-								CommandParameter="PropertiesSave">
-                                <uc:ButtonWithIcon.ContextMenu>
-                                    <ContextMenu Name="PropertiesSaveContextMenu" Placement="Bottom">
-                                        <MenuItem
-										  Command="{Binding OnClickPropertiesSaveFile}"
-										  Header="To File"
-										  i:MenuItem.Icon="fa-regular fa-floppy-disk"/>
+                                Command="{Binding OnClickPropertiesSaveClipboard}">
+                                <uc:SplitButtonWithIcon.Flyout>
+                                    <MenuFlyout>
+                                        <MenuItem Command="{Binding OnClickPropertiesSaveFile}"
+                                                  Header="To File"
+                                                  i:MenuItem.Icon="fa-regular fa-floppy-disk"/>
 
-                                        <MenuItem
-										  Command="{Binding OnClickPropertiesSaveClipboard}"
-										  Header="To Clipboard"
-										  i:MenuItem.Icon="fa-regular fa-clipboard"/>
+                                        <MenuItem Command="{Binding OnClickPropertiesSaveClipboard}"
+                                                  Header="To Clipboard"
+                                                  i:MenuItem.Icon="fa-regular fa-clipboard"/>
 
-                                    </ContextMenu>
-                                </uc:ButtonWithIcon.ContextMenu>
-                            </uc:ButtonWithIcon>
+                                    </MenuFlyout>
+                                </uc:SplitButtonWithIcon.Flyout>
+                            </uc:SplitButtonWithIcon>
 
                         </StackPanel>
 
@@ -694,28 +680,24 @@
 						   i:Attached.Icon="fa-solid fa-sync-alt"
 						   Command="{Binding OnClickRebuildGcode}"/>
 
-                            <uc:ButtonWithIcon Name="GcodeSaveButton"
+                            <uc:SplitButtonWithIcon
 							  ToolTip.Tip="Save gcode to a file or clipboard"
 							  Icon="fa-solid fa-floppy-disk"
 							  Spacing="3"
-							  Text="⮟"
-							  Command="{Binding OpenContextMenu}"
-							  CommandParameter="GcodeSave">
-                                <uc:ButtonWithIcon.ContextMenu>
-                                    <ContextMenu Name="GcodeSaveContextMenu" Placement="Bottom">
-                                        <MenuItem
-										  Command="{Binding OnClickGCodeSaveFile}"
-										  Header="To File"
-										  i:MenuItem.Icon="fa-regular fa-floppy-disk"/>
+                              Command="{Binding OnClickGCodeSaveClipboard}">
+                                <uc:SplitButtonWithIcon.Flyout>
+                                    <MenuFlyout>
+                                        <MenuItem Command="{Binding OnClickGCodeSaveFile}"
+                                                  Header="To File"
+                                                  i:MenuItem.Icon="fa-regular fa-floppy-disk"/>
 
-                                        <MenuItem
-										  Command="{Binding OnClickGCodeSaveClipboard}"
-										  Header="To Clipboard"
-										  i:MenuItem.Icon="fa-regular fa-clipboard"/>
+                                        <MenuItem Command="{Binding OnClickGCodeSaveClipboard}"
+                                                  Header="To Clipboard"
+                                                  i:MenuItem.Icon="fa-regular fa-clipboard"/>
 
-                                    </ContextMenu>
-                                </uc:ButtonWithIcon.ContextMenu>
-                            </uc:ButtonWithIcon>
+                                    </MenuFlyout>
+                                </uc:SplitButtonWithIcon.Flyout>
+                            </uc:SplitButtonWithIcon>
 
                         </StackPanel>
 
@@ -806,73 +788,70 @@
                                     Command="{Binding OnClickRepairIssues}">
                             </Button>
 
-                            <uc:ButtonWithIcon VerticalAlignment="Stretch"
-											   ToolTip.Tip="Compute Issues.
+                            <uc:SplitButtonWithIcon VerticalAlignment="Stretch"
+                                                    ToolTip.Tip="Compute Issues.
 &#x0a;Right click to access settings."
-											   Icon="fa-solid fa-sync-alt"
-											   Spacing="5"
-											   Text="Detect ⮟"
-											   Command="{Binding OnClickDetectIssues}">
-
-                                <uc:ButtonWithIcon.ContextMenu>
-                                    <ContextMenu Placement="Bottom">
-                                        <CheckBox
-										  IsChecked="{Binding Settings.Issues.ComputeIslands}"
-										  Content="Islands"/>
-                                        <CheckBox
-										  IsChecked="{Binding Settings.Issues.ComputeOverhangs}"
-										  Content="Overhangs"/>
+                                                    Icon="fa-solid fa-sync-alt"
+                                                    Spacing="5"
+                                                    Text="Detect"
+                                                    Command="{Binding OnClickDetectIssues}">
+                                <uc:SplitButtonWithIcon.Flyout>
+                                    <MenuFlyout>
+                                        <CheckBox IsChecked="{Binding Settings.Issues.ComputeIslands}"
+                                                  Content="Islands"/>
+                                        <CheckBox IsChecked="{Binding Settings.Issues.ComputeOverhangs}"
+                                                  Content="Overhangs"/>
                                         <StackPanel Orientation="Horizontal">
                                             <CheckBox
-												VerticalAlignment="Center"
-												IsChecked="{Binding Settings.Issues.ComputeResinTraps}"
-												Content="Resin traps"/>
+                                                VerticalAlignment="Center"
+                                                IsChecked="{Binding Settings.Issues.ComputeResinTraps}"
+                                                Content="Resin traps"/>
 
                                             <NumericUpDown
-												VerticalAlignment="Center"
-												Margin="10,0,0,0"
-												ToolTip.Tip="Starting layer index for resin trap detection which will also be considered a drain layer.
+                                                VerticalAlignment="Center"
+                                                Margin="10,0,0,0"
+                                                ToolTip.Tip="Starting layer index for resin trap detection which will also be considered a drain layer.
 &#x0a;Use this setting to bypass complicated rafts by select the model first real layer."
-												Minimum="0"
-												Maximum="{Binding SlicerFile.LastLayerIndex}"
-												Increment="1"
-												Width="110"
-												Value="{Binding ResinTrapDetectionStartLayer}"/>
+                                                Minimum="0"
+                                                Maximum="{Binding SlicerFile.LastLayerIndex}"
+                                                Increment="1"
+                                                Width="110"
+                                                Value="{Binding ResinTrapDetectionStartLayer}"/>
 
                                             <Button
-												VerticalAlignment="Center"
-												Margin="2,0,0,0"
-												ToolTip.Tip="Set to the first normal layer"
-												Content="N"
-												Command="{Binding SetResinTrapDetectionStartLayer}"
-												CommandParameter="N"/>
+                                                VerticalAlignment="Center"
+                                                Margin="2,0,0,0"
+                                                ToolTip.Tip="Set to the first normal layer"
+                                                Content="N"
+                                                Command="{Binding SetResinTrapDetectionStartLayer}"
+                                                CommandParameter="N"/>
                                             <Button
-												VerticalAlignment="Center"
-												Margin="2,0,0,0"
-												ToolTip.Tip="Set to the current layer"
-												Content="C"
-												Command="{Binding SetResinTrapDetectionStartLayer}"
-												CommandParameter="C"/>
+                                                VerticalAlignment="Center"
+                                                Margin="2,0,0,0"
+                                                ToolTip.Tip="Set to the current layer"
+                                                Content="C"
+                                                Command="{Binding SetResinTrapDetectionStartLayer}"
+                                                CommandParameter="C"/>
                                         </StackPanel>
 
                                         <CheckBox
-											VerticalAlignment="Center"
-											IsEnabled="{Binding Settings.Issues.ComputeResinTraps}"
-											IsChecked="{Binding Settings.Issues.ComputeSuctionCups}"
-											Content="Suction cups"/>
+                                            VerticalAlignment="Center"
+                                            IsEnabled="{Binding Settings.Issues.ComputeResinTraps}"
+                                            IsChecked="{Binding Settings.Issues.ComputeSuctionCups}"
+                                            Content="Suction cups"/>
 
                                         <CheckBox
-										  IsChecked="{Binding Settings.Issues.ComputeTouchingBounds}"
-										  Content="Touching bounds"/>
+                                          IsChecked="{Binding Settings.Issues.ComputeTouchingBounds}"
+                                          Content="Touching bounds"/>
                                         <CheckBox
-											IsChecked="{Binding Settings.Issues.ComputePrintHeight}"
-											Content="Print height"/>
+                                            IsChecked="{Binding Settings.Issues.ComputePrintHeight}"
+                                            Content="Print height"/>
                                         <CheckBox
-										  IsChecked="{Binding Settings.Issues.ComputeEmptyLayers}"
-										  Content="Empty layers"/>
-                                    </ContextMenu>
-                                </uc:ButtonWithIcon.ContextMenu>
-                            </uc:ButtonWithIcon>
+                                          IsChecked="{Binding Settings.Issues.ComputeEmptyLayers}"
+                                          Content="Empty layers"/>
+                                    </MenuFlyout>
+                                </uc:SplitButtonWithIcon.Flyout>
+                            </uc:SplitButtonWithIcon>
 
                         </StackPanel>
 
@@ -971,11 +950,10 @@
 
                         </Grid>
 
-                        <ListBox
-							Grid.Row="1"
-							Name="SuggestionsAvailableListBox"
-							SelectionMode="Multiple,Toggle"
-							ItemsSource="{Binding SuggestionsAvailable}">
+                        <ListBox Grid.Row="1"
+                                 Name="SuggestionsAvailableListBox"
+                                 SelectionMode="Multiple,Toggle"
+                                 ItemsSource="{Binding SuggestionsAvailable}">
                             <ListBox.ItemTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding Message}"
@@ -990,23 +968,20 @@
 								  !-->
                                         <TextBlock.ContextMenu>
                                             <ContextMenu>
-                                                <MenuItem
-													Command="{Binding $parent[uc:WindowEx].((ui:MainWindow)DataContext).ApplySuggestionClicked}"
-													CommandParameter="{Binding .}"
-													Header="Apply"
-													IsVisible="{Binding !IsInformativeOnly}"
-													i:MenuItem.Icon="fa-solid fa-check"/>
-                                                <MenuItem
-													Command="{Binding $parent[uc:WindowEx].((ui:MainWindow)DataContext).OpenWebsite}"
-													CommandParameter="{Binding InformationUrl}"
-													Header="More information (Web)"
-													IsVisible="{Binding InformationUrl, Converter={x:Static ObjectConverters.IsNotNull}}"
-													i:MenuItem.Icon="fa-solid fa-info-circle"/>
-                                                <MenuItem
-													Command="{Binding $parent[uc:WindowEx].((ui:MainWindow)DataContext).ConfigureSuggestionClicked}"
-													CommandParameter="{Binding .}"
-													Header="Configure"
-													i:MenuItem.Icon="fa-solid fa-cog"/>
+                                                <MenuItem Command="{Binding $parent[uc:WindowEx].((ui:MainWindow)DataContext).ApplySuggestionClicked}"
+                                                          CommandParameter="{Binding .}"
+                                                          Header="Apply"
+                                                          IsVisible="{Binding !IsInformativeOnly}"
+                                                          i:MenuItem.Icon="fa-solid fa-check"/>
+                                                <MenuItem Command="{Binding $parent[uc:WindowEx].((ui:MainWindow)DataContext).OpenWebsite}"
+                                                          CommandParameter="{Binding InformationUrl}"
+                                                          Header="More information (Web)"
+                                                          IsVisible="{Binding InformationUrl, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                                          i:MenuItem.Icon="fa-solid fa-info-circle"/>
+                                                <MenuItem Command="{Binding $parent[uc:WindowEx].((ui:MainWindow)DataContext).ConfigureSuggestionClicked}"
+                                                          CommandParameter="{Binding .}"
+                                                          Header="Configure"
+                                                          i:MenuItem.Icon="fa-solid fa-cog"/>
                                             </ContextMenu>
                                         </TextBlock.ContextMenu>
                                     </TextBlock>
@@ -1018,10 +993,9 @@
 
                         <TextBlock Grid.Row="2" Text="Applied suggestions:" HorizontalAlignment="Center" FontWeight="Bold"/>
 
-                        <ListBox
-							Grid.Row="3"
-							SelectionMode="AlwaysSelected"
-							ItemsSource="{Binding SuggestionsApplied}">
+                        <ListBox Grid.Row="3"
+                                 SelectionMode="AlwaysSelected"
+                                 ItemsSource="{Binding SuggestionsApplied}">
                             <ListBox.ItemTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding Message}"
@@ -1902,92 +1876,89 @@
 					  IsEnabled="{Binding IsFileLoaded}"
 					  ColumnDefinitions="*,Auto" RowDefinitions="Auto" Margin="0,5,0,5">
                     <WrapPanel Grid.Row="0" Grid.Column="0" HorizontalAlignment="Left" Orientation="Horizontal">
-                        <uc:ToggleButtonWithIcon
+                        <uc:ToggleSplitButtonWithIcon
 						  IsChecked="{Binding ShowLayerImageRotated}"
-						  HotKey="Ctrl + R"
 						  VerticalAlignment="Stretch"
 						  ToolTip.Tip="Auto rotate layer preview image at 90º (This can slow down the layer preview) [CTRL+R]"
 						  Margin="0,0,1,0"
-						  Text="Rotate ⮟"
+						  Text="Rotate"
 						  Spacing="5"
 						  Icon="fa-solid fa-sync-alt">
-                            <uc:ToggleButtonWithIcon.ContextMenu>
-                                <ContextMenu Placement="Bottom">
+                            <uc:ToggleSplitButtonWithIcon.Flyout>
+                                <MenuFlyout>
                                     <RadioButton
-										GroupName="ShowLayerImageRotateDirection"
-										IsChecked="{Binding ShowLayerImageRotateCWDirection}"
-										Content="90º Clockwise (CW)"/>
+                                        GroupName="ShowLayerImageRotateDirection"
+                                        IsChecked="{Binding ShowLayerImageRotateCWDirection}"
+                                        Content="90º Clockwise (CW)"/>
                                     <RadioButton
-									  GroupName="ShowLayerImageRotateDirection"
-										IsChecked="{Binding ShowLayerImageRotateCCWDirection}"
-										Content="90º Counter-clockwise (CCW)"/>
-                                </ContextMenu>
-                            </uc:ToggleButtonWithIcon.ContextMenu>
-                        </uc:ToggleButtonWithIcon>
+                                        GroupName="ShowLayerImageRotateDirection"
+                                        IsChecked="{Binding ShowLayerImageRotateCCWDirection}"
+                                        Content="90º Counter-clockwise (CCW)"/>
+                                </MenuFlyout>
+                            </uc:ToggleSplitButtonWithIcon.Flyout>
+                        </uc:ToggleSplitButtonWithIcon>
 
 
-                        <uc:ToggleButtonWithIcon
+                        <uc:ToggleSplitButtonWithIcon
 							IsChecked="{Binding ShowLayerImageFlipped}"
-							HotKey="Ctrl + F"
 							VerticalAlignment="Stretch"
 							ToolTip.Tip="Auto flip layer preview image (This can slow down the layer preview) [CTRL+F]"
 							Margin="0,0,1,0"
-							Text="Flip ⮟"
+							Text="Flip"
 							Spacing="5"
 							Icon="mdi-flip-horizontal">
-                            <uc:ToggleButtonWithIcon.ContextMenu>
-                                <ContextMenu Placement="Bottom">
+                            <uc:ToggleSplitButtonWithIcon.Flyout>
+                                <MenuFlyout Placement="Bottom">
                                     <CheckBox
 										IsChecked="{Binding ShowLayerImageFlippedHorizontally}"
 										Content="Horizontally"/>
                                     <CheckBox
 										IsChecked="{Binding ShowLayerImageFlippedVertically}"
 										Content="Vertically"/>
-                                </ContextMenu>
-                            </uc:ToggleButtonWithIcon.ContextMenu>
-                        </uc:ToggleButtonWithIcon>
+                                </MenuFlyout>
+                            </uc:ToggleSplitButtonWithIcon.Flyout>
+                        </uc:ToggleSplitButtonWithIcon>
 
 
-                        <uc:ToggleButtonWithIcon
+                        <uc:ToggleSplitButtonWithIcon
 						  IsChecked="{Binding ShowLayerImageDifference}"
 						  ToolTip.Tip="Show layer differences where darker pixels were also present on previous layer and the white pixels the difference between previous and current layer."
 						  VerticalAlignment="Stretch"
 						  Margin="0,0,1,0"
-						  Text="Difference ⮟"
+						  Text="Difference"
 						  Spacing="5"
 						  Icon="fa-solid fa-layer-group">
-                            <uc:ToggleButtonWithIcon.ContextMenu>
-                                <ContextMenu Placement="Bottom">
+                            <uc:ToggleSplitButtonWithIcon.Flyout>
+                                <MenuFlyout>
                                     <CheckBox
 										Content="Show layer similarity instead of difference"
 										ToolTip.Tip="If enabled, it will recolor the current layer pixels in common with the previous and next layer"
 										IsChecked="{Binding Settings.LayerPreview.LayerDifferenceHighlightSimilarityInstead}"/>
-                                </ContextMenu>
-                            </uc:ToggleButtonWithIcon.ContextMenu>
-                        </uc:ToggleButtonWithIcon>
+                                </MenuFlyout>
+                            </uc:ToggleSplitButtonWithIcon.Flyout>
+                        </uc:ToggleSplitButtonWithIcon>
 
-                        <uc:ToggleButtonWithIcon
+                        <uc:ToggleSplitButtonWithIcon
 						  IsChecked="{Binding ShowLayerImageIssues}"
 						  ToolTip.Tip="Highlight Issues on current layer. Valid only if Issues are calculated."
 						  VerticalAlignment="Stretch"
 						  Margin="0,0,1,0"
-						  Text="Issues ⮟"
+						  Text="Issues"
 						  Spacing="5"
 						  Icon="fa-solid fa-radiation-alt">
-                            <Button.ContextMenu>
-                                <ContextMenu Placement="Bottom">
-                                    <CheckBox
-										ToolTip.Tip="Show crosshairs for selected issues on the current layer"
-										IsChecked="{Binding ShowLayerImageCrosshairs}">
+                            <uc:ToggleSplitButtonWithIcon.Flyout>
+                                <MenuFlyout>
+                                    <CheckBox ToolTip.Tip="Show crosshairs for selected issues on the current layer"
+                                              IsChecked="{Binding ShowLayerImageCrosshairs}">
                                         <StackPanel Orientation="Horizontal">
                                             <i:Icon Value="fa-solid fa-crosshairs"/>
                                             <TextBlock Margin="5,0,5,0" Text="Crosshairs"/>
                                         </StackPanel>
                                     </CheckBox>
 
-                                </ContextMenu>
-                            </Button.ContextMenu>
-                        </uc:ToggleButtonWithIcon>
+                                </MenuFlyout>
+                            </uc:ToggleSplitButtonWithIcon.Flyout>
+                        </uc:ToggleSplitButtonWithIcon>
 
 
                         <uc:DropDownButtonWithIcon Name="LayerPreviewOutlineButton"
@@ -2072,32 +2043,29 @@
                             </uc:DropDownButtonWithIcon.Flyout>
                         </uc:DropDownButtonWithIcon>
 
-                        <Button
-						  Command="{Binding ShowLayer}"
-						  HotKey="F5"
-						  ToolTip.Tip="Refresh current layer [F5]"
-						  VerticalAlignment="Stretch"
-						  Margin="1,0,0,0"
-						  i:Attached.Icon="fa-solid fa-sync-alt"/>
+                        <Button Command="{Binding ShowLayer}"
+                                HotKey="F5"
+                                ToolTip.Tip="Refresh current layer [F5]"
+                                VerticalAlignment="Stretch"
+                                Margin="1,0,0,0"
+                                i:Attached.Icon="fa-solid fa-sync-alt"/>
 
 
-                        <uc:ButtonWithIcon
-						  Command="{Binding SaveCurrentLayerImage}"
-						  ToolTip.Tip="Save layer image to a file"
-						  VerticalAlignment="Stretch"
-						  VerticalContentAlignment="Center"
-						  Margin="1,0,0,0"
-						  Text="⮟"
-						  Spacing="3"
-						  Icon="fa-solid fa-floppy-disk">
-                            <uc:ButtonWithIcon.ContextMenu>
-                                <ContextMenu Placement="Bottom">
+                        <uc:SplitButtonWithIcon Command="{Binding SaveCurrentLayerImage}"
+                                           ToolTip.Tip="Save layer image to a file"
+                                           VerticalAlignment="Stretch"
+                                           VerticalContentAlignment="Center"
+                                           Margin="1,0,0,0"
+                                           Spacing="3"
+                                           Icon="fa-solid fa-floppy-disk">
+                            <uc:SplitButtonWithIcon.Flyout>
+                                <MenuFlyout>
                                     <MenuItem Command="{Binding SaveCurrentROIImage}"
-										Header="Save the selected region (ROI)"
-										i:MenuItem.Icon="fa-regular fa-object-group"/>
-                                </ContextMenu>
-                            </uc:ButtonWithIcon.ContextMenu>
-                        </uc:ButtonWithIcon>
+                                              Header="Save the selected region (ROI)"
+                                              i:MenuItem.Icon="fa-regular fa-object-group"/>
+                                </MenuFlyout>
+                            </uc:SplitButtonWithIcon.Flyout>
+                        </uc:SplitButtonWithIcon>
 
 
                     </StackPanel>
@@ -2150,7 +2118,7 @@
 						  Spacing="5"
 						  Icon="fa-solid fa-expand"/>
 
-                        <uc:ButtonWithIcon
+                        <uc:SplitButtonWithIcon
 						  IsEnabled="{Binding IsFileLoaded}"
 						  Margin="2,0,0,0"
 						  Command="{Binding OnROIClick}"
@@ -2161,31 +2129,25 @@
 						  Text="{Binding LayerROIStr}"
 						  Spacing="5"
 						  Icon="fa-regular fa-object-group">
-                            <uc:ButtonWithIcon.ContextMenu>
-                                <ContextMenu Name="ROIContextMenu" Placement="Top">
-                                    <MenuItem
-										Command="{Binding SelectLayerPositiveAreasMask}"
-										Header="Mask: Select layer positive areas"/>
-                                    <MenuItem
-										Command="{Binding SelectLayerHollowAreasMask}"
-										Header="Mask: Select layer hollow areas"/>
+                            <uc:SplitButtonWithIcon.Flyout>
+                                <MenuFlyout Placement="Top">
+                                    <MenuItem Command="{Binding SelectLayerPositiveAreasMask}"
+                                              Header="Mask: Select layer positive areas"/>
+                                    <MenuItem Command="{Binding SelectLayerHollowAreasMask}"
+                                              Header="Mask: Select layer hollow areas"/>
                                     <Separator/>
-                                    <MenuItem
-										Command="{Binding SelectModelVolumeRoi}"
-										Header="ROI: Select model volume"/>
-                                    <MenuItem
-										Command="{Binding SelectLayerVolumeRoi}"
-										Header="ROI: Select layer volume"/>
+                                    <MenuItem Command="{Binding SelectModelVolumeRoi}"
+                                              Header="ROI: Select model volume"/>
+                                    <MenuItem Command="{Binding SelectLayerVolumeRoi}"
+                                              Header="ROI: Select layer volume"/>
                                     <Separator/>
-                                    <MenuItem
-										Command="{Binding ClearMask}"
-										Header="Clear Mask"/>
-                                    <MenuItem
-										Command="{Binding ClearROI}"
-										Header="Clear ROI"/>
-                                </ContextMenu>
-                            </uc:ButtonWithIcon.ContextMenu>
-                        </uc:ButtonWithIcon>
+                                    <MenuItem Command="{Binding ClearMask}"
+                                              Header="Clear Mask"/>
+                                    <MenuItem Command="{Binding ClearROI}"
+                                              Header="Clear ROI"/>
+                                </MenuFlyout>
+                            </uc:SplitButtonWithIcon.Flyout>
+                        </uc:SplitButtonWithIcon>
 
                     </WrapPanel>
 

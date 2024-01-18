@@ -19,6 +19,24 @@
     <DockPanel>
         <Border DockPanel.Dock="Bottom" Classes="FooterActions">
             <Grid ColumnDefinitions="Auto,*">
+                <controls:SplitButtonWithIcon
+                    Grid.Column="0"
+                    Command="{Binding CopyEssentialInformation}"
+                    Padding="10,10,5,10"
+                    VerticalContentAlignment="Center"
+                    HorizontalAlignment="Right"
+                    Icon="fa-regular fa-clipboard"
+                    Text="Copy information">
+                    <controls:SplitButtonWithIcon.Flyout>
+                        <MenuFlyout Placement="TopEdgeAlignedLeft">
+                            <MenuItem Header="Copy the essential information" Command="{Binding CopyEssentialInformation}"/>
+                            <MenuItem Header="Copy OpenCV build information" Command="{Binding CopyOpenCVInformationToClipboard}"/>
+                            <MenuItem Header="Copy loaded assemblies" Command="{Binding CopyLoadedAssembliesToClipboard}"/>
+                            <MenuItem Header="All information" Command="{Binding CopyInformationToClipboard}"/>
+                        </MenuFlyout>
+                    </controls:SplitButtonWithIcon.Flyout>
+                </controls:SplitButtonWithIcon>
+                <!--
                 <controls:ButtonWithIcon
                     Grid.Column="0"
                     Command="{Binding CopyEssentialInformation}"
@@ -36,7 +54,8 @@
                         </ContextMenu>
                     </Button.ContextMenu>
                 </controls:ButtonWithIcon>
-                
+                !-->
+
                 <controls:ButtonWithIcon Grid.Column="1"
                         Command="{Binding Close}"
                         IsCancel="True"
@@ -53,7 +72,7 @@
                       HorizontalScrollBarVisibility="Auto">
             <StackPanel Spacing="5" Margin="20" MaxWidth="380">
 
-				<Border Background="#660066" Margin="0,0,0,10">
+                <Border Background="#660066" Margin="0,0,0,10">
                     <Image HorizontalAlignment="Center" VerticalAlignment="Center"
                            Source="/Assets/Icons/UVtools_alt.ico"
                            Width="178"/>
@@ -123,11 +142,10 @@
             </StackPanel>
         </ScrollViewer>
 
-    
 
-    <Border>
+
         <Grid RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,5,*"
-              Margin="20">
+              Margin="0,20,20,20">
 
             <SelectableTextBlock Grid.Row="0" Text="{Binding Source={x:Static core:About.Software}}" FontWeight="Bold"/>
             <SelectableTextBlock Grid.Row="2" Text="{Binding Source={x:Static core:About.VersionArch}, StringFormat='Version: {0}'}"/>
@@ -145,10 +163,10 @@
                                          CommandParameter="{Binding Source={x:Static core:About.LicenseUrl}}"
                                          Text="{Binding Source={x:Static core:About.License}}"
                                          Icon="fa-solid fa-balance-scale"/>
-			</StackPanel>
+            </StackPanel>
 
 
-			<TabControl Grid.Row="10">
+            <TabControl Grid.Row="10">
                 <TabItem Header="Description">
                     <TextBox IsReadOnly="True"
                              ScrollViewer.VerticalScrollBarVisibility="Auto"
@@ -171,7 +189,6 @@
                 </TabItem>
             </TabControl>
         </Grid>
-    </Border>
-</DockPanel>
+    </DockPanel>
 
 </controls:WindowEx>

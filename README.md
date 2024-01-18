@@ -339,7 +339,7 @@ The fastest way to compile the project is by run the `build/compile.bat`, howeve
 1. Install the [.NET 6.0 SDK](https://dotnet.microsoft.com/download/dotnet/6.0) if not included on previous installation
 1. Install the [Avalonia for Visual Studio](https://marketplace.visualstudio.com/items?itemName=AvaloniaTeam.AvaloniaVS):
 1. Install the Wix Toolset: (Required only for MSI build, **optional**)
-   - `dotnet tool install --global wix --version 4.0.0`
+   - `dotnet tool install --global wix`
    - [Visual Studio HeatWave extension](https://www.firegiant.com/wix/heatwave)
 1. Open UVtools.sln
 1. Build

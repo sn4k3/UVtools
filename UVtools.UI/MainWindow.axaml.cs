@@ -450,6 +450,10 @@ public partial class MainWindow : WindowEx
             MenuFileSendToItems = menuItems;
             MainMenuFileSendTo.IsVisible = MainMenuFileSendTo.IsEnabled = menuItems.Count > 0;
         };
+
+#if DEBUG
+        this.AttachDevTools(new KeyGesture(Key.F12, KeyModifiers.Control));
+#endif
     }
 
     private async void FileSendToItemClick(object? sender, RoutedEventArgs e)

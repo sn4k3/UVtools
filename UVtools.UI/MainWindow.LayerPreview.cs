@@ -2071,7 +2071,7 @@ public partial class MainWindow
                     operation.SelectCurrentLayer(ActualLayer);
                     layerRange = $"in the current {ActualLayer} layer";
                 }
-
+                
                 if (await this.MessageBoxQuestion($"Are you sure you want to keep only the selected region/mask(s) {layerRange}?",
                         "Keep only selected region/mask(s)?") != MessageButtonResult.Yes) return;
                 await RunOperation(operation);

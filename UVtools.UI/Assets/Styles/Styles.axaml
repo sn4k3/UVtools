@@ -1,13 +1,14 @@
 ﻿<Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:uac="clr-namespace:UVtools.AvaloniaControls;assembly=UVtools.AvaloniaControls">
+        xmlns:uac="clr-namespace:UVtools.AvaloniaControls;assembly=UVtools.AvaloniaControls"
+        xmlns:controls="clr-namespace:UVtools.UI.Controls">
 
     <Design.PreviewWith>
         <Border Padding="20"></Border>
     </Design.PreviewWith>
 
     <Styles.Resources>
-        <ResourceDictionary>
+        <ResourceDictionary x:Key="Themes">
             <ResourceDictionary.ThemeDictionaries>
                 <ResourceDictionary x:Key="Light">
                     <SolidColorBrush x:Key="GroupBoxHeaderBackground" Color="LightBlue" />
@@ -367,5 +368,13 @@
         <Setter Property="FontWeight" Value="Bold" />
         <Setter Property="Cursor" Value="Hand" />
     </Style>
-   
+
+    <Style Selector="SplitButton /template/ Border">
+        <Setter Property="IsVisible" Value="False" />
+    </Style>
+
+    <Style Selector="ToggleSplitButton, SplitButton, controls|SplitButtonWithIcon, controls|ToggleSplitButtonWithIcon">
+        <Setter Property="Padding" Value="8,5,5,6" />
+    </Style>
+
 </Styles>

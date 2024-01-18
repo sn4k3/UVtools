@@ -2,13 +2,22 @@
 using Avalonia.Controls;
 using Avalonia.Layout;
 using System;
+using Avalonia.Input;
 
 namespace UVtools.UI.Controls;
 
 public class SplitButtonWithIcon : SplitButton
 {
     protected override Type StyleKeyOverride => typeof(SplitButton);
+    
+    public static readonly StyledProperty<bool> OpenFlyoutWithRightClickProperty =
+        AvaloniaProperty.Register<SplitButtonWithIcon, bool>(nameof(OpenFlyoutWithRightClick), defaultValue: true);
 
+    public bool OpenFlyoutWithRightClick
+    {
+        get => GetValue(OpenFlyoutWithRightClickProperty);
+        set => SetValue(OpenFlyoutWithRightClickProperty, value);
+    }
 
     public static readonly StyledProperty<string?> TextProperty =
         ButtonWithIcon.TextProperty.AddOwner<SplitButtonWithIcon>();
@@ -58,6 +67,15 @@ public class SplitButtonWithIcon : SplitButton
             || ReferenceEquals(e.Property, IconPlacementProperty))
         {
             RebuildContent();
+        }
+    }
+
+    protected override void OnPointerReleased(PointerReleasedEventArgs e)
+    {
+        base.OnPointerReleased(e);
+        if (e.InitialPressMouseButton == MouseButton.Right && OpenFlyoutWithRightClick)
+        {
+            OpenFlyout();
         }
     }
 
