@@ -1,6 +1,6 @@
 # Changelog
 
-## /12/2023 - v4.1.0
+## 19/01/2024 - v4.1.0
 
 - **File formats:**
   - (Add) Emake3D Galaxy 1 (QDT) file format and PrusaSlicer printer profile
