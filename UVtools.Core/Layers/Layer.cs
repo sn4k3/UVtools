@@ -928,12 +928,12 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
                     CvInvoke.Imdecode(_compressedBytes, ImreadModes.Grayscale, mat);
                     break;
                 case LayerCompressionCodec.Lz4:
-                    mat = CreateMat();
+                    mat = CreateMat(false);
                     LZ4Codec.Decode(_compressedBytes.AsSpan(), mat.GetDataByteSpan());
                     break;
                 case LayerCompressionCodec.GZip:
                 {
-                    mat = CreateMat();
+                    mat = CreateMat(false);
                     unsafe
                     {
                         fixed (byte* pBuffer = _compressedBytes)
@@ -949,7 +949,7 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
                 }
                 case LayerCompressionCodec.Deflate:
                 {
-                    mat = CreateMat();
+                    mat = CreateMat(false);
                     unsafe
                     {
                         fixed (byte* pBuffer = _compressedBytes)
@@ -1312,12 +1312,15 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
     #region Methods
 
     /// <summary>
-    /// Creates an <see cref="Mat"/> using this layer information
+    /// Creates an empty <see cref="Mat"/> of file <see cref="Resolution"/> size
     /// </summary>
+    /// <param name="initMat">True to black out the mat</param>
     /// <returns></returns>
-    public Mat CreateMat()
+    public Mat CreateMat(bool initMat = true)
     {
-        return new Mat(Resolution, DepthType.Cv8U, 1);
+        return initMat
+            ? EmguExtensions.InitMat(Resolution)
+            : new Mat(Resolution, DepthType.Cv8U, 1);
     }
 
     /// <summary>
@@ -2007,6 +2010,11 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
 
                 ArrayPool<byte>.Shared.Return(rent);
                 return target;
+                
+                /*var span = mat.GetDataByteSpan();
+                using var buffer = new PooledBufferWriter<byte>();
+                LZ4Frame.Encode(span, buffer, LZ4Level.L00_FAST);
+                return buffer.WrittenMemory.ToArray();*/
             }
             case LayerCompressionCodec.GZip:
                 return CompressionExtensions.GZipCompressToBytes(mat.GetUnmanagedMemoryStream(FileAccess.Read), CompressionLevel.Fastest);

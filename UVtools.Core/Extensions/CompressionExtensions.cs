@@ -32,7 +32,7 @@ public static class CompressionExtensions
         return BitConverter.ToInt32(uncompressedLength);
     }
 
-    public static MemoryStream GZipCompress(Stream inputStream, CompressionLevel compressionLevel, bool leaveStreamOpen = false)
+    public static Stream GZipCompress(Stream inputStream, CompressionLevel compressionLevel, bool leaveStreamOpen = false)
     {
         if (inputStream.Position == inputStream.Length) inputStream.Seek(0, SeekOrigin.Begin);
 
@@ -41,19 +41,20 @@ public static class CompressionExtensions
         {
             inputStream.CopyTo(gzipStream);
         }
-        if (!leaveStreamOpen) { inputStream.Close(); }
+        if (!leaveStreamOpen) inputStream.Close();
 
         compressedStream.Seek(0, SeekOrigin.Begin);
+
         return compressedStream;
     }
 
-    public static MemoryStream GZipCompress(byte[] inputStream, CompressionLevel compressionLevel) =>
+    public static Stream GZipCompress(byte[] inputStream, CompressionLevel compressionLevel) =>
         GZipCompress(new ReadOnlyMemory<byte>(inputStream).AsStream(), compressionLevel);
 
     public static byte[] GZipCompressToBytes(Stream inputStream, CompressionLevel compressionLevel)
     {
-        using var ms = GZipCompress(inputStream, compressionLevel);
-        return ms.ToArray();
+        using var stream = GZipCompress(inputStream, compressionLevel);
+        return stream.ToArray();
     }
 
     public static byte[] GZipCompressToBytes(byte[] inputStream, CompressionLevel compressionLevel)
@@ -63,7 +64,7 @@ public static class CompressionExtensions
     }
             
 
-    public static MemoryStream GZipDecompress(Stream compressedStream, bool leaveStreamOpen = false)
+    public static Stream GZipDecompress(Stream compressedStream, bool leaveStreamOpen = false)
     {
         if (compressedStream.Position == compressedStream.Length) { compressedStream.Seek(0, SeekOrigin.Begin); }
 
@@ -87,7 +88,7 @@ public static class CompressionExtensions
             : uncompressedStream.ToArray();
     }
 
-    public static MemoryStream DeflateCompress(Stream inputStream, CompressionLevel compressionLevel, bool leaveStreamOpen = false)
+    public static Stream DeflateCompress(Stream inputStream, CompressionLevel compressionLevel, bool leaveStreamOpen = false)
     {
         if (inputStream.Position == inputStream.Length) { inputStream.Seek(0, SeekOrigin.Begin); }
 
@@ -96,13 +97,13 @@ public static class CompressionExtensions
         {
             inputStream.CopyTo(gzipStream);
         }
-        if (!leaveStreamOpen) { inputStream.Close(); }
+        if (!leaveStreamOpen) inputStream.Close();
 
         compressedStream.Seek(0, SeekOrigin.Begin);
         return compressedStream;
     }
 
-    public static MemoryStream DeflateCompress(byte[] inputStream, CompressionLevel compressionLevel) =>
+    public static Stream DeflateCompress(byte[] inputStream, CompressionLevel compressionLevel) =>
         DeflateCompress(new ReadOnlyMemory<byte>(inputStream).AsStream(), compressionLevel);
 
     public static byte[] DeflateCompressToBytes(Stream inputStream, CompressionLevel compressionLevel)
@@ -117,7 +118,7 @@ public static class CompressionExtensions
         return ms.ToArray();
     }
 
-    public static MemoryStream DeflateDecompress(Stream compressedStream, bool leaveStreamOpen = false)
+    public static Stream DeflateDecompress(Stream compressedStream, bool leaveStreamOpen = false)
     {
         if (compressedStream.Position == compressedStream.Length) { compressedStream.Seek(0, SeekOrigin.Begin); }
 

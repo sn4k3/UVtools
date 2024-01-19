@@ -14,6 +14,7 @@
   - (Add) Title bar: Display the loaded file size and re-arrange the last operation run time to the right
   - (Improvement) Re-arrange some items on `File` and `Help` menu
   - (Improvement) Use icons instead UTF-8 character for buttons with drop-down menus
+  - (Fix) Benchmark tool: Allow to show percentages larger than 100% and increase progress height
 - **Tools:**
   - (Fix) Layer actions - Import layer(s): Unable to process image files (#815)
   - (Fix) PCB Exposure: Draw circles using ellipses in order to use non-square pixels (#822)

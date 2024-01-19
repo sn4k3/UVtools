@@ -4416,7 +4416,7 @@
         </member>
         <member name="M:UVtools.Core.FileFormats.FileFormat.CreateMat(System.Boolean)">
             <summary>
-            Creates a empty mat of file <see cref="P:UVtools.Core.FileFormats.FileFormat.Resolution"/> size
+            Creates an empty mat of file <see cref="P:UVtools.Core.FileFormats.FileFormat.Resolution"/> size
             </summary>
             <param name="initMat">True to black out the mat</param>
             <returns></returns>
@@ -6189,10 +6189,11 @@
             Gets tree contours cache for this layer.  If not set it will calculate contours first
             </summary>
         </member>
-        <member name="M:UVtools.Core.Layers.Layer.CreateMat">
+        <member name="M:UVtools.Core.Layers.Layer.CreateMat(System.Boolean)">
             <summary>
-            Creates an <see cref="T:Emgu.CV.Mat"/> using this layer information
+            Creates an empty <see cref="T:Emgu.CV.Mat"/> of file <see cref="P:UVtools.Core.Layers.Layer.Resolution"/> size
             </summary>
+            <param name="initMat">True to black out the mat</param>
             <returns></returns>
         </member>
         <member name="M:UVtools.Core.Layers.Layer.ResetParameters">

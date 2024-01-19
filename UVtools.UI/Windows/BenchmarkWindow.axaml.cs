@@ -71,8 +71,8 @@ public partial class BenchmarkWindow : WindowEx
                 /*GZip 8K Compress*/    new BenchmarkTestResult(63.29f, 1020.41f),
                 /*Deflate 4K Compress*/ new BenchmarkTestResult(246.91f, 4000.00f),
                 /*Deflate 8K Compress*/ new BenchmarkTestResult(64.10f, 1033.06f),
-                /*LZ4 4K Compress*/     new BenchmarkTestResult(1052.63f, 6666.67f),
-                /*LZ4 8K Compress*/     new BenchmarkTestResult(281.69f, 2155.17f),
+                /*LZ4 4K Compress*/     new BenchmarkTestResult(1111.11f, 20833.33f),
+                /*LZ4 8K Compress*/     new BenchmarkTestResult(312.5f, 6097.56f),
                 /*Stress CPU test*/     new BenchmarkTestResult(0f, 0f),
             }),
             new BenchmarkMachine("Intel® Core™ i9-9900K @ 5.0 GHz", "G.Skill Trident Z 32GB DDR4-3200MHz CL14", new []
@@ -198,7 +198,7 @@ public partial class BenchmarkWindow : WindowEx
         get => _multiThreadDiffMaxValue;
         set => RaiseAndSetIfChanged(ref _multiThreadDiffMaxValue, value);
     }
-
+    
     public IBrush SingleThreadDiffForeground
     {
         get => _singleThreadDiffForeground;

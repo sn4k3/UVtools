@@ -9,6 +9,7 @@
         Icon="/Assets/Icons/UVtools.ico"
         SizeToContent="WidthAndHeight"
         WindowStartupLocation="CenterOwner"
+        MinWidth="560"
         CanResize="False"
         x:Class="UVtools.UI.Windows.BenchmarkWindow"
         x:DataType="windows:BenchmarkWindow">
@@ -81,17 +82,23 @@
 
           <ProgressBar Grid.Row="4" Grid.Column="0"
                        Name="SingleThreadDiffProgressBar"
+                       FontWeight="Bold"
+                       MinHeight="30"
                        Value="{Binding SingleThreadDiffValue}"
                        Maximum="{Binding SingleThreadDiffMaxValue}"
                        Foreground="{Binding SingleThreadDiffForeground}"
-                       ShowProgressText="True"/>
+                       ShowProgressText="True"
+                       ProgressTextFormat="{Binding #SingleThreadDiffProgressBar.Value, StringFormat='{}{0:0}%'}"/>
 
 		  <ProgressBar Grid.Row="4" Grid.Column="2"
                        Name="MultiThreadDiffProgressBar"
+                       FontWeight="Bold"
+                       MinHeight="30"
                        Value="{Binding MultiThreadDiffValue}"
                        Maximum="{Binding MultiThreadDiffMaxValue}"
                        Foreground="{Binding MultiThreadDiffForeground}"
-                       ShowProgressText="True"/>
+                       ShowProgressText="True"
+                       ProgressTextFormat="{Binding #MultiThreadDiffProgressBar.Value, StringFormat='{}{0:0}%'}"/>
 
           <TextBlock Grid.Row="6" Grid.Column="0"
                      FontWeight="Bold" Text="Developer results:"/>

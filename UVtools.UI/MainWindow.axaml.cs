@@ -1263,7 +1263,7 @@ public partial class MainWindow : WindowEx
         
         if (IsFileLoaded)
         {
-            _titleStringBuilder.Append($"File: {SlicerFile!.Filename}   Size: {_loadedFileSizeRepresentation}");
+            _titleStringBuilder.Append($"File: {SlicerFile!.Filename} ({_loadedFileSizeRepresentation})");
         }
 
         _titleStringBuilder.Append($"   Version: {About.VersionStr}   RAM: {SizeExtensions.SizeSuffix(Environment.WorkingSet)}");

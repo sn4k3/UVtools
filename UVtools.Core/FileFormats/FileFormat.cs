@@ -6035,7 +6035,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     public Mat CreateMatWithDummyPixel() => CreateMatWithDummyPixel(SupportGCode ? (byte)1 : (byte)128);
       
     /// <summary>
-    /// Creates a empty mat of file <see cref="Resolution"/> size
+    /// Creates an empty mat of file <see cref="Resolution"/> size
     /// </summary>
     /// <param name="initMat">True to black out the mat</param>
     /// <returns></returns>
