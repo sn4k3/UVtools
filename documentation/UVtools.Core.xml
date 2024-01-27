@@ -127,6 +127,131 @@
             Gets the default folder to save the settings
             </summary>
         </member>
+        <member name="F:UVtools.Core.EmguCV.CompressedMat._compressedBytes">
+            <summary>
+            Gets the compressed bytes that have been compressed with <see cref="P:UVtools.Core.EmguCV.CompressedMat.Decompressor"/>.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.EmguCV.CompressedMat.CompressedBytes">
+            <summary>
+            Gets the compressed bytes that have been compressed with <see cref="P:UVtools.Core.EmguCV.CompressedMat.Decompressor"/>.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.EmguCV.CompressedMat.Width">
+            <summary>
+            Gets the cached width of the <see cref="P:UVtools.Core.EmguCV.CompressedMat.Mat"/> that was compressed.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.EmguCV.CompressedMat.Height">
+            <summary>
+            Gets the cached height of the <see cref="P:UVtools.Core.EmguCV.CompressedMat.Mat"/> that was compressed.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.EmguCV.CompressedMat.Size">
+            <summary>
+            Gets the cached size of the <see cref="P:UVtools.Core.EmguCV.CompressedMat.Mat"/> that was compressed.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.EmguCV.CompressedMat.Depth">
+            <summary>
+            Gets the cached depth of the <see cref="P:UVtools.Core.EmguCV.CompressedMat.Mat"/> that was compressed.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.EmguCV.CompressedMat.Channels">
+            <summary>
+            Gets the cached number of channels of the <see cref="P:UVtools.Core.EmguCV.CompressedMat.Mat"/> that was compressed.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.EmguCV.CompressedMat.Roi">
+            <summary>
+            Gets the cached ROI of the <see cref="P:UVtools.Core.EmguCV.CompressedMat.Mat"/> that was compressed.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.EmguCV.CompressedMat.Compressor">
+            <summary>
+            Gets or sets the <see cref="T:UVtools.Core.EmguCV.MatCompressor"/> that will be used to compress and decompress the <see cref="P:UVtools.Core.EmguCV.CompressedMat.Mat"/>.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.EmguCV.CompressedMat.Decompressor">
+            <summary>
+            Gets the <see cref="T:UVtools.Core.EmguCV.MatCompressor"/> that will be used to decompress the <see cref="P:UVtools.Core.EmguCV.CompressedMat.Mat"/>.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.EmguCV.CompressedMat.IsEmpty">
+            <summary>
+            Gets a value indicating whether the <see cref="P:UVtools.Core.EmguCV.CompressedMat.CompressedBytes"/> are empty.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.EmguCV.CompressedMat.IsCompressed">
+            <summary>
+            Gets a value indicating whether the <see cref="P:UVtools.Core.EmguCV.CompressedMat.CompressedBytes"/> are compressed or raw bytes.
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.EmguCV.CompressedMat.CreateMat">
+            <summary>
+            Creates a new <see cref="P:UVtools.Core.EmguCV.CompressedMat.Mat"/> with the same size, depth, and channels as the <see cref="T:UVtools.Core.EmguCV.CompressedMat"/>.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:UVtools.Core.EmguCV.CompressedMat.CreateMatZeros">
+            <summary>
+            Create a new <see cref="P:UVtools.Core.EmguCV.CompressedMat.Mat"/> with the same size, depth, and channels as the <see cref="T:UVtools.Core.EmguCV.CompressedMat"/> but with all bytes set to 0.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:UVtools.Core.EmguCV.CompressedMat.Compress(Emgu.CV.Mat,System.Object)">
+            <summary>
+            Compresses the <see cref="P:UVtools.Core.EmguCV.CompressedMat.Mat"/> into a byte array. 
+            </summary>
+            <param name="src"></param>
+            <param name="tag"></param>
+        </member>
+        <member name="M:UVtools.Core.EmguCV.CompressedMat.Compress(UVtools.Core.EmguCV.MatRoi,System.Object)">
+            <summary>
+            Compresses the <see cref="T:UVtools.Core.EmguCV.MatRoi"/> into a byte array.
+            </summary>
+            <param name="src"></param>
+            <param name="tag"></param>
+        </member>
+        <member name="M:UVtools.Core.EmguCV.CompressedMat.CompressAsync(Emgu.CV.Mat,System.Object,System.Threading.CancellationToken)">
+            <summary>
+            Compresses the <see cref="P:UVtools.Core.EmguCV.CompressedMat.Mat"/> into a byte array.
+            </summary>
+            <param name="src"></param>
+            <param name="tag"></param>
+            <param name="cancellationToken"></param>
+            <returns></returns>
+        </member>
+        <member name="M:UVtools.Core.EmguCV.CompressedMat.CompressAsync(UVtools.Core.EmguCV.MatRoi,System.Object,System.Threading.CancellationToken)">
+            <summary>
+            Compresses the <see cref="P:UVtools.Core.EmguCV.CompressedMat.Mat"/> into a byte array.
+            </summary>
+            <param name="src"></param>
+            <param name="tag"></param>
+            <param name="cancellationToken"></param>
+            <returns></returns>
+        </member>
+        <member name="M:UVtools.Core.EmguCV.CompressedMat.Decompress(System.Object)">
+            <summary>
+            Decompresses the <see cref="P:UVtools.Core.EmguCV.CompressedMat.CompressedBytes"/> into a new <see cref="P:UVtools.Core.EmguCV.CompressedMat.Mat"/>.
+            </summary>
+            <param name="tag"></param>
+            <returns></returns>
+        </member>
+        <member name="M:UVtools.Core.EmguCV.CompressedMat.DecompressAsync(System.Object,System.Threading.CancellationToken)">
+            <summary>
+            Decompresses the <see cref="P:UVtools.Core.EmguCV.CompressedMat.CompressedBytes"/> into a new <see cref="P:UVtools.Core.EmguCV.CompressedMat.Mat"/>.
+            </summary>
+            <param name="tag"></param>
+            <param name="cancellationToken"></param>
+            <returns></returns>
+        </member>
+        <member name="M:UVtools.Core.EmguCV.CompressedMat.Clone">
+            <summary>
+            Creates a clone of the <see cref="T:UVtools.Core.EmguCV.CompressedMat"/> with the same <see cref="P:UVtools.Core.EmguCV.CompressedMat.CompressedBytes"/>.
+            </summary>
+            <returns></returns>
+        </member>
         <member name="T:UVtools.Core.EmguCV.EmguContour">
             <summary>
             A contour cache for OpenCV
@@ -295,6 +420,96 @@
             <param name="contour2">Contour 2</param>
             <returns></returns>
         </member>
+        <member name="M:UVtools.Core.EmguCV.MatCompressor.Compress(Emgu.CV.Mat,System.Object)">
+            <summary>
+            Compresses the <see cref="T:Emgu.CV.Mat"/> into a byte array.
+            </summary>
+            <param name="src"></param>
+            <param name="tag"></param>
+            <returns></returns>
+        </member>
+        <member name="M:UVtools.Core.EmguCV.MatCompressor.Decompress(System.Byte[],Emgu.CV.Mat,System.Object)">
+            <summary>
+            Decompresses the <see cref="T:Emgu.CV.Mat"/> from a byte array.
+            </summary>
+            <param name="compressedBytes"></param>
+            <param name="dst"></param>
+            <param name="tag"></param>
+        </member>
+        <member name="M:UVtools.Core.EmguCV.MatCompressor.CompressAsync(Emgu.CV.Mat,System.Object,System.Threading.CancellationToken)">
+            <summary>
+            Compresses the <see cref="T:Emgu.CV.Mat"/> into a byte array.
+            </summary>
+            <param name="src"></param>
+            <param name="tag"></param>
+            <param name="cancellationToken"></param>
+            <returns></returns>
+        </member>
+        <member name="M:UVtools.Core.EmguCV.MatCompressor.DecompressAsync(System.Byte[],Emgu.CV.Mat,System.Object,System.Threading.CancellationToken)">
+            <summary>
+            Decompresses the <see cref="T:Emgu.CV.Mat"/> from a byte array.
+            </summary>
+            <param name="compressedBytes"></param>
+            <param name="dst"></param>
+            <param name="tag"></param>
+            <param name="cancellationToken"></param>
+            <returns></returns>
+        </member>
+        <member name="F:UVtools.Core.EmguCV.MatCompressorPng.Instance">
+            <summary>
+            Instance of <see cref="T:UVtools.Core.EmguCV.MatCompressorPng"/>.
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.EmguCV.MatCompressorPng.Compress(Emgu.CV.Mat,System.Object)">
+            <inheritdoc />
+        </member>
+        <member name="M:UVtools.Core.EmguCV.MatCompressorPng.Decompress(System.Byte[],Emgu.CV.Mat,System.Object)">
+            <inheritdoc />
+        </member>
+        <member name="F:UVtools.Core.EmguCV.MatCompressorPngGreyScale.Instance">
+            <summary>
+            Instance of <see cref="T:UVtools.Core.EmguCV.MatCompressorPng"/>.
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.EmguCV.MatCompressorPngGreyScale.Compress(Emgu.CV.Mat,System.Object)">
+            <inheritdoc />
+        </member>
+        <member name="M:UVtools.Core.EmguCV.MatCompressorPngGreyScale.Decompress(System.Byte[],Emgu.CV.Mat,System.Object)">
+            <inheritdoc />
+        </member>
+        <member name="F:UVtools.Core.EmguCV.MatCompressorDeflate.Instance">
+            <summary>
+            Instance of <see cref="T:UVtools.Core.EmguCV.MatCompressorDeflate"/>.
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.EmguCV.MatCompressorDeflate.Compress(Emgu.CV.Mat,System.Object)">
+            <inheritdoc />
+        </member>
+        <member name="M:UVtools.Core.EmguCV.MatCompressorDeflate.Decompress(System.Byte[],Emgu.CV.Mat,System.Object)">
+            <inheritdoc />
+        </member>
+        <member name="F:UVtools.Core.EmguCV.MatCompressorGZip.Instance">
+            <summary>
+            Instance of <see cref="T:UVtools.Core.EmguCV.MatCompressorGZip"/>.
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.EmguCV.MatCompressorGZip.Compress(Emgu.CV.Mat,System.Object)">
+            <inheritdoc />
+        </member>
+        <member name="M:UVtools.Core.EmguCV.MatCompressorGZip.Decompress(System.Byte[],Emgu.CV.Mat,System.Object)">
+            <inheritdoc />
+        </member>
+        <member name="F:UVtools.Core.EmguCV.MatCompressorLz4.Instance">
+            <summary>
+            Instance of <see cref="T:UVtools.Core.EmguCV.MatCompressorLz4"/>.
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.EmguCV.MatCompressorLz4.Compress(Emgu.CV.Mat,System.Object)">
+            <inheritdoc />
+        </member>
+        <member name="M:UVtools.Core.EmguCV.MatCompressorLz4.Decompress(System.Byte[],Emgu.CV.Mat,System.Object)">
+            <inheritdoc />
+        </member>
         <member name="T:UVtools.Core.EmguCV.MatRoi">
             <summary>
             A disposable Mat with the associated ROI Mat
@@ -303,6 +518,11 @@
         <member name="P:UVtools.Core.EmguCV.MatRoi.DisposeSourceMat">
             <summary>
             True to dispose the <see cref="P:UVtools.Core.EmguCV.MatRoi.SourceMat"/> on <see cref="M:UVtools.Core.EmguCV.MatRoi.Dispose"/>
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.EmguCV.MatRoi.IsSourceSameSizeOfRoi">
+            <summary>
+            Gets if the <see cref="P:UVtools.Core.EmguCV.MatRoi.SourceMat"/> is the same size of the <see cref="P:UVtools.Core.EmguCV.MatRoi.RoiSize"/>
             </summary>
         </member>
         <member name="M:UVtools.Core.EmguCV.MatRoi.#ctor(Emgu.CV.Mat,System.Drawing.Rectangle,System.Boolean)">
@@ -2802,27 +3022,6 @@
             <param name="from">From source file</param>
             <param name="to">To target file</param>
             <returns>Number of affected parameters</returns>
-        </member>
-        <member name="M:UVtools.Core.FileFormats.FileFormat.CompressLayer(System.IO.Stream)">
-            <summary>
-            Compress a layer from a <see cref="T:System.IO.Stream"/>
-            </summary>
-            <param name="input"><see cref="T:System.IO.Stream"/> to compress</param>
-            <returns>Compressed byte array</returns>
-        </member>
-        <member name="M:UVtools.Core.FileFormats.FileFormat.CompressLayer(System.Byte[])">
-            <summary>
-            Compress a layer from a byte array
-            </summary>
-            <param name="input">byte array to compress</param>
-            <returns>Compressed byte array</returns>
-        </member>
-        <member name="M:UVtools.Core.FileFormats.FileFormat.DecompressLayer(System.Byte[])">
-            <summary>
-            Decompress a layer from a byte array
-            </summary>
-            <param name="input">byte array to decompress</param>
-            <returns>Decompressed byte array</returns>
         </member>
         <member name="M:UVtools.Core.FileFormats.FileFormat.Compare(UVtools.Core.FileFormats.FileFormat,UVtools.Core.FileFormats.FileFormat,System.Boolean,System.String[])">
             <summary>

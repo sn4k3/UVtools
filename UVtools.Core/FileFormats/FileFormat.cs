@@ -661,55 +661,6 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         return count;
     }
 
-    /// <summary>
-    /// Compress a layer from a <see cref="Stream"/>
-    /// </summary>
-    /// <param name="input"><see cref="Stream"/> to compress</param>
-    /// <returns>Compressed byte array</returns>
-    public static byte[] CompressLayer(Stream input)
-    {
-        return CompressLayer(input.ToArray());
-    }
-
-    /// <summary>
-    /// Compress a layer from a byte array
-    /// </summary>
-    /// <param name="input">byte array to compress</param>
-    /// <returns>Compressed byte array</returns>
-    public static byte[] CompressLayer(byte[] input)
-    {
-        return input;
-        /*using (MemoryStream output = new MemoryStream())
-        {
-            using (DeflateStream dstream = new DeflateStream(output, CompressionLevel.Optimal))
-            {
-                dstream.Write(input, 0, input.Length);
-            }
-            return output.ToArray();
-        }*/
-    }
-
-    /// <summary>
-    /// Decompress a layer from a byte array
-    /// </summary>
-    /// <param name="input">byte array to decompress</param>
-    /// <returns>Decompressed byte array</returns>
-    public static byte[] DecompressLayer(byte[] input)
-    {
-        return input;
-        /*using (MemoryStream ms = new MemoryStream(input))
-        {
-            using (MemoryStream output = new MemoryStream())
-            {
-                using (DeflateStream dstream = new DeflateStream(ms, CompressionMode.Decompress))
-                {
-                    dstream.CopyTo(output);
-                }
-                return output.ToArray();
-            }
-        }*/
-    }
-
     public static byte[] EncodeImage(string dataType, Mat mat)
     {
         dataType = dataType.ToUpperInvariant();

@@ -1,5 +1,12 @@
 # Changelog
 
+## /01/2024 - v4.1.1
+
+- **Layers:**
+  - (Improvement) Use `ResizableMemory` instead of `MemoryStream` for GZip and Deflate compressions, this results in faster compressions and less memory pressure
+- (Fix) UI: Missing theme styles
+- (Fix) PrusaSlicer profiles for Creality Halot Mage's: Enable the "Horizontal" mirror under the "Printer" tab to produce the correct orientation when printing (#827)
+
 ## 19/01/2024 - v4.1.0
 
 - **File formats:**

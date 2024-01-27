@@ -66,7 +66,6 @@ public static class Program
             }
         }
 
-
         /*using var mat = CvInvoke.Imread(@"D:\layer0.png", ImreadModes.Grayscale);
         var contours = mat.FindContours(out var hierarchy, RetrType.Tree, ChainApproxMethod.ChainApproxTc89Kcos);
 

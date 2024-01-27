@@ -134,12 +134,12 @@ $runtimes =
     "win-x64" = @{
         "extraCmd" = ""
         "exclude" = @("UVtools.sh", "opencv_videoio_ffmpeg470_64.dll")
-        "include" = @("cvextern.dll")
+        "include" = @()
     }
     "linux-x64" = @{
         "extraCmd" = ""
         "exclude" = @()
-        "include" = @("libcvextern.so")
+        "include" = @()
     }
     #"arch-x64" = @{
     #    "extraCmd" = ""
@@ -163,12 +163,12 @@ $runtimes =
     "osx-x64" = @{
         "extraCmd" = ""
         "exclude" = @()
-        "include" = @("libcvextern.dylib")
+        "include" = @()
     }
     "osx-arm64" = @{
         "extraCmd" = ""
         "exclude" = @()
-        "include" = @("libcvextern.dylib")
+        "include" = @()
     }
 }
 
@@ -265,7 +265,6 @@ foreach ($obj in $runtimes.GetEnumerator()) {
 
         foreach ($includeObj in $obj.Value.include) {
             Write-Output "Including: $includeObj"
-            Copy-Item "$platformsPath\$runtime\$includeObj" -Destination "$publishCurrentPath" -Recurse -ErrorAction Ignore
             Copy-Item "$platformsPath\$runtime\$includeObj" -Destination "$publishCurrentPath" -Recurse -ErrorAction Ignore
         }
 

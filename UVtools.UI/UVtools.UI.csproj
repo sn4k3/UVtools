@@ -1,46 +1,75 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-	<PropertyGroup>
-		<OutputType>WinExe</OutputType>
-		<AssemblyName>UVtools</AssemblyName>
-		<Version>4.1.0</Version>
+    <PropertyGroup>
+        <OutputType>WinExe</OutputType>
+        <AssemblyName>UVtools</AssemblyName>
+        <Version>4.1.1</Version>
 
-		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-		<NoWarn>1701;1702;</NoWarn>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <NoWarn>1701;1702;</NoWarn>
 
-		<BuiltInComInteropSupport>true</BuiltInComInteropSupport>
-		<ApplicationManifest>app.manifest</ApplicationManifest>
+        <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+        <ApplicationManifest>app.manifest</ApplicationManifest>
 
-		<AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
-	</PropertyGroup>
+        <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    </PropertyGroup>
 
-	<ItemGroup>
-		<PackageReference Include="Avalonia" Version="11.0.7" />
-		<PackageReference Include="Avalonia.Controls.ColorPicker" Version="11.0.7" />
-		<PackageReference Include="Avalonia.Controls.DataGrid" Version="11.0.7" />
-		<PackageReference Include="Avalonia.Desktop" Version="11.0.7" />
-		<PackageReference Include="Avalonia.Fonts.Inter" Version="11.0.7" />
-		<PackageReference Include="Avalonia.Themes.Fluent" Version="11.0.7" />
-		<PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="11.0.7" />
-		<PackageReference Include="Markdown.Avalonia" Version="11.0.2" />
-		<PackageReference Include="Projektanker.Icons.Avalonia" Version="9.0.1" />
-		<PackageReference Include="Projektanker.Icons.Avalonia.FontAwesome" Version="9.0.1" />
-		<PackageReference Include="Projektanker.Icons.Avalonia.MaterialDesign" Version="9.0.1" />
-	</ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Avalonia" Version="11.0.7" />
+        <PackageReference Include="Avalonia.Controls.ColorPicker" Version="11.0.7" />
+        <PackageReference Include="Avalonia.Controls.DataGrid" Version="11.0.7" />
+        <PackageReference Include="Avalonia.Desktop" Version="11.0.7" />
+        <PackageReference Include="Avalonia.Fonts.Inter" Version="11.0.7" />
+        <PackageReference Include="Avalonia.Themes.Fluent" Version="11.0.7" />
+        <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="11.0.7" />
+        <PackageReference Include="Markdown.Avalonia" Version="11.0.2" />
+        <PackageReference Include="Projektanker.Icons.Avalonia" Version="9.0.1" />
+        <PackageReference Include="Projektanker.Icons.Avalonia.FontAwesome" Version="9.0.1" />
+        <PackageReference Include="Projektanker.Icons.Avalonia.MaterialDesign" Version="9.0.1" />
+    </ItemGroup>
 
-	<ItemGroup>
-		<ProjectReference Include="..\UVtools.AvaloniaControls\UVtools.AvaloniaControls.csproj" />
-		<ProjectReference Include="..\UVtools.Core\UVtools.Core.csproj" />
-	</ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\UVtools.AvaloniaControls\UVtools.AvaloniaControls.csproj" />
+        <ProjectReference Include="..\UVtools.Core\UVtools.Core.csproj" />
+    </ItemGroup>
 
-	<ItemGroup>
-		<None Update="UVtools.sh" CopyToOutputDirectory="PreserveNewest" />
-		<None Include="..\LICENSE" Pack="True" CopyToOutputDirectory="PreserveNewest" />
-		<None Include="..\PrusaSlicer\**" CopyToOutputDirectory="PreserveNewest" LinkBase="Assets\PrusaSlicer" />
-		<None Include="..\UVtools.CAD\UVtools_demo_file.sl1" CopyToOutputDirectory="PreserveNewest" Link="UVtools_demo_file.sl1" />
-	</ItemGroup>
+    <ItemGroup>
+        <AvaloniaResource Include="Assets\Icons\*" />
+        <AvaloniaResource Include="Assets\benchmark.png" />
+    </ItemGroup>
 
-	<ItemGroup>
-		<AvaloniaResource Include="Assets\Icons\*" />
-		<AvaloniaResource Include="Assets\benchmark.png" />
-	</ItemGroup>
+    <ItemGroup>
+        <None Include="..\LICENSE" Pack="True" CopyToOutputDirectory="PreserveNewest" Visible="False" />
+        <None Include="..\PrusaSlicer\**" CopyToOutputDirectory="PreserveNewest" LinkBase="Assets\PrusaSlicer" Visible="False" />
+        <None Include="..\UVtools.CAD\UVtools_demo_file.sl1" CopyToOutputDirectory="PreserveNewest" Visible="False" />
+    </ItemGroup>
+
+    <Choose>
+        <!-- Universal package -->
+        <When Condition="'$(RuntimeIdentifier)'==''">
+            <ItemGroup>
+                <None Include="..\build\platforms\win-x64\cvextern.dll" CopyToOutputDirectory="Always" Condition="'$(RuntimeIdentifier)'==''" LinkBase="runtimes\win-x64\native" Visible="False" />
+                <None Include="..\build\platforms\linux-x64\libcvextern.so" CopyToOutputDirectory="Always" Condition="'$(RuntimeIdentifier)'==''" LinkBase="runtimes\linux-x64\native" Visible="False" />
+                <None Include="..\build\platforms\linux-arm64\libcvextern.so" CopyToOutputDirectory="Always" Condition="'$(RuntimeIdentifier)'==''" LinkBase="runtimes\linux-arm64\native" Visible="False" />
+                <None Include="..\build\platforms\osx-x64\libcvextern.dylib" CopyToOutputDirectory="Always" Condition="'$(RuntimeIdentifier)'==''" LinkBase="runtimes\osx-x64\native" Visible="False" />
+                <None Include="..\build\platforms\osx-arm64\libcvextern.dylib" CopyToOutputDirectory="Always" Condition="'$(RuntimeIdentifier)'==''" LinkBase="runtimes\osx-arm64\native" Visible="False" />
+            </ItemGroup>
+        </When>
+
+        <!-- With RuntimeIdentifier (RID) -->
+        <Otherwise>
+            <ItemGroup>
+                <None Include="..\build\platforms\win-x64\cvextern.dll" CopyToOutputDirectory="Always" Condition="'$(RuntimeIdentifier)'=='win-x64'" Visible="False" />
+                <None Include="..\build\platforms\linux-x64\libcvextern.so" CopyToOutputDirectory="Always" Condition="'$(RuntimeIdentifier)'=='linux-x64'" Visible="False" />
+                <None Include="..\build\platforms\linux-arm64\libcvextern.so" CopyToOutputDirectory="Always" Condition="'$(RuntimeIdentifier)'=='linux-arm64'" Visible="False" />
+                <None Include="..\build\platforms\osx-x64\libcvextern.dylib" CopyToOutputDirectory="Always" Condition="'$(RuntimeIdentifier)'=='osx-x64'" Visible="False" />
+                <None Include="..\build\platforms\osx-arm64\libcvextern.dylib" CopyToOutputDirectory="Always" Condition="'$(RuntimeIdentifier)'=='osx-arm64'" Visible="False" />
+                <None Include="..\build\platforms\unix\UVtools.sh" CopyToOutputDirectory="PreserveNewest" Condition="$([System.Text.RegularExpressions.Regex]::IsMatch($(RuntimeIdentifier), '^linux|^unix|^osx'))" Visible="False" />
+            </ItemGroup>
+        </Otherwise>
+    </Choose>
+
+    <Target Name="SaveRuntimeIdentifierToFile" AfterTargets="Publish" Condition="'$(RuntimeIdentifier)'!=''">
+        <WriteLinesToFile File="$(PublishDir)\runtime_package.dat" Lines="$(RuntimeIdentifier)" Overwrite="true" />
+    </Target>
+    
 </Project>

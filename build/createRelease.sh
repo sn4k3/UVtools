@@ -110,16 +110,16 @@ dotnet publish $cmdProject -o "$publishRuntimeDir" -c $buildWith -r $runtime /p:
 dotnet publish $buildProject -o "$publishRuntimeDir" -c $buildWith -r $runtime /p:PublishReadyToRun=true --self-contained
 
 echo "3. Copying dependencies"
-echo $runtime > "$publishRuntimeDir/runtime_package.dat"
+#echo $runtime > "$publishRuntimeDir/runtime_package.dat"
 #find "$runtimePlatformDir" -type f | grep -i lib | xargs -i cp -fv {} "$publishRuntimeDir/"
 #cp -afv "$runtimePlatformDir/." "$publishRuntimeDir/"
-if [ -f "$runtimePlatformDir/libcvextern.so" ]; then
-    cp -afv "$runtimePlatformDir/libcvextern.so" "$publishRuntimeDir"
-elif [ -f "$runtimePlatformDir/libcvextern.dylib" ]; then
-    cp -afv "$runtimePlatformDir/libcvextern.dylib" "$publishRuntimeDir"
-elif [ -f "$runtimePlatformDir/libcvextern.zip" ]; then
-    unzip "$runtimePlatformDir/libcvextern.zip" -d "$publishRuntimeDir"
-fi
+#if [ -f "$runtimePlatformDir/libcvextern.so" ]; then
+#    cp -afv "$runtimePlatformDir/libcvextern.so" "$publishRuntimeDir"
+#elif [ -f "$runtimePlatformDir/libcvextern.dylib" ]; then
+#    cp -afv "$runtimePlatformDir/libcvextern.dylib" "$publishRuntimeDir"
+#elif [ -f "$runtimePlatformDir/libcvextern.zip" ]; then
+#    unzip "$runtimePlatformDir/libcvextern.zip" -d "$publishRuntimeDir"
+#fi
 
 echo "4. Cleaning up"
 rm -rf "$cmdProjectDir/bin/$buildWith/net$netVersion/$runtime" 2>/dev/null

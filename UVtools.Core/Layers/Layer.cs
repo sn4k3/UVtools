@@ -1503,7 +1503,7 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
     {
         if (_nonZeroPixelCount > 0 && !reCalculate)
         {
-            return BoundingRectangle;
+            return _boundingRectangle;
         }
         bool needDispose = false;
         if (mat is null)

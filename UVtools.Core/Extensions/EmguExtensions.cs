@@ -208,7 +208,7 @@ public static class EmguExtensions
     public static unsafe Span2D<T> GetDataSpan2D<T>(this Mat mat)
     {
         var step = mat.GetRealStep();
-        if (!mat.IsSubmatrix) return new(mat.DataPointer.ToPointer(), mat.Height, step, 0);
+        if (mat.IsContinuous) return new(mat.DataPointer.ToPointer(), mat.Height, step, 0);
         return new(mat.DataPointer.ToPointer(), mat.Height, step, mat.Step / mat.DepthToByteCount() - step);
     }
 
@@ -244,13 +244,13 @@ public static class EmguExtensions
     {
         if (length <= 0)
         {
-            if (mat.IsSubmatrix)
+            if (mat.IsContinuous)
             {
-                length = mat.Step / mat.DepthToByteCount() * (mat.Height - 1) + mat.GetRealStep();
+                length = mat.GetLength();
             }
             else
             {
-                length = mat.GetLength();
+                length = mat.Step / mat.DepthToByteCount() * (mat.Height - 1) + mat.GetRealStep();
             }
         }
         return new(IntPtr.Add(mat.DataPointer, offset).ToPointer(), length);

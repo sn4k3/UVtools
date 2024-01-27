@@ -6,6 +6,7 @@
  *  of this license document, but changing it is not allowed.
  */
 
+using Microsoft.IO;
 using System;
 using System.IO;
 using System.Threading;
@@ -15,6 +16,8 @@ namespace UVtools.Core.Extensions;
 
 public static class StreamExtensions
 {
+    public static readonly RecyclableMemoryStreamManager RecyclableMemoryStreamManager = new();
+
     //public const int DefaultCopyBufferSize = 81920; // 81.92 kilobytes, .NET default
     //public const int DefaultCopyBufferSize = 512000; // 512 kilobytes
     public const int DefaultCopyBufferSize = 1048576; // 1 MB

@@ -37,6 +37,11 @@ public class MatRoi : IDisposable, IEquatable<MatRoi>
     public Point RoiLocation => Roi.Location;
     public Size RoiSize => Roi.Size;
 
+    /// <summary>
+    /// Gets if the <see cref="SourceMat"/> is the same size of the <see cref="RoiSize"/>
+    /// </summary>
+    public bool IsSourceSameSizeOfRoi => SourceMat.Size == RoiSize;
+
     #endregion
 
     #region Constructor
