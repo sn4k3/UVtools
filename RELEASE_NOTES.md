@@ -1,23 +1,18 @@
-- **File formats:**
-  - (Add) Emake3D Galaxy 1 (QDT) file format and PrusaSlicer printer profile
-  - (Add) `ManufacturingProcess` property to get the manufacturing process used by the file/printer combination
-  - (Add) `SupportAntiAliasing` property to get if the file supports antialiasing usage (grey pixels)
-  - (Improvement) Goo: On encode image do not use gradient compression when going from grey to black or white
-  - (Change) PZR: Disable gradient compression for this file format as it corrupt layer for Phrozen Sonic Mini 8K S (#776, #810, #814)
-  - (Fix) Thumbnail text generation and for partial open files
-  - (Fix) Parse transition step time and count from layers throw an exception when the file only have one layer
-- **UI:**
-  - (Add) Title bar: Display the loaded file size and re-arrange the last operation run time to the right
-  - (Improvement) Re-arrange some items on `File` and `Help` menu
-  - (Improvement) Use icons instead UTF-8 character for buttons with drop-down menus
-  - (Fix) Benchmark tool: Allow to show percentages larger than 100% and increase progress height
-- **Tools:**
-  - (Fix) Layer actions - Import layer(s): Unable to process image files (#815)
-  - (Fix) PCB Exposure: Draw circles using ellipses in order to use non-square pixels (#822)
-- **Suggestions:**
-  - (Fix) Bottom layers count: Do not trigger the suggestion when the file layer count are equal or less than the configured minimum bottom layers
-  - (Fix) Transition layers: Do not trigger the suggestion when it can't fade exposure time or when bottom time is equal to normal time
-- (Fix) PrusaSlicer Printer: "Elegoo Mars 4" is wrongly named, renamed to "Elegoo Mars 4 DLP" and added the corresponding "Elegoo Mars 4"
-- (Upgrade) .NET from 6.0.25 to 6.0.26
-- (Upgrade) AvaloniaUI from 11.0.6 to 11.0.7 (Fixes #803, #812)
+- **Layers:**
+  - (Add) Brotli compression codec with good performance and compression ratio (Choose it if you have low available RAM)
+  - (Improvement) Use `ResizableMemory` instead of `MemoryStream` for `GZip` and `Deflate` compressions, this results in faster compressions and less memory pressure
+  - (Improvement) Changed how layers are cached into the memory, before they were compressed and save for the whole image. Now it crops the bitmap to the bounding rectangle of the current layer and save only that portion with pixels.
+                  For example, if the image is empty the cached size will be 0 bytes, and in a 12K image but with a 100 x 100 usable area it will save only that area instead of requiring a 12K buffer.
+                  The size of the buffer is now dynamic and will depends on layer data, as so, this method can reduce the memory usage greatly, specially when using large images with a lot of empty space, but also boosts the overall performance by relief the allocations and the required memory footprint.
+                  Only in few special cases can have drawbacks, however they are very minimal and the performance impact is minimal in that case.
+                  When decompressing, the full resolution image is still created and then the cached area is imported to the corresponding position, composing the final and original image. This is still faster than the old method because decompress a larger buffer is more costly.
+                  In the end both writes/compresses and reads/decompresses are now faster and using less memory.
+                  Note: When printing multiple objects it is recommended to place them close to each other as you can to take better advantage of this new method.
+- **Issues Detection:**
+  - (Fix) When detecting for Islands but not overhangs it will throw an exception about invalid roi
+  - (Fix) Huge memory leak when detecting resin traps (#830)
+- (Improvement) Core: Changed the way "Roi" method is returned and try to dispose all it instances
+- (Fix) EncryptedCTB, GOO, SVGX: Huge memory leak when decoding files that caused the program to crash (#830)
+- (Fix) UI: Missing theme styles
+- (Fix) PrusaSlicer profiles for Creality Halot Mage's: Enable the "Horizontal" mirror under the "Printer" tab to produce the correct orientation when printing (#827)
 

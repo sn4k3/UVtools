@@ -1,6 +1,6 @@
 # Changelog
 
-## /01/2024 - v4.2.0
+## 29/01/2024 - v4.2.0
 
 - **Layers:**
   - (Add) Brotli compression codec with good performance and compression ratio (Choose it if you have low available RAM)
