@@ -635,7 +635,7 @@ public class OperationPixelDimming : Operation
         using var blankMat = EmguExtensions.InitMat(SlicerFile.Resolution);
         using var matPattern = blankMat.NewBlank();
         using var matAlternatePattern = blankMat.NewBlank();
-        var target = GetRoiOrDefault(blankMat);
+        using var target = GetRoiOrDefault(blankMat);
 
         CvInvoke.Repeat(Pattern, target.Rows / Pattern.Rows + 1, target.Cols / Pattern.Cols + 1, matPattern);
         CvInvoke.Repeat(AlternatePattern, target.Rows / AlternatePattern.Rows + 1, target.Cols / AlternatePattern.Cols + 1, matAlternatePattern);
@@ -687,8 +687,8 @@ public class OperationPixelDimming : Operation
         using Mat erode = new();
         //using Mat diff = new();
         var original = mat.Clone();
-        var originalRoi = GetRoiOrDefault(original);
-        var target = GetRoiOrDefault(mat);
+        using var originalRoi = GetRoiOrDefault(original);
+        using var target = GetRoiOrDefault(mat);
         using var mask = GetMask(mat);
 
 

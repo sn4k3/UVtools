@@ -694,7 +694,7 @@ public sealed class CXDLPFile : FileFormat
                     layerLargestContourArea[layerIndex] = (uint)(EmguContours.GetLargestContourArea(contours) * pixelArea * 1000);
                     //Debug.WriteLine($"Area: {contourArea} ({contourArea * PixelArea * 1000})  BR: {max.Bounds.Area()} ({max.Bounds.Area() * PixelArea * 1000})");
 
-                    var span = mat.GetDataByteSpan();
+                    var span = mat.GetDataByteReadOnlySpan();
 
                     layerBytes[layerIndex] = new();
 

@@ -632,7 +632,7 @@ public class OperationPixelArithmetic : Operation
 
                             // Difference
                             using var nextMat = SlicerFile[layerIndex + 1].LayerMat;
-                            var nextMatRoi = GetMatRoiCropped(nextMat);
+                            using var nextMatRoi = GetMatRoiCropped(nextMat);
                             CvInvoke.Subtract(target, nextMatRoi, applyMask);
 
                             // 1px walls

@@ -202,7 +202,7 @@ public class OperationResize : Operation
         }
 
         using var original = mat.Clone();
-        var target = GetRoiOrDefault(mat);
+        using var target = GetRoiOrDefault(mat);
         target.TransformFromCenter((double) xScale, (double) yScale);
         ApplyMask(original, target);
         return true;

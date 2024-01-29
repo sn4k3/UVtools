@@ -119,7 +119,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// Gets the default batch count to process layers in parallel
     /// </summary>
     public static int DefaultParallelBatchCount => Environment.ProcessorCount * 10;
-    #endregion 
+
+    #endregion
 
     #region Enums
 
@@ -180,10 +181,12 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         Png8,
         Png24,
         Png32,
+
         /// <summary>
         /// eg: Nova Bene4, Elfin Mono SE, Whale 1/2
         /// </summary>
         Png24BgrAA,
+
         /// <summary>
         /// eg: Uniformation GKone
         /// </summary>
@@ -194,54 +197,105 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     #endregion
 
     #region Sub Classes
+
     /// <summary>
     /// Available Print Parameters to modify
     /// </summary>
     public class PrintParameterModifier
     {
-            
+
         #region Instances
-        public static PrintParameterModifier PositionZ { get; } = new ("Position Z", "Layer absolute Z position", "mm", 0, 100000, 0.01m, Layer.HeightPrecision);
-        public static PrintParameterModifier BottomLayerCount { get; } = new ("Bottom layers", "Number of bottom/burn-in layers", "Ξ", 0, ushort.MaxValue, 1, 0);
-        public static PrintParameterModifier TransitionLayerCount { get; } = new ("Transition layers", "Number of fade/transition layers", "Ξ", 0, ushort.MaxValue, 1, 0);
-            
-        public static PrintParameterModifier BottomLightOffDelay { get; } = new("Bottom light-off delay", "Total motor movement time + rest time to wait before cure a new bottom layer", "s");
-        public static PrintParameterModifier LightOffDelay { get; } = new("Light-off delay", "Total motor movement time + rest time to wait before cure a new layer", "s");
 
-        public static PrintParameterModifier BottomWaitTimeBeforeCure { get; } = new ("Bottom wait before cure", "Time to wait/rest before cure a new bottom layer\nChitubox: Rest after retract\nLychee: Wait before print", "s");
-        public static PrintParameterModifier WaitTimeBeforeCure { get; } = new ("Wait before cure", "Time to wait/rest before cure a new layer\nChitubox: Rest after retract\nLychee: Wait before print", "s");
-            
-        public static PrintParameterModifier BottomExposureTime { get; } = new ("Bottom exposure time", "Bottom layers exposure time", "s", 0.1M);
-        public static PrintParameterModifier ExposureTime { get; } = new ("Exposure time", "Normal layers exposure time", "s", 0.1M);
-           
-        public static PrintParameterModifier BottomWaitTimeAfterCure { get; } = new("Bottom wait after cure", "Time to wait/rest after cure a new bottom layer\nChitubox: Rest before lift\nLychee: Wait after print", "s");
-        public static PrintParameterModifier WaitTimeAfterCure { get; } = new("Wait after cure", "Time to wait/rest after cure a new layer\nChitubox: Rest before lift\nLychee: Wait after print", "s");
-            
-        public static PrintParameterModifier BottomLiftHeight { get; } = new ("Bottom lift height", "Lift/peel height between bottom layers", "mm");
-        public static PrintParameterModifier LiftHeight { get; } = new ("Lift height", @"Lift/peel height between layers", "mm");
-            
-        public static PrintParameterModifier BottomLiftSpeed { get; } = new ("Bottom lift speed", "Lift speed of bottom layers", "mm/min", 10, 5000, 5);
-        public static PrintParameterModifier LiftSpeed { get; } = new ("Lift speed", "Lift speed of normal layers", "mm/min", 10, 5000, 5);
+        public static PrintParameterModifier PositionZ { get; } = new("Position Z", "Layer absolute Z position", "mm",
+            0, 100000, 0.01m, Layer.HeightPrecision);
 
-        public static PrintParameterModifier BottomLiftHeight2 { get; } = new("2) Bottom lift height", "Second lift/peel height between bottom layers", "mm");
-        public static PrintParameterModifier LiftHeight2 { get; } = new("2) Lift height", @"Second lift/peel height between layers", "mm");
+        public static PrintParameterModifier BottomLayerCount { get; } = new("Bottom layers",
+            "Number of bottom/burn-in layers", "Ξ", 0, ushort.MaxValue, 1, 0);
 
-        public static PrintParameterModifier BottomLiftSpeed2 { get; } = new("2) Bottom lift speed", "Lift speed of bottom layers for the second lift sequence (TSMC)", "mm/min", 0, 5000, 5);
-        public static PrintParameterModifier LiftSpeed2 { get; } = new("2) Lift speed", "Lift speed of normal layers for the second lift sequence (TSMC)", "mm/min", 0, 5000, 5);
+        public static PrintParameterModifier TransitionLayerCount { get; } = new("Transition layers",
+            "Number of fade/transition layers", "Ξ", 0, ushort.MaxValue, 1, 0);
 
-        public static PrintParameterModifier BottomWaitTimeAfterLift { get; } = new("Bottom wait after lift", "Time to wait/rest after a lift/peel sequence on bottom layers\nChitubox: Rest after lift\nLychee: Wait after lift", "s");
-        public static PrintParameterModifier WaitTimeAfterLift { get; } = new("Wait after lift", "Time to wait/rest after a lift/peel sequence on layers\nChitubox: Rest after lift\nLychee: Wait after lift", "s");
-           
-        public static PrintParameterModifier BottomRetractSpeed { get; } = new ("Bottom retract speed", "Down speed from lift height to next bottom layer cure position", "mm/min", 10, 5000, 5);
-        public static PrintParameterModifier RetractSpeed { get; } = new ("Retract speed", "Down speed from lift height to next layer cure position", "mm/min", 10, 5000, 5);
+        public static PrintParameterModifier BottomLightOffDelay { get; } = new("Bottom light-off delay",
+            "Total motor movement time + rest time to wait before cure a new bottom layer", "s");
 
-        public static PrintParameterModifier BottomRetractHeight2 { get; } = new("2) Bottom retract height", "Slow retract height of bottom layers (TSMC)", "mm");
-        public static PrintParameterModifier RetractHeight2 { get; } = new("2) Retract height", "Slow retract height of normal layers (TSMC)", "mm");
-        public static PrintParameterModifier BottomRetractSpeed2 { get; } = new("2) Bottom retract speed", "Slow retract speed of bottom layers (TSMC)", "mm/min", 0, 5000, 5);
-        public static PrintParameterModifier RetractSpeed2 { get; } = new("2) Retract speed", "Slow retract speed of normal layers (TSMC)", "mm/min", 0, 5000, 5);
+        public static PrintParameterModifier LightOffDelay { get; } = new("Light-off delay",
+            "Total motor movement time + rest time to wait before cure a new layer", "s");
 
-        public static PrintParameterModifier BottomLightPWM { get; } = new ("Bottom light PWM", "UV LED power for bottom layers", "☀", 1, byte.MaxValue, 5, 0);
-        public static PrintParameterModifier LightPWM { get; } = new ("Light PWM", "UV LED power for layers", "☀", 1, byte.MaxValue, 5, 0);
+        public static PrintParameterModifier BottomWaitTimeBeforeCure { get; } = new("Bottom wait before cure",
+            "Time to wait/rest before cure a new bottom layer\nChitubox: Rest after retract\nLychee: Wait before print",
+            "s");
+
+        public static PrintParameterModifier WaitTimeBeforeCure { get; } = new("Wait before cure",
+            "Time to wait/rest before cure a new layer\nChitubox: Rest after retract\nLychee: Wait before print", "s");
+
+        public static PrintParameterModifier BottomExposureTime { get; } =
+            new("Bottom exposure time", "Bottom layers exposure time", "s", 0.1M);
+
+        public static PrintParameterModifier ExposureTime { get; } =
+            new("Exposure time", "Normal layers exposure time", "s", 0.1M);
+
+        public static PrintParameterModifier BottomWaitTimeAfterCure { get; } = new("Bottom wait after cure",
+            "Time to wait/rest after cure a new bottom layer\nChitubox: Rest before lift\nLychee: Wait after print",
+            "s");
+
+        public static PrintParameterModifier WaitTimeAfterCure { get; } = new("Wait after cure",
+            "Time to wait/rest after cure a new layer\nChitubox: Rest before lift\nLychee: Wait after print", "s");
+
+        public static PrintParameterModifier BottomLiftHeight { get; } =
+            new("Bottom lift height", "Lift/peel height between bottom layers", "mm");
+
+        public static PrintParameterModifier LiftHeight { get; } =
+            new("Lift height", @"Lift/peel height between layers", "mm");
+
+        public static PrintParameterModifier BottomLiftSpeed { get; } = new("Bottom lift speed",
+            "Lift speed of bottom layers", "mm/min", 10, 5000, 5);
+
+        public static PrintParameterModifier LiftSpeed { get; } =
+            new("Lift speed", "Lift speed of normal layers", "mm/min", 10, 5000, 5);
+
+        public static PrintParameterModifier BottomLiftHeight2 { get; } = new("2) Bottom lift height",
+            "Second lift/peel height between bottom layers", "mm");
+
+        public static PrintParameterModifier LiftHeight2 { get; } =
+            new("2) Lift height", @"Second lift/peel height between layers", "mm");
+
+        public static PrintParameterModifier BottomLiftSpeed2 { get; } = new("2) Bottom lift speed",
+            "Lift speed of bottom layers for the second lift sequence (TSMC)", "mm/min", 0, 5000, 5);
+
+        public static PrintParameterModifier LiftSpeed2 { get; } = new("2) Lift speed",
+            "Lift speed of normal layers for the second lift sequence (TSMC)", "mm/min", 0, 5000, 5);
+
+        public static PrintParameterModifier BottomWaitTimeAfterLift { get; } = new("Bottom wait after lift",
+            "Time to wait/rest after a lift/peel sequence on bottom layers\nChitubox: Rest after lift\nLychee: Wait after lift",
+            "s");
+
+        public static PrintParameterModifier WaitTimeAfterLift { get; } = new("Wait after lift",
+            "Time to wait/rest after a lift/peel sequence on layers\nChitubox: Rest after lift\nLychee: Wait after lift",
+            "s");
+
+        public static PrintParameterModifier BottomRetractSpeed { get; } = new("Bottom retract speed",
+            "Down speed from lift height to next bottom layer cure position", "mm/min", 10, 5000, 5);
+
+        public static PrintParameterModifier RetractSpeed { get; } = new("Retract speed",
+            "Down speed from lift height to next layer cure position", "mm/min", 10, 5000, 5);
+
+        public static PrintParameterModifier BottomRetractHeight2 { get; } = new("2) Bottom retract height",
+            "Slow retract height of bottom layers (TSMC)", "mm");
+
+        public static PrintParameterModifier RetractHeight2 { get; } = new("2) Retract height",
+            "Slow retract height of normal layers (TSMC)", "mm");
+
+        public static PrintParameterModifier BottomRetractSpeed2 { get; } = new("2) Bottom retract speed",
+            "Slow retract speed of bottom layers (TSMC)", "mm/min", 0, 5000, 5);
+
+        public static PrintParameterModifier RetractSpeed2 { get; } = new("2) Retract speed",
+            "Slow retract speed of normal layers (TSMC)", "mm/min", 0, 5000, 5);
+
+        public static PrintParameterModifier BottomLightPWM { get; } = new("Bottom light PWM",
+            "UV LED power for bottom layers", "☀", 1, byte.MaxValue, 5, 0);
+
+        public static PrintParameterModifier LightPWM { get; } =
+            new("Light PWM", "UV LED power for layers", "☀", 1, byte.MaxValue, 5, 0);
 
         /*public static PrintParameterModifier[] Parameters = {
             BottomLayerCount,
@@ -266,6 +320,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             BottomLightPWM,
             LightPWM
         };*/
+
         #endregion
 
         #region Properties
@@ -325,10 +380,13 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         /// Gets if the value has changed
         /// </summary>
         public bool HasChanged => OldValue != NewValue;
+
         #endregion
 
         #region Constructor
-        public PrintParameterModifier(string name, string? description = null, string? valueUnit = null, decimal minimum = 0, decimal maximum = 1000, decimal increment = 0.5m, byte decimalPlates = 2)
+
+        public PrintParameterModifier(string name, string? description = null, string? valueUnit = null,
+            decimal minimum = 0, decimal maximum = 1000, decimal increment = 0.5m, byte decimalPlates = 2)
         {
             Name = name;
             Description = description ?? $"Modify '{name}'";
@@ -338,6 +396,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             Increment = decimalPlates == 0 ? Math.Max(1, increment) : increment;
             DecimalPlates = decimalPlates;
         }
+
         #endregion
 
         #region Overrides
@@ -352,7 +411,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
             if (obj.GetType() != this.GetType()) return false;
-            return Equals((PrintParameterModifier) obj);
+            return Equals((PrintParameterModifier)obj);
         }
 
         public override int GetHashCode()
@@ -362,52 +421,56 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
 
         public override string ToString()
         {
-            return $"{nameof(Name)}: {Name}, {nameof(Description)}: {Description}, {nameof(ValueUnit)}: {ValueUnit}, {nameof(Minimum)}: {Minimum}, {nameof(Maximum)}: {Maximum}, {nameof(DecimalPlates)}: {DecimalPlates}, {nameof(OldValue)}: {OldValue}, {nameof(NewValue)}: {NewValue}, {nameof(HasChanged)}: {HasChanged}";
+            return
+                $"{nameof(Name)}: {Name}, {nameof(Description)}: {Description}, {nameof(ValueUnit)}: {ValueUnit}, {nameof(Minimum)}: {Minimum}, {nameof(Maximum)}: {Maximum}, {nameof(DecimalPlates)}: {DecimalPlates}, {nameof(OldValue)}: {OldValue}, {nameof(NewValue)}: {NewValue}, {nameof(HasChanged)}: {HasChanged}";
         }
 
         public PrintParameterModifier Clone()
         {
             return (PrintParameterModifier)MemberwiseClone();
         }
+
         #endregion
     }
+
     #endregion
 
     #region Static Methods
+
     /// <summary>
     /// Gets the available formats to process
     /// </summary>
     public static FileFormat[] AvailableFormats { get; } =
     {
-        new SL1File(),      // Prusa SL1
+        new SL1File(), // Prusa SL1
         new ChituboxZipFile(), // Zip
         new ChituboxFile(), // cbddlp, cbt, photon
         new CTBEncryptedFile(), // encrypted ctb
         new PhotonSFile(), // photons
         new PHZFile(), // phz
-        new PhotonWorkshopFile(),   // PSW
-        new CWSFile(),   // CWS
+        new PhotonWorkshopFile(), // PSW
+        new CWSFile(), // CWS
         new AnetFile(), // Anet N4, N7
-        new LGSFile(),   // LGS, LGS30
-        new VDAFile(),   // VDA
-        new VDTFile(),   // VDT
+        new LGSFile(), // LGS, LGS30
+        new VDAFile(), // VDA
+        new VDTFile(), // VDT
         //new CXDLPv1File(),   // Creality Box v1
-        new CXDLPFile(),   // Creality Box
-        new CXDLPv4File(),   // Creality Box
+        new CXDLPFile(), // Creality Box
+        new CXDLPv4File(), // Creality Box
         new FDGFile(), // fdg
         new GooFile(), // goo
-        new ZCodeFile(),   // zcode
-        new JXSFile(),      // jxs
-        new ZCodexFile(),   // zcodex
-        new MDLPFile(),   // MKS v1
-        new GR1File(),   // GR1 Workshop
+        new ZCodeFile(), // zcode
+        new JXSFile(), // jxs
+        new ZCodexFile(), // zcodex
+        new MDLPFile(), // MKS v1
+        new GR1File(), // GR1 Workshop
         new FlashForgeSVGXFile(), // SVGX
         new QDTFile(), // QDT
-        new OSLAFile(),  // OSLA
-        new OSFFile(),   // OSF
-        new UVJFile(),   // UVJ
-        new GenericZIPFile(),   // Generic zip files
-        new ImageFile(),   // images
+        new OSLAFile(), // OSLA
+        new OSFFile(), // OSF
+        new UVJFile(), // UVJ
+        new GenericZIPFile(), // Generic zip files
+        new ImageFile(), // images
     };
 
     public static string AllSlicerFiles => AvailableFormats.Aggregate("All slicer files|",
@@ -432,12 +495,12 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             {
                 new("All slicer files", new List<string>())
             };
-                
+
             foreach (var format in AvailableFormats)
             {
                 foreach (var fileExtension in format.FileExtensions)
                 {
-                    if(!fileExtension.IsVisibleOnFileFilters) continue;
+                    if (!fileExtension.IsVisibleOnFileFilters) continue;
                     result[0].Value.Add(fileExtension.Extension);
                     result.Add(new KeyValuePair<string, List<string>>(fileExtension.Description, new List<string>
                     {
@@ -448,7 +511,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
 
             return result;
         }
-            
+
     }
 
     public static List<FileExtension> AllFileExtensions
@@ -460,17 +523,21 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             {
                 extensions.AddRange(slicerFile.FileExtensions);
             }
+
             return extensions;
         }
     }
 
-    public static List<string> AllFileExtensionsString => (from slicerFile in AvailableFormats from extension in slicerFile.FileExtensions select extension.Extension).ToList();
+    public static List<string> AllFileExtensionsString => (from slicerFile in AvailableFormats
+        from extension in slicerFile.FileExtensions
+        select extension.Extension).ToList();
 
 
     /// <summary>
     /// Gets the count of available file extensions
     /// </summary>
-    public static byte FileExtensionsCount => AvailableFormats.Aggregate<FileFormat, byte>(0, (current, fileFormat) => (byte) (current + fileFormat.FileExtensions.Length));
+    public static byte FileExtensionsCount => AvailableFormats.Aggregate<FileFormat, byte>(0,
+        (current, fileFormat) => (byte)(current + fileFormat.FileExtensions.Length));
 
     /// <summary>
     /// Find <see cref="FileFormat"/> by an extension
@@ -488,14 +555,16 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <param name="fileFormatsSharingExt">Number of file formats sharing the input extension</param>
     /// <param name="createNewInstance">True to create a new instance of found file format, otherwise will return a pre created one which should be used for read-only purpose</param>
     /// <returns><see cref="FileFormat"/> object or null if not found</returns>
-    public static FileFormat? FindByExtensionOrFilePath(string extensionOrFilePath, out byte fileFormatsSharingExt, bool createNewInstance = false)
+    public static FileFormat? FindByExtensionOrFilePath(string extensionOrFilePath, out byte fileFormatsSharingExt,
+        bool createNewInstance = false)
     {
         fileFormatsSharingExt = 0;
         if (string.IsNullOrWhiteSpace(extensionOrFilePath)) return null;
 
         bool isFilePath = false;
         // Test for ext first
-        var fileFormats = AvailableFormats.Where(fileFormat => fileFormat.IsExtensionValid(extensionOrFilePath)).ToArray();
+        var fileFormats = AvailableFormats.Where(fileFormat => fileFormat.IsExtensionValid(extensionOrFilePath))
+            .ToArray();
         fileFormatsSharingExt = (byte)fileFormats.Length;
 
         if (fileFormats.Length == 0) // Extension not found, can be filepath, try to find it
@@ -546,7 +615,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             type += "File";
         }
 
-        var fileFormat = AvailableFormats.FirstOrDefault(format => string.Equals(format.GetType().Name, type, StringComparison.OrdinalIgnoreCase));
+        var fileFormat = AvailableFormats.FirstOrDefault(format =>
+            string.Equals(format.GetType().Name, type, StringComparison.OrdinalIgnoreCase));
         if (fileFormat is null) return null;
         return createNewInstance
             ? Activator.CreateInstance(fileFormat.GetType()) as FileFormat
@@ -584,7 +654,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
 
     public static FileExtension? FindExtension(string extension)
     {
-        return AvailableFormats.SelectMany(format => format.FileExtensions).FirstOrDefault(ext => ext.Equals(extension));
+        return AvailableFormats.SelectMany(format => format.FileExtensions)
+            .FirstOrDefault(ext => ext.Equals(extension));
     }
 
     public static IEnumerable<FileExtension> FindExtensions(string extension)
@@ -596,13 +667,15 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     {
         if (filepath is null) return null;
         //if (file.EndsWith(TemporaryFileAppend)) file = Path.GetFileNameWithoutExtension(file);
-        return PathExtensions.GetFileNameStripExtensions(filepath, AllFileExtensionsString.OrderByDescending(s => s.Length).ToList(), out _);
+        return PathExtensions.GetFileNameStripExtensions(filepath,
+            AllFileExtensionsString.OrderByDescending(s => s.Length).ToList(), out _);
     }
 
     public static string GetFileNameStripExtensions(string filepath, out string strippedExtension)
     {
         //if (file.EndsWith(TemporaryFileAppend)) file = Path.GetFileNameWithoutExtension(file);
-        return PathExtensions.GetFileNameStripExtensions(filepath, AllFileExtensionsString.OrderByDescending(s => s.Length).ToList(), out strippedExtension);
+        return PathExtensions.GetFileNameStripExtensions(filepath,
+            AllFileExtensionsString.OrderByDescending(s => s.Length).ToList(), out strippedExtension);
     }
 
     public static FileFormat? Open(string fileFullPath, FileDecodeType decodeType, OperationProgress? progress = null)
@@ -616,12 +689,14 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     public static FileFormat? Open(string fileFullPath, OperationProgress? progress = null) =>
         Open(fileFullPath, FileDecodeType.Full, progress);
 
-    public static Task<FileFormat?> OpenAsync(string fileFullPath, FileDecodeType decodeType, OperationProgress? progress = null) 
+    public static Task<FileFormat?> OpenAsync(string fileFullPath, FileDecodeType decodeType,
+        OperationProgress? progress = null)
         => Task.Run(() => Open(fileFullPath, decodeType, progress), progress?.Token ?? default);
 
-    public static Task<FileFormat?> OpenAsync(string fileFullPath, OperationProgress? progress = null) => OpenAsync(fileFullPath, FileDecodeType.Full, progress);
+    public static Task<FileFormat?> OpenAsync(string fileFullPath, OperationProgress? progress = null) =>
+        OpenAsync(fileFullPath, FileDecodeType.Full, progress);
 
-    public static float RoundDisplaySize(float value) => (float) Math.Round(value, DisplayFloatPrecision);
+    public static float RoundDisplaySize(float value) => (float)Math.Round(value, DisplayFloatPrecision);
     public static double RoundDisplaySize(double value) => Math.Round(value, DisplayFloatPrecision);
     public static decimal RoundDisplaySize(decimal value) => Math.Round(value, DisplayFloatPrecision);
 
@@ -657,7 +732,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
                 count++;
             }
         }
-            
+
         return count;
     }
 
@@ -857,7 +932,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
                     case DATATYPE_RGB888:
                         span[pixel++] = bytes[i + 2]; // b
                         span[pixel++] = bytes[i + 1]; // g
-                        span[pixel++] = bytes[i];     // r
+                        span[pixel++] = bytes[i]; // r
                         i += 3;
                         break;
                     case DATATYPE_BGR555:
@@ -899,7 +974,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
 
             for (; pixel < span.Length; pixel++) // Fill leftovers
             {
-                span[pixel] = 0; 
+                span[pixel] = 0;
             }
 
             return mat;
@@ -911,7 +986,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     public static Mat DecodeImage(string dataType, byte[] bytes, uint resolutionX = 0, uint resolutionY = 0)
         => DecodeImage(dataType, bytes, new Size((int)resolutionX, (int)resolutionY));
 
-    public static void MutateGetVarsIterationChamfer(uint startLayerIndex, uint endLayerIndex, int iterationsStart, int iterationsEnd, ref bool isFade, out float iterationSteps, out int maxIteration)
+    public static void MutateGetVarsIterationChamfer(uint startLayerIndex, uint endLayerIndex, int iterationsStart,
+        int iterationsEnd, ref bool isFade, out float iterationSteps, out int maxIteration)
     {
         iterationSteps = 0;
         maxIteration = 0;
@@ -921,7 +997,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         maxIteration = Math.Max(iterationsStart, iterationsEnd);
     }
 
-    public static int MutateGetIterationVar(bool isFade, int iterationsStart, int iterationsEnd, float iterationSteps, int maxIteration, uint startLayerIndex, uint layerIndex)
+    public static int MutateGetIterationVar(bool isFade, int iterationsStart, int iterationsEnd, float iterationSteps,
+        int maxIteration, uint startLayerIndex, uint layerIndex)
     {
         if (!isFade) return iterationsStart;
         // calculate iterations based on range
@@ -933,86 +1010,89 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         return Math.Min(Math.Max(0, iterations), maxIteration);
     }
 
-    public static int MutateGetIterationChamfer(uint layerIndex, uint startLayerIndex, uint endLayerIndex, int iterationsStart,
+    public static int MutateGetIterationChamfer(uint layerIndex, uint startLayerIndex, uint endLayerIndex,
+        int iterationsStart,
         int iterationsEnd, bool isFade)
     {
         MutateGetVarsIterationChamfer(startLayerIndex, endLayerIndex, iterationsStart, iterationsEnd, ref isFade,
             out float iterationSteps, out int maxIteration);
-        return MutateGetIterationVar(isFade, iterationsStart, iterationsEnd, iterationSteps, maxIteration, startLayerIndex, layerIndex);
+        return MutateGetIterationVar(isFade, iterationsStart, iterationsEnd, iterationSteps, maxIteration,
+            startLayerIndex, layerIndex);
     }
 
-	/// <summary>
-	/// Compares file a with file b
-	/// </summary>
-	/// <param name="left">Left file</param>
-	/// <param name="right">Right file</param>
-	/// <param name="compareLayers">True if you also want to compare layers</param>
-	/// <param name="onlyProperties">A list of strict properties to compare</param>
-	/// <returns></returns>
-	public static FileFormatComparison Compare(FileFormat left, FileFormat right, bool compareLayers = true, params string[] onlyProperties)
+    /// <summary>
+    /// Compares file a with file b
+    /// </summary>
+    /// <param name="left">Left file</param>
+    /// <param name="right">Right file</param>
+    /// <param name="compareLayers">True if you also want to compare layers</param>
+    /// <param name="onlyProperties">A list of strict properties to compare</param>
+    /// <returns></returns>
+    public static FileFormatComparison Compare(FileFormat left, FileFormat right, bool compareLayers = true,
+        params string[] onlyProperties)
     {
-	    FileFormatComparison comparison = new();
-	    
+        FileFormatComparison comparison = new();
+
         void CheckAddProperties(object a, object b, uint? layerIndex = null)
-	    {
-		    var properties = ReflectionExtensions.GetProperties(a);
-		    foreach (var aProperty in properties)
-		    {
-			    if (aProperty.GetMethod is null || !(aProperty.PropertyType.IsPrimitive ||
-			                                         aProperty.PropertyType == typeof(decimal) ||
-			                                         aProperty.PropertyType == typeof(string) ||
-			                                         aProperty.PropertyType == typeof(Point) ||
-			                                         aProperty.PropertyType == typeof(PointF) ||
-			                                         aProperty.PropertyType == typeof(Size) ||
-			                                         aProperty.PropertyType == typeof(SizeF) ||
-			                                         aProperty.PropertyType == typeof(Rectangle) ||
-			                                         aProperty.PropertyType == typeof(RectangleF) ||
-			                                         aProperty.PropertyType == typeof(DateTime) ||
-			                                         aProperty.PropertyType == typeof(TimeSpan) ||
-			                                         aProperty.PropertyType == typeof(TimeOnly)
-				        )) continue;
+        {
+            var properties = ReflectionExtensions.GetProperties(a);
+            foreach (var aProperty in properties)
+            {
+                if (aProperty.GetMethod is null || !(aProperty.PropertyType.IsPrimitive ||
+                                                     aProperty.PropertyType == typeof(decimal) ||
+                                                     aProperty.PropertyType == typeof(string) ||
+                                                     aProperty.PropertyType == typeof(Point) ||
+                                                     aProperty.PropertyType == typeof(PointF) ||
+                                                     aProperty.PropertyType == typeof(Size) ||
+                                                     aProperty.PropertyType == typeof(SizeF) ||
+                                                     aProperty.PropertyType == typeof(Rectangle) ||
+                                                     aProperty.PropertyType == typeof(RectangleF) ||
+                                                     aProperty.PropertyType == typeof(DateTime) ||
+                                                     aProperty.PropertyType == typeof(TimeSpan) ||
+                                                     aProperty.PropertyType == typeof(TimeOnly)
+                        )) continue;
 
-			    if (onlyProperties.Length > 0 && !onlyProperties.Contains(aProperty.Name)) continue;
+                if (onlyProperties.Length > 0 && !onlyProperties.Contains(aProperty.Name)) continue;
 
-			    var bProperty = b.GetType().GetProperty(aProperty.Name);
-				if (bProperty is null) continue;
+                var bProperty = b.GetType().GetProperty(aProperty.Name);
+                if (bProperty is null) continue;
 
-				var aValue = aProperty.GetValue(a);
-			    var bValue = bProperty.GetValue(b);
+                var aValue = aProperty.GetValue(a);
+                var bValue = bProperty.GetValue(b);
 
-				if (Equals(aValue, bValue)) continue;
+                if (Equals(aValue, bValue)) continue;
 
-			    if (layerIndex is null)
-			    {
-				    comparison.Global.Add(new ComparisonItem(aProperty.Name, aValue, bValue));
-			    }
-			    else
-			    {
-				    if (!comparison.Layers.TryGetValue(layerIndex.Value, out var list))
-				    {
-					    list = new List<ComparisonItem>();
+                if (layerIndex is null)
+                {
+                    comparison.Global.Add(new ComparisonItem(aProperty.Name, aValue, bValue));
+                }
+                else
+                {
+                    if (!comparison.Layers.TryGetValue(layerIndex.Value, out var list))
+                    {
+                        list = new List<ComparisonItem>();
                         comparison.Layers.Add(layerIndex.Value, list);
-				    }
-					    
-				    list.Add(new ComparisonItem(aProperty.Name, aValue, bValue));
-			    }
-			}
+                    }
+
+                    list.Add(new ComparisonItem(aProperty.Name, aValue, bValue));
+                }
+            }
         }
 
         CheckAddProperties(left, right);
 
 
-		if (compareLayers)
-	    {
-		    var commonLayers = Math.Min(left.LayerCount, right.LayerCount);
-		    //var diffLayers = Math.Abs(a.Count - b.Count);
-		    for (uint layerIndex = 0; layerIndex < commonLayers; layerIndex++)
-		    {
+        if (compareLayers)
+        {
+            var commonLayers = Math.Min(left.LayerCount, right.LayerCount);
+            //var diffLayers = Math.Abs(a.Count - b.Count);
+            for (uint layerIndex = 0; layerIndex < commonLayers; layerIndex++)
+            {
                 CheckAddProperties(left[layerIndex], right[layerIndex], layerIndex);
-			}
-	    }
+            }
+        }
 
-	    return comparison;
+        return comparison;
     }
 
     /// <summary>
@@ -1028,10 +1108,11 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
 
         var invalidFileNameChars = Path.GetInvalidFileNameChars();
         var invalidChars = filename.Where(c => invalidFileNameChars.Contains(c)).Distinct();
-        
+
         if (invalidChars.Any())
         {
-            errorMessage = $"The file \"{filename}\" have invalid characters.\nThe following in-name characters are forbidden: {string.Join(", ", invalidChars)}.";
+            errorMessage =
+                $"The file \"{filename}\" have invalid characters.\nThe following in-name characters are forbidden: {string.Join(", ", invalidChars)}.";
             return false;
         }
 
@@ -1040,7 +1121,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             var nonAscii = filename.Where(c => !char.IsAscii(c)).Distinct();
             if (nonAscii.Any())
             {
-                errorMessage = $"The file \"{filename}\" have non-ASCII characters.\nThe following in-name characters are not allowed: {string.Join(", ", nonAscii)}.";
+                errorMessage =
+                    $"The file \"{filename}\" have non-ASCII characters.\nThe following in-name characters are not allowed: {string.Join(", ", nonAscii)}.";
                 return false;
             }
         }
@@ -1058,9 +1140,11 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     {
         return IsFileNameValid(filename, out _, onlyAsciiCharacters);
     }
+
     #endregion
 
     #region Members
+
     public object Mutex = new();
 
     private string? _fileFullPath;
@@ -1095,7 +1179,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
 
     private float _bottomWaitTimeAfterCure;
     private float _waitTimeAfterCure;
-        
+
     private float _bottomLiftHeight = DefaultBottomLiftHeight;
     private float _liftHeight = DefaultLiftHeight;
     private float _bottomLiftSpeed = DefaultBottomLiftSpeed;
@@ -1131,7 +1215,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
 
     private Rectangle _boundingRectangle = Rectangle.Empty;
 
-    private readonly Timer _queueTimerPrintTime = new(QueueTimerPrintTime){AutoReset = false};
+    private readonly Timer _queueTimerPrintTime = new(QueueTimerPrintTime) { AutoReset = false };
 
     #endregion
 
@@ -1143,16 +1227,20 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// Gets the file format type
     /// </summary>
     public abstract FileFormatType FileType { get; }
-    
+
     /// <summary>
     /// Gets the manufacturing process this file and printer uses
     /// </summary>
-    public virtual PrinterManufacturingProcess ManufacturingProcess => MachineName.Contains(" DLP", StringComparison.OrdinalIgnoreCase) ? PrinterManufacturingProcess.DLP : PrinterManufacturingProcess.mSLA;
+    public virtual PrinterManufacturingProcess ManufacturingProcess =>
+        MachineName.Contains(" DLP", StringComparison.OrdinalIgnoreCase)
+            ? PrinterManufacturingProcess.DLP
+            : PrinterManufacturingProcess.mSLA;
 
     /// <summary>
     /// Gets the layer image data type used on this file format
     /// </summary>
-    public virtual FileImageType LayerImageType => FileType == FileFormatType.Archive ? FileImageType.Png8 : FileImageType.Custom;
+    public virtual FileImageType LayerImageType =>
+        FileType == FileFormatType.Archive ? FileImageType.Png8 : FileImageType.Custom;
 
     /// <summary>
     /// Gets the group name under convert menu to group all extensions, set to null to not group items
@@ -1168,7 +1256,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// The speed unit used by this file format in his internal data
     /// </summary>
     public virtual SpeedUnit FormatSpeedUnit => CoreSpeedUnit;
-    
+
     /// <summary>
     /// Gets the available <see cref="PrintParameterModifier"/>
     /// </summary>
@@ -1184,19 +1272,22 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// </summary>
     /// <param name="modifier"></param>
     /// <returns>True if exists, otherwise false</returns>
-    public bool HavePrintParameterModifier(PrintParameterModifier modifier) => PrintParameterModifiers.Contains(modifier);
+    public bool HavePrintParameterModifier(PrintParameterModifier modifier) =>
+        PrintParameterModifiers.Contains(modifier);
 
     /// <summary>
     /// Checks if a <see cref="PrintParameterModifier"/> exists on layer parameters
     /// </summary>
     /// <param name="modifier"></param>
     /// <returns>True if exists, otherwise false</returns>
-    public bool HaveLayerParameterModifier(PrintParameterModifier modifier) => SupportPerLayerSettings && PrintParameterPerLayerModifiers.Contains(modifier);
+    public bool HaveLayerParameterModifier(PrintParameterModifier modifier) =>
+        SupportPerLayerSettings && PrintParameterPerLayerModifiers.Contains(modifier);
 
     /// <summary>
     /// Gets the file filter for open and save dialogs
     /// </summary>
-    public string FileFilter {
+    public string FileFilter
+    {
         get
         {
             var result = string.Empty;
@@ -1207,6 +1298,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
                 {
                     result += '|';
                 }
+
                 result += fileExt.Filter;
             }
 
@@ -1217,8 +1309,10 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <summary>
     /// Gets all valid file extensions for Avalonia file dialog
     /// </summary>
-    public List<KeyValuePair<string, List<string>>> FileFilterAvalonia 
-        => FileExtensions.Select(fileExt => new KeyValuePair<string, List<string>>(fileExt.Description, new List<string> {fileExt.Extension})).ToList();
+    public List<KeyValuePair<string, List<string>>> FileFilterAvalonia
+        => FileExtensions.Select(fileExt =>
+                new KeyValuePair<string, List<string>>(fileExt.Description, new List<string> { fileExt.Extension }))
+            .ToList();
 
     /// <summary>
     /// Gets all valid file extensions in "*.extension1;*.extension2" format
@@ -1235,6 +1329,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
                 {
                     result += "; ";
                 }
+
                 result += $"*.{fileExt.Extension}";
             }
 
@@ -1265,7 +1360,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get => _fileFullPath;
         set
         {
-            if(!RaiseAndSetIfChanged(ref _fileFullPath, value)) return;
+            if (!RaiseAndSetIfChanged(ref _fileFullPath, value)) return;
             RaisePropertyChanged(DirectoryPath);
             RaisePropertyChanged(Filename);
             RaisePropertyChanged(FilenameNoExt);
@@ -1288,8 +1383,9 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <summary>
     /// Returns the file name without the extension(s)
     /// </summary>
-    public string? FilenameStripExtensions => FileFullPath is null ? null : GetFileNameStripExtensions(FileFullPath, out _);
-    
+    public string? FilenameStripExtensions =>
+        FileFullPath is null ? null : GetFileNameStripExtensions(FileFullPath, out _);
+
     /// <summary>
     /// Returns the file extension. The returned value includes the period (".") character of the
     /// extension except when you have a terminal period when you get string.Empty, such as ".exe" or ".cpp".
@@ -1308,7 +1404,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     {
         get
         {
-            if(FileFullPath is null) return null;
+            if (FileFullPath is null) return null;
             GetFileNameStripExtensions(FileFullPath, out var ext);
             return ext;
         }
@@ -1342,7 +1438,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// </summary>
     /// <param name="fileName"></param>
     /// <returns></returns>
-    public uint[] GetAvailableVersionsForFileName(string? fileName) => GetAvailableVersionsForExtension(Path.GetExtension(fileName));
+    public uint[] GetAvailableVersionsForFileName(string? fileName) =>
+        GetAvailableVersionsForExtension(Path.GetExtension(fileName));
 
     /// <summary>
     /// Gets the default version to use in this file when not setting the version
@@ -1443,7 +1540,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
                         _layers[layerIndex].Index = layerIndex;
                         _layers[layerIndex].SlicerFile = this;
 
-                        if (layerIndex >= oldLayerCount || layerIndex < oldLayerCount && !_layers[layerIndex].Equals(oldLayers[layerIndex]))
+                        if (layerIndex >= oldLayerCount || layerIndex < oldLayerCount &&
+                            !_layers[layerIndex].Equals(oldLayers[layerIndex]))
                         {
                             // Marks as modified only if layer image changed on this index
                             _layers[layerIndex].IsModified = true;
@@ -1472,6 +1570,27 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             RaisePropertyChanged();
         }
     }
+
+    /// <summary>
+    /// Gets the layers cache/memory occupation size in bytes
+    /// </summary>
+    public long LayersCacheSize {
+        get
+        {
+            long size = 0;
+            for (int i = 0; i < LayerCount; i++)
+            {
+                if (this[i] is null) continue;
+                size += this[i].CompressedMat.Length;
+            }
+            return size;
+        }
+    }
+
+    /// <summary>
+    /// Gets the layers cache/memory occupation size in readable string format
+    /// </summary>
+    public string LayersCacheSizeString => SizeExtensions.SizeSuffix(LayersCacheSize);
 
     /// <summary>
     /// First layer index, this is always 0
@@ -5644,10 +5763,13 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// Changes the compression method of all layers to a new method
     /// </summary>
     /// <param name="newCodec">The new method to change to</param>
-    /// <param name="progress"></param>
-    public void ChangeLayersCompressionMethod(LayerCompressionCodec newCodec, OperationProgress? progress = null)
+    public void ChangeLayersCompressionMethod(LayerCompressionCodec newCodec)
     {
-        progress ??= new OperationProgress($"Changing layers compression codec to {newCodec}");
+        for (int i = 0; i < LayerCount; i++)
+        {
+            this[i].CompressionCodec = newCodec;
+        }
+        /*progress ??= new OperationProgress($"Changing layers compression codec to {newCodec}");
         progress.Reset("Layers", LayerCount);
 
         Parallel.ForEach(this, CoreSettings.GetParallelOptions(progress), layer =>
@@ -5655,7 +5777,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             progress.PauseIfRequested();
             layer.CompressionCodec = newCodec;
             progress.LockAndIncrement();
-        });
+        });*/
     }
 
     /// <summary>
@@ -6195,17 +6317,6 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         {
             Layers = _layers;
         }, resetLayerProperties, resetLayerProperties);
-
-        if (differenceLayerCount > 0 && initBlack)
-        {
-            using var blackMat = CreateMat();
-            var layer = new Layer(0, blackMat, this);
-
-            for (var layerIndex = oldLayerCount; layerIndex < newLayerCount; layerIndex++)
-            {
-                this[layerIndex].CompressedBytes = layer.CompressedBytes.ToArray();
-            }
-        }
     }
 
     /// <summary>
@@ -6238,16 +6349,6 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         {
             Layers = newLayers;
         }, resetLayerProperties, resetLayerProperties);
-
-        if (initBlack)
-        {
-            using var blackMat = CreateMat();
-            var layer = new Layer(0, blackMat, this);
-            for (var layerIndex = insertAtLayerIndex; layerIndex < rightDestinationIndex; layerIndex++)
-            {
-                this[layerIndex].CompressedBytes = layer.CompressedBytes.ToArray();
-            }
-        }
 
         if (!resetLayerProperties && fixPositionZ)
         {

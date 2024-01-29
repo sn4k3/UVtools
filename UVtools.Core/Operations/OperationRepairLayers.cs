@@ -330,7 +330,7 @@ public class OperationRepairLayers : Operation
             {
                 progress.PauseIfRequested();
                 using var mat = SlicerFile[group.Key].LayerMat;
-                var matSpan = mat.GetDataByteSpan();
+                var matSpan = mat.GetDataByteReadOnlySpan();
                 var matCache = new Dictionary<uint, Mat>();
                 var matCacheModified = new Dictionary<uint, bool>();
                 var startLayer = Math.Max(0, (int)group.Key - 2);

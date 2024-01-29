@@ -184,9 +184,11 @@ public sealed class OperationLayerExportImage : Operation
             progress.PauseIfRequested();
             using var mat = SlicerFile[layerIndex].LayerMat;
             var matRoi = mat;
+            bool needDispose = false;
             if (_cropByRoi && HaveROI)
             {
                 matRoi = GetRoiOrDefault(mat);
+                needDispose = true;
             }
 
             if (_flipDirection != FlipDirection.None)
@@ -282,6 +284,8 @@ public sealed class OperationLayerExportImage : Operation
 
                 tw.WriteLine("\t</g>");
                 tw.WriteLine("</svg>");
+
+                if (needDispose) matRoi.Dispose();
             }
                 
             progress.LockAndIncrement();

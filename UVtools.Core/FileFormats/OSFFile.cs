@@ -846,8 +846,12 @@ public sealed class OSFFile : FileFormat
                 Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), layerIndex =>
                 {
                     progress.PauseIfRequested();
-                    using var mat = layerDef[layerIndex].DecodeImage(this);
-                    _layers[layerIndex] = new Layer((uint)layerIndex, mat, this);
+                    
+                    using (var mat = layerDef[layerIndex].DecodeImage(this))
+                    {
+                        _layers[layerIndex] = new Layer((uint)layerIndex, mat, this);
+                    }
+
                     layerDef[layerIndex].EncodedRle = null!;
 
                     progress.LockAndIncrement();

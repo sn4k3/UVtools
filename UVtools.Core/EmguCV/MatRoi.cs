@@ -33,8 +33,14 @@ public class MatRoi : IDisposable, IEquatable<MatRoi>
     /// </summary>
     public bool DisposeSourceMat { get; set; }
     
-    
+    /// <summary>
+    /// Gets the <see cref="Roi"/> location
+    /// </summary>
     public Point RoiLocation => Roi.Location;
+
+    /// <summary>
+    /// Gets the <see cref="Roi"/> size
+    /// </summary>
     public Size RoiSize => Roi.Size;
 
     /// <summary>
@@ -51,15 +57,27 @@ public class MatRoi : IDisposable, IEquatable<MatRoi>
     /// </summary>
     /// <param name="sourceMat">The source mat to apply the <paramref name="roi"/>.</param>
     /// <param name="roi">The roi rectangle.</param>
+    /// <param name="emptyRoiBehaviour">Sets the behavior for an empty roi event.</param>
     /// <param name="disposeSourceMat">True if you want to dispose the <see cref="SourceMat"/> upon the <see cref="Dispose()"/> call.<br/>
     /// Use true when creating a <see cref="Mat"/> directly on this constructor or not handling the <see cref="SourceMat"/> disposal, otherwise false.</param>
-    public MatRoi(Mat sourceMat, Rectangle roi, bool disposeSourceMat = false)
+    public MatRoi(Mat sourceMat, Rectangle roi, EmptyRoiBehaviour emptyRoiBehaviour = EmptyRoiBehaviour.Continue, bool disposeSourceMat = false)
     {
         SourceMat = sourceMat;
         Roi = roi;
-        RoiMat = sourceMat.Roi(roi);
+        RoiMat = sourceMat.Roi(roi, emptyRoiBehaviour);
 
         DisposeSourceMat = disposeSourceMat;
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="sourceMat">The source mat to apply the <paramref name="roi"/>.</param>
+    /// <param name="roi">The roi rectangle.</param>
+    /// <param name="disposeSourceMat">True if you want to dispose the <see cref="SourceMat"/> upon the <see cref="Dispose()"/> call.<br/>
+    /// Use true when creating a <see cref="Mat"/> directly on this constructor or not handling the <see cref="SourceMat"/> disposal, otherwise false.</param>
+    public MatRoi(Mat sourceMat, Rectangle roi, bool disposeSourceMat) : this(sourceMat, roi, EmptyRoiBehaviour.Continue, disposeSourceMat)
+    {
     }
 
     public void Deconstruct(out Mat sourceMat, out Mat roiMat, out Rectangle roi)

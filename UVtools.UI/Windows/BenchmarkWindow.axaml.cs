@@ -11,7 +11,6 @@ using Avalonia.Controls;
 using Avalonia.Media;
 using UVtools.Core.EmguCV;
 using UVtools.Core.Extensions;
-using UVtools.Core.Layers;
 using UVtools.UI.Controls;
 using UVtools.UI.Extensions;
 using UVtools.UI.Structures;
@@ -68,10 +67,12 @@ public partial class BenchmarkWindow : WindowEx
                 /*PW0 8K Encode*/       new BenchmarkTestResult(45.15f, 678.43f),
                 /*PNG 4K Compress*/     new BenchmarkTestResult(86.96f, 1479.29f),
                 /*PNG 8K Compress*/     new BenchmarkTestResult(22.17f, 369.00f),
-                /*GZip 4K Compress*/    new BenchmarkTestResult(243.9f, 4000.00f),
-                /*GZip 8K Compress*/    new BenchmarkTestResult(63.29f, 1020.41f),
-                /*Deflate 4K Compress*/ new BenchmarkTestResult(246.91f, 4000.00f),
-                /*Deflate 8K Compress*/ new BenchmarkTestResult(64.10f, 1033.06f),
+                /*GZip 4K Compress*/    new BenchmarkTestResult(250f, 4237.29f),
+                /*GZip 8K Compress*/    new BenchmarkTestResult(65.57f, 1039.5f),
+                /*Deflate 4K Compress*/ new BenchmarkTestResult(256.41f, 4201.68f),
+                /*Deflate 8K Compress*/ new BenchmarkTestResult(66.67f, 1072.96f),
+                /*Brotli 4K Compress*/  new BenchmarkTestResult(645.16f, 12820.51f),
+                /*Brotli 8K Compress*/  new BenchmarkTestResult(190.48f, 3787.88f),
                 /*LZ4 4K Compress*/     new BenchmarkTestResult(1111.11f, 20833.33f),
                 /*LZ4 8K Compress*/     new BenchmarkTestResult(312.5f, 6097.56f),
                 /*Stress CPU test*/     new BenchmarkTestResult(0f, 0f),
@@ -90,6 +91,8 @@ public partial class BenchmarkWindow : WindowEx
                 /*GZip 8K Compress*/    new BenchmarkTestResult(45.77f, 397.47f),
                 /*Deflate 4K Compress*/ new BenchmarkTestResult(170.94f, 1592.36f),
                 /*Deflate 8K Compress*/ new BenchmarkTestResult(46.30f, 406.50f),
+                /*Brotli 4K Compress*/  new BenchmarkTestResult(0, 0),
+                /*Brotli 8K Compress*/  new BenchmarkTestResult(0, 0),
                 /*LZ4 4K Compress*/     new BenchmarkTestResult(665.12f, 2762.43f),
                 /*LZ4 8K Compress*/     new BenchmarkTestResult(148.15f, 907.44f),
                 /*Stress CPU test*/     new BenchmarkTestResult(0f, 0f),
@@ -114,6 +117,9 @@ public partial class BenchmarkWindow : WindowEx
 
             new BenchmarkTest("Deflate 4K Compress", "TestDeflateCompress", BenchmarkResolution.Resolution4K),
             new BenchmarkTest("Deflate 8K Compress", "TestDeflateCompress", BenchmarkResolution.Resolution8K),
+
+            new BenchmarkTest("Brotli 4K Compress", "TestBrotliCompress", BenchmarkResolution.Resolution4K),
+            new BenchmarkTest("Brotli 8K Compress", "TestBrotliCompress", BenchmarkResolution.Resolution8K),
 
             new BenchmarkTest("LZ4 4K Compress", "TestLZ4Compress", BenchmarkResolution.Resolution4K),
             new BenchmarkTest("LZ4 8K Compress", "TestLZ4Compress", BenchmarkResolution.Resolution8K),
@@ -388,7 +394,7 @@ public partial class BenchmarkWindow : WindowEx
     public byte[] EncodeCbddlpImage(Mat image, byte bit = 0)
     {
         List<byte> rawData = new();
-        var span = image.GetDataByteSpan();
+        var span = image.GetDataByteReadOnlySpan();
 
         bool obit = false;
         int rep = 0;
@@ -450,7 +456,7 @@ public partial class BenchmarkWindow : WindowEx
         List<byte> rawData = new();
         byte color = byte.MaxValue >> 1;
         uint stride = 0;
-        var span = image.GetDataByteSpan();
+        var span = image.GetDataByteReadOnlySpan();
 
         void AddRep()
         {
@@ -528,7 +534,7 @@ public partial class BenchmarkWindow : WindowEx
     public byte[] EncodePW0Image(Mat image)
     {
         List<byte> rawData = new();
-        var span = image.GetDataByteSpan();
+        var span = image.GetDataByteReadOnlySpan();
 
         int lastColor = -1;
         int reps = 0;
@@ -691,6 +697,11 @@ public partial class BenchmarkWindow : WindowEx
 
     public void TestDeflateDecompress(BenchmarkResolution resolution)
     { }
+
+    public void TestBrotliCompress(BenchmarkResolution resolution)
+    {
+        MatCompressorBrotli.Instance.Compress(Mats[resolution]);
+    }
 
     public void TestLZ4Compress(BenchmarkResolution resolution)
     {

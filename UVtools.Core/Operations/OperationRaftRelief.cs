@@ -400,7 +400,7 @@ public class OperationRaftRelief : Operation
             progress.PauseIfRequested();
             using var mat = SlicerFile[layerIndex].LayerMat;
             using var original = mat.Clone();
-            var target = GetRoiOrDefault(mat);
+            using var target = GetRoiOrDefault(mat);
 
             switch (ReliefType)
             {
@@ -425,7 +425,7 @@ public class OperationRaftRelief : Operation
                 case RaftReliefTypes.Tabs:
                 {
                     using var contours = new EmguContours(mat, RetrType.External);
-                    var span = mat.GetDataByteSpan();
+                    var span = mat.GetDataByteReadOnlySpan();
 
                     var minX = 10;
                     var maxX = mat.Size.Width - 10;

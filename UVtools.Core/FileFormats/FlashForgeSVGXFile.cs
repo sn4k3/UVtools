@@ -621,79 +621,84 @@ public sealed class FlashForgeSVGXFile : FileFormat
         Parallel.For(0, LayerCount, CoreSettings.GetParallelOptions(progress), layerIndex =>
         {
             progress.PauseIfRequested();
-            var mat = EmguExtensions.InitMat(Resolution);
 
-            var group = SVGDocument.Groups.FirstOrDefault(g => g.Id == $"layer-{layerIndex}");
-
-            if (group is not null)
+            using (var mat = EmguExtensions.InitMat(Resolution))
             {
-                var pointsOfPoints = new List<Point[]>();
-                var points = new List<Point>();
-                foreach (var path in group.Paths)
-                {
-                    progress.PauseOrCancelIfRequested();
-                    var spaceSplit = path.Value.Split(' ',
-                        StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+                var group = SVGDocument.Groups.FirstOrDefault(g => g.Id == $"layer-{layerIndex}");
 
-                    for (int i = 0; i < spaceSplit.Length; i++)
+                if (group is not null)
+                {
+                    var pointsOfPoints = new List<Point[]>();
+                    var points = new List<Point>();
+                    foreach (var path in group.Paths)
                     {
-                        if (spaceSplit[i] == "M")
+                        progress.PauseOrCancelIfRequested();
+                        var spaceSplit = path.Value.Split(' ',
+                            StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+
+                        for (int i = 0; i < spaceSplit.Length; i++)
                         {
-                            if (points.Count > 0)
+                            if (spaceSplit[i] == "M")
                             {
-                                pointsOfPoints.Add(points.ToArray());
-                                points.Clear();
+                                if (points.Count > 0)
+                                {
+                                    pointsOfPoints.Add(points.ToArray());
+                                    points.Clear();
+                                }
+
+                                continue;
                             }
 
-                            continue;
-                        }
-
-                        if (spaceSplit[i] == "Z")
-                        {
-                            if (points.Count > 0)
+                            if (spaceSplit[i] == "Z")
                             {
-                                pointsOfPoints.Add(points.ToArray());
-                                points.Clear();
+                                if (points.Count > 0)
+                                {
+                                    pointsOfPoints.Add(points.ToArray());
+                                    points.Clear();
+                                }
+
+                                continue;
                             }
 
-                            continue;
+                            if (spaceSplit[i].Length == 1 && !char.IsDigit(spaceSplit[i][0]))
+                                continue; // Ignore any other not processed 1 char that's not a digit (L)
+
+                            if (i + 1 >= spaceSplit.Length) break; // No more to see
+
+
+                            if (!float.TryParse(spaceSplit[i], NumberStyles.Float, CultureInfo.InvariantCulture,
+                                    out var mmX)) continue;
+                            if (!float.TryParse(spaceSplit[++i], NumberStyles.Float, CultureInfo.InvariantCulture,
+                                    out var mmY)) continue;
+
+
+                            var mmAbsX = Math.Clamp(halfDisplay.Width + mmX, 0, DisplayWidth);
+                            var mmAbsY = Math.Clamp(halfDisplay.Height + mmY, 0, DisplayHeight);
+
+                            int x = (int)(mmAbsX * ppmm.Width);
+                            int y = (int)(mmAbsY * ppmm.Height);
+
+                            points.Add(new Point(x, y));
                         }
 
-                        if (spaceSplit[i].Length == 1 && !char.IsDigit(spaceSplit[i][0]))
-                            continue; // Ignore any other not processed 1 char that's not a digit (L)
-
-                        if (i + 1 >= spaceSplit.Length) break; // No more to see
-
-
-                        if (!float.TryParse(spaceSplit[i], NumberStyles.Float, CultureInfo.InvariantCulture, out var mmX)) continue;
-                        if (!float.TryParse(spaceSplit[++i], NumberStyles.Float, CultureInfo.InvariantCulture, out var mmY)) continue;
-
-
-                        var mmAbsX = Math.Clamp(halfDisplay.Width + mmX, 0, DisplayWidth);
-                        var mmAbsY = Math.Clamp(halfDisplay.Height + mmY, 0, DisplayHeight);
-
-                        int x = (int)(mmAbsX * ppmm.Width);
-                        int y = (int)(mmAbsY * ppmm.Height);
-
-                        points.Add(new Point(x, y));
+                        if (points.Count > 0) // Leftovers, still this should never happen!
+                        {
+                            pointsOfPoints.Add(points.ToArray());
+                            points.Clear();
+                        }
                     }
 
-                    if (points.Count > 0) // Leftovers, still this should never happen!
+                    if (pointsOfPoints.Count > 0)
                     {
-                        pointsOfPoints.Add(points.ToArray());
-                        points.Clear();
+                        using var vecPoints = new VectorOfVectorOfPoint(pointsOfPoints.ToArray());
+                        CvInvoke.DrawContours(mat, vecPoints, -1, EmguExtensions.WhiteColor, -1);
                     }
+
                 }
 
-                if (pointsOfPoints.Count > 0)
-                {
-                    using var vecPoints = new VectorOfVectorOfPoint(pointsOfPoints.ToArray());
-                    CvInvoke.DrawContours(mat, vecPoints, -1, EmguExtensions.WhiteColor, -1);
-                }
-
+                _layers[layerIndex] = new Layer((uint)layerIndex, mat, this);
             }
 
-            _layers[layerIndex] = new Layer((uint)layerIndex, mat, this);
             progress.LockAndIncrement();
         });
     }

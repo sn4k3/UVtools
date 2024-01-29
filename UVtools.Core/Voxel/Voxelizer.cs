@@ -50,7 +50,7 @@ public class Voxelizer
 
     public static FaceOrientation GetOpenFaces(Mat layer, int x, int y, Mat? layerBelow = null, Mat? layerAbove = null)
     {
-        var layerSpan = layer.GetDataByteSpan();
+        var layerSpan = layer.GetDataByteReadOnlySpan();
 
         var foundFaces = FaceOrientation.None;
         var pixelPos = layer.GetPixelPos(x, y);
@@ -65,7 +65,7 @@ public class Voxelizer
         }
         else
         {
-            var belowSpan = layerBelow.GetDataByteSpan();
+            var belowSpan = layerBelow.GetDataByteReadOnlySpan();
             if (belowSpan[pixelPos] == 0)
             {
                 foundFaces |= FaceOrientation.Bottom;
@@ -78,7 +78,7 @@ public class Voxelizer
         }
         else
         {
-            var aboveSpan = layerAbove.GetDataByteSpan();
+            var aboveSpan = layerAbove.GetDataByteReadOnlySpan();
             if (aboveSpan[pixelPos] == 0)
             {
                 foundFaces |= FaceOrientation.Top;

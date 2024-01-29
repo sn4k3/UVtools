@@ -1107,8 +1107,12 @@ public sealed class PHZFile : FileFormat
                 Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), layerIndex =>
                 {
                     progress.PauseIfRequested();
-                    using var mat = LayersDefinitions[layerIndex].Decode((uint)layerIndex);
-                    _layers[layerIndex] = new Layer((uint)layerIndex, mat, this);
+                    
+                    using (var mat = LayersDefinitions[layerIndex].Decode((uint)layerIndex))
+                    {
+                        _layers[layerIndex] = new Layer((uint)layerIndex, mat, this);
+                    }
+
                     progress.LockAndIncrement();
                 });
             }

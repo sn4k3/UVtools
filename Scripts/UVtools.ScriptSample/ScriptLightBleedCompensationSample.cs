@@ -94,7 +94,7 @@ public class ScriptLightBleedCompensationSample : ScriptGlobals
             using var mat = layer.LayerMat;     // Gets this layer mat/image
             var original = mat.Clone();     // Keep a original mat copy
 
-            var target = Operation.GetRoiOrDefault(mat); // Get ROI from mat if user selected an region
+            using var target = Operation.GetRoiOrDefault(mat); // Get ROI from mat if user selected an region
 
             for (byte i = 0; i < brightnesses.Length; i++)
             {
@@ -103,7 +103,7 @@ public class ScriptLightBleedCompensationSample : ScriptGlobals
                 using var subtractMat = EmguExtensions.InitMat(target.Size, new MCvScalar(brightnesses[i]));
 
                 using var nextMat = SlicerFile[layerIndexNext].LayerMat;
-                var nextMatRoi = Operation.GetRoiOrDefault(nextMat);
+                using var nextMatRoi = Operation.GetRoiOrDefault(nextMat);
 
                 CvInvoke.Subtract(target, subtractMat, target, nextMatRoi);
             }

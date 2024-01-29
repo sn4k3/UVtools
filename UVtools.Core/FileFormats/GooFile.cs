@@ -366,7 +366,7 @@ public sealed class GooFile : FileFormat
             byte currentColor = 0;
             uint stride = 0;
             byte checkSum = 0;
-            var span = image.GetDataByteSpan();
+            var span = image.GetDataByteReadOnlySpan();
 
             void AddRep()
             {
@@ -976,7 +976,12 @@ public sealed class GooFile : FileFormat
                 Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), layerIndex =>
                 {
                     progress.PauseIfRequested();
-                    _layers[layerIndex] = new Layer((uint) layerIndex, LayersDefinition[layerIndex].DecodeImage((uint) layerIndex), this);
+                    
+                    using (var mat = LayersDefinition[layerIndex].DecodeImage((uint)layerIndex))
+                    {
+                        _layers[layerIndex] = new Layer((uint)layerIndex, mat, this);
+                    }
+
                     progress.LockAndIncrement();
                 });
             }

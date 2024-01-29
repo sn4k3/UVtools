@@ -531,7 +531,7 @@ public sealed class CXDLPv1File : FileFormat
                 var layer = this[layerIndex];
                 using (var mat = layer.LayerMat)
                 {
-                    var span = mat.GetDataByteSpan();
+                    var span = mat.GetDataByteReadOnlySpan();
 
                     layerBytes[layerIndex] = new();
 

@@ -295,62 +295,64 @@ public sealed class QDTFile : FileFormat
             {
                 progress.PauseIfRequested();
 
-                using var mat = CreateMat();
-
-                if (layerCoords[layerIndex].Count > 0)
+                using (var mat = CreateMat())
                 {
-                    Guard.IsEqualTo((int)layerCoords[layerIndex][0][2], 0);
-                    int zerosInRow = 1;
 
-                    var coords = layerCoords[layerIndex][0];
-                    
-                    var startPoint = new Point(coords[0], coords[1]);
-                    var endPoint = startPoint;
-
-                    var mirror = layerIndex % 2 != 0;
-
-                    for (var i = 1; i < layerCoords[layerIndex].Count; i++)
+                    if (layerCoords[layerIndex].Count > 0)
                     {
-                        coords = layerCoords[layerIndex][i];
-                        if (coords[2] == 0)
+                        Guard.IsEqualTo((int)layerCoords[layerIndex][0][2], 0);
+                        int zerosInRow = 1;
+
+                        var coords = layerCoords[layerIndex][0];
+
+                        var startPoint = new Point(coords[0], coords[1]);
+                        var endPoint = startPoint;
+
+                        var mirror = layerIndex % 2 != 0;
+
+                        for (var i = 1; i < layerCoords[layerIndex].Count; i++)
                         {
-                            zerosInRow++;
-                            continue;
+                            coords = layerCoords[layerIndex][i];
+                            if (coords[2] == 0)
+                            {
+                                zerosInRow++;
+                                continue;
+                            }
+
+                            Guard.IsBetweenOrEqualTo(zerosInRow, 1, 2);
+
+                            var lastCoords = layerCoords[layerIndex][i - 1];
+
+                            if (zerosInRow == 1)
+                            {
+                                if (i > 1) startPoint = new Point(coords[0], endPoint.Y + lastCoords[1]);
+                            }
+                            else
+                            {
+                                startPoint = new Point(coords[0], lastCoords[1]);
+                            }
+
+                            endPoint = new Point(coords[0], startPoint.Y + coords[1]);
+
+                            if (mirror)
+                            {
+                                CvInvoke.Line(mat,
+                                    startPoint with { X = (int)(ResolutionX - startPoint.X + 1) },
+                                    endPoint with { X = (int)(ResolutionX - endPoint.X + 1) },
+                                    EmguExtensions.WhiteColor);
+                            }
+                            else
+                            {
+                                CvInvoke.Line(mat, startPoint, endPoint, EmguExtensions.WhiteColor);
+                            }
+
+                            zerosInRow = 0;
                         }
-
-                        Guard.IsBetweenOrEqualTo(zerosInRow, 1, 2);
-
-                        var lastCoords = layerCoords[layerIndex][i - 1];
-
-                        if (zerosInRow == 1)
-                        {
-                            if (i > 1) startPoint = new Point(coords[0], endPoint.Y + lastCoords[1]);
-                        }
-                        else
-                        {
-                            startPoint = new Point(coords[0], lastCoords[1]);
-                        }
-
-                        endPoint = new Point(coords[0], startPoint.Y + coords[1]);
-
-                        if (mirror)
-                        {
-                            CvInvoke.Line(mat, 
-                                startPoint with { X = (int)(ResolutionX - startPoint.X + 1) },
-                                endPoint with { X = (int)(ResolutionX - endPoint.X + 1) },
-                                EmguExtensions.WhiteColor);
-                        }
-                        else
-                        {
-                            CvInvoke.Line(mat, startPoint, endPoint, EmguExtensions.WhiteColor);
-                        }
-
-                        zerosInRow = 0;
                     }
-                }
 
-                layerCoords[layerIndex] = null!; // Clean
-                _layers[layerIndex].LayerMat = mat;
+                    layerCoords[layerIndex] = null!; // Clean
+                    _layers[layerIndex].LayerMat = mat;
+                }
 
                 progress.LockAndIncrement();
             });

@@ -2230,13 +2230,16 @@ public sealed class PhotonWorkshopFile : FileFormat
                 Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), layerIndex =>
                 {
                     progress.PauseIfRequested();
-                    using var mat = LayersDefinition[layerIndex].Decode(this);
-                    this[layerIndex] = new Layer((uint)layerIndex, mat, this)
+
+                    using (var mat = LayersDefinition[layerIndex].Decode(this))
                     {
-                        PositionZ = LayersDefinition.Layers
-                            .Where((_, i) => i <= layerIndex)
-                            .Sum(def => def.LayerHeight),
-                    };
+                        this[layerIndex] = new Layer((uint)layerIndex, mat, this)
+                        {
+                            PositionZ = LayersDefinition.Layers
+                                .Where((_, i) => i <= layerIndex)
+                                .Sum(def => def.LayerHeight),
+                        };
+                    }
 
                     progress.LockAndIncrement();
                 });

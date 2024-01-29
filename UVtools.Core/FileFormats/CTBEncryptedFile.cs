@@ -1181,7 +1181,8 @@ public sealed class CTBEncryptedFile : FileFormat
                     }
                     else
                     {
-                        _layers[layerIndex] = new Layer((uint) layerIndex, layerDef.DecodeImage((uint) layerIndex), this);
+                        using var mat = layerDef.DecodeImage((uint)layerIndex);
+                        _layers[layerIndex] = new Layer((uint) layerIndex, mat, this);
                     }
 
                     progress.LockAndIncrement();

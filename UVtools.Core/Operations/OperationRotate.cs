@@ -110,7 +110,7 @@ public class OperationRotate : Operation
     public override bool Execute(Mat mat, params object[]? arguments)
     {
         using var original = mat.Clone();
-        var target = GetRoiOrDefault(mat);
+        using var target = GetRoiOrDefault(mat);
         target.Rotate((double)AngleDegrees);
         ApplyMask(original, target);
         return true;

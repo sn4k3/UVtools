@@ -673,10 +673,12 @@ public sealed class OSLAFile : FileFormat
                 Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), layerIndex =>
                 {
                     progress.PauseIfRequested();
-                    using var mat = DecodeImage(HeaderSettings.LayerDataType, layerBytes[layerIndex], Resolution);
-                    layerBytes[layerIndex] = null!; // Clean
 
-                    _layers[layerIndex] = new Layer((uint)layerIndex, mat, this);
+                    using (var mat = DecodeImage(HeaderSettings.LayerDataType, layerBytes[layerIndex], Resolution))
+                    {
+                        layerBytes[layerIndex] = null!; // Clean
+                        _layers[layerIndex] = new Layer((uint)layerIndex, mat, this);
+                    }
 
                     progress.LockAndIncrement();
                 });

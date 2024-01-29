@@ -1420,8 +1420,10 @@ public sealed class CXDLPv4File : FileFormat
                 Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), layerIndex =>
                 {
                     progress.PauseIfRequested();
-                    using var mat = LayerDefinitionsEx[layerIndex].Decode(this, LayerDefinitions[layerIndex], (uint)layerIndex);
-                    _layers[layerIndex] = new Layer((uint)layerIndex, mat, this);
+                    using (var mat = LayerDefinitionsEx[layerIndex].Decode(this, LayerDefinitions[layerIndex], (uint)layerIndex))
+                    {
+                        _layers[layerIndex] = new Layer((uint)layerIndex, mat, this);
+                    }
 
                     progress.LockAndIncrement();
                 });

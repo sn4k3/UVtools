@@ -231,7 +231,6 @@ public static class EmguExtensions
     /// <returns></returns>
     public static Span<byte> GetDataByteSpan(this Mat mat, int length, int offset = 0) => GetDataSpan<byte>(mat, length, offset);
 
-
     /// <summary>
     /// Gets the data span to manipulate or read pixels given a length and offset
     /// </summary>
@@ -303,6 +302,7 @@ public static class EmguExtensions
     /// <returns></returns>
     public static Span<byte> GetRowByteSpan(this Mat mat, int y, int length = 0, int offset = 0) => mat.GetRowSpan<byte>(y, length, offset);
 
+    /*
     /// <summary>
     /// Gets a col span to manipulate or read pixels
     /// </summary>
@@ -317,7 +317,66 @@ public static class EmguExtensions
         // Fix with Span2D
         var colMat = mat.Col(x);
         return new(IntPtr.Add(colMat.DataPointer, offset).ToPointer(), length <= 0 ? mat.Height : length);
+    }*/
+
+
+
+    /// <summary>
+    /// Gets the data span to read pixels given a length and offset
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="mat"></param>
+    /// <param name="length"></param>
+    /// <param name="offset"></param>
+    /// <returns></returns>
+    public static unsafe ReadOnlySpan<T> GetDataReadOnlySpan<T>(this Mat mat, int length = 0, int offset = 0)
+    {
+        if (length <= 0)
+        {
+            if (mat.IsContinuous)
+            {
+                length = mat.GetLength();
+            }
+            else
+            {
+                length = mat.Step / mat.DepthToByteCount() * (mat.Height - 1) + mat.GetRealStep();
+            }
+        }
+        return new(IntPtr.Add(mat.DataPointer, offset).ToPointer(), length);
     }
+
+    /// <summary>
+    /// Gets the whole data span to manipulate or read pixels
+    /// </summary>
+    /// <param name="mat"></param>
+    /// <returns></returns>
+    public static ReadOnlySpan<byte> GetDataByteReadOnlySpan(this Mat mat) => mat.GetDataReadOnlySpan<byte>();
+
+    /// <summary>
+    /// Gets a row span to read pixels
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="mat"></param>
+    /// <param name="y"></param>
+    /// <param name="length"></param>
+    /// <param name="offset"></param>
+    /// <returns></returns>
+    public static unsafe ReadOnlySpan<T> GetRowReadOnlySpan<T>(this Mat mat, int y, int length = 0, int offset = 0)
+    {
+        var originalStep = mat.Step;
+        if (length <= 0) length = mat.GetRealStep();
+        return new(IntPtr.Add(mat.DataPointer, y * originalStep + offset).ToPointer(), length);
+    }
+
+    /// <summary>
+    /// Gets a row span or read pixels
+    /// </summary>
+    /// <param name="mat"></param>
+    /// <param name="y"></param>
+    /// <param name="length"></param>
+    /// <param name="offset"></param>
+    /// <returns></returns>
+    public static ReadOnlySpan<byte> GetRowByteReadOnlySpan(this Mat mat, int y, int length = 0, int offset = 0) => mat.GetRowReadOnlySpan<byte>(y, length, offset);
     #endregion
 
     #region Memory Fill
@@ -613,7 +672,7 @@ public static class EmguExtensions
     /// <param name="dst">Target <see cref="Mat"/> to paste the <paramref name="src"/></param>
     public static void CopyCenterToCenter(this Mat src, Size size, Mat dst)
     {
-        var srcRoi = src.RoiFromCenter(size);
+        using var srcRoi = src.RoiFromCenter(size);
         CopyToCenter(srcRoi, dst);
     }
 
@@ -625,7 +684,7 @@ public static class EmguExtensions
     /// <param name="dst">Target <see cref="Mat"/> to paste the <paramref name="src"/></param>
     public static void CopyRegionToCenter(this Mat src, Rectangle region, Mat dst)
     {
-        var srcRoi = src.Roi(region);
+        using var srcRoi = src.Roi(region);
         CopyToCenter(srcRoi, dst);
     }
 
@@ -720,34 +779,44 @@ public static class EmguExtensions
     #region Roi methods
 
     /// <summary>
-    /// Gets a Roi, but return source when roi is empty or have same size as source
+    /// Gets a Roi
     /// </summary>
     /// <param name="mat"></param>
     /// <param name="roi"></param>
+    /// <param name="emptyRoiBehaviour"></param>
     /// <returns></returns>
-    public static Mat Roi(this Mat mat, Rectangle roi)
+    public static Mat Roi(this Mat mat, Rectangle roi, EmptyRoiBehaviour emptyRoiBehaviour = EmptyRoiBehaviour.Continue)
     {
-        return roi.IsEmpty || roi.Size == mat.Size ? mat : new Mat(mat, roi);
+        return emptyRoiBehaviour switch
+        {
+            EmptyRoiBehaviour.Continue => new Mat(mat, roi),
+            EmptyRoiBehaviour.CaptureSource => new Mat(mat, roi.IsEmpty ? new Rectangle(Point.Empty, mat.Size) : roi),
+            _ => throw new ArgumentOutOfRangeException(nameof(emptyRoiBehaviour), emptyRoiBehaviour, null)
+        };
     }
 
     /// <summary>
-    /// Gets a Roi at x=0 and y=0 given a size, but return source when roi is empty or have same size as source
+    /// Gets a Roi at x=0 and y=0 given a size
     /// </summary>
     /// <param name="mat"></param>
     /// <param name="size"></param>
     /// <returns></returns>
     public static Mat Roi(this Mat mat, Size size)
     {
-        return size.IsEmpty || size == mat.Size ? mat : new Mat(mat, new(Point.Empty, size));
+        return new Mat(mat, new(Point.Empty, size));
     }
 
     /// <summary>
-    /// Gets a Roi from a mat size, but return source when roi is empty or have same size as source
+    /// Gets a Roi from a mat size
     /// </summary>
     /// <param name="mat"></param>
     /// <param name="fromMat"></param>
     /// <returns></returns>
-    public static Mat Roi(this Mat mat, Mat fromMat) => mat.Roi(fromMat.Size);
+    public static Mat Roi(this Mat mat, Mat fromMat)
+    {
+        return new Mat(mat, new(Point.Empty, fromMat.Size));
+    }
+    
 
     /// <summary>
     /// Calculates the bounding rectangle and return a <see cref="MatRoi"/> object with it
@@ -761,14 +830,14 @@ public static class EmguExtensions
     }
 
     /// <summary>
-    /// Gets a Roi from center, but return source when have same size as source
+    /// Gets a Roi from center
     /// </summary>
     /// <param name="mat"></param>
     /// <param name="size"></param>
     /// <returns></returns>
     public static Mat RoiFromCenter(this Mat mat, Size size)
     {
-        if(mat.Size == size) return mat;
+        if(mat.Size == size) return mat.Roi(size);
 
         var newRoi = mat.Roi(new Rectangle(
             mat.Width / 2 - size.Width / 2,
@@ -791,11 +860,11 @@ public static class EmguExtensions
     {
         if (targetSize == mat.Size) return mat.Clone();
         var newMat = InitMat(targetSize);
-        var roiMat = mat.Roi(roi);
+        using var roiMat = mat.Roi(roi);
             
         //int xStart = mat.Width / 2 - targetSize.Width / 2;
         //int yStart = mat.Height / 2 - targetSize.Height / 2;
-        var newMatRoi = newMat.RoiFromCenter(roi.Size);
+        using var newMatRoi = newMat.RoiFromCenter(roi.Size);
         /*var newMatRoi = new Mat(newMat, new Rectangle(
             targetSize.Width / 2 - roi.Width / 2,
             targetSize.Height / 2 - roi.Height / 2,
@@ -859,7 +928,7 @@ public static class EmguExtensions
     /// <returns>Pixel position in the span, or -1 if not found</returns>
     public static int FindFirstPixelEqualTo(this Mat mat, byte value, int startPos = 0, int length = 0)
     {
-        var span = mat.GetDataByteSpan();
+        var span = mat.GetDataByteReadOnlySpan();
         if (length <= 0) length = span.Length;
         for (var i = startPos; i < length; i++)
         {
@@ -879,7 +948,7 @@ public static class EmguExtensions
     /// <returns>Pixel position in the span, or -1 if not found</returns>
     public static int FindFirstPixelLessThan(this Mat mat, byte value, int startPos = 0, int length = 0)
     {
-        var span = mat.GetDataByteSpan();
+        var span = mat.GetDataByteReadOnlySpan();
         if (length <= 0) length = span.Length;
         for (var i = startPos; i < length; i++)
         {
@@ -899,7 +968,7 @@ public static class EmguExtensions
     /// <returns>Pixel position in the span, or -1 if not found</returns>
     public static int FindFirstPixelEqualOrLessThan(this Mat mat, byte value, int startPos = 0, int length = 0)
     {
-        var span = mat.GetDataByteSpan();
+        var span = mat.GetDataByteReadOnlySpan();
         if (length <= 0) length = span.Length;
         for (var i = startPos; i < length; i++)
         {
@@ -919,7 +988,7 @@ public static class EmguExtensions
     /// <returns>Pixel position in the span, or -1 if not found</returns>
     public static int FindFirstPixelGreaterThan(this Mat mat, byte value, int startPos = 0, int length = 0)
     {
-        var span = mat.GetDataByteSpan();
+        var span = mat.GetDataByteReadOnlySpan();
         if (length <= 0) length = span.Length;
         for (var i = startPos; i < length; i++)
         {
@@ -939,7 +1008,7 @@ public static class EmguExtensions
     /// <returns>Pixel position in the span, or -1 if not found</returns>
     public static int FindFirstPixelEqualOrGreaterThan(this Mat mat, byte value, int startPos = 0, int length = 0)
     {
-        var span = mat.GetDataByteSpan();
+        var span = mat.GetDataByteReadOnlySpan();
         if (length <= 0) length = span.Length;
         for (var i = startPos; i < length; i++)
         {
@@ -981,7 +1050,7 @@ public static class EmguExtensions
 
         var maxWidth = mat.Width;
 
-        var span = mat.GetDataByteSpan();
+        var span = mat.GetDataByteReadOnlySpan();
 
         if (excludeBlacks || startOnFirstPositivePixel)
         {
@@ -1109,7 +1178,7 @@ public static class EmguExtensions
 
         var maxWidth = mat.Width;
 
-        var span = mat.GetDataByteSpan();
+        var span = mat.GetDataByteReadOnlySpan();
 
         if (excludeBlacks || startOnFirstPositivePixel)
         {
@@ -2103,6 +2172,16 @@ public static class EmguExtensions
     public static void DisposeIfSubMatrix(this Mat mat)
     {
         if(mat.IsSubmatrix) mat.Dispose();
+    }
+
+    /// <summary>
+    /// Dispose this <see cref="Mat"/> if it's not the same reference as <paramref name="otherMat"/>
+    /// </summary>
+    /// <param name="mat">Mat to dispose</param>
+    /// <param name="otherMat"></param>
+    public static void DisposeIfNot(this Mat mat, Mat otherMat)
+    {
+        if (!ReferenceEquals(mat, otherMat)) mat.Dispose();
     }
     #endregion
 }

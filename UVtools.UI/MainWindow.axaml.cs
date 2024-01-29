@@ -1088,7 +1088,7 @@ public partial class MainWindow : WindowEx
 
             if (oldLayerCompressionCodec != Settings.General.LayerCompressionCodec && IsFileLoaded)
             {
-                IsGUIEnabled = false;
+                /*IsGUIEnabled = false;
                 ShowProgressWindow($"Changing layers compression codec from {oldLayerCompressionCodec.ToString().ToUpper()} to {Settings.General.LayerCompressionCodec.ToString().ToUpper()}");
 
                 await Task.Run(() =>
@@ -1106,7 +1106,9 @@ public partial class MainWindow : WindowEx
                     return false;
                 });
 
-                IsGUIEnabled = true;
+                IsGUIEnabled = true;*/
+
+                SlicerFile!.ChangeLayersCompressionMethod(Settings.General.LayerCompressionCodec);
             }
 
             _layerNavigationSliderDebounceTimer.Interval = Settings.LayerPreview.LayerSliderDebounce == 0 ? 1 : Settings.LayerPreview.LayerSliderDebounce;

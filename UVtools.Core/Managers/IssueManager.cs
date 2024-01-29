@@ -135,11 +135,11 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
 
         var result = new ConcurrentBag<MainIssue>();
         //var layerHollowAreas = new ConcurrentDictionary<uint, List<LayerHollowArea>>();
-        var resinTraps = new List<VectorOfVectorOfPoint>[SlicerFile.LayerCount];
-        var suctionCups = new List<VectorOfVectorOfPoint>[SlicerFile.LayerCount];
-        var externalContours = new VectorOfVectorOfPoint[SlicerFile.LayerCount];
-        var hollows = new List<VectorOfVectorOfPoint>[SlicerFile.LayerCount];
-        var airContours = new List<VectorOfVectorOfPoint>[SlicerFile.LayerCount];
+        var resinTraps = new List<VectorOfVectorOfPoint>?[SlicerFile.LayerCount];
+        var suctionCups = new List<VectorOfVectorOfPoint>?[SlicerFile.LayerCount];
+        var externalContours = new VectorOfVectorOfPoint?[SlicerFile.LayerCount];
+        var hollows = new List<VectorOfVectorOfPoint>?[SlicerFile.LayerCount];
+        var airContours = new List<VectorOfVectorOfPoint>?[SlicerFile.LayerCount];
         var resinTrapsContoursArea = new double[SlicerFile.LayerCount][];
 
         bool IsIgnored(MainIssue issue) => IgnoredIssues.Count > 0 && IgnoredIssues.Contains(issue);
@@ -470,7 +470,7 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
                                 //stats[i][2]: Width of Connected Component
                                 //stats[i][3]: Height of Connected Component
                                 //stats[i][4]: Total Area (in pixels) in Connected Component
-                                var ccStats = stats.GetDataSpan<int>();
+                                var ccStats = stats.GetDataReadOnlySpan<int>();
                                 var labelSpan = labels.GetDataSpan2D<int>();
 
                                 for (int i = 1; i < numLabels; i++)
@@ -545,8 +545,10 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
                                         using var previousIslandRoi = previousImage.RoiMat.Roi(rect);
 
                                         var islandOverhangMat = overhangImage;
+                                        bool wasNull = false;
                                         if (islandOverhangMat is null)
                                         {
+                                            wasNull = true;
                                             islandOverhangMat = new Mat();
                                             CvInvoke.Subtract(islandRoi, previousIslandRoi, islandOverhangMat);
                                             CvInvoke.Threshold(islandOverhangMat, islandOverhangMat, 127, 255, ThresholdType.Binary);
@@ -555,7 +557,7 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
                                                 EmguExtensions.AnchorCenter, overhangsIterations, BorderType.Default, default);
                                         }
 
-                                        using var subtractedImage = islandOverhangMat.Roi(rect);
+                                        using var subtractedImage = islandOverhangMat.Roi(wasNull ? Rectangle.Empty : rect, EmptyRoiBehaviour.CaptureSource);
 
                                         var subtractedSpan = subtractedImage.GetDataByteSpan2D();
                                         var subtractedStep = subtractedImage.GetRealStep();
@@ -598,15 +600,15 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
                         Mat resinTrapImage;
                         if (resinTrapConfig.BinaryThreshold > 0)
                         {
+                            needDispose = true;
                             resinTrapImage = new Mat();
                             CvInvoke.Threshold(image.SourceMat, resinTrapImage, resinTrapConfig.BinaryThreshold, byte.MaxValue, ThresholdType.Binary);
                         }
                         else
                         {
-                            needDispose = true;
                             resinTrapImage = image.SourceMat;
                         }
-                        var contourLayer = resinTrapImage.Roi(SlicerFile.BoundingRectangle);
+                        using var contourLayer = resinTrapImage.Roi(SlicerFile.BoundingRectangle);
 
                         using var contours = contourLayer.FindContours(out var hierarchy, RetrType.Tree);
                         externalContours[layerIndex] = EmguContours.GetExternalContours(contours, hierarchy);
@@ -657,21 +659,20 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
             //if (progress.Token.IsCancellationRequested) return result.OrderBy(issue => issue.Type).ThenBy(issue => issue.LayerIndex).ThenBy(issue => issue.Area).ToList();
             progress.Reset("Detection pass 1 of 2 (Resin traps)", SlicerFile.LayerCount, resinTrapConfig.StartLayerIndex);
 
-            using var matCache = new MatCacheManager(SlicerFile, 0, 2)
+            using var matCache = new MatCacheManager(SlicerFile, 0, 2);
+            matCache.AfterCacheAction = mats =>
             {
-                AfterCacheAction = mats =>
+                mats[1] = mats[0].Roi(SlicerFile.BoundingRectangle);
+                if (resinTrapConfig.MaximumPixelBrightnessToDrain > 0)
                 {
-                    mats[1] = mats[0].Roi(SlicerFile.BoundingRectangle);
-                    if (resinTrapConfig.MaximumPixelBrightnessToDrain > 0)
-                    {
-                        CvInvoke.Threshold(mats[1], mats[1], resinTrapConfig.MaximumPixelBrightnessToDrain, byte.MaxValue, ThresholdType.Binary);
-                    }
+                    CvInvoke.Threshold(mats[1], mats[1], resinTrapConfig.MaximumPixelBrightnessToDrain, byte.MaxValue, ThresholdType.Binary);
                 }
             };
 
             /* define all mats up front, reducing allocations */
-            var currentAirMap = EmguExtensions.InitMat(SlicerFile.BoundingRectangle.Size);
-            var layerAirMap = currentAirMap.NewBlank();
+            
+            using var layerAirMap = new Mat();
+            Mat? currentAirMap = null;
             /* the first pass does bottom to top, and tracks anything it thinks is a resin trap */
             for (var layerIndex = resinTrapConfig.StartLayerIndex; layerIndex < SlicerFile.LayerCount; layerIndex++)
             {
@@ -719,7 +720,7 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
 
                         /* intersect current contour, with the current airmap. */
                         using var currentContour = curLayer.NewBlank();
-                        using var airOverlap = curLayer.NewBlank();
+                        using var airOverlap = new Mat();
                         CvInvoke.DrawContours(currentContour, hollows[layerIndex][i], -1, EmguExtensions.WhiteColor, -1);
                         CvInvoke.BitwiseAnd(currentAirMap, currentContour, airOverlap);
                         var overlapCount = CvInvoke.CountNonZero(airOverlap);
@@ -751,9 +752,6 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
                         }
 
                     });
-
-                    if (progress.Token.IsCancellationRequested)
-                        return GetResult();
                 }
 
                 //matCache[layerIndex].Dispose();
@@ -788,7 +786,7 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
                 {
                     /* this is subtly different that for the first pass, we don't use GenerateAirMap for the initial airmap */
                     /* instead we use a bitwise not, this way anything that is open/hollow on the top layer is treated as air */
-                    currentAirMap = curLayer.Clone();
+                    currentAirMap = new Mat();
                     CvInvoke.BitwiseNot(curLayer, currentAirMap);
                 }
 
@@ -824,7 +822,7 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
 
                         /* check if each contour overlaps known air */
                         using var currentContour = curLayer.NewBlank();
-                        using var airOverlap = curLayer.NewBlank();
+                        using var airOverlap = new Mat();
                         CvInvoke.DrawContours(currentContour, resinTraps[layerIndex][x], -1, EmguExtensions.WhiteColor, -1);
 
                         CvInvoke.BitwiseAnd(currentAirMap, currentContour, airOverlap);
@@ -951,6 +949,13 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
 
                 progress++;
             }
+
+            if (currentAirMap is not null)
+            {
+                currentAirMap.Dispose();
+                currentAirMap = null;
+            }
+
             if (progress.Token.IsCancellationRequested) return GetResult();
 
             /* translate all contour points by ROI x and y */

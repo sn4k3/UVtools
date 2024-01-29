@@ -1087,9 +1087,9 @@ public sealed class FDGFile : FileFormat
                 Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), layerIndex =>
                 {
                     progress.PauseIfRequested();
-                    if (DecodeType == FileDecodeType.Full)
+
+                    using (var mat = LayersDefinitions[layerIndex].Decode((uint)layerIndex))
                     {
-                        using var mat = LayersDefinitions[layerIndex].Decode((uint)layerIndex);
                         _layers[layerIndex] = new Layer((uint)layerIndex, mat, this);
                     }
 

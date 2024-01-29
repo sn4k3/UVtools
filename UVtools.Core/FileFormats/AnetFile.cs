@@ -177,7 +177,7 @@ public sealed class AnetFile : FileFormat
             uint compressedPos = 33;
 
             var rawData = new List<byte>();
-            var spanMat = mat.GetDataByteSpan();
+            var spanMat = mat.GetDataByteReadOnlySpan();
 
             bool isWhitePrev = spanMat[0] > 127;
 
@@ -471,10 +471,14 @@ public sealed class AnetFile : FileFormat
             {
                 progress.PauseIfRequested();
                 var layer = this[layerIndex];
-                using var mat = layer.LayerMat;
-                layerData[layerIndex] = new LayerDef();
-                layerData[layerIndex].SetFrom(layer);
-                layerData[layerIndex].Encode(mat);
+
+                using (var mat = layer.LayerMat)
+                {
+                    layerData[layerIndex] = new LayerDef();
+                    layerData[layerIndex].SetFrom(layer);
+                    layerData[layerIndex].Encode(mat);
+                }
+
                 progress.LockAndIncrement();
             });
 
@@ -545,25 +549,31 @@ public sealed class AnetFile : FileFormat
                 Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), layerIndex =>
                 {
                     progress.PauseIfRequested();
-                    using var mat = layersDefinitions[layerIndex].Decode(out var resolutionX, out var resolutionY);
-                    if (layerIndex == 0) // Set file resolution from first layer RLE. Figure out other properties after that
+
+                    using (var mat = layersDefinitions[layerIndex].Decode(out var resolutionX, out var resolutionY))
                     {
-                        ResolutionX = resolutionX;
-                        ResolutionY = resolutionY;
-
-                        var machine = Machine.Machines.FirstOrDefault(machine =>
-                            machine.Brand == PrinterBrand.Anet && machine.ResolutionX == resolutionX &&
-                            machine.ResolutionY == resolutionY);
-
-                        if (machine is not null)
+                        if (layerIndex ==
+                            0) // Set file resolution from first layer RLE. Figure out other properties after that
                         {
-                            DisplayWidth = machine.DisplayWidth;
-                            DisplayHeight = machine.DisplayHeight;
-                            MachineZ = machine.MachineZ;
-                            MachineName = machine.Name;
+                            ResolutionX = resolutionX;
+                            ResolutionY = resolutionY;
+
+                            var machine = Machine.Machines.FirstOrDefault(machine =>
+                                machine.Brand == PrinterBrand.Anet && machine.ResolutionX == resolutionX &&
+                                machine.ResolutionY == resolutionY);
+
+                            if (machine is not null)
+                            {
+                                DisplayWidth = machine.DisplayWidth;
+                                DisplayHeight = machine.DisplayHeight;
+                                MachineZ = machine.MachineZ;
+                                MachineName = machine.Name;
+                            }
                         }
+
+                        _layers[layerIndex] = new Layer((uint)layerIndex, mat, this);
                     }
-                    _layers[layerIndex] = new Layer((uint)layerIndex, mat, this);
+
                     progress.LockAndIncrement();
                 });
             }

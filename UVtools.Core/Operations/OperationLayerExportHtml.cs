@@ -578,7 +578,7 @@ public sealed class OperationLayerExportHtml : Operation
             html.WriteLine("      const layerSvg = {");
 
             var layerSvgPath = new string[SlicerFile.LayerCount];
-            Parallel.For(0, SlicerFile.LayerCount, CoreSettings.ParallelOptions, layerIndex =>
+            Parallel.For(0, SlicerFile.LayerCount, CoreSettings.GetParallelOptions(progress), layerIndex =>
             {
                 progress.PauseIfRequested();
                 using var mat = SlicerFile[layerIndex].LayerMat;

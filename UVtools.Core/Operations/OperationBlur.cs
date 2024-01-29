@@ -154,7 +154,7 @@ public sealed class OperationBlur : Operation
         if (anchor.IsEmpty) anchor = EmguExtensions.AnchorCenter;
         //if (size.IsEmpty) size = new Size(3, 3);
         //if (anchor.IsEmpty) anchor = EmguExtensions.AnchorCenter;
-        var target = GetRoiOrDefault(mat);
+        using var target = GetRoiOrDefault(mat);
         using var original = mat.Clone();
         switch (BlurOperation)
         {

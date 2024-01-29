@@ -192,8 +192,8 @@ public class OperationRedrawModel : Operation
                 using var nextLayerMat = otherFile[layerIndex + 1].LayerMat;
                 using var nextLayerMatRoi = GetRoiOrDefault(nextLayerMat);
                 var fullSpan = fullMatRoi.GetDataByteSpan();
-                var supportsSpan = supportsMat.GetDataByteSpan();
-                var nextSpan = nextLayerMatRoi.GetDataByteSpan();
+                var supportsSpan = supportsMat.GetDataByteReadOnlySpan();
+                var nextSpan = nextLayerMatRoi.GetDataByteReadOnlySpan();
                 for (int i = 0; i < contours.Size; i++)
                 {
                     var foundContour = false;

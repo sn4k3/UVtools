@@ -14,6 +14,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
+using UVtools.Core.EmguCV;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Layers;
@@ -635,7 +636,7 @@ public abstract class Operation : BindableBase, IDisposable
     /// <returns></returns>
     public Mat GetRoiOrDefault(Mat src)
     {
-        return HaveROI && src.Size != _roi.Size ? src.Roi(_roi) : src;
+        return src.Roi(_roi, EmptyRoiBehaviour.CaptureSource);
     }
 
     /// <summary>
@@ -646,9 +647,7 @@ public abstract class Operation : BindableBase, IDisposable
     /// <returns></returns>
     public Mat GetRoiOrDefault(Mat src, Rectangle fallbackRoi)
     {
-        if (HaveROI && src.Size != _roi.Size) return src.Roi(_roi);
-        if (fallbackRoi.IsEmpty) return src;
-        return src.Size != fallbackRoi.Size ? src.Roi(fallbackRoi) : src;
+        return HaveROI ? src.Roi(_roi) : src.Roi(fallbackRoi, EmptyRoiBehaviour.CaptureSource);
     }
 
     /// <summary>
@@ -710,21 +709,28 @@ public abstract class Operation : BindableBase, IDisposable
     public void ApplyMask(Mat original, Mat result, Mat? mask)
     {
         if (mask is null) return;
-        var originalRoi = GetRoiOrDefault(original);
+        using var originalRoi = GetRoiOrDefault(original);
         var resultRoi = result;
+        bool needDisposeResultRoi = false;
         if (originalRoi.Size != result.Size) // Accept a ROI mat
         {
             resultRoi = GetRoiOrDefault(result);
+            needDisposeResultRoi = true;
         }
 
+        bool needDisposeMask = false;
         if (mask.Size != resultRoi.Size) // Accept a full size mask
         {
             mask = GetRoiOrDefault(mask);
+            needDisposeMask = true;
         }
 
         using var tempMat = originalRoi.Clone();
         resultRoi.CopyTo(tempMat, mask);
         tempMat.CopyTo(resultRoi);
+
+        if (needDisposeResultRoi) resultRoi.Dispose();
+        if (needDisposeMask) mask.Dispose();
     }
 
     /// <summary>

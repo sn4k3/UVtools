@@ -209,7 +209,7 @@ public class OperationLightBleedCompensation : Operation
             var layer = SlicerFile[layerIndex];
             using var mat = layer.LayerMat;    
             using var original = mat.Clone();    
-            var target = GetRoiOrDefault(mat);
+            using var target = GetRoiOrDefault(mat);
 
             for (byte i = 0; i < dimMats.Length; i++)
             {
@@ -250,6 +250,8 @@ public class OperationLightBleedCompensation : Operation
 
                 previousMat?.Dispose();
                 nextMat?.Dispose();
+                previousMatRoi?.Dispose();
+                nextMatRoi?.Dispose();
             }
 
             // Apply the results only to the selected masked area, if user selected one

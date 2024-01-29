@@ -102,7 +102,7 @@ public class ScriptInsetSample : ScriptGlobals
             using var erodeMat = new Mat();     // Creates a temporary mat for the eroded image
             using var wallMat = new Mat();      // Creates a temporary mat for the wall image
 
-            var target = Operation.GetRoiOrDefault(mat); // Get ROI from mat if user selected an region
+            using var target = Operation.GetRoiOrDefault(mat); // Get ROI from mat if user selected an region
 
             // Erode original image by InsetMarginFromEdge pixels, so we get the offset margin from image and put new image on erodeMat
             CvInvoke.Erode(target, erodeMat, kernel, EmguExtensions.AnchorCenter, InsetMarginFromEdge.Value, BorderType.Reflect101, default);

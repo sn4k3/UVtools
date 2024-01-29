@@ -332,7 +332,7 @@ public sealed class MDLPFile : FileFormat
                 var layer = this[layerIndex];
                 using (var mat = layer.LayerMat)
                 {
-                    var span = mat.GetDataByteSpan();
+                    var span = mat.GetDataByteReadOnlySpan();
 
                     layerBytes[layerIndex] = new();
 
@@ -348,8 +348,7 @@ public sealed class MDLPFile : FileFormat
                             if (span[pos] < 128) // Black pixel
                             {
                                 if (startY == -1) continue; // Keep ignoring
-                                layerBytes[layerIndex]
-                                    .AddRange(LayerLine.GetBytes((ushort)startY, (ushort)(y - 1), (ushort)x));
+                                layerBytes[layerIndex].AddRange(LayerLine.GetBytes((ushort)startY, (ushort)(y - 1), (ushort)x));
                                 startY = -1;
                                 lineCount++;
                             }

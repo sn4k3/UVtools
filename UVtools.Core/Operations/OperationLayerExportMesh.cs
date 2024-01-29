@@ -251,7 +251,7 @@ public sealed class OperationLayerExportMesh : Operation
         Mat? aboveLayer;
         using (var mat = SlicerFile.GetMergedMatForSequentialPositionedLayers(distinctLayers[0].Index, cacheManager))
         {
-            var matRoi = mat.Roi(SlicerFile.BoundingRectangle);
+            using var matRoi = mat.Roi(SlicerFile.BoundingRectangle);
 
             if ((byte)_quality > 1)
             {
@@ -316,7 +316,7 @@ public sealed class OperationLayerExportMesh : Operation
             if (layerIndex < distinctLayers.Length - 1)
             {
                 using var mat = SlicerFile.GetMergedMatForSequentialPositionedLayers(distinctLayers[(int)layerIndex+1].Index, cacheManager);
-                var matRoi = mat.Roi(SlicerFile.BoundingRectangle);
+                using var matRoi = mat.Roi(SlicerFile.BoundingRectangle);
 
                 if ((byte)_quality > 1)
                 {

@@ -116,7 +116,7 @@ public class OperationFlip : Operation
     public override bool Execute(Mat mat, params object[]? arguments)
     {
         using var original = mat.Clone();
-        var target = GetRoiOrDefault(mat);
+        using var target = GetRoiOrDefault(mat);
 
         if (MakeCopy)
         {

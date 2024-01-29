@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<Version>4.1.1</Version>
+		<Version>4.2.0</Version>
 
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
 		<DocumentationFile>..\documentation\$(AssemblyName).xml</DocumentationFile>

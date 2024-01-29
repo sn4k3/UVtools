@@ -573,8 +573,11 @@ public sealed class LGSFile : FileFormat
                 Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), layerIndex =>
                 {
                     progress.PauseIfRequested();
-                    using var mat = layerData[layerIndex].Decode();
-                    _layers[layerIndex] = new Layer((uint)layerIndex, mat, this);
+
+                    using (var mat = layerData[layerIndex].Decode())
+                    {
+                        _layers[layerIndex] = new Layer((uint)layerIndex, mat, this);
+                    }
 
                     progress.LockAndIncrement();
                 });

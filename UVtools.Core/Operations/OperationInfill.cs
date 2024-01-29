@@ -429,7 +429,7 @@ public sealed class OperationInfill : Operation, IEquatable<OperationInfill>
                     points.Add(new Point(x, y));
                     maxY = Math.Max(maxY, y);
                 }
-                var infillPatternRoi = infillPattern.Roi(new Size(infillPattern.Width, maxY + radius + 2 + _infillSpacing));
+                using var infillPatternRoi = infillPattern.Roi(new Size(infillPattern.Width, maxY + radius + 2 + _infillSpacing));
                 CvInvoke.Polylines(infillPatternRoi, points.ToArray(), false, infillColor, _infillThickness);
 
                 CvInvoke.Repeat(infillPatternRoi, target.Rows / infillPatternRoi.Rows + 1, 1, infillPattern);
@@ -443,7 +443,7 @@ public sealed class OperationInfill : Operation, IEquatable<OperationInfill>
                     points.Add(new Point(x, y));
                     maxY = Math.Max(maxY, x);
                 }
-                var infillPatternRoi = infillPattern.Roi(new Size(maxY + radius + 2 + _infillSpacing, infillPattern.Height));
+                using var infillPatternRoi = infillPattern.Roi(new Size(maxY + radius + 2 + _infillSpacing, infillPattern.Height));
                 CvInvoke.Polylines(infillPatternRoi, points.ToArray(), false, infillColor, _infillThickness);
                 CvInvoke.Repeat(infillPatternRoi, 1, target.Cols / infillPatternRoi.Cols + 1, infillPattern);
                 

@@ -370,7 +370,7 @@ public sealed class GR1File : FileFormat
                 var layer = this[layerIndex];
                 using (var mat = layer.LayerMat)
                 {
-                    var span = mat.GetDataByteSpan();
+                    var span = mat.GetDataByteReadOnlySpan();
 
                     layerBytes[layerIndex] = new();
 
@@ -471,21 +471,23 @@ public sealed class GR1File : FileFormat
                 Parallel.ForEach(batch, CoreSettings.GetParallelOptions(progress), layerIndex =>
                 {
                     progress.PauseIfRequested();
-                    using var mat = EmguExtensions.InitMat(Resolution);
-
-                    for (int i = 0; i < linesBytes[layerIndex].Length; i++)
+                    
+                    using (var mat = EmguExtensions.InitMat(Resolution))
                     {
-                        var startY = BitExtensions.ToUShortBigEndian(linesBytes[layerIndex][i++], linesBytes[layerIndex][i++]);
-                        var endY = BitExtensions.ToUShortBigEndian(linesBytes[layerIndex][i++], linesBytes[layerIndex][i++]);
-                        var startX = BitExtensions.ToUShortBigEndian(linesBytes[layerIndex][i++], linesBytes[layerIndex][i]);
 
-                        CvInvoke.Line(mat, new Point(startX, startY), new Point(startX, endY),
-                            EmguExtensions.WhiteColor);
+                        for (int i = 0; i < linesBytes[layerIndex].Length; i++)
+                        {
+                            var startY = BitExtensions.ToUShortBigEndian(linesBytes[layerIndex][i++], linesBytes[layerIndex][i++]);
+                            var endY = BitExtensions.ToUShortBigEndian(linesBytes[layerIndex][i++], linesBytes[layerIndex][i++]);
+                            var startX = BitExtensions.ToUShortBigEndian(linesBytes[layerIndex][i++], linesBytes[layerIndex][i]);
+
+                            CvInvoke.Line(mat, new Point(startX, startY), new Point(startX, endY), EmguExtensions.WhiteColor);
+                        }
+
+                        linesBytes[layerIndex] = null!;
+
+                        _layers[layerIndex] = new Layer((uint)layerIndex, mat, this);
                     }
-
-                    linesBytes[layerIndex] = null!;
-
-                    _layers[layerIndex] = new Layer((uint)layerIndex, mat, this);
 
                     progress.LockAndIncrement();
                 });

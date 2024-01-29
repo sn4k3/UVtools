@@ -261,7 +261,7 @@ public static class BitmapExtension
                     }
                     else if (mat.Depth == DepthType.Cv32S)
                     {
-                        mat.GetDataSpan<uint>().CopyTo(new Span<uint>(lockBuffer.Address.ToPointer(), dataCount));
+                        mat.GetDataReadOnlySpan<uint>().CopyTo(new Span<uint>(lockBuffer.Address.ToPointer(), dataCount));
                     }
 
                     break;

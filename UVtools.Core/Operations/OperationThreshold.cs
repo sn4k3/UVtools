@@ -100,7 +100,7 @@ public class OperationThreshold : Operation
     public override bool Execute(Mat mat, params object[]? arguments)
     {
         using var original = mat.Clone();
-        var target = GetRoiOrDefault(mat);
+        using var target = GetRoiOrDefault(mat);
         CvInvoke.Threshold(target, target, Threshold, Maximum, Type);
         ApplyMask(original, target);
         return true;

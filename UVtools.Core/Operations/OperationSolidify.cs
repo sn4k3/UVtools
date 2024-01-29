@@ -103,7 +103,7 @@ public sealed class OperationSolidify : Operation
     {
         using Mat filteredMat = new();
         using var original = mat.Clone();
-        var target = GetRoiOrDefault(mat);
+        using var target = GetRoiOrDefault(mat);
 
         CvInvoke.Threshold(target, filteredMat, 127, 255, ThresholdType.Binary); // Clean AA
         using var contours = filteredMat.FindContours(out var hierarchy, RetrType.Ccomp);

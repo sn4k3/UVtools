@@ -50,13 +50,13 @@ public class ScriptCompensateCrossBleeding : ScriptGlobals
                 var layersBelowCount = layerIndex > LayerBleed.Value ? LayerBleed.Value : layerIndex;
 
                 using var sourceMat = originalLayers[layerIndex].LayerMat;
-                var source = sourceMat.GetDataByteSpan();
+                var source = sourceMat.GetDataByteReadOnlySpan();
 
                 using var targetMat = sourceMat.NewBlank();
                 var target = targetMat.GetDataByteSpan();
 
                 using var occupancyMat = sourceMat.NewBlank();
-                var occupancy = occupancyMat.GetDataByteSpan();
+                var occupancy = occupancyMat.GetDataByteReadOnlySpan();
 
                 var sumRectangle = Rectangle.Empty;
                 for (int i = 0; i < layersBelowCount; i++)

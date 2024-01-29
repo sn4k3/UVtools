@@ -200,7 +200,7 @@ public sealed class OperationMorph : Operation
         }
             
         using var original = mat.Clone();
-        var target = GetRoiOrDefault(mat);
+        using var target = GetRoiOrDefault(mat);
 
         /*if (CoreSettings.CanUseCuda)
         {
@@ -217,7 +217,7 @@ public sealed class OperationMorph : Operation
 
         if (_morphOperation == MorphOperations.OffsetCrop)
         {
-            var originalRoi = GetRoiOrDefault(original);
+            using var originalRoi = GetRoiOrDefault(original);
             originalRoi.CopyTo(target, target);
         }
         /*else if (_morphOperation == MorphOperations.IsolateFeatures)
