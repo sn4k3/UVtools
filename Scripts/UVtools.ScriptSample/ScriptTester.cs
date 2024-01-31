@@ -87,12 +87,12 @@ public class ScriptChangeLayesrPropertiesSample : ScriptGlobals
                         CvInvoke.DrawContours(thisContourMat, vec, -1, EmguExtensions.WhiteColor, -1);
                     }
 
-                    using var nextContourMat = thisContourMat.NewBlank();
+                    using var nextContourMat = thisContourMat.NewZeros();
                     using var vecNext = new VectorOfPoint(nextTuple.points);
                     CvInvoke.DrawContours(nextContourMat, vecNext, -1, EmguExtensions.WhiteColor, -1);
 
                     CvInvoke.BitwiseAnd(thisContourMat, nextContourMat, nextContourMat);
-                    if (CvInvoke.CountNonZero(nextContourMat) == 0) continue; // Does not intersect!
+                    if (!CvInvoke.HasNonZero(nextContourMat)) continue; // Does not intersect!
 
                     // Intersecting here!
                 }

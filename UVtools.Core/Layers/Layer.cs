@@ -1194,7 +1194,7 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
 
     public override int GetHashCode()
     {
-        return _compressedMat.GetHashCode();
+        return CompressedMat.GetHashCode();
     }
 
     private sealed class IndexRelationalComparer : IComparer<Layer>

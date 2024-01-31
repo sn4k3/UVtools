@@ -7,4 +7,6 @@ Name=UVtools
 Comment=MSLA/DLP, file analysis, calibration, repair, conversion and manipulation
 Icon=UVtools
 Exec=UVtools
+Path=~
+Terminal=false
 Categories=Utility;

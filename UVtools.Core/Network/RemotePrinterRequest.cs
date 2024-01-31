@@ -339,7 +339,7 @@ public class RemotePrinterRequest : BindableBase
 
     public override int GetHashCode()
     {
-        return (_path != null ? _path.GetHashCode() : 0);
+        return HashCode.Combine(_path);
     }
 
     #endregion

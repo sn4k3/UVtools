@@ -152,12 +152,7 @@ public sealed class OperationScripting : Operation
     {
         return ReferenceEquals(this, obj) || obj is OperationScripting other && Equals(other);
     }
-
-    public override int GetHashCode()
-    {
-        return (_filePath != null ? _filePath.GetHashCode() : 0);
-    }
-
+    
     #endregion
 
     #region Methods

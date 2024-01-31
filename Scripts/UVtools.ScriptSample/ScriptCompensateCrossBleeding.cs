@@ -52,10 +52,10 @@ public class ScriptCompensateCrossBleeding : ScriptGlobals
                 using var sourceMat = originalLayers[layerIndex].LayerMat;
                 var source = sourceMat.GetDataByteReadOnlySpan();
 
-                using var targetMat = sourceMat.NewBlank();
+                using var targetMat = sourceMat.NewZeros();
                 var target = targetMat.GetDataByteSpan();
 
-                using var occupancyMat = sourceMat.NewBlank();
+                using var occupancyMat = sourceMat.NewZeros();
                 var occupancy = occupancyMat.GetDataByteReadOnlySpan();
 
                 var sumRectangle = Rectangle.Empty;

@@ -3511,7 +3511,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
 
     public override int GetHashCode()
     {
-        return (FileFullPath != null ? FileFullPath.GetHashCode() : 0);
+        return FileFullPath?.GetHashCode() ?? 0;
     }
 
     public void Dispose()
@@ -6903,7 +6903,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
 
                             using (var matCircleRoi = new Mat(mat, new Rectangle(xStart, yStart, operationSupport.TipDiameter, operationSupport.TipDiameter)))
                             {
-                                using var matCircleMask = matCircleRoi.NewBlank();
+                                using var matCircleMask = matCircleRoi.NewZeros();
                                 CvInvoke.Circle(matCircleMask,
                                     new Point(operationSupport.TipDiameter / 2, operationSupport.TipDiameter / 2),
                                     operationSupport.TipDiameter / 2, new MCvScalar(operation.PixelBrightness), -1);
@@ -6937,7 +6937,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
                             {
                                 using var matCircleRoiInv = new Mat();
                                 CvInvoke.Threshold(matCircleRoi, matCircleRoiInv, 100, 255, ThresholdType.BinaryInv);
-                                using var matCircleMask = matCircleRoi.NewBlank();
+                                using var matCircleMask = matCircleRoi.NewZeros();
                                 CvInvoke.Circle(matCircleMask, new Point(radius, radius), radius, EmguExtensions.WhiteColor, -1);
                                 CvInvoke.BitwiseAnd(matCircleRoiInv, matCircleMask, matCircleMask);
                                 blackPixels = (uint) CvInvoke.CountNonZero(matCircleMask);

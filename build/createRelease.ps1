@@ -247,7 +247,7 @@ foreach ($obj in $runtimes.GetEnumerator()) {
         dotnet publish "$rootPath\UVtools.Cmd" -o "$publishCurrentPath" -c $buildWith -r $runtime -p:PublishReadyToRun=true --self-contained $extraCmd
         dotnet publish "$rootPath\$project" -o "$publishCurrentPath" -c $buildWith -r $runtime -p:PublishReadyToRun=true --self-contained $extraCmd
 
-        New-Item "$publishCurrentPath\runtime_package.dat" -ItemType File -Value $runtime
+        #New-Item "$publishCurrentPath\runtime_package.dat" -ItemType File -Value $runtime
         
         # Cleanup
         Remove-Item "$rootPath\UVtools.Cmd\bin\$buildWith\net$netVersion\$runtime" -Recurse -ErrorAction Ignore

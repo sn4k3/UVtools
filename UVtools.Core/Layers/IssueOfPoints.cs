@@ -6,6 +6,7 @@
  *  of this license document, but changing it is not allowed.
  */
 
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -40,6 +41,6 @@ public sealed class IssueOfPoints : Issue
 
     public override int GetHashCode()
     {
-        return (Points != null ? Points.GetHashCode() : 0);
+        return HashCode.Combine(Points);
     }
 }

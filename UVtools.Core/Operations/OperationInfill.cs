@@ -155,12 +155,7 @@ public sealed class OperationInfill : Operation, IEquatable<OperationInfill>
     {
         return ReferenceEquals(this, obj) || obj is OperationInfill other && Equals(other);
     }
-
-    public override int GetHashCode()
-    {
-        return HashCode.Combine((int)_infillType, _floorCeilThickness, _wallThickness, _infillThickness, _infillSpacing, _infillBrightness, _reinforceInfill);
-    }
-
+    
     public static bool operator ==(OperationInfill? left, OperationInfill? right)
     {
         return Equals(left, right);
@@ -237,7 +232,7 @@ public sealed class OperationInfill : Operation, IEquatable<OperationInfill>
             or InfillAlgorithm.CubicStar)
         {
             using var infillPattern = EmguExtensions.InitMat(new Size(_infillSpacing, _infillSpacing));
-            using var matPattern = mat.NewBlank();
+            using var matPattern = mat.NewZeros();
             bool firstPattern = true;
             uint accumulator = 0;
             bool dynamicCenter = false;
@@ -416,7 +411,7 @@ public sealed class OperationInfill : Operation, IEquatable<OperationInfill>
 
             //using var infillPattern = EmguExtensions.InitMat(new Size(_infillSpacing, _infillSpacing));
             //using var matPattern = new Mat();
-            using var infillPattern = mat.NewBlank();
+            using var infillPattern = mat.NewZeros();
 
             int maxY = 0;
 
@@ -455,7 +450,7 @@ public sealed class OperationInfill : Operation, IEquatable<OperationInfill>
         }
         else if (_infillType == InfillAlgorithm.Gyroid)
         {
-            patternMask = target.NewBlank();
+            patternMask = target.NewZeros();
 
             var scaleRatio = 0.0012 / (_infillSpacing + _infillThickness / 2);
             //var scaleX = 0.04 * _infillSpacing * Math.PI / target.Width;

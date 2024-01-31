@@ -326,33 +326,6 @@ public sealed class OperationCalibrateGrayscale : Operation
         return ReferenceEquals(this, obj) || obj is OperationCalibrateGrayscale other && Equals(other);
     }
 
-    public override int GetHashCode()
-    {
-        var hashCode = new HashCode();
-        hashCode.Add(_layerHeight);
-        hashCode.Add(_bottomLayers);
-        hashCode.Add(_interfaceLayers);
-        hashCode.Add(_normalLayers);
-        hashCode.Add(_bottomExposure);
-        hashCode.Add(_normalExposure);
-        hashCode.Add(_outerMargin);
-        hashCode.Add(_innerMargin);
-        hashCode.Add(_enableAntiAliasing);
-        hashCode.Add(_mirrorOutput);
-        hashCode.Add(_startBrightness);
-        hashCode.Add(_endBrightness);
-        hashCode.Add(_brightnessSteps);
-        hashCode.Add(_enableCenterHoleRelief);
-        hashCode.Add(_centerHoleDiameter);
-        hashCode.Add(_textEnabled);
-        hashCode.Add(_convertBrightnessToExposureTime);
-        hashCode.Add(_enableLineDivisions);
-        hashCode.Add(_lineDivisionThickness);
-        hashCode.Add(_lineDivisionBrightness);
-        hashCode.Add(_textXOffset);
-        return hashCode.ToHashCode();
-    }
-
     #endregion
 
     #region Methods

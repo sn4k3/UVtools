@@ -163,12 +163,7 @@ public class OperationRaiseOnPrintFinish : Operation
         if (obj.GetType() != this.GetType()) return false;
         return Equals((OperationRaiseOnPrintFinish) obj);
     }
-
-    public override int GetHashCode()
-    {
-        return HashCode.Combine(_positionZ, _outputDummyPixel, _waitTime);
-    }
-
+    
     #endregion
 
     #region Methods

@@ -106,14 +106,7 @@ public class Color
 
     public override int GetHashCode()
     {
-        unchecked
-        {
-            int hashCode = A.GetHashCode();
-            hashCode = (hashCode * 397) ^ R.GetHashCode();
-            hashCode = (hashCode * 397) ^ G.GetHashCode();
-            hashCode = (hashCode * 397) ^ B.GetHashCode();
-            return hashCode;
-        }
+        return HashCode.Combine(A, R, G, B);
     }
 
     public static bool operator ==(Color left, Color right)

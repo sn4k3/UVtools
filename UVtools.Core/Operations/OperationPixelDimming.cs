@@ -268,24 +268,7 @@ public class OperationPixelDimming : Operation
         if (obj.GetType() != this.GetType()) return false;
         return Equals((OperationPixelDimming)obj);
     }
-
-    public override int GetHashCode()
-    {
-        var hashCode = new HashCode();
-        hashCode.Add(_lighteningPixels);
-        hashCode.Add(_wallThicknessStart);
-        hashCode.Add(_wallThicknessEnd);
-        hashCode.Add(_wallsOnly);
-        hashCode.Add(_chamfer);
-        hashCode.Add(_alternatePatternPerLayers);
-        hashCode.Add(_patternText);
-        hashCode.Add(_alternatePatternText);
-        hashCode.Add(_brightness);
-        hashCode.Add(_infillGenThickness);
-        hashCode.Add(_infillGenSpacing);
-        return hashCode.ToHashCode();
-    }
-
+    
     #endregion
 
     #region Methods
@@ -633,8 +616,8 @@ public class OperationPixelDimming : Operation
         AlternatePattern ??= Pattern;
 
         using var blankMat = EmguExtensions.InitMat(SlicerFile.Resolution);
-        using var matPattern = blankMat.NewBlank();
-        using var matAlternatePattern = blankMat.NewBlank();
+        using var matPattern = blankMat.NewZeros();
+        using var matAlternatePattern = blankMat.NewZeros();
         using var target = GetRoiOrDefault(blankMat);
 
         CvInvoke.Repeat(Pattern, target.Rows / Pattern.Rows + 1, target.Cols / Pattern.Cols + 1, matPattern);

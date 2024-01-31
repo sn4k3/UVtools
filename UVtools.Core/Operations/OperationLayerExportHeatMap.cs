@@ -194,10 +194,6 @@ public sealed class OperationLayerExportHeatMap : Operation
         return ReferenceEquals(this, obj) || obj is OperationLayerExportHeatMap other && Equals(other);
     }
 
-    public override int GetHashCode()
-    {
-        return HashCode.Combine(_filePath, (int)_rotateDirection, (int)_flipDirection, _mergeSamePositionedLayers, _cropByRoi);
-    }
 
     #endregion
 }

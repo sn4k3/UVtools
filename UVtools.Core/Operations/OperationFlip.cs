@@ -86,15 +86,7 @@ public class OperationFlip : Operation
         if (obj.GetType() != GetType()) return false;
         return Equals((OperationFlip) obj);
     }
-
-    public override int GetHashCode()
-    {
-        unchecked
-        {
-            return (_makeCopy.GetHashCode() * 397) ^ (int) _flipDirection;
-        }
-    }
-
+    
     #endregion
 
     #region Methods

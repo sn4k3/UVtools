@@ -6,6 +6,7 @@
  *  of this license document, but changing it is not allowed.
  */
 
+using System;
 using UVtools.Core.Objects;
 
 namespace UVtools.Core.Network;
@@ -97,7 +98,7 @@ public class MappedDevice : BindableBase
 
     public override int GetHashCode()
     {
-        return (_path != null ? _path.GetHashCode() : 0);
+        return HashCode.Combine(_path);
     }
 
     public MappedDevice Clone()

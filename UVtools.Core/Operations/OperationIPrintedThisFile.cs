@@ -173,10 +173,6 @@ public class OperationIPrintedThisFile : Operation
         return Equals((OperationIPrintedThisFile) obj);
     }
 
-    public override int GetHashCode()
-    {
-        return HashCode.Combine(_volume, _printTime, _materialItem, _multiplier);
-    }
 
     #endregion
 }

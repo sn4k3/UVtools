@@ -7,6 +7,7 @@
  */
 
 using System;
+using System.IO;
 
 namespace UVtools.Core.Objects;
 
@@ -192,7 +193,7 @@ public class Material : BindableBase, ICloneable
 
     public override int GetHashCode()
     {
-        return (_name != null ? _name.GetHashCode() : 0);
+        return HashCode.Combine(_name);
     }
 
     public override string ToString()

@@ -236,25 +236,6 @@ public sealed class OperationCalibrateBloomingEffect : Operation
         return ReferenceEquals(this, obj) || obj is OperationCalibrateBloomingEffect other && Equals(other);
     }
 
-    public override int GetHashCode()
-    {
-        var hashCode = new HashCode();
-        hashCode.Add(_layerHeight);
-        hashCode.Add(_bottomLayers);
-        hashCode.Add(_bottomExposure);
-        hashCode.Add(_normalExposure);
-        hashCode.Add(_leftRightMargin);
-        hashCode.Add(_topBottomMargin);
-        hashCode.Add(_waitTimeBeforeCureStart);
-        hashCode.Add(_waitTimeBeforeCureIncrement);
-        hashCode.Add(_objectCount);
-        hashCode.Add(_objectDiameter);
-        hashCode.Add(_objectHeight);
-        hashCode.Add(_objectMargin);
-        hashCode.Add(_mirrorOutput);
-        return hashCode.ToHashCode();
-    }
-
     #endregion
 
     #region Methods

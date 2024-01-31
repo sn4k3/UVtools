@@ -7,6 +7,7 @@
  */
 
 using BinarySerialization;
+using System;
 using UVtools.Core.Extensions;
 
 namespace UVtools.Core.Objects;
@@ -54,7 +55,7 @@ public sealed class UInt24BigEndian
 
     public override int GetHashCode()
     {
-        return (int)Value;
+        return HashCode.Combine(Value);
     }
 
 

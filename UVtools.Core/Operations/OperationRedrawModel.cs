@@ -144,12 +144,7 @@ public class OperationRedrawModel : Operation
         if (obj.GetType() != this.GetType()) return false;
         return Equals((OperationRedrawModel) obj);
     }
-
-    public override int GetHashCode()
-    {
-        return HashCode.Combine(_brightness, _contactPointsOnly, (int) _redrawType, _ignoreContactLessPixels);
-    }
-
+    
     #endregion
 
     #region Methods

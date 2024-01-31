@@ -7,6 +7,7 @@
  */
 
 using BinarySerialization;
+using System;
 
 namespace UVtools.Core.Objects;
 
@@ -62,7 +63,7 @@ public sealed class NullTerminatedUintStringBigEndian
 
     public override int GetHashCode()
     {
-        return (SerializedValue != null ? SerializedValue.GetHashCode() : 0);
+        return HashCode.Combine(SerializedValue);
     }
 
     public static implicit operator NullTerminatedUintStringBigEndian(string value) => new(value);

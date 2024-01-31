@@ -503,37 +503,6 @@ public sealed class OperationCalibrateXYZAccuracy : Operation
         return ReferenceEquals(this, obj) || obj is OperationCalibrateXYZAccuracy other && Equals(other);
     }
 
-    public override int GetHashCode()
-    {
-        var hashCode = new HashCode();
-        hashCode.Add(_layerHeight);
-        hashCode.Add(_bottomLayers);
-        hashCode.Add(_bottomExposure);
-        hashCode.Add(_normalExposure);
-        hashCode.Add(_topBottomMargin);
-        hashCode.Add(_leftRightMargin);
-        hashCode.Add(_xSize);
-        hashCode.Add(_ySize);
-        hashCode.Add(_zSize);
-        hashCode.Add(_centerHoleRelief);
-        hashCode.Add(_hollowModel);
-        hashCode.Add(_mirrorOutput);
-        hashCode.Add(_wallThickness);
-        hashCode.Add(_observedXSize);
-        hashCode.Add(_observedYSize);
-        hashCode.Add(_observedZSize);
-        hashCode.Add(_outputTLObject);
-        hashCode.Add(_outputTCObject);
-        hashCode.Add(_outputTRObject);
-        hashCode.Add(_outputMLObject);
-        hashCode.Add(_outputMCObject);
-        hashCode.Add(_outputMRObject);
-        hashCode.Add(_outputBLObject);
-        hashCode.Add(_outputBCObject);
-        hashCode.Add(_outputBRObject);
-        return hashCode.ToHashCode();
-    }
-
     #endregion
 
     #region Methods

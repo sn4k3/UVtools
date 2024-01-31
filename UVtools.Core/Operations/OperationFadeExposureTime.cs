@@ -169,10 +169,6 @@ public class OperationFadeExposureTime : Operation
         return Equals((OperationFadeExposureTime) obj);
     }
 
-    public override int GetHashCode()
-    {
-        return HashCode.Combine(_layerCount, _fromExposureTime, _toExposureTime, _disableFirmwareTransitionLayers);
-    }
 
     #endregion
 

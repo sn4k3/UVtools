@@ -127,10 +127,6 @@ public sealed class OperationLayerRemove : Operation
         return ReferenceEquals(this, obj) || obj is OperationLayerRemove other && Equals(other);
     }
 
-    public override int GetHashCode()
-    {
-        return HashCode.Combine(_useThreshold, _pixelThreshold);
-    }
     #endregion
 
     #region Methods

@@ -309,6 +309,20 @@
             <param name="cancellationToken"></param>
             <returns></returns>
         </member>
+        <member name="M:UVtools.Core.EmguCV.CMat.RawDecompress(System.Object)">
+            <summary>
+            Decompresses the <see cref="P:UVtools.Core.EmguCV.CMat.CompressedBytes"/> into a new <see cref="P:UVtools.Core.EmguCV.CMat.Mat"/> without expanding into the original <see cref="P:UVtools.Core.EmguCV.CMat.Mat"/> if there is a <see cref="P:UVtools.Core.EmguCV.CMat.Roi"/>.
+            </summary>
+            <param name="argument"></param>
+            <returns>Returns a <see cref="P:UVtools.Core.EmguCV.CMat.Mat"/> with size of <see cref="P:UVtools.Core.EmguCV.CMat.Roi"/> if is not empty, otherwise returns the original <see cref="P:UVtools.Core.EmguCV.CMat.Size"/></returns>
+        </member>
+        <member name="M:UVtools.Core.EmguCV.CMat.RawDecompressAsync(System.Object,System.Threading.CancellationToken)">
+            <summary>
+            Decompresses the <see cref="P:UVtools.Core.EmguCV.CMat.CompressedBytes"/> into a new <see cref="P:UVtools.Core.EmguCV.CMat.Mat"/> without expanding into the original <see cref="P:UVtools.Core.EmguCV.CMat.Mat"/> if there is a <see cref="P:UVtools.Core.EmguCV.CMat.Roi"/>.
+            </summary>
+            <param name="argument"></param>
+            <returns>Returns a <see cref="P:UVtools.Core.EmguCV.CMat.Mat"/> with size of <see cref="P:UVtools.Core.EmguCV.CMat.Roi"/> if is not empty, otherwise returns the original <see cref="P:UVtools.Core.EmguCV.CMat.Size"/></returns>
+        </member>
         <member name="M:UVtools.Core.EmguCV.CMat.Decompress(System.Object)">
             <summary>
             Decompresses the <see cref="P:UVtools.Core.EmguCV.CMat.CompressedBytes"/> into a new <see cref="P:UVtools.Core.EmguCV.CMat.Mat"/>.
@@ -908,14 +922,14 @@
             <param name="color"></param>
             <returns></returns>
         </member>
-        <member name="M:UVtools.Core.Extensions.EmguExtensions.NewBlank(Emgu.CV.Mat)">
+        <member name="M:UVtools.Core.Extensions.EmguExtensions.NewZeros(Emgu.CV.Mat)">
             <summary>
             Creates a new blanked (All zeros) <see cref="T:Emgu.CV.Mat"/> with same size and type of the source
             </summary>
             <param name="mat"></param>
             <returns>Blanked <see cref="T:Emgu.CV.Mat"/></returns>
         </member>
-        <member name="M:UVtools.Core.Extensions.EmguExtensions.NewBlank(Emgu.CV.UMat)">
+        <member name="M:UVtools.Core.Extensions.EmguExtensions.NewZeros(Emgu.CV.UMat)">
             <summary>
             Creates a new blanked (All zeros) <see cref="T:Emgu.CV.UMat"/> with same size and type of the source
             </summary>
@@ -1653,7 +1667,7 @@
             <param name="offset">Offset, by which every contour point is shifted. This is useful if the contours are extracted from the image ROI and then they should be analyzed in the whole image context</param>
             <returns>Detected contours. Each contour is stored as a vector of points.</returns>
         </member>
-        <member name="M:UVtools.Core.Extensions.EmguExtensions.Skeletonize(Emgu.CV.Mat,System.Int32@,System.Drawing.Size,Emgu.CV.CvEnum.ElementShape)">
+        <member name="M:UVtools.Core.Extensions.EmguExtensions.Skeletonize(Emgu.CV.Mat,System.Int32@,System.Drawing.Size,Emgu.CV.CvEnum.ElementShape,System.Threading.CancellationToken)">
             <summary>
             Determine the area (i.e. total number of pixels in the image),
             initialize the output skeletonized image, and construct the
@@ -1663,8 +1677,9 @@
             <param name="iterations">Number of iterations required to perform the skeletoize</param>
             <param name="ksize"></param>
             <param name="elementShape"></param>
+            <param name="cancellationToken"></param>
         </member>
-        <member name="M:UVtools.Core.Extensions.EmguExtensions.Skeletonize(Emgu.CV.Mat,System.Drawing.Size,Emgu.CV.CvEnum.ElementShape)">
+        <member name="M:UVtools.Core.Extensions.EmguExtensions.Skeletonize(Emgu.CV.Mat,System.Drawing.Size,Emgu.CV.CvEnum.ElementShape,System.Threading.CancellationToken)">
             <summary>
             Determine the area (i.e. total number of pixels in the image),
             initialize the output skeletonized image, and construct the
@@ -1673,6 +1688,7 @@
             <param name="src"></param>
             <param name="ksize"></param>
             <param name="elementShape"></param>
+            <param name="cancellationToken"></param>
         </member>
         <member name="M:UVtools.Core.Extensions.EmguExtensions.GetDynamicKernel(System.Int32@,Emgu.CV.CvEnum.ElementShape)">
             <summary>

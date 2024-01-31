@@ -132,19 +132,7 @@ public class OperationResize : Operation
         if (obj.GetType() != GetType()) return false;
         return Equals((OperationResize) obj);
     }
-
-    public override int GetHashCode()
-    {
-        unchecked
-        {
-            var hashCode = _x.GetHashCode();
-            hashCode = (hashCode * 397) ^ _y.GetHashCode();
-            hashCode = (hashCode * 397) ^ _constrainXy.GetHashCode();
-            hashCode = (hashCode * 397) ^ _isFade.GetHashCode();
-            return hashCode;
-        }
-    }
-
+    
     #endregion
 
     #region Methods

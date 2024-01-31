@@ -299,11 +299,6 @@ public class OperationPhasedExposure : Operation, IEquatable<OperationPhasedExpo
         return Equals((OperationPhasedExposure)obj);
     }
 
-    public override int GetHashCode()
-    {
-        return HashCode.Combine(_phasedExposures, _exposureDifferenceOnly, _exposureDifferenceOnlyOverlapIterations, _differentSettingsForSequentialLayers, _sequentialLiftHeightEnabled, _sequentialLiftHeight, _sequentialWaitTimeBeforeCureEnabled, _sequentialWaitTimeBeforeCure);
-    }
-
     public static bool operator ==(OperationPhasedExposure? left, OperationPhasedExposure? right)
     {
         return Equals(left, right);

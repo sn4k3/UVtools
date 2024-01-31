@@ -9,6 +9,9 @@
 using System;
 using System.Drawing;
 using System.Linq;
+using System.Reflection.Metadata;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Emgu.CV;
@@ -239,14 +242,16 @@ public class CMat : IEquatable<CMat>
     /// <returns>True if compressor has been changed, otherwise false.</returns>
     public bool ChangeCompressor(MatCompressor compressor, bool reEncodeWithNewCompressor = false, object? argument = null)
     {
-        bool willReEncode = reEncodeWithNewCompressor && !ReferenceEquals(Decompressor, compressor);
+        bool willReEncode = reEncodeWithNewCompressor && !IsEmpty && !ReferenceEquals(Decompressor, compressor);
         if (ReferenceEquals(Compressor, compressor) && !willReEncode) return false; // Nothing to change
         Compressor = compressor;
 
         if (willReEncode)
         {
-            using var mat = Decompress(argument);
+            using var mat = RawDecompress(argument);
+            var lastRoi = Roi;
             Compress(mat);
+            Roi = lastRoi;
         }
 
         return true;
@@ -262,7 +267,7 @@ public class CMat : IEquatable<CMat>
     /// <returns>True if compressor has been changed, otherwise false.</returns>
     public Task<bool> ChangeCompressorAsync(MatCompressor compressor, bool reEncodeWithNewCompressor = false, object? argument = null, CancellationToken cancellationToken = default)
     {
-        bool willReEncode = reEncodeWithNewCompressor && !ReferenceEquals(Decompressor, compressor);
+        bool willReEncode = reEncodeWithNewCompressor && !IsEmpty && !ReferenceEquals(Decompressor, compressor);
         if (ReferenceEquals(Compressor, compressor) && !willReEncode) return Task.FromResult(false); // Nothing to change
         Compressor = compressor;
 
@@ -270,8 +275,10 @@ public class CMat : IEquatable<CMat>
 
         return Task.Run(() =>
         {
-            using var mat = Decompress(argument);
+            using var mat = RawDecompress(argument);
+            var lastRoi = Roi;
             Compress(mat);
+            Roi = lastRoi;
             return true;
         }, cancellationToken);
     }
@@ -448,6 +455,39 @@ public class CMat : IEquatable<CMat>
     }
 
     /// <summary>
+    /// Decompresses the <see cref="CompressedBytes"/> into a new <see cref="Mat"/> without expanding into the original <see cref="Mat"/> if there is a <see cref="Roi"/>.
+    /// </summary>
+    /// <param name="argument"></param>
+    /// <returns>Returns a <see cref="Mat"/> with size of <see cref="Roi"/> if is not empty, otherwise returns the original <see cref="Size"/></returns>
+    public Mat RawDecompress(object? argument = null)
+    {
+        if (IsEmpty) return Roi.Size.IsEmpty ? CreateMatZeros() : EmguExtensions.InitMat(Roi.Size, Channels, Depth);
+
+        var mat = Roi.Size.IsEmpty ? CreateMat() : new Mat(Roi.Size, Depth, Channels);
+
+        if (IsCompressed)
+        {
+            Decompressor.Decompress(_compressedBytes, mat, argument);
+        }
+        else
+        {
+            mat.SetBytes(_compressedBytes);
+        }
+
+        return mat;
+    }
+
+    /// <summary>
+    /// Decompresses the <see cref="CompressedBytes"/> into a new <see cref="Mat"/> without expanding into the original <see cref="Mat"/> if there is a <see cref="Roi"/>.
+    /// </summary>
+    /// <param name="argument"></param>
+    /// <returns>Returns a <see cref="Mat"/> with size of <see cref="Roi"/> if is not empty, otherwise returns the original <see cref="Size"/></returns>
+    public Task<Mat> RawDecompressAsync(object? argument = null, CancellationToken cancellationToken = default)
+    {
+        return Task.Run(() => RawDecompress(argument), cancellationToken);
+    }
+
+    /// <summary>
     /// Decompresses the <see cref="CompressedBytes"/> into a new <see cref="Mat"/>.
     /// </summary>
     /// <param name="argument"></param>
@@ -575,21 +615,6 @@ public class CMat : IEquatable<CMat>
         if (ReferenceEquals(this, obj)) return true;
         if (obj.GetType() != this.GetType()) return false;
         return Equals((CMat)obj);
-    }
-
-    public override int GetHashCode()
-    {
-        var hashCode = new HashCode();
-        hashCode.Add(_compressedBytes);
-        hashCode.Add(IsInitialized);
-        hashCode.Add(IsCompressed);
-        hashCode.Add(ThresholdToCompress);
-        hashCode.Add(Width);
-        hashCode.Add(Height);
-        hashCode.Add((int)Depth);
-        hashCode.Add(Channels);
-        hashCode.Add(Roi);
-        return hashCode.ToHashCode();
     }
 
     public static bool operator ==(CMat? left, CMat? right)

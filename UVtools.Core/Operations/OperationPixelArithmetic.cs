@@ -560,8 +560,8 @@ public class OperationPixelArithmetic : Operation
             _patternAlternate ??= _pattern;
 
             var target = new Mat(GetMatSizeCropped(), DepthType.Cv8U, 1);
-            patternMat = target.NewBlank();
-            patternAlternateMat = target.NewBlank();
+            patternMat = target.NewZeros();
+            patternAlternateMat = target.NewZeros();
 
             CvInvoke.Repeat(_pattern, (int)Math.Ceiling((double)target.Rows / _pattern.Rows), (int)Math.Ceiling((double)target.Cols / _pattern.Cols), patternMat);
             CvInvoke.Repeat(_patternAlternate, (int)Math.Ceiling((double)target.Rows / _patternAlternate.Rows), (int)Math.Ceiling((double)target.Cols / _patternAlternate.Cols), patternAlternateMat);
@@ -1282,36 +1282,6 @@ public class OperationPixelArithmetic : Operation
         if (obj.GetType() != this.GetType()) return false;
         return Equals((OperationPixelArithmetic) obj);
     }
-
-    public override int GetHashCode()
-    {
-        var hashCode = new HashCode();
-        hashCode.Add((int) _operator);
-        hashCode.Add((int) _applyMethod);
-        hashCode.Add(_wallThicknessStart);
-        hashCode.Add(_wallThicknessEnd);
-        hashCode.Add(_wallChamfer);
-        hashCode.Add((int) _ignoreAreaOperator);
-        hashCode.Add(_ignoreAreaThreshold);
-        hashCode.Add(_value);
-        hashCode.Add(_usePattern);
-        hashCode.Add((int) _thresholdType);
-        hashCode.Add(_thresholdMaxValue);
-        hashCode.Add(_patternAlternatePerLayersNumber);
-        hashCode.Add(_patternInvert);
-        hashCode.Add(_patternText);
-        hashCode.Add(_patternTextAlternate);
-        hashCode.Add(_patternGenMinBrightness);
-        hashCode.Add(_patternGenBrightness);
-        hashCode.Add(_patternGenInfillThickness);
-        hashCode.Add(_patternGenInfillSpacing);
-        hashCode.Add(_noiseMinOffset);
-        hashCode.Add(_noiseMaxOffset);
-        hashCode.Add(_noiseThreshold);
-        hashCode.Add(_noisePixelArea);
-        hashCode.Add(_noisePasses);
-        return hashCode.ToHashCode();
-    }
-
+    
     #endregion
 }

@@ -323,10 +323,6 @@ public sealed class OperationChangeResolution : Operation
         return ReferenceEquals(this, obj) || obj is OperationChangeResolution other && Equals(other);
     }
 
-    public override int GetHashCode()
-    {
-        return HashCode.Combine(_newResolutionX, _newResolutionY, _fixRatio, _newDisplayWidth, _newDisplayHeight);
-    }
 
     #endregion
 

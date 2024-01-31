@@ -8,7 +8,9 @@
 
 using Emgu.CV;
 using System;
+using System.Drawing;
 using System.Threading.Tasks;
+using Emgu.CV.CvEnum;
 using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 
@@ -86,7 +88,7 @@ public sealed class OperationLayerExportSkeleton : Operation
 
     protected override bool ExecuteInternally(OperationProgress progress)
     {
-        using var skeletonSum = EmguExtensions.InitMat(SlicerFile.Resolution);
+        using var skeletonSum = SlicerFile.CreateMat();
         using var skeletonSumRoi = GetRoiOrDefault(skeletonSum);
         using var mask = GetMask(skeletonSum);
             
@@ -96,7 +98,7 @@ public sealed class OperationLayerExportSkeleton : Operation
             progress.PauseIfRequested();
             using var mat = SlicerFile[layerIndex].LayerMat;
             using var matRoi = GetRoiOrDefault(mat);
-            using var skeletonRoi = matRoi.Skeletonize();
+            using var skeletonRoi = matRoi.Skeletonize(new Size(3, 3), ElementShape.Rectangle, progress.Token);
             lock (progress.Mutex)
             {
                 CvInvoke.Add(skeletonSumRoi, skeletonRoi, skeletonSumRoi, mask);
@@ -130,10 +132,6 @@ public sealed class OperationLayerExportSkeleton : Operation
         return ReferenceEquals(this, obj) || obj is OperationLayerExportSkeleton other && Equals(other);
     }
 
-    public override int GetHashCode()
-    {
-        return HashCode.Combine(_filePath, _cropByRoi);
-    }
 
     #endregion
 }

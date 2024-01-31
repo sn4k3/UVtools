@@ -153,12 +153,7 @@ public sealed class OperationMorph : Operation
     {
         return ReferenceEquals(this, obj) || obj is OperationMorph other && Equals(other);
     }
-
-    public override int GetHashCode()
-    {
-        return HashCode.Combine((int)_morphOperation, _iterationsStart, _iterationsEnd, _chamfer);
-    }
-
+    
     #endregion
 
     #region Methods

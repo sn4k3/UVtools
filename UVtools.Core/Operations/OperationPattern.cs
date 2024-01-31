@@ -310,7 +310,7 @@ public class OperationPattern : Operation
             progress.PauseIfRequested();
             using var mat = SlicerFile[layerIndex].LayerMat;
             using var layerRoi = new Mat(mat, ROI);
-            using var dstLayer = mat.NewBlank();
+            using var dstLayer = mat.NewZeros();
             for (ushort col = 0; col < Cols; col++)
             for (ushort row = 0; row < Rows; row++)
             {

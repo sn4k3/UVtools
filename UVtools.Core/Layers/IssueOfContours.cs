@@ -6,6 +6,7 @@
  *  of this license document, but changing it is not allowed.
  */
 
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -51,6 +52,6 @@ public sealed class IssueOfContours : Issue
 
     public override int GetHashCode()
     {
-        return (Contours != null ? Contours.GetHashCode() : 0);
+        return HashCode.Combine(Contours);
     }
 }

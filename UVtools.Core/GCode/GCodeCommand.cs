@@ -6,6 +6,8 @@
  *  of this license document, but changing it is not allowed.
  */
 
+using System;
+
 namespace UVtools.Core.GCode;
 
 public class GCodeCommand
@@ -114,6 +116,6 @@ public class GCodeCommand
 
     public override int GetHashCode()
     {
-        return (Command != null ? Command.GetHashCode() : 0);
+        return HashCode.Combine(Command, Arguments);
     }
 }

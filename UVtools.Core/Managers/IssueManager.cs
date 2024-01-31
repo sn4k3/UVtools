@@ -719,7 +719,7 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
                         if (resinTrapsContoursArea[layerIndex][i] < resinTrapConfig.RequiredAreaToProcessCheck) return;
 
                         /* intersect current contour, with the current airmap. */
-                        using var currentContour = curLayer.NewBlank();
+                        using var currentContour = curLayer.NewZeros();
                         using var airOverlap = new Mat();
                         CvInvoke.DrawContours(currentContour, hollows[layerIndex][i], -1, EmguExtensions.WhiteColor, -1);
                         CvInvoke.BitwiseAnd(currentAirMap, currentContour, airOverlap);
@@ -821,7 +821,7 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
                         if (progress.Token.IsCancellationRequested) return;
 
                         /* check if each contour overlaps known air */
-                        using var currentContour = curLayer.NewBlank();
+                        using var currentContour = curLayer.NewZeros();
                         using var airOverlap = new Mat();
                         CvInvoke.DrawContours(currentContour, resinTraps[layerIndex][x], -1, EmguExtensions.WhiteColor, -1);
 
@@ -1184,7 +1184,7 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
         CvInvoke.Circle(circleCheck, new(centroid.X + inverseOffset.X, centroid.Y + inverseOffset.Y), diameter, EmguExtensions.WhiteColor, -1);
         CvInvoke.BitwiseAnd(circleCheck, contourMat, circleCheck);
 
-        return CvInvoke.CountNonZero(circleCheck) > 0
+        return CvInvoke.HasNonZero(circleCheck)
             ? centroid       /* 5px centroid is inside layer! drill baby drill */
             : new Point(-1,-1); /* centroid is not inside the actual contour, no drill */
     }

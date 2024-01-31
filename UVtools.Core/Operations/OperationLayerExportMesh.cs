@@ -695,10 +695,6 @@ public sealed class OperationLayerExportMesh : Operation
         return ReferenceEquals(this, obj) || obj is OperationLayerExportMesh other && Equals(other);
     }
 
-    public override int GetHashCode()
-    {
-        return HashCode.Combine(_filePath, (int)_meshFileFormat, (int)_quality, (int)_rotateDirection, (int)_flipDirection, _stripAntiAliasing);
-    }
 
     #endregion
 }

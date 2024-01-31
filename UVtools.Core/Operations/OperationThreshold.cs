@@ -122,17 +122,6 @@ public class OperationThreshold : Operation
         if (obj.GetType() != this.GetType()) return false;
         return Equals((OperationThreshold) obj);
     }
-
-    public override int GetHashCode()
-    {
-        unchecked
-        {
-            var hashCode = _threshold.GetHashCode();
-            hashCode = (hashCode * 397) ^ _maximum.GetHashCode();
-            hashCode = (hashCode * 397) ^ (int) _type;
-            return hashCode;
-        }
-    }
-
+    
     #endregion
 }

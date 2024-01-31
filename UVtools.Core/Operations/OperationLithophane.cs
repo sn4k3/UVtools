@@ -299,35 +299,7 @@ public class OperationLithophane : Operation
         if (obj.GetType() != this.GetType()) return false;
         return Equals((OperationLithophane) obj);
     }
-
-    public override int GetHashCode()
-    {
-        var hashCode = new HashCode();
-        hashCode.Add(_layerHeight);
-        hashCode.Add(_bottomLayerCount);
-        hashCode.Add(_bottomExposure);
-        hashCode.Add(_normalExposure);
-        hashCode.Add(_filePath);
-        hashCode.Add((int) _rotate);
-        hashCode.Add(_mirror);
-        hashCode.Add(_invertColor);
-        hashCode.Add(_enhanceContrast);
-        hashCode.Add(_resizeFactor);
-        hashCode.Add(_brightnessGain);
-        hashCode.Add(_gapClosingIterations);
-        hashCode.Add(_removeNoiseIterations);
-        hashCode.Add(_gaussianBlur);
-        hashCode.Add(_startThresholdRange);
-        hashCode.Add(_endThresholdRange);
-        hashCode.Add(_baseThickness);
-        hashCode.Add((int) _baseType);
-        hashCode.Add(_baseMargin);
-        hashCode.Add(_lithophaneHeight);
-        hashCode.Add(_oneLayerPerThreshold);
-        hashCode.Add(_enableAntiAliasing);
-        return hashCode.ToHashCode();
-    }
-
+    
     #endregion
 
     #region Methods
@@ -397,7 +369,7 @@ public class OperationLithophane : Operation
             progress.PauseIfRequested();
             using var thresholdMat = new Mat();
             CvInvoke.Threshold(mat, thresholdMat, threshold, byte.MaxValue, ThresholdType.Binary);
-            if (CvInvoke.CountNonZero(thresholdMat) == 0) return;
+            if (!CvInvoke.HasNonZero(thresholdMat)) return;
 
             if (_enableAntiAliasing)
             {

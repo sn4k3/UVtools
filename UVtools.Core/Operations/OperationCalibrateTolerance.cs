@@ -462,36 +462,7 @@ public sealed class OperationCalibrateTolerance : Operation
     {
         return ReferenceEquals(this, obj) || obj is OperationCalibrateTolerance other && Equals(other);
     }
-
-    public override int GetHashCode()
-    {
-        var hashCode = new HashCode();
-        hashCode.Add(_layerHeight);
-        hashCode.Add(_bottomLayers);
-        hashCode.Add(_bottomExposure);
-        hashCode.Add(_normalExposure);
-        hashCode.Add(_zSize);
-        hashCode.Add(_topBottomMargin);
-        hashCode.Add(_leftRightMargin);
-        hashCode.Add(_chamferLayers);
-        hashCode.Add(_erodeBottomIterations);
-        hashCode.Add((int) _shape);
-        hashCode.Add(_partMargin);
-        hashCode.Add(_outputSameDiameterPart);
-        hashCode.Add(_fuseParts);
-        hashCode.Add(_enableAntiAliasing);
-        hashCode.Add(_mirrorOutput);
-        hashCode.Add(_femaleDiameter);
-        hashCode.Add(_femaleHoleDiameter);
-        hashCode.Add(_maleThinnerModels);
-        hashCode.Add(_maleThinnerOffset);
-        hashCode.Add(_maleThinnerStep);
-        hashCode.Add(_maleThickerModels);
-        hashCode.Add(_maleThickerOffset);
-        hashCode.Add(_maleThickerStep);
-        return hashCode.ToHashCode();
-    }
-
+    
     #endregion
 
     #region Methods

@@ -249,28 +249,7 @@ public class OperationDoubleExposure : Operation
         if (obj.GetType() != this.GetType()) return false;
         return Equals((OperationDoubleExposure)obj);
     }
-
-    public override int GetHashCode()
-    {
-        var hashCode = new HashCode();
-        hashCode.Add(_firstBottomExposure);
-        hashCode.Add(_firstNormalExposure);
-        hashCode.Add(_secondBottomExposure);
-        hashCode.Add(_secondNormalExposure);
-        hashCode.Add(_firstBottomErodeIterations);
-        hashCode.Add(_secondBottomErodeIterations);
-        hashCode.Add(_firstNormalErodeIterations);
-        hashCode.Add(_secondNormalErodeIterations);
-        hashCode.Add(_secondLayerDifference);
-        hashCode.Add(_secondLayerDifferenceOverlapErodeIterations);
-        hashCode.Add(_differentSettingsForSecondLayer);
-        hashCode.Add(_secondLayerLiftHeightEnabled);
-        hashCode.Add(_secondLayerLiftHeight);
-        hashCode.Add(_secondLayerWaitTimeBeforeCureEnabled);
-        hashCode.Add(_secondLayerWaitTimeBeforeCure);
-        return hashCode.ToHashCode();
-    }
-
+    
     #endregion
 
     #region Methods

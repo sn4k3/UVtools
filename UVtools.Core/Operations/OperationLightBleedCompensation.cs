@@ -172,10 +172,6 @@ public class OperationLightBleedCompensation : Operation
         return Equals((OperationLightBleedCompensation) obj);
     }
 
-    public override int GetHashCode()
-    {
-        return HashCode.Combine((int) _lookupMode, _dimBy);
-    }
 
     #endregion
 

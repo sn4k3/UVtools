@@ -308,11 +308,6 @@ public sealed class OperationLayerExportGif : Operation
     {
         return ReferenceEquals(this, obj) || obj is OperationLayerExportGif other && Equals(other);
     }
-
-    public override int GetHashCode()
-    {
-        return HashCode.Combine(_clipByVolumeBounds, _renderLayerCount, _fps, _skip, _scale, (int) _rotateDirection, (int) _flipDirection, _repeats);
-    }
-
+    
     #endregion
 }

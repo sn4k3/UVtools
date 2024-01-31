@@ -18,6 +18,7 @@ using System.Drawing;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using CommunityToolkit.Diagnostics;
 using UVtools.Core.EmguCV;
 using UVtools.Core.Objects;
@@ -80,7 +81,7 @@ public static class EmguExtensions
     /// </summary>
     /// <param name="mat"></param>
     /// <returns>Blanked <see cref="Mat"/></returns>
-    public static Mat NewBlank(this Mat mat)
+    public static Mat NewZeros(this Mat mat)
         => InitMat(mat.Size, mat.NumberOfChannels, mat.Depth);
 
     /// <summary>
@@ -88,7 +89,7 @@ public static class EmguExtensions
     /// </summary>
     /// <param name="mat"></param>
     /// <returns>Blanked <see cref="Mat"/></returns>
-    public static UMat NewBlank(this UMat mat)
+    public static UMat NewZeros(this UMat mat)
         => InitUMat(mat.Size, mat.NumberOfChannels, mat.Depth);
 
     /// <summary>
@@ -608,7 +609,7 @@ public static class EmguExtensions
 
     public static Mat CreateMask(this Mat src, VectorOfVectorOfPoint contours, Point offset = default)
     {
-        var mask = src.NewBlank();
+        var mask = src.NewZeros();
         CvInvoke.DrawContours(mask, contours, -1, WhiteColor, -1, LineType.EightConnected, null, int.MaxValue, offset);
         return mask;
     }
@@ -729,7 +730,7 @@ public static class EmguExtensions
         using var contours = src.FindContours(out var hierarchy, RetrType.Tree);
         var contourGroups = EmguContours.GetContoursInGroups(contours, hierarchy);
 
-        var mask = src.NewBlank();
+        var mask = src.NewZeros();
         uint drawContours = 0;
         foreach (var contourGroup in contourGroups)
         {
@@ -755,7 +756,7 @@ public static class EmguExtensions
         using var contours = src.FindContours(out var hierarchy, RetrType.Tree);
         var contourGroups = EmguContours.GetContoursInGroups(contours, hierarchy);
 
-        var mask = src.NewBlank();
+        var mask = src.NewZeros();
         uint drawContours = 0;
         foreach (var contourGroup in contourGroups)
         {
@@ -1961,7 +1962,7 @@ public static class EmguExtensions
         org = org.Rotate(-angle, new Point(rotatedSrc.Size.Width / 2, rotatedSrc.Size.Height / 2));
         rotatedSrc.PutTextExtended(text, org, fontFace, fontScale, color, thickness, lineGapOffset, lineType, bottomLeftOrigin, lineAlignment);
    
-        using var mask = rotatedSrc.NewBlank();
+        using var mask = rotatedSrc.NewZeros();
         mask.PutTextExtended(text, org, fontFace, fontScale, WhiteColor, thickness, lineGapOffset, lineType, bottomLeftOrigin, lineAlignment);
 
         rotatedSrc.Rotate(angle, src.Size);
@@ -2103,21 +2104,23 @@ public static class EmguExtensions
     /// <param name="iterations">Number of iterations required to perform the skeletoize</param>
     /// <param name="ksize"></param>
     /// <param name="elementShape"></param>
-    public static Mat Skeletonize(this Mat src, out int iterations, Size ksize = default, ElementShape elementShape = ElementShape.Rectangle)
+    /// <param name="cancellationToken"></param>
+    public static Mat Skeletonize(this Mat src, out int iterations, Size ksize = default, ElementShape elementShape = ElementShape.Rectangle, CancellationToken cancellationToken = default)
     {
         if (ksize.IsEmpty) ksize = new Size(3, 3);
-        var skeleton = src.NewBlank();
-        var kernel = Kernel3x3Rectangle;
+        var skeleton = src.NewZeros();
+        using var kernel = CvInvoke.GetStructuringElement(elementShape, ksize, AnchorCenter);
 
         var image = src;
         using var temp = new Mat();
         iterations = 0;
+        using var eroded = new Mat();
         while (true)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             iterations++;
 
             // erode and dilate the image using the structuring element
-            using var eroded = new Mat();
             CvInvoke.Erode(image, eroded, kernel, AnchorCenter, 1, BorderType.Reflect101, default);
             CvInvoke.Dilate(eroded, temp, kernel, AnchorCenter, 1, BorderType.Reflect101, default);
 
@@ -2126,16 +2129,19 @@ public static class EmguExtensions
             // and the temporary image
             CvInvoke.Subtract(image, temp, temp);
             CvInvoke.BitwiseOr(skeleton, temp, skeleton);
-            image = eroded.Clone();
+
+            if (iterations > 1) image.Dispose();
 
             // if there are no more 'white' pixels in the image, then
             // break from the loop
-            if (CvInvoke.CountNonZero(image) == 0) break;
+            if (!CvInvoke.HasNonZero(eroded)) break;
+
+            image = eroded.Clone();
         }
 
         return skeleton;
     }
-        
+
     /// <summary>
     /// Determine the area (i.e. total number of pixels in the image),
     /// initialize the output skeletonized image, and construct the
@@ -2144,8 +2150,9 @@ public static class EmguExtensions
     /// <param name="src"></param>
     /// <param name="ksize"></param>
     /// <param name="elementShape"></param>
-    public static Mat Skeletonize(this Mat src, Size ksize = default, ElementShape elementShape = ElementShape.Rectangle)
-        => src.Skeletonize(out _, ksize, elementShape);
+    /// <param name="cancellationToken"></param>
+    public static Mat Skeletonize(this Mat src, Size ksize = default, ElementShape elementShape = ElementShape.Rectangle, CancellationToken cancellationToken = default)
+        => src.Skeletonize(out _, ksize, elementShape, cancellationToken);
     #endregion
 
     #region Kernel methods

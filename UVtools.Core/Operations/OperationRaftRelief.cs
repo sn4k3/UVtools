@@ -241,27 +241,7 @@ public class OperationRaftRelief : Operation
         if (obj.GetType() != this.GetType()) return false;
         return Equals((OperationRaftRelief) obj);
     }
-
-    public override int GetHashCode()
-    {
-        var hashCode = new HashCode();
-        hashCode.Add((int) _reliefType);
-        hashCode.Add(_maskLayerIndex);
-        hashCode.Add(_ignoreFirstLayers);
-        hashCode.Add(_lowBrightness);
-        hashCode.Add(_dilateIterations);
-        hashCode.Add(_wallMargin);
-        hashCode.Add(_holeDiameter);
-        hashCode.Add(_holeSpacing);
-        hashCode.Add(_linkedLineThickness);
-        hashCode.Add(_linkedMinimumLinks);
-        hashCode.Add(_linkedExternalSupports);
-        hashCode.Add(_highBrightness);
-        hashCode.Add(_tabTriangleBase);
-        hashCode.Add(_tabTriangleHeight);
-        return hashCode.ToHashCode();
-    }
-
+    
     #endregion
 
     #region Methods
@@ -314,7 +294,7 @@ public class OperationRaftRelief : Operation
         switch (ReliefType)
         {
             case RaftReliefTypes.Relief:
-                patternMat = supportsMat.NewBlank();
+                patternMat = supportsMat.NewZeros();
                 int shapeSize = HoleDiameter + HoleSpacing;
                 using (var shape = EmguExtensions.InitMat(new Size(shapeSize, shapeSize)))
                 {

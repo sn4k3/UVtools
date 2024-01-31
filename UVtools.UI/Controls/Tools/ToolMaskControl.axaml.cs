@@ -109,7 +109,7 @@ public partial class ToolMaskControl : ToolControl
     {
         if (!App.MainWindow.LayerCache.IsCached) return;
         var roi = App.MainWindow.ROI;
-        Operation.Mask = roi.IsEmpty ? App.MainWindow.LayerCache.Image!.NewBlank() : new Mat(roi.Size, DepthType.Cv8U, 1);
+        Operation.Mask = roi.IsEmpty ? App.MainWindow.LayerCache.Image!.NewZeros() : new Mat(roi.Size, DepthType.Cv8U, 1);
 
         int radius = (int)_genDiameter;
         if (radius == 0)

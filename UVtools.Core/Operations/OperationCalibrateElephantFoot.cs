@@ -397,34 +397,6 @@ public sealed class OperationCalibrateElephantFoot : Operation
         return ReferenceEquals(this, obj) || obj is OperationCalibrateElephantFoot other && Equals(other);
     }
 
-    public override int GetHashCode()
-    {
-        var hashCode = new HashCode();
-        hashCode.Add(_layerHeight);
-        hashCode.Add(_syncLayers);
-        hashCode.Add(_bottomLayers);
-        hashCode.Add(_normalLayers);
-        hashCode.Add(_bottomExposure);
-        hashCode.Add(_normalExposure);
-        hashCode.Add(_partScale);
-        hashCode.Add(_margin);
-        hashCode.Add(_extrudeText);
-        hashCode.Add(_textHeight);
-        hashCode.Add(_enableAntiAliasing);
-        hashCode.Add(_mirrorOutput);
-        hashCode.Add(_isErodeEnabled);
-        hashCode.Add(_erodeStartIteration);
-        hashCode.Add(_erodeEndIteration);
-        hashCode.Add(_erodeIterationSteps);
-        hashCode.Add(_isDimmingEnabled);
-        hashCode.Add(_dimmingWallThickness);
-        hashCode.Add(_dimmingStartBrightness);
-        hashCode.Add(_dimmingEndBrightness);
-        hashCode.Add(_dimmingBrightnessSteps);
-        hashCode.Add(_outputOriginalPart);
-        return hashCode.ToHashCode();
-    }
-
     #endregion
 
     #region Methods
@@ -649,7 +621,7 @@ public sealed class OperationCalibrateElephantFoot : Operation
                 using (var roi = new Mat(layers[0], new Rectangle(new Point(currentX, currentY), shape.Size)))
                 using (var erode = new Mat())
                 using (var target = new Mat())
-                using (var mask = shape.NewBlank())
+                using (var mask = shape.NewZeros())
                 {
                     mask.SetTo(new MCvScalar(byte.MaxValue-brightness));
                     int tempIterations = DimmingWallThickness;

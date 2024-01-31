@@ -191,25 +191,7 @@ public class OperationRepairLayers : Operation
         if (obj.GetType() != this.GetType()) return false;
         return Equals((OperationRepairLayers) obj);
     }
-
-    public override int GetHashCode()
-    {
-        var hashCode = new HashCode();
-        hashCode.Add(_detectIssues);
-        hashCode.Add(_repairIslands);
-        hashCode.Add(_repairResinTraps);
-        hashCode.Add(_repairSuctionCups);
-        hashCode.Add(_removeEmptyLayers);
-        hashCode.Add(_removeIslandsBelowEqualPixelCount);
-        hashCode.Add(_removeIslandsRecursiveIterations);
-        hashCode.Add(_attachIslandsBelowLayers);
-        hashCode.Add(_resinTrapsOverlapBy);
-        hashCode.Add(_suctionCupsVentHole);
-        hashCode.Add(_gapClosingIterations);
-        hashCode.Add(_noiseRemovalIterations);
-        return hashCode.ToHashCode();
-    }
-
+    
     #endregion
 
     #region Methods

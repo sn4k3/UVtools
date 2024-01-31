@@ -114,14 +114,14 @@ public class Voxelizer
 
         /* the outer contours of the current layer should always be checked, they by definition should have an exposed face */
         using var contours = curLayer.FindContours(RetrType.Tree, contourCompressionMethod);
-        var onlyContours = curLayer.NewBlank();
+        var onlyContours = curLayer.NewZeros();
         CvInvoke.DrawContours(onlyContours, contours, -1, EmguExtensions.WhiteColor, 1);
 
         bool needAboveDispose = layerAbove is null;
         bool needBelowDispose = layerBelow is null;
 
-        layerAbove ??= curLayer.NewBlank();
-        layerBelow ??= curLayer.NewBlank();
+        layerAbove ??= curLayer.NewZeros();
+        layerBelow ??= curLayer.NewZeros();
 
         /* anything that is in the current layer but is not in the layer above, by definition has an exposed face */
         var upperSubtract = new Mat();
@@ -132,7 +132,7 @@ public class Voxelizer
         CvInvoke.Subtract(curLayer, layerBelow, lowerSubtract);
 
         /* Or all of these together to get the list of pixels that have exposed face(s) */
-        var voxelLayer = curLayer.NewBlank();
+        var voxelLayer = curLayer.NewZeros();
         CvInvoke.BitwiseOr(onlyContours, voxelLayer, voxelLayer);
         CvInvoke.BitwiseOr(upperSubtract, voxelLayer, voxelLayer);
         CvInvoke.BitwiseOr(lowerSubtract, voxelLayer, voxelLayer);

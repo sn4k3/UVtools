@@ -468,24 +468,6 @@ public sealed class OperationDynamicLayerHeight : Operation
         return ReferenceEquals(this, obj) || obj is OperationDynamicLayerHeight other && Equals(other);
     }
 
-    public override int GetHashCode()
-    {
-        var hashCode = new HashCode();
-        hashCode.Add(_cacheRamSize);
-        hashCode.Add(_minimumLayerHeight);
-        hashCode.Add(_maximumLayerHeight);
-        hashCode.Add(_stripAntiAliasing);
-        hashCode.Add(_reconstructAntiAliasing);
-        hashCode.Add(_maximumErodes);
-        hashCode.Add((int)_exposureSetType);
-        hashCode.Add(_iterateBottomExposureTime);
-        hashCode.Add(_bottomExposureTime);
-        hashCode.Add(_exposureTime);
-        hashCode.Add(_bottomExposureStep);
-        hashCode.Add(_exposureStep);
-        hashCode.Add(_manualExposureTable);
-        return hashCode.ToHashCode();
-    }
 
     #endregion
 
@@ -673,7 +655,7 @@ public sealed class OperationDynamicLayerHeight : Operation
                 //var currentLayerHeigthUm = currentLayerHeight * 1000.0;
                 //CvInvoke.Imshow("test", matXorSum);
                 //CvInvoke.WaitKey();
-                if (CvInvoke.CountNonZero(matXorSum) > 0) // Layers are different
+                if (CvInvoke.HasNonZero(matXorSum)) // Layers are different
                     //if (!matXorSum.IsZeroed(0, startPos, endPos + 1)) // Layers are different
                 {
                     //byte innerErodeCount = 0;
@@ -700,7 +682,7 @@ public sealed class OperationDynamicLayerHeight : Operation
                         CvInvoke.Erode(matXorSum, matXor, kernel, EmguExtensions.AnchorCenter, 1, BorderType.Reflect101, default);
                         //CvInvoke.Imshow("Render", erodeMatXor.Roi(SlicerFile.BoundingRectangle));
                         //CvInvoke.WaitKey();
-                        if (CvInvoke.CountNonZero(matXor) == 0)
+                        if (!CvInvoke.HasNonZero(matXor))
                             //if (erodeMatXor.IsZeroed(0, startPos, endPos+1)) // Image pixels exhausted and got empty image, can pack and go next
                         {
                             meetRequirement = true;

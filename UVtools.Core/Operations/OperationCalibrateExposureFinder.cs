@@ -1213,86 +1213,6 @@ public sealed class OperationCalibrateExposureFinder : Operation
         return ReferenceEquals(this, obj) || obj is OperationCalibrateExposureFinder other && Equals(other);
     }
 
-    public override int GetHashCode()
-    {
-        var hashCode = new HashCode();
-        hashCode.Add(_displayWidth);
-        hashCode.Add(_displayHeight);
-        hashCode.Add(_layerHeight);
-        hashCode.Add(_bottomLayers);
-        hashCode.Add(_bottomExposure);
-        hashCode.Add(_normalExposure);
-        hashCode.Add(_topBottomMargin);
-        hashCode.Add(_leftRightMargin);
-        hashCode.Add(_chamferLayers);
-        hashCode.Add(_erodeBottomIterations);
-        hashCode.Add(_partMargin);
-        hashCode.Add(_enableAntiAliasing);
-        hashCode.Add(_mirrorOutput);
-        hashCode.Add(_baseHeight);
-        hashCode.Add(_featuresHeight);
-        hashCode.Add(_featuresMargin);
-        hashCode.Add(_staircaseThicknessPx);
-        hashCode.Add(_staircaseThicknessMm);
-        hashCode.Add(_holesEnabled);
-        hashCode.Add((int)_holeShape);
-        hashCode.Add((int)_unitOfMeasure);
-        hashCode.Add(_holeDiametersPx);
-        hashCode.Add(_holeDiametersMm);
-        hashCode.Add(_barsEnabled);
-        hashCode.Add(_barSpacing);
-        hashCode.Add(_barLength);
-        hashCode.Add(_barVerticalSplitter);
-        hashCode.Add(_barFenceThickness);
-        hashCode.Add(_barFenceOffset);
-        hashCode.Add(_barThicknessesPx);
-        hashCode.Add(_barThicknessesMm);
-        hashCode.Add(_textEnabled);
-        hashCode.Add((int)_textFont);
-        hashCode.Add(_textScale);
-        hashCode.Add(_textThickness);
-        hashCode.Add(_text);
-        hashCode.Add(_multipleBrightness);
-        hashCode.Add((int)_multipleBrightnessExcludeFrom);
-        hashCode.Add(_multipleBrightnessValues);
-        hashCode.Add(_multipleBrightnessGenExposureTime);
-        hashCode.Add(_multipleBrightnessGenEmulatedAALevel);
-        hashCode.Add(_multipleBrightnessGenExposureFractions);
-        hashCode.Add(_multipleLayerHeight);
-        hashCode.Add(_multipleLayerHeightMaximum);
-        hashCode.Add(_multipleLayerHeightStep);
-        hashCode.Add((int)_multipleExposuresBaseLayersPrintMode);
-        hashCode.Add(_multipleExposuresBaseLayersCustomExposure);
-        hashCode.Add(_differentSettingsForSamePositionedLayers);
-        hashCode.Add(_samePositionedLayersLiftHeightEnabled);
-        hashCode.Add(_samePositionedLayersLiftHeight);
-        hashCode.Add(_samePositionedLayersWaitTimeBeforeCureEnabled);
-        hashCode.Add(_samePositionedLayersWaitTimeBeforeCure);
-        hashCode.Add(_multipleExposures);
-        hashCode.Add((int)_exposureGenType);
-        hashCode.Add(_exposureGenIgnoreBaseExposure);
-        hashCode.Add(_exposureGenBottomStep);
-        hashCode.Add(_exposureGenNormalStep);
-        hashCode.Add(_exposureGenTests);
-        hashCode.Add(_exposureGenManualLayerHeight);
-        hashCode.Add(_exposureGenManualBottom);
-        hashCode.Add(_exposureGenManualNormal);
-        hashCode.Add(_exposureTable);
-        hashCode.Add(_bullsEyeEnabled);
-        hashCode.Add(_bullsEyeConfigurationPx);
-        hashCode.Add(_bullsEyeConfigurationMm);
-        hashCode.Add(_bullsEyeInvertQuadrants);
-        hashCode.Add(_counterTrianglesEnabled);
-        hashCode.Add(_counterTrianglesTipOffset);
-        hashCode.Add(_counterTrianglesFence);
-        hashCode.Add(_patternModel);
-        hashCode.Add(_bullsEyeFenceThickness);
-        hashCode.Add(_bullsEyeFenceOffset);
-        hashCode.Add(_patternModelGlueBottomLayers);
-        hashCode.Add(_patternModelTextEnabled);
-        return hashCode.ToHashCode();
-    }
-
     #endregion
 
     #region Methods
@@ -1440,7 +1360,7 @@ public sealed class OperationCalibrateExposureFinder : Operation
         layers[0] = EmguExtensions.InitMat(rect.Size);
 
         CvInvoke.Rectangle(layers[0], rect, EmguExtensions.WhiteColor, -1, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
-        layers[1] = layers[0].NewBlank();
+        layers[1] = layers[0].NewZeros();
         if (holes.Length > 0)
         {
             CvInvoke.Rectangle(layers[1],
@@ -1904,7 +1824,7 @@ public sealed class OperationCalibrateExposureFinder : Operation
                 {
                     var newLayer = layer.Clone();
                     newLayer.ExposureTime = (float)(newLayer.IsBottomLayer ? group.Key.BottomExposure : group.Key.Exposure);
-                    using var newMat = mat.NewBlank();
+                    using var newMat = mat.NewZeros();
                     foreach (var brightness in brightnesses)
                     {
                         ExposureItem item = new(group.Key.LayerHeight, group.Key.BottomExposure, group.Key.Exposure, brightness);

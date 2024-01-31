@@ -308,10 +308,6 @@ public sealed class OperationLayerExportImage : Operation
         return ReferenceEquals(this, obj) || obj is OperationLayerExportImage other && Equals(other);
     }
 
-    public override int GetHashCode()
-    {
-        return HashCode.Combine(_outputFolder, _filename, (int) _imageType, (int) _rotateDirection, (int) _flipDirection, _padLayerIndex, _cropByRoi);
-    }
 
     #endregion
 }

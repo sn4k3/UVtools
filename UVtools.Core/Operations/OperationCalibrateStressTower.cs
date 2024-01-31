@@ -286,27 +286,6 @@ public sealed class OperationCalibrateStressTower : Operation
         return ReferenceEquals(this, obj) || obj is OperationCalibrateStressTower other && Equals(other);
     }
 
-    public override int GetHashCode()
-    {
-        var hashCode = new HashCode();
-        hashCode.Add(_layerHeight);
-        hashCode.Add(_bottomLayers);
-        hashCode.Add(_bottomExposure);
-        hashCode.Add(_normalExposure);
-        hashCode.Add(_baseDiameter);
-        hashCode.Add(_baseHeight);
-        hashCode.Add(_bodyHeight);
-        hashCode.Add(_ceilHeight);
-        hashCode.Add(_chamferLayers);
-        hashCode.Add(_enableAntiAliasing);
-        hashCode.Add(_mirrorOutput);
-        hashCode.Add(_spirals);
-        hashCode.Add(_spiralDiameter);
-        hashCode.Add((int) _spiralDirection);
-        hashCode.Add(_spiralAngleStepPerLayer);
-        return hashCode.ToHashCode();
-    }
-
     #endregion
 
     #region Methods

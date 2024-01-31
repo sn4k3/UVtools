@@ -310,27 +310,7 @@ public class OperationTimelapse : Operation
         if (obj.GetType() != this.GetType()) return false;
         return Equals((OperationTimelapse) obj);
     }
-
-    public override int GetHashCode()
-    {
-        var hashCode = new HashCode();
-        hashCode.Add(_raisePositionZ);
-        hashCode.Add(_outputDummyPixel);
-        hashCode.Add(_raiseEachNthHeight);
-        hashCode.Add((int) _raiseMode);
-        hashCode.Add(_waitTimeAfterLift);
-        hashCode.Add(_exposureTime);
-        hashCode.Add(_ensureLastLayer);
-        hashCode.Add(_useCustomLift);
-        hashCode.Add(_slowLiftHeight);
-        hashCode.Add(_liftSpeed);
-        hashCode.Add(_liftSpeed2);
-        hashCode.Add(_slowRetractHeight);
-        hashCode.Add(_retractSpeed);
-        hashCode.Add(_retractSpeed2);
-        return hashCode.ToHashCode();
-    }
-
+    
     #endregion
 
     #region Methods

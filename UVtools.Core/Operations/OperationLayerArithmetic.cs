@@ -331,9 +331,5 @@ public class OperationLayerArithmetic : Operation
         return Equals((OperationLayerArithmetic) obj);
     }
 
-    public override int GetHashCode()
-    {
-        return (_sentence != null ? _sentence.GetHashCode() : 0);
-    }
     #endregion
 }

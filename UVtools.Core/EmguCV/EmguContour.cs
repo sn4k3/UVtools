@@ -287,11 +287,6 @@ public class EmguContour : IReadOnlyList<Point>, IComparable<EmguContour>, IComp
         return Equals((EmguContour) obj);
     }
 
-    public override int GetHashCode()
-    {
-        return _contour.GetHashCode();
-    }
-
     public int CompareTo(EmguContour? other)
     {
         if (ReferenceEquals(this, other)) return 0;

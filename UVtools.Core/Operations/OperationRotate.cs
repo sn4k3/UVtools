@@ -83,12 +83,7 @@ public class OperationRotate : Operation
         if (obj.GetType() != GetType()) return false;
         return Equals((OperationRotate) obj);
     }
-
-    public override int GetHashCode()
-    {
-        return _angleDegrees.GetHashCode();
-    }
-
+    
     #endregion
 
     #region Methods

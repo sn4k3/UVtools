@@ -375,20 +375,6 @@ public sealed class OperationDynamicLifts : Operation
         return ReferenceEquals(this, obj) || obj is OperationDynamicLifts other && Equals(other);
     }
 
-    public override int GetHashCode()
-    {
-        var hashCode = new HashCode();
-        hashCode.Add((int)_setMethod);
-        hashCode.Add(_smallestBottomLiftHeight);
-        hashCode.Add(_largestBottomLiftHeight);
-        hashCode.Add(_smallestLiftHeight);
-        hashCode.Add(_largestLiftHeight);
-        hashCode.Add(_slowestBottomLiftSpeed);
-        hashCode.Add(_fastestBottomLiftSpeed);
-        hashCode.Add(_slowestLiftSpeed);
-        hashCode.Add(_fastestLiftSpeed);
-        return hashCode.ToHashCode();
-    }
 
     #endregion
 }

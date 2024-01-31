@@ -200,12 +200,5 @@ public sealed class OperationBlur : Operation
         return ReferenceEquals(this, obj) || obj is OperationBlur other && Equals(other);
     }
 
-    public override int GetHashCode()
-    {
-        unchecked
-        {
-            return ((int) _blurOperation * 397) ^ (int) _size;
-        }
-    }
     #endregion
 }

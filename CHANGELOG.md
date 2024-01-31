@@ -1,10 +1,16 @@
 # Changelog
 
+## 31/01/2024 - v4.2.1
+
+- (Improvement) Dynamic layer height, Lithophane, PCB exposure and Phased exposure: Use better performant `HasNonZero` instead of `CountNonZero` to check if there are any pixels to process
+- (Fix) Possible throw an exception about invalid roi when using Roi and/or masks under some tools
+- (Fix) Skeletonize memory leak
+
 ## 29/01/2024 - v4.2.0
 
 - **Layers:**
   - (Add) Brotli compression codec with good performance and compression ratio (Choose it if you have low available RAM)
-  - (Improvement) Use `ResizableMemory` instead of `MemoryStream` for `GZip` and `Deflate` compressions, this results in faster compressions and less memory pressure
+  - (Improvement) Use `RecyclableMemoryStream` instead of `MemoryStream` for `GZip` and `Deflate` compressions, this results in faster compressions and less memory pressure
   - (Improvement) Changed how layers are cached into the memory, before they were compressed and save for the whole image. Now it crops the bitmap to the bounding rectangle of the current layer and save only that portion with pixels.  
                   For example, if the image is empty the cached size will be 0 bytes, and in a 12K image but with a 100 x 100 usable area it will save only that area instead of requiring a 12K buffer.  
                   The size of the buffer is now dynamic and will depends on layer data, as so, this method can reduce the memory usage greatly, specially when using large images with a lot of empty space, but also boosts the overall performance by relief the allocations and the required memory footprint.  

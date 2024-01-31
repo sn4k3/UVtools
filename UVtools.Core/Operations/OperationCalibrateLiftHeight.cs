@@ -301,26 +301,6 @@ public sealed class OperationCalibrateLiftHeight : Operation
         return ReferenceEquals(this, obj) || obj is OperationCalibrateLiftHeight other && Equals(other);
     }
 
-    public override int GetHashCode()
-    {
-        var hashCode = new HashCode();
-        hashCode.Add(_layerHeight);
-        hashCode.Add(_bottomLayers);
-        hashCode.Add(_normalLayers);
-        hashCode.Add(_bottomExposure);
-        hashCode.Add(_normalExposure);
-        hashCode.Add(_bottomLiftHeight);
-        hashCode.Add(_liftHeight);
-        hashCode.Add(_bottomLiftSpeed);
-        hashCode.Add(_liftSpeed);
-        hashCode.Add(_retractSpeed);
-        hashCode.Add(_leftRightMargin);
-        hashCode.Add(_topBottomMargin);
-        hashCode.Add(_decreaseImage);
-        hashCode.Add(_decreaseImageFactor);
-        hashCode.Add(_minimumImageFactor);
-        return hashCode.ToHashCode();
-    }
 
     #endregion
 
@@ -385,7 +365,7 @@ public sealed class OperationCalibrateLiftHeight : Operation
             var rect = WhiteBlock;
             for (int factor = 100 - _decreaseImageFactor; factor >= _minimumImageFactor; factor -= _decreaseImageFactor)
             {
-                using var mat = layers[0].NewBlank();
+                using var mat = layers[0].NewZeros();
 
                 // size -  100
                 //  x   - factor

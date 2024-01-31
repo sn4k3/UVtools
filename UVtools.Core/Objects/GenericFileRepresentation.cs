@@ -131,7 +131,7 @@ public class GenericFileRepresentation : BindableBase, ICloneable,
 
     public override int GetHashCode()
     {
-        return _filePath.GetHashCode();
+        return HashCode.Combine(_filePath);
     }
     #endregion
 }

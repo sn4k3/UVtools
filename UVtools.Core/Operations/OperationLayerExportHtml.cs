@@ -663,10 +663,6 @@ public sealed class OperationLayerExportHtml : Operation
         return ReferenceEquals(this, obj) || obj is OperationLayerExportHtml other && Equals(other);
     }
 
-    public override int GetHashCode()
-    {
-        return HashCode.Combine(_filePath, _exportThumbnails, _exportLayerSettings, _exportGCode, _exportLayerPreview, _exportRawData);
-    }
 
     #endregion
 }

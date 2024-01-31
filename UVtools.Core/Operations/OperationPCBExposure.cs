@@ -254,23 +254,7 @@ public class OperationPCBExposure : Operation
         if (obj.GetType() != this.GetType()) return false;
         return Equals((OperationPCBExposure) obj);
     }
-
-    public override int GetHashCode()
-    {
-        var hashCode = new HashCode();
-        hashCode.Add(_files);
-        hashCode.Add(_mergeFiles);
-        hashCode.Add(_layerHeight);
-        hashCode.Add(_exposureTime);
-        hashCode.Add((int) _sizeMidpointRounding);
-        hashCode.Add(_offsetX);
-        hashCode.Add(_offsetY);
-        hashCode.Add(_mirror);
-        hashCode.Add(_invertColor);
-        hashCode.Add(_enableAntiAliasing);
-        return hashCode.ToHashCode();
-    }
-
+    
     #endregion
 
     #region Methods
@@ -383,7 +367,7 @@ public class OperationPCBExposure : Operation
             {
                 if (i == 0)
                 {
-                    if (CvInvoke.CountNonZero(mergeMat) > 0)
+                    if (CvInvoke.HasNonZero(mergeMat))
                     {
                         layers.Add(new Layer(mergeMat, SlicerFile));
                     }
@@ -392,7 +376,7 @@ public class OperationPCBExposure : Operation
                 {
                     using var mat = SlicerFile.CreateMat();
                     DrawMat(orderFiles[i], mat);
-                    if (CvInvoke.CountNonZero(mat) > 0)
+                    if (CvInvoke.HasNonZero(mat))
                     {
                         layers.Add(new Layer(mat, SlicerFile));
                     }
@@ -404,7 +388,7 @@ public class OperationPCBExposure : Operation
 
         if (_mergeFiles)
         {
-            if (CvInvoke.CountNonZero(mergeMat) > 0)
+            if (CvInvoke.HasNonZero(mergeMat))
             {
                 layers.Add(new Layer(mergeMat, SlicerFile));
             }

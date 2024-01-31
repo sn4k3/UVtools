@@ -301,7 +301,7 @@ public abstract class Operation : BindableBase, IDisposable
     /// <summary>
     /// Gets if there is an ROI associated
     /// </summary>
-    public bool HaveROI => !ROI.IsEmpty;
+    public bool HaveROI => !_roi.IsEmpty;
 
     /// <summary>
     /// Gets or sets an Mask to process this operation
@@ -696,8 +696,9 @@ public abstract class Operation : BindableBase, IDisposable
     {
         if (!HaveMask) return null;
 
-        var mask = mat.CreateMask(points!, offset);
-        return GetRoiOrDefault(mask);
+        if (!HaveROI) return mat.CreateMask(points!, offset);
+        using var mask = mat.CreateMask(points!, offset);
+        return GetRoiOrDefault(mask).Clone();
     }
 
     /// <summary>
@@ -709,7 +710,14 @@ public abstract class Operation : BindableBase, IDisposable
     public void ApplyMask(Mat original, Mat result, Mat? mask)
     {
         if (mask is null) return;
-        using var originalRoi = GetRoiOrDefault(original);
+        var originalRoi = original;
+        bool needDisposeOriginalRoi = false;
+        if (originalRoi.Size != result.Size) // Accept a ROI mat
+        {
+            originalRoi = GetRoiOrDefault(original);
+            needDisposeOriginalRoi = true;
+        }
+
         var resultRoi = result;
         bool needDisposeResultRoi = false;
         if (originalRoi.Size != result.Size) // Accept a ROI mat
@@ -729,6 +737,7 @@ public abstract class Operation : BindableBase, IDisposable
         resultRoi.CopyTo(tempMat, mask);
         tempMat.CopyTo(resultRoi);
 
+        if (needDisposeOriginalRoi) originalRoi.Dispose();
         if (needDisposeResultRoi) resultRoi.Dispose();
         if (needDisposeMask) mask.Dispose();
     }
