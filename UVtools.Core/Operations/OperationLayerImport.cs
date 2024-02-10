@@ -310,10 +310,8 @@ public sealed class OperationLayerImport : Operation
 
             foreach (var fileFormat in fileFormats)
             {
-                if (fileFormat.CanDecode)
-                {
-                    fileFormat.Decode(fileFormat.FileFullPath, progress);
-                }
+                if (!fileFormat.CanDecode) continue;
+                fileFormat.Decode(fileFormat.FileFullPath, progress);
 
                 var boundingRectangle = SlicerFile.GetBoundingRectangle(progress);
                 var fileFormatBoundingRectangle = fileFormat.GetBoundingRectangle(progress);
@@ -365,7 +363,7 @@ public sealed class OperationLayerImport : Operation
                             int layerCountDifference = (int)(_startLayerIndex + fileFormat.LayerCount - SlicerFile.LayerCount);
                             if (layerCountDifference > 0)
                             {
-                                SlicerFile.ReallocateEnd((uint)layerCountDifference, _importType == ImportTypes.Stack);
+                                SlicerFile.ReallocateEnd((uint)layerCountDifference);
                             }
                         }
 
@@ -379,7 +377,7 @@ public sealed class OperationLayerImport : Operation
                             int layerCountDifference = (int)(_startLayerIndex + fileFormat.LayerCount - SlicerFile.LayerCount);
                             if (layerCountDifference > 0)
                             {
-                                SlicerFile.ReallocateEnd((uint)layerCountDifference, true);
+                                SlicerFile.ReallocateEnd((uint)layerCountDifference);
                             }
                         }
                         importedFormats++;

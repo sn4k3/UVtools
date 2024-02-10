@@ -72,7 +72,7 @@ internal static class ExtractCommand
 
                             if (contentType == ExtractContentType.Layers)
                             {
-                                if (slicerFile.LayerCount == 0)
+                                if (!slicerFile.HaveLayers)
                                 {
                                     Program.WriteLineWarning("File have no valid layers to extract.");
                                     return;

@@ -173,7 +173,7 @@ public abstract class Suggestion : BindableBase
     public bool Execute(OperationProgress? progress = null)
     {
         if (_slicerFile is null) throw new InvalidOperationException($"The suggestion '{Title}' can't execute due the lacking of a file parent.");
-        if (!Enabled || !IsAvailable || IsApplied || IsInformativeOnly || SlicerFile.LayerCount == 0) return false;
+        if (!Enabled || !IsAvailable || IsApplied || IsInformativeOnly || !SlicerFile.HaveLayers) return false;
 
         progress ??= new OperationProgress();
         progress.Title = $"Applying suggestion: {Title}";

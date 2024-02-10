@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Drawing;
+using Emgu.CV.Structure;
 
 namespace UVtools.Core.Extensions;
 
@@ -44,7 +45,20 @@ public static class DrawingExtensions
 
         var vertices = new Point[sides];
 
-        double deg = 360.0 / sides;//calculate the rotation angle
+        /*if (sides == 4)
+        {
+            var rotatedRect = new RotatedRect(center, new SizeF(radius * 2, radius * 2), (float)startingAngle);
+            var verticesF = rotatedRect.GetVertices();
+            for (var i = 0; i < verticesF.Length; i++)
+            {
+                vertices[i] = verticesF[i].ToPoint();
+            }
+            return vertices;
+        }*/
+
+        
+
+        var deg = 360.0 / sides;//calculate the rotation angle
         var rad = Math.PI / 180.0;
 
         var x0 = center.X + radius * Math.Cos(-(((180 - deg) / 2) + startingAngle) * rad);
@@ -54,23 +68,23 @@ public static class DrawingExtensions
         var y1 = center.Y - radius * Math.Sin(-(((180 - deg) / 2) + deg + startingAngle) * rad);
 
         vertices[0] = new(
-            (int) Math.Round(x0),
-            (int) Math.Round(y0)
+            (int) Math.Round(x0, MidpointRounding.AwayFromZero),
+            (int) Math.Round(y0, MidpointRounding.AwayFromZero)
         );
 
         vertices[1] = new(
-            (int) Math.Round(x1),
-            (int) Math.Round(y1)
+            (int) Math.Round(x1, MidpointRounding.AwayFromZero),
+            (int) Math.Round(y1, MidpointRounding.AwayFromZero)
         );
 
         for (int i = 0; i < sides - 2; i++)
         {
-            double dsinrot = Math.Sin((deg * (i + 1)) * rad);
-            double dcosrot = Math.Cos((deg * (i + 1)) * rad);
+            var dsinrot = Math.Sin(deg * (i + 1) * rad);
+            var dcosrot = Math.Cos(deg * (i + 1) * rad);
 
             vertices[i + 2] = new(
-                (int)Math.Round(center.X + dcosrot * (x1 - center.X) - dsinrot * (y1 - center.Y)),
-                (int)Math.Round(center.Y + dsinrot * (x1 - center.X) + dcosrot * (y1 - center.Y))
+                (int)Math.Round(center.X + dcosrot * (x1 - center.X) - dsinrot * (y1 - center.Y), MidpointRounding.AwayFromZero),
+                (int)Math.Round(center.Y + dsinrot * (x1 - center.X) + dcosrot * (y1 - center.Y), MidpointRounding.AwayFromZero)
             );
         }
 

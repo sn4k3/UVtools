@@ -21,7 +21,7 @@ public class OperationProfiles //: IList<Operation>
 {
     #region Properties
     /// <summary>
-    /// Default filepath for store <see cref="UserSettings"/>
+    /// Default filepath for store <see cref="OperationProfiles"/>
     /// </summary>
     private static string FilePath => Path.Combine(UserSettings.SettingsFolder, "operation_profiles.xml");
 
@@ -38,10 +38,12 @@ public class OperationProfiles //: IList<Operation>
     [XmlElement(typeof(OperationLayerArithmetic))]
     [XmlElement(typeof(OperationPixelArithmetic))]
     [XmlElement(typeof(OperationPixelDimming))]
+    [XmlElement(typeof(OperationLightBleedCompensation))]
     [XmlElement(typeof(OperationInfill))]
     [XmlElement(typeof(OperationBlur))]
     [XmlElement(typeof(OperationFadeExposureTime))]
     [XmlElement(typeof(OperationDoubleExposure))]
+    [XmlElement(typeof(OperationPhasedExposure))]
     [XmlElement(typeof(OperationDynamicLayerHeight))]
     [XmlElement(typeof(OperationDynamicLifts))]
     [XmlElement(typeof(OperationRaiseOnPrintFinish))]
@@ -75,8 +77,7 @@ public class OperationProfiles //: IList<Operation>
 
     #region Singleton
 
-    private static Lazy<OperationProfiles> _instanceHolder =
-        new(() => new OperationProfiles());
+    private static Lazy<OperationProfiles> _instanceHolder = new(() => new OperationProfiles());
 
     /// <summary>
     /// Instance of <see cref="UserSettings"/> (singleton)

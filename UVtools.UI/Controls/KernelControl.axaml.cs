@@ -1,10 +1,11 @@
 ﻿using Avalonia;
+using Avalonia.Controls;
 using UVtools.Core.Objects;
 using UVtools.UI.Extensions;
 
 namespace UVtools.UI.Controls;
 
-public partial class KernelControl : UserControlEx
+public partial class KernelControl : UserControl
 {
     private KernelConfiguration? _kernel;
 

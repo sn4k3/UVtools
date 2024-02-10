@@ -269,6 +269,19 @@
             </summary>
             <param name="isInitialized">Sets the <see cref="P:UVtools.Core.EmguCV.CMat.IsInitialized"/> to a known state.</param>
         </member>
+        <member name="M:UVtools.Core.EmguCV.CMat.SetEmptyCompressedBytes(Emgu.CV.Mat)">
+            <summary>
+            Sets the <see cref="P:UVtools.Core.EmguCV.CMat.CompressedBytes"/> to an empty byte array, sets <see cref="P:UVtools.Core.EmguCV.CMat.IsCompressed"/> to false and extract size, depth and channels from a <see cref="P:UVtools.Core.EmguCV.CMat.Mat"/>.
+            </summary>
+            <param name="src">Source Mat to extract Size, Depth and Channels</param>
+        </member>
+        <member name="M:UVtools.Core.EmguCV.CMat.SetEmptyCompressedBytes(Emgu.CV.Mat,System.Boolean)">
+            <summary>
+            Sets the <see cref="P:UVtools.Core.EmguCV.CMat.CompressedBytes"/> to an empty byte array, sets <see cref="P:UVtools.Core.EmguCV.CMat.IsCompressed"/> to false and extract size, depth and channels from a <see cref="P:UVtools.Core.EmguCV.CMat.Mat"/>.
+            </summary>
+            <param name="src">Source Mat to extract Size, Depth and Channels</param>
+            <param name="isInitialized">Sets the <see cref="P:UVtools.Core.EmguCV.CMat.IsInitialized"/> to a known state.</param>
+        </member>
         <member name="M:UVtools.Core.EmguCV.CMat.SetCompressedBytes(System.Byte[],UVtools.Core.EmguCV.MatCompressor,System.Boolean)">
             <summary>
             Sets the <see cref="P:UVtools.Core.EmguCV.CMat.CompressedBytes"/> and <see cref="P:UVtools.Core.EmguCV.CMat.Compressor"/> and <see cref="P:UVtools.Core.EmguCV.CMat.Decompressor"/>.
@@ -276,6 +289,12 @@
             <param name="compressedBytes"></param>
             <param name="decompressor"></param>
             <param name="setCompressor"></param>
+        </member>
+        <member name="M:UVtools.Core.EmguCV.CMat.SetUncompressed(Emgu.CV.Mat)">
+            <summary>
+            Sets the <see cref="P:UVtools.Core.EmguCV.CMat.CompressedBytes"/> to uncompressed bitmap data.
+            </summary>
+            <param name="src"></param>
         </member>
         <member name="M:UVtools.Core.EmguCV.CMat.Compress(Emgu.CV.Mat,System.Object)">
             <summary>
@@ -3796,6 +3815,16 @@
             Checks if this file format supports per layer settings
             </summary>
         </member>
+        <member name="P:UVtools.Core.FileFormats.FileFormat.HaveLayers">
+            <summary>
+            Return true if this file have layers, otherwise false
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.FileFormat.Count">
+            <summary>
+            Gets the layer count
+            </summary>
+        </member>
         <member name="P:UVtools.Core.FileFormats.FileFormat.LayerCount">
             <summary>
             Gets or sets the layer count
@@ -4839,6 +4868,45 @@
             <param name="initMat">True to black out the mat</param>
             <returns></returns>
         </member>
+        <member name="M:UVtools.Core.FileFormats.FileFormat.ContainsLayer(System.Int32)">
+            <summary>
+            True if the <paramref name="layerIndex"/> exists in the collection, otherwise false
+            </summary>
+            <param name="layerIndex">Layer index to check</param>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.FileFormat.ContainsLayer(System.UInt32)">
+            <summary>
+            True if the <paramref name="layerIndex"/> exists in the collection, otherwise false
+            </summary>
+            <param name="layerIndex">Layer index to check</param>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.FileFormat.ContainsLayerAndValid(System.Int32)">
+            <summary>
+            True if the <paramref name="layerIndex"/> exists in the collection and if is valid, ie: not null, otherwise false
+            </summary>
+            <param name="layerIndex">Layer index to check</param>
+            <returns></returns>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.FileFormat.ContainsLayerAndValid(System.UInt32)">
+            <summary>
+            True if the <paramref name="layerIndex"/> exists in the collection and if is valid, ie: not null, otherwise false
+            </summary>
+            <param name="layerIndex">Layer index to check</param>
+            <returns></returns>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.FileFormat.ContainsLayer(UVtools.Core.Layers.Layer)">
+            <summary>
+            True if the <paramref name="layer"/> exists in the collection, otherwise false
+            </summary>
+            <param name="layer"></param>
+            <returns></returns>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.FileFormat.Contains(UVtools.Core.Layers.Layer)">
+            <summary>
+            True if the <paramref name="layer"/> exists in the collection, otherwise false
+            </summary>
+            <param name="layer"></param>
+        </member>
         <member name="M:UVtools.Core.FileFormats.FileFormat.CloneLayers">
             <summary>
             Clone layers
@@ -4851,15 +4919,14 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="M:UVtools.Core.FileFormats.FileFormat.Reallocate(System.UInt32,System.Boolean,System.Boolean)">
+        <member name="M:UVtools.Core.FileFormats.FileFormat.Reallocate(System.UInt32,System.Boolean)">
             <summary>
             Reallocate layer count with a new size
             </summary>
             <param name="newLayerCount">New layer count</param>
-            <param name="initBlack"></param>
             <param name="resetLayerProperties"></param>
         </member>
-        <member name="M:UVtools.Core.FileFormats.FileFormat.ReallocateInsert(System.UInt32,System.UInt32,System.Boolean,System.Boolean,System.Boolean)">
+        <member name="M:UVtools.Core.FileFormats.FileFormat.ReallocateInsert(System.UInt32,System.UInt32,System.Boolean,System.Boolean)">
             <summary>
             Reallocate at given index
             </summary>
@@ -4873,13 +4940,13 @@
             <param name="endLayerIndex"></param>
             <param name="resetLayerProperties"></param>
         </member>
-        <member name="M:UVtools.Core.FileFormats.FileFormat.ReallocateStart(System.UInt32,System.Boolean,System.Boolean,System.Boolean)">
+        <member name="M:UVtools.Core.FileFormats.FileFormat.ReallocateStart(System.UInt32,System.Boolean,System.Boolean)">
             <summary>
             Reallocate at start
             </summary>
             <returns></returns>
         </member>
-        <member name="M:UVtools.Core.FileFormats.FileFormat.ReallocateEnd(System.UInt32,System.Boolean,System.Boolean)">
+        <member name="M:UVtools.Core.FileFormats.FileFormat.ReallocateEnd(System.UInt32,System.Boolean)">
             <summary>
             Reallocate at end
             </summary>
@@ -4900,34 +4967,6 @@
             <param name="mats"></param>
             <param name="progress"></param>
             /// <returns>The new Layer array</returns>
-        </member>
-        <member name="M:UVtools.Core.FileFormats.FileFormat.LayerExists(System.Int32)">
-            <summary>
-            Checks if a layer index exists in the collection
-            </summary>
-            <param name="layerIndex">Layer index to check</param>
-            <returns></returns>
-        </member>
-        <member name="M:UVtools.Core.FileFormats.FileFormat.LayerExists(System.UInt32)">
-            <summary>
-            Checks if a layer index exists in the collection
-            </summary>
-            <param name="layerIndex">Layer index to check</param>
-            <returns></returns>
-        </member>
-        <member name="M:UVtools.Core.FileFormats.FileFormat.LayerExistsAndValid(System.Int32)">
-            <summary>
-            Checks if a layer index exists in the collection and if is valid, ie: not null
-            </summary>
-            <param name="layerIndex">Layer index to check</param>
-            <returns></returns>
-        </member>
-        <member name="M:UVtools.Core.FileFormats.FileFormat.LayerExistsAndValid(System.UInt32)">
-            <summary>
-            Checks if a layer index exists in the collection and if is valid, ie: not null
-            </summary>
-            <param name="layerIndex">Layer index to check</param>
-            <returns></returns>
         </member>
         <member name="M:UVtools.Core.FileFormats.FileFormat.TryParseLayerIndexRange(System.String,System.UInt32@,System.UInt32@)">
             <summary>
@@ -8322,11 +8361,6 @@
             <summary>
             Gets or sets if last layer must be ensured in the sequence,
             If true, it will generate an obligatory additional layer to cover the last layer
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.PixelEditor.PixelOperation.Index">
-            <summary>
-            Gets or sets the index number to show on GUI
             </summary>
         </member>
         <member name="P:UVtools.Core.PixelEditor.PixelOperation.OperationType">

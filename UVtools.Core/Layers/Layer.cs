@@ -900,11 +900,7 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
     [JsonInclude]
     public Mat LayerMat
     {
-        get
-        {
-            if (!HaveImage) return null!;
-            return _compressedMat.Mat;
-        }
+        get => SlicerFile.DecodeType != FileFormat.FileDecodeType.Full ? null! : _compressedMat.Mat;
         set
         {
             GetBoundingRectangle(value, true);
@@ -914,7 +910,7 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
             }
             else if (_nonZeroPixelCount == 0)
             {
-                _compressedMat.SetEmptyCompressedBytes(true);
+                _compressedMat.SetEmptyCompressedBytes(value, true);
             }
             else
             {

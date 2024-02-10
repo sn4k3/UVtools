@@ -1520,8 +1520,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             }
 
             RequireFullEncode = true;
-
-            if (LayerCount > 0)
+            
+            if (HaveLayers)
             {
                 //SetAllIsModified(true);
 
@@ -1568,6 +1568,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             }
 
             RaisePropertyChanged();
+            RaisePropertyChanged(nameof(HaveLayers));
         }
     }
 
@@ -1600,12 +1601,12 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <summary>
     /// Gets the last layer index
     /// </summary>
-    public uint LastLayerIndex => LayerCount > 0 ? LayerCount - 1 : 0;
+    public uint LastLayerIndex => HaveLayers ? LayerCount - 1 : 0;
 
     /// <summary>
     /// Gets the first layer
     /// </summary>
-    public Layer? FirstLayer => LayerCount > 0 ? this[0] : null;
+    public Layer? FirstLayer => HaveLayers ? this[0] : null;
 
     /// <summary>
     /// Gets the last bottom layer
@@ -1630,7 +1631,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <summary>
     /// Gets the last layer
     /// </summary>
-    public Layer? LastLayer => LayerCount > 0 ? this[^1] : null;
+    public Layer? LastLayer => HaveLayers ? this[^1] : null;
 
     /// <summary>
     /// Gets the smallest bottom layer using the pixel count
@@ -2127,7 +2128,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// </summary>
     public virtual float PrintHeight
     {
-        get => LayerCount == 0 ? 0 : LastLayer?.PositionZ ?? LayerCount * LayerHeight;
+        get => HaveLayers ? LastLayer?.PositionZ ?? LayerCount * LayerHeight : 0;
         set => RaisePropertyChanged();
     }
 
@@ -2143,6 +2144,14 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
 
     public bool IsReadOnly => false;
 
+    /// <summary>
+    /// Return true if this file have layers, otherwise false
+    /// </summary>
+    public bool HaveLayers => _layers.Length > 0;
+
+    /// <summary>
+    /// Gets the layer count
+    /// </summary>
     public int Count => _layers.Length;
 
     /// <summary>
@@ -3092,7 +3101,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     {
         get
         {
-            if (LayerCount == 0) return 0;
+            if (!HaveLayers) return 0;
             float time = ExtraPrintTime;
             bool computeGeneral = false;
             if (!computeGeneral)
@@ -4284,7 +4293,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     public void EncodeLayersInZip(ZipArchive zipArchive, string prepend, byte padDigits, IndexStartNumber layerIndexStartNumber = default, 
         OperationProgress? progress = null, string path = "", Func<uint, Mat, Mat>? matGenFunc = null)
     {
-        if (DecodeType != FileDecodeType.Full || LayerCount == 0) return;
+        if (DecodeType != FileDecodeType.Full || !HaveLayers) return;
         progress ??= new OperationProgress();
         progress.Reset(OperationProgress.StatusEncodeLayers, LayerCount);
         var batches = BatchLayersIndexes();
@@ -4372,7 +4381,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
 
     public void DecodeLayersFromZip(ZipArchiveEntry[] layerEntries, OperationProgress? progress = null, Func<uint, byte[], Mat>? matGenFunc = null)
     {
-        if (DecodeType != FileDecodeType.Full || LayerCount == 0) return;
+        if (DecodeType != FileDecodeType.Full || !HaveLayers) return;
         progress ??= new OperationProgress();
         progress.Reset(OperationProgress.StatusDecodeLayers, LayerCount);
 
@@ -4533,7 +4542,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
 
         if (genericLayersExtract)
         {
-            if (LayerCount > 0)
+            if (HaveLayers)
             {
                 using TextWriter tw = new StreamWriter(Path.Combine(path, "Layers.ini"));
                 for (int layerIndex = 0; layerIndex < LayerCount; layerIndex++)
@@ -4617,7 +4626,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
                 i++;
             }
 
-            if (LayerCount > 0 && DecodeType == FileDecodeType.Full)
+            if (HaveLayers && DecodeType == FileDecodeType.Full)
             {
                 Parallel.ForEach(this, CoreSettings.GetParallelOptions(progress), layer =>
                 {
@@ -4818,7 +4827,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         if (usePreviousLayer)
         {
             int previousLayerIndex = (int)layerIndex - 1;
-            if (LayerExistsAndValid(previousLayerIndex) && this[previousLayerIndex].PositionZ > 0)
+            if (ContainsLayerAndValid(previousLayerIndex) && this[previousLayerIndex].PositionZ > 0)
             {
                 return Layer.RoundHeight(this[previousLayerIndex].PositionZ + LayerHeight);
             }
@@ -5841,7 +5850,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
 
     public void UpdateGlobalPropertiesFromLayers()
     {
-        if (LayerCount == 0) return;
+        if (!HaveLayers) return;
 
         SuppressRebuildPropertiesWork(() =>
         {
@@ -6009,7 +6018,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     public Rectangle GetBoundingRectangle(OperationProgress? progress = null)
     {
         var firstLayer = FirstLayer;
-        if (!_boundingRectangle.IsEmpty || LayerCount == 0 || firstLayer is null || !firstLayer.HaveImage) return _boundingRectangle;
+        if (!_boundingRectangle.IsEmpty || !HaveLayers || firstLayer is null || !firstLayer.HaveImage) return _boundingRectangle;
         progress ??= new OperationProgress(OperationProgress.StatusOptimizingBounds, LayerCount - 1);
         _boundingRectangle = Rectangle.Empty;
         uint firstValidLayerBounds = 0;
@@ -6041,7 +6050,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             FindFirstBoundingRectangle();
         }
 
-        if (firstValidLayerBounds + 1 < LayerCount)
+        if (ContainsLayer(firstValidLayerBounds + 1))
         {
             progress.Reset(OperationProgress.StatusCalculatingBounds, LayerCount - firstValidLayerBounds - 1);
             for (var i = firstValidLayerBounds + 1; i < LayerCount; i++)
@@ -6164,21 +6173,58 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         Layers = list.ToArray();
     }
 
+    /// <summary>
+    /// True if the <paramref name="layerIndex"/> exists in the collection, otherwise false
+    /// </summary>
+    /// <param name="layerIndex">Layer index to check</param>
     public bool ContainsLayer(int layerIndex)
     {
         return layerIndex >= 0 && layerIndex < Count;
     }
 
+    /// <summary>
+    /// True if the <paramref name="layerIndex"/> exists in the collection, otherwise false
+    /// </summary>
+    /// <param name="layerIndex">Layer index to check</param>
     public bool ContainsLayer(uint layerIndex)
     {
         return layerIndex < LayerCount;
     }
 
+    /// <summary>
+    /// True if the <paramref name="layerIndex"/> exists in the collection and if is valid, ie: not null, otherwise false
+    /// </summary>
+    /// <param name="layerIndex">Layer index to check</param>
+    /// <returns></returns>
+    public bool ContainsLayerAndValid(int layerIndex)
+    {
+        return ContainsLayer(layerIndex) && this[layerIndex] is not null;
+    }
+
+    /// <summary>
+    /// True if the <paramref name="layerIndex"/> exists in the collection and if is valid, ie: not null, otherwise false
+    /// </summary>
+    /// <param name="layerIndex">Layer index to check</param>
+    /// <returns></returns>
+    public bool ContainsLayerAndValid(uint layerIndex)
+    {
+        return ContainsLayer(layerIndex) && this[layerIndex] is not null;
+    }
+
+    /// <summary>
+    /// True if the <paramref name="layer"/> exists in the collection, otherwise false
+    /// </summary>
+    /// <param name="layer"></param>
+    /// <returns></returns>
     public bool ContainsLayer(Layer layer)
     {
         return _layers.Contains(layer);
     }
 
+    /// <summary>
+    /// True if the <paramref name="layer"/> exists in the collection, otherwise false
+    /// </summary>
+    /// <param name="layer"></param>
     public bool Contains(Layer layer)
     {
         return _layers.Contains(layer);
@@ -6303,11 +6349,9 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// Reallocate layer count with a new size
     /// </summary>
     /// <param name="newLayerCount">New layer count</param>
-    /// <param name="initBlack"></param>
     /// <param name="resetLayerProperties"></param>
-    public void Reallocate(uint newLayerCount, bool initBlack = false, bool resetLayerProperties = false)
+    public void Reallocate(uint newLayerCount, bool resetLayerProperties = false)
     {
-        var oldLayerCount = LayerCount;
         int differenceLayerCount = (int)newLayerCount - Count;
         if (differenceLayerCount == 0) return;
 
@@ -6323,8 +6367,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// Reallocate at given index
     /// </summary>
     /// <returns></returns>
-    public void ReallocateInsert(uint insertAtLayerIndex, uint layerCount, bool initBlack = false, 
-        bool resetLayerProperties = false, bool fixPositionZ = false)
+    public void ReallocateInsert(uint insertAtLayerIndex, uint layerCount, bool resetLayerProperties = false, bool fixPositionZ = false)
     {
         if (layerCount == 0) return;
         insertAtLayerIndex = Math.Min(insertAtLayerIndex, LayerCount);
@@ -6343,7 +6386,6 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
                 _layers, insertAtLayerIndex,
                 newLayers, rightDestinationIndex,
                 LayerCount - insertAtLayerIndex);
-
 
         SuppressRebuildPropertiesWork(() =>
         {
@@ -6388,13 +6430,13 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// Reallocate at start
     /// </summary>
     /// <returns></returns>
-    public void ReallocateStart(uint layerCount, bool initBlack = false, bool resetLayerProperties = false, bool fixPositionZ = false) => ReallocateInsert(0, layerCount, initBlack, resetLayerProperties, fixPositionZ);
+    public void ReallocateStart(uint layerCount, bool resetLayerProperties = false, bool fixPositionZ = false) => ReallocateInsert(0, layerCount, resetLayerProperties, fixPositionZ);
 
     /// <summary>
     /// Reallocate at end
     /// </summary>
     /// <returns></returns>
-    public void ReallocateEnd(uint layerCount, bool initBlack = false, bool resetLayerProperties = false) => ReallocateInsert(LayerCount, layerCount, initBlack, resetLayerProperties);
+    public void ReallocateEnd(uint layerCount, bool resetLayerProperties = false) => ReallocateInsert(LayerCount, layerCount, resetLayerProperties);
 
     /// <summary>
     /// Allocate layers from a Mat array
@@ -6426,46 +6468,6 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         var layers = AllocateFromMat(mats, progress);
         Layers = layers;
         return layers;
-    }
-
-    /// <summary>
-    /// Checks if a layer index exists in the collection
-    /// </summary>
-    /// <param name="layerIndex">Layer index to check</param>
-    /// <returns></returns>
-    public bool LayerExists(int layerIndex)
-    {
-        return layerIndex >= 0 && layerIndex < LayerCount;
-    }
-
-    /// <summary>
-    /// Checks if a layer index exists in the collection
-    /// </summary>
-    /// <param name="layerIndex">Layer index to check</param>
-    /// <returns></returns>
-    public bool LayerExists(uint layerIndex)
-    {
-        return layerIndex < LayerCount;
-    }
-
-    /// <summary>
-    /// Checks if a layer index exists in the collection and if is valid, ie: not null
-    /// </summary>
-    /// <param name="layerIndex">Layer index to check</param>
-    /// <returns></returns>
-    public bool LayerExistsAndValid(int layerIndex)
-    {
-        return LayerExists(layerIndex) && this[layerIndex] is not null;
-    }
-
-    /// <summary>
-    /// Checks if a layer index exists in the collection and if is valid, ie: not null
-    /// </summary>
-    /// <param name="layerIndex">Layer index to check</param>
-    /// <returns></returns>
-    public bool LayerExistsAndValid(uint layerIndex)
-    {
-        return LayerExists(layerIndex) && this[layerIndex] is not null;
     }
     #endregion
 

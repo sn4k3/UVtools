@@ -25,4 +25,9 @@ public class PixelEraser : PixelOperation
     {
         Size = new Size(Diameter, Diameter);
     }
+
+    public override string ToString()
+    {
+        return $"{_pixelBrightness}☼, Layers: {_layersBelow}/{_layersAbove}";
+    }
 }

@@ -475,7 +475,7 @@ public partial class MainWindow
 
     public string MinimumLayerString => SlicerFile is null ? "???" : $"{SlicerFile.LayerHeight}mm\n0";
     public string MaximumLayerString => SlicerFile is null ? "???" : $"{SlicerFile.PrintHeight}mm\n{SlicerFile.LastLayerIndex}";
-    public string ActualLayerTooltip => SlicerFile is null || !SlicerFile.LayerExists(_actualLayer) ? "???" : $"{Layer.ShowHeight(SlicerFile[_actualLayer]?.PositionZ ?? 0)}mm\n" +
+    public string ActualLayerTooltip => SlicerFile is null || !SlicerFile.ContainsLayer(_actualLayer) ? "???" : $"{Layer.ShowHeight(SlicerFile[_actualLayer]?.PositionZ ?? 0)}mm\n" +
                                                                      $"{_actualLayer}\n" +
                                                                      $"{(_actualLayer + 1) * 100 / SlicerFile.LayerCount}%";
 
@@ -2130,7 +2130,7 @@ public partial class MainWindow
         }
 
 
-        if ((e.KeyModifiers & KeyModifiers.Control) != 0)
+        if ((e.KeyModifiers & AppSettings.SystemCommandKeyModifier) != 0)
         {
             if (e.Key is Key.LeftShift or Key.RightShift || (e.KeyModifiers & KeyModifiers.Shift) != 0) // Ctrl + Shift
             {
@@ -2182,7 +2182,6 @@ public partial class MainWindow
                     e.Handled = true;
                     return;
                 }
-
             }
 
             if (e.Key is Key.D0 or Key.NumPad0)

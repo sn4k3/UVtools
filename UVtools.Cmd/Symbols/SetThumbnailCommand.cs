@@ -72,7 +72,7 @@ internal static class SetThumbnailCommand
                 if (string.Equals(source, RandomLayerArg, StringComparison.OrdinalIgnoreCase))
                 {
                     var slicerFile = Program.OpenInputFile(inputFile);
-                    if (slicerFile.LayerCount == 0) Program.WriteLineError("The file have no valid layers");
+                    if (!slicerFile.HaveLayers) Program.WriteLineError("The file have no valid layers");
 
 
                     using var matRoi = slicerFile[Random.Shared.Next((int)slicerFile.LayerCount)].GetLayerMatBoundingRectangle(50, 100);
@@ -97,7 +97,7 @@ internal static class SetThumbnailCommand
                 if (uint.TryParse(source, out var layerIndex))
                 {
                     var slicerFile = Program.OpenInputFile(inputFile);
-                    if (slicerFile.LayerCount == 0) Program.WriteLineError("The file have no valid layers");
+                    if (!slicerFile.HaveLayers) Program.WriteLineError("The file have no valid layers");
                     slicerFile.SanitizeLayerIndex(ref layerIndex);
 
                     using var matRoi = slicerFile[layerIndex].GetLayerMatBoundingRectangle(50, 100);

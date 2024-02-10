@@ -1,0 +1,55 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="using:UVtools.UI.Controls.Fragments"
+        xmlns:uc="clr-namespace:UVtools.UI.Controls"
+        xmlns:pixelEditor="clr-namespace:UVtools.Core.PixelEditor;assembly=UVtools.Core">
+  <Design.PreviewWith>
+    <controls:PixelEditorProfilesFragment />
+  </Design.PreviewWith>
+
+  <Style Selector="controls|PixelEditorProfilesFragment">
+    <!-- Set Defaults -->
+    <Setter Property="Template">
+      <ControlTemplate>
+          <Grid RowDefinitions="Auto" ColumnDefinitions="Auto,10,*,5,Auto,1,Auto,1,Auto">
+              <TextBlock Name="PART_Label"
+                         Grid.Column="0"
+                         VerticalAlignment="Center"
+                         Text="Profile:"/>
+
+              <ComboBox Name="PART_ProfileList"
+                        Grid.Column="2"
+                        HorizontalAlignment="Stretch"
+                        ItemsSource="{TemplateBinding Profiles}"
+                        SelectedIndex="{TemplateBinding SelectedProfileIndex, Mode=TwoWay}"
+                        IsEnabled="{Binding $self.ItemCount}"/>
+
+              <uc:ButtonWithIcon Name="PART_AddButton"
+                                 Grid.Column="4"
+                                 Icon="fa-solid fa-plus"
+                                 VerticalAlignment="Stretch"
+                                 ToolTip.Tip="Add a new profile with the current set values"
+                                 Command="{Binding $parent[controls:PixelEditorProfilesFragment].AddNewProfile}"/>
+
+              <uc:ButtonWithIcon Name="PART_DeselectButton"
+                                 Grid.Column="6"
+                                 Text="D"
+                                 VerticalAlignment="Stretch"
+                                 ToolTip.Tip="Set the selected profile as default to load with the program"
+                                 IsEnabled="{Binding #PART_ProfileList.SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                 Command="{Binding $parent[controls:PixelEditorProfilesFragment].DefaultSelectedProfile}">
+              </uc:ButtonWithIcon>
+
+              <uc:ButtonWithIcon Name="PART_RemoveButton"
+                                 Grid.Column="8"
+                                 Icon="fa-solid fa-trash-can"
+                                 VerticalAlignment="Stretch"
+                                 ToolTip.Tip="Remove the selected profile"
+                                 IsEnabled="{Binding #PART_ProfileList.SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                 Command="{Binding $parent[controls:PixelEditorProfilesFragment].RemoveSelectedProfile}"/>
+
+          </Grid>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+</Styles>

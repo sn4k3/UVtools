@@ -9,13 +9,16 @@
 using Emgu.CV.CvEnum;
 using System;
 using System.Drawing;
+using System.Xml.Serialization;
 using UVtools.Core.Objects;
 
 namespace UVtools.Core.PixelEditor;
 
-public abstract class PixelOperation : BindableBase
+public abstract class PixelOperation : BindableBase, IEquatable<PixelOperation>
 {
-    private protected uint _index;
+    private string? _profileName;
+    private bool _profileIsDefault;
+
     private protected LineType _lineType = LineType.AntiAlias;
     private protected byte _pixelBrightness = 255;
     private protected uint _layersBelow;
@@ -30,13 +33,16 @@ public abstract class PixelOperation : BindableBase
         DrainHole,
     }
 
-    /// <summary>
-    /// Gets or sets the index number to show on GUI
-    /// </summary>
-    public uint Index
+    public string? ProfileName
     {
-        get => _index;
-        set => RaiseAndSetIfChanged(ref _index, value);
+        get => _profileName;
+        set => RaiseAndSetIfChanged(ref _profileName, value);
+    }
+
+    public bool ProfileIsDefault
+    {
+        get => _profileIsDefault;
+        set => RaiseAndSetIfChanged(ref _profileIsDefault, value);
     }
 
     /// <summary>
@@ -47,12 +53,14 @@ public abstract class PixelOperation : BindableBase
     /// <summary>
     /// Gets the layer index
     /// </summary>
-    public uint LayerIndex { get; }
+    [XmlIgnore]
+    public uint LayerIndex { get; private set; }
 
     /// <summary>
     /// Gets the location of the operation
     /// </summary>
-    public Point Location { get; }
+    [XmlIgnore]
+    public Point Location { get; private set; }
 
     /// <summary>
     /// Gets the <see cref="LineType"/> for the draw operation
@@ -80,7 +88,7 @@ public abstract class PixelOperation : BindableBase
         }
     }
 
-    public decimal PixelBrightnessPercent => Math.Round(_pixelBrightness * 100M / 255M, 2);
+    public decimal PixelBrightnessPercent => Math.Round(_pixelBrightness * 100M / 255M, 2, MidpointRounding.AwayFromZero);
 
     public uint LayersBelow
     {
@@ -97,6 +105,7 @@ public abstract class PixelOperation : BindableBase
     /// <summary>
     /// Gets the total size of the operation
     /// </summary>
+    [XmlIgnore]
     public Size Size { get; private protected set; } = Size.Empty;
 
     protected PixelOperation() { }
@@ -106,12 +115,53 @@ public abstract class PixelOperation : BindableBase
         Location = location;
         LayerIndex = layerIndex;
         LineType = lineType;
-        if (pixelBrightness > -1)
-            _pixelBrightness = (byte) pixelBrightness;
+        if (pixelBrightness > -1) _pixelBrightness = (byte) pixelBrightness;
+    }
+
+    public virtual void CopyTo(PixelOperation operation)
+    {
+        operation.LineType = _lineType;
+        operation.PixelBrightness = _pixelBrightness;
+        operation.LayersBelow = _layersBelow;
+        operation.LayersAbove = _layersAbove;
+
+        operation.LayerIndex = LayerIndex;
+        operation.Location = Location;
+        operation.Size = Size;
     }
 
     public PixelOperation Clone()
     {
         return (PixelOperation) MemberwiseClone();
+    }
+
+    public override string ToString()
+    {
+        return $"{nameof(OperationType)}: {OperationType}, {nameof(LineType)}: {LineType}, {nameof(PixelBrightness)}: {PixelBrightness}, {nameof(LayersBelow)}: {LayersBelow}, {nameof(LayersAbove)}: {LayersAbove}";
+    }
+
+    public bool Equals(PixelOperation? other)
+    {
+        if (ReferenceEquals(null, other)) return false;
+        if (ReferenceEquals(this, other)) return true;
+        return _lineType == other._lineType && _pixelBrightness == other._pixelBrightness && _layersBelow == other._layersBelow && _layersAbove == other._layersAbove && OperationType == other.OperationType && LayerIndex == other.LayerIndex && Location.Equals(other.Location) && Size.Equals(other.Size);
+    }
+
+    public override bool Equals(object? obj)
+    {
+        if (ReferenceEquals(null, obj)) return false;
+        if (ReferenceEquals(this, obj)) return true;
+        if (obj.GetType() != this.GetType()) return false;
+        return Equals((PixelOperation)obj);
+    }
+
+    public static bool operator ==(PixelOperation? left, PixelOperation? right)
+    {
+        return Equals(left, right);
+    }
+
+    public static bool operator !=(PixelOperation? left, PixelOperation? right)
+    {
+        return !Equals(left, right);
     }
 }

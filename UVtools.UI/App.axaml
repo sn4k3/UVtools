@@ -30,6 +30,7 @@
     </Application.Resources>
     <Application.Styles>
         <StyleInclude Source="avares://UVtools.AvaloniaControls/Controls.axaml"/>
+        <StyleInclude Source="/Controls/Fragments/PixelEditorProfilesFragment.axaml"/>
         <StyleInclude Source="/Assets/Styles/Styles.axaml"/>
     </Application.Styles>
 </Application>

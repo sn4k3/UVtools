@@ -1,10 +1,24 @@
 # Changelog
 
-## 31/01/2024 - v4.2.1
+## 10/02/2024 - v4.2.1
 
+- **UI:**
+  - **Pixel editor:**
+    - (Add) Shortcut: Ctrl/âŒ˜+E to de/activate pixel editor
+    - (Add) Profiles (#604, #831)
+    - (Improvement) Use DataGrid row header to show the operation count instead of process and store indexes for the objects
+    - (Fix) Drawings and Text controls are not stretched to fill the available space to the right
+  - (Improvement) macOS: Shortcuts Ctrl+0, Ctrl+R, Ctrl+F changed to use command key(âŒ˜) instead of control key
 - (Improvement) Dynamic layer height, Lithophane, PCB exposure and Phased exposure: Use better performant `HasNonZero` instead of `CountNonZero` to check if there are any pixels to process
+- (Improvement) Update demo file with the newest version of the format and use SL1S printer instead
+- (Change) Extract file contents shortcut: From Ctrl+E to Ctrl+Shift+E
+- (Fix) Files with different resolution information from empty layers were generating wrong image creation for such layers (#833)
 - (Fix) Possible throw an exception about invalid roi when using Roi and/or masks under some tools
 - (Fix) Skeletonize memory leak
+- (Fix) System.NullReferenceException when accessing reallocated layers (#835)
+- (Fix) Unable to save profiles for "Light bleed compensation", "Phased exposure"
+- (Fix) PrusaSlicer printer "UVtools Prusa SL1S SPEED": Fix the display width and height, they were flipped
+- (Upgrade) AvaloniaUI from 11.0.7 to 11.0.9
 
 ## 29/01/2024 - v4.2.0
 
@@ -272,7 +286,7 @@
 ## 23/04/2023 - v3.13.0
 
 - **Benchmark tool:**
-  - (Add) Reference machine Intel® Core™ i9-13900K @ 5.5 GHz
+  - (Add) Reference machine IntelÂ® Coreâ„¢ i9-13900K @ 5.5 GHz
   - (Improvement) Layout and arrangement
 - **Windows MSI:**
   - (Improvement) Move registry keys from HKCU to HKLM
@@ -811,7 +825,7 @@
 ## 02/05/2022 - v3.4.1
 
 - (Add) Suggestion - Wait time before cure: Allow to set the number of layers to smooth transition from bottom to normal wait time (Defaults to 8)
-- (Fix) Tool - PCB Exposure: Pixels per millimeter was been set to fixed value instead of use printer lcd pitch, causing wrong dimentions on different from 50µm pitch
+- (Fix) Tool - PCB Exposure: Pixels per millimeter was been set to fixed value instead of use printer lcd pitch, causing wrong dimentions on different from 50Âµm pitch
 - (Fix) Tool - PCB Exposure: Unable to run the tool when the display size information isn't available
 
 ## 02/05/2022 - v3.4.0
@@ -1144,7 +1158,7 @@
 
 - **Pixel Arithmetic:**
    - (Add) Corrode: Number of passes
-   - (Change) Corrode: Noise area default from 3px² to 1px²
+   - (Change) Corrode: Noise area default from 3pxÂ² to 1pxÂ²
    - (Change) Fuzzy skin preset: Wall thickness from 6px to 4px
    - (Change) Fuzzy skin preset: Max noise offset: 64
 - (Add) Core: More helper functions: Area, Volume, LastBottomLayer, BottomLayersHeight, SetNoDelays, SetWaitTimeBeforeCureOrLightOffDelay
@@ -1165,7 +1179,7 @@
 ## 05/01/2022 - v2.27.5
 
 - **Pixel Arithmetic:**
-  - (Add) Corrode: Noise pixel area, defaulting to 3px²
+  - (Add) Corrode: Noise pixel area, defaulting to 3pxÂ²
   - (Change) Corrode: Cryptonumeric random to normal random to speed up calculation
   - (Change) Fuzzy skin preset: Set a ignore threshold area of 5000px2
   - (Improvement) Masking performance and auto crop the layer to speed up the processing when using an "Apply to" other than "All"
@@ -2212,7 +2226,7 @@
    * Add option to clear ROI when adding masks
    * Add option "Auto flip on load": Auto flip the layer preview on file load if the file is marked to print mirrored on the printer LCD
 * **Layer preview:**
-   * Add selectable rotation directions 90º (CW and CCW)
+   * Add selectable rotation directions 90Âº (CW and CCW)
    * Add preview flip (CTRL+F) horizontally and/or vertically
    * Add maskable regions to process on a layer (SHIFT + Alt + Right-Click) on a area 
    * ROI: Shortcut "Shift + left click" now also selects hollow black areas inside a white perimeter
@@ -2668,7 +2682,7 @@ This release bump the major version due the introduction of .NET 5.0, the discon
 
 * (Add) Changelog description to the new version update dialog
 * (Add) Tool - Infill: Proper configurable infills
-* (Add) Pixel area as "px²" to the layer bounds and ROI at layer bottom information bar
+* (Add) Pixel area as "pxÂ²" to the layer bounds and ROI at layer bottom information bar
 * (Add) Pixel dimming: Alternate pattern every x layers
 * (Add) Pixel dimming: Lattice infill
 * (Add) Solidify: Required minimum/maximum area to solidify found areas (Default values will produce the old behavior)
@@ -3149,7 +3163,7 @@ Less frequently used settings for gap and noise removal iterations have been mov
 * (Add) Pixel Editor: Double click items will track and position over the draw
 * (Fix) Pixel Editor: Label "Operations" was not reset to 0 after apply the modifications
 * (Fix) Pixel Editor: Button "Remove" tooltip
-* (Fix) Pixel Editor: Drawing - Brush Area - px to px²
+* (Fix) Pixel Editor: Drawing - Brush Area - px to pxÂ²
 
 ## 19/07/2020 - v0.6.3.0
 

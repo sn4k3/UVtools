@@ -217,7 +217,7 @@ public partial class MainWindow
     public void OnClickThumbnailImportRandomLayer(object replaceAllObj)
     {
         if (!IsFileLoaded) return;
-        if (SlicerFile!.LayerCount == 0 || SlicerFile.DecodeType == FileFormat.FileDecodeType.Partial) return;
+        if (!SlicerFile!.HaveLayers || SlicerFile.DecodeType == FileFormat.FileDecodeType.Partial) return;
         var replaceAll = Convert.ToBoolean(replaceAllObj);
         if (replaceAll)
         {

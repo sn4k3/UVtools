@@ -105,7 +105,7 @@ public class MatCacheManager : IDisposable
     public MatCacheManager(FileFormat slicerFile, uint layerIndexStart, uint layerIndexEnd, ushort cacheCount = 0, byte elementsPerCache = 1)
     {
         if (cacheCount == 0) cacheCount = (ushort)(Environment.ProcessorCount * 5);
-        if (layerIndexEnd == 0) layerIndexEnd = slicerFile.LayerCount > 0 ? slicerFile.LayerCount - 1 : 0;
+        if (layerIndexEnd == 0) layerIndexEnd = slicerFile.HaveLayers ? slicerFile.LayerCount - 1 : 0;
         SlicerFile = slicerFile;
         LayerIndexStart = layerIndexStart;
         LayerIndexEnd = layerIndexEnd;

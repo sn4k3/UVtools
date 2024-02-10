@@ -25,6 +25,7 @@ using UVtools.Core.Extensions;
 using UVtools.Core.Layers;
 using UVtools.Core.PixelEditor;
 using UVtools.UI.Extensions;
+using UVtools.UI.Structures;
 using DrawingExtensions = UVtools.Core.Extensions.DrawingExtensions;
 
 namespace UVtools.UI;
@@ -40,6 +41,12 @@ public partial class MainWindow
     public PixelSupport DrawingPixelSupport { get; } = new();
     public PixelDrainHole DrawingPixelDrainHole { get; } = new();
 
+    public RangeObservableCollection<PixelOperation> DrawingPixelDrawingProfiles { get; } = new();
+    public RangeObservableCollection<PixelOperation> DrawingPixelTextProfiles { get; } = new();
+    public RangeObservableCollection<PixelOperation> DrawingPixelEraserProfiles { get; } = new();
+    public RangeObservableCollection<PixelOperation> DrawingPixelSupportProfiles { get; } = new();
+    public RangeObservableCollection<PixelOperation> DrawingPixelDrainHoleProfiles { get; } = new();
+
     public int SelectedPixelOperationTabIndex
     {
         get => _selectedPixelOperationTabIndex;
@@ -48,12 +55,25 @@ public partial class MainWindow
 
     public void InitPixelEditor()
     {
-        DrawingsGrid.KeyUp += DrawingsGridOnKeyUp;
-        DrawingsGrid.SelectionChanged += DrawingsGridOnSelectionChanged;
-        DrawingsGrid.CellPointerPressed += DrawingsGridOnCellPointerPressed;
+        DrawingPixelDrawingProfiles.Add(DrawingPixelDrawing.Clone());
+        DrawingPixelTextProfiles.Add(DrawingPixelText.Clone());
+        DrawingPixelEraserProfiles.Add(DrawingPixelEraser.Clone());
+        DrawingPixelSupportProfiles.Add(DrawingPixelSupport.Clone());
+        DrawingPixelDrainHoleProfiles.Add(DrawingPixelDrainHole.Clone());
+
+        DrawingPixelDrawingProfiles.AddRange(PixelEditorProfiles.GetProfiles<PixelDrawing>());
+        DrawingPixelTextProfiles.AddRange(PixelEditorProfiles.GetProfiles<PixelText>());
+        DrawingPixelEraserProfiles.AddRange(PixelEditorProfiles.GetProfiles<PixelEraser>());
+        DrawingPixelSupportProfiles.AddRange(PixelEditorProfiles.GetProfiles<PixelSupport>());
+        DrawingPixelDrainHoleProfiles.AddRange(PixelEditorProfiles.GetProfiles<PixelDrainHole>());
     }
 
-    private void DrawingsGridOnSelectionChanged(object? sender, SelectionChangedEventArgs e)
+    private void DrawingsGrid_OnLoadingRow(object? sender, DataGridRowEventArgs e)
+    {
+        e.Row.Header = e.Row.GetIndex() + 1;
+    }
+
+    private void DrawingsGrid_OnSelectionChanged(object? sender, SelectionChangedEventArgs e)
     {
         if (DrawingsGrid.SelectedItem is not PixelOperation operation)
         {
@@ -76,7 +96,7 @@ public partial class MainWindow
         ForceUpdateActualLayer(operation.LayerIndex);
     }
 
-    private void DrawingsGridOnCellPointerPressed(object? sender, DataGridCellPointerPressedEventArgs e)
+    private void DrawingsGrid_OnCellPointerPressed(object? sender, DataGridCellPointerPressedEventArgs e)
     {
         if (e.PointerPressedEventArgs.ClickCount == 2) return;
         if (DrawingsGrid.SelectedItem is not MainIssue) return;
@@ -93,7 +113,7 @@ public partial class MainWindow
 
     }
 
-    private void DrawingsGridOnKeyUp(object? sender, KeyEventArgs e)
+    private void DrawingsGrid_OnKeyUp(object? sender, KeyEventArgs e)
     {
             
         switch (e.Key)
@@ -483,17 +503,11 @@ public partial class MainWindow
 
     public void AddDrawing(PixelOperation operation)
     {
-        operation.Index = (uint)Drawings.Count;
         Drawings.Insert(0, operation);
     }
 
     public void AddDrawings(IEnumerable<PixelOperation> operations)
     {
-        uint count = (uint)Drawings.Count;
-        foreach (var operation in operations)
-        {
-            operation.Index = count++;
-        }
         Drawings.InsertRange(0, operations);
     }
 

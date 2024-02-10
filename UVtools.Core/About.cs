@@ -204,6 +204,6 @@ public static class About
         }
     }
 
-    public const string DemoFile = "UVtools_demo_file.sl1";
+    public const string DemoFile = "UVtools_demo_file.sl1s";
 
 }

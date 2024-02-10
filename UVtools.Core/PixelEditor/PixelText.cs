@@ -8,11 +8,12 @@
 using Emgu.CV.CvEnum;
 using System;
 using System.Drawing;
+using System.Xml.Serialization;
 using UVtools.Core.Extensions;
 
 namespace UVtools.Core.PixelEditor;
 
-public class PixelText : PixelOperation
+public class PixelText : PixelOperation, IEquatable<PixelText>
 {
     private FontFace _font;
     private double _fontScale = 1;
@@ -80,11 +81,13 @@ public class PixelText : PixelOperation
 
     public decimal RemovePixelBrightnessPercent => Math.Round(_removePixelBrightness * 100M / 255M, 2);
 
-    public bool IsAdd { get; }
+    [XmlIgnore]
+    public bool IsAdd { get; private set; }
 
     public byte Brightness => IsAdd ? _pixelBrightness : _removePixelBrightness;
 
-    public Rectangle Rectangle { get; }
+    [XmlIgnore]
+    public Rectangle Rectangle { get; private set; }
 
     public PixelText(){}
 
@@ -105,5 +108,51 @@ public class PixelText : PixelOperation
         Rectangle = new Rectangle(location, Size);
     }
 
-        
+    public override void CopyTo(PixelOperation operation)
+    {
+        base.CopyTo(operation);
+        if (operation is not PixelText text) throw new TypeAccessException($"Expecting PixelText but got {operation.GetType().Name}");
+        text.Font = _font;
+        text.FontScale = _fontScale;
+        text.Thickness = _thickness;
+        text.Text = _text;
+        text.Mirror = _mirror;
+        text.LineAlignment = _lineAlignment;
+        text.Angle = _angle;
+        text.RemovePixelBrightness = _removePixelBrightness;
+        text.IsAdd = IsAdd;
+        text.Rectangle = Rectangle;
+    }
+
+    public override string ToString()
+    {
+        return $"{LineType}, {_font}, {_fontScale}px/{_thickness}px, "
+               + (string.IsNullOrWhiteSpace(_text) ? string.Empty : $"{_text}, ")
+               + $"{_lineAlignment}, {_angle}º, Layers: {_layersBelow}/{_layersAbove}";
+    }
+
+    public bool Equals(PixelText? other)
+    {
+        if (ReferenceEquals(null, other)) return false;
+        if (ReferenceEquals(this, other)) return true;
+        return base.Equals(other) && _font == other._font && _fontScale.Equals(other._fontScale) && _thickness == other._thickness && _text == other._text && _mirror == other._mirror && _lineAlignment == other._lineAlignment && _angle.Equals(other._angle) && _removePixelBrightness == other._removePixelBrightness && IsAdd == other.IsAdd && Rectangle.Equals(other.Rectangle);
+    }
+
+    public override bool Equals(object? obj)
+    {
+        if (ReferenceEquals(null, obj)) return false;
+        if (ReferenceEquals(this, obj)) return true;
+        if (obj.GetType() != this.GetType()) return false;
+        return Equals((PixelText)obj);
+    }
+
+    public static bool operator ==(PixelText? left, PixelText? right)
+    {
+        return Equals(left, right);
+    }
+
+    public static bool operator !=(PixelText? left, PixelText? right)
+    {
+        return !Equals(left, right);
+    }
 }

@@ -288,8 +288,10 @@ public class CMat : IEquatable<CMat>
     /// </summary>
     public void SetEmptyCompressedBytes()
     {
+        if (_compressedBytes.Length == 0) return; // Already empty
         _compressedBytes = Array.Empty<byte>();
         IsCompressed = false;
+        Roi = Rectangle.Empty;
     }
 
     /// <summary>
@@ -299,6 +301,30 @@ public class CMat : IEquatable<CMat>
     public void SetEmptyCompressedBytes(bool isInitialized)
     {
         SetEmptyCompressedBytes();
+        IsInitialized = isInitialized;
+    }
+
+    /// <summary>
+    /// Sets the <see cref="CompressedBytes"/> to an empty byte array, sets <see cref="IsCompressed"/> to false and extract size, depth and channels from a <see cref="Mat"/>.
+    /// </summary>
+    /// <param name="src">Source Mat to extract Size, Depth and Channels</param>
+    public void SetEmptyCompressedBytes(Mat src)
+    {
+        SetEmptyCompressedBytes();
+        Width = src.Width;
+        Height = src.Height;
+        Depth = src.Depth;
+        Channels = src.NumberOfChannels;
+    }
+
+    /// <summary>
+    /// Sets the <see cref="CompressedBytes"/> to an empty byte array, sets <see cref="IsCompressed"/> to false and extract size, depth and channels from a <see cref="Mat"/>.
+    /// </summary>
+    /// <param name="src">Source Mat to extract Size, Depth and Channels</param>
+    /// <param name="isInitialized">Sets the <see cref="IsInitialized"/> to a known state.</param>
+    public void SetEmptyCompressedBytes(Mat src, bool isInitialized)
+    {
+        SetEmptyCompressedBytes(src);
         IsInitialized = isInitialized;
     }
 
@@ -315,34 +341,10 @@ public class CMat : IEquatable<CMat>
         Decompressor = decompressor;
     }
 
-    /*
-    public void SetUncompressed(Mat src)
-    {
-        Width = src.Width;
-        Height = src.Height;
-        Depth = src.Depth;
-        Channels = src.NumberOfChannels;
-        Roi = Rectangle.Empty;
-
-        CompressedBytes = src.GetBytes();
-        IsCompressed = false;
-        Decompressor = MatCompressorNone.Instance;
-    }
-
-    public void SetUncompressed(MatRoi src)
-    {
-        Width = src.RoiMat.Width;
-        Height = src.RoiMat.Height;
-        Depth = src.RoiMat.Depth;
-        Channels = src.RoiMat.NumberOfChannels;
-        Roi = src.Roi;
-
-        CompressedBytes = src.RoiMat.GetBytes();
-        IsCompressed = false;
-        Decompressor = MatCompressorNone.Instance;
-    }
-    */
-
+    /// <summary>
+    /// Sets the <see cref="CompressedBytes"/> to uncompressed bitmap data.
+    /// </summary>
+    /// <param name="src"></param>
     private void SetUncompressed(Mat src)
     {
         CompressedBytes = src.GetBytes();

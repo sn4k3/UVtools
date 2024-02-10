@@ -56,12 +56,4 @@ public class PixelHistory : IEnumerable<PixelOperation>
     }
 
     #endregion
-
-    public void Renumber()
-    {
-        for (int i = 0; i < Count; i++)
-        {
-            Items[i].Index = (uint) (i + 1);
-        }
-    }
 }

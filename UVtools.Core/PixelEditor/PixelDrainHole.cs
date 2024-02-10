@@ -5,11 +5,12 @@
  *  Everyone is permitted to copy and distribute verbatim copies
  *  of this license document, but changing it is not allowed.
  */
+using System;
 using System.Drawing;
 
 namespace UVtools.Core.PixelEditor;
 
-public class PixelDrainHole : PixelOperation
+public class PixelDrainHole : PixelOperation, IEquatable<PixelDrainHole>
 {
     private ushort _diameter = 50;
     public override PixelOperationType OperationType => PixelOperationType.DrainHole;
@@ -26,5 +27,42 @@ public class PixelDrainHole : PixelOperation
     {
         Diameter = diameter;
         Size = new Size(diameter, diameter);
+    }
+
+    public override void CopyTo(PixelOperation operation)
+    {
+        base.CopyTo(operation);
+        if (operation is not PixelDrainHole drainHole) throw new TypeAccessException($"Expecting PixelDrainHole but got {operation.GetType().Name}"); 
+        drainHole.Diameter = Diameter;
+    }
+
+    public override string ToString()
+    {
+        return $"{_diameter}px";
+    }
+
+    public bool Equals(PixelDrainHole? other)
+    {
+        if (ReferenceEquals(null, other)) return false;
+        if (ReferenceEquals(this, other)) return true;
+        return base.Equals(other) && _diameter == other._diameter;
+    }
+
+    public override bool Equals(object? obj)
+    {
+        if (ReferenceEquals(null, obj)) return false;
+        if (ReferenceEquals(this, obj)) return true;
+        if (obj.GetType() != this.GetType()) return false;
+        return Equals((PixelDrainHole)obj);
+    }
+
+    public static bool operator ==(PixelDrainHole? left, PixelDrainHole? right)
+    {
+        return Equals(left, right);
+    }
+
+    public static bool operator !=(PixelDrainHole? left, PixelDrainHole? right)
+    {
+        return !Equals(left, right);
     }
 }

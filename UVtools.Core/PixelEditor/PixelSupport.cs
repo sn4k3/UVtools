@@ -6,11 +6,12 @@
  *  of this license document, but changing it is not allowed.
  */
 using Emgu.CV.CvEnum;
+using System;
 using System.Drawing;
 
 namespace UVtools.Core.PixelEditor;
 
-public class PixelSupport : PixelOperation
+public class PixelSupport : PixelOperation, IEquatable<PixelSupport>
 {
     private byte _tipDiameter = 19;
     private byte _pillarDiameter = 32;
@@ -43,5 +44,44 @@ public class PixelSupport : PixelOperation
         PillarDiameter = pillarDiameter;
         BaseDiameter = baseDiameter;
         Size = new Size(TipDiameter, TipDiameter);
+    }
+
+    public override void CopyTo(PixelOperation operation)
+    {
+        base.CopyTo(operation);
+        if (operation is not PixelSupport support) throw new TypeAccessException($"Expecting PixelSupport but got {operation.GetType().Name}");
+        support.TipDiameter = TipDiameter;
+        support.PillarDiameter = PillarDiameter;
+        support.BaseDiameter = BaseDiameter;
+    }
+
+    public override string ToString()
+    {
+        return $"{_tipDiameter}px, {_pillarDiameter}px, {_baseDiameter}px, {_pixelBrightness}☼";
+    }
+
+    public bool Equals(PixelSupport? other)
+    {
+        if (ReferenceEquals(null, other)) return false;
+        if (ReferenceEquals(this, other)) return true;
+        return base.Equals(other) && _tipDiameter == other._tipDiameter && _pillarDiameter == other._pillarDiameter && _baseDiameter == other._baseDiameter;
+    }
+
+    public override bool Equals(object? obj)
+    {
+        if (ReferenceEquals(null, obj)) return false;
+        if (ReferenceEquals(this, obj)) return true;
+        if (obj.GetType() != this.GetType()) return false;
+        return Equals((PixelSupport)obj);
+    }
+
+    public static bool operator ==(PixelSupport? left, PixelSupport? right)
+    {
+        return Equals(left, right);
+    }
+
+    public static bool operator !=(PixelSupport? left, PixelSupport? right)
+    {
+        return !Equals(left, right);
     }
 }

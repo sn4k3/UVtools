@@ -1424,7 +1424,7 @@ public partial class MainWindow : WindowEx
 
         AddRecentFile(fileName);
 
-        if (SlicerFile.LayerCount == 0)
+        if (!SlicerFile.HaveLayers)
         {
             await this.MessageBoxError("It seems this file has no layers.  Possible causes could be:\n" +
                                        "- File is empty\n" +

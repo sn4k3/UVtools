@@ -713,7 +713,7 @@ public class GCodeBuilder : BindableBase
         Clear();
         AppendUVtools();
 
-        if (slicerFile.LayerCount == 0) return;
+        if (!slicerFile.HaveLayers) return;
 
         if (!string.IsNullOrWhiteSpace(header))
         {
@@ -882,7 +882,7 @@ public class GCodeBuilder : BindableBase
 
     public void ParseLayersFromGCode(FileFormat slicerFile, string? gcode, bool rebuildGlobalTable = true)
     {
-        if (slicerFile.LayerCount == 0) return;
+        if (!slicerFile.HaveLayers) return;
             
         if (string.IsNullOrWhiteSpace(gcode))
         {

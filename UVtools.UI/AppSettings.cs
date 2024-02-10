@@ -5,6 +5,10 @@
  *  Everyone is permitted to copy and distribute verbatim copies
  *  of this license document, but changing it is not allowed.
  */
+
+using System;
+using Avalonia.Input;
+
 namespace UVtools.UI;
 
 public static class AppSettings
@@ -36,5 +40,13 @@ public static class AppSettings
     /// </summary>
     public const byte MinLockedZoomLevel = 200;
 
-        
+    /// <summary>
+    /// Returns the command key if the system is MacOS, otherwise returns Ctrl
+    /// </summary>
+    public static string SystemCommandKeyString => OperatingSystem.IsMacOS() ? "⌘" : "Ctrl";
+
+    /// <summary>
+    /// Returns the <see cref="KeyModifiers.Meta"/> if the system is MacOS, otherwise returns <see cref="KeyModifiers.Control"/>
+    /// </summary>
+    public static KeyModifiers SystemCommandKeyModifier => OperatingSystem.IsMacOS() ? KeyModifiers.Meta : KeyModifiers.Control;
 }

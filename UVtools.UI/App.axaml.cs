@@ -196,7 +196,7 @@ public class App : Application
                     "fa-regular fa-frown",
                     $"{About.Software} crashed due an unexpected {category.ToLowerInvariant()} error.\nYou can report this error if you find necessary.\nFind more details below:\n",
                     bugDescription,
-                    TextWrapping.NoWrap,
+                    TextWrapping.Wrap,
                     new[]
                     {
                         MessageWindow.CreateLinkButtonAction("Report", "fa-solid fa-bug", $"https://github.com/sn4k3/UVtools/issues/new?template=bug_report_form.yml&title={HttpUtility.UrlEncode($"[Crash] {reader.ReadLine()}")}&system={HttpUtility.UrlEncode(system)}&bug_description={HttpUtility.UrlEncode($"```\n{bugDescription}\n```")}", () => window?.Clipboard?.SetTextAsync($"```\n{bugDescription}\n```")),
@@ -250,9 +250,10 @@ public class App : Application
                         };
                     }
 
+                    PixelEditorProfiles.Load();
+                    SuggestionManager.Load();
                     MaterialManager.Load();
                     OperationProfiles.Load();
-                    SuggestionManager.Load();
 
                     MainWindow = new MainWindow();
                     desktop.MainWindow = MainWindow;
@@ -311,7 +312,7 @@ public class App : Application
             "fa-regular fa-frown",
             $"{About.SoftwareWithVersionArch} [{SystemAware.OperatingSystemName}]\nUnable to run due one or more missing dependencies.\nTriggered by: libcvextern  (OpenCV)",
             message,
-            TextWrapping.NoWrap,
+            TextWrapping.Wrap,
             new[]
             {
                 MessageWindow.CreateLinkButton("Open manual", "fa-brands fa-edge", "https://github.com/sn4k3/UVtools#requirements"),

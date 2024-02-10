@@ -7,6 +7,7 @@
         xmlns:i="https://github.com/projektanker/icons.avalonia"
         xmlns:ui="clr-namespace:UVtools.UI"
         xmlns:core="clr-namespace:UVtools.Core;assembly=UVtools.Core"
+        xmlns:fragments="clr-namespace:UVtools.UI.Controls.Fragments"
         mc:Ignorable="d" d:DesignWidth="1024" d:DesignHeight="600"
         x:Class="UVtools.UI.MainWindow"
 		x:DataType="ui:MainWindow"
@@ -26,7 +27,7 @@
         <KeyBinding Gesture="{OnPlatform Ctrl+W, macOS=⌘+W}" Command="{Binding MenuFileCloseFileClicked}"/>
         <KeyBinding Gesture="{OnPlatform Ctrl+P, macOS=⌘+P}" Command="{Binding IPrintedThisFile}"/>
         <KeyBinding Gesture="{OnPlatform Ctrl+Shift+L, macOS=⌘+Shift+L}" Command="{Binding MenuFileOpenContainingFolderClicked}"/>
-        <KeyBinding Gesture="{OnPlatform Ctrl+E, macOS=⌘+E}" Command="{Binding ExtractFile}"/>
+        <KeyBinding Gesture="{OnPlatform Ctrl+Shift+E, macOS=⌘+Shift+E}" Command="{Binding ExtractFile}"/>
         <KeyBinding Gesture="{OnPlatform Ctrl+Shift+T, macOS=⌘+Shift+T}" Command="{Binding OpenTerminal}"/>
         <KeyBinding Gesture="F11" Command="{Binding MenuFileFullscreenClicked}"/>
         <KeyBinding Gesture="F12" Command="{Binding MenuFileSettingsClicked}"/>
@@ -146,7 +147,7 @@
 
                     <MenuItem Name="MainMenuFileExtract"
 							  Header="_Extract file contents"
-                              HotKey="{OnPlatform Ctrl+E, macOS=⌘+E}" InputGesture="{Binding $self.HotKey}"
+                              HotKey="{OnPlatform Ctrl+Shift+E, macOS=⌘+Shift+E}" InputGesture="{Binding $self.HotKey}"
 							  IsEnabled="{Binding IsFileLoaded}"
 							  Command="{Binding ExtractFile}"
 							  i:MenuItem.Icon="fa-solid fa-box-open"/>
@@ -867,7 +868,7 @@
                                   ClipboardCopyMode="None"
                                   ItemsSource="{Binding IssuesGridItems}">
                             <DataGrid.ContextMenu>
-                                <ContextMenu IsVisible="{Binding #IssuesGrid.SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}">
+                                <ContextMenu IsVisible="{Binding $parent[DataGrid].SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}">
                                     <MenuItem i:MenuItem.Icon="fa-solid fa-eye-slash" Command="{Binding OnClickIssueIgnore}" Header="Ignore issue(s)"/>
                                     <Separator/>
                                     <MenuItem i:MenuItem.Icon="fa-solid fa-trash-can" Command="{Binding SelectedIssuesIslandRemove}" IsVisible="{ReflectionBinding #IssuesGrid.SelectedItem.IsIsland}" Header="Remove island(s)"/>
@@ -1068,9 +1069,11 @@
 &#x0a;Shift+Right click to remove pixels"/>
                                     </Border>
 
+                                    <fragments:PixelEditorProfilesFragment Source="{Binding DrawingPixelDrawing}" Profiles="{Binding DrawingPixelDrawingProfiles}"/>
+
                                     <Grid
 										RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto"
-										ColumnDefinitions="Auto,10,130,5,40">
+										ColumnDefinitions="Auto,10,*,5,40">
 
                                         <TextBlock
 										  Grid.Row="0"
@@ -1081,7 +1084,7 @@
 										  Grid.Row="0"
 										  Grid.Column="2"
 										  Grid.ColumnSpan="3"
-										  Width="180"
+                                          HorizontalAlignment="Stretch"
 										  ItemsSource="{Binding DrawingPixelDrawing.LineTypes}"
 										  SelectedItem="{Binding DrawingPixelDrawing.LineType}"/>
 
@@ -1094,7 +1097,7 @@
 										  Grid.Row="2"
 										  Grid.Column="2"
 										  Grid.ColumnSpan="3"
-										  Width="180"
+                                          HorizontalAlignment="Stretch"
                                           ItemsSource="{Binding DrawingPixelDrawing.BrushShape, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
                                           SelectedItem="{Binding DrawingPixelDrawing.BrushShape, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
 
@@ -1205,9 +1208,11 @@
 &#x0a;Shift+Right click to remove text"/>
                                     </Border>
 
+                                    <fragments:PixelEditorProfilesFragment Source="{Binding DrawingPixelText}" Profiles="{Binding DrawingPixelTextProfiles}"/>
+
                                     <Grid
 						  RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto"
-						  ColumnDefinitions="Auto,10,130,5,40">
+						  ColumnDefinitions="Auto,10,*,5,40">
 
                                         <TextBlock
 										  Grid.Row="0"
@@ -1218,7 +1223,7 @@
 										  Grid.Row="0"
 										  Grid.Column="2"
 										  Grid.ColumnSpan="3"
-										  Width="180"
+                                          HorizontalAlignment="Stretch"
 										  ItemsSource="{Binding DrawingPixelText.LineTypes}"
 										  SelectedItem="{Binding DrawingPixelText.LineType}"/>
 
@@ -1231,7 +1236,7 @@
 										  Grid.Row="2"
 										  Grid.Column="2"
 										  Grid.ColumnSpan="3"
-										  Width="180"
+                                          HorizontalAlignment="Stretch"
 										  ItemsSource="{Binding DrawingPixelText.FontFaces}"
 										  SelectedItem="{Binding DrawingPixelText.Font}"/>
 
@@ -1285,7 +1290,7 @@
 											Grid.Row="10"
 											Grid.Column="2"
 											Grid.ColumnSpan="3"
-											Width="180"
+                                            HorizontalAlignment="Stretch"
 											ItemsSource="{Binding DrawingPixelText.LineAlignment, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
 											SelectedItem="{Binding DrawingPixelText.LineAlignment, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
 
@@ -1387,6 +1392,8 @@
 &#x0a;(Fill linked area with black)"/>
                                     </Border>
 
+                                    <fragments:PixelEditorProfilesFragment Source="{Binding DrawingPixelEraser}" Profiles="{Binding DrawingPixelEraserProfiles}"/>
+
                                     <Grid
 						  RowDefinitions="Auto,10,Auto,10,Auto"
 						  ColumnDefinitions="Auto,10,*,10,40">
@@ -1436,9 +1443,7 @@
                             </TabItem>
 
                             <!-- Supports !-->
-                            <TabItem
-							  ToolTip.Tip="Supports"
-              >
+                            <TabItem ToolTip.Tip="Supports">
                                 <TabItem.Header>
                                     <StackPanel VerticalAlignment="Center" Orientation="Horizontal" Spacing="5">
                                         <i:Icon Value="fa-solid fa-code-branch"/>
@@ -1451,6 +1456,9 @@
                                         <TextBlock Padding="10" Text="Shift+click under a island to add primitive support.
 &#x0a;Note: this operation can't be previewed."/>
                                     </Border>
+
+                                    <fragments:PixelEditorProfilesFragment Source="{Binding DrawingPixelSupport}" Profiles="{Binding DrawingPixelSupportProfiles}"/>
+
                                     <Grid
 									  RowDefinitions="Auto,10,Auto,10,Auto,10,Auto"
 									  ColumnDefinitions="Auto,10,*,5,35">
@@ -1510,9 +1518,7 @@
                             </TabItem>
 
                             <!-- Drain holes !-->
-                            <TabItem
-							  ToolTip.Tip="Drain holes"
-              >
+                            <TabItem ToolTip.Tip="Drain holes">
                                 <TabItem.Header>
                                     <StackPanel VerticalAlignment="Center" Orientation="Horizontal" Spacing="5">
                                         <i:Icon Value="fa-solid fa-ring"/>
@@ -1525,6 +1531,9 @@
                                         <TextBlock Padding="10" Text="Shift+click to add a vertical drain hole.
 &#x0a;Note: this operation can't be previewed."/>
                                     </Border>
+
+                                    <fragments:PixelEditorProfilesFragment Source="{Binding DrawingPixelDrainHole}" Profiles="{Binding DrawingPixelDrainHoleProfiles}"/>
+
                                     <Grid
 									  RowDefinitions="Auto"
 									  ColumnDefinitions="Auto,10,*">
@@ -1575,21 +1584,23 @@
 											   Command="{Binding DrawModificationsCommand}"/>
                         </StackPanel>
 
-                        <DataGrid
-								Name="DrawingsGrid"
-								Grid.Row="3"
-								CanUserReorderColumns="True"
-								CanUserResizeColumns="True"
-								CanUserSortColumns="True"
-								GridLinesVisibility="Horizontal"
-								SelectionMode="Extended"
-								IsReadOnly="True"
-								ClipboardCopyMode="IncludeHeader"
-								ItemsSource="{Binding Drawings}">
+                        <DataGrid Name="DrawingsGrid"
+                                  Grid.Row="3"
+                                  CanUserReorderColumns="True"
+                                  CanUserResizeColumns="True"
+                                  CanUserSortColumns="True"
+                                  GridLinesVisibility="Horizontal"
+                                  SelectionMode="Extended"
+                                  IsReadOnly="True"
+                                  HeadersVisibility="All"
+                                  ClipboardCopyMode="IncludeHeader"
+                                  RowHeaderWidth="50"
+                                  ItemsSource="{Binding Drawings}"
+                                  LoadingRow="DrawingsGrid_OnLoadingRow"
+                                  SelectionChanged="DrawingsGrid_OnSelectionChanged"
+                                  KeyUp="DrawingsGrid_OnKeyUp"
+                                  CellPointerPressed="DrawingsGrid_OnCellPointerPressed">
                             <DataGrid.Columns>
-                                <DataGridTextColumn  Header="#"
-													 Binding="{Binding Index}"
-													 Width="Auto" />
                                 <DataGridTextColumn Header="Operation"
 													Binding="{Binding OperationType}"
 													Width="Auto" />
@@ -1879,7 +1890,7 @@
                         <uc:ToggleSplitButtonWithIcon
 						  IsChecked="{Binding ShowLayerImageRotated}"
 						  VerticalAlignment="Stretch"
-						  ToolTip.Tip="Auto rotate layer preview image at 90º (This can slow down the layer preview) [CTRL+R]"
+                          ToolTip.Tip="{Binding Source={x:Static ui:AppSettings.SystemCommandKeyString}, StringFormat='Auto rotate layer preview image at 90º (This can slow down the layer preview) [{0}+R]'}"
 						  Margin="0,0,1,0"
 						  Text="Rotate"
 						  Spacing="5"
@@ -1902,7 +1913,7 @@
                         <uc:ToggleSplitButtonWithIcon
 							IsChecked="{Binding ShowLayerImageFlipped}"
 							VerticalAlignment="Stretch"
-							ToolTip.Tip="Auto flip layer preview image (This can slow down the layer preview) [CTRL+F]"
+                            ToolTip.Tip="{Binding Source={x:Static ui:AppSettings.SystemCommandKeyString}, StringFormat='Auto flip layer preview image (This can slow down the layer preview) [{0}+F]'}"
 							Margin="0,0,1,0"
 							Text="Flip"
 							Spacing="5"
@@ -2022,7 +2033,8 @@
 
                         <uc:ToggleButtonWithIcon
 						  IsChecked="{Binding IsPixelEditorActive}"
-						  ToolTip.Tip="Edit layer image: Draw pixels, add supports and/or drain holes."
+						  ToolTip.Tip="{Binding Source={x:Static ui:AppSettings.SystemCommandKeyString}, StringFormat='Edit layer image: Draw pixels, add supports and/or drain holes. [{0}+E]'}"
+                          HotKey="{OnPlatform Ctrl+E, macOS=⌘+E}"
 						  VerticalAlignment="Stretch"
 						  Margin="-1,0,0,0"
 						  Text="Pixel editor"
@@ -2112,7 +2124,7 @@
                         <uc:ButtonWithIcon
 						  ToolTip.Tip="Object volume bounds for current layer, position and size in pixels and millimeters.
 &#x0a;Click: go to region"
-						  Command="{Binding ZoomToFitPrintVolume}"
+                          Command="{Binding ZoomToFitPrintVolume}"
 						  Margin="5,0,0,0"
 						  Text="{Binding LayerBoundsStr}"
 						  Spacing="5"
@@ -2163,10 +2175,10 @@
 						  Icon="fa-solid fa-map-marker-alt"/>
 
                         <uc:ButtonWithIcon
-						  ToolTip.Tip="Layer image zoom level, use mouse scroll to zoom in/out into image.
+                          ToolTip.Tip="{Binding Source={x:Static ui:AppSettings.SystemCommandKeyString}, StringFormat='Layer image zoom level, use mouse scroll to zoom in/out into image.
 &#x0a;Click to set zoom to 100%
 &#x0a;Shift+Click to set zoom to defined value
-&#x0a;Ctrl + 0 OR double right click to scale to fit"
+&#x0a;{0}+0 OR double right click to scale to fit'}"
 						Margin="2,0,0,0"
 						Command="{Binding ZoomToNormal}"
 						  Text="{Binding LayerZoomStr}"
@@ -2174,13 +2186,14 @@
 						  Icon="fa-solid fa-search-plus"/>
 
                         <uc:ButtonWithIcon
-						  ToolTip.Tip="Layer Resolution and display size.
-&#x0a;Click: Zoom to fit"
+                          ToolTip.Tip="{Binding Source={x:Static ui:AppSettings.SystemCommandKeyString}, StringFormat='Layer Resolution and display size.
+&#x0a;Click: Zoom to fit [{0}+Alt+0]'}"
 						Command="{Binding ZoomToFitSimple}"
 						Margin="2,0,0,0"
 						  Text="{Binding LayerResolutionStr}"
 						  Spacing="5"
-						  Icon="fa-solid fa-expand"/>
+						  Icon="fa-solid fa-expand">
+                        </uc:ButtonWithIcon>
 
 
                         <TextBlock
