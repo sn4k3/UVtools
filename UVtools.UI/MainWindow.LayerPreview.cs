@@ -853,7 +853,7 @@ public partial class MainWindow
 
     public void RefreshLayerImage()
     {
-        LayerImageBox.Image = LayerCache.ImageBgr.ToBitmapParallel();
+        LayerImageBox.Image = LayerCache.ImageBgra.ToBitmap();
     }
 
     /// <summary>
@@ -934,13 +934,13 @@ public partial class MainWindow
 
             
             var imageSpan = LayerCache.ImageSpan;
-            var imageBgrSpan = LayerCache.ImageBgrSpan;
+            var imageBgrSpan = LayerCache.ImageBgraSpan;
 
             if (_showLayerOutlineEdgeDetection)
             {
                 using var canny = new Mat();
                 CvInvoke.Canny(LayerCache.Image, canny, 80, 40, 3, true);
-                CvInvoke.CvtColor(canny, LayerCache.ImageBgr, ColorConversion.Gray2Bgr);
+                CvInvoke.CvtColor(canny, LayerCache.ImageBgra, ColorConversion.Gray2Bgra);
             }
             else if (_showLayerOutlineDistanceDetection)
             {
@@ -948,12 +948,12 @@ public partial class MainWindow
                 CvInvoke.DistanceTransform(LayerCache.Image, distance, null, DistType.C, 3);
                 //distance.ConvertTo(distance, DepthType.Cv8U);
                 CvInvoke.Normalize(distance, distance, byte.MinValue, byte.MaxValue, NormType.MinMax, DepthType.Cv8U);
-                CvInvoke.CvtColor(distance, LayerCache.ImageBgr, ColorConversion.Gray2Bgr);
+                CvInvoke.CvtColor(distance, LayerCache.ImageBgra, ColorConversion.Gray2Bgra);
             }
             else if (_showLayerOutlineSkeletonize)
             {
                 using var skeletonize = LayerCache.Image.Skeletonize();
-                CvInvoke.CvtColor(skeletonize, LayerCache.ImageBgr, ColorConversion.Gray2Bgr);
+                CvInvoke.CvtColor(skeletonize, LayerCache.ImageBgra, ColorConversion.Gray2Bgra);
             }
             else if (_showLayerImageDifference)
             {
@@ -1019,9 +1019,8 @@ public partial class MainWindow
 
 
                     int width = LayerCache.Image.GetRealStep();
-                    int channels = LayerCache.ImageBgr.NumberOfChannels;
-                    bool showSimilarityInstead =
-                        Settings.LayerPreview.LayerDifferenceHighlightSimilarityInstead;
+                    int channels = LayerCache.ImageBgra.NumberOfChannels;
+                    bool showSimilarityInstead = Settings.LayerPreview.LayerDifferenceHighlightSimilarityInstead;
 
                     Parallel.For(rect.Y, rect.Bottom, CoreSettings.ParallelOptions, y =>
                     {
@@ -1064,7 +1063,7 @@ public partial class MainWindow
                             imageBgrSpan[bgrPixel] = color.B; // B
                             imageBgrSpan[bgrPixel + 1] = color.G; // G
                             imageBgrSpan[bgrPixel + 2] = color.R; // R
-                            //imageBgrSpan[++bgrPixel] = color.A; // A
+                            imageBgrSpan[bgrPixel + 3] = color.A; // A
                         }
                     });
                 }
@@ -1145,7 +1144,7 @@ public partial class MainWindow
                         case IssueOfContours issueOfContours:
                         {
                             using var vec = new VectorOfVectorOfPoint(issueOfContours.Contours);
-                            CvInvoke.DrawContours(LayerCache.ImageBgr, vec, -1, new MCvScalar(color.B, color.G, color.R), -1);
+                            CvInvoke.DrawContours(LayerCache.ImageBgra, vec, -1, color.ToMCvScalar(), -1);
                             break;
                         }
                         case IssueOfPoints issueOfPoints:
@@ -1156,7 +1155,7 @@ public partial class MainWindow
                                 byte brightness = imageSpan[pixelPos];
                                 if (brightness == 0) continue;
 
-                                int pixelBgrPos = pixelPos * LayerCache.ImageBgr.NumberOfChannels;
+                                int pixelBgrPos = pixelPos * LayerCache.ImageBgra.NumberOfChannels;
 
                                 var newColor = color.FactorColor(brightness, 80);
 
@@ -1174,18 +1173,15 @@ public partial class MainWindow
 
             if (_showLayerOutlinePrintVolumeBoundary)
             {
-                CvInvoke.Rectangle(LayerCache.ImageBgr, SlicerFile.BoundingRectangle,
-                    new MCvScalar(Settings.LayerPreview.VolumeBoundsOutlineColor.B,
-                        Settings.LayerPreview.VolumeBoundsOutlineColor.G,
-                        Settings.LayerPreview.VolumeBoundsOutlineColor.R),
+                CvInvoke.Rectangle(LayerCache.ImageBgra, SlicerFile.BoundingRectangle,
+                    Settings.LayerPreview.VolumeBoundsOutlineColor.ToMCvScalar(),
                     Settings.LayerPreview.VolumeBoundsOutlineThickness);
             }
 
             if (_showLayerOutlineLayerBoundary && !SlicerFile[_actualLayer].BoundingRectangle.IsEmpty)
             {
-                CvInvoke.Rectangle(LayerCache.ImageBgr, SlicerFile[_actualLayer].BoundingRectangle,
-                    new MCvScalar(Settings.LayerPreview.LayerBoundsOutlineColor.B,
-                        Settings.LayerPreview.LayerBoundsOutlineColor.G, Settings.LayerPreview.LayerBoundsOutlineColor.R),
+                CvInvoke.Rectangle(LayerCache.ImageBgra, SlicerFile[_actualLayer].BoundingRectangle,
+                    Settings.LayerPreview.LayerBoundsOutlineColor.ToMCvScalar(),
                     Settings.LayerPreview.LayerBoundsOutlineThickness);
             }
 
@@ -1207,11 +1203,8 @@ public partial class MainWindow
                         continue;
                     }
 
-                    CvInvoke.Rectangle(LayerCache.ImageBgr, LayerCache.Layer.Contours[i].BoundingRectangle,
-                        new MCvScalar(
-                            Settings.LayerPreview.ContourBoundsOutlineColor.B,
-                            Settings.LayerPreview.ContourBoundsOutlineColor.G, 
-                            Settings.LayerPreview.ContourBoundsOutlineColor.R),
+                    CvInvoke.Rectangle(LayerCache.ImageBgra, LayerCache.Layer.Contours[i].BoundingRectangle,
+                        Settings.LayerPreview.ContourBoundsOutlineColor.ToMCvScalar(),
                         Settings.LayerPreview.ContourBoundsOutlineThickness);
 
                     lastParent = parent;
@@ -1222,11 +1215,9 @@ public partial class MainWindow
             {
                 for (int i = 0; i < LayerCache.Layer.Contours.Count; i++)
                 {
-                    LayerCache.Layer.Contours[i].FitCircle(LayerCache.ImageBgr, 
-                        new MCvScalar(
-                            Settings.LayerPreview.EnclosingCirclesOutlineColor.B,
-                            Settings.LayerPreview.EnclosingCirclesOutlineColor.G,
-                            Settings.LayerPreview.EnclosingCirclesOutlineColor.R), Settings.LayerPreview.EnclosingCirclesOutlineThickness, LineType.AntiAlias);
+                    LayerCache.Layer.Contours[i].FitCircle(LayerCache.ImageBgra, 
+                        Settings.LayerPreview.EnclosingCirclesOutlineColor.ToMCvScalar(),
+                        Settings.LayerPreview.EnclosingCirclesOutlineThickness, LineType.AntiAlias);
                 }
             }
 
@@ -1243,10 +1234,8 @@ public partial class MainWindow
                 using var vec = EmguContours.GetNegativeContours(LayerCache.Layer.Contours.VectorOfContours, LayerCache.Layer.Contours.Hierarchy);
                 if (vec.Size > 0)
                 {
-                    CvInvoke.DrawContours(LayerCache.ImageBgr, vec, -1,
-                        new MCvScalar(Settings.LayerPreview.HollowOutlineColor.B,
-                            Settings.LayerPreview.HollowOutlineColor.G,
-                            Settings.LayerPreview.HollowOutlineColor.R),
+                    CvInvoke.DrawContours(LayerCache.ImageBgra, vec, -1, 
+                        Settings.LayerPreview.HollowOutlineColor.ToMCvScalar(),
                         Settings.LayerPreview.HollowOutlineLineThickness);
                 }
             }
@@ -1267,23 +1256,16 @@ public partial class MainWindow
                     {
                         if (Settings.LayerPreview.CentroidOutlineHollow)
                         {
-                            CvInvoke.Circle(LayerCache.ImageBgr, LayerCache.Layer.Contours[i].Centroid,
-                                Settings.LayerPreview.CentroidOutlineDiameter / 2, new MCvScalar(
-                                    Settings.LayerPreview.HollowOutlineColor.B,
-                                    Settings.LayerPreview.HollowOutlineColor.G,
-                                    Settings.LayerPreview.HollowOutlineColor.R), 1, LineType.AntiAlias);
+                            CvInvoke.Circle(LayerCache.ImageBgra, LayerCache.Layer.Contours[i].Centroid,
+                                Settings.LayerPreview.CentroidOutlineDiameter / 2, Settings.LayerPreview.HollowOutlineColor.ToMCvScalar(), 1, LineType.AntiAlias);
                         }
                     }
                     else
                     {
-                        CvInvoke.Circle(LayerCache.ImageBgr, LayerCache.Layer.Contours[i].Centroid,
-                            Settings.LayerPreview.CentroidOutlineDiameter / 2, new MCvScalar(
-                                Settings.LayerPreview.CentroidOutlineColor.B,
-                                Settings.LayerPreview.CentroidOutlineColor.G,
-                                Settings.LayerPreview.CentroidOutlineColor.R), -1, LineType.AntiAlias);
+                        CvInvoke.Circle(LayerCache.ImageBgra, LayerCache.Layer.Contours[i].Centroid,
+                            Settings.LayerPreview.CentroidOutlineDiameter / 2, Settings.LayerPreview.CentroidOutlineColor.ToMCvScalar(),
+                            -1, LineType.AntiAlias);
                     }
-
-                        
 
                     lastParent = parent;
                 }
@@ -1292,14 +1274,12 @@ public partial class MainWindow
             if (_showLayerOutlineTriangulate)
             {
                 var groups = EmguContours.GetPositiveContoursInGroups(LayerCache.Layer.Contours.VectorOfContours, LayerCache.Layer.Contours.Hierarchy);
-                var lineColor = new MCvScalar(
-                    Settings.LayerPreview.TriangulateOutlineColor.B,
-                    Settings.LayerPreview.TriangulateOutlineColor.G,
-                    Settings.LayerPreview.TriangulateOutlineColor.R);
+                var lineColor = Settings.LayerPreview.TriangulateOutlineColor.ToMCvScalar();
                 var dotColor = new MCvScalar(
                     byte.MaxValue - Settings.LayerPreview.TriangulateOutlineColor.B,
                     byte.MaxValue - Settings.LayerPreview.TriangulateOutlineColor.G,
-                    byte.MaxValue - Settings.LayerPreview.TriangulateOutlineColor.R);
+                    byte.MaxValue - Settings.LayerPreview.TriangulateOutlineColor.R,
+                    Settings.LayerPreview.TriangulateOutlineColor.A);
 
                 uint triangleCount = 0;
 
@@ -1327,11 +1307,11 @@ public partial class MainWindow
                             triangle.V2.ToPoint()
                         };
 
-                        CvInvoke.Polylines(LayerCache.ImageBgr, points, true, lineColor, Settings.LayerPreview.TriangulateOutlineLineThickness);
+                        CvInvoke.Polylines(LayerCache.ImageBgra, points, true, lineColor, Settings.LayerPreview.TriangulateOutlineLineThickness);
 
-                        CvInvoke.Circle(LayerCache.ImageBgr, points[0], 2, dotColor, -1);
-                        CvInvoke.Circle(LayerCache.ImageBgr, points[1], 2, dotColor, -1);
-                        CvInvoke.Circle(LayerCache.ImageBgr, points[2], 2, dotColor, -1);
+                        CvInvoke.Circle(LayerCache.ImageBgra, points[0], 2, dotColor, -1);
+                        CvInvoke.Circle(LayerCache.ImageBgra, points[1], 2, dotColor, -1);
+                        CvInvoke.Circle(LayerCache.ImageBgra, points[2], 2, dotColor, -1);
                     }
 
                     triangleCount += (uint)triangles.Length;
@@ -1339,7 +1319,7 @@ public partial class MainWindow
 
                 if (triangleCount > 0 && Settings.LayerPreview.TriangulateOutlineShowCount)
                 {
-                    CvInvoke.PutText(LayerCache.ImageBgr, $"Triangles: {triangleCount:N0}", new Point(10, 80), FontFace.HersheyDuplex, 3, dotColor, 3);
+                    CvInvoke.PutText(LayerCache.ImageBgra, $"Triangles: {triangleCount:N0}", new Point(10, 80), FontFace.HersheyDuplex, 3, dotColor, 3);
                 }
                 
             }
@@ -1347,10 +1327,8 @@ public partial class MainWindow
             if (_maskPoints is not null && _maskPoints.Count > 0)
             {
                 using var vec = new VectorOfVectorOfPoint(_maskPoints.ToArray());
-                CvInvoke.DrawContours(LayerCache.ImageBgr, vec, -1,
-                    new MCvScalar(Settings.LayerPreview.MaskOutlineColor.B,
-                        Settings.LayerPreview.MaskOutlineColor.G,
-                        Settings.LayerPreview.MaskOutlineColor.R),
+                CvInvoke.DrawContours(LayerCache.ImageBgra, vec, -1,
+                    Settings.LayerPreview.MaskOutlineColor.ToMCvScalar(),
                     Settings.LayerPreview.MaskOutlineLineThickness);
             }
 
@@ -1370,23 +1348,22 @@ public partial class MainWindow
                             : Settings.PixelEditor.RemovePixelColor);
                     if (operationDrawing.BrushSize == 1)
                     {
-                        LayerCache.ImageBgr.SetByte(operation.Location.X, operation.Location.Y,
-                            new[] {color.B, color.G, color.R});
+                        LayerCache.ImageBgra.SetByte(operation.Location.X, operation.Location.Y, new[] {color.B, color.G, color.R, color.A});
                         continue;
                     }
 
-                    LayerCache.ImageBgr.DrawPolygon((byte)operationDrawing.BrushShape, operationDrawing.BrushSize / 2, operationDrawing.Location,
-                        new MCvScalar(color.B, color.G, color.R), operationDrawing.RotationAngle, operationDrawing.Thickness, operationDrawing.LineType);
+                    LayerCache.ImageBgra.DrawPolygon((byte)operationDrawing.BrushShape, operationDrawing.BrushSize, operationDrawing.Location,
+                        color.ToMCvScalar(), operationDrawing.RotationAngle, operationDrawing.Thickness, operationDrawing.LineType);
                     /*switch (operationDrawing.BrushShape)
                     {
                         case PixelDrawing.BrushShapeType.Square:
                             CvInvoke.Rectangle(LayerCache.ImageBgr, operationDrawing.Rectangle,
-                                new MCvScalar(color.B, color.G, color.R), operationDrawing.Thickness,
+                                color.ToMCvScalar(), operationDrawing.Thickness,
                                 operationDrawing.LineType);
                             break;
                         case PixelDrawing.BrushShapeType.Circle:
                             CvInvoke.Circle(LayerCache.ImageBgr, operation.Location, operationDrawing.BrushSize / 2,
-                                new MCvScalar(color.B, color.G, color.R), operationDrawing.Thickness,
+                                color.ToMCvScalar(), operationDrawing.Thickness,
                                 operationDrawing.LineType);
                             break;
                         default:
@@ -1404,14 +1381,9 @@ public partial class MainWindow
                             ? Settings.PixelEditor.RemovePixelHighlightColor
                             : Settings.PixelEditor.RemovePixelColor);
 
-
-
-                    /*CvInvoke.PutText(LayerCache.ImageBgr, operationText.Text, operationText.Location,
-                        operationText.Font, operationText.FontScale, new MCvScalar(color.B, color.G, color.R),
-                        operationText.Thickness, operationText.LineType, operationText.Mirror);*/
-                    LayerCache.ImageBgr.PutTextRotated(operationText.Text, operationText.Location,
-                        operationText.Font, operationText.FontScale, new MCvScalar(color.B, color.G, color.R),
-                        operationText.Thickness, operationText.LineType, operationText.Mirror, operationText.LineAlignment, operationText.Angle);
+                    LayerCache.ImageBgra.PutTextRotated(operationText.Text, operationText.Location,
+                        operationText.Font, operationText.FontScale, color.ToMCvScalar(),
+                        operationText.Thickness, operationText.LineType, operationText.Mirror, operationText.LineAlignment, (double)operationText.Angle);
                 }
                 else if (operation.OperationType == PixelOperation.PixelOperationType.Eraser)
                 {
@@ -1422,7 +1394,7 @@ public partial class MainWindow
                         : Settings.PixelEditor.RemovePixelColor;
 
                     using var vec = EmguContours.GetContoursInside(LayerCache.Layer.Contours.VectorOfContours, LayerCache.Layer.Contours.Hierarchy, operation.Location);
-                    if (vec.Size > 0) CvInvoke.DrawContours(LayerCache.ImageBgr, vec, -1, new MCvScalar(color.B, color.G, color.R), -1);
+                    if (vec.Size > 0) CvInvoke.DrawContours(LayerCache.ImageBgra, vec, -1, color.ToMCvScalar(), -1);
 
                     /*var hollowGroups = EmguContours.GetPositiveContoursInGroups(LayerCache.LayerContours, LayerCache.LayerContourHierarchy);
 
@@ -1441,8 +1413,8 @@ public partial class MainWindow
                         ? Settings.PixelEditor.SupportsHighlightColor
                         : Settings.PixelEditor.SupportsColor;
 
-                    CvInvoke.Circle(LayerCache.ImageBgr, operation.Location, operationSupport.TipDiameter / 2,
-                        new MCvScalar(color.B, color.G, color.R), -1);
+                    CvInvoke.Circle(LayerCache.ImageBgra, operation.Location, operationSupport.TipDiameter / 2,
+                        color.ToMCvScalar(), -1);
                 }
                 else if (operation.OperationType == PixelOperation.PixelOperationType.DrainHole)
                 {
@@ -1451,8 +1423,7 @@ public partial class MainWindow
                         ? Settings.PixelEditor.DrainHoleHighlightColor
                         : Settings.PixelEditor.DrainHoleColor;
 
-                    CvInvoke.Circle(LayerCache.ImageBgr, operation.Location, operationDrainHole.Diameter / 2,
-                        new MCvScalar(color.B, color.G, color.R), -1);
+                    CvInvoke.Circle(LayerCache.ImageBgra, operation.Location, operationDrainHole.Diameter / 2, color.ToMCvScalar(), -1);
                 }
             }
 
@@ -1491,15 +1462,15 @@ public partial class MainWindow
                 else if (_showLayerImageFlippedVertically)
                     flipType = FlipType.Vertical;
 
-                CvInvoke.Flip(LayerCache.ImageBgr, LayerCache.ImageBgr, flipType);
+                CvInvoke.Flip(LayerCache.ImageBgra, LayerCache.ImageBgra, flipType);
             }
 
             if (_showLayerImageRotated)
             {
-                CvInvoke.Rotate(LayerCache.ImageBgr, LayerCache.ImageBgr, _showLayerImageRotateCcwDirection ? RotateFlags.Rotate90CounterClockwise : RotateFlags.Rotate90Clockwise);
+                CvInvoke.Rotate(LayerCache.ImageBgra, LayerCache.ImageBgra, _showLayerImageRotateCcwDirection ? RotateFlags.Rotate90CounterClockwise : RotateFlags.Rotate90Clockwise);
             }
 
-            LayerImageBox.Image = LayerCache.Bitmap = LayerCache.ImageBgr.ToBitmapParallel();
+            LayerImageBox.Image = LayerCache.Bitmap = LayerCache.ImageBgra.ToBitmap();
                 
             RefreshCurrentLayerData();
 
@@ -1523,8 +1494,7 @@ public partial class MainWindow
         // This prevents the crosshair lines from disappearing due to being too thin to
         // render at very low zoom factors.
         var lineThickness = (LayerImageBox.Zoom > 100) ? 1 : (LayerImageBox.Zoom < 50) ? 3 : 2;
-        var color = new MCvScalar(Settings.LayerPreview.CrosshairColor.B, Settings.LayerPreview.CrosshairColor.G,
-            Settings.LayerPreview.CrosshairColor.R);
+        var color = Settings.LayerPreview.CrosshairColor.ToMCvScalar();
 
 
         // LEFT
@@ -1535,7 +1505,7 @@ public partial class MainWindow
                 ? 0
                 : (int)Math.Max(0, startPoint.X - Settings.LayerPreview.CrosshairLength + 1)};
 
-        CvInvoke.Line(LayerCache.ImageBgr,
+        CvInvoke.Line(LayerCache.ImageBgra,
             startPoint,
             endPoint,
             color,
@@ -1543,13 +1513,13 @@ public partial class MainWindow
 
 
         // RIGHT
-        startPoint.X = Math.Min(LayerCache.ImageBgr.Width,
+        startPoint.X = Math.Min(LayerCache.ImageBgra.Width,
             rect.Right + Settings.LayerPreview.CrosshairMargin);
         endPoint.X = Settings.LayerPreview.CrosshairLength == 0
-            ? LayerCache.ImageBgr.Width
-            : (int)Math.Min(LayerCache.ImageBgr.Width, startPoint.X + Settings.LayerPreview.CrosshairLength - 1);
+            ? LayerCache.ImageBgra.Width
+            : (int)Math.Min(LayerCache.ImageBgra.Width, startPoint.X + Settings.LayerPreview.CrosshairLength - 1);
 
-        CvInvoke.Line(LayerCache.ImageBgr,
+        CvInvoke.Line(LayerCache.ImageBgra,
             startPoint,
             endPoint,
             color,
@@ -1563,19 +1533,19 @@ public partial class MainWindow
             : Math.Max(0, startPoint.Y - Settings.LayerPreview.CrosshairLength + 1))};
 
 
-        CvInvoke.Line(LayerCache.ImageBgr,
+        CvInvoke.Line(LayerCache.ImageBgra,
             startPoint,
             endPoint,
             color,
             lineThickness);
 
         // Bottom
-        startPoint.Y = Math.Min(LayerCache.ImageBgr.Height, rect.Bottom + Settings.LayerPreview.CrosshairMargin);
+        startPoint.Y = Math.Min(LayerCache.ImageBgra.Height, rect.Bottom + Settings.LayerPreview.CrosshairMargin);
         endPoint.Y = Settings.LayerPreview.CrosshairLength == 0
-            ? LayerCache.ImageBgr.Height
-            : (int)Math.Min(LayerCache.ImageBgr.Height, startPoint.Y + Settings.LayerPreview.CrosshairLength - 1);
+            ? LayerCache.ImageBgra.Height
+            : (int)Math.Min(LayerCache.ImageBgra.Height, startPoint.Y + Settings.LayerPreview.CrosshairLength - 1);
 
-        CvInvoke.Line(LayerCache.ImageBgr,
+        CvInvoke.Line(LayerCache.ImageBgra,
             startPoint,
             endPoint,
             color,
@@ -2317,7 +2287,7 @@ public partial class MainWindow
         using var file = await SaveFilePickerAsync(SlicerFile!.DirectoryPath, $"{SlicerFile.FilenameNoExt}_layer{ActualLayer}.png", AvaloniaStatic.PngFileFilter);
         if (file?.TryGetLocalPath() is not { } filePath) return;
 
-        LayerCache.ImageBgr.Save(filePath);
+        LayerCache.ImageBgra.Save(filePath);
     }
 
     public async void SaveCurrentROIImage()
@@ -2331,11 +2301,11 @@ public partial class MainWindow
         LayerImageBox.GetSelectedBitmap()?.Save(filePath);
     }
 
-    const byte _pixelEditorCursorMinDiamater = 10;
+    const byte PixelEditorCursorMinDiameter = 10;
     public void UpdatePixelEditorCursor()
     {
         Mat? cursor = null;
-        var _pixelEditorCursorColor = new MCvScalar(
+        var pixelEditorCursorColor = new MCvScalar(
             Settings.PixelEditor.CursorColor.B, 
             Settings.PixelEditor.CursorColor.G,
             Settings.PixelEditor.CursorColor.R,
@@ -2348,15 +2318,27 @@ public partial class MainWindow
                 {
                     if ((byte)DrawingPixelDrawing.BrushShape >= 1)
                     {
-                        int cursorSize = DrawingPixelDrawing.BrushSize;
+                        int cursorSize = DrawingPixelDrawing.BrushSize + 1;
                         if (DrawingPixelDrawing.Thickness > 1)
                         {
                             cursorSize += DrawingPixelDrawing.Thickness;
                         }
-                        cursor = EmguExtensions.InitMat(new Size(cursorSize, cursorSize), 4);
 
-                        cursor.DrawPolygon((byte) DrawingPixelDrawing.BrushShape, DrawingPixelDrawing.BrushSize / 2, cursor.Size.ToPoint().Half(), 
-                            _pixelEditorCursorColor, DrawingPixelDrawing.RotationAngle, DrawingPixelDrawing.Thickness, DrawingPixelDrawing.LineType);
+                        //if (cursorSize % 2 != 0) cursorSize++;
+
+                        cursor = EmguExtensions.InitMat(new Size(cursorSize, cursorSize), 4);
+                        //cursor.SetTo(new MCvScalar(255,255,255,255)); // Debug
+
+                        /*FlipType? flip = null;
+                        if (_showLayerImageFlipped)
+                        { 
+                            if (_showLayerImageFlippedHorizontally && _showLayerImageFlippedVertically) flip = FlipType.Both;
+                            else if (_showLayerImageFlippedHorizontally) flip = FlipType.Horizontal;
+                            else if (_showLayerImageFlippedVertically) flip = FlipType.Vertical;
+                        }*/
+                        
+                        cursor.DrawPolygon((byte) DrawingPixelDrawing.BrushShape, DrawingPixelDrawing.BrushSize, new PointF(cursor.Width / 2.0f, cursor.Height / 2.0f), 
+                            pixelEditorCursorColor, DrawingPixelDrawing.RotationAngle, DrawingPixelDrawing.Thickness, DrawingPixelDrawing.LineType);
 
                         if (DrawingPixelDrawing.BrushShape != PixelDrawing.BrushShapeType.Circle)
                         {
@@ -2428,7 +2410,7 @@ public partial class MainWindow
                 //_pixelEditorCursorColor.V3 = 255;
                 //CvInvoke.Rectangle(cursor, new Rectangle(new Point(size.Width, 0), size), _pixelEditorCursorColor, 1, DrawingPixelText.LineType);
 
-                cursor.PutTextExtended(text, size.ToPoint(), DrawingPixelText.Font, DrawingPixelText.FontScale, _pixelEditorCursorColor, DrawingPixelText.Thickness, DrawingPixelText.LineType, DrawingPixelText.Mirror, DrawingPixelText.LineAlignment);
+                cursor.PutTextExtended(text, size.ToPoint(), DrawingPixelText.Font, DrawingPixelText.FontScale, pixelEditorCursorColor, DrawingPixelText.Thickness, DrawingPixelText.LineType, DrawingPixelText.Mirror, DrawingPixelText.LineAlignment);
                 //CvInvoke.PutText(cursor, text, size.ToPoint(), DrawingPixelText.Font, DrawingPixelText.FontScale, _pixelEditorCursorColor, DrawingPixelText.Thickness, DrawingPixelText.LineType, DrawingPixelText.Mirror);
                 cursor.RotateAdjustBounds(DrawingPixelText.Angle);
                 //cursor.Rotate(DrawingPixelText.Angle);
@@ -2457,21 +2439,21 @@ public partial class MainWindow
                 var diameter = SelectedPixelOperationTabIndex == (byte)PixelOperation.PixelOperationType.Supports ?
                     DrawingPixelSupport.TipDiameter : DrawingPixelDrainHole.Diameter;
 
-                if (diameter >= _pixelEditorCursorMinDiamater)
+                if (diameter >= PixelEditorCursorMinDiameter)
                 {
                     cursor = EmguExtensions.InitMat(new Size(diameter, diameter), 4);
                     var center = new Point(diameter / 2, diameter / 2);
                     CvInvoke.Circle(cursor,
                         center,
                         center.X,
-                        _pixelEditorCursorColor,
+                        pixelEditorCursorColor,
                         -1, LineType.AntiAlias
                     );
-                    _pixelEditorCursorColor.V3 = 255;
+                    pixelEditorCursorColor.V3 = 255;
                     CvInvoke.Circle(cursor,
                         center,
                         center.X,
-                        _pixelEditorCursorColor,
+                        pixelEditorCursorColor,
                         1, LineType.AntiAlias
                     );
                 }
@@ -2480,7 +2462,13 @@ public partial class MainWindow
 
         if (cursor is not null)
         {
-            LayerImageBox.TrackerImage = cursor.ToBitmapParallel();
+            /*using var cursorGrey = new Mat();
+            CvInvoke.CvtColor(cursor, cursorGrey, ColorConversion.Bgra2Gray);
+            var bounds = CvInvoke.BoundingRectangle(cursorGrey);
+            using var cursorRoi = new Mat(cursor, bounds);*/
+            
+            LayerImageBox.TrackerImage = cursor.ToBitmap();
+            //cursorRoi.Save("D:\\Cursor.png");
             //LayerImageBox.Cursor = new Cursor(cursor.ToBitmap(), new PixelPoint(cursor.Width / 2, cursor.Height / 2));
             //cursor.Save("D:\\Cursor.png");
             //LayerImageBox.TrackerImage.Save("D:\\CursorAVA.png");

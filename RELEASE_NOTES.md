@@ -1,18 +1,16 @@
 - **UI:**
-  - **Pixel editor:**
-    - (Add) Shortcut: Ctrl/⌘+E to de/activate pixel editor
-    - (Add) Profiles (#604, #831)
-    - (Improvement) Use DataGrid row header to show the operation count instead of process and store indexes for the objects
-    - (Fix) Drawings and Text controls are not stretched to fill the available space to the right
-  - (Improvement) macOS: Shortcuts Ctrl+0, Ctrl+R, Ctrl+F changed to use command key(⌘) instead of control key
-- (Improvement) Dynamic layer height, Lithophane, PCB exposure and Phased exposure: Use better performant `HasNonZero` instead of `CountNonZero` to check if there are any pixels to process
-- (Improvement) Update demo file with the newest version of the format and use SL1S printer instead
-- (Change) Extract file contents shortcut: From Ctrl+E to Ctrl+Shift+E
-- (Fix) Files with different resolution information from empty layers were generating wrong image creation for such layers (#833)
-- (Fix) Possible throw an exception about invalid roi when using Roi and/or masks under some tools
-- (Fix) Skeletonize memory leak
-- (Fix) System.NullReferenceException when accessing reallocated layers (#835)
-- (Fix) Unable to save profiles for "Light bleed compensation", "Phased exposure"
-- (Fix) PrusaSlicer printer "UVtools Prusa SL1S SPEED": Fix the display width and height, they were flipped
-- (Upgrade) AvaloniaUI from 11.0.7 to 11.0.9
+  - (Add) Allow to drag and drop Gerber files into main window to open them in the PCB exposure tool (Hold SHIFT key to run the operation right away, without opening the tool dialog, it will run with the default settings)
+  - (Improvement) Drag and drop invalid files that are not recognized no longer closes the current file nor open new instances when multiple files are passed or when SHIFT is held
+- **Pixel editor:**
+  - (Improvement) Line shape was producing one pixel more than required
+  - (Improvement) Make the shape preview more accurate with the actual real output and when defining a shape thickness instead of a fill
+  - (Improvement) Increase the accuracy of the shapes by passing float instead of int
+  - (Improvement) Make the square shape to be exactly the input brush size
+  - (Improvement) Dispose Skia drawing objects after draw the pixel editor shapes into the previewer
+- (Improvement) Better performance and speed when rendering the layer image into the previewer
+- (Improvement) Dispose cached data when layer changes into the previewer
+- (Change) Layer image preview format from Bgr to Bgra (Added alpha channel, now 32 bits)
+- (Fix) Calibration Blooming effect: All layers are being set with bottom exposure time (#481)
+- (Upgrade) .NET from 6.0.26 to 6.0.27
+- (Downgrade) AvaloniaUI from 11.0.9 to 11.0.7 (Fix #836 but may re-introduce others)
 

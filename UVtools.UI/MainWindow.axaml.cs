@@ -1308,6 +1308,17 @@ public partial class MainWindow : WindowEx
     {
         if (files.Length == 0) return;
 
+        if (files.All(s => OperationPCBExposure.ValidExtensions.Any(extension => s.EndsWith($".{extension}", StringComparison.OrdinalIgnoreCase))))
+        {
+            if (!IsFileLoaded) return;
+            var operation = new OperationPCBExposure();
+            operation.AddFiles(files);
+            if (operation.Count == 0) return;
+            if ((_globalModifiers & KeyModifiers.Shift) != 0) await RunOperation(operation);
+            else await ShowRunOperation(operation);
+            return;
+        }
+
         for (int i = 0; i < files.Length; i++)
         {
             if (!File.Exists(files[i])) continue;
@@ -1353,6 +1364,7 @@ public partial class MainWindow : WindowEx
                 continue;
             }
 
+            if (FileFormat.FindByExtensionOrFilePath(files[i]) is null) continue;
 
             if (i == 0 && !openNewWindow && (_globalModifiers & KeyModifiers.Shift) == 0)
             {
@@ -1361,7 +1373,6 @@ public partial class MainWindow : WindowEx
             }
 
             App.NewInstance(files[i]);
-
         }
     }
 

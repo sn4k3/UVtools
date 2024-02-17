@@ -1918,7 +1918,7 @@ public sealed class OperationCalibrateExposureFinder : Operation
 
             SlicerFile.SuppressRebuildPropertiesWork(() =>
             {
-                SlicerFile.BottomLayerCount = (ushort)bottomLayerCount;
+                SlicerFile.BottomLayerCount = bottomLayerCount;
                 SlicerFile.BottomExposureTime = (float)BottomExposure;
                 SlicerFile.ExposureTime = (float)NormalExposure;
                 SlicerFile.Layers = layers.ToArray();

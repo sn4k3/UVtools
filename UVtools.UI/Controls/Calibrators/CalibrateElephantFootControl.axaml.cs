@@ -64,7 +64,7 @@ public partial class CalibrateElephantFootControl : ToolControl
     {
         var layers = Operation.GetLayers();
         _previewImage?.Dispose();
-        PreviewImage = layers[0].ToBitmapParallel();
+        PreviewImage = layers[0].ToBitmap();
         foreach (var layer in layers)
         {
             layer.Dispose();

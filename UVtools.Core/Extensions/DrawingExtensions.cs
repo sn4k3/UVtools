@@ -38,54 +38,55 @@ public static class DrawingExtensions
         return length / (2 * Math.Cos((90 - theta / 2) * Math.PI / 180.0));
     }
 
-    public static Point[] GetPolygonVertices(int sides, int radius, Point center, double startingAngle = 0, bool flipHorizontally = false, bool flipVertically = false)
+    
+    public static Point[] GetPolygonVertices(int sides, double diameter, PointF center, double startingAngle = 0, bool flipHorizontally = false, bool flipVertically = false, MidpointRounding midpointRounding = MidpointRounding.AwayFromZero)
     {
         if (sides < 3)
             throw new ArgumentException("Polygons can't have less than 3 sides...", nameof(sides));
 
         var vertices = new Point[sides];
+        var radius = diameter / 2;
 
-        /*if (sides == 4)
+        if (sides == 4)
         {
-            var rotatedRect = new RotatedRect(center, new SizeF(radius * 2, radius * 2), (float)startingAngle);
+            var rotatedRect = new RotatedRect(center, new SizeF((float)diameter - 1, (float)diameter - 1), (float)startingAngle);
             var verticesF = rotatedRect.GetVertices();
             for (var i = 0; i < verticesF.Length; i++)
             {
-                vertices[i] = verticesF[i].ToPoint();
+                vertices[i] = verticesF[i].ToPoint(midpointRounding);
             }
-            return vertices;
-        }*/
-
-        
-
-        var deg = 360.0 / sides;//calculate the rotation angle
-        var rad = Math.PI / 180.0;
-
-        var x0 = center.X + radius * Math.Cos(-(((180 - deg) / 2) + startingAngle) * rad);
-        var y0 = center.Y - radius * Math.Sin(-(((180 - deg) / 2) + startingAngle) * rad);
-
-        var x1 = center.X + radius * Math.Cos(-(((180 - deg) / 2) + deg + startingAngle) * rad);
-        var y1 = center.Y - radius * Math.Sin(-(((180 - deg) / 2) + deg + startingAngle) * rad);
-
-        vertices[0] = new(
-            (int) Math.Round(x0, MidpointRounding.AwayFromZero),
-            (int) Math.Round(y0, MidpointRounding.AwayFromZero)
-        );
-
-        vertices[1] = new(
-            (int) Math.Round(x1, MidpointRounding.AwayFromZero),
-            (int) Math.Round(y1, MidpointRounding.AwayFromZero)
-        );
-
-        for (int i = 0; i < sides - 2; i++)
+        }
+        else
         {
-            var dsinrot = Math.Sin(deg * (i + 1) * rad);
-            var dcosrot = Math.Cos(deg * (i + 1) * rad);
+            var angleIncrement = 360.0 / sides; //calculate the rotation angle
+            var rad = Math.PI / 180.0;
 
-            vertices[i + 2] = new(
-                (int)Math.Round(center.X + dcosrot * (x1 - center.X) - dsinrot * (y1 - center.Y), MidpointRounding.AwayFromZero),
-                (int)Math.Round(center.Y + dsinrot * (x1 - center.X) + dcosrot * (y1 - center.Y), MidpointRounding.AwayFromZero)
+            var x0 = center.X + radius * Math.Cos(-(((180 - angleIncrement) / 2) + startingAngle) * rad);
+            var y0 = center.Y - radius * Math.Sin(-(((180 - angleIncrement) / 2) + startingAngle) * rad);
+
+            var x1 = center.X + radius * Math.Cos(-(((180 - angleIncrement) / 2) + startingAngle + angleIncrement) * rad);
+            var y1 = center.Y - radius * Math.Sin(-(((180 - angleIncrement) / 2) + startingAngle + angleIncrement) * rad);
+
+            vertices[0] = new(
+                (int)Math.Round(x0, midpointRounding),
+                (int)Math.Round(y0, midpointRounding)
             );
+
+            vertices[1] = new(
+                (int)Math.Round(x1, midpointRounding),
+                (int)Math.Round(y1, midpointRounding)
+            );
+
+            for (int i = 0; i < sides - 2; i++)
+            {
+                var dsinrot = Math.Sin(angleIncrement * (i + 1) * rad);
+                var dcosrot = Math.Cos(angleIncrement * (i + 1) * rad);
+
+                vertices[i + 2] = new(
+                    (int)Math.Round(center.X + dcosrot * (x1 - center.X) - dsinrot * (y1 - center.Y), midpointRounding),
+                    (int)Math.Round(center.Y + dsinrot * (x1 - center.X) + dcosrot * (y1 - center.Y), midpointRounding)
+                );
+            }
         }
 
         if (flipHorizontally)
@@ -94,7 +95,7 @@ public static class DrawingExtensions
             var endX = center.X + radius;
             for (int i = 0; i < sides; i++)
             {
-                vertices[i].X = endX - (vertices[i].X - startX);
+                vertices[i].X = (int)Math.Round(endX - (vertices[i].X - startX), midpointRounding);
             }
         }
 
@@ -104,7 +105,7 @@ public static class DrawingExtensions
             var endY = center.Y + radius;
             for (int i = 0; i < sides; i++)
             {
-                vertices[i].Y = endY - (vertices[i].Y - startY);
+                vertices[i].Y = (int)Math.Round(endY - (vertices[i].Y - startY), midpointRounding);
             }
         }
 

@@ -121,18 +121,18 @@ public partial class ToolPCBExposureControl : ToolControl
                 
             if (!OperationPCBExposure.ValidExtensions.Any(extension => _selectedFile.IsExtension(extension)) || !_selectedFile.Exists) return;
             var file = (OperationPCBExposure.PCBExposureFile)_selectedFile.Clone();
-            file._invertPolarity = ExcellonDrillFormat.Extensions.Any(extension => file.IsExtension(extension));
+            file.InvertPolarity = ExcellonDrillFormat.Extensions.Any(extension => file.IsExtension(extension));
             _previewImage?.Dispose();
             using var mat = Operation.GetMat(file);
 
             if (_cropPreview)
             {
                 using var matCropped = mat.CropByBounds(20);
-                PreviewImage = matCropped.ToBitmapParallel();
+                PreviewImage = matCropped.ToBitmap();
             }
             else
             {
-                PreviewImage = mat.ToBitmapParallel();
+                PreviewImage = mat.ToBitmap();
             }
         }
         catch (Exception e)

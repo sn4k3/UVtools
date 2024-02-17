@@ -345,7 +345,7 @@ public static class SystemAware
         using var outputWaitHandle = new AutoResetEvent(false);
         using var errorWaitHandle = new AutoResetEvent(false);
 
-        process.OutputDataReceived += (sender, e) =>
+        void ProcessOnOutputDataReceived(object sender, DataReceivedEventArgs e)
         {
             if (e.Data is null)
             {
@@ -355,9 +355,9 @@ public static class SystemAware
             {
                 standardOutput.AppendLine(e.Data);
             }
-        };
+        }
 
-        process.ErrorDataReceived += (sender, e) =>
+        void ProcessOnErrorDataReceived(object sender, DataReceivedEventArgs e)
         {
             if (e.Data is null)
             {
@@ -367,7 +367,11 @@ public static class SystemAware
             {
                 errorOutput.AppendLine(e.Data);
             }
-        };
+        }
+
+
+        process.OutputDataReceived += ProcessOnOutputDataReceived;
+        process.ErrorDataReceived += ProcessOnErrorDataReceived;
 
         process.Start();
 
@@ -377,6 +381,9 @@ public static class SystemAware
         process.WaitForExit(timeout);
         outputWaitHandle.WaitOne(timeout);
         errorWaitHandle.WaitOne(timeout);
+
+        process.OutputDataReceived -= ProcessOnOutputDataReceived;
+        process.ErrorDataReceived -= ProcessOnErrorDataReceived;
 
         return (standardOutput.ToString(), errorOutput.ToString());
     }
@@ -395,7 +402,7 @@ public static class SystemAware
 
         using var outputWaitHandle = new AutoResetEvent(false);
 
-        process.OutputDataReceived += (sender, e) =>
+        void ProcessOnOutputDataReceived(object sender, DataReceivedEventArgs e)
         {
             if (e.Data is null)
             {
@@ -405,7 +412,9 @@ public static class SystemAware
             {
                 stringBuilder.AppendLine(e.Data);
             }
-        };
+        }
+
+        process.OutputDataReceived += ProcessOnOutputDataReceived;
 
         process.Start();
 
@@ -413,7 +422,9 @@ public static class SystemAware
 
         process.WaitForExit(timeout);
         outputWaitHandle.WaitOne(timeout);
-        
+
+        process.OutputDataReceived -= ProcessOnOutputDataReceived;
+
         return stringBuilder.ToString();
     }
 

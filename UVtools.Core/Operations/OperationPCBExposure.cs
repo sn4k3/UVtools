@@ -32,8 +32,9 @@ public class OperationPCBExposure : Operation
 
     public sealed class PCBExposureFile : GenericFileRepresentation
     {
-        public bool _invertPolarity;
-        public double _sizeScale = 1;
+        private bool _invertPolarity;
+
+        private double _sizeScale = 1;
 
         /// <summary>
         /// Gets or sets to invert the polarity when drawing

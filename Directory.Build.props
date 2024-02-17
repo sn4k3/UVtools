@@ -25,6 +25,8 @@
         <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)build\UVtools.snk</AssemblyOriginatorKeyFile>
 
         <PathMap>$(MSBuildProjectDirectory)=$(MSBuildProjectName)</PathMap>
+
+        <AvaloniaVersion>11.0.7</AvaloniaVersion>
     </PropertyGroup>
 
     <ItemGroup>

@@ -30,7 +30,7 @@ public partial class ToolMaskControl : ToolControl
             if(!RaiseAndSetIfChanged(ref _isMaskInverted, value)) return;
             if (!Operation.HaveInputMask) return;
             Operation.InvertMask();
-            MaskImage = Operation.Mask?.ToBitmapParallel();
+            MaskImage = Operation.Mask?.ToBitmap();
         }
     }
 
@@ -97,7 +97,7 @@ public partial class ToolMaskControl : ToolControl
         try
         {
             Operation.LoadFromFile(filePath, _isMaskInverted, App.MainWindow.ROI.Size.IsEmpty ? SlicerFile!.Resolution : App.MainWindow.ROI.Size);
-            MaskImage = Operation.Mask?.ToBitmapParallel();
+            MaskImage = Operation.Mask?.ToBitmap();
         }
         catch (Exception e)
         {
@@ -135,6 +135,6 @@ public partial class ToolMaskControl : ToolControl
         }
 
         if (_isMaskInverted) Operation.InvertMask();
-        MaskImage = Operation.Mask.ToBitmapParallel();
+        MaskImage = Operation.Mask.ToBitmap();
     }
 }

@@ -8,11 +8,9 @@
 
 using Avalonia.Controls;
 using Avalonia.Input;
-using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
-using Emgu.CV.Structure;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
@@ -189,11 +187,6 @@ public partial class MainWindow
             return;
         }
 
-        WriteableBitmap bitmap = LayerImageBox.ImageAsWriteableBitmap!;
-        //var context = CreateRenderTarget().CreateDrawingContext(bitmap);
-
-        
-        //Bitmap bmp = pbLayer.Image as Bitmap;
         if (SelectedPixelOperationTabIndex == (byte)PixelOperation.PixelOperationType.Drawing)
         {
             var drawings = new List<PixelOperation>();
@@ -221,13 +214,14 @@ public partial class MainWindow
                         continue;
                     }
 
-                    int halfBrush = operationDrawing.BrushSize / 2;
-                    double angle = operationDrawing.RotationAngle;
+                    float halfBrush = operationDrawing.BrushSize / 2f;
+                    var angle = operationDrawing.RotationAngle;
                     switch (operationDrawing.BrushShape)
                     {
                         case PixelDrawing.BrushShapeType.Line:
-                            Point point1 = location with {X = location.X - halfBrush};
-                            Point point2 = location with {X = location.X + halfBrush};
+                        {
+                            var point1 = location with { X = (int)Math.Round(location.X - halfBrush, MidpointRounding.AwayFromZero) };
+                            var point2 = point1 with { X = point1.X + operationDrawing.BrushSize };
 
                             if (_showLayerImageRotated)
                             {
@@ -243,7 +237,7 @@ public partial class MainWindow
 
                             point1 = point1.Rotate(angle, location);
                             point2 = point2.Rotate(angle, location);
-                                
+
 
                             if (_showLayerImageFlipped)
                             {
@@ -293,19 +287,21 @@ public partial class MainWindow
                             }*/
 
 
-
-                            LayerCache.Canvas?.DrawLine(point1.X, point1.Y, point2.X, point2.Y, new SKPaint
+                            using var linePaint = new SKPaint
                             {
                                 IsAntialias = operationDrawing.LineType == LineType.AntiAlias,
                                 Color = new SKColor(color.ToUint32()),
                                 IsStroke = operationDrawing.Thickness >= 0,
                                 StrokeWidth = operationDrawing.Thickness,
                                 StrokeCap = SKStrokeCap.Round
-                            });
+                            };
+
+                            LayerCache.Canvas?.DrawLine(point1.X, point1.Y, point2.X, point2.Y, linePaint);
                             break;
+                        }
                         /*case PixelDrawing.BrushShapeType.Square:
-                            LayerCache.Canvas.DrawRect(location.X - halfBrush, location.Y - halfBrush, 
-                                operationDrawing.BrushSize, 
+                            LayerCache.Canvas.DrawRect(location.X - halfBrush, location.Y - halfBrush,
+                                operationDrawing.BrushSize,
                                 operationDrawing.BrushSize,
                                 new SKPaint
                                 {
@@ -319,23 +315,27 @@ public partial class MainWindow
                                 operationDrawing.LineType);*/
                         //break;
                         case PixelDrawing.BrushShapeType.Circle:
-                            LayerCache.Canvas?.DrawCircle(location.X, location.Y, operationDrawing.BrushSize / 2f,
-                                new SKPaint
-                                {
-                                    IsAntialias = operationDrawing.LineType == LineType.AntiAlias,
-                                    Color = new SKColor(color.ToUint32()),
-                                    IsStroke = operationDrawing.Thickness >= 0,
-                                    StrokeWidth = operationDrawing.Thickness
-                                });
-                                
+                        {
+                            using var circlePaint = new SKPaint
+                            {
+                                IsAntialias = operationDrawing.LineType == LineType.AntiAlias,
+                                Color = new SKColor(color.ToUint32()),
+                                IsStroke = operationDrawing.Thickness >= 0,
+                                StrokeWidth = operationDrawing.Thickness
+                            };
+                            LayerCache.Canvas?.DrawCircle(location.X, location.Y, operationDrawing.BrushSize / 2f, circlePaint);
+
                             /*CvInvoke.Circle(LayerCache.ImageBgr, location, operationDrawing.BrushSize / 2,
                                 new MCvScalar(color.B, color.G, color.R), operationDrawing.Thickness,
                                 operationDrawing.LineType);*/
                             break;
+                        }
                         default:
+                        {
                             if (_showLayerImageRotated)
                             {
-                                if (!_showLayerImageFlipped || _showLayerImageFlippedHorizontally && _showLayerImageFlippedVertically)
+                                if (!_showLayerImageFlipped || _showLayerImageFlippedHorizontally &&
+                                    _showLayerImageFlippedVertically)
                                 {
                                     if (_showLayerImageRotateCcwDirection)
                                     {
@@ -359,36 +359,49 @@ public partial class MainWindow
                                 }
                             }
 
-
-                            var vertices = DrawingExtensions.GetPolygonVertices((byte) operationDrawing.BrushShape,
-                                operationDrawing.BrushSize / 2, location, angle, _showLayerImageFlipped && _showLayerImageFlippedHorizontally, _showLayerImageFlipped && _showLayerImageFlippedVertically);
+                            var vertices = DrawingExtensions.GetPolygonVertices((byte)operationDrawing.BrushShape,
+                                operationDrawing.BrushSize,
+                                location, angle, _showLayerImageFlipped && _showLayerImageFlippedHorizontally,
+                                _showLayerImageFlipped && _showLayerImageFlippedVertically);
 
                             //if(angle % 360 != 0) PointExtensions.Rotate(vertices, angle, location);
 
-                            var path = new SKPath();
-                            path.MoveTo(vertices[0].X, vertices[0].Y);
-                            for (var i = 1; i < vertices.Length; i++)
+                            using var canvas = LayerCache.Canvas;
+                            using var linePaint = new SKPaint
                             {
-                                path.LineTo(vertices[i].X, vertices[i].Y);
-                            }
-                            path.Close();
+                                IsAntialias = operationDrawing.LineType == LineType.AntiAlias,
+                                Color = new SKColor(color.ToUint32()),
+                                IsStroke = true,
+                                StrokeWidth = operationDrawing.Thickness,
+                                StrokeJoin = SKStrokeJoin.Round
+                            };
 
-                            LayerCache.Canvas?.DrawPath(path, new SKPaint
+                            using var fillPaint = new SKPaint
                             {
                                 IsAntialias = operationDrawing.LineType == LineType.AntiAlias,
                                 Color = new SKColor(color.ToUint32()),
                                 IsStroke = operationDrawing.Thickness >= 0,
-                                StrokeWidth = operationDrawing.Thickness
-                            });
-                            /*LayerCache.Canvas.DrawPoints(SKPointMode.Polygon, points,
-                                new SKPaint
-                                {
-                                    IsAntialias = operationDrawing.LineType == LineType.AntiAlias,
-                                    Color = new SKColor(color.ToUint32()),
-                                    IsStroke = operationDrawing.Thickness >= 0,
-                                    StrokeWidth = operationDrawing.Thickness
-                                });*/
+                                StrokeWidth = operationDrawing.Thickness,
+                                StrokeJoin = SKStrokeJoin.Round,
+                            };
+
+                            using var path = new SKPath();
+                            path.MoveTo(vertices[0].X, vertices[0].Y);
+                            canvas!.DrawPoint(vertices[0].X, vertices[0].Y, linePaint);
+                            for (var i = 1; i < vertices.Length; i++)
+                            {
+                                path.LineTo(vertices[i].X, vertices[i].Y);
+                                canvas.DrawLine(vertices[i - 1].X, vertices[i - 1].Y, vertices[i].X, vertices[i].Y, linePaint);
+                                canvas.DrawPoint(vertices[i].X, vertices[i].Y, linePaint);
+                            }
+
+                            canvas.DrawLine(vertices[0].X, vertices[0].Y, vertices[^1].X, vertices[^1].Y, linePaint);
+                            path.Close();
+
+                            canvas.DrawPath(path, fillPaint);
+
                             break;
+                        }
                     }
                     LayerImageBox.InvalidateVisual();
                     //RefreshLayerImage();
@@ -477,8 +490,8 @@ public partial class MainWindow
             //if (PixelHistory.Contains(operation)) return;
             AddDrawing(operationSupport);
 
-            CvInvoke.Circle(LayerCache.ImageBgr, location, operationSupport.TipDiameter / 2,
-                new MCvScalar(Settings.PixelEditor.SupportsColor.B, Settings.PixelEditor.SupportsColor.G, Settings.PixelEditor.SupportsColor.R), -1);
+            CvInvoke.Circle(LayerCache.ImageBgra, location, operationSupport.TipDiameter / 2,
+                Settings.PixelEditor.SupportsColor.ToMCvScalar(), -1);
             RefreshLayerImage();
             return;
         }
@@ -490,8 +503,8 @@ public partial class MainWindow
             //if (PixelHistory.Contains(operation)) return;
             AddDrawing(operationDrainHole);
 
-            CvInvoke.Circle(LayerCache.ImageBgr, location, operationDrainHole.Diameter / 2,
-                new MCvScalar(Settings.PixelEditor.DrainHoleColor.B, Settings.PixelEditor.DrainHoleColor.G, Settings.PixelEditor.DrainHoleColor.R), -1);
+            CvInvoke.Circle(LayerCache.ImageBgra, location, operationDrainHole.Diameter / 2,
+                Settings.PixelEditor.DrainHoleColor.ToMCvScalar(), -1);
             RefreshLayerImage();
             return;
         }

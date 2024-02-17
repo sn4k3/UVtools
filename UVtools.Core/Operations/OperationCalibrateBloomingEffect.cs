@@ -394,13 +394,17 @@ public sealed class OperationCalibrateBloomingEffect : Operation
                 newLayers.Add(layer);
             }
 
-
             SlicerFile.Layers = newLayers.ToArray();
         });
 
+        // Fix exposure times
+        foreach (var layer in SlicerFile)
+        {
+            if (layer.IsBottomLayerByHeight) continue;
+            layer.ExposureTime = (float)_normalExposure;
+        }
 
         progress++;
-
         
         return !progress.Token.IsCancellationRequested;
     }

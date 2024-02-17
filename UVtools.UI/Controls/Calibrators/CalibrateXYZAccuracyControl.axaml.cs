@@ -75,7 +75,7 @@ public partial class CalibrateXYZAccuracyControl : ToolControl
     {
         var layers = Operation.GetLayers();
         _previewImage?.Dispose();
-        PreviewImage = layers[1].ToBitmapParallel();
+        PreviewImage = layers[1].ToBitmap();
         foreach (var layer in layers)
         {
             layer.Dispose();

@@ -63,7 +63,7 @@ public partial class CalibrateGrayscaleControl : ToolControl
     {
         var layers = Operation.GetLayers();
         _previewImage?.Dispose();
-        PreviewImage = layers[2].ToBitmapParallel();
+        PreviewImage = layers[2].ToBitmap();
         foreach (var layer in layers)
         {
             layer.Dispose();

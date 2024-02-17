@@ -66,7 +66,7 @@ public partial class CalibrateExposureFinderControl : ToolControl
         _previewImage?.Dispose();
         if (layers is not null)
         {
-            PreviewImage = layers[^1].ToBitmapParallel();
+            PreviewImage = layers[^1].ToBitmap();
             foreach (var layer in layers)
             {
                 layer.Dispose();

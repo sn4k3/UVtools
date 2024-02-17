@@ -6,6 +6,7 @@
  *  of this license document, but changing it is not allowed.
  */
 
+using System;
 using Avalonia.Media.Imaging;
 using Avalonia.Skia;
 using Emgu.CV;
@@ -16,11 +17,12 @@ using UVtools.Core.Layers;
 
 namespace UVtools.UI;
 
-public sealed class LayerCache
+public sealed class LayerCache : IDisposable
 {
     private Layer? _layer;
-    //private SKCanvas _canvas;
+    private Mat? _image;
     private WriteableBitmap? _bitmap;
+    private bool disposedValue;
 
     public bool IsCached => _layer is not null;
 
@@ -30,30 +32,43 @@ public sealed class LayerCache
         set
         {
             //if (ReferenceEquals(_layer, value)) return;
-            Clear();
             _layer = value;
             Image = _layer?.LayerMat;
-            if (Image is null) return;
-            CvInvoke.CvtColor(Image, ImageBgr, ColorConversion.Gray2Bgr);
+            if (_image is null)
+            {
+                Bitmap = null;
+                return;
+            }
+            CvInvoke.CvtColor(_image, ImageBgra, ColorConversion.Gray2Bgra);
 
-            ImageSpan = Image.GetBytePointer();
-            ImageBgrSpan = ImageBgr.GetBytePointer();
+            ImageSpan = _image.GetBytePointer();
+            ImageBgraSpan = ImageBgra.GetBytePointer();
         }
     }
 
-    public Mat? Image { get; private set; }
+    public Mat? Image
+    {
+        get => _image;
+        private set
+        {
+            _image?.Dispose();
+            _image = value;
+        }
+    }
 
-    public Mat ImageBgr { get; } = new();
+    public Mat ImageBgra { get; } = new();
 
     public unsafe byte *ImageSpan { get; private set; }
-    public unsafe byte *ImageBgrSpan { get; private set; }
+    public unsafe byte *ImageBgraSpan { get; private set; }
 
     public WriteableBitmap? Bitmap
     {
         get => _bitmap;
-        set => _bitmap = value;
-        //_canvas?.Dispose();
-        //_canvas = null;
+        set
+        {
+            _bitmap?.Dispose();
+            _bitmap = value;
+        }
     }
 
     public SKCanvas? Canvas
@@ -73,7 +88,31 @@ public sealed class LayerCache
     /// </summary>
     public void Clear()
     {
+        _image?.Dispose();
+        _bitmap?.Dispose();
+
         _layer = null;
-        Image?.Dispose();
+        _image = null;
+        _bitmap = null;
+    }
+
+    private void Dispose(bool disposing)
+    {
+        if (!disposedValue)
+        {
+            if (disposing)
+            {
+                Clear();
+            }
+
+            disposedValue = true;
+        }
+    }
+
+    public void Dispose()
+    {
+        // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+        Dispose(disposing: true);
+        GC.SuppressFinalize(this);
     }
 }

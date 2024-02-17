@@ -125,7 +125,7 @@ public partial class MainWindow
             if (value >= SlicerFile!.ThumbnailsCount) return;
             if (SlicerFile.Thumbnails[value].IsEmpty) return;
             
-            VisibleThumbnailImage = SlicerFile.Thumbnails[value].ToBitmapParallel();
+            VisibleThumbnailImage = SlicerFile.Thumbnails[value].ToBitmap();
         }
     }
 
@@ -301,7 +301,7 @@ public partial class MainWindow
     {
         if (!IsFileLoaded) return;
         if (_visibleThumbnailIndex < 0 || _visibleThumbnailIndex >= SlicerFile!.ThumbnailsCount) return;
-        VisibleThumbnailImage = SlicerFile.Thumbnails[_visibleThumbnailIndex].ToBitmapParallel();
+        VisibleThumbnailImage = SlicerFile.Thumbnails[_visibleThumbnailIndex].ToBitmap();
     }
     #endregion
 

@@ -287,16 +287,22 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
     public bool IsBottomLayer => _index < SlicerFile.BottomLayerCount;
 
     /// <summary>
-    /// Gets if is in the bottom layer group by count and height
+    /// Gets if this layer is in the bottom layer group by it <see cref="Index"/> and <see cref="PositionZ"/> height
     /// </summary>
     public bool IsBottomLayerByHeight
     {
         get
         {
             var bottomLayers = SlicerFile.BottomLayerCount;
-            return _index < bottomLayers || PositionZ / SlicerFile.LayerHeight <= bottomLayers;
+            return _index < bottomLayers || RoundHeight(PositionZ / SlicerFile.LayerHeight) <= bottomLayers;
         }
     }
+
+    /// <summary>
+    /// Gets if this layer is in the normal layer group by it <see cref="Index"/> and <see cref="PositionZ"/> height
+    /// </summary>
+    public bool IsNormalLayerByHeight => !IsBottomLayerByHeight;
+
 
     /// <summary>
     /// Gets if is in the normal layer group
@@ -1894,9 +1900,9 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
         return rect;
     }
 
-    public static float RoundHeight(float height) => (float) Math.Round(height, HeightPrecision);
-    public static double RoundHeight(double height) => Math.Round(height, HeightPrecision);
-    public static decimal RoundHeight(decimal height) => Math.Round(height, HeightPrecision);
+    public static float RoundHeight(float height) => (float) Math.Round(height, HeightPrecision, MidpointRounding.AwayFromZero);
+    public static double RoundHeight(double height) => Math.Round(height, HeightPrecision, MidpointRounding.AwayFromZero);
+    public static decimal RoundHeight(decimal height) => Math.Round(height, HeightPrecision, MidpointRounding.AwayFromZero);
 
     public static string ShowHeight(float height) => string.Format($"{{0:F{HeightPrecision}}}", height);
     public static string ShowHeight(double height) => string.Format($"{{0:F{HeightPrecision}}}", height);

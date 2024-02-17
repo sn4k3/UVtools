@@ -1022,7 +1022,7 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
             TriggerRender();
             RaisePropertyChanged(nameof(HaveSelection));
             RaisePropertyChanged(nameof(SelectionRegionNet));
-            RaisePropertyChanged(nameof(SelectionPixelSize));
+            RaisePropertyChanged(nameof(SelectionRegionPixel));
         }
     }
 
@@ -1031,17 +1031,16 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
         get
         {
             var rect = SelectionRegion;
-            return new Rectangle((int) Math.Ceiling(rect.X), (int)Math.Ceiling(rect.Y),
-                (int)rect.Width, (int)rect.Height);
+            return new ((int) Math.Ceiling(rect.X), (int)Math.Ceiling(rect.Y), (int)rect.Width, (int)rect.Height);
         }
     }
 
-    public PixelSize SelectionPixelSize
+    public PixelRect SelectionRegionPixel
     {
         get
         {
             var rect = SelectionRegion;
-            return new PixelSize((int) rect.Width, (int) rect.Height);
+            return new ((int)Math.Ceiling(rect.X), (int)Math.Ceiling(rect.Y), (int)rect.Width, (int)rect.Height);
         }
     }
 
@@ -1191,8 +1190,7 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
         var image = Image;
         if (image is null) return;
         var imageViewPort = GetImageViewPort();
-
-
+        
         // Draw image
         context.DrawImage(image,
             GetSourceImageRegion(),
@@ -2395,6 +2393,10 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     #endregion
 
     #region Image methods
+    /// <summary>
+    /// Loads the image from the specified path.
+    /// </summary>
+    /// <param name="path">Image path from disk</param>
     public void LoadImage(string path)
     {
         Image = new Bitmap(path);
@@ -2405,31 +2407,31 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
         var image = ImageAsWriteableBitmap;
         if (image is null || !HaveSelection) return null;
             
-        var selection = SelectionRegionNet;
-        var pixelSize = SelectionPixelSize;
-        using var frameBuffer = image.Lock();
+        var selection = SelectionRegionPixel;
 
-        var newBitmap = new WriteableBitmap(pixelSize, image.Dpi, frameBuffer.Format, AlphaFormat.Unpremul);
-        using var newFrameBuffer = newBitmap.Lock();
-
-        int i = 0;
+        using var srcBuffer = image.Lock();
+        var cropBitmap = new WriteableBitmap(selection.Size, image.Dpi, srcBuffer.Format, AlphaFormat.Unpremul);
+        using var dstBuffer = cropBitmap.Lock();
 
         unsafe
         {
-            var inputPixels = (uint*) (void*) frameBuffer.Address;
-            var targetPixels = (uint*) (void*) newFrameBuffer.Address;
+            var ySrc = srcBuffer.Address + srcBuffer.RowBytes * selection.Y + selection.X * (srcBuffer.Format.BitsPerPixel / 8);
+            var yDst = dstBuffer.Address;
 
             for (int y = selection.Y; y < selection.Bottom; y++)
             {
-                var thisY = y * frameBuffer.Size.Width;
-                for (int x = selection.X; x < selection.Right; x++)
-                {
-                    targetPixels![i++] = inputPixels![thisY + x];
-                }
+                Buffer.MemoryCopy(
+                    ySrc.ToPointer(),
+                    yDst.ToPointer(),
+                    dstBuffer.RowBytes,
+                    dstBuffer.RowBytes);
+
+                ySrc += srcBuffer.RowBytes;
+                yDst += dstBuffer.RowBytes;
             }
         }
 
-        return newBitmap;
+        return cropBitmap;
     }
     #endregion
 

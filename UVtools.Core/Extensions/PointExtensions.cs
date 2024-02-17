@@ -79,8 +79,8 @@ public static class PointExtensions
 
 
     public static Point Half(this Point point) => new(point.X / 2, point.Y / 2);
-    public static PointF Half(this PointF point) => new(point.X / 2, point.Y / 2);
-    public static Point ToPoint(this PointF point) => new((int) Math.Round(point.X), (int) Math.Round(point.Y));
+    public static PointF Half(this PointF point) => new(point.X / 2f, point.Y / 2f);
+    public static Point ToPoint(this PointF point, MidpointRounding midpointRounding = MidpointRounding.AwayFromZero) => new((int) Math.Round(point.X, midpointRounding), (int) Math.Round(point.Y, midpointRounding));
 
 
 

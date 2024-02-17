@@ -6822,7 +6822,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
                         continue;
                     }
 
-                    mat.DrawPolygon((byte)operationDrawing.BrushShape, operationDrawing.BrushSize / 2, operationDrawing.Location,
+                    mat.DrawPolygon((byte)operationDrawing.BrushShape, operationDrawing.BrushSize, operationDrawing.Location,
                         new MCvScalar(operationDrawing.Brightness), operationDrawing.RotationAngle, operationDrawing.Thickness, operationDrawing.LineType);
                     /*switch (operationDrawing.BrushShape)
                     {
@@ -6840,7 +6840,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
                 else if (operation.OperationType == PixelOperation.PixelOperationType.Text)
                 {
                     var operationText = (PixelText)operation;
-                    mat.PutTextRotated(operationText.Text, operationText.Location, operationText.Font, operationText.FontScale, new MCvScalar(operationText.Brightness), operationText.Thickness, operationText.LineType, operationText.Mirror, operationText.LineAlignment, operationText.Angle);
+                    mat.PutTextRotated(operationText.Text, operationText.Location, operationText.Font, operationText.FontScale, new MCvScalar(operationText.Brightness), operationText.Thickness, operationText.LineType, operationText.Mirror, operationText.LineAlignment, (double)operationText.Angle);
                 }
                 else if (operation.OperationType == PixelOperation.PixelOperationType.Eraser)
                 {

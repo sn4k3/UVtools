@@ -57,7 +57,7 @@ public partial class ToolLithophaneControl : ToolControl
     {
         using var mat = Operation.GetTargetMat();
         _previewImage?.Dispose();
-        PreviewImage = mat?.ToBitmapParallel();
+        PreviewImage = mat?.ToBitmap();
     }
 
     public async void SelectFile()

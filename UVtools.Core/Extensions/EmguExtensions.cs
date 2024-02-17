@@ -665,6 +665,22 @@ public static class EmguExtensions
     #endregion
 
     #region Copy methods
+
+    /// <summary>
+    /// Copy the whole mat data to another <paramref name="destination"/> reference
+    /// </summary>
+    /// <remarks>It does not do any safe-check.</remarks>
+    /// <param name="mat"></param>
+    /// <param name="destination">Destination address to copy data to</param>
+    public static void CopyTo(this Mat mat, IntPtr destination)
+    {
+        var totalBytes = (uint)mat.GetLength();
+        unsafe
+        {
+            Buffer.MemoryCopy(mat.DataPointer.ToPointer(), destination.ToPointer(), totalBytes, totalBytes);
+        }
+    }
+
     /// <summary>
     /// Copy a region from <see cref="Mat"/> to center of other <see cref="Mat"/>
     /// </summary>
@@ -817,14 +833,24 @@ public static class EmguExtensions
     {
         return new Mat(mat, new(Point.Empty, fromMat.Size));
     }
-    
+
+    /// <summary>
+    /// Calculates the bounding rectangle and return a <see cref="Mat"/> object with it
+    /// </summary>
+    /// <param name="mat"></param>
+    /// <returns></returns>
+    public static Mat BoundingRectangleRoi(this Mat mat)
+    {
+        var boundingRectangle = CvInvoke.BoundingRectangle(mat);
+        return new Mat(mat, boundingRectangle);
+    }
 
     /// <summary>
     /// Calculates the bounding rectangle and return a <see cref="MatRoi"/> object with it
     /// </summary>
     /// <param name="mat"></param>
     /// <returns></returns>
-    public static MatRoi RoiFromAutoBoundingRectangle(this Mat mat)
+    public static MatRoi BoundingRectangleMatRoi(this Mat mat)
     {
         var boundingRectangle = CvInvoke.BoundingRectangle(mat);
         return new MatRoi(mat, boundingRectangle);
@@ -1736,54 +1762,56 @@ public static class EmguExtensions
     }
 
     /// <summary>
-    /// Draw a polygon given number of sides and length
+    /// Draw a polygon given number of sides and diameter
     /// </summary>
     /// <param name="src"></param>
     /// <param name="sides">Number of polygon sides, Special: use 1 to draw a line and >= 100 to draw a native OpenCV circle</param>
-    /// <param name="radius">Radius</param>
+    /// <param name="diameter">Diameter</param>
     /// <param name="center">Center position</param>
     /// <param name="color"></param>
     /// <param name="startingAngle"></param>
     /// <param name="thickness"></param>
     /// <param name="lineType"></param>
     /// <param name="flip"></param>
-    public static void DrawPolygon(this Mat src, int sides, int radius, Point center, MCvScalar color, double startingAngle = 0, int thickness = -1, LineType lineType = LineType.EightConnected, FlipType? flip = null)
+    /// <param name="midpointRounding"></param>
+    public static void DrawPolygon(this Mat src, int sides, double diameter, PointF center, MCvScalar color, double startingAngle = 0, int thickness = -1, LineType lineType = LineType.EightConnected, FlipType? flip = null, MidpointRounding midpointRounding = MidpointRounding.AwayFromZero)
     {
         if (sides == 1)
         {
-            var point1 = center with {X = center.X - radius};
-            var point2 = center with {X = center.X + radius};
+            var point1 = center with { X = (float)Math.Round(center.X - diameter / 2, midpointRounding) };
+            var point2 = point1 with { X = (float)(point1.X + diameter - 1) };
             point1 = point1.Rotate(startingAngle, center);
             point2 = point2.Rotate(startingAngle, center);
 
             if (flip is FlipType.Horizontal or FlipType.Both)
             {
-                var newPoint1 = new Point(point2.X, point1.Y);
-                var newPoint2 = new Point(point1.X, point2.Y);
+                var newPoint1 = new PointF(point2.X, point1.Y);
+                var newPoint2 = new PointF(point1.X, point2.Y);
                 point1 = newPoint1;
                 point2 = newPoint2;
             }
 
             if (flip is FlipType.Vertical or FlipType.Both)
             {
-                var newPoint1 = new Point(point1.X, point2.Y);
-                var newPoint2 = new Point(point2.X, point1.Y);
+                var newPoint1 = new PointF(point1.X, point2.Y);
+                var newPoint2 = new PointF(point2.X, point1.Y);
                 point1 = newPoint1;
                 point2 = newPoint2;
             }
 
-            CvInvoke.Line(src, point1, point2, color, thickness < 1 ? 1 : thickness, lineType);
+            CvInvoke.Line(src, point1.ToPoint(midpointRounding), point2.ToPoint(midpointRounding), color, thickness < 1 ? 1 : thickness, lineType);
             return;
         }
         if (sides >= 100)
         {
-            CvInvoke.Circle(src, center, radius, color, thickness, lineType);
+            CvInvoke.Circle(src, center.ToPoint(midpointRounding), (int)Math.Round(diameter / 2, midpointRounding), color, thickness, lineType);
             return;
         }
 
-        var points = DrawingExtensions.GetPolygonVertices(sides, radius, center, startingAngle,
+        var points = DrawingExtensions.GetPolygonVertices(sides, diameter, center, startingAngle,
             flip is FlipType.Horizontal or FlipType.Both,
-            flip is FlipType.Vertical or FlipType.Both);
+            flip is FlipType.Vertical or FlipType.Both,
+            midpointRounding);
             
         if (thickness <= 0)
         {

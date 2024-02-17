@@ -138,7 +138,9 @@ public static class SizeExtensions
     public static SizeF Half(this SizeF size) => new(size.Width / 2f, size.Height / 2f);
 
     public static Point ToPoint(this Size size) => new(size.Width, size.Height);
-    public static PointF ToPoint(this SizeF size) => new(size.Width, size.Height);
+    public static PointF ToPointF(this Size size) => new(size.Width, size.Height);
+    public static Point ToPoint(this SizeF size) => new((int)size.Width, (int)size.Height);
+    public static PointF ToPointF(this SizeF size) => new(size.Width, size.Height);
 
     public static Size Rotate(this Size size, double angleDegree)
     {

@@ -7,6 +7,7 @@
  */
 using Avalonia.Media;
 using System;
+using Emgu.CV.Structure;
 
 
 namespace UVtools.UI.Structures;
@@ -77,7 +78,12 @@ public class Color
 
         byte b = (byte)(B == 0 ? 0 :
             Math.Min(Math.Max(min, B * factor), max));
-        return Color.FromArgb(A, r, g, b);
+        return FromArgb(A, r, g, b);
+    }
+
+    public MCvScalar ToMCvScalar()
+    {
+        return new MCvScalar(B, G, R, A);
     }
 
     /// <summary>
@@ -88,7 +94,7 @@ public class Color
     /// </returns>
     public uint ToUint32()
     {
-        return ((uint)A << 24) | ((uint)R << 16) | ((uint)G << 8) | (uint)B;
+        return ((uint)A << 24) | ((uint)R << 16) | ((uint)G << 8) | B;
     }
 
     /// <summary>
