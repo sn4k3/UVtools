@@ -52,8 +52,8 @@ public partial class ToolMaskControl : ToolControl
         set => RaiseAndSetIfChanged(ref _genDiameter, value);
     }
 
-    public string InfoPrinterResolutionStr => $"Printer resolution: {SlicerFile?.Resolution}";
-    public string InfoMaskResolutionStr => $"Mask resolution: {Operation.Mask?.Size.ToString() ?? "(Unloaded)"}";
+    public string InfoPrinterResolutionString => $"Printer resolution: {SlicerFile?.Resolution}";
+    public string InfoMaskResolutionString => $"Mask resolution: {Operation.Mask?.Size.ToString() ?? "(Unloaded)"}";
 
     public Bitmap? MaskImage
     {
@@ -61,7 +61,7 @@ public partial class ToolMaskControl : ToolControl
         set
         {
             if(!RaiseAndSetIfChanged(ref _maskImage, value)) return;
-            RaisePropertyChanged(nameof(InfoMaskResolutionStr));
+            RaisePropertyChanged(nameof(InfoMaskResolutionString));
             ParentWindow!.ButtonOkEnabled = Operation.HaveInputMask;
         }
     }

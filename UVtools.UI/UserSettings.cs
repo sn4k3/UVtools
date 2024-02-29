@@ -1719,7 +1719,7 @@ public sealed class UserSettings : BindableBase
     /// </summary>
     public string AppVersion
     {
-        get => _appVersion ??= About.VersionStr;
+        get => _appVersion ??= About.VersionString;
         set => RaiseAndSetIfChanged(ref _appVersion, value);
     }
 
@@ -2081,7 +2081,7 @@ public sealed class UserSettings : BindableBase
 
     public static void SetVersion()
     {
-        Instance.AppVersion = About.VersionStr;
+        Instance.AppVersion = About.VersionString;
     }
 
     public static object[] PackObjects => 

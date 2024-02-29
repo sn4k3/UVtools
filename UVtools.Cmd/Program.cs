@@ -94,7 +94,7 @@ internal class Program
 
             if (arg == "--core-version")
             {
-                Console.WriteLine(About.VersionStr);
+                Console.WriteLine(About.VersionString);
                 Environment.Exit(0);
             }
         }

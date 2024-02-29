@@ -150,7 +150,7 @@ public class AppVersionChecker : BindableBase
             string? tagName = json["tag_name"]?.ToString();
             if (string.IsNullOrEmpty(tagName)) return false;
             tagName = tagName.Trim(' ', 'v', 'V');
-            Debug.WriteLine($"Version checker: v{About.VersionStr} <=> v{tagName}");
+            Debug.WriteLine($"Version checker: v{About.VersionString} <=> v{tagName}");
             Version checkVersion = new(tagName);
             Changelog = json["body"]?.ToString();
             if (alwaysTrigger || About.Version.CompareTo(checkVersion) < 0)
@@ -256,9 +256,9 @@ public class AppVersionChecker : BindableBase
                     await stream.WriteLineAsync("testcmd() { command -v \"$1\" &> /dev/null; }");
                     await stream.WriteLineAsync();
                     await stream.WriteLineAsync("cd \"$(dirname \"$0\")\"");
-                    await stream.WriteLineAsync($"echo '{About.Software} v{About.VersionStr} -> {_version} updater script'");
+                    await stream.WriteLineAsync($"echo '{About.Software} v{About.VersionString} -> {_version} updater script'");
                     await stream.WriteLineAsync();
-                    await stream.WriteLineAsync($"oldversion='{About.VersionStr}'");
+                    await stream.WriteLineAsync($"oldversion='{About.VersionString}'");
                     await stream.WriteLineAsync($"newversion='{_version}'");
                     await stream.WriteLineAsync();
                     //await stream.WriteLineAsync($"cd '{App.ApplicationPath}'");
@@ -295,7 +295,7 @@ public class AppVersionChecker : BindableBase
                         await stream.WriteLineAsync($"  cp -fR '{extractDirectoryPath}/'* '{App.ApplicationPath}'");
                         await stream.WriteLineAsync("fi");
 
-                        if (About.VersionStr != _version)
+                        if (About.VersionString != _version)
                         {
                             var di = new DirectoryInfo(App.ApplicationPath);
                             var newDirectoryName = Regex.Replace(di.Name, $@"({About.Software}.*)(v[0-9]+[.][0-9]+[.][0-9]+)", $@"$1v{_version}", RegexOptions.IgnoreCase);

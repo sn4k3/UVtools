@@ -474,8 +474,9 @@ public sealed class SuggestionWaitTimeBeforeCure : Suggestion
             if (!firstLayer.IsDummy) // First layer is not blank as it seems, lets create one
             {
                 firstLayer = firstLayer.Clone();
-                using var mat = SlicerFile.CreateMatWithDummyPixel();
+                using var mat = SlicerFile.CreateMatWithDummyPixelFromLayer(0);
                 firstLayer.LayerMat = mat;
+                firstLayer.LightPWM = SlicerFile.SupportGCode ? byte.MinValue : (byte)1;
                 firstLayer.ExposureTime = SlicerFile.SupportGCode ? 0 : 0.01f;
                 //firstLayer.LiftHeightTotal = SlicerFile.SupportsGCode ? 0 : 0.1f;
                 SlicerFile.FirstLayer!.LiftHeightTotal = SlicerFile.SupportGCode ? 0 : 0.1f; // Already on position, try to not lift

@@ -101,9 +101,9 @@
           ColumnDefinitions="Auto,20,Auto">
 
       <StackPanel Spacing="10">
-        <TextBlock Text="{Binding Operation.InfoWidthStr}" />
-        <TextBlock Text="{Binding Operation.InfoHeightStr}" />
-        <TextBlock Text="{Binding Operation.InfoModelWithinBoundaryStr}" />
+        <TextBlock Text="{Binding Operation.InfoWidthString}" />
+        <TextBlock Text="{Binding Operation.InfoHeightString}" />
+        <TextBlock Text="{Binding Operation.InfoModelWithinBoundaryString}" />
       </StackPanel>
 
 

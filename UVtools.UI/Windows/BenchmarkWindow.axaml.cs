@@ -2,6 +2,7 @@
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -57,24 +58,28 @@ public partial class BenchmarkWindow : WindowEx
     public static BenchmarkMachine[] BenchmarkMachines =>
         new[]
         {
-            new BenchmarkMachine("Intel® Core™ i9-13900K @ 5.5 GHz", "G.Skill Trident Z5 32GB DDR5-6400MHz CL32", new []
+            new BenchmarkMachine("Intel® Core™ i9-13900K @ 5.5 GHz", "G.Skill Trident Z5 64GB DDR5-6400MHz CL32", new []
             {
                 /*CBBDLP 4K Encode*/    new BenchmarkTestResult(200.0f, 3355.70f),
                 /*CBBDLP 8K Encode*/    new BenchmarkTestResult(49.38f, 847.46f),
                 /*CBT 4K Encode*/       new BenchmarkTestResult(162.60f, 2463.05f),
                 /*CBT 8K Encode*/       new BenchmarkTestResult(39.45f, 617.28f),
-                /*PW0 4K Encode*/       new BenchmarkTestResult(186.92f, 2793.30f),
-                /*PW0 8K Encode*/       new BenchmarkTestResult(45.15f, 678.43f),
-                /*PNG 4K Compress*/     new BenchmarkTestResult(86.96f, 1479.29f),
-                /*PNG 8K Compress*/     new BenchmarkTestResult(22.17f, 369.00f),
+                /*PW0 4K Encode*/       new BenchmarkTestResult(196.08f, 2824.86f),
+                /*PW0 8K Encode*/       new BenchmarkTestResult(47.06f, 697.35f),
+                /*PNG 4K Compress*/     new BenchmarkTestResult(88.5f, 1479.29f),
+                /*PNG 8K Compress*/     new BenchmarkTestResult(22.68f, 369.28f),
                 /*GZip 4K Compress*/    new BenchmarkTestResult(250f, 4237.29f),
-                /*GZip 8K Compress*/    new BenchmarkTestResult(65.57f, 1039.5f),
-                /*Deflate 4K Compress*/ new BenchmarkTestResult(256.41f, 4201.68f),
-                /*Deflate 8K Compress*/ new BenchmarkTestResult(66.67f, 1072.96f),
-                /*Brotli 4K Compress*/  new BenchmarkTestResult(645.16f, 12820.51f),
-                /*Brotli 8K Compress*/  new BenchmarkTestResult(190.48f, 3787.88f),
-                /*LZ4 4K Compress*/     new BenchmarkTestResult(1111.11f, 20833.33f),
-                /*LZ4 8K Compress*/     new BenchmarkTestResult(312.5f, 6097.56f),
+                /*GZip 8K Compress*/    new BenchmarkTestResult(65.57f, 1091.7f),
+                /*Deflate 4K Compress*/ new BenchmarkTestResult(256.41f, 4273.5f),
+                /*Deflate 8K Compress*/ new BenchmarkTestResult(66.67f, 1103.75f),
+                /*Brotli 4K Compress*/  new BenchmarkTestResult(666.67f, 13157.89f),
+                /*Brotli 8K Compress*/  new BenchmarkTestResult(198.02f, 3968.25f),
+                /*LZ4 4K Compress*/     new BenchmarkTestResult(1250f, 20833.33f),
+                /*LZ4 8K Compress*/     new BenchmarkTestResult(344.83f, 6250f),
+                /*GC Memory Copy 4K*/   new BenchmarkTestResult(571.43f, 1219.51f),
+                /*GC Memory Copy 8K*/   new BenchmarkTestResult(186.92f, 327.65f),
+                /*Pooled Memory Copy 4K*/new BenchmarkTestResult(5000, 9433.96f),
+                /*Pooled Memory Copy 8K*/new BenchmarkTestResult(769.23f, 2074.69f),
                 /*Stress CPU test*/     new BenchmarkTestResult(0f, 0f),
             }),
             new BenchmarkMachine("Intel® Core™ i9-9900K @ 5.0 GHz", "G.Skill Trident Z 32GB DDR4-3200MHz CL14", new []
@@ -95,6 +100,10 @@ public partial class BenchmarkWindow : WindowEx
                 /*Brotli 8K Compress*/  new BenchmarkTestResult(0, 0),
                 /*LZ4 4K Compress*/     new BenchmarkTestResult(665.12f, 2762.43f),
                 /*LZ4 8K Compress*/     new BenchmarkTestResult(148.15f, 907.44f),
+                /*GC Memory Copy 4K*/   new BenchmarkTestResult(0, 0),
+                /*GC Memory Copy 8K*/   new BenchmarkTestResult(0, 0),
+                /*Pooled Memory Copy 4K*/new BenchmarkTestResult(0, 0),
+                /*Pooled Memory Copy 8K*/new BenchmarkTestResult(0, 0),
                 /*Stress CPU test*/     new BenchmarkTestResult(0f, 0f),
             })
         };
@@ -123,6 +132,12 @@ public partial class BenchmarkWindow : WindowEx
 
             new BenchmarkTest("LZ4 4K Compress", "TestLZ4Compress", BenchmarkResolution.Resolution4K),
             new BenchmarkTest("LZ4 8K Compress", "TestLZ4Compress", BenchmarkResolution.Resolution8K),
+
+            new BenchmarkTest("GC Memory Copy 4K", "TestGCMemoryCopy", BenchmarkResolution.Resolution4K),
+            new BenchmarkTest("GC Memory Copy 8K", "TestGCMemoryCopy", BenchmarkResolution.Resolution8K),
+
+            new BenchmarkTest("Pooled Memory Copy 4K", "TestPooledMemoryCopy", BenchmarkResolution.Resolution4K),
+            new BenchmarkTest("Pooled Memory Copy 8K", "TestPooledMemoryCopy", BenchmarkResolution.Resolution8K),
 
             new BenchmarkTest(StressCPUTestName, "TestCBTEncode", BenchmarkResolution.Resolution4K),
         };
@@ -711,6 +726,19 @@ public partial class BenchmarkWindow : WindowEx
 
     public void TestLZ4Decompress(BenchmarkResolution resolution)
     { }
+
+    public void TestGCMemoryCopy(BenchmarkResolution resolution)
+    {
+        var bytes = Mats[resolution].GetBytes();
+    }
+
+    public void TestPooledMemoryCopy(BenchmarkResolution resolution)
+    {
+        var spanSrc = Mats[resolution].GetDataByteReadOnlySpan();
+        var bytes = ArrayPool<byte>.Shared.Rent(spanSrc.Length);
+        spanSrc.CopyTo(bytes.AsSpan());
+        ArrayPool<byte>.Shared.Return(bytes);
+    }
 
     #endregion
 }

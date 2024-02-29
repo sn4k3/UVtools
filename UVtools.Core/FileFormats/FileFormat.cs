@@ -118,7 +118,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <summary>
     /// Gets the default batch count to process layers in parallel
     /// </summary>
-    public static int DefaultParallelBatchCount => Environment.ProcessorCount * 10;
+    public static int DefaultParallelBatchCount => (CoreSettings.MaxDegreeOfParallelism > 0 ? CoreSettings.MaxDegreeOfParallelism : Environment.ProcessorCount) * 10;
 
     #endregion
 
@@ -3183,7 +3183,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <summary>
     /// Gets the total time formatted in hours, minutes and seconds the display will remain on exposing the layers during the print
     /// </summary>
-    public string DisplayTotalOnTimeString => TimeSpan.FromSeconds(DisplayTotalOnTime).ToString("hh\\hmm\\mss\\s");
+    public string DisplayTotalOnTimeString => TimeSpan.FromSeconds(DisplayTotalOnTime).ToTimeString();
 
     /// <summary>
     /// Gets the total time in seconds the display will remain off during the print.
@@ -3209,7 +3209,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get
         {
             var time = DisplayTotalOffTime;
-            return TimeSpan.FromSeconds(float.IsPositiveInfinity(time) || float.IsNaN(time) ? 0 : time).ToString("hh\\hmm\\mss\\s");
+            return TimeSpan.FromSeconds(float.IsPositiveInfinity(time) || float.IsNaN(time) ? 0 : time).ToTimeString();
         }
     }
 
@@ -6079,7 +6079,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
 
 
     /// <summary>
-    /// Creates a empty mat of file <see cref="Resolution"/> size and create a dummy pixel to prevent a empty layer detection
+    /// Creates an empty mat of file <see cref="Resolution"/> size and create a dummy pixel to prevent an empty layer detection
     /// </summary>
     /// <param name="dummyPixelLocation">Location to set the dummy pixel, use a negative value (-1,-1) to set to the bounding center</param>
     /// <param name="dummyPixelBrightness">Dummy pixel brightness</param>
@@ -6097,25 +6097,45 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     }
 
     /// <summary>
-    /// Creates a empty mat of file <see cref="Resolution"/> size and create a dummy pixel to prevent a empty layer detection
+    /// Creates an empty mat of file <see cref="Resolution"/> size and create a dummy pixel to prevent an empty layer detection
     /// </summary>
     /// <param name="dummyPixelLocation">Location to set the dummy pixel, use a negative value (-1,-1) to set to the bounding center</param>
     /// <returns></returns>
     public Mat CreateMatWithDummyPixel(Point dummyPixelLocation) => CreateMatWithDummyPixel(dummyPixelLocation, SupportGCode ? (byte) 1 : (byte) 128);
 
     /// <summary>
-    /// Creates a empty mat of file <see cref="Resolution"/> size
+    /// Creates an empty mat of file <see cref="Resolution"/> size
     /// </summary>
     /// <param name="dummyPixelBrightness">Dummy pixel brightness</param>
     /// <returns></returns>
     public Mat CreateMatWithDummyPixel(byte dummyPixelBrightness) => CreateMatWithDummyPixel(BoundingRectangle.Center(), dummyPixelBrightness);
 
     /// <summary>
-    /// Creates a empty mat of file <see cref="Resolution"/> size
+    /// Creates an empty mat of file <see cref="Resolution"/> size
     /// </summary>
     /// <returns></returns>
     public Mat CreateMatWithDummyPixel() => CreateMatWithDummyPixel(SupportGCode ? (byte)1 : (byte)128);
-      
+
+    /// <summary>
+    /// Creates an empty mat of file <see cref="Resolution"/> size and create a dummy pixel on optimal position from layer information to prevent an empty layer detection
+    /// </summary>
+    /// <param name="layerIndex">The layer index to fetch better position of the dummy pixel</param>
+    /// <remarks>If the selected layer index does not exist, it will use the global <see cref="BoundingRectangle"/> instead</remarks>
+    /// <returns></returns>
+    public Mat CreateMatWithDummyPixelFromLayer(uint layerIndex)
+    {
+        SanitizeLayerIndex(ref layerIndex);
+        if (layerIndex >= LayerCount || this[layerIndex].IsEmpty)
+        {
+            return CreateMatWithDummyPixel();
+        }
+
+        var location = this[layerIndex].FirstPixelPosition;
+        if (location.X <= 0 || location.Y <= 0) location = new Point(-1, -1);
+
+        return CreateMatWithDummyPixel(location);
+    }
+    
     /// <summary>
     /// Creates an empty mat of file <see cref="Resolution"/> size
     /// </summary>

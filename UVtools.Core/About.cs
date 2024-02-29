@@ -21,9 +21,9 @@ public static class About
 {
     public const string Software = "UVtools";
     public static Version Version => CoreAssembly.GetName().Version!;
-    public static string VersionStr => Version.ToString(3);
-    public static string VersionArch => $"{VersionStr} {RuntimeInformation.ProcessArchitecture}";
-    public static string SoftwareWithVersion => $"{Software} v{VersionStr}";
+    public static string VersionString => Version.ToString(3);
+    public static string VersionArch => $"{VersionString} {RuntimeInformation.ProcessArchitecture}";
+    public static string SoftwareWithVersion => $"{Software} v{VersionString}";
     public static string SoftwareWithVersionArch => $"{Software} v{VersionArch}";
     public const string Author = "Tiago Conceição";
     public const string License = "GNU Affero General Public License v3.0 (AGPL)";

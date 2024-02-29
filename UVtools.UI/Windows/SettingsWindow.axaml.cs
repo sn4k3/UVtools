@@ -41,7 +41,7 @@ public partial class SettingsWindow : WindowEx
 
     public SettingsWindow()
     {
-        Title += $" [v{About.VersionStr}]";
+        Title += $" [v{About.VersionString}]";
         SettingsBackup = UserSettings.Instance.Clone();
 
         var fileFormats = new List<string>

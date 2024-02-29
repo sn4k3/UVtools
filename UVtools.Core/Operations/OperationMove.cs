@@ -152,11 +152,11 @@ public class OperationMove : Operation
         set => RaiseAndSetIfChanged(ref _isCutMove, value);
     }
 
-    public string LocationXStr => $"X: {DstRoi.X} / {ImageWidth - ROI.Width}";
-    public string LocationYStr => $"Y: {DstRoi.Y} / {ImageHeight - ROI.Height}";
+    public string LocationXString => $"X: {DstRoi.X} / {ImageWidth - ROI.Width}";
+    public string LocationYString => $"Y: {DstRoi.Y} / {ImageHeight - ROI.Height}";
 
-    public string LocationWidthStr => $"Width: {ROI.Width} / {ImageWidth}";
-    public string LocationHeightStr => $"Height: {ROI.Height} / {ImageHeight}";
+    public string LocationWidthString => $"Width: {ROI.Width} / {ImageWidth}";
+    public string LocationHeightString => $"Height: {ROI.Height} / {ImageHeight}";
 
     public bool IsWithinBoundary
     {
@@ -164,11 +164,11 @@ public class OperationMove : Operation
         set
         {
             if (!RaiseAndSetIfChanged(ref _isWithinBoundary, value)) return;
-            RaisePropertyChanged(nameof(IsWithinBoundaryStr));
+            RaisePropertyChanged(nameof(IsWithinBoundaryString));
         }
     }
 
-    public string IsWithinBoundaryStr => "Model within boundary: " + (_isWithinBoundary ? "Yes" : "No");
+    public string IsWithinBoundaryString => "Model within boundary: " + (_isWithinBoundary ? "Yes" : "No");
 
     #endregion
 
@@ -234,8 +234,8 @@ public class OperationMove : Operation
                              _dstRoi.Height == 0 || _dstRoi.Bottom > ImageHeight);
 
         RaisePropertyChanged(nameof(DstRoi));
-        RaisePropertyChanged(nameof(LocationXStr));
-        RaisePropertyChanged(nameof(LocationYStr));
+        RaisePropertyChanged(nameof(LocationXString));
+        RaisePropertyChanged(nameof(LocationYString));
     }
 
 

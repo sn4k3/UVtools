@@ -588,8 +588,8 @@ public sealed class OperationCalibrateXYZAccuracy : Operation
             
         int currentX = 0;
         int currentY = 0;
-        string positionYStr = string.Empty;
-        string positionStr = string.Empty;
+        string positionYString = string.Empty;
+        string positionString = string.Empty;
 
         const FontFace fontFace = FontFace.HersheyDuplex;
         const byte fontStartX = 30;
@@ -606,15 +606,15 @@ public sealed class OperationCalibrateXYZAccuracy : Operation
             {
                 case 0:
                     currentY = _topBottomMargin;
-                    positionYStr = "T";
+                    positionYString = "T";
                     break;
                 case 1:
                     currentY = (int)(SlicerFile.Resolution.Height / 2 - yPixels / 2);
-                    positionYStr = "M";
+                    positionYString = "M";
                     break;
                 case 2:
                     currentY = (int)(SlicerFile.Resolution.Height - yPixels - _topBottomMargin);
-                    positionYStr = "B";
+                    positionYString = "B";
                     break;
             }
             for (int x = 0; x < 3; x++)
@@ -623,15 +623,15 @@ public sealed class OperationCalibrateXYZAccuracy : Operation
                 {
                     case 0:
                         currentX = _leftRightMargin;
-                        positionStr = $"{positionYStr}L";
+                        positionString = $"{positionYString}L";
                         break;
                     case 1:
                         currentX = (int)(SlicerFile.Resolution.Width / 2 - xPixels / 2);
-                        positionStr = $"{positionYStr}C";
+                        positionString = $"{positionYString}C";
                         break;
                     case 2:
                         currentX = (int)(SlicerFile.Resolution.Width - xPixels - _leftRightMargin);
-                        positionStr = $"{positionYStr}R";
+                        positionString = $"{positionYString}R";
                         break;
                 }
 
@@ -652,7 +652,7 @@ public sealed class OperationCalibrateXYZAccuracy : Operation
                         new Rectangle(currentX, currentY, (int)xPixels, (int) yPixels), 
                         EmguExtensions.WhiteColor, -1);
                         
-                    CvInvoke.PutText(layer, positionStr, 
+                    CvInvoke.PutText(layer, positionString, 
                         new Point(currentX + fontStartX, currentY + fontStartY), fontFace, fontScale, 
                         EmguExtensions.BlackColor, fontThickness);
 
@@ -763,7 +763,10 @@ public sealed class OperationCalibrateXYZAccuracy : Operation
         }
 
         if (SlicerFile.ThumbnailsCount > 0)
-            SlicerFile.SetThumbnails(GetThumbnail());
+        {
+            using var thumbnail = GetThumbnail();
+            SlicerFile.SetThumbnails(thumbnail);
+        }
 
         SlicerFile.SuppressRebuildPropertiesWork(() =>
         {

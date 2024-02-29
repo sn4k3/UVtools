@@ -145,17 +145,7 @@ public static class BitmapExtension
             }
             case 4:
             {
-                if (mat.IsContinuous)
-                {
-                    mat.CopyTo(lockBuffer.Address);
-                }
-                else
-                {
-                    var srcSpan = mat.GetDataSpan2D<byte>();
-                    var dstSpan = lockBuffer.GetPixelByteSpan();
-                    srcSpan.CopyTo(dstSpan);
-                }
-
+                mat.CopyTo(lockBuffer.Address);
                 break;
             }
         }

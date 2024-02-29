@@ -39,7 +39,7 @@ public static class EmguExtensions
     public static readonly MCvScalar BlackColor = new(0, 0, 0, 255);
     //public static readonly MCvScalar TransparentColor = new();
 
-    public static readonly Point AnchorCenter = new (-1, -1);
+    public static readonly Point AnchorCenter = new(-1, -1);
     public static readonly Mat Kernel3x3Rectangle = CvInvoke.GetStructuringElement(ElementShape.Rectangle, new Size(3, 3), AnchorCenter);
 
     /// <summary>
@@ -56,11 +56,11 @@ public static class EmguExtensions
     /// </summary>
     /// <param name="mat"></param>
     /// <returns>Blank byte array</returns>
-    public static byte[] CreateBlankByteArray(this Mat mat)
+    public static byte[] CreateByteArray(this Mat mat)
         => new byte[mat.GetLength()];
 
     /// <summary>
-    /// Creates a new empty <see cref="Mat"/> with same size and type of the source
+    /// Creates a new <see cref="Mat"/> with same size and type of the source
     /// </summary>
     /// <param name="mat"></param>
     /// <returns></returns>
@@ -68,7 +68,7 @@ public static class EmguExtensions
         => new(mat.Size, mat.Depth, mat.NumberOfChannels);
 
     /// <summary>
-    /// Creates a new empty <see cref="Mat"/> with same size and type of the source
+    /// Creates a new <see cref="Mat"/> with same size and type of the source
     /// </summary>
     /// <param name="src"></param>
     /// <param name="color"></param>
@@ -674,11 +674,21 @@ public static class EmguExtensions
     /// <param name="destination">Destination address to copy data to</param>
     public static void CopyTo(this Mat mat, IntPtr destination)
     {
-        var totalBytes = (uint)mat.GetLength();
         unsafe
         {
-            Buffer.MemoryCopy(mat.DataPointer.ToPointer(), destination.ToPointer(), totalBytes, totalBytes);
+            if (mat.IsContinuous)
+            {
+                var totalBytes = (uint)mat.GetLength();
+                Buffer.MemoryCopy(mat.DataPointer.ToPointer(), destination.ToPointer(), totalBytes, totalBytes);
+            }
+            else
+            {
+                var srcSpan = mat.GetDataSpan2D<byte>();
+                var dstSpan = new Span<byte>(destination.ToPointer(), mat.GetLength());
+                srcSpan.CopyTo(dstSpan);
+            }
         }
+
     }
 
     /// <summary>

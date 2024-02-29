@@ -82,8 +82,8 @@
       
     </Border>
 
-    <TextBlock Text="{Binding InfoPrinterResolutionStr}"/>
-    <TextBlock Text="{Binding InfoMaskResolutionStr}"/>
+    <TextBlock Text="{Binding InfoPrinterResolutionString}"/>
+    <TextBlock Text="{Binding InfoMaskResolutionString}"/>
 
     <Border
   BorderBrush="LightGray"

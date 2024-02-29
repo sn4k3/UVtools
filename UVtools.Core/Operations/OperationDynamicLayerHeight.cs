@@ -127,7 +127,7 @@ public sealed class OperationDynamicLayerHeight : Operation
                 (decimal)SlicerFile.LayerHeight) continue;
             return $"This file contain layer(s) with modified positions, starting at layer {layerIndex}.\n" +
                    $"This tool requires sequential layers with equal height.\n" +
-                   $"If you run this tool before, you cant re-run.";
+                   $"If you ran this tool before, you can't run again.";
         }
 
         return null;

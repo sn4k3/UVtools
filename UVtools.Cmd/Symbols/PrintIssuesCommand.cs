@@ -82,7 +82,7 @@ internal static class PrintIssuesCommand
 
             foreach (var issue in issues)
             {
-                Console.WriteLine($"{issue.Type}, {issue.LayerInfoStr}, {issue.Area:F0}px{issue.AreaChar}, {issue.BoundingRectangle}");
+                Console.WriteLine($"{issue.Type}, {issue.LayerInfoString}, {issue.Area:F0}px{issue.AreaChar}, {issue.BoundingRectangle}");
             }
         });
 

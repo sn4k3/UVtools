@@ -43,7 +43,7 @@ public sealed class VDTFile : FileFormat
     {
         [JsonPropertyName("application_name")] public string ApplicationName { get; set; } = About.Software;
 
-        [JsonPropertyName("application_version")] public string ApplicationVersion { get; set; } = About.VersionStr;
+        [JsonPropertyName("application_version")] public string ApplicationVersion { get; set; } = About.VersionString;
         //2021-04-09 17:48:46
         [JsonPropertyName("create_datetime")] public string CreateDateTime { get; set; } = DateTime.UtcNow.ToString("u");
 

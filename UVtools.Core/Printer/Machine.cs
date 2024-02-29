@@ -50,7 +50,7 @@ namespace UVtools.Core.Printer
             set => RaiseAndSetIfChanged(ref _totalPrintTime, (float)Math.Max(0f, Math.Round(value, 2)));
         }
 
-        public string TotalPrintTimeString => TimeSpan.FromSeconds(_totalPrintTime).ToString("hh\\hmm\\mss\\s");
+        public string TotalPrintTimeString => TimeSpan.FromSeconds(_totalPrintTime).ToTimeString();
 
         public float TotalDisplayOnTime
         {
@@ -58,11 +58,11 @@ namespace UVtools.Core.Printer
             set => RaiseAndSetIfChanged(ref _totalDisplayOnTime, (float)Math.Max(0f, Math.Round(value, 2)));
         }
 
-        public string DisplayTotalOnTimeString => TimeSpan.FromSeconds(_totalDisplayOnTime).ToString("hh\\hmm\\mss\\s");
+        public string DisplayTotalOnTimeString => TimeSpan.FromSeconds(_totalDisplayOnTime).ToTimeString();
 
         public float TotalDisplayOffTime => TotalPrintTime - TotalDisplayOnTime;
 
-        public string DisplayTotalOffTimeString => TimeSpan.FromSeconds(TotalDisplayOffTime).ToString("hh\\hmm\\mss\\s");
+        public string DisplayTotalOffTimeString => TimeSpan.FromSeconds(TotalDisplayOffTime).ToTimeString();
 
         #endregion
 
@@ -232,6 +232,7 @@ namespace UVtools.Core.Printer
                 new(PrinterBrand.AnyCubic, "AnyCubic Photon M3 Premium", "Photon M3 Premium", 7680, 4320, 218.88f, 123.12f, 250f, FlipDirection.Horizontally),
                 new(PrinterBrand.AnyCubic, "AnyCubic Photon Mono M5", "Photon Mono M5", 11520, 5120, 218.88f, 122.88f, 200f, FlipDirection.Horizontally),
                 new(PrinterBrand.AnyCubic, "AnyCubic Photon Mono M5s", "Photon Mono M5s", 11520, 5120, 218.88f, 122.88f, 200f, FlipDirection.Horizontally),
+                new(PrinterBrand.AnyCubic, "AnyCubic Photon Mono M5s Pro", "Photon Mono M5s Pro", 13312, 5120, 223.6416f, 126.976f, 200f, FlipDirection.Horizontally),
                 new(PrinterBrand.AnyCubic, "AnyCubic Photon Mono", "Photon Mono", 1620, 2560, 82.62f, 130.56f, 165f, FlipDirection.Horizontally),
                 new(PrinterBrand.AnyCubic, "AnyCubic Photon Mono 2", "Photon Mono 2", 4096, 2560, 143.36f, 89.60f, 165f, FlipDirection.Horizontally),new(PrinterBrand.AnyCubic, "AnyCubic Photon Mono 4K", "Photon Mono 4K", 3840, 2400, 134.40f, 84f, 165f, FlipDirection.Horizontally),
                 new(PrinterBrand.AnyCubic, "AnyCubic Photon Mono SE", "Photon Mono SE", 1620, 2560, 82.62f, 130.56f, 160f, FlipDirection.Horizontally),

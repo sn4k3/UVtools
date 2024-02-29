@@ -53,7 +53,7 @@
                      Value="{Binding Operation.StartLayerIndex}"/>
       <TextBlock Grid.Row="2" Grid.Column="4"
                  VerticalAlignment="Center"
-                 Text="{Binding InfoLayerHeightStr}"/>
+                 Text="{Binding InfoLayerHeightString}"/>
       <Button Grid.Row="2" Grid.Column="6"
                  VerticalAlignment="Center"
                  Content="Set current layer"

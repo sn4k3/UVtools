@@ -85,8 +85,8 @@ $changelogFile      = "$rootPath\CHANGELOG.md"
 $releaseNotesFile   = "$rootPath\RELEASE_NOTES.md"
 
 #$version = (Get-Command "$releasePath\UVtools.dll").FileVersionInfo.ProductVersion
-$projectXml = [Xml] (Get-Content "$rootPath\$project\$project.csproj")
-$version = "$($projectXml.Project.PropertyGroup.Version)".Trim();
+$projectXml = [Xml] (Get-Content "$rootPath\Directory.Build.props")
+$version = "$($projectXml.Project.PropertyGroup.UVtoolsVersion)".Trim();
 if([string]::IsNullOrWhiteSpace($version)){
     Write-Error "Can not detect the UVtools version, does $project\$project.csproj exists?"
     exit
@@ -230,7 +230,7 @@ foreach ($obj in $runtimes.GetEnumerator()) {
     $extraCmd = $obj.extraCmd;  # extra cmd to run with dotnet
     $publishName="${software}_${runtime}_v$version"
     $publishCurrentPath="$publishPath\$publishName"
-
+    
     #dotnet build "UVtools.Cmd" -c $buildWith
     #dotnet build $project -c $buildWith
 

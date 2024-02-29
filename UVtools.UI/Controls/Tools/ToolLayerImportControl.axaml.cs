@@ -21,7 +21,7 @@ public partial class ToolLayerImportControl : ToolControl
 
     public uint MaximumLayer => SlicerFile!.LastLayerIndex;
 
-    public string InfoLayerHeightStr => $"({SlicerFile?[Operation.StartLayerIndex].PositionZ}mm)";
+    public string InfoLayerHeightString => $"({SlicerFile?[Operation.StartLayerIndex].PositionZ}mm)";
 
     public bool IsAutoSortLayersByFileNameChecked
     {
@@ -46,7 +46,7 @@ public partial class ToolLayerImportControl : ToolControl
             }*/
 
             return
-                $"{Operation.Files.Count} files will be imported into model starting from layer {Operation.StartLayerIndex} {InfoLayerHeightStr}.";
+                $"{Operation.Files.Count} files will be imported into model starting from layer {Operation.StartLayerIndex} {InfoLayerHeightString}.";
             //$"Model will {textFactor} from layers {App.SlicerFile.LayerCount} ({App.SlicerFile.TotalHeight}mm) to {modelTotalLayers} ({App.SlicerFile.GetHeightFromLayer(modelTotalLayers, false)}mm)";
         }
             
@@ -144,7 +144,7 @@ public partial class ToolLayerImportControl : ToolControl
 
     public void RefreshGUI()
     {
-        RaisePropertyChanged(nameof(InfoLayerHeightStr));
+        RaisePropertyChanged(nameof(InfoLayerHeightString));
         RaisePropertyChanged(nameof(InfoImportResult));
         if(ParentWindow is not null) ParentWindow.ButtonOkEnabled = Operation.Files.Count > 0;
     }

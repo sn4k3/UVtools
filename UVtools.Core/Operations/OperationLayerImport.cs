@@ -25,6 +25,8 @@ namespace UVtools.Core.Operations;
 
 public sealed class OperationLayerImport : Operation
 {
+    private const string ImageFileVirtualFormatPath = "#VIRTUAL";
+
     #region Enums
     public enum ImportTypes : byte
     {
@@ -283,6 +285,7 @@ public sealed class OperationLayerImport : Operation
                 });
 
                 format.Resolution = resolution;
+                format.FileFullPath = "#VIRTUAL";
                 fileFormats.Add(format);
             }
 
@@ -290,7 +293,6 @@ public sealed class OperationLayerImport : Operation
             for (int i = 0; i < Count; i++)
             {
                 if (ValidImageExtensions.Any(extension => _files[i].IsExtension(extension))) continue;
-
                 var fileFormat = FileFormat.FindByExtensionOrFilePath(_files[i].FilePath, true);
                 if (fileFormat is null) continue;
                 fileFormat.FileFullPath = _files[i].FilePath;
@@ -310,8 +312,11 @@ public sealed class OperationLayerImport : Operation
 
             foreach (var fileFormat in fileFormats)
             {
-                if (!fileFormat.CanDecode) continue;
-                fileFormat.Decode(fileFormat.FileFullPath, progress);
+                if (fileFormat.FileFullPath != ImageFileVirtualFormatPath)
+                {
+                    if (!fileFormat.CanDecode) continue;
+                    fileFormat.Decode(fileFormat.FileFullPath, progress);
+                }
 
                 var boundingRectangle = SlicerFile.GetBoundingRectangle(progress);
                 var fileFormatBoundingRectangle = fileFormat.GetBoundingRectangle(progress);

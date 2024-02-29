@@ -114,8 +114,12 @@ public class ScriptVATClean : ScriptGlobals
 
         Progress++;
 
-        SlicerFile.SetThumbnails(GetThumbnail());
-            
+        if (SlicerFile.ThumbnailsCount > 0)
+        {
+            using var thumbnail = GetThumbnail();
+            SlicerFile.SetThumbnails(thumbnail);
+        }
+
         // return true if not cancelled by user
         return !Progress.Token.IsCancellationRequested;
     }

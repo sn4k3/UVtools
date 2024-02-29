@@ -166,14 +166,14 @@ public sealed class ClipboardManager : BindableBase, IList<ClipboardItem>
             }
 
             RaisePropertyChanged();
-            RaisePropertyChanged(nameof(CurrentIndexCountStr));
+            RaisePropertyChanged(nameof(CurrentIndexCountString));
             RaisePropertyChanged(nameof(CanUndo));
             RaisePropertyChanged(nameof(CanRedo));
             return;
         }
     }
 
-    public string CurrentIndexCountStr => string.Format($"{{0:D{Count.DigitCount()}}}", CurrentIndex + 1);
+    public string CurrentIndexCountString => string.Format($"{{0:D{Count.DigitCount()}}}", CurrentIndex + 1);
 
     public bool SuppressRestore
     {

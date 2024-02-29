@@ -57,6 +57,7 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
 
     public const float MinimumHeightFloat = (float)MinimumHeight;
     public const float MaximumHeightFloat = (float)MaximumHeight;
+    public const float HeightPrecisionIncrementFloat = (float)HeightPrecisionIncrement;
     #endregion
 
     #region Members
@@ -799,7 +800,7 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
     /// <summary>
     /// Gets the time estimate in minutes and seconds it takes for this layer to be completed
     /// </summary>
-    public string CompletionTimeStr => TimeSpan.FromSeconds(CalculateCompletionTime()).ToString(@"mm\m\:ss\s");
+    public string CompletionTimeString => TimeSpan.FromSeconds(CalculateCompletionTime()).ToTimeString();
 
     /// <summary>
     /// Get the start time estimate in seconds when this layer should start at
@@ -809,7 +810,7 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
     /// <summary>
     /// Get the start time estimate in hours, minutes and seconds when this layer should start at
     /// </summary>
-    public string StartTimeStr => TimeSpan.FromSeconds(CalculateStartTime(30)).ToString(@"hh\h\:mm\m\:ss\s");
+    public string StartTimeString => TimeSpan.FromSeconds(CalculateStartTime(30)).ToTimeString();
 
     /// <summary>
     /// Get the end time estimate in seconds when this layer should end at
@@ -819,7 +820,7 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
     /// <summary>
     /// Get the end time estimate in hours, minutes and seconds when this layer should end at
     /// </summary>
-    public string EndTimeStr => TimeSpan.FromSeconds(CalculateStartTime(30) + CalculateCompletionTime()).ToString(@"hh\h\:mm\m\:ss\s");
+    public string EndTimeString => TimeSpan.FromSeconds(CalculateStartTime(30) + CalculateCompletionTime()).ToTimeString();
 
     private void InvalidateImage()
     {

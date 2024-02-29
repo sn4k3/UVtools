@@ -1,0 +1,110 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:tools="clr-namespace:UVtools.UI.Controls.Tools"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="UVtools.UI.Controls.Tools.ToolStirResinControl"
+             x:DataType="tools:ToolStirResinControl"
+             Width="500">
+  <Grid RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto" ColumnDefinitions="Auto,10,*">
+      <TextBlock Grid.Row="0" Grid.Column="0"
+                 VerticalAlignment="Center"
+                 Text="Stirring time:" />
+      <SelectableTextBlock Grid.Row="0" Grid.Column="2"
+                           VerticalAlignment="Center"
+                           FontWeight="Bold"
+                           Text="{Binding Operation.StirTimeString}"/>
+
+      <TextBlock Grid.Row="2" Grid.Column="0"
+                 VerticalAlignment="Center"
+                 Text="Method:" />
+    <ComboBox Grid.Row="2" Grid.Column="2"
+              VerticalAlignment="Center"
+              HorizontalAlignment="Stretch"
+              ItemsSource="{Binding Operation.Method, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+              SelectedItem="{Binding Operation.Method, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
+
+    <TextBlock Grid.Row="4" Grid.Column="0"
+               VerticalAlignment="Center"
+               Text="Stirs:" />
+    <NumericUpDown Grid.Row="4" Grid.Column="2"
+                   Classes="ValueLabel ValueLabel_times"
+                   VerticalAlignment="Center"
+                   Minimum="1"
+                   Maximum="65535"
+                   Increment="1"
+                   Value="{Binding Operation.Stirs}"/>
+
+    <TextBlock Grid.Row="6" Grid.Column="0"
+               VerticalAlignment="Center"
+               IsEnabled="{Binding SlicerFile.CanUseAnyLiftHeight}"
+               Text="Lift height:" />
+    <NumericUpDown Grid.Row="6" Grid.Column="2"
+                   Classes="ValueLabel ValueLabel_mm"
+                   VerticalAlignment="Center"
+                   Minimum="0"
+                   Maximum="1000"
+                   Increment="5"
+                   IsEnabled="{Binding SlicerFile.CanUseAnyLiftHeight}"
+                   Value="{Binding Operation.LiftHeight}"/>
+
+    <TextBlock Grid.Row="8" Grid.Column="0"
+               VerticalAlignment="Center"
+               IsEnabled="{Binding SlicerFile.CanUseAnyLiftSpeed}"
+               Text="Lift speed:" />
+    <NumericUpDown Grid.Row="8" Grid.Column="2"
+                   Classes="ValueLabel ValueLabel_mmmin"
+                   VerticalAlignment="Center"
+                   Minimum="1"
+                   Maximum="1000"
+                   Increment="5"
+                   IsEnabled="{Binding SlicerFile.CanUseAnyLiftSpeed}"
+                   Value="{Binding Operation.LiftSpeed}"/>
+
+    <TextBlock Grid.Row="10" Grid.Column="0"
+               VerticalAlignment="Center"
+               IsEnabled="{Binding SlicerFile.CanUseAnyRetractSpeed}"
+               Text="Retract speed:" />
+    <NumericUpDown Grid.Row="10" Grid.Column="2"
+                   Classes="ValueLabel ValueLabel_mmmin"
+                   VerticalAlignment="Center"
+                   Minimum="1"
+                   Maximum="1000"
+                   Increment="5"
+                   IsEnabled="{Binding SlicerFile.CanUseAnyRetractSpeed}"
+                   Value="{Binding Operation.RetractSpeed}"/>
+
+      <TextBlock Grid.Row="12" Grid.Column="0"
+                 VerticalAlignment="Center"
+                 Text="Wait time before stir:">
+          <TextBlock.IsEnabled>
+              <MultiBinding Converter="{x:Static BoolConverters.Or}">
+                  <Binding Path="SlicerFile.CanUseAnyLightOffDelay"/>
+                  <Binding Path="SlicerFile.CanUseAnyWaitTimeBeforeCure"/>
+              </MultiBinding>
+          </TextBlock.IsEnabled>
+      </TextBlock>
+      <NumericUpDown Grid.Row="12" Grid.Column="2"
+                     Classes="ValueLabel ValueLabel_s"
+                     VerticalAlignment="Center"
+                     Minimum="0"
+                     Maximum="3600"
+                     Increment="1"
+                     IsEnabled="{Binding SlicerFile.CanUseRetractSpeed}"
+                     Value="{Binding Operation.WaitTimeBeforeStir}"/>
+
+      <TextBlock Grid.Row="14" Grid.Column="0"
+                 VerticalAlignment="Center"
+                 IsEnabled="{Binding SlicerFile.CanUseAnyWaitTimeAfterLift}"
+                 Text="Wait time after lift:" />
+      <NumericUpDown Grid.Row="14" Grid.Column="2"
+                     Classes="ValueLabel ValueLabel_s"
+                     VerticalAlignment="Center"
+                     Minimum="0"
+                     Maximum="3600"
+                     Increment="1"
+                     IsEnabled="{Binding SlicerFile.CanUseAnyWaitTimeAfterLift}"
+                     Value="{Binding Operation.WaitTimeAfterLift}"/>
+  </Grid>
+</UserControl>

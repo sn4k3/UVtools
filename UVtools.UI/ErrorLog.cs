@@ -15,7 +15,7 @@ public static class ErrorLog
     {
         try
         {
-            File.AppendAllText(FullPath, $"[v{About.VersionStr}] ({errorType}) @ {DateTime.Now}: {text}{Environment.NewLine}");
+            File.AppendAllText(FullPath, $"[v{About.VersionString}] ({errorType}) @ {DateTime.Now}: {text}{Environment.NewLine}");
         }
         catch (Exception exception)
         {

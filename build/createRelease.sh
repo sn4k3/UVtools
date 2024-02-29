@@ -19,7 +19,7 @@ rootDir="$PWD"
 buildDir="$rootDir/build"
 coreDir="$rootDir/UVtools.Core"
 #version="$(grep -oP '<Version>\K([0-9][.][0-9][.][0-9])(?=<\/Version>)' "$coreDir/UVtools.Core.csproj")" # Not supported on recent macos!
-version="$(perl -nle'print $& while m{<Version>\K([0-9]+[.][0-9]+[.][0-9]+)(?=<\/Version>)}g' "$coreDir/UVtools.Core.csproj")"
+version="$(perl -nle'print $& while m{<UVtoolsVersion>\K([0-9]+[.][0-9]+[.][0-9]+)(?=<\/UVtoolsVersion>)}g' "$rootDir/Directory.Build.props")"
 platformsDir="$buildDir/platforms"
 runtimePlatformDir="$platformsDir/$runtime"
 publishName="UVtools_${runtime}_v$version"

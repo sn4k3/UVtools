@@ -75,7 +75,7 @@ public class MainIssue : IReadOnlyList<Issue>
     /// </summary>
     public uint LayerRangeCount => 1 + EndLayerIndex - StartLayerIndex;
 
-    public string LayerInfoStr => StartLayerIndex == EndLayerIndex
+    public string LayerInfoString => StartLayerIndex == EndLayerIndex
         ? $"{StartLayerIndex}"
         : $"{StartLayerIndex}-{EndLayerIndex}  ({LayerRangeCount})";
 

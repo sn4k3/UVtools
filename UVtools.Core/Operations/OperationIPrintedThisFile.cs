@@ -8,6 +8,7 @@
 
 using System;
 using System.Text;
+using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Managers;
 using UVtools.Core.Objects;
@@ -106,9 +107,9 @@ public class OperationIPrintedThisFile : Operation
         }
     }
 
-    public string PrintTimeString => TimeSpan.FromSeconds(_printTime).ToString("hh\\hmm\\mss\\s");
+    public string PrintTimeString => TimeSpan.FromSeconds(_printTime).ToTimeString();
     public float FinalPrintTime => _printTime * (float)_multiplier;
-    public string FinalPrintTimeString => TimeSpan.FromSeconds(FinalPrintTime).ToString("hh\\hmm\\mss\\s");
+    public string FinalPrintTimeString => TimeSpan.FromSeconds(FinalPrintTime).ToTimeString();
 
     /// <summary>
     /// Number of times this file has been printed

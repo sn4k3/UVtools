@@ -82,7 +82,7 @@ public partial class ToolScriptingControl : ToolControl
             if (Operation.ScriptGlobals is not null && About.Version.CompareTo(Operation.ScriptGlobals.Script.MinimumVersionToRun) < 0)
             {
                 await ParentWindow.MessageBoxError(
-                    $"Unable to run due {About.Software} version {About.VersionStr} is lower than required {Operation.ScriptGlobals.Script.MinimumVersionToRun}\n" +
+                    $"Unable to run due {About.Software} version {About.VersionString} is lower than required {Operation.ScriptGlobals.Script.MinimumVersionToRun}\n" +
                     $"Please update {About.Software} in order to run this script.");
             }
         }

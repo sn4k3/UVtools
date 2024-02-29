@@ -884,7 +884,7 @@
 													 Binding="{ReflectionBinding Type}"
 													 Width="Auto" />
                                 <DataGridTextColumn Header="Layer(s)"
-												  Binding="{ReflectionBinding LayerInfoStr}"
+												  Binding="{ReflectionBinding LayerInfoString}"
 												  SortMemberPath="StartLayerIndex"
 												  Width="Auto" />
                                 <DataGridTextColumn Header="Area"
@@ -1649,7 +1649,7 @@
                             <TextBlock VerticalAlignment="Center">
                                 <TextBlock.Text>
                                     <MultiBinding StringFormat="{}{0}/{1}">
-                                        <Binding Path="ClipboardManager.CurrentIndexCountStr"/>
+                                        <Binding Path="ClipboardManager.CurrentIndexCountString"/>
                                         <Binding Path="ClipboardManager.Items.Count"/>
                                     </MultiBinding>
                                 </TextBlock.Text>
@@ -2229,7 +2229,7 @@
                                 Orientation="Horizontal"
                                 Margin="10,0,10,10"
                                 Spacing="10">
-                        <TextBlock Text="{Binding Progress.ElapsedTimeStr, StringFormat=Elapsed Time: {0}}"/>
+                        <TextBlock Text="{Binding Progress.ElapsedTimeString, StringFormat=Elapsed Time: {0}}"/>
                         <TextBlock Text="[PAUSED]"
                                    IsVisible="{Binding Progress.IsPaused}"/>
                     </StackPanel>

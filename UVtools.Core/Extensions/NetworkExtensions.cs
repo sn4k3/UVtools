@@ -19,7 +19,7 @@ public static class NetworkExtensions
 {
     public static readonly HttpClient HttpClient = new()
     {
-        DefaultRequestHeaders = { UserAgent = { new ProductInfoHeaderValue(About.Software, About.VersionStr) } }
+        DefaultRequestHeaders = { UserAgent = { new ProductInfoHeaderValue(About.Software, About.VersionString) } }
     };
 
     public static async Task<HttpResponseMessage> DownloadAsync(this HttpClient client, string requestUri, Stream destination, IProgress<(long total, long bytes)>? progress = null, CancellationToken cancellationToken = default)

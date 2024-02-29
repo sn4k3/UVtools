@@ -8,7 +8,6 @@
 
 using System;
 using System.Text;
-using UVtools.Core.Extensions;
 using UVtools.Core.FileFormats;
 using UVtools.Core.Layers;
 
@@ -17,9 +16,6 @@ namespace UVtools.Core.Operations;
 
 public class OperationRaiseOnPrintFinish : Operation
 {
-    #region Constants
-    #endregion
-
     #region Members
     private decimal _positionZ;
     private decimal _waitTime = 1200; // 20m
@@ -183,7 +179,7 @@ public class OperationRaiseOnPrintFinish : Operation
         layer.LightPWM = 0; // Try to disable light if possible
         layer.SetNoDelays();
         using var newMat = _outputDummyPixel 
-            ? SlicerFile.CreateMatWithDummyPixel(layer.BoundingRectangle.Center())
+            ? SlicerFile.CreateMatWithDummyPixelFromLayer(SlicerFile.LastLayerIndex)
             : SlicerFile.CreateMat();
                
         layer.LayerMat = newMat;

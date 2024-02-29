@@ -54,8 +54,8 @@ public sealed class GooFile : FileFormat
         [FieldEndianness(Endianness.Big)] [FieldOrder(0)] [FieldLength(4)] public string Version { get; set; } = FileVersion;
         [FieldOrder(1)] [FieldCount(8)] public byte[] Magic { get; set; } = FileMagic;
         [FieldOrder(2)] [FieldLength(32)] [SerializeAs(SerializedType.TerminatedString)] public string SoftwareName { get; set; } = About.Software;
-        [FieldOrder(3)] [FieldLength(24)] [SerializeAs(SerializedType.TerminatedString)] public string SoftwareVersion { get; set; } = About.VersionStr;
-        [FieldOrder(4)] [FieldLength(24)] [SerializeAs(SerializedType.TerminatedString)] public string FileCreateTime { get; set; } = DateTime.UtcNow.ToString("yyyy-mm-dd hh:mm:ss");
+        [FieldOrder(3)] [FieldLength(24)] [SerializeAs(SerializedType.TerminatedString)] public string SoftwareVersion { get; set; } = About.VersionString;
+        [FieldOrder(4)] [FieldLength(24)] [SerializeAs(SerializedType.TerminatedString)] public string FileCreateTime { get; set; } = DateTime.UtcNow.ToString("yyyy-mm-dd HH:mm:ss");
         [FieldOrder(5)] [FieldLength(32)] [SerializeAs(SerializedType.TerminatedString)] public string MachineName { get; set; } = DefaultMachineName;
         [FieldOrder(6)] [FieldLength(32)] [SerializeAs(SerializedType.TerminatedString)] public string MachineType { get; set; } = "DLP";
         [FieldOrder(7)] [FieldLength(32)] [SerializeAs(SerializedType.TerminatedString)] public string ProfileName { get; set; } = About.Software;

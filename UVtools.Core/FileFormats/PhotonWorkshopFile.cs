@@ -102,6 +102,7 @@ public sealed class PhotonWorkshopFile : FileFormat
         PhotonM3Premium,
         PhotonMonoM5,
         PhotonMonoM5s,
+        PhotonMonoM5sPro,
         Custom,
     }
     #endregion
@@ -607,7 +608,7 @@ public sealed class PhotonWorkshopFile : FileFormat
         public const uint TableSize = 164;
         [FieldOrder(0)][FieldLength(32)][SerializeAs(SerializedType.TerminatedString)] public string SoftwareName { get; set; } = About.Software;
         [FieldOrder(1)] public uint TableLength { get; set; } = TableSize;
-        [FieldOrder(2)][FieldLength(32)][SerializeAs(SerializedType.TerminatedString)] public string Version { get; set; } = About.VersionStr;
+        [FieldOrder(2)][FieldLength(32)][SerializeAs(SerializedType.TerminatedString)] public string Version { get; set; } = About.VersionString;
         [FieldOrder(3)][FieldLength(64)][SerializeAs(SerializedType.TerminatedString)] public string OperativeSystem { get; set; } = RuntimeInformation.RuntimeIdentifier;
         [FieldOrder(4)][FieldLength(32)][SerializeAs(SerializedType.TerminatedString)] public string OpenGLVersion { get; set; } = "3.3-CoreProfile";
 
@@ -1203,6 +1204,7 @@ public sealed class PhotonWorkshopFile : FileFormat
         new(typeof(PhotonWorkshopFile), "pm3r", "Photon M3 Premium (PM3R)"),
         new(typeof(PhotonWorkshopFile), "pm5", "Photon Mono M5 (PM5)"),
         new(typeof(PhotonWorkshopFile), "pm5s", "Photon Mono M5s (PM5s)"),
+        new(typeof(PhotonWorkshopFile), "m5sp", "Photon Mono M5s Pro (M5sp)"),
         new(typeof(PhotonWorkshopFile), "pwc", "Anycubic Custom Machine (PWC)"),
         //new(typeof(PhotonWorkshopFile), "pwmb", "Photon M3 Plus (PWMB)"),
     };
@@ -1311,6 +1313,7 @@ public sealed class PhotonWorkshopFile : FileFormat
             case "px6s":
                 return new uint[] { VERSION_517 };
             case "pm5s":
+            case "m5sp":
                 return new uint[] { VERSION_518 };
             default:
                 return AvailableVersions;
@@ -1375,6 +1378,7 @@ public sealed class PhotonWorkshopFile : FileFormat
                 AnyCubicMachine.PhotonM3Premium => 218.88f,
                 AnyCubicMachine.PhotonMonoM5 => 218.88f,
                 AnyCubicMachine.PhotonMonoM5s => 218.88f,
+                AnyCubicMachine.PhotonMonoM5sPro => 218.88f,
                 _ => 0
             };
         }
@@ -1406,6 +1410,7 @@ public sealed class PhotonWorkshopFile : FileFormat
                 AnyCubicMachine.PhotonM3Premium => 123.12f,
                 AnyCubicMachine.PhotonMonoM5 => 122.88f,
                 AnyCubicMachine.PhotonMonoM5s => 122.88f,
+                AnyCubicMachine.PhotonMonoM5sPro => 223.6416f,
                 _ => 0
             };
         }
@@ -1438,6 +1443,7 @@ public sealed class PhotonWorkshopFile : FileFormat
                 AnyCubicMachine.PhotonM3Premium => 250,
                 AnyCubicMachine.PhotonMonoM5 => 200,
                 AnyCubicMachine.PhotonMonoM5s => 200,
+                AnyCubicMachine.PhotonMonoM5sPro => 200,
                 _ => 0
             };
         }
@@ -1735,6 +1741,7 @@ public sealed class PhotonWorkshopFile : FileFormat
                 AnyCubicMachine.PhotonM3Premium => "Photon M3 Premium",
                 AnyCubicMachine.PhotonMonoM5 => "Photon Mono M5",
                 AnyCubicMachine.PhotonMonoM5s => "Photon Mono M5s",
+                AnyCubicMachine.PhotonMonoM5sPro => "Photon Mono M5s Pro",
                 AnyCubicMachine.Custom  => "Custom",
                 _ => base.MachineName
             };
@@ -1881,6 +1888,11 @@ public sealed class PhotonWorkshopFile : FileFormat
             if (FileEndsWith(".pm5s"))
             {
                 return AnyCubicMachine.PhotonMonoM5s;
+            }
+
+            if (FileEndsWith(".m5sp"))
+            {
+                return AnyCubicMachine.PhotonMonoM5sPro;
             }
 
             if (FileEndsWith(".pwc"))

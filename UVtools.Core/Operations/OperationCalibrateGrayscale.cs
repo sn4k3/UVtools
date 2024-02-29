@@ -515,7 +515,10 @@ public sealed class OperationCalibrateGrayscale : Operation
 
 
         if (SlicerFile.ThumbnailsCount > 0)
-            SlicerFile.SetThumbnails(GetThumbnail());
+        {
+            using var thumbnail = GetThumbnail();
+            SlicerFile.SetThumbnails(thumbnail);
+        }
 
         SlicerFile.SuppressRebuildPropertiesWork(() =>
         {

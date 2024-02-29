@@ -299,7 +299,10 @@ public sealed class OperationCalibrateBloomingEffect : Operation
         var newLayers = new List<Layer>();
 
         if (SlicerFile.ThumbnailsCount > 0)
-            SlicerFile.SetThumbnails(GetThumbnail());
+        {
+            using var thumbnail = GetThumbnail();
+            SlicerFile.SetThumbnails(thumbnail);
+        }
 
         var maxWaitTime = MaximumWaiTimeBeforeCure;
         var flip = SlicerFile.DisplayMirror;

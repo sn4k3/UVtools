@@ -89,7 +89,7 @@ public sealed class UVJFile : FileFormat
 
     public sealed class UVtoolsVendor
     {
-        public string Version { get; set; } = About.VersionStr;
+        public string Version { get; set; } = About.VersionString;
         public string FirstModified = DateTime.UtcNow.ToString(CultureInfo.InvariantCulture);
         public string LastModified = DateTime.UtcNow.ToString(CultureInfo.InvariantCulture);
 

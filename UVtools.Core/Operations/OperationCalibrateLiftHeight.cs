@@ -394,9 +394,12 @@ public sealed class OperationCalibrateLiftHeight : Operation
             mat.Dispose();
         }
 
-            
+
         if (SlicerFile.ThumbnailsCount > 0)
-            SlicerFile.SetThumbnails(GetThumbnail());
+        {
+            using var thumbnail = GetThumbnail();
+            SlicerFile.SetThumbnails(thumbnail);
+        }
 
         progress++;
 

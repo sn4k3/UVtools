@@ -65,7 +65,7 @@ public sealed class OperationScripting : Operation
         {
             if (ScriptGlobals is not null && About.Version.CompareTo(ScriptGlobals.Script.MinimumVersionToRun) >= 0)
             {
-                return $"Unable to run due {About.Software} version {About.VersionStr} is lower than required {ScriptGlobals.Script.MinimumVersionToRun}\n" +
+                return $"Unable to run due {About.Software} version {About.VersionString} is lower than required {ScriptGlobals.Script.MinimumVersionToRun}\n" +
                        $"Please update {About.Software} in order to run this script.";
             }
 

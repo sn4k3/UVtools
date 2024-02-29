@@ -409,6 +409,7 @@ public class OperationTimelapse : Operation
         var virtualSlowLiftLayer = new Layer(SlicerFile.LayerCount, mat, SlicerFile)
         {
             PositionZ = (float)_raisePositionZ,
+            LightPWM = SlicerFile.SupportGCode ? byte.MinValue : (byte)1,
             ExposureTime = SlicerFile.SupportGCode ? 0 : 0.01f,
             LiftHeightTotal = SlicerFile.SupportGCode ? 0 : 0.1f, 
             LiftSpeed = minLiftSpeed,

@@ -124,7 +124,7 @@ public sealed class OperationProgress : BindableBase, IDisposable
         set => RaiseAndSetIfChanged(ref _title, value);
     }
 
-    public string ElapsedTimeStr => $"{StopWatch.Elapsed.Minutes}m {StopWatch.Elapsed.Seconds}s";
+    public string ElapsedTimeString => $"{StopWatch.Elapsed.Minutes}m {StopWatch.Elapsed.Seconds}s";
     //{StopWatch.Elapsed.Milliseconds} ms
 
     /// <summary>
@@ -271,7 +271,7 @@ public sealed class OperationProgress : BindableBase, IDisposable
 
     public void TriggerRefresh()
     {
-        RaisePropertyChanged(nameof(ElapsedTimeStr));
+        RaisePropertyChanged(nameof(ElapsedTimeString));
         RaisePropertyChanged(nameof(CanCancel));
         //OnPropertyChanged(nameof(ProgressPercent));
         //OnPropertyChanged(nameof(Description));

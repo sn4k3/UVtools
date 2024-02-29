@@ -100,6 +100,9 @@ public class OperationPhasedExposure : Operation, IEquatable<OperationPhasedExpo
 
     #region Overrides
     public override LayerRangeSelection StartLayerRangeSelection => LayerRangeSelection.Bottom;
+    public override bool CanROI => false;
+    public override bool CanMask => false;
+
     public override string IconClass => "fa-solid fa-bars-staggered";
     public override string Title => "Phased exposure";
     public override string Description =>
@@ -107,9 +110,6 @@ public class OperationPhasedExposure : Operation, IEquatable<OperationPhasedExpo
         "Can be used to eliminate the elephant foot effect or to harden a layer in multiple steps.\n" +
         "After this, do not apply any modification which reconstruct the z positions of the layers.\n" +
         "Note: To eliminate the elephant foot effect, the use of wall dimming method is recommended.";
-
-    public override bool CanROI => false;
-    public override bool CanMask => false;
 
     public override string ConfirmationText =>
         $"phased exposure model layers {LayerIndexStart} through {LayerIndexEnd}";

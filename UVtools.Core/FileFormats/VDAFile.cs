@@ -46,7 +46,7 @@ public class VDARoot
                 public string ApplicationName { get; set; } = About.Software;
 
                 [XmlAttribute]
-                public string ApplicationVersion { get; set; } = About.VersionStr;
+                public string ApplicationVersion { get; set; } = About.VersionString;
 
                 public override string ToString()
                 {
@@ -56,7 +56,7 @@ public class VDARoot
                 public void Reset()
                 {
                     ApplicationName = About.Software;
-                    ApplicationVersion = About.VersionStr;
+                    ApplicationVersion = About.VersionString;
                 }
             }
 

@@ -79,4 +79,21 @@ public static class DateTimeExtensions
 
         return age;
     }
+
+    /// <summary>
+    /// Convert a <see cref="TimeSpan"/> to a string representation of the time
+    /// </summary>
+    /// <param name="timeSpan"></param>
+    /// <returns></returns>
+    public static string ToTimeString(this TimeSpan timeSpan)
+    {
+        var totalSeconds = timeSpan.TotalSeconds;
+        return totalSeconds switch
+        {
+            < 60 => $"{totalSeconds}s",                               // Less than a minute
+            < 3600 => timeSpan.ToString(@"mm\m\:ss\s"),        // Less than an hour
+            < 86400 => timeSpan.ToString(@"hh\h\:mm\m\:ss\s"), // Less than a day
+            _ => timeSpan.ToString(@"dd\ \d\a\y\(\s\)\ hh\h\:mm\m\:ss\s")
+        };
+    }
 }

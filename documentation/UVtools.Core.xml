@@ -902,6 +902,13 @@
             <param name="laterDate">The date on which to calculate the age.</param>
             <returns>Age in years on a later day. 0 is returned as minimum.</returns>
         </member>
+        <member name="M:UVtools.Core.Extensions.DateTimeExtensions.ToTimeString(System.TimeSpan)">
+            <summary>
+            Convert a <see cref="T:System.TimeSpan"/> to a string representation of the time
+            </summary>
+            <param name="timeSpan"></param>
+            <returns></returns>
+        </member>
         <member name="F:UVtools.Core.Extensions.EmguExtensions.WhiteColor">
             <summary>
             White color: 255, 255, 255, 255
@@ -919,7 +926,7 @@
             </summary>
             <remarks>Last three digits will drop (...039)</remarks>
         </member>
-        <member name="M:UVtools.Core.Extensions.EmguExtensions.CreateBlankByteArray(Emgu.CV.Mat)">
+        <member name="M:UVtools.Core.Extensions.EmguExtensions.CreateByteArray(Emgu.CV.Mat)">
             <summary>
             Create a byte array of size of this <see cref="T:Emgu.CV.Mat"/>
             </summary>
@@ -928,14 +935,14 @@
         </member>
         <member name="M:UVtools.Core.Extensions.EmguExtensions.New(Emgu.CV.Mat)">
             <summary>
-            Creates a new empty <see cref="T:Emgu.CV.Mat"/> with same size and type of the source
+            Creates a new <see cref="T:Emgu.CV.Mat"/> with same size and type of the source
             </summary>
             <param name="mat"></param>
             <returns></returns>
         </member>
         <member name="M:UVtools.Core.Extensions.EmguExtensions.New(Emgu.CV.Mat,Emgu.CV.Structure.MCvScalar)">
             <summary>
-            Creates a new empty <see cref="T:Emgu.CV.Mat"/> with same size and type of the source
+            Creates a new <see cref="T:Emgu.CV.Mat"/> with same size and type of the source
             </summary>
             <param name="src"></param>
             <param name="color"></param>
@@ -4851,7 +4858,7 @@
         </member>
         <member name="M:UVtools.Core.FileFormats.FileFormat.CreateMatWithDummyPixel(System.Drawing.Point,System.Byte)">
             <summary>
-            Creates a empty mat of file <see cref="P:UVtools.Core.FileFormats.FileFormat.Resolution"/> size and create a dummy pixel to prevent a empty layer detection
+            Creates an empty mat of file <see cref="P:UVtools.Core.FileFormats.FileFormat.Resolution"/> size and create a dummy pixel to prevent an empty layer detection
             </summary>
             <param name="dummyPixelLocation">Location to set the dummy pixel, use a negative value (-1,-1) to set to the bounding center</param>
             <param name="dummyPixelBrightness">Dummy pixel brightness</param>
@@ -4859,22 +4866,30 @@
         </member>
         <member name="M:UVtools.Core.FileFormats.FileFormat.CreateMatWithDummyPixel(System.Drawing.Point)">
             <summary>
-            Creates a empty mat of file <see cref="P:UVtools.Core.FileFormats.FileFormat.Resolution"/> size and create a dummy pixel to prevent a empty layer detection
+            Creates an empty mat of file <see cref="P:UVtools.Core.FileFormats.FileFormat.Resolution"/> size and create a dummy pixel to prevent an empty layer detection
             </summary>
             <param name="dummyPixelLocation">Location to set the dummy pixel, use a negative value (-1,-1) to set to the bounding center</param>
             <returns></returns>
         </member>
         <member name="M:UVtools.Core.FileFormats.FileFormat.CreateMatWithDummyPixel(System.Byte)">
             <summary>
-            Creates a empty mat of file <see cref="P:UVtools.Core.FileFormats.FileFormat.Resolution"/> size
+            Creates an empty mat of file <see cref="P:UVtools.Core.FileFormats.FileFormat.Resolution"/> size
             </summary>
             <param name="dummyPixelBrightness">Dummy pixel brightness</param>
             <returns></returns>
         </member>
         <member name="M:UVtools.Core.FileFormats.FileFormat.CreateMatWithDummyPixel">
             <summary>
-            Creates a empty mat of file <see cref="P:UVtools.Core.FileFormats.FileFormat.Resolution"/> size
+            Creates an empty mat of file <see cref="P:UVtools.Core.FileFormats.FileFormat.Resolution"/> size
             </summary>
+            <returns></returns>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.FileFormat.CreateMatWithDummyPixelFromLayer(System.UInt32)">
+            <summary>
+            Creates an empty mat of file <see cref="P:UVtools.Core.FileFormats.FileFormat.Resolution"/> size and create a dummy pixel on optimal position from layer information to prevent an empty layer detection
+            </summary>
+            <param name="layerIndex">The layer index to fetch better position of the dummy pixel</param>
+            <remarks>If the selected layer index does not exist, it will use the global <see cref="P:UVtools.Core.FileFormats.FileFormat.BoundingRectangle"/> instead</remarks>
             <returns></returns>
         </member>
         <member name="M:UVtools.Core.FileFormats.FileFormat.CreateMat(System.Boolean)">
@@ -6539,7 +6554,7 @@
             Gets the time estimate in seconds it takes for this layer to be completed
             </summary>
         </member>
-        <member name="P:UVtools.Core.Layers.Layer.CompletionTimeStr">
+        <member name="P:UVtools.Core.Layers.Layer.CompletionTimeString">
             <summary>
             Gets the time estimate in minutes and seconds it takes for this layer to be completed
             </summary>
@@ -6549,7 +6564,7 @@
             Get the start time estimate in seconds when this layer should start at
             </summary>
         </member>
-        <member name="P:UVtools.Core.Layers.Layer.StartTimeStr">
+        <member name="P:UVtools.Core.Layers.Layer.StartTimeString">
             <summary>
             Get the start time estimate in hours, minutes and seconds when this layer should start at
             </summary>
@@ -6559,7 +6574,7 @@
             Get the end time estimate in seconds when this layer should end at
             </summary>
         </member>
-        <member name="P:UVtools.Core.Layers.Layer.EndTimeStr">
+        <member name="P:UVtools.Core.Layers.Layer.EndTimeString">
             <summary>
             Get the end time estimate in hours, minutes and seconds when this layer should end at
             </summary>
@@ -8351,6 +8366,51 @@
         <member name="P:UVtools.Core.Operations.OperationSolidify.MinimumArea">
             <summary>
             Gets the minimum required area to solidify it
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Operations.OperationStirResin.Method">
+            <summary>
+            Gets or sets the method to use to stir the resin
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Operations.OperationStirResin.Stirs">
+            <summary>
+            Gets or sets the number of stirs to perform
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Operations.OperationStirResin.LiftHeight">
+            <summary>
+            Gets or sets the lift height in mm between stirs
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Operations.OperationStirResin.LiftSpeed">
+            <summary>
+            Gets or sets the lift speed in mm/min
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Operations.OperationStirResin.RetractSpeed">
+            <summary>
+            Gets or sets the retract speed in mm/min
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Operations.OperationStirResin.WaitTimeBeforeStir">
+            <summary>
+            Gets or sets the wait time in seconds before stirring
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Operations.OperationStirResin.WaitTimeAfterLift">
+            <summary>
+            Gets or sets the wait time in seconds after lift / before retract
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Operations.OperationStirResin.StirSeconds">
+            <summary>
+            Gets the total time in seconds to stir the resin
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Operations.OperationStirResin.StirTimeString">
+            <summary>
+            Gets the total time in readable string to stir the resin
             </summary>
         </member>
         <member name="P:UVtools.Core.Operations.OperationTimelapse.RaisePositionZ">

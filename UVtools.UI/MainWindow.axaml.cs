@@ -91,6 +91,7 @@ public partial class MainWindow : WindowEx
         new() { Tag = new OperationTimelapse()},
         new() { Tag = new OperationLithophane()},
         new() { Tag = new OperationPCBExposure()},
+        new() { Tag = new OperationStirResin()},
         new() { Tag = new OperationScripting()},
         new() { Tag = new OperationCalculator()},
     };
@@ -1207,7 +1208,7 @@ public partial class MainWindow : WindowEx
 
         var messageBox = new MessageWindow($"Update UVtools to v{VersionChecker.Version}?",
             MessageWindow.IconHeaderQuestion,
-            $"Do you like to update {About.Software} from v{About.VersionStr} to v{VersionChecker.Version}?",
+            $"Do you like to update {About.Software} from v{About.VersionString} to v{VersionChecker.Version}?",
             "## Changelog:\n\n" +
             $"{VersionChecker.Changelog}",
             string.IsNullOrWhiteSpace(VersionChecker.DownloadLink) ?
@@ -1268,7 +1269,7 @@ public partial class MainWindow : WindowEx
             _titleStringBuilder.Append($"File: {SlicerFile!.Filename} ({_loadedFileSizeRepresentation})");
         }
 
-        _titleStringBuilder.Append($"   Version: {About.VersionStr}   RAM: {SizeExtensions.SizeSuffix(Environment.WorkingSet)}");
+        _titleStringBuilder.Append($"   Version: {About.VersionString}   RAM: {SizeExtensions.SizeSuffix(Environment.WorkingSet)}");
 
         if (IsFileLoaded)
         {

@@ -183,12 +183,12 @@ public class OperationLayerArithmetic : Operation
 
             if (string.IsNullOrWhiteSpace(operations)) return false;
 
-            string layerIndexStr = string.Empty;
+            string layerIndexString = string.Empty;
             foreach (char c in operations)
             {
                 if (c is >= '0' and <= '9')
                 {
-                    layerIndexStr += c;
+                    layerIndexString += c;
                     continue;
                 }
 
@@ -206,23 +206,23 @@ public class OperationLayerArithmetic : Operation
                 };
 
                 if (op == LayerArithmeticOperators.None  // No valid operator
-                    || string.IsNullOrWhiteSpace(layerIndexStr) // Started with a operator instead of layer
+                    || string.IsNullOrWhiteSpace(layerIndexString) // Started with a operator instead of layer
                    ) continue;
 
 
-                if (uint.TryParse(layerIndexStr, out var layerIndex) && layerIndex <= SlicerFile.LastLayerIndex)
+                if (uint.TryParse(layerIndexString, out var layerIndex) && layerIndex <= SlicerFile.LastLayerIndex)
                 {
                     group.Operations.Add(new ArithmeticOperation(layerIndex, op));
                 }
 
                 // Reset layer string
-                layerIndexStr = string.Empty;
+                layerIndexString = string.Empty;
             }
 
             // Append the left over
-            if (!string.IsNullOrWhiteSpace(layerIndexStr))
+            if (!string.IsNullOrWhiteSpace(layerIndexString))
             {
-                if (uint.TryParse(layerIndexStr, out var layerIndex) && layerIndex <= SlicerFile.LastLayerIndex)
+                if (uint.TryParse(layerIndexString, out var layerIndex) && layerIndex <= SlicerFile.LastLayerIndex)
                 {
                     group.Operations.Add(new ArithmeticOperation(layerIndex, LayerArithmeticOperators.None));
                 }

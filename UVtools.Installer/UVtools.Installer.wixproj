@@ -1,56 +1,57 @@
-﻿<Project Sdk="WixToolset.Sdk/4.0.3">
-  <PropertyGroup>
-    <Platform Condition="'$(Platform)' == ''">x64</Platform>
-    <ProductVersion>3.7</ProductVersion>
-    <OutputName>UVtools</OutputName>
-    <!-- If ProductVersion not passed in, try to get it from TFBuild Environments (XAML Builds)-->
-    <ProductVersion Condition="'$(ProductVersion)' == ''">$([System.Text.RegularExpressions.Regex]::Match($(TF_BUILD_BUILDNUMBER), "[0-9]+[.][0-9]+[.][0-9]+[.][0-9]+"))</ProductVersion>
-    <!-- If ProductVersion still not known, try to get it from TFBuild Environments (V.Next Builds)-->
-    <ProductVersion Condition="'$(ProductVersion)' == ''">$([System.Text.RegularExpressions.Regex]::Match($(BUILD_BUILDNUMBER), "[0-9]+[.][0-9]+[.][0-9]+[.][0-9]+"))</ProductVersion>
-    <!-- If ProductVersion still not known, default to lowerbound 0.0.1 for developer builds.-->
-    <ProductVersion Condition="'$(ProductVersion)' == ''">3.0.0</ProductVersion>
-    <!-- The following allows one cert to be referenced from the certificate store for self-signing in localbuilds and another cert to be passed in during official builds. -->
-    <AppxCertificateThumbprint Condition="'$(AppxCertificateThumbprint)' == ''" />
-    <AppxTimestampUrl Condition="'$(AppxTimestampUrl)' == ''" />
-    <MsixCertificateThumbprint Condition="'$(MsixCertificateThumbprint)' == ''" />
-    <MsixTimestampUrl Condition="'$(MsixTimestampUrl)' == ''" />
-    <SignOutput>true</SignOutput>
-    <WixVariables>WixUIBannerBmp=Resources\Banner.jpg;WixUIDialogBmp=Resources\Dialog.jpg;WixUILicenseRtf=Resources\EULA.rtf</WixVariables>
-    <DefineConstants>ProductVersion=$(ProductVersion);HarvestPath=$(HarvestPath)</DefineConstants>
-    <SuppressIces>ICE27;ICE38;ICE43;ICE57</SuppressIces>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
-    <DefineConstants>Debug;$(DefineConstants)</DefineConstants>
-  </PropertyGroup>
-  <ItemGroup>
-    <Folder Include="Code" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="WixToolset.Util.wixext" Version="4.0.4" />
-    <PackageReference Include="WixToolset.Iis.wixext" Version="4.0.4" />
-    <PackageReference Include="WixToolset.UI.wixext" Version="4.0.4" />
-    <PackageReference Include="WixToolset.NetFx.wixext" Version="4.0.4" />
-    <PackageReference Include="WixToolset.Heat" Version="4.0.4" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Resources" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Resources\Banner.jpg" />
-    <Content Include="Resources\Dialog.jpg" />
-    <Content Include="Resources\EULA.rtf" />
-  </ItemGroup>
-  <ItemGroup>
-    <HarvestDirectory Include="$(HarvestPath)">
-      <ComponentGroupName>HarvestedComponents</ComponentGroupName>
-      <DirectoryRefId>INSTALLPATH</DirectoryRefId>
-      <PreprocessorVariable>var.HarvestPath</PreprocessorVariable>
-      <KeepEmptyDirectories>true</KeepEmptyDirectories>
-      <SuppressCom>true</SuppressCom>
-      <SuppressFragments>true</SuppressFragments>
-      <SuppressRegistry>true</SuppressRegistry>
-      <SuppressRootDirectory>true</SuppressRootDirectory>
-      <HarvestDirectoryAutogenerateGuids>true</HarvestDirectoryAutogenerateGuids>
-    </HarvestDirectory>
-  </ItemGroup>
+﻿<Project Sdk="WixToolset.Sdk/4.0.4">
+    <PropertyGroup>
+        <Platform Condition="'$(Platform)' == ''">x64</Platform>
+        <ProductVersion>$(UVtoolsVersion)</ProductVersion>
+        <OutputName>UVtools</OutputName>
+        <!-- If ProductVersion not passed in, try to get it from TFBuild Environments (XAML Builds)-->
+        <ProductVersion Condition="'$(ProductVersion)' == ''">$([System.Text.RegularExpressions.Regex]::Match($(TF_BUILD_BUILDNUMBER), "[0-9]+[.][0-9]+[.][0-9]+[.][0-9]+"))</ProductVersion>
+        <!-- If ProductVersion still not known, try to get it from TFBuild Environments (V.Next Builds)-->
+        <ProductVersion Condition="'$(ProductVersion)' == ''">$([System.Text.RegularExpressions.Regex]::Match($(BUILD_BUILDNUMBER), "[0-9]+[.][0-9]+[.][0-9]+[.][0-9]+"))</ProductVersion>
+        <!-- If ProductVersion still not known, default to lowerbound 0.0.1 for developer builds.-->
+        <ProductVersion Condition="'$(ProductVersion)' == ''">4.0.0</ProductVersion>
+        <!-- The following allows one cert to be referenced from the certificate store for self-signing in localbuilds and another cert to be passed in during official builds. -->
+        <AppxCertificateThumbprint Condition="'$(AppxCertificateThumbprint)' == ''" />
+        <AppxTimestampUrl Condition="'$(AppxTimestampUrl)' == ''" />
+        <MsixCertificateThumbprint Condition="'$(MsixCertificateThumbprint)' == ''" />
+        <MsixTimestampUrl Condition="'$(MsixTimestampUrl)' == ''" />
+        <SignOutput>true</SignOutput>
+        <WixVariables>WixUIBannerBmp=Resources\Banner.jpg;WixUIDialogBmp=Resources\Dialog.jpg;WixUILicenseRtf=Resources\EULA.rtf</WixVariables>
+        <DefineConstants>ProductVersion=$(ProductVersion);HarvestPath=$(HarvestPath)</DefineConstants>
+        <SuppressIces>ICE27;ICE38;ICE43;ICE57</SuppressIces>
+
+        <HarvestDirectoryAutogenerateGuids>true</HarvestDirectoryAutogenerateGuids>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+        <DefineConstants>Debug;$(DefineConstants)</DefineConstants>
+    </PropertyGroup>
+    <ItemGroup>
+        <Folder Include="Code" />
+    </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="WixToolset.Util.wixext" Version="4.0.4" />
+        <PackageReference Include="WixToolset.Iis.wixext" Version="4.0.4" />
+        <PackageReference Include="WixToolset.UI.wixext" Version="4.0.4" />
+        <PackageReference Include="WixToolset.NetFx.wixext" Version="4.0.4" />
+        <PackageReference Include="WixToolset.Heat" Version="4.0.4" />
+    </ItemGroup>
+    <ItemGroup>
+        <Folder Include="Resources" />
+    </ItemGroup>
+    <ItemGroup>
+        <Content Include="Resources\Banner.jpg" />
+        <Content Include="Resources\Dialog.jpg" />
+        <Content Include="Resources\EULA.rtf" />
+    </ItemGroup>
+    <ItemGroup>
+        <HarvestDirectory Include="$(HarvestPath)">
+            <ComponentGroupName>HarvestedComponents</ComponentGroupName>
+            <DirectoryRefId>INSTALLPATH</DirectoryRefId>
+            <PreprocessorVariable>var.HarvestPath</PreprocessorVariable>
+            <KeepEmptyDirectories>true</KeepEmptyDirectories>
+            <SuppressCom>true</SuppressCom>
+            <SuppressFragments>true</SuppressFragments>
+            <SuppressRegistry>true</SuppressRegistry>
+            <SuppressRootDirectory>true</SuppressRootDirectory>
+        </HarvestDirectory>
+    </ItemGroup>
 </Project>

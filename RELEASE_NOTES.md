@@ -1,16 +1,8 @@
-- **UI:**
-  - (Add) Allow to drag and drop Gerber files into main window to open them in the PCB exposure tool (Hold SHIFT key to run the operation right away, without opening the tool dialog, it will run with the default settings)
-  - (Improvement) Drag and drop invalid files that are not recognized no longer closes the current file nor open new instances when multiple files are passed or when SHIFT is held
-- **Pixel editor:**
-  - (Improvement) Line shape was producing one pixel more than required
-  - (Improvement) Make the shape preview more accurate with the actual real output and when defining a shape thickness instead of a fill
-  - (Improvement) Increase the accuracy of the shapes by passing float instead of int
-  - (Improvement) Make the square shape to be exactly the input brush size
-  - (Improvement) Dispose Skia drawing objects after draw the pixel editor shapes into the previewer
-- (Improvement) Better performance and speed when rendering the layer image into the previewer
-- (Improvement) Dispose cached data when layer changes into the previewer
-- (Change) Layer image preview format from Bgr to Bgra (Added alpha channel, now 32 bits)
-- (Fix) Calibration Blooming effect: All layers are being set with bottom exposure time (#481)
-- (Upgrade) .NET from 6.0.26 to 6.0.27
-- (Downgrade) AvaloniaUI from 11.0.9 to 11.0.7 (Fix #836 but may re-introduce others)
+- (Add) Benchmark test: GC Memory Copy and Pooled Memory Copy
+- (Add) Photon Mono M5s Pro (m5sp) support and corresponding PrusaSlicer printer (#842)
+- (Add) Tool: Stir resin - Allow to stir the resin in the VAT by moving the build plate up and down multiple times (#839)
+- (Improvement) Improve the dummy pixel location to match the first pixel of the layer (if possible)
+- (Improvement) Better format for readable time from seconds, it now can show/hide days, hours, minutes and seconds when optimal
+- (Improvement) The setting `MaxDegreeOfParallelism` is now used when calculating the batch size for the parallel operations under file decode and encode
+- (Fix) Layer import: Unable to import layers from image files (#841)
 

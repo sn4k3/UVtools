@@ -96,8 +96,8 @@ public class OperationPattern : Operation
         {
             if (!RaiseAndSetIfChanged(ref _cols, value)) return;
             RaisePropertyChanged(nameof(InfoCols));
-            RaisePropertyChanged(nameof(InfoWidthStr));
-            RaisePropertyChanged(nameof(InfoModelWithinBoundaryStr));
+            RaisePropertyChanged(nameof(InfoWidthString));
+            RaisePropertyChanged(nameof(InfoModelWithinBoundaryString));
             ValidateBounds();
         }
     }
@@ -109,8 +109,8 @@ public class OperationPattern : Operation
         {
             if (!RaiseAndSetIfChanged(ref _rows, value)) return;
             RaisePropertyChanged(nameof(InfoRows));
-            RaisePropertyChanged(nameof(InfoHeightStr));
-            RaisePropertyChanged(nameof(InfoModelWithinBoundaryStr));
+            RaisePropertyChanged(nameof(InfoHeightString));
+            RaisePropertyChanged(nameof(InfoModelWithinBoundaryString));
             ValidateBounds();
         }
     }
@@ -143,8 +143,8 @@ public class OperationPattern : Operation
         set
         {
             if(!RaiseAndSetIfChanged(ref _colSpacing, value)) return;
-            RaisePropertyChanged(nameof(InfoWidthStr));
-            RaisePropertyChanged(nameof(InfoModelWithinBoundaryStr));
+            RaisePropertyChanged(nameof(InfoWidthString));
+            RaisePropertyChanged(nameof(InfoModelWithinBoundaryString));
             ValidateBounds();
         }
     }
@@ -155,8 +155,8 @@ public class OperationPattern : Operation
         set
         {
             if (!RaiseAndSetIfChanged(ref _rowSpacing, value)) return;
-            RaisePropertyChanged(nameof(InfoHeightStr));
-            RaisePropertyChanged(nameof(InfoModelWithinBoundaryStr));
+            RaisePropertyChanged(nameof(InfoHeightString));
+            RaisePropertyChanged(nameof(InfoModelWithinBoundaryString));
             ValidateBounds();
         }
     }
@@ -176,10 +176,10 @@ public class OperationPattern : Operation
     public string InfoCols => $"Columns: {Cols} / {MaxCols}";
     public string InfoRows => $"Rows: {Rows} / {MaxRows}";
 
-    public string InfoWidthStr =>
+    public string InfoWidthString =>
         $"Width: {GetPatternVolume.Width} (Min: {ROI.Width}, Max: {ImageWidth})";
 
-    public string InfoHeightStr =>
+    public string InfoHeightString =>
         $"Width: {GetPatternVolume.Height} (Min: {ROI.Height}, Max: {ImageHeight})";
 
     public bool IsWithinBoundary
@@ -188,11 +188,11 @@ public class OperationPattern : Operation
         set
         {
             if (!RaiseAndSetIfChanged(ref _isWithinBoundary, value)) return;
-            RaisePropertyChanged(nameof(InfoModelWithinBoundaryStr));
+            RaisePropertyChanged(nameof(InfoModelWithinBoundaryString));
         }
     }
 
-    public string InfoModelWithinBoundaryStr => "Model within boundary: " + (_isWithinBoundary ? "Yes" : "No");
+    public string InfoModelWithinBoundaryString => "Model within boundary: " + (_isWithinBoundary ? "Yes" : "No");
 
     public Size GetPatternVolume => new(Cols * ROI.Width + (Cols - 1) * ColSpacing, Rows * ROI.Height + (Rows - 1) * RowSpacing);
     #endregion
