@@ -49,7 +49,7 @@ public sealed class UserSettings : BindableBase
         private bool _checkForUpdatesOnStartup = true;
         private bool _loadDemoFileOnStartup = true;
         private bool _loadLastRecentFileOnStartup;
-        private int _maxDegreeOfParallelism = -1;
+        private int _maxDegreeOfParallelism = -2;
         private LayerCompressionCodec _layerCompressionCodec = CoreSettings.DefaultLayerCompressionCodec;
         private float _averageResin1000MlBottleCost = CoreSettings.AverageResin1000MlBottleCost;
         private bool _windowsCanResize;
@@ -1782,23 +1782,10 @@ public sealed class UserSettings : BindableBase
         try
         {
             _instance = XmlExtensions.DeserializeFromFile<UserSettings>(FilePath);
-            if (_instance.General.MaxDegreeOfParallelism <= 0)
-            {
-                _instance.General.MaxDegreeOfParallelism = -1;
-            }
-            else
-            {
-                _instance.General.MaxDegreeOfParallelism = Math.Min(_instance.General.MaxDegreeOfParallelism, Environment.ProcessorCount);
-            }
-                    
 
             if (_instance.SettingsVersion < SETTINGS_VERSION)
             {
                 // Upgrade
-                if (_instance.SettingsVersion <= 4)
-                {
-                    _instance.General.MaxDegreeOfParallelism = -1;
-                }
                 _instance.SettingsVersion = SETTINGS_VERSION;
             }
 

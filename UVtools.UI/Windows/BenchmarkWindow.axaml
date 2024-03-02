@@ -4,6 +4,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:controls="clr-namespace:UVtools.UI.Controls"
         xmlns:windows="clr-namespace:UVtools.UI.Windows"
+        xmlns:system="clr-namespace:System;assembly=System.Runtime"
+        xmlns:ac="clr-namespace:UVtools.AvaloniaControls;assembly=UVtools.AvaloniaControls"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         Title="Benchmark"
         Icon="/Assets/Icons/UVtools.ico"
@@ -27,7 +29,7 @@
     
   </Border>
 
-    <Grid RowDefinitions="Auto,10,Auto,10,Auto" ColumnDefinitions="Auto,10,*"
+    <Grid RowDefinitions="Auto,10,Auto,10,Auto,10,Auto" ColumnDefinitions="Auto,10,*"
           Grid.Row="2"
           Margin="10">
 
@@ -58,6 +60,23 @@
                 SelectedIndex="{Binding TestSelectedIndex}"
                 ItemsSource="{Binding Tests}"
                 IsEnabled="{Binding !IsRunning}"/>
+
+        <TextBlock Grid.Row="6" Grid.Column="0"
+                   VerticalAlignment="Center"
+                   Text="Threads:"/>
+
+        <ac:ExtendedNumericUpDown Grid.Row="6" Grid.Column="2"
+                                    HorizontalAlignment="Stretch"
+                                    VerticalAlignment="Center"
+                                    Minimum="-2"
+                                    Maximum="{Binding Source={x:Static system:Environment.ProcessorCount}}"
+                                    Value="{Binding Threads}"
+                                    ValueUnit="{Binding Source={x:Static system:Environment.ProcessorCount}, StringFormat=Max: {0}}"
+                                    IsEnabled="{Binding !IsRunning}"
+                                    ToolTip.Tip="Sets the maximum number of concurrent tasks/threads enabled to run by parallel method calls.
+&#x0a;-2: Will utilize an optimal number in order to relief some load and therefore preventing the computer from lags and freezes, mostly this is the processor core count less a few. The more cores the CPU haves the larger is the margin up to a limit. (Optimal/Recommended)
+&#x0a;-1: Will utilize however many threads the underlying scheduler provides, mostly this is the processor core count. (Fast/Performance)
+&#x0a;0: Will utilize the processor core count. (Fast/Performance)"/>
     </Grid>
 
 	  <Grid Grid.Row="4"

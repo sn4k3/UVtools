@@ -165,7 +165,7 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
     public bool IsEmpty => _nonZeroPixelCount == 0;
 
     /// <summary>
-    /// Gets if this layer is a dummy layer to bypass a firmware constrain, that is contain at most one pixel and exposure time no more than 0.01s
+    /// Gets if this layer is a dummy layer to bypass a firmware constrain, that is contained at most one pixel and exposure time no more than 0.01s
     /// </summary>
     public bool IsDummy => _nonZeroPixelCount <= 1 || _exposureTime <= 0.01;
 

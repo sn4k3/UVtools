@@ -6,105 +6,181 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="UVtools.UI.Controls.Tools.ToolStirResinControl"
              x:DataType="tools:ToolStirResinControl"
-             Width="500">
-  <Grid RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto" ColumnDefinitions="Auto,10,*">
-      <TextBlock Grid.Row="0" Grid.Column="0"
-                 VerticalAlignment="Center"
-                 Text="Stirring time:" />
-      <SelectableTextBlock Grid.Row="0" Grid.Column="2"
+             Width="550">
+
+    <StackPanel Orientation="Vertical" Spacing="20">
+        <SelectableTextBlock
+            FontWeight="Bold"
+            IsVisible="{Binding !SlicerFile.CanUseSameLayerPositionZ}"
+            TextWrapping="Wrap"
+            Text="Warning: Your printer and/or file format can not use layers in same Z position, as so, each stir/layer will increment in height.
+&#x0a;Make sure the total stirs are below the set lift height."/>
+
+        <Grid RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto" ColumnDefinitions="Auto,10,*">
+            <TextBlock Grid.Row="0" Grid.Column="0"
+                       VerticalAlignment="Center"
+                       Text="Stirring time:" />
+            <SelectableTextBlock Grid.Row="0" Grid.Column="2"
+                                 VerticalAlignment="Center"
+                                 FontWeight="Bold"
+                                 Text="{Binding Operation.StirTimeString}"/>
+
+            <TextBlock Grid.Row="2" Grid.Column="0"
+                       VerticalAlignment="Center"
+                       Text="Method:" />
+            <ComboBox Grid.Row="2" Grid.Column="2"
+                      VerticalAlignment="Center"
+                      HorizontalAlignment="Stretch"
+                      ItemsSource="{Binding Operation.Method, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                      SelectedItem="{Binding Operation.Method, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
+
+            <TextBlock Grid.Row="4" Grid.Column="0"
+                       VerticalAlignment="Center"
+                       Text="Stirs:"
+                       ToolTip.Tip="Number of times to stir the resin using the build plate."/>
+
+            <Grid Grid.Row="4" Grid.Column="2"
+                  RowDefinitions="Auto" ColumnDefinitions="*,20,Auto">
+                <NumericUpDown Grid.Row="0" Grid.Column="0" Classes="ValueLabel ValueLabel_times"
+                               VerticalAlignment="Center"
+                               Minimum="1"
+                               Maximum="65535"
+                               Increment="1"
+                               Value="{Binding Operation.Stirs}"/>
+
+                <CheckBox Grid.Row="0" Grid.Column="2" VerticalAlignment="Center"
+                          ToolTip.Tip="If enabled, output a dummy pixel inside the layer bound to prevent a empty image and to ensure the correct handle by the firmware. This will also prevent layer being removed by auto-fix issues (Empty Layers)."
+                          Content="Output a dummy pixel"
+                          IsChecked="{Binding Operation.OutputDummyPixel}"/>
+            </Grid>
+
+
+            <TextBlock Grid.Row="6" Grid.Column="0"
+                       VerticalAlignment="Center"
+                       IsEnabled="{Binding SlicerFile.CanUseAnyExposureTime}"
+                       Text="Exposure time:"
+                       ToolTip.Tip="Time in seconds to exposure the dummy layer.
+&#x0a;Use the lowest value possible."/>
+            <NumericUpDown Grid.Row="6" Grid.Column="2"
+                           Classes="ValueLabel ValueLabel_s"
                            VerticalAlignment="Center"
-                           FontWeight="Bold"
-                           Text="{Binding Operation.StirTimeString}"/>
+                           Minimum="0"
+                           Maximum="1000"
+                           Increment="0.01"
+                           IsEnabled="{Binding SlicerFile.CanUseAnyExposureTime}"
+                           IsVisible="{Binding SlicerFile.CanUseAnyExposureTime}"
+                           Value="{Binding Operation.ExposureTime}"/>
+            <TextBlock Grid.Row="6" Grid.Column="2"
+                       VerticalAlignment="Center"
+                       IsVisible="{Binding !SlicerFile.CanUseAnyExposureTime}"
+                       Text="(Incompatible with the current printer / file format)"/>
 
-      <TextBlock Grid.Row="2" Grid.Column="0"
-                 VerticalAlignment="Center"
-                 Text="Method:" />
-    <ComboBox Grid.Row="2" Grid.Column="2"
-              VerticalAlignment="Center"
-              HorizontalAlignment="Stretch"
-              ItemsSource="{Binding Operation.Method, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
-              SelectedItem="{Binding Operation.Method, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
+            <TextBlock Grid.Row="8" Grid.Column="0"
+                       VerticalAlignment="Center"
+                       IsEnabled="{Binding SlicerFile.CanUseAnyLiftHeight}"
+                       Text="Lift height:"
+                       ToolTip.Tip="The lift height in millimeters to raise the plate between stirs.
+&#x0a;Use a height above your resin level."/>
+            <NumericUpDown Grid.Row="8" Grid.Column="2"
+                           Classes="ValueLabel ValueLabel_mm"
+                           VerticalAlignment="Center"
+                           Minimum="0"
+                           Maximum="1000"
+                           Increment="5"
+                           IsEnabled="{Binding SlicerFile.CanUseAnyLiftHeight}"
+                           IsVisible="{Binding SlicerFile.CanUseAnyLiftHeight}"
+                           Value="{Binding Operation.LiftHeight}"/>
+            <TextBlock Grid.Row="8" Grid.Column="2"
+                       VerticalAlignment="Center"
+                       IsVisible="{Binding !SlicerFile.CanUseAnyLiftHeight}"
+                       Text="(Incompatible with the current printer / file format)"/>
 
-    <TextBlock Grid.Row="4" Grid.Column="0"
-               VerticalAlignment="Center"
-               Text="Stirs:" />
-    <NumericUpDown Grid.Row="4" Grid.Column="2"
-                   Classes="ValueLabel ValueLabel_times"
-                   VerticalAlignment="Center"
-                   Minimum="1"
-                   Maximum="65535"
-                   Increment="1"
-                   Value="{Binding Operation.Stirs}"/>
+            <TextBlock Grid.Row="10" Grid.Column="0"
+                       VerticalAlignment="Center"
+                       IsEnabled="{Binding SlicerFile.CanUseAnyLiftSpeed}"
+                       Text="Lift speed:" />
+            <NumericUpDown Grid.Row="10" Grid.Column="2"
+                           Classes="ValueLabel ValueLabel_mmmin"
+                           VerticalAlignment="Center"
+                           Minimum="1"
+                           Maximum="1000"
+                           Increment="5"
+                           IsEnabled="{Binding SlicerFile.CanUseAnyLiftSpeed}"
+                           IsVisible="{Binding SlicerFile.CanUseAnyLiftSpeed}"
+                           Value="{Binding Operation.LiftSpeed}"/>
+            <TextBlock Grid.Row="10" Grid.Column="2"
+                       VerticalAlignment="Center"
+                       IsVisible="{Binding !SlicerFile.CanUseAnyLiftSpeed}"
+                       Text="(Incompatible with the current printer / file format)"/>
 
-    <TextBlock Grid.Row="6" Grid.Column="0"
-               VerticalAlignment="Center"
-               IsEnabled="{Binding SlicerFile.CanUseAnyLiftHeight}"
-               Text="Lift height:" />
-    <NumericUpDown Grid.Row="6" Grid.Column="2"
-                   Classes="ValueLabel ValueLabel_mm"
-                   VerticalAlignment="Center"
-                   Minimum="0"
-                   Maximum="1000"
-                   Increment="5"
-                   IsEnabled="{Binding SlicerFile.CanUseAnyLiftHeight}"
-                   Value="{Binding Operation.LiftHeight}"/>
+            <TextBlock Grid.Row="12" Grid.Column="0"
+                       VerticalAlignment="Center"
+                       IsEnabled="{Binding SlicerFile.CanUseAnyRetractSpeed}"
+                       Text="Retract speed:" />
+            <NumericUpDown Grid.Row="12" Grid.Column="2"
+                           Classes="ValueLabel ValueLabel_mmmin"
+                           VerticalAlignment="Center"
+                           Minimum="1"
+                           Maximum="1000"
+                           Increment="5"
+                           IsEnabled="{Binding SlicerFile.CanUseAnyRetractSpeed}"
+                           IsVisible="{Binding SlicerFile.CanUseAnyRetractSpeed}"
+                           Value="{Binding Operation.RetractSpeed}"/>
+            <TextBlock Grid.Row="12" Grid.Column="2"
+                       VerticalAlignment="Center"
+                       IsVisible="{Binding !SlicerFile.CanUseAnyRetractSpeed}"
+                       Text="(Incompatible with the current printer / file format)"/>
 
-    <TextBlock Grid.Row="8" Grid.Column="0"
-               VerticalAlignment="Center"
-               IsEnabled="{Binding SlicerFile.CanUseAnyLiftSpeed}"
-               Text="Lift speed:" />
-    <NumericUpDown Grid.Row="8" Grid.Column="2"
-                   Classes="ValueLabel ValueLabel_mmmin"
-                   VerticalAlignment="Center"
-                   Minimum="1"
-                   Maximum="1000"
-                   Increment="5"
-                   IsEnabled="{Binding SlicerFile.CanUseAnyLiftSpeed}"
-                   Value="{Binding Operation.LiftSpeed}"/>
+            <TextBlock Grid.Row="14" Grid.Column="0"
+                       VerticalAlignment="Center"
+                       Text="Wait time before stir:"
+                       ToolTip.Tip="The time in seconds to wait when the build plate is down in the tank (Before exposure).">
+                <TextBlock.IsEnabled>
+                    <MultiBinding Converter="{x:Static BoolConverters.Or}">
+                        <Binding Path="SlicerFile.CanUseAnyLightOffDelay"/>
+                        <Binding Path="SlicerFile.CanUseAnyWaitTimeBeforeCure"/>
+                    </MultiBinding>
+                </TextBlock.IsEnabled>
+            </TextBlock>
+            <NumericUpDown Grid.Row="14" Grid.Column="2"
+                           Classes="ValueLabel ValueLabel_s"
+                           VerticalAlignment="Center"
+                           Minimum="0"
+                           Maximum="3600"
+                           Increment="1"
+                           IsEnabled="{Binding SlicerFile.CanUseRetractSpeed}"
+                           IsVisible="{Binding SlicerFile.CanUseRetractSpeed}"
+                           Value="{Binding Operation.WaitTimeBeforeStir}"/>
 
-    <TextBlock Grid.Row="10" Grid.Column="0"
-               VerticalAlignment="Center"
-               IsEnabled="{Binding SlicerFile.CanUseAnyRetractSpeed}"
-               Text="Retract speed:" />
-    <NumericUpDown Grid.Row="10" Grid.Column="2"
-                   Classes="ValueLabel ValueLabel_mmmin"
-                   VerticalAlignment="Center"
-                   Minimum="1"
-                   Maximum="1000"
-                   Increment="5"
-                   IsEnabled="{Binding SlicerFile.CanUseAnyRetractSpeed}"
-                   Value="{Binding Operation.RetractSpeed}"/>
+            <TextBlock Grid.Row="14" Grid.Column="2"
+                       VerticalAlignment="Center"
+                       Text="(Incompatible with the current printer / file format)">
+                <TextBlock.IsVisible>
+                    <MultiBinding Converter="{x:Static BoolConverters.And}">
+                        <Binding Path="!SlicerFile.CanUseAnyLightOffDelay"/>
+                        <Binding Path="!SlicerFile.CanUseAnyWaitTimeBeforeCure"/>
+                    </MultiBinding>
+                </TextBlock.IsVisible>
+            </TextBlock>
 
-      <TextBlock Grid.Row="12" Grid.Column="0"
-                 VerticalAlignment="Center"
-                 Text="Wait time before stir:">
-          <TextBlock.IsEnabled>
-              <MultiBinding Converter="{x:Static BoolConverters.Or}">
-                  <Binding Path="SlicerFile.CanUseAnyLightOffDelay"/>
-                  <Binding Path="SlicerFile.CanUseAnyWaitTimeBeforeCure"/>
-              </MultiBinding>
-          </TextBlock.IsEnabled>
-      </TextBlock>
-      <NumericUpDown Grid.Row="12" Grid.Column="2"
-                     Classes="ValueLabel ValueLabel_s"
-                     VerticalAlignment="Center"
-                     Minimum="0"
-                     Maximum="3600"
-                     Increment="1"
-                     IsEnabled="{Binding SlicerFile.CanUseRetractSpeed}"
-                     Value="{Binding Operation.WaitTimeBeforeStir}"/>
-
-      <TextBlock Grid.Row="14" Grid.Column="0"
-                 VerticalAlignment="Center"
-                 IsEnabled="{Binding SlicerFile.CanUseAnyWaitTimeAfterLift}"
-                 Text="Wait time after lift:" />
-      <NumericUpDown Grid.Row="14" Grid.Column="2"
-                     Classes="ValueLabel ValueLabel_s"
-                     VerticalAlignment="Center"
-                     Minimum="0"
-                     Maximum="3600"
-                     Increment="1"
-                     IsEnabled="{Binding SlicerFile.CanUseAnyWaitTimeAfterLift}"
-                     Value="{Binding Operation.WaitTimeAfterLift}"/>
-  </Grid>
+            <TextBlock Grid.Row="16" Grid.Column="0"
+                       VerticalAlignment="Center"
+                       IsEnabled="{Binding SlicerFile.CanUseAnyWaitTimeAfterLift}"
+                       Text="Wait time after lift:"
+                       ToolTip.Tip="The time in seconds to wait when the build plate is raised (After lift / before retract)."/>
+            <NumericUpDown Grid.Row="16" Grid.Column="2"
+                           Classes="ValueLabel ValueLabel_s"
+                           VerticalAlignment="Center"
+                           Minimum="0"
+                           Maximum="3600"
+                           Increment="1"
+                           IsEnabled="{Binding SlicerFile.CanUseAnyWaitTimeAfterLift}"
+                           IsVisible="{Binding SlicerFile.CanUseAnyWaitTimeAfterLift}"
+                           Value="{Binding Operation.WaitTimeAfterLift}"/>
+            <TextBlock Grid.Row="16" Grid.Column="2"
+                       VerticalAlignment="Center"
+                       IsVisible="{Binding !SlicerFile.CanUseAnyWaitTimeAfterLift}"
+                       Text="(Incompatible with the current printer / file format)"/>
+        </Grid>
+    </StackPanel>
 </UserControl>

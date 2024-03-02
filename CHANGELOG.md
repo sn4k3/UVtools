@@ -1,5 +1,22 @@
 # Changelog
 
+## 02/03/2024 - v4.2.4
+
+- **Setting - MaxDegreeOfParallelism:**
+  - (Add) Value `-2`: Will utilize an optimal number in order to relief some load and therefore preventing the computer from lags and freezes, mostly this is the processor core count less a few. The more cores the CPU haves the larger is the margin up to a limit. (Optimal/Recommended)
+  - (Add) Value `0`: Will utilize the processor core count. (Fast/Performance). Note that `0` is only equal to `Max` if you don't change your CPU or translate settings to other machine.
+  - (Change) `!` preset will set the value as would the `-2` in the runtime. However it's recommended to use `-2` instead of the fixed positive number
+  - (Change) Default value from `-1` to `-2` **(For current users is recommended to change to `-2`)**
+- **Tool - Stir resin:**
+  - (Add) Option to output a dummy pixel
+  - (Add) Exposure time setting to allow to set the time of layer exposure
+  - (Add) Informative text warning about the fact that each stir will increase in height due no ability to run layers in same Z position
+  - (Add) Tooltips on the labels
+  - (Improvement) Always allow the tool to run even if applied before
+  - (Improvement) Do not allow to run the tool when stir number multiplied by layer height pass the set lift height when running on printers with no ability to run layers in same Z position
+  - (Improvement) Instead of grey out incompatible fields, hide them and show the text (Incompatible with the current printer / file format)
+- (Add) Benchmark tool: Allow to change thread count for the multi-thread test
+
 ## 29/02/2024 - v4.2.3
 
 - (Add) Benchmark test: GC Memory Copy and Pooled Memory Copy

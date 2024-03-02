@@ -1,8 +1,15 @@
-- (Add) Benchmark test: GC Memory Copy and Pooled Memory Copy
-- (Add) Photon Mono M5s Pro (m5sp) support and corresponding PrusaSlicer printer (#842)
-- (Add) Tool: Stir resin - Allow to stir the resin in the VAT by moving the build plate up and down multiple times (#839)
-- (Improvement) Improve the dummy pixel location to match the first pixel of the layer (if possible)
-- (Improvement) Better format for readable time from seconds, it now can show/hide days, hours, minutes and seconds when optimal
-- (Improvement) The setting `MaxDegreeOfParallelism` is now used when calculating the batch size for the parallel operations under file decode and encode
-- (Fix) Layer import: Unable to import layers from image files (#841)
+- **Setting - MaxDegreeOfParallelism:**
+  - (Add) Value `-2`: Will utilize an optimal number in order to relief some load and therefore preventing the computer from lags and freezes, mostly this is the processor core count less a few. The more cores the CPU haves the larger is the margin up to a limit. (Optimal/Recommended)
+  - (Add) Value `0`: Will utilize the processor core count. (Fast/Performance). Note that `0` is only equal to `Max` if you don't change your CPU or translate settings to other machine.
+  - (Change) `!` preset will set the value as would the `-2` in the runtime. However it's recommended to use `-2` instead of the fixed positive number
+  - (Change) Default value from `-1` to `-2` **(For current users is recommended to change to `-2`)**
+- **Tool - Stir resin:**
+  - (Add) Option to output a dummy pixel
+  - (Add) Exposure time setting to allow to set the time of layer exposure
+  - (Add) Informative text warning about the fact that each stir will increase in height due no ability to run layers in same Z position
+  - (Add) Tooltips on the labels
+  - (Improvement) Always allow the tool to run even if applied before
+  - (Improvement) Do not allow to run the tool when stir number multiplied by layer height pass the set lift height when running on printers with no ability to run layers in same Z position
+  - (Improvement) Instead of grey out incompatible fields, hide them and show the text (Incompatible with the current printer / file format)
+- (Add) Benchmark tool: Allow to change thread count for the multi-thread test
 

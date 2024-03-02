@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Media;
+using UVtools.Core;
 using UVtools.Core.EmguCV;
 using UVtools.Core.Extensions;
 using UVtools.UI.Controls;
@@ -46,6 +47,7 @@ public partial class BenchmarkWindow : WindowEx
     private CancellationTokenSource _tokenSource = null!;
     private IBrush _singleThreadDiffForeground = null!;
     private IBrush _multiThreadDiffForeground = null!;
+    private int _threads = -1;
 
     private CancellationToken _token => _tokenSource.Token;
 
@@ -173,6 +175,12 @@ public partial class BenchmarkWindow : WindowEx
         }
     }
 
+    public int Threads
+    {
+        get => _threads;
+        set => RaiseAndSetIfChanged(ref _threads, value);
+    }
+
     public string SingleThreadTDPS
     {
         get => _singleThreadTdps;
@@ -268,6 +276,14 @@ public partial class BenchmarkWindow : WindowEx
         base.OnClosing(e);
     }
 
+    private int GetMaxDegreeOfParallelism()
+    {
+        if (_threads <= -2) return CoreSettings.OptimalMaxDegreeOfParallelism;
+        if (_threads == -1) return -1;
+        if (_threads == 0) return Environment.ProcessorCount;
+        return _threads;
+    }
+
     public void StartStop()
     {
         if (IsRunning)
@@ -295,7 +311,7 @@ public partial class BenchmarkWindow : WindowEx
                     {
                         while (true)
                         {
-                            Parallel.For(0, MultiThreadTests, new ParallelOptions{CancellationToken = _tokenSource.Token }, i =>
+                            Parallel.For(0, MultiThreadTests, new ParallelOptions{ MaxDegreeOfParallelism = GetMaxDegreeOfParallelism(), CancellationToken = _tokenSource.Token }, i =>
                             {
                                 theMethod.Invoke(this, new object[]{benchmark.Resolution});
                             });
@@ -316,7 +332,7 @@ public partial class BenchmarkWindow : WindowEx
                     if (_token.IsCancellationRequested) _token.ThrowIfCancellationRequested();
 
                     sw.Restart();
-                    Parallel.For(0, MultiThreadTests, new ParallelOptions { CancellationToken = _tokenSource.Token }, i =>
+                    Parallel.For(0, MultiThreadTests, new ParallelOptions { MaxDegreeOfParallelism = GetMaxDegreeOfParallelism(), CancellationToken = _tokenSource.Token }, i =>
                     {
                         theMethod.Invoke(this, new object[] { benchmark.Resolution });
                     });

@@ -1,5 +1,4 @@
-﻿using Avalonia.Controls;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -19,8 +18,6 @@ public partial class SettingsWindow : WindowEx
 {
     private double _scrollViewerMaxHeight;
     private int _selectedTabIndex;
-
-    public int MaxProcessorCount => Environment.ProcessorCount;
 
     public UserSettings SettingsBackup { get; }
 
@@ -82,13 +79,13 @@ public partial class SettingsWindow : WindowEx
         var to = toObject.ToString()!;
         if (to == "*")
         {
-            Settings.General.MaxDegreeOfParallelism = MaxProcessorCount;
+            Settings.General.MaxDegreeOfParallelism = Environment.ProcessorCount;
             return;
         }
 
         if (to == "!")
         {
-            Settings.General.MaxDegreeOfParallelism = Math.Max(1, MaxProcessorCount-2);
+            Settings.General.MaxDegreeOfParallelism = CoreSettings.OptimalMaxDegreeOfParallelism;
             return;
         }
 
@@ -100,7 +97,7 @@ public partial class SettingsWindow : WindowEx
 
         if (decimal.TryParse(to, out var d))
         {
-            Settings.General.MaxDegreeOfParallelism = (int)(MaxProcessorCount * d);
+            Settings.General.MaxDegreeOfParallelism = (int)(Environment.ProcessorCount * d);
             return;
         }
     }

@@ -6,6 +6,7 @@
         xmlns:i="https://github.com/projektanker/icons.avalonia"
         xmlns:uvtava="clr-namespace:UVtools.AvaloniaControls;assembly=UVtools.AvaloniaControls"
         xmlns:windows="clr-namespace:UVtools.UI.Windows"
+        xmlns:system="clr-namespace:System;assembly=System.Runtime"
         mc:Ignorable="d" d:DesignWidth="700" d:DesignHeight="450"
         x:Class="UVtools.UI.Windows.SettingsWindow"
 		x:DataType="windows:SettingsWindow"
@@ -65,36 +66,62 @@
 
 							<StackPanel Spacing="10">
 								<Grid RowDefinitions="Auto,10,Auto,10,Auto"
-									  ColumnDefinitions="Auto,10,180,5,Auto,20,Auto,2,Auto,2,Auto,2,Auto,2,Auto,2,Auto,2,Auto">
+									  ColumnDefinitions="Auto,10,180,5,Auto,10,Auto,2,Auto,2,Auto,2,Auto,2,Auto,2,Auto,2,Auto">
 
 									<TextBlock Grid.Row="0" Grid.Column="0"
 											   VerticalAlignment="Center"
-											   ToolTip.Tip="Sets the maximum number of concurrent tasks/threads/operations enabled to run by parallel method calls.
-&#x0a;If your computer lags and freeze during operations you can reduce this number to reduce the workload and keep some cores available to other tasks as well.
-&#x0a;&lt;= 0: Will utilize however many threads the underlying scheduler provides, mostly this is the processor core count.
-&#x0a;1: Single thread."
+                                               ToolTip.Tip="Sets the maximum number of concurrent tasks/threads/operations enabled to run by parallel method calls.
+&#x0a;If your computer lags and freezes during operations you can reduce this number to reduce the workload and keep some cores available to other tasks as well.
+&#x0a;-2: Will utilize an optimal number in order to relief some load and therefore preventing the computer from lags and freezes, mostly this is the processor core count less a few. The more cores the CPU haves the larger is the margin up to a limit. (Optimal/Recommended)
+&#x0a;-1: Will utilize however many threads the underlying scheduler provides, mostly this is the processor core count. (Fast/Performance)
+&#x0a;0: Will utilize the processor core count. (Fast/Performance)
+&#x0a;1: Single thread. (Slowest)"
 											   Text="Max degree of parallelism:"/>
 
 									<NumericUpDown Grid.Row="0" Grid.Column="2"
 											   VerticalAlignment="Center"
 											   ToolTip.Tip="Sets the maximum number of concurrent tasks/threads/operations enabled to run by parallel method calls.
-&#x0a;If your computer lags and freeze during operations you can reduce this number to reduce the workload and keep some cores available to other tasks as well.
-&#x0a;&lt;= 0: Will utilize however many threads the underlying scheduler provides, mostly this is the processor core count.
-&#x0a;1: Single thread."
-											   Minimum="-1"
-											   Maximum="{Binding MaxProcessorCount}"
+&#x0a;If your computer lags and freezes during operations you can reduce this number to reduce the workload and keep some cores available to other tasks as well.
+&#x0a;-2: Will utilize an optimal number in order to relief some load and therefore preventing the computer from lags and freezes, mostly this is the processor core count less a few. The more cores the CPU haves the larger is the margin up to a limit. (Optimal/Recommended)
+&#x0a;-1: Will utilize however many threads the underlying scheduler provides, mostly this is the processor core count. (Fast/Performance)
+&#x0a;0: Will utilize the processor core count. (Fast/Performance)
+&#x0a;1: Single thread. (Slow)"
+											   Minimum="-2"
+                                               Maximum="{Binding Source={x:Static system:Environment.ProcessorCount}}"
 											   Increment="1"
 											   Value="{Binding Settings.General.MaxDegreeOfParallelism}"/>
 									<TextBlock Grid.Row="0" Grid.Column="4"
 											   VerticalAlignment="Center"
-											   Text="{Binding MaxProcessorCount, StringFormat=/ {0} threads}"/>
+											   Text="{Binding Source={x:Static system:Environment.ProcessorCount}, StringFormat=/ {0} threads}"/>
 
+                                    <DropDownButton Grid.Row="0" Grid.Column="6"
+                                                    Content="Auto">
+                                        <DropDownButton.Flyout>
+											<MenuFlyout>
+												<MenuItem Header="Auto-optimal number (Optimal/Recommended)"
+                                                          Command="{Binding SetMaxDegreeOfParallelism}" 
+                                                          CommandParameter="-2"
+                                                          ToolTip.Tip="Will utilize an optimal number in order to relief some load and therefore preventing the computer from lags and freezes, mostly this is the processor core count less a few. The more cores the CPU haves the larger is the margin up to a limit. (Optimal/Recommended)"/>
+                                                <MenuItem Header="Framework scheduler (Fastest/Performance)"
+                                                          Command="{Binding SetMaxDegreeOfParallelism}"
+                                                          CommandParameter="-1"
+                                                          ToolTip.Tip="Will utilize however many threads the underlying scheduler provides, mostly this is the processor core count. (Fast/Performance)"/>
+                                                <MenuItem Header="Processor core count (Fastest/Performance)" 
+                                                          Command="{Binding SetMaxDegreeOfParallelism}" 
+                                                          CommandParameter="0"
+                                                          ToolTip.Tip="Will utilize the processor core count. (Fast/Performance)"/>
+                                            </MenuFlyout>
+                                        </DropDownButton.Flyout>
+                                    </DropDownButton>
+
+                                    <!--
 									<Button Grid.Row="0" Grid.Column="6"
 											VerticalAlignment="Center"
 											Content="Auto"
 											ToolTip.Tip="Will utilize however many threads the underlying scheduler provides (Full performance)"
 											Command="{Binding SetMaxDegreeOfParallelism}"
 											CommandParameter="-1"/>
+                                    !-->
 
 									<Button Grid.Row="0" Grid.Column="8"
 											VerticalAlignment="Center"
@@ -134,9 +161,9 @@
 									<Button Grid.Row="0" Grid.Column="18"
 											VerticalAlignment="Center"
 											Content="Max"
-											ToolTip.Tip="{Binding MaxProcessorCount, StringFormat=All of the available threads [{0}] (Full performance)}"
+											ToolTip.Tip="{Binding Source={x:Static system:Environment.ProcessorCount}, StringFormat=All the available threads [{0}] (Full performance)}"
 											Command="{Binding SetMaxDegreeOfParallelism}"
-											CommandParameter="{Binding MaxProcessorCount}"/>
+											CommandParameter="{Binding Source={x:Static system:Environment.ProcessorCount}}"/>
 
 									<TextBlock Grid.Row="2" Grid.Column="0"
 											   VerticalAlignment="Center"

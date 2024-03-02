@@ -43,15 +43,48 @@ public static class CoreSettings
     }
 
     /// <summary>
+    /// Gets the optimal maximum degree of parallelism
+    /// </summary>
+    public static int OptimalMaxDegreeOfParallelism
+    {
+        get
+        {
+            var processorCount = Environment.ProcessorCount;
+            return processorCount switch
+            {
+                //>= 24 => processorCount - 6,
+                >= 20 => processorCount - 5,
+                >= 16 => processorCount - 4,
+                >= 12 => processorCount - 3,
+                >= 8 => processorCount - 2,
+                >= 4 => processorCount - 1,
+                _ => processorCount
+            };
+        }
+    }
+
+    /// <summary>
     /// Gets or sets the maximum number of concurrent tasks enabled by this ParallelOptions instance.
     /// Less or equal to 0 will set to auto number
+    /// -2 = Auto-optimal number
+    /// -1 = .NET scheduler
+    /// 0 = <see cref="Environment.ProcessorCount"/>
     /// 1 = Single thread
     /// n = Multi threads
     /// </summary>
     public static int MaxDegreeOfParallelism
     {
         get => _maxDegreeOfParallelism;
-        set => _maxDegreeOfParallelism = value > 0 ? Math.Min(value, Environment.ProcessorCount) : -1;
+        set
+        {
+            _maxDegreeOfParallelism = value switch
+            {
+                <= -2 => OptimalMaxDegreeOfParallelism, // Auto-optimal number
+                -1 => -1, // .NET scheduler
+                0 => Environment.ProcessorCount, // Max threads
+                _ => Math.Clamp(value, 1, Environment.ProcessorCount) // Custom number
+            };
+        }
     }
 
     /// <summary>
@@ -94,8 +127,7 @@ public static class CoreSettings
     /// Gets the ParallelOptions with <see cref="MaxDegreeOfParallelism"/> and the <see cref="CancellationToken"/> set
     /// </summary>
     public static ParallelOptions GetParallelOptions(OperationProgress progress) => GetParallelOptions(progress.Token);
-
-
+    
 
     /// <summary>
     /// Gets or sets if operations run via CUDA when possible
