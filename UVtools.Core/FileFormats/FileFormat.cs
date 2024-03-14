@@ -85,6 +85,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     public const byte DefaultLightPWM = 255;
 
     public const string DefaultMachineName = "Unknown";
+    public const string DefaultResinName = "Unknown";
 
     public const byte MaximumAntiAliasing = 16;
 
@@ -3289,7 +3290,11 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     public virtual string? MaterialName
     {
         get => _materialName;
-        set => RaiseAndSetIfChanged(ref _materialName, value);
+        set
+        {
+            if (!RaiseAndSetIfChanged(ref _materialName, value)) return;
+            if (FileType == FileFormatType.Binary) RequireFullEncode = true;
+        }
     }
 
     /// <summary>

@@ -15,7 +15,9 @@ using UVtools.Core.FileFormats;
 namespace UVtools.Core.Operations;
 
 
+#pragma warning disable CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
 public sealed class OperationLayerRemove : Operation
+#pragma warning restore CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
 {
     #region Members
     private bool _useThreshold;

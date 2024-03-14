@@ -14,7 +14,7 @@ struct HEADER {
     uint EncryptedHeaderSize <fgcolor=cBlack, bgcolor=cRed>;
     uint EncryptedHeaderOffset <fgcolor=cBlack, bgcolor=cRed>;
     uint unknown1;
-    uint unknown2;
+    uint Version;
     uint SignatureSize <fgcolor=cBlack, bgcolor=cRed>;
     uint SignatureOffset <fgcolor=cBlack, bgcolor=cRed>;
     uint unknown3;
@@ -22,7 +22,7 @@ struct HEADER {
     ushort unknown5;
     uint unknown6;
     uint unknown7;
-    uint unknown9;
+    uint unknown9 <fgcolor=cBlack, bgcolor=cRed>;
 } header;
 
 FSeek(header.EncryptedHeaderOffset);
@@ -51,6 +51,28 @@ if(machineNameLength > 0){
 
 char Disclaimer[320] <fgcolor=cBlack, bgcolor=cPurple>;
 
+if (header.Version >= 5)
+{
+    struct RESIN_PARAMETERS {
+        uint Padding <fgcolor=cBlack, bgcolor=cYellow>;
+        ubyte ResinColorB <fgcolor=cBlack, bgcolor=cYellow>;
+        ubyte ResinColorG <fgcolor=cBlack, bgcolor=cYellow>;
+        ubyte ResinColorR <fgcolor=cBlack, bgcolor=cYellow>;
+        ubyte ResinColorA <fgcolor=cBlack, bgcolor=cYellow>;
+        uint MachineNameAddress <fgcolor=cBlack, bgcolor=cYellow>;
+        uint ResinTypeLength <fgcolor=cBlack, bgcolor=cYellow>;
+        uint ResinTypeAddress <fgcolor=cBlack, bgcolor=cYellow>;
+        uint ResinNameLength <fgcolor=cBlack, bgcolor=cYellow>;
+        uint ResinNameAddress <fgcolor=cBlack, bgcolor=cYellow>;
+        uint MachineNameLength <fgcolor=cBlack, bgcolor=cYellow>;
+        float ResinDensity <fgcolor=cBlack, bgcolor=cYellow>;
+        uint Padding <fgcolor=cBlack, bgcolor=cYellow>;
+        char ResinType[ResinTypeLength] <fgcolor=cBlack, bgcolor=cYellow>;
+        char ResinName[ResinNameLength] <fgcolor=cBlack, bgcolor=cYellow>;
+        char MachineName[MachineNameLength] <fgcolor=cBlack, bgcolor=cYellow>;
+    } resinParameters;
+}
+
 /* need to walk the layer index table to get a count of them.
    the actual count field is in the encrypted header */
 local uint curOffset = FTell();
@@ -72,11 +94,13 @@ local uint layerCount = tableSize / 16;
 
 FSeek(curOffset);
 
+
+
 struct LAYER_POINTER {
-    uint Offset <format=hex>;
-    uint PageNumber;
-    uint LayerTableSize;
-    uint Padding2;
+    uint Offset <fgcolor=cBlack, bgcolor=cRed>;
+    uint PageNumber <fgcolor=cBlack, bgcolor=cRed>;
+    uint LayerTableSize <fgcolor=cBlack, bgcolor=cRed>;
+    uint Padding2 <fgcolor=cBlack, bgcolor=cRed>;
 } layerPointers[layerCount];
 
 struct LAYER_HEADER{
@@ -133,4 +157,14 @@ struct LAYERS {
     }
 } layers;
 
-ubyte Sha256Hash[0x20]<format=hex>;
+
+struct FOOTER {
+    if (header.Version >= 5)
+    {
+        uint Unknown <fgcolor=cBlack, bgcolor=cRed>;
+        uint Padding <fgcolor=cBlack, bgcolor=cRed>;
+    }
+    ubyte Sha256Hash[32]<format=hex, fgcolor=cBlack, bgcolor=cGreen>;
+    uint Unknown <fgcolor=cBlack, bgcolor=cRed>;
+} footer;
+

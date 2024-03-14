@@ -29,7 +29,7 @@ public sealed class ChituboxFile : FileFormat
 {
 
     #region Constants
-    public const byte DEFAULT_VERSION = 3;
+    public const byte DEFAULT_VERSION = 5;
 
     public const uint MAGIC_CBDDLP = 0x12FD0019; // 318570521
     public const uint MAGIC_CTB = 0x12FD0086; // 318570630
@@ -45,6 +45,7 @@ public sealed class ChituboxFile : FileFormat
     private const byte PERLAYER_SETTINGS_CTBv2 =     0x20; // 15 for ctb v2 files and others (This disallow per layer settings)
     private const byte PERLAYER_SETTINGS_CTBv3 =     0x30; // 536870927 for ctb v3 files (This allow per layer settings, while 15 don't)
     private const byte PERLAYER_SETTINGS_CTBv4 =     0x40; // 1073741839 for ctb v4 files (This allow per layer settings, while 15 don't)
+    private const byte PERLAYER_SETTINGS_CTBv5 =     0x50; // 1073741839 for ctb v5 files (This allow per layer settings, while 15 don't)
             
     private const string CTBv4_DISCLAIMER = "Layout and record format for the ctb and cbddlp file types are the copyrighted programs or codes of CBD Technology (China) Inc..The Customer or User shall not in any manner reproduce, distribute, modify, decompile, disassemble, decrypt, extract, reverse engineer, lease, assign, or sublicense the said programs or codes.";
     private const ushort CTBv4_DISCLAIMER_SIZE = 320;
@@ -52,7 +53,7 @@ public sealed class ChituboxFile : FileFormat
     private const string CTBv4_GKtwo_DISCLAIMER = "Layout and record format for the jxs,ctb and cbddlp file types are the copyrighted programs or codes of CBD Technology (China) Inc.The Customer or User shall not in any manner reproduce, distribute, modify, decompile, disassemble, decrypt, extract, reverse engineer, lease, assign, or sublicense the said programs or codes.";
     private const ushort CTBv4_GKtwo_DISCLAIMER_SIZE = 323;
 
-    private const ushort CTBv4_RESERVED_SIZE = 384;
+    private const ushort CTBv4_RESERVED_SIZE = 380;
 
     public const long PageSize = 4_294_967_296L; // Page-size for layers, limited to 4GB
 
@@ -336,7 +337,7 @@ public sealed class ChituboxFile : FileFormat
         /// (No provision is made to name the software being used, so this assumes that only one software package can generate the files.
         /// Probably best to hardcode it at 0x01060300.)
         /// </summary>17170480
-        [FieldOrder(14)] public uint SoftwareVersion { get; set; } = 0x1090000; // ctb v3 = 0x1060300 (1.6.3) | ctb v4 = 0x1090000 (1.9.0)
+        [FieldOrder(14)] public uint SoftwareVersion { get; set; } = 0x1090000; // ctb v3 = 0x1060300 (1.6.3) | ctb v4 = 0x1090000 (1.9.0) | ctb v5 = 0x2000000 (2.0.0)
         [FieldOrder(15)] public float RestTimeAfterRetract { get; set; }
         [FieldOrder(16)] public float RestTimeAfterLift2   { get; set; }
         [FieldOrder(17)] public uint TransitionLayerCount { get; set; } // CTB not all printers
@@ -345,7 +346,7 @@ public sealed class ChituboxFile : FileFormat
         [FieldOrder(20)] public uint Padding3         { get; set; }
 
         /// <summary>
-        /// Gets the machine name. string is not nul-terminated.
+        /// Gets the machine name. string is not nul-terminated. But on CTBv5 it is null-terminated.
         /// The character encoding is currently unknown — all observed files in the wild use 7-bit ASCII characters only.
         /// Note that the machine type here is set in the software profile, and is not the name the user assigned to the machine.
         /// </summary>
@@ -428,13 +429,76 @@ public sealed class ChituboxFile : FileFormat
 
         [FieldOrder(20)] public uint DisclaimerLength { get; set; } = CTBv4_DISCLAIMER_SIZE;
 
-        [FieldOrder(21)]
+        [FieldOrder(21)] public uint ResinParametersAddress { get; set; } // CTBv5
+
+        [FieldOrder(22)]
         [FieldLength(CTBv4_RESERVED_SIZE)]
         public byte[] Reserved { get; set; } = new byte[CTBv4_RESERVED_SIZE]; // 384 bytes
 
         public override string ToString()
         {
-            return $"{nameof(BottomRetractSpeed)}: {BottomRetractSpeed}, {nameof(BottomRetractSpeed2)}: {BottomRetractSpeed2}, {nameof(Padding1)}: {Padding1}, {nameof(Four1)}: {Four1}, {nameof(Padding2)}: {Padding2}, {nameof(Four2)}: {Four2}, {nameof(RestTimeAfterRetract)}: {RestTimeAfterRetract}, {nameof(RestTimeAfterLift)}: {RestTimeAfterLift}, {nameof(RestTimeBeforeLift)}: {RestTimeBeforeLift}, {nameof(BottomRetractHeight2)}: {BottomRetractHeight2}, {nameof(Unknown1)}: {Unknown1}, {nameof(Unknown2)}: {Unknown2}, {nameof(Unknown3)}: {Unknown3}, {nameof(LastLayerIndex)}: {LastLayerIndex}, {nameof(Padding3)}: {Padding3}, {nameof(Padding4)}: {Padding4}, {nameof(Padding5)}: {Padding5}, {nameof(Padding6)}: {Padding6}, {nameof(DisclaimerAddress)}: {DisclaimerAddress}, {nameof(DisclaimerLength)}: {DisclaimerLength}, {nameof(Reserved)}: {Reserved}";
+            return $"{nameof(BottomRetractSpeed)}: {BottomRetractSpeed}, {nameof(BottomRetractSpeed2)}: {BottomRetractSpeed2}, {nameof(Padding1)}: {Padding1}, {nameof(Four1)}: {Four1}, {nameof(Padding2)}: {Padding2}, {nameof(Four2)}: {Four2}, {nameof(RestTimeAfterRetract)}: {RestTimeAfterRetract}, {nameof(RestTimeAfterLift)}: {RestTimeAfterLift}, {nameof(RestTimeBeforeLift)}: {RestTimeBeforeLift}, {nameof(BottomRetractHeight2)}: {BottomRetractHeight2}, {nameof(Unknown1)}: {Unknown1}, {nameof(Unknown2)}: {Unknown2}, {nameof(Unknown3)}: {Unknown3}, {nameof(LastLayerIndex)}: {LastLayerIndex}, {nameof(Padding3)}: {Padding3}, {nameof(Padding4)}: {Padding4}, {nameof(Padding5)}: {Padding5}, {nameof(Padding6)}: {Padding6}, {nameof(DisclaimerAddress)}: {DisclaimerAddress}, {nameof(DisclaimerLength)}: {DisclaimerLength}, {nameof(ResinParametersAddress)}: {ResinParametersAddress}, {nameof(Reserved)}: {Reserved}";
+        }
+    }
+    #endregion
+
+    #region ResinParameters
+    public sealed class ResinParameters
+    {
+        [FieldOrder(0)]
+        public uint Padding1 { get; set; }
+
+        [FieldOrder(1)]
+        public byte ResinColorB { get; set; }
+
+        [FieldOrder(2)]
+        public byte ResinColorG { get; set; }
+
+        [FieldOrder(3)]
+        public byte ResinColorR { get; set; }
+
+        [FieldOrder(4)]
+        public byte ResinColorA { get; set; }
+
+        [FieldOrder(5)]
+        public uint MachineNameAddress { get; set; }
+
+        [FieldOrder(6)]
+        public uint ResinTypeLength { get; set; }
+
+        [FieldOrder(7)]
+        public uint ResinTypeAddress { get; set; }
+
+        [FieldOrder(8)]
+        public uint ResinNameLength { get; set; }
+
+        [FieldOrder(9)]
+        public uint ResinNameAddress { get; set; }
+
+        [FieldOrder(10)]
+        public uint MachineNameLength { get; set; } = (uint)DefaultMachineName.Length;
+
+        [FieldOrder(11)] 
+        public float ResinDensity { get; set; } = 1.1f;
+
+        [FieldOrder(12)]
+        public uint Padding2 { get; set; }
+
+        [FieldOrder(13)]
+        [FieldLength(nameof(ResinTypeLength))]
+        public string ResinType { get; set; } = string.Empty;
+
+        [FieldOrder(14)]
+        [FieldLength(nameof(ResinNameLength))]
+        public string ResinName { get; set; } = string.Empty;
+
+        [FieldOrder(15)]
+        [FieldLength(nameof(MachineNameLength))]
+        public string MachineName { get; set; } = DefaultMachineName;
+
+        public override string ToString()
+        {
+            return $"{nameof(Padding1)}: {Padding1}, {nameof(ResinColorB)}: {ResinColorB}, {nameof(ResinColorG)}: {ResinColorG}, {nameof(ResinColorR)}: {ResinColorR}, {nameof(ResinColorA)}: {ResinColorA}, {nameof(MachineNameAddress)}: {MachineNameAddress}, {nameof(ResinTypeLength)}: {ResinTypeLength}, {nameof(ResinTypeAddress)}: {ResinTypeAddress}, {nameof(ResinNameLength)}: {ResinNameLength}, {nameof(ResinNameAddress)}: {ResinNameAddress}, {nameof(MachineNameLength)}: {MachineNameLength}, {nameof(ResinDensity)}: {ResinDensity}, {nameof(Padding2)}: {Padding2}, {nameof(ResinType)}: {ResinType}, {nameof(ResinName)}: {ResinName}, {nameof(MachineName)}: {MachineName}";
         }
     }
     #endregion
@@ -1056,6 +1120,7 @@ public sealed class ChituboxFile : FileFormat
 
     public SlicerInfo SlicerInfoSettings { get; private set; } = new();
     public PrintParametersV4 PrintParametersV4Settings { get; private set; } = new();
+    public ResinParameters ResinParametersSettings { get; private set; } = new();
 
     public Preview[] Previews { get; }
 
@@ -1070,9 +1135,6 @@ public sealed class ChituboxFile : FileFormat
         new(typeof(ChituboxFile), "cbddlp", "Chitubox CBDDLP"),
         new(typeof(ChituboxFile), "ctb", "Chitubox CTB"),
         new(typeof(ChituboxFile), "gktwo.ctb", "Chitubox CTB for UniFormation GKtwo", false),
-        //new(typeof(ChituboxFile), "v2.ctb", "Chitubox CTBv2"),
-        //new(typeof(ChituboxFile), "v3.ctb", "Chitubox CTBv3"),
-        //new(typeof(ChituboxFile), "v4.ctb", "Chitubox CTBv4", false, false),
     };
 
     public override PrintParameterModifier[] PrintParameterModifiers
@@ -1228,7 +1290,7 @@ public sealed class ChituboxFile : FileFormat
         new(200, 125)
     };
 
-    public override uint[] AvailableVersions { get; } = { 1, 2, 3, 4 };
+    public override uint[] AvailableVersions { get; } = { 1, 2, 3, 4, 5 };
 
     public override uint[] GetAvailableVersionsForExtension(string? extension)
     {
@@ -1662,6 +1724,12 @@ public sealed class ChituboxFile : FileFormat
         }
     }
 
+    public override string? MaterialName
+    {
+        get => ResinParametersSettings.ResinName;
+        set => base.MaterialName = ResinParametersSettings.ResinName = value!;
+    }
+
     public override float MaterialGrams
     {
         get => PrintParametersSettings.WeightG;
@@ -1677,7 +1745,7 @@ public sealed class ChituboxFile : FileFormat
     public override string MachineName
     {
         get => SlicerInfoSettings.MachineName;
-        set => base.MachineName = SlicerInfoSettings.MachineName = value;
+        set => base.MachineName = ResinParametersSettings.MachineName = SlicerInfoSettings.MachineName = value;
     }
 
     public override object[] Configs
@@ -1688,14 +1756,15 @@ public sealed class ChituboxFile : FileFormat
             {
                 <= 1 => new object[] { HeaderSettings },
                 <= 3 => new object[] { HeaderSettings, PrintParametersSettings, SlicerInfoSettings },
-            /*v4*/ _ => new object[] { HeaderSettings, PrintParametersSettings, SlicerInfoSettings, PrintParametersV4Settings }
+                <= 4 => new object[] { HeaderSettings, PrintParametersSettings, SlicerInfoSettings, PrintParametersV4Settings },
+            /*v5*/ _ => new object[] { HeaderSettings, PrintParametersSettings, SlicerInfoSettings, PrintParametersV4Settings, ResinParametersSettings }
             };
         }
     }
 
     public bool IsCbddlpFile => HeaderSettings.Magic == MAGIC_CBDDLP;
-    public bool IsCtbFile => HeaderSettings.Magic is MAGIC_CTB or MAGIC_CTBv4 or MAGIC_CTBv4_GKtwo;
-    public bool IsGkTwoFile => HeaderSettings.Magic is MAGIC_CTBv4_GKtwo;
+    public bool IsCtbFile => HeaderSettings.Magic > MAGIC_CBDDLP;
+    public bool IsGkTwoFile => HeaderSettings.Magic == MAGIC_CTBv4_GKtwo;
 
     public bool IsMagicValid => IsValidKnownMagic(HeaderSettings.Magic);
 
@@ -1876,9 +1945,8 @@ public sealed class ChituboxFile : FileFormat
             if (IsCtbFile)
             {
                 HeaderSettings.SlicerOffset = (uint) outputFile.Position;
-                HeaderSettings.SlicerSize = (uint) Helpers.Serializer.SizeOf(SlicerInfoSettings) -
-                                            SlicerInfoSettings.MachineNameSize;
-
+                HeaderSettings.SlicerSize = (uint)(Helpers.Serializer.SizeOf(SlicerInfoSettings) - MachineName.Length);
+                
                 SlicerInfoSettings.MachineNameAddress = HeaderSettings.SlicerOffset + HeaderSettings.SlicerSize;
 
                 if (HeaderSettings.Version >= 4)
@@ -1902,8 +1970,22 @@ public sealed class ChituboxFile : FileFormat
                     {
                         PrintParametersV4Settings.DisclaimerLength = outputFile.WriteBytes(Encoding.UTF8.GetBytes(CTBv4_DISCLAIMER));
                     }
+
+                    if (HeaderSettings.Version >= 5)
+                    {
+                        PrintParametersV4Settings.ResinParametersAddress = (uint)(outputFile.Position + Helpers.Serializer.SizeOf(PrintParametersV4Settings));
+                    }
                     
                     outputFile.WriteSerialize(PrintParametersV4Settings);
+
+                    if (HeaderSettings.Version >= 5)
+                    {
+                        var resinParametersSize = Helpers.Serializer.SizeOf(ResinParametersSettings);
+                        ResinParametersSettings.MachineNameAddress = (uint)(PrintParametersV4Settings.ResinParametersAddress + resinParametersSize - ResinParametersSettings.MachineName.Length);
+                        ResinParametersSettings.ResinNameAddress = (uint)(ResinParametersSettings.MachineNameAddress - ResinParametersSettings.ResinName.Length);
+                        ResinParametersSettings.ResinTypeAddress = (uint)(ResinParametersSettings.ResinNameAddress - ResinParametersSettings.ResinType.Length);
+                        outputFile.WriteSerialize(ResinParametersSettings);
+                    }
                 }
             }
         }
@@ -2054,13 +2136,15 @@ public sealed class ChituboxFile : FileFormat
             SlicerInfoSettings = Helpers.Deserialize<SlicerInfo>(inputFile);
             Debug.Write("Slicer Info -> ");
             Debug.WriteLine(SlicerInfoSettings);
-        }
 
-        /*InputFile.BaseStream.Seek(MachineInfoSettings.MachineNameAddress, SeekOrigin.Begin);
-            byte[] bytes = InputFile.ReadBytes((int)MachineInfoSettings.MachineNameSize);
-            MachineName = System.Text.Encoding.UTF8.GetString(bytes);
-            Debug.WriteLine($"{nameof(MachineName)}: {MachineName}");*/
-        //}
+            if (SlicerInfoSettings is { MachineNameAddress: > 0, MachineNameSize: >= 1 })
+            {
+                inputFile.Seek(SlicerInfoSettings.MachineNameAddress, SeekOrigin.Begin);
+                var machineBytes = inputFile.ReadBytes((int)SlicerInfoSettings.MachineNameSize);
+                MachineName = Encoding.UTF8.GetString(machineBytes).TrimEnd(char.MinValue);
+                Debug.WriteLine($"{nameof(MachineName)}: {MachineName}");
+            }
+        }
 
         if (HeaderSettings.Version >= 4)
         {
@@ -2083,6 +2167,14 @@ public sealed class ChituboxFile : FileFormat
                     $"but got ({PrintParametersV4Settings.Four1}, {PrintParametersV4Settings.Four2})",
                     FileFullPath);
             }*/
+
+            if (HeaderSettings.Version >= 5 && PrintParametersV4Settings.ResinParametersAddress > 0)
+            {
+                inputFile.Seek(PrintParametersV4Settings.ResinParametersAddress, SeekOrigin.Begin);
+                ResinParametersSettings = Helpers.Deserialize<ResinParameters>(inputFile);
+                Debug.Write("Resin Parameters -> ");
+                Debug.WriteLine(ResinParametersSettings);
+            }
         }
 
         Init(HeaderSettings.LayerCount, DecodeType == FileDecodeType.Partial);

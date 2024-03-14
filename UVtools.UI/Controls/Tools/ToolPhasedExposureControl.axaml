@@ -85,7 +85,6 @@
                   RowHeaderWidth="40"
                   LoadingRow="PhasedExposuresGrid_OnLoadingRow">
             <DataGrid.Columns>
-                <DataGridTextColumn IsVisible="False"/>
                 <DataGridTemplateColumn Header="Bottom exposure time" MinWidth="180" Width="Auto">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>

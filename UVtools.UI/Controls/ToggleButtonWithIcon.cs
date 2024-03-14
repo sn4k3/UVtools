@@ -63,7 +63,7 @@ public class ToggleButtonWithIcon : ToggleButton
 
     public Projektanker.Icons.Avalonia.Icon MakeIcon()
     {
-        return new Projektanker.Icons.Avalonia.Icon { Value = Icon };
+        return new Projektanker.Icons.Avalonia.Icon { Value = Icon! };
     }
 
     private void RebuildContent()

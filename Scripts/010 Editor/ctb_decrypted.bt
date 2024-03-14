@@ -14,15 +14,15 @@ struct HEADER {
     uint HeaderSize <fgcolor=cBlack, bgcolor=cRed>;
     uint HeaderOffset <fgcolor=cBlack, bgcolor=cRed, format=hex>;
     uint unknown1;
-    uint unknown2;
+    uint Version;
     uint SignatureSize <fgcolor=cBlack, bgcolor=cRed>;
     uint SignatureOffset <fgcolor=cBlack, bgcolor=cRed, format=hex>;
-    uint unknown3;
+    uint unknown2;
+    ushort unknown3;
     ushort unknown4;
-    ushort unknown5;
+    uint unknown5;
     uint unknown6;
-    uint unknown7;
-    uint unknown9;
+    uint unknown7 <fgcolor=cBlack, bgcolor=cRed>;
 } header;
 
 FSeek(header.HeaderOffset);
@@ -99,7 +99,7 @@ struct DECRYPTED_HEADER {
     uint DisclaimerOffset;
     uint DisclaimerSize;
     uint Padding7;
-    uint Padding8;
+    uint ResinParametersAddress;
     uint Padding9;
     uint Padding10;
 };
@@ -122,6 +122,31 @@ FSeek(decryptedHeader.PrinterNameOffset);
 char MachineName[decryptedHeader.PrinterNameSize] <fgcolor=cBlack, bgcolor=cYellow>;
 
 char Disclaimer[320] <fgcolor=cBlack, bgcolor=cPurple>;
+
+
+if (header.Version >= 5 && decryptedHeader.ResinParametersAddress > 0)
+{
+    FSeek(decryptedHeader.ResinParametersAddress);
+    struct RESIN_PARAMETERS {
+        uint Padding <fgcolor=cBlack, bgcolor=cYellow>;
+        ubyte ResinColorB <fgcolor=cBlack, bgcolor=cYellow>;
+        ubyte ResinColorG <fgcolor=cBlack, bgcolor=cYellow>;
+        ubyte ResinColorR <fgcolor=cBlack, bgcolor=cYellow>;
+        ubyte ResinColorA <fgcolor=cBlack, bgcolor=cYellow>;
+        uint MachineNameAddress <fgcolor=cBlack, bgcolor=cYellow>;
+        uint ResinTypeLength <fgcolor=cBlack, bgcolor=cYellow>;
+        uint ResinTypeAddress <fgcolor=cBlack, bgcolor=cYellow>;
+        uint ResinNameLength <fgcolor=cBlack, bgcolor=cYellow>;
+        uint ResinNameAddress <fgcolor=cBlack, bgcolor=cYellow>;
+        uint MachineNameLength <fgcolor=cBlack, bgcolor=cYellow>;
+        float ResinDensity <fgcolor=cBlack, bgcolor=cYellow>;
+        uint Padding <fgcolor=cBlack, bgcolor=cYellow>;
+        char ResinType[ResinTypeLength] <fgcolor=cBlack, bgcolor=cYellow>;
+        char ResinName[ResinNameLength] <fgcolor=cBlack, bgcolor=cYellow>;
+        char MachineName[MachineNameLength] <fgcolor=cBlack, bgcolor=cYellow>;
+    } resinParameters;
+}
+
 
 FSeek(decryptedHeader.LayerTableOffset);
 
@@ -189,4 +214,12 @@ struct LAYERS {
 	}
 } layers;
 
-ubyte Sha256Hash[0x20]<format=hex>;
+struct FOOTER {
+    if (header.Version >= 5)
+    {
+        uint Unknown <fgcolor=cBlack, bgcolor=cRed>;
+        uint Padding <fgcolor=cBlack, bgcolor=cRed>;
+    }
+    ubyte Sha256Hash[32]<format=hex, fgcolor=cBlack, bgcolor=cGreen>;
+    uint Unknown <fgcolor=cBlack, bgcolor=cRed>;
+} footer;

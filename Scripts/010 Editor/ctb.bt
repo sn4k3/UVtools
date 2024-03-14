@@ -152,12 +152,36 @@ if(header.Version >= 4)
         uint Padding6 <fgcolor=cWhite, bgcolor=cBlue>;
         uint DisclaimerAddress <fgcolor=cWhite, bgcolor=cBlue>; 
         uint DisclaimerLength <fgcolor=cWhite, bgcolor=cBlue>; // 320
-        ubyte Reserved[384] <fgcolor=cYellow, bgcolor=cBlue>;
+        uint ResinParametersAddress;
+        ubyte Reserved[380] <fgcolor=cYellow, bgcolor=cBlue>;
     } printParametersV4;
 
     FSeek(printParametersV4.DisclaimerAddress);
     char DisclaimerText[printParametersV4.DisclaimerLength] <fgcolor=cBlack, bgcolor=cYellow>;;
 
+    
+    if (header.Version >= 5 && printParametersV4.ResinParametersAddress > 0)
+    {
+        FSeek(printParametersV4.ResinParametersAddress);
+        struct RESIN_PARAMETERS {
+            uint Padding <fgcolor=cBlack, bgcolor=cYellow>;
+            ubyte ResinColorB <fgcolor=cBlack, bgcolor=cYellow>;
+            ubyte ResinColorG <fgcolor=cBlack, bgcolor=cYellow>;
+            ubyte ResinColorR <fgcolor=cBlack, bgcolor=cYellow>;
+            ubyte ResinColorA <fgcolor=cBlack, bgcolor=cYellow>;
+            uint MachineNameAddress <fgcolor=cBlack, bgcolor=cYellow>;
+            uint ResinTypeLength <fgcolor=cBlack, bgcolor=cYellow>;
+            uint ResinTypeAddress <fgcolor=cBlack, bgcolor=cYellow>;
+            uint ResinNameLength <fgcolor=cBlack, bgcolor=cYellow>;
+            uint ResinNameAddress <fgcolor=cBlack, bgcolor=cYellow>;
+            uint MachineNameLength <fgcolor=cBlack, bgcolor=cYellow>;
+            float ResinDensity <fgcolor=cBlack, bgcolor=cYellow>;
+            uint Padding <fgcolor=cBlack, bgcolor=cYellow>;
+            char ResinType[ResinTypeLength] <fgcolor=cBlack, bgcolor=cYellow>;
+            char ResinName[ResinNameLength] <fgcolor=cBlack, bgcolor=cYellow>;
+            char MachineName[MachineNameLength] <fgcolor=cBlack, bgcolor=cYellow>;
+        } resinParameters;
+    }
 }
 
 struct LAYER_DATA {
@@ -197,12 +221,13 @@ FSeek(header.LayersDefinitionOffsetAddress);
 struct LAYERS {
     local int aa;
     local int i;
-    local uint currentPos;
+    local uint currentPos = FTell();
     local uint aaLevel = Max(1, header.AntiAliasLevel);
     
     for( aa = 0; aa < aaLevel; aa++)
     {
         for( i = 0; i < header.LayerCount; i++ ){
+            FSeek(currentPos);
             LAYER_DATA layerData <fgcolor=cBlack, bgcolor=cYellow>;
             currentPos = FTell();
 
@@ -214,7 +239,18 @@ struct LAYERS {
             
             FSeek(layerData.PageNumber * 4294967296 + layerData.DataAddress);
             LAYER_RLE layerRLE(layerData.DataSize);
-            FSeek(currentPos);
+            
         }
     }
 } layers;
+
+/*
+if(header.Version >= 5)
+{
+    struct UNKNOWN_V5
+    {
+        uint Unknown <fgcolor=cWhite, bgcolor=cBlue>;
+        uint Unknown <fgcolor=cWhite, bgcolor=cBlue>;
+        uint Unknown <fgcolor=cWhite, bgcolor=cBlue>;
+    } unknownV5;
+}*/

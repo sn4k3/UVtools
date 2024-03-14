@@ -22,7 +22,9 @@ namespace UVtools.Core.EmguCV;
 /// <summary>
 /// A contour cache for OpenCV
 /// </summary>
+#pragma warning disable CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
 public class EmguContour : IReadOnlyList<Point>, IComparable<EmguContour>, IComparer<EmguContour>, IDisposable
+#pragma warning restore CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
 {
     #region Constants
 

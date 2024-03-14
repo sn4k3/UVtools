@@ -12,7 +12,11 @@ using System.Xml.Serialization;
 
 namespace UVtools.Core.PixelEditor;
 
+#pragma warning disable CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
+#pragma warning disable CS0661 // Type defines operator == or operator != but does not override Object.GetHashCode()
 public class PixelDrawing : PixelOperation, IEquatable<PixelDrawing>
+#pragma warning restore CS0661 // Type defines operator == or operator != but does not override Object.GetHashCode()
+#pragma warning restore CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
 {
     private BrushShapeType _brushShape = BrushShapeType.Square;
     private ushort _brushSize = 1;

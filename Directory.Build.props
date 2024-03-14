@@ -29,7 +29,7 @@
         <!-- Enable Build Acceleration in Visual Studio. -->
         <AccelerateBuildsInVisualStudio>true</AccelerateBuildsInVisualStudio>
 
-        <UVtoolsVersion>4.2.4</UVtoolsVersion>
+        <UVtoolsVersion>4.2.5</UVtoolsVersion>
         <AvaloniaVersion>11.0.7</AvaloniaVersion>
     </PropertyGroup>
 

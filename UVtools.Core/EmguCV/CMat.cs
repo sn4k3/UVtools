@@ -9,9 +9,6 @@
 using System;
 using System.Drawing;
 using System.Linq;
-using System.Reflection.Metadata;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Emgu.CV;
@@ -24,7 +21,11 @@ namespace UVtools.Core.EmguCV;
 /// Represents a compressed <see cref="Mat"/> that can be compressed and decompressed using multiple <see cref="MatCompressor"/>s.<br/>
 /// This allows to have a high count of <see cref="CMat"/>s in memory without using too much memory.
 /// </summary>
+#pragma warning disable CS0661 // Type defines operator == or operator != but does not override Object.GetHashCode()
+#pragma warning disable CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
 public class CMat : IEquatable<CMat>
+#pragma warning restore CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
+#pragma warning restore CS0661 // Type defines operator == or operator != but does not override Object.GetHashCode()
 {
     #region Properties
     /// <summary>
@@ -483,6 +484,7 @@ public class CMat : IEquatable<CMat>
     /// Decompresses the <see cref="CompressedBytes"/> into a new <see cref="Mat"/> without expanding into the original <see cref="Mat"/> if there is a <see cref="Roi"/>.
     /// </summary>
     /// <param name="argument"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns>Returns a <see cref="Mat"/> with size of <see cref="Roi"/> if is not empty, otherwise returns the original <see cref="Size"/></returns>
     public Task<Mat> RawDecompressAsync(object? argument = null, CancellationToken cancellationToken = default)
     {

@@ -79,7 +79,7 @@ public class ToggleSplitButtonWithIcon : ToggleSplitButton
 
     public Projektanker.Icons.Avalonia.Icon MakeIcon()
     {
-        return new Projektanker.Icons.Avalonia.Icon { Value = Icon };
+        return new Projektanker.Icons.Avalonia.Icon { Value = Icon! };
     }
 
     private void RebuildContent()

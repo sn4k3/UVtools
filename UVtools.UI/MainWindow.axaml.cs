@@ -44,6 +44,8 @@ using UVtools.UI.Structures;
 using UVtools.UI.Windows;
 using Path = System.IO.Path;
 using Point = Avalonia.Point;
+using System.Runtime;
+using System.Threading;
 
 namespace UVtools.UI;
 
@@ -1122,10 +1124,17 @@ public partial class MainWindow : WindowEx
         await new AboutWindow().ShowDialog(this);
     }
 
-    public void MenuHelpFreeUnusedRAMClicked()
+    public async void MenuHelpFreeUnusedRAMClicked()
     {
-        GC.Collect();
-        GC.WaitForPendingFinalizers();
+        IsGUIEnabled = false;
+        ShowProgressWindow("Garbage collector (GC)", "Collecting garbage from LOH", false);
+        await Task.Run(() =>
+        {
+            GCSettings.LargeObjectHeapCompactionMode = GCLargeObjectHeapCompactionMode.CompactOnce;
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+        });
+        IsGUIEnabled = true;
     }
 
     public async void MenuHelpBenchmarkClicked()
@@ -1868,6 +1877,37 @@ public partial class MainWindow : WindowEx
         {
             RaisePropertyChanged(nameof(LayerZoomStr));
             return;
+        }
+    }
+
+    private async void ShowProgressWindow(string title, string subTitle, bool canCancel = true)
+    {
+        if (Dispatcher.UIThread.CheckAccess())
+        {
+            ProgressShow(title, canCancel);
+            Progress.ItemName = subTitle;
+
+            //ProgressWindow.SetTitle(title);
+            //await ProgressWindow.ShowDialog(this);
+        }
+        else
+        {
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                ProgressShow(title, canCancel);
+                Progress.ItemName = subTitle;
+                /*try
+                {
+
+                    //ProgressWindow.SetTitle(title);
+                    //await ProgressWindow.ShowDialog(this);
+                }
+                catch (Exception e)
+                {
+                    Debug.WriteLine(e);
+                }*/
+
+            });
         }
     }
 

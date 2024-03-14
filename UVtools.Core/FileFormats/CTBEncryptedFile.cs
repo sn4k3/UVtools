@@ -21,6 +21,7 @@ public sealed class CTBEncryptedFile : FileFormat
 {
 
     #region Constants 
+    public const uint DEFAULT_VERSION = 5;
     public const uint MAGIC_CBT_ENCRYPTED = 0x12FD0107;
     public const ushort REPEATRGB15MASK = 0x20;
     public const ushort RLE16EncodingLimit = 0xFFF;
@@ -51,12 +52,12 @@ public sealed class CTBEncryptedFile : FileFormat
     public class FileHeader
     {
         public const byte TABLE_SIZE = 48;
-
+        
         [FieldOrder(0)] public uint Magic { get; set; } = MAGIC_CBT_ENCRYPTED;
         [FieldOrder(1)] public uint SettingsSize { get; set; } = SlicerSettings.TABLE_SIZE;
         [FieldOrder(2)] public uint SettingsOffset { get; set; } = TABLE_SIZE;
         [FieldOrder(3)] public uint Unknown1 { get; set; } // set to 0
-        [FieldOrder(4)] public uint Unknown2 { get; set; } = 4; // set to 4
+        [FieldOrder(4)] public uint Version { get; set; } = DEFAULT_VERSION;
         [FieldOrder(5)] public uint SignatureSize { get; set; }
         [FieldOrder(6)] public uint SignatureOffset { get; set; }
         [FieldOrder(7)] public uint Unknown { get; set; } //set to 0
@@ -68,7 +69,7 @@ public sealed class CTBEncryptedFile : FileFormat
 
         public override string ToString()
         {
-            return $"{nameof(Magic)}: {Magic}, {nameof(SettingsSize)}: {SettingsSize}, {nameof(SettingsOffset)}: {SettingsOffset}, {nameof(Unknown1)}: {Unknown1}, {nameof(Unknown2)}: {Unknown2}, {nameof(SignatureSize)}: {SignatureSize}, {nameof(SignatureOffset)}: {SignatureOffset}, {nameof(Unknown)}: {Unknown}, {nameof(Unknown4)}: {Unknown4}, {nameof(Unknown5)}: {Unknown5}, {nameof(Unknown6)}: {Unknown6}, {nameof(Unknown7)}: {Unknown7}, {nameof(Unknown8)}: {Unknown8}";
+            return $"{nameof(Magic)}: {Magic}, {nameof(SettingsSize)}: {SettingsSize}, {nameof(SettingsOffset)}: {SettingsOffset}, {nameof(Unknown1)}: {Unknown1}, {nameof(Version)}: {Version}, {nameof(SignatureSize)}: {SignatureSize}, {nameof(SignatureOffset)}: {SignatureOffset}, {nameof(Unknown)}: {Unknown}, {nameof(Unknown4)}: {Unknown4}, {nameof(Unknown5)}: {Unknown5}, {nameof(Unknown6)}: {Unknown6}, {nameof(Unknown7)}: {Unknown7}, {nameof(Unknown8)}: {Unknown8}";
         }
     }
 
@@ -161,9 +162,9 @@ public sealed class CTBEncryptedFile : FileFormat
         [FieldOrder(68)] public uint DisclaimerOffset { get; set; }
         [FieldOrder(69)] public uint DisclaimerSize { get; set; }
         [FieldOrder(70)] public uint Padding7 { get; set; }
-        [FieldOrder(71)] public uint Padding8 { get; set; }
-        [FieldOrder(72)] public uint Padding9 { get; set; }
-        [FieldOrder(73)] public uint Padding10 { get; set; }
+        [FieldOrder(71)] public uint ResinParametersAddress { get; set; }
+        [FieldOrder(72)] public uint Padding8 { get; set; }
+        [FieldOrder(73)] public uint Padding9 { get; set; }
 
         [Ignore]
         public string MachineName
@@ -179,9 +180,70 @@ public sealed class CTBEncryptedFile : FileFormat
 
         public override string ToString()
         {
-            return $"{nameof(ChecksumValue)}: {ChecksumValue}, {nameof(LayerPointersOffset)}: {LayerPointersOffset}, {nameof(DisplayWidth)}: {DisplayWidth}, {nameof(DisplayHeight)}: {DisplayHeight}, {nameof(MachineZ)}: {MachineZ}, {nameof(Unknown1)}: {Unknown1}, {nameof(Unknown2)}: {Unknown2}, {nameof(TotalHeightMillimeter)}: {TotalHeightMillimeter}, {nameof(LayerHeight)}: {LayerHeight}, {nameof(ExposureTime)}: {ExposureTime}, {nameof(BottomExposureTime)}: {BottomExposureTime}, {nameof(LightOffDelay)}: {LightOffDelay}, {nameof(BottomLayerCount)}: {BottomLayerCount}, {nameof(ResolutionX)}: {ResolutionX}, {nameof(ResolutionY)}: {ResolutionY}, {nameof(LayerCount)}: {LayerCount}, {nameof(LargePreviewOffset)}: {LargePreviewOffset}, {nameof(SmallPreviewOffset)}: {SmallPreviewOffset}, {nameof(PrintTime)}: {PrintTime}, {nameof(ProjectorType)}: {ProjectorType}, {nameof(BottomLiftHeight)}: {BottomLiftHeight}, {nameof(BottomLiftSpeed)}: {BottomLiftSpeed}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(RetractSpeed)}: {RetractSpeed}, {nameof(MaterialMilliliters)}: {MaterialMilliliters}, {nameof(MaterialGrams)}: {MaterialGrams}, {nameof(MaterialCost)}: {MaterialCost}, {nameof(BottomLightOffDelay)}: {BottomLightOffDelay}, {nameof(Unknown3)}: {Unknown3}, {nameof(LightPWM)}: {LightPWM}, {nameof(BottomLightPWM)}: {BottomLightPWM}, {nameof(LayerXorKey)}: {LayerXorKey}, {nameof(BottomLiftHeight2)}: {BottomLiftHeight2}, {nameof(BottomLiftSpeed2)}: {BottomLiftSpeed2}, {nameof(LiftHeight2)}: {LiftHeight2}, {nameof(LiftSpeed2)}: {LiftSpeed2}, {nameof(RetractHeight2)}: {RetractHeight2}, {nameof(RetractSpeed2)}: {RetractSpeed2}, {nameof(RestTimeAfterLift)}: {RestTimeAfterLift}, {nameof(MachineNameOffset)}: {MachineNameOffset}, {nameof(MachineNameSize)}: {MachineNameSize}, {nameof(AntiAliasFlag)}: {AntiAliasFlag}, {nameof(Padding)}: {Padding}, {nameof(PerLayerSettings)}: {PerLayerSettings}, {nameof(Unknown4)}: {Unknown4}, {nameof(Unknown5)}: {Unknown5}, {nameof(RestTimeAfterRetract)}: {RestTimeAfterRetract}, {nameof(RestTimeAfterLift2)}: {RestTimeAfterLift2}, {nameof(TransitionLayerCount)}: {TransitionLayerCount}, {nameof(BottomRetractSpeed)}: {BottomRetractSpeed}, {nameof(BottomRetractSpeed2)}: {BottomRetractSpeed2}, {nameof(Padding1)}: {Padding1}, {nameof(Four1)}: {Four1}, {nameof(Padding2)}: {Padding2}, {nameof(Four2)}: {Four2}, {nameof(RestTimeAfterRetract2)}: {RestTimeAfterRetract2}, {nameof(RestTimeAfterLift3)}: {RestTimeAfterLift3}, {nameof(RestTimeBeforeLift)}: {RestTimeBeforeLift}, {nameof(BottomRetractHeight2)}: {BottomRetractHeight2}, {nameof(Unknown6)}: {Unknown6}, {nameof(Unknown7)}: {Unknown7}, {nameof(Unknown8)}: {Unknown8}, {nameof(LastLayerIndex)}: {LastLayerIndex}, {nameof(Padding3)}: {Padding3}, {nameof(Padding4)}: {Padding4}, {nameof(Padding5)}: {Padding5}, {nameof(Padding6)}: {Padding6}, {nameof(DisclaimerOffset)}: {DisclaimerOffset}, {nameof(DisclaimerSize)}: {DisclaimerSize}, {nameof(Padding7)}: {Padding7}, {nameof(Padding8)}: {Padding8}, {nameof(Padding9)}: {Padding9}, {nameof(Padding10)}: {Padding10}, {nameof(MachineName)}: {MachineName}";
+            return $"{nameof(ChecksumValue)}: {ChecksumValue}, {nameof(LayerPointersOffset)}: {LayerPointersOffset}, {nameof(DisplayWidth)}: {DisplayWidth}, {nameof(DisplayHeight)}: {DisplayHeight}, {nameof(MachineZ)}: {MachineZ}, {nameof(Unknown1)}: {Unknown1}, {nameof(Unknown2)}: {Unknown2}, {nameof(TotalHeightMillimeter)}: {TotalHeightMillimeter}, {nameof(LayerHeight)}: {LayerHeight}, {nameof(ExposureTime)}: {ExposureTime}, {nameof(BottomExposureTime)}: {BottomExposureTime}, {nameof(LightOffDelay)}: {LightOffDelay}, {nameof(BottomLayerCount)}: {BottomLayerCount}, {nameof(ResolutionX)}: {ResolutionX}, {nameof(ResolutionY)}: {ResolutionY}, {nameof(LayerCount)}: {LayerCount}, {nameof(LargePreviewOffset)}: {LargePreviewOffset}, {nameof(SmallPreviewOffset)}: {SmallPreviewOffset}, {nameof(PrintTime)}: {PrintTime}, {nameof(ProjectorType)}: {ProjectorType}, {nameof(BottomLiftHeight)}: {BottomLiftHeight}, {nameof(BottomLiftSpeed)}: {BottomLiftSpeed}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(RetractSpeed)}: {RetractSpeed}, {nameof(MaterialMilliliters)}: {MaterialMilliliters}, {nameof(MaterialGrams)}: {MaterialGrams}, {nameof(MaterialCost)}: {MaterialCost}, {nameof(BottomLightOffDelay)}: {BottomLightOffDelay}, {nameof(Unknown3)}: {Unknown3}, {nameof(LightPWM)}: {LightPWM}, {nameof(BottomLightPWM)}: {BottomLightPWM}, {nameof(LayerXorKey)}: {LayerXorKey}, {nameof(BottomLiftHeight2)}: {BottomLiftHeight2}, {nameof(BottomLiftSpeed2)}: {BottomLiftSpeed2}, {nameof(LiftHeight2)}: {LiftHeight2}, {nameof(LiftSpeed2)}: {LiftSpeed2}, {nameof(RetractHeight2)}: {RetractHeight2}, {nameof(RetractSpeed2)}: {RetractSpeed2}, {nameof(RestTimeAfterLift)}: {RestTimeAfterLift}, {nameof(MachineNameOffset)}: {MachineNameOffset}, {nameof(MachineNameSize)}: {MachineNameSize}, {nameof(AntiAliasFlag)}: {AntiAliasFlag}, {nameof(Padding)}: {Padding}, {nameof(PerLayerSettings)}: {PerLayerSettings}, {nameof(Unknown4)}: {Unknown4}, {nameof(Unknown5)}: {Unknown5}, {nameof(RestTimeAfterRetract)}: {RestTimeAfterRetract}, {nameof(RestTimeAfterLift2)}: {RestTimeAfterLift2}, {nameof(TransitionLayerCount)}: {TransitionLayerCount}, {nameof(BottomRetractSpeed)}: {BottomRetractSpeed}, {nameof(BottomRetractSpeed2)}: {BottomRetractSpeed2}, {nameof(Padding1)}: {Padding1}, {nameof(Four1)}: {Four1}, {nameof(Padding2)}: {Padding2}, {nameof(Four2)}: {Four2}, {nameof(RestTimeAfterRetract2)}: {RestTimeAfterRetract2}, {nameof(RestTimeAfterLift3)}: {RestTimeAfterLift3}, {nameof(RestTimeBeforeLift)}: {RestTimeBeforeLift}, {nameof(BottomRetractHeight2)}: {BottomRetractHeight2}, {nameof(Unknown6)}: {Unknown6}, {nameof(Unknown7)}: {Unknown7}, {nameof(Unknown8)}: {Unknown8}, {nameof(LastLayerIndex)}: {LastLayerIndex}, {nameof(Padding3)}: {Padding3}, {nameof(Padding4)}: {Padding4}, {nameof(Padding5)}: {Padding5}, {nameof(Padding6)}: {Padding6}, {nameof(DisclaimerOffset)}: {DisclaimerOffset}, {nameof(DisclaimerSize)}: {DisclaimerSize}, {nameof(Padding7)}: {Padding7}, {nameof(ResinParametersAddress)}: {ResinParametersAddress}, {nameof(Padding8)}: {Padding8}, {nameof(Padding9)}: {Padding9}, {nameof(MachineName)}: {MachineName}";
         }
     }
+
+    #region ResinParameters
+    public sealed class ResinParameters
+    {
+        [FieldOrder(0)]
+        public uint Padding1 { get; set; }
+
+        [FieldOrder(1)]
+        public byte ResinColorB { get; set; }
+
+        [FieldOrder(2)]
+        public byte ResinColorG { get; set; }
+
+        [FieldOrder(3)]
+        public byte ResinColorR { get; set; }
+
+        [FieldOrder(4)]
+        public byte ResinColorA { get; set; }
+
+        [FieldOrder(5)]
+        public uint MachineNameAddress { get; set; }
+
+        [FieldOrder(6)]
+        public uint ResinTypeLength { get; set; }
+
+        [FieldOrder(7)]
+        public uint ResinTypeAddress { get; set; }
+
+        [FieldOrder(8)]
+        public uint ResinNameLength { get; set; }
+
+        [FieldOrder(9)]
+        public uint ResinNameAddress { get; set; }
+
+        [FieldOrder(10)]
+        public uint MachineNameLength { get; set; } = (uint)DefaultMachineName.Length;
+
+        [FieldOrder(11)]
+        public float ResinDensity { get; set; } = 1.1f;
+
+        [FieldOrder(12)]
+        public uint Padding2 { get; set; }
+
+        [FieldOrder(13)]
+        [FieldLength(nameof(ResinTypeLength))]
+        public string ResinType { get; set; } = string.Empty;
+
+        [FieldOrder(14)]
+        [FieldLength(nameof(ResinNameLength))]
+        public string ResinName { get; set; } = string.Empty;
+
+        [FieldOrder(15)]
+        [FieldLength(nameof(MachineNameLength))]
+        public string MachineName { get; set; } = DefaultMachineName;
+
+        public override string ToString()
+        {
+            return $"{nameof(Padding1)}: {Padding1}, {nameof(ResinColorB)}: {ResinColorB}, {nameof(ResinColorG)}: {ResinColorG}, {nameof(ResinColorR)}: {ResinColorR}, {nameof(ResinColorA)}: {ResinColorA}, {nameof(MachineNameAddress)}: {MachineNameAddress}, {nameof(ResinTypeLength)}: {ResinTypeLength}, {nameof(ResinTypeAddress)}: {ResinTypeAddress}, {nameof(ResinNameLength)}: {ResinNameLength}, {nameof(ResinNameAddress)}: {ResinNameAddress}, {nameof(MachineNameLength)}: {MachineNameLength}, {nameof(ResinDensity)}: {ResinDensity}, {nameof(Padding2)}: {Padding2}, {nameof(ResinType)}: {ResinType}, {nameof(ResinName)}: {ResinName}, {nameof(MachineName)}: {MachineName}";
+        }
+    }
+    #endregion
 
     public class LayerPointer
     {
@@ -599,13 +661,28 @@ public sealed class CTBEncryptedFile : FileFormat
         new(200, 125)
     };
 
+    public override uint[] AvailableVersions { get; } = { 4, 5 };
+
+    public override uint DefaultVersion => DEFAULT_VERSION;
+
+    public override uint Version
+    {
+        get => Header.Version;
+        set
+        {
+            base.Version = value;
+            Header.Version = base.Version;
+        }
+    }
+
     public Preview[] Previews { get; }
 
     public FileHeader Header { get; private set; } = new();
 
     public SlicerSettings Settings { get; private set; } = new();
-    public LayerPointer[]? LayersPointer { get; private set; }
-    public LayerDef[]? LayersDefinition { get; private set; }
+    public ResinParameters ResinParametersSettings { get; private set; } = new();
+    public LayerPointer[] LayersPointer { get; private set; } = Array.Empty<LayerPointer>();
+    public LayerDef[] LayersDefinition { get; private set; } = Array.Empty<LayerDef>();
 
     public override PrintParameterModifier[] PrintParameterModifiers { get; } = {
         PrintParameterModifier.BottomLayerCount,
@@ -980,7 +1057,7 @@ public sealed class CTBEncryptedFile : FileFormat
     public override string MachineName
     {
         get => Settings.MachineName;
-        set => base.MachineName = Settings.MachineName = value;
+        set => base.MachineName = ResinParametersSettings.MachineName = Settings.MachineName = value;
     }
 
     public override float MaterialMilliliters
@@ -991,6 +1068,12 @@ public sealed class CTBEncryptedFile : FileFormat
             base.MaterialMilliliters = value;
             Settings.MaterialMilliliters = base.MaterialMilliliters;
         }
+    }
+
+    public override string? MaterialName
+    {
+        get => ResinParametersSettings.ResinName;
+        set => base.MaterialName = ResinParametersSettings.ResinName = value!;
     }
 
     public override float MaterialGrams
@@ -1009,7 +1092,11 @@ public sealed class CTBEncryptedFile : FileFormat
     {
         get
         {
-            return new object[] { Header, Settings };
+            return Header.Version switch
+            {
+                <= 4 => new object[] { Header, Settings },
+                /*v5*/_ => new object[] { Header, Settings, ResinParametersSettings }
+            };
         }
     }
 
@@ -1080,13 +1167,12 @@ public sealed class CTBEncryptedFile : FileFormat
         var checksumHash = CryptExtensions.ComputeSHA256Hash(checksumBytes);
         var encryptedHash = CryptExtensions.AesCryptBytes(checksumHash, Bigfoot, CipherMode.CBC, PaddingMode.None, true, CookieMonster);
 
-        // Does not work with recent Chitubox 1.4.5
-        /*inputFile.Seek(-HASH_LENGTH, SeekOrigin.End);
-        var hash = inputFile.ReadBytes(HASH_LENGTH);
-        if (!hash.SequenceEqual(encryptedHash)) 
+        inputFile.Seek(Header.SignatureOffset, SeekOrigin.Begin);
+        var hash = inputFile.ReadBytes(Header.SignatureSize);
+        if (!hash.SequenceEqual(encryptedHash))
         {
             throw new FileLoadException("The file checksum does not match, malformed file.", FileFullPath);
-        }*/
+        }
 
         progress.Reset(OperationProgress.StatusDecodePreviews, (uint)ThumbnailCountFileShouldHave);
         var thumbnailOffsets = new[] { Settings.LargePreviewOffset, Settings.SmallPreviewOffset };
@@ -1111,9 +1197,16 @@ public sealed class CTBEncryptedFile : FileFormat
         /* Read the settings and disclaimer */
         inputFile.Seek(Settings.MachineNameOffset, SeekOrigin.Begin);
         var machineNameBytes = inputFile.ReadBytes(Settings.MachineNameSize);
-        Settings.MachineName = Encoding.UTF8.GetString(machineNameBytes);
+        Settings.MachineName = Encoding.UTF8.GetString(machineNameBytes).TrimEnd(char.MinValue);
 
         /* Read the disclaimer here? we can really just ignore it though...*/
+        if (Header.Version >= 5 && Settings.ResinParametersAddress > 0)
+        {
+            inputFile.Seek(Settings.ResinParametersAddress, SeekOrigin.Begin);
+            ResinParametersSettings = Helpers.Deserialize<ResinParameters>(inputFile);
+            Debug.Write("Resin Parameters -> ");
+            Debug.WriteLine(ResinParametersSettings);
+        }
 
         /* start gathering up the layers */
         progress.Reset(OperationProgress.StatusGatherLayers, Settings.LayerCount);
@@ -1196,14 +1289,10 @@ public sealed class CTBEncryptedFile : FileFormat
                                         "Please increase the portion of the plate in use and re-slice the file.");
         }
 
-        if (DecodeType == FileDecodeType.Full)
+        /*if (Header.Version >= 5)
         {
-            var hash = inputFile.ReadBytes(HASH_LENGTH);
-            if (!hash.SequenceEqual(encryptedHash))
-            {
-                throw new FileLoadException("The file checksum does not match, malformed file.", FileFullPath);
-            }
-        }
+            inputFile.Seek(8, SeekOrigin.Current); // Skip 8 bytes
+        }*/
 
         for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
         {
@@ -1319,6 +1408,16 @@ public sealed class CTBEncryptedFile : FileFormat
         Settings.DisclaimerSize = CTB_DISCLAIMER_SIZE;
         outputFile.WriteBytes(Encoding.UTF8.GetBytes(CTB_DISCLAIMER));
 
+        if (Header.Version >= 5)
+        {
+            Settings.ResinParametersAddress = (uint)outputFile.Position;
+            var resinParametersSize = Helpers.Serializer.SizeOf(ResinParametersSettings);
+            ResinParametersSettings.MachineNameAddress = (uint)(Settings.ResinParametersAddress + resinParametersSize - ResinParametersSettings.MachineName.Length);
+            ResinParametersSettings.ResinNameAddress = (uint)(ResinParametersSettings.MachineNameAddress - ResinParametersSettings.ResinName.Length);
+            ResinParametersSettings.ResinTypeAddress = (uint)(ResinParametersSettings.ResinNameAddress - ResinParametersSettings.ResinType.Length);
+            outputFile.WriteSerialize(ResinParametersSettings);
+        }
+
         Settings.LayerPointersOffset = (uint)outputFile.Position;
 
         /* we'll write this after we write out all of the layers ... */
@@ -1357,6 +1456,13 @@ public sealed class CTBEncryptedFile : FileFormat
             outputFile.WriteBytes(layerDef.RLEData!);
             progress++;
         }
+
+        if (Header.Version >= 5)
+        {
+            // 8 bytes of unknown data
+            outputFile.WriteUIntLittleEndian(1109414650);
+            outputFile.WriteUIntLittleEndian(0);
+        }
             
         /* write the final hash */
         var hash = CryptExtensions.ComputeSHA256Hash(BitExtensions.ToBytesLittleEndian(Settings.ChecksumValue));
@@ -1364,6 +1470,11 @@ public sealed class CTBEncryptedFile : FileFormat
         Header.SignatureOffset = (uint)outputFile.Position;
         Header.SignatureSize = (uint)encryptedHash.Length;
         outputFile.WriteBytes(encryptedHash);
+
+        if (Header.Version >= 4)
+        {
+            outputFile.WriteUIntLittleEndian(1833054899); // 4 bytes of unknown data
+        }
 
         // Rewind
 
@@ -1394,9 +1505,9 @@ public sealed class CTBEncryptedFile : FileFormat
         var encryptedSettings = CryptExtensions.AesCryptBytes(settingsBytes, Bigfoot, CipherMode.CBC, PaddingMode.None, true, CookieMonster);
         outputFile.WriteBytes(encryptedSettings);
 
-        for (uint layerIndex = 0; layerIndex < LayersPointer!.Length; layerIndex++)
+        for (uint layerIndex = 0; layerIndex < LayersPointer.Length; layerIndex++)
         {
-            LayersDefinition![layerIndex].SetFrom(this[layerIndex]);
+            LayersDefinition[layerIndex].SetFrom(this[layerIndex]);
             outputFile.Seek(LayersPointer[layerIndex].PageNumber * ChituboxFile.PageSize + LayersPointer[layerIndex].LayerOffset, SeekOrigin.Begin);
             outputFile.WriteSerialize(LayersDefinition[layerIndex]);
         }
@@ -1551,7 +1662,7 @@ public sealed class CTBEncryptedFile : FileFormat
             }
         }
 
-        /* last 20 bytes are an encrypted sha256 */
+        /* last 32 bytes are an encrypted sha256 */
         var cipheredHash = cryptedFile[^0x20..];
 
         var plainHash = CryptExtensions.AesCryptBytes(cipheredHash, Bigfoot, CipherMode.CBC, PaddingMode.None, encrypt, CookieMonster);

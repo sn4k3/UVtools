@@ -10,7 +10,11 @@ using System.Drawing;
 
 namespace UVtools.Core.PixelEditor;
 
+#pragma warning disable CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
+#pragma warning disable CS0661 // Type defines operator == or operator != but does not override Object.GetHashCode()
 public class PixelDrainHole : PixelOperation, IEquatable<PixelDrainHole>
+#pragma warning restore CS0661 // Type defines operator == or operator != but does not override Object.GetHashCode()
+#pragma warning restore CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
 {
     private ushort _diameter = 50;
     public override PixelOperationType OperationType => PixelOperationType.DrainHole;

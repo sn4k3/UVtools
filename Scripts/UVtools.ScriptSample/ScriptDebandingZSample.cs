@@ -123,7 +123,9 @@ public class ScriptDebandingZSample : ScriptGlobals
         throw new NotSupportedException(
             "Do not use this script! it's outdated and replaced by inbuilt UVtools suggestion (Wait time before cure).\n" +
             "Check the Shield icon/tab and look for 'Wait time before cure' suggestion, you can also configure it and offers more possibilities.");
+#pragma warning disable CS0162 // Unreachable code detected
         Progress.Reset("Changing layers", Operation.LayerRangeCount); // Sets the progress name and number of items to process
+#pragma warning restore CS0162 // Unreachable code detected
 
         if (SlicerFile.CanUseAnyWaitTime)
         {

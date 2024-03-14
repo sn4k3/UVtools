@@ -348,6 +348,7 @@
             Decompresses the <see cref="P:UVtools.Core.EmguCV.CMat.CompressedBytes"/> into a new <see cref="P:UVtools.Core.EmguCV.CMat.Mat"/> without expanding into the original <see cref="P:UVtools.Core.EmguCV.CMat.Mat"/> if there is a <see cref="P:UVtools.Core.EmguCV.CMat.Roi"/>.
             </summary>
             <param name="argument"></param>
+            <param name="cancellationToken"></param>
             <returns>Returns a <see cref="P:UVtools.Core.EmguCV.CMat.Mat"/> with size of <see cref="P:UVtools.Core.EmguCV.CMat.Roi"/> if is not empty, otherwise returns the original <see cref="P:UVtools.Core.EmguCV.CMat.Size"/></returns>
         </member>
         <member name="M:UVtools.Core.EmguCV.CMat.Decompress(System.Object)">
@@ -2380,7 +2381,7 @@
         </member>
         <member name="P:UVtools.Core.FileFormats.ChituboxFile.SlicerInfo.MachineName">
             <summary>
-            Gets the machine name. string is not nul-terminated.
+            Gets the machine name. string is not nul-terminated. But on CTBv5 it is null-terminated.
             The character encoding is currently unknown — all observed files in the wild use 7-bit ASCII characters only.
             Note that the machine type here is set in the software profile, and is not the name the user assigned to the machine.
             </summary>
