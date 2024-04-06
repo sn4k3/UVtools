@@ -7,7 +7,7 @@
         xmlns:uvtava="clr-namespace:UVtools.AvaloniaControls;assembly=UVtools.AvaloniaControls"
         xmlns:windows="clr-namespace:UVtools.UI.Windows"
         xmlns:system="clr-namespace:System;assembly=System.Runtime"
-        mc:Ignorable="d" d:DesignWidth="700" d:DesignHeight="450"
+        mc:Ignorable="d" d:DesignWidth="780" d:DesignHeight="450"
         x:Class="UVtools.UI.Windows.SettingsWindow"
 		x:DataType="windows:SettingsWindow"
         WindowStartupLocation="CenterOwner"
@@ -256,15 +256,14 @@
 							<StackPanel Spacing="10">
 
 								<Grid RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto"
-									  ColumnDefinitions="Auto,10,449,Auto,Auto">
+									  ColumnDefinitions="Auto,10,*,Auto,Auto">
 									<TextBlock
 									  VerticalAlignment="Center"
 									  Grid.Row="0" Grid.Column="0"
 									  Text="File open dialog filters:"/>
 									<ComboBox ItemsSource="{Binding FileOpenDialogFilters}"
 											  SelectedIndex="{Binding Settings.General.DefaultOpenFileExtensionIndex}"
-											  HorizontalAlignment="Left"
-											  Width="517"
+											  HorizontalAlignment="Stretch"
 											  MaxDropDownHeight="350"
 											  Grid.ColumnSpan="3" Grid.Row="0" Grid.Column="2"/>
 
@@ -1708,6 +1707,87 @@
 							</StackPanel>
 
 						</uvtava:GroupBox>
+
+                        <uvtava:GroupBox Margin="5">
+							<uvtava:GroupBox.Header>
+								<StackPanel Orientation="Horizontal" Spacing="5">
+									<TextBlock Text="Events"/>
+									<i:Icon Value="fa-solid fa-circle-info" Cursor="Help"
+                                            ToolTip.Tip="Events are fired upon an action and execute a defined script.
+&#x0a;If the script is written with the UVtools scripting structure, it will run under an operation and within the Core context.
+&#x0a;Otherwise, if plain C# code is used, it will run under the Terminal and in the UI context."/>
+                                </StackPanel>
+                            </uvtava:GroupBox.Header>
+
+                            <StackPanel Orientation="Vertical" Spacing="10">
+                                <Grid RowDefinitions="Auto,10,Auto,10,Auto" ColumnDefinitions="Auto,10,*,Auto,Auto">
+                                    <TextBlock Grid.Row="0" Grid.Column="0"
+											   VerticalAlignment="Center"
+                                               ToolTip.Tip="Trigger every time after a file has been loaded."
+											   Text="After file load:"/>
+                                    <TextBox Grid.Row="0" Grid.Column="2" 
+                                             IsReadOnly="True"
+                                             Text="{Binding Settings.Automations.EventAfterFileLoadScriptFile}"/>
+                                    <Button Grid.Row="0" Grid.Column="3"
+                                            VerticalAlignment="Stretch"
+                                            HorizontalAlignment="Stretch"
+                                            i:Attached.Icon="fa-solid fa-file-import"
+                                            Command="{Binding AutomationsOpenFileField}"
+                                            CommandParameter="EventAfterFileLoadScriptFile"/>
+                                    <Button Grid.Row="0" Grid.Column="4"
+                                            VerticalAlignment="Stretch"
+                                            HorizontalAlignment="Stretch"
+                                            i:Attached.Icon="fa-solid fa-xmark"
+                                            Command="{Binding AutomationsClearField}"
+                                            CommandParameter="EventAfterFileLoadScriptFile"/>
+
+                                    <TextBlock Grid.Row="2" Grid.Column="0"
+											   VerticalAlignment="Center"
+											   ToolTip.Tip="Trigger every time before a file save."
+											   Text="Before file save:"/>
+                                    <TextBox Grid.Row="2" Grid.Column="2"
+                                             IsReadOnly="True"
+                                             Text="{Binding Settings.Automations.EventBeforeFileSaveScriptFile}"/>
+                                    <Button Grid.Row="2" Grid.Column="3"
+                                            VerticalAlignment="Stretch"
+                                            HorizontalAlignment="Stretch"
+                                            i:Attached.Icon="fa-solid fa-file-import"
+                                            Command="{Binding AutomationsOpenFileField}"
+                                            CommandParameter="EventBeforeFileSaveScriptFile"/>
+                                    <Button Grid.Row="2" Grid.Column="4"
+                                            VerticalAlignment="Stretch"
+                                            HorizontalAlignment="Stretch"
+                                            i:Attached.Icon="fa-solid fa-xmark"
+                                            Command="{Binding AutomationsClearField}"
+                                            CommandParameter="EventBeforeFileSaveScriptFile"/>
+
+                                    <TextBlock Grid.Row="4" Grid.Column="0"
+                                               VerticalAlignment="Center"
+                                               ToolTip.Tip="Trigger every time after a file has been saved."
+                                               Text="After file save:"/>
+                                    <TextBox Grid.Row="4" Grid.Column="2"
+                                             IsReadOnly="True"
+                                             Text="{Binding Settings.Automations.EventAfterFileSaveScriptFile}"/>
+                                    <Button Grid.Row="4" Grid.Column="3"
+                                            VerticalAlignment="Stretch"
+                                            HorizontalAlignment="Stretch"
+                                            i:Attached.Icon="fa-solid fa-file-import"
+                                            Command="{Binding AutomationsOpenFileField}"
+                                            CommandParameter="EventAfterFileSaveScriptFile"/>
+                                    <Button Grid.Row="4" Grid.Column="4"
+                                            VerticalAlignment="Stretch"
+                                            HorizontalAlignment="Stretch"
+                                            i:Attached.Icon="fa-solid fa-xmark"
+                                            Command="{Binding AutomationsClearField}"
+                                            CommandParameter="EventAfterFileSaveScriptFile"/>
+
+                                </Grid>
+
+
+
+                            </StackPanel>
+
+                        </uvtava:GroupBox>
 
 
 					</StackPanel>

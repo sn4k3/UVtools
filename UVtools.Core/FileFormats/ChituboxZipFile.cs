@@ -391,10 +391,10 @@ public sealed class ChituboxZipFile : FileFormat
         if (!IsPHZZip)
         {
             RebuildGCode();
-            outputFile.PutFileContent(GCodeFilename, GCodeStr, ZipArchiveMode.Create);
+            outputFile.CreateEntryFromContent(GCodeFilename, GCodeStr, ZipArchiveMode.Create);
         }
 
-        EncodeThumbnailsInZip(outputFile, ThumbnailsEntryNames);
+        EncodeThumbnailsInZip(outputFile, progress, ThumbnailsEntryNames);
         EncodeLayersInZip(outputFile, IndexStartNumber.One, progress);
     }
 
@@ -448,7 +448,7 @@ public sealed class ChituboxZipFile : FileFormat
             }
         }
 
-        DecodeThumbnailsFromZip(inputFile, ThumbnailsEntryNames);
+        DecodeThumbnailsFromZip(inputFile, progress, ThumbnailsEntryNames);
 
         Init(HeaderSettings.LayerCount, DecodeType == FileDecodeType.Partial);
         DecodeLayersFromZip(inputFile, IndexStartNumber.One, progress);
@@ -481,7 +481,7 @@ public sealed class ChituboxZipFile : FileFormat
 
         if (!IsPHZZip)
         {
-            outputFile.PutFileContent(GCodeFilename, GCodeStr, ZipArchiveMode.Update);
+            outputFile.CreateEntryFromContent(GCodeFilename, GCodeStr, ZipArchiveMode.Update);
         }
 
         //Decode(FileFullPath, progress);

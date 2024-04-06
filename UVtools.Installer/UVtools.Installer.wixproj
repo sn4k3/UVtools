@@ -1,4 +1,4 @@
-﻿<Project Sdk="WixToolset.Sdk/4.0.4">
+﻿<Project Sdk="WixToolset.Sdk/5.0.0">
     <PropertyGroup>
         <Platform Condition="'$(Platform)' == ''">x64</Platform>
         <ProductVersion>$(UVtoolsVersion)</ProductVersion>
@@ -14,25 +14,21 @@
         <AppxTimestampUrl Condition="'$(AppxTimestampUrl)' == ''" />
         <MsixCertificateThumbprint Condition="'$(MsixCertificateThumbprint)' == ''" />
         <MsixTimestampUrl Condition="'$(MsixTimestampUrl)' == ''" />
+        <HarvestPath Condition="'$(HarvestPath)' == ''">$(CommonPublishDir)\$(OutputName)_win-x64_v$(UVtoolsVersion)</HarvestPath>
+        
         <SignOutput>true</SignOutput>
         <WixVariables>WixUIBannerBmp=Resources\Banner.jpg;WixUIDialogBmp=Resources\Dialog.jpg;WixUILicenseRtf=Resources\EULA.rtf</WixVariables>
         <DefineConstants>ProductVersion=$(ProductVersion);HarvestPath=$(HarvestPath)</DefineConstants>
         <SuppressIces>ICE27;ICE38;ICE43;ICE57</SuppressIces>
-
         <HarvestDirectoryAutogenerateGuids>true</HarvestDirectoryAutogenerateGuids>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
         <DefineConstants>Debug;$(DefineConstants)</DefineConstants>
     </PropertyGroup>
     <ItemGroup>
-        <Folder Include="Code" />
-    </ItemGroup>
-    <ItemGroup>
-        <PackageReference Include="WixToolset.Util.wixext" Version="4.0.4" />
-        <PackageReference Include="WixToolset.Iis.wixext" Version="4.0.4" />
-        <PackageReference Include="WixToolset.UI.wixext" Version="4.0.4" />
-        <PackageReference Include="WixToolset.NetFx.wixext" Version="4.0.4" />
-        <PackageReference Include="WixToolset.Heat" Version="4.0.4" />
+        <PackageReference Include="WixToolset.Util.wixext" Version="5.0.0" />
+        <PackageReference Include="WixToolset.Iis.wixext" Version="5.0.0" />
+        <PackageReference Include="WixToolset.UI.wixext" Version="5.0.0" />
     </ItemGroup>
     <ItemGroup>
         <Folder Include="Resources" />
@@ -42,16 +38,22 @@
         <Content Include="Resources\Dialog.jpg" />
         <Content Include="Resources\EULA.rtf" />
     </ItemGroup>
-    <ItemGroup>
-        <HarvestDirectory Include="$(HarvestPath)">
-            <ComponentGroupName>HarvestedComponents</ComponentGroupName>
-            <DirectoryRefId>INSTALLPATH</DirectoryRefId>
-            <PreprocessorVariable>var.HarvestPath</PreprocessorVariable>
-            <KeepEmptyDirectories>true</KeepEmptyDirectories>
-            <SuppressCom>true</SuppressCom>
-            <SuppressFragments>true</SuppressFragments>
-            <SuppressRegistry>true</SuppressRegistry>
-            <SuppressRootDirectory>true</SuppressRootDirectory>
-        </HarvestDirectory>
-    </ItemGroup>
+    <!--
+  <ItemGroup>
+    <HarvestDirectory Include="$(HarvestPath)">
+      <ComponentGroupName>HarvestedComponents</ComponentGroupName>
+      <DirectoryRefId>INSTALLPATH</DirectoryRefId>
+      <PreprocessorVariable>var.HarvestPath</PreprocessorVariable>
+      <KeepEmptyDirectories>true</KeepEmptyDirectories>
+      <SuppressCom>true</SuppressCom>
+      <SuppressFragments>true</SuppressFragments>
+      <SuppressRegistry>true</SuppressRegistry>
+      <SuppressRootDirectory>true</SuppressRootDirectory>
+    </HarvestDirectory>
+  </ItemGroup>
+-->
+
+    <Target Name="ShowReservedProperties" AfterTargets="BeforeBuild">
+        <Message Text=" HarvestPath = $(HarvestPath)" Importance="high" />
+    </Target>
 </Project>

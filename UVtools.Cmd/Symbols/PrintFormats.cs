@@ -24,7 +24,7 @@ public class AvailableFormat
     public FileExtension[] Extensions { get; init; } = Array.Empty<FileExtension>();
     
     public FileFormat.FileFormatType FileType { get; init; }
-    public FileFormat.FileImageType LayerImageType { get; init; }
+    public FileFormat.ImageFormat LayerImageFormat { get; init; }
     public Size[] ThumbnailsOriginalSize { get; init; } = Array.Empty<Size>();
 
     public string[] PrintParameterModifiers { get; init; } = Array.Empty<string>();
@@ -32,7 +32,7 @@ public class AvailableFormat
 
     public override string ToString()
     {
-        return $"{nameof(ClassName)}: {ClassName}, {nameof(DefaultVersion)}: {DefaultVersion}, {nameof(Versions)}: [{string.Join(", ", Versions)}], {nameof(Extensions)}: [{string.Join(", ", Extensions.Select(extension => extension.Extension))}], {nameof(FileType)}: {FileType}, {nameof(LayerImageType)}: {LayerImageType}";
+        return $"{nameof(ClassName)}: {ClassName}, {nameof(DefaultVersion)}: {DefaultVersion}, {nameof(Versions)}: [{string.Join(", ", Versions)}], {nameof(Extensions)}: [{string.Join(", ", Extensions.Select(extension => extension.Extension))}], {nameof(FileType)}: {FileType}, {nameof(LayerImageFormat)}: {LayerImageFormat}";
     }
 }
 
@@ -60,7 +60,7 @@ internal static class PrintFormatsCommand
                         Versions = slicerFile.AvailableVersions,
                         Extensions = slicerFile.FileExtensions,
                         FileType = slicerFile.FileType,
-                        LayerImageType = slicerFile.LayerImageType,
+                        LayerImageFormat = slicerFile.LayerImageFormat,
                         ThumbnailsOriginalSize = slicerFile.ThumbnailsOriginalSize,
                         PrintParameterModifiers = slicerFile.PrintParameterModifiers.Select(modifier => modifier.Name).ToArray(),
                         PrintParameterPerLayerModifiers = slicerFile.PrintParameterPerLayerModifiers.Select(modifier => modifier.Name).ToArray()

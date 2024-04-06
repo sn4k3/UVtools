@@ -5,16 +5,14 @@
  *  Everyone is permitted to copy and distribute verbatim copies
  *  of this license document, but changing it is not allowed.
  */
-using Avalonia;
-using Avalonia.Controls;
 using Avalonia.Input;
-using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Scripting;
 using System;
 using System.IO;
 using System.Text;
 using Avalonia.Platform.Storage;
 using UVtools.Core;
+using UVtools.Core.Scripting;
 using UVtools.UI.Controls;
 
 namespace UVtools.UI.Windows;
@@ -141,34 +139,7 @@ public partial class TerminalWindow : WindowEx
         {
             if (_scriptState is null)
             {
-                _scriptState = CSharpScript.RunAsync(_commandText,
-                    ScriptOptions.Default
-                        .AddReferences(typeof(About).Assembly)
-                        .AddImports(
-                            "System",
-                            "System.Collections.Generic",
-                            "System.Math",
-                            "System.IO",
-                            "System.Linq",
-                            "System.Threading",
-                            "System.Threading.Tasks",
-                            "UVtools.Core",
-                            "UVtools.Core.EmguCV",
-                            "UVtools.Core.Extensions",
-                            "UVtools.Core.FileFormats",
-                            "UVtools.Core.GCode",
-                            "UVtools.Core.Gerber",
-                            "UVtools.Core.Layers",
-                            "UVtools.Core.Managers",
-                            "UVtools.Core.MeshFormats",
-                            "UVtools.Core.Objects",
-                            "UVtools.Core.Operations",
-                            "UVtools.Core.PixelEditor",
-                            "UVtools.Core.Printer",
-                            "UVtools.Core.Suggestions",
-                            "UVtools.Core.SystemOS"
-                        )
-                        .WithAllowUnsafe(true), App.MainWindow).Result;
+                _scriptState = await Scripter.RunScript(_commandText);
             }
             else
             {

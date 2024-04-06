@@ -88,13 +88,13 @@
                      FontWeight="Bold" Text="Your results:"/>
 
         <TextBox Grid.Row="2" Grid.Column="0"
-                 Classes="TransparentReadOnly"
+                 Classes="ReadOnly"
                  UseFloatingWatermark="True"
                  Watermark="Single thread"
                  Text="{Binding SingleThreadTDPS}"/>
 
 		<TextBox Grid.Row="2" Grid.Column="2"
-                 Classes="TransparentReadOnly"
+                 Classes="ReadOnly"
                  UseFloatingWatermark="True"
                  Watermark="Multi thread"
                  Text="{Binding MultiThreadTDPS}"/>
@@ -123,13 +123,13 @@
                      FontWeight="Bold" Text="Developer results:"/>
 
           <TextBox Grid.Row="8" Grid.Column="0"
-                   Classes="TransparentReadOnly"
+                   Classes="ReadOnly"
                    UseFloatingWatermark="True"
                    Watermark="Single thread"
                    Text="{Binding DevSingleThreadTDPS}"/>
 
           <TextBox Grid.Row="8" Grid.Column="2"
-                   Classes="TransparentReadOnly"
+                   Classes="ReadOnly"
                    UseFloatingWatermark="True"
                    Watermark="Multi thread"
                    Text="{Binding DevMultiThreadTDPS}"/>

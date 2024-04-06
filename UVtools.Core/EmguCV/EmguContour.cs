@@ -37,7 +37,7 @@ public class EmguContour : IReadOnlyList<Point>, IComparable<EmguContour>, IComp
 
     #region Members
 
-    private VectorOfPoint _contour;
+    private VectorOfPoint _vector;
     private Rectangle? _bounds;
     private RotatedRect? _boundsBestFit;
     private CircleF? _minEnclosingCircle;
@@ -58,13 +58,13 @@ public class EmguContour : IReadOnlyList<Point>, IComparable<EmguContour>, IComp
 
     public int YMax => BoundingRectangle.Bottom;
 
-    public Rectangle BoundingRectangle => _bounds ??= CvInvoke.BoundingRectangle(_contour);
+    public Rectangle BoundingRectangle => _bounds ??= CvInvoke.BoundingRectangle(_vector);
 
-    public RotatedRect BoundsBestFit => _boundsBestFit ??= CvInvoke.MinAreaRect(_contour);
+    public RotatedRect BoundsBestFit => _boundsBestFit ??= CvInvoke.MinAreaRect(_vector);
 
-    public CircleF MinEnclosingCircle => _minEnclosingCircle ??= CvInvoke.MinEnclosingCircle(_contour);
+    public CircleF MinEnclosingCircle => _minEnclosingCircle ??= CvInvoke.MinEnclosingCircle(_vector);
 
-    public bool IsConvex => _isConvex ??= CvInvoke.IsContourConvex(_contour);
+    public bool IsConvex => _isConvex ??= CvInvoke.IsContourConvex(_vector);
 
     /// <summary>
     /// Gets the area of the contour
@@ -75,7 +75,7 @@ public class EmguContour : IReadOnlyList<Point>, IComparable<EmguContour>, IComp
         {
             if (double.IsNaN(_area))
             {
-                _area = CvInvoke.ContourArea(_contour);
+                _area = CvInvoke.ContourArea(_vector);
             }
                 
             return _area;
@@ -91,13 +91,13 @@ public class EmguContour : IReadOnlyList<Point>, IComparable<EmguContour>, IComp
         {
             if (double.IsNaN(_perimeter))
             {
-                _perimeter = CvInvoke.ArcLength(_contour, true);
+                _perimeter = CvInvoke.ArcLength(_vector, true);
             }
             return _perimeter;
         }
     }
 
-    public Moments Moments => _moments ??= CvInvoke.Moments(_contour);
+    public Moments Moments => _moments ??= CvInvoke.Moments(_vector);
 
     /// <summary>
     /// Gets the centroid of the contour
@@ -110,13 +110,13 @@ public class EmguContour : IReadOnlyList<Point>, IComparable<EmguContour>, IComp
     /// <summary>
     /// Gets or sets the contour points
     /// </summary>
-    public VectorOfPoint Contour
+    public VectorOfPoint Vector
     {
-        get => _contour;
+        get => _vector;
         set
         {
             Dispose();
-            _contour = value ?? throw new ArgumentNullException(nameof(Contour));
+            _vector = value ?? throw new ArgumentNullException(nameof(Vector));
         }
     }
 
@@ -124,14 +124,14 @@ public class EmguContour : IReadOnlyList<Point>, IComparable<EmguContour>, IComp
     /// <summary>
     /// Gets if this contour have any point
     /// </summary>
-    public bool IsEmpty => _contour.Size == 0;
+    public bool IsEmpty => _vector.Size == 0;
     #endregion
 
     #region Constructor
 
-    public EmguContour(VectorOfPoint points)
+    public EmguContour(VectorOfPoint point)
     {
-        _contour = points;
+        _vector = point;
     }
 
     public EmguContour(Point[] points) : this(new VectorOfPoint(points))
@@ -156,19 +156,19 @@ public class EmguContour : IReadOnlyList<Point>, IComparable<EmguContour>, IComp
     public bool IsInside(Point point)
     {
         if (!IsInsideBounds(point)) return false;
-        return CvInvoke.PointPolygonTest(_contour, point, false) >= 0;
+        return CvInvoke.PointPolygonTest(_vector, point, false) >= 0;
     }
 
     public double MeasureDist(Point point)
     {
         if (!IsInsideBounds(point)) return -1;
-        return CvInvoke.PointPolygonTest(_contour, point, true);
+        return CvInvoke.PointPolygonTest(_vector, point, true);
     }
 
     public IOutputArray ContourApproximation(double epsilon = 0.1)
     {
         var mat = new Mat();
-        CvInvoke.ApproxPolyDP(_contour, mat, epsilon*Perimeter, true);
+        CvInvoke.ApproxPolyDP(_vector, mat, epsilon*Perimeter, true);
         return mat;
     }
 
@@ -241,12 +241,12 @@ public class EmguContour : IReadOnlyList<Point>, IComparable<EmguContour>, IComp
 
     public EmguContour Clone()
     {
-        return new EmguContour(Contour.ToArray());
+        return new EmguContour(Vector.ToArray());
     }
 
     public IEnumerator<Point> GetEnumerator()
     {
-        return (IEnumerator<Point>) _contour.ToArray().GetEnumerator();
+        return (IEnumerator<Point>) _vector.ToArray().GetEnumerator();
     }
 
     IEnumerator IEnumerable.GetEnumerator()
@@ -254,20 +254,20 @@ public class EmguContour : IReadOnlyList<Point>, IComparable<EmguContour>, IComp
         return GetEnumerator();
     }
 
-    public int Count => _contour.Size;
+    public int Count => _vector.Size;
 
-    public Point this[sbyte index] => _contour[index];
-    public Point this[byte index] => _contour[index];
-    public Point this[short index] => _contour[index];
-    public Point this[ushort index] => _contour[index];
-    public Point this[int index] => _contour[index];
-    public Point this[uint index] => _contour[(int) index];
-    public Point this[long index] => _contour[(int) index];
-    public Point this[ulong index] => _contour[(int) index];
+    public Point this[sbyte index] => _vector[index];
+    public Point this[byte index] => _vector[index];
+    public Point this[short index] => _vector[index];
+    public Point this[ushort index] => _vector[index];
+    public Point this[int index] => _vector[index];
+    public Point this[uint index] => _vector[(int) index];
+    public Point this[long index] => _vector[(int) index];
+    public Point this[ulong index] => _vector[(int) index];
 
     public void Dispose()
     {
-        _contour.Dispose();
+        _vector.Dispose();
         _moments?.Dispose();
         _moments = null;
     }
@@ -278,7 +278,7 @@ public class EmguContour : IReadOnlyList<Point>, IComparable<EmguContour>, IComp
     protected bool Equals(EmguContour other)
     {
         if (Count != other.Count) return false;
-        return _contour.ToArray().SequenceEqual(other.ToArray());
+        return _vector.ToArray().SequenceEqual(other.ToArray());
     }
 
     public override bool Equals(object? obj)

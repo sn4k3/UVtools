@@ -459,16 +459,11 @@ public sealed class ZCodeFile : FileFormat
     {
         using var outputFile = ZipFile.Open(TemporaryOutputFileFullPath, ZipArchiveMode.Create);
 
-        EncodeThumbnailsInZip(outputFile, PreviewFilename);
+        EncodeThumbnailsInZip(outputFile, progress, PreviewFilename);
         EncodeLayersInZip(outputFile, IndexStartNumber.One, progress);
 
-        var entry = outputFile.CreateEntry(ManifestFilename);
-        using (var stream = entry.Open())
-        {
-            XmlExtensions.Serialize(ManifestFile, stream, XmlExtensions.SettingsIndent, true);
-        }
-
-        outputFile.PutFileContent(GCodeFilename, EncryptGCode(progress), ZipArchiveMode.Create);
+        outputFile.CreateEntryFromSerializeXml(ManifestFilename, ManifestFile, ZipArchiveMode.Create, XmlExtensions.SettingsIndent, true);
+        outputFile.CreateEntryFromContent(GCodeFilename, EncryptGCode(progress), ZipArchiveMode.Create);
     }
 
     protected override void DecodeInternally(OperationProgress progress)
@@ -526,7 +521,7 @@ public sealed class ZCodeFile : FileFormat
 
         Init(ManifestFile.Job.LayerCount, DecodeType == FileDecodeType.Partial);
 
-        DecodeThumbnailsFromZip(inputFile, PreviewFilename);
+        DecodeThumbnailsFromZip(inputFile, progress, PreviewFilename);
         DecodeLayersFromZip(inputFile, IndexStartNumber.One, progress);
 
         GCode!.ParseLayersFromGCode(this);
@@ -542,13 +537,8 @@ public sealed class ZCodeFile : FileFormat
             zipEntry.Delete();
         }
 
-        var entry = outputFile.CreateEntry(ManifestFilename);
-        using var stream = entry.Open();
-        XmlExtensions.Serialize(ManifestFile, stream, XmlExtensions.SettingsIndent, true);
-
-        outputFile.PutFileContent(GCodeFilename, EncryptGCode(progress), ZipArchiveMode.Update);
-
-        //Decode(FileFullPath, progress);
+        outputFile.CreateEntryFromSerializeXml(ManifestFilename, ManifestFile, ZipArchiveMode.Update, XmlExtensions.SettingsIndent, true);
+        outputFile.CreateEntryFromContent(GCodeFilename, EncryptGCode(progress), ZipArchiveMode.Update);
     }
 
     private string EncryptGCode(OperationProgress progress)

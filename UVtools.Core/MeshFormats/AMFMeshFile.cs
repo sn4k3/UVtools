@@ -127,7 +127,7 @@ public class AMFMeshFile : MeshFile
         using (var zip = ZipFile.Open(tmpFile, ZipArchiveMode.Create))
         {
             MeshStream.Seek(0, SeekOrigin.Begin);
-            zip.PutFileContent(Filename, MeshStream, ZipArchiveMode.Create);
+            zip.CreateEntryFromContent(Filename, MeshStream, ZipArchiveMode.Create);
         }
         MeshStream.Dispose();
             

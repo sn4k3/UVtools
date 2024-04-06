@@ -86,8 +86,6 @@ public sealed class JXSFile : FileFormat
 
     public override FileFormatType FileType => FileFormatType.Archive;
 
-    public override FileImageType LayerImageType => FileImageType.Png24RgbAA;
-
     public override FileExtension[] FileExtensions { get; } = {
         new(typeof(JXSFile), "jxs", "Uniformation GKone (JXS)")
     };
@@ -291,6 +289,7 @@ public sealed class JXSFile : FileFormat
     #region Constructor
     public JXSFile()
     {
+        _layerImageFormat = ImageFormat.Png24RgbAA;
         ResolutionX = RESOLUTION_X;
         ResolutionY = RESOLUTION_Y;
         DisplayWidth = 221.40f;
@@ -554,8 +553,7 @@ public sealed class JXSFile : FileFormat
 
         RebuildFileProperties();
 
-        var entry = outputFile.CreateEntry(ConfigFileName);
-        using (var stream = entry.Open())
+        using (var stream = outputFile.CreateEntryStream(ConfigFileName))
         using (var tw = new StreamWriter(stream))
         {
             foreach (var propertyInfo in ConfigFile.GetType()
@@ -584,11 +582,7 @@ public sealed class JXSFile : FileFormat
             }
         }
 
-        entry = outputFile.CreateEntry(ControlFilename);
-        using (var stream = entry.Open())
-        {
-            JsonSerializer.Serialize(stream, ControlFile, JsonExtensions.SettingsIndent);
-        }
+        outputFile.CreateEntryFromSerializeJson(ControlFilename, ConfigFile, ZipArchiveMode.Create, JsonExtensions.SettingsIndent);
     }
 
     protected override void PartialSaveInternally(OperationProgress progress)
@@ -603,8 +597,7 @@ public sealed class JXSFile : FileFormat
 
         RebuildFileProperties();
 
-        var entry = outputFile.CreateEntry(ConfigFileName);
-        using (var stream = entry.Open())
+        using (var stream = outputFile.CreateEntryStream(ConfigFileName))
         using (var tw = new StreamWriter(stream))
         {
             foreach (var propertyInfo in ConfigFile.GetType()
@@ -633,11 +626,7 @@ public sealed class JXSFile : FileFormat
             }
         }
 
-        entry = outputFile.CreateEntry(ControlFilename);
-        using (var stream = entry.Open())
-        {
-            JsonSerializer.Serialize(stream, ControlFile, JsonExtensions.SettingsIndent);
-        }
+        outputFile.CreateEntryFromSerializeJson(ControlFilename, ConfigFile, ZipArchiveMode.Update, JsonExtensions.SettingsIndent);
     }
     #endregion
 }

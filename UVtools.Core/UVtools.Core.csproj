@@ -28,7 +28,7 @@
 		<PackageReference Include="Emgu.CV.runtime.mini.macos" Version="4.8.1.5350" />
 		<PackageReference Include="Emgu.CV.runtime.mini.ubuntu-x64" Version="4.8.1.5350" />
 		<PackageReference Include="Emgu.CV.runtime.mini.windows" Version="4.8.1.5350" />
-		<PackageReference Include="K4os.Compression.LZ4" Version="1.3.6" />
+		<PackageReference Include="K4os.Compression.LZ4" Version="1.3.8" />
 		<PackageReference Include="KdTree" Version="1.4.1" />
 		<PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="4.9.2" />
 		<PackageReference Include="Microsoft.IO.RecyclableMemoryStream" Version="3.0.0" />

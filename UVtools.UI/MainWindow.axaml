@@ -212,10 +212,33 @@
 							  CommandParameter="https://github.com/sn4k3/UVtools/wiki"
 							  i:MenuItem.Icon="fa-brands fa-wikipedia-w"/>
 
-                    <MenuItem Header="_Facebook group"
-							  Command="{Binding OpenWebsite}"
-							  CommandParameter="https://www.facebook.com/groups/uvtools"
-							  i:MenuItem.Icon="fa-brands fa-facebook"/>
+                    <MenuItem Header="Community _forums"
+                              i:MenuItem.Icon="mdi forum">
+                        <MenuItem Header="_GitHub"
+                                  Command="{Binding OpenWebsite}"
+                                  CommandParameter="https://github.com/sn4k3/UVtools/discussions"
+                                  i:MenuItem.Icon="fa-brands fa-github"/>
+
+                        <MenuItem Header="_Facebook"
+                                  Command="{Binding OpenWebsite}"
+                                  CommandParameter="https://www.facebook.com/groups/uvtools"
+                                  i:MenuItem.Icon="fa-brands fa-facebook"/>
+
+                        <MenuItem Header="_Reddit"
+                                  Command="{Binding OpenWebsite}"
+                                  CommandParameter="https://www.reddit.com/search/?q=UVtools&amp;type=link&amp;sort=new"
+                                  i:MenuItem.Icon="fa-brands fa-reddit"/>
+
+                        <MenuItem Header="_Twitter"
+                                  Command="{Binding OpenWebsite}"
+                                  CommandParameter="https://twitter.com/search?q=UVtools&amp;src=typed_query&amp;f=live"
+                                  i:MenuItem.Icon="fa-brands fa-x-twitter"/>
+
+                        <MenuItem Header="_Youtube"
+                                  Command="{Binding OpenWebsite}"
+                                  CommandParameter="https://www.youtube.com/results?search_query=UVtools"
+                                  i:MenuItem.Icon="fa-brands fa-youtube"/>
+                    </MenuItem>
 
                     <MenuItem Header="_Donate"
 							  i:MenuItem.Icon="fa-solid fa-donate">
@@ -296,6 +319,11 @@
                                   Command="{Binding MenuHelpDebugLongMessageBoxClicked}"
                                   i:MenuItem.Icon="fa-solid fa-message"/>
 
+                        <MenuItem Header="Show birthday message box"
+                                  IsVisible="{Binding IsDebug}"
+                                  Command="{Binding ShowBirthdayMessage}"
+                                  i:MenuItem.Icon="mdi party-popper"/>
+
                         <MenuItem Header="Trigger new update"
                                   IsVisible="{Binding IsDebug}"
                                   Command="{Binding MenuHelpDebugTriggerNewUpdateClicked}"
@@ -305,10 +333,22 @@
 
                 </MenuItem>
 
-                <MenuItem Background="LimeGreen"
+                <MenuItem Background="DarkGreen"
+                          Foreground="White"
+                          CornerRadius="10"
+                          Margin="10,0,0,0"
 						  IsVisible="{Binding VersionChecker.HaveNewVersion}"
 						  Header="{Binding VersionChecker.VersionAnnouncementText}"
 						  Command="{Binding MenuNewVersionClicked}">
+                </MenuItem>
+
+                <MenuItem Background="{StaticResource LogoColor}"
+                          Foreground="White"
+                          CornerRadius="10"
+                          Margin="10,0,0,0"
+                          IsVisible="{Binding Source={x:Static core:About.IsBirthdayWithin7Days}}"
+                          Header="{Binding Source={x:Static core:About.BirthdayTitle}}"
+                          Command="{Binding ShowBirthdayMessage}">
                 </MenuItem>
 
             </Menu>

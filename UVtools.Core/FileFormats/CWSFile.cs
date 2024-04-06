@@ -6,8 +6,6 @@
  *  of this license document, but changing it is not allowed.
  */
 
-using Emgu.CV;
-using Emgu.CV.CvEnum;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -16,7 +14,6 @@ using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Xml.Serialization;
 using UVtools.Core.Converters;
 using UVtools.Core.Extensions;
@@ -289,26 +286,7 @@ public sealed class CWSFile : FileFormat
     public Output OutputSettings { get; } = new();
     public CWSSliceBuildConfig SliceBuildConfig { get; set; } = new();
 
-
     public override FileFormatType FileType => FileFormatType.Archive;
-
-    public override FileImageType LayerImageType =>
-        ImageType switch
-        {
-            PrinterImageType.BGRAntiAliasing => FileImageType.Png24BgrAA,
-            PrinterImageType.Wanhao32bit => FileImageType.Png32,
-            _ => FileImageType.Png8
-        };
-
-    public enum PrinterImageType : byte
-    {
-        Unknown,
-        Normal,
-        BGRAntiAliasing,
-        Wanhao32bit,
-    }
-
-    public PrinterImageType ImageType { get; set; } = PrinterImageType.Unknown;
 
     public override string ConvertMenuGroup => "CWS";
 
@@ -550,7 +528,7 @@ public sealed class CWSFile : FileFormat
     }
 
 
-    public override object[] Configs => ImageType == PrinterImageType.Wanhao32bit ? new object[] { SliceBuildConfig, OutputSettings } : new object[] { SliceSettings, OutputSettings};
+    public override object[] Configs => LayerImageFormat == ImageFormat.Png32 ? new object[] { SliceBuildConfig, OutputSettings } : new object[] { SliceSettings, OutputSettings};
     #endregion
 
     #region Constructor
@@ -588,36 +566,22 @@ public sealed class CWSFile : FileFormat
     {
         SliceSettings.Xppm = Xppmm;
         SliceSettings.Yppm = Yppmm;
+
+        if (!isPartialEncode)
+        {
+            if (FileEndsWith(".rgb.cws"))
+            {
+                LayerImageFormat = ImageFormat.Png24BgrAA;
+            }
+            if (FileEndsWith(".xml.cws"))
+            {
+                LayerImageFormat = ImageFormat.Png32;
+            }
+        }
     }
 
     protected override void EncodeInternally(OperationProgress progress)
     {
-        //var filename = fileFullPath.EndsWith(TemporaryFileAppend) ? Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(fileFullPath)) : Path.GetFileNameWithoutExtension(fileFullPath);
-
-        if (ImageType == PrinterImageType.Unknown)
-        {
-            ImageType = PrinterImageType.Normal;
-            for (int i = 0; i < FileExtensions.Length; i++)
-            {
-                if (!FileEndsWith(FileExtensions[i].Extension)) continue;
-                ImageType = (PrinterImageType) i+1;
-            }
-        }
-
-        if (ImageType == PrinterImageType.BGRAntiAliasing)
-        {
-            if (ResolutionX % 3 != 0)
-            {
-                throw new InvalidOperationException($"Resolution width of {ResolutionX}px is invalid. Width must be in multiples of 3.\n" +
-                                                    "Fix your printer slicing settings with the correct width that is multiple of 3.");
-            }
-        }
-
-        /*var filename = Path.GetFileNameWithoutExtension(fileFullPath);
-        if (fileFullPath.EndsWith(TemporaryFileAppend))
-        {
-            filename = Path.GetFileNameWithoutExtension(filename);
-        }*/
         var filename = About.Software;
 
         if (char.IsDigit(filename[^1]))
@@ -626,7 +590,7 @@ public sealed class CWSFile : FileFormat
         }
 
         using var outputFile = ZipFile.Open(TemporaryOutputFileFullPath, ZipArchiveMode.Create);
-        if (ImageType == PrinterImageType.Wanhao32bit)
+        if (LayerImageFormat == ImageFormat.Png32)
         {
             var manifest = new CWSManifest
             {
@@ -640,14 +604,12 @@ public sealed class CWSFile : FileFormat
                 manifest.Slices[layerIndex] = new CWSManifest.Slice(this[layerIndex].FormatFileNameWithLayerDigits(filename));
             }
 
-            var entry = outputFile.CreateEntry(CWSManifest.FileName);
-            using (var stream = entry.Open())
+            using (var stream = outputFile.CreateEntryStream(CWSManifest.FileName))
             {
                 XmlExtensions.Serialize(manifest, stream, XmlExtensions.SettingsIndent, true);
             }
 
-            entry = outputFile.CreateEntry($"{filename}.slicing");
-            using (var stream = entry.Open())
+            using (var stream = outputFile.CreateEntryStream($"{filename}.slicing"))
             {
                 XmlExtensions.Serialize(SliceBuildConfig, stream, XmlExtensions.SettingsIndent, true);
             }
@@ -655,9 +617,8 @@ public sealed class CWSFile : FileFormat
         else
         {
             string arch = Environment.Is64BitOperatingSystem ? "64-bits" : "32-bits";
-            var entry = outputFile.CreateEntry("slice.conf");
-
-            using TextWriter tw = new StreamWriter(entry.Open());
+            using var stream = outputFile.CreateEntryStream("slice.conf");
+            using TextWriter tw = new StreamWriter(stream);
             tw.WriteLine($"# {About.Website} {About.Software} {Assembly.GetExecutingAssembly().GetName().Version} {arch} {DateTime.UtcNow}");
             tw.WriteLine("# conf version 1.0");
             tw.WriteLine("");
@@ -673,7 +634,7 @@ public sealed class CWSFile : FileFormat
         EncodeLayersInZip(outputFile, filename, LayerDigits, IndexStartNumber.Zero, progress);
 
         RebuildGCode();
-        outputFile.PutFileContent($"{filename}.gcode", GCodeStr, ZipArchiveMode.Create);
+        outputFile.CreateEntryFromContent($"{filename}.gcode", GCodeStr, ZipArchiveMode.Create);
     }
 
     protected override void DecodeInternally(OperationProgress progress)
@@ -683,7 +644,7 @@ public sealed class CWSFile : FileFormat
         if (entry is not null) // Wanhao
         {
             //DecodeXML(fileFullPath, inputFile, progress);
-            ImageType = PrinterImageType.Wanhao32bit;
+            LayerImageFormat = ImageFormat.Png32;
 
             try
             {
@@ -798,26 +759,12 @@ public sealed class CWSFile : FileFormat
         if (LayerCount <= 0) return;
         
         // Must discover png depth grayscale or color
-        if (DecodeType == FileDecodeType.Full && ImageType == PrinterImageType.Unknown)
+        if (DecodeType == FileDecodeType.Full)
         {
-            //var inputFilename = Path.GetFileNameWithoutExtension(FileFullPath)!;
-            foreach (var pngEntry in inputFile.Entries)
-            {
-                if (!pngEntry.Name.EndsWith(".png")) continue;
-                var match = Regex.Match(pngEntry.Name, @"([0-9]+)[.]png$");
-                if (!match.Success || match.Groups.Count < 2) continue;
-                if (!uint.TryParse(match.Groups[1].Value, out var layerIndex)) continue;
-                
-                using var stream = pngEntry.Open();
-                using var mat = new Mat();
-                CvInvoke.Imdecode(stream.ToArray(), ImreadModes.AnyColor, mat);
-                ImageType = mat.NumberOfChannels == 1 ? PrinterImageType.Normal : PrinterImageType.BGRAntiAliasing;
-                break;
-            }
+            LayerImageFormat = FetchImageFormat(inputFile, ImageFormat.Png24BgrAA);
         }
 
         DecodeLayersFromZipIgnoreFilename(inputFile, progress);
-        
         GCode.ParseLayersFromGCode(this);
     }
 
@@ -825,9 +772,9 @@ public sealed class CWSFile : FileFormat
     {
         if (!SupportGCode || SuppressRebuildGCode) return;
 
-        switch (ImageType)
+        switch (LayerImageFormat)
         {
-            case PrinterImageType.Wanhao32bit:
+            case ImageFormat.Png32:
                 GCode!.CommandWaitSyncDelay.Command = ";<Takes>";
                 break;
             default:
@@ -943,8 +890,7 @@ public sealed class CWSFile : FileFormat
     {
         using var outputFile = ZipFile.Open(TemporaryOutputFileFullPath, ZipArchiveMode.Update);
         var arch = Environment.Is64BitOperatingSystem ? "64-bits" : "32-bits";
-        var entry = outputFile.GetPutFile("slice.conf");
-        var stream = entry.Open();
+        using var stream = outputFile.GetOrCreateStream("slice.conf");
         stream.SetLength(0);
 
         using (TextWriter tw = new StreamWriter(stream))
@@ -968,7 +914,7 @@ public sealed class CWSFile : FileFormat
             zipEntry.Delete();
         }
 
-        outputFile.PutFileContent($"{About.Software}.gcode", GCodeStr, ZipArchiveMode.Update);
+        outputFile.CreateEntryFromContent($"{About.Software}.gcode", GCodeStr, ZipArchiveMode.Update);
 
         /*foreach (var layer in this)
             {

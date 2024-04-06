@@ -12,6 +12,7 @@ using Emgu.CV.Util;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
@@ -31,12 +32,19 @@ public class EmguContours : IReadOnlyList<EmguContour>, IDisposable
     /// <summary>
     /// Gets the contours inside <see cref="VectorOfVectorOfPoint"/>
     /// </summary>
-    public readonly VectorOfVectorOfPoint VectorOfContours;
+    public readonly VectorOfVectorOfPoint Vector;
 
     /// <summary>
     /// Gets the contours hierarchy
     /// </summary>
-    public readonly int[,] Hierarchy = new int[0, 0];
+    public readonly int[,] Hierarchy;
+
+    /// <summary>
+    /// Gets the count of external contours
+    /// </summary>
+    public readonly int ExternalContoursCount;
+
+    public readonly ReadOnlyCollection<EmguContourFamily> Families;
 
     #endregion
 
@@ -45,41 +53,93 @@ public class EmguContours : IReadOnlyList<EmguContour>, IDisposable
     /// Gets if this collection have any contours
     /// </summary>
     public bool IsEmpty => Count == 0;
+
+    /// <summary>
+    /// Gets the external contours
+    /// </summary>
+    public IEnumerable<EmguContour> ExternalContours
+    {
+        get { return Families.Select(family => family.Self); }
+    }
+
+    /// <summary>
+    /// Gets the total solid area enclosed in all contours, including children contours, which is the sum of all positive areas minus the sum of all negative areas
+    /// </summary>
+    /// <remarks>Only work with tree contour detection method</remarks>
+    public double TotalSolidArea => Families.Sum(family => family.TotalSolidArea);
+
+    /// <summary>
+    /// Gets the minimum solid area enclosed in all contours, including children contours, which is the sum of all positive areas minus the sum of all negative areas
+    /// </summary>
+    /// <remarks>Only work with tree contour detection method</remarks>
+    public double MinSolidArea => Families.Min(family => family.TotalSolidArea);
+
+    /// <summary>
+    /// Gets the maximum solid area enclosed in all contours, including children contours, which is the sum of all positive areas minus the sum of all negative areas
+    /// </summary>
+    /// <remarks>Only work with tree contour detection method</remarks>
+    public double MaxSolidArea => Families.Max(family => family.TotalSolidArea);
     #endregion
 
     #region Constructor
 
-    public EmguContours(VectorOfVectorOfPoint vectorOfPointsOfPoints)
+    public EmguContours(Point[][] points, int[,] hierarchy) : this(new VectorOfVectorOfPoint(points), hierarchy)
     {
-        VectorOfContours = vectorOfPointsOfPoints;
-        _contours = new EmguContour[VectorOfContours.Size];
+    }
+
+    public EmguContours(VectorOfVectorOfPoint vectorOfPointsOfPoints, int[,] hierarchy)
+    {
+        Vector = vectorOfPointsOfPoints;
+        Hierarchy = hierarchy;
+        _contours = new EmguContour[Vector.Size];
+
+        List<EmguContourFamily> families = new();
+
         for (int i = 0; i < Count; i++)
         {
-            _contours[i] = new EmguContour(VectorOfContours[i]);
+            if (Hierarchy[i, EmguContour.HierarchyParent] == -1)
+            {
+                ExternalContoursCount++;
+                families.Add(ArrangeFamily(ref i, 0, null));
+            }
         }
+
+        Families = families.AsReadOnly();
     }
 
-    public EmguContours(Point[][] points) : this(new VectorOfVectorOfPoint(points))
-    { }
-
-    public EmguContours(Point[][] points, int[,] hierarchy) : this(points)
+    public EmguContours(IInputOutputArray mat, RetrType mode = RetrType.Tree, ChainApproxMethod method = ChainApproxMethod.ChainApproxSimple, Point offset = default)
     {
-        Hierarchy = hierarchy;
-    }
+        Vector = mat.FindContours(out Hierarchy, mode, method, offset);
+        _contours = new EmguContour[Vector.Size];
 
-    public EmguContours(VectorOfVectorOfPoint vectorOfPointsOfPoints, int[,] hierarchy) : this(vectorOfPointsOfPoints)
-    {
-        Hierarchy = hierarchy;
-    }
+        List<EmguContourFamily> families = new();
 
-    public EmguContours(IInputOutputArray mat, RetrType mode = RetrType.List, ChainApproxMethod method = ChainApproxMethod.ChainApproxSimple, Point offset = default)
-    {
-        VectorOfContours = mat.FindContours(out Hierarchy, mode, method, offset);
-        _contours = new EmguContour[VectorOfContours.Size];
-        for (int i = 0; i < _contours.Length; i++)
+        for (int i = 0; i < Count; i++)
         {
-            _contours[i] = new EmguContour(VectorOfContours[i]);
+            if (Hierarchy[i, EmguContour.HierarchyParent] == -1)
+            {
+                ExternalContoursCount++;
+                families.Add(ArrangeFamily(ref i, 0, null));
+            }
         }
+
+        Families = families.AsReadOnly();
+    }
+
+    private EmguContourFamily ArrangeFamily(ref int loopIndex, int depth, EmguContourFamily? parent)
+    {
+        int contourIndex = loopIndex;
+        _contours[contourIndex] = new EmguContour(Vector[contourIndex]);
+        var family = new EmguContourFamily(contourIndex, depth, _contours[contourIndex], parent);
+
+        for (loopIndex++; loopIndex < Count && Hierarchy[loopIndex, EmguContour.HierarchyParent] == contourIndex; loopIndex++)
+        {
+            family.Add(ArrangeFamily(ref loopIndex, depth + 1, family));
+        }
+
+        loopIndex--;
+
+        return family;
     }
     #endregion
 
@@ -149,12 +209,12 @@ public class EmguContours : IReadOnlyList<EmguContour>, IDisposable
 
     public EmguContours Clone()
     {
-        return new EmguContours(VectorOfContours.ToArrayOfArray(), Hierarchy);
+        return new EmguContours(Vector.ToArrayOfArray(), Hierarchy);
     }
 
     public void Dispose()
     {
-        VectorOfContours.Dispose();
+        Vector.Dispose();
         foreach (var contour in _contours)
         {
             contour.Dispose();

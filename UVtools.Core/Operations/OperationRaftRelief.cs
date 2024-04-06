@@ -318,7 +318,7 @@ public class OperationRaftRelief : Operation
                 break;
             case RaftReliefTypes.LinkedLines:
             {
-                using var contours = new EmguContours(supportsMatOriginal);
+                using var contours = new EmguContours(supportsMatOriginal, RetrType.List);
                 using var supportsRedraw = _linkedExternalSupports ? supportsMatOriginal.Clone() : null;
                 using var supportsBrightnessCorrection = _highBrightness < byte.MaxValue ? supportsMat.Clone() : null;
 
@@ -454,7 +454,7 @@ public class OperationRaftRelief : Operation
                                         continue;
                                     }
 
-                                    if (CvInvoke.PointPolygonTest(contour.Contour, new PointF(x, y), false) == 0) // Must be on edge
+                                    if (CvInvoke.PointPolygonTest(contour.Vector, new PointF(x, y), false) == 0) // Must be on edge
                                     {
                                         foundPoint = true;
                                         break;

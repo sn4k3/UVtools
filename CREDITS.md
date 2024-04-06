@@ -84,3 +84,4 @@
 - Mark Johnston
 - Ivan Ivanov
 - Simon Christ
+- Leonardo Farenzena Felin

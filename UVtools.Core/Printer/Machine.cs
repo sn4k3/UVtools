@@ -248,6 +248,9 @@ namespace UVtools.Core.Printer
                 new(PrinterBrand.AnyCubic, "AnyCubic Photon X", "Photon X", 2560, 1600, 192f, 120f, 245f, FlipDirection.Horizontally),
                 new(PrinterBrand.AnyCubic, "AnyCubic Photon Zero", "Photon Zero", 480, 854, 55.4f, 98.63f, 150f, FlipDirection.Horizontally),
 
+                new(PrinterBrand.Concepts3D, "Concepts3D Athena 8K", "Athena 8K", 7680, 4320, 218.88f, 123.12f, 245f, FlipDirection.Horizontally),
+                new(PrinterBrand.Concepts3D, "Concepts3D Athena 12K", "Athena 12K", 11520, 5120, 218.88f, 122.88f, 245f, FlipDirection.Horizontally),
+
                 new(PrinterBrand.Creality, "Creality CT-005 Pro", "CT-005", 3840, 2400, 192f, 120f, 250f, FlipDirection.None),
                 new(PrinterBrand.Creality, "Creality CT-133 Pro", "CT133PRO", 3840, 2160, 293.76f, 165.24f, 300f, FlipDirection.None),
                 new(PrinterBrand.Creality, "Creality Halot Lite CL-89L", "CL-89L", 3840, 2400, 192f, 120f, 200f, FlipDirection.None),

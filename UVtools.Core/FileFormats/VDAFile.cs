@@ -298,6 +298,11 @@ public sealed class VDAFile : FileFormat
         return false;
     }
 
+    protected override void OnBeforeEncode(bool isPartialEncode)
+    {
+        UpdateManifest();
+    }
+
     protected override void EncodeInternally(OperationProgress progress)
     {
         using var outputFile = ZipFile.Open(TemporaryOutputFileFullPath, ZipArchiveMode.Create);
@@ -307,11 +312,7 @@ public sealed class VDAFile : FileFormat
 
         EncodeLayersInZip(outputFile, 4, IndexStartNumber.One, progress);
         
-        UpdateManifest();
-
-        var entry = outputFile.CreateEntry(manifestFilename);
-        using var stream = entry.Open();
-        XmlExtensions.Serialize(ManifestFile, stream, XmlExtensions.SettingsIndent, true);
+        outputFile.CreateEntryFromSerializeXml(manifestFilename, ManifestFile, ZipArchiveMode.Create, XmlExtensions.SettingsIndent, true);
     }
 
     protected override void DecodeInternally(OperationProgress progress)
@@ -361,11 +362,7 @@ public sealed class VDAFile : FileFormat
             Replace($".{FileExtensions[0].Extension}{TemporaryFileAppend}", ".xml").
             Replace($".{FileExtensions[0].Extension}", ".xml");
 
-        UpdateManifest();
-
-        var entry = outputFile.CreateEntry(manifestFilename);
-        using var stream = entry.Open();
-        XmlExtensions.Serialize(ManifestFile, stream, XmlExtensions.SettingsIndent, true);
+        outputFile.CreateEntryFromSerializeXml(manifestFilename, ManifestFile, ZipArchiveMode.Update, XmlExtensions.SettingsIndent, true);
     }
 
     public void UpdateManifest()

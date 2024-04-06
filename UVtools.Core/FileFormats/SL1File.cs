@@ -29,6 +29,7 @@ public sealed class SL1File : FileFormat
 
     public const string Keyword_FileFormat = "FILEFORMAT";
     public const string Keyword_FileVersion = "FILEVERSION";
+    public const string Keyword_LayerImageFormat = "LAYERIMAGEFORMAT";
 
     public const string Keyword_TransitionLayerCount = "TransitionLayerCount";
     public const string Keyword_BottomLightOffDelay = "BottomLightOffDelay";
@@ -567,6 +568,8 @@ public sealed class SL1File : FileFormat
             output.Version = (uint)fileVersion;
         }
 
+        output.LayerImageFormat = LookupCustomValue(Keyword_LayerImageFormat, output.LayerImageFormat);
+
         return true;
     }
 
@@ -577,8 +580,8 @@ public sealed class SL1File : FileFormat
         filename = Path.GetFileNameWithoutExtension(filename); // sl1
         OutputConfigSettings.JobDir = filename;
         using var outputFile = ZipFile.Open(TemporaryOutputFileFullPath, ZipArchiveMode.Create);
-        var entry = outputFile.CreateEntry("config.ini");
-        using (TextWriter tw = new StreamWriter(entry.Open()))
+        using (var stream = outputFile.CreateEntryStream("config.ini"))
+        using (TextWriter tw = new StreamWriter(stream))
         {
             var properties = OutputConfigSettings.GetType()
                 .GetProperties(BindingFlags.Public | BindingFlags.Instance);
@@ -593,8 +596,8 @@ public sealed class SL1File : FileFormat
             tw.Close();
         }
 
-        entry = outputFile.CreateEntry(IniPrusaslicer);
-        using (TextWriter tw = new StreamWriter(entry.Open()))
+        using (var stream = outputFile.CreateEntryStream(IniPrusaslicer))
+        using (TextWriter tw = new StreamWriter(stream))
         {
             foreach (var config in Configs)
             {
@@ -613,7 +616,7 @@ public sealed class SL1File : FileFormat
             tw.Close();
         }
 
-        EncodeAllThumbnailsInZip(outputFile, "thumbnail/thumbnail{1}x{2}.png");
+        EncodeAllThumbnailsInZip(outputFile, "thumbnail/thumbnail{1}x{2}.png", progress);
         EncodeLayersInZip(outputFile, filename, 5, IndexStartNumber.Zero, progress);
     }
 
@@ -730,7 +733,7 @@ public sealed class SL1File : FileFormat
         }
         */
 
-        DecodeAllThumbnailsFromZip(inputFile, "thumbnail");
+        DecodeAllThumbnailsFromZip(inputFile, progress, "thumbnail");
         DecodeLayersFromZip(inputFile, 5, IndexStartNumber.Zero, progress);
 
 
@@ -747,8 +750,8 @@ public sealed class SL1File : FileFormat
     protected override void PartialSaveInternally(OperationProgress progress)
     {
         using var outputFile = ZipFile.Open(TemporaryOutputFileFullPath, ZipArchiveMode.Update);
-        //InputFile.CreateEntry("Modified");
-        using (TextWriter tw = new StreamWriter(outputFile.PutFileContent("config.ini", string.Empty, ZipArchiveMode.Update).Open()))
+        using (var stream = outputFile.CreateEntryFromContent("config.ini", string.Empty, ZipArchiveMode.Update).Open())
+        using (TextWriter tw = new StreamWriter(stream))
         {
             var properties = OutputConfigSettings.GetType()
                 .GetProperties(BindingFlags.Public | BindingFlags.Instance);
@@ -763,7 +766,8 @@ public sealed class SL1File : FileFormat
             tw.Close();
         }
 
-        using (TextWriter tw = new StreamWriter(outputFile.PutFileContent("prusaslicer.ini", string.Empty, ZipArchiveMode.Update).Open()))
+        using (var stream = outputFile.CreateEntryFromContent("prusaslicer.ini", string.Empty, ZipArchiveMode.Update).Open())
+        using (TextWriter tw = new StreamWriter(stream))
         {
             foreach (var config in Configs)
             {
@@ -800,7 +804,7 @@ public sealed class SL1File : FileFormat
 
             foreach (var line in lines)
             {
-                if (!line.StartsWith(name)) continue;
+                if (!line.StartsWith(name, StringComparison.OrdinalIgnoreCase)) continue;
                 if (existsOnly || line == name) return "true".Convert<T>();
                 var value = line.Remove(0, name.Length);
                 foreach (var c in value)

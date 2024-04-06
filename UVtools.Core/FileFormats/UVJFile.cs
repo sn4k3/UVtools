@@ -566,9 +566,9 @@ public sealed class UVJFile : FileFormat
         }
 
         using var outputFile = ZipFile.Open(TemporaryOutputFileFullPath, ZipArchiveMode.Create);
-        outputFile.PutFileContent(FileConfigName, JsonSerializer.SerializeToUtf8Bytes(JsonSettings, JsonExtensions.SettingsIndent), ZipArchiveMode.Create);
+        outputFile.CreateEntryFromSerializeJson(FileConfigName, JsonSettings, ZipArchiveMode.Create, JsonExtensions.SettingsIndent);
 
-        EncodeThumbnailsInZip(outputFile, FilePreviewTinyName, FilePreviewHugeName);
+        EncodeThumbnailsInZip(outputFile, progress, FilePreviewTinyName, FilePreviewHugeName);
         EncodeLayersInZip(outputFile, 8, IndexStartNumber.Zero, progress, FolderImageName);
     }
 
@@ -585,7 +585,7 @@ public sealed class UVJFile : FileFormat
         JsonSettings = JsonSerializer.Deserialize<Settings>(entry.Open())!;
         Init(JsonSettings.Properties.Size.Layers, DecodeType == FileDecodeType.Partial);
 
-        DecodeThumbnailsFromZip(inputFile, FilePreviewTinyName, FilePreviewHugeName);
+        DecodeThumbnailsFromZip(inputFile, progress, FilePreviewTinyName, FilePreviewHugeName);
         DecodeLayersFromZip(inputFile, progress);
 
         for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
@@ -614,9 +614,7 @@ public sealed class UVJFile : FileFormat
         }
 
         using var outputFile = ZipFile.Open(TemporaryOutputFileFullPath, ZipArchiveMode.Update);
-        outputFile.PutFileContent(FileConfigName, JsonSerializer.SerializeToUtf8Bytes(JsonSettings, JsonExtensions.SettingsIndent), ZipArchiveMode.Update);
-
-        //Decode(FileFullPath, progress);
+        outputFile.CreateEntryFromSerializeJson(FileConfigName, JsonSettings, ZipArchiveMode.Update, JsonExtensions.SettingsIndent);
     }
     #endregion
 }

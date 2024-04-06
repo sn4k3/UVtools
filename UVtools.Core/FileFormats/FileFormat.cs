@@ -33,6 +33,7 @@ using UVtools.Core.Managers;
 using UVtools.Core.Objects;
 using UVtools.Core.Operations;
 using UVtools.Core.PixelEditor;
+using UVtools.Core.Exceptions;
 
 namespace UVtools.Core.FileFormats;
 
@@ -176,9 +177,12 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <summary>
     /// Image data type
     /// </summary>
-    public enum FileImageType : byte
+    public enum ImageFormat : byte
     {
         Custom,
+        Rle,
+        GCode,
+
         Png8,
         Png24,
         Png32,
@@ -189,10 +193,11 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         Png24BgrAA,
 
         /// <summary>
-        /// eg: Uniformation GKone
+        /// eg: Uniformation GKone, Athena 12K
         /// </summary>
         Png24RgbAA,
 
+        Svg,
     }
 
     #endregion
@@ -458,6 +463,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         //new CXDLPv1File(),   // Creality Box v1
         new CXDLPFile(), // Creality Box
         new CXDLPv4File(), // Creality Box
+        new NanoDLPFile(), // NanoDLP
+
         new FDGFile(), // fdg
         new GooFile(), // goo
         new ZCodeFile(), // zcode
@@ -871,7 +878,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
            )
         {
             var mat = new Mat();
-            CvInvoke.Imdecode(bytes, ImreadModes.AnyColor, mat);
+            CvInvoke.Imdecode(bytes, ImreadModes.Unchanged, mat);
             return mat;
         }
 
@@ -1150,6 +1157,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
 
     private string? _fileFullPath;
 
+    protected ImageFormat _layerImageFormat = ImageFormat.Custom;
 
     protected Layer[] _layers = Array.Empty<Layer>();
 
@@ -1238,11 +1246,14 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             : PrinterManufacturingProcess.mSLA;
 
     /// <summary>
-    /// Gets the layer image data type used on this file format
+    /// Gets the layer image format type used by this file format
     /// </summary>
-    public virtual FileImageType LayerImageType =>
-        FileType == FileFormatType.Archive ? FileImageType.Png8 : FileImageType.Custom;
-
+    public ImageFormat LayerImageFormat
+    {
+        get => _layerImageFormat;
+        set => RaiseAndSetIfChanged(ref _layerImageFormat, value);
+    }
+        
     /// <summary>
     /// Gets the group name under convert menu to group all extensions, set to null to not group items
     /// </summary>
@@ -2888,10 +2899,15 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
                
             if (string.IsNullOrEmpty(str)) return str;
 
-            str += "mm @ ";
+            str += "mm";
 
             var haveBottomLiftSpeed = CanUseBottomLiftSpeed;
             var haveLiftSpeed = CanUseLiftSpeed;
+
+            if (!haveBottomLiftSpeed && !haveLiftSpeed) return str;
+
+            str += " @ ";
+
             if (haveBottomLiftSpeed)
             {
                 str += BottomLiftSpeed.ToString(CultureInfo.InvariantCulture);
@@ -2900,6 +2916,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
                     str += $"+{BottomLiftSpeed2.ToString(CultureInfo.InvariantCulture)}";
                 }
             }
+
             if (haveLiftSpeed)
             {
                 if (haveBottomLiftSpeed) str += '/';
@@ -3172,7 +3189,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         get
         {
             var printTime = PrintTime;
-            return TimeSpan.FromSeconds(float.IsPositiveInfinity(printTime) || float.IsNaN(printTime) ? 0 : printTime).ToString("hh\\hmm\\m");
+            return TimeSpan.FromSeconds(float.IsPositiveInfinity(printTime) || float.IsNaN(printTime) ? 0 : printTime).ToTimeString(false);
         }
     }
 
@@ -3376,6 +3393,14 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     {
         IssueManager = new(this);
         _queueTimerPrintTime.Elapsed += (sender, e) => UpdatePrintTime();
+
+        _layerImageFormat = FileType switch
+        {
+            FileFormatType.Archive => ImageFormat.Png8,
+            FileFormatType.Binary => ImageFormat.Rle,
+            FileFormatType.Text => ImageFormat.Custom,
+            _ => throw new ArgumentOutOfRangeException(nameof(LayerImageFormat), _layerImageFormat, null)
+        };
     }
 
     protected override void OnPropertyChanged(PropertyChangedEventArgs e)
@@ -4020,9 +4045,10 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     }
 
     /// <summary>
-    /// Method that are called before an full or partial encode
+    /// Method that are called before a full or partial encode
+    /// <param name="isPartialEncode">True if is a partial encode, otherwise false</param>
     /// </summary>
-    private void BeforeEncode()
+    private void BeforeEncode(bool isPartialEncode)
     {
         // Convert wait time to light-off delay if first not supported but the second is
         var bottomWaitTime = BottomWaitTimeAfterCure;
@@ -4094,7 +4120,9 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         SanitizeThumbnails();
 
         OnBeforeEncode(false);
-        BeforeEncode();
+        BeforeEncode(false);
+
+        ValidateLayerImageFormat();
 
         bool success;
         try
@@ -4232,7 +4260,63 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     public Task ReloadAsync(OperationProgress? progress = null) => ReloadAsync(FileDecodeType.Full, progress);
 
     /// <summary>
-    /// Encodes all <see cref="Thumbnails"/> into <paramref name="zipArchive"/> given an path format
+    /// Detect image format from <see cref="Mat"/>
+    /// </summary>
+    /// <param name="mat"></param>
+    /// <param name="png24Variant"></param>
+    /// <returns></returns>
+    /// <exception cref="MessageException"></exception>
+    public ImageFormat FetchImageFormat(Mat mat, ImageFormat png24Variant = ImageFormat.Png24BgrAA)
+    {
+        if (mat.Depth != DepthType.Cv8U) throw new MessageException($"Unable to auto detect and/or use image format from {mat.Depth} depth. Was expecting {DepthType.Cv8U}.");
+        return mat.NumberOfChannels switch
+        {
+            1 => ImageFormat.Png8,
+            3 => ResolutionX > 0 && ResolutionX == mat.Width * 3 ? png24Variant : ImageFormat.Png24,
+            4 => ImageFormat.Png32,
+            _ => throw new MessageException($"Unable to auto detect and/or use image format from {mat.NumberOfChannels} channels. Was expecting 1, 3 or 4.")
+        };
+    }
+
+    /// <summary>
+    /// Detect image format from image byte array
+    /// </summary>
+    /// <param name="matBytes"></param>
+    /// <param name="png24Variant"></param>
+    /// <returns></returns>
+    public ImageFormat FetchImageFormat(byte[] matBytes, ImageFormat png24Variant = ImageFormat.Png24BgrAA)
+    {
+        using var mat = new Mat();
+        CvInvoke.Imdecode(matBytes, ImreadModes.Unchanged, mat);
+        return FetchImageFormat(mat, png24Variant);
+    }
+
+    /// <summary>
+    /// Detect image format from <see cref="ZipArchive"/>
+    /// </summary>
+    /// <param name="archive"></param>
+    /// <param name="png24Variant"></param>
+    /// <param name="mathRegex"></param>
+    /// <returns></returns>
+    /// <exception cref="MessageException"></exception>
+    public ImageFormat FetchImageFormat(ZipArchive archive, ImageFormat png24Variant = ImageFormat.Png24BgrAA, string mathRegex = "([0-9]+)[.]png$")
+    {
+        foreach (var pngEntry in archive.Entries)
+        {
+            if (!pngEntry.Name.EndsWith(".png")) continue;
+            var match = Regex.Match(pngEntry.Name, mathRegex);
+            if (!match.Success || match.Groups.Count < 2) continue;
+            if (!uint.TryParse(match.Groups[1].Value, out _)) continue;
+
+            using var stream = pngEntry.Open();
+            return FetchImageFormat(stream.ToArray(), png24Variant);
+        }
+
+        throw new MessageException("Unable to detect layer image format from the archive, no valid candidates found.");
+    }
+
+    /// <summary>
+    /// Encodes all <see cref="Thumbnails"/> into <paramref name="zipArchive"/> given a path format
     /// </summary>
     /// <param name="zipArchive"></param>
     /// <param name="pathFormat">
@@ -4241,14 +4325,16 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// {2} = Height<br/>
     /// <para>Example: thumbnail/thumbnail{1}x{2}.png</para>
     /// </param>
-    public void EncodeAllThumbnailsInZip(ZipArchive zipArchive, string pathFormat = "preview{0}.png")
+    /// <param name="progress"></param>
+    public void EncodeAllThumbnailsInZip(ZipArchive zipArchive, string pathFormat = "preview{0}.png", OperationProgress? progress = null)
     {
+        progress ??= new OperationProgress();
+        progress.Reset(OperationProgress.StatusEncodePreviews, (uint)ThumbnailsCount);
         for (var i = 0; i < ThumbnailsCount; i++)
         {
             var thumbnail = Thumbnails[i];
-            using var stream = zipArchive.CreateEntry(string.Format(pathFormat, i, thumbnail.Width, thumbnail.Height)).Open();
-            stream.WriteBytes(thumbnail.GetPngByes());
-            stream.Close();
+            zipArchive.CreateEntryFromContent(string.Format(pathFormat, i, thumbnail.Width, thumbnail.Height), thumbnail.GetPngByes(), ZipArchiveMode.Create);
+            progress++;
         }
     }
 
@@ -4256,42 +4342,50 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// Encodes <see cref="Thumbnails"/> into <paramref name="zipArchive"/> given specific entry path's
     /// </summary>
     /// <param name="zipArchive"></param>
+    /// <param name="progress"></param>
     /// <param name="entryPaths"></param>
-    public void EncodeThumbnailsInZip(ZipArchive zipArchive, params string[] entryPaths)
+    public void EncodeThumbnailsInZip(ZipArchive zipArchive, OperationProgress? progress = null, params string[] entryPaths)
     {
+        progress ??= new OperationProgress();
+        progress.Reset(OperationProgress.StatusEncodePreviews, (uint)entryPaths.Length);
         for (var i = 0; i < ThumbnailsCount && i < entryPaths.Length; i++)
         {
             var thumbnail = Thumbnails[i];
-            using var stream = zipArchive.CreateEntry(entryPaths[i]).Open();
-            stream.WriteBytes(thumbnail.GetPngByes());
-            stream.Close();
+            zipArchive.CreateEntryFromContent(entryPaths[i], thumbnail.GetPngByes(), ZipArchiveMode.Create);
+            progress++;
         }
     }
 
-    public void DecodeThumbnailsFromZip(ZipArchive zipArchive, params string[] entryPaths)
+    public void DecodeThumbnailsFromZip(ZipArchive zipArchive, OperationProgress? progress = null, params string[] entryPaths)
     {
+        progress ??= new OperationProgress();
+        progress.Reset(OperationProgress.StatusDecodePreviews, (uint)entryPaths.Length);
         foreach (var entryPath in entryPaths)
         {
             using var stream = zipArchive.GetEntry(entryPath)?.Open();
             if (stream is null) continue;
             var mat = new Mat();
-            CvInvoke.Imdecode(stream.ToArray(), ImreadModes.AnyColor, mat);
+            CvInvoke.Imdecode(stream.ToArray(), ImreadModes.Unchanged, mat);
             Thumbnails.Add(mat);
             stream.Close();
+            progress++;
         }
     }
 
-    public void DecodeAllThumbnailsFromZip(ZipArchive zipArchive, string entryStartsWith = "preview", string entryEndsWith = ".png")
+    public void DecodeAllThumbnailsFromZip(ZipArchive zipArchive, OperationProgress? progress = null, string entryStartsWith = "preview", string entryEndsWith = ".png")
     {
+        progress ??= new OperationProgress();
+        progress.Reset(OperationProgress.StatusDecodePreviews, (uint)ThumbnailCountFileShouldHave);
         foreach (var entity in zipArchive.Entries)
         {
             if (!string.IsNullOrWhiteSpace(entryEndsWith) && !entity.Name.EndsWith(entryEndsWith)) continue;
             if (!entity.Name.StartsWith(entryStartsWith)) continue;
             using var stream = entity.Open();
             Mat mat = new();
-            CvInvoke.Imdecode(stream.ToArray(), ImreadModes.AnyColor, mat);
+            CvInvoke.Imdecode(stream.ToArray(), ImreadModes.Unchanged, mat);
             Thumbnails.Add(mat);
             stream.Close();
+            progress++;
         }
     }
 
@@ -4304,7 +4398,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         var batches = BatchLayersIndexes();
         var pngLayerBytes = new byte[LayerCount][];
 
-        var layerImageType = LayerImageType;
+        var layerImageType = LayerImageFormat;
 
         foreach (var batch in batches)
         {
@@ -4315,7 +4409,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
                 {
                     switch (layerImageType)
                     {
-                        case FileImageType.Png24:
+                        case ImageFormat.Png24:
                         {
                             using var mat = this[layerIndex].LayerMat;
                             CvInvoke.CvtColor(mat, mat, ColorConversion.Gray2Bgr);
@@ -4323,7 +4417,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
 
                             break;
                         }
-                        case FileImageType.Png32:
+                        case ImageFormat.Png32:
                         {
                             using var mat = this[layerIndex].LayerMat;
                             CvInvoke.CvtColor(mat, mat, ColorConversion.Gray2Bgra);
@@ -4331,7 +4425,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
 
                             break;
                         }
-                        case FileImageType.Png24BgrAA:
+                        case ImageFormat.Png24BgrAA:
                         {
                             using var mat = this[layerIndex].LayerMat;
                             using var outputMat = mat.Reshape(3);
@@ -4339,7 +4433,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
 
                             break;
                         }
-                        case FileImageType.Png24RgbAA:
+                        case ImageFormat.Png24RgbAA:
                         {
                             using var mat = this[layerIndex].LayerMat;
                             using var outputMat = mat.Reshape(3);
@@ -4365,7 +4459,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
 
             foreach (var layerIndex in batch)
             {
-                zipArchive.PutFileContent(Path.Combine(path, this[layerIndex].FormatFileName(prepend, padDigits, layerIndexStartNumber)), pngLayerBytes[layerIndex], ZipArchiveMode.Create);
+                zipArchive.CreateEntryFromContent(Path.Combine(path, this[layerIndex].FormatFileName(prepend, padDigits, layerIndexStartNumber)), pngLayerBytes[layerIndex], ZipArchiveMode.Create);
                 pngLayerBytes[layerIndex] = null!;
             }
         }
@@ -4390,7 +4484,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         progress ??= new OperationProgress();
         progress.Reset(OperationProgress.StatusDecodeLayers, LayerCount);
 
-        var layerImageType = LayerImageType;
+        var layerImageFormat = LayerImageFormat;
 
         Parallel.For(0, LayerCount, CoreSettings.GetParallelOptions(progress), layerIndex =>
         {
@@ -4400,14 +4494,41 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             {
                 using var stream = layerEntries[layerIndex].Open();
                 pngBytes = stream.ToArray();
-                stream.Close();
             }
 
             if (matGenFunc is null)
             {
-                switch (layerImageType)
+                /*if (layerImageFormat == ImageFormat.AutoDetect)
                 {
-                    case FileImageType.Png24BgrAA:
+                    using var mat = new Mat();
+                    CvInvoke.Imdecode(pngBytes, ImreadModes.Unchanged, mat);
+                    if (mat.Depth != DepthType.Cv8U) throw new MessageException($"Unable to auto detect and/or use image format from {mat.Depth} depth. Was expecting {DepthType.Cv8U}.", FileFullPath);
+                    if (mat.NumberOfChannels == 1)
+                    {
+                        LayerImageFormat = layerImageFormat = ImageFormat.Png8;
+                    }
+                    else if (mat.NumberOfChannels == 3)
+                    {
+                        LayerImageFormat = layerImageFormat = ImageFormat.Png24;
+                    }
+                    else if (mat.NumberOfChannels == 4)
+                    {
+                        LayerImageFormat = layerImageFormat = ImageFormat.Png32;
+                    }
+                    else
+                    {
+                        throw new MessageException($"Unable to auto detect and/or use image format from {mat.NumberOfChannels} channels. Was expecting 1, 3 or 4.");
+                    }
+                }*/
+
+                switch (layerImageFormat)
+                {
+                    case ImageFormat.Png8:
+                    case ImageFormat.Png24:
+                    case ImageFormat.Png32:
+                        _layers[layerIndex] = new Layer((uint)layerIndex, pngBytes, this);
+                        break;
+                    case ImageFormat.Png24BgrAA:
                     {
                         using var bgrMat = new Mat();
                         CvInvoke.Imdecode(pngBytes, ImreadModes.Color, bgrMat);
@@ -4417,7 +4538,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
 
                         break;
                     }
-                    case FileImageType.Png24RgbAA:
+                    case ImageFormat.Png24RgbAA:
                     {
                         using Mat rgbMat = new();
                         CvInvoke.Imdecode(pngBytes, ImreadModes.Color, rgbMat);
@@ -4429,8 +4550,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
                         break;
                     }
                     default:
-                        _layers[layerIndex] = new Layer((uint)layerIndex, pngBytes, this);
-                        break;
+                        throw new ArgumentOutOfRangeException(nameof(layerImageFormat), layerImageFormat, null);
                 }
             }
             else
@@ -5569,7 +5689,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         }
 
         OnBeforeEncode(true);
-        BeforeEncode();
+        BeforeEncode(true);
 
         // Backup old file name and prepare the temporary file to be written next
         var oldFilePath = FileFullPath!;
@@ -5802,6 +5922,22 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         if (AntiAliasing <= 1) return 1;
         //if(AntiAliasing % 2 != 0) throw new ArgumentException("AntiAliasing must be multiples of 2, otherwise use 0 or 1 to disable it", nameof(AntiAliasing));
         return AntiAliasing;
+    }
+
+    /// <summary>
+    /// Validate the layer image format
+    /// </summary>
+    /// <exception cref="InvalidOperationException"></exception>
+    protected void ValidateLayerImageFormat()
+    {
+        if (LayerImageFormat is ImageFormat.Png24BgrAA or ImageFormat.Png24RgbAA)
+        {
+            if (ResolutionX % 3 != 0)
+            {
+                throw new InvalidOperationException($"Resolution width of {ResolutionX}px is invalid. Width must be in multiples of 3.\n" +
+                                                    "Fix your printer slicing settings with the correct width that is multiple of 3.");
+            }
+        }
     }
 
     /// <summary>

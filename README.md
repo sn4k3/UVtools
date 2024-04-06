@@ -37,6 +37,13 @@ bash -c "$(curl -fsSL https://raw.githubusercontent.com/sn4k3/UVtools/master/Scr
 bash -c "$(curl -fsSL https://raw.githubusercontent.com/sn4k3/UVtools/master/Scripts/install-uvtools.sh)"
 ```
 
+## To downgrade to a previous version:
+
+```bash
+# Replace x.x.x by the version you want to install
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/sn4k3/UVtools/master/Scripts/install-uvtools.sh)" -- x.x.x
+```
+
 # MSLA/DLP, file analysis, calibration, repair, conversion and manipulation
 
 This simple tool can give you insight of supports and find key failures.  
@@ -116,6 +123,7 @@ But also, I need victims for test subject. Proceed at your own risk!
 - QDT (Emake3D Galaxy 1) 
 - OSLA (Open SLA universal binary file)
 - OSF (Vlare Open File Format)
+- NanoDLP (Zip)
 - UVJ (Vendor-neutral format for manual manipulation)
 - VDT (Voxeldance Tango), VDA.ZIP (Voxeldance Additive)
 - ZIP (Generic / Phrozen Zip)
@@ -156,6 +164,7 @@ But also, I need victims for test subject. Proceed at your own risk!
   - **LightPWM_xxx:** Sets the LED light power (0-255)
   - **FILEVERSION_n:** Sets the output file format version/revision
   - **FILEFORMAT_xxx:** Sets the output file format extension to be auto converted once open on UVtools
+  - **LAYERIMAGEFORMAT_xxx:** Sets the layer image format required for the converted file if the format have multiple options (For Archives with PNG's)
    
 Note that some variables will only work if the target format supports them, otherwise they will be ignored.  
 Replace the "xxx" by your desired value in the correct units

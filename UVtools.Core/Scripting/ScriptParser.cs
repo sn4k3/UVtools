@@ -20,6 +20,29 @@ public static class ScriptParser
     }
 
     /// <summary>
+    /// Checks whatever the script is valid
+    /// </summary>
+    /// <param name="text"></param>
+    /// <returns></returns>
+    public static bool IsValidScript(string text)
+    {
+        if (!Regex.Match(text, @"(void\s+ScriptInit\s*\(\s*\))").Success)
+        {
+            return false;
+        }
+        if (!Regex.Match(text, @"(string\s*[?]?\s+ScriptValidate\s*\(\s*\))").Success)
+        {
+            return false;
+        }
+        if (!Regex.Match(text, @"(bool\s+ScriptExecute\s*\(\s*\))").Success)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    /// <summary>
     /// Parse the script and clean forbidden keywords
     /// </summary>
     /// <param name="text">Text to parse</param>

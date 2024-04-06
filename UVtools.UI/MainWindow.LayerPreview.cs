@@ -759,14 +759,14 @@ public partial class MainWindow
     public void SelectLayerPositiveAreasMask()
     {
         if (!LayerCache.IsCached) return;
-        AddMaskPoints(LayerCache.Layer!.Contours.VectorOfContours.ToArrayOfArray());
+        AddMaskPoints(LayerCache.Layer!.Contours.Vector.ToArrayOfArray());
         if (_maskPoints.Count > 0 && Settings.LayerPreview.MaskClearROIAfterSet) ClearROI();
     }
 
     public void SelectLayerHollowAreasMask()
     {
         if (!LayerCache.IsCached) return;
-        var contours = EmguContours.GetNegativeContours(LayerCache.Layer!.Contours.VectorOfContours, LayerCache.Layer.Contours.Hierarchy);
+        var contours = EmguContours.GetNegativeContours(LayerCache.Layer!.Contours.Vector, LayerCache.Layer.Contours.Hierarchy);
         AddMaskPoints(contours.ToArrayOfArray());
         if (_maskPoints.Count > 0 && Settings.LayerPreview.MaskClearROIAfterSet) ClearROI();
     }
@@ -1231,7 +1231,7 @@ public partial class MainWindow
                  * hierarchy[i][2]: the index of the first child
                  * hierarchy[i][3]: the index of the parent
                  */
-                using var vec = EmguContours.GetNegativeContours(LayerCache.Layer.Contours.VectorOfContours, LayerCache.Layer.Contours.Hierarchy);
+                using var vec = EmguContours.GetNegativeContours(LayerCache.Layer.Contours.Vector, LayerCache.Layer.Contours.Hierarchy);
                 if (vec.Size > 0)
                 {
                     CvInvoke.DrawContours(LayerCache.ImageBgra, vec, -1, 
@@ -1273,7 +1273,7 @@ public partial class MainWindow
 
             if (_showLayerOutlineTriangulate)
             {
-                var groups = EmguContours.GetPositiveContoursInGroups(LayerCache.Layer.Contours.VectorOfContours, LayerCache.Layer.Contours.Hierarchy);
+                var groups = EmguContours.GetPositiveContoursInGroups(LayerCache.Layer.Contours.Vector, LayerCache.Layer.Contours.Hierarchy);
                 var lineColor = Settings.LayerPreview.TriangulateOutlineColor.ToMCvScalar();
                 var dotColor = new MCvScalar(
                     byte.MaxValue - Settings.LayerPreview.TriangulateOutlineColor.B,
@@ -1393,7 +1393,7 @@ public partial class MainWindow
                         ? Settings.PixelEditor.RemovePixelHighlightColor
                         : Settings.PixelEditor.RemovePixelColor;
 
-                    using var vec = EmguContours.GetContoursInside(LayerCache.Layer.Contours.VectorOfContours, LayerCache.Layer.Contours.Hierarchy, operation.Location);
+                    using var vec = EmguContours.GetContoursInside(LayerCache.Layer.Contours.Vector, LayerCache.Layer.Contours.Hierarchy, operation.Location);
                     if (vec.Size > 0) CvInvoke.DrawContours(LayerCache.ImageBgra, vec, -1, color.ToMCvScalar(), -1);
 
                     /*var hollowGroups = EmguContours.GetPositiveContoursInGroups(LayerCache.LayerContours, LayerCache.LayerContourHierarchy);
@@ -2269,7 +2269,7 @@ public partial class MainWindow
         if (!LayerCache.IsCached) return false;
         var point = GetTransposedPoint(location);
 
-        using var vec = EmguContours.GetContoursInside(LayerCache.Layer!.Contours.VectorOfContours, LayerCache.Layer.Contours.Hierarchy, point, (_globalModifiers & KeyModifiers.Control) != 0);
+        using var vec = EmguContours.GetContoursInside(LayerCache.Layer!.Contours.Vector, LayerCache.Layer.Contours.Hierarchy, point, (_globalModifiers & KeyModifiers.Control) != 0);
         AddMaskPoints(vec.ToArrayOfArray(), false);
         return vec.Size > 0;
     }

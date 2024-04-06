@@ -75,7 +75,7 @@ public sealed class PhotonWorkshopFile : FileFormat
     #endregion
 
     #region Enums
-    public enum LayerRleFormat
+    public enum PhotonRleFormat
     {
         PWS,
         PW0
@@ -643,11 +643,11 @@ public sealed class PhotonWorkshopFile : FileFormat
         public void Parse(FileFormat slicerFile)
         {
             var rect = slicerFile.BoundingRectangleMillimeters;
-            MaxX = (float)Math.Round(rect.Width / 2, 3);
-            MinX = -MaxX;
-
-            MaxY = (float)Math.Round(rect.Height / 2, 3);
-            MinY = -MaxY;
+            rect.Offset(slicerFile.DisplayWidth / -2f, slicerFile.DisplayHeight / -2f);
+            MinX = (float)Math.Round(rect.X, 4);
+            MinY = (float)Math.Round(rect.Y, 4);
+            MaxX = (float)Math.Round(rect.Right, 4);
+            MaxY = (float)Math.Round(rect.Bottom, 4);
 
             MinZ = 0;
             MaxZ = slicerFile.PrintHeight;
@@ -717,7 +717,7 @@ public sealed class PhotonWorkshopFile : FileFormat
 
         public Mat Decode(PhotonWorkshopFile slicerFile, bool consumeData = true)
         {
-            var result = slicerFile.LayerImageFormat == LayerRleFormat.PWS ? DecodePWS(slicerFile) : DecodePW0(slicerFile);
+            var result = slicerFile.RleFormat == PhotonRleFormat.PWS ? DecodePWS(slicerFile) : DecodePW0(slicerFile);
             if (consumeData)
                 EncodedRle = null!;
 
@@ -726,7 +726,7 @@ public sealed class PhotonWorkshopFile : FileFormat
 
         public byte[] Encode(PhotonWorkshopFile slicerFile, Mat image)
         {
-            EncodedRle = slicerFile.LayerImageFormat == LayerRleFormat.PWS ? EncodePWS(slicerFile, image) : EncodePW0(image);
+            EncodedRle = slicerFile.RleFormat == PhotonRleFormat.PWS ? EncodePWS(slicerFile, image) : EncodePW0(image);
             return EncodedRle;
         }
 
@@ -1378,7 +1378,7 @@ public sealed class PhotonWorkshopFile : FileFormat
                 AnyCubicMachine.PhotonM3Premium => 218.88f,
                 AnyCubicMachine.PhotonMonoM5 => 218.88f,
                 AnyCubicMachine.PhotonMonoM5s => 218.88f,
-                AnyCubicMachine.PhotonMonoM5sPro => 218.88f,
+                AnyCubicMachine.PhotonMonoM5sPro => 223.6416f,
                 _ => 0
             };
         }
@@ -1410,7 +1410,7 @@ public sealed class PhotonWorkshopFile : FileFormat
                 AnyCubicMachine.PhotonM3Premium => 123.12f,
                 AnyCubicMachine.PhotonMonoM5 => 122.88f,
                 AnyCubicMachine.PhotonMonoM5s => 122.88f,
-                AnyCubicMachine.PhotonMonoM5sPro => 223.6416f,
+                AnyCubicMachine.PhotonMonoM5sPro => 126.976f,
                 _ => 0
             };
         }
@@ -1786,10 +1786,10 @@ public sealed class PhotonWorkshopFile : FileFormat
 
     public override bool CanUseSameLayerPositionZ => false;
 
-    public LayerRleFormat LayerImageFormat =>
+    public PhotonRleFormat RleFormat =>
         FileEndsWith(".pws")
-            ? LayerRleFormat.PWS
-            : LayerRleFormat.PW0;
+            ? PhotonRleFormat.PWS
+            : PhotonRleFormat.PW0;
 
     public AnyCubicMachine PrinterModel
     {
@@ -1959,7 +1959,7 @@ public sealed class PhotonWorkshopFile : FileFormat
         HeaderSettings.PixelSizeUm = PixelSizeMicronsMax;
         MachineSettings.PixelWidthUm = PixelWidthMicrons;
         MachineSettings.PixelHeightUm = PixelHeightMicrons;
-        MachineSettings.LayerImageFormat = $"{LayerImageFormat.ToString().ToLower()}Img";
+        MachineSettings.LayerImageFormat = $"{RleFormat.ToString().ToLower()}Img";
         MachineSettings.MaxFileVersion = GetAvailableVersionsForExtension(FileExtension)[^1];
 
         FileMarkSettings.HeaderAddress = (uint) Helpers.Serializer.SizeOf(FileMarkSettings);

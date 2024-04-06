@@ -6,8 +6,6 @@
  *  of this license document, but changing it is not allowed.
  */
 
-using Avalonia.Media;
-using Avalonia.Media.Immutable;
 using Avalonia.Themes.Fluent;
 using System;
 using System.Collections.Generic;
@@ -31,7 +29,7 @@ namespace UVtools.UI;
 public sealed class UserSettings : BindableBase
 {
     #region Constants
-    public const ushort SETTINGS_VERSION = 6;
+    public const ushort SETTINGS_VERSION = 7;
     #endregion
 
     #region Sub classes
@@ -1549,6 +1547,9 @@ public sealed class UserSettings : BindableBase
         private bool _autoConvertFiles = true;
         private RemoveSourceFileAction _removeSourceFileAfterAutoConversion = RemoveSourceFileAction.No;
         private RemoveSourceFileAction _removeSourceFileAfterManualConversion = RemoveSourceFileAction.No;
+        private string? _eventAfterFileLoadScriptFile;
+        private string? _eventBeforeFileSaveScriptFile;
+        private string? _eventAfterFileSaveScriptFile;
 
         public bool SaveFileAfterModifications
         {
@@ -1578,6 +1579,24 @@ public sealed class UserSettings : BindableBase
         {
             get => _removeSourceFileAfterManualConversion;
             set => RaiseAndSetIfChanged(ref _removeSourceFileAfterManualConversion, value);
+        }
+
+        public string? EventAfterFileLoadScriptFile
+        {
+            get => _eventAfterFileLoadScriptFile;
+            set => RaiseAndSetIfChanged(ref _eventAfterFileLoadScriptFile, value);
+        }
+
+        public string? EventBeforeFileSaveScriptFile
+        {
+            get => _eventBeforeFileSaveScriptFile;
+            set => RaiseAndSetIfChanged(ref _eventBeforeFileSaveScriptFile, value);
+        }
+
+        public string? EventAfterFileSaveScriptFile
+        {
+            get => _eventAfterFileSaveScriptFile;
+            set => RaiseAndSetIfChanged(ref _eventAfterFileSaveScriptFile, value);
         }
 
         public AutomationsUserSettings Clone()
@@ -1645,6 +1664,7 @@ public sealed class UserSettings : BindableBase
 
     private ushort _settingsVersion = SETTINGS_VERSION;
     private string? _appVersion;
+    private int _lastBirthdayYearsOld;
     private uint _savesCount;
     private DateTime _modifiedDateTime;
 
@@ -1721,6 +1741,12 @@ public sealed class UserSettings : BindableBase
     {
         get => _appVersion ??= About.VersionString;
         set => RaiseAndSetIfChanged(ref _appVersion, value);
+    }
+
+    public int LastBirthdayYearsOld
+    {
+        get => _lastBirthdayYearsOld;
+        set => RaiseAndSetIfChanged(ref _lastBirthdayYearsOld, value);
     }
 
     /// <summary>
@@ -1961,7 +1987,7 @@ public sealed class UserSettings : BindableBase
                                 {
                                     var application = new MappedProcess(executable, "Open archive: WinRAR")
                                     {
-                                        CompatibleExtensions = "zip;sl1;sl1s;cws;zcode;zcodex;jxs;vdt;uvj"
+                                        CompatibleExtensions = "zip;sl1;sl1s;cws;zcode;zcodex;jxs;nanodlp;vdt;uvj"
                                     };
                                     _instance.General.SendToProcess.Add(application);
                                 }

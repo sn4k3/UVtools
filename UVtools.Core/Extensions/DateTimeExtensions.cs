@@ -55,7 +55,7 @@ public static class DateTimeExtensions
     /// <returns>Age in years today. 0 is returned for a future date of birth.</returns>
     public static int Age(this DateTime birthDate)
     {
-        return Age(birthDate, DateTime.Today);
+        return Age(birthDate, DateTime.UtcNow.Date);
     }
 
     /// <summary>
@@ -84,16 +84,18 @@ public static class DateTimeExtensions
     /// Convert a <see cref="TimeSpan"/> to a string representation of the time
     /// </summary>
     /// <param name="timeSpan"></param>
+    /// <param name="showSeconds"></param>
     /// <returns></returns>
-    public static string ToTimeString(this TimeSpan timeSpan)
+    public static string ToTimeString(this TimeSpan timeSpan, bool showSeconds = true)
     {
         var totalSeconds = timeSpan.TotalSeconds;
         return totalSeconds switch
         {
-            < 60 => $"{totalSeconds}s",                               // Less than a minute
-            < 3600 => timeSpan.ToString(@"mm\m\:ss\s"),        // Less than an hour
-            < 86400 => timeSpan.ToString(@"hh\h\:mm\m\:ss\s"), // Less than a day
-            _ => timeSpan.ToString(@"dd\ \d\a\y\(\s\)\ hh\h\:mm\m\:ss\s")
+            < 60 => $"{totalSeconds}s",                     // Less than a minute
+            < 3600 => showSeconds ? timeSpan.ToString(@"mm\mss\s") : timeSpan.ToString(@"mm\m"),           // Less than an hour
+            < 86400 => showSeconds ? timeSpan.ToString(@"hh\hmm\mss\s") : timeSpan.ToString(@"hh\hmm\m"),  // Less than a day
+            < 172800 => showSeconds ? timeSpan.ToString(@"d'day 'hh\hmm\mss\s") : timeSpan.ToString(@"d'day 'hh\hmm\m"),  // Less than a two days
+            _ => showSeconds ? timeSpan.ToString(@"d'days 'hh\hmm\mss\s") : timeSpan.ToString(@"d'days 'hh\hmm\m") // More than a day
         };
     }
 }

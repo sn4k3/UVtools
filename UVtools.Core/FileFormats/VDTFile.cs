@@ -615,15 +615,18 @@ public sealed class VDTFile : FileFormat
         return true;
     }
 
-    protected override void EncodeInternally(OperationProgress progress)
+    protected override void OnBeforeEncode(bool isPartialEncode)
     {
         // Redo layer data
         RebuildVDTLayers();
+    }
 
+    protected override void EncodeInternally(OperationProgress progress)
+    {
         using var outputFile = ZipFile.Open(TemporaryOutputFileFullPath, ZipArchiveMode.Create);
-        outputFile.PutFileContent(FileManifestName, JsonSerializer.SerializeToUtf8Bytes(ManifestFile, JsonExtensions.SettingsIndent), ZipArchiveMode.Create);
+        outputFile.CreateEntryFromSerializeJson(FileManifestName, ManifestFile, ZipArchiveMode.Create, JsonExtensions.SettingsIndent);
 
-        EncodeThumbnailsInZip(outputFile, FilePreviewNames);
+        EncodeThumbnailsInZip(outputFile, progress, FilePreviewNames);
         EncodeLayersInZip(outputFile, progress);
     }
 
@@ -641,7 +644,7 @@ public sealed class VDTFile : FileFormat
                 
         Init((uint) ManifestFile.Layers!.Length, DecodeType == FileDecodeType.Partial);
 
-        DecodeThumbnailsFromZip(inputFile, FilePreviewNames);
+        DecodeThumbnailsFromZip(inputFile, progress, FilePreviewNames);
         DecodeLayersFromZip(inputFile, progress);
 
         for (uint layerIndex = 0; layerIndex < LayerCount; layerIndex++)
@@ -655,11 +658,8 @@ public sealed class VDTFile : FileFormat
 
     protected override void PartialSaveInternally(OperationProgress progress)
     {
-        RebuildVDTLayers();
         using var outputFile = ZipFile.Open(TemporaryOutputFileFullPath, ZipArchiveMode.Update);
-        outputFile.PutFileContent(FileManifestName, JsonSerializer.SerializeToUtf8Bytes(ManifestFile, JsonExtensions.SettingsIndent), ZipArchiveMode.Update);
-
-        //Decode(FileFullPath, progress);
+        outputFile.CreateEntryFromSerializeJson(FileManifestName, ManifestFile, ZipArchiveMode.Update, JsonExtensions.SettingsIndent);
     }
 
     public T? LookupCustomValue<T>(string name, T? defaultValue, bool existsOnly = false)
@@ -676,7 +676,7 @@ public sealed class VDTFile : FileFormat
 
             foreach (var line in lines)
             {
-                if (!line.StartsWith(name)) continue;
+                if (!line.StartsWith(name, StringComparison.OrdinalIgnoreCase)) continue;
                 if (existsOnly || line == name) return "true".Convert<T>();
                 var value = line.Remove(0, name.Length);
                 foreach (var c in value)

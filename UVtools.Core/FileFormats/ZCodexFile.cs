@@ -370,11 +370,12 @@ public sealed class ZCodexFile : FileFormat
         }
 
         using var outputFile = ZipFile.Open(TemporaryOutputFileFullPath, ZipArchiveMode.Create);
-        outputFile.PutFileContent("ResinMetadata", JsonSerializer.SerializeToUtf8Bytes(ResinMetadataSettings, JsonExtensions.SettingsIndent), ZipArchiveMode.Create);
-        outputFile.PutFileContent("UserSettingsData", JsonSerializer.SerializeToUtf8Bytes(UserSettings, JsonExtensions.SettingsIndent), ZipArchiveMode.Create);
-        outputFile.PutFileContent("ZCodeMetadata", JsonSerializer.SerializeToUtf8Bytes(ZCodeMetadataSettings, JsonExtensions.SettingsIndent), ZipArchiveMode.Create);
 
-        EncodeThumbnailsInZip(outputFile, "Preview.png");
+        outputFile.CreateEntryFromSerializeJson("ResinMetadata", ResinMetadataSettings, ZipArchiveMode.Create, JsonExtensions.SettingsIndent);
+        outputFile.CreateEntryFromSerializeJson("UserSettingsData", UserSettings, ZipArchiveMode.Create, JsonExtensions.SettingsIndent);
+        outputFile.CreateEntryFromSerializeJson("ZCodeMetadata", ZCodeMetadataSettings, ZipArchiveMode.Create, JsonExtensions.SettingsIndent);
+
+        EncodeThumbnailsInZip(outputFile, progress, "Preview.png");
         EncodeLayersInZip(outputFile, FolderImageName, 5, IndexStartNumber.Zero, progress, FolderImages);
 
         GCode!.Clear();
@@ -418,7 +419,7 @@ public sealed class ZCodexFile : FileFormat
         GCode.AppendLine($"G1 Z40.0 F{UserSettings.ZLiftFeedRate}");
         GCode.AppendLine("M18");
 
-        outputFile.PutFileContent("ResinGCodeData", GCode.ToString(), ZipArchiveMode.Create);
+        outputFile.CreateEntryFromContent("ResinGCodeData", GCode.ToString(), ZipArchiveMode.Create);
     }
 
     protected override void DecodeInternally(OperationProgress progress)
@@ -558,7 +559,7 @@ M106 S0
             tr.Close();
         }
         
-        DecodeThumbnailsFromZip(inputFile, "Preview.png");
+        DecodeThumbnailsFromZip(inputFile, progress, "Preview.png");
 
         BottomRetractSpeed = RetractSpeed; // Compability
     }
@@ -581,10 +582,10 @@ M106 S0
     protected override void PartialSaveInternally(OperationProgress progress)
     {
         using var outputFile = ZipFile.Open(TemporaryOutputFileFullPath, ZipArchiveMode.Update);
-        outputFile.PutFileContent("ResinMetadata", JsonSerializer.SerializeToUtf8Bytes(ResinMetadataSettings, JsonExtensions.SettingsIndent), ZipArchiveMode.Update);
-        outputFile.PutFileContent("UserSettingsData", JsonSerializer.SerializeToUtf8Bytes(UserSettings, JsonExtensions.SettingsIndent), ZipArchiveMode.Update);
-        outputFile.PutFileContent("ZCodeMetadata", JsonSerializer.SerializeToUtf8Bytes(ZCodeMetadataSettings, JsonExtensions.SettingsIndent), ZipArchiveMode.Update);
-        outputFile.PutFileContent("ResinGCodeData", GCodeStr, ZipArchiveMode.Update);
+        outputFile.CreateEntryFromSerializeJson("ResinMetadata", ResinMetadataSettings, ZipArchiveMode.Update, JsonExtensions.SettingsIndent);
+        outputFile.CreateEntryFromSerializeJson("UserSettingsData", UserSettings, ZipArchiveMode.Update, JsonExtensions.SettingsIndent);
+        outputFile.CreateEntryFromSerializeJson("ZCodeMetadata", ZCodeMetadataSettings, ZipArchiveMode.Update, JsonExtensions.SettingsIndent);
+        outputFile.CreateEntryFromContent("ResinGCodeData", GCodeStr, ZipArchiveMode.Update);
     }
 
     #endregion

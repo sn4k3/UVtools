@@ -110,7 +110,7 @@ public class Consortium3MFMeshFile : MeshFile
         bool haveThumbnail = SlicerFile?.HaveThumbnails ?? false;
         using (var zip = ZipFile.Open(tmpFile, ZipArchiveMode.Create))
         {
-            zip.PutFileContent("[Content_Types].xml", "<?xml version=\"1.0\" encoding=\"utf-8\"?>" +
+            zip.CreateEntryFromContent("[Content_Types].xml", "<?xml version=\"1.0\" encoding=\"utf-8\"?>" +
                                                       "\n<Types xmlns=\"http://schemas.openxmlformats.org/package/2006/content-types\">" +
                                                       //"\n\t<Default Extension=\"jpeg\" ContentType=\"image/jpeg\" />" +
                                                       //"\n\t<Default Extension=\"jpg\" ContentType=\"image/jpeg\" />" +
@@ -119,19 +119,19 @@ public class Consortium3MFMeshFile : MeshFile
                                                       "\n\t<Default Extension=\"png\" ContentType=\"image/png\" />" +
                                                       //"\n\t<Default Extension=\"texture\" ContentType=\"application/vnd.ms-package.3dmanufacturing-3dmodeltexture\" />" +
                                                       "\n</Types>\n", ZipArchiveMode.Create);
-            zip.PutFileContent("_rels/.rels", "<?xml version=\"1.0\" encoding=\"utf-8\"?>" +
+            zip.CreateEntryFromContent("_rels/.rels", "<?xml version=\"1.0\" encoding=\"utf-8\"?>" +
                                               "\n<Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\">" +
                                               "\n\t<Relationship Target=\"/3D/3dmodel.model\" Id=\"rel0\" Type=\"http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel\" />" +
                                               (haveThumbnail ? "\n\t<Relationship Target=\"/Metadata/thumbnail.png\" Id=\"rel1\" Type=\"http://schemas.openxmlformats.org/package/2006/relationships/metadata/thumbnail\" />" : string.Empty) +
                                               "\n</Relationships>\r\n", ZipArchiveMode.Create);
                 
             MeshStream.Seek(0, SeekOrigin.Begin);
-            zip.PutFileContent("3D/3dmodel.model", MeshStream, ZipArchiveMode.Create);
+            zip.CreateEntryFromContent("3D/3dmodel.model", MeshStream, ZipArchiveMode.Create);
                 
             if (haveThumbnail)
             {
                 var mat = SlicerFile!.GetLargestThumbnail();
-                zip.PutFileContent("Metadata/thumbnail.png", mat!.GetPngByes(), ZipArchiveMode.Create);
+                zip.CreateEntryFromContent("Metadata/thumbnail.png", mat!.GetPngByes(), ZipArchiveMode.Create);
             }
         }
         MeshStream.Dispose();

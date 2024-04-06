@@ -33,6 +33,8 @@ cmdProjectDir="$rootDir/$cmdProject"
 netVersion="6.0"
 chmodPermissions=0755
 
+DOTNET_CLI_TELEMETRY_OPTOUT=1
+
 if [ "$runtime" == "clean" ]; then
     echo "Cleaning publish directory"
     rm -rf "$publishDir" 2>/dev/null

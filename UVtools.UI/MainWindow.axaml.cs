@@ -45,7 +45,9 @@ using UVtools.UI.Windows;
 using Path = System.IO.Path;
 using Point = Avalonia.Point;
 using System.Runtime;
+using System.Runtime.InteropServices;
 using System.Threading;
+using UVtools.Core.Scripting;
 
 namespace UVtools.UI;
 
@@ -733,21 +735,19 @@ public partial class MainWindow : WindowEx
         }, TimeSpan.FromSeconds(1));
         Program.ProgramStartupTime.Stop();
 
-        /*if (About.IsBirthday)
+        if (About.IsBirthdayWithin7Days && About.YearsOld != UserSettings.Instance.LastBirthdayYearsOld)
         {
-            this.MessageBoxInfo($"Age: {About.AgeStr}\n" +
-                                $"This message will only show today, see you in next year!\n" +
-                                $"Thank you for using {About.Software}.", $"Today it's the {About.Software} birthday!").ConfigureAwait(true);
-        }*/
+            ShowBirthdayMessage();
+        }
     }
 
     protected override void OnClosed(EventArgs e)
     {
         base.OnClosed(e);
 
-        if (!UserSettings.Instance.General.StartMaximized && 
-            (UserSettings.Instance.General.RestoreWindowLastPosition ||
-            UserSettings.Instance.General.RestoreWindowLastSize))
+        if (!Settings.General.StartMaximized && 
+            (Settings.General.RestoreWindowLastPosition ||
+            Settings.General.RestoreWindowLastSize))
         {
             UserSettings.Save();
         }
@@ -879,6 +879,13 @@ public partial class MainWindow : WindowEx
     #endregion
 
     #region Events
+
+    public async void ShowBirthdayMessage()
+    {
+        await this.MessageBoxGeneric(About.BirthdayMessage, About.BirthdayTitle, About.BirthdayTitle, MessageButtons.Ok, "mdi party-popper"); 
+        Settings.LastBirthdayYearsOld = About.YearsOld;
+        UserSettings.Save();
+    }
 
     public void MenuFileOpenClicked() => OpenFile();
     public void MenuFileOpenNewWindowClicked() => OpenFile(true);
@@ -1271,14 +1278,14 @@ public partial class MainWindow : WindowEx
     private void UpdateTitle()
     {
         _titleStringBuilder.Clear();
-        _titleStringBuilder.Append($"{About.Software}   ");
+        _titleStringBuilder.Append($"{About.Software} {About.VersionArch}   ");
         
         if (IsFileLoaded)
         {
             _titleStringBuilder.Append($"File: {SlicerFile!.Filename} ({_loadedFileSizeRepresentation})");
         }
 
-        _titleStringBuilder.Append($"   Version: {About.VersionString}   RAM: {SizeExtensions.SizeSuffix(Environment.WorkingSet)}");
+        _titleStringBuilder.Append($"   RAM: {SizeExtensions.SizeSuffix(Environment.WorkingSet)}");
 
         if (IsFileLoaded)
         {
@@ -1308,7 +1315,7 @@ public partial class MainWindow : WindowEx
 
         //_titleStringBuilder.Append($"   [{RuntimeInformation.RuntimeIdentifier}]");
 #if DEBUG
-        _titleStringBuilder.Append("   [DEBUG]");
+        _titleStringBuilder.Append($"   [{RuntimeInformation.RuntimeIdentifier}] [DEBUG]");
 #endif
 
         Title = _titleStringBuilder.ToString();
@@ -1858,6 +1865,43 @@ public partial class MainWindow : WindowEx
             UserSettings.Save();
         }
 
+        if (!string.IsNullOrWhiteSpace(Settings.Automations.EventAfterFileLoadScriptFile) &&
+            File.Exists(Settings.Automations.EventAfterFileLoadScriptFile))
+        {
+            Progress.CanCancel = false;
+            Progress.Reset("Running \"After Load File\" script");
+            await Task.Run(() =>
+            {
+                try
+                {
+                    var scriptText = File.ReadAllText(Settings.Automations.EventAfterFileLoadScriptFile);
+
+                    if (ScriptParser.IsValidScript(scriptText))
+                    {
+                        var operation = new OperationScripting(SlicerFile!);
+                        operation.ReloadScriptFromFile(Settings.Automations.EventAfterFileLoadScriptFile);
+                        if (operation.CanExecute)
+                        {
+                            operation.Execute();
+                        }
+                    }
+                    else
+                    {
+                        var state = Scripter.RunScript(scriptText, this).Result;
+                        if (state.Exception is not null)
+                        {
+                            HandleException(state.Exception, "Event: After Load File (script error)");
+                            Debug.WriteLine(state.Exception);
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    HandleException(e, "Event: After Load File (script error)");
+                    Debug.WriteLine(e);
+                }
+            });
+        }
         //TabGCode.IsVisible = HaveGCode;
     }
 
@@ -1988,7 +2032,7 @@ public partial class MainWindow : WindowEx
             catch (Exception ex)
             {
                 string extraMessage = string.Empty;
-                if (SlicerFile.FileEndsWith(".sl1"))
+                if (SlicerFile is SL1File)
                 {
                     extraMessage = "Note: When converting from SL1 make sure you have the correct printer selected, you MUST use a UVtools base printer.\n" +
                                    "Go to \"Help\" -> \"Install profiles into PrusaSlicer\" to install printers.\n";
@@ -2071,6 +2115,46 @@ public partial class MainWindow : WindowEx
 
         var oldFile = SlicerFile!.FileFullPath;
 
+        if (!string.IsNullOrWhiteSpace(Settings.Automations.EventBeforeFileSaveScriptFile) &&
+            File.Exists(Settings.Automations.EventBeforeFileSaveScriptFile))
+        {
+            Progress.CanCancel = false;
+            Progress.Reset("Running \"Before Save File\" script");
+            await Task.Run(() =>
+            {
+                try
+                {
+                    var scriptText = File.ReadAllText(Settings.Automations.EventBeforeFileSaveScriptFile);
+
+                    if (ScriptParser.IsValidScript(scriptText))
+                    {
+                        var operation = new OperationScripting(SlicerFile!);
+                        operation.ReloadScriptFromFile(Settings.Automations.EventBeforeFileSaveScriptFile);
+                        if (operation.CanExecute)
+                        {
+                            operation.Execute();
+                        }
+                    }
+                    else
+                    {
+                        var state = Scripter.RunScript(scriptText, this).Result;
+                        if (state.Exception is not null)
+                        {
+                            HandleException(state.Exception, "Event: Before Save File (script error)");
+                            Debug.WriteLine(state.Exception);
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    HandleException(e, "Event: Before Save File (script error)");
+                    Debug.WriteLine(e);
+                }
+            });
+
+            Progress.CanCancel = true;
+        }
+
         var task = await Task.Run( () =>
         {
             try
@@ -2111,6 +2195,44 @@ public partial class MainWindow : WindowEx
             }
 
             if (oldFile != SlicerFile.FileFullPath) AddRecentFile(SlicerFile!.FileFullPath!);
+
+            if (!string.IsNullOrWhiteSpace(Settings.Automations.EventAfterFileSaveScriptFile) &&
+                File.Exists(Settings.Automations.EventAfterFileSaveScriptFile))
+            {
+                Progress.CanCancel = false;
+                Progress.Reset("Running \"After Save File\" script");
+                await Task.Run(() =>
+                {
+                    try
+                    {
+                        var scriptText = File.ReadAllText(Settings.Automations.EventAfterFileSaveScriptFile);
+
+                        if (ScriptParser.IsValidScript(scriptText))
+                        {
+                            var operation = new OperationScripting(SlicerFile!);
+                            operation.ReloadScriptFromFile(Settings.Automations.EventAfterFileSaveScriptFile);
+                            if (operation.CanExecute)
+                            {
+                                operation.Execute();
+                            }
+                        }
+                        else
+                        {
+                            var state = Scripter.RunScript(scriptText, this).Result;
+                            if (state.Exception is not null)
+                            {
+                                HandleException(state.Exception, "Event: After Save File (script error)");
+                                Debug.WriteLine(state.Exception);
+                            }
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        HandleException(e, "Event: After Save File (script error)");
+                        Debug.WriteLine(e);
+                    }
+                });
+            }
         }
 
         IsGUIEnabled = true;
@@ -2466,15 +2588,14 @@ public partial class MainWindow : WindowEx
     #endregion
 
     #region Error Handling
-    public void HandleException(Exception ex, string? title = null)
+    public Task<MessageButtonResult> HandleException(Exception ex, string? title = null)
     {
         switch (ex)
         {
             case OperationCanceledException:
-                return;
+                return Task.FromResult(MessageButtonResult.None);
             case MessageException msgEx:
-                Dispatcher.UIThread.InvokeAsync(async () => await this.MessageBoxError(msgEx.Message, title));
-                return;
+                return Dispatcher.UIThread.Invoke(() => this.MessageBoxError(msgEx.Message, title));
             case AggregateException aggEx:
                 {
                     var sb = new StringBuilder();
@@ -2508,12 +2629,10 @@ public partial class MainWindow : WindowEx
                         }
                     }
 
-                    Dispatcher.UIThread.InvokeAsync(async () => await this.MessageBoxError(sb.ToString(), title));
-                    return;
+                    return Dispatcher.UIThread.Invoke(() => this.MessageBoxError(sb.ToString(), title));
                 }
             default:
-                Dispatcher.UIThread.InvokeAsync(async () => await this.MessageBoxError(ex.ToString(), title));
-                return;
+                return Dispatcher.UIThread.Invoke(() => this.MessageBoxError(ex.ToString(), title));
         }
     }
     #endregion

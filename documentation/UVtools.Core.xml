@@ -19,10 +19,27 @@
             Return full age in a readable string
             </summary>
         </member>
+        <member name="P:UVtools.Core.About.AgeShortStr">
+            <summary>
+            Return full age in a readable string
+            </summary>
+        </member>
         <member name="P:UVtools.Core.About.IsBirthday">
             <summary>
             Checks if today is UVtools birthday
             </summary>
+        </member>
+        <member name="P:UVtools.Core.About.IsBirthdayWithin7Days">
+            <summary>
+            Checks if today is UVtools birthday
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.About.IsBirthdayWithOffset(System.Byte)">
+            <summary>
+            Checks if today is UVtools birthday within some days range
+            </summary>
+            <param name="daysOffset">Number of positive days from birthday date which is still considered as birthday</param>
+            <returns></returns>
         </member>
         <member name="M:UVtools.Core.Converters.SpeedConverter.Convert(System.Single,UVtools.Core.SpeedUnit,UVtools.Core.SpeedUnit,System.Byte)">
             <summary>
@@ -410,7 +427,7 @@
             Gets the centroid of the contour
             </summary>
         </member>
-        <member name="P:UVtools.Core.EmguCV.EmguContour.Contour">
+        <member name="P:UVtools.Core.EmguCV.EmguContour.Vector">
             <summary>
             Gets or sets the contour points
             </summary>
@@ -434,13 +451,88 @@
             <param name="point"></param>
             <returns></returns>
         </member>
+        <member name="P:UVtools.Core.EmguCV.EmguContourFamily.Index">
+            <summary>
+            Gets the index of the contour
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.EmguCV.EmguContourFamily.Self">
+            <summary>
+            Gets the self contour
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.EmguCV.EmguContourFamily.Depth">
+            <summary>
+            Gets the contour depth level
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.EmguCV.EmguContourFamily.Root">
+            <summary>
+            Gets the root contour which is the topmost/external contour
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.EmguCV.EmguContourFamily.Parent">
+            <summary>
+            Gets the parent contour
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.EmguCV.EmguContourFamily.ParentIndex">
+            <summary>
+            Gets the parent index
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.EmguCV.EmguContourFamily.IsExternal">
+            <summary>
+            Gets whether the contour is a root/external contour
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.EmguCV.EmguContourFamily.IsPositive">
+            <summary>
+            Gets whether the contour is a positive contour
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.EmguCV.EmguContourFamily.IsNegative">
+            <summary>
+            Gets whether the contour is a negative contour
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.EmguCV.EmguContourFamily.HaveChildren">
+            <summary>
+            Gets whether this contour has children contours
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.EmguCV.EmguContourFamily.TotalSolidArea">
+            <summary>
+            Gets the total solid area enclosed in this contour, including children contours, which is the sum of all positive areas minus the sum of all negative areas
+            </summary>
+            <remarks>Call only this method on external contours / root</remarks>
+        </member>
+        <member name="M:UVtools.Core.EmguCV.EmguContourFamily.TraverseTree">
+            <summary>
+            Traverses the contour tree in a breadth-first manner
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:UVtools.Core.EmguCV.EmguContourFamily.ToVectorOfVectorOfPoint">
+            <summary>
+            Gets the contours of this family and its children of children down to last level
+            </summary>
+            <remarks>Always dispose the returned <see cref="T:Emgu.CV.Util.VectorOfVectorOfPoint"/>.</remarks>
+            <returns>A new instance of <see cref="T:Emgu.CV.Util.VectorOfVectorOfPoint"/> holding all <see cref="T:Emgu.CV.Util.VectorOfPoint"/>.</returns>
+        </member>
+        <member name="M:UVtools.Core.EmguCV.EmguContourFamily.ToEmguContourArray">
+            <summary>
+            Gets the contours of this family and its children of children down to last level
+            </summary>
+            <returns></returns>
+        </member>
         <member name="T:UVtools.Core.EmguCV.EmguContours">
             <summary>
             Utility methods for contour handling.  
             Use only with Tree type
             </summary>
         </member>
-        <member name="F:UVtools.Core.EmguCV.EmguContours.VectorOfContours">
+        <member name="F:UVtools.Core.EmguCV.EmguContours.Vector">
             <summary>
             Gets the contours inside <see cref="T:Emgu.CV.Util.VectorOfVectorOfPoint"/>
             </summary>
@@ -450,10 +542,38 @@
             Gets the contours hierarchy
             </summary>
         </member>
+        <member name="F:UVtools.Core.EmguCV.EmguContours.ExternalContoursCount">
+            <summary>
+            Gets the count of external contours
+            </summary>
+        </member>
         <member name="P:UVtools.Core.EmguCV.EmguContours.IsEmpty">
             <summary>
             Gets if this collection have any contours
             </summary>
+        </member>
+        <member name="P:UVtools.Core.EmguCV.EmguContours.ExternalContours">
+            <summary>
+            Gets the external contours
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.EmguCV.EmguContours.TotalSolidArea">
+            <summary>
+            Gets the total solid area enclosed in all contours, including children contours, which is the sum of all positive areas minus the sum of all negative areas
+            </summary>
+            <remarks>Only work with tree contour detection method</remarks>
+        </member>
+        <member name="P:UVtools.Core.EmguCV.EmguContours.MinSolidArea">
+            <summary>
+            Gets the minimum solid area enclosed in all contours, including children contours, which is the sum of all positive areas minus the sum of all negative areas
+            </summary>
+            <remarks>Only work with tree contour detection method</remarks>
+        </member>
+        <member name="P:UVtools.Core.EmguCV.EmguContours.MaxSolidArea">
+            <summary>
+            Gets the maximum solid area enclosed in all contours, including children contours, which is the sum of all positive areas minus the sum of all negative areas
+            </summary>
+            <remarks>Only work with tree contour detection method</remarks>
         </member>
         <member name="M:UVtools.Core.EmguCV.EmguContours.GetContoursInside(Emgu.CV.Util.VectorOfVectorOfPoint,System.Int32[0:,0:],System.Drawing.Point,System.Boolean)">
             <summary>
@@ -911,11 +1031,12 @@
             <param name="laterDate">The date on which to calculate the age.</param>
             <returns>Age in years on a later day. 0 is returned as minimum.</returns>
         </member>
-        <member name="M:UVtools.Core.Extensions.DateTimeExtensions.ToTimeString(System.TimeSpan)">
+        <member name="M:UVtools.Core.Extensions.DateTimeExtensions.ToTimeString(System.TimeSpan,System.Boolean)">
             <summary>
             Convert a <see cref="T:System.TimeSpan"/> to a string representation of the time
             </summary>
             <param name="timeSpan"></param>
+            <param name="showSeconds"></param>
             <returns></returns>
         </member>
         <member name="F:UVtools.Core.Extensions.EmguExtensions.WhiteColor">
@@ -1187,6 +1308,14 @@
             <param name="length">Length to fill</param>
             <param name="color">Color to fill with</param>
             <param name="colorFillMinThreshold">Ignore and fill to <paramref name="length"/> if <paramref name="color"/> is less than the threshold value</param>
+        </member>
+        <member name="M:UVtools.Core.Extensions.EmguExtensions.DepthToBitCount(Emgu.CV.Mat)">
+            <summary>
+            Gets the number of bits this <see cref="T:Emgu.CV.Mat"/> uses per data type (Depth)
+            </summary>
+            <param name="mat"></param>
+            <returns></returns>
+            <exception cref="T:System.ArgumentOutOfRangeException"></exception>
         </member>
         <member name="M:UVtools.Core.Extensions.EmguExtensions.DepthToByteCount(Emgu.CV.Mat)">
             <summary>
@@ -2089,43 +2218,91 @@
             Specifies what type of compression to use - defaults to Optimal
             </param>
         </member>
-        <member name="M:UVtools.Core.Extensions.ZipArchiveExtensions.GetPutFile(System.IO.Compression.ZipArchive,System.String)">
+        <member name="M:UVtools.Core.Extensions.ZipArchiveExtensions.CreateEntryStream(System.IO.Compression.ZipArchive,System.String)">
             <summary>
-            Get or put a file into archive
+            Creates a new entry in the archive and returns a stream to write to it
+            </summary>
+            <param name="input"></param>
+            <param name="entryName"></param>
+            <returns></returns>
+        </member>
+        <member name="M:UVtools.Core.Extensions.ZipArchiveExtensions.CreateEntryStream(System.IO.Compression.ZipArchive,System.String,System.IO.Compression.CompressionLevel)">
+            <summary>
+            Creates a new entry in the archive and returns a stream to write to it
+            </summary>
+            <param name="input"></param>
+            <param name="entryName"></param>
+            <param name="compressionLevel"></param>
+            <returns></returns>
+        </member>
+        <member name="M:UVtools.Core.Extensions.ZipArchiveExtensions.GetOrCreateEntry(System.IO.Compression.ZipArchive,System.String)">
+            <summary>
+            Gets an entry from the archive or creates it if it doesn't exist
             </summary>
             <param name="input"><see cref="T:System.IO.Compression.ZipArchive"/></param>
-            <param name="filename">Filename to create</param>
+            <param name="entryName">Filename to get and/or create</param>
             <returns>Created <see cref="T:System.IO.Compression.ZipArchiveEntry"/></returns>
         </member>
-        <member name="M:UVtools.Core.Extensions.ZipArchiveExtensions.PutFileContent(System.IO.Compression.ZipArchive,System.String,System.String,System.IO.Compression.ZipArchiveMode)">
+        <member name="M:UVtools.Core.Extensions.ZipArchiveExtensions.GetOrCreateStream(System.IO.Compression.ZipArchive,System.String)">
+            <summary>
+            Gets a stream from an entry of the archive or creates it if it doesn't exist
+            </summary>
+            <param name="input"><see cref="T:System.IO.Compression.ZipArchive"/></param>
+            <param name="entryName">Filename to get and/or create</param>
+            <returns>Created <see cref="T:System.IO.Compression.ZipArchiveEntry"/></returns>
+        </member>
+        <member name="M:UVtools.Core.Extensions.ZipArchiveExtensions.CreateEntryFromContent(System.IO.Compression.ZipArchive,System.String,System.String,System.IO.Compression.ZipArchiveMode)">
             <summary>
             Create or update a file into archive and write content to it
             </summary>
             <param name="input"><see cref="T:System.IO.Compression.ZipArchive"/></param>
-            <param name="filename">Filename to create</param>
+            <param name="entryName">Filename to create</param>
             <param name="content">Content to write</param>
             <param name="mode"></param>
             <returns>Created <see cref="T:System.IO.Compression.ZipArchiveEntry"/></returns>
         </member>
-        <member name="M:UVtools.Core.Extensions.ZipArchiveExtensions.PutFileContent(System.IO.Compression.ZipArchive,System.String,System.Byte[],System.IO.Compression.ZipArchiveMode)">
+        <member name="M:UVtools.Core.Extensions.ZipArchiveExtensions.CreateEntryFromContent(System.IO.Compression.ZipArchive,System.String,System.Byte[],System.IO.Compression.ZipArchiveMode)">
             <summary>
             Create or update a file into archive and write content to it
             </summary>
             <param name="input"><see cref="T:System.IO.Compression.ZipArchive"/></param>
-            <param name="filename">Filename to create</param>
+            <param name="entryName">Filename to create</param>
             <param name="content">Content to write</param>
             <param name="mode"></param>
             <returns>Created <see cref="T:System.IO.Compression.ZipArchiveEntry"/></returns>
         </member>
-        <member name="M:UVtools.Core.Extensions.ZipArchiveExtensions.PutFileContent(System.IO.Compression.ZipArchive,System.String,System.IO.Stream,System.IO.Compression.ZipArchiveMode)">
+        <member name="M:UVtools.Core.Extensions.ZipArchiveExtensions.CreateEntryFromContent(System.IO.Compression.ZipArchive,System.String,System.IO.Stream,System.IO.Compression.ZipArchiveMode)">
             <summary>
             Create or update a file into archive and write content to it
             </summary>
             <param name="input"><see cref="T:System.IO.Compression.ZipArchive"/></param>
-            <param name="filename">Filename to create</param>
+            <param name="entryName">Filename to create</param>
             <param name="content">Content to write</param>
             <param name="mode"></param>
             <returns>Created <see cref="T:System.IO.Compression.ZipArchiveEntry"/></returns>
+        </member>
+        <member name="M:UVtools.Core.Extensions.ZipArchiveExtensions.CreateEntryFromSerializeXml(System.IO.Compression.ZipArchive,System.String,System.Object,System.IO.Compression.ZipArchiveMode,System.Xml.XmlWriterSettings,System.Boolean)">
+            <summary>
+            Create or update a file into archive and write content to it
+            </summary>
+            <param name="input"></param>
+            <param name="entryName"></param>
+            <param name="classObject"></param>
+            <param name="mode"></param>
+            <param name="xmlOptions"></param>
+            <param name="noNamespace"></param>
+            <returns></returns>
+        </member>
+        <member name="M:UVtools.Core.Extensions.ZipArchiveExtensions.CreateEntryFromSerializeJson(System.IO.Compression.ZipArchive,System.String,System.Object,System.IO.Compression.ZipArchiveMode,System.Text.Json.JsonSerializerOptions)">
+            <summary>
+            Create or update a file into archive and write content to it
+            </summary>
+            <param name="input"></param>
+            <param name="entryName"></param>
+            <param name="classObject"></param>
+            <param name="mode"></param>
+            <param name="jsonOptions"></param>
+            <returns></returns>
         </member>
         <member name="T:UVtools.Core.FileFormats.AnetFile">
             <summary>
@@ -3150,19 +3327,19 @@
             Decodes only the information in the file and thumbnails, no layer image is read nor cached, fast
             </summary>
         </member>
-        <member name="T:UVtools.Core.FileFormats.FileFormat.FileImageType">
+        <member name="T:UVtools.Core.FileFormats.FileFormat.ImageFormat">
             <summary>
             Image data type
             </summary>
         </member>
-        <member name="F:UVtools.Core.FileFormats.FileFormat.FileImageType.Png24BgrAA">
+        <member name="F:UVtools.Core.FileFormats.FileFormat.ImageFormat.Png24BgrAA">
             <summary>
             eg: Nova Bene4, Elfin Mono SE, Whale 1/2
             </summary>
         </member>
-        <member name="F:UVtools.Core.FileFormats.FileFormat.FileImageType.Png24RgbAA">
+        <member name="F:UVtools.Core.FileFormats.FileFormat.ImageFormat.Png24RgbAA">
             <summary>
-            eg: Uniformation GKone
+            eg: Uniformation GKone, Athena 12K
             </summary>
         </member>
         <member name="T:UVtools.Core.FileFormats.FileFormat.PrintParameterModifier">
@@ -3321,9 +3498,9 @@
             Gets the manufacturing process this file and printer uses
             </summary>
         </member>
-        <member name="P:UVtools.Core.FileFormats.FileFormat.LayerImageType">
+        <member name="P:UVtools.Core.FileFormats.FileFormat.LayerImageFormat">
             <summary>
-            Gets the layer image data type used on this file format
+            Gets the layer image format type used by this file format
             </summary>
         </member>
         <member name="P:UVtools.Core.FileFormats.FileFormat.ConvertMenuGroup">
@@ -4419,9 +4596,10 @@
             <param name="index">Thumbnail index</param>
             <param name="filePath"></param>
         </member>
-        <member name="M:UVtools.Core.FileFormats.FileFormat.BeforeEncode">
+        <member name="M:UVtools.Core.FileFormats.FileFormat.BeforeEncode(System.Boolean)">
             <summary>
-            Method that are called before an full or partial encode
+            Method that are called before a full or partial encode
+            <param name="isPartialEncode">True if is a partial encode, otherwise false</param>
             </summary>
         </member>
         <member name="M:UVtools.Core.FileFormats.FileFormat.OnBeforeEncode(System.Boolean)">
@@ -4494,9 +4672,36 @@
             </summary>
             <param name="progress"></param>
         </member>
-        <member name="M:UVtools.Core.FileFormats.FileFormat.EncodeAllThumbnailsInZip(System.IO.Compression.ZipArchive,System.String)">
+        <member name="M:UVtools.Core.FileFormats.FileFormat.FetchImageFormat(Emgu.CV.Mat,UVtools.Core.FileFormats.FileFormat.ImageFormat)">
             <summary>
-            Encodes all <see cref="P:UVtools.Core.FileFormats.FileFormat.Thumbnails"/> into <paramref name="zipArchive"/> given an path format
+            Detect image format from <see cref="T:Emgu.CV.Mat"/>
+            </summary>
+            <param name="mat"></param>
+            <param name="png24Variant"></param>
+            <returns></returns>
+            <exception cref="T:UVtools.Core.Exceptions.MessageException"></exception>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.FileFormat.FetchImageFormat(System.Byte[],UVtools.Core.FileFormats.FileFormat.ImageFormat)">
+            <summary>
+            Detect image format from image byte array
+            </summary>
+            <param name="matBytes"></param>
+            <param name="png24Variant"></param>
+            <returns></returns>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.FileFormat.FetchImageFormat(System.IO.Compression.ZipArchive,UVtools.Core.FileFormats.FileFormat.ImageFormat,System.String)">
+            <summary>
+            Detect image format from <see cref="T:System.IO.Compression.ZipArchive"/>
+            </summary>
+            <param name="archive"></param>
+            <param name="png24Variant"></param>
+            <param name="mathRegex"></param>
+            <returns></returns>
+            <exception cref="T:UVtools.Core.Exceptions.MessageException"></exception>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.FileFormat.EncodeAllThumbnailsInZip(System.IO.Compression.ZipArchive,System.String,UVtools.Core.Operations.OperationProgress)">
+            <summary>
+            Encodes all <see cref="P:UVtools.Core.FileFormats.FileFormat.Thumbnails"/> into <paramref name="zipArchive"/> given a path format
             </summary>
             <param name="zipArchive"></param>
             <param name="pathFormat">
@@ -4505,12 +4710,14 @@
             {2} = Height<br/>
             <para>Example: thumbnail/thumbnail{1}x{2}.png</para>
             </param>
+            <param name="progress"></param>
         </member>
-        <member name="M:UVtools.Core.FileFormats.FileFormat.EncodeThumbnailsInZip(System.IO.Compression.ZipArchive,System.String[])">
+        <member name="M:UVtools.Core.FileFormats.FileFormat.EncodeThumbnailsInZip(System.IO.Compression.ZipArchive,UVtools.Core.Operations.OperationProgress,System.String[])">
             <summary>
             Encodes <see cref="P:UVtools.Core.FileFormats.FileFormat.Thumbnails"/> into <paramref name="zipArchive"/> given specific entry path's
             </summary>
             <param name="zipArchive"></param>
+            <param name="progress"></param>
             <param name="entryPaths"></param>
         </member>
         <member name="M:UVtools.Core.FileFormats.FileFormat.Extract(System.String,System.Boolean,System.Boolean,UVtools.Core.Operations.OperationProgress)">
@@ -4767,6 +4974,12 @@
             <summary>
             Validate AntiAlias Level
             </summary>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.FileFormat.ValidateLayerImageFormat">
+            <summary>
+            Validate the layer image format
+            </summary>
+            <exception cref="T:System.InvalidOperationException"></exception>
         </member>
         <member name="M:UVtools.Core.FileFormats.FileFormat.SuppressRebuildPropertiesWork(System.Action,System.Boolean,System.Boolean,System.String)">
             <summary>
@@ -5160,6 +5373,41 @@
         <member name="P:UVtools.Core.FileFormats.MDLPFile.Header.HeaderValue">
             <summary>
             Gets the file tag = MKSDLP
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.NanoDLPFile.NanoDLPMetaManifest.FormatVersion">
+            <summary>
+            Current version of the export file
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.NanoDLPFile.NanoDLPMetaManifest.Distro">
+            <summary>
+            Manufacturer or target printer 
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.NanoDLPFile.NanoDLPMetaManifest.Program">
+            <summary>
+            Program used to prepare file
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.NanoDLPFile.NanoDLPMetaManifest.Version">
+            <summary>
+            Program version
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.NanoDLPFile.NanoDLPMetaManifest.OS">
+            <summary>
+            OS used to export it 
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.NanoDLPFile.NanoDLPMetaManifest.Arch">
+            <summary>
+            Architecture used
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.NanoDLPFile.NanoDLPMetaManifest.Profile">
+            <summary>
+            Is profile file should be used
             </summary>
         </member>
         <member name="P:UVtools.Core.FileFormats.OSFFile.OSFSettings.Mirror">
@@ -8731,6 +8979,13 @@
             <summary>
             Gets the title for the dialog
             </summary>
+        </member>
+        <member name="M:UVtools.Core.Scripting.ScriptParser.IsValidScript(System.String)">
+            <summary>
+            Checks whatever the script is valid
+            </summary>
+            <param name="text"></param>
+            <returns></returns>
         </member>
         <member name="M:UVtools.Core.Scripting.ScriptParser.ParseScriptFromText(System.String)">
             <summary>

@@ -11,6 +11,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Text.Json;
+using System.Xml;
 
 namespace UVtools.Core.Extensions;
 
@@ -285,34 +287,70 @@ public static class ZipArchiveExtensions
     }
 
     /// <summary>
-    /// Get or put a file into archive
+    /// Creates a new entry in the archive and returns a stream to write to it
+    /// </summary>
+    /// <param name="input"></param>
+    /// <param name="entryName"></param>
+    /// <returns></returns>
+    public static Stream CreateEntryStream(this ZipArchive input, string entryName)
+    {
+        return input.CreateEntry(entryName).Open();
+    }
+
+    /// <summary>
+    /// Creates a new entry in the archive and returns a stream to write to it
+    /// </summary>
+    /// <param name="input"></param>
+    /// <param name="entryName"></param>
+    /// <param name="compressionLevel"></param>
+    /// <returns></returns>
+    public static Stream CreateEntryStream(this ZipArchive input, string entryName, CompressionLevel compressionLevel)
+    {
+        return input.CreateEntry(entryName, compressionLevel).Open();
+    }
+
+    /// <summary>
+    /// Gets an entry from the archive or creates it if it doesn't exist
     /// </summary>
     /// <param name="input"><see cref="ZipArchive"/></param>
-    /// <param name="filename">Filename to create</param>
+    /// <param name="entryName">Filename to get and/or create</param>
     /// <returns>Created <see cref="ZipArchiveEntry"/></returns>
-    public static ZipArchiveEntry GetPutFile(this ZipArchive input, string filename)
+    public static ZipArchiveEntry GetOrCreateEntry(this ZipArchive input, string entryName)
     {
-        return input.GetEntry(filename) ?? input.CreateEntry(filename);
+        return input.GetEntry(entryName) ?? input.CreateEntry(entryName);
+    }
+
+    /// <summary>
+    /// Gets a stream from an entry of the archive or creates it if it doesn't exist
+    /// </summary>
+    /// <param name="input"><see cref="ZipArchive"/></param>
+    /// <param name="entryName">Filename to get and/or create</param>
+    /// <returns>Created <see cref="ZipArchiveEntry"/></returns>
+    public static Stream GetOrCreateStream(this ZipArchive input, string entryName)
+    {
+        var entry = input.GetOrCreateEntry(entryName);
+        var stream = entry.Open();
+        return stream;
     }
 
     /// <summary>
     /// Create or update a file into archive and write content to it
     /// </summary>
     /// <param name="input"><see cref="ZipArchive"/></param>
-    /// <param name="filename">Filename to create</param>
+    /// <param name="entryName">Filename to create</param>
     /// <param name="content">Content to write</param>
     /// <param name="mode"></param>
     /// <returns>Created <see cref="ZipArchiveEntry"/></returns>
-    public static ZipArchiveEntry PutFileContent(this ZipArchive input, string filename, string? content, ZipArchiveMode mode)
+    public static ZipArchiveEntry CreateEntryFromContent(this ZipArchive input, string entryName, string? content, ZipArchiveMode mode)
     {
         ZipArchiveEntry entry;
         if (mode == ZipArchiveMode.Update)
         {
-            entry = input.GetEntry(filename) ?? input.CreateEntry(filename);
+            entry = input.GetEntry(entryName) ?? input.CreateEntry(entryName);
         }
         else
         {
-            entry = input.CreateEntry(filename);
+            entry = input.CreateEntry(entryName);
         }
 
         if (string.IsNullOrEmpty(content)) return entry;
@@ -327,20 +365,20 @@ public static class ZipArchiveExtensions
     /// Create or update a file into archive and write content to it
     /// </summary>
     /// <param name="input"><see cref="ZipArchive"/></param>
-    /// <param name="filename">Filename to create</param>
+    /// <param name="entryName">Filename to create</param>
     /// <param name="content">Content to write</param>
     /// <param name="mode"></param>
     /// <returns>Created <see cref="ZipArchiveEntry"/></returns>
-    public static ZipArchiveEntry PutFileContent(this ZipArchive input, string filename, byte[]? content, ZipArchiveMode mode)
+    public static ZipArchiveEntry CreateEntryFromContent(this ZipArchive input, string entryName, byte[]? content, ZipArchiveMode mode)
     {
         ZipArchiveEntry entry;
         if (mode == ZipArchiveMode.Update)
         {
-            entry = input.GetEntry(filename) ?? input.CreateEntry(filename);
+            entry = input.GetEntry(entryName) ?? input.CreateEntry(entryName);
         }
         else
         {
-            entry = input.CreateEntry(filename);
+            entry = input.CreateEntry(entryName);
         }
 
         if (content is null) return entry;
@@ -354,26 +392,97 @@ public static class ZipArchiveExtensions
     /// Create or update a file into archive and write content to it
     /// </summary>
     /// <param name="input"><see cref="ZipArchive"/></param>
-    /// <param name="filename">Filename to create</param>
+    /// <param name="entryName">Filename to create</param>
     /// <param name="content">Content to write</param>
     /// <param name="mode"></param>
     /// <returns>Created <see cref="ZipArchiveEntry"/></returns>
-    public static ZipArchiveEntry PutFileContent(this ZipArchive input, string filename, Stream? content, ZipArchiveMode mode)
+    public static ZipArchiveEntry CreateEntryFromContent(this ZipArchive input, string entryName, Stream? content, ZipArchiveMode mode)
     {
         ZipArchiveEntry entry;
         if (mode == ZipArchiveMode.Update)
         {
-            entry = input.GetEntry(filename) ?? input.CreateEntry(filename);
+            entry = input.GetEntry(entryName) ?? input.CreateEntry(entryName);
         }
         else
         {
-            entry = input.CreateEntry(filename);
+            entry = input.CreateEntry(entryName);
         }
 
         if (content is null) return entry;
         using var stream = entry.Open();
         if (mode == ZipArchiveMode.Update) stream.SetLength(0);
+        content.Position = 0;
         content.CopyTo(stream);
+        return entry;
+    }
+
+    /// <summary>
+    /// Create or update a file into archive and write content to it
+    /// </summary>
+    /// <param name="input"></param>
+    /// <param name="entryName"></param>
+    /// <param name="classObject"></param>
+    /// <param name="mode"></param>
+    /// <param name="xmlOptions"></param>
+    /// <param name="noNamespace"></param>
+    /// <returns></returns>
+    public static ZipArchiveEntry CreateEntryFromSerializeXml(this ZipArchive input, string entryName, object? classObject, ZipArchiveMode mode, XmlWriterSettings? xmlOptions = null, bool noNamespace = false)
+    {
+        ZipArchiveEntry entry;
+        if (mode == ZipArchiveMode.Update)
+        {
+            entry = input.GetEntry(entryName) ?? input.CreateEntry(entryName);
+        }
+        else
+        {
+            entry = input.CreateEntry(entryName);
+        }
+
+        if (classObject is null) return entry;
+        using var stream = entry.Open();
+        if (mode == ZipArchiveMode.Update) stream.SetLength(0);
+
+        if(xmlOptions is null) 
+        {
+            XmlExtensions.Serialize(classObject, stream, noNamespace);
+        }
+        else
+        {
+            XmlExtensions.Serialize(classObject, stream, xmlOptions, noNamespace);
+        }
+        
+
+        return entry;
+    }
+
+    /// <summary>
+    /// Create or update a file into archive and write content to it
+    /// </summary>
+    /// <param name="input"></param>
+    /// <param name="entryName"></param>
+    /// <param name="classObject"></param>
+    /// <param name="mode"></param>
+    /// <param name="jsonOptions"></param>
+    /// <returns></returns>
+    public static ZipArchiveEntry CreateEntryFromSerializeJson(this ZipArchive input, string entryName, object? classObject, ZipArchiveMode mode, JsonSerializerOptions? jsonOptions = null)
+    {
+        ZipArchiveEntry entry;
+        if (mode == ZipArchiveMode.Update)
+        {
+            entry = input.GetEntry(entryName) ?? input.CreateEntry(entryName);
+        }
+        else
+        {
+            entry = input.CreateEntry(entryName);
+        }
+
+        if (classObject is null) return entry;
+        using var stream = entry.Open();
+        if (mode == ZipArchiveMode.Update) stream.SetLength(0);
+
+        jsonOptions ??= JsonSerializerOptions.Default;
+        JsonSerializer.Serialize(stream, classObject, jsonOptions);
+
         return entry;
     }
 }

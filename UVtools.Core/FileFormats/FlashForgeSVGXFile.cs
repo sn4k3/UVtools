@@ -424,6 +424,7 @@ public sealed class FlashForgeSVGXFile : FileFormat
     #region Constructors
     public FlashForgeSVGXFile()
     {
+        _layerImageFormat = ImageFormat.Svg;
     }
     #endregion
 

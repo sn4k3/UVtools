@@ -99,6 +99,8 @@ public sealed class QDTFile : FileFormat
     #region Constructors
     public QDTFile()
     {
+        _layerImageFormat = ImageFormat.GCode;
+
         ResolutionX = 8000;
         ResolutionY = 4000;
         DisplayWidth = 400;

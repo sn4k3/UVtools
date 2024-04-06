@@ -8,6 +8,8 @@ You need at least the Powershell 7: https://github.com/PowerShell/PowerShell/rel
     return;
 }
 
+set DOTNET_CLI_TELEMETRY_OPTOUT=1
+
 # When using System.IO.Compression.ZipFile.CreateFromDirectory in PowerShell, it still uses backslashes in the zip paths
 # despite this https://docs.microsoft.com/en-us/dotnet/framework/migration-guide/mitigation-ziparchiveentry-fullname-path-separator
 
@@ -356,7 +358,7 @@ if($null -ne $enableMSI -and $enableMSI)
         Remove-Item "$installerPath\obj" -Recurse -ErrorAction Ignore
         Remove-Item "$installerPath\bin" -Recurse -ErrorAction Ignore
 
-        dotnet build "$installerPath" -c $buildWith -p:Platform=x64 -p:ProductVersion="$version" -p:HarvestPath="$msiSourceFiles"
+        dotnet build "$installerPath" -c $buildWith -p:Platform=x64 # -p:ProductVersion="$version" -p:HarvestPath="$msiSourceFiles"
 
         Write-Output "Copying $runtime MSI to: $msiTargetFile"
         Copy-Item $msiOutputFile $msiTargetFile

@@ -117,7 +117,6 @@ public partial class SettingsWindow : WindowEx
 
     }
 
-
     public void GeneralClearField(object fieldObj)
     {
         var field = fieldObj.ToString()!;
@@ -126,6 +125,34 @@ public partial class SettingsWindow : WindowEx
         {
             if (propertyInfo.Name != field) continue;
             propertyInfo.SetValue(Settings.General, null);
+            return;
+        }
+
+    }
+
+    public async void AutomationsOpenFileField(object fieldObj)
+    {
+        var field = fieldObj.ToString()!;
+        foreach (var propertyInfo in Settings.Automations.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
+        {
+            if (propertyInfo.Name != field) continue;
+            var folders = await OpenFilePickerAsync(AvaloniaStatic.ScriptsFileFilter);
+            if (folders.Count == 0) return;
+            propertyInfo.SetValue(Settings.Automations, folders[0].TryGetLocalPath());
+            return;
+        }
+
+    }
+
+
+    public void AutomationsClearField(object fieldObj)
+    {
+        var field = fieldObj.ToString()!;
+        var properties = Settings.Automations.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
+        foreach (var propertyInfo in properties)
+        {
+            if (propertyInfo.Name != field) continue;
+            propertyInfo.SetValue(Settings.Automations, null);
             return;
         }
             

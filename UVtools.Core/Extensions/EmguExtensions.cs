@@ -433,6 +433,28 @@ public static class EmguExtensions
     #region Get/Set methods
 
     /// <summary>
+    /// Gets the number of bits this <see cref="Mat"/> uses per data type (Depth)
+    /// </summary>
+    /// <param name="mat"></param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentOutOfRangeException"></exception>
+    public static byte DepthToBitCount(this Mat mat)
+    {
+        return mat.Depth switch
+        {
+            DepthType.Default => 8,
+            DepthType.Cv8U => 8,
+            DepthType.Cv8S => 8,
+            DepthType.Cv16U => 16,
+            DepthType.Cv16S => 16,
+            DepthType.Cv32S => 32,
+            DepthType.Cv32F => 32,
+            DepthType.Cv64F => 64,
+            _ => throw new ArgumentOutOfRangeException()
+        };
+    }
+
+    /// <summary>
     /// Gets the number of bytes this <see cref="Mat"/> uses per data type (Depth)
     /// </summary>
     /// <param name="mat"></param>

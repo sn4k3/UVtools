@@ -157,24 +157,26 @@ public sealed class GenericZIPFile : FileFormat
         return true;
     }
 
+    protected override void OnBeforeEncode(bool isPartialEncode)
+    {
+        ManifestFile.Update();
+    }
+
     protected override void EncodeInternally(OperationProgress progress)
     {
         using var outputFile = ZipFile.Open(TemporaryOutputFileFullPath, ZipArchiveMode.Create);
 
-        EncodeThumbnailsInZip(outputFile, ChituboxZipFile.ThumbnailsEntryNames);
+        EncodeThumbnailsInZip(outputFile, progress, ChituboxZipFile.ThumbnailsEntryNames);
         EncodeLayersInZip(outputFile, IndexStartNumber.One, progress);
 
-        ManifestFile.Update();
-
-        var entry = outputFile.CreateEntry(ManifestFileName);
-        using var streamManifest = entry.Open();
+        using var streamManifest = outputFile.CreateEntryStream(ManifestFileName);
         XmlExtensions.Serialize(ManifestFile, streamManifest, XmlExtensions.SettingsIndent, true);
     }
 
     protected override void DecodeInternally(OperationProgress progress)
     {
         using var inputFile = ZipFile.Open(FileFullPath!, ZipArchiveMode.Read);
-        var entry = inputFile.Entries.FirstOrDefault(zipEntry => zipEntry.Name == ManifestFileName);
+        var entry = inputFile.GetEntry(ManifestFileName);
         if (entry is not null)
         {
             try
@@ -206,7 +208,7 @@ public sealed class GenericZIPFile : FileFormat
             throw new FileLoadException("Unable to detect layer images in the file", FileFullPath);
         }
 
-        DecodeThumbnailsFromZip(inputFile, ChituboxZipFile.ThumbnailsEntryNames);
+        DecodeThumbnailsFromZip(inputFile, progress, ChituboxZipFile.ThumbnailsEntryNames);
 
         Init(layerCount, DecodeType == FileDecodeType.Partial);
         DecodeLayersFromZip(inputFile, IndexStartNumber.One, progress);
@@ -215,25 +217,9 @@ public sealed class GenericZIPFile : FileFormat
     protected override void PartialSaveInternally(OperationProgress progress)
     {
         using var outputFile = ZipFile.Open(TemporaryOutputFileFullPath, ZipArchiveMode.Update);
-        bool deleted;
 
-        do
-        {
-            deleted = false;
-            foreach (var zipEntry in outputFile.Entries)
-            {
-                if (zipEntry.Name != ManifestFileName) continue;
-                zipEntry.Delete();
-                deleted = true;
-                break;
-            }
-        } while (deleted);
-
-        ManifestFile.Update();
-            
-        var entry = outputFile.CreateEntry(ManifestFileName);
-        using var stream = entry.Open();
-
+        using var stream = outputFile.GetOrCreateStream(ManifestFileName);
+        stream.SetLength(0);
         XmlExtensions.Serialize(ManifestFile, stream, XmlExtensions.SettingsIndent, true);
     }
     #endregion

@@ -115,7 +115,7 @@ public sealed class MatCompressorPng : MatCompressor
     /// <inheritdoc />
     public override void Decompress(byte[] compressedBytes, Mat dst, object? argument = null)
     {
-        CvInvoke.Imdecode(compressedBytes, ImreadModes.AnyColor, dst);
+        CvInvoke.Imdecode(compressedBytes, ImreadModes.Unchanged, dst);
     }
 }
 

@@ -12,6 +12,7 @@ public enum PrinterBrand : byte
     Generic,
     Anet,
     AnyCubic,
+    Concepts3D,
     Creality,
     Elegoo,
     EPAX,

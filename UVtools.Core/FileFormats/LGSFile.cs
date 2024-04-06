@@ -117,7 +117,7 @@ public sealed class LGSFile : FileFormat
         public Mat Decode(bool consumeRle = true)
         {
             var mat = new Mat();
-            CvInvoke.Imdecode(PngBytes, ImreadModes.AnyColor, mat);
+            CvInvoke.Imdecode(PngBytes, ImreadModes.Unchanged, mat);
             if (consumeRle)
                 PngBytes = null!;
             return mat;
@@ -549,7 +549,7 @@ public sealed class LGSFile : FileFormat
             var pngPreview = Helpers.Deserialize<LGS120PngPreview>(inputFile);
 
             var mat = new Mat();
-            CvInvoke.Imdecode(pngPreview.PngBytes, ImreadModes.AnyColor, mat);
+            CvInvoke.Imdecode(pngPreview.PngBytes, ImreadModes.Unchanged, mat);
             Thumbnails.Add(mat);
         }
 

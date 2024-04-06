@@ -5,9 +5,10 @@
         xmlns:controls="clr-namespace:UVtools.UI.Controls"
         xmlns:core="clr-namespace:UVtools.Core;assembly=UVtools.Core"
         xmlns:windows="clr-namespace:UVtools.UI.Windows"
+        xmlns:i="https://github.com/projektanker/icons.avalonia"
         mc:Ignorable="d" d:DesignWidth="960" d:DesignHeight="700"
         Width="960" Height="710"
-        MinWidth="600" MinHeight="550"
+        MinWidth="640" MinHeight="550"
         WindowStartupLocation="CenterOwner"
         SizeToContent="Manual"
         CanResize="True"
@@ -72,7 +73,7 @@
                       HorizontalScrollBarVisibility="Auto">
             <StackPanel Spacing="5" Margin="20" MaxWidth="380">
 
-                <Border Background="#660066" Margin="0,0,0,10">
+                <Border Background="{StaticResource LogoColor}" Margin="0,0,0,10">
                     <Image HorizontalAlignment="Center" VerticalAlignment="Center"
                            Source="/Assets/Icons/UVtools_alt.ico"
                            Width="178"/>
@@ -147,11 +148,19 @@
         <Grid RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,5,*"
               Margin="0,20,20,20">
 
-            <SelectableTextBlock Grid.Row="0" Text="{Binding Source={x:Static core:About.Software}}" FontWeight="Bold"/>
-            <SelectableTextBlock Grid.Row="2" Text="{Binding Source={x:Static core:About.VersionArch}, StringFormat='Version: {0}'}"/>
+            <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="5">
+                <SelectableTextBlock Text="{Binding Source={x:Static core:About.Software}}" FontWeight="Bold"/>
+                <SelectableTextBlock Text="{Binding Source={x:Static core:About.VersionArch}}"/>
+            </StackPanel>
+
+            <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="5">
+                <SelectableTextBlock Text="{Binding Source={x:Static core:About.AgeShortStr}, StringFormat='Age: {0}'}"/>
+                <i:Icon Value="fa-solid fa-cake-candles" Foreground="{StaticResource LogoColor}" IsVisible="{Binding Source={x:Static core:About.IsBirthday}}"/>
+                <i:Icon Value="mdi party-popper" Foreground="{StaticResource LogoColor}" IsVisible="{Binding Source={x:Static core:About.IsBirthday}}"/>
+                <i:Icon Value="fa-solid fa-gift" Foreground="{StaticResource LogoColor}" IsVisible="{Binding Source={x:Static core:About.IsBirthday}}"/>
+            </StackPanel>
             <SelectableTextBlock Grid.Row="4" Text="{Binding Source={x:Static core:About.AssemblyCopyright}}"/>
             <SelectableTextBlock Grid.Row="6" Text="{Binding Source={x:Static core:About.Author}}"/>
-            <!--<TextBlock Grid.Row="8" Text="{Binding AgeStr, StringFormat=Age: {0}}"/>-->
             <StackPanel Grid.Row="8" Orientation="Horizontal" Spacing="5">
                 <controls:ButtonWithIcon VerticalAlignment="Center"
                                          Command="{Binding TermsOfUseClicked}"
