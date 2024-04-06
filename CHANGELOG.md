@@ -6,7 +6,7 @@
   - (Add) nanoDLP file format
   - (Add) SL1 printer note keyword: `LAYERIMAGEFORMAT_xxx` sets the layer image format required for the converted file if the format have multiple options (For Archives with PNG's)
   - (Fix) Anycubic file format: Model Min/Max(X/Y) was not properly calculated
-  - (Fix) Photon Mono M5s Pro incorrect display height and width (fixes #854)
+  - (Fix) Photon Mono M5s Pro incorrect display height and width (fixes #858)
 - **PrusaSlicer:**
   - (Add) Concepts3D Athena 8K & 12K
   - (Change) Wanhao D7: Add `LAYERIMAGEFORMAT_Png32` to printer notes
