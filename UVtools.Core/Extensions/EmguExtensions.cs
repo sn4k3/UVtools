@@ -213,11 +213,31 @@ public static class EmguExtensions
     /// <returns></returns>
     public static Span2D<T> GetDataSpan2D<T>(this Mat mat) where T : struct
     {
-        var step = mat.GetRealStep();
+        var step = mat.GetRealStep() / Marshal.SizeOf<T>();
         unsafe
         {
             if (mat.IsContinuous) return new(mat.DataPointer.ToPointer(), mat.Height, step, 0);
-            return new(mat.DataPointer.ToPointer(), mat.Height, step, mat.Step / mat.DepthToByteCount() - step);
+            return new(mat.DataPointer.ToPointer(), mat.Height, step, mat.Step / Marshal.SizeOf<T>() - step);
+        }
+    }
+
+    /// <summary>
+    /// Gets the whole data span to read pixels, use this when possibly using ROI
+    /// </summary>
+    /// <returns></returns>
+    public static ReadOnlySpan2D<byte> GetDataByteReadOnlySpan2D(this Mat mat) => mat.GetDataSpan2D<byte>();
+
+    /// <summary>
+    /// Gets the whole data span to read pixels, use this when possibly using ROI
+    /// </summary>
+    /// <returns></returns>
+    public static ReadOnlySpan2D<T> GetDataReadOnlySpan2D<T>(this Mat mat) where T : struct
+    {
+        var step = mat.GetRealStep() / Marshal.SizeOf<T>();
+        unsafe
+        {
+            if (mat.IsContinuous) return new(mat.DataPointer.ToPointer(), mat.Height, step, 0);
+            return new(mat.DataPointer.ToPointer(), mat.Height, step, mat.Step / Marshal.SizeOf<T>() - step);
         }
     }
 
@@ -388,8 +408,8 @@ public static class EmguExtensions
 
         if (offset < 0)
             throw new ArgumentOutOfRangeException(nameof(offset), offset, "Offset must be a positive value.");
-
-        int maxLength = mat.GetLength() / Marshal.SizeOf<T>() - offset;
+        
+        var maxLength = mat.GetLength() / Marshal.SizeOf<T>() - offset;
 
         if (maxLength < 0)
             throw new ArgumentOutOfRangeException(nameof(offset), offset, "Offset value overflow this Mat size.");
@@ -558,24 +578,24 @@ public static class EmguExtensions
     }
 
     /// <summary>
-    /// Step return the original Mat step, if ROI step still from original matrix which lead to errors.
+    /// Return the original Mat step in bytes, if ROI step still from original matrix which lead to errors.
     /// Use this to get the real step size
     /// </summary>
     /// <param name="mat"></param>
     /// <returns></returns>
     public static int GetRealStep(this Mat mat)
     {
-        return mat.Width * mat.NumberOfChannels;
+        return mat.Width * mat.NumberOfChannels * mat.DepthToByteCount();
     }
 
     /// <summary>
-    /// Gets the total length of this <see cref="Mat"/>
+    /// Gets the total length in bytes of this <see cref="Mat"/>
     /// </summary>
     /// <param name="mat"></param>
     /// <returns>The total length of this <see cref="Mat"/></returns>
     public static int GetLength(this Mat mat)
     {
-        return mat.Total.ToInt32() * mat.NumberOfChannels;
+        return mat.Total.ToInt32() * mat.NumberOfChannels * mat.DepthToByteCount();
     }
 
     /// <summary>
@@ -1435,7 +1455,7 @@ public static class EmguExtensions
 
         if (vertically)
         {
-            var span = mat.GetDataByteSpan2D();
+            var span = mat.GetDataByteReadOnlySpan2D();
             for (x = 0; x < matSize.Width; x++)
             {
                 line.StartX = x + offset.X;
@@ -1547,7 +1567,7 @@ public static class EmguExtensions
 
         if (vertically)
         {
-            var span = mat.GetDataByteSpan2D();
+            var span = mat.GetDataByteReadOnlySpan2D();
             for (x = 0; x < matSize.Width; x++)
             {
                 line.StartX = x + offset.X;

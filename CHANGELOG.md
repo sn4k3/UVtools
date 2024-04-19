@@ -1,11 +1,14 @@
 # Changelog
 
+## 19/04/2024 - v4.3.2
+
+- (Fix) "Index was outside the bounds of the array" when detecting issues (Fixes #869)
+
 ## 19/04/2024 - v4.3.1
 
 - **Tool - Change resolution:**
   - (Add) 12K resolution profile
   - (Improvement) Do not mark the option "Resize layers with the proposed ratio" when a machine preset results in the same pixel size / ratio of (1.0x, 1.0x)
-  - (Fix) Wait time before cure suggestion for GOO and PRZ file formats, it now allows the use of the create first empty layer (#864)
 - **Thumbnail sanitizer:**
   - (Add) Check if the thumbnails have the correct number of channels, if not it will throw an error
   - (Improvement) When full encode a file, strip all extra thumbnails that are not used by the file format if they are not an archive
@@ -14,7 +17,7 @@
 - (Add) Tool - Light bleed compensation: Add "Dim subject" option to select from different subjects to dim, "Bridges" was added (#868)
 - (Add) Settings - Notifications: Allow to define beeps sounds to play after ran long operations (#863)
 - (Improvement) CTB, FDG, PHZ: Make possible to encode a thumbnail using 1 and 4 channels, this fixes the issue where the file format could encode invalid thumbnail data
-- (Improvement) Add empty layer for Goo file format when running the wait time before cure suggestion
+- (Fix) Wait time before cure suggestion for GOO and PRZ file formats, it now allows the use of the create first empty layer (#864)
 - (Fix) Terminal: The run globals was lost from the previous version update
 - (Upgrade) .NET from 6.0.28 to 6.0.29
 

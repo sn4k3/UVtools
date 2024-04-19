@@ -263,8 +263,8 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
 
                 using (var image = layer.GetLayerMat(layerIndex == 0 ? SlicerFile.BoundingRectangle : Layer.GetBoundingRectangleUnion(SlicerFile[layerIndex - 1], layer)))
                 {
-                    var sourceSpan = image.SourceMat.GetDataByteSpan2D();
-                    var roiSpan = image.RoiMat.GetDataByteSpan2D();
+                    var sourceSpan = image.SourceMat.GetDataByteReadOnlySpan2D();
+                    var roiSpan = image.RoiMat.GetDataByteReadOnlySpan2D();
 
                     if (touchBoundConfig.Enabled)
                     {
@@ -368,7 +368,7 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
                     if (layerIndex > 0 && layer.PositionZ > firstLayer!.PositionZ) // No islands nor overhangs for layer 0 or on plate
                     {
                         MatRoi? previousImage = null;
-                        Span2D<byte> previousSpan = null;
+                        ReadOnlySpan2D<byte> previousSpan = null;
                         Mat? overhangImage = null;
                         var previousLayer = SlicerFile[layerIndex - 1];
 
@@ -494,7 +494,7 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
 
                                     if (previousSpan == null)
                                     {
-                                        previousSpan = previousImage.RoiMat.GetDataByteSpan2D();
+                                        previousSpan = previousImage.RoiMat.GetDataByteReadOnlySpan2D();
                                     }
 
                                     List<Point> points = new();
@@ -559,7 +559,7 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
 
                                         using var subtractedImage = islandOverhangMat.Roi(wasNull ? Rectangle.Empty : rect, EmptyRoiBehaviour.CaptureSource);
 
-                                        var subtractedSpan = subtractedImage.GetDataByteSpan2D();
+                                        var subtractedSpan = subtractedImage.GetDataByteReadOnlySpan2D();
                                         var subtractedStep = subtractedImage.GetRealStep();
 
                                         int overhangPixels = 0;
