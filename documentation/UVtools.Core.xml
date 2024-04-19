@@ -4550,8 +4550,10 @@
             Sanitizes the thumbnails to respect the file specification:<br/>
             - Remove empty thumbnails<br/>
             - Remove the excess thumbnails up to spec, if requested<br/>
-            - Resize thumbnails to the spec
-            - Creates missing thumbnails required by the file spec
+            - Check if the thumbnails have the correct number of channels<br/>
+            - Force BGR color space and strip alpha channel if required by the format<br/>
+            - Resize thumbnails to the spec<br/>
+            - Creates missing thumbnails required by the file spec<br/>
             </summary>
             <param name="trimToFileSpec">True to trim the excess thumbnails, otherwise false to not trim</param>
             <returns>True if anything changed, otherwise false</returns>
@@ -9203,6 +9205,14 @@
             <summary>
             Gets the name of the running .app. Returns null or empty if not running an macOS .app
             </summary>
+        </member>
+        <member name="M:UVtools.Core.SystemOS.SystemAware.Beep(System.Int32,System.Int32,System.Boolean)">
+            <summary>
+            Produces a beep tone from speaker
+            </summary>
+            <param name="frequency">The sound frequency</param>
+            <param name="duration">The duration of the beep in milliseconds</param>
+            <param name="waitForCompletion">True to wait for beep ends to continue, otherwise run in background</param>
         </member>
         <member name="P:UVtools.Core.SystemOS.SystemAware.IsRunningLinuxAppImage">
             <summary>

@@ -188,10 +188,13 @@ public static class EmguExtensions
     /// <param name="mat"></param>
     /// <param name="accessMode"></param>
     /// <returns></returns>
-    public static unsafe UnmanagedMemoryStream GetUnmanagedMemoryStream(this Mat mat, FileAccess accessMode)
+    public static UnmanagedMemoryStream GetUnmanagedMemoryStream(this Mat mat, FileAccess accessMode)
     {
         var length = mat.GetLength();
-        return new UnmanagedMemoryStream(mat.GetBytePointer(), length, length, accessMode);
+        unsafe
+        {
+            return new UnmanagedMemoryStream(mat.GetBytePointer(), length, length, accessMode);
+        }
     }
 
     /// <summary>
@@ -200,17 +203,22 @@ public static class EmguExtensions
     /// <param name="mat"></param>
     /// <returns></returns>
     public static unsafe byte* GetBytePointer(this Mat mat)
-        => (byte*)mat.DataPointer.ToPointer();
+    {
+        return (byte*)mat.DataPointer.ToPointer();    
+    }
 
     /// <summary>
     /// Gets the whole data span to manipulate or read pixels, use this when possibly using ROI
     /// </summary>
     /// <returns></returns>
-    public static unsafe Span2D<T> GetDataSpan2D<T>(this Mat mat)
+    public static Span2D<T> GetDataSpan2D<T>(this Mat mat) where T : struct
     {
         var step = mat.GetRealStep();
-        if (mat.IsContinuous) return new(mat.DataPointer.ToPointer(), mat.Height, step, 0);
-        return new(mat.DataPointer.ToPointer(), mat.Height, step, mat.Step / mat.DepthToByteCount() - step);
+        unsafe
+        {
+            if (mat.IsContinuous) return new(mat.DataPointer.ToPointer(), mat.Height, step, 0);
+            return new(mat.DataPointer.ToPointer(), mat.Height, step, mat.Step / mat.DepthToByteCount() - step);
+        }
     }
 
     /// <summary>
@@ -240,9 +248,34 @@ public static class EmguExtensions
     /// <param name="length"></param>
     /// <param name="offset"></param>
     /// <returns></returns>
-    public static unsafe Span<T> GetDataSpan<T>(this Mat mat, int length = 0, int offset = 0)
+    public static Span<T> GetDataSpan<T>(this Mat mat, int length = 0, int offset = 0) where T : struct
     {
+        if (!mat.IsContinuous)
+            throw new NotSupportedException("To create a Span, the Mat's memory must be continuous. This Mat does not use continuous memory. Use Span2D instead.");
+
+        if (offset < 0)
+            throw new ArgumentOutOfRangeException(nameof(offset), offset, "Offset must be a positive value.");
+
+        var maxLength = mat.GetLength() / Marshal.SizeOf<T>() - offset;
+
+        if (maxLength < 0)
+            throw new ArgumentOutOfRangeException(nameof(offset), offset, "Offset value overflow this Mat size.");
+
         if (length <= 0)
+        {
+            length = maxLength;
+        }
+        else if (length > maxLength)
+        {
+            throw new ArgumentOutOfRangeException(nameof(length), length, $"The maximum size allowed for this Mat with an offset of {offset} is {maxLength}.");
+        }
+
+        unsafe
+        {
+            return new(IntPtr.Add(mat.DataPointer, offset).ToPointer(), length);
+        }
+
+        /*if (length <= 0)
         {
             if (mat.IsContinuous)
             {
@@ -253,7 +286,7 @@ public static class EmguExtensions
                 length = mat.Step / mat.DepthToByteCount() * (mat.Height - 1) + mat.GetRealStep();
             }
         }
-        return new(IntPtr.Add(mat.DataPointer, offset).ToPointer(), length);
+        return new(IntPtr.Add(mat.DataPointer, offset).ToPointer(), length);*/
     }
 
     /// <summary>
@@ -264,7 +297,7 @@ public static class EmguExtensions
     /// <param name="x"></param>
     /// <param name="y"></param>
     /// <returns></returns>
-    public static Span<T> GetPixelSpan<T>(this Mat mat, int x, int y) 
+    public static Span<T> GetPixelSpan<T>(this Mat mat, int x, int y) where T : struct
         => mat.GetDataSpan<T>(mat.NumberOfChannels, mat.GetPixelPos(x, y));
 
     /// <summary>
@@ -274,7 +307,7 @@ public static class EmguExtensions
     /// <param name="mat"></param>
     /// <param name="pos"></param>
     /// <returns></returns>
-    public static Span<T> GetPixelSpan<T>(this Mat mat, int pos) 
+    public static Span<T> GetPixelSpan<T>(this Mat mat, int pos) where T : struct
         => mat.GetDataSpan<T>(mat.NumberOfChannels, pos);
 
     /// <summary>
@@ -286,11 +319,29 @@ public static class EmguExtensions
     /// <param name="length"></param>
     /// <param name="offset"></param>
     /// <returns></returns>
-    public static unsafe Span<T> GetRowSpan<T>(this Mat mat, int y, int length = 0, int offset = 0)
+    public static Span<T> GetRowSpan<T>(this Mat mat, int y, int length = 0, int offset = 0) where T : struct
     {
-        var originalStep = mat.Step;
-        if(length <= 0) length = mat.GetRealStep();
-        return new(IntPtr.Add(mat.DataPointer, y * originalStep + offset).ToPointer(), length);
+        if (offset < 0)
+            throw new ArgumentOutOfRangeException(nameof(offset), offset, "Offset must be a positive value.");
+
+        var maxLength = mat.GetRealStep() / Marshal.SizeOf<T>() - offset;
+
+        if (maxLength < 0)
+            throw new ArgumentOutOfRangeException(nameof(offset), offset, "Offset value overflow this Mat row size.");
+
+        if (length <= 0)
+        {
+            length = maxLength;
+        }
+        else if (length > maxLength)
+        {
+            throw new ArgumentOutOfRangeException(nameof(length), length, $"The maximum size allowed for this Mat row with an offset of {offset} is {maxLength}.");
+        }
+
+        unsafe
+        {
+            return new(IntPtr.Add(mat.DataPointer, y * mat.Step + offset).ToPointer(), length);
+        }
     }
 
     /// <summary>
@@ -330,20 +381,32 @@ public static class EmguExtensions
     /// <param name="length"></param>
     /// <param name="offset"></param>
     /// <returns></returns>
-    public static unsafe ReadOnlySpan<T> GetDataReadOnlySpan<T>(this Mat mat, int length = 0, int offset = 0)
+    public static ReadOnlySpan<T> GetDataReadOnlySpan<T>(this Mat mat, int length = 0, int offset = 0) where T : struct
     {
+        if (!mat.IsContinuous)
+            throw new NotSupportedException("To create a Span, the Mat's memory must be continuous. This Mat does not use continuous memory. Use Span2D instead.");
+
+        if (offset < 0)
+            throw new ArgumentOutOfRangeException(nameof(offset), offset, "Offset must be a positive value.");
+
+        int maxLength = mat.GetLength() / Marshal.SizeOf<T>() - offset;
+
+        if (maxLength < 0)
+            throw new ArgumentOutOfRangeException(nameof(offset), offset, "Offset value overflow this Mat size.");
+
         if (length <= 0)
         {
-            if (mat.IsContinuous)
-            {
-                length = mat.GetLength();
-            }
-            else
-            {
-                length = mat.Step / mat.DepthToByteCount() * (mat.Height - 1) + mat.GetRealStep();
-            }
+            length = maxLength;
         }
-        return new(IntPtr.Add(mat.DataPointer, offset).ToPointer(), length);
+        else if (length > maxLength)
+        {
+            throw new ArgumentOutOfRangeException(nameof(length), length, $"The maximum size allowed for this Mat with an offset of {offset} is {maxLength}.");
+        }
+
+        unsafe
+        {
+            return new(IntPtr.Add(mat.DataPointer, offset).ToPointer(), length);
+        }
     }
 
     /// <summary>
@@ -362,11 +425,29 @@ public static class EmguExtensions
     /// <param name="length"></param>
     /// <param name="offset"></param>
     /// <returns></returns>
-    public static unsafe ReadOnlySpan<T> GetRowReadOnlySpan<T>(this Mat mat, int y, int length = 0, int offset = 0)
+    public static ReadOnlySpan<T> GetRowReadOnlySpan<T>(this Mat mat, int y, int length = 0, int offset = 0) where T : struct
     {
-        var originalStep = mat.Step;
-        if (length <= 0) length = mat.GetRealStep();
-        return new(IntPtr.Add(mat.DataPointer, y * originalStep + offset).ToPointer(), length);
+        if (offset < 0)
+            throw new ArgumentOutOfRangeException(nameof(offset), offset, "Offset must be a positive value.");
+
+        var maxLength = mat.GetRealStep() / Marshal.SizeOf<T>() - offset;
+
+        if (maxLength < 0)
+            throw new ArgumentOutOfRangeException(nameof(offset), offset, "Offset value overflow this Mat row size.");
+
+        if (length <= 0)
+        {
+            length = maxLength;
+        }
+        else if (length > maxLength)
+        {
+            throw new ArgumentOutOfRangeException(nameof(length), length, $"The maximum size allowed for this Mat row with an offset of {offset} is {maxLength}.");
+        }
+
+        unsafe
+        {
+            return new(IntPtr.Add(mat.DataPointer, y * mat.Step + offset).ToPointer(), length);
+        }
     }
 
     /// <summary>

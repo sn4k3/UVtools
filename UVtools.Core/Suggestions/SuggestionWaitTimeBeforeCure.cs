@@ -468,7 +468,7 @@ public sealed class SuggestionWaitTimeBeforeCure : Suggestion
             }
         }
 
-        if (_createEmptyFirstLayer && SlicerFile is (ChituboxFile or CTBEncryptedFile) and { CanUseLayerPositionZ: true, SupportGCode: false})
+        if (_createEmptyFirstLayer && SlicerFile is (ChituboxFile or CTBEncryptedFile or GooFile) and { CanUseLayerPositionZ: true, SupportGCode: false})
         {
             var firstLayer = SlicerFile.FirstLayer!;
             if (!firstLayer.IsDummy) // First layer is not blank as it seems, lets create one

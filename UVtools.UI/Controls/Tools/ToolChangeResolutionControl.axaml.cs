@@ -36,7 +36,8 @@ public partial class ToolChangeResolutionControl : ToolControl
             Operation.NewResolutionY = _selectedMachinePresetItem.ResolutionY;
             Operation.NewDisplayWidth = (decimal)_selectedMachinePresetItem.DisplayWidth;
             Operation.NewDisplayHeight = (decimal)_selectedMachinePresetItem.DisplayHeight;
-            Operation.FixRatio = true;
+            Operation.FixRatio = Operation.NewFixedRatioX != 1.0 || Operation.NewFixedRatioY != 1.0;
+
             Dispatcher.UIThread.Post(() => SelectedMachinePresetItem = null, DispatcherPriority.Loaded);
         }
     }

@@ -85,3 +85,11 @@
 - Ivan Ivanov
 - Simon Christ
 - Leonardo Farenzena Felin
+- Sylvain Chartrand
+- Sason Simpson
+- Starbase3D
+- Robert Blackett
+- Michael Pullen
+- Landry David
+- Jeremy Conoley
+- Brady George

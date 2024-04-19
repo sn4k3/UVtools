@@ -390,6 +390,85 @@
 							</StackPanel>
 						</uvtava:GroupBox>
 
+                        <uvtava:GroupBox Margin="5"
+                                         Header="Notifications">
+
+                            <StackPanel Spacing="10">
+
+                                <StackPanel Orientation="Horizontal" Spacing="5">
+                                    <CheckBox VerticalAlignment="Center"
+                                              IsChecked="{Binding Settings.General.NotificationBeep}"
+                                              Content="Play"/>
+                                    <NumericUpDown VerticalAlignment="Center"
+												   Width="130"
+                                                   Minimum="1"
+                                                   Maximum="255"
+                                                   IsEnabled="{Binding Settings.General.NotificationBeep}"
+                                                   Value="{Binding Settings.General.NotificationBeepCount}"/>
+									<TextBlock VerticalAlignment="Center"
+                                               Text="beep(s) when finish operations that ran longer than"/>
+                                    <NumericUpDown Classes="ValueLabel ValueLabel_s"
+                                                   VerticalAlignment="Center"
+                                                   Width="190"
+                                                   Minimum="10"
+                                                   Maximum="65535"
+                                                   IsEnabled="{Binding Settings.General.NotificationBeep}"
+                                                   Value="{Binding Settings.General.NotificationBeepActivateAboveTime}"/>
+                                </StackPanel>
+
+                                <Grid RowDefinitions="Auto,10,Auto"
+                                      ColumnDefinitions="Auto,10,*,20,Auto,10,*">
+
+                                    <TextBlock Grid.Row="0" Grid.Column="0"
+											   VerticalAlignment="Center"
+                                               Text="Beep frequency:"/>
+                                    <NumericUpDown Grid.Row="0" Grid.Column="2" 
+                                                   Classes="ValueLabel ValueLabel_hz"
+                                                   VerticalAlignment="Center"
+                                                   Minimum="20"
+                                                   Maximum="20000"
+                                                   IsEnabled="{Binding Settings.General.NotificationBeep}"
+                                                   Value="{Binding Settings.General.NotificationBeepFrequency}"/>
+                                    <TextBlock Grid.Row="0" Grid.Column="4"
+                                               VerticalAlignment="Center"
+                                               Text="Beep duration:"/>
+                                    <NumericUpDown Grid.Row="0" Grid.Column="6"
+                                                   Classes="ValueLabel ValueLabel_ms"
+                                                   VerticalAlignment="Center"
+                                                   Minimum="50"
+                                                   Maximum="5000"
+                                                   IsEnabled="{Binding Settings.General.NotificationBeep}"
+                                                   Value="{Binding Settings.General.NotificationBeepDuration}"/>
+
+                                    <TextBlock Grid.Row="2" Grid.Column="0"
+                                               VerticalAlignment="Center"
+                                               Text="Repeat offset:"/>
+                                    <NumericUpDown Grid.Row="2" Grid.Column="2"
+                                                   Classes="ValueLabel ValueLabel_hz"
+                                                   VerticalAlignment="Center"
+                                                   Minimum="0"
+                                                   Maximum="10000"
+                                                   IsEnabled="{Binding Settings.General.NotificationBeep}"
+                                                   Value="{Binding Settings.General.NotificationBeepRepeatFrequencyOffset}"/>
+                                    <TextBlock Grid.Row="2" Grid.Column="4"
+                                               VerticalAlignment="Center"
+                                               Text="Repeat delay:"/>
+                                    <NumericUpDown Grid.Row="2" Grid.Column="6"
+                                                   Classes="ValueLabel ValueLabel_ms"
+                                                   VerticalAlignment="Center"
+                                                   Minimum="0"
+                                                   Maximum="5000"
+                                                   IsEnabled="{Binding Settings.General.NotificationBeep}"
+                                                   Value="{Binding Settings.General.NotificationBeepRepeatDelay}"/>
+                                </Grid>
+								<controls:ButtonWithIcon Icon="fa-solid fa-play"
+                                                         Text="Play beep"
+														 Padding="20,10,20,10"
+														 Command="{Binding PlayBeep}"
+                                                         IsEnabled="{Binding Settings.General.NotificationBeep}"/>
+							</StackPanel>
+						</uvtava:GroupBox>
+
 						<uvtava:GroupBox Margin="5">
 							<uvtava:GroupBox.Header>
 								<Grid RowDefinitions="Auto" ColumnDefinitions="*,Auto">

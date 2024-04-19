@@ -6,40 +6,56 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="UVtools.UI.Controls.Tools.ToolLightBleedCompensationControl"
              x:DataType="tools:ToolLightBleedCompensationControl">
-  <Grid RowDefinitions="Auto,10,Auto,10,Auto,10,Auto" ColumnDefinitions="Auto,10,500">
-    <TextBlock Grid.Row="0" Grid.Column="0" 
+    <Grid RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto" ColumnDefinitions="Auto,10,500">
+        <TextBlock Grid.Row="0" Grid.Column="0"
+                   VerticalAlignment="Center"
+                   Text="Dim subject:"/>
+
+        <ComboBox Grid.Row="0" Grid.Column="2"
+                  HorizontalAlignment="Stretch"
+                  ItemsSource="{Binding Operation.Subject, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                  SelectedItem="{Binding Operation.Subject, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
+
+
+        <TextBlock Grid.Row="2" Grid.Column="0"
                    VerticalAlignment="Center"
                    Text="Pixel lookup mode:"/>
 
-    <ComboBox Grid.Row="0" Grid.Column="2"
-              HorizontalAlignment="Stretch"
-              ItemsSource="{Binding Operation.LookupMode, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
-              SelectedItem="{Binding Operation.LookupMode, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
+        <ComboBox Grid.Row="2" Grid.Column="2"
+                  HorizontalAlignment="Stretch"
+                  ItemsSource="{Binding Operation.LookupMode, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                  SelectedItem="{Binding Operation.LookupMode, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
 
-    <TextBlock Grid.Row="2" Grid.Column="0"
-               VerticalAlignment="Center"
-               ToolTip.Tip="List of brightnesses to subtract for each subsequent pixel, format: 1-254, 1-254, 1-254, ..."
-               Text="Dim subsequent pixels by:"/>
-
-    <TextBox Grid.Row="2" Grid.Column="2"
-             Classes="ValueLabel ValueLabel_sun"
-                 VerticalAlignment="Center"
-                 Text="{Binding Operation.DimBy}"/>
-        
         <TextBlock Grid.Row="4" Grid.Column="0"
                    VerticalAlignment="Center"
-                   Text="Minimum pixel brightness:"/>
+                   ToolTip.Tip="List of brightnesses to subtract for each subsequent pixel, format: 1-254, 1-254, 1-254, ..."
+                   Text="Dim subsequent pixels by:"/>
 
-        <TextBlock Grid.Row="4" Grid.Column="2"
-                   VerticalAlignment="Center"
-                   Text="{Binding Operation.MinimumBrightness, StringFormat={}{0} of 255}"/>
+        <TextBox Grid.Row="4" Grid.Column="2"
+                 Classes="ValueLabel ValueLabel_sun"
+                     VerticalAlignment="Center"
+                     Text="{Binding Operation.DimBy}"/>
 
         <TextBlock Grid.Row="6" Grid.Column="0"
                    VerticalAlignment="Center"
-                   Text="Maximum subtraction:"/>
+                   Text="Minimum pixel brightness:"/>
 
         <TextBlock Grid.Row="6" Grid.Column="2"
+                   VerticalAlignment="Center">
+            <TextBlock.Text>
+                <MultiBinding StringFormat="{}{0} of 255  ({1}%)">
+                    <Binding Path="Operation.MinimumBrightness"/>
+                    <Binding Path="Operation.MinimumBrightnessPercentage"/>
+                </MultiBinding>
+            </TextBlock.Text>
+        </TextBlock>
+
+        <TextBlock Grid.Row="8" Grid.Column="0"
+                   VerticalAlignment="Center"
+                   Text="Maximum subtraction:"/>
+
+        <TextBlock Grid.Row="8" Grid.Column="2"
                    VerticalAlignment="Center"
                    Text="{Binding Operation.MaximumSubtraction, StringFormat={}{0} of 255}"/>
-  </Grid>
+    </Grid>
 </UserControl>

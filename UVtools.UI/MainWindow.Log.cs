@@ -8,6 +8,9 @@
 
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Threading;
+using System.Threading.Tasks;
+using UVtools.Core.SystemOS;
 using UVtools.UI.Structures;
 
 namespace UVtools.UI;
@@ -27,11 +30,17 @@ public partial class MainWindow
     {
         log.Index = Logs.Count;
         Logs.Insert(0, log);
+
+        if (log.ElapsedTime >= Settings.General.NotificationBeepActivateAboveTime)
+        {
+            App.BeepIfAble();
+        }
     }
 
-    public void AddLog(string description, double elapsedTime = 0) =>
+    public void AddLog(string description, double elapsedTime = 0)
+    {
         AddLog(new LogItem(Logs.Count, description, elapsedTime));
-
+    }
 
     public void AddLogVerbose(string description, double elapsedTime = 0)
     {

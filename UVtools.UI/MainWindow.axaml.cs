@@ -46,7 +46,6 @@ using Path = System.IO.Path;
 using Point = Avalonia.Point;
 using System.Runtime;
 using System.Runtime.InteropServices;
-using System.Threading;
 using UVtools.Core.Scripting;
 
 namespace UVtools.UI;

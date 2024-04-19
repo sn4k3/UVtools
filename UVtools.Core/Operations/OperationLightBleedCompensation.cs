@@ -20,11 +20,23 @@ using UVtools.Core.FileFormats;
 namespace UVtools.Core.Operations;
 
 
-#pragma warning disable CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
+#pragma warning disable CS0660, CS0661
 public class OperationLightBleedCompensation : Operation
-#pragma warning restore CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
+#pragma warning restore CS0660, CS0661
 {
     #region Enums
+
+    public enum LightBleedCompensationSubject : byte
+    {
+        [Description("Similarities: Dims sequential pixels in the model")]
+        Similarities,
+
+        [Description("Bridges: Dims sequential pixels that are bridges")]
+        Bridges,
+
+        [Description("Both: Similarities and bridges")]
+        Both
+    }
 
     public enum LightBleedCompensationLookupMode : byte
     {
@@ -44,6 +56,7 @@ public class OperationLightBleedCompensation : Operation
 
     private LightBleedCompensationLookupMode _lookupMode = LightBleedCompensationLookupMode.Next;
     private string _dimBy = "25,15,10,5";
+    private LightBleedCompensationSubject _subject;
 
     #endregion
 
@@ -53,7 +66,7 @@ public class OperationLightBleedCompensation : Operation
     public override string IconClass => "mdi-lightbulb-on";
     public override string Title => "Light bleed compensation";
     public override string Description =>
-        "Compensate the over-curing and light bleed from clear resins by dimming the sequential pixels.\n" +
+        "Compensate the over-curing and light bleed from clear resins by dimming the sequential pixels in the Z axis.\n" +
         "Note: You need to find the optimal minimum pixel brightness that such resin can print in order to optimize this process.\n" +
         "With more translucent resins you can go with lower brightness but stick to a limit that can form the layer without loss." +
         " Tiny details can be lost when using low brightness level.\n" +
@@ -86,7 +99,8 @@ public class OperationLightBleedCompensation : Operation
 
     public override string ToString()
     {
-        var result = $"[Lookup: {_lookupMode}]" +
+        var result = $"[Subject: {_subject}]" + 
+                     $" [Lookup: {_lookupMode}]" +
                      $" [Dim by: {_dimBy}]" + LayerRangeString;
         if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
         return result;
@@ -103,6 +117,12 @@ public class OperationLightBleedCompensation : Operation
 
     #region Properties
 
+    public LightBleedCompensationSubject Subject
+    {
+        get => _subject;
+        set => RaiseAndSetIfChanged(ref _subject, value);
+    }
+
     public LightBleedCompensationLookupMode LookupMode
     {
         get => _lookupMode;
@@ -116,11 +136,13 @@ public class OperationLightBleedCompensation : Operation
         {
             if(!RaiseAndSetIfChanged(ref _dimBy, value)) return;
             RaisePropertyChanged(nameof(MinimumBrightness));
+            RaisePropertyChanged(nameof(MinimumBrightnessPercentage));
             RaisePropertyChanged(nameof(MaximumSubtraction));
         }
     }
 
     public int MinimumBrightness => 255 - MaximumSubtraction;
+    public float MinimumBrightnessPercentage => (float)Math.Round(MinimumBrightness * 100.0 / 255.0, 2);
     public int MaximumSubtraction => DimByArray.Aggregate(0, (current, dim) => current + dim);
 
     public byte[] DimByArray
@@ -163,7 +185,7 @@ public class OperationLightBleedCompensation : Operation
 
     protected bool Equals(OperationLightBleedCompensation other)
     {
-        return _lookupMode == other._lookupMode && _dimBy == other._dimBy;
+        return _lookupMode == other._lookupMode && _dimBy == other._dimBy && _subject == other._subject;
     }
 
     public override bool Equals(object? obj)
@@ -171,9 +193,18 @@ public class OperationLightBleedCompensation : Operation
         if (ReferenceEquals(null, obj)) return false;
         if (ReferenceEquals(this, obj)) return true;
         if (obj.GetType() != this.GetType()) return false;
-        return Equals((OperationLightBleedCompensation) obj);
+        return Equals((OperationLightBleedCompensation)obj);
     }
 
+    public static bool operator ==(OperationLightBleedCompensation? left, OperationLightBleedCompensation? right)
+    {
+        return Equals(left, right);
+    }
+
+    public static bool operator !=(OperationLightBleedCompensation? left, OperationLightBleedCompensation? right)
+    {
+        return !Equals(left, right);
+    }
 
     #endregion
 
@@ -237,19 +268,38 @@ public class OperationLightBleedCompensation : Operation
                     }
                 }
                     
-                if (previousMat is null && nextMat is null) break; // Nothing more to do
+                if (mask is null || (previousMat is null && nextMat is null)) break; // Nothing more to do
                 if (previousMat is not null && nextMat is not null) // both, need to merge previous with next layer
                 {
                     CvInvoke.Add(previousMatRoi, nextMatRoi, previousMatRoi);
                     mask = previousMatRoi;
                 }
 
-                CvInvoke.Subtract(target, dimMats[i], target, mask);
+                switch (_subject)
+                {
+                    case LightBleedCompensationSubject.Similarities:
+                        CvInvoke.Subtract(target, dimMats[i], target, mask);
+                        break;
+                    case LightBleedCompensationSubject.Bridges:
+                        mask!.SetTo(EmguExtensions.WhiteColor, mask);
+                        CvInvoke.BitwiseNot(mask, mask);
+                        CvInvoke.Subtract(target, dimMats[i], target, mask);
+                        break;
+                    case LightBleedCompensationSubject.Both:
+                        CvInvoke.Subtract(target, dimMats[i], target, mask);
+                        mask!.SetTo(EmguExtensions.WhiteColor, mask);
+                        CvInvoke.BitwiseNot(mask, mask);
+                        CvInvoke.Subtract(target, dimMats[i], target, mask);
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(Subject), _subject, null);
+                }
 
                 previousMat?.Dispose();
                 nextMat?.Dispose();
                 previousMatRoi?.Dispose();
                 nextMatRoi?.Dispose();
+                mask?.Dispose();
             }
 
             // Apply the results only to the selected masked area, if user selected one

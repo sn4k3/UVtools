@@ -1469,8 +1469,9 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
             NonZeroPixelCount = (uint)CvInvoke.CountNonZero(roiMat);
 
             // Compute first and last pixel
-            var span = roiMat.GetDataByteReadOnlySpan();
-            var yOffset = mat.GetRealStep() * BoundingRectangle.Y;
+            var span = roiMat.GetRowByteReadOnlySpan(0);
+            var step = mat.GetRealStep();
+            var yOffset = step * BoundingRectangle.Y;
             for (var i = 0; i < span.Length; i++)
             {
                 if (span[i] == 0) continue;
@@ -1479,6 +1480,9 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
                 FirstPixelPosition = new Point(xOffset, BoundingRectangle.Y);
                 break;
             }
+
+            span = roiMat.GetRowByteReadOnlySpan(roiMat.Height - 1);
+            yOffset = step * BoundingRectangle.Bottom;
             for (var i = span.Length - 1; i >= 0; i--)
             {
                 if (span[i] == 0) continue;

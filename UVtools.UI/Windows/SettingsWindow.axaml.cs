@@ -155,7 +155,11 @@ public partial class SettingsWindow : WindowEx
             propertyInfo.SetValue(Settings.Automations, null);
             return;
         }
-            
+    }
+
+    public void PlayBeep()
+    {
+        App.BeepIfAble();
     }
 
     public async void SendToAddCustomLocation()

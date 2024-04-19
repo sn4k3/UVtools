@@ -34,6 +34,7 @@ using UVtools.Core.Objects;
 using UVtools.Core.Operations;
 using UVtools.Core.PixelEditor;
 using UVtools.Core.Exceptions;
+using System.Threading.Channels;
 
 namespace UVtools.Core.FileFormats;
 
@@ -781,7 +782,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             var bytesPerPixel = dataType is "RGB888" or "BGR888" ? 3 : 2;
             var bytes = new byte[mat.Width * mat.Height * bytesPerPixel];
             uint index = 0;
-            var span = mat.GetDataByteSpan();
+            var span = mat.GetDataByteReadOnlySpan();
             for (int i = 0; i < span.Length;)
             {
                 byte b = span[i++];
@@ -3837,8 +3838,10 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// Sanitizes the thumbnails to respect the file specification:<br/>
     /// - Remove empty thumbnails<br/>
     /// - Remove the excess thumbnails up to spec, if requested<br/>
-    /// - Resize thumbnails to the spec
-    /// - Creates missing thumbnails required by the file spec
+    /// - Check if the thumbnails have the correct number of channels<br/>
+    /// - Force BGR color space and strip alpha channel if required by the format<br/>
+    /// - Resize thumbnails to the spec<br/>
+    /// - Creates missing thumbnails required by the file spec<br/>
     /// </summary>
     /// <param name="trimToFileSpec">True to trim the excess thumbnails, otherwise false to not trim</param>
     /// <returns>True if anything changed, otherwise false</returns>
@@ -3861,13 +3864,55 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             changed = true;
         }
 
-        // Resize thumbnails to the spec
-        for (var i = 0; i < ThumbnailsCount && i < ThumbnailsOriginalSize.Length; i++)
+        // Check if the thumbnails have the correct number of channels
+        for (var i = 0; i < ThumbnailsCount; i++)
         {
-            if (Thumbnails[i].Size != ThumbnailsOriginalSize[i])
+            var numberOfChannels = Thumbnails[i].NumberOfChannels;
+            var validNumberOfChannels = new[] { 1, 3, 4 };
+
+
+            if (!validNumberOfChannels.Contains(numberOfChannels))
             {
-                CvInvoke.Resize(Thumbnails[i], Thumbnails[i], ThumbnailsOriginalSize[i]);
-                changed = true;
+                throw new InvalidDataException($"The thumbnail {i} holds an invalid number of channels ({numberOfChannels}). To be valid should have: <{string.Join(", ", validNumberOfChannels)}>.");
+            }
+        }
+
+        // Force BGR color space and strip alpha channel if required by the format
+        if (FileType != FileFormatType.Archive)
+        {
+            for (var i = 0; i < ThumbnailsCount; i++)
+            {
+                switch (Thumbnails[i].NumberOfChannels)
+                {
+                    case 1:
+                        CvInvoke.CvtColor(Thumbnails[i], Thumbnails[i], ColorConversion.Gray2Bgr);
+                        changed = true;
+                        break;
+                    case 4:
+                        CvInvoke.CvtColor(Thumbnails[i], Thumbnails[i], ColorConversion.Bgra2Bgr);
+                        changed = true;
+                        break;
+                }
+            }
+        }
+
+        // Resize thumbnails to the spec
+        if (ThumbnailsCount > 0 && ThumbnailsOriginalSize.Length > 0)
+        {
+            int originalThumbnailSize = 0;
+            for (var i = 0; i < ThumbnailsCount; i++)
+            {
+                if (Thumbnails[i].Size != ThumbnailsOriginalSize[originalThumbnailSize])
+                {
+                    CvInvoke.Resize(Thumbnails[i], Thumbnails[i], ThumbnailsOriginalSize[originalThumbnailSize]);
+                    changed = true;
+                }
+
+                originalThumbnailSize++;
+                if (originalThumbnailSize >= ThumbnailsOriginalSize.Length)
+                {
+                    originalThumbnailSize = 0;
+                }
             }
         }
 
@@ -4117,7 +4162,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         }
 
         // Make sure thumbnails are all set, otherwise clone/create them
-        SanitizeThumbnails();
+        SanitizeThumbnails(FileType != FileFormatType.Archive);
 
         OnBeforeEncode(false);
         BeforeEncode(false);
@@ -4367,7 +4412,6 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             var mat = new Mat();
             CvInvoke.Imdecode(stream.ToArray(), ImreadModes.Unchanged, mat);
             Thumbnails.Add(mat);
-            stream.Close();
             progress++;
         }
     }
@@ -4384,7 +4428,6 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
             Mat mat = new();
             CvInvoke.Imdecode(stream.ToArray(), ImreadModes.Unchanged, mat);
             Thumbnails.Add(mat);
-            stream.Close();
             progress++;
         }
     }

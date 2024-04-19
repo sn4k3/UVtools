@@ -239,6 +239,7 @@ public sealed class OperationChangeResolution : Operation
             new Resolution(4920, 2880, "5K UHD"),
             new Resolution(5448, 3064, "6K"),
             new Resolution(7680, 4320, "8K UHD"),
+            new Resolution(11520, 5120, "12K"),
         };
     }
 

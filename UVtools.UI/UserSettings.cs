@@ -63,11 +63,19 @@ public sealed class UserSettings : BindableBase
         private bool _fileSavePromptOverwrite = true;
         private string? _fileSaveAsDefaultName = "{0}_{PrintTimeString}_{MaterialMillilitersInteger}ml_copy";
         private string? _fileSaveAsDefaultNameCleanUpRegex = @"_?[0-9]+h[0-9]+m([0-9]+s)?|_?(([0-9]*[.])?[0-9]+)ml|_copy([0-9]*)?";
+        private bool _notificationBeep = true;
+        private byte _notificationBeepCount = 1;
+        private ushort _notificationBeepActivateAboveTime = 20;
+        private ushort _notificationBeepFrequency = 600;
+        private ushort _notificationBeepDuration = 300;
+        private int _notificationBeepRepeatFrequencyOffset = 50;
+        private ushort _notificationBeepRepeatDelay;
         private bool _sendToPromptForRemovableDeviceEject = true;
         private RangeObservableCollection<MappedDevice> _sendToCustomLocations = new();
         private RangeObservableCollection<MappedProcess> _sendToProcess = new();
         private ushort _lockedFilesOpenCounter;
         private bool _fileSaveUpdateNameWithNewInformation = true;
+        
 
         public const byte LockedFilesMaxOpenCounter = 10;
 
@@ -229,6 +237,48 @@ public sealed class UserSettings : BindableBase
         {
             get => _fileSaveAsDefaultNameCleanUpRegex;
             set => RaiseAndSetIfChanged(ref _fileSaveAsDefaultNameCleanUpRegex, value);
+        }
+
+        public bool NotificationBeep
+        {
+            get => _notificationBeep;
+            set => RaiseAndSetIfChanged(ref _notificationBeep, value);
+        }
+
+        public byte NotificationBeepCount
+        {
+            get => _notificationBeepCount;
+            set => RaiseAndSetIfChanged(ref _notificationBeepCount, value);
+        }
+
+        public ushort NotificationBeepActivateAboveTime
+        {
+            get => _notificationBeepActivateAboveTime;
+            set => RaiseAndSetIfChanged(ref _notificationBeepActivateAboveTime, value);
+        }
+
+        public ushort NotificationBeepFrequency
+        {
+            get => _notificationBeepFrequency;
+            set => RaiseAndSetIfChanged(ref _notificationBeepFrequency, value);
+        }
+
+        public ushort NotificationBeepDuration
+        {
+            get => _notificationBeepDuration;
+            set => RaiseAndSetIfChanged(ref _notificationBeepDuration, value);
+        }
+
+        public int NotificationBeepRepeatFrequencyOffset
+        {
+            get => _notificationBeepRepeatFrequencyOffset;
+            set => RaiseAndSetIfChanged(ref _notificationBeepRepeatFrequencyOffset, value);
+        }
+
+        public ushort NotificationBeepRepeatDelay
+        {
+            get => _notificationBeepRepeatDelay;
+            set => RaiseAndSetIfChanged(ref _notificationBeepRepeatDelay, value);
         }
 
         public bool SendToPromptForRemovableDeviceEject

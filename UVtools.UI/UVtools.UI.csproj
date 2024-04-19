@@ -13,6 +13,17 @@
         <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
     </PropertyGroup>
 
+    <!--
+    net6.0-windows10.0.17763.0: If your app targets Windows 10, version 1809.
+    net6.0-windows10.0.18362.0: If your app targets Windows 10, version 1903.
+    net6.0-windows10.0.19041.0: If your app targets Windows 10, version 2004.
+    net6.0-windows10.0.22000.0: If your app targets Windows 11.
+    
+    <PropertyGroup Condition=" '$(OS)' == 'Windows_NT' ">
+        <TargetFramework>$(TargetFramework)-windows10.0.17763.0</TargetFramework>
+    </PropertyGroup>
+    <-->
+
     <ItemGroup>
         <PackageReference Include="Avalonia" Version="11.0.10" />
         <PackageReference Include="Avalonia.Controls.ColorPicker" Version="11.0.10" />
@@ -22,9 +33,9 @@
         <PackageReference Include="Avalonia.Themes.Fluent" Version="11.0.10" />
         <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="11.0.10" />
         <PackageReference Include="Markdown.Avalonia" Version="11.0.2" />
-        <PackageReference Include="Projektanker.Icons.Avalonia" Version="9.2.0" />
-        <PackageReference Include="Projektanker.Icons.Avalonia.FontAwesome" Version="9.2.0" />
-        <PackageReference Include="Projektanker.Icons.Avalonia.MaterialDesign" Version="9.2.0" />
+        <PackageReference Include="Projektanker.Icons.Avalonia" Version="9.3.0" />
+        <PackageReference Include="Projektanker.Icons.Avalonia.FontAwesome" Version="9.3.0" />
+        <PackageReference Include="Projektanker.Icons.Avalonia.MaterialDesign" Version="9.3.0" />
     </ItemGroup>
 
     <ItemGroup>

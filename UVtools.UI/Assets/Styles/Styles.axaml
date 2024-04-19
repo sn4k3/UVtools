@@ -328,6 +328,14 @@
         </Setter>
     </Style>
 
+    <Style Selector="TextBox.ValueLabel_hz, NumericUpDown.ValueLabel_hz /template/ TextBox">
+        <Setter Property="InnerRightContent">
+            <Template>
+                <TextBox Classes="NumericUpDownValueLabel" Text="Hz" ToolTip.Tip="Hertz" />
+            </Template>
+        </Setter>
+    </Style>
+
     <!--
     <Style Selector="NumericUpDown /template/ TextBox:not(.empty)">
         <Setter Property="MinWidth" Value="0"/>

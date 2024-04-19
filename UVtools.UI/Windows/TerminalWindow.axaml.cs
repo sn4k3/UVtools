@@ -139,7 +139,7 @@ public partial class TerminalWindow : WindowEx
         {
             if (_scriptState is null)
             {
-                _scriptState = await Scripter.RunScript(_commandText);
+                _scriptState = await Scripter.RunScript(_commandText, App.MainWindow);
             }
             else
             {

@@ -540,10 +540,10 @@ public sealed class CTBEncryptedFile : FileFormat
         [FieldOrder(3)] public uint ImageLength { get; set; }
 
 
-        public unsafe Mat Decode(byte[] rawImageData)
+        public Mat Decode(byte[] rawImageData)
         {
             var image = new Mat(new Size((int)ResolutionX, (int)ResolutionY), DepthType.Cv8U, 3);
-            var span = image.GetBytePointer();
+            var span = image.GetDataByteSpan();
 
             int pixel = 0;
             for (int n = 0; n < rawImageData.Length; n++)
@@ -574,14 +574,13 @@ public sealed class CTBEncryptedFile : FileFormat
             return $"{nameof(ResolutionX)}: {ResolutionX}, {nameof(ResolutionY)}: {ResolutionY}, {nameof(ImageOffset)}: {ImageOffset}, {nameof(ImageLength)}: {ImageLength}";
         }
 
-        public unsafe byte[] Encode(Mat image)
+        public byte[] Encode(Mat image)
         {
             List<byte> rawData = new();
             ushort color15 = 0;
             uint rep = 0;
 
-            var span = image.GetBytePointer();
-            var imageLength = image.GetLength();
+            var span = image.GetDataByteReadOnlySpan();
 
             void RleRGB15()
             {
@@ -611,11 +610,27 @@ public sealed class CTBEncryptedFile : FileFormat
             }
 
             int pixel = 0;
-            while (pixel < imageLength)
+            while (pixel < span.Length)
             {
+                byte b = span[pixel++];
+                byte g;
+                byte r;
+
+                if (image.NumberOfChannels == 1) // 8 bit safe-guard
+                {
+                    r = g = b;
+                }
+                else
+                {
+                    g = span[pixel++];
+                    r = span[pixel++];
+                }
+
+                if (image.NumberOfChannels == 4) pixel++; // skip alpha
+
                 var ncolor15 =
                     // bgr
-                    (span[pixel++] >> 3) | ((span[pixel++] >> 2) << 5) | ((span[pixel++] >> 3) << 11);
+                    (b >> 3) | ((g >> 2) << 5) | ((r >> 3) << 11);
 
                 if (ncolor15 == color15)
                 {

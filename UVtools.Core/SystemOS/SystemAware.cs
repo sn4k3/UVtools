@@ -14,6 +14,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.Threading.Tasks;
 using UVtools.Core.Extensions;
 
 namespace UVtools.Core.SystemOS;
@@ -426,6 +427,33 @@ public static class SystemAware
         process.OutputDataReceived -= ProcessOnOutputDataReceived;
 
         return stringBuilder.ToString();
+    }
+
+    /// <summary>
+    /// Produces a beep tone from speaker
+    /// </summary>
+    /// <param name="frequency">The sound frequency</param>
+    /// <param name="duration">The duration of the beep in milliseconds</param>
+    /// <param name="waitForCompletion">True to wait for beep ends to continue, otherwise run in background</param>
+    public static void Beep(int frequency = 800, int duration = 150, bool waitForCompletion = false)
+    {
+        frequency = Math.Clamp(frequency, 20, 20_000);
+        duration = Math.Max(40, duration);
+
+        if (OperatingSystem.IsWindows())
+        {
+#pragma warning disable CA1416 // Validate platform compatibility
+            if (waitForCompletion) { Console.Beep(frequency, duration); }
+            else { Task.Run(() => Console.Beep(frequency, duration)); }
+#pragma warning restore CA1416 // Validate platform compatibility
+
+        }
+        else
+        {
+            var seconds = Math.Round(duration / 1000.0, 3, MidpointRounding.AwayFromZero);
+            StartProcess("bash", $"-c \"if [ '$(command -v speaker-test)' ]; then speaker-test -t sine -f {frequency} -l 1 > /dev/null & sleep {seconds} && kill -9 $!; else echo -e '\\a'; fi\"",
+                waitForCompletion);
+        }
     }
 
     /// <summary>

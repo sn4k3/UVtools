@@ -20,6 +20,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Web;
 using Avalonia.Data.Core.Plugins;
 using Avalonia.Media;
@@ -31,6 +33,7 @@ using UVtools.UI.Structures;
 using UVtools.UI.Windows;
 using Bitmap = Avalonia.Media.Imaging.Bitmap;
 using UVtools.UI.Extensions;
+using static UVtools.Core.FileFormats.UVJFile;
 
 namespace UVtools.UI;
 
@@ -399,6 +402,23 @@ public class App : Application
         }
 
         return null;
+    }
+
+    public static void BeepIfAble()
+    {
+        if (!UserSettings.Instance.General.NotificationBeep || UserSettings.Instance.General.NotificationBeepCount == 0) return;
+        Task.Run(() =>
+        {
+            int frequency = UserSettings.Instance.General.NotificationBeepFrequency;
+
+            for (int i = 0; i < UserSettings.Instance.General.NotificationBeepCount; i++)
+            {
+                SystemAware.Beep(frequency, UserSettings.Instance.General.NotificationBeepDuration, true);
+                frequency += UserSettings.Instance.General.NotificationBeepRepeatFrequencyOffset;
+                Thread.Sleep(UserSettings.Instance.General.NotificationBeepRepeatDelay);
+            }
+
+        });
     }
 
 #endregion

@@ -303,10 +303,10 @@ public sealed class FDGFile : FileFormat
         [FieldOrder(6)] public uint Unknown3    { get; set; }
         [FieldOrder(7)] public uint Unknown4    { get; set; }
 
-        public unsafe Mat Decode(byte[] rawImageData)
+        public Mat Decode(byte[] rawImageData)
         {
             var image = new Mat(new Size((int)ResolutionX, (int)ResolutionY), DepthType.Cv8U, 3);
-            var span = image.GetBytePointer();
+            var span = image.GetDataByteSpan();
 
             int pixel = 0;
             for (uint n = 0; n < ImageLength; n++)
@@ -335,11 +335,10 @@ public sealed class FDGFile : FileFormat
             return image;
         }
 
-        public static unsafe byte[] Encode(Mat image)
+        public static byte[] Encode(Mat image)
         {
             List<byte> rawData = new();
-            var span = image.GetBytePointer();
-            var imageLength = image.GetLength();
+            var span = image.GetDataByteReadOnlySpan();
 
             ushort color15 = 0;
             uint rep = 0;
@@ -371,12 +370,26 @@ public sealed class FDGFile : FileFormat
                 }
             }
 
-            for (int pixel = 0; pixel < imageLength; pixel += image.NumberOfChannels)
+            int pixel = 0;
+            while (pixel < span.Length)
             {
-                var ncolor15 =
-                    (span[pixel] >> 3)
-                    | ((span[pixel+1] >> 2) << 5)
-                    | ((span[pixel+2] >> 3) << 11);
+                byte b = span[pixel++];
+                byte g;
+                byte r;
+
+                if (image.NumberOfChannels == 1) // 8 bit safe-guard
+                {
+                    r = g = b;
+                }
+                else
+                {
+                    g = span[pixel++];
+                    r = span[pixel++];
+                }
+
+                if (image.NumberOfChannels == 4) pixel++; // skip alpha
+
+                var ncolor15 = (b >> 3) | ((g >> 2) << 5) | ((r >> 3) << 11);
 
                 if (ncolor15 == color15)
                 {

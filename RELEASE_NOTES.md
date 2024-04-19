@@ -1,24 +1,16 @@
-- **File formats:**
-  - (Add) nanoDLP file format
-  - (Add) SL1 printer note keyword: `LAYERIMAGEFORMAT_xxx` sets the layer image format required for the converted file if the format have multiple options (For Archives with PNG's)
-  - (Fix) Anycubic file format: Model Min/Max(X/Y) was not properly calculated
-  - (Fix) Photon Mono M5s Pro incorrect display height and width (fixes #854)
-- **PrusaSlicer:**
-  - (Add) Concepts3D Athena 8K & 12K
-  - (Change) Wanhao D7: Add `LAYERIMAGEFORMAT_Png32` to printer notes
-  - (Change) Nova3D Bene4 Mono, Bene5, Elfin2 Mono SE, Whale, Whale2: Add `LAYERIMAGEFORMAT_Png24BgrAA` to printer notes
-- **UI:**
-  - (Add) Settings - Automations - Events: After file load, before file save and after file save. Events are fired upon an action and execute a defined script.
-        If the script is written with the UVtools scripting structure, it will run under an operation and within the Core context.
-        Otherwise, if plain C# code is used, it will run under the Terminal and in the UI context.
-  - (Add) Show a message of congratulations on the software birthday (Trigger only once per year)
-  - (Add) Menu - Help: Add "Community forums" submenu, move Facebook group into it and add GitHub, Reddit, Twitter and Youtube
-  - (Change) Window title: Move version near software name and add the system arch to it
-  - (Change) About window: Move version near software name and add "Age" label
-  - (Change) Benchmark tool: Add a thin border to the result panels
-  - (Improvement) On the status bar, hide the " @ mm/min" from lift speed label if file is not able to use lift speed parameters
-  - (Improvement) Re-style the new version button
-  - (Fix) Show print times correctly when larger than a day (#854)
-- (Upgrade) .NET from 6.0.27 to 6.0.28
-- (Upgrade) Wix from 4.0.4 to 5.0.0
+- **Tool - Change resolution:**
+  - (Add) 12K resolution profile
+  - (Improvement) Do not mark the option "Resize layers with the proposed ratio" when a machine preset results in the same pixel size / ratio of (1.0x, 1.0x)
+  - (Fix) Wait time before cure suggestion for GOO and PRZ file formats, it now allows the use of the create first empty layer (#864)
+- **Thumbnail sanitizer:**
+  - (Add) Check if the thumbnails have the correct number of channels, if not it will throw an error
+  - (Improvement) When full encode a file, strip all extra thumbnails that are not used by the file format if they are not an archive
+  - (Improvement) Resize all thumbnails to the same size as the original from file format even when there are more than file format requires, this fixes a problem when converting from zip that have many thumbnails but file format selects the larger and the smallest, leading to encode the wrong size
+  - (Improvement) Convert thumbnails to BGR and strip the alpha channel when required, this fixes the issue where format conversion from zip such as sl1 and vdt where corrupting the final file with invalid thumbnail rle
+- (Add) Tool - Light bleed compensation: Add "Dim subject" option to select from different subjects to dim, "Bridges" was added (#868)
+- (Add) Settings - Notifications: Allow to define beeps sounds to play after ran long operations (#863)
+- (Improvement) CTB, FDG, PHZ: Make possible to encode a thumbnail using 1 and 4 channels, this fixes the issue where the file format could encode invalid thumbnail data
+- (Improvement) Add empty layer for Goo file format when running the wait time before cure suggestion
+- (Fix) Terminal: The run globals was lost from the previous version update
+- (Upgrade) .NET from 6.0.28 to 6.0.29
 
