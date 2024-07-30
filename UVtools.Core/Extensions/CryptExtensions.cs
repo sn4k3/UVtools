@@ -9,15 +9,27 @@
 using System;
 using System.IO;
 using System.Security.Cryptography;
+using Aes = System.Security.Cryptography.Aes;
 
 namespace UVtools.Core.Extensions;
 
 public static class CryptExtensions
 {
     public static readonly SHA1 SHA1Instance = SHA1.Create();
+    public static readonly MD5 MD5Instance = MD5.Create();
     public static string ComputeSHA1Hash(byte[] input)
     {
         return Convert.ToBase64String(SHA1Instance.ComputeHash(input));
+    }
+
+    public static string ComputeMD5Hash(byte[] input)
+    {
+        return Convert.ToBase64String(MD5Instance.ComputeHash(input));
+    }
+
+    public static string ComputeCRC32Hash(byte[] input)
+    {
+        return Convert.ToBase64String(MD5Instance.ComputeHash(input));
     }
 
     public static readonly SHA256 SHA256Instance = SHA256.Create();

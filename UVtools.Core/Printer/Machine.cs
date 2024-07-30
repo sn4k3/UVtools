@@ -233,6 +233,8 @@ namespace UVtools.Core.Printer
                 new(PrinterBrand.AnyCubic, "AnyCubic Photon Mono M5", "Photon Mono M5", 11520, 5120, 218.88f, 122.88f, 200f, FlipDirection.Horizontally),
                 new(PrinterBrand.AnyCubic, "AnyCubic Photon Mono M5s", "Photon Mono M5s", 11520, 5120, 218.88f, 122.88f, 200f, FlipDirection.Horizontally),
                 new(PrinterBrand.AnyCubic, "AnyCubic Photon Mono M5s Pro", "Photon Mono M5s Pro", 13312, 5120, 223.6416f, 126.976f, 200f, FlipDirection.Horizontally),
+                new(PrinterBrand.AnyCubic, "AnyCubic Photon Mono M7", "Photon Mono M7", 13312, 5120, 223.6416f, 126.976f, 230f, FlipDirection.Horizontally),
+                new(PrinterBrand.AnyCubic, "AnyCubic Photon Mono M7 Pro", "Photon Mono M7 Pro", 13312, 5120, 223.6416f, 126.976f, 230f, FlipDirection.Horizontally),
                 new(PrinterBrand.AnyCubic, "AnyCubic Photon Mono", "Photon Mono", 1620, 2560, 82.62f, 130.56f, 165f, FlipDirection.Horizontally),
                 new(PrinterBrand.AnyCubic, "AnyCubic Photon Mono 2", "Photon Mono 2", 4096, 2560, 143.36f, 89.60f, 165f, FlipDirection.Horizontally),new(PrinterBrand.AnyCubic, "AnyCubic Photon Mono 4K", "Photon Mono 4K", 3840, 2400, 134.40f, 84f, 165f, FlipDirection.Horizontally),
                 new(PrinterBrand.AnyCubic, "AnyCubic Photon Mono SE", "Photon Mono SE", 1620, 2560, 82.62f, 130.56f, 160f, FlipDirection.Horizontally),
@@ -282,6 +284,7 @@ namespace UVtools.Core.Printer
                 new(PrinterBrand.Elegoo, "Elegoo Saturn 2", "Saturn 2", 7680, 4320, 218.88f, 123.12f, 250f, FlipDirection.Horizontally),
                 new(PrinterBrand.Elegoo, "Elegoo Saturn 3", "Saturn 3", 11520, 5120, 218.88f, 122.88f, 249.7f, FlipDirection.Horizontally),
                 new(PrinterBrand.Elegoo, "Elegoo Saturn 3 Ultra", "Saturn 3 Ultra", 11520, 5120, 218.88f, 122.88f, 260f, FlipDirection.Horizontally),
+                new(PrinterBrand.Elegoo, "Elegoo Saturn 4 Ultra", "Saturn 4 Ultra", 11520, 5120, 218.88f, 122.88f, 220f, FlipDirection.Horizontally),
                 new(PrinterBrand.Elegoo, "Elegoo Saturn 8K", "Saturn 8K", 7680, 4320, 218.88f, 123.12f, 210f, FlipDirection.Horizontally),
                 new(PrinterBrand.Elegoo, "Elegoo Saturn S", "Saturn S", 4098, 2560, 196.704f, 122.88f, 210f, FlipDirection.Horizontally),
 

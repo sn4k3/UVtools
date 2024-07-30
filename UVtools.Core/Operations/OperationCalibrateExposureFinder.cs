@@ -1150,12 +1150,12 @@ public sealed class OperationCalibrateExposureFinder : Operation
             if (SlicerFile.SupportGCode)
             {
                 _samePositionedLayersLiftHeight = 0;
-                _samePositionedLayersWaitTimeBeforeCure = 2;
+                _samePositionedLayersWaitTimeBeforeCure = 0;
             }
             else
             {
                 _samePositionedLayersLiftHeight = 0.1m;
-                _samePositionedLayersWaitTimeBeforeCure = 0;
+                _samePositionedLayersWaitTimeBeforeCure = 1;
             }
         }
 
@@ -2200,6 +2200,9 @@ public sealed class OperationCalibrateExposureFinder : Operation
                 if(_samePositionedLayersWaitTimeBeforeCureEnabled) layer.SetWaitTimeBeforeCureOrLightOffDelay((float) _samePositionedLayersWaitTimeBeforeCure);
             }
         }
+
+        SlicerFile.WaitTimeAfterCure = 0;
+        SlicerFile.WaitTimeAfterLift = 0;
 
         new OperationMove(SlicerFile).Execute(progress);
 

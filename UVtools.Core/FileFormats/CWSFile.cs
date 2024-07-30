@@ -541,7 +541,7 @@ public sealed class CWSFile : FileFormat
             GCodeSpeedUnit = GCodeBuilder.GCodeSpeedUnits.MillimetersPerMinute,
             GCodeTimeUnit = GCodeBuilder.GCodeTimeUnits.Milliseconds,
             GCodeShowImageType = GCodeBuilder.GCodeShowImageTypes.LayerIndex0Started,
-            GCodeShowImagePosition = GCodeBuilder.GCodeShowImagePositions.WhenRequired,
+            //GCodeShowImagePosition = GCodeBuilder.GCodeShowImagePositions.WhenRequired,
             LayerMoveCommand = GCodeBuilder.GCodeMoveCommands.G1,
             EndGCodeMoveCommand = GCodeBuilder.GCodeMoveCommands.G1,
             CommandSyncMovements =

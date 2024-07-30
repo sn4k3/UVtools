@@ -24,6 +24,8 @@ public sealed class VDTFile : FileFormat
 
     private const string FileManifestName = "manifest.json";
     private static readonly string[] FilePreviewNames = {
+        "Preview_FLT.png",
+        "Preview_FLT_48.png",
         "Preview_Top.png",
         "Preview_Top_48.png",
         "Preview_Right.png",
@@ -32,8 +34,6 @@ public sealed class VDTFile : FileFormat
         "Preview_Left_48.png",
         "Preview_Front.png",
         "Preview_Front_48.png",
-        "Preview_FLT.png",
-        "Preview_FLT_48.png",
     };
     #endregion
 

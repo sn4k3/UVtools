@@ -709,6 +709,18 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
         set => SetValue(PanWithMouseButtonsProperty, value);
     }
 
+    public static readonly StyledProperty<int> PanOffsetProperty =
+        AvaloniaProperty.Register<AdvancedImageBox, int>(nameof(PanOffset), 20);
+
+    /// <summary>
+    /// Gets or sets the pan offset to displace everytime a key is pressed
+    /// </summary>
+    public int PanOffset
+    {
+        get => GetValue(PanOffsetProperty);
+        set => SetValue(PanOffsetProperty, value);
+    }
+
     public static readonly StyledProperty<bool> PanWithArrowsProperty =
         AvaloniaProperty.Register<AdvancedImageBox, bool>(nameof(PanWithArrows), true);
 
@@ -721,9 +733,57 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
         set => SetValue(PanWithArrowsProperty, value);
     }
 
+    
+    public static readonly StyledProperty<Key?> PanLeftKeyProperty =
+        AvaloniaProperty.Register<AdvancedImageBox, Key?>(nameof(PanLeftKey));
+
+    /// <summary>
+    /// Gets or sets the key to pan left
+    /// </summary>
+    public Key? PanLeftKey
+    {
+        get => GetValue(PanLeftKeyProperty);
+        set => SetValue(PanLeftKeyProperty, value);
+    }
+
+    public static readonly StyledProperty<Key?> PanUpKeyProperty =
+        AvaloniaProperty.Register<AdvancedImageBox, Key?>(nameof(PanUpKey));
+
+    /// <summary>
+    /// Gets or sets the key to pan up
+    /// </summary>
+    public Key? PanUpKey
+    {
+        get => GetValue(PanUpKeyProperty);
+        set => SetValue(PanUpKeyProperty, value);
+    }
+
+    public static readonly StyledProperty<Key?> PanRightKeyProperty =
+        AvaloniaProperty.Register<AdvancedImageBox, Key?>(nameof(PanRightKey));
+
+    /// <summary>
+    /// Gets or sets the key to pan right
+    /// </summary>
+    public Key? PanRightKey
+    {
+        get => GetValue(PanRightKeyProperty);
+        set => SetValue(PanRightKeyProperty, value);
+    }
+
+    public static readonly StyledProperty<Key?> PanDownKeyProperty =
+        AvaloniaProperty.Register<AdvancedImageBox, Key?>(nameof(PanDownKey));
+
+    /// <summary>
+    /// Gets or sets the key to pan down
+    /// </summary>
+    public Key? PanDownKey
+    {
+        get => GetValue(PanDownKeyProperty);
+        set => SetValue(PanDownKeyProperty, value);
+    }
+
     public static readonly StyledProperty<MouseButtons> SelectWithMouseButtonsProperty =
         AvaloniaProperty.Register<AdvancedImageBox, MouseButtons>(nameof(SelectWithMouseButtons), MouseButtons.LeftButton | MouseButtons.RightButton);
-
 
     /// <summary>
     /// Gets or sets the mouse buttons to select a region on image
@@ -1097,9 +1157,12 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
         ViewPort.PointerExited += ViewPortOnPointerExited;
         ViewPort.PointerMoved += ViewPortOnPointerMoved;
         ViewPort.PointerWheelChanged += ViewPortOnPointerWheelChanged;
+
         HorizontalScrollBar.Scroll += ScrollBarOnScroll;
         VerticalScrollBar.Scroll += ScrollBarOnScroll;
     }
+
+
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs e)
     {
@@ -1517,6 +1580,71 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
 
         e.Handled = true;
     }
+
+    protected override void OnKeyDown(KeyEventArgs e)
+    {
+        var panLeft = false;
+        var panUp = false;
+        var panRight = false;
+        var panDown = false;
+
+        if (PanWithArrows)
+        {
+            switch (e.Key)
+            {
+                case Key.Left:
+                    panLeft = true;
+                    break;
+                case Key.Up:
+                    panUp = true;
+                    break;
+                case Key.Right:
+                    panRight = true;
+                    break;
+                case Key.Down:
+                    panDown = true;
+                    break;
+            }
+        }
+
+        if (PanLeftKey == e.Key)
+        {
+            panLeft = true;
+        }
+        else if (PanUpKey == e.Key)
+        {
+            panUp = true;
+        }
+        else if (PanRightKey == e.Key)
+        {
+            panRight = true;
+        }
+        else if (PanDownKey == e.Key)
+        {
+            panDown = true;
+        }
+
+        if (panLeft)
+        {
+            Offset = new Vector(Offset.X - PanOffset * ZoomFactor, Offset.Y);
+        }
+        else if (panUp)
+        {
+            Offset = new Vector(Offset.X, Offset.Y - PanOffset * ZoomFactor);
+        }
+        else if (panRight)
+        {
+            Offset = new Vector(Offset.X + PanOffset * ZoomFactor, Offset.Y);
+        }
+        else if (panDown)
+        {
+            Offset = new Vector(Offset.X, Offset.Y + PanOffset * ZoomFactor);
+        }
+
+
+        base.OnKeyDown(e);
+    }
+
 
     /*protected override void OnPointerMoved(PointerEventArgs e)
     {

@@ -35,10 +35,6 @@ public sealed class CXDLPv4File : FileFormat
 
     public const byte DEFAULT_VERSION = 4;
     
-    public const ushort REPEATRGB15MASK = 0x20;
-
-    public const ushort RLE16EncodingLimit = 0xFFF;
-
     #endregion
 
     #region Sub Classes
@@ -351,114 +347,9 @@ public sealed class CXDLPv4File : FileFormat
         [FieldOrder(6)] public uint Unknown3    { get; set; }
         [FieldOrder(7)] public uint Unknown4    { get; set; }
 
-        public unsafe Mat Decode(byte[] rawImageData)
-        {
-            var image = new Mat(new Size((int) ResolutionX, (int) ResolutionY), DepthType.Cv8U, 3);
-            var span = image.GetBytePointer();
-
-            /*var previewSize = ResolutionX * ResolutionY  * 2;
-            if (previewSize != rawImageData.Length)
-            {
-                throw new FileLoadException($"Thumbnail out of size, expecting {previewSize} bytes, got {rawImageData.Length}");
-                return null;
-            }*/
-
-            int pixel = 0;
-            for (int n = 0; n < rawImageData.Length; n++)
-            {
-                uint dot = (uint)(rawImageData[n] & 0xFF | ((rawImageData[++n] & 0xFF) << 8));
-                //uint color = ((dot & 0xF800) << 8) | ((dot & 0x07C0) << 5) | ((dot & 0x001F) << 3);
-                byte red = (byte)(((dot >> 11) & 0x1F) << 3);
-                byte green = (byte)(((dot >> 6) & 0x1F) << 3);
-                byte blue = (byte)((dot & 0x1F) << 3);
-                int repeat = 1;
-                if ((dot & 0x0020) == 0x0020)
-                {
-                    repeat += rawImageData[++n] & 0xFF | ((rawImageData[++n] & 0x0F) << 8);
-                }
-
-                for (int j = 0; j < repeat; j++)
-                {
-                    span[pixel++] = blue;
-                    span[pixel++] = green;
-                    span[pixel++] = red;
-                    //span[pixel++] = new Rgba32(red, green, blue);
-                }
-            }
-
-            return image;
-        }
-
         public override string ToString()
         {
             return $"{nameof(ResolutionX)}: {ResolutionX}, {nameof(ResolutionY)}: {ResolutionY}, {nameof(ImageOffset)}: {ImageOffset}, {nameof(ImageLength)}: {ImageLength}, {nameof(Unknown1)}: {Unknown1}, {nameof(Unknown2)}: {Unknown2}, {nameof(Unknown3)}: {Unknown3}, {nameof(Unknown4)}: {Unknown4}";
-        }
-
-        public unsafe byte[] Encode(Mat image)
-        {
-            List<byte> rawData = new();
-            ushort color15 = 0;
-            uint rep = 0;
-
-            var span = image.GetBytePointer();
-            var imageLength = image.GetLength();
-
-            void RleRGB15()
-            {
-                switch (rep)
-                {
-                    case 0:
-                        return;
-                    case 1:
-                        rawData.Add((byte)(color15 & ~REPEATRGB15MASK));
-                        rawData.Add((byte)((color15 & ~REPEATRGB15MASK) >> 8));
-                        break;
-                    case 2:
-                        for (int i = 0; i < 2; i++)
-                        {
-                            rawData.Add((byte)(color15 & ~REPEATRGB15MASK));
-                            rawData.Add((byte)((color15 & ~REPEATRGB15MASK) >> 8));
-                        }
-
-                        break;
-                    default:
-                        rawData.Add((byte)(color15 | REPEATRGB15MASK));
-                        rawData.Add((byte)((color15 | REPEATRGB15MASK) >> 8));
-                        rawData.Add((byte)((rep - 1) | 0x3000));
-                        rawData.Add((byte)(((rep - 1) | 0x3000) >> 8));
-                        break;
-                }
-            }
-
-            int pixel = 0;
-            while (pixel < imageLength)
-            {
-                var ncolor15 =
-                    // bgr
-                    (span[pixel++] >> 3) | ((span[pixel++] >> 2) << 5) | ((span[pixel++] >> 3) << 11);
-
-                if (ncolor15 == color15)
-                {
-                    rep++;
-                    if (rep == RLE16EncodingLimit)
-                    {
-                        RleRGB15();
-                        rep = 0;
-                    }
-                }
-                else
-                {
-                    RleRGB15();
-                    color15 = (ushort) ncolor15;
-                    rep = 1;
-                }
-            }
-
-            RleRGB15();
-
-            ImageLength = (uint) rawData.Count;
-
-            return rawData.ToArray();
         }
     }
 
@@ -1216,16 +1107,16 @@ public sealed class CXDLPv4File : FileFormat
         {
             var image = thumbnails[i];
             if(image is null) continue;
+            var previewBytes = EncodeChituImageRGB15Rle(image);
+            if (previewBytes.Length == 0) continue;
 
             Preview preview = new()
             {
                 ResolutionX = (uint)image.Width,
                 ResolutionY = (uint)image.Height,
+                ImageLength = (uint)previewBytes.Length,
             };
 
-            var previewBytes = preview.Encode(image);
-
-            if (previewBytes.Length == 0) continue;
 
             if (i == 0)
             {
@@ -1361,7 +1252,7 @@ public sealed class CXDLPv4File : FileFormat
             byte[] rawImageData = new byte[Previews[i].ImageLength];
             inputFile.Read(rawImageData, 0, (int)Previews[i].ImageLength);
 
-            Thumbnails.Add(Previews[i].Decode(rawImageData));
+            Thumbnails.Add(DecodeChituImageRGB15Rle(rawImageData, Previews[i].ResolutionX, Previews[i].ResolutionY));
             progress++;
         }
 

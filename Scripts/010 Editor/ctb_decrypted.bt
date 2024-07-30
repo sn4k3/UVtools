@@ -73,8 +73,8 @@ struct DECRYPTED_HEADER {
     ubyte AntiAliasFlag <fgcolor=cBlack, bgcolor=cRed>; // 7(0x7) [No AA] / 15(0x0F) [AA]
     ushort Padding <fgcolor=cBlack, bgcolor=cRed>; 
     ubyte PerLayerSettings <fgcolor=cBlack, bgcolor=cRed, format=hex>; // 0 to not support, 0x40 or 0x50, 16 * version?
-    uint unknown4;
-    uint unknown5;
+    uint ModifiedTimestampMinutes;
+    uint AntiAliasLevel;
     float RestTimeAfterRetract;
     float RestTimeAfterLift;
     uint TransitionLayerCount;

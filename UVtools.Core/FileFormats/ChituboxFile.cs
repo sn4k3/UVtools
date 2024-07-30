@@ -10,7 +10,6 @@
 
 using BinarySerialization;
 using Emgu.CV;
-using Emgu.CV.CvEnum;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -35,10 +34,8 @@ public sealed class ChituboxFile : FileFormat
     public const uint MAGIC_CTB = 0x12FD0086; // 318570630
     public const uint MAGIC_CTBv4 = 0x12FD0106; // 318570758
     public const uint MAGIC_CTBv4_GKtwo = 0xFF220810; // 4280420368
-    public const ushort REPEATRGB15MASK = 0x20;
 
     public const byte RLE8EncodingLimit = 0x7d; // 125;
-    public const ushort RLE16EncodingLimit = 0xFFF;
 
     private const byte PERLAYER_SETTINGS_DISALLOW =     0; 
     private const byte PERLAYER_SETTINGS_CBDDLP =    0x10; 
@@ -535,129 +532,10 @@ public sealed class ChituboxFile : FileFormat
         [FieldOrder(6)] public uint Unknown3    { get; set; }
         [FieldOrder(7)] public uint Unknown4    { get; set; }
 
-        public Mat Decode(byte[] rawImageData)
-        {
-            var image = new Mat(new Size((int) ResolutionX, (int) ResolutionY), DepthType.Cv8U, 3);
-            var span = image.GetDataByteSpan();
-
-            /*var previewSize = ResolutionX * ResolutionY  * 2;
-            if (previewSize != rawImageData.Length)
-            {
-                throw new FileLoadException($"Thumbnail out of size, expecting {previewSize} bytes, got {rawImageData.Length}");
-                return null;
-            }*/
-
-            int pixel = 0;
-            for (int n = 0; n < rawImageData.Length; n++)
-            {
-                uint dot = (uint)(rawImageData[n] & 0xFF | ((rawImageData[++n] & 0xFF) << 8));
-                //uint color = ((dot & 0xF800) << 8) | ((dot & 0x07C0) << 5) | ((dot & 0x001F) << 3);
-                byte red = (byte)(((dot >> 11) & 0x1F) << 3);
-                byte green = (byte)(((dot >> 6) & 0x1F) << 3);
-                byte blue = (byte)((dot & 0x1F) << 3);
-                int repeat = 1;
-                if ((dot & 0x0020) == 0x0020)
-                {
-                    repeat += rawImageData[++n] & 0xFF | ((rawImageData[++n] & 0x0F) << 8);
-                }
-
-                for (int j = 0; j < repeat; j++)
-                {
-                    span[pixel++] = blue;
-                    span[pixel++] = green;
-                    span[pixel++] = red;
-                    //span[pixel++] = new Rgba32(red, green, blue);
-                }
-            }
-
-            return image;
-        }
-
+        
         public override string ToString()
         {
             return $"{nameof(ResolutionX)}: {ResolutionX}, {nameof(ResolutionY)}: {ResolutionY}, {nameof(ImageOffset)}: {ImageOffset}, {nameof(ImageLength)}: {ImageLength}, {nameof(Unknown1)}: {Unknown1}, {nameof(Unknown2)}: {Unknown2}, {nameof(Unknown3)}: {Unknown3}, {nameof(Unknown4)}: {Unknown4}";
-        }
-
-        public byte[] Encode(Mat image)
-        {
-            List<byte> rawData = new();
-            ushort color15 = 0;
-            uint rep = 0;
-
-            var span = image.GetDataByteReadOnlySpan();
-
-            void RleRGB15()
-            {
-                switch (rep)
-                {
-                    case 0:
-                        return;
-                    case 1:
-                        rawData.Add((byte)(color15 & ~REPEATRGB15MASK));
-                        rawData.Add((byte)((color15 & ~REPEATRGB15MASK) >> 8));
-                        break;
-                    case 2:
-                        for (int i = 0; i < 2; i++)
-                        {
-                            rawData.Add((byte)(color15 & ~REPEATRGB15MASK));
-                            rawData.Add((byte)((color15 & ~REPEATRGB15MASK) >> 8));
-                        }
-
-                        break;
-                    default:
-                        rawData.Add((byte)(color15 | REPEATRGB15MASK));
-                        rawData.Add((byte)((color15 | REPEATRGB15MASK) >> 8));
-                        rawData.Add((byte)((rep - 1) | 0x3000));
-                        rawData.Add((byte)(((rep - 1) | 0x3000) >> 8));
-                        break;
-                }
-            }
-
-            int pixel = 0;
-            while (pixel < span.Length)
-            {
-                byte b = span[pixel++];
-                byte g;
-                byte r;
-
-                if (image.NumberOfChannels == 1) // 8 bit safe-guard
-                {
-                    r = g = b;
-                }
-                else
-                {
-                    g = span[pixel++];
-                    r = span[pixel++];
-                }
-
-                if (image.NumberOfChannels == 4) pixel++; // skip alpha
-
-                var ncolor15 =
-                    // bgr
-                    (b >> 3) | ((g >> 2) << 5) | ((r >> 3) << 11);
-
-                if (ncolor15 == color15)
-                {
-                    rep++;
-                    if (rep == RLE16EncodingLimit)
-                    {
-                        RleRGB15();
-                        rep = 0;
-                    }
-                }
-                else
-                {
-                    RleRGB15();
-                    color15 = (ushort) ncolor15;
-                    rep = 1;
-                }
-            }
-
-            RleRGB15();
-
-            ImageLength = (uint) rawData.Count;
-
-            return rawData.ToArray();
         }
     }
 
@@ -1924,16 +1802,15 @@ public sealed class ChituboxFile : FileFormat
         {
             var image = thumbnails[i];
             if(image is null) continue;
+            var previewBytes = EncodeChituImageRGB15Rle(image);
+            if (previewBytes.Length == 0) continue;
 
             Preview preview = new()
             {
                 ResolutionX = (uint)image.Width,
                 ResolutionY = (uint)image.Height,
+                ImageLength = (uint)previewBytes.Length,
             };
-
-            var previewBytes = preview.Encode(image);
-
-            if (previewBytes.Length == 0) continue;
 
             if (i == 0)
             {
@@ -2133,7 +2010,8 @@ public sealed class ChituboxFile : FileFormat
             byte[] rawImageData = new byte[Previews[i].ImageLength];
             inputFile.Read(rawImageData, 0, (int)Previews[i].ImageLength);
 
-            Thumbnails.Add(Previews[i].Decode(rawImageData));
+
+            Thumbnails.Add(DecodeChituImageRGB15Rle(rawImageData, Previews[i].ResolutionX, Previews[i].ResolutionY));
             progress++;
         }
 

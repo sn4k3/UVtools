@@ -168,6 +168,11 @@
             Gets the compressed bytes that have been compressed with <see cref="P:UVtools.Core.EmguCV.CMat.Decompressor"/>.
             </summary>
         </member>
+        <member name="P:UVtools.Core.EmguCV.CMat.Hash">
+            <summary>
+            Gets the MD5 hash of the <see cref="P:UVtools.Core.EmguCV.CMat.CompressedBytes"/>.
+            </summary>
+        </member>
         <member name="P:UVtools.Core.EmguCV.CMat.IsInitialized">
             <summary>
             Gets a value indicating whether the <see cref="P:UVtools.Core.EmguCV.CMat.CompressedBytes"/> have ever been set.
@@ -863,6 +868,11 @@
         <member name="T:UVtools.Core.IndexStartNumber">
             <summary>
             Gets index start number, if starts on 0 or 1
+            </summary>
+        </member>
+        <member name="T:UVtools.Core.LayerGroup">
+            <summary>
+            Gets the possible layer groups in the file
             </summary>
         </member>
         <member name="T:UVtools.Core.FlipDirection">
@@ -3443,7 +3453,7 @@
         </member>
         <member name="M:UVtools.Core.FileFormats.FileFormat.FindByType(System.String,System.Boolean)">
             <summary>
-            Find <see cref="T:UVtools.Core.FileFormats.FileFormat"/> by an type name
+            Find <see cref="T:UVtools.Core.FileFormats.FileFormat"/> by a type name
             </summary>
             <param name="type">Type name to find</param>
             <param name="createNewInstance">True to create a new instance of found file format, otherwise will return a pre created one which should be used for read-only purpose</param>
@@ -3991,6 +4001,11 @@
             Gets the file volume (XYZ) in mm^3
             </summary>
         </member>
+        <member name="P:UVtools.Core.FileFormats.FileFormat.HaveTiltingVat">
+            <summary>
+            Gets if the printer have a tilting vat
+            </summary>
+        </member>
         <member name="P:UVtools.Core.FileFormats.FileFormat.SupportAntiAliasing">
             <summary>
             Gets if the file supports antialiasing usage (grey pixels)
@@ -4153,6 +4168,11 @@
             Gets or sets the bottom lift speed in mm/min
             </summary>
         </member>
+        <member name="P:UVtools.Core.FileFormats.FileFormat.BottomLiftAcceleration">
+            <summary>
+            Gets or sets the bottom lift acceleration in mm/s²
+            </summary>
+        </member>
         <member name="P:UVtools.Core.FileFormats.FileFormat.LiftHeight">
             <summary>
             Gets or sets the lift height in mm
@@ -4161,6 +4181,11 @@
         <member name="P:UVtools.Core.FileFormats.FileFormat.LiftSpeed">
             <summary>
             Gets or sets the speed in mm/min
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.FileFormat.LiftAcceleration">
+            <summary>
+            Gets or sets the lift acceleration in mm/s²
             </summary>
         </member>
         <member name="P:UVtools.Core.FileFormats.FileFormat.BottomLiftHeight2">
@@ -4173,6 +4198,11 @@
             Gets or sets the second bottom lift speed in mm/min
             </summary>
         </member>
+        <member name="P:UVtools.Core.FileFormats.FileFormat.BottomLiftAcceleration2">
+            <summary>
+            Gets or sets the second bottom lift acceleration in mm/s²
+            </summary>
+        </member>
         <member name="P:UVtools.Core.FileFormats.FileFormat.LiftHeight2">
             <summary>
             Gets or sets the second lift height in mm (This is the closer to fep retract)
@@ -4181,6 +4211,11 @@
         <member name="P:UVtools.Core.FileFormats.FileFormat.LiftSpeed2">
             <summary>
             Gets or sets the second speed in mm/min (This is the closer to fep retract)
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.FileFormat.LiftAcceleration2">
+            <summary>
+            Gets or sets the second lift acceleration in mm/s²
             </summary>
         </member>
         <member name="P:UVtools.Core.FileFormats.FileFormat.BottomWaitTimeAfterLift">
@@ -4210,7 +4245,12 @@
         </member>
         <member name="P:UVtools.Core.FileFormats.FileFormat.BottomRetractSpeed">
             <summary>
-            Gets the speed in mm/min for the bottom retracts
+            Gets or sets the speed in mm/min for the bottom retracts
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.FileFormat.BottomRetractAcceleration">
+            <summary>
+            Gets or sets the acceleration in mm/s² for the bottom retracts
             </summary>
         </member>
         <member name="P:UVtools.Core.FileFormats.FileFormat.RetractHeight">
@@ -4223,6 +4263,11 @@
             Gets the speed in mm/min for the retracts
             </summary>
         </member>
+        <member name="P:UVtools.Core.FileFormats.FileFormat.RetractAcceleration">
+            <summary>
+            Gets or sets the acceleration in mm/s² for the retracts
+            </summary>
+        </member>
         <member name="P:UVtools.Core.FileFormats.FileFormat.BottomRetractHeight2">
             <summary>
             Gets or sets the second bottom retract height in mm
@@ -4233,6 +4278,11 @@
             Gets the speed in mm/min for the retracts
             </summary>
         </member>
+        <member name="P:UVtools.Core.FileFormats.FileFormat.BottomRetractAcceleration2">
+            <summary>
+            Gets or sets the second acceleration in mm/s² for the bottom retracts
+            </summary>
+        </member>
         <member name="P:UVtools.Core.FileFormats.FileFormat.RetractHeight2">
             <summary>
             Gets or sets the second retract height in mm
@@ -4241,6 +4291,11 @@
         <member name="P:UVtools.Core.FileFormats.FileFormat.RetractSpeed2">
             <summary>
             Gets the speed in mm/min for the retracts
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.FileFormat.RetractAcceleration2">
+            <summary>
+            Gets or sets the second acceleration in mm/s² for the retracts
             </summary>
         </member>
         <member name="P:UVtools.Core.FileFormats.FileFormat.BottomLightPWM">
@@ -4686,6 +4741,11 @@
             </summary>
             <param name="progress"></param>
         </member>
+        <member name="M:UVtools.Core.FileFormats.FileFormat.CalculateLayersHash">
+            <summary>
+            Calculate  and store layers hash
+            </summary>
+        </member>
         <member name="M:UVtools.Core.FileFormats.FileFormat.FetchImageFormat(Emgu.CV.Mat,UVtools.Core.FileFormats.FileFormat.ImageFormat)">
             <summary>
             Detect image format from <see cref="T:Emgu.CV.Mat"/>
@@ -4896,11 +4956,11 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="M:UVtools.Core.FileFormats.FileFormat.SetWaitTimeBeforeCureOrLightOffDelay(System.Boolean,System.Single,System.Boolean)">
+        <member name="M:UVtools.Core.FileFormats.FileFormat.SetWaitTimeBeforeCureOrLightOffDelay(UVtools.Core.LayerGroup,System.Single,System.Boolean)">
             <summary>
             Attempt to set wait time before cure if supported, otherwise fall-back to light-off delay
             </summary>
-            <param name="isBottomLayer">True to set to bottom properties, otherwise false</param>
+            <param name="layerGroup">Choose the layer group to set the wait time.</param>
             <param name="time">The time to set</param>
             <param name="zeroLightOffDelayCalculateBase">When true and time is zero, it will calculate light-off delay without extra time, otherwise false to set light-off delay to 0 when time is 0</param>
         </member>
@@ -5012,6 +5072,12 @@
             <param name="callRebuildOnEnd">True to force rebuild the layer properties after the work and before reset to false</param>
             <param name="recalculateZPos">True to recalculate z position of each layer (requires <paramref name="callRebuildOnEnd"/> = true), otherwise false</param>
             <param name="property">Property name to change for each layer, use null to update all properties (requires <paramref name="callRebuildOnEnd"/> = true)</param>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.FileFormat.UpdateGlobalPropertiesFromLayers">
+            <summary>
+            Parses and updates global properties from layers.<br/>
+            Use this method if file lacks of global properties metadata but have layers metadata
+            </summary>
         </member>
         <member name="M:UVtools.Core.FileFormats.FileFormat.MillimetersXToPixels(System.Single,System.UInt32)">
             <summary>
@@ -6006,6 +6072,11 @@
             End of the file completed
             </summary>
         </member>
+        <member name="M:UVtools.Core.GCode.GCodeBuilder.SetKlipperStandard">
+            <summary>
+            Sets Klipper GCode standard
+            </summary>
+        </member>
         <member name="F:UVtools.Core.GCode.GCodeBuilder.GCodeTimeUnits.Milliseconds">
             <summary>
             ms
@@ -6077,6 +6148,11 @@
         <member name="P:UVtools.Core.GCode.GCodeCommand.Command">
             <summary>
             Gets or sets the command name
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.GCode.GCodeCommand.CommandAlias">
+            <summary>
+            Gets ir sets the command alias
             </summary>
         </member>
         <member name="P:UVtools.Core.GCode.GCodeCommand.Arguments">
@@ -6544,7 +6620,7 @@
         </member>
         <member name="P:UVtools.Core.Layers.Layer.Area">
             <summary>
-            Gets the layer area (XY)  in mm^2
+            Gets the layer area (XY)  in mm²
             Pixel size * number of pixels
             </summary>
         </member>
@@ -6684,6 +6760,11 @@
             Gets the next layer matching at least <param name="numberOfPixels"/> pixels, returns null if no next layer
             </summary>
         </member>
+        <member name="P:UVtools.Core.Layers.Layer.Hash">
+            <summary>
+            Gets the layer hash
+            </summary>
+        </member>
         <member name="P:UVtools.Core.Layers.Layer.Index">
             <summary>
             Gets the layer index
@@ -6745,14 +6826,24 @@
             Gets or sets the speed in mm/min
             </summary>
         </member>
+        <member name="P:UVtools.Core.Layers.Layer.LiftAcceleration">
+            <summary>
+            Gets or sets the lift acceleration in mm/s²
+            </summary>
+        </member>
         <member name="P:UVtools.Core.Layers.Layer.LiftHeight2">
             <summary>
-            Gets or sets the lift height in mm
+            Gets or sets the second lift height in mm
             </summary>
         </member>
         <member name="P:UVtools.Core.Layers.Layer.LiftSpeed2">
             <summary>
-            Gets or sets the speed in mm/min
+            Gets or sets the second lift speed in mm/min
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Layers.Layer.LiftAcceleration2">
+            <summary>
+            Gets or sets the second lift acceleration in mm/s²
             </summary>
         </member>
         <member name="P:UVtools.Core.Layers.Layer.RetractHeightTotal">
@@ -6770,6 +6861,11 @@
             Gets the speed in mm/min for the retracts
             </summary>
         </member>
+        <member name="P:UVtools.Core.Layers.Layer.RetractAcceleration">
+            <summary>
+            Gets or sets the retract acceleration in mm/s²
+            </summary>
+        </member>
         <member name="P:UVtools.Core.Layers.Layer.RetractHeight2">
             <summary>
             Gets or sets the second retract height in mm
@@ -6780,9 +6876,24 @@
             Gets the speed in mm/min for the retracts
             </summary>
         </member>
+        <member name="P:UVtools.Core.Layers.Layer.RetractAcceleration2">
+            <summary>
+            Gets or sets the second retract acceleration in mm/s²
+            </summary>
+        </member>
         <member name="P:UVtools.Core.Layers.Layer.LightPWM">
             <summary>
             Gets or sets the pwm value from 0 to 255
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Layers.Layer.Pause">
+            <summary>
+            Gets or sets if this layer should be paused before printing
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.Layers.Layer.ChangeResin">
+            <summary>
+            Gets or sets if printer should be paused to change resin before printing this layer
             </summary>
         </member>
         <member name="P:UVtools.Core.Layers.Layer.MinimumSpeed">
@@ -6820,14 +6931,14 @@
             Gets the computed material milliliters percentage compared to the rest of the model
             </summary>
         </member>
-        <member name="P:UVtools.Core.Layers.Layer.CompletionTime">
+        <member name="P:UVtools.Core.Layers.Layer.PrintTime">
             <summary>
-            Gets the time estimate in seconds it takes for this layer to be completed
+            Gets the time estimate in seconds it takes for this layer to be printed
             </summary>
         </member>
-        <member name="P:UVtools.Core.Layers.Layer.CompletionTimeString">
+        <member name="P:UVtools.Core.Layers.Layer.PrintTimeString">
             <summary>
-            Gets the time estimate in minutes and seconds it takes for this layer to be completed
+            Gets the time estimate in minutes and seconds it takes for this layer to be printed
             </summary>
         </member>
         <member name="P:UVtools.Core.Layers.Layer.StartTime">
@@ -6963,13 +7074,13 @@
         </member>
         <member name="M:UVtools.Core.Layers.Layer.GetArea">
             <summary>
-            Gets the layer area (XY) in mm^2
+            Gets the layer area (XY) in mm²
             Pixel size * number of pixels
             </summary>
         </member>
         <member name="M:UVtools.Core.Layers.Layer.GetArea(System.Byte)">
             <summary>
-            Gets the layer area (XY) in mm^2
+            Gets the layer area (XY) in mm²
             Pixel size * number of pixels
             </summary>
         </member>
@@ -6985,9 +7096,9 @@
             Pixel size * number of pixels * layer height
             </summary>
         </member>
-        <member name="M:UVtools.Core.Layers.Layer.CalculateCompletionTime(System.Single)">
+        <member name="M:UVtools.Core.Layers.Layer.CalculatePrintTime(System.Single)">
             <summary>
-            Calculates the time estimate in seconds it takes for this layer to be completed
+            Calculates the time estimate in seconds it takes for this layer to be printed
             </summary>
             <returns></returns>
         </member>
@@ -7022,9 +7133,14 @@
             Zero all 'wait times / delays' for this layer
             </summary>
         </member>
+        <member name="M:UVtools.Core.Layers.Layer.ClearPauses">
+            <summary>
+            Clear all pauses for this layer
+            </summary>
+        </member>
         <member name="M:UVtools.Core.Layers.Layer.CopyParametersTo(UVtools.Core.Layers.Layer)">
             <summary>
-            Copy all parameters from this layer to an target layer
+            Copy all parameters from this layer to a target layer
             </summary>
             <param name="layer"></param>
         </member>

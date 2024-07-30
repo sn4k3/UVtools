@@ -676,15 +676,23 @@
                 </StackPanel>
             </Expander>
 
-        <Expander Header="Multiple layer height"
+        <Expander Name="MultipleLayerHeightExpander"
                   HorizontalAlignment="Stretch"
                   IsExpanded="False">
-          <Expander.IsVisible>
+            <Expander.Header>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="Multiple layer height"/>
+                    <TextBlock Text=" (Not compatible with current file format and/or printer)" 
+                               IsVisible="{Binding !#MultipleLayerHeightExpander.IsEnabled}"/>
+                       
+                </StackPanel>
+            </Expander.Header>
+            <Expander.IsEnabled>
             <MultiBinding Converter="{x:Static BoolConverters.And}">
               <Binding Path="SlicerFile.CanUseSameLayerPositionZ"/>
               <Binding Path="!Operation.PatternModel"/>
             </MultiBinding>
-          </Expander.IsVisible>
+          </Expander.IsEnabled>
 
             <StackPanel Spacing="10">
 
@@ -736,15 +744,22 @@
 
         </Expander>
 
-        <Expander Header="Multiple exposures"
+        <Expander Name="MultipleExposuresExpander"
                   HorizontalAlignment="Stretch"
-                  IsExpanded="True">
-            <Expander.IsVisible>
+                  IsExpanded="{Binding $self.IsEnabled}">
+            <Expander.Header>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="Multiple exposures"/>
+                    <TextBlock Text=" (Not compatible with current file format and/or printer)"
+                               IsVisible="{Binding !#MultipleExposuresExpander.IsEnabled}"/>
+                </StackPanel>
+            </Expander.Header>
+            <Expander.IsEnabled>
                 <MultiBinding Converter="{x:Static BoolConverters.And}">
                     <Binding Path="SlicerFile.CanUseSameLayerPositionZ"/>
                     <Binding Path="SlicerFile.CanUseLayerExposureTime"/>
                 </MultiBinding>
-            </Expander.IsVisible>
+            </Expander.IsEnabled>
 
             <StackPanel Spacing="10">
 
@@ -1051,11 +1066,18 @@
 
         </Expander>
 
-        <Expander Header="Pattern loaded model"
-                  HorizontalAlignment="Stretch"
-                  IsExpanded="False" IsVisible="{Binding Operation.CanPatternModel}">
+        <Expander HorizontalAlignment="Stretch"
+                  IsExpanded="False" 
+                  IsEnabled="{Binding Operation.CanPatternModel}">
+            <Expander.Header>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="Pattern loaded model"/>
+                    <TextBlock Text=" (Not compatible with current file format and/or printer or configuration)"
+                               IsVisible="{Binding !Operation.CanPatternModel}"/>
+                </StackPanel>
+            </Expander.Header>
 
-          <StackPanel Spacing="10">
+            <StackPanel Spacing="10">
 
             <TextBlock Text="This option will pattern the current loaded model and generate multiple exposure tests with it.
 &#x0a;Only few printers support this, make sure your is supported or else it will print a malformed model.

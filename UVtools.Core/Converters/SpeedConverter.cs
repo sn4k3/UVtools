@@ -31,21 +31,21 @@ public static class SpeedConverter
             SpeedUnit.MillimetersPerSecond => to switch
             {
                 SpeedUnit.MillimetersPerSecond => value,
-                SpeedUnit.MillimetersPerMinute => (float) Math.Round(value * 60, rounding),
-                SpeedUnit.CentimetersPerMinute => (float) Math.Round(value * 6, rounding),
+                SpeedUnit.MillimetersPerMinute => (float) Math.Round(value * 60, rounding, MidpointRounding.AwayFromZero),
+                SpeedUnit.CentimetersPerMinute => (float) Math.Round(value * 6, rounding, MidpointRounding.AwayFromZero),
                 _ => throw new ArgumentOutOfRangeException(nameof(to), to, null)
             },
             SpeedUnit.MillimetersPerMinute => to switch
             {
-                SpeedUnit.MillimetersPerSecond => (float) Math.Round(value / 60, rounding),
+                SpeedUnit.MillimetersPerSecond => (float) Math.Round(value / 60, rounding, MidpointRounding.AwayFromZero),
                 SpeedUnit.MillimetersPerMinute => value,
-                SpeedUnit.CentimetersPerMinute => (float) Math.Round(value / 10, rounding),
+                SpeedUnit.CentimetersPerMinute => (float) Math.Round(value / 10, rounding, MidpointRounding.AwayFromZero),
                 _ => throw new ArgumentOutOfRangeException(nameof(to), to, null)
             },
             SpeedUnit.CentimetersPerMinute => to switch
             {
-                SpeedUnit.MillimetersPerSecond => (float) Math.Round(value * (1.0/6.0), rounding),
-                SpeedUnit.MillimetersPerMinute => (float)Math.Round(value * 10, rounding),
+                SpeedUnit.MillimetersPerSecond => (float) Math.Round(value * (1.0/6.0), rounding, MidpointRounding.AwayFromZero),
+                SpeedUnit.MillimetersPerMinute => (float)Math.Round(value * 10, rounding, MidpointRounding.AwayFromZero),
                 SpeedUnit.CentimetersPerMinute => value,
                 _ => throw new ArgumentOutOfRangeException(nameof(to), to, null)
             },

@@ -80,17 +80,22 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
     private float _waitTimeAfterCure;
     private float _liftHeight = FileFormat.DefaultLiftHeight;
     private float _liftSpeed = FileFormat.DefaultLiftSpeed;
+    private float _liftAcceleration;
     private float _liftHeight2 = FileFormat.DefaultLiftHeight2;
     private float _liftSpeed2 = FileFormat.DefaultLiftSpeed2;
+    private float _liftAcceleration2;
     private float _waitTimeAfterLift;
     private float _retractSpeed = FileFormat.DefaultRetractSpeed;
+    private float _retractAcceleration;
     private float _retractHeight2 = FileFormat.DefaultRetractHeight2;
     private float _retractSpeed2 = FileFormat.DefaultRetractSpeed2;
+    private float _retractAcceleration2;
     private byte _lightPWM = FileFormat.DefaultLightPWM;
-    private float _materialMilliliters;
+    private bool _pause;
+    private bool _changeResin;
 
+    private float _materialMilliliters;
     private EmguContours? _contours;
-    
 
     #endregion
 
@@ -170,7 +175,7 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
     public bool IsDummy => _nonZeroPixelCount <= 1 || _exposureTime <= 0.01;
 
     /// <summary>
-    /// Gets the layer area (XY)  in mm^2
+    /// Gets the layer area (XY)  in mm²
     /// Pixel size * number of pixels
     /// </summary>
     public float Area => GetArea(3);
@@ -427,6 +432,11 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
     }
 
     /// <summary>
+    /// Gets the layer hash
+    /// </summary>
+    public string Hash => _compressedMat.Hash;
+
+    /// <summary>
     /// Gets the layer index
     /// </summary>
     public uint Index
@@ -585,7 +595,16 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
     }
 
     /// <summary>
-    /// Gets or sets the lift height in mm
+    /// Gets or sets the lift acceleration in mm/s²
+    /// </summary>
+    public float LiftAcceleration
+    {
+        get => _liftAcceleration;
+        set => RaiseAndSetIfChanged(ref _liftAcceleration, (float)Math.Round(Math.Max(value, 0), 2));
+    }
+
+    /// <summary>
+    /// Gets or sets the second lift height in mm
     /// </summary>
     public float LiftHeight2
     {
@@ -602,7 +621,7 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
     }
 
     /// <summary>
-    /// Gets or sets the speed in mm/min
+    /// Gets or sets the second lift speed in mm/min
     /// </summary>
     public float LiftSpeed2
     {
@@ -614,6 +633,15 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
             if (!RaiseAndSetIfChanged(ref _liftSpeed2, value)) return;
             SlicerFile.UpdatePrintTimeQueued();
         }
+    }
+
+    /// <summary>
+    /// Gets or sets the second lift acceleration in mm/s²
+    /// </summary>
+    public float LiftAcceleration2
+    {
+        get => _liftAcceleration2;
+        set => RaiseAndSetIfChanged(ref _liftAcceleration2, (float)Math.Round(Math.Max(value, 0), 2));
     }
 
     public float WaitTimeAfterLift
@@ -654,9 +682,18 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
     }
 
     /// <summary>
+    /// Gets or sets the retract acceleration in mm/s²
+    /// </summary>
+    public float RetractAcceleration
+    {
+        get => _retractAcceleration;
+        set => RaiseAndSetIfChanged(ref _retractAcceleration, (float)Math.Round(Math.Max(value, 0), 2));
+    }
+
+    /// <summary>
     /// Gets or sets the second retract height in mm
     /// </summary>
-    public virtual float RetractHeight2
+    public float RetractHeight2
     {
         get => _retractHeight2;
         set
@@ -672,7 +709,7 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
     /// <summary>
     /// Gets the speed in mm/min for the retracts
     /// </summary>
-    public virtual float RetractSpeed2
+    public float RetractSpeed2
     {
         get => _retractSpeed2;
         set
@@ -685,6 +722,15 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
     }
 
     /// <summary>
+    /// Gets or sets the second retract acceleration in mm/s²
+    /// </summary>
+    public float RetractAcceleration2
+    {
+        get => _retractAcceleration2;
+        set => RaiseAndSetIfChanged(ref _retractAcceleration2, (float)Math.Round(Math.Max(value, 0), 2));
+    }
+
+    /// <summary>
     /// Gets or sets the pwm value from 0 to 255
     /// </summary>
     public byte LightPWM
@@ -694,6 +740,24 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
             //if (value == 0) value = SlicerFile.GetInitialLayerValueOrNormal(Index, SlicerFile.BottomLightPWM, SlicerFile.LightPWM);
             //if (value == 0) value = FileFormat.DefaultLightPWM;
             RaiseAndSetIfChanged(ref _lightPWM, value);
+    }
+
+    /// <summary>
+    /// Gets or sets if this layer should be paused before printing
+    /// </summary>
+    public bool Pause
+    {
+        get => _pause;
+        set => RaiseAndSetIfChanged(ref _pause, value);
+    }
+
+    /// <summary>
+    /// Gets or sets if printer should be paused to change resin before printing this layer
+    /// </summary>
+    public bool ChangeResin
+    {
+        get => _changeResin;
+        set => RaiseAndSetIfChanged(ref _changeResin, value);
     }
 
     /// <summary>
@@ -793,34 +857,34 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
     public float MaterialMillilitersPercent => SlicerFile.MaterialMilliliters > 0 ? _materialMilliliters * 100 / SlicerFile.MaterialMilliliters : float.NaN;
 
     /// <summary>
-    /// Gets the time estimate in seconds it takes for this layer to be completed
+    /// Gets the time estimate in seconds it takes for this layer to be printed
     /// </summary>
-    public float CompletionTime => (float)Math.Round(CalculateCompletionTime(), 2);
+    public float PrintTime => (float)Math.Round(CalculatePrintTime(), 2, MidpointRounding.AwayFromZero);
 
     /// <summary>
-    /// Gets the time estimate in minutes and seconds it takes for this layer to be completed
+    /// Gets the time estimate in minutes and seconds it takes for this layer to be printed
     /// </summary>
-    public string CompletionTimeString => TimeSpan.FromSeconds(CalculateCompletionTime()).ToTimeString();
+    public string PrintTimeString => TimeSpan.FromSeconds(PrintTime).ToTimeString();
 
     /// <summary>
     /// Get the start time estimate in seconds when this layer should start at
     /// </summary>
-    public float StartTime => (float)Math.Round(CalculateStartTime(30), 2);
+    public float StartTime => (float)Math.Round(CalculateStartTime(30), 2, MidpointRounding.AwayFromZero);
 
     /// <summary>
     /// Get the start time estimate in hours, minutes and seconds when this layer should start at
     /// </summary>
-    public string StartTimeString => TimeSpan.FromSeconds(CalculateStartTime(30)).ToTimeString();
+    public string StartTimeString => TimeSpan.FromSeconds(StartTime).ToTimeString();
 
     /// <summary>
     /// Get the end time estimate in seconds when this layer should end at
     /// </summary>
-    public float EndTime => (float)Math.Round(CalculateStartTime(30) + CalculateCompletionTime(), 2);
+    public float EndTime => (float)Math.Round(CalculateStartTime(30) + CalculatePrintTime(), 2, MidpointRounding.AwayFromZero);
 
     /// <summary>
     /// Get the end time estimate in hours, minutes and seconds when this layer should end at
     /// </summary>
-    public string EndTimeString => TimeSpan.FromSeconds(CalculateStartTime(30) + CalculateCompletionTime()).ToTimeString();
+    public string EndTimeString => TimeSpan.FromSeconds(EndTime).ToTimeString();
 
     private void InvalidateImage()
     {
@@ -1020,12 +1084,16 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
                     (SlicerFile.CanUseLayerWaitTimeAfterCure && _waitTimeAfterCure != SlicerFile.BottomWaitTimeAfterCure) ||
                     (SlicerFile.CanUseLayerLiftHeight && _liftHeight != SlicerFile.BottomLiftHeight) ||
                     (SlicerFile.CanUseLayerLiftSpeed && _liftSpeed != SlicerFile.BottomLiftSpeed) ||
+                    (SlicerFile.CanUseLayerLiftAcceleration && _liftAcceleration != SlicerFile.BottomLiftAcceleration) ||
                     (SlicerFile.CanUseLayerLiftHeight2 && _liftHeight2 != SlicerFile.BottomLiftHeight2) ||
                     (SlicerFile.CanUseLayerLiftSpeed2 && _liftSpeed2 != SlicerFile.BottomLiftSpeed2) ||
+                    (SlicerFile.CanUseLayerLiftAcceleration2 && _liftAcceleration2 != SlicerFile.BottomLiftAcceleration2) ||
                     (SlicerFile.CanUseLayerWaitTimeAfterLift && _waitTimeAfterLift != SlicerFile.BottomWaitTimeAfterLift) ||
                     (SlicerFile.CanUseLayerRetractSpeed && _retractSpeed != SlicerFile.BottomRetractSpeed) ||
+                    (SlicerFile.CanUseLayerRetractAcceleration && _retractAcceleration != SlicerFile.BottomRetractAcceleration) ||
                     (SlicerFile.CanUseLayerRetractHeight2 && _retractHeight2 != SlicerFile.BottomRetractHeight2) ||
                     (SlicerFile.CanUseLayerRetractSpeed2 && _retractSpeed2 != SlicerFile.BottomRetractSpeed2) ||
+                    (SlicerFile.CanUseLayerRetractAcceleration2 && _retractAcceleration2 != SlicerFile.BottomRetractAcceleration2) ||
                     (SlicerFile.CanUseLayerLightPWM && _lightPWM != SlicerFile.BottomLightPWM)
                 ) 
                     return false;
@@ -1041,12 +1109,16 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
                     (SlicerFile.CanUseLayerWaitTimeAfterCure && _waitTimeAfterCure != SlicerFile.WaitTimeAfterCure) ||
                     (SlicerFile.CanUseLayerLiftHeight && _liftHeight != SlicerFile.LiftHeight) ||
                     (SlicerFile.CanUseLayerLiftSpeed && _liftSpeed != SlicerFile.LiftSpeed) ||
+                    (SlicerFile.CanUseLayerLiftAcceleration && _liftAcceleration != SlicerFile.LiftAcceleration) ||
                     (SlicerFile.CanUseLayerLiftHeight2 && _liftHeight2 != SlicerFile.LiftHeight2) ||
                     (SlicerFile.CanUseLayerLiftSpeed2 && _liftSpeed2 != SlicerFile.LiftSpeed2) ||
+                    (SlicerFile.CanUseLayerLiftAcceleration2 && _liftAcceleration2 != SlicerFile.LiftAcceleration2) ||
                     (SlicerFile.CanUseLayerWaitTimeAfterLift && _waitTimeAfterLift != SlicerFile.WaitTimeAfterLift) ||
                     (SlicerFile.CanUseLayerRetractSpeed && _retractSpeed != SlicerFile.RetractSpeed) ||
+                    (SlicerFile.CanUseLayerRetractAcceleration && _retractAcceleration != SlicerFile.RetractAcceleration) ||
                     (SlicerFile.CanUseLayerRetractHeight2 && _retractHeight2 != SlicerFile.RetractHeight2) ||
                     (SlicerFile.CanUseLayerRetractSpeed2 && _retractSpeed2 != SlicerFile.RetractSpeed2) ||
+                    (SlicerFile.CanUseLayerRetractAcceleration2 && _retractAcceleration2 != SlicerFile.RetractAcceleration2) ||
                     (SlicerFile.CanUseLayerLightPWM && _lightPWM != SlicerFile.LightPWM)
                 ) 
                     return false;
@@ -1212,6 +1284,9 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
     }
 
     public static IComparer<Layer> IndexComparer { get; } = new IndexRelationalComparer();
+
+
+
     #endregion
 
     #region Formaters
@@ -1234,14 +1309,20 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
                $"{nameof(WaitTimeAfterCure)}: {WaitTimeAfterCure}s, " +
                $"{nameof(LiftHeight)}: {LiftHeight}mm, " +
                $"{nameof(LiftSpeed)}: {LiftSpeed}mm/mim, " +
+               $"{nameof(LiftAcceleration)}: {LiftAcceleration}mm/s², " +
                $"{nameof(LiftHeight2)}: {LiftHeight2}mm, " +
                $"{nameof(LiftSpeed2)}: {LiftSpeed2}mm/mim, " +
+               $"{nameof(LiftAcceleration2)}: {LiftAcceleration2}mm/s², " +
                $"{nameof(WaitTimeAfterLift)}: {WaitTimeAfterLift}s, " +
                $"{nameof(RetractHeight)}: {RetractHeight}mm, " +
                $"{nameof(RetractSpeed)}: {RetractSpeed}mm/mim, " +
+               $"{nameof(RetractAcceleration)}: {RetractAcceleration}mm/s², " +
                $"{nameof(RetractHeight2)}: {RetractHeight2}mm, " +
                $"{nameof(RetractSpeed2)}: {RetractSpeed2}mm/mim, " +
+               $"{nameof(RetractAcceleration2)}: {RetractAcceleration2}mm/s², " +
                $"{nameof(LightPWM)}: {LightPWM}, " +
+               $"{nameof(Pause)}: {Pause}, " +
+               $"{nameof(ChangeResin)}: {ChangeResin}, " +
                $"{nameof(IsModified)}: {IsModified}, " +
                $"{nameof(IsUsingGlobalParameters)}: {IsUsingGlobalParameters}";
     }
@@ -1272,24 +1353,28 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
         _waitTimeAfterCure = SlicerFile.GetBottomOrNormalValue(this, SlicerFile.BottomWaitTimeAfterCure, SlicerFile.WaitTimeAfterCure);
         _liftHeight = SlicerFile.GetBottomOrNormalValue(this, SlicerFile.BottomLiftHeight, SlicerFile.LiftHeight);
         _liftSpeed = SlicerFile.GetBottomOrNormalValue(this, SlicerFile.BottomLiftSpeed, SlicerFile.LiftSpeed);
+        _liftAcceleration = SlicerFile.GetBottomOrNormalValue(this, SlicerFile.BottomLiftAcceleration, SlicerFile.LiftAcceleration);
         _liftHeight2 = SlicerFile.GetBottomOrNormalValue(this, SlicerFile.BottomLiftHeight2, SlicerFile.LiftHeight2);
         _liftSpeed2 = SlicerFile.GetBottomOrNormalValue(this, SlicerFile.BottomLiftSpeed2, SlicerFile.LiftSpeed2);
+        _liftAcceleration2 = SlicerFile.GetBottomOrNormalValue(this, SlicerFile.BottomLiftAcceleration2, SlicerFile.LiftAcceleration2);
         _waitTimeAfterLift = SlicerFile.GetBottomOrNormalValue(this, SlicerFile.BottomWaitTimeAfterLift, SlicerFile.WaitTimeAfterLift);
         _retractSpeed = SlicerFile.GetBottomOrNormalValue(this, SlicerFile.BottomRetractSpeed, SlicerFile.RetractSpeed);
+        _retractAcceleration = SlicerFile.GetBottomOrNormalValue(this, SlicerFile.BottomRetractAcceleration, SlicerFile.RetractAcceleration);
         _retractHeight2 = SlicerFile.GetBottomOrNormalValue(this, SlicerFile.BottomRetractHeight2, SlicerFile.RetractHeight2);
         _retractSpeed2 = SlicerFile.GetBottomOrNormalValue(this, SlicerFile.BottomRetractSpeed2, SlicerFile.RetractSpeed2);
+        _retractAcceleration2 = SlicerFile.GetBottomOrNormalValue(this, SlicerFile.BottomRetractAcceleration2, SlicerFile.RetractAcceleration2);
         _lightPWM = SlicerFile.GetBottomOrNormalValue(this, SlicerFile.BottomLightPWM, SlicerFile.LightPWM);
     }
 
     /// <summary>
-    /// Gets the layer area (XY) in mm^2
+    /// Gets the layer area (XY) in mm²
     /// Pixel size * number of pixels
     /// </summary>
     public float GetArea() => SlicerFile.PixelArea * _nonZeroPixelCount;
 
 
     /// <summary>
-    /// Gets the layer area (XY) in mm^2
+    /// Gets the layer area (XY) in mm²
     /// Pixel size * number of pixels
     /// </summary>
     public float GetArea(byte roundToDigits) => (float)Math.Round(GetArea(), roundToDigits);
@@ -1307,13 +1392,18 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
     public float GetVolume(byte roundToDigits) => (float)Math.Round(GetArea() * LayerHeight, roundToDigits);
 
     /// <summary>
-    /// Calculates the time estimate in seconds it takes for this layer to be completed
+    /// Calculates the time estimate in seconds it takes for this layer to be printed
     /// </summary>
     /// <returns></returns>
-    public float CalculateCompletionTime(float extraTime = 0)
+    public float CalculatePrintTime(float extraTime = 0)
     {
         float time = extraTime;
         var motorTime = CalculateMotorMovementTime();
+        if (SlicerFile.HaveTiltingVat)
+        {
+            motorTime = 4;
+        }
+
         time += WaitTimeBeforeCure + ExposureTime + WaitTimeAfterCure + WaitTimeAfterLift;
         if (SlicerFile.SupportGCode)
         {
@@ -1340,7 +1430,7 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
         float time = extraTime;
         for (int i = 0; i < Index; i++)
         {
-            time += SlicerFile[i].CompletionTime;
+            time += SlicerFile[i].PrintTime;
         }
 
         return time;
@@ -1418,6 +1508,15 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
         WaitTimeBeforeCure = 0;
         WaitTimeAfterCure = 0;
         WaitTimeAfterLift = 0;
+    }
+
+    /// <summary>
+    /// Clear all pauses for this layer
+    /// </summary>
+    public void ClearPauses()
+    {
+        Pause = false;
+        ChangeResin = false;
     }
 
     public string FormatFileName(string prepend  = "", byte padDigits = 0, IndexStartNumber layerIndexStartNumber = default, string appendExt = ".png")
@@ -1603,6 +1702,18 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
             return true;
         }
 
+        if (ReferenceEquals(modifier, FileFormat.PrintParameterModifier.Pause))
+        {
+            Pause = Convert.ToBoolean(value);
+            return true;
+        }
+
+        if (ReferenceEquals(modifier, FileFormat.PrintParameterModifier.ChangeResin))
+        {
+            ChangeResin = Convert.ToBoolean(value);
+            return true;
+        }
+
         return false;
     }
 
@@ -1620,167 +1731,8 @@ public class Layer : BindableBase, IEquatable<Layer>, IEquatable<uint>
         return changed;
     }
 
-    /*
     /// <summary>
-    /// Gets all islands start pixel location for this layer
-    /// https://www.geeksforgeeks.org/find-number-of-islands/
-    /// </summary>
-    /// <returns><see cref="List{T}"/> holding all islands coordinates</returns>
-    public List<LayerIssue> GetIssues(uint requiredPixelsToSupportIsland = 5)
-    {
-        if (requiredPixelsToSupportIsland == 0)
-            requiredPixelsToSupportIsland = 1;
-
-        // These arrays are used to 
-        // get row and column numbers 
-        // of 8 neighbors of a given cell 
-        List<LayerIssue> result = new();
-        List<Point> pixels = new();
-
-
-
-        var mat = LayerMat;
-        var bytes = mat.GetDataSpan<byte>();
-
-
-
-        var previousLayerImage = PreviousLayer()?.LayerMat;
-        var previousBytes = previousLayerImage?.GetBytes();
-
-        // Make a bool array to
-        // mark visited cells. 
-        // Initially all cells 
-        // are unvisited 
-        bool[,] visited = new bool[mat.Width, mat.Height];
-
-        // Initialize count as 0 and 
-        // traverse through the all 
-        // cells of given matrix 
-        //uint count = 0;
-
-        // Island checker
-        sbyte[] rowNbr = { -1, -1, -1, 0, 0, 1, 1, 1 };
-        sbyte[] colNbr = { -1, 0, 1, -1, 1, -1, 0, 1 };
-        const uint minPixel = 10;
-        const uint minPixelForSupportIsland = 200;
-        int pixelIndex;
-        uint islandSupportingPixels;
-        if (Index > 0)
-        {
-            for (int y = 0; y < mat.Height; y++)
-            {
-                for (int x = 0; x < mat.Width; x++)
-                {
-                    pixelIndex = y * mat.Width + x;
-
-                    if (bytes[pixelIndex] > minPixel && !visited[x, y])
-                    {
-                        // If a cell with value 1 is not 
-                        // visited yet, then new island 
-                        // found, Visit all cells in this 
-                        // island and increment island count 
-                        pixels.Clear();
-                        pixels.Add(new Point(x, y));
-                        islandSupportingPixels = previousBytes[pixelIndex] >= minPixelForSupportIsland ? 1u : 0;
-
-                        int minX = x;
-                        int maxX = x;
-                        int minY = y;
-                        int maxY = y;
-
-                        int x2;
-                        int y2;
-
-
-                        Queue<Point> queue = new();
-                        queue.Enqueue(new Point(x, y));
-                        // Mark this cell as visited 
-                        visited[x, y] = true;
-
-                        while (queue.Count > 0)
-                        {
-                            var point = queue.Dequeue();
-                            y2 = point.Y;
-                            x2 = point.X;
-                            for (byte k = 0; k < 8; k++)
-                            {
-                                //if (isSafe(y2 + rowNbr[k], x2 + colNbr[k]))
-                                var tempy2 = y2 + rowNbr[k];
-                                var tempx2 = x2 + colNbr[k];
-                                pixelIndex = tempy2 * mat.Width + tempx2;
-                                if (tempy2 >= 0 &&
-                                    tempy2 < mat.Height &&
-                                    tempx2 >= 0 && tempx2 < mat.Width &&
-                                    bytes[pixelIndex] >= minPixel &&
-                                    !visited[tempx2, tempy2])
-                                {
-                                    visited[tempx2, tempy2] = true;
-                                    point = new Point(tempx2, tempy2);
-                                    pixels.Add(point);
-                                    queue.Enqueue(point);
-
-                                    minX = Math.Min(minX, tempx2);
-                                    maxX = Math.Max(maxX, tempx2);
-                                    minY = Math.Min(minY, tempy2);
-                                    maxY = Math.Max(maxY, tempy2);
-
-                                    islandSupportingPixels += previousBytes[pixelIndex] >= minPixelForSupportIsland ? 1u : 0;
-                                }
-                            }
-                        }
-                        //count++;
-
-                        if (islandSupportingPixels >= requiredPixelsToSupportIsland)
-                            continue; // Not a island, bounding is strong
-                        if (islandSupportingPixels > 0 && pixels.Count < requiredPixelsToSupportIsland &&
-                            islandSupportingPixels >= Math.Max(1, pixels.Count / 2)) continue; // Not a island
-                        result.Add(new LayerIssue(this, LayerIssue.IssueType.Island, pixels.ToArray(), new Rectangle(minX, minY, maxX - minX, maxY - minY)));
-                    }
-                }
-            }
-        }
-
-        pixels.Clear();
-
-        // TouchingBounds Checker
-        for (int x = 0; x < mat.Width; x++) // Check Top and Bottom bounds
-        {
-            if (bytes[x] >= 200) // Top
-            {
-                pixels.Add(new Point(x, 0));
-            }
-
-            if (bytes[mat.Width * mat.Height - mat.Width + x] >= 200) // Bottom
-            {
-                pixels.Add(new Point(x, mat.Height - 1));
-            }
-        }
-
-        for (int y = 0; y < mat.Height; y++) // Check Left and Right bounds
-        {
-            if (bytes[y * mat.Width] >= 200) // Left
-            {
-                pixels.Add(new Point(0, y));
-            }
-
-            if (bytes[y * mat.Width + mat.Width - 1] >= 200) // Right
-            {
-                pixels.Add(new Point(mat.Width - 1, y));
-            }
-        }
-
-        if (pixels.Count > 0)
-        {
-            result.Add(new LayerIssue(this, LayerIssue.IssueType.TouchingBound, pixels.ToArray()));
-        }
-
-        pixels.Clear();
-
-        return result;
-    }*/
-
-    /// <summary>
-    /// Copy all parameters from this layer to an target layer
+    /// Copy all parameters from this layer to a target layer
     /// </summary>
     /// <param name="layer"></param>
     public void CopyParametersTo(Layer layer)

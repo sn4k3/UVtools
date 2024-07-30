@@ -94,11 +94,7 @@ public sealed class GenericZIPFile : FileFormat
     public override float MachineZ
     {
         get => ManifestFile.MachineZ > 0 ? ManifestFile.MachineZ : base.MachineZ;
-        set
-        {
-            ManifestFile.MachineZ = value;
-            RaisePropertyChanged();
-        }
+        set => base.MachineZ = ManifestFile.MachineZ = value;
     }
 
     public override float LayerHeight
@@ -140,6 +136,7 @@ public sealed class GenericZIPFile : FileFormat
         try
         {
             using var zip = ZipFile.Open(fileFullPath!, ZipArchiveMode.Read);
+            
             foreach (var entry in zip.Entries)
             {
                 if (entry.Name == ManifestFileName) return true;
@@ -154,7 +151,7 @@ public sealed class GenericZIPFile : FileFormat
         }
             
 
-        return true;
+        return false;
     }
 
     protected override void OnBeforeEncode(bool isPartialEncode)

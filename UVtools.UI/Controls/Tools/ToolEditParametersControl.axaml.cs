@@ -73,6 +73,14 @@ public partial class ToolEditParametersControl : ToolControl
             {
                 stackPanel.Children.Add(new Icon { Value = "fa-regular fa-sun" });
             }
+            else if (label.Contains("pause", StringComparison.InvariantCultureIgnoreCase))
+            {
+                stackPanel.Children.Add(new Icon { Value = "fa-solid fa-pause" });
+            }
+            else if (label.Contains("change resin", StringComparison.InvariantCultureIgnoreCase))
+            {
+                stackPanel.Children.Add(new Icon { Value = "fa-solid fa-flask" });
+            }
 
             Name = new TextBlock
             {
@@ -123,13 +131,17 @@ public partial class ToolEditParametersControl : ToolControl
         {
             new (FileFormat.PrintParameterModifier.BottomLiftHeight, FileFormat.PrintParameterModifier.BottomLiftHeight2),
             new (FileFormat.PrintParameterModifier.BottomLiftSpeed, FileFormat.PrintParameterModifier.BottomLiftSpeed2),
+            new (FileFormat.PrintParameterModifier.BottomLiftAcceleration, FileFormat.PrintParameterModifier.BottomLiftAcceleration2),
             //new (FileFormat.PrintParameterModifier.BottomRetractHeight, FileFormat.PrintParameterModifier.BottomRetractHeight2),
             new (FileFormat.PrintParameterModifier.BottomRetractSpeed, FileFormat.PrintParameterModifier.BottomRetractSpeed2),
+            new (FileFormat.PrintParameterModifier.BottomRetractAcceleration, FileFormat.PrintParameterModifier.BottomRetractAcceleration2),
 
             new (FileFormat.PrintParameterModifier.LiftHeight, FileFormat.PrintParameterModifier.LiftHeight2),
             new (FileFormat.PrintParameterModifier.LiftSpeed, FileFormat.PrintParameterModifier.LiftSpeed2),
+            new (FileFormat.PrintParameterModifier.LiftAcceleration, FileFormat.PrintParameterModifier.LiftAcceleration2),
             //new (FileFormat.PrintParameterModifier.RetractHeight, FileFormat.PrintParameterModifier.RetractHeight2),
             new (FileFormat.PrintParameterModifier.RetractSpeed, FileFormat.PrintParameterModifier.RetractSpeed2),
+            new (FileFormat.PrintParameterModifier.RetractAcceleration, FileFormat.PrintParameterModifier.RetractAcceleration2),
         };
 
     public ToolEditParametersControl()

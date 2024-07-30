@@ -1964,6 +1964,7 @@ public partial class MainWindow
 
     private void LayerImageBox_KeyDown(object? sender, KeyEventArgs e)
     {
+        if (e.KeyModifiers != KeyModifiers.None) return;
         switch (e.Key)
         {
             case Key.Up:
@@ -2099,10 +2100,23 @@ public partial class MainWindow
                 return;
         }
 
-
-        if ((e.KeyModifiers & AppSettings.SystemCommandKeyModifier) != 0)
+        if (e.KeyModifiers == KeyModifiers.None)
         {
-            if (e.Key is Key.LeftShift or Key.RightShift || (e.KeyModifiers & KeyModifiers.Shift) != 0) // Ctrl + Shift
+            switch (e.Key)
+            {
+                case Key.Q:
+                    GoPreviousLayer();
+                    e.Handled = true;
+                    return;
+                case Key.E:
+                    GoNextLayer();
+                    e.Handled = true;
+                    return;
+            }
+        }
+        else if ((e.KeyModifiers & AppSettings.SystemCommandKeyModifier) != 0)
+        {
+            if ((e.KeyModifiers & KeyModifiers.Shift) != 0) // Ctrl + Shift
             {
                 if (e.Key == Key.R)
                 {

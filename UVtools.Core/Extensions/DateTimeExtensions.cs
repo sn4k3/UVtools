@@ -91,7 +91,7 @@ public static class DateTimeExtensions
         var totalSeconds = timeSpan.TotalSeconds;
         return totalSeconds switch
         {
-            < 60 => $"{totalSeconds}s",                     // Less than a minute
+            < 60 => $"{Math.Round(totalSeconds, MidpointRounding.AwayFromZero)}s", // Less than a minute
             < 3600 => showSeconds ? timeSpan.ToString(@"mm\mss\s") : timeSpan.ToString(@"mm\m"),           // Less than an hour
             < 86400 => showSeconds ? timeSpan.ToString(@"hh\hmm\mss\s") : timeSpan.ToString(@"hh\hmm\m"),  // Less than a day
             < 172800 => showSeconds ? timeSpan.ToString(@"d'day 'hh\hmm\mss\s") : timeSpan.ToString(@"d'day 'hh\hmm\m"),  // Less than a two days

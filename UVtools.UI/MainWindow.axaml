@@ -123,7 +123,9 @@
 
                     <MenuItem Header="Reset layers properties"
                               Command="{Binding ResetLayersProperties}"
-                              i:MenuItem.Icon="fa-solid fa-hammer">
+                              i:MenuItem.Icon="fa-solid fa-hammer"
+                              ToolTip.Tip="Reset all layer properties with the file globals.
+&#x0a;Hold SHIFT key to also rebuild layers position with the file layer height.">
                         <MenuItem.IsEnabled>
                             <MultiBinding Converter="{x:Static BoolConverters.And}">
                                 <Binding Path="IsFileLoaded"/>
@@ -151,6 +153,11 @@
 							  IsEnabled="{Binding IsFileLoaded}"
 							  Command="{Binding ExtractFile}"
 							  i:MenuItem.Icon="fa-solid fa-box-open"/>
+
+                    <MenuItem Header="Copy parameters to files"
+                              IsEnabled="{Binding IsFileLoaded}"
+                              Command="{Binding CopyParametersToFiles}"
+                              i:MenuItem.Icon="fa-solid fa-file-export"/>
 
                     <MenuItem Name="MainMenuFileTerminal"
 							  HotKey="{OnPlatform Ctrl+Shift+T, macOS=⌘+Shift+T}" InputGesture="{Binding $self.HotKey}"
@@ -2128,6 +2135,11 @@
 				  BorderBrush="{DynamicResource LightBackground}"
 				  BorderThickness="5">
                     <uvtava:AdvancedImageBox
+                        PanLeftKey="A"
+                        PanUpKey="W"
+                        PanRightKey="D"
+                        PanDownKey="S"
+                        PanWithArrows="False"
 						ShowGrid="{Binding Settings.LayerPreview.ShowBackgroudGrid}"
 						GridCellSize="15"
 						Name="LayerImageBox"/>

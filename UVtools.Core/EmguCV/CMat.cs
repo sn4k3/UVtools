@@ -32,6 +32,7 @@ public class CMat : IEquatable<CMat>
     /// Gets the compressed bytes that have been compressed with <see cref="Decompressor"/>.
     /// </summary>
     private byte[] _compressedBytes = Array.Empty<byte>();
+    private string? _hash;
 
     /// <summary>
     /// Gets the compressed bytes that have been compressed with <see cref="Decompressor"/>.
@@ -42,10 +43,16 @@ public class CMat : IEquatable<CMat>
         private set
         {
             _compressedBytes = value;
+            _hash = null;
             IsInitialized = true;
             IsCompressed = !IsEmpty;
         }
     }
+
+    /// <summary>
+    /// Gets the MD5 hash of the <see cref="CompressedBytes"/>.
+    /// </summary>
+    public string Hash => _hash ?? CryptExtensions.ComputeSHA1Hash(_compressedBytes);
 
     /// <summary>
     /// Gets a value indicating whether the <see cref="CompressedBytes"/> have ever been set.
@@ -291,6 +298,7 @@ public class CMat : IEquatable<CMat>
     {
         if (_compressedBytes.Length == 0) return; // Already empty
         _compressedBytes = Array.Empty<byte>();
+        _hash = null;
         IsCompressed = false;
         Roi = Rectangle.Empty;
     }
@@ -564,6 +572,7 @@ public class CMat : IEquatable<CMat>
     public void CopyTo(CMat dst)
     {
         dst._compressedBytes = _compressedBytes.ToArray();
+        dst._hash = _hash;
         dst.IsInitialized = IsInitialized;
         dst.IsCompressed = IsCompressed;
         dst.ThresholdToCompress = ThresholdToCompress;

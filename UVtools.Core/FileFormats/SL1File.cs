@@ -27,6 +27,7 @@ public sealed class SL1File : FileFormat
     public const string IniConfig = "config.ini";
     public const string IniPrusaslicer = "prusaslicer.ini";
 
+    public const string Keyword_FileClass = "FILECLASS";
     public const string Keyword_FileFormat = "FILEFORMAT";
     public const string Keyword_FileVersion = "FILEVERSION";
     public const string Keyword_LayerImageFormat = "LAYERIMAGEFORMAT";
@@ -40,20 +41,28 @@ public sealed class SL1File : FileFormat
     public const string Keyword_WaitTimeAfterCure = "WaitTimeAfterCure";
     public const string Keyword_BottomLiftHeight    = "BottomLiftHeight";
     public const string Keyword_BottomLiftSpeed     = "BottomLiftSpeed";
+    public const string Keyword_BottomLiftAcceleration     = "BottomLiftAcceleration";
     public const string Keyword_LiftHeight          = "LiftHeight";
     public const string Keyword_LiftSpeed           = "LiftSpeed";
+    public const string Keyword_LiftAcceleration           = "LiftAcceleration";
     public const string Keyword_BottomLiftHeight2 = "BottomLiftHeight2";
     public const string Keyword_BottomLiftSpeed2 = "BottomLiftSpeed2";
+    public const string Keyword_BottomLiftAcceleration2 = "BottomLiftAcceleration2";
     public const string Keyword_LiftHeight2 = "LiftHeight2";
     public const string Keyword_LiftSpeed2 = "LiftSpeed2";
+    public const string Keyword_LiftAcceleration2 = "LiftAcceleration2";
     public const string Keyword_BottomWaitTimeAfterLift = "BottomWaitTimeAfterLift";
     public const string Keyword_WaitTimeAfterLift = "WaitTimeAfterLift";
     public const string Keyword_BottomRetractSpeed        = "BottomRetractSpeed";
+    public const string Keyword_BottomRetractAcceleration        = "BottomRetractAcceleration";
     public const string Keyword_RetractSpeed        = "RetractSpeed";
+    public const string Keyword_RetractAcceleration        = "RetractAcceleration";
     public const string Keyword_BottomRetractHeight2 = "BottomRetractHeight2";
     public const string Keyword_BottomRetractSpeed2 = "BottomRetractSpeed2";
+    public const string Keyword_BottomRetractAcceleration2 = "BottomRetractAcceleration2";
     public const string Keyword_RetractHeight2        = "RetractHeight2";
     public const string Keyword_RetractSpeed2        = "RetractSpeed2";
+    public const string Keyword_RetractAcceleration2        = "RetractAcceleration2";
     public const string Keyword_BottomLightPWM      = "BottomLightPWM";
     public const string Keyword_LightPWM            = "LightPWM";
     #endregion
@@ -675,7 +684,6 @@ public sealed class SL1File : FileFormat
 
         SuppressRebuildPropertiesWork(() =>
         {
-            TransitionLayerCount = LookupCustomValue<ushort>(Keyword_TransitionLayerCount, 0);
             BottomLightOffDelay = LookupCustomValue(Keyword_BottomLightOffDelay, 0f);
             LightOffDelay = LookupCustomValue(Keyword_LightOffDelay, 0f);
 
@@ -687,34 +695,45 @@ public sealed class SL1File : FileFormat
 
             BottomLiftHeight = LookupCustomValue(Keyword_BottomLiftHeight, DefaultBottomLiftHeight);
             BottomLiftSpeed = LookupCustomValue(Keyword_BottomLiftSpeed, DefaultBottomLiftSpeed);
+            BottomLiftAcceleration = LookupCustomValue(Keyword_BottomLiftAcceleration, 0);
 
             LiftHeight = LookupCustomValue(Keyword_LiftHeight, DefaultLiftHeight);
             LiftSpeed = LookupCustomValue(Keyword_LiftSpeed, DefaultLiftSpeed);
+            LiftAcceleration = LookupCustomValue(Keyword_LiftAcceleration, 0);
 
             BottomLiftHeight2 = LookupCustomValue(Keyword_BottomLiftHeight2, DefaultBottomLiftHeight2);
             BottomLiftSpeed2 = LookupCustomValue(Keyword_BottomLiftSpeed2, DefaultBottomLiftSpeed2);
+            BottomLiftAcceleration2 = LookupCustomValue(Keyword_BottomLiftAcceleration2, 0);
 
             LiftHeight2 = LookupCustomValue(Keyword_LiftHeight2, DefaultLiftHeight2);
             LiftSpeed2 = LookupCustomValue(Keyword_LiftSpeed2, DefaultLiftSpeed2);
+            LiftAcceleration2 = LookupCustomValue(Keyword_LiftAcceleration2, 0);
 
             BottomWaitTimeAfterLift = LookupCustomValue(Keyword_BottomWaitTimeAfterLift, 0f);
             WaitTimeAfterLift = LookupCustomValue(Keyword_WaitTimeAfterLift, 0f);
 
             BottomRetractSpeed = LookupCustomValue(Keyword_BottomRetractSpeed, DefaultBottomRetractSpeed);
+            BottomRetractAcceleration = LookupCustomValue(Keyword_BottomRetractAcceleration, 0);
             RetractSpeed = LookupCustomValue(Keyword_RetractSpeed, DefaultRetractSpeed);
+            RetractAcceleration = LookupCustomValue(Keyword_RetractAcceleration, 0);
 
             BottomRetractHeight2 = LookupCustomValue(Keyword_BottomRetractHeight2, DefaultBottomRetractHeight2);
             RetractHeight2 = LookupCustomValue(Keyword_RetractHeight2, DefaultRetractHeight2);
             BottomRetractSpeed2 = LookupCustomValue(Keyword_BottomRetractSpeed2, DefaultBottomRetractSpeed2);
+            BottomRetractAcceleration2 = LookupCustomValue(Keyword_BottomRetractAcceleration2, 0);
             RetractSpeed2 = LookupCustomValue(Keyword_RetractSpeed2, DefaultRetractSpeed2);
+            RetractAcceleration2 = LookupCustomValue(Keyword_RetractAcceleration2, 0);
             BottomLightPWM = LookupCustomValue(Keyword_BottomLightPWM, DefaultLightPWM);
             LightPWM = LookupCustomValue(Keyword_LightPWM, DefaultBottomLightPWM);
         });
 
         Init(OutputConfigSettings.NumSlow + OutputConfigSettings.NumFast, DecodeType == FileDecodeType.Partial);
-
         progress.ItemCount = LayerCount;
 
+        SuppressRebuildPropertiesWork(() =>
+        {
+            TransitionLayerCount = LookupCustomValue<ushort>(Keyword_TransitionLayerCount, 0);
+        });
 
         /*
         if (string.Equals(PrinterSettings.DisplayOrientation, "portrait", StringComparison.OrdinalIgnoreCase))

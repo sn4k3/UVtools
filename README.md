@@ -127,6 +127,7 @@ But also, I need victims for test subject. Proceed at your own risk!
 - UVJ (Vendor-neutral format for manual manipulation)
 - VDT (Voxeldance Tango), VDA.ZIP (Voxeldance Additive)
 - ZIP (Generic / Phrozen Zip)
+- ZIP (Klipper)
 - Image files (png, jpg, jpeg, jp2, tif, bmp, pbm, pgm, ras, sr)
 
 # PrusaSlicer
@@ -163,6 +164,7 @@ But also, I need victims for test subject. Proceed at your own risk!
   - **BottomLightPWM_xxx:** Sets the bottom LED light power (0-255)
   - **LightPWM_xxx:** Sets the LED light power (0-255)
   - **FILEVERSION_n:** Sets the output file format version/revision
+  - **FILECLASS_xxx:** Sets the output file format class to be auto converted once open on UVtools
   - **FILEFORMAT_xxx:** Sets the output file format extension to be auto converted once open on UVtools
   - **LAYERIMAGEFORMAT_xxx:** Sets the layer image format required for the converted file if the format have multiple options (For Archives with PNG's)
    

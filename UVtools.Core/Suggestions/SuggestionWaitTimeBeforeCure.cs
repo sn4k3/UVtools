@@ -118,11 +118,11 @@ public sealed class SuggestionWaitTimeBeforeCure : Suggestion
                 case SuggestionApplyWhen.Different:
                     if (SlicerFile.CanUseBottomWaitTimeBeforeCure || SlicerFile.CanUseBottomLightOffDelay)
                     {
-                        if (Math.Abs(SlicerFile.GetBottomWaitTimeBeforeCure() - CalculateWaitTime(true)) > 0.1) return false;
+                        if (Math.Abs(SlicerFile.GetBottomWaitTimeBeforeCure() - CalculateWaitTime(LayerGroup.Bottom)) > 0.1) return false;
                     }
                     if (SlicerFile.CanUseWaitTimeBeforeCure || SlicerFile.CanUseLightOffDelay)
                     {
-                        if (Math.Abs(SlicerFile.GetNormalWaitTimeBeforeCure() - CalculateWaitTime(false)) > 0.1) return false;
+                        if (Math.Abs(SlicerFile.GetNormalWaitTimeBeforeCure() - CalculateWaitTime(LayerGroup.Normal)) > 0.1) return false;
                     }
 
                     if (SlicerFile.CanUseLayerWaitTimeBeforeCure || SlicerFile.CanUseLayerLightOffDelay)
@@ -164,14 +164,14 @@ public sealed class SuggestionWaitTimeBeforeCure : Suggestion
                 return IsApplied
                     ? $"{GlobalAppliedMessage}: {SlicerFile.GetBottomWaitTimeBeforeCure()}/{SlicerFile.GetNormalWaitTimeBeforeCure()}s"
                     : $"{GlobalNotAppliedMessage} of {SlicerFile.GetBottomWaitTimeBeforeCure()}/{SlicerFile.GetNormalWaitTimeBeforeCure()}s " +
-                      $"is out of the recommended {CalculateWaitTime(true)}/{CalculateWaitTime(false)}s";
+                      $"is out of the recommended {CalculateWaitTime(LayerGroup.Bottom)}/{CalculateWaitTime(LayerGroup.Normal)}s";
             }
 
             // Single property
             return IsApplied
                 ? $"{GlobalAppliedMessage}: {SlicerFile.GetNormalWaitTimeBeforeCure()}s"
                 : $"{GlobalNotAppliedMessage} of {SlicerFile.GetNormalWaitTimeBeforeCure()}s " +
-                  $"is out of the recommended {CalculateWaitTime(false)}s";
+                  $"is out of the recommended {CalculateWaitTime(LayerGroup.Normal)}s";
         }
     }
 
@@ -209,11 +209,11 @@ public sealed class SuggestionWaitTimeBeforeCure : Suggestion
                     is {CanUseBottomWaitTimeBeforeCure: true, CanUseWaitTimeBeforeCure: true}
                     or {CanUseBottomLightOffDelay: true, CanUseLightOffDelay: true})
             {
-                return $"{Title}: {SlicerFile.BottomWaitTimeBeforeCure}/{SlicerFile.WaitTimeBeforeCure}s » {CalculateWaitTime(true)}/{CalculateWaitTime(false)}s";
+                return $"{Title}: {SlicerFile.BottomWaitTimeBeforeCure}/{SlicerFile.WaitTimeBeforeCure}s » {CalculateWaitTime(LayerGroup.Bottom)}/{CalculateWaitTime(LayerGroup.Normal)}s";
             }
 
             // Single property
-            return $"{Title}: {SlicerFile.WaitTimeBeforeCure}s » {CalculateWaitTime(false)}s";
+            return $"{Title}: {SlicerFile.WaitTimeBeforeCure}s » {CalculateWaitTime(LayerGroup.Normal)}s";
 
         }
     }
@@ -452,11 +452,11 @@ public sealed class SuggestionWaitTimeBeforeCure : Suggestion
         {
             if (SlicerFile.CanUseBottomWaitTimeBeforeCure || SlicerFile.CanUseBottomLightOffDelay)
             {
-                SlicerFile.SetBottomWaitTimeBeforeCureOrLightOffDelay(CalculateWaitTime(true));
+                SlicerFile.SetBottomWaitTimeBeforeCureOrLightOffDelay(CalculateWaitTime(LayerGroup.Bottom));
             }
             if (SlicerFile.CanUseWaitTimeBeforeCure || SlicerFile.CanUseLightOffDelay)
             {
-                SlicerFile.SetNormalWaitTimeBeforeCureOrLightOffDelay(CalculateWaitTime(false));
+                SlicerFile.SetNormalWaitTimeBeforeCureOrLightOffDelay(CalculateWaitTime(LayerGroup.Normal));
             }
         });
         
@@ -497,17 +497,17 @@ public sealed class SuggestionWaitTimeBeforeCure : Suggestion
     }
         
 
-    public float CalculateWaitTime(bool isBottomLayer, Layer? layer = null)
+    public float CalculateWaitTime(LayerGroup layerGroup, Layer? layer = null)
     {
         if (layer is not null)
         {
             // Reassign isBottomLayer given the layer
-            isBottomLayer = layer.IsBottomLayer || (_bottomHeight > 0 && (decimal)layer.PositionZ <= _bottomHeight);
+            layerGroup = layer.IsBottomLayer || (_bottomHeight > 0 && (decimal)layer.PositionZ <= _bottomHeight) ? LayerGroup.Bottom : LayerGroup.Normal;
         }
 
         if (_setType == SuggestionWaitTimeBeforeCureSetType.Fixed)
         {
-            if(layer is null || isBottomLayer || _waitTimeBeforeCureTransitionLayerCount == 0) return (float)(isBottomLayer ? _fixedBottomWaitTimeBeforeCure : _fixedWaitTimeBeforeCure);
+            if(layer is null || layerGroup == LayerGroup.Bottom || _waitTimeBeforeCureTransitionLayerCount == 0) return (float)(layerGroup == LayerGroup.Bottom ? _fixedBottomWaitTimeBeforeCure : _fixedWaitTimeBeforeCure);
             
             // Check for transition layer
             var firstNormalLayer = SlicerFile.FirstOrDefault(target => (decimal) target.PositionZ > _bottomHeight);
@@ -522,12 +522,12 @@ public sealed class SuggestionWaitTimeBeforeCure : Suggestion
             }
 
             // Fallback
-            return (float)(isBottomLayer ? _fixedBottomWaitTimeBeforeCure : _fixedWaitTimeBeforeCure);
+            return (float)(layerGroup == LayerGroup.Bottom ? _fixedBottomWaitTimeBeforeCure : _fixedWaitTimeBeforeCure);
         }
 
         if (layer is null || _setType == SuggestionWaitTimeBeforeCureSetType.Fixed)
         {
-            return (float)(isBottomLayer ? _fixedBottomWaitTimeBeforeCure : _fixedWaitTimeBeforeCure);
+            return (float)(layerGroup == LayerGroup.Bottom ? _fixedBottomWaitTimeBeforeCure : _fixedWaitTimeBeforeCure);
         }
 
         if (layer.IsDummy) return 0; // Empty layer or not exposed, don't need wait time
@@ -574,7 +574,7 @@ public sealed class SuggestionWaitTimeBeforeCure : Suggestion
             var previousLayer = layer.GetPreviousLayerWithAtLeastPixelCountOf(2) ?? layer.GetNextLayerWithAtLeastPixelCountOf(2); // Skip all empty layers
             if (previousLayer is null) // No parent layer to calculate from, set to fixed values
             {
-                return isBottomLayer ? (float)_fixedBottomWaitTimeBeforeCure : (float)_fixedWaitTimeBeforeCure;
+                return layerGroup == LayerGroup.Bottom ? (float)_fixedBottomWaitTimeBeforeCure : (float)_fixedWaitTimeBeforeCure;
             }
             mass = _setType == SuggestionWaitTimeBeforeCureSetType.ProportionalLayerPixels
                 ? previousLayer.NonZeroPixelCount
@@ -583,16 +583,16 @@ public sealed class SuggestionWaitTimeBeforeCure : Suggestion
 
         float value = _setType switch
         {
-            SuggestionWaitTimeBeforeCureSetType.ProportionalLayerPixels => (float) (isBottomLayer 
+            SuggestionWaitTimeBeforeCureSetType.ProportionalLayerPixels => (float) (layerGroup == LayerGroup.Bottom
                     ? (decimal)mass * _proportionalBottomWaitTimeBeforeCure / _proportionalBottomLayerPixels 
                     : (decimal)mass * _proportionalWaitTimeBeforeCure / _proportionalLayerPixels),
-            SuggestionWaitTimeBeforeCureSetType.ProportionalLayerArea => (float) (isBottomLayer 
+            SuggestionWaitTimeBeforeCureSetType.ProportionalLayerArea => (float) (layerGroup == LayerGroup.Bottom
                     ? (decimal)mass * _proportionalBottomWaitTimeBeforeCure / _proportionalBottomLayerArea
                     : (decimal)mass * _proportionalWaitTimeBeforeCure / _proportionalLayerArea),
             _ => throw new ArgumentOutOfRangeException()
         };
 
-        if (isBottomLayer)
+        if (layerGroup == LayerGroup.Bottom)
         {
             if (_proportionalBottomWaitTimeBeforeCureMaximumDifference > 0)
             {
@@ -620,11 +620,11 @@ public sealed class SuggestionWaitTimeBeforeCure : Suggestion
         }
 
         return (float)Math.Clamp(Math.Round((decimal)value, 2),
-            isBottomLayer ? _minimumBottomWaitTimeBeforeCure : _minimumWaitTimeBeforeCure,
-            isBottomLayer ? _maximumBottomWaitTimeBeforeCure : _maximumWaitTimeBeforeCure);
+            layerGroup == LayerGroup.Bottom ? _minimumBottomWaitTimeBeforeCure : _minimumWaitTimeBeforeCure,
+            layerGroup == LayerGroup.Bottom ? _maximumBottomWaitTimeBeforeCure : _maximumWaitTimeBeforeCure);
     }
 
-    public float CalculateWaitTime(Layer layer) => layer.IsDummy ? 0 : CalculateWaitTime(false, layer);
+    public float CalculateWaitTime(Layer layer) => layer.IsDummy ? 0 : CalculateWaitTime(LayerGroup.Normal, layer);
 
     #endregion
 }

@@ -47,6 +47,7 @@ using Point = Avalonia.Point;
 using System.Runtime;
 using System.Runtime.InteropServices;
 using UVtools.Core.Scripting;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace UVtools.UI;
 
@@ -870,11 +871,9 @@ public partial class MainWindow : WindowEx
             return;
         }
 
-            
-
         base.OnKeyUp(e);
     }
-        
+    
     #endregion
 
     #region Events
@@ -998,6 +997,8 @@ public partial class MainWindow : WindowEx
                 AvaloniaStatic.CreateFilePickerFileTypes(extension.Description, ext));
 
         if (file?.TryGetLocalPath() is not { } filePath) return;
+
+        if (!filePath.EndsWith($".{ext}")) filePath += $".{ext}";
 
         await SaveFile(filePath);
     }
@@ -1487,26 +1488,71 @@ public partial class MainWindow : WindowEx
 
         if (Settings.Automations.AutoConvertFiles && SlicerFile.DecodeType == FileFormat.FileDecodeType.Full)
         {
+            string? convertFileClass = null;
             string? convertFileExtension = null;
             switch (SlicerFile)
             {
                 case SL1File sl1File:
+                    convertFileClass = sl1File.LookupCustomValue<string>(SL1File.Keyword_FileClass, null);
                     convertFileExtension = sl1File.LookupCustomValue<string>(SL1File.Keyword_FileFormat, null);
                     break;
                 case VDTFile vdtFile:
-                    if (string.IsNullOrWhiteSpace(vdtFile.ManifestFile.Machine.UVToolsConvertTo) || vdtFile.ManifestFile.Machine.UVToolsConvertTo == "None")
+                    if (string.IsNullOrWhiteSpace(vdtFile.ManifestFile.Machine.UVToolsConvertTo) ||
+                        vdtFile.ManifestFile.Machine.UVToolsConvertTo == "None")
+                    {
+                        convertFileClass = vdtFile.LookupCustomValue<string>(SL1File.Keyword_FileClass, null);
                         convertFileExtension = vdtFile.LookupCustomValue<string>(SL1File.Keyword_FileFormat, null);
+                    }
                     else
+                    {
                         convertFileExtension = vdtFile.ManifestFile.Machine.UVToolsConvertTo;
+                    }
+
                     break;
             }
 
-            if (!string.IsNullOrWhiteSpace(convertFileExtension))
+            if (!string.IsNullOrWhiteSpace(convertFileClass) || !string.IsNullOrWhiteSpace(convertFileExtension))
             {
-                convertFileExtension = convertFileExtension.ToLower(CultureInfo.InvariantCulture);
-                var fileExtension = FileFormat.FindExtension(convertFileExtension);
-                //var convertToFormat = FileFormat.FindByExtensionOrFilePath(convertFileExtension);
-                var convertToFormat = fileExtension?.GetFileFormat();
+                if (!string.IsNullOrWhiteSpace(convertFileExtension))
+                    convertFileExtension = convertFileExtension.ToLower(CultureInfo.InvariantCulture);
+
+                FileFormat? convertToFormat = null;
+                FileExtension? fileExtension = null;
+                if (!string.IsNullOrWhiteSpace(convertFileClass))
+                {
+                    convertToFormat = FileFormat.FindByType(convertFileClass);
+                    if (convertToFormat is not null)
+                    {
+                        if (string.IsNullOrWhiteSpace(convertFileExtension))
+                        {
+                            fileExtension = convertToFormat.FileExtensions[0];
+                        }
+                        else
+                        {
+                            foreach (var extension in convertToFormat.FileExtensions)
+                            {
+                                if (extension.Extension.Equals(convertFileExtension))
+                                {
+                                    fileExtension = extension;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    else if (!string.IsNullOrWhiteSpace(convertFileExtension))
+                    {
+                        fileExtension = FileFormat.FindExtension(convertFileExtension);
+                        convertToFormat = fileExtension?.GetFileFormat();
+                    }
+                    
+                }
+                else if (!string.IsNullOrWhiteSpace(convertFileExtension))
+                {
+                    fileExtension = FileFormat.FindExtension(convertFileExtension);
+                    convertToFormat = fileExtension?.GetFileFormat();
+                }
+                
+                
                 if (fileExtension is not null && convertToFormat is not null)
                 {
                     var directory = SlicerFile.DirectoryPath!;
@@ -1540,13 +1586,14 @@ public partial class MainWindow : WindowEx
                             using var file = await SaveFilePickerAsync(directory, filenameNoExt,
                                     AvaloniaStatic.CreateFilePickerFileTypes(fileExtension.Description, convertFileExtension));
 
-                            if (file?.TryGetLocalPath() is not { } filePath)
+                            if (file?.TryGetLocalPath() is { } filePath)
                             {
-                                canConvert = false;
+                                if (!filePath.EndsWith($".{convertFileExtension}")) filePath += $".{convertFileExtension}";
+                                outputFile = filePath;
                             }
                             else
                             {
-                                outputFile = filePath;
+                                canConvert = false;
                             }
                         }
                     }
@@ -2013,6 +2060,7 @@ public partial class MainWindow : WindowEx
                 new List<FilePickerFileType>{AvaloniaStatic.CreateFilePickerFileType(fileExtension.Description, fileExtension.Extension)});
 
         if (file?.TryGetLocalPath() is not { } filePath) return;
+        if (!filePath.EndsWith($".{fileExtension.Extension}")) filePath += $".{fileExtension.Extension}";
 
         IsGUIEnabled = false;
         var oldFileName = SlicerFile.Filename!;
@@ -2242,14 +2290,16 @@ public partial class MainWindow : WindowEx
     public async void ResetLayersProperties()
     {
         if (!IsFileLoaded || !SlicerFile!.SupportPerLayerSettings) return;
+        var currentModifiers = _globalModifiers;
         if (await this.MessageBoxQuestion(
                 "Are you sure you want to reset layers properties with the global properties of the file?\n" +
                 "1. The bottom layers will set with the global bottom properties.\n" +
-                "2. The normal layers will set with the global normal properties.\n\n" +
+                "2. The normal layers will set with the global normal properties.\n" +
+                ((currentModifiers & KeyModifiers.Shift) != 0 ? $"3. Rebuild layers position with the file layer height of {SlicerFile.LayerHeight}mm\n\n" : "\n")+
                 $"This action will undo any modification you or {About.Software} made to layers (properties), reverting its information to the original state.",
                 "Reset layers properties with the global properties of the file?") != MessageButtonResult.Yes) return;
 
-        SlicerFile.RebuildLayersProperties(false);
+        SlicerFile.RebuildLayersProperties((currentModifiers & KeyModifiers.Shift) != 0);
         RefreshCurrentLayerData();
         CanSave = true;
     }
@@ -2258,6 +2308,67 @@ public partial class MainWindow : WindowEx
     {
         if (!IsFileLoaded) return;
         await ShowRunOperation(typeof(OperationIPrintedThisFile));
+    }
+
+    public async void CopyParametersToFiles()
+    {
+        if (!IsFileLoaded) return;
+        var filters = AvaloniaStatic.ToAvaloniaFileFilter(FileFormat.AllFileFiltersAvalonia);
+        var orderedFilters = new List<FilePickerFileType> { filters[Settings.General.DefaultOpenFileExtensionIndex] };
+        for (int i = 0; i < filters.Count; i++)
+        {
+            if (i == Settings.General.DefaultOpenFileExtensionIndex) continue;
+            orderedFilters.Add(filters[i]);
+        }
+
+        var files = await OpenFilePickerAsync(Settings.General.DefaultDirectoryOpenFile,
+            orderedFilters, allowMultiple: true);
+
+        if (files.Count == 0) return;
+        uint count = 0;
+        IsGUIEnabled = false;
+        ShowProgressWindow($"Copying parameters to {files.Count} files");
+
+        Progress.Reset("Copying", (uint)files.Count);
+        await Task.Run(async () =>
+        {
+            try
+            {
+                for (int i = 0; i < files.Count; i++)
+                {
+                    if (Progress.Token.IsCancellationRequested) return;
+                    var path = files[i].TryGetLocalPath();
+                    if (string.IsNullOrWhiteSpace(path) || SlicerFile!.FileFullPath == path) continue;
+                    var slicerFile = FileFormat.Open(path, FileFormat.FileDecodeType.Partial, Progress);
+                    if (slicerFile is null) continue;
+                    var countTmp = FileFormat.CopyParameters(SlicerFile, slicerFile);
+                    if (countTmp > 0)
+                    {
+                        slicerFile.Save(Progress);
+                        count += countTmp;
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                await HandleException(e, "Copying parameters error");
+                Debug.WriteLine(e);
+            }
+        });
+
+        IsGUIEnabled = true;
+
+        if (count > 0)
+        {
+            await this.MessageBoxInfo($"{count} parameters were copied over {files.Count} files.", "Copy parameters to files");
+        }
+        else
+        {
+            await this.MessageBoxInfo("No parameters were copied to file(s).\n" +
+                                      "- File(s) are invalid.\n" +
+                                      "- Files(s) lack of properties to set.\n" +
+                                      "- Files(s) properties are already equal.", "Copy parameters to files");
+        }
     }
 
     public async void ExtractFile()

@@ -33,7 +33,6 @@ using UVtools.UI.Structures;
 using UVtools.UI.Windows;
 using Bitmap = Avalonia.Media.Imaging.Bitmap;
 using UVtools.UI.Extensions;
-using static UVtools.Core.FileFormats.UVJFile;
 
 namespace UVtools.UI;
 
@@ -162,7 +161,7 @@ public class App : Application
     {
         // Line below is needed to remove Avalonia data validation.
         // Without this line you will get duplicate validations from both Avalonia and CT
-        BindingPlugins.DataValidators.RemoveAt(0);
+        //BindingPlugins.DataValidators.RemoveAt(0);
 
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {

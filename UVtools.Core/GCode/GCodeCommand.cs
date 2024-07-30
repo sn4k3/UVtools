@@ -15,12 +15,17 @@ public class GCodeCommand
     /// <summary>
     /// Gets or sets if this command is enabled
     /// </summary>
-    public bool Enabled { get; set; } = true;
+    public bool Enabled { get; set; }
 
     /// <summary>
     /// Gets or sets the command name
     /// </summary>
-    public string Command { get; set; } = null!;
+    public string Command { get; set; }
+
+    /// <summary>
+    /// Gets ir sets the command alias
+    /// </summary>
+    public string[] CommandAlias { get; set; } = Array.Empty<string>();
 
     /// <summary>
     /// Gets or sets the arguments for this command
@@ -31,8 +36,6 @@ public class GCodeCommand
     /// Gets or sets the comment
     /// </summary>
     public string? Comment { get; set; }
-
-    public GCodeCommand() { }
 
     public GCodeCommand(string command, string? arguments = null, string? comment = null, bool enabled = true)
     {

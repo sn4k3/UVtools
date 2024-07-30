@@ -51,13 +51,13 @@ public class ScriptCustomGCode : ScriptGlobals
         float feedrate = gcode.ConvertFromMillimetersPerMinute(150);
         float lightoff = gcode.ConvertFromSeconds(1f);
 
-        gcode.AppendStartGCode();
+        gcode.AppendStartGCode(SlicerFile);
         //gcode.AppendShowImageM6054(gcode.GetShowImageString(0));
         //gcode.AppendWaitG4(gcode.ConvertFromSeconds(2));
         //gcode.AppendTurnLightM106(255);
         gcode.AppendWaitG4(gcode.ConvertFromSeconds(1));
         //gcode.AppendTurnLightM106(0);
-        gcode.AppendLiftMoveG0(20, feedrate, pos, feedrate);
+        gcode.AppendLiftMoveG0(20, feedrate,0, pos, feedrate, 0);
         gcode.AppendWaitG4(gcode.ConvertFromSeconds(5));
 
         // 0.025 test
@@ -117,17 +117,17 @@ public class ScriptCustomGCode : ScriptGlobals
         }
         */
 
-        gcode.AppendLiftMoveG0(20, gcode.ConvertFromMillimetersPerMinute(150), 1, gcode.ConvertFromMillimetersPerMinute(150));
-        gcode.AppendWaitG4(lightoff);
-        gcode.AppendLiftMoveG0(20, gcode.ConvertFromMillimetersPerMinute(180), 1.5f, gcode.ConvertFromMillimetersPerMinute(180));
-        gcode.AppendWaitG4(lightoff);
-        gcode.AppendLiftMoveG0(20, gcode.ConvertFromMillimetersPerMinute(195), 2, gcode.ConvertFromMillimetersPerMinute(195));
-        gcode.AppendWaitG4(lightoff);
-        gcode.AppendLiftMoveG0(20, gcode.ConvertFromMillimetersPerMinute(200), 2.5f, gcode.ConvertFromMillimetersPerMinute(200));
-        gcode.AppendWaitG4(lightoff);
-        gcode.AppendLiftMoveG0(20, gcode.ConvertFromMillimetersPerMinute(250), 3f, gcode.ConvertFromMillimetersPerMinute(250));
-        gcode.AppendWaitG4(lightoff);
-        gcode.AppendLiftMoveG0(20, gcode.ConvertFromMillimetersPerMinute(300), 3.5f, gcode.ConvertFromMillimetersPerMinute(300));
+        gcode.AppendLiftMoveG0(20, gcode.ConvertFromMillimetersPerMinute(150), 0, 1, gcode.ConvertFromMillimetersPerMinute(150), 0);
+        gcode.AppendWaitG4(lightoff);                                                             
+        gcode.AppendLiftMoveG0(20, gcode.ConvertFromMillimetersPerMinute(180), 0, 1.5f, gcode.ConvertFromMillimetersPerMinute(180), 0);
+        gcode.AppendWaitG4(lightoff);                                                             
+        gcode.AppendLiftMoveG0(20, gcode.ConvertFromMillimetersPerMinute(195), 0, 2, gcode.ConvertFromMillimetersPerMinute(195), 0);
+        gcode.AppendWaitG4(lightoff);                                                             
+        gcode.AppendLiftMoveG0(20, gcode.ConvertFromMillimetersPerMinute(200), 0, 2.5f, gcode.ConvertFromMillimetersPerMinute(200), 0);
+        gcode.AppendWaitG4(lightoff);                                                             
+        gcode.AppendLiftMoveG0(20, gcode.ConvertFromMillimetersPerMinute(250), 0, 3f, gcode.ConvertFromMillimetersPerMinute(250), 0);
+        gcode.AppendWaitG4(lightoff);                                                             
+        gcode.AppendLiftMoveG0(20, gcode.ConvertFromMillimetersPerMinute(300), 0, 3.5f, gcode.ConvertFromMillimetersPerMinute(300), 0);
         gcode.AppendWaitG4(lightoff);
 
         gcode.AppendMoveG0(100, feedrate);

@@ -1,6 +1,5 @@
 ﻿using BinarySerialization;
 using Emgu.CV;
-using Emgu.CV.CvEnum;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -23,8 +22,7 @@ public sealed class CTBEncryptedFile : FileFormat
     #region Constants 
     public const uint DEFAULT_VERSION = 5;
     public const uint MAGIC_CBT_ENCRYPTED = 0x12FD0107;
-    public const ushort REPEATRGB15MASK = 0x20;
-    public const ushort RLE16EncodingLimit = 0xFFF;
+
     public const ushort RLEEncryptedMinimumLength = 512;
 
     private const byte PERLAYER_SETTINGS_DISALLOW       = 0;
@@ -136,8 +134,9 @@ public sealed class CTBEncryptedFile : FileFormat
         /// Not totally understood. 0 to not support, 0x40 to 0x50 to allow per layer parameters
         /// </summary>
         [FieldOrder(44)] public byte PerLayerSettings { get; set; }
-        [FieldOrder(45)] public uint Unknown4 { get; set; }
-        [FieldOrder(46)] public uint Unknown5 { get; set; } = 8; // Also 1
+        [FieldOrder(45)] public uint ModifiedTimestampMinutes { get; set; } = (uint)DateTimeExtensions.Timestamp.TotalMinutes;
+        [Ignore] public string ModifiedDate => DateTimeExtensions.GetDateTimeFromTimestampMinutes(ModifiedTimestampMinutes).ToString("dd/MM/yyyy HH:mm");
+        [FieldOrder(46)] public uint AntiAliasLevel { get; set; } = 8; // Also 1
         [FieldOrder(47)] public float RestTimeAfterRetract { get; set; }
         [FieldOrder(48)] public float RestTimeAfterLift2 { get; set; }
         [FieldOrder(49)] public uint TransitionLayerCount { get; set; }
@@ -180,7 +179,7 @@ public sealed class CTBEncryptedFile : FileFormat
 
         public override string ToString()
         {
-            return $"{nameof(ChecksumValue)}: {ChecksumValue}, {nameof(LayerPointersOffset)}: {LayerPointersOffset}, {nameof(DisplayWidth)}: {DisplayWidth}, {nameof(DisplayHeight)}: {DisplayHeight}, {nameof(MachineZ)}: {MachineZ}, {nameof(Unknown1)}: {Unknown1}, {nameof(Unknown2)}: {Unknown2}, {nameof(TotalHeightMillimeter)}: {TotalHeightMillimeter}, {nameof(LayerHeight)}: {LayerHeight}, {nameof(ExposureTime)}: {ExposureTime}, {nameof(BottomExposureTime)}: {BottomExposureTime}, {nameof(LightOffDelay)}: {LightOffDelay}, {nameof(BottomLayerCount)}: {BottomLayerCount}, {nameof(ResolutionX)}: {ResolutionX}, {nameof(ResolutionY)}: {ResolutionY}, {nameof(LayerCount)}: {LayerCount}, {nameof(LargePreviewOffset)}: {LargePreviewOffset}, {nameof(SmallPreviewOffset)}: {SmallPreviewOffset}, {nameof(PrintTime)}: {PrintTime}, {nameof(ProjectorType)}: {ProjectorType}, {nameof(BottomLiftHeight)}: {BottomLiftHeight}, {nameof(BottomLiftSpeed)}: {BottomLiftSpeed}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(RetractSpeed)}: {RetractSpeed}, {nameof(MaterialMilliliters)}: {MaterialMilliliters}, {nameof(MaterialGrams)}: {MaterialGrams}, {nameof(MaterialCost)}: {MaterialCost}, {nameof(BottomLightOffDelay)}: {BottomLightOffDelay}, {nameof(Unknown3)}: {Unknown3}, {nameof(LightPWM)}: {LightPWM}, {nameof(BottomLightPWM)}: {BottomLightPWM}, {nameof(LayerXorKey)}: {LayerXorKey}, {nameof(BottomLiftHeight2)}: {BottomLiftHeight2}, {nameof(BottomLiftSpeed2)}: {BottomLiftSpeed2}, {nameof(LiftHeight2)}: {LiftHeight2}, {nameof(LiftSpeed2)}: {LiftSpeed2}, {nameof(RetractHeight2)}: {RetractHeight2}, {nameof(RetractSpeed2)}: {RetractSpeed2}, {nameof(RestTimeAfterLift)}: {RestTimeAfterLift}, {nameof(MachineNameOffset)}: {MachineNameOffset}, {nameof(MachineNameSize)}: {MachineNameSize}, {nameof(AntiAliasFlag)}: {AntiAliasFlag}, {nameof(Padding)}: {Padding}, {nameof(PerLayerSettings)}: {PerLayerSettings}, {nameof(Unknown4)}: {Unknown4}, {nameof(Unknown5)}: {Unknown5}, {nameof(RestTimeAfterRetract)}: {RestTimeAfterRetract}, {nameof(RestTimeAfterLift2)}: {RestTimeAfterLift2}, {nameof(TransitionLayerCount)}: {TransitionLayerCount}, {nameof(BottomRetractSpeed)}: {BottomRetractSpeed}, {nameof(BottomRetractSpeed2)}: {BottomRetractSpeed2}, {nameof(Padding1)}: {Padding1}, {nameof(Four1)}: {Four1}, {nameof(Padding2)}: {Padding2}, {nameof(Four2)}: {Four2}, {nameof(RestTimeAfterRetract2)}: {RestTimeAfterRetract2}, {nameof(RestTimeAfterLift3)}: {RestTimeAfterLift3}, {nameof(RestTimeBeforeLift)}: {RestTimeBeforeLift}, {nameof(BottomRetractHeight2)}: {BottomRetractHeight2}, {nameof(Unknown6)}: {Unknown6}, {nameof(Unknown7)}: {Unknown7}, {nameof(Unknown8)}: {Unknown8}, {nameof(LastLayerIndex)}: {LastLayerIndex}, {nameof(Padding3)}: {Padding3}, {nameof(Padding4)}: {Padding4}, {nameof(Padding5)}: {Padding5}, {nameof(Padding6)}: {Padding6}, {nameof(DisclaimerOffset)}: {DisclaimerOffset}, {nameof(DisclaimerSize)}: {DisclaimerSize}, {nameof(Padding7)}: {Padding7}, {nameof(ResinParametersAddress)}: {ResinParametersAddress}, {nameof(Padding8)}: {Padding8}, {nameof(Padding9)}: {Padding9}, {nameof(MachineName)}: {MachineName}";
+            return $"{nameof(ChecksumValue)}: {ChecksumValue}, {nameof(LayerPointersOffset)}: {LayerPointersOffset}, {nameof(DisplayWidth)}: {DisplayWidth}, {nameof(DisplayHeight)}: {DisplayHeight}, {nameof(MachineZ)}: {MachineZ}, {nameof(Unknown1)}: {Unknown1}, {nameof(Unknown2)}: {Unknown2}, {nameof(TotalHeightMillimeter)}: {TotalHeightMillimeter}, {nameof(LayerHeight)}: {LayerHeight}, {nameof(ExposureTime)}: {ExposureTime}, {nameof(BottomExposureTime)}: {BottomExposureTime}, {nameof(LightOffDelay)}: {LightOffDelay}, {nameof(BottomLayerCount)}: {BottomLayerCount}, {nameof(ResolutionX)}: {ResolutionX}, {nameof(ResolutionY)}: {ResolutionY}, {nameof(LayerCount)}: {LayerCount}, {nameof(LargePreviewOffset)}: {LargePreviewOffset}, {nameof(SmallPreviewOffset)}: {SmallPreviewOffset}, {nameof(PrintTime)}: {PrintTime}, {nameof(ProjectorType)}: {ProjectorType}, {nameof(BottomLiftHeight)}: {BottomLiftHeight}, {nameof(BottomLiftSpeed)}: {BottomLiftSpeed}, {nameof(LiftHeight)}: {LiftHeight}, {nameof(LiftSpeed)}: {LiftSpeed}, {nameof(RetractSpeed)}: {RetractSpeed}, {nameof(MaterialMilliliters)}: {MaterialMilliliters}, {nameof(MaterialGrams)}: {MaterialGrams}, {nameof(MaterialCost)}: {MaterialCost}, {nameof(BottomLightOffDelay)}: {BottomLightOffDelay}, {nameof(Unknown3)}: {Unknown3}, {nameof(LightPWM)}: {LightPWM}, {nameof(BottomLightPWM)}: {BottomLightPWM}, {nameof(LayerXorKey)}: {LayerXorKey}, {nameof(BottomLiftHeight2)}: {BottomLiftHeight2}, {nameof(BottomLiftSpeed2)}: {BottomLiftSpeed2}, {nameof(LiftHeight2)}: {LiftHeight2}, {nameof(LiftSpeed2)}: {LiftSpeed2}, {nameof(RetractHeight2)}: {RetractHeight2}, {nameof(RetractSpeed2)}: {RetractSpeed2}, {nameof(RestTimeAfterLift)}: {RestTimeAfterLift}, {nameof(MachineNameOffset)}: {MachineNameOffset}, {nameof(MachineNameSize)}: {MachineNameSize}, {nameof(AntiAliasFlag)}: {AntiAliasFlag}, {nameof(Padding)}: {Padding}, {nameof(PerLayerSettings)}: {PerLayerSettings}, {nameof(ModifiedTimestampMinutes)}: {ModifiedTimestampMinutes}, {nameof(ModifiedDate)}: {ModifiedDate}, {nameof(AntiAliasLevel)}: {AntiAliasLevel}, {nameof(RestTimeAfterRetract)}: {RestTimeAfterRetract}, {nameof(RestTimeAfterLift2)}: {RestTimeAfterLift2}, {nameof(TransitionLayerCount)}: {TransitionLayerCount}, {nameof(BottomRetractSpeed)}: {BottomRetractSpeed}, {nameof(BottomRetractSpeed2)}: {BottomRetractSpeed2}, {nameof(Padding1)}: {Padding1}, {nameof(Four1)}: {Four1}, {nameof(Padding2)}: {Padding2}, {nameof(Four2)}: {Four2}, {nameof(RestTimeAfterRetract2)}: {RestTimeAfterRetract2}, {nameof(RestTimeAfterLift3)}: {RestTimeAfterLift3}, {nameof(RestTimeBeforeLift)}: {RestTimeBeforeLift}, {nameof(BottomRetractHeight2)}: {BottomRetractHeight2}, {nameof(Unknown6)}: {Unknown6}, {nameof(Unknown7)}: {Unknown7}, {nameof(Unknown8)}: {Unknown8}, {nameof(LastLayerIndex)}: {LastLayerIndex}, {nameof(Padding3)}: {Padding3}, {nameof(Padding4)}: {Padding4}, {nameof(Padding5)}: {Padding5}, {nameof(Padding6)}: {Padding6}, {nameof(DisclaimerOffset)}: {DisclaimerOffset}, {nameof(DisclaimerSize)}: {DisclaimerSize}, {nameof(Padding7)}: {Padding7}, {nameof(ResinParametersAddress)}: {ResinParametersAddress}, {nameof(Padding8)}: {Padding8}, {nameof(Padding9)}: {Padding9}, {nameof(MachineName)}: {MachineName}";
         }
     }
 
@@ -540,120 +539,9 @@ public sealed class CTBEncryptedFile : FileFormat
         [FieldOrder(3)] public uint ImageLength { get; set; }
 
 
-        public Mat Decode(byte[] rawImageData)
-        {
-            var image = new Mat(new Size((int)ResolutionX, (int)ResolutionY), DepthType.Cv8U, 3);
-            var span = image.GetDataByteSpan();
-
-            int pixel = 0;
-            for (int n = 0; n < rawImageData.Length; n++)
-            {
-                uint dot = (uint)(rawImageData[n] & 0xFF | ((rawImageData[++n] & 0xFF) << 8));
-                byte red = (byte)(((dot >> 11) & 0x1F) << 3);
-                byte green = (byte)(((dot >> 6) & 0x1F) << 3);
-                byte blue = (byte)((dot & 0x1F) << 3);
-                int repeat = 1;
-                if ((dot & 0x0020) == 0x0020)
-                {
-                    repeat += rawImageData[++n] & 0xFF | ((rawImageData[++n] & 0x0F) << 8);
-                }
-
-                for (int j = 0; j < repeat; j++)
-                {
-                    span[pixel++] = blue;
-                    span[pixel++] = green;
-                    span[pixel++] = red;
-                }
-            }
-
-            return image;
-        }
-
         public override string ToString()
         {
             return $"{nameof(ResolutionX)}: {ResolutionX}, {nameof(ResolutionY)}: {ResolutionY}, {nameof(ImageOffset)}: {ImageOffset}, {nameof(ImageLength)}: {ImageLength}";
-        }
-
-        public byte[] Encode(Mat image)
-        {
-            List<byte> rawData = new();
-            ushort color15 = 0;
-            uint rep = 0;
-
-            var span = image.GetDataByteReadOnlySpan();
-
-            void RleRGB15()
-            {
-                switch (rep)
-                {
-                    case 0:
-                        return;
-                    case 1:
-                        rawData.Add((byte)(color15 & ~REPEATRGB15MASK));
-                        rawData.Add((byte)((color15 & ~REPEATRGB15MASK) >> 8));
-                        break;
-                    case 2:
-                        for (int i = 0; i < 2; i++)
-                        {
-                            rawData.Add((byte)(color15 & ~REPEATRGB15MASK));
-                            rawData.Add((byte)((color15 & ~REPEATRGB15MASK) >> 8));
-                        }
-
-                        break;
-                    default:
-                        rawData.Add((byte)(color15 | REPEATRGB15MASK));
-                        rawData.Add((byte)((color15 | REPEATRGB15MASK) >> 8));
-                        rawData.Add((byte)((rep - 1) | 0x3000));
-                        rawData.Add((byte)(((rep - 1) | 0x3000) >> 8));
-                        break;
-                }
-            }
-
-            int pixel = 0;
-            while (pixel < span.Length)
-            {
-                byte b = span[pixel++];
-                byte g;
-                byte r;
-
-                if (image.NumberOfChannels == 1) // 8 bit safe-guard
-                {
-                    r = g = b;
-                }
-                else
-                {
-                    g = span[pixel++];
-                    r = span[pixel++];
-                }
-
-                if (image.NumberOfChannels == 4) pixel++; // skip alpha
-
-                var ncolor15 =
-                    // bgr
-                    (b >> 3) | ((g >> 2) << 5) | ((r >> 3) << 11);
-
-                if (ncolor15 == color15)
-                {
-                    rep++;
-                    if (rep == RLE16EncodingLimit)
-                    {
-                        RleRGB15();
-                        rep = 0;
-                    }
-                }
-                else
-                {
-                    RleRGB15();
-                    color15 = (ushort)ncolor15;
-                    rep = 1;
-                }
-            }
-
-            RleRGB15();
-
-            ImageLength = (uint)rawData.Count;
-
-            return rawData.ToArray();
         }
     }
     #endregion
@@ -699,61 +587,125 @@ public sealed class CTBEncryptedFile : FileFormat
     public LayerPointer[] LayersPointer { get; private set; } = Array.Empty<LayerPointer>();
     public LayerDef[] LayersDefinition { get; private set; } = Array.Empty<LayerDef>();
 
-    public override PrintParameterModifier[] PrintParameterModifiers { get; } = {
-        PrintParameterModifier.BottomLayerCount,
-        PrintParameterModifier.TransitionLayerCount,
+    public override PrintParameterModifier[] PrintParameterModifiers
+    {
+        get
+        {
+            if (HaveTiltingVat)
+            {
+                return new[]
+                {
+                    PrintParameterModifier.BottomLayerCount,
+                    PrintParameterModifier.TransitionLayerCount,
 
-        PrintParameterModifier.BottomLightOffDelay,
-        PrintParameterModifier.LightOffDelay,
+                    PrintParameterModifier.BottomLightOffDelay,
+                    PrintParameterModifier.LightOffDelay,
 
-        PrintParameterModifier.BottomWaitTimeBeforeCure,
-        PrintParameterModifier.WaitTimeBeforeCure,
+                    PrintParameterModifier.BottomWaitTimeBeforeCure,
+                    PrintParameterModifier.WaitTimeBeforeCure,
 
-        PrintParameterModifier.BottomExposureTime,
-        PrintParameterModifier.ExposureTime,
+                    PrintParameterModifier.BottomExposureTime,
+                    PrintParameterModifier.ExposureTime,
 
-        PrintParameterModifier.BottomWaitTimeAfterCure,
-        PrintParameterModifier.WaitTimeAfterCure,
+                    PrintParameterModifier.BottomWaitTimeAfterCure,
+                    PrintParameterModifier.WaitTimeAfterCure,
 
-        PrintParameterModifier.BottomLiftHeight,
-        PrintParameterModifier.BottomLiftSpeed,
-        PrintParameterModifier.LiftHeight,
-        PrintParameterModifier.LiftSpeed,
-        PrintParameterModifier.BottomLiftHeight2,
-        PrintParameterModifier.BottomLiftSpeed2,
-        PrintParameterModifier.LiftHeight2,
-        PrintParameterModifier.LiftSpeed2,
+                    PrintParameterModifier.BottomWaitTimeAfterLift,
+                    PrintParameterModifier.WaitTimeAfterLift,
 
-        PrintParameterModifier.BottomWaitTimeAfterLift,
-        PrintParameterModifier.WaitTimeAfterLift,
+                    PrintParameterModifier.BottomLightPWM,
+                    PrintParameterModifier.LightPWM
+                };
+            }
 
-        PrintParameterModifier.BottomRetractSpeed,
-        PrintParameterModifier.RetractSpeed,
-        PrintParameterModifier.BottomRetractHeight2,
-        PrintParameterModifier.BottomRetractSpeed2,
-        PrintParameterModifier.RetractHeight2,
-        PrintParameterModifier.RetractSpeed2,
+            return new[]
+            {
+                PrintParameterModifier.BottomLayerCount,
+                PrintParameterModifier.TransitionLayerCount,
 
-        PrintParameterModifier.BottomLightPWM,
-        PrintParameterModifier.LightPWM
-    };
+                PrintParameterModifier.BottomLightOffDelay,
+                PrintParameterModifier.LightOffDelay,
+
+                PrintParameterModifier.BottomWaitTimeBeforeCure,
+                PrintParameterModifier.WaitTimeBeforeCure,
+
+                PrintParameterModifier.BottomExposureTime,
+                PrintParameterModifier.ExposureTime,
+
+                PrintParameterModifier.BottomWaitTimeAfterCure,
+                PrintParameterModifier.WaitTimeAfterCure,
+
+                PrintParameterModifier.BottomLiftHeight,
+                PrintParameterModifier.BottomLiftSpeed,
+                PrintParameterModifier.LiftHeight,
+                PrintParameterModifier.LiftSpeed,
+                PrintParameterModifier.BottomLiftHeight2,
+                PrintParameterModifier.BottomLiftSpeed2,
+                PrintParameterModifier.LiftHeight2,
+                PrintParameterModifier.LiftSpeed2,
+
+                PrintParameterModifier.BottomWaitTimeAfterLift,
+                PrintParameterModifier.WaitTimeAfterLift,
+
+                PrintParameterModifier.BottomRetractSpeed,
+                PrintParameterModifier.RetractSpeed,
+                PrintParameterModifier.BottomRetractHeight2,
+                PrintParameterModifier.BottomRetractSpeed2,
+                PrintParameterModifier.RetractHeight2,
+                PrintParameterModifier.RetractSpeed2,
+
+                PrintParameterModifier.BottomLightPWM,
+                PrintParameterModifier.LightPWM
+            };
+        }
+    }
         
-    public override PrintParameterModifier[] PrintParameterPerLayerModifiers { get; } = {
-        PrintParameterModifier.PositionZ,
-        PrintParameterModifier.LightOffDelay,
-        PrintParameterModifier.WaitTimeBeforeCure,
-        PrintParameterModifier.ExposureTime,
-        PrintParameterModifier.WaitTimeAfterCure,
-        PrintParameterModifier.LiftHeight,
-        PrintParameterModifier.LiftSpeed,
-        PrintParameterModifier.LiftHeight2,
-        PrintParameterModifier.LiftSpeed2,
-        PrintParameterModifier.WaitTimeAfterLift,
-        PrintParameterModifier.RetractSpeed,
-        PrintParameterModifier.RetractHeight2,
-        PrintParameterModifier.RetractSpeed2,
-        PrintParameterModifier.LightPWM
-    };
+    public override PrintParameterModifier[] PrintParameterPerLayerModifiers
+    {
+        get
+        {
+            if (HaveTiltingVat)
+            {
+                return new[]
+                {
+                    PrintParameterModifier.PositionZ,
+                    PrintParameterModifier.LightOffDelay,
+                    PrintParameterModifier.WaitTimeBeforeCure,
+                    PrintParameterModifier.ExposureTime,
+                    PrintParameterModifier.WaitTimeAfterCure,
+                    PrintParameterModifier.WaitTimeAfterLift,
+                    PrintParameterModifier.LightPWM
+                };
+            }
+
+            return new[]
+            {
+                PrintParameterModifier.PositionZ,
+                PrintParameterModifier.LightOffDelay,
+                PrintParameterModifier.WaitTimeBeforeCure,
+                PrintParameterModifier.ExposureTime,
+                PrintParameterModifier.WaitTimeAfterCure,
+                PrintParameterModifier.LiftHeight,
+                PrintParameterModifier.LiftSpeed,
+                PrintParameterModifier.LiftHeight2,
+                PrintParameterModifier.LiftSpeed2,
+                PrintParameterModifier.WaitTimeAfterLift,
+                PrintParameterModifier.RetractSpeed,
+                PrintParameterModifier.RetractHeight2,
+                PrintParameterModifier.RetractSpeed2,
+                PrintParameterModifier.LightPWM
+            };
+        }
+    }
+
+    public override bool HaveTiltingVat
+    {
+        get
+        {
+            if (MachineName.Contains("Saturn 4 Ultra", StringComparison.OrdinalIgnoreCase)) return true;
+            return LayerHeight == LiftHeight && LiftHeight < 0.5 && LiftSpeed < 0.5;
+        }
+    }
 
     public override uint ResolutionX
     {
@@ -775,8 +727,8 @@ public sealed class CTBEncryptedFile : FileFormat
 
     public override byte AntiAliasing
     {
-        get => 8; 
-        set { }
+        get => (byte)Settings.AntiAliasLevel;
+        set => base.AntiAliasing = (byte)(Settings.AntiAliasLevel = Math.Clamp(value, 1u, 16u));
     }
 
     public override float DisplayWidth
@@ -806,18 +758,6 @@ public sealed class CTBEncryptedFile : FileFormat
             RaisePropertyChanged();
         }
     }
-
-    /* TODO: Find AntiAliasLevel in file */
-    /*
-    public override byte AntiAliasing
-    {
-        get => (byte)(Settings.AntiAliasLevel);
-        set
-        {
-            Settings.AntiAliasLevel = value;
-            RaisePropertyChanged();
-        }
-    }*/
 
     public override float PrintHeight
     {
@@ -1205,7 +1145,7 @@ public sealed class CTBEncryptedFile : FileFormat
             byte[] rawImageData = new byte[Previews[i].ImageLength];
             inputFile.Read(rawImageData, 0, (int)Previews[i].ImageLength);
 
-            Thumbnails.Add(Previews[i].Decode(rawImageData));
+            Thumbnails.Add(DecodeChituImageRGB15Rle(rawImageData, Previews[i].ResolutionX, Previews[i].ResolutionY));
             progress++;
         }
 
@@ -1361,6 +1301,21 @@ public sealed class CTBEncryptedFile : FileFormat
         Settings.PerLayerSettings = AllLayersAreUsingGlobalParameters
             ? PERLAYER_SETTINGS_DISALLOW
             : PERLAYER_SETTINGS_ALLOW;
+
+        if (HaveTiltingVat)
+        {
+            BottomLiftHeightTotal = LayerHeight;
+            LiftHeightTotal = LayerHeight;
+            if (BottomLiftSpeed > 0.5 || LiftSpeed > 0.5 || BottomRetractSpeed > 0.5 || RetractSpeed > 0.5)
+            {
+                BottomLiftSpeed = 0.05f;
+                LiftSpeed = 0.05f;
+                BottomRetractSpeed = 0.05f;
+                RetractSpeed = 0.05f;
+            }
+        }
+
+        Settings.ModifiedTimestampMinutes = (uint)DateTimeExtensions.TimestampMinutes;
     }
 
     protected override void EncodeInternally(OperationProgress progress)
@@ -1387,15 +1342,15 @@ public sealed class CTBEncryptedFile : FileFormat
             var image = thumbnails[i];
             if (image is null) continue;
 
+            var previewBytes = EncodeChituImageRGB15Rle(image);
+            if (previewBytes.Length == 0) continue;
+
             Preview preview = new()
             {
                 ResolutionX = (uint)image.Width,
                 ResolutionY = (uint)image.Height,
+                ImageLength = (uint)previewBytes.Length
             };
-
-            var previewBytes = preview.Encode(image);
-
-            if (previewBytes.Length == 0) continue;
 
             if (i == 0)
             {

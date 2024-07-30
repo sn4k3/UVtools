@@ -1,4 +1,6 @@
 ﻿using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Threading;
 using Projektanker.Icons.Avalonia;
 using Projektanker.Icons.Avalonia.FontAwesome;
 using Projektanker.Icons.Avalonia.MaterialDesign;
@@ -6,6 +8,7 @@ using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.Threading.Tasks;
+using Avalonia.Dialogs;
 using UVtools.Core;
 using UVtools.Core.SystemOS;
 
@@ -65,6 +68,7 @@ public static class Program
                     break;
             }
         }
+
 
         /*using var mat = CvInvoke.Imread(@"D:\layer0.png", ImreadModes.Grayscale);
         var contours = mat.FindContours(out var hierarchy, RetrType.Tree, ChainApproxMethod.ChainApproxTc89Kcos);
@@ -166,8 +170,9 @@ public static class Program
         // Add the event handler for handling non-UI thread exceptions to the event.
         AppDomain.CurrentDomain.UnhandledException += (sender, e) => HandleUnhandledException("Non-UI", (Exception)e.ExceptionObject);
         TaskScheduler.UnobservedTaskException += (sender, e) => HandleUnhandledException("Task", e.Exception);
+        //Dispatcher.UIThread.UnhandledException += (sender, e) => HandleUnhandledException("Dispatcher", e.Exception);
         //AppDomain.CurrentDomain.FirstChanceException += CurrentDomainOnFirstChanceException;
-
+        
         try
         {
             BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);

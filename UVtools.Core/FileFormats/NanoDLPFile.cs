@@ -142,7 +142,7 @@ public sealed class NanoDLPFile : FileFormat
     public sealed class NanoDLPSlicerManifest
     {
         public string Type { get; set; } = "stl";
-
+        public string URL { get; set; } = string.Empty;
         public uint PWidth { get; set; }
         public uint PHeight { get; set; }
         public float ScaleFactor { get; set; }
@@ -151,9 +151,9 @@ public sealed class NanoDLPFile : FileFormat
         public float SupportDepth { get; set; } = DefaultLayerHeight;
         public float SupportLayerNumber { get; set; } = DefaultBottomLayerCount;
         public float Thickness { get; set; } = DefaultLayerHeight;
-        public int XOffset { get; set; }
-        public int YOffset { get; set; } 
-        public int ZOffset { get; set; } 
+        public float XOffset { get; set; }
+        public float YOffset { get; set; } 
+        public float ZOffset { get; set; } 
         public float XPixelSize { get; set; } 
         public float YPixelSize { get; set; } 
         public string? Mask { get; set; } 
@@ -513,7 +513,7 @@ public sealed class NanoDLPFile : FileFormat
         set
         {
             base.ResolutionX = SlicerManifest.PWidth = (ushort)value;
-            SlicerManifest.XOffset = (int)(value / 2);
+            SlicerManifest.XOffset = value / 2f;
             SlicerManifest.XPixelSize = PixelWidth;
         }
     }
@@ -524,7 +524,7 @@ public sealed class NanoDLPFile : FileFormat
         set
         {
             base.ResolutionY = SlicerManifest.PHeight = (ushort)value;
-            SlicerManifest.YOffset = (int)(value / 2);
+            SlicerManifest.YOffset = value / 2f;
             SlicerManifest.YPixelSize = PixelHeight;
         }
     }
@@ -1144,9 +1144,8 @@ public sealed class NanoDLPFile : FileFormat
         if (DecodeType == FileDecodeType.Full)
         {
             LayerImageFormat = FetchImageFormat(inputFile, ImageFormat.Png24RgbAA);
+            DecodeLayersFromZip(inputFile, IndexStartNumber.One, progress);
         }
-
-        DecodeLayersFromZip(inputFile, IndexStartNumber.One, progress);
     }
 
     protected override void PartialSaveInternally(OperationProgress progress)

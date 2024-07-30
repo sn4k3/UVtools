@@ -372,8 +372,16 @@ public sealed class ChituboxZipFile : FileFormat
 
         try
         {
-            var zip = ZipFile.Open(fileFullPath!, ZipArchiveMode.Read);
-            if (zip.Entries.Any(entry => entry.Name.EndsWith(".gcode"))) return true;
+            using var zip = ZipFile.Open(fileFullPath!, ZipArchiveMode.Read);
+
+            var gcodeFound = false;
+            foreach (var entry in zip.Entries)
+            {
+                if (entry.Name.EndsWith(KlipperFile.KlipperFileIdentifier)) return false;
+                if (entry.Name.EndsWith(".gcode")) gcodeFound = true;
+            }
+
+            return gcodeFound;
         }
         catch (Exception e)
         {

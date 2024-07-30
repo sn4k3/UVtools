@@ -31,6 +31,17 @@ public enum IndexStartNumber : byte
     One
 }
 
+/// <summary>
+/// Gets the possible layer groups in the file
+/// </summary>
+public enum LayerGroup : byte
+{
+    [Description("Bottom layers")]
+    Bottom,
+    [Description("Normal layers")]
+    Normal,
+}
+
 public enum LayerRangeSelection : byte
 {
     None,

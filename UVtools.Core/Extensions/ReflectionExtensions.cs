@@ -7,9 +7,11 @@
  */
 
 using System;
+using System.Drawing;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using System.Text.RegularExpressions;
 
 namespace UVtools.Core.Extensions;
 
@@ -128,6 +130,112 @@ public static class ReflectionExtensions
         {
             attribute.SetValue(obj, nuint.Parse(value, CultureInfo.InvariantCulture));
             return true;
+        }
+
+        if (attribute.PropertyType == typeof(Point))
+        {
+            var match = Regex.Match(value, string.Format("X={0},\\s?Y={0}", @"(\d+)"));
+            if (match is { Success: true, Groups.Count: >= 3 })
+            {
+                if (int.TryParse(match.Groups[1].Value, out var x)
+                    && int.TryParse(match.Groups[2].Value, out var y)
+                   )
+                {
+                    attribute.SetValue(obj, new Point(x, y));
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        if (attribute.PropertyType == typeof(PointF))
+        {
+            var match = Regex.Match(value, string.Format("X={0},\\s?Y={0}", "([+-]?([0-9]*[.])?[0-9]+)"));
+            if (match is { Success: true, Groups.Count: >= 3 })
+            {
+                if (float.TryParse(match.Groups[1].Value, out var x)
+                    && float.TryParse(match.Groups[2].Value, out var y)
+                   )
+                {
+                    attribute.SetValue(obj, new PointF(x, y));
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        if (attribute.PropertyType == typeof(Size))
+        {
+            var match = Regex.Match(value, string.Format("Width={0},\\s?Height={0}", @"(\d+)"));
+            if (match is { Success: true, Groups.Count: >= 3 })
+            {
+                if (int.TryParse(match.Groups[1].Value, out var width)
+                    && int.TryParse(match.Groups[2].Value, out var height)
+                   )
+                {
+                    attribute.SetValue(obj, new Size(width, height));
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        if (attribute.PropertyType == typeof(SizeF))
+        {
+            var match = Regex.Match(value, string.Format("Width={0},\\s?Height={0}", "([+-]?([0-9]*[.])?[0-9]+)"));
+            if (match is { Success: true, Groups.Count: >= 3 })
+            {
+                if (float.TryParse(match.Groups[1].Value, out var width)
+                    && float.TryParse(match.Groups[2].Value, out var height)
+                   )
+                {
+                    attribute.SetValue(obj, new SizeF(width, height));
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        if (attribute.PropertyType == typeof(Rectangle))
+        {
+            var match = Regex.Match(value, string.Format("X={0},\\s?Y={0},\\s?Width={0},\\s?Height={0}", @"(\d+)"));
+            if (match is { Success: true, Groups.Count: >= 5 })
+            {
+                if (int.TryParse(match.Groups[1].Value, out var x)
+                    && int.TryParse(match.Groups[2].Value, out var y)
+                    && int.TryParse(match.Groups[3].Value, out var width)
+                    && int.TryParse(match.Groups[4].Value, out var height)
+                   )
+                {
+                    attribute.SetValue(obj, new Rectangle(x, y, width, height));
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        if (attribute.PropertyType == typeof(RectangleF))
+        {
+            var match = Regex.Match(value, string.Format("X={0},\\s?Y={0},\\s?Width={0},\\s?Height={0}", "([+-]?([0-9]*[.])?[0-9]+)"));
+            if (match is { Success: true, Groups.Count: >= 5 })
+            {
+                if (float.TryParse(match.Groups[1].Value, out var x)
+                    && float.TryParse(match.Groups[2].Value, out var y)
+                    && float.TryParse(match.Groups[3].Value, out var width)
+                    && float.TryParse(match.Groups[4].Value, out var height)
+                   )
+                {
+                    attribute.SetValue(obj, new RectangleF(x, y, width, height));
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         throw new Exception($"Data type '{attribute.PropertyType.Name}' not recognized nor implemented.");

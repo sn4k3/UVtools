@@ -5,7 +5,6 @@
  *  Everyone is permitted to copy and distribute verbatim copies
  *  of this license document, but changing it is not allowed.
  */
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Emgu.CV;
@@ -425,11 +424,10 @@ public partial class MainWindow
         if (!IsFileLoaded) return;
         var layer = LayerCache.Layer!;
 
-        CurrentLayerProperties.Add(new ValueDescription($"{layer.Index}", nameof(layer.Index)));
+        CurrentLayerProperties.Add(new ValueDescription($"{layer.Index}{(layer.IsModified ? " (Modified)" : string.Empty)}", nameof(layer.Index)));
         CurrentLayerProperties.Add(new ValueDescription($"{Layer.ShowHeight(layer.LayerHeight)}mm", nameof(layer.LayerHeight)));
         CurrentLayerProperties.Add(new ValueDescription($"{Layer.ShowHeight(layer.PositionZ)}mm", nameof(layer.PositionZ)));
         CurrentLayerProperties.Add(new ValueDescription(layer.IsBottomLayer.ToString(), nameof(layer.IsBottomLayer)));
-        CurrentLayerProperties.Add(new ValueDescription(layer.IsModified.ToString(), nameof(layer.IsModified)));
 
         if (SlicerFile!.CanUseExposureTime)
             CurrentLayerProperties.Add(new ValueDescription($"{layer.ExposureTime:F2}s", nameof(layer.ExposureTime)));
@@ -437,14 +435,30 @@ public partial class MainWindow
         if (SlicerFile.SupportPerLayerSettings)
         {
             if (SlicerFile.CanUseLayerLiftHeight)
-                CurrentLayerProperties.Add(new ValueDescription($"{layer.LiftHeight.ToString(CultureInfo.InvariantCulture)}mm @ {layer.LiftSpeed.ToString(CultureInfo.InvariantCulture)}mm/min", nameof(layer.LiftHeight)));
+            { 
+                var value = $"{layer.LiftHeight.ToString(CultureInfo.InvariantCulture)}mm @ {layer.LiftSpeed.ToString(CultureInfo.InvariantCulture)}mm/min";
+                if (SlicerFile.CanUseLayerLiftAcceleration) value += $" ({layer.LiftAcceleration.ToString(CultureInfo.InvariantCulture)}mm/s²)";
+                CurrentLayerProperties.Add(new ValueDescription(value, nameof(layer.LiftHeight)));
+            }
             if (SlicerFile.CanUseLayerLiftHeight2)
-                CurrentLayerProperties.Add(new ValueDescription($"{layer.LiftHeight2.ToString(CultureInfo.InvariantCulture)}mm @ {layer.LiftSpeed2.ToString(CultureInfo.InvariantCulture)}mm/min", nameof(layer.LiftHeight2)));
+            {
+                var value = $"{layer.LiftHeight2.ToString(CultureInfo.InvariantCulture)}mm @ {layer.LiftSpeed2.ToString(CultureInfo.InvariantCulture)}mm/min";
+                if (SlicerFile.CanUseLayerLiftAcceleration2) value += $" ({layer.LiftAcceleration2.ToString(CultureInfo.InvariantCulture)}mm/s²)";
+                CurrentLayerProperties.Add(new ValueDescription(value, nameof(layer.LiftHeight2)));
+            }
 
             if (SlicerFile.CanUseLayerRetractSpeed)
-                CurrentLayerProperties.Add(new ValueDescription($"{layer.RetractHeight.ToString(CultureInfo.InvariantCulture)}mm @ {layer.RetractSpeed}mm/min", nameof(layer.RetractHeight)));
+            {
+                var value = $"{layer.RetractHeight.ToString(CultureInfo.InvariantCulture)}mm @ {layer.RetractSpeed.ToString(CultureInfo.InvariantCulture)}mm/min";
+                if (SlicerFile.CanUseLayerRetractAcceleration) value += $" ({layer.RetractAcceleration.ToString(CultureInfo.InvariantCulture)}mm/s²)";
+                CurrentLayerProperties.Add(new ValueDescription(value, nameof(layer.RetractHeight)));
+            }
             if (SlicerFile.CanUseLayerRetractHeight2)
-                CurrentLayerProperties.Add(new ValueDescription($"{layer.RetractHeight2.ToString(CultureInfo.InvariantCulture)}mm @ {layer.RetractSpeed2}mm/min", nameof(layer.RetractHeight2)));
+            {
+                var value = $"{layer.RetractHeight2.ToString(CultureInfo.InvariantCulture)}mm @ {layer.RetractSpeed2.ToString(CultureInfo.InvariantCulture)}mm/min";
+                if (SlicerFile.CanUseLayerRetractAcceleration2) value += $" ({layer.RetractAcceleration2.ToString(CultureInfo.InvariantCulture)}mm/s²)";
+                CurrentLayerProperties.Add(new ValueDescription(value, nameof(layer.RetractHeight2)));
+            }
 
             if (SlicerFile.CanUseLayerLightOffDelay)
                 CurrentLayerProperties.Add(new ValueDescription($"{layer.LightOffDelay}s", nameof(layer.LightOffDelay)));
@@ -454,6 +468,17 @@ public partial class MainWindow
 
             if (SlicerFile.CanUseLayerLightPWM)
                 CurrentLayerProperties.Add(new ValueDescription(layer.LightPWM.ToString(), nameof(layer.LightPWM)));
+
+            if (SlicerFile.CanUseLayerPause || SlicerFile.CanUseLayerChangeResin)
+            {
+                var value = (layer.Pause | layer.ChangeResin).ToString();
+                if (layer.ChangeResin)
+                {
+                    value += " (Change resin)";
+                }
+
+                CurrentLayerProperties.Add(new ValueDescription(value, nameof(layer.Pause)));
+            }
         }
         var materialMillilitersPercent = layer.MaterialMillilitersPercent;
         if (layer.MaterialMilliliters > 0 && !float.IsNaN(materialMillilitersPercent))

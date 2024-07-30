@@ -185,12 +185,14 @@ public class WindowEx : Window, INotifyPropertyChanged
 
     public void OpenWebsite(object url)
     {
-        SystemAware.OpenBrowser((string)url);
+        GetTopLevel(this)!.Launcher.LaunchUriAsync(new Uri(url.ToString()!));
+        //SystemAware.OpenBrowser((string)url);
     }
 
     public void OpenWebsite(string url)
     {
-        SystemAware.OpenBrowser(url);
+        GetTopLevel(this)!.Launcher.LaunchUriAsync(new Uri(url));
+        //SystemAware.OpenBrowser(url);
     }
 
     public void OpenContextMenu(object name) => OpenContextMenu(name.ToString()!);

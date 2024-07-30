@@ -22,17 +22,21 @@ public class GCodeLayer
     private float? _waitTimeAfterCure;
     private float? _liftHeight;
     private float? _liftSpeed;
+    private float _liftAcceleration;
     private float? _liftHeight2;
     private float? _liftSpeed2;
+    private float _liftAcceleration2;
     private float? _waitTimeAfterLift;
     private float? _retractSpeed;
+    private float _retractAcceleration;
     private float? _retractHeight2;
     private float? _retractSpeed2;
+    private float _retractAcceleration2;
 
     public bool IsValid => LayerIndex.HasValue;
 
     public FileFormat SlicerFile { get; }
-    public List<(float Pos, float Speed)> Movements = new();
+    public List<(float Pos, float Speed, float Acceleration)> Movements = new();
     public uint? LayerIndex { get; set; }
 
     public float? PositionZ
@@ -75,6 +79,12 @@ public class GCodeLayer
         set => _liftSpeed = value is null ? null : (float)Math.Round(value.Value, 2);
     }
 
+    public float LiftAcceleration
+    {
+        get => _liftAcceleration;
+        set => _liftAcceleration = (float)Math.Round(Math.Max(value, 0), 2);
+    }
+
     public float LiftHeightTotal => Layer.RoundHeight((LiftHeight ?? 0) + (LiftHeight2 ?? 0));
 
     public float? LiftHeight2
@@ -89,6 +99,12 @@ public class GCodeLayer
         set => _liftSpeed2 = value is null ? null : (float)Math.Round(value.Value, 2);
     }
 
+    public float LiftAcceleration2
+    {
+        get => _liftAcceleration2;
+        set => _liftAcceleration2 = (float)Math.Round(Math.Max(value, 0), 2);
+    }
+
     public float? WaitTimeAfterLift
     {
         get => _waitTimeAfterLift;
@@ -99,6 +115,11 @@ public class GCodeLayer
     {
         get => _retractSpeed;
         set => _retractSpeed = value is null ? null : (float)Math.Round(value.Value, 2);
+    }
+    public float RetractAcceleration
+    {
+        get => _retractAcceleration;
+        set => _retractAcceleration = (float)Math.Round(Math.Max(value, 0), 2);
     }
 
     public float? RetractHeight2
@@ -113,7 +134,15 @@ public class GCodeLayer
         set => _retractSpeed2 = value is null ? null : (float)Math.Round(value.Value, 2);
     }
 
+    public float RetractAcceleration2
+    {
+        get => _retractAcceleration2;
+        set => _retractAcceleration2 = (float)Math.Round(Math.Max(value, 0), 2);
+    }
+
     public byte? LightPWM { get; set; }
+    public bool Pause { get; set; }
+    public bool ChangeResin { get; set; }
 
     public bool IsExposing => LightPWM.HasValue && !IsAfterLightOff;
     public bool IsExposed => LightPWM.HasValue && IsAfterLightOff;
@@ -146,6 +175,8 @@ public class GCodeLayer
         RetractHeight2 = null;
         RetractSpeed2 = null;
         LightPWM = null;
+        Pause = false;
+        ChangeResin = false;
         LightOffCount = 0;
     }
 
@@ -167,7 +198,7 @@ public class GCodeLayer
 
         for (int i = 0; i < Movements.Count; i++)
         {
-            var (pos, speed) = Movements[i];
+            var (pos, speed, acceleration) = Movements[i];
             float partialPositionZ;
             switch (positionType)
             {
@@ -199,6 +230,7 @@ public class GCodeLayer
                 if (LiftHeight.HasValue && partialPositionZ < 0) 
                 {
                     RetractSpeed = speed; // A lift exists, and its descending, set to retract speed of this move
+                    RetractAcceleration = acceleration;
                 }
                 break;
             }
@@ -211,6 +243,7 @@ public class GCodeLayer
                 LiftHeight ??= 0;
                 LiftHeight = Math.Min(LiftHeight.Value, -currentZ);
                 LiftSpeed = speed;
+                LiftAcceleration = acceleration;
                 continue;
             }
                 
@@ -221,6 +254,7 @@ public class GCodeLayer
                 {
                     LiftHeight = height;
                     LiftSpeed = speed;
+                    LiftAcceleration = acceleration;
                     continue;
                 }
 
@@ -228,21 +262,24 @@ public class GCodeLayer
                 LiftHeight2 ??= 0;
                 LiftHeight2 += height;
                 LiftSpeed2 = speed;
+                LiftAcceleration2 = acceleration;
 
                 continue;
             }
 
             if(!LiftHeight.HasValue) continue; // Fail-safe: Retract without a lift? Skip
 
-            // Is a extra retract (2)
+            // Is an extra retract (2)
             RetractHeight2 ??= 0;
             RetractHeight2 += height;
             RetractSpeed2 = speed;
+            RetractAcceleration2 = acceleration;
         }
 
         if (Movements.Count == 1) // Only 1 move, this is the PositionZ only
         {
             LiftSpeed = Movements[0].Speed;
+            LiftAcceleration = Movements[0].Acceleration;
             return;
         }
 
@@ -261,15 +298,16 @@ public class GCodeLayer
             }
         }
 
-        if (PositionZ.HasValue && LiftHeight.HasValue && !IsExposed) 
+        /*if (PositionZ.HasValue && LiftHeight.HasValue && !IsExposed) 
         {
                 
-        }
+        }*/
 
         if (RetractHeight2.HasValue) // Need to fix the purpose of this value
         {
             RetractHeight2 = Layer.RoundHeight(LiftHeightTotal - RetractHeight2.Value);
             (RetractSpeed, RetractSpeed2) = (RetractSpeed2, RetractSpeed);
+            (RetractAcceleration, RetractAcceleration2) = (RetractAcceleration2, RetractAcceleration);
         }
 
         if (LiftHeight.HasValue && RetractHeight2.HasValue) // Sanitize RetractHeight2 value
@@ -294,13 +332,19 @@ public class GCodeLayer
         layer.WaitTimeAfterCure = WaitTimeAfterCure ?? 0;
         layer.LiftHeight = LiftHeight ?? 0;
         layer.LiftSpeed = LiftSpeed ?? SlicerFile.GetBottomOrNormalValue(layer, SlicerFile.BottomLiftSpeed, SlicerFile.LiftSpeed);
+        layer.LiftAcceleration = LiftAcceleration;
         layer.LiftHeight2 = LiftHeight2 ?? 0;
         layer.LiftSpeed2 = LiftSpeed2 ?? SlicerFile.GetBottomOrNormalValue(layer, SlicerFile.BottomLiftSpeed2, SlicerFile.LiftSpeed2);
+        layer.LiftAcceleration2 = LiftAcceleration2;
         layer.WaitTimeAfterLift = WaitTimeAfterLift ?? 0;
         layer.RetractSpeed = RetractSpeed ?? SlicerFile.GetBottomOrNormalValue(layer, SlicerFile.BottomRetractSpeed, SlicerFile.RetractSpeed);
+        layer.RetractAcceleration = RetractAcceleration;
         layer.RetractHeight2 = RetractHeight2 ?? 0;
         layer.RetractSpeed2 = RetractSpeed2 ?? SlicerFile.GetBottomOrNormalValue(layer, SlicerFile.BottomRetractSpeed2, SlicerFile.RetractSpeed2);
+        layer.RetractAcceleration2 = RetractAcceleration2;
         layer.LightPWM = LightPWM ?? 0;//SlicerFile.GetInitialLayerValueOrNormal(layerIndex, SlicerFile.BottomLightPWM, SlicerFile.LightPWM);
+        layer.Pause = Pause;
+        layer.ChangeResin = ChangeResin;
 
         if (SlicerFile.GCode!.CommandWaitSyncDelay.Enabled && !WaitSyncDelayDetected) // Dirty fix of the value
         {

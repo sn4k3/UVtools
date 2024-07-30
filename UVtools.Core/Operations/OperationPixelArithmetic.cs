@@ -562,6 +562,7 @@ public class OperationPixelArithmetic : Operation
             _patternAlternate ??= _pattern;
 
             var target = new Mat(GetMatSizeCropped(), DepthType.Cv8U, 1);
+            if (target.IsEmpty) return false;
             patternMat = target.NewZeros();
             patternAlternateMat = target.NewZeros();
 
@@ -726,13 +727,28 @@ public class OperationPixelArithmetic : Operation
                         CvInvoke.Add(target, tempMat, target, applyMask);
                         break;
                     case PixelArithmeticOperators.Subtract:
+                        if (layer.IsEmpty)
+                        {
+                            progress.LockAndIncrement();
+                            return;
+                        }
                         CvInvoke.Subtract(target, tempMat, target, applyMask);
                         break;
                     case PixelArithmeticOperators.Multiply:
+                        if (layer.IsEmpty)
+                        {
+                            progress.LockAndIncrement();
+                            return;
+                        }
                         CvInvoke.Multiply(target, tempMat, target, EmguExtensions.ByteScale);
                         if (_applyMethod != PixelArithmeticApplyMethod.All) ApplyMask(originalRoi, target, applyMask);
                         break;
                     case PixelArithmeticOperators.Divide:
+                        if (layer.IsEmpty)
+                        {
+                            progress.LockAndIncrement();
+                            return;
+                        }
                         CvInvoke.Divide(target, tempMat, target);
                         if (_applyMethod != PixelArithmeticApplyMethod.All) ApplyMask(originalRoi, target, applyMask);
                         break;
@@ -741,6 +757,11 @@ public class OperationPixelArithmetic : Operation
                         if(!_affectBackPixels) ApplyMask(original, mat, original);
                         break;*/
                     case PixelArithmeticOperators.Minimum:
+                        if (layer.IsEmpty)
+                        {
+                            progress.LockAndIncrement();
+                            return;
+                        }
                         CvInvoke.Min(target, tempMat, target);
                         if (_applyMethod != PixelArithmeticApplyMethod.All) ApplyMask(originalRoi, target, applyMask);
                         break;
@@ -752,6 +773,11 @@ public class OperationPixelArithmetic : Operation
                         CvInvoke.BitwiseNot(target, target, applyMask);
                         break;
                     case PixelArithmeticOperators.BitwiseAnd:
+                        if (layer.IsEmpty)
+                        {
+                            progress.LockAndIncrement();
+                            return;
+                        }
                         CvInvoke.BitwiseAnd(target, tempMat, target, applyMask);
                         break;
                     case PixelArithmeticOperators.BitwiseOr:
@@ -761,6 +787,11 @@ public class OperationPixelArithmetic : Operation
                         CvInvoke.BitwiseXor(target, tempMat, target, applyMask);
                         break;
                     case PixelArithmeticOperators.AbsDiff:
+                        if (layer.IsEmpty)
+                        {
+                            progress.LockAndIncrement();
+                            return;
+                        }
                         CvInvoke.AbsDiff(target, tempMat, target);
                         if (_applyMethod != PixelArithmeticApplyMethod.All) ApplyMask(originalRoi, target, applyMask);
                         break;
@@ -771,8 +802,12 @@ public class OperationPixelArithmetic : Operation
                         if (_applyMethod != PixelArithmeticApplyMethod.All) ApplyMask(originalRoi, target, applyMask);
                         break;
                     case PixelArithmeticOperators.Corrode:
+                        if (layer.IsEmpty)
+                        {
+                            progress.LockAndIncrement();
+                            return;
+                        }
                         var span = mat.GetDataByteSpan();
-                        var random = new Random();
 
                         var bounds = HaveROI ? ROI : layer.BoundingRectangle;
 
@@ -794,7 +829,7 @@ public class OperationPixelArithmetic : Operation
 
                             for (ushort i = 0; i < _noisePasses; i++)
                             {
-                                brightness = (byte)Math.Clamp(random.Next(_noiseMinOffset, _noiseMaxOffset + 1) + brightness, byte.MinValue, byte.MaxValue);
+                                brightness = (byte)Math.Clamp(Random.Shared.Next(_noiseMinOffset, _noiseMaxOffset + 1) + brightness, byte.MinValue, byte.MaxValue);
                             }
 
                             //byte brightness = (byte)Math.Clamp(RandomNumberGenerator.GetInt32(_noiseMinOffset, _noiseMaxOffset + 1) + zoneBrightness, byte.MinValue, byte.MaxValue);
@@ -844,6 +879,11 @@ public class OperationPixelArithmetic : Operation
                         break;
                     case PixelArithmeticOperators.KeepRegion:
                     {
+                        if (layer.IsEmpty)
+                        {
+                            progress.LockAndIncrement();
+                            return;
+                        }
                         using var targetClone = target.Clone();
                         original.SetTo(EmguExtensions.BlackColor);
                         mat.SetTo(EmguExtensions.BlackColor);
@@ -851,6 +891,11 @@ public class OperationPixelArithmetic : Operation
                         break;
                     }
                     case PixelArithmeticOperators.DiscardRegion:
+                        if (layer.IsEmpty)
+                        {
+                            progress.LockAndIncrement();
+                            return;
+                        }
                         target.SetTo(EmguExtensions.BlackColor);
                         break;
                     default:

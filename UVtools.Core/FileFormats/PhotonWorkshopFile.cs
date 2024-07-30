@@ -1982,6 +1982,28 @@ public sealed class PhotonWorkshopFile : FileFormat
 
         if (FileMarkSettings.Version >= VERSION_515)
         {
+            float pixelIncrement = 255.0f / Math.Max(1, HeaderSettings.AntiAliasing);
+
+            // Table was always noticed as 16 bytes
+            if (LayerImageColorSettings.GreyMaxCount < 16 || LayerImageColorSettings.Grey.Length < 16)
+            {
+                LayerImageColorSettings.GreyMaxCount = 16;
+                LayerImageColorSettings.Grey = new byte[16];
+            }
+            
+            // But if the AntiAliasing is higher than 16, we adjust the table (Experimental)
+            if (HeaderSettings.AntiAliasing > LayerImageColorSettings.GreyMaxCount || HeaderSettings.AntiAliasing > LayerImageColorSettings.Grey.Length)
+            {
+                LayerImageColorSettings.GreyMaxCount = HeaderSettings.AntiAliasing;
+                LayerImageColorSettings.Grey = new byte[HeaderSettings.AntiAliasing];
+            }
+
+            // Map the grey values
+            for (var i = 0; i < LayerImageColorSettings.GreyMaxCount; i++)
+            {
+                LayerImageColorSettings.Grey[i] = (byte)Math.Min((i + 1) * pixelIncrement, byte.MaxValue);
+            }
+
             FileMarkSettings.LayerImageColorTableAddress = (uint)outputFile.Position;
             outputFile.WriteSerialize(LayerImageColorSettings);
         }

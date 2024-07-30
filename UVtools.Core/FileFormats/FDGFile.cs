@@ -10,7 +10,6 @@
 
 using BinarySerialization;
 using Emgu.CV;
-using Emgu.CV.CvEnum;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -29,9 +28,6 @@ public sealed class FDGFile : FileFormat
 {
     #region Constants
     private const uint MAGIC = 0xBD3C7AC8; // 3174857416
-    private const ushort REPEATRGB15MASK = 0x20;
-
-    private const ushort RLE16EncodingLimit = 0x1000;
     #endregion
 
     #region Sub Classes
@@ -302,116 +298,6 @@ public sealed class FDGFile : FileFormat
         [FieldOrder(5)] public uint Unknown2    { get; set; }
         [FieldOrder(6)] public uint Unknown3    { get; set; }
         [FieldOrder(7)] public uint Unknown4    { get; set; }
-
-        public Mat Decode(byte[] rawImageData)
-        {
-            var image = new Mat(new Size((int)ResolutionX, (int)ResolutionY), DepthType.Cv8U, 3);
-            var span = image.GetDataByteSpan();
-
-            int pixel = 0;
-            for (uint n = 0; n < ImageLength; n++)
-            {
-                uint dot = (uint)(rawImageData[n] & 0xFF | ((rawImageData[++n] & 0xFF) << 8));
-                //uint color = ((dot & 0xF800) << 8) | ((dot & 0x07C0) << 5) | ((dot & 0x001F) << 3);
-                byte red = (byte)(((dot >> 11) & 0x1F) << 3);
-                byte green = (byte)(((dot >> 6) & 0x1F) << 3);
-                byte blue = (byte)((dot & 0x1F) << 3);
-                int repeat = 1;
-                if ((dot & 0x0020) == 0x0020)
-                {
-                    repeat += rawImageData[++n] & 0xFF | ((rawImageData[++n] & 0x0F) << 8);
-                }
-
-
-                for (int j = 0; j < repeat; j++)
-                {
-                    span[pixel++] = blue;
-                    span[pixel++] = green;
-                    span[pixel++] = red;
-                    //span[pixel] = new Rgba32(red, green, blue, byte.MaxValue);
-                }
-            }
-
-            return image;
-        }
-
-        public static byte[] Encode(Mat image)
-        {
-            List<byte> rawData = new();
-            var span = image.GetDataByteReadOnlySpan();
-
-            ushort color15 = 0;
-            uint rep = 0;
-
-            void RleRGB15()
-            {
-                switch (rep)
-                {
-                    case 0:
-                        return;
-                    case 1:
-                        rawData.Add((byte)(color15 & ~REPEATRGB15MASK));
-                        rawData.Add((byte)((color15 & ~REPEATRGB15MASK) >> 8));
-                        break;
-                    case 2:
-                        for (int i = 0; i < 2; i++)
-                        {
-                            rawData.Add((byte)(color15 & ~REPEATRGB15MASK));
-                            rawData.Add((byte)((color15 & ~REPEATRGB15MASK) >> 8));
-                        }
-
-                        break;
-                    default:
-                        rawData.Add((byte)(color15 | REPEATRGB15MASK));
-                        rawData.Add((byte)((color15 | REPEATRGB15MASK) >> 8));
-                        rawData.Add((byte)((rep - 1) | 0x3000));
-                        rawData.Add((byte)(((rep - 1) | 0x3000) >> 8));
-                        break;
-                }
-            }
-
-            int pixel = 0;
-            while (pixel < span.Length)
-            {
-                byte b = span[pixel++];
-                byte g;
-                byte r;
-
-                if (image.NumberOfChannels == 1) // 8 bit safe-guard
-                {
-                    r = g = b;
-                }
-                else
-                {
-                    g = span[pixel++];
-                    r = span[pixel++];
-                }
-
-                if (image.NumberOfChannels == 4) pixel++; // skip alpha
-
-                var ncolor15 = (b >> 3) | ((g >> 2) << 5) | ((r >> 3) << 11);
-
-                if (ncolor15 == color15)
-                {
-                    rep++;
-                    if (rep == RLE16EncodingLimit)
-                    {
-                        RleRGB15();
-                        rep = 0;
-                    }
-                }
-                else
-                {
-                    RleRGB15();
-                    color15 = (ushort) ncolor15;
-                    rep = 1;
-                }
-            }
-
-            RleRGB15();
-
-            return rawData.ToArray();
-        }
 
         public override string ToString()
         {
@@ -924,8 +810,7 @@ public sealed class FDGFile : FileFormat
             var image = thumbnails[i];
             if (image is null) continue;
 
-            var bytes = Preview.Encode(image);
-
+            var bytes = EncodeChituImageRGB15Rle(image);
             if (bytes.Length == 0) continue;
 
             if (i == 0)
@@ -1059,7 +944,7 @@ public sealed class FDGFile : FileFormat
             byte[] rawImageData = new byte[Previews[i].ImageLength];
             inputFile.Read(rawImageData, 0, (int)Previews[i].ImageLength);
 
-            Thumbnails.Add(Previews[i].Decode(rawImageData));
+            Thumbnails.Add(DecodeChituImageRGB15Rle(rawImageData, Previews[i].ResolutionX, Previews[i].ResolutionY));
             progress++;
         }
 
