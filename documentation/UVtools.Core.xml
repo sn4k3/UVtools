@@ -580,6 +580,14 @@
             </summary>
             <remarks>Only work with tree contour detection method</remarks>
         </member>
+        <member name="M:UVtools.Core.EmguCV.EmguContours.GetContoursInside(System.Drawing.Point,System.Boolean)">
+            <summary>
+            Gets contours inside a point
+            </summary>
+            <param name="location"></param>
+            <param name="includeLimitingArea">If true it will include all limiting area, otherwise only outer contour will be returned</param>
+            <returns></returns>
+        </member>
         <member name="M:UVtools.Core.EmguCV.EmguContours.GetContoursInside(Emgu.CV.Util.VectorOfVectorOfPoint,System.Int32[0:,0:],System.Drawing.Point,System.Boolean)">
             <summary>
             Gets contours inside a point

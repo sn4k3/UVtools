@@ -39,6 +39,7 @@ using Color = UVtools.UI.Structures.Color;
 using AvaloniaStatic = UVtools.UI.Controls.AvaloniaStatic;
 using Point = System.Drawing.Point;
 using Size = System.Drawing.Size;
+using Emgu.CV.Reg;
 
 namespace UVtools.UI;
 
@@ -1385,15 +1386,20 @@ public partial class MainWindow
                         operationText.Font, operationText.FontScale, color.ToMCvScalar(),
                         operationText.Thickness, operationText.LineType, operationText.Mirror, operationText.LineAlignment, (double)operationText.Angle);
                 }
-                else if (operation.OperationType == PixelOperation.PixelOperationType.Eraser)
+                else if (operation.OperationType == PixelOperation.PixelOperationType.Fill)
                 {
                     //var pixelBrightness = LayerCache.Image.GetPixelPos(operation.Location);
-                    if (imageSpan[LayerCache.Image.GetPixelPos(operation.Location)] < 10) continue;
-                    var color = DrawingsGrid.SelectedItems.Contains(operation)
-                        ? Settings.PixelEditor.RemovePixelHighlightColor
-                        : Settings.PixelEditor.RemovePixelColor;
+                    var operationFill = (PixelFill)operation;
+                    if (!operationFill.IsAdd && imageSpan[LayerCache.Image.GetPixelPos(operation.Location)] == 0) continue;
+                    var color = operationFill.IsAdd
+                        ? (DrawingsGrid.SelectedItems.Contains(operation)
+                            ? Settings.PixelEditor.AddPixelHighlightColor
+                            : Settings.PixelEditor.AddPixelColor)
+                        : (DrawingsGrid.SelectedItems.Contains(operation)
+                            ? Settings.PixelEditor.RemovePixelHighlightColor
+                            : Settings.PixelEditor.RemovePixelColor);
 
-                    using var vec = EmguContours.GetContoursInside(LayerCache.Layer.Contours.Vector, LayerCache.Layer.Contours.Hierarchy, operation.Location);
+                    using var vec = LayerCache.Layer.Contours.GetContoursInside(operation.Location);
                     if (vec.Size > 0) CvInvoke.DrawContours(LayerCache.ImageBgra, vec, -1, color.ToMCvScalar(), -1);
 
                     /*var hollowGroups = EmguContours.GetPositiveContoursInGroups(LayerCache.LayerContours, LayerCache.LayerContourHierarchy);

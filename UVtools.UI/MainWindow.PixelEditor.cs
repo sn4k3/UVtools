@@ -35,13 +35,13 @@ public partial class MainWindow
 
     public PixelDrawing DrawingPixelDrawing { get; } = new();
     public PixelText DrawingPixelText { get; } = new();
-    public PixelEraser DrawingPixelEraser { get; } = new();
+    public PixelFill DrawingPixelFill { get; } = new();
     public PixelSupport DrawingPixelSupport { get; } = new();
     public PixelDrainHole DrawingPixelDrainHole { get; } = new();
 
     public RangeObservableCollection<PixelOperation> DrawingPixelDrawingProfiles { get; } = new();
     public RangeObservableCollection<PixelOperation> DrawingPixelTextProfiles { get; } = new();
-    public RangeObservableCollection<PixelOperation> DrawingPixelEraserProfiles { get; } = new();
+    public RangeObservableCollection<PixelOperation> DrawingPixelFillProfiles { get; } = new();
     public RangeObservableCollection<PixelOperation> DrawingPixelSupportProfiles { get; } = new();
     public RangeObservableCollection<PixelOperation> DrawingPixelDrainHoleProfiles { get; } = new();
 
@@ -55,13 +55,13 @@ public partial class MainWindow
     {
         DrawingPixelDrawingProfiles.Add(DrawingPixelDrawing.Clone());
         DrawingPixelTextProfiles.Add(DrawingPixelText.Clone());
-        DrawingPixelEraserProfiles.Add(DrawingPixelEraser.Clone());
+        DrawingPixelFillProfiles.Add(DrawingPixelFill.Clone());
         DrawingPixelSupportProfiles.Add(DrawingPixelSupport.Clone());
         DrawingPixelDrainHoleProfiles.Add(DrawingPixelDrainHole.Clone());
 
         DrawingPixelDrawingProfiles.AddRange(PixelEditorProfiles.GetProfiles<PixelDrawing>());
         DrawingPixelTextProfiles.AddRange(PixelEditorProfiles.GetProfiles<PixelText>());
-        DrawingPixelEraserProfiles.AddRange(PixelEditorProfiles.GetProfiles<PixelEraser>());
+        DrawingPixelFillProfiles.AddRange(PixelEditorProfiles.GetProfiles<PixelFill>());
         DrawingPixelSupportProfiles.AddRange(PixelEditorProfiles.GetProfiles<PixelSupport>());
         DrawingPixelDrainHoleProfiles.AddRange(PixelEditorProfiles.GetProfiles<PixelDrainHole>());
     }
@@ -446,26 +446,25 @@ public partial class MainWindow
             ShowLayer();
             return;
         }
-        else if (SelectedPixelOperationTabIndex == (byte)PixelOperation.PixelOperationType.Eraser)
+        else if (SelectedPixelOperationTabIndex == (byte)PixelOperation.PixelOperationType.Fill)
         {
-            if (LayerCache.Image!.GetByte(realLocation) < 10) return;
+            if (!isAdd && LayerCache.Image!.GetByte(realLocation) == 0) return;
 
             var drawings = new List<PixelOperation>();
-            uint minLayer = SlicerFile!.SanitizeLayerIndex((int)ActualLayer - (int)DrawingPixelEraser.LayersBelow);
-            uint maxLayer = SlicerFile!.SanitizeLayerIndex(ActualLayer + DrawingPixelEraser.LayersAbove);
+            uint minLayer = SlicerFile!.SanitizeLayerIndex((int)ActualLayer - (int)DrawingPixelFill.LayersBelow);
+            uint maxLayer = SlicerFile!.SanitizeLayerIndex(ActualLayer + DrawingPixelFill.LayersAbove);
             for (uint layerIndex = minLayer; layerIndex <= maxLayer; layerIndex++)
             {
-                var operationEraser = new PixelEraser(layerIndex, realLocation, DrawingPixelEraser.PixelBrightness);
+                var operationFill = new PixelFill(layerIndex, realLocation, DrawingPixelFill.ErasePixelBrightness, DrawingPixelFill.PixelBrightness, isAdd);
 
                 //if (PixelHistory.Contains(operation)) continue;
-                //AddDrawing(operationEraser);
-                drawings.Add(operationEraser);
+                drawings.Add(operationFill);
 
                 /*if (layerIndex == _actualLayer)
                 {
                     for (int i = 0; i < LayerCache.LayerContours.Size; i++)
                     {
-                        if (CvInvoke.PointPolygonTest(LayerCache.LayerContours[i], operationEraser.Location, false) >= 0)
+                        if (CvInvoke.PointPolygonTest(LayerCache.LayerContours[i], operationFill.Location, false) >= 0)
                         {
                             CvInvoke.DrawContours(LayerCache.ImageBgr, LayerCache.LayerContours, i,
                                 new MCvScalar(Settings.PixelEditor.RemovePixelColor.B, Settings.PixelEditor.RemovePixelColor.G, Settings.PixelEditor.RemovePixelColor.R), -1);
@@ -615,7 +614,7 @@ public partial class MainWindow
                 {
                     /*if (item.OperationType != PixelOperation.PixelOperationType.Drawing &&
                         item.OperationType != PixelOperation.PixelOperationType.Text &&
-                        item.OperationType != PixelOperation.PixelOperationType.Eraser &&
+                        item.OperationType != PixelOperation.PixelOperationType.Fill &&
                         item.OperationType != PixelOperation.PixelOperationType.Supports) continue;*/
                     if (!whiteListLayers.Contains(item.LayerIndex))
                         whiteListLayers.Add(item.LayerIndex);

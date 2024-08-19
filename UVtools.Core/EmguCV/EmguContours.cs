@@ -141,6 +141,17 @@ public class EmguContours : IReadOnlyList<EmguContour>, IDisposable
 
         return family;
     }
+
+    /// <summary>
+    /// Gets contours inside a point
+    /// </summary>
+    /// <param name="location"></param>
+    /// <param name="includeLimitingArea">If true it will include all limiting area, otherwise only outer contour will be returned</param>
+    /// <returns></returns>
+    public VectorOfVectorOfPoint GetContoursInside(Point location, bool includeLimitingArea = true)
+    {
+        return GetContoursInside(Vector, Hierarchy, location, includeLimitingArea);
+    }
     #endregion
 
     #region Indexers

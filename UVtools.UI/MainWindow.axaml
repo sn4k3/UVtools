@@ -1424,63 +1424,65 @@
 
                             </TabItem>
 
-                            <!-- Eraser !-->
-                            <TabItem ToolTip.Tip="Eraser">
+                            <!-- Fill !-->
+                            <TabItem ToolTip.Tip="Fill / Erase">
                                 <TabItem.Header>
                                     <StackPanel VerticalAlignment="Center" Orientation="Horizontal" Spacing="5">
-                                        <i:Icon Value="fa-solid fa-eraser"/>
-                                        <TextBlock IsVisible="{Binding $parent[TabItem].IsSelected}" Text="Eraser" />
+                                        <i:Icon Value="fa-solid fa-fill"/>
+                                        <TextBlock IsVisible="{Binding $parent[TabItem].IsSelected}" Text="Fill" />
                                     </StackPanel>
                                 </TabItem.Header>
 
                                 <StackPanel Spacing="10">
                                     <Border Background="{DynamicResource LightBackground}" BorderThickness="1" BorderBrush="Black">
-                                        <TextBlock Padding="10" Text="Shift+click over a white pixel to remove the linked area.
-&#x0a;(Fill linked area with black)"/>
+                                        <TextBlock Padding="10" Text="Shift+Left click to fill the linked area.
+&#x0a;Shift+Right click to erase the linked area."/>
                                     </Border>
 
-                                    <fragments:PixelEditorProfilesFragment Source="{Binding DrawingPixelEraser}" Profiles="{Binding DrawingPixelEraserProfiles}"/>
+                                    <fragments:PixelEditorProfilesFragment Source="{Binding DrawingPixelFill}" Profiles="{Binding DrawingPixelFillProfiles}"/>
 
-                                    <Grid
-						  RowDefinitions="Auto,10,Auto,10,Auto"
-						  ColumnDefinitions="Auto,10,*,10,40">
+                                    <Grid RowDefinitions="Auto,10,Auto,10,Auto,10,Auto"
+                                          ColumnDefinitions="Auto,10,*,10,40">
 
-                                        <TextBlock
-											Grid.Row="0"
-											Grid.Column="0"
-											VerticalAlignment="Center"
-											Text="Pixel brightness:" />
+                                        <TextBlock Grid.Row="0" Grid.Column="0"
+                                                   VerticalAlignment="Center"
+                                                   Text="Erase brightness:" />
                                         <NumericUpDown Grid.Row="0" Grid.Column="2"
+                                                       Classes="ValueLabel ValueLabel_sun"
+                                                       Minimum="0"
+                                                       Maximum="255"
+                                                       Value="{Binding DrawingPixelFill.ErasePixelBrightness}"/>
+                                        <TextBlock Grid.Row="0" Grid.Column="4"
+                                                   VerticalAlignment="Center"
+                                                   Text="{Binding DrawingPixelFill.ErasePixelBrightnessPercent, StringFormat={}{0:0}%}" />
+
+                                        <TextBlock Grid.Row="2" Grid.Column="0"
+                                                   VerticalAlignment="Center"
+                                                   Text="Fill brightness:" />
+                                        <NumericUpDown Grid.Row="2" Grid.Column="2"
 													   Classes="ValueLabel ValueLabel_sun"
 													   Minimum="0"
 													   Maximum="255"
-                        
-													   Value="{Binding DrawingPixelEraser.PixelBrightness}"/>
-                                        <TextBlock
-											Grid.Row="0"
-											Grid.Column="4"
-											VerticalAlignment="Center"
-											Text="{Binding DrawingPixelEraser.PixelBrightnessPercent, StringFormat={}{0:0}%}" />
+													   Value="{Binding DrawingPixelFill.PixelBrightness}"/>
+                                        <TextBlock Grid.Row="2" Grid.Column="4"
+                                                   VerticalAlignment="Center"
+                                                   Text="{Binding DrawingPixelFill.PixelBrightnessPercent, StringFormat={}{0:0}%}" />
 
-                                        <TextBlock
-											Grid.Row="2"
-											Grid.Column="0"
-											VerticalAlignment="Center"
-											Text="Layers depth below:" />
-                                        <NumericUpDown Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="3"
-													   Classes="ValueLabel ValueLabel_layers"
-													   Minimum="0"
-													   Value="{Binding DrawingPixelEraser.LayersBelow}"/>
-
-                                        <TextBlock
-											Grid.Row="4"
-											Grid.Column="0"
-											VerticalAlignment="Center"
-											Text="Layers depth above:" />
+                                        <TextBlock Grid.Row="4" Grid.Column="0"
+                                                   VerticalAlignment="Center"
+                                                   Text="Layers depth below:" />
                                         <NumericUpDown Grid.Row="4" Grid.Column="2" Grid.ColumnSpan="3"
 													   Classes="ValueLabel ValueLabel_layers"
 													   Minimum="0"
-													   Value="{Binding DrawingPixelEraser.LayersAbove}"/>
+													   Value="{Binding DrawingPixelFill.LayersBelow}"/>
+
+                                        <TextBlock Grid.Row="6" Grid.Column="0"
+                                                   VerticalAlignment="Center"
+                                                   Text="Layers depth above:" />
+                                        <NumericUpDown Grid.Row="6" Grid.Column="2" Grid.ColumnSpan="3"
+													   Classes="ValueLabel ValueLabel_layers"
+													   Minimum="0"
+													   Value="{Binding DrawingPixelFill.LayersAbove}"/>
 
 
                                     </Grid>

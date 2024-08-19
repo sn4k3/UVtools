@@ -32,7 +32,7 @@ public abstract class PixelOperation : BindableBase, IEquatable<PixelOperation>
     {
         Drawing,
         Text,
-        Eraser,
+        Fill,
         Supports,
         DrainHole,
     }

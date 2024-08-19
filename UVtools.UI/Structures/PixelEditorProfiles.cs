@@ -27,7 +27,7 @@ public class PixelEditorProfiles //: IList<Operation>
 
     [XmlElement(typeof(PixelDrawing))]
     [XmlElement(typeof(PixelText))]
-    [XmlElement(typeof(PixelEraser))]
+    [XmlElement(typeof(PixelFill))]
     [XmlElement(typeof(PixelDrainHole))]
     [XmlElement(typeof(PixelSupport))]
     public List<PixelOperation> Profiles { get; internal set; } = new();

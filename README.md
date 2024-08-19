@@ -255,14 +255,13 @@ The following commands are the old way and commands under the UI executable, the
 
 ## Windows
 
-1. Windows 7 SP1 or greater
+1. Windows 10 or greater
    1. If on Windows 10/11 N or NK:
       - [Media Feature Pack](https://www.microsoft.com/download/details.aspx?id=48231) must be installed
       - Press Windows + R
       - Type: appwiz.cpl (and press Enter key)
       - Click on: Turn Windows features on or off
       - Check the "Media Extensions" and click Ok
-<!-- 1. [.NET 6.0](https://dotnet.microsoft.com/download/dotnet/6.0) installed (Comes pre-installed on Windows 10 with last updates)!-->
 1. 8GB RAM or higher + 512MB per CPU core
 2. 64 bit System
 3. 1920 x 1080 @ 100% scale as minimum resolution
@@ -302,8 +301,7 @@ If you downloaded the **.AppImage** package variant you must set run permissions
 
 1. macOS 10.15 Catalina or higher
 1. 8GB RAM or higher + 512MB per CPU core
-3. **For Mac M1/M2 (ARM):**
-   1. Install via the [auto installer](https://github.com/sn4k3/UVtools#to-auto-install-on-macos-homebrew)
+3. Install UVtools via the [auto installer](https://github.com/sn4k3/UVtools#to-auto-install-on-macos)
 
 To run UVtools open it folder on a terminal and call one of:
 

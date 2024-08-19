@@ -166,6 +166,22 @@ public sealed class SL1File : FileFormat
 
         #endregion
 
+        #region Material Overrides
+        public float MaterialOwBranchingsupportHeadFrontDiameter { get; set; } = 0.4f;
+        public float MaterialOwBranchingsupportHeadPenetration { get; set; } = 0.2f;
+        public float MaterialOwBranchingsupportHeadWidth { get; set; } = 1f;
+        public float MaterialOwBranchingsupportPillarDiameter { get; set; } = 1;
+        public float MaterialOwElefantFootCompensation { get; set; } = 0;
+        public float MaterialOwRelativeCorrectionX { get; set; } = 1f;
+        public float MaterialOwRelativeCorrectionY { get; set; } = 1f;
+        public float MaterialOwRelativeCorrectionZ { get; set; } = 1f;
+        public float MaterialOwSupportHeadFrontDiameter { get; set; } = 0.4f;
+        public float MaterialOwSupportHeadPenetration { get; set; } = 0.2f;
+        public float MaterialOwSupportHeadWidth { get; set; } = 1f;
+        public float MaterialOwSupportPillarDiameter { get; set; } = 1f;
+        public float MaterialOwSupportPointsDensityRelative { get; set; } = 100f;
+        #endregion
+
         #region Layers
 
         public float InitialLayerHeight { get; set; }
