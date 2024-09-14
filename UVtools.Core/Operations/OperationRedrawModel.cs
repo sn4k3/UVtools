@@ -10,6 +10,7 @@ using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
 using System;
+using System.ComponentModel;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
@@ -23,6 +24,29 @@ namespace UVtools.Core.Operations;
 public class OperationRedrawModel : Operation
 #pragma warning restore CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
 {
+    #region Enums
+    public enum RedrawModelOperators : byte
+    {
+        [Description("Set: to a brightness")]
+        Set,
+        [Description("Add: with a brightness")]
+        Add,
+        [Description("Subtract: with a brightness")]
+        Subtract,
+        [Description("Multiply: with a brightness")]
+        Multiply,
+        [Description("Divide: with a brightness")]
+        Divide,
+        [Description("Minimum: set to a brightness if is lower than the current pixel")]
+        Minimum,
+        [Description("Maximum: set to a brightness if is higher than the current pixel")]
+        Maximum,
+        [Description("AbsDiff: perform a absolute difference between pixel and brightness")]
+        AbsDiff,
+    }
+
+    #endregion
+
     #region Members
 
     private string _filePath = null!;
@@ -30,6 +54,7 @@ public class OperationRedrawModel : Operation
     private bool _contactPointsOnly = true;
     private RedrawTypes _redrawType = RedrawTypes.Supports;
     private bool _ignoreContactLessPixels = true;
+    private RedrawModelOperators _operator = RedrawModelOperators.Minimum;
 
     #endregion
         
@@ -44,7 +69,7 @@ public class OperationRedrawModel : Operation
         "Note: Run this tool prior to any made modification. You must find the optimal exposure/brightness combo, or supports can fail.";
 
     public override string ConfirmationText => "redraw the "+ (_redrawType == RedrawTypes.Supports ? "supports" : "model") + 
-                                               $" with an brightness of {_brightness}?";
+                                               " with an"+ (_redrawType == RedrawTypes.Model || !_contactPointsOnly ? $" {_operator}" : string.Empty) + $" brightness of {_brightness}?";
 
     public override string ProgressTitle => "Redrawing " + (_redrawType == RedrawTypes.Supports ? "supports" : "model");
 
@@ -59,13 +84,30 @@ public class OperationRedrawModel : Operation
             sb.AppendLine("The selected file is not valid.");
         }
 
+        if (_redrawType == RedrawTypes.Model || _contactPointsOnly)
+        {
+            switch (_operator)
+            {
+                case RedrawModelOperators.Add:
+                case RedrawModelOperators.Subtract:
+                case RedrawModelOperators.Maximum:
+                case RedrawModelOperators.AbsDiff:
+                    if (_brightness == 0) sb.AppendLine($"{_operator} with a brightness of 0 yield no result, please use a value larger than 0.");
+                    break;
+                case RedrawModelOperators.Divide:
+                    if (_brightness == 0) sb.AppendLine($"{_operator} with a brightness of 0 is not valid, please use a value larger than 0.");
+                    else if (_brightness == 1) sb.AppendLine($"{_operator} with a brightness of 0 yield no result, please use a value larger than 0.");
+                    break;
+            }
+        }
+
         return sb.ToString();
     }
 
 
     public override string ToString()
     {
-        var result = $"[{_redrawType}] [B: {_brightness}] [CS: {_contactPointsOnly}] [ICLP: {_ignoreContactLessPixels}]";
+        var result = $"[{_redrawType}] [B: {_brightness}] [OP: {_operator}] [CS: {_contactPointsOnly}] [ICLP: {_ignoreContactLessPixels}]";
         if (!string.IsNullOrEmpty(ProfileName)) result = $"{ProfileName}: {result}";
         return result;
     }
@@ -104,7 +146,11 @@ public class OperationRedrawModel : Operation
         set => RaiseAndSetIfChanged(ref _redrawType, value);
     }
 
-    public static Array RedrawTypesItems => Enum.GetValues(typeof(RedrawTypes));
+    public RedrawModelOperators Operator
+    {
+        get => _operator;
+        set => RaiseAndSetIfChanged(ref _operator, value);
+    }
 
     public byte Brightness
     {
@@ -169,6 +215,11 @@ public class OperationRedrawModel : Operation
         if (startLayerIndex < 0) return false;
         Parallel.For(0, otherFile.LayerCount, CoreSettings.GetParallelOptions(progress), layerIndex =>
         {
+            if (SlicerFile[layerIndex].IsEmpty)
+            {
+                progress.LockAndIncrement();
+                return;
+            }
             progress.PauseIfRequested();
             var fullMatLayerIndex = startLayerIndex + layerIndex;
             using var fullMat = SlicerFile[fullMatLayerIndex].LayerMat;
@@ -176,7 +227,6 @@ public class OperationRedrawModel : Operation
             using var bodyMat = otherFile[layerIndex].LayerMat;
             using var fullMatRoi = GetRoiOrDefault(fullMat);
             using var bodyMatRoi = GetRoiOrDefault(bodyMat);
-            using var patternMat = EmguExtensions.InitMat(fullMatRoi.Size, new MCvScalar(255 - _brightness));
             using var supportsMat = new Mat();
 
             bool modified = false;
@@ -229,9 +279,41 @@ public class OperationRedrawModel : Operation
                     case RedrawTypes.Model:
                         CvInvoke.BitwiseAnd(fullMatRoi, bodyMatRoi, supportsMat); // Model
                         break;
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(RedrawType), _redrawType, null);
                 }
 
-                CvInvoke.Subtract(fullMatRoi, patternMat, fullMatRoi, supportsMat);
+                using var patternMat = fullMatRoi.NewSetTo(new MCvScalar(_brightness), supportsMat);
+
+                switch (_operator)
+                {
+                    case RedrawModelOperators.Set:
+                        patternMat.CopyTo(fullMatRoi, fullMatRoi);
+                        break;
+                    case RedrawModelOperators.Add:
+                        CvInvoke.Add(fullMatRoi, patternMat, fullMatRoi, supportsMat);
+                        break;
+                    case RedrawModelOperators.Subtract:
+                        CvInvoke.Subtract(fullMatRoi, patternMat, fullMatRoi, supportsMat);
+                        break;
+                    case RedrawModelOperators.Multiply:
+                        CvInvoke.Multiply(fullMatRoi, patternMat, fullMatRoi, EmguExtensions.ByteScale);
+                        break;
+                    case RedrawModelOperators.Divide:
+                        CvInvoke.Divide(fullMatRoi, patternMat, fullMatRoi);
+                        break;
+                    case RedrawModelOperators.Minimum:
+                        CvInvoke.Min(fullMatRoi, patternMat, fullMatRoi);
+                        break;
+                    case RedrawModelOperators.Maximum:
+                        CvInvoke.Max(fullMatRoi, patternMat, fullMatRoi);
+                        break;
+                    case RedrawModelOperators.AbsDiff:
+                        CvInvoke.AbsDiff(fullMatRoi, patternMat, fullMatRoi);
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(Operator), _operator, null);
+                }
                 modified = true;
             }
 

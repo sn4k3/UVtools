@@ -68,15 +68,6 @@ public static class EmguExtensions
         => new(mat.Size, mat.Depth, mat.NumberOfChannels);
 
     /// <summary>
-    /// Creates a new <see cref="Mat"/> with same size and type of the source
-    /// </summary>
-    /// <param name="src"></param>
-    /// <param name="color"></param>
-    /// <returns></returns>
-    public static Mat New(this Mat src, MCvScalar color)
-        => InitMat(src.Size, color, src.NumberOfChannels, src.Depth);
-
-    /// <summary>
     /// Creates a new blanked (All zeros) <see cref="Mat"/> with same size and type of the source
     /// </summary>
     /// <param name="mat"></param>
@@ -97,9 +88,10 @@ public static class EmguExtensions
     /// </summary>
     /// <param name="mat"></param>
     /// <param name="color"></param>
+    /// <param name="mask"></param>
     /// <returns></returns>
-    public static Mat NewSetTo(this Mat mat, MCvScalar color)
-        => InitMat(mat.Size, color, mat.NumberOfChannels, mat.Depth);
+    public static Mat NewSetTo(this Mat mat, MCvScalar color, IInputArray? mask = null)
+        => InitMat(mat.Size, color, mat.NumberOfChannels, mat.Depth, mask);
 
 
     /// <summary>
@@ -134,12 +126,13 @@ public static class EmguExtensions
     /// <param name="color"></param>
     /// <param name="channels"></param>
     /// <param name="depthType"></param>
+    /// <param name="mask"></param>
     /// <returns></returns>
-    public static Mat InitMat(Size size, MCvScalar color, int channels = 1, DepthType depthType = DepthType.Cv8U)
+    public static Mat InitMat(Size size, MCvScalar color, int channels = 1, DepthType depthType = DepthType.Cv8U, IInputArray? mask = null)
     {
         if (size.IsEmpty) return new();
         var mat = new Mat(size, depthType, channels);
-        mat.SetTo(color);
+        mat.SetTo(color, mask);
         return mat;
     }
 

@@ -8,6 +8,8 @@
     <string>UVtools.icns</string>
     <key>CFBundleIdentifier</key>
     <string>com.UVtools</string>
+	<key>CFBundleDisplayName</key>
+    <string>UVtools</string>
     <key>CFBundleName</key>
     <string>UVtools</string>
     <key>CFBundleVersion</key>

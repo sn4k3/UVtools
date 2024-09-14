@@ -746,7 +746,7 @@
 
         <Expander Name="MultipleExposuresExpander"
                   HorizontalAlignment="Stretch"
-                  IsExpanded="{Binding $self.IsEnabled}">
+                  IsExpanded="{Binding $self.IsEnabled, Mode=OneTime}">
             <Expander.Header>
                 <StackPanel Orientation="Horizontal">
                     <TextBlock Text="Multiple exposures"/>

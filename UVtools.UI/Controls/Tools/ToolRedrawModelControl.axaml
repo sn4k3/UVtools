@@ -4,25 +4,24 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:i="https://github.com/projektanker/icons.avalonia"
              xmlns:tools="clr-namespace:UVtools.UI.Controls.Tools"
+             xmlns:op="clr-namespace:UVtools.Core.Operations;assembly=UVtools.Core"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="UVtools.UI.Controls.Tools.ToolRedrawModelControl"
              x:DataType="tools:ToolRedrawModelControl">
-    <Grid RowDefinitions="Auto,10,Auto,10,Auto,10,Auto"
+    <Grid RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto"
               ColumnDefinitions="Auto,10,Auto">
             <TextBlock Grid.Row="0" Grid.Column="0"
                        ToolTip.Tip="Select the sliced file without supports and raft. (Model B)"
                        VerticalAlignment="Center"
                        Text="Body file:"/>
             <StackPanel Grid.Row="0" Grid.Column="2" Orientation="Horizontal" Spacing="1">
-                <TextBox
-                          ToolTip.Tip="Select the sliced file without supports and raft. (Model B)"
-                          IsReadOnly="True"
-                          Watermark="Select the sliced file without supports and raft. (Model B)"
-                          HorizontalAlignment="Stretch"
-                          Width="505"
-                          Text="{Binding Operation.FilePath}"/>
-                <Button
-                        VerticalAlignment="Stretch"
+                <TextBox ToolTip.Tip="Select the sliced file without supports and raft. (Model B)"
+                         IsReadOnly="True"
+                         Watermark="Select the sliced file without supports and raft. (Model B)"
+                         HorizontalAlignment="Stretch"
+                         Width="505"
+                         Text="{Binding Operation.FilePath}"/>
+                <Button VerticalAlignment="Stretch"
                         ToolTip.Tip="Select the sliced file without supports and raft. (Model B)"
                         Command="{Binding ImportFile}"
                         i:Attached.Icon="fa-solid fa-file-import"/>
@@ -34,24 +33,28 @@
                        Text="Redraw:"/>
 
             <StackPanel Grid.Row="2" Grid.Column="2" Orientation="Horizontal" Spacing="10">
-                <ComboBox
-                      SelectedItem="{Binding Operation.RedrawType}"
-                      ItemsSource="{Binding Operation.RedrawTypesItems}"
-                      Width="120"/>
+                <ComboBox HorizontalAlignment="Stretch"
+                          ItemsSource="{Binding Operation.RedrawType, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                          SelectedItem="{Binding Operation.RedrawType, Converter={StaticResource FromValueDescriptionToEnumConverter}}"
+                          Width="120"/>
 
-                <CheckBox
-                    VerticalAlignment="Center"
-                    IsVisible="{Binding !Operation.RedrawType}"
-                    IsChecked="{Binding Operation.ContactPointsOnly}"
-                    ToolTip.Tip="If enabled, it will only redraw the supports with physical contact points within the model. (Slower)"
-                    Content="Only the contact supports"/>
+                <CheckBox VerticalAlignment="Center"
+                          IsVisible="{Binding !Operation.RedrawType}"
+                          IsChecked="{Binding Operation.ContactPointsOnly}"
+                          ToolTip.Tip="If enabled, it will only redraw the supports with physical contact points within the model. (Slower)"
+                          Content="Only the contact supports"/>
 
-                <CheckBox
-                    VerticalAlignment="Center"
-                    IsVisible="{Binding Operation.ContactPointsOnly}"
-                    IsChecked="{Binding Operation.IgnoreContactLessPixels}"
-                    ToolTip.Tip="If enabled, all supports pixels with no physical contact with the model will be ignored and maintain the same original brightness."
-                    Content="Ignore contact-less pixels"/>
+                <CheckBox VerticalAlignment="Center"
+                          IsChecked="{Binding Operation.IgnoreContactLessPixels}"
+                          IsEnabled="{Binding Operation.ContactPointsOnly}"
+                          ToolTip.Tip="If enabled, all supports pixels with no physical contact with the model will be ignored and maintain the same original brightness."
+                          Content="Ignore contact-less pixels">
+                    <CheckBox.IsVisible>
+                        <MultiBinding Converter="{x:Static BoolConverters.And}">
+                            <Binding Path="!Operation.RedrawType"/>
+                        </MultiBinding>
+                    </CheckBox.IsVisible>
+                </CheckBox>
             </StackPanel>
 
           <TextBlock Grid.Row="4" Grid.Column="0"
@@ -59,17 +62,42 @@
                      Text="Brightness:"/>
 
             <StackPanel Grid.Row="4" Grid.Column="2" Orientation="Horizontal" Spacing="5">
-              <NumericUpDown 
-                            Classes="ValueLabel ValueLabel_sun"
-                            Width="180"
+              <NumericUpDown Classes="ValueLabel ValueLabel_sun"
+                             Width="180"
                              Minimum="0"
                              Maximum="255"
                              Increment="1"
                              Value="{Binding Operation.Brightness}"/>
-              <TextBlock
-                         VerticalAlignment="Center"
+              <TextBlock VerticalAlignment="Center"
                          Text="{Binding Operation.BrightnessPercent, StringFormat={}{0:F2}%}"/>
             </StackPanel>
+
+            <TextBlock Grid.Row="6" Grid.Column="0"
+                       VerticalAlignment="Center"
+                       Text="Operator:">
+                <TextBlock.IsVisible>
+                    <MultiBinding Converter="{x:Static BoolConverters.Or}">
+                        <Binding Path="Operation.RedrawType" 
+                                 Converter="{StaticResource EnumToBooleanConverter}"
+                                 ConverterParameter="Model"/>
+                        <Binding Path="!Operation.ContactPointsOnly"/>
+                    </MultiBinding>
+                </TextBlock.IsVisible>
+            </TextBlock>
+
+            <ComboBox Grid.Row="6" Grid.Column="2"
+                      HorizontalAlignment="Stretch"
+                      ItemsSource="{Binding Operation.Operator, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                      SelectedItem="{Binding Operation.Operator, Converter={StaticResource FromValueDescriptionToEnumConverter}}">
+                <ComboBox.IsVisible>
+                    <MultiBinding Converter="{x:Static BoolConverters.Or}">
+                        <Binding Path="Operation.RedrawType"
+                                 Converter="{StaticResource EnumToBooleanConverter}"
+                                 ConverterParameter="Model"/>
+                        <Binding Path="!Operation.ContactPointsOnly"/>
+                    </MultiBinding>
+                </ComboBox.IsVisible>
+            </ComboBox>
            
       </Grid>
 </UserControl>

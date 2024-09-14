@@ -1,5 +1,14 @@
 # Changelog
 
+## 14/09/2024 - v4.4.2
+
+- (Add) Tool - Redraw model: Add multiple operator modes (#926)
+- (Fix) Tool - Redraw model: Redo (Ctrl + Shift + Z) would cause a crash
+- (Fix) Pixel Editor: Make the content scrollable when the window is resized to a smaller size
+- (Fix) Calibration - Exposure time finder: When the "Multiple exposures" panel is collapsed it become disabled and unusable
+- (Fix) Layer preview - Difference: Fixes the white background over black pixels
+- (Fix) macOS: Change title "Avalonia Application" to "UVtools" on some app managers
+
 ## 19/08/2024 - v4.4.1
 
 - (Add) Pixel Editor: Fill tool and merge into Erase section, left click fills and right click erases

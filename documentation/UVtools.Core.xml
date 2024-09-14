@@ -1088,14 +1088,6 @@
             <param name="mat"></param>
             <returns></returns>
         </member>
-        <member name="M:UVtools.Core.Extensions.EmguExtensions.New(Emgu.CV.Mat,Emgu.CV.Structure.MCvScalar)">
-            <summary>
-            Creates a new <see cref="T:Emgu.CV.Mat"/> with same size and type of the source
-            </summary>
-            <param name="src"></param>
-            <param name="color"></param>
-            <returns></returns>
-        </member>
         <member name="M:UVtools.Core.Extensions.EmguExtensions.NewZeros(Emgu.CV.Mat)">
             <summary>
             Creates a new blanked (All zeros) <see cref="T:Emgu.CV.Mat"/> with same size and type of the source
@@ -1110,12 +1102,13 @@
             <param name="mat"></param>
             <returns>Blanked <see cref="T:Emgu.CV.Mat"/></returns>
         </member>
-        <member name="M:UVtools.Core.Extensions.EmguExtensions.NewSetTo(Emgu.CV.Mat,Emgu.CV.Structure.MCvScalar)">
+        <member name="M:UVtools.Core.Extensions.EmguExtensions.NewSetTo(Emgu.CV.Mat,Emgu.CV.Structure.MCvScalar,Emgu.CV.IInputArray)">
             <summary>
             Creates a <see cref="T:Emgu.CV.Mat"/> with same size and type of the source and set it to a color
             </summary>
             <param name="mat"></param>
             <param name="color"></param>
+            <param name="mask"></param>
             <returns></returns>
         </member>
         <member name="M:UVtools.Core.Extensions.EmguExtensions.InitMat(System.Drawing.Size,System.Int32,Emgu.CV.CvEnum.DepthType)">
@@ -1136,7 +1129,7 @@
             <param name="depthType"></param>
             <returns></returns>
         </member>
-        <member name="M:UVtools.Core.Extensions.EmguExtensions.InitMat(System.Drawing.Size,Emgu.CV.Structure.MCvScalar,System.Int32,Emgu.CV.CvEnum.DepthType)">
+        <member name="M:UVtools.Core.Extensions.EmguExtensions.InitMat(System.Drawing.Size,Emgu.CV.Structure.MCvScalar,System.Int32,Emgu.CV.CvEnum.DepthType,Emgu.CV.IInputArray)">
             <summary>
             Creates a new <see cref="T:Emgu.CV.Mat"/> and set it to a <see cref="T:Emgu.CV.Structure.MCvScalar"/>
             </summary>
@@ -1144,6 +1137,7 @@
             <param name="color"></param>
             <param name="channels"></param>
             <param name="depthType"></param>
+            <param name="mask"></param>
             <returns></returns>
         </member>
         <member name="M:UVtools.Core.Extensions.EmguExtensions.InitMats(System.UInt32)">

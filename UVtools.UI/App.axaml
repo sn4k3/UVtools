@@ -1,9 +1,12 @@
 ﻿<Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:converters="clr-namespace:UVtools.UI.Converters"
+             xmlns:core="clr-namespace:UVtools.Core;assembly=UVtools.Core"
+             Name="{Binding Source={x:Static core:About.Software}}"
              x:Class="UVtools.UI.App"
              RequestedThemeVariant="Default">
     <Application.Resources>
+        <converters:EnumToBooleanConverter x:Key="EnumToBooleanConverter" />
         <converters:EnumToCollectionConverter x:Key="EnumToCollectionConverter" />
         <converters:FromValueDescriptionToEnumConverter x:Key="FromValueDescriptionToEnumConverter" />
         <converters:NumericUpDownValueConverter x:Key="NumericUpDownValueConverter" />

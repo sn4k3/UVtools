@@ -56,7 +56,7 @@ public class Color
         return new Avalonia.Media.Color(A, R, G, B);
     }
 
-    public bool IsEmpty => ReferenceEquals(this, Empty);
+    public bool IsEmpty => Equals(Empty);
 
     public static Color FromArgb(byte a, byte r, byte g, byte b)
     {

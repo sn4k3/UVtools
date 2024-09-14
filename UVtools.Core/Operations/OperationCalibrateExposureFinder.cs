@@ -1293,7 +1293,7 @@ public sealed class OperationCalibrateExposureFinder : Operation
         var bars = Bars;
         var bulleyes = BullsEyes;
         var textSize = TextSize;
-
+        
         int featuresMarginX = (int)(Xppmm * _featuresMargin);
         int featuresMarginY = (int)(Yppmm * _featuresMargin);
         ushort startCaseThickness = StaircaseThickness;

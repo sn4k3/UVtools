@@ -23,7 +23,7 @@ public partial class ToolRedrawModelControl : ToolControl
         {
             case ToolWindow.Callbacks.Init:
             case ToolWindow.Callbacks.AfterLoadProfile:
-                ParentWindow!.ButtonOkEnabled = !string.IsNullOrWhiteSpace(Operation.FilePath);
+                if (ParentWindow is not null) ParentWindow.ButtonOkEnabled = !string.IsNullOrWhiteSpace(Operation.FilePath);
                 Operation.PropertyChanged += (sender, e) =>
                 {
                     if (e.PropertyName == nameof(Operation.FilePath))
