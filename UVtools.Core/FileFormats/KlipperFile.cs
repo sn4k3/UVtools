@@ -489,7 +489,7 @@ public sealed class KlipperFile : FileFormat
     public override string? MaterialName
     {
         get => HeaderSettings.MaterialName;
-        set => base.MaterialName = HeaderSettings.MaterialName = value;
+        set => base.MaterialName = HeaderSettings.MaterialName = value ?? string.Empty;
     }
 
     public override string MachineName

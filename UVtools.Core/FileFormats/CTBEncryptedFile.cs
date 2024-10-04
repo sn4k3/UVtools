@@ -1028,7 +1028,7 @@ public sealed class CTBEncryptedFile : FileFormat
     public override string? MaterialName
     {
         get => ResinParametersSettings.ResinName;
-        set => base.MaterialName = ResinParametersSettings.ResinName = value!;
+        set => base.MaterialName = ResinParametersSettings.ResinName = value ?? string.Empty;
     }
 
     public override float MaterialGrams

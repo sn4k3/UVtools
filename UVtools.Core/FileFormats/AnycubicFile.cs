@@ -23,7 +23,7 @@ using UVtools.Core.Operations;
 
 namespace UVtools.Core.FileFormats;
 
-public sealed class PhotonWorkshopFile : FileFormat
+public sealed class AnycubicFile : FileFormat
 {
     #region Constants
     public const byte VERSION_1 = 1;       // 0x1
@@ -715,7 +715,7 @@ public sealed class PhotonWorkshopFile : FileFormat
             layer.LiftSpeed = SpeedConverter.Convert(LiftSpeed, SpeedUnit.MillimetersPerSecond, CoreSpeedUnit);
         }
 
-        public Mat Decode(PhotonWorkshopFile slicerFile, bool consumeData = true)
+        public Mat Decode(AnycubicFile slicerFile, bool consumeData = true)
         {
             var result = slicerFile.RleFormat == PhotonRleFormat.PWS ? DecodePWS(slicerFile) : DecodePW0(slicerFile);
             if (consumeData)
@@ -724,13 +724,13 @@ public sealed class PhotonWorkshopFile : FileFormat
             return result;
         }
 
-        public byte[] Encode(PhotonWorkshopFile slicerFile, Mat image)
+        public byte[] Encode(AnycubicFile slicerFile, Mat image)
         {
             EncodedRle = slicerFile.RleFormat == PhotonRleFormat.PWS ? EncodePWS(slicerFile, image) : EncodePW0(image);
             return EncodedRle;
         }
 
-        private unsafe Mat DecodePWS(PhotonWorkshopFile slicerFile)
+        private unsafe Mat DecodePWS(AnycubicFile slicerFile)
         {
             var image = EmguExtensions.InitMat(slicerFile.Resolution);
             var span = image.GetBytePointer();
@@ -786,7 +786,7 @@ public sealed class PhotonWorkshopFile : FileFormat
             return image;
         }
 
-        public unsafe byte[] EncodePWS(PhotonWorkshopFile slicerFile, Mat image)
+        public unsafe byte[] EncodePWS(AnycubicFile slicerFile, Mat image)
         {
             List<byte> rawData = new();
             var span = image.GetBytePointer();
@@ -857,7 +857,7 @@ public sealed class PhotonWorkshopFile : FileFormat
             return rawData.ToArray();
         }
 
-        private Mat DecodePW0(PhotonWorkshopFile slicerFile)
+        private Mat DecodePW0(AnycubicFile slicerFile)
         {
             var mat = slicerFile.CreateMat();
             var imageLength = mat.GetLength();
@@ -1185,27 +1185,27 @@ public sealed class PhotonWorkshopFile : FileFormat
 
     public override FileExtension[] FileExtensions { get; } = {
 
-        new(typeof(PhotonWorkshopFile), "pws", "Photon / Photon S (PWS)"),
-        new(typeof(PhotonWorkshopFile), "pw0", "Photon Zero (PW0)"),
-        new(typeof(PhotonWorkshopFile), "pwx", "Photon X (PWX)"),
-        new(typeof(PhotonWorkshopFile), "dlp", "Photon Ultra (DLP)"),
-        new(typeof(PhotonWorkshopFile), "dl2p", "Photon Photon D2 (DL2P)"),
-        new(typeof(PhotonWorkshopFile), "pwmx", "Photon Mono X (PWMX)"),
-        new(typeof(PhotonWorkshopFile), "pmx2", "Photon Mono X2 (PMX2)"),
-        new(typeof(PhotonWorkshopFile), "pwmb", "Photon Mono X 6K / Photon M3 Plus (PWMB)"),
-        new(typeof(PhotonWorkshopFile), "px6s", "Photon Mono X 6Ks (PX6S)"),
-        new(typeof(PhotonWorkshopFile), "pwmo", "Photon Mono (PWMO)"),
-        new(typeof(PhotonWorkshopFile), "pm3n", "Photon Mono 2 (PM3N)"),
-        new(typeof(PhotonWorkshopFile), "pwms", "Photon Mono SE (PWMS)"),
-        new(typeof(PhotonWorkshopFile), "pwma", "Photon Mono 4K (PWMA)"),
-        new(typeof(PhotonWorkshopFile), "pmsq", "Photon Mono SQ (PMSQ)"),
-        new(typeof(PhotonWorkshopFile), "pm3", "Photon M3 (PM3)"),
-        new(typeof(PhotonWorkshopFile), "pm3m", "Photon M3 Max (PM3M)"),
-        new(typeof(PhotonWorkshopFile), "pm3r", "Photon M3 Premium (PM3R)"),
-        new(typeof(PhotonWorkshopFile), "pm5", "Photon Mono M5 (PM5)"),
-        new(typeof(PhotonWorkshopFile), "pm5s", "Photon Mono M5s (PM5s)"),
-        new(typeof(PhotonWorkshopFile), "m5sp", "Photon Mono M5s Pro (M5sp)"),
-        new(typeof(PhotonWorkshopFile), "pwc", "Anycubic Custom Machine (PWC)"),
+        new(typeof(AnycubicFile), "pws", "Photon / Photon S (PWS)"),
+        new(typeof(AnycubicFile), "pw0", "Photon Zero (PW0)"),
+        new(typeof(AnycubicFile), "pwx", "Photon X (PWX)"),
+        new(typeof(AnycubicFile), "dlp", "Photon Ultra (DLP)"),
+        new(typeof(AnycubicFile), "dl2p", "Photon Photon D2 (DL2P)"),
+        new(typeof(AnycubicFile), "pwmx", "Photon Mono X (PWMX)"),
+        new(typeof(AnycubicFile), "pmx2", "Photon Mono X2 (PMX2)"),
+        new(typeof(AnycubicFile), "pwmb", "Photon Mono X 6K / Photon M3 Plus (PWMB)"),
+        new(typeof(AnycubicFile), "px6s", "Photon Mono X 6Ks (PX6S)"),
+        new(typeof(AnycubicFile), "pwmo", "Photon Mono (PWMO)"),
+        new(typeof(AnycubicFile), "pm3n", "Photon Mono 2 (PM3N)"),
+        new(typeof(AnycubicFile), "pwms", "Photon Mono SE (PWMS)"),
+        new(typeof(AnycubicFile), "pwma", "Photon Mono 4K (PWMA)"),
+        new(typeof(AnycubicFile), "pmsq", "Photon Mono SQ (PMSQ)"),
+        new(typeof(AnycubicFile), "pm3", "Photon M3 (PM3)"),
+        new(typeof(AnycubicFile), "pm3m", "Photon M3 Max (PM3M)"),
+        new(typeof(AnycubicFile), "pm3r", "Photon M3 Premium (PM3R)"),
+        new(typeof(AnycubicFile), "pm5", "Photon Mono M5 (PM5)"),
+        new(typeof(AnycubicFile), "pm5s", "Photon Mono M5s (PM5s)"),
+        new(typeof(AnycubicFile), "m5sp", "Photon Mono M5s Pro (M5sp)"),
+        new(typeof(AnycubicFile), "pwc", "Anycubic Custom Machine (PWC)"),
         //new(typeof(PhotonWorkshopFile), "pwmb", "Photon M3 Plus (PWMB)"),
     };
     
@@ -1906,7 +1906,7 @@ public sealed class PhotonWorkshopFile : FileFormat
     #endregion
 
     #region Constructors
-    public PhotonWorkshopFile()
+    public AnycubicFile()
     {
     }
     #endregion

@@ -1994,7 +1994,7 @@ public sealed class UserSettings : BindableBase
                                     };
                                     foreach (var slicerFile in FileFormat.AvailableFormats)
                                     {
-                                        if (slicerFile is not PhotonWorkshopFile) continue;
+                                        if (slicerFile is not AnycubicFile) continue;
                                         application.CompatibleExtensions += slicerFile.GetFileExtensions(string.Empty, ";");
                                     }
 

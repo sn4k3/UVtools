@@ -31,7 +31,7 @@
 
         <CommonPublishDir>$(MSBuildThisFileDirectory)publish</CommonPublishDir>
 
-        <UVtoolsVersion>4.4.2</UVtoolsVersion>
+        <UVtoolsVersion>4.4.3</UVtoolsVersion>
         <AvaloniaVersion>11.1.3</AvaloniaVersion>
     </PropertyGroup>
 

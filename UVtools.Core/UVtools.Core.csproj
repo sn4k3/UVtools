@@ -22,8 +22,8 @@
 	<ItemGroup>
 		<PackageReference Include="AnimatedGif" Version="1.0.5" />
 		<PackageReference Include="BinarySerializer" Version="8.6.4.1" />
-		<PackageReference Include="CommunityToolkit.Diagnostics" Version="8.3.1" />
-		<PackageReference Include="CommunityToolkit.HighPerformance" Version="8.3.1" />
+		<PackageReference Include="CommunityToolkit.Diagnostics" Version="8.3.2" />
+		<PackageReference Include="CommunityToolkit.HighPerformance" Version="8.3.2" />
 		<PackageReference Include="Emgu.CV" Version="4.9.0.5494" />
 		<PackageReference Include="Emgu.CV.runtime.mini.macos" Version="4.9.0.5494" />
 		<PackageReference Include="Emgu.CV.runtime.mini.ubuntu-x64" Version="4.9.0.5494" />

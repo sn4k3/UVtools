@@ -2345,6 +2345,277 @@
             White pixels region (border including corner pixels)
             </summary>
         </member>
+        <member name="P:UVtools.Core.FileFormats.AnycubicFile.FileMark.Mark">
+            <summary>
+            Gets the file mark placeholder
+            Fixed to "ANYCUBIC"
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.AnycubicFile.FileMark.Version">
+            <summary>
+            Gets the file format version
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.AnycubicFile.FileMark.NumberOfTables">
+            <summary>
+            Gets the area num
+            4 for v1, 5 for v515, 8 for v516?
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.AnycubicFile.FileMark.HeaderAddress">
+            <summary>
+            Gets the header start address
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.AnycubicFile.FileMark.SoftwareAddress">
+            <summary>
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.AnycubicFile.FileMark.PreviewAddress">
+            <summary>
+            Gets the preview start offset
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.AnycubicFile.FileMark.LayerImageColorTableAddress">
+            <summary>
+            Spotted on version 515 only
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.AnycubicFile.FileMark.LayerDefinitionAddress">
+            <summary>
+            Gets the layer definition start address
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.AnycubicFile.FileMark.ExtraAddress">
+            <summary>
+            Spotted on version 516 only
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.AnycubicFile.FileMark.MachineAddress">
+            <summary>
+            Spotted on version 516 only
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.AnycubicFile.FileMark.LayerImageAddress">
+            <summary>
+            Gets layer image start address
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.AnycubicFile.FileMark.ModelAddress">
+            <summary>
+            Spotted on version 517 only
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.AnycubicFile.FileMark.SubLayerDefinitionAddress">
+            <summary>
+            Spotted on version 518 only
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.AnycubicFile.FileMark.Preview2Address">
+            <summary>
+            Spotted on version 518 only
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.AnycubicFile.AnycubicNamedTable.IncludeBaseTableLength">
+            <summary>
+            Gets or sets whatever to include the base table length into <see cref="P:UVtools.Core.FileFormats.AnycubicFile.AnycubicNamedTable.TableLength"/>
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.AnycubicFile.AnycubicNamedTable.DefaultTableName">
+            <summary>
+            Name of this table
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.AnycubicFile.AnycubicNamedTable.TableName">
+            <summary>
+            Gets the section name placeholder
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.AnycubicFile.AnycubicNamedTable.TableLength">
+            <summary>
+            Gets the length of this section
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.AnycubicFile.AnycubicNamedTable.GetWholeTableLength">
+            <summary>
+            Gets the absolute size of the table including base and derived
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.AnycubicFile.AnycubicNamedTable.GetDerivedTableLength">
+            <summary>
+            Gets the absolute size of the derived table
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.AnycubicFile.AnycubicNamedTable.GetFinalTableLength">
+            <summary>
+            Gets the absolute size to set in this table
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.AnycubicFile.AnycubicNamedTable.Validate(System.Boolean,System.Int32)">
+            <summary>
+            Validates this table
+            </summary>
+            <param name="validateName">True to validate the name, otherwise false</param>
+            <param name="lengthOffset">Offset to length</param>
+            <exception cref="T:System.IO.FileLoadException"></exception>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.AnycubicFile.AnycubicNamedTable.ValidateExpecting(System.Int32,System.Boolean)">
+            <summary>
+            Validates this table
+            </summary>
+            <param name="length">Length to expect</param>
+            <param name="validateName">True to validate the name, otherwise false</param>
+            <exception cref="T:System.IO.FileLoadException"></exception>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.AnycubicFile.Header.LayerHeight">
+            <summary>
+            Layer height in mm
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.AnycubicFile.Header.LiftSpeed">
+            <summary>
+            Gets the lift speed in mm/s
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.AnycubicFile.Header.RetractSpeed">
+            <summary>
+            Gets the retract speed in mm/s
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.AnycubicFile.Header.PriceCurrencySymbol">
+            <summary>
+            24 00 00 00 $ or ¥ C2 A5 00 00 or € = E2 82 AC 00
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.AnycubicFile.Header.PerLayerOverride">
+            <summary>
+            80
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.AnycubicFile.Header.TransitionLayerCount">
+            <summary>
+            spotted on 516
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.AnycubicFile.Header.TransitionLayerType">
+            <summary>
+            spotted on 516
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.AnycubicFile.Header.AdvancedMode">
+            <summary>
+            0 = Basic mode | 1 = Advanced mode which allows TSMC
+            v516
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.AnycubicFile.Header.Grey">
+            <summary>
+            v517
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.AnycubicFile.Header.BlurLevel">
+            <summary>
+            v517
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.AnycubicFile.Header.ResinType">
+            <summary>
+            v517
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.AnycubicFile.Header.IntelligentMode">
+            <summary>
+            When true, normal exposure time will be auto set, use false for traditional way
+            v518
+            </summary>
+        </member>
+        <member name="T:UVtools.Core.FileFormats.AnycubicFile.Preview">
+            <summary>
+            The files contain two preview images.
+            These are shown on the printer display when choosing which file to print, sparing the poor printer from needing to render a 3D image from scratch.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.AnycubicFile.Preview.ResolutionX">
+            <summary>
+            Gets the image width, in pixels.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.AnycubicFile.Preview.Mark">
+            <summary>
+            Gets the operation mark 'x'
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.AnycubicFile.Preview.ResolutionY">
+            <summary>
+            Gets the image height, in pixels.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.AnycubicFile.Preview2.ResolutionX">
+            <summary>
+            Gets the image width, in pixels.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.AnycubicFile.Preview2.BackgroundColor1">
+            <summary>
+            Gets the operation mark 'x'
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.AnycubicFile.Preview2.ResolutionY">
+            <summary>
+            Gets the image height, in pixels.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.AnycubicFile.LayerDef.DataAddress">
+            <summary>
+            Gets the layer image offset to encoded layer data, and its length in bytes.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.AnycubicFile.LayerDef.DataLength">
+            <summary>
+            Gets the layer image length in bytes.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.AnycubicFile.LayerDef.ExposureTime">
+            <summary>
+            Gets the exposure time for this layer, in seconds.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.AnycubicFile.LayerDef.LayerHeight">
+            <summary>
+            Gets the layer height for this layer, measured in millimeters.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.AnycubicFile.SubLayerDef.DataAddress">
+            <summary>
+            Gets the layer image offset to encoded layer data, and its length in bytes.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.AnycubicFile.SubLayerDef.DataLength">
+            <summary>
+            Gets the layer image length in bytes.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.AnycubicZipFile.SceneManifest.BinaryType">
+            <summary>
+            1: Pure Binary<br/>
+            2: FPGA Debug<br/>
+            3: FPGA Release. Firmware set to 3 (Default)
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.AnycubicZipFile.SceneManifest.ModelUnit">
+            <summary>
+            0: mm<br/>
+            1: cm<br/>
+            2: m
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.AnycubicZipFile.SceneManifest.ModelStats">
+            <summary>
+            Some status flags of the scene model
+            </summary>
+        </member>
         <member name="P:UVtools.Core.FileFormats.ChituboxFile.Header.Magic">
             <summary>
             Gets a magic number identifying the file type.
@@ -2648,6 +2919,331 @@
             Gets the total size of ctbImageInfo and Image data
             </summary>
         </member>
+        <member name="P:UVtools.Core.FileFormats.CrealityCXDLPFile.Header.MagicSize">
+            <summary>
+            Gets the size of the magic
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.CrealityCXDLPFile.Header.Magic">
+            <summary>
+            Gets the magic name
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.CrealityCXDLPFile.Header.PrinterModel">
+            <summary>
+            Gets the printer model
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.CrealityCXDLPFile.Header.LayerCount">
+            <summary>
+            Gets the number of records in the layer table
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.CrealityCXDLPFile.Header.ResolutionX">
+            <summary>
+            Gets the printer resolution along X axis, in pixels. This information is critical to correctly decoding layer images.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.CrealityCXDLPFile.Header.ResolutionY">
+            <summary>
+            Gets the printer resolution along Y axis, in pixels. This information is critical to correctly decoding layer images.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.CrealityCXDLPFile.Footer.FooterSize">
+            <summary>
+            Gets the size of the header
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.CrealityCXDLPFile.Footer.FooterValue">
+            <summary>
+            Gets the header name
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.CrealityCXDLPv1File.Header.HeaderSize">
+            <summary>
+            Gets the size of the header
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.CrealityCXDLPv1File.Header.HeaderValue">
+            <summary>
+            Gets the header name
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.CrealityCXDLPv1File.Header.LayerCount">
+            <summary>
+            Gets the number of records in the layer table
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.CrealityCXDLPv1File.Header.ResolutionX">
+            <summary>
+            Gets the printer resolution along X axis, in pixels. This information is critical to correctly decoding layer images.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.CrealityCXDLPv1File.Header.ResolutionY">
+            <summary>
+            Gets the printer resolution along Y axis, in pixels. This information is critical to correctly decoding layer images.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.CrealityCXDLPv1File.Footer.FooterSize">
+            <summary>
+            Gets the size of the header
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.CrealityCXDLPv1File.Footer.FooterValue">
+            <summary>
+            Gets the header name
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.CrealityCXDLPv4File.Header.MagicSize">
+            <summary>
+            Gets the size of the magic
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.CrealityCXDLPv4File.Header.Magic">
+            <summary>
+            Gets the magic name
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.CrealityCXDLPv4File.Header.PrinterModel">
+            <summary>
+            Gets the printer model
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.CrealityCXDLPv4File.Header.ResolutionX">
+            <summary>
+            Gets the printer resolution along X axis, in pixels. This information is critical to correctly decoding layer images.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.CrealityCXDLPv4File.Header.ResolutionY">
+            <summary>
+            Gets the printer resolution along Y axis, in pixels. This information is critical to correctly decoding layer images.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.CrealityCXDLPv4File.Header.BedSizeX">
+            <summary>
+            Gets dimensions of the printer’s X output volume, in millimeters.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.CrealityCXDLPv4File.Header.BedSizeY">
+            <summary>
+            Gets dimensions of the printer’s Y output volume, in millimeters.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.CrealityCXDLPv4File.Header.BedSizeZ">
+            <summary>
+            Gets dimensions of the printer’s Z output volume, in millimeters.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.CrealityCXDLPv4File.Header.PrintHeight">
+            <summary>
+            Gets the height of the model described by this file, in millimeters.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.CrealityCXDLPv4File.Header.LayerHeight">
+            <summary>
+            Gets the layer height setting used at slicing, in millimeters. Actual height used by the machine is in the layer table.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.CrealityCXDLPv4File.Header.BottomLayersCount">
+            <summary>
+            Gets number of layers configured as "bottom." Note that this field appears in both the file header and ExtConfig..
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.CrealityCXDLPv4File.Header.PreviewSmallOffsetAddress">
+            <summary>
+            Gets the file offsets of ImageHeader records describing the smaller preview images.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.CrealityCXDLPv4File.Header.LayersDefinitionOffsetAddress">
+            <summary>
+            Gets the file offset of a table of LayerHeader records giving parameters for each printed layer.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.CrealityCXDLPv4File.Header.LayerCount">
+            <summary>
+            Gets the number of records in the layer table for the first level set. In ctb files, that’s equivalent to the total number of records, but records may be multiplied in antialiased cbddlp files.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.CrealityCXDLPv4File.Header.PreviewLargeOffsetAddress">
+            <summary>
+            Gets the file offsets of ImageHeader records describing the larger preview images.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.CrealityCXDLPv4File.Header.PrintTime">
+            <summary>
+            Gets the estimated duration of print, in seconds.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.CrealityCXDLPv4File.Header.ProjectorType">
+            <summary>
+            Gets the records whether this file was generated assuming normal (0) or mirrored (1) image projection. LCD printers are "mirrored" for this purpose.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.CrealityCXDLPv4File.Header.PrintParametersOffsetAddress">
+            <summary>
+            Gets the print parameters table offset
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.CrealityCXDLPv4File.Header.PrintParametersSize">
+            <summary>
+            Gets the print parameters table size in bytes.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.CrealityCXDLPv4File.Header.LightPWM">
+            <summary>
+            Gets the PWM duty cycle for the UV illumination source on normal levels, respectively.
+            This appears to be an 8-bit quantity where 0xFF is fully on and 0x00 is fully off.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.CrealityCXDLPv4File.Header.BottomLightPWM">
+            <summary>
+            Gets the PWM duty cycle for the UV illumination source on bottom levels, respectively.
+            This appears to be an 8-bit quantity where 0xFF is fully on and 0x00 is fully off.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.CrealityCXDLPv4File.Header.EncryptionKey">
+            <summary>
+            Gets the key used to encrypt layer data, or 0 if encryption is not used.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.CrealityCXDLPv4File.Header.SlicerAddress">
+            <summary>
+            Gets the slicer tablet address 
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.CrealityCXDLPv4File.Header.SlicerSize">
+            <summary>
+            Gets the slicer table size in bytes
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.CrealityCXDLPv4File.PrintParameters.BottomLiftHeight">
+            <summary>
+            Gets the distance to lift the build platform away from the vat after bottom layers, in millimeters.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.CrealityCXDLPv4File.PrintParameters.BottomLiftSpeed">
+            <summary>
+            Gets the speed at which to lift the build platform away from the vat after bottom layers, in millimeters per minute.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.CrealityCXDLPv4File.PrintParameters.LiftHeight">
+            <summary>
+            Gets the distance to lift the build platform away from the vat after normal layers, in millimeters.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.CrealityCXDLPv4File.PrintParameters.LiftSpeed">
+            <summary>
+            Gets the speed at which to lift the build platform away from the vat after normal layers, in millimeters per minute.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.CrealityCXDLPv4File.PrintParameters.RetractSpeed">
+            <summary>
+            Gets the speed to use when the build platform re-approaches the vat after lift, in millimeters per minute.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.CrealityCXDLPv4File.PrintParameters.VolumeMl">
+            <summary>
+            Gets the estimated required resin, measured in milliliters. The volume number is derived from the model.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.CrealityCXDLPv4File.PrintParameters.WeightG">
+            <summary>
+            Gets the estimated grams, derived from volume using configured factors for density.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.CrealityCXDLPv4File.PrintParameters.CostDollars">
+            <summary>
+            Gets the estimated cost based on currency unit the user had configured. Derived from volume using configured factors for density and cost.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.CrealityCXDLPv4File.PrintParameters.BottomLightOffDelay">
+            <summary>
+            Gets the light off time setting used at slicing, for bottom layers, in seconds. Actual time used by the machine is in the layer table. Note that light_off_time_s appears in both the file header and ExtConfig.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.CrealityCXDLPv4File.PrintParameters.LightOffDelay">
+            <summary>
+            Gets the light off time setting used at slicing, for normal layers, in seconds. Actual time used by the machine is in the layer table. Note that light_off_time_s appears in both the file header and ExtConfig.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.CrealityCXDLPv4File.PrintParameters.BottomLayerCount">
+            <summary>
+            Gets number of layers configured as "bottom." Note that this field appears in both the file header and ExtConfig.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.CrealityCXDLPv4File.SlicerInfo.PerLayerSettings">
+            <summary>
+            Enable per layer settings, true or false
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.CrealityCXDLPv4File.SlicerInfo.ModifiedTimestampMinutes">
+            <summary>
+            Gets the minutes since Jan 1, 1970 UTC
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.CrealityCXDLPv4File.SlicerInfo.AntiAliasLevel">
+            <summary>
+            Gets the user-selected antialiasing level.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.CrealityCXDLPv4File.SlicerInfo.SoftwareVersion">
+            <summary>
+            Gets a version of software that generated this file, encoded with major, minor, and patch release in bytes starting from the MSB down.
+            (No provision is made to name the software being used, so this assumes that only one software package can generate the files.
+            Probably best to hardcode it at 0x01060300.)
+            </summary>17170480
+        </member>
+        <member name="T:UVtools.Core.FileFormats.CrealityCXDLPv4File.Preview">
+            <summary>
+            The files contain two preview images.
+            These are shown on the printer display when choosing which file to print, sparing the poor printer from needing to render a 3D image from scratch.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.CrealityCXDLPv4File.Preview.ResolutionX">
+            <summary>
+            Gets the X dimension of the preview image, in pixels. 
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.CrealityCXDLPv4File.Preview.ResolutionY">
+            <summary>
+            Gets the Y dimension of the preview image, in pixels. 
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.CrealityCXDLPv4File.Preview.ImageOffset">
+            <summary>
+            Gets the image offset of the encoded data blob.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.CrealityCXDLPv4File.Preview.ImageLength">
+            <summary>
+            Gets the image length in bytes.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.CrealityCXDLPv4File.LayerDef.PositionZ">
+            <summary>
+            Gets the build platform Z position for this layer, measured in millimeters.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.CrealityCXDLPv4File.LayerDef.ExposureTime">
+            <summary>
+            Gets the exposure time for this layer, in seconds.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.CrealityCXDLPv4File.LayerDef.LightOffSeconds">
+            <summary>
+            Gets how long to keep the light off after exposing this layer, in seconds.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.CrealityCXDLPv4File.LayerDef.DataAddress">
+            <summary>
+            Gets the layer image offset to encoded layer data, and its length in bytes.
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.CrealityCXDLPv4File.LayerDef.DataSize">
+            <summary>
+            Gets the layer image length in bytes.
+            </summary>
+        </member>
         <member name="P:UVtools.Core.FileFormats.CTBEncryptedFile.SlicerSettings.ChecksumValue">
             <summary>
             Checksum of unix timestamp
@@ -2687,331 +3283,6 @@
         <member name="P:UVtools.Core.FileFormats.CTBEncryptedFile.Preview.ImageLength">
             <summary>
             Gets the image length in bytes.
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.CXDLPFile.Header.MagicSize">
-            <summary>
-            Gets the size of the magic
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.CXDLPFile.Header.Magic">
-            <summary>
-            Gets the magic name
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.CXDLPFile.Header.PrinterModel">
-            <summary>
-            Gets the printer model
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.CXDLPFile.Header.LayerCount">
-            <summary>
-            Gets the number of records in the layer table
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.CXDLPFile.Header.ResolutionX">
-            <summary>
-            Gets the printer resolution along X axis, in pixels. This information is critical to correctly decoding layer images.
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.CXDLPFile.Header.ResolutionY">
-            <summary>
-            Gets the printer resolution along Y axis, in pixels. This information is critical to correctly decoding layer images.
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.CXDLPFile.Footer.FooterSize">
-            <summary>
-            Gets the size of the header
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.CXDLPFile.Footer.FooterValue">
-            <summary>
-            Gets the header name
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.CXDLPv1File.Header.HeaderSize">
-            <summary>
-            Gets the size of the header
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.CXDLPv1File.Header.HeaderValue">
-            <summary>
-            Gets the header name
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.CXDLPv1File.Header.LayerCount">
-            <summary>
-            Gets the number of records in the layer table
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.CXDLPv1File.Header.ResolutionX">
-            <summary>
-            Gets the printer resolution along X axis, in pixels. This information is critical to correctly decoding layer images.
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.CXDLPv1File.Header.ResolutionY">
-            <summary>
-            Gets the printer resolution along Y axis, in pixels. This information is critical to correctly decoding layer images.
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.CXDLPv1File.Footer.FooterSize">
-            <summary>
-            Gets the size of the header
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.CXDLPv1File.Footer.FooterValue">
-            <summary>
-            Gets the header name
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.CXDLPv4File.Header.MagicSize">
-            <summary>
-            Gets the size of the magic
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.CXDLPv4File.Header.Magic">
-            <summary>
-            Gets the magic name
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.CXDLPv4File.Header.PrinterModel">
-            <summary>
-            Gets the printer model
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.CXDLPv4File.Header.ResolutionX">
-            <summary>
-            Gets the printer resolution along X axis, in pixels. This information is critical to correctly decoding layer images.
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.CXDLPv4File.Header.ResolutionY">
-            <summary>
-            Gets the printer resolution along Y axis, in pixels. This information is critical to correctly decoding layer images.
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.CXDLPv4File.Header.BedSizeX">
-            <summary>
-            Gets dimensions of the printer’s X output volume, in millimeters.
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.CXDLPv4File.Header.BedSizeY">
-            <summary>
-            Gets dimensions of the printer’s Y output volume, in millimeters.
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.CXDLPv4File.Header.BedSizeZ">
-            <summary>
-            Gets dimensions of the printer’s Z output volume, in millimeters.
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.CXDLPv4File.Header.PrintHeight">
-            <summary>
-            Gets the height of the model described by this file, in millimeters.
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.CXDLPv4File.Header.LayerHeight">
-            <summary>
-            Gets the layer height setting used at slicing, in millimeters. Actual height used by the machine is in the layer table.
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.CXDLPv4File.Header.BottomLayersCount">
-            <summary>
-            Gets number of layers configured as "bottom." Note that this field appears in both the file header and ExtConfig..
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.CXDLPv4File.Header.PreviewSmallOffsetAddress">
-            <summary>
-            Gets the file offsets of ImageHeader records describing the smaller preview images.
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.CXDLPv4File.Header.LayersDefinitionOffsetAddress">
-            <summary>
-            Gets the file offset of a table of LayerHeader records giving parameters for each printed layer.
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.CXDLPv4File.Header.LayerCount">
-            <summary>
-            Gets the number of records in the layer table for the first level set. In ctb files, that’s equivalent to the total number of records, but records may be multiplied in antialiased cbddlp files.
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.CXDLPv4File.Header.PreviewLargeOffsetAddress">
-            <summary>
-            Gets the file offsets of ImageHeader records describing the larger preview images.
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.CXDLPv4File.Header.PrintTime">
-            <summary>
-            Gets the estimated duration of print, in seconds.
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.CXDLPv4File.Header.ProjectorType">
-            <summary>
-            Gets the records whether this file was generated assuming normal (0) or mirrored (1) image projection. LCD printers are "mirrored" for this purpose.
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.CXDLPv4File.Header.PrintParametersOffsetAddress">
-            <summary>
-            Gets the print parameters table offset
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.CXDLPv4File.Header.PrintParametersSize">
-            <summary>
-            Gets the print parameters table size in bytes.
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.CXDLPv4File.Header.LightPWM">
-            <summary>
-            Gets the PWM duty cycle for the UV illumination source on normal levels, respectively.
-            This appears to be an 8-bit quantity where 0xFF is fully on and 0x00 is fully off.
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.CXDLPv4File.Header.BottomLightPWM">
-            <summary>
-            Gets the PWM duty cycle for the UV illumination source on bottom levels, respectively.
-            This appears to be an 8-bit quantity where 0xFF is fully on and 0x00 is fully off.
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.CXDLPv4File.Header.EncryptionKey">
-            <summary>
-            Gets the key used to encrypt layer data, or 0 if encryption is not used.
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.CXDLPv4File.Header.SlicerAddress">
-            <summary>
-            Gets the slicer tablet address 
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.CXDLPv4File.Header.SlicerSize">
-            <summary>
-            Gets the slicer table size in bytes
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.CXDLPv4File.PrintParameters.BottomLiftHeight">
-            <summary>
-            Gets the distance to lift the build platform away from the vat after bottom layers, in millimeters.
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.CXDLPv4File.PrintParameters.BottomLiftSpeed">
-            <summary>
-            Gets the speed at which to lift the build platform away from the vat after bottom layers, in millimeters per minute.
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.CXDLPv4File.PrintParameters.LiftHeight">
-            <summary>
-            Gets the distance to lift the build platform away from the vat after normal layers, in millimeters.
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.CXDLPv4File.PrintParameters.LiftSpeed">
-            <summary>
-            Gets the speed at which to lift the build platform away from the vat after normal layers, in millimeters per minute.
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.CXDLPv4File.PrintParameters.RetractSpeed">
-            <summary>
-            Gets the speed to use when the build platform re-approaches the vat after lift, in millimeters per minute.
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.CXDLPv4File.PrintParameters.VolumeMl">
-            <summary>
-            Gets the estimated required resin, measured in milliliters. The volume number is derived from the model.
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.CXDLPv4File.PrintParameters.WeightG">
-            <summary>
-            Gets the estimated grams, derived from volume using configured factors for density.
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.CXDLPv4File.PrintParameters.CostDollars">
-            <summary>
-            Gets the estimated cost based on currency unit the user had configured. Derived from volume using configured factors for density and cost.
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.CXDLPv4File.PrintParameters.BottomLightOffDelay">
-            <summary>
-            Gets the light off time setting used at slicing, for bottom layers, in seconds. Actual time used by the machine is in the layer table. Note that light_off_time_s appears in both the file header and ExtConfig.
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.CXDLPv4File.PrintParameters.LightOffDelay">
-            <summary>
-            Gets the light off time setting used at slicing, for normal layers, in seconds. Actual time used by the machine is in the layer table. Note that light_off_time_s appears in both the file header and ExtConfig.
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.CXDLPv4File.PrintParameters.BottomLayerCount">
-            <summary>
-            Gets number of layers configured as "bottom." Note that this field appears in both the file header and ExtConfig.
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.CXDLPv4File.SlicerInfo.PerLayerSettings">
-            <summary>
-            Enable per layer settings, true or false
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.CXDLPv4File.SlicerInfo.ModifiedTimestampMinutes">
-            <summary>
-            Gets the minutes since Jan 1, 1970 UTC
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.CXDLPv4File.SlicerInfo.AntiAliasLevel">
-            <summary>
-            Gets the user-selected antialiasing level.
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.CXDLPv4File.SlicerInfo.SoftwareVersion">
-            <summary>
-            Gets a version of software that generated this file, encoded with major, minor, and patch release in bytes starting from the MSB down.
-            (No provision is made to name the software being used, so this assumes that only one software package can generate the files.
-            Probably best to hardcode it at 0x01060300.)
-            </summary>17170480
-        </member>
-        <member name="T:UVtools.Core.FileFormats.CXDLPv4File.Preview">
-            <summary>
-            The files contain two preview images.
-            These are shown on the printer display when choosing which file to print, sparing the poor printer from needing to render a 3D image from scratch.
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.CXDLPv4File.Preview.ResolutionX">
-            <summary>
-            Gets the X dimension of the preview image, in pixels. 
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.CXDLPv4File.Preview.ResolutionY">
-            <summary>
-            Gets the Y dimension of the preview image, in pixels. 
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.CXDLPv4File.Preview.ImageOffset">
-            <summary>
-            Gets the image offset of the encoded data blob.
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.CXDLPv4File.Preview.ImageLength">
-            <summary>
-            Gets the image length in bytes.
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.CXDLPv4File.LayerDef.PositionZ">
-            <summary>
-            Gets the build platform Z position for this layer, measured in millimeters.
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.CXDLPv4File.LayerDef.ExposureTime">
-            <summary>
-            Gets the exposure time for this layer, in seconds.
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.CXDLPv4File.LayerDef.LightOffSeconds">
-            <summary>
-            Gets how long to keep the light off after exposing this layer, in seconds.
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.CXDLPv4File.LayerDef.DataAddress">
-            <summary>
-            Gets the layer image offset to encoded layer data, and its length in bytes.
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.CXDLPv4File.LayerDef.DataSize">
-            <summary>
-            Gets the layer image length in bytes.
             </summary>
         </member>
         <member name="P:UVtools.Core.FileFormats.FDGFile.Header.Magic">
@@ -5349,6 +5620,12 @@
             </summary>
             <returns>True if one or more corrections has been applied, otherwise false</returns>
         </member>
+        <member name="M:UVtools.Core.FileFormats.FileFormat.SanitizeVersion">
+            <summary>
+            Sanitize version and return true if a correction has been applied
+            </summary>
+            <returns>True if one or more corrections has been applied, otherwise false</returns>
+        </member>
         <member name="M:UVtools.Core.FileFormats.FileFormat.RebuildLayersProperties(System.Boolean,System.String)">
             <summary>
             Rebuild layer properties based on slice settings
@@ -5525,258 +5802,6 @@
         <member name="P:UVtools.Core.FileFormats.OSLAFile.Preview.ImageLength">
             <summary>
             Gets the image length in bytes.
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.FileMark.Mark">
-            <summary>
-            Gets the file mark placeholder
-            Fixed to "ANYCUBIC"
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.FileMark.Version">
-            <summary>
-            Gets the file format version
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.FileMark.NumberOfTables">
-            <summary>
-            Gets the area num
-            4 for v1, 5 for v515, 8 for v516?
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.FileMark.HeaderAddress">
-            <summary>
-            Gets the header start address
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.FileMark.SoftwareAddress">
-            <summary>
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.FileMark.PreviewAddress">
-            <summary>
-            Gets the preview start offset
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.FileMark.LayerImageColorTableAddress">
-            <summary>
-            Spotted on version 515 only
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.FileMark.LayerDefinitionAddress">
-            <summary>
-            Gets the layer definition start address
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.FileMark.ExtraAddress">
-            <summary>
-            Spotted on version 516 only
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.FileMark.MachineAddress">
-            <summary>
-            Spotted on version 516 only
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.FileMark.LayerImageAddress">
-            <summary>
-            Gets layer image start address
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.FileMark.ModelAddress">
-            <summary>
-            Spotted on version 517 only
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.FileMark.SubLayerDefinitionAddress">
-            <summary>
-            Spotted on version 518 only
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.FileMark.Preview2Address">
-            <summary>
-            Spotted on version 518 only
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.AnycubicNamedTable.IncludeBaseTableLength">
-            <summary>
-            Gets or sets whatever to include the base table length into <see cref="P:UVtools.Core.FileFormats.PhotonWorkshopFile.AnycubicNamedTable.TableLength"/>
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.AnycubicNamedTable.DefaultTableName">
-            <summary>
-            Name of this table
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.AnycubicNamedTable.TableName">
-            <summary>
-            Gets the section name placeholder
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.AnycubicNamedTable.TableLength">
-            <summary>
-            Gets the length of this section
-            </summary>
-        </member>
-        <member name="M:UVtools.Core.FileFormats.PhotonWorkshopFile.AnycubicNamedTable.GetWholeTableLength">
-            <summary>
-            Gets the absolute size of the table including base and derived
-            </summary>
-        </member>
-        <member name="M:UVtools.Core.FileFormats.PhotonWorkshopFile.AnycubicNamedTable.GetDerivedTableLength">
-            <summary>
-            Gets the absolute size of the derived table
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:UVtools.Core.FileFormats.PhotonWorkshopFile.AnycubicNamedTable.GetFinalTableLength">
-            <summary>
-            Gets the absolute size to set in this table
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:UVtools.Core.FileFormats.PhotonWorkshopFile.AnycubicNamedTable.Validate(System.Boolean,System.Int32)">
-            <summary>
-            Validates this table
-            </summary>
-            <param name="validateName">True to validate the name, otherwise false</param>
-            <param name="lengthOffset">Offset to length</param>
-            <exception cref="T:System.IO.FileLoadException"></exception>
-        </member>
-        <member name="M:UVtools.Core.FileFormats.PhotonWorkshopFile.AnycubicNamedTable.ValidateExpecting(System.Int32,System.Boolean)">
-            <summary>
-            Validates this table
-            </summary>
-            <param name="length">Length to expect</param>
-            <param name="validateName">True to validate the name, otherwise false</param>
-            <exception cref="T:System.IO.FileLoadException"></exception>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.Header.LayerHeight">
-            <summary>
-            Layer height in mm
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.Header.LiftSpeed">
-            <summary>
-            Gets the lift speed in mm/s
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.Header.RetractSpeed">
-            <summary>
-            Gets the retract speed in mm/s
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.Header.PriceCurrencySymbol">
-            <summary>
-            24 00 00 00 $ or ¥ C2 A5 00 00 or € = E2 82 AC 00
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.Header.PerLayerOverride">
-            <summary>
-            80
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.Header.TransitionLayerCount">
-            <summary>
-            spotted on 516
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.Header.TransitionLayerType">
-            <summary>
-            spotted on 516
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.Header.AdvancedMode">
-            <summary>
-            0 = Basic mode | 1 = Advanced mode which allows TSMC
-            v516
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.Header.Grey">
-            <summary>
-            v517
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.Header.BlurLevel">
-            <summary>
-            v517
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.Header.ResinType">
-            <summary>
-            v517
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.Header.IntelligentMode">
-            <summary>
-            When true, normal exposure time will be auto set, use false for traditional way
-            v518
-            </summary>
-        </member>
-        <member name="T:UVtools.Core.FileFormats.PhotonWorkshopFile.Preview">
-            <summary>
-            The files contain two preview images.
-            These are shown on the printer display when choosing which file to print, sparing the poor printer from needing to render a 3D image from scratch.
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.Preview.ResolutionX">
-            <summary>
-            Gets the image width, in pixels.
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.Preview.Mark">
-            <summary>
-            Gets the operation mark 'x'
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.Preview.ResolutionY">
-            <summary>
-            Gets the image height, in pixels.
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.Preview2.ResolutionX">
-            <summary>
-            Gets the image width, in pixels.
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.Preview2.BackgroundColor1">
-            <summary>
-            Gets the operation mark 'x'
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.Preview2.ResolutionY">
-            <summary>
-            Gets the image height, in pixels.
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.LayerDef.DataAddress">
-            <summary>
-            Gets the layer image offset to encoded layer data, and its length in bytes.
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.LayerDef.DataLength">
-            <summary>
-            Gets the layer image length in bytes.
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.LayerDef.ExposureTime">
-            <summary>
-            Gets the exposure time for this layer, in seconds.
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.LayerDef.LayerHeight">
-            <summary>
-            Gets the layer height for this layer, measured in millimeters.
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.SubLayerDef.DataAddress">
-            <summary>
-            Gets the layer image offset to encoded layer data, and its length in bytes.
-            </summary>
-        </member>
-        <member name="P:UVtools.Core.FileFormats.PhotonWorkshopFile.SubLayerDef.DataLength">
-            <summary>
-            Gets the layer image length in bytes.
             </summary>
         </member>
         <member name="P:UVtools.Core.FileFormats.PHZFile.Header.Magic">

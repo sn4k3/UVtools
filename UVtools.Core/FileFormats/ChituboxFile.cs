@@ -1620,7 +1620,7 @@ public sealed class ChituboxFile : FileFormat
     public override string? MaterialName
     {
         get => ResinParametersSettings.ResinName;
-        set => base.MaterialName = ResinParametersSettings.ResinName = value!;
+        set => base.MaterialName = ResinParametersSettings.ResinName = value ?? string.Empty;
     }
 
     public override float MaterialGrams
@@ -1716,28 +1716,33 @@ public sealed class ChituboxFile : FileFormat
             if (FileEndsWith(".v2.ctb"))
             {
                 HeaderSettings.Magic = MAGIC_CTB;
-                HeaderSettings.Version = 2;
+                Version = 2;
             }
             else if (FileEndsWith(".v3.ctb"))
             {
                 HeaderSettings.Magic = MAGIC_CTB;
-                HeaderSettings.Version = 3;
+                Version = 3;
             }
             else if (FileEndsWith(".v4.ctb"))
             {
                 HeaderSettings.Magic = MAGIC_CTBv4;
-                HeaderSettings.Version = 4;
+                Version = 4;
+            }
+            else if (FileEndsWith(".v5.ctb"))
+            {
+                HeaderSettings.Magic = MAGIC_CTBv4;
+                Version = 5;
             }
             else if (FileEndsWith(".gktwo.ctb"))
             {
                 HeaderSettings.Magic = MAGIC_CTBv4_GKtwo;
-                HeaderSettings.Version = 4;
+                Version = 4;
             }
         }
         else if (FileEndsWith(".cbddlp") || FileEndsWith(".photon"))
         {
             HeaderSettings.Magic = MAGIC_CBDDLP;
-            if (HeaderSettings.Version > 2) HeaderSettings.Version = 2;
+            if (Version > 2) Version = 2;
         }
     }
 
@@ -1786,7 +1791,7 @@ public sealed class ChituboxFile : FileFormat
         }
         else // IsCbddlp
         {
-            //HeaderSettings.Version = 2;
+            //Version = 2;
             HeaderSettings.EncryptionKey = 0; // Force disable encryption
             HeaderSettings.SlicerOffset = 0;  // Force remove SlicerInfo for cbddlp
             HeaderSettings.SlicerSize = 0;

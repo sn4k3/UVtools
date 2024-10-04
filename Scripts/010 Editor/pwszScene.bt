@@ -1,0 +1,52 @@
+//------------------------------------------------
+//--- 010 Editor v13.0.2 Binary Template
+//
+//      File: pwsz
+//   Authors: Tiago Conceição
+//------------------------------------------------
+
+LittleEndian();
+
+enum <uint> BOOL { False, True };
+
+struct HEADER {
+    char Magic[16] <fgcolor=cBlack, bgcolor=cRed>; // ANYCUBIC-PWSZ
+    char Software[64] <fgcolor=cBlack, bgcolor=cRed>; // Identifies the generated software, company, name, eg: AnycubicPhotonWorkshop Exports
+    uint BinaryType <fgcolor=cBlack, bgcolor=cRed>; // 1: Pure Binary; 2: FPGA Debug; 3: FPGA Release. Firmware set to 3 (Default)
+    uint Version <fgcolor=cBlack, bgcolor=cRed>; // 1
+    uint SliceType <fgcolor=cBlack, bgcolor=cRed>; // Currently fixed at 0
+    uint ModelUnit <fgcolor=cBlack, bgcolor=cRed>; // 0: mm; 1: cm; 2: m; Currently fixed at 0
+    float PointRatio <fgcolor=cBlack, bgcolor=cRed>; // Currently fixed at 1.0f
+    uint LayerCount <fgcolor=cBlack, bgcolor=cRed>; 
+    float MinX <fgcolor=cBlack, bgcolor=cRed>; // 
+    float MinY <fgcolor=cBlack, bgcolor=cRed>; // 
+    float MinZ <fgcolor=cBlack, bgcolor=cRed>; // 
+    float MaxX <fgcolor=cBlack, bgcolor=cRed>; // 
+    float MaxY <fgcolor=cBlack, bgcolor=cRed>; // 
+    float MaxZ <fgcolor=cBlack, bgcolor=cRed>; // 
+    uint ModelStats <fgcolor=cBlack, bgcolor=cRed>; // Some status flags of the scene model
+    uint Padding[64] <fgcolor=cBlack, bgcolor=cRed>; // 
+    char Separator[4] <fgcolor=cBlack, bgcolor=cPurple>; // <---
+    uint LayerCount <fgcolor=cBlack, bgcolor=cGreen>; 
+} header;
+
+struct LAYER_DEF {
+    float Height <fgcolor=cWhite, bgcolor=cBlue>;
+    float Area <fgcolor=cWhite, bgcolor=cBlue>; // mm^2
+    float XMin <fgcolor=cWhite, bgcolor=cBlue>;
+    float YMin <fgcolor=cWhite, bgcolor=cBlue>;
+    float XMax <fgcolor=cWhite, bgcolor=cBlue>;
+    float YMax <fgcolor=cWhite, bgcolor=cBlue>;
+    uint ContourCount <fgcolor=cWhite, bgcolor=cBlue>;
+    float MaxContourArea <fgcolor=cWhite, bgcolor=cBlue>; // mm^2
+    uint Padding[8] <fgcolor=cWhite, bgcolor=cBlue>;
+};
+
+struct LAYERSDATA{
+        local uint i;
+        for( i = 0; i < header.LayerCount; i++ ){
+            LAYER_DEF layer;
+        }
+    } layers;
+    
+char EndMarker[4] <fgcolor=cBlack, bgcolor=cPurple>; // --->

@@ -483,11 +483,11 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         new ChituboxZipFile(), // Zip
         new ChituboxFile(), // cbddlp, cbt, photon
         new CTBEncryptedFile(), // encrypted ctb
-        new PhotonSFile(), // photons
+        new AnycubicPhotonSFile(), // photons
         new PHZFile(), // phz
-        new PhotonWorkshopFile(), // PSW
+        new AnycubicFile(), // PSW
 #if DEBUG
-        new PWSZFile(), // PWSZ
+        new AnycubicZipFile(), // PWSZ
 #endif
         new CWSFile(), // CWS
         new AnetFile(), // Anet N4, N7
@@ -495,8 +495,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         new VDAFile(), // VDA
         new VDTFile(), // VDT
         //new CXDLPv1File(),   // Creality Box v1
-        new CXDLPFile(), // Creality Box
-        new CXDLPv4File(), // Creality Box
+        new CrealityCXDLPFile(), // Creality Box
+        new CrealityCXDLPv4File(), // Creality Box
         new NanoDLPFile(), // NanoDLP
         new KlipperFile(), // Klipper
 
@@ -4457,18 +4457,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         var tempFile = TemporaryOutputFileFullPath;
         if (File.Exists(tempFile)) File.Delete(tempFile);
 
-        // Sanitize Version
-        if (AvailableVersionsCount > 0)
-        {
-            var possibleVersions = GetAvailableVersionsForExtension(FileExtension);
-            if (possibleVersions.Length > 0)
-            {
-                if (!possibleVersions.Contains(Version)) // Version not found on possible versions, set to last
-                {
-                    Version = possibleVersions[^1];
-                }
-            }
-        }
+        // Sanitize Version after file name is set
+        SanitizeVersion();
 
         // Make sure thumbnails are all set, otherwise clone/create them
         SanitizeThumbnails(FileType != FileFormatType.Archive);
@@ -6279,10 +6269,12 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         if (!convertSlicerFile.OnBeforeConvertFrom(this)) return null;
         if (!OnBeforeConvertTo(convertSlicerFile)) return null;
 
-        if (version > 0 && version != DefaultVersion)
+        if (version > 0 && version != convertSlicerFile.Version)
         {
             convertSlicerFile.Version = version;
         }
+
+        convertSlicerFile.SanitizeVersion();
 
         convertSlicerFile.SuppressRebuildPropertiesWork(() =>
         {
@@ -7418,6 +7410,29 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         }
 
         return appliedCorrections;
+    }
+
+    /// <summary>
+    /// Sanitize version and return true if a correction has been applied
+    /// </summary>
+    /// <returns>True if one or more corrections has been applied, otherwise false</returns>
+    public bool SanitizeVersion()
+    {
+        // Sanitize Version
+        if (AvailableVersionsCount > 0)
+        {
+            var possibleVersions = GetAvailableVersionsForExtension(FileExtension);
+            if (possibleVersions.Length > 0)
+            {
+                if (!possibleVersions.Contains(Version)) // Version not found on possible versions, set to last
+                {
+                    Version = possibleVersions[^1];
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     /// <summary>

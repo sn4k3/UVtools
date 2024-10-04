@@ -25,7 +25,7 @@ using UVtools.Core.Operations;
 
 namespace UVtools.Core.FileFormats;
 
-public sealed class CXDLPv4File : FileFormat
+public sealed class CrealityCXDLPv4File : FileFormat
 {
 
     #region Constants
@@ -477,7 +477,7 @@ public sealed class CXDLPv4File : FileFormat
             layer.WaitTimeAfterLift = RestTimeAfterLift;
         }
 
-        public Mat Decode(CXDLPv4File parent, LayerDef layerDef, uint layerIndex)
+        public Mat Decode(CrealityCXDLPv4File parent, LayerDef layerDef, uint layerIndex)
         {
             if (layerDef.DataType > 0)
             {
@@ -556,7 +556,7 @@ public sealed class CXDLPv4File : FileFormat
             return mat;
         }
 
-        public unsafe byte[] Encode(CXDLPv4File parent, Mat image, uint layerIndex)
+        public unsafe byte[] Encode(CrealityCXDLPv4File parent, Mat image, uint layerIndex)
         {
             List<byte> rawData = new();
             byte color = byte.MaxValue >> 1;
@@ -662,10 +662,10 @@ public sealed class CXDLPv4File : FileFormat
 
     public override FileFormatType FileType => FileFormatType.Binary;
 
-    public override string ConvertMenuGroup => "CXDLP";
+    public override string ConvertMenuGroup => "Creality CXDLP";
 
     public override FileExtension[] FileExtensions { get; } = {
-        new(typeof(CXDLPv4File), "cxdlpv4", "Creality CXDLPv4"),
+        new(typeof(CrealityCXDLPv4File), "cxdlpv4", "Creality CXDLPv4"),
     };
 
     public override PrintParameterModifier[] PrintParameterModifiers =>
@@ -1068,7 +1068,7 @@ public sealed class CXDLPv4File : FileFormat
     #endregion
 
     #region Constructors
-    public CXDLPv4File()
+    public CrealityCXDLPv4File()
     {
         Previews = new Preview[ThumbnailCountFileShouldHave];
     }

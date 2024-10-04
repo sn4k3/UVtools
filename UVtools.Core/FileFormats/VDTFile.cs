@@ -612,6 +612,8 @@ public sealed class VDTFile : FileFormat
             output.Version = (uint)fileVersion;
         }
 
+        output.LayerImageFormat = LookupCustomValue(SL1File.Keyword_LayerImageFormat, output.LayerImageFormat);
+
         return true;
     }
 

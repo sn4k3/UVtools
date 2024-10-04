@@ -117,6 +117,7 @@ But also, I need victims for test subject. Proceed at your own risk!
 - GR1 (GR1 Workshop)
 - CXDLP, CXDLPV4 (Creality Box)
 - GOO (Elegoo)
+- PRZ (Phrozen Sonic Mini 8K S)
 - LGS (Longer Orange 10), LGS30 (Longer Orange 30), LGS120 (Longer Orange 120), LGS4K (Longer Orange 4K & mono)
 - Flashforge SVGX
 - Anet N4, Anet N7

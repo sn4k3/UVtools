@@ -20,7 +20,7 @@ using UVtools.Core.Operations;
 
 namespace UVtools.Core.FileFormats;
 
-public sealed class PhotonSFile : FileFormat
+public sealed class AnycubicPhotonSFile : FileFormat
 {
     #region Constants
     public const byte RLEEncodingLimit = 128;
@@ -250,7 +250,7 @@ public sealed class PhotonSFile : FileFormat
     public override string ConvertMenuGroup => "Chitubox";
 
     public override FileExtension[] FileExtensions { get; } = {
-        new(typeof(PhotonSFile), "photons", "Chitubox PhotonS"),
+        new(typeof(AnycubicPhotonSFile), "photons", "Chitubox PhotonS"),
     };
 
     public override PrintParameterModifier[] PrintParameterModifiers { get; } =
@@ -384,7 +384,7 @@ public sealed class PhotonSFile : FileFormat
     #endregion
 
     #region Constructors
-    public PhotonSFile()
+    public AnycubicPhotonSFile()
     {
         ResolutionX = RESOLUTION_X;
         ResolutionY = RESOLUTION_Y;

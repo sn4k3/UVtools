@@ -29,7 +29,7 @@ using UVtools.Core.Printer;
 
 namespace UVtools.Core.FileFormats;
 
-public sealed class CXDLPFile : FileFormat
+public sealed class CrealityCXDLPFile : FileFormat
 {
     #region Constants
 
@@ -391,10 +391,10 @@ public sealed class CXDLPFile : FileFormat
 
     public override FileFormatType FileType => FileFormatType.Binary;
 
-    public override string ConvertMenuGroup => "CXDLP";
+    public override string ConvertMenuGroup => "Creality CXDLP";
 
     public override FileExtension[] FileExtensions { get; } = {
-        new(typeof(CXDLPFile), "cxdlp", "Creality CXDLP"),
+        new(typeof(CrealityCXDLPFile), "cxdlp", "Creality CXDLP"),
     };
 
     public override SpeedUnit FormatSpeedUnit => SpeedUnit.MillimetersPerSecond;
