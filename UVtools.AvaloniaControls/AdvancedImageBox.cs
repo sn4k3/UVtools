@@ -19,6 +19,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.Runtime.CompilerServices;
 using Avalonia.Controls.Presenters;
@@ -435,30 +436,54 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
 
     #region UI Controls
     /// <inheritdoc />
-    public Size Extent => new(Math.Max(ViewPort.Bounds.Width, ScaledImageWidth), Math.Max(ViewPort.Bounds.Height, ScaledImageHeight));
+    public Size Extent
+    {
+        get
+        {
+            var viewPort = ViewPort;
+            if (viewPort is null) return default;
+            return new(Math.Max(viewPort.Bounds.Width, ScaledImageWidth),
+                Math.Max(viewPort.Bounds.Height, ScaledImageHeight));
+        }
+    }
 
     /// <inheritdoc />
     public Vector Offset
     {
-        get => new(HorizontalScrollBar.Value, VerticalScrollBar.Value);
+        get
+        {
+            var horizontalScrollBar = HorizontalScrollBar;
+            if (horizontalScrollBar is null) return default;
+
+            var verticalScrollBar = VerticalScrollBar;
+            if (verticalScrollBar is null) return default;
+
+            return new Vector(horizontalScrollBar.Value, verticalScrollBar.Value);
+        }
         set
         {
-            HorizontalScrollBar.Value = value.X;
-            VerticalScrollBar.Value = value.Y;
+            var horizontalScrollBar = HorizontalScrollBar;
+            if (horizontalScrollBar is null) return;
+
+            var verticalScrollBar = VerticalScrollBar;
+            if (verticalScrollBar is null) return;
+
+            horizontalScrollBar.Value = value.X;
+            verticalScrollBar.Value = value.Y;
             RaisePropertyChanged();
             TriggerRender();
         }
     }
 
     /// <inheritdoc />
-    public Size Viewport => ViewPort.Bounds.Size;
+    public Size Viewport => ViewPort?.Bounds.Size ?? default;
     #endregion
 
     #region Private Members
 
-    protected internal ScrollContentPresenter ViewPort = null!;
-    protected internal ScrollBar HorizontalScrollBar = null!;
-    protected internal ScrollBar VerticalScrollBar = null!;
+    protected internal ScrollContentPresenter? ViewPort;
+    protected internal ScrollBar? HorizontalScrollBar;
+    protected internal ScrollBar? VerticalScrollBar;
 
     private Point _startMousePosition;
     private Vector _startScrollPosition;
@@ -539,15 +564,23 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
         set => SetValue(ImageProperty, value);
     }
 
+    /// <summary>
+    /// Gets the image as a writeable bitmap
+    /// </summary>
     public WriteableBitmap? ImageAsWriteableBitmap
     {
         get
         {
-            if (Image is null) return null;
-            return (WriteableBitmap) Image;
+            var image = Image;
+            if (image is null) return null;
+            return (WriteableBitmap)image;
         }
     }
 
+    /// <summary>
+    /// Returns true if image is loaded, otherwise false.
+    /// </summary>
+    [MemberNotNullWhen(true, nameof(Image))]
     public bool IsImageLoaded => Image is not null;
 
     public static readonly DirectProperty<AdvancedImageBox, Bitmap?> TrackerImageProperty =
@@ -832,16 +865,22 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
 
     private void SizeModeChanged()
     {
+        var horizontalScrollBar = HorizontalScrollBar;
+        if (horizontalScrollBar is null) return;
+
+        var verticalScrollBar = VerticalScrollBar;
+        if (verticalScrollBar is null) return;
+
         switch (SizeMode)
         {
             case SizeModes.Normal:
-                HorizontalScrollBar.Visibility = ScrollBarVisibility.Auto;
-                VerticalScrollBar.Visibility = ScrollBarVisibility.Auto;
+                horizontalScrollBar.Visibility = ScrollBarVisibility.Auto;
+                verticalScrollBar.Visibility = ScrollBarVisibility.Auto;
                 break;
             case SizeModes.Stretch:
             case SizeModes.Fit:
-                HorizontalScrollBar.Visibility = ScrollBarVisibility.Hidden;
-                VerticalScrollBar.Visibility = ScrollBarVisibility.Hidden;
+                horizontalScrollBar.Visibility = ScrollBarVisibility.Hidden;
+                verticalScrollBar.Visibility = ScrollBarVisibility.Hidden;
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(SizeMode), SizeMode, null);
@@ -972,9 +1011,9 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     {
         get
         {
-            if (!IsImageLoaded) return 100;
-            var image = Image!;
-
+            var image = Image;
+            if (image is null) return 100;
+            
             double zoom;
             double aspectRatio;
 
@@ -1143,14 +1182,25 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
             ViewPort.PointerExited -= ViewPortOnPointerExited;
             ViewPort.PointerMoved -= ViewPortOnPointerMoved;
             ViewPort.PointerWheelChanged -= ViewPortOnPointerWheelChanged;
-            HorizontalScrollBar.Scroll -= ScrollBarOnScroll;
-            VerticalScrollBar.Scroll -= ScrollBarOnScroll;
+        }
+
+        // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
+        if (HorizontalScrollBar is not null)
+        {
+            HorizontalScrollBar.Scroll += ScrollBarOnScroll;
+        }
+
+        // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
+        if (VerticalScrollBar is not null)
+        {
+            VerticalScrollBar.Scroll += ScrollBarOnScroll;
         }
 
         ViewPort = e.NameScope.Find<ScrollContentPresenter>("PART_ContentPresenter")!;
         HorizontalScrollBar = e.NameScope.Find<ScrollBar>("PART_HorizontalScrollBar")!;
         VerticalScrollBar = e.NameScope.Find<ScrollBar>("PART_VerticalScrollBar")!;
 
+        UpdateViewPort();
         SizeModeChanged();
         
         ViewPort.PointerPressed += ViewPortOnPointerPressed;
@@ -1168,6 +1218,7 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     {
         base.OnPropertyChanged(e);
 
+        if (!IsLoaded) return;
         if (ReferenceEquals(e.Property, ImageProperty))
         {
             if (!IsImageLoaded)
@@ -1177,7 +1228,7 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
 
             UpdateViewPort();
             TriggerRender();
-
+            
             RaisePropertyChanged(nameof(ImageAsWriteableBitmap));
             RaisePropertyChanged(nameof(IsImageLoaded));
             RaisePropertyChanged(nameof(ScaledImageWidth));
@@ -1309,30 +1360,36 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
 
     private bool UpdateViewPort()
     {
+        var horizontalScrollBar = HorizontalScrollBar;
+        if (horizontalScrollBar is null) return false;
+
+        var verticalScrollBar = VerticalScrollBar;
+        if (verticalScrollBar is null) return false;
+
         if (!IsImageLoaded)
         {
-            HorizontalScrollBar.Maximum = 0;
-            VerticalScrollBar.Maximum = 0;
+            horizontalScrollBar.Maximum = 0;
+            verticalScrollBar.Maximum = 0;
             return true;
         }
 
         var scaledImageWidth = ScaledImageWidth;
         var scaledImageHeight = ScaledImageHeight;
-        var width = scaledImageWidth - HorizontalScrollBar.ViewportSize;
-        var height = scaledImageHeight - VerticalScrollBar.ViewportSize;
+        var width = scaledImageWidth - horizontalScrollBar.ViewportSize;
+        var height = scaledImageHeight - verticalScrollBar.ViewportSize;
         //var width = scaledImageWidth <= Viewport.Width ? Viewport.Width : scaledImageWidth;
         //var height = scaledImageHeight <= Viewport.Height ? Viewport.Height : scaledImageHeight;
 
         bool changed = false;
-        if (Math.Abs(HorizontalScrollBar.Maximum - width) > 0.01)
+        if (Math.Abs(horizontalScrollBar.Maximum - width) > 0.01)
         {
-            HorizontalScrollBar.Maximum = width;
+            horizontalScrollBar.Maximum = width;
             changed = true;
         }
 
-        if (Math.Abs(VerticalScrollBar.Maximum - scaledImageHeight) > 0.01)
+        if (Math.Abs(verticalScrollBar.Maximum - scaledImageHeight) > 0.01)
         {
-            VerticalScrollBar.Maximum = height;
+            verticalScrollBar.Maximum = height;
             changed = true;
         }
 
@@ -1501,7 +1558,14 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     {
         if (e.Handled) return;
 
-        var pointer = e.GetCurrentPoint(ViewPort);
+        var viewPort = ViewPort;
+        if (viewPort is null)
+        {
+            e.Handled = true;
+            return;
+        }
+
+        var pointer = e.GetCurrentPoint(viewPort);
         PointerPosition = pointer.Position;
         
         if (!_isPanning && !_isSelecting)
@@ -1531,8 +1595,8 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
         else if (_isSelecting)
         {
             var viewPortPoint = new Point(
-                Math.Min(_pointerPosition.X, ViewPort.Bounds.Right),
-                Math.Min(_pointerPosition.Y, ViewPort.Bounds.Bottom));
+                Math.Min(_pointerPosition.X, viewPort.Bounds.Right),
+                Math.Min(_pointerPosition.Y, viewPort.Bounds.Bottom));
             
             double x;
             double y;
@@ -2261,7 +2325,13 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     /// </summary>
     public void CenterToImage()
     {
-        Offset = new Vector(HorizontalScrollBar.Maximum / 2, VerticalScrollBar.Maximum / 2);
+        var horizontalScrollBar = HorizontalScrollBar;
+        if (horizontalScrollBar is null) return;
+
+        var verticalScrollBar = VerticalScrollBar;
+        if (verticalScrollBar is null) return;
+
+        Offset = new Vector(horizontalScrollBar.Maximum / 2.0, verticalScrollBar.Maximum / 2.0);
     }
     #endregion
 
@@ -2471,24 +2541,27 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     /// <summary>
     /// Gets the image view port.
     /// </summary>
-    /// <returns></returns>
+    /// <returns>The image viewport rectangle.</returns>
     public Rect GetImageViewPort()
     {
-        var viewPortSize = Viewport;
-        if (!IsImageLoaded || viewPortSize is {Width: 0, Height: 0}) return default;
+        var image = Image;
+        if (image is null) return default;
 
-        double xOffset = 0;
-        double yOffset = 0;
-        double width = 0;
-        double height = 0;
+        var viewPortSize = Viewport;
+        if (viewPortSize is {Width: 0, Height: 0}) return default;
+        
+        double xOffset = 0.0;
+        double yOffset = 0.0;
+        double width = 0.0;
+        double height = 0.0;
 
         switch (SizeMode)
         {
             case SizeModes.Normal:
                 if (AutoCenter)
                 {
-                    xOffset = (!IsHorizontalBarVisible ? (viewPortSize.Width - ScaledImageWidth) / 2 : 0);
-                    yOffset = (!IsVerticalBarVisible ? (viewPortSize.Height - ScaledImageHeight) / 2 : 0);
+                    xOffset = (!IsHorizontalBarVisible ? (viewPortSize.Width - ScaledImageWidth) / 2.0 : 0.0);
+                    yOffset = (!IsVerticalBarVisible ? (viewPortSize.Height - ScaledImageHeight) / 2.0 : 0.0);
                 }
 
                 width = Math.Min(ScaledImageWidth - Math.Abs(Offset.X), viewPortSize.Width);
@@ -2499,16 +2572,15 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
                 height = viewPortSize.Height;
                 break;
             case SizeModes.Fit:
-                var image = Image;
-                double scaleFactor = Math.Min(viewPortSize.Width / image!.Size.Width, viewPortSize.Height / image.Size.Height);
+                double scaleFactor = Math.Min(viewPortSize.Width / image.Size.Width, viewPortSize.Height / image.Size.Height);
                     
                 width = Math.Floor(image.Size.Width * scaleFactor);
                 height = Math.Floor(image.Size.Height * scaleFactor);
 
                 if (AutoCenter)
                 {
-                    xOffset = (viewPortSize.Width - width) / 2;
-                    yOffset = (viewPortSize.Height - height) / 2;
+                    xOffset = (viewPortSize.Width - width) / 2.0;
+                    yOffset = (viewPortSize.Height - height) / 2.0;
                 }
 
                 break;

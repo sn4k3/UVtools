@@ -7,7 +7,7 @@
 - ExtendedNumericUpDown: Initial value with a reset button and value unit label
 - IndexSelector: Allow to choose an index from a collection count and display the selected number
 - GroupBox: Similar to GroupBox of WinForms, it contain an Header and Content</Description>
-		<Version>3.0.5</Version>
+		<Version>3.0.6</Version>
 
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<RepositoryUrl>https://github.com/sn4k3/UVtools/tree/master/UVtools.AvaloniaControls</RepositoryUrl>
