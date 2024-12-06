@@ -23,6 +23,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.Runtime.CompilerServices;
 using Avalonia.Controls.Presenters;
+using Avalonia.Interactivity;
 using Bitmap = Avalonia.Media.Imaging.Bitmap;
 using Color = Avalonia.Media.Color;
 using Pen = Avalonia.Media.Pen;
@@ -887,16 +888,16 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
         }
     }
 
-    public static readonly StyledProperty<bool> AllowZoomProperty =
-        AvaloniaProperty.Register<AdvancedImageBox, bool>(nameof(AllowZoom), true);
+    public static readonly StyledProperty<bool> ZoomWithMouseWheelProperty =
+        AvaloniaProperty.Register<AdvancedImageBox, bool>(nameof(ZoomWithMouseWheel), true);
 
     /// <summary>
-    /// Gets or sets if zoom is allowed
+    /// Gets or sets if zoom can be performed with the mouse wheel
     /// </summary>
-    public bool AllowZoom
+    public bool ZoomWithMouseWheel
     {
-        get => GetValue(AllowZoomProperty);
-        set => SetValue(AllowZoomProperty, value);
+        get => GetValue(ZoomWithMouseWheelProperty);
+        set => SetValue(ZoomWithMouseWheelProperty, value);
     }
 
     public static readonly DirectProperty<AdvancedImageBox, ZoomLevelCollection> ZoomLevelsProperty =
@@ -942,7 +943,7 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     }
 
     public static readonly StyledProperty<bool> ConstrainZoomOutToFitLevelProperty =
-        AvaloniaProperty.Register<AdvancedImageBox, bool>(nameof(ConstrainZoomOutToFitLevel), true);
+        AvaloniaProperty.Register<AdvancedImageBox, bool>(nameof(ConstrainZoomOutToFitLevel));
 
     /// <summary>
     /// Gets or sets if the zoom out should constrain to fit image as the lowest zoom level.
@@ -1040,9 +1041,72 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
                 }
             }
 
-            return (int) zoom;
+            return zoom <= 0 ? 100 : (int) zoom;
         }
     }
+
+    public static readonly StyledProperty<bool> AutoZoomToFitProperty =
+        AvaloniaProperty.Register<AdvancedImageBox, bool>(nameof(AutoZoomToFitProperty));
+
+    /// <summary>
+    /// Gets or sets if the zoom level should be auto set to fit when loading a new image.
+    /// </summary>
+    /// <remarks>Requires <see cref="SizeMode"/> to be <see cref="SizeModes.Normal"/>.</remarks>
+    public bool AutoZoomToFit
+    {
+        get => GetValue(AutoZoomToFitProperty);
+        set => SetValue(AutoZoomToFitProperty, value);
+    }
+
+
+    public static readonly StyledProperty<KeyGesture[]?> ZoomInKeyGesturesProperty =
+        AvaloniaProperty.Register<AdvancedImageBox, KeyGesture[]?>(nameof(ZoomInKeyGestures));
+
+    /// <summary>
+    /// Gets or sets the hot key to zoom in
+    /// </summary>
+    public KeyGesture[]? ZoomInKeyGestures
+    {
+        get => GetValue(ZoomInKeyGesturesProperty);
+        set => SetValue(ZoomInKeyGesturesProperty, value);
+    }
+
+    public static readonly StyledProperty<KeyGesture[]?> ZoomOutKeyGesturesProperty =
+        AvaloniaProperty.Register<AdvancedImageBox, KeyGesture[]?>(nameof(ZoomOutKeyGestures));
+
+    /// <summary>
+    /// Gets or sets the hot key to zoom out
+    /// </summary>
+    public KeyGesture[]? ZoomOutKeyGestures
+    {
+        get => GetValue(ZoomOutKeyGesturesProperty);
+        set => SetValue(ZoomOutKeyGesturesProperty, value);
+    }
+
+    public static readonly StyledProperty<KeyGesture[]?> ZoomTo100KeyGesturesProperty =
+        AvaloniaProperty.Register<AdvancedImageBox, KeyGesture[]?>(nameof(ZoomTo100KeyGestures));
+
+    /// <summary>
+    /// Gets or sets the hot key to zoom to 100%
+    /// </summary>
+    public KeyGesture[]? ZoomTo100KeyGestures
+    {
+        get => GetValue(ZoomTo100KeyGesturesProperty);
+        set => SetValue(ZoomTo100KeyGesturesProperty, value);
+    }
+
+    public static readonly StyledProperty<KeyGesture[]?> ZoomToFitKeyGesturesProperty =
+        AvaloniaProperty.Register<AdvancedImageBox, KeyGesture[]?>(nameof(ZoomToFitKeyGestures));
+
+    /// <summary>
+    /// Gets or sets the hot key to zoom to fit
+    /// </summary>
+    public KeyGesture[]? ZoomToFitKeyGestures
+    {
+        get => GetValue(ZoomToFitKeyGesturesProperty);
+        set => SetValue(ZoomToFitKeyGesturesProperty, value);
+    }
+
 
     /// <summary>
     /// Gets the size of the scaled image.
@@ -1174,7 +1238,7 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
-
+        
         // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
         if (ViewPort is not null)
         {
@@ -1200,9 +1264,8 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
         HorizontalScrollBar = e.NameScope.Find<ScrollBar>("PART_HorizontalScrollBar")!;
         VerticalScrollBar = e.NameScope.Find<ScrollBar>("PART_VerticalScrollBar")!;
 
-        UpdateViewPort();
         SizeModeChanged();
-        
+
         ViewPort.PointerPressed += ViewPortOnPointerPressed;
         ViewPort.PointerExited += ViewPortOnPointerExited;
         ViewPort.PointerMoved += ViewPortOnPointerMoved;
@@ -1212,7 +1275,27 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
         VerticalScrollBar.Scroll += ScrollBarOnScroll;
     }
 
-
+    protected override void OnLoaded(RoutedEventArgs e)
+    {
+        base.OnLoaded(e);
+        
+        UpdateViewPort();
+        if (IsImageLoaded)
+        {
+            if (AutoZoomToFit)
+            {
+                Zoom = ZoomLevelToFit;
+            }
+            else if (ConstrainZoomOutToFitLevel)
+            {
+                var zoomLevelToFit = ZoomLevelToFit;
+                if (Zoom < zoomLevelToFit)
+                {
+                    Zoom = zoomLevelToFit;
+                }
+            }
+        }
+    }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs e)
     {
@@ -1221,12 +1304,28 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
         if (!IsLoaded) return;
         if (ReferenceEquals(e.Property, ImageProperty))
         {
+            UpdateViewPort();
+
             if (!IsImageLoaded)
             {
                 SelectNone();
             }
-
-            UpdateViewPort();
+            else
+            {
+                if (AutoZoomToFit)
+                {
+                    Zoom = ZoomLevelToFit;
+                }
+                else if (ConstrainZoomOutToFitLevel)
+                {
+                    var zoomLevelToFit = ZoomLevelToFit;
+                    if (Zoom < zoomLevelToFit)
+                    {
+                        Zoom = zoomLevelToFit;
+                    }
+                }
+            }
+            
             TriggerRender();
             
             RaisePropertyChanged(nameof(ImageAsWriteableBitmap));
@@ -1235,6 +1334,7 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
             RaisePropertyChanged(nameof(ScaledImageHeight));
             RaisePropertyChanged(nameof(ScaledImageSize));
             RaisePropertyChanged(nameof(Extent));
+            RaisePropertyChanged(nameof(ZoomLevelToFit));
         }
         else if (ReferenceEquals(e.Property, SizeModeProperty))
         {
@@ -1375,8 +1475,8 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
 
         var scaledImageWidth = ScaledImageWidth;
         var scaledImageHeight = ScaledImageHeight;
-        var width = scaledImageWidth - horizontalScrollBar.ViewportSize;
-        var height = scaledImageHeight - verticalScrollBar.ViewportSize;
+        var width = Math.Max(0, scaledImageWidth - horizontalScrollBar.ViewportSize);
+        var height = Math.Max(0, scaledImageHeight - verticalScrollBar.ViewportSize);
         //var width = scaledImageWidth <= Viewport.Width ? Viewport.Width : scaledImageWidth;
         //var height = scaledImageHeight <= Viewport.Height ? Viewport.Height : scaledImageHeight;
 
@@ -1387,7 +1487,7 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
             changed = true;
         }
 
-        if (Math.Abs(verticalScrollBar.Maximum - scaledImageHeight) > 0.01)
+        if (Math.Abs(verticalScrollBar.Maximum - height) > 0.01)
         {
             verticalScrollBar.Maximum = height;
             changed = true;
@@ -1432,18 +1532,15 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     private void ViewPortOnPointerWheelChanged(object? sender, PointerWheelEventArgs e)
     {
         e.Handled = true;
-        if (Image is null) return;
-        if (AllowZoom && SizeMode == SizeModes.Normal)
-        {
-            // The MouseWheel event can contain multiple "spins" of the wheel so we need to adjust accordingly
-            //double spins = Math.Abs(e.Delta.Y);
-            //Debug.WriteLine(e.GetPosition(this));
-            // TODO: Really should update the source method to handle multiple increments rather than calling it multiple times
-            /*for (int i = 0; i < spins; i++)
-            {*/
-            ProcessMouseZoom(e.Delta.Y > 0, e.GetPosition(ViewPort));
-            //}
-        }
+        if (!IsImageLoaded || SizeMode != SizeModes.Normal || !ZoomWithMouseWheel) return;
+        // The MouseWheel event can contain multiple "spins" of the wheel so we need to adjust accordingly
+        //double spins = Math.Abs(e.Delta.Y);
+        //Debug.WriteLine(e.GetPosition(this));
+        // TODO: Really should update the source method to handle multiple increments rather than calling it multiple times
+        /*for (int i = 0; i < spins; i++)
+        {*/
+        ProcessMouseZoom(e.Delta.Y > 0, e.GetPosition(ViewPort));
+        //}
     }
 
     private void ViewPortOnPointerPressed(object? sender, PointerPressedEventArgs e)
@@ -1647,11 +1744,45 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
 
     protected override void OnKeyDown(KeyEventArgs e)
     {
+        base.OnKeyDown(e);
+
+        if (!IsImageLoaded || SizeMode != SizeModes.Normal) return;
+        
+        var zoomInKeyGestures = ZoomInKeyGestures;
+        if (zoomInKeyGestures is not null)
+        {
+            foreach (var zoomInKeyGesture in zoomInKeyGestures)
+            {
+                if (e.KeyModifiers == zoomInKeyGesture.KeyModifiers && e.Key == zoomInKeyGesture.Key)
+                {
+                    ZoomIn();
+                    e.Handled = true;
+                    return;
+                }
+            }
+        }
+        
+        var zoomOutKeyGestures = ZoomOutKeyGestures;
+        if (zoomOutKeyGestures is not null)
+        {
+            foreach (var zoomOutKeyGesture in zoomOutKeyGestures)
+            {
+                if (e.KeyModifiers == zoomOutKeyGesture.KeyModifiers && e.Key == zoomOutKeyGesture.Key)
+                {
+                    ZoomOut();
+                    e.Handled = true;
+                    return;
+                }
+            }
+        }
+
+        if (e.KeyModifiers != KeyModifiers.None) return;
+
         var panLeft = false;
         var panUp = false;
         var panRight = false;
         var panDown = false;
-
+        
         if (PanWithArrows)
         {
             switch (e.Key)
@@ -1671,19 +1802,19 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
             }
         }
 
-        if (PanLeftKey == e.Key)
+        if (e.Key == PanLeftKey)
         {
             panLeft = true;
         }
-        else if (PanUpKey == e.Key)
+        else if (e.Key == PanUpKey)
         {
             panUp = true;
         }
-        else if (PanRightKey == e.Key)
+        else if (e.Key == PanRightKey)
         {
             panRight = true;
         }
-        else if (PanDownKey == e.Key)
+        else if (e.Key == PanDownKey)
         {
             panDown = true;
         }
@@ -1691,22 +1822,64 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
         if (panLeft)
         {
             Offset = new Vector(Offset.X - PanOffset * ZoomFactor, Offset.Y);
+            e.Handled = true;
+            return;
         }
-        else if (panUp)
+
+        if (panUp)
         {
             Offset = new Vector(Offset.X, Offset.Y - PanOffset * ZoomFactor);
+            e.Handled = true;
+            return;
         }
-        else if (panRight)
+
+        if (panRight)
         {
             Offset = new Vector(Offset.X + PanOffset * ZoomFactor, Offset.Y);
+            e.Handled = true;
+            return;
         }
-        else if (panDown)
+
+        if (panDown)
         {
             Offset = new Vector(Offset.X, Offset.Y + PanOffset * ZoomFactor);
+            e.Handled = true;
+            return;
+        }
+    }
+
+    protected override void OnKeyUp(KeyEventArgs e)
+    {
+        base.OnKeyUp(e);
+        if (!IsImageLoaded || SizeMode != SizeModes.Normal) return;
+
+        var zoomTo100KeyGestures = ZoomTo100KeyGestures;
+        if (zoomTo100KeyGestures is not null && Zoom != 100)
+        {
+            foreach (var zoomTo100KeyGesture in zoomTo100KeyGestures)
+            {
+                if (e.KeyModifiers == zoomTo100KeyGesture.KeyModifiers && e.Key == zoomTo100KeyGesture.Key)
+                {
+                    Zoom = 100;
+                    e.Handled = true;
+                    return;
+                }
+            }
         }
 
-
-        base.OnKeyDown(e);
+        var zoomToFitKeyGestures = ZoomToFitKeyGestures;
+        if (zoomToFitKeyGestures is not null)
+        {
+            foreach (var zoomToFitKeyGesture in zoomToFitKeyGestures)
+            {
+                if (e.KeyModifiers == zoomToFitKeyGesture.KeyModifiers && e.Key == zoomToFitKeyGesture.Key)
+                {
+                    Zoom = ZoomLevelToFit;
+                    e.Handled = true;
+                    return;
+                }
+            }
+        }
     }
 
 
