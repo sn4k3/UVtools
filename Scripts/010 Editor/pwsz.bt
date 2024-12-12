@@ -11,10 +11,10 @@ char FileStartMarker[4] <fgcolor=cBlack, bgcolor=cPurple>; // {==
 
 struct BOUNDING_BOX {
     float Area <fgcolor=cBlack, bgcolor=cRed>; // 
-    float MinXOffsetFromCenter <fgcolor=cBlack, bgcolor=cRed>; // in mm
-    float MinYOffsetFromCenter <fgcolor=cBlack, bgcolor=cRed>; // in mm
-    float MaxXOffsetFromCenter <fgcolor=cBlack, bgcolor=cRed>; // in mm
-    float MaxYOffsetFromCenter <fgcolor=cBlack, bgcolor=cRed>; // in mm
+    float StartXOffsetFromCenter <fgcolor=cBlack, bgcolor=cRed>; // in mm
+    float StartYOffsetFromCenter <fgcolor=cBlack, bgcolor=cRed>; // in mm
+    float EndXOffsetFromCenter <fgcolor=cBlack, bgcolor=cRed>; // in mm
+    float EndYOffsetFromCenter <fgcolor=cBlack, bgcolor=cRed>; // in mm
     float Padding <fgcolor=cBlack, bgcolor=cRed>; // 0
     uint CountourCount <fgcolor=cBlack, bgcolor=cRed>; // 
 } BoundingBox;
@@ -25,10 +25,10 @@ uint CoordinateCount <fgcolor=cBlack, bgcolor=cRed>; //
 uint Unknown <fgcolor=cBlack, bgcolor=cRed>; // So far always 1
 
 struct COORDINATE {
-    float XStartOffsetFromCenter <fgcolor=cWhite, bgcolor=cBlue>; // in mm
-    float YStartOffsetFromCenter <fgcolor=cWhite, bgcolor=cBlue>; // in mm
-    float XEndOffsetFromCenter <fgcolor=cWhite, bgcolor=cBlue>; // in mm
-    float YEndOffsetFromCenter <fgcolor=cWhite, bgcolor=cBlue>; // in mm
+    float StartXOffsetFromCenter <fgcolor=cWhite, bgcolor=cBlue>; // in mm
+    float StartYOffsetFromCenter <fgcolor=cWhite, bgcolor=cBlue>; // in mm
+    float EndXOffsetFromCenter <fgcolor=cWhite, bgcolor=cBlue>; // in mm
+    float EndYOffsetFromCenter <fgcolor=cWhite, bgcolor=cBlue>; // in mm
     ubyte Unknown <fgcolor=cWhite, bgcolor=cRed>; // 0 or 1
 };
 
