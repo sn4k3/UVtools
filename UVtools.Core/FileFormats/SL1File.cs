@@ -198,6 +198,7 @@ public sealed class SL1File : FileFormat
         public float MaterialCorrectionX { get; set; } = 1;
         public float MaterialCorrectionY { get; set; } = 1;
         public float MaterialCorrectionZ { get; set; } = 1;
+        public int ZcorrectionLayers { get; set; }
 
         #endregion
 

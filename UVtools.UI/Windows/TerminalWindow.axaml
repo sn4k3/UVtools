@@ -16,7 +16,7 @@
         DragDrop.AllowDrop="True"
         Icon="/Assets/Icons/UVtools.ico"
         Title="UVtools interactive terminal">
-	<Grid>
+	<Grid ColumnDefinitions="*">
       <Grid.RowDefinitions>
           <RowDefinition Height="4*" MinHeight="100"/>
           <RowDefinition Height="Auto"/>

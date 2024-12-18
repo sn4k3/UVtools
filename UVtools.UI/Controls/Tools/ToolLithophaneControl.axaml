@@ -10,7 +10,7 @@
 	<Grid ColumnDefinitions="Auto,10,350">
 		<StackPanel Spacing="10">
 			<Grid
-				  RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto"
+				  RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto"
 				  ColumnDefinitions="Auto,10,190,20,Auto,10,190">
 
 				<TextBlock Grid.Row="0" Grid.Column="0"
@@ -156,43 +156,52 @@
                                Increment="1"
                                Value="{Binding Operation.GaussianBlur}"/>
 
-                <TextBlock Grid.Row="16" Grid.Column="0"
+                <CheckBox Grid.Row="16" Grid.Column="2" Grid.ColumnSpan="5"
+                          VerticalAlignment="Center"
+                          IsChecked="{Binding Operation.SeparateGrayscalePixels}"
+                          Content="Separate grayscale pixels"/>
+
+                <TextBlock Grid.Row="18" Grid.Column="0"
                            VerticalAlignment="Center"
+                           IsEnabled="{Binding Operation.SeparateGrayscalePixels}"
                            Text="Start threshold:"/>
 
-                <NumericUpDown Grid.Row="16" Grid.Column="2"
+                <NumericUpDown Grid.Row="18" Grid.Column="2"
                                Classes="ValueLabel ValueLabel_sun"
+                               IsEnabled="{Binding Operation.SeparateGrayscalePixels}"
                                Minimum="1"
                                Maximum="255"
                                Increment="1"
                                Value="{Binding Operation.StartThresholdRange}"/>
 
-                <TextBlock Grid.Row="16" Grid.Column="4"
+                <TextBlock Grid.Row="18" Grid.Column="4"
                            VerticalAlignment="Center"
                            HorizontalAlignment="Right"
+                           IsEnabled="{Binding Operation.SeparateGrayscalePixels}"
                            Text="End threshold:"/>
 
-                <NumericUpDown Grid.Row="16" Grid.Column="6"
+                <NumericUpDown Grid.Row="18" Grid.Column="6"
                                Classes="ValueLabel ValueLabel_sun"
+                               IsEnabled="{Binding Operation.SeparateGrayscalePixels}"
                                Minimum="1"
                                Maximum="255"
                                Increment="1"
                                Value="{Binding Operation.EndThresholdRange}"/>
 
-                <TextBlock Grid.Row="18" Grid.Column="0"
+                <TextBlock Grid.Row="20" Grid.Column="0"
                            VerticalAlignment="Center"
                            Text="Base type:"/>
 
-                <ComboBox Grid.Row="18" Grid.Column="2" Grid.ColumnSpan="5"
+                <ComboBox Grid.Row="20" Grid.Column="2" Grid.ColumnSpan="5"
                           HorizontalAlignment="Stretch"
                           ItemsSource="{Binding Operation.BaseType, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
                           SelectedItem="{Binding Operation.BaseType, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
 
-                <TextBlock Grid.Row="20" Grid.Column="0"
+                <TextBlock Grid.Row="22" Grid.Column="0"
                            VerticalAlignment="Center"
                            Text="Base thickness:"/>
 
-                <NumericUpDown Grid.Row="20" Grid.Column="2"
+                <NumericUpDown Grid.Row="22" Grid.Column="2"
                                Classes="ValueLabel ValueLabel_mm"
                                Minimum="0"
                                Maximum="255"
@@ -200,24 +209,24 @@
                                FormatString="F2"
                                Value="{Binding Operation.BaseThickness}"/>
 
-                <TextBlock Grid.Row="20" Grid.Column="4"
+                <TextBlock Grid.Row="22" Grid.Column="4"
                            HorizontalAlignment="Right"
                            VerticalAlignment="Center"
                            Text="Base margin:"/>
 
-                <NumericUpDown Grid.Row="20" Grid.Column="6"
+                <NumericUpDown Grid.Row="22" Grid.Column="6"
                                Classes="ValueLabel ValueLabel_px"
                                Minimum="0"
                                Maximum="65535"
                                Increment="1"
                                Value="{Binding Operation.BaseMargin}"/>
 
-                <TextBlock Grid.Row="22" Grid.Column="0"
+                <TextBlock Grid.Row="24" Grid.Column="0"
                            VerticalAlignment="Center"
                            IsEnabled="{Binding !Operation.OneLayerPerThreshold}"
                            Text="Lithophane height:"/>
 
-                <NumericUpDown Grid.Row="22" Grid.Column="2"
+                <NumericUpDown Grid.Row="24" Grid.Column="2"
                                Classes="ValueLabel ValueLabel_mm"
                                Minimum="0"
                                Maximum="10000"
@@ -225,12 +234,13 @@
                                IsEnabled="{Binding !Operation.OneLayerPerThreshold}"
                                Value="{Binding Operation.LithophaneHeight}"/>
 
-                <CheckBox Grid.Row="22" Grid.Column="4" Grid.ColumnSpan="3"
+                <CheckBox Grid.Row="24" Grid.Column="4" Grid.ColumnSpan="3"
                           VerticalAlignment="Center"
+                          IsEnabled="{Binding Operation.SeparateGrayscalePixels}"
                           IsChecked="{Binding Operation.OneLayerPerThreshold}"
                           Content="One layer per threshold level"/>
 
-                <CheckBox Grid.Row="24" Grid.Column="2"
+                <CheckBox Grid.Row="26" Grid.Column="2"
                           VerticalAlignment="Center"
                           IsChecked="{Binding Operation.EnableAntiAliasing}"
                           Content="Enable Anti-Aliasing"/>

@@ -1287,25 +1287,36 @@ public sealed class OperationCalibrateExposureFinder : Operation
         ExposureTable = new(list);
     }
 
-    public Mat[] GetLayers(bool isPreview = false)
+    public Mat[] GetLayers(out Point markingTextPositivePosition, out Point markingTextNegativePosition, bool isPreview = false)
     {
         var holes = Holes;
         var bars = Bars;
         var bulleyes = BullsEyes;
         var textSize = TextSize;
-        
+
+        int baseLine = 0;
+        var markingTextSize = EmguExtensions.GetTextSizeExtended("100u\n20.00s\n3.00s",
+            _textFont, _textScale, _textThickness, 10, ref baseLine);
+        markingTextPositivePosition = Point.Empty;
+        markingTextNegativePosition = Point.Empty;
+
         int featuresMarginX = (int)(Xppmm * _featuresMargin);
         int featuresMarginY = (int)(Yppmm * _featuresMargin);
         ushort startCaseThickness = StaircaseThickness;
 
         int holePanelWidth = holes.Length > 0 ? featuresMarginX * 2 + holes[^1] : 0;
+        if (holePanelWidth > 0)
+        {
+            holePanelWidth = Math.Max(holePanelWidth, markingTextSize.Width + featuresMarginX * 2);
+        }
+        
         int holePanelHeight = GetHolesHeight(holes);
         int barsPanelHeight = GetBarsLength(bars);
         int bulleyesDiameter = GetBullsEyeMaxDiameter(bulleyes);
         int bulleyesPanelDiameter = GetBullsEyeMaxPanelDiameter(bulleyes);
         int bulleyesRadius = bulleyesDiameter / 2;
         int yLeftMaxSize = startCaseThickness + featuresMarginY + Math.Max(barsPanelHeight, textSize.Width) + bulleyesPanelDiameter;
-        int yRightMaxSize = startCaseThickness + holePanelHeight + featuresMarginY * 2;
+        int yRightMaxSize = startCaseThickness + holePanelHeight + markingTextSize.Height + featuresMarginY * 2;
             
         int xSize = featuresMarginX;
         int ySize = TextMarkingSpacing + featuresMarginY;
@@ -1335,21 +1346,29 @@ public sealed class OperationCalibrateExposureFinder : Operation
         }
 
         int bullseyeYPos = yLeftMaxSize - bulleyesPanelDiameter / 2;
-
+        markingTextPositivePosition.Y = (int)(bullseyeYPos - markingTextSize.Height / 3.5);
+        
         if (bulleyes.Length > 0)
         {
-            xSize = Math.Max(xSize, bulleyesPanelDiameter + featuresMarginX * 2);
+            xSize = Math.Max(xSize, markingTextSize.Width + bulleyesPanelDiameter + featuresMarginX * 3);
             yLeftMaxSize += featuresMarginY + 24;
+            markingTextPositivePosition.X = featuresMarginX;
+        }
+        else
+        {
+            xSize = Math.Max(xSize, markingTextSize.Width + featuresMarginX * 2);
+            yLeftMaxSize += featuresMarginY + 24;
+            markingTextPositivePosition.X = xSize / 2 - markingTextSize.Width / 2;
         }
 
-        int bullseyeXPos = xSize / 2;
+        
+        int bullseyeXPos = (int)(xSize / 1.5);
             
         if (holePanelWidth > 0)
         {
-            xSize -= featuresMarginX;
+            xSize += featuresMarginX + holes[^1];
         }
             
-        xSize += holePanelWidth;
         int negativeSideWidth = xSize;
         xSize += holePanelWidth;
 
@@ -1391,18 +1410,17 @@ public sealed class OperationCalibrateExposureFinder : Operation
             {
                 var diameter = holes[i];
                 var radius = diameter / 2;
-                xPos = layers[0].Width - holePanelWidth - featuresMarginX;
+                xPos = layers[0].Width - holePanelWidth - featuresMarginX - holes[^1] / 2;
 
-                CalibrateExposureFinderShapes effectiveShape = _holeShape == CalibrateExposureFinderShapes.Square || diameter < 6 ?
+                var effectiveShape = _holeShape == CalibrateExposureFinderShapes.Square || diameter < 6 ?
                     CalibrateExposureFinderShapes.Square : CalibrateExposureFinderShapes.Circle;
 
                 switch (effectiveShape)
                 {
                     case CalibrateExposureFinderShapes.Square:
-                        xPos -= diameter;
+                        xPos -= radius;
                         break;
                     case CalibrateExposureFinderShapes.Circle:
-                        xPos -= radius;
                         yPos += radius;
                         break;
                 }
@@ -1440,10 +1458,11 @@ public sealed class OperationCalibrateExposureFinder : Operation
                 switch (effectiveShape)
                 {
                     case CalibrateExposureFinderShapes.Square:
-                        xPos = layers[0].Width - rect.X - featuresMarginX - holes[^1];
+                        //xPos = layers[0].Width - rect.X - featuresMarginX - holes[^1];
+                        xPos = layers[0].Width - holePanelWidth / 2 - radius;
                         break;
                     case CalibrateExposureFinderShapes.Circle:
-                        xPos = layers[0].Width - rect.X - featuresMarginX - holes[^1] + radius;
+                        xPos = layers[0].Width - holePanelWidth / 2;
                         break;
                 }
 
@@ -1576,17 +1595,21 @@ public sealed class OperationCalibrateExposureFinder : Operation
             yPos += bulleyesRadius;
         }
 
+        if (holes.Length > 0)
+        {
+            markingTextNegativePosition.X = layers[1].Width - holePanelWidth / 2 - markingTextSize.Width / 3;
+            markingTextNegativePosition.Y = layers[1].Height - featuresMarginY - markingTextSize.Height;
+        }
+
         if (isPreview)
         {
-            var textHeightStart = layers[1].Height - featuresMarginY - TextMarkingSpacing;
-            CvInvoke.PutText(layers[1], $"{Microns}u", new Point(TextMarkingStartX, textHeightStart), TextMarkingFontFace, TextMarkingScale, EmguExtensions.WhiteColor, TextMarkingThickness, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
-            CvInvoke.PutText(layers[1], $"{_bottomExposure}s", new Point(TextMarkingStartX, textHeightStart + TextMarkingLineBreak), TextMarkingFontFace, TextMarkingScale, EmguExtensions.WhiteColor, TextMarkingThickness, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
-            CvInvoke.PutText(layers[1], $"{_normalExposure}s", new Point(TextMarkingStartX, textHeightStart + TextMarkingLineBreak * 2), TextMarkingFontFace, TextMarkingScale, EmguExtensions.WhiteColor, TextMarkingThickness, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
+            layers[1].PutTextExtended($"{Microns}u\n{_bottomExposure}s\n{_normalExposure}s", markingTextPositivePosition,
+                _textFont, _textScale, EmguExtensions.WhiteColor, _textThickness, 10, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
+
             if (holes.Length > 0)
             {
-                CvInvoke.PutText(layers[1], $"{Microns}u", new Point(layers[1].Width - featuresMarginX * 2 - holes[^1] + TextMarkingStartX, textHeightStart), TextMarkingFontFace, TextMarkingScale, EmguExtensions.BlackColor, TextMarkingThickness, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
-                CvInvoke.PutText(layers[1], $"{_bottomExposure}s", new Point(layers[1].Width - featuresMarginX * 2 - holes[^1] + TextMarkingStartX, textHeightStart + TextMarkingLineBreak), TextMarkingFontFace, TextMarkingScale, EmguExtensions.BlackColor, TextMarkingThickness, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
-                CvInvoke.PutText(layers[1], $"{_normalExposure}s", new Point(layers[1].Width - featuresMarginX * 2 - holes[^1] + TextMarkingStartX, textHeightStart + TextMarkingLineBreak * 2), TextMarkingFontFace, TextMarkingScale, EmguExtensions.BlackColor, TextMarkingThickness, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
+                layers[1].PutTextExtended($"{Microns}u\n{_bottomExposure}s\n{_normalExposure}s", markingTextNegativePosition,
+                    _textFont, _textScale, EmguExtensions.BlackColor, _textThickness, 10, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
             }
         }
 
@@ -1777,6 +1800,10 @@ public sealed class OperationCalibrateExposureFinder : Operation
             int xHalf = boundingRectangle.Width / 2;
             int yHalf = boundingRectangle.Height / 2;
 
+            var baseLine = 0;
+            var markingTextSize = EmguExtensions.GetTextSizeExtended("100u\n20.00s\n3.00s",
+                _textFont, _textScale, _textThickness, 10, ref baseLine);
+
             var brightnesses = MultipleBrightnessValuesArray;
             var multipleExposures = _exposureTable.Where(item => item.IsValid && item.LayerHeight == (decimal) SlicerFile.LayerHeight).ToArray();
             if (brightnesses.Length == 0 || !_multipleBrightness) brightnesses = new[] { byte.MaxValue };
@@ -1857,13 +1884,9 @@ public sealed class OperationCalibrateExposureFinder : Operation
 
                             if(_patternModelTextEnabled)
                             {
-                                if (_multipleBrightness)
-                                {
-                                    CvInvoke.PutText(newMatRoi, brightness.ToString(), new(xHalf - 60, yHalf + 20 - TextMarkingLineBreak * 4), TextMarkingFontFace, 2, EmguExtensions.BlackColor, 3, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
-                                }
-                                CvInvoke.PutText(newMatRoi, $"{microns}u", new(xHalf - 60, yHalf + 20 - TextMarkingLineBreak * 2), TextMarkingFontFace, 2, EmguExtensions.BlackColor, 3, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
-                                CvInvoke.PutText(newMatRoi, $"{group.Key.BottomExposure}s", new(xHalf - 60, yHalf + 20), TextMarkingFontFace, 2, EmguExtensions.BlackColor, 3, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
-                                CvInvoke.PutText(newMatRoi, $"{group.Key.Exposure}s", new(xHalf - 60, yHalf + 20 + TextMarkingLineBreak * 2), TextMarkingFontFace, 2, EmguExtensions.BlackColor, 3, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
+                                newMatRoi.PutTextExtended((_multipleBrightness ? $"{brightness.ToString()}\n" : string.Empty) 
+                                                          + $"{microns}u\n{group.Key.BottomExposure}s\n{group.Key.Exposure}s", new Point(xHalf - markingTextSize.Width / 2, yHalf - markingTextSize.Height / 2),
+                                    _textFont, _textScale, EmguExtensions.BlackColor, _textThickness, 10, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
                             }
                         }
 
@@ -1928,7 +1951,7 @@ public sealed class OperationCalibrateExposureFinder : Operation
         }
         else // No patterned
         {
-            var layers = GetLayers();
+            var layers = GetLayers(out var markingTextPositivePosition, out var markingTextNegativePosition);
             progress.ItemCount = 0;
             //SanitizeExposureTable();
             if (layers[0].Width+sideMarginPx > SlicerFile.ResolutionX || layers[0].Height+topBottomMarginPx > SlicerFile.ResolutionY)
@@ -2061,17 +2084,15 @@ public sealed class OperationCalibrateExposureFinder : Operation
                         }
                     }
 
-                    var textHeightStart = matRoi.Height - featuresMarginY - TextMarkingSpacing;
-                    CvInvoke.PutText(matRoi, $"{microns}u", new Point(TextMarkingStartX, textHeightStart), TextMarkingFontFace, TextMarkingScale, EmguExtensions.WhiteColor, TextMarkingThickness, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
-                    CvInvoke.PutText(matRoi, $"{bottomExposureTemp}s", new Point(TextMarkingStartX, textHeightStart + TextMarkingLineBreak), TextMarkingFontFace, TextMarkingScale, EmguExtensions.WhiteColor, TextMarkingThickness, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
-                    CvInvoke.PutText(matRoi, $"{normalExposureTemp}s", new Point(TextMarkingStartX, textHeightStart + TextMarkingLineBreak * 2), TextMarkingFontFace, TextMarkingScale, EmguExtensions.WhiteColor, TextMarkingThickness, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
+                    matRoi.PutTextExtended($"{Microns}u\n{bottomExposureTemp}s\n{normalExposureTemp}s", markingTextPositivePosition,
+                        _textFont, _textScale, EmguExtensions.WhiteColor, _textThickness, 10, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
                     if (holes.Length > 0)
                     {
-                        CvInvoke.PutText(matRoi, $"{microns}u", new Point(matRoi.Width - featuresMarginX * 2 - holes[^1] + TextMarkingStartX, textHeightStart), TextMarkingFontFace, TextMarkingScale, EmguExtensions.BlackColor, TextMarkingThickness, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
-                        CvInvoke.PutText(matRoi, $"{bottomExposureTemp}s", new Point(matRoi.Width - featuresMarginX * 2 - holes[^1] + TextMarkingStartX, textHeightStart + TextMarkingLineBreak), TextMarkingFontFace, TextMarkingScale, EmguExtensions.BlackColor, TextMarkingThickness, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
-                        CvInvoke.PutText(matRoi, $"{normalExposureTemp}s", new Point(matRoi.Width - featuresMarginX * 2 - holes[^1] + TextMarkingStartX, textHeightStart + TextMarkingLineBreak * 2), TextMarkingFontFace, TextMarkingScale, EmguExtensions.BlackColor, TextMarkingThickness, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
+                        matRoi.PutTextExtended($"{Microns}u\n{bottomExposureTemp}s\n{normalExposureTemp}s", markingTextNegativePosition,
+                            _textFont, _textScale, EmguExtensions.BlackColor, _textThickness, 10, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
                     }
 
+                    
                     if (_multipleBrightness)
                     {
                         CvInvoke.PutText(matRoi, brightness.ToString(), new Point(matRoi.Width / 3, 35), TextMarkingFontFace, TextMarkingScale, EmguExtensions.WhiteColor, TextMarkingThickness, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);

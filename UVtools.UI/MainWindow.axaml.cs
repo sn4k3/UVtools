@@ -46,8 +46,8 @@ using Path = System.IO.Path;
 using Point = Avalonia.Point;
 using System.Runtime;
 using System.Runtime.InteropServices;
+using System.Timers;
 using UVtools.Core.Scripting;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace UVtools.UI;
 
@@ -132,7 +132,8 @@ public partial class MainWindow : WindowEx
     #region Members
 
     public Stopwatch LastStopWatch = new();
-        
+    private readonly Timer _ramUsageTimer = new(2000) { AutoReset = true };
+
     private bool _isGUIEnabled = true;
     private uint _savesCount;
     private bool _canSave;
@@ -166,7 +167,6 @@ public partial class MainWindow : WindowEx
                 //ProgressWindow = new ProgressWindow();
                 return;
             }
-
             DragDrop.SetAllowDrop(this, true);
 
             LastStopWatch = Progress.StopWatch;
@@ -456,9 +456,73 @@ public partial class MainWindow : WindowEx
             MainMenuFileSendTo.IsVisible = MainMenuFileSendTo.IsEnabled = menuItems.Count > 0;
         };
 
+        _ramUsageTimer.Elapsed += RamUsageTimerOnElapsed;
+
 #if DEBUG
         this.AttachDevTools(new KeyGesture(Key.F12, KeyModifiers.Control));
 #endif
+    }
+
+    private void RamUsageTimerOnElapsed(object? sender, ElapsedEventArgs e)
+    {
+        if (!IsProgressVisible)
+        {
+            _ramUsageTimer.Stop();
+            return;
+        }
+
+        var memoryStatus = SystemAware.GetMemoryStatus();
+        if (memoryStatus.ullAvailPhys == 0) return; // Unable to check
+
+        var availableMemory = (decimal)Math.Round(memoryStatus.ullAvailPhys / Math.Pow(1024, 3), 2, MidpointRounding.AwayFromZero);
+        if (availableMemory > Settings.General.AvailableRamLimit) return;
+
+        var totalMemory = Math.Round(memoryStatus.ullTotalPhys / Math.Pow(1024, 3), 2, MidpointRounding.AwayFromZero);
+        var usedMemory = Math.Round((memoryStatus.ullTotalPhys - memoryStatus.ullAvailPhys) / Math.Pow(1024, 3), 2, MidpointRounding.AwayFromZero);
+
+        var processMemory = Math.Round(Environment.WorkingSet / Math.Pow(1024, 3), 2, MidpointRounding.AwayFromZero);
+        var percentProcessMemory = Math.Round(processMemory * 100 / totalMemory, 2, MidpointRounding.AwayFromZero);
+
+        _ramUsageTimer.Stop();
+        Dispatcher.UIThread.InvokeAsync(() =>
+        {
+            if (Progress.CanCancel)
+            {
+
+                switch (Settings.General.AvailableRamOnHitLimitAction)
+                {
+                    case RamLimitAction.Pause:
+                        Progress.IsPaused = true;
+                        break;
+                    case RamLimitAction.Cancel:
+                        Progress.TokenSource.Cancel();
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(Settings.General.AvailableRamOnHitLimitAction),
+                            Settings.General.AvailableRamOnHitLimitAction, null);
+                }
+
+                this.MessageBoxWaring(
+                    $"Your system memory RAM hit the limit of {usedMemory}GB from a total of {totalMemory}GB.  Available: {availableMemory}GB.  {About.Software}: {processMemory}GB ({percentProcessMemory}%).\n" +
+                    $"The running operation will {Settings.General.AvailableRamOnHitLimitAction.ToString().ToLowerInvariant()} as soon as possible to relief pressure and maintain the system stability.\n" +
+                    $"If you continue the operation this check will not be performed again for the self operation.\n\n" +
+                    $"Monitor your memory RAM under the system tools and re-run the operation to check the usages and find the cause.\n" +
+                    $"You may need to stop other processes or increase your memory RAM in order to deal with huge files and/or heavy operations.\n\n" +
+                    $"Currently you have configured a lower limit of {Settings.General.AvailableRamLimit}GB of available memory RAM for the operations.",
+                    $"Insufficient memory RAM! ({usedMemory}GB / {totalMemory}GB)");
+
+            }
+            else
+            {
+                // Kills
+                throw new InsufficientMemoryException(
+                    $"Your system memory RAM hit the limit of {usedMemory}GB from a total of {totalMemory}GB.  Available: {availableMemory}GB.  {About.Software}: {processMemory}GB ({percentProcessMemory}%).\n" +
+                    $"The program crashed on purpose due the impossibility to pause or cancel the running operation, this was to relief pressure and ensure the system stability.\n\n" +
+                    $"Monitor your memory RAM under the system tools and re-run the operation to check the usages and find the cause.\n" +
+                    $"You may need to stop other processes or increase your memory RAM in order to deal with huge files and/or heavy operations.\n\n" +
+                    $"Currently you have configured a lower limit of {Settings.General.AvailableRamLimit}GB of available memory RAM for the operations.");
+            }
+        });
     }
 
     private async void FileSendToItemClick(object? sender, RoutedEventArgs e)
@@ -727,7 +791,7 @@ public partial class MainWindow : WindowEx
         {
             ProcessFile(Path.Combine(App.ApplicationPath, About.DemoFile));
         }
-            
+        
         DispatcherTimer.Run(() =>
         {
             UpdateTitle();

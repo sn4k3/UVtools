@@ -107,7 +107,7 @@ But also, I need victims for test subject. Proceed at your own risk!
 
 - SL1, SL1S (PrusaSlicer)
 - Photon, Photons, CBDDLP, CTB, PHZ, FDG, ZIP (Chitubox)
-- PWS, PW0, PWX, DLP, DL2P, PWMO, PWMA, PWMS, PWMX, PMX2, PWMB, PWSQ, PX6S, PM3, PM3N, PM3M, PM3R, PM5, PM5S, PWC (Photon Workshop)
+- PWS, PW0, PWX, DLP, DL2P, PWMO, PWMA, PWMS, PWMX, PMX2, PWMB, PWSQ, PX6S, PM3, PM3N, PM3M, PM4M, PM4U, PM3R, PM5, PM5S, PWC, PM7, PM7M, PWSZ (Photon Workshop)
 - JXS (GKone Slicer)
 - ZCode (UnizMaker)
 - ZCodex (Z-Suite)

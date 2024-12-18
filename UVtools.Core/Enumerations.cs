@@ -205,3 +205,14 @@ public static class Enumerations
         };
     }
 }*/
+
+/// <summary>
+/// The action to take when the RAM hit the limit.
+/// </summary>
+public enum RamLimitAction : byte
+{
+    [Description("Pause the current operation")]
+    Pause,
+    [Description("Cancel the current operation")]
+    Cancel,
+}

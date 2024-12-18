@@ -6722,7 +6722,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <param name="x">X position in pixels</param>
     /// <param name="precision">Decimal precision</param>
     /// <returns>Display position in millimeters</returns>
-    public float PixelToDisplayPositionX(int x, byte precision = 3) => (float)Math.Round(PixelWidth * x, precision);
+    public float PixelToDisplayPositionX(int x, byte precision = DisplayFloatPrecision) => (float)Math.Round(PixelWidth * x, precision);
 
     /// <summary>
     /// From a pixel position get the equivalent position on the display
@@ -6730,7 +6730,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <param name="y">Y position in pixels</param>
     /// <param name="precision">Decimal precision</param>
     /// <returns>Display position in millimeters</returns>
-    public float PixelToDisplayPositionY(int y, byte precision = 3) => (float)Math.Round(PixelHeight * y, precision);
+    public float PixelToDisplayPositionY(int y, byte precision = DisplayFloatPrecision) => (float)Math.Round(PixelHeight * y, precision);
 
     /// <summary>
     /// From a pixel position get the equivalent position on the display
@@ -6739,8 +6739,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     /// <param name="y">Y position in pixels</param>
     /// <param name="precision">Decimal precision</param>
     /// <returns>Resolution position in pixels</returns>
-    public PointF PixelToDisplayPosition(int x, int y, byte precision = 3) =>new(PixelToDisplayPositionX(x, precision), PixelToDisplayPositionY(y, precision));
-    public PointF PixelToDisplayPosition(Point point, byte precision = 3) => new(PixelToDisplayPositionX(point.X, precision), PixelToDisplayPositionY(point.Y, precision));
+    public PointF PixelToDisplayPosition(int x, int y, byte precision = DisplayFloatPrecision) =>new(PixelToDisplayPositionX(x, precision), PixelToDisplayPositionY(y, precision));
+    public PointF PixelToDisplayPosition(Point point, byte precision = DisplayFloatPrecision) => new(PixelToDisplayPositionX(point.X, precision), PixelToDisplayPositionY(point.Y, precision));
 
     /// <summary>
     /// From a pixel position get the equivalent position on the display
@@ -6757,12 +6757,17 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     public int DisplayToPixelPositionY(float y) => (int)(y * Yppmm);
 
     /// <summary>
-    /// From a pixel position get the equivalent position on the display
+    /// From a display position get the equivalent position on the pixel
     /// </summary>
     /// <param name="x">X position in millimeters</param>
     /// <param name="y">Y position in millimeters</param>
     /// <returns>Resolution position in pixels</returns>
     public Point DisplayToPixelPosition(float x, float y) => new(DisplayToPixelPositionX(x), DisplayToPixelPositionY(y));
+    /// <summary>
+    /// From a display position get the equivalent position on the pixel
+    /// </summary>
+    /// <param name="point"></param>
+    /// <returns></returns>
     public Point DisplayToPixelPosition(PointF point) => new(DisplayToPixelPositionX(point.X), DisplayToPixelPositionY(point.Y));
 
     public bool SanitizeBoundingRectangle(ref Rectangle rectangle)

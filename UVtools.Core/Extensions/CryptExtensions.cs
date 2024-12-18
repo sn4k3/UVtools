@@ -61,7 +61,7 @@ public static class CryptExtensions
         using var msDecrypt = new MemoryStream(data);
         using var csDecrypt = new CryptoStream(msDecrypt, cryptor, CryptoStreamMode.Read);
         var outputBuffer = new byte[data.Length];
-        csDecrypt.Read(outputBuffer, 0, data.Length);
+        csDecrypt.ReadExactly(outputBuffer.AsSpan());
 
         return outputBuffer;
     }

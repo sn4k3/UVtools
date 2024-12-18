@@ -30,7 +30,7 @@ namespace UVtools.UI.Controls.Tools
 
         private void PhasedExposuresGrid_OnLoadingRow(object? sender, DataGridRowEventArgs e)
         {
-            e.Row.Header = e.Row.GetIndex() + 1;
+            e.Row.Header = e.Row.Index + 1;
         }
 
         public void AddExposure()

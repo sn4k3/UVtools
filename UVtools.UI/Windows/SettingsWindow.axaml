@@ -65,10 +65,46 @@
                                          Header="Tasks">
 
 							<StackPanel Spacing="10">
-								<Grid RowDefinitions="Auto,10,Auto,10,Auto"
+								<Grid RowDefinitions="Auto,10,Auto,10,Auto,10,Auto"
 									  ColumnDefinitions="Auto,10,180,5,Auto,10,Auto,2,Auto,2,Auto,2,Auto,2,Auto,2,Auto,2,Auto">
+                                    <TextBlock Grid.Row="0" Grid.Column="0"
+                                               VerticalAlignment="Center"
+                                               ToolTip.Tip="Sets a lower limiter for the available memory RAM the program is allowed to run operations.
+&#x0a;When meet the threshold, a stopping action will be queued to relief pressure and maintain the system stability.
+&#x0a;In cases where is unable to pause or cancel the operation, the program will be forced to close and trigger an exception to ensure the system stability.
+&#x0a;&#x0a;Note: This limiter will check the RAM every 2 seconds while operations are running, if you have set a very low limit there is a chance to consume more RAM in the time and cause system instability.
+&#x0a;System can also reserve some RAM to prevent depletion and start to use SWAP memory, doing such with a low limit and is possible that the limiter never trigger.
+&#x0a;&#x0a;0: Ignore the RAM limiter."
+                                               Text="Available RAM lower limit:"/>
 
-									<TextBlock Grid.Row="0" Grid.Column="0"
+                                    <NumericUpDown Grid.Row="0" Grid.Column="2"
+											   VerticalAlignment="Center"
+                                               ToolTip.Tip="Sets a lower limiter for the available memory RAM the program is allowed to run operations.
+&#x0a;When meet the threshold, a stopping action will be queued to relief pressure and maintain the system stability.
+&#x0a;In cases where is unable to pause or cancel the operation, the program will be forced to close and trigger an exception to ensure the system stability.
+&#x0a;&#x0a;Note: This limiter will check the RAM every 2 seconds while operations are running, if you have set a very low limit there is a chance to consume more RAM in the time and cause system instability.
+&#x0a;System can also reserve some RAM to prevent depletion and start to use SWAP memory, doing such with a low limit and is possible that the limiter never trigger.
+&#x0a;&#x0a;0: Ignore the RAM limiter."
+											   Classes="ValueLabel ValueLabel_GB"
+											   Minimum="0"
+                                               Maximum="100"
+											   Increment="0.5"
+											   FormatString="F2"
+											   Value="{Binding Settings.General.AvailableRamLimit}"/>
+
+                                    <TextBlock Grid.Row="0" Grid.Column="4"
+                                               VerticalAlignment="Center"
+                                               ToolTip.Tip="Action to perform when the available RAM limiter triggers."
+                                               Text="Hit action:"/>
+
+                                    <ComboBox Grid.Row="0" Grid.Column="6" Grid.ColumnSpan="13"
+                                              VerticalAlignment="Center"
+                                              HorizontalAlignment="Stretch"
+                                              ItemsSource="{Binding Settings.General.AvailableRamOnHitLimitAction, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
+                                              SelectedItem="{Binding Settings.General.AvailableRamOnHitLimitAction, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
+
+
+                                    <TextBlock Grid.Row="2" Grid.Column="0"
 											   VerticalAlignment="Center"
                                                ToolTip.Tip="Sets the maximum number of concurrent tasks/threads/operations enabled to run by parallel method calls.
 &#x0a;If your computer lags and freezes during operations you can reduce this number to reduce the workload and keep some cores available to other tasks as well.
@@ -78,7 +114,7 @@
 &#x0a;1: Single thread. (Slowest)"
 											   Text="Max degree of parallelism:"/>
 
-									<NumericUpDown Grid.Row="0" Grid.Column="2"
+									<NumericUpDown Grid.Row="2" Grid.Column="2"
 											   VerticalAlignment="Center"
 											   ToolTip.Tip="Sets the maximum number of concurrent tasks/threads/operations enabled to run by parallel method calls.
 &#x0a;If your computer lags and freezes during operations you can reduce this number to reduce the workload and keep some cores available to other tasks as well.
@@ -90,11 +126,11 @@
                                                Maximum="{Binding Source={x:Static system:Environment.ProcessorCount}}"
 											   Increment="1"
 											   Value="{Binding Settings.General.MaxDegreeOfParallelism}"/>
-									<TextBlock Grid.Row="0" Grid.Column="4"
+									<TextBlock Grid.Row="2" Grid.Column="4"
 											   VerticalAlignment="Center"
 											   Text="{Binding Source={x:Static system:Environment.ProcessorCount}, StringFormat=/ {0} threads}"/>
 
-                                    <DropDownButton Grid.Row="0" Grid.Column="6"
+                                    <DropDownButton Grid.Row="2" Grid.Column="6"
                                                     Content="Auto">
                                         <DropDownButton.Flyout>
 											<MenuFlyout>
@@ -123,61 +159,61 @@
 											CommandParameter="-1"/>
                                     !-->
 
-									<Button Grid.Row="0" Grid.Column="8"
+									<Button Grid.Row="2" Grid.Column="8"
 											VerticalAlignment="Center"
 											Content="1"
 											ToolTip.Tip="Single thread (Very slow performance)"
 											Command="{Binding SetMaxDegreeOfParallelism}"
 											CommandParameter="1"/>
 
-									<Button Grid.Row="0" Grid.Column="10"
+									<Button Grid.Row="2" Grid.Column="10"
 											VerticalAlignment="Center"
 											Content="¼"
 											ToolTip.Tip="A quarter of the available threads (Slow performance)"
 											Command="{Binding SetMaxDegreeOfParallelism}"
 											CommandParameter="0.25"/>
 
-									<Button Grid.Row="0" Grid.Column="12"
+									<Button Grid.Row="2" Grid.Column="12"
 											VerticalAlignment="Center"
 											Content="½"
 											ToolTip.Tip="Half of the available threads (Half performance)"
 											Command="{Binding SetMaxDegreeOfParallelism}"
 											CommandParameter="0.5"/>
 
-									<Button Grid.Row="0" Grid.Column="14"
+									<Button Grid.Row="2" Grid.Column="14"
 											VerticalAlignment="Center"
 											Content="¾"
 											ToolTip.Tip="Three quarters of the available threads (Fast performance)"
 											Command="{Binding SetMaxDegreeOfParallelism}"
 											CommandParameter="0.75"/>
 
-									<Button Grid.Row="0" Grid.Column="16"
+									<Button Grid.Row="2" Grid.Column="16"
 											VerticalAlignment="Center"
 											Content="!"
 											ToolTip.Tip="Optimal of the available threads, this is your thread count less 2 to relief the workload and leave 2 cores free for other running tasks (Optimal performance)"
 											Command="{Binding SetMaxDegreeOfParallelism}"
 											CommandParameter="!"/>
 
-									<Button Grid.Row="0" Grid.Column="18"
+									<Button Grid.Row="2" Grid.Column="18"
 											VerticalAlignment="Center"
 											Content="Max"
 											ToolTip.Tip="{Binding Source={x:Static system:Environment.ProcessorCount}, StringFormat=All the available threads [{0}] (Full performance)}"
 											Command="{Binding SetMaxDegreeOfParallelism}"
 											CommandParameter="{Binding Source={x:Static system:Environment.ProcessorCount}}"/>
 
-									<TextBlock Grid.Row="2" Grid.Column="0"
+									<TextBlock Grid.Row="4" Grid.Column="0"
 											   VerticalAlignment="Center"
 											   ToolTip.Tip="Sets the compression codec used to store the layer image cache.
 &#x0a;The selected method will impact RAM usage and operations speed."
 											   Text="Layer compression codec:"/>
 
-									<ComboBox Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="17"
+									<ComboBox Grid.Row="4" Grid.Column="2" Grid.ColumnSpan="17"
 											VerticalAlignment="Center"
 											HorizontalAlignment="Stretch"
 											ItemsSource="{Binding Settings.General.LayerCompressionCodec, Converter={StaticResource EnumToCollectionConverter}, Mode=OneTime}"
 											SelectedItem="{Binding Settings.General.LayerCompressionCodec, Converter={StaticResource FromValueDescriptionToEnumConverter}}"/>
 
-									<TextBlock Grid.Row="4" Grid.Column="0"
+									<TextBlock Grid.Row="6" Grid.Column="0"
 											   VerticalAlignment="Center"
 											   ToolTip.Tip="The average cost per one resin bottle of 1000ml.
 &#x0a;Used to calculate the material cost when the file lacks that information.
@@ -185,7 +221,7 @@
 &#x0a;If this value is changed, you need to reload the current file to update the cost."
 											   Text="Average resin bottle cost:"/>
 
-									<NumericUpDown Grid.Row="4" Grid.Column="2"
+									<NumericUpDown Grid.Row="6" Grid.Column="2"
 												   Classes="ValueLabel ValueLabel_euro"
 												   VerticalAlignment="Center"
 												   ToolTip.Tip="The average cost per one resin bottle of 1000ml.
@@ -196,7 +232,7 @@
 												   Maximum="10000"
 												   Increment="1"
 												   Value="{Binding Settings.General.AverageResin1000MlBottleCost}"/>
-									<TextBlock Grid.Row="4" Grid.Column="4" Grid.ColumnSpan="15"
+									<TextBlock Grid.Row="6" Grid.Column="4" Grid.ColumnSpan="15"
 											   VerticalAlignment="Center"
 											   Text="/ 1000ml bottle"/>
 								</Grid>

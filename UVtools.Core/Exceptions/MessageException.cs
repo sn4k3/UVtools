@@ -18,9 +18,6 @@ public class MessageException : Exception
 {
     public string? Title { get; }
 
-    protected MessageException(SerializationInfo info, StreamingContext context) : base(info, context)
-    { }
-
     public MessageException(string? message, string? title = null) : base(message)
     {
         Title = title;

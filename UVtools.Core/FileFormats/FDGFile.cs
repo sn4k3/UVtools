@@ -941,8 +941,8 @@ public sealed class FDGFile : FileFormat
             Debug.WriteLine(Previews[i]);
 
             inputFile.Seek(Previews[i].ImageOffset, SeekOrigin.Begin);
-            byte[] rawImageData = new byte[Previews[i].ImageLength];
-            inputFile.Read(rawImageData, 0, (int)Previews[i].ImageLength);
+            var rawImageData = new byte[Previews[i].ImageLength];
+            inputFile.ReadExactly(rawImageData.AsSpan());
 
             Thumbnails.Add(DecodeChituImageRGB15Rle(rawImageData, Previews[i].ResolutionX, Previews[i].ResolutionY));
             progress++;
@@ -952,7 +952,7 @@ public sealed class FDGFile : FileFormat
         {
             inputFile.Seek(HeaderSettings.MachineNameAddress, SeekOrigin.Begin);
             var buffer = new byte[HeaderSettings.MachineNameSize];
-            inputFile.Read(buffer, 0, (int) HeaderSettings.MachineNameSize);
+            inputFile.ReadExactly(buffer.AsSpan());
             HeaderSettings.MachineName = Encoding.ASCII.GetString(buffer);
         }
 

@@ -8,6 +8,7 @@
 
 using Avalonia.Threading;
 using System;
+using System.ComponentModel.DataAnnotations;
 using System.Timers;
 using UVtools.Core.Operations;
 using UVtools.UI.Structures;
@@ -30,7 +31,11 @@ public partial class MainWindow
     public bool IsProgressVisible
     {
         get => _isProgressVisible;
-        set => RaiseAndSetIfChanged(ref _isProgressVisible, value);
+        set
+        {
+            if (!RaiseAndSetIfChanged(ref _isProgressVisible, value)) return;
+            _ramUsageTimer.Enabled = value && Settings.General.AvailableRamLimit > 0;
+        }
     }
 
     #endregion
@@ -53,9 +58,7 @@ public partial class MainWindow
     public void ProgressOnClickPauseResume()
     {
         if (!Progress.CanCancel) return;
-        DialogResult = DialogResults.Cancel;
-        Progress.CanCancel = false;
-        Progress.TokenSource.Cancel();
+        Progress.IsPaused = !Progress.IsPaused;
     }
 
     public void ProgressOnClickCancel()

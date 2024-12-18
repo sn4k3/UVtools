@@ -18,11 +18,11 @@ struct HEADER {
     uint ModelUnit <fgcolor=cBlack, bgcolor=cRed>; // 0: mm; 1: cm; 2: m; Currently fixed at 0
     float PointRatio <fgcolor=cBlack, bgcolor=cRed>; // Currently fixed at 1.0f
     uint LayerCount <fgcolor=cBlack, bgcolor=cRed>; 
-    float MinX <fgcolor=cBlack, bgcolor=cRed>; // 
-    float MinY <fgcolor=cBlack, bgcolor=cRed>; // 
+    float XStartBoundingRectangleOffsetFromCenter <fgcolor=cBlack, bgcolor=cRed>; // 
+    float YStartBoundingRectangleOffsetFromCenter <fgcolor=cBlack, bgcolor=cRed>; // 
     float MinZ <fgcolor=cBlack, bgcolor=cRed>; // 
-    float MaxX <fgcolor=cBlack, bgcolor=cRed>; // 
-    float MaxY <fgcolor=cBlack, bgcolor=cRed>; // 
+    float XEndBoundingRectangleOffsetFromCenter <fgcolor=cBlack, bgcolor=cRed>; // 
+    float YEndBoundingRectangleOffsetFromCenter <fgcolor=cBlack, bgcolor=cRed>; // 
     float MaxZ <fgcolor=cBlack, bgcolor=cRed>; // 
     uint ModelStats <fgcolor=cBlack, bgcolor=cRed>; // Some status flags of the scene model
     uint Padding[64] <fgcolor=cBlack, bgcolor=cRed>; // 
@@ -33,10 +33,10 @@ struct HEADER {
 struct LAYER_DEF {
     float Height <fgcolor=cWhite, bgcolor=cBlue>;
     float Area <fgcolor=cWhite, bgcolor=cBlue>; // mm^2
-    float XMin <fgcolor=cWhite, bgcolor=cBlue>;
-    float YMin <fgcolor=cWhite, bgcolor=cBlue>;
-    float XMax <fgcolor=cWhite, bgcolor=cBlue>;
-    float YMax <fgcolor=cWhite, bgcolor=cBlue>;
+    float XStartBoundingRectangleOffsetFromCenter <fgcolor=cWhite, bgcolor=cBlue>;
+    float YStartBoundingRectangleOffsetFromCenter <fgcolor=cWhite, bgcolor=cBlue>;
+    float YEndBoundingRectangleOffsetFromCenter <fgcolor=cWhite, bgcolor=cBlue>;
+    float YEndOffsetFromCenter <fgcolor=cWhite, bgcolor=cBlue>;
     uint ContourCount <fgcolor=cWhite, bgcolor=cBlue>;
     float MaxContourArea <fgcolor=cWhite, bgcolor=cBlue>; // mm^2
     uint Padding[8] <fgcolor=cWhite, bgcolor=cBlue>;

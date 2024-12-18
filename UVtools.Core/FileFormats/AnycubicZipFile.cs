@@ -10,19 +10,21 @@ using BinarySerialization;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using Emgu.CV.Util;
 using UVtools.Core.Converters;
 using UVtools.Core.EmguCV;
 using UVtools.Core.Extensions;
 using UVtools.Core.Layers;
 using UVtools.Core.Operations;
-using static UVtools.Core.FileFormats.AnycubicFile;
 
 namespace UVtools.Core.FileFormats;
 
@@ -102,7 +104,7 @@ public sealed class AnycubicZipFile : FileFormat
         public float PixelHeightMicrons { get; set; }
 
         [JsonPropertyName("max_samples")]
-        public byte AntiAliasing { get; set; }
+        public byte MaxSamples { get; set; } = 16;
 
         [JsonPropertyName("property")]
         public ushort Properties { get; set; } = 119;
@@ -144,7 +146,7 @@ public sealed class AnycubicZipFile : FileFormat
         public uint RasterSegmentsCapacity { get; set; } = 100000;
 
         [JsonPropertyName("raster_antialiasing")]
-        public byte RasterAntialiasing { get; set; } = 4;
+        public byte RasterAntialiasing { get; set; } = 8;
 
         [JsonPropertyName("cloudprev_back_color")]
         public float[] CloudBackgroundColor { get; set; } = { 0.00f, 0.28f, 0.39f };
@@ -155,7 +157,7 @@ public sealed class AnycubicZipFile : FileFormat
         public override string ToString()
         {
             return
-                $"{nameof(Version)}: {Version}, {nameof(Name)}: {Name}, {nameof(KeySuffix)}: {KeySuffix}, {nameof(KeyImageFormat)}: {KeyImageFormat}, {nameof(ResolutionX)}: {ResolutionX}, {nameof(ResolutionY)}: {ResolutionY}, {nameof(PixelWidthMicrons)}: {PixelWidthMicrons}, {nameof(PixelHeightMicrons)}: {PixelHeightMicrons}, {nameof(AntiAliasing)}: {AntiAliasing}, {nameof(Properties)}: {Properties}, {nameof(DisplayWidth)}: {DisplayWidth}, {nameof(DisplayHeight)}: {DisplayHeight}, {nameof(MachineZ)}: {MachineZ}, {nameof(MaxFileVersion)}: {MaxFileVersion}, {nameof(PreviewBackgroundColor)}: {PreviewBackgroundColor}, {nameof(ModelBackgroundColor)}: {ModelBackgroundColor}, {nameof(SupportsBackgroundColor)}: {SupportsBackgroundColor}, {nameof(PreviewImageSize)}: {PreviewImageSize}, {nameof(Preview2BackgroundColor)}: {Preview2BackgroundColor}, {nameof(Preview2ImageSize)}: {Preview2ImageSize}, {nameof(RasterSegmentsCapacity)}: {RasterSegmentsCapacity}, {nameof(RasterAntialiasing)}: {RasterAntialiasing}, {nameof(CloudBackgroundColor)}: {CloudBackgroundColor}, {nameof(CloudImageSize)}: {CloudImageSize}";
+                $"{nameof(Version)}: {Version}, {nameof(Name)}: {Name}, {nameof(KeySuffix)}: {KeySuffix}, {nameof(KeyImageFormat)}: {KeyImageFormat}, {nameof(ResolutionX)}: {ResolutionX}, {nameof(ResolutionY)}: {ResolutionY}, {nameof(PixelWidthMicrons)}: {PixelWidthMicrons}, {nameof(PixelHeightMicrons)}: {PixelHeightMicrons}, {nameof(MaxSamples)}: {MaxSamples}, {nameof(Properties)}: {Properties}, {nameof(DisplayWidth)}: {DisplayWidth}, {nameof(DisplayHeight)}: {DisplayHeight}, {nameof(MachineZ)}: {MachineZ}, {nameof(MaxFileVersion)}: {MaxFileVersion}, {nameof(PreviewBackgroundColor)}: {PreviewBackgroundColor}, {nameof(ModelBackgroundColor)}: {ModelBackgroundColor}, {nameof(SupportsBackgroundColor)}: {SupportsBackgroundColor}, {nameof(PreviewImageSize)}: {PreviewImageSize}, {nameof(Preview2BackgroundColor)}: {Preview2BackgroundColor}, {nameof(Preview2ImageSize)}: {Preview2ImageSize}, {nameof(RasterSegmentsCapacity)}: {RasterSegmentsCapacity}, {nameof(RasterAntialiasing)}: {RasterAntialiasing}, {nameof(CloudBackgroundColor)}: {CloudBackgroundColor}, {nameof(CloudImageSize)}: {CloudImageSize}";
         }
     }
 
@@ -293,15 +295,15 @@ public sealed class AnycubicZipFile : FileFormat
 
         [FieldOrder(1)] public float Area { get; set; }
 
-        [FieldOrder(2)] public float XMin { get; set; }
+        [FieldOrder(2)] public float XStartBoundingRectangleOffsetFromCenter { get; set; }
 
-        [FieldOrder(3)] public float YMin { get; set; }
+        [FieldOrder(3)] public float YStartBoundingRectangleOffsetFromCenter { get; set; }
 
-        [FieldOrder(4)] public float XMax { get; set; }
+        [FieldOrder(4)] public float XEndBoundingRectangleOffsetFromCenter { get; set; }
 
-        [FieldOrder(5)] public float YMax { get; set; }
+        [FieldOrder(5)] public float YEndBoundingRectangleOffsetFromCenter { get; set; }
 
-        [FieldOrder(6)] public uint ContourCount { get; set; }
+        [FieldOrder(6)] public uint ObjectCount { get; set; }
 
         [FieldOrder(7)] public float MaxContourArea { get; set; }
 
@@ -310,7 +312,7 @@ public sealed class AnycubicZipFile : FileFormat
         public override string ToString()
         {
             return
-                $"{nameof(Height)}: {Height}, {nameof(Area)}: {Area}, {nameof(XMin)}: {XMin}, {nameof(YMin)}: {YMin}, {nameof(XMax)}: {XMax}, {nameof(YMax)}: {YMax}, {nameof(ContourCount)}: {ContourCount}, {nameof(MaxContourArea)}: {MaxContourArea}, {nameof(Padding)}: {Padding}";
+                $"{nameof(Height)}: {Height}, {nameof(Area)}: {Area}, {nameof(XStartBoundingRectangleOffsetFromCenter)}: {XStartBoundingRectangleOffsetFromCenter}, {nameof(YStartBoundingRectangleOffsetFromCenter)}: {YStartBoundingRectangleOffsetFromCenter}, {nameof(XEndBoundingRectangleOffsetFromCenter)}: {XEndBoundingRectangleOffsetFromCenter}, {nameof(YEndBoundingRectangleOffsetFromCenter)}: {YEndBoundingRectangleOffsetFromCenter}, {nameof(ObjectCount)}: {ObjectCount}, {nameof(MaxContourArea)}: {MaxContourArea}, {nameof(Padding)}: {Padding}";
         }
     }
 
@@ -350,15 +352,15 @@ public sealed class AnycubicZipFile : FileFormat
 
         [FieldOrder(7)] public uint LayerCount { get; set; }
 
-        [FieldOrder(8)] public float XMin { get; set; }
+        [FieldOrder(8)] public float XStartBoundingRectangleOffsetFromCenter { get; set; }
 
-        [FieldOrder(9)] public float YMin { get; set; }
+        [FieldOrder(9)] public float YStartBoundingRectangleOffsetFromCenter { get; set; }
 
         [FieldOrder(10)] public float ZMin { get; set; }
 
-        [FieldOrder(11)] public float XMax { get; set; } = 1;
+        [FieldOrder(11)] public float XEndBoundingRectangleOffsetFromCenter { get; set; }
 
-        [FieldOrder(12)] public float YMax { get; set; }
+        [FieldOrder(12)] public float YEndBoundingRectangleOffsetFromCenter { get; set; }
 
         [FieldOrder(13)] public float ZMax { get; set; }
 
@@ -382,10 +384,10 @@ public sealed class AnycubicZipFile : FileFormat
             Software = About.SoftwareWithVersionArch;
             var rect = slicerFile.BoundingRectangleMillimeters;
             rect.Offset(slicerFile.DisplayWidth / -2f, slicerFile.DisplayHeight / -2f);
-            XMin = (float)Math.Round(rect.X, 4);
-            YMin = (float)Math.Round(rect.Y, 4);
-            XMax = (float)Math.Round(rect.Right, 4);
-            YMax = (float)Math.Round(rect.Bottom, 4);
+            XStartBoundingRectangleOffsetFromCenter = RoundDisplaySize(rect.X);
+            YStartBoundingRectangleOffsetFromCenter = RoundDisplaySize(rect.Y);
+            XEndBoundingRectangleOffsetFromCenter = RoundDisplaySize(rect.Right);
+            YEndBoundingRectangleOffsetFromCenter = RoundDisplaySize(rect.Bottom);
 
             ZMin = 0;
             ZMax = slicerFile.PrintHeight;
@@ -394,8 +396,16 @@ public sealed class AnycubicZipFile : FileFormat
         public override string ToString()
         {
             return
-                $"{nameof(Magic)}: {Magic}, {nameof(Software)}: {Software}, {nameof(BinaryType)}: {BinaryType}, {nameof(Version)}: {Version}, {nameof(SliceType)}: {SliceType}, {nameof(ModelUnit)}: {ModelUnit}, {nameof(PointRatio)}: {PointRatio}, {nameof(LayerCount)}: {LayerCount}, {nameof(XMin)}: {XMin}, {nameof(YMin)}: {YMin}, {nameof(ZMin)}: {ZMin}, {nameof(XMax)}: {XMax}, {nameof(YMax)}: {YMax}, {nameof(ZMax)}: {ZMax}, {nameof(ModelStats)}: {ModelStats}, {nameof(Padding)}: {Padding}, {nameof(Separator)}: {Separator}, {nameof(LayerDefCount)}: {LayerDefCount}, {nameof(LayersDef)}: {LayersDef}, {nameof(EndMarker)}: {EndMarker}";
+                $"{nameof(Magic)}: {Magic}, {nameof(Software)}: {Software}, {nameof(BinaryType)}: {BinaryType}, {nameof(Version)}: {Version}, {nameof(SliceType)}: {SliceType}, {nameof(ModelUnit)}: {ModelUnit}, {nameof(PointRatio)}: {PointRatio}, {nameof(LayerCount)}: {LayerCount}, {nameof(XStartBoundingRectangleOffsetFromCenter)}: {XStartBoundingRectangleOffsetFromCenter}, {nameof(YStartBoundingRectangleOffsetFromCenter)}: {YStartBoundingRectangleOffsetFromCenter}, {nameof(ZMin)}: {ZMin}, {nameof(XEndBoundingRectangleOffsetFromCenter)}: {XEndBoundingRectangleOffsetFromCenter}, {nameof(YEndBoundingRectangleOffsetFromCenter)}: {YEndBoundingRectangleOffsetFromCenter}, {nameof(ZMax)}: {ZMax}, {nameof(ModelStats)}: {ModelStats}, {nameof(Padding)}: {Padding}, {nameof(Separator)}: {Separator}, {nameof(LayerDefCount)}: {LayerDefCount}, {nameof(LayersDef)}: {LayersDef}, {nameof(EndMarker)}: {EndMarker}";
         }
+    }
+    #endregion
+
+    #region Enums
+    public enum AnycubicZipRleFormat
+    {
+        PW0,
+        PWSZ
     }
     #endregion
 
@@ -448,8 +458,11 @@ public sealed class AnycubicZipFile : FileFormat
     public override string ConvertMenuGroup => "Anycubic Photon Workshop";
 
     public override FileExtension[] FileExtensions { get; } = {
+        new(typeof(AnycubicZipFile), "pm4u", "Photon Mono 4 Ultra (PM4U)"),
         new(typeof(AnycubicZipFile), "pm7", "Photon Mono M7 (PM7)"),
-        new(typeof(AnycubicZipFile), "pwsz", "Photon Mono M7 Pro (PWSZ)")
+        new(typeof(AnycubicZipFile), "pm7m", "Photon Mono M7 Max (PM7M)"),
+        new(typeof(AnycubicZipFile), "pwsz", "Photon Mono M7 Pro (PWSZ)"),
+        
     };
 
     /*public override uint[] AvailableVersions { get; } = { 1 };
@@ -512,6 +525,12 @@ public sealed class AnycubicZipFile : FileFormat
         }
     }
 
+    public override byte AntiAliasing
+    {
+        get => Settings.MachineType.RasterAntialiasing;
+        set => base.AntiAliasing = Settings.MachineType.RasterAntialiasing = Math.Clamp(value, (byte)1, (byte)16);
+    }
+
     public override Size[] ThumbnailsOriginalSize { get; } =
     {
         new(224, 168),
@@ -532,80 +551,209 @@ public sealed class AnycubicZipFile : FileFormat
 
     #region Methods
 
-    // PW0
-    private Mat DecodeLayerRle(byte[] encodedRle)
+    private Mat DecodeLayerRle(AnycubicZipRleFormat format, byte[] encodedRle)
     {
         var mat = CreateMat();
-        var imageLength = mat.GetLength();
 
-        int pixelPos = 0;
-        for (int i = 0; i < encodedRle.Length; i++)
+        if (format == AnycubicZipRleFormat.PW0)
         {
-            byte b = encodedRle[i];
-            int code = b >> 4;
-            int repeat = b & 0xf;
-            byte color;
-            switch (code)
-            {
-                case 0x0:
-                    color = 0;
-                    i++;
-                    //reps = reps * 256 + EncodedRle[i];
-                    if (i >= encodedRle.Length)
-                    {
-                        repeat = imageLength - pixelPos;
-                        break;
-                    }
-
-                    repeat = (repeat << 8) + encodedRle[i];
-                    break;
-                case 0xf:
-                    color = 255;
-                    i++;
-                    //reps = reps * 256 + EncodedRle[i];
-                    if (i >= encodedRle.Length)
-                    {
-                        repeat = imageLength - pixelPos;
-                        break;
-                    }
-
-                    repeat = (repeat << 8) + encodedRle[i];
-                    break;
-                default:
-                    color = (byte)((code << 4) | code);
-                    if (i >= encodedRle.Length)
-                    {
-                        repeat = imageLength - pixelPos;
-                    }
-                    break;
-            }
-
-            //color &= 0xff;
-
-            if (pixelPos + repeat > imageLength)
-            {
-                mat.Dispose();
-                throw new FileLoadException($"Image ran off the end: {pixelPos} + {repeat} = {pixelPos + repeat}, expecting: {imageLength}");
-            }
-
-            // We only need to set the non-zero pixels
-            mat.FillSpan(ref pixelPos, repeat, color);
-
-
-            if (pixelPos == imageLength)
-            {
-                //i++;
-                break;
-            }
+            return AnycubicFile.DecodePW0(mat, encodedRle);
         }
 
-        if (pixelPos > 0 && pixelPos != imageLength)
+        if (format == AnycubicZipRleFormat.PWSZ)
         {
-            mat.Dispose();
-            throw new FileLoadException($"Image ended short: {pixelPos}, expecting: {imageLength}");
+            if (encodedRle.Length < 56) throw new FileLoadException("Invalid RLE data is shorter than 56 bytes.");
+            
+
+            if (encodedRle[0] != '{' || encodedRle[1] != '=' || encodedRle[2] != '=' || encodedRle[3] != '\0') 
+                throw new FileLoadException($"Invalid RLE file start marker, expecting: {{==\0 got: {System.Text.Encoding.Default.GetString(encodedRle, 0, 4)}.");
+            
+
+            int index = 4;
+            var area = BitExtensions.ToSingleLittleEndian(encodedRle, index); index += 4;
+            var xMin = BitExtensions.ToSingleLittleEndian(encodedRle, index); index += 4;
+            var yMin = BitExtensions.ToSingleLittleEndian(encodedRle, index); index += 4;
+            var xMax = BitExtensions.ToSingleLittleEndian(encodedRle, index); index += 4;
+            var yMax = BitExtensions.ToSingleLittleEndian(encodedRle, index); index += 4;
+            var padding1 = BitExtensions.ToUIntLittleEndian(encodedRle, index); index += 4;
+            var objectCount = BitExtensions.ToUIntLittleEndian(encodedRle, index); index += 4;
+
+            if (encodedRle[index] != '[' || encodedRle[index+1] != '-' || encodedRle[index+2] != '-' || encodedRle[index+3] != '\0')
+                throw new FileLoadException($"Invalid RLE coordinates start marker, expecting: [--\0 got: {System.Text.Encoding.Default.GetString(encodedRle, index, 4)}.");
+
+            index += 4;
+
+            var padding2 = BitExtensions.ToUIntLittleEndian(encodedRle, index); index += 4;
+            var lineCount = BitExtensions.ToUIntLittleEndian(encodedRle, index); index += 4;
+            var unknown1 = BitExtensions.ToUIntLittleEndian(encodedRle, index); index += 4;
+
+            float halfDisplayX = DisplayWidth / 2f;
+            float halfDisplayY = DisplayHeight / 2f;
+
+            if (lineCount > 0)
+            {
+                for (int i = 0; i < lineCount; i++)
+                {
+                    var startX = BitExtensions.ToSingleLittleEndian(encodedRle, index) + halfDisplayX; index += 4;
+                    var startY = BitExtensions.ToSingleLittleEndian(encodedRle, index) + halfDisplayY; index += 4;
+                    var endX = BitExtensions.ToSingleLittleEndian(encodedRle, index) + halfDisplayX; index += 4;
+                    var endY = BitExtensions.ToSingleLittleEndian(encodedRle, index) + halfDisplayY; index += 4;
+                    var cw = encodedRle[index++];
+
+                    var startPoint = DisplayToPixelPosition(startX, startY);
+                    var endPoint = DisplayToPixelPosition(endX, endY);
+
+                    CvInvoke.Line(mat, startPoint, endPoint, EmguExtensions.WhiteColor);
+                }
+
+                var boundingRectangle = CvInvoke.BoundingRectangle(mat);
+                using var matRoi = new Mat(mat, boundingRectangle);
+                using var contours = new EmguContours(matRoi, RetrType.Tree, ChainApproxMethod.ChainApproxSimple, boundingRectangle.Location);
+
+                if (!contours.IsEmpty)
+                {
+                    using var newContours = new VectorOfVectorOfPoint();
+                    foreach (var family in contours.Families)
+                    {
+                        newContours.Push(family.TraverseTree()
+                            .Where(traverseFamily => traverseFamily.Depth % 2 == 0) // Ignore all non-welcomers
+                            .Select(traverseFamily => traverseFamily.Self.Vector).ToArray());
+                    }
+
+                    CvInvoke.DrawContours(mat, newContours, -1, EmguExtensions.WhiteColor, -1);
+                }
+            }
+
+            if (encodedRle[index] != '-' || encodedRle[index + 1] != '-' || encodedRle[index + 2] != ']' || encodedRle[index + 3] != '\0')
+                throw new FileLoadException($"Invalid RLE coordinates end marker, expecting: --]\0 got: {System.Text.Encoding.Default.GetString(encodedRle, index, 4)}.");
+            
+            index += 4;
+
+            if (encodedRle[index] != '=' || encodedRle[index + 1] != '=' || encodedRle[index + 2] != '}' || encodedRle[index + 3] != '\0')
+                throw new FileLoadException($"Invalid RLE file end marker, expecting: ==}}\0 got: {System.Text.Encoding.Default.GetString(encodedRle, index, 4)}.");
+
+            return mat;
         }
 
-        return mat;
+        throw new NotSupportedException($"Unsupported RLE format: {format}");
+    }
+
+    private byte[] EncodeLayerRle(AnycubicZipRleFormat format, uint layerIndex)
+    {
+        if (format == AnycubicZipRleFormat.PW0)
+        {
+            using var mat = this[layerIndex].LayerMat;
+            return AnycubicFile.EncodePW0(mat);
+        }
+
+        if (format == AnycubicZipRleFormat.PWSZ)
+        {
+            var layer = this[layerIndex];
+            var rle = new List<byte>();
+
+            rle.AddRange(new byte[]
+            {
+                (byte)'{', 
+                (byte)'=', 
+                (byte)'=', 
+                0
+            });
+
+            var zeroUintArray = new byte[4];
+
+            rle.AddRange(BitExtensions.ToBytesLittleEndian(SceneSettings.LayersDef[layerIndex].Area));
+            rle.AddRange(BitExtensions.ToBytesLittleEndian(SceneSettings.LayersDef[layerIndex].XStartBoundingRectangleOffsetFromCenter));
+            rle.AddRange(BitExtensions.ToBytesLittleEndian(SceneSettings.LayersDef[layerIndex].YStartBoundingRectangleOffsetFromCenter));
+            rle.AddRange(BitExtensions.ToBytesLittleEndian(SceneSettings.LayersDef[layerIndex].XEndBoundingRectangleOffsetFromCenter));
+            rle.AddRange(BitExtensions.ToBytesLittleEndian(SceneSettings.LayersDef[layerIndex].YEndBoundingRectangleOffsetFromCenter));
+            rle.AddRange(zeroUintArray);
+            rle.AddRange(BitExtensions.ToBytesLittleEndian(SceneSettings.LayersDef[layerIndex].ObjectCount));
+
+            rle.AddRange(new byte[]
+            {
+                (byte)'[',
+                (byte)'-',
+                (byte)'-',
+                0
+            });
+
+            rle.AddRange(zeroUintArray);
+
+            float halfDisplayX = DisplayWidth / 2f;
+            float halfDisplayY = DisplayHeight / 2f;
+
+            uint lines = 0;
+
+            var linesRle = new List<byte>();
+            foreach (var family in layer.Contours.Families)
+            {
+                foreach (var contour in family.TraverseTreeAsEmguContour())
+                {
+                    if (contour.Count == 1)
+                    {
+                        var startPoint = PixelToDisplayPosition(contour[0]);
+                        linesRle.AddRange(BitExtensions.ToBytesLittleEndian(RoundDisplaySize(startPoint.X - halfDisplayX)));
+                        linesRle.AddRange(BitExtensions.ToBytesLittleEndian(RoundDisplaySize(startPoint.Y - halfDisplayY)));
+                        linesRle.AddRange(BitExtensions.ToBytesLittleEndian(RoundDisplaySize(startPoint.X - halfDisplayX)));
+                        linesRle.AddRange(BitExtensions.ToBytesLittleEndian(RoundDisplaySize(startPoint.Y - halfDisplayY)));
+                        linesRle.Add(1);
+                        lines++;
+                    }
+                    else
+                    {
+                        for (int i = 1; i < contour.Count; i++)
+                        {
+                            var startPoint = PixelToDisplayPosition(contour[i-1]);
+                            var endPoint = PixelToDisplayPosition(contour[i]);
+                            linesRle.AddRange(BitExtensions.ToBytesLittleEndian(RoundDisplaySize(startPoint.X - halfDisplayX)));
+                            linesRle.AddRange(BitExtensions.ToBytesLittleEndian(RoundDisplaySize(startPoint.Y - halfDisplayY)));
+                            linesRle.AddRange(BitExtensions.ToBytesLittleEndian(RoundDisplaySize(endPoint.X - halfDisplayX)));
+                            linesRle.AddRange(BitExtensions.ToBytesLittleEndian(RoundDisplaySize(endPoint.Y - halfDisplayY)));
+                            linesRle.Add(1);
+                            lines++;
+                        }
+
+                        // Closing line
+                        if (lines >= 3 && contour.IsClosed)
+                        {
+                            var startPoint = PixelToDisplayPosition(contour[^1]);
+                            var endPoint = PixelToDisplayPosition(contour[0]);
+                            linesRle.AddRange(BitExtensions.ToBytesLittleEndian(RoundDisplaySize(startPoint.X - halfDisplayX)));
+                            linesRle.AddRange(BitExtensions.ToBytesLittleEndian(RoundDisplaySize(startPoint.Y - halfDisplayY)));
+                            linesRle.AddRange(BitExtensions.ToBytesLittleEndian(RoundDisplaySize(endPoint.X - halfDisplayX)));
+                            linesRle.AddRange(BitExtensions.ToBytesLittleEndian(RoundDisplaySize(endPoint.Y - halfDisplayY)));
+                            linesRle.Add(1);
+                            lines++;
+                        }
+                    }
+                }
+            }
+            
+            rle.AddRange(BitExtensions.ToBytesLittleEndian(lines));
+            rle.AddRange(BitExtensions.ToBytesLittleEndian(1u)); // Unknown
+
+            rle.AddRange(linesRle);
+
+            rle.AddRange(new byte[]
+            {
+                (byte)'-',
+                (byte)'-',
+                (byte)']',
+                0
+            });
+
+            rle.AddRange(new byte[]
+            {
+                (byte)'=',
+                (byte)'=',
+                (byte)'}',
+                0
+            });
+
+            return rle.ToArray();
+        }
+
+        throw new NotSupportedException($"Unsupported RLE format: {format}");
     }
 
     protected override void OnBeforeEncode(bool isPartialEncode)
@@ -671,6 +819,8 @@ public sealed class AnycubicZipFile : FileFormat
         SceneSettings.LayersDef = new SceneLayerDef[LayerCount];
         var pixelArea = PixelArea;
 
+        var encodeWith = AnycubicZipRleFormat.PW0; // pw0 better than my pmsz implementation
+        var encodedRle = new byte[LayerCount][];
         progress.Reset(OperationProgress.StatusEncodeLayers, LayerCount);
         foreach (var batch in BatchLayersIndexes())
         {
@@ -679,30 +829,30 @@ public sealed class AnycubicZipFile : FileFormat
                 progress.PauseIfRequested();
 
                 var layer = this[layerIndex];
-                using var mat = layer.LayerMatModelBoundingRectangle;
-
                 var rect = layer.BoundingRectangleMillimeters;
                 rect.Offset(DisplayWidth / -2f, DisplayHeight / -2f);
-
-                using var contours = new EmguContours(mat.RoiMat, RetrType.External);
 
                 SceneSettings.LayersDef[layerIndex] = new SceneLayerDef
                 {
                     Height = this[layerIndex].PositionZ,
-                    Area = layer.GetArea(),
-                    XMin = (float)Math.Round(rect.X, 4),
-                    YMin = (float)Math.Round(rect.Y, 4),
-                    XMax = (float)Math.Round(rect.Right, 4),
-                    YMax = (float)Math.Round(rect.Bottom, 4),
-                    ContourCount = (uint)contours.ExternalContoursCount,
-                    MaxContourArea = (float)Math.Round(contours.MaxSolidArea * pixelArea, 4)
+                    Area = (float)Math.Round(layer.Contours.TotalSolidArea * pixelArea, 4),
+                    XStartBoundingRectangleOffsetFromCenter = (float)Math.Round(rect.X, 4),
+                    YStartBoundingRectangleOffsetFromCenter = (float)Math.Round(rect.Y, 4),
+                    XEndBoundingRectangleOffsetFromCenter = (float)Math.Round(rect.Right, 4),
+                    YEndBoundingRectangleOffsetFromCenter = (float)Math.Round(rect.Bottom, 4),
+                    ObjectCount = (uint)layer.Contours.ExternalContoursCount,
+                    MaxContourArea = (float)Math.Round(layer.Contours.MaxSolidArea * pixelArea, 4)
                 };
+
+                encodedRle[layerIndex] = EncodeLayerRle(encodeWith, (uint)layerIndex);
 
                 progress.LockAndIncrement();
             });
 
             foreach (var layerIndex in batch)
             {
+                outputFile.CreateEntryFromContent($"layer_images/layer_{layerIndex}.{encodeWith.ToString().ToLowerInvariant()}Img", encodedRle[layerIndex], ZipArchiveMode.Create);
+                encodedRle[layerIndex] = null!;
                 progress.PauseOrCancelIfRequested();
             }
         }
@@ -825,20 +975,31 @@ public sealed class AnycubicZipFile : FileFormat
             {
                 progress.PauseIfRequested();
                 byte[] encodedRle;
+                AnycubicZipRleFormat rleFormat;
                 lock (Mutex)
                 {
                     entry = inputFile.GetEntry($"layer_images/layer_{layerIndex}.pwszImg");
                     if (entry is null)
                     {
-                        Clear();
-                        throw new FileLoadException($"Layer image {layerIndex} is missing in the file.", FileFullPath);
+                        entry = inputFile.GetEntry($"layer_images/layer_{layerIndex}.pw0Img");
+                        if (entry is null)
+                        {
+                            Clear();
+                            throw new FileLoadException($"Layer image {layerIndex} is missing in the file.", FileFullPath);
+                        }
+
+                        rleFormat = AnycubicZipRleFormat.PW0;
+                    }
+                    else
+                    {
+                        rleFormat = AnycubicZipRleFormat.PWSZ;
                     }
 
                     using var stream = entry.Open();
                     encodedRle = stream.ToArray();
                 }
 
-                this[layerIndex].LayerMat = DecodeLayerRle(encodedRle);
+                this[layerIndex].LayerMat = DecodeLayerRle(rleFormat, encodedRle);
                 progress.LockAndIncrement();
             });
         }

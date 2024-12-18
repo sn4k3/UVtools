@@ -2012,8 +2012,8 @@ public sealed class ChituboxFile : FileFormat
             Debug.WriteLine(Previews[i]);
 
             inputFile.Seek(Previews[i].ImageOffset, SeekOrigin.Begin);
-            byte[] rawImageData = new byte[Previews[i].ImageLength];
-            inputFile.Read(rawImageData, 0, (int)Previews[i].ImageLength);
+            var rawImageData = new byte[Previews[i].ImageLength];
+            inputFile.ReadExactly(rawImageData.AsSpan());
 
 
             Thumbnails.Add(DecodeChituImageRGB15Rle(rawImageData, Previews[i].ResolutionX, Previews[i].ResolutionY));

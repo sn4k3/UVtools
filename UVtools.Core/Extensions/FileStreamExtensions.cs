@@ -22,7 +22,7 @@ public static class FileStreamExtensions
     public static byte[] ReadBytes(this FileStream fs, int length, int offset = 0)
     {
         var buffer = new byte[length];
-        fs.Read(buffer, offset, length);
+        fs.ReadExactly(buffer, offset, length);
         return buffer;
     }
 

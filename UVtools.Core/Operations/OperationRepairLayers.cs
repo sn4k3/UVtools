@@ -416,13 +416,13 @@ public class OperationRepairLayers : Operation
                 {
                     if (_repairIslands && _removeIslandsBelowEqualPixelCount > 0 && _removeIslandsRecursiveIterations == 1)
                     {
-                        Span<byte> bytes = null;
+                        var bytes = Span<byte>.Empty;
                         foreach (IssueOfPoints issue in IssueManager.GetIssuesBy(issues, MainIssue.IssueType.Island, (uint)layerIndex))
                         {
                             if (issue.PixelsCount > _removeIslandsBelowEqualPixelCount) continue;
 
                             InitImage();
-                            if (bytes == null) bytes = image!.GetDataByteSpan();
+                            if (bytes.IsEmpty) bytes = image!.GetDataByteSpan();
 
                             foreach (var issuePixel in issue.Points)
                             {

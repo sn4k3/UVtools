@@ -2123,6 +2123,7 @@
                         PanWithArrows="False"
 						ShowGrid="{Binding Settings.LayerPreview.ShowBackgroudGrid}"
 						GridCellSize="15"
+                        ConstrainZoomOutToFitLevel="True"
 						Name="LayerImageBox"/>
                 </Border>
 

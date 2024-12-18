@@ -78,10 +78,10 @@ jobs:
           git fetch --no-tags --prune --depth=1 origin +refs/heads/*:refs/remotes/origin/*
           git branch --remote --contains | grep origin/master
 
-      - name: 🟣 Setup .NET 7.0
+      - name: 🟣 Setup .NET 9.0
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: 7.0.x
+          dotnet-version: 9.0.x
 
       #- name: Set VERSION variable from tag
       #  run: | 
@@ -95,3 +95,6 @@ jobs:
 
       - name: 🚀 Push nuget.org
         run: dotnet nuget push UVtools*.nupkg --source https://api.nuget.org/v3/index.json --api-key ${NUGET_TOKEN} --skip-duplicate
+
+      - name: 🚀 Push Github
+        run: dotnet nuget push UVtools*.nupkg --source https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json --api-key ${{ github.token }} --skip-duplicate

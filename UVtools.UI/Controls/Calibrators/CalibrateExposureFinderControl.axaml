@@ -15,7 +15,7 @@
               IsExpanded="True">
 
       <Grid
-          RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto"
+          RowDefinitions="Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto,10,Auto"
           ColumnDefinitions="Auto,10,190,20,Auto,10,190">
 
         <TextBlock
@@ -140,13 +140,46 @@
                        Maximum="255"
                        Value="{Binding Operation.ErodeBottomIterations}"/>
 
-        <CheckBox Grid.Row="12" Grid.Column="2" 
+        <TextBlock Grid.Row="12" Grid.Column="0"
+                   IsEnabled="{Binding Operation.TextEnabled}"
+                   Text="Font:"
+                   VerticalAlignment="Center"/>
+        <ComboBox Grid.Row="12" Grid.Column="2" Grid.ColumnSpan="5"
+                  VerticalAlignment="Center"
+                  HorizontalAlignment="Stretch"
+                  ItemsSource="{Binding Operation.TextFonts}"
+                  SelectedItem="{Binding Operation.TextFont}"/>
+
+        <TextBlock Grid.Row="14" Grid.Column="0"
+                   Text="Text scale:"
+                   VerticalAlignment="Center"/>
+        <NumericUpDown Grid.Row="14" Grid.Column="2"
+                       Classes="ValueLabel ValueLabel_times"
+                       Increment="0.5"
+                       Minimum="0.1"
+                       Maximum="100"
+                       FormatString="F2"
+                       Value="{Binding Operation.TextScale}"/>
+
+        <TextBlock Grid.Row="14" Grid.Column="4"
+                   Text="Text thickness:"
+                   HorizontalAlignment="Right"
+                   VerticalAlignment="Center"/>
+        <NumericUpDown Grid.Row="14" Grid.Column="6"
+                       Classes="ValueLabel ValueLabel_px"
+                       Increment="1"
+                       Minimum="1"
+                       Maximum="255"
+                       Value="{Binding Operation.TextThickness}"/>
+
+
+          <CheckBox Grid.Row="16" Grid.Column="2" 
                   VerticalAlignment="Center"
                   IsEnabled="{Binding !Operation.PatternModel}"
                   IsChecked="{Binding Operation.EnableAntiAliasing}"
                   Content="Enable Anti-Aliasing"/>
 
-        <CheckBox Grid.Row="12" Grid.Column="4" 
+        <CheckBox Grid.Row="16" Grid.Column="4" 
                   IsEnabled="{Binding !Operation.PatternModel}"
                   ToolTip.Tip="Most of the printers requires a mirror output to print with the correct orientation"
                   IsChecked="{Binding Operation.MirrorOutput}"

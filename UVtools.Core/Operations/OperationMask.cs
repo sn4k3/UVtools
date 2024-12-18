@@ -26,7 +26,7 @@ public class OperationMask : Operation
     public override string Description =>
         "Mask the intensity of the LCD output using a greyscale input image.\n\n" +
         "Useful to correct LCD light uniformity for a specific printer.\n\n" +
-        "NOTE:  This operation should be run only after repairs and other transformations.  The provided" +
+        "NOTE: This operation should be run only after repairs and other transformations. The provided " +
         "input mask image must match the output resolution of the target printer.";
 
     public override string ConfirmationText =>

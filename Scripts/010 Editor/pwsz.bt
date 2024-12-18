@@ -16,15 +16,15 @@ struct BOUNDING_BOX {
     float EndXOffsetFromCenter <fgcolor=cBlack, bgcolor=cRed>; // in mm
     float EndYOffsetFromCenter <fgcolor=cBlack, bgcolor=cRed>; // in mm
     float Padding <fgcolor=cBlack, bgcolor=cRed>; // 0
-    uint CountourCount <fgcolor=cBlack, bgcolor=cRed>; // 
+    uint ObjectCount <fgcolor=cBlack, bgcolor=cRed>; // 
 } BoundingBox;
 
 char ImageStartMarker[4] <fgcolor=cBlack, bgcolor=cPurple>; // [--
 uint Padding <fgcolor=cBlack, bgcolor=cRed>; // 0
-uint CoordinateCount <fgcolor=cBlack, bgcolor=cRed>; // 
+uint LineCount <fgcolor=cBlack, bgcolor=cRed>; // 
 uint Unknown <fgcolor=cBlack, bgcolor=cRed>; // So far always 1
 
-struct COORDINATE {
+struct LINE {
     float StartXOffsetFromCenter <fgcolor=cWhite, bgcolor=cBlue>; // in mm
     float StartYOffsetFromCenter <fgcolor=cWhite, bgcolor=cBlue>; // in mm
     float EndXOffsetFromCenter <fgcolor=cWhite, bgcolor=cBlue>; // in mm
@@ -32,12 +32,12 @@ struct COORDINATE {
     ubyte Unknown <fgcolor=cWhite, bgcolor=cRed>; // 0 or 1
 };
 
-struct COUNTOURS{
+struct LINES{
         local uint i;
-        for( i = 0; i < CoordinateCount; i++ ){
-            COORDINATE coordinate;
+        for( i = 0; i < LineCount; i++ ){
+            LINE line;
         }
-    } Countours;
+    } lines;
     
 char ImageEndMarker[4] <fgcolor=cBlack, bgcolor=cPurple>; // --]
 char FileEndMarker[4] <fgcolor=cBlack, bgcolor=cPurple>; // ==}

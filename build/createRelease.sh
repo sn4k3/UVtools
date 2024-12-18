@@ -18,6 +18,7 @@ for runtime in $@; do :; done # Get last argument
 rootDir="$PWD"
 buildDir="$rootDir/build"
 coreDir="$rootDir/UVtools.Core"
+artifactsDir="$rootDir/artifacts"
 #version="$(grep -oP '<Version>\K([0-9][.][0-9][.][0-9])(?=<\/Version>)' "$coreDir/UVtools.Core.csproj")" # Not supported on recent macos!
 version="$(perl -nle'print $& while m{<UVtoolsVersion>\K([0-9]+[.][0-9]+[.][0-9]+)(?=<\/UVtoolsVersion>)}g' "$rootDir/Directory.Build.props")"
 platformsDir="$buildDir/platforms"
@@ -30,7 +31,7 @@ cmdProject="UVtools.Cmd"
 buildWith="Release" # Release or Debug
 projectDir="$rootDir/$buildProject"
 cmdProjectDir="$rootDir/$cmdProject"
-netVersion="6.0"
+netVersion="9.0"
 chmodPermissions=0755
 
 DOTNET_CLI_TELEMETRY_OPTOUT=1
@@ -125,10 +126,11 @@ echo "3. Copying dependencies"
 #fi
 
 echo "4. Cleaning up"
-rm -rf "$cmdProjectDir/bin/$buildWith/net$netVersion/$runtime" 2>/dev/null
-rm -rf "$cmdProjectDir/obj/$buildWith/net$netVersion/$runtime" 2>/dev/null
-rm -rf "$projectDir/bin/$buildWith/net$netVersion/$runtime" 2>/dev/null
-rm -rf "$projectDir/obj/$buildWith/net$netVersion/$runtime" 2>/dev/null
+#rm -rf "$cmdProjectDir/bin/$buildWith/net$netVersion/$runtime" 2>/dev/null
+#rm -rf "$cmdProjectDir/obj/$buildWith/net$netVersion/$runtime" 2>/dev/null
+#rm -rf "$projectDir/bin/$buildWith/net$netVersion/$runtime" 2>/dev/null
+#rm -rf "$projectDir/obj/$buildWith/net$netVersion/$runtime" 2>/dev/null
+find "$artifactsDir" -type d -name "release_$runtime" -exec rm -r {} \;
 
 echo "5. Setting Permissions"
 chmod -fv $chmodPermissions "$publishRuntimeDir/UVtools"

@@ -143,7 +143,7 @@
         <Setter Property="Padding" Value="5,0" />
     </Style>
 
-    <Style Selector="TextBox.ValueLabel, NumericUpDown.ValueLabel /template/ TextBox">
+    <Style Selector="NumericUpDown.ValueLabel">
         <Setter Property="InnerRightContent">
             <Template>
                 <TextBox Classes="NumericUpDownValueLabel" />
@@ -151,7 +151,7 @@
         </Setter>
     </Style>
 
-    <Style Selector="TextBox.ValueLabel_percent, NumericUpDown.ValueLabel_percent /template/ TextBox">
+    <Style Selector="NumericUpDown.ValueLabel_percent">
         <Setter Property="InnerRightContent">
             <Template>
                 <TextBox Classes="NumericUpDownValueLabel" Text="%" ToolTip.Tip="Percent" />
@@ -159,7 +159,7 @@
         </Setter>
     </Style>
 
-    <Style Selector="TextBox.ValueLabel_deg, NumericUpDown.ValueLabel_deg /template/ TextBox">
+    <Style Selector="NumericUpDown.ValueLabel_deg">
         <Setter Property="InnerRightContent">
             <Template>
                 <TextBox Classes="NumericUpDownValueLabel" Text="º" ToolTip.Tip="Degree(s)" />
@@ -167,7 +167,7 @@
         </Setter>
     </Style>
 
-    <Style Selector="TextBox.ValueLabel_s, NumericUpDown.ValueLabel_s /template/ TextBox">
+    <Style Selector="NumericUpDown.ValueLabel_s">
         <Setter Property="InnerRightContent">
             <Template>
                 <TextBox Classes="NumericUpDownValueLabel" Text="s" ToolTip.Tip="Second(s)" />
@@ -175,7 +175,7 @@
         </Setter>
     </Style>
 
-    <Style Selector="TextBox.ValueLabel_um, NumericUpDown.ValueLabel_um /template/ TextBox">
+    <Style Selector="NumericUpDown.ValueLabel_um">
         <Setter Property="InnerRightContent">
             <Template>
                 <TextBox Classes="NumericUpDownValueLabel" Text="µm" ToolTip.Tip="Micron(s)" />
@@ -183,7 +183,7 @@
         </Setter>
     </Style>
 
-    <Style Selector="TextBox.ValueLabel_mm, NumericUpDown.ValueLabel_mm /template/ TextBox">
+    <Style Selector="NumericUpDown.ValueLabel_mm">
         <Setter Property="InnerRightContent">
             <Template>
                 <TextBox Classes="NumericUpDownValueLabel" Text="mm" ToolTip.Tip="Millimeter(s)" />
@@ -191,7 +191,7 @@
         </Setter>
     </Style>
 
-    <Style Selector="TextBox.ValueLabel_mm2, NumericUpDown.ValueLabel_mm2 /template/ TextBox">
+    <Style Selector="NumericUpDown.ValueLabel_mm2">
         <Setter Property="InnerRightContent">
             <Template>
                 <TextBox Classes="NumericUpDownValueLabel" Text="mm²" ToolTip.Tip="Square Millimeter(s)" />
@@ -199,7 +199,7 @@
         </Setter>
     </Style>
 
-    <Style Selector="TextBox.ValueLabel_mm3, NumericUpDown.ValueLabel_mm3 /template/ TextBox">
+    <Style Selector="NumericUpDown.ValueLabel_mm3">
         <Setter Property="InnerRightContent">
             <Template>
                 <TextBox Classes="NumericUpDownValueLabel" Text="mm³" ToolTip.Tip="Cubic Millimeter(s)" />
@@ -207,7 +207,7 @@
         </Setter>
     </Style>
 
-    <Style Selector="TextBox.ValueLabel_diametermm, NumericUpDown.ValueLabel_diametermm /template/ TextBox">
+    <Style Selector="NumericUpDown.ValueLabel_diametermm">
         <Setter Property="InnerRightContent">
             <Template>
                 <TextBox Classes="NumericUpDownValueLabel" Text="⌀mm" ToolTip.Tip="Diameter Millimeter(s)" />
@@ -215,7 +215,7 @@
         </Setter>
     </Style>
 
-    <Style Selector="TextBox.ValueLabel_mmmin, NumericUpDown.ValueLabel_mmmin /template/ TextBox">
+    <Style Selector="NumericUpDown.ValueLabel_mmmin">
         <Setter Property="InnerRightContent">
             <Template>
                 <TextBox Classes="NumericUpDownValueLabel" Text="mm/min" ToolTip.Tip="Millimeters per minute" />
@@ -223,7 +223,7 @@
         </Setter>
     </Style>
 
-    <Style Selector="TextBox.ValueLabel_px, NumericUpDown.ValueLabel_px /template/ TextBox">
+    <Style Selector="NumericUpDown.ValueLabel_px">
         <Setter Property="InnerRightContent">
             <Template>
                 <TextBox Classes="NumericUpDownValueLabel" Text="px" ToolTip.Tip="Pixel(s)" />
@@ -231,7 +231,7 @@
         </Setter>
     </Style>
 
-    <Style Selector="TextBox.ValueLabel_px2, NumericUpDown.ValueLabel_px2 /template/ TextBox">
+    <Style Selector="NumericUpDown.ValueLabel_px2">
         <Setter Property="InnerRightContent">
             <Template>
                 <TextBox Classes="NumericUpDownValueLabel" Text="px²" ToolTip.Tip="Squared Pixel(s)" />
@@ -239,7 +239,7 @@
         </Setter>
     </Style>
 
-    <Style Selector="TextBox.ValueLabel_px3, NumericUpDown.ValueLabel_px3 /template/ TextBox">
+    <Style Selector="NumericUpDown.ValueLabel_px3">
         <Setter Property="InnerRightContent">
             <Template>
                 <TextBox Classes="NumericUpDownValueLabel" Text="px³" ToolTip.Tip="Cubic Pixel(s)" />
@@ -247,7 +247,7 @@
         </Setter>
     </Style>
 
-    <Style Selector="TextBox.ValueLabel_diameterpx, NumericUpDown.ValueLabel_diameterpx /template/ TextBox">
+    <Style Selector="NumericUpDown.ValueLabel_diameterpx">
         <Setter Property="InnerRightContent">
             <Template>
                 <TextBox Classes="NumericUpDownValueLabel" Text="⌀px" ToolTip.Tip="Diameter Pixel(s)" />
@@ -255,7 +255,7 @@
         </Setter>
     </Style>
 
-    <Style Selector="TextBox.ValueLabel_sun, NumericUpDown.ValueLabel_sun /template/ TextBox">
+    <Style Selector="NumericUpDown.ValueLabel_sun">
         <Setter Property="InnerRightContent">
             <Template>
                 <TextBox Classes="NumericUpDownValueLabel" Text="☀" ToolTip.Tip="Brightness" />
@@ -263,7 +263,7 @@
         </Setter>
     </Style>
 
-    <Style Selector="TextBox.ValueLabel_GB, NumericUpDown.ValueLabel_GB /template/ TextBox">
+    <Style Selector="NumericUpDown.ValueLabel_GB">
         <Setter Property="InnerRightContent">
             <Template>
                 <TextBox Classes="NumericUpDownValueLabel" Text="GB" ToolTip.Tip="Gigabyte(s)" />
@@ -271,7 +271,7 @@
         </Setter>
     </Style>
 
-    <Style Selector="TextBox.ValueLabel_g, NumericUpDown.ValueLabel_g /template/ TextBox">
+    <Style Selector="NumericUpDown.ValueLabel_g">
         <Setter Property="InnerRightContent">
             <Template>
                 <TextBox Classes="NumericUpDownValueLabel" Text="g" ToolTip.Tip="Gram(s)" />
@@ -279,7 +279,7 @@
         </Setter>
     </Style>
 
-    <Style Selector="TextBox.ValueLabel_gml, NumericUpDown.ValueLabel_gml /template/ TextBox">
+    <Style Selector="NumericUpDown.ValueLabel_gml">
         <Setter Property="InnerRightContent">
             <Template>
                 <TextBox Classes="NumericUpDownValueLabel" Text="g/ml" ToolTip.Tip="Grams per milliliter" />
@@ -287,7 +287,7 @@
         </Setter>
     </Style>
 
-    <Style Selector="TextBox.ValueLabel_ml, NumericUpDown.ValueLabel_ml /template/ TextBox">
+    <Style Selector="NumericUpDown.ValueLabel_ml">
         <Setter Property="InnerRightContent">
             <Template>
                 <TextBox Classes="NumericUpDownValueLabel" Text="ml" ToolTip.Tip="Milliliter(s)" />
@@ -295,7 +295,7 @@
         </Setter>
     </Style>
 
-    <Style Selector="TextBox.ValueLabel_times, NumericUpDown.ValueLabel_times /template/ TextBox">
+    <Style Selector="NumericUpDown.ValueLabel_times">
         <Setter Property="InnerRightContent">
             <Template>
                 <TextBox Classes="NumericUpDownValueLabel" Text="×" ToolTip.Tip="Times" />
@@ -304,7 +304,7 @@
     </Style>
 
 
-    <Style Selector="TextBox.ValueLabel_layers, NumericUpDown.ValueLabel_layers /template/ TextBox">
+    <Style Selector="NumericUpDown.ValueLabel_layers">
         <Setter Property="InnerRightContent">
             <Template>
                 <TextBox Classes="NumericUpDownValueLabel" Text="Ξ" ToolTip.Tip="Layer(s)" />
@@ -312,7 +312,7 @@
         </Setter>
     </Style>
 
-    <Style Selector="TextBox.ValueLabel_ms, NumericUpDown.ValueLabel_ms /template/ TextBox">
+    <Style Selector="NumericUpDown.ValueLabel_ms">
         <Setter Property="InnerRightContent">
             <Template>
                 <TextBox Classes="NumericUpDownValueLabel" Text="ms" ToolTip.Tip="Milliseconds" />
@@ -320,7 +320,7 @@
         </Setter>
     </Style>
 
-    <Style Selector="TextBox.ValueLabel_euro, NumericUpDown.ValueLabel_euro /template/ TextBox">
+    <Style Selector="NumericUpDown.ValueLabel_euro">
         <Setter Property="InnerRightContent">
             <Template>
                 <TextBox Classes="NumericUpDownValueLabel" Text="€" ToolTip.Tip="Euros" />
@@ -328,7 +328,7 @@
         </Setter>
     </Style>
 
-    <Style Selector="TextBox.ValueLabel_hz, NumericUpDown.ValueLabel_hz /template/ TextBox">
+    <Style Selector="NumericUpDown.ValueLabel_hz">
         <Setter Property="InnerRightContent">
             <Template>
                 <TextBox Classes="NumericUpDownValueLabel" Text="Hz" ToolTip.Tip="Hertz" />
@@ -337,7 +337,7 @@
     </Style>
 
     <!--
-    <Style Selector="NumericUpDown /template/ TextBox:not(.empty)">
+    <Style Selector="NumericUpDown:not(.empty)">
         <Setter Property="MinWidth" Value="0"/>
     </Style>
     -->

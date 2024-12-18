@@ -22,23 +22,6 @@ public static class StreamExtensions
     //public const int DefaultCopyBufferSize = 512000; // 512 kilobytes
     public const int DefaultCopyBufferSize = 1048576; // 1 MB
 
-    public static void ReadExactly(this Stream input, byte[] buffer, int bytesToRead)
-    {
-        int index = 0;
-        while (index < bytesToRead)
-        {
-            int read = input.Read(buffer, index, bytesToRead - index);
-            if (read == 0)
-            {
-                throw new EndOfStreamException
-                (string.Format("End of stream reached with {0} byte{1} left to read.",
-                    bytesToRead - index,
-                    bytesToRead - index == 1 ? 's' : string.Empty));
-            }
-            index += read;
-        }
-    }
-
     /// <summary>
     /// Converts stream into byte array
     /// </summary>

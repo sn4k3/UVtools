@@ -97,6 +97,16 @@ public class EmguContour : IReadOnlyList<Point>, IComparable<EmguContour>, IComp
         }
     }
 
+    /// <summary>
+    /// Gets if the contour is closed
+    /// </summary>
+    public bool IsClosed => IsConvex || Area > Perimeter;
+
+    /// <summary>
+    /// Gets if the contour is open
+    /// </summary>
+    public bool IsOpen => !IsClosed;
+
     public Moments Moments => _moments ??= CvInvoke.Moments(_vector);
 
     /// <summary>

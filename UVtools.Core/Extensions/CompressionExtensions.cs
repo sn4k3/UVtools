@@ -27,7 +27,7 @@ public static class CompressionExtensions
     {
         Span<byte> uncompressedLength = stackalloc byte[4];
         stream.Seek(-4, SeekOrigin.End);
-        stream.Read(uncompressedLength);
+        stream.ReadExactly(uncompressedLength);
         stream.Seek(0, SeekOrigin.Begin);
         return BitConverter.ToInt32(uncompressedLength);
     }

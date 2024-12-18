@@ -427,6 +427,16 @@
             Gets the perimeter of the contours
             </summary>
         </member>
+        <member name="P:UVtools.Core.EmguCV.EmguContour.IsClosed">
+            <summary>
+            Gets if the contour is closed
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.EmguCV.EmguContour.IsOpen">
+            <summary>
+            Gets if the contour is open
+            </summary>
+        </member>
         <member name="P:UVtools.Core.EmguCV.EmguContour.Centroid">
             <summary>
             Gets the centroid of the contour
@@ -930,6 +940,11 @@
         <member name="T:UVtools.Core.IssuesOrderBy">
             <summary>
             Default order of issues to show on the UI list
+            </summary>
+        </member>
+        <member name="T:UVtools.Core.RamLimitAction">
+            <summary>
+            The action to take when the RAM hit the limit.
             </summary>
         </member>
         <member name="T:UVtools.Core.Excellon.ExcellonDrillFormat">
@@ -5425,11 +5440,18 @@
         </member>
         <member name="M:UVtools.Core.FileFormats.FileFormat.DisplayToPixelPosition(System.Single,System.Single)">
             <summary>
-            From a pixel position get the equivalent position on the display
+            From a display position get the equivalent position on the pixel
             </summary>
             <param name="x">X position in millimeters</param>
             <param name="y">Y position in millimeters</param>
             <returns>Resolution position in pixels</returns>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.FileFormat.DisplayToPixelPosition(System.Drawing.PointF)">
+            <summary>
+            From a display position get the equivalent position on the pixel
+            </summary>
+            <param name="point"></param>
+            <returns></returns>
         </member>
         <member name="M:UVtools.Core.FileFormats.FileFormat.CreateMatWithDummyPixel(System.Drawing.Point,System.Byte)">
             <summary>

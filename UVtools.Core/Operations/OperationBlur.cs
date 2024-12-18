@@ -49,7 +49,7 @@ public sealed class OperationBlur : Operation
     {
         var sb = new StringBuilder();
 
-        if (BlurOperation is BlurAlgorithm.GaussianBlur or BlurAlgorithm.MedianBlur)
+        if (BlurOperation is BlurAlgorithm.StackBlur or BlurAlgorithm.GaussianBlur or BlurAlgorithm.MedianBlur)
         {
             if (Size % 2 != 1)
             {

@@ -127,7 +127,7 @@ public class EmguContourFamily : List<EmguContourFamily>
             yield return currentFamily;
             foreach (var child in currentFamily)
             {
-                yield return child;
+                //yield return child;
                 queue.Enqueue(child);
             }
         }

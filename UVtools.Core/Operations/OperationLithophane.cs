@@ -54,6 +54,7 @@ public class OperationLithophane : Operation
     private byte _gapClosingIterations;
     private byte _removeNoiseIterations;
     private byte _gaussianBlur;
+    private bool _separateGrayscalePixels = true;
     private byte _startThresholdRange = 1;
     private byte _endThresholdRange = byte.MaxValue;
     private decimal _baseThickness = 2;
@@ -115,13 +116,16 @@ public class OperationLithophane : Operation
             }
         }
 
-        if (_startThresholdRange == _endThresholdRange)
+        if (_separateGrayscalePixels)
         {
-            sb.AppendLine($"Start threshold can't be equal than end threshold ({_endThresholdRange})");
-        }
-        else if (_startThresholdRange > _endThresholdRange)
-        {
-            sb.AppendLine("Start threshold can't be higher than end threshold");
+            if (_startThresholdRange == _endThresholdRange)
+            {
+                sb.AppendLine($"Start threshold can't be equal than end threshold ({_endThresholdRange})");
+            }
+            else if (_startThresholdRange > _endThresholdRange)
+            {
+                sb.AppendLine("Start threshold can't be higher than end threshold");
+            }
         }
 
         return sb.ToString();
@@ -235,6 +239,16 @@ public class OperationLithophane : Operation
     {
         get => _gaussianBlur;
         set => RaiseAndSetIfChanged(ref _gaussianBlur, value);
+    }
+
+    public bool SeparateGrayscalePixels
+    {
+        get => _separateGrayscalePixels;
+        set
+        {
+            if (!RaiseAndSetIfChanged(ref _separateGrayscalePixels, value)) return;
+            OneLayerPerThreshold = false;
+        }
     }
 
     public byte StartThresholdRange
@@ -363,91 +377,110 @@ public class OperationLithophane : Operation
     {
         using var mat = GetTargetMat();
         if (mat is null) return false;
-        
-        var layersBag = new ConcurrentDictionary<byte, Layer>();
-        progress.Reset("Threshold levels", byte.MaxValue);
-        Parallel.For(_startThresholdRange, _endThresholdRange, CoreSettings.GetParallelOptions(progress), threshold =>
+
+        Layer[] thresholdLayers;
+
+        if (_separateGrayscalePixels)
         {
-            progress.PauseIfRequested();
-            using var thresholdMat = new Mat();
-            CvInvoke.Threshold(mat, thresholdMat, threshold, byte.MaxValue, ThresholdType.Binary);
-            if (!CvInvoke.HasNonZero(thresholdMat)) return;
-
-            if (_enableAntiAliasing)
-            {
-                CvInvoke.GaussianBlur(thresholdMat, thresholdMat, new Size(3, 3), 0);
-            }
-
-            using var layerMat = EmguExtensions.InitMat(SlicerFile.Resolution);
-            thresholdMat.CopyToCenter(layerMat);
-            layersBag.TryAdd((byte)threshold, new Layer(layerMat, SlicerFile));
-            progress.LockAndIncrement();
-        });
-
-        if (layersBag.Count == 0)
-        {
-            throw new InvalidOperationException("Unable to continue due to no threshold layers was generated, either by lack of pixels or by using a short range.");
-        }
-
-        var thresholdLayers = layersBag.OrderBy(pair => pair.Key).Select(pair => pair.Value).ToArray();
-
-        if (!_oneLayerPerThreshold)
-        {
-            var layerIncrementF = thresholdLayers.Length * _layerHeight / Math.Max(_layerHeight, _lithophaneHeight);
-            if (layerIncrementF >= 2)
-            {
-                var layerIncrement = (uint) layerIncrementF;
-                var indexes = new int[(int)Math.Ceiling(thresholdLayers.Length / (float)layerIncrement)];
-                var newLayers = new Layer[indexes.Length];
-                var count = 0;
-                for (int index = 0; index < thresholdLayers.Length; index++)
-                {
-                    if (index % layerIncrement != 0) continue;
-                    newLayers[count] = thresholdLayers[index];
-                    indexes[count++] = index;
-                    
-                }
-
-                progress.ResetNameAndProcessed("Packed layers");
-                Parallel.ForEach(indexes, CoreSettings.GetParallelOptions(progress), i =>
+            var layersBag = new ConcurrentDictionary<byte, Layer>();
+            progress.Reset("Threshold levels", byte.MaxValue);
+            Parallel.For(_startThresholdRange, _endThresholdRange, CoreSettings.GetParallelOptions(progress),
+                threshold =>
                 {
                     progress.PauseIfRequested();
-                    progress.LockAndIncrement();
-                    using var mat = thresholdLayers[i].LayerMat;
-                    for (int index = i+1; index < i + layerIncrement && index < thresholdLayers.Length; index++)
+                    using var thresholdMat = new Mat();
+                    CvInvoke.Threshold(mat, thresholdMat, threshold, byte.MaxValue, ThresholdType.Binary);
+                    if (!CvInvoke.HasNonZero(thresholdMat)) return;
+
+                    if (_enableAntiAliasing)
                     {
-                        using var nextMat = thresholdLayers[index].LayerMat;
-                        CvInvoke.Max(mat, nextMat, mat);
-                        progress.LockAndIncrement();
+                        CvInvoke.GaussianBlur(thresholdMat, thresholdMat, new Size(3, 3), 0);
                     }
 
-                    thresholdLayers[i].LayerMat = mat;
+                    using var layerMat = SlicerFile.CreateMat();
+                    thresholdMat.CopyToCenter(layerMat);
+                    layersBag.TryAdd((byte)threshold, new Layer(layerMat, SlicerFile));
+                    progress.LockAndIncrement();
                 });
 
-
-                thresholdLayers = newLayers;
-            }
-            else if (layerIncrementF < 1)
+            if (layersBag.Count == 0)
             {
-                var layerIncrement = (uint)Math.Ceiling(1/layerIncrementF);
-                if (layerIncrement > 1)
+                throw new InvalidOperationException(
+                    "Unable to continue due to no threshold layers was generated, either by lack of pixels or by using a short range.");
+            }
+
+            thresholdLayers = layersBag.OrderBy(pair => pair.Key).Select(pair => pair.Value).ToArray();
+
+            if (!_oneLayerPerThreshold)
+            {
+                var layerIncrementF = thresholdLayers.Length * _layerHeight / Math.Max(_layerHeight, _lithophaneHeight);
+                if (layerIncrementF >= 2)
                 {
-                    progress.Reset("Packed layers");
-                    var newLayers = new Layer[thresholdLayers.Length * layerIncrement];
-                    for (int i = 0; i < thresholdLayers.Length; i++)
+                    var layerIncrement = (uint)layerIncrementF;
+                    var indexes = new int[(int)Math.Ceiling(thresholdLayers.Length / (float)layerIncrement)];
+                    var newLayers = new Layer[indexes.Length];
+                    var count = 0;
+                    for (int index = 0; index < thresholdLayers.Length; index++)
                     {
-                        var layer = thresholdLayers[i];
-                        var newIndex = i * layerIncrement;
-                        newLayers[newIndex] = layer;
-                        for (int x = 1; x < layerIncrement; x++)
-                        {
-                            newLayers[++newIndex] = layer.Clone();
-                        }
+                        if (index % layerIncrement != 0) continue;
+                        newLayers[count] = thresholdLayers[index];
+                        indexes[count++] = index;
 
                     }
+
+                    progress.ResetNameAndProcessed("Packed layers");
+                    Parallel.ForEach(indexes, CoreSettings.GetParallelOptions(progress), i =>
+                    {
+                        progress.PauseIfRequested();
+                        progress.LockAndIncrement();
+                        using var mat = thresholdLayers[i].LayerMat;
+                        for (int index = i + 1; index < i + layerIncrement && index < thresholdLayers.Length; index++)
+                        {
+                            using var nextMat = thresholdLayers[index].LayerMat;
+                            CvInvoke.Max(mat, nextMat, mat);
+                            progress.LockAndIncrement();
+                        }
+
+                        thresholdLayers[i].LayerMat = mat;
+                    });
+
+
                     thresholdLayers = newLayers;
                 }
+                else if (layerIncrementF < 1)
+                {
+                    var layerIncrement = (uint)Math.Ceiling(1 / layerIncrementF);
+                    if (layerIncrement > 1)
+                    {
+                        progress.Reset("Packed layers");
+                        var newLayers = new Layer[thresholdLayers.Length * layerIncrement];
+                        for (int i = 0; i < thresholdLayers.Length; i++)
+                        {
+                            var layer = thresholdLayers[i];
+                            var newIndex = i * layerIncrement;
+                            newLayers[newIndex] = layer;
+                            for (int x = 1; x < layerIncrement; x++)
+                            {
+                                newLayers[++newIndex] = layer.Clone();
+                            }
+
+                        }
+
+                        thresholdLayers = newLayers;
+                    }
+                }
             }
+        }
+        else
+        {
+            using var layerMat = SlicerFile.CreateMat();
+            mat.CopyToCenter(layerMat);
+            if (_enableAntiAliasing)
+            {
+                CvInvoke.GaussianBlur(layerMat, layerMat, new Size(3, 3), 0);
+            }
+            var layer = new Layer(layerMat, SlicerFile);
+            thresholdLayers = layer.Clone((uint)(_lithophaneHeight / _layerHeight));
         }
 
         if (_baseType != LithophaneBaseType.None && _baseThickness > 0)

@@ -169,7 +169,7 @@ public sealed class ReverseLineReader : IEnumerable<string>
 
                 position -= bytesToRead;
                 stream.Position = position;
-                stream.ReadExactly(buffer, bytesToRead);
+                stream.ReadExactly(buffer, 0, bytesToRead);
                 // If we haven't read a full buffer, but we had bytes left
                 // over from before, copy them to the end of the buffer
                 if (leftOverData > 0 && bytesToRead != _bufferSize)

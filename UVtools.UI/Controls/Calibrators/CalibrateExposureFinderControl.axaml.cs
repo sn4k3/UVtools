@@ -4,7 +4,6 @@ using System;
 using System.Linq;
 using System.Timers;
 using UVtools.Core.Dialogs;
-using UVtools.Core.FileFormats;
 using UVtools.Core.Objects;
 using UVtools.Core.Operations;
 using UVtools.UI.Controls.Tools;
@@ -62,7 +61,7 @@ public partial class CalibrateExposureFinderControl : ToolControl
 
     public void UpdatePreview()
     {
-        var layers = Operation.GetLayers(true);
+        var layers = Operation.GetLayers(out _, out _, true);
         _previewImage?.Dispose();
         if (layers is not null)
         {
