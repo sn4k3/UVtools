@@ -13,7 +13,7 @@ osVariant=''       # osx, linux, arch, rhel
 tag="$1"           # Download specific version, passed as first argument to the script
 api_url="https://api.github.com/repos/sn4k3/UVtools/releases/latest"
 dependencies_url="https://raw.githubusercontent.com/sn4k3/UVtools/master/Scripts/install-dependencies.sh"
-macOS_least_version='10.15'
+macOS_least_version='12.0'
 
 # Arch validation
 if [ "$arch" != "x86_64" -a "$arch" != "arm64" ]; then

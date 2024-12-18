@@ -26,7 +26,7 @@
 - (Upgrade) .NET from 6.0.33 to 9.0.0
   - .NET 6.0 is end of life and will no longer supported
   - This represents three major upgrades and will increase the system os version requirements, see more here: https://github.com/dotnet/core/blob/main/release-notes/9.0/supported-os.md
-  - macOS requirement from Catalina (10.15) to Monterey (13)
+  - macOS requirement from Catalina (10.15) to Monterey (12.0)
   - With this upgrade the software will be able to take advantage of the new features and improvements of the .NET 9.0, including a significant performance boost
 
 ## 04/10/2024 - v4.4.3
