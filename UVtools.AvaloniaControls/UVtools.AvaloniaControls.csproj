@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
+        <TargetFramework></TargetFramework>
         <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
         <Title>UVtools Avalonia Controls</Title>
 		<Description>AvaloniaUI Controls

@@ -5,10 +5,10 @@ Set-Location $PSScriptRoot\..\..
 # Variables
 $package = "UVtools.Core"
 $nugetApiKeyFile = 'build/secret/nuget_api.key'
-$outputFolder = "$package/bin/Release"
+$outputFolder = "artifacts/package/release"
 
-$projectXml = [Xml] (Get-Content "$package\$package.csproj")
-$version = "$($projectXml.Project.PropertyGroup.Version)".Trim();
+$projectXml = [Xml] (Get-Content "Directory.Build.props")
+$version = "$($projectXml.Project.PropertyGroup.UVtoolsVersion)".Trim();
 if([string]::IsNullOrWhiteSpace($version)){
     Write-Error "Can not detect the $package version, does $project\$project.csproj exists?"
     exit

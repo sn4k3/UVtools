@@ -300,7 +300,7 @@ If you downloaded the **.AppImage** package variant you must set run permissions
 
 ## Mac
 
-1. macOS 10.15 Catalina or higher
+1. macOS 13 Monterey or higher
 1. 8GB RAM or higher + 512MB per CPU core
 3. Install UVtools via the [auto installer](https://github.com/sn4k3/UVtools#to-auto-install-on-macos)
 
