@@ -1,5 +1,10 @@
 # Changelog
 
+## 19/12/2024 - v5.0.2
+
+- (Fix) Remove a condition that prevents the new Anycubic file format from being used
+- (Upgrade) AvaloniaUI from 11.1.3 to 11.2.2
+
 ## 19/12/2024 - v5.0.1
 
 - (Fix) Windows MSI: System.IO.Compression.Native is missing when upgrading from 4.4.3 (#957)

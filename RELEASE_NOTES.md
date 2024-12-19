@@ -1,3 +1,3 @@
-- (Fix) Index out of range when saving some file formats (#957)
-- (Change) Exposure time finder: Allow using 0 for the normal step in the multiple exposure generator (#958)
+- (Fix) Remove a condition that prevents the new Anycubic file format from being used
+- (Upgrade) AvaloniaUI from 11.1.3 to 11.2.2
 

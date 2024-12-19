@@ -52,6 +52,29 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "scripts", "scripts", "{2BE3
 		Scripts\install-uvtools.sh = Scripts\install-uvtools.sh
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{D606E7A2-219E-4FD1-B269-9F28F0BFC206}"
+	ProjectSection(SolutionItems) = preProject
+		.github\FUNDING.yml = .github\FUNDING.yml
+		.github\PULL_REQUEST_TEMPLATE.md = .github\PULL_REQUEST_TEMPLATE.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{21A89D47-FDB1-450D-8703-200EA399B16C}"
+	ProjectSection(SolutionItems) = preProject
+		.github\workflows\codeql-analysis.yml = .github\workflows\codeql-analysis.yml
+		.github\workflows\devskim.yml = .github\workflows\devskim.yml
+		.github\workflows\greetings.yml = .github\workflows\greetings.yml
+		.github\workflows\package-publish.yml = .github\workflows\package-publish.yml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ISSUE_TEMPLATE", "ISSUE_TEMPLATE", "{2ADDF363-B0A0-40E7-B210-A50F1B04D669}"
+	ProjectSection(SolutionItems) = preProject
+		.github\ISSUE_TEMPLATE\bug_report.md.old = .github\ISSUE_TEMPLATE\bug_report.md.old
+		.github\ISSUE_TEMPLATE\bug_report_form.yml = .github\ISSUE_TEMPLATE\bug_report_form.yml
+		.github\ISSUE_TEMPLATE\config.yml = .github\ISSUE_TEMPLATE\config.yml
+		.github\ISSUE_TEMPLATE\feature_request.md.old = .github\ISSUE_TEMPLATE\feature_request.md.old
+		.github\ISSUE_TEMPLATE\feature_request_form.yml = .github\ISSUE_TEMPLATE\feature_request_form.yml
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -136,6 +159,9 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{B5BD32D7-3B3E-4254-877C-3353664BC044} = {E91CEB7A-5EDC-4928-8133-D8F354EF3CE8}
 		{2BE3B5D1-3E9C-451E-A795-40298AFFDE6B} = {E91CEB7A-5EDC-4928-8133-D8F354EF3CE8}
+		{D606E7A2-219E-4FD1-B269-9F28F0BFC206} = {E91CEB7A-5EDC-4928-8133-D8F354EF3CE8}
+		{21A89D47-FDB1-450D-8703-200EA399B16C} = {D606E7A2-219E-4FD1-B269-9F28F0BFC206}
+		{2ADDF363-B0A0-40E7-B210-A50F1B04D669} = {D606E7A2-219E-4FD1-B269-9F28F0BFC206}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {E9BEE8D8-E894-49A9-9435-491BF1E26E46}

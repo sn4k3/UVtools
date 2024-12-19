@@ -27,7 +27,7 @@ if (Test-Path -Path $nugetApiKeyFile -PathType Leaf)
         $nugetApiKeyFile = (Get-Content $nugetApiKeyFile)
         $githubApiKeyFile = (Get-Content $githubApiKeyFile)
         dotnet nuget push $nupkg --api-key $nugetApiKeyFile --source https://api.nuget.org/v3/index.json --skip-duplicate
-        #dotnet nuget push $nupkg --api-key $githubApiKeyFile --source https://nuget.pkg.github.com/sn4k3/UVtools/index.json --skip-duplicate
+        dotnet nuget push $nupkg --api-key $githubApiKeyFile --source https://nuget.pkg.github.com/sn4k3/index.json --skip-duplicate
         #Remove-Item $nupkg
     }else {
         Write-Error "Nuget package publish failed!"

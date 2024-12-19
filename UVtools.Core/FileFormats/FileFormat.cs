@@ -485,10 +485,8 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         new CTBEncryptedFile(), // encrypted ctb
         new AnycubicPhotonSFile(), // photons
         new PHZFile(), // phz
-        new AnycubicFile(), // PSW
-#if DEBUG
+        new AnycubicFile(), // PSW, PW0
         new AnycubicZipFile(), // PWSZ
-#endif
         new CWSFile(), // CWS
         new AnetFile(), // Anet N4, N7
         new LGSFile(), // LGS, LGS30
