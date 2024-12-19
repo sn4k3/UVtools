@@ -12,7 +12,7 @@
 - (Add) PrusaSlicer printer: Phrozen Sonic Mighty Revo (#950)
 - (Add) Litophane tool: Option to enable or disable the separation of grayscale pixels (#954)
 - (Add) Exposure time finder: Re-arrange exposure text layout and allow to change it font (#955)
-- (Add) Setting: Available RAM lower limit - Sets a lower limiter for the available memory RAM the program is allowed to run operations.  
+- (Add) Setting: Available RAM lower limit - Sets a lower limiter for the available memory RAM the program is allowed to run operations. (#953)  
                    When meet the threshold, a stopping action will be queued to relief pressure and maintain the system stability.  
                    In cases where is unable to pause or cancel the operation, the program will be forced to close and trigger an exception to ensure the system stability.  
                    Note: This limiter will check the RAM every 2 seconds while operations are running, if you have set a very low limit there is a chance to consume more RAM in the time and cause system instability.  
