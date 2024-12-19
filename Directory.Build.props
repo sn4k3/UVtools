@@ -30,7 +30,7 @@
         <!-- Set the path map and artifacts path. -->
         <PathMap>$(MSBuildProjectDirectory)=$(MSBuildProjectName)</PathMap>
         <ArtifactsPath>$(MSBuildThisFileDirectory)artifacts</ArtifactsPath>
-        <CommonPublishDir>$(MSBuildThisFileDirectory)publish</CommonPublishDir>
+        <CommonPublishDir>$(MSBuildThisFileDirectory)artifacts\publish</CommonPublishDir>
 
 
         <!-- Enable Build Acceleration in Visual Studio. -->
