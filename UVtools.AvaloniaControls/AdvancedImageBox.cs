@@ -1429,7 +1429,7 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
 
         //SkiaContext.SkCanvas.dr
         // Draw pixel grid
-        if (zoomFactor > PixelGridZoomThreshold && SizeMode == SizeModes.Normal)
+        if (SizeMode == SizeModes.Normal && zoomFactor > PixelGridZoomThreshold)
         {
             var offsetX = Offset.X % zoomFactor;
             var offsetY = Offset.Y % zoomFactor;
@@ -1437,12 +1437,12 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
             Pen pen = new(PixelGridColor);
             for (double x = imageViewPort.X + zoomFactor - offsetX; x < imageViewPort.Right; x += zoomFactor)
             {
-                context.DrawLine(pen, new Point(x, imageViewPort.X), new Point(x, imageViewPort.Bottom));
+                context.DrawLine(pen, new Point(x, imageViewPort.Y), new Point(x, imageViewPort.Bottom));
             }
 
             for (double y = imageViewPort.Y + zoomFactor - offsetY; y < imageViewPort.Bottom; y += zoomFactor)
             {
-                context.DrawLine(pen, new Point(imageViewPort.Y, y), new Point(imageViewPort.Right, y));
+                context.DrawLine(pen, new Point(imageViewPort.X, y), new Point(imageViewPort.Right, y));
             }
 
             context.DrawRectangle(pen, imageViewPort);
