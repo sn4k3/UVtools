@@ -815,7 +815,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
         {
             var bytesPerPixel = dataType is "RGB888" or "BGR888" ? 3 : 2;
             var bytes = new byte[mat.Width * mat.Height * bytesPerPixel];
-            uint index = 0;
+            int index = 0;
             var span = mat.GetDataByteReadOnlySpan();
             for (int i = 0; i < span.Length;)
             {

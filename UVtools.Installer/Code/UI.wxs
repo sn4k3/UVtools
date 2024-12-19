@@ -1,16 +1,16 @@
 ﻿<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui">
-	<Fragment>
-		<UI Id="UI">
+    <Fragment>
+        <UI Id="UI">
 
-			<!-- See http://wix.sourceforge.net/manual-wix3/WixUI_index.htm for more information-->
-			<!--<UIRef Id="UI_CustomFeatureTree"/>!-->
-			<ui:WixUI Id="UI_CustomInstallDir" />
+            <!-- See http://wix.sourceforge.net/manual-wix3/WixUI_index.htm for more information-->
+            <!--<UIRef Id="UI_CustomFeatureTree"/>!-->
+            <ui:WixUI Id="UI_CustomInstallDir" />
 
-			<Publish Dialog="ExitDialog" Control="Finish" Event="DoAction" Value="LaunchApplication" Condition="WIXUI_EXITDIALOGOPTIONALCHECKBOX = 1 and NOT Installed" />
+            <Publish Dialog="ExitDialog" Control="Finish" Event="DoAction" Value="LaunchApplication" Condition="WIXUI_EXITDIALOGOPTIONALCHECKBOX = 1 and NOT Installed" />
 
-			<!--Uncomment to inject a custom dialog into the install wizard loop -->
-			<!--<UIRef Id="CustomDlg"/>-->
+            <!--Uncomment to inject a custom dialog into the install wizard loop -->
+            <!--<UIRef Id="CustomDlg"/>-->
 
-		</UI>
-	</Fragment>
+        </UI>
+    </Fragment>
 </Wix>

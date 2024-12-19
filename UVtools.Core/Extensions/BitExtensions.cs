@@ -112,7 +112,7 @@ public static class BitExtensions
         return bytes;
     }
 
-    public static void ToBytesLittleEndian(float value, byte[] buffer, uint offset = 0)
+    public static void ToBytesLittleEndian(float value, byte[] buffer, int offset = 0)
     {
         BinaryPrimitives.WriteSingleLittleEndian(buffer.AsSpan((int)offset, 4), value);
     }
@@ -124,7 +124,7 @@ public static class BitExtensions
         return bytes;
     }
 
-    public static void ToBytesBigEndian(float value, byte[] buffer, uint offset = 0)
+    public static void ToBytesBigEndian(float value, byte[] buffer, int offset = 0)
     {
         BinaryPrimitives.WriteSingleBigEndian(buffer.AsSpan((int)offset, 4), value);
     }

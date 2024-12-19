@@ -2005,7 +2005,7 @@ public sealed class OperationCalibrateExposureFinder : Operation
                     lastCurrentHeight == currentHeight &&
                     lastExposureItem.LayerHeight == layerHeight &&
                     (
-                        (isBottomLayer && lastExposureItem.BottomExposure == bottomExposure || !isBottomLayer && lastExposureItem.Exposure == normalExposure) ||
+                        ((isBottomLayer && lastExposureItem.BottomExposure == bottomExposure) || (!isBottomLayer && lastExposureItem.Exposure == normalExposure)) ||
                         (!isBottomLayer && isBaseLayer && _multipleExposuresBaseLayersPrintMode != CalibrateExposureFinderMultipleExposuresBaseLayersPrintModes.Iterative)
                     );
 
@@ -2125,11 +2125,12 @@ public sealed class OperationCalibrateExposureFinder : Operation
                     {
                         layer.ExposureTime = _multipleExposuresBaseLayersPrintMode switch
                         {
+                            CalibrateExposureFinderMultipleExposuresBaseLayersPrintModes.Iterative => (float)normalExposure,
                             CalibrateExposureFinderMultipleExposuresBaseLayersPrintModes.UseLowest => (float) _exposureTable[0].Exposure,
                             CalibrateExposureFinderMultipleExposuresBaseLayersPrintModes.UseMiddle => (float) _exposureTable[(int) Math.Ceiling((_exposureTable.Count - 1) / 2.0)].Exposure,
                             CalibrateExposureFinderMultipleExposuresBaseLayersPrintModes.UseHighest => (float) _exposureTable[^1].Exposure,
                             CalibrateExposureFinderMultipleExposuresBaseLayersPrintModes.Custom => (float) _multipleExposuresBaseLayersCustomExposure,
-                            _ => throw new ArgumentOutOfRangeException($"Unhandled type for {_multipleExposuresBaseLayersCustomExposure}")
+                            _ => throw new ArgumentOutOfRangeException($"Unhandled type for {_multipleExposuresBaseLayersPrintMode}")
                         };
                     }
                 }

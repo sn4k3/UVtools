@@ -1,5 +1,5 @@
 <Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
-	<!-- 
+    <!-- 
   ProductVersion is defined in UVtools.Installer.wixproj as 0.0.1 for local desktop builds.  
   You should pass in the MSBuild Property 'ProductVersion' to override it during an automated build.
   See http://msdn.microsoft.com/en-us/library/windows/desktop/aa370859%28v=vs.85%29.aspx for information on allowable values.
@@ -9,154 +9,164 @@
   Version="$(var.ProductVersion)"
   -->
 
-	<?define UpgradeCode="1ea6d212-15c0-425e-b2ec-4b6c60817552"?>
-	<?define ProductDescription="MSLA/DLP, file analysis, repair, conversion and manipulation"?>
+    <?define UpgradeCode="1ea6d212-15c0-425e-b2ec-4b6c60817552"?>
+    <?define ProductDescription="MSLA/DLP, file analysis, repair, conversion and manipulation"?>
 
-	<Package Name="UVtools" Language="1033" Version="$(var.ProductVersion)" Manufacturer="PTRTECH" Scope="perMachine" UpgradeCode="$(var.UpgradeCode)" Compressed="yes">
-		<SummaryInformation Keywords="MSLA, DLP, 3D print, resin" Description="$(var.ProductDescription)" />
-		<MediaTemplate EmbedCab="yes" CompressionLevel="high" />
-		
-		<!-- Major Upgrade Rule to disallow downgrades -->
+    <Package Name="UVtools" Language="1033" Version="$(var.ProductVersion)" Manufacturer="PTRTECH" Scope="perMachine" UpgradeCode="$(var.UpgradeCode)" Compressed="yes">
+        <SummaryInformation Keywords="MSLA, DLP, 3D print, resin" Description="$(var.ProductDescription)" />
+        <MediaTemplate EmbedCab="yes" CompressionLevel="high" />
+
+        <!-- Major Upgrade Rule to disallow downgrades -->
         <!-- 
         DowngradeErrorMessage="A newer version of [ProductName] is already installed. Setup will now exit."
         AllowSameVersionUpgrades="yes"
         -->
-		<MajorUpgrade AllowDowngrades="yes"
+        <MajorUpgrade AllowDowngrades="yes"
 		              IgnoreRemoveFailure="no"
 		              Schedule="afterInstallInitialize" />
 
-		<!-- Product upgrade -->
-		<!-- https://stackoverflow.com/questions/4227456/windows-installer-deletes-versioned-file-during-product-upgrade-instead-of-down -->
-		<!--<Upgrade Id="$(var.UpgradeCode)">-->
-		<!--	<UpgradeVersion OnlyDetect="no" Property="WIX_UPGRADE_DETECTED" Maximum="$(var.ProductVersion)" IncludeMaximum="no" IncludeMinimum="no" MigrateFeatures="yes" />-->
-		<!--	<UpgradeVersion OnlyDetect="yes" Property="WIX_DOWNGRADE_DETECTED" Minimum="$(var.ProductVersion)" IncludeMinimum="no" />-->
-		<!--</Upgrade>-->
-		<!--<InstallExecuteSequence>-->
-		<!--	<RemoveExistingProducts Before="CostInitialize" />-->
-		<!--</InstallExecuteSequence>-->
-		<!--<Launch Condition="NOT WIX_DOWNGRADE_DETECTED" Message="A newer version of [ProductName] is already installed. Setup will now exit." />-->
-		
+        <!-- Product upgrade -->
+        <!-- https://stackoverflow.com/questions/4227456/windows-installer-deletes-versioned-file-during-product-upgrade-instead-of-down -->
+        <!--<Upgrade Id="$(var.UpgradeCode)">-->
+        <!--	<UpgradeVersion OnlyDetect="no" Property="WIX_UPGRADE_DETECTED" Maximum="$(var.ProductVersion)" IncludeMaximum="no" IncludeMinimum="no" MigrateFeatures="yes" />-->
+        <!--	<UpgradeVersion OnlyDetect="yes" Property="WIX_DOWNGRADE_DETECTED" Minimum="$(var.ProductVersion)" IncludeMinimum="no" />-->
+        <!--</Upgrade>-->
+        <!--<InstallExecuteSequence>-->
+        <!--	<RemoveExistingProducts Before="CostInitialize" />-->
+        <!--</InstallExecuteSequence>-->
+        <!--<Launch Condition="NOT WIX_DOWNGRADE_DETECTED" Message="A newer version of [ProductName] is already installed. Setup will now exit." />-->
 
-		<!--Common Launch Condition-->
-		<!-- Examples at http://wixtoolset.org/documentation/manual/v3/customactions/wixnetfxextension.html -->
-		<!--
+
+        <!--Common Launch Condition-->
+        <!-- Examples at http://wixtoolset.org/documentation/manual/v3/customactions/wixnetfxextension.html -->
+        <!--
 		    <PropertyRef Id="NETFRAMEWORK45" />
 		    <Condition Message="[ProductName] requires .NET Framework 4.8.">Installed OR NETFRAMEWORK45</Condition>
 		    -->
-		<!-- Include User Interface Experience -->
-		<Icon Id="Icon" SourceFile="..\UVtools.CAD\UVtools.ico" />
-		<Property Id="ARPPRODUCTICON" Value="Icon" />
-		<Property Id="ARPCONTACT" Value="Tiago Conceição" />
-		<Property Id="ARPHELPLINK" Value="https://github.com/sn4k3/UVtools" />
-		<Property Id="ARPURLINFOABOUT" Value="https://github.com/sn4k3/UVtools" />
-		<Property Id="WIXUI_INSTALLDIR" Value="INSTALLPATH" />
-		<Property Id="DISABLEADVTSHORTCUTS" Value="1" />
+        <!-- Include User Interface Experience -->
+        <Icon Id="Icon" SourceFile="..\UVtools.CAD\UVtools.ico" />
+        <Property Id="ARPPRODUCTICON" Value="Icon" />
+        <Property Id="ARPCONTACT" Value="Tiago Conceição" />
+        <Property Id="ARPHELPLINK" Value="https://github.com/sn4k3/UVtools" />
+        <Property Id="ARPURLINFOABOUT" Value="https://github.com/sn4k3/UVtools" />
+        <Property Id="WIXUI_INSTALLDIR" Value="INSTALLPATH" />
+        <Property Id="DISABLEADVTSHORTCUTS" Value="1" />
 
-		<StandardDirectory Id="ProgramFiles64Folder">
-			<Directory Id="INSTALLPATH" Name="!(bind.Property.ProductName)" />
-		</StandardDirectory>
+        <StandardDirectory Id="ProgramFiles64Folder">
+            <Directory Id="INSTALLPATH" Name="!(bind.Property.ProductName)" />
+        </StandardDirectory>
 
-		<Property Id="INSTALLPATH_REG">
-			<RegistrySearch Id="INSTALLPATH_REG_QUERY" Type="raw" Root="HKLM" Key="Software\[ProductName]" Name="InstallDir" />
-		</Property>
-		<SetDirectory Id="INSTALLPATH" Value="[INSTALLPATH_REG]" Condition="INSTALLPATH_REG" />
+        <Property Id="INSTALLPATH_REG">
+            <RegistrySearch Id="INSTALLPATH_REG_QUERY" Type="raw" Root="HKLM" Key="Software\[ProductName]" Name="InstallDir" />
+        </Property>
+        <SetDirectory Id="INSTALLPATH" Value="[INSTALLPATH_REG]" Condition="INSTALLPATH_REG" />
 
-		<Property Id="CREATEDESKTOPSHORTCUT" Value="1">
-			<!--<RegistrySearch Id="CREATEDESKTOPSHORTCUT_REG" Type="raw" Root="HKLM" Key="Software\[ProductName]" Name="CreateDesktopShortcut" />!-->
-		</Property>
-		<SetProperty Id="CREATEDESKTOPSHORTCUT" Value="0" Before="WriteRegistryValues" Sequence="execute" Condition="NOT (CREATEDESKTOPSHORTCUT=1)" />
+        <Property Id="CREATEDESKTOPSHORTCUT" Value="1">
+            <!--<RegistrySearch Id="CREATEDESKTOPSHORTCUT_REG" Type="raw" Root="HKLM" Key="Software\[ProductName]" Name="CreateDesktopShortcut" />!-->
+        </Property>
+        <SetProperty Id="CREATEDESKTOPSHORTCUT" Value="0" Before="WriteRegistryValues" Sequence="execute" Condition="NOT (CREATEDESKTOPSHORTCUT=1)" />
 
-		<Property Id="CREATEFILEASSOCIATIONS" Value="1">
-			<!--<RegistrySearch Id="CREATEFILEASSOCIATIONS_REG" Type="raw" Root="HKLM" Key="Software\[ProductName]" Name="CreateFileAssociations" />!-->
-		</Property>
-		<SetProperty Id="CREATEFILEASSOCIATIONS" Value="0" Before="WriteRegistryValues" Sequence="execute" Condition="NOT (CREATEFILEASSOCIATIONS=1)" />
+        <Property Id="CREATEFILEASSOCIATIONS" Value="1">
+            <!--<RegistrySearch Id="CREATEFILEASSOCIATIONS_REG" Type="raw" Root="HKLM" Key="Software\[ProductName]" Name="CreateFileAssociations" />!-->
+        </Property>
+        <SetProperty Id="CREATEFILEASSOCIATIONS" Value="0" Before="WriteRegistryValues" Sequence="execute" Condition="NOT (CREATEFILEASSOCIATIONS=1)" />
 
-		<Property Id="SETPATHENVIRONMENTVAR" Value="1">
-			<!--<RegistrySearch Id="SETPATHENVIRONMENTVAR_REG" Type="raw" Root="HKLM" Key="Software\[ProductName]" Name="SetPathEnvironmentVar" />!-->
-		</Property>
-		<SetProperty Id="SETPATHENVIRONMENTVAR" Value="0" Before="WriteRegistryValues" Sequence="execute" Condition="NOT (SETPATHENVIRONMENTVAR=1)" />
+        <Property Id="SETPATHENVIRONMENTVAR" Value="1">
+            <!--<RegistrySearch Id="SETPATHENVIRONMENTVAR_REG" Type="raw" Root="HKLM" Key="Software\[ProductName]" Name="SetPathEnvironmentVar" />!-->
+        </Property>
+        <SetProperty Id="SETPATHENVIRONMENTVAR" Value="0" Before="WriteRegistryValues" Sequence="execute" Condition="NOT (SETPATHENVIRONMENTVAR=1)" />
 
-		<UIRef Id="UI" />
+        <UIRef Id="UI" />
 
 
-		<!-- Start Features -->
-		<Feature Id="UVtools" Title="!(bind.Property.ProductName)" Description="Installs all the files needed for [ProductName]" Level="1" AllowAdvertise="no" ConfigurableDirectory="INSTALLPATH">
-			<ComponentRef Id="RegInstallInfo" />
+        <!-- Start Features -->
+        <Feature Id="UVtools" Title="!(bind.Property.ProductName)" Description="Installs all the files needed for [ProductName]" Level="1" AllowAdvertise="no" ConfigurableDirectory="INSTALLPATH">
+            <ComponentRef Id="RegInstallInfo" />
             <ComponentRef Id="RegFilesAssociations" />
             <ComponentGroupRef Id="ProgramFiles"/>
             <!--<ComponentGroupRef Id="HarvestedComponents"/>!-->
             <ComponentRef Id="CMP_DesktopShortcuts" />
-			<ComponentRef Id="CMP_StartMenuShortcuts" />
-			<ComponentRef Id="CMP_SetPathEnvironmentVar" />
-		</Feature>
-		<!-- End Features -->
+            <ComponentRef Id="CMP_StartMenuShortcuts" />
+            <ComponentRef Id="CMP_SetPathEnvironmentVar" />
+        </Feature>
+        <!-- End Features -->
 
-		<Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOXTEXT" Value="Launch !(bind.Property.ProductName)" />
-		<Property Id="WixShellExecTarget" Value="[INSTALLPATH]UVtools.exe" />
-		<CustomAction Id="LaunchApplication" DllEntry="WixShellExec" Impersonate="yes" BinaryRef="Wix4UtilCA_X64" />
+        <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOXTEXT" Value="Launch !(bind.Property.ProductName)" />
+        <Property Id="WixShellExecTarget" Value="[INSTALLPATH]UVtools.exe" />
+        <CustomAction Id="LaunchApplication" DllEntry="WixShellExec" Impersonate="yes" BinaryRef="Wix4UtilCA_X64" />
 
 
-		<StandardDirectory Id="DesktopFolder">
-			<Component Id="CMP_DesktopShortcuts" Guid="B5B54770-8764-4EF5-B649-F612C3F5B04D" Condition="CREATEDESKTOPSHORTCUT = 1">
+        <StandardDirectory Id="DesktopFolder">
+            <Component Id="CMP_DesktopShortcuts" Guid="B5B54770-8764-4EF5-B649-F612C3F5B04D" Condition="CREATEDESKTOPSHORTCUT = 1">
 
-				<Shortcut Id="desktopUVtoolsSC" Name="!(bind.Property.ProductName)" Description="$(var.ProductDescription)" Target="[INSTALLPATH]UVtools.exe" WorkingDirectory="INSTALLPATH" />
+                <Shortcut Id="desktopUVtoolsSC" Name="!(bind.Property.ProductName)" Description="$(var.ProductDescription)" Target="[INSTALLPATH]UVtools.exe" WorkingDirectory="INSTALLPATH" />
 
-				<RegistryKey Root="HKLM" Key="Software\[ProductName]" ForceCreateOnInstall="yes" ForceDeleteOnUninstall="yes">
-					<RegistryValue Name="Uninstall" Value="[ProductCode]" Type="string" />
-				</RegistryKey>
-			</Component>
-		</StandardDirectory>
-		<StandardDirectory Id="ProgramMenuFolder">
-			<Directory Id="ProgramMenuUVtoolsFolder" Name="!(bind.Property.ProductName)">
-				<Component Id="CMP_StartMenuShortcuts" Guid="857FE93D-3F67-4298-A20D-439F7421724F">
-					<Shortcut Id="startMenuUVtoolsSC" Name="!(bind.Property.ProductName)" Description="$(var.ProductDescription)" Target="[INSTALLPATH]UVtools.exe" WorkingDirectory="INSTALLPATH" />
-					<Shortcut Id="startMenuUVtoolsCmdSC" Name="UVtoolsCmd" Description="$(var.ProductDescription)" Target="[System64Folder]cmd.exe" Arguments="/k UVtoolsCmd.exe" WorkingDirectory="INSTALLPATH" />
-					<Shortcut Id="startMenuUninstallSC" Name="Uninstall !(bind.Property.ProductName)" Description="Uninstalls !(bind.Property.ProductName) and all of its components" Target="[System64Folder]msiexec.exe" Arguments="/i [ProductCode]" />
+                <RegistryKey Root="HKLM" Key="Software\[ProductName]" ForceCreateOnInstall="yes" ForceDeleteOnUninstall="yes">
+                    <RegistryValue Name="Uninstall" Value="[ProductCode]" Type="string" />
+                </RegistryKey>
+            </Component>
+        </StandardDirectory>
+        <StandardDirectory Id="ProgramMenuFolder">
+            <Directory Id="ProgramMenuUVtoolsFolder" Name="!(bind.Property.ProductName)">
+                <Component Id="CMP_StartMenuShortcuts" Guid="857FE93D-3F67-4298-A20D-439F7421724F">
+                    <Shortcut Id="startMenuUVtoolsSC" Name="!(bind.Property.ProductName)" Description="$(var.ProductDescription)" Target="[INSTALLPATH]UVtools.exe" WorkingDirectory="INSTALLPATH" />
+                    <Shortcut Id="startMenuUVtoolsCmdSC" Name="UVtoolsCmd" Description="$(var.ProductDescription)" Target="[System64Folder]cmd.exe" Arguments="/k UVtoolsCmd.exe" WorkingDirectory="INSTALLPATH" />
+                    <Shortcut Id="startMenuUninstallSC" Name="Uninstall !(bind.Property.ProductName)" Description="Uninstalls !(bind.Property.ProductName) and all of its components" Target="[System64Folder]msiexec.exe" Arguments="/i [ProductCode]" />
 
-					<RemoveFolder Id="ProgramMenuUVtoolsFolder" On="uninstall" />
+                    <RemoveFolder Id="ProgramMenuUVtoolsFolder" On="uninstall" />
 
-					<RegistryKey Root="HKLM" Key="Software\[ProductName]" ForceCreateOnInstall="yes" ForceDeleteOnUninstall="yes">
-						<RegistryValue Name="Uninstall" Value="[ProductCode]" Type="string" />
-					</RegistryKey>
-				</Component>
-			</Directory>
-		</StandardDirectory>
+                    <RegistryKey Root="HKLM" Key="Software\[ProductName]" ForceCreateOnInstall="yes" ForceDeleteOnUninstall="yes">
+                        <RegistryValue Name="Uninstall" Value="[ProductCode]" Type="string" />
+                    </RegistryKey>
+                </Component>
+            </Directory>
+        </StandardDirectory>
 
-		<!-- Environment vars -->
-		<Component Id="CMP_SetPathEnvironmentVar" Guid="974A9C67-F75E-44BB-BDCD-59680100504E" Directory="INSTALLPATH" Condition="SETPATHENVIRONMENTVAR = 1">
-			<Environment Id="PathEnvironmentVar" Name="PATH" Value="[INSTALLPATH]" Permanent="no" Part="last" Action="set" System="yes" />
-		</Component>
+        <!-- Environment vars -->
+        <Component Id="CMP_SetPathEnvironmentVar" Guid="974A9C67-F75E-44BB-BDCD-59680100504E" Directory="INSTALLPATH" Condition="SETPATHENVIRONMENTVAR = 1">
+            <Environment Id="PathEnvironmentVar" Name="PATH" Value="[INSTALLPATH]" Permanent="no" Part="last" Action="set" System="yes" />
+        </Component>
 
-		<!-- Start Registry -->
-		<Component Id="RegInstallInfo" Guid="C3603223-A8C1-4393-8C06-36B48DED2652" Directory="INSTALLPATH">
-			<!-- Install directory -->
-			<RegistryKey Root="HKLM" Key="Software\[ProductName]" ForceCreateOnInstall="yes" ForceDeleteOnUninstall="yes">
-				<RegistryValue Name="InstallDir" Value="[INSTALLPATH]" Type="string" />
-				<RegistryValue Name="CreateDesktopShortcut" Value="[CREATEDESKTOPSHORTCUT]" Type="integer" />
-				<RegistryValue Name="CreateFileAssociations" Value="[CREATEFILEASSOCIATIONS]" Type="integer" />
-				<RegistryValue Name="SetPathEnvironmentVar" Value="[SETPATHENVIRONMENTVAR]" Type="integer" />
-			</RegistryKey>
-		</Component>
+        <!-- Start Registry -->
+        <Component Id="RegInstallInfo" Guid="C3603223-A8C1-4393-8C06-36B48DED2652" Directory="INSTALLPATH">
+            <!-- Install directory -->
+            <RegistryKey Root="HKLM" Key="Software\[ProductName]" ForceCreateOnInstall="yes" ForceDeleteOnUninstall="yes">
+                <RegistryValue Name="InstallDir" Value="[INSTALLPATH]" Type="string" />
+                <RegistryValue Name="CreateDesktopShortcut" Value="[CREATEDESKTOPSHORTCUT]" Type="integer" />
+                <RegistryValue Name="CreateFileAssociations" Value="[CREATEFILEASSOCIATIONS]" Type="integer" />
+                <RegistryValue Name="SetPathEnvironmentVar" Value="[SETPATHENVIRONMENTVAR]" Type="integer" />
+            </RegistryKey>
+        </Component>
 
-		<Component Id="RegFilesAssociations" Guid="A39174DD-7B4A-4020-A57A-0DC01242D7EC" Directory="INSTALLPATH" Condition="CREATEFILEASSOCIATIONS = 1">
-			<!-- Open file with UVtools -->
+        <Component Id="RegFilesAssociations" Guid="A39174DD-7B4A-4020-A57A-0DC01242D7EC" Directory="INSTALLPATH" Condition="CREATEFILEASSOCIATIONS = 1">
+            <!-- Open file with UVtools -->
 
-			<RegistryKey Root="HKCR" Key="*\shell\[ProductName]" ForceCreateOnInstall="yes" ForceDeleteOnUninstall="yes">
-				<RegistryValue Value="Open with [ProductName]" Type="string" />
-				<RegistryValue Name="Icon" Value="[INSTALLPATH][ProductName].exe" Type="string" />
-				<RegistryValue Name="Position" Value="Top" Type="string" />
-				<RegistryValue Name="AppliesTo" Value="System.FileName:&quot;*.sl1&quot; OR System.FileName:&quot;*.sl1s&quot; OR System.FileName:&quot;*.zip&quot; OR System.FileName:&quot;*.photon&quot; OR System.FileName:&quot;*.cbddlp&quot; OR System.FileName:&quot;*.ctb&quot; OR System.FileName:&quot;*.photons&quot; OR System.FileName:&quot;*.phz&quot; OR System.FileName:&quot;*.pws&quot; OR System.FileName:&quot;*.pw0&quot; OR System.FileName:&quot;*.pwx&quot; OR System.FileName:&quot;*.dlp&quot; OR System.FileName:&quot;*.dl2p&quot; OR System.FileName:&quot;*.pwmx&quot; OR System.FileName:&quot;*.pmx2&quot; OR System.FileName:&quot;*.pwmb&quot; OR System.FileName:&quot;*.px6s&quot; OR System.FileName:&quot;*.pwmo&quot; OR System.FileName:&quot;*.pm3n&quot; OR System.FileName:&quot;*.pwms&quot; OR System.FileName:&quot;*.pwma&quot; OR System.FileName:&quot;*.pmsq&quot; OR System.FileName:&quot;*.pm3&quot; OR System.FileName:&quot;*.pm3m&quot; OR System.FileName:&quot;*.pm3r&quot; OR System.FileName:&quot;*.pm4n&quot; OR System.FileName:&quot;*.pm5&quot; OR System.FileName:&quot;*.pm5s&quot; OR System.FileName:&quot;*.m5sp&quot; OR System.FileName:&quot;*.pwc&quot; OR System.FileName:&quot;*.pm4u&quot; OR System.FileName:&quot;*.pm7&quot; OR System.FileName:&quot;*.pm7m&quot; OR System.FileName:&quot;*.pwsz&quot; OR System.FileName:&quot;*.cws&quot; OR System.FileName:&quot;*.n4&quot; OR System.FileName:&quot;*.n7&quot; OR System.FileName:&quot;*.lgs&quot; OR System.FileName:&quot;*.lgs30&quot; OR System.FileName:&quot;*.lgs120&quot; OR System.FileName:&quot;*.lgs4k&quot; OR System.FileName:&quot;*.vdt&quot; OR System.FileName:&quot;*.cxdlp&quot; OR System.FileName:&quot;*.cxdlpv4&quot; OR System.FileName:&quot;*.nanodlp&quot; OR System.FileName:&quot;*.fdg&quot; OR System.FileName:&quot;*.goo&quot; OR System.FileName:&quot;*.prz&quot; OR System.FileName:&quot;*.zcode&quot; OR System.FileName:&quot;*.jxs&quot; OR System.FileName:&quot;*.zcodex&quot; OR System.FileName:&quot;*.mdlp&quot; OR System.FileName:&quot;*.gr1&quot; OR System.FileName:&quot;*.svgx&quot; OR System.FileName:&quot;*.qdt&quot; OR System.FileName:&quot;*.osla&quot; OR System.FileName:&quot;*.osf&quot; OR System.FileName:&quot;*.uvj&quot; OR System.FileName:&quot;*.png&quot; OR System.FileName:&quot;*.jpg&quot; OR System.FileName:&quot;*.jpeg&quot; OR System.FileName:&quot;*.jp2&quot; OR System.FileName:&quot;*.tif&quot; OR System.FileName:&quot;*.tiff&quot; OR System.FileName:&quot;*.bmp&quot; OR System.FileName:&quot;*.pbm&quot; OR System.FileName:&quot;*.pgm&quot; OR System.FileName:&quot;*.sr&quot; OR System.FileName:&quot;*.ras&quot;" Type="string" />
+            <RegistryKey Root="HKCR" Key="*\shell\[ProductName]" ForceCreateOnInstall="yes" ForceDeleteOnUninstall="yes">
+                <RegistryValue Value="Open with [ProductName]" Type="string" />
+                <RegistryValue Name="Icon" Value="[INSTALLPATH][ProductName].exe" Type="string" />
+                <RegistryValue Name="Position" Value="Top" Type="string" />
+                <RegistryValue Name="AppliesTo" Value="System.FileName:&quot;*.sl1&quot; OR System.FileName:&quot;*.sl1s&quot; OR System.FileName:&quot;*.zip&quot; OR System.FileName:&quot;*.photon&quot; OR System.FileName:&quot;*.cbddlp&quot; OR System.FileName:&quot;*.ctb&quot; OR System.FileName:&quot;*.photons&quot; OR System.FileName:&quot;*.phz&quot; OR System.FileName:&quot;*.pws&quot; OR System.FileName:&quot;*.pw0&quot; OR System.FileName:&quot;*.pwx&quot; OR System.FileName:&quot;*.dlp&quot; OR System.FileName:&quot;*.dl2p&quot; OR System.FileName:&quot;*.pwmx&quot; OR System.FileName:&quot;*.pmx2&quot; OR System.FileName:&quot;*.pwmb&quot; OR System.FileName:&quot;*.px6s&quot; OR System.FileName:&quot;*.pwmo&quot; OR System.FileName:&quot;*.pm3n&quot; OR System.FileName:&quot;*.pwms&quot; OR System.FileName:&quot;*.pwma&quot; OR System.FileName:&quot;*.pmsq&quot; OR System.FileName:&quot;*.pm3&quot; OR System.FileName:&quot;*.pm3m&quot; OR System.FileName:&quot;*.pm3r&quot; OR System.FileName:&quot;*.pm4n&quot; OR System.FileName:&quot;*.pm5&quot; OR System.FileName:&quot;*.pm5s&quot; OR System.FileName:&quot;*.m5sp&quot; OR System.FileName:&quot;*.pwc&quot; OR System.FileName:&quot;*.pm4u&quot; OR System.FileName:&quot;*.pm7&quot; OR System.FileName:&quot;*.pm7m&quot; OR System.FileName:&quot;*.pwsz&quot; OR System.FileName:&quot;*.cws&quot; OR System.FileName:&quot;*.n4&quot; OR System.FileName:&quot;*.n7&quot; OR System.FileName:&quot;*.lgs&quot; OR System.FileName:&quot;*.lgs30&quot; OR System.FileName:&quot;*.lgs120&quot; OR System.FileName:&quot;*.lgs4k&quot; OR System.FileName:&quot;*.vdt&quot; OR System.FileName:&quot;*.cxdlp&quot; OR System.FileName:&quot;*.cxdlpv4&quot; OR System.FileName:&quot;*.nanodlp&quot; OR System.FileName:&quot;*.fdg&quot; OR System.FileName:&quot;*.goo&quot; OR System.FileName:&quot;*.prz&quot; OR System.FileName:&quot;*.zcode&quot; OR System.FileName:&quot;*.jxs&quot; OR System.FileName:&quot;*.zcodex&quot; OR System.FileName:&quot;*.mdlp&quot; OR System.FileName:&quot;*.gr1&quot; OR System.FileName:&quot;*.svgx&quot; OR System.FileName:&quot;*.qdt&quot; OR System.FileName:&quot;*.osla&quot; OR System.FileName:&quot;*.osf&quot; OR System.FileName:&quot;*.uvj&quot; OR System.FileName:&quot;*.png&quot; OR System.FileName:&quot;*.jpg&quot; OR System.FileName:&quot;*.jpeg&quot; OR System.FileName:&quot;*.jp2&quot; OR System.FileName:&quot;*.tif&quot; OR System.FileName:&quot;*.tiff&quot; OR System.FileName:&quot;*.bmp&quot; OR System.FileName:&quot;*.pbm&quot; OR System.FileName:&quot;*.pgm&quot; OR System.FileName:&quot;*.sr&quot; OR System.FileName:&quot;*.ras&quot;" Type="string" />
 
-				<RegistryKey Key="command" ForceCreateOnInstall="yes" ForceDeleteOnUninstall="yes">
-					<RegistryValue Value="&quot;[INSTALLPATH][ProductName].exe&quot; &quot;%1&quot;" Type="string" />
-				</RegistryKey>
-			</RegistryKey>
+                <RegistryKey Key="command" ForceCreateOnInstall="yes" ForceDeleteOnUninstall="yes">
+                    <RegistryValue Value="&quot;[INSTALLPATH][ProductName].exe&quot; &quot;%1&quot;" Type="string" />
+                </RegistryKey>
+            </RegistryKey>
 
-		</Component>
-		<!-- End Registry -->
+        </Component>
+        <!-- End Registry -->
 
         <ComponentGroup Id="ProgramFiles" Directory="INSTALLPATH">
-            <Files Include="$(var.HarvestPath)\**"/>
+            <Files Include="$(var.HarvestPath)\**">
+
+                <!-- Fix upgrades from .NET6 to other .NET library -->
+                <Exclude Files="$(var.HarvestPath)\System.IO.Compression.dll" />
+                <Exclude Files="$(var.HarvestPath)\System.IO.Compression.Native.dll" />
+            </Files>
+
+            <Component Id="Comp_Compression" Guid="{377FD7E4-2ED4-42F2-B533-CBE865122B23}">
+                <File Id="System_IO_Compression_dll" Source="$(var.HarvestPath)\System.IO.Compression.dll" KeyPath="yes" />
+                <File Id="System_IO_Compression_Native_dll" Source="$(var.HarvestPath)\System.IO.Compression.Native.dll" CompanionFile="System_IO_Compression_dll" />
+            </Component>
         </ComponentGroup>
-	</Package>
+    </Package>
 </Wix>

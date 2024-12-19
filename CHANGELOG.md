@@ -1,5 +1,11 @@
 # Changelog
 
+## 19/12/2024 - v5.0.1
+
+- (Fix) Windows MSI: System.IO.Compression.Native is missing when upgrading from 4.4.3 (#957)
+- (Fix) Index out of range when saving some file formats (#957)
+- (Change) Exposure time finder: Allow using 0 for the normal step in the multiple exposure generator (#958)
+
 ## 18/12/2024 - v5.0.0
 
 - **File formats:**
