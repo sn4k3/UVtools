@@ -191,13 +191,13 @@ public partial class SettingsWindow : WindowEx
 
     public async void SendToAddProcess()
     {
-        var folders = await OpenFolderPickerAsync();
-        if (folders.Count == 0) return;
-        var file = new MappedProcess(folders[0].TryGetLocalPath()!);
+        var files = await OpenFilePickerAsync();
+        if (files.Count == 0) return;
+        var file = new MappedProcess(files[0].TryGetLocalPath()!);
         if (Settings.General.SendToProcess.Contains(file))
         {
             await this.MessageBoxError("The selected process already exists on the list:\n" +
-                                       $"{folders[0].TryGetLocalPath()}");
+                                       $"{files[0].TryGetLocalPath()}");
             return;
         }
 

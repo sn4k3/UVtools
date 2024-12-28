@@ -1221,7 +1221,7 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
             GridColorProperty,
             GridColorAlternateProperty,
             PixelGridColorProperty,
-            ImageProperty,
+            //ImageProperty,
             SelectionRegionProperty
             );
     }
@@ -1297,6 +1297,13 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
         }
     }
 
+    protected override void OnSizeChanged(SizeChangedEventArgs e)
+    {
+        base.OnSizeChanged(e);
+        UpdateViewPort();
+        e.Handled = true;
+    }
+
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs e)
     {
         base.OnPropertyChanged(e);
@@ -1339,6 +1346,7 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
         else if (ReferenceEquals(e.Property, SizeModeProperty))
         {
             SizeModeChanged();
+            TriggerRender();
             RaisePropertyChanged(nameof(IsHorizontalBarVisible));
             RaisePropertyChanged(nameof(IsVerticalBarVisible));
         }
@@ -1354,6 +1362,11 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
             RaisePropertyChanged(nameof(ScaledImageHeight));
             RaisePropertyChanged(nameof(ScaledImageSize));
             RaisePropertyChanged(nameof(Extent));
+        }
+        else if(ReferenceEquals(e.Property, PaddingProperty))
+        {
+            UpdateViewPort();
+            TriggerRender();
         }
     }
 
@@ -1371,7 +1384,7 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
     {
         //Debug.WriteLine($"Render: {DateTime.Now.Ticks}");
         base.Render(context);
-        
+
         var viewPortSize = Viewport;
         // Draw Grid
         var gridCellSize = GridCellSize;
@@ -1466,7 +1479,7 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
         var verticalScrollBar = VerticalScrollBar;
         if (verticalScrollBar is null) return false;
 
-        if (!IsImageLoaded)
+        if (!IsImageLoaded || SizeMode != SizeModes.Normal)
         {
             horizontalScrollBar.Maximum = 0;
             verticalScrollBar.Maximum = 0;
@@ -2728,6 +2741,8 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
         double width = 0.0;
         double height = 0.0;
 
+        var padding = Padding;
+
         switch (SizeMode)
         {
             case SizeModes.Normal:
@@ -2736,16 +2751,23 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
                     xOffset = (!IsHorizontalBarVisible ? (viewPortSize.Width - ScaledImageWidth) / 2.0 : 0.0);
                     yOffset = (!IsVerticalBarVisible ? (viewPortSize.Height - ScaledImageHeight) / 2.0 : 0.0);
                 }
-
+                
                 width = Math.Min(ScaledImageWidth - Math.Abs(Offset.X), viewPortSize.Width);
                 height = Math.Min(ScaledImageHeight - Math.Abs(Offset.Y), viewPortSize.Height);
                 break;
             case SizeModes.Stretch:
-                width = viewPortSize.Width;
-                height = viewPortSize.Height;
+                width = viewPortSize.Width - padding.Left - padding.Right;
+                if (width <= 0) return new Rect();
+                height = viewPortSize.Height - padding.Top - padding.Bottom;
+                if (height <= 0) return new Rect();
+
+                xOffset = padding.Left;
+                yOffset = padding.Top;
                 break;
             case SizeModes.Fit:
-                double scaleFactor = Math.Min(viewPortSize.Width / image.Size.Width, viewPortSize.Height / image.Size.Height);
+                double scaleFactor = Math.Min((viewPortSize.Width - padding.Left - padding.Right) / image.Size.Width, (viewPortSize.Height - padding.Top - padding.Bottom) / image.Size.Height);
+
+                if (scaleFactor <= 0) return new Rect();
                     
                 width = Math.Floor(image.Size.Width * scaleFactor);
                 height = Math.Floor(image.Size.Height * scaleFactor);
@@ -2755,13 +2777,18 @@ public class AdvancedImageBox : TemplatedControl, IScrollable
                     xOffset = (viewPortSize.Width - width) / 2.0;
                     yOffset = (viewPortSize.Height - height) / 2.0;
                 }
+                else
+                {
+                    xOffset = padding.Left;
+                    yOffset = padding.Top;
+                }
 
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(SizeMode), SizeMode, null);
         }
 
-        return new(xOffset, yOffset, width, height);
+        return new Rect(xOffset, yOffset, width, height);
     }
     #endregion
 

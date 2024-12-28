@@ -1615,7 +1615,7 @@ public sealed class OperationCalibrateExposureFinder : Operation
 
         if (negativeSideWidth >= 200 && _counterTrianglesEnabled)
         {
-            xPos = 120;
+            xPos = featuresMarginX;
             int triangleHeight = TextMarkingSpacing + 19;
             int triangleWidth = (negativeSideWidth - xPos - featuresMarginX) / 2;
             int triangleWidthQuarter = triangleWidth / 4;
@@ -2084,11 +2084,11 @@ public sealed class OperationCalibrateExposureFinder : Operation
                         }
                     }
 
-                    matRoi.PutTextExtended($"{Microns}u\n{bottomExposureTemp}s\n{normalExposureTemp}s", markingTextPositivePosition,
+                    matRoi.PutTextExtended($"{microns}u\n{bottomExposureTemp}s\n{normalExposureTemp}s", markingTextPositivePosition,
                         _textFont, _textScale, EmguExtensions.WhiteColor, _textThickness, 10, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
                     if (holes.Length > 0)
                     {
-                        matRoi.PutTextExtended($"{Microns}u\n{bottomExposureTemp}s\n{normalExposureTemp}s", markingTextNegativePosition,
+                        matRoi.PutTextExtended($"{microns}u\n{bottomExposureTemp}s\n{normalExposureTemp}s", markingTextNegativePosition,
                             _textFont, _textScale, EmguExtensions.BlackColor, _textThickness, 10, _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
                     }
 

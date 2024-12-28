@@ -1,5 +1,18 @@
 # Changelog
 
+## 28/12/2024 - v5.0.3
+
+- Anycubic file format:
+  - (Fix) Reset TSMC values to comply with globals when decoding file and AdvancedMode is disabled (#971)
+  - (Fix) Setting the LiftHeight2 was setting the base value to BottomLiftHeight2
+  - (Fix) Setting the BottomRetractSpeed was not applying the value in the base property
+- Multiple exposure finder: 
+   - (Fix) Counter triangles not taking all the new left space
+   - (Fix) When doing multiple heights the text label always show the base height
+- (Improvement) Layer image viewer internal handling
+- (Fix) Settings - Send to process: Unable to pick a process file, it was selecting folder instead
+- (Fix) Save As can show incorrect file extension description when there are other file formats with the same extension
+
 ## 19/12/2024 - v5.0.2
 
 - (Fix) Remove a condition that prevents the new Anycubic file format from being used

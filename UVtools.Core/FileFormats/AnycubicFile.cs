@@ -1382,7 +1382,9 @@ public sealed class AnycubicFile : FileFormat
 
     public override float BottomLiftHeight
     {
-        get => FileMarkSettings.Version >= VERSION_516 ? ExtraSettings.BottomLiftHeight1 : base.BottomLiftHeight;
+        get => FileMarkSettings.Version >= VERSION_516 
+            ? ExtraSettings.BottomLiftHeight1 
+            : base.BottomLiftHeight;
         set
         {
             value = (float)Math.Round(value, 2);
@@ -1402,7 +1404,7 @@ public sealed class AnycubicFile : FileFormat
 
     public override float BottomLiftSpeed
     {
-        get => FileMarkSettings.Version >= VERSION_516 
+        get => FileMarkSettings.Version >= VERSION_516
             ? SpeedConverter.Convert(ExtraSettings.BottomLiftSpeed1, FormatSpeedUnit, CoreSpeedUnit) 
             : base.BottomLiftSpeed;
         set
@@ -1415,7 +1417,9 @@ public sealed class AnycubicFile : FileFormat
 
     public override float LiftHeight
     {
-        get => FileMarkSettings.Version >= VERSION_516 ? ExtraSettings.LiftHeight1 : HeaderSettings.LiftHeight;
+        get => FileMarkSettings.Version >= VERSION_516 
+            ? ExtraSettings.LiftHeight1 
+            : HeaderSettings.LiftHeight;
         set
         {
             value = (float)Math.Round(value, 2);
@@ -1435,7 +1439,9 @@ public sealed class AnycubicFile : FileFormat
 
     public override float LiftSpeed
     {
-        get => SpeedConverter.Convert(FileMarkSettings.Version >= VERSION_516 ? ExtraSettings.LiftSpeed1 : HeaderSettings.LiftSpeed, FormatSpeedUnit, CoreSpeedUnit);
+        get => SpeedConverter.Convert(FileMarkSettings.Version >= VERSION_516
+            ? ExtraSettings.LiftSpeed1 
+            : HeaderSettings.LiftSpeed, FormatSpeedUnit, CoreSpeedUnit);
         set
         {
             value = (float)Math.Round(value, 2);
@@ -1446,7 +1452,9 @@ public sealed class AnycubicFile : FileFormat
 
     public override float BottomLiftHeight2
     {
-        get => FileMarkSettings.Version >= VERSION_516 ? ExtraSettings.BottomLiftHeight2 : 0;
+        get => FileMarkSettings.Version >= VERSION_516
+            ? ExtraSettings.BottomLiftHeight2 
+            : 0;
         set
         {
             if (FileMarkSettings.Version < VERSION_516) return;
@@ -1455,12 +1463,15 @@ public sealed class AnycubicFile : FileFormat
             BottomLiftHeight = bottomLiftHeight;
             base.BottomLiftHeight2 = ExtraSettings.BottomLiftHeight2;
             HeaderSettings.AdvancedMode = System.Convert.ToUInt32(IsUsingTSMC);
+            RaisePropertyChanged();
         }
     }
 
     public override float BottomLiftSpeed2
     {
-        get => FileMarkSettings.Version >= VERSION_516 ? SpeedConverter.Convert(ExtraSettings.BottomLiftSpeed2, FormatSpeedUnit, CoreSpeedUnit) : 0;
+        get => FileMarkSettings.Version >= VERSION_516
+            ? SpeedConverter.Convert(ExtraSettings.BottomLiftSpeed2, FormatSpeedUnit, CoreSpeedUnit) 
+            : 0;
         set
         {
             if (FileMarkSettings.Version < VERSION_516) return;
@@ -1472,21 +1483,26 @@ public sealed class AnycubicFile : FileFormat
 
     public override float LiftHeight2
     {
-        get => FileMarkSettings.Version >= VERSION_516 ? ExtraSettings.LiftHeight2 : 0;
+        get => FileMarkSettings.Version >= VERSION_516
+            ? ExtraSettings.LiftHeight2 
+            : 0;
         set
         {
             if (FileMarkSettings.Version < VERSION_516) return;
             var liftHeight = LiftHeight;
             ExtraSettings.LiftHeight2 = (float)Math.Round(value, 2);
             LiftHeight = liftHeight;
-            base.BottomLiftHeight2 = ExtraSettings.LiftHeight2;
+            base.LiftHeight2 = ExtraSettings.LiftHeight2;
             HeaderSettings.AdvancedMode = System.Convert.ToUInt32(IsUsingTSMC);
+            RaisePropertyChanged();
         }
     }
 
     public override float LiftSpeed2
     {
-        get => FileMarkSettings.Version >= VERSION_516 ? SpeedConverter.Convert(ExtraSettings.LiftSpeed2, FormatSpeedUnit, CoreSpeedUnit) : 0;
+        get => FileMarkSettings.Version >= VERSION_516 
+            ? SpeedConverter.Convert(ExtraSettings.LiftSpeed2, FormatSpeedUnit, CoreSpeedUnit) 
+            : 0;
         set
         {
             if (FileMarkSettings.Version < VERSION_516) return;
@@ -1498,19 +1514,23 @@ public sealed class AnycubicFile : FileFormat
 
     public override float BottomRetractSpeed
     {
-        get => FileMarkSettings.Version >= VERSION_516 ? SpeedConverter.Convert(ExtraSettings.BottomRetractSpeed1, FormatSpeedUnit, CoreSpeedUnit) : RetractSpeed;
+        get => FileMarkSettings.Version >= VERSION_516 
+            ? SpeedConverter.Convert(ExtraSettings.BottomRetractSpeed1, FormatSpeedUnit, CoreSpeedUnit) 
+            : RetractSpeed;
         set
         {
-            value = (float)Math.Round(value, 2);
-
             if (FileMarkSettings.Version < VERSION_516) return;
+            value = (float)Math.Round(value, 2);
             ExtraSettings.BottomRetractSpeed1 = SpeedConverter.Convert(value, CoreSpeedUnit, FormatSpeedUnit);
+            base.BottomRetractSpeed = value;
         }
     }
 
     public override float RetractSpeed
     {
-        get => SpeedConverter.Convert(FileMarkSettings.Version >= VERSION_516 ? ExtraSettings.RetractSpeed1 : HeaderSettings.RetractSpeed, FormatSpeedUnit, CoreSpeedUnit);
+        get => SpeedConverter.Convert(FileMarkSettings.Version >= VERSION_516 
+            ? ExtraSettings.RetractSpeed1 
+            : HeaderSettings.RetractSpeed, FormatSpeedUnit, CoreSpeedUnit);
         set
         {
             value = (float)Math.Round(value, 2);
@@ -1521,7 +1541,9 @@ public sealed class AnycubicFile : FileFormat
 
     public override float BottomRetractSpeed2
     {
-        get => FileMarkSettings.Version >= VERSION_516 ? SpeedConverter.Convert(ExtraSettings.BottomRetractSpeed2, FormatSpeedUnit, CoreSpeedUnit) : 0;
+        get => FileMarkSettings.Version >= VERSION_516
+            ? SpeedConverter.Convert(ExtraSettings.BottomRetractSpeed2, FormatSpeedUnit, CoreSpeedUnit) 
+            : 0;
         set
         {
             if (FileMarkSettings.Version < VERSION_516) return;
@@ -1533,7 +1555,9 @@ public sealed class AnycubicFile : FileFormat
 
     public override float RetractSpeed2
     {
-        get => FileMarkSettings.Version >= VERSION_516 ? SpeedConverter.Convert(ExtraSettings.RetractSpeed2, FormatSpeedUnit, CoreSpeedUnit) : 0;
+        get => FileMarkSettings.Version >= VERSION_516
+            ? SpeedConverter.Convert(ExtraSettings.RetractSpeed2, FormatSpeedUnit, CoreSpeedUnit) 
+            : 0;
         set
         {
             if (FileMarkSettings.Version < VERSION_516) return;
@@ -2040,6 +2064,24 @@ public sealed class AnycubicFile : FileFormat
                     Debug.Write("Extra -> ");
                     Debug.WriteLine(ExtraSettings);
                     //ExtraSettings.ValidateExpecting(24);
+
+                    if (HeaderSettings.AdvancedMode == 0)
+                    {
+                        // Reset TSMC values to comply with globals
+                        ExtraSettings.BottomLiftHeight1 = HeaderSettings.LiftHeight;
+                        ExtraSettings.BottomLiftSpeed1 = HeaderSettings.LiftSpeed;
+                        ExtraSettings.BottomLiftHeight2 = 0;
+                        ExtraSettings.BottomLiftSpeed2 = HeaderSettings.LiftSpeed;
+                        ExtraSettings.BottomRetractSpeed1 = HeaderSettings.RetractSpeed;
+                        ExtraSettings.BottomRetractSpeed2 = HeaderSettings.RetractSpeed;
+                        
+                        ExtraSettings.LiftHeight1 = HeaderSettings.LiftHeight;
+                        ExtraSettings.LiftSpeed1 = HeaderSettings.LiftSpeed;
+                        ExtraSettings.LiftHeight2 = 0;
+                        ExtraSettings.LiftSpeed2 = HeaderSettings.LiftSpeed;
+                        ExtraSettings.RetractSpeed1 = HeaderSettings.RetractSpeed;
+                        ExtraSettings.RetractSpeed2 = HeaderSettings.RetractSpeed;
+                    }
                 }
 
                 if (FileMarkSettings.MachineAddress > 0)

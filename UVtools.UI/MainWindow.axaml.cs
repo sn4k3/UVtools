@@ -997,7 +997,8 @@ public partial class MainWindow : WindowEx
         var filename = FileFormat.GetFileNameStripExtensions(SlicerFile!.FileFullPath!, out var ext);
         //var ext = Path.GetExtension(SlicerFile.FileFullPath);
         //var extNoDot = ext.Remove(0, 1);
-        var extension = FileExtension.Find(ext);
+        //var extension = FileExtension.Find(ext);
+        var extension = SlicerFile.FileExtensions.FirstOrDefault(fileExtension => fileExtension.Extension == ext);
         if (extension is null)
         {
             await this.MessageBoxError("Unable to find the target extension.", "Invalid extension");

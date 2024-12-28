@@ -2054,7 +2054,7 @@ public sealed class UserSettings : BindableBase
                                 {
                                     var application = new MappedProcess(executable, "Open archive: WinRAR")
                                     {
-                                        CompatibleExtensions = "zip;sl1;sl1s;cws;zcode;zcodex;jxs;nanodlp;vdt;uvj"
+                                        CompatibleExtensions = "zip;sl1;sl1s;cws;zcode;zcodex;jxs;nanodlp;vdt;uvj;pm7;pm7m;pm4u;pwsz"
                                     };
                                     _instance.General.SendToProcess.Add(application);
                                 }
@@ -2069,7 +2069,7 @@ public sealed class UserSettings : BindableBase
                                 {
                                     var application = new MappedProcess(executable, "Open archive: 7-Zip")
                                     {
-                                        CompatibleExtensions = "zip;sl1;sl1s;cws;zcode;zcodex;vdt;uvj"
+                                        CompatibleExtensions = "zip;sl1;sl1s;cws;zcode;zcodex;jxs;nanodlp;vdt;uvj;pm7;pm7m;pm4u;pwsz"
                                     };
                                     _instance.General.SendToProcess.Add(application);
                                 }

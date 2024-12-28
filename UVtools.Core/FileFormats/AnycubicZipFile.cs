@@ -19,6 +19,7 @@ using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using Emgu.CV.Structure;
 using Emgu.CV.Util;
 using UVtools.Core.Converters;
 using UVtools.Core.EmguCV;
@@ -603,7 +604,8 @@ public sealed class AnycubicZipFile : FileFormat
                     var startPoint = DisplayToPixelPosition(startX, startY);
                     var endPoint = DisplayToPixelPosition(endX, endY);
 
-                    CvInvoke.Line(mat, startPoint, endPoint, EmguExtensions.WhiteColor);
+                    //CvInvoke.Line(mat, startPoint, endPoint, EmguExtensions.WhiteColor);
+                    CvInvoke.Line(mat, startPoint, endPoint, new MCvScalar((1+i)*15));
                 }
 
                 var boundingRectangle = CvInvoke.BoundingRectangle(mat);
@@ -616,11 +618,27 @@ public sealed class AnycubicZipFile : FileFormat
                     foreach (var family in contours.Families)
                     {
                         newContours.Push(family.TraverseTree()
-                            .Where(traverseFamily => traverseFamily.Depth % 2 == 0) // Ignore all non-welcomers
+                            .Where(traverseFamily => traverseFamily.IsPositive) // Ignore all non-welcomers
                             .Select(traverseFamily => traverseFamily.Self.Vector).ToArray());
                     }
+                    
+
+                    /*for (var i = 0; i < contours.Vector.Size; i++)
+                    {
+                        var x = Random.Shared.Next(0, contours.Vector[i].Size);
+                        CvInvoke.PutText(mat, contours.Hierarchy[i, EmguContour.HierarchyParent].ToString(), contours.Vector[i][0], FontFace.HersheyDuplex, 1, new MCvScalar(127), 1);
+                    }*/
 
                     CvInvoke.DrawContours(mat, newContours, -1, EmguExtensions.WhiteColor, -1);
+
+                    /*foreach (var family in contours.Families)
+                    {
+                        foreach (var me in family.TraverseTree())
+                        {
+                            var i = Random.Shared.Next(0, me.Self.Vector.Size);
+                            CvInvoke.PutText(mat, me.Depth.ToString(), me.Self.Vector[0], FontFace.HersheyDuplex, 1, new MCvScalar(127), 1);
+                        }
+                    }*/
                 }
             }
 
@@ -760,8 +778,8 @@ public sealed class AnycubicZipFile : FileFormat
     {
         Settings.MachineType.PixelWidthMicrons = PixelWidthMicrons;
         Settings.MachineType.PixelHeightMicrons = PixelHeightMicrons;
-        Settings.MachineType.PreviewImageSize = new []{ ThumbnailsOriginalSize[0].Width, ThumbnailsOriginalSize[0].Height };
-        Settings.MachineType.Preview2ImageSize = new []{ ThumbnailsOriginalSize[1].Width, ThumbnailsOriginalSize[1].Height };
+        Settings.MachineType.PreviewImageSize = [ThumbnailsOriginalSize[0].Width, ThumbnailsOriginalSize[0].Height];
+        Settings.MachineType.Preview2ImageSize = [ThumbnailsOriginalSize[1].Width, ThumbnailsOriginalSize[1].Height];
 
         if (Settings.MachineType.Screens.Length > 0)
         {
