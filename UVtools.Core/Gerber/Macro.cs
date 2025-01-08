@@ -71,7 +71,7 @@ public class Macro : IReadOnlyList<Primitive>
                 Primitives.Add(primitive);
                 break;
             }
-            // 21 Center Line: Exposure, Width, Hight, Center X, Center Y, Rotation
+            // 21 Center Line: Exposure, Width, Height, Center X, Center Y, Rotation
             case CenterLinePrimitive.Code:
             {
                 var primitive = new CenterLinePrimitive(Document, commaSplit[1], commaSplit[2], commaSplit[3], commaSplit[4], commaSplit[5]);
@@ -85,7 +85,7 @@ public class Macro : IReadOnlyList<Primitive>
                 Primitives.Add(new OutlinePrimitive(Document, commaSplit[1], commaSplit[3..^1], commaSplit[^1]));
                 break;
             }
-            // 5 Outline: Exposure, # vertices, Start X, Start Y, Subsequent points..., Rotation
+            // 5 Outline: Exposure, # vertices, Center X, Center Y, Diameter, Rotation
             case PolygonPrimitive.Code:
             {
                 var primitive = new PolygonPrimitive(Document, commaSplit[1], commaSplit[2], commaSplit[3], commaSplit[4], commaSplit[5]);

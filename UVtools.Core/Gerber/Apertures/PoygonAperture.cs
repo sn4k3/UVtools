@@ -19,20 +19,33 @@ public class PolygonAperture : Aperture
     #region Properties
     public double Diameter { get; set; }
     public ushort Vertices { get; set; }
+    public double Rotation { get; set; }
+    public double HoleDiameter { get; set; }
     #endregion
 
     #region Constructor
     public PolygonAperture(GerberFormat document) : base(document, "Polygon") { }
 
-    public PolygonAperture(GerberFormat document, int index, double diameter, ushort vertices) : base(document, index, "Polygon")
+    public PolygonAperture(GerberFormat document, int index, double diameter, ushort vertices, double rotation = 0.0, double holeDiameter = 0) : base(document, index, "Polygon")
     {
         Diameter = document.GetMillimeters(diameter);
         Vertices = vertices;
+        Rotation = rotation;
+        if (holeDiameter > 0) HoleDiameter = document.GetMillimeters(holeDiameter);
     }
     #endregion
     
     public override void DrawFlashD3(Mat mat, PointF at, MCvScalar color, LineType lineType = LineType.EightConnected)
     {
-        mat.DrawPolygon(Vertices, Document.SizeMmToPx(Diameter), Document.PositionMmToPx(at), color, 0, -1, lineType);
+        var location = Document.PositionMmToPx(at);
+        mat.DrawPolygon(Vertices, Document.SizeMmToPx(Diameter), location, color, Rotation, -1, lineType);
+        if (HoleDiameter > 0)
+        {
+            var invertColor = color.Equals(EmguExtensions.BlackColor) ? EmguExtensions.WhiteColor : EmguExtensions.BlackColor;
+            CvInvoke.Ellipse(mat,
+                location,
+                Document.SizeMmToPx(HoleDiameter / 2.0, HoleDiameter / 2.0),
+                0, 0, 360, invertColor, -1, lineType);
+        }
     }
 }

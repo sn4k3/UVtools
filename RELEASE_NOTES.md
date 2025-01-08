@@ -1,11 +1,6 @@
-- Anycubic file format:
-  - (Fix) Reset TSMC values to comply with globals when decoding file and AdvancedMode is disabled (#971)
-  - (Fix) Setting the LiftHeight2 was setting the base value to BottomLiftHeight2
-  - (Fix) Setting the BottomRetractSpeed was not applying the value in the base property
-- Multiple exposure finder:
-   - (Fix) Counter triangles not taking all the new left space
-   - (Fix) When doing multiple heights the text label always show the base height
-- (Improvement) Layer image viewer internal handling
-- (Fix) Settings - Send to process: Unable to pick a process file, it was selecting folder instead
-- (Fix) Save As can show incorrect file extension description when there are other file formats with the same extension
+- PCB Exposure:
+  - (Fix) Polygon primitive vertex count not parsing correctly when having argument (#976)
+  - (Fix) Obround aperture to follow the correct implementation (two semicircles connected by parallel lines tangent to their endpoints) (#976)
+  - (Fix) Implement the "hole diameter" argument in all apertures (#976)
+  - (Fix) Implement the "rotation" argument for the polygon aperture
 

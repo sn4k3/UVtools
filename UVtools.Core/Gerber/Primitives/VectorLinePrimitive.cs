@@ -89,12 +89,12 @@ public class VectorLinePrimitive : Primitive
     public VectorLinePrimitive(GerberFormat document, string exposureExpression, string lineWidthExpression, string startXExpression, string startYExpression, string endXExpression, string endYExpression, string rotationExpression = "0") : base(document)
     {
         ExposureExpression = exposureExpression;
-        LineWidthExpression = lineWidthExpression;
+        LineWidthExpression = lineWidthExpression.Replace("X", "*", StringComparison.OrdinalIgnoreCase); ;
         StartXExpression = startXExpression;
         StartYExpression = startYExpression;
         EndXExpression = endXExpression;
         EndYExpression = endYExpression;
-        RotationExpression = rotationExpression;
+        RotationExpression = rotationExpression.Replace("X", "*", StringComparison.OrdinalIgnoreCase); ;
     }
 
     public override void DrawFlashD3(Mat mat, PointF at, LineType lineType = LineType.EightConnected)

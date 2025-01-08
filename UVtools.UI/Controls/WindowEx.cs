@@ -14,7 +14,6 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Avalonia.Platform.Storage;
 using UVtools.Core.FileFormats;
-using UVtools.Core.SystemOS;
 using UVtools.UI.Extensions;
 using Size = Avalonia.Size;
 

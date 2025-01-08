@@ -72,7 +72,7 @@ public class OutlinePrimitive : Primitive
     {
         ExposureExpression = exposureExpression;
         CoordinatesExpression = coordinatesExpression;
-        RotationExpression = rotationExpression;
+        RotationExpression = rotationExpression.Replace("X", "*", StringComparison.OrdinalIgnoreCase); ;
     }
 
 

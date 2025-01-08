@@ -72,10 +72,10 @@ public class CirclePrimitive : Primitive
     public CirclePrimitive(GerberFormat document, string exposureExpression = "1", string diameterExpression = "0", string centerXExpression = "0", string centerYExpression = "0", string rotationExpression = "0") : base(document)
     {
         ExposureExpression = exposureExpression;
-        DiameterExpression = diameterExpression;
-        CenterXExpression = centerXExpression;
-        CenterYExpression = centerYExpression;
-        RotationExpression = rotationExpression;
+        DiameterExpression = diameterExpression.Replace("X", "*", StringComparison.OrdinalIgnoreCase);
+        CenterXExpression = centerXExpression.Replace("X", "*", StringComparison.OrdinalIgnoreCase);
+        CenterYExpression = centerYExpression.Replace("X", "*", StringComparison.OrdinalIgnoreCase);
+        RotationExpression = rotationExpression.Replace("X", "*", StringComparison.OrdinalIgnoreCase);
     }
 
     public override void DrawFlashD3(Mat mat, PointF at, LineType lineType = LineType.EightConnected)

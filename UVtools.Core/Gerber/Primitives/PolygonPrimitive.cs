@@ -81,8 +81,8 @@ public class PolygonPrimitive : Primitive
         VerticesCountExpression = verticesCountExpression;
         CenterXExpression = centerXExpression;
         CenterYExpression = centerYExpression;
-        DiameterExpression = diameterExpression;
-        RotationExpression = rotationExpression;
+        DiameterExpression = diameterExpression.Replace("X", "*", StringComparison.OrdinalIgnoreCase);
+        RotationExpression = rotationExpression.Replace("X", "*", StringComparison.OrdinalIgnoreCase);
     }
 
     public override void DrawFlashD3(Mat mat, PointF at, LineType lineType = LineType.EightConnected)
@@ -110,10 +110,10 @@ public class PolygonPrimitive : Primitive
             if (temp is not DBNull) Exposure = Convert.ToByte(temp);
         }
 
-        if (byte.TryParse(DiameterExpression, out var vertices)) VerticesCount = vertices;
+        if (byte.TryParse(VerticesCountExpression, out var vertices)) VerticesCount = vertices;
         else
         {
-            csharpExp = Regex.Replace(DiameterExpression, @"\$([0-9]+)", "{$1}");
+            csharpExp = Regex.Replace(VerticesCountExpression, @"\$([0-9]+)", "{$1}");
             csharpExp = string.Format(csharpExp, args);
             var temp = exp.Compute(csharpExp, null);
             if (temp is not DBNull) VerticesCount = Convert.ToByte(temp);

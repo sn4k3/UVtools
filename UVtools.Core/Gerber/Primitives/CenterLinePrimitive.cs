@@ -80,11 +80,11 @@ public class CenterLinePrimitive : Primitive
     public CenterLinePrimitive(GerberFormat document, string exposureExpression, string widthExpression = "0", string heightExpression = "0", string centerXExpression = "0", string centerYExpression = "0", string rotationExpression = "0") : base(document)
     {
         ExposureExpression = exposureExpression;
-        WidthExpression = widthExpression;
-        HeightExpression = heightExpression;
-        CenterXExpression = centerXExpression;
-        CenterYExpression = centerYExpression;
-        RotationExpression = rotationExpression;
+        WidthExpression = widthExpression.Replace("X", "*", StringComparison.OrdinalIgnoreCase);
+        HeightExpression = heightExpression.Replace("X", "*", StringComparison.OrdinalIgnoreCase);
+        CenterXExpression = centerXExpression.Replace("X", "*", StringComparison.OrdinalIgnoreCase);
+        CenterYExpression = centerYExpression.Replace("X", "*", StringComparison.OrdinalIgnoreCase);
+        RotationExpression = rotationExpression.Replace("X", "*", StringComparison.OrdinalIgnoreCase);
     }
 
 
