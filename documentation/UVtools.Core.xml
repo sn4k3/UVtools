@@ -1804,7 +1804,22 @@
             <param name="thickness"></param>
             <param name="lineType"></param>
         </member>
-        <member name="M:UVtools.Core.Extensions.EmguExtensions.DrawPolygon(Emgu.CV.Mat,System.Int32,System.Double,System.Drawing.PointF,Emgu.CV.Structure.MCvScalar,System.Double,System.Int32,Emgu.CV.CvEnum.LineType,System.Nullable{Emgu.CV.CvEnum.FlipType},System.MidpointRounding)">
+        <member name="M:UVtools.Core.Extensions.EmguExtensions.DrawPolygon(Emgu.CV.Mat,System.Int32,System.Drawing.SizeF,System.Drawing.PointF,Emgu.CV.Structure.MCvScalar,System.Double,System.Int32,Emgu.CV.CvEnum.LineType,System.Nullable{Emgu.CV.CvEnum.FlipType},System.MidpointRounding)">
+            <summary>
+            Draw a polygon given number of sides and diameter
+            </summary>
+            <param name="src"></param>
+            <param name="sides">Number of polygon sides, Special: use 1 to draw a line and >= 100 to draw a native OpenCV circle</param>
+            <param name="diameter">Diameter for both X and Y axis</param>
+            <param name="center">Center position</param>
+            <param name="color"></param>
+            <param name="startingAngle"></param>
+            <param name="thickness"></param>
+            <param name="lineType"></param>
+            <param name="flip"></param>
+            <param name="midpointRounding"></param>
+        </member>
+        <member name="M:UVtools.Core.Extensions.EmguExtensions.DrawPolygon(Emgu.CV.Mat,System.Int32,System.Single,System.Drawing.PointF,Emgu.CV.Structure.MCvScalar,System.Double,System.Int32,Emgu.CV.CvEnum.LineType,System.Nullable{Emgu.CV.CvEnum.FlipType},System.MidpointRounding)">
             <summary>
             Draw a polygon given number of sides and diameter
             </summary>
@@ -1818,6 +1833,43 @@
             <param name="lineType"></param>
             <param name="flip"></param>
             <param name="midpointRounding"></param>
+        </member>
+        <member name="M:UVtools.Core.Extensions.EmguExtensions.DrawAlignedPolygon(Emgu.CV.Mat,System.Int32,System.Drawing.SizeF,System.Drawing.PointF,Emgu.CV.Structure.MCvScalar,System.Double,System.Int32,Emgu.CV.CvEnum.LineType,System.Nullable{Emgu.CV.CvEnum.FlipType},System.MidpointRounding)">
+            <summary>
+            Draw a polygon given number of sides and diameter (Aligned in X axis)
+            </summary>
+            <param name="src"></param>
+            <param name="sides">Number of polygon sides, Special: use 1 to draw a line and >= 100 to draw a native OpenCV circle</param>
+            <param name="diameter">Diameter for both X and Y axis</param>
+            <param name="center">Center position</param>
+            <param name="color"></param>
+            <param name="startingAngle"></param>
+            <param name="thickness"></param>
+            <param name="lineType"></param>
+            <param name="flip"></param>
+            <param name="midpointRounding"></param>
+        </member>
+        <member name="M:UVtools.Core.Extensions.EmguExtensions.DrawCircle(Emgu.CV.Mat,System.Drawing.Point,System.Drawing.Size,Emgu.CV.Structure.MCvScalar,System.Int32,Emgu.CV.CvEnum.LineType)">
+            <summary>
+            Draw a circle with a center point and radius
+            </summary>
+            <param name="src"></param>
+            <param name="center"></param>
+            <param name="radius"></param>
+            <param name="color"></param>
+            <param name="thickness"></param>
+            <param name="lineType"></param>
+        </member>
+        <member name="M:UVtools.Core.Extensions.EmguExtensions.DrawCircle(Emgu.CV.Mat,System.Drawing.Point,System.Int32,Emgu.CV.Structure.MCvScalar,System.Int32,Emgu.CV.CvEnum.LineType)">
+            <summary>
+            Draw a circle with a center point and radius
+            </summary>
+            <param name="src"></param>
+            <param name="center"></param>
+            <param name="radius"></param>
+            <param name="color"></param>
+            <param name="thickness"></param>
+            <param name="lineType"></param>
         </member>
         <member name="F:UVtools.Core.Extensions.EmguExtensions.PutTextLineAlignment.None">
             <summary>
@@ -4283,6 +4335,35 @@
             <summary>
             Gets the pixel area in millimeters
             </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.FileFormat.PixelScaleNormalizeXRelativeToY">
+            <summary>
+            Gets the pixel scale normalized with X relative to Y
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.FileFormat.PixelScaleNormalizeYRelativeToX">
+            <summary>
+            Gets the pixel scale normalized with Y relative to X
+            </summary>
+        </member>
+        <member name="P:UVtools.Core.FileFormats.FileFormat.PixelScaleNormalized">
+            <summary>
+            Gets the pixel scale normalized with X relative to Y and Y relative to X
+            </summary>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.FileFormat.PixelsToNormalizedPitchF(System.Int32)">
+            <summary>
+            Translates a pixel size to a X/Y normalized pitch where it compensates the lower side
+            </summary>
+            <param name="size"></param>
+            <returns></returns>
+        </member>
+        <member name="M:UVtools.Core.FileFormats.FileFormat.PixelsToNormalizedPitch(System.Int32)">
+            <summary>
+            Translates a pixel size to a X/Y normalized pitch where it compensates the lower side
+            </summary>
+            <param name="size"></param>
+            <returns></returns>
         </member>
         <member name="P:UVtools.Core.FileFormats.FileFormat.Volume">
             <summary>

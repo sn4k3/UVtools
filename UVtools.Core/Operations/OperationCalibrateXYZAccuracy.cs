@@ -664,9 +664,8 @@ public sealed class OperationCalibrateXYZAccuracy : Operation
 
                     if (CenterHoleRelief)
                     {
-                        CvInvoke.Circle(layer,
-                            new Point((int) (currentX + xPixels / 2), (int) (currentY + yPixels / 2)),
-                            (int) (Math.Min(xPixels, yPixels) / 4),
+                        layer.DrawCircle(new Point((int) (currentX + xPixels / 2), (int) (currentY + yPixels / 2)),
+                            SlicerFile.PixelsToNormalizedPitch((int) (Math.Min(xPixels, yPixels) / 4)),
                             EmguExtensions.BlackColor, -1);
                     }
 

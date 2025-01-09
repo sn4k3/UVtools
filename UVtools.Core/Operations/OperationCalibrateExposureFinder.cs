@@ -1444,9 +1444,8 @@ public sealed class OperationCalibrateExposureFinder : Operation
                                     _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
                                 break;
                             case CalibrateExposureFinderShapes.Circle:
-                                CvInvoke.Circle(layers[layerIndex],
-                                    new Point(xPos, yPos),
-                                    radius, EmguExtensions.WhiteColor, -1,
+                                layers[layerIndex].DrawCircle(new Point(xPos, yPos),
+                                    SlicerFile.PixelsToNormalizedPitch(radius), EmguExtensions.WhiteColor, -1,
                                     _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
                                 break;
                         }
@@ -1482,9 +1481,8 @@ public sealed class OperationCalibrateExposureFinder : Operation
                                 _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
                             break;
                         case CalibrateExposureFinderShapes.Circle:
-                            CvInvoke.Circle(layers[layerIndex],
-                                new Point(xPos, yPos),
-                                radius, EmguExtensions.BlackColor, -1,
+                            layers[layerIndex].DrawCircle(new Point(xPos, yPos),
+                                SlicerFile.PixelsToNormalizedPitch(radius), EmguExtensions.BlackColor, -1,
                                 _enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);
                             break;
                     }

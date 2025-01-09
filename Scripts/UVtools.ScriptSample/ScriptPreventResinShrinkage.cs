@@ -63,9 +63,8 @@ public class ScriptPreventResinShrinkage : ScriptGlobals
         var evenRow = false;
         for (int y = 0; y < pattern.Size.Height; y += yStep) {
             for (int x = 0; x < pattern.Size.Width; x += xStep) {
-                CvInvoke.Circle(pattern,
-                    new Point(x + (evenRow ? xStep / 2 : 0), y),
-                    GrainSize.Value / 2,
+                pattern.DrawCircle(new Point(x + (evenRow ? xStep / 2 : 0), y),
+                    SlicerFile.PixelsToNormalizedPitch(GrainSize.Value / 2),
                     EmguExtensions.WhiteColor,
                     -1, LineType.FourConnected);
             }

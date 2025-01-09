@@ -374,6 +374,10 @@ public class ExcellonDrillFormat
 
     public int SizeMmToPx(float sizeMm)
         => (int)Math.Max(1, Math.Round(sizeMm * XYppmm.Max() * SizeScale, (MidpointRounding)SizeMidpointRounding));
+
+    public Size SizeMmToPx(float sizeMmX, float sizeMmY)
+        => new ((int)Math.Max(1, Math.Round(sizeMmX * XYppmm.Width * SizeScale, (MidpointRounding)SizeMidpointRounding)),
+            (int)Math.Max(1, Math.Round(sizeMmX * XYppmm.Height * SizeScale, (MidpointRounding)SizeMidpointRounding)));
     #endregion
 
     #region Static methods
@@ -383,9 +387,10 @@ public class ExcellonDrillFormat
 
         foreach (var drill in document.Drills)
         {
+            var radiusMillimeters = document.GetMillimeters(drill.Diameter / 2);
             var position = document.PositionMmToPx(document.GetMillimeters(drill.Position));
-            var radius = document.SizeMmToPx(document.GetMillimeters(drill.Diameter / 2));
-            CvInvoke.Circle(mat, position, radius,
+            var radius = document.SizeMmToPx(radiusMillimeters, radiusMillimeters);
+            mat.DrawCircle(position, radius,
                 document.InversePolarity ? EmguExtensions.WhiteColor : EmguExtensions.BlackColor,
                 -1, 
                 enableAntiAliasing ? LineType.AntiAlias : LineType.EightConnected);

@@ -521,61 +521,125 @@ public sealed class GooFile : FileFormat
 
     public FileFooter Footer { get; private set; } = new();
 
-    public override PrintParameterModifier[] PrintParameterModifiers { get; } = {
-        PrintParameterModifier.BottomLayerCount,
-        PrintParameterModifier.TransitionLayerCount,
+    public override PrintParameterModifier[] PrintParameterModifiers
+    {
+        get
+        {
+            if (HaveTiltingVat)
+            {
+                return
+                [
+                    PrintParameterModifier.BottomLayerCount,
+                    PrintParameterModifier.TransitionLayerCount,
 
-        //PrintParameterModifier.BottomLightOffDelay,
-        PrintParameterModifier.LightOffDelay,
+                    //PrintParameterModifier.BottomLightOffDelay,
+                    PrintParameterModifier.LightOffDelay,
 
-        PrintParameterModifier.BottomWaitTimeBeforeCure,
-        PrintParameterModifier.WaitTimeBeforeCure,
+                    PrintParameterModifier.BottomWaitTimeBeforeCure,
+                    PrintParameterModifier.WaitTimeBeforeCure,
 
-        PrintParameterModifier.BottomExposureTime,
-        PrintParameterModifier.ExposureTime,
+                    PrintParameterModifier.BottomExposureTime,
+                    PrintParameterModifier.ExposureTime,
 
-        PrintParameterModifier.BottomWaitTimeAfterCure,
-        PrintParameterModifier.WaitTimeAfterCure,
+                    PrintParameterModifier.BottomWaitTimeAfterCure,
+                    PrintParameterModifier.WaitTimeAfterCure,
 
-        PrintParameterModifier.BottomLiftHeight,
-        PrintParameterModifier.BottomLiftSpeed,
-        PrintParameterModifier.LiftHeight,
-        PrintParameterModifier.LiftSpeed,
-        PrintParameterModifier.BottomLiftHeight2,
-        PrintParameterModifier.BottomLiftSpeed2,
-        PrintParameterModifier.LiftHeight2,
-        PrintParameterModifier.LiftSpeed2,
+                    PrintParameterModifier.BottomWaitTimeAfterLift,
+                    PrintParameterModifier.WaitTimeAfterLift,
 
-        PrintParameterModifier.BottomWaitTimeAfterLift,
-        PrintParameterModifier.WaitTimeAfterLift,
+                    PrintParameterModifier.BottomLightPWM,
+                    PrintParameterModifier.LightPWM
+                ];
+            }
 
-        PrintParameterModifier.BottomRetractSpeed,
-        PrintParameterModifier.RetractSpeed,
-        PrintParameterModifier.BottomRetractHeight2,
-        PrintParameterModifier.BottomRetractSpeed2,
-        PrintParameterModifier.RetractHeight2,
-        PrintParameterModifier.RetractSpeed2,
+            return
+            [
+                PrintParameterModifier.BottomLayerCount,
+                PrintParameterModifier.TransitionLayerCount,
 
-        PrintParameterModifier.BottomLightPWM,
-        PrintParameterModifier.LightPWM
-    };
-        
-    public override PrintParameterModifier[] PrintParameterPerLayerModifiers { get; } = {
-        PrintParameterModifier.PositionZ,
-        PrintParameterModifier.LightOffDelay,
-        PrintParameterModifier.WaitTimeBeforeCure,
-        PrintParameterModifier.ExposureTime,
-        PrintParameterModifier.WaitTimeAfterCure,
-        PrintParameterModifier.LiftHeight,
-        PrintParameterModifier.LiftSpeed,
-        PrintParameterModifier.LiftHeight2,
-        PrintParameterModifier.LiftSpeed2,
-        PrintParameterModifier.WaitTimeAfterLift,
-        PrintParameterModifier.RetractSpeed,
-        PrintParameterModifier.RetractHeight2,
-        PrintParameterModifier.RetractSpeed2,
-        PrintParameterModifier.LightPWM
-    };
+                //PrintParameterModifier.BottomLightOffDelay,
+                PrintParameterModifier.LightOffDelay,
+
+                PrintParameterModifier.BottomWaitTimeBeforeCure,
+                PrintParameterModifier.WaitTimeBeforeCure,
+
+                PrintParameterModifier.BottomExposureTime,
+                PrintParameterModifier.ExposureTime,
+
+                PrintParameterModifier.BottomWaitTimeAfterCure,
+                PrintParameterModifier.WaitTimeAfterCure,
+
+                PrintParameterModifier.BottomLiftHeight,
+                PrintParameterModifier.BottomLiftSpeed,
+                PrintParameterModifier.LiftHeight,
+                PrintParameterModifier.LiftSpeed,
+                PrintParameterModifier.BottomLiftHeight2,
+                PrintParameterModifier.BottomLiftSpeed2,
+                PrintParameterModifier.LiftHeight2,
+                PrintParameterModifier.LiftSpeed2,
+
+                PrintParameterModifier.BottomWaitTimeAfterLift,
+                PrintParameterModifier.WaitTimeAfterLift,
+
+                PrintParameterModifier.BottomRetractSpeed,
+                PrintParameterModifier.RetractSpeed,
+                PrintParameterModifier.BottomRetractHeight2,
+                PrintParameterModifier.BottomRetractSpeed2,
+                PrintParameterModifier.RetractHeight2,
+                PrintParameterModifier.RetractSpeed2,
+
+                PrintParameterModifier.BottomLightPWM,
+                PrintParameterModifier.LightPWM
+            ];
+        }
+    }
+
+    public override PrintParameterModifier[] PrintParameterPerLayerModifiers
+    {
+        get
+        {
+            if (HaveTiltingVat)
+            {
+                return
+                [
+                    PrintParameterModifier.PositionZ,
+                    PrintParameterModifier.LightOffDelay,
+                    PrintParameterModifier.WaitTimeBeforeCure,
+                    PrintParameterModifier.ExposureTime,
+                    PrintParameterModifier.WaitTimeAfterCure,
+                    PrintParameterModifier.WaitTimeAfterLift,
+                    PrintParameterModifier.LightPWM
+                ];
+            }
+
+            return
+            [
+                PrintParameterModifier.PositionZ,
+                PrintParameterModifier.LightOffDelay,
+                PrintParameterModifier.WaitTimeBeforeCure,
+                PrintParameterModifier.ExposureTime,
+                PrintParameterModifier.WaitTimeAfterCure,
+                PrintParameterModifier.LiftHeight,
+                PrintParameterModifier.LiftSpeed,
+                PrintParameterModifier.LiftHeight2,
+                PrintParameterModifier.LiftSpeed2,
+                PrintParameterModifier.WaitTimeAfterLift,
+                PrintParameterModifier.RetractSpeed,
+                PrintParameterModifier.RetractHeight2,
+                PrintParameterModifier.RetractSpeed2,
+                PrintParameterModifier.LightPWM
+            ];
+        }
+    }
+
+    public override bool HaveTiltingVat
+    {
+        get
+        {
+            if (MachineName.Contains("Saturn 4 Ultra", StringComparison.OrdinalIgnoreCase)) return true;
+            return LayerHeight == LiftHeight && LiftHeight < 0.5 && LiftSpeed < 0.5;
+        }
+    }
 
     public override uint ResolutionX
     {
@@ -1013,6 +1077,19 @@ public sealed class GooFile : FileFormat
         Header.PerLayerSettings = UsingPerLayerSettings;
         Header.Volume = Volume;
         Header.MaterialGrams = MaterialMilliliters;
+
+        if (HaveTiltingVat)
+        {
+            BottomLiftHeightTotal = LayerHeight;
+            LiftHeightTotal = LayerHeight;
+            if (BottomLiftSpeed > 0.5 || LiftSpeed > 0.5 || BottomRetractSpeed > 0.5 || RetractSpeed > 0.5)
+            {
+                BottomLiftSpeed = 0.05f;
+                LiftSpeed = 0.05f;
+                BottomRetractSpeed = 0.05f;
+                RetractSpeed = 0.05f;
+            }
+        }
     }
 
     protected override void EncodeInternally(OperationProgress progress)

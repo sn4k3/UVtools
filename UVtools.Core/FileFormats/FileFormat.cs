@@ -2246,6 +2246,95 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
     public float PixelAreaMicrons => PixelSizeMicrons.Area();
 
     /// <summary>
+    /// Gets the pixel scale normalized with X relative to Y
+    /// </summary>
+    public float PixelScaleNormalizeXRelativeToY
+    {
+        get
+        {
+            var pixelWidth = PixelWidth;
+            var pixelHeigth = PixelHeight;
+            return pixelWidth > 0 && pixelHeigth > 0 
+                ? pixelHeigth / pixelWidth
+                : 1;
+        }
+    }
+
+    /// <summary>
+    /// Gets the pixel scale normalized with Y relative to X
+    /// </summary>
+    public float PixelScaleNormalizeYRelativeToX
+    {
+        get
+        {
+            var pixelWidth = PixelWidth;
+            var pixelHeigth = PixelHeight;
+            return pixelWidth > 0 && pixelHeigth > 0
+                ? pixelWidth / pixelHeigth
+                : 1;
+        }
+    }
+
+    /// <summary>
+    /// Gets the pixel scale normalized with X relative to Y and Y relative to X
+    /// </summary>
+    public SizeF PixelScaleNormalized
+    {
+        get
+        {
+            var pixelWidth = PixelWidth;
+            var pixelHeigth = PixelHeight;
+            return pixelWidth > 0 && pixelHeigth > 0
+                ? new SizeF(pixelHeigth / pixelWidth, pixelWidth / pixelHeigth)
+                : new SizeF(1f, 1f);
+        }
+    }
+
+    /// <summary>
+    /// Translates a pixel size to a X/Y normalized pitch where it compensates the lower side
+    /// </summary>
+    /// <param name="size"></param>
+    /// <returns></returns>
+    public SizeF PixelsToNormalizedPitchF(int size)
+    {
+        var pixelScaleNormalized = PixelScaleNormalized;
+        if (pixelScaleNormalized.Width == PixelScaleNormalized.Height)
+        {
+            return new SizeF(size, size);
+        }
+        if (pixelScaleNormalized.Width > PixelScaleNormalized.Height)
+        {
+            return new SizeF(size * pixelScaleNormalized.Width, size);
+        }
+        else
+        {
+            return new SizeF(size, size * pixelScaleNormalized.Height);
+        }
+    }
+
+    /// <summary>
+    /// Translates a pixel size to a X/Y normalized pitch where it compensates the lower side
+    /// </summary>
+    /// <param name="size"></param>
+    /// <returns></returns>
+    public Size PixelsToNormalizedPitch(int size)
+    {
+        var pixelScaleNormalized = PixelScaleNormalized;
+        if (pixelScaleNormalized.Width == PixelScaleNormalized.Height)
+        {
+            return new Size(size, size);
+        }
+        if (pixelScaleNormalized.Width > PixelScaleNormalized.Height)
+        {
+            return new Size((int)(size * pixelScaleNormalized.Width), size);
+        }
+        else
+        {
+            return new Size(size, (int)(size * pixelScaleNormalized.Height));
+        }
+    }
+
+    /// <summary>
     /// Gets the file volume (XYZ) in mm^3
     /// </summary>
     public float Volume => (float)Math.Round(this.Sum(layer => layer.GetVolume()), 3);
@@ -7640,7 +7729,11 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
                         continue;
                     }
 
-                    mat.DrawPolygon((byte)operationDrawing.BrushShape, operationDrawing.BrushSize,
+                    var pixelWidth = PixelWidth;
+                    var pixelHeigth = PixelHeight;
+                    var diameter = PixelsToNormalizedPitchF(operationDrawing.BrushSize);
+
+                    mat.DrawAlignedPolygon((byte)operationDrawing.BrushShape, diameter,
                         operationDrawing.Location,
                         new MCvScalar(operationDrawing.Brightness), operationDrawing.RotationAngle,
                         operationDrawing.Thickness, operationDrawing.LineType);
@@ -7725,12 +7818,14 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
                             int yStart = Math.Max(0, operation.Location.Y - operationSupport.TipDiameter / 2);
                             int xStart = Math.Max(0, operation.Location.X - operationSupport.TipDiameter / 2);
 
-                            using (var matCircleRoi = new Mat(mat, new Rectangle(xStart, yStart, operationSupport.TipDiameter, operationSupport.TipDiameter)))
+                            var tipDiameter = PixelsToNormalizedPitch(operationSupport.TipDiameter);
+                            var tipRadius = PixelsToNormalizedPitch(operationSupport.TipDiameter / 2);
+                            var pillarDiameter = PixelsToNormalizedPitch(operationSupport.PillarDiameter);
+
+                            using (var matCircleRoi = new Mat(mat, new Rectangle(xStart, yStart, tipDiameter.Width, tipDiameter.Height)))
                             {
                                 using var matCircleMask = matCircleRoi.NewZeros();
-                                CvInvoke.Circle(matCircleMask,
-                                    new Point(operationSupport.TipDiameter / 2, operationSupport.TipDiameter / 2),
-                                    operationSupport.TipDiameter / 2, new MCvScalar(operation.PixelBrightness), -1);
+                                matCircleMask.DrawCircle(tipRadius.ToPoint(), tipRadius, new MCvScalar(operation.PixelBrightness), -1);
                                 CvInvoke.BitwiseAnd(matCircleRoi, matCircleMask, matCircleMask);
                                 whitePixels = (uint) CvInvoke.CountNonZero(matCircleMask);
                             }
@@ -7743,7 +7838,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
                                 continue; // White area end supporting
                             }
 
-                            CvInvoke.Circle(mat, operation.Location, radius, new MCvScalar(operation.PixelBrightness), -1, operationSupport.LineType);
+                            mat.DrawCircle(operation.Location, PixelsToNormalizedPitch(radius), new MCvScalar(operation.PixelBrightness), -1, operationSupport.LineType);
                             isMatModified = true;
                             drawnSupportLayers++;
                         }
@@ -7751,18 +7846,19 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
                         {
                             var operationDrainHole = (PixelDrainHole) operation;
 
-                            int radius = operationDrainHole.Diameter / 2;
+                            var diameterPitched = PixelsToNormalizedPitch(operationDrainHole.Diameter);
+                            var radius = PixelsToNormalizedPitch(operationDrainHole.Diameter / 2);
                             uint blackPixels;
 
-                            int yStart = Math.Max(0, operation.Location.Y - radius);
-                            int xStart = Math.Max(0, operation.Location.X - radius);
+                            int xStart = Math.Max(0, operation.Location.X - radius.Width);
+                            int yStart = Math.Max(0, operation.Location.Y - radius.Height);
 
-                            using (var matCircleRoi = new Mat(mat, new Rectangle(xStart, yStart, operationDrainHole.Diameter, operationDrainHole.Diameter)))
+                            using (var matCircleRoi = new Mat(mat, new Rectangle(xStart, yStart, diameterPitched.Width, diameterPitched.Height)))
                             {
                                 using var matCircleRoiInv = new Mat();
                                 CvInvoke.Threshold(matCircleRoi, matCircleRoiInv, 100, 255, ThresholdType.BinaryInv);
                                 using var matCircleMask = matCircleRoi.NewZeros();
-                                CvInvoke.Circle(matCircleMask, new Point(radius, radius), radius, EmguExtensions.WhiteColor, -1);
+                                matCircleMask.DrawCircle(radius.ToPoint(), radius, EmguExtensions.WhiteColor, -1);
                                 CvInvoke.BitwiseAnd(matCircleRoiInv, matCircleMask, matCircleMask);
                                 blackPixels = (uint) CvInvoke.CountNonZero(matCircleMask);
                             }
@@ -7774,7 +7870,7 @@ public abstract class FileFormat : BindableBase, IDisposable, IEquatable<FileFor
                                 continue; // Stop drill drain found!
                             }
 
-                            CvInvoke.Circle(mat, operation.Location, radius, EmguExtensions.BlackColor, -1, operationDrainHole.LineType);
+                            mat.DrawCircle(operation.Location, radius, EmguExtensions.BlackColor, -1, operationDrainHole.LineType);
                             isMatModified = true;
                             drawnDrainHoleLayers++;
                         }

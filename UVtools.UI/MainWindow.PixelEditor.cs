@@ -359,8 +359,8 @@ public partial class MainWindow
                                 }
                             }
 
-                            var vertices = DrawingExtensions.GetPolygonVertices((byte)operationDrawing.BrushShape,
-                                operationDrawing.BrushSize,
+                            var vertices = DrawingExtensions.GetAlignedPolygonVertices((byte)operationDrawing.BrushShape,
+                                SlicerFile.PixelsToNormalizedPitchF(operationDrawing.BrushSize),
                                 location, angle, _showLayerImageFlipped && _showLayerImageFlippedHorizontally,
                                 _showLayerImageFlipped && _showLayerImageFlippedVertically);
 
@@ -489,7 +489,7 @@ public partial class MainWindow
             //if (PixelHistory.Contains(operation)) return;
             AddDrawing(operationSupport);
 
-            CvInvoke.Circle(LayerCache.ImageBgra, location, operationSupport.TipDiameter / 2,
+            LayerCache.ImageBgra.DrawCircle(location, SlicerFile!.PixelsToNormalizedPitch(operationSupport.TipDiameter / 2),
                 Settings.PixelEditor.SupportsColor.ToMCvScalar(), -1);
             RefreshLayerImage();
             return;
@@ -502,7 +502,7 @@ public partial class MainWindow
             //if (PixelHistory.Contains(operation)) return;
             AddDrawing(operationDrainHole);
 
-            CvInvoke.Circle(LayerCache.ImageBgra, location, operationDrainHole.Diameter / 2,
+            LayerCache.ImageBgra.DrawCircle(location, SlicerFile!.PixelsToNormalizedPitch(operationDrainHole.Diameter / 2),
                 Settings.PixelEditor.DrainHoleColor.ToMCvScalar(), -1);
             RefreshLayerImage();
             return;

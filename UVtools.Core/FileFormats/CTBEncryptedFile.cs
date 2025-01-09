@@ -593,8 +593,8 @@ public sealed class CTBEncryptedFile : FileFormat
         {
             if (HaveTiltingVat)
             {
-                return new[]
-                {
+                return
+                [
                     PrintParameterModifier.BottomLayerCount,
                     PrintParameterModifier.TransitionLayerCount,
 
@@ -615,11 +615,11 @@ public sealed class CTBEncryptedFile : FileFormat
 
                     PrintParameterModifier.BottomLightPWM,
                     PrintParameterModifier.LightPWM
-                };
+                ];
             }
 
-            return new[]
-            {
+            return
+            [
                 PrintParameterModifier.BottomLayerCount,
                 PrintParameterModifier.TransitionLayerCount,
 
@@ -656,7 +656,7 @@ public sealed class CTBEncryptedFile : FileFormat
 
                 PrintParameterModifier.BottomLightPWM,
                 PrintParameterModifier.LightPWM
-            };
+            ];
         }
     }
         
@@ -666,8 +666,8 @@ public sealed class CTBEncryptedFile : FileFormat
         {
             if (HaveTiltingVat)
             {
-                return new[]
-                {
+                return
+                [
                     PrintParameterModifier.PositionZ,
                     PrintParameterModifier.LightOffDelay,
                     PrintParameterModifier.WaitTimeBeforeCure,
@@ -675,11 +675,11 @@ public sealed class CTBEncryptedFile : FileFormat
                     PrintParameterModifier.WaitTimeAfterCure,
                     PrintParameterModifier.WaitTimeAfterLift,
                     PrintParameterModifier.LightPWM
-                };
+                ];
             }
 
-            return new[]
-            {
+            return
+            [
                 PrintParameterModifier.PositionZ,
                 PrintParameterModifier.LightOffDelay,
                 PrintParameterModifier.WaitTimeBeforeCure,
@@ -694,7 +694,7 @@ public sealed class CTBEncryptedFile : FileFormat
                 PrintParameterModifier.RetractHeight2,
                 PrintParameterModifier.RetractSpeed2,
                 PrintParameterModifier.LightPWM
-            };
+            ];
         }
     }
 

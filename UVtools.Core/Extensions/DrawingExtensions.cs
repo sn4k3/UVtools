@@ -38,10 +38,71 @@ public static class DrawingExtensions
         return length / (2 * Math.Cos((90 - theta / 2) * Math.PI / 180.0));
     }
 
-    
-    public static Point[] GetPolygonVertices(int sides, double diameter, PointF center, double startingAngle = 0, bool flipHorizontally = false, bool flipVertically = false, MidpointRounding midpointRounding = MidpointRounding.AwayFromZero)
+    public static Point[] GetPolygonVertices(int sides, SizeF diameter, PointF center, double startingAngle = 0, bool flipHorizontally = false, bool flipVertically = false, MidpointRounding midpointRounding = MidpointRounding.AwayFromZero)
     {
         if (sides < 3)
+            throw new ArgumentException("Polygons can't have less than 3 sides...", nameof(sides));
+
+        var vertices = new Point[sides];
+        var radiusX = diameter.Width / 2; // X radius for pixel pitch
+        var radiusY = diameter.Height / 2; // Y radius for pixel pitch
+
+        if (sides == 4)
+        {
+            var rotatedRect = new RotatedRect(center, new SizeF(diameter.Width - 1, diameter.Height - 1), (float)startingAngle);
+            var verticesF = rotatedRect.GetVertices();
+            for (var i = 0; i < verticesF.Length; i++)
+            {
+                vertices[i] = verticesF[i].ToPoint(midpointRounding);
+            }
+        }
+        else
+        {
+            var angleIncrement = 2 * Math.PI / sides;
+            var startRotationAngleRadians = startingAngle * Math.PI / 180;
+
+            for (int i = 0; i < sides; i++)
+            {
+                var angle = startRotationAngleRadians + i * angleIncrement;
+
+                // Scale the X and Y coordinates independently for pixel pitch
+                var x = (int)Math.Round(center.X + radiusX * Math.Cos(angle), midpointRounding);
+                var y = (int)Math.Round(center.Y + radiusY * Math.Sin(angle), midpointRounding);
+
+                vertices[i] = new Point(x, y);
+            }
+        }
+
+        if (flipHorizontally)
+        {
+            var startX = center.X - radiusX;
+            var endX = center.X + radiusX;
+            for (int i = 0; i < sides; i++)
+            {
+                vertices[i].X = (int)Math.Round(endX - (vertices[i].X - startX), midpointRounding);
+            }
+        }
+
+        if (flipVertically)
+        {
+            var startY = center.Y - radiusY;
+            var endY = center.Y + radiusY;
+            for (int i = 0; i < sides; i++)
+            {
+                vertices[i].Y = (int)Math.Round(endY - (vertices[i].Y - startY), midpointRounding);
+            }
+        }
+
+        return vertices;
+    }
+
+
+    public static Point[] GetAlignedPolygonVertices(int sides, SizeF diameter, PointF center, double startingAngle = 0, bool flipHorizontally = false, bool flipVertically = false, MidpointRounding midpointRounding = MidpointRounding.AwayFromZero)
+    {
+        if (sides != 4) startingAngle += (180 - (360.0 / sides)) / 2;
+        return GetPolygonVertices(sides, diameter, center, startingAngle, flipHorizontally, flipVertically, midpointRounding);
+
+        /*if (sides < 3)
             throw new ArgumentException("Polygons can't have less than 3 sides...", nameof(sides));
 
         var vertices = new Point[sides];
@@ -58,6 +119,7 @@ public static class DrawingExtensions
         }
         else
         {
+            // Aligned version
             var angleIncrement = 360.0 / sides; //calculate the rotation angle
             var rad = Math.PI / 180.0;
 
@@ -110,5 +172,12 @@ public static class DrawingExtensions
         }
 
         return vertices;
+    */
+    }
+
+    public static Point[] GetAlignedPolygonVertices(int sides, float diameter, PointF center, double startingAngle = 0, bool flipHorizontally = false, bool flipVertically = false, MidpointRounding midpointRounding = MidpointRounding.AwayFromZero)
+    {
+        if (sides != 4) startingAngle += (180 - (360.0 / sides)) / 2;
+        return GetPolygonVertices(sides, new SizeF(diameter, diameter), center, startingAngle, flipHorizontally, flipVertically, midpointRounding);
     }
 }

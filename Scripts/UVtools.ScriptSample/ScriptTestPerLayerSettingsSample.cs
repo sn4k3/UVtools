@@ -90,14 +90,15 @@ public class ScriptTestPerLayerSettingsSample : ScriptGlobals
         // Do the left eye
         var x = xCenter - noseThickness/2 - faceSpacing - eyeDiameter/2;
         int y = faceSpacing;
-        CvInvoke.Circle(mats[0], new Point(x, y), eyeDiameter/2, EmguExtensions.WhiteColor, -1, lineType);
-        CvInvoke.Circle(mats[1], new Point(x, y), eyeDiameter/2, EmguExtensions.WhiteColor, -1, lineType);
+        var radius = SlicerFile.PixelsToNormalizedPitch(eyeDiameter / 2);
+        mats[0].DrawCircle(new Point(x, y), radius, EmguExtensions.WhiteColor, -1, lineType);
+        mats[1].DrawCircle(new Point(x, y), radius, EmguExtensions.WhiteColor, -1, lineType);
         Progress++;
 
         // Do the right eye, the mirror of left...
         x = (int)(SlicerFile.ResolutionX - x);
-        CvInvoke.Circle(mats[0], new Point(x, y), eyeDiameter / 2, EmguExtensions.WhiteColor, -1, lineType);
-        CvInvoke.Circle(mats[3], new Point(x, y), eyeDiameter / 2, EmguExtensions.WhiteColor, -1, lineType);
+        mats[0].DrawCircle(new Point(x, y), radius, EmguExtensions.WhiteColor, -1, lineType);
+        mats[3].DrawCircle(new Point(x, y), radius, EmguExtensions.WhiteColor, -1, lineType);
         Progress++;
 
         // Do the noose

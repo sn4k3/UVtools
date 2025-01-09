@@ -91,7 +91,7 @@ public class PolygonPrimitive : Primitive
         if (Diameter <= 0) return;
 
         mat.DrawPolygon(VerticesCount,
-            Document.SizeMmToPx(Diameter),
+            Document.SizeMmToPx(Diameter, Diameter),
             Document.PositionMmToPx(at.X + CenterX, at.Y + CenterY),
             Document.GetPolarityColor(Exposure), Rotation, -1, lineType);
     }

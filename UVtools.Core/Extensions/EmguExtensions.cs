@@ -22,6 +22,10 @@ using System.Threading;
 using CommunityToolkit.Diagnostics;
 using UVtools.Core.EmguCV;
 using UVtools.Core.Objects;
+using Emgu.CV.Reg;
+using static UVtools.Core.FileFormats.UVJFile;
+using System.Reflection.Metadata;
+using Size = System.Drawing.Size;
 
 namespace UVtools.Core.Extensions;
 
@@ -1892,7 +1896,7 @@ public static class EmguExtensions
     /// </summary>
     /// <param name="src"></param>
     /// <param name="sides">Number of polygon sides, Special: use 1 to draw a line and >= 100 to draw a native OpenCV circle</param>
-    /// <param name="diameter">Diameter</param>
+    /// <param name="diameter">Diameter for both X and Y axis</param>
     /// <param name="center">Center position</param>
     /// <param name="color"></param>
     /// <param name="startingAngle"></param>
@@ -1900,12 +1904,12 @@ public static class EmguExtensions
     /// <param name="lineType"></param>
     /// <param name="flip"></param>
     /// <param name="midpointRounding"></param>
-    public static void DrawPolygon(this Mat src, int sides, double diameter, PointF center, MCvScalar color, double startingAngle = 0, int thickness = -1, LineType lineType = LineType.EightConnected, FlipType? flip = null, MidpointRounding midpointRounding = MidpointRounding.AwayFromZero)
+    public static void DrawPolygon(this Mat src, int sides, SizeF diameter, PointF center, MCvScalar color, double startingAngle = 0, int thickness = -1, LineType lineType = LineType.EightConnected, FlipType? flip = null, MidpointRounding midpointRounding = MidpointRounding.AwayFromZero)
     {
         if (sides == 1)
         {
-            var point1 = center with { X = (float)Math.Round(center.X - diameter / 2, midpointRounding) };
-            var point2 = point1 with { X = (float)(point1.X + diameter - 1) };
+            var point1 = center with { X = (float)Math.Round(center.X - diameter.Width / 2, midpointRounding) };
+            var point2 = point1 with { X = point1.X + diameter.Width - 1 };
             point1 = point1.Rotate(startingAngle, center);
             point2 = point2.Rotate(startingAngle, center);
 
@@ -1930,7 +1934,9 @@ public static class EmguExtensions
         }
         if (sides >= 100)
         {
-            CvInvoke.Circle(src, center.ToPoint(midpointRounding), (int)Math.Round(diameter / 2, midpointRounding), color, thickness, lineType);
+            src.DrawCircle(center.ToPoint(midpointRounding),
+                new Size((int)Math.Round(diameter.Width / 2, midpointRounding), (int)Math.Round(diameter.Height / 2, midpointRounding)),
+                color, -1, lineType);
             return;
         }
 
@@ -1938,7 +1944,7 @@ public static class EmguExtensions
             flip is FlipType.Horizontal or FlipType.Both,
             flip is FlipType.Vertical or FlipType.Both,
             midpointRounding);
-            
+
         if (thickness <= 0)
         {
             using var vec = new VectorOfPoint(points);
@@ -1948,7 +1954,90 @@ public static class EmguExtensions
         {
             CvInvoke.Polylines(src, points, true, color, thickness, lineType);
         }
-            
+    }
+
+    /// <summary>
+    /// Draw a polygon given number of sides and diameter
+    /// </summary>
+    /// <param name="src"></param>
+    /// <param name="sides">Number of polygon sides, Special: use 1 to draw a line and >= 100 to draw a native OpenCV circle</param>
+    /// <param name="diameter">Diameter</param>
+    /// <param name="center">Center position</param>
+    /// <param name="color"></param>
+    /// <param name="startingAngle"></param>
+    /// <param name="thickness"></param>
+    /// <param name="lineType"></param>
+    /// <param name="flip"></param>
+    /// <param name="midpointRounding"></param>
+    public static void DrawPolygon(this Mat src, int sides, float diameter, PointF center, MCvScalar color, double startingAngle = 0, int thickness = -1, LineType lineType = LineType.EightConnected, FlipType? flip = null, MidpointRounding midpointRounding = MidpointRounding.AwayFromZero)
+    {
+        DrawPolygon(src, sides, new SizeF(diameter, diameter), center, color, startingAngle, thickness, lineType, flip, midpointRounding);
+    }
+
+    /// <summary>
+    /// Draw a polygon given number of sides and diameter (Aligned in X axis)
+    /// </summary>
+    /// <param name="src"></param>
+    /// <param name="sides">Number of polygon sides, Special: use 1 to draw a line and >= 100 to draw a native OpenCV circle</param>
+    /// <param name="diameter">Diameter for both X and Y axis</param>
+    /// <param name="center">Center position</param>
+    /// <param name="color"></param>
+    /// <param name="startingAngle"></param>
+    /// <param name="thickness"></param>
+    /// <param name="lineType"></param>
+    /// <param name="flip"></param>
+    /// <param name="midpointRounding"></param>
+    public static void DrawAlignedPolygon(this Mat src, int sides, SizeF diameter, PointF center, MCvScalar color, double startingAngle = 0, int thickness = -1, LineType lineType = LineType.EightConnected, FlipType? flip = null, MidpointRounding midpointRounding = MidpointRounding.AwayFromZero)
+    {
+        if (sides >= 3 && sides != 4)
+        {
+            startingAngle += (180 - (360.0 / sides)) / 2;
+        }
+        DrawPolygon(src, sides, diameter, center, color, startingAngle, thickness, lineType, flip, midpointRounding);
+    }
+
+    public static void DrawAlignedPolygon(this Mat src, int sides, float diameter, PointF center, MCvScalar color, double startingAngle = 0, int thickness = -1, LineType lineType = LineType.EightConnected, FlipType? flip = null, MidpointRounding midpointRounding = MidpointRounding.AwayFromZero)
+    {
+        if (sides >= 3 && sides != 4)
+        {
+            startingAngle += (180 - (360.0 / sides)) / 2;
+        }
+        DrawPolygon(src, sides, new SizeF(diameter, diameter), center, color, startingAngle, thickness, lineType, flip, midpointRounding);
+    }
+
+    /// <summary>
+    /// Draw a circle with a center point and radius
+    /// </summary>
+    /// <param name="src"></param>
+    /// <param name="center"></param>
+    /// <param name="radius"></param>
+    /// <param name="color"></param>
+    /// <param name="thickness"></param>
+    /// <param name="lineType"></param>
+    public static void DrawCircle(this Mat src, Point center, Size radius, MCvScalar color, int thickness = -1, LineType lineType = LineType.EightConnected)
+    {
+        if (Math.Abs(radius.Width - radius.Height) < 0.01)
+        {
+            CvInvoke.Circle(src, center, radius.Width, color, thickness, lineType);
+        }
+        else
+        {
+            CvInvoke.Ellipse(src, center, radius, 0, 0, 360, color, thickness, lineType);
+        }
+    }
+
+    /// <summary>
+    /// Draw a circle with a center point and radius
+    /// </summary>
+    /// <param name="src"></param>
+    /// <param name="center"></param>
+    /// <param name="radius"></param>
+    /// <param name="color"></param>
+    /// <param name="thickness"></param>
+    /// <param name="lineType"></param>
+    public static void DrawCircle(this Mat src, Point center, int radius, MCvScalar color, int thickness = -1, LineType lineType = LineType.EightConnected)
+    {
+        CvInvoke.Circle(src, center, radius, color, thickness, lineType);
     }
     #endregion
 

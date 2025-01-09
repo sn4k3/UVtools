@@ -303,12 +303,12 @@ public class OperationRaftRelief : Operation
 
                     int center = HoleDiameter / 2;
                     //int centerTwo = operation.HoleDiameter + operation.HoleSpacing + operation.HoleDiameter / 2;
-                    int radius = center;
-                    CvInvoke.Circle(shape, new Point(shapeSize / 2, shapeSize / 2), radius, color, -1);
-                    CvInvoke.Circle(shape, new Point(0, 0), radius / 2, color, -1);
-                    CvInvoke.Circle(shape, new Point(0, shapeSize), radius / 2, color, -1);
-                    CvInvoke.Circle(shape, new Point(shapeSize, 0), radius / 2, color, -1);
-                    CvInvoke.Circle(shape, new Point(shapeSize, shapeSize), radius / 2, color, -1);
+                    var radius = SlicerFile.PixelsToNormalizedPitch(center);
+                    shape.DrawCircle(new Point(shapeSize / 2, shapeSize / 2), radius, color, -1);
+                    shape.DrawCircle(new Point(0, 0), radius / 2, color, -1);
+                    shape.DrawCircle(new Point(0, shapeSize), radius / 2, color, -1);
+                    shape.DrawCircle(new Point(shapeSize, 0), radius / 2, color, -1);
+                    shape.DrawCircle(new Point(shapeSize, shapeSize), radius / 2, color, -1);
 
                     CvInvoke.Repeat(shape, supportsMat.Height / shape.Height + 1, supportsMat.Width / shape.Width + 1, patternMat);
 

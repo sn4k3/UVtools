@@ -131,7 +131,7 @@ public partial class ToolMaskControl : ToolControl
         for (decimal i = 1; i < radius; i++)
         {
             int color = (int)(_genMinimumBrightness - i / radius * colorDifference); //or some another color calculation
-            CvInvoke.Circle(Operation.Mask, center, (int)i, new MCvScalar(color), 2);
+            Operation.Mask.DrawCircle(center, SlicerFile!.PixelsToNormalizedPitch((int)i), new MCvScalar(color), 2);
         }
 
         if (_isMaskInverted) Operation.InvertMask();

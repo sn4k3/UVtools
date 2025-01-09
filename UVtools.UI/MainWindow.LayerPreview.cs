@@ -1353,23 +1353,8 @@ public partial class MainWindow
                         continue;
                     }
 
-                    LayerCache.ImageBgra.DrawPolygon((byte)operationDrawing.BrushShape, operationDrawing.BrushSize, operationDrawing.Location,
+                    LayerCache.ImageBgra.DrawAlignedPolygon((byte)operationDrawing.BrushShape, SlicerFile.PixelsToNormalizedPitchF(operationDrawing.BrushSize), operationDrawing.Location,
                         color.ToMCvScalar(), operationDrawing.RotationAngle, operationDrawing.Thickness, operationDrawing.LineType);
-                    /*switch (operationDrawing.BrushShape)
-                    {
-                        case PixelDrawing.BrushShapeType.Square:
-                            CvInvoke.Rectangle(LayerCache.ImageBgr, operationDrawing.Rectangle,
-                                color.ToMCvScalar(), operationDrawing.Thickness,
-                                operationDrawing.LineType);
-                            break;
-                        case PixelDrawing.BrushShapeType.Circle:
-                            CvInvoke.Circle(LayerCache.ImageBgr, operation.Location, operationDrawing.BrushSize / 2,
-                                color.ToMCvScalar(), operationDrawing.Thickness,
-                                operationDrawing.LineType);
-                            break;
-                        default:
-                            throw new ArgumentOutOfRangeException();
-                    }*/
                 }
                 else if (operation.OperationType == PixelOperation.PixelOperationType.Text)
                 {
@@ -1419,7 +1404,8 @@ public partial class MainWindow
                         ? Settings.PixelEditor.SupportsHighlightColor
                         : Settings.PixelEditor.SupportsColor;
 
-                    CvInvoke.Circle(LayerCache.ImageBgra, operation.Location, operationSupport.TipDiameter / 2,
+                    LayerCache.ImageBgra.DrawCircle(operation.Location, 
+                        SlicerFile.PixelsToNormalizedPitch(operationSupport.TipDiameter / 2),
                         color.ToMCvScalar(), -1);
                 }
                 else if (operation.OperationType == PixelOperation.PixelOperationType.DrainHole)
@@ -1429,7 +1415,7 @@ public partial class MainWindow
                         ? Settings.PixelEditor.DrainHoleHighlightColor
                         : Settings.PixelEditor.DrainHoleColor;
 
-                    CvInvoke.Circle(LayerCache.ImageBgra, operation.Location, operationDrainHole.Diameter / 2, color.ToMCvScalar(), -1);
+                    LayerCache.ImageBgra.DrawCircle(operation.Location, SlicerFile.PixelsToNormalizedPitch(operationDrainHole.Diameter / 2), color.ToMCvScalar(), -1);
                 }
             }
 
@@ -2346,7 +2332,7 @@ public partial class MainWindow
 
                         //if (cursorSize % 2 != 0) cursorSize++;
 
-                        cursor = EmguExtensions.InitMat(new Size(cursorSize, cursorSize), 4);
+                        cursor = EmguExtensions.InitMat(SlicerFile!.PixelsToNormalizedPitch(cursorSize), 4);
                         //cursor.SetTo(new MCvScalar(255,255,255,255)); // Debug
 
                         /*FlipType? flip = null;
@@ -2357,7 +2343,9 @@ public partial class MainWindow
                             else if (_showLayerImageFlippedVertically) flip = FlipType.Vertical;
                         }*/
                         
-                        cursor.DrawPolygon((byte) DrawingPixelDrawing.BrushShape, DrawingPixelDrawing.BrushSize, new PointF(cursor.Width / 2.0f, cursor.Height / 2.0f), 
+                        cursor.DrawAlignedPolygon((byte) DrawingPixelDrawing.BrushShape, 
+                            SlicerFile!.PixelsToNormalizedPitchF(DrawingPixelDrawing.BrushSize), 
+                            new PointF(cursor.Width / 2.0f, cursor.Height / 2.0f), 
                             pixelEditorCursorColor, DrawingPixelDrawing.RotationAngle, DrawingPixelDrawing.Thickness, DrawingPixelDrawing.LineType);
 
                         if (DrawingPixelDrawing.BrushShape != PixelDrawing.BrushShapeType.Circle)
@@ -2385,35 +2373,6 @@ public partial class MainWindow
                             }
                         }
                     }
-
-                    /*switch (DrawingPixelDrawing.BrushShape)
-                    {
-                        case PixelDrawing.BrushShapeType.Square:
-                            CvInvoke.Rectangle(cursor,
-                                new Rectangle(Point.Empty, new Size(DrawingPixelDrawing.BrushSize, DrawingPixelDrawing.BrushSize)),
-                                _pixelEditorCursorColor, DrawingPixelDrawing.Thickness, DrawingPixelDrawing.LineType);
-                            _pixelEditorCursorColor.V3 = 255;
-                            CvInvoke.Rectangle(cursor,
-                                new Rectangle(Point.Empty, new Size(DrawingPixelDrawing.BrushSize-1, DrawingPixelDrawing.BrushSize-1)),
-                                _pixelEditorCursorColor, 1, DrawingPixelDrawing.LineType);
-                            break;
-                        case PixelDrawing.BrushShapeType.Circle:
-                            var center = new Point(DrawingPixelDrawing.BrushSize / 2, DrawingPixelDrawing.BrushSize / 2);
-                            CvInvoke.Circle(cursor,
-                               center,
-                               center.X,
-                               _pixelEditorCursorColor,
-                               DrawingPixelDrawing.Thickness, DrawingPixelDrawing.LineType
-                               );
-                            _pixelEditorCursorColor.V3 = 255;
-                            CvInvoke.Circle(cursor,
-                                center,
-                                center.X,
-                                _pixelEditorCursorColor,
-                                1, DrawingPixelDrawing.LineType
-                            );
-                            break;
-                    }*/
                 }
                 break;
             case PixelOperation.PixelOperationType.Text:
@@ -2461,18 +2420,18 @@ public partial class MainWindow
 
                 if (diameter >= PixelEditorCursorMinDiameter)
                 {
-                    cursor = EmguExtensions.InitMat(new Size(diameter, diameter), 4);
-                    var center = new Point(diameter / 2, diameter / 2);
-                    CvInvoke.Circle(cursor,
-                        center,
-                        center.X,
+                    var diameterPitched = SlicerFile!.PixelsToNormalizedPitch(diameter);
+                    var radiusPitched = SlicerFile!.PixelsToNormalizedPitch(diameter / 2);
+                    cursor = EmguExtensions.InitMat(diameterPitched, 4);
+                    var center = radiusPitched.ToPoint();
+                    cursor.DrawCircle(center,
+                        radiusPitched,
                         pixelEditorCursorColor,
                         -1, LineType.AntiAlias
                     );
                     pixelEditorCursorColor.V3 = 255;
-                    CvInvoke.Circle(cursor,
-                        center,
-                        center.X,
+                    cursor.DrawCircle(center,
+                        radiusPitched,
                         pixelEditorCursorColor,
                         1, LineType.AntiAlias
                     );

@@ -1961,7 +1961,7 @@ public partial class MainWindow : WindowEx
 
         PopulateSuggestions();
 
-        if (SlicerFile is CTBEncryptedFile)
+        /*if (SlicerFile is CTBEncryptedFile)
         {
             if (Settings.General.LockedFilesOpenCounter == 0)
             {
@@ -1974,7 +1974,7 @@ public partial class MainWindow : WindowEx
                 Settings.General.LockedFilesOpenCounter = 0;
             }
             UserSettings.Save();
-        }
+        }*/
 
         if (!string.IsNullOrWhiteSpace(Settings.Automations.EventAfterFileLoadScriptFile) &&
             File.Exists(Settings.Automations.EventAfterFileLoadScriptFile))

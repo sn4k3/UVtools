@@ -34,11 +34,11 @@ public class PolygonAperture : Aperture
         if (holeDiameter > 0) HoleDiameter = document.GetMillimeters(holeDiameter);
     }
     #endregion
-    
+
     public override void DrawFlashD3(Mat mat, PointF at, MCvScalar color, LineType lineType = LineType.EightConnected)
     {
         var location = Document.PositionMmToPx(at);
-        mat.DrawPolygon(Vertices, Document.SizeMmToPx(Diameter), location, color, Rotation, -1, lineType);
+        mat.DrawPolygon(Vertices, Document.SizeMmToPx(Diameter, Diameter), location, color, Rotation, -1, lineType);
         if (HoleDiameter > 0)
         {
             var invertColor = color.Equals(EmguExtensions.BlackColor) ? EmguExtensions.WhiteColor : EmguExtensions.BlackColor;

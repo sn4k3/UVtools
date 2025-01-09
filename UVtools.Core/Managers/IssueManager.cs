@@ -1155,11 +1155,12 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
     {
         var drillOps = new List<PixelOperation>();
         var drilledIssues = new List<MainIssue>();
+        var radius = SlicerFile.PixelsToNormalizedPitch(ventHoleDiameter / 2);
         //var suctionReliefSize = (ushort)Math.Max(SlicerFile.PpmmMax * 0.8, 17);
         /* for each suction cup issue that is an initial layer */
         foreach (var mainIssue in issues)
         {
-            var drillPoint = GetDrillLocation((IssueOfContours)mainIssue[0], ventHoleDiameter);
+            var drillPoint = GetDrillLocation((IssueOfContours)mainIssue[0], radius);
             if (drillPoint.IsAnyNegative()) continue;
             drillOps.Add(new PixelDrainHole(mainIssue.StartLayerIndex, drillPoint, (ushort)ventHoleDiameter));
             drilledIssues.Add(mainIssue);
@@ -1170,7 +1171,7 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
         return drilledIssues.ToArray();
     }
 
-    public static Point GetDrillLocation(IssueOfContours issue, int diameter)
+    public static Point GetDrillLocation(IssueOfContours issue, Size radius)
     {
         using var vecCentroid = new VectorOfPoint(issue.Contours[0]);
         var centroid = EmguContour.GetCentroid(vecCentroid);
@@ -1181,7 +1182,7 @@ public sealed class IssueManager : RangeObservableCollection<MainIssue>
         var inverseOffset = new Point(issue.BoundingRectangle.X * -1, issue.BoundingRectangle.Y * -1);
         using var vec = new VectorOfVectorOfPoint(issue.Contours);
         CvInvoke.DrawContours(contourMat, vec, -1, EmguExtensions.WhiteColor, -1, LineType.EightConnected, null, int.MaxValue, inverseOffset);
-        CvInvoke.Circle(circleCheck, new(centroid.X + inverseOffset.X, centroid.Y + inverseOffset.Y), diameter, EmguExtensions.WhiteColor, -1);
+        circleCheck.DrawCircle(new(centroid.X + inverseOffset.X, centroid.Y + inverseOffset.Y), radius, EmguExtensions.WhiteColor, -1);
         CvInvoke.BitwiseAnd(circleCheck, contourMat, circleCheck);
 
         return CvInvoke.HasNonZero(circleCheck)
