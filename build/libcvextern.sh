@@ -99,14 +99,15 @@ elif testcmd apt; then
         #FULL: sudo apt -y install git build-essential libgtk-3-dev libgstreamer1.0-dev libavcodec-dev libswscale-dev libavformat-dev libdc1394-dev libv4l-dev cmake-curses-gui ocl-icd-dev freeglut3-dev libgeotiff-dev libusb-1.0-0-dev
         sudo apt -y install git build-essential cmake-curses-gui
         sudo apt install -y apt-transport-https
+        sudo apt install -y libtbb-dev
         sudo apt update
-        sudo apt install -y dotnet-sdk-6.0
+        sudo apt install -y dotnet-sdk-9.0
         if ! testcmd dotnet; then
-            wget https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
+            wget https://packages.microsoft.com/config/ubuntu/22.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
             sudo dpkg -i packages-microsoft-prod.deb
             rm packages-microsoft-prod.deb
             sudo apt update
-            sudo apt install -y dotnet-sdk-6.0
+            sudo apt install -y dotnet-sdk-9.0
         fi
     fi
 elif testcmd pacman; then
@@ -124,7 +125,7 @@ elif testcmd dnf; then
         sudo dnf install -y https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm
         sudo dnf groupinstall -y "Development Tools" "Development Libraries"
         #FULL: sudo dnf install -y git cmake gcc-c++ gtk3-devel gstreamer1-devel ffmpeg ffmpeg-devel libdc1394 libv4l-devel cmake-gui ocl-icd-devel freeglut libgeotiff libusb dotnet-sdk-6.0
-        sudo dnf install -y git cmake gcc-c++ dotnet-sdk-6.0
+        sudo dnf install -y git cmake gcc-c++ dotnet-sdk-9.0 libtbb-devel
     fi
 fi
 
@@ -168,7 +169,7 @@ echo "- Bulding"
 if [ "$osVariant" == "macOS" ]; then
 	#sed -i '' "s/-DBUILD_TIFF:BOOL=TRUE/-DBUILD_TIFF:BOOL=FALSE/g" "$directory/platforms/macos/configure" 2>/dev/null
     if [ "$build_package" == "mini" ]; then
-        searchFor='$FREETYPE_OPTION'
+        searchFor='${FREETYPE_OPTIONS[@]}'
         sed -i '' "s/$searchFor/$searchFor \\\\\\
        -DWITH_EIGEN:BOOL=FALSE \\\\\\
        -DWITH_AVFOUNDATION:BOOL=FALSE \\\\\\
@@ -176,12 +177,14 @@ if [ "$osVariant" == "macOS" ]; then
        -DWITH_GSTREAMER:BOOL=FALSE \\\\\\
        -DWITH_1394:BOOL=FALSE \\\\\\
        -DVIDEOIO_ENABLE_PLUGINS:BOOL=FALSE \\\\\\
+       -DBUILD_opencv_videoio:BOOL=FALSE \\\\\\
+       -DBUILD_opencv_gapi:BOOL=FALSE \\\\\\
        -DWITH_PROTOBUF:BOOL=FALSE \\\\\\
        -DBUILD_PROTOBUF:BOOL=FALSE/g" "$directory/platforms/macos/configure" 2>/dev/null
     fi
     "$directory/platforms/macos/configure" $arch $build_package
 else # Linux
-	sed -i "s/-DBUILD_TIFF:BOOL=TRUE/-DBUILD_TIFF:BOOL=FALSE/g" "$directory/platforms/ubuntu/22.04/cmake_configure" 2>/dev/null
+	sed -i "s/-DBUILD_TIFF:BOOL=TRUE/-DBUILD_TIFF:BOOL=FALSE/g" "$directory/platforms/ubuntu/24.04/cmake_configure" 2>/dev/null
     if [ "$build_package" == "mini" ]; then
         searchFor='-DWITH_EIGEN:BOOL=TRUE'
         sed -i "s/$searchFor/-DWITH_EIGEN:BOOL=FALSE \\\\\\
@@ -190,10 +193,14 @@ else # Linux
        -DWITH_GSTREAMER:BOOL=FALSE \\\\\\
        -DWITH_1394:BOOL=FALSE \\\\\\
        -DVIDEOIO_ENABLE_PLUGINS:BOOL=FALSE \\\\\\
+       -DBUILD_opencv_videoio:BOOL=FALSE \\\\\\
+       -DBUILD_opencv_gapi:BOOL=FALSE \\\\\\
        -DWITH_PROTOBUF:BOOL=FALSE \\\\\\
-       -DBUILD_PROTOBUF:BOOL=FALSE/g" "$directory/platforms/ubuntu/22.04/cmake_configure" 2>/dev/null
+       -DBUILD_PROTOBUF:BOOL=FALSE \\\\\\
+       -DWITH_TBB:BOOL=TRUE \\\\\\
+       -DBUILD_TBB:BOOL=TRUE/g" "$directory/platforms/ubuntu/24.04/cmake_configure" 2>/dev/null
     fi
-    "$directory/platforms/ubuntu/22.04/cmake_configure" $build_package
+    "$directory/platforms/ubuntu/24.04/cmake_configure" $build_package
 fi
 
 echo "Completed - Check for errors but also for libcvextern presence on $directory/libs"
